@@ -168,7 +168,10 @@ sobrescritas.
 
 ## Corrida em parede
 
-Só na forma lobo, só no ar, só segurando W.
+Só na forma lobo, só no ar, só segurando W, **e só na descida do
+pulo** — encostar na parede no chão não gruda. É preciso pular e
+esperar começar a cair. Isso faz grudar ser uma decisão, não um
+acidente de encostar na parede.
 
 - Sem limite de tempo: corre enquanto a parede existir
 - Solta ao largar o W, ao bater em obstáculo, ou se atordoado
@@ -179,6 +182,11 @@ Só na forma lobo, só no ar, só segurando W.
 - O olhar fica livre durante a corrida: mirar não desvia o movimento
 - A/D não controlam durante a corrida
 - Space salta para fora e para cima
+- **Contorna quinas**: ao acabar uma face, troca para a face seguinte
+  sem soltar, com uma janela curta de tolerância. Dá para dar a volta
+  num bloco inteiro colado
+- Sucção constante contra a parede mantém o lobo colado, exceto
+  durante a transição de quina, onde ela o prenderia no canto
 
 Esta é **a mecânica mais importante do jogo**. A memória central de
 quem jogava de lobo é correr pela parede, ver o inimigo embaixo e

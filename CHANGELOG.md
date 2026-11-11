@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.4.0 — 2026-11-11
+
+### Alterado
+- Corrida em parede só começa **na descida do pulo**. Encostar na
+  parede estando no chão não gruda mais.
+- Sucção contra a parede (`WallStickForce`): o lobo fica colado em vez
+  de apenas correr perto da superfície.
+
+### Adicionado
+- **Transição de quina**: ao acabar uma face, a corrida troca para a
+  face seguinte em vez de soltar. A nova normal é a direção em que se
+  corria; o novo sentido é o oposto da normal antiga. Uma janela de
+  tolerância (`CornerGrace`) cobre o trecho sem contato entre as duas
+  faces. Permite dar a volta completa num bloco.
+
 ## v0.3.0 — 2026-11-11
 
 ### Alterado
