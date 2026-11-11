@@ -69,6 +69,10 @@ public partial class Player : CharacterBody3D
     /// exigido. Impede regrudar na mesma parede no mesmo pulo.</summary>
     [Export] public float WallRunCooldown = 0.45f;
 
+    /// <summary>Imprime por que a corrida em parede não começou.
+    /// Desligue quando a física estiver no ponto.</summary>
+    [Export] public bool WallDebug = true;
+
     /// <summary>Distância da câmera na forma lobo.</summary>
     [Export] public float ThirdPersonDistance = 3.5f;
 
@@ -325,13 +329,25 @@ public partial class Player : CharacterBody3D
         {
             // Uma corrida por ida ao ar. Sem isto o lobo regruda na
             // mesma altura logo após o salto e a parede vira elevador.
-            if (RequireFloorBetweenWallRuns && _wallSpent) return false;
+            if (RequireFloorBetweenWallRuns && _wallSpent)
+            {
+                if (WallDebug) GD.Print("parede: já usou esta ida ao ar — precisa tocar o chão");
+                return false;
+            }
+
             if (_wallCooldown > 0) return false;
 
             // Só gruda na descida. Encostado na parede no chão não basta:
             // é preciso pular, e a aderência começa quando o lobo começa
             // a cair. Isso faz o gesto ser uma decisão, não um acidente.
-            if (!found || Velocity.Y > 0) return false;
+            if (!found)
+            {
+                if (WallDebug && Velocity.Y <= 0)
+                    GD.Print($"parede: nenhuma a menos de {WallCheckDistance}m");
+                return false;
+            }
+
+            if (Velocity.Y > 0) return false;
 
             _wallSpent = true;
 
@@ -340,7 +356,18 @@ public partial class Player : CharacterBody3D
             _wallNormal = normal;
             _cornerGrace = 0;
 
-            _wallAlong = ChooseDirection(normal);
+            // Numa quina côncava o sentido escolhido pode apontar para
+            // dentro da parede vizinha. Vira para o outro lado antes de
+            // desistir, senão o lobo solta no mesmo frame em que gruda.
+            if (!ResolveDirection(normal, out _wallAlong))
+            {
+                if (WallDebug) GD.Print("parede: os dois sentidos estão bloqueados");
+                _onWall = false;
+                _wallSpent = false;
+                return false;
+            }
+
+            if (WallDebug) GD.Print($"parede: grudou, normal {_wallNormal}, sentido {_wallAlong}");
         }
         else if (found)
         {
@@ -414,6 +441,7 @@ public partial class Player : CharacterBody3D
         // Caminho bloqueado à frente: solta e cai.
         if (IsBlocked(_wallAlong))
         {
+            if (WallDebug) GD.Print("parede: soltou, caminho bloqueado à frente");
             ReleaseWall();
             return false;
         }
@@ -460,6 +488,21 @@ public partial class Player : CharacterBody3D
             return momentum > 0 ? along : -along;
 
         return along.Dot(-GlobalTransform.Basis.Z) < 0 ? -along : along;
+    }
+
+    /// <summary>
+    /// Escolhe o sentido inicial e garante que ele não esbarra de
+    /// imediato. Devolve falso quando os dois lados estão fechados —
+    /// um canto apertado demais para correr.
+    /// </summary>
+    private bool ResolveDirection(Vector3 normal, out Vector3 along)
+    {
+        along = ChooseDirection(normal);
+
+        if (!IsBlocked(along)) return true;
+
+        along = -along;
+        return !IsBlocked(along);
     }
 
     /// <summary>
