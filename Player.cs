@@ -13,8 +13,8 @@ using Godot;
 /// </summary>
 public partial class Player : CharacterBody3D
 {
-    [Export] public float HumanSpeed = 5.2f;
-    [Export] public float JumpVelocity = 3.9f;
+    [Export] public float HumanSpeed = 4.2f;
+    [Export] public float JumpVelocity = 3.0f;
 
     // --- Agachar: vale nas duas formas ---
 
