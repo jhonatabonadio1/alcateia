@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.2 — 2026-11-11
+
+### Corrigido
+- O salto da parede zerava o avanço acumulado na corrida e empurrava
+  o lobo apenas de lado. Agora conserva uma fração do avanço
+  (`WallJumpKeepSpeed`, 0.8) e soma o empurrão perpendicular, o que
+  torna possível saltar em direção a alguém à frente.
+
 ## v0.4.1 — 2026-11-11
 
 ### Alterado

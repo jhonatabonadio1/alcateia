@@ -186,7 +186,12 @@ acidente de encostar na parede.
   laterais: o ângulo do corpo não decide se existe parede ali
 - O olhar fica livre durante a corrida: mirar não desvia o movimento
 - A/D não controlam durante a corrida
-- Space salta para fora e para cima
+- Space desgruda, salta para fora e para cima, e cai. O salto
+  **conserva o avanço** da corrida (`WallJumpKeepSpeed`) e soma o
+  empurrão perpendicular: sem isso o lobo sai de lado e perde tudo
+  que acumulou, que é o oposto da jogada de cair em cima de alguém
+- Reencostar na mesma parede logo após o salto não acontece, porque
+  grudar exige estar caindo
 - **Contorna quinas**: ao acabar uma face, troca para a face seguinte
   sem soltar, com uma janela curta de tolerância. Dá para dar a volta
   num bloco inteiro colado

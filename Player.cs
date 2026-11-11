@@ -51,8 +51,13 @@ public partial class Player : CharacterBody3D
     /// contornar uma quina, antes de reencontrar a face seguinte.</summary>
     [Export] public float CornerGrace = 0.3f;
 
-    /// <summary>Força do empurrão ao saltar da parede.</summary>
+    /// <summary>Força do empurrão para fora ao saltar da parede.</summary>
     [Export] public float WallJumpPush = 6.5f;
+
+    /// <summary>Fração do avanço ao longo da parede que o salto
+    /// conserva. Zero faz o lobo sair de lado e perder tudo que
+    /// acumulou correndo.</summary>
+    [Export] public float WallJumpKeepSpeed = 0.8f;
 
     /// <summary>Distância da câmera na forma lobo.</summary>
     [Export] public float ThirdPersonDistance = 3.5f;
@@ -366,7 +371,13 @@ public partial class Player : CharacterBody3D
         // transforma a corrida em jogada ofensiva.
         if (Input.IsActionJustPressed("jump"))
         {
-            velocity = _wallNormal * WallJumpPush;
+            // Conserva o avanço ao longo da parede e soma o empurrão
+            // para fora. Sem isso o salto zera tudo que a corrida
+            // acumulou, e o lobo sai de lado em vez de seguir em frente
+            // — justamente o oposto da jogada de cair em cima de alguém.
+            float carried = HumanSpeed * SpeedScale * WallRunSpeedBonus * WallJumpKeepSpeed;
+
+            velocity = _wallAlong * carried + _wallNormal * WallJumpPush;
             velocity.Y = JumpVelocity * JumpScale * 1.1f;
 
             ReleaseWall();
