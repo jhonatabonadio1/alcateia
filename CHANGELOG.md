@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.5.2 — 2026-11-11
+
+### Corrigido
+- Agachamento acontecia em dois tempos. A cápsula encolhe em torno do
+  próprio centro, então os pés subiam no ar e a gravidade os trazia de
+  volta. Agora o corpo desce metade da diferença de altura a cada
+  passo, mantendo os pés plantados.
+- Transição de agachar ficou mais rápida (12 → 22).
+
+## v0.5.1 — 2026-11-11
+
+### Alterado
+- Humano mais lento e com pulo mais curto: velocidade 5.2 → 4.2,
+  pulo 3.9 → 3.0.
+- Multiplicadores das classes subiram para compensar, já que a
+  velocidade do lobo deriva da humana: Bruto 1.1 → 1.5 de velocidade
+  e 1.3 → 1.9 de pulo; Ligeiro 1.6 → 2.1 e 1.8 → 2.5. Sem isso o lobo
+  teria encolhido junto com o humano e o contraste continuaria igual.
+
 ## v0.5.0 — 2026-11-11
 
 ### Adicionado

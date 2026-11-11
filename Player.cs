@@ -29,7 +29,7 @@ public partial class Player : CharacterBody3D
     [Export] public float CrouchEyeHeight = 0.1f;
 
     /// <summary>Velocidade da transição entre em pé e agachado.</summary>
-    [Export] public float CrouchLerpSpeed = 12f;
+    [Export] public float CrouchLerpSpeed = 22f;
     [Export] public float MouseSensitivity = 0.002f;
 
     [Export] public float HowlShield = 60f;
@@ -525,9 +525,22 @@ public partial class Player : CharacterBody3D
         _crouching = !_onWall && Input.IsActionPressed("crouch");
 
         float target = _crouching ? CrouchHeight : StandHeight;
+        float previous = _height;
+
         _height = Mathf.MoveToward(_height, target, CrouchLerpSpeed * (float)delta);
 
+        if (Mathf.IsEqualApprox(previous, _height))
+            return;
+
         _capsule.Height = _height;
+
+        // A cápsula encolhe em torno do próprio centro, então os pés
+        // sobem no ar e a gravidade os traz de volta — o que aparece
+        // como um agachamento em dois tempos. Descer o corpo metade da
+        // diferença mantém os pés plantados e o movimento contínuo.
+        Vector3 position = GlobalPosition;
+        position.Y += (_height - previous) * 0.5f;
+        GlobalPosition = position;
 
         // O olho acompanha a cápsula na mesma proporção.
         float t = Mathf.InverseLerp(CrouchHeight, StandHeight, _height);
