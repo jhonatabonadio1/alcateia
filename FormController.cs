@@ -49,6 +49,12 @@ public partial class FormController : Node
     /// peso à decisão de transformar.</summary>
     [Export] public float ShiftDamageMultiplier = 1.5f;
 
+    /// <summary>Encher a vida ao trocar de forma. Com transformação
+    /// livre isto vira cura infinita e torna o uivo inútil, por isso
+    /// o padrão é falso: a proporção de vida é preservada entre os
+    /// corpos. Meio de vida como humano = meio de vida como lobo.</summary>
+    [Export] public bool RefillOnTransform = false;
+
     public Form Current { get; private set; } = Form.Human;
     public float Wp { get; private set; }
 
@@ -141,6 +147,8 @@ public partial class FormController : Node
     /// denunciar a posição pelo som. Só faz sentido na forma lobo.</summary>
     public bool CanHowl => Current == Form.Wolf;
 
+    private bool KeepRatio => !RefillOnTransform;
+
     private void Enter(Form next)
     {
         Current = next;
@@ -155,12 +163,12 @@ public partial class FormController : Node
 
             case Form.Wolf:
                 _health.DamageMultiplier = 1f;
-                _health.SetPool(Breed.Hp, Breed.Shield, true);
+                _health.SetPool(Breed.Hp, Breed.Shield, RefillOnTransform, KeepRatio);
                 break;
 
             case Form.Human:
                 _health.DamageMultiplier = 1f;
-                _health.SetPool(HumanHp, 0f, true);
+                _health.SetPool(HumanHp, 0f, RefillOnTransform, KeepRatio);
                 break;
         }
 

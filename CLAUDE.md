@@ -22,15 +22,19 @@ validado é retrabalho garantido.
 
 ## O que o jogo é
 
-Um FPS onde virar lobo é **uma decisão com preço**, não uma habilidade
-sempre disponível. A economia de WP é o coração do jogo:
+Um FPS com transformação humano ↔ lobo, onde a escolha de forma é a
+decisão central de cada momento.
 
-- Transformar cedo = vantagem imediata, sem recurso depois
-- Guardar WP = mais tempo num corpo fraco em curta distância
-- Lobo caro = aposta alta, porque morrer cedo desperdiça o investimento
+**Decisão do autor (nov/2026): as classes básicas custam 0 WP.** O
+jogador transforma quando quiser. O WP continua existindo no sistema e
+é o que vai separar as classes caras — Couraçado, Espectro e as demais
+mutações devem custar, criando a economia que o básico não tem.
 
-Sem custo, todos viram lobo e deixa de ser FPS. Com custo alto demais,
-ninguém transforma e o diferencial some.
+Risco conhecido e aceito: sem custo, o lobo domina. Ele é mais rápido,
+tem mais vida, escudo, corre em parede e mata em dois golpes. Se nos
+testes ninguém mais quiser ficar humano, as alavancas para corrigir
+são, nesta ordem: custo de WP no básico, buff nas armas humanas, e
+granadas mais fortes.
 
 ---
 
@@ -131,7 +135,14 @@ VirandoHumano --[0,8s]-->         Humano
 A transição **não pode ser cancelada**. Comprometer-se faz parte do
 custo.
 
-Não existe restrição de HP para transformar. O único custo é WP.
+Não existe restrição de HP para transformar, e as classes básicas não
+custam WP: dá para transformar sempre.
+
+**Transformar não cura.** A proporção de vida é preservada entre os
+corpos — metade da vida humana vira metade da vida do lobo. Sem isso,
+com transformação livre, trocar de forma viraria cura infinita e o
+uivo perderia a razão de existir. O comportamento antigo está atrás do
+export `RefillOnTransform`, desligado por padrão.
 
 ---
 

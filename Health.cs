@@ -46,14 +46,24 @@ public partial class Health : Node
 
     /// <summary>Troca o pool de vida ao mudar de forma. O lobo não
     /// "cura" ao transformar: ele passa a usar outro corpo.</summary>
-    public void SetPool(float maxHp, float maxShield, bool refill)
+    public void SetPool(float maxHp, float maxShield, bool refill, bool keepRatio = false)
     {
+        float oldMaxHp = MaxHp;
+        float oldHp = Hp;
+
         MaxHp = maxHp;
         MaxShield = maxShield;
 
         if (refill)
         {
             Hp = maxHp;
+            Shield = maxShield;
+        }
+        else if (keepRatio && oldMaxHp > 0)
+        {
+            // Corpo novo, mesmo estado: meio de vida como humano vira
+            // meio de vida como lobo. Sem isto, transformar cura.
+            Hp = maxHp * Mathf.Clamp(oldHp / oldMaxHp, 0f, 1f);
             Shield = maxShield;
         }
         else

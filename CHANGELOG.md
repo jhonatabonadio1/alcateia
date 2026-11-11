@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.3.0 — 2026-11-11
+
+### Alterado
+- **Transformação livre**: `WpCost` das classes básicas vai a zero.
+  Decisão do autor. O WP continua no sistema para as classes caras.
+- **Transformar não cura mais**: a proporção de vida passa a ser
+  preservada entre os corpos. Com transformação gratuita, encher a
+  vida a cada troca era cura infinita e tornava o uivo inútil.
+  `RefillOnTransform` traz o comportamento antigo de volta.
+- `Health.SetPool` ganhou o modo `keepRatio`.
+
 ## v0.2.1 — 2026-11-11
 
 ### Corrigido

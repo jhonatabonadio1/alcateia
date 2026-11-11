@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_breed")
 DisplayName = "Ligeiro"
-WpCost = 120.0
+WpCost = 0.0
 Hp = 160.0
 Shield = 60.0
 SpeedMultiplier = 1.6
