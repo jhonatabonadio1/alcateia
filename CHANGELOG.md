@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.5.0 — 2026-11-11
+
+### Adicionado
+- **Agachar** (Ctrl) nas duas formas: encolhe a cápsula de 1.8 para
+  1.0, baixa o olho e corta a velocidade para 45%. Não funciona
+  durante a corrida em parede.
+- Volta ao spawn ao cair abaixo de `FallLimit`. Antes, sair do mapa
+  era queda infinita.
+
+### Alterado
+- Humano mais lento e mais pesado: velocidade 7.0 → 5.2, pulo
+  5.0 → 3.9. A mobilidade passa a pertencer ao lobo.
+- Diagnóstico de parede imprime só quando a mensagem muda, e a
+  transição de quina passou a avisar quando dispara e quando desiste.
+
 ## v0.4.3 — 2026-11-11
 
 ### Corrigido

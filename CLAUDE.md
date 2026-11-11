@@ -69,6 +69,14 @@ granadas mais fortes.
 8. **Câmera: humano em primeira pessoa, lobo em terceira.** A câmera
    não inclina na corrida em parede.
 
+9. **O humano é deliberadamente lento e pesado.** Velocidade 5.2 e
+   pulo 3.9. Toda a mobilidade do jogo pertence ao lobo; o humano
+   compra distância e tempo com arma e granada, não com as pernas.
+
+10. **Agachar vale nas duas formas.** Encolhe a cápsula, baixa o olho
+    e corta a velocidade para 45%. Não se agacha na parede — a corrida
+    já é um estado de corpo inteiro.
+
 ---
 
 ## Propriedade intelectual
@@ -158,6 +166,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 4 | Arremessar granada |
 | Clique esq. | Atacar |
 | F | Uivar (só de lobo) |
+| Ctrl | Agachar (nas duas formas) |
 
 Input é registrado por código em `InputSetup.cs`. **Não peça ao
 usuário para configurar o Input Map no editor** — já foi feito uma vez

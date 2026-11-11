@@ -13,8 +13,23 @@ using Godot;
 /// </summary>
 public partial class Player : CharacterBody3D
 {
-    [Export] public float HumanSpeed = 7.0f;
-    [Export] public float JumpVelocity = 5.0f;
+    [Export] public float HumanSpeed = 5.2f;
+    [Export] public float JumpVelocity = 3.9f;
+
+    // --- Agachar: vale nas duas formas ---
+
+    /// <summary>Fração da velocidade enquanto agachado.</summary>
+    [Export] public float CrouchSpeedFactor = 0.45f;
+
+    [Export] public float StandHeight = 1.8f;
+    [Export] public float CrouchHeight = 1.0f;
+
+    /// <summary>Altura do olho em pé e agachado.</summary>
+    [Export] public float StandEyeHeight = 0.6f;
+    [Export] public float CrouchEyeHeight = 0.1f;
+
+    /// <summary>Velocidade da transição entre em pé e agachado.</summary>
+    [Export] public float CrouchLerpSpeed = 12f;
     [Export] public float MouseSensitivity = 0.002f;
 
     [Export] public float HowlShield = 60f;
@@ -107,6 +122,10 @@ public partial class Player : CharacterBody3D
     private double _wallCooldown;
     private string _lastWallLog = "";
     private Vector3 _spawn;
+    private CollisionShape3D _collision;
+    private CapsuleShape3D _capsule;
+    private bool _crouching;
+    private float _height;
     private double _wallTimer;
 
     public bool IsWallRunning => _onWall;
@@ -126,6 +145,16 @@ public partial class Player : CharacterBody3D
 
         _gravity = (float)ProjectSettings.GetSetting("physics/3d/default_gravity");
         _spawn = GlobalPosition;
+
+        _collision = GetNode<CollisionShape3D>("CollisionShape3D");
+
+        // Duplica a forma: sem isto todos os jogadores da cena
+        // compartilham a mesma cápsula e agacham juntos.
+        _capsule = (CapsuleShape3D)_collision.Shape.Duplicate();
+        _collision.Shape = _capsule;
+
+        _height = StandHeight;
+        _capsule.Height = StandHeight;
 
         // O braço recua sozinho quando há parede atrás — sem isso a
         // câmera atravessa o cenário durante a corrida em parede.
@@ -223,6 +252,8 @@ public partial class Player : CharacterBody3D
         if (_wallCooldown > 0)
             _wallCooldown -= delta;
 
+        UpdateCrouch(delta);
+
         // Uivar trava você no lugar. É o preço da cura.
         if (IsHowling)
         {
@@ -259,7 +290,9 @@ public partial class Player : CharacterBody3D
     }
 
     private float SpeedScale =>
-        (_form.IsWolf ? _form.Breed.SpeedMultiplier : 1f) * (IsStunned ? _stunSlow : 1f);
+        (_form.IsWolf ? _form.Breed.SpeedMultiplier : 1f)
+        * (IsStunned ? _stunSlow : 1f)
+        * (_crouching ? CrouchSpeedFactor : 1f);
     private float JumpScale => _form.IsWolf ? _form.Breed.JumpMultiplier : 1f;
 
     private void HandleActions()
@@ -480,6 +513,28 @@ public partial class Player : CharacterBody3D
         Velocity = velocity;
         MoveAndSlide();
         return true;
+    }
+
+    /// <summary>
+    /// Agachar vale nas duas formas: encolhe a cápsula, baixa o olho e
+    /// corta a velocidade. Na parede não se agacha — a corrida já é um
+    /// estado de corpo inteiro.
+    /// </summary>
+    private void UpdateCrouch(double delta)
+    {
+        _crouching = !_onWall && Input.IsActionPressed("crouch");
+
+        float target = _crouching ? CrouchHeight : StandHeight;
+        _height = Mathf.MoveToward(_height, target, CrouchLerpSpeed * (float)delta);
+
+        _capsule.Height = _height;
+
+        // O olho acompanha a cápsula na mesma proporção.
+        float t = Mathf.InverseLerp(CrouchHeight, StandHeight, _height);
+
+        Vector3 head = _head.Position;
+        head.Y = Mathf.Lerp(CrouchEyeHeight, StandEyeHeight, t);
+        _head.Position = head;
     }
 
     /// <summary>Imprime só quando a mensagem muda. Sem isso cada frame

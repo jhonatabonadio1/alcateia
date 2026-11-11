@@ -19,6 +19,7 @@ public static class InputSetup
         Key("move_right", Godot.Key.D);
         Key("jump", Godot.Key.Space);
         Key("howl", Godot.Key.F);
+        Key("crouch", Godot.Key.Ctrl);
         Mouse("attack", MouseButton.Left);
 
         // Slots: o lobo é o 3, na mesma memória muscular das armas.
