@@ -153,12 +153,21 @@ Lobo          --[tecla 1/2/4]-->  VirandoHumano
 VirandoHumano --[0,8s]-->         Humano
 ```
 
-| Estado | Hitbox | Ataca | Dano recebido |
-|---|---|---|---|
-| Humano | humana | arma | normal |
-| VirandoLobo | humana | não | ×1,5 |
-| Lobo | lupina | corpo-a-corpo | normal |
-| VirandoHumano | lupina | não | ×1,5 |
+| Estado | Hitbox | Ataca | Dano recebido | Física |
+|---|---|---|---|---|
+| Humano | humana | arma | normal | humana |
+| VirandoLobo | humana | não | ×1,5 | **lobo** |
+| Lobo | lupina | corpo-a-corpo | normal | lobo |
+| VirandoHumano | lupina | não | ×1,5 | **humana** |
+
+**A física troca no início da transição, não no fim.** Trocou de
+personagem, trocou de velocidade, pulo e corrida em parede — sem
+esperar a animação. Esperar o fim fazia o jogador apertar 3, pular na
+sequência e receber o pulo humano, o que parece um bug mesmo sendo
+intencional.
+
+O que a transição tira é a capacidade de **atacar**, não a de se
+mover. É essa a vulnerabilidade, junto com o dano aumentado.
 
 A transição **não pode ser cancelada**. Comprometer-se faz parte do
 custo.
@@ -187,6 +196,9 @@ export `RefillOnTransform`, desligado por padrão.
 | Clique esq. | Atacar |
 | F | Uivar (só de lobo) |
 | Ctrl | Agachar (nas duas formas) |
+
+Um toque, um pulo: segurar Space não repete, e uma trava curta impede
+que o mesmo toque dispare o pulo do chão e o da parede.
 
 Input é registrado por código em `InputSetup.cs`. **Não peça ao
 usuário para configurar o Input Map no editor** — já foi feito uma vez

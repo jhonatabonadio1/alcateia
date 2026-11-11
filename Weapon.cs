@@ -192,9 +192,9 @@ public partial class Weapon : Node3D
 	/// </summary>
 	private void ThrowGrenade()
 	{
-		if (_form.IsWolf)
+		if (_form.IsWolf || !_form.CanAttack)
 		{
-			if (Debug) GD.Print("granada: so na forma humana");
+			if (Debug) GD.Print("granada: so na forma humana, fora de transicao");
 			return;
 		}
 

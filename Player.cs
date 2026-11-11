@@ -143,6 +143,7 @@ public partial class Player : CharacterBody3D
     private CollisionShape3D _collision;
     private CapsuleShape3D _capsule;
     private bool _crouching;
+    private double _jumpLock;
     private float _height;
     private double _wallTimer;
 
@@ -270,6 +271,9 @@ public partial class Player : CharacterBody3D
         if (_wallCooldown > 0)
             _wallCooldown -= delta;
 
+        if (_jumpLock > 0)
+            _jumpLock -= delta;
+
         UpdateCrouch(delta);
 
         // Uivar trava você no lugar. É o preço da cura.
@@ -342,7 +346,7 @@ public partial class Player : CharacterBody3D
 
         if (!IsOnFloor())
             velocity.Y -= _gravity * (float)delta;
-        else if (Input.IsActionJustPressed("jump"))
+        else if (WantsJump())
             velocity.Y = JumpVelocity * JumpScale;
 
         Vector2 input = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
@@ -516,7 +520,7 @@ public partial class Player : CharacterBody3D
 
         // Salto da parede: empurra para fora e para cima. É a saída que
         // transforma a corrida em jogada ofensiva.
-        if (Input.IsActionJustPressed("jump"))
+        if (WantsJump())
         {
             // Conserva o avanço ao longo da parede e soma o empurrão
             // para fora. Sem isso o salto zera tudo que a corrida
@@ -603,6 +607,19 @@ public partial class Player : CharacterBody3D
 
         _lastWallLog = message;
         GD.Print($"parede: {message}");
+    }
+
+    /// <summary>
+    /// Um toque, um pulo. Segurar a tecla não repete, e a trava curta
+    /// impede que o mesmo toque dispare o pulo do chão e o da parede.
+    /// </summary>
+    private bool WantsJump()
+    {
+        if (_jumpLock > 0) return false;
+        if (!Input.IsActionJustPressed("jump")) return false;
+
+        _jumpLock = 0.2;
+        return true;
     }
 
     private void ReleaseWall()

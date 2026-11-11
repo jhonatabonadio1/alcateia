@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.6.0 — 2026-11-11
+
+### Alterado
+- **A física troca no início da transição de forma**, não no fim.
+  Antes, apertar 3 e pular em seguida ainda usava o pulo humano
+  durante os 0,8s da transição. A vulnerabilidade da transição
+  continua sendo a impossibilidade de atacar, não de se mover.
+- Pulo passa a ser um por toque: segurar não repete e uma trava curta
+  impede que o mesmo toque dispare o pulo do chão e o da parede.
+- Granada também respeita a transição: não é arremessada enquanto a
+  troca de forma está em curso.
+
 ## v0.5.4 — 2026-11-11
 
 ### Corrigido

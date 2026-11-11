@@ -59,7 +59,19 @@ public partial class FormController : Node
     public float Wp { get; private set; }
 
     public bool CanAttack => Current == Form.Human || Current == Form.Wolf;
-    public bool IsWolf => Current == Form.Wolf || Current == Form.ShiftingToHuman;
+
+    /// <summary>
+    /// Corpo de lobo: velocidade, pulo e corrida em parede.
+    ///
+    /// Vale já na transição PARA lobo e deixa de valer assim que a
+    /// transição DE VOLTA começa — trocou de personagem, trocou de
+    /// física, sem esperar a animação acabar. Esperar o fim fazia o
+    /// jogador apertar 3, pular e receber o pulo humano.
+    ///
+    /// A vulnerabilidade da transição continua: o que não vale durante
+    /// ela é atacar, não se mover.
+    /// </summary>
+    public bool IsWolf => Current == Form.ShiftingToWolf || Current == Form.Wolf;
 
     /// <summary>Câmera em terceira pessoa. Vale também durante as duas
     /// transições: ver o próprio corpo mudar é o gesto de poder, e em
