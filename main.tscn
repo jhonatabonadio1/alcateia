@@ -81,9 +81,8 @@ shape = SubResource("BoxShape3D_wall")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallRight"]
 mesh = SubResource("BoxMesh_wall")
 
-[node name="Player" parent="." instance=ExtResource("1_player")]
+[node name="Player" parent="." instance=ExtResource("1_player") groups=["player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
-groups = ["player"]
 
 [node name="Dummies" type="Node3D" parent="."]
 

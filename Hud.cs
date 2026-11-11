@@ -38,11 +38,15 @@ public partial class Hud : CanvasLayer
 
     public override void _Ready()
     {
-        Node player = GetTree().GetFirstNodeInGroup("player");
+        // O grupo é o caminho normal. A varredura é plano B: cena
+        // montada à mão esquece o grupo com facilidade, e o HUD sumir
+        // inteiro por causa disso custa caro para diagnosticar.
+        Node player = GetTree().GetFirstNodeInGroup("player")
+            ?? FindPlayer(GetTree().CurrentScene);
 
         if (player == null)
         {
-            GD.PrintErr("Hud: nenhum nó no grupo 'player'.");
+            GD.PrintErr("Hud: nenhum Player encontrado na cena.");
             return;
         }
 
@@ -63,6 +67,20 @@ public partial class Hud : CanvasLayer
         OnWpChanged(_form.Wp, _form.MaxWp);
         OnSlotChanged((int)_weapon.Current);
         OnGrenadesChanged(_weapon.Grenades);
+    }
+
+    private static Node FindPlayer(Node from)
+    {
+        if (from == null) return null;
+        if (from is Player) return from;
+
+        foreach (Node child in from.GetChildren())
+        {
+            Node found = FindPlayer(child);
+            if (found != null) return found;
+        }
+
+        return null;
     }
 
     public override void _Process(double delta)
