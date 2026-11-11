@@ -31,6 +31,11 @@ public partial class Player : CharacterBody3D
     /// compromisso: você escolhe a trajetória antes de saltar.</summary>
     [Export] public float AirAccel = 18f;
 
+    /// <summary>Fração da gravidade ao segurar o pulo durante a queda.
+    /// Pouco abaixo de 1: dá um respiro no controle do salto sem virar
+    /// planagem.</summary>
+    [Export] public float HoldFallGravity = 0.78f;
+
     /// <summary>Arrasto no ar quando nenhuma tecla está pressionada.
     /// É o que dá controle sobre o alcance do pulo: segurar mantém o
     /// avanço, soltar encurta. Zero conserva tudo e tira a escolha.</summary>
@@ -345,9 +350,19 @@ public partial class Player : CharacterBody3D
         Vector3 velocity = Velocity;
 
         if (!IsOnFloor())
-            velocity.Y -= _gravity * (float)delta;
+        {
+            // Segurar o pulo durante a queda alivia um pouco a
+            // gravidade. É sutil de propósito: dá controle fino sobre
+            // onde aterrissar sem transformar o salto em planagem.
+            bool holding = velocity.Y < 0 && Input.IsActionPressed("jump");
+            float scale = holding ? HoldFallGravity : 1f;
+
+            velocity.Y -= _gravity * scale * (float)delta;
+        }
         else if (WantsJump())
+        {
             velocity.Y = JumpVelocity * JumpScale;
+        }
 
         Vector2 input = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
         Vector3 direction = (Transform.Basis * new Vector3(input.X, 0, input.Y)).Normalized();

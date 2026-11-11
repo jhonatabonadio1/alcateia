@@ -160,7 +160,7 @@ VirandoHumano --[0,8s]-->         Humano
 | Lobo | lupina | corpo-a-corpo | normal | lobo |
 | VirandoHumano | lupina | não | ×1,5 | **humana** |
 
-**A física troca no início da transição, não no fim.** Trocou de
+**A física e a câmera trocam no início da transição, não no fim.** Trocou de
 personagem, trocou de velocidade, pulo e corrida em parede — sem
 esperar a animação. Esperar o fim fazia o jogador apertar 3, pular na
 sequência e receber o pulo humano, o que parece um bug mesmo sendo
@@ -198,7 +198,9 @@ export `RefillOnTransform`, desligado por padrão.
 | Ctrl | Agachar (nas duas formas) |
 
 Um toque, um pulo: segurar Space não repete, e uma trava curta impede
-que o mesmo toque dispare o pulo do chão e o da parede.
+que o mesmo toque dispare o pulo do chão e o da parede. Segurar Space
+durante a **queda** alivia a gravidade levemente (`HoldFallGravity`) —
+controle fino de aterrissagem, não planagem.
 
 Input é registrado por código em `InputSetup.cs`. **Não peça ao
 usuário para configurar o Input Map no editor** — já foi feito uma vez

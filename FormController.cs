@@ -73,10 +73,13 @@ public partial class FormController : Node
     /// </summary>
     public bool IsWolf => Current == Form.ShiftingToWolf || Current == Form.Wolf;
 
-    /// <summary>Câmera em terceira pessoa. Vale também durante as duas
-    /// transições: ver o próprio corpo mudar é o gesto de poder, e em
-    /// primeira pessoa ele simplesmente não existe.</summary>
-    public bool IsThirdPerson => Current != Form.Human;
+    /// <summary>
+    /// Câmera em terceira pessoa. Segue o corpo pela mesma regra da
+    /// física: entra já na transição para lobo e sai no instante em
+    /// que a volta começa. Deixá-la presa até o fim da transição fazia
+    /// o 1 parecer ter atraso.
+    /// </summary>
+    public bool IsThirdPerson => IsWolf;
 
     private Health _health;
     private double _shiftTimer;

@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.6.1 — 2026-11-11
+
+### Corrigido
+- Atraso ao voltar para humano: a física já trocava no início da
+  transição, mas a câmera só voltava à primeira pessoa no fim. Agora
+  a câmera segue o corpo pela mesma regra.
+
+### Adicionado
+- Segurar o pulo durante a queda alivia a gravidade em 22%
+  (`HoldFallGravity`). Sutil de propósito: controle fino de onde
+  aterrissar, sem virar planagem.
+
 ## v0.6.0 — 2026-11-11
 
 ### Alterado
