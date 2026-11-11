@@ -1,10 +1,10 @@
 [gd_scene load_steps=9 format=3]
 
-[ext_resource type="Script" path="res://Bot.cs" id="1_bot"]
-[ext_resource type="Script" path="res://Health.cs" id="2_health"]
-[ext_resource type="Script" path="res://FormController.cs" id="3_form"]
-[ext_resource type="Script" path="res://Weapon.cs" id="4_weapon"]
-[ext_resource type="Resource" path="res://bruto.tres" id="5_breed"]
+[ext_resource type="Script" path="res://scripts/actors/Bot.cs" id="1_bot"]
+[ext_resource type="Script" path="res://scripts/combat/Health.cs" id="2_health"]
+[ext_resource type="Script" path="res://scripts/forms/FormController.cs" id="3_form"]
+[ext_resource type="Script" path="res://scripts/combat/Weapon.cs" id="4_weapon"]
+[ext_resource type="Resource" path="res://resources/breeds/bruto.tres" id="5_breed"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_bot"]
 radius = 0.4

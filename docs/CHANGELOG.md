@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.7.0 — 2026-11-11
+
+### Adicionado
+- **Bot oponente** (`scripts/actors/Bot.cs`) reusando Health,
+  FormController e Weapon do jogador. Percepção por distância, campo
+  de visão e linha de visada, com memória curta. De humano mantém o
+  alcance da arma; de lobo fecha a distância. Duas instâncias no mapa.
+
+### Alterado
+- **Projeto reorganizado em pastas**: `scenes/`, `resources/breeds/`,
+  `scripts/{actors,combat,forms,ui,core,net,debug}` e `docs/`. Antes
+  eram 14 arquivos soltos na raiz. `CLAUDE.md` e `AGENTS.md` ficam na
+  raiz, que é onde agentes procuram.
+- `run/main_scene` passou a apontar para o caminho explícito em vez de
+  um uid, que não sobrevive bem a mover arquivos fora do editor.
+
 ## v0.6.1 — 2026-11-11
 
 ### Corrigido

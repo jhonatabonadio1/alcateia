@@ -1,9 +1,9 @@
 [gd_scene load_steps=12 format=3]
 
-[ext_resource type="PackedScene" path="res://player.tscn" id="1_player"]
-[ext_resource type="PackedScene" path="res://dummy.tscn" id="2_dummy"]
-[ext_resource type="Script" path="res://Hud.cs" id="3_hud"]
-[ext_resource type="PackedScene" path="res://bot.tscn" id="4_bot"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/dummy.tscn" id="2_dummy"]
+[ext_resource type="Script" path="res://scripts/ui/Hud.cs" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/bot.tscn" id="4_bot"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
 

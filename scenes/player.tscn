@@ -1,11 +1,11 @@
 [gd_scene load_steps=9 format=3]
 
-[ext_resource type="Script" path="res://Player.cs" id="1_player"]
-[ext_resource type="Script" path="res://Health.cs" id="2_health"]
-[ext_resource type="Script" path="res://FormController.cs" id="3_form"]
-[ext_resource type="Script" path="res://Weapon.cs" id="4_weapon"]
-[ext_resource type="Resource" path="res://bruto.tres" id="5_breed"]
-[ext_resource type="PackedScene" path="res://grenade.tscn" id="6_grenade"]
+[ext_resource type="Script" path="res://scripts/actors/Player.cs" id="1_player"]
+[ext_resource type="Script" path="res://scripts/combat/Health.cs" id="2_health"]
+[ext_resource type="Script" path="res://scripts/forms/FormController.cs" id="3_form"]
+[ext_resource type="Script" path="res://scripts/combat/Weapon.cs" id="4_weapon"]
+[ext_resource type="Resource" path="res://resources/breeds/bruto.tres" id="5_breed"]
+[ext_resource type="PackedScene" path="res://scenes/grenade.tscn" id="6_grenade"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.4

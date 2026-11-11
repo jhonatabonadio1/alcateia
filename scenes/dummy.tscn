@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3]
 
-[ext_resource type="Script" path="res://Dummy.cs" id="1_dummy"]
-[ext_resource type="Script" path="res://Health.cs" id="2_health"]
+[ext_resource type="Script" path="res://scripts/debug/Dummy.cs" id="1_dummy"]
+[ext_resource type="Script" path="res://scripts/combat/Health.cs" id="2_health"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_dummy"]
 size = Vector3(1, 2, 1)

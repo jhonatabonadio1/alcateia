@@ -116,18 +116,69 @@ Couraçado, Espectro, Detonador, Congelante, Arcano.
 
 ## Arquitetura
 
+```
+alcateia/
+├── CLAUDE.md           este guia (fica na raiz, é onde agentes olham)
+├── AGENTS.md           atalho para o mesmo arquivo
+├── project.godot
+├── docs/
+│   └── CHANGELOG.md
+├── scenes/             tudo que é .tscn
+│   ├── main.tscn       cena principal
+│   ├── player.tscn
+│   ├── bot.tscn
+│   ├── dummy.tscn
+│   └── grenade.tscn
+├── resources/
+│   └── breeds/         estatísticas das classes de lobo
+│       ├── bruto.tres
+│       └── ligeiro.tres
+└── scripts/
+    ├── actors/         quem ocupa o mundo e decide
+    │   ├── Player.cs
+    │   └── Bot.cs
+    ├── combat/         dano e o que o causa
+    │   ├── Health.cs
+    │   ├── Weapon.cs
+    │   └── Grenade.cs
+    ├── forms/          a transformação e seus dados
+    │   ├── FormController.cs
+    │   └── WolfBreed.cs
+    ├── ui/
+    │   └── Hud.cs
+    ├── core/
+    │   └── InputSetup.cs
+    ├── net/            dormente até a Fase 2
+    │   └── GameManager.cs
+    └── debug/          peças descartáveis
+        └── Dummy.cs
+```
+
 | Arquivo | Responsabilidade |
 |---|---|
-| `Player.cs` | Movimento, corrida em parede, câmeras, stun, leitura de input |
-| `Health.cs` | HP, escudo, dano, morte, respawn |
-| `FormController.cs` | Máquina de estados da transformação + economia de WP |
-| `Weapon.cs` | Slots, tiro hitscan, garrada, granada |
-| `Grenade.cs` | Projétil de atordoamento com física |
-| `WolfBreed.cs` | Resource com estatísticas por classe |
-| `Hud.cs` | Barras e avisos, construído por código |
-| `InputSetup.cs` | Registra ações de input sem passar pelo editor |
-| `Dummy.cs` | Boneco de teste — descartável |
-| `GameManager.cs` | Rede — dormente até a Fase 2 |
+| `actors/Player.cs` | Movimento, corrida em parede, câmeras, agachar, stun, input |
+| `actors/Bot.cs` | Percepção, perseguição, decisão de forma, combate |
+| `combat/Health.cs` | HP, escudo, dano, morte, respawn |
+| `combat/Weapon.cs` | Slots, tiro hitscan, garrada, granada |
+| `combat/Grenade.cs` | Projétil de atordoamento com física |
+| `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
+| `forms/WolfBreed.cs` | Resource com estatísticas por classe |
+| `ui/Hud.cs` | Barras e avisos, construído por código |
+| `core/InputSetup.cs` | Registra ações de input sem passar pelo editor |
+| `net/GameManager.cs` | Rede — dormente até a Fase 2 |
+| `debug/Dummy.cs` | Boneco de teste — descartável |
+
+### Por que não há pasta `player/`
+
+`Health`, `Weapon` e `FormController` **não pertencem ao jogador**: o
+bot usa exatamente os mesmos componentes, e é isso que faz o
+balanceamento medido contra o bot valer contra uma pessoa. Agrupar por
+dono criaria a tentação de escrever uma versão para cada um, e aí os
+dois estariam jogando jogos diferentes.
+
+A divisão é por **domínio**: quem age, o que causa dano, o que
+transforma. Componente compartilhado mora no domínio dele, não no de
+quem o usa.
 
 ### Separação que precisa ser preservada
 
