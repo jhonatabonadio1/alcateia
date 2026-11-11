@@ -69,9 +69,22 @@ granadas mais fortes.
 8. **Câmera: humano em primeira pessoa, lobo em terceira.** A câmera
    não inclina na corrida em parede.
 
-9. **O humano é deliberadamente lento e pesado.** Velocidade 5.2 e
-   pulo 3.9. Toda a mobilidade do jogo pertence ao lobo; o humano
+9. **O humano é deliberadamente lento e pesado.** Velocidade 4.2 e
+   pulo 3.0. Toda a mobilidade do jogo pertence ao lobo; o humano
    compra distância e tempo com arma e granada, não com as pernas.
+
+   Atenção ao mexer: a velocidade e o pulo do lobo são
+   **multiplicadores** dos valores humanos. Baixar o humano encolhe o
+   lobo junto e o contraste entre as formas não muda. Para separar as
+   duas, mexa no `SpeedMultiplier` das classes, não só aqui.
+
+   Valores absolutos atuais:
+
+   | | Humano | Bruto | Ligeiro |
+   |---|---|---|---|
+   | Velocidade | 4.2 | 6.3 | 8.8 |
+   | Pulo | 3.0 | 5.7 | 7.5 |
+   | Agachado | 1.9 | 2.8 | 4.0 |
 
 10. **Agachar vale nas duas formas.** Encolhe a cápsula, baixa o olho
     e corta a velocidade para 45%. Não se agacha na parede — a corrida
