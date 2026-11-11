@@ -1,0 +1,49 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://Player.cs" id="1_player"]
+[ext_resource type="Script" path="res://Health.cs" id="2_health"]
+[ext_resource type="Script" path="res://FormController.cs" id="3_form"]
+[ext_resource type="Script" path="res://Weapon.cs" id="4_weapon"]
+[ext_resource type="Resource" path="res://bruto.tres" id="5_breed"]
+[ext_resource type="PackedScene" path="res://grenade.tscn" id="6_grenade"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
+radius = 0.4
+height = 1.8
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_body")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Head"]
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Head"]
+spring_length = 3.5
+margin = 0.2
+
+[node name="WolfCamera" type="Camera3D" parent="Head/SpringArm3D"]
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("2_health")
+
+[node name="FormController" type="Node" parent="."]
+script = ExtResource("3_form")
+Breed = ExtResource("5_breed")
+
+[node name="Weapon" type="Node3D" parent="."]
+script = ExtResource("4_weapon")
+GrenadeScene = ExtResource("6_grenade")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]

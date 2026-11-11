@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WolfBreed" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://WolfBreed.cs" id="1_breed"]
+
+[resource]
+script = ExtResource("1_breed")
+DisplayName = "Ligeiro"
+WpCost = 120.0
+Hp = 160.0
+Shield = 60.0
+SpeedMultiplier = 1.6
+JumpMultiplier = 1.8
+AttackDamage = 55.0
+AttackRange = 2.2
+AttackCooldown = 0.35
+AirAttackBonus = 2.0

@@ -1,0 +1,48 @@
+# Changelog
+
+## v0.2.0 — 2026-11-11
+
+### Adicionado
+- Granada de atordoamento (`Grenade.cs`, `grenade.tscn`): arremesso em
+  arco com física, pavio de 1,8s, dano com falloff e atordoamento em
+  área. Duas por vida, reabastece ao renascer, só na forma humana.
+- Atordoamento no `Player`: reduz velocidade e desativa a corrida em
+  parede. É a resposta do humano contra o lobo.
+- Contador de granadas no HUD.
+- `CLAUDE.md` — guia para agentes, com as regras de design, a
+  arquitetura e o que não pode ser violado.
+
+### Decisões de design
+- A granada tira mobilidade, não dá dano pesado — o poder do lobo vem
+  da mobilidade, então é ela que precisa ser atacada.
+- Granada é slot de ação, não de arma: apertar 4 arremessa na hora,
+  sem deixar o jogador segurando granada no meio do tiroteio.
+- Arremesso soma a velocidade do jogador, então correr e jogar leva
+  mais longe.
+
+## v0.1.0 — 2026-11-11
+
+Primeira versão jogável. Fase 1, local, sem rede.
+
+### Adicionado
+- Controlador em primeira pessoa
+- Vida, escudo separado do HP, morte e respawn
+- Máquina de estados da transformação com quatro estados e economia
+  de WP
+- Sistema de slots: 1 principal, 2 secundária, 3 lobo, 4 granada
+- Duas armas: principal automática, secundária semiautomática
+- Garrada do lobo com bônus de ataque aéreo
+- Uivo: recarrega escudo, trava no lugar
+- Corrida em parede e salto da parede, só na forma lobo
+- Câmera em primeira pessoa no humano, terceira pessoa no lobo
+- HUD com vida, escudo, WP e slot atual
+- Registro de input por código, sem configuração no editor
+- Boneco de teste que pisca ao levar dano
+- Classes Bruto e Ligeiro como recursos editáveis
+
+### Decisões de design
+- Transformar é um slot, não um botão separado
+- Corrida em parede sem limite de tempo; solta ao largar W ou bater
+- Câmera não inclina na parede
+- Sem restrição de HP para transformar; o único custo é WP
+- Estados de transição são reais, com hitbox e regras próprias

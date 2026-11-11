@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WolfBreed" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://WolfBreed.cs" id="1_breed"]
+
+[resource]
+script = ExtResource("1_breed")
+DisplayName = "Bruto"
+WpCost = 250.0
+Hp = 300.0
+Shield = 100.0
+SpeedMultiplier = 1.1
+JumpMultiplier = 1.3
+AttackDamage = 150.0
+AttackRange = 2.5
+AttackCooldown = 1.0
+AirAttackBonus = 1.5

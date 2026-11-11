@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://Dummy.cs" id="1_dummy"]
+[ext_resource type="Script" path="res://Health.cs" id="2_health"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dummy"]
+size = Vector3(1, 2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dummy"]
+size = Vector3(1, 2, 1)
+
+[node name="Dummy" type="StaticBody3D"]
+script = ExtResource("1_dummy")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_dummy")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_dummy")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("2_health")
