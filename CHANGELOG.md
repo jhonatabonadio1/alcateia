@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.3 — 2026-11-11
+
+### Corrigido
+- Soltar as teclas no ar travava o corpo no lugar, inclusive no meio
+  do pulo. A desaceleração era aplicada sem considerar o tempo nem se
+  o jogador estava no chão, zerando a velocidade horizontal em um
+  frame. Agora chão e ar são tratados separadamente: o chão freia
+  rápido (`GroundFriction`) e o ar conserva o impulso com aceleração
+  reduzida (`AirAccel`).
+
 ## v0.5.2 — 2026-11-11
 
 ### Corrigido

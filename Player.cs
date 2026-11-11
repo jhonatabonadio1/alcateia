@@ -18,6 +18,19 @@ public partial class Player : CharacterBody3D
 
     // --- Agachar: vale nas duas formas ---
 
+    // --- Aceleração e inércia ---
+
+    /// <summary>Aceleração no chão, em m/s². Alta deixa o controle
+    /// responsivo sem virar teletransporte.</summary>
+    [Export] public float GroundAccel = 60f;
+
+    /// <summary>Desaceleração no chão ao soltar as teclas.</summary>
+    [Export] public float GroundFriction = 50f;
+
+    /// <summary>Aceleração no ar. Baixa, para o pulo ser um
+    /// compromisso: você escolhe a trajetória antes de saltar.</summary>
+    [Export] public float AirAccel = 18f;
+
     /// <summary>Fração da velocidade enquanto agachado.</summary>
     [Export] public float CrouchSpeedFactor = 0.45f;
 
@@ -331,16 +344,24 @@ public partial class Player : CharacterBody3D
         Vector3 direction = (Transform.Basis * new Vector3(input.X, 0, input.Y)).Normalized();
         float speed = HumanSpeed * SpeedScale;
 
+        bool grounded = IsOnFloor();
+        var horizontal = new Vector3(velocity.X, 0, velocity.Z);
+
         if (direction != Vector3.Zero)
         {
-            velocity.X = direction.X * speed;
-            velocity.Z = direction.Z * speed;
+            float accel = grounded ? GroundAccel : AirAccel;
+            horizontal = horizontal.MoveToward(direction * speed, accel * (float)delta);
         }
-        else
+        else if (grounded)
         {
-            velocity.X = Mathf.MoveToward(velocity.X, 0, speed);
-            velocity.Z = Mathf.MoveToward(velocity.Z, 0, speed);
+            horizontal = horizontal.MoveToward(Vector3.Zero, GroundFriction * (float)delta);
         }
+
+        // No ar e sem comando, o impulso é conservado: o corpo segue a
+        // trajetória do pulo em vez de parar no lugar.
+
+        velocity.X = horizontal.X;
+        velocity.Z = horizontal.Z;
 
         Velocity = velocity;
         MoveAndSlide();

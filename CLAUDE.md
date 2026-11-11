@@ -86,7 +86,13 @@ granadas mais fortes.
    | Pulo | 3.0 | 5.7 | 7.5 |
    | Agachado | 1.9 | 2.8 | 4.0 |
 
-10. **Agachar vale nas duas formas.** Encolhe a cápsula, baixa o olho
+10. **O pulo conserva o impulso.** Soltar as teclas no ar não trava o
+    corpo: a trajetória é escolhida antes de saltar, e o controle no
+    ar é parcial (`AirAccel`). No chão a freada é rápida
+    (`GroundFriction`). Nunca volte a zerar a velocidade horizontal
+    direto — isso mata todo o peso do movimento.
+
+11. **Agachar vale nas duas formas.** Encolhe a cápsula, baixa o olho
     e corta a velocidade para 45%. Não se agacha na parede — a corrida
     já é um estado de corpo inteiro.
 
