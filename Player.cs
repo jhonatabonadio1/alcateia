@@ -33,9 +33,9 @@ public partial class Player : CharacterBody3D
     /// da parede.</summary>
     [Export] public float WallRunClearance = 0.7f;
 
-    /// <summary>Fração da gravidade aplicada enquanto corre na parede.
-    /// Quanto menor, mais grudado. Zero = não cai nunca.</summary>
-    [Export] public float WallRunGravityScale = 0.12f;
+    /// <summary>Deriva vertical na parede, em metros por segundo.
+    /// Zero mantém a altura travada: o lobo não sobe nem desce.</summary>
+    [Export] public float WallRunVerticalDrift = 0f;
 
     /// <summary>Velocidade ao longo da parede, sobre a velocidade da forma.</summary>
     [Export] public float WallRunSpeedBonus = 1.25f;
@@ -67,6 +67,7 @@ public partial class Player : CharacterBody3D
 
     private bool _onWall;
     private Vector3 _wallNormal;
+    private Vector3 _wallAlong;
     private double _wallTimer;
 
     public bool IsWallRunning => _onWall;
@@ -292,6 +293,14 @@ public partial class Player : CharacterBody3D
             _onWall = true;
             _wallTimer = WallRunMaxTime;
             _wallNormal = normal;
+
+            // A direção é escolhida UMA vez, no momento de grudar, pelo
+            // lado para onde o jogador olhava. Depois disso o olhar fica
+            // livre para mirar sem desviar a corrida.
+            _wallAlong = normal.Cross(Vector3.Up).Normalized();
+
+            if (_wallAlong.Dot(-GlobalTransform.Basis.Z) < 0)
+                _wallAlong = -_wallAlong;
         }
         else
         {
@@ -324,16 +333,19 @@ public partial class Player : CharacterBody3D
             return true;
         }
 
-        // Gravidade reduzida, não anulada: a parede segura, não voa.
-        velocity.Y -= _gravity * WallRunGravityScale * (float)delta;
-        velocity.Y = Mathf.Max(velocity.Y, -4f);
+        // Altura travada: na parede o lobo não sobe nem desce.
+        velocity.Y = WallRunVerticalDrift;
 
-        // Direção ao longo da parede, orientada por onde o jogador olha.
+        // A direção acompanha a curva da parede, mas nunca se inverte:
+        // dos dois sentidos possíveis, fica com o que continua o
+        // movimento já em curso. Para ir para o outro lado é preciso
+        // cair e recomeçar.
         Vector3 along = _wallNormal.Cross(Vector3.Up).Normalized();
-        Vector3 looking = -GlobalTransform.Basis.Z;
 
-        if (along.Dot(looking) < 0)
+        if (along.Dot(_wallAlong) < 0)
             along = -along;
+
+        _wallAlong = along;
 
         // Caminho bloqueado à frente: solta da parede e cai.
         if (IsBlocked(along))

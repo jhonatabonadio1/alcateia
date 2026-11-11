@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.1 — 2026-11-11
+
+### Corrigido
+- Grupo `player` no `main.tscn`: a declaração vai dentro dos colchetes
+  do cabeçalho do nó. Como linha de propriedade o Godot ignorava em
+  silêncio e o HUD não encontrava o jogador.
+- HUD ganhou varredura da cena como plano B quando o grupo não existe.
+
+### Alterado
+- Corrida em parede: altura travada (não sobe nem desce) e direção
+  travada no momento de grudar. O olhar passa a ser livre durante a
+  corrida — mirar não desvia mais o movimento. Para mudar de lado é
+  preciso cair e recomeçar.
+- `WallRunGravityScale` virou `WallRunVerticalDrift`, em metros por
+  segundo, com zero como padrão.
+
 ## v0.2.0 — 2026-11-11
 
 ### Adicionado

@@ -161,7 +161,11 @@ Só na forma lobo, só no ar, só segurando W.
 
 - Sem limite de tempo: corre enquanto a parede existir
 - Solta ao largar o W, ao bater em obstáculo, ou se atordoado
-- A direção é ditada pela parede, orientada por onde o jogador olha
+- **Altura travada**: não sobe nem desce enquanto corre
+- **Direção travada**: escolhida uma vez, ao grudar, pelo lado para
+  onde o jogador olhava. Acompanha a curva da parede, mas nunca se
+  inverte. Para ir ao outro lado é preciso cair e recomeçar
+- O olhar fica livre durante a corrida: mirar não desvia o movimento
 - A/D não controlam durante a corrida
 - Space salta para fora e para cima
 
