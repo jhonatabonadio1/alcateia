@@ -69,6 +69,10 @@ public partial class Player : CharacterBody3D
     /// exigido. Impede regrudar na mesma parede no mesmo pulo.</summary>
     [Export] public float WallRunCooldown = 0.45f;
 
+    /// <summary>Altura abaixo da qual o jogador é devolvido ao spawn.
+    /// Sem isto, sair do mapa é queda infinita.</summary>
+    [Export] public float FallLimit = -25f;
+
     /// <summary>Imprime por que a corrida em parede não começou.
     /// Desligue quando a física estiver no ponto.</summary>
     [Export] public bool WallDebug = true;
@@ -101,6 +105,8 @@ public partial class Player : CharacterBody3D
     private double _cornerGrace;
     private bool _wallSpent;
     private double _wallCooldown;
+    private string _lastWallLog = "";
+    private Vector3 _spawn;
     private double _wallTimer;
 
     public bool IsWallRunning => _onWall;
@@ -119,6 +125,7 @@ public partial class Player : CharacterBody3D
         _weapon = GetNode<Weapon>("Weapon");
 
         _gravity = (float)ProjectSettings.GetSetting("physics/3d/default_gravity");
+        _spawn = GlobalPosition;
 
         // O braço recua sozinho quando há parede atrás — sem isso a
         // câmera atravessa o cenário durante a corrida em parede.
@@ -177,6 +184,15 @@ public partial class Player : CharacterBody3D
     public override void _PhysicsProcess(double delta)
     {
         if (!IsMultiplayerAuthority()) return;
+
+        if (GlobalPosition.Y < FallLimit)
+        {
+            GlobalPosition = _spawn;
+            Velocity = Vector3.Zero;
+            ReleaseWall();
+            _wallSpent = false;
+            return;
+        }
 
         if (_health.IsDead)
         {
@@ -331,7 +347,7 @@ public partial class Player : CharacterBody3D
             // mesma altura logo após o salto e a parede vira elevador.
             if (RequireFloorBetweenWallRuns && _wallSpent)
             {
-                if (WallDebug) GD.Print("parede: já usou esta ida ao ar — precisa tocar o chão");
+                WallLog("já usou esta ida ao ar — precisa tocar o chão");
                 return false;
             }
 
@@ -342,8 +358,8 @@ public partial class Player : CharacterBody3D
             // a cair. Isso faz o gesto ser uma decisão, não um acidente.
             if (!found)
             {
-                if (WallDebug && Velocity.Y <= 0)
-                    GD.Print($"parede: nenhuma a menos de {WallCheckDistance}m");
+                if (Velocity.Y <= 0)
+                    WallLog($"nenhuma a menos de {WallCheckDistance}m");
                 return false;
             }
 
@@ -361,13 +377,13 @@ public partial class Player : CharacterBody3D
             // desistir, senão o lobo solta no mesmo frame em que gruda.
             if (!ResolveDirection(normal, out _wallAlong))
             {
-                if (WallDebug) GD.Print("parede: os dois sentidos estão bloqueados");
+                WallLog("os dois sentidos estão bloqueados");
                 _onWall = false;
                 _wallSpent = false;
                 return false;
             }
 
-            if (WallDebug) GD.Print($"parede: grudou, normal {_wallNormal}, sentido {_wallAlong}");
+            WallLog($"grudou, normal {_wallNormal}, sentido {_wallAlong}");
         }
         else if (found)
         {
@@ -392,6 +408,8 @@ public partial class Player : CharacterBody3D
             _wallNormal = _wallAlong;
             _wallAlong = -oldNormal;
             _cornerGrace = CornerGrace;
+
+            WallLog($"quina: tentando face seguinte, normal {_wallNormal}");
         }
         else
         {
@@ -399,6 +417,7 @@ public partial class Player : CharacterBody3D
 
             if (_cornerGrace <= 0)
             {
+                WallLog("quina: não achou a face seguinte, soltou");
                 ReleaseWall();
                 return false;
             }
@@ -441,7 +460,7 @@ public partial class Player : CharacterBody3D
         // Caminho bloqueado à frente: solta e cai.
         if (IsBlocked(_wallAlong))
         {
-            if (WallDebug) GD.Print("parede: soltou, caminho bloqueado à frente");
+            WallLog("soltou, caminho bloqueado à frente");
             ReleaseWall();
             return false;
         }
@@ -461,6 +480,16 @@ public partial class Player : CharacterBody3D
         Velocity = velocity;
         MoveAndSlide();
         return true;
+    }
+
+    /// <summary>Imprime só quando a mensagem muda. Sem isso cada frame
+    /// de queda vira uma linha e o sinal some no meio do ruído.</summary>
+    private void WallLog(string message)
+    {
+        if (!WallDebug || message == _lastWallLog) return;
+
+        _lastWallLog = message;
+        GD.Print($"parede: {message}");
     }
 
     private void ReleaseWall()
