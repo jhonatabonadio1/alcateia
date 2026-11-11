@@ -86,11 +86,12 @@ granadas mais fortes.
    | Pulo | 3.0 | 5.7 | 7.5 |
    | Agachado | 1.9 | 2.8 | 4.0 |
 
-10. **O pulo conserva o impulso.** Soltar as teclas no ar não trava o
-    corpo: a trajetória é escolhida antes de saltar, e o controle no
-    ar é parcial (`AirAccel`). No chão a freada é rápida
-    (`GroundFriction`). Nunca volte a zerar a velocidade horizontal
-    direto — isso mata todo o peso do movimento.
+10. **O alcance do pulo é controlado pela tecla.** Segurar para frente
+    mantém o avanço até o fim; soltar encurta, via um arrasto suave no
+    ar (`AirFriction`). Não existe distância máxima fixa — quem decide
+    é o jogador, durante o salto. Os dois extremos são erros: zerar a
+    velocidade trava o corpo no ar, e conservar tudo tira a escolha.
+    O controle de direção no ar é parcial (`AirAccel`).
 
 11. **Agachar vale nas duas formas.** Encolhe a cápsula, baixa o olho
     e corta a velocidade para 45%. Não se agacha na parede — a corrida
@@ -229,6 +230,12 @@ acidente de encostar na parede.
   num bloco inteiro colado
 - Sucção constante contra a parede mantém o lobo colado, exceto
   durante a transição de quina, onde ela o prenderia no canto
+- Ao trocar para uma parede em ângulo, quem decide o sentido é o
+  **movimento** que o lobo carrega, não o sentido antigo: em paredes
+  perpendiculares a comparação com o sentido antigo dá zero e o
+  desempate mandava o lobo de volta pelo outro lado
+- Quinas muito finas não funcionam: os raios precisam de superfície
+  para encontrar. Paredes de cerca de 1m de espessura são adequadas
 
 Esta é **a mecânica mais importante do jogo**. A memória central de
 quem jogava de lobo é correr pela parede, ver o inimigo embaixo e

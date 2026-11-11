@@ -31,6 +31,11 @@ public partial class Player : CharacterBody3D
     /// compromisso: você escolhe a trajetória antes de saltar.</summary>
     [Export] public float AirAccel = 18f;
 
+    /// <summary>Arrasto no ar quando nenhuma tecla está pressionada.
+    /// É o que dá controle sobre o alcance do pulo: segurar mantém o
+    /// avanço, soltar encurta. Zero conserva tudo e tira a escolha.</summary>
+    [Export] public float AirFriction = 7f;
+
     /// <summary>Fração da velocidade enquanto agachado.</summary>
     [Export] public float CrouchSpeedFactor = 0.45f;
 
@@ -352,13 +357,14 @@ public partial class Player : CharacterBody3D
             float accel = grounded ? GroundAccel : AirAccel;
             horizontal = horizontal.MoveToward(direction * speed, accel * (float)delta);
         }
-        else if (grounded)
+        else
         {
-            horizontal = horizontal.MoveToward(Vector3.Zero, GroundFriction * (float)delta);
+            // No chão freia rápido. No ar o arrasto é suave: o corpo
+            // segue a trajetória do pulo, mas soltar a tecla encurta o
+            // alcance — é assim que o jogador controla a distância.
+            float drag = grounded ? GroundFriction : AirFriction;
+            horizontal = horizontal.MoveToward(Vector3.Zero, drag * (float)delta);
         }
-
-        // No ar e sem comando, o impulso é conservado: o corpo segue a
-        // trajetória do pulo em vez de parar no lugar.
 
         velocity.X = horizontal.X;
         velocity.Z = horizontal.Z;
@@ -441,14 +447,32 @@ public partial class Player : CharacterBody3D
         }
         else if (found)
         {
+            bool turned = normal.Dot(_wallNormal) < 0.8f;
+
             _wallNormal = normal;
             _cornerGrace = 0;
 
-            // Acompanha a curva da parede sem nunca inverter o sentido.
             Vector3 along = normal.Cross(Vector3.Up).Normalized();
 
-            if (along.Dot(_wallAlong) < 0)
+            if (turned)
+            {
+                // Parede nova em ângulo. Comparar com o sentido antigo
+                // não resolve: numa parede perpendicular os dois lados
+                // dão zero e o desempate manda o lobo de volta. Quem
+                // decide é o movimento que ele já carrega, e o lado
+                // bloqueado é descartado.
+                Vector3 flat = new Vector3(Velocity.X, 0, Velocity.Z);
+
+                if (Mathf.Abs(flat.Dot(along)) > 0.5f)
+                    along = flat.Dot(along) > 0 ? along : -along;
+                else if (IsBlocked(along))
+                    along = -along;
+            }
+            else if (along.Dot(_wallAlong) < 0)
+            {
+                // Mesma parede, apenas curvando: mantém o sentido.
                 along = -along;
+            }
 
             _wallAlong = along;
         }

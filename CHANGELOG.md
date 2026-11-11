@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.5.4 — 2026-11-11
+
+### Corrigido
+- O alcance do pulo não respondia à tecla: o impulso era conservado
+  por inteiro e o salto sempre ia até o fim. Um arrasto suave no ar
+  (`AirFriction`) devolve o controle — segurar mantém o avanço,
+  soltar encurta.
+- Ao encontrar uma parede em ângulo durante a corrida, o lobo voltava
+  pelo outro lado. O sentido era decidido comparando com o sentido
+  antigo, e em paredes perpendiculares essa comparação dá zero. Agora
+  quem decide é o movimento que o lobo já carrega, descartando o lado
+  bloqueado.
+
 ## v0.5.3 — 2026-11-11
 
 ### Corrigido
