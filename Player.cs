@@ -312,12 +312,7 @@ public partial class Player : CharacterBody3D
             _wallNormal = normal;
             _cornerGrace = 0;
 
-            // A direção é escolhida UMA vez, pelo lado para onde o
-            // jogador olhava. Depois o olhar fica livre para mirar.
-            _wallAlong = normal.Cross(Vector3.Up).Normalized();
-
-            if (_wallAlong.Dot(-GlobalTransform.Basis.Z) < 0)
-                _wallAlong = -_wallAlong;
+            _wallAlong = ChooseDirection(normal);
         }
         else if (found)
         {
@@ -410,19 +405,54 @@ public partial class Player : CharacterBody3D
         _cornerGrace = 0;
     }
 
-    /// <summary>Procura parede à esquerda e à direita. Devolve a normal
-    /// da que encontrar primeiro.</summary>
+    /// <summary>
+    /// A direção da corrida sai do movimento que o lobo já tem, não de
+    /// para onde a câmera aponta: saltar de uma parede e encostar na
+    /// seguinte mantém o sentido sem tocar no mouse.
+    ///
+    /// O olhar só decide quando não há momento horizontal — caso de
+    /// quem pula parado contra a parede.
+    /// </summary>
+    private Vector3 ChooseDirection(Vector3 normal)
+    {
+        Vector3 along = normal.Cross(Vector3.Up).Normalized();
+
+        Vector3 flat = new Vector3(Velocity.X, 0, Velocity.Z);
+        float momentum = flat.Dot(along);
+
+        if (Mathf.Abs(momentum) > 0.5f)
+            return momentum > 0 ? along : -along;
+
+        return along.Dot(-GlobalTransform.Basis.Z) < 0 ? -along : along;
+    }
+
+    /// <summary>
+    /// Varre o entorno em leque e devolve a normal da parede mais
+    /// próxima. Em leque, e não só para os lados do corpo, porque o
+    /// ângulo do corpo não deve decidir se existe parede ali.
+    /// </summary>
     private bool FindWall(out Vector3 normal)
     {
         normal = Vector3.Zero;
 
         Vector3 origin = GlobalPosition;
-        Vector3 right = GlobalTransform.Basis.X;
+        float best = float.MaxValue;
+        bool any = false;
 
-        if (Cast(origin, right, out normal)) return true;
-        if (Cast(origin, -right, out normal)) return true;
+        for (int i = 0; i < 8; i++)
+        {
+            float angle = Mathf.Tau * i / 8f;
+            var dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
 
-        return false;
+            if (!Cast(origin, dir, out Vector3 n, out float distance)) continue;
+            if (distance >= best) continue;
+
+            best = distance;
+            normal = n;
+            any = true;
+        }
+
+        return any;
     }
 
     /// <summary>Há obstáculo no caminho à frente, ao longo da parede?</summary>
@@ -437,9 +467,10 @@ public partial class Player : CharacterBody3D
         return GetWorld3D().DirectSpaceState.IntersectRay(query).Count > 0;
     }
 
-    private bool Cast(Vector3 origin, Vector3 direction, out Vector3 normal)
+    private bool Cast(Vector3 origin, Vector3 direction, out Vector3 normal, out float distance)
     {
         normal = Vector3.Zero;
+        distance = 0f;
 
         var query = PhysicsRayQueryParameters3D.Create(
             origin, origin + direction * WallCheckDistance);
@@ -454,6 +485,7 @@ public partial class Player : CharacterBody3D
         if (Mathf.Abs(n.Y) > 0.4f) return false;
 
         normal = n;
+        distance = origin.DistanceTo((Vector3)hit["position"]);
         return true;
     }
 }

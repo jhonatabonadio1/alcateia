@@ -176,9 +176,14 @@ acidente de encostar na parede.
 - Sem limite de tempo: corre enquanto a parede existir
 - Solta ao largar o W, ao bater em obstáculo, ou se atordoado
 - **Altura travada**: não sobe nem desce enquanto corre
-- **Direção travada**: escolhida uma vez, ao grudar, pelo lado para
-  onde o jogador olhava. Acompanha a curva da parede, mas nunca se
-  inverte. Para ir ao outro lado é preciso cair e recomeçar
+- **Direção travada**: escolhida uma vez, ao grudar, pelo **momento**
+  que o lobo já carrega — não pela câmera. Saltar de uma parede e
+  encostar na seguinte mantém o sentido sem tocar no mouse. O olhar só
+  decide quando não há momento horizontal. Acompanha a curva da
+  parede, mas nunca se inverte: para ir ao outro lado é preciso cair
+  e recomeçar
+- A busca por parede é um leque de 8 raios em volta, não dois raios
+  laterais: o ângulo do corpo não decide se existe parede ali
 - O olhar fica livre durante a corrida: mirar não desvia o movimento
 - A/D não controlam durante a corrida
 - Space salta para fora e para cima

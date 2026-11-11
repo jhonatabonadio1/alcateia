@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.4.1 — 2026-11-11
+
+### Alterado
+- A direção da corrida em parede passa a vir do **momento** do lobo,
+  não da câmera. Saltar de uma parede e encostar na seguinte mantém o
+  sentido sem precisar mover o mouse. O olhar só decide quando não há
+  movimento horizontal.
+- `FindWall` virou um leque de 8 raios em volta, substituindo os dois
+  raios laterais. O ângulo do corpo deixa de influenciar se a parede é
+  encontrada, e a parede mais próxima vence.
+
 ## v0.4.0 — 2026-11-11
 
 ### Alterado
