@@ -1,8 +1,9 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="PackedScene" path="res://player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://dummy.tscn" id="2_dummy"]
 [ext_resource type="Script" path="res://Hud.cs" id="3_hud"]
+[ext_resource type="PackedScene" path="res://bot.tscn" id="4_bot"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
 
@@ -94,6 +95,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, -10)
 
 [node name="Dummy3" parent="Dummies" instance=ExtResource("2_dummy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -14)
+
+[node name="Bots" type="Node3D" parent="."]
+
+[node name="Bot" parent="Bots" instance=ExtResource("4_bot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, -10)
+
+[node name="Bot2" parent="Bots" instance=ExtResource("4_bot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1, -12)
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("3_hud")
