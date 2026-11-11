@@ -190,8 +190,12 @@ acidente de encostar na parede.
   **conserva o avanço** da corrida (`WallJumpKeepSpeed`) e soma o
   empurrão perpendicular: sem isso o lobo sai de lado e perde tudo
   que acumulou, que é o oposto da jogada de cair em cima de alguém
-- Reencostar na mesma parede logo após o salto não acontece, porque
-  grudar exige estar caindo
+- **Uma corrida por ida ao ar**: depois de grudar uma vez, é preciso
+  tocar o chão antes de grudar de novo. Sem isso o lobo regruda na
+  mesma altura após o salto e a parede vira elevador
+- `RequireFloorBetweenWallRuns` desligado troca a exigência de chão
+  por um tempo mínimo (`WallRunCooldown`), o que permite encadear
+  saltos entre paredes opostas. Decisão de design em aberto
 - **Contorna quinas**: ao acabar uma face, troca para a face seguinte
   sem soltar, com uma janela curta de tolerância. Dá para dar a volta
   num bloco inteiro colado

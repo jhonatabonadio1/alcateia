@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.4.3 — 2026-11-11
+
+### Corrigido
+- O lobo regrudava na parede na mesma altura logo após o salto,
+  transformando a parede em elevador. Agora é necessário tocar o chão
+  entre uma corrida e a seguinte (`RequireFloorBetweenWallRuns`).
+  Desligando a exigência, um tempo mínimo (`WallRunCooldown`) impede
+  o regrude imediato e permite encadear paredes opostas.
+
 ## v0.4.2 — 2026-11-11
 
 ### Corrigido

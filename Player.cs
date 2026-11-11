@@ -59,6 +59,16 @@ public partial class Player : CharacterBody3D
     /// acumulou correndo.</summary>
     [Export] public float WallJumpKeepSpeed = 0.8f;
 
+    /// <summary>Exigir tocar o chão entre uma corrida em parede e a
+    /// seguinte. Sem isso o lobo regruda na mesma altura e a parede
+    /// vira elevador. Desligue para permitir encadear saltos entre
+    /// paredes opostas.</summary>
+    [Export] public bool RequireFloorBetweenWallRuns = true;
+
+    /// <summary>Tempo mínimo entre corridas quando o chão não é
+    /// exigido. Impede regrudar na mesma parede no mesmo pulo.</summary>
+    [Export] public float WallRunCooldown = 0.45f;
+
     /// <summary>Distância da câmera na forma lobo.</summary>
     [Export] public float ThirdPersonDistance = 3.5f;
 
@@ -85,6 +95,8 @@ public partial class Player : CharacterBody3D
     private Vector3 _wallNormal;
     private Vector3 _wallAlong;
     private double _cornerGrace;
+    private bool _wallSpent;
+    private double _wallCooldown;
     private double _wallTimer;
 
     public bool IsWallRunning => _onWall;
@@ -185,7 +197,11 @@ public partial class Player : CharacterBody3D
         {
             ReleaseWall();
             _wallTimer = 0;
+            _wallSpent = false;
         }
+
+        if (_wallCooldown > 0)
+            _wallCooldown -= delta;
 
         // Uivar trava você no lugar. É o preço da cura.
         if (IsHowling)
@@ -307,10 +323,17 @@ public partial class Player : CharacterBody3D
 
         if (!_onWall)
         {
+            // Uma corrida por ida ao ar. Sem isto o lobo regruda na
+            // mesma altura logo após o salto e a parede vira elevador.
+            if (RequireFloorBetweenWallRuns && _wallSpent) return false;
+            if (_wallCooldown > 0) return false;
+
             // Só gruda na descida. Encostado na parede no chão não basta:
             // é preciso pular, e a aderência começa quando o lobo começa
             // a cair. Isso faz o gesto ser uma decisão, não um acidente.
             if (!found || Velocity.Y > 0) return false;
+
+            _wallSpent = true;
 
             _onWall = true;
             _wallTimer = WallRunMaxTime;
@@ -381,6 +404,8 @@ public partial class Player : CharacterBody3D
             velocity.Y = JumpVelocity * JumpScale * 1.1f;
 
             ReleaseWall();
+            _wallCooldown = WallRunCooldown;
+
             Velocity = velocity;
             MoveAndSlide();
             return true;
