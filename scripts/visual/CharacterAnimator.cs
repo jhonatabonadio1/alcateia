@@ -79,7 +79,12 @@ public partial class CharacterAnimator : Node3D
     {
         "idle_rifle", "walk_fwd", "walk_back", "run_fwd", "run_back",
         "strafe_left", "strafe_right", "jump", "fire", "reload",
-        "grenade", "hit", "turn_left", "turn_right", "death"
+        "grenade", "hit", "turn_left", "turn_right",
+
+        // Ainda não baixados. Ficam listados de propósito: arquivo
+        // que não existe é pulado sem erro, então basta soltar o .fbx
+        // com este nome na pasta para ele entrar sozinho.
+        "death", "crouch_idle", "crouch_walk", "fall", "land", "knife"
     };
 
     private Node3D _model;
@@ -203,7 +208,8 @@ public partial class CharacterAnimator : Node3D
 
     private static bool IsLooping(string clip) =>
         clip.StartsWith("idle") || clip.StartsWith("walk") ||
-        clip.StartsWith("run") || clip.StartsWith("strafe");
+        clip.StartsWith("run") || clip.StartsWith("strafe") ||
+        clip == "crouch_idle" || clip == "crouch_walk" || clip == "fall";
 
     /// <summary>A primeira animação de verdade do tocador de origem.
     /// O importador deixa um "Take 001" vazio junto do clipe real.</summary>
