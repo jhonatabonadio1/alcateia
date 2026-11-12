@@ -13,3 +13,6 @@ obj/
 # local. Versionar republicaria arte de terceiros — e 22 MB de binário
 # por commit. Veja assets/maps/LEIA-ME.md.
 assets/maps/arrival/
+
+# Python
+__pycache__/
