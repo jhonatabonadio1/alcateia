@@ -121,6 +121,10 @@ Couraçado, Espectro, Detonador, Congelante, Arcano.
 entra com licença que permita uso comercial, e com a linha dele nos
 créditos no mesmo commit.
 
+As fontes Barlow e Barlow Condensed (`assets/fonts/`) são **SIL OFL
+1.1**: uso comercial livre, e a licença vai junto (`OFL.txt`). Não
+venda a fonte sozinha nem distribua com outro nome.
+
 ---
 
 ## Arquitetura
@@ -130,38 +134,36 @@ alcateia/
 ├── CLAUDE.md           este guia (fica na raiz, é onde agentes olham)
 ├── AGENTS.md           atalho para o mesmo arquivo
 ├── project.godot
-├── docs/
-│   └── CHANGELOG.md
-├── scenes/             tudo que é .tscn
-│   ├── main.tscn       cena principal
-│   ├── player.tscn
-│   ├── bot.tscn
-│   ├── dummy.tscn
-│   └── grenade.tscn
+├── docs/               ARQUITETURA, UI (guia de interface), ARSENAL, CONJUNTOS, CHANGELOG
+├── assets/             audio, characters, fonts, maps, textures, ui (miniaturas de mapa)
 ├── resources/
-│   └── breeds/         estatísticas das classes de lobo
-│       ├── bruto.tres
-│       └── ligeiro.tres
+│   ├── breeds/         estatísticas das classes de lobo
+│   └── weapons/        uma definição por arma (gerada por tools/gerar_arsenal.py)
+├── scenes/
+│   ├── menu/menu.tscn  o lobby inteiro (LobbyShell)
+│   ├── main.tscn       a partida
+│   ├── treino.tscn     campo de treino, sem partida
+│   ├── maps/           hangar.tscn (gerado por tools/gerar_hangar.py)
+│   └── player, bot, dummy, grenade
+├── tools/              geradores: arsenal, hangar, miniaturas de mapa, sons
 └── scripts/
-    ├── actors/         quem ocupa o mundo e decide
-    │   ├── Player.cs
-    │   └── Bot.cs
-    ├── combat/         dano e o que o causa
-    │   ├── Health.cs
-    │   ├── Weapon.cs
-    │   └── Grenade.cs
-    ├── forms/          a transformação e seus dados
-    │   ├── FormController.cs
-    │   └── WolfBreed.cs
-    ├── ui/
-    │   └── Hud.cs
-    ├── core/
-    │   └── InputSetup.cs
+    ├── actors/         Player, Bot — quem ocupa o mundo e decide
+    ├── ai/             o cérebro do bot
+    ├── combat/         Health, Weapon, Grenade, Arsenal, LoadoutSet
+    ├── forms/          FormController (transformação e WP), WolfBreed
+    ├── core/           partida, regras da sala, perfil, opções, som, input
+    ├── meta/           o que vive fora da partida: patentes, catálogo,
+    │                   missões, progressão, mapas, lista de salas
+    ├── lobby/          as telas do lobby
+    ├── ui/             HUD, placar, resultado, respawn, Esc
+    │   └── kit/        tokens, tema e componentes de interface
+    ├── visual/         animação e áudio dos personagens
     ├── net/            dormente até a Fase 2
-    │   └── GameManager.cs
     └── debug/          peças descartáveis
-        └── Dummy.cs
 ```
+
+O mapa completo, arquivo por arquivo, e o caminho de cada dado da
+sala até a partida estão em `docs/ARQUITETURA.md`.
 
 | Arquivo | Responsabilidade |
 |---|---|
@@ -169,13 +171,16 @@ alcateia/
 | `actors/Bot.cs` | Percepção, combate à distância, strafe, decisão de forma |
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
 | `combat/Weapon.cs` | Slots, tiro hitscan, garrada, granada |
-| `combat/Grenade.cs` | Projétil de atordoamento com física |
 | `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
-| `forms/WolfBreed.cs` | Resource com estatísticas por classe |
-| `ui/Hud.cs` | Barras e avisos, construído por código |
+| `core/Match.cs` | Fases da partida, placar, MVP, pagamento de XP e Presas no fim |
+| `core/Profile.cs` | O perfil salvo: nome, patente, XP, moedas, inventário, conjuntos, missões |
+| `core/RoomConfig.cs` | A sala que vai para a partida e suas regras |
+| `meta/*.cs` | Patentes, catálogo da loja, missões, progressão, mapas, salas |
+| `lobby/LobbyShell.cs` | Moldura do lobby: header fixo, miolo trocando |
+| `ui/kit/*.cs` | Tokens, tema e componentes — toda tela usa estes |
+| `ui/Hud.cs` | HUD de combate |
 | `core/InputSetup.cs` | Registra ações de input sem passar pelo editor |
 | `net/GameManager.cs` | Rede — dormente até a Fase 2 |
-| `debug/Dummy.cs` | Boneco de teste — descartável |
 
 ### Por que não há pasta `player/`
 
@@ -261,9 +266,14 @@ export `RefillOnTransform`, desligado por padrão.
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
 | R | Rugir segurando (lobo) · recarregar (humano) |
-| Esc | Menu da partida (continuar, reiniciar, voltar ao menu, sair) — **não pausa** |
+| Esc | Menu da partida (continuar, opções, controles, reiniciar, sair para a sala, sair do jogo) — **não pausa** |
 | Tab (segurar) | Placar da partida |
-| Enter | Jogar de novo, na tela de fim |
+| 1 a 4 na tela de respawn | Escolhe o conjunto |
+
+Na tela de fim, **Jogar de novo** já nasce sob o cursor. Não há mais
+Enter para recomeçar: a tela de resultado tem três saídas (jogar de
+novo, voltar à sala, sair para o lobby), e um atalho escondido para
+uma delas pularia a recompensa animada.
 
 Um toque, um pulo: segurar Space não repete, e uma trava curta impede
 que o mesmo toque dispare o pulo do chão e o da parede. Segurar Space
@@ -414,17 +424,27 @@ e um inimigo sem resposta não é difícil, é injusto.
 
 ### Layout da tela
 
+Regra dos cantos (`docs/UI.md`, "HUD de combate"). O centro fica livre:
+só mira e avisos críticos.
+
 | Canto | O quê |
 |---|---|
-| Inferior esquerdo | Vida e escudo — o corpo |
-| Inferior direito | WP, munição e forma — o equipamento |
-| Superior direito | Minimapa quadrado, e o feed de abates abaixo dele |
-| Rodapé central | Barra de slots, só ao trocar de arma |
+| Superior esquerdo | Minimapa e nome do mapa |
+| Superior centro | Placar dos times com barra até a meta, relógio e modo |
+| Superior direito | Feed de abates: 5 linhas, 5 s cada, ícone da arma, cor do time |
+| Centro | Mira com abertura dinâmica, marcador de acerto, dano direcional, avisos |
+| Inferior esquerdo | Forma atual (sempre visível), escudo e vida |
+| Inferior centro | Barra de transformação |
+| Inferior direito | WP, e o painel da forma: arma, pente `/ ∞`, granadas e slots no humano; recargas de garrada, patada, bote e uivo no lobo |
 
-A barra de slots aparece no gesto de trocar e some sozinha. Ela serve
-para o jogador conferir o que tem sem abrir menu; permanente,
-ocuparia tela o tempo todo para informar algo que ele já sabe na
-maior parte do jogo.
+**O HUD troca de forma.** Humano e lobo são dois painéis distintos,
+trocados com transição. O lobo não tem munição; mostrar "30 / ∞" num
+lobo seria informação errada.
+
+**Vida abaixo de 30%** pulsa e põe a vinheta vermelha nas bordas. A
+**barra de transformação** pulsa enquanto canaliza — é o momento de
+maior risco da partida — e diz "bloqueado nesta sala" quando a regra
+da sala proíbe o lobo.
 
 ### O minimapa
 
@@ -452,19 +472,19 @@ dificuldade capturava o mouse com a tela de lotes ainda aberta. Com
 contador, o cursor só volta quando o último menu fecha — é a lógica
 de um semáforo, liberado por quem solta por último.
 
-O relógio da tela de lotes também só corre quando ela é a tela de
-cima, senão o tempo escorre por trás de outro menu e o lote é
+O relógio da tela de conjuntos também só corre quando ela é a tela de
+cima, senão o tempo escorre por trás de outro menu e o conjunto é
 escolhido sozinho.
 
 ### A economia de WP
 
-WP vem de **abater** (150) e de **renascer** (40), nunca do relógio.
+WP vem de **abater**, de **assistir** e de **renascer com o conjunto
+padrão**, nunca do relógio (valores em "Conjuntos e economia").
 Ganhar por tempo premia esperar; ganhar por abate premia jogar. O
-bônus por renascer existe para que morrer não deixe o jogador sem
+bônus do padrão existe para que morrer não deixe o jogador sem
 recurso nenhum — castigo que se acumula afunda quem já está perdendo.
 
-As classes básicas custam 0 WP; o recurso existe para o que ainda não
-foi feito: lotes de armamento e classes caras.
+O lobo custa 0 WP; o recurso existe para os conjuntos de armas.
 
 A transição de ida é mais longa que a de volta (0,55s contra 0,2s).
 Virar lobo é um compromisso; voltar é uma retirada, e punir a retirada
@@ -472,9 +492,10 @@ com a mesma espera só faz o jogador se sentir travado.
 
 ### Times e feed de abates
 
-Azul é o jogador, vermelho são os bots. **Fogo amigo desligado**: num
-jogo de duas formas, confundir aliado com inimigo já acontece demais
-pela silhueta.
+Azul contra **Laranja**, com bots nos dois lados. Laranja e não vermelho
+porque daltônicos distinguem azul de laranja com folga. **Fogo amigo
+desligado** por padrão — num jogo de duas formas, confundir aliado com
+inimigo já acontece demais pela silhueta. A sala pode ligar.
 
 O feed no canto superior direito não é enfeite. É como o jogador
 entende o que aconteceu fora do campo de visão e, principalmente, de
@@ -782,8 +803,8 @@ câmera que volta sozinho. Sem isso atirar não tem peso.
   vermelhos e maiores na cabeça. Sem isso não se sabe se o tiro pegou.
 - **Dano na cabeça**: 2,5× o dano. A zona é a faixa superior do corpo,
   medida a partir do centro — continua valendo quando houver modelo.
-- **Levar dano**: faixas vermelhas nas quatro bordas da tela, que
-  somem em menos de meio segundo.
+- **Levar dano**: vinheta vermelha nas bordas, que some em menos de
+  meio segundo, e o arco em volta da mira apontando de onde veio.
 - **Bot alvejado**: não vira na hora. Marca a origem do tiro, espera
   um tempo curto com variação aleatória, e só então gira — mais devagar
   que o giro normal, porque foi pego de surpresa. Reação instantânea é
@@ -819,6 +840,13 @@ Veja `CHANGELOG.md` para o que já entrou.
 - Rodar os quatro testes de validação do `docs/ARSENAL.md` (duelos,
   lobo no corredor e em campo aberto, ritmo da economia).
 - Responder "A pergunta que decide o projeto", no fim deste guia.
+
+**Fora do escopo enquanto não houver servidor** (o guia `docs/UI.md`
+descreve, mas depende de rede): login de verdade, canais, amigos,
+matilha, chat entre jogadores, ranking, compra paga (Sangue),
+temporadas e moderação. Na criação de sala, os modos além de Equipe, a
+regra "Só faca" e as transformações "Obrigatória" e "Só um lado"
+aparecem como "em breve".
 
 **Fase 2 — os quatro pilares de netcode**, nesta ordem:
 1. Predição no cliente
@@ -986,7 +1014,7 @@ registro de como ele nasceu.
 | Medida | Valor |
 |---|---|
 | Arena | 84 × 48 m, muro de 12 m |
-| Bases | galpões de 10 × 21 m com teto a 5 m, A (azul) a oeste, B (vermelha) a leste |
+| Bases | galpões de 10 × 21 m com teto a 5 m, A (azul) a oeste, B (laranja) a leste |
 | Centro | heliponto de 12 × 12 m a 2 m, parapeito de 1 m, farol de 4 m |
 | Blocos | quatro, 12 × 9 m e 5 m de altura, com rampa vindo do centro |
 | Pontes | duas, 28 m de vão a 5 m, ligando os telhados |
@@ -1026,42 +1054,55 @@ velocidade — parede lisa não mostra o quanto você andou.
 
 ## A partida
 
-`scripts/core/Match.cs`. Mata-mata em equipe, Azul contra Vermelho:
-ganha quem fizer **40** abates primeiro; se os **10 minutos** acabarem
-antes, ganha quem tiver mais, e empate é empate.
+`scripts/core/Match.cs`. Mata-mata em equipe, Azul contra Laranja:
+ganha quem chegar primeiro ao objetivo da sala (padrão **40** abates);
+se o tempo acabar antes (padrão **10 minutos**), ganha quem tiver
+mais, e empate é empate. Pontos e tempo vêm de `RoomConfig`.
 
 | Fase | O que acontece |
 |---|---|
-| Contagem (10 s) | Todos na base. Olha-se em volta, não se anda nem se atira. É também o tempo da tela de lote |
+| Contagem (10 s) | Todos na base. Olha-se em volta, não se anda nem se atira. É também o tempo da tela de conjuntos |
 | Valendo | Relógio corre, abates pontuam |
-| Fim | Tudo congela, tela de vitória ou derrota, Enter recomeça |
-
-A contagem só começa quando o menu de dificuldade fecha, porque o menu
-pausa a árvore e a partida é pausável. Abrir o menu no meio da partida
-pausa o relógio junto.
+| Fim | O `Match` paga XP e Presas uma vez (`Progression.Apply`) e só então troca de fase; a tela de resultado lê `Match.Reward` |
 
 **A partida não sabe quem atirou em quem.** Ela escuta o `KillFeed`, o
 mesmo barramento do feed na tela. Quem mata não precisa saber que
 existe placar. Só abate de inimigo pontua; queda e granada nos próprios
-pés contam só como morte.
+pés contam só como morte. Pontos no placar: abate 10, assistência 5.
 
 `Match.IsLive` é o que Player e Bot consultam para saber se podem se
 mexer. **Sem `Match` na cena ele responde verdadeiro** — é o que mantém
-o treino e a referência do Arrival funcionando como antes.
+o treino funcionando como antes.
 
-Reiniciar zera o `UiState` antes de recarregar: o contador de menus é
-estático e sobrevive à troca de cena, e um menu aberto no fim faria a
-tela de lote da partida nova nunca contar o tempo.
+`Match.Restart()` e `Match.Leave(destino)` zeram o `UiState` antes de
+trocar de cena: o contador de menus é estático e sobrevive à troca, e
+um menu aberto no fim faria a tela de conjuntos da partida nova nunca
+contar o tempo. **Sair no meio é abandonar**: não paga nada, e o Esc
+pede confirmação.
+
+Atalhos de desenvolvimento, para ver o fim sem jogar dez minutos:
+`godot ... res://scenes/main.tscn -- --duracao=30 --contagem=2`, e
+`--placar` deixa o Tab aberto.
 
 ### O HUD da partida
 
 `scripts/ui/MatchHud.cs`, separado do `Hud` de propósito: o `Hud` fala
 do corpo, este fala da partida, e some inteiro numa cena sem partida.
 
-Placar e relógio no topo, com uma barra por time até os 40 — porque
-"27" não diz o quanto falta e um traço a dois terços do caminho diz. O
-relógio fica vermelho no último minuto. Tab mostra a tabela por
-jogador, com você em amarelo.
+- **Topo:** placar de cada time com a barra até a meta — "27" não diz o
+  quanto falta, um traço a dois terços do caminho diz —, relógio
+  (vermelho no último minuto) e modo. O seu time leva "· VOCÊ".
+- **Tab** (`Scoreboard.cs`): os dois times lado a lado. Colunas
+  patente, jogador, abates, mortes, assistências, pontos, forma e
+  ping, ordenado por pontos. Você com fundo dourado, morto esmaecido,
+  sequência de abates (×N) ao lado do nome. As linhas são montadas uma
+  vez e reaproveitadas: recriá-las quatro vezes por segundo derrubava o
+  jogo ao fechar.
+- **Fim** (`ResultScreen.cs`), em três tempos: o veredito sozinho por
+  1,5 s; o placar com o MVP no topo; a recompensa animada — linhas de
+  ganho uma a uma, barra de patente enchendo, Presas contando, missões
+  concluídas e o aviso de promoção. Rodapé: **Jogar de novo**
+  (primário, já sob o cursor), Voltar à sala, Sair para o lobby.
 
 ---
 
@@ -1075,7 +1116,7 @@ vida leem o time no `_Ready` deles para escolher a cor.
 | Quem | Como sabe o lado |
 |---|---|
 | Corpo | Pintado na cor do time; juntas num tom escuro dela |
-| Barra de vida | Aliado na cor do time, inimigo em vermelho |
+| Barra de vida | Sempre na cor do time |
 | Minimapa | Ponto na cor do time |
 | Feed e placar | `Health.PublicName`, que nunca vem vazio |
 
@@ -1102,22 +1143,42 @@ numa linha só.
 ## Do menu à partida
 
 ```
-menu.tscn ── Criar sala ──> sala ── Iniciar ──> main.tscn ── Esc ──> menu.tscn
-            Conjuntos (editor)        (RoomConfig)
-            Inventário
+menu.tscn (LobbyShell)
+  Entrada (apelido) ─> Lista de salas ─> Sala ── Iniciar (5 s) ──> main.tscn
+        header fixo: Salas · Loja · Inventário · Perfil · Missões · Opções
+main.tscn ── fim ──> Resultado ── Jogar de novo ──> main.tscn
+                               ── Voltar à sala ──> menu.tscn, na sala
+                               ── Sair para o lobby ──> menu.tscn, na lista
 ```
 
-**Sala.** Times Azul e Vermelho, até 8 em cada. O mestre (quem criou —
-hoje, você) adiciona e remove bots, escolhe pontos, tempo e
-dificuldade. Cada jogador aperta **Pronto**; o mestre só inicia com
-todos prontos e os dois times com alguém. Bots estão sempre prontos.
+O lobby é **uma cena só** com moldura fixa: o header nunca sai, o miolo
+troca (`LobbyShell.Go`). Loja e inventário não são cenas separadas. O
+fim da partida **volta à sala**, não à lista: manter o grupo junto é o
+que segura a sessão longa.
+
+**Lista de salas.** Grade 2 × 5 por página, filtros, "ir para a sala
+nº", atualização a cada 5 s. As salas dos outros são simuladas
+(`RoomDirectory`), com bots dentro; entrar numa delas funciona.
+
+**Sala.** Times Azul e Laranja, até 8 em cada. O mestre (quem criou —
+hoje, você) escolhe modo, tamanho, objetivo, tempo, regra de armas, de
+transformação, dificuldade dos bots, faixa de patente, senha e fogo
+amigo; enche com bots e troca de lado. Cada jogador marca **Pronto**;
+o mestre só inicia com todos prontos e os dois times com alguém. Bots
+estão sempre prontos. Iniciar abre uma contagem de 5 s, cancelável.
 
 A regra de "pronto" existe hoje com um humano só, de propósito: na
 Fase 2 muda de onde vêm os jogadores, não como a sala funciona.
 
 `RoomConfig` (estático) leva a sala para a partida, porque sala e
 partida são cenas diferentes. Com `Active` falso — partida aberta
-direto pelo editor — o `MatchSetup` monta a escalação padrão.
+direto pelo editor — o `MatchSetup` monta a escalação padrão e
+`RoomConfig.Rules` devolve as regras padrão.
+
+**Regras que valem na partida** (`RoomRules`): fogo amigo; "Sem
+pesadas" deixa indisponível o conjunto com escopeta; "Só pistolas" põe
+pistola nas duas mãos e tira as granadas, inclusive dos bots;
+"Bloqueada" tira o lobo de todo mundo.
 
 Na partida, o `MatchSetup` distribui cada time pelos spawns da sua
 base em ordem, ninguém em cima de ninguém. O time do jogador é
@@ -1127,7 +1188,8 @@ escolherem cor.
 **Esc não pausa.** É jogo multijogador: não existe pausa com outras
 pessoas na sala, e treinar com a regra certa evita o hábito de abrir
 o menu para fugir de uma luta. Com o menu aberto o corpo fica parado
-(o mouse é do menu), mas continua tomando tiro.
+(o mouse é do menu), mas continua tomando tiro. O Esc tem Opções
+(volume por canal, sensibilidade) e Controles, os mesmos do lobby.
 
 ---
 
@@ -1208,18 +1270,39 @@ ponto. A assistência existe porque sem ela quem tira 90% da vida e
 perde o abate sai sem nada, e o jogo passa a premiar roubar o último
 tiro.
 
-O inventário hoje tem todo o arsenal. Quando houver loja, a compra
-entra no `Profile.Inventory`; o editor já só aceita item do inventário.
+O editor de conjuntos fica no Inventário e só aceita item que você
+tem. Item com prazo vencido some do conjunto na próxima leitura do
+perfil (`Profile.Repair`), e o conjunto volta a valer com o que sobrou.
+
+A tela de respawn mostra todo conjunto, com o motivo de cada um
+bloqueado: regra da sala, item fora do inventário ou "faltam X WP".
+Morto, ela abre com "ABATIDO" e de quê.
 
 ---
 
 ## HUD de combate
 
+`scripts/ui/Hud.cs`, no layout da regra dos cantos (veja "Layout da
+tela"). Tudo chega por sinal — vida, munição, WP, forma, slot, abates —
+exceto o que é contínuo por natureza e é lido a cada quadro: abertura
+da mira, barra de transformação, recargas do lobo, uivo, relógio de
+renascer e vinheta.
+
+**Mira** (`Crosshair.cs`): quatro hastes que se afastam com a dispersão
+da arma (`Weapon.CurrentSpread`). No lobo vira um ponto — o lobo não
+mira, ele chega.
+
+**Marcador de acerto** (`HitMarker.cs`): branco no corpo, vermelho e
+maior na cabeça, e segura mais no abate. O som de cada um é diferente.
+
 **Dano direcional** (`scripts/ui/DamageIndicator.cs`): arco vermelho em
-volta da mira apontando para quem atirou. Guarda a posição de origem
-no mundo, não o ângulo do momento — é o que faz o arco girar quando
-você vira, continuando a apontar para o atirador. A borda vermelha da
-tela inteira ficou fraca: ela diz "levou dano", o arco diz "de onde".
+volta da mira apontando para quem atirou, por 1,5 s. Guarda a posição
+de origem no mundo, não o ângulo do momento — é o que faz o arco girar
+quando você vira, continuando a apontar para o atirador.
+
+**Recargas do lobo** chegam pelo sinal `Weapon.AttackCooldown(tipo,
+segundos)` — garrada, patada e bote —, e o uivo por
+`Player.HowlProgress`.
 
 **Minimapa** desenha toda caixa do mapa com a cor do material dela, as
 mais altas por cima (telhado cobre o que está embaixo) e mais claras
@@ -1236,6 +1319,60 @@ colisão desliga e o corpo **para de se mover de vez** — sem gravidade.
 A segunda metade foi o defeito: sem colisão, `IsOnFloor()` responde
 falso no quadro seguinte, porque não existe chão para quem não colide,
 e a gravidade voltava a puxar o corpo através do mapa.
+
+---
+
+## Fora da partida: perfil, patentes, loja e missões
+
+Tudo salvo em `user://perfil.json` (`Profile`, versão 2; o perfil da
+versão 1 é migrado). Opções ficam à parte, em `user://opcoes.json`.
+
+- **Duas moedas.** **Presas** se ganham jogando; **Sangue** é a moeda
+  paga e só aparece — vender exige servidor. **WP não é moeda de
+  lobby**: vive só dentro da partida. Perfil novo começa com 3.000
+  Presas.
+- **Patentes** (`meta/Ranks.cs`): 30, em 10 famílias de 3 graus
+  (Filhote I até Alfa III). XP para a patente *r*: 250·r^1,9. Cada
+  promoção dá Presas (150 + 100 por família) e a tela de promoção.
+  Patente não cai.
+- **Partida rende** (`meta/Progression.cs`): 150 XP e 100 Presas por
+  jogar, mais abate, assistência, vitória ou empate, e MVP. Abandonar
+  não rende nada.
+- **Loja** (`meta/Catalog.cs`): armas, granada, tatuagens (bônus
+  pequenos de velocidade, pulo, escudo, garra e perda de escudo) e
+  troca de nome. Prazos de 1, 7, 30 e 90 dias ou permanente; quatro
+  itens do dia com 20% de desconto. Item com patente mínima aparece
+  trancado, com a patente que destrava. A raça Ligeiro não é vendida:
+  destrava na patente.
+- **Missões** (`meta/Missions.cs`): três diárias e cinco semanais
+  sorteadas pela data (mesmo dia, mesmas missões), e as permanentes,
+  que dão título. **O resgate é manual** — o clique é o momento da
+  recompensa.
+
+## Interface: o kit
+
+Guia completo, com as decisões de cada tela: `docs/UI.md`. Toda tela
+nova usa `scripts/ui/kit/` — não crie `Label` com tamanho e cor soltos.
+
+- **Tokens** em `UiTokens`: grade de 8 (4 · 8 · 16 · 24 · 32 · 48 ·
+  64), raios, paleta, tempos de animação. Número fora da grade é bug.
+- **Tema feito em código** (`UiTheme`) e aplicado na raiz de cada tela
+  com `UiTheme.Apply(...)`: `CanvasLayer` corta a herança de tema, e
+  sem isso a tela sai com o tema padrão do Godot.
+- **Variações** em vez de override: `ThemeTypeVariation = "Title"`,
+  `"Caption"`, `"Numeric"`, `"Surface1"`, `"HudPanel"`... Número de
+  moeda, munição e placar usa fonte tabular (`Numeric`), senão treme
+  ao contar.
+- **Um primário por tela.** Primário dourado e sólido; secundário com
+  contorno; terciário só texto.
+- **Tudo anima** (`Motion`): número conta, painel desliza, nada aparece
+  seco. 120 a 200 ms.
+- Uma classe Godot por arquivo, com construtor sem parâmetros. Não
+  chame método de `Show`, `Panel` ou `Button`: colide com
+  `CanvasItem.Show` ou com tipos do Godot.
+- Lista que se atualiza sozinha reaproveita os nós (veja
+  `Scoreboard`). Recriar dezenas de controles por segundo acumula
+  objetos do lado C# e derruba o jogo ao fechar.
 
 ---
 

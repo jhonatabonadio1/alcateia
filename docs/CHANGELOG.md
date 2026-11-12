@@ -1,5 +1,94 @@
 # Changelog
 
+## v0.24.0 — 2026-11-12
+
+Interface nova inteira, seguindo o guia `docs/UI.md`. Escopo combinado:
+tudo o que roda sem servidor.
+
+### Adicionado
+- **Kit de interface** (`scripts/ui/kit/`): tokens de design (grade de
+  8, paleta, raios, tempos), tema feito em código, fontes Barlow e
+  Barlow Condensed com números tabulares (OFL, `assets/fonts/OFL.txt`)
+  e componentes: botões em seis variações, ícones desenhados, insígnia
+  de patente, moeda que conta ao mudar, barras de atributo, silhuetas
+  de arma, abas, modal, contagem em círculo, ping, avisos.
+- **Lobby** (`scripts/lobby/`, `menu.tscn`): moldura fixa com header
+  (identidade clicável, navegação, missões prontas, Presas e Sangue) e
+  miolo que troca. Telas: entrada com apelido e novidades, lista de
+  salas (2 × 5 por página, filtros, ir para a sala nº, atualização a
+  cada 5 s), sala, loja, inventário com editor de conjuntos e prévia
+  do personagem, perfil, missões e opções.
+- **Sala**: modo, jogadores por time, objetivo, tempo, armas,
+  transformação, dificuldade, faixa de patente, senha, fogo amigo;
+  encher com bots, trocar de lado, chat, Pronto e Iniciar com contagem
+  de 5 s cancelável. Modos e regras que dependem de servidor aparecem
+  como "em breve".
+- **Regras da sala valendo na partida** (`RoomRules`): fogo amigo, "Sem
+  pesadas", "Só pistolas" (inclusive nos bots) e lobo bloqueado.
+- **Perfil v2** (`user://perfil.json`, migra o antigo): patente, XP,
+  Presas, Sangue, inventário com prazo, raça, tatuagens, estatísticas
+  vitalícias, missões, títulos e histórico de patentes.
+- **30 patentes** em 10 famílias (`meta/Ranks.cs`), promoção com
+  recompensa e tela própria.
+- **Loja** (`meta/Catalog.cs`): armas, granada, tatuagens e troca de
+  nome, com prazos de 1, 7, 30 e 90 dias ou permanente, itens do dia
+  com desconto, patente mínima e confirmação de compra.
+- **Missões**: três diárias e cinco semanais sorteadas pela data, e
+  permanentes que dão título. Resgate manual.
+- **Recompensa de partida** (`meta/Progression.cs`): XP e Presas por
+  jogar, abate, assistência, vitória ou empate e MVP. Abandonar não
+  rende nada.
+- **Opções** (`user://opcoes.json`): volume geral, efeitos, interface e
+  música, sensibilidade do mouse. Também no Esc da partida.
+- **HUD de combate novo** (`Hud.cs`), pela regra dos cantos: minimapa
+  e nome do mapa em cima à esquerda; feed com ícone da arma em cima à
+  direita; forma, escudo e vida embaixo à esquerda; WP e o painel da
+  forma embaixo à direita; barra de transformação no centro. O painel
+  troca entre humano (arma, pente `/ ∞`, granadas, slots) e lobo
+  (recargas de garrada, patada, bote e uivo).
+- Mira com abertura dinâmica (`Crosshair.cs`), marcador de acerto
+  maior e vermelho na cabeça e no abate (`HitMarker.cs`), vida baixa
+  pulsando com vinheta vermelha, barra de transformação que pulsa
+  enquanto canaliza.
+- **Placar do Tab** (`Scoreboard.cs`): patente, jogador, abates,
+  mortes, assistências, pontos, forma e ping; você destacado, morto
+  esmaecido, sequência de abates ao lado do nome.
+- **Tela de resultado** (`ResultScreen.cs`): veredito sozinho por 1,5 s,
+  placar com o MVP, recompensa animada (linhas, barra de patente, Presas
+  contando, missões concluídas, promoção) e Jogar de novo / Voltar à
+  sala / Sair para o lobby.
+- Tela de respawn com o kit: motivo de cada conjunto bloqueado, causa
+  da morte ("ABATIDO por X com Y"), contagem em círculo.
+- Esc com Opções e Controles; reiniciar e sair pedem confirmação.
+- Miniatura do mapa (`tools/gerar_miniaturas.gd`).
+- `Weapon.AttackCooldown`, `FormController.ShiftLeft/ShiftTotal`,
+  `KillFeed.HowDied`; o abate leva a arma e os assistentes.
+- Atalhos de desenvolvimento: `-- --duracao=30 --contagem=2 --placar`
+  na partida, `-- --tela=loja --foco=ak47` no lobby.
+
+### Mudado
+- **Times: Azul contra Laranja** (era Vermelho). Corpo, base B do
+  Hangar, barras e placar seguem a cor; barra de vida sempre na cor do
+  time.
+- Partida termina na tela de resultado; não há mais Enter para
+  recomeçar.
+- A pontuação do placar: abate 10, assistência 5.
+- Dano direcional dura 1,5 s.
+
+### Removido
+- `scripts/menu/MainMenu.cs`, substituído pelo lobby.
+
+### Corrigido
+- Recriar as linhas do placar quatro vezes por segundo derrubava o
+  jogo ao fechar; agora as linhas são reaproveitadas.
+- Item de arma sem arquivo `.tres` (faca) não gera mais erro no
+  `Arsenal.Get`.
+
+### Fora do escopo (precisa de servidor)
+- Login, canais, amigos, matilha, chat entre jogadores, ranking,
+  compra paga, temporadas e moderação.
+
+
 ## v0.23.0 — 2026-11-12
 
 ### Adicionado

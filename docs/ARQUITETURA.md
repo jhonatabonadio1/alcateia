@@ -95,9 +95,10 @@ alcateia/
 │   ├── ARQUITETURA.md     este guia
 │   ├── ARSENAL.md         especificação das armas
 │   ├── CONJUNTOS.md       especificação de conjuntos e economia
+│   ├── UI.md              guia de interface: telas, HUD, tokens
 │   └── CHANGELOG.md
 ├── scenes/
-│   ├── menu/menu.tscn     entrada do jogo
+│   ├── menu/menu.tscn     entrada do jogo: o lobby inteiro
 │   ├── main.tscn          a partida
 │   ├── treino.tscn        caixa de areia
 │   ├── player.tscn        o seu personagem
@@ -108,17 +109,22 @@ alcateia/
 ├── resources/
 │   ├── weapons/*.tres     armas (geradas por tools/gerar_arsenal.py)
 │   └── breeds/*.tres      classes de lobo
-├── assets/                modelos, animações, texturas
-├── tools/                 geradores em Python
+├── assets/                modelos, animações, texturas, sons, fontes,
+│                          miniaturas de mapa (assets/ui/mapas)
+├── tools/                 geradores: arsenal, hangar, miniaturas, sons
 └── scripts/
     ├── actors/            quem decide: Player (input) e Bot (IA)
     ├── combat/            vida, armas, granada, arsenal, conjuntos
     ├── forms/             transformação humano ↔ lobo e WP
     ├── ai/                pontuação de decisões do bot
-    ├── core/              partida, sala, perfil, mapa, barramentos
-    ├── ui/                HUD, menus da partida, minimapa
-    ├── menu/              menu principal
-    ├── visual/            animação do personagem
+    ├── core/              partida, sala e suas regras, perfil, opções,
+    │                      mapa, som, barramentos
+    ├── meta/              fora da partida: patentes, catálogo da loja,
+    │                      missões, progressão, mapas, lista de salas
+    ├── lobby/             as telas do lobby (LobbyShell e uma por tela)
+    ├── ui/                HUD, placar, resultado, respawn, Esc, minimapa
+    │   └── kit/           tokens, tema e componentes de interface
+    ├── visual/            animação e áudio dos personagens
     ├── net/               rede — dormente até a Fase 2
     └── debug/             peças descartáveis
 ```
@@ -221,24 +227,42 @@ assim que HUD, minimapa e menus acham você.
 ### 6.1 Do menu à partida
 
 ```
-menu.tscn (MainMenu.cs)
-  │  Criar sala → tela da sala: times, bots, pontos, tempo, dificuldade
-  │  Pronto → Iniciar partida
-  │     preenche RoomConfig (estático): Active, PlayerTeam, Bots,
-  │     ScoreToWin, Duration · Difficulty.Set(nível)
+menu.tscn (LobbyShell)
+  │  header fixo; o miolo é uma LobbyScreen trocada por Shell.Go(...)
+  │  Entrada (apelido) → Lista de salas → Sala
+  │  Sala: regras, times, bots, Pronto → Iniciar (contagem de 5 s)
+  │     preenche RoomConfig (estático): Active, Settings (cópia das
+  │     regras), Members · Difficulty.Set(nível)
   ▼
 ChangeSceneToFile("res://scenes/main.tscn")
   │
   ├─ Player._EnterTree     lê RoomConfig.PlayerTeam → Health.Team
+  ├─ Player._Ready         FormController.Breed = Profile.BuildBreed()
+  │                        (raça + tatuagens equipadas)
   ├─ Match._Ready          lê ScoreToWin e Duration; começa a contagem
-  └─ MatchSetup._Ready     põe você num spawn da sua base;
-                           instancia bot.tscn para cada bot da sala
-                           (ou a escalação padrão se RoomConfig.Active
-                           for falso — partida aberta pelo editor)
+  ├─ MatchSetup._Ready     põe você num spawn da sua base; instancia
+  │                        bot.tscn para cada bot da sala e aplica
+  │                        RoomRules.EquipBot (ou a escalação padrão se
+  │                        RoomConfig.Active for falso)
+  └─ LoadoutMenu._Ready    abre a escolha de conjunto
+  ⋮
+Match.End → Payout() → Progression.Apply(resultado) → Match.Reward
+          → PhaseChanged(Ended) → MatchHud abre o ResultScreen
+ResultScreen: Jogar de novo → Match.Restart()   (recarrega a cena)
+              Voltar à sala → Match.Leave(Room)       → menu.tscn
+              Sair para o lobby → Match.Leave(RoomList) → menu.tscn
+LobbyShell._Ready: ReturnTo == Room e RoomDirectory.Current → RoomScreen
 ```
 
 `RoomConfig` é estático porque sala e partida são cenas diferentes e o
 Godot destrói uma ao abrir a outra. Estático é a ponte mais simples.
+`RoomConfig.Rules` é o que o jogo consulta durante a partida (fogo
+amigo, armas, transformação); com `Active` falso devolve as regras
+padrão.
+
+O pagamento acontece **dentro** do `Match`, antes do sinal de fim: a
+tela de resultado só lê `Match.Reward`. Assim, se a tela sumisse, o
+jogador ainda receberia — e não existe jeito de pagar duas vezes.
 
 **A ordem dos nós em `main.tscn` importa.** `MatchSetup` vem depois de
 `Bots` para o nó `Bots` já existir quando ele for preencher. HUD e menus
@@ -283,9 +307,11 @@ aplica. É o lugar que vai virar servidor na Fase 2.
 Health.Died
   ├─ Player.OnDied / Bot.OnDied   câmera, estado, zera recuo
   ├─ CharacterAnimator            animação de morte, depois some aos poucos
-  ├─ Hud                          aviso
-  └─ LoadoutMenu (só o jogador)   abre a tela de respawn (5 s):
-                                  escolhe conjunto → paga WP → Weapon.Equip
+  ├─ Hud                          "ABATIDO por X com Y" (KillFeed.HowDied)
+  └─ LoadoutMenu (só o jogador)   abre a tela de respawn (5 s), com a
+                                  causa da morte: escolhe conjunto →
+                                  RoomRules.Allows → paga WP →
+                                  RoomRules.Equip → Weapon.Equip
 Health.TryRespawn → Respawned → volta ao spawn via SpawnPoints.Pick
 ```
 
@@ -391,7 +417,15 @@ public override void _ExitTree() => KillFeed.Reported -= OnKill;
 |---|---|---|
 | `Match.Current` | A partida em andamento. `Match.IsLive` é **verdadeiro quando não há partida** (treino) | A cena da partida |
 | `RoomConfig` | Configuração da sala para a partida ler | O jogo aberto |
-| `Profile` | Conjuntos, inventário, último usado. Salva em `user://perfil.json` | Em disco |
+| `Profile` | Nome, patente, XP, Presas e Sangue, inventário com prazos, conjuntos, raça, tatuagens, estatísticas, missões, títulos. Salva em `user://perfil.json`; evento `Changed` | Em disco |
+| `Settings` | Volumes por canal e sensibilidade. `user://opcoes.json` | Em disco |
+| `RoomDirectory` | As salas da lista (simuladas) e a sala em que você está (`Current`) | O jogo aberto |
+| `Catalog` | A loja: itens, preços por prazo, itens do dia | Sempre |
+| `Ranks` | As 30 patentes, nomes, cores e XP de cada uma | Sempre |
+| `MissionBook` | (dentro do `Profile`) missões do dia, da semana e permanentes | Em disco |
+| `Progression` | `Apply(resultado)`: XP, Presas, estatísticas e missões no fim da partida | Sempre |
+| `Maps` | Nome, descrição e miniatura de cada mapa | Sempre |
+| `RoomRules` | Aplica a regra de armas da sala a um conjunto | Sempre |
 | `Arsenal` | Catálogo: ids, preços, `Get(id)` carrega o `.tres` | Sempre |
 | `Difficulty` | Nível atual dos bots | O jogo aberto |
 | `UiState` | Quantos menus estão abertos — **dono do cursor** | O jogo aberto; `Reset()` ao trocar de cena |
@@ -400,7 +434,8 @@ public override void _ExitTree() => KillFeed.Reported -= OnKill;
 | `KillFeed` | Evento de abate | Sempre |
 | `Sfx` | Toca som por nome; cria os canais SFX, Interface e Musica | Sempre |
 | `NoiseBus` | Evento de som | Sempre |
-| `Teams` | Constantes `Blue = 1`, `Red = 2`, cor e nome | Sempre |
+| `Teams` | Constantes `Blue = 1`, `Orange = 2`, cor e nome | Sempre |
+| `UiTokens`, `UiFonts`, `UiTheme` | Grade, cores, fontes e o tema da interface | Sempre |
 
 **`UiState` é um contador, não um booleano.** Cada menu que abre chama
 `UiState.Push()` e ao fechar `UiState.Pop()`. Enquanto
@@ -505,7 +540,33 @@ do `project.godot` e para não haver duas fontes.
 3. Em `Hud.cs`, no `_Ready`, ligue `_componente.X += OnX;` e desenhe.
 
 O HUD é montado por código (sem cena), então os elementos são criados
-no próprio `Hud.cs`.
+no próprio `Hud.cs`, com as peças do kit: `UiKit.Text(texto, "Numeric")`,
+`UiKit.Caption(...)`, `Icon.Make(IconKind.X, tamanho, cor)`, painel com
+`ThemeTypeVariation = "HudPanel"`. Escolha o canto pela regra do
+`docs/UI.md` ("HUD de combate"). Só leia estado no `_Process` se a
+coisa for contínua (uma barra enchendo); se ela muda em momentos, é
+sinal.
+
+### Fazer uma tela nova do lobby
+
+1. Crie `scripts/lobby/MinhaTela.cs` herdando de `LobbyScreen`.
+2. Monte tudo em `Build()`. Para redesenhar depois de uma mudança,
+   chame `Refresh()` (reconstrói no próximo quadro).
+3. Abra com `Shell.Go(new MinhaTela())`. Toast, modal e sobreposições:
+   `Shell.Toast(...)`, `Shell.Modal(...)`, `Shell.Overlay`.
+4. Se ela merece botão no header, acrescente em `LobbyHeader`.
+
+Use só o kit (`UiKit`, `UiTokens`): espaçamento da grade de 8, um botão
+primário por tela, número com a variação `Numeric`.
+
+### Adicionar um item à loja
+
+1. Se for arma nova, crie antes a arma (receita acima).
+2. Em `scripts/meta/Catalog.cs`, acrescente o `CatalogItem`: id, nome,
+   tipo, descrição, raridade, patente mínima e os cinco preços (1, 7,
+   30, 90 dias e permanente). Tatuagem leva um `TattooEffect`.
+3. Se o desenho do cartão não existir, acrescente a silhueta em
+   `scripts/ui/kit/WeaponArt.cs`.
 
 ### Adicionar um som
 
@@ -549,7 +610,17 @@ void Fechar() { Visible = false; UiState.Pop();  }
 ```
 
 Se o menu troca de cena, chame `UiState.Reset()` antes do
-`ChangeSceneToFile`. Use um `CanvasLayer` com `Layer` acima do HUD.
+`ChangeSceneToFile` (ou use `Match.Restart` / `Match.Leave`, que já
+fazem isso). Use um `CanvasLayer` com `Layer` acima do HUD e aplique o
+tema na raiz: `UiTheme.Apply(UiKit.Fill(new Control()))`.
+
+| Camada | Quem |
+|---|---|
+| 1 | HUD |
+| 8 | MatchHud (topo, contagem, Tab) |
+| 9 | Escolha de conjunto |
+| 10 | Esc |
+| 11 | Resultado |
 
 ### Criar um mapa
 
@@ -561,7 +632,7 @@ O caminho atual é gerar o `.tscn` por script, como
   toda caixa que encontrar, com a cor do material dela, e ignora pisos
   maiores que 1200 m².
 - **Dois `SpawnPoints`**, um com `Team = 1` (azul) e outro com
-  `Team = 2` (vermelho), com os pontos de nascimento de cada base.
+  `Team = 2` (laranja), com os pontos de nascimento de cada base.
 - **`PatrolRoutes`** com as rondas dos bots. Cada mapa traz as suas.
 - **`NavBaker`**, que gera a malha de navegação ao carregar.
 - **`Label3D`** com texto curto ("A", "B") onde quiser marca no

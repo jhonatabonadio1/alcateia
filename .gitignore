@@ -16,3 +16,7 @@ assets/maps/arrival/
 
 # Python
 __pycache__/
+
+# Pacotes NuGet locais do Godot .NET (cópia de GodotSharp/Tools/nupkgs,
+# só para compilar fora do editor). Cada máquina tem os seus.
+tools/nupkgs/
