@@ -228,6 +228,10 @@ public partial class Player : CharacterBody3D
     private CharacterAnimator _animator;
     private CapsuleShape3D _capsule;
     private bool _crouching;
+
+    /// <summary>Está agachado? Leitura para quem desenha o corpo. O
+    /// agachamento é decidido aqui e em lugar nenhum mais.</summary>
+    public bool IsCrouching => _crouching;
     private bool _walking;
     private float _cameraKick;
     private double _jumpLock;

@@ -132,6 +132,15 @@ public partial class CharacterAnimator : Node3D
     /// </summary>
     [Export] public bool HideInWolfForm = false;
 
+    /// <summary>
+    /// Tempo mínimo entre dois esticões de dano.
+    ///
+    /// Sem isto, uma rajada produz uma reação por bala e o corpo
+    /// tremeluz no lugar em vez de reagir. A reação é um tempero: ela
+    /// conta que você acertou, não cada vez que acertou.
+    /// </summary>
+    [Export] public float HitCooldown = 1.6f;
+
     [Export] public bool Debug = true;
 
     /// <summary>Arquivo do clipe, e o nome com que ele entra na
@@ -158,6 +167,7 @@ public partial class CharacterAnimator : Node3D
     private AnimationNodeStateMachinePlayback _playback;
 
     private CharacterBody3D _body;
+    private Player _owner;
     private Health _health;
     private FormController _form;
 
@@ -170,10 +180,13 @@ public partial class CharacterAnimator : Node3D
     private readonly List<StandardMaterial3D> _fadeMaterials = new();
     private bool _hasDeath;
     private bool _airborne;
+    private bool _crouched;
+    private double _hitTimer;
 
     public override void _Ready()
     {
         _body = GetParent<CharacterBody3D>();
+        _owner = _body as Player;
         _health = _body.GetNodeOrNull<Health>("Health");
         _form = _body.GetNodeOrNull<FormController>("FormController");
 
@@ -222,6 +235,7 @@ public partial class CharacterAnimator : Node3D
         {
             _health.Died += _ => OnDied();
             _health.Respawned += OnRespawned;
+            _health.Damaged += (_, _) => Hit();
         }
 
         if (_form != null)
@@ -425,6 +439,7 @@ public partial class CharacterAnimator : Node3D
         var machine = new AnimationNodeStateMachine();
         machine.AddNode("Locomotion", locomotion, new Vector2(300, 100));
 
+        Single(machine, "Crouch", "crouch_idle", new Vector2(300, 240));
         Single(machine, "Jump", "jump", new Vector2(520, -20));
         Single(machine, "Fall", "fall", new Vector2(720, 40));
         Single(machine, "Hit", "hit", new Vector2(520, 160));
@@ -438,13 +453,16 @@ public partial class CharacterAnimator : Node3D
         Link(machine, "Locomotion", "Fall");
         Link(machine, "Fall", "Locomotion");
 
+        Link(machine, "Locomotion", "Crouch");
+        Link(machine, "Crouch", "Locomotion");
+
         Link(machine, "Locomotion", "Hit");
         Link(machine, "Hit", "Locomotion", auto: true);
 
         // Morrer interrompe qualquer coisa, e é por isso que precisa
         // de uma aresta vinda de cada estado: Travel anda pelo grafo,
         // e estado sem caminho de entrada é estado inalcançável.
-        foreach (string from in new[] { "Locomotion", "Jump", "Fall", "Hit" })
+        foreach (string from in new[] { "Locomotion", "Crouch", "Jump", "Fall", "Hit" })
             Link(machine, from, "Death");
 
         _tree = new AnimationTree { TreeRoot = machine };
@@ -535,7 +553,29 @@ public partial class CharacterAnimator : Node3D
 
         _tree.Set("parameters/Locomotion/blend_position", _blend);
 
+        if (_hitTimer > 0) _hitTimer -= delta;
+
         UpdateAir(delta);
+        UpdateStance();
+    }
+
+    /// <summary>
+    /// Agachado é um estado à parte, não um ponto do espaço de
+    /// mistura: a pose não é a caminhada mais devagar, é outra postura.
+    ///
+    /// Sem o clipe de andar agachado, mover-se agachado mostra a pose
+    /// parada. É feio e é honesto — melhor do que o corpo levantar
+    /// sozinho porque o jogador andou.
+    /// </summary>
+    private void UpdateStance()
+    {
+        if (_airborne) return;
+
+        bool crouching = _owner != null && _owner.IsCrouching;
+        if (crouching == _crouched) return;
+
+        _crouched = crouching;
+        _playback?.Travel(crouching ? "Crouch" : "Locomotion");
     }
 
     /// <summary>
@@ -565,6 +605,7 @@ public partial class CharacterAnimator : Node3D
         else if (grounded && _airborne)
         {
             _airborne = false;
+            _crouched = false;
             _playback?.Travel("Locomotion");
         }
     }
@@ -587,8 +628,15 @@ public partial class CharacterAnimator : Node3D
         _playback?.Travel("Jump");
     }
 
-    /// <summary>Reação a dano. Só interrompe a locomoção.</summary>
-    public void Hit() => _playback?.Travel("Hit");
+    /// <summary>Reação a dano. Só interrompe a locomoção, e só de vez
+    /// em quando — ver <see cref="HitCooldown"/>.</summary>
+    public void Hit()
+    {
+        if (_dead || _airborne || _hitTimer > 0) return;
+
+        _hitTimer = HitCooldown;
+        _playback?.Travel("Hit");
+    }
 
     private void OnDied()
     {
@@ -681,6 +729,8 @@ public partial class CharacterAnimator : Node3D
         _dead = false;
         _corpseTimer = 0;
         _blend = Vector2.Zero;
+        _crouched = false;
+        _airborne = false;
 
         // Volta tudo: um corpo que renasce meio transparente e meio
         // enterrado é o mesmo defeito, só adiado.
