@@ -42,6 +42,31 @@ public partial class Bot : CharacterBody3D
 
     [Export] public float SightRange = 40f;
 
+    /// <summary>
+    /// Time deste bot. 0 mantém o que estiver no Health da cena.
+    ///
+    /// Fica no bot, e não só no Health, porque é o bot que a cena da
+    /// partida instancia e configura: sobrescrever uma propriedade de
+    /// um filho de cena instanciada é frágil no formato .tscn, e uma
+    /// propriedade da raiz não é.
+    /// </summary>
+    [Export] public int Team = 0;
+
+    /// <summary>Nome no placar e no feed. Vazio usa o nome do nó.</summary>
+    [Export] public string Callsign = "";
+
+    /// <summary>Intervalo entre reavaliações de alvo, em segundos.</summary>
+    [Export] public float RetargetInterval = 0.5f;
+
+    /// <summary>
+    /// Vantagem, em metros, do alvo atual sobre um candidato novo.
+    ///
+    /// Sem ela, dois inimigos a distâncias parecidas fazem o bot trocar
+    /// de alvo a cada reavaliação, e ele passa a luta girando a cabeça
+    /// entre os dois sem acertar nenhum.
+    /// </summary>
+    [Export] public float TargetStickiness = 6f;
+
     /// <summary>Campo de visão em graus, total.</summary>
     [Export] public float FieldOfView = 140f;
 
@@ -212,6 +237,7 @@ public partial class Bot : CharacterBody3D
     private Node3D _head;
     private Node3D _target;
     private Health _targetHealth;
+    private double _retargetTimer;
 
     private float _gravity = 9.8f;
     private Vector3 _spawn;
@@ -256,6 +282,24 @@ public partial class Bot : CharacterBody3D
     private double _patrolPause;
     private double _stuckTimer;
     private Vector3 _lastPosition;
+
+    /// <summary>
+    /// Time e nome entram aqui, e não no _Ready.
+    ///
+    /// Os filhos fazem _Ready antes do pai. A barra de vida e o corpo
+    /// animado leem o time no _Ready deles para escolher a cor — se o
+    /// time só fosse aplicado no _Ready do bot, eles já teriam pintado
+    /// todo mundo com o time padrão da cena. O _EnterTree do pai vem
+    /// antes de tudo isso.
+    /// </summary>
+    public override void _EnterTree()
+    {
+        var health = GetNodeOrNull<Health>("Health");
+        if (health == null) return;
+
+        if (Team > 0) health.Team = Team;
+        if (!string.IsNullOrEmpty(Callsign)) health.DisplayName = Callsign;
+    }
 
     public override void _Ready()
     {
@@ -304,16 +348,25 @@ public partial class Bot : CharacterBody3D
             return;
         }
 
-        if (_target == null)
+        if (!Match.IsLive)
         {
-            _target = GetTree().GetFirstNodeInGroup("player") as Node3D;
-            _targetHealth = _target?.GetNodeOrNull<Health>("Health");
+            Fall(delta);
+            return;
         }
 
-        // Alvo abatido deixa de ser alvo. Sem isto o bot continua
-        // descarregando no corpo, o que é ruim de assistir e torna o
-        // respawn uma emboscada.
-        if (_targetHealth != null && _targetHealth.IsDead)
+        _retargetTimer -= delta;
+
+        bool lost = _target == null || _targetHealth == null || _targetHealth.IsDead;
+        if (lost || _retargetTimer <= 0)
+        {
+            _retargetTimer = RetargetInterval;
+            ChooseTarget();
+        }
+
+        // Ninguém vivo do outro lado. Sem isto o bot continua
+        // descarregando no último corpo, o que é ruim de assistir e torna
+        // o renascimento uma emboscada.
+        if (_target == null || _targetHealth == null || _targetHealth.IsDead)
         {
             _hasBelief = false;
             _memoryTimer = 0;
@@ -591,6 +644,12 @@ public partial class Bot : CharacterBody3D
         if (_health.IsDead) return;
         if (noise.Source == this) return;
 
+        // Passo de aliado não é pista. Sem isto o time inteiro passaria
+        // a partida investigando os próprios passos dentro da base.
+        if (noise.Source?.GetNodeOrNull<Health>("Health") is Health source
+            && source.Team == _health.Team)
+            return;
+
         float distance = GlobalPosition.DistanceTo(noise.Position);
         if (distance > noise.Radius * Hearing) return;
 
@@ -655,6 +714,72 @@ public partial class Bot : CharacterBody3D
             Mathf.Acos(Mathf.Clamp(flat.Dot(-GlobalTransform.Basis.Z), -1f, 1f)));
 
         return angle <= FieldOfView * 0.5f && HasLineOfSight();
+    }
+
+    /// <summary>
+    /// Escolhe o inimigo a perseguir.
+    ///
+    /// Antes o alvo era sempre o jogador, pego uma vez pelo grupo
+    /// "player". Com times isso deixa de fazer sentido de duas formas:
+    /// o bot aliado mirava em você, e dois bots inimigos passavam um
+    /// pelo outro sem se ver.
+    ///
+    /// Agora vale qualquer um vivo do outro time. Quem está à vista
+    /// ganha de quem não está, e entre iguais ganha o mais perto — com a
+    /// vantagem de <see cref="TargetStickiness"/> para o alvo atual, que
+    /// é o que impede a cabeça de ficar indo e voltando entre dois.
+    /// </summary>
+    private void ChooseTarget()
+    {
+        Node3D best = null;
+        Health bestHealth = null;
+        float bestScore = float.MaxValue;
+
+        foreach (string group in new[] { "player", "bot" })
+        {
+            foreach (Node node in GetTree().GetNodesInGroup(group))
+            {
+                if (node == this || node is not Node3D body) continue;
+
+                var health = body.GetNodeOrNull<Health>("Health");
+                if (health == null || health.IsDead || health.Team == _health.Team) continue;
+
+                float distance = GlobalPosition.DistanceTo(body.GlobalPosition);
+                float score = distance;
+
+                if (distance <= SightRange && CanSee(body)) score -= 1000f;
+                if (body == _target) score -= TargetStickiness;
+
+                if (score >= bestScore) continue;
+
+                bestScore = score;
+                best = body;
+                bestHealth = health;
+            }
+        }
+
+        // A crença não é zerada na troca, de propósito. Com vários
+        // inimigos ela deixa de ser "onde fulano está" e passa a ser "de
+        // onde vem a ameaça" — e zerar aqui apagava justamente o tiro
+        // pelas costas que a vigília existe para lembrar: o bot levava
+        // tiro de um, trocava de alvo meio segundo depois e esquecia de
+        // onde o tiro veio.
+        _target = best;
+        _targetHealth = bestHealth;
+    }
+
+    /// <summary>Linha de visão até um corpo qualquer, da cabeça ao peito.</summary>
+    private bool CanSee(Node3D body)
+    {
+        var query = PhysicsRayQueryParameters3D.Create(
+            _head.GlobalPosition, body.GlobalPosition + Vector3.Up * 0.4f);
+
+        query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+
+        var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+        if (hit.Count == 0) return true;
+
+        return hit["collider"].Obj == body;
     }
 
     private bool HasLineOfSight()

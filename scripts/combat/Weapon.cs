@@ -611,9 +611,9 @@ public partial class Weapon : Node3D
 		_form.OnKill();
 
 		KillFeed.Report(new Kill(
-			_health?.DisplayName ?? _body.Name,
+			_health?.PublicName ?? _body.Name.ToString(),
 			_health?.Team ?? 0,
-			target.DisplayName,
+			target.PublicName,
 			target.Team,
 			CauseOf(headshot)));
 	}
@@ -670,6 +670,7 @@ public partial class Weapon : Node3D
 		_cooldown = ThrowCooldown;
 
 		var grenade = GrenadeScene.Instantiate<RigidBody3D>();
+		if (grenade is Grenade armed) armed.Thrower = _health;
 		_body.GetTree().CurrentScene.AddChild(grenade);
 
 		// Nasce a frente da camera para nao colidir com o proprio corpo.

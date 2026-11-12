@@ -406,6 +406,18 @@ public partial class Player : CharacterBody3D
 
 
 
+    /// <summary>Parado no lugar, com gravidade. Sem a gravidade quem
+    /// estivesse no ar quando a partida acabou ficaria pendurado.</summary>
+    private void Hold(double delta)
+    {
+        ReleaseWall();
+
+        Velocity = new Vector3(0,
+            IsOnFloor() ? 0 : Velocity.Y - _gravity * (float)delta, 0);
+
+        MoveAndSlide();
+    }
+
     private void OnRespawned()
     {
         ApplyCamera();
@@ -468,12 +480,9 @@ public partial class Player : CharacterBody3D
             _head.Rotation = headRot;
         }
 
-        if (@event.IsActionPressed("ui_cancel"))
-        {
-            Input.MouseMode = Input.MouseMode == Input.MouseModeEnum.Captured
-                ? Input.MouseModeEnum.Visible
-                : Input.MouseModeEnum.Captured;
-        }
+        // Esc não solta mais o mouse aqui: abre o menu, e quem decide
+        // o cursor é o UiState. Dois donos do mesmo cursor foi o defeito
+        // que o UiState nasceu para resolver.
     }
 
     public override void _PhysicsProcess(double delta)
@@ -495,6 +504,13 @@ public partial class Player : CharacterBody3D
             return;
         }
 
+        // Contagem e fim de partida: o corpo fica, a cabeça gira. Olhar
+        // em volta durante a contagem é como se lê o mapa antes de valer.
+        if (!Match.IsLive)
+        {
+            Hold(delta);
+            return;
+        }
 
         if (_stunTimer > 0)
         {

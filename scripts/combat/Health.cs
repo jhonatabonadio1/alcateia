@@ -25,6 +25,19 @@ public partial class Health : Node
     /// <summary>Nome exibido no feed de abates.</summary>
     [Export] public string DisplayName = "";
 
+    /// <summary>
+    /// Nome para mostrar, nunca vazio.
+    ///
+    /// Bots não tinham <see cref="DisplayName"/>, e quem reportava o
+    /// abate usava <c>DisplayName ?? nome do nó</c> — que não cai no
+    /// nó, porque string vazia não é nula. O feed mostrava abates sem
+    /// autor, e um placar por jogador juntaria todos os bots numa linha
+    /// só, a do nome "".
+    /// </summary>
+    public string PublicName => string.IsNullOrEmpty(DisplayName)
+        ? GetParent()?.Name.ToString() ?? Name.ToString()
+        : DisplayName;
+
     [Export] public float MaxHp = 200f;
     [Export] public float RespawnDelay = 3f;
 

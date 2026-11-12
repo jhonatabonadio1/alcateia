@@ -28,6 +28,13 @@ public partial class Grenade : RigidBody3D
     /// <summary>Fração da velocidade enquanto atordoado.</summary>
     [Export] public float StunSlowFactor = 0.3f;
 
+    /// <summary>
+    /// Quem lançou. Sem isto a explosão não sabe de que lado está: feria
+    /// aliado, e um abate de granada não contava para ninguém — o que,
+    /// numa partida decidida por pontos, é um abate jogado fora.
+    /// </summary>
+    public Health Thrower { get; set; }
+
     private double _timer;
     private bool _exploded;
 
@@ -71,7 +78,20 @@ public partial class Grenade : RigidBody3D
             float falloff = Mathf.Clamp(1f - distance / Radius, 0f, 1f);
             if (falloff <= 0) continue;
 
-            body.GetNodeOrNull<Health>("Health")?.TakeDamage(MaxDamage * falloff);
+            var health = body.GetNodeOrNull<Health>("Health");
+
+            // Aliado passa ileso, dano e atordoamento. Quem lançou não:
+            // granada aos próprios pés tem que custar alguma coisa.
+            if (health != null && Thrower != null && health != Thrower
+                && health.Team == Thrower.Team)
+                continue;
+
+            bool wasAlive = health != null && !health.IsDead;
+
+            health?.TakeDamage(MaxDamage * falloff, 0, GlobalPosition);
+
+            if (wasAlive && health.IsDead && Thrower != null && health != Thrower)
+                ReportKill(health);
 
             // O atordoamento é o ponto da granada, não o dano.
             if (body is Player player)
@@ -81,6 +101,18 @@ public partial class Grenade : RigidBody3D
         NoiseBus.Emit(GlobalPosition, Radius * 6f, NoiseKind.Explosion, this);
         SpawnFlash();
         QueueFree();
+    }
+
+    /// <summary>Abate de granada conta como qualquer outro: entra no
+    /// feed, no placar e rende o WP de quem lançou.</summary>
+    private void ReportKill(Health victim)
+    {
+        Thrower.GetParent()?.GetNodeOrNull<FormController>("FormController")?.OnKill();
+
+        KillFeed.Report(new Kill(
+            Thrower.PublicName, Thrower.Team,
+            victim.PublicName, victim.Team,
+            KillCause.Grenade));
     }
 
     /// <summary>Clarão que cresce e some. Peça descartável — vira

@@ -159,6 +159,19 @@ public partial class CharacterAnimator : Node3D
     /// <summary>Velocidade em que o agachado está andando a pleno.</summary>
     [Export] public float CrouchWalkSpeed = 1.9f;
 
+    /// <summary>
+    /// Pintar o corpo com a cor do time.
+    ///
+    /// Num quatro contra quatro com o mesmo boneco para todo mundo, a
+    /// primeira pergunta de cada encontro é "é dos meus?", e ela precisa
+    /// de resposta antes do primeiro tiro. Cor de corpo inteiro responde
+    /// a trinta metros; nome em cima da cabeça, não.
+    /// </summary>
+    [Export] public bool TintByTeam = true;
+
+    [Export] public Color BlueBody = new Color(0.22f, 0.45f, 0.95f);
+    [Export] public Color RedBody = new Color(0.92f, 0.26f, 0.2f);
+
     [Export] public bool Debug = true;
 
     /// <summary>Arquivo do clipe, e o nome com que ele entra na
@@ -206,7 +219,7 @@ public partial class CharacterAnimator : Node3D
     /// o dobro certinho de onde ele devia estar.
     /// </summary>
     private float BaseY => _owner != null ? _owner.FeetOffset : _modelY;
-    private readonly List<StandardMaterial3D> _fadeMaterials = new();
+    private readonly List<BaseMaterial3D> _fadeMaterials = new();
     private bool _hasDeath;
     private bool _airborne;
     private bool _crouched;
@@ -257,6 +270,7 @@ public partial class CharacterAnimator : Node3D
         _model.Position = new Vector3(_model.Position.X, 0, _model.Position.Z);
 
         HideFromOwner();
+        ApplyTeamTint();
 
         if (loaded > 0)
         {
@@ -468,6 +482,45 @@ public partial class CharacterAnimator : Node3D
 
         SetLayer(_model, bit);
         camera.CullMask &= ~bit;
+    }
+
+    /// <summary>
+    /// Corpo na cor do time, juntas num tom escuro dela.
+    ///
+    /// O material é duplicado antes de pintar, pelo mesmo motivo do
+    /// desbotar da morte: ele vem da importação e é um só para todos os
+    /// bots, e pintar o original pintaria os oito da mesma cor.
+    ///
+    /// O desbotar da morte duplica de novo a partir daqui, porque lê o
+    /// material ativo — que passa a ser esta cópia já pintada.
+    /// </summary>
+    private void ApplyTeamTint()
+    {
+        if (!TintByTeam || _health == null) return;
+
+        Color body = _health.Team == Teams.Blue ? BlueBody : RedBody;
+        Color joints = body.Darkened(0.6f);
+
+        Paint(_model);
+
+        void Paint(Node node)
+        {
+            if (node is MeshInstance3D mesh && mesh.Mesh != null)
+            {
+                bool isJoint = mesh.Name.ToString().ToLowerInvariant().Contains("joint");
+
+                for (int surface = 0; surface < mesh.Mesh.GetSurfaceCount(); surface++)
+                {
+                    if (mesh.GetActiveMaterial(surface) is not BaseMaterial3D source) continue;
+
+                    var copy = (BaseMaterial3D)source.Duplicate();
+                    copy.AlbedoColor = isJoint ? joints : body;
+                    mesh.SetSurfaceOverrideMaterial(surface, copy);
+                }
+            }
+
+            foreach (Node child in node.GetChildren()) Paint(child);
+        }
     }
 
     private static VisualInstance3D FirstVisual(Node node)
@@ -870,7 +923,7 @@ public partial class CharacterAnimator : Node3D
 
         if (_fadeMaterials.Count == 0) PrepareFade();
 
-        foreach (StandardMaterial3D material in _fadeMaterials)
+        foreach (BaseMaterial3D material in _fadeMaterials)
         {
             Color color = material.AlbedoColor;
             color.A = 1f - progress;
@@ -899,10 +952,10 @@ public partial class CharacterAnimator : Node3D
             {
                 for (int surface = 0; surface < mesh.Mesh.GetSurfaceCount(); surface++)
                 {
-                    if (mesh.GetActiveMaterial(surface) is not StandardMaterial3D source)
+                    if (mesh.GetActiveMaterial(surface) is not BaseMaterial3D source)
                         continue;
 
-                    var copy = (StandardMaterial3D)source.Duplicate();
+                    var copy = (BaseMaterial3D)source.Duplicate();
                     copy.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
 
                     mesh.SetSurfaceOverrideMaterial(surface, copy);
@@ -924,7 +977,7 @@ public partial class CharacterAnimator : Node3D
 
         // Volta tudo: um corpo que renasce meio transparente e meio
         // enterrado é o mesmo defeito, só adiado.
-        foreach (StandardMaterial3D material in _fadeMaterials)
+        foreach (BaseMaterial3D material in _fadeMaterials)
         {
             Color color = material.AlbedoColor;
             color.A = 1f;

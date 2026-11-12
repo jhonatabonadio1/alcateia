@@ -28,6 +28,14 @@ public static class UiState
         Apply();
     }
 
+    /// <summary>Zera a contagem. Só para troca de cena: menus que
+    /// somem junto com a cena antiga não chegam a chamar Pop.</summary>
+    public static void Reset()
+    {
+        Open = 0;
+        Apply();
+    }
+
     public static void Pop()
     {
         Open = Mathf.Max(Open - 1, 0);

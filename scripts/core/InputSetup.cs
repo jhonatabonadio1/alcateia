@@ -21,7 +21,12 @@ public static class InputSetup
         Key("howl", Godot.Key.R);
         Key("crouch", Godot.Key.Ctrl);
         Key("walk", Godot.Key.Shift);
-        Key("menu", Godot.Key.Tab);
+        // Menu no Esc e placar no Tab, como em quase todo FPS — e como
+        // no WolfTeam. Tab abria o menu de dificuldade porque não havia
+        // placar quando ele nasceu.
+        Key("menu", Godot.Key.Escape);
+        Key("scoreboard", Godot.Key.Tab);
+        Key("restart", Godot.Key.Enter);
         Mouse("attack", MouseButton.Left);
         Mouse("special", MouseButton.Right);
 

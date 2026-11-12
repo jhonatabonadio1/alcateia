@@ -252,7 +252,9 @@ export `RefillOnTransform`, desligado por padrão.
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
 | R | Rugir segurando (lobo) · recarregar (humano) |
-| Tab | Menu de dificuldade |
+| Esc | Menu de dificuldade |
+| Tab (segurar) | Placar da partida |
+| Enter | Jogar de novo, na tela de fim |
 
 Um toque, um pulo: segurar Space não repete, e uma trava curta impede
 que o mesmo toque dispare o pulo do chão e o da parede. Segurar Space
@@ -330,6 +332,12 @@ perde velocidade e não corre em parede, que é de onde vem todo o poder
 da forma.
 
 Duas por vida, reabastece ao renascer. Só na forma humana.
+
+A granada sabe quem a lançou (`Grenade.Thrower`). Aliado passa ileso,
+dano e atordoamento; quem lançou, não — granada aos próprios pés tem
+que custar alguma coisa. Abate de granada entra no feed, no placar e
+rende WP como qualquer outro. Antes não contava para ninguém, o que
+numa partida por pontos é abate jogado fora.
 
 ---
 
@@ -791,9 +799,11 @@ para o jogo sem inventar um formato paralelo.
 espessura com faces verticais limpas. Quinas finas não funcionam,
 porque os raios precisam de superfície para encontrar.
 
-### O mapa atual: Arrival
+### Arrival: referência, não mais o mapa da partida
 
-`assets/maps/arrival/Arrival.glb`, carregado por `scenes/main.tscn`.
+`assets/maps/arrival/Arrival.glb`, carregado por
+`scenes/arrival_referencia.tscn`. Saiu de `main.tscn` quando o Hangar
+entrou; ficou como régua de proporção para física.
 
 | Medida | Valor |
 |---|---|
@@ -923,16 +933,144 @@ Por isso a vigília de sete segundos mantém a crença viva, e o bot
 continua indo e olhando para lá. Ver alguém interrompe: ver é
 informação melhor do que lembrar.
 
-### As duas cenas
+### As cenas
 
 | Cena | Para que serve |
 |---|---|
-| `scenes/main.tscn` | A partida: Arrival, cinco bots, oito spawns |
+| `scenes/main.tscn` | A partida: Hangar, você e três bots azuis contra quatro vermelhos |
+| `scenes/maps/hangar.tscn` | O mapa, com tudo que é dele: geometria, spawns por base, rotas e navegação |
 | `scenes/treino.tscn` | Caixa cinza com duas paredes paralelas e bonecos, para medir física sem o mapa no caminho |
+| `scenes/arrival_referencia.tscn` | O Arrival, sem partida, para comparar proporções |
 
 A cena de treino não é sobra: quando a física quebra, uma sala limpa
 com duas paredes e um cubo diz em dez segundos o que um mapa inteiro
 esconde.
+
+---
+
+## O mapa Hangar
+
+Mapa próprio no espírito do Arrival. Caixa cinza, nenhuma peça vinda de
+outro jogo — é o primeiro mapa que pode ser publicado.
+
+Gerado por `tools/gerar_hangar.py`, que guarda cada medida com o motivo
+dela. **Rodar o script de novo sobrescreve o `.tscn`**: se o mapa for
+editado no Godot, o `.tscn` passa a ser a fonte e o script vira só o
+registro de como ele nasceu.
+
+| Medida | Valor |
+|---|---|
+| Arena | 84 × 48 m, muro de 12 m |
+| Bases | galpões de 10 × 21 m com teto a 5 m, A (azul) a oeste, B (vermelha) a leste |
+| Centro | heliponto de 12 × 12 m a 2 m, parapeito de 1 m, farol de 4 m |
+| Blocos | quatro, 12 × 9 m e 5 m de altura, com rampa vindo do centro |
+| Pontes | duas, 28 m de vão a 5 m, ligando os telhados |
+| Becos | 3 m de largura entre cada bloco e o muro |
+
+**Simétrico em X.** Num mapa de bases, qualquer vantagem de um lado é
+vantagem de um time, e não tem como afinar isso jogando sozinho contra
+bots.
+
+### As quatro perguntas, respondidas pela geometria
+
+1. **Caminho que só o lobo faz:** os becos. Duas paredes paralelas a
+   3 m é o que a corrida em parede precisa para subir ricocheteando até
+   o telhado de 5 m. O humano chega lá pelas rampas — pelo centro,
+   exposto.
+2. **Lugar onde o humano vê o lobo chegando:** o heliponto, 2 m acima
+   do chão, de frente para as alas abertas.
+3. **Corredor que o humano deve evitar:** os mesmos becos. Três metros
+   é distância de garra, não de fuzil.
+4. **Cair em cima de quem não olha:** as pontes. Grade só do lado do
+   muro; do lado da ala, nada.
+
+### Alturas amarradas à física
+
+O humano pula 0,99 m: sobe caixote (0,8 m), não sobe contêiner
+(2,2 m). O Bruto pula 1,54 m: do caixote alcança o contêiner. Ninguém
+alcança 5 m sem parede. **Mexeu no pulo, confira estes números** — um
+caixote 2 cm alto demais vira parede para o humano sem ninguém notar.
+
+### Textura de grade
+
+`assets/textures/grid.png`, projetada no espaço do mundo: um ladrilho a
+cada 2 m, subdivisão a cada 1 m. Em caixa cinza é o que dá escala e
+velocidade — parede lisa não mostra o quanto você andou.
+
+---
+
+## A partida
+
+`scripts/core/Match.cs`. Mata-mata em equipe, Azul contra Vermelho:
+ganha quem fizer **40** abates primeiro; se os **10 minutos** acabarem
+antes, ganha quem tiver mais, e empate é empate.
+
+| Fase | O que acontece |
+|---|---|
+| Contagem (10 s) | Todos na base. Olha-se em volta, não se anda nem se atira. É também o tempo da tela de lote |
+| Valendo | Relógio corre, abates pontuam |
+| Fim | Tudo congela, tela de vitória ou derrota, Enter recomeça |
+
+A contagem só começa quando o menu de dificuldade fecha, porque o menu
+pausa a árvore e a partida é pausável. Abrir o menu no meio da partida
+pausa o relógio junto.
+
+**A partida não sabe quem atirou em quem.** Ela escuta o `KillFeed`, o
+mesmo barramento do feed na tela. Quem mata não precisa saber que
+existe placar. Só abate de inimigo pontua; queda e granada nos próprios
+pés contam só como morte.
+
+`Match.IsLive` é o que Player e Bot consultam para saber se podem se
+mexer. **Sem `Match` na cena ele responde verdadeiro** — é o que mantém
+o treino e a referência do Arrival funcionando como antes.
+
+Reiniciar zera o `UiState` antes de recarregar: o contador de menus é
+estático e sobrevive à troca de cena, e um menu aberto no fim faria a
+tela de lote da partida nova nunca contar o tempo.
+
+### O HUD da partida
+
+`scripts/ui/MatchHud.cs`, separado do `Hud` de propósito: o `Hud` fala
+do corpo, este fala da partida, e some inteiro numa cena sem partida.
+
+Placar e relógio no topo, com uma barra por time até os 40 — porque
+"27" não diz o quanto falta e um traço a dois terços do caminho diz. O
+relógio fica vermelho no último minuto. Tab mostra a tabela por
+jogador, com você em amarelo.
+
+---
+
+## Times
+
+`Health.Team` diz o lado. Os bots recebem time e nome pela raiz
+(`Bot.Team`, `Bot.Callsign`) e aplicam no `_EnterTree`, não no
+`_Ready`: os filhos fazem `_Ready` antes do pai, e o corpo e a barra de
+vida leem o time no `_Ready` deles para escolher a cor.
+
+| Quem | Como sabe o lado |
+|---|---|
+| Corpo | Pintado na cor do time; juntas num tom escuro dela |
+| Barra de vida | Aliado na cor do time, inimigo em vermelho |
+| Minimapa | Ponto na cor do time |
+| Feed e placar | `Health.PublicName`, que nunca vem vazio |
+
+**O bot escolhe alvo por time.** Antes o alvo era sempre o jogador:
+com times, o aliado mirava em você e dois inimigos passavam um pelo
+outro sem se ver. Agora vale qualquer vivo do outro lado; quem está à
+vista ganha, e entre iguais o mais perto, com 6 m de vantagem para o
+alvo atual — sem isso a cabeça fica indo e voltando entre dois.
+
+A crença **não** é zerada na troca de alvo. Com vários inimigos ela é
+"de onde vem a ameaça", não "onde está fulano". Zerar apagava o tiro
+pelas costas que a vigília existe para lembrar.
+
+Passo de aliado não é pista: sem esse filtro o time inteiro passaria a
+partida investigando os próprios passos dentro da base.
+
+`PublicName` existe porque `DisplayName` vazio não é nulo, e o
+`DisplayName ?? nome do nó` que reportava os abates nunca caía no nó.
+O feed mostrava abate sem autor, e o placar juntaria todos os bots
+numa linha só.
 
 ---
 

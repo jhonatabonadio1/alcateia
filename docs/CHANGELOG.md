@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.20.0 — 2026-11-12
+
+### Adicionado
+- **Mapa Hangar**, próprio, no espírito do Arrival: 84 × 48 m,
+  simétrico, base A (azul) e base B (vermelha), heliponto central,
+  quatro blocos com telhado, duas pontes a 5 m, becos de 3 m para a
+  corrida em parede. Gerado por `tools/gerar_hangar.py`.
+- **Partida**: mata-mata em equipe até 40 abates, contagem de 10 s,
+  10 minutos, tela de vitória/derrota/empate com destaque, Enter
+  recomeça.
+- **HUD da partida**: placar e relógio no topo com barra até a
+  vitória, contagem no centro, tabela por jogador no Tab.
+- **Times**: você e três bots azuis contra quatro vermelhos, cada um
+  com nome. Corpo pintado e barra de vida na cor do time.
+- **Spawns por base**, longe do inimigo vivo mais próximo.
+- Textura de grade em espaço de mundo para a caixa cinza.
+
+### Alterado
+- Bots escolhem alvo entre os inimigos vivos, preferindo quem está à
+  vista, em vez de mirar sempre no jogador. Ignoram passo de aliado.
+- Menu de dificuldade foi do Tab para o Esc; Tab é o placar.
+- Arrival saiu da partida e ficou em `scenes/arrival_referencia.tscn`.
+
+### Corrigido
+- Granada feria aliado e o abate dela não contava para ninguém.
+- Bots tinham nome vazio no feed: `DisplayName` vazio não é nulo, e o
+  `??` que devia cair no nome do nó nunca caía.
+- Esc soltava o mouse por conta própria no Player, brigando com o
+  `UiState` pelo cursor.
+
 ## v0.19.1 — 2026-11-11
 
 ### Corrigido
