@@ -61,6 +61,18 @@ public partial class Bot : CharacterBody3D
     /// </summary>
     [Export] public float Vigilance = 7f;
 
+    /// <summary>Impulso do pulo do bot. O mesmo do humano: bot que
+    /// pula mais alto que o jogador alcança lugares que o jogador não
+    /// alcança, e isso não é dificuldade, é trapaça.</summary>
+    [Export] public float JumpVelocity = 4.4f;
+
+    /// <summary>Altura máxima do obstáculo que o bot tenta vencer
+    /// pulando.</summary>
+    [Export] public float JumpMaxHeight = 1.1f;
+
+    /// <summary>Distância à frente em que ele procura o obstáculo.</summary>
+    [Export] public float JumpProbe = 1.1f;
+
     // --- Percepção: audição ---
 
     /// <summary>Multiplicador do raio dos ruídos. Abaixo de 1 o bot é
@@ -944,8 +956,60 @@ public partial class Bot : CharacterBody3D
         velocity.Z = Mathf.MoveToward(velocity.Z, direction.Z * speed, speed * 6f * (float)delta);
         velocity.Y = IsOnFloor() ? 0 : velocity.Y - _gravity * (float)delta;
 
+        if (IsOnFloor() && ShouldJump(direction))
+            velocity.Y = JumpVelocity;
+
         Velocity = velocity;
         MoveAndSlide();
+    }
+
+    /// <summary>
+    /// Há degrau à frente que valha um pulo?
+    ///
+    /// A navegação resolve o chão e ignora o resto: ela devolve um
+    /// caminho pelo piso e nada diz sobre o caixote de um metro no
+    /// meio dele. O bot então empurrava contra o caixote até o
+    /// detector de travamento desistir e mandá-lo para outro lugar —
+    /// e de fora isso parece um bot que não entende o mapa.
+    ///
+    /// A leitura é em três perguntas, nessa ordem, porque cada uma só
+    /// faz sentido se a anterior passou: existe algo à frente na
+    /// altura da canela? O topo desse algo está dentro do alcance do
+    /// pulo? E existe piso logo depois, para onde cair?
+    ///
+    /// A terceira é a que importa. Sem ela o bot pula em parede.
+    /// </summary>
+    private bool ShouldJump(Vector3 direction)
+    {
+        Vector3 flat = new Vector3(direction.X, 0, direction.Z);
+        if (flat.LengthSquared() < 0.01f) return false;
+
+        flat = flat.Normalized();
+
+        var space = GetWorld3D().DirectSpaceState;
+        var exclude = new Godot.Collections.Array<Rid> { GetRid() };
+
+        // 1. obstáculo na canela
+        Vector3 shin = GlobalPosition + Vector3.Down * 0.6f;
+        var ahead = PhysicsRayQueryParameters3D.Create(shin, shin + flat * JumpProbe);
+        ahead.Exclude = exclude;
+
+        if (space.IntersectRay(ahead).Count == 0) return false;
+
+        // 2. passa por cima na altura do pulo?
+        Vector3 over = GlobalPosition + Vector3.Up * JumpMaxHeight;
+        var clear = PhysicsRayQueryParameters3D.Create(over, over + flat * (JumpProbe + 0.4f));
+        clear.Exclude = exclude;
+
+        if (space.IntersectRay(clear).Count > 0) return false;
+
+        // 3. tem chão do outro lado?
+        Vector3 beyond = over + flat * (JumpProbe + 0.4f);
+        var ground = PhysicsRayQueryParameters3D.Create(
+            beyond, beyond + Vector3.Down * (JumpMaxHeight + 1.6f));
+        ground.Exclude = exclude;
+
+        return space.IntersectRay(ground).Count > 0;
     }
 
     private void Fall(double delta)

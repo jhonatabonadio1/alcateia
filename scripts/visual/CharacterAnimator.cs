@@ -118,6 +118,15 @@ public partial class CharacterAnimator : Node3D
     /// apagar deixa o corpo piscar para fora.</summary>
     [Export] public float CorpseSink = 0.55f;
 
+    /// <summary>
+    /// Esconder o corpo humano quando o dono vira lobo.
+    ///
+    /// Desligado por enquanto: o lobo ainda não tem corpo próprio, e
+    /// sem isto ele vira um par de braços flutuando. Ligar no dia em
+    /// que existir um quadrúpede animado.
+    /// </summary>
+    [Export] public bool HideInWolfForm = false;
+
     [Export] public bool Debug = true;
 
     /// <summary>Arquivo do clipe, e o nome com que ele entra na
@@ -669,6 +678,6 @@ public partial class CharacterAnimator : Node3D
     /// <summary>O corpo humano some quando o dono vira lobo.</summary>
     private void Refresh()
     {
-        if (_form != null) Visible = !_form.IsWolf;
+        if (_form != null) Visible = !(HideInWolfForm && _form.IsWolf);
     }
 }

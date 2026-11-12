@@ -14,7 +14,7 @@ using Godot;
 public partial class Player : CharacterBody3D
 {
     [Export] public float HumanSpeed = 4.2f;
-    [Export] public float JumpVelocity = 3.8f;
+    [Export] public float JumpVelocity = 4.4f;
 
     // --- Agachar: vale nas duas formas ---
 
@@ -55,7 +55,7 @@ public partial class Player : CharacterBody3D
     /// vertical, é um salto dirigido. Mirar no alvo e apertar leva o
     /// lobo até ele.
     /// </summary>
-    [Export] public float LeapSpeed = 13f;
+    [Export] public float LeapSpeed = 9f;
 
     /// <summary>Queda extra somada à direção do bote. Faz o lobo
     /// chegar antes do que chegaria só pela gravidade.</summary>
