@@ -148,16 +148,24 @@ public partial class Player : CharacterBody3D
     /// meio metro.</summary>
     [Export] public float WallBrake = 32f;
 
-    /// <summary>Sucção contra a parede. Mantém o lobo colado em vez de
-    /// apenas deslizar perto dela.</summary>
+    /// <summary>Velocidade máxima com que o lobo é puxado contra a parede.
+    /// A puxada é proporcional à folga: mantém o corpo a
+    /// <see cref="WallHoldDistance"/> da parede, sem bater nem descolar.</summary>
     [Export] public float WallStickForce = 4f;
 
-    /// <summary>Quanto à frente olhar para antecipar o fim da face.</summary>
-    [Export] public float CornerLookahead = 0.9f;
+    /// <summary>Distância do centro do corpo à parede durante a corrida:
+    /// o raio da cápsula e um fio de folga.</summary>
+    [Export] public float WallHoldDistance = 0.34f;
 
-    /// <summary>Tempo que a corrida sobrevive sem encostar em nada, ao
-    /// contornar uma quina, antes de reencontrar a face seguinte.</summary>
-    [Export] public float CornerGrace = 0.3f;
+    /// <summary>Tempo que a corrida sobrevive sem encostar em nada antes
+    /// de soltar. Com a sonda que acha o ponto de parede mais perto, a
+    /// quina não perde a parede; isto cobre falha de geometria.</summary>
+    [Export] public float CornerGrace = 0.15f;
+
+    /// <summary>Subindo mais rápido que isto (m/s), o lobo ainda não
+    /// gruda: ele gruda no alto do pulo, na altura em que chegou, e fica
+    /// nela. Grudar subindo carregava o impulso para cima da parede.</summary>
+    [Export] public float WallGrabMaxRise = 0.6f;
 
     /// <summary>
     /// Multiplicador de altura do salto da parede. Acima de 1 cada
@@ -942,7 +950,7 @@ public partial class Player : CharacterBody3D
             return false;
         }
 
-        bool found = FindWall(out Vector3 normal);
+        bool found = ProbeWall(out Vector3 normal, out float wallDistance);
 
         if (!_onWall)
         {
@@ -960,6 +968,20 @@ public partial class Player : CharacterBody3D
                 return false;
             }
 
+            // Gruda no alto do pulo, não na subida: grudar subindo levava o
+            // impulso para cima da parede e o lobo subia em vez de ficar na
+            // altura em que encostou.
+            if (Velocity.Y > WallGrabMaxRise)
+            {
+                WallLog("subindo — gruda no alto do pulo");
+                return false;
+            }
+
+            if (IsNearFloor())
+            {
+                WallLog("perto demais do chão");
+                return false;
+            }
 
             // A mesma parede, sem ter tocado o chão, viraria elevador:
             // sobe, salta, regruda mais alto, repete. Uma parede
@@ -990,47 +1012,30 @@ public partial class Player : CharacterBody3D
         }
         else if (found)
         {
-            bool turned = normal.Dot(_wallNormal) < 0.8f;
-
+            // O sentido segue a parede sem nunca virar para trás: é o
+            // sentido de antes, deitado no plano da parede de agora. Numa
+            // quina convexa a normal gira suave de uma face para a outra
+            // (o ponto mais perto é a aresta), e o sentido gira junto — o
+            // lobo contorna a coluna em vez de escolher a face de novo a
+            // cada quadro. Era essa escolha que fazia ele ir e voltar
+            // preso na quina de coluna fina.
             _wallNormal = normal;
             _cornerGrace = 0;
 
-            Vector3 along = normal.Cross(Vector3.Up).Normalized();
+            Vector3 along = _wallAlong - normal * _wallAlong.Dot(normal);
+            along.Y = 0;
 
-            if (turned)
-            {
-                // Parede nova em ângulo. Comparar com o sentido antigo
-                // não resolve: numa parede perpendicular os dois lados
-                // dão zero e o desempate manda o lobo de volta. Quem
-                // decide é o movimento que ele já carrega, e o lado
-                // bloqueado é descartado.
-                Vector3 flat = new Vector3(Velocity.X, 0, Velocity.Z);
-
-                if (Mathf.Abs(flat.Dot(along)) > 0.5f)
-                    along = flat.Dot(along) > 0 ? along : -along;
-                else if (IsBlocked(along))
-                    along = -along;
-            }
-            else if (along.Dot(_wallAlong) < 0)
-            {
-                // Mesma parede, apenas curvando: mantém o sentido.
-                along = -along;
-            }
-
-            _wallAlong = along;
+            // De frente para uma parede (quina côncava), não há para onde
+            // deitar o sentido: fica o de antes, e o bloqueio à frente
+            // solta o lobo logo abaixo.
+            if (along.LengthSquared() > 0.04f)
+                _wallAlong = along.Normalized();
         }
         else if (_cornerGrace <= 0)
         {
-            // A face acabou. Numa quina convexa, a face seguinte tem
-            // normal igual à direção em que estávamos correndo, e o novo
-            // sentido é o oposto da normal antiga. Gira e segue, com uma
-            // janela curta para reencontrar a parede do outro lado.
-            Vector3 oldNormal = _wallNormal;
-            _wallNormal = _wallAlong;
-            _wallAlong = -oldNormal;
+            // Perdeu a parede: segue reto um instante antes de soltar.
             _cornerGrace = CornerGrace;
-
-            WallLog($"quina: tentando face seguinte, normal {_wallNormal}");
+            WallLog("perdeu a parede");
         }
         else
         {
@@ -1038,7 +1043,7 @@ public partial class Player : CharacterBody3D
 
             if (_cornerGrace <= 0)
             {
-                WallLog("quina: não achou a face seguinte, soltou");
+                WallLog("soltou: nada para encostar");
                 ReleaseWall();
                 return false;
             }
@@ -1099,19 +1104,10 @@ public partial class Player : CharacterBody3D
             return false;
         }
 
-        // A subida é PRESERVADA ao grudar, e só depois a altura trava.
-        //
-        // Era aqui o erro: travar a altura no instante do contato
-        // matava o pulo de quem grudava subindo — o jogador apertava
-        // pular colado na parede e só colava. Impedir de grudar
-        // subindo consertava o pulo e quebrava a jogada inteira.
-        //
-        // Deixar o impulso morrer sozinho resolve os dois: pula-se
-        // contra a parede, sobe-se o que o pulo rendeu, e dali em
-        // diante a corrida é plana.
-        velocity.Y = velocity.Y > WallRunVerticalDrift
-            ? Mathf.Max(velocity.Y - _gravity * 0.55f * (float)delta, WallRunVerticalDrift)
-            : WallRunVerticalDrift;
+        // A altura fica a do instante em que grudou. O pulo não é morto
+        // por isso: o lobo só gruda no alto do pulo (WallGrabMaxRise), e
+        // pular colado na parede sobe primeiro e gruda depois.
+        velocity.Y = WallRunVerticalDrift;
 
         // Agarrado com o botão de ataque e sem o pulo: fica parado.
         float target = _clinging && !Input.IsActionPressed("jump")
@@ -1126,9 +1122,13 @@ public partial class Player : CharacterBody3D
         float rate = target < current ? WallBrake : WallAccel;
         float speed = Mathf.MoveToward(current, target, rate * (float)delta);
 
-        // Sucção contra a parede, exceto ao contornar uma quina — ali
-        // ela empurraria o lobo para dentro do canto e o prenderia.
-        float stick = _cornerGrace > 0 ? 0f : WallStickForce;
+        // Puxada contra a parede proporcional à folga: mantém o corpo a
+        // WallHoldDistance dela. Força fixa batia na quina e empurrava o
+        // lobo para dentro do canto; proporcional, ele contorna a aresta
+        // na mesma distância. Sem parede (instante de tolerância), nada.
+        float stick = _cornerGrace > 0
+            ? 0f
+            : Mathf.Clamp((wallDistance - WallHoldDistance) * 12f, -2f, WallStickForce);
 
         velocity.X = _wallAlong.X * speed - _wallNormal.X * stick;
         velocity.Z = _wallAlong.Z * speed - _wallNormal.Z * stick;
@@ -1243,33 +1243,52 @@ public partial class Player : CharacterBody3D
         return !IsBlocked(along);
     }
 
+    private PhysicsShapeQueryParameters3D _wallProbe;
+
     /// <summary>
-    /// Varre o entorno em leque e devolve a normal da parede mais
-    /// próxima. Em leque, e não só para os lados do corpo, porque o
-    /// ângulo do corpo não deve decidir se existe parede ali.
+    /// O ponto de parede mais perto do corpo, num cilindro do alcance de
+    /// grudar em volta dele. A normal sai do ponto para o corpo, então
+    /// numa aresta ela aponta na diagonal e gira suave enquanto o lobo
+    /// contorna — o leque de raios antigo pulava de uma face para a outra
+    /// na quina. O cilindro fica acima dos pés e abaixo da cabeça: chão e
+    /// teto não contam. Gente também não é parede.
     /// </summary>
-    private bool FindWall(out Vector3 normal)
+    private bool ProbeWall(out Vector3 normal, out float distance)
     {
         normal = Vector3.Zero;
+        distance = 0f;
 
-        Vector3 origin = GlobalPosition;
-        float best = float.MaxValue;
-        bool any = false;
-
-        for (int i = 0; i < 8; i++)
+        _wallProbe ??= new PhysicsShapeQueryParameters3D
         {
-            float angle = Mathf.Tau * i / 8f;
-            var dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+            Shape = new CylinderShape3D { Radius = WallHoldDistance + WallCheckDistance * 0.55f, Height = 0.9f },
+            CollideWithAreas = false
+        };
 
-            if (!Cast(origin, dir, out Vector3 n, out float distance)) continue;
-            if (distance >= best) continue;
+        var space = GetWorld3D().DirectSpaceState;
+        var exclude = new Godot.Collections.Array<Rid> { GetRid() };
+        _wallProbe.Transform = new Transform3D(Basis.Identity, GlobalPosition);
+        _wallProbe.Exclude = exclude;
 
-            best = distance;
-            normal = n;
-            any = true;
+        foreach (var hit in space.IntersectShape(_wallProbe, 8))
+            if (hit["collider"].Obj is CharacterBody3D) exclude.Add((Rid)hit["rid"]);
+        _wallProbe.Exclude = exclude;
+
+        var rest = space.GetRestInfo(_wallProbe);
+        if (rest.Count == 0) return false;
+
+        Vector3 away = GlobalPosition - (Vector3)rest["point"];
+        away.Y = 0;
+
+        if (away.LengthSquared() < 1e-6f)
+        {
+            away = (Vector3)rest["normal"];
+            away.Y = 0;
+            if (away.LengthSquared() < 1e-6f) return false;
         }
 
-        return any;
+        normal = away.Normalized();
+        distance = away.Length();
+        return true;
     }
 
     /// <summary>Altura mínima dos pés ao chão para a parede pegar.
@@ -1317,37 +1336,5 @@ public partial class Player : CharacterBody3D
         if (n.Dot(along) > 0) n = -n;
 
         return Mathf.Abs(n.Y) < 0.4f;
-    }
-
-    private bool Cast(Vector3 origin, Vector3 direction, out Vector3 normal, out float distance)
-    {
-        normal = Vector3.Zero;
-        distance = 0f;
-
-        var query = PhysicsRayQueryParameters3D.Create(
-            origin, origin + direction * WallCheckDistance);
-        query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
-
-        var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
-        if (hit.Count == 0) return false;
-
-        Vector3 n = (Vector3)hit["normal"];
-
-        // Orienta a normal contra o raio.
-        //
-        // Com colisão de dois lados, bater no verso de um triângulo
-        // devolve a normal geométrica, que aponta para o mesmo lado em
-        // que o raio viaja. Usada crua, ela inverteria a força que
-        // segura o lobo: em vez de colar na parede, ele seria empurrado
-        // para dentro dela. Virar a normal para quem perguntou vale
-        // para qualquer sentido de face e não muda nada no caso normal.
-        if (n.Dot(direction) > 0) n = -n;
-
-        // Rejeita chão e teto: só parede vale.
-        if (Mathf.Abs(n.Y) > 0.4f) return false;
-
-        normal = n;
-        distance = origin.DistanceTo((Vector3)hit["position"]);
-        return true;
     }
 }
