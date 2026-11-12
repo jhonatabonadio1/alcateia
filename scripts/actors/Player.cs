@@ -146,8 +146,11 @@ public partial class Player : CharacterBody3D
     [Export] public float WallRunVerticalDrift = 0f;
 
     /// <summary>Velocidade ao longo da parede, sobre a velocidade da forma.
-    /// Era 1,25: rápido demais para escolher onde descer.</summary>
-    [Export] public float WallRunSpeedBonus = 1.0f;
+    /// Era 1,25: rápido demais para escolher onde descer. 1,0388 desde a
+    /// v0.26.11 (decisão do Jhon): o chão subiu 3% e a parede 7%, então a
+    /// parede fica 1,07 / 1,03 acima do chão — Bruto 4,05 m/s, Ligeiro 4,38.
+    /// O salto da parede leva 80% disto (<see cref="WallJumpKeepSpeed"/>).</summary>
+    [Export] public float WallRunSpeedBonus = 1.0388f;
 
     /// <summary>Aceleração ao longo da parede, em m/s². A corrida
     /// começa aos poucos em vez de sair a toda no quadro em que gruda.</summary>
