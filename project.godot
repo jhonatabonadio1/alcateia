@@ -15,6 +15,11 @@ run/main_scene="res://scenes/menu/menu.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+
+[autoload]
+
+Saida="*res://scripts/core/Saida.cs"
+
 [display]
 
 window/size/viewport_width=1920
