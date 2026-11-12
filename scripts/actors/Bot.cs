@@ -37,15 +37,39 @@ public partial class Bot : CharacterBody3D
     [Export] public float PreferredRange = 12f;
 
     // --- Decisão de forma ---
+    //
+    // O bot é um atirador. Virar lobo é recurso de desespero, não
+    // tática padrão: como lobo é corpo-a-corpo, um bot que transforma
+    // cedo gruda no jogador e nunca mais atira.
 
-    /// <summary>Abaixo desta distância, vira lobo: é onde o
-    /// corpo-a-corpo ganha da arma.</summary>
-    [Export] public float WolfRange = 9f;
+    /// <summary>Vira lobo abaixo desta fração de vida.</summary>
+    [Export] public float WolfHealthThreshold = 0.4f;
 
-    /// <summary>Acima desta, volta a humano.</summary>
-    [Export] public float HumanRange = 16f;
+    /// <summary>E só se o alvo estiver a esta distância ou menos —
+    /// virar lobo longe do alvo é suicídio.</summary>
+    [Export] public float WolfRange = 14f;
+
+    /// <summary>Volta a humano acima desta distância.</summary>
+    [Export] public float HumanRange = 20f;
 
     [Export] public float DecisionInterval = 0.4f;
+
+    // --- Combate ---
+
+    /// <summary>Duração da rajada e da pausa entre elas. Fogo contínuo
+    /// não dá ao jogador nenhuma janela para reagir.</summary>
+    [Export] public float BurstTime = 0.7f;
+    [Export] public float BurstPause = 0.6f;
+
+    /// <summary>Alcance efetivo. Além disso não atira: um bot que
+    /// acerta do outro lado do mapa é insuportável.</summary>
+    [Export] public float EngageRange = 45f;
+
+    /// <summary>Velocidade do deslocamento lateral em combate.</summary>
+    [Export] public float StrafeFactor = 0.8f;
+
+    /// <summary>Intervalo entre trocas de lado no strafe.</summary>
+    [Export] public float StrafeInterval = 1.4f;
 
     // --- Pontaria ---
 
@@ -65,6 +89,10 @@ public partial class Bot : CharacterBody3D
     private double _memoryTimer;
     private double _decisionTimer;
     private Vector3 _aimOffset;
+    private double _burstTimer;
+    private bool _firing;
+    private double _strafeTimer;
+    private int _strafeSide = 1;
 
     public override void _Ready()
     {
@@ -116,6 +144,9 @@ public partial class Bot : CharacterBody3D
             DecideForm();
             ShuffleAim();
         }
+
+        UpdateBurst(delta);
+        UpdateStrafe(delta);
 
         Vector3 toTarget = _target.GlobalPosition - GlobalPosition;
         float distance = new Vector3(toTarget.X, 0, toTarget.Z).Length();
@@ -181,11 +212,44 @@ public partial class Bot : CharacterBody3D
     private void DecideForm()
     {
         float distance = GlobalPosition.DistanceTo(_target.GlobalPosition);
+        float healthRatio = _health.MaxHp > 0 ? _health.Hp / _health.MaxHp : 1f;
 
-        if (!_form.IsWolf && distance < WolfRange)
-            _weapon.SelectSlot(Slot.Wolf);
-        else if (_form.IsWolf && distance > HumanRange)
+        if (!_form.IsWolf)
+        {
+            // Encurralado e com o alvo ao alcance: aposta no lobo.
+            if (healthRatio <= WolfHealthThreshold && distance <= WolfRange)
+                _weapon.SelectSlot(Slot.Wolf);
+
+            return;
+        }
+
+        // Alvo escapou, ou a vida voltou ao normal depois de renascer.
+        if (distance > HumanRange || healthRatio > WolfHealthThreshold)
             _weapon.SelectSlot(Slot.Primary);
+    }
+
+    /// <summary>Rajada e pausa. Fogo contínuo não deixa o jogador
+    /// respirar e esconde de onde vem o tiro.</summary>
+    private void UpdateBurst(double delta)
+    {
+        _burstTimer -= delta;
+
+        if (_burstTimer > 0) return;
+
+        _firing = !_firing;
+        _burstTimer = _firing ? BurstTime : BurstPause;
+    }
+
+    /// <summary>Troca de lado periodicamente. Um bot parado em linha
+    /// reta é alvo de tiro ao prato.</summary>
+    private void UpdateStrafe(double delta)
+    {
+        _strafeTimer -= delta;
+
+        if (_strafeTimer > 0) return;
+
+        _strafeSide = GD.Randf() < 0.5f ? -1 : 1;
+        _strafeTimer = StrafeInterval * GD.RandRange(0.6, 1.4);
     }
 
     private void ShuffleAim()
@@ -227,23 +291,32 @@ public partial class Bot : CharacterBody3D
     private void Advance(float distance, Vector3 toTarget, double delta)
     {
         Vector3 flat = new Vector3(toTarget.X, 0, toTarget.Z).Normalized();
-        Vector3 desired = Vector3.Zero;
+        Vector3 side = flat.Cross(Vector3.Up).Normalized() * _strafeSide;
+        Vector3 desired;
 
         if (_form.IsWolf)
         {
+            // Como lobo, fechar a distância é a única jogada.
             desired = flat;
         }
-        else if (distance > PreferredRange * 1.2f)
+        else if (distance > PreferredRange * 1.25f)
         {
-            desired = flat;
+            // Longe demais: aproxima, mas já deslocando de lado.
+            desired = (flat + side * StrafeFactor * 0.5f).Normalized();
         }
-        else if (distance < PreferredRange * 0.6f)
+        else if (distance < PreferredRange * 0.7f)
         {
-            desired = -flat;
+            // Perto demais: recua sem dar as costas.
+            desired = (-flat + side * StrafeFactor * 0.5f).Normalized();
+        }
+        else
+        {
+            // Na distância certa: só circula. É aqui que ele atira,
+            // em vez de grudar no jogador.
+            desired = side * StrafeFactor;
         }
 
-        if (desired != Vector3.Zero)
-            desired = Avoid(desired);
+        desired = Avoid(desired);
 
         Vector3 velocity = Velocity;
         float speed = Speed * (_form.IsWolf ? _form.Breed.SpeedMultiplier : 1f);
@@ -260,6 +333,7 @@ public partial class Bot : CharacterBody3D
     /// Não é pathfinding e não resolve labirinto.</summary>
     private Vector3 Avoid(Vector3 desired)
     {
+        if (desired == Vector3.Zero) return desired;
         if (!Blocked(desired)) return desired;
 
         for (int sign = -1; sign <= 1; sign += 2)
@@ -289,9 +363,15 @@ public partial class Bot : CharacterBody3D
     {
         if (!_form.CanAttack) return;
 
-        float reach = _form.IsWolf ? _form.Breed.AttackRange : _weapon.PrimaryRange;
+        float reach = _form.IsWolf
+            ? _form.Breed.AttackRange
+            : Mathf.Min(EngageRange, _weapon.PrimaryRange);
 
         if (distance > reach) return;
+
+        // A garrada não tem rajada: é um golpe por cooldown.
+        if (!_form.IsWolf && !_firing) return;
+
         if (!HasLineOfSight()) return;
 
         _weapon.TryAttack();

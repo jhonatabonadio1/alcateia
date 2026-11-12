@@ -49,6 +49,14 @@ public partial class Weapon : Node3D
 	/// <summary>Diagnóstico. Desligue quando o tiro estiver confirmado.</summary>
 	[Export] public bool Debug = true;
 
+	/// <summary>Traçante do disparo. Sem nenhum retorno visual não há
+	/// como saber que alguém atirou em você — o bot parecia inofensivo
+	/// enquanto acertava.</summary>
+	[Export] public bool ShowTracer = true;
+
+	[Export] public Color TracerColor = new Color(1f, 0.9f, 0.5f, 0.9f);
+	[Export] public float TracerLife = 0.08f;
+
 	/// <summary>Slot de arma guardado enquanto você está de lobo, para
 	/// voltar nele ao destransformar.</summary>
 	public Slot HumanSlot { get; private set; } = Slot.Primary;
@@ -149,7 +157,9 @@ public partial class Weapon : Node3D
 		Vector3 from = _camera.GlobalPosition;
 		Vector3 to = from - _camera.GlobalTransform.Basis.Z * range;
 
-		Health hit = Raycast(from, to);
+		Health hit = Raycast(from, to, out Vector3 impact);
+		Tracer(from, hit == null ? to : impact);
+
 		if (hit == null) return;
 
 		hit.TakeDamage(damage);
@@ -169,7 +179,7 @@ public partial class Weapon : Node3D
 		Vector3 from = _head.GlobalPosition;
 		Vector3 to = from - _head.GlobalTransform.Basis.Z * breed.AttackRange;
 
-		Health hit = Raycast(from, to);
+		Health hit = Raycast(from, to, out _);
 		if (hit == null) return;
 
 		float damage = breed.AttackDamage;
@@ -244,8 +254,39 @@ public partial class Weapon : Node3D
 		}
 	}
 
-	private Health Raycast(Vector3 from, Vector3 to)
+	/// <summary>Linha fina que aparece e some. Peça descartável — vira
+	/// efeito de verdade na fase de polimento.</summary>
+	private void Tracer(Vector3 from, Vector3 to)
 	{
+		if (!ShowTracer) return;
+
+		var mesh = new ImmediateMesh();
+		var material = new StandardMaterial3D
+		{
+			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+			AlbedoColor = TracerColor,
+			VertexColorUseAsAlbedo = true
+		};
+
+		mesh.SurfaceBegin(Mesh.PrimitiveType.Lines, material);
+		mesh.SurfaceAddVertex(Vector3.Zero);
+		mesh.SurfaceAddVertex(to - from);
+		mesh.SurfaceEnd();
+
+		var node = new MeshInstance3D { Mesh = mesh };
+		_body.GetTree().CurrentScene.AddChild(node);
+		node.GlobalPosition = from;
+
+		Tween tween = node.CreateTween();
+		tween.TweenProperty(material, "albedo_color:a", 0.0f, TracerLife);
+		tween.TweenCallback(Callable.From(node.QueueFree));
+	}
+
+	private Health Raycast(Vector3 from, Vector3 to, out Vector3 impact)
+	{
+		impact = to;
+
 		var query = PhysicsRayQueryParameters3D.Create(from, to);
 		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
 		query.CollideWithAreas = false;
@@ -257,6 +298,8 @@ public partial class Weapon : Node3D
 			if (Debug) GD.Print("ataque: não acertou nada");
 			return null;
 		}
+
+		impact = (Vector3)result["position"];
 
 		if (result["collider"].Obj is not Node collider)
 			return null;

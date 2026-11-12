@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.7.1 — 2026-11-11
+
+### Corrigido
+- O bot virava lobo a menos de 9m e, sendo o lobo corpo-a-corpo,
+  grudava no jogador e nunca atirava. Agora virar lobo é recurso de
+  desespero: só abaixo de 40% de vida e com o alvo ao alcance.
+- Disparos não tinham retorno visual nenhum, então o bot parecia
+  inofensivo enquanto acertava. Todo tiro agora deixa traçante.
+
+### Adicionado
+- Combate à distância no estilo de bots de FPS: mantém o alcance da
+  arma, circula com strafe de lado alternado, e atira em rajadas com
+  pausa em vez de fogo contínuo.
+- `EngageRange` limita o alcance efetivo do bot — acertar do outro
+  lado do mapa torna o jogo insuportável.
+
 ## v0.7.0 — 2026-11-11
 
 ### Adicionado

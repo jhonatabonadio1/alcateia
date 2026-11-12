@@ -157,7 +157,7 @@ alcateia/
 | Arquivo | Responsabilidade |
 |---|---|
 | `actors/Player.cs` | Movimento, corrida em parede, câmeras, agachar, stun, input |
-| `actors/Bot.cs` | Percepção, perseguição, decisão de forma, combate |
+| `actors/Bot.cs` | Percepção, combate à distância, strafe, decisão de forma |
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
 | `combat/Weapon.cs` | Slots, tiro hitscan, garrada, granada |
 | `combat/Grenade.cs` | Projétil de atordoamento com física |
@@ -330,6 +330,30 @@ Duas por vida, reabastece ao renascer. Só na forma humana.
   faz polling
 - Peças descartáveis (Dummy, HUD atual, clarão da granada) estão
   marcadas como tal no comentário de topo
+
+---
+
+## O bot
+
+**O bot é um atirador, não um perseguidor.** Na distância certa ele
+circula e atira em rajadas; longe, aproxima; perto demais, recua sem
+dar as costas.
+
+Virar lobo é recurso de desespero: só abaixo de 40% de vida e com o
+alvo ao alcance. Um bot que vira lobo cedo gruda no jogador e nunca
+mais atira — foi o primeiro comportamento implementado, e estava
+errado.
+
+Rajada e pausa existem para dar ao jogador janela de reagir e para
+deixar claro de onde vem o tiro. Fogo contínuo esconde as duas coisas.
+
+Todo disparo deixa traçante. Sem retorno visual o bot parecia
+inofensivo enquanto acertava — não havia como distinguir "não atirou"
+de "atirou e eu não vi".
+
+Limites conhecidos: navegação é direção e desvio raso, sem caminho
+calculado. Não há cobertura, rota nem memória de posição. Tudo isso
+depende de navmesh, e navmesh depende de um mapa de verdade.
 
 ---
 

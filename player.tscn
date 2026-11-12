@@ -1,0 +1,99 @@
+[gd_scene format=3 uid="uid://bq5i3itdh4w5s"]
+
+[ext_resource type="Script" path="res://Player.cs" id="1_player"]
+[ext_resource type="Script" path="res://Health.cs" id="2_health"]
+[ext_resource type="Script" path="res://FormController.cs" id="3_form"]
+[ext_resource type="Script" path="res://Weapon.cs" id="4_weapon"]
+[ext_resource type="Resource" path="res://bruto.tres" id="5_breed"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
+radius = 0.4
+height = 1.8
+
+[node name="Player" type="CharacterBody3D" unique_id=1570397899]
+script = ExtResource("1_player")
+HumanSpeed = null
+JumpVelocity = null
+GroundAccel = null
+GroundFriction = null
+AirAccel = null
+HoldFallGravity = null
+AirFriction = null
+CrouchSpeedFactor = null
+StandHeight = null
+CrouchHeight = null
+StandEyeHeight = null
+CrouchEyeHeight = null
+CrouchLerpSpeed = null
+MouseSensitivity = null
+HowlShield = null
+HowlDuration = null
+WallCheckDistance = null
+WallRunMaxTime = null
+WallRunClearance = null
+WallRunVerticalDrift = null
+WallRunSpeedBonus = null
+WallStickForce = null
+CornerLookahead = null
+CornerGrace = null
+WallJumpPush = null
+WallJumpKeepSpeed = null
+RequireFloorBetweenWallRuns = null
+WallRunCooldown = null
+FallLimit = null
+WallDebug = null
+ThirdPersonDistance = null
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=183649763]
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1938034656]
+mesh = SubResource("CapsuleMesh_body")
+
+[node name="Head" type="Node3D" parent="." unique_id=1986605367]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=656040742]
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Head" unique_id=1675350211]
+spring_length = 3.5
+margin = 0.2
+
+[node name="WolfCamera" type="Camera3D" parent="Head/SpringArm3D" unique_id=1782475410]
+
+[node name="Health" type="Node" parent="." unique_id=2114578204]
+script = ExtResource("2_health")
+MaxHp = null
+RespawnDelay = null
+
+[node name="FormController" type="Node" parent="." unique_id=945088973]
+script = ExtResource("3_form")
+Breed = ExtResource("5_breed")
+MaxWp = null
+WpPerSecond = null
+WpPerDamageDealt = null
+HumanHp = null
+ShiftDuration = null
+ShiftDamageMultiplier = null
+RefillOnTransform = null
+
+[node name="Weapon" type="Node3D" parent="." unique_id=65752455]
+script = ExtResource("4_weapon")
+PrimaryDamage = null
+PrimaryRange = null
+PrimaryCooldown = null
+SecondaryDamage = null
+SecondaryRange = null
+SecondaryCooldown = null
+MaxGrenades = null
+ThrowForce = null
+ThrowArc = null
+ThrowCooldown = null
+AirAttackMinFall = null
+Debug = null
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1043563070]

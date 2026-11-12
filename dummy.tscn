@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://dsbysahyhwcii"]
+
+[ext_resource type="Script" path="res://Dummy.cs" id="1_dummy"]
+[ext_resource type="Script" path="res://Health.cs" id="2_health"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_dummy"]
+size = Vector3(1, 2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_dummy"]
+size = Vector3(1, 2, 1)
+
+[node name="Dummy" type="StaticBody3D" unique_id=130637772]
+script = ExtResource("1_dummy")
+BaseColor = null
+HitColor = null
+FlashDuration = null
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1565396352]
+shape = SubResource("BoxShape3D_dummy")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=830218802]
+mesh = SubResource("BoxMesh_dummy")
+
+[node name="Health" type="Node" parent="." unique_id=1294247024]
+script = ExtResource("2_health")
+MaxHp = null
+RespawnDelay = null
