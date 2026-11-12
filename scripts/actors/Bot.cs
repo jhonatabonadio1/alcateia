@@ -49,6 +49,18 @@ public partial class Bot : CharacterBody3D
     /// perdê-lo de vista.</summary>
     [Export] public float Memory = 3f;
 
+    /// <summary>
+    /// Tempo que o bot segue vigiando de onde veio o tiro, depois de
+    /// ter se virado.
+    ///
+    /// A memória normal de três segundos serve para perder alguém de
+    /// vista numa troca de tiros. Levar um tiro pelas costas é outra
+    /// coisa: ali existe alguém, e o bot sabe disso. Esquecer em três
+    /// segundos faz ele voltar a patrulhar de costas para o mesmo
+    /// corredor, que é o comportamento que faz um bot parecer burro.
+    /// </summary>
+    [Export] public float Vigilance = 7f;
+
     // --- Percepção: audição ---
 
     /// <summary>Multiplicador do raio dos ruídos. Abaixo de 1 o bot é
@@ -198,6 +210,7 @@ public partial class Bot : CharacterBody3D
     private bool _hasBelief;
 
     private double _memoryTimer;
+    private double _vigilTimer;
     private double _scanTimer;
     private double _burstTimer;
     private bool _firing;
@@ -528,6 +541,7 @@ public partial class Bot : CharacterBody3D
     private void UpdateSight(double delta)
     {
         _memoryTimer -= delta;
+        UpdateVigilance(delta);
 
         if (_target == null) return;
         if (_targetHealth != null && _targetHealth.IsDead) return;
@@ -1051,13 +1065,35 @@ public partial class Bot : CharacterBody3D
 
         _reacting = false;
         _alerted = true;
+
+        // Virou-se. Agora vigia: enquanto este tempo corre, a crença
+        // não expira, então o bot continua olhando e indo para onde o
+        // tiro veio em vez de voltar à ronda.
+        _vigilTimer = Vigilance;
+    }
+
+    /// <summary>Mantém viva a crença de onde veio o tiro.</summary>
+    private void UpdateVigilance(double delta)
+    {
+        if (_vigilTimer <= 0) return;
+
+        _vigilTimer -= delta;
+
+        // Só sustenta enquanto não há alvo à vista: ver alguém é uma
+        // informação melhor do que lembrar de onde veio um tiro.
+        if (State != BotState.Combat && _hasBelief)
+            _memoryTimer = Mathf.Max(_memoryTimer, 0.5f);
     }
 
     private void OnDied(int killerId)
     {
         if (Debug) GD.Print($"{Name} morreu");
 
+        GetNode<CollisionShape3D>("CollisionShape3D")
+            .SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
+
         _memoryTimer = 0;
+        _vigilTimer = 0;
         _hasBelief = false;
         _alerted = false;
         _reacting = false;
@@ -1067,6 +1103,9 @@ public partial class Bot : CharacterBody3D
 
     private void OnRespawned()
     {
+        GetNode<CollisionShape3D>("CollisionShape3D")
+            .SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
+
         GlobalPosition = SpawnPoints.Pick(this, _spawn);
         Velocity = Vector3.Zero;
 

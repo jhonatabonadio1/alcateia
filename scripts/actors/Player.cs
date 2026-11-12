@@ -269,7 +269,7 @@ public partial class Player : CharacterBody3D
         _form.FormChanged += OnFormChanged;
         _weapon.Fired += OnWeaponFired;
         _health.Respawned += OnRespawned;
-        _health.Died += _ => ApplyCamera();
+        _health.Died += _ => OnDied();
 
         SetProcessInput(IsMultiplayerAuthority());
         ApplyCamera();
@@ -338,9 +338,26 @@ public partial class Player : CharacterBody3D
 
     /// <summary>Reviver no lugar onde se morreu devolve o jogador para
     /// dentro do tiroteio que o matou. Volta ao spawn.</summary>
+    /// <summary>
+    /// Morreu: câmera para trás e corpo fora da física.
+    ///
+    /// Desligar a colisão não é enfeite. Cadáver que continua sendo um
+    /// corpo sólido é um corpo que o motor precisa manter fora do
+    /// cenário todo quadro, e com colisão de dois lados no mapa a
+    /// resolução dessa penetração pode empurrar para o lado errado —
+    /// que é o boneco afundando no chão aos poucos. Sem colisão não há
+    /// o que resolver, e de quebra ninguém esbarra no morto.
+    /// </summary>
+    private void OnDied()
+    {
+        ApplyCamera();
+        _collision.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
+    }
+
     private void OnRespawned()
     {
         ApplyCamera();
+        _collision.SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
 
         GlobalPosition = SpawnPoints.Pick(this, _spawn);
         Velocity = Vector3.Zero;
