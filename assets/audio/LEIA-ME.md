@@ -1,6 +1,9 @@
 # Sons do Alcateia
 
-Jogue os arquivos **nesta pasta** com os nomes abaixo. O jogo acha
+Os sons que estão aqui foram gerados por `tools/sons/processar.py` a
+partir de gravações livres — origem e licença de cada um em
+`CREDITOS.md`. Para trocar um, ou acrescentar o que falta, jogue o
+arquivo **nesta pasta** com os nomes abaixo. O jogo acha
 sozinho: o que existir toca, o que faltar fica mudo. Não precisa mexer
 em código nem em cena.
 
@@ -56,7 +59,8 @@ Os bots não ouvem estes, então eles não carregam informação de longe.
 | `faca` | Golpe de faca |
 | `recarga` | Começo da recarga, genérico |
 | `recarga_ak47` etc. | Recarga de uma arma específica |
-| `recarga_fim` | Recarga terminou (ferrolho, trava) |
+| `recarga_fim` | Recarga terminou (ferrolho, trava), genérico |
+| `recarga_fim_ak47` etc. | Fim de recarga de uma arma específica |
 | `cartucho` | Cada cartucho entrando na M3 |
 | `trocar_arma` | Trocou de arma |
 | `granada_lancar` | Arremessou a granada |

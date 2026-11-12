@@ -115,6 +115,12 @@ mutações (Power, Ghost, Smart, Guardian, Berserker, Ice, Psycho).
 Nomes das classes aqui são inventados: Bruto, Ligeiro, e depois
 Couraçado, Espectro, Detonador, Congelante, Arcano.
 
+**Licenças de assets de terceiros.** Todo som tem a origem em
+`assets/audio/CREDITOS.md`. A maior parte é CC0; o Oculus Audio Pack é
+**CC BY 4.0** e exige crédito visível no jogo publicado. Asset novo só
+entra com licença que permita uso comercial, e com a linha dele nos
+créditos no mesmo commit.
+
 ---
 
 ## Arquitetura
@@ -593,7 +599,12 @@ consegue prever a reação.
 
 ### O áudio
 
-Três peças, e a lista de arquivos em `assets/audio/LEIA-ME.md`:
+Os arquivos são gerados por `tools/sons/processar.py` a partir de
+gravações baixadas do GitHub por `tools/sons/baixar.py`. Para mudar um
+som, mude a linha dele no gerador e rode de novo; editar o `.wav` à mão
+se perde na próxima geração.
+
+Três peças de código, e a lista de arquivos em `assets/audio/LEIA-ME.md`:
 
 - `scripts/core/Sfx.cs` toca por **nome**: `Sfx.At("passo", ponto,
   raio)` acha `passo.wav`/`.ogg`/`.mp3` e as variações `passo_1`,
@@ -801,9 +812,10 @@ depende de navmesh, e navmesh depende de um mapa de verdade.
 Veja `CHANGELOG.md` para o que já entrou.
 
 **Fase 1 — falta:**
-- **Arquivos de som.** O sistema está pronto e ligado; faltam os
-  arquivos (lista em `assets/audio/LEIA-ME.md`). O uivo e o passo do
-  lobo são os primeiros: são sinal de posição.
+- **Uivo de verdade.** O `lobo_uivo` atual é sintetizado, provisório.
+  Os outros sons já são gravações (`assets/audio/CREDITOS.md`).
+- **Tela de créditos**, antes de qualquer publicação: o Oculus Audio
+  Pack é CC BY 4.0.
 - Rodar os quatro testes de validação do `docs/ARSENAL.md` (duelos,
   lobo no corredor e em campo aberto, ritmo da economia).
 - Responder "A pergunta que decide o projeto", no fim deste guia.

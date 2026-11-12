@@ -509,9 +509,22 @@ no próprio `Hud.cs`.
 
 ### Adicionar um som
 
-**Som de um evento que já existe:** só jogue o arquivo em
-`assets/audio/` com o nome da tabela do `LEIA-ME.md` daquela pasta.
-Nada de código.
+**Trocar um som existente:** os arquivos de `assets/audio/` saem de
+`tools/sons/processar.py` (precisa de ffmpeg e numpy). Mude a linha do
+som lá e rode, da raiz:
+
+```
+python3 tools/sons/baixar.py /tmp/sons_brutos
+python3 tools/sons/processar.py /tmp/sons_brutos assets/audio
+```
+
+Ou jogue um arquivo seu com o mesmo nome por cima, e anote a origem em
+`assets/audio/CREDITOS.md`. Só lembre que rodar o gerador de novo
+sobrescreve.
+
+**Som de um evento que já existe, sem arquivo ainda:** jogue o arquivo
+em `assets/audio/` com o nome da tabela do `LEIA-ME.md`. Nada de
+código.
 
 **Som de um evento novo:**
 

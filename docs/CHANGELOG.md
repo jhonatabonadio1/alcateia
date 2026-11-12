@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.23.0 — 2026-11-12
+
+### Adicionado
+- **130 arquivos de som** em `assets/audio/`, cobrindo toda a lista:
+  passos e pousos (humano e lobo), tiro de perto e de longe para cada
+  uma das seis armas, recarga com pente saindo e entrando no tempo de
+  cada arma, fim de recarga por arma, cartucho a cartucho da M3,
+  bombeada depois do tiro da M3, transformação nas duas direções,
+  garra, bote, faca, granada, dor, morte, marcador de acerto, abate,
+  contagem, vitória, derrota, interface e ambiente do menu.
+- Fontes: Free Firearm Sound Library (CC0), Kenney (CC0) e Oculus Audio
+  Pack 1 (CC BY 4.0). Origem de cada arquivo em
+  `assets/audio/CREDITOS.md`.
+- `tools/sons/baixar.py` e `tools/sons/processar.py`: regeneram tudo a
+  partir das gravações originais.
+- Fim de recarga por arma (`recarga_fim_<id>`).
+
+### Pendente
+- `lobo_uivo` é sintetizado, provisório.
+- O Oculus Audio Pack exige crédito na tela de créditos antes de
+  publicar.
+
+
 ## v0.22.0 — 2026-11-12
 
 ### Adicionado

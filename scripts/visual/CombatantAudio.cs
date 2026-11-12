@@ -108,7 +108,7 @@ public partial class CombatantAudio : Node
         else if (reloading && _wasReloading && inMag > _lastMag)
             Play("cartucho");
         else if (!reloading && _wasReloading && inMag >= magSize && magSize > 0)
-            Play("recarga_fim");
+            Play(Sfx.First($"recarga_fim_{id}", "recarga_fim"));
 
         _wasReloading = reloading;
         _lastMag = inMag;
