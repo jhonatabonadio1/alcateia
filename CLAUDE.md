@@ -442,6 +442,10 @@ vez de empurrar a parede indefinidamente.
 
 **Ação** — movimento e tiro decorrem do estado.
 
+Alvo abatido deixa de ser alvo: o bot esquece o que sabia e volta a
+patrulhar. Sem isso ele descarrega no corpo, o que é ruim de assistir
+e transforma o respawn numa emboscada.
+
 A regra que sustenta tudo: **o bot nunca lê a posição do jogador para
 decidir**, só a última posição conhecida. É isso que produz
 comportamento legível — ele vai aonde você estava, e você entende por

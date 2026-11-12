@@ -141,6 +141,7 @@ public partial class Bot : CharacterBody3D
     private Weapon _weapon;
     private Node3D _head;
     private Node3D _target;
+    private Health _targetHealth;
 
     private float _gravity = 9.8f;
     private Vector3 _spawn;
@@ -202,7 +203,33 @@ public partial class Bot : CharacterBody3D
             return;
         }
 
-        _target ??= GetTree().GetFirstNodeInGroup("player") as Node3D;
+        if (_target == null)
+        {
+            _target = GetTree().GetFirstNodeInGroup("player") as Node3D;
+            _targetHealth = _target?.GetNodeOrNull<Health>("Health");
+        }
+
+        // Alvo abatido deixa de ser alvo. Sem isto o bot continua
+        // descarregando no corpo, o que é ruim de assistir e torna o
+        // respawn uma emboscada.
+        if (_targetHealth != null && _targetHealth.IsDead)
+        {
+            _hasBelief = false;
+            _memoryTimer = 0;
+            _alerted = false;
+            _reacting = false;
+
+            if (State != BotState.Idle)
+            {
+                State = BotState.Idle;
+                _hasPatrolTarget = false;
+                _patrolPause = PatrolPause;
+            }
+
+            RunPatrol(delta);
+            return;
+        }
+
 
         UpdateReaction(delta);
         UpdateSight(delta);
@@ -227,6 +254,7 @@ public partial class Bot : CharacterBody3D
         _memoryTimer -= delta;
 
         if (_target == null) return;
+        if (_targetHealth != null && _targetHealth.IsDead) return;
 
         Vector3 toTarget = _target.GlobalPosition - GlobalPosition;
         if (toTarget.Length() > SightRange) return;
@@ -279,6 +307,7 @@ public partial class Bot : CharacterBody3D
     private bool CanSeeTarget()
     {
         if (_target == null) return false;
+        if (_targetHealth != null && _targetHealth.IsDead) return false;
 
         Vector3 toTarget = _target.GlobalPosition - GlobalPosition;
         if (toTarget.Length() > SightRange) return false;

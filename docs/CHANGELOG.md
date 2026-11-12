@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.11.2 — 2026-11-11
+
+### Corrigido
+- Bots continuavam atirando no jogador morto: a percepção via o nó do
+  alvo mas não checava se ele estava vivo. Alvo abatido agora deixa de
+  ser alvo, e o bot esquece o que sabia e volta a patrulhar.
+
 ## v0.11.1 — 2026-11-11
 
 ### Adicionado
