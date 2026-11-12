@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.9.0 — 2026-11-11
+
+### Adicionado
+- **Menu de dificuldade** (Tab, e aberto no início): fácil, médio e
+  difícil. Muda reação, erro de mira, taxa de erro deliberado,
+  sustentação de fogo, percepção e mobilidade — nunca vida ou dano.
+- **Erro deliberado** nos bots (`MissChance`): fração dos tiros que
+  sai de propósito com desvio grande, separada do erro de mira comum.
+  Nem no difícil vai a zero.
+- **Escudo do lobo escorre** com o tempo (`ShieldDecay`). Deixa de ser
+  vida extra e vira relógio.
+
+### Alterado
+- Rugido mudou de F para **R** e passou a ser **segurado**: recupera
+  escudo continuamente enquanto trava o lobo no lugar.
+- Vida e escudo passam a ser exibidos como números grandes em vez de
+  barras. Com um recurso que vaza, o jogador precisa ler o valor.
+- Escudo do Bruto 100 → 200, do Ligeiro 60 → 140.
+
 ## v0.8.0 — 2026-11-11
 
 ### Adicionado

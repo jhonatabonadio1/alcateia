@@ -178,11 +178,17 @@ public partial class FormController : Node
 
             case Form.Wolf:
                 _health.DamageMultiplier = 1f;
+                _health.ShieldDecay = Breed.ShieldDecay;
+
+                // O escudo sempre entra cheio, mesmo quando a vida é
+                // preservada: ele é o recurso da forma, não a vida.
                 _health.SetPool(Breed.Hp, Breed.Shield, RefillOnTransform, KeepRatio);
+                _health.RestoreShield(Breed.Shield);
                 break;
 
             case Form.Human:
                 _health.DamageMultiplier = 1f;
+                _health.ShieldDecay = 0f;
                 _health.SetPool(HumanHp, 0f, RefillOnTransform, KeepRatio);
                 break;
         }

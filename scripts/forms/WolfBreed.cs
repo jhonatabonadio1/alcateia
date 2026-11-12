@@ -19,8 +19,13 @@ public partial class WolfBreed : Resource
     /// <summary>Vida da forma lobo (substitui a vida humana enquanto dura).</summary>
     [Export] public float Hp = 300f;
 
-    /// <summary>Escudo recarregável pelo uivo. Separado do HP de propósito.</summary>
-    [Export] public float Shield = 100f;
+    /// <summary>Escudo do lobo, recarregado pelo rugido. Separado do
+    /// HP de propósito: é o recurso que define a forma.</summary>
+    [Export] public float Shield = 200f;
+
+    /// <summary>Quanto de escudo escorre por segundo. É o que dá
+    /// urgência ao rugido — o escudo não espera, ele vaza.</summary>
+    [Export] public float ShieldDecay = 9f;
 
     /// <summary>Multiplicador de velocidade sobre a velocidade humana base.</summary>
     [Export] public float SpeedMultiplier = 1.15f;

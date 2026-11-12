@@ -55,8 +55,10 @@ public partial class Player : CharacterBody3D
     [Export] public float CrouchLerpSpeed = 22f;
     [Export] public float MouseSensitivity = 0.002f;
 
-    [Export] public float HowlShield = 60f;
-    [Export] public float HowlDuration = 1.2f;
+    /// <summary>Escudo recuperado por segundo de rugido. O rugido é
+    /// segurado, não apertado: é uma troca contínua entre ficar parado
+    /// e recuperar o escudo.</summary>
+    [Export] public float HowlRestoreRate = 320f;
 
     // --- Corrida em parede (só na forma lobo) ---
 
@@ -130,7 +132,7 @@ public partial class Player : CharacterBody3D
     private Weapon _weapon;
 
     private float _gravity = 9.8f;
-    private double _howlTimer;
+    private bool _howling;
 
     private double _stunTimer;
     private float _stunSlow = 1f;
@@ -270,8 +272,6 @@ public partial class Player : CharacterBody3D
             return;
         }
 
-        if (_howlTimer > 0)
-            _howlTimer -= delta;
 
         if (_stunTimer > 0)
         {
@@ -300,6 +300,8 @@ public partial class Player : CharacterBody3D
         // Uivar trava você no lugar. É o preço da cura.
         if (IsHowling)
         {
+            _health.RestoreShield(HowlRestoreRate * (float)delta);
+
             Vector3 frozen = Velocity;
             frozen.X = 0;
             frozen.Z = 0;
@@ -318,7 +320,20 @@ public partial class Player : CharacterBody3D
 
     // ------------------------------------------------------------------
 
-    private bool IsHowling => _howlTimer > 0;
+    private bool IsHowling => _howling;
+
+    /// <summary>
+    /// Rugido: segurar R recupera o escudo enquanto trava o lobo no
+    /// lugar. Como o escudo escorre sozinho, rugir é decidir ficar
+    /// exposto agora para sobreviver depois — e o som entrega a
+    /// posição, que é a outra metade do preço.
+    /// </summary>
+    private void UpdateHowl()
+    {
+        _howling = Input.IsActionPressed("howl")
+            && _form.CanHowl
+            && !_health.IsDead;
+    }
 
     /// <summary>Aplica atordoamento. O mais forte vence: uma segunda
     /// granada nao pode enfraquecer a primeira.</summary>
@@ -354,11 +369,7 @@ public partial class Player : CharacterBody3D
         if (firing)
             _weapon.TryAttack();
 
-        if (Input.IsActionJustPressed("howl") && _form.CanHowl && !IsHowling)
-        {
-            _howlTimer = HowlDuration;
-            _health.RestoreShield(HowlShield);
-        }
+        UpdateHowl();
     }
 
     private void NormalMovement(double delta)

@@ -22,6 +22,10 @@ public partial class Health : Node
     [Export] public float MaxHp = 200f;
     [Export] public float RespawnDelay = 3f;
 
+    /// <summary>Escudo perdido por segundo. Zero para quem não tem
+    /// escudo que vaza, como o humano.</summary>
+    public float ShieldDecay { get; set; }
+
     /// <summary>Segundos restantes até reviver. O HUD mostra isto —
     /// morrer sem aviso na tela é indistinguível de travar.</summary>
     public float RespawnIn => (float)Mathf.Max(_respawnTimer, 0);
@@ -46,6 +50,12 @@ public partial class Health : Node
 
     public override void _Process(double delta)
     {
+        if (!IsDead && Shield > 0 && ShieldDecay > 0)
+        {
+            Shield = Mathf.Max(Shield - ShieldDecay * (float)delta, 0);
+            EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
+        }
+
         if (!IsDead) return;
 
         _respawnTimer -= delta;

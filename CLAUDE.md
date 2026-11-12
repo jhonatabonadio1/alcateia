@@ -245,8 +245,9 @@ export `RefillOnTransform`, desligado por padrão.
 | 3 | Virar lobo |
 | 4 | Arremessar granada |
 | Clique esq. | Atacar |
-| F | Uivar (só de lobo) |
 | Ctrl | Agachar (nas duas formas) |
+| R | Rugir — segurar (só de lobo) |
+| Tab | Menu de dificuldade |
 
 Um toque, um pulo: segurar Space não repete, e uma trava curta impede
 que o mesmo toque dispare o pulo do chão e o da parede. Segurar Space
@@ -346,6 +347,47 @@ errado.
 
 Rajada e pausa existem para dar ao jogador janela de reagir e para
 deixar claro de onde vem o tiro. Fogo contínuo esconde as duas coisas.
+
+### O escudo do lobo
+
+O escudo **escorre sozinho** enquanto o lobo está transformado. Não é
+vida extra: é um relógio. Segurar R rugindo recupera o escudo, ao
+preço de ficar parado e de entregar a posição pelo som.
+
+Essa é a tensão central da forma lobo: quanto mais tempo transformado,
+mais exposto, e a única forma de sustentar é parar — justamente o que
+um corpo-a-corpo não pode fazer numa luta.
+
+Vida e escudo aparecem como **números**, não barras. Com um recurso
+que vaza continuamente, o jogador precisa ler quanto resta, não
+estimar por comprimento.
+
+### Dificuldade dos bots
+
+Três níveis, em `scripts/core/Difficulty.cs`. O que muda é
+**competência, nunca vida ou dano**: inflar o inimigo produz luta
+longa, não luta difícil.
+
+As alavancas, em ordem de impacto: tempo de reação, erro de mira,
+taxa de erro deliberado, e sustentação de fogo. Depois vêm percepção
+(alcance, campo de visão, memória) e mobilidade.
+
+| | Fácil | Médio | Difícil |
+|---|---|---|---|
+| Reação | 0,8s | 0,4s | 0,2s |
+| Erro de mira | 9° | 4,5° | 2° |
+| Erro deliberado | 45% | 20% | 8% |
+| Rajada / pausa | 0,45 / 1,3 | 0,7 / 0,65 | 0,95 / 0,35 |
+| Visão | 26m / 100° | 40m / 140° | 55m / 170° |
+| Velocidade | 3,4 | 4,2 | 4,9 |
+
+**Nem no difícil o erro vai a zero.** Um bot que acerta sempre não é
+difícil, é injusto — e o jogador desiste em vez de melhorar.
+
+O erro deliberado é separado do erro de mira de propósito: aumentar
+só o erro médio produz um chuvisco de quase-acertos, enquanto jogar
+alguns tiros fora mantém os acertos convincentes e cria janelas
+claras para o jogador se mover.
 
 ### Retorno de combate
 

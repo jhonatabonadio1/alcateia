@@ -76,6 +76,15 @@ public partial class Bot : CharacterBody3D
     /// <summary>Erro de mira em graus. Zero faz um bot desumano.</summary>
     [Export] public float AimError = 4f;
 
+    /// <summary>Fração dos tiros que erra de propósito, com desvio
+    /// bem maior. É o que separa um bot fácil de um difícil mais que
+    /// qualquer outra coisa — e mesmo no difícil não vai a zero: um
+    /// bot que acerta sempre não é difícil, é injusto.</summary>
+    [Export] public float MissChance = 0.2f;
+
+    /// <summary>Desvio em graus de um tiro errado de propósito.</summary>
+    [Export] public float MissSpread = 14f;
+
     // --- Reação a levar tiro ---
 
     /// <summary>Atraso entre levar tiro e reagir. Virar na hora é
@@ -121,6 +130,9 @@ public partial class Bot : CharacterBody3D
 
         _gravity = (float)ProjectSettings.GetSetting("physics/3d/default_gravity");
         _spawn = GlobalPosition;
+
+        AddToGroup("bot");
+        Difficulty.Apply(this);
 
         _health.Died += OnDied;
         _health.Damaged += OnDamaged;
@@ -274,9 +286,18 @@ public partial class Bot : CharacterBody3D
         _strafeTimer = StrafeInterval * GD.RandRange(0.6, 1.4);
     }
 
+    /// <summary>
+    /// Sorteia o desvio da mira. Na maior parte das vezes é o erro
+    /// normal; de vez em quando é um tiro jogado fora de propósito.
+    ///
+    /// Errar explicitamente é melhor que só aumentar o erro médio:
+    /// mantém os acertos convincentes e dá ao jogador janelas claras
+    /// em vez de um chuvisco constante de quase-acertos.
+    /// </summary>
     private void ShuffleAim()
     {
-        float spread = Mathf.DegToRad(AimError);
+        bool miss = GD.Randf() < MissChance;
+        float spread = Mathf.DegToRad(miss ? MissSpread : AimError);
 
         _aimOffset = new Vector3(
             (float)GD.RandRange(-spread, spread),

@@ -13,8 +13,8 @@ using Godot;
 /// </summary>
 public partial class Hud : CanvasLayer
 {
-    [Export] public Color HpColor = new Color(0.85f, 0.25f, 0.25f);
-    [Export] public Color ShieldColor = new Color(0.35f, 0.7f, 0.95f);
+    [Export] public Color HpColor = new Color(1f, 0.22f, 0.12f);
+    [Export] public Color ShieldColor = new Color(1f, 0.42f, 0.18f);
     [Export] public Color WpColor = new Color(0.95f, 0.75f, 0.2f);
     [Export] public Color WpReadyColor = new Color(0.45f, 0.95f, 0.4f);
 
@@ -30,8 +30,8 @@ public partial class Hud : CanvasLayer
     private FormController _form;
     private Weapon _weapon;
 
-    private ColorRect _hpFill;
-    private ColorRect _shieldFill;
+    private Label _hpLabel;
+    private Label _shieldLabel;
     private ColorRect _wpFill;
     private Label _wpLabel;
     private Label _slotLabel;
@@ -133,9 +133,8 @@ public partial class Hud : CanvasLayer
     private void Build()
     {
         // Vida (canto inferior esquerdo)
-        MakeBar(0, "VIDA", HpColor, out _hpFill);
-        MakeBar(1, "ESCUDO", ShieldColor, out _shieldFill);
         MakeBar(2, "WP", WpColor, out _wpFill);
+        BuildVitals();
 
         _wpLabel = new Label
         {
@@ -245,6 +244,35 @@ public partial class Hud : CanvasLayer
         }
     }
 
+    /// <summary>
+    /// Vida em número grande, escudo em número menor logo abaixo.
+    ///
+    /// Barra não serve aqui: o escudo do lobo escorre o tempo todo e o
+    /// jogador precisa ler quanto resta, não estimar por comprimento.
+    /// </summary>
+    private void BuildVitals()
+    {
+        _hpLabel = new Label
+        {
+            AnchorTop = 1f, AnchorBottom = 1f,
+            GrowVertical = Control.GrowDirection.Begin,
+            Position = new Vector2(Margin, -148),
+            Modulate = HpColor
+        };
+        _hpLabel.AddThemeFontSizeOverride("font_size", 54);
+        AddChild(_hpLabel);
+
+        _shieldLabel = new Label
+        {
+            AnchorTop = 1f, AnchorBottom = 1f,
+            GrowVertical = Control.GrowDirection.Begin,
+            Position = new Vector2(Margin + 10, -100),
+            Modulate = ShieldColor
+        };
+        _shieldLabel.AddThemeFontSizeOverride("font_size", 32);
+        AddChild(_shieldLabel);
+    }
+
     private int BarY(int index) => -(Margin + (BarHeight + 10) * (3 - index));
 
     private void MakeBar(int index, string caption, Color color, out ColorRect fill)
@@ -290,18 +318,18 @@ public partial class Hud : CanvasLayer
 
     private void OnHealthChanged(float hp, float maxHp, float shield)
     {
-        if (_hpFill == null) return;
+        if (_hpLabel == null) return;
 
         if (_lastHp >= 0 && hp < _lastHp && !_health.IsDead)
             _hurtTimer = HurtLife;
 
         _lastHp = hp;
 
-        float hpRatio = maxHp > 0 ? hp / maxHp : 0;
-        _hpFill.Size = new Vector2(BarWidth * Mathf.Clamp(hpRatio, 0, 1), BarHeight);
+        _hpLabel.Text = $"{Mathf.Ceil(hp):0}";
 
-        float shieldRatio = _health.MaxShield > 0 ? shield / _health.MaxShield : 0;
-        _shieldFill.Size = new Vector2(BarWidth * Mathf.Clamp(shieldRatio, 0, 1), BarHeight);
+        // Sem escudo o número some, em vez de mostrar zero: humano não
+        // tem escudo, e um zero permanente na tela vira ruído.
+        _shieldLabel.Text = shield > 0 ? $"{Mathf.Ceil(shield):0}" : "";
     }
 
     private void OnWpChanged(float wp, float max)
