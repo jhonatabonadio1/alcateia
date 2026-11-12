@@ -243,7 +243,8 @@ export `RefillOnTransform`, desligado por padrão.
 | 1 | Arma principal (automática) |
 | 2 | Arma secundária (semiautomática) |
 | 3 | Virar lobo |
-| 4 | Equipar granada (o ataque arremessa) |
+| 4 | Faca |
+| 5 | Equipar granada (o ataque arremessa) |
 | Clique esq. | Atacar |
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
@@ -349,17 +350,21 @@ errado.
 Rajada e pausa existem para dar ao jogador janela de reagir e para
 deixar claro de onde vem o tiro. Fogo contínuo esconde as duas coisas.
 
-### Dois corpos, duas vidas
+### Vida é uma só
 
-Lobo e humano **não compartilham vida**. Cada forma guarda a própria e
-volta como estava na última vez. Transformar não cura e não zera:
-sair do lobo ferido e voltar devolve o lobo ferido.
+Lobo e humano **compartilham a vida**. O que a forma lobo acrescenta é
+o escudo, e é ele que define a forma. Vida separada faria de
+transformar um segundo tanque de vida, o que esvazia a decisão.
 
-Sem isso, trocar de forma vira botão de regeneração — e como
-transformar é gratuito, seria regeneração infinita.
+### A economia de WP
 
-Morrer apaga os dois estados: renascer devolve os dois corpos
-inteiros.
+WP vem de **abater** (150) e de **renascer** (40), nunca do relógio.
+Ganhar por tempo premia esperar; ganhar por abate premia jogar. O
+bônus por renascer existe para que morrer não deixe o jogador sem
+recurso nenhum — castigo que se acumula afunda quem já está perdendo.
+
+As classes básicas custam 0 WP; o recurso existe para o que ainda não
+foi feito: lotes de armamento e classes caras.
 
 A transição de ida é mais longa que a de volta (0,55s contra 0,2s).
 Virar lobo é um compromisso; voltar é uma retirada, e punir a retirada

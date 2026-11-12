@@ -34,6 +34,7 @@ public partial class ViewModel : Node3D
     private Node3D _pistol;
     private Node3D _grenade;
     private Node3D _claws;
+    private Node3D _knife;
 
     private Node3D _rifleMuzzle;
     private Node3D _pistolMuzzle;
@@ -87,6 +88,7 @@ public partial class ViewModel : Node3D
         _pistol = BuildPistol();
         _grenade = BuildGrenade();
         _claws = BuildClaws();
+        _knife = BuildKnife();
 
         _weapon.SlotChanged += _ => Refresh();
         _form.FormChanged += _ => Refresh();
@@ -155,6 +157,7 @@ public partial class ViewModel : Node3D
         _rifle.Visible = !wolf && _weapon.HumanSlot == Slot.Primary;
         _pistol.Visible = !wolf && _weapon.HumanSlot == Slot.Secondary;
         _grenade.Visible = !wolf && _weapon.HumanSlot == Slot.Grenade;
+        _knife.Visible = !wolf && _weapon.HumanSlot == Slot.Knife;
     }
 
     // ------------------------------------------------------------------
@@ -183,6 +186,19 @@ public partial class ViewModel : Node3D
 
         _pistolMuzzle = new Node3D { Position = new Vector3(0.2f, -0.22f, -0.44f) };
         root.AddChild(_pistolMuzzle);
+
+        return root;
+    }
+
+    private Node3D BuildKnife()
+    {
+        var root = NewPart();
+
+        Box(root, new Color(0.62f, 0.63f, 0.66f),
+            new Vector3(0.02f, 0.06f, 0.26f), new Vector3(0.2f, -0.24f, -0.34f));
+
+        Box(root, new Color(0.16f, 0.16f, 0.18f),
+            new Vector3(0.035f, 0.05f, 0.12f), new Vector3(0.2f, -0.25f, -0.16f));
 
         return root;
     }

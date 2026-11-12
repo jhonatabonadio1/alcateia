@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.12.0 — 2026-11-11
+
+### Alterado
+- **Vida é uma só**: lobo e humano compartilham o mesmo pool. O que a
+  forma acrescenta é o escudo. Vida separada fazia de transformar um
+  segundo tanque de vida.
+- **Slots**: 4 virou faca, granada foi para o 5.
+- **Rugido completa em 1 segundo** segurando R, em vez de recuperar
+  continuamente. Soltar antes do fim não recupera nada — é o que
+  torna rugir uma aposta.
+- **WP vem de abater (150) e renascer (40)**, não mais do relógio.
+  Ganhar por tempo premia esperar; ganhar por abate premia jogar.
+- Painel de WP, slot e granadas foi para o lado direito da tela, com
+  a vida à esquerda. Separar os recursos no espaço evita ler o errado
+  no meio da luta.
+
+### Adicionado
+- **Faca** no slot 4: 85 de dano, alcance curto, sem ruído de tiro.
+- **Imortalidade de 3 segundos ao renascer**, para quem morre perto de
+  um inimigo não voltar direto para a mesma morte.
+
 ## v0.11.2 — 2026-11-11
 
 ### Corrigido

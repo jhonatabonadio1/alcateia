@@ -136,26 +136,10 @@ public partial class Hud : CanvasLayer
         MakeBar(2, "WP", WpColor, out _wpFill);
         BuildVitals();
 
-        _wpLabel = new Label
-        {
-            Position = new Vector2(Margin + BarWidth + 12, BarY(2) - 4),
-            Modulate = new Color(1, 1, 1, 0.85f)
-        };
-        AddChild(_wpLabel);
+        _wpLabel = Right(BarY(2) - 4, 0.85f);
+        _slotLabel = Right(BarY(2) - 38, 0.9f);
 
-        _slotLabel = new Label
-        {
-            Position = new Vector2(Margin, BarY(2) - 36),
-            Modulate = new Color(1, 1, 1, 0.9f)
-        };
-        AddChild(_slotLabel);
-
-        _grenadeLabel = new Label
-        {
-            Position = new Vector2(Margin, BarY(2) - 58),
-            Modulate = new Color(1, 1, 1, 0.75f)
-        };
-        AddChild(_grenadeLabel);
+        _grenadeLabel = Right(BarY(2) - 60, 0.75f);
 
         BuildHitMarker();
         BuildHurtEdges();
@@ -273,17 +257,42 @@ public partial class Hud : CanvasLayer
         AddChild(_shieldLabel);
     }
 
+    /// <summary>Rótulo alinhado à direita, acima das barras.</summary>
+    private Label Right(int y, float alpha)
+    {
+        var label = new Label
+        {
+            Position = new Vector2(-Margin - BarWidth, y),
+            Size = new Vector2(BarWidth, 20),
+            AnchorLeft = 1f, AnchorRight = 1f,
+            AnchorTop = 1f, AnchorBottom = 1f,
+            GrowHorizontal = Control.GrowDirection.Begin,
+            GrowVertical = Control.GrowDirection.Begin,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Modulate = new Color(1, 1, 1, alpha)
+        };
+
+        AddChild(label);
+        return label;
+    }
+
     private int BarY(int index) => -(Margin + (BarHeight + 10) * (3 - index));
 
+    /// <summary>
+    /// Barra ancorada à direita. Vida fica à esquerda e WP à direita:
+    /// separar os dois recursos no espaço evita que o jogador leia o
+    /// errado no meio de uma luta.
+    /// </summary>
     private void MakeBar(int index, string caption, Color color, out ColorRect fill)
     {
         int y = BarY(index);
 
         var label = new Label
         {
-            Position = new Vector2(Margin, y - 20),
-            AnchorTop = 1f,
-            AnchorBottom = 1f,
+            Position = new Vector2(-Margin - BarWidth, y - 20),
+            AnchorLeft = 1f, AnchorRight = 1f,
+            AnchorTop = 1f, AnchorBottom = 1f,
+            GrowHorizontal = Control.GrowDirection.Begin,
             GrowVertical = Control.GrowDirection.Begin,
             Modulate = new Color(1, 1, 1, 0.55f),
             Text = caption
@@ -293,10 +302,11 @@ public partial class Hud : CanvasLayer
 
         var back = new ColorRect
         {
-            Position = new Vector2(Margin, y),
+            Position = new Vector2(-Margin - BarWidth, y),
             Size = new Vector2(BarWidth, BarHeight),
-            AnchorTop = 1f,
-            AnchorBottom = 1f,
+            AnchorLeft = 1f, AnchorRight = 1f,
+            AnchorTop = 1f, AnchorBottom = 1f,
+            GrowHorizontal = Control.GrowDirection.Begin,
             GrowVertical = Control.GrowDirection.Begin,
             Color = new Color(0, 0, 0, 0.45f)
         };
@@ -304,10 +314,11 @@ public partial class Hud : CanvasLayer
 
         fill = new ColorRect
         {
-            Position = new Vector2(Margin, y),
+            Position = new Vector2(-Margin - BarWidth, y),
             Size = new Vector2(BarWidth, BarHeight),
-            AnchorTop = 1f,
-            AnchorBottom = 1f,
+            AnchorLeft = 1f, AnchorRight = 1f,
+            AnchorTop = 1f, AnchorBottom = 1f,
+            GrowHorizontal = Control.GrowDirection.Begin,
             GrowVertical = Control.GrowDirection.Begin,
             Color = color
         };
@@ -357,7 +368,8 @@ public partial class Hud : CanvasLayer
             Slot.Primary => "1 · PRINCIPAL",
             Slot.Secondary => "2 · SECUNDÁRIA",
             Slot.Wolf => $"3 · {_form.Breed?.DisplayName ?? "LOBO"}".ToUpper(),
-            Slot.Grenade => "4 · GRANADA",
+            Slot.Knife => "4 · FACA",
+            Slot.Grenade => "5 · GRANADA",
             _ => ""
         };
     }
@@ -410,7 +422,7 @@ public partial class Hud : CanvasLayer
     {
         if (_grenadeLabel == null) return;
 
-        _grenadeLabel.Text = $"4 · GRANADAS  {left}";
+        _grenadeLabel.Text = $"5 · GRANADAS  {left}";
 
         if (left == 0)
         {

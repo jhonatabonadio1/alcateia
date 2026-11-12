@@ -22,6 +22,12 @@ public partial class Health : Node
     [Export] public float MaxHp = 200f;
     [Export] public float RespawnDelay = 3f;
 
+    /// <summary>Segundos de imortalidade ao renascer. Sem isso, quem
+    /// morre perto de um inimigo volta direto para a mesma morte.</summary>
+    [Export] public float SpawnProtection = 3f;
+
+    public bool IsProtected => _protection > 0;
+
     /// <summary>Escudo perdido por segundo. Zero para quem não tem
     /// escudo que vaza, como o humano.</summary>
     public float ShieldDecay { get; set; }
@@ -41,6 +47,7 @@ public partial class Health : Node
     public float DamageMultiplier { get; set; } = 1f;
 
     private double _respawnTimer;
+    private double _protection;
 
     public override void _Ready()
     {
@@ -55,6 +62,9 @@ public partial class Health : Node
             Shield = Mathf.Max(Shield - ShieldDecay * (float)delta, 0);
             EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
         }
+
+        if (_protection > 0)
+            _protection -= delta;
 
         if (!IsDead) return;
 
@@ -104,7 +114,7 @@ public partial class Health : Node
 
     public void TakeDamage(float amount, int attackerId = 0, Vector3 from = default)
     {
-        if (IsDead || amount <= 0) return;
+        if (IsDead || amount <= 0 || IsProtected) return;
 
         float dealt = amount * DamageMultiplier;
         EmitSignal(SignalName.Damaged, dealt, from);
@@ -150,6 +160,7 @@ public partial class Health : Node
         IsDead = false;
         Hp = MaxHp;
         Shield = MaxShield;
+        _protection = SpawnProtection;
 
         EmitSignal(SignalName.Respawned);
         EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);

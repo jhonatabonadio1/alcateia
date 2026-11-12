@@ -36,8 +36,18 @@ public partial class FormController : Node
     [Export] public WolfBreed Breed;
 
     [Export] public float MaxWp = 1000f;
-    [Export] public float WpPerSecond = 12f;
-    [Export] public float WpPerDamageDealt = 0.5f;
+    /// <summary>
+    /// WP vem de abater e de renascer, não do relógio.
+    ///
+    /// Ganhar por tempo premia esperar; ganhar por abate premia jogar.
+    /// O bônus por renascer existe para que morrer não deixe o
+    /// jogador sem recurso nenhum — castigo que se acumula afunda
+    /// quem já está perdendo.
+    /// </summary>
+    [Export] public float WpPerKill = 150f;
+
+    [Export] public float WpPerRespawn = 40f;
+    [Export] public float WpPerDamageDealt = 0.25f;
 
     [Export] public float HumanHp = 200f;
 
@@ -89,18 +99,12 @@ public partial class FormController : Node
     private Health _health;
     private double _shiftTimer;
 
-    /// <summary>Vida guardada de cada corpo. O lobo e o humano são
-    /// corpos distintos e cada um lembra o próprio estado.</summary>
-    private float _humanHp;
-    private float _wolfHp;
+
 
     public override void _Ready()
     {
         _health = GetParent().GetNode<Health>("Health");
         _health.SetPool(HumanHp, 0f, true);
-
-        _humanHp = HumanHp;
-        _wolfHp = 0f;
 
         _health.Respawned += OnRespawned;
         EmitSignal(SignalName.WpChanged, Wp, MaxWp);
@@ -108,10 +112,6 @@ public partial class FormController : Node
 
     public override void _Process(double delta)
     {
-        // WP acumula jogando. A barra tem que estar sempre visível:
-        // a decisão só existe se o jogador enxerga o recurso.
-        AddWp(WpPerSecond * (float)delta);
-
         if (Current != Form.ShiftingToWolf && Current != Form.ShiftingToHuman)
             return;
 
@@ -160,13 +160,9 @@ public partial class FormController : Node
         }
     }
 
-    /// <summary>Renascer zera os dois corpos: morrer apaga o estado
-    /// guardado, senão o lobo voltaria ferido da vida passada.</summary>
-    private void OnRespawned()
-    {
-        _humanHp = HumanHp;
-        _wolfHp = Breed != null ? Breed.Hp : 0f;
-    }
+    /// <summary>Renascer devolve um pouco de WP: ficar sem recurso
+    /// depois de morrer afunda quem já está perdendo.</summary>
+    private void OnRespawned() => AddWp(WpPerRespawn);
 
     public void AddWp(float amount)
     {
@@ -181,6 +177,8 @@ public partial class FormController : Node
 
     public void OnDamageDealt(float amount) => AddWp(amount * WpPerDamageDealt);
 
+    public void OnKill() => AddWp(WpPerKill);
+
     /// <summary>Uivo: recarrega escudo em troca de ficar parado e
     /// denunciar a posição pelo som. Só faz sentido na forma lobo.</summary>
     public bool CanHowl => Current == Form.Wolf;
@@ -189,10 +187,6 @@ public partial class FormController : Node
 
     private void Enter(Form next)
     {
-        // Antes de trocar, guarda a vida do corpo que está saindo.
-        if (Current == Form.Human) _humanHp = _health.Hp;
-        else if (Current == Form.Wolf) _wolfHp = _health.Hp;
-
         Current = next;
 
         switch (next)
@@ -211,20 +205,17 @@ public partial class FormController : Node
                 _health.DamageMultiplier = 1f;
                 _health.ShieldDecay = Breed.ShieldDecay;
 
-                // Dois corpos, duas vidas. O lobo volta como estava na
-                // última vez — sair e entrar não é cura, senão
-                // transformar vira botão de regeneração.
-                _health.SetPool(Breed.Hp, Breed.Shield, false);
-                _health.SetHp(_wolfHp > 0 ? _wolfHp : Breed.Hp);
+                // Vida é uma só. O que a forma lobo acrescenta é o
+                // escudo, e é ele que define a forma — vida separada
+                // faria de transformar um segundo tanque de vida.
+                _health.SetPool(HumanHp, Breed.Shield, false);
                 _health.RestoreShield(Breed.Shield);
                 break;
 
             case Form.Human:
                 _health.DamageMultiplier = 1f;
                 _health.ShieldDecay = 0f;
-
                 _health.SetPool(HumanHp, 0f, false);
-                _health.SetHp(_humanHp > 0 ? _humanHp : HumanHp);
                 break;
         }
 

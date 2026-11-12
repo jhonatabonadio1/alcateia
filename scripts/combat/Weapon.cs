@@ -5,7 +5,8 @@ public enum Slot
 	Primary = 1,
 	Secondary = 2,
 	Wolf = 3,
-	Grenade = 4
+	Knife = 4,
+	Grenade = 5
 }
 
 /// <summary>
@@ -46,6 +47,11 @@ public partial class Weapon : Node3D
 	[Export] public float ThrowForce = 11f;
 	[Export] public float ThrowArc = 3.5f;
 	[Export] public float ThrowCooldown = 0.9f;
+
+	// --- Faca: saída silenciosa e último recurso ---
+	[Export] public float KnifeDamage = 85f;
+	[Export] public float KnifeRange = 2.2f;
+	[Export] public float KnifeCooldown = 0.55f;
 
 	/// <summary>Multiplicador de dano na cabeça.</summary>
 	[Export] public float HeadshotMultiplier = 2.5f;
@@ -128,6 +134,18 @@ public partial class Weapon : Node3D
 	/// <summary>Chamado ao apertar 1, 2, 3 ou 4.</summary>
 	public void SelectSlot(Slot slot)
 	{
+		if (slot == Slot.Knife)
+		{
+			HumanSlot = Slot.Knife;
+
+			if (_form.IsWolf)
+				_form.ToggleForm();
+
+			_cooldown = 0.2f;
+			EmitSignal(SignalName.SlotChanged, (int)Slot.Knife);
+			return;
+		}
+
 		if (slot == Slot.Grenade)
 		{
 			// Equipa, não arremessa. Apertar 4 e já jogar tira do
@@ -185,8 +203,31 @@ public partial class Weapon : Node3D
 			WolfAttack();
 		else if (HumanSlot == Slot.Grenade)
 			ThrowGrenade();
+		else if (HumanSlot == Slot.Knife)
+			Knife();
 		else
 			Shoot();
+	}
+
+	/// <summary>
+	/// Facada. Não faz ruído de tiro: é a arma de quem está se movendo
+	/// em silêncio e não quer entregar a posição por um abate.
+	/// </summary>
+	private void Knife()
+	{
+		_cooldown = KnifeCooldown;
+		EmitSignal(SignalName.Fired);
+
+		Vector3 from = _head.GlobalPosition;
+		Vector3 to = from - _head.GlobalTransform.Basis.Z * KnifeRange;
+
+		Health hit = Raycast(from, to, out Vector3 impact, out Node collider);
+		if (hit == null) return;
+
+		bool headshot = IsHeadshot(collider, impact);
+		float damage = KnifeDamage * (headshot ? HeadshotMultiplier : 1f);
+
+		Damage(hit, damage, from, headshot);
 	}
 
 	private void Shoot()
@@ -214,10 +255,7 @@ public partial class Weapon : Node3D
 		bool headshot = IsHeadshot(collider, impact);
 		if (headshot) damage *= HeadshotMultiplier;
 
-		hit.TakeDamage(damage, 0, from);
-		EmitSignal(SignalName.DamageDealt, damage);
-		EmitSignal(SignalName.HitConfirmed, headshot);
-		_form.OnDamageDealt(damage);
+		Damage(hit, damage, from, headshot);
 	}
 
 	private void WolfAttack()
@@ -243,10 +281,26 @@ public partial class Weapon : Node3D
 		if (!_body.IsOnFloor() && fallen >= AirAttackMinFall)
 			damage *= breed.AirAttackBonus;
 
-		hit.TakeDamage(damage, 0, from);
-		EmitSignal(SignalName.DamageDealt, damage);
-		EmitSignal(SignalName.HitConfirmed, false);
-		_form.OnDamageDealt(damage);
+		Damage(hit, damage, from, false);
+	}
+
+	/// <summary>
+	/// Aplica o dano e, se o alvo cair, credita o abate. O crédito
+	/// sai daqui porque é aqui que se sabe quem bateu — fazer a vítima
+	/// descobrir o autor acopla Health a quem atira.
+	/// </summary>
+	private void Damage(Health target, float amount, Vector3 from, bool headshot)
+	{
+		bool wasAlive = !target.IsDead;
+
+		target.TakeDamage(amount, 0, from);
+
+		EmitSignal(SignalName.DamageDealt, amount);
+		EmitSignal(SignalName.HitConfirmed, headshot);
+		_form.OnDamageDealt(amount);
+
+		if (wasAlive && target.IsDead)
+			_form.OnKill();
 	}
 
 	/// <summary>

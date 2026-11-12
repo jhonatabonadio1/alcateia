@@ -29,6 +29,7 @@ public static class InputSetup
         Key("slot_2", Godot.Key.Key2);
         Key("slot_3", Godot.Key.Key3);
         Key("slot_4", Godot.Key.Key4);
+        Key("slot_5", Godot.Key.Key5);
     }
 
     private static void Key(string action, Key key)

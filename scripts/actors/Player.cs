@@ -68,7 +68,14 @@ public partial class Player : CharacterBody3D
     /// <summary>Escudo recuperado por segundo de rugido. O rugido é
     /// segurado, não apertado: é uma troca contínua entre ficar parado
     /// e recuperar o escudo.</summary>
-    [Export] public float HowlRestoreRate = 320f;
+    /// <summary>
+    /// Tempo segurando R até o rugido completar. É uma conclusão, não
+    /// uma torneira: soltar antes do fim não recupera nada.
+    ///
+    /// Isso é o que torna rugir uma aposta. Um segundo parado no meio
+    /// de uma luta é muito tempo, e é por isso que a decisão importa.
+    /// </summary>
+    [Export] public float HowlDuration = 1f;
 
     // --- Ruído ---
     //
@@ -166,6 +173,7 @@ public partial class Player : CharacterBody3D
 
     private float _gravity = 9.8f;
     private bool _howling;
+    private double _howlProgress;
     private float _stepDistance;
     private bool _wasAirborne;
     private double _howlNoiseTimer;
@@ -372,7 +380,6 @@ public partial class Player : CharacterBody3D
         // Uivar trava você no lugar. É o preço da cura.
         if (IsHowling)
         {
-            _health.RestoreShield(HowlRestoreRate * (float)delta);
 
             Vector3 frozen = Velocity;
             frozen.X = 0;
@@ -449,12 +456,33 @@ public partial class Player : CharacterBody3D
     /// exposto agora para sobreviver depois — e o som entrega a
     /// posição, que é a outra metade do preço.
     /// </summary>
-    private void UpdateHowl()
+    private void UpdateHowl(double delta)
     {
-        _howling = Input.IsActionPressed("howl")
+        bool wants = Input.IsActionPressed("howl")
             && _form.CanHowl
             && !_health.IsDead;
+
+        if (!wants)
+        {
+            _howling = false;
+            _howlProgress = 0;
+            return;
+        }
+
+        _howling = true;
+        _howlProgress += delta;
+
+        if (_howlProgress < HowlDuration) return;
+
+        // Completou: escudo cheio e o contador reinicia, então segurar
+        // mais tempo rende outro rugido.
+        _health.RestoreShield(_health.MaxShield);
+        _howlProgress = 0;
     }
+
+    /// <summary>Fração do rugido já concluída, para o HUD mostrar.</summary>
+    public float HowlProgress =>
+        _howling ? (float)(_howlProgress / HowlDuration) : 0f;
 
     /// <summary>Aplica atordoamento. O mais forte vence: uma segunda
     /// granada nao pode enfraquecer a primeira.</summary>
@@ -480,7 +508,8 @@ public partial class Player : CharacterBody3D
         if (Input.IsActionJustPressed("slot_1")) _weapon.SelectSlot(Slot.Primary);
         if (Input.IsActionJustPressed("slot_2")) _weapon.SelectSlot(Slot.Secondary);
         if (Input.IsActionJustPressed("slot_3")) _weapon.SelectSlot(Slot.Wolf);
-        if (Input.IsActionJustPressed("slot_4")) _weapon.SelectSlot(Slot.Grenade);
+        if (Input.IsActionJustPressed("slot_4")) _weapon.SelectSlot(Slot.Knife);
+        if (Input.IsActionJustPressed("slot_5")) _weapon.SelectSlot(Slot.Grenade);
 
         // Só a arma principal é automática. A secundária e a garrada
         // exigem um clique por golpe.
@@ -491,7 +520,7 @@ public partial class Player : CharacterBody3D
         if (firing)
             _weapon.TryAttack();
 
-        UpdateHowl();
+        UpdateHowl(delta);
     }
 
     private void NormalMovement(double delta)
