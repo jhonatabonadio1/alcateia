@@ -16,6 +16,7 @@ using System.Collections.Generic;
 ///   *-invis*  colide mas não aparece (parede invisível, teto de
 ///             bloqueio, limite do mapa)
 ///   spawn*    vira ponto de nascimento
+///   route*    vira rota de ronda; os filhos são os pontos, em ordem
 ///
 /// Nomear no Blender é a forma mais barata de passar intenção do
 /// modelo para o jogo sem inventar um formato de arquivo paralelo.
@@ -126,6 +127,24 @@ public partial class MapLoader : Node3D
         {
             Spawns.Add(marker.GlobalPosition);
             SpawnPoints.Register(marker.GlobalPosition);
+        }
+
+        // Rota desenhada no modelo: um objeto chamado route*, com os
+        // pontos como filhos. É a mesma ideia dos spawns — quem faz o
+        // mapa sabe por onde se anda nele, e dizer isso no Blender é
+        // mais barato do que depois adivinhar por código.
+        if (name.StartsWith("route") && node is Node3D path)
+        {
+            var points = new List<Vector3>();
+
+            foreach (Node child in path.GetChildren())
+                if (child is Node3D point)
+                    points.Add(point.GlobalPosition);
+
+            PatrolRoutes.Register(points);
+
+            if (Debug && points.Count >= 2)
+                GD.Print($"MapLoader: rota '{node.Name}' com {points.Count} pontos");
         }
 
         if (node is MeshInstance3D mesh)

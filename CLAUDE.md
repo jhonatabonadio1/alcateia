@@ -870,6 +870,59 @@ a média: nascer longe de quatro e colado em um é nascer colado em um.
 Sem `SpawnPoints` na cena, cada ator volta ao próprio ponto inicial —
 é o que mantém `scenes/treino.tscn` funcionando sem configuração.
 
+### Rondas: cada mapa traz as suas
+
+`scripts/core/PatrolRoutes.cs`. Uma rota é uma sequência de pontos
+que alguém já sabe que dá para percorrer. O bot pega uma, percorre e
+pega outra.
+
+Isso existe porque a alternativa não funciona: ponto aleatório dentro
+de um raio produz bot andando em linha reta para o meio de um prédio,
+porque o destino não tem relação nenhuma com a forma do mapa — é um
+número dentro de um círculo.
+
+**As rotas pertencem ao mapa, nunca ao bot.** Mapa novo traz as suas,
+de duas formas:
+
+1. Um nó `PatrolRoutes` na cena, com um filho por rota e um
+   `Marker3D` por ponto. É como o Arrival faz.
+2. Objetos chamados `route*` dentro do próprio `.glb`, com os pontos
+   como filhos. Mesma ideia dos `spawn*`: quem desenha o mapa sabe por
+   onde se anda nele, e dizer isso no Blender custa menos do que
+   adivinhar por código depois.
+
+Sem nenhuma rota o bot volta a vagar no raio. A ronda nunca depende
+disto existir.
+
+As quatro do Arrival foram **geradas a partir do `.glb`**, não postas
+a olho: células de piso com dois metros de folga em volta e teto
+livre, espalhadas por ângulo em torno do centro. Saíram um perímetro
+de seis pontos, uma interna de quatro e duas travessias de três.
+
+Dois detalhes tiram o cheiro de roteiro, e os dois custaram bug antes
+de ficarem certos: o bot entra pelo **ponto mais próximo** e não pelo
+primeiro, porque rota é caminho e não fila; e o **sentido é
+sorteado** — mas invertido quando apontaria para fora da rota, senão
+quem entra por uma ponta pega um ponto só e troca de rota, que de
+longe é idêntico a não ter rota nenhuma.
+
+### Vigilância: o bot não esquece quem atirou
+
+Levar tiro marca a origem, espera um tempo curto — reação instantânea
+é desumana e anula o prêmio de atacar pelas costas — e só então o bot
+se vira.
+
+O que vem depois é o que faz diferença. A memória normal de três
+segundos serve para perder alguém de vista numa troca de tiros. Um
+tiro pelas costas é outra coisa: ali existe alguém e o bot sabe
+disso. Esquecer em três segundos o fazia voltar a patrulhar de costas
+para o mesmo corredor, que é exatamente o que faz um bot parecer
+burro.
+
+Por isso a vigília de sete segundos mantém a crença viva, e o bot
+continua indo e olhando para lá. Ver alguém interrompe: ver é
+informação melhor do que lembrar.
+
 ### As duas cenas
 
 | Cena | Para que serve |

@@ -51,6 +51,18 @@ public partial class PatrolRoutes : Node3D
         if (_instance == this) _instance = null;
     }
 
+    /// <summary>
+    /// Registra uma rota vinda de fora da cena — do .glb do mapa, por
+    /// exemplo. Rotas com menos de dois pontos são ignoradas: uma
+    /// rota de um ponto é um destino, não um caminho.
+    /// </summary>
+    public static void Register(List<Vector3> points)
+    {
+        if (_instance == null || points == null || points.Count < 2) return;
+
+        _instance._routes.Add(points);
+    }
+
     /// <summary>Quantos pontos tem a rota. Zero se ela não existe.</summary>
     public static int Length(int route) =>
         _instance != null && route >= 0 && route < _instance._routes.Count
