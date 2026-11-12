@@ -211,6 +211,12 @@ public partial class Bot : CharacterBody3D
 
     private double _memoryTimer;
     private double _vigilTimer;
+
+    /// <summary>Rota de ronda atual e em que ponto dela o bot está.
+    /// −1 significa que ainda não pegou nenhuma.</summary>
+    private int _route = -1;
+    private int _leg;
+    private int _legStep = 1;
     private double _scanTimer;
     private double _burstTimer;
     private bool _firing;
@@ -821,6 +827,8 @@ public partial class Bot : CharacterBody3D
 
     private void PickPatrolTarget()
     {
+        if (PickRouteTarget()) return;
+
         float angle = (float)GD.RandRange(0, Mathf.Tau);
 
         // Raiz quadrada distribui por área; elevar o expoente puxa os
@@ -834,6 +842,43 @@ public partial class Bot : CharacterBody3D
         _hasPatrolTarget = true;
         _stuckTimer = 0;
         _lastPosition = GlobalPosition;
+    }
+
+    /// <summary>
+    /// Próximo ponto da rota, pegando uma nova quando a atual acaba.
+    ///
+    /// Entra pelo ponto mais próximo, não pelo primeiro: rota é um
+    /// caminho, não uma fila com começo obrigatório, e fazer o bot
+    /// voltar ao ponto um antes de andar é a travessia boba que
+    /// denuncia o roteiro.
+    ///
+    /// O sentido é sorteado, então a mesma rota não vira um trilho
+    /// onde dá para esperar o bot aparecer sempre pelo mesmo lado.
+    /// </summary>
+    private bool PickRouteTarget()
+    {
+        if (PatrolRoutes.RouteCount == 0) return false;
+
+        if (_route < 0 || _leg < 0 || _leg >= PatrolRoutes.Length(_route))
+        {
+            _route = PatrolRoutes.Nearest(GlobalPosition);
+            if (_route < 0) return false;
+
+            PatrolRoutes.ClosestPoint(_route, GlobalPosition, out _leg);
+            _legStep = GD.Randf() < 0.5f ? 1 : -1;
+        }
+
+        _patrolTarget = PatrolRoutes.Point(_route, _leg);
+        _leg += _legStep;
+
+        // Acabou a rota: na próxima vez pega outra.
+        if (_leg < 0 || _leg >= PatrolRoutes.Length(_route))
+            _route = -1;
+
+        _hasPatrolTarget = true;
+        _stuckTimer = 0;
+        _lastPosition = GlobalPosition;
+        return true;
     }
 
     private void Maneuver(float distance, Vector3 toTarget, double delta)
@@ -1094,6 +1139,7 @@ public partial class Bot : CharacterBody3D
 
         _memoryTimer = 0;
         _vigilTimer = 0;
+        _route = -1;
         _hasBelief = false;
         _alerted = false;
         _reacting = false;

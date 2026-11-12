@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/bot.tscn" id="2_bot"]
@@ -11,6 +11,7 @@
 [ext_resource type="Resource" path="res://resources/loadouts/elite.tres" id="9_l4"]
 [ext_resource type="Script" path="res://scripts/core/MapLoader.cs" id="10_map"]
 [ext_resource type="Script" path="res://scripts/core/SpawnPoints.cs" id="11_spawns"]
+[ext_resource type="Script" path="res://scripts/core/PatrolRoutes.cs" id="12_routes"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
 
@@ -69,6 +70,65 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 1.2, -7)
 
 [node name="spawn8" type="Marker3D" parent="SpawnPoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 1.2, 1)
+
+[node name="PatrolRoutes" type="Node3D" parent="."]
+script = ExtResource("12_routes")
+
+[node name="perimetro" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/perimetro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 0.5, -1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/perimetro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.5, -23)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/perimetro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 0.5, -15)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/perimetro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 0.5, 7)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/perimetro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 0.5, 13)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/perimetro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 0.5, 5)
+
+[node name="interna" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/interna"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.5, -1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/interna"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.5, -19)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/interna"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0.5, -19)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/interna"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0.5, -9)
+
+[node name="travessia" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/travessia"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 0.5, -1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/travessia"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.5, -7)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/travessia"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 0.5, 9)
+
+[node name="travessia2" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/travessia2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.5, -23)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/travessia2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0.5, -7)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/travessia2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 0.5, 13)
 
 [node name="Player" parent="." instance=ExtResource("1_player") groups=["player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 1.2, -1)
