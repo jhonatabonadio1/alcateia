@@ -866,10 +866,20 @@ public partial class Bot : CharacterBody3D
 
             PatrolRoutes.ClosestPoint(_route, GlobalPosition, out _leg);
             _legStep = GD.Randf() < 0.5f ? 1 : -1;
+
+            // Entrando pela ponta, metade dos sorteios apontava para
+            // fora da rota: o bot pegava um ponto só, a rota acabava
+            // e ele sorteava outra. De longe isso é idêntico a não ter
+            // rota nenhuma — ia parecer que o recurso não existe.
+            if (_leg + _legStep < 0 || _leg + _legStep >= PatrolRoutes.Length(_route))
+                _legStep = -_legStep;
         }
 
         _patrolTarget = PatrolRoutes.Point(_route, _leg);
         _leg += _legStep;
+
+        if (Debug)
+            GD.Print($"{Name}: rota {_route} ponto {_leg - _legStep} -> {_patrolTarget}");
 
         // Acabou a rota: na próxima vez pega outra.
         if (_leg < 0 || _leg >= PatrolRoutes.Length(_route))
