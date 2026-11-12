@@ -67,10 +67,21 @@ public partial class WolfVisual : Node3D
     /// <summary>Mixamo olha para +Z; o corpo, para −Z.</summary>
     [Export] public float ModelYaw = 180f;
 
-    /// <summary>Velocidades dos clipes de andar e correr, em m/s. Acima
-    /// da corrida o clipe acelera junto.</summary>
-    [Export] public float WalkSpeed = 2.4f;
-    [Export] public float RunSpeed = 7f;
+    /// <summary>Até que velocidade (m/s) o corpo mistura parado e andar,
+    /// e a partir de qual é só correr. Entre as duas, andar e correr — e
+    /// a faixa é curta de propósito: os dois clipes têm ciclos de tamanhos
+    /// diferentes (1,43 s e 0,87 s), e misturados o pé de um puxa o do
+    /// outro e patina. O lobo agachado (2,6 m/s) já corre o clipe inteiro.</summary>
+    [Export] public float WalkSpeed = 1.5f;
+    [Export] public float RunSpeed = 2.2f;
+
+    /// <summary>A velocidade em que o pé de cada clipe não patina, em m/s:
+    /// a passada medida no Mutant (andar 1,22 m/s, correr 2,20 m/s) vezes a
+    /// escala do modelo. O clipe toca na razão entre a velocidade do corpo
+    /// e esta — o Bruto a 5,7 m/s corre o clipe a 2,4×. Antes ele tocava a
+    /// 1× até 7 m/s, e o corpo andava mais do dobro do que as pernas.</summary>
+    [Export] public float WalkClipSpeed = 1.34f;
+    [Export] public float RunClipSpeed = 2.42f;
 
     /// <summary>Quanto da cor do time entra na pele — só quando os dois
     /// times usam o mesmo modelo. Com um modelo por time, a pele já diz
@@ -78,9 +89,9 @@ public partial class WolfVisual : Node3D
     [Export(PropertyHint.Range, "0,1")] public float TeamTint = 0.3f;
 
     /// <summary>Velocidade do clipe de engatinhar na parede, em m/s
-    /// (o Running Crawl anda 1,3 m em 0,67 s). Mais rápido que isso o
-    /// clipe acelera junto, até o dobro e meio.</summary>
-    [Export] public float WallClipSpeed = 1.95f;
+    /// (o Running Crawl anda 1,40 m em 0,67 s, vezes a escala do modelo).
+    /// Mais rápido que isso o clipe acelera junto, até o dobro e meio.</summary>
+    [Export] public float WallClipSpeed = 2.3f;
 
     /// <summary>Tempo para deitar na parede e para voltar, em segundos.</summary>
     [Export] public float WallTurnTime = 0.12f;
@@ -534,13 +545,16 @@ public partial class WolfVisual : Node3D
         var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
         _speed = Mathf.Lerp(_speed, flat.Length(), Mathf.Min(1f, 10f * (float)delta));
 
-        // 0 parado, 1 andando, 2 correndo; acima da corrida, o clipe
-        // acelera em vez de o pé patinar.
+        // 0 parado, 1 andando, 2 correndo. O clipe toca na velocidade em
+        // que o pé acompanha o corpo: a do corpo dividida pela passada do
+        // clipe (a mistura de andar e correr, entre os dois).
         float blend = _speed <= WalkSpeed
             ? _speed / Mathf.Max(WalkSpeed, 0.01f)
             : 1f + Mathf.Clamp((_speed - WalkSpeed) / Mathf.Max(RunSpeed - WalkSpeed, 0.01f), 0f, 1f);
+        float stride = Mathf.Lerp(WalkClipSpeed, RunClipSpeed, Mathf.Clamp(blend - 1f, 0f, 1f));
+        float cadence = _speed > 0.3f ? Mathf.Clamp(_speed / Mathf.Max(stride, 0.01f), 0.6f, 3f) : 1f;
         _tree.Set("parameters/Machine/Locomotion/Blend/blend_position", blend);
-        _tree.Set("parameters/Machine/Locomotion/Speed/scale", _speed > RunSpeed ? Mathf.Min(_speed / RunSpeed, 1.8f) : 1f);
+        _tree.Set("parameters/Machine/Locomotion/Speed/scale", cadence);
 
         // No ar depois de um pulo, o voo do clipe de pulo; caindo de uma
         // beirada, o corpo segue na pose de antes.
