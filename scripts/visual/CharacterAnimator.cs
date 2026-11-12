@@ -88,6 +88,30 @@ public partial class CharacterAnimator : Node3D
     /// misturar os dois tiraria o cenário junto.</summary>
     [Export] public int BodyLayer = 2;
 
+    /// <summary>
+    /// Quanto o corpo desce ao morrer, para encostar no chão.
+    ///
+    /// De pé o modelo casa com a cápsula, porque os dois têm o pé na
+    /// base. Deitado não: a pose final do clipe de morte deixa o corpo
+    /// um pouco acima do plano de onde ele foi animado, e o que sobra
+    /// aparece como um defunto pairando. Um número resolve, e é melhor
+    /// como número do que como conserto na animação — clipe de morte
+    /// novo traz a própria folga.
+    /// </summary>
+    [Export] public float CorpseDrop = 0.12f;
+
+    /// <summary>Tempo que o corpo fica inteiro no chão antes de
+    /// começar a sumir.</summary>
+    [Export] public float CorpseHold = 1.2f;
+
+    /// <summary>Duração do desaparecimento.</summary>
+    [Export] public float CorpseFade = 1.4f;
+
+    /// <summary>Quanto o corpo afunda enquanto some. Afundar junto com
+    /// a opacidade esconde o instante em que ele sai da tela — só
+    /// apagar deixa o corpo piscar para fora.</summary>
+    [Export] public float CorpseSink = 0.55f;
+
     [Export] public bool Debug = true;
 
     /// <summary>Arquivo do clipe, e o nome com que ele entra na
@@ -119,6 +143,9 @@ public partial class CharacterAnimator : Node3D
 
     private Vector2 _blend;
     private bool _dead;
+    private double _corpseTimer;
+    private float _modelY;
+    private readonly List<StandardMaterial3D> _fadeMaterials = new();
     private bool _hasDeath;
     private bool _airborne;
 
@@ -150,6 +177,8 @@ public partial class CharacterAnimator : Node3D
 
         _model.RotationDegrees = new Vector3(
             _model.RotationDegrees.X, ModelYaw, _model.RotationDegrees.Z);
+
+        _modelY = _model.Position.Y;
 
         HideFromOwner();
 
@@ -453,7 +482,13 @@ public partial class CharacterAnimator : Node3D
 
     public override void _Process(double delta)
     {
-        if (_tree == null || _dead) return;
+        if (_dead)
+        {
+            UpdateCorpse(delta);
+            return;
+        }
+
+        if (_tree == null) return;
 
         // Velocidade no referencial do corpo: é o que o espaço de
         // mistura entende. Em referencial do mundo, virar a câmera
@@ -514,15 +549,104 @@ public partial class CharacterAnimator : Node3D
     private void OnDied()
     {
         _dead = true;
+        _corpseTimer = 0;
 
         if (_hasDeath) _playback?.Travel("Death");
         else if (Debug) GD.Print("CharacterAnimator: sem clipe de morte.");
     }
 
+    /// <summary>
+    /// O corpo fica um instante, depois afunda e some.
+    ///
+    /// A pausa antes é o que faz a morte ser lida: sumir no mesmo
+    /// quadro em que cai tira do jogador a chance de ver o que
+    /// aconteceu, e quem matou perde a confirmação do abate.
+    ///
+    /// Afundar junto com a opacidade esconde o instante da saída. Só
+    /// apagar deixa o corpo piscar para fora, e isso o olho pega.
+    /// </summary>
+    private void UpdateCorpse(double delta)
+    {
+        _corpseTimer += delta;
+
+        // Assenta primeiro, some depois. A descida é rápida e curta,
+        // só para o corpo tocar o chão; a queda longa é a de sumir.
+        float settle = Mathf.Clamp((float)_corpseTimer / 0.25f, 0f, 1f);
+
+        double t = (_corpseTimer - CorpseHold) / Mathf.Max(CorpseFade, 0.01f);
+        float progress = t <= 0 ? 0f : Mathf.Clamp((float)t, 0f, 1f);
+
+        _model.Position = new Vector3(
+            _model.Position.X,
+            _modelY - CorpseDrop * settle - CorpseSink * progress,
+            _model.Position.Z);
+
+        if (progress <= 0) return;
+
+        if (_fadeMaterials.Count == 0) PrepareFade();
+
+        foreach (StandardMaterial3D material in _fadeMaterials)
+        {
+            Color color = material.AlbedoColor;
+            color.A = 1f - progress;
+            material.AlbedoColor = color;
+        }
+
+        if (progress >= 1f) _model.Visible = false;
+    }
+
+    /// <summary>
+    /// Prepara os materiais para receber opacidade.
+    ///
+    /// Duplicar é obrigatório: o material vem da importação e é
+    /// compartilhado por todos os bots da cena. Sem a cópia, matar um
+    /// faz os outros desbotarem junto — e esse é o tipo de defeito que
+    /// se procura no código de morte, que está certo, em vez de no
+    /// material, que é onde está.
+    /// </summary>
+    private void PrepareFade()
+    {
+        Collect(_model);
+
+        void Collect(Node node)
+        {
+            if (node is MeshInstance3D mesh && mesh.Mesh != null)
+            {
+                for (int surface = 0; surface < mesh.Mesh.GetSurfaceCount(); surface++)
+                {
+                    if (mesh.GetActiveMaterial(surface) is not StandardMaterial3D source)
+                        continue;
+
+                    var copy = (StandardMaterial3D)source.Duplicate();
+                    copy.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
+
+                    mesh.SetSurfaceOverrideMaterial(surface, copy);
+                    _fadeMaterials.Add(copy);
+                }
+            }
+
+            foreach (Node child in node.GetChildren()) Collect(child);
+        }
+    }
+
     private void OnRespawned()
     {
         _dead = false;
+        _corpseTimer = 0;
         _blend = Vector2.Zero;
+
+        // Volta tudo: um corpo que renasce meio transparente e meio
+        // enterrado é o mesmo defeito, só adiado.
+        foreach (StandardMaterial3D material in _fadeMaterials)
+        {
+            Color color = material.AlbedoColor;
+            color.A = 1f;
+            material.AlbedoColor = color;
+        }
+
+        _model.Position = new Vector3(_model.Position.X, _modelY, _model.Position.Z);
+        _model.Visible = true;
+
         _playback?.Start("Locomotion");
     }
 
