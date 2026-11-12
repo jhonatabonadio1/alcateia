@@ -269,6 +269,7 @@ public partial class Player : CharacterBody3D
         _form.FormChanged += OnFormChanged;
         _weapon.Fired += OnWeaponFired;
         _health.Respawned += OnRespawned;
+        _health.Died += _ => ApplyCamera();
 
         SetProcessInput(IsMultiplayerAuthority());
         ApplyCamera();
@@ -339,6 +340,8 @@ public partial class Player : CharacterBody3D
     /// dentro do tiroteio que o matou. Volta ao spawn.</summary>
     private void OnRespawned()
     {
+        ApplyCamera();
+
         GlobalPosition = SpawnPoints.Pick(this, _spawn);
         Velocity = Vector3.Zero;
 
@@ -351,7 +354,12 @@ public partial class Player : CharacterBody3D
     private void ApplyCamera()
     {
         bool isMine = IsMultiplayerAuthority();
-        bool third = _form.IsThirdPerson;
+
+        // Morrer joga a câmera para trás. É a única hora em que o dono
+        // vê o próprio corpo em primeira pessoa — e é justamente a
+        // hora em que ver importa, porque mostra o que aconteceu em
+        // vez de congelar a tela onde você já não está.
+        bool third = _form.IsThirdPerson || (_health != null && _health.IsDead);
 
         _camera.Current = isMine && !third;
         _wolfCamera.Current = isMine && third;
@@ -362,7 +370,11 @@ public partial class Player : CharacterBody3D
 
         // Em primeira pessoa o dono não vê o próprio corpo; os outros
         // jogadores continuam vendo normalmente.
-        if (isMine)
+        //
+        // Com modelo humano na cena a cápsula não volta nunca: ela era
+        // o corpo provisório, e reacendê-la na morte poria uma cápsula
+        // cinza em pé ao lado do boneco caído.
+        if (isMine && GetNodeOrNull<Node3D>("Human") == null)
             _mesh.Visible = third;
     }
 

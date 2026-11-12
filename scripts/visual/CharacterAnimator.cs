@@ -70,6 +70,24 @@ public partial class CharacterAnimator : Node3D
     /// </summary>
     [Export] public NodePath HideOnSuccess;
 
+    /// <summary>
+    /// Câmera que não deve desenhar este corpo.
+    ///
+    /// Em primeira pessoa o dono tem a cabeça dentro do próprio
+    /// modelo, e o que ele veria é o interior de um crânio. A saída
+    /// não é esconder o corpo — isso o apagaria também para os outros
+    /// jogadores na Fase 2 — e sim tirá-lo da máscara desta câmera.
+    /// O corpo continua existindo, continua animado e continua
+    /// projetando sombra, que é como se vê o próprio corpo num FPS.
+    ///
+    /// Vazio em bot: bot não tem dono olhando de dentro.
+    /// </summary>
+    [Export] public NodePath OwnerCameraPath;
+
+    /// <summary>Camada de render do corpo. 2 porque a 1 é o mundo, e
+    /// misturar os dois tiraria o cenário junto.</summary>
+    [Export] public int BodyLayer = 2;
+
     [Export] public bool Debug = true;
 
     /// <summary>Arquivo do clipe, e o nome com que ele entra na
@@ -132,6 +150,8 @@ public partial class CharacterAnimator : Node3D
 
         _model.RotationDegrees = new Vector3(
             _model.RotationDegrees.X, ModelYaw, _model.RotationDegrees.Z);
+
+        HideFromOwner();
 
         if (loaded > 0)
         {
@@ -275,6 +295,27 @@ public partial class CharacterAnimator : Node3D
                     new Vector3(first.X, value.Y, first.Z));
             }
         }
+    }
+
+    /// <summary>Move o corpo para uma camada própria e tira essa
+    /// camada da máscara da câmera do dono.</summary>
+    private void HideFromOwner()
+    {
+        var camera = GetNodeOrNull<Camera3D>(OwnerCameraPath);
+        if (camera == null) return;
+
+        uint bit = 1u << (BodyLayer - 1);
+
+        SetLayer(_model, bit);
+        camera.CullMask &= ~bit;
+    }
+
+    private static void SetLayer(Node node, uint bit)
+    {
+        if (node is VisualInstance3D visual) visual.Layers = bit;
+
+        foreach (Node child in node.GetChildren())
+            SetLayer(child, bit);
     }
 
     private static AnimationPlayer FindPlayer(Node root)
