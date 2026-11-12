@@ -859,6 +859,12 @@ public partial class Player : CharacterBody3D
             // de cima e por trás.
             velocity.Y = JumpVelocity * JumpScale * WallJumpClimb;
 
+            // O salto de parede também é um pulo. Faltava avisar, e no
+            // modo lobo é justamente este o pulo que se usa o tempo
+            // todo — então o corpo saía da parede sem trocar de pose.
+            _animator ??= GetNodeOrNull<CharacterAnimator>("Human");
+            _animator?.Jump();
+
             _lastWall = _wallNormal;
 
             ReleaseWall();

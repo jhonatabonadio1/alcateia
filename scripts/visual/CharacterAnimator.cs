@@ -654,6 +654,9 @@ public partial class CharacterAnimator : Node3D
 
         _jumpGrace = 0.35;
         _playback?.Travel("Jump");
+
+        if (Debug && _playback == null)
+            GD.Print($"{_body.Name}: Jump() chamado sem árvore montada");
     }
 
     /// <summary>Reação a dano. Só interrompe a locomoção, e só de vez
