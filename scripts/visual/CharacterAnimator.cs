@@ -182,6 +182,7 @@ public partial class CharacterAnimator : Node3D
     private bool _airborne;
     private bool _crouched;
     private double _hitTimer;
+    private string _lastState = "";
 
     public override void _Ready()
     {
@@ -245,8 +246,14 @@ public partial class CharacterAnimator : Node3D
         }
 
         if (Debug)
+        {
+            var missing = new List<string>();
+            foreach (string clip in Clips)
+                if (!_player.HasAnimation($"alcateia/{clip}")) missing.Add(clip);
+
             GD.Print($"CharacterAnimator: {loaded} clipes carregados" +
-                     (_hasDeath ? "" : " (sem clipe de morte)"));
+                     (missing.Count > 0 ? $" — faltando: {string.Join(", ", missing)}" : ""));
+        }
     }
 
     // ------------------------------------------------------------------
@@ -557,6 +564,7 @@ public partial class CharacterAnimator : Node3D
 
         UpdateAir(delta);
         UpdateStance();
+        ReportState();
     }
 
     /// <summary>
@@ -576,6 +584,26 @@ public partial class CharacterAnimator : Node3D
 
         _crouched = crouching;
         _playback?.Travel(crouching ? "Crouch" : "Locomotion");
+    }
+
+    /// <summary>
+    /// Diz no log cada vez que o estado muda.
+    ///
+    /// Vale mais do que parece: a árvore erra em silêncio. Estado sem
+    /// aresta de entrada, estado sem gatilho e clipe que não carregou
+    /// dão todos o mesmo sintoma na tela — o boneco continua na pose
+    /// anterior — e nenhum deles gera erro. Ver o nome do estado
+    /// separa os três em um teste.
+    /// </summary>
+    private void ReportState()
+    {
+        if (!Debug || _playback == null) return;
+
+        string now = _playback.GetCurrentNode().ToString();
+        if (now == _lastState) return;
+
+        _lastState = now;
+        GD.Print($"{_body.Name}: estado '{now}'  (no chão: {_body.IsOnFloor()})");
     }
 
     /// <summary>
