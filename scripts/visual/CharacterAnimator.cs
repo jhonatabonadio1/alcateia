@@ -327,9 +327,14 @@ public partial class CharacterAnimator : Node3D
     /// avisa e não move nada — o esqueleto fica na pose de repouso, e
     /// a pose de repouso de um rig humanoide é o T.
     ///
-    /// Escolher pelo **número de trilhas** acerta sempre: o que anima
-    /// sessenta e cinco ossos tem sessenta e cinco trilhas, e o vazio
-    /// não tem nenhuma. A duração vira só desempate.
+    /// Escolher pelo número de trilhas também não resolve: nos
+    /// arquivos da segunda leva o "Take 001" tem 53 trilhas de 3,33 s
+    /// — trilhas existem, mas não animam, e todas as quatro vítimas
+    /// tinham exatamente essa assinatura.
+    ///
+    /// O nome é o sinal confiável: o clipe do Mixamo se chama
+    /// "mixamo_com" e ganha de qualquer outro. Trilhas e duração
+    /// viram desempate para arquivos de outra procedência.
     /// </summary>
     private static Animation TakeAnimation(AnimationPlayer source, string clip, bool debug)
     {
@@ -340,22 +345,31 @@ public partial class CharacterAnimator : Node3D
         double longest = 0;
         string chosen = "";
 
-        foreach (StringName name in source.GetAnimationList())
+        foreach (StringName entry in source.GetAnimationList())
         {
-            Animation candidate = source.GetAnimation(name);
+            Animation candidate = source.GetAnimation(entry);
             if (candidate == null) continue;
 
+            string name = entry.ToString();
             int tracks = candidate.GetTrackCount();
 
-            bool better = tracks > mostTracks
-                || (tracks == mostTracks && candidate.Length > longest);
+            // O clipe do Mixamo ganha de qualquer outro, sempre. Entre
+            // os demais, mais trilhas e depois mais longo.
+            bool isMixamo = name.ToLowerInvariant().Contains("mixamo");
+            bool chosenIsMixamo = chosen.ToLowerInvariant().Contains("mixamo");
+
+            bool better = best == null
+                || (isMixamo && !chosenIsMixamo)
+                || (isMixamo == chosenIsMixamo
+                    && (tracks > mostTracks
+                        || (tracks == mostTracks && candidate.Length > longest)));
 
             if (!better) continue;
 
             mostTracks = tracks;
             longest = candidate.Length;
             best = candidate;
-            chosen = name.ToString();
+            chosen = name;
         }
 
         if (debug && mostTracks == 0)
