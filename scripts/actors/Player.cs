@@ -174,9 +174,16 @@ public partial class Player : CharacterBody3D
     [Export] public float WallGrabMaxRise = 0.6f;
 
     /// <summary>Quanto o lobo passa da ponta da parede, em metros, antes
-    /// de soltar e seguir reto. Na quina ele não contorna: a parede
-    /// acabou, a corrida acaba e o embalo continua no ar.</summary>
+    /// de decidir a quina: contornar para a face seguinte ou, se ela é
+    /// estreita, seguir reto.</summary>
     [Export] public float WallEndMargin = 0.1f;
+
+    /// <summary>Largura mínima da face seguinte, em metros, para o lobo
+    /// contornar a quina. Bloco, contêiner, pilar e coluna fina contornam
+    /// (decisão do Jhon: na quina ele continua pela parede); só uma chapa
+    /// mais fina que isto — onde contornar seria dar meia-volta no ar —
+    /// faz o lobo seguir reto.</summary>
+    [Export] public float WallWrapMinFace = 0.25f;
 
     /// <summary>Indo para longe da parede mais rápido que isto (m/s), não
     /// gruda. É o que impede de regrudar na ponta que acabou de deixar.</summary>
@@ -779,6 +786,10 @@ public partial class Player : CharacterBody3D
 
     private bool IsHowling => _howling;
 
+    /// <summary>Contornando uma quina: o sentido gira com a parede até a
+    /// face seguinte.</summary>
+    private bool _rounding;
+
     /// <summary>Especial apertado junto com o pulo: vira bote no quadro
     /// seguinte.</summary>
     private bool _diveAfterJump;
@@ -1072,6 +1083,7 @@ public partial class Player : CharacterBody3D
             _wallTimer = WallRunMaxTime;
             _wallNormal = normal;
             _cornerGrace = 0;
+            _rounding = false;
 
             // Numa quina côncava o sentido escolhido pode apontar para
             // dentro da parede vizinha. Vira para o outro lado antes de
@@ -1098,29 +1110,42 @@ public partial class Player : CharacterBody3D
                 wallDistance = besideDistance;
             }
 
-            // Passou da ponta: segue reto, sem contornar. Contornar trazia
-            // o lobo de volta pela outra face — numa parede fina, ele
-            // voltava pelo outro lado em vez de continuar.
-            if (normal.Dot(_wallAlong) * wallDistance > WallEndMargin)
+            // Passou da ponta: é uma quina. Face seguinte larga (bloco,
+            // contêiner, pilar), contorna e continua nela. Estreita (a ponta
+            // de uma parede fina), segue reto: contornar ali era voltar pelo
+            // outro lado.
+            float side = normal.Dot(_wallAlong);
+            if (side * wallDistance > WallEndMargin && !_rounding)
             {
-                WallLog("a parede acabou: segue reto");
-                LeaveWallStraight();
-                return false;
+                if (!NextFaceIsWide(normal, wallDistance))
+                {
+                    WallLog("ponta de parede fina: segue reto");
+                    LeaveWallStraight();
+                    return false;
+                }
+
+                _rounding = true;
+                WallLog("quina: contorna para a face seguinte");
             }
 
             _wallNormal = normal;
             _cornerGrace = 0;
 
-            // Parede que vira para dentro (côncava): o sentido deita no
-            // plano dela e acompanha. Para fora, não: é a ponta, tratada
-            // acima. Nunca vira para trás.
-            if (normal.Dot(_wallAlong) < 0f)
+            // O sentido deita no plano da parede de agora: no canto
+            // (côncavo) sempre, e na quina enquanto contorna — a normal gira
+            // em volta da aresta e o sentido gira junto, sem tranco. Chegou
+            // na face seguinte (a normal parou de girar), acabou a quina.
+            // Nunca vira para trás.
+            if (side < 0f || _rounding)
             {
-                Vector3 along = _wallAlong - normal * _wallAlong.Dot(normal);
+                Vector3 along = _wallAlong - normal * side;
                 along.Y = 0;
                 if (along.LengthSquared() > 0.04f)
                     _wallAlong = along.Normalized();
             }
+
+            if (_rounding && Mathf.Abs(side) < 0.01f)
+                _rounding = false;
         }
         else if (_cornerGrace <= 0)
         {
@@ -1312,6 +1337,27 @@ public partial class Player : CharacterBody3D
     {
         _onWall = false;
         _cornerGrace = 0;
+        _rounding = false;
+    }
+
+    /// <summary>
+    /// A face depois da quina tem pelo menos <see cref="WallWrapMinFace"/>?
+    /// Um raio paralelo à face que acabou, a essa distância da aresta para
+    /// dentro da parede, procura a face seguinte. Numa parede fina ele
+    /// passa por trás dela e não acha nada.
+    /// </summary>
+    private bool NextFaceIsWide(Vector3 normal, float distance)
+    {
+        Vector3 edge = GlobalPosition - normal * distance;
+        Vector3 depth = -_wallNormal;
+        Vector3 from = edge + _wallAlong * 0.4f + depth * WallWrapMinFace;
+
+        var query = PhysicsRayQueryParameters3D.Create(from, from - _wallAlong * 0.7f);
+        query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+        var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+        if (hit.Count == 0 || hit["collider"].Obj is CharacterBody3D) return false;
+
+        return ((Vector3)hit["normal"]).Dot(_wallAlong) > 0.7f;
     }
 
     /// <summary>A parede acabou: solta e segue no sentido da corrida, com
