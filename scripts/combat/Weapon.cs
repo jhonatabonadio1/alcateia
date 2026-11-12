@@ -42,6 +42,20 @@ public partial class Weapon : Node3D
 
 	public const int CooldownClaw = 0, CooldownHeavy = 1, CooldownLeap = 2;
 
+	/// <summary>Pegou uma arma do chão. O HUD avisa qual.</summary>
+	[Signal] public delegate void PickedUpEventHandler(string id);
+
+	/// <summary>Soltou a arma da mão (B) ou deixou cair ao morrer.</summary>
+	[Signal] public delegate void DroppedEventHandler(string id);
+
+	// --- Soltar e pegar ---
+
+	/// <summary>Velocidade do arremesso ao soltar com B, para frente.</summary>
+	[Export] public float DropThrow = 5.5f;
+
+	/// <summary>Quanto sobe o arremesso.</summary>
+	[Export] public float DropLift = 1.8f;
+
 	// Os números das armas de fogo vêm de WeaponDefinition (o arsenal).
 	// Aqui ficam só faca, granada e garras, que não são itens de compra.
 
@@ -189,6 +203,7 @@ public partial class Weapon : Node3D
 	public bool IsReloading => _reloadTimer > 0;
 
 	private double _reloadTimer;
+	private double _reloadTotal = 1;
 	private bool _shellReload;
 	private int _comboIndex;
 	private double _comboTimer;
@@ -223,6 +238,18 @@ public partial class Weapon : Node3D
 	/// <summary>Dispersão de agora, em graus — para a mira poder crescer junto.</summary>
 	public float CurrentSpread => Held == null ? 0f : SpreadNow(Held);
 
+	/// <summary>Quanto da recarga em curso já passou, de 0 a 1. Na
+	/// escopeta é o ciclo do cartucho atual. A animação da recarga segue
+	/// este relógio, então recarga vazia mais longa dura mais na tela.</summary>
+	public float ReloadProgress =>
+		IsReloading ? Mathf.Clamp(1f - (float)(_reloadTimer / Mathf.Max(_reloadTotal, 0.01)), 0f, 1f) : 0f;
+
+	/// <summary>Duração total da recarga em curso, em segundos.</summary>
+	public float ReloadDuration => (float)_reloadTotal;
+
+	public bool HasPrimary => PrimaryDef != null;
+	public bool HasSecondary => SecondaryDef != null;
+
 	public int AmmoInMag => HumanSlot == Slot.Primary ? PrimaryAmmo : SecondaryAmmo;
 	public int MagSize => HumanSlot == Slot.Primary ? PrimaryMag : SecondaryMag;
 
@@ -240,6 +267,7 @@ public partial class Weapon : Node3D
 		_reloadTimer = held.ShellByShell
 			? held.ShellEnter + held.ShellTime
 			: AmmoInMag == 0 ? held.ReloadEmpty : held.ReloadTactical;
+		_reloadTotal = _reloadTimer;
 
 		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, true);
 		return true;
@@ -257,6 +285,7 @@ public partial class Weapon : Node3D
 			if (AmmoInMag < MagSize && Held != null)
 			{
 				_reloadTimer = Held.ShellTime;
+				_reloadTotal = _reloadTimer;
 				EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, true);
 				return;
 			}
@@ -328,6 +357,7 @@ public partial class Weapon : Node3D
 			Equip(null, null, MaxGrenades);
 
 		_body.GetNode<Health>("Health").Changed += OnHealthChanged;
+		_health.Died += OnDied;
 	}
 
 	public override void _PhysicsProcess(double delta)
@@ -410,6 +440,21 @@ public partial class Weapon : Node3D
 
 			EmitSignal(SignalName.SlotChanged, (int)Slot.Wolf);
 			return;
+		}
+
+		// Espaço vazio (a arma foi solta): não há o que pôr na mão. De
+		// lobo, a tecla ainda serve para voltar a humano — com a melhor
+		// arma que sobrou.
+		if ((slot == Slot.Primary && PrimaryDef == null) || (slot == Slot.Secondary && SecondaryDef == null))
+		{
+			if (!_form.IsWolf) return;
+
+			slot = BestSlot();
+			if (slot == Slot.Knife)
+			{
+				SelectSlot(Slot.Knife);
+				return;
+			}
 		}
 
 		if (slot != HumanSlot && IsReloading) CancelReload();
@@ -880,8 +925,141 @@ public partial class Weapon : Node3D
 		EmitSignal(SignalName.GrenadesChanged, Grenades);
 
 		// Sem granadas restantes, volta sozinho para a arma.
-		HumanSlot = _slotBeforeGrenade;
+		HumanSlot = Usable(_slotBeforeGrenade) ? _slotBeforeGrenade : BestSlot();
 		EmitSignal(SignalName.SlotChanged, (int)HumanSlot);
+	}
+
+	// ------------------------------------------------------------------
+	// Soltar e pegar
+
+	private bool Usable(Slot slot) => slot switch
+	{
+		Slot.Primary => PrimaryDef != null,
+		Slot.Secondary => SecondaryDef != null,
+		Slot.Grenade => Grenades > 0,
+		Slot.Knife => true,
+		_ => false
+	};
+
+	/// <summary>A melhor arma que sobrou: primária, secundária, faca.</summary>
+	private Slot BestSlot() =>
+		PrimaryDef != null ? Slot.Primary : SecondaryDef != null ? Slot.Secondary : Slot.Knife;
+
+	/// <summary>
+	/// Solta a arma da mão (B), jogando-a para frente, e passa para a
+	/// próxima: da primária vai à secundária, da secundária à faca.
+	/// Faca e granada não se soltam. A arma cai no chão com o pente que
+	/// tinha, e quem passar por cima com o espaço vazio fica com ela.
+	/// </summary>
+	public bool TryDrop()
+	{
+		if (_form.IsWolf || _health.IsDead) return false;
+		if (HumanSlot != Slot.Primary && HumanSlot != Slot.Secondary) return false;
+
+		WeaponDefinition def = HumanSlot == Slot.Primary ? PrimaryDef : SecondaryDef;
+		if (def == null) return false;
+
+		int ammo = AmmoInMag;
+		if (IsReloading) CancelReload();
+
+		Vector3 forward = -_camera.GlobalTransform.Basis.Z;
+		Vector3 from = _camera.GlobalPosition + forward * 0.45f + Vector3.Down * 0.25f;
+		Vector3 velocity = _body.Velocity * 0.6f + forward * DropThrow + Vector3.Up * DropLift;
+		WeaponPickup.Spawn(_body, def, ammo, from, velocity);
+
+		Remove(HumanSlot);
+		EmitSignal(SignalName.Dropped, def.Id);
+
+		HumanSlot = BestSlot();
+		_cooldown = 0.25f;
+		EmitSignal(SignalName.SlotChanged, (int)HumanSlot);
+		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
+		return true;
+	}
+
+	/// <summary>Cabe esta arma? Só se o espaço dela estiver vazio — como
+	/// no CS: para trocar, solte a sua primeiro.</summary>
+	public bool CanTake(WeaponDefinition def)
+	{
+		if (def == null || _form.IsWolf || _health.IsDead) return false;
+		return Arsenal.IsSecondary(def.Id) ? SecondaryDef == null : PrimaryDef == null;
+	}
+
+	/// <summary>
+	/// Pega uma arma do chão para o espaço vazio. Vai para a mão quando
+	/// for a melhor que você tem — quem soltou a primária para pegar
+	/// outra quer atirar com ela, não continuar de pistola.
+	/// </summary>
+	public bool TryPickUp(WeaponDefinition def, int ammo)
+	{
+		if (!CanTake(def)) return false;
+
+		bool secondary = Arsenal.IsSecondary(def.Id);
+		if (secondary)
+		{
+			SecondaryDef = def;
+			SecondaryAmmo = Mathf.Clamp(ammo, 0, SecondaryMag);
+		}
+		else
+		{
+			PrimaryDef = def;
+			PrimaryAmmo = Mathf.Clamp(ammo, 0, PrimaryMag);
+		}
+
+		Slot target = secondary ? Slot.Secondary : Slot.Primary;
+		bool take = secondary ? HumanSlot == Slot.Knife : HumanSlot != Slot.Primary;
+
+		EmitSignal(SignalName.PickedUp, def.Id);
+
+		if (take && HumanSlot != Slot.Grenade)
+		{
+			if (IsReloading) CancelReload();
+			HumanSlot = target;
+			_cooldown = 0.25f;
+		}
+
+		EmitSignal(SignalName.SlotChanged, (int)HumanSlot);
+		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
+		return true;
+	}
+
+	private void Remove(Slot slot)
+	{
+		if (slot == Slot.Primary)
+		{
+			PrimaryDef = null;
+			PrimaryAmmo = 0;
+		}
+		else if (slot == Slot.Secondary)
+		{
+			SecondaryDef = null;
+			SecondaryAmmo = 0;
+		}
+	}
+
+	/// <summary>
+	/// Morto em forma humana deixa a arma cair: a primária, ou a pistola
+	/// se só tinha ela. É o que permite pegar a arma de quem você
+	/// derrubou. O lobo não carrega arma na mão e não deixa nada.
+	///
+	/// Quem morreu não perde o que tinha — renasce com o conjunto que
+	/// escolher. O que cai é uma cópia, com o pente como estava.
+	/// </summary>
+	private void OnDied(int killerId)
+	{
+		if (IsReloading) CancelReload();
+		if (_form.IsWolf) return;
+
+		bool primary = PrimaryDef != null;
+		WeaponDefinition def = primary ? PrimaryDef : SecondaryDef;
+		if (def == null) return;
+
+		int ammo = primary ? PrimaryAmmo : SecondaryAmmo;
+		Vector3 from = _body.GlobalPosition + Vector3.Up * 1.1f;
+		var spread = new Vector3((float)GD.RandRange(-1.0, 1.0), 0, (float)GD.RandRange(-1.0, 1.0));
+		Vector3 velocity = _body.Velocity * 0.4f + spread + Vector3.Up * 1.2f;
+		WeaponPickup.Spawn(_body, def, ammo, from, velocity);
+		EmitSignal(SignalName.Dropped, def.Id);
 	}
 
 	/// <summary>Renascer devolve o estoque de granadas.</summary>

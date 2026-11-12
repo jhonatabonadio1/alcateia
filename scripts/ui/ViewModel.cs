@@ -1,22 +1,20 @@
 using Godot;
 
 /// <summary>
-/// O que o jogador vê nas próprias mãos.
+/// O que o jogador vê nas próprias mãos: a arma que ele escolheu, não
+/// uma genérica. A AK aparece como AK, a M3 como M3 — o modelo vem de
+/// <see cref="WeaponModel"/>, o mesmo que os outros veem na sua mão e
+/// no chão quando você solta.
 ///
-/// Formas geométricas por enquanto — substituir por modelo é trocar a
-/// malha, não reescrever isto. O que importa já funciona: saber qual
-/// slot está na mão sem olhar o HUD, e ver a arma reagir ao tiro e ao
-/// passo.
-///
-/// Fica numa camada de render própria, com a câmera enxergando-a por
-/// cima do mundo: sem isso a arma atravessa parede quando você encosta
-/// nela, que é o artefato mais visível de um FPS mal montado.
+/// Reage a tudo o que a arma faz: coice e clarão no tiro, balanço no
+/// passo e a **recarga** — a arma inclina, o carregador sai por baixo e
+/// volta, e ela endireita no fim. A recarga segue o relógio da própria
+/// arma (<see cref="Weapon.ReloadProgress"/>), então uma recarga vazia
+/// mais longa dura mais na tela também. Na escopeta cada cartucho é um
+/// empurrão.
 /// </summary>
 public partial class ViewModel : Node3D
 {
-    [Export] public Color RifleColor = new Color(0.22f, 0.23f, 0.26f);
-    [Export] public Color PistolColor = new Color(0.3f, 0.31f, 0.34f);
-    [Export] public Color GrenadeColor = new Color(0.3f, 0.38f, 0.26f);
     [Export] public Color ClawColor = new Color(0.55f, 0.5f, 0.48f);
 
     /// <summary>Recuo do disparo, em metros.</summary>
@@ -26,29 +24,40 @@ public partial class ViewModel : Node3D
     [Export] public float BobAmount = 0.015f;
     [Export] public float BobSpeed = 9f;
 
+    /// <summary>Duração do clarão do cano.</summary>
+    [Export] public float FlashLife = 0.045f;
+
+    [Export] public Color FlashColor = new Color(1f, 0.85f, 0.45f);
+
+    // Onde fica o punho de cada tipo de arma, a partir da câmera.
+    // O modelo é em tamanho real; na mão ele fica um pouco menor e
+    // levemente virado para o centro, para se ver o lado da arma e não
+    // só a coronha encostada na câmera.
+    private static readonly Vector3 RifleAnchor = new(0.17f, -0.17f, -0.44f);
+    private static readonly Vector3 PistolAnchor = new(0.14f, -0.16f, -0.34f);
+    private static readonly Vector3 KnifeAnchor = new(0.17f, -0.2f, -0.3f);
+    private static readonly Vector3 GrenadeAnchor = new(0.17f, -0.19f, -0.32f);
+    private const float ModelScale = 0.72f;
+    private const float AimYaw = 4f;
+
     private Weapon _weapon;
     private FormController _form;
     private CharacterBody3D _body;
 
-    private Node3D _rifle;
-    private Node3D _pistol;
-    private Node3D _grenade;
+    private Node3D _held;
+    private string _heldId = "";
+    private Node3D _muzzle;
+    private Node3D _magazine;
+    private Vector3 _magRest;
     private Node3D _claws;
-    private Node3D _knife;
-
-    private Node3D _rifleMuzzle;
-    private Node3D _pistolMuzzle;
     private MeshInstance3D _flash;
     private double _flashTimer;
 
     private Vector3 _rest;
     private float _recoil;
     private float _bobTime;
-
-    /// <summary>Duração do clarão do cano.</summary>
-    [Export] public float FlashLife = 0.045f;
-
-    [Export] public Color FlashColor = new Color(1f, 0.85f, 0.45f);
+    private float _reloadPose;
+    private float _draw;
 
     /// <summary>
     /// Ponta do cano da arma na mão, em coordenadas de mundo.
@@ -62,17 +71,9 @@ public partial class ViewModel : Node3D
     public bool TryGetMuzzle(out Vector3 position)
     {
         position = Vector3.Zero;
+        if (_muzzle == null || _form.IsWolf || !Visible || _weapon.Held == null) return false;
 
-        Node3D muzzle = _weapon.HumanSlot switch
-        {
-            Slot.Primary => _rifleMuzzle,
-            Slot.Secondary => _pistolMuzzle,
-            _ => null
-        };
-
-        if (muzzle == null || _form.IsWolf || !Visible) return false;
-
-        position = muzzle.GlobalPosition;
+        position = _muzzle.GlobalPosition;
         return true;
     }
 
@@ -83,12 +84,7 @@ public partial class ViewModel : Node3D
         _form = _body.GetNode<FormController>("FormController");
 
         _rest = Position;
-
-        _rifle = BuildRifle();
-        _pistol = BuildPistol();
-        _grenade = BuildGrenade();
         _claws = BuildClaws();
-        _knife = BuildKnife();
 
         _weapon.SlotChanged += _ => Refresh();
         _form.FormChanged += _ => Refresh();
@@ -112,156 +108,158 @@ public partial class ViewModel : Node3D
 
     public override void _Process(double delta)
     {
-        _recoil = Mathf.MoveToward(_recoil, 0f, (float)delta * 1.4f);
+        float dt = (float)delta;
+        _recoil = Mathf.MoveToward(_recoil, 0f, dt * 1.4f);
+        _draw = Mathf.MoveToward(_draw, 0f, dt * 4f);
 
         if (_flashTimer > 0)
         {
             _flashTimer -= delta;
-
-            if (_flashTimer <= 0)
-                _flash.Visible = false;
+            if (_flashTimer <= 0) _flash.Visible = false;
         }
 
         var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
         bool walking = _body.IsOnFloor() && flat.Length() > 0.5f;
-
-        if (walking)
-            _bobTime += (float)delta * BobSpeed;
+        if (walking) _bobTime += dt * BobSpeed;
 
         float bobX = walking ? Mathf.Sin(_bobTime) * BobAmount : 0f;
         float bobY = walking ? Mathf.Abs(Mathf.Cos(_bobTime)) * BobAmount : 0f;
 
-        Position = _rest + new Vector3(bobX, bobY, _recoil);
+        Position = _rest + new Vector3(bobX, bobY - _draw * 0.18f, _recoil);
+
+        UpdateReload(dt);
+    }
+
+    /// <summary>
+    /// A recarga em três tempos: inclina, o carregador sai e volta,
+    /// endireita. A pose inclinada entra e sai suave; o carregador
+    /// segue o progresso exato da recarga.
+    /// </summary>
+    private void UpdateReload(float dt)
+    {
+        if (_held == null) return;
+
+        bool reloading = _weapon.IsReloading && _weapon.Held != null && !_form.IsWolf;
+        _reloadPose = Mathf.MoveToward(_reloadPose, reloading ? 1f : 0f, dt * 6f);
+
+        float p = reloading ? _weapon.ReloadProgress : 1f;
+        float jolt = 0f;
+
+        if (_magazine != null)
+        {
+            // 0–40%: sai por baixo. 40–55%: fora. 55–85%: volta. Depois,
+            // um tapa no carregador — o tranco que diz "pronto".
+            float drop = 0f;
+            if (reloading)
+            {
+                if (p < 0.4f) drop = Smooth(p / 0.4f);
+                else if (p < 0.55f) drop = 1f;
+                else if (p < 0.85f) drop = 1f - Smooth((p - 0.55f) / 0.3f);
+                else jolt = Mathf.Sin((p - 0.85f) / 0.15f * Mathf.Pi);
+            }
+
+            _magazine.Position = _magRest + new Vector3(0, -0.28f * drop, 0.04f * drop);
+            _magazine.Visible = drop < 0.95f;
+        }
+        else if (reloading)
+        {
+            // Escopeta: cada cartucho é um empurrão para dentro.
+            jolt = Mathf.Max(0f, Mathf.Sin(p * Mathf.Pi)) * 0.6f;
+        }
+
+        float r = Smooth(_reloadPose);
+        _held.RotationDegrees = new Vector3(8f * r + 4f * jolt, AimYaw + 12f * r, 22f * r);
+        _held.Position = Anchor(_heldId) + new Vector3(-0.05f * r, -0.05f * r + 0.012f * jolt, 0.04f * r);
+    }
+
+    private static float Smooth(float t)
+    {
+        t = Mathf.Clamp(t, 0f, 1f);
+        return t * t * (3f - 2f * t);
     }
 
     private void OnFired()
     {
         _recoil = Kick;
+        if (_form.IsWolf || _muzzle == null || _weapon.Held == null) return;
 
-        if (_form.IsWolf) return;
-
-        Node3D muzzle = _weapon.HumanSlot == Slot.Primary ? _rifleMuzzle : _pistolMuzzle;
-        if (muzzle == null) return;
-
-        _flash.Position = muzzle.Position + muzzle.GetParent<Node3D>().Position;
+        _flash.Position = ToLocal(_muzzle.GlobalPosition);
         _flash.Visible = true;
         _flashTimer = FlashLife;
     }
 
-    /// <summary>Mostra só o que está na mão.</summary>
+    /// <summary>Mostra só o que está na mão, com o modelo da arma
+    /// escolhida. Trocar de arma reconstrói e a nova sobe de baixo.</summary>
     private void Refresh()
     {
         bool wolf = _form.IsWolf;
-
         _claws.Visible = wolf;
-        _rifle.Visible = !wolf && _weapon.HumanSlot == Slot.Primary;
-        _pistol.Visible = !wolf && _weapon.HumanSlot == Slot.Secondary;
-        _grenade.Visible = !wolf && _weapon.HumanSlot == Slot.Grenade;
-        _knife.Visible = !wolf && _weapon.HumanSlot == Slot.Knife;
+
+        string id = wolf ? "" : _weapon.HumanSlot switch
+        {
+            Slot.Primary => _weapon.PrimaryDef?.Id ?? "",
+            Slot.Secondary => _weapon.SecondaryDef?.Id ?? "",
+            Slot.Knife => "faca",
+            Slot.Grenade => "choque",
+            _ => ""
+        };
+
+        if (id == _heldId && _held != null) return;
+
+        _held?.QueueFree();
+        _held = null;
+        _muzzle = null;
+        _magazine = null;
+        _heldId = id;
+
+        if (id == "") return;
+
+        _held = WeaponModel.Build(id);
+        _held.Position = Anchor(id);
+        _held.Scale = Vector3.One * ModelScale;
+        _held.RotationDegrees = new Vector3(0, AimYaw, 0);
+        AddChild(_held);
+
+        _muzzle = _held.GetNodeOrNull<Node3D>(WeaponModel.MuzzleName);
+        _magazine = _held.GetNodeOrNull<Node3D>(WeaponModel.MagazineName);
+        if (_magazine != null) _magRest = _magazine.Position;
+
+        _draw = 1f;
     }
+
+    private static Vector3 Anchor(string id) => id switch
+    {
+        "faca" => KnifeAnchor,
+        "choque" => GrenadeAnchor,
+        _ when WeaponModel.IsPistol(id) => PistolAnchor,
+        _ => RifleAnchor
+    };
 
     // ------------------------------------------------------------------
-
-    private Node3D BuildRifle()
-    {
-        var root = NewPart();
-
-        Box(root, RifleColor, new Vector3(0.07f, 0.09f, 0.5f), new Vector3(0.22f, -0.2f, -0.38f));
-        Box(root, RifleColor, new Vector3(0.04f, 0.05f, 0.34f), new Vector3(0.22f, -0.17f, -0.72f));
-
-        _rifleMuzzle = new Node3D { Position = new Vector3(0.22f, -0.17f, -0.9f) };
-        root.AddChild(_rifleMuzzle);
-        Box(root, RifleColor, new Vector3(0.05f, 0.16f, 0.07f), new Vector3(0.22f, -0.3f, -0.26f));
-        Box(root, RifleColor, new Vector3(0.05f, 0.07f, 0.2f), new Vector3(0.22f, -0.21f, -0.1f));
-
-        return root;
-    }
-
-    private Node3D BuildPistol()
-    {
-        var root = NewPart();
-
-        Box(root, PistolColor, new Vector3(0.06f, 0.08f, 0.26f), new Vector3(0.2f, -0.22f, -0.3f));
-        Box(root, PistolColor, new Vector3(0.05f, 0.15f, 0.07f), new Vector3(0.2f, -0.31f, -0.22f));
-
-        _pistolMuzzle = new Node3D { Position = new Vector3(0.2f, -0.22f, -0.44f) };
-        root.AddChild(_pistolMuzzle);
-
-        return root;
-    }
-
-    private Node3D BuildKnife()
-    {
-        var root = NewPart();
-
-        Box(root, new Color(0.62f, 0.63f, 0.66f),
-            new Vector3(0.02f, 0.06f, 0.26f), new Vector3(0.2f, -0.24f, -0.34f));
-
-        Box(root, new Color(0.16f, 0.16f, 0.18f),
-            new Vector3(0.035f, 0.05f, 0.12f), new Vector3(0.2f, -0.25f, -0.16f));
-
-        return root;
-    }
-
-    private Node3D BuildGrenade()
-    {
-        var root = NewPart();
-
-        var sphere = new MeshInstance3D
-        {
-            Mesh = new SphereMesh { Radius = 0.07f, Height = 0.14f },
-            MaterialOverride = Flat(GrenadeColor),
-            Position = new Vector3(0.2f, -0.24f, -0.3f)
-        };
-        root.AddChild(sphere);
-
-        return root;
-    }
 
     /// <summary>Garras: três lâminas em leque, uma de cada lado.</summary>
     private Node3D BuildClaws()
     {
-        var root = NewPart();
+        var root = new Node3D();
+        AddChild(root);
+
+        var material = new StandardMaterial3D { AlbedoColor = ClawColor, Roughness = 0.55f, Metallic = 0.1f };
 
         for (int side = -1; side <= 1; side += 2)
         {
             for (int i = 0; i < 3; i++)
             {
-                var claw = Box(root, ClawColor,
-                    new Vector3(0.025f, 0.025f, 0.22f),
-                    new Vector3(side * (0.18f + i * 0.05f), -0.26f + i * 0.02f, -0.34f));
-
-                claw.RotationDegrees = new Vector3(-12f, side * (8f + i * 6f), 0);
+                var claw = new MeshInstance3D
+                {
+                    Mesh = new BoxMesh { Size = new Vector3(0.025f, 0.025f, 0.22f) },
+                    MaterialOverride = material,
+                    Position = new Vector3(side * (0.18f + i * 0.05f), -0.26f + i * 0.02f, -0.34f),
+                    RotationDegrees = new Vector3(-12f, side * (8f + i * 6f), 0)
+                };
+                root.AddChild(claw);
             }
         }
 
         return root;
     }
-
-    private Node3D NewPart()
-    {
-        var node = new Node3D();
-        AddChild(node);
-        return node;
-    }
-
-    private MeshInstance3D Box(Node parent, Color color, Vector3 size, Vector3 position)
-    {
-        var node = new MeshInstance3D
-        {
-            Mesh = new BoxMesh { Size = size },
-            MaterialOverride = Flat(color),
-            Position = position
-        };
-
-        parent.AddChild(node);
-        return node;
-    }
-
-    private static StandardMaterial3D Flat(Color color) => new()
-    {
-        AlbedoColor = color,
-        Roughness = 0.55f,
-        Metallic = 0.1f
-    };
 }

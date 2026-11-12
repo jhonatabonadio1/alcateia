@@ -758,6 +758,10 @@ public partial class Player : CharacterBody3D
         if (Input.IsActionJustPressed("howl") && !_form.IsWolf)
             _weapon.TryReload();
 
+        // B: solta a arma da mão para frente e passa para a próxima.
+        if (Input.IsActionJustPressed("drop"))
+            _weapon.TryDrop();
+
         UpdateHowl(delta);
     }
 

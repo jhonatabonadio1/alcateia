@@ -169,6 +169,21 @@ public partial class CharacterAnimator : Node3D
     /// </summary>
     [Export] public bool TintByTeam = true;
 
+    /// <summary>
+    /// Personagem de cada time. O time azul é o Exo Gray, o laranja é a
+    /// Ely — decisão do Jhon. Os dois são do Mixamo, com o mesmo
+    /// esqueleto do xbot, então todos os clipes servem sem conversão.
+    ///
+    /// Com personagem próprio o corpo não é pintado: a roupa já diz o
+    /// time, e pintar por cima de textura vira lama. Caminho vazio, ou
+    /// arquivo que não existe, mantém o xbot pintado da cena.
+    /// </summary>
+    [Export(PropertyHint.File, "*.fbx,*.glb,*.tscn")]
+    public string BlueModel = "res://assets/characters/human/exo_gray.fbx";
+
+    [Export(PropertyHint.File, "*.fbx,*.glb,*.tscn")]
+    public string OrangeModel = "res://assets/characters/human/ely.fbx";
+
     [Export] public Color BlueBody = new Color(0.22f, 0.45f, 0.95f);
     [Export] public Color OrangeBody = new Color(1f, 0.48f, 0.16f);
 
@@ -196,6 +211,11 @@ public partial class CharacterAnimator : Node3D
     private AnimationPlayer _player;
     private AnimationTree _tree;
     private AnimationNodeStateMachinePlayback _playback;
+    private Weapon _weapon;
+    private bool _teamModel;
+    private bool _hasReload;
+    private bool _reloadPlaying;
+    private float _reloadLength;
 
     private CharacterBody3D _body;
     private Player _owner;
@@ -234,6 +254,7 @@ public partial class CharacterAnimator : Node3D
         _owner = _body as Player;
         _health = _body.GetNodeOrNull<Health>("Health");
         _form = _body.GetNodeOrNull<FormController>("FormController");
+        _weapon = _body.GetNodeOrNull<Weapon>("Weapon");
 
         _model = GetNodeOrNull<Node3D>(ModelPath);
         if (_model == null)
@@ -241,6 +262,8 @@ public partial class CharacterAnimator : Node3D
             GD.PrintErr($"CharacterAnimator: não achei o modelo em '{ModelPath}'.");
             return;
         }
+
+        SwapTeamModel();
 
         _player = FindPlayer(_model);
         if (_player == null)
@@ -271,6 +294,10 @@ public partial class CharacterAnimator : Node3D
 
         HideFromOwner();
         ApplyTeamTint();
+        AttachWeapon();
+
+        if (_weapon != null)
+            _weapon.AmmoChanged += OnAmmoChanged;
 
         if (loaded > 0)
         {
@@ -387,7 +414,7 @@ public partial class CharacterAnimator : Node3D
     /// "mixamo_com" e ganha de qualquer outro. Trilhas e duração
     /// viram desempate para arquivos de outra procedência.
     /// </summary>
-    private static Animation TakeAnimation(AnimationPlayer source, string clip, bool debug)
+    public static Animation TakeAnimation(AnimationPlayer source, string clip, bool debug)
     {
         if (source == null) return null;
 
@@ -447,7 +474,7 @@ public partial class CharacterAnimator : Node3D
     /// importador reescreve nome de osso e o caminho exato depende de
     /// uma opção de importação que ninguém vai lembrar de conferir.
     /// </summary>
-    private static void StripRootMotion(Animation animation)
+    public static void StripRootMotion(Animation animation)
     {
         for (int track = 0; track < animation.GetTrackCount(); track++)
         {
@@ -496,7 +523,7 @@ public partial class CharacterAnimator : Node3D
     /// </summary>
     private void ApplyTeamTint()
     {
-        if (!TintByTeam || _health == null) return;
+        if (!TintByTeam || _health == null || _teamModel) return;
 
         Color body = _health.Team == Teams.Blue ? BlueBody : OrangeBody;
         Color joints = body.Darkened(0.6f);
@@ -541,7 +568,7 @@ public partial class CharacterAnimator : Node3D
             SetLayer(child, bit);
     }
 
-    private static AnimationPlayer FindPlayer(Node root)
+    public static AnimationPlayer FindPlayer(Node root)
     {
         if (root is AnimationPlayer found) return found;
 
@@ -620,7 +647,7 @@ public partial class CharacterAnimator : Node3D
         foreach (string from in new[] { "Locomotion", "Crouch", "Jump", "Fall", "Land", "Hit" })
             Link(machine, from, "Death");
 
-        _tree = new AnimationTree { TreeRoot = machine };
+        _tree = new AnimationTree { TreeRoot = WithReload(machine) };
 
         // A ordem importa. O caminho do tocador é relativo à própria
         // árvore, então ele só pode ser calculado depois que ela está
@@ -632,9 +659,144 @@ public partial class CharacterAnimator : Node3D
         _tree.Active = true;
 
         _playback = (AnimationNodeStateMachinePlayback)
-            _tree.Get("parameters/playback");
+            _tree.Get("parameters/Machine/playback");
 
         _playback?.Start("Locomotion");
+    }
+
+    /// <summary>
+    /// Põe a recarga por cima de tudo, só da cintura para cima.
+    ///
+    /// A recarga é um gesto dos braços: as pernas continuam no que
+    /// estavam — andando, correndo, agachado. Por isso ela entra como
+    /// disparo único filtrado nos ossos do tronco, braços e cabeça, e
+    /// não como estado da máquina, que trocaria o corpo inteiro e
+    /// pararia o boneco para recarregar.
+    /// </summary>
+    private AnimationRootNode WithReload(AnimationNodeStateMachine machine)
+    {
+        var root = new AnimationNodeBlendTree();
+        root.AddNode("Machine", machine, new Vector2(0, 0));
+
+        _hasReload = _player.HasAnimation("alcateia/reload");
+        if (!_hasReload)
+        {
+            root.ConnectNode("output", 0, "Machine");
+            return root;
+        }
+
+        Animation clip = _player.GetAnimation("alcateia/reload");
+        _reloadLength = (float)clip.Length;
+
+        var shot = new AnimationNodeOneShot
+        {
+            FadeInTime = 0.15f,
+            FadeOutTime = 0.25f,
+            FilterEnabled = true
+        };
+
+        for (int track = 0; track < clip.GetTrackCount(); track++)
+        {
+            NodePath path = clip.TrackGetPath(track);
+            if (UpperBody(path.ToString())) shot.SetFilterPath(path, true);
+        }
+
+        root.AddNode("ReloadClip", new AnimationNodeAnimation { Animation = "alcateia/reload" }, new Vector2(-300, 200));
+        root.AddNode("ReloadSpeed", new AnimationNodeTimeScale(), new Vector2(-100, 200));
+        root.AddNode("Reload", shot, new Vector2(200, 0));
+
+        root.ConnectNode("ReloadSpeed", 0, "ReloadClip");
+        root.ConnectNode("Reload", 0, "Machine");
+        root.ConnectNode("Reload", 1, "ReloadSpeed");
+        root.ConnectNode("output", 0, "Reload");
+        return root;
+    }
+
+    /// <summary>Osso da cintura para cima: coluna, pescoço, cabeça,
+    /// ombros, braços e mãos (com os dedos).</summary>
+    private static bool UpperBody(string path)
+    {
+        int colon = path.LastIndexOf(':');
+        string bone = colon >= 0 ? path[(colon + 1)..] : path;
+        return bone.Contains("Spine") || bone.Contains("Neck") || bone.Contains("Head")
+            || bone.Contains("Shoulder") || bone.Contains("Arm") || bone.Contains("Hand");
+    }
+
+    /// <summary>
+    /// A recarga começa e termina com a da arma. A velocidade do clipe
+    /// é ajustada para ele acabar junto com a recarga: a vazia, mais
+    /// longa, fica mais lenta na tela também. Na escopeta o clipe toca
+    /// uma vez no tempo dele, como gesto de "carregando".
+    /// </summary>
+    private void OnAmmoChanged(int inMag, int magSize, bool reloading)
+    {
+        if (!_hasReload || _tree == null || _dead) return;
+
+        if (reloading && !_reloadPlaying)
+        {
+            _reloadPlaying = true;
+            float duration = _weapon.ReloadDuration;
+            bool shells = _weapon.Held?.ShellByShell == true;
+            float scale = shells || duration <= 0.05f ? 1f : _reloadLength / duration;
+
+            _tree.Set("parameters/ReloadSpeed/scale", Mathf.Clamp(scale, 0.4f, 3f));
+            _tree.Set("parameters/Reload/request", (int)AnimationNodeOneShot.OneShotRequest.Fire);
+            return;
+        }
+
+        if (!reloading && _reloadPlaying)
+        {
+            _reloadPlaying = false;
+
+            // Acabou cheio: deixa o clipe terminar sozinho. Interrompida
+            // (trocou de arma, atirou na escopeta): corta.
+            if (inMag < magSize) StopReload();
+        }
+    }
+
+    private void StopReload()
+    {
+        _reloadPlaying = false;
+        if (_hasReload && _tree != null)
+            _tree.Set("parameters/Reload/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
+    }
+
+    /// <summary>
+    /// Troca o xbot da cena pelo personagem do time. Acontece antes de
+    /// carregar os clipes, porque eles entram no tocador do modelo que
+    /// fica.
+    /// </summary>
+    private void SwapTeamModel()
+    {
+        if (_health == null) return;
+
+        string path = _health.Team == Teams.Orange ? OrangeModel : BlueModel;
+        if (string.IsNullOrEmpty(path) || !ResourceLoader.Exists(path)) return;
+
+        if (GD.Load<PackedScene>(path)?.Instantiate() is not Node3D model) return;
+
+        Node3D old = _model;
+        model.Name = old.Name;
+        model.Transform = old.Transform;
+        RemoveChild(old);
+        old.QueueFree();
+        AddChild(model);
+
+        _model = model;
+        _teamModel = true;
+    }
+
+    /// <summary>A arma na mão, para os outros verem.</summary>
+    private void AttachWeapon()
+    {
+        if (_weapon == null) return;
+
+        var camera = GetNodeOrNull<Camera3D>(OwnerCameraPath);
+        uint layers = camera != null ? 1u << (BodyLayer - 1) : 1u;
+
+        var held = new HeldWeapon { Name = "HeldWeapon" };
+        AddChild(held);
+        held.Attach(_model, _body, layers);
     }
 
     private void Point(AnimationNodeBlendSpace2D space, string clip, float x, float y)
@@ -643,7 +805,7 @@ public partial class CharacterAnimator : Node3D
 
         space.AddBlendPoint(
             new AnimationNodeAnimation { Animation = $"alcateia/{clip}" },
-            new Vector2(x, y));
+            new Vector2(x, y), -1, clip);
     }
 
     /// <summary>
@@ -673,10 +835,10 @@ public partial class CharacterAnimator : Node3D
 
         if (hasIdle)
             crouch.AddBlendPoint(
-                new AnimationNodeAnimation { Animation = "alcateia/crouch_idle" }, 0f);
+                new AnimationNodeAnimation { Animation = "alcateia/crouch_idle" }, 0f, -1, "crouch_idle");
 
         crouch.AddBlendPoint(
-            new AnimationNodeAnimation { Animation = "alcateia/crouch_walk" }, 1f);
+            new AnimationNodeAnimation { Animation = "alcateia/crouch_walk" }, 1f, -1, "crouch_walk");
 
         machine.AddNode("Crouch", crouch, new Vector2(300, 240));
     }
@@ -741,7 +903,7 @@ public partial class CharacterAnimator : Node3D
 
         _blend = _blend.Lerp(target, Mathf.Min(1f, BlendSmoothing * (float)delta));
 
-        _tree.Set("parameters/Locomotion/blend_position", _blend);
+        _tree.Set("parameters/Machine/Locomotion/blend_position", _blend);
 
         if (_hitTimer > 0) _hitTimer -= delta;
 
@@ -782,7 +944,7 @@ public partial class CharacterAnimator : Node3D
         float target = Mathf.Clamp(flat.Length() / Mathf.Max(CrouchWalkSpeed, 0.01f), 0f, 1f);
 
         _crouchBlend = Mathf.MoveToward(_crouchBlend, target, 4f * (float)delta);
-        _tree.Set("parameters/Crouch/blend_position", _crouchBlend);
+        _tree.Set("parameters/Machine/Crouch/blend_position", _crouchBlend);
     }
 
     /// <summary>
@@ -882,6 +1044,7 @@ public partial class CharacterAnimator : Node3D
 
     private void OnDied()
     {
+        StopReload();
         _dead = true;
         _corpseTimer = 0;
 

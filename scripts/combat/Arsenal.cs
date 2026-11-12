@@ -44,6 +44,10 @@ public static class Arsenal
     public static readonly string[] Primaries = { "m16a2", "sg552", "ak47", "ump45", "m3" };
     public static readonly string[] Secondaries = { "m9" };
 
+    /// <summary>A arma vai para o espaço da secundária? É o que decide em
+    /// que espaço entra uma arma pega do chão.</summary>
+    public static bool IsSecondary(string id) => System.Array.IndexOf(Secondaries, id) >= 0;
+
     public const string DefaultPrimary = "m16a2";
     public const string DefaultSecondary = "m9";
 
