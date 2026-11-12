@@ -58,6 +58,7 @@ public partial class ViewModel : Node3D
     private float _bobTime;
     private float _reloadPose;
     private float _draw;
+    private float _windup;
 
     /// <summary>
     /// Ponta do cano da arma na mão, em coordenadas de mundo.
@@ -168,8 +169,18 @@ public partial class ViewModel : Node3D
         }
 
         float r = Smooth(_reloadPose);
-        _held.RotationDegrees = new Vector3(8f * r + 4f * jolt, AimYaw + 12f * r, 22f * r);
-        _held.Position = Anchor(_heldId) + new Vector3(-0.05f * r, -0.05f * r + 0.012f * jolt, 0.04f * r);
+
+        // Granada segura: o braço vai para trás e para cima, armando o
+        // arremesso, e fica lá até o botão soltar. Vai em 0,25 s; ao
+        // soltar ela sai da mão e a arma volta subindo.
+        bool winding = _weapon.IsGrenadeReady;
+        _windup = Mathf.MoveToward(_windup, winding ? 1f : 0f, dt * (winding ? 4f : 10f));
+        float w = Smooth(_windup);
+
+        _held.RotationDegrees = new Vector3(8f * r + 4f * jolt + 38f * w, AimYaw + 12f * r - 10f * w, 22f * r - 18f * w);
+        _held.Position = Anchor(_heldId)
+            + new Vector3(-0.05f * r, -0.05f * r + 0.012f * jolt, 0.04f * r)
+            + new Vector3(0.01f * w, 0.1f * w, 0.1f * w);
     }
 
     private static float Smooth(float t)

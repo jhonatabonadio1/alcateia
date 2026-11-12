@@ -177,6 +177,11 @@ public partial class CharacterAnimator : Node3D
     /// <summary>Velocidade em que o agachado está andando a pleno.</summary>
     [Export] public float CrouchWalkSpeed = 1.9f;
 
+    /// <summary>Quanto da pose de mira em pé entra no tronco agachado: 1 é
+    /// o fuzil no ombro, como de pé; 0, o fuzil baixo dos clipes
+    /// agachados.</summary>
+    [Export(PropertyHint.Range, "0,1")] public float CrouchAim = 1f;
+
     /// <summary>
     /// Pintar o corpo com a cor do time.
     ///
@@ -753,7 +758,7 @@ public partial class CharacterAnimator : Node3D
         _hasReload = _player.HasAnimation("alcateia/reload");
         if (!_hasReload)
         {
-            root.ConnectNode("output", 0, "Machine");
+            root.ConnectNode("output", 0, WithGrenade(root, "Machine"));
             return root;
         }
 
@@ -780,8 +785,78 @@ public partial class CharacterAnimator : Node3D
         root.ConnectNode("ReloadSpeed", 0, "ReloadClip");
         root.ConnectNode("Reload", 0, "Machine");
         root.ConnectNode("Reload", 1, "ReloadSpeed");
-        root.ConnectNode("output", 0, "Reload");
+        root.ConnectNode("output", 0, WithGrenade(root, "Reload"));
         return root;
+    }
+
+    // O clipe "grenade" (3,2 s), medido pela mão direita: puxa o braço
+    // para trás até 1,60 s (a mão 0,76 m atrás do quadril), solta por cima
+    // da cabeça em ~1,9 s e volta. Segurando o botão, o clipe para no
+    // braço armado; soltou, o resto toca no dobro, para a mão passar na
+    // frente logo depois de a granada sair (2,5×).
+    private const float GrenadeFrom = 0.5f;
+    private const float GrenadeCocked = 1.6f;
+    private const float GrenadeThrowSpeed = 2.5f;
+
+    private bool _hasGrenade;
+    private bool _grenadeShot;
+    private double _grenadeClock;
+
+    /// <summary>A granada por cima, da cintura para cima, como a recarga:
+    /// arma o braço enquanto o botão está seguro e arremessa quando solta.
+    /// É o que os outros veem; o próprio jogador vê a mão na tela
+    /// (<see cref="ViewModel"/>).</summary>
+    private string WithGrenade(AnimationNodeBlendTree root, string below)
+    {
+        _hasGrenade = _player.HasAnimation("alcateia/grenade");
+        if (!_hasGrenade) return below;
+
+        Animation clip = _player.GetAnimation("alcateia/grenade");
+        var shot = new AnimationNodeOneShot { FadeInTime = 0.12f, FadeOutTime = 0.25f, FilterEnabled = true };
+        for (int track = 0; track < clip.GetTrackCount(); track++)
+        {
+            NodePath path = clip.TrackGetPath(track);
+            if (UpperBody(path.ToString())) shot.SetFilterPath(path, true);
+        }
+
+        root.AddNode("GrenadeClip", new AnimationNodeAnimation { Animation = "alcateia/grenade" }, new Vector2(-300, 400));
+        root.AddNode("GrenadeSeek", new AnimationNodeTimeSeek(), new Vector2(-200, 400));
+        root.AddNode("GrenadeSpeed", new AnimationNodeTimeScale(), new Vector2(-100, 400));
+        root.AddNode("Grenade", shot, new Vector2(400, 0));
+        root.ConnectNode("GrenadeSeek", 0, "GrenadeClip");
+        root.ConnectNode("GrenadeSpeed", 0, "GrenadeSeek");
+        root.ConnectNode("Grenade", 0, below);
+        root.ConnectNode("Grenade", 1, "GrenadeSpeed");
+        return "Grenade";
+    }
+
+    private void UpdateGrenade(double delta)
+    {
+        if (!_hasGrenade || _tree == null || _weapon == null || _dead) return;
+
+        bool ready = _weapon.IsGrenadeReady;
+        if (ready && !_grenadeShot)
+        {
+            _grenadeShot = true;
+            _grenadeClock = GrenadeFrom;
+            _tree.Set("parameters/GrenadeSeek/seek_request", GrenadeFrom);
+            _tree.Set("parameters/GrenadeSpeed/scale", 1f);
+            _tree.Set("parameters/Grenade/request", (int)AnimationNodeOneShot.OneShotRequest.Fire);
+            return;
+        }
+
+        if (!_grenadeShot) return;
+
+        if (ready)
+        {
+            _grenadeClock += delta;
+            if (_grenadeClock >= GrenadeCocked) _tree.Set("parameters/GrenadeSpeed/scale", 0f);
+            return;
+        }
+
+        // Soltou: o resto do arremesso toca rápido e o disparo acaba sozinho.
+        _grenadeShot = false;
+        _tree.Set("parameters/GrenadeSpeed/scale", GrenadeThrowSpeed);
     }
 
     /// <summary>Osso da cintura para cima: coluna, pescoço, cabeça,
@@ -896,24 +971,57 @@ public partial class CharacterAnimator : Node3D
 
         if (!hasIdle && !hasWalk) return;
 
+        AnimationRootNode pose;
         if (!hasWalk)
+            pose = new AnimationNodeAnimation { Animation = "alcateia/crouch_idle" };
+        else
         {
-            Single(machine, "Crouch", "crouch_idle", new Vector2(300, 240));
-            return;
+            var space = new AnimationNodeBlendSpace1D { MinSpace = 0f, MaxSpace = 1f };
+            space.Set("sync", true);
+
+            if (hasIdle)
+                space.AddBlendPoint(
+                    new AnimationNodeAnimation { Animation = "alcateia/crouch_idle" }, 0f, -1, "crouch_idle");
+
+            space.AddBlendPoint(
+                new AnimationNodeAnimation { Animation = "alcateia/crouch_walk" }, 1f, -1, "crouch_walk");
+            pose = space;
         }
 
-        var crouch = new AnimationNodeBlendSpace1D { MinSpace = 0f, MaxSpace = 1f };
-        crouch.Set("sync", true);
+        // Agachado de arma em punho (decisão do Jhon: o humano agacha e
+        // atira). Os clipes agachados seguram o fuzil baixo, na cintura —
+        // o tiro saía com a arma apontada para o chão. Da cintura para
+        // cima entra a pose de mira do parado em pé (idle_rifle), a mesma
+        // de quem atira de pé; as pernas ficam ajoelhadas ou andando.
+        var crouch = new AnimationNodeBlendTree();
+        crouch.AddNode("Pose", pose, Vector2.Zero);
 
-        if (hasIdle)
-            crouch.AddBlendPoint(
-                new AnimationNodeAnimation { Animation = "alcateia/crouch_idle" }, 0f, -1, "crouch_idle");
+        if (_player.HasAnimation("alcateia/idle_rifle"))
+        {
+            var aim = new AnimationNodeBlend2 { FilterEnabled = true };
+            Animation clip = _player.GetAnimation("alcateia/idle_rifle");
+            for (int track = 0; track < clip.GetTrackCount(); track++)
+            {
+                NodePath path = clip.TrackGetPath(track);
+                if (UpperBody(path.ToString())) aim.SetFilterPath(path, true);
+            }
 
-        crouch.AddBlendPoint(
-            new AnimationNodeAnimation { Animation = "alcateia/crouch_walk" }, 1f, -1, "crouch_walk");
+            crouch.AddNode("Aim", new AnimationNodeAnimation { Animation = "alcateia/idle_rifle" }, new Vector2(0, 200));
+            crouch.AddNode("AimBlend", aim, new Vector2(200, 100));
+            crouch.ConnectNode("AimBlend", 0, "Pose");
+            crouch.ConnectNode("AimBlend", 1, "Aim");
+            crouch.ConnectNode("output", 0, "AimBlend");
+            _crouchAim = true;
+        }
+        else
+            crouch.ConnectNode("output", 0, "Pose");
 
+        _crouchWalk = hasWalk;
         machine.AddNode("Crouch", crouch, new Vector2(300, 240));
     }
+
+    private bool _crouchAim;
+    private bool _crouchWalk;
 
     private void Single(AnimationNodeStateMachine machine, string state,
         string clip, Vector2 position)
@@ -983,6 +1091,7 @@ public partial class CharacterAnimator : Node3D
         UpdateAir(delta);
         UpdateStance();
         UpdateCrouchBlend(delta);
+        UpdateGrenade(delta);
 
         Position = new Vector3(Position.X, BaseY, Position.Z);
 
@@ -1025,7 +1134,8 @@ public partial class CharacterAnimator : Node3D
         float target = Mathf.Clamp(flat.Length() / Mathf.Max(CrouchWalkSpeed, 0.01f), 0f, 1f);
 
         _crouchBlend = Mathf.MoveToward(_crouchBlend, target, 4f * (float)delta);
-        _tree.Set("parameters/Machine/Crouch/blend_position", _crouchBlend);
+        if (_crouchWalk) _tree.Set("parameters/Machine/Crouch/Pose/blend_position", _crouchBlend);
+        if (_crouchAim) _tree.Set("parameters/Machine/Crouch/AimBlend/blend_amount", CrouchAim);
     }
 
     /// <summary>
