@@ -541,6 +541,12 @@ acopla a IA a tudo que existe.
 | Rugido | 45m |
 | Explosão | ~39m |
 
+**Nem todo som vira ida.** Cada bot nasce com uma curiosidade
+sorteada, e tiro chama mais atenção que passo. Quem decide ficar ainda
+assim vira na direção do som. Dois bots reagindo igual ao mesmo tiro
+entregam que são scripts; um indo e outro ficando parece decisão —
+pelo mesmo motivo que o erro de mira tem variação.
+
 **Agachado e andando com Shift não fazem barulho nenhum.** São as
 duas ferramentas de furtividade do humano, e é o que dá escolha
 contra um inimigo que ouve. Andar devagar é só do humano: o lobo vive
@@ -558,6 +564,14 @@ mesma coisa, senão o jogador não consegue prever a reação.
 ### Como o bot pensa
 
 Três camadas, que é como IA de FPS se organiza desde os anos 2000:
+
+**Navegação** — `NavigationAgent3D` sobre malha assada em tempo de
+execução (`NavBaker`). O desvio raso que existia antes funcionava em
+campo aberto e travava na primeira parede longa: rotacionar o vetor
+noventa graus não contorna vinte e quatro metros de concreto.
+
+Perto do alvo o bot volta ao vetor direto — navegação ponto a ponto
+estraga strafe e recuo, que são movimentos curtos e intencionais.
 
 **Percepção** — visão e audição são sentidos independentes que
 alimentam uma única crença: onde o alvo *provavelmente* está. Visão

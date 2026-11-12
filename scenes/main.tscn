@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/dummy.tscn" id="2_dummy"]
@@ -10,6 +10,7 @@
 [ext_resource type="Resource" path="res://resources/loadouts/assalto.tres" id="8_l2"]
 [ext_resource type="Resource" path="res://resources/loadouts/precisao.tres" id="9_l3"]
 [ext_resource type="Resource" path="res://resources/loadouts/elite.tres" id="10_l4"]
+[ext_resource type="Script" path="res://scripts/core/NavBaker.cs" id="11_nav"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
 
@@ -87,6 +88,9 @@ shape = SubResource("BoxShape3D_wall")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallRight"]
 mesh = SubResource("BoxMesh_wall")
+
+[node name="NavBaker" type="Node3D" parent="."]
+script = ExtResource("11_nav")
 
 [node name="Player" parent="." instance=ExtResource("1_player") groups=["player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)

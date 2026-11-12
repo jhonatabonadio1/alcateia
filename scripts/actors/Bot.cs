@@ -59,6 +59,20 @@ public partial class Bot : CharacterBody3D
     /// o bot vai à direção certa, não ao ponto exato.</summary>
     [Export] public float HearingError = 2.5f;
 
+    /// <summary>
+    /// Tendência a ir atrás do que ouviu, de 0 a 1.
+    ///
+    /// Sorteada por bot no início, dentro de uma faixa. Dois bots
+    /// idênticos reagindo igual ao mesmo tiro entregam que são
+    /// scripts; um indo e outro ficando parece decisão. É o mesmo
+    /// motivo do erro de mira ter variação: regularidade é o que
+    /// denuncia a máquina.
+    /// </summary>
+    [Export] public float Curiosity = 0.6f;
+
+    /// <summary>Variação sorteada em volta da curiosidade base.</summary>
+    [Export] public float CuriositySpread = 0.35f;
+
     // --- Movimento ---
 
     [Export] public float Speed = 4.2f;
@@ -179,6 +193,7 @@ public partial class Bot : CharacterBody3D
     private float _scanAngle;
 
     private Action<Noise> _ear;
+    private NavigationAgent3D _nav;
     private double _threatAge = 99;
     private double _beliefAge = 99;
     private double _brainTimer;
@@ -202,12 +217,28 @@ public partial class Bot : CharacterBody3D
         AddToGroup("bot");
         Difficulty.Apply(this);
 
+        // Personalidade: cada bot nasce mais ou menos curioso.
+        Curiosity = Mathf.Clamp(
+            Curiosity + (float)GD.RandRange(-CuriositySpread, CuriositySpread), 0f, 1f);
+
         _health.Died += OnDied;
         _health.Respawned += OnRespawned;
         _health.Damaged += OnDamaged;
 
         _ear = OnNoise;
         NoiseBus.Subscribe(_ear);
+
+        // Navegação de verdade. O desvio raso funcionava em campo
+        // aberto e travava na primeira parede longa — rotacionar o
+        // vetor 90 graus não contorna 24 metros de concreto.
+        _nav = new NavigationAgent3D
+        {
+            PathDesiredDistance = 1.2f,
+            TargetDesiredDistance = 1.2f,
+            AvoidanceEnabled = false,
+            PathMaxDistance = 6f
+        };
+        AddChild(_nav);
     }
 
     public override void _ExitTree() => NoiseBus.Unsubscribe(_ear);
@@ -419,6 +450,32 @@ public partial class Bot : CharacterBody3D
         // Já vendo o alvo, som não acrescenta nada.
         if (State == BotState.Combat) return;
 
+        // Nem todo som vira ida. Tiro e explosão chamam mais atenção
+        // que um passo, e cada bot tem a própria tendência a investigar.
+        float interest = noise.Kind switch
+        {
+            NoiseKind.Shot => 1f,
+            NoiseKind.Explosion => 1f,
+            NoiseKind.Howl => 0.9f,
+            NoiseKind.Land => 0.6f,
+            _ => 0.45f
+        };
+
+        // Som perto importa mais que som no limite da audição.
+        float closeness = 1f - Mathf.Clamp(distance / (noise.Radius * Hearing), 0f, 1f);
+        float chance = Curiosity * interest * (0.45f + closeness * 0.55f);
+
+        if (GD.Randf() > chance)
+        {
+            // Ouviu e decidiu ficar. Mesmo assim fica alerta: vira na
+            // direção do som sem abandonar a posição.
+            _alerted = true;
+            _threatAge = 0;
+
+            if (Debug) GD.Print($"{Name} ouviu {noise.Kind} e ficou");
+            return;
+        }
+
         var error = new Vector3(
             (float)GD.RandRange(-HearingError, HearingError),
             0,
@@ -426,7 +483,7 @@ public partial class Bot : CharacterBody3D
 
         Believe(noise.Position + error, Memory);
 
-        if (Debug) GD.Print($"{Name} ouviu {noise.Kind} a {distance:0}m");
+        if (Debug) GD.Print($"{Name} ouviu {noise.Kind} a {distance:0}m e foi olhar");
     }
 
     /// <summary>Registra onde o bot acha que o alvo está.</summary>
@@ -546,8 +603,10 @@ public partial class Bot : CharacterBody3D
 
         if (distance > ArriveRadius)
         {
+            Vector3 step = PathTo(_lastKnown);
+
             FaceDirection(_lastKnown, delta);
-            MoveTowards((_lastKnown - GlobalPosition).Normalized(), Speed * 0.85f, delta);
+            MoveTowards(step, Speed * 0.85f, delta);
             return;
         }
 
@@ -622,8 +681,16 @@ public partial class Bot : CharacterBody3D
 
         _lastPosition = GlobalPosition;
 
-        FaceDirection(_patrolTarget, delta);
-        MoveTowards(Avoid(flat.Normalized()), Speed * PatrolSpeedFactor, delta);
+        Vector3 step = PathTo(_patrolTarget);
+
+        if (step == Vector3.Zero)
+        {
+            _hasPatrolTarget = false;
+            return;
+        }
+
+        FaceDirection(GlobalPosition + step * 4f, delta);
+        MoveTowards(step, Speed * PatrolSpeedFactor, delta);
     }
 
     private void PickPatrolTarget()
@@ -670,6 +737,21 @@ public partial class Bot : CharacterBody3D
         }
 
         float speed = Speed * (_form.IsWolf ? _form.Breed.SpeedMultiplier : 1f);
+
+        // Longe do alvo, segue o caminho: ir em linha reta esbarra em
+        // parede. Perto, manda a intenção direta, porque navegação
+        // ponto a ponto estraga strafe e recuo.
+        if (distance > PreferredRange * 1.5f)
+        {
+            Vector3 step = PathTo(_target.GlobalPosition);
+
+            if (step != Vector3.Zero)
+            {
+                MoveTowards(step, speed, delta);
+                return;
+            }
+        }
+
         MoveTowards(Avoid(desired), speed, delta);
     }
 
@@ -689,6 +771,33 @@ public partial class Bot : CharacterBody3D
     {
         Velocity = new Vector3(0, Velocity.Y - _gravity * (float)delta, 0);
         MoveAndSlide();
+    }
+
+    /// <summary>
+    /// Direção para chegar a um ponto, seguindo o mapa de navegação.
+    ///
+    /// Devolve Zero quando já chegou. Se a navegação não tiver mapa
+    /// assado, cai no vetor direto — melhor andar torto que ficar
+    /// parado esperando uma malha que pode não existir.
+    /// </summary>
+    private Vector3 PathTo(Vector3 destination)
+    {
+        _nav.TargetPosition = destination;
+
+        if (_nav.IsNavigationFinished())
+            return Vector3.Zero;
+
+        Vector3 next = _nav.GetNextPathPosition();
+        Vector3 delta = next - GlobalPosition;
+        var flat = new Vector3(delta.X, 0, delta.Z);
+
+        if (flat.LengthSquared() < 0.0001f)
+        {
+            Vector3 direct = destination - GlobalPosition;
+            flat = new Vector3(direct.X, 0, direct.Z);
+        }
+
+        return flat.Normalized();
     }
 
     /// <summary>Desvio raso: se o caminho está fechado, tenta os lados.

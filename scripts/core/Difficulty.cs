@@ -57,6 +57,7 @@ public static class Difficulty
                 bot.Memory = 1.5f;
                 bot.Hearing = 0.6f;
                 bot.HearingError = 5f;
+                bot.Curiosity = 0.35f;
 
                 bot.ReactionTime = 0.8f;
                 bot.ReactionJitter = 0.35f;
@@ -85,6 +86,7 @@ public static class Difficulty
                 bot.Memory = 3f;
                 bot.Hearing = 1f;
                 bot.HearingError = 2.5f;
+                bot.Curiosity = 0.6f;
 
                 bot.ReactionTime = 0.4f;
                 bot.ReactionJitter = 0.2f;
@@ -116,6 +118,7 @@ public static class Difficulty
                 bot.Memory = 5f;
                 bot.Hearing = 1.35f;
                 bot.HearingError = 1.2f;
+                bot.Curiosity = 0.85f;
 
                 bot.ReactionTime = 0.2f;
                 bot.ReactionJitter = 0.1f;

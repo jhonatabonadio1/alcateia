@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.17.1 — 2026-11-11
+
+### Corrigido
+- **Bots ficavam presos atrás das paredes longas.** O desvio por
+  raycast não contorna geometria extensa. Agora há navegação assada em
+  tempo de execução (`NavBaker`) e os bots seguem caminho com
+  `NavigationAgent3D`.
+
+### Adicionado
+- **Reação variada a ruído**: cada bot nasce com uma curiosidade
+  sorteada, e o tipo de som pesa — tiro chama mais que passo. Quem
+  decide ficar ainda assim vira na direção do som.
+
 ## v0.17.0 — 2026-11-11
 
 ### Adicionado
