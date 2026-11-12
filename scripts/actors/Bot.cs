@@ -91,6 +91,16 @@ public partial class Bot : CharacterBody3D
     /// alcança, e isso não é dificuldade, é trapaça.</summary>
     [Export] public float JumpVelocity = 4.4f;
 
+    /// <summary>Chance por segundo de o lobo do bot usar um golpe especial
+    /// quando dá (o salto carregado de 4 a 11 m, o pulo com bote de perto).
+    /// Sobe com a dificuldade: no fácil o lobo quase só corre e arranha.</summary>
+    [Export] public float WolfSpecialRate = 0.35f;
+
+    /// <summary>Erro da carga do salto do bot, em fração da carga: quanto
+    /// ele erra o alcance. Nunca zero — um salto que sempre cai na cabeça
+    /// é injusto, não difícil.</summary>
+    [Export] public float PounceError = 0.12f;
+
     /// <summary>
     /// Ruído dos passos, pouso e uivo do bot — os mesmos raios do
     /// Player. Antes o bot andava em silêncio: os bots ouviam você, mas
@@ -139,7 +149,7 @@ public partial class Bot : CharacterBody3D
 
     // --- Movimento ---
 
-    [Export] public float Speed = 4.2f;
+    [Export] public float Speed = 3.0f;
     [Export] public float TurnSpeed = 8f;
 
     /// <summary>Distância que tenta manter do alvo na forma humana.</summary>
@@ -370,6 +380,30 @@ public partial class Bot : CharacterBody3D
         if (!Match.IsLive)
         {
             Fall(delta);
+            return;
+        }
+
+        // Os golpes especiais do lobo movem o corpo, como no jogador.
+        if (_weapon.IsDiving)
+        {
+            BotDive();
+            return;
+        }
+
+        if (_weapon.IsPounceFlying)
+        {
+            Vector3 next = _weapon.PounceFlightPoint(delta);
+            Velocity = ((next - GlobalPosition) / (float)delta).LimitLength(28f);
+            MoveAndSlide();
+            return;
+        }
+
+        if (_weapon.IsRooted)
+        {
+            Vector3 frozen = Velocity;
+            Vector3 flat = _weapon.IsStepping ? _weapon.StepVelocity : new Vector3(frozen.X, 0, frozen.Z).MoveToward(Vector3.Zero, 30f * (float)delta);
+            Velocity = new Vector3(flat.X, IsOnFloor() ? 0 : frozen.Y - _gravity * (float)delta, flat.Z);
+            MoveAndSlide();
             return;
         }
 
@@ -971,6 +1005,15 @@ public partial class Bot : CharacterBody3D
 
         FaceDirection(_target.GlobalPosition, delta);
         Maneuver(distance, toTarget, delta);
+
+        // O especial vem antes da garra: arranhar no meio do pulo ou já
+        // em alcance deixava o golpe em recarga e o bote não saía.
+        if (_form.IsWolf)
+        {
+            WolfTactics(distance, delta);
+            if (_wantDive || _weapon.IsChargingPounce || _weapon.IsPounceFlying || _weapon.IsDiving) return;
+        }
+
         Engage(distance);
     }
 
@@ -1308,6 +1351,74 @@ public partial class Bot : CharacterBody3D
         }
 
         MoveAndSlide();
+    }
+
+    /// <summary>O bote do bot: segue a velocidade do mergulho até encostar.</summary>
+    private void BotDive()
+    {
+        Velocity = _weapon.DiveVelocity;
+        MoveAndSlide();
+        if (IsOnFloor() || IsOnWall() || IsOnCeiling())
+        {
+            _weapon.DiveContact();
+            Velocity = Vector3.Zero;
+        }
+    }
+
+    private double _specialRoll;
+    private bool _wantDive;
+
+    /// <summary>
+    /// O lobo do bot com as jogadas do jogador, na medida da dificuldade:
+    ///
+    /// - **Salto carregado** de 4 a 11 m, com o alvo à vista: carrega o
+    ///   que precisa para cair numa garra dele, errando
+    ///   <see cref="PounceError"/>.
+    /// - **Pulo com bote** de 3 a 6 m: pula em direção ao alvo e mergulha
+    ///   no alto do pulo.
+    ///
+    /// Sorteado uma vez por segundo com <see cref="WolfSpecialRate"/>: o
+    /// lobo não vive de especial, ele chega correndo e arranha — o especial
+    /// é a surpresa.
+    /// </summary>
+    private void WolfTactics(float distance, double delta)
+    {
+        if (_wantDive)
+        {
+            if (IsOnFloor()) { _wantDive = false; return; }
+            if (Velocity.Y < 1.5f)
+            {
+                _wantDive = false;
+                _weapon.TrySpecial();
+                if (Debug) GD.Print($"{Name}: bote {(_weapon.IsDiving ? "saiu" : "não saiu")}");
+            }
+            return;
+        }
+
+        _specialRoll -= delta;
+        if (_specialRoll > 0) return;
+        _specialRoll = 0.5;
+
+        if (!IsOnFloor() || _target == null || !CanSeeTarget()) return;
+        if (GD.Randf() > WolfSpecialRate * 0.5f) return;
+
+        if (distance >= 4f && distance <= 11f)
+        {
+            float power = _weapon.PounceChargeFor(distance) + (float)GD.RandRange(-PounceError, PounceError);
+            bool went = _weapon.BotPounce(_target, power);
+            if (Debug) GD.Print($"{Name}: salto a {distance:0.0} m, carga {power:0.00}{(went ? "" : " (não deu)")}");
+        }
+        else if (distance >= 3f && distance < 6f)
+        {
+            Vector3 to = _target.GlobalPosition - GlobalPosition;
+            to.Y = 0;
+            Vector3 hop = to.Normalized() * 3.2f;
+            // Sai do chão já neste quadro: no próximo, o andar zeraria a
+            // subida de quem ainda está no chão.
+            Velocity = new Vector3(hop.X, JumpVelocity * (_form.Breed?.JumpMultiplier ?? 1f), hop.Z);
+            MoveAndSlide();
+            _wantDive = true;
+        }
     }
 
     private void Fall(double delta)
