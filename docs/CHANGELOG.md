@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.17.0 — 2026-11-11
+
+### Adicionado
+- **`MapLoader`**: carrega mapa de `.glb`, gera colisão de malha,
+  coleta spawns e assa navegação em tempo de execução. Convenções por
+  nome de nó: `-noco`, `-invis`, `spawn*`.
+- `assets/maps/LEIA-ME.md` com as convenções e as exigências de
+  geometria para a corrida em parede.
+
 ## v0.16.0 — 2026-11-11
 
 ### Alterado

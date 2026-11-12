@@ -733,6 +733,26 @@ modo assimétrico, segunda classe, mapa com verticalidade real.
 
 ---
 
+## Mapas vindos de .glb
+
+`scripts/core/MapLoader.cs` carrega um `.glb`, gera colisão de malha,
+coleta spawns e assa a navegação — tudo em tempo de execução.
+
+Colisão normalmente se configura na janela de importação, que é GUI.
+Fazer em tempo de execução custa um pouco de carregamento e devolve
+uma vantagem: trocar o `.glb` não exige reconfigurar nada.
+
+Convenções lidas do nome do objeto no arquivo: `-noco` não colide,
+`-invis` colide sem aparecer, `spawn*` vira ponto de nascimento.
+Nomear no Blender é a forma mais barata de passar intenção do modelo
+para o jogo sem inventar um formato paralelo.
+
+**Exigência da corrida em parede:** paredes de cerca de 1m de
+espessura com faces verticais limpas. Quinas finas não funcionam,
+porque os raios precisam de superfície para encontrar.
+
+---
+
 ## O teste de mapa
 
 Antes de colocar arte em qualquer mapa, ande por ele em cinza e
