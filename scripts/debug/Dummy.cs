@@ -48,14 +48,14 @@ public partial class Dummy : StaticBody3D
     {
         if (_health.IsDead)
         {
-            SetVisible(false);
+            ShowBody(false);
             return;
         }
 
         // Voltou do respawn.
         if (!_mesh.Visible)
         {
-            SetVisible(true);
+            ShowBody(true);
             return;
         }
 
@@ -68,10 +68,13 @@ public partial class Dummy : StaticBody3D
     private void OnDied(int killerId)
     {
         GD.Print($"{Name} morreu");
-        SetVisible(false);
+        ShowBody(false);
     }
 
-    private void SetVisible(bool visible)
+    /// <summary>Nome próprio em vez de SetVisible: Node3D já tem um
+    /// método com esse nome, e sobrepor por acidente é a origem de bug
+    /// difícil de achar.</summary>
+    private void ShowBody(bool visible)
     {
         _mesh.Visible = visible;
         _shape.Disabled = !visible;

@@ -358,7 +358,7 @@ public partial class Player : CharacterBody3D
                 _stunSlow = 1f;
         }
 
-        HandleActions();
+        HandleActions(delta);
 
         if (IsOnFloor())
         {
@@ -503,7 +503,7 @@ public partial class Player : CharacterBody3D
         * (_walking ? WalkSpeedFactor : 1f);
     private float JumpScale => _form.IsWolf ? _form.Breed.JumpMultiplier : 1f;
 
-    private void HandleActions()
+    private void HandleActions(double delta)
     {
         if (Input.IsActionJustPressed("slot_1")) _weapon.SelectSlot(Slot.Primary);
         if (Input.IsActionJustPressed("slot_2")) _weapon.SelectSlot(Slot.Secondary);
