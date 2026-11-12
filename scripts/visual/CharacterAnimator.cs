@@ -121,8 +121,10 @@ public partial class CharacterAnimator : Node3D
         _model.RotationDegrees = new Vector3(
             _model.RotationDegrees.X, ModelYaw, _model.RotationDegrees.Z);
 
-        if (loaded > 0 && HideOnSuccess != null && !HideOnSuccess.IsEmpty())
+        if (loaded > 0)
         {
+            // Caminho vazio devolve null aqui, então não precisa de
+            // teste próprio: sem alvo configurado, nada acontece.
             var hide = GetNodeOrNull<Node3D>(HideOnSuccess);
             if (hide != null) hide.Visible = false;
         }
@@ -210,7 +212,7 @@ public partial class CharacterAnimator : Node3D
         if (source == null) return null;
 
         Animation best = null;
-        float longest = 0f;
+        double longest = 0;
 
         foreach (StringName name in source.GetAnimationList())
         {
@@ -292,9 +294,16 @@ public partial class CharacterAnimator : Node3D
         var locomotion = new AnimationNodeBlendSpace2D
         {
             MinSpace = new Vector2(-2.2f, -2.2f),
-            MaxSpace = new Vector2(2.2f, 2.2f),
-            Sync = true
+            MaxSpace = new Vector2(2.2f, 2.2f)
         };
+
+        // Pelo nome do motor, e não pela propriedade do binding, que
+        // foi renomeada e volta a quebrar na próxima renomeação.
+        //
+        // Sincronizar mantém caminhada e corrida em fase enquanto se
+        // misturam. Sem isso os dois clipes correm cada um no seu
+        // tempo e o pé do boneco pisa duas vezes no mesmo passo.
+        locomotion.Set("sync", true);
 
         Point(locomotion, "idle_rifle", 0, 0);
         Point(locomotion, "walk_fwd", 0, 1);
