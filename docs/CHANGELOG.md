@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.26.4 — 2026-11-12
+
+### Mudado
+- **Salto do lobo em arco, passando por cima de obstáculos:** o salto
+  mede o chão no caminho e sobe o bastante para passar por cima do que
+  tiver até 2,6 m (caixote, contêiner). Mirando além de um contêiner
+  perto, cai em cima dele; diante de algo mais alto (bloco, muro), cai
+  antes, nunca dentro.
+- **W + botão direito avança:** segurando W, o salto anda pelo menos
+  6 m, mesmo mirando o chão perto.
+- **O salto acompanha o alvo:** o ponto de queda segue quem você mirou
+  a 3 m/s durante o voo. Quem só caminha não escapa mais, e quem corre
+  de lado desde o começo ainda escapa.
+- **Rugido segurando R, em 2,0 s** (eram 2,88): soltar antes cancela
+  sem devolver o escudo.
+
+### Corrigido
+- **O lobo subia depois de grudar na parede.** Agora ele só gruda no
+  alto do pulo e fica na altura em que grudou.
+- **Trancos ao contornar quina e coluna fina.** A parede agora é o
+  ponto mais próximo dela, não o que um leque de raios acerta: a
+  normal gira contínua em volta da quina, e o lobo dá a volta inteira
+  numa coluna de 30 cm sem soltar, na mesma altura.
+
 ## v0.26.3 — 2026-11-12
 
 ### Mudado

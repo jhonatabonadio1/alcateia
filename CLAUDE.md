@@ -278,7 +278,7 @@ export `RefillOnTransform`, desligado por padrão.
 | Clique esq. | Atacar |
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
-| R | Rugir (lobo): vai até o fim e devolve o escudo · recarregar (humano) |
+| R | Rugir (lobo): segure até o fim para o escudo voltar · recarregar (humano) |
 | B | Soltar a arma da mão: cai à frente, e você passa para a próxima |
 | Esc | Menu da partida (continuar, opções, controles, reiniciar, sair para a sala, sair do jogo) — **não pausa** |
 | Tab (segurar) | Placar da partida |
@@ -303,8 +303,8 @@ sobrescritas.
 
 ## Corrida em parede
 
-Só na forma lobo e no ar. **Pula-se contra a parede e segura o pulo**
-— é a tecla de pulo que sustenta a corrida, não o W.
+Só na forma lobo e no ar. **Pula-se contra a parede segurando W** —
+é o W que sustenta a corrida.
 
 **Segurar o botão de ataque agarra sem avançar.** É a pausa que
 permite escolher a hora de saltar em vez de correr até a parede
@@ -317,15 +317,24 @@ acabar.
   32 m/s²)
 - Sem limite de tempo: corre enquanto a parede existir
 - Solta ao largar o W, ao bater em obstáculo, ou se atordoado
-- **Altura travada**: não sobe nem desce enquanto corre
+- **Gruda no alto do pulo e fica na altura em que grudou.** Subindo
+  rápido (`WallGrabMaxRise`, 0,6 m/s) ele ainda não gruda: espera o
+  topo. Antes, grudava na subida e a velocidade do pulo se perdia aos
+  poucos — o lobo subia um pedaço depois de colar. Grudado, a altura
+  não muda enquanto corre
 - **Direção travada**: escolhida uma vez, ao grudar, pelo **momento**
   que o lobo já carrega — não pela câmera. Saltar de uma parede e
   encostar na seguinte mantém o sentido sem tocar no mouse. O olhar só
-  decide quando não há momento horizontal. Acompanha a curva da
-  parede, mas nunca se inverte: para ir ao outro lado é preciso cair
-  e recomeçar
-- A busca por parede é um leque de 8 raios em volta, não dois raios
-  laterais: o ângulo do corpo não decide se existe parede ali
+  decide quando não há momento horizontal. A cada quadro o sentido é
+  **projetado na face atual**, então acompanha a parede, faz a curva e
+  dobra a quina, mas nunca se inverte: para ir ao outro lado é preciso
+  cair e recomeçar
+- **A parede é o ponto mais próximo dela**, não o que um raio acerta:
+  um cilindro em volta do lobo pega a geometria e `GetRestInfo` dá o
+  ponto de contato. A normal é a direção do ponto até o lobo, que
+  **gira contínua em volta da quina** em vez de saltar de uma face para
+  a outra. O leque de 8 raios que havia antes alternava entre as duas
+  faces na diagonal da quina, e numa coluna fina o lobo dava trancos
 - O olhar fica livre durante a corrida: mirar não desvia o movimento
 - A/D não controlam durante a corrida
 - **O salto da parede sai mais alto do que entrou**
@@ -342,17 +351,14 @@ acabar.
   paredes de um corredor, e ela é desejada. O que separa os dois casos
   é a semelhança entre as normais (`SameWallThreshold`), não o tempo
   nem o contato com o chão
-- **Contorna quinas**: ao acabar uma face, troca para a face seguinte
-  sem soltar, com uma janela curta de tolerância. Dá para dar a volta
-  num bloco inteiro colado
-- Sucção constante contra a parede mantém o lobo colado, exceto
-  durante a transição de quina, onde ela o prenderia no canto
-- Ao trocar para uma parede em ângulo, quem decide o sentido é o
-  **movimento** que o lobo carrega, não o sentido antigo: em paredes
-  perpendiculares a comparação com o sentido antigo dá zero e o
-  desempate mandava o lobo de volta pelo outro lado
-- Quinas muito finas não funcionam: os raios precisam de superfície
-  para encontrar. Paredes de cerca de 1m de espessura são adequadas
+- **Contorna quinas e colunas**: dá para dar a volta num bloco inteiro
+  ou numa coluna de 30 cm sem soltar, na mesma altura e na mesma
+  velocidade. Perdeu a parede de vez, tem `CornerGrace` (0,15 s) antes
+  de soltar
+- **Fica a uma distância fixa da parede** (`WallHoldDistance`,
+  0,34 m): a força que segura é proporcional ao quanto ele se afastou
+  dela, até `WallStickForce`. A sucção fixa de antes batia na quina e
+  empurrava o lobo para dentro dela
 
 Esta é **a mecânica mais importante do jogo**. A memória central de
 quem jogava de lobo é correr pela parede, ver o inimigo embaixo e
@@ -562,9 +568,9 @@ corrija a linha dele.
 |---|---|---|---|
 | Garrada, braço 1 | swiping, 1,00–1,85 s, 2,2× | 0,14 s | 0,39 s |
 | Garrada, braço 2 | punch, 0–0,85 s, 2,2× | 0,14 s | 0,39 s |
-| Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso; avança até 12 m |
+| Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso; voa até 12 m em arco |
 | Bote (direito no ar) | jump attack: a queda, depois a aterrissagem | quando encosta | aterrissagem de 0,78 s, presa; recarga de 2 s |
-| Rugido (R) | roaring, 0,30–4,90 s, 1,6× | escudo no fim | 2,88 s |
+| Rugido (R, segurado) | roaring, 0,30–4,90 s, 2,3× | escudo no fim | 2,0 s; soltar cancela |
 
 Durante um golpe o lobo não volta a humano: a tecla espera o golpe
 acabar.
@@ -610,8 +616,25 @@ dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
 **Botão direito no chão: o salto.** O "jump attack" inteiro — agacha,
 salta, cai. É a arma do lobo para **fechar distância**: aperta-se de
 longe e o lobo cai em cima do humano. O jogador não anda nem pula, mas
-o salto avança: do impulso até os pés tocarem o chão, o corpo anda até
-as garras caírem no alvo, **até 12 m** (`PounceMaxDistance`).
+o salto voa: do impulso até os pés tocarem o chão, o corpo vai até as
+garras caírem no alvo, **até 12 m** (`PounceMaxDistance`).
+
+**O voo é um arco de verdade, calculado no impulso.** Para a frente, em
+sino (sai devagar, voa, assenta), como o quadril do clipe; para cima,
+em parábola, subindo rápido no impulso. Antes de sair, o salto mede o
+chão no caminho a cada 40 cm, com raios de cima para baixo:
+
+- **O que tem até 2,6 m acima dos pés passa por cima**
+  (`PounceMaxClear`): o arco sobe o bastante para os pés passarem
+  15 cm acima. Caixote, mureta, contêiner.
+- **Algo no fim do caminho que dá para alcançar vira o lugar de cair**:
+  mirando além de um contêiner perto, o lobo cai **em cima dele**.
+- **O que é mais alto encurta o salto**: diante de um bloco ou do muro,
+  o lobo cai antes dele, nunca dentro dele. O ponto de queda também
+  recua se cair dentro da quina de algo alto.
+- O arco mínimo é `PounceArc` (0,6 m) e cresce com a distância, até
+  1,6 m no chão plano.
+- Gente não conta como chão: cair em cima de alguém é o objetivo.
 
 - **Com um inimigo perto do centro da tela** (até 10°,
   `PounceAimAssist`, à vista e ao alcance), o alvo é ele, escolhido no
@@ -620,6 +643,13 @@ as garras caírem no alvo, **até 12 m** (`PounceMaxDistance`).
   seria loteria.
 - **Sem ninguém**, o ponto para onde a câmera aponta: chão perto, quase
   não sai do lugar; céu, os 12 m.
+- **Segurando W, avança pelo menos 6 m** (`PounceAdvanceMin`), mesmo
+  mirando o chão perto: quem aperta para frente quer avançar.
+- **Durante o voo, o ponto de queda acompanha o alvo** a 3 m/s
+  (`PounceHoming`). O alvo anda até 3 m no 1,1 s do salto, e o golpe
+  errava quem só caminhava; mais devagar que o humano correndo
+  (4,2 m/s), então quem corre de lado desde o começo ainda escapa. O
+  golpe sai na direção do voo, não na do olhar.
 - O ponto sai da câmera do próprio jogador (`Player.AimCamera`), não da
   câmera que estiver na tela. O
 dano (2,1×) sai **quando o lobo cai**, 1,14 s depois do clique. Preso
@@ -656,11 +686,13 @@ de um humano a trinta metros é o contorno.
 ### O escudo do lobo
 
 O escudo **escorre sozinho** enquanto o lobo está transformado. Não é
-vida extra: é um relógio. **R ruge**: um toque começa, a animação vai
-até o fim (soltar não cancela) e só então o escudo volta cheio. O
-preço é ficar parado esse tempo todo, sem atacar, e entregar a posição
-pelo som. Morrer ou deixar de ser lobo no meio corta o rugido sem
-pagar. O bot segue a mesma regra.
+vida extra: é um relógio. **Segurar R ruge**: 2,0 s do começo ao fim,
+e só então o escudo volta cheio. **Soltar antes cancela** sem pagar —
+o rugido é um compromisso, não um botão de disparo. O preço é ficar
+parado esse tempo todo, sem atacar, e entregar a posição pelo som.
+Morrer ou deixar de ser lobo no meio também corta o rugido sem pagar.
+O bot segue a mesma regra (ele não "solta": ruge até o fim ou até ser
+interrompido).
 
 Essa é a tensão central da forma lobo: quanto mais tempo transformado,
 mais exposto, e a única forma de sustentar é parar — justamente o que
