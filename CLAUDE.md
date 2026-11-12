@@ -86,15 +86,19 @@ granadas mais fortes.
    | | Humano | Bruto | Ligeiro |
    |---|---|---|---|
    | Velocidade | 4,2 | 5,7 (1,35×) | 6,1 (1,45×) |
-   | Pulo | 0,99 m | 1,31 m (1,15×) | 2,22 m (1,5×) |
+   | Pulo | 0,99 m | 1,54 m (1,25×) | 2,38 m (1,55×) |
+   | Avanço do pulo correndo | 3,8 m | 3,7 m | ~4,7 m |
    | Agachado | 1,9 | 2,6 | 2,7 |
    | Na parede | — | 5,7 | 6,1 |
 
    O lobo estava rápido demais (o Bruto a 6,5 m/s, 8,1 na parede): ser
-   lobo ficava vantajoso demais. Para encurtar o pulo do lobo, baixe a
-   **velocidade**, não o pulo: a distância é velocidade × tempo no ar,
-   e a altura está amarrada ao mapa (veja "Alturas amarradas à
-   física").
+   lobo ficava vantajoso demais. **O pulo do lobo é para cima, não para
+   a frente**: o pulo do chão leva só 55% do passo (`WolfJumpCarry`), e
+   o ar não acelera além disso até tocar o chão ou grudar numa parede.
+   Com o passo inteiro o Bruto planava 6 m parado na pose de correr, e
+   ficava estranho (decisão do Jhon). O salto da parede não entra:
+   conserva o avanço da corrida. A altura está amarrada ao mapa (veja
+   "Alturas amarradas à física").
 
 10. **O alcance do pulo é controlado pela tecla.** Segurar para frente
     mantém o avanço até o fim; soltar encurta, via um arrasto suave no
@@ -316,7 +320,8 @@ acabar.
   primeiro quadro, e **agarrar freia em meio metro** (`WallBrake`,
   32 m/s²)
 - Sem limite de tempo: corre enquanto a parede existir
-- Solta ao largar o W, ao bater em obstáculo, ou se atordoado
+- Solta ao largar o W, na ponta da parede, num obstáculo sem saída,
+  ou se atordoado
 - **Gruda no alto do pulo e fica na altura em que grudou.** Subindo
   rápido (`WallGrabMaxRise`, 0,6 m/s) ele ainda não gruda: espera o
   topo. Antes, grudava na subida e a velocidade do pulo se perdia aos
@@ -325,16 +330,26 @@ acabar.
 - **Direção travada**: escolhida uma vez, ao grudar, pelo **momento**
   que o lobo já carrega — não pela câmera. Saltar de uma parede e
   encostar na seguinte mantém o sentido sem tocar no mouse. O olhar só
-  decide quando não há momento horizontal. A cada quadro o sentido é
-  **projetado na face atual**, então acompanha a parede, faz a curva e
-  dobra a quina, mas nunca se inverte: para ir ao outro lado é preciso
-  cair e recomeçar
+  decide quando não há momento horizontal. Nunca se inverte: para ir
+  ao outro lado é preciso cair e recomeçar. Com embalo, se o sentido
+  do embalo está bloqueado, não gruda — virar ao contrário fazia o lobo
+  voltar pela parede
+- **Na quina, segue reto** (decisão do Jhon). A parede acabou, a
+  corrida acaba: o lobo solta 10 cm depois da ponta (`WallEndMargin`)
+  e continua no ar, no mesmo passo, caindo. Não contorna — contornar
+  trazia o lobo de volta pela outra face, e numa parede fina ele
+  voltava pelo outro lado. Indo para longe da parede
+  (`WallLeaveSpeed`, 0,5 m/s) ele não gruda, então a ponta não o puxa
+  de volta
+- **No canto, vira e continua.** Uma parede à frente vira a parede da
+  corrida: o lobo segue por ela, para longe da antiga, no mesmo passo.
+  Antes ele soltava e regrudava na parede de trás, voltando
 - **A parede é o ponto mais próximo dela**, não o que um raio acerta:
   um cilindro em volta do lobo pega a geometria e `GetRestInfo` dá o
-  ponto de contato. A normal é a direção do ponto até o lobo, que
-  **gira contínua em volta da quina** em vez de saltar de uma face para
-  a outra. O leque de 8 raios que havia antes alternava entre as duas
-  faces na diagonal da quina, e numa coluna fina o lobo dava trancos
+  ponto de contato, e a normal é a direção do ponto até o lobo. Ponto
+  mais perto **atrás** do lobo quer dizer que a parede acabou; no canto,
+  a parede de trás é a antiga, e uma segunda busca sem ela acha a nova
+  ao lado
 - O olhar fica livre durante a corrida: mirar não desvia o movimento
 - A/D não controlam durante a corrida
 - **O salto da parede sai mais alto do que entrou**
@@ -351,10 +366,8 @@ acabar.
   paredes de um corredor, e ela é desejada. O que separa os dois casos
   é a semelhança entre as normais (`SameWallThreshold`), não o tempo
   nem o contato com o chão
-- **Contorna quinas e colunas**: dá para dar a volta num bloco inteiro
-  ou numa coluna de 30 cm sem soltar, na mesma altura e na mesma
-  velocidade. Perdeu a parede de vez, tem `CornerGrace` (0,15 s) antes
-  de soltar
+- Perdeu a parede de repente (um vão), tem `CornerGrace` (0,15 s)
+  antes de soltar
 - **Fica a uma distância fixa da parede** (`WallHoldDistance`,
   0,34 m): a força que segura é proporcional ao quanto ele se afastou
   dela, até `WallStickForce`. A sucção fixa de antes batia na quina e
@@ -569,7 +582,7 @@ corrija a linha dele.
 | Garrada, braço 1 | swiping, 1,00–1,85 s, 2,2× | 0,14 s | 0,39 s |
 | Garrada, braço 2 | punch, 0–0,85 s, 2,2× | 0,14 s | 0,39 s |
 | Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso; voa até 12 m em arco |
-| Bote (direito no ar) | jump attack: a queda, depois a aterrissagem | quando encosta | aterrissagem de 0,78 s, presa; recarga de 2 s |
+| Bote (direito no ar) | jump attack: a queda, depois a aterrissagem | quando encosta | aterrissagem de 0,78 s, presa; sem recarga |
 | Rugido (R, segurado) | roaring, 0,30–4,90 s, 2,3× | escudo no fim | 2,0 s; soltar cancela |
 
 Durante um golpe o lobo não volta a humano: a tecla espera o golpe
@@ -595,7 +608,7 @@ não responder. Clicando sem parar, dois golpes e meio por segundo.
   as pernas andam um passo junto com o braço. O empurrão instantâneo
   antigo jogava os pés na pose de correr de uma vez. Correndo, vale o
   empurrão de sempre (`ClawLunge`): as pernas já estão correndo.
-- Preso no lugar (salto, rugido, aterrissagem do bote), o lobo freia em
+- Preso no lugar (salto, aterrissagem do bote), o lobo freia em
   `FreezeBrake` (30 m/s²) em vez de parar seco: desliza meio metro
   enquanto agacha.
 
@@ -665,8 +678,16 @@ preciso. O golpe sai **no instante em que o lobo encosta** — no chão,
 numa parede de frente ou em alguém —, não num tempo marcado: um golpe
 só, 3×, com o bônus aéreo se a queda passou de 2,5 m. O volume é **um
 pouco maior que o do salto** (1,7 m à frente, raio 1,5, contra 1,5 e
-1,15). Encostou, aterrissa preso por 0,78 s. Recarga de 2 s contada do
-clique; mirou no vazio, bate no ar em 0,9 s.
+1,15). Encostou, aterrissa preso por 0,78 s; mirou no vazio, bate no ar
+em 0,9 s.
+
+**Todo pulo tem o seu bote** (decisão do Jhon). Não há recarga: acabou
+a aterrissagem, o próximo pulo já pode ter outro. E não dá para pular
+antes de ela acabar — o lobo está preso —, então o bote nunca corta o
+anterior. Com a recarga de 2 s, quem pulava logo depois de aterrissar
+apertava e nada saía. O bote sai **em qualquer ponto do pulo**, até na
+subida; **pulo e especial no mesmo quadro** viram bote (o pulo sai e o
+bote no quadro seguinte, já no ar), e não o salto do chão.
 
 O corpo acompanha: a queda do clipe é acelerada para o impacto dela
 cair no quadro em que o lobo encosta (o tempo até o chão é medido no
@@ -688,8 +709,11 @@ de um humano a trinta metros é o contorno.
 O escudo **escorre sozinho** enquanto o lobo está transformado. Não é
 vida extra: é um relógio. **Segurar R ruge**: 2,0 s do começo ao fim,
 e só então o escudo volta cheio. **Soltar antes cancela** sem pagar —
-o rugido é um compromisso, não um botão de disparo. O preço é ficar
-parado esse tempo todo, sem atacar, e entregar a posição pelo som.
+o rugido é um compromisso, não um botão de disparo. **O lobo ruge em
+movimento** (decisão do Jhon): anda, pula e cai rugindo, sem frear —
+parar no meio do pulo parecia travar. O rugido toca da cintura para
+cima, por cima do andar. O preço é não atacar esse tempo todo e
+entregar a posição pelo som.
 Morrer ou deixar de ser lobo no meio também corta o rugido sem pagar.
 O bot segue a mesma regra (ele não "solta": ruge até o fim ou até ser
 interrompido).
@@ -1517,11 +1541,12 @@ e com o esqueleto dentro de `Armature`: o tocador é criado ao lado do
 esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.
 
 Clipes do lobo: parado, andar e correr misturados pela velocidade;
-as garradas e a transformação **da cintura para cima**; o salto e o
-bote no corpo inteiro; o rugido no R; a morte; e, na parede, o
+as garradas e o rugido **da cintura para cima**; o salto e o bote no
+corpo inteiro; a morte; e, na parede, o
 **Running Crawl** com a barriga virada para a parede em que está — o
 modelo deita para o lado da parede (pela normal dela), a cápsula e a
-câmera continuam de pé.
+câmera continuam de pé. **Virar lobo não tem animação** (decisão do
+Jhon): o lobo aparece já na locomoção.
 
 O clique esquerdo **alterna** dois golpes, o "swiping" e o "punch", um
 braço de cada vez. O "jump attack" serve três clipes: inteiro no salto

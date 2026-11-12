@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.26.5 — 2026-11-12
+
+### Mudado
+- **Na quina, o lobo segue reto.** A corrida na parede acaba na ponta e
+  o lobo continua no ar, no mesmo passo. Antes ele contornava e, numa
+  parede fina, voltava pelo outro lado.
+- **No canto, vira e continua** pela parede da frente, no mesmo passo.
+- **Pulo do lobo mais curto e um pouco mais alto:** o pulo do chão leva
+  55% do passo (o Bruto avança 3,7 m; eram uns 6) e sobe 1,54 m no
+  Bruto (eram 1,31) e 2,38 m no Ligeiro (eram 2,22). O salto da parede
+  não muda.
+- **Bote em todo pulo:** sem a recarga de 2 s. Acabou a aterrissagem, o
+  próximo pulo já tem outro, e pular só depois que ela acaba.
+- **Pulo e especial juntos viram bote**, não o salto do chão. O bote sai
+  em qualquer ponto do pulo, até na subida.
+- **O lobo ruge em movimento:** anda, pula e cai rugindo, sem frear. O
+  rugido toca da cintura para cima.
+- **Virar lobo não tem mais animação.**
+
+### Corrigido
+- **O lobo voltava pela parede ao chegar num canto:** soltava e
+  regrudava na parede de trás, no sentido contrário.
+
 ## v0.26.4 — 2026-11-12
 
 ### Mudado
