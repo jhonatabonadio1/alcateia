@@ -167,6 +167,15 @@ public partial class Player : CharacterBody3D
     /// nela. Grudar subindo carregava o impulso para cima da parede.</summary>
     [Export] public float WallGrabMaxRise = 0.6f;
 
+    /// <summary>Quanto o lobo passa da ponta da parede, em metros, antes
+    /// de soltar e seguir reto. Na quina ele não contorna: a parede
+    /// acabou, a corrida acaba e o embalo continua no ar.</summary>
+    [Export] public float WallEndMargin = 0.1f;
+
+    /// <summary>Indo para longe da parede mais rápido que isto (m/s), não
+    /// gruda. É o que impede de regrudar na ponta que acabou de deixar.</summary>
+    [Export] public float WallLeaveSpeed = 0.5f;
+
     /// <summary>
     /// Multiplicador de altura do salto da parede. Acima de 1 cada
     /// salto sai mais alto do que entrou, permitindo escalar um
@@ -985,6 +994,15 @@ public partial class Player : CharacterBody3D
                 return false;
             }
 
+            // Indo embora da parede não gruda: passou da ponta dela, ou
+            // saltou para longe. Sem isto a ponta que o lobo acabou de
+            // deixar o puxava de volta.
+            if (new Vector3(Velocity.X, 0, Velocity.Z).Dot(normal) > WallLeaveSpeed)
+            {
+                WallLog("indo para longe da parede");
+                return false;
+            }
+
             // A mesma parede, sem ter tocado o chão, viraria elevador:
             // sobe, salta, regruda mais alto, repete. Uma parede
             // diferente é outra coisa — é a jogada de quicar entre as
@@ -1014,24 +1032,40 @@ public partial class Player : CharacterBody3D
         }
         else if (found)
         {
-            // O sentido segue a parede sem nunca virar para trás: é o
-            // sentido de antes, deitado no plano da parede de agora. Numa
-            // quina convexa a normal gira suave de uma face para a outra
-            // (o ponto mais perto é a aresta), e o sentido gira junto — o
-            // lobo contorna a coluna em vez de escolher a face de novo a
-            // cada quadro. Era essa escolha que fazia ele ir e voltar
-            // preso na quina de coluna fina.
+            // O ponto de parede mais perto ficou para trás: ou a parede
+            // acabou (quina) ou o lobo acabou de virar num canto e a parede
+            // de trás é a antiga. No canto há outra parede ao lado.
+            if (normal.Dot(_wallAlong) * wallDistance > WallEndMargin
+                && ProbeWall(out Vector3 beside, out float besideDistance, behind: true)
+                && beside.Dot(_wallAlong) * besideDistance <= WallEndMargin)
+            {
+                normal = beside;
+                wallDistance = besideDistance;
+            }
+
+            // Passou da ponta: segue reto, sem contornar. Contornar trazia
+            // o lobo de volta pela outra face — numa parede fina, ele
+            // voltava pelo outro lado em vez de continuar.
+            if (normal.Dot(_wallAlong) * wallDistance > WallEndMargin)
+            {
+                WallLog("a parede acabou: segue reto");
+                LeaveWallStraight();
+                return false;
+            }
+
             _wallNormal = normal;
             _cornerGrace = 0;
 
-            Vector3 along = _wallAlong - normal * _wallAlong.Dot(normal);
-            along.Y = 0;
-
-            // De frente para uma parede (quina côncava), não há para onde
-            // deitar o sentido: fica o de antes, e o bloqueio à frente
-            // solta o lobo logo abaixo.
-            if (along.LengthSquared() > 0.04f)
-                _wallAlong = along.Normalized();
+            // Parede que vira para dentro (côncava): o sentido deita no
+            // plano dela e acompanha. Para fora, não: é a ponta, tratada
+            // acima. Nunca vira para trás.
+            if (normal.Dot(_wallAlong) < 0f)
+            {
+                Vector3 along = _wallAlong - normal * _wallAlong.Dot(normal);
+                along.Y = 0;
+                if (along.LengthSquared() > 0.04f)
+                    _wallAlong = along.Normalized();
+            }
         }
         else if (_cornerGrace <= 0)
         {
@@ -1098,12 +1132,26 @@ public partial class Player : CharacterBody3D
             return true;
         }
 
-        // Caminho bloqueado à frente: solta e cai.
-        if (IsBlocked(_wallAlong))
+        // Parede à frente: é um canto. Ela vira a parede da corrida e o
+        // lobo segue por ela, para longe da antiga, no mesmo passo. Antes
+        // ele soltava e regrudava na parede de trás, voltando.
+        if (IsBlocked(_wallAlong, out Vector3 front))
         {
-            WallLog("soltou, caminho bloqueado à frente");
-            ReleaseWall();
-            return false;
+            Vector3 turn = _wallNormal - front * _wallNormal.Dot(front);
+            turn.Y = 0;
+
+            if (turn.LengthSquared() < 0.04f || IsBlocked(turn.Normalized(), out _))
+            {
+                WallLog("soltou, caminho bloqueado à frente");
+                ReleaseWall();
+                return false;
+            }
+
+            float pace = new Vector3(Velocity.X, 0, Velocity.Z).Dot(_wallAlong);
+            _wallAlong = turn.Normalized();
+            _wallNormal = front;
+            velocity = _wallAlong * Mathf.Max(pace, 0f) + Vector3.Up * velocity.Y;
+            WallLog("canto: segue pela parede da frente");
         }
 
         // A altura fica a do instante em que grudou. O pulo não é morto
@@ -1209,6 +1257,18 @@ public partial class Player : CharacterBody3D
         _cornerGrace = 0;
     }
 
+    /// <summary>A parede acabou: solta e segue no sentido da corrida, com
+    /// o mesmo passo, sem a puxada contra a parede. Uma recarga curta
+    /// leva o corpo para fora do alcance da ponta antes de poder grudar
+    /// de novo.</summary>
+    private void LeaveWallStraight()
+    {
+        float pace = new Vector3(Velocity.X, 0, Velocity.Z).Dot(_wallAlong);
+        Velocity = _wallAlong * Mathf.Max(pace, 0f) + Vector3.Up * Velocity.Y;
+        ReleaseWall();
+        _wallCooldown = WallRunCooldown;
+    }
+
     /// <summary>
     /// A direção da corrida sai do movimento que o lobo já tem, não de
     /// para onde a câmera aponta: saltar de uma parede e encostar na
@@ -1217,14 +1277,15 @@ public partial class Player : CharacterBody3D
     /// O olhar só decide quando não há momento horizontal — caso de
     /// quem pula parado contra a parede.
     /// </summary>
-    private Vector3 ChooseDirection(Vector3 normal)
+    private Vector3 ChooseDirection(Vector3 normal, out bool byMomentum)
     {
         Vector3 along = normal.Cross(Vector3.Up).Normalized();
 
         Vector3 flat = new Vector3(Velocity.X, 0, Velocity.Z);
         float momentum = flat.Dot(along);
 
-        if (Mathf.Abs(momentum) > 0.5f)
+        byMomentum = Mathf.Abs(momentum) > 0.5f;
+        if (byMomentum)
             return momentum > 0 ? along : -along;
 
         return along.Dot(-GlobalTransform.Basis.Z) < 0 ? -along : along;
@@ -1237,12 +1298,16 @@ public partial class Player : CharacterBody3D
     /// </summary>
     private bool ResolveDirection(Vector3 normal, out Vector3 along)
     {
-        along = ChooseDirection(normal);
+        along = ChooseDirection(normal, out bool byMomentum);
 
-        if (!IsBlocked(along)) return true;
+        if (!IsBlocked(along, out _)) return true;
+
+        // Com embalo, o sentido é o do embalo: virar ao contrário fazia o
+        // lobo voltar pela parede ao chegar num canto.
+        if (byMomentum) return false;
 
         along = -along;
-        return !IsBlocked(along);
+        return !IsBlocked(along, out _);
     }
 
     private PhysicsShapeQueryParameters3D _wallProbe;
@@ -1255,7 +1320,9 @@ public partial class Player : CharacterBody3D
     /// na quina. O cilindro fica acima dos pés e abaixo da cabeça: chão e
     /// teto não contam. Gente também não é parede.
     /// </summary>
-    private bool ProbeWall(out Vector3 normal, out float distance)
+    private Rid _wallBody;
+
+    private bool ProbeWall(out Vector3 normal, out float distance, bool behind = false)
     {
         normal = Vector3.Zero;
         distance = 0f;
@@ -1273,10 +1340,14 @@ public partial class Player : CharacterBody3D
 
         foreach (var hit in space.IntersectShape(_wallProbe, 8))
             if (hit["collider"].Obj is CharacterBody3D) exclude.Add((Rid)hit["rid"]);
+
+        // A segunda busca, no canto: sem a parede que ficou para trás.
+        if (behind && _wallBody.IsValid) exclude.Add(_wallBody);
         _wallProbe.Exclude = exclude;
 
         var rest = space.GetRestInfo(_wallProbe);
         if (rest.Count == 0) return false;
+        if (!behind) _wallBody = (Rid)rest["rid"];
 
         Vector3 away = GlobalPosition - (Vector3)rest["point"];
         away.Y = 0;
@@ -1323,8 +1394,9 @@ public partial class Player : CharacterBody3D
     /// este teste passar a acertar tudo, inclusive o que não deveria
     /// contar — um conserto que cria o problema seguinte.
     /// </summary>
-    private bool IsBlocked(Vector3 along)
+    private bool IsBlocked(Vector3 along, out Vector3 normal)
     {
+        normal = Vector3.Zero;
         Vector3 origin = GlobalPosition;
 
         var query = PhysicsRayQueryParameters3D.Create(
@@ -1336,7 +1408,10 @@ public partial class Player : CharacterBody3D
 
         Vector3 n = (Vector3)hit["normal"];
         if (n.Dot(along) > 0) n = -n;
+        if (Mathf.Abs(n.Y) >= 0.4f) return false;
 
-        return Mathf.Abs(n.Y) < 0.4f;
+        n.Y = 0;
+        normal = n.Normalized();
+        return true;
     }
 }
