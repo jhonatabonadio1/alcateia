@@ -19,6 +19,11 @@ using System.Linq;
 /// Iniciar abre uma contagem de 5 s num círculo grande sobre os times,
 /// cancelável enquanto roda.
 ///
+/// **O mestre não marca pronto**: quem inicia é ele, então o botão de
+/// pronto some para ele. Ele inicia quando todos estão prontos — ou
+/// quando os prontos já fecham times equilibrados, com no máximo um a
+/// menos de um lado. Quem não estava pronto fica na sala e não joga.
+///
 /// Sem servidor só há um humano (você), sempre mestre. As regras de
 /// pronto e de mestre já são as do multijogador: na Fase 2 muda de onde
 /// vêm os jogadores, não como a sala funciona.
@@ -61,6 +66,12 @@ public partial class RoomScreen : LobbyScreen
     private RoomSettings S => _room.Settings;
     private RoomMember Me => _room.Members.FirstOrDefault(m => !m.IsBot);
     private bool IsHost => Me?.IsHost == true;
+
+    /// <summary>Quem entra na partida: o mestre, que não marca pronto, e
+    /// quem está pronto.</summary>
+    private List<RoomMember> Playing => _room.Members.Where(m => m.IsHost || m.Ready).ToList();
+
+    private bool AllReady => _room.Members.All(m => m.IsHost || m.Ready);
 
     // ------------------------------------------------------------------ montagem
 
@@ -229,10 +240,11 @@ public partial class RoomScreen : LobbyScreen
         if (member.IsBot) row.AddChild(UiKit.Chip("bot", UiTokens.TextDisabled));
 
         // Pronto: divisas verdes. Quem não está pronto simplesmente não
-        // tem as divisas — e o texto diz que está aguardando.
+        // tem as divisas — e o texto diz que está aguardando. O mestre não
+        // marca pronto: a coroa já diz que é ele quem inicia.
         if (member.Ready)
             row.AddChild(Icon.Make(IconKind.Chevrons, 18, UiTokens.Success));
-        else
+        else if (!member.IsHost)
             row.AddChild(UiKit.Text("aguardando", "Caption", UiTokens.TextDisabled));
 
         row.AddChild(PingBars.Make(0));
@@ -569,15 +581,23 @@ public partial class RoomScreen : LobbyScreen
 
     private int _lastSecond = -1;
 
+    /// <summary>
+    /// O mestre inicia com todos prontos, ou com os prontos já em times
+    /// equilibrados: um lado pode ter um a menos. Esperar o último
+    /// indeciso trava a sala inteira; começar 5 contra 2 estraga a partida.
+    /// </summary>
     private bool CanStart(out string why)
     {
         why = null;
-        int blue = _room.Members.Count(m => m.Team == Teams.Blue);
-        int orange = _room.Members.Count(m => m.Team == Teams.Orange);
+        List<RoomMember> playing = Playing;
+        int blue = playing.Count(m => m.Team == Teams.Blue);
+        int orange = playing.Count(m => m.Team == Teams.Orange);
 
         if (!IsHost) why = "Só o mestre inicia";
-        else if (blue == 0 || orange == 0) why = "Os dois times precisam de alguém";
-        else if (_room.Members.Any(m => !m.Ready)) why = "Todos precisam estar prontos";
+        else if (blue == 0 || orange == 0)
+            why = AllReady ? "Os dois times precisam de alguém" : "Falta alguém pronto num dos times";
+        else if (!AllReady && Math.Abs(blue - orange) > 1)
+            why = $"Prontos: {blue} contra {orange} — espere mais alguém ficar pronto";
 
         return why == null;
     }
@@ -588,6 +608,7 @@ public partial class RoomScreen : LobbyScreen
 
         // Mesmo símbolo do lugar na lista: as divisas » querem dizer
         // "pronto" em toda a tela.
+        _ready.Visible = !IsHost;
         _ready.Text = Me.Ready ? "Pronto  »" : "Marcar pronto";
         foreach (string state in new[] { "font_color", "font_hover_color", "font_focus_color", "font_pressed_color" })
             _ready.AddThemeColorOverride(state, Me.Ready ? UiTokens.Success : UiTokens.TextPrimary);
@@ -609,7 +630,7 @@ public partial class RoomScreen : LobbyScreen
 
     private void ToggleReady()
     {
-        if (Me == null) return;
+        if (Me == null || IsHost) return;
         Me.Ready = !Me.Ready;
         Log(Me.Ready ? $"{Me.Name} está pronto." : $"{Me.Name} não está mais pronto.", system: true);
         Refresh();
@@ -642,8 +663,12 @@ public partial class RoomScreen : LobbyScreen
     {
         RoomConfig.Active = true;
         RoomConfig.Settings = S.Clone();
+        // Quem não estava pronto fica na sala.
+        foreach (RoomMember left in _room.Members.Where(m => !m.IsHost && !m.Ready))
+            Log($"{left.Name} ficou de fora: não estava pronto.", system: true);
+
         RoomConfig.Members.Clear();
-        RoomConfig.Members.AddRange(_room.Members.Select(m => new RoomMember
+        RoomConfig.Members.AddRange(Playing.Select(m => new RoomMember
         {
             Name = m.Name, Team = m.Team, IsBot = m.IsBot, Ready = m.Ready, IsHost = m.IsHost, Rank = m.Rank
         }));
