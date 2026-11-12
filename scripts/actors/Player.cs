@@ -232,6 +232,17 @@ public partial class Player : CharacterBody3D
     /// <summary>Está agachado? Leitura para quem desenha o corpo. O
     /// agachamento é decidido aqui e em lugar nenhum mais.</summary>
     public bool IsCrouching => _crouching;
+
+    /// <summary>
+    /// Onde ficam os pés, em relação ao centro do corpo.
+    ///
+    /// A cápsula encolhe ao agachar e o corpo desce metade da
+    /// diferença, então a base **se move**: −0,875 de pé, −0,5
+    /// agachado. Quem desenha o corpo precisa seguir isso, senão o
+    /// modelo fica fixo na base de pé e afunda 37 cm no chão quando o
+    /// jogador agacha.
+    /// </summary>
+    public float FeetOffset => -_height * 0.5f;
     private bool _walking;
     private float _cameraKick;
     private double _jumpLock;

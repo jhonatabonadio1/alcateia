@@ -177,6 +177,10 @@ public partial class CharacterAnimator : Node3D
     private double _jumpGrace;
     private double _deathLength;
     private float _modelY;
+
+    /// <summary>Altura em que o modelo deve ficar agora. Segue a
+    /// cápsula quando há dono, porque ela encolhe ao agachar.</summary>
+    private float BaseY => _owner != null ? _owner.FeetOffset : _modelY;
     private readonly List<StandardMaterial3D> _fadeMaterials = new();
     private bool _hasDeath;
     private bool _airborne;
@@ -504,6 +508,7 @@ public partial class CharacterAnimator : Node3D
         Single(machine, "Crouch", "crouch_idle", new Vector2(300, 240));
         Single(machine, "Jump", "jump", new Vector2(520, -20));
         Single(machine, "Fall", "fall", new Vector2(720, 40));
+        Single(machine, "Land", "land", new Vector2(720, 150));
         Single(machine, "Hit", "hit", new Vector2(520, 160));
         Single(machine, "Death", "death", new Vector2(520, 280));
 
@@ -513,6 +518,8 @@ public partial class CharacterAnimator : Node3D
         Link(machine, "Locomotion", "Jump");
         Link(machine, "Jump", "Fall", auto: true);
         Link(machine, "Locomotion", "Fall");
+        Link(machine, "Fall", "Land");
+        Link(machine, "Land", "Locomotion", auto: true);
         Link(machine, "Fall", "Locomotion");
 
         Link(machine, "Locomotion", "Crouch");
@@ -524,7 +531,7 @@ public partial class CharacterAnimator : Node3D
         // Morrer interrompe qualquer coisa, e é por isso que precisa
         // de uma aresta vinda de cada estado: Travel anda pelo grafo,
         // e estado sem caminho de entrada é estado inalcançável.
-        foreach (string from in new[] { "Locomotion", "Crouch", "Jump", "Fall", "Hit" })
+        foreach (string from in new[] { "Locomotion", "Crouch", "Jump", "Fall", "Land", "Hit" })
             Link(machine, from, "Death");
 
         _tree = new AnimationTree { TreeRoot = machine };
@@ -619,6 +626,9 @@ public partial class CharacterAnimator : Node3D
 
         UpdateAir(delta);
         UpdateStance();
+
+        _model.Position = new Vector3(_model.Position.X, BaseY, _model.Position.Z);
+
         ReportState();
     }
 
@@ -698,7 +708,10 @@ public partial class CharacterAnimator : Node3D
         {
             _airborne = false;
             _crouched = false;
-            _playback?.Travel("Locomotion");
+
+            // Pousa se houver clipe de pouso; o estado devolve para a
+            // locomoção sozinho quando acaba.
+            _playback?.Travel(_player.HasAnimation("alcateia/land") ? "Land" : "Locomotion");
         }
     }
 
@@ -768,7 +781,7 @@ public partial class CharacterAnimator : Node3D
 
         _model.Position = new Vector3(
             _model.Position.X,
-            _modelY - CorpseDrop * settle - CorpseSink * progress,
+            BaseY - CorpseDrop * settle - CorpseSink * progress,
             _model.Position.Z);
 
         if (progress <= 0) return;
@@ -836,7 +849,7 @@ public partial class CharacterAnimator : Node3D
             material.AlbedoColor = color;
         }
 
-        _model.Position = new Vector3(_model.Position.X, _modelY, _model.Position.Z);
+        _model.Position = new Vector3(_model.Position.X, BaseY, _model.Position.Z);
         _model.Visible = true;
 
         _playback?.Start("Locomotion");
