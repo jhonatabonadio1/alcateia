@@ -565,7 +565,40 @@ exige distância, ângulo e linha de visada. Audição dá posição com
 erro, porque ouvir não é ver — um bot que localiza som com precisão
 cirúrgica parece trapacear.
 
-**Estado** — máquina explícita com quatro estados:
+**Decisão** — **utilidade**, não transições fixas. Cada ação dá uma
+nota de 0 a 1 e a maior vence (`scripts/ai/BotBrain.cs`).
+
+A diferença aparece quando duas coisas são verdade ao mesmo tempo.
+Uma máquina de estados precisa de uma regra para decidir se recarrega
+ou atira com pouca munição e o inimigo longe; com utilidade, as duas
+notas se comparam sozinhas.
+
+Três regras de construção, e violar qualquer uma estraga o sistema:
+
+**Multiplicar, não somar.** Uma consideração ruim derruba a ação
+inteira. Recarregar no meio de um tiroteio deve valer zero, não a
+média entre "preciso" e "não dá".
+
+**Compensar o produto.** Com muitas considerações o produto afunda, e
+uma ação bem avaliada perderia para outra mal avaliada e simples.
+
+**Inércia.** A ação em curso ganha um bônus. Sem isso o bot oscila
+entre duas opções quase empatadas e parece indeciso — o defeito mais
+visível de utilidade mal feita.
+
+As ações: Patrol, Investigate, Engage, Push, Reposition, Reload,
+Transform, Revert, Howl, Retreat. Patrol é o piso e nunca vale zero,
+senão um bot sem informação ficaria parado.
+
+A decisão sai em intervalos, não a cada frame: pensar sessenta vezes
+por segundo custa caro e produz um bot que muda de ideia antes de
+terminar o que começou.
+
+As **curvas** ficam separadas da decisão (`scripts/ai/Utility.cs`).
+Trocar uma curva muda a personalidade do bot; trocar um `if` muda o
+programa.
+
+**Estado** — a máquina continua, agora só descrevendo percepção:
 
 ```
 Idle (patrulha) --[ouviu]-->  Investigate

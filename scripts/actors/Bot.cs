@@ -148,6 +148,9 @@ public partial class Bot : CharacterBody3D
 
     public BotState State { get; private set; } = BotState.Idle;
 
+    /// <summary>Ação escolhida pelo cérebro de utilidade.</summary>
+    public BotAction Action { get; private set; } = BotAction.Patrol;
+
     private Health _health;
     private FormController _form;
     private Weapon _weapon;
@@ -164,7 +167,6 @@ public partial class Bot : CharacterBody3D
     private bool _hasBelief;
 
     private double _memoryTimer;
-    private double _decisionTimer;
     private double _scanTimer;
     private double _burstTimer;
     private bool _firing;
@@ -177,6 +179,9 @@ public partial class Bot : CharacterBody3D
     private float _scanAngle;
 
     private Action<Noise> _ear;
+    private double _threatAge = 99;
+    private double _beliefAge = 99;
+    private double _brainTimer;
 
     private Vector3 _patrolTarget;
     private bool _hasPatrolTarget;
@@ -243,17 +248,133 @@ public partial class Bot : CharacterBody3D
         }
 
 
+        _threatAge += delta;
+        _beliefAge += delta;
+
         UpdateReaction(delta);
         UpdateSight(delta);
         UpdateState(delta);
+        UpdateBrain(delta);
 
-        switch (State)
+        switch (Action)
         {
-            case BotState.Combat: RunCombat(delta); break;
-            case BotState.Investigate:
-            case BotState.Search: RunSearch(delta); break;
-            default: RunPatrol(delta); break;
+            case BotAction.Engage:
+            case BotAction.Push:
+            case BotAction.Reposition:
+                RunCombat(delta);
+                break;
+
+            case BotAction.Reload:
+                _weapon.TryReload();
+                RunCombat(delta);
+                break;
+
+            case BotAction.Transform:
+                _weapon.SelectSlot(Slot.Wolf);
+                RunCombat(delta);
+                break;
+
+            case BotAction.Revert:
+                _weapon.SelectSlot(Slot.Primary);
+                RunCombat(delta);
+                break;
+
+            case BotAction.Howl:
+                RunHowl(delta);
+                break;
+
+            case BotAction.Retreat:
+                RunRetreat(delta);
+                break;
+
+            case BotAction.Investigate:
+                RunSearch(delta);
+                break;
+
+            default:
+                RunPatrol(delta);
+                break;
         }
+    }
+
+    /// <summary>
+    /// Monta a fotografia do mundo e pede uma ação ao cérebro.
+    ///
+    /// A decisão sai em intervalos, não a cada frame: pensar sessenta
+    /// vezes por segundo custa caro e produz um bot que muda de ideia
+    /// antes de terminar o que começou.
+    /// </summary>
+    private void UpdateBrain(double delta)
+    {
+        _brainTimer -= delta;
+        if (_brainTimer > 0) return;
+
+        _brainTimer = DecisionInterval;
+
+        bool canSee = CanSeeTarget();
+        float distance = _target != null
+            ? GlobalPosition.DistanceTo(_target.GlobalPosition)
+            : 999f;
+
+        int mag = _weapon.CurrentSlot == Slot.Secondary
+            ? _weapon.SecondaryMag
+            : _weapon.PrimaryMag;
+
+        int ammo = _weapon.CurrentSlot == Slot.Secondary
+            ? _weapon.SecondaryAmmo
+            : _weapon.PrimaryAmmo;
+
+        var context = new BotContext
+        {
+            HasTarget = _target != null,
+            CanSee = canSee,
+            Distance = distance,
+            HealthRatio = _health.MaxHp > 0 ? _health.Hp / _health.MaxHp : 1f,
+            ShieldRatio = _health.MaxShield > 0 ? _health.Shield / _health.MaxShield : 0f,
+            AmmoRatio = mag > 0 ? (float)ammo / mag : 1f,
+            MagEmpty = ammo <= 0,
+            IsWolf = _form.IsWolf,
+            CanTransform = !_form.IsWolf && _form.Breed != null,
+            ThreatAge = (float)_threatAge,
+            BeliefAge = (float)_beliefAge,
+            HasBelief = _hasBelief && _memoryTimer > 0,
+            Aggression = Aggression,
+            PreferredRange = PreferredRange
+        };
+
+        BotAction next = BotBrain.Choose(context, Action);
+
+        if (Debug && next != Action)
+            GD.Print($"{Name}: {Action} -> {next}");
+
+        Action = next;
+
+        ShuffleAim();
+        UpdateStrafe(delta);
+    }
+
+    /// <summary>Rugir: parado, recuperando escudo.</summary>
+    private void RunHowl(double delta)
+    {
+        MoveTowards(Vector3.Zero, Speed, delta);
+        _health.RestoreShield(_health.MaxShield * (float)delta * 1.2f);
+    }
+
+    /// <summary>Recuar quebrando a linha de visão: afasta-se do alvo
+    /// em vez de dar as costas em linha reta.</summary>
+    private void RunRetreat(double delta)
+    {
+        if (_target == null)
+        {
+            RunPatrol(delta);
+            return;
+        }
+
+        Vector3 away = GlobalPosition - _target.GlobalPosition;
+        Vector3 flat = new Vector3(away.X, 0, away.Z).Normalized();
+
+        FaceDirection(_target.GlobalPosition, delta);
+        MoveTowards(Avoid(flat), Speed, delta);
     }
 
     // ------------------------------------------------------------------
@@ -314,6 +435,7 @@ public partial class Bot : CharacterBody3D
         _lastKnown = position;
         _hasBelief = true;
         _memoryTimer = duration;
+        _beliefAge = 0;
     }
 
     private bool CanSeeTarget()
@@ -395,17 +517,13 @@ public partial class Bot : CharacterBody3D
 
     private void RunCombat(double delta)
     {
-        _decisionTimer -= delta;
-
-        if (_decisionTimer <= 0)
+        if (_target == null)
         {
-            _decisionTimer = DecisionInterval;
-            DecideForm();
-            ShuffleAim();
+            RunPatrol(delta);
+            return;
         }
 
         UpdateBurst(delta);
-        UpdateStrafe(delta);
 
         Vector3 toTarget = _target.GlobalPosition - GlobalPosition;
         float distance = new Vector3(toTarget.X, 0, toTarget.Z).Length();
@@ -544,7 +662,9 @@ public partial class Bot : CharacterBody3D
         {
             // Avança enquanto circula. O peso da agressão decide o
             // quanto da intenção é ir para cima e o quanto é lateral.
-            float push = distance > PreferredRange ? 1f : Aggression;
+            float push = Action == BotAction.Push
+                ? 1f
+                : distance > PreferredRange ? 1f : Aggression;
 
             desired = (flat * push + side * StrafeFactor).Normalized();
         }
@@ -624,22 +744,6 @@ public partial class Bot : CharacterBody3D
             Mathf.Clamp(pitch, Mathf.DegToRad(-70f), Mathf.DegToRad(70f)), 0, 0);
     }
 
-    private void DecideForm()
-    {
-        float distance = GlobalPosition.DistanceTo(_target.GlobalPosition);
-        float ratio = _health.MaxHp > 0 ? _health.Hp / _health.MaxHp : 1f;
-
-        if (!_form.IsWolf)
-        {
-            if (ratio <= WolfHealthThreshold && distance <= WolfRange)
-                _weapon.SelectSlot(Slot.Wolf);
-
-            return;
-        }
-
-        if (distance > HumanRange || ratio > WolfHealthThreshold)
-            _weapon.SelectSlot(Slot.Primary);
-    }
 
     /// <summary>Rajada e pausa. Fogo contínuo não deixa o jogador
     /// respirar e esconde de onde vem o tiro.</summary>
@@ -684,6 +788,10 @@ public partial class Bot : CharacterBody3D
     {
         if (!_form.CanAttack) return;
 
+        // Recarregando ou recuando não se atira. É o cérebro que
+        // decide, e a ação em curso é a decisão.
+        if (Action == BotAction.Reload || Action == BotAction.Retreat) return;
+
         float reach = _form.IsWolf
             ? _form.Breed.AttackRange
             : Mathf.Min(EngageRange, _weapon.PrimaryRange);
@@ -706,6 +814,7 @@ public partial class Bot : CharacterBody3D
     {
         if (_health.IsDead || from == Vector3.Zero || _reacting) return;
 
+        _threatAge = 0;
         _reacting = true;
         _reactionTimer = ReactionTime + GD.RandRange(0, ReactionJitter);
         Believe(from, Memory);

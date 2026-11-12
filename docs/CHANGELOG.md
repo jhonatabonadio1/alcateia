@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.16.0 — 2026-11-11
+
+### Alterado
+- **A decisão dos bots virou utility AI.** Dez ações pontuadas de 0 a
+  1, com a maior vencendo, no lugar de transições fixas. Considerações
+  multiplicam (uma ruim veta a ação), o produto é compensado para não
+  punir ações bem avaliadas, e a ação em curso ganha inércia para o
+  bot não oscilar.
+- Decidir forma, recarregar e recuar deixaram de ser regras soltas e
+  passaram a competir como ações.
+
+### Adicionado
+- `scripts/ai/Utility.cs` — curvas de consideração separadas da
+  decisão.
+- `scripts/ai/BotBrain.cs` — contexto e pontuação das ações.
+- Ações novas que a máquina de estados não tinha: Reload, Retreat,
+  Howl e Reposition.
+
 ## v0.15.0 — 2026-11-11
 
 ### Alterado
