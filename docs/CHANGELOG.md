@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.26.11 — 2026-11-12
+
+### Mudado
+- **Lobo 3% mais rápido no chão** (Bruto 3,89 m/s, Ligeiro 4,22) e
+  **7% mais rápido na parede** (Bruto 4,05, Ligeiro 4,38). O salto da
+  parede leva 80% da velocidade dela e sobe junto.
+
 ## v0.26.10 — 2026-11-12
 
 ### Adicionado

@@ -89,11 +89,11 @@ granadas mais fortes.
 
    | | Humano | Bruto | Ligeiro |
    |---|---|---|---|
-   | Velocidade | 3,0 | 3,78 (1,26×) | 4,10 (1,365×) |
+   | Velocidade | 3,0 | 3,89 (1,298×) | 4,22 (1,406×) |
    | Pulo | 0,99 m | 1,62 m (1,28×) | 2,50 m (1,59×) |
    | Avanço do pulo correndo | ~2,7 m | ~3,9 m | ~5,0 m |
-   | Agachado | 1,35 | 1,70 | 1,84 |
-   | Na parede | — | 3,78 | 4,10 |
+   | Agachado | 1,35 | 1,75 | 1,90 |
+   | Na parede | — | 4,05 | 4,38 |
 
    **A velocidade do humano é a passada do X Bot**, medida no quadril:
    correr ("run_fwd") anda 3,0 m/s a 1×, andar 1,0, de costas 1,1 e
@@ -110,8 +110,11 @@ granadas mais fortes.
    **A velocidade do lobo é a da passada do Mutant.** A corrida do
    clipe anda 2,42 m/s na escala do jogo; mais rápido que isso ela
    precisa tocar acelerada para o pé não patinar, e a 2,4× (o Bruto a
-   5,7 m/s) ficava corrida. A 3,78 m/s (5% acima dos 3,6 de antes,
-   decisão do Jhon, no chão e na parede) toca a 1,56×, ainda fluido.
+   5,7 m/s) ficava corrida. A 3,89 m/s (decisões do Jhon: +5% e depois
+   +3% sobre os 3,6 de antes) toca a 1,61×. **Na parede o lobo vai 7%
+   além disso** (`WallRunSpeedBonus` 1,0388 = 1,07 / 1,03): 4,05 m/s
+   no Bruto, e o engatinhar da parede toca a 1,76×. O salto da parede
+   leva 80% da velocidade dela, então sobe junto.
    Para o lobo correr mais sem ficar corrido, é preciso um clipe de
    corrida com passada maior, não só o número.
 
@@ -1661,7 +1664,7 @@ Clipes do lobo: parado num ramo, andar e correr no outro, e o passo
 **no ritmo do corpo**: o clipe toca na razão entre a velocidade do corpo
 e a passada dele, medida no Mutant (andar 1,34 m/s, correr 2,42 m/s, já
 na escala do jogo; varrido de 2,2 a 3,3 no esqueleto, 2,42 é a de menor
-patinação) — o Bruto a 3,78 m/s corre o clipe a 1,56×. Antes ele tocava
+patinação) — o Bruto a 3,89 m/s corre o clipe a 1,61×. Antes ele tocava
 a 1× até 7 m/s, e o corpo andava mais do dobro das pernas. Só anda até
 2,0 m/s e só corre de 2,6 m/s: nenhuma velocidade do jogo para entre os
 dois (os ciclos têm tamanhos diferentes, e misturados o pé patina).
@@ -1688,7 +1691,7 @@ pés andando um metro com o corpo parado.
 attack" (1,95 a 2,25 s, indo e voltando): 0,98 m do chão ao topo da
 cabeça, a altura da cápsula agachada (1,0 m). Andando agachado ele
 **engatinha**: o Running Crawl da parede, no chão, na velocidade do
-corpo (1,7 m/s toca a 0,74×), 10 cm mais alto para as mãos não
+corpo (1,75 m/s toca a 0,76×), 10 cm mais alto para as mãos não
 entrarem no chão (`CrawlLift`). Antes o lobo agachado continuava de pé,
 a cabeça a 1,7 m — fora da cápsula, e o tiro passava por cima do que se
 via. Testado e descartado: misturar a pose agachada no andar (o pé de
