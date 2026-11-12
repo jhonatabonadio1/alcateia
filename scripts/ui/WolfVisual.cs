@@ -96,13 +96,12 @@ public partial class WolfVisual : Node3D
     private static bool FullBody(string shot) => shot is "pounce" or "dive" or "dive_land";
 
     /// <summary>Entrada e saída de cada disparo, em segundos. A garrada
-    /// entra um pouco mais devagar porque o trecho dela começa com os
-    /// braços já no alto: em 0,08 s eles voavam até lá. Sai curta, porque
-    /// a próxima vem logo. A aterrissagem do bote entra quase seca,
-    /// porque é o impacto.</summary>
+    /// entra seca: a garra chega 0,14 s depois do clique, e uma entrada
+    /// mais longa comeria o golpe. Sai curta, porque a próxima vem logo.
+    /// A aterrissagem do bote também entra quase seca: é o impacto.</summary>
     private static (float In, float Out) Fades(string shot) => shot switch
     {
-        "claw" or "heavy" => (0.12f, 0.15f),
+        "claw" or "heavy" => (0.07f, 0.12f),
         "pounce" => (0.12f, 0.25f),
         "dive" => (0.08f, 0.15f),
         "dive_land" => (0.05f, 0.25f),

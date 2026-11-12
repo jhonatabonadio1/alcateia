@@ -49,8 +49,8 @@ public readonly record struct WolfClip(string Source, float Start, float End, fl
 ///
 /// | Clipe | Arquivo | Medido | Trecho usado |
 /// |---|---|---|---|
-/// | claw | mutant swiping (2,67 s) | mão esquerda a 22,5 m/s em 1,30 s; passo de 0,91 m de 0,97 s até o quadril parar em 1,43 s | 0,75–2,00 s (sem a preparação longa) |
-/// | heavy | mutant punch (1,10 s) | mão direita a 12,6 m/s em 0,30 s; o clipe só passa o peso (0,19 m) — o passo de 0,35 m é do jogo | 0–1,00 s |
+/// | claw | mutant swiping (2,67 s) | mão esquerda recolhida e parada de 0,80 a 1,10 s, golpe a 22,5 m/s em 1,30 s; passo de 0,91 m de 0,97 s até o quadril parar em 1,43 s | 1,00–1,85 s: começa com a mão já recolhida, para a garra sair rápido |
+/// | heavy | mutant punch (1,10 s) | mão direita a 12,6 m/s em 0,30 s; o clipe só passa o peso (0,19 m) — o passo de 0,35 m é do jogo | 0–0,85 s |
 /// | pounce | mutant jump attack (3,70 s) | agacha até 0,5 s, topo em 0,97 s, pés no chão em 1,53 s, garras no chão em 1,60 s, de pé em 3,0 s; quadril anda 1,71 m | 0–3,00 s: o salto inteiro; o corpo anda do impulso (0,45 s) aos pés no chão (1,55 s) — quanto, quem diz é a mira |
 /// | dive | o mesmo jump attack | do topo (1,03 s) às garras no chão (1,60 s) | só a queda |
 /// | dive_land | o mesmo jump attack | da pancada (1,60 s) a de pé | a aterrissagem do bote |
@@ -62,8 +62,8 @@ public static class WolfMoves
 {
     public static readonly Dictionary<string, WolfClip> Clips = new()
     {
-        ["claw"] = new WolfClip("claw", 0.75f, 2.0f, 1.30f, StepFrom: 0.97f, StepTo: 1.43f, Step: 0.91f),
-        ["heavy"] = new WolfClip("heavy", 0f, 1.0f, 0.30f, StepFrom: 0.05f, StepTo: 0.40f, Step: 0.35f),
+        ["claw"] = new WolfClip("claw", 1.00f, 1.85f, 1.30f, StepFrom: 1.00f, StepTo: 1.43f, Step: 0.91f),
+        ["heavy"] = new WolfClip("heavy", 0f, 0.85f, 0.30f, StepFrom: 0.05f, StepTo: 0.40f, Step: 0.35f),
         ["pounce"] = new WolfClip("leap", 0f, 3.0f, 1.60f, StepFrom: 0.45f, StepTo: 1.55f, Step: 1.71f),
         ["dive"] = new WolfClip("leap", 1.03f, 1.60f, 1.60f, FallOnly: true),
         ["dive_land"] = new WolfClip("leap", 1.60f, 2.77f, 1.60f, FallOnly: true),
@@ -80,8 +80,8 @@ public static class WolfMoves
     /// <see cref="Land"/>.</summary>
     public static (string Clip, float Speed) Of(WolfMove move) => move switch
     {
-        WolfMove.Claw => ("claw", 2.4f),
-        WolfMove.Punch => ("heavy", 1.9f),
+        WolfMove.Claw => ("claw", 2.2f),
+        WolfMove.Punch => ("heavy", 2.2f),
         WolfMove.Pounce => ("pounce", 1.4f),
         WolfMove.Leap => ("dive", 1f),
         _ => ("howl", 1.6f)
@@ -99,7 +99,8 @@ public static class WolfMoves
         var (clip, speed) = Of(move);
         WolfClip c = Clips[clip];
         if (c.Step <= 0f) return (0f, 0f, 0f);
-        return ((c.StepFrom - c.Start) / speed, (c.StepTo - c.StepFrom) / speed, c.Step * BodyScale);
+        float from = System.Math.Max(c.StepFrom, c.Start);
+        return ((from - c.Start) / speed, (c.StepTo - from) / speed, c.Step * BodyScale);
     }
 
     /// <summary>A aterrissagem do bote, do impacto até de pé.</summary>

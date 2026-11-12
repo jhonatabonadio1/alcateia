@@ -135,8 +135,18 @@ public partial class Player : CharacterBody3D
     /// Zero mantém a altura travada: o lobo não sobe nem desce.</summary>
     [Export] public float WallRunVerticalDrift = 0f;
 
-    /// <summary>Velocidade ao longo da parede, sobre a velocidade da forma.</summary>
-    [Export] public float WallRunSpeedBonus = 1.25f;
+    /// <summary>Velocidade ao longo da parede, sobre a velocidade da forma.
+    /// Era 1,25: rápido demais para escolher onde descer.</summary>
+    [Export] public float WallRunSpeedBonus = 1.0f;
+
+    /// <summary>Aceleração ao longo da parede, em m/s². A corrida
+    /// começa aos poucos em vez de sair a toda no quadro em que gruda.</summary>
+    [Export] public float WallAccel = 18f;
+
+    /// <summary>Freada ao agarrar (botão de ataque), em m/s². Mais forte
+    /// que a aceleração: agarrar é escolher o ponto, e o lobo para em
+    /// meio metro.</summary>
+    [Export] public float WallBrake = 32f;
 
     /// <summary>Sucção contra a parede. Mantém o lobo colado em vez de
     /// apenas deslizar perto dela.</summary>
@@ -1081,9 +1091,17 @@ public partial class Player : CharacterBody3D
             : WallRunVerticalDrift;
 
         // Agarrado com o botão de ataque e sem o pulo: fica parado.
-        float speed = _clinging && !Input.IsActionPressed("jump")
+        float target = _clinging && !Input.IsActionPressed("jump")
             ? 0f
             : HumanSpeed * SpeedScale * WallRunSpeedBonus;
+
+        // O passo muda aos poucos: acelera ao grudar e freia ao agarrar,
+        // em vez de saltar entre parado e correndo num quadro. É o que
+        // deixa parar no ponto certo da parede. O olhar continua livre —
+        // a direção é a escolhida ao grudar.
+        float current = new Vector3(velocity.X, 0, velocity.Z).Dot(_wallAlong);
+        float rate = target < current ? WallBrake : WallAccel;
+        float speed = Mathf.MoveToward(current, target, rate * (float)delta);
 
         // Sucção contra a parede, exceto ao contornar uma quina — ali
         // ela empurraria o lobo para dentro do canto e o prenderia.

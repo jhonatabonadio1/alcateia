@@ -162,9 +162,16 @@ public partial class Weapon : Node3D
 	/// responder.</summary>
 	[Export] public float AttackBuffer = 0.3f;
 
-	/// <summary>Até onde o salto no chão leva o lobo, em metros. Ele cai
-	/// com as garras no ponto da mira, até este limite.</summary>
-	[Export] public float PounceMaxDistance = 5f;
+	/// <summary>Até onde o salto no chão leva o lobo, em metros. É a
+	/// arma do lobo para fechar distância: apertar de longe e cair em
+	/// cima do humano. Ele cai com as garras no ponto da mira, até este
+	/// limite.</summary>
+	[Export] public float PounceMaxDistance = 12f;
+
+	/// <summary>Quão longe do centro da tela, em graus, um inimigo ainda
+	/// conta como "mirado" pelo salto. O lobo não tem mira na tela, e
+	/// acertar um corpo a 12 m só com o centro da câmera seria loteria.</summary>
+	[Export] public float PounceAimAssist = 10f;
 
 	/// <summary>Multiplicador de dano na cabeça.</summary>
 	[Export] public float HeadshotMultiplier = 2.5f;
@@ -810,36 +817,101 @@ public partial class Weapon : Node3D
 		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown, () => Claw(HeavyDamageBonus, ClawReach, ClawRadius, false));
 
 		// O salto avança: do impulso até os pés tocarem o chão, o corpo anda
-		// até as garras caírem no ponto da mira.
+		// até as garras caírem no ponto da mira. O alvo é escolhido no
+		// clique; onde ele está é lido no impulso, 0,32 s depois.
+		_pounceTarget = FindPounceTarget();
 		var (delay, duration, clipDistance) = WolfMoves.StepOf(WolfMove.Pounce);
-		float distance = PounceDistance(clipDistance);
-		if (distance > 0.05f)
-			After(delay, id, () => BeginStep(duration, distance));
+		After(delay, id, () =>
+		{
+			var (distance, direction) = PounceAim(clipDistance);
+			if (Debug) GD.Print($"salto: alvo {(_pounceTarget != null ? _pounceTarget.Name : "nenhum")}, anda {distance:0.0} m");
+			if (distance > 0.05f) BeginStep(duration, distance, direction);
+		});
+	}
+
+	private Node3D _pounceTarget;
+
+	/// <summary>
+	/// Para onde e quanto o salto anda: até as garras (o volume,
+	/// <see cref="ClawReach"/> à frente do corpo) caírem no alvo. Com um
+	/// inimigo mirado, em cima dele, onde ele estiver no impulso. Sem
+	/// ninguém, no ponto para onde a câmera aponta: chão perto, quase não
+	/// sai do lugar; céu, vai até <see cref="PounceMaxDistance"/>. Sem
+	/// câmera (bot), a distância do próprio clipe.
+	/// </summary>
+	private (float Distance, Vector3 Direction) PounceAim(float fallback)
+	{
+		Vector3 forward = -_body.GlobalTransform.Basis.Z;
+		forward.Y = 0;
+		forward = forward.Normalized();
+
+		if (_pounceTarget != null && IsInstanceValid(_pounceTarget)
+			&& _pounceTarget.GetNodeOrNull<Health>("Health") is { IsDead: false })
+		{
+			Vector3 to = _pounceTarget.GlobalPosition - _body.GlobalPosition;
+			to.Y = 0;
+			float flat = to.Length();
+			if (flat > 0.01f)
+				return (Mathf.Clamp(flat - ClawReach, 0f, PounceMaxDistance), to / flat);
+		}
+
+		Camera3D camera = (_body as Player)?.AimCamera;
+		if (camera == null) return (Mathf.Min(fallback, PounceMaxDistance), forward);
+
+		Vector3 from = camera.GlobalPosition;
+		Vector3 end = from - camera.GlobalBasis.Z * 80f;
+		var query = PhysicsRayQueryParameters3D.Create(from, end);
+		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+		var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
+		if (hit.Count == 0) return (PounceMaxDistance, forward);
+
+		float along = ((Vector3)hit["position"] - _body.GlobalPosition).Dot(forward);
+		return (Mathf.Clamp(along - ClawReach, 0f, PounceMaxDistance), forward);
 	}
 
 	/// <summary>
-	/// Quanto o salto anda: até as garras (o volume, <see cref="ClawReach"/>
-	/// à frente do corpo) caírem no ponto para onde a câmera aponta. Mirou
-	/// em alguém, cai em cima dele; mirou no chão perto, quase não sai do
-	/// lugar; mirou no céu, vai até <see cref="PounceMaxDistance"/>. Sem
-	/// câmera (bot), a distância do próprio clipe.
+	/// O inimigo que o jogador está mirando para o salto: o mais perto do
+	/// centro da tela, até <see cref="PounceAimAssist"/> graus, ao alcance
+	/// do salto e à vista (sem parede no meio). Nenhum: null.
 	/// </summary>
-	private float PounceDistance(float fallback)
+	private Node3D FindPounceTarget()
 	{
 		Camera3D camera = (_body as Player)?.AimCamera;
-		if (camera == null) return Mathf.Min(fallback, PounceMaxDistance);
+		if (camera == null) return null;
 
-		Vector3 from = camera.GlobalPosition;
-		Vector3 to = from - camera.GlobalBasis.Z * 80f;
-		var query = PhysicsRayQueryParameters3D.Create(from, to);
-		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
-		var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
-		if (hit.Count == 0) return PounceMaxDistance;
+		Vector3 eye = camera.GlobalPosition;
+		Vector3 look = -camera.GlobalBasis.Z;
+		float reach = PounceMaxDistance + ClawReach + 1f;
+		float bestAngle = Mathf.DegToRad(PounceAimAssist);
+		Node3D best = null;
 
-		Vector3 forward = -_body.GlobalTransform.Basis.Z;
-		forward.Y = 0;
-		float along = ((Vector3)hit["position"] - _body.GlobalPosition).Dot(forward.Normalized());
-		return Mathf.Clamp(along - ClawReach, 0f, PounceMaxDistance);
+		foreach (string group in new[] { "player", "bot" })
+		{
+			foreach (Node node in _body.GetTree().GetNodesInGroup(group))
+			{
+				if (node is not CharacterBody3D other || other == _body) continue;
+
+				Health health = other.GetNodeOrNull<Health>("Health");
+				if (health == null || health.IsDead) continue;
+				if (health.Team == _health.Team && !RoomConfig.Rules.FriendlyFire) continue;
+
+				Vector3 flat = other.GlobalPosition - _body.GlobalPosition;
+				flat.Y = 0;
+				if (flat.Length() > reach) continue;
+
+				float angle = look.AngleTo((other.GlobalPosition - eye).Normalized());
+				if (angle > bestAngle) continue;
+
+				var sight = PhysicsRayQueryParameters3D.Create(eye, other.GlobalPosition, 1);
+				sight.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid(), other.GetRid() };
+				if (_body.GetWorld3D().DirectSpaceState.IntersectRay(sight).Count > 0) continue;
+
+				best = other;
+				bestAngle = angle;
+			}
+		}
+
+		return best;
 	}
 
 	/// <summary>
@@ -998,12 +1070,13 @@ public partial class Weapon : Node3D
 			After(delay, id, () => BeginStep(duration, distance));
 	}
 
-	/// <summary>O passo da garrada: anda <paramref name="distance"/> em
-	/// <paramref name="duration"/>, para a frente do corpo. O pico do sino
-	/// é π/2 da média, para a distância total ser a mesma.</summary>
-	private void BeginStep(float duration, float distance)
+	/// <summary>O passo da garrada e o avanço do salto: anda
+	/// <paramref name="distance"/> em <paramref name="duration"/>, para a
+	/// frente do corpo ou na <paramref name="direction"/> dada. O pico do
+	/// sino é π/2 da média, para a distância total ser a mesma.</summary>
+	private void BeginStep(float duration, float distance, Vector3? direction = null)
 	{
-		Vector3 forward = -_body.GlobalTransform.Basis.Z;
+		Vector3 forward = direction ?? -_body.GlobalTransform.Basis.Z;
 		forward.Y = 0;
 		_stepForward = forward.Normalized();
 		_stepTotal = Mathf.Max(duration, 0.01f);
