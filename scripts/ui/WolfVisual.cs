@@ -71,15 +71,17 @@ public partial class WolfVisual : Node3D
     /// e a partir de qual é só correr. Entre as duas, andar e correr — e
     /// a faixa é curta de propósito: os dois clipes têm ciclos de tamanhos
     /// diferentes (1,43 s e 0,87 s), e misturados o pé de um puxa o do
-    /// outro e patina. O lobo agachado (2,6 m/s) já corre o clipe inteiro.</summary>
+    /// outro e patina.</summary>
     [Export] public float WalkSpeed = 1.5f;
     [Export] public float RunSpeed = 2.2f;
 
     /// <summary>A velocidade em que o pé de cada clipe não patina, em m/s:
     /// a passada medida no Mutant (andar 1,22 m/s, correr 2,20 m/s) vezes a
     /// escala do modelo. O clipe toca na razão entre a velocidade do corpo
-    /// e esta — o Bruto a 5,7 m/s corre o clipe a 2,4×. Antes ele tocava a
-    /// 1× até 7 m/s, e o corpo andava mais do dobro do que as pernas.</summary>
+    /// e esta — o Bruto a 3,6 m/s corre o clipe a 1,5×. Antes ele tocava a
+    /// 1× até 7 m/s, e o corpo andava mais do dobro do que as pernas. O
+    /// limite do que fica natural é a passada: correr além de ~1,6× fica
+    /// corrido, e por isso o lobo anda a 3,6 m/s (decisão do Jhon).</summary>
     [Export] public float WalkClipSpeed = 1.34f;
     [Export] public float RunClipSpeed = 2.42f;
 
@@ -101,7 +103,7 @@ public partial class WolfVisual : Node3D
     /// <summary>Clipes tocados como vêm do arquivo. Os golpes e o rugido
     /// saem de <see cref="WolfMoves.Clips"/>, recortados.</summary>
     private static readonly string[] Clips =
-        { "idle", "walk", "run", "death", "wallrun" };
+        { "idle", "walk", "run", "wallrun" };
 
     /// <summary>Disparos por cima da locomoção, na ordem da pilha: o de
     /// baixo é sobreposto pelos de cima.</summary>
@@ -559,7 +561,15 @@ public partial class WolfVisual : Node3D
         // No ar depois de um pulo, o voo do clipe de pulo; caindo de uma
         // beirada, o corpo segue na pose de antes.
         bool onWall = _player != null && _player.IsWallRunning && Has("wallrun");
-        bool jumping = !onWall && _player != null && _player.IsJumpAirborne && Has("jump");
+
+        // No ar o lobo cai, não anda: depois de um pulo (do chão ou da
+        // parede) e também soltando da parede ou caindo de uma beirada.
+        // Um instante no ar descendo rampa ou degrau não conta.
+        _airTime = _body.IsOnFloor() ? 0f : _airTime + (float)delta;
+        bool jumped = _player != null && _player.IsJumpAirborne;
+        bool falling = !_body.IsOnFloor() && (_airTime > 0.12f || _body.Velocity.Y < -2f);
+        bool special = _weapon.IsDiving || _weapon.IsPounceFlying || _weapon.IsRooted;
+        bool jumping = !onWall && !special && (jumped || falling) && Has("jump");
         if (onWall != _onWall || jumping != _jumping)
         {
             // Acabou o pulo no chão: chegou devagar, aterrissa; chegou
@@ -705,14 +715,39 @@ public partial class WolfVisual : Node3D
         WolfClip clip = WolfMoves.Clips["jump"];
         float apex = clip.Impact - clip.Start;
         float fall = clip.Length - apex;
-        float up = Mathf.Max(_player.JumpSpeed, 0.1f);
         float vy = _body.Velocity.Y;
 
-        float t = vy >= 0f
-            ? apex * (1f - Mathf.Clamp(vy / up, 0f, 1f))
-            : apex + fall * Mathf.Clamp(-vy / up, 0f, 0.92f);
+        // Subindo de um pulo: da saída ao topo, pela velocidade vertical.
+        // Descendo — de um pulo, de um salto da parede ou de uma queda —:
+        // a pose do topo, encolhido e de braços para cima, até o chão
+        // chegar perto; aí as pernas esticam para pousar. Pela velocidade,
+        // uma queda longa (saltar da parede) ficava de pernas esticadas e
+        // parado no ar o caminho todo.
+        float t;
+        if (vy > 0f && _player != null && _player.IsJumpAirborne)
+            t = apex * (1f - Mathf.Clamp(vy / Mathf.Max(_player.JumpSpeed, 0.1f), 0f, 1f));
+        else
+            t = apex + fall * 0.92f * (1f - Mathf.Clamp(GroundBelow() / LegReach, 0f, 1f));
 
         _tree.Set("parameters/Machine/Jump/Seek/seek_request", t);
+    }
+
+    /// <summary>A que altura do chão as pernas começam a esticar para
+    /// pousar, em metros dos pés.</summary>
+    private const float LegReach = 1.0f;
+
+    private float _airTime;
+
+    /// <summary>Distância dos pés até o chão logo abaixo, em metros.
+    /// Sem chão ao alcance, longe.</summary>
+    private float GroundBelow()
+    {
+        float feet = _player != null ? _player.FeetOffset : -0.875f;
+        Vector3 from = _body.GlobalPosition + Vector3.Up * feet;
+        var query = PhysicsRayQueryParameters3D.Create(from, from + Vector3.Down * (LegReach + 0.5f));
+        query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+        var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
+        return hit.Count == 0 ? LegReach * 2f : from.Y - ((Vector3)hit["position"]).Y;
     }
 
     /// <summary>Distância do centro do corpo à parede: o raio da cápsula.</summary>

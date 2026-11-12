@@ -41,12 +41,13 @@ public partial class Player : CharacterBody3D
     /// avanço, soltar encurta. Zero conserva tudo e tira a escolha.</summary>
     [Export] public float AirFriction = 7f;
 
-    /// <summary>Quanto do passo o lobo leva para o pulo do chão. O lobo
-    /// corre a 5,7 m/s e o pulo dele dura mais de um segundo: com o passo
-    /// inteiro, ele planava 6 m para a frente parado na pose de correr.
-    /// Vale para o pulo todo, até tocar o chão ou grudar numa parede — o
-    /// salto da parede não entra, ele conserva o avanço da corrida.</summary>
-    [Export] public float WolfJumpCarry = 0.55f;
+    /// <summary>Quanto do passo o lobo leva para o pulo do chão. Vale para
+    /// o pulo todo, até tocar o chão ou grudar numa parede — o salto da
+    /// parede não entra, ele conserva o avanço da corrida. Com o Bruto a
+    /// 5,7 m/s era 0,55, para ele não planar 6 m parado na pose de correr;
+    /// com ele a 3,6 m/s, 0,9 mantém o pulo que o Jhon aprovou: uns 3,8 m
+    /// para a frente.</summary>
+    [Export] public float WolfJumpCarry = 0.9f;
 
     /// <summary>Fração da velocidade enquanto agachado.</summary>
     [Export] public float CrouchSpeedFactor = 0.45f;
@@ -192,9 +193,10 @@ public partial class Player : CharacterBody3D
     /// <summary>
     /// Multiplicador de altura do salto da parede. Acima de 1 cada
     /// salto sai mais alto do que entrou, permitindo escalar um
-    /// corredor ricocheteando entre as paredes.
+    /// corredor ricocheteando entre as paredes. Era 1,35 (2,8 m de
+    /// subida, alto demais); 1,02 sobe 40% menos (decisão do Jhon).
     /// </summary>
-    [Export] public float WallJumpClimb = 1.35f;
+    [Export] public float WallJumpClimb = 1.02f;
 
     /// <summary>Força do empurrão para fora ao saltar da parede.</summary>
     [Export] public float WallJumpPush = 6.5f;
@@ -269,6 +271,11 @@ public partial class Player : CharacterBody3D
     /// pulo anda pela subida e pela queda medindo a velocidade de agora
     /// contra esta.</summary>
     public float JumpSpeed { get; private set; } = 1f;
+
+    /// <summary>No ar por um salto da parede: o bote daqui avança menos
+    /// (<see cref="Weapon.DiveForwardFromWall"/>).</summary>
+    public bool JumpedFromWall => IsJumpAirborne && _jumpFromWall;
+    private bool _jumpFromWall;
     private bool _clinging;
     private double _wallCooldown;
     private string _lastWallLog = "";
@@ -497,7 +504,16 @@ public partial class Player : CharacterBody3D
         ApplyCamera();
         _cameraKick = 0;
         _settled = false;
+
+        // Quem te matou: silhueta vermelha só para você, e a câmera vira
+        // para ele até você renascer.
+        _killCam?.Finish();
+        _killCam = null;
+        if (IsMultiplayerAuthority() && _health.Killer is Node3D killer && killer != this)
+            _killCam = KillCam.Begin(GetTree().CurrentScene ?? GetParent(), this, killer, GetViewport().GetCamera3D());
     }
+
+    private KillCam _killCam;
 
     /// <summary>
     /// Assenta o corpo morto.
@@ -554,6 +570,8 @@ public partial class Player : CharacterBody3D
 
     private void OnRespawned()
     {
+        _killCam?.Finish();
+        _killCam = null;
         ApplyCamera();
         _settled = false;
         _collision.SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
@@ -579,6 +597,10 @@ public partial class Player : CharacterBody3D
 
         _camera.Current = isMine && !third;
         _wolfCamera.Current = isMine && third;
+
+        // Morto, quem manda na tela é a câmera de morte.
+        if (_killCam != null && IsInstanceValid(_killCam) && _health != null && _health.IsDead)
+            _killCam.Reclaim();
 
         // A arma na mão é do dono e só existe em primeira pessoa.
         Node3D view = _camera.GetNodeOrNull<Node3D>("ViewModel");
@@ -937,6 +959,7 @@ public partial class Player : CharacterBody3D
         {
             velocity.Y = JumpVelocity * JumpScale;
             IsJumpAirborne = true;
+            _jumpFromWall = false;
             JumpSpeed = velocity.Y;
 
             // O lobo pula para cima, não para a frente.
@@ -1196,6 +1219,7 @@ public partial class Player : CharacterBody3D
             // de cima e por trás.
             velocity.Y = JumpVelocity * JumpScale * WallJumpClimb;
             IsJumpAirborne = true;
+            _jumpFromWall = true;
             JumpSpeed = velocity.Y;
 
             // O salto de parede também é um pulo. Faltava avisar, e no

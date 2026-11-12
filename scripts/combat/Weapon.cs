@@ -45,7 +45,7 @@ public partial class Weapon : Node3D
 	/// <summary>Pegou uma arma do chão. O HUD avisa qual.</summary>
 	[Signal] public delegate void PickedUpEventHandler(string id);
 
-	/// <summary>Soltou a arma da mão (B) ou deixou cair ao morrer.</summary>
+	/// <summary>Soltou a arma da mão (G) ou deixou cair ao morrer.</summary>
 	[Signal] public delegate void DroppedEventHandler(string id);
 
 	/// <summary>Um golpe do lobo começou (<see cref="WolfMove"/>). O corpo
@@ -124,6 +124,14 @@ public partial class Weapon : Node3D
 	/// encostou em nada: bate no ar e volta a cair. Com o mergulho mais
 	/// lento, 1,1 s mantém o alcance de antes (14 m).</summary>
 	[Export] public float DiveMaxTime = 1.1f;
+
+	/// <summary>Quanto do avanço horizontal o bote mantém (decisão do
+	/// Jhon): 0,8 — o mergulho desce igual e avança 20% menos.</summary>
+	[Export] public float DiveForward = 0.8f;
+
+	/// <summary>O mesmo depois de um salto da parede: dali o lobo sai mais
+	/// alto e o bote ia longe demais. Metade.</summary>
+	[Export] public float DiveForwardFromWall = 0.5f;
 
 	/// <summary>Volume do bote: um pouco maior que o do salto e das
 	/// garras (<see cref="ClawReach"/>, <see cref="ClawRadius"/>). Cair
@@ -1153,7 +1161,9 @@ public partial class Weapon : Node3D
 		aim = aim.Normalized();
 
 		DiveVelocity = aim * DiveSpeed;
-		DiveEta = TimeToContact(aim);
+		float forward = (_body as Player)?.JumpedFromWall == true ? DiveForwardFromWall : DiveForward;
+		DiveVelocity = new Vector3(DiveVelocity.X * forward, DiveVelocity.Y, DiveVelocity.Z * forward);
+		DiveEta = TimeToContact(DiveVelocity);
 
 		_diving = true;
 		_diveLeft = DiveMaxTime;
@@ -1169,9 +1179,11 @@ public partial class Weapon : Node3D
 
 	/// <summary>Em quanto tempo o mergulho encosta no cenário, pelo raio
 	/// dos pés na direção dele.</summary>
-	private float TimeToContact(Vector3 direction)
+	private float TimeToContact(Vector3 velocity)
 	{
-		float range = DiveSpeed * DiveMaxTime;
+		float speed = Mathf.Max(velocity.Length(), 0.1f);
+		Vector3 direction = velocity / speed;
+		float range = speed * DiveMaxTime;
 		Vector3 feet = _body.GlobalPosition + Vector3.Down * 0.8f;
 
 		var query = PhysicsRayQueryParameters3D.Create(feet, feet + direction * range, 1);
@@ -1179,7 +1191,7 @@ public partial class Weapon : Node3D
 		var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
 
 		if (hit.Count == 0) return DiveMaxTime;
-		return feet.DistanceTo((Vector3)hit["position"]) / DiveSpeed;
+		return feet.DistanceTo((Vector3)hit["position"]) / speed;
 	}
 
 	/// <summary>Durante o mergulho: alguém na frente encerra o bote em
@@ -1588,7 +1600,7 @@ public partial class Weapon : Node3D
 		PrimaryDef != null ? Slot.Primary : SecondaryDef != null ? Slot.Secondary : Slot.Knife;
 
 	/// <summary>
-	/// Solta a arma da mão (B), jogando-a para frente, e passa para a
+	/// Solta a arma da mão (G), jogando-a para frente, e passa para a
 	/// próxima: da primária vai à secundária, da secundária à faca.
 	/// Faca e granada não se soltam. A arma cai no chão com o pente que
 	/// tinha, e quem passar por cima com o espaço vazio fica com ela.
