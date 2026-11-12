@@ -32,12 +32,10 @@ public partial class HealthBar3D : Node3D
 
         Position = new Vector3(0, HeightAbove, 0);
 
-        // Aliado na cor do time; inimigo no vermelho de sempre. A barra
-        // é a segunda coisa que se lê num encontro, depois da cor do
-        // corpo, e as duas precisam dizer a mesma coisa.
-        var local = GetTree().GetFirstNodeInGroup("player")?.GetNodeOrNull<Health>("Health");
-        bool ally = local != null && local.Team == _health.Team;
-        Color hp = ally ? Teams.ColorOf(_health.Team) : HpColor;
+        // Na cor do time, aliado ou inimigo. A barra é a segunda coisa
+        // que se lê num encontro, depois da cor do corpo, e as duas
+        // precisam dizer a mesma coisa.
+        Color hp = Teams.ColorOf(_health.Team);
 
         Make(BackColor, Width, Height, 0f, out _);
         Make(hp, Width, Height, 0.001f, out _hpFill);

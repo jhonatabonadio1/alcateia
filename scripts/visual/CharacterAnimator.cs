@@ -170,7 +170,7 @@ public partial class CharacterAnimator : Node3D
     [Export] public bool TintByTeam = true;
 
     [Export] public Color BlueBody = new Color(0.22f, 0.45f, 0.95f);
-    [Export] public Color RedBody = new Color(0.92f, 0.26f, 0.2f);
+    [Export] public Color OrangeBody = new Color(1f, 0.48f, 0.16f);
 
     [Export] public bool Debug = true;
 
@@ -498,7 +498,7 @@ public partial class CharacterAnimator : Node3D
     {
         if (!TintByTeam || _health == null) return;
 
-        Color body = _health.Team == Teams.Blue ? BlueBody : RedBody;
+        Color body = _health.Team == Teams.Blue ? BlueBody : OrangeBody;
         Color joints = body.Darkened(0.6f);
 
         Paint(_model);

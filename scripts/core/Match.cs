@@ -1,9 +1,10 @@
 using Godot;
 using System.Collections.Generic;
+using System.Linq;
 
 public enum MatchPhase
 {
-    /// <summary>Todos na base, ninguém se mexe. Hora de escolher o lote.</summary>
+    /// <summary>Todos na base, ninguém se mexe. Hora de escolher o conjunto.</summary>
     Countdown,
 
     /// <summary>Valendo.</summary>
@@ -20,38 +21,54 @@ public sealed class CombatantStats
     public int Team;
     public int Kills;
     public int Deaths;
+    public int Assists;
+    /// <summary>Abates seguidos sem morrer, agora.</summary>
+    public int Spree;
+    public int BestSpree;
+    public int Rank;
     public bool IsLocal;
+    public bool IsBot;
+
+    /// <summary>O corpo, para o placar ler vivo/morto e forma na hora.</summary>
+    public Health Health;
+    public FormController Form;
+
+    public int Points => Kills * Match.PointsPerKill + Assists * Match.PointsPerAssist;
+    public bool IsDead => Health != null && GodotObject.IsInstanceValid(Health) && Health.IsDead;
+    public bool IsWolf => Form != null && GodotObject.IsInstanceValid(Form) && Form.IsWolf;
 }
 
 /// <summary>
-/// A partida: mata-mata em equipe, Azul contra Vermelho.
+/// A partida: mata-mata em equipe, Azul contra Laranja.
 ///
 /// Ganha o time que fizer <see cref="ScoreToWin"/> abates primeiro. Se o
 /// tempo acabar antes, ganha quem tiver mais; empate é empate.
-///
-/// Existe porque sem ela o jogo era um campo de testes: morrer não
-/// custava nada e matar rendia só WP. A pergunta que decide o projeto —
-/// "transformar é gostoso?" — não se responde sem aposta. Virar lobo
-/// com o placar 38 a 38 é uma decisão; virar lobo sem placar é um botão.
 ///
 /// A partida não sabe quem atirou em quem. Ela escuta o
 /// <see cref="KillFeed"/>, o mesmo barramento que alimenta o feed na
 /// tela, e conta. Quem mata não precisa saber que existe placar.
 ///
-/// Fora de uma partida — a cena de treino, a referência do Arrival —
-/// não há instância, e <see cref="IsLive"/> responde verdadeiro: tudo
-/// funciona como antes, sem contagem nem fim.
+/// No fim ela monta o <see cref="MatchResult"/> do jogador local e passa
+/// pela <see cref="Progression"/> — uma vez só — guardando o resumo em
+/// <see cref="Reward"/> para a tela de resultado animar.
+///
+/// Fora de uma partida — a cena de treino — não há instância, e
+/// <see cref="IsLive"/> responde verdadeiro: tudo funciona como antes,
+/// sem contagem nem fim.
 /// </summary>
 public partial class Match : Node
 {
     [Signal] public delegate void PhaseChangedEventHandler(int phase);
-    [Signal] public delegate void ScoreChangedEventHandler(int blue, int red);
+    [Signal] public delegate void ScoreChangedEventHandler(int blue, int orange);
+
+    public const int PointsPerKill = 10;
+    public const int PointsPerAssist = 5;
 
     [Export] public int ScoreToWin = 40;
 
     /// <summary>Contagem antes de valer, em segundos. É também o tempo
-    /// da tela de lote, de propósito: escolhe-se o equipamento enquanto
-    /// se espera, e ninguém sai da base com vantagem.</summary>
+    /// da tela de conjunto, de propósito: escolhe-se o equipamento
+    /// enquanto se espera, e ninguém sai da base com vantagem.</summary>
     [Export] public float CountdownTime = 10f;
 
     /// <summary>Duração da partida, em segundos.</summary>
@@ -75,22 +92,42 @@ public partial class Match : Node
     /// <summary>Terminou por pontos, e não por tempo.</summary>
     public bool EndedByScore { get; private set; }
 
+    /// <summary>O que o jogador ganhou — preenchido no fim.</summary>
+    public RewardSummary Reward { get; private set; }
+    public MatchResult Result { get; private set; }
+
     public IEnumerable<CombatantStats> Combatants => _stats.Values;
+
+    /// <summary>Maior pontuação da partida (desempate por abates).</summary>
+    public CombatantStats Mvp => _stats.Values
+        .OrderByDescending(s => s.Points).ThenByDescending(s => s.Kills).ThenBy(s => s.Deaths)
+        .FirstOrDefault(s => s.Points > 0);
 
     private readonly int[] _score = new int[3];
     private readonly Dictionary<string, CombatantStats> _stats = new();
     private bool _rostered;
 
-    public int ScoreOf(int team) => team == Teams.Blue || team == Teams.Red ? _score[team] : 0;
+    // Só do jogador local, para o resultado.
+    private CombatantStats _local;
+    private int _localHeadshots, _localKillsWolf, _localKillsHuman;
+    private double _localSeconds, _localSecondsHuman, _localSecondsWolf;
+    private readonly Dictionary<string, int> _localByWeapon = new();
+
+    public int ScoreOf(int team) => team == Teams.Blue || team == Teams.Orange ? _score[team] : 0;
 
     public override void _EnterTree() => Current = this;
 
     public override void _Ready()
     {
-        if (RoomConfig.Active)
+        ScoreToWin = RoomConfig.Active ? RoomConfig.ScoreToWin : ScoreToWin;
+        Duration = RoomConfig.Active ? RoomConfig.Duration : Duration;
+
+        // Atalhos de desenvolvimento, para ver o fim sem jogar dez
+        // minutos: -- --duracao=30 --contagem=2
+        foreach (string arg in OS.GetCmdlineUserArgs())
         {
-            ScoreToWin = RoomConfig.ScoreToWin;
-            Duration = RoomConfig.Duration;
+            if (arg.StartsWith("--duracao=") && float.TryParse(arg["--duracao=".Length..], out float d)) Duration = d;
+            if (arg.StartsWith("--contagem=") && float.TryParse(arg["--contagem=".Length..], out float c)) CountdownTime = c;
         }
 
         CountdownLeft = CountdownTime;
@@ -107,12 +144,10 @@ public partial class Match : Node
 
     public override void _Process(double delta)
     {
-        // A lista sai no primeiro quadro, não no _Ready: os bots só
-        // recebem nome e time no _EnterTree deles, e a ordem de entrada
-        // na árvore não é algo em que valha confiar.
-        // Durante a contagem a lista é refeita a cada quadro: os bots
-        // nascem no _Ready do MatchSetup, e confiar que isso acontece antes
-        // do primeiro quadro daqui seria apostar na ordem da cena.
+        // A lista sai no primeiro quadro e é refeita durante a contagem:
+        // os bots nascem no _Ready do MatchSetup, e confiar que isso
+        // acontece antes do primeiro quadro daqui seria apostar na ordem
+        // da cena.
         if (!_rostered || Phase == MatchPhase.Countdown)
         {
             Roster();
@@ -132,6 +167,7 @@ public partial class Match : Node
 
             case MatchPhase.Live:
                 TimeLeft -= delta;
+                TrackLocal(delta);
                 if (TimeLeft <= 0)
                 {
                     TimeLeft = 0;
@@ -141,16 +177,22 @@ public partial class Match : Node
         }
     }
 
-    public override void _UnhandledInput(InputEvent @event)
+    /// <summary>Recomeça a mesma partida, com a mesma sala.</summary>
+    public void Restart()
     {
-        if (Phase != MatchPhase.Ended || !@event.IsActionPressed("restart")) return;
-
         // O contador de menus é estático e sobrevive à troca de cena. Se
-        // algum menu estava aberto no fim, a cena nova nasceria achando
-        // que já há menus por cima — e a tela de lote nunca contaria o
-        // tempo, porque ela só conta quando está sozinha.
+        // algum menu estava aberto, a cena nova nasceria achando que já há
+        // menus por cima.
         UiState.Reset();
         GetTree().ReloadCurrentScene();
+    }
+
+    /// <summary>Volta ao menu: para a sala, ou para a lista de salas.</summary>
+    public void Leave(ReturnTarget target)
+    {
+        UiState.Reset();
+        RoomConfig.ReturnTo = RoomConfig.Active ? target : ReturnTarget.RoomList;
+        GetTree().ChangeSceneToFile("res://scenes/menu/menu.tscn");
     }
 
     // ------------------------------------------------------------------
@@ -169,6 +211,14 @@ public partial class Match : Node
 
                 CombatantStats entry = Entry(health.PublicName, health.Team);
                 entry.IsLocal = group == "player";
+                entry.IsBot = group == "bot";
+                entry.Health = health;
+                entry.Form = node.GetNodeOrNull<FormController>("FormController");
+                entry.Rank = entry.IsLocal
+                    ? Profile.Rank
+                    : Ranks.ForBot(entry.Name, (int)RoomConfig.Rules.Difficulty);
+
+                if (entry.IsLocal) _local = entry;
             }
         }
     }
@@ -184,24 +234,51 @@ public partial class Match : Node
         return entry;
     }
 
+    public CombatantStats StatsOf(string name) => _stats.TryGetValue(name ?? "", out CombatantStats s) ? s : null;
+
+    private void TrackLocal(double delta)
+    {
+        if (_local == null) return;
+        _localSeconds += delta;
+        if (_local.IsDead) return;
+        if (_local.IsWolf) _localSecondsWolf += delta;
+        else _localSecondsHuman += delta;
+    }
+
     private void OnKill(Kill kill)
     {
         // Abate na contagem ou depois do fim não vale nada.
         if (Phase != MatchPhase.Live) return;
 
-        Entry(kill.Victim, kill.VictimTeam).Deaths++;
+        CombatantStats victim = Entry(kill.Victim, kill.VictimTeam);
+        victim.Deaths++;
+        victim.Spree = 0;
 
         // Só abate de inimigo pontua. Queda, granada nos próprios pés e
         // qualquer coisa sem autor contam como morte e nada mais.
-        bool scores = (kill.KillerTeam == Teams.Blue || kill.KillerTeam == Teams.Red)
+        bool scores = (kill.KillerTeam == Teams.Blue || kill.KillerTeam == Teams.Orange)
             && kill.KillerTeam != kill.VictimTeam;
 
         if (!scores) return;
 
-        Entry(kill.Killer, kill.KillerTeam).Kills++;
-        _score[kill.KillerTeam]++;
+        CombatantStats killer = Entry(kill.Killer, kill.KillerTeam);
+        killer.Kills++;
+        killer.Spree++;
+        killer.BestSpree = Mathf.Max(killer.BestSpree, killer.Spree);
 
-        EmitSignal(SignalName.ScoreChanged, _score[Teams.Blue], _score[Teams.Red]);
+        foreach (string name in kill.Assisters)
+            if (name != kill.Killer) Entry(name, kill.KillerTeam).Assists++;
+
+        if (killer == _local)
+        {
+            if (kill.Cause == KillCause.Headshot) _localHeadshots++;
+            if (kill.ByWolf) _localKillsWolf++; else _localKillsHuman++;
+            if (!string.IsNullOrEmpty(kill.Weapon) && kill.Weapon != "lobo")
+                _localByWeapon[kill.Weapon] = (_localByWeapon.TryGetValue(kill.Weapon, out int n) ? n : 0) + 1;
+        }
+
+        _score[kill.KillerTeam]++;
+        EmitSignal(SignalName.ScoreChanged, _score[Teams.Blue], _score[Teams.Orange]);
 
         if (_score[kill.KillerTeam] >= ScoreToWin)
             End(byScore: true);
@@ -212,10 +289,42 @@ public partial class Match : Node
         EndedByScore = byScore;
 
         int blue = _score[Teams.Blue];
-        int red = _score[Teams.Red];
-        Winner = blue > red ? Teams.Blue : red > blue ? Teams.Red : 0;
+        int orange = _score[Teams.Orange];
+        Winner = blue > orange ? Teams.Blue : orange > blue ? Teams.Orange : 0;
 
+        Payout();
         SetPhase(MatchPhase.Ended);
+    }
+
+    /// <summary>Monta o resultado do jogador local e paga XP e Presas.
+    /// Antes da troca de fase, para a tela de resultado já encontrar o
+    /// resumo pronto quando o sinal chegar.</summary>
+    private void Payout()
+    {
+        if (_local == null || Reward != null) return;
+
+        CombatantStats mvp = Mvp;
+
+        Result = new MatchResult
+        {
+            Won = Winner != 0 && Winner == _local.Team,
+            Draw = Winner == 0,
+            Kills = _local.Kills,
+            Deaths = _local.Deaths,
+            Assists = _local.Assists,
+            Headshots = _localHeadshots,
+            KillsWolf = _localKillsWolf,
+            KillsHuman = _localKillsHuman,
+            Points = _local.Points,
+            Mvp = mvp == _local,
+            Seconds = _localSeconds,
+            SecondsHuman = _localSecondsHuman,
+            SecondsWolf = _localSecondsWolf,
+            KillsByWeapon = new Dictionary<string, int>(_localByWeapon),
+            Breed = Profile.Breed
+        };
+
+        Reward = Progression.Apply(Result);
     }
 
     private void SetPhase(MatchPhase phase)
@@ -224,6 +333,6 @@ public partial class Match : Node
         EmitSignal(SignalName.PhaseChanged, (int)phase);
 
         if (Debug)
-            GD.Print($"Partida: {phase}  (AZUL {_score[Teams.Blue]} x {_score[Teams.Red]} VERMELHO)");
+            GD.Print($"Partida: {phase}  (AZUL {_score[Teams.Blue]} x {_score[Teams.Orange]} LARANJA)");
     }
 }

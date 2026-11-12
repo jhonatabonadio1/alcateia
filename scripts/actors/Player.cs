@@ -92,6 +92,9 @@ public partial class Player : CharacterBody3D
     [Export] public float CrouchLerpSpeed = 22f;
     [Export] public float MouseSensitivity = 0.002f;
 
+    /// <summary>Sensibilidade efetiva: a base daqui vezes a das opções.</summary>
+    private float Sensitivity => MouseSensitivity * Settings.Values.Sensitivity;
+
     /// <summary>Escudo recuperado por segundo de rugido. O rugido é
     /// segurado, não apertado: é uma troca contínua entre ficar parado
     /// e recuperar o escudo.</summary>
@@ -287,6 +290,11 @@ public partial class Player : CharacterBody3D
         // câmera atravessa o cenário durante a corrida em parede.
         _springArm.SpringLength = ThirdPersonDistance;
         _springArm.AddExcludedObject(GetRid());
+
+        // A classe de lobo e as tatuagens vêm do perfil. Cópia do recurso:
+        // o original é o mesmo dos bots.
+        WolfBreed breed = Profile.BuildBreed();
+        if (breed != null) _form.Breed = breed;
 
         _form.FormChanged += OnFormChanged;
         _weapon.Fired += OnWeaponFired;
@@ -512,9 +520,9 @@ public partial class Player : CharacterBody3D
 
         if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured)
         {
-            RotateY(-motion.Relative.X * MouseSensitivity);
+            RotateY(-motion.Relative.X * Sensitivity);
 
-            float pitch = motion.Relative.Y * MouseSensitivity;
+            float pitch = motion.Relative.Y * Sensitivity;
 
             // Puxar o mouse para baixo durante o recuo já é a volta,
             // feita à mão. Desconta do que falta voltar, senão a volta

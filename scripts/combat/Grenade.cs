@@ -83,7 +83,7 @@ public partial class Grenade : RigidBody3D
             // Aliado passa ileso, dano e atordoamento. Quem lançou não:
             // granada aos próprios pés tem que custar alguma coisa.
             if (health != null && Thrower != null && health != Thrower
-                && health.Team == Thrower.Team)
+                && health.Team == Thrower.Team && !RoomConfig.Rules.FriendlyFire)
                 continue;
 
             bool wasAlive = health != null && !health.IsDead;
@@ -112,7 +112,7 @@ public partial class Grenade : RigidBody3D
         KillFeed.Report(new Kill(
             Thrower.PublicName, Thrower.Team,
             victim.PublicName, victim.Team,
-            KillCause.Grenade));
+            KillCause.Grenade, "choque"));
     }
 
     /// <summary>Clarão que cresce e some. Peça descartável — vira

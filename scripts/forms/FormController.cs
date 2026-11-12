@@ -141,6 +141,14 @@ public partial class FormController : Node
         switch (Current)
         {
             case Form.Human:
+                // A sala pode proibir o lobo. Faltando −1 é o código de
+                // "bloqueado" para o HUD, que não é falta de WP.
+                if (RoomConfig.Rules.Transform == TransformRule.Bloqueada)
+                {
+                    EmitSignal(SignalName.TransformDenied, -1f);
+                    return;
+                }
+
                 if (Breed == null)
                 {
                     GD.PrintErr("FormController: nenhuma WolfBreed atribuída.");
@@ -204,6 +212,14 @@ public partial class FormController : Node
     /// <summary>Uivo: recarrega escudo em troca de ficar parado e
     /// denunciar a posição pelo som. Só faz sentido na forma lobo.</summary>
     public bool CanHowl => Current == Form.Wolf;
+
+    /// <summary>Segundos que faltam da transformação em andamento.</summary>
+    public float ShiftLeft => IsShifting ? (float)Mathf.Max(_shiftTimer, 0) : 0f;
+
+    /// <summary>Duração total da transformação em andamento.</summary>
+    public float ShiftTotal => Current == Form.ShiftingToWolf ? ShiftDuration : ShiftBackDuration;
+
+    public bool IsShifting => Current == Form.ShiftingToWolf || Current == Form.ShiftingToHuman;
 
     private bool KeepRatio => !RefillOnTransform;
 

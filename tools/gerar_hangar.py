@@ -56,10 +56,9 @@ MATERIALS = {
     "pad":     dict(color=(0.28, 0.29, 0.31), grid=True),
     "trim":    dict(color=(0.95, 0.74, 0.16), grid=False, roughness=0.6),
     "blue":    dict(color=(0.24, 0.44, 0.86), grid=True),
-    "red":     dict(color=(0.84, 0.27, 0.23), grid=True),
+    "teamorange": dict(color=(0.95, 0.47, 0.16), grid=True),
     "bluepad": dict(color=(0.16, 0.30, 0.60), grid=True),
-    "redpad":  dict(color=(0.58, 0.17, 0.15), grid=True),
-    "orange":  dict(color=(0.86, 0.47, 0.16), grid=True),
+    "orangepad": dict(color=(0.60, 0.27, 0.09), grid=True),
     "teal":    dict(color=(0.16, 0.50, 0.50), grid=True),
     "green":   dict(color=(0.32, 0.50, 0.27), grid=True),
     "crate":   dict(color=(0.56, 0.43, 0.26), grid=True),
@@ -132,10 +131,10 @@ for sz, tz in ((1, "Norte"), (-1, "Sul")):
     box("Pontes", f"Ponte{tz}", (0, 4.75, sz * 18.5), (28, 0.5, 3), "metal")
     box("Pontes", f"Ponte{tz}Grade", (0, 5.4, sz * 19.85), (28, 0.8, 0.3), "trim")
 
-# --- Cada lado. s = +1 é o lado B (vermelho), s = −1 o lado A (azul).
+# --- Cada lado. s = +1 é o lado B (laranja), s = −1 o lado A (azul).
 for s, side in ((-1, "A"), (1, "B")):
-    team_mat = "blue" if side == "A" else "red"
-    pad_mat = "bluepad" if side == "A" else "redpad"
+    team_mat = "blue" if side == "A" else "teamorange"
+    pad_mat = "bluepad" if side == "A" else "orangepad"
     g = f"Base{side}"
 
     # Base: galpão de 10 x 21 m com teto a 5 m, aberto para o centro.
@@ -153,12 +152,12 @@ for s, side in ((-1, "A"), (1, "B")):
 
     # Contêineres empilhados entre a base e os blocos.
     for sz, tz in ((1, "Norte"), (-1, "Sul")):
-        box(g, f"Conteiner{tz}", (s * 29, 1.1, sz * 15), (6, 2.2, 2.6), "orange")
+        box(g, f"Conteiner{tz}", (s * 29, 1.1, sz * 15), (6, 2.2, 2.6), "green")
         box(g, f"Conteiner{tz}Alto", (s * 29, 3.3, sz * 15), (4, 2.2, 2.6), "teal")
         box(g, f"Caixote{tz}Escada", (s * 29, 0.4, sz * 17.9), (1.6, 0.8, 1.6), "crate")
 
     yaw = 90 if side == "A" else -90
-    color = (0.45, 0.65, 1.0) if side == "A" else (1.0, 0.45, 0.4)
+    color = (0.45, 0.65, 1.0) if side == "A" else (1.0, 0.58, 0.28)
     label(g, "Letra", (s * 31.8, 8.2, 0), side, 520, color, yaw)
     label(g, "Nome", (s * 31.8, 6.4, 0), "BASE AZUL" if side == "A" else "BASE VERMELHA",
           110, color, yaw)

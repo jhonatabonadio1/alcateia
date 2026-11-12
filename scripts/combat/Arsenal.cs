@@ -67,9 +67,11 @@ public static class Arsenal
         if (string.IsNullOrEmpty(id)) return null;
         if (_cache.TryGetValue(id, out WeaponDefinition cached)) return cached;
 
-        var definition = GD.Load<WeaponDefinition>($"res://resources/weapons/{id}.tres");
-        if (definition == null)
-            GD.PrintErr($"Arsenal: arma '{id}' não encontrada.");
+        // Nem todo id é arma de fogo: a faca, a granada e os itens da
+        // loja passam por aqui e não têm definição. Ausência é resposta
+        // normal (nulo), não erro.
+        string path = $"res://resources/weapons/{id}.tres";
+        WeaponDefinition definition = ResourceLoader.Exists(path) ? GD.Load<WeaponDefinition>(path) : null;
 
         _cache[id] = definition;
         return definition;

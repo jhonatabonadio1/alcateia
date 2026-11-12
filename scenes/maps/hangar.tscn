@@ -1,4 +1,4 @@
-[gd_scene load_steps=68 format=3]
+[gd_scene load_steps=67 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/textures/grid.png" id="1_grid"]
 [ext_resource type="Script" path="res://scripts/core/SpawnPoints.cs" id="2_spawns"]
@@ -66,8 +66,8 @@ uv1_triplanar = true
 uv1_world_triplanar = true
 roughness = 0.9
 
-[sub_resource type="StandardMaterial3D" id="M_red"]
-albedo_color = Color(0.84, 0.27, 0.23, 1)
+[sub_resource type="StandardMaterial3D" id="M_teamorange"]
+albedo_color = Color(0.95, 0.47, 0.16, 1)
 albedo_texture = ExtResource("1_grid")
 uv1_scale = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
@@ -82,16 +82,8 @@ uv1_triplanar = true
 uv1_world_triplanar = true
 roughness = 0.9
 
-[sub_resource type="StandardMaterial3D" id="M_redpad"]
-albedo_color = Color(0.58, 0.17, 0.15, 1)
-albedo_texture = ExtResource("1_grid")
-uv1_scale = Vector3(0.5, 0.5, 0.5)
-uv1_triplanar = true
-uv1_world_triplanar = true
-roughness = 0.9
-
-[sub_resource type="StandardMaterial3D" id="M_orange"]
-albedo_color = Color(0.86, 0.47, 0.16, 1)
+[sub_resource type="StandardMaterial3D" id="M_orangepad"]
+albedo_color = Color(0.6, 0.27, 0.09, 1)
 albedo_texture = ExtResource("1_grid")
 uv1_scale = Vector3(0.5, 0.5, 0.5)
 uv1_triplanar = true
@@ -559,7 +551,7 @@ shape = SubResource("S15")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseA/ConteinerNorte"]
 mesh = SubResource("B16")
-material_override = SubResource("M_orange")
+material_override = SubResource("M_green")
 
 [node name="ConteinerNorteAlto" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29, 3.3, 15)
@@ -589,7 +581,7 @@ shape = SubResource("S15")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseA/ConteinerSul"]
 mesh = SubResource("B16")
-material_override = SubResource("M_orange")
+material_override = SubResource("M_green")
 
 [node name="ConteinerSulAlto" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29, 3.3, -15)
@@ -729,7 +721,7 @@ shape = SubResource("S11")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/ParedeNorte"]
 mesh = SubResource("B11")
-material_override = SubResource("M_red")
+material_override = SubResource("M_teamorange")
 
 [node name="ParedeSul" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 2.5, -10)
@@ -739,7 +731,7 @@ shape = SubResource("S11")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/ParedeSul"]
 mesh = SubResource("B11")
-material_override = SubResource("M_red")
+material_override = SubResource("M_teamorange")
 
 [node name="Teto" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 5.25, 0)
@@ -749,7 +741,7 @@ shape = SubResource("S12")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/Teto"]
 mesh = SubResource("B12")
-material_override = SubResource("M_red")
+material_override = SubResource("M_teamorange")
 
 [node name="PilarNorte" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, 2.5, 5)
@@ -759,7 +751,7 @@ shape = SubResource("S13")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/PilarNorte"]
 mesh = SubResource("B13")
-material_override = SubResource("M_red")
+material_override = SubResource("M_teamorange")
 
 [node name="PilarSul" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, 2.5, -5)
@@ -769,12 +761,12 @@ shape = SubResource("S13")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/PilarSul"]
 mesh = SubResource("B13")
-material_override = SubResource("M_red")
+material_override = SubResource("M_teamorange")
 
 [node name="Piso" type="MeshInstance3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 0.012, 0)
 mesh = SubResource("B14")
-material_override = SubResource("M_redpad")
+material_override = SubResource("M_orangepad")
 
 [node name="CaixoteNorte" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 0.4, 4)
@@ -804,7 +796,7 @@ shape = SubResource("S15")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/ConteinerNorte"]
 mesh = SubResource("B16")
-material_override = SubResource("M_orange")
+material_override = SubResource("M_green")
 
 [node name="ConteinerNorteAlto" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 3.3, 15)
@@ -834,7 +826,7 @@ shape = SubResource("S15")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/ConteinerSul"]
 mesh = SubResource("B16")
-material_override = SubResource("M_orange")
+material_override = SubResource("M_green")
 
 [node name="ConteinerSulAlto" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 3.3, -15)
@@ -985,7 +977,7 @@ outline_size = 8
 [node name="Letra" type="Label3D" parent="BaseB"]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 31.8, 8.2, 0)
 pixel_size = 0.01
-modulate = Color(1, 0.45, 0.4, 1)
+modulate = Color(1, 0.58, 0.28, 1)
 text = "B"
 font_size = 520
 outline_size = 37
@@ -993,7 +985,7 @@ outline_size = 37
 [node name="Nome" type="Label3D" parent="BaseB"]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 31.8, 6.4, 0)
 pixel_size = 0.01
-modulate = Color(1, 0.45, 0.4, 1)
+modulate = Color(1, 0.58, 0.28, 1)
 text = "BASE VERMELHA"
 font_size = 110
 outline_size = 8
@@ -1012,7 +1004,7 @@ omni_range = 12
 
 [node name="Luz" type="OmniLight3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 4.2, 0)
-light_color = Color(1, 0.45, 0.4, 1)
+light_color = Color(1, 0.58, 0.28, 1)
 light_energy = 1.4
 omni_range = 12
 

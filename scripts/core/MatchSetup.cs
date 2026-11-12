@@ -58,6 +58,9 @@ public partial class MatchSetup : Node
             // nasceu no _Ready, e é para lá que ele volta se cair do mapa.
             Place(bot, team, used);
             bots.AddChild(bot);
+
+            // A regra de armas da sala vale para os bots também.
+            RoomRules.EquipBot(bot.GetNode<Weapon>("Weapon"));
         }
     }
 
@@ -75,7 +78,7 @@ public partial class MatchSetup : Node
         else body.Position = at;
 
         // Olhando para o centro do mapa. O azul nasce a oeste e olha para
-        // leste; o vermelho, o contrário.
+        // leste; o laranja, o contrário.
         float yaw = team == Teams.Blue ? -Mathf.Pi / 2f : Mathf.Pi / 2f;
         body.Rotation = new Vector3(0, yaw, 0);
     }

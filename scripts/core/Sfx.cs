@@ -223,7 +223,7 @@ public static class Sfx
     /// InputSetup: uma fonte só, sem depender do editor. Separados para
     /// o menu de opções poder ter um volume para cada.
     /// </summary>
-    private static void EnsureBuses()
+    public static void EnsureBuses()
     {
         if (_busesReady) return;
         _busesReady = true;

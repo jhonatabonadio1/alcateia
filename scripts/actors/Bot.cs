@@ -494,7 +494,8 @@ public partial class Bot : CharacterBody3D
             AmmoRatio = mag > 0 ? (float)ammo / mag : 1f,
             MagEmpty = ammo <= 0,
             IsWolf = _form.IsWolf,
-            CanTransform = !_form.IsWolf && _form.Breed != null,
+            CanTransform = !_form.IsWolf && _form.Breed != null
+                && RoomConfig.Rules.Transform != TransformRule.Bloqueada,
             ThreatAge = (float)_threatAge,
             BeliefAge = (float)_beliefAge,
             HasBelief = _hasBelief && _memoryTimer > 0,

@@ -35,6 +35,13 @@ public partial class Weapon : Node3D
 	/// <summary>Munição do carregador mudou, ou a recarga começou.</summary>
 	[Signal] public delegate void AmmoChangedEventHandler(int inMag, int magSize, bool reloading);
 
+	/// <summary>Um ataque de lobo entrou em recarga: <paramref name="kind"/>
+	/// é 0 garrada, 1 patada, 2 bote. O HUD do lobo anima a volta a partir
+	/// daqui, sem consultar a arma a cada quadro.</summary>
+	[Signal] public delegate void AttackCooldownEventHandler(int kind, float seconds);
+
+	public const int CooldownClaw = 0, CooldownHeavy = 1, CooldownLeap = 2;
+
 	// Os números das armas de fogo vêm de WeaponDefinition (o arsenal).
 	// Aqui ficam só faca, granada e garras, que não são itens de compra.
 
@@ -216,8 +223,8 @@ public partial class Weapon : Node3D
 	/// <summary>Dispersão de agora, em graus — para a mira poder crescer junto.</summary>
 	public float CurrentSpread => Held == null ? 0f : SpreadNow(Held);
 
-	private int AmmoInMag => HumanSlot == Slot.Primary ? PrimaryAmmo : SecondaryAmmo;
-	private int MagSize => HumanSlot == Slot.Primary ? PrimaryMag : SecondaryMag;
+	public int AmmoInMag => HumanSlot == Slot.Primary ? PrimaryAmmo : SecondaryAmmo;
+	public int MagSize => HumanSlot == Slot.Primary ? PrimaryMag : SecondaryMag;
 
 	/// <summary>Recarrega o carregador em uso. Só faz sentido com arma
 	/// de fogo na mão e com o carregador incompleto.</summary>
@@ -634,6 +641,7 @@ public partial class Weapon : Node3D
 		_comboIndex = 0;
 
 		EmitSignal(SignalName.Fired);
+		EmitSignal(SignalName.AttackCooldown, CooldownHeavy, HeavyCooldown);
 
 		Lunge();
 		Claw(HeavyDamageBonus);
@@ -647,6 +655,7 @@ public partial class Weapon : Node3D
 		_comboIndex = 0;
 
 		EmitSignal(SignalName.Fired);
+		EmitSignal(SignalName.AttackCooldown, CooldownLeap, LeapCooldown);
 
 		Claw(LeapDamageBonus);
 
@@ -670,6 +679,7 @@ public partial class Weapon : Node3D
 		_cooldown = ComboCooldown;
 
 		EmitSignal(SignalName.Fired);
+		EmitSignal(SignalName.AttackCooldown, CooldownClaw, ComboCooldown);
 
 		Lunge();
 		Claw(multiplier);
@@ -755,9 +765,11 @@ public partial class Weapon : Node3D
 	/// </summary>
 	private void Damage(Health target, float amount, Vector3 from, bool headshot)
 	{
-		// Fogo amigo desligado: num jogo de duas formas, confundir
-		// aliado com inimigo já acontece demais pela silhueta.
-		if (_health != null && target.Team == _health.Team) return;
+		// Fogo amigo desligado por padrão: num jogo de duas formas,
+		// confundir aliado com inimigo já acontece demais pela silhueta.
+		// A sala pode ligar.
+		if (_health != null && target.Team == _health.Team && target != _health
+			&& !RoomConfig.Rules.FriendlyFire) return;
 
 		bool wasAlive = !target.IsDead;
 
@@ -775,15 +787,29 @@ public partial class Weapon : Node3D
 		// Quem ajudou nos últimos segundos também ganha. Sem assistência,
 		// quem tira 90% da vida e perde o abate para um tiro alheio sai
 		// sem nada — e o jogo passa a premiar roubar o último tiro.
+		var assisters = new System.Collections.Generic.List<string>();
 		foreach (Node helper in target.TakeAssists(_body))
+		{
 			helper.GetNodeOrNull<FormController>("FormController")?.OnAssist();
+			if (helper.GetNodeOrNull<Health>("Health") is Health h) assisters.Add(h.PublicName);
+		}
 
 		KillFeed.Report(new Kill(
 			_health?.PublicName ?? _body.Name.ToString(),
 			_health?.Team ?? 0,
 			target.PublicName,
 			target.Team,
-			CauseOf(headshot)));
+			CauseOf(headshot),
+			KillWeapon(),
+			assisters.ToArray()));
+	}
+
+	/// <summary>Id do que matou, para o feed e as estatísticas.</summary>
+	private string KillWeapon()
+	{
+		if (_form.IsWolf) return "lobo";
+		if (HumanSlot == Slot.Knife) return "faca";
+		return Held?.Id ?? "";
 	}
 
 	private KillCause CauseOf(bool headshot)
