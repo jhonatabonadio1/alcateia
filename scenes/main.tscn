@@ -59,20 +59,6 @@ script = ExtResource("5_loadout")
 [node name="HUD" type="CanvasLayer" parent="." unique_id=369621219]
 script = ExtResource("3_hud")
 
-[node name="Crosshair" type="ColorRect" parent="HUD" unique_id=1825456756]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -3.0
-offset_top = -3.0
-offset_right = 3.0
-offset_bottom = 3.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(1, 1, 1, 0.85)
-
 [node name="DamageIndicator" type="Control" parent="HUD" unique_id=421800747]
 layout_mode = 3
 anchors_preset = 15

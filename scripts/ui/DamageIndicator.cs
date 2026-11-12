@@ -24,7 +24,7 @@ public partial class DamageIndicator : Control
     [Export] public float Thickness = 14f;
 
     /// <summary>Quanto tempo cada arco fica na tela.</summary>
-    [Export] public float Life = 1.4f;
+    [Export] public float Life = 1.5f;
 
     [Export] public Color ArcColor = new Color(0.95f, 0.1f, 0.08f);
 
