@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.26.7 — 2026-11-12
+
+### Mudado
+- **Na quina, o lobo contorna e continua pela parede** em vez de cair:
+  bloco, contêiner, pilar e coluna fina, na mesma altura e no mesmo
+  passo.
+- **O salto (especial no chão) cai no ponto do clique:** segurar W não
+  aumenta mais a distância, e virar a câmera no agachar não muda nada.
+- **O bote cai mais devagar:** 13 m/s (eram 17), com o mesmo alcance.
+
+### Corrigido
+- **O lobo andava mais rápido que os passos:** o clipe de correr tocava
+  a 1× e o pé patinava. Agora toca no ritmo do corpo (2,36× no Bruto
+  correndo) e o pé apoiado fica parado no chão, correndo e agachado.
+
 ## v0.26.6 — 2026-11-12
 
 ### Adicionado

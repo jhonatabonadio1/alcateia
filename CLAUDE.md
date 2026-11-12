@@ -334,13 +334,15 @@ acabar.
   ao outro lado é preciso cair e recomeçar. Com embalo, se o sentido
   do embalo está bloqueado, não gruda — virar ao contrário fazia o lobo
   voltar pela parede
-- **Na quina, segue reto** (decisão do Jhon). A parede acabou, a
-  corrida acaba: o lobo solta 10 cm depois da ponta (`WallEndMargin`)
-  e continua no ar, no mesmo passo, caindo. Não contorna — contornar
-  trazia o lobo de volta pela outra face, e numa parede fina ele
-  voltava pelo outro lado. Indo para longe da parede
-  (`WallLeaveSpeed`, 0,5 m/s) ele não gruda, então a ponta não o puxa
-  de volta
+- **Na quina, contorna e continua pela parede** (decisão do Jhon: "ele
+  não continua a parede, ele cai" era o erro). Passou 10 cm da ponta
+  (`WallEndMargin`), o sentido gira junto com a normal em volta da
+  aresta e o lobo segue na face seguinte, na mesma altura e no mesmo
+  passo. Bloco, contêiner, pilar e coluna de 30 cm: dá a volta inteira.
+  Só uma chapa mais fina que `WallWrapMinFace` (0,25 m) faz o lobo
+  seguir reto no ar — contornar ali seria dar meia-volta. Indo para
+  longe da parede (`WallLeaveSpeed`, 0,5 m/s) ele não gruda, então uma
+  ponta que ficou para trás não o puxa de volta
 - **No canto, vira e continua.** Uma parede à frente vira a parede da
   corrida: o lobo segue por ela, para longe da antiga, no mesmo passo.
   Antes ele soltava e regrudava na parede de trás, voltando
@@ -656,8 +658,10 @@ chão no caminho a cada 40 cm, com raios de cima para baixo:
   seria loteria.
 - **Sem ninguém**, o ponto para onde a câmera aponta: chão perto, quase
   não sai do lugar; céu, os 12 m.
-- **Segurando W, avança pelo menos 6 m** (`PounceAdvanceMin`), mesmo
-  mirando o chão perto: quem aperta para frente quer avançar.
+- **O ponto é o do clique** (decisão do Jhon): virar a câmera ou
+  segurar W durante o agachar não muda a distância nem a direção. O
+  ponto fica guardado no clique e, no impulso, é medido de onde o corpo
+  está.
 - **Durante o voo, o ponto de queda acompanha o alvo** a 3 m/s
   (`PounceHoming`). O alvo anda até 3 m no 1,1 s do salto, e o golpe
   errava quem só caminhava; mais devagar que o humano correndo
@@ -670,7 +674,8 @@ por 2,14 s: forte, mas lento e fácil de ver vindo — a lentidão é o que
 impede que seja a resposta para tudo. O volume é o das garras.
 
 **Botão direito no ar: o bote.** Um mergulho **em linha reta** na
-direção da **mira inteira**, a 17 m/s, sem gravidade, sem freio e sem
+direção da **mira inteira**, a 13 m/s (era 17: rápido demais para quem
+está embaixo ver o lobo chegando), sem gravidade, sem freio e sem
 desvio: olhar para baixo dá um bote curto e mergulhado, olhar à frente
 dá um longo e raso (sempre descendo, no mínimo 0,35 de inclinação). O
 ponto de impacto é escolhido no clique, e é isso que deixa o bote
@@ -679,7 +684,7 @@ numa parede de frente ou em alguém —, não num tempo marcado: um golpe
 só, 3×, com o bônus aéreo se a queda passou de 2,5 m. O volume é **um
 pouco maior que o do salto** (1,7 m à frente, raio 1,5, contra 1,5 e
 1,15). Encostou, aterrissa preso por 0,78 s; mirou no vazio, bate no ar
-em 0,9 s.
+em 1,1 s (o alcance de antes, 14 m).
 
 **Todo pulo tem o seu bote** (decisão do Jhon). Não há recarga: acabou
 a aterrissagem, o próximo pulo já pode ter outro. E não dá para pular
@@ -1540,7 +1545,14 @@ para o lobo. O `mutant_red.fbx` veio do Blender, sem `AnimationPlayer`
 e com o esqueleto dentro de `Armature`: o tocador é criado ao lado do
 esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.
 
-Clipes do lobo: parado, andar e correr misturados pela velocidade;
+Clipes do lobo: parado, andar e correr misturados pela velocidade, e
+**no ritmo do corpo**: o clipe toca na razão entre a velocidade do corpo
+e a passada dele, medida no Mutant (andar 1,34 m/s, correr 2,42 m/s, já
+na escala do jogo) — o Bruto a 5,7 m/s corre o clipe a 2,36× e o pé
+apoiado fica parado no chão. Antes ele tocava a 1× até 7 m/s, e o corpo
+andava mais do dobro das pernas. A mistura de andar com correr fica
+numa faixa curta (1,5 a 2,2 m/s): os ciclos têm tamanhos diferentes, e
+misturados o pé patina;
 as garradas e o rugido **da cintura para cima**; o salto e o bote no
 corpo inteiro; **o pulo**, só o voo do "mutant jumping", tocado pela
 velocidade vertical (o agachar do clipe fica de fora: a física sai do
