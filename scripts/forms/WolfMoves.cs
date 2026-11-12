@@ -56,6 +56,7 @@ public readonly record struct WolfClip(string Source, float Start, float End, fl
 /// | dive_land | o mesmo jump attack | da pancada (1,60 s) a de pé | a aterrissagem do bote |
 /// | howl | mutant roaring (5,40 s) | parado até 0,4 s; a volta ao repouso, depois de 4,9 s, fica com a troca para o andar | 0,30–4,90 s, a 2,3×: 2,0 s |
 /// | jump | mutant jumping (3,17 s) | parado até 0,5 s, agacha até 0,93 s, empurra, pés saem do chão em 1,27 s, topo em 1,60 s (quadril 0,49 acima de pé), pés no chão em 1,87 s | 1,27–1,87 s: só o voo, tocado pela velocidade vertical (o agachar não cabe: a física sai do chão no quadro do clique). Impact marca o topo |
+/// | death | mutant dying (4,60 s) | parado até 0,43 s, a queda começa de verdade em 0,6 s | 0,55–4,60 s: tocado inteiro, o lobo ficava meio segundo de pé depois de morto, como se nada tivesse acontecido |
 /// | jump_land | o mesmo jumping | da pancada (1,87 s): agacha até o quadril a 0,55 em 2,13 s, de pé em 2,80 s | 1,87–2,80 s, a aterrissagem quando o lobo chega devagar |
 ///
 /// Trocou um clipe? Rode a ferramenta de novo e corrija a linha dele.
@@ -72,6 +73,7 @@ public static class WolfMoves
         ["howl"] = new WolfClip("howl", 0.30f, 4.90f, 4.90f),
         ["jump"] = new WolfClip("jump", 1.27f, 1.87f, 1.60f, FallOnly: true),
         ["jump_land"] = new WolfClip("jump", 1.87f, 2.80f, 1.87f, FallOnly: true),
+        ["death"] = new WolfClip("death", 0.55f, 4.60f, 0.55f),
     };
 
     /// <summary>Clipe e velocidade de cada golpe. A velocidade é a única

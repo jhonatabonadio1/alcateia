@@ -36,6 +36,11 @@ public partial class FormController : Node
     [Export] public WolfBreed Breed;
 
     [Export] public float MaxWp = 2500f;
+
+    /// <summary>WP perdido a cada morte (decisão do Jhon). Um abate rende
+    /// 100: morrer custa um abate. Nunca abaixo de zero, e o conjunto
+    /// padrão continua devolvendo +50 no renascer.</summary>
+    [Export] public float WpLostOnDeath = 100f;
     /// <summary>
     /// WP vem de abater e de renascer, não do relógio.
     ///
@@ -114,6 +119,7 @@ public partial class FormController : Node
     {
         _health = GetParent().GetNode<Health>("Health");
         _health.SetPool(HumanHp, 0f, true);
+        _health.Died += _ => LoseWp(WpLostOnDeath);
 
         EmitSignal(SignalName.WpChanged, Wp, MaxWp);
     }
@@ -204,6 +210,13 @@ public partial class FormController : Node
     }
 
     public void OnDamageDealt(float amount) => AddWp(amount * WpPerDamageDealt);
+
+    private void LoseWp(float amount)
+    {
+        if (amount <= 0 || Wp <= 0) return;
+        Wp = Mathf.Max(Wp - amount, 0f);
+        EmitSignal(SignalName.WpChanged, Wp, MaxWp);
+    }
 
     public void OnKill(bool asWolf = false) => AddWp(asWolf ? WpPerWolfKill : WpPerKill);
 

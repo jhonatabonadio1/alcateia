@@ -191,8 +191,19 @@ public partial class Health : Node
         EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
     }
 
+    /// <summary>Quem matou este corpo da última vez — o último que o
+    /// acertou, se foi há pouco. Nulo numa queda. Quem morreu usa para a
+    /// câmera de morte.</summary>
+    public Node Killer { get; private set; }
+
+    private Node _lastAttacker;
+    private double _lastAttackAt;
+
     private void Die(int killerId)
     {
+        double now = Time.GetTicksMsec() / 1000.0;
+        Killer = _lastAttacker != null && GodotObject.IsInstanceValid(_lastAttacker) && now - _lastAttackAt < 5.0
+            ? _lastAttacker : null;
         IsDead = true;
         Hp = 0;
         Shield = 0;
@@ -219,8 +230,10 @@ public partial class Health : Node
 
     public void NoteAttacker(Node attacker)
     {
-        if (attacker != null)
-            _attackers[attacker] = Time.GetTicksMsec() / 1000.0;
+        if (attacker == null) return;
+        _attackers[attacker] = Time.GetTicksMsec() / 1000.0;
+        _lastAttacker = attacker;
+        _lastAttackAt = _attackers[attacker];
     }
 
     /// <summary>Quem acertou nos últimos <paramref name="window"/>
@@ -242,6 +255,7 @@ public partial class Health : Node
     private void Respawn()
     {
         _attackers.Clear();
+        _lastAttacker = null;
         IsDead = false;
         Hp = MaxHp;
         Shield = MaxShield;

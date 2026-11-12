@@ -88,6 +88,7 @@ public partial class Grenade : RigidBody3D
 
             bool wasAlive = health != null && !health.IsDead;
 
+            if (Thrower != null && health != Thrower) health?.NoteAttacker(Thrower.GetParent());
             health?.TakeDamage(MaxDamage * falloff, 0, GlobalPosition);
 
             if (wasAlive && health.IsDead && Thrower != null && health != Thrower)

@@ -17,13 +17,22 @@ using Godot;
 /// sala também aparece, com o motivo.
 ///
 /// O pagamento acontece aqui, no renascer, e não antes. O equipamento
-/// comprado some na morte; o WP acumulado fica.
+/// comprado some na morte, e morrer custa
+/// <see cref="FormController.WpLostOnDeath"/> do WP.
+///
+/// Morto por alguém, a tela espera <see cref="KillCamTime"/> antes de
+/// abrir: é o tempo de ver quem te matou, com a silhueta vermelha e a
+/// câmera virada para ele (<see cref="KillCam"/>). O fundo escuro da
+/// tela cobriria justamente isso.
 ///
 /// Não pausa a árvore: o mundo segue enquanto você escolhe.
 /// </summary>
 public partial class LoadoutMenu : CanvasLayer
 {
     [Export] public float ChooseTime = 5f;
+
+    /// <summary>Segundos vendo quem te matou antes da escolha abrir.</summary>
+    [Export] public float KillCamTime = 1.8f;
 
     /// <summary>WP concedido ao escolher o padrão. É a rede de segurança:
     /// o padrão não só é grátis, ele paga — quem está sem pontos tem
@@ -68,7 +77,7 @@ public partial class LoadoutMenu : CanvasLayer
         // O jogador controla o próprio renascimento: só volta quando
         // tiver escolhido o conjunto.
         _health.AutoRespawn = false;
-        _health.Died += _ => Open();
+        _health.Died += _ => OpenAfterKillCam();
         KillFeed.Reported += OnKill;
 
         Build();
@@ -138,6 +147,19 @@ public partial class LoadoutMenu : CanvasLayer
     {
         int last = Mathf.Clamp(Profile.LastUsed, 0, Profile.Sets.Count - 1);
         return Blocker(Profile.Sets[last]) == null ? last : 0;
+    }
+
+    private async void OpenAfterKillCam()
+    {
+        if (_health.Killer == null || KillCamTime <= 0f)
+        {
+            Open();
+            return;
+        }
+
+        await ToSignal(GetTree().CreateTimer(KillCamTime), SceneTreeTimer.SignalName.Timeout);
+        if (!IsInstanceValid(this) || !_health.IsDead || _open) return;
+        Open();
     }
 
     private void Open()
@@ -247,7 +269,7 @@ public partial class LoadoutMenu : CanvasLayer
         HBoxContainer head = UiKit.Row(UiTokens.S4);
         VBoxContainer titles = UiKit.Column(0);
         titles.AddChild(UiKit.Text("Escolha o conjunto", "Title"));
-        titles.AddChild(UiKit.Text("1 a 4 ou clique. O equipamento se paga ao renascer; o WP fica.", "Muted"));
+        titles.AddChild(UiKit.Text("1 a 4 ou clique. O equipamento se paga ao renascer.", "Muted"));
         head.AddChild(titles);
         head.AddChild(UiKit.Spacer());
 
