@@ -675,6 +675,12 @@ public partial class Player : CharacterBody3D
 
         if (!Input.IsActionPressed("jump") && !_clinging)
         {
+            // Este era o caminho mudo, e é o mais provável de todos:
+            // pula-se, solta-se a tecla no ar e chega-se à parede sem
+            // nada segurando a corrida. Sem a linha abaixo o log dizia
+            // que estava tudo bem porque nem chegava a olhar.
+            if (!IsOnFloor()) WallLog("segure PULO para correr na parede");
+
             ReleaseWall();
             return false;
         }
@@ -685,7 +691,11 @@ public partial class Player : CharacterBody3D
         {
             // Uma corrida por ida ao ar. Sem isto o lobo regruda na
             // mesma altura logo após o salto e a parede vira elevador.
-            if (_wallCooldown > 0) return false;
+            if (_wallCooldown > 0)
+            {
+                WallLog("ainda em recarga desde a última corrida");
+                return false;
+            }
 
             if (!found)
             {
@@ -1008,7 +1018,19 @@ public partial class Player : CharacterBody3D
         return GetWorld3D().DirectSpaceState.IntersectRay(query).Count > 0;
     }
 
-    /// <summary>Há obstáculo no caminho à frente, ao longo da parede?</summary>
+    /// <summary>
+    /// Há obstáculo de verdade no caminho à frente, ao longo da parede?
+    ///
+    /// Só parede bloqueia. Chão, rampa, meio-fio e beiral de telhado
+    /// não — são coisas que o lobo passa por cima, e vetar a corrida
+    /// por causa deles fecha os dois sentidos num mapa real.
+    ///
+    /// A distinção não existia antes porque não precisava: com
+    /// colisão de uma face, metade da geometria do mapa era invisível
+    /// para o raio e quase nada bloqueava. Consertar a colisão fez
+    /// este teste passar a acertar tudo, inclusive o que não deveria
+    /// contar — um conserto que cria o problema seguinte.
+    /// </summary>
     private bool IsBlocked(Vector3 along)
     {
         Vector3 origin = GlobalPosition;
@@ -1017,7 +1039,13 @@ public partial class Player : CharacterBody3D
             origin, origin + along * WallRunClearance);
         query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
 
-        return GetWorld3D().DirectSpaceState.IntersectRay(query).Count > 0;
+        var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+        if (hit.Count == 0) return false;
+
+        Vector3 n = (Vector3)hit["normal"];
+        if (n.Dot(along) > 0) n = -n;
+
+        return Mathf.Abs(n.Y) < 0.4f;
     }
 
     private bool Cast(Vector3 origin, Vector3 direction, out Vector3 normal, out float distance)
