@@ -254,6 +254,27 @@ public partial class Weapon : Node3D
 		}
 	}
 
+	/// <summary>
+	/// Material único, compartilhado por todos os traçantes do jogo.
+	///
+	/// Criar um material por disparo força o Godot a montar pipeline de
+	/// render na hora. Com dois bots atirando nove vezes por segundo,
+	/// isso trava o quadro — o jogador sente como congelamento no
+	/// instante em que levam tiro nele.
+	/// </summary>
+	private static StandardMaterial3D _tracerMaterial;
+
+	private static StandardMaterial3D TracerMaterial(Color color)
+	{
+		return _tracerMaterial ??= new StandardMaterial3D
+		{
+			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+			AlbedoColor = color,
+			NoDepthTest = false
+		};
+	}
+
 	/// <summary>Linha fina que aparece e some. Peça descartável — vira
 	/// efeito de verdade na fase de polimento.</summary>
 	private void Tracer(Vector3 from, Vector3 to)
@@ -261,15 +282,8 @@ public partial class Weapon : Node3D
 		if (!ShowTracer) return;
 
 		var mesh = new ImmediateMesh();
-		var material = new StandardMaterial3D
-		{
-			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-			AlbedoColor = TracerColor,
-			VertexColorUseAsAlbedo = true
-		};
 
-		mesh.SurfaceBegin(Mesh.PrimitiveType.Lines, material);
+		mesh.SurfaceBegin(Mesh.PrimitiveType.Lines, TracerMaterial(TracerColor));
 		mesh.SurfaceAddVertex(Vector3.Zero);
 		mesh.SurfaceAddVertex(to - from);
 		mesh.SurfaceEnd();
@@ -278,9 +292,10 @@ public partial class Weapon : Node3D
 		_body.GetTree().CurrentScene.AddChild(node);
 		node.GlobalPosition = from;
 
-		Tween tween = node.CreateTween();
-		tween.TweenProperty(material, "albedo_color:a", 0.0f, TracerLife);
-		tween.TweenCallback(Callable.From(node.QueueFree));
+		// Timer simples em vez de Tween: nada a animar, já que o
+		// material é compartilhado e não pode ser esmaecido sozinho.
+		SceneTreeTimer timer = _body.GetTree().CreateTimer(TracerLife);
+		timer.Timeout += node.QueueFree;
 	}
 
 	private Health Raycast(Vector3 from, Vector3 to, out Vector3 impact)

@@ -284,12 +284,12 @@ acidente de encostar na parede.
   **conserva o avanço** da corrida (`WallJumpKeepSpeed`) e soma o
   empurrão perpendicular: sem isso o lobo sai de lado e perde tudo
   que acumulou, que é o oposto da jogada de cair em cima de alguém
-- **Uma corrida por ida ao ar**: depois de grudar uma vez, é preciso
-  tocar o chão antes de grudar de novo. Sem isso o lobo regruda na
-  mesma altura após o salto e a parede vira elevador
-- `RequireFloorBetweenWallRuns` desligado troca a exigência de chão
-  por um tempo mínimo (`WallRunCooldown`), o que permite encadear
-  saltos entre paredes opostas. Decisão de design em aberto
+- **A mesma parede não serve duas vezes** sem tocar o chão: subir,
+  saltar e regrudar mais alto transformaria a parede em elevador.
+  Uma parede **diferente** vale — é a jogada de quicar entre as duas
+  paredes de um corredor, e ela é desejada. O que separa os dois casos
+  é a semelhança entre as normais (`SameWallThreshold`), não o tempo
+  nem o contato com o chão
 - **Contorna quinas**: ao acabar uma face, troca para a face seguinte
   sem soltar, com uma janela curta de tolerância. Dá para dar a volta
   num bloco inteiro colado

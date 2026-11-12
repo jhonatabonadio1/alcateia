@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.7.3 — 2026-11-11
+
+### Alterado
+- Saltar de uma parede para **outra** volta a grudar. A proibição
+  deixa de ser "uma corrida por ida ao ar" e passa a ser "não na mesma
+  parede": o elevador continua impossível, mas quicar entre paredes
+  opostas de um corredor funciona. O critério é a semelhança entre as
+  normais (`SameWallThreshold`), não o tempo nem o contato com o chão.
+
+### Corrigido
+- Traçante criava um material novo a cada disparo, o que obriga o
+  Godot a montar pipeline de render na hora e travava o quadro com
+  dois bots atirando. Agora o material é único e compartilhado.
+
 ## v0.7.2 — 2026-11-11
 
 ### Corrigido

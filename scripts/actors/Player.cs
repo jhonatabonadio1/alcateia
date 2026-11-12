@@ -97,15 +97,17 @@ public partial class Player : CharacterBody3D
     /// acumulou correndo.</summary>
     [Export] public float WallJumpKeepSpeed = 0.8f;
 
-    /// <summary>Exigir tocar o chão entre uma corrida em parede e a
-    /// seguinte. Sem isso o lobo regruda na mesma altura e a parede
-    /// vira elevador. Desligue para permitir encadear saltos entre
-    /// paredes opostas.</summary>
-    [Export] public bool RequireFloorBetweenWallRuns = true;
+    /// <summary>
+    /// Impede regrudar na MESMA parede sem tocar o chão, mas libera
+    /// saltar para outra. Sem isso a parede vira elevador; com isso
+    /// demais, o lobo não consegue encadear paredes opostas.
+    ///
+    /// Duas normais acima desta semelhança contam como a mesma parede.
+    /// </summary>
+    [Export] public float SameWallThreshold = 0.85f;
 
-    /// <summary>Tempo mínimo entre corridas quando o chão não é
-    /// exigido. Impede regrudar na mesma parede no mesmo pulo.</summary>
-    [Export] public float WallRunCooldown = 0.45f;
+    /// <summary>Tempo mínimo entre uma corrida e a seguinte.</summary>
+    [Export] public float WallRunCooldown = 0.12f;
 
     /// <summary>Altura abaixo da qual o jogador é devolvido ao spawn.
     /// Sem isto, sair do mapa é queda infinita.</summary>
@@ -141,7 +143,7 @@ public partial class Player : CharacterBody3D
     private Vector3 _wallNormal;
     private Vector3 _wallAlong;
     private double _cornerGrace;
-    private bool _wallSpent;
+    private Vector3 _lastWall;
     private double _wallCooldown;
     private string _lastWallLog = "";
     private Vector3 _spawn;
@@ -205,7 +207,7 @@ public partial class Player : CharacterBody3D
         Velocity = Vector3.Zero;
 
         ReleaseWall();
-        _wallSpent = false;
+        _lastWall = Vector3.Zero;
         _stunTimer = 0;
         _stunSlow = 1f;
     }
@@ -257,7 +259,7 @@ public partial class Player : CharacterBody3D
             GlobalPosition = _spawn;
             Velocity = Vector3.Zero;
             ReleaseWall();
-            _wallSpent = false;
+            _lastWall = Vector3.Zero;
             return;
         }
 
@@ -284,7 +286,7 @@ public partial class Player : CharacterBody3D
         {
             ReleaseWall();
             _wallTimer = 0;
-            _wallSpent = false;
+            _lastWall = Vector3.Zero;
         }
 
         if (_wallCooldown > 0)
@@ -438,12 +440,6 @@ public partial class Player : CharacterBody3D
         {
             // Uma corrida por ida ao ar. Sem isto o lobo regruda na
             // mesma altura logo após o salto e a parede vira elevador.
-            if (RequireFloorBetweenWallRuns && _wallSpent)
-            {
-                WallLog("já usou esta ida ao ar — precisa tocar o chão");
-                return false;
-            }
-
             if (_wallCooldown > 0) return false;
 
             // Só gruda na descida. Encostado na parede no chão não basta:
@@ -458,7 +454,15 @@ public partial class Player : CharacterBody3D
 
             if (Velocity.Y > 0) return false;
 
-            _wallSpent = true;
+            // A mesma parede, sem ter tocado o chão, viraria elevador:
+            // sobe, salta, regruda mais alto, repete. Uma parede
+            // diferente é outra coisa — é a jogada de quicar entre as
+            // duas paredes de um corredor, e essa vale.
+            if (_lastWall != Vector3.Zero && normal.Dot(_lastWall) > SameWallThreshold)
+            {
+                WallLog("mesma parede — salte para outra ou toque o chão");
+                return false;
+            }
 
             _onWall = true;
             _wallTimer = WallRunMaxTime;
@@ -472,7 +476,6 @@ public partial class Player : CharacterBody3D
             {
                 WallLog("os dois sentidos estão bloqueados");
                 _onWall = false;
-                _wallSpent = false;
                 return false;
             }
 
@@ -559,6 +562,8 @@ public partial class Player : CharacterBody3D
 
             velocity = _wallAlong * carried + _wallNormal * WallJumpPush;
             velocity.Y = JumpVelocity * JumpScale * 1.1f;
+
+            _lastWall = _wallNormal;
 
             ReleaseWall();
             _wallCooldown = WallRunCooldown;
