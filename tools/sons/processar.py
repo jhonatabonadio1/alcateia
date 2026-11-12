@@ -179,44 +179,8 @@ for i in (1, 2, 3):
     back = clip(oc(f"CREAMnstr_CreatureCreepy_OS_0{i}"), maxlen=1.0, pitch=2, reverse=True)
     save(mix([(bones, 0.2, -2), (back, 0, -3)]), f"lobo_destransformar_{i}", -4)
 
-# ---------------------------------------------------------- uivo sintetizado (provisório)
-def howl(path, base, length, seed):
-    rng = np.random.default_rng(seed)
-    n = int(length * SR); t = np.arange(n) / SR
-    rise, fall = 0.35, length - 0.75
-    f = np.empty(n)
-    a = t < rise
-    f[a] = base * 0.62 + (base - base * 0.62) * np.sin(np.pi / 2 * t[a] / rise)
-    b = (t >= rise) & (t < fall)
-    tb = t[b] - rise
-    f[b] = base * (1 + 0.05 * tb / (fall - rise)) + 7 * np.sin(2 * np.pi * 5.3 * tb) * np.minimum(tb / 0.5, 1)
-    c = t >= fall
-    tc = (t[c] - fall) / (length - fall)
-    f[c] = base * 1.05 * (1 - 0.3 * tc ** 1.4)
-    f *= 1 + 0.004 * np.convolve(rng.standard_normal(n), np.ones(800) / 800, mode="same")
-    phase = 2 * np.pi * np.cumsum(f) / SR
-    def formant(x):
-        return (np.exp(-((x - 380) / 160) ** 2) + 0.55 * np.exp(-((x - 850) / 220) ** 2)
-                + 0.12 * np.exp(-((x - 2500) / 400) ** 2))
-    y = np.zeros(n)
-    for k in range(1, 14):
-        y += formant(k * f) / k ** 0.7 * np.sin(k * phase + rng.uniform(0, 6.28))
-    noise = rng.standard_normal(n)
-    noise = np.convolve(noise, np.ones(6) / 6, mode="same") - np.convolve(noise, np.ones(60) / 60, mode="same")
-    y += 0.05 * noise
-    env = np.minimum(t / 0.28, 1) * np.clip((length - t) / 0.7, 0, 1) ** 1.3
-    y *= env
-    y /= np.abs(y).max()
-    raw = tmp()
-    import wave
-    with wave.open(raw, "wb") as w:
-        w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
-        w.writeframes((y * 30000).astype(np.int16).tobytes())
-    rev = tmp()
-    ff(["-i", raw, "-af", "apad=pad_dur=1.5,aecho=0.8:0.6:70|140|260|420:0.35|0.25|0.18|0.12,lowpass=f=4500", "-ac", "1", "-c:a", "pcm_s16le", rev])
-    save(rev, path, -3, ogg=True)
-howl("lobo_uivo_1", 520, 2.6, 1)
-howl("lobo_uivo_2", 470, 3.1, 2)
+# O uivo (R, de lobo) usa o som da transformação — decisão do Jhon. Não
+# há arquivo próprio; veja WorldAudio.HowlSound.
 
 # ---------------------------------------------------------- só para você
 # Marcador de acerto: o tique da Kenney sozinho dura 20 ms e some; com

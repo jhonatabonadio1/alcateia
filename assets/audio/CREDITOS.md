@@ -44,9 +44,8 @@ Usado em: `passo`, `pouso`, `lobo_passo`, `lobo_pouso` (com Kenney),
 Impact Sounds (`acerto`, `acerto_cabeca`, `lobo_pouso`), Sci-Fi Sounds
 (`granada_explosao`). Via os espelhos no GitHub de Calinou e Boyquotes.
 
-## Feito aqui — CC0
+## O uivo
 
-`lobo_uivo` é **sintetizado** pelo `processar.py` (síntese aditiva com
-formantes e eco). É provisório: serve para o uivo já funcionar como
-sinal de posição. Troque por uma gravação de verdade quando achar uma
-boa (Freesound com filtro CC0, Pixabay ou Mixkit).
+Não tem arquivo próprio: o uivo (R, de lobo) toca o mesmo som da
+transformação, `lobo_transformar`, por decisão do Jhon
+(`WorldAudio.HowlSound`).

@@ -37,7 +37,7 @@ muito bem-vindas aqui.
 | `lobo_passo` | Passo de lobo, mais pesado, com unha | 20 m |
 | `pouso` | Humano tocando o chão depois de pular ou cair | 17 m |
 | `lobo_pouso` | Lobo tocando o chão | 17 m |
-| `lobo_uivo` | Uivo (uma vez por uivo). Cauda longa, `.ogg` | 45 m |
+| `lobo_transformar` | Também é o uivo (R, de lobo), uma vez por uivo — veja `WorldAudio.HowlSound` | 45 m |
 | `tiro` | Tiro genérico, se a arma não tiver o seu | da arma |
 | `tiro_m16a2` `tiro_sg552` `tiro_ak47` `tiro_ump45` `tiro_m3` `tiro_m9` | Tiro de cada arma | da arma |
 | `tiro_distante` | Tiro de longe (mais de 35 m), abafado | da arma |

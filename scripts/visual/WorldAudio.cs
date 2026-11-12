@@ -37,6 +37,14 @@ public partial class WorldAudio : Node
     /// o som toca uma vez por uivo.</summary>
     [Export] public float HowlRetrigger = 1.5f;
 
+    /// <summary>
+    /// Som do uivo (R, de lobo). É o mesmo da transformação, decisão do
+    /// Jhon: o rugido de virar lobo é o grito da fera, e o uivo de cura
+    /// usa a mesma voz. Para um uivo próprio, ponha o arquivo em
+    /// <c>assets/audio/</c> e troque este nome.
+    /// </summary>
+    [Export] public string HowlSound = "lobo_transformar";
+
     private Node _local;
     private Health _localHealth;
     private readonly Dictionary<ulong, double> _lastHowl = new();
@@ -93,7 +101,7 @@ public partial class WorldAudio : Node
                 ulong id = source.GetInstanceId();
                 if (_lastHowl.TryGetValue(id, out double last) && _clock - last < HowlRetrigger) break;
                 _lastHowl[id] = _clock;
-                Play("lobo_uivo", noise, mine);
+                Play(HowlSound, noise, mine);
                 break;
 
             case NoiseKind.Shot:
