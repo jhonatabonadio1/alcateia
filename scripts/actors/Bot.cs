@@ -408,6 +408,7 @@ public partial class Bot : CharacterBody3D
 
         _threatAge += delta;
         _beliefAge += delta;
+        if (_noCoverTimer > 0) _noCoverTimer -= delta;
 
         UpdateReaction(delta);
         UpdateSight(delta);
@@ -486,7 +487,7 @@ public partial class Bot : CharacterBody3D
             ? _weapon.SecondaryAmmo
             : _weapon.PrimaryAmmo;
 
-        _hasCover = canSee && !_form.IsWolf && FindCover(out _cover);
+        _hasCover = canSee && !_form.IsWolf && _noCoverTimer <= 0 && FindCover(out _cover);
 
         var context = new BotContext
         {
@@ -661,9 +662,28 @@ public partial class Bot : CharacterBody3D
 
         Vector3 step = PathTo(_cover);
 
-        // Chegou: encara o alvo esperando para sair de novo.
+        // Atira indo para a parede: correr para o esconderijo sem revidar
+        // entregava o duelo. E parado sem caminho, ou "chegou" e ainda vê
+        // o alvo, a parede não protege: desiste dela por um tempo e luta.
+        // Era o defeito dos bots que paravam de atirar — dois bots a 3 m,
+        // os dois "indo para a parede", parados e se encarando por meio
+        // minuto.
+        bool sees = _target != null && CanSeeTarget();
+        if (sees)
+        {
+            UpdateBurst(delta);
+            Vector3 to = _target.GlobalPosition - GlobalPosition;
+            Engage(new Vector3(to.X, 0, to.Z).Length());
+        }
+
         if (step == Vector3.Zero)
         {
+            if (sees)
+            {
+                _noCoverTimer = NoCoverTime;
+                _hasCover = false;
+            }
+
             if (_target != null)
                 FaceDirection(_target.GlobalPosition, delta);
 
@@ -676,6 +696,11 @@ public partial class Bot : CharacterBody3D
 
         MoveTowards(step, Speed, delta);
     }
+
+    /// <summary>Quanto tempo o bot esquece a ideia de parede depois de uma
+    /// que não protegeu (sem caminho, ou chegou e ainda vê o alvo).</summary>
+    [Export] public float NoCoverTime = 3f;
+    private double _noCoverTimer;
 
     /// <summary>Recuar quebrando a linha de visão: afasta-se do alvo
     /// em vez de dar as costas em linha reta.</summary>
@@ -956,6 +981,13 @@ public partial class Bot : CharacterBody3D
     /// </summary>
     private void RunSearch(double delta)
     {
+        // Procurando e deu de cara com o alvo: luta, não termina a busca.
+        if (_target != null && CanSeeTarget())
+        {
+            RunCombat(delta);
+            return;
+        }
+
         float distance = new Vector3(
             _lastKnown.X - GlobalPosition.X, 0,
             _lastKnown.Z - GlobalPosition.Z).Length();
@@ -996,6 +1028,12 @@ public partial class Bot : CharacterBody3D
     /// </summary>
     private void RunPatrol(double delta)
     {
+        if (_target != null && CanSeeTarget())
+        {
+            RunCombat(delta);
+            return;
+        }
+
         if (_patrolPause > 0)
         {
             _patrolPause -= delta;
@@ -1403,9 +1441,9 @@ public partial class Bot : CharacterBody3D
         if (!_form.CanAttack) return;
 
         // Recarregando ou recuando não se atira. É o cérebro que
-        // decide, e a ação em curso é a decisão.
+        // decide, e a ação em curso é a decisão. Indo para a parede, sim:
+        // é fogo de cobertura.
         if (Action == BotAction.Reload || Action == BotAction.Retreat) return;
-        if (Action == BotAction.TakeCover) return;
 
         float reach = _form.IsWolf
             ? _form.Breed.AttackRange
