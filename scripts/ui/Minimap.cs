@@ -18,7 +18,7 @@ using Godot;
 /// </summary>
 public partial class Minimap : Control
 {
-    [Export] public float Range = 42f;
+    [Export] public float Range = 30f;
 
     /// <summary>Lado do quadrado, em pixels.</summary>
     [Export] public float Side = 168f;

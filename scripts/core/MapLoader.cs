@@ -31,6 +31,32 @@ public partial class MapLoader : Node3D
     /// <summary>Assar navegação depois de montar a geometria.</summary>
     [Export] public bool BakeNavigation = true;
 
+    /// <summary>
+    /// Deslocamento aplicado ao mapa inteiro.
+    ///
+    /// Modelo exportado de outra ferramenta raramente tem o chão em
+    /// Y=0 — o Arrival tem o piso em 7,5. Em vez de corrigir no
+    /// Blender e reexportar a cada troca de mapa, o jogo baixa o mapa
+    /// na entrada. Com o piso em zero, o limite de queda, o minimapa e
+    /// qualquer coordenada que apareça em log voltam a ser legíveis.
+    /// </summary>
+    [Export] public Vector3 MapOffset = Vector3.Zero;
+
+    /// <summary>Tamanho da célula de navegação. Menor acompanha melhor
+    /// a geometria e custa mais para assar.</summary>
+    [Export] public float NavCellSize = 0.25f;
+
+    /// <summary>
+    /// Caixa dentro da qual a navegação é assada. Vazia significa tudo.
+    ///
+    /// Mapas de FPS costumam ter "cortinas": planos enormes descendo
+    /// centenas de metros para o jogador não ver o vazio nas bordas. O
+    /// Arrival tem as suas descendo até -287. Assar isso faria o
+    /// Godot varrer uma caixa de 300 metros de altura célula por
+    /// célula para encontrar um piso que está todo nos três primeiros.
+    /// </summary>
+    [Export] public Aabb NavBounds = new Aabb();
+
     /// <summary>Altura máxima que a navegação considera subível.</summary>
     [Export] public float AgentStepHeight = 0.5f;
 
@@ -66,6 +92,12 @@ public partial class MapLoader : Node3D
         Node3D map = scene.Instantiate<Node3D>();
         AddChild(map);
 
+        map.Position = MapOffset;
+
+        // A árvore precisa estar com a posição final antes de ler
+        // GlobalPosition dos marcadores de spawn.
+        map.ForceUpdateTransform();
+
         int collisions = 0;
         Prepare(map, ref collisions);
 
@@ -91,7 +123,10 @@ public partial class MapLoader : Node3D
         string name = node.Name.ToString().ToLowerInvariant();
 
         if (name.StartsWith("spawn") && node is Node3D marker)
+        {
             Spawns.Add(marker.GlobalPosition);
+            SpawnPoints.Register(marker.GlobalPosition);
+        }
 
         if (node is MeshInstance3D mesh)
         {
@@ -132,8 +167,15 @@ public partial class MapLoader : Node3D
             AgentHeight = AgentHeight,
             AgentMaxClimb = AgentStepHeight,
             AgentMaxSlope = AgentMaxSlope,
+            CellSize = NavCellSize,
             GeometryParsedGeometryType = NavigationMesh.ParsedGeometryType.StaticColliders
         };
+
+        if (NavBounds.Size != Vector3.Zero)
+        {
+            mesh.FilterBakingAabb = NavBounds;
+            mesh.FilterBakingAabbOffset = Vector3.Zero;
+        }
 
         _region.NavigationMesh = mesh;
 

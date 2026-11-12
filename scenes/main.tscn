@@ -1,16 +1,16 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
-[ext_resource type="PackedScene" path="res://scenes/dummy.tscn" id="2_dummy"]
+[ext_resource type="PackedScene" path="res://scenes/bot.tscn" id="2_bot"]
 [ext_resource type="Script" path="res://scripts/ui/Hud.cs" id="3_hud"]
-[ext_resource type="PackedScene" path="res://scenes/bot.tscn" id="4_bot"]
-[ext_resource type="Script" path="res://scripts/ui/DifficultyMenu.cs" id="5_menu"]
-[ext_resource type="Script" path="res://scripts/ui/LoadoutMenu.cs" id="6_loadout"]
-[ext_resource type="Resource" path="res://resources/loadouts/padrao.tres" id="7_l1"]
-[ext_resource type="Resource" path="res://resources/loadouts/assalto.tres" id="8_l2"]
-[ext_resource type="Resource" path="res://resources/loadouts/precisao.tres" id="9_l3"]
-[ext_resource type="Resource" path="res://resources/loadouts/elite.tres" id="10_l4"]
-[ext_resource type="Script" path="res://scripts/core/NavBaker.cs" id="11_nav"]
+[ext_resource type="Script" path="res://scripts/ui/DifficultyMenu.cs" id="4_menu"]
+[ext_resource type="Script" path="res://scripts/ui/LoadoutMenu.cs" id="5_loadout"]
+[ext_resource type="Resource" path="res://resources/loadouts/padrao.tres" id="6_l1"]
+[ext_resource type="Resource" path="res://resources/loadouts/assalto.tres" id="7_l2"]
+[ext_resource type="Resource" path="res://resources/loadouts/precisao.tres" id="8_l3"]
+[ext_resource type="Resource" path="res://resources/loadouts/elite.tres" id="9_l4"]
+[ext_resource type="Script" path="res://scripts/core/MapLoader.cs" id="10_map"]
+[ext_resource type="Script" path="res://scripts/core/SpawnPoints.cs" id="11_spawns"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
 
@@ -24,104 +24,90 @@ ambient_light_source = 3
 ambient_light_energy = 1.0
 tonemap_mode = 2
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
-size = Vector3(40, 1, 40)
-
-[sub_resource type="BoxMesh" id="BoxMesh_floor"]
-size = Vector3(40, 1, 40)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_box"]
-size = Vector3(4, 4, 4)
-
-[sub_resource type="BoxMesh" id="BoxMesh_box"]
-size = Vector3(4, 4, 4)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
-size = Vector3(24, 8, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_wall"]
-size = Vector3(24, 8, 1)
-
 [node name="Main" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 10, 0)
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 30, 0)
 shadow_enabled = true
 
-[node name="Floor" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+[node name="Map" type="Node3D" parent="."]
+script = ExtResource("10_map")
+MapPath = "res://assets/maps/arrival/Arrival.glb"
+MapOffset = Vector3(0, -7.5, 0)
+NavCellSize = 0.25
+NavBounds = AABB(-46, -3, -32, 92, 26, 58)
+AgentRadius = 0.45
+AgentHeight = 1.8
+AgentStepHeight = 0.5
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
-shape = SubResource("BoxShape3D_floor")
+[node name="SpawnPoints" type="Node3D" parent="."]
+script = ExtResource("11_spawns")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
-mesh = SubResource("BoxMesh_floor")
+[node name="spawn1" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 1.2, -1)
 
-[node name="Box" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0)
+[node name="spawn2" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 1.2, 13)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Box"]
-shape = SubResource("BoxShape3D_box")
+[node name="spawn3" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 1.2, -19)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Box"]
-mesh = SubResource("BoxMesh_box")
+[node name="spawn4" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.2, -1)
 
-[node name="Walls" type="Node3D" parent="."]
+[node name="spawn5" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 1.2, -9)
 
-[node name="WallLeft" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -6)
+[node name="spawn6" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1.2, -23)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/WallLeft"]
-shape = SubResource("BoxShape3D_wall")
+[node name="spawn7" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 1.2, -7)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallLeft"]
-mesh = SubResource("BoxMesh_wall")
-
-[node name="WallRight" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 6)
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/WallRight"]
-shape = SubResource("BoxShape3D_wall")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallRight"]
-mesh = SubResource("BoxMesh_wall")
-
-[node name="NavBaker" type="Node3D" parent="."]
-script = ExtResource("11_nav")
+[node name="spawn8" type="Marker3D" parent="SpawnPoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 1.2, 1)
 
 [node name="Player" parent="." instance=ExtResource("1_player") groups=["player"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
-
-[node name="Dummies" type="Node3D" parent="."]
-
-[node name="Dummy" parent="Dummies" instance=ExtResource("2_dummy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, -8)
-
-[node name="Dummy2" parent="Dummies" instance=ExtResource("2_dummy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, -10)
-
-[node name="Dummy3" parent="Dummies" instance=ExtResource("2_dummy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27, 1.2, -1)
 
 [node name="Bots" type="Node3D" parent="."]
 
-[node name="Bot" parent="Bots" instance=ExtResource("4_bot")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, -10)
+[node name="Bot" parent="Bots" instance=ExtResource("2_bot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 1.2, 13)
+PatrolCenter = Vector3(11, 0, -5)
+PatrolRadius = 38.0
 
-[node name="Bot2" parent="Bots" instance=ExtResource("4_bot")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1, -12)
+[node name="Bot2" parent="Bots" instance=ExtResource("2_bot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 1.2, -19)
+PatrolCenter = Vector3(11, 0, -5)
+PatrolRadius = 38.0
+
+[node name="Bot3" parent="Bots" instance=ExtResource("2_bot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 1.2, -9)
+PatrolCenter = Vector3(11, 0, -5)
+PatrolRadius = 38.0
+
+[node name="Bot4" parent="Bots" instance=ExtResource("2_bot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1.2, -23)
+PatrolCenter = Vector3(11, 0, -5)
+PatrolRadius = 38.0
+
+[node name="Bot5" parent="Bots" instance=ExtResource("2_bot")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 1.2, 1)
+PatrolCenter = Vector3(11, 0, -5)
+PatrolRadius = 38.0
 
 [node name="Menu" type="CanvasLayer" parent="."]
 layer = 10
-script = ExtResource("5_menu")
+script = ExtResource("4_menu")
 
 [node name="LoadoutMenu" type="CanvasLayer" parent="."]
 layer = 9
-script = ExtResource("6_loadout")
-Loadouts = [ExtResource("7_l1"), ExtResource("8_l2"), ExtResource("9_l3"), ExtResource("10_l4")]
+script = ExtResource("5_loadout")
+Loadouts = [ExtResource("6_l1"), ExtResource("7_l2"), ExtResource("8_l3"), ExtResource("9_l4")]
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("3_hud")

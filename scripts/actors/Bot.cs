@@ -1067,7 +1067,7 @@ public partial class Bot : CharacterBody3D
 
     private void OnRespawned()
     {
-        GlobalPosition = _spawn;
+        GlobalPosition = SpawnPoints.Pick(this, _spawn);
         Velocity = Vector3.Zero;
 
         if (_form.IsWolf)

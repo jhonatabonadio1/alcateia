@@ -791,6 +791,63 @@ para o jogo sem inventar um formato paralelo.
 espessura com faces verticais limpas. Quinas finas não funcionam,
 porque os raios precisam de superfície para encontrar.
 
+### O mapa atual: Arrival
+
+`assets/maps/arrival/Arrival.glb`, carregado por `scenes/main.tscn`.
+
+| Medida | Valor |
+|---|---|
+| Área andável | 82 × 44 m, ~3.400 m² |
+| Piso principal | Y = 7,5 no arquivo, rebaixado para 0 pelo `MapOffset` |
+| Níveis acima | 9 a 17 m — telhados, passarelas, heliponto |
+| Triângulos | 5.213 |
+| Materiais / texturas | 75 / 154 |
+
+O piso vem em 7,5 porque o modelo foi exportado de outra ferramenta.
+Em vez de corrigir no Blender e reexportar, o `MapLoader` baixa o mapa
+inteiro na entrada: com o piso em zero, o limite de queda, o minimapa
+e qualquer coordenada de log voltam a ser legíveis.
+
+O mapa tem **cortinas**: planos de 4 a 8 triângulos descendo até -287
+para o jogador não ver o vazio nas bordas. É padrão do gênero e
+inofensivo em colisão, mas destruiria a navegação — o Godot varreria
+uma caixa de 300 m de altura célula por célula para achar um piso que
+está todo nos três primeiros metros. Por isso `NavBounds` existe e
+está em `AABB(-46, -3, -32, 92, 26, 58)`.
+
+**Este mapa é referência de teste, não entrega.** Ele vem extraído do
+cliente original, o que a seção de propriedade intelectual proíbe em
+qualquer coisa publicada. Serve — e serve muito — para medir física em
+proporções reais em vez de caixas cinzas: alturas de telhado, largura
+de corredor, distância entre paredes paralelas. Antes de qualquer
+distribuição ele precisa ser substituído por geometria própria, de
+preferência remedindo o que funcionou aqui.
+
+### Pontos de nascimento
+
+`scripts/core/SpawnPoints.cs`. Oito marcadores em `main.tscn`,
+escolhidos por terem 2 m de folga em volta e 3 m de teto livre — foram
+medidos no arquivo, não estimados a olho.
+
+Nasce-se no ponto mais longe do inimigo vivo mais próximo, com uns
+metros de ruído na escolha para o mesmo par de mortes não gerar sempre
+o mesmo spawn. A distância ao mais próximo é o número que decide, não
+a média: nascer longe de quatro e colado em um é nascer colado em um.
+
+Sem `SpawnPoints` na cena, cada ator volta ao próprio ponto inicial —
+é o que mantém `scenes/treino.tscn` funcionando sem configuração.
+
+### As duas cenas
+
+| Cena | Para que serve |
+|---|---|
+| `scenes/main.tscn` | A partida: Arrival, cinco bots, oito spawns |
+| `scenes/treino.tscn` | Caixa cinza com duas paredes paralelas e bonecos, para medir física sem o mapa no caminho |
+
+A cena de treino não é sobra: quando a física quebra, uma sala limpa
+com duas paredes e um cubo diz em dez segundos o que um mapa inteiro
+esconde.
+
 ---
 
 ## O teste de mapa

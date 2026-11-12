@@ -2,6 +2,18 @@
 
 Jogue um `.glb` aqui e aponte o `MapLoader` para ele.
 
+## O que está aqui
+
+`arrival/Arrival.glb` — 82 × 44 m andáveis, piso em Y = 7,5 (o
+`MapLoader` rebaixa para 0), telhados e passarelas até 17 m.
+
+**É referência de teste, não entrega.** Vem extraído do cliente
+original, o que `CLAUDE.md` proíbe em qualquer coisa publicada. Serve
+para medir física em proporções reais — e só.
+
+Nomes de pasta em ASCII, sempre. O original vinha com um `İ` turco
+(U+0130) que quebra caminho de recurso, git e export para Windows.
+
 ## Convenções de nome, lidas do arquivo
 
 | Sufixo no nome do objeto | Efeito |

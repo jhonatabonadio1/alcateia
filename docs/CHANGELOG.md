@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.19.0 — 2026-11-11
+
+### Adicionado
+- **Mapa Arrival** carregado em `scenes/main.tscn`: 82 × 44 m de área
+  andável, telhados e passarelas de 9 a 17 m, 5.213 triângulos. O
+  `MapLoader` gera a colisão de malha, coleta spawns e assa a
+  navegação em tempo de execução.
+- **`MapOffset`** no `MapLoader`: o piso do Arrival vem em Y = 7,5 e é
+  rebaixado para 0 na entrada, em vez de corrigido no Blender.
+- **`NavBounds`**: caixa de bake da navegação. Sem ela o Godot varre
+  os 300 m de altura das cortinas do mapa para achar um piso que está
+  nos três primeiros metros.
+- **`SpawnPoints`**: oito pontos de nascimento, medidos no arquivo por
+  folga em volta e teto livre. Nasce-se no mais longe do inimigo vivo
+  mais próximo, com ruído na escolha.
+- **`scenes/treino.tscn`**: a caixa cinza de antes, preservada para
+  medir física sem o mapa no caminho.
+
+### Alterado
+- Cinco bots em vez de dois, patrulhando os 38 m de raio do mapa real.
+- Alcance do minimapa de 42 para 30 m — em 42 ele mostrava o mapa
+  inteiro, o que é planta baixa, não minimapa.
+- Pasta do mapa renomeada de `ARRİVAL` para `arrival`: o `İ` era um
+  U+0130, que quebra caminho de recurso, git e export para Windows.
+
 ## v0.18.1 — 2026-11-11
 
 ### Corrigido
