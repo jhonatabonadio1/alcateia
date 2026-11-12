@@ -41,6 +41,13 @@ public partial class Player : CharacterBody3D
     /// avanço, soltar encurta. Zero conserva tudo e tira a escolha.</summary>
     [Export] public float AirFriction = 7f;
 
+    /// <summary>Quanto do passo o lobo leva para o pulo do chão. O lobo
+    /// corre a 5,7 m/s e o pulo dele dura mais de um segundo: com o passo
+    /// inteiro, ele planava 6 m para a frente parado na pose de correr.
+    /// Vale para o pulo todo, até tocar o chão ou grudar numa parede — o
+    /// salto da parede não entra, ele conserva o avanço da corrida.</summary>
+    [Export] public float WolfJumpCarry = 0.55f;
+
     /// <summary>Fração da velocidade enquanto agachado.</summary>
     [Export] public float CrouchSpeedFactor = 0.45f;
 
@@ -242,6 +249,10 @@ public partial class Player : CharacterBody3D
     private Vector3 _wallAlong;
     private double _cornerGrace;
     private Vector3 _lastWall;
+
+    /// <summary>No ar por um pulo do chão, de lobo: o passo fica em
+    /// <see cref="WolfJumpCarry"/>.</summary>
+    private bool _wolfJump;
     private bool _clinging;
     private double _wallCooldown;
     private string _lastWallLog = "";
@@ -655,6 +666,9 @@ public partial class Player : CharacterBody3D
 
         HandleActions(delta);
 
+        if (IsOnFloor() || _onWall || !_form.IsWolf)
+            _wolfJump = false;
+
         if (IsOnFloor())
         {
             ReleaseWall();
@@ -882,6 +896,14 @@ public partial class Player : CharacterBody3D
         {
             velocity.Y = JumpVelocity * JumpScale;
 
+            // O lobo pula para cima, não para a frente.
+            if (_form.IsWolf)
+            {
+                _wolfJump = true;
+                velocity.X *= WolfJumpCarry;
+                velocity.Z *= WolfJumpCarry;
+            }
+
             _animator ??= GetNodeOrNull<CharacterAnimator>("Human");
             _animator?.Jump();
         }
@@ -889,6 +911,7 @@ public partial class Player : CharacterBody3D
         Vector2 input = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
         Vector3 direction = (Transform.Basis * new Vector3(input.X, 0, input.Y)).Normalized();
         float speed = HumanSpeed * SpeedScale;
+        if (_wolfJump) speed *= WolfJumpCarry;
 
         bool grounded = IsOnFloor();
         var horizontal = new Vector3(velocity.X, 0, velocity.Z);
