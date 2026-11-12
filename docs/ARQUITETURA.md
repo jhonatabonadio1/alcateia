@@ -231,7 +231,7 @@ assim que HUD, minimapa e menus acham você.
 menu.tscn (LobbyShell)
   │  header fixo; o miolo é uma LobbyScreen trocada por Shell.Go(...)
   │  Entrada (apelido) → Lista de salas → Sala
-  │  Sala: regras, times, bots, Pronto → Iniciar (contagem de 5 s)
+  │  Sala: regras, times, bots, Pronto (menos o mestre) → Iniciar (contagem de 5 s)
   │     preenche RoomConfig (estático): Active, Settings (cópia das
   │     regras), Members · Difficulty.Set(nível)
   ▼

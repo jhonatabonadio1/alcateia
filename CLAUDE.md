@@ -548,25 +548,32 @@ corrija a linha dele.
 
 | Golpe | Clipe | Golpe na tela | Dura |
 |---|---|---|---|
-| Garrada, braço 1 | swiping, 0,75–2,00 s, 1,8× | 0,31 s | 0,69 s |
-| Garrada, braço 2 | punch, 0–1,00 s, 1,4× | 0,21 s | 0,71 s |
-| Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso no lugar |
+| Garrada, braço 1 | swiping, 0,75–2,00 s, 2,4× | 0,23 s | 0,52 s |
+| Garrada, braço 2 | punch, 0–1,00 s, 1,9× | 0,16 s | 0,53 s |
+| Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso; avança até a mira |
 | Bote (direito no ar) | jump attack: a queda, depois a aterrissagem | quando encosta | aterrissagem de 0,78 s, presa; recarga de 2 s |
 | Rugido (R) | roaring, 0,30–4,90 s, 1,6× | escudo no fim | 2,88 s |
 
 Durante um golpe o lobo não volta a humano: a tecla espera o golpe
 acabar.
 
+**O clique fica guardado** (`AttackBuffer`, 0,3 s): clicou na garrada
+com o golpe anterior ainda no fim, o próximo sai no quadro em que ele
+acaba. Sem isso o clique dado um pouco cedo se perdia e o lobo parecia
+não responder. Clicando sem parar, quase dois golpes por segundo.
+
 **Golpes fluidos.** Medido quadro a quadro na velocidade dos ossos
 (mãos, pés, cabeça), não só a olho:
 
-- A garrada entra em 0,15 s, não em 0,08: o trecho dela começa com os
-  braços já no alto, e em 0,08 s eles voavam até lá.
+- A garrada entra em 0,12 s, não em 0,08: o trecho dela começa com os
+  braços já no alto, e em 0,08 s eles voavam até lá. Sai em 0,15 s,
+  porque a próxima vem logo.
 - As garradas ficam **da cintura para cima**. No corpo inteiro o
   "swiping" gira o quadril 90° e o lobo terminaria o golpe de lado.
 - Parado, o corpo dá **o passo do golpe em sino** (`StepFrom`,
   `StepTo`, `Step` em `WolfMoves`): 0,91 m na garrada, como o quadril
-  do clipe, e 0,35 m no punch. A velocidade sobe e desce sem degrau, e
+  do clipe, e 0,35 m no punch. O avanço do salto usa o mesmo passo,
+  com a distância da mira. A velocidade sobe e desce sem degrau, e
   as pernas andam um passo junto com o braço. O empurrão instantâneo
   antigo jogava os pés na pose de correr de uma vez. Correndo, vale o
   empurrão de sempre (`ClawLunge`): as pernas já estão correndo.
@@ -589,11 +596,15 @@ gente, não para duelar com outro lobo — sem isso, o encontro entre
 dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
 
 **Botão direito no chão: o salto.** O "jump attack" inteiro — agacha,
-salta, cai —, com o lobo preso no lugar. O dano (2,1×) sai **quando o
-lobo cai** na animação, 1,14 s depois do clique, e não no clique. Preso
-por 2,14 s: forte, mas lento e fácil de ver vindo. É o castigo de quem
-deixou o lobo chegar parado, e a lentidão é o que impede que seja a
-resposta para tudo. O volume é o das garras.
+salta, cai. O jogador não anda nem pula, mas **o salto avança**: do
+impulso até os pés tocarem o chão, o corpo anda até as garras caírem
+**no ponto para onde a câmera aponta** (até `PounceMaxDistance`, 5 m).
+Mirou em alguém, cai em cima dele; mirou no chão perto, quase não sai
+do lugar; mirou no céu, vai os 5 m. O ponto sai da câmera do próprio
+jogador (`Player.AimCamera`), não da câmera que estiver na tela. O
+dano (2,1×) sai **quando o lobo cai**, 1,14 s depois do clique. Preso
+por 2,14 s: forte, mas lento e fácil de ver vindo — a lentidão é o que
+impede que seja a resposta para tudo. O volume é o das garras.
 
 **Botão direito no ar: o bote.** Um mergulho **em linha reta** na
 direção da **mira inteira**, a 17 m/s, sem gravidade, sem freio e sem
@@ -1220,9 +1231,13 @@ nº", atualização a cada 5 s. As salas dos outros são simuladas
 **Sala.** Times Azul e Laranja, até 8 em cada. O mestre (quem criou —
 hoje, você) escolhe modo, tamanho, objetivo, tempo, regra de armas, de
 transformação, dificuldade dos bots, faixa de patente, senha e fogo
-amigo; enche com bots e troca de lado. Cada jogador marca **Pronto**;
-o mestre só inicia com todos prontos e os dois times com alguém. Bots
-estão sempre prontos. Iniciar abre uma contagem de 5 s, cancelável.
+amigo; enche com bots e troca de lado. Cada jogador marca **Pronto**,
+menos o mestre: quem inicia é ele, então o botão some para ele. O
+mestre inicia quando todos estão prontos — ou quando os prontos já
+fecham times equilibrados, com no máximo **um a menos** de um lado
+(esperar o último indeciso trava a sala; começar 5 contra 2 estraga a
+partida). Quem não estava pronto fica na sala e não joga. Bots estão
+sempre prontos. Iniciar abre uma contagem de 5 s, cancelável.
 
 A regra de "pronto" existe hoje com um humano só, de propósito: na
 Fase 2 muda de onde vêm os jogadores, não como a sala funciona.
@@ -1346,8 +1361,9 @@ da mira, barra de transformação, recargas do lobo, uivo, relógio de
 renascer e vinheta.
 
 **Mira** (`Crosshair.cs`): quatro hastes que se afastam com a dispersão
-da arma (`Weapon.CurrentSpread`). No lobo vira um ponto — o lobo não
-mira, ele chega.
+da arma (`Weapon.CurrentSpread`). No lobo **não aparece** — o lobo não
+mira, ele chega, e em terceira pessoa o próprio lobo no meio da tela já
+diz para onde vai.
 
 **Marcador de acerto** (`HitMarker.cs`): branco no corpo, vermelho e
 maior na cabeça, e segura mais no abate. O som de cada um é diferente.

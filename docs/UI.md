@@ -122,7 +122,7 @@ A tela de sala do WolfTeam divide a largura em **três colunas**: times à esque
 
 - Coroa ou marcador no host
 
-- Estado: `Pronto` (verde) ou `Aguardando` (cinza)
+- Estado: `Pronto` (verde) ou `Aguardando` (cinza). O host não tem estado: ele não marca pronto, é quem inicia
 
 - Ping
 

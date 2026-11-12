@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.26.2 — 2026-11-12
+
+### Mudado
+- **O salto no chão avança até a mira:** do impulso até os pés tocarem
+  o chão, o lobo anda até as garras caírem no ponto para onde a câmera
+  aponta — em cima de quem você mirou, até 5 m. Antes ele saltava no
+  lugar.
+- **Garradas mais rápidas e respondendo ao clique:** 0,52 s por golpe
+  (eram 0,69 e 0,71), garra chegando em 0,23 s e 0,16 s. O clique dado
+  no fim de um golpe fica guardado e o próximo sai no quadro em que ele
+  acaba — antes ele se perdia.
+- **O mestre da sala não marca pronto.** Ele inicia com todos prontos,
+  ou com os prontos já em times equilibrados (um lado pode ter um a
+  menos). Quem não estava pronto fica na sala.
+- **Sem mira na forma lobo.** Em terceira pessoa o próprio lobo no meio
+  da tela já diz para onde ele vai.
+
 ## v0.26.1 — 2026-11-12
 
 ### Mudado
