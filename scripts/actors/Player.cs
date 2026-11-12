@@ -767,6 +767,10 @@ public partial class Player : CharacterBody3D
 
     private bool IsHowling => _howling;
 
+    /// <summary>Especial apertado junto com o pulo: vira bote no quadro
+    /// seguinte.</summary>
+    private bool _diveAfterJump;
+
     /// <summary>
     /// Rugido: segurar R do começo ao fim da animação devolve o escudo
     /// cheio. Soltar no meio corta o rugido sem escudo. Como o escudo
@@ -863,8 +867,22 @@ public partial class Player : CharacterBody3D
 
         // Botão direito: salto no chão, bote no ar. Quem move o corpo
         // durante os dois é o passo de física, pela arma.
-        if (Input.IsActionJustPressed("special"))
-            _weapon.TrySpecial(Input.IsActionPressed("move_forward"));
+        //
+        // Pulo e especial no mesmo quadro: quem apertou os dois quer o
+        // bote, não o salto do chão. O pulo sai agora e o bote no quadro
+        // seguinte, já no ar.
+        if (_diveAfterJump)
+        {
+            _diveAfterJump = false;
+            if (!IsOnFloor()) _weapon.TrySpecial();
+        }
+        else if (Input.IsActionJustPressed("special"))
+        {
+            if (_form.IsWolf && IsOnFloor() && Input.IsActionJustPressed("jump"))
+                _diveAfterJump = true;
+            else
+                _weapon.TrySpecial(Input.IsActionPressed("move_forward"));
+        }
 
         // R faz o que a forma permite: ruge de lobo, recarrega de
         // humano. Uma tecla, um gesto, dois corpos.

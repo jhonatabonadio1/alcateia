@@ -102,8 +102,12 @@ public partial class Weapon : Node3D
 	/// <summary>Dano do bote, num golpe só, na hora do impacto.</summary>
 	[Export] public float LeapDamageBonus = 3f;
 
-	/// <summary>Tempo mínimo entre um bote e outro, contado do clique.</summary>
-	[Export] public float LeapCooldown = 2f;
+	/// <summary>Tempo mínimo entre um bote e outro, contado do clique.
+	/// Zero: o bote volta assim que a aterrissagem acaba, e todo pulo pode
+	/// ter o seu. Com 2 s, quem pulava logo depois de aterrissar apertava
+	/// e nada saía. A aterrissagem prende o lobo, então pular de novo já
+	/// espera o golpe acabar.</summary>
+	[Export] public float LeapCooldown = 0f;
 
 	/// <summary>Velocidade do mergulho, em m/s. Constante, em linha reta:
 	/// sem gravidade, sem freio e sem desvio no meio. O ponto de impacto
@@ -1229,7 +1233,8 @@ public partial class Weapon : Node3D
 
 	/// <summary>
 	/// O impacto do bote: um golpe só, no volume maior do bote, e o lobo
-	/// preso no chão durante a aterrissagem. A recarga conta do clique.
+	/// preso no chão durante a aterrissagem. Acabou a aterrissagem, o
+	/// próximo pulo já pode ter outro bote.
 	/// </summary>
 	private void DiveImpact()
 	{
