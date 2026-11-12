@@ -1,5 +1,40 @@
 # Changelog
 
+## v0.26.0 — 2026-11-12
+
+### Adicionado
+- **Lobo correndo na parede** com o Running Crawl, deitado de lado com
+  a barriga virada para a parede em que está (pela normal dela). Entra
+  e sai suave; parado agarrado, o clipe para.
+- **`WolfMoves`**: tabela única com trecho, velocidade e instante do
+  golpe de cada animação do lobo, medidos nas mãos do esqueleto.
+- `tools/analisar_golpes.gd`: mede de novo os golpes quando um clipe
+  for trocado.
+
+### Mudado
+- **Golpes do lobo sincronizados com a animação:** o dano sai no quadro
+  em que a garra chega (garrada 0,31 s e 0,21 s, patada 0,30 s, bote
+  0,50 s depois do clique), e o próximo golpe só sai quando a animação
+  acaba. Golpe não corta golpe, nem para voltar a humano.
+- **A garrada alterna os braços na arma**, não só na animação: o combo
+  continua (o terceiro golpe machuca mais).
+- **Rugido inteiro:** um toque em R começa, a animação vai até o fim
+  (3,6 s) e só então o escudo volta cheio. Soltar não cancela; parado e
+  sem atacar o tempo todo. Bots seguem a mesma regra (antes recuperavam
+  aos poucos).
+- O som da garra sai no instante do golpe.
+
+### Corrigido
+- **O jogo abortava ao fechar depois de uma partida longa**
+  ("script_bindings is not empty"). Os objetos que o C# monta (animações,
+  árvores de animação) ficavam na fila do coletor, e a fila rodava
+  depois de o C# já ter desligado. O autoload `Saida` esvazia a fila
+  depois que a cena some. Em 25 saídas de teste: 7 abortos antes, 0
+  depois.
+- O HUD não monta estilo novo a cada quadro, e o golpe do lobo espera
+  numa fila da arma em vez de um timer novo por golpe: menos lixo para
+  o coletor durante a partida.
+
 ## v0.25.1 — 2026-11-12
 
 ### Mudado

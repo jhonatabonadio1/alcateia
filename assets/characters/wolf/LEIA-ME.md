@@ -19,6 +19,7 @@ que fazem no jogo:
 | `howl.fbx` | mutant roaring | uivando (R) |
 | `transform.fbx` | mutant flexing muscles | acabou de virar lobo |
 | `death.fbx` | mutant dying | morreu de lobo |
+| `wallrun.fbx` | Running Crawl | correndo na parede, deitado de lado com a barriga para ela |
 | `idle_alerta.fbx` | mutant idle | reserva, não usado |
 
 **O lobo não tem animação de pulo** (decisão do Jhon): no ar o corpo
@@ -29,6 +30,17 @@ que ele começa com o lobo no ar (`WolfVisual.FallOnly`).
 Clipe com deslocamento de raiz tem o deslocamento horizontal zerado na
 carga (`CharacterAnimator.StripRootMotion`): quem move o corpo é a
 física.
+
+**Golpes e rugido tocam um trecho medido**, não o arquivo inteiro: a
+garrada pula a preparação longa, o bote usa só a queda. Os trechos, as
+velocidades e o instante do golpe ficam em
+`scripts/forms/WolfMoves.cs`, e a arma usa os mesmos números para o
+dano sair no quadro em que a garra chega. Trocou um desses clipes?
+Meça de novo com `godot --headless --path . -s res://tools/analisar_golpes.gd`
+e corrija a linha dele.
+
+`wallrun.fbx` veio com a malha do Mutant junto (19 MB); só a animação é
+usada. Da próxima vez, baixe do Mixamo "without skin".
 
 Para trocar uma animação, ponha o `.fbx` do Mixamo aqui com o mesmo
 nome. Clipe que falta é pulado sem erro.

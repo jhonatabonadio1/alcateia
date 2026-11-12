@@ -178,6 +178,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `combat/Weapon.cs` | Slots, tiro hitscan, garrada, granada |
 | `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
 | `core/Match.cs` | Fases da partida, placar, MVP, pagamento de XP e Presas no fim |
+| `core/Saida.cs` | Autoload: esvazia o coletor do C# na saída, para o jogo fechar sem abortar |
 | `core/Profile.cs` | O perfil salvo: nome, patente, XP, moedas, inventário, conjuntos, missões |
 | `core/RoomConfig.cs` | A sala que vai para a partida e suas regras |
 | `meta/*.cs` | Patentes, catálogo da loja, missões, progressão, mapas, salas |
@@ -270,7 +271,7 @@ export `RefillOnTransform`, desligado por padrão.
 | Clique esq. | Atacar |
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
-| R | Rugir segurando (lobo) · recarregar (humano) |
+| R | Rugir (lobo): vai até o fim e devolve o escudo · recarregar (humano) |
 | B | Soltar a arma da mão: cai à frente, e você passa para a próxima |
 | Esc | Menu da partida (continuar, opções, controles, reiniciar, sair para a sala, sair do jogo) — **não pausa** |
 | Tab (segurar) | Placar da partida |
@@ -375,6 +376,11 @@ numa partida por pontos é abate jogado fora.
   faz polling
 - Peças descartáveis (Dummy, HUD atual, clarão da granada) estão
   marcadas como tal no comentário de topo
+- Nada de cache `static` de recurso montado em runtime (animação,
+  material, nó de árvore): o C# segura a referência até o coletor
+  passar, e o que sobra na fila quando o jogo fecha derruba a saída
+  ("script_bindings is not empty"). O `Saida` limpa a fila no fim; não
+  dependa dele para mais nada
 
 ---
 
@@ -526,8 +532,30 @@ Três coisas fazem isso funcionar, e nenhuma é opcional:
 
 ### As garras
 
-Clique esquerdo: **combo de três golpes**. O terceiro machuca mais, e
-encadear é mais rápido que recomeçar.
+Clique esquerdo: **combo de três golpes**, alternando os braços. O
+terceiro machuca mais.
+
+**Golpe sincronizado com a animação, e golpe não corta golpe.** O dano
+sai no quadro em que a garra chega na animação, não no clique, e o
+próximo golpe só sai quando a animação acaba. A tabela é uma só,
+`scripts/forms/WolfMoves.cs`: para cada golpe, o trecho do clipe, a
+velocidade e o instante do golpe, medidos nas mãos do esqueleto por
+`tools/analisar_golpes.gd`. A arma lê dela para o dano e o
+`WolfVisual` para a animação — não tem como sair de sincronia. Para um
+golpe mais rápido ou mais pesado, mude só a velocidade; a duração e o
+instante do dano acompanham. Trocou o clipe? Rode a ferramenta e
+corrija a linha dele.
+
+| Golpe | Clipe | Golpe na tela | Dura |
+|---|---|---|---|
+| Garrada, braço 1 | swiping, 0,75–2,00 s, 1,8× | 0,31 s | 0,69 s |
+| Garrada, braço 2 | punch, 0–1,00 s, 1,4× | 0,21 s | 0,71 s |
+| Patada (direito no chão) | punch, 1,0× | 0,30 s | 1,00 s |
+| Bote (direito no ar) | jump attack, só a queda, 1,2× | 0,50 s | 1,45 s (recarga de 2 s) |
+| Rugido (R) | roaring inteiro, 1,5× | escudo no fim | 3,60 s |
+
+Durante um golpe o lobo não volta a humano: a tecla espera o golpe
+acabar.
 
 **O golpe não é hitscan.** Cada patada cria um volume curto à frente
 do corpo e pega quem estiver dentro. A diferença é concreta: um raio
@@ -576,8 +604,11 @@ de um humano a trinta metros é o contorno.
 ### O escudo do lobo
 
 O escudo **escorre sozinho** enquanto o lobo está transformado. Não é
-vida extra: é um relógio. Segurar R rugindo recupera o escudo, ao
-preço de ficar parado e de entregar a posição pelo som.
+vida extra: é um relógio. **R ruge**: um toque começa, a animação vai
+até o fim (soltar não cancela) e só então o escudo volta cheio. O
+preço é ficar parado esse tempo todo, sem atacar, e entregar a posição
+pelo som. Morrer ou deixar de ser lobo no meio corta o rugido sem
+pagar. O bot segue a mesma regra.
 
 Essa é a tensão central da forma lobo: quanto mais tempo transformado,
 mais exposto, e a única forma de sustentar é parar — justamente o que
@@ -1388,11 +1419,16 @@ esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.
 
 Clipes do lobo: parado, andar e correr misturados pela velocidade;
 garrada, patada e transformação **da cintura para cima**; o rugido
-enquanto segura R; a morte. O clique esquerdo **alterna** dois golpes,
-o "swiping" e o "punch", um braço de cada vez. O bote (direito no ar)
-toca **só a queda** do "jump attack", do ponto mais alto ao impacto —
-ele começa com o lobo já no ar. **O lobo não tem animação de pulo**,
-decisão do Jhon: ele só pula, e o corpo segue na pose em que estava.
+inteiro no R; a morte; e, na parede, o **Running Crawl** com a barriga
+virada para a parede em que está — o modelo deita para o lado da
+parede (pela normal dela), a cápsula e a câmera continuam de pé.
+
+O clique esquerdo **alterna** dois golpes, o "swiping" e o "punch", um
+braço de cada vez. O bote (direito no ar) toca **só a queda** do "jump
+attack", do ponto mais alto ao impacto — ele começa com o lobo já no
+ar. **O lobo não tem animação de pulo**, decisão do Jhon: ele só pula,
+e o corpo segue na pose em que estava. Trechos, velocidades e instante
+do golpe: `WolfMoves` (veja "As garras").
 
 Texturas embutidas nos `.fbx` são extraídas pelo Godot na importação
 (`exo_gray_0.png`...) e ficam fora do git: cada máquina gera as suas.
