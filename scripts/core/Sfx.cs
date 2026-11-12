@@ -60,7 +60,7 @@ public static class Sfx
     /// chega, em metros — use o mesmo raio do ruído que os bots ouvem,
     /// para o jogador e o bot ouvirem a mesma coisa.
     /// </summary>
-    public static void At(string name, Vector3 position, float radius, float volumeDb = 0f)
+    public static void At(string name, Vector3 position, float radius, float volumeDb = 0f, float reach = 0f)
     {
         AudioStream stream = Get(name);
         if (stream == null || !Reserve(out Window root)) return;
@@ -70,7 +70,7 @@ public static class Sfx
             Stream = stream,
             Bus = BusSfx,
             VolumeDb = volumeDb,
-            MaxDistance = Mathf.Max(radius, 1f),
+            MaxDistance = Mathf.Max(Mathf.Max(radius, reach), 1f),
 
             // Com esta escala o som chega à borda do raio uns 16 dB
             // abaixo do volume de perto: audível, mas claramente longe.

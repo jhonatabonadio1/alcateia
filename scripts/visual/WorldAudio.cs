@@ -33,6 +33,13 @@ public partial class WorldAudio : Node
     /// distante (<c>tiro_distante</c>), se ela existir.</summary>
     [Export] public float DistantShot = 35f;
 
+    /// <summary>Até onde se ouve o tiro de outro, em metros (decisão do
+    /// Jhon: o tiro do inimigo vem dele, da distância dele, de qualquer
+    /// ponto do mapa). É o único som que passa do raio do ruído: o bot
+    /// continua ouvindo só até o raio da arma, e o volume cai com a
+    /// distância a partir dele — longe, abafado, mas presente.</summary>
+    [Export] public float ShotReach = 120f;
+
     /// <summary>O uivo emite ruído a cada meio segundo para os bots;
     /// o som toca uma vez por uivo.</summary>
     [Export] public float HowlRetrigger = 1.5f;
@@ -105,7 +112,7 @@ public partial class WorldAudio : Node
                 break;
 
             case NoiseKind.Shot:
-                Play(ShotName(source, noise.Position, mine), noise, mine);
+                Play(ShotName(source, noise.Position, mine), noise, mine, reach: ShotReach);
                 break;
 
             case NoiseKind.Explosion:
@@ -131,7 +138,7 @@ public partial class WorldAudio : Node
         return Sfx.First($"tiro_{id}", "tiro");
     }
 
-    private void Play(string name, Noise noise, bool mine, float volumeDb = 0f)
+    private void Play(string name, Noise noise, bool mine, float volumeDb = 0f, float reach = 0f)
     {
         if (Debug)
             GD.Print($"[som] {noise.Kind} de {noise.Source?.Name} ({(mine ? "seu" : $"raio {noise.Radius:0} m")}) → "
@@ -140,7 +147,7 @@ public partial class WorldAudio : Node
         if (name == null) return;
 
         if (mine) Sfx.Local(name, volumeDb);
-        else Sfx.At(name, noise.Position, noise.Radius, volumeDb);
+        else Sfx.At(name, noise.Position, noise.Radius, volumeDb, reach);
     }
 
     private bool Listener(out Vector3 position)

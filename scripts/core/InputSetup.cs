@@ -26,8 +26,8 @@ public static class InputSetup
         // placar quando ele nasceu.
         Key("menu", Godot.Key.Escape);
         Key("scoreboard", Godot.Key.Tab);
-        // B solta a arma da mão, como no CS.
-        Key("drop", Godot.Key.B);
+        // G solta a arma da mão (decisão do Jhon; era o B do CS).
+        Key("drop", Godot.Key.G);
         Mouse("attack", MouseButton.Left);
         Mouse("special", MouseButton.Right);
 
