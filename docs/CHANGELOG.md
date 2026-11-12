@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.26.6 — 2026-11-12
+
+### Adicionado
+- **Animação de pulo do lobo** ("mutant jumping"): o voo acompanha o
+  pulo de verdade — saindo do chão, no topo, caindo —, e chegando
+  devagar o lobo aterrissa agachando; chegando correndo, já sai
+  correndo. Vale para o pulo do chão e o da parede.
+
 ## v0.26.5 — 2026-11-12
 
 ### Mudado

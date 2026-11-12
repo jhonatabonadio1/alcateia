@@ -1542,7 +1542,12 @@ esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.
 
 Clipes do lobo: parado, andar e correr misturados pela velocidade;
 as garradas e o rugido **da cintura para cima**; o salto e o bote no
-corpo inteiro; a morte; e, na parede, o
+corpo inteiro; **o pulo**, só o voo do "mutant jumping", tocado pela
+velocidade vertical (o agachar do clipe fica de fora: a física sai do
+chão no quadro do clique), com o quadril na altura de pé — quem sobe é
+a cápsula —, e a aterrissagem do clipe quando o lobo chega devagar
+(chegando correndo, volta direto para a corrida, senão o pé patina); a
+morte; e, na parede, o
 **Running Crawl** com a barriga virada para a parede em que está — o
 modelo deita para o lado da parede (pela normal dela), a cápsula e a
 câmera continuam de pé. **Virar lobo não tem animação** (decisão do
