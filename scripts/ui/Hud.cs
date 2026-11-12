@@ -37,6 +37,13 @@ public partial class Hud : CanvasLayer
     private const int Margin = 26;
     private const int MinimapSide = 168;
 
+    /// <summary>Ordem dos slots na barra. O lobo é o 3 e aparece junto
+    /// com as armas porque é isso que ele é: um item da mochila.</summary>
+    private static readonly Slot[] BarSlots =
+    {
+        Slot.Primary, Slot.Secondary, Slot.Wolf, Slot.Knife, Slot.Grenade
+    };
+
     private Health _health;
     private FormController _form;
     private Weapon _weapon;
@@ -244,12 +251,11 @@ public partial class Hud : CanvasLayer
         _slotBar.AddThemeConstantOverride("separation", 6);
         AddChild(_slotBar);
 
-        Slot[] slots = { Slot.Primary, Slot.Secondary, Slot.Knife, Slot.Grenade };
-        _slotCells = new PanelContainer[slots.Length];
+        _slotCells = new PanelContainer[BarSlots.Length];
 
-        for (int i = 0; i < slots.Length; i++)
+        for (int i = 0; i < BarSlots.Length; i++)
         {
-            _slotCells[i] = SlotCell(slots[i]);
+            _slotCells[i] = SlotCell(BarSlots[i]);
             _slotBar.AddChild(_slotCells[i]);
         }
     }
@@ -258,7 +264,7 @@ public partial class Hud : CanvasLayer
     {
         var cell = new PanelContainer
         {
-            CustomMinimumSize = new Vector2(104, 52),
+            CustomMinimumSize = new Vector2(96, 52),
             MouseFilter = Control.MouseFilterEnum.Ignore
         };
 
@@ -284,11 +290,14 @@ public partial class Hud : CanvasLayer
     {
         if (_slotCells == null) return;
 
-        Slot[] slots = { Slot.Primary, Slot.Secondary, Slot.Knife, Slot.Grenade };
-
         for (int i = 0; i < _slotCells.Length; i++)
         {
-            bool selected = slots[i] == active && !_form.IsWolf;
+            // De lobo, quem fica aceso é o slot 3 — a forma ocupa um
+            // espaço na mochila como qualquer outro item, e é assim
+            // que o jogador lê que transformar é uma escolha de slot.
+            bool selected = _form.IsWolf
+                ? BarSlots[i] == Slot.Wolf
+                : BarSlots[i] == active;
 
             var style = new StyleBoxFlat
             {
@@ -301,13 +310,16 @@ public partial class Hud : CanvasLayer
                 ContentMarginLeft = 10, ContentMarginRight = 10,
                 ContentMarginTop = 6, ContentMarginBottom = 6
             };
+            if (selected && BarSlots[i] == Slot.Wolf)
+                style.BorderColor = new Color(1f, 0.55f, 0.2f);
+
             style.SetBorderWidthAll(selected ? 2 : 1);
             _slotCells[i].AddThemeStyleboxOverride("panel", style);
 
             var box = _slotCells[i].GetChild<VBoxContainer>(0);
             var name = box.GetNode<Label>("SlotName");
 
-            name.Text = NameOf(slots[i]);
+            name.Text = NameOf(BarSlots[i]);
             name.Modulate = selected ? Colors.White : new Color(1, 1, 1, 0.45f);
         }
 
@@ -319,6 +331,7 @@ public partial class Hud : CanvasLayer
     {
         Slot.Primary => _weapon.Current?.PrimaryName ?? "PRINCIPAL",
         Slot.Secondary => _weapon.Current?.SecondaryName ?? "SECUNDÁRIA",
+        Slot.Wolf => (_form.Breed?.DisplayName ?? "LOBO").ToUpper(),
         Slot.Knife => "FACA",
         Slot.Grenade => $"GRANADA {_weapon.Grenades}",
         _ => ""
