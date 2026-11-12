@@ -290,7 +290,7 @@ public partial class CharacterAnimator : Node3D
             Node temp = scene.Instantiate();
             AnimationPlayer source = FindPlayer(temp);
 
-            Animation animation = TakeAnimation(source);
+            Animation animation = TakeAnimation(source, clip, Debug && !_reported);
 
             if (animation != null)
             {
@@ -317,23 +317,51 @@ public partial class CharacterAnimator : Node3D
         clip.StartsWith("run") || clip.StartsWith("strafe") ||
         clip == "crouch_idle" || clip == "crouch_walk" || clip == "fall";
 
-    /// <summary>A primeira animação de verdade do tocador de origem.
-    /// O importador deixa um "Take 001" vazio junto do clipe real.</summary>
-    private static Animation TakeAnimation(AnimationPlayer source)
+    /// <summary>
+    /// A animação de verdade do tocador de origem.
+    ///
+    /// Cada FBX importado traz duas: o clipe do Mixamo e um "Take 001"
+    /// que o importador deixa junto. Eu escolhia pela **duração**, e
+    /// esse foi o erro: quando o take vazio é o mais longo, carrega-se
+    /// um clipe sem osso nenhum. Clipe sem trilha não dá erro, não
+    /// avisa e não move nada — o esqueleto fica na pose de repouso, e
+    /// a pose de repouso de um rig humanoide é o T.
+    ///
+    /// Escolher pelo **número de trilhas** acerta sempre: o que anima
+    /// sessenta e cinco ossos tem sessenta e cinco trilhas, e o vazio
+    /// não tem nenhuma. A duração vira só desempate.
+    /// </summary>
+    private static Animation TakeAnimation(AnimationPlayer source, string clip, bool debug)
     {
         if (source == null) return null;
 
         Animation best = null;
+        int mostTracks = 0;
         double longest = 0;
+        string chosen = "";
 
         foreach (StringName name in source.GetAnimationList())
         {
             Animation candidate = source.GetAnimation(name);
-            if (candidate == null || candidate.Length <= longest) continue;
+            if (candidate == null) continue;
 
+            int tracks = candidate.GetTrackCount();
+
+            bool better = tracks > mostTracks
+                || (tracks == mostTracks && candidate.Length > longest);
+
+            if (!better) continue;
+
+            mostTracks = tracks;
             longest = candidate.Length;
             best = candidate;
+            chosen = name.ToString();
         }
+
+        if (debug && mostTracks == 0)
+            GD.PrintErr($"CharacterAnimator: '{clip}' não traz trilha nenhuma — vai dar pose em T.");
+        else if (debug)
+            GD.Print($"  {clip}: '{chosen}', {mostTracks} trilhas, {longest:0.00}s");
 
         return best?.Duplicate() as Animation;
     }
