@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.26.1 — 2026-11-12
+
+### Mudado
+- **Rugido em 2,9 s** (era 3,6): corta o começo e o fim parados do
+  clipe e toca um pouco mais rápido. O escudo continua voltando só no
+  fim.
+- **Bote (direito no ar) refeito:** mergulho em linha reta na direção
+  da mira, a 17 m/s, sem gravidade nem freio no meio — o ponto de
+  impacto é escolhido no clique. O golpe sai no instante em que o lobo
+  encosta (chão, parede ou alguém), não num tempo marcado: um golpe só,
+  3×, num volume um pouco maior que o do salto. Aterrissa preso por
+  0,78 s; recarga de 2 s.
+- **Salto (direito no chão):** toca o "jump attack" inteiro com o lobo
+  preso no lugar, e o dano sai só quando ele cai, 1,14 s depois do
+  clique. Substitui a patada pesada.
+- **Golpes fluidos**, medidos quadro a quadro na velocidade dos ossos:
+  - a garrada entra em 0,15 s, e os braços não voam mais até a pose
+    inicial;
+  - parado, a garrada dá um passo em sino (0,91 m, como o do clipe; o
+    punch, 0,35 m) e as pernas andam junto — antes o empurrão
+    instantâneo jogava os pés na pose de correr de uma vez;
+  - a queda do bote acelera para o impacto da animação coincidir com o
+    impacto de verdade, e a aterrissagem entra por cima dela, sem
+    tranco;
+  - no bote o lobo tomba para a frente na inclinação do mergulho;
+  - preso no lugar (salto, rugido, aterrissagem), o lobo freia deslizando
+    em vez de parar seco.
+- `tools/analisar_golpes.gd` também mede o passo do quadril, o quadro
+  em que os pés voltam ao chão e o trecho do clipe com movimento.
+
 ## v0.26.0 — 2026-11-12
 
 ### Adicionado

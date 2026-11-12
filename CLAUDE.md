@@ -265,7 +265,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 3 | Virar lobo |
 | 4 | Faca |
 | 5 | Equipar granada (o ataque arremessa) |
-| Botão direito | Bote aéreo (só de lobo, só no ar) |
+| Botão direito | Lobo: salto no chão, bote no ar |
 | W segurado | Sustenta a corrida em parede |
 | Ataque segurado | Agarra na parede sem avançar |
 | Clique esq. | Atacar |
@@ -447,7 +447,7 @@ só mira e avisos críticos.
 | Centro | Mira com abertura dinâmica, marcador de acerto, dano direcional, avisos |
 | Inferior esquerdo | Forma atual (sempre visível), escudo e vida |
 | Inferior centro | Barra de transformação |
-| Inferior direito | WP, e o painel da forma: arma, pente `/ ∞`, granadas e slots no humano; recargas de garrada, patada, bote e uivo no lobo |
+| Inferior direito | WP, e o painel da forma: arma, pente `/ ∞`, granadas e slots no humano; recargas de garrada, salto, bote e uivo no lobo |
 
 **O HUD troca de forma.** Humano e lobo são dois painéis distintos,
 trocados com transição. O lobo não tem munição; mostrar "30 / ∞" num
@@ -550,12 +550,29 @@ corrija a linha dele.
 |---|---|---|---|
 | Garrada, braço 1 | swiping, 0,75–2,00 s, 1,8× | 0,31 s | 0,69 s |
 | Garrada, braço 2 | punch, 0–1,00 s, 1,4× | 0,21 s | 0,71 s |
-| Patada (direito no chão) | punch, 1,0× | 0,30 s | 1,00 s |
-| Bote (direito no ar) | jump attack, só a queda, 1,2× | 0,50 s | 1,45 s (recarga de 2 s) |
-| Rugido (R) | roaring inteiro, 1,5× | escudo no fim | 3,60 s |
+| Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso no lugar |
+| Bote (direito no ar) | jump attack: a queda, depois a aterrissagem | quando encosta | aterrissagem de 0,78 s, presa; recarga de 2 s |
+| Rugido (R) | roaring, 0,30–4,90 s, 1,6× | escudo no fim | 2,88 s |
 
 Durante um golpe o lobo não volta a humano: a tecla espera o golpe
 acabar.
+
+**Golpes fluidos.** Medido quadro a quadro na velocidade dos ossos
+(mãos, pés, cabeça), não só a olho:
+
+- A garrada entra em 0,15 s, não em 0,08: o trecho dela começa com os
+  braços já no alto, e em 0,08 s eles voavam até lá.
+- As garradas ficam **da cintura para cima**. No corpo inteiro o
+  "swiping" gira o quadril 90° e o lobo terminaria o golpe de lado.
+- Parado, o corpo dá **o passo do golpe em sino** (`StepFrom`,
+  `StepTo`, `Step` em `WolfMoves`): 0,91 m na garrada, como o quadril
+  do clipe, e 0,35 m no punch. A velocidade sobe e desce sem degrau, e
+  as pernas andam um passo junto com o braço. O empurrão instantâneo
+  antigo jogava os pés na pose de correr de uma vez. Correndo, vale o
+  empurrão de sempre (`ClawLunge`): as pernas já estão correndo.
+- Preso no lugar (salto, rugido, aterrissagem do bote), o lobo freia em
+  `FreezeBrake` (30 m/s²) em vez de parar seco: desliza meio metro
+  enquanto agacha.
 
 **O golpe não é hitscan.** Cada patada cria um volume curto à frente
 do corpo e pega quem estiver dentro. A diferença é concreta: um raio
@@ -563,37 +580,41 @@ sai da câmera e acerta onde se mira, enquanto um volume preso ao corpo
 acerta o que estiver perto da garra. É isso que faz o alcance parecer
 variar com a postura em vez de seguir o olhar.
 
-**Cada golpe empurra o lobo para frente** (`ClawLunge`). Sem isso o
-combo deixa o jogador batendo no ar enquanto o alvo anda — o golpe
-precisa levar o lobo até o alvo.
+**Cada garrada leva o lobo para frente** — o passo parado, o empurrão
+correndo. Sem isso o combo deixa o jogador batendo no ar enquanto o
+alvo anda: o golpe precisa levar o lobo até o alvo.
 
 **Contra humano a patada vale 1,6×.** O lobo é feito para caçar
 gente, não para duelar com outro lobo — sem isso, o encontro entre
 dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
 
-**Botão direito no chão: patada pesada da direita.** Um golpe, 2,1×
-de dano, um segundo parado. É o castigo de quem deixou o lobo chegar
-parado — e o segundo de recuperação é o que impede que seja a resposta
-para tudo.
+**Botão direito no chão: o salto.** O "jump attack" inteiro — agacha,
+salta, cai —, com o lobo preso no lugar. O dano (2,1×) sai **quando o
+lobo cai** na animação, 1,14 s depois do clique, e não no clique. Preso
+por 2,14 s: forte, mas lento e fácil de ver vindo. É o castigo de quem
+deixou o lobo chegar parado, e a lentidão é o que impede que seja a
+resposta para tudo. O volume é o das garras.
 
-**Botão direito no ar: bote de três golpes.** O corpo viaja na direção
-da **mira inteira**, com o pitch: olhar para baixo dá um bote curto e
-mergulhado, olhar à frente dá um salto longo e raso. O jogador escolhe
-o arco. Dois segundos de recuperação.
+**Botão direito no ar: o bote.** Um mergulho **em linha reta** na
+direção da **mira inteira**, a 17 m/s, sem gravidade, sem freio e sem
+desvio: olhar para baixo dá um bote curto e mergulhado, olhar à frente
+dá um longo e raso (sempre descendo, no mínimo 0,35 de inclinação). O
+ponto de impacto é escolhido no clique, e é isso que deixa o bote
+preciso. O golpe sai **no instante em que o lobo encosta** — no chão,
+numa parede de frente ou em alguém —, não num tempo marcado: um golpe
+só, 3×, com o bônus aéreo se a queda passou de 2,5 m. O volume é **um
+pouco maior que o do salto** (1,7 m à frente, raio 1,5, contra 1,5 e
+1,15). Encostou, aterrissa preso por 0,78 s. Recarga de 2 s contada do
+clique; mirou no vazio, bate no ar em 0,9 s.
+
+O corpo acompanha: a queda do clipe é acelerada para o impacto dela
+cair no quadro em que o lobo encosta (o tempo até o chão é medido no
+clique), e o lobo tomba para a frente na inclinação do mergulho, até
+40°. Sem a inclinação ele despencava de pé em vez de avançar no alvo.
 
 O primário também funciona no ar — o bote é uma escolha, não a única
-opção de quem pulou.
-
-**Botão direito no ar: investida.** O lobo despenca na direção em que
-olha e dá duas patadas em sequência, com 1,45× de dano e cooldown
-quase o dobro.
-
-O mergulho é o que transforma o golpe numa investida em vez de dois
-golpes dados no ar — e é também o compromisso: o jogador escolhe o
-ponto de impacto no clique e não controla mais nada até aterrissar.
-
-A condição de estar no ar amarra o golpe mais forte do lobo ao salto,
-que é a jogada que o jogo quer premiar. Errar custa o dobro do tempo.
+opção de quem pulou. A condição de estar no ar amarra o golpe mais
+forte do lobo ao salto, que é a jogada que o jogo quer premiar.
 
 **O lobo é um corpo inteiro, em terceira pessoa** (`WolfVisual`, com o
 Mutant do Mixamo — veja "Personagens"). O dono vê o próprio lobo e os
@@ -1337,7 +1358,7 @@ de origem no mundo, não o ângulo do momento — é o que faz o arco girar
 quando você vira, continuando a apontar para o atirador.
 
 **Recargas do lobo** chegam pelo sinal `Weapon.AttackCooldown(tipo,
-segundos)` — garrada, patada e bote —, e o uivo por
+segundos)` — garrada, salto e bote —, e o uivo por
 `Player.HowlProgress`.
 
 **Minimapa** desenha toda caixa do mapa com a cor do material dela, as
@@ -1418,15 +1439,16 @@ e com o esqueleto dentro de `Armature`: o tocador é criado ao lado do
 esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.
 
 Clipes do lobo: parado, andar e correr misturados pela velocidade;
-garrada, patada e transformação **da cintura para cima**; o rugido
-inteiro no R; a morte; e, na parede, o **Running Crawl** com a barriga
-virada para a parede em que está — o modelo deita para o lado da
-parede (pela normal dela), a cápsula e a câmera continuam de pé.
+as garradas e a transformação **da cintura para cima**; o salto e o
+bote no corpo inteiro; o rugido no R; a morte; e, na parede, o
+**Running Crawl** com a barriga virada para a parede em que está — o
+modelo deita para o lado da parede (pela normal dela), a cápsula e a
+câmera continuam de pé.
 
 O clique esquerdo **alterna** dois golpes, o "swiping" e o "punch", um
-braço de cada vez. O bote (direito no ar) toca **só a queda** do "jump
-attack", do ponto mais alto ao impacto — ele começa com o lobo já no
-ar. **O lobo não tem animação de pulo**, decisão do Jhon: ele só pula,
+braço de cada vez. O "jump attack" serve três clipes: inteiro no salto
+(direito no chão); só a queda no bote (direito no ar), do ponto mais
+alto ao impacto; e, quando o bote encosta, a aterrissagem. **O lobo não tem animação de pulo**, decisão do Jhon: ele só pula,
 e o corpo segue na pose em que estava. Trechos, velocidades e instante
 do golpe: `WolfMoves` (veja "As garras").
 
