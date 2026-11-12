@@ -121,6 +121,14 @@ public partial class FormController : Node
         _health.SetPool(HumanHp, 0f, true);
         _health.Died += _ => LoseWp(WpLostOnDeath);
 
+        // Renasce sempre humano (decisão do Jhon): o lobo é pago com WP e
+        // morre com o corpo. Conectado antes do Player e do Bot (o filho
+        // fica pronto primeiro), então eles já veem a forma humana.
+        _health.Respawned += () =>
+        {
+            if (Current != Form.Human) Enter(Form.Human);
+        };
+
         EmitSignal(SignalName.WpChanged, Wp, MaxWp);
     }
 

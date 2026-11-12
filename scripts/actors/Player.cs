@@ -407,6 +407,9 @@ public partial class Player : CharacterBody3D
         Velocity = Vector3.Zero;
     }
 
+    /// <summary>Estava no voo do salto no quadro anterior.</summary>
+    private bool _pounceFlying;
+
     /// <summary>
     /// O voo do salto: o corpo vai para o ponto do arco no próximo quadro.
     /// Por posição e não por força, para o pulo cair exatamente onde foi
@@ -750,7 +753,17 @@ public partial class Player : CharacterBody3D
         if (_weapon.IsPounceFlying)
         {
             PounceFlight(delta);
+            _pounceFlying = true;
             return;
+        }
+
+        // Acabou o voo: o lobo fica onde caiu. Sem isto, o embalo de um voo
+        // barrado no caminho (alguém na frente) virava um deslize extra
+        // depois da queda, e o salto andava mais do que a barra mandou.
+        if (_pounceFlying)
+        {
+            _pounceFlying = false;
+            Velocity = new Vector3(0, Mathf.Min(Velocity.Y, 0), 0);
         }
 
         // O salto e a aterrissagem do bote prendem o lobo: golpe pesado

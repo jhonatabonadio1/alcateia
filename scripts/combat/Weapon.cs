@@ -70,8 +70,12 @@ public partial class Weapon : Node3D
 	// --- Granada de atordoamento: a resposta do humano contra o lobo ---
 	[Export] public PackedScene GrenadeScene;
 	[Export] public int MaxGrenades = 2;
-	[Export] public float ThrowForce = 11f;
-	[Export] public float ThrowArc = 3.5f;
+	/// <summary>Velocidade do arremesso da granada na direção da mira, em
+	/// m/s, e o empurrão para cima. Mais forte desde a v0.26.10 (decisão do
+	/// Jhon; era 11 e 3,5): olhando reto, de pé, ela cai a uns 16 m em vez
+	/// de 11.</summary>
+	[Export] public float ThrowForce = 14.5f;
+	[Export] public float ThrowArc = 4f;
 	[Export] public float ThrowCooldown = 0.9f;
 
 	// --- Faca: saída silenciosa e último recurso ---
@@ -176,10 +180,9 @@ public partial class Weapon : Node3D
 	/// responder.</summary>
 	[Export] public float AttackBuffer = 0.3f;
 
-	/// <summary>Até onde o salto no chão leva o lobo, em metros. É a
-	/// arma do lobo para fechar distância: apertar de longe e cair em
-	/// cima do humano. Ele cai com as garras no ponto da mira, até este
-	/// limite.</summary>
+	/// <summary>Até onde o salto no chão leva o lobo com a carga cheia, em
+	/// metros. É a arma do lobo para fechar distância: apertar de longe e
+	/// cair em cima do humano.</summary>
 	[Export] public float PounceMaxDistance = 12f;
 
 	/// <summary>Segundos segurando o botão direito no chão até o salto
@@ -188,8 +191,9 @@ public partial class Weapon : Node3D
 	[Export] public float PounceChargeTime = 1.0f;
 
 	/// <summary>Até onde o salto vai sem carga nenhuma, em metros. A carga
-	/// leva daqui a <see cref="PounceMaxDistance"/>, e o ponto mirado é o
-	/// teto: para chegar no alvo é preciso carregar o bastante.</summary>
+	/// leva daqui a <see cref="PounceMaxDistance"/> em linha reta, e só ela
+	/// decide (decisão do Jhon): a mesma barra dá sempre o mesmo salto,
+	/// com ou sem inimigo na frente, olhando para o chão ou para o céu.</summary>
 	[Export] public float PounceMinDistance = 1.5f;
 
 	/// <summary>Fração do dano do salto sem carga. Carregado inteiro, o
@@ -208,17 +212,6 @@ public partial class Weapon : Node3D
 	/// <summary>Altura mínima do arco do salto, em metros. Cresce com a
 	/// distância e com o que houver no caminho.</summary>
 	[Export] public float PounceArc = 0.6f;
-
-	/// <summary>Quanto o ponto de queda acompanha o alvo durante o voo, em
-	/// m/s. O alvo anda até 3 m no 1,1 s do salto e o golpe errava quem só
-	/// caminhava; mais devagar que o humano correndo (3,0), quem corre de
-	/// lado desde o começo ainda escapa.</summary>
-	[Export] public float PounceHoming = 2.4f;
-
-	/// <summary>Quão longe do centro da tela, em graus, um inimigo ainda
-	/// conta como "mirado" pelo salto. O lobo não tem mira na tela, e
-	/// acertar um corpo a 12 m só com o centro da câmera seria loteria.</summary>
-	[Export] public float PounceAimAssist = 10f;
 
 	/// <summary>Multiplicador de dano na cabeça.</summary>
 	[Export] public float HeadshotMultiplier = 2.5f;
@@ -542,7 +535,6 @@ public partial class Weapon : Node3D
 
 		if (_flying)
 		{
-			HomePounce((float)delta);
 			_flyTime += delta;
 			if (_flyTime >= _flyTotal || !_form.IsWolf || _health.IsDead)
 				_flying = false;
@@ -899,18 +891,32 @@ public partial class Weapon : Node3D
 
 	/// <summary>
 	/// O salto do bot: sem botão para segurar, ele já sabe a carga — a
-	/// que leva até o alvo, com o erro da dificuldade. Mesmo golpe do
-	/// jogador, do agachar à queda.
+	/// que leva até o alvo, com o erro da dificuldade — e mira no alvo como
+	/// o jogador mira com a câmera. Mesmo golpe do jogador, do agachar à
+	/// queda, e a mesma regra: a carga decide a distância, nada segue o
+	/// alvo no voo.
 	/// </summary>
 	public bool BotPounce(Node3D target, float power)
 	{
 		if (_cooldown > 0 || _charging || !_form.IsWolf || !_form.CanAttack || !_body.IsOnFloor()) return false;
+
+		_botAim = null;
+		if (target != null)
+		{
+			Vector3 to = target.GlobalPosition - _body.GlobalPosition;
+			to.Y = 0;
+			if (to.LengthSquared() > 0.0001f) _botAim = to.Normalized();
+		}
+
 		BeginCharge();
 		_chargeTime = Mathf.Clamp(power, 0f, 1f) * PounceChargeTime;
 		ReleaseCharge();
-		if (target != null) _pounceTarget = target;
+		_botAim = null;
 		return true;
 	}
+
+	/// <summary>Direção do salto do bot, só durante <see cref="BotPounce"/>.</summary>
+	private Vector3? _botAim;
 
 	/// <summary>Carga para o salto chegar a <paramref name="distance"/>
 	/// metros (o ponto de queda fica a uma garra do alvo).</summary>
@@ -957,20 +963,36 @@ public partial class Weapon : Node3D
 			() => Claw(damage, ClawReach, ClawRadius, false, _pounceFlew ? _flyDir : null), elapsed);
 
 		// O salto é um pulo de verdade: do impulso até os pés tocarem o
-		// chão, o corpo voa num arco até as garras caírem no alvo. Até onde,
-		// diz a carga; o ponto mirado é o teto — para chegar no alvo é
-		// preciso carregar o bastante (decisão do Jhon). Mirado no soltar.
-		_pounceTarget = FindPounceTarget();
-		var (delay, duration, clipDistance) = WolfMoves.StepOf(WolfMove.Pounce);
-		var (aimDistance, aimDirection) = PounceAim(clipDistance);
-		_pounceRange = Mathf.Lerp(PounceMinDistance, PounceMaxDistance, power);
-		_pounceAimPoint = _body.GlobalPosition + aimDirection * Mathf.Min(aimDistance, _pounceRange);
+		// chão, o corpo voa num arco. Para onde, diz a mira no instante de
+		// soltar; até onde, só a carga (decisão do Jhon): a mesma barra dá
+		// sempre o mesmo salto. Nada de seguir inimigo nem de parar no ponto
+		// mirado — salto que muda sozinho conforme quem está na frente é
+		// vantagem que o jogador não controla.
+		var (delay, duration, _) = WolfMoves.StepOf(WolfMove.Pounce);
+		_pounceRange = Mathf.Lerp(PounceMinDistance, PounceMaxDistance, Mathf.Clamp(power, 0f, 1f));
+		_pounceDir = PounceDirection();
 		After(Mathf.Max(delay - elapsed, 0f), id, () => BeginPounceFlight(duration));
 	}
 
-	private Node3D _pounceTarget;
-	private Vector3 _pounceAimPoint;
+	private Vector3 _pounceDir = Vector3.Forward;
 	private bool _pounceFlew;
+
+	/// <summary>Para onde o salto vai, no chão: a direção da câmera do
+	/// próprio jogador (<see cref="Player.AimCamera"/>), não a da câmera que
+	/// estiver na tela; o bot, para o alvo; sem nenhuma, para a frente do
+	/// corpo.</summary>
+	private Vector3 PounceDirection()
+	{
+		Vector3 direction = _botAim
+			?? ((_body as Player)?.AimCamera is Camera3D camera
+				? -camera.GlobalBasis.Z
+				: -_body.GlobalTransform.Basis.Z);
+
+		direction.Y = 0;
+		if (direction.LengthSquared() < 0.0001f) direction = -_body.GlobalTransform.Basis.Z with { Y = 0 };
+		if (direction.LengthSquared() < 0.0001f) direction = Vector3.Forward;
+		return direction.Normalized();
+	}
 
 	// --- O voo do salto ---
 
@@ -1001,46 +1023,19 @@ public partial class Weapon : Node3D
 		return _flyStart + _flyDir * (_flyDistance * s) + Vector3.Up * y;
 	}
 
-	/// <summary>Puxa o ponto de queda para onde o alvo está agora, até
-	/// <see cref="PounceHoming"/> m/s e sem passar do alcance.</summary>
-	private void HomePounce(float delta)
-	{
-		if (_pounceTarget == null || !IsInstanceValid(_pounceTarget)) return;
-		if (_pounceTarget.GetNodeOrNull<Health>("Health") is not { IsDead: false }) return;
-
-		Vector3 end = _flyStart + _flyDir * _flyDistance;
-		Vector3 to = _pounceTarget.GlobalPosition - _flyStart;
-		to.Y = 0;
-		float reach = to.Length();
-		if (reach < 0.01f) return;
-
-		Vector3 wanted = _flyStart + to / reach * Mathf.Clamp(reach - ClawReach, 0f, _pounceRange);
-		wanted.Y = end.Y;
-		end = end.MoveToward(wanted, PounceHoming * delta);
-
-		Vector3 flat = end - _flyStart;
-		flat.Y = 0;
-		_flyDistance = flat.Length();
-		if (_flyDistance > 0.01f) _flyDir = flat / _flyDistance;
-	}
-
 	private void BeginPounceFlight(float duration)
 	{
-		// O ponto do clique, visto de onde o corpo está agora (no agachar ele
-		// ainda desliza um pouco). Alvo vivo é seguido no voo (HomePounce).
-		Vector3 to = _pounceAimPoint - _body.GlobalPosition;
-		to.Y = 0;
-		float distance = Mathf.Min(to.Length(), PounceMaxDistance);
-		Vector3 direction = to.Length() > 0.01f ? to.Normalized() : -_body.GlobalTransform.Basis.Z with { Y = 0 };
-		if (direction.LengthSquared() < 0.01f) direction = Vector3.Forward;
-		direction = direction.Normalized();
+		// Direção e distância guardadas no soltar, medidas de onde o corpo
+		// está no impulso. Só o que não dá para atravessar (bloco, muro)
+		// encurta — e isso é o mapa, igual para todo mundo.
+		Vector3 direction = _pounceDir;
+		float distance = _pounceRange;
 
 		float wanted = distance;
 		PlanPounce(ref distance, direction, out float land, out float arc);
 
 		if (Debug)
-			GD.Print($"salto: alvo {(_pounceTarget != null ? _pounceTarget.Name : "nenhum")}, " +
-				$"anda {distance:0.0} m{(distance < wanted - 0.05f ? $" (queria {wanted:0.0}: obstáculo no caminho)" : "")}, " +
+			GD.Print($"salto: anda {distance:0.0} m{(distance < wanted - 0.05f ? $" (queria {wanted:0.0}: obstáculo no caminho)" : "")}, " +
 				$"arco {arc:0.0} m, cai {land:+0.0;-0.0} m");
 
 		_flyStart = _body.GlobalPosition;
@@ -1161,89 +1156,6 @@ public partial class Weapon : Node3D
 		}
 
 		return -1.6f;
-	}
-
-	/// <summary>
-	/// Para onde e quanto o salto anda: até as garras (o volume,
-	/// <see cref="ClawReach"/> à frente do corpo) caírem no alvo. Com um
-	/// inimigo mirado, em cima dele, onde ele estiver no impulso. Sem
-	/// ninguém, no ponto para onde a câmera aponta: chão perto, quase não
-	/// sai do lugar; céu, vai até <see cref="PounceMaxDistance"/>. Sem
-	/// câmera (bot), a distância do próprio clipe.
-	/// </summary>
-	private (float Distance, Vector3 Direction) PounceAim(float fallback)
-	{
-		Vector3 forward = -_body.GlobalTransform.Basis.Z;
-		forward.Y = 0;
-		forward = forward.Normalized();
-
-		if (_pounceTarget != null && IsInstanceValid(_pounceTarget)
-			&& _pounceTarget.GetNodeOrNull<Health>("Health") is { IsDead: false })
-		{
-			Vector3 to = _pounceTarget.GlobalPosition - _body.GlobalPosition;
-			to.Y = 0;
-			float flat = to.Length();
-			if (flat > 0.01f)
-				return (Mathf.Clamp(flat - ClawReach, 0f, PounceMaxDistance), to / flat);
-		}
-
-		Camera3D camera = (_body as Player)?.AimCamera;
-		if (camera == null) return (Mathf.Min(fallback, PounceMaxDistance), forward);
-
-		Vector3 from = camera.GlobalPosition;
-		Vector3 end = from - camera.GlobalBasis.Z * 80f;
-		var query = PhysicsRayQueryParameters3D.Create(from, end);
-		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
-		var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
-		if (hit.Count == 0) return (PounceMaxDistance, forward);
-
-		float along = ((Vector3)hit["position"] - _body.GlobalPosition).Dot(forward);
-		return (Mathf.Clamp(along - ClawReach, 0f, PounceMaxDistance), forward);
-	}
-
-	/// <summary>
-	/// O inimigo que o jogador está mirando para o salto: o mais perto do
-	/// centro da tela, até <see cref="PounceAimAssist"/> graus, ao alcance
-	/// do salto e à vista (sem parede no meio). Nenhum: null.
-	/// </summary>
-	private Node3D FindPounceTarget()
-	{
-		Camera3D camera = (_body as Player)?.AimCamera;
-		if (camera == null) return null;
-
-		Vector3 eye = camera.GlobalPosition;
-		Vector3 look = -camera.GlobalBasis.Z;
-		float reach = PounceMaxDistance + ClawReach + 1f;
-		float bestAngle = Mathf.DegToRad(PounceAimAssist);
-		Node3D best = null;
-
-		foreach (string group in new[] { "player", "bot" })
-		{
-			foreach (Node node in _body.GetTree().GetNodesInGroup(group))
-			{
-				if (node is not CharacterBody3D other || other == _body) continue;
-
-				Health health = other.GetNodeOrNull<Health>("Health");
-				if (health == null || health.IsDead) continue;
-				if (health.Team == _health.Team && !RoomConfig.Rules.FriendlyFire) continue;
-
-				Vector3 flat = other.GlobalPosition - _body.GlobalPosition;
-				flat.Y = 0;
-				if (flat.Length() > reach) continue;
-
-				float angle = look.AngleTo((other.GlobalPosition - eye).Normalized());
-				if (angle > bestAngle) continue;
-
-				var sight = PhysicsRayQueryParameters3D.Create(eye, other.GlobalPosition, 1);
-				sight.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid(), other.GetRid() };
-				if (_body.GetWorld3D().DirectSpaceState.IntersectRay(sight).Count > 0) continue;
-
-				best = other;
-				bestAngle = angle;
-			}
-		}
-
-		return best;
 	}
 
 	/// <summary>

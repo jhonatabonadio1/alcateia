@@ -395,7 +395,15 @@ public partial class Bot : CharacterBody3D
             Vector3 next = _weapon.PounceFlightPoint(delta);
             Velocity = ((next - GlobalPosition) / (float)delta).LimitLength(28f);
             MoveAndSlide();
+            _pounceFlying = true;
             return;
+        }
+
+        // Acabou o voo: fica onde caiu, sem deslizar com o embalo.
+        if (_pounceFlying)
+        {
+            _pounceFlying = false;
+            Velocity = new Vector3(0, Mathf.Min(Velocity.Y, 0), 0);
         }
 
         if (_weapon.IsRooted)
@@ -1367,6 +1375,7 @@ public partial class Bot : CharacterBody3D
 
     private double _specialRoll;
     private bool _wantDive;
+    private bool _pounceFlying;
 
     /// <summary>
     /// O lobo do bot com as jogadas do jogador, na medida da dificuldade:
