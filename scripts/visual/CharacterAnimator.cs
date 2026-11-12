@@ -183,6 +183,7 @@ public partial class CharacterAnimator : Node3D
     private bool _crouched;
     private double _hitTimer;
     private string _lastState = "";
+    private static bool _reported;
 
     public override void _Ready()
     {
@@ -245,8 +246,10 @@ public partial class CharacterAnimator : Node3D
             Refresh();
         }
 
-        if (Debug)
+        if (Debug && !_reported)
         {
+            _reported = true;
+
             var missing = new List<string>();
             foreach (string clip in Clips)
                 if (!_player.HasAnimation($"alcateia/{clip}")) missing.Add(clip);
@@ -386,6 +389,16 @@ public partial class CharacterAnimator : Node3D
 
         SetLayer(_model, bit);
         camera.CullMask &= ~bit;
+    }
+
+    private static VisualInstance3D FirstVisual(Node node)
+    {
+        if (node is VisualInstance3D visual) return visual;
+
+        foreach (Node child in node.GetChildren())
+            if (FirstVisual(child) is VisualInstance3D inner) return inner;
+
+        return null;
     }
 
     private static void SetLayer(Node node, uint bit)
@@ -603,7 +616,16 @@ public partial class CharacterAnimator : Node3D
         if (now == _lastState) return;
 
         _lastState = now;
-        GD.Print($"{_body.Name}: estado '{now}'  (no chão: {_body.IsOnFloor()})");
+
+        // A visibilidade e a camada entram no relatório porque o
+        // estado certo com o corpo fora de vista dá o mesmo sintoma do
+        // estado errado: nada muda na tela.
+        uint layers = 0;
+        if (FirstVisual(_model) is VisualInstance3D first) layers = first.Layers;
+
+        GD.Print($"{_body.Name}: estado '{now}'  chão {_body.IsOnFloor()}" +
+                 $"  visível {Visible && _model.Visible}  camada {layers}" +
+                 $"  forma {(_form != null && _form.IsWolf ? "lobo" : "humano")}");
     }
 
     /// <summary>
