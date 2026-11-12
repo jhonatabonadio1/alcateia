@@ -72,12 +72,13 @@ granadas mais fortes.
 8. **Câmera: humano em primeira pessoa, lobo em terceira.** A câmera
    não inclina na corrida em parede.
 
-9. **O humano é deliberadamente lento e pesado.** Velocidade 4,2 m/s
-   e pulo de 0,99 m. A mobilidade do jogo pertence ao lobo — no pulo,
-   na parede, no salto e no bote, não na corrida: a pé o lobo anda
-   **mais devagar** que o humano (decisão do Jhon, para a corrida do
-   Mutant ficar natural; veja abaixo). O humano compra distância e
-   tempo com arma e granada, não com as pernas.
+9. **O humano é deliberadamente lento e pesado.** Velocidade 3,0 m/s
+   e pulo de 0,99 m. **As duas formas andam o que as pernas andam**
+   (decisão do Jhon): a velocidade de cada uma é a passada do próprio
+   clipe de corrida, sem acelerar a animação do humano. A mobilidade do
+   jogo pertence ao lobo — 20% mais rápido a pé, e o pulo, a parede, o
+   salto e o bote. O humano compra distância e tempo com arma e
+   granada, não com as pernas.
 
    Atenção ao mexer: a velocidade e o pulo do lobo são
    **multiplicadores** dos valores humanos. Baixar o humano encolhe o
@@ -88,11 +89,23 @@ granadas mais fortes.
 
    | | Humano | Bruto | Ligeiro |
    |---|---|---|---|
-   | Velocidade | 4,2 | 3,6 (0,86×) | 3,9 (0,93×) |
+   | Velocidade | 3,0 | 3,6 (1,2×) | 3,9 (1,3×) |
    | Pulo | 0,99 m | 1,62 m (1,28×) | 2,50 m (1,59×) |
-   | Avanço do pulo correndo | 3,8 m | ~3,9 m | ~5,0 m |
-   | Agachado | 1,9 | 1,6 | 1,8 |
+   | Avanço do pulo correndo | ~2,7 m | ~3,9 m | ~5,0 m |
+   | Agachado | 1,35 | 1,6 | 1,8 |
    | Na parede | — | 3,6 | 3,9 |
+
+   **A velocidade do humano é a passada do X Bot**, medida no quadril:
+   correr ("run_fwd") anda 3,0 m/s a 1×, andar 1,0, de costas 1,1 e
+   2,6, de lado ~1,0. O ponto da mistura sai da velocidade por esses
+   números, trecho a trecho (`CharacterAnimator.WalkClip`, `RunClip`...),
+   e o clipe nunca acelera: correndo para a frente o pé apoiado fica
+   parado no chão (0,2 m/s medidos), de costas quase (0,6). Era 4,2 m/s,
+   com a caminhada em 2,1 — o pé patinava o dobro. **De lado ainda
+   patina** (~2 m/s): só há strafe andando, e o corpo vai a 3,0. Resolve
+   com um clipe de corrida lateral, não com número. O strafe tocava
+   **ao contrário** (`InvertStrafe` agora marcado): o pé andava junto
+   com o corpo, 4 m/s de patinada.
 
    **A velocidade do lobo é a da passada do Mutant.** A corrida do
    clipe anda 2,42 m/s na escala do jogo; mais rápido que isso ela
@@ -403,6 +416,12 @@ da forma.
 
 Duas por vida, reabastece ao renascer. Só na forma humana.
 
+**Segurar prepara, soltar arremessa** (decisão do Jhon): o ataque com a
+granada na mão a deixa pronta, e ela sai quando o botão solta, na
+direção da mira daquele instante — dá para apontar com calma, mais
+alto para ir mais longe. A física do arremesso não muda (força, arco e
+o embalo de quem corre). O bot arremessa direto.
+
 A granada sabe quem a lançou (`Grenade.Thrower`). Aliado passa ileso,
 dano e atordoamento; quem lançou, não — granada aos próprios pés tem
 que custar alguma coisa. Abate de granada entra no feed, no placar e
@@ -645,6 +664,16 @@ longe e o lobo cai em cima do humano. O jogador não anda nem pula, mas
 o salto voa: do impulso até os pés tocarem o chão, o corpo vai até as
 garras caírem no alvo, **até 12 m** (`PounceMaxDistance`).
 
+**Segurar carrega** (decisão do Jhon). Apertou, o lobo agacha e fica
+encolhido (o clipe para no fim do agachar); soltou, salta. Em 1 s
+(`PounceChargeTime`) a carga enche: o alcance vai de 1,5 m a 12 m e o
+dano de 40% a 100% do cheio. **O ponto mirado é o teto** — para chegar
+no alvo é preciso carregar o bastante; carregar além não passa dele,
+só bate mais forte. Uma barra de força aparece enquanto carrega
+(`ChargeBar`). Cheio, segura mais 0,6 s e salta sozinho. A mira vale
+no instante de soltar. No ar não carrega: o especial no ar é o bote,
+direto.
+
 **O voo é um arco de verdade, calculado no impulso.** Para a frente, em
 sino (sai devagar, voa, assenta), como o quadril do clipe; para cima,
 em parábola, subindo rápido no impulso. Antes de sair, o salto mede o
@@ -826,6 +855,14 @@ bot não ouve.
 
 ### Como o bot pensa
 
+**O lobo do bot usa os especiais** (`Bot.WolfTactics`): o salto
+carregado de 4 a 11 m — com a carga que leva até uma garra do alvo,
+errando `PounceError` — e, de 3 a 6 m, um pulo na direção do alvo com
+o bote no alto. Sorteado a cada meio segundo com `WolfSpecialRate`; o
+especial vem antes da garra (arranhar no meio do pulo deixava o golpe
+em recarga e o bote não saía). O corpo do bot segue o voo, o mergulho
+e a trava do golpe como o do jogador.
+
 **Viu o alvo, atira** — em qualquer ação que não seja recarregar ou
 recuar. Indo para a parede o bot faz fogo de cobertura, e patrulhando ou
 procurando ele passa direto para o combate. Antes, "procurar parede"
@@ -954,7 +991,9 @@ taxa de erro deliberado, e sustentação de fogo. Depois vêm percepção
 | Erro deliberado | 45% | 20% | 8% |
 | Rajada / pausa | 0,45 / 1,3 | 0,7 / 0,65 | 0,95 / 0,35 |
 | Visão | 26m / 100° | 40m / 140° | 55m / 170° |
-| Velocidade | 3,4 | 4,2 | 4,9 |
+| Velocidade | 2,5 | 3,0 | 3,5 |
+| Especial do lobo (chance) | 25% | 50% | 75% |
+| Erro da carga do salto | 25% | 12% | 6% |
 | Audição | 0,6× | 1,0× | 1,35× |
 | Erro ao localizar som | 5m | 2,5m | 1,2m |
 
@@ -1500,7 +1539,8 @@ na caixa cinza antiga, e no Hangar não desenhava nada.
 ## Morte
 
 **Quem te matou fica com a silhueta vermelha, só para você, e a câmera
-vira para ele** (`KillCam`, decisão do Jhon). A silhueta é um
+vira para ele** (`KillCam`, decisão do Jhon), **com um cartão em cima
+dele: patente e nome**. A silhueta é um
 `MaterialOverlay` vermelho sem teste de profundidade nas malhas do
 matador — aparece através das paredes, mais forte na borda — e sai
 quando você renasce. A câmera é própria: sobe por cima do seu corpo, do
@@ -1510,6 +1550,17 @@ ele era um ponto. A escolha de conjunto espera 1,8 s para abrir
 (`LoadoutMenu.KillCamTime`): o fundo escuro dela cobriria justamente
 isso. O matador é o último que te acertou nos últimos 5 s
 (`Health.Killer`); a granada conta quem a lançou.
+
+**Matou ou morreu, sobe o cartão do duelo** (`DuelCard`, decisão do
+Jhon): no centro de baixo, você à esquerda e o outro à direita, com a
+patente, o nome e **quantas vezes cada um matou o outro nesta
+partida**; no meio, o que aconteceu, a arma e a distância. Some em 4 s.
+
+**Inimigo tem a borda levemente vermelha** (`EnemyMarks`, decisão do
+Jhon), para separar de aliado à primeira vista. É a mesma marca do
+matador, mais fraca e **com** teste de profundidade: só onde você já
+vê o inimigo. Através de parede seria ver quem está escondido — isso
+fica só para o matador, e só enquanto você está morto (`Silhouette`).
 
 **A morte começa no quadro da morte.** O "mutant dying" fica parado
 0,43 s antes de cair; tocado inteiro, o lobo morto ficava meio segundo

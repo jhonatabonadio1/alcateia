@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.26.9 — 2026-11-12
+
+### Adicionado
+- **Salto do lobo carregado:** segurar o botão direito no chão carrega
+  em 1 s; mais carga, mais longe (1,5 a 12 m, até o ponto mirado) e
+  mais dano (40% a 100%). Barra de força na tela.
+- **Granada: segurar prepara, soltar arremessa**, na mira de quando
+  solta.
+- **Cartão do duelo** ao matar ou morrer: patentes, nomes e quantas
+  vezes cada um matou o outro.
+- **Inimigos com a borda levemente vermelha** (só onde estão à vista).
+- **Cartão sobre o matador** na câmera de morte, com patente e nome.
+- **Lobos dos bots usam o salto carregado e o pulo com bote**, mais ou
+  menos conforme a dificuldade.
+
+### Mudado
+- **Humano a 3,0 m/s, na passada da animação** (era 4,2): correndo, o
+  pé não patina mais, e a animação não acelera. Os lobos continuam a
+  3,6 e 3,9; os bots seguem a mesma conta (2,5 / 3,0 / 3,5).
+
+### Corrigido
+- **O strafe do humano tocava ao contrário**: o pé andava junto com o
+  corpo.
+
 ## v0.26.8 — 2026-11-12
 
 ### Adicionado
