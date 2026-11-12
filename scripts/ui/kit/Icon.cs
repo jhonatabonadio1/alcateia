@@ -6,7 +6,7 @@ public enum IconKind
     Rooms, Shop, Inventory, Profile, Missions, Options, Collapse, Expand,
     Lock, Crown, Wolf, Human, Refresh, Go, Back, Close, Check, Chevrons,
     Presa, Sangue, Star, Clock, Skull, Knife, Grenade, Claw, Fall, Headshot,
-    Plus, Minus, Trophy, Chat, Play, Users, Map, Bot, Info, Warning, Gun, Key
+    Plus, Minus, Trophy, Chat, Play, Users, Map, Bot, Info, Warning, Gun, Key, Power
 }
 
 /// <summary>
@@ -208,6 +208,12 @@ public partial class Icon : Control
 
             case IconKind.Close:
                 L(6, 6, 18, 18); L(18, 6, 6, 18);
+                break;
+
+            case IconKind.Power:
+                // Círculo aberto em cima, com o traço atravessando a abertura.
+                DrawArc(P(12, 13), 7.5f * _scale, Mathf.DegToRad(-55), Mathf.DegToRad(235), 24, _tint, _stroke, true);
+                L(12, 3.5f, 12, 12);
                 break;
 
             case IconKind.Check:

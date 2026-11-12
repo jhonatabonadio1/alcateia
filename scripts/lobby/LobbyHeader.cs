@@ -50,6 +50,8 @@ public partial class LobbyHeader : PanelContainer
         row.AddChild(Navigation());
         row.AddChild(new VSeparator());
         row.AddChild(Currencies());
+        row.AddChild(new VSeparator());
+        row.AddChild(ExitButton());
 
         Profile.Changed += OnProfileChanged;
         OnProfileChanged();
@@ -221,6 +223,69 @@ public partial class LobbyHeader : PanelContainer
         column.AddChild(_presas);
         column.AddChild(_sangue);
         return margin;
+    }
+
+    /// <summary>
+    /// Sair do jogo, no canto direito — onde a mão vai procurar. Pede
+    /// confirmação: um clique errado no canto da tela não pode fechar o
+    /// jogo. O perfil é salvo a cada mudança, então sair não perde nada.
+    /// </summary>
+    private Control ExitButton()
+    {
+        var button = new Button
+        {
+            ThemeTypeVariation = "TertiaryButton",
+            CustomMinimumSize = new Vector2(72, UiTokens.HeaderHeight - 8),
+            FocusMode = FocusModeEnum.All,
+            MouseDefaultCursorShape = CursorShape.PointingHand,
+            TooltipText = "Sair do jogo"
+        };
+        button.Pressed += ConfirmExit;
+        Sfx.Wire(button);
+
+        VBoxContainer stack = UiKit.Fill(UiKit.Column(2));
+        stack.Alignment = BoxContainer.AlignmentMode.Center;
+        stack.MouseFilter = MouseFilterEnum.Ignore;
+        button.AddChild(stack);
+
+        Icon icon = Icon.Make(IconKind.Power, 22, UiTokens.TextSecondary);
+        icon.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+        stack.AddChild(icon);
+
+        Label label = UiKit.Caption("Sair");
+        label.HorizontalAlignment = HorizontalAlignment.Center;
+        stack.AddChild(label);
+
+        // Vermelho só no foco do mouse: em repouso é discreto como os outros.
+        button.MouseEntered += () =>
+        {
+            icon.Tint = UiTokens.Danger;
+            label.AddThemeColorOverride("font_color", UiTokens.Danger);
+        };
+        button.MouseExited += () =>
+        {
+            icon.Tint = UiTokens.TextSecondary;
+            label.RemoveThemeColorOverride("font_color");
+        };
+
+        MarginContainer margin = UiKit.Margin(UiTokens.S1, 0, UiTokens.S2, 0);
+        margin.AddChild(button);
+        return margin;
+    }
+
+    private void ConfirmExit()
+    {
+        Label body = UiKit.Paragraph("Seu perfil, inventário e missões ficam salvos neste computador.");
+        body.CustomMinimumSize = new Vector2(400, 0);
+
+        LobbyShell.Instance?.Modal("Sair do jogo?", body,
+            new Modal.Choice("Sair", ButtonKind.Danger, () =>
+            {
+                Profile.Save();
+                Settings.Save();
+                GetTree().Quit();
+            }),
+            new Modal.Choice("Ficar", ButtonKind.Primary, null));
     }
 
     // ------------------------------------------------------------------ estado
