@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.26.8 — 2026-11-12
+
+### Adicionado
+- **Quem te matou fica com a silhueta vermelha** (só para você, através
+  das paredes) **e a câmera vira para ele**, aproximando se estiver
+  longe. A escolha de conjunto abre 1,8 s depois.
+
+### Mudado
+- **Lobo mais lento a pé, com a corrida fluida:** Bruto a 3,6 m/s (era
+  5,7) e Ligeiro a 3,9 (era 6,1), também na parede. A corrida toca a
+  1,5× em vez de 2,4×.
+- **Pulo do lobo 5% mais alto** (Bruto 1,62 m); **salto da parede 40%
+  mais baixo**.
+- **Especial no ar avança 20% menos**, e metade depois de um salto da
+  parede.
+- **No ar o lobo cai, não anda:** pose de queda ao soltar ou saltar da
+  parede e ao cair de beirada.
+- **Morrer custa 100 WP.**
+- **O tiro do inimigo se ouve de longe**, vindo de onde ele está.
+- **Soltar a arma agora é G** (era B).
+
+### Corrigido
+- **Bots paravam de atirar:** indo para a parede ou procurando, eles
+  viam o alvo e não atiravam — dois bots ficavam meio minuto se
+  encarando. Agora atiram em qualquer ação que não seja recarregar ou
+  recuar.
+- **O lobo morto ficava meio segundo de pé** antes de cair.
+
 ## v0.26.7 — 2026-11-12
 
 ### Mudado

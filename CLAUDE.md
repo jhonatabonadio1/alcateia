@@ -73,8 +73,11 @@ granadas mais fortes.
    não inclina na corrida em parede.
 
 9. **O humano é deliberadamente lento e pesado.** Velocidade 4,2 m/s
-   e pulo de 0,99 m. Toda a mobilidade do jogo pertence ao lobo; o humano
-   compra distância e tempo com arma e granada, não com as pernas.
+   e pulo de 0,99 m. A mobilidade do jogo pertence ao lobo — no pulo,
+   na parede, no salto e no bote, não na corrida: a pé o lobo anda
+   **mais devagar** que o humano (decisão do Jhon, para a corrida do
+   Mutant ficar natural; veja abaixo). O humano compra distância e
+   tempo com arma e granada, não com as pernas.
 
    Atenção ao mexer: a velocidade e o pulo do lobo são
    **multiplicadores** dos valores humanos. Baixar o humano encolhe o
@@ -85,18 +88,25 @@ granadas mais fortes.
 
    | | Humano | Bruto | Ligeiro |
    |---|---|---|---|
-   | Velocidade | 4,2 | 5,7 (1,35×) | 6,1 (1,45×) |
-   | Pulo | 0,99 m | 1,54 m (1,25×) | 2,38 m (1,55×) |
-   | Avanço do pulo correndo | 3,8 m | 3,7 m | ~4,7 m |
-   | Agachado | 1,9 | 2,6 | 2,7 |
-   | Na parede | — | 5,7 | 6,1 |
+   | Velocidade | 4,2 | 3,6 (0,86×) | 3,9 (0,93×) |
+   | Pulo | 0,99 m | 1,62 m (1,28×) | 2,50 m (1,59×) |
+   | Avanço do pulo correndo | 3,8 m | ~3,9 m | ~5,0 m |
+   | Agachado | 1,9 | 1,6 | 1,8 |
+   | Na parede | — | 3,6 | 3,9 |
+
+   **A velocidade do lobo é a da passada do Mutant.** A corrida do
+   clipe anda 2,42 m/s na escala do jogo; mais rápido que isso ela
+   precisa tocar acelerada para o pé não patinar, e a 2,4× (o Bruto a
+   5,7 m/s) ficava corrida. A 3,6 m/s toca a 1,5×, que ainda é fluido.
+   Para o lobo correr mais sem ficar corrido, é preciso um clipe de
+   corrida com passada maior, não só o número.
 
    O lobo estava rápido demais (o Bruto a 6,5 m/s, 8,1 na parede): ser
    lobo ficava vantajoso demais. **O pulo do lobo é para cima, não para
-   a frente**: o pulo do chão leva só 55% do passo (`WolfJumpCarry`), e
-   o ar não acelera além disso até tocar o chão ou grudar numa parede.
-   Com o passo inteiro o Bruto planava 6 m parado na pose de correr, e
-   ficava estranho (decisão do Jhon). O salto da parede não entra:
+   a frente**: o pulo do chão leva 90% do passo (`WolfJumpCarry`), e o
+   ar não acelera além disso até tocar o chão ou grudar numa parede —
+   uns 3,8 m de avanço, o que o Jhon aprovou. Com o Bruto a 5,7 m/s e o
+   passo inteiro ele planava 6 m parado, e ficava estranho. O salto da parede não entra:
    conserva o avanço da corrida. A altura está amarrada ao mapa (veja
    "Alturas amarradas à física").
 
@@ -283,7 +293,7 @@ export `RefillOnTransform`, desligado por padrão.
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
 | R | Rugir (lobo): segure até o fim para o escudo voltar · recarregar (humano) |
-| B | Soltar a arma da mão: cai à frente, e você passa para a próxima |
+| G | Soltar a arma da mão: cai à frente, e você passa para a próxima |
 | Esc | Menu da partida (continuar, opções, controles, reiniciar, sair para a sala, sair do jogo) — **não pausa** |
 | Tab (segurar) | Placar da partida |
 | 1 a 4 na tela de respawn | Escolhe o conjunto |
@@ -354,8 +364,9 @@ acabar.
   ao lado
 - O olhar fica livre durante a corrida: mirar não desvia o movimento
 - A/D não controlam durante a corrida
-- **O salto da parede sai mais alto do que entrou**
-  (`WallJumpClimb`), então dá para escalar um corredor ricocheteando
+- **O salto da parede sai um pouco mais alto do que entrou**
+  (`WallJumpClimb`, 1,02; era 1,35 e subia 2,8 m — 40% mais baixo,
+  decisão do Jhon), então dá para escalar um corredor ricocheteando
   entre as duas paredes. É essa subida que dá ao lobo o ângulo que as
   armas defendem mal: de cima e por trás
 - Space desgruda, salta para fora e para cima, e cai. O salto
@@ -678,6 +689,9 @@ direção da **mira inteira**, a 13 m/s (era 17: rápido demais para quem
 está embaixo ver o lobo chegando), sem gravidade, sem freio e sem
 desvio: olhar para baixo dá um bote curto e mergulhado, olhar à frente
 dá um longo e raso (sempre descendo, no mínimo 0,35 de inclinação). O
+avanço horizontal é 80% do da mira (`DiveForward`), e **metade depois
+de um salto da parede** (`DiveForwardFromWall`): de lá o lobo sai mais
+alto e o bote ia longe demais (decisão do Jhon). O
 ponto de impacto é escolhido no clique, e é isso que deixa o bote
 preciso. O golpe sai **no instante em que o lobo encosta** — no chão,
 numa parede de frente ou em alguém —, não num tempo marcado: um golpe
@@ -801,11 +815,25 @@ pouso e uivo: os bots ouviam você, mas ninguém ouvia os bots. Com
 áudio, isso virou bot silencioso chegando por trás. Efeito colateral:
 bots de times opostos passaram a se ouvir.
 
+**O tiro é a exceção ao raio** (decisão do Jhon): o de outro se ouve
+de qualquer ponto do mapa, até 120 m (`WorldAudio.ShotReach`), vindo de
+onde ele está e caindo com a distância — longe, a versão abafada. O bot
+continua ouvindo só até o raio da arma.
+
 Som novo que for informação de jogo **entra como `NoiseKind`**, com
 raio, e não como som solto — senão o jogador passa a ouvir algo que o
 bot não ouve.
 
 ### Como o bot pensa
+
+**Viu o alvo, atira** — em qualquer ação que não seja recarregar ou
+recuar. Indo para a parede o bot faz fogo de cobertura, e patrulhando ou
+procurando ele passa direto para o combate. Antes, "procurar parede"
+calava o bot: dois bots a 3 m, os dois "indo para a parede", ficavam
+meio minuto se encarando sem atirar. Parede que não protege (sem
+caminho, ou chegou e ainda vê o alvo) fica esquecida por 3 s
+(`NoCoverTime`). Numa partida de 5 min, os momentos com alvo à vista e
+nenhum tiro caíram de 42 em 82 para 1 em 40.
 
 Três camadas, que é como IA de FPS se organiza desde os anos 2000:
 
@@ -1191,7 +1219,7 @@ bots.
 O humano pula 0,99 m: sobe caixote (0,8 m), não sobe contêiner
 (2,2 m). Para o Bruto alcançar o contêiner a partir do caixote ele
 precisa pular 1,4 m — `JumpMultiplier` de pelo menos **1,2** (com
-1,25, 1,54 m). Ninguém alcança 5 m sem parede. **Mexeu no pulo, confira estes números** — um
+1,28, 1,62 m). Ninguém alcança 5 m sem parede. **Mexeu no pulo, confira estes números** — um
 caixote 2 cm alto demais vira parede para o humano sem ninguém notar.
 
 ### Textura de grade
@@ -1409,7 +1437,9 @@ Especificação: `docs/CONJUNTOS.md`. Implementação:
 - Editar só fora da partida. Na partida só se escolhe e paga.
 - Respawn: 5 s, cartões que não cabem aparecem acinzentados com
   "faltam X", estouro do tempo usa o último conjunto ou o padrão.
-- Paga-se no renascer. O equipamento some na morte; o WP fica.
+- Paga-se no renascer. O equipamento some na morte, e **morrer custa
+  100 WP** (`WpLostOnDeath`, decisão do Jhon) — um abate. Nunca abaixo
+  de zero; o padrão continua devolvendo +50.
 
 | Ganho | WP |
 |---|---|
@@ -1468,6 +1498,22 @@ na caixa cinza antiga, e no Hangar não desenhava nada.
 ---
 
 ## Morte
+
+**Quem te matou fica com a silhueta vermelha, só para você, e a câmera
+vira para ele** (`KillCam`, decisão do Jhon). A silhueta é um
+`MaterialOverlay` vermelho sem teste de profundidade nas malhas do
+matador — aparece através das paredes, mais forte na borda — e sai
+quando você renasce. A câmera é própria: sobe por cima do seu corpo, do
+lado oposto ao matador (de trás do ombro o corpo caído o tapava), vira
+para ele e fecha o quadro em uns 10 m em volta dele, até 15° — a 70 m
+ele era um ponto. A escolha de conjunto espera 1,8 s para abrir
+(`LoadoutMenu.KillCamTime`): o fundo escuro dela cobriria justamente
+isso. O matador é o último que te acertou nos últimos 5 s
+(`Health.Killer`); a granada conta quem a lançou.
+
+**A morte começa no quadro da morte.** O "mutant dying" fica parado
+0,43 s antes de cair; tocado inteiro, o lobo morto ficava meio segundo
+de pé. O clipe começa em 0,55 s (`WolfMoves`).
 
 O corpo cai com a colisão **ligada** até tocar o chão, e só então a
 colisão desliga e o corpo **para de se mover de vez** — sem gravidade.
@@ -1548,7 +1594,7 @@ esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.
 Clipes do lobo: parado, andar e correr misturados pela velocidade, e
 **no ritmo do corpo**: o clipe toca na razão entre a velocidade do corpo
 e a passada dele, medida no Mutant (andar 1,34 m/s, correr 2,42 m/s, já
-na escala do jogo) — o Bruto a 5,7 m/s corre o clipe a 2,36× e o pé
+na escala do jogo) — o Bruto a 3,6 m/s corre o clipe a 1,5× e o pé
 apoiado fica parado no chão. Antes ele tocava a 1× até 7 m/s, e o corpo
 andava mais do dobro das pernas. A mistura de andar com correr fica
 numa faixa curta (1,5 a 2,2 m/s): os ciclos têm tamanhos diferentes, e
@@ -1558,8 +1604,12 @@ corpo inteiro; **o pulo**, só o voo do "mutant jumping", tocado pela
 velocidade vertical (o agachar do clipe fica de fora: a física sai do
 chão no quadro do clique), com o quadril na altura de pé — quem sobe é
 a cápsula —, e a aterrissagem do clipe quando o lobo chega devagar
-(chegando correndo, volta direto para a corrida, senão o pé patina); a
-morte; e, na parede, o
+(chegando correndo, volta direto para a corrida, senão o pé patina).
+**No ar o lobo cai, não anda**: soltando da parede, saltando dela ou
+caindo de uma beirada, fica a pose do topo do pulo (encolhido, braços
+para cima) até o chão chegar a 1 m, e aí as pernas esticam para pousar
+— a altura é medida por um raio para baixo. Um instante no ar descendo
+rampa (menos de 0,12 s) não conta. A morte; e, na parede, o
 **Running Crawl** com a barriga virada para a parede em que está — o
 modelo deita para o lado da parede (pela normal dela), a cápsula e a
 câmera continuam de pé. **Virar lobo não tem animação** (decisão do
