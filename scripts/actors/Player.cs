@@ -89,16 +89,15 @@ public partial class Player : CharacterBody3D
     /// <summary>Sensibilidade efetiva: a base daqui vezes a das opções.</summary>
     private float Sensitivity => MouseSensitivity * Settings.Values.Sensitivity;
 
-    /// <summary>Escudo recuperado por segundo de rugido. O rugido é
-    /// segurado, não apertado: é uma troca contínua entre ficar parado
-    /// e recuperar o escudo.</summary>
     /// <summary>
     /// Duração do rugido: a animação inteira do "roaring", na velocidade
-    /// de <see cref="WolfMoves"/>. Apertar R começa e não tem volta — o
-    /// lobo fica parado até o fim, e só então o escudo volta.
+    /// de <see cref="WolfMoves"/>. Segura-se R do começo ao fim, e só
+    /// então o escudo volta.
     ///
-    /// É isso que torna rugir uma aposta: segundos parado no meio de uma
-    /// luta, com o som entregando a posição.
+    /// É isso que torna rugir uma aposta: dois segundos sem atacar no
+    /// meio de uma luta, com o som entregando a posição. O lobo continua
+    /// andando e pulando enquanto ruge (decisão do Jhon) — parar no ar
+    /// no meio do pulo parecia travar.
     /// </summary>
     public static float HowlDuration => WolfMoves.Duration(WolfMove.Howl);
 
@@ -700,9 +699,9 @@ public partial class Player : CharacterBody3D
             return;
         }
 
-        // Uivar trava você no lugar — é o preço da cura —, e o salto e a
-        // aterrissagem do bote também: golpe pesado não se faz andando.
-        if (IsHowling || _weapon.IsRooted)
+        // O salto e a aterrissagem do bote prendem o lobo: golpe pesado
+        // não se faz andando. O rugido não: ruge-se em movimento.
+        if (_weapon.IsRooted)
         {
             Freeze(delta);
             return;

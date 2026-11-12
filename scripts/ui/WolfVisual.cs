@@ -15,7 +15,9 @@ using System.Collections.Generic;
 /// Mesma regra do <see cref="CharacterAnimator"/>: **lê** estado e
 /// nunca decide. A velocidade escolhe entre parado, andando e correndo;
 /// os sinais da arma disparam a garrada, o salto e o bote; o uivo (R)
-/// toca o rugido; virar lobo toca o "flexionar" do bicho.
+/// toca o rugido da cintura para cima, por cima do andar — o lobo ruge
+/// em movimento. Virar lobo não tem animação (decisão do Jhon): o lobo
+/// aparece já andando.
 ///
 /// **O pulo não tem animação** — decisão do Jhon: o lobo só pula, e o
 /// corpo segue na pose em que estava. O clipe de pulo do pack agacha,
@@ -31,9 +33,8 @@ using System.Collections.Generic;
 /// | pounce | mutant jump attack, inteiro | salto (direito no chão) |
 /// | dive | mutant jump attack, só a queda | bote (direito no ar), até encostar |
 /// | dive_land | mutant jump attack, da pancada ao fim | bote, ao encostar |
-/// | howl | mutant roaring | uivando (R) |
+/// | howl | mutant roaring | uivando (R), da cintura para cima |
 /// | wallrun | Running Crawl | correndo na parede, de barriga para ela |
-/// | transform | mutant flexing muscles | acabou de virar lobo |
 /// | death | mutant dying | morreu de lobo |
 ///
 /// Os golpes e o rugido tocam o trecho e a velocidade de
@@ -83,12 +84,12 @@ public partial class WolfVisual : Node3D
     /// <summary>Clipes tocados como vêm do arquivo. Os golpes e o rugido
     /// saem de <see cref="WolfMoves.Clips"/>, recortados.</summary>
     private static readonly string[] Clips =
-        { "idle", "walk", "run", "transform", "death", "wallrun" };
+        { "idle", "walk", "run", "death", "wallrun" };
 
     /// <summary>Disparos por cima da locomoção, na ordem da pilha: o de
     /// baixo é sobreposto pelos de cima.</summary>
     private static readonly string[] Shots =
-        { "claw", "heavy", "transform", "pounce", "dive", "dive_land" };
+        { "claw", "heavy", "howl", "pounce", "dive", "dive_land" };
 
     /// <summary>Disparos que tomam o corpo inteiro. As garradas ficam só
     /// no tronco: o "swiping" gira o quadril 90° e terminaria o golpe
@@ -102,6 +103,7 @@ public partial class WolfVisual : Node3D
     private static (float In, float Out) Fades(string shot) => shot switch
     {
         "claw" or "heavy" => (0.07f, 0.12f),
+        "howl" => (0.15f, 0.2f),
         "pounce" => (0.12f, 0.25f),
         "dive" => (0.08f, 0.15f),
         "dive_land" => (0.05f, 0.25f),
@@ -344,7 +346,7 @@ public partial class WolfVisual : Node3D
     /// <summary>
     /// Máquina de estados para o corpo inteiro (locomoção, uivo, parede,
     /// morte) e os disparos por cima (<see cref="Shots"/>): as garradas e
-    /// a transformação só da cintura para cima, o salto e o bote no corpo
+    /// o rugido só da cintura para cima, o salto e o bote no corpo
     /// inteiro.
     /// </summary>
     private void BuildTree()
@@ -363,17 +365,6 @@ public partial class WolfVisual : Node3D
 
         var machine = new AnimationNodeStateMachine();
         machine.AddNode("Locomotion", locoSpeed, new Vector2(200, 100));
-        if (Has("howl"))
-        {
-            // O rugido toca uma vez, inteiro, na velocidade de WolfMoves:
-            // o escudo volta exatamente quando ele acaba.
-            var howl = new AnimationNodeBlendTree();
-            howl.AddNode("Clip", Clip("howl"), Vector2.Zero);
-            howl.AddNode("Speed", new AnimationNodeTimeScale(), new Vector2(200, 0));
-            howl.ConnectNode("Speed", 0, "Clip");
-            howl.ConnectNode("output", 0, "Speed");
-            machine.AddNode("Howl", howl, new Vector2(400, 200));
-        }
         if (Has("death")) machine.AddNode("Death", Clip("death"), new Vector2(600, 100));
 
         if (Has("wallrun"))
@@ -386,11 +377,9 @@ public partial class WolfVisual : Node3D
             machine.AddNode("Wall", wall, new Vector2(400, 0));
         }
 
-        Link(machine, "Locomotion", "Howl");
-        Link(machine, "Howl", "Locomotion");
         Link(machine, "Locomotion", "Wall");
         Link(machine, "Wall", "Locomotion");
-        foreach (string from in new[] { "Locomotion", "Howl", "Wall" })
+        foreach (string from in new[] { "Locomotion", "Wall" })
             Link(machine, from, "Death");
         Link(machine, "Death", "Locomotion");
 
@@ -437,8 +426,6 @@ public partial class WolfVisual : Node3D
         _model.AddChild(_tree);
         _tree.AnimPlayer = _tree.GetPathTo(_anims);
         _tree.Active = true;
-        if (Has("howl"))
-            _tree.Set("parameters/Machine/Howl/Speed/scale", WolfMoves.Of(WolfMove.Howl).Speed);
 
         _playback = (AnimationNodeStateMachinePlayback)_tree.Get("parameters/Machine/playback");
         _playback?.Start("Locomotion");
@@ -527,14 +514,22 @@ public partial class WolfVisual : Node3D
         _tree.Set("parameters/Machine/Locomotion/Speed/scale", _speed > RunSpeed ? Mathf.Min(_speed / RunSpeed, 1.8f) : 1f);
 
         // No ar não há clipe próprio: o corpo segue na pose de antes.
-        bool howling = IsHowling();
         bool onWall = _player != null && _player.IsWallRunning && Has("wallrun");
+        if (onWall != _onWall)
+        {
+            _onWall = onWall;
+            _playback?.Travel(onWall ? "Wall" : "Locomotion");
+        }
 
-        if (howling != _howling || onWall != _onWall)
+        // O rugido vai por cima do andar, uma vez, na velocidade de
+        // WolfMoves: acaba junto com o escudo voltando. Soltou R antes,
+        // ele sai.
+        bool howling = IsHowling();
+        if (howling != _howling)
         {
             _howling = howling;
-            _onWall = onWall;
-            _playback?.Travel(onWall ? "Wall" : howling && Has("howl") ? "Howl" : "Locomotion");
+            if (howling) Fire("howl", WolfMoves.Of(WolfMove.Howl).Speed);
+            else if (Has("howl")) _tree.Set("parameters/Howl/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
         }
 
         UpdateLean((float)delta);
@@ -693,8 +688,6 @@ public partial class WolfVisual : Node3D
         {
             _model.Visible = true;
             _playback?.Start("Locomotion");
-            // O "flexionar" inteiro em pouco mais de um segundo.
-            if (Has("transform")) Fire("transform", _lengths["transform"] / 1.1f);
         }
     }
 
