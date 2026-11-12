@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.15.0 — 2026-11-11
+
+### Alterado
+- **O ataque do lobo virou combo de três golpes**, com o terceiro mais
+  forte, e deixou de ser hitscan: cada patada cria um volume curto à
+  frente do corpo. O alcance passa a variar com a postura em vez de
+  seguir a mira.
+- **Cada golpe empurra o lobo para frente** (`ClawLunge`), para que
+  mira ruim ainda conecte.
+- **A corrida em parede é sustentada pelo pulo**, não pelo W, e não
+  exige mais estar caindo para grudar.
+- **Segurar o ataque agarra na parede sem avançar.**
+- **O salto da parede ganha altura** (`WallJumpClimb` 1.35), o que
+  permite escalar um corredor ricocheteando entre as duas paredes.
+
 ## v0.14.2 — 2026-11-11
 
 ### Adicionado

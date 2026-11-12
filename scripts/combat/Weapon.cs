@@ -71,6 +71,37 @@ public partial class Weapon : Node3D
 	/// <summary>Intervalo entre as duas patadas do especial.</summary>
 	[Export] public float SpecialSecondDelay = 0.16f;
 
+	// --- Combo de garras ---
+	//
+	// O ataque de chão é uma sequência de três golpes, e cada um cria
+	// um VOLUME curto à frente do lobo em vez de disparar um raio.
+	//
+	// A diferença importa: um raio sai da câmera e acerta exatamente
+	// onde se mira, enquanto um volume preso ao corpo acerta o que
+	// estiver perto da garra. É isso que faz a garra parecer alcançar
+	// mais de baixo para cima do que de cima para baixo — o volume
+	// acompanha o corpo, não o olhar.
+
+	/// <summary>Raio do volume de acerto da garra.</summary>
+	[Export] public float ClawRadius = 1.15f;
+
+	/// <summary>Quanto à frente do corpo o volume nasce.</summary>
+	[Export] public float ClawReach = 1.5f;
+
+	/// <summary>Multiplicador de dano de cada golpe do combo.</summary>
+	[Export] public float[] ComboDamage = { 1f, 1f, 1.5f };
+
+	/// <summary>Tempo entre golpes dentro do combo. Mais curto que o
+	/// cooldown normal: encadear é mais rápido que recomeçar.</summary>
+	[Export] public float ComboCooldown = 0.32f;
+
+	/// <summary>Tempo sem atacar até o combo voltar ao primeiro golpe.</summary>
+	[Export] public float ComboReset = 1.1f;
+
+	/// <summary>Empurrão para frente a cada golpe. É o que faz mira
+	/// ruim ainda conectar — o golpe leva o lobo até o alvo.</summary>
+	[Export] public float ClawLunge = 6.5f;
+
 	/// <summary>Multiplicador de dano na cabeça.</summary>
 	[Export] public float HeadshotMultiplier = 2.5f;
 
@@ -148,6 +179,8 @@ public partial class Weapon : Node3D
 	private float _primaryRecoil = 0.22f;
 	private float _secondaryRecoil = 0.5f;
 	private double _reloadTimer;
+	private int _comboIndex;
+	private double _comboTimer;
 
 	/// <summary>Recuo da arma na mão, em graus por tiro.</summary>
 	public float Recoil => HumanSlot == Slot.Primary ? _primaryRecoil : _secondaryRecoil;
@@ -230,6 +263,9 @@ public partial class Weapon : Node3D
 	{
 		if (_cooldown > 0)
 			_cooldown -= delta;
+
+		if (_comboTimer > 0)
+			_comboTimer -= delta;
 
 		if (_reloadTimer > 0)
 		{
@@ -410,55 +446,102 @@ public partial class Weapon : Node3D
 
 	private void WolfAttack(bool special = false)
 	{
-		WolfBreed breed = _form.Breed;
+		if (special)
+		{
+			_cooldown = _form.Breed.AttackCooldown * SpecialCooldownBonus;
+			_comboIndex = 0;
 
-		_cooldown = special
-			? breed.AttackCooldown * SpecialCooldownBonus
-			: breed.AttackCooldown;
+			EmitSignal(SignalName.Fired);
+
+			// A segunda patada sai um instante depois: o golpe tem dois
+			// tempos em vez de ser um número maior.
+			SceneTreeTimer timer = _body.GetTree().CreateTimer(SpecialSecondDelay);
+			timer.Timeout += () => Claw(SpecialDamageBonus);
+
+			Claw(SpecialDamageBonus);
+			return;
+		}
+
+		// Combo de chão: o golpe seguinte sai mais rápido que o
+		// primeiro, e o terceiro machuca mais.
+		if (_comboTimer <= 0) _comboIndex = 0;
+
+		float multiplier = ComboDamage[Mathf.Min(_comboIndex, ComboDamage.Length - 1)];
+
+		_comboIndex = (_comboIndex + 1) % ComboDamage.Length;
+		_comboTimer = ComboReset;
+		_cooldown = ComboCooldown;
 
 		EmitSignal(SignalName.Fired);
 
-		if (special)
-		{
-			// A segunda patada sai um instante depois, para o golpe ter
-			// dois tempos em vez de ser um número maior.
-			SceneTreeTimer timer = _body.GetTree().CreateTimer(SpecialSecondDelay);
-			timer.Timeout += () => Claw(special: true);
-		}
-
-		Claw(special);
+		Lunge();
+		Claw(multiplier);
 	}
 
-	private void Claw(bool special)
+	/// <summary>
+	/// Empurra o lobo para frente durante o golpe. Sem isso o combo
+	/// deixa o jogador parado batendo no ar enquanto o alvo anda.
+	/// </summary>
+	private void Lunge()
+	{
+		if (_body is not Player player) return;
+
+		Vector3 forward = -_body.GlobalTransform.Basis.Z;
+		Vector3 velocity = player.Velocity;
+
+		velocity.X = forward.X * ClawLunge;
+		velocity.Z = forward.Z * ClawLunge;
+
+		player.Velocity = velocity;
+	}
+
+	/// <summary>
+	/// Golpe de garra: um volume curto à frente do corpo, não um raio
+	/// a partir da câmera. Pega quem estiver perto da garra.
+	/// </summary>
+	private void Claw(float multiplier)
 	{
 		WolfBreed breed = _form.Breed;
 
-		// A garrada sai do corpo, não da câmera. Em terceira pessoa a
-		// câmera está metros atrás — partir dela faria o lobo acertar
-		// coisas que estão atrás dele.
-		Vector3 from = _head.GlobalPosition;
-		Vector3 to = from - _head.GlobalTransform.Basis.Z * breed.AttackRange;
+		// O volume nasce à frente do CORPO, na altura do peito. Preso
+		// ao corpo e não ao olhar, é o que dá à garra um alcance que
+		// varia com a postura em vez de seguir a mira.
+		Vector3 forward = -_body.GlobalTransform.Basis.Z;
+		Vector3 center = _body.GlobalPosition + forward * ClawReach + Vector3.Up * 0.2f;
 
-		Health hit = Raycast(from, to, out _, out Node collider);
-		if (hit == null) return;
+		var query = new PhysicsShapeQueryParameters3D
+		{
+			Shape = new SphereShape3D { Radius = ClawRadius },
+			Transform = new Transform3D(Basis.Identity, center),
+			CollideWithBodies = true,
+			CollideWithAreas = false,
+			Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() }
+		};
 
-		float damage = breed.AttackDamage;
+		var hits = _body.GetWorld3D().DirectSpaceState.IntersectShape(query, 8);
 
-		if (special)
-			damage *= SpecialDamageBonus;
+		foreach (var entry in hits)
+		{
+			if (entry["collider"].Obj is not Node collider) continue;
 
-		// Contra humano a patada vale mais: o lobo é feito para caçar
-		// gente, não para duelar com outro lobo.
-		if (IsHumanForm(collider))
-			damage *= ClawVsHumanBonus;
+			Health target = collider.GetNodeOrNull<Health>("Health");
+			if (target == null) continue;
 
-		// Ataque aéreo: cair em cima de alguém é a jogada que as
-		// pessoas lembram. Vale bônus.
-		float fallen = _fallStartY - _body.GlobalPosition.Y;
-		if (!_body.IsOnFloor() && fallen >= AirAttackMinFall)
-			damage *= breed.AirAttackBonus;
+			float damage = breed.AttackDamage * multiplier;
 
-		Damage(hit, damage, from, false);
+			// Contra humano a patada vale mais: o lobo é feito para
+			// caçar gente, não para duelar com outro lobo.
+			if (IsHumanForm(collider))
+				damage *= ClawVsHumanBonus;
+
+			// Ataque aéreo: cair em cima de alguém é a jogada que as
+			// pessoas lembram. Vale bônus.
+			float fallen = _fallStartY - _body.GlobalPosition.Y;
+			if (!_body.IsOnFloor() && fallen >= AirAttackMinFall)
+				damage *= breed.AirAttackBonus;
+
+			Damage(target, damage, _body.GlobalPosition, false);
+		}
 	}
 
 	private static bool IsHumanForm(Node collider)

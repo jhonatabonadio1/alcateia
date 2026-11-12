@@ -147,6 +147,13 @@ public partial class Player : CharacterBody3D
     /// contornar uma quina, antes de reencontrar a face seguinte.</summary>
     [Export] public float CornerGrace = 0.3f;
 
+    /// <summary>
+    /// Multiplicador de altura do salto da parede. Acima de 1 cada
+    /// salto sai mais alto do que entrou, permitindo escalar um
+    /// corredor ricocheteando entre as paredes.
+    /// </summary>
+    [Export] public float WallJumpClimb = 1.35f;
+
     /// <summary>Força do empurrão para fora ao saltar da parede.</summary>
     [Export] public float WallJumpPush = 6.5f;
 
@@ -206,6 +213,7 @@ public partial class Player : CharacterBody3D
     private Vector3 _wallAlong;
     private double _cornerGrace;
     private Vector3 _lastWall;
+    private bool _clinging;
     private double _wallCooldown;
     private string _lastWallLog = "";
     private Vector3 _spawn;
@@ -647,8 +655,15 @@ public partial class Player : CharacterBody3D
             return false;
         }
 
-        // Soltar o W solta a parede.
-        if (Input.GetActionStrength("move_forward") < 0.1f)
+        // A corrida é sustentada pelo PULO, não pelo W: pula-se contra
+        // a parede e segura. Soltar solta a parede.
+        //
+        // O botão de ataque agarra sem avançar — é a pausa que permite
+        // escolher a hora de saltar em vez de correr até a parede
+        // acabar.
+        _clinging = Input.IsActionPressed("attack");
+
+        if (!Input.IsActionPressed("jump") && !_clinging)
         {
             ReleaseWall();
             return false;
@@ -662,9 +677,6 @@ public partial class Player : CharacterBody3D
             // mesma altura logo após o salto e a parede vira elevador.
             if (_wallCooldown > 0) return false;
 
-            // Só gruda na descida. Encostado na parede no chão não basta:
-            // é preciso pular, e a aderência começa quando o lobo começa
-            // a cair. Isso faz o gesto ser uma decisão, não um acidente.
             if (!found)
             {
                 if (Velocity.Y <= 0)
@@ -672,7 +684,6 @@ public partial class Player : CharacterBody3D
                 return false;
             }
 
-            if (Velocity.Y > 0) return false;
 
             // A mesma parede, sem ter tocado o chão, viraria elevador:
             // sobe, salta, regruda mais alto, repete. Uma parede
@@ -781,7 +792,12 @@ public partial class Player : CharacterBody3D
             float carried = HumanSpeed * SpeedScale * WallRunSpeedBonus * WallJumpKeepSpeed;
 
             velocity = _wallAlong * carried + _wallNormal * WallJumpPush;
-            velocity.Y = JumpVelocity * JumpScale * 1.1f;
+
+            // Sai mais alto do que entrou. É o que permite escalar um
+            // corredor ricocheteando entre as duas paredes, e é essa
+            // subida que dá ao lobo o ângulo que as armas defendem mal:
+            // de cima e por trás.
+            velocity.Y = JumpVelocity * JumpScale * WallJumpClimb;
 
             _lastWall = _wallNormal;
 
@@ -804,7 +820,10 @@ public partial class Player : CharacterBody3D
         // Altura travada: na parede o lobo não sobe nem desce.
         velocity.Y = WallRunVerticalDrift;
 
-        float speed = HumanSpeed * SpeedScale * WallRunSpeedBonus;
+        // Agarrado com o botão de ataque e sem o pulo: fica parado.
+        float speed = _clinging && !Input.IsActionPressed("jump")
+            ? 0f
+            : HumanSpeed * SpeedScale * WallRunSpeedBonus;
 
         // Sucção contra a parede, exceto ao contornar uma quina — ali
         // ela empurraria o lobo para dentro do canto e o prenderia.

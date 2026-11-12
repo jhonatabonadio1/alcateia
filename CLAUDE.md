@@ -245,7 +245,9 @@ export `RefillOnTransform`, desligado por padrão.
 | 3 | Virar lobo |
 | 4 | Faca |
 | 5 | Equipar granada (o ataque arremessa) |
-| Botão direito | Patada dupla (só de lobo, só no ar) |
+| Botão direito | Bote aéreo (só de lobo, só no ar) |
+| Pulo segurado | Sustenta a corrida em parede |
+| Ataque segurado | Agarra na parede sem avançar |
 | Clique esq. | Atacar |
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
@@ -266,10 +268,12 @@ sobrescritas.
 
 ## Corrida em parede
 
-Só na forma lobo, só no ar, só segurando W, **e só na descida do
-pulo** — encostar na parede no chão não gruda. É preciso pular e
-esperar começar a cair. Isso faz grudar ser uma decisão, não um
-acidente de encostar na parede.
+Só na forma lobo e no ar. **Pula-se contra a parede e segura o pulo**
+— é a tecla de pulo que sustenta a corrida, não o W.
+
+**Segurar o botão de ataque agarra sem avançar.** É a pausa que
+permite escolher a hora de saltar em vez de correr até a parede
+acabar.
 
 - Sem limite de tempo: corre enquanto a parede existir
 - Solta ao largar o W, ao bater em obstáculo, ou se atordoado
@@ -284,6 +288,10 @@ acidente de encostar na parede.
   laterais: o ângulo do corpo não decide se existe parede ali
 - O olhar fica livre durante a corrida: mirar não desvia o movimento
 - A/D não controlam durante a corrida
+- **O salto da parede sai mais alto do que entrou**
+  (`WallJumpClimb`), então dá para escalar um corredor ricocheteando
+  entre as duas paredes. É essa subida que dá ao lobo o ângulo que as
+  armas defendem mal: de cima e por trás
 - Space desgruda, salta para fora e para cima, e cai. O salto
   **conserva o avanço** da corrida (`WallJumpKeepSpeed`) e soma o
   empurrão perpendicular: sem isso o lobo sai de lado e perde tudo
@@ -450,9 +458,36 @@ entende o que aconteceu fora do campo de visão e, principalmente, de
 que ele morreu. Morrer sem saber a causa é a forma mais rápida de um
 jogo parecer injusto.
 
+### A troca básica
+
+O lobo **abre mão das armas e ganha mobilidade**. Transformar troca o
+controlador inteiro: mais velocidade, pulo bem mais alto, e a parede
+vira chão. Como todo ataque é corpo a corpo, o problema que a física
+precisa resolver é *como encostar vinte metros antes de um rifle
+matar*.
+
+Três coisas fazem isso funcionar, e nenhuma é opcional:
+
+1. **A diferença de velocidade é grande o bastante** para o humano não
+   conseguir simplesmente recuar.
+2. **Os ataques movem o lobo para frente**, então mira ruim ainda
+   conecta.
+3. **O espaço vertical é rota de ataque de verdade**, não decoração.
+
 ### As garras
 
-Clique esquerdo: uma patada por clique, nunca automático.
+Clique esquerdo: **combo de três golpes**. O terceiro machuca mais, e
+encadear é mais rápido que recomeçar.
+
+**O golpe não é hitscan.** Cada patada cria um volume curto à frente
+do corpo e pega quem estiver dentro. A diferença é concreta: um raio
+sai da câmera e acerta onde se mira, enquanto um volume preso ao corpo
+acerta o que estiver perto da garra. É isso que faz o alcance parecer
+variar com a postura em vez de seguir o olhar.
+
+**Cada golpe empurra o lobo para frente** (`ClawLunge`). Sem isso o
+combo deixa o jogador batendo no ar enquanto o alvo anda — o golpe
+precisa levar o lobo até o alvo.
 
 **Contra humano a patada vale 1,6×.** O lobo é feito para caçar
 gente, não para duelar com outro lobo — sem isso, o encontro entre
