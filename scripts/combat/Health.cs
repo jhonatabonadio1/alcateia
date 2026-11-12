@@ -34,6 +34,15 @@ public partial class Health : Node
 
     public bool IsProtected => _protection > 0;
 
+    /// <summary>Renascer sozinho ao fim da contagem. O jogador desliga
+    /// isto: quem escolhe lote decide quando volta.</summary>
+    [Export] public bool AutoRespawn = true;
+
+    /// <summary>Carência antes do escudo voltar a escorrer depois de
+    /// ser recarregado. Sem ela, o rugido termina e o escudo já começa
+    /// a cair no mesmo instante — o jogador não vê o que ganhou.</summary>
+    [Export] public float ShieldDecayGrace = 1f;
+
     /// <summary>Escudo perdido por segundo. Zero para quem não tem
     /// escudo que vaza, como o humano.</summary>
     public float ShieldDecay { get; set; }
@@ -52,8 +61,14 @@ public partial class Health : Node
     /// não significa nada.</summary>
     public float DamageMultiplier { get; set; } = 1f;
 
+    /// <summary>Multiplicador do dano recebido no corpo. Headshot não
+    /// passa por aqui: é a saída que o atirador tem contra um corpo
+    /// resistente.</summary>
+    public float BodyResistance { get; set; } = 1f;
+
     private double _respawnTimer;
     private double _protection;
+    private double _decayHold;
 
     public override void _Ready()
     {
@@ -66,7 +81,10 @@ public partial class Health : Node
 
     public override void _Process(double delta)
     {
-        if (!IsDead && Shield > 0 && ShieldDecay > 0)
+        if (_decayHold > 0)
+            _decayHold -= delta;
+
+        if (!IsDead && Shield > 0 && ShieldDecay > 0 && _decayHold <= 0)
         {
             Shield = Mathf.Max(Shield - ShieldDecay * (float)delta, 0);
             EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
@@ -78,7 +96,8 @@ public partial class Health : Node
         if (!IsDead) return;
 
         _respawnTimer -= delta;
-        if (_respawnTimer <= 0)
+
+        if (_respawnTimer <= 0 && AutoRespawn)
             Respawn();
     }
 
@@ -121,11 +140,14 @@ public partial class Health : Node
         EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
     }
 
-    public void TakeDamage(float amount, int attackerId = 0, Vector3 from = default)
+    public void TakeDamage(float amount, int attackerId = 0, Vector3 from = default, bool headshot = false)
     {
         if (IsDead || amount <= 0 || IsProtected) return;
 
         float dealt = amount * DamageMultiplier;
+
+        if (!headshot)
+            dealt *= BodyResistance;
         EmitSignal(SignalName.Damaged, dealt, from);
 
         // Escudo absorve primeiro.
@@ -150,6 +172,8 @@ public partial class Health : Node
         if (IsDead) return;
 
         Shield = Mathf.Min(Shield + amount, MaxShield);
+        _decayHold = ShieldDecayGrace;
+
         EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
     }
 
@@ -162,6 +186,16 @@ public partial class Health : Node
 
         EmitSignal(SignalName.Died, killerId);
         EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
+    }
+
+    /// <summary>Renasce agora, respeitando o tempo mínimo de espera.
+    /// Usado por quem controla o próprio renascimento.</summary>
+    public bool TryRespawn()
+    {
+        if (!IsDead || _respawnTimer > 0) return false;
+
+        Respawn();
+        return true;
     }
 
     private void Respawn()

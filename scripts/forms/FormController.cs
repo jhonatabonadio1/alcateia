@@ -35,7 +35,7 @@ public partial class FormController : Node
 
     [Export] public WolfBreed Breed;
 
-    [Export] public float MaxWp = 1000f;
+    [Export] public float MaxWp = 5000f;
     /// <summary>
     /// WP vem de abater e de renascer, não do relógio.
     ///
@@ -46,7 +46,7 @@ public partial class FormController : Node
     /// </summary>
     [Export] public float WpPerKill = 150f;
 
-    [Export] public float WpPerRespawn = 40f;
+
     [Export] public float WpPerDamageDealt = 0.25f;
 
     [Export] public float HumanHp = 200f;
@@ -106,7 +106,6 @@ public partial class FormController : Node
         _health = GetParent().GetNode<Health>("Health");
         _health.SetPool(HumanHp, 0f, true);
 
-        _health.Respawned += OnRespawned;
         EmitSignal(SignalName.WpChanged, Wp, MaxWp);
     }
 
@@ -160,9 +159,21 @@ public partial class FormController : Node
         }
     }
 
-    /// <summary>Renascer devolve um pouco de WP: ficar sem recurso
-    /// depois de morrer afunda quem já está perdendo.</summary>
-    private void OnRespawned() => AddWp(WpPerRespawn);
+    /// <summary>
+    /// Tenta gastar WP. Devolve falso se não houver o bastante.
+    ///
+    /// Custo negativo concede: é como o lote padrão devolve recurso a
+    /// quem está sem nada, em vez de deixar o jogador preso no fundo.
+    /// </summary>
+    public bool TrySpend(int amount)
+    {
+        if (amount > 0 && Wp < amount) return false;
+
+        Wp = Mathf.Clamp(Wp - amount, 0f, MaxWp);
+        EmitSignal(SignalName.WpChanged, Wp, MaxWp);
+
+        return true;
+    }
 
     public void AddWp(float amount)
     {
@@ -204,6 +215,7 @@ public partial class FormController : Node
             case Form.Wolf:
                 _health.DamageMultiplier = 1f;
                 _health.ShieldDecay = Breed.ShieldDecay;
+                _health.BodyResistance = Breed.BodyResistance;
 
                 // Vida é uma só. O que a forma lobo acrescenta é o
                 // escudo, e é ele que define a forma — vida separada
@@ -215,6 +227,7 @@ public partial class FormController : Node
             case Form.Human:
                 _health.DamageMultiplier = 1f;
                 _health.ShieldDecay = 0f;
+                _health.BodyResistance = 1f;
                 _health.SetPool(HumanHp, 0f, false);
                 break;
         }

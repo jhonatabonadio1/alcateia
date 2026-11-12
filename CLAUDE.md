@@ -249,7 +249,7 @@ export `RefillOnTransform`, desligado por padrão.
 | Clique esq. | Atacar |
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
-| R | Rugir — segurar (só de lobo) |
+| R | Rugir segurando (lobo) · recarregar (humano) |
 | Tab | Menu de dificuldade |
 
 Um toque, um pulo: segurar Space não repete, e uma trava curta impede
@@ -356,6 +356,44 @@ deixar claro de onde vem o tiro. Fogo contínuo esconde as duas coisas.
 Lobo e humano **compartilham a vida**. O que a forma lobo acrescenta é
 o escudo, e é ele que define a forma. Vida separada faria de
 transformar um segundo tanque de vida, o que esvazia a decisão.
+
+### Munição e recuo
+
+Carregador por arma, **reserva infinita**: o custo de atirar é o tempo
+de recarga, não o estoque. Contar balas no inventário só pune quem já
+está perdendo a luta.
+
+Carregador vazio recarrega sozinho ao puxar o gatilho — obrigar o
+jogador a apertar R depois de ouvir o clique adiciona um passo que ele
+já quis dar.
+
+O recuo tem **teto** (`RecoilMax`). Sem teto, segurar o gatilho aponta
+a arma para o céu e ela vira inútil em vez de difícil. Cada arma traz
+o próprio recuo no lote.
+
+### O lobo de perto
+
+Alcance de garra maior que o de uma faca, e **resistência no corpo**
+(0,6 no Bruto, 0,78 no Ligeiro). O lobo é uma ameaça de frente, não só
+um corpo rápido.
+
+**Headshot atravessa a resistência inteira.** Sem essa saída, o humano
+com rifle não teria resposta nenhuma contra um lobo vindo de frente —
+e um inimigo sem resposta não é difícil, é injusto.
+
+### O minimapa
+
+Desenhado em 2D a partir das posições, não por câmera ortogonal. Um
+minimapa é um diagrama, não uma foto: câmera de cima desenharia chão,
+sombra e iluminação, e nada disso ajuda a ler posição.
+
+Gira com o jogador — o que está em cima é o que está à frente. Mapa
+fixo obriga a traduzir mentalmente enquanto corre, e ninguém faz isso
+num tiroteio.
+
+**Só mostra quem está dentro do alcance.** Saber onde está todo mundo
+o tempo todo destruiria a razão de existir do agachar, do andar
+devagar e da audição dos bots.
 
 ### A economia de WP
 
@@ -471,6 +509,10 @@ Investigate     --[viu]-->    Combat
 Combat          --[perdeu]--> Search
 Search          --[desistiu]--> Idle
 ```
+
+Em deathmatch o bot **avança enquanto atira** em vez de administrar
+distância (`Aggression`). O modo não premia quem segura posição, e um
+bot que recua o tempo todo transforma a partida numa perseguição.
 
 Em Idle o bot **patrulha**: escolhe um ponto aleatório da área, vai
 até ele devagar, pausa e escolhe outro. Bot parado no spawn denuncia

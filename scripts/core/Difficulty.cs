@@ -73,7 +73,8 @@ public static class Difficulty
                 bot.Speed = 3.4f;
                 bot.StrafeFactor = 0.5f;
                 bot.StrafeInterval = 2.2f;
-                bot.PreferredRange = 14f;
+                bot.PreferredRange = 11f;
+                bot.Aggression = 0.5f;
                 bot.PatrolSpeedFactor = 0.45f;
                 bot.PatrolPause = 2.2f;
                 break;
@@ -100,7 +101,8 @@ public static class Difficulty
                 bot.Speed = 4.2f;
                 bot.StrafeFactor = 0.8f;
                 bot.StrafeInterval = 1.4f;
-                bot.PreferredRange = 12f;
+                bot.PreferredRange = 9f;
+                bot.Aggression = 0.8f;
                 bot.PatrolSpeedFactor = 0.55f;
                 bot.PatrolPause = 1.5f;
                 break;
@@ -130,7 +132,8 @@ public static class Difficulty
                 bot.Speed = 4.9f;
                 bot.StrafeFactor = 1f;
                 bot.StrafeInterval = 0.9f;
-                bot.PreferredRange = 11f;
+                bot.PreferredRange = 7f;
+                bot.Aggression = 1f;
                 bot.PatrolSpeedFactor = 0.7f;
                 bot.PatrolPause = 0.9f;
                 break;

@@ -31,6 +31,9 @@ public partial class Weapon : Node3D
 	[Signal] public delegate void HitConfirmedEventHandler(bool headshot);
 	[Signal] public delegate void GrenadesChangedEventHandler(int left);
 
+	/// <summary>Munição do carregador mudou, ou a recarga começou.</summary>
+	[Signal] public delegate void AmmoChangedEventHandler(int inMag, int magSize, bool reloading);
+
 	// --- Arma principal: cadência alta, dano baixo, automática ---
 	[Export] public float PrimaryDamage = 28f;
 	[Export] public float PrimaryRange = 120f;
@@ -101,13 +104,13 @@ public partial class Weapon : Node3D
 	/// voltar nele ao destransformar.</summary>
 	public Slot HumanSlot { get; private set; } = Slot.Primary;
 
-	public Slot Current => _form.IsWolf ? Slot.Wolf : HumanSlot;
+	public Slot CurrentSlot => _form.IsWolf ? Slot.Wolf : HumanSlot;
 
 	/// <summary>Granadas restantes. Reabastece ao renascer.</summary>
 	public int Grenades { get; private set; }
 
 	/// <summary>Só a principal dispara segurando o botão.</summary>
-	public bool IsAutomatic => Current == Slot.Primary;
+	public bool IsAutomatic => CurrentSlot == Slot.Primary;
 
 	/// <summary>Volta para a arma anterior depois de arremessar: ficar
 	/// com a mão vazia no meio de um tiroteio não é escolha de
@@ -123,6 +126,92 @@ public partial class Weapon : Node3D
 	private double _cooldown;
 	private float _fallStartY;
 	private bool _wasOnFloor = true;
+
+	/// <summary>Lote em uso. Trocar reescreve as armas sem recriar nada.</summary>
+	public Loadout Current { get; private set; }
+
+	// --- Munição ---
+	//
+	// Reserva infinita: o custo de atirar é o tempo de recarga, não o
+	// estoque. Contar balas no inventário pune quem já está perdendo.
+
+	public int PrimaryMag { get; private set; } = 40;
+	public int SecondaryMag { get; private set; } = 12;
+
+	public int PrimaryAmmo { get; private set; }
+	public int SecondaryAmmo { get; private set; }
+
+	public bool IsReloading => _reloadTimer > 0;
+
+	private float _primaryReload = 2f;
+	private float _secondaryReload = 1.4f;
+	private float _primaryRecoil = 0.22f;
+	private float _secondaryRecoil = 0.5f;
+	private double _reloadTimer;
+
+	/// <summary>Recuo da arma na mão, em graus por tiro.</summary>
+	public float Recoil => HumanSlot == Slot.Primary ? _primaryRecoil : _secondaryRecoil;
+
+	private int AmmoInMag => HumanSlot == Slot.Primary ? PrimaryAmmo : SecondaryAmmo;
+	private int MagSize => HumanSlot == Slot.Primary ? PrimaryMag : SecondaryMag;
+
+	/// <summary>Recarrega o carregador em uso. Só faz sentido com arma
+	/// de fogo na mão e com o carregador incompleto.</summary>
+	public bool TryReload()
+	{
+		if (_form.IsWolf || IsReloading) return false;
+		if (HumanSlot != Slot.Primary && HumanSlot != Slot.Secondary) return false;
+		if (AmmoInMag >= MagSize) return false;
+
+		_reloadTimer = HumanSlot == Slot.Primary ? _primaryReload : _secondaryReload;
+		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, true);
+
+		return true;
+	}
+
+	private void FinishReload()
+	{
+		if (HumanSlot == Slot.Primary) PrimaryAmmo = PrimaryMag;
+		else SecondaryAmmo = SecondaryMag;
+
+		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
+	}
+
+	public void ApplyLoadout(Loadout loadout)
+	{
+		if (loadout == null) return;
+
+		Current = loadout;
+
+		PrimaryMag = loadout.PrimaryMag;
+		SecondaryMag = loadout.SecondaryMag;
+		PrimaryAmmo = PrimaryMag;
+		SecondaryAmmo = SecondaryMag;
+
+		_primaryReload = loadout.PrimaryReload;
+		_secondaryReload = loadout.SecondaryReload;
+		_primaryRecoil = loadout.PrimaryRecoil;
+		_secondaryRecoil = loadout.SecondaryRecoil;
+
+		_reloadTimer = 0;
+
+		PrimaryDamage = loadout.PrimaryDamage;
+		PrimaryRange = loadout.PrimaryRange;
+		PrimaryCooldown = loadout.PrimaryCooldown;
+
+		SecondaryDamage = loadout.SecondaryDamage;
+		SecondaryRange = loadout.SecondaryRange;
+		SecondaryCooldown = loadout.SecondaryCooldown;
+
+		MaxGrenades = loadout.Grenades;
+		Grenades = loadout.Grenades;
+
+		HumanSlot = Slot.Primary;
+
+		EmitSignal(SignalName.GrenadesChanged, Grenades);
+		EmitSignal(SignalName.SlotChanged, (int)Slot.Primary);
+		EmitSignal(SignalName.AmmoChanged, PrimaryAmmo, PrimaryMag, false);
+	}
 
 	public override void _Ready()
 	{
@@ -141,6 +230,14 @@ public partial class Weapon : Node3D
 	{
 		if (_cooldown > 0)
 			_cooldown -= delta;
+
+		if (_reloadTimer > 0)
+		{
+			_reloadTimer -= delta;
+
+			if (_reloadTimer <= 0)
+				FinishReload();
+		}
 
 		bool onFloor = _body.IsOnFloor();
 		if (_wasOnFloor && !onFloor)
@@ -198,12 +295,14 @@ public partial class Weapon : Node3D
 		}
 
 		HumanSlot = slot;
+		_reloadTimer = 0;
 
 		if (_form.IsWolf)
 			_form.ToggleForm();
 
 		_cooldown = 0.2f;
 		EmitSignal(SignalName.SlotChanged, (int)slot);
+		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
 	}
 
 	public void TryAttack()
@@ -249,7 +348,24 @@ public partial class Weapon : Node3D
 
 	private void Shoot()
 	{
+		if (IsReloading) return;
+
 		bool primary = HumanSlot == Slot.Primary;
+
+		// Carregador vazio recarrega sozinho: obrigar o jogador a
+		// apertar R depois de ouvir o clique só adiciona um passo que
+		// ele já quis dar.
+		if (AmmoInMag <= 0)
+		{
+			TryReload();
+			return;
+		}
+
+		if (primary) PrimaryAmmo--;
+		else SecondaryAmmo--;
+
+		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
+
 		float damage = primary ? PrimaryDamage : SecondaryDamage;
 		float range = primary ? PrimaryRange : SecondaryRange;
 
@@ -365,7 +481,7 @@ public partial class Weapon : Node3D
 
 		bool wasAlive = !target.IsDead;
 
-		target.TakeDamage(amount, 0, from);
+		target.TakeDamage(amount, 0, from, headshot);
 
 		EmitSignal(SignalName.DamageDealt, amount);
 		EmitSignal(SignalName.HitConfirmed, headshot);

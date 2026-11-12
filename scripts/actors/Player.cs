@@ -54,11 +54,21 @@ public partial class Player : CharacterBody3D
     /// <summary>Avanço na direção do olhar durante o mergulho.</summary>
     [Export] public float DiveForward = 7f;
 
-    /// <summary>Recuo vertical da câmera por disparo, em graus.</summary>
-    [Export] public float CameraKick = 0.9f;
+    /// <summary>
+    /// Multiplicador do recuo da arma. O valor base vem de cada arma
+    /// no lote; isto é o ajuste global de quanto o recuo pesa.
+    /// </summary>
+    [Export] public float RecoilScale = 1f;
 
-    /// <summary>Velocidade com que a câmera volta ao lugar.</summary>
-    [Export] public float CameraRecover = 7f;
+    /// <summary>Teto do recuo acumulado, em graus. Sem teto, segurar
+    /// o gatilho aponta a arma para o céu e a arma vira inútil em vez
+    /// de difícil.</summary>
+    [Export] public float RecoilMax = 4.5f;
+
+    /// <summary>Velocidade com que a câmera volta ao lugar. Alta o
+    /// bastante para o recuo ser um empurrão que se corrige, não uma
+    /// deriva que se acumula.</summary>
+    [Export] public float CameraRecover = 11f;
 
     [Export] public float StandHeight = 1.75f;
     [Export] public float CrouchHeight = 1.0f;
@@ -280,12 +290,19 @@ public partial class Player : CharacterBody3D
     {
         if (_form.IsWolf) return;
 
-        _cameraKick += Mathf.DegToRad(CameraKick);
+        float kick = Mathf.DegToRad(_weapon.Recoil * RecoilScale);
+        float room = Mathf.DegToRad(RecoilMax) - _cameraKick;
+
+        // Perto do teto o recuo para de crescer: a arma fica difícil,
+        // não inútil.
+        kick = Mathf.Min(kick, Mathf.Max(room, 0));
+        if (kick <= 0) return;
+
+        _cameraKick += kick;
 
         Vector3 rotation = _head.Rotation;
         rotation.X = Mathf.Clamp(
-            rotation.X + Mathf.DegToRad(CameraKick),
-            Mathf.DegToRad(-89f), Mathf.DegToRad(89f));
+            rotation.X + kick, Mathf.DegToRad(-89f), Mathf.DegToRad(89f));
         _head.Rotation = rotation;
     }
 
@@ -549,6 +566,11 @@ public partial class Player : CharacterBody3D
         // Patada dupla: só de lobo e só no ar.
         if (Input.IsActionJustPressed("special") && _weapon.TrySpecial())
             Dive();
+
+        // R faz o que a forma permite: ruge de lobo, recarrega de
+        // humano. Uma tecla, um gesto, dois corpos.
+        if (Input.IsActionJustPressed("howl") && !_form.IsWolf)
+            _weapon.TryReload();
 
         UpdateHowl(delta);
     }

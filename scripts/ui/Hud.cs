@@ -1,22 +1,25 @@
 using Godot;
 
 /// <summary>
-/// HUD mínimo: vida, escudo, WP e slot atual.
+/// HUD do jogador.
 ///
-/// A barra de WP é o item mais importante aqui. O documento é explícito:
-/// a decisão de transformar só existe se o jogador enxerga o recurso o
-/// tempo todo.
+/// Dois cantos, dois assuntos. **Esquerda é o corpo**: vida e escudo.
+/// **Direita é o equipamento**: WP, munição e forma atual. Separar os
+/// recursos no espaço evita que o jogador leia o errado no meio de uma
+/// luta — e no meio de uma luta ninguém lê, só reconhece a posição.
 ///
-/// Construído por código de propósito — é uma peça descartável que será
-/// refeita com arte na Fase 3, e montá-la por GUI agora seria trabalho
-/// jogado fora.
+/// Tudo em número, nada em barra. Vida e escudo caem continuamente, e
+/// munição se conta: estimar por comprimento de barra não serve para
+/// nenhum dos dois.
+///
+/// Peça descartável. Quando houver arte, isto some inteiro — o que
+/// precisa sobreviver é a decisão de o que mostrar, não o desenho.
 /// </summary>
 public partial class Hud : CanvasLayer
 {
     [Export] public Color HpColor = new Color(1f, 0.22f, 0.12f);
     [Export] public Color ShieldColor = new Color(1f, 0.42f, 0.18f);
-    [Export] public Color WpColor = new Color(0.95f, 0.75f, 0.2f);
-    [Export] public Color WpReadyColor = new Color(0.45f, 0.95f, 0.4f);
+    [Export] public Color WpColor = new Color(0.95f, 0.8f, 0.35f);
 
     [Export] public Color HitColor = new Color(1f, 1f, 1f, 0.95f);
     [Export] public Color HeadshotColor = new Color(1f, 0.35f, 0.3f, 1f);
@@ -26,37 +29,34 @@ public partial class Hud : CanvasLayer
     [Export] public float HurtLife = 0.45f;
     [Export] public float HurtBand = 90f;
 
+    private const int Margin = 26;
+
     private Health _health;
     private FormController _form;
     private Weapon _weapon;
 
     private Label _hpLabel;
     private Label _shieldLabel;
-    private ColorRect _wpFill;
+
     private Label _wpLabel;
-    private Label _slotLabel;
+    private Label _ammoLabel;
+    private Label _formLabel;
     private Label _grenadeLabel;
+
     private Label _warning;
     private Label _death;
-    private readonly ColorRect[] _hitMarks = new ColorRect[4];
-    private readonly ColorRect[] _edges = new ColorRect[4];
-    private double _hitTimer;
-    private double _hurtTimer;
     private VBoxContainer _feed;
 
-    private double _warningTimer;
+    private readonly ColorRect[] _hitMarks = new ColorRect[4];
+    private readonly ColorRect[] _edges = new ColorRect[4];
 
-    private const int BarWidth = 260;
-    private const int BarHeight = 16;
-    private const int Margin = 24;
+    private double _hitTimer;
+    private double _hurtTimer;
+    private double _warningTimer;
 
     public override void _Ready()
     {
-        // O grupo é o caminho normal. A varredura é plano B: cena
-        // montada à mão esquece o grupo com facilidade, e o HUD sumir
-        // inteiro por causa disso custa caro para diagnosticar.
-        Node player = GetTree().GetFirstNodeInGroup("player")
-            ?? FindPlayer(GetTree().CurrentScene);
+        Node player = GetTree().GetFirstNodeInGroup("player") ?? FindPlayer(GetTree().CurrentScene);
 
         if (player == null)
         {
@@ -68,43 +68,41 @@ public partial class Hud : CanvasLayer
         _form = player.GetNode<FormController>("FormController");
         _weapon = player.GetNode<Weapon>("Weapon");
 
-        Build();
+        BuildVitals();
+        BuildEquipment();
+        BuildMinimap();
+        BuildFeed();
+        BuildHitMarker();
+        BuildHurtEdges();
+        BuildOverlays();
 
         _health.Changed += OnHealthChanged;
         _health.Damaged += OnDamaged;
         _health.Died += OnDied;
         _health.Respawned += OnRespawned;
+
         _form.WpChanged += OnWpChanged;
         _form.FormChanged += OnFormChanged;
         _form.TransformDenied += OnTransformDenied;
+
         _weapon.SlotChanged += OnSlotChanged;
         _weapon.GrenadesChanged += OnGrenadesChanged;
         _weapon.HitConfirmed += OnHitConfirmed;
+        _weapon.AmmoChanged += OnAmmoChanged;
 
         OnHealthChanged(_health.Hp, _health.MaxHp, _health.Shield);
         OnWpChanged(_form.Wp, _form.MaxWp);
-        OnSlotChanged((int)_weapon.Current);
+        OnSlotChanged((int)_weapon.CurrentSlot);
         OnGrenadesChanged(_weapon.Grenades);
+        OnAmmoChanged(_weapon.PrimaryAmmo, _weapon.PrimaryMag, false);
     }
 
-    private static Node FindPlayer(Node from)
-    {
-        if (from == null) return null;
-        if (from is Player) return from;
-
-        foreach (Node child in from.GetChildren())
-        {
-            Node found = FindPlayer(child);
-            if (found != null) return found;
-        }
-
-        return null;
-    }
+    public override void _ExitTree() => KillFeed.Reported -= OnKill;
 
     public override void _Process(double delta)
     {
         if (_death != null && _health != null && _health.IsDead)
-            _death.Text = $"ABATIDO\nvolta em {_health.RespawnIn:0.0}s";
+            _death.Text = $"ABATIDO\n{_health.RespawnIn:0.0}";
 
         if (_hitTimer > 0)
         {
@@ -122,76 +120,114 @@ public partial class Hud : CanvasLayer
             foreach (ColorRect edge in _edges) edge.Color = new Color(HurtColor, alpha);
         }
 
-        if (_warningTimer <= 0) return;
+        if (_warningTimer > 0)
+        {
+            _warningTimer -= delta;
 
-        _warningTimer -= delta;
-        if (_warningTimer <= 0 && _warning != null)
-            _warning.Text = "";
+            if (_warningTimer <= 0)
+                _warning.Text = "";
+        }
     }
 
     // ------------------------------------------------------------------
+    // CONSTRUÇÃO
 
-    private void Build()
+    /// <summary>Canto inferior esquerdo: o corpo.</summary>
+    private void BuildVitals()
     {
-        // Vida (canto inferior esquerdo)
-        MakeBar(2, "WP", WpColor, out _wpFill);
-        BuildVitals();
+        _hpLabel = Corner(false, -150, 54, HpColor);
+        _shieldLabel = Corner(false, -98, 32, ShieldColor);
+    }
 
-        _wpLabel = Right(BarY(2) - 4, 0.85f);
-        _slotLabel = Right(BarY(2) - 38, 0.9f);
+    /// <summary>Canto inferior direito: o equipamento.</summary>
+    private void BuildEquipment()
+    {
+        _wpLabel = Corner(true, -168, 30, WpColor);
+        _ammoLabel = Corner(true, -118, 40, new Color(1, 1, 1, 0.92f));
+        _formLabel = Corner(true, -68, 20, new Color(1, 1, 1, 0.7f));
+        _grenadeLabel = Corner(true, -42, 14, new Color(1, 1, 1, 0.6f));
+    }
 
-        _grenadeLabel = Right(BarY(2) - 60, 0.75f);
-
-        BuildFeed();
-        BuildHitMarker();
-        BuildHurtEdges();
-
-        _death = new Label
+    private Label Corner(bool right, int y, int size, Color color)
+    {
+        var label = new Label
         {
-            AnchorLeft = 0.5f,
-            AnchorRight = 0.5f,
-            AnchorTop = 0.42f,
-            AnchorBottom = 0.42f,
-            GrowHorizontal = Control.GrowDirection.Both,
-            Modulate = new Color(1f, 0.3f, 0.25f),
-            Text = "",
-            Visible = false
+            AnchorTop = 1f, AnchorBottom = 1f,
+            GrowVertical = Control.GrowDirection.Begin,
+            Modulate = color,
+            Size = new Vector2(300, size + 6)
         };
-        _death.AddThemeFontSizeOverride("font_size", 30);
-        AddChild(_death);
 
-        _warning = new Label
+        if (right)
         {
-            AnchorLeft = 0.5f,
-            AnchorRight = 0.5f,
-            AnchorTop = 0.62f,
-            AnchorBottom = 0.62f,
+            label.AnchorLeft = 1f;
+            label.AnchorRight = 1f;
+            label.GrowHorizontal = Control.GrowDirection.Begin;
+            label.Position = new Vector2(-Margin - 300, y);
+            label.HorizontalAlignment = HorizontalAlignment.Right;
+        }
+        else
+        {
+            label.Position = new Vector2(Margin, y);
+        }
+
+        label.AddThemeFontSizeOverride("font_size", size);
+        AddChild(label);
+
+        return label;
+    }
+
+    private void BuildOverlays()
+    {
+        _death = Centered(0.42f, 30, new Color(1f, 0.3f, 0.25f));
+        _death.Visible = false;
+
+        _warning = Centered(0.6f, 18, new Color(1f, 0.55f, 0.35f));
+    }
+
+    private Label Centered(float anchor, int size, Color color)
+    {
+        var label = new Label
+        {
+            AnchorLeft = 0.5f, AnchorRight = 0.5f,
+            AnchorTop = anchor, AnchorBottom = anchor,
             GrowHorizontal = Control.GrowDirection.Both,
-            Modulate = new Color(1f, 0.55f, 0.35f),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Modulate = color,
             Text = ""
         };
-        _warning.AddThemeFontSizeOverride("font_size", 18);
-        AddChild(_warning);
+
+        label.AddThemeFontSizeOverride("font_size", size);
+        AddChild(label);
+
+        return label;
+    }
+
+    private void BuildMinimap()
+    {
+        var map = new Minimap
+        {
+            Position = new Vector2(Margin, Margin),
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+
+        AddChild(map);
     }
 
     /// <summary>
-    /// Feed de abates, canto superior direito.
-    ///
-    /// Não é enfeite: é como o jogador entende o que aconteceu fora do
-    /// seu campo de visão e, principalmente, de que ele morreu. Morrer
-    /// sem saber a causa é a forma mais rápida de um jogo parecer
-    /// injusto.
+    /// Feed de abates, canto superior direito. Não é enfeite: é como o
+    /// jogador entende o que aconteceu fora do campo de visão e,
+    /// principalmente, de que ele morreu. Morrer sem saber a causa é a
+    /// forma mais rápida de um jogo parecer injusto.
     /// </summary>
     private void BuildFeed()
     {
         _feed = new VBoxContainer
         {
             AnchorLeft = 1f, AnchorRight = 1f,
-            AnchorTop = 0f, AnchorBottom = 0f,
             GrowHorizontal = Control.GrowDirection.Begin,
             Position = new Vector2(-Margin - 360, Margin),
             CustomMinimumSize = new Vector2(360, 0),
-            Alignment = BoxContainer.AlignmentMode.Begin,
             MouseFilter = Control.MouseFilterEnum.Ignore
         };
         _feed.AddThemeConstantOverride("separation", 4);
@@ -200,7 +236,193 @@ public partial class Hud : CanvasLayer
         KillFeed.Reported += OnKill;
     }
 
-    public override void _ExitTree() => KillFeed.Reported -= OnKill;
+    /// <summary>Quatro riscos em volta do centro, no acerto.</summary>
+    private void BuildHitMarker()
+    {
+        var offsets = new[]
+        {
+            new Vector2(-14, -14), new Vector2(8, -14),
+            new Vector2(-14, 8), new Vector2(8, 8)
+        };
+
+        for (int i = 0; i < 4; i++)
+        {
+            var mark = new ColorRect
+            {
+                AnchorLeft = 0.5f, AnchorRight = 0.5f,
+                AnchorTop = 0.5f, AnchorBottom = 0.5f,
+                GrowHorizontal = Control.GrowDirection.Both,
+                GrowVertical = Control.GrowDirection.Both,
+                Position = offsets[i],
+                Size = new Vector2(6, 6),
+                Color = HitColor,
+                Visible = false
+            };
+
+            AddChild(mark);
+            _hitMarks[i] = mark;
+        }
+    }
+
+    private void BuildHurtEdges()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            var edge = new ColorRect
+            {
+                Color = new Color(HurtColor, 0f),
+                MouseFilter = Control.MouseFilterEnum.Ignore,
+                AnchorLeft = 0f, AnchorRight = 1f,
+                AnchorTop = 0f, AnchorBottom = 1f
+            };
+
+            if (i == 0) { edge.AnchorBottom = 0f; edge.OffsetBottom = HurtBand; }
+            if (i == 1) { edge.AnchorTop = 1f; edge.OffsetTop = -HurtBand; }
+            if (i == 2) { edge.AnchorRight = 0f; edge.OffsetRight = HurtBand; }
+            if (i == 3) { edge.AnchorLeft = 1f; edge.OffsetLeft = -HurtBand; }
+
+            AddChild(edge);
+            _edges[i] = edge;
+        }
+    }
+
+    private static Node FindPlayer(Node from)
+    {
+        if (from == null) return null;
+        if (from is Player) return from;
+
+        foreach (Node child in from.GetChildren())
+        {
+            Node found = FindPlayer(child);
+            if (found != null) return found;
+        }
+
+        return null;
+    }
+
+    // ------------------------------------------------------------------
+    // ATUALIZAÇÃO
+
+    private void OnHealthChanged(float hp, float maxHp, float shield)
+    {
+        if (_hpLabel == null) return;
+
+        _hpLabel.Text = $"{Mathf.Ceil(hp):0}";
+
+        // Sem escudo o número some: humano não tem escudo, e um zero
+        // permanente na tela vira ruído.
+        _shieldLabel.Text = shield > 0 ? $"{Mathf.Ceil(shield):0}" : "";
+    }
+
+    private void OnWpChanged(float wp, float max)
+    {
+        if (_wpLabel == null) return;
+
+        _wpLabel.Text = $"WP  {Mathf.Floor(wp):0}";
+    }
+
+    private void OnAmmoChanged(int inMag, int magSize, bool reloading)
+    {
+        if (_ammoLabel == null) return;
+
+        if (_form.IsWolf)
+        {
+            _ammoLabel.Text = "";
+            return;
+        }
+
+        _ammoLabel.Text = reloading ? "RECARREGANDO" : $"{inMag} / {magSize}";
+        _ammoLabel.AddThemeFontSizeOverride("font_size", reloading ? 20 : 40);
+
+        _ammoLabel.Modulate = inMag == 0 && !reloading
+            ? new Color(1f, 0.3f, 0.25f)
+            : new Color(1, 1, 1, 0.92f);
+    }
+
+    private void OnFormChanged(int form)
+    {
+        OnWpChanged(_form.Wp, _form.MaxWp);
+        OnSlotChanged((int)_weapon.CurrentSlot);
+        OnAmmoChanged(_weapon.PrimaryAmmo, _weapon.PrimaryMag, false);
+    }
+
+    private void OnSlotChanged(int slot)
+    {
+        if (_formLabel == null) return;
+
+        _formLabel.Text = _form.IsWolf
+            ? (_form.Breed?.DisplayName ?? "LOBO").ToUpper()
+            : (Slot)slot switch
+            {
+                Slot.Primary => "PRINCIPAL",
+                Slot.Secondary => "SECUNDÁRIA",
+                Slot.Knife => "FACA",
+                Slot.Grenade => "GRANADA",
+                _ => "HUMANO"
+            };
+
+        _formLabel.Modulate = _form.IsWolf
+            ? new Color(1f, 0.55f, 0.2f)
+            : new Color(1, 1, 1, 0.7f);
+    }
+
+    private void OnGrenadesChanged(int left)
+    {
+        if (_grenadeLabel == null) return;
+
+        _grenadeLabel.Text = $"GRANADAS {left}";
+    }
+
+    private void OnHitConfirmed(bool headshot)
+    {
+        if (_hitMarks[0] == null) return;
+
+        foreach (ColorRect mark in _hitMarks)
+        {
+            mark.Color = headshot ? HeadshotColor : HitColor;
+            mark.Size = headshot ? new Vector2(8, 8) : new Vector2(6, 6);
+            mark.Visible = true;
+        }
+
+        _hitTimer = HitMarkerLife;
+    }
+
+    /// <summary>
+    /// O alerta vermelho vem do sinal de dano, não de ver a vida
+    /// baixar: trocar de forma troca o pool de vida, e o número cai
+    /// sem ninguém ter atirado.
+    /// </summary>
+    private void OnDamaged(float amount, Vector3 from)
+    {
+        if (_health.IsDead) return;
+
+        _hurtTimer = HurtLife;
+    }
+
+    private void OnTransformDenied(float missing)
+    {
+        if (_warning == null) return;
+
+        _warning.Text = $"faltam {missing:0} WP";
+        _warningTimer = 1.5;
+    }
+
+    private void OnDied(int killerId)
+    {
+        if (_death == null) return;
+
+        _death.Visible = true;
+        _warning.Text = "";
+        _warningTimer = 0;
+    }
+
+    private void OnRespawned()
+    {
+        if (_death == null) return;
+
+        _death.Visible = false;
+        _death.Text = "";
+    }
 
     private void OnKill(Kill kill)
     {
@@ -234,272 +456,5 @@ public partial class Hud : CanvasLayer
 
         SceneTreeTimer timer = GetTree().CreateTimer(6.0);
         timer.Timeout += () => { if (IsInstanceValid(line)) line.QueueFree(); };
-    }
-
-    /// <summary>Quatro riscos em volta do centro. Aparecem no acerto
-    /// e somem — sem isso não se sabe se o tiro pegou.</summary>
-    private void BuildHitMarker()
-    {
-        var offsets = new[]
-        {
-            new Vector2(-14, -14), new Vector2(8, -14),
-            new Vector2(-14, 8), new Vector2(8, 8)
-        };
-
-        for (int i = 0; i < 4; i++)
-        {
-            var mark = new ColorRect
-            {
-                AnchorLeft = 0.5f, AnchorRight = 0.5f,
-                AnchorTop = 0.5f, AnchorBottom = 0.5f,
-                GrowHorizontal = Control.GrowDirection.Both,
-                GrowVertical = Control.GrowDirection.Both,
-                Position = offsets[i],
-                Size = new Vector2(6, 6),
-                Color = HitColor,
-                Visible = false
-            };
-
-            AddChild(mark);
-            _hitMarks[i] = mark;
-        }
-    }
-
-    /// <summary>Faixas vermelhas nas bordas ao levar dano.</summary>
-    private void BuildHurtEdges()
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            var edge = new ColorRect
-            {
-                Color = new Color(HurtColor, 0f),
-                MouseFilter = Control.MouseFilterEnum.Ignore
-            };
-
-            // 0 topo, 1 base, 2 esquerda, 3 direita.
-            edge.AnchorLeft = 0f;
-            edge.AnchorRight = 1f;
-            edge.AnchorTop = 0f;
-            edge.AnchorBottom = 1f;
-
-            if (i == 0) { edge.AnchorBottom = 0f; edge.OffsetBottom = HurtBand; }
-            if (i == 1) { edge.AnchorTop = 1f; edge.OffsetTop = -HurtBand; }
-            if (i == 2) { edge.AnchorRight = 0f; edge.OffsetRight = HurtBand; }
-            if (i == 3) { edge.AnchorLeft = 1f; edge.OffsetLeft = -HurtBand; }
-
-            AddChild(edge);
-            _edges[i] = edge;
-        }
-    }
-
-    /// <summary>
-    /// Vida em número grande, escudo em número menor logo abaixo.
-    ///
-    /// Barra não serve aqui: o escudo do lobo escorre o tempo todo e o
-    /// jogador precisa ler quanto resta, não estimar por comprimento.
-    /// </summary>
-    private void BuildVitals()
-    {
-        _hpLabel = new Label
-        {
-            AnchorTop = 1f, AnchorBottom = 1f,
-            GrowVertical = Control.GrowDirection.Begin,
-            Position = new Vector2(Margin, -148),
-            Modulate = HpColor
-        };
-        _hpLabel.AddThemeFontSizeOverride("font_size", 54);
-        AddChild(_hpLabel);
-
-        _shieldLabel = new Label
-        {
-            AnchorTop = 1f, AnchorBottom = 1f,
-            GrowVertical = Control.GrowDirection.Begin,
-            Position = new Vector2(Margin + 10, -100),
-            Modulate = ShieldColor
-        };
-        _shieldLabel.AddThemeFontSizeOverride("font_size", 32);
-        AddChild(_shieldLabel);
-    }
-
-    /// <summary>Rótulo alinhado à direita, acima das barras.</summary>
-    private Label Right(int y, float alpha)
-    {
-        var label = new Label
-        {
-            Position = new Vector2(-Margin - BarWidth, y),
-            Size = new Vector2(BarWidth, 20),
-            AnchorLeft = 1f, AnchorRight = 1f,
-            AnchorTop = 1f, AnchorBottom = 1f,
-            GrowHorizontal = Control.GrowDirection.Begin,
-            GrowVertical = Control.GrowDirection.Begin,
-            HorizontalAlignment = HorizontalAlignment.Right,
-            Modulate = new Color(1, 1, 1, alpha)
-        };
-
-        AddChild(label);
-        return label;
-    }
-
-    private int BarY(int index) => -(Margin + (BarHeight + 10) * (3 - index));
-
-    /// <summary>
-    /// Barra ancorada à direita. Vida fica à esquerda e WP à direita:
-    /// separar os dois recursos no espaço evita que o jogador leia o
-    /// errado no meio de uma luta.
-    /// </summary>
-    private void MakeBar(int index, string caption, Color color, out ColorRect fill)
-    {
-        int y = BarY(index);
-
-        var label = new Label
-        {
-            Position = new Vector2(-Margin - BarWidth, y - 20),
-            AnchorLeft = 1f, AnchorRight = 1f,
-            AnchorTop = 1f, AnchorBottom = 1f,
-            GrowHorizontal = Control.GrowDirection.Begin,
-            GrowVertical = Control.GrowDirection.Begin,
-            Modulate = new Color(1, 1, 1, 0.55f),
-            Text = caption
-        };
-        label.AddThemeFontSizeOverride("font_size", 11);
-        AddChild(label);
-
-        var back = new ColorRect
-        {
-            Position = new Vector2(-Margin - BarWidth, y),
-            Size = new Vector2(BarWidth, BarHeight),
-            AnchorLeft = 1f, AnchorRight = 1f,
-            AnchorTop = 1f, AnchorBottom = 1f,
-            GrowHorizontal = Control.GrowDirection.Begin,
-            GrowVertical = Control.GrowDirection.Begin,
-            Color = new Color(0, 0, 0, 0.45f)
-        };
-        AddChild(back);
-
-        fill = new ColorRect
-        {
-            Position = new Vector2(-Margin - BarWidth, y),
-            Size = new Vector2(BarWidth, BarHeight),
-            AnchorLeft = 1f, AnchorRight = 1f,
-            AnchorTop = 1f, AnchorBottom = 1f,
-            GrowHorizontal = Control.GrowDirection.Begin,
-            GrowVertical = Control.GrowDirection.Begin,
-            Color = color
-        };
-        AddChild(fill);
-    }
-
-    // ------------------------------------------------------------------
-
-    private void OnHealthChanged(float hp, float maxHp, float shield)
-    {
-        if (_hpLabel == null) return;
-
-        _hpLabel.Text = $"{Mathf.Ceil(hp):0}";
-
-        // Sem escudo o número some, em vez de mostrar zero: humano não
-        // tem escudo, e um zero permanente na tela vira ruído.
-        _shieldLabel.Text = shield > 0 ? $"{Mathf.Ceil(shield):0}" : "";
-    }
-
-    private void OnWpChanged(float wp, float max)
-    {
-        if (_wpFill == null) return;
-
-        _wpFill.Size = new Vector2(BarWidth * Mathf.Clamp(wp / max, 0, 1), BarHeight);
-
-        float cost = _form.Breed?.WpCost ?? 0;
-        bool ready = !_form.IsWolf && wp >= cost;
-
-        _wpFill.Color = ready ? WpReadyColor : WpColor;
-        _wpLabel.Text = _form.IsWolf
-            ? $"{wp:0}"
-            : $"{wp:0} / {cost:0}";
-    }
-
-    private void OnFormChanged(int form)
-    {
-        OnWpChanged(_form.Wp, _form.MaxWp);
-        OnSlotChanged((int)_weapon.Current);
-    }
-
-    private void OnSlotChanged(int slot)
-    {
-        if (_slotLabel == null) return;
-
-        _slotLabel.Text = (Slot)slot switch
-        {
-            Slot.Primary => "1 · PRINCIPAL",
-            Slot.Secondary => "2 · SECUNDÁRIA",
-            Slot.Wolf => $"3 · {_form.Breed?.DisplayName ?? "LOBO"}".ToUpper(),
-            Slot.Knife => "4 · FACA",
-            Slot.Grenade => "5 · GRANADA",
-            _ => ""
-        };
-    }
-
-    /// <summary>
-    /// O alerta vermelho vem do sinal de dano, não de ver a vida
-    /// baixar. Trocar de forma troca o pool de vida, e o número cai
-    /// sem ninguém ter atirado — o jogador lia isso como ter levado
-    /// tiro ao sair do lobo.
-    /// </summary>
-    private void OnDamaged(float amount, Vector3 from)
-    {
-        if (_health.IsDead) return;
-
-        _hurtTimer = HurtLife;
-    }
-
-    private void OnHitConfirmed(bool headshot)
-    {
-        if (_hitMarks[0] == null) return;
-
-        foreach (ColorRect mark in _hitMarks)
-        {
-            mark.Color = headshot ? HeadshotColor : HitColor;
-            mark.Size = headshot ? new Vector2(8, 8) : new Vector2(6, 6);
-            mark.Visible = true;
-        }
-
-        _hitTimer = HitMarkerLife;
-    }
-
-    private void OnDied(int killerId)
-    {
-        if (_death == null) return;
-
-        _death.Visible = true;
-        _warning.Text = "";
-        _warningTimer = 0;
-    }
-
-    private void OnRespawned()
-    {
-        if (_death == null) return;
-
-        _death.Visible = false;
-        _death.Text = "";
-    }
-
-    private void OnGrenadesChanged(int left)
-    {
-        if (_grenadeLabel == null) return;
-
-        _grenadeLabel.Text = $"5 · GRANADAS  {left}";
-
-        if (left == 0)
-        {
-            _warning.Text = "sem granadas";
-            _warningTimer = 1.2;
-        }
-    }
-
-    private void OnTransformDenied(float missing)
-    {
-        if (_warning == null) return;
-
-        _warning.Text = $"faltam {missing:0} WP";
-        _warningTimer = 1.5;
     }
 }

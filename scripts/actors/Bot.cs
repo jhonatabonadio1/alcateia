@@ -116,6 +116,18 @@ public partial class Bot : CharacterBody3D
     [Export] public float StrafeFactor = 0.8f;
     [Export] public float StrafeInterval = 1.4f;
 
+    /// <summary>
+    /// Quanto o bot avança em vez de circular. Deathmatch não premia
+    /// quem administra distância: premia quem vai atrás. Em 1 ele
+    /// fecha a distância enquanto atira, mantendo o strafe só como
+    /// movimento lateral.
+    /// </summary>
+    [Export] public float Aggression = 0.75f;
+
+    /// <summary>Distância abaixo da qual ele para de avançar. Colar no
+    /// alvo com arma de fogo é pior que manter um palmo.</summary>
+    [Export] public float MinRange = 4f;
+
     /// <summary>Erro de mira em graus. Zero faz um bot desumano.</summary>
     [Export] public float AimError = 4f;
 
@@ -499,7 +511,11 @@ public partial class Bot : CharacterBody3D
     private void PickPatrolTarget()
     {
         float angle = (float)GD.RandRange(0, Mathf.Tau);
-        float radius = PatrolRadius * Mathf.Sqrt((float)GD.Randf());
+
+        // Raiz quadrada distribui por área; elevar o expoente puxa os
+        // destinos para o meio do mapa, que é onde a luta acontece.
+        // Patrulha que vive na borda é patrulha que ninguém encontra.
+        float radius = PatrolRadius * Mathf.Pow((float)GD.Randf(), 0.85f);
 
         _patrolTarget = PatrolCenter + new Vector3(
             Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
@@ -516,13 +532,22 @@ public partial class Bot : CharacterBody3D
         Vector3 desired;
 
         if (_form.IsWolf)
+        {
             desired = flat;
-        else if (distance > PreferredRange * 1.25f)
-            desired = (flat + side * StrafeFactor * 0.5f).Normalized();
-        else if (distance < PreferredRange * 0.7f)
-            desired = (-flat + side * StrafeFactor * 0.5f).Normalized();
+        }
+        else if (distance < MinRange)
+        {
+            // Perto demais até para um bot agressivo: recua de lado.
+            desired = (-flat * 0.6f + side).Normalized();
+        }
         else
-            desired = side * StrafeFactor;
+        {
+            // Avança enquanto circula. O peso da agressão decide o
+            // quanto da intenção é ir para cima e o quanto é lateral.
+            float push = distance > PreferredRange ? 1f : Aggression;
+
+            desired = (flat * push + side * StrafeFactor).Normalized();
+        }
 
         float speed = Speed * (_form.IsWolf ? _form.Breed.SpeedMultiplier : 1f);
         MoveTowards(Avoid(desired), speed, delta);

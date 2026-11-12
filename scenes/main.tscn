@@ -1,10 +1,15 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/dummy.tscn" id="2_dummy"]
 [ext_resource type="Script" path="res://scripts/ui/Hud.cs" id="3_hud"]
 [ext_resource type="PackedScene" path="res://scenes/bot.tscn" id="4_bot"]
 [ext_resource type="Script" path="res://scripts/ui/DifficultyMenu.cs" id="5_menu"]
+[ext_resource type="Script" path="res://scripts/ui/LoadoutMenu.cs" id="6_loadout"]
+[ext_resource type="Resource" path="res://resources/loadouts/padrao.tres" id="7_l1"]
+[ext_resource type="Resource" path="res://resources/loadouts/assalto.tres" id="8_l2"]
+[ext_resource type="Resource" path="res://resources/loadouts/precisao.tres" id="9_l3"]
+[ext_resource type="Resource" path="res://resources/loadouts/elite.tres" id="10_l4"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
 
@@ -108,6 +113,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1, -12)
 [node name="Menu" type="CanvasLayer" parent="."]
 layer = 10
 script = ExtResource("5_menu")
+
+[node name="LoadoutMenu" type="CanvasLayer" parent="."]
+layer = 9
+script = ExtResource("6_loadout")
+Loadouts = [ExtResource("7_l1"), ExtResource("8_l2"), ExtResource("9_l3"), ExtResource("10_l4")]
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("3_hud")

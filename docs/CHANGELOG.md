@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.14.0 — 2026-11-11
+
+### Adicionado
+- **Lotes de armamento** com escolha em 10 segundos, no início e a
+  cada morte. Quatro lotes: padrão (concede 50 WP), assalto (200),
+  precisão (420) e elite (520). Tempo esgotado entra o padrão.
+- **Munição por carregador** com reserva infinita, recarga no R
+  (humano) e recarga automática ao atirar com o carregador vazio.
+- **Recuo por arma**, com teto de acumulação.
+- **Minimapa** no canto superior esquerdo, girando com o jogador e
+  mostrando só quem está no alcance.
+- **Resistência de corpo do lobo**, atravessada por headshot.
+
+### Alterado
+- Alcance da garra aumentado (2,5 → 3,8 no Bruto).
+- WP vira número puro com teto de 5000; HUD direito mostra WP,
+  munição e forma, como na referência.
+- Bots avançam enquanto atiram, em vez de administrar distância, e
+  patrulham puxando para o meio do mapa.
+- Escudo só volta a escorrer 1 segundo depois de ser recarregado.
+- HUD reescrito: esquerda é o corpo, direita é o equipamento.
+
 ## v0.13.1 — 2026-11-11
 
 ### Alterado

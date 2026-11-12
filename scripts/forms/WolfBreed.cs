@@ -33,6 +33,17 @@ public partial class WolfBreed : Resource
     /// <summary>Multiplicador de altura do pulo.</summary>
     [Export] public float JumpMultiplier = 1.4f;
 
+    /// <summary>
+    /// Multiplicador do dano recebido NO CORPO. Abaixo de 1 o lobo é
+    /// mais resistente — é o que faz dele uma ameaça de frente, e não
+    /// só um corpo rápido.
+    ///
+    /// A cabeça não entra: headshot atravessa a resistência inteira.
+    /// Sem essa saída, o humano com rifle não teria resposta nenhuma
+    /// contra um lobo vindo de frente.
+    /// </summary>
+    [Export] public float BodyResistance = 0.65f;
+
     [Export] public float AttackDamage = 120f;
     [Export] public float AttackRange = 2.5f;
     [Export] public float AttackCooldown = 0.8f;
