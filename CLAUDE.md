@@ -89,11 +89,11 @@ granadas mais fortes.
 
    | | Humano | Bruto | Ligeiro |
    |---|---|---|---|
-   | Velocidade | 3,0 | 3,6 (1,2×) | 3,9 (1,3×) |
+   | Velocidade | 3,0 | 3,78 (1,26×) | 4,10 (1,365×) |
    | Pulo | 0,99 m | 1,62 m (1,28×) | 2,50 m (1,59×) |
    | Avanço do pulo correndo | ~2,7 m | ~3,9 m | ~5,0 m |
-   | Agachado | 1,35 | 1,6 | 1,8 |
-   | Na parede | — | 3,6 | 3,9 |
+   | Agachado | 1,35 | 1,70 | 1,84 |
+   | Na parede | — | 3,78 | 4,10 |
 
    **A velocidade do humano é a passada do X Bot**, medida no quadril:
    correr ("run_fwd") anda 3,0 m/s a 1×, andar 1,0, de costas 1,1 e
@@ -110,7 +110,8 @@ granadas mais fortes.
    **A velocidade do lobo é a da passada do Mutant.** A corrida do
    clipe anda 2,42 m/s na escala do jogo; mais rápido que isso ela
    precisa tocar acelerada para o pé não patinar, e a 2,4× (o Bruto a
-   5,7 m/s) ficava corrida. A 3,6 m/s toca a 1,5×, que ainda é fluido.
+   5,7 m/s) ficava corrida. A 3,78 m/s (5% acima dos 3,6 de antes,
+   decisão do Jhon, no chão e na parede) toca a 1,56×, ainda fluido.
    Para o lobo correr mais sem ficar corrido, é preciso um clipe de
    corrida com passada maior, não só o número.
 
@@ -132,7 +133,12 @@ granadas mais fortes.
 
 11. **Agachar vale nas duas formas.** Encolhe a cápsula, baixa o olho
     e corta a velocidade para 45%. Não se agacha na parede — a corrida
-    já é um estado de corpo inteiro.
+    já é um estado de corpo inteiro. **O corpo visto agacha junto**: o
+    humano ajoelha com o fuzil no ombro (da cintura para cima, a pose
+    de mira do parado em pé, `CharacterAnimator.CrouchAim` — agacha e
+    atira, decisão do Jhon; os clipes agachados seguravam a arma na
+    cintura), e o lobo encolhe parado e engatinha andando (veja "Clipes
+    do lobo").
 
 ---
 
@@ -277,6 +283,12 @@ mover. É essa a vulnerabilidade, junto com o dano aumentado.
 A transição **não pode ser cancelada**. Comprometer-se faz parte do
 custo.
 
+**Renasce-se sempre humano** (decisão do Jhon), mesmo morrendo de lobo
+ou no meio da transição: o `FormController` volta para Humano no
+`Respawned`, antes do `Player` e do `Bot` tratarem o renascer (o filho
+fica pronto primeiro, então o sinal chega nele antes). Antes o lobo
+voltava lobo.
+
 Não existe restrição de HP para transformar, e as classes básicas não
 custam WP: dá para transformar sempre.
 
@@ -419,8 +431,16 @@ Duas por vida, reabastece ao renascer. Só na forma humana.
 **Segurar prepara, soltar arremessa** (decisão do Jhon): o ataque com a
 granada na mão a deixa pronta, e ela sai quando o botão solta, na
 direção da mira daquele instante — dá para apontar com calma, mais
-alto para ir mais longe. A física do arremesso não muda (força, arco e
-o embalo de quem corre). O bot arremessa direto.
+alto para ir mais longe. **Enquanto segura, o braço arma o
+arremesso**: na tela a granada sobe e inclina para trás (`ViewModel`);
+no corpo que os outros veem, o clipe "grenade" puxa o braço e para no
+braço armado (1,6 s do clipe), e soltando o resto toca a 2,5× — a mão
+passa na frente logo depois de a granada sair (`CharacterAnimator`).
+O bot arremessa direto.
+
+**Arremesso forte** (decisão do Jhon): 14,5 m/s na mira e 4 para cima
+(era 11 e 3,5), mais o embalo de quem corre. Olhando reto, de pé, cai a
+15,5 m medidos (era ~11).
 
 A granada sabe quem a lançou (`Grenade.Thrower`). Aliado passa ileso,
 dano e atordoamento; quem lançou, não — granada aos próprios pés tem
@@ -661,18 +681,29 @@ dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
 **Botão direito no chão: o salto.** O "jump attack" inteiro — agacha,
 salta, cai. É a arma do lobo para **fechar distância**: aperta-se de
 longe e o lobo cai em cima do humano. O jogador não anda nem pula, mas
-o salto voa: do impulso até os pés tocarem o chão, o corpo vai até as
-garras caírem no alvo, **até 12 m** (`PounceMaxDistance`).
+o salto voa: do impulso até os pés tocarem o chão, o corpo anda a
+distância da carga, **até 12 m** (`PounceMaxDistance`).
 
 **Segurar carrega** (decisão do Jhon). Apertou, o lobo agacha e fica
 encolhido (o clipe para no fim do agachar); soltou, salta. Em 1 s
 (`PounceChargeTime`) a carga enche: o alcance vai de 1,5 m a 12 m e o
-dano de 40% a 100% do cheio. **O ponto mirado é o teto** — para chegar
-no alvo é preciso carregar o bastante; carregar além não passa dele,
-só bate mais forte. Uma barra de força aparece enquanto carrega
-(`ChargeBar`). Cheio, segura mais 0,6 s e salta sozinho. A mira vale
-no instante de soltar. No ar não carrega: o especial no ar é o bote,
-direto.
+dano de 40% a 100% do cheio. Uma barra de força aparece enquanto
+carrega (`ChargeBar`). Cheio, segura mais 0,6 s e salta sozinho. No ar
+não carrega: o especial no ar é o bote, direto.
+
+**A distância é só a da barra** (decisão do Jhon): a mesma carga dá
+sempre o mesmo salto, em linha reta na direção da mira no instante de
+soltar — olhando para o chão ou para o céu, com ou sem inimigo na
+frente. Antes o salto parava no ponto mirado, ia até o inimigo perto
+do centro da tela e seguia o alvo no voo; com alguém na frente, a carga
+cheia ora passava do alcance, ora quase não saía do lugar, e o jogador
+não controlava nada disso. Medido (carga cheia: reto, chão, céu,
+inimigo a 5 m, ao lado, a 14 m): 12,0 m em todos; metade, 7,1 m em
+todos. O que encurta é o mapa, igual para todo mundo: parede, bloco e
+um corpo no caminho (bater em alguém para nele, e o golpe sai ali).
+Acabado o voo, o lobo para onde caiu — o embalo de um voo barrado não
+vira mais um deslize. O bot mira no alvo e escolhe a carga que leva
+até ele (`PounceChargeFor`), com o erro da dificuldade.
 
 **O voo é um arco de verdade, calculado no impulso.** Para a frente, em
 sino (sai devagar, voa, assenta), como o quadril do clipe; para cima,
@@ -683,7 +714,7 @@ chão no caminho a cada 40 cm, com raios de cima para baixo:
   (`PounceMaxClear`): o arco sobe o bastante para os pés passarem
   15 cm acima. Caixote, mureta, contêiner.
 - **Algo no fim do caminho que dá para alcançar vira o lugar de cair**:
-  mirando além de um contêiner perto, o lobo cai **em cima dele**.
+  saltando além de um contêiner perto, o lobo cai **em cima dele**.
 - **O que é mais alto encurta o salto**: diante de um bloco ou do muro,
   o lobo cai antes dele, nunca dentro dele. O ponto de queda também
   recua se cair dentro da quina de algo alto.
@@ -691,24 +722,8 @@ chão no caminho a cada 40 cm, com raios de cima para baixo:
   1,6 m no chão plano.
 - Gente não conta como chão: cair em cima de alguém é o objetivo.
 
-- **Com um inimigo perto do centro da tela** (até 10°,
-  `PounceAimAssist`, à vista e ao alcance), o alvo é ele, escolhido no
-  clique; onde ele está é lido no impulso, 0,32 s depois. O lobo não
-  tem mira na tela, e acertar um corpo a 12 m só com o centro da câmera
-  seria loteria.
-- **Sem ninguém**, o ponto para onde a câmera aponta: chão perto, quase
-  não sai do lugar; céu, os 12 m.
-- **O ponto é o do clique** (decisão do Jhon): virar a câmera ou
-  segurar W durante o agachar não muda a distância nem a direção. O
-  ponto fica guardado no clique e, no impulso, é medido de onde o corpo
-  está.
-- **Durante o voo, o ponto de queda acompanha o alvo** a 3 m/s
-  (`PounceHoming`). O alvo anda até 3 m no 1,1 s do salto, e o golpe
-  errava quem só caminhava; mais devagar que o humano correndo
-  (4,2 m/s), então quem corre de lado desde o começo ainda escapa. O
-  golpe sai na direção do voo, não na do olhar.
-- O ponto sai da câmera do próprio jogador (`Player.AimCamera`), não da
-  câmera que estiver na tela. O
+- A direção sai da câmera do próprio jogador (`Player.AimCamera`), não
+  da câmera que estiver na tela. O
 dano (2,1×) sai **quando o lobo cai**, 1,14 s depois do clique. Preso
 por 2,14 s: forte, mas lento e fácil de ver vindo — a lentidão é o que
 impede que seja a resposta para tudo. O volume é o das garras.
@@ -1642,14 +1657,44 @@ para o lobo. O `mutant_red.fbx` veio do Blender, sem `AnimationPlayer`
 e com o esqueleto dentro de `Armature`: o tocador é criado ao lado do
 esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.
 
-Clipes do lobo: parado, andar e correr misturados pela velocidade, e
+Clipes do lobo: parado num ramo, andar e correr no outro, e o passo
 **no ritmo do corpo**: o clipe toca na razão entre a velocidade do corpo
 e a passada dele, medida no Mutant (andar 1,34 m/s, correr 2,42 m/s, já
-na escala do jogo) — o Bruto a 3,6 m/s corre o clipe a 1,5× e o pé
-apoiado fica parado no chão. Antes ele tocava a 1× até 7 m/s, e o corpo
-andava mais do dobro das pernas. A mistura de andar com correr fica
-numa faixa curta (1,5 a 2,2 m/s): os ciclos têm tamanhos diferentes, e
-misturados o pé patina;
+na escala do jogo; varrido de 2,2 a 3,3 no esqueleto, 2,42 é a de menor
+patinação) — o Bruto a 3,78 m/s corre o clipe a 1,56×. Antes ele tocava
+a 1× até 7 m/s, e o corpo andava mais do dobro das pernas. Só anda até
+2,0 m/s e só corre de 2,6 m/s: nenhuma velocidade do jogo para entre os
+dois (os ciclos têm tamanhos diferentes, e misturados o pé patina).
+
+**O lobo vira para onde anda** (`WolfVisual.UpdateLocomotion`). Só há
+clipes para a frente: de lado (A, D e as diagonais da frente) o modelo
+gira até 90° e anda de frente para onde vai; para trás (S e as
+diagonais de trás) fica de frente e o passo toca **ao contrário**. A
+divisa tem folga (105° a 120°) para não dar meia-volta à toa. Golpe,
+carga do salto, bote, salto e parede voltam o modelo para a mira
+(1400°/s); parado, ele fica virado para onde parou — voltar arrastaria
+os pés sem passo. Medido no pé de apoio: de lado a patinação foi de 5,4
+para 0,85 m/s, para trás de 7,3 para 0,72; para a frente fica em 0,73
+(o pé rolando no apoio). Só a cápsula, a câmera e a mira continuam
+olhando para a frente.
+
+**Parando, o passo congela onde o corpo parou** — o clipe toca na
+velocidade do corpo, que já é zero em 0,08 s — e as pernas se juntam em
+0,22 s (`StopBlend`). Antes a velocidade da animação vinha com atraso e
+um mínimo de 0,6×: o lobo corria no lugar mais um quarto de segundo, os
+pés andando um metro com o corpo parado.
+
+**Agachado** o lobo encolhe, parado, no fim da aterrissagem do "jump
+attack" (1,95 a 2,25 s, indo e voltando): 0,98 m do chão ao topo da
+cabeça, a altura da cápsula agachada (1,0 m). Andando agachado ele
+**engatinha**: o Running Crawl da parede, no chão, na velocidade do
+corpo (1,7 m/s toca a 0,74×), 10 cm mais alto para as mãos não
+entrarem no chão (`CrawlLift`). Antes o lobo agachado continuava de pé,
+a cabeça a 1,7 m — fora da cápsula, e o tiro passava por cima do que se
+via. Testado e descartado: misturar a pose agachada no andar (o pé de
+apoio patinava 0,9 a 1,4 m/s em qualquer passada) e pôr só no tronco (a
+cabeça ficava a 1,58 m). Um clipe de andar agachado do Mixamo aplicado
+no Mutant resolveria melhor que o engatinhar;
 as garradas e o rugido **da cintura para cima**; o salto e o bote no
 corpo inteiro; **o pulo**, só o voo do "mutant jumping", tocado pela
 velocidade vertical (o agachar do clipe fica de fora: a física sai do

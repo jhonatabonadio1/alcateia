@@ -1,5 +1,34 @@
 # Changelog
 
+## v0.26.10 — 2026-11-12
+
+### Adicionado
+- **Lobo agachado de verdade:** parado, encolhe (0,98 m, a altura da
+  cápsula agachada); andando, engatinha. Antes ele continuava em pé
+  com a cabeça fora da própria cápsula.
+- **Humano agachado mira com o fuzil no ombro**, como de pé (antes o
+  tiro saía com a arma baixa, na cintura).
+- **Granada armada:** segurando o botão, o braço vai para trás (na mão
+  da tela e no corpo que os outros veem); soltou, arremessa.
+
+### Mudado
+- **Salto carregado com distância fixa pela barra** (1,5 a 12 m), com
+  ou sem inimigo na frente, olhando para onde for: sai na direção da
+  mira e não persegue ninguém no voo. Só parede e bloco encurtam.
+- **Lobo 5% mais rápido** no chão e na parede (Bruto 3,78 m/s, Ligeiro
+  4,1).
+- **Granada mais forte:** olhando reto cai a ~16 m (era 11).
+- **Lobo vira para onde anda:** de lado ele vira e anda de frente; para
+  trás fica de frente e o passo toca ao contrário. A patinação dos pés
+  caiu de 5,4 para 0,85 m/s de lado e de 7,3 para 0,72 para trás.
+- **Lobo parando:** o passo congela onde parou e as pernas se juntam em
+  0,2 s; antes ele corria no lugar mais um quarto de segundo.
+
+### Corrigido
+- **Renascer sempre como humano**, mesmo morrendo de lobo.
+- **Salto que mudava sozinho com inimigo na frente**: ia até o inimigo
+  e passava do alcance da barra.
+
 ## v0.26.9 — 2026-11-12
 
 ### Adicionado
