@@ -126,11 +126,11 @@ public partial class CharacterAnimator : Node3D
     /// <summary>
     /// Esconder o corpo humano quando o dono vira lobo.
     ///
-    /// Desligado por enquanto: o lobo ainda não tem corpo próprio, e
-    /// sem isto ele vira um par de braços flutuando. Ligar no dia em
-    /// que existir um quadrúpede animado.
+    /// Ligado desde que o lobo tem corpo próprio (o Mutant, em
+    /// <see cref="WolfVisual"/>). Desligado, o soldado aparece por
+    /// dentro do lobo — braço e arma atravessando a pele.
     /// </summary>
-    [Export] public bool HideInWolfForm = false;
+    [Export] public bool HideInWolfForm = true;
 
     /// <summary>
     /// Tempo mínimo entre dois esticões de dano.

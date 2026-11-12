@@ -32,6 +32,8 @@
 - Tecla B: soltar a arma. O Enter de recomeçar saiu do mapa de teclas.
 
 ### Corrigido
+- O soldado aparecia por dentro do lobo: o corpo humano agora some na
+  forma lobo (`CharacterAnimator.HideInWolfForm` ligado).
 - Aviso do Godot 4.7 sobre ponto de mistura sem nome nas animações.
 
 ## v0.24.0 — 2026-11-12
