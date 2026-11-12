@@ -1,5 +1,39 @@
 # Changelog
 
+## v0.25.0 — 2026-11-12
+
+### Adicionado
+- **A arma escolhida na mão.** Cada arma tem modelo 3D próprio
+  (`WeaponModel`): M16A2 com a alça, AK-47 com madeira e carregador
+  curvo, SG-552 compacta, UMP-45 quadrada, M3 com o tubo, M9, faca e
+  granada. Aparece na sua mão, na dos outros e no chão.
+- **Recarga animada.** Primeira pessoa: a arma inclina, o carregador
+  sai e volta, e ela endireita; a escopeta empurra cartucho por
+  cartucho. Terceira pessoa: o clipe `reload` só da cintura para cima,
+  sem parar as pernas. As duas seguem o tempo de recarga da arma.
+- **Os outros seguram a arma deles** (`HeldWeapon`), presa na mão
+  direita e apontando para a esquerda; troca junto com o slot.
+- **Soltar e pegar armas, como no CS.** B joga a arma da mão para
+  frente e passa para a próxima. Morto em forma humana deixa a arma
+  cair. Passar por cima pega, se o espaço da arma estiver vazio. A arma
+  no chão some em 30 s; no máximo 20 no mapa.
+- **Personagens por time:** Exo Gray no azul e Ely (K. Atienza) no
+  laranja, no lugar do boneco xbot.
+- **Lobo de verdade:** o Mutant do Mixamo (um por time, o vermelho no
+  laranja), animado com o Creature Pack — parado, andar, correr, pulo,
+  garrada, patada, bote, rugido no R, transformação e morte.
+- A vitrine da loja e do inventário mostra o Exo Gray e o Mutant.
+- **Sair do jogo** no canto direito do topo do lobby, com confirmação.
+- HUD: "Pegou: AK-47" e "Soltou: AK-47"; o slot sem arma fica apagado.
+
+### Mudado
+- **O uivo (R) toca o mesmo som da transformação**, decisão do Jhon.
+  O uivo sintetizado (`lobo_uivo`) saiu.
+- Tecla B: soltar a arma. O Enter de recomeçar saiu do mapa de teclas.
+
+### Corrigido
+- Aviso do Godot 4.7 sobre ponto de mistura sem nome nas animações.
+
 ## v0.24.0 — 2026-11-12
 
 Interface nova inteira, seguindo o guia `docs/UI.md`. Escopo combinado:

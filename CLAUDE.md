@@ -121,6 +121,11 @@ Couraçado, Espectro, Detonador, Congelante, Arcano.
 entra com licença que permita uso comercial, e com a linha dele nos
 créditos no mesmo commit.
 
+Personagens e animações vêm do **Mixamo** (Adobe): uso livre em jogo,
+inclusive comercial, mas **não** se redistribui o arquivo cru como
+asset. Se o repositório um dia for público, os `.fbx` do Mixamo
+precisam sair dele.
+
 As fontes Barlow e Barlow Condensed (`assets/fonts/`) são **SIL OFL
 1.1**: uso comercial livre, e a licença vai junto (`OFL.txt`). Não
 venda a fonte sozinha nem distribua com outro nome.
@@ -266,6 +271,7 @@ export `RefillOnTransform`, desligado por padrão.
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
 | R | Rugir segurando (lobo) · recarregar (humano) |
+| B | Soltar a arma da mão: cai à frente, e você passa para a próxima |
 | Esc | Menu da partida (continuar, opções, controles, reiniciar, sair para a sala, sair do jogo) — **não pausa** |
 | Tab (segurar) | Placar da partida |
 | 1 a 4 na tela de respawn | Escolhe o conjunto |
@@ -561,11 +567,11 @@ ponto de impacto no clique e não controla mais nada até aterrissar.
 A condição de estar no ar amarra o golpe mais forte do lobo ao salto,
 que é a jogada que o jogo quer premiar. Errar custa o dobro do tempo.
 
-**Os braços do lobo ficam no corpo, não na câmera.** A forma é em
-terceira pessoa: o dono precisa ver os próprios braços e os outros
-precisam reconhecer a silhueta de longe. Numa luta rápida ninguém lê
-textura — o que separa um lobo de um humano a trinta metros é o
-contorno.
+**O lobo é um corpo inteiro, em terceira pessoa** (`WolfVisual`, com o
+Mutant do Mixamo — veja "Personagens"). O dono vê o próprio lobo e os
+outros reconhecem a silhueta de longe: curvado, largo, braços
+compridos. Numa luta rápida ninguém lê textura — o que separa um lobo
+de um humano a trinta metros é o contorno.
 
 ### O escudo do lobo
 
@@ -634,7 +640,8 @@ Três peças de código, e a lista de arquivos em `assets/audio/LEIA-ME.md`:
   um arquivo por vez, sem tocar em código.
 - `scripts/visual/WorldAudio.cs` (um por cena de jogo) **escuta o
   NoiseBus** e toca passo, pouso, tiro, uivo e explosão no ponto e no
-  raio do ruído. Não existe som de mundo que não seja ruído: é assim que
+  raio do ruído. **O uivo usa o mesmo som da transformação**
+  (`lobo_transformar`), decisão do Jhon — `WorldAudio.HowlSound`. Não existe som de mundo que não seja ruído: é assim que
   a regra acima se mantém sozinha.
 - `scripts/visual/CombatantAudio.cs` (filho de Player e Bot) toca o
   que não é ruído — transformação, garra, recarga, dor, morte — com
@@ -833,8 +840,6 @@ depende de navmesh, e navmesh depende de um mapa de verdade.
 Veja `CHANGELOG.md` para o que já entrou.
 
 **Fase 1 — falta:**
-- **Uivo de verdade.** O `lobo_uivo` atual é sintetizado, provisório.
-  Os outros sons já são gravações (`assets/audio/CREDITOS.md`).
 - **Tela de créditos**, antes de qualquer publicação: o Oculus Audio
   Pack é CC BY 4.0.
 - Rodar os quatro testes de validação do `docs/ARSENAL.md` (duelos,
@@ -1321,6 +1326,72 @@ falso no quadro seguinte, porque não existe chão para quem não colide,
 e a gravidade voltava a puxar o corpo através do mapa.
 
 ---
+
+## Armas na mão, soltar e pegar
+
+**Cada arma tem o seu modelo** (`scripts/visual/WeaponModel.cs`),
+montado com caixas e cilindros: a alça do M16, a madeira e o carregador
+curvo da AK, o tubo da M3. O mesmo modelo aparece em três lugares —
+na sua mão (`ViewModel`), na mão dos outros (`HeldWeapon`) e no chão
+(`WeaponPickup`) —, então a AK caída é a mesma AK que o inimigo
+segurava. Arma nova precisa de um caso em `WeaponModel.Build`; sem
+ele, aparece um fuzil genérico.
+
+**Recarga animada.** Em primeira pessoa a arma inclina, o carregador
+sai por baixo e volta, e ela endireita; na escopeta cada cartucho é um
+empurrão. Em terceira pessoa o clipe `reload` do Mixamo toca **só da
+cintura para cima** (disparo único filtrado nos ossos do tronco e dos
+braços), então quem recarrega correndo continua correndo. As duas
+seguem o relógio da arma (`Weapon.ReloadProgress`): recarga vazia, mais
+longa, dura mais na tela também.
+
+**A arma na mão dos outros sem calibrar osso.** As animações são de
+fuzil, com a mão direita no punho e a esquerda no guarda-mão: a arma
+vai na mão direita apontando para a esquerda. Na recarga a mão
+esquerda sai para buscar o carregador, então a arma congela a relação
+com a mão direita do último quadro bom e só a acompanha.
+
+**Soltar e pegar, como no CS:**
+
+- **B** joga a arma da mão para frente. Da primária você vai para a
+  secundária; da secundária, para a faca. Faca e granada não se soltam.
+- **Morto em forma humana deixa cair** a primária (ou a pistola, se só
+  tinha ela), com o pente como estava. Lobo não deixa nada. Quem
+  morreu não perde o que tinha: renasce com o conjunto que escolher.
+- **Passar por cima pega** — só se o espaço daquela arma estiver
+  vazio. Para trocar, solte a sua primeiro. Pegar uma primária põe na
+  mão; pegar uma pistola com a primária na mão, não.
+- Quem soltou não pega de volta no primeiro 1,2 s. A arma no chão some
+  em 30 s, e o mapa guarda no máximo 20.
+- A arma no chão é uma **área, não um corpo rígido**: o voo é feito à
+  mão, com raio de quadro em quadro. Corpo rígido viraria obstáculo
+  para o tiro, para a visão do bot e para a câmera do lobo.
+
+## Personagens
+
+Todos do Mixamo, com o mesmo esqueleto `mixamorig` — por isso os
+clipes servem para todos sem conversão.
+
+| Quem | Arquivo | Animações |
+|---|---|---|
+| Humano, time azul | `assets/characters/human/exo_gray.fbx` (Exo Gray) | os clipes de `assets/characters/human/` |
+| Humano, time laranja | `assets/characters/human/ely.fbx` (Ely, de K. Atienza) | os mesmos |
+| Lobo, time azul | `assets/characters/wolf/mutant.fbx` | Creature Pack, em `assets/characters/wolf/` |
+| Lobo, time laranja | `assets/characters/wolf/mutant_red.fbx` | os mesmos |
+
+O `CharacterAnimator` troca o `xbot` da cena pelo personagem do time
+antes de carregar os clipes (`BlueModel`, `OrangeModel`); com
+personagem próprio o corpo não é pintado. O `WolfVisual` faz o mesmo
+para o lobo. O `mutant_red.fbx` veio do Blender, sem `AnimationPlayer`
+e com o esqueleto dentro de `Armature`: o tocador é criado ao lado do
+esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.
+
+Clipes do lobo: parado, andar e correr misturados pela velocidade; o
+pulo no ar; garrada, patada e transformação **da cintura para cima**;
+bote no corpo inteiro; o rugido enquanto segura R; a morte.
+
+Texturas embutidas nos `.fbx` são extraídas pelo Godot na importação
+(`exo_gray_0.png`...) e ficam fora do git: cada máquina gera as suas.
 
 ## Fora da partida: perfil, patentes, loja e missões
 

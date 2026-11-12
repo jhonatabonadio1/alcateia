@@ -124,7 +124,8 @@ alcateia/
     ├── lobby/             as telas do lobby (LobbyShell e uma por tela)
     ├── ui/                HUD, placar, resultado, respawn, Esc, minimapa
     │   └── kit/           tokens, tema e componentes de interface
-    ├── visual/            animação e áudio dos personagens
+    ├── visual/            animação e áudio dos personagens, modelo das
+    │                      armas (WeaponModel) e a arma na mão (HeldWeapon)
     ├── net/               rede — dormente até a Fase 2
     └── debug/             peças descartáveis
 ```
@@ -306,6 +307,7 @@ aplica. É o lugar que vai virar servidor na Fase 2.
 ```
 Health.Died
   ├─ Player.OnDied / Bot.OnDied   câmera, estado, zera recuo
+  ├─ Weapon.OnDied                humano: a arma cai no chão (WeaponPickup)
   ├─ CharacterAnimator            animação de morte, depois some aos poucos
   ├─ Hud                          "ABATIDO por X com Y" (KillFeed.HowDied)
   └─ LoadoutMenu (só o jogador)   abre a tela de respawn (5 s), com a
@@ -509,13 +511,31 @@ só passe o valor final para o gerador depois.
    `Id`, `DisplayName`, `Class`, `WpCost` e os números. Rode o gerador.
 2. Em `scripts/combat/Arsenal.cs`, ponha o id em `Primaries` ou
    `Secondaries`.
-3. Pronto: aparece no inventário, no editor de conjuntos e no catálogo.
+3. Em `scripts/visual/WeaponModel.cs`, acrescente o caso da arma em
+   `Build` — o modelo 3D que aparece na sua mão, na dos outros e no
+   chão. Sem ele, aparece um fuzil genérico. Ponha um nó `Muzzle` na
+   boca do cano e, se tiver carregador, um `Magazine` (a recarga tira e
+   põe esse nó).
+4. Para a loja: um item em `scripts/meta/Catalog.cs` e a silhueta 2D em
+   `scripts/ui/kit/WeaponArt.cs`.
+5. Pronto: aparece no inventário, no editor de conjuntos e no catálogo.
    Se não aparecer num perfil já salvo, confira o `Profile.Repair` —
    ou apague o `perfil.json`.
 
 Se a arma precisa de um comportamento novo (rajada, mira telescópica),
 o campo vai em `WeaponDefinition.cs` e o comportamento em
 `Weapon.Shoot()`/`TryAttack()`.
+
+### Trocar um personagem ou uma animação
+
+- **Personagem de um time:** ponha o `.fbx` do Mixamo em
+  `assets/characters/human/` (humano) ou `assets/characters/wolf/`
+  (lobo) e aponte `BlueModel`/`OrangeModel` no `CharacterAnimator` ou
+  no `WolfVisual`. Precisa ter o esqueleto `mixamorig` — todo
+  personagem baixado do Mixamo tem.
+- **Animação:** baixe do Mixamo "without skin" e salve com o nome do
+  clipe que ela substitui (`run_fwd.fbx`, `wolf/claw.fbx`...). Clipe que
+  falta é pulado sem erro.
 
 ### Ajustar movimento, pulo, lobo
 
