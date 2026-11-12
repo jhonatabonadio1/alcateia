@@ -9,24 +9,28 @@ using Godot;
 /// dentro, nem a luz da vitrine vaza para fora. Arrastar com o mouse
 /// gira o modelo.
 ///
-/// O lobo ainda não tem modelo: a vitrine mostra o corpo do humano maior
-/// e na cor da pelagem — o mesmo provisório que a partida usa.
+/// Os mesmos corpos da partida: o soldado do time azul (Exo Gray) e o
+/// lobo (Mutant), cada um com o seu clipe de parado.
 /// </summary>
 public partial class CharacterPreview : SubViewportContainer
 {
-    private const string ModelPath = "res://assets/characters/human/xbot.fbx";
-    private const string IdlePath = "res://assets/characters/human/idle_rifle.fbx";
+    private const string HumanPath = "res://assets/characters/human/exo_gray.fbx";
+    private const string HumanFallback = "res://assets/characters/human/xbot.fbx";
+    private const string HumanIdle = "res://assets/characters/human/idle_rifle.fbx";
+    private const string WolfPath = "res://assets/characters/wolf/mutant.fbx";
+    private const string WolfIdle = "res://assets/characters/wolf/idle.fbx";
 
     private SubViewport _viewport;
     private Node3D _pivot;
-    private Node3D _model;
+    private Node3D _human;
+    private Node3D _wolfModel;
     private bool _wolf;
     private bool _dragging;
 
     public bool Wolf
     {
         get => _wolf;
-        set { _wolf = value; Paint(); }
+        set { _wolf = value; ShowForm(); }
     }
 
     public override void _Ready()
@@ -75,14 +79,10 @@ public partial class CharacterPreview : SubViewportContainer
         _pivot = new Node3D();
         _viewport.AddChild(_pivot);
 
-        if (ResourceLoader.Exists(ModelPath))
-        {
-            _model = GD.Load<PackedScene>(ModelPath).Instantiate<Node3D>();
-            _pivot.AddChild(_model);
-            PlayIdle();
-        }
+        _human = Load(ResourceLoader.Exists(HumanPath) ? HumanPath : HumanFallback, HumanIdle, 1f);
+        _wolfModel = Load(WolfPath, WolfIdle, 1.0f);
 
-        Paint();
+        ShowForm();
     }
 
     public override void _Process(double delta)
@@ -134,63 +134,38 @@ public partial class CharacterPreview : SubViewportContainer
         return root;
     }
 
-    /// <summary>A animação de parado vem de outro arquivo do Mixamo; é a
-    /// mesma escolha que o CharacterAnimator faz (o clipe "mixamo").</summary>
-    private void PlayIdle()
+    /// <summary>Um corpo com o clipe de parado em laço. O clipe vem de
+    /// outro arquivo do Mixamo, escolhido como o CharacterAnimator escolhe.</summary>
+    private Node3D Load(string modelPath, string idlePath, float scale)
     {
-        AnimationPlayer player = Find<AnimationPlayer>(_model);
-        if (player == null || !ResourceLoader.Exists(IdlePath)) return;
+        if (!ResourceLoader.Exists(modelPath)) return null;
 
-        Node temp = GD.Load<PackedScene>(IdlePath).Instantiate();
-        AnimationPlayer source = Find<AnimationPlayer>(temp);
-        Animation idle = null;
+        var model = GD.Load<PackedScene>(modelPath).Instantiate<Node3D>();
+        model.Scale = Vector3.One * scale;
+        _pivot.AddChild(model);
 
-        if (source != null)
-        {
-            foreach (StringName name in source.GetAnimationList())
-            {
-                Animation candidate = source.GetAnimation(name);
-                if (idle == null || name.ToString().ToLowerInvariant().Contains("mixamo")) idle = candidate;
-            }
-        }
+        AnimationPlayer player = Find<AnimationPlayer>(model);
+        if (player == null || !ResourceLoader.Exists(idlePath)) return model;
 
-        temp.QueueFree();
-        if (idle == null) return;
+        Node temp = GD.Load<PackedScene>(idlePath).Instantiate();
+        Animation idle = CharacterAnimator.TakeAnimation(Find<AnimationPlayer>(temp), "idle", false);
+        temp.Free();
+        if (idle == null) return model;
 
-        idle = (Animation)idle.Duplicate();
+        CharacterAnimator.StripRootMotion(idle);
         idle.LoopMode = Animation.LoopModeEnum.Linear;
 
         var library = new AnimationLibrary();
         library.AddAnimation("idle", idle);
         player.AddAnimationLibrary("vitrine", library);
         player.Play("vitrine/idle");
+        return model;
     }
 
-    private void Paint()
+    private void ShowForm()
     {
-        if (_model == null) return;
-
-        Color body = _wolf ? new Color("3a3029") : new Color("4f5b6b");
-        Color joints = _wolf ? new Color("1b1613") : new Color("2b313b");
-        _pivot.Scale = Vector3.One * (_wolf ? 1.12f : 1f);
-
-        Apply(_model);
-
-        void Apply(Node node)
-        {
-            if (node is MeshInstance3D mesh && mesh.Mesh != null)
-            {
-                bool isJoint = mesh.Name.ToString().ToLowerInvariant().Contains("joint");
-                mesh.MaterialOverride = new StandardMaterial3D
-                {
-                    AlbedoColor = isJoint ? joints : body,
-                    Roughness = _wolf ? 0.95f : 0.55f,
-                    Metallic = _wolf ? 0f : 0.25f
-                };
-            }
-
-            foreach (Node child in node.GetChildren()) Apply(child);
-        }
+        if (_human != null) _human.Visible = !_wolf;
+        if (_wolfModel != null) _wolfModel.Visible = _wolf;
     }
 
     private static T Find<T>(Node node) where T : Node

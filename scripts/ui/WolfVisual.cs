@@ -1,128 +1,423 @@
 using Godot;
+using System.Collections.Generic;
 
 /// <summary>
-/// Braços e garras do lobo, presos ao corpo.
+/// O corpo do lobo: o Mutant do Mixamo, animado com o Creature Pack.
+/// Cada time tem o seu — o azul usa <c>mutant.fbx</c>, o laranja
+/// <c>mutant_red.fbx</c> (decisão do Jhon).
 ///
-/// Ficam no corpo e não na câmera porque a forma lobo é em terceira
-/// pessoa: o dono precisa ver os próprios braços, e os outros
-/// jogadores precisam reconhecer a silhueta de longe.
+/// Fica no corpo e não na câmera porque a forma lobo é em terceira
+/// pessoa: o dono vê o próprio lobo, e os outros reconhecem a silhueta
+/// de longe — curvado, largo, braços compridos. Numa luta rápida
+/// ninguém lê textura; o contorno é o que separa lobo de humano a
+/// trinta metros.
 ///
-/// Silhueta é o ponto. Numa luta rápida ninguém lê textura — o que
-/// diferencia um lobo de um humano a trinta metros é o contorno.
-/// Por isso os braços são largos, abertos e escuros contra o corpo.
+/// Mesma regra do <see cref="CharacterAnimator"/>: **lê** estado e
+/// nunca decide. A velocidade escolhe entre parado, andando e correndo;
+/// o chão escolhe o pulo; os sinais da arma disparam a garrada, a
+/// patada e o bote; o uivo (R) toca o rugido; virar lobo toca o
+/// "flexionar" do bicho.
+///
+/// | Clipe | Arquivo do pack | Quando |
+/// |---|---|---|
+/// | idle | mutant breathing idle | parado |
+/// | walk / run | mutant walking / run | andando, correndo |
+/// | jump | mutant jumping | no ar |
+/// | claw | mutant swiping | garrada (clique) |
+/// | heavy | mutant punch | patada (direito no chão) |
+/// | leap | mutant jump attack | bote (direito no ar) |
+/// | howl | mutant roaring | uivando (R) |
+/// | transform | mutant flexing muscles | acabou de virar lobo |
+/// | death | mutant dying | morreu de lobo |
+///
+/// Golpes e rugido só mexem da cintura para cima: o lobo continua
+/// correndo enquanto bate.
 /// </summary>
 public partial class WolfVisual : Node3D
 {
-    [Export] public Color FurColor = new Color(0.17f, 0.15f, 0.17f);
-    [Export] public Color ClawColor = new Color(0.78f, 0.76f, 0.72f);
+    [Export(PropertyHint.File, "*.fbx,*.glb,*.tscn")]
+    public string BlueModel = "res://assets/characters/wolf/mutant.fbx";
 
-    /// <summary>Balanço dos braços ao correr.</summary>
-    [Export] public float SwingAmount = 0.35f;
-    [Export] public float SwingSpeed = 8f;
+    [Export(PropertyHint.File, "*.fbx,*.glb,*.tscn")]
+    public string OrangeModel = "res://assets/characters/wolf/mutant_red.fbx";
 
-    /// <summary>Abertura dos braços ao atacar.</summary>
-    [Export] public float StrikeAmount = 1.1f;
-    [Export] public float StrikeRecover = 6f;
+    [Export(PropertyHint.Dir)]
+    public string ClipFolder = "res://assets/characters/wolf";
+
+    /// <summary>O Mutant tem 1,86 m; o lobo fica um pouco maior que
+    /// um homem.</summary>
+    [Export] public float ModelScale = 1.1f;
+
+    /// <summary>Mixamo olha para +Z; o corpo, para −Z.</summary>
+    [Export] public float ModelYaw = 180f;
+
+    /// <summary>Velocidades dos clipes de andar e correr, em m/s. Acima
+    /// da corrida o clipe acelera junto.</summary>
+    [Export] public float WalkSpeed = 2.4f;
+    [Export] public float RunSpeed = 7f;
+
+    /// <summary>Quanto da cor do time entra na pele — só quando os dois
+    /// times usam o mesmo modelo. Com um modelo por time, a pele já diz
+    /// o lado.</summary>
+    [Export(PropertyHint.Range, "0,1")] public float TeamTint = 0.3f;
+
+    [Export] public bool Debug;
+
+    private static readonly string[] Clips =
+        { "idle", "walk", "run", "jump", "claw", "heavy", "leap", "howl", "transform", "death" };
 
     private FormController _form;
     private Weapon _weapon;
+    private Health _health;
     private CharacterBody3D _body;
+    private Player _player;
+    private Bot _bot;
 
-    private Node3D _left;
-    private Node3D _right;
+    private Node3D _model;
+    private AnimationPlayer _anims;
+    private AnimationTree _tree;
+    private AnimationNodeStateMachinePlayback _playback;
+    private readonly Dictionary<string, float> _lengths = new();
 
-    private float _swing;
-
-    /// <summary>Força do golpe de cada braço, separada: é a
-    /// alternância que faz o combo parecer uma sequência de patadas em
-    /// vez de um corpo pulsando.</summary>
-    private float _strikeLeft;
-    private float _strikeRight;
-
-    private bool _nextIsLeft;
+    private bool _sharedModel = true;
+    private float _speed;
+    private bool _airborne;
+    private bool _dead;
+    private bool _howling;
+    private double _deadTimer;
 
     public override void _Ready()
     {
         _body = GetParent<CharacterBody3D>();
         _form = _body.GetNode<FormController>("FormController");
         _weapon = _body.GetNode<Weapon>("Weapon");
+        _health = _body.GetNodeOrNull<Health>("Health");
+        _player = _body as Player;
+        _bot = _body as Bot;
 
-        _left = BuildArm(-1);
-        _right = BuildArm(1);
+        if (!BuildModel()) return;
 
-        _form.FormChanged += _ => Refresh();
-        _weapon.Fired += OnFired;
+        _form.FormChanged += OnFormChanged;
+        _weapon.AttackCooldown += OnAttack;
+        if (_health != null)
+        {
+            _health.Died += _ => OnDied();
+            _health.Respawned += OnRespawned;
+        }
 
-        Refresh();
+        Visible = _form.IsWolf;
     }
+
+    // ================================================================== montagem
+
+    private bool BuildModel()
+    {
+        bool orange = _health != null && _health.Team == Teams.Orange;
+        string path = orange && ResourceLoader.Exists(OrangeModel) ? OrangeModel : BlueModel;
+        _sharedModel = !ResourceLoader.Exists(OrangeModel) || OrangeModel == BlueModel;
+
+        if (!ResourceLoader.Exists(path) || GD.Load<PackedScene>(path)?.Instantiate() is not Node3D model)
+        {
+            GD.PrintErr($"WolfVisual: modelo do lobo não encontrado em {path}.");
+            return false;
+        }
+
+        _model = model;
+        _model.Scale = Vector3.One * ModelScale;
+        _model.RotationDegrees = new Vector3(0, ModelYaw, 0);
+        AddChild(_model);
+
+        _anims = CharacterAnimator.FindPlayer(_model);
+
+        // Modelo exportado de outro programa (o Mutant vermelho veio do
+        // Blender) chega sem AnimationPlayer e com o esqueleto dentro de
+        // "Armature". Os clipes apontam para "Skeleton3D:osso", então o
+        // tocador nasce ao lado do esqueleto, onde esse caminho existe.
+        if (_anims == null)
+        {
+            Skeleton3D skeleton = FindSkeleton(_model);
+            if (skeleton == null)
+            {
+                GD.PrintErr("WolfVisual: o modelo do lobo não tem esqueleto.");
+                return false;
+            }
+
+            _anims = new AnimationPlayer { Name = "AnimationPlayer" };
+            skeleton.GetParent().AddChild(_anims);
+        }
+
+        LoadClips();
+        ApplyTeamTint();
+        BuildTree();
+        return true;
+    }
+
+    private void LoadClips()
+    {
+        var library = new AnimationLibrary();
+
+        foreach (string clip in Clips)
+        {
+            string path = $"{ClipFolder}/{clip}.fbx";
+            if (!ResourceLoader.Exists(path)) continue;
+
+            Node temp = GD.Load<PackedScene>(path)?.Instantiate();
+            if (temp == null) continue;
+
+            Animation animation = CharacterAnimator.TakeAnimation(CharacterAnimator.FindPlayer(temp), clip, Debug);
+            temp.Free();
+            if (animation == null) continue;
+
+            CharacterAnimator.StripRootMotion(animation);
+            animation.LoopMode = clip is "idle" or "walk" or "run" or "howl"
+                ? Animation.LoopModeEnum.Linear
+                : Animation.LoopModeEnum.None;
+
+            library.AddAnimation(clip, animation);
+            _lengths[clip] = (float)animation.Length;
+        }
+
+        _anims.AddAnimationLibrary("lobo", library);
+    }
+
+    private bool Has(string clip) => _lengths.ContainsKey(clip);
+
+    private static Skeleton3D FindSkeleton(Node node)
+    {
+        if (node is Skeleton3D skeleton) return skeleton;
+        foreach (Node child in node.GetChildren())
+        {
+            Skeleton3D found = FindSkeleton(child);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Máquina de estados para o corpo inteiro (locomoção, ar, uivo,
+    /// morte) e três disparos por cima, só da cintura para cima:
+    /// golpe, transformação e bote (este no corpo inteiro).
+    /// </summary>
+    private void BuildTree()
+    {
+        var locomotion = new AnimationNodeBlendSpace1D { MinSpace = 0f, MaxSpace = 2f };
+        locomotion.Set("sync", true);
+        if (Has("idle")) locomotion.AddBlendPoint(Clip("idle"), 0f, -1, "idle");
+        if (Has("walk")) locomotion.AddBlendPoint(Clip("walk"), 1f, -1, "walk");
+        if (Has("run")) locomotion.AddBlendPoint(Clip("run"), 2f, -1, "run");
+
+        var locoSpeed = new AnimationNodeBlendTree();
+        locoSpeed.AddNode("Blend", locomotion, Vector2.Zero);
+        locoSpeed.AddNode("Speed", new AnimationNodeTimeScale(), new Vector2(200, 0));
+        locoSpeed.ConnectNode("Speed", 0, "Blend");
+        locoSpeed.ConnectNode("output", 0, "Speed");
+
+        var machine = new AnimationNodeStateMachine();
+        machine.AddNode("Locomotion", locoSpeed, new Vector2(200, 100));
+        if (Has("jump")) machine.AddNode("Air", Clip("jump"), new Vector2(400, 0));
+        if (Has("howl")) machine.AddNode("Howl", Clip("howl"), new Vector2(400, 200));
+        if (Has("death")) machine.AddNode("Death", Clip("death"), new Vector2(600, 100));
+
+        Link(machine, "Locomotion", "Air");
+        Link(machine, "Air", "Locomotion");
+        Link(machine, "Locomotion", "Howl");
+        Link(machine, "Howl", "Locomotion");
+        foreach (string from in new[] { "Locomotion", "Air", "Howl" })
+            Link(machine, from, "Death");
+        Link(machine, "Death", "Locomotion");
+
+        var root = new AnimationNodeBlendTree();
+        root.AddNode("Machine", machine, Vector2.Zero);
+        string last = "Machine";
+
+        // Cada disparo recebe o anterior como base e põe o golpe por cima.
+        foreach (string shot in new[] { "claw", "heavy", "transform", "leap" })
+        {
+            if (!Has(shot)) continue;
+
+            var oneShot = new AnimationNodeOneShot
+            {
+                FadeInTime = 0.08f,
+                FadeOutTime = 0.2f,
+                FilterEnabled = shot != "leap"
+            };
+
+            if (shot != "leap")
+            {
+                Animation clip = _anims.GetAnimation($"lobo/{shot}");
+                for (int t = 0; t < clip.GetTrackCount(); t++)
+                {
+                    NodePath path = clip.TrackGetPath(t);
+                    if (UpperBody(path.ToString())) oneShot.SetFilterPath(path, true);
+                }
+            }
+
+            string name = Cap(shot);
+            root.AddNode($"{name}Clip", Clip(shot), Vector2.Zero);
+            root.AddNode($"{name}Speed", new AnimationNodeTimeScale(), Vector2.Zero);
+            root.AddNode(name, oneShot, Vector2.Zero);
+            root.ConnectNode($"{name}Speed", 0, $"{name}Clip");
+            root.ConnectNode(name, 0, last);
+            root.ConnectNode(name, 1, $"{name}Speed");
+            last = name;
+        }
+
+        root.ConnectNode("output", 0, last);
+
+        _tree = new AnimationTree { TreeRoot = root };
+        _model.AddChild(_tree);
+        _tree.AnimPlayer = _tree.GetPathTo(_anims);
+        _tree.Active = true;
+
+        _playback = (AnimationNodeStateMachinePlayback)_tree.Get("parameters/Machine/playback");
+        _playback?.Start("Locomotion");
+    }
+
+    private static AnimationNodeAnimation Clip(string clip) => new() { Animation = $"lobo/{clip}" };
+
+    private static string Cap(string s) => char.ToUpperInvariant(s[0]) + s[1..];
+
+    private static bool UpperBody(string path)
+    {
+        int colon = path.LastIndexOf(':');
+        string bone = colon >= 0 ? path[(colon + 1)..] : path;
+        return bone.Contains("Spine") || bone.Contains("Neck") || bone.Contains("Head")
+            || bone.Contains("Shoulder") || bone.Contains("Arm") || bone.Contains("Hand");
+    }
+
+    private static void Link(AnimationNodeStateMachine machine, string from, string to)
+    {
+        if (!machine.HasNode(from) || !machine.HasNode(to)) return;
+        machine.AddTransition(from, to, new AnimationNodeStateMachineTransition { XfadeTime = 0.15f });
+    }
+
+    /// <summary>
+    /// Um toque da cor do time na pele. O material é duplicado: vem da
+    /// importação e é um só para todos os lobos, e pintar o original
+    /// pintaria o lobo azul e o laranja da mesma cor.
+    /// </summary>
+    private void ApplyTeamTint()
+    {
+        if (_health == null || TeamTint <= 0 || !_sharedModel) return;
+
+        Color team = Teams.ColorOf(_health.Team);
+        Color tint = Colors.White.Lerp(team, TeamTint);
+
+        foreach (Node node in _model.FindChildren("*", nameof(MeshInstance3D), true, false))
+        {
+            if (node is not MeshInstance3D mesh || mesh.Mesh == null) continue;
+
+            for (int surface = 0; surface < mesh.Mesh.GetSurfaceCount(); surface++)
+            {
+                if (mesh.GetActiveMaterial(surface) is not BaseMaterial3D source) continue;
+
+                var copy = (BaseMaterial3D)source.Duplicate();
+                copy.AlbedoColor = source.AlbedoColor * tint;
+                mesh.SetSurfaceOverrideMaterial(surface, copy);
+            }
+        }
+    }
+
+    // ================================================================== estado
 
     public override void _Process(double delta)
     {
-        if (!Visible) return;
+        if (_tree == null || !Visible) return;
+
+        // O lobo da cena fica no pé da cápsula, que encolhe ao agachar.
+        float feet = _player != null ? _player.FeetOffset : -0.875f;
+        Position = new Vector3(0, feet, 0);
+
+        if (_dead)
+        {
+            // Depois de cair, o corpo some.
+            _deadTimer += delta;
+            float hold = (_lengths.TryGetValue("death", out float d) ? d : 1.5f) + 1.2f;
+            if (_deadTimer > hold) _model.Visible = false;
+            return;
+        }
 
         var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
+        _speed = Mathf.Lerp(_speed, flat.Length(), Mathf.Min(1f, 10f * (float)delta));
 
-        if (flat.Length() > 0.5f)
-            _swing += (float)delta * SwingSpeed;
+        // 0 parado, 1 andando, 2 correndo; acima da corrida, o clipe
+        // acelera em vez de o pé patinar.
+        float blend = _speed <= WalkSpeed
+            ? _speed / Mathf.Max(WalkSpeed, 0.01f)
+            : 1f + Mathf.Clamp((_speed - WalkSpeed) / Mathf.Max(RunSpeed - WalkSpeed, 0.01f), 0f, 1f);
+        _tree.Set("parameters/Machine/Locomotion/Blend/blend_position", blend);
+        _tree.Set("parameters/Machine/Locomotion/Speed/scale", _speed > RunSpeed ? Mathf.Min(_speed / RunSpeed, 1.8f) : 1f);
 
-        _strikeLeft = Mathf.MoveToward(_strikeLeft, 0f, StrikeRecover * (float)delta);
-        _strikeRight = Mathf.MoveToward(_strikeRight, 0f, StrikeRecover * (float)delta);
+        bool airborne = !_body.IsOnFloor();
+        bool howling = IsHowling();
 
-        float swing = Mathf.Sin(_swing) * SwingAmount;
+        string want = howling && Has("howl") ? "Howl"
+            : airborne && Has("jump") ? "Air"
+            : "Locomotion";
 
-        // Cada braço soma o próprio golpe ao balanço, por isso o combo
-        // aparece como patadas alternadas.
-        _left.Rotation = new Vector3(-swing - _strikeLeft, 0, _strikeLeft * 0.4f);
-        _right.Rotation = new Vector3(swing - _strikeRight, 0, -_strikeRight * 0.4f);
+        if (airborne != _airborne || howling != _howling)
+        {
+            _airborne = airborne;
+            _howling = howling;
+            _playback?.Travel(want);
+        }
     }
 
-    private void OnFired()
+    private bool IsHowling() =>
+        _player != null ? _player.HowlProgress > 0f
+        : _bot != null && _bot.Action == BotAction.Howl;
+
+    private void Fire(string shot, float duration)
+    {
+        if (_tree == null || !Has(shot)) return;
+
+        string name = Cap(shot);
+        float scale = duration > 0.05f ? _lengths[shot] / duration : 1f;
+        _tree.Set($"parameters/{name}Speed/scale", Mathf.Clamp(scale, 0.5f, 4f));
+        _tree.Set($"parameters/{name}/request", (int)AnimationNodeOneShot.OneShotRequest.Fire);
+    }
+
+    /// <summary>Golpe do lobo. A duração do clipe acompanha a recarga do
+    /// golpe, com um mínimo para a garrada não virar um tremor.</summary>
+    private void OnAttack(int kind, float seconds)
     {
         if (!_form.IsWolf) return;
 
-        // Alterna a pata a cada golpe.
-        if (_nextIsLeft) _strikeLeft = StrikeAmount;
-        else _strikeRight = StrikeAmount;
-
-        _nextIsLeft = !_nextIsLeft;
-    }
-
-    private void Refresh() => Visible = _form.IsWolf;
-
-    /// <summary>Um braço: ombro, antebraço e três garras.</summary>
-    private Node3D BuildArm(int side)
-    {
-        var shoulder = new Node3D
+        switch (kind)
         {
-            Position = new Vector3(side * 0.34f, 0.32f, 0)
-        };
-        AddChild(shoulder);
-
-        Box(shoulder, FurColor, new Vector3(0.17f, 0.17f, 0.46f), new Vector3(0, -0.1f, -0.2f));
-        Box(shoulder, FurColor, new Vector3(0.14f, 0.14f, 0.3f), new Vector3(side * 0.03f, -0.26f, -0.42f));
-
-        for (int i = -1; i <= 1; i++)
-        {
-            var claw = Box(shoulder, ClawColor,
-                new Vector3(0.035f, 0.035f, 0.19f),
-                new Vector3(side * 0.03f + i * 0.055f, -0.3f, -0.63f));
-
-            claw.RotationDegrees = new Vector3(-14f, i * 9f, 0);
+            case Weapon.CooldownClaw: Fire("claw", Mathf.Max(seconds, 0.45f)); break;
+            case Weapon.CooldownHeavy: Fire("heavy", Mathf.Max(seconds * 0.8f, 0.6f)); break;
+            case Weapon.CooldownLeap: Fire("leap", 0.9f); break;
         }
-
-        return shoulder;
     }
 
-    private MeshInstance3D Box(Node parent, Color color, Vector3 size, Vector3 position)
+    private void OnFormChanged(int form)
     {
-        var node = new MeshInstance3D
-        {
-            Mesh = new BoxMesh { Size = size },
-            MaterialOverride = new StandardMaterial3D { AlbedoColor = color, Roughness = 0.85f },
-            Position = position
-        };
+        Visible = _form.IsWolf;
 
-        parent.AddChild(node);
-        return node;
+        if ((Form)form == Form.ShiftingToWolf)
+        {
+            _model.Visible = true;
+            _playback?.Start("Locomotion");
+            Fire("transform", 1.1f);
+        }
+    }
+
+    private void OnDied()
+    {
+        if (!_form.IsWolf) return;
+        _dead = true;
+        _deadTimer = 0;
+        _playback?.Travel("Death");
+    }
+
+    private void OnRespawned()
+    {
+        _dead = false;
+        _model.Visible = true;
+        _airborne = false;
+        _howling = false;
+        _playback?.Start("Locomotion");
+        Visible = _form.IsWolf;
     }
 }

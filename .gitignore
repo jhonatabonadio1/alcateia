@@ -20,3 +20,11 @@ __pycache__/
 # Pacotes NuGet locais do Godot .NET (cópia de GodotSharp/Tools/nupkgs,
 # só para compilar fora do editor). Cada máquina tem os seus.
 tools/nupkgs/
+
+# Texturas que o Godot extrai dos .fbx na importação (exo_gray_0.png,
+# mutant_red_1.png...). Saem do próprio .fbx, então cada máquina gera
+# as suas.
+assets/characters/**/*_[0-9].png
+assets/characters/**/*_[0-9].png.import
+assets/characters/**/*_alpha_[0-9].png
+assets/characters/**/*_alpha_[0-9].png.import

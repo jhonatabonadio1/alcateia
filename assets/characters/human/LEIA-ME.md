@@ -1,5 +1,10 @@
 # Humano — Mixamo Basic Shooter Pack
 
+`exo_gray.fbx` (Exo Gray) é o soldado do **time azul** e `ely.fbx`
+(Ely, de K. Atienza) o do **time laranja**; o `CharacterAnimator`
+troca o `xbot` da cena por eles conforme o time. `xbot.fbx` continua
+como reserva e na cena.
+
 `xbot.fbx` é o personagem (malha + esqueleto). Os outros 16 são
 clipes, um por arquivo, todos sobre o **mesmo rig `mixamorig:` de 65
 ossos** — foi conferido osso por osso, então misturam entre si.
