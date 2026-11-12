@@ -823,6 +823,39 @@ de corredor, distância entre paredes paralelas. Antes de qualquer
 distribuição ele precisa ser substituído por geometria própria, de
 preferência remedindo o que funcionou aqui.
 
+### Geometria de uma face, e por que isso quebra meio jogo
+
+Mapa extraído de jogo é feito de planos de **uma face só**. O lado que
+cada plano considera frente é o que o modelador precisou para
+desenhar, não o lado onde o jogador anda: no Arrival, 53% das faces
+verticais na altura de jogo apontam para fora da arena — a parede do
+perímetro em X = −39,9 tem normal (−1, 0) com a área jogável do lado
++X, ou seja, o jogador encosta no verso do triângulo.
+
+`ConcavePolygonShape3D` nasce com `BackfaceCollision = false`. Com
+isso, metade das paredes do mapa existe para os olhos e não existe
+para a física. O sintoma não aponta para a causa em nenhum dos casos:
+
+- o lobo não gruda em parede plana, e o log diz que não havia parede —
+  porque para o motor não havia;
+- o bot vê e atira **através** de parede, porque o raio de linha de
+  visão atravessa;
+- o bot não acha cobertura, porque cobertura é definida por raio
+  bloqueado e nada bloqueia;
+- o tiro do jogador atravessa parede.
+
+Por isso `MapLoader.BuildCollision` monta a forma à mão em vez de usar
+`CreateTrimeshCollision()`: aquele método não devolve a forma gerada,
+e a forma precisa de `BackfaceCollision = true`.
+
+Com colisão de dois lados vem uma consequência: bater no verso de um
+triângulo devolve a normal geométrica, apontando para o mesmo lado em
+que o raio viaja. **Toda leitura de normal de raycast precisa orientar
+a normal contra o raio** (`if (n.Dot(direction) > 0) n = -n;`). Sem
+isso a força que segura o lobo inverte e ele é empurrado para dentro
+da parede em vez de colar. Vale para qualquer sentido de face e não
+muda nada no caso normal.
+
 ### Pontos de nascimento
 
 `scripts/core/SpawnPoints.cs`. Oito marcadores em `main.tscn`,

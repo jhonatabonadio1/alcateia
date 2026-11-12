@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.19.1 — 2026-11-11
+
+### Corrigido
+- **Metade das paredes do Arrival não existia para a física.** O mapa
+  é feito de planos de uma face e 53% das faces verticais na altura de
+  jogo apontam para fora da arena; `ConcavePolygonShape3D` nasce sem
+  `BackfaceCollision`, então o jogador via parede e o raio atravessava.
+  O `MapLoader` agora monta a forma à mão com colisão de dois lados.
+  Isso conserta de uma vez o lobo não grudando, o bot vendo e atirando
+  através de parede, o bot não achando cobertura e o tiro atravessando.
+- **Normal de raycast orientada contra o raio** no `Cast` da corrida em
+  parede: com colisão de dois lados a normal crua do verso inverteria a
+  força que segura o lobo, empurrando-o para dentro da parede.
+
+### Alterado
+- Log da corrida em parede religado. Ele só imprime quando o motivo
+  muda, então não enche o Output.
+
 ## v0.19.0 — 2026-11-11
 
 ### Adicionado

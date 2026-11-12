@@ -185,10 +185,9 @@ public partial class Player : CharacterBody3D
     /// Sem isto, sair do mapa é queda infinita.</summary>
     [Export] public float FallLimit = -25f;
 
-    /// <summary>Imprime por que a corrida em parede não começou.
-    /// Desligado: a física está no ponto, e num mapa cheio de paredes
-    /// isto imprime uma linha por frame e deixa o Output ilegível.</summary>
-    [Export] public bool WallDebug = false;
+    /// <summary>Imprime por que a corrida em parede não começou. Só
+    /// imprime quando o motivo muda, então não enche o Output.</summary>
+    [Export] public bool WallDebug = true;
 
     /// <summary>Distância da câmera na forma lobo.</summary>
     [Export] public float ThirdPersonDistance = 3.5f;
@@ -1034,6 +1033,16 @@ public partial class Player : CharacterBody3D
         if (hit.Count == 0) return false;
 
         Vector3 n = (Vector3)hit["normal"];
+
+        // Orienta a normal contra o raio.
+        //
+        // Com colisão de dois lados, bater no verso de um triângulo
+        // devolve a normal geométrica, que aponta para o mesmo lado em
+        // que o raio viaja. Usada crua, ela inverteria a força que
+        // segura o lobo: em vez de colar na parede, ele seria empurrado
+        // para dentro dela. Virar a normal para quem perguntou vale
+        // para qualquer sentido de face e não muda nada no caso normal.
+        if (n.Dot(direction) > 0) n = -n;
 
         // Rejeita chão e teto: só parede vale.
         if (Mathf.Abs(n.Y) > 0.4f) return false;

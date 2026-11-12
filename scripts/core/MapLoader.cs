@@ -137,16 +137,50 @@ public partial class MapLoader : Node3D
 
             if (GenerateCollision && !skip && mesh.Mesh != null)
             {
-                // Trimesh: colisão exata e estática. Correta para
-                // cenário, inútil para corpo que se move — e cenário é
-                // tudo que vem de um mapa.
-                mesh.CreateTrimeshCollision();
+                BuildCollision(mesh);
                 collisions++;
             }
         }
 
         foreach (Node child in children)
             Prepare(child, ref collisions);
+    }
+
+    /// <summary>
+    /// Gera colisão de malha para um objeto do mapa.
+    ///
+    /// Faz à mão o que <c>CreateTrimeshCollision()</c> faria, por um
+    /// motivo só: aquele método não dá acesso à forma gerada, e a
+    /// forma precisa de <c>BackfaceCollision</c>.
+    ///
+    /// Mapa extraído de jogo é feito de planos de uma face só, e o
+    /// lado que cada plano considera "frente" é o que o modelador
+    /// precisou para desenhar, não o lado onde o jogador anda. No
+    /// Arrival, mais da metade das faces verticais na altura de jogo
+    /// aponta para fora da arena. Com colisão de uma face, metade das
+    /// paredes do mapa existe para os olhos e não existe para a
+    /// física: o jogador vê parede, o raio atravessa, o lobo não
+    /// gruda — e nada no log explica por quê, porque para o motor não
+    /// havia nada ali.
+    ///
+    /// Colisão de dois lados custa pouco (5.213 triângulos no mapa
+    /// inteiro) e é a resposta certa para geometria de uma face.
+    /// </summary>
+    private static void BuildCollision(MeshInstance3D mesh)
+    {
+        var shape = new ConcavePolygonShape3D
+        {
+            Data = mesh.Mesh.GetFaces(),
+            BackfaceCollision = true
+        };
+
+        var body = new StaticBody3D { Name = $"{mesh.Name}_col" };
+        body.AddChild(new CollisionShape3D { Shape = shape });
+
+        // Filho do próprio objeto, com transformação local identidade:
+        // é assim que os dados da forma, que estão em espaço local da
+        // malha, caem no lugar certo do mundo.
+        mesh.AddChild(body);
     }
 
     /// <summary>
