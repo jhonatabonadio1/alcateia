@@ -621,7 +621,7 @@ Três peças de código, e a lista de arquivos em `assets/audio/LEIA-ME.md`:
   podem servir de informação de longe; de perto você já está vendo
   quem os fez.
 
-Os seus próprios sons tocam sem posição, e o seu passo 8 dB abaixo do
+Os seus próprios sons tocam sem posição, e o seu passo 3 dB abaixo do
 dos outros: o seu passo não pode cobrir o de quem está atrás de você.
 
 **Os bots emitem ruído também.** Antes só o jogador emitia passo,

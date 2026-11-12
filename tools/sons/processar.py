@@ -94,14 +94,14 @@ kn = lambda n: f"kn_{n}"
 fw = lambda n: f"ff_{n}.wav"
 
 # ---------------------------------------------------------- passos e pouso
-series("passo", [oc(f"FEETHmn_ShoeConcreteRun_OS_0{i}") for i in range(1, 6)], -10, maxlen=0.35)
-series("pouso", [oc(f"FEETHmn_ShoeConcreteLand_OS_0{i}") for i in (1, 2)], -7, maxlen=0.5)
+series("passo", [oc(f"FEETHmn_ShoeConcreteRun_OS_0{i}") for i in range(1, 6)], -3, maxlen=0.35)
+series("pouso", [oc(f"FEETHmn_ShoeConcreteLand_OS_0{i}") for i in (1, 2)], -2, maxlen=0.5)
 # Lobo: passo de terra 5 semitons abaixo, sem agudo: pesado e abafado.
-series("lobo_passo", [oc(f"FEETHmn_ShoeDirtRun_OS_0{i}") for i in range(1, 6)], -7, maxlen=0.4, pitch=-5, lowpass=3200)
+series("lobo_passo", [oc(f"FEETHmn_ShoeDirtRun_OS_0{i}") for i in range(1, 6)], -2, maxlen=0.4, pitch=-5, lowpass=3200)
 for i in (1, 2):
     a = clip(oc(f"FEETHmn_ShoeDirtLand_OS_0{i}"), pitch=-5, lowpass=3000, maxlen=0.6)
     b = clip(kn(f"impact_soft_heavy_00{i}.ogg"), maxlen=0.5)
-    save(mix([(a, 0, 0), (b, 0, -4)]), f"lobo_pouso_{i}", -4)
+    save(mix([(a, 0, 0), (b, 0, -4)]), f"lobo_pouso_{i}", -1)
 
 # ---------------------------------------------------------- tiros
 # (perto, longe, duração perto)

@@ -97,5 +97,5 @@ opções, cada canal ganha um controle de volume.
 
 Até lá, para equilibrar: normalize os arquivos e, se um som específico
 ficar alto ou baixo demais, ajuste o volume do próprio arquivo. O seu
-passo já toca 8 dB mais baixo que o dos outros (`OwnStepVolume` no nó
+passo já toca 3 dB mais baixo que o dos outros (`OwnStepVolume` no nó
 WorldAudio).

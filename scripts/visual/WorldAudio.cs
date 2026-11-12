@@ -20,8 +20,14 @@ using System.Collections.Generic;
 /// </summary>
 public partial class WorldAudio : Node
 {
-    /// <summary>Volume dos seus próprios passos e pousos, em dB.</summary>
-    [Export] public float OwnStepVolume = -8f;
+    /// <summary>Volume dos seus próprios passos e pousos, em dB. Um
+    /// pouco abaixo dos outros: o seu passo não pode cobrir o de quem
+    /// está atrás de você. Abaixo de uns −6 ele some no meio do jogo.</summary>
+    [Export] public float OwnStepVolume = -3f;
+
+    /// <summary>Escreve no Output cada ruído recebido e o som que ele
+    /// tocou — ou "SEM ARQUIVO". Para descobrir por que algo está mudo.</summary>
+    [Export] public bool Debug;
 
     /// <summary>Distância a partir da qual um tiro usa a versão
     /// distante (<c>tiro_distante</c>), se ela existir.</summary>
@@ -117,8 +123,12 @@ public partial class WorldAudio : Node
         return Sfx.First($"tiro_{id}", "tiro");
     }
 
-    private static void Play(string name, Noise noise, bool mine, float volumeDb = 0f)
+    private void Play(string name, Noise noise, bool mine, float volumeDb = 0f)
     {
+        if (Debug)
+            GD.Print($"[som] {noise.Kind} de {noise.Source?.Name} ({(mine ? "seu" : $"raio {noise.Radius:0} m")}) → "
+                + (name != null && Sfx.Has(name) ? name : $"SEM ARQUIVO ({name})"));
+
         if (name == null) return;
 
         if (mine) Sfx.Local(name, volumeDb);
