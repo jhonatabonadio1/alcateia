@@ -8,6 +8,9 @@ Leia este arquivo inteiro antes de mexer em qualquer coisa.
 
 ---
 
+> Para entender como o código está montado e onde mexer em cada coisa,
+> veja `docs/ARQUITETURA.md`. Este guia trata das regras e decisões.
+
 ## Regra zero
 
 **Fase 1 é local, sem rede.** Não implemente multiplayer, RPC,
@@ -767,11 +770,13 @@ depende de navmesh, e navmesh depende de um mapa de verdade.
 Veja `CHANGELOG.md` para o que já entrou.
 
 **Fase 1 — falta:**
-- Bot que navega, persegue e ataca (sem alguém se mexendo, não dá para
-  saber se o combate funciona)
-- Escalada de parede
-- Placar
-- Som — o uivo precisa ser audível à distância, é sinal de posição
+- **Som.** Não existe nenhum áudio no jogo. Os bots já "ouvem" pelo
+  `NoiseBus`, mas o jogador não ouve nada — e o uivo precisa ser
+  audível à distância, é sinal de posição. É a única peça da Fase 1 que
+  falta inteira.
+- Rodar os quatro testes de validação do `docs/ARSENAL.md` (duelos,
+  lobo no corredor e em campo aberto, ritmo da economia).
+- Responder "A pergunta que decide o projeto", no fim deste guia.
 
 **Fase 2 — os quatro pilares de netcode**, nesta ordem:
 1. Predição no cliente
