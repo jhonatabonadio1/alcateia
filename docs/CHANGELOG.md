@@ -1,5 +1,41 @@
 # Changelog
 
+## v0.21.0 — 2026-11-12
+
+### Adicionado
+- **Menu principal** como cena de entrada: início, sala, conjuntos e
+  inventário.
+- **Sala**: times Azul e Vermelho até 8 cada, adicionar e remover bots,
+  pontos, tempo e dificuldade; cada um aperta Pronto e o mestre inicia.
+- **Arsenal, primeira leva** (`docs/ARSENAL.md`): M16A2, SG-552, AK-47,
+  UMP-45, M3 e M9, com dispersão, recuo em fases, queda por distância,
+  chumbos e recarga cartucho a cartucho interrompível.
+- **Conjuntos** (`docs/CONJUNTOS.md`): quatro salvos no perfil, padrão
+  grátis que rende +50 WP, editor com validação, inventário.
+- **Tela de respawn** do documento: WP disponível, custo, "faltam X",
+  5 s, débito no renascer.
+- **Assistência**: +35 WP para quem acertou nos 10 s antes da morte.
+- **Dano direcional**: arco que aponta para o atirador e gira com a
+  câmera.
+- **Menu do Esc sem pausa**: continuar, reiniciar, voltar ao menu,
+  sair.
+
+### Alterado
+- Economia do documento: abate 100, abate de lobo 70, teto 2500. Dano
+  deixa de render WP.
+- Minimapa desenha o mapa inteiro com as cores dele e as letras das
+  bases.
+- Bots da partida nascem da sala (`MatchSetup`), distribuídos pelos
+  spawns da base.
+
+### Removido
+- Mapa Arrival e a cena de referência.
+- O `Loadout` antigo e os quatro lotes `.tres`.
+
+### Corrigido
+- Corpo morto atravessava o mapa: sem colisão, `IsOnFloor()` dava
+  falso e a gravidade voltava. Assentado, o corpo para de vez.
+
 ## v0.20.0 — 2026-11-12
 
 ### Adicionado

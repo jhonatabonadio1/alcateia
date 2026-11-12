@@ -252,7 +252,7 @@ export `RefillOnTransform`, desligado por padrão.
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
 | R | Rugir segurando (lobo) · recarregar (humano) |
-| Esc | Menu de dificuldade |
+| Esc | Menu da partida (continuar, reiniciar, voltar ao menu, sair) — **não pausa** |
 | Tab (segurar) | Placar da partida |
 | Enter | Jogar de novo, na tela de fim |
 
@@ -799,39 +799,11 @@ para o jogo sem inventar um formato paralelo.
 espessura com faces verticais limpas. Quinas finas não funcionam,
 porque os raios precisam de superfície para encontrar.
 
-### Arrival: referência, não mais o mapa da partida
+### Arrival: removido
 
-`assets/maps/arrival/Arrival.glb`, carregado por
-`scenes/arrival_referencia.tscn`. Saiu de `main.tscn` quando o Hangar
-entrou; ficou como régua de proporção para física.
-
-| Medida | Valor |
-|---|---|
-| Área andável | 82 × 44 m, ~3.400 m² |
-| Piso principal | Y = 7,5 no arquivo, rebaixado para 0 pelo `MapOffset` |
-| Níveis acima | 9 a 17 m — telhados, passarelas, heliponto |
-| Triângulos | 5.213 |
-| Materiais / texturas | 75 / 154 |
-
-O piso vem em 7,5 porque o modelo foi exportado de outra ferramenta.
-Em vez de corrigir no Blender e reexportar, o `MapLoader` baixa o mapa
-inteiro na entrada: com o piso em zero, o limite de queda, o minimapa
-e qualquer coordenada de log voltam a ser legíveis.
-
-O mapa tem **cortinas**: planos de 4 a 8 triângulos descendo até -287
-para o jogador não ver o vazio nas bordas. É padrão do gênero e
-inofensivo em colisão, mas destruiria a navegação — o Godot varreria
-uma caixa de 300 m de altura célula por célula para achar um piso que
-está todo nos três primeiros metros. Por isso `NavBounds` existe e
-está em `AABB(-46, -3, -32, 92, 26, 58)`.
-
-**Este mapa é referência de teste, não entrega.** Ele vem extraído do
-cliente original, o que a seção de propriedade intelectual proíbe em
-qualquer coisa publicada. Serve — e serve muito — para medir física em
-proporções reais em vez de caixas cinzas: alturas de telhado, largura
-de corredor, distância entre paredes paralelas. Antes de qualquer
-distribuição ele precisa ser substituído por geometria própria, de
-preferência remedindo o que funcionou aqui.
+O Arrival vinha extraído do cliente original e nunca pôde ser
+publicado. Serviu de régua de proporção enquanto não havia mapa
+próprio; com o Hangar, foi apagado do projeto a pedido.
 
 ### Geometria de uma face, e por que isso quebra meio jogo
 
@@ -937,10 +909,10 @@ informação melhor do que lembrar.
 
 | Cena | Para que serve |
 |---|---|
-| `scenes/main.tscn` | A partida: Hangar, você e três bots azuis contra quatro vermelhos |
+| `scenes/menu/menu.tscn` | **Cena principal do projeto.** Início, sala, conjuntos e inventário |
+| `scenes/main.tscn` | A partida. Os bots nascem da sala (`MatchSetup`); aberta direto pelo editor, monta um 4 contra 4 padrão |
 | `scenes/maps/hangar.tscn` | O mapa, com tudo que é dele: geometria, spawns por base, rotas e navegação |
 | `scenes/treino.tscn` | Caixa cinza com duas paredes paralelas e bonecos, para medir física sem o mapa no caminho |
-| `scenes/arrival_referencia.tscn` | O Arrival, sem partida, para comparar proporções |
 
 A cena de treino não é sobra: quando a física quebra, uma sala limpa
 com duas paredes e um cubo diz em dez segundos o que um mapa inteiro
@@ -1071,6 +1043,146 @@ partida investigando os próprios passos dentro da base.
 `DisplayName ?? nome do nó` que reportava os abates nunca caía no nó.
 O feed mostrava abate sem autor, e o placar juntaria todos os bots
 numa linha só.
+
+---
+
+## Do menu à partida
+
+```
+menu.tscn ── Criar sala ──> sala ── Iniciar ──> main.tscn ── Esc ──> menu.tscn
+            Conjuntos (editor)        (RoomConfig)
+            Inventário
+```
+
+**Sala.** Times Azul e Vermelho, até 8 em cada. O mestre (quem criou —
+hoje, você) adiciona e remove bots, escolhe pontos, tempo e
+dificuldade. Cada jogador aperta **Pronto**; o mestre só inicia com
+todos prontos e os dois times com alguém. Bots estão sempre prontos.
+
+A regra de "pronto" existe hoje com um humano só, de propósito: na
+Fase 2 muda de onde vêm os jogadores, não como a sala funciona.
+
+`RoomConfig` (estático) leva a sala para a partida, porque sala e
+partida são cenas diferentes. Com `Active` falso — partida aberta
+direto pelo editor — o `MatchSetup` monta a escalação padrão.
+
+Na partida, o `MatchSetup` distribui cada time pelos spawns da sua
+base em ordem, ninguém em cima de ninguém. O time do jogador é
+aplicado no `_EnterTree` do Player, antes de corpo e barra de vida
+escolherem cor.
+
+**Esc não pausa.** É jogo multijogador: não existe pausa com outras
+pessoas na sala, e treinar com a regra certa evita o hábito de abrir
+o menu para fugir de uma luta. Com o menu aberto o corpo fica parado
+(o mouse é do menu), mas continua tomando tiro.
+
+---
+
+## Arsenal
+
+Especificação: `docs/ARSENAL.md`. Implementação:
+`scripts/combat/WeaponDefinition.cs` (um Resource por arma),
+`scripts/combat/Arsenal.cs` (catálogo e preços) e
+`resources/weapons/*.tres`, gerados por `tools/gerar_arsenal.py`.
+
+Só a **primeira leva** do documento: M16A2, SG-552, AK-47, UMP-45 e M3,
+mais a M9 do conjunto padrão. O documento explica por quê — cinco armas
+bastam para saber se humano contra lobo funciona, e as outras bagunçam o
+balanceamento se entrarem antes.
+
+### Decisões que divergem do documento, e por quê
+
+| Ponto | Documento | Jogo | Motivo |
+|---|---|---|---|
+| Vida do humano | 100 | **200** | Decisão do Jhon. O dano é multiplicado por `Arsenal.DamageScale = 2` na hora do tiro, o que preserva tiros-para-matar e TTK do documento sem reescrever os números |
+| Reserva de munição | 90, 100… | **infinita** | Regra antiga do Jhon: o custo de atirar é o tempo de recarga. A reserva fica na definição só para exibir |
+| Lobo | vendido no respawn | **grátis, tecla 3** | Decisão do Jhon: virar lobo é decisão tática, não compra |
+| Cone da M3 | 2,5° a 0 m → 9° a 20 m | **4,5° fixo** | Cone que cresce com a distância é aproximado por um meio-ângulo fixo; a 20 m dá 1,6 m de raio |
+| Rajada (SG-552, G36C) | modo extra | **só automático** | Um modo por arma até alguém sentir falta |
+
+**Mexeu num número de dano?** Confira "tiros para matar" no documento.
+O AK mata com um tiro na cabeça porque 42 × 2,4 × 2 = 201,6 passa de
+200 — um ajuste de 1 ponto quebra a identidade da arma.
+
+### O que a definição controla
+
+Dispersão (base, por tiro, máxima, recuperação, multiplicador andando
+e agachado), recuo vertical em duas fases e horizontal alternado ou
+sorteado, queda de dano por distância, cadência, modo de tiro, pente,
+recarga tática e vazia, recarga cartucho a cartucho interrompível,
+chumbos por disparo, lentidão no lobo, velocidade com a arma na mão e
+raio do estampido para a audição dos bots.
+
+A dispersão de um tiro é a de **antes** dele: o primeiro tiro parado é
+sempre o mais preciso. Os chumbos de um disparo somam dano por alvo
+antes de aplicar, para abate e marcador saírem uma vez, não nove.
+
+O recuo lateral não volta sozinho. É ele que o jogador aprende a
+compensar, e devolvê-lo automaticamente apagaria o que diferencia uma
+arma da outra.
+
+---
+
+## Conjuntos e economia
+
+Especificação: `docs/CONJUNTOS.md`. Implementação:
+`scripts/combat/LoadoutSet.cs`, `scripts/core/Profile.cs` (salvo em
+`user://perfil.json`) e a tela de respawn em `scripts/ui/LoadoutMenu.cs`.
+
+- Quatro conjuntos. O **primeiro é o padrão**: só itens grátis, sempre
+  disponível, e escolhê-lo rende **+50 WP**. O `Profile.Repair` força
+  isso a cada leitura — é a rede de segurança de quem está sem WP.
+- O custo é **soma simples** e **nunca é salvo**: recalcula do arsenal,
+  então ajuste de preço chega a todos os perfis sozinho.
+- **Sem teto de custo.** Conjunto de 2000 WP é meta, não erro. O
+  documento avisa que essa é a primeira regra que alguém tenta
+  consertar. Não conserte.
+- Editar só fora da partida. Na partida só se escolhe e paga.
+- Respawn: 5 s, cartões que não cabem aparecem acinzentados com
+  "faltam X", estouro do tempo usa o último conjunto ou o padrão.
+- Paga-se no renascer. O equipamento some na morte; o WP fica.
+
+| Ganho | WP |
+|---|---|
+| Abate | 100 |
+| Abate de lobo | 70 |
+| Assistência (acertou nos 10 s antes da morte) | 35 |
+| Escolher o padrão | 50 |
+| Teto | 2500 |
+
+Dano não rende mais WP: pagar por dano fazia spray em parede valer
+ponto. A assistência existe porque sem ela quem tira 90% da vida e
+perde o abate sai sem nada, e o jogo passa a premiar roubar o último
+tiro.
+
+O inventário hoje tem todo o arsenal. Quando houver loja, a compra
+entra no `Profile.Inventory`; o editor já só aceita item do inventário.
+
+---
+
+## HUD de combate
+
+**Dano direcional** (`scripts/ui/DamageIndicator.cs`): arco vermelho em
+volta da mira apontando para quem atirou. Guarda a posição de origem
+no mundo, não o ângulo do momento — é o que faz o arco girar quando
+você vira, continuando a apontar para o atirador. A borda vermelha da
+tela inteira ficou fraca: ela diz "levou dano", o arco diz "de onde".
+
+**Minimapa** desenha toda caixa do mapa com a cor do material dela, as
+mais altas por cima (telhado cobre o que está embaixo) e mais claras
+quando bem acima de você. Letras curtas do mapa (o "A" e o "B" das
+bases) viram marcas. Antes ele procurava um nó "Walls" que só existia
+na caixa cinza antiga, e no Hangar não desenhava nada.
+
+---
+
+## Morte
+
+O corpo cai com a colisão **ligada** até tocar o chão, e só então a
+colisão desliga e o corpo **para de se mover de vez** — sem gravidade.
+A segunda metade foi o defeito: sem colisão, `IsOnFloor()` responde
+falso no quadro seguinte, porque não existe chão para quem não colide,
+e a gravidade voltava a puxar o corpo através do mapa.
 
 ---
 
