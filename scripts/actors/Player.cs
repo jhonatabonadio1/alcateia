@@ -258,7 +258,7 @@ public partial class Player : CharacterBody3D
         SetProcessInput(IsMultiplayerAuthority());
         ApplyCamera();
 
-        if (IsMultiplayerAuthority())
+        if (IsMultiplayerAuthority() && !UiState.AnyOpen)
             Input.MouseMode = Input.MouseModeEnum.Captured;
     }
 
@@ -352,6 +352,10 @@ public partial class Player : CharacterBody3D
     public override void _Input(InputEvent @event)
     {
         if (!IsMultiplayerAuthority()) return;
+
+        // Menu aberto: o mouse é do menu. Sem isto a câmera gira atrás
+        // da tela de lotes enquanto o jogador tenta clicar num cartão.
+        if (UiState.AnyOpen) return;
 
         if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured)
         {
@@ -548,6 +552,8 @@ public partial class Player : CharacterBody3D
 
     private void HandleActions(double delta)
     {
+        if (UiState.AnyOpen) return;
+
         if (Input.IsActionJustPressed("slot_1")) _weapon.SelectSlot(Slot.Primary);
         if (Input.IsActionJustPressed("slot_2")) _weapon.SelectSlot(Slot.Secondary);
         if (Input.IsActionJustPressed("slot_3")) _weapon.SelectSlot(Slot.Wolf);

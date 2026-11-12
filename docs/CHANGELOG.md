@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.14.1 — 2026-11-11
+
+### Corrigido
+- Com menu aberto, o mouse agora pertence ao menu: cursor visível,
+  câmera travada, sem atirar nem andar.
+- Dois menus abrindo juntos no início brigavam pelo cursor — fechar o
+  de dificuldade capturava o mouse com a tela de lotes aberta. O
+  estado virou um contador em `UiState`.
+- O relógio da tela de lotes corria por trás do menu de dificuldade e
+  escolhia o lote sozinho. Agora só conta quando é a tela de cima.
+
 ## v0.14.0 — 2026-11-11
 
 ### Adicionado

@@ -118,7 +118,7 @@ public partial class DifficultyMenu : CanvasLayer
         _root.Visible = true;
 
         GetTree().Paused = true;
-        Input.MouseMode = Input.MouseModeEnum.Visible;
+        UiState.Push();
     }
 
     private void Close()
@@ -127,6 +127,6 @@ public partial class DifficultyMenu : CanvasLayer
         _root.Visible = false;
 
         GetTree().Paused = false;
-        Input.MouseMode = Input.MouseModeEnum.Captured;
+        UiState.Pop();
     }
 }

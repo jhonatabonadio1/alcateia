@@ -395,6 +395,22 @@ num tiroteio.
 o tempo todo destruiria a razão de existir do agachar, do andar
 devagar e da audição dos bots.
 
+### Menus e o cursor
+
+Enquanto houver menu aberto, **o mouse pertence ao menu**: o cursor
+aparece, a câmera não gira e o jogador não atira nem anda.
+
+O controle é um contador em `UiState`, não um booleano em cada menu.
+A razão é concreta: dois menus abriam juntos no início e cada um
+capturava ou liberava o cursor sem saber do outro, então fechar o de
+dificuldade capturava o mouse com a tela de lotes ainda aberta. Com
+contador, o cursor só volta quando o último menu fecha — é a lógica
+de um semáforo, liberado por quem solta por último.
+
+O relógio da tela de lotes também só corre quando ela é a tela de
+cima, senão o tempo escorre por trás de outro menu e o lote é
+escolhido sozinho.
+
 ### A economia de WP
 
 WP vem de **abater** (150) e de **renascer** (40), nunca do relógio.

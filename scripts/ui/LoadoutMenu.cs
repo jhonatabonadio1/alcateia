@@ -61,6 +61,11 @@ public partial class LoadoutMenu : CanvasLayer
     {
         if (!_open) return;
 
+        // O relógio só corre quando esta é a tela de cima. Sem isto o
+        // tempo escorria por trás do menu de dificuldade e o lote era
+        // escolhido sozinho antes do jogador ver a tela.
+        if (!UiState.IsAlone) return;
+
         _remaining -= delta;
         _timer.Text = $"{Mathf.Max(_remaining, 0):0}";
 
@@ -82,7 +87,8 @@ public partial class LoadoutMenu : CanvasLayer
         _remaining = ChooseTime;
 
         _root.Visible = true;
-        Input.MouseMode = Input.MouseModeEnum.Visible;
+        _root.MouseFilter = Control.MouseFilterEnum.Stop;
+        UiState.Push();
 
         Refresh();
     }
@@ -91,7 +97,8 @@ public partial class LoadoutMenu : CanvasLayer
     {
         _open = false;
         _root.Visible = false;
-        Input.MouseMode = Input.MouseModeEnum.Captured;
+        _root.MouseFilter = Control.MouseFilterEnum.Ignore;
+        UiState.Pop();
     }
 
     private void Choose(Loadout loadout)
@@ -135,6 +142,8 @@ public partial class LoadoutMenu : CanvasLayer
 
     private void Build()
     {
+        // Fundo que intercepta o clique: sem ele o jogador atira no
+        // mundo ao tentar escolher um cartão.
         _root = new Control
         {
             AnchorRight = 1f,
@@ -143,6 +152,14 @@ public partial class LoadoutMenu : CanvasLayer
             Visible = false
         };
         AddChild(_root);
+
+        var backdrop = new ColorRect
+        {
+            AnchorRight = 1f, AnchorBottom = 1f,
+            Color = new Color(0.03f, 0.03f, 0.05f, 0.35f),
+            MouseFilter = Control.MouseFilterEnum.Stop
+        };
+        _root.AddChild(backdrop);
 
         var column = new VBoxContainer
         {
