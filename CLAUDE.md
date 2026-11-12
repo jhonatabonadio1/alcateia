@@ -385,7 +385,13 @@ já quis dar.
 
 O recuo tem **teto** (`RecoilMax`). Sem teto, segurar o gatilho aponta
 a arma para o céu e ela vira inútil em vez de difícil. Cada arma traz
-o próprio recuo no lote.
+o próprio recuo na definição.
+
+Enquanto se atira a mira **só sobe**; ela desce quando o gatilho solta
+(`RecoilReturnDelay`, 0,12 s sem tiro), em linha reta na velocidade
+`RecoilRecovery` da arma, em °/s. O que o jogador já puxou para baixo
+com o mouse é descontado do que falta descer — sem isso, quem compensa
+o recuo à mão termina mirando abaixo do alvo.
 
 ### O lobo de perto
 

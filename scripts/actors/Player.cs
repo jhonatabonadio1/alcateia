@@ -72,10 +72,14 @@ public partial class Player : CharacterBody3D
     /// de difícil.</summary>
     [Export] public float RecoilMax = 4.5f;
 
-    /// <summary>Velocidade com que a câmera volta ao lugar. Alta o
-    /// bastante para o recuo ser um empurrão que se corrige, não uma
-    /// deriva que se acumula.</summary>
-    [Export] public float CameraRecover = 11f;
+    /// <summary>
+    /// Quanto tempo sem atirar até a mira começar a descer, em
+    /// segundos. Maior que o intervalo de qualquer automática da
+    /// primeira leva (0,08 s): enquanto o dedo está no gatilho a mira só
+    /// sobe, e desce quando ele solta. É o mesmo atraso que o documento
+    /// usa para a dispersão.
+    /// </summary>
+    [Export] public float RecoilReturnDelay = 0.12f;
 
     [Export] public float StandHeight = 1.75f;
     [Export] public float CrouchHeight = 1.0f;
@@ -246,6 +250,7 @@ public partial class Player : CharacterBody3D
     public float FeetOffset => -_height * 0.5f;
     private bool _walking;
     private float _cameraKick;
+    private double _sinceKick;
     private double _jumpLock;
     private float _height;
     private double _wallTimer;
@@ -334,6 +339,7 @@ public partial class Player : CharacterBody3D
         if (kick <= 0) return;
 
         _cameraKick += kick;
+        _sinceKick = 0;
 
         Vector3 rotation = _head.Rotation;
         rotation.X = Mathf.Clamp(
@@ -350,15 +356,20 @@ public partial class Player : CharacterBody3D
     {
         if (_cameraKick <= 0) return;
 
-        // A volta é proporcional à da arma, com o M16 (7°/s no
-        // documento) como referência do valor que já estava afinado: o AK
-        // demora mais a voltar, a SMG volta mais rápido.
-        float rate = CameraRecover * ((_weapon.Held?.RecoilRecovery ?? 7f) / 7f);
-        float recover = _cameraKick * rate * (float)delta;
+        _sinceKick += delta;
+        if (_sinceKick < RecoilReturnDelay) return;
 
-        _cameraKick = Mathf.Max(_cameraKick - recover, 0);
+        // Volta linear, na velocidade do documento (°/s): o M16 desce os
+        // 4,5° do teto em 0,6 s, o AK em 0,8 s, a M3 em 1,1 s.
+        //
+        // O defeito antigo: a volta SOMAVA ao ângulo da cabeça em vez de
+        // subtrair, então a mira subia de novo ao parar de atirar.
+        float rate = Mathf.DegToRad((_weapon.Held?.RecoilRecovery ?? 7f) * RecoilScale);
+        float recover = Mathf.Min(rate * (float)delta, _cameraKick);
+
+        _cameraKick -= recover;
         _head.Rotation = new Vector3(
-            Mathf.Clamp(_head.Rotation.X + recover * 0.5f, Mathf.DegToRad(-89f), Mathf.DegToRad(89f)),
+            Mathf.Clamp(_head.Rotation.X - recover, Mathf.DegToRad(-89f), Mathf.DegToRad(89f)),
             _head.Rotation.Y, _head.Rotation.Z);
     }
 
@@ -377,6 +388,7 @@ public partial class Player : CharacterBody3D
     private void OnDied()
     {
         ApplyCamera();
+        _cameraKick = 0;
         _settled = false;
     }
 
@@ -502,9 +514,17 @@ public partial class Player : CharacterBody3D
         {
             RotateY(-motion.Relative.X * MouseSensitivity);
 
+            float pitch = motion.Relative.Y * MouseSensitivity;
+
+            // Puxar o mouse para baixo durante o recuo já é a volta,
+            // feita à mão. Desconta do que falta voltar, senão a volta
+            // automática soma em cima e a mira afunda abaixo do alvo.
+            if (pitch > 0 && _cameraKick > 0)
+                _cameraKick = Mathf.Max(_cameraKick - pitch, 0);
+
             Vector3 headRot = _head.Rotation;
             headRot.X = Mathf.Clamp(
-                headRot.X - motion.Relative.Y * MouseSensitivity,
+                headRot.X - pitch,
                 Mathf.DegToRad(-89f),
                 Mathf.DegToRad(89f));
             _head.Rotation = headRot;

@@ -33,6 +33,9 @@
 - O `Loadout` antigo e os quatro lotes `.tres`.
 
 ### Corrigido
+- Mira não descia depois do recuo: a volta somava ao ângulo em vez de
+  subtrair. Agora desce 0,12 s após o último tiro, na velocidade de
+  recuperação da arma, descontando o que o jogador puxou com o mouse.
 - Corpo morto atravessava o mapa: sem colisão, `IsOnFloor()` dava
   falso e a gravidade voltava. Assentado, o corpo para de vez.
 
