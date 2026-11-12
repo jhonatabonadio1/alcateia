@@ -72,8 +72,8 @@ granadas mais fortes.
 8. **Câmera: humano em primeira pessoa, lobo em terceira.** A câmera
    não inclina na corrida em parede.
 
-9. **O humano é deliberadamente lento e pesado.** Velocidade 4.2 e
-   pulo 3.0. Toda a mobilidade do jogo pertence ao lobo; o humano
+9. **O humano é deliberadamente lento e pesado.** Velocidade 4,2 m/s
+   e pulo de 0,99 m. Toda a mobilidade do jogo pertence ao lobo; o humano
    compra distância e tempo com arma e granada, não com as pernas.
 
    Atenção ao mexer: a velocidade e o pulo do lobo são
@@ -81,13 +81,20 @@ granadas mais fortes.
    lobo junto e o contraste entre as formas não muda. Para separar as
    duas, mexa no `SpeedMultiplier` das classes, não só aqui.
 
-   Valores absolutos atuais:
+   Valores absolutos atuais (velocidade em m/s, pulo em altura):
 
    | | Humano | Bruto | Ligeiro |
    |---|---|---|---|
-   | Velocidade | 4.2 | 6.3 | 8.8 |
-   | Pulo | 3.0 | 5.7 | 7.5 |
-   | Agachado | 1.9 | 2.8 | 4.0 |
+   | Velocidade | 4,2 | 5,7 (1,35×) | 6,1 (1,45×) |
+   | Pulo | 0,99 m | 1,31 m (1,15×) | 2,22 m (1,5×) |
+   | Agachado | 1,9 | 2,6 | 2,7 |
+   | Na parede | — | 5,7 | 6,1 |
+
+   O lobo estava rápido demais (o Bruto a 6,5 m/s, 8,1 na parede): ser
+   lobo ficava vantajoso demais. Para encurtar o pulo do lobo, baixe a
+   **velocidade**, não o pulo: a distância é velocidade × tempo no ar,
+   e a altura está amarrada ao mapa (veja "Alturas amarradas à
+   física").
 
 10. **O alcance do pulo é controlado pela tecla.** Segurar para frente
     mantém o avanço até o fim; soltar encurta, via um arrasto suave no
@@ -303,6 +310,11 @@ Só na forma lobo e no ar. **Pula-se contra a parede e segura o pulo**
 permite escolher a hora de saltar em vez de correr até a parede
 acabar.
 
+- **Velocidade: a do lobo, sem bônus** (`WallRunSpeedBonus` 1,0; era
+  1,25 — 8,1 m/s no Bruto, rápido demais para escolher onde descer).
+  Acelera em `WallAccel` (18 m/s²) ao grudar, em vez de sair a toda no
+  primeiro quadro, e **agarrar freia em meio metro** (`WallBrake`,
+  32 m/s²)
 - Sem limite de tempo: corre enquanto a parede existir
 - Solta ao largar o W, ao bater em obstáculo, ou se atordoado
 - **Altura travada**: não sobe nem desce enquanto corre
@@ -548,9 +560,9 @@ corrija a linha dele.
 
 | Golpe | Clipe | Golpe na tela | Dura |
 |---|---|---|---|
-| Garrada, braço 1 | swiping, 0,75–2,00 s, 2,4× | 0,23 s | 0,52 s |
-| Garrada, braço 2 | punch, 0–1,00 s, 1,9× | 0,16 s | 0,53 s |
-| Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso; avança até a mira |
+| Garrada, braço 1 | swiping, 1,00–1,85 s, 2,2× | 0,14 s | 0,39 s |
+| Garrada, braço 2 | punch, 0–0,85 s, 2,2× | 0,14 s | 0,39 s |
+| Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso; avança até 12 m |
 | Bote (direito no ar) | jump attack: a queda, depois a aterrissagem | quando encosta | aterrissagem de 0,78 s, presa; recarga de 2 s |
 | Rugido (R) | roaring, 0,30–4,90 s, 1,6× | escudo no fim | 2,88 s |
 
@@ -560,14 +572,14 @@ acabar.
 **O clique fica guardado** (`AttackBuffer`, 0,3 s): clicou na garrada
 com o golpe anterior ainda no fim, o próximo sai no quadro em que ele
 acaba. Sem isso o clique dado um pouco cedo se perdia e o lobo parecia
-não responder. Clicando sem parar, quase dois golpes por segundo.
+não responder. Clicando sem parar, dois golpes e meio por segundo.
 
 **Golpes fluidos.** Medido quadro a quadro na velocidade dos ossos
 (mãos, pés, cabeça), não só a olho:
 
-- A garrada entra em 0,12 s, não em 0,08: o trecho dela começa com os
-  braços já no alto, e em 0,08 s eles voavam até lá. Sai em 0,15 s,
-  porque a próxima vem logo.
+- A garrada começa com a mão já recolhida (1,00 s do "swiping") e
+  entra em 0,07 s: a garra chega 0,14 s depois do clique, e uma entrada
+  mais longa comeria o golpe. Sai em 0,12 s, porque a próxima vem logo.
 - As garradas ficam **da cintura para cima**. No corpo inteiro o
   "swiping" gira o quadril 90° e o lobo terminaria o golpe de lado.
 - Parado, o corpo dá **o passo do golpe em sino** (`StepFrom`,
@@ -596,12 +608,20 @@ gente, não para duelar com outro lobo — sem isso, o encontro entre
 dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
 
 **Botão direito no chão: o salto.** O "jump attack" inteiro — agacha,
-salta, cai. O jogador não anda nem pula, mas **o salto avança**: do
-impulso até os pés tocarem o chão, o corpo anda até as garras caírem
-**no ponto para onde a câmera aponta** (até `PounceMaxDistance`, 5 m).
-Mirou em alguém, cai em cima dele; mirou no chão perto, quase não sai
-do lugar; mirou no céu, vai os 5 m. O ponto sai da câmera do próprio
-jogador (`Player.AimCamera`), não da câmera que estiver na tela. O
+salta, cai. É a arma do lobo para **fechar distância**: aperta-se de
+longe e o lobo cai em cima do humano. O jogador não anda nem pula, mas
+o salto avança: do impulso até os pés tocarem o chão, o corpo anda até
+as garras caírem no alvo, **até 12 m** (`PounceMaxDistance`).
+
+- **Com um inimigo perto do centro da tela** (até 10°,
+  `PounceAimAssist`, à vista e ao alcance), o alvo é ele, escolhido no
+  clique; onde ele está é lido no impulso, 0,32 s depois. O lobo não
+  tem mira na tela, e acertar um corpo a 12 m só com o centro da câmera
+  seria loteria.
+- **Sem ninguém**, o ponto para onde a câmera aponta: chão perto, quase
+  não sai do lugar; céu, os 12 m.
+- O ponto sai da câmera do próprio jogador (`Player.AimCamera`), não da
+  câmera que estiver na tela. O
 dano (2,1×) sai **quando o lobo cai**, 1,14 s depois do clique. Preso
 por 2,14 s: forte, mas lento e fácil de ver vindo — a lentidão é o que
 impede que seja a resposta para tudo. O volume é o das garras.
@@ -1108,8 +1128,9 @@ bots.
 ### Alturas amarradas à física
 
 O humano pula 0,99 m: sobe caixote (0,8 m), não sobe contêiner
-(2,2 m). O Bruto pula 1,54 m: do caixote alcança o contêiner. Ninguém
-alcança 5 m sem parede. **Mexeu no pulo, confira estes números** — um
+(2,2 m). Para o Bruto alcançar o contêiner a partir do caixote ele
+precisa pular 1,4 m — `JumpMultiplier` de pelo menos **1,2** (com
+1,25, 1,54 m). Ninguém alcança 5 m sem parede. **Mexeu no pulo, confira estes números** — um
 caixote 2 cm alto demais vira parede para o humano sem ninguém notar.
 
 ### Textura de grade
@@ -1449,7 +1470,16 @@ clipes servem para todos sem conversão.
 
 O `CharacterAnimator` troca o `xbot` da cena pelo personagem do time
 antes de carregar os clipes (`BlueModel`, `OrangeModel`); com
-personagem próprio o corpo não é pintado. O `WolfVisual` faz o mesmo
+personagem próprio o corpo não é pintado.
+
+**Os clipes humanos são do X Bot**, e a trilha do quadril vem em
+metros do corpo dele (quadril a 1,04 m). O Exo Gray (0,96 m) e a Ely
+(0,98 m) têm pernas mais curtas, e com o quadril do X Bot os pés
+ficavam 6 a 8 cm acima do chão. Cada clipe é ajustado na carga pela
+razão entre os dois quadris em repouso
+(`CharacterAnimator.MatchHips`). Os clipes do lobo são do próprio
+Mutant e já pisam no chão. Trocou o personagem? Não precisa mexer em
+nada: a razão é lida dos dois esqueletos. O `WolfVisual` faz o mesmo
 para o lobo. O `mutant_red.fbx` veio do Blender, sem `AnimationPlayer`
 e com o esqueleto dentro de `Armature`: o tocador é criado ao lado do
 esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.

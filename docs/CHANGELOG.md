@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.26.3 — 2026-11-12
+
+### Mudado
+- **Salto do lobo de longe:** até 12 m (eram 5), para apertar de longe
+  e cair em cima do humano. Um inimigo a até 10° do centro da tela vira
+  o alvo — o lobo não tem mira, e acertar um corpo a 12 m só com o
+  centro da câmera seria loteria.
+- **Garradas respondem mais rápido:** a garra chega 0,14 s depois do
+  clique (eram 0,23 e 0,16) e cada golpe dura 0,39 s (eram 0,52). A
+  garrada começa com a mão já recolhida.
+- **Lobo mais lento:** Bruto a 5,7 m/s (1,35×) e Ligeiro a 6,1 m/s
+  (1,45×). O pulo fica mais curto pela velocidade; a altura não muda,
+  porque está amarrada ao mapa.
+- **Corrida na parede mais lenta e controlada:** sem bônus de
+  velocidade (5,7 m/s no Bruto; eram 8,1), acelerando ao grudar e
+  freando em meio metro ao agarrar.
+
+### Corrigido
+- **Humanos flutuavam 6 a 8 cm acima do chão.** Os clipes são do X Bot,
+  que tem perna mais longa que o Exo Gray e a Ely; a trilha do quadril
+  agora é ajustada à altura de cada modelo.
+
 ## v0.26.2 — 2026-11-12
 
 ### Mudado
