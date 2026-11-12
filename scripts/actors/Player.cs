@@ -226,6 +226,7 @@ public partial class Player : CharacterBody3D
     private Vector3 _spawn;
     private CollisionShape3D _collision;
     private CharacterAnimator _animator;
+    private bool _settled;
     private CapsuleShape3D _capsule;
     private bool _crouching;
 
@@ -367,12 +368,48 @@ public partial class Player : CharacterBody3D
     private void OnDied()
     {
         ApplyCamera();
-        _collision.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
+        _settled = false;
     }
+
+    /// <summary>
+    /// Assenta o corpo morto.
+    ///
+    /// São duas coisas em ordem, e inverter quebra as duas. Primeiro a
+    /// gravidade trabalha, com a colisão ligada, até o corpo tocar o
+    /// chão — quem morre no ar precisa cair. Só então a colisão
+    /// desliga e o corpo para onde parou.
+    ///
+    /// Desligar antes, como eu fazia, derruba o corpo pelo cenário sem
+    /// nada para segurá-lo. Nunca desligar deixa o cadáver sendo
+    /// empurrado para fora do chão quadro a quadro, que com colisão de
+    /// dois lados pode resolver para o lado errado e afundar devagar.
+    /// </summary>
+    private void Settle(double delta)
+    {
+        if (IsOnFloor())
+        {
+            Velocity = Vector3.Zero;
+
+            if (!_settled)
+            {
+                _settled = true;
+                _collision.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
+            }
+        }
+        else
+        {
+            Velocity = new Vector3(0, Velocity.Y - _gravity * (float)delta, 0);
+        }
+
+        MoveAndSlide();
+    }
+
+
 
     private void OnRespawned()
     {
         ApplyCamera();
+        _settled = false;
         _collision.SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
 
         GlobalPosition = SpawnPoints.Pick(this, _spawn);
@@ -454,8 +491,7 @@ public partial class Player : CharacterBody3D
 
         if (_health.IsDead)
         {
-            Velocity = Vector3.Zero;
-            MoveAndSlide();
+            Settle(delta);
             return;
         }
 

@@ -224,6 +224,8 @@ public partial class Bot : CharacterBody3D
     private double _memoryTimer;
     private double _vigilTimer;
     private CharacterAnimator _animator;
+    private CollisionShape3D _deadShape;
+    private bool _settled;
 
     /// <summary>Rota de ronda atual e em que ponto dela o bot está.
     /// −1 significa que ainda não pegou nenhuma.</summary>
@@ -298,7 +300,7 @@ public partial class Bot : CharacterBody3D
     {
         if (_health.IsDead)
         {
-            Fall(delta);
+            Settle(delta);
             return;
         }
 
@@ -1018,6 +1020,40 @@ public partial class Bot : CharacterBody3D
         return space.IntersectRay(ground).Count > 0;
     }
 
+    /// <summary>
+    /// Assenta o corpo morto.
+    ///
+    /// São duas coisas em ordem, e inverter quebra as duas. Primeiro a
+    /// gravidade trabalha, com a colisão ligada, até o corpo tocar o
+    /// chão — quem morre no ar precisa cair. Só então a colisão
+    /// desliga e o corpo para onde parou.
+    ///
+    /// Desligar antes, como eu fazia, derruba o corpo pelo cenário sem
+    /// nada para segurá-lo. Nunca desligar deixa o cadáver sendo
+    /// empurrado para fora do chão quadro a quadro, que com colisão de
+    /// dois lados pode resolver para o lado errado e afundar devagar.
+    /// </summary>
+    private void Settle(double delta)
+    {
+        if (IsOnFloor())
+        {
+            Velocity = Vector3.Zero;
+
+            if (!_settled)
+            {
+                _settled = true;
+                _deadShape ??= GetNode<CollisionShape3D>("CollisionShape3D");
+                _deadShape.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
+            }
+        }
+        else
+        {
+            Velocity = new Vector3(0, Velocity.Y - _gravity * (float)delta, 0);
+        }
+
+        MoveAndSlide();
+    }
+
     private void Fall(double delta)
     {
         Velocity = new Vector3(0, Velocity.Y - _gravity * (float)delta, 0);
@@ -1214,8 +1250,8 @@ public partial class Bot : CharacterBody3D
     {
         if (Debug) GD.Print($"{Name} morreu");
 
-        GetNode<CollisionShape3D>("CollisionShape3D")
-            .SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
+        _deadShape ??= GetNode<CollisionShape3D>("CollisionShape3D");
+        _settled = false;
 
         _memoryTimer = 0;
         _vigilTimer = 0;
@@ -1229,8 +1265,9 @@ public partial class Bot : CharacterBody3D
 
     private void OnRespawned()
     {
-        GetNode<CollisionShape3D>("CollisionShape3D")
-            .SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
+        _deadShape ??= GetNode<CollisionShape3D>("CollisionShape3D");
+        _settled = false;
+        _deadShape.SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
 
         GlobalPosition = SpawnPoints.Pick(this, _spawn);
         Velocity = Vector3.Zero;
