@@ -15,6 +15,10 @@ public partial class Health : Node
     [Signal] public delegate void DiedEventHandler(int killerId);
     [Signal] public delegate void RespawnedEventHandler();
 
+    /// <summary>Levou dano, e de onde veio. A posição permite ao bot
+    /// reagir a tiro pelas costas e ao HUD apontar a direção.</summary>
+    [Signal] public delegate void DamagedEventHandler(float amount, Vector3 from);
+
     [Export] public float MaxHp = 200f;
     [Export] public float RespawnDelay = 3f;
 
@@ -80,11 +84,12 @@ public partial class Health : Node
         EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
     }
 
-    public void TakeDamage(float amount, int attackerId = 0)
+    public void TakeDamage(float amount, int attackerId = 0, Vector3 from = default)
     {
         if (IsDead || amount <= 0) return;
 
         float dealt = amount * DamageMultiplier;
+        EmitSignal(SignalName.Damaged, dealt, from);
 
         // Escudo absorve primeiro.
         if (Shield > 0)

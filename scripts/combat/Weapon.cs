@@ -24,6 +24,10 @@ public partial class Weapon : Node3D
 	[Signal] public delegate void DamageDealtEventHandler(float amount);
 	[Signal] public delegate void FiredEventHandler();
 	[Signal] public delegate void SlotChangedEventHandler(int slot);
+
+	/// <summary>Acertou alguém. O HUD usa para marcar no crosshair —
+	/// sem confirmação visual não se sabe se o tiro pegou.</summary>
+	[Signal] public delegate void HitConfirmedEventHandler(bool headshot);
 	[Signal] public delegate void GrenadesChangedEventHandler(int left);
 
 	// --- Arma principal: cadência alta, dano baixo, automática ---
@@ -42,6 +46,13 @@ public partial class Weapon : Node3D
 	[Export] public float ThrowForce = 11f;
 	[Export] public float ThrowArc = 3.5f;
 	[Export] public float ThrowCooldown = 0.9f;
+
+	/// <summary>Multiplicador de dano na cabeça.</summary>
+	[Export] public float HeadshotMultiplier = 2.5f;
+
+	/// <summary>Altura da zona de cabeça, medida do centro do corpo
+	/// para cima. A cápsula tem 1.8, então o topo fica em 0.9.</summary>
+	[Export] public float HeadZone = 0.55f;
 
 	/// <summary>Altura mínima de queda para contar como ataque aéreo.</summary>
 	[Export] public float AirAttackMinFall = 2.5f;
@@ -157,13 +168,17 @@ public partial class Weapon : Node3D
 		Vector3 from = _camera.GlobalPosition;
 		Vector3 to = from - _camera.GlobalTransform.Basis.Z * range;
 
-		Health hit = Raycast(from, to, out Vector3 impact);
+		Health hit = Raycast(from, to, out Vector3 impact, out Node collider);
 		Tracer(from, hit == null ? to : impact);
 
 		if (hit == null) return;
 
-		hit.TakeDamage(damage);
+		bool headshot = IsHeadshot(collider, impact);
+		if (headshot) damage *= HeadshotMultiplier;
+
+		hit.TakeDamage(damage, 0, from);
 		EmitSignal(SignalName.DamageDealt, damage);
+		EmitSignal(SignalName.HitConfirmed, headshot);
 		_form.OnDamageDealt(damage);
 	}
 
@@ -179,7 +194,7 @@ public partial class Weapon : Node3D
 		Vector3 from = _head.GlobalPosition;
 		Vector3 to = from - _head.GlobalTransform.Basis.Z * breed.AttackRange;
 
-		Health hit = Raycast(from, to, out _);
+		Health hit = Raycast(from, to, out _, out _);
 		if (hit == null) return;
 
 		float damage = breed.AttackDamage;
@@ -190,9 +205,22 @@ public partial class Weapon : Node3D
 		if (!_body.IsOnFloor() && fallen >= AirAttackMinFall)
 			damage *= breed.AirAttackBonus;
 
-		hit.TakeDamage(damage);
+		hit.TakeDamage(damage, 0, from);
 		EmitSignal(SignalName.DamageDealt, damage);
+		EmitSignal(SignalName.HitConfirmed, false);
 		_form.OnDamageDealt(damage);
+	}
+
+	/// <summary>
+	/// Cabeça é a faixa superior do corpo. Sem hitbox dedicada, a
+	/// altura do impacto resolve — e continua valendo quando o modelo
+	/// chegar, porque a zona é medida do centro do corpo.
+	/// </summary>
+	private bool IsHeadshot(Node collider, Vector3 impact)
+	{
+		if (collider is not Node3D body) return false;
+
+		return impact.Y - body.GlobalPosition.Y >= HeadZone;
 	}
 
 	/// <summary>
@@ -298,9 +326,10 @@ public partial class Weapon : Node3D
 		timer.Timeout += node.QueueFree;
 	}
 
-	private Health Raycast(Vector3 from, Vector3 to, out Vector3 impact)
+	private Health Raycast(Vector3 from, Vector3 to, out Vector3 impact, out Node collider)
 	{
 		impact = to;
+		collider = null;
 
 		var query = PhysicsRayQueryParameters3D.Create(from, to);
 		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
@@ -316,16 +345,18 @@ public partial class Weapon : Node3D
 
 		impact = (Vector3)result["position"];
 
-		if (result["collider"].Obj is not Node collider)
+		if (result["collider"].Obj is not Node node)
 			return null;
 
-		Health health = collider.GetNodeOrNull<Health>("Health");
+		collider = node;
+
+		Health health = node.GetNodeOrNull<Health>("Health");
 
 		if (Debug)
 		{
 			GD.Print(health == null
-				? $"ataque: acertou '{collider.Name}', que não tem um filho chamado Health"
-				: $"ataque: acertou '{collider.Name}'");
+				? $"ataque: acertou '{node.Name}', que não tem um filho chamado Health"
+				: $"ataque: acertou '{node.Name}'");
 		}
 
 		return health;

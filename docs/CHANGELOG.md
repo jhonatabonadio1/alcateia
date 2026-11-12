@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.8.0 — 2026-11-11
+
+### Adicionado
+- **Dano na cabeça**: 2,5× o dano normal. A zona é a faixa superior
+  do corpo, medida a partir do centro, então continua válida quando
+  houver modelo no lugar da cápsula.
+- **Marcador de acerto**: quatro riscos em volta do crosshair,
+  brancos no corpo e vermelhos e maiores na cabeça.
+- **Alerta de dano**: faixas vermelhas nas quatro bordas da tela ao
+  levar tiro, desaparecendo em menos de meio segundo.
+- **Reação do bot ao ser alvejado**: marca a origem do tiro, espera
+  um tempo curto com variação aleatória e então gira mais devagar que
+  o normal. Reação instantânea é desumana e anula o prêmio de atacar
+  pelas costas.
+- Sinais `Damaged` em `Health` (com a origem do dano) e `HitConfirmed`
+  em `Weapon`.
+
 ## v0.7.3 — 2026-11-11
 
 ### Alterado

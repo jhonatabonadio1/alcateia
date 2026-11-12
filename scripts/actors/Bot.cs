@@ -76,6 +76,20 @@ public partial class Bot : CharacterBody3D
     /// <summary>Erro de mira em graus. Zero faz um bot desumano.</summary>
     [Export] public float AimError = 4f;
 
+    // --- Reação a levar tiro ---
+
+    /// <summary>Atraso entre levar tiro e reagir. Virar na hora é
+    /// desumano e tira do jogador o prêmio de atacar pelas costas.</summary>
+    [Export] public float ReactionTime = 0.35f;
+
+    /// <summary>Variação aleatória do atraso, para dois bots não
+    /// reagirem em sincronia.</summary>
+    [Export] public float ReactionJitter = 0.2f;
+
+    /// <summary>Velocidade de giro ao se virar para o atacante. Mais
+    /// lenta que o giro normal: o bot foi pego de surpresa.</summary>
+    [Export] public float AlertTurnSpeed = 4.5f;
+
     [Export] public bool Debug = false;
 
     private Health _health;
@@ -93,6 +107,10 @@ public partial class Bot : CharacterBody3D
     private bool _firing;
     private double _strafeTimer;
     private int _strafeSide = 1;
+    private double _reactionTimer;
+    private Vector3 _threatFrom;
+    private bool _reacting;
+    private bool _alerted;
 
     public override void _Ready()
     {
@@ -105,6 +123,7 @@ public partial class Bot : CharacterBody3D
         _spawn = GlobalPosition;
 
         _health.Died += OnDied;
+        _health.Damaged += OnDamaged;
         _health.Respawned += OnRespawned;
 
         // O bot é dono de si: sem isto o Weapon e o FormController
@@ -120,6 +139,8 @@ public partial class Bot : CharacterBody3D
             MoveAndSlide();
             return;
         }
+
+        UpdateReaction(delta);
 
         _target ??= GetTree().GetFirstNodeInGroup("player") as Node3D;
 
@@ -271,10 +292,15 @@ public partial class Bot : CharacterBody3D
         if (flat.LengthSquared() < 0.01f) return;
 
         float desired = Mathf.Atan2(-flat.X, -flat.Z) + _aimOffset.Y;
-        Rotation = new Vector3(
-            0,
-            Mathf.LerpAngle(Rotation.Y, desired, TurnSpeed * (float)delta),
-            0);
+
+        // Pego de surpresa, gira mais devagar até ficar de frente.
+        float turn = _alerted ? AlertTurnSpeed : TurnSpeed;
+        float next = Mathf.LerpAngle(Rotation.Y, desired, turn * (float)delta);
+
+        if (_alerted && Mathf.Abs(Mathf.AngleDifference(next, desired)) < 0.15f)
+            _alerted = false;
+
+        Rotation = new Vector3(0, next, 0);
 
         // A cabeça mira na altura certa; a arma parte dela.
         float height = toTarget.Y - _head.Position.Y;
@@ -376,6 +402,37 @@ public partial class Bot : CharacterBody3D
         if (!HasLineOfSight()) return;
 
         _weapon.TryAttack();
+    }
+
+    /// <summary>
+    /// Levou tiro. Não reage na hora: marca a origem e conta um tempo
+    /// curto antes de se virar. Reação instantânea é desumana e anula
+    /// o prêmio de atacar pelas costas.
+    /// </summary>
+    private void OnDamaged(float amount, Vector3 from)
+    {
+        if (_health.IsDead) return;
+        if (from == Vector3.Zero) return;
+        if (_reacting) return;
+
+        _reacting = true;
+        _threatFrom = from;
+        _reactionTimer = ReactionTime + GD.RandRange(0, ReactionJitter);
+    }
+
+    private void UpdateReaction(double delta)
+    {
+        if (!_reacting) return;
+
+        _reactionTimer -= delta;
+        if (_reactionTimer > 0) return;
+
+        _reacting = false;
+
+        // Acordou: passa a saber que há alguém, mesmo sem ter visto.
+        // O giro em si é gradual, feito pelo FaceTarget.
+        _memoryTimer = Memory;
+        _alerted = true;
     }
 
     private void OnDied(int killerId)

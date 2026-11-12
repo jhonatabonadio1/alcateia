@@ -347,6 +347,19 @@ errado.
 Rajada e pausa existem para dar ao jogador janela de reagir e para
 deixar claro de onde vem o tiro. Fogo contínuo esconde as duas coisas.
 
+### Retorno de combate
+
+- **Acerto**: quatro riscos em volta do crosshair. Brancos no corpo,
+  vermelhos e maiores na cabeça. Sem isso não se sabe se o tiro pegou.
+- **Dano na cabeça**: 2,5× o dano. A zona é a faixa superior do corpo,
+  medida a partir do centro — continua valendo quando houver modelo.
+- **Levar dano**: faixas vermelhas nas quatro bordas da tela, que
+  somem em menos de meio segundo.
+- **Bot alvejado**: não vira na hora. Marca a origem do tiro, espera
+  um tempo curto com variação aleatória, e só então gira — mais devagar
+  que o giro normal, porque foi pego de surpresa. Reação instantânea é
+  desumana e anula o prêmio de atacar pelas costas.
+
 ### Todo estado do jogador precisa aparecer na tela
 
 Morrer sem aviso é indistinguível de travar — o jogador relatou
