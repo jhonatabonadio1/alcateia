@@ -452,7 +452,7 @@ public partial class Hud : CanvasLayer
         }
 
         HBoxContainer howl = UiKit.Row(UiTokens.S2);
-        _howlLabel = UiKit.Caption("Uivo · R", UiTokens.TextPrimary);
+        _howlLabel = UiKit.Caption("Uivo · segure R", UiTokens.TextPrimary);
         _howlLabel.CustomMinimumSize = new Vector2(190, 0);
         howl.AddChild(_howlLabel);
         _howlBar = Bar(UiTokens.Accent, 6);
@@ -697,7 +697,7 @@ public partial class Hud : CanvasLayer
 
         float howl = _player?.HowlProgress ?? 0f;
         _howlBar.Value = howl;
-        _howlLabel.Text = howl > 0 ? "UIVANDO · ESCUDO NO FIM" : "UIVO · R";
+        _howlLabel.Text = howl > 0 ? "SEGURE R · ESCUDO NO FIM" : "UIVO · SEGURE R";
     }
 
     // ================================================================== forma

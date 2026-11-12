@@ -745,13 +745,13 @@ public partial class Player : CharacterBody3D
     private bool IsHowling => _howling;
 
     /// <summary>
-    /// Rugido: um toque em R começa, e ele vai até o fim da animação —
-    /// soltar não cancela. Só no fim o escudo volta cheio. Como o escudo
+    /// Rugido: segurar R do começo ao fim da animação devolve o escudo
+    /// cheio. Soltar no meio corta o rugido sem escudo. Como o escudo
     /// escorre sozinho, rugir é decidir ficar exposto agora para
     /// sobreviver depois — e o som entrega a posição, que é a outra
     /// metade do preço.
     ///
-    /// Morrer ou deixar de ser lobo no meio corta o rugido sem pagar.
+    /// Morrer ou deixar de ser lobo no meio também corta sem pagar.
     /// </summary>
     private void UpdateHowl(double delta)
     {
@@ -769,7 +769,9 @@ public partial class Player : CharacterBody3D
             _howlProgress = 0;
         }
 
-        if (_health.IsDead || !_form.IsWolf)
+        // Segurar é o compromisso: soltar R no meio corta o rugido sem
+        // escudo (decisão do Jhon). Morrer ou deixar de ser lobo também.
+        if (_health.IsDead || !_form.IsWolf || !Input.IsActionPressed("howl"))
         {
             _howling = false;
             _howlProgress = 0;

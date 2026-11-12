@@ -54,7 +54,7 @@ public readonly record struct WolfClip(string Source, float Start, float End, fl
 /// | pounce | mutant jump attack (3,70 s) | agacha até 0,5 s, topo em 0,97 s, pés no chão em 1,53 s, garras no chão em 1,60 s, de pé em 3,0 s; quadril anda 1,71 m | 0–3,00 s: o salto inteiro; o corpo voa do impulso (0,45 s) aos pés no chão (1,55 s) — quanto, quem diz é a mira. Só a descida do quadril vale (FallOnly): a subida é do corpo, no arco |
 /// | dive | o mesmo jump attack | do topo (1,03 s) às garras no chão (1,60 s) | só a queda |
 /// | dive_land | o mesmo jump attack | da pancada (1,60 s) a de pé | a aterrissagem do bote |
-/// | howl | mutant roaring (5,40 s) | parado até 0,4 s; a volta ao repouso, depois de 4,9 s, fica com a troca para o andar | 0,30–4,90 s |
+/// | howl | mutant roaring (5,40 s) | parado até 0,4 s; a volta ao repouso, depois de 4,9 s, fica com a troca para o andar | 0,30–4,90 s, a 2,3×: 2,0 s |
 ///
 /// Trocou um clipe? Rode a ferramenta de novo e corrija a linha dele.
 /// </summary>
@@ -84,7 +84,7 @@ public static class WolfMoves
         WolfMove.Punch => ("heavy", 2.2f),
         WolfMove.Pounce => ("pounce", 1.4f),
         WolfMove.Leap => ("dive", 1f),
-        _ => ("howl", 1.6f)
+        _ => ("howl", 2.3f)
     };
 
     /// <summary>Escala do Mutant no jogo (<see cref="WolfVisual.ModelScale"/>):
