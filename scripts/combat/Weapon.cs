@@ -68,6 +68,10 @@ public partial class Weapon : Node3D
 	[Export] public Color TracerColor = new Color(1f, 0.9f, 0.5f, 0.9f);
 	[Export] public float TracerLife = 0.08f;
 
+	/// <summary>Raio do estampido. Atirar sempre entrega a posição —
+	/// é o custo de usar a arma.</summary>
+	[Export] public float ShotNoise = 60f;
+
 	/// <summary>Slot de arma guardado enquanto você está de lobo, para
 	/// voltar nele ao destransformar.</summary>
 	public Slot HumanSlot { get; private set; } = Slot.Primary;
@@ -164,6 +168,8 @@ public partial class Weapon : Node3D
 
 		_cooldown = primary ? PrimaryCooldown : SecondaryCooldown;
 		EmitSignal(SignalName.Fired);
+
+		NoiseBus.Emit(_body.GlobalPosition, ShotNoise, NoiseKind.Shot, _body);
 
 		Vector3 from = _camera.GlobalPosition;
 		Vector3 to = from - _camera.GlobalTransform.Basis.Z * range;

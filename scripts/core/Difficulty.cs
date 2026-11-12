@@ -55,6 +55,8 @@ public static class Difficulty
                 bot.SightRange = 26f;
                 bot.FieldOfView = 100f;
                 bot.Memory = 1.5f;
+                bot.Hearing = 0.6f;
+                bot.HearingError = 5f;
 
                 bot.ReactionTime = 0.8f;
                 bot.ReactionJitter = 0.35f;
@@ -78,6 +80,8 @@ public static class Difficulty
                 bot.SightRange = 40f;
                 bot.FieldOfView = 140f;
                 bot.Memory = 3f;
+                bot.Hearing = 1f;
+                bot.HearingError = 2.5f;
 
                 bot.ReactionTime = 0.4f;
                 bot.ReactionJitter = 0.2f;
@@ -104,6 +108,8 @@ public static class Difficulty
                 bot.SightRange = 55f;
                 bot.FieldOfView = 170f;
                 bot.Memory = 5f;
+                bot.Hearing = 1.35f;
+                bot.HearingError = 1.2f;
 
                 bot.ReactionTime = 0.2f;
                 bot.ReactionJitter = 0.1f;

@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/actors/Bot.cs" id="1_bot"]
 [ext_resource type="Script" path="res://scripts/combat/Health.cs" id="2_health"]
 [ext_resource type="Script" path="res://scripts/forms/FormController.cs" id="3_form"]
 [ext_resource type="Script" path="res://scripts/combat/Weapon.cs" id="4_weapon"]
 [ext_resource type="Resource" path="res://resources/breeds/bruto.tres" id="5_breed"]
+[ext_resource type="Script" path="res://scripts/ui/HealthBar3D.cs" id="6_bar"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_bot"]
 radius = 0.4
@@ -38,6 +39,9 @@ script = ExtResource("2_health")
 [node name="FormController" type="Node" parent="."]
 script = ExtResource("3_form")
 Breed = ExtResource("5_breed")
+
+[node name="HealthBar" type="Node3D" parent="."]
+script = ExtResource("6_bar")
 
 [node name="Weapon" type="Node3D" parent="."]
 script = ExtResource("4_weapon")

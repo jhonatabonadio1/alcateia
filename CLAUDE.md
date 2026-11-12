@@ -362,6 +362,65 @@ Vida e escudo aparecem como **números**, não barras. Com um recurso
 que vaza continuamente, o jogador precisa ler quanto resta, não
 estimar por comprimento.
 
+### Som é informação de jogo
+
+Ruído passa por um barramento (`scripts/core/NoiseBus.cs`): quem faz
+barulho publica, quem ouve se inscreve, e nenhum dos dois conhece o
+outro. É o padrão de *stimulus broadcast* usado em IA de stealth —
+a alternativa, cada bot varrer o mundo procurando coisas barulhentas,
+acopla a IA a tudo que existe.
+
+| Evento | Raio |
+|---|---|
+| Passo humano | 13m |
+| Passo de lobo | 20m |
+| Aterrissagem | 17m |
+| Tiro | 60m |
+| Rugido | 45m |
+| Explosão | ~39m |
+
+**Agachado não faz barulho nenhum.** É isso que dá ao agachamento um
+propósito tático em vez de ser só um botão de ficar menor.
+
+O passo sai por distância percorrida, não por tempo: a cadência
+acompanha a velocidade sozinha e andar devagar faz menos barulho.
+
+Quando houver áudio de verdade, ele acompanha o evento em vez de
+substituí-lo. O que o bot ouve e o que o jogador ouve precisam ser a
+mesma coisa, senão o jogador não consegue prever a reação.
+
+### Como o bot pensa
+
+Três camadas, que é como IA de FPS se organiza desde os anos 2000:
+
+**Percepção** — visão e audição são sentidos independentes que
+alimentam uma única crença: onde o alvo *provavelmente* está. Visão
+exige distância, ângulo e linha de visada. Audição dá posição com
+erro, porque ouvir não é ver — um bot que localiza som com precisão
+cirúrgica parece trapacear.
+
+**Estado** — máquina explícita com quatro estados:
+
+```
+Idle  --[ouviu]-->      Investigate
+Idle  --[viu]-->        Combat
+Investigate --[viu]-->  Combat
+Combat --[perdeu]-->    Search
+Search --[desistiu]-->  Idle
+```
+
+**Ação** — movimento e tiro decorrem do estado.
+
+A regra que sustenta tudo: **o bot nunca lê a posição do jogador para
+decidir**, só a última posição conhecida. É isso que produz
+comportamento legível — ele vai aonde você estava, e você entende por
+quê. Ler a posição real produz onisciência disfarçada, que o jogador
+percebe mesmo sem saber nomear.
+
+Ao chegar no destino sem achar ninguém, ele varre o entorno girando e
+só então desiste. Procurar e desistir visivelmente é o que faz o
+jogador confiar que esconder-se funciona.
+
 ### Dificuldade dos bots
 
 Três níveis, em `scripts/core/Difficulty.cs`. O que muda é
@@ -380,6 +439,8 @@ taxa de erro deliberado, e sustentação de fogo. Depois vêm percepção
 | Rajada / pausa | 0,45 / 1,3 | 0,7 / 0,65 | 0,95 / 0,35 |
 | Visão | 26m / 100° | 40m / 140° | 55m / 170° |
 | Velocidade | 3,4 | 4,2 | 4,9 |
+| Audição | 0,6× | 1,0× | 1,35× |
+| Erro ao localizar som | 5m | 2,5m | 1,2m |
 
 **Nem no difícil o erro vai a zero.** Um bot que acerta sempre não é
 difícil, é injusto — e o jogador desiste em vez de melhorar.

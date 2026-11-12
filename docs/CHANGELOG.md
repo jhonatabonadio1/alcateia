@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.10.0 — 2026-11-11
+
+### Adicionado
+- **Barramento de ruído** (`NoiseBus`): passos, aterrissagem, tiro,
+  rugido e explosão publicam posição e raio. Agachado não emite nada.
+- **Audição nos bots**: localizam a origem do som com erro, porque
+  ouvir não é ver. Não acumula com a visão — quem já vê o alvo ignora
+  som.
+- **Máquina de estados do bot**: Idle, Investigate, Combat e Search.
+  O bot age sempre sobre a última posição conhecida, nunca sobre a
+  posição real do jogador. Ao chegar sem achar ninguém, varre o
+  entorno girando e desiste.
+- **Barra de vida sobre os bots**, no mundo e não no HUD, com billboard
+  e teste de profundidade — barra visível através da parede entregaria
+  posição de graça. Mostra escudo quando há.
+- Audição e precisão de localização entram nos perfis de dificuldade.
+
 ## v0.9.0 — 2026-11-11
 
 ### Adicionado

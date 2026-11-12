@@ -78,6 +78,7 @@ public partial class Grenade : RigidBody3D
                 player.ApplyStun(StunDuration * falloff, StunSlowFactor);
         }
 
+        NoiseBus.Emit(GlobalPosition, Radius * 6f, NoiseKind.Explosion, this);
         SpawnFlash();
         QueueFree();
     }

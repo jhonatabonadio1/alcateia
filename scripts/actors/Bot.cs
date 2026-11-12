@@ -1,105 +1,116 @@
 using Godot;
+using System;
+
+public enum BotState
+{
+    /// <summary>Não sabe de nada. Fica de guarda.</summary>
+    Idle,
+
+    /// <summary>Ouviu algo. Vai até lá sem saber o que é.</summary>
+    Investigate,
+
+    /// <summary>Vê o alvo. Atira.</summary>
+    Combat,
+
+    /// <summary>Viu e perdeu. Procura em volta da última posição.</summary>
+    Search
+}
 
 /// <summary>
 /// Oponente controlado por código.
 ///
 /// Reusa Health, FormController e Weapon — os mesmos componentes do
-/// jogador. Isso não é economia de código: é o que garante que o
-/// balanceamento testado contra o bot valha contra uma pessoa. Um bot
-/// com regras próprias mediria outro jogo.
+/// jogador. Isso garante que o balanceamento medido contra o bot valha
+/// contra uma pessoa; um bot com regras próprias mediria outro jogo.
 ///
-/// Navegação é por direção e desvio, não por caminho calculado. Num
-/// mapa aberto funciona; em corredores ele vai encostar em quina.
-/// Navegação de verdade pede navmesh, e navmesh pede mapa.
+/// Arquitetura em três camadas, que é como IA de FPS se organiza desde
+/// os anos 2000:
 ///
-/// Fase 2: o bot roda só no servidor. Nada aqui é replicado.
+///   PERCEPÇÃO  sentidos independentes (visão, audição) que alimentam
+///              uma única crença: onde o alvo provavelmente está.
+///   ESTADO     máquina explícita, sem comportamento implícito em
+///              condicionais espalhadas.
+///   AÇÃO       movimento e tiro decorrem do estado atual.
+///
+/// O bot nunca lê a posição do jogador direto para decidir: ele age
+/// sobre a última posição conhecida. É o que produz comportamento
+/// legível — ele vai aonde você estava, e você entende por quê.
 /// </summary>
 public partial class Bot : CharacterBody3D
 {
-    // --- Percepção ---
+    // --- Percepção: visão ---
 
     [Export] public float SightRange = 40f;
 
     /// <summary>Campo de visão em graus, total.</summary>
     [Export] public float FieldOfView = 140f;
 
-    /// <summary>Tempo que continua perseguindo depois de perder de
-    /// vista. Sem isso o bot desiste no primeiro obstáculo.</summary>
+    /// <summary>Tempo que continua acreditando no alvo depois de
+    /// perdê-lo de vista.</summary>
     [Export] public float Memory = 3f;
+
+    // --- Percepção: audição ---
+
+    /// <summary>Multiplicador do raio dos ruídos. Abaixo de 1 o bot é
+    /// surdo para sons distantes.</summary>
+    [Export] public float Hearing = 1f;
+
+    /// <summary>Erro ao localizar um som, em metros. Ouvir não é ver:
+    /// o bot vai à direção certa, não ao ponto exato.</summary>
+    [Export] public float HearingError = 2.5f;
 
     // --- Movimento ---
 
     [Export] public float Speed = 4.2f;
     [Export] public float TurnSpeed = 8f;
 
-    /// <summary>Distância que tenta manter do alvo na forma humana.
-    /// Perto demais, a arma perde a vantagem.</summary>
+    /// <summary>Distância que tenta manter do alvo na forma humana.</summary>
     [Export] public float PreferredRange = 12f;
+
+    /// <summary>Raio de chegada ao destino de investigação.</summary>
+    [Export] public float ArriveRadius = 2.5f;
+
+    /// <summary>Tempo olhando em volta ao chegar no destino.</summary>
+    [Export] public float ScanTime = 2.5f;
 
     // --- Decisão de forma ---
     //
-    // O bot é um atirador. Virar lobo é recurso de desespero, não
-    // tática padrão: como lobo é corpo-a-corpo, um bot que transforma
-    // cedo gruda no jogador e nunca mais atira.
+    // O bot é um atirador. Virar lobo é recurso de desespero: como o
+    // lobo é corpo-a-corpo, um bot que transforma cedo gruda no
+    // jogador e nunca mais atira.
 
-    /// <summary>Vira lobo abaixo desta fração de vida.</summary>
     [Export] public float WolfHealthThreshold = 0.4f;
-
-    /// <summary>E só se o alvo estiver a esta distância ou menos —
-    /// virar lobo longe do alvo é suicídio.</summary>
     [Export] public float WolfRange = 14f;
-
-    /// <summary>Volta a humano acima desta distância.</summary>
     [Export] public float HumanRange = 20f;
-
     [Export] public float DecisionInterval = 0.4f;
 
     // --- Combate ---
 
-    /// <summary>Duração da rajada e da pausa entre elas. Fogo contínuo
-    /// não dá ao jogador nenhuma janela para reagir.</summary>
     [Export] public float BurstTime = 0.7f;
     [Export] public float BurstPause = 0.6f;
-
-    /// <summary>Alcance efetivo. Além disso não atira: um bot que
-    /// acerta do outro lado do mapa é insuportável.</summary>
     [Export] public float EngageRange = 45f;
-
-    /// <summary>Velocidade do deslocamento lateral em combate.</summary>
     [Export] public float StrafeFactor = 0.8f;
-
-    /// <summary>Intervalo entre trocas de lado no strafe.</summary>
     [Export] public float StrafeInterval = 1.4f;
-
-    // --- Pontaria ---
 
     /// <summary>Erro de mira em graus. Zero faz um bot desumano.</summary>
     [Export] public float AimError = 4f;
 
-    /// <summary>Fração dos tiros que erra de propósito, com desvio
-    /// bem maior. É o que separa um bot fácil de um difícil mais que
-    /// qualquer outra coisa — e mesmo no difícil não vai a zero: um
-    /// bot que acerta sempre não é difícil, é injusto.</summary>
+    /// <summary>Fração dos tiros que erra de propósito, com desvio bem
+    /// maior. Nem no difícil vai a zero: um bot que acerta sempre não
+    /// é difícil, é injusto.</summary>
     [Export] public float MissChance = 0.2f;
 
-    /// <summary>Desvio em graus de um tiro errado de propósito.</summary>
     [Export] public float MissSpread = 14f;
 
     // --- Reação a levar tiro ---
 
-    /// <summary>Atraso entre levar tiro e reagir. Virar na hora é
-    /// desumano e tira do jogador o prêmio de atacar pelas costas.</summary>
     [Export] public float ReactionTime = 0.35f;
-
-    /// <summary>Variação aleatória do atraso, para dois bots não
-    /// reagirem em sincronia.</summary>
     [Export] public float ReactionJitter = 0.2f;
-
-    /// <summary>Velocidade de giro ao se virar para o atacante. Mais
-    /// lenta que o giro normal: o bot foi pego de surpresa.</summary>
     [Export] public float AlertTurnSpeed = 4.5f;
 
     [Export] public bool Debug = false;
+
+    public BotState State { get; private set; } = BotState.Idle;
 
     private Health _health;
     private FormController _form;
@@ -109,17 +120,26 @@ public partial class Bot : CharacterBody3D
 
     private float _gravity = 9.8f;
     private Vector3 _spawn;
+
+    /// <summary>Onde o bot acredita que o alvo está. Toda ação sai
+    /// daqui, nunca da posição real.</summary>
+    private Vector3 _lastKnown;
+    private bool _hasBelief;
+
     private double _memoryTimer;
     private double _decisionTimer;
-    private Vector3 _aimOffset;
+    private double _scanTimer;
     private double _burstTimer;
     private bool _firing;
     private double _strafeTimer;
     private int _strafeSide = 1;
     private double _reactionTimer;
-    private Vector3 _threatFrom;
     private bool _reacting;
     private bool _alerted;
+    private Vector3 _aimOffset;
+    private float _scanAngle;
+
+    private Action<Noise> _ear;
 
     public override void _Ready()
     {
@@ -135,41 +155,169 @@ public partial class Bot : CharacterBody3D
         Difficulty.Apply(this);
 
         _health.Died += OnDied;
-        _health.Damaged += OnDamaged;
         _health.Respawned += OnRespawned;
+        _health.Damaged += OnDamaged;
 
-        // O bot é dono de si: sem isto o Weapon e o FormController
-        // rejeitariam os comandos num jogo em rede.
-        SetMultiplayerAuthority(GetMultiplayerAuthority());
+        _ear = OnNoise;
+        NoiseBus.Subscribe(_ear);
     }
+
+    public override void _ExitTree() => NoiseBus.Unsubscribe(_ear);
 
     public override void _PhysicsProcess(double delta)
     {
         if (_health.IsDead)
         {
-            Velocity = new Vector3(0, Velocity.Y - _gravity * (float)delta, 0);
-            MoveAndSlide();
+            Fall(delta);
             return;
         }
-
-        UpdateReaction(delta);
 
         _target ??= GetTree().GetFirstNodeInGroup("player") as Node3D;
 
-        if (_target == null)
+        UpdateReaction(delta);
+        UpdateSight(delta);
+        UpdateState(delta);
+
+        switch (State)
         {
-            Idle(delta);
-            return;
+            case BotState.Combat: RunCombat(delta); break;
+            case BotState.Investigate:
+            case BotState.Search: RunSearch(delta); break;
+            default: RunIdle(delta); break;
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // PERCEPÇÃO
+
+    /// <summary>Visão: precisa estar perto, à frente e sem parede no
+    /// meio. Os três, não um dos três.</summary>
+    private void UpdateSight(double delta)
+    {
+        _memoryTimer -= delta;
+
+        if (_target == null) return;
+
+        Vector3 toTarget = _target.GlobalPosition - GlobalPosition;
+        if (toTarget.Length() > SightRange) return;
+
+        Vector3 flat = new Vector3(toTarget.X, 0, toTarget.Z).Normalized();
+        Vector3 facing = -GlobalTransform.Basis.Z;
+
+        float angle = Mathf.RadToDeg(Mathf.Acos(Mathf.Clamp(flat.Dot(facing), -1f, 1f)));
+        if (angle > FieldOfView * 0.5f) return;
+
+        if (!HasLineOfSight()) return;
+
+        Believe(_target.GlobalPosition, Memory);
+    }
+
+    /// <summary>
+    /// Audição. Som não revela o quê, só o onde — e com erro, porque
+    /// ouvir não é ver. Um bot que localiza som com precisão cirúrgica
+    /// parece trapacear.
+    /// </summary>
+    private void OnNoise(Noise noise)
+    {
+        if (_health.IsDead) return;
+        if (noise.Source == this) return;
+
+        float distance = GlobalPosition.DistanceTo(noise.Position);
+        if (distance > noise.Radius * Hearing) return;
+
+        // Já vendo o alvo, som não acrescenta nada.
+        if (State == BotState.Combat) return;
+
+        var error = new Vector3(
+            (float)GD.RandRange(-HearingError, HearingError),
+            0,
+            (float)GD.RandRange(-HearingError, HearingError));
+
+        Believe(noise.Position + error, Memory);
+
+        if (Debug) GD.Print($"{Name} ouviu {noise.Kind} a {distance:0}m");
+    }
+
+    /// <summary>Registra onde o bot acha que o alvo está.</summary>
+    private void Believe(Vector3 position, double duration)
+    {
+        _lastKnown = position;
+        _hasBelief = true;
+        _memoryTimer = duration;
+    }
+
+    private bool CanSeeTarget()
+    {
+        if (_target == null) return false;
+
+        Vector3 toTarget = _target.GlobalPosition - GlobalPosition;
+        if (toTarget.Length() > SightRange) return false;
+
+        Vector3 flat = new Vector3(toTarget.X, 0, toTarget.Z).Normalized();
+        float angle = Mathf.RadToDeg(
+            Mathf.Acos(Mathf.Clamp(flat.Dot(-GlobalTransform.Basis.Z), -1f, 1f)));
+
+        return angle <= FieldOfView * 0.5f && HasLineOfSight();
+    }
+
+    private bool HasLineOfSight()
+    {
+        if (_target == null) return false;
+
+        var query = PhysicsRayQueryParameters3D.Create(
+            _head.GlobalPosition, _target.GlobalPosition + Vector3.Up * 0.4f);
+
+        query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+
+        var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+        if (hit.Count == 0) return true;
+
+        return hit["collider"].Obj == _target;
+    }
+
+    // ------------------------------------------------------------------
+    // ESTADO
+
+    /// <summary>
+    /// Transições explícitas. Ter os estados nomeados vale mais que a
+    /// economia de um punhado de condicionais: o comportamento fica
+    /// legível para quem depura e previsível para quem joga.
+    /// </summary>
+    private void UpdateState(double delta)
+    {
+        BotState previous = State;
+
+        if (CanSeeTarget())
+        {
+            State = BotState.Combat;
+            _scanTimer = 0;
+        }
+        else if (State == BotState.Combat)
+        {
+            // Perdeu de vista: vai até onde o alvo estava.
+            State = BotState.Search;
+            _scanTimer = ScanTime;
+        }
+        else if (_hasBelief && _memoryTimer > 0)
+        {
+            if (State != BotState.Search)
+                State = BotState.Investigate;
+        }
+        else if (_memoryTimer <= 0)
+        {
+            State = BotState.Idle;
+            _hasBelief = false;
         }
 
-        Perceive(delta);
+        if (Debug && State != previous)
+            GD.Print($"{Name}: {previous} -> {State}");
+    }
 
-        if (_memoryTimer <= 0)
-        {
-            Idle(delta);
-            return;
-        }
+    // ------------------------------------------------------------------
+    // AÇÃO
 
+    private void RunCombat(double delta)
+    {
         _decisionTimer -= delta;
 
         if (_decisionTimer <= 0)
@@ -185,195 +333,81 @@ public partial class Bot : CharacterBody3D
         Vector3 toTarget = _target.GlobalPosition - GlobalPosition;
         float distance = new Vector3(toTarget.X, 0, toTarget.Z).Length();
 
-        FaceTarget(delta);
-        Advance(distance, toTarget, delta);
+        FaceDirection(_target.GlobalPosition, delta);
+        Maneuver(distance, toTarget, delta);
         Engage(distance);
     }
 
-    // ------------------------------------------------------------------
-
-    /// <summary>Vê o alvo? Precisa estar perto, à frente e sem parede
-    /// no meio. Os três, não um dos três.</summary>
-    private void Perceive(double delta)
-    {
-        _memoryTimer -= delta;
-
-        Vector3 toTarget = _target.GlobalPosition - GlobalPosition;
-
-        if (toTarget.Length() > SightRange) return;
-
-        Vector3 flat = new Vector3(toTarget.X, 0, toTarget.Z).Normalized();
-        Vector3 facing = -GlobalTransform.Basis.Z;
-
-        float angle = Mathf.RadToDeg(Mathf.Acos(Mathf.Clamp(flat.Dot(facing), -1f, 1f)));
-        if (angle > FieldOfView * 0.5f) return;
-
-        if (!HasLineOfSight()) return;
-
-        _memoryTimer = Memory;
-    }
-
-    private bool HasLineOfSight()
-    {
-        var query = PhysicsRayQueryParameters3D.Create(
-            _head.GlobalPosition, _target.GlobalPosition + Vector3.Up * 0.5f);
-
-        query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
-
-        var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
-        if (hit.Count == 0) return true;
-
-        return hit["collider"].Obj == _target;
-    }
-
-    private void Idle(double delta)
-    {
-        Vector3 velocity = Velocity;
-
-        velocity.X = Mathf.MoveToward(velocity.X, 0, Speed * 3f * (float)delta);
-        velocity.Z = Mathf.MoveToward(velocity.Z, 0, Speed * 3f * (float)delta);
-        velocity.Y = IsOnFloor() ? 0 : velocity.Y - _gravity * (float)delta;
-
-        Velocity = velocity;
-        MoveAndSlide();
-    }
-
     /// <summary>
-    /// Vira lobo de perto, volta a humano de longe. As duas distâncias
-    /// são diferentes de propósito: iguais, o bot ficaria oscilando
-    /// entre as formas na fronteira.
+    /// Vai até a última posição conhecida e olha em volta. Se não achar
+    /// nada, desiste. É o que transforma um som em comportamento
+    /// legível: o jogador vê o bot indo aonde ele estava.
     /// </summary>
-    private void DecideForm()
+    private void RunSearch(double delta)
     {
-        float distance = GlobalPosition.DistanceTo(_target.GlobalPosition);
-        float healthRatio = _health.MaxHp > 0 ? _health.Hp / _health.MaxHp : 1f;
+        float distance = new Vector3(
+            _lastKnown.X - GlobalPosition.X, 0,
+            _lastKnown.Z - GlobalPosition.Z).Length();
 
-        if (!_form.IsWolf)
+        if (distance > ArriveRadius)
         {
-            // Encurralado e com o alvo ao alcance: aposta no lobo.
-            if (healthRatio <= WolfHealthThreshold && distance <= WolfRange)
-                _weapon.SelectSlot(Slot.Wolf);
-
+            FaceDirection(_lastKnown, delta);
+            MoveTowards((_lastKnown - GlobalPosition).Normalized(), Speed * 0.85f, delta);
             return;
         }
 
-        // Alvo escapou, ou a vida voltou ao normal depois de renascer.
-        if (distance > HumanRange || healthRatio > WolfHealthThreshold)
-            _weapon.SelectSlot(Slot.Primary);
+        // Chegou: varre o entorno girando devagar.
+        _scanTimer -= delta;
+
+        if (_scanTimer <= 0)
+        {
+            _hasBelief = false;
+            _memoryTimer = 0;
+            return;
+        }
+
+        _scanAngle += (float)delta * 1.8f;
+        Rotation = new Vector3(0, _scanAngle, 0);
+
+        MoveTowards(Vector3.Zero, Speed, delta);
     }
 
-    /// <summary>Rajada e pausa. Fogo contínuo não deixa o jogador
-    /// respirar e esconde de onde vem o tiro.</summary>
-    private void UpdateBurst(double delta)
-    {
-        _burstTimer -= delta;
+    private void RunIdle(double delta) => MoveTowards(Vector3.Zero, Speed, delta);
 
-        if (_burstTimer > 0) return;
-
-        _firing = !_firing;
-        _burstTimer = _firing ? BurstTime : BurstPause;
-    }
-
-    /// <summary>Troca de lado periodicamente. Um bot parado em linha
-    /// reta é alvo de tiro ao prato.</summary>
-    private void UpdateStrafe(double delta)
-    {
-        _strafeTimer -= delta;
-
-        if (_strafeTimer > 0) return;
-
-        _strafeSide = GD.Randf() < 0.5f ? -1 : 1;
-        _strafeTimer = StrafeInterval * GD.RandRange(0.6, 1.4);
-    }
-
-    /// <summary>
-    /// Sorteia o desvio da mira. Na maior parte das vezes é o erro
-    /// normal; de vez em quando é um tiro jogado fora de propósito.
-    ///
-    /// Errar explicitamente é melhor que só aumentar o erro médio:
-    /// mantém os acertos convincentes e dá ao jogador janelas claras
-    /// em vez de um chuvisco constante de quase-acertos.
-    /// </summary>
-    private void ShuffleAim()
-    {
-        bool miss = GD.Randf() < MissChance;
-        float spread = Mathf.DegToRad(miss ? MissSpread : AimError);
-
-        _aimOffset = new Vector3(
-            (float)GD.RandRange(-spread, spread),
-            (float)GD.RandRange(-spread, spread),
-            0);
-    }
-
-    private void FaceTarget(double delta)
-    {
-        Vector3 toTarget = _target.GlobalPosition - GlobalPosition;
-        Vector3 flat = new Vector3(toTarget.X, 0, toTarget.Z);
-
-        if (flat.LengthSquared() < 0.01f) return;
-
-        float desired = Mathf.Atan2(-flat.X, -flat.Z) + _aimOffset.Y;
-
-        // Pego de surpresa, gira mais devagar até ficar de frente.
-        float turn = _alerted ? AlertTurnSpeed : TurnSpeed;
-        float next = Mathf.LerpAngle(Rotation.Y, desired, turn * (float)delta);
-
-        if (_alerted && Mathf.Abs(Mathf.AngleDifference(next, desired)) < 0.15f)
-            _alerted = false;
-
-        Rotation = new Vector3(0, next, 0);
-
-        // A cabeça mira na altura certa; a arma parte dela.
-        float height = toTarget.Y - _head.Position.Y;
-        float pitch = Mathf.Atan2(height, flat.Length()) + _aimOffset.X;
-
-        _head.Rotation = new Vector3(
-            Mathf.Clamp(pitch, Mathf.DegToRad(-70f), Mathf.DegToRad(70f)),
-            0, 0);
-    }
-
-    /// <summary>
-    /// De lobo, fecha a distância. De humano, mantém o alcance da arma:
-    /// aproxima se está longe, recua se está perto demais.
-    /// </summary>
-    private void Advance(float distance, Vector3 toTarget, double delta)
+    private void Maneuver(float distance, Vector3 toTarget, double delta)
     {
         Vector3 flat = new Vector3(toTarget.X, 0, toTarget.Z).Normalized();
         Vector3 side = flat.Cross(Vector3.Up).Normalized() * _strafeSide;
         Vector3 desired;
 
         if (_form.IsWolf)
-        {
-            // Como lobo, fechar a distância é a única jogada.
             desired = flat;
-        }
         else if (distance > PreferredRange * 1.25f)
-        {
-            // Longe demais: aproxima, mas já deslocando de lado.
             desired = (flat + side * StrafeFactor * 0.5f).Normalized();
-        }
         else if (distance < PreferredRange * 0.7f)
-        {
-            // Perto demais: recua sem dar as costas.
             desired = (-flat + side * StrafeFactor * 0.5f).Normalized();
-        }
         else
-        {
-            // Na distância certa: só circula. É aqui que ele atira,
-            // em vez de grudar no jogador.
             desired = side * StrafeFactor;
-        }
 
-        desired = Avoid(desired);
-
-        Vector3 velocity = Velocity;
         float speed = Speed * (_form.IsWolf ? _form.Breed.SpeedMultiplier : 1f);
+        MoveTowards(Avoid(desired), speed, delta);
+    }
 
-        velocity.X = Mathf.MoveToward(velocity.X, desired.X * speed, speed * 6f * (float)delta);
-        velocity.Z = Mathf.MoveToward(velocity.Z, desired.Z * speed, speed * 6f * (float)delta);
+    private void MoveTowards(Vector3 direction, float speed, double delta)
+    {
+        Vector3 velocity = Velocity;
+
+        velocity.X = Mathf.MoveToward(velocity.X, direction.X * speed, speed * 6f * (float)delta);
+        velocity.Z = Mathf.MoveToward(velocity.Z, direction.Z * speed, speed * 6f * (float)delta);
         velocity.Y = IsOnFloor() ? 0 : velocity.Y - _gravity * (float)delta;
 
         Velocity = velocity;
+        MoveAndSlide();
+    }
+
+    private void Fall(double delta)
+    {
+        Velocity = new Vector3(0, Velocity.Y - _gravity * (float)delta, 0);
         MoveAndSlide();
     }
 
@@ -389,7 +423,6 @@ public partial class Bot : CharacterBody3D
             for (int step = 1; step <= 3; step++)
             {
                 Vector3 candidate = desired.Rotated(Vector3.Up, sign * step * Mathf.Pi / 6f);
-
                 if (!Blocked(candidate)) return candidate;
             }
         }
@@ -407,6 +440,86 @@ public partial class Bot : CharacterBody3D
         return GetWorld3D().DirectSpaceState.IntersectRay(query).Count > 0;
     }
 
+    private void FaceDirection(Vector3 point, double delta)
+    {
+        Vector3 flat = new Vector3(point.X - GlobalPosition.X, 0, point.Z - GlobalPosition.Z);
+        if (flat.LengthSquared() < 0.01f) return;
+
+        float desired = Mathf.Atan2(-flat.X, -flat.Z) + _aimOffset.Y;
+
+        // Pego de surpresa, gira mais devagar até ficar de frente.
+        float turn = _alerted ? AlertTurnSpeed : TurnSpeed;
+        float next = Mathf.LerpAngle(Rotation.Y, desired, turn * (float)delta);
+
+        if (_alerted && Mathf.Abs(Mathf.AngleDifference(next, desired)) < 0.15f)
+            _alerted = false;
+
+        Rotation = new Vector3(0, next, 0);
+        _scanAngle = next;
+
+        float height = point.Y - GlobalPosition.Y - _head.Position.Y;
+        float pitch = Mathf.Atan2(height, flat.Length()) + _aimOffset.X;
+
+        _head.Rotation = new Vector3(
+            Mathf.Clamp(pitch, Mathf.DegToRad(-70f), Mathf.DegToRad(70f)), 0, 0);
+    }
+
+    private void DecideForm()
+    {
+        float distance = GlobalPosition.DistanceTo(_target.GlobalPosition);
+        float ratio = _health.MaxHp > 0 ? _health.Hp / _health.MaxHp : 1f;
+
+        if (!_form.IsWolf)
+        {
+            if (ratio <= WolfHealthThreshold && distance <= WolfRange)
+                _weapon.SelectSlot(Slot.Wolf);
+
+            return;
+        }
+
+        if (distance > HumanRange || ratio > WolfHealthThreshold)
+            _weapon.SelectSlot(Slot.Primary);
+    }
+
+    /// <summary>Rajada e pausa. Fogo contínuo não deixa o jogador
+    /// respirar e esconde de onde vem o tiro.</summary>
+    private void UpdateBurst(double delta)
+    {
+        _burstTimer -= delta;
+        if (_burstTimer > 0) return;
+
+        _firing = !_firing;
+        _burstTimer = _firing ? BurstTime : BurstPause;
+    }
+
+    private void UpdateStrafe(double delta)
+    {
+        _strafeTimer -= delta;
+        if (_strafeTimer > 0) return;
+
+        _strafeSide = GD.Randf() < 0.5f ? -1 : 1;
+        _strafeTimer = StrafeInterval * GD.RandRange(0.6, 1.4);
+    }
+
+    /// <summary>
+    /// Sorteia o desvio da mira. Na maior parte das vezes é o erro
+    /// normal; de vez em quando é um tiro jogado fora de propósito.
+    ///
+    /// Errar explicitamente é melhor que só aumentar o erro médio:
+    /// mantém os acertos convincentes e dá ao jogador janelas claras
+    /// em vez de um chuvisco de quase-acertos.
+    /// </summary>
+    private void ShuffleAim()
+    {
+        bool miss = GD.Randf() < MissChance;
+        float spread = Mathf.DegToRad(miss ? MissSpread : AimError);
+
+        _aimOffset = new Vector3(
+            (float)GD.RandRange(-spread, spread),
+            (float)GD.RandRange(-spread, spread),
+            0);
+    }
+
     private void Engage(float distance)
     {
         if (!_form.CanAttack) return;
@@ -416,14 +529,13 @@ public partial class Bot : CharacterBody3D
             : Mathf.Min(EngageRange, _weapon.PrimaryRange);
 
         if (distance > reach) return;
-
-        // A garrada não tem rajada: é um golpe por cooldown.
         if (!_form.IsWolf && !_firing) return;
-
         if (!HasLineOfSight()) return;
 
         _weapon.TryAttack();
     }
+
+    // ------------------------------------------------------------------
 
     /// <summary>
     /// Levou tiro. Não reage na hora: marca a origem e conta um tempo
@@ -432,13 +544,11 @@ public partial class Bot : CharacterBody3D
     /// </summary>
     private void OnDamaged(float amount, Vector3 from)
     {
-        if (_health.IsDead) return;
-        if (from == Vector3.Zero) return;
-        if (_reacting) return;
+        if (_health.IsDead || from == Vector3.Zero || _reacting) return;
 
         _reacting = true;
-        _threatFrom = from;
         _reactionTimer = ReactionTime + GD.RandRange(0, ReactionJitter);
+        Believe(from, Memory);
     }
 
     private void UpdateReaction(double delta)
@@ -449,10 +559,6 @@ public partial class Bot : CharacterBody3D
         if (_reactionTimer > 0) return;
 
         _reacting = false;
-
-        // Acordou: passa a saber que há alguém, mesmo sem ter visto.
-        // O giro em si é gradual, feito pelo FaceTarget.
-        _memoryTimer = Memory;
         _alerted = true;
     }
 
@@ -461,15 +567,16 @@ public partial class Bot : CharacterBody3D
         if (Debug) GD.Print($"{Name} morreu");
 
         _memoryTimer = 0;
+        _hasBelief = false;
+        _alerted = false;
+        _reacting = false;
+        State = BotState.Idle;
     }
 
-    /// <summary>Só volta ao spawn ao reviver, não ao morrer: o corpo
-    /// precisa ficar onde caiu durante a contagem.</summary>
     private void OnRespawned()
     {
         GlobalPosition = _spawn;
         Velocity = Vector3.Zero;
-        _memoryTimer = 0;
 
         if (_form.IsWolf)
             _weapon.SelectSlot(Slot.Primary);

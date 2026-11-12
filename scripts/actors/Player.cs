@@ -60,6 +60,29 @@ public partial class Player : CharacterBody3D
     /// e recuperar o escudo.</summary>
     [Export] public float HowlRestoreRate = 320f;
 
+    // --- Ruído ---
+    //
+    // Som é informação de jogo: o bot ouve o que o jogador ouviria.
+    // Agachar é silencioso, e é isso que torna o agachamento uma
+    // decisão tática em vez de um botão de encolher.
+
+    /// <summary>Raio do passo humano andando.</summary>
+    [Export] public float StepNoiseHuman = 13f;
+
+    /// <summary>Raio do passo do lobo. Mais alto: o corpo é maior e
+    /// mais rápido, e isso precisa ter um custo.</summary>
+    [Export] public float StepNoiseWolf = 20f;
+
+    /// <summary>Raio do baque ao aterrissar.</summary>
+    [Export] public float LandNoise = 17f;
+
+    /// <summary>Raio do rugido. Muito alto de propósito — entregar a
+    /// posição é metade do preço de recuperar o escudo.</summary>
+    [Export] public float HowlNoise = 45f;
+
+    /// <summary>Distância percorrida entre um passo e outro.</summary>
+    [Export] public float StepDistance = 2.2f;
+
     // --- Corrida em parede (só na forma lobo) ---
 
     /// <summary>Distância máxima até a parede para grudar.</summary>
@@ -133,6 +156,9 @@ public partial class Player : CharacterBody3D
 
     private float _gravity = 9.8f;
     private bool _howling;
+    private float _stepDistance;
+    private bool _wasAirborne;
+    private double _howlNoiseTimer;
 
     private double _stunTimer;
     private float _stunSlow = 1f;
@@ -296,6 +322,7 @@ public partial class Player : CharacterBody3D
             _jumpLock -= delta;
 
         UpdateCrouch(delta);
+        UpdateNoise(delta);
 
         // Uivar trava você no lugar. É o preço da cura.
         if (IsHowling)
@@ -319,6 +346,52 @@ public partial class Player : CharacterBody3D
     }
 
     // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Publica os ruídos do corpo. O passo sai por distância
+    /// percorrida, não por tempo: assim a cadência acompanha a
+    /// velocidade sozinha e andar devagar faz menos barulho.
+    ///
+    /// Agachado não emite nada. É o que dá ao agachamento um propósito
+    /// além de ficar menor.
+    /// </summary>
+    private void UpdateNoise(double delta)
+    {
+        bool grounded = IsOnFloor();
+
+        // Baque de aterrissagem.
+        if (grounded && _wasAirborne)
+            NoiseBus.Emit(GlobalPosition, LandNoise, NoiseKind.Land, this);
+
+        _wasAirborne = !grounded;
+
+        if (_howling)
+        {
+            _howlNoiseTimer -= delta;
+
+            if (_howlNoiseTimer <= 0)
+            {
+                _howlNoiseTimer = 0.5;
+                NoiseBus.Emit(GlobalPosition, HowlNoise, NoiseKind.Howl, this);
+            }
+        }
+
+        if (!grounded || _crouching) return;
+
+        var flat = new Vector3(Velocity.X, 0, Velocity.Z);
+        if (flat.Length() < 0.5f) return;
+
+        _stepDistance += flat.Length() * (float)delta;
+        if (_stepDistance < StepDistance) return;
+
+        _stepDistance = 0;
+
+        NoiseBus.Emit(
+            GlobalPosition,
+            _form.IsWolf ? StepNoiseWolf : StepNoiseHuman,
+            NoiseKind.Step,
+            this);
+    }
 
     private bool IsHowling => _howling;
 
