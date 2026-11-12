@@ -352,6 +352,12 @@ public partial class CharacterAnimator : Node3D
         var library = new AnimationLibrary();
         int count = 0;
 
+        // Os clipes são do X Bot, e o quadril deles fica na altura do X
+        // Bot (1,04 m). O Exo Gray (0,96) e a Ely (0,98) têm pernas mais
+        // curtas: com o quadril do X Bot os pés ficavam 6 a 8 cm acima do
+        // chão. Cada clipe é ajustado para o quadril do modelo em uso.
+        float modelHips = HipsRestHeight(_model);
+
         foreach (string clip in Clips)
         {
             string path = $"{ClipFolder}/{clip}.fbx";
@@ -369,6 +375,10 @@ public partial class CharacterAnimator : Node3D
             if (animation != null)
             {
                 StripRootMotion(animation);
+
+                float clipHips = HipsRestHeight(temp);
+                if (modelHips > 0.01f && clipHips > 0.01f)
+                    MatchHips(animation, modelHips / clipHips);
 
                 // Locomoção precisa repetir; golpe e morte, não.
                 if (clip == "crouch_walk" && CrouchWalkTrim > 0
@@ -566,6 +576,50 @@ public partial class CharacterAnimator : Node3D
 
         foreach (Node child in node.GetChildren())
             SetLayer(child, bit);
+    }
+
+    /// <summary>
+    /// Leva a trilha do quadril de um clipe feito para outro corpo à
+    /// altura deste: multiplica a posição do quadril pela razão entre os
+    /// dois quadris em repouso. Os ossos giram igual em qualquer corpo; é
+    /// só a posição do quadril que vem em metros do corpo original, e é
+    /// ela que deixa os pés no ar (ou enterrados) quando as pernas mudam.
+    /// </summary>
+    public static void MatchHips(Animation animation, float ratio)
+    {
+        if (Mathf.IsEqualApprox(ratio, 1f)) return;
+
+        for (int track = 0; track < animation.GetTrackCount(); track++)
+        {
+            if (animation.TrackGetType(track) != Animation.TrackType.Position3D) continue;
+            if (!animation.TrackGetPath(track).ToString().Contains("Hips")) continue;
+
+            for (int key = 0; key < animation.TrackGetKeyCount(track); key++)
+                animation.TrackSetKeyValue(track, key, (Vector3)animation.TrackGetKeyValue(track, key) * ratio);
+        }
+    }
+
+    /// <summary>Altura do quadril em repouso no esqueleto de uma cena, ou 0.</summary>
+    public static float HipsRestHeight(Node root)
+    {
+        Skeleton3D skeleton = FindSkeleton(root);
+        if (skeleton == null) return 0f;
+
+        int hips = skeleton.FindBone("mixamorig_Hips");
+        return hips < 0 ? 0f : skeleton.GetBoneGlobalRest(hips).Origin.Y;
+    }
+
+    private static Skeleton3D FindSkeleton(Node root)
+    {
+        if (root is Skeleton3D found) return found;
+
+        foreach (Node child in root.GetChildren())
+        {
+            Skeleton3D inner = FindSkeleton(child);
+            if (inner != null) return inner;
+        }
+
+        return null;
     }
 
     public static AnimationPlayer FindPlayer(Node root)
