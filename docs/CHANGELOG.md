@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.11.0 — 2026-11-11
+
+### Corrigido
+- **R não rugia**: a ação `howl` estava gravada no `project.godot`
+  com F, do Input Map configurado à mão no início, e o `InputSetup`
+  não sobrescreve ações existentes. A seção `[input]` foi removida e
+  o código virou a única fonte das teclas.
+- **Sair do lobo parecia levar dano**: o alerta vermelho vinha de ver
+  a vida baixar, e trocar de forma troca o pool de vida. Agora vem do
+  sinal de dano.
+- Transição de volta para humano caiu de 0,8s para 0,2s.
+
+### Alterado
+- **Cada forma guarda a própria vida.** Sair do lobo e voltar devolve
+  o lobo como estava, em vez de restaurar proporção. Morrer zera os
+  dois corpos.
+- **Granada equipa em vez de arremessar**: 4 equipa, o botão de ataque
+  joga. Depois do arremesso volta sozinha para a arma anterior.
+- Corpos mais magros (raio 0,4 → 0,3) e zona de cabeça menor
+  (0,55 → 0,72 do centro), tornando o headshot mais difícil.
+
+### Adicionado
+- **Arma visível em primeira pessoa** (`ViewModel`): rifle, pistola,
+  granada e garras, com recuo no disparo e balanço no passo. Formas
+  geométricas por enquanto; trocar por modelo é trocar a malha.
+
 ## v0.10.1 — 2026-11-11
 
 ### Adicionado

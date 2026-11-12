@@ -94,6 +94,14 @@ public partial class Health : Node
         EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
     }
 
+    /// <summary>Define a vida diretamente, sem contar como dano. Usado
+    /// ao restaurar o estado guardado de uma forma.</summary>
+    public void SetHp(float value)
+    {
+        Hp = Mathf.Clamp(value, 1f, MaxHp);
+        EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
+    }
+
     public void TakeDamage(float amount, int attackerId = 0, Vector3 from = default)
     {
         if (IsDead || amount <= 0) return;

@@ -243,7 +243,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 1 | Arma principal (automática) |
 | 2 | Arma secundária (semiautomática) |
 | 3 | Virar lobo |
-| 4 | Arremessar granada |
+| 4 | Equipar granada (o ataque arremessa) |
 | Clique esq. | Atacar |
 | Ctrl | Agachar (nas duas formas) |
 | R | Rugir — segurar (só de lobo) |
@@ -347,6 +347,22 @@ errado.
 
 Rajada e pausa existem para dar ao jogador janela de reagir e para
 deixar claro de onde vem o tiro. Fogo contínuo esconde as duas coisas.
+
+### Dois corpos, duas vidas
+
+Lobo e humano **não compartilham vida**. Cada forma guarda a própria e
+volta como estava na última vez. Transformar não cura e não zera:
+sair do lobo ferido e voltar devolve o lobo ferido.
+
+Sem isso, trocar de forma vira botão de regeneração — e como
+transformar é gratuito, seria regeneração infinita.
+
+Morrer apaga os dois estados: renascer devolve os dois corpos
+inteiros.
+
+A transição de ida é mais longa que a de volta (0,55s contra 0,2s).
+Virar lobo é um compromisso; voltar é uma retirada, e punir a retirada
+com a mesma espera só faz o jogador se sentir travado.
 
 ### O escudo do lobo
 

@@ -1,19 +1,20 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/actors/Player.cs" id="1_player"]
 [ext_resource type="Script" path="res://scripts/combat/Health.cs" id="2_health"]
 [ext_resource type="Script" path="res://scripts/forms/FormController.cs" id="3_form"]
 [ext_resource type="Script" path="res://scripts/combat/Weapon.cs" id="4_weapon"]
 [ext_resource type="Resource" path="res://resources/breeds/bruto.tres" id="5_breed"]
+[ext_resource type="Script" path="res://scripts/ui/ViewModel.cs" id="7_view"]
 [ext_resource type="PackedScene" path="res://scenes/grenade.tscn" id="6_grenade"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.4
-height = 1.8
+radius = 0.3
+height = 1.75
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_body"]
-radius = 0.4
-height = 1.8
+radius = 0.3
+height = 1.75
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_player")
@@ -28,6 +29,9 @@ mesh = SubResource("CapsuleMesh_body")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Head"]
+
+[node name="ViewModel" type="Node3D" parent="Head/Camera3D"]
+script = ExtResource("7_view")
 
 [node name="SpringArm3D" type="SpringArm3D" parent="Head"]
 spring_length = 3.5

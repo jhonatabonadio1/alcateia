@@ -44,11 +44,11 @@ public partial class Player : CharacterBody3D
     /// <summary>Fração da velocidade enquanto agachado.</summary>
     [Export] public float CrouchSpeedFactor = 0.45f;
 
-    [Export] public float StandHeight = 1.8f;
+    [Export] public float StandHeight = 1.75f;
     [Export] public float CrouchHeight = 1.0f;
 
     /// <summary>Altura do olho em pé e agachado.</summary>
-    [Export] public float StandEyeHeight = 0.6f;
+    [Export] public float StandEyeHeight = 0.62f;
     [Export] public float CrouchEyeHeight = 0.1f;
 
     /// <summary>Velocidade da transição entre em pé e agachado.</summary>
@@ -247,6 +247,10 @@ public partial class Player : CharacterBody3D
 
         _camera.Current = isMine && !third;
         _wolfCamera.Current = isMine && third;
+
+        // A arma na mão é do dono e só existe em primeira pessoa.
+        Node3D view = _camera.GetNodeOrNull<Node3D>("ViewModel");
+        if (view != null) view.Visible = isMine && !third;
 
         // Em primeira pessoa o dono não vê o próprio corpo; os outros
         // jogadores continuam vendo normalmente.

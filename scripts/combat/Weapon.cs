@@ -50,9 +50,13 @@ public partial class Weapon : Node3D
 	/// <summary>Multiplicador de dano na cabeça.</summary>
 	[Export] public float HeadshotMultiplier = 2.5f;
 
-	/// <summary>Altura da zona de cabeça, medida do centro do corpo
-	/// para cima. A cápsula tem 1.8, então o topo fica em 0.9.</summary>
-	[Export] public float HeadZone = 0.55f;
+	/// <summary>
+	/// Altura da zona de cabeça, medida do centro do corpo para cima.
+	/// A cápsula tem 1,75, então o topo fica em ~0,87: uma zona a
+	/// partir de 0,72 deixa a cabeça com cerca de 15cm, proporcional a
+	/// uma cabeça humana, e não o terço superior do corpo.
+	/// </summary>
+	[Export] public float HeadZone = 0.72f;
 
 	/// <summary>Altura mínima de queda para contar como ataque aéreo.</summary>
 	[Export] public float AirAttackMinFall = 2.5f;
@@ -83,6 +87,11 @@ public partial class Weapon : Node3D
 
 	/// <summary>Só a principal dispara segurando o botão.</summary>
 	public bool IsAutomatic => Current == Slot.Primary;
+
+	/// <summary>Volta para a arma anterior depois de arremessar: ficar
+	/// com a mão vazia no meio de um tiroteio não é escolha de
+	/// ninguém.</summary>
+	private Slot _slotBeforeGrenade = Slot.Primary;
 
 	private Camera3D _camera;
 	private Node3D _head;
@@ -120,7 +129,24 @@ public partial class Weapon : Node3D
 	{
 		if (slot == Slot.Grenade)
 		{
-			ThrowGrenade();
+			// Equipa, não arremessa. Apertar 4 e já jogar tira do
+			// jogador a chance de mirar — e granada mal mirada é pior
+			// que granada não usada.
+			if (Grenades <= 0)
+			{
+				if (Debug) GD.Print("granada: acabou");
+				EmitSignal(SignalName.GrenadesChanged, Grenades);
+				return;
+			}
+
+			_slotBeforeGrenade = HumanSlot == Slot.Grenade ? _slotBeforeGrenade : HumanSlot;
+			HumanSlot = Slot.Grenade;
+
+			if (_form.IsWolf)
+				_form.ToggleForm();
+
+			_cooldown = 0.2f;
+			EmitSignal(SignalName.SlotChanged, (int)Slot.Grenade);
 			return;
 		}
 
@@ -156,6 +182,8 @@ public partial class Weapon : Node3D
 
 		if (_form.IsWolf)
 			WolfAttack();
+		else if (HumanSlot == Slot.Grenade)
+			ThrowGrenade();
 		else
 			Shoot();
 	}
@@ -274,6 +302,10 @@ public partial class Weapon : Node3D
 		grenade.AngularVelocity = new Vector3(4f, 2f, 1f);
 
 		EmitSignal(SignalName.GrenadesChanged, Grenades);
+
+		// Sem granadas restantes, volta sozinho para a arma.
+		HumanSlot = _slotBeforeGrenade;
+		EmitSignal(SignalName.SlotChanged, (int)HumanSlot);
 	}
 
 	/// <summary>Renascer devolve o estoque de granadas.</summary>

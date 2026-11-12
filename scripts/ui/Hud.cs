@@ -42,7 +42,6 @@ public partial class Hud : CanvasLayer
     private readonly ColorRect[] _edges = new ColorRect[4];
     private double _hitTimer;
     private double _hurtTimer;
-    private float _lastHp = -1f;
 
     private double _warningTimer;
 
@@ -71,6 +70,7 @@ public partial class Hud : CanvasLayer
         Build();
 
         _health.Changed += OnHealthChanged;
+        _health.Damaged += OnDamaged;
         _health.Died += OnDied;
         _health.Respawned += OnRespawned;
         _form.WpChanged += OnWpChanged;
@@ -320,11 +320,6 @@ public partial class Hud : CanvasLayer
     {
         if (_hpLabel == null) return;
 
-        if (_lastHp >= 0 && hp < _lastHp && !_health.IsDead)
-            _hurtTimer = HurtLife;
-
-        _lastHp = hp;
-
         _hpLabel.Text = $"{Mathf.Ceil(hp):0}";
 
         // Sem escudo o número some, em vez de mostrar zero: humano não
@@ -365,6 +360,19 @@ public partial class Hud : CanvasLayer
             Slot.Grenade => "4 · GRANADA",
             _ => ""
         };
+    }
+
+    /// <summary>
+    /// O alerta vermelho vem do sinal de dano, não de ver a vida
+    /// baixar. Trocar de forma troca o pool de vida, e o número cai
+    /// sem ninguém ter atirado — o jogador lia isso como ter levado
+    /// tiro ao sair do lobo.
+    /// </summary>
+    private void OnDamaged(float amount, Vector3 from)
+    {
+        if (_health.IsDead) return;
+
+        _hurtTimer = HurtLife;
     }
 
     private void OnHitConfirmed(bool headshot)

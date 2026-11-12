@@ -43,7 +43,12 @@ public partial class FormController : Node
 
     /// <summary>Duração de cada transição. Curta o bastante para ser
     /// um gesto, longa o bastante para o inimigo reagir.</summary>
-    [Export] public float ShiftDuration = 0.8f;
+    [Export] public float ShiftDuration = 0.55f;
+
+    /// <summary>Transição de volta para humano. Mais curta que a ida:
+    /// virar lobo é um compromisso, voltar é uma retirada — e punir a
+    /// retirada com a mesma espera só faz o jogador se sentir travado.</summary>
+    [Export] public float ShiftBackDuration = 0.2f;
 
     /// <summary>Vulnerabilidade extra durante a transição. É o que dá
     /// peso à decisão de transformar.</summary>
@@ -84,10 +89,20 @@ public partial class FormController : Node
     private Health _health;
     private double _shiftTimer;
 
+    /// <summary>Vida guardada de cada corpo. O lobo e o humano são
+    /// corpos distintos e cada um lembra o próprio estado.</summary>
+    private float _humanHp;
+    private float _wolfHp;
+
     public override void _Ready()
     {
         _health = GetParent().GetNode<Health>("Health");
         _health.SetPool(HumanHp, 0f, true);
+
+        _humanHp = HumanHp;
+        _wolfHp = 0f;
+
+        _health.Respawned += OnRespawned;
         EmitSignal(SignalName.WpChanged, Wp, MaxWp);
     }
 
@@ -145,6 +160,14 @@ public partial class FormController : Node
         }
     }
 
+    /// <summary>Renascer zera os dois corpos: morrer apaga o estado
+    /// guardado, senão o lobo voltaria ferido da vida passada.</summary>
+    private void OnRespawned()
+    {
+        _humanHp = HumanHp;
+        _wolfHp = Breed != null ? Breed.Hp : 0f;
+    }
+
     public void AddWp(float amount)
     {
         if (amount <= 0) return;
@@ -166,13 +189,21 @@ public partial class FormController : Node
 
     private void Enter(Form next)
     {
+        // Antes de trocar, guarda a vida do corpo que está saindo.
+        if (Current == Form.Human) _humanHp = _health.Hp;
+        else if (Current == Form.Wolf) _wolfHp = _health.Hp;
+
         Current = next;
 
         switch (next)
         {
             case Form.ShiftingToWolf:
-            case Form.ShiftingToHuman:
                 _shiftTimer = ShiftDuration;
+                _health.DamageMultiplier = ShiftDamageMultiplier;
+                break;
+
+            case Form.ShiftingToHuman:
+                _shiftTimer = ShiftBackDuration;
                 _health.DamageMultiplier = ShiftDamageMultiplier;
                 break;
 
@@ -180,16 +211,20 @@ public partial class FormController : Node
                 _health.DamageMultiplier = 1f;
                 _health.ShieldDecay = Breed.ShieldDecay;
 
-                // O escudo sempre entra cheio, mesmo quando a vida é
-                // preservada: ele é o recurso da forma, não a vida.
-                _health.SetPool(Breed.Hp, Breed.Shield, RefillOnTransform, KeepRatio);
+                // Dois corpos, duas vidas. O lobo volta como estava na
+                // última vez — sair e entrar não é cura, senão
+                // transformar vira botão de regeneração.
+                _health.SetPool(Breed.Hp, Breed.Shield, false);
+                _health.SetHp(_wolfHp > 0 ? _wolfHp : Breed.Hp);
                 _health.RestoreShield(Breed.Shield);
                 break;
 
             case Form.Human:
                 _health.DamageMultiplier = 1f;
                 _health.ShieldDecay = 0f;
-                _health.SetPool(HumanHp, 0f, RefillOnTransform, KeepRatio);
+
+                _health.SetPool(HumanHp, 0f, false);
+                _health.SetHp(_humanHp > 0 ? _humanHp : HumanHp);
                 break;
         }
 
