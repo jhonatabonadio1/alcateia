@@ -53,6 +53,21 @@ public partial class Weapon : Node3D
 	[Export] public float KnifeRange = 2.2f;
 	[Export] public float KnifeCooldown = 0.55f;
 
+	// --- Garras do lobo ---
+
+	/// <summary>Dano extra da patada contra um humano. O lobo é feito
+	/// para caçar gente, não para duelar com outro lobo.</summary>
+	[Export] public float ClawVsHumanBonus = 1.6f;
+
+	/// <summary>Patada dupla no ar: mais dano e mais lenta. É um
+	/// compromisso — errar custa o dobro do tempo.</summary>
+	[Export] public float SpecialDamageBonus = 1.45f;
+
+	[Export] public float SpecialCooldownBonus = 1.9f;
+
+	/// <summary>Intervalo entre as duas patadas do especial.</summary>
+	[Export] public float SpecialSecondDelay = 0.16f;
+
 	/// <summary>Multiplicador de dano na cabeça.</summary>
 	[Export] public float HeadshotMultiplier = 2.5f;
 
@@ -102,6 +117,7 @@ public partial class Weapon : Node3D
 	private Camera3D _camera;
 	private Node3D _head;
 	private ViewModel _viewModel;
+	private Health _health;
 	private FormController _form;
 	private CharacterBody3D _body;
 	private double _cooldown;
@@ -114,6 +130,7 @@ public partial class Weapon : Node3D
 		_form = _body.GetNode<FormController>("FormController");
 		_camera = _body.GetNode<Camera3D>("Head/Camera3D");
 		_head = _body.GetNode<Node3D>("Head");
+		_health = _body.GetNode<Health>("Health");
 
 		Grenades = MaxGrenades;
 
@@ -258,11 +275,46 @@ public partial class Weapon : Node3D
 		Damage(hit, damage, from, headshot);
 	}
 
-	private void WolfAttack()
+	/// <summary>
+	/// Patada especial: só no ar, botão direito. Duas patadas seguidas,
+	/// mais dano e cooldown bem maior.
+	///
+	/// A condição de estar no ar não é decoração: amarra o golpe mais
+	/// forte do lobo ao salto, que é a jogada que o jogo quer premiar.
+	/// </summary>
+	public void TrySpecial()
+	{
+		if (_cooldown > 0) return;
+		if (!_form.IsWolf || !_form.CanAttack) return;
+		if (_body.IsOnFloor()) return;
+
+		WolfAttack(true);
+	}
+
+	private void WolfAttack(bool special = false)
 	{
 		WolfBreed breed = _form.Breed;
-		_cooldown = breed.AttackCooldown;
+
+		_cooldown = special
+			? breed.AttackCooldown * SpecialCooldownBonus
+			: breed.AttackCooldown;
+
 		EmitSignal(SignalName.Fired);
+
+		if (special)
+		{
+			// A segunda patada sai um instante depois, para o golpe ter
+			// dois tempos em vez de ser um número maior.
+			SceneTreeTimer timer = _body.GetTree().CreateTimer(SpecialSecondDelay);
+			timer.Timeout += () => Claw(special: true);
+		}
+
+		Claw(special);
+	}
+
+	private void Claw(bool special)
+	{
+		WolfBreed breed = _form.Breed;
 
 		// A garrada sai do corpo, não da câmera. Em terceira pessoa a
 		// câmera está metros atrás — partir dela faria o lobo acertar
@@ -270,10 +322,18 @@ public partial class Weapon : Node3D
 		Vector3 from = _head.GlobalPosition;
 		Vector3 to = from - _head.GlobalTransform.Basis.Z * breed.AttackRange;
 
-		Health hit = Raycast(from, to, out _, out _);
+		Health hit = Raycast(from, to, out _, out Node collider);
 		if (hit == null) return;
 
 		float damage = breed.AttackDamage;
+
+		if (special)
+			damage *= SpecialDamageBonus;
+
+		// Contra humano a patada vale mais: o lobo é feito para caçar
+		// gente, não para duelar com outro lobo.
+		if (IsHumanForm(collider))
+			damage *= ClawVsHumanBonus;
 
 		// Ataque aéreo: cair em cima de alguém é a jogada que as
 		// pessoas lembram. Vale bônus.
@@ -284,6 +344,13 @@ public partial class Weapon : Node3D
 		Damage(hit, damage, from, false);
 	}
 
+	private static bool IsHumanForm(Node collider)
+	{
+		FormController form = collider?.GetNodeOrNull<FormController>("FormController");
+
+		return form == null || !form.IsWolf;
+	}
+
 	/// <summary>
 	/// Aplica o dano e, se o alvo cair, credita o abate. O crédito
 	/// sai daqui porque é aqui que se sabe quem bateu — fazer a vítima
@@ -291,6 +358,10 @@ public partial class Weapon : Node3D
 	/// </summary>
 	private void Damage(Health target, float amount, Vector3 from, bool headshot)
 	{
+		// Fogo amigo desligado: num jogo de duas formas, confundir
+		// aliado com inimigo já acontece demais pela silhueta.
+		if (_health != null && target.Team == _health.Team) return;
+
 		bool wasAlive = !target.IsDead;
 
 		target.TakeDamage(amount, 0, from);
@@ -299,8 +370,24 @@ public partial class Weapon : Node3D
 		EmitSignal(SignalName.HitConfirmed, headshot);
 		_form.OnDamageDealt(amount);
 
-		if (wasAlive && target.IsDead)
-			_form.OnKill();
+		if (!wasAlive || !target.IsDead) return;
+
+		_form.OnKill();
+
+		KillFeed.Report(new Kill(
+			_health?.DisplayName ?? _body.Name,
+			_health?.Team ?? 0,
+			target.DisplayName,
+			target.Team,
+			CauseOf(headshot)));
+	}
+
+	private KillCause CauseOf(bool headshot)
+	{
+		if (_form.IsWolf) return KillCause.Wolf;
+		if (headshot) return KillCause.Headshot;
+
+		return HumanSlot == Slot.Knife ? KillCause.Knife : KillCause.Gun;
 	}
 
 	/// <summary>

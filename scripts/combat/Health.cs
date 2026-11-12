@@ -19,6 +19,12 @@ public partial class Health : Node
     /// reagir a tiro pelas costas e ao HUD apontar a direção.</summary>
     [Signal] public delegate void DamagedEventHandler(float amount, Vector3 from);
 
+    /// <summary>Time do dono. Define fogo amigo e a cor no feed.</summary>
+    [Export] public int Team = Teams.Blue;
+
+    /// <summary>Nome exibido no feed de abates.</summary>
+    [Export] public string DisplayName = "";
+
     [Export] public float MaxHp = 200f;
     [Export] public float RespawnDelay = 3f;
 
@@ -51,6 +57,9 @@ public partial class Health : Node
 
     public override void _Ready()
     {
+        if (string.IsNullOrEmpty(DisplayName))
+            DisplayName = GetParent().Name;
+
         Hp = MaxHp;
         EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
     }

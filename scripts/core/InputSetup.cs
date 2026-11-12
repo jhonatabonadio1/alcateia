@@ -23,6 +23,7 @@ public static class InputSetup
         Key("walk", Godot.Key.Shift);
         Key("menu", Godot.Key.Tab);
         Mouse("attack", MouseButton.Left);
+        Mouse("special", MouseButton.Right);
 
         // Slots: o lobo é o 3, na mesma memória muscular das armas.
         Key("slot_1", Godot.Key.Key1);

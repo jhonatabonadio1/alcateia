@@ -245,6 +245,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 3 | Virar lobo |
 | 4 | Faca |
 | 5 | Equipar granada (o ataque arremessa) |
+| Botão direito | Patada dupla (só de lobo, só no ar) |
 | Clique esq. | Atacar |
 | Ctrl | Agachar (nas duas formas) |
 | Shift | Andar devagar e em silêncio (só humano) |
@@ -369,6 +370,30 @@ foi feito: lotes de armamento e classes caras.
 A transição de ida é mais longa que a de volta (0,55s contra 0,2s).
 Virar lobo é um compromisso; voltar é uma retirada, e punir a retirada
 com a mesma espera só faz o jogador se sentir travado.
+
+### Times e feed de abates
+
+Azul é o jogador, vermelho são os bots. **Fogo amigo desligado**: num
+jogo de duas formas, confundir aliado com inimigo já acontece demais
+pela silhueta.
+
+O feed no canto superior direito não é enfeite. É como o jogador
+entende o que aconteceu fora do campo de visão e, principalmente, de
+que ele morreu. Morrer sem saber a causa é a forma mais rápida de um
+jogo parecer injusto.
+
+### As garras
+
+Clique esquerdo: uma patada por clique, nunca automático.
+
+**Contra humano a patada vale 1,6×.** O lobo é feito para caçar
+gente, não para duelar com outro lobo — sem isso, o encontro entre
+dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
+
+**Botão direito no ar: patada dupla.** Dois golpes em sequência, 1,45×
+de dano e cooldown quase o dobro. A condição de estar no ar não é
+decoração: amarra o golpe mais forte do lobo ao salto, que é a jogada
+que o jogo quer premiar. Errar no ar custa o dobro do tempo.
 
 ### O escudo do lobo
 

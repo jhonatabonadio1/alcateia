@@ -42,6 +42,7 @@ public partial class Hud : CanvasLayer
     private readonly ColorRect[] _edges = new ColorRect[4];
     private double _hitTimer;
     private double _hurtTimer;
+    private VBoxContainer _feed;
 
     private double _warningTimer;
 
@@ -141,6 +142,7 @@ public partial class Hud : CanvasLayer
 
         _grenadeLabel = Right(BarY(2) - 60, 0.75f);
 
+        BuildFeed();
         BuildHitMarker();
         BuildHurtEdges();
 
@@ -170,6 +172,68 @@ public partial class Hud : CanvasLayer
         };
         _warning.AddThemeFontSizeOverride("font_size", 18);
         AddChild(_warning);
+    }
+
+    /// <summary>
+    /// Feed de abates, canto superior direito.
+    ///
+    /// Não é enfeite: é como o jogador entende o que aconteceu fora do
+    /// seu campo de visão e, principalmente, de que ele morreu. Morrer
+    /// sem saber a causa é a forma mais rápida de um jogo parecer
+    /// injusto.
+    /// </summary>
+    private void BuildFeed()
+    {
+        _feed = new VBoxContainer
+        {
+            AnchorLeft = 1f, AnchorRight = 1f,
+            AnchorTop = 0f, AnchorBottom = 0f,
+            GrowHorizontal = Control.GrowDirection.Begin,
+            Position = new Vector2(-Margin - 360, Margin),
+            CustomMinimumSize = new Vector2(360, 0),
+            Alignment = BoxContainer.AlignmentMode.Begin,
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+        _feed.AddThemeConstantOverride("separation", 4);
+        AddChild(_feed);
+
+        KillFeed.Reported += OnKill;
+    }
+
+    public override void _ExitTree() => KillFeed.Reported -= OnKill;
+
+    private void OnKill(Kill kill)
+    {
+        if (_feed == null) return;
+
+        var line = new RichTextLabel
+        {
+            BbcodeEnabled = true,
+            FitContent = true,
+            ScrollActive = false,
+            AutowrapMode = TextServer.AutowrapMode.Off,
+            CustomMinimumSize = new Vector2(360, 0),
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+        line.AddThemeFontSizeOverride("normal_font_size", 14);
+
+        string killer = Teams.ColorOf(kill.KillerTeam).ToHtml(false);
+        string victim = Teams.ColorOf(kill.VictimTeam).ToHtml(false);
+
+        line.Text = "[right]"
+            + $"[color=#{killer}]{kill.Killer}[/color]"
+            + $"  [color=#9aa0a6]{KillFeed.Describe(kill.Cause)}[/color]  "
+            + $"[color=#{victim}]{kill.Victim}[/color]"
+            + "[/right]";
+
+        _feed.AddChild(line);
+
+        // Só as cinco últimas: um feed que cresce vira parede de texto.
+        while (_feed.GetChildCount() > 5)
+            _feed.GetChild(0).QueueFree();
+
+        SceneTreeTimer timer = GetTree().CreateTimer(6.0);
+        timer.Timeout += () => { if (IsInstanceValid(line)) line.QueueFree(); };
     }
 
     /// <summary>Quatro riscos em volta do centro. Aparecem no acerto

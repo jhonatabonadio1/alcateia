@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.13.0 — 2026-11-11
+
+### Adicionado
+- **Times**: azul (jogador) e vermelho (bots), com fogo amigo
+  desligado.
+- **Feed de abates** no canto superior direito, com nomes coloridos
+  por time e a causa da morte: na cabeça, na faca, de lobo, de
+  granada.
+- **Patada dupla do lobo**: botão direito no ar. Dois golpes em
+  sequência, 1,45× de dano e cooldown quase o dobro.
+- **Bônus da patada contra humano** (1,6×).
+
 ## v0.12.0 — 2026-11-11
 
 ### Alterado

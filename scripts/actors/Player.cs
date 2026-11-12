@@ -520,6 +520,10 @@ public partial class Player : CharacterBody3D
         if (firing)
             _weapon.TryAttack();
 
+        // Patada dupla: só de lobo e só no ar.
+        if (Input.IsActionJustPressed("special"))
+            _weapon.TrySpecial();
+
         UpdateHowl(delta);
     }
 
