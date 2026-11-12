@@ -48,11 +48,18 @@ public partial class Player : CharacterBody3D
     /// o lobo é puro movimento e não teria por que abrir mão disso.</summary>
     [Export] public float WalkSpeedFactor = 0.42f;
 
-    /// <summary>Velocidade de mergulho do golpe especial do lobo.</summary>
-    [Export] public float DiveSpeed = 14f;
+    /// <summary>
+    /// Velocidade do bote aéreo do lobo, na direção da mira.
+    ///
+    /// O bote segue o olhar, inclusive para baixo: não é um martelo
+    /// vertical, é um salto dirigido. Mirar no alvo e apertar leva o
+    /// lobo até ele.
+    /// </summary>
+    [Export] public float LeapSpeed = 13f;
 
-    /// <summary>Avanço na direção do olhar durante o mergulho.</summary>
-    [Export] public float DiveForward = 7f;
+    /// <summary>Queda extra somada à direção do bote. Faz o lobo
+    /// chegar antes do que chegaria só pela gravidade.</summary>
+    [Export] public float LeapDrop = 5f;
 
     /// <summary>
     /// Multiplicador do recuo da arma. O valor base vem de cada arma
@@ -284,11 +291,13 @@ public partial class Player : CharacterBody3D
     /// </summary>
     private void Dive()
     {
+        // A direção é a da mira inteira, com o pitch: olhar para baixo
+        // produz um bote curto e mergulhado, olhar à frente produz um
+        // salto longo e raso. É o jogador que escolhe o arco.
         Vector3 look = -_head.GlobalTransform.Basis.Z;
-        Vector3 flat = new Vector3(look.X, 0, look.Z).Normalized();
 
-        Vector3 velocity = flat * DiveForward;
-        velocity.Y = -DiveSpeed;
+        Vector3 velocity = look.Normalized() * LeapSpeed;
+        velocity.Y -= LeapDrop;
 
         Velocity = velocity;
         ReleaseWall();
@@ -577,7 +586,8 @@ public partial class Player : CharacterBody3D
         if (firing)
             _weapon.TryAttack();
 
-        // Patada dupla: só de lobo e só no ar.
+        // Botão direito: patada pesada no chão, bote dirigido no ar.
+        // Só o bote move o corpo, e é por isso que TrySpecial avisa.
         if (Input.IsActionJustPressed("special") && _weapon.TrySpecial())
             Dive();
 
@@ -677,29 +687,9 @@ public partial class Player : CharacterBody3D
             // mesma altura logo após o salto e a parede vira elevador.
             if (_wallCooldown > 0) return false;
 
-            // Subindo ainda não gruda. Pular colado numa parede trava
-            // a altura em zero no frame seguinte, e o pulo morre antes
-            // de acontecer: o jogador aperta pular e só cola.
-            //
-            // A partir do ápice a parede pega, que é o gesto desejado —
-            // pular contra ela e segurar.
-            if (Velocity.Y > 0.5f)
-            {
-                WallLog($"ainda subindo ({Velocity.Y:0.0} m/s) — gruda a partir do ápice");
-                return false;
-            }
-
             if (!found)
             {
                 WallLog($"nenhuma a menos de {WallCheckDistance}m");
-                return false;
-            }
-
-            // E não gruda rente ao chão: a essa altura é mais provável
-            // que o jogador tenha esbarrado do que escolhido subir.
-            if (IsNearFloor())
-            {
-                WallLog("rente ao chão — pule mais alto antes de encostar");
                 return false;
             }
 
@@ -836,8 +826,19 @@ public partial class Player : CharacterBody3D
             return false;
         }
 
-        // Altura travada: na parede o lobo não sobe nem desce.
-        velocity.Y = WallRunVerticalDrift;
+        // A subida é PRESERVADA ao grudar, e só depois a altura trava.
+        //
+        // Era aqui o erro: travar a altura no instante do contato
+        // matava o pulo de quem grudava subindo — o jogador apertava
+        // pular colado na parede e só colava. Impedir de grudar
+        // subindo consertava o pulo e quebrava a jogada inteira.
+        //
+        // Deixar o impulso morrer sozinho resolve os dois: pula-se
+        // contra a parede, sobe-se o que o pulo rendeu, e dali em
+        // diante a corrida é plana.
+        velocity.Y = velocity.Y > WallRunVerticalDrift
+            ? Mathf.Max(velocity.Y - _gravity * 0.55f * (float)delta, WallRunVerticalDrift)
+            : WallRunVerticalDrift;
 
         // Agarrado com o botão de ataque e sem o pulo: fica parado.
         float speed = _clinging && !Input.IsActionPressed("jump")

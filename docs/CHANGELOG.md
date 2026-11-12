@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.18.1 — 2026-11-11
+
+### Corrigido
+- **O lobo voltou a grudar na parede subindo.** A trava do ápice
+  barrava a subida inteira. O conserto certo do pulo não era impedir
+  de grudar subindo e sim preservar o impulso ao grudar: agora a
+  subida continua e a altura só trava quando o pulo se esgota.
+
+### Alterado
+- **Botão direito no chão** virou patada pesada da direita: 2,1× de
+  dano e um segundo de recuperação.
+- **Botão direito no ar** virou bote de três golpes na direção da
+  mira, com o pitch — não cai mais reto. Dois segundos de recuperação.
+- As patas **alternam** a cada golpe do combo.
+
 ## v0.18.0 — 2026-11-11
 
 ### Adicionado

@@ -493,6 +493,19 @@ precisa levar o lobo até o alvo.
 gente, não para duelar com outro lobo — sem isso, o encontro entre
 dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
 
+**Botão direito no chão: patada pesada da direita.** Um golpe, 2,1×
+de dano, um segundo parado. É o castigo de quem deixou o lobo chegar
+parado — e o segundo de recuperação é o que impede que seja a resposta
+para tudo.
+
+**Botão direito no ar: bote de três golpes.** O corpo viaja na direção
+da **mira inteira**, com o pitch: olhar para baixo dá um bote curto e
+mergulhado, olhar à frente dá um salto longo e raso. O jogador escolhe
+o arco. Dois segundos de recuperação.
+
+O primário também funciona no ar — o bote é uma escolha, não a única
+opção de quem pulou.
+
 **Botão direito no ar: investida.** O lobo despenca na direção em que
 olha e dá duas patadas em sequência, com 1,45× de dano e cooldown
 quase o dobro.

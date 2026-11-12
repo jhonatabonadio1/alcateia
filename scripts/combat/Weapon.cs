@@ -62,14 +62,25 @@ public partial class Weapon : Node3D
 	/// para caçar gente, não para duelar com outro lobo.</summary>
 	[Export] public float ClawVsHumanBonus = 1.6f;
 
-	/// <summary>Patada dupla no ar: mais dano e mais lenta. É um
-	/// compromisso — errar custa o dobro do tempo.</summary>
-	[Export] public float SpecialDamageBonus = 1.45f;
+	// --- Ataques especiais (botão direito) ---
+	//
+	// No chão e no ar são golpes diferentes, não o mesmo em lugares
+	// diferentes. No chão é uma patada pesada e lenta; no ar é um bote
+	// de três golpes na direção da mira.
 
-	[Export] public float SpecialCooldownBonus = 1.9f;
+	/// <summary>Patada pesada no chão: dano alto, um segundo parado.</summary>
+	[Export] public float HeavyDamageBonus = 2.1f;
 
-	/// <summary>Intervalo entre as duas patadas do especial.</summary>
-	[Export] public float SpecialSecondDelay = 0.16f;
+	[Export] public float HeavyCooldown = 1f;
+
+	/// <summary>Bote aéreo: três golpes, dois segundos de recuperação.</summary>
+	[Export] public int LeapHits = 3;
+
+	[Export] public float LeapDamageBonus = 1.3f;
+	[Export] public float LeapCooldown = 2f;
+
+	/// <summary>Intervalo entre os golpes do bote.</summary>
+	[Export] public float SpecialSecondDelay = 0.13f;
 
 	// --- Combo de garras ---
 	//
@@ -434,35 +445,60 @@ public partial class Weapon : Node3D
 	/// A condição de estar no ar não é decoração: amarra o golpe mais
 	/// forte do lobo ao salto, que é a jogada que o jogo quer premiar.
 	/// </summary>
+	/// <summary>
+	/// Botão direito. No chão, patada pesada da direita. No ar, bote de
+	/// três golpes — e só esse avisa ao chamador, porque só esse move o
+	/// corpo.
+	/// </summary>
 	public bool TrySpecial()
 	{
 		if (_cooldown > 0) return false;
 		if (!_form.IsWolf || !_form.CanAttack) return false;
-		if (_body.IsOnFloor()) return false;
 
-		WolfAttack(true);
+		if (_body.IsOnFloor())
+		{
+			Heavy();
+			return false;
+		}
+
+		Leap();
 		return true;
 	}
 
-	private void WolfAttack(bool special = false)
+	/// <summary>Patada pesada no chão: um golpe, dano alto, lenta. É o
+	/// castigo de quem deixou o lobo chegar parado.</summary>
+	private void Heavy()
 	{
-		if (special)
+		_cooldown = HeavyCooldown;
+		_comboIndex = 0;
+
+		EmitSignal(SignalName.Fired);
+
+		Lunge();
+		Claw(HeavyDamageBonus);
+	}
+
+	/// <summary>Bote aéreo: três golpes em sequência enquanto o corpo
+	/// viaja na direção da mira.</summary>
+	private void Leap()
+	{
+		_cooldown = LeapCooldown;
+		_comboIndex = 0;
+
+		EmitSignal(SignalName.Fired);
+
+		Claw(LeapDamageBonus);
+
+		for (int i = 1; i < LeapHits; i++)
 		{
-			_cooldown = _form.Breed.AttackCooldown * SpecialCooldownBonus;
-			_comboIndex = 0;
-
-			EmitSignal(SignalName.Fired);
-
-			// A segunda patada sai um instante depois: o golpe tem dois
-			// tempos em vez de ser um número maior.
-			SceneTreeTimer timer = _body.GetTree().CreateTimer(SpecialSecondDelay);
-			timer.Timeout += () => Claw(SpecialDamageBonus);
-
-			Claw(SpecialDamageBonus);
-			return;
+			SceneTreeTimer timer = _body.GetTree().CreateTimer(SpecialSecondDelay * i);
+			timer.Timeout += () => Claw(LeapDamageBonus);
 		}
+	}
 
-		// Combo de chão: o golpe seguinte sai mais rápido que o
+	private void WolfAttack()
+	{
+		// Combo: o golpe seguinte sai mais rápido que o
 		// primeiro, e o terceiro machuca mais.
 		if (_comboTimer <= 0) _comboIndex = 0;
 

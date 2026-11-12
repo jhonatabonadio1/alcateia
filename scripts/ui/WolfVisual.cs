@@ -32,7 +32,14 @@ public partial class WolfVisual : Node3D
     private Node3D _right;
 
     private float _swing;
-    private float _strike;
+
+    /// <summary>Força do golpe de cada braço, separada: é a
+    /// alternância que faz o combo parecer uma sequência de patadas em
+    /// vez de um corpo pulsando.</summary>
+    private float _strikeLeft;
+    private float _strikeRight;
+
+    private bool _nextIsLeft;
 
     public override void _Ready()
     {
@@ -58,19 +65,26 @@ public partial class WolfVisual : Node3D
         if (flat.Length() > 0.5f)
             _swing += (float)delta * SwingSpeed;
 
-        _strike = Mathf.MoveToward(_strike, 0f, StrikeRecover * (float)delta);
+        _strikeLeft = Mathf.MoveToward(_strikeLeft, 0f, StrikeRecover * (float)delta);
+        _strikeRight = Mathf.MoveToward(_strikeRight, 0f, StrikeRecover * (float)delta);
 
         float swing = Mathf.Sin(_swing) * SwingAmount;
 
-        // Os braços alternam no balanço e se abrem juntos no golpe.
-        _left.Rotation = new Vector3(-swing - _strike, 0, 0);
-        _right.Rotation = new Vector3(swing - _strike, 0, 0);
+        // Cada braço soma o próprio golpe ao balanço, por isso o combo
+        // aparece como patadas alternadas.
+        _left.Rotation = new Vector3(-swing - _strikeLeft, 0, _strikeLeft * 0.4f);
+        _right.Rotation = new Vector3(swing - _strikeRight, 0, -_strikeRight * 0.4f);
     }
 
     private void OnFired()
     {
-        if (_form.IsWolf)
-            _strike = StrikeAmount;
+        if (!_form.IsWolf) return;
+
+        // Alterna a pata a cada golpe.
+        if (_nextIsLeft) _strikeLeft = StrikeAmount;
+        else _strikeRight = StrikeAmount;
+
+        _nextIsLeft = !_nextIsLeft;
     }
 
     private void Refresh() => Visible = _form.IsWolf;
