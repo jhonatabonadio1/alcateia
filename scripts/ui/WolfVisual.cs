@@ -19,10 +19,14 @@ using System.Collections.Generic;
 /// em movimento. Virar lobo não tem animação (decisão do Jhon): o lobo
 /// aparece já andando.
 ///
-/// **O pulo não tem animação** — decisão do Jhon: o lobo só pula, e o
-/// corpo segue na pose em que estava. O clipe de pulo do pack agacha,
-/// salta e aterrissa sozinho, e no jogo quem salta é a física; os dois
-/// juntos dão um bicho que pula duas vezes.
+/// **O pulo usa só o voo do "mutant jumping"**: o clipe agacha, salta e
+/// aterrissa sozinho, e no jogo quem salta é a física, no quadro do
+/// clique — tocado inteiro, o bicho pularia duas vezes. Então o agachar
+/// fica de fora, e o voo não corre no relógio: anda pela velocidade
+/// vertical do corpo (saindo do chão, no topo, caindo), e o quadril fica
+/// na altura de pé (quem sobe é a cápsula). Chegou devagar, toca a
+/// aterrissagem; chegou correndo, volta direto para a corrida — agachar
+/// com o corpo a 5 m/s faria o pé patinar.
 ///
 /// | Clipe | Arquivo do pack | Quando |
 /// |---|---|---|
@@ -34,6 +38,8 @@ using System.Collections.Generic;
 /// | dive | mutant jump attack, só a queda | bote (direito no ar), até encostar |
 /// | dive_land | mutant jump attack, da pancada ao fim | bote, ao encostar |
 /// | howl | mutant roaring | uivando (R), da cintura para cima |
+/// | jump | mutant jumping, só o voo | no ar depois de um pulo (do chão ou da parede) |
+/// | jump_land | mutant jumping, a aterrissagem | tocou o chão depois do pulo, devagar |
 /// | wallrun | Running Crawl | correndo na parede, de barriga para ela |
 /// | death | mutant dying | morreu de lobo |
 ///
@@ -89,12 +95,12 @@ public partial class WolfVisual : Node3D
     /// <summary>Disparos por cima da locomoção, na ordem da pilha: o de
     /// baixo é sobreposto pelos de cima.</summary>
     private static readonly string[] Shots =
-        { "claw", "heavy", "howl", "pounce", "dive", "dive_land" };
+        { "claw", "heavy", "howl", "jump_land", "pounce", "dive", "dive_land" };
 
     /// <summary>Disparos que tomam o corpo inteiro. As garradas ficam só
     /// no tronco: o "swiping" gira o quadril 90° e terminaria o golpe
     /// com o lobo de lado, voltando num tranco.</summary>
-    private static bool FullBody(string shot) => shot is "pounce" or "dive" or "dive_land";
+    private static bool FullBody(string shot) => shot is "pounce" or "dive" or "dive_land" or "jump_land";
 
     /// <summary>Entrada e saída de cada disparo, em segundos. A garrada
     /// entra seca: a garra chega 0,14 s depois do clique, e uma entrada
@@ -104,6 +110,7 @@ public partial class WolfVisual : Node3D
     {
         "claw" or "heavy" => (0.07f, 0.12f),
         "howl" => (0.15f, 0.2f),
+        "jump_land" => (0.05f, 0.25f),
         "pounce" => (0.12f, 0.25f),
         "dive" => (0.08f, 0.15f),
         "dive_land" => (0.05f, 0.25f),
@@ -367,6 +374,21 @@ public partial class WolfVisual : Node3D
         machine.AddNode("Locomotion", locoSpeed, new Vector2(200, 100));
         if (Has("death")) machine.AddNode("Death", Clip("death"), new Vector2(600, 100));
 
+        if (Has("jump"))
+        {
+            // O voo não corre sozinho: a cada quadro o ponto do clipe é
+            // escolhido pela velocidade vertical (UpdateJump), e a escala
+            // zero segura o clipe parado entre um quadro e outro.
+            var jump = new AnimationNodeBlendTree();
+            jump.AddNode("Clip", Clip("jump"), Vector2.Zero);
+            jump.AddNode("Seek", new AnimationNodeTimeSeek(), new Vector2(200, 0));
+            jump.AddNode("Speed", new AnimationNodeTimeScale(), new Vector2(400, 0));
+            jump.ConnectNode("Seek", 0, "Clip");
+            jump.ConnectNode("Speed", 0, "Seek");
+            jump.ConnectNode("output", 0, "Speed");
+            machine.AddNode("Jump", jump, new Vector2(400, 300));
+        }
+
         if (Has("wallrun"))
         {
             var wall = new AnimationNodeBlendTree();
@@ -379,7 +401,11 @@ public partial class WolfVisual : Node3D
 
         Link(machine, "Locomotion", "Wall");
         Link(machine, "Wall", "Locomotion");
-        foreach (string from in new[] { "Locomotion", "Wall" })
+        Link(machine, "Locomotion", "Jump");
+        Link(machine, "Jump", "Locomotion");
+        Link(machine, "Jump", "Wall");
+        Link(machine, "Wall", "Jump");
+        foreach (string from in new[] { "Locomotion", "Wall", "Jump" })
             Link(machine, from, "Death");
         Link(machine, "Death", "Locomotion");
 
@@ -426,6 +452,9 @@ public partial class WolfVisual : Node3D
         _model.AddChild(_tree);
         _tree.AnimPlayer = _tree.GetPathTo(_anims);
         _tree.Active = true;
+
+        if (Has("jump"))
+            _tree.Set("parameters/Machine/Jump/Speed/scale", 0f);
 
         _playback = (AnimationNodeStateMachinePlayback)_tree.Get("parameters/Machine/playback");
         _playback?.Start("Locomotion");
@@ -513,13 +542,28 @@ public partial class WolfVisual : Node3D
         _tree.Set("parameters/Machine/Locomotion/Blend/blend_position", blend);
         _tree.Set("parameters/Machine/Locomotion/Speed/scale", _speed > RunSpeed ? Mathf.Min(_speed / RunSpeed, 1.8f) : 1f);
 
-        // No ar não há clipe próprio: o corpo segue na pose de antes.
+        // No ar depois de um pulo, o voo do clipe de pulo; caindo de uma
+        // beirada, o corpo segue na pose de antes.
         bool onWall = _player != null && _player.IsWallRunning && Has("wallrun");
-        if (onWall != _onWall)
+        bool jumping = !onWall && _player != null && _player.IsJumpAirborne && Has("jump");
+        if (onWall != _onWall || jumping != _jumping)
         {
+            // Acabou o pulo no chão: chegou devagar, aterrissa; chegou
+            // correndo, a corrida já é a aterrissagem.
+            if (_jumping && !jumping && !onWall && _body.IsOnFloor() && _speed < WalkSpeed && !_weapon.IsStriking)
+                Fire("jump_land", JumpLandSpeed);
+
             _onWall = onWall;
-            _playback?.Travel(onWall ? "Wall" : "Locomotion");
+            _jumping = jumping;
+            _playback?.Travel(onWall ? "Wall" : jumping ? "Jump" : "Locomotion");
         }
+
+        if (_jumping) UpdateJump();
+
+        // Aterrissando e já saiu andando: a aterrissagem sai.
+        if (Has("jump_land") && _speed > WalkSpeed
+            && (bool)_tree.Get("parameters/JumpLand/active"))
+            _tree.Set("parameters/JumpLand/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
 
         // O rugido vai por cima do andar, uma vez, na velocidade de
         // WolfMoves: acaba junto com o escudo voltando. Soltou R antes,
@@ -628,6 +672,35 @@ public partial class WolfVisual : Node3D
         _tree.Set("parameters/Machine/Wall/Speed/scale", Mathf.Clamp(speed / Mathf.Max(WallClipSpeed, 0.01f), 0f, 2.5f));
     }
 
+    /// <summary>Velocidade da aterrissagem do pulo: o clipe inteiro de
+    /// pé de novo em 0,6 s.</summary>
+    private const float JumpLandSpeed = 1.6f;
+
+    private bool _jumping;
+
+    /// <summary>
+    /// O ponto do voo pela velocidade vertical: saindo do chão a toda, o
+    /// começo do clipe; parado no alto, o topo; caindo tão rápido quanto
+    /// saiu, os pés esticados para o chão. Pulo mais longo que o do clipe
+    /// fica nessa última pose até encostar; mais curto (caiu em cima de
+    /// um caixote) sai antes. Assim o topo do clipe é o topo do pulo, seja
+    /// qual for a altura dele.
+    /// </summary>
+    private void UpdateJump()
+    {
+        WolfClip clip = WolfMoves.Clips["jump"];
+        float apex = clip.Impact - clip.Start;
+        float fall = clip.Length - apex;
+        float up = Mathf.Max(_player.JumpSpeed, 0.1f);
+        float vy = _body.Velocity.Y;
+
+        float t = vy >= 0f
+            ? apex * (1f - Mathf.Clamp(vy / up, 0f, 1f))
+            : apex + fall * Mathf.Clamp(-vy / up, 0f, 0.92f);
+
+        _tree.Set("parameters/Machine/Jump/Seek/seek_request", t);
+    }
+
     /// <summary>Distância do centro do corpo à parede: o raio da cápsula.</summary>
     private const float WallGap = 0.3f;
 
@@ -705,6 +778,7 @@ public partial class WolfVisual : Node3D
         _model.Visible = true;
         _howling = false;
         _onWall = false;
+        _jumping = false;
         _wallBlend = 0;
         _playback?.Start("Locomotion");
         Visible = _form.IsWolf;

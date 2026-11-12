@@ -252,6 +252,16 @@ public partial class Player : CharacterBody3D
     /// <summary>No ar por um pulo do chão, de lobo: o passo fica em
     /// <see cref="WolfJumpCarry"/>.</summary>
     private bool _wolfJump;
+
+    /// <summary>No ar por um pulo (do chão ou da parede), até tocar o
+    /// chão, grudar numa parede ou começar um golpe. É o que o corpo do
+    /// lobo lê para tocar o clipe de pulo.</summary>
+    public bool IsJumpAirborne { get; private set; }
+
+    /// <summary>Velocidade vertical na saída do último pulo: o clipe de
+    /// pulo anda pela subida e pela queda medindo a velocidade de agora
+    /// contra esta.</summary>
+    public float JumpSpeed { get; private set; } = 1f;
     private bool _clinging;
     private double _wallCooldown;
     private string _lastWallLog = "";
@@ -668,6 +678,9 @@ public partial class Player : CharacterBody3D
         if (IsOnFloor() || _onWall || !_form.IsWolf)
             _wolfJump = false;
 
+        if (IsOnFloor() || _onWall || _weapon.IsDiving || _weapon.IsPounceFlying || _weapon.IsRooted)
+            IsJumpAirborne = false;
+
         if (IsOnFloor())
         {
             ReleaseWall();
@@ -912,6 +925,8 @@ public partial class Player : CharacterBody3D
         else if (WantsJump())
         {
             velocity.Y = JumpVelocity * JumpScale;
+            IsJumpAirborne = true;
+            JumpSpeed = velocity.Y;
 
             // O lobo pula para cima, não para a frente.
             if (_form.IsWolf)
@@ -1155,6 +1170,8 @@ public partial class Player : CharacterBody3D
             // subida que dá ao lobo o ângulo que as armas defendem mal:
             // de cima e por trás.
             velocity.Y = JumpVelocity * JumpScale * WallJumpClimb;
+            IsJumpAirborne = true;
+            JumpSpeed = velocity.Y;
 
             // O salto de parede também é um pulo. Faltava avisar, e no
             // modo lobo é justamente este o pulo que se usa o tempo

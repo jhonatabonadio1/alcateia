@@ -18,7 +18,7 @@ extends SceneTree
 ## janela o esqueleto não atualiza a pose.
 
 const MODELO := "res://assets/characters/wolf/mutant.fbx"
-const CLIPES := ["claw", "heavy", "leap", "howl", "transform", "wallrun"]
+const CLIPES := ["claw", "heavy", "leap", "howl", "jump", "wallrun"]
 
 var skeleton: Skeleton3D
 

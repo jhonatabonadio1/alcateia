@@ -17,13 +17,20 @@ que fazem no jogo:
 | `heavy.fbx` | mutant punch | a outra garrada do clique |
 | `leap.fbx` | mutant jump attack | salto (direito no chão), inteiro; bote (direito no ar), a queda e a aterrissagem |
 | `howl.fbx` | mutant roaring | uivando (R) |
-| `transform.fbx` | mutant flexing muscles | acabou de virar lobo |
+| `transform.fbx` | mutant flexing muscles | não usado: virar lobo não tem animação (decisão do Jhon) |
+| `jump.fbx` | mutant jumping | pulo: só o voo, tocado pela velocidade vertical; a aterrissagem quando chega devagar |
 | `death.fbx` | mutant dying | morreu de lobo |
 | `wallrun.fbx` | Running Crawl | correndo na parede, deitado de lado com a barriga para ela |
 | `idle_alerta.fbx` | mutant idle | reserva, não usado |
 
-**O lobo não tem animação de pulo** (decisão do Jhon): no ar o corpo
-segue na pose em que estava. O `leap.fbx` ("jump attack") serve três
+**O pulo usa só o voo do `jump.fbx`** (de 1,27 a 1,87 s do arquivo):
+o clipe agacha antes de sair do chão, e no jogo a física sai no quadro
+do clique — tocado inteiro, o bicho pularia duas vezes. O voo anda pela
+velocidade vertical do corpo, não pelo relógio: o topo do clipe cai no
+topo do pulo, seja qual for a altura. O `jump.fbx` é importado sem
+extrair as texturas (`fbx/embedded_image_handling=0`): só a animação
+interessa, e as texturas repetiriam 16 MB das do `wallrun`. Caindo de
+uma beirada, sem pular, o corpo segue na pose em que estava. O `leap.fbx` ("jump attack") serve três
 clipes: inteiro no salto (direito no chão), só a queda no bote (direito
 no ar, que começa com o lobo já no ar — `FallOnly`) e, quando o bote
 encosta, a aterrissagem.
