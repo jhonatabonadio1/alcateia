@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.25.1 — 2026-11-12
+
+### Mudado
+- **Garrada do lobo alterna os golpes:** cada clique esquerdo usa um
+  braço — o "swiping" e o "punch" do pack, um de cada vez.
+- **Bote no ar toca só a queda** do "jump attack", do ponto mais alto
+  ao impacto. O agachar e o salto do clipe saíram: o bote começa com o
+  lobo já no ar.
+- **O lobo não tem mais animação de pulo:** ele só pula, e o corpo
+  segue na pose em que estava. O clipe `jump.fbx` saiu.
+
 ## v0.25.0 — 2026-11-12
 
 ### Adicionado

@@ -14,18 +14,21 @@ using System.Collections.Generic;
 ///
 /// Mesma regra do <see cref="CharacterAnimator"/>: **lê** estado e
 /// nunca decide. A velocidade escolhe entre parado, andando e correndo;
-/// o chão escolhe o pulo; os sinais da arma disparam a garrada, a
-/// patada e o bote; o uivo (R) toca o rugido; virar lobo toca o
-/// "flexionar" do bicho.
+/// os sinais da arma disparam a garrada, a patada e o bote; o uivo (R)
+/// toca o rugido; virar lobo toca o "flexionar" do bicho.
+///
+/// **O pulo não tem animação** — decisão do Jhon: o lobo só pula, e o
+/// corpo segue na pose em que estava. O clipe de pulo do pack agacha,
+/// salta e aterrissa sozinho, e no jogo quem salta é a física; os dois
+/// juntos dão um bicho que pula duas vezes.
 ///
 /// | Clipe | Arquivo do pack | Quando |
 /// |---|---|---|
 /// | idle | mutant breathing idle | parado |
 /// | walk / run | mutant walking / run | andando, correndo |
-/// | jump | mutant jumping | no ar |
-/// | claw | mutant swiping | garrada (clique) |
-/// | heavy | mutant punch | patada (direito no chão) |
-/// | leap | mutant jump attack | bote (direito no ar) |
+/// | claw | mutant swiping | garrada (clique), alternando com o punch |
+/// | heavy | mutant punch | garrada alternada; patada (direito no chão) |
+/// | leap | mutant jump attack, **só a queda** | bote (direito no ar) |
 /// | howl | mutant roaring | uivando (R) |
 /// | transform | mutant flexing muscles | acabou de virar lobo |
 /// | death | mutant dying | morreu de lobo |
@@ -64,7 +67,7 @@ public partial class WolfVisual : Node3D
     [Export] public bool Debug;
 
     private static readonly string[] Clips =
-        { "idle", "walk", "run", "jump", "claw", "heavy", "leap", "howl", "transform", "death" };
+        { "idle", "walk", "run", "claw", "heavy", "leap", "howl", "transform", "death" };
 
     private FormController _form;
     private Weapon _weapon;
@@ -80,8 +83,10 @@ public partial class WolfVisual : Node3D
     private readonly Dictionary<string, float> _lengths = new();
 
     private bool _sharedModel = true;
+
+    /// <summary>A próxima garrada sai com o outro braço.</summary>
+    private bool _otherArm;
     private float _speed;
-    private bool _airborne;
     private bool _dead;
     private bool _howling;
     private double _deadTimer;
@@ -169,6 +174,7 @@ public partial class WolfVisual : Node3D
             if (animation == null) continue;
 
             CharacterAnimator.StripRootMotion(animation);
+            if (clip == "leap") animation = FallOnly(animation);
             animation.LoopMode = clip is "idle" or "walk" or "run" or "howl"
                 ? Animation.LoopModeEnum.Linear
                 : Animation.LoopModeEnum.None;
@@ -182,6 +188,96 @@ public partial class WolfVisual : Node3D
 
     private bool Has(string clip) => _lengths.ContainsKey(clip);
 
+    /// <summary>
+    /// Só a queda do "jump attack": do ponto mais alto até o bicho voltar
+    /// a ficar de pé depois do impacto. O bote começa com o lobo já no ar
+    /// — agachar e saltar de novo seria pular duas vezes.
+    ///
+    /// O ponto mais alto e o fim são achados na altura do quadril, não
+    /// cravados em segundos: trocar o clipe continua funcionando. A
+    /// altura do quadril é limitada à de pé: no ar quem levanta o corpo
+    /// é a física, e somar a subida do clipe deixaria o lobo flutuando
+    /// acima da cápsula. A agachada do impacto, abaixo disso, fica.
+    /// </summary>
+    private static Animation FallOnly(Animation source)
+    {
+        int hips = -1;
+        for (int t = 0; t < source.GetTrackCount(); t++)
+        {
+            if (source.TrackGetType(t) == Animation.TrackType.Position3D
+                && source.TrackGetPath(t).ToString().Contains("Hips"))
+            {
+                hips = t;
+                break;
+            }
+        }
+
+        if (hips < 0 || source.TrackGetKeyCount(hips) < 2) return source;
+
+        float rest = ((Vector3)source.TrackGetKeyValue(hips, 0)).Y;
+        double apex = 0, lowest = 0;
+        float top = float.MinValue, bottom = float.MaxValue;
+
+        for (int k = 0; k < source.TrackGetKeyCount(hips); k++)
+        {
+            float y = ((Vector3)source.TrackGetKeyValue(hips, k)).Y;
+            if (y > top) { top = y; apex = source.TrackGetKeyTime(hips, k); }
+        }
+
+        for (int k = 0; k < source.TrackGetKeyCount(hips); k++)
+        {
+            double time = source.TrackGetKeyTime(hips, k);
+            float y = ((Vector3)source.TrackGetKeyValue(hips, k)).Y;
+            if (time > apex && y < bottom) { bottom = y; lowest = time; }
+        }
+
+        // Fim: o quadril de volta à altura de pé depois do impacto.
+        double end = source.Length;
+        for (int k = 0; k < source.TrackGetKeyCount(hips); k++)
+        {
+            double time = source.TrackGetKeyTime(hips, k);
+            if (time > lowest && ((Vector3)source.TrackGetKeyValue(hips, k)).Y >= rest - 0.03f)
+            {
+                end = time;
+                break;
+            }
+        }
+
+        var fall = new Animation { Length = (float)(end - apex) };
+        const double step = 1.0 / 30.0;
+
+        for (int t = 0; t < source.GetTrackCount(); t++)
+        {
+            Animation.TrackType type = source.TrackGetType(t);
+            if (type is not (Animation.TrackType.Position3D or Animation.TrackType.Rotation3D or Animation.TrackType.Scale3D))
+                continue;
+
+            int track = fall.AddTrack(type);
+            fall.TrackSetPath(track, source.TrackGetPath(t));
+
+            for (double time = apex; time <= end + 0.0001; time += step)
+            {
+                double at = time - apex;
+                switch (type)
+                {
+                    case Animation.TrackType.Position3D:
+                        Vector3 position = source.PositionTrackInterpolate(t, time);
+                        if (t == hips) position.Y = Mathf.Min(position.Y, rest);
+                        fall.PositionTrackInsertKey(track, at, position);
+                        break;
+                    case Animation.TrackType.Rotation3D:
+                        fall.RotationTrackInsertKey(track, at, source.RotationTrackInterpolate(t, time));
+                        break;
+                    default:
+                        fall.ScaleTrackInsertKey(track, at, source.ScaleTrackInterpolate(t, time));
+                        break;
+                }
+            }
+        }
+
+        return fall;
+    }
+
     private static Skeleton3D FindSkeleton(Node node)
     {
         if (node is Skeleton3D skeleton) return skeleton;
@@ -194,8 +290,7 @@ public partial class WolfVisual : Node3D
     }
 
     /// <summary>
-    /// Máquina de estados para o corpo inteiro (locomoção, ar, uivo,
-    /// morte) e três disparos por cima, só da cintura para cima:
+    /// Máquina de estados para o corpo inteiro (locomoção, uivo, morte) e três disparos por cima, só da cintura para cima:
     /// golpe, transformação e bote (este no corpo inteiro).
     /// </summary>
     private void BuildTree()
@@ -214,15 +309,12 @@ public partial class WolfVisual : Node3D
 
         var machine = new AnimationNodeStateMachine();
         machine.AddNode("Locomotion", locoSpeed, new Vector2(200, 100));
-        if (Has("jump")) machine.AddNode("Air", Clip("jump"), new Vector2(400, 0));
         if (Has("howl")) machine.AddNode("Howl", Clip("howl"), new Vector2(400, 200));
         if (Has("death")) machine.AddNode("Death", Clip("death"), new Vector2(600, 100));
 
-        Link(machine, "Locomotion", "Air");
-        Link(machine, "Air", "Locomotion");
         Link(machine, "Locomotion", "Howl");
         Link(machine, "Howl", "Locomotion");
-        foreach (string from in new[] { "Locomotion", "Air", "Howl" })
+        foreach (string from in new[] { "Locomotion", "Howl" })
             Link(machine, from, "Death");
         Link(machine, "Death", "Locomotion");
 
@@ -348,18 +440,12 @@ public partial class WolfVisual : Node3D
         _tree.Set("parameters/Machine/Locomotion/Blend/blend_position", blend);
         _tree.Set("parameters/Machine/Locomotion/Speed/scale", _speed > RunSpeed ? Mathf.Min(_speed / RunSpeed, 1.8f) : 1f);
 
-        bool airborne = !_body.IsOnFloor();
+        // No ar não há clipe próprio: o corpo segue na pose de antes.
         bool howling = IsHowling();
-
-        string want = howling && Has("howl") ? "Howl"
-            : airborne && Has("jump") ? "Air"
-            : "Locomotion";
-
-        if (airborne != _airborne || howling != _howling)
+        if (howling != _howling)
         {
-            _airborne = airborne;
             _howling = howling;
-            _playback?.Travel(want);
+            _playback?.Travel(howling && Has("howl") ? "Howl" : "Locomotion");
         }
     }
 
@@ -385,9 +471,26 @@ public partial class WolfVisual : Node3D
 
         switch (kind)
         {
-            case Weapon.CooldownClaw: Fire("claw", Mathf.Max(seconds, 0.45f)); break;
+            case Weapon.CooldownClaw:
+                // O clique esquerdo alterna os dois golpes do pack — o
+                // "swiping" e o "punch" —, um braço de cada vez. Golpe
+                // repetido com a mesma mão parece um boneco travado; a
+                // alternância lê como uma sequência de patadas.
+                string swing = _otherArm && Has("heavy") ? "heavy" : "claw";
+                string previous = swing == "claw" ? "heavy" : "claw";
+
+                // Clique rápido: o golpe anterior sai para o novo
+                // aparecer. Sem isto o de cima na árvore cobre o outro.
+                if (_tree != null && Has(previous))
+                    _tree.Set($"parameters/{Cap(previous)}/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
+
+                Fire(swing, Mathf.Max(seconds, 0.45f));
+                _otherArm = !_otherArm;
+                break;
             case Weapon.CooldownHeavy: Fire("heavy", Mathf.Max(seconds * 0.8f, 0.6f)); break;
-            case Weapon.CooldownLeap: Fire("leap", 0.9f); break;
+            // O bote já começa no alto: a queda toca no tempo dela, um
+            // pouco mais rápida para o golpe chegar com o chão.
+            case Weapon.CooldownLeap: Fire("leap", _lengths.TryGetValue("leap", out float leap) ? leap / 1.2f : 0.9f); break;
         }
     }
 
@@ -415,7 +518,6 @@ public partial class WolfVisual : Node3D
     {
         _dead = false;
         _model.Visible = true;
-        _airborne = false;
         _howling = false;
         _playback?.Start("Locomotion");
         Visible = _form.IsWolf;

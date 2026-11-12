@@ -1386,9 +1386,13 @@ para o lobo. O `mutant_red.fbx` veio do Blender, sem `AnimationPlayer`
 e com o esqueleto dentro de `Armature`: o tocador é criado ao lado do
 esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.
 
-Clipes do lobo: parado, andar e correr misturados pela velocidade; o
-pulo no ar; garrada, patada e transformação **da cintura para cima**;
-bote no corpo inteiro; o rugido enquanto segura R; a morte.
+Clipes do lobo: parado, andar e correr misturados pela velocidade;
+garrada, patada e transformação **da cintura para cima**; o rugido
+enquanto segura R; a morte. O clique esquerdo **alterna** dois golpes,
+o "swiping" e o "punch", um braço de cada vez. O bote (direito no ar)
+toca **só a queda** do "jump attack", do ponto mais alto ao impacto —
+ele começa com o lobo já no ar. **O lobo não tem animação de pulo**,
+decisão do Jhon: ele só pula, e o corpo segue na pose em que estava.
 
 Texturas embutidas nos `.fbx` são extraídas pelo Godot na importação
 (`exo_gray_0.png`...) e ficam fora do git: cada máquina gera as suas.
