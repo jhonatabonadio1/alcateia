@@ -186,8 +186,9 @@ public partial class Player : CharacterBody3D
     [Export] public float FallLimit = -25f;
 
     /// <summary>Imprime por que a corrida em parede não começou.
-    /// Desligue quando a física estiver no ponto.</summary>
-    [Export] public bool WallDebug = true;
+    /// Desligado: a física está no ponto, e num mapa cheio de paredes
+    /// isto imprime uma linha por frame e deixa o Output ilegível.</summary>
+    [Export] public bool WallDebug = false;
 
     /// <summary>Distância da câmera na forma lobo.</summary>
     [Export] public float ThirdPersonDistance = 3.5f;
