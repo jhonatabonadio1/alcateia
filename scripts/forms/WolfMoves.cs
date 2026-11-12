@@ -51,7 +51,7 @@ public readonly record struct WolfClip(string Source, float Start, float End, fl
 /// |---|---|---|---|
 /// | claw | mutant swiping (2,67 s) | mão esquerda recolhida e parada de 0,80 a 1,10 s, golpe a 22,5 m/s em 1,30 s; passo de 0,91 m de 0,97 s até o quadril parar em 1,43 s | 1,00–1,85 s: começa com a mão já recolhida, para a garra sair rápido |
 /// | heavy | mutant punch (1,10 s) | mão direita a 12,6 m/s em 0,30 s; o clipe só passa o peso (0,19 m) — o passo de 0,35 m é do jogo | 0–0,85 s |
-/// | pounce | mutant jump attack (3,70 s) | agacha até 0,5 s, topo em 0,97 s, pés no chão em 1,53 s, garras no chão em 1,60 s, de pé em 3,0 s; quadril anda 1,71 m | 0–3,00 s: o salto inteiro; o corpo anda do impulso (0,45 s) aos pés no chão (1,55 s) — quanto, quem diz é a mira |
+/// | pounce | mutant jump attack (3,70 s) | agacha até 0,5 s, topo em 0,97 s, pés no chão em 1,53 s, garras no chão em 1,60 s, de pé em 3,0 s; quadril anda 1,71 m | 0–3,00 s: o salto inteiro; o corpo voa do impulso (0,45 s) aos pés no chão (1,55 s) — quanto, quem diz é a mira. Só a descida do quadril vale (FallOnly): a subida é do corpo, no arco |
 /// | dive | o mesmo jump attack | do topo (1,03 s) às garras no chão (1,60 s) | só a queda |
 /// | dive_land | o mesmo jump attack | da pancada (1,60 s) a de pé | a aterrissagem do bote |
 /// | howl | mutant roaring (5,40 s) | parado até 0,4 s; a volta ao repouso, depois de 4,9 s, fica com a troca para o andar | 0,30–4,90 s |
@@ -64,7 +64,7 @@ public static class WolfMoves
     {
         ["claw"] = new WolfClip("claw", 1.00f, 1.85f, 1.30f, StepFrom: 1.00f, StepTo: 1.43f, Step: 0.91f),
         ["heavy"] = new WolfClip("heavy", 0f, 0.85f, 0.30f, StepFrom: 0.05f, StepTo: 0.40f, Step: 0.35f),
-        ["pounce"] = new WolfClip("leap", 0f, 3.0f, 1.60f, StepFrom: 0.45f, StepTo: 1.55f, Step: 1.71f),
+        ["pounce"] = new WolfClip("leap", 0f, 3.0f, 1.60f, FallOnly: true, StepFrom: 0.45f, StepTo: 1.55f, Step: 1.71f),
         ["dive"] = new WolfClip("leap", 1.03f, 1.60f, 1.60f, FallOnly: true),
         ["dive_land"] = new WolfClip("leap", 1.60f, 2.77f, 1.60f, FallOnly: true),
         ["howl"] = new WolfClip("howl", 0.30f, 4.90f, 4.90f),

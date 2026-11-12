@@ -168,6 +168,25 @@ public partial class Weapon : Node3D
 	/// limite.</summary>
 	[Export] public float PounceMaxDistance = 12f;
 
+	/// <summary>Segurando W, o salto anda pelo menos isto, mesmo mirando
+	/// o chão perto: quem aperta para frente quer avançar.</summary>
+	[Export] public float PounceAdvanceMin = 6f;
+
+	/// <summary>O que o salto passa por cima, em metros acima dos pés: um
+	/// contêiner (2,2 m) passa; um bloco (5 m) ou o muro, não — o salto
+	/// para antes dele.</summary>
+	[Export] public float PounceMaxClear = 2.6f;
+
+	/// <summary>Altura mínima do arco do salto, em metros. Cresce com a
+	/// distância e com o que houver no caminho.</summary>
+	[Export] public float PounceArc = 0.6f;
+
+	/// <summary>Quanto o ponto de queda acompanha o alvo durante o voo, em
+	/// m/s. O alvo anda até 3 m no 1,1 s do salto e o golpe errava quem só
+	/// caminhava; mais devagar que o humano correndo (4,2), quem corre de
+	/// lado desde o começo ainda escapa.</summary>
+	[Export] public float PounceHoming = 3f;
+
 	/// <summary>Quão longe do centro da tela, em graus, um inimigo ainda
 	/// conta como "mirado" pelo salto. O lobo não tem mira na tela, e
 	/// acertar um corpo a 12 m só com o centro da câmera seria loteria.</summary>
@@ -486,6 +505,14 @@ public partial class Weapon : Node3D
 		if (_diving)
 			UpdateDive(delta);
 
+		if (_flying)
+		{
+			HomePounce((float)delta);
+			_flyTime += delta;
+			if (_flyTime >= _flyTotal || !_form.IsWolf || _health.IsDead)
+				_flying = false;
+		}
+
 		if (_pending.Count > 0)
 			RunPending(delta);
 
@@ -792,13 +819,15 @@ public partial class Weapon : Node3D
 	/// lobo até o fim — o salto no lugar, o bote na trajetória — e o
 	/// dano dos dois sai quando o lobo de fato cai.
 	/// </summary>
-	public void TrySpecial()
+	/// <param name="advancing">O jogador está segurando para frente: o
+	/// salto no chão avança mesmo sem alvo.</param>
+	public void TrySpecial(bool advancing = false)
 	{
 		if (_cooldown > 0) return;
 		if (!_form.IsWolf || !_form.CanAttack) return;
 
 		if (_body.IsOnFloor())
-			Pounce();
+			Pounce(advancing);
 		else
 			Leap();
 	}
@@ -809,27 +838,216 @@ public partial class Weapon : Node3D
 	/// chão na animação, não no clique. É o golpe de quem deixou o lobo
 	/// chegar parado: forte, mas lento e fácil de ver vindo.
 	/// </summary>
-	private void Pounce()
+	private void Pounce(bool advancing)
 	{
 		_comboIndex = 0;
 		_attackQueued = false;
 		_rootLeft = WolfMoves.Duration(WolfMove.Pounce);
-		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown, () => Claw(HeavyDamageBonus, ClawReach, ClawRadius, false));
+		_pounceFlew = false;
+		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown,
+			() => Claw(HeavyDamageBonus, ClawReach, ClawRadius, false, _pounceFlew ? _flyDir : null));
 
-		// O salto avança: do impulso até os pés tocarem o chão, o corpo anda
-		// até as garras caírem no ponto da mira. O alvo é escolhido no
-		// clique; onde ele está é lido no impulso, 0,32 s depois.
+		// O salto é um pulo de verdade: do impulso até os pés tocarem o
+		// chão, o corpo voa num arco até as garras caírem no alvo. O alvo é
+		// escolhido no clique; onde ele está é lido no impulso, 0,32 s
+		// depois.
 		_pounceTarget = FindPounceTarget();
+		_pounceAdvance = advancing;
 		var (delay, duration, clipDistance) = WolfMoves.StepOf(WolfMove.Pounce);
-		After(delay, id, () =>
-		{
-			var (distance, direction) = PounceAim(clipDistance);
-			if (Debug) GD.Print($"salto: alvo {(_pounceTarget != null ? _pounceTarget.Name : "nenhum")}, anda {distance:0.0} m");
-			if (distance > 0.05f) BeginStep(duration, distance, direction);
-		});
+		After(delay, id, () => BeginPounceFlight(duration, clipDistance));
 	}
 
 	private Node3D _pounceTarget;
+	private bool _pounceAdvance;
+	private bool _pounceFlew;
+
+	// --- O voo do salto ---
+
+	private bool _flying;
+	private double _flyTime;
+	private double _flyTotal = 1;
+	private Vector3 _flyStart;
+	private Vector3 _flyDir;
+	private float _flyDistance;
+	private float _flyLand;
+	private float _flyArc;
+
+	/// <summary>No ar no salto: o corpo segue <see cref="PounceFlightPoint"/>.</summary>
+	public bool IsPounceFlying => _flying && _form != null && _form.IsWolf;
+
+	/// <summary>
+	/// Onde o corpo deve estar daqui a <paramref name="ahead"/> segundos
+	/// de voo. Para a frente em sino (sai devagar, voa, assenta), como o
+	/// quadril do clipe; para cima em parábola no tempo, subindo rápido no
+	/// impulso — é o que passa por cima de um caixote logo à frente sem
+	/// precisar de um arco enorme.
+	/// </summary>
+	public Vector3 PounceFlightPoint(double ahead)
+	{
+		float u = Mathf.Clamp((float)((_flyTime + ahead) / _flyTotal), 0f, 1f);
+		float s = (1f - Mathf.Cos(Mathf.Pi * u)) * 0.5f;
+		float y = _flyLand * u + 4f * _flyArc * u * (1f - u);
+		return _flyStart + _flyDir * (_flyDistance * s) + Vector3.Up * y;
+	}
+
+	/// <summary>Puxa o ponto de queda para onde o alvo está agora, até
+	/// <see cref="PounceHoming"/> m/s e sem passar do alcance.</summary>
+	private void HomePounce(float delta)
+	{
+		if (_pounceTarget == null || !IsInstanceValid(_pounceTarget)) return;
+		if (_pounceTarget.GetNodeOrNull<Health>("Health") is not { IsDead: false }) return;
+
+		Vector3 end = _flyStart + _flyDir * _flyDistance;
+		Vector3 to = _pounceTarget.GlobalPosition - _flyStart;
+		to.Y = 0;
+		float reach = to.Length();
+		if (reach < 0.01f) return;
+
+		Vector3 wanted = _flyStart + to / reach * Mathf.Clamp(reach - ClawReach, 0f, PounceMaxDistance);
+		wanted.Y = end.Y;
+		end = end.MoveToward(wanted, PounceHoming * delta);
+
+		Vector3 flat = end - _flyStart;
+		flat.Y = 0;
+		_flyDistance = flat.Length();
+		if (_flyDistance > 0.01f) _flyDir = flat / _flyDistance;
+	}
+
+	private void BeginPounceFlight(float duration, float clipDistance)
+	{
+		var (distance, direction) = PounceAim(clipDistance);
+
+		// Segurando W, avança mesmo mirando o chão perto.
+		if (_pounceAdvance && _pounceTarget == null)
+			distance = Mathf.Max(distance, Mathf.Min(PounceAdvanceMin, PounceMaxDistance));
+
+		float wanted = distance;
+		PlanPounce(ref distance, direction, out float land, out float arc);
+
+		if (Debug)
+			GD.Print($"salto: alvo {(_pounceTarget != null ? _pounceTarget.Name : "nenhum")}, " +
+				$"anda {distance:0.0} m{(distance < wanted - 0.05f ? $" (queria {wanted:0.0}: obstáculo no caminho)" : "")}, " +
+				$"arco {arc:0.0} m, cai {land:+0.0;-0.0} m");
+
+		_flyStart = _body.GlobalPosition;
+		_flyDir = direction;
+		_flyDistance = distance;
+		_flyLand = land;
+		_flyArc = arc;
+		_flyTotal = Mathf.Max(duration, 0.05f);
+		_flyTime = 0;
+		_flying = true;
+		_pounceFlew = distance > 0.05f;
+	}
+
+	/// <summary>
+	/// Mede o chão no caminho do salto e escolhe o arco. O que tem até
+	/// <see cref="PounceMaxClear"/> acima dos pés é pulado por cima (o
+	/// arco sobe o bastante para passar); o que é mais alto (bloco, muro)
+	/// encurta o salto para cair antes dele. Cair em cima de um contêiner
+	/// também vale: o arco termina na altura dele.
+	/// </summary>
+	private void PlanPounce(ref float distance, Vector3 direction, out float land, out float arc)
+	{
+		var space = _body.GetWorld3D().DirectSpaceState;
+		float halfHeight = -((_body as Player)?.FeetOffset ?? -0.875f);
+		Vector3 feet = _body.GlobalPosition + Vector3.Down * halfHeight;
+		float top = PounceMaxClear + 0.4f;
+
+		var path = new List<(float X, float H)>();
+		for (float x = 0.4f; x <= distance + 0.01f; x += 0.4f)
+		{
+			float h = GroundAt(space, feet + direction * x, top);
+			if (h > PounceMaxClear)
+			{
+				distance = Mathf.Max(x - 0.8f, 0f);
+				break;
+			}
+			path.Add((x, h));
+		}
+
+		float arcMax = PounceMaxClear + 0.6f;
+		land = 0f;
+		arc = PounceArc;
+
+		// Até três tentativas: o arco que passa por tudo; se algo no fim do
+		// caminho não dá para passar com esse alcance (um contêiner logo
+		// antes do ponto de queda), cair em cima dele; se nem isso, cair
+		// antes dele.
+		for (int attempt = 0; attempt < 3; attempt++)
+		{
+			// O ponto de queda não pode cair dentro de algo alto (a quina de
+			// um pilar, a borda de um muro entre duas amostras): recua até
+			// achar chão.
+			land = 0f;
+			while (distance > 0.05f)
+			{
+				land = GroundAt(space, feet + direction * distance, top);
+				if (land <= PounceMaxClear) break;
+				distance = Mathf.Max(distance - 0.4f, 0f);
+			}
+			land = distance > 0.05f ? Mathf.Clamp(land, -1.5f, PounceMaxClear) : 0f;
+			arc = Mathf.Clamp(PounceArc + 0.07f * distance, PounceArc, 1.6f);
+
+			float failX = -1f;
+			float failH = 0f;
+
+			foreach (var (x, h) in path)
+			{
+				if (x >= distance) break;
+
+				// Em que instante do voo o corpo passa por x, e quanto o arco
+				// precisa subir para os pés passarem 15 cm acima.
+				float s = Mathf.Clamp(x / Mathf.Max(distance, 0.01f), 0.01f, 0.99f);
+				float u = Mathf.Acos(1f - 2f * s) / Mathf.Pi;
+				float need = (h + 0.15f - land * u) / (4f * u * (1f - u));
+
+				if (need > arcMax)
+				{
+					failX = x;
+					failH = h;
+					break;
+				}
+
+				arc = Mathf.Max(arc, need);
+			}
+
+			if (failX < 0f) return;
+
+			float onTop = GroundAt(space, feet + direction * (failX + 0.4f), top);
+			distance = Mathf.Abs(onTop - failH) < 0.35f && failX + 0.4f <= PounceMaxDistance
+				? failX + 0.4f
+				: Mathf.Max(failX - 0.8f, 0f);
+		}
+	}
+
+	/// <summary>Altura do chão em <paramref name="at"/>, relativa a ele:
+	/// raio de cima para baixo. Começar dentro de algo (um muro mais alto
+	/// que o raio) devolve a altura do raio inteira — é obstáculo. Gente
+	/// não conta: cair em cima de alguém é o objetivo, não um degrau.</summary>
+	private float GroundAt(PhysicsDirectSpaceState3D space, Vector3 at, float top)
+	{
+		var query = PhysicsRayQueryParameters3D.Create(at + Vector3.Up * top, at + Vector3.Down * 1.6f);
+		query.HitFromInside = true;
+		var exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+
+		for (int tries = 0; tries < 4; tries++)
+		{
+			query.Exclude = exclude;
+			var hit = space.IntersectRay(query);
+			if (hit.Count == 0) return -1.6f;
+
+			if (hit["collider"].Obj is CharacterBody3D)
+			{
+				exclude.Add((Rid)hit["rid"]);
+				continue;
+			}
+
+			return ((Vector3)hit["position"]).Y - at.Y;
+		}
+
+		return -1.6f;
+	}
 
 	/// <summary>
 	/// Para onde e quanto o salto anda: até as garras (o volume,
@@ -1169,14 +1387,15 @@ public partial class Weapon : Node3D
 	/// <paramref name="aerial"/>: o golpe veio de uma queda alta e vale
 	/// o bônus aéreo mesmo já no chão — o bote bate quando aterrissa.
 	/// </summary>
-	private void Claw(float multiplier, float reach, float radius, bool aerial)
+	private void Claw(float multiplier, float reach, float radius, bool aerial, Vector3? facing = null)
 	{
 		WolfBreed breed = _form.Breed;
 
 		// O volume nasce à frente do CORPO, na altura do peito. Preso
 		// ao corpo e não ao olhar, é o que dá à garra um alcance que
-		// varia com a postura em vez de seguir a mira.
-		Vector3 forward = -_body.GlobalTransform.Basis.Z;
+		// varia com a postura em vez de seguir a mira. O salto passa a
+		// direção em que voou: ele pode ter curvado atrás do alvo.
+		Vector3 forward = facing ?? -_body.GlobalTransform.Basis.Z;
 		Vector3 center = _body.GlobalPosition + forward * reach + Vector3.Up * 0.2f;
 
 		var query = new PhysicsShapeQueryParameters3D
@@ -1470,6 +1689,7 @@ public partial class Weapon : Node3D
 		_rootLeft = 0;
 		_stepLeft = 0;
 		_diving = false;
+		_flying = false;
 		_attackQueued = false;
 		_pending.Clear();
 		if (IsReloading) CancelReload();

@@ -344,6 +344,22 @@ public partial class Player : CharacterBody3D
         Velocity = Vector3.Zero;
     }
 
+    /// <summary>
+    /// O voo do salto: o corpo vai para o ponto do arco no próximo quadro.
+    /// Por posição e não por força, para o pulo cair exatamente onde foi
+    /// planejado; a física ainda manda — bater em algo no caminho para o
+    /// corpo ali. A velocidade é limitada para nunca atravessar parede.
+    /// </summary>
+    private void PounceFlight(double delta)
+    {
+        ReleaseWall();
+
+        Vector3 next = _weapon.PounceFlightPoint(delta);
+        Vector3 velocity = (next - GlobalPosition) / (float)delta;
+        Velocity = velocity.LimitLength(28f);
+        MoveAndSlide();
+    }
+
     /// <summary>Freada de quem fica preso no lugar, em m/s². Parar seco a
     /// 6,5 m/s era um tranco de câmera; assim o lobo desliza meio metro
     /// enquanto agacha para o salto, que é o embalo que se espera ver.</summary>
@@ -646,6 +662,13 @@ public partial class Player : CharacterBody3D
             return;
         }
 
+        // O salto voa no arco que a arma planejou.
+        if (_weapon.IsPounceFlying)
+        {
+            PounceFlight(delta);
+            return;
+        }
+
         // Uivar trava você no lugar — é o preço da cura —, e o salto e a
         // aterrissagem do bote também: golpe pesado não se faz andando.
         if (IsHowling || _weapon.IsRooted)
@@ -808,7 +831,7 @@ public partial class Player : CharacterBody3D
         // Botão direito: salto no chão, bote no ar. Quem move o corpo
         // durante os dois é o passo de física, pela arma.
         if (Input.IsActionJustPressed("special"))
-            _weapon.TrySpecial();
+            _weapon.TrySpecial(Input.IsActionPressed("move_forward"));
 
         // R faz o que a forma permite: ruge de lobo, recarrega de
         // humano. Uma tecla, um gesto, dois corpos.
