@@ -178,8 +178,15 @@ public partial class CharacterAnimator : Node3D
     private double _deathLength;
     private float _modelY;
 
-    /// <summary>Altura em que o modelo deve ficar agora. Segue a
-    /// cápsula quando há dono, porque ela encolhe ao agachar.</summary>
+    /// <summary>
+    /// Altura dos pés agora. Segue a cápsula quando há dono, porque
+    /// ela encolhe ao agachar.
+    ///
+    /// Vai neste nó, não no modelo dentro dele. Este nó já carrega o
+    /// deslocamento vindo da cena, e aplicar a mesma altura nos dois
+    /// soma duas vezes — foi assim que o corpo afundou 1,75 m, que é
+    /// o dobro certinho de onde ele devia estar.
+    /// </summary>
     private float BaseY => _owner != null ? _owner.FeetOffset : _modelY;
     private readonly List<StandardMaterial3D> _fadeMaterials = new();
     private bool _hasDeath;
@@ -225,7 +232,10 @@ public partial class CharacterAnimator : Node3D
         _model.RotationDegrees = new Vector3(
             _model.RotationDegrees.X, ModelYaw, _model.RotationDegrees.Z);
 
-        _modelY = _model.Position.Y;
+        // A altura da cena está NESTE nó; o modelo dentro dele fica em
+        // zero e só se mexe para o efeito de morte.
+        _modelY = Position.Y;
+        _model.Position = new Vector3(_model.Position.X, 0, _model.Position.Z);
 
         HideFromOwner();
 
@@ -627,7 +637,7 @@ public partial class CharacterAnimator : Node3D
         UpdateAir(delta);
         UpdateStance();
 
-        _model.Position = new Vector3(_model.Position.X, BaseY, _model.Position.Z);
+        Position = new Vector3(Position.X, BaseY, Position.Z);
 
         ReportState();
     }
@@ -779,9 +789,10 @@ public partial class CharacterAnimator : Node3D
         double t = (grounded - CorpseHold) / Mathf.Max(CorpseFade, 0.01f);
         float progress = t <= 0 ? 0f : Mathf.Clamp((float)t, 0f, 1f);
 
+        // Só o afundar da morte. A altura dos pés é do nó de cima.
         _model.Position = new Vector3(
             _model.Position.X,
-            BaseY - CorpseDrop * settle - CorpseSink * progress,
+            -CorpseDrop * settle - CorpseSink * progress,
             _model.Position.Z);
 
         if (progress <= 0) return;
@@ -849,7 +860,7 @@ public partial class CharacterAnimator : Node3D
             material.AlbedoColor = color;
         }
 
-        _model.Position = new Vector3(_model.Position.X, BaseY, _model.Position.Z);
+        _model.Position = new Vector3(_model.Position.X, 0, _model.Position.Z);
         _model.Visible = true;
 
         _playback?.Start("Locomotion");
