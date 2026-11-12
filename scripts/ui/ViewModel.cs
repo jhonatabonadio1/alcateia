@@ -35,9 +35,45 @@ public partial class ViewModel : Node3D
     private Node3D _grenade;
     private Node3D _claws;
 
+    private Node3D _rifleMuzzle;
+    private Node3D _pistolMuzzle;
+    private MeshInstance3D _flash;
+    private double _flashTimer;
+
     private Vector3 _rest;
     private float _recoil;
     private float _bobTime;
+
+    /// <summary>Duração do clarão do cano.</summary>
+    [Export] public float FlashLife = 0.045f;
+
+    [Export] public Color FlashColor = new Color(1f, 0.85f, 0.45f);
+
+    /// <summary>
+    /// Ponta do cano da arma na mão, em coordenadas de mundo.
+    ///
+    /// O traçante sai daqui, não da câmera. O raio continua partindo
+    /// do centro da tela, porque é dele que vem a precisão — mas o
+    /// jogador vê a linha nascer no cano, que é de onde ela deveria
+    /// nascer. Desenhar a partir da câmera deixa o tiro saindo da
+    /// testa, e é o artefato que mais entrega um FPS improvisado.
+    /// </summary>
+    public bool TryGetMuzzle(out Vector3 position)
+    {
+        position = Vector3.Zero;
+
+        Node3D muzzle = _weapon.HumanSlot switch
+        {
+            Slot.Primary => _rifleMuzzle,
+            Slot.Secondary => _pistolMuzzle,
+            _ => null
+        };
+
+        if (muzzle == null || _form.IsWolf || !Visible) return false;
+
+        position = muzzle.GlobalPosition;
+        return true;
+    }
 
     public override void _Ready()
     {
@@ -56,12 +92,33 @@ public partial class ViewModel : Node3D
         _form.FormChanged += _ => Refresh();
         _weapon.Fired += OnFired;
 
+        _flash = new MeshInstance3D
+        {
+            Mesh = new SphereMesh { Radius = 0.055f, Height = 0.11f, RadialSegments = 8, Rings = 4 },
+            MaterialOverride = new StandardMaterial3D
+            {
+                AlbedoColor = FlashColor,
+                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha
+            },
+            Visible = false
+        };
+        AddChild(_flash);
+
         Refresh();
     }
 
     public override void _Process(double delta)
     {
         _recoil = Mathf.MoveToward(_recoil, 0f, (float)delta * 1.4f);
+
+        if (_flashTimer > 0)
+        {
+            _flashTimer -= delta;
+
+            if (_flashTimer <= 0)
+                _flash.Visible = false;
+        }
 
         var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
         bool walking = _body.IsOnFloor() && flat.Length() > 0.5f;
@@ -78,6 +135,15 @@ public partial class ViewModel : Node3D
     private void OnFired()
     {
         _recoil = Kick;
+
+        if (_form.IsWolf) return;
+
+        Node3D muzzle = _weapon.HumanSlot == Slot.Primary ? _rifleMuzzle : _pistolMuzzle;
+        if (muzzle == null) return;
+
+        _flash.Position = muzzle.Position + muzzle.GetParent<Node3D>().Position;
+        _flash.Visible = true;
+        _flashTimer = FlashLife;
     }
 
     /// <summary>Mostra só o que está na mão.</summary>
@@ -99,6 +165,9 @@ public partial class ViewModel : Node3D
 
         Box(root, RifleColor, new Vector3(0.07f, 0.09f, 0.5f), new Vector3(0.22f, -0.2f, -0.38f));
         Box(root, RifleColor, new Vector3(0.04f, 0.05f, 0.34f), new Vector3(0.22f, -0.17f, -0.72f));
+
+        _rifleMuzzle = new Node3D { Position = new Vector3(0.22f, -0.17f, -0.9f) };
+        root.AddChild(_rifleMuzzle);
         Box(root, RifleColor, new Vector3(0.05f, 0.16f, 0.07f), new Vector3(0.22f, -0.3f, -0.26f));
         Box(root, RifleColor, new Vector3(0.05f, 0.07f, 0.2f), new Vector3(0.22f, -0.21f, -0.1f));
 
@@ -111,6 +180,9 @@ public partial class ViewModel : Node3D
 
         Box(root, PistolColor, new Vector3(0.06f, 0.08f, 0.26f), new Vector3(0.2f, -0.22f, -0.3f));
         Box(root, PistolColor, new Vector3(0.05f, 0.15f, 0.07f), new Vector3(0.2f, -0.31f, -0.22f));
+
+        _pistolMuzzle = new Node3D { Position = new Vector3(0.2f, -0.22f, -0.44f) };
+        root.AddChild(_pistolMuzzle);
 
         return root;
     }

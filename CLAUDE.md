@@ -246,6 +246,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 4 | Equipar granada (o ataque arremessa) |
 | Clique esq. | Atacar |
 | Ctrl | Agachar (nas duas formas) |
+| Shift | Andar devagar e em silêncio (só humano) |
 | R | Rugir — segurar (só de lobo) |
 | Tab | Menu de dificuldade |
 
@@ -395,7 +396,11 @@ acopla a IA a tudo que existe.
 | Rugido | 45m |
 | Explosão | ~39m |
 
-**Agachado não faz barulho nenhum.** É isso que dá ao agachamento um
+**Agachado e andando com Shift não fazem barulho nenhum.** São as
+duas ferramentas de furtividade do humano, e é o que dá escolha
+contra um inimigo que ouve. Andar devagar é só do humano: o lobo vive
+de movimento, e dar a ele a opção de abrir mão disso criaria um lobo
+furtivo, que é o oposto da forma. É isso que dá ao agachamento um
 propósito tático em vez de ser só um botão de ficar menor.
 
 O passo sai por distância percorrida, não por tempo: a cadência
@@ -475,6 +480,16 @@ O erro deliberado é separado do erro de mira de propósito: aumentar
 só o erro médio produz um chuvisco de quase-acertos, enquanto jogar
 alguns tiros fora mantém os acertos convincentes e cria janelas
 claras para o jogador se mover.
+
+### O tiro sai do cano
+
+O **raio** parte da câmera, porque é dela que vem a precisão. O
+**traçante** parte da ponta do cano, porque é de lá que o jogador
+espera vê-lo nascer. Desenhar a linha a partir da câmera deixa o tiro
+saindo da testa — é o artefato que mais entrega um FPS improvisado.
+
+Cada disparo também produz clarão no cano, recuo da arma e recuo de
+câmera que volta sozinho. Sem isso atirar não tem peso.
 
 ### Retorno de combate
 

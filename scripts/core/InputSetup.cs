@@ -20,6 +20,7 @@ public static class InputSetup
         Key("jump", Godot.Key.Space);
         Key("howl", Godot.Key.R);
         Key("crouch", Godot.Key.Ctrl);
+        Key("walk", Godot.Key.Shift);
         Key("menu", Godot.Key.Tab);
         Mouse("attack", MouseButton.Left);
 

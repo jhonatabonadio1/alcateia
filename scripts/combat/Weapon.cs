@@ -95,6 +95,7 @@ public partial class Weapon : Node3D
 
 	private Camera3D _camera;
 	private Node3D _head;
+	private ViewModel _viewModel;
 	private FormController _form;
 	private CharacterBody3D _body;
 	private double _cooldown;
@@ -203,7 +204,10 @@ public partial class Weapon : Node3D
 		Vector3 to = from - _camera.GlobalTransform.Basis.Z * range;
 
 		Health hit = Raycast(from, to, out Vector3 impact, out Node collider);
-		Tracer(from, hit == null ? to : impact);
+
+		// A mira sai da câmera, porque é dela que vem a precisão; a
+		// linha sai do cano, porque é de lá que o jogador espera vê-la.
+		Tracer(MuzzleOrigin(from), hit == null ? to : impact);
 
 		if (hit == null) return;
 
@@ -339,6 +343,17 @@ public partial class Weapon : Node3D
 			AlbedoColor = color,
 			NoDepthTest = false
 		};
+	}
+
+	/// <summary>Ponta do cano, quando há arma visível na mão.</summary>
+	private Vector3 MuzzleOrigin(Vector3 fallback)
+	{
+		_viewModel ??= _body.GetNodeOrNull<Node3D>("Head/Camera3D/ViewModel") as ViewModel;
+
+		if (_viewModel != null && _viewModel.TryGetMuzzle(out Vector3 muzzle))
+			return muzzle;
+
+		return fallback;
 	}
 
 	/// <summary>Linha fina que aparece e some. Peça descartável — vira

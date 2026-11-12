@@ -44,6 +44,16 @@ public partial class Player : CharacterBody3D
     /// <summary>Fração da velocidade enquanto agachado.</summary>
     [Export] public float CrouchSpeedFactor = 0.45f;
 
+    /// <summary>Fração da velocidade andando com Shift. Só no humano:
+    /// o lobo é puro movimento e não teria por que abrir mão disso.</summary>
+    [Export] public float WalkSpeedFactor = 0.42f;
+
+    /// <summary>Recuo vertical da câmera por disparo, em graus.</summary>
+    [Export] public float CameraKick = 0.9f;
+
+    /// <summary>Velocidade com que a câmera volta ao lugar.</summary>
+    [Export] public float CameraRecover = 7f;
+
     [Export] public float StandHeight = 1.75f;
     [Export] public float CrouchHeight = 1.0f;
 
@@ -178,6 +188,8 @@ public partial class Player : CharacterBody3D
     private CollisionShape3D _collision;
     private CapsuleShape3D _capsule;
     private bool _crouching;
+    private bool _walking;
+    private float _cameraKick;
     private double _jumpLock;
     private float _height;
     private double _wallTimer;
@@ -216,6 +228,7 @@ public partial class Player : CharacterBody3D
         _springArm.AddExcludedObject(GetRid());
 
         _form.FormChanged += OnFormChanged;
+        _weapon.Fired += OnWeaponFired;
         _health.Respawned += OnRespawned;
 
         SetProcessInput(IsMultiplayerAuthority());
@@ -226,6 +239,33 @@ public partial class Player : CharacterBody3D
     }
 
     private void OnFormChanged(int form) => ApplyCamera();
+
+    /// <summary>Recuo de câmera: o cano sobe a cada tiro e volta
+    /// sozinho. Sem isso, atirar não tem peso nenhum.</summary>
+    private void OnWeaponFired()
+    {
+        if (_form.IsWolf) return;
+
+        _cameraKick += Mathf.DegToRad(CameraKick);
+
+        Vector3 rotation = _head.Rotation;
+        rotation.X = Mathf.Clamp(
+            rotation.X + Mathf.DegToRad(CameraKick),
+            Mathf.DegToRad(-89f), Mathf.DegToRad(89f));
+        _head.Rotation = rotation;
+    }
+
+    private void UpdateCameraKick(double delta)
+    {
+        if (_cameraKick <= 0) return;
+
+        float recover = _cameraKick * CameraRecover * (float)delta;
+
+        _cameraKick = Mathf.Max(_cameraKick - recover, 0);
+        _head.Rotation = new Vector3(
+            Mathf.Clamp(_head.Rotation.X + recover * 0.5f, Mathf.DegToRad(-89f), Mathf.DegToRad(89f)),
+            _head.Rotation.Y, _head.Rotation.Z);
+    }
 
     /// <summary>Reviver no lugar onde se morreu devolve o jogador para
     /// dentro do tiroteio que o matou. Volta ao spawn.</summary>
@@ -327,6 +367,7 @@ public partial class Player : CharacterBody3D
 
         UpdateCrouch(delta);
         UpdateNoise(delta);
+        UpdateCameraKick(delta);
 
         // Uivar trava você no lugar. É o preço da cura.
         if (IsHowling)
@@ -380,7 +421,10 @@ public partial class Player : CharacterBody3D
             }
         }
 
-        if (!grounded || _crouching) return;
+        // Agachado e andando devagar não fazem barulho. São as duas
+        // ferramentas de furtividade do humano, e é o que dá ao jogador
+        // escolha contra um inimigo que ouve.
+        if (!grounded || _crouching || _walking) return;
 
         var flat = new Vector3(Velocity.X, 0, Velocity.Z);
         if (flat.Length() < 0.5f) return;
@@ -427,7 +471,8 @@ public partial class Player : CharacterBody3D
     private float SpeedScale =>
         (_form.IsWolf ? _form.Breed.SpeedMultiplier : 1f)
         * (IsStunned ? _stunSlow : 1f)
-        * (_crouching ? CrouchSpeedFactor : 1f);
+        * (_crouching ? CrouchSpeedFactor : 1f)
+        * (_walking ? WalkSpeedFactor : 1f);
     private float JumpScale => _form.IsWolf ? _form.Breed.JumpMultiplier : 1f;
 
     private void HandleActions()
@@ -694,6 +739,11 @@ public partial class Player : CharacterBody3D
     private void UpdateCrouch(double delta)
     {
         _crouching = !_onWall && Input.IsActionPressed("crouch");
+
+        // Andar devagar é ferramenta do humano. O lobo vive de
+        // movimento; dar a ele a opção de abrir mão disso só criaria
+        // um lobo furtivo, que é o oposto da forma.
+        _walking = !_onWall && !_form.IsWolf && Input.IsActionPressed("walk");
 
         float target = _crouching ? CrouchHeight : StandHeight;
         float previous = _height;

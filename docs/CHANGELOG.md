@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.11.1 — 2026-11-11
+
+### Adicionado
+- **Andar devagar com Shift**, só na forma humana: 42% da velocidade
+  e sem ruído. Segunda ferramenta de furtividade ao lado do agachar.
+- **Clarão no cano** e **recuo de câmera** a cada disparo.
+
+### Alterado
+- O traçante passa a nascer na ponta do cano em vez da câmera. O raio
+  continua partindo da câmera, que é de onde vem a precisão.
+
 ## v0.11.0 — 2026-11-11
 
 ### Corrigido
