@@ -3,10 +3,16 @@ extends SceneTree
 ## mão quadro a quadro, quanto ela anda e quando ela está mais à frente.
 ## O golpe é o pico de velocidade da mão que bate.
 ##
+## Também mede o corpo: o trecho em que o clipe se mexe de verdade (para
+## cortar a parte parada do começo e do fim), o passo do quadril (o jogo
+## prende o quadril e anda o corpo no lugar dele) e, nos saltos, o quadro
+## em que os pés voltam ao chão.
+##
 ## Uso, da raiz do projeto:
 ##   godot --headless --path . -s res://tools/analisar_golpes.gd
 ##
-## Os números vão para scripts/forms/WolfMoves.cs (Start, End, Impact).
+## Os números vão para scripts/forms/WolfMoves.cs (Start, End, Impact,
+## StepFrom, StepTo, Step).
 ## A posição das mãos é reconstruída somando osso por osso (repouso do
 ## esqueleto + trilhas do clipe), sem tocar a animação — no modo sem
 ## janela o esqueleto não atualiza a pose.
@@ -62,8 +68,77 @@ func _init() -> void:
 			print("  mão %s: mais à frente %.2f m em %.2f s · mais rápida %.1f m/s em %.2f s"
 				% [side, front, front_at, fastest, fastest_at])
 
+		_body(anim, hips)
+
 	model.free()
 	quit()
+
+
+## Movimento, passo do quadril e aterrissagem de um clipe.
+func _body(anim: Animation, hips: int) -> void:
+	var parts := ["Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot"]
+	var feet := [skeleton.find_bone("mixamorig_LeftFoot"), skeleton.find_bone("mixamorig_RightFoot")]
+	var previous := {}
+	var first_move := -1.0
+	var last_move := 0.0
+	var z_max := -INF
+	var times: Array[float] = []
+	var zs: Array[float] = []
+	var foot_rest := minf(_global(anim, feet[0], 0.0).origin.y, _global(anim, feet[1], 0.0).origin.y)
+	var foot_top := foot_rest
+	var foot_top_at := 0.0
+	var touch := -1.0
+	var t := 0.0
+
+	while t <= anim.length + 0.001:
+		var center: Vector3 = _global(anim, hips, t).origin
+		var motion := 0.0
+		for part in parts:
+			var at: Vector3 = _global(anim, skeleton.find_bone("mixamorig_" + part), t).origin - center
+			if previous.has(part):
+				motion += (at - previous[part]).length() * 30.0
+			previous[part] = at
+		if motion > 1.5:
+			if first_move < 0.0:
+				first_move = t
+			last_move = t
+
+		var z: float = _local(anim, hips, t).origin.z
+		times.append(t)
+		zs.append(z)
+		z_max = maxf(z_max, z)
+
+		var low := minf(_global(anim, feet[0], t).origin.y, _global(anim, feet[1], t).origin.y)
+		if low > foot_top:
+			foot_top = low
+			foot_top_at = t
+		if touch < 0.0 and foot_top - foot_rest > 0.3 and t > foot_top_at and low <= foot_rest + 0.05:
+			touch = t
+		t += 1.0 / 30.0
+
+	print("  movimento: de %.2f a %.2f s" % [maxf(first_move, 0.0), last_move])
+
+	# O passo: do ponto mais atrás antes do mais à frente até ele, do
+	# primeiro ao último quadro em que o quadril anda (5% e 95% do total).
+	var top := zs.find(z_max)
+	var low_at := 0
+	for i in top:
+		if zs[i] < zs[low_at]:
+			low_at = i
+	var travel := z_max - zs[low_at]
+	if travel > 0.1:
+		var from := times[low_at]
+		var to := times[top]
+		for i in range(low_at, top + 1):
+			if zs[i] <= zs[low_at] + travel * 0.05:
+				from = times[i]
+			if zs[i] >= zs[low_at] + travel * 0.95:
+				to = times[i]
+				break
+		print("  quadril: passo de %.2f m para a frente, de %.2f a %.2f s" % [travel, from, to])
+
+	if touch >= 0.0:
+		print("  pés: sobem %.2f m (topo em %.2f s) e tocam o chão em %.2f s" % [foot_top - foot_rest, foot_top_at, touch])
 
 
 func _take(source: Node) -> Animation:

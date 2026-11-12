@@ -49,19 +49,6 @@ public partial class Player : CharacterBody3D
     [Export] public float WalkSpeedFactor = 0.42f;
 
     /// <summary>
-    /// Velocidade do bote aéreo do lobo, na direção da mira.
-    ///
-    /// O bote segue o olhar, inclusive para baixo: não é um martelo
-    /// vertical, é um salto dirigido. Mirar no alvo e apertar leva o
-    /// lobo até ele.
-    /// </summary>
-    [Export] public float LeapSpeed = 9f;
-
-    /// <summary>Queda extra somada à direção do bote. Faz o lobo
-    /// chegar antes do que chegaria só pela gravidade.</summary>
-    [Export] public float LeapDrop = 5f;
-
-    /// <summary>
     /// Multiplicador do recuo da arma. O valor base vem de cada arma
     /// no lote; isto é o ajuste global de quanto o recuo pesa.
     /// </summary>
@@ -318,30 +305,53 @@ public partial class Player : CharacterBody3D
 
     private void OnFormChanged(int form) => ApplyCamera();
 
-    /// <summary>Recuo de câmera: o cano sobe a cada tiro e volta
-    /// sozinho. Sem isso, atirar não tem peso nenhum.</summary>
     /// <summary>
-    /// Mergulho do golpe especial: o lobo despenca na direção em que
-    /// olha. É o que transforma a patada dupla numa investida em vez
-    /// de dois golpes dados no ar.
-    ///
-    /// Também é o compromisso: você escolhe o ponto de impacto no
-    /// momento do clique e não controla mais nada até aterrissar.
+    /// O bote em curso: o corpo segue a velocidade fixada no clique, em
+    /// linha reta, até encostar em algo. É o compromisso do golpe — o
+    /// ponto de impacto é escolhido no clique e não se controla mais
+    /// nada até aterrissar. Encostou: para seco e avisa a arma, que bate.
     /// </summary>
-    private void Dive()
+    private void DiveMovement()
     {
-        // A direção é a da mira inteira, com o pitch: olhar para baixo
-        // produz um bote curto e mergulhado, olhar à frente produz um
-        // salto longo e raso. É o jogador que escolhe o arco.
-        Vector3 look = -_head.GlobalTransform.Basis.Z;
-
-        Vector3 velocity = look.Normalized() * LeapSpeed;
-        velocity.Y -= LeapDrop;
-
-        Velocity = velocity;
         ReleaseWall();
+        Velocity = _weapon.DiveVelocity;
+        MoveAndSlide();
+
+        // Parede só conta se o bote vai de encontro a ela. Saindo de uma
+        // corrida na parede, o corpo ainda roça nela no primeiro quadro, e
+        // isso não pode virar impacto.
+        Vector3 heading = _weapon.DiveVelocity.Normalized();
+        bool wall = IsOnWall() && GetWallNormal().Dot(heading) < -0.3f;
+
+        if (!IsOnFloor() && !wall && !IsOnCeiling()) return;
+
+        _weapon.DiveContact();
+        Velocity = Vector3.Zero;
     }
 
+    /// <summary>Freada de quem fica preso no lugar, em m/s². Parar seco a
+    /// 6,5 m/s era um tranco de câmera; assim o lobo desliza meio metro
+    /// enquanto agacha para o salto, que é o embalo que se espera ver.</summary>
+    [Export] public float FreezeBrake = 30f;
+
+    /// <summary>Preso no lugar: sem andar nem pular, só a gravidade.
+    /// Rugir, o salto no chão e a aterrissagem do bote usam.</summary>
+    private void Freeze(double delta)
+    {
+        ReleaseWall();
+
+        Vector3 frozen = Velocity;
+        var flat = new Vector3(frozen.X, 0, frozen.Z).MoveToward(Vector3.Zero, FreezeBrake * (float)delta);
+        frozen.X = flat.X;
+        frozen.Z = flat.Z;
+        if (!IsOnFloor())
+            frozen.Y -= _gravity * (float)delta;
+        Velocity = frozen;
+        MoveAndSlide();
+    }
+
+    /// <summary>Recuo de câmera: o cano sobe a cada tiro e volta
+    /// sozinho. Sem isso, atirar não tem peso nenhum.</summary>
     private void OnWeaponFired()
     {
         if (_form.IsWolf) return;
@@ -608,17 +618,18 @@ public partial class Player : CharacterBody3D
         UpdateNoise(delta);
         UpdateCameraKick(delta);
 
-        // Uivar trava você no lugar. É o preço da cura.
-        if (IsHowling)
+        // O bote segue a trajetória do clique até encostar.
+        if (_weapon.IsDiving)
         {
+            DiveMovement();
+            return;
+        }
 
-            Vector3 frozen = Velocity;
-            frozen.X = 0;
-            frozen.Z = 0;
-            if (!IsOnFloor())
-                frozen.Y -= _gravity * (float)delta;
-            Velocity = frozen;
-            MoveAndSlide();
+        // Uivar trava você no lugar — é o preço da cura —, e o salto e a
+        // aterrissagem do bote também: golpe pesado não se faz andando.
+        if (IsHowling || _weapon.IsRooted)
+        {
+            Freeze(delta);
             return;
         }
 
@@ -773,10 +784,10 @@ public partial class Player : CharacterBody3D
         if (firing)
             _weapon.TryAttack();
 
-        // Botão direito: patada pesada no chão, bote dirigido no ar.
-        // Só o bote move o corpo, e é por isso que TrySpecial avisa.
-        if (Input.IsActionJustPressed("special") && _weapon.TrySpecial())
-            Dive();
+        // Botão direito: salto no chão, bote no ar. Quem move o corpo
+        // durante os dois é o passo de física, pela arma.
+        if (Input.IsActionJustPressed("special"))
+            _weapon.TrySpecial();
 
         // R faz o que a forma permite: ruge de lobo, recarrega de
         // humano. Uma tecla, um gesto, dois corpos.
@@ -832,6 +843,10 @@ public partial class Player : CharacterBody3D
             float drag = grounded ? GroundFriction : AirFriction;
             horizontal = horizontal.MoveToward(Vector3.Zero, drag * (float)delta);
         }
+
+        // O passo da garrada parada: o corpo anda junto com o pé do clipe.
+        if (_weapon.IsStepping)
+            horizontal = _weapon.StepVelocity;
 
         velocity.X = horizontal.X;
         velocity.Z = horizontal.Z;

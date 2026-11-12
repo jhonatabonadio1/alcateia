@@ -12,7 +12,7 @@ public static class ControlsTable
         ("Shift", "Andar devagar e em silêncio (humano)"),
         ("Ctrl", "Agachar"),
         ("Clique esquerdo", "Atacar"),
-        ("Clique direito", "Bote aéreo (lobo, no ar)"),
+        ("Clique direito", "Lobo: salto no chão · bote no ar, na direção da mira"),
         ("1", "Arma principal"),
         ("2", "Arma secundária"),
         ("3", "Virar lobo"),

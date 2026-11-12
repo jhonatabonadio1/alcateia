@@ -36,7 +36,7 @@ public partial class Weapon : Node3D
 	[Signal] public delegate void AmmoChangedEventHandler(int inMag, int magSize, bool reloading);
 
 	/// <summary>Um ataque de lobo entrou em recarga: <paramref name="kind"/>
-	/// é 0 garrada, 1 patada, 2 bote. O HUD do lobo anima a volta a partir
+	/// é 0 garrada, 1 salto, 2 bote. O HUD do lobo anima a volta a partir
 	/// daqui, sem consultar a arma a cada quadro.</summary>
 	[Signal] public delegate void AttackCooldownEventHandler(int kind, float seconds);
 
@@ -51,6 +51,10 @@ public partial class Weapon : Node3D
 	/// <summary>Um golpe do lobo começou (<see cref="WolfMove"/>). O corpo
 	/// toca a animação daqui; o dano sai depois, no instante do golpe.</summary>
 	[Signal] public delegate void WolfMoveStartedEventHandler(int move);
+
+	/// <summary>O bote encostou em algo (chão, parede, alguém) e bateu. O
+	/// corpo troca a queda pela aterrissagem neste instante.</summary>
+	[Signal] public delegate void WolfDiveLandedEventHandler();
 
 	// --- Soltar e pegar ---
 
@@ -84,22 +88,44 @@ public partial class Weapon : Node3D
 	// --- Ataques especiais (botão direito) ---
 	//
 	// No chão e no ar são golpes diferentes, não o mesmo em lugares
-	// diferentes. No chão é uma patada pesada e lenta; no ar é um bote
-	// de três golpes na direção da mira.
+	// diferentes. No chão é o salto inteiro do "jump attack", parado no
+	// lugar, com o dano só quando o lobo cai. No ar é o bote: um
+	// mergulho reto na direção da mira, que bate no instante em que
+	// encosta em algo.
 
-	/// <summary>Patada pesada no chão: dano alto, um segundo parado.</summary>
+	/// <summary>Salto no chão: dano alto, o lobo preso no lugar até a
+	/// animação acabar.</summary>
 	[Export] public float HeavyDamageBonus = 2.1f;
 
 	[Export] public float HeavyCooldown = 1f;
 
-	/// <summary>Bote aéreo: três golpes, dois segundos de recuperação.</summary>
-	[Export] public int LeapHits = 3;
+	/// <summary>Dano do bote, num golpe só, na hora do impacto.</summary>
+	[Export] public float LeapDamageBonus = 3f;
 
-	[Export] public float LeapDamageBonus = 1.3f;
+	/// <summary>Tempo mínimo entre um bote e outro, contado do clique.</summary>
 	[Export] public float LeapCooldown = 2f;
 
-	/// <summary>Intervalo entre os golpes do bote.</summary>
-	[Export] public float SpecialSecondDelay = 0.13f;
+	/// <summary>Velocidade do mergulho, em m/s. Constante, em linha reta:
+	/// sem gravidade, sem freio e sem desvio no meio. O ponto de impacto
+	/// é escolhido no clique, e é isso que deixa o bote preciso.</summary>
+	[Export] public float DiveSpeed = 17f;
+
+	/// <summary>Inclinação mínima para baixo do mergulho. Mirando reto ou
+	/// para cima, o bote ainda desce: é um ataque de cima para baixo, não
+	/// um segundo pulo.</summary>
+	[Export] public float DiveMinDrop = 0.35f;
+
+	/// <summary>Teto do mergulho, em segundos. Mirou no vazio e não
+	/// encostou em nada: bate no ar e volta a cair.</summary>
+	[Export] public float DiveMaxTime = 0.9f;
+
+	/// <summary>Volume do bote: um pouco maior que o do salto e das
+	/// garras (<see cref="ClawReach"/>, <see cref="ClawRadius"/>). Cair
+	/// do alto em cima de alguém é a jogada que o jogo quer premiar, e
+	/// um impacto que erra por um palmo não premia ninguém.</summary>
+	[Export] public float LeapReach = 1.7f;
+
+	[Export] public float LeapRadius = 1.5f;
 
 	// --- Combo de garras ---
 	//
@@ -222,6 +248,22 @@ public partial class Weapon : Node3D
 	private ulong _strikeId;
 	private double _comboTimer;
 
+	/// <summary>Tempo que o lobo ainda fica preso no lugar: o salto
+	/// inteiro, e a aterrissagem do bote.</summary>
+	private double _rootLeft;
+
+	private double _stepLeft;
+	private double _stepTotal = 1;
+	private float _stepPeak;
+	private Vector3 _stepForward;
+	private bool _diving;
+	private double _diveLeft;
+	private double _diveElapsed;
+
+	/// <summary>Consulta de "tem alguém na frente do bote", reaproveitada
+	/// a cada quadro do mergulho em vez de montada de novo.</summary>
+	private PhysicsShapeQueryParameters3D _diveProbe;
+
 	// --- Dispersão e recuo da arma na mão ---
 
 	/// <summary>Dispersão acumulada pelos tiros, acima da base.</summary>
@@ -263,7 +305,35 @@ public partial class Weapon : Node3D
 
 	/// <summary>No meio de um golpe do lobo. A animação não é cortada:
 	/// nem por outro golpe nem pela volta a humano.</summary>
-	public bool IsStriking => _form != null && _form.IsWolf && _strikeLeft > 0;
+	public bool IsStriking => _form != null && _form.IsWolf && (_strikeLeft > 0 || _diving);
+
+	/// <summary>No meio do bote: o corpo segue <see cref="DiveVelocity"/>
+	/// e mais nada até encostar.</summary>
+	public bool IsDiving => _diving && _form != null && _form.IsWolf;
+
+	/// <summary>Velocidade do mergulho em curso, fixa desde o clique.</summary>
+	public Vector3 DiveVelocity { get; private set; }
+
+	/// <summary>Quanto o mergulho deve levar até encostar no chão, medido
+	/// no clique. O corpo usa para a queda da animação chegar junto.</summary>
+	public float DiveEta { get; private set; }
+
+	/// <summary>Preso no lugar: o salto no chão, ou a aterrissagem do bote.
+	/// O corpo não anda nem pula, só gira a mira.</summary>
+	public bool IsRooted => _form != null && _form.IsWolf && _rootLeft > 0;
+
+	/// <summary>No passo da garrada: o corpo anda nesta velocidade, por
+	/// cima do que o jogador estiver apertando.</summary>
+	public bool IsStepping => _form != null && _form.IsWolf && _stepLeft > 0;
+
+	/// <summary>Velocidade do passo neste instante: sobe e desce em
+	/// sino, sem degrau no começo nem no fim — o degrau era o que jogava
+	/// as pernas na pose de correr de uma vez.</summary>
+	public Vector3 StepVelocity =>
+		_stepForward * (_stepPeak * Mathf.Sin(Mathf.Pi * (float)(1.0 - _stepLeft / _stepTotal)));
+
+	/// <summary>Abaixo disto o lobo conta como parado ao bater.</summary>
+	private const float StandingSpeed = 1.5f;
 
 	public bool HasPrimary => PrimaryDef != null;
 	public bool HasSecondary => SecondaryDef != null;
@@ -388,6 +458,15 @@ public partial class Weapon : Node3D
 
 		if (_strikeLeft > 0)
 			_strikeLeft -= delta;
+
+		if (_rootLeft > 0)
+			_rootLeft -= delta;
+
+		if (_stepLeft > 0)
+			_stepLeft -= delta;
+
+		if (_diving)
+			UpdateDive(delta);
 
 		if (_pending.Count > 0)
 			RunPending(delta);
@@ -679,61 +758,150 @@ public partial class Weapon : Node3D
 	}
 
 	/// <summary>
-	/// Patada especial: só no ar, botão direito. Duas patadas seguidas,
-	/// mais dano e cooldown bem maior.
-	///
-	/// A condição de estar no ar não é decoração: amarra o golpe mais
-	/// forte do lobo ao salto, que é a jogada que o jogo quer premiar.
+	/// Botão direito. No chão, o salto; no ar, o bote. Os dois prendem o
+	/// lobo até o fim — o salto no lugar, o bote na trajetória — e o
+	/// dano dos dois sai quando o lobo de fato cai.
 	/// </summary>
-	/// <summary>
-	/// Botão direito. No chão, patada pesada da direita. No ar, bote de
-	/// três golpes — e só esse avisa ao chamador, porque só esse move o
-	/// corpo.
-	/// </summary>
-	public bool TrySpecial()
+	public void TrySpecial()
 	{
-		if (_cooldown > 0) return false;
-		if (!_form.IsWolf || !_form.CanAttack) return false;
+		if (_cooldown > 0) return;
+		if (!_form.IsWolf || !_form.CanAttack) return;
 
 		if (_body.IsOnFloor())
-		{
-			Heavy();
-			return false;
-		}
-
-		Leap();
-		return true;
-	}
-
-	/// <summary>Patada pesada no chão: um golpe, dano alto, lenta. É o
-	/// castigo de quem deixou o lobo chegar parado.</summary>
-	private void Heavy()
-	{
-		_comboIndex = 0;
-		StartMove(WolfMove.Heavy, CooldownHeavy, HeavyCooldown, () =>
-		{
-			Lunge();
-			Claw(HeavyDamageBonus);
-		});
+			Pounce();
+		else
+			Leap();
 	}
 
 	/// <summary>
-	/// Bote aéreo: três golpes em volta do instante em que as garras
-	/// chegam na animação — o corpo já viaja na direção da mira desde o
-	/// clique (Player.Dive), o dano espera a queda.
+	/// Salto no chão: o "jump attack" inteiro — agacha, salta, cai — com
+	/// o lobo preso no lugar. O dano sai no quadro em que os pés tocam o
+	/// chão na animação, não no clique. É o golpe de quem deixou o lobo
+	/// chegar parado: forte, mas lento e fácil de ver vindo.
+	/// </summary>
+	private void Pounce()
+	{
+		_comboIndex = 0;
+		_rootLeft = WolfMoves.Duration(WolfMove.Pounce);
+		StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown, () => Claw(HeavyDamageBonus, ClawReach, ClawRadius, false));
+	}
+
+	/// <summary>
+	/// Bote: mergulho reto na direção da mira, com a velocidade fixa
+	/// desde o clique. Bate no instante em que encosta — no chão, numa
+	/// parede ou em alguém —, não num tempo marcado. A animação da queda
+	/// é acelerada para o impacto dela cair no mesmo quadro.
 	/// </summary>
 	private void Leap()
 	{
 		_comboIndex = 0;
-		float impact = WolfMoves.ImpactDelay(WolfMove.Leap);
-		ulong id = StartMove(WolfMove.Leap, CooldownLeap, LeapCooldown, () => Claw(LeapDamageBonus));
 
-		// Os outros golpes do bote, metade antes e metade depois.
-		for (int i = 1; i < LeapHits; i++)
+		// A mira inteira, com o pitch: olhar para baixo dá um bote curto e
+		// mergulhado, olhar à frente, um longo e raso. Sempre descendo.
+		Vector3 aim = -_head.GlobalTransform.Basis.Z;
+		aim.Y = Mathf.Min(aim.Y, -DiveMinDrop);
+		aim = aim.Normalized();
+
+		DiveVelocity = aim * DiveSpeed;
+		DiveEta = TimeToContact(aim);
+
+		_diving = true;
+		_diveLeft = DiveMaxTime;
+		_diveElapsed = 0;
+		_strikeId++;
+		_strikeLeft = 0;
+		_cooldown = DiveMaxTime + WolfMoves.LandDuration;
+
+		EmitSignal(SignalName.WolfMoveStarted, (int)WolfMove.Leap);
+		EmitSignal(SignalName.AttackCooldown, CooldownLeap,
+			Mathf.Max(DiveEta + WolfMoves.LandDuration, LeapCooldown));
+	}
+
+	/// <summary>Em quanto tempo o mergulho encosta no cenário, pelo raio
+	/// dos pés na direção dele.</summary>
+	private float TimeToContact(Vector3 direction)
+	{
+		float range = DiveSpeed * DiveMaxTime;
+		Vector3 feet = _body.GlobalPosition + Vector3.Down * 0.8f;
+
+		var query = PhysicsRayQueryParameters3D.Create(feet, feet + direction * range, 1);
+		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+		var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
+
+		if (hit.Count == 0) return DiveMaxTime;
+		return feet.DistanceTo((Vector3)hit["position"]) / DiveSpeed;
+	}
+
+	/// <summary>Durante o mergulho: alguém na frente encerra o bote em
+	/// cima dele; o tempo acabando encerra no ar. O chão e a parede quem
+	/// avisa é o corpo (<see cref="DiveContact"/>), que é quem se move.</summary>
+	private void UpdateDive(double delta)
+	{
+		if (!_form.IsWolf || _health.IsDead)
 		{
-			float offset = (i % 2 == 1 ? 1 : -1) * SpecialSecondDelay * ((i + 1) / 2);
-			After(Mathf.Max(impact + offset, 0.02f), id, () => Claw(LeapDamageBonus));
+			_diving = false;
+			return;
 		}
+
+		_diveLeft -= delta;
+		_diveElapsed += delta;
+
+		if (_diveLeft <= 0 || EnemyAhead())
+			DiveImpact();
+	}
+
+	/// <summary>O corpo encostou no chão, numa parede ou no teto.</summary>
+	public void DiveContact()
+	{
+		if (_diving) DiveImpact();
+	}
+
+	private bool EnemyAhead()
+	{
+		_diveProbe ??= new PhysicsShapeQueryParameters3D
+		{
+			Shape = new SphereShape3D { Radius = 0.9f },
+			CollideWithBodies = true,
+			CollideWithAreas = false,
+			Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() }
+		};
+
+		Vector3 ahead = DiveVelocity.Normalized() * 0.7f;
+		_diveProbe.Transform = new Transform3D(Basis.Identity, _body.GlobalPosition + ahead);
+
+		foreach (var entry in _body.GetWorld3D().DirectSpaceState.IntersectShape(_diveProbe, 4))
+		{
+			if (entry["collider"].Obj is not Node collider) continue;
+			Health target = collider.GetNodeOrNull<Health>("Health");
+			if (target == null || target.IsDead) continue;
+			if (target.Team == _health.Team && !RoomConfig.Rules.FriendlyFire) continue;
+			return true;
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// O impacto do bote: um golpe só, no volume maior do bote, e o lobo
+	/// preso no chão durante a aterrissagem. A recarga conta do clique.
+	/// </summary>
+	private void DiveImpact()
+	{
+		_diving = false;
+		_diveLeft = 0;
+
+		bool aerial = _fallStartY - _body.GlobalPosition.Y >= AirAttackMinFall;
+
+		EmitSignal(SignalName.Fired);
+		Claw(LeapDamageBonus, LeapReach, LeapRadius, aerial);
+
+		float land = WolfMoves.LandDuration;
+		_strikeLeft = land;
+		_rootLeft = land;
+		_cooldown = Mathf.Max(land, LeapCooldown - (float)_diveElapsed);
+
+		EmitSignal(SignalName.WolfDiveLanded);
+		EmitSignal(SignalName.AttackCooldown, CooldownLeap, (float)_cooldown);
 	}
 
 	/// <summary>
@@ -754,11 +922,35 @@ public partial class Weapon : Node3D
 		// O combo zera se passar ComboReset depois do fim do golpe.
 		_comboTimer = WolfMoves.Duration(move) + ComboReset;
 
-		StartMove(move, CooldownClaw, 0f, () =>
+		// Parado, o corpo dá o passo do golpe, em sino: as pernas andam
+		// um passo junto com o braço. Correndo, o empurrão de sempre leva
+		// o lobo até o alvo — as pernas já estão correndo. Só o jogador: o
+		// bot anda pela própria cabeça.
+		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
+		bool standing = _body is Player && _body.IsOnFloor() && flat.Length() < StandingSpeed;
+
+		ulong id = StartMove(move, CooldownClaw, 0f, () =>
 		{
-			Lunge();
-			Claw(multiplier);
+			if (!standing) Lunge();
+			Claw(multiplier, ClawReach, ClawRadius, false);
 		});
+
+		var (delay, duration, distance) = WolfMoves.StepOf(move);
+		if (standing && distance > 0f)
+			After(delay, id, () => BeginStep(duration, distance));
+	}
+
+	/// <summary>O passo da garrada: anda <paramref name="distance"/> em
+	/// <paramref name="duration"/>, para a frente do corpo. O pico do sino
+	/// é π/2 da média, para a distância total ser a mesma.</summary>
+	private void BeginStep(float duration, float distance)
+	{
+		Vector3 forward = -_body.GlobalTransform.Basis.Z;
+		forward.Y = 0;
+		_stepForward = forward.Normalized();
+		_stepTotal = Mathf.Max(duration, 0.01f);
+		_stepPeak = Mathf.Pi / 2f * distance / (float)_stepTotal;
+		_stepLeft = _stepTotal;
 	}
 
 	/// <summary>
@@ -842,8 +1034,11 @@ public partial class Weapon : Node3D
 	/// <summary>
 	/// Golpe de garra: um volume curto à frente do corpo, não um raio
 	/// a partir da câmera. Pega quem estiver perto da garra.
+	///
+	/// <paramref name="aerial"/>: o golpe veio de uma queda alta e vale
+	/// o bônus aéreo mesmo já no chão — o bote bate quando aterrissa.
 	/// </summary>
-	private void Claw(float multiplier)
+	private void Claw(float multiplier, float reach, float radius, bool aerial)
 	{
 		WolfBreed breed = _form.Breed;
 
@@ -851,11 +1046,11 @@ public partial class Weapon : Node3D
 		// ao corpo e não ao olhar, é o que dá à garra um alcance que
 		// varia com a postura em vez de seguir a mira.
 		Vector3 forward = -_body.GlobalTransform.Basis.Z;
-		Vector3 center = _body.GlobalPosition + forward * ClawReach + Vector3.Up * 0.2f;
+		Vector3 center = _body.GlobalPosition + forward * reach + Vector3.Up * 0.2f;
 
 		var query = new PhysicsShapeQueryParameters3D
 		{
-			Shape = new SphereShape3D { Radius = ClawRadius },
+			Shape = new SphereShape3D { Radius = radius },
 			Transform = new Transform3D(Basis.Identity, center),
 			CollideWithBodies = true,
 			CollideWithAreas = false,
@@ -881,7 +1076,7 @@ public partial class Weapon : Node3D
 			// Ataque aéreo: cair em cima de alguém é a jogada que as
 			// pessoas lembram. Vale bônus.
 			float fallen = _fallStartY - _body.GlobalPosition.Y;
-			if (!_body.IsOnFloor() && fallen >= AirAttackMinFall)
+			if (aerial || (!_body.IsOnFloor() && fallen >= AirAttackMinFall))
 				damage *= breed.AirAttackBonus;
 
 			Damage(target, damage, _body.GlobalPosition, false);
@@ -1141,6 +1336,9 @@ public partial class Weapon : Node3D
 	{
 		_strikeId++;
 		_strikeLeft = 0;
+		_rootLeft = 0;
+		_stepLeft = 0;
+		_diving = false;
 		_pending.Clear();
 		if (IsReloading) CancelReload();
 		if (_form.IsWolf) return;

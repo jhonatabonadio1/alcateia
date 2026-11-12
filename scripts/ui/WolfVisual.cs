@@ -14,7 +14,7 @@ using System.Collections.Generic;
 ///
 /// Mesma regra do <see cref="CharacterAnimator"/>: **lê** estado e
 /// nunca decide. A velocidade escolhe entre parado, andando e correndo;
-/// os sinais da arma disparam a garrada, a patada e o bote; o uivo (R)
+/// os sinais da arma disparam a garrada, o salto e o bote; o uivo (R)
 /// toca o rugido; virar lobo toca o "flexionar" do bicho.
 ///
 /// **O pulo não tem animação** — decisão do Jhon: o lobo só pula, e o
@@ -27,19 +27,20 @@ using System.Collections.Generic;
 /// | idle | mutant breathing idle | parado |
 /// | walk / run | mutant walking / run | andando, correndo |
 /// | claw | mutant swiping | garrada (clique), alternando com o punch |
-/// | heavy | mutant punch | garrada alternada; patada (direito no chão) |
-/// | leap | mutant jump attack, **só a queda** | bote (direito no ar) |
-///
-/// Os golpes e o rugido tocam o trecho e a velocidade de
-/// <see cref="WolfMoves"/>, a mesma tabela que a arma usa para o dano
-/// sair no quadro do golpe. Nenhum golpe corta outro.
+/// | heavy | mutant punch | a outra garrada |
+/// | pounce | mutant jump attack, inteiro | salto (direito no chão) |
+/// | dive | mutant jump attack, só a queda | bote (direito no ar), até encostar |
+/// | dive_land | mutant jump attack, da pancada ao fim | bote, ao encostar |
 /// | howl | mutant roaring | uivando (R) |
 /// | wallrun | Running Crawl | correndo na parede, de barriga para ela |
 /// | transform | mutant flexing muscles | acabou de virar lobo |
 /// | death | mutant dying | morreu de lobo |
 ///
-/// Golpes e rugido só mexem da cintura para cima: o lobo continua
-/// correndo enquanto bate.
+/// Os golpes e o rugido tocam o trecho e a velocidade de
+/// <see cref="WolfMoves"/>, a mesma tabela que a arma usa para o dano
+/// sair no quadro do golpe. Nenhum golpe corta outro. As garradas só
+/// mexem da cintura para cima — o lobo continua correndo enquanto bate
+/// —; o salto e o bote, que prendem o lobo, mexem o corpo inteiro.
 /// </summary>
 public partial class WolfVisual : Node3D
 {
@@ -54,7 +55,7 @@ public partial class WolfVisual : Node3D
 
     /// <summary>O Mutant tem 1,86 m; o lobo fica um pouco maior que
     /// um homem.</summary>
-    [Export] public float ModelScale = 1.1f;
+    [Export] public float ModelScale = WolfMoves.BodyScale;
 
     /// <summary>Mixamo olha para +Z; o corpo, para −Z.</summary>
     [Export] public float ModelYaw = 180f;
@@ -79,8 +80,36 @@ public partial class WolfVisual : Node3D
 
     [Export] public bool Debug;
 
+    /// <summary>Clipes tocados como vêm do arquivo. Os golpes e o rugido
+    /// saem de <see cref="WolfMoves.Clips"/>, recortados.</summary>
     private static readonly string[] Clips =
-        { "idle", "walk", "run", "claw", "heavy", "leap", "howl", "transform", "death", "wallrun" };
+        { "idle", "walk", "run", "transform", "death", "wallrun" };
+
+    /// <summary>Disparos por cima da locomoção, na ordem da pilha: o de
+    /// baixo é sobreposto pelos de cima.</summary>
+    private static readonly string[] Shots =
+        { "claw", "heavy", "transform", "pounce", "dive", "dive_land" };
+
+    /// <summary>Disparos que tomam o corpo inteiro. As garradas ficam só
+    /// no tronco: o "swiping" gira o quadril 90° e terminaria o golpe
+    /// com o lobo de lado, voltando num tranco.</summary>
+    private static bool FullBody(string shot) => shot is "pounce" or "dive" or "dive_land";
+
+    /// <summary>Entrada e saída de cada disparo, em segundos. A garrada
+    /// entra mais devagar porque o trecho dela começa com os braços já
+    /// no alto: em 0,08 s eles voavam até lá. A aterrissagem do bote
+    /// entra quase seca, porque é o impacto.</summary>
+    private static (float In, float Out) Fades(string shot) => shot switch
+    {
+        "claw" or "heavy" => (0.15f, 0.25f),
+        "pounce" => (0.12f, 0.25f),
+        "dive" => (0.08f, 0.15f),
+        "dive_land" => (0.05f, 0.25f),
+        _ => (0.08f, 0.2f)
+    };
+
+    /// <summary>Inclinação máxima do corpo no bote, em graus.</summary>
+    [Export] public float DiveLeanMax = 40f;
 
     private FormController _form;
     private Weapon _weapon;
@@ -101,6 +130,7 @@ public partial class WolfVisual : Node3D
     private Vector3 _lastNormal;
     private Vector3 _lastAlong;
     private float _speed;
+    private float _lean;
     private bool _dead;
     private bool _howling;
     private double _deadTimer;
@@ -118,6 +148,7 @@ public partial class WolfVisual : Node3D
 
         _form.FormChanged += OnFormChanged;
         _weapon.WolfMoveStarted += OnMove;
+        _weapon.WolfDiveLanded += OnDiveLanded;
         if (_health != null)
         {
             _health.Died += _ => OnDied();
@@ -175,24 +206,20 @@ public partial class WolfVisual : Node3D
     {
         var library = new AnimationLibrary();
 
+        // Um arquivo pode dar mais de um clipe (o "jump attack" é o salto,
+        // a queda do bote e a aterrissagem): cada um é lido uma vez só.
+        var files = new Dictionary<string, Animation>();
+        Animation Source(string file)
+        {
+            if (!files.TryGetValue(file, out Animation animation))
+                files[file] = animation = LoadFile(file);
+            return animation;
+        }
+
         foreach (string clip in Clips)
         {
-            string path = $"{ClipFolder}/{clip}.fbx";
-            if (!ResourceLoader.Exists(path)) continue;
-
-            Node temp = GD.Load<PackedScene>(path)?.Instantiate();
-            if (temp == null) continue;
-
-            Animation animation = CharacterAnimator.TakeAnimation(CharacterAnimator.FindPlayer(temp), clip, Debug);
-            temp.Free();
+            Animation animation = Source(clip);
             if (animation == null) continue;
-
-            CharacterAnimator.StripRootMotion(animation);
-
-            // Golpes e rugido tocam o trecho medido em WolfMoves — o mesmo
-            // que a arma usa para saber quando o dano sai.
-            if (WolfMoves.Clips.TryGetValue(clip, out WolfClip window))
-                animation = Trim(animation, window.Start, window.End, window.FallOnly);
 
             animation.LoopMode = clip is "idle" or "walk" or "run" or "wallrun"
                 ? Animation.LoopModeEnum.Linear
@@ -202,7 +229,37 @@ public partial class WolfVisual : Node3D
             _lengths[clip] = (float)animation.Length;
         }
 
+        // Golpes e rugido tocam o trecho medido em WolfMoves — o mesmo que
+        // a arma usa para saber quando o dano sai.
+        foreach ((string clip, WolfClip window) in WolfMoves.Clips)
+        {
+            Animation source = Source(window.Source);
+            if (source == null) continue;
+
+            Animation animation = Trim(source, window.Start, window.End, window.FallOnly, force: true);
+            animation.LoopMode = Animation.LoopModeEnum.None;
+
+            library.AddAnimation(clip, animation);
+            _lengths[clip] = (float)animation.Length;
+        }
+
         _anims.AddAnimationLibrary("lobo", library);
+    }
+
+    private Animation LoadFile(string file)
+    {
+        string path = $"{ClipFolder}/{file}.fbx";
+        if (!ResourceLoader.Exists(path)) return null;
+
+        Node temp = GD.Load<PackedScene>(path)?.Instantiate();
+        if (temp == null) return null;
+
+        Animation animation = CharacterAnimator.TakeAnimation(CharacterAnimator.FindPlayer(temp), file, Debug);
+        temp.Free();
+        if (animation == null) return null;
+
+        CharacterAnimator.StripRootMotion(animation);
+        return animation;
     }
 
     private bool Has(string clip) => _lengths.ContainsKey(clip);
@@ -211,16 +268,18 @@ public partial class WolfVisual : Node3D
     /// Recorta o clipe de <paramref name="start"/> a <paramref name="end"/>
     /// (segundos do arquivo) e começa do zero. É como o bote usa só a
     /// queda do "jump attack" e a garrada pula a preparação longa.
+    /// <paramref name="force"/> copia mesmo quando o trecho é o clipe
+    /// inteiro: o mesmo arquivo pode dar mais de um clipe.
     ///
     /// <paramref name="fallOnly"/>: a altura do quadril fica limitada à
     /// de pé. No ar quem levanta o corpo é a física; somar a subida do
     /// clipe deixaria o lobo flutuando acima da cápsula. A agachada do
     /// impacto, abaixo disso, fica.
     /// </summary>
-    private static Animation Trim(Animation source, float start, float end, bool fallOnly)
+    private static Animation Trim(Animation source, float start, float end, bool fallOnly, bool force = false)
     {
         end = Mathf.Min(end, (float)source.Length);
-        if (start <= 0.001f && end >= source.Length - 0.001f && !fallOnly) return source;
+        if (!force && start <= 0.001f && end >= source.Length - 0.001f && !fallOnly) return source;
 
         int hips = -1;
         float rest = 0f;
@@ -283,8 +342,10 @@ public partial class WolfVisual : Node3D
     }
 
     /// <summary>
-    /// Máquina de estados para o corpo inteiro (locomoção, uivo, morte) e três disparos por cima, só da cintura para cima:
-    /// golpe, transformação e bote (este no corpo inteiro).
+    /// Máquina de estados para o corpo inteiro (locomoção, uivo, parede,
+    /// morte) e os disparos por cima (<see cref="Shots"/>): as garradas e
+    /// a transformação só da cintura para cima, o salto e o bote no corpo
+    /// inteiro.
     /// </summary>
     private void BuildTree()
     {
@@ -338,18 +399,19 @@ public partial class WolfVisual : Node3D
         string last = "Machine";
 
         // Cada disparo recebe o anterior como base e põe o golpe por cima.
-        foreach (string shot in new[] { "claw", "heavy", "transform", "leap" })
+        foreach (string shot in Shots)
         {
             if (!Has(shot)) continue;
 
+            var (fadeIn, fadeOut) = Fades(shot);
             var oneShot = new AnimationNodeOneShot
             {
-                FadeInTime = 0.08f,
-                FadeOutTime = 0.2f,
-                FilterEnabled = shot != "leap"
+                FadeInTime = fadeIn,
+                FadeOutTime = fadeOut,
+                FilterEnabled = !FullBody(shot)
             };
 
-            if (shot != "leap")
+            if (!FullBody(shot))
             {
                 Animation clip = _anims.GetAnimation($"lobo/{shot}");
                 for (int t = 0; t < clip.GetTrackCount(); t++)
@@ -384,7 +446,14 @@ public partial class WolfVisual : Node3D
 
     private static AnimationNodeAnimation Clip(string clip) => new() { Animation = $"lobo/{clip}" };
 
-    private static string Cap(string s) => char.ToUpperInvariant(s[0]) + s[1..];
+    /// <summary>Nome do nó do disparo: "dive_land" vira "DiveLand".</summary>
+    private static string Cap(string s)
+    {
+        var name = new System.Text.StringBuilder();
+        foreach (string part in s.Split('_'))
+            if (part.Length > 0) name.Append(char.ToUpperInvariant(part[0])).Append(part[1..]);
+        return name.ToString();
+    }
 
     private static bool UpperBody(string path)
     {
@@ -468,8 +537,31 @@ public partial class WolfVisual : Node3D
             _playback?.Travel(onWall ? "Wall" : howling && Has("howl") ? "Howl" : "Locomotion");
         }
 
+        UpdateLean((float)delta);
         UpdateWall((float)delta);
     }
+
+    /// <summary>
+    /// No bote o corpo tomba para a frente, na inclinação do mergulho: o
+    /// clipe cai de pé, com os braços para cima, e sem a inclinação o
+    /// lobo parecia despencar em vez de avançar no alvo. Gira em volta do
+    /// quadril, não dos pés, e volta rápido ao encostar.
+    /// </summary>
+    private void UpdateLean(float delta)
+    {
+        float target = 0f;
+        if (_weapon.IsDiving)
+        {
+            Vector3 v = _weapon.DiveVelocity;
+            float descent = Mathf.RadToDeg(Mathf.Atan2(-v.Y, new Vector2(v.X, v.Z).Length()));
+            target = Mathf.Clamp(descent * 0.8f, 10f, DiveLeanMax);
+        }
+
+        float rate = target > _lean ? 400f : 250f;
+        _lean = Mathf.MoveToward(_lean, target, rate * delta);
+    }
+
+    private const float LeanPivot = 0.95f;
 
     /// <summary>
     /// Na parede, o lobo engatinha com a barriga virada para ela: o
@@ -492,6 +584,15 @@ public partial class WolfVisual : Node3D
         var rest = new Transform3D(
             Basis.FromEuler(new Vector3(0, Mathf.DegToRad(ModelYaw), 0)).Scaled(Vector3.One * ModelScale),
             Vector3.Zero);
+
+        if (_lean > 0.01f)
+        {
+            // Nariz para baixo: girar em X negativo leva o −Z (a frente do
+            // corpo) para baixo. O pivô fica na altura do quadril.
+            var pivot = new Vector3(0, LeanPivot, 0);
+            var tilt = new Transform3D(new Basis(Vector3.Right, -Mathf.DegToRad(_lean)), Vector3.Zero);
+            rest = new Transform3D(Basis.Identity, pivot) * tilt * new Transform3D(Basis.Identity, -pivot) * rest;
+        }
 
         if (_wallBlend <= 0f)
         {
@@ -562,6 +663,25 @@ public partial class WolfVisual : Node3D
         if (!_form.IsWolf) return;
 
         var (clip, speed) = WolfMoves.Of((WolfMove)move);
+
+        // A queda do bote acompanha o mergulho: o impacto da animação cai
+        // no quadro em que o lobo deve encostar.
+        if ((WolfMove)move == WolfMove.Leap)
+            speed = WolfMoves.DiveSpeed(_weapon.DiveEta);
+
+        Fire(clip, speed);
+    }
+
+    /// <summary>O bote encostou: a aterrissagem entra por cima da queda,
+    /// no mesmo quadro do dano — mesmo que tenha encostado antes do
+    /// previsto (alguém no caminho). A queda não é cortada: a
+    /// aterrissagem precisa dela embaixo para entrar a partir da pose do
+    /// mergulho, e não da pose parada.</summary>
+    private void OnDiveLanded()
+    {
+        if (!_form.IsWolf || _tree == null) return;
+
+        var (clip, speed) = WolfMoves.Land;
         Fire(clip, speed);
     }
 

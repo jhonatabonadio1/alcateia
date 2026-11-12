@@ -17,7 +17,7 @@ using System.Collections.Generic;
 /// O centro fica livre: só mira e avisos críticos.
 ///
 /// **O HUD troca de forma.** Humano mostra munição, pente e granadas;
-/// lobo mostra a recarga da garrada, da patada, do bote e o uivo, e
+/// lobo mostra a recarga da garrada, do salto, do bote e o uivo, e
 /// nenhuma munição. São dois painéis distintos com transição, não dez
 /// nós ligando e desligando.
 ///
@@ -438,7 +438,7 @@ public partial class Hud : CanvasLayer
         head.AddChild(UiKit.Caption("sem munição", UiTokens.TextDisabled));
         column.AddChild(head);
 
-        string[] names = { "Garrada · clique", "Patada · direito no chão", "Bote · direito no ar" };
+        string[] names = { "Garrada · clique", "Salto · direito no chão", "Bote · direito no ar" };
         for (int i = 0; i < 3; i++)
         {
             HBoxContainer row = UiKit.Row(UiTokens.S2);
