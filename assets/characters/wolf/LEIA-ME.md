@@ -15,12 +15,12 @@ que fazem no jogo:
 | `run.fbx` | mutant run | correndo |
 | `claw.fbx` | mutant swiping | garrada (clique), alternando com o punch |
 | `heavy.fbx` | mutant punch | a outra garrada do clique |
-| `leap.fbx` | mutant jump attack | salto (direito no chão), inteiro; bote (direito no ar), a queda e a aterrissagem |
+| `leap.fbx` | mutant jump attack | salto (direito no chão), inteiro; bote (direito no ar), a queda e a aterrissagem; agachado parado (o fim da aterrissagem, 1,95 a 2,25 s) |
 | `howl.fbx` | mutant roaring | uivando (R) |
 | `transform.fbx` | mutant flexing muscles | não usado: virar lobo não tem animação (decisão do Jhon) |
 | `jump.fbx` | mutant jumping | pulo: só o voo, tocado pela velocidade vertical; a aterrissagem quando chega devagar |
 | `death.fbx` | mutant dying | morreu de lobo |
-| `wallrun.fbx` | Running Crawl | correndo na parede, deitado de lado com a barriga para ela |
+| `wallrun.fbx` | Running Crawl | correndo na parede, deitado de lado com a barriga para ela; engatinhando no chão, agachado e andando |
 | `idle_alerta.fbx` | mutant idle | reserva, não usado |
 
 **O pulo usa só o voo do `jump.fbx`** (de 1,27 a 1,87 s do arquivo):

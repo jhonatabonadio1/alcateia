@@ -67,13 +67,48 @@ public partial class WolfVisual : Node3D
     /// <summary>Mixamo olha para +Z; o corpo, para −Z.</summary>
     [Export] public float ModelYaw = 180f;
 
-    /// <summary>Até que velocidade (m/s) o corpo mistura parado e andar,
-    /// e a partir de qual é só correr. Entre as duas, andar e correr — e
-    /// a faixa é curta de propósito: os dois clipes têm ciclos de tamanhos
-    /// diferentes (1,43 s e 0,87 s), e misturados o pé de um puxa o do
-    /// outro e patina.</summary>
-    [Export] public float WalkSpeed = 1.5f;
-    [Export] public float RunSpeed = 2.2f;
+    /// <summary>Até que velocidade (m/s) o corpo só anda, e a partir de qual
+    /// só corre. Entre as duas, andar e correr se misturam — e nenhuma
+    /// velocidade do jogo fica nessa faixa, só se passa por ela: os dois
+    /// clipes têm ciclos de tamanhos diferentes (1,43 s e 0,87 s), e
+    /// misturados o pé de um puxa o do outro e patina. Agachado (1,7 a
+    /// 1,85 m/s) o lobo só anda.</summary>
+    [Export] public float WalkSpeed = 2.0f;
+    [Export] public float RunSpeed = 2.6f;
+
+    /// <summary>Abaixo disto o corpo conta como parado para pousar do
+    /// pulo e para o clipe de pés juntos entrar, em m/s.</summary>
+    private const float MovingSpeed = 1.5f;
+
+    /// <summary>Quanto tempo o corpo leva para sair do parado para o
+    /// andar e para voltar, em segundos. Na volta, o passo congela onde o
+    /// corpo parou (o clipe toca na velocidade do corpo, que já é zero) e
+    /// as pernas se juntam nesse tempo — sem correr no lugar.</summary>
+    [Export] public float StartBlend = 0.12f;
+    [Export] public float StopBlend = 0.22f;
+
+    /// <summary>Quão rápido o corpo vira para o lado em que anda, em
+    /// graus por segundo. O lobo não tem clipe de andar de lado nem de
+    /// costas: de lado, ele vira e anda de frente para onde vai; para
+    /// trás, fica de frente e o passo toca ao contrário. Assim o pé de
+    /// apoio fica parado no chão em qualquer direção.</summary>
+    [Export] public float TurnRate = 540f;
+
+    /// <summary>O trecho do "jump attack" que é a pose agachada, em segundos
+    /// do arquivo: o fim da aterrissagem, os dois pés no chão e o corpo
+    /// encolhido (0,95 a 1,0 m de altura). Tocado indo e voltando, respira.</summary>
+    private const float CrouchFrom = 1.95f;
+    private const float CrouchTo = 2.25f;
+
+    /// <summary>Quanto o corpo sobe engatinhando, em metros: no "Running
+    /// Crawl" as mãos descem 13 cm abaixo dos pés, e sem isto entrariam no
+    /// chão.</summary>
+    [Export] public float CrawlLift = 0.1f;
+
+    /// <summary>Atacando, carregando o salto, no bote ou na parede o corpo
+    /// volta a olhar para a mira — o golpe sai para onde se mira — nesta
+    /// velocidade, em graus por segundo.</summary>
+    [Export] public float AimTurnRate = 1400f;
 
     /// <summary>A velocidade em que o pé de cada clipe não patina, em m/s:
     /// a passada medida no Mutant (andar 1,22 m/s, correr 2,20 m/s) vezes a
@@ -251,6 +286,19 @@ public partial class WolfVisual : Node3D
             _lengths[clip] = (float)animation.Length;
         }
 
+        // Agachado: o fim da aterrissagem do "jump attack" (1,95 a 2,25 s),
+        // encolhido com os dois pés no chão, a 0,98 m do chão ao topo da
+        // cabeça — a altura da cápsula agachada (1,0 m). Em pé ele tem
+        // 1,65 m; sem isto o lobo agachado continuava em pé, com a cabeça
+        // fora da própria cápsula, e o tiro passava por cima do que se via.
+        if (Source("leap") is Animation leap)
+        {
+            Animation crouch = Trim(leap, CrouchFrom, CrouchTo, false, force: true);
+            crouch.LoopMode = Animation.LoopModeEnum.Pingpong;
+            library.AddAnimation("crouch", crouch);
+            _lengths["crouch"] = (float)crouch.Length;
+        }
+
         // Golpes e rugido tocam o trecho medido em WolfMoves — o mesmo que
         // a arma usa para saber quando o dano sai.
         foreach ((string clip, WolfClip window) in WolfMoves.Clips)
@@ -371,17 +419,46 @@ public partial class WolfVisual : Node3D
     /// </summary>
     private void BuildTree()
     {
-        var locomotion = new AnimationNodeBlendSpace1D { MinSpace = 0f, MaxSpace = 2f };
-        locomotion.Set("sync", true);
-        if (Has("idle")) locomotion.AddBlendPoint(Clip("idle"), 0f, -1, "idle");
-        if (Has("walk")) locomotion.AddBlendPoint(Clip("walk"), 1f, -1, "walk");
-        if (Has("run")) locomotion.AddBlendPoint(Clip("run"), 2f, -1, "run");
+        // Parado e andando em ramos separados: o parado respira no ritmo
+        // dele, e o passo toca na velocidade do corpo — zero quando ele
+        // para, negativa andando para trás. Na mesma escala, o parado
+        // congelava junto ou o passo corria no lugar.
+        var gait = new AnimationNodeBlendSpace1D { MinSpace = 0f, MaxSpace = 1f };
+        gait.Set("sync", true);
+        if (Has("walk")) gait.AddBlendPoint(Clip("walk"), 0f, -1, "walk");
+        if (Has("run")) gait.AddBlendPoint(Clip("run"), 1f, -1, "run");
 
+        // Agachado entra por cima dos dois ramos. Parado, a pose agachada
+        // (0,98 m, a altura da cápsula). Andando, o lobo engatinha: o
+        // "Running Crawl" da parede, no chão, na velocidade do corpo.
+        // Testado antes: misturar a pose agachada no andar deixava o pé sem
+        // apoio (patinava 0,9 a 1,4 m/s em qualquer passada), e só no
+        // tronco a cabeça ficava a 1,58 m — de pé, fora da cápsula.
         var locoSpeed = new AnimationNodeBlendTree();
-        locoSpeed.AddNode("Blend", locomotion, Vector2.Zero);
-        locoSpeed.AddNode("Speed", new AnimationNodeTimeScale(), new Vector2(200, 0));
-        locoSpeed.ConnectNode("Speed", 0, "Blend");
-        locoSpeed.ConnectNode("output", 0, "Speed");
+        if (Has("idle")) locoSpeed.AddNode("Idle", Clip("idle"), Vector2.Zero);
+        locoSpeed.AddNode("Gait", gait, new Vector2(0, 200));
+        locoSpeed.AddNode("Speed", new AnimationNodeTimeScale(), new Vector2(200, 200));
+        locoSpeed.AddNode("IdleCrouch", new AnimationNodeBlend2(), new Vector2(200, 50));
+        locoSpeed.AddNode("GaitCrouch", new AnimationNodeBlend2(), new Vector2(400, 250));
+        locoSpeed.AddNode("Mix", new AnimationNodeBlend2(), new Vector2(600, 100));
+        locoSpeed.ConnectNode("Speed", 0, "Gait");
+        if (Has("idle")) locoSpeed.ConnectNode("IdleCrouch", 0, "Idle");
+        locoSpeed.ConnectNode("GaitCrouch", 0, "Speed");
+        if (Has("crouch"))
+        {
+            locoSpeed.AddNode("CrouchIdle", Clip("crouch"), new Vector2(0, 100));
+            locoSpeed.ConnectNode("IdleCrouch", 1, "CrouchIdle");
+        }
+        if (Has("wallrun"))
+        {
+            locoSpeed.AddNode("Crawl", Clip("wallrun"), new Vector2(0, 300));
+            locoSpeed.AddNode("CrawlSpeed", new AnimationNodeTimeScale(), new Vector2(200, 300));
+            locoSpeed.ConnectNode("CrawlSpeed", 0, "Crawl");
+            locoSpeed.ConnectNode("GaitCrouch", 1, "CrawlSpeed");
+        }
+        locoSpeed.ConnectNode("Mix", 0, "IdleCrouch");
+        locoSpeed.ConnectNode("Mix", 1, "GaitCrouch");
+        locoSpeed.ConnectNode("output", 0, "Mix");
 
         var machine = new AnimationNodeStateMachine();
         machine.AddNode("Locomotion", locoSpeed, new Vector2(200, 100));
@@ -533,7 +610,7 @@ public partial class WolfVisual : Node3D
 
         // O lobo da cena fica no pé da cápsula, que encolhe ao agachar.
         float feet = _player != null ? _player.FeetOffset : -0.875f;
-        Position = new Vector3(0, feet, 0);
+        Position = new Vector3(0, feet + CrawlLift * _crouch * _moveMix, 0);
 
         if (_dead)
         {
@@ -544,19 +621,7 @@ public partial class WolfVisual : Node3D
             return;
         }
 
-        var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
-        _speed = Mathf.Lerp(_speed, flat.Length(), Mathf.Min(1f, 10f * (float)delta));
-
-        // 0 parado, 1 andando, 2 correndo. O clipe toca na velocidade em
-        // que o pé acompanha o corpo: a do corpo dividida pela passada do
-        // clipe (a mistura de andar e correr, entre os dois).
-        float blend = _speed <= WalkSpeed
-            ? _speed / Mathf.Max(WalkSpeed, 0.01f)
-            : 1f + Mathf.Clamp((_speed - WalkSpeed) / Mathf.Max(RunSpeed - WalkSpeed, 0.01f), 0f, 1f);
-        float stride = Mathf.Lerp(WalkClipSpeed, RunClipSpeed, Mathf.Clamp(blend - 1f, 0f, 1f));
-        float cadence = _speed > 0.3f ? Mathf.Clamp(_speed / Mathf.Max(stride, 0.01f), 0.6f, 3f) : 1f;
-        _tree.Set("parameters/Machine/Locomotion/Blend/blend_position", blend);
-        _tree.Set("parameters/Machine/Locomotion/Speed/scale", cadence);
+        UpdateLocomotion((float)delta);
 
         // No ar depois de um pulo, o voo do clipe de pulo; caindo de uma
         // beirada, o corpo segue na pose de antes.
@@ -574,7 +639,7 @@ public partial class WolfVisual : Node3D
         {
             // Acabou o pulo no chão: chegou devagar, aterrissa; chegou
             // correndo, a corrida já é a aterrissagem.
-            if (_jumping && !jumping && !onWall && _body.IsOnFloor() && _speed < WalkSpeed && !_weapon.IsStriking)
+            if (_jumping && !jumping && !onWall && _body.IsOnFloor() && _speed < MovingSpeed && !_weapon.IsStriking)
                 Fire("jump_land", JumpLandSpeed);
 
             _onWall = onWall;
@@ -585,7 +650,7 @@ public partial class WolfVisual : Node3D
         if (_jumping) UpdateJump();
 
         // Aterrissando e já saiu andando: a aterrissagem sai.
-        if (Has("jump_land") && _speed > WalkSpeed
+        if (Has("jump_land") && _speed > MovingSpeed
             && (bool)_tree.Get("parameters/JumpLand/active"))
             _tree.Set("parameters/JumpLand/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
 
@@ -603,6 +668,103 @@ public partial class WolfVisual : Node3D
         UpdateCharge(delta);
         UpdateLean((float)delta);
         UpdateWall((float)delta);
+    }
+
+    private float _moveMix;
+    private float _gait;
+    private float _yawOffset;
+    private bool _backward;
+
+    /// <summary>
+    /// O passo acompanha o corpo, em velocidade e em direção.
+    ///
+    /// Velocidade: o clipe toca na do corpo dividida pela passada dele —
+    /// sem mínimo, sem atraso. Parou, o passo congela onde estava e as
+    /// pernas se juntam em <see cref="StopBlend"/>; antes ele corria no
+    /// lugar mais um quarto de segundo, e os pés andavam um metro com o
+    /// corpo parado.
+    ///
+    /// Direção: só há clipes de andar para a frente. De lado (A, D e as
+    /// diagonais da frente) o corpo vira para onde vai; para trás (S e as
+    /// diagonais de trás) fica de frente e o passo toca ao contrário.
+    /// Golpe, carga, salto, bote e parede voltam o corpo para a mira.
+    /// Medido no esqueleto (pé de apoio, Bruto a 3,78 m/s): de lado ia de
+    /// 5,4 m/s de patinação a 0,85; para trás, de 7,3 a 0,72; para a
+    /// frente, 0,73 — o resto é o pé rolando no apoio, e a passada
+    /// medida (2,42 m/s) é a de menor patinação.
+    /// </summary>
+    private void UpdateLocomotion(float delta)
+    {
+        var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
+        float speed = flat.Length();
+        _speed = speed;
+
+        bool onWall = _player != null && _player.IsWallRunning;
+        bool aiming = onWall || _weapon.IsStriking || _weapon.IsChargingPounce || _weapon.IsRooted
+            || _weapon.IsPounceFlying || _weapon.IsDiving;
+
+        // Parado, fica virado para onde parou: girar de volta para a mira
+        // arrastaria os pés pelo chão sem passo nenhum. Volta quando anda
+        // para a frente ou ataca.
+        float target = aiming ? 0f : _yawOffset;
+        if (!aiming && speed > 0.4f)
+        {
+            // No espaço do corpo: 0 é a frente, positivo é a direita.
+            Vector3 local = _body.GlobalTransform.Basis.Inverse() * flat;
+            float angle = Mathf.Atan2(local.X, -local.Z);
+            float abs = Mathf.Abs(angle);
+
+            // Com folga entre 105° e 120°: perto da divisa, fica no lado
+            // em que estava, senão o corpo daria meia-volta à toa.
+            if (abs > Mathf.DegToRad(120f)) _backward = true;
+            else if (abs < Mathf.DegToRad(105f)) _backward = false;
+
+            if (_backward) angle -= Mathf.Sign(angle) * Mathf.Pi;
+
+            // Girar o modelo em Y positivo leva a frente para a esquerda.
+            target = -angle;
+        }
+
+        float rate = Mathf.DegToRad(aiming ? AimTurnRate : TurnRate) * delta;
+        _yawOffset = Mathf.MoveToward(_yawOffset, target, rate);
+
+        // Andar ou correr, pela velocidade; a troca leva 0,15 s, que é só
+        // a passagem — nenhuma velocidade do jogo para no meio.
+        if (speed > 0.4f)
+        {
+            float gaitTarget = Mathf.Clamp((speed - WalkSpeed) / Mathf.Max(RunSpeed - WalkSpeed, 0.01f), 0f, 1f);
+            _gait = Mathf.MoveToward(_gait, gaitTarget, delta / 0.15f);
+        }
+
+        // Agachado acompanha a cápsula (que desce em 0,03 s) num décimo de
+        // segundo: rápido o bastante para a cabeça não ficar fora dela.
+        bool crouching = (_player?.IsCrouching ?? false) && !onWall;
+        _crouch = Mathf.MoveToward(_crouch, crouching ? 1f : 0f, delta / 0.1f);
+
+        float stride = Mathf.Lerp(WalkClipSpeed, RunClipSpeed, _gait);
+        float sign = _backward ? -1f : 1f;
+        float cadence = Mathf.Clamp(speed / Mathf.Max(stride, 0.01f), 0f, 3f) * sign;
+        float crawl = Mathf.Clamp(speed / Mathf.Max(WallClipSpeed, 0.01f), 0f, 3f) * sign;
+
+        float mixTarget = Mathf.Clamp(speed / 0.5f, 0f, 1f);
+        float mixTime = mixTarget > _moveMix ? StartBlend : StopBlend;
+        _moveMix = Mathf.MoveToward(_moveMix, mixTarget, delta / Mathf.Max(mixTime, 0.01f));
+
+        _tree.Set("parameters/Machine/Locomotion/Gait/blend_position", _gait);
+        _tree.Set("parameters/Machine/Locomotion/Speed/scale", cadence);
+        _tree.Set("parameters/Machine/Locomotion/Mix/blend_amount", _moveMix);
+        _tree.Set("parameters/Machine/Locomotion/IdleCrouch/blend_amount", _crouch);
+        _tree.Set("parameters/Machine/Locomotion/GaitCrouch/blend_amount", _crouch);
+        _tree.Set("parameters/Machine/Locomotion/CrawlSpeed/scale", crawl);
+    }
+
+    private float _crouch;
+
+    private void ResetLocomotion()
+    {
+        _yawOffset = 0f;
+        _moveMix = 0f;
+        _backward = false;
     }
 
     /// <summary>
@@ -646,7 +808,7 @@ public partial class WolfVisual : Node3D
         _wallBlend = Mathf.MoveToward(_wallBlend, target, delta / Mathf.Max(WallTurnTime, 0.01f));
 
         var rest = new Transform3D(
-            Basis.FromEuler(new Vector3(0, Mathf.DegToRad(ModelYaw), 0)).Scaled(Vector3.One * ModelScale),
+            Basis.FromEuler(new Vector3(0, Mathf.DegToRad(ModelYaw) + _yawOffset, 0)).Scaled(Vector3.One * ModelScale),
             Vector3.Zero);
 
         if (_lean > 0.01f)
@@ -833,6 +995,7 @@ public partial class WolfVisual : Node3D
         if ((Form)form == Form.ShiftingToWolf)
         {
             _model.Visible = true;
+            ResetLocomotion();
             _playback?.Start("Locomotion");
         }
     }
@@ -853,6 +1016,7 @@ public partial class WolfVisual : Node3D
         _onWall = false;
         _jumping = false;
         _wallBlend = 0;
+        ResetLocomotion();
         _playback?.Start("Locomotion");
         Visible = _form.IsWolf;
     }
