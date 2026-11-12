@@ -14,7 +14,7 @@ using Godot;
 public partial class Player : CharacterBody3D
 {
     [Export] public float HumanSpeed = 4.2f;
-    [Export] public float JumpVelocity = 3.0f;
+    [Export] public float JumpVelocity = 3.8f;
 
     // --- Agachar: vale nas duas formas ---
 
@@ -665,21 +665,25 @@ public partial class Player : CharacterBody3D
             return false;
         }
 
-        // A corrida é sustentada pelo PULO, não pelo W: pula-se contra
-        // a parede e segura. Soltar solta a parede.
+        // A corrida é sustentada pelo W: pula-se contra a parede e
+        // segura para frente. Soltar solta a parede.
+        //
+        // Deixar o pulo livre é o que torna o salto entre paredes uma
+        // jogada: segura-se o W o tempo todo e o pulo serve só para
+        // trocar de parede, sem disputar com a tecla que sustenta.
         //
         // O botão de ataque agarra sem avançar — é a pausa que permite
         // escolher a hora de saltar em vez de correr até a parede
         // acabar.
         _clinging = Input.IsActionPressed("attack");
 
-        if (!Input.IsActionPressed("jump") && !_clinging)
+        if (!Input.IsActionPressed("move_forward") && !_clinging)
         {
             // Este era o caminho mudo, e é o mais provável de todos:
-            // pula-se, solta-se a tecla no ar e chega-se à parede sem
-            // nada segurando a corrida. Sem a linha abaixo o log dizia
-            // que estava tudo bem porque nem chegava a olhar.
-            if (!IsOnFloor()) WallLog("segure PULO para correr na parede");
+            // chega-se à parede sem nada segurando a corrida e o
+            // código voltava antes de olhar, então o log ficava calado
+            // como se estivesse tudo bem.
+            if (!IsOnFloor()) WallLog("segure W para correr na parede");
 
             ReleaseWall();
             return false;

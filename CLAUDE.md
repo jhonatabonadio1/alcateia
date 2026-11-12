@@ -246,7 +246,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 4 | Faca |
 | 5 | Equipar granada (o ataque arremessa) |
 | Botão direito | Bote aéreo (só de lobo, só no ar) |
-| Pulo segurado | Sustenta a corrida em parede |
+| W segurado | Sustenta a corrida em parede |
 | Ataque segurado | Agarra na parede sem avançar |
 | Clique esq. | Atacar |
 | Ctrl | Agachar (nas duas formas) |
