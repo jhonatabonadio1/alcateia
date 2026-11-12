@@ -223,6 +223,7 @@ public partial class Bot : CharacterBody3D
 
     private double _memoryTimer;
     private double _vigilTimer;
+    private CharacterAnimator _animator;
 
     /// <summary>Rota de ronda atual e em que ponto dela o bot está.
     /// −1 significa que ainda não pegou nenhuma.</summary>
@@ -957,7 +958,12 @@ public partial class Bot : CharacterBody3D
         velocity.Y = IsOnFloor() ? 0 : velocity.Y - _gravity * (float)delta;
 
         if (IsOnFloor() && ShouldJump(direction))
+        {
             velocity.Y = JumpVelocity;
+
+            _animator ??= GetNodeOrNull<CharacterAnimator>("Human");
+            _animator?.Jump();
+        }
 
         Velocity = velocity;
         MoveAndSlide();

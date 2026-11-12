@@ -113,10 +113,15 @@ public partial class CharacterAnimator : Node3D
     /// <summary>Duração do desaparecimento.</summary>
     [Export] public float CorpseFade = 1.2f;
 
-    /// <summary>Quanto o corpo afunda enquanto some. Afundar junto com
-    /// a opacidade esconde o instante em que ele sai da tela — só
-    /// apagar deixa o corpo piscar para fora.</summary>
-    [Export] public float CorpseSink = 0.55f;
+    /// <summary>
+    /// Quanto o corpo afunda enquanto some. Zero: some no lugar.
+    ///
+    /// Afundar esconde melhor o instante da saída, mas só funciona
+    /// quando o corpo está sobre piso — em cima de uma caixa ou de um
+    /// telhado ele atravessa antes de apagar, e aí o truque aparece.
+    /// Fica como número para quem quiser.
+    /// </summary>
+    [Export] public float CorpseSink = 0f;
 
     /// <summary>
     /// Esconder o corpo humano quando o dono vira lobo.
@@ -159,6 +164,7 @@ public partial class CharacterAnimator : Node3D
     private Vector2 _blend;
     private bool _dead;
     private double _corpseTimer;
+    private double _jumpGrace;
     private double _deathLength;
     private float _modelY;
     private readonly List<StandardMaterial3D> _fadeMaterials = new();
@@ -529,7 +535,7 @@ public partial class CharacterAnimator : Node3D
 
         _tree.Set("parameters/Locomotion/blend_position", _blend);
 
-        UpdateAir();
+        UpdateAir(delta);
     }
 
     /// <summary>
@@ -541,8 +547,10 @@ public partial class CharacterAnimator : Node3D
     /// telhado não passa por Jump() e sem isso o boneco desceria os
     /// dezessete metros do Arrival andando.
     /// </summary>
-    private void UpdateAir()
+    private void UpdateAir(double delta)
     {
+        if (_jumpGrace > 0) _jumpGrace -= delta;
+
         bool grounded = _body.IsOnFloor();
 
         if (!grounded && !_airborne)
@@ -551,7 +559,7 @@ public partial class CharacterAnimator : Node3D
 
             // Só vai para a queda se não estiver saltando: o salto
             // entrega para ela sozinho quando termina.
-            if (_playback?.GetCurrentNode().ToString() != "Jump")
+            if (_jumpGrace <= 0 && _playback?.GetCurrentNode().ToString() != "Jump")
                 _playback?.Travel("Fall");
         }
         else if (grounded && _airborne)
@@ -561,9 +569,23 @@ public partial class CharacterAnimator : Node3D
         }
     }
 
-    /// <summary>Dispara o estado do pulo. Chamado por quem pula, não
-    /// adivinhado aqui a partir de estar no ar.</summary>
-    public void Jump() => _playback?.Travel("Jump");
+    /// <summary>
+    /// Dispara o estado do pulo. Chamado por quem pula, e não
+    /// adivinhado aqui a partir de estar no ar — sair do chão também
+    /// acontece ao cair de um telhado, e as duas coisas não são a
+    /// mesma animação.
+    ///
+    /// A carência existe porque o pulo e a saída do chão acontecem no
+    /// mesmo quadro: sem ela, a detecção de ar via o corpo subindo e
+    /// mandava para a queda antes de o pulo aparecer.
+    /// </summary>
+    public void Jump()
+    {
+        if (_dead) return;
+
+        _jumpGrace = 0.35;
+        _playback?.Travel("Jump");
+    }
 
     /// <summary>Reação a dano. Só interrompe a locomoção.</summary>
     public void Hit() => _playback?.Travel("Hit");

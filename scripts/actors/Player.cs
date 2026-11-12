@@ -225,6 +225,7 @@ public partial class Player : CharacterBody3D
     private string _lastWallLog = "";
     private Vector3 _spawn;
     private CollisionShape3D _collision;
+    private CharacterAnimator _animator;
     private CapsuleShape3D _capsule;
     private bool _crouching;
     private bool _walking;
@@ -645,6 +646,9 @@ public partial class Player : CharacterBody3D
         else if (WantsJump())
         {
             velocity.Y = JumpVelocity * JumpScale;
+
+            _animator ??= GetNodeOrNull<CharacterAnimator>("Human");
+            _animator?.Jump();
         }
 
         Vector2 input = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
