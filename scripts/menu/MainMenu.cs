@@ -64,6 +64,10 @@ public partial class MainMenu : Control
         UiState.Reset();
         Input.MouseMode = Input.MouseModeEnum.Visible;
 
+        // Música do menu, se houver arquivo. Filha do menu: para sozinha
+        // quando a partida começa.
+        Sfx.Music(this, "musica_menu");
+
         AddChild(new ColorRect
         {
             Color = new Color(0.05f, 0.06f, 0.08f),
@@ -588,6 +592,7 @@ public partial class MainMenu : Control
         };
         button.AddThemeFontSizeOverride("font_size", 17);
         button.Pressed += action;
+        Sfx.Wire(button);
         return button;
     }
 
@@ -602,6 +607,7 @@ public partial class MainMenu : Control
             picker.Select(Mathf.Clamp(selected, 0, labels.Length - 1));
 
         picker.ItemSelected += index => chosen((int)index);
+        Sfx.Wire(picker);
         return picker;
     }
 

@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.22.0 — 2026-11-12
+
+### Adicionado
+- **Sistema de som**, pronto para receber arquivos. Cada arquivo com o
+  nome certo em `assets/audio/` passa a tocar; o que falta fica mudo.
+  Lista em `assets/audio/LEIA-ME.md`.
+- `Sfx`: toca por nome, sorteia variações (`passo_1`, `passo_2`...) com
+  tom variando, limita vozes simultâneas e cria os canais SFX,
+  Interface e Musica.
+- `WorldAudio`: passo, pouso, tiro (um por arma, versão distante),
+  uivo e explosão, tocados a partir do NoiseBus — o mesmo ruído que os
+  bots ouvem. Contagem, início e fim de partida, confirmação de abate.
+- `CombatantAudio`: transformação, garra, bote, faca, recarga,
+  cartucho, troca de arma, granada, pulo, dor, morte, marcador de
+  acerto. Alcance de 12 m para os outros.
+- Sons de interface nos menus e música do menu principal.
+
+### Alterado
+- **Bots emitem ruído** de passo, pouso e uivo, como o jogador. Antes
+  andavam em silêncio. Bots de times opostos passam a se ouvir.
+
+
 ## v0.21.0 — 2026-11-12
 
 ### Adicionado

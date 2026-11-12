@@ -153,11 +153,12 @@ balanceamento contra bot deixa de valer contra gente.
             ┌──────────────▼───────────────────────────┐
   QUEM      │  Hud, MatchHud, Minimap, DamageIndicator │
   MOSTRA    │  ViewModel, WolfVisual, CharacterAnimator│
+  E TOCA    │  WorldAudio, CombatantAudio              │
             └──────────────────────────────────────────┘
 
   SERVIÇOS ESTÁTICOS (qualquer um consulta):
   Match.Current · KillFeed · NoiseBus · UiState · Arsenal · Profile
-  RoomConfig · Difficulty · SpawnPoints · PatrolRoutes · Teams
+  RoomConfig · Difficulty · SpawnPoints · PatrolRoutes · Teams · Sfx
 ```
 
 **Regras que mantêm isso de pé:**
@@ -196,7 +197,8 @@ Player (CharacterBody3D)  ← Player.cs      Bot (CharacterBody3D) ← Bot.cs
 ├── Health                                  └── Weapon
 ├── FormController
 ├── Weapon
-└── MultiplayerSynchronizer  (Fase 2)
+├── MultiplayerSynchronizer  (Fase 2)
+└── CombatantAudio        sons do corpo (o Bot também tem)
 ```
 
 **Os nomes são contrato.** O código acha as peças por nome:
@@ -305,7 +307,19 @@ humano). O `FormController` troca a vida mantendo a proporção
 Quem escuta: `Player` (física e câmera), `ViewModel`, `WolfVisual`,
 `CharacterAnimator`, `Hud`.
 
-### 6.5 O bot, a cada passo de física
+### 6.5 Som
+
+```
+Player/Bot/Weapon/Grenade ─ NoiseBus.Emit(ponto, raio, tipo) ─┬─> Bot.OnNoise (IA)
+                                                              └─> WorldAudio ─> Sfx.At(nome, ponto, raio)
+Health/Weapon/FormController ─ sinais ─> CombatantAudio ─> Sfx (até 12 m)
+Menus ─ Sfx.Wire(botão) ─> Sfx.Ui
+```
+
+O som do mundo **é** o ruído que os bots ouvem, tocado. Por isso não
+existe tiro audível que o bot não ouviu.
+
+### 6.6 O bot, a cada passo de física
 
 ```
 Bot._PhysicsProcess
@@ -384,6 +398,7 @@ public override void _ExitTree() => KillFeed.Reported -= OnKill;
 | `SpawnPoints` | Pontos de nascimento por time, registrados pelo mapa | A cena do mapa |
 | `PatrolRoutes` | Rotas de ronda, registradas pelo mapa | A cena do mapa |
 | `KillFeed` | Evento de abate | Sempre |
+| `Sfx` | Toca som por nome; cria os canais SFX, Interface e Musica | Sempre |
 | `NoiseBus` | Evento de som | Sempre |
 | `Teams` | Constantes `Blue = 1`, `Red = 2`, cor e nome | Sempre |
 
@@ -491,6 +506,27 @@ do `project.godot` e para não haver duas fontes.
 
 O HUD é montado por código (sem cena), então os elementos são criados
 no próprio `Hud.cs`.
+
+### Adicionar um som
+
+**Som de um evento que já existe:** só jogue o arquivo em
+`assets/audio/` com o nome da tabela do `LEIA-ME.md` daquela pasta.
+Nada de código.
+
+**Som de um evento novo:**
+
+- É informação de jogo (dá para saber onde alguém está pelo som)?
+  Crie um `NoiseKind`, emita com `NoiseBus.Emit(posição, raio, tipo,
+  this)` e trate o tipo novo no `switch` do `WorldAudio.OnNoise`. Os
+  bots passam a ouvir junto, automaticamente.
+- É detalhe do corpo, que só importa de perto? Toque no
+  `CombatantAudio`, a partir de um sinal do componente.
+- É seu (retorno, interface)? `Sfx.Local("nome")` ou
+  `Sfx.Ui("nome")` de onde fizer sentido.
+
+Acrescente o nome novo no `assets/audio/LEIA-ME.md`.
+
+Botão novo de menu ganha som com `Sfx.Wire(botao)`.
 
 ### Abrir um menu novo
 

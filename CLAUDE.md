@@ -587,9 +587,40 @@ propósito tático em vez de ser só um botão de ficar menor.
 O passo sai por distância percorrida, não por tempo: a cadência
 acompanha a velocidade sozinha e andar devagar faz menos barulho.
 
-Quando houver áudio de verdade, ele acompanha o evento em vez de
-substituí-lo. O que o bot ouve e o que o jogador ouve precisam ser a
-mesma coisa, senão o jogador não consegue prever a reação.
+O áudio acompanha o evento em vez de substituí-lo. O que o bot ouve
+e o que o jogador ouve precisam ser a mesma coisa, senão o jogador não
+consegue prever a reação.
+
+### O áudio
+
+Três peças, e a lista de arquivos em `assets/audio/LEIA-ME.md`:
+
+- `scripts/core/Sfx.cs` toca por **nome**: `Sfx.At("passo", ponto,
+  raio)` acha `passo.wav`/`.ogg`/`.mp3` e as variações `passo_1`,
+  `passo_2`... e sorteia entre elas com o tom variando ±6%. **Arquivo
+  que não existe fica mudo, sem erro** — o jogo ganha som aos poucos,
+  um arquivo por vez, sem tocar em código.
+- `scripts/visual/WorldAudio.cs` (um por cena de jogo) **escuta o
+  NoiseBus** e toca passo, pouso, tiro, uivo e explosão no ponto e no
+  raio do ruído. Não existe som de mundo que não seja ruído: é assim que
+  a regra acima se mantém sozinha.
+- `scripts/visual/CombatantAudio.cs` (filho de Player e Bot) toca o
+  que não é ruído — transformação, garra, recarga, dor, morte — com
+  **alcance de 12 m**. Os bots não ouvem esses sons, então eles não
+  podem servir de informação de longe; de perto você já está vendo
+  quem os fez.
+
+Os seus próprios sons tocam sem posição, e o seu passo 8 dB abaixo do
+dos outros: o seu passo não pode cobrir o de quem está atrás de você.
+
+**Os bots emitem ruído também.** Antes só o jogador emitia passo,
+pouso e uivo: os bots ouviam você, mas ninguém ouvia os bots. Com
+áudio, isso virou bot silencioso chegando por trás. Efeito colateral:
+bots de times opostos passaram a se ouvir.
+
+Som novo que for informação de jogo **entra como `NoiseKind`**, com
+raio, e não como som solto — senão o jogador passa a ouvir algo que o
+bot não ouve.
 
 ### Como o bot pensa
 
@@ -770,10 +801,9 @@ depende de navmesh, e navmesh depende de um mapa de verdade.
 Veja `CHANGELOG.md` para o que já entrou.
 
 **Fase 1 — falta:**
-- **Som.** Não existe nenhum áudio no jogo. Os bots já "ouvem" pelo
-  `NoiseBus`, mas o jogador não ouve nada — e o uivo precisa ser
-  audível à distância, é sinal de posição. É a única peça da Fase 1 que
-  falta inteira.
+- **Arquivos de som.** O sistema está pronto e ligado; faltam os
+  arquivos (lista em `assets/audio/LEIA-ME.md`). O uivo e o passo do
+  lobo são os primeiros: são sinal de posição.
 - Rodar os quatro testes de validação do `docs/ARSENAL.md` (duelos,
   lobo no corredor e em campo aberto, ritmo da economia).
 - Responder "A pergunta que decide o projeto", no fim deste guia.

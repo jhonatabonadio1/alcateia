@@ -140,7 +140,11 @@ public partial class LoadoutMenu : CanvasLayer
         // acontece, porque o reserva já é sempre pagável.
         if (!set.IsDefault && !set.IsAffordable(_form.Wp))
         {
-            if (!timedOut) return;
+            if (!timedOut)
+            {
+                Sfx.Ui("ui_negado");
+                return;
+            }
 
             index = 0;
             set = Profile.Sets[0];
@@ -150,6 +154,7 @@ public partial class LoadoutMenu : CanvasLayer
         else _form.TrySpend(set.TotalCost());
 
         _weapon.Equip(set);
+        if (!timedOut) Sfx.Ui("ui_clique");
 
         Profile.LastUsed = index;
         Profile.Save();
@@ -273,6 +278,10 @@ public partial class LoadoutMenu : CanvasLayer
         {
             if (e is InputEventMouseButton click && click.Pressed && click.ButtonIndex == MouseButton.Left)
                 Choose(index, timedOut: false);
+        };
+        card.MouseEntered += () =>
+        {
+            if (affordable) Sfx.Ui("ui_passar");
         };
 
         var stack = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };

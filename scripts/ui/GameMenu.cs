@@ -132,6 +132,7 @@ public partial class GameMenu : CanvasLayer
         };
         button.AddThemeFontSizeOverride("font_size", 18);
         button.Pressed += action;
+        Sfx.Wire(button);
         return button;
     }
 }

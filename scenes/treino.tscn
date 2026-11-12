@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/dummy.tscn" id="2_dummy"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/ui/DifficultyMenu.cs" id="5_menu"]
 [ext_resource type="Script" path="res://scripts/ui/LoadoutMenu.cs" id="6_loadout"]
 [ext_resource type="Script" path="res://scripts/core/NavBaker.cs" id="11_nav"]
+[ext_resource type="Script" path="res://scripts/visual/WorldAudio.cs" id="20_world_audio"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
 
@@ -134,3 +135,6 @@ offset_bottom = 3.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(1, 1, 1, 0.85)
+
+[node name="WorldAudio" type="Node" parent="."]
+script = ExtResource("20_world_audio")

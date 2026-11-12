@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/actors/Player.cs" id="1_player"]
 [ext_resource type="Script" path="res://scripts/combat/Health.cs" id="2_health"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/ui/WolfVisual.cs" id="8_wolf"]
 [ext_resource type="Script" path="res://scripts/visual/CharacterAnimator.cs" id="9_anim"]
 [ext_resource type="PackedScene" path="res://assets/characters/human/xbot.fbx" id="10_xbot"]
+[ext_resource type="Script" path="res://scripts/visual/CombatantAudio.cs" id="20_audio"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.3
@@ -67,3 +68,6 @@ script = ExtResource("4_weapon")
 GrenadeScene = ExtResource("6_grenade")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+
+[node name="CombatantAudio" type="Node" parent="."]
+script = ExtResource("20_audio")

@@ -91,6 +91,21 @@ public partial class Bot : CharacterBody3D
     /// alcança, e isso não é dificuldade, é trapaça.</summary>
     [Export] public float JumpVelocity = 4.4f;
 
+    /// <summary>
+    /// Ruído dos passos, pouso e uivo do bot — os mesmos raios do
+    /// Player. Antes o bot andava em silêncio: os bots ouviam você, mas
+    /// nem você nem os outros bots ouviam o bot. Agora o que ele faz de
+    /// barulho entra no mesmo barramento, e o som que você ouve dele é
+    /// esse ruído.
+    /// </summary>
+    [ExportGroup("Ruído")]
+    [Export] public float StepNoiseHuman = 13f;
+    [Export] public float StepNoiseWolf = 20f;
+    [Export] public float LandNoise = 17f;
+    [Export] public float HowlNoise = 45f;
+    [Export] public float StepDistance = 2.2f;
+    [ExportGroup("")]
+
     /// <summary>Altura máxima do obstáculo que o bot tenta vencer
     /// pulando.</summary>
     [Export] public float JumpMaxHeight = 1.1f;
@@ -354,6 +369,8 @@ public partial class Bot : CharacterBody3D
             return;
         }
 
+        UpdateNoise(delta);
+
         _retargetTimer -= delta;
 
         bool lost = _target == null || _targetHealth == null || _targetHealth.IsDead;
@@ -501,6 +518,50 @@ public partial class Bot : CharacterBody3D
     }
 
     /// <summary>Rugir: parado, recuperando escudo.</summary>
+    private bool _wasAirborne;
+    private float _stepDistance;
+    private double _howlNoiseTimer;
+
+    /// <summary>Mesma regra do Player: passo por distância percorrida,
+    /// baque ao pousar, uivo a cada meio segundo enquanto dura.</summary>
+    private void UpdateNoise(double delta)
+    {
+        bool grounded = IsOnFloor();
+
+        if (grounded && _wasAirborne)
+            NoiseBus.Emit(GlobalPosition, LandNoise, NoiseKind.Land, this);
+        _wasAirborne = !grounded;
+
+        if (Action == BotAction.Howl)
+        {
+            _howlNoiseTimer -= delta;
+            if (_howlNoiseTimer <= 0)
+            {
+                _howlNoiseTimer = 0.5;
+                NoiseBus.Emit(GlobalPosition, HowlNoise, NoiseKind.Howl, this);
+            }
+        }
+        else
+        {
+            _howlNoiseTimer = 0;
+        }
+
+        if (!grounded) return;
+
+        var flat = new Vector3(Velocity.X, 0, Velocity.Z);
+        if (flat.Length() < 0.5f) return;
+
+        _stepDistance += flat.Length() * (float)delta;
+        if (_stepDistance < StepDistance) return;
+        _stepDistance = 0;
+
+        NoiseBus.Emit(
+            GlobalPosition,
+            _form.IsWolf ? StepNoiseWolf : StepNoiseHuman,
+            NoiseKind.Step,
+            this);
+    }
+
     private void RunHowl(double delta)
     {
         MoveTowards(Vector3.Zero, Speed, delta);
