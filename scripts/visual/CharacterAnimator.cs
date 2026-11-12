@@ -100,12 +100,18 @@ public partial class CharacterAnimator : Node3D
     /// </summary>
     [Export] public float CorpseDrop = 0.12f;
 
-    /// <summary>Tempo que o corpo fica inteiro no chão antes de
-    /// começar a sumir.</summary>
+    /// <summary>
+    /// Tempo que o corpo fica à mostra no chão antes de sumir.
+    ///
+    /// Contado a partir do fim do clipe de morte, não da morte: o
+    /// clipe tem três segundos e o corpo passa boa parte deles ainda
+    /// caindo. Contar do começo fazia o corpo desbotar no meio da
+    /// queda.
+    /// </summary>
     [Export] public float CorpseHold = 1.2f;
 
     /// <summary>Duração do desaparecimento.</summary>
-    [Export] public float CorpseFade = 1.4f;
+    [Export] public float CorpseFade = 1.2f;
 
     /// <summary>Quanto o corpo afunda enquanto some. Afundar junto com
     /// a opacidade esconde o instante em que ele sai da tela — só
@@ -144,6 +150,7 @@ public partial class CharacterAnimator : Node3D
     private Vector2 _blend;
     private bool _dead;
     private double _corpseTimer;
+    private double _deathLength;
     private float _modelY;
     private readonly List<StandardMaterial3D> _fadeMaterials = new();
     private bool _hasDeath;
@@ -172,6 +179,12 @@ public partial class CharacterAnimator : Node3D
         int loaded = LoadClips();
 
         _hasDeath = _player.HasAnimation("alcateia/death");
+
+        // A duração do clipe é o que diz quando o corpo chegou ao
+        // chão. Ler do próprio clipe em vez de cravar um número faz
+        // isto continuar certo quando a morte for trocada por outra.
+        if (_hasDeath)
+            _deathLength = _player.GetAnimation("alcateia/death").Length;
 
         BuildTree();
 
@@ -569,11 +582,14 @@ public partial class CharacterAnimator : Node3D
     {
         _corpseTimer += delta;
 
-        // Assenta primeiro, some depois. A descida é rápida e curta,
-        // só para o corpo tocar o chão; a queda longa é a de sumir.
-        float settle = Mathf.Clamp((float)_corpseTimer / 0.25f, 0f, 1f);
+        // Nada acontece enquanto o corpo cai. Só depois de pousado é
+        // que começa a contar o tempo em que ele fica à mostra.
+        double grounded = _corpseTimer - _deathLength;
+        if (grounded < 0) return;
 
-        double t = (_corpseTimer - CorpseHold) / Mathf.Max(CorpseFade, 0.01f);
+        float settle = Mathf.Clamp((float)grounded / 0.25f, 0f, 1f);
+
+        double t = (grounded - CorpseHold) / Mathf.Max(CorpseFade, 0.01f);
         float progress = t <= 0 ? 0f : Mathf.Clamp((float)t, 0f, 1f);
 
         _model.Position = new Vector3(

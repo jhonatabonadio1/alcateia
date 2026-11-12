@@ -49,6 +49,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
 [node name="Health" type="Node" parent="."]
 script = ExtResource("2_health")
 Team = 2
+RespawnDelay = 6.0
 
 [node name="FormController" type="Node" parent="."]
 script = ExtResource("3_form")
