@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 /// <summary>
 /// Vida, escudo, morte e respawn.
@@ -211,8 +212,36 @@ public partial class Health : Node
         return true;
     }
 
+    /// <summary>Quem acertou este corpo, e quando. Alimenta a
+    /// assistência: guarda o corpo de quem atirou, não o componente, para
+    /// a vida não precisar saber nada de economia nem de forma.</summary>
+    private readonly Dictionary<Node, double> _attackers = new();
+
+    public void NoteAttacker(Node attacker)
+    {
+        if (attacker != null)
+            _attackers[attacker] = Time.GetTicksMsec() / 1000.0;
+    }
+
+    /// <summary>Quem acertou nos últimos <paramref name="window"/>
+    /// segundos, menos quem matou. Esvazia a lista: assistência se paga
+    /// uma vez por morte.</summary>
+    public List<Node> TakeAssists(Node killer, double window = 10.0)
+    {
+        double now = Time.GetTicksMsec() / 1000.0;
+        var helpers = new List<Node>();
+
+        foreach (var (node, time) in _attackers)
+            if (node != killer && now - time <= window && GodotObject.IsInstanceValid(node))
+                helpers.Add(node);
+
+        _attackers.Clear();
+        return helpers;
+    }
+
     private void Respawn()
     {
+        _attackers.Clear();
         IsDead = false;
         Hp = MaxHp;
         Shield = MaxShield;

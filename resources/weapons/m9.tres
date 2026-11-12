@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/WeaponDefinition.cs" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+Id = "m9"
+DisplayName = "M9"
+Class = 4
+WpCost = 0
+Description = "Pistola padrão. Saque rápido e a melhor mobilidade do arsenal."
+Damage = 25
+HeadshotMultiplier = 2.4
+Rpm = 420
+Mode = 1
+Magazine = 15
+Reserve = 60
+ReloadTactical = 1.9
+ReloadEmpty = 2.4
+DrawTime = 0.3
+SpreadBase = 0.5
+SpreadPerShot = 0.3
+SpreadMax = 4.0
+SpreadRecovery = 9.0
+MoveSpreadMultiplier = 1.5
+CrouchSpreadMultiplier = 0.8
+RecoilVertical = 1.2
+RecoilVerticalLate = 1.2
+RecoilEarlyShots = 1
+RecoilHorizontal = 0.15
+RecoilRecovery = 9.0
+Range = 100
+FalloffStart = 18
+FalloffEnd = 35
+FalloffMin = 0.6
+SpeedMultiplier = 1.12
+NoiseRadius = 30
+StarDamage = 2.0
+StarPenetration = 1.5
+StarAccuracy = 2.5
+StarRate = 3.0
+StarMobility = 5.0
+StarRecoil = 3.0
+StarRange = 2.0

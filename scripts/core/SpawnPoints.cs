@@ -68,6 +68,19 @@ public partial class SpawnPoints : Node3D
         }
     }
 
+    /// <summary>Todos os pontos que servem a um time, na ordem da cena.
+    /// Usado para distribuir a largada sem ninguém nascer em cima de
+    /// ninguém.</summary>
+    public static List<Vector3> PointsFor(int team)
+    {
+        var points = new List<Vector3>();
+        foreach (SpawnPoints set in _all)
+            if (set.Team == 0 || set.Team == team)
+                points.AddRange(set._points);
+
+        return points;
+    }
+
     /// <summary>
     /// Escolhe onde nascer. Devolve <paramref name="fallback"/> quando
     /// não há ponto para o time de quem pergunta, o que mantém a cena de

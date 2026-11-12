@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/WeaponDefinition.cs" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+Id = "ak47"
+DisplayName = "AK-47"
+Class = 0
+WpCost = 380
+Description = "Fuzil de impacto. Melhor TTK do jogo e morte com um tiro na cabeça. Feito para rajadas de 3 a 5, nunca para spray."
+Damage = 42
+HeadshotMultiplier = 2.4
+Rpm = 500
+Mode = 0
+Magazine = 30
+Reserve = 90
+ReloadTactical = 2.5
+ReloadEmpty = 3.3
+DrawTime = 0.6
+SpreadBase = 0.45
+SpreadPerShot = 0.4
+SpreadMax = 6.5
+SpreadRecovery = 7.0
+MoveSpreadMultiplier = 3.0
+CrouchSpreadMultiplier = 0.6
+RecoilVertical = 1.8
+RecoilVerticalLate = 0.9
+RecoilEarlyShots = 5
+RecoilHorizontal = 0.15
+RecoilHorizontalLate = 0.7
+RecoilHorizontalAfter = 6
+RecoilRecovery = 5.5
+Range = 150
+FalloffStart = 30
+FalloffEnd = 55
+FalloffMin = 0.75
+SpeedMultiplier = 0.92
+NoiseRadius = 55
+StarDamage = 4.0
+StarPenetration = 3.5
+StarAccuracy = 1.5
+StarRate = 2.0
+StarMobility = 2.0
+StarRecoil = 1.0
+StarRange = 2.5

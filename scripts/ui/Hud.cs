@@ -134,7 +134,9 @@ public partial class Hud : CanvasLayer
         {
             _hurtTimer -= delta;
 
-            float alpha = (float)Mathf.Max(_hurtTimer, 0) / HurtLife * 0.55f;
+            // Fraca de propósito: diz que você levou dano. De onde, quem diz é
+            // o arco do DamageIndicator.
+            float alpha = (float)Mathf.Max(_hurtTimer, 0) / HurtLife * 0.16f;
             foreach (ColorRect edge in _edges) edge.Color = new Color(HurtColor, alpha);
         }
 
@@ -329,8 +331,8 @@ public partial class Hud : CanvasLayer
 
     private string NameOf(Slot slot) => slot switch
     {
-        Slot.Primary => _weapon.Current?.PrimaryName ?? "PRINCIPAL",
-        Slot.Secondary => _weapon.Current?.SecondaryName ?? "SECUNDÁRIA",
+        Slot.Primary => _weapon.PrimaryDef?.DisplayName ?? "PRINCIPAL",
+        Slot.Secondary => _weapon.SecondaryDef?.DisplayName ?? "SECUNDÁRIA",
         Slot.Wolf => (_form.Breed?.DisplayName ?? "LOBO").ToUpper(),
         Slot.Knife => "FACA",
         Slot.Grenade => $"GRANADA {_weapon.Grenades}",

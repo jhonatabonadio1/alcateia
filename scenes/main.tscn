@@ -1,17 +1,15 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/bot.tscn" id="2_bot"]
 [ext_resource type="Script" path="res://scripts/ui/Hud.cs" id="3_hud"]
-[ext_resource type="Script" path="res://scripts/ui/DifficultyMenu.cs" id="4_menu"]
+[ext_resource type="Script" path="res://scripts/ui/GameMenu.cs" id="4_gamemenu"]
 [ext_resource type="Script" path="res://scripts/ui/LoadoutMenu.cs" id="5_loadout"]
-[ext_resource type="Resource" path="res://resources/loadouts/padrao.tres" id="6_l1"]
-[ext_resource type="Resource" path="res://resources/loadouts/assalto.tres" id="7_l2"]
-[ext_resource type="Resource" path="res://resources/loadouts/precisao.tres" id="8_l3"]
-[ext_resource type="Resource" path="res://resources/loadouts/elite.tres" id="9_l4"]
-[ext_resource type="PackedScene" path="res://scenes/maps/hangar.tscn" id="10_map"]
-[ext_resource type="Script" path="res://scripts/core/Match.cs" id="11_match"]
-[ext_resource type="Script" path="res://scripts/ui/MatchHud.cs" id="12_matchhud"]
+[ext_resource type="PackedScene" path="res://scenes/maps/hangar.tscn" id="6_map"]
+[ext_resource type="Script" path="res://scripts/core/Match.cs" id="7_match"]
+[ext_resource type="Script" path="res://scripts/ui/MatchHud.cs" id="8_matchhud"]
+[ext_resource type="Script" path="res://scripts/core/MatchSetup.cs" id="9_setup"]
+[ext_resource type="Script" path="res://scripts/ui/DamageIndicator.cs" id="10_damage"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
 
@@ -37,10 +35,10 @@ transform = Transform3D(0.81915, 0.43939, -0.36869, 0, 0.64279, 0.76604, 0.57358
 shadow_enabled = true
 directional_shadow_max_distance = 120.0
 
-[node name="Map" parent="." instance=ExtResource("10_map")]
+[node name="Map" parent="." instance=ExtResource("6_map")]
 
 [node name="Match" type="Node" parent="."]
-script = ExtResource("11_match")
+script = ExtResource("7_match")
 ScoreToWin = 40
 CountdownTime = 10.0
 Duration = 600.0
@@ -50,63 +48,17 @@ transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -39, 1.2, -2)
 
 [node name="Bots" type="Node3D" parent="."]
 
-[node name="Corvo" parent="Bots" instance=ExtResource("2_bot")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -39, 1.2, 2)
-Team = 1
-Callsign = "Corvo"
-PatrolCenter = Vector3(0, 0, 0)
-PatrolRadius = 30.0
+[node name="MatchSetup" type="Node" parent="."]
+script = ExtResource("9_setup")
+BotScene = ExtResource("2_bot")
+BotsPath = NodePath("../Bots")
 
-[node name="Brasa" parent="Bots" instance=ExtResource("2_bot")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -39, 1.2, 6)
-Team = 1
-Callsign = "Brasa"
-PatrolCenter = Vector3(0, 0, 0)
-PatrolRadius = 30.0
-
-[node name="Trovao" parent="Bots" instance=ExtResource("2_bot")]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -39, 1.2, -6)
-Team = 1
-Callsign = "Trovão"
-PatrolCenter = Vector3(0, 0, 0)
-PatrolRadius = 30.0
-
-[node name="Vibora" parent="Bots" instance=ExtResource("2_bot")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 39, 1.2, -6)
-Team = 2
-Callsign = "Víbora"
-PatrolCenter = Vector3(0, 0, 0)
-PatrolRadius = 30.0
-
-[node name="Lamina" parent="Bots" instance=ExtResource("2_bot")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 39, 1.2, -2)
-Team = 2
-Callsign = "Lâmina"
-PatrolCenter = Vector3(0, 0, 0)
-PatrolRadius = 30.0
-
-[node name="Sombra" parent="Bots" instance=ExtResource("2_bot")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 39, 1.2, 2)
-Team = 2
-Callsign = "Sombra"
-PatrolCenter = Vector3(0, 0, 0)
-PatrolRadius = 30.0
-
-[node name="Ferrugem" parent="Bots" instance=ExtResource("2_bot")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 39, 1.2, 6)
-Team = 2
-Callsign = "Ferrugem"
-PatrolCenter = Vector3(0, 0, 0)
-PatrolRadius = 30.0
-
-[node name="Menu" type="CanvasLayer" parent="."]
-layer = 10
-script = ExtResource("4_menu")
+[node name="GameMenu" type="CanvasLayer" parent="."]
+script = ExtResource("4_gamemenu")
 
 [node name="LoadoutMenu" type="CanvasLayer" parent="."]
 layer = 9
 script = ExtResource("5_loadout")
-Loadouts = [ExtResource("6_l1"), ExtResource("7_l2"), ExtResource("8_l3"), ExtResource("9_l4")]
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("3_hud")
@@ -125,5 +77,15 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(1, 1, 1, 0.85)
 
+[node name="DamageIndicator" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("10_damage")
+
 [node name="MatchHud" type="CanvasLayer" parent="."]
-script = ExtResource("12_matchhud")
+script = ExtResource("8_matchhud")

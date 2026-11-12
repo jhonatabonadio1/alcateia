@@ -87,6 +87,12 @@ public partial class Match : Node
 
     public override void _Ready()
     {
+        if (RoomConfig.Active)
+        {
+            ScoreToWin = RoomConfig.ScoreToWin;
+            Duration = RoomConfig.Duration;
+        }
+
         CountdownLeft = CountdownTime;
         TimeLeft = Duration;
 
@@ -104,7 +110,10 @@ public partial class Match : Node
         // A lista sai no primeiro quadro, não no _Ready: os bots só
         // recebem nome e time no _EnterTree deles, e a ordem de entrada
         // na árvore não é algo em que valha confiar.
-        if (!_rostered)
+        // Durante a contagem a lista é refeita a cada quadro: os bots
+        // nascem no _Ready do MatchSetup, e confiar que isso acontece antes
+        // do primeiro quadro daqui seria apostar na ordem da cena.
+        if (!_rostered || Phase == MatchPhase.Countdown)
         {
             Roster();
             _rostered = true;

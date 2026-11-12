@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 public enum Slot
 {
@@ -34,15 +35,8 @@ public partial class Weapon : Node3D
 	/// <summary>Munição do carregador mudou, ou a recarga começou.</summary>
 	[Signal] public delegate void AmmoChangedEventHandler(int inMag, int magSize, bool reloading);
 
-	// --- Arma principal: cadência alta, dano baixo, automática ---
-	[Export] public float PrimaryDamage = 28f;
-	[Export] public float PrimaryRange = 120f;
-	[Export] public float PrimaryCooldown = 0.11f;
-
-	// --- Arma secundária: precisa, lenta, semiautomática ---
-	[Export] public float SecondaryDamage = 65f;
-	[Export] public float SecondaryRange = 150f;
-	[Export] public float SecondaryCooldown = 0.5f;
+	// Os números das armas de fogo vêm de WeaponDefinition (o arsenal).
+	// Aqui ficam só faca, granada e garras, que não são itens de compra.
 
 	// --- Granada de atordoamento: a resposta do humano contra o lobo ---
 	[Export] public PackedScene GrenadeScene;
@@ -151,8 +145,8 @@ public partial class Weapon : Node3D
 	/// <summary>Granadas restantes. Reabastece ao renascer.</summary>
 	public int Grenades { get; private set; }
 
-	/// <summary>Só a principal dispara segurando o botão.</summary>
-	public bool IsAutomatic => CurrentSlot == Slot.Primary;
+	/// <summary>Dispara segurando o botão? Quem decide é a arma.</summary>
+	public bool IsAutomatic => Held != null && Held.IsAutomatic;
 
 	/// <summary>Volta para a arma anterior depois de arremessar: ficar
 	/// com a mão vazia no meio de um tiroteio não é escolha de
@@ -169,32 +163,58 @@ public partial class Weapon : Node3D
 	private float _fallStartY;
 	private bool _wasOnFloor = true;
 
-	/// <summary>Lote em uso. Trocar reescreve as armas sem recriar nada.</summary>
-	public Loadout Current { get; private set; }
+	/// <summary>Armas em uso. Trocar reescreve as armas sem recriar nada.</summary>
+	public WeaponDefinition PrimaryDef { get; private set; }
+	public WeaponDefinition SecondaryDef { get; private set; }
 
 	// --- Munição ---
 	//
 	// Reserva infinita: o custo de atirar é o tempo de recarga, não o
 	// estoque. Contar balas no inventário pune quem já está perdendo.
+	// A reserva do documento existe na definição só para exibição.
 
-	public int PrimaryMag { get; private set; } = 40;
-	public int SecondaryMag { get; private set; } = 12;
+	public int PrimaryMag => PrimaryDef?.Magazine ?? 0;
+	public int SecondaryMag => SecondaryDef?.Magazine ?? 0;
 
 	public int PrimaryAmmo { get; private set; }
 	public int SecondaryAmmo { get; private set; }
 
 	public bool IsReloading => _reloadTimer > 0;
 
-	private float _primaryReload = 2f;
-	private float _secondaryReload = 1.4f;
-	private float _primaryRecoil = 0.22f;
-	private float _secondaryRecoil = 0.5f;
 	private double _reloadTimer;
+	private bool _shellReload;
 	private int _comboIndex;
 	private double _comboTimer;
 
-	/// <summary>Recuo da arma na mão, em graus por tiro.</summary>
-	public float Recoil => HumanSlot == Slot.Primary ? _primaryRecoil : _secondaryRecoil;
+	// --- Dispersão e recuo da arma na mão ---
+
+	/// <summary>Dispersão acumulada pelos tiros, acima da base.</summary>
+	private float _bloom;
+	private double _sinceShot = 10;
+
+	/// <summary>Tiros seguidos: é o que decide em que fase do recuo a
+	/// arma está (o M16 coiceia forte nos quatro primeiros, o AK fica
+	/// imprevisível depois do sexto).</summary>
+	private int _streak;
+
+	/// <summary>Arma de fogo na mão; nula com faca, granada ou de lobo.</summary>
+	public WeaponDefinition Held =>
+		_form == null || _form.IsWolf ? null
+		: HumanSlot == Slot.Primary ? PrimaryDef
+		: HumanSlot == Slot.Secondary ? SecondaryDef
+		: null;
+
+	/// <summary>Recuo vertical do último tiro, em graus.</summary>
+	public float Recoil { get; private set; }
+
+	/// <summary>Recuo horizontal do último tiro, em graus.</summary>
+	public float RecoilYaw { get; private set; }
+
+	/// <summary>Velocidade de caminhada com a arma da mão (1 = base).</summary>
+	public float MoveSpeedMultiplier => Held?.SpeedMultiplier ?? 1f;
+
+	/// <summary>Dispersão de agora, em graus — para a mira poder crescer junto.</summary>
+	public float CurrentSpread => Held == null ? 0f : SpreadNow(Held);
 
 	private int AmmoInMag => HumanSlot == Slot.Primary ? PrimaryAmmo : SecondaryAmmo;
 	private int MagSize => HumanSlot == Slot.Primary ? PrimaryMag : SecondaryMag;
@@ -204,57 +224,87 @@ public partial class Weapon : Node3D
 	public bool TryReload()
 	{
 		if (_form.IsWolf || IsReloading) return false;
-		if (HumanSlot != Slot.Primary && HumanSlot != Slot.Secondary) return false;
-		if (AmmoInMag >= MagSize) return false;
 
-		_reloadTimer = HumanSlot == Slot.Primary ? _primaryReload : _secondaryReload;
+		WeaponDefinition held = Held;
+		if (held == null || AmmoInMag >= MagSize) return false;
+
+		// Vazia demora mais que tática: é o preço de esvaziar o pente.
+		_shellReload = held.ShellByShell;
+		_reloadTimer = held.ShellByShell
+			? held.ShellEnter + held.ShellTime
+			: AmmoInMag == 0 ? held.ReloadEmpty : held.ReloadTactical;
+
 		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, true);
-
 		return true;
 	}
 
 	private void FinishReload()
 	{
-		if (HumanSlot == Slot.Primary) PrimaryAmmo = PrimaryMag;
+		if (_shellReload)
+		{
+			// Um cartucho por ciclo, e o ciclo seguinte começa sozinho
+			// até encher. O tiro interrompe — é a decisão sob pressão que
+			// define a escopeta: mais um cartucho ou atirar com o que tem.
+			AddRound();
+
+			if (AmmoInMag < MagSize && Held != null)
+			{
+				_reloadTimer = Held.ShellTime;
+				EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, true);
+				return;
+			}
+		}
+		else if (HumanSlot == Slot.Primary) PrimaryAmmo = PrimaryMag;
 		else SecondaryAmmo = SecondaryMag;
 
+		_reloadTimer = 0;
 		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
 	}
 
-	public void ApplyLoadout(Loadout loadout)
+	private void AddRound()
 	{
-		if (loadout == null) return;
+		if (HumanSlot == Slot.Primary) PrimaryAmmo = Mathf.Min(PrimaryAmmo + 1, PrimaryMag);
+		else SecondaryAmmo = Mathf.Min(SecondaryAmmo + 1, SecondaryMag);
+	}
 
-		Current = loadout;
+	private void CancelReload()
+	{
+		_reloadTimer = 0;
+		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
+	}
 
-		PrimaryMag = loadout.PrimaryMag;
-		SecondaryMag = loadout.SecondaryMag;
+	/// <summary>Equipa primária, secundária e granadas. Nulo cai no
+	/// conjunto padrão, que é o que bot e jogador sem escolha usam.</summary>
+	public void Equip(WeaponDefinition primary, WeaponDefinition secondary, int grenades)
+	{
+		PrimaryDef = primary ?? Arsenal.Get(Arsenal.DefaultPrimary);
+		SecondaryDef = secondary ?? Arsenal.Get(Arsenal.DefaultSecondary);
+
 		PrimaryAmmo = PrimaryMag;
 		SecondaryAmmo = SecondaryMag;
-
-		_primaryReload = loadout.PrimaryReload;
-		_secondaryReload = loadout.SecondaryReload;
-		_primaryRecoil = loadout.PrimaryRecoil;
-		_secondaryRecoil = loadout.SecondaryRecoil;
-
 		_reloadTimer = 0;
+		_bloom = 0;
+		_streak = 0;
 
-		PrimaryDamage = loadout.PrimaryDamage;
-		PrimaryRange = loadout.PrimaryRange;
-		PrimaryCooldown = loadout.PrimaryCooldown;
-
-		SecondaryDamage = loadout.SecondaryDamage;
-		SecondaryRange = loadout.SecondaryRange;
-		SecondaryCooldown = loadout.SecondaryCooldown;
-
-		MaxGrenades = loadout.Grenades;
-		Grenades = loadout.Grenades;
+		MaxGrenades = grenades;
+		Grenades = grenades;
 
 		HumanSlot = Slot.Primary;
 
 		EmitSignal(SignalName.GrenadesChanged, Grenades);
 		EmitSignal(SignalName.SlotChanged, (int)Slot.Primary);
 		EmitSignal(SignalName.AmmoChanged, PrimaryAmmo, PrimaryMag, false);
+	}
+
+	public void Equip(LoadoutSet set)
+	{
+		if (set == null)
+		{
+			Equip(null, null, 0);
+			return;
+		}
+
+		Equip(Arsenal.Get(set.Primary), Arsenal.Get(set.Secondary), set.GrenadeCount());
 	}
 
 	public override void _Ready()
@@ -265,7 +315,10 @@ public partial class Weapon : Node3D
 		_head = _body.GetNode<Node3D>("Head");
 		_health = _body.GetNode<Health>("Health");
 
-		Grenades = MaxGrenades;
+		// Quem ainda não escolheu nada — bot, ou o jogador antes da tela
+		// de conjunto — começa com o padrão.
+		if (PrimaryDef == null)
+			Equip(null, null, MaxGrenades);
 
 		_body.GetNode<Health>("Health").Changed += OnHealthChanged;
 	}
@@ -285,6 +338,17 @@ public partial class Weapon : Node3D
 			if (_reloadTimer <= 0)
 				FinishReload();
 		}
+
+		// A dispersão volta à base depois de uma pausa curta. É a pausa
+		// que ensina a atirar em rajadas: quem segura o gatilho nunca
+		// deixa a arma descansar.
+		_sinceShot += delta;
+
+		WeaponDefinition held = Held;
+		if (held != null && _sinceShot > held.SpreadDelay)
+			_bloom = Mathf.Max(0f, _bloom - held.SpreadRecovery * (float)delta);
+
+		if (_sinceShot > 0.3) _streak = 0;
 
 		bool onFloor = _body.IsOnFloor();
 		if (_wasOnFloor && !onFloor)
@@ -341,6 +405,8 @@ public partial class Weapon : Node3D
 			return;
 		}
 
+		if (slot != HumanSlot && IsReloading) CancelReload();
+
 		HumanSlot = slot;
 		_reloadTimer = 0;
 
@@ -395,7 +461,16 @@ public partial class Weapon : Node3D
 
 	private void Shoot()
 	{
-		if (IsReloading) return;
+		WeaponDefinition held = Held;
+		if (held == null) return;
+
+		// Na escopeta o tiro interrompe a recarga cartucho a cartucho; nas
+		// outras, recarga é recarga.
+		if (IsReloading)
+		{
+			if (_shellReload && AmmoInMag > 0) CancelReload();
+			else return;
+		}
 
 		bool primary = HumanSlot == Slot.Primary;
 
@@ -413,29 +488,115 @@ public partial class Weapon : Node3D
 
 		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
 
-		float damage = primary ? PrimaryDamage : SecondaryDamage;
-		float range = primary ? PrimaryRange : SecondaryRange;
+		_cooldown = held.Interval;
 
-		_cooldown = primary ? PrimaryCooldown : SecondaryCooldown;
+		// A dispersão deste tiro é a de antes dele; o tiro só piora o
+		// próximo. Primeiro tiro parado é sempre o mais preciso.
+		float spread = SpreadNow(held);
+
+		_streak++;
+		_sinceShot = 0;
+		_bloom = Mathf.Min(_bloom + held.SpreadPerShot, Mathf.Max(held.SpreadMax - held.SpreadBase, 0f));
+
+		Recoil = _streak <= held.RecoilEarlyShots ? held.RecoilVertical : held.RecoilVerticalLate;
+
+		// Horizontal alternado é decorável; depois do limite, sorteado. É
+		// o que faz o AK ser arma de rajada e não de spray.
+		bool wild = held.RecoilHorizontalAfter > 0 && _streak >= held.RecoilHorizontalAfter;
+		float side = wild ? held.RecoilHorizontalLate : held.RecoilHorizontal;
+		RecoilYaw = wild ? (float)GD.RandRange(-side, side) : (_streak % 2 == 0 ? side : -side);
+
 		EmitSignal(SignalName.Fired);
 
-		NoiseBus.Emit(_body.GlobalPosition, ShotNoise, NoiseKind.Shot, _body);
+		NoiseBus.Emit(_body.GlobalPosition, held.NoiseRadius, NoiseKind.Shot, _body);
 
 		Vector3 from = _camera.GlobalPosition;
-		Vector3 to = from - _camera.GlobalTransform.Basis.Z * range;
+		Basis aim = _camera.GlobalTransform.Basis;
 
-		Health hit = Raycast(from, to, out Vector3 impact, out Node collider);
+		// Um raio por chumbo — um só nas armas que não são escopeta. O
+		// dano de todos os chumbos que acertaram o mesmo alvo é somado
+		// antes de aplicar, para o abate e o marcador saírem uma vez por
+		// disparo, e não nove.
+		var dealt = new Dictionary<Health, (float Damage, bool Headshot)>();
+		Vector3 tracerEnd = from - aim.Z * held.Range;
+
+		int pellets = Mathf.Max(held.Pellets, 1);
+
+		for (int i = 0; i < pellets; i++)
+		{
+			Vector3 direction = Scatter(aim, spread);
+			Vector3 to = from + direction * held.Range;
+
+			Health hit = Raycast(from, to, out Vector3 impact, out Node collider);
+
+			// A linha para na parede em vez de atravessá-la.
+			if (i == 0) tracerEnd = impact;
+			if (hit == null) continue;
+
+			bool headshot = IsHeadshot(collider, impact);
+
+			float damage = held.Damage * Arsenal.DamageScale * held.Falloff(from.DistanceTo(impact));
+			if (headshot) damage *= held.HeadshotMultiplier;
+
+			dealt.TryGetValue(hit, out var sum);
+			dealt[hit] = (sum.Damage + damage, sum.Headshot || headshot);
+		}
 
 		// A mira sai da câmera, porque é dela que vem a precisão; a
 		// linha sai do cano, porque é de lá que o jogador espera vê-la.
-		Tracer(MuzzleOrigin(from), hit == null ? to : impact);
+		Tracer(MuzzleOrigin(from), tracerEnd);
 
-		if (hit == null) return;
+		foreach (var (target, result) in dealt)
+		{
+			Damage(target, result.Damage, from, result.Headshot);
 
-		bool headshot = IsHeadshot(collider, impact);
-		if (headshot) damage *= HeadshotMultiplier;
+			if (held.WolfStun > 0)
+				StunWolf(target, held.WolfStun);
+		}
+	}
 
-		Damage(hit, damage, from, headshot);
+	/// <summary>
+	/// Dispersão do próximo tiro: base, mais o acumulado, vezes o
+	/// movimento e a postura. Andar multiplica — e quanto multiplica é a
+	/// assinatura de cada arma: 1,3 na UMP, 3,0 no AK.
+	/// </summary>
+	private float SpreadNow(WeaponDefinition held)
+	{
+		float spread = held.SpreadBase + _bloom;
+
+		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
+		if (flat.Length() > 0.6f) spread *= held.MoveSpreadMultiplier;
+
+		if (_body is Player player && player.IsCrouching)
+			spread *= held.CrouchSpreadMultiplier;
+
+		return spread;
+	}
+
+	/// <summary>Direção sorteada num cone de meio-ângulo dado. A raiz no
+	/// raio distribui por área; sem ela os tiros se amontoam no centro e o
+	/// cone vale menos do que o número diz.</summary>
+	private static Vector3 Scatter(Basis aim, float halfAngleDegrees)
+	{
+		Vector3 forward = -aim.Z;
+		if (halfAngleDegrees <= 0.001f) return forward.Normalized();
+
+		float radius = Mathf.Tan(Mathf.DegToRad(halfAngleDegrees)) * Mathf.Sqrt(GD.Randf());
+		float angle = GD.Randf() * Mathf.Tau;
+
+		return (forward + aim.X * (Mathf.Cos(angle) * radius) + aim.Y * (Mathf.Sin(angle) * radius)).Normalized();
+	}
+
+	/// <summary>Escopeta no lobo: lentidão curta. Só em lobo, e só em
+	/// quem tem corpo que sabe ficar lento.</summary>
+	private static void StunWolf(Health target, float seconds)
+	{
+		if (target.GetParent() is not Player player) return;
+
+		var form = player.GetNodeOrNull<FormController>("FormController");
+		if (form == null || !form.IsWolf) return;
+
+		player.ApplyStun(seconds, 0.5f);
 	}
 
 	/// <summary>
@@ -600,6 +761,7 @@ public partial class Weapon : Node3D
 
 		bool wasAlive = !target.IsDead;
 
+		target.NoteAttacker(_body);
 		target.TakeDamage(amount, 0, from, headshot);
 
 		EmitSignal(SignalName.DamageDealt, amount);
@@ -608,7 +770,13 @@ public partial class Weapon : Node3D
 
 		if (!wasAlive || !target.IsDead) return;
 
-		_form.OnKill();
+		_form.OnKill(_form.IsWolf);
+
+		// Quem ajudou nos últimos segundos também ganha. Sem assistência,
+		// quem tira 90% da vida e perde o abate para um tiro alheio sai
+		// sem nada — e o jogo passa a premiar roubar o último tiro.
+		foreach (Node helper in target.TakeAssists(_body))
+			helper.GetNodeOrNull<FormController>("FormController")?.OnAssist();
 
 		KillFeed.Report(new Kill(
 			_health?.PublicName ?? _body.Name.ToString(),

@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/WeaponDefinition.cs" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+Id = "m16a2"
+DisplayName = "M16A2"
+Class = 0
+WpCost = 0
+Description = "Fuzil padrão. Referência do arsenal: nada excepcional, e esse é o ponto."
+Damage = 30
+HeadshotMultiplier = 2.5
+Rpm = 650
+Mode = 0
+Magazine = 30
+Reserve = 90
+ReloadTactical = 2.3
+ReloadEmpty = 2.9
+DrawTime = 0.5
+SpreadBase = 0.35
+SpreadPerShot = 0.22
+SpreadMax = 4.0
+SpreadRecovery = 9.0
+MoveSpreadMultiplier = 2.2
+CrouchSpreadMultiplier = 0.7
+RecoilVertical = 1.0
+RecoilVerticalLate = 0.55
+RecoilEarlyShots = 4
+RecoilHorizontal = 0.18
+RecoilRecovery = 7.0
+Range = 150
+FalloffStart = 35
+FalloffEnd = 60
+FalloffMin = 0.7
+SpeedMultiplier = 1.0
+NoiseRadius = 45
+StarDamage = 2.5
+StarPenetration = 2.5
+StarAccuracy = 2.5
+StarRate = 3.0
+StarMobility = 2.5
+StarRecoil = 2.5
+StarRange = 3.0

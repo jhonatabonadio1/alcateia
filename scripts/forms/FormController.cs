@@ -35,7 +35,7 @@ public partial class FormController : Node
 
     [Export] public WolfBreed Breed;
 
-    [Export] public float MaxWp = 5000f;
+    [Export] public float MaxWp = 2500f;
     /// <summary>
     /// WP vem de abater e de renascer, não do relógio.
     ///
@@ -44,10 +44,19 @@ public partial class FormController : Node
     /// jogador sem recurso nenhum — castigo que se acumula afunda
     /// quem já está perdendo.
     /// </summary>
-    [Export] public float WpPerKill = 150f;
+    [Export] public float WpPerKill = 100f;
+
+    /// <summary>Abate feito de lobo vale menos que de arma: o lobo já é
+    /// gratuito e fica disponível a qualquer hora, e premiar igual faria
+    /// dele a forma mais barata de enriquecer.</summary>
+    [Export] public float WpPerWolfKill = 70f;
+
+    [Export] public float WpPerAssist = 35f;
 
 
-    [Export] public float WpPerDamageDealt = 0.25f;
+    /// <summary>Zero desde o arsenal: o documento paga abate, lobo e
+    /// assistência, e só. Pagar por dano fazia spray em parede render WP.</summary>
+    [Export] public float WpPerDamageDealt = 0f;
 
     [Export] public float HumanHp = 200f;
 
@@ -188,7 +197,9 @@ public partial class FormController : Node
 
     public void OnDamageDealt(float amount) => AddWp(amount * WpPerDamageDealt);
 
-    public void OnKill() => AddWp(WpPerKill);
+    public void OnKill(bool asWolf = false) => AddWp(asWolf ? WpPerWolfKill : WpPerKill);
+
+    public void OnAssist() => AddWp(WpPerAssist);
 
     /// <summary>Uivo: recarrega escudo em troca de ficar parado e
     /// denunciar a posição pelo som. Só faz sentido na forma lobo.</summary>

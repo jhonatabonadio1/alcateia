@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/WeaponDefinition.cs" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+Id = "sg552"
+DisplayName = "SG-552"
+Class = 0
+WpCost = 320
+Description = "Fuzil de controle. A única arma que não pune atirar em movimento; recuo quase reto, decorável. Pior arma do arsenal contra lobo em espaço fechado."
+Damage = 26
+HeadshotMultiplier = 2.5
+Rpm = 550
+Mode = 0
+Magazine = 30
+Reserve = 90
+ReloadTactical = 2.6
+ReloadEmpty = 3.2
+DrawTime = 0.55
+SpreadBase = 0.25
+SpreadPerShot = 0.15
+SpreadMax = 2.8
+SpreadRecovery = 11.0
+MoveSpreadMultiplier = 1.5
+CrouchSpreadMultiplier = 0.65
+RecoilVertical = 0.65
+RecoilVerticalLate = 0.65
+RecoilEarlyShots = 4
+RecoilHorizontal = 0.08
+RecoilRecovery = 9.0
+Range = 150
+FalloffStart = 45
+FalloffEnd = 70
+FalloffMin = 0.8
+SpeedMultiplier = 0.95
+NoiseRadius = 45
+StarDamage = 2.0
+StarPenetration = 2.5
+StarAccuracy = 4.0
+StarRate = 2.5
+StarMobility = 2.5
+StarRecoil = 4.0
+StarRange = 3.5

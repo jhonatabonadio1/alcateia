@@ -1160,6 +1160,12 @@ public partial class Bot : CharacterBody3D
     /// </summary>
     private void Settle(double delta)
     {
+        // Assentado, o corpo não se move mais — nem a gravidade. Era o
+        // defeito: com a colisão desligada, IsOnFloor() responde falso
+        // no quadro seguinte, porque sem colisão não existe chão, e a
+        // gravidade voltava a puxar o corpo através do mapa.
+        if (_settled) return;
+
         if (IsOnFloor())
         {
             Velocity = Vector3.Zero;
@@ -1316,7 +1322,7 @@ public partial class Bot : CharacterBody3D
 
         float reach = _form.IsWolf
             ? _form.Breed.AttackRange
-            : Mathf.Min(EngageRange, _weapon.PrimaryRange);
+            : Mathf.Min(EngageRange, _weapon.PrimaryDef?.Range ?? EngageRange);
 
         if (distance > reach) return;
         if (!_form.IsWolf && !_firing) return;

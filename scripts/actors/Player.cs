@@ -339,13 +339,22 @@ public partial class Player : CharacterBody3D
         rotation.X = Mathf.Clamp(
             rotation.X + kick, Mathf.DegToRad(-89f), Mathf.DegToRad(89f));
         _head.Rotation = rotation;
+
+        // O lateral não volta sozinho, de propósito: é ele que o jogador
+        // aprende a compensar com o mouse, e devolvê-lo automaticamente
+        // tiraria o padrão que diferencia uma arma da outra.
+        RotateY(-Mathf.DegToRad(_weapon.RecoilYaw * RecoilScale));
     }
 
     private void UpdateCameraKick(double delta)
     {
         if (_cameraKick <= 0) return;
 
-        float recover = _cameraKick * CameraRecover * (float)delta;
+        // A volta é proporcional à da arma, com o M16 (7°/s no
+        // documento) como referência do valor que já estava afinado: o AK
+        // demora mais a voltar, a SMG volta mais rápido.
+        float rate = CameraRecover * ((_weapon.Held?.RecoilRecovery ?? 7f) / 7f);
+        float recover = _cameraKick * rate * (float)delta;
 
         _cameraKick = Mathf.Max(_cameraKick - recover, 0);
         _head.Rotation = new Vector3(
@@ -386,6 +395,12 @@ public partial class Player : CharacterBody3D
     /// </summary>
     private void Settle(double delta)
     {
+        // Assentado, o corpo não se move mais — nem a gravidade. Era o
+        // defeito: com a colisão desligada, IsOnFloor() responde falso
+        // no quadro seguinte, porque sem colisão não existe chão, e a
+        // gravidade voltava a puxar o corpo através do mapa.
+        if (_settled) return;
+
         if (IsOnFloor())
         {
             Velocity = Vector3.Zero;
@@ -460,6 +475,21 @@ public partial class Player : CharacterBody3D
             _mesh.Visible = third;
     }
 
+    /// <summary>
+    /// Time da sala, aplicado antes de qualquer _Ready.
+    ///
+    /// Os filhos fazem _Ready antes do pai, e o corpo animado e a barra
+    /// de vida escolhem a cor pelo time no _Ready deles. Aplicar aqui é o
+    /// único jeito de eles já nascerem com a cor certa.
+    /// </summary>
+    public override void _EnterTree()
+    {
+        if (!RoomConfig.Active) return;
+
+        var health = GetNodeOrNull<Health>("Health");
+        if (health != null) health.Team = RoomConfig.PlayerTeam;
+    }
+
     public override void _Input(InputEvent @event)
     {
         if (!IsMultiplayerAuthority()) return;
@@ -506,7 +536,11 @@ public partial class Player : CharacterBody3D
 
         // Contagem e fim de partida: o corpo fica, a cabeça gira. Olhar
         // em volta durante a contagem é como se lê o mapa antes de valer.
-        if (!Match.IsLive)
+        // Menu aberto também segura o corpo. O menu do Esc não pausa o
+        // jogo — a partida continua e você continua levando tiro —, mas
+        // uma tecla esquecida pressionada não pode levar o personagem
+        // andando sozinho enquanto o mouse está no menu.
+        if (!Match.IsLive || UiState.AnyOpen)
         {
             Hold(delta);
             return;
@@ -661,7 +695,10 @@ public partial class Player : CharacterBody3D
         (_form.IsWolf ? _form.Breed.SpeedMultiplier : 1f)
         * (IsStunned ? _stunSlow : 1f)
         * (_crouching ? CrouchSpeedFactor : 1f)
-        * (_walking ? WalkSpeedFactor : 1f);
+        * (_walking ? WalkSpeedFactor : 1f)
+        // A arma na mão pesa: 1,12 com a M9, 0,9 com a M3. É metade do
+        // que faz trocar para a secundária ser fuga e não só munição.
+        * (_form.IsWolf ? 1f : _weapon.MoveSpeedMultiplier);
     private float JumpScale => _form.IsWolf ? _form.Breed.JumpMultiplier : 1f;
 
     private void HandleActions(double delta)

@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/WeaponDefinition.cs" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+Id = "m3"
+DisplayName = "M3"
+Class = 2
+WpCost = 350
+Description = "Escopeta pump. Mata lobo de escudo leve com um tiro. O ciclo de 0,85 s é a janela em que o lobo te alcança; a recarga cartucho a cartucho pode ser interrompida pelo tiro."
+Damage = 13
+HeadshotMultiplier = 1.5
+Pellets = 9
+WolfStun = 0.4
+Rpm = 70
+Mode = 2
+Magazine = 8
+Reserve = 32
+ReloadTactical = 0.55
+ReloadEmpty = 0.55
+ShellByShell = true
+ShellTime = 0.55
+ShellEnter = 0.3
+DrawTime = 0.6
+SpreadBase = 4.5
+SpreadPerShot = 0.0
+SpreadMax = 4.5
+SpreadRecovery = 99.0
+MoveSpreadMultiplier = 1.0
+CrouchSpreadMultiplier = 1.0
+RecoilVertical = 3.5
+RecoilVerticalLate = 3.5
+RecoilEarlyShots = 1
+RecoilHorizontal = 0.3
+RecoilRecovery = 4.0
+Range = 40
+FalloffStart = 8
+FalloffEnd = 20
+FalloffMin = 0.45
+SpeedMultiplier = 0.9
+NoiseRadius = 60
+StarDamage = 5.0
+StarPenetration = 1.0
+StarAccuracy = 1.0
+StarRate = 0.5
+StarMobility = 2.0
+StarRecoil = 1.0
+StarRange = 0.5

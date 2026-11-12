@@ -28,16 +28,30 @@ public partial class Minimap : Control
     [Export] public Color WallColor = new Color(1f, 1f, 1f, 0.3f);
     [Export] public Color SelfColor = new Color(0.95f, 0.95f, 0.95f);
 
+    /// <summary>Opacidade das peças do mapa. Abaixo de 1 para os pontos
+    /// dos jogadores sempre se destacarem por cima.</summary>
+    [Export] public float MapAlpha = 0.85f;
+
     private Node3D _player;
     private Health _playerHealth;
-    private Node3D _walls;
+
+    /// <summary>Uma peça do mapa vista de cima: quatro cantos no mundo,
+    /// a cor do material e a altura do topo.</summary>
+    private struct Piece
+    {
+        public Vector3[] Corners;
+        public Color Color;
+        public float Top;
+    }
+
+    private readonly System.Collections.Generic.List<Piece> _pieces = new();
+    private readonly System.Collections.Generic.List<(Vector3 Position, string Text, Color Color)> _marks = new();
+    private bool _scanned;
 
     public override void _Ready()
     {
         _player = GetTree().GetFirstNodeInGroup("player") as Node3D;
         _playerHealth = _player?.GetNodeOrNull<Health>("Health");
-
-        _walls = GetTree().CurrentScene?.GetNodeOrNull<Node3D>("Walls");
 
         CustomMinimumSize = new Vector2(Side, Side);
         Size = CustomMinimumSize;
@@ -47,7 +61,79 @@ public partial class Minimap : Control
 
     public override void _Process(double delta)
     {
+        // A varredura sai no primeiro quadro e não no _Ready: o mapa é
+        // uma cena irmã, e não vale apostar na ordem em que as duas
+        // ficam prontas.
+        if (!_scanned)
+        {
+            Scan();
+            _scanned = true;
+        }
+
         if (_player != null) QueueRedraw();
+    }
+
+    /// <summary>
+    /// Lê a geometria do mapa uma vez.
+    ///
+    /// Antes o minimapa procurava um nó chamado "Walls", que só existia
+    /// na caixa cinza antiga — no Hangar ele não desenhava nada. Agora
+    /// qualquer caixa do mapa entra, com a cor do material dela: o
+    /// minimapa mostra o mesmo mapa que o jogador vê, base azul azul,
+    /// base vermelha vermelha, e um mapa novo não precisa de nada
+    /// para aparecer.
+    /// </summary>
+    private void Scan()
+    {
+        Node root = GetTree().CurrentScene?.GetNodeOrNull("Map") ?? GetTree().CurrentScene;
+        if (root != null) Collect(root);
+
+        // Mais baixo primeiro: o telhado pinta por cima do que está
+        // embaixo dele, como visto do alto.
+        _pieces.Sort((a, b) => a.Top.CompareTo(b.Top));
+    }
+
+    private void Collect(Node node)
+    {
+        // Corpo de gente não é mapa. Sem isto as garras do lobo, que
+        // também são caixas, apareceriam como paredes andando.
+        if (node is CharacterBody3D || node is RigidBody3D) return;
+
+        if (node is MeshInstance3D mesh && mesh.Mesh is BoxMesh box)
+            AddPiece(mesh, box.Size);
+
+        // Letras curtas no mapa viram marcas no minimapa: é assim que
+        // "A" e "B" aparecem sem o minimapa saber o que é uma base.
+        if (node is Label3D label && label.Text.Length <= 2)
+            _marks.Add((label.GlobalPosition, label.Text, label.Modulate));
+
+        foreach (Node child in node.GetChildren())
+            Collect(child);
+    }
+
+    private void AddPiece(MeshInstance3D mesh, Vector3 size)
+    {
+        // O chão cobre o mapa inteiro; desenhá-lo só escureceria tudo.
+        if (size.X * size.Z > 1200f) return;
+
+        Vector3 half = size * 0.5f;
+        Transform3D xform = mesh.GlobalTransform;
+
+        var corners = new Vector3[]
+        {
+            xform * new Vector3(-half.X, half.Y, -half.Z),
+            xform * new Vector3(half.X, half.Y, -half.Z),
+            xform * new Vector3(half.X, half.Y, half.Z),
+            xform * new Vector3(-half.X, half.Y, half.Z)
+        };
+
+        float top = Mathf.Max(Mathf.Max(corners[0].Y, corners[1].Y), Mathf.Max(corners[2].Y, corners[3].Y));
+
+        Color color = mesh.MaterialOverride is BaseMaterial3D material
+            ? material.AlbedoColor
+            : new Color(0.6f, 0.6f, 0.62f);
+
+        _pieces.Add(new Piece { Corners = corners, Color = color, Top = top });
     }
 
     public override void _Draw()
@@ -97,40 +183,40 @@ public partial class Minimap : Control
 
     private void DrawWalls(Vector2 center, float yaw)
     {
-        if (_walls == null) return;
+        float reach = Range * 1.6f;
 
-        foreach (Node node in _walls.GetChildren())
+        foreach (Piece piece in _pieces)
         {
-            if (node is not Node3D wall) continue;
-
-            var shape = wall.GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
-            if (shape?.Shape is not BoxShape3D box) continue;
-
-            // Quatro cantos do retângulo, girados junto com o resto.
-            Vector3 half = box.Size * 0.5f;
-            var corners = new Vector3[]
-            {
-                new(-half.X, 0, -half.Z), new(half.X, 0, -half.Z),
-                new(half.X, 0, half.Z), new(-half.X, 0, half.Z)
-            };
+            // Peça inteira longe demais não entra. Perto, entra mesmo com
+            // cantos fora do quadro — o recorte do controle corta a sobra.
+            Vector3 mid = (piece.Corners[0] + piece.Corners[2]) * 0.5f;
+            Vector3 gap = mid - _player.GlobalPosition;
+            if (new Vector2(gap.X, gap.Z).Length() > reach + 30f) continue;
 
             var points = new Vector2[4];
-            bool visible = false;
-
             for (int i = 0; i < 4; i++)
-            {
-                Vector3 world = wall.GlobalTransform * corners[i];
+                ToMapUnclamped(piece.Corners[i], center, yaw, out points[i]);
 
-                if (ToMap(world, center, yaw, out points[i]))
-                    visible = true;
-                else
-                    ToMapUnclamped(world, center, yaw, out points[i]);
-            }
+            // Quem está bem acima do jogador aparece mais claro: é o
+            // único jeito de um desenho plano dizer "isto é telhado".
+            float above = piece.Top - _player.GlobalPosition.Y;
+            Color fill = new Color(piece.Color, MapAlpha);
+            if (above > 2.5f) fill = fill.Lightened(0.18f);
 
-            if (!visible) continue;
+            DrawColoredPolygon(points, fill);
+            DrawPolyline(new[] { points[0], points[1], points[2], points[3], points[0] },
+                new Color(0, 0, 0, 0.45f), 1f);
+        }
 
-            for (int i = 0; i < 4; i++)
-                DrawLine(points[i], points[(i + 1) % 4], WallColor, 1.5f);
+        Font font = ThemeDB.FallbackFont;
+
+        foreach (var mark in _marks)
+        {
+            ToMapUnclamped(mark.Position, center, yaw, out Vector2 at);
+            if (at.X < -10 || at.Y < -10 || at.X > Side + 10 || at.Y > Side + 10) continue;
+
+            DrawString(font, at + new Vector2(-12, 7), mark.Text, HorizontalAlignment.Center,
+                24, 20, new Color(1, 1, 1, 0.95f));
         }
     }
 

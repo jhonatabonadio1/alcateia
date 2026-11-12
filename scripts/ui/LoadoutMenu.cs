@@ -1,27 +1,37 @@
 using Godot;
+using System.Collections.Generic;
 
 /// <summary>
-/// Escolha de lote, no início e a cada morte.
+/// Tela de respawn: escolher um dos quatro conjuntos e pagar.
 ///
-/// Dez segundos para decidir. O relógio existe para a escolha ser uma
-/// leitura rápida da situação, não um planejamento: quem está morto
-/// precisa voltar à luta, e deixar o jogador parado no menu é tirá-lo
-/// do jogo duas vezes.
+/// Só seleciona. Montar conjunto é coisa do editor, fora da partida
+/// (docs/CONJUNTOS.md): se desse para montar aqui, a decisão perderia o
+/// custo e viraria otimização sem fim no meio da luta.
 ///
-/// Estourado o tempo, entra o lote padrão. Nunca trava esperando
-/// decisão — num jogo de ritmo rápido, indecisão não pode custar a
-/// partida inteira.
+/// Cinco segundos para decidir, depois entra o último conjunto usado —
+/// ou o padrão, se o último não couber no WP. Nunca trava esperando:
+/// quem está morto precisa voltar à luta.
 ///
-/// Não pausa a árvore: o mundo segue enquanto você escolhe, como no
-/// jogo que serviu de referência.
+/// Os conjuntos que não cabem no WP aparecem acinzentados mas visíveis,
+/// com quanto falta. Ver o que não se pode pagar é o que dá sentido ao
+/// próximo abate.
+///
+/// O pagamento acontece aqui, no renascer, e não antes. O equipamento
+/// comprado some na morte; o WP acumulado fica.
+///
+/// Não pausa a árvore: o mundo segue enquanto você escolhe.
 /// </summary>
 public partial class LoadoutMenu : CanvasLayer
 {
-    [Export] public float ChooseTime = 10f;
+    [Export] public float ChooseTime = 5f;
 
-    [Export] public Loadout[] Loadouts = System.Array.Empty<Loadout>();
+    /// <summary>WP concedido ao escolher o padrão. É a rede de segurança:
+    /// o padrão não só é grátis, ele paga — quem está sem pontos tem
+    /// caminho de volta e a partida não trava para quem está perdendo.</summary>
+    [Export] public int DefaultBonus = 50;
 
     private Control _root;
+    private Label _wpLabel;
     private Label _timer;
     private HBoxContainer _cards;
 
@@ -49,7 +59,7 @@ public partial class LoadoutMenu : CanvasLayer
         _form = player.GetNode<FormController>("FormController");
 
         // O jogador controla o próprio renascimento: só volta quando
-        // tiver escolhido o lote.
+        // tiver escolhido o conjunto.
         _health.AutoRespawn = false;
         _health.Died += _ => Open();
 
@@ -61,28 +71,46 @@ public partial class LoadoutMenu : CanvasLayer
     {
         if (!_open) return;
 
-        // O relógio só corre quando esta é a tela de cima. Sem isto o
-        // tempo escorria por trás do menu de dificuldade e o lote era
-        // escolhido sozinho antes do jogador ver a tela.
+        // O relógio só corre quando esta é a tela de cima.
         if (!UiState.IsAlone) return;
 
         _remaining -= delta;
-        _timer.Text = $"{Mathf.Max(_remaining, 0):0}";
+        RefreshTimer();
 
         if (_remaining > 0) return;
 
-        // Tempo esgotado: o padrão entra sozinho.
-        Choose(Fallback());
+        Choose(Fallback(), timedOut: true);
+    }
+
+    public override void _Input(InputEvent @event)
+    {
+        if (!_open) return;
+
+        // 1 a 4 escolhem direto, como os números dos cartões.
+        string[] keys = { "slot_1", "slot_2", "slot_3", "slot_4" };
+        for (int i = 0; i < keys.Length; i++)
+        {
+            if (!@event.IsActionPressed(keys[i])) continue;
+
+            Choose(i, timedOut: false);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
     }
 
     // ------------------------------------------------------------------
 
-    private Loadout Fallback() => Loadouts.Length > 0 ? Loadouts[0] : null;
+    /// <summary>O último usado, se couber; senão o padrão.</summary>
+    private int Fallback()
+    {
+        int last = Profile.LastUsed;
+        LoadoutSet set = Profile.Sets[last];
+
+        return set.IsDefault || set.IsAffordable(_form.Wp) ? last : 0;
+    }
 
     private void Open()
     {
-        if (Loadouts.Length == 0) return;
-
         _open = true;
         _remaining = ChooseTime;
 
@@ -101,23 +129,30 @@ public partial class LoadoutMenu : CanvasLayer
         UiState.Pop();
     }
 
-    private void Choose(Loadout loadout)
+    private void Choose(int index, bool timedOut)
     {
-        if (loadout == null)
+        if (!_open || index < 0 || index >= Profile.Sets.Count) return;
+
+        LoadoutSet set = Profile.Sets[index];
+
+        // Clique num conjunto que não cabe não faz nada — ele está ali
+        // para ser visto, não escolhido. No estouro do tempo isso não
+        // acontece, porque o reserva já é sempre pagável.
+        if (!set.IsDefault && !set.IsAffordable(_form.Wp))
         {
-            Close();
-            return;
+            if (!timedOut) return;
+
+            index = 0;
+            set = Profile.Sets[0];
         }
 
-        // Sem WP para o lote escolhido, cai no padrão em vez de
-        // bloquear: ficar sem poder renascer seria punição dupla.
-        if (!_form.TrySpend(loadout.WpCost))
-        {
-            loadout = Fallback();
-            _form.TrySpend(loadout.WpCost);
-        }
+        if (set.IsDefault) _form.AddWp(DefaultBonus);
+        else _form.TrySpend(set.TotalCost());
 
-        _weapon.ApplyLoadout(loadout);
+        _weapon.Equip(set);
+
+        Profile.LastUsed = index;
+        Profile.Save();
 
         Close();
 
@@ -139,169 +174,132 @@ public partial class LoadoutMenu : CanvasLayer
     }
 
     // ------------------------------------------------------------------
+    // Montagem
 
     private void Build()
     {
-        // Fundo que intercepta o clique: sem ele o jogador atira no
-        // mundo ao tentar escolher um cartão.
-        _root = new Control
+        _root = new ColorRect
         {
+            Color = new Color(0.02f, 0.03f, 0.05f, 0.78f),
             AnchorRight = 1f,
-            AnchorBottom = 1f,
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-            Visible = false
+            AnchorBottom = 1f
         };
         AddChild(_root);
 
-        var backdrop = new ColorRect
-        {
-            AnchorRight = 1f, AnchorBottom = 1f,
-            Color = new Color(0.03f, 0.03f, 0.05f, 0.35f),
-            MouseFilter = Control.MouseFilterEnum.Stop
-        };
-        _root.AddChild(backdrop);
-
-        var column = new VBoxContainer
-        {
-            AnchorLeft = 0.5f, AnchorRight = 0.5f,
-            AnchorTop = 0.18f, AnchorBottom = 0.18f,
-            GrowHorizontal = Control.GrowDirection.Both,
-            MouseFilter = Control.MouseFilterEnum.Ignore
-        };
-        column.AddThemeConstantOverride("separation", 14);
-        _root.AddChild(column);
-
-        var header = new HBoxContainer
-        {
-            Alignment = BoxContainer.AlignmentMode.Center,
-            MouseFilter = Control.MouseFilterEnum.Ignore
-        };
-        column.AddChild(header);
-
-        var title = new Label
-        {
-            Text = "ESCOLHA O LOTE DESTA VIDA   ",
-            Modulate = new Color(0.95f, 0.78f, 0.35f)
-        };
-        title.AddThemeFontSizeOverride("font_size", 20);
-        header.AddChild(title);
-
-        _timer = new Label { Modulate = new Color(1f, 0.9f, 0.5f) };
-        _timer.AddThemeFontSizeOverride("font_size", 28);
-        header.AddChild(_timer);
-
-        _cards = new HBoxContainer { Alignment = BoxContainer.AlignmentMode.Center };
-        _cards.AddThemeConstantOverride("separation", 12);
-        column.AddChild(_cards);
-    }
-
-    /// <summary>Redesenha os cartões: o custo e a disponibilidade mudam
-    /// a cada morte, conforme o WP do jogador.</summary>
-    private void Refresh()
-    {
-        foreach (Node child in _cards.GetChildren())
-            child.QueueFree();
-
-        foreach (Loadout loadout in Loadouts)
-            _cards.AddChild(Card(loadout));
-    }
-
-    private Control Card(Loadout loadout)
-    {
-        bool grants = loadout.WpCost < 0;
-        bool affordable = grants || _form.Wp >= loadout.WpCost;
-
-        // O cartão inteiro é o botão. Um botão dentro do cartão
-        // cria um alvo pequeno dentro de um alvo grande, e o jogador
-        // clica no cartão esperando que funcione.
-        var panel = new Button
-        {
-            CustomMinimumSize = new Vector2(230, 150),
-            Disabled = !affordable,
-            Text = ""
-        };
-
-        panel.AddThemeStyleboxOverride("normal", CardStyle(affordable, false));
-        panel.AddThemeStyleboxOverride("hover", CardStyle(affordable, true));
-        panel.AddThemeStyleboxOverride("pressed", CardStyle(affordable, true));
-        panel.AddThemeStyleboxOverride("disabled", CardStyle(false, false));
-        panel.AddThemeStyleboxOverride("focus", CardStyle(affordable, false));
-
-        panel.Pressed += () => Choose(loadout);
-
-        // O conteúdo não intercepta o clique: quem recebe é o cartão.
         var box = new VBoxContainer
         {
-            AnchorRight = 1f, AnchorBottom = 1f,
-            MouseFilter = Control.MouseFilterEnum.Ignore
+            AnchorLeft = 0.5f, AnchorRight = 0.5f,
+            AnchorTop = 0.5f, AnchorBottom = 0.5f,
+            GrowHorizontal = Control.GrowDirection.Both,
+            GrowVertical = Control.GrowDirection.Both
         };
-        panel.AddChild(box);
+        box.AddThemeConstantOverride("separation", 14);
+        _root.AddChild(box);
 
-        var head = new HBoxContainer();
-        box.AddChild(head);
+        var title = MakeLabel("ESCOLHA O CONJUNTO", 30, Colors.White);
+        title.HorizontalAlignment = HorizontalAlignment.Center;
+        box.AddChild(title);
 
-        var name = new Label
-        {
-            Text = loadout.DisplayName,
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-            Modulate = affordable ? Colors.White : new Color(1, 1, 1, 0.4f)
-        };
-        name.AddThemeFontSizeOverride("font_size", 15);
-        head.AddChild(name);
+        _wpLabel = MakeLabel("", 22, new Color(1f, 0.85f, 0.3f));
+        _wpLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        box.AddChild(_wpLabel);
 
-        var cost = new Label
-        {
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-            Text = grants ? $"+{-loadout.WpCost}" : $"{loadout.WpCost}",
-            Modulate = grants
-                ? new Color(0.45f, 0.95f, 0.45f)
-                : affordable ? new Color(0.95f, 0.8f, 0.35f) : new Color(0.9f, 0.35f, 0.3f)
-        };
-        cost.AddThemeFontSizeOverride("font_size", 15);
-        head.AddChild(cost);
+        _cards = new HBoxContainer();
+        _cards.AddThemeConstantOverride("separation", 12);
+        box.AddChild(_cards);
 
-        box.AddChild(new HSeparator());
+        _timer = MakeLabel("", 16, new Color(0.8f, 0.8f, 0.83f));
+        _timer.HorizontalAlignment = HorizontalAlignment.Center;
+        box.AddChild(_timer);
 
-        var detail = new Label
-        {
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-            Text = $"{loadout.PrimaryName}\n{loadout.SecondaryName}\nFACA\n{loadout.Grenades} GRANADAS",
-            Modulate = new Color(1, 1, 1, affordable ? 0.75f : 0.35f)
-        };
-        detail.AddThemeFontSizeOverride("font_size", 12);
-        box.AddChild(detail);
+        var wolf = MakeLabel("Lobo: grátis, a qualquer hora — tecla 3", 14, new Color(0.65f, 0.65f, 0.7f));
+        wolf.HorizontalAlignment = HorizontalAlignment.Center;
+        box.AddChild(wolf);
 
-        if (!affordable)
-        {
-            var warn = new Label
-            {
-                Text = "SEM WP",
-                Modulate = new Color(0.9f, 0.35f, 0.3f),
-                MouseFilter = Control.MouseFilterEnum.Ignore
-            };
-            warn.AddThemeFontSizeOverride("font_size", 12);
-            box.AddChild(warn);
-        }
-
-        return panel;
+        _root.Visible = false;
     }
 
-    private StyleBoxFlat CardStyle(bool affordable, bool hover)
+    private void Refresh()
     {
+        _wpLabel.Text = $"WP disponível: {_form.Wp:0}";
+
+        foreach (Node child in _cards.GetChildren())
+        {
+            _cards.RemoveChild(child);
+            child.QueueFree();
+        }
+
+        for (int i = 0; i < Profile.Sets.Count; i++)
+            _cards.AddChild(Card(i));
+
+        RefreshTimer();
+    }
+
+    private void RefreshTimer()
+    {
+        int fallback = Fallback();
+        _timer.Text = $"entra em {Mathf.CeilToInt((float)Mathf.Max(_remaining, 0))} s: " +
+                      Profile.Sets[fallback].Name;
+    }
+
+    private Control Card(int index)
+    {
+        LoadoutSet set = Profile.Sets[index];
+        int cost = set.TotalCost();
+        bool affordable = set.IsDefault || set.IsAffordable(_form.Wp);
+        bool last = index == Profile.LastUsed;
+
         var style = new StyleBoxFlat
         {
-            BgColor = hover
-                ? new Color(0.13f, 0.13f, 0.15f, 0.96f)
-                : new Color(0.06f, 0.06f, 0.07f, 0.92f),
-            BorderColor = affordable
-                ? new Color(0.85f, 0.65f, 0.25f, hover ? 1f : 0.75f)
-                : new Color(0.3f, 0.3f, 0.32f),
-            ContentMarginLeft = 12, ContentMarginRight = 12,
-            ContentMarginTop = 10, ContentMarginBottom = 10
+            BgColor = new Color(0.09f, 0.1f, 0.13f, 0.97f),
+            BorderColor = last ? new Color(1f, 0.85f, 0.3f) : new Color(1, 1, 1, 0.12f),
+            ContentMarginLeft = 16, ContentMarginRight = 16,
+            ContentMarginTop = 14, ContentMarginBottom = 14
+        };
+        style.SetBorderWidthAll(last ? 3 : 1);
+        style.SetCornerRadiusAll(8);
+
+        var card = new PanelContainer
+        {
+            CustomMinimumSize = new Vector2(210, 230),
+            MouseFilter = Control.MouseFilterEnum.Stop,
+            MouseDefaultCursorShape = affordable ? Control.CursorShape.PointingHand : Control.CursorShape.Forbidden,
+            Modulate = affordable ? Colors.White : new Color(1, 1, 1, 0.45f)
+        };
+        card.AddThemeStyleboxOverride("panel", style);
+
+        // O cartão inteiro é o botão: clicar nele escolhe.
+        card.GuiInput += e =>
+        {
+            if (e is InputEventMouseButton click && click.Pressed && click.ButtonIndex == MouseButton.Left)
+                Choose(index, timedOut: false);
         };
 
-        style.SetBorderWidthAll(hover ? 2 : 1);
-        return style;
+        var stack = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        stack.AddThemeConstantOverride("separation", 8);
+        card.AddChild(stack);
+
+        stack.AddChild(MakeLabel($"[{index + 1}]  {set.Name}", 20, Colors.White));
+
+        var items = MakeLabel(set.Describe(), 15, new Color(0.82f, 0.84f, 0.88f));
+        items.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+        stack.AddChild(items);
+
+        string price = set.IsDefault ? $"GRÁTIS  (+{DefaultBonus} WP)" : $"{cost} WP";
+        stack.AddChild(MakeLabel(price, 20, set.IsDefault ? new Color(0.5f, 0.95f, 0.5f) : new Color(1f, 0.85f, 0.3f)));
+
+        string status = affordable ? "✓ disponível" : $"faltam {cost - _form.Wp:0}";
+        stack.AddChild(MakeLabel(status, 14,
+            affordable ? new Color(0.5f, 0.95f, 0.5f) : new Color(1f, 0.45f, 0.4f)));
+
+        return card;
+    }
+
+    private static Label MakeLabel(string text, int size, Color color)
+    {
+        var label = new Label { Text = text, MouseFilter = Control.MouseFilterEnum.Ignore };
+        label.AddThemeFontSizeOverride("font_size", size);
+        label.AddThemeColorOverride("font_color", color);
+        return label;
     }
 }
