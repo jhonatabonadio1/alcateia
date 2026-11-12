@@ -292,6 +292,10 @@ public partial class Bot : CharacterBody3D
     private double _beliefAge = 99;
     private double _brainTimer;
 
+    /// <summary>Tempo que falta do rugido. Rugir é compromisso, como
+    /// para o jogador: o bot só volta a decidir depois do fim.</summary>
+    private double _howlLeft;
+
     private Vector3 _patrolTarget;
     private bool _hasPatrolTarget;
     private double _patrolPause;
@@ -465,7 +469,7 @@ public partial class Bot : CharacterBody3D
     private void UpdateBrain(double delta)
     {
         _brainTimer -= delta;
-        if (_brainTimer > 0) return;
+        if (_brainTimer > 0 || _howlLeft > 0) return;
 
         _brainTimer = DecisionInterval;
 
@@ -511,6 +515,9 @@ public partial class Bot : CharacterBody3D
 
         if (Debug && next != Action)
             GD.Print($"{Name}: {Action} -> {next}");
+
+        if (next == BotAction.Howl && Action != BotAction.Howl)
+            _howlLeft = WolfMoves.Duration(WolfMove.Howl);
 
         Action = next;
 
@@ -563,10 +570,28 @@ public partial class Bot : CharacterBody3D
             this);
     }
 
+    /// <summary>
+    /// Rugido inteiro, parado, e o escudo cheio só no fim — a mesma regra
+    /// do jogador, no mesmo tempo da animação (<see cref="WolfMoves"/>).
+    /// </summary>
     private void RunHowl(double delta)
     {
         MoveTowards(Vector3.Zero, Speed, delta);
-        _health.RestoreShield(_health.MaxShield * (float)delta * 1.2f);
+
+        if (!_form.IsWolf || _health.IsDead)
+        {
+            _howlLeft = 0;
+            Action = BotAction.Engage;
+            return;
+        }
+
+        _howlLeft -= delta;
+        if (_howlLeft > 0) return;
+
+        _health.RestoreShield(_health.MaxShield);
+        _howlLeft = 0;
+        Action = BotAction.Engage;
+        _brainTimer = 0;
     }
 
     /// <summary>
@@ -1453,6 +1478,7 @@ public partial class Bot : CharacterBody3D
         _alerted = false;
         _reacting = false;
         _hasPatrolTarget = false;
+        _howlLeft = 0;
         State = BotState.Idle;
     }
 

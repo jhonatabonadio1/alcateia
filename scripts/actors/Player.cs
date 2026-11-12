@@ -99,13 +99,14 @@ public partial class Player : CharacterBody3D
     /// segurado, não apertado: é uma troca contínua entre ficar parado
     /// e recuperar o escudo.</summary>
     /// <summary>
-    /// Tempo segurando R até o rugido completar. É uma conclusão, não
-    /// uma torneira: soltar antes do fim não recupera nada.
+    /// Duração do rugido: a animação inteira do "roaring", na velocidade
+    /// de <see cref="WolfMoves"/>. Apertar R começa e não tem volta — o
+    /// lobo fica parado até o fim, e só então o escudo volta.
     ///
-    /// Isso é o que torna rugir uma aposta. Um segundo parado no meio
-    /// de uma luta é muito tempo, e é por isso que a decisão importa.
+    /// É isso que torna rugir uma aposta: segundos parado no meio de uma
+    /// luta, com o som entregando a posição.
     /// </summary>
-    [Export] public float HowlDuration = 1f;
+    public static float HowlDuration => WolfMoves.Duration(WolfMove.Howl);
 
     // --- Ruído ---
     //
@@ -259,6 +260,13 @@ public partial class Player : CharacterBody3D
     private double _wallTimer;
 
     public bool IsWallRunning => _onWall;
+
+    /// <summary>Normal da parede em que o lobo corre (para fora dela).
+    /// O corpo do lobo deita com os pés na parede a partir daqui.</summary>
+    public Vector3 WallNormal => _onWall ? _wallNormal : Vector3.Zero;
+
+    /// <summary>Sentido da corrida na parede.</summary>
+    public Vector3 WallAlong => _onWall ? _wallAlong : Vector3.Zero;
 
     public override void _Ready()
     {
@@ -674,32 +682,42 @@ public partial class Player : CharacterBody3D
     private bool IsHowling => _howling;
 
     /// <summary>
-    /// Rugido: segurar R recupera o escudo enquanto trava o lobo no
-    /// lugar. Como o escudo escorre sozinho, rugir é decidir ficar
-    /// exposto agora para sobreviver depois — e o som entrega a
-    /// posição, que é a outra metade do preço.
+    /// Rugido: um toque em R começa, e ele vai até o fim da animação —
+    /// soltar não cancela. Só no fim o escudo volta cheio. Como o escudo
+    /// escorre sozinho, rugir é decidir ficar exposto agora para
+    /// sobreviver depois — e o som entrega a posição, que é a outra
+    /// metade do preço.
+    ///
+    /// Morrer ou deixar de ser lobo no meio corta o rugido sem pagar.
     /// </summary>
     private void UpdateHowl(double delta)
     {
-        bool wants = Input.IsActionPressed("howl")
-            && _form.CanHowl
-            && !_health.IsDead;
+        if (!_howling)
+        {
+            bool starts = Input.IsActionJustPressed("howl")
+                && _form.CanHowl
+                && !_weapon.IsStriking
+                && !_health.IsDead
+                && !UiState.AnyOpen;
 
-        if (!wants)
+            if (!starts) return;
+
+            _howling = true;
+            _howlProgress = 0;
+        }
+
+        if (_health.IsDead || !_form.IsWolf)
         {
             _howling = false;
             _howlProgress = 0;
             return;
         }
 
-        _howling = true;
         _howlProgress += delta;
-
         if (_howlProgress < HowlDuration) return;
 
-        // Completou: escudo cheio e o contador reinicia, então segurar
-        // mais tempo rende outro rugido.
         _health.RestoreShield(_health.MaxShield);
+        _howling = false;
         _howlProgress = 0;
     }
 
@@ -732,6 +750,13 @@ public partial class Player : CharacterBody3D
     private void HandleActions(double delta)
     {
         if (UiState.AnyOpen) return;
+
+        // Rugindo, o lobo não faz mais nada até o rugido acabar.
+        if (_howling)
+        {
+            UpdateHowl(delta);
+            return;
+        }
 
         if (Input.IsActionJustPressed("slot_1")) _weapon.SelectSlot(Slot.Primary);
         if (Input.IsActionJustPressed("slot_2")) _weapon.SelectSlot(Slot.Secondary);

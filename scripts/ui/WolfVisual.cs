@@ -29,7 +29,12 @@ using System.Collections.Generic;
 /// | claw | mutant swiping | garrada (clique), alternando com o punch |
 /// | heavy | mutant punch | garrada alternada; patada (direito no chão) |
 /// | leap | mutant jump attack, **só a queda** | bote (direito no ar) |
+///
+/// Os golpes e o rugido tocam o trecho e a velocidade de
+/// <see cref="WolfMoves"/>, a mesma tabela que a arma usa para o dano
+/// sair no quadro do golpe. Nenhum golpe corta outro.
 /// | howl | mutant roaring | uivando (R) |
+/// | wallrun | Running Crawl | correndo na parede, de barriga para ela |
 /// | transform | mutant flexing muscles | acabou de virar lobo |
 /// | death | mutant dying | morreu de lobo |
 ///
@@ -64,10 +69,18 @@ public partial class WolfVisual : Node3D
     /// o lado.</summary>
     [Export(PropertyHint.Range, "0,1")] public float TeamTint = 0.3f;
 
+    /// <summary>Velocidade do clipe de engatinhar na parede, em m/s
+    /// (o Running Crawl anda 1,3 m em 0,67 s). Mais rápido que isso o
+    /// clipe acelera junto, até o dobro e meio.</summary>
+    [Export] public float WallClipSpeed = 1.95f;
+
+    /// <summary>Tempo para deitar na parede e para voltar, em segundos.</summary>
+    [Export] public float WallTurnTime = 0.12f;
+
     [Export] public bool Debug;
 
     private static readonly string[] Clips =
-        { "idle", "walk", "run", "claw", "heavy", "leap", "howl", "transform", "death" };
+        { "idle", "walk", "run", "claw", "heavy", "leap", "howl", "transform", "death", "wallrun" };
 
     private FormController _form;
     private Weapon _weapon;
@@ -83,9 +96,10 @@ public partial class WolfVisual : Node3D
     private readonly Dictionary<string, float> _lengths = new();
 
     private bool _sharedModel = true;
-
-    /// <summary>A próxima garrada sai com o outro braço.</summary>
-    private bool _otherArm;
+    private bool _onWall;
+    private float _wallBlend;
+    private Vector3 _lastNormal;
+    private Vector3 _lastAlong;
     private float _speed;
     private bool _dead;
     private bool _howling;
@@ -103,7 +117,7 @@ public partial class WolfVisual : Node3D
         if (!BuildModel()) return;
 
         _form.FormChanged += OnFormChanged;
-        _weapon.AttackCooldown += OnAttack;
+        _weapon.WolfMoveStarted += OnMove;
         if (_health != null)
         {
             _health.Died += _ => OnDied();
@@ -174,8 +188,13 @@ public partial class WolfVisual : Node3D
             if (animation == null) continue;
 
             CharacterAnimator.StripRootMotion(animation);
-            if (clip == "leap") animation = FallOnly(animation);
-            animation.LoopMode = clip is "idle" or "walk" or "run" or "howl"
+
+            // Golpes e rugido tocam o trecho medido em WolfMoves — o mesmo
+            // que a arma usa para saber quando o dano sai.
+            if (WolfMoves.Clips.TryGetValue(clip, out WolfClip window))
+                animation = Trim(animation, window.Start, window.End, window.FallOnly);
+
+            animation.LoopMode = clip is "idle" or "walk" or "run" or "wallrun"
                 ? Animation.LoopModeEnum.Linear
                 : Animation.LoopModeEnum.None;
 
@@ -189,61 +208,35 @@ public partial class WolfVisual : Node3D
     private bool Has(string clip) => _lengths.ContainsKey(clip);
 
     /// <summary>
-    /// Só a queda do "jump attack": do ponto mais alto até o bicho voltar
-    /// a ficar de pé depois do impacto. O bote começa com o lobo já no ar
-    /// — agachar e saltar de novo seria pular duas vezes.
+    /// Recorta o clipe de <paramref name="start"/> a <paramref name="end"/>
+    /// (segundos do arquivo) e começa do zero. É como o bote usa só a
+    /// queda do "jump attack" e a garrada pula a preparação longa.
     ///
-    /// O ponto mais alto e o fim são achados na altura do quadril, não
-    /// cravados em segundos: trocar o clipe continua funcionando. A
-    /// altura do quadril é limitada à de pé: no ar quem levanta o corpo
-    /// é a física, e somar a subida do clipe deixaria o lobo flutuando
-    /// acima da cápsula. A agachada do impacto, abaixo disso, fica.
+    /// <paramref name="fallOnly"/>: a altura do quadril fica limitada à
+    /// de pé. No ar quem levanta o corpo é a física; somar a subida do
+    /// clipe deixaria o lobo flutuando acima da cápsula. A agachada do
+    /// impacto, abaixo disso, fica.
     /// </summary>
-    private static Animation FallOnly(Animation source)
+    private static Animation Trim(Animation source, float start, float end, bool fallOnly)
     {
+        end = Mathf.Min(end, (float)source.Length);
+        if (start <= 0.001f && end >= source.Length - 0.001f && !fallOnly) return source;
+
         int hips = -1;
+        float rest = 0f;
         for (int t = 0; t < source.GetTrackCount(); t++)
         {
             if (source.TrackGetType(t) == Animation.TrackType.Position3D
-                && source.TrackGetPath(t).ToString().Contains("Hips"))
+                && source.TrackGetPath(t).ToString().Contains("Hips")
+                && source.TrackGetKeyCount(t) > 0)
             {
                 hips = t;
+                rest = ((Vector3)source.TrackGetKeyValue(t, 0)).Y;
                 break;
             }
         }
 
-        if (hips < 0 || source.TrackGetKeyCount(hips) < 2) return source;
-
-        float rest = ((Vector3)source.TrackGetKeyValue(hips, 0)).Y;
-        double apex = 0, lowest = 0;
-        float top = float.MinValue, bottom = float.MaxValue;
-
-        for (int k = 0; k < source.TrackGetKeyCount(hips); k++)
-        {
-            float y = ((Vector3)source.TrackGetKeyValue(hips, k)).Y;
-            if (y > top) { top = y; apex = source.TrackGetKeyTime(hips, k); }
-        }
-
-        for (int k = 0; k < source.TrackGetKeyCount(hips); k++)
-        {
-            double time = source.TrackGetKeyTime(hips, k);
-            float y = ((Vector3)source.TrackGetKeyValue(hips, k)).Y;
-            if (time > apex && y < bottom) { bottom = y; lowest = time; }
-        }
-
-        // Fim: o quadril de volta à altura de pé depois do impacto.
-        double end = source.Length;
-        for (int k = 0; k < source.TrackGetKeyCount(hips); k++)
-        {
-            double time = source.TrackGetKeyTime(hips, k);
-            if (time > lowest && ((Vector3)source.TrackGetKeyValue(hips, k)).Y >= rest - 0.03f)
-            {
-                end = time;
-                break;
-            }
-        }
-
-        var fall = new Animation { Length = (float)(end - apex) };
+        var cut = new Animation { Length = end - start };
         const double step = 1.0 / 30.0;
 
         for (int t = 0; t < source.GetTrackCount(); t++)
@@ -252,30 +245,30 @@ public partial class WolfVisual : Node3D
             if (type is not (Animation.TrackType.Position3D or Animation.TrackType.Rotation3D or Animation.TrackType.Scale3D))
                 continue;
 
-            int track = fall.AddTrack(type);
-            fall.TrackSetPath(track, source.TrackGetPath(t));
+            int track = cut.AddTrack(type);
+            cut.TrackSetPath(track, source.TrackGetPath(t));
 
-            for (double time = apex; time <= end + 0.0001; time += step)
+            for (double time = start; time <= end + 0.0001; time += step)
             {
-                double at = time - apex;
+                double at = time - start;
                 switch (type)
                 {
                     case Animation.TrackType.Position3D:
                         Vector3 position = source.PositionTrackInterpolate(t, time);
-                        if (t == hips) position.Y = Mathf.Min(position.Y, rest);
-                        fall.PositionTrackInsertKey(track, at, position);
+                        if (fallOnly && t == hips) position.Y = Mathf.Min(position.Y, rest);
+                        cut.PositionTrackInsertKey(track, at, position);
                         break;
                     case Animation.TrackType.Rotation3D:
-                        fall.RotationTrackInsertKey(track, at, source.RotationTrackInterpolate(t, time));
+                        cut.RotationTrackInsertKey(track, at, source.RotationTrackInterpolate(t, time));
                         break;
                     default:
-                        fall.ScaleTrackInsertKey(track, at, source.ScaleTrackInterpolate(t, time));
+                        cut.ScaleTrackInsertKey(track, at, source.ScaleTrackInterpolate(t, time));
                         break;
                 }
             }
         }
 
-        return fall;
+        return cut;
     }
 
     private static Skeleton3D FindSkeleton(Node node)
@@ -309,12 +302,34 @@ public partial class WolfVisual : Node3D
 
         var machine = new AnimationNodeStateMachine();
         machine.AddNode("Locomotion", locoSpeed, new Vector2(200, 100));
-        if (Has("howl")) machine.AddNode("Howl", Clip("howl"), new Vector2(400, 200));
+        if (Has("howl"))
+        {
+            // O rugido toca uma vez, inteiro, na velocidade de WolfMoves:
+            // o escudo volta exatamente quando ele acaba.
+            var howl = new AnimationNodeBlendTree();
+            howl.AddNode("Clip", Clip("howl"), Vector2.Zero);
+            howl.AddNode("Speed", new AnimationNodeTimeScale(), new Vector2(200, 0));
+            howl.ConnectNode("Speed", 0, "Clip");
+            howl.ConnectNode("output", 0, "Speed");
+            machine.AddNode("Howl", howl, new Vector2(400, 200));
+        }
         if (Has("death")) machine.AddNode("Death", Clip("death"), new Vector2(600, 100));
+
+        if (Has("wallrun"))
+        {
+            var wall = new AnimationNodeBlendTree();
+            wall.AddNode("Clip", Clip("wallrun"), Vector2.Zero);
+            wall.AddNode("Speed", new AnimationNodeTimeScale(), new Vector2(200, 0));
+            wall.ConnectNode("Speed", 0, "Clip");
+            wall.ConnectNode("output", 0, "Speed");
+            machine.AddNode("Wall", wall, new Vector2(400, 0));
+        }
 
         Link(machine, "Locomotion", "Howl");
         Link(machine, "Howl", "Locomotion");
-        foreach (string from in new[] { "Locomotion", "Howl" })
+        Link(machine, "Locomotion", "Wall");
+        Link(machine, "Wall", "Locomotion");
+        foreach (string from in new[] { "Locomotion", "Howl", "Wall" })
             Link(machine, from, "Death");
         Link(machine, "Death", "Locomotion");
 
@@ -360,6 +375,8 @@ public partial class WolfVisual : Node3D
         _model.AddChild(_tree);
         _tree.AnimPlayer = _tree.GetPathTo(_anims);
         _tree.Active = true;
+        if (Has("howl"))
+            _tree.Set("parameters/Machine/Howl/Speed/scale", WolfMoves.Of(WolfMove.Howl).Speed);
 
         _playback = (AnimationNodeStateMachinePlayback)_tree.Get("parameters/Machine/playback");
         _playback?.Start("Locomotion");
@@ -442,56 +459,110 @@ public partial class WolfVisual : Node3D
 
         // No ar não há clipe próprio: o corpo segue na pose de antes.
         bool howling = IsHowling();
-        if (howling != _howling)
+        bool onWall = _player != null && _player.IsWallRunning && Has("wallrun");
+
+        if (howling != _howling || onWall != _onWall)
         {
             _howling = howling;
-            _playback?.Travel(howling && Has("howl") ? "Howl" : "Locomotion");
+            _onWall = onWall;
+            _playback?.Travel(onWall ? "Wall" : howling && Has("howl") ? "Howl" : "Locomotion");
         }
+
+        UpdateWall((float)delta);
     }
+
+    /// <summary>
+    /// Na parede, o lobo engatinha com a barriga virada para ela: o
+    /// corpo deita de lado, os pés na parede e as costas para fora, de
+    /// frente para o sentido da corrida. Parede à esquerda deita para a
+    /// esquerda, à direita para a direita — quem decide é a normal da
+    /// parede, não o lado da câmera.
+    ///
+    /// Gira só o modelo, não o corpo: a cápsula, a câmera e a mira
+    /// continuam de pé, como a física as deixa. A entrada e a saída são
+    /// suaves (<see cref="WallTurnTime"/>), senão o bicho estala de lado.
+    /// </summary>
+    private void UpdateWall(float delta)
+    {
+        if (_player == null) return;
+
+        float target = _onWall ? 1f : 0f;
+        _wallBlend = Mathf.MoveToward(_wallBlend, target, delta / Mathf.Max(WallTurnTime, 0.01f));
+
+        var rest = new Transform3D(
+            Basis.FromEuler(new Vector3(0, Mathf.DegToRad(ModelYaw), 0)).Scaled(Vector3.One * ModelScale),
+            Vector3.Zero);
+
+        if (_wallBlend <= 0f)
+        {
+            _model.Transform = rest;
+            return;
+        }
+
+        // Saindo da parede, a normal some antes de o corpo terminar de
+        // levantar: a volta usa a última parede conhecida.
+        if (_player.WallNormal != Vector3.Zero && _player.WallAlong != Vector3.Zero)
+        {
+            _lastNormal = _player.WallNormal;
+            _lastAlong = _player.WallAlong;
+        }
+
+        Vector3 normal = _lastNormal;
+        Vector3 along = _lastAlong;
+        if (normal == Vector3.Zero || along == Vector3.Zero)
+        {
+            _model.Transform = rest;
+            return;
+        }
+
+        // Clipe do Mixamo olha para +Z: −Z do modelo fica contra o
+        // sentido da corrida, e o "em cima" do bicho é a normal.
+        Basis basis = Basis.LookingAt(-along, normal).Scaled(Vector3.One * ModelScale);
+
+        // Os pés tocam a parede: o plano dela fica a um raio da cápsula
+        // do centro do corpo.
+        Vector3 center = _body.GlobalPosition;
+        var onWall = new Transform3D(basis, center - normal * WallGap);
+
+        Transform3D local = GlobalTransform.AffineInverse() * onWall;
+        _model.Transform = rest.InterpolateWith(local, Smooth(_wallBlend));
+
+        // Engatinhar no ritmo da corrida; agarrado (parado), o clipe para.
+        float speed = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z).Length();
+        _tree.Set("parameters/Machine/Wall/Speed/scale", Mathf.Clamp(speed / Mathf.Max(WallClipSpeed, 0.01f), 0f, 2.5f));
+    }
+
+    /// <summary>Distância do centro do corpo à parede: o raio da cápsula.</summary>
+    private const float WallGap = 0.3f;
+
+    private static float Smooth(float t) => t * t * (3f - 2f * t);
 
     private bool IsHowling() =>
         _player != null ? _player.HowlProgress > 0f
         : _bot != null && _bot.Action == BotAction.Howl;
 
-    private void Fire(string shot, float duration)
+    /// <summary>Dispara um golpe por cima do corpo.</summary>
+    private void Fire(string shot, float speed)
     {
         if (_tree == null || !Has(shot)) return;
 
         string name = Cap(shot);
-        float scale = duration > 0.05f ? _lengths[shot] / duration : 1f;
-        _tree.Set($"parameters/{name}Speed/scale", Mathf.Clamp(scale, 0.5f, 4f));
+        _tree.Set($"parameters/{name}Speed/scale", speed);
         _tree.Set($"parameters/{name}/request", (int)AnimationNodeOneShot.OneShotRequest.Fire);
     }
 
-    /// <summary>Golpe do lobo. A duração do clipe acompanha a recarga do
-    /// golpe, com um mínimo para a garrada não virar um tremor.</summary>
-    private void OnAttack(int kind, float seconds)
+    /// <summary>
+    /// Golpe do lobo, com o clipe e a velocidade de
+    /// <see cref="WolfMoves"/> — os mesmos que a arma usa para o dano
+    /// sair no instante em que a garra chega. Quem alterna os braços e
+    /// decide quando pode bater é a arma; aqui só se toca.
+    /// </summary>
+    private void OnMove(int move)
     {
         if (!_form.IsWolf) return;
 
-        switch (kind)
-        {
-            case Weapon.CooldownClaw:
-                // O clique esquerdo alterna os dois golpes do pack — o
-                // "swiping" e o "punch" —, um braço de cada vez. Golpe
-                // repetido com a mesma mão parece um boneco travado; a
-                // alternância lê como uma sequência de patadas.
-                string swing = _otherArm && Has("heavy") ? "heavy" : "claw";
-                string previous = swing == "claw" ? "heavy" : "claw";
-
-                // Clique rápido: o golpe anterior sai para o novo
-                // aparecer. Sem isto o de cima na árvore cobre o outro.
-                if (_tree != null && Has(previous))
-                    _tree.Set($"parameters/{Cap(previous)}/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
-
-                Fire(swing, Mathf.Max(seconds, 0.45f));
-                _otherArm = !_otherArm;
-                break;
-            case Weapon.CooldownHeavy: Fire("heavy", Mathf.Max(seconds * 0.8f, 0.6f)); break;
-            // O bote já começa no alto: a queda toca no tempo dela, um
-            // pouco mais rápida para o golpe chegar com o chão.
-            case Weapon.CooldownLeap: Fire("leap", _lengths.TryGetValue("leap", out float leap) ? leap / 1.2f : 0.9f); break;
-        }
+        var (clip, speed) = WolfMoves.Of((WolfMove)move);
+        Fire(clip, speed);
     }
 
     private void OnFormChanged(int form)
@@ -502,7 +573,8 @@ public partial class WolfVisual : Node3D
         {
             _model.Visible = true;
             _playback?.Start("Locomotion");
-            Fire("transform", 1.1f);
+            // O "flexionar" inteiro em pouco mais de um segundo.
+            if (Has("transform")) Fire("transform", _lengths["transform"] / 1.1f);
         }
     }
 
@@ -519,6 +591,8 @@ public partial class WolfVisual : Node3D
         _dead = false;
         _model.Visible = true;
         _howling = false;
+        _onWall = false;
+        _wallBlend = 0;
         _playback?.Start("Locomotion");
         Visible = _form.IsWolf;
     }

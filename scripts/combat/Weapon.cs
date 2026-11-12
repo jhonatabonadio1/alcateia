@@ -48,6 +48,10 @@ public partial class Weapon : Node3D
 	/// <summary>Soltou a arma da mão (B) ou deixou cair ao morrer.</summary>
 	[Signal] public delegate void DroppedEventHandler(string id);
 
+	/// <summary>Um golpe do lobo começou (<see cref="WolfMove"/>). O corpo
+	/// toca a animação daqui; o dano sai depois, no instante do golpe.</summary>
+	[Signal] public delegate void WolfMoveStartedEventHandler(int move);
+
 	// --- Soltar e pegar ---
 
 	/// <summary>Velocidade do arremesso ao soltar com B, para frente.</summary>
@@ -117,11 +121,9 @@ public partial class Weapon : Node3D
 	/// <summary>Multiplicador de dano de cada golpe do combo.</summary>
 	[Export] public float[] ComboDamage = { 1f, 1f, 1.5f };
 
-	/// <summary>Tempo entre golpes dentro do combo. Mais curto que o
-	/// cooldown normal: encadear é mais rápido que recomeçar.</summary>
-	[Export] public float ComboCooldown = 0.32f;
-
-	/// <summary>Tempo sem atacar até o combo voltar ao primeiro golpe.</summary>
+	/// <summary>Tempo sem atacar, depois do fim do golpe, até o combo
+	/// voltar ao primeiro. O intervalo entre golpes é a própria animação
+	/// (<see cref="WolfMoves"/>).</summary>
 	[Export] public float ComboReset = 1.1f;
 
 	/// <summary>Empurrão para frente a cada golpe. É o que faz mira
@@ -206,6 +208,18 @@ public partial class Weapon : Node3D
 	private double _reloadTotal = 1;
 	private bool _shellReload;
 	private int _comboIndex;
+
+	// --- Golpes do lobo sincronizados com a animação ---
+
+	/// <summary>Próxima garrada com o outro braço.</summary>
+	private bool _nextPunch;
+
+	/// <summary>Tempo que falta da animação do golpe em curso.</summary>
+	private double _strikeLeft;
+
+	/// <summary>Muda a cada golpe e na morte: dano agendado de um golpe
+	/// que não vale mais (morreu, voltou a humano) não sai.</summary>
+	private ulong _strikeId;
 	private double _comboTimer;
 
 	// --- Dispersão e recuo da arma na mão ---
@@ -246,6 +260,10 @@ public partial class Weapon : Node3D
 
 	/// <summary>Duração total da recarga em curso, em segundos.</summary>
 	public float ReloadDuration => (float)_reloadTotal;
+
+	/// <summary>No meio de um golpe do lobo. A animação não é cortada:
+	/// nem por outro golpe nem pela volta a humano.</summary>
+	public bool IsStriking => _form != null && _form.IsWolf && _strikeLeft > 0;
 
 	public bool HasPrimary => PrimaryDef != null;
 	public bool HasSecondary => SecondaryDef != null;
@@ -368,6 +386,12 @@ public partial class Weapon : Node3D
 		if (_comboTimer > 0)
 			_comboTimer -= delta;
 
+		if (_strikeLeft > 0)
+			_strikeLeft -= delta;
+
+		if (_pending.Count > 0)
+			RunPending(delta);
+
 		if (_reloadTimer > 0)
 		{
 			_reloadTimer -= delta;
@@ -396,6 +420,9 @@ public partial class Weapon : Node3D
 	/// <summary>Chamado ao apertar 1, 2, 3 ou 4.</summary>
 	public void SelectSlot(Slot slot)
 	{
+		// Golpe de lobo não se interrompe, nem para voltar a humano.
+		if (IsStriking) return;
+
 		if (slot == Slot.Knife)
 		{
 			HumanSlot = Slot.Knife;
@@ -682,52 +709,117 @@ public partial class Weapon : Node3D
 	/// castigo de quem deixou o lobo chegar parado.</summary>
 	private void Heavy()
 	{
-		_cooldown = HeavyCooldown;
 		_comboIndex = 0;
-
-		EmitSignal(SignalName.Fired);
-		EmitSignal(SignalName.AttackCooldown, CooldownHeavy, HeavyCooldown);
-
-		Lunge();
-		Claw(HeavyDamageBonus);
+		StartMove(WolfMove.Heavy, CooldownHeavy, HeavyCooldown, () =>
+		{
+			Lunge();
+			Claw(HeavyDamageBonus);
+		});
 	}
 
-	/// <summary>Bote aéreo: três golpes em sequência enquanto o corpo
-	/// viaja na direção da mira.</summary>
+	/// <summary>
+	/// Bote aéreo: três golpes em volta do instante em que as garras
+	/// chegam na animação — o corpo já viaja na direção da mira desde o
+	/// clique (Player.Dive), o dano espera a queda.
+	/// </summary>
 	private void Leap()
 	{
-		_cooldown = LeapCooldown;
 		_comboIndex = 0;
+		float impact = WolfMoves.ImpactDelay(WolfMove.Leap);
+		ulong id = StartMove(WolfMove.Leap, CooldownLeap, LeapCooldown, () => Claw(LeapDamageBonus));
 
-		EmitSignal(SignalName.Fired);
-		EmitSignal(SignalName.AttackCooldown, CooldownLeap, LeapCooldown);
-
-		Claw(LeapDamageBonus);
-
+		// Os outros golpes do bote, metade antes e metade depois.
 		for (int i = 1; i < LeapHits; i++)
 		{
-			SceneTreeTimer timer = _body.GetTree().CreateTimer(SpecialSecondDelay * i);
-			timer.Timeout += () => Claw(LeapDamageBonus);
+			float offset = (i % 2 == 1 ? 1 : -1) * SpecialSecondDelay * ((i + 1) / 2);
+			After(Mathf.Max(impact + offset, 0.02f), id, () => Claw(LeapDamageBonus));
 		}
 	}
 
+	/// <summary>
+	/// Garrada do clique esquerdo. Os braços alternam — o "swiping" e o
+	/// "punch" — e o combo continua contando: o terceiro golpe seguido
+	/// machuca mais.
+	/// </summary>
 	private void WolfAttack()
 	{
-		// Combo: o golpe seguinte sai mais rápido que o
-		// primeiro, e o terceiro machuca mais.
 		if (_comboTimer <= 0) _comboIndex = 0;
 
 		float multiplier = ComboDamage[Mathf.Min(_comboIndex, ComboDamage.Length - 1)];
-
 		_comboIndex = (_comboIndex + 1) % ComboDamage.Length;
-		_comboTimer = ComboReset;
-		_cooldown = ComboCooldown;
 
-		EmitSignal(SignalName.Fired);
-		EmitSignal(SignalName.AttackCooldown, CooldownClaw, ComboCooldown);
+		WolfMove move = _nextPunch ? WolfMove.Punch : WolfMove.Claw;
+		_nextPunch = !_nextPunch;
 
-		Lunge();
-		Claw(multiplier);
+		// O combo zera se passar ComboReset depois do fim do golpe.
+		_comboTimer = WolfMoves.Duration(move) + ComboReset;
+
+		StartMove(move, CooldownClaw, 0f, () =>
+		{
+			Lunge();
+			Claw(multiplier);
+		});
+	}
+
+	/// <summary>
+	/// Começa um golpe do lobo. A animação dura
+	/// <see cref="WolfMoves.Duration"/> e o próximo golpe só sai depois
+	/// dela — golpe não corta golpe. O dano (<paramref name="impact"/>)
+	/// sai no instante em que a garra chega na animação, não no clique.
+	/// </summary>
+	private ulong StartMove(WolfMove move, int kind, float minCooldown, System.Action impact)
+	{
+		float duration = WolfMoves.Duration(move);
+		float cooldown = Mathf.Max(duration, minCooldown);
+
+		_cooldown = cooldown;
+		_strikeLeft = duration;
+		ulong id = ++_strikeId;
+
+		EmitSignal(SignalName.WolfMoveStarted, (int)move);
+		EmitSignal(SignalName.AttackCooldown, kind, cooldown);
+
+		After(WolfMoves.ImpactDelay(move), id, () =>
+		{
+			// O som do golpe sai junto com o golpe.
+			EmitSignal(SignalName.Fired);
+			impact();
+		});
+
+		return id;
+	}
+
+	/// <summary>Roda <paramref name="action"/> depois de
+	/// <paramref name="delay"/> segundos, se o golpe ainda valer.
+	///
+	/// Fila própria, contada no passo de física, e não um timer da
+	/// árvore por golpe: um bot de lobo bate o tempo todo, e criar um
+	/// objeto do Godot a cada golpe acumulava objetos do lado C# que
+	/// derrubavam o jogo ao fechar.</summary>
+	private void After(float delay, ulong id, System.Action action) =>
+		_pending.Add(new PendingHit(delay, id, action));
+
+	private readonly record struct PendingHit(double Left, ulong Id, System.Action Action);
+
+	private readonly List<PendingHit> _pending = new();
+
+	private void RunPending(double delta)
+	{
+		for (int i = _pending.Count - 1; i >= 0; i--)
+		{
+			PendingHit hit = _pending[i];
+			double left = hit.Left - delta;
+
+			if (left > 0)
+			{
+				_pending[i] = hit with { Left = left };
+				continue;
+			}
+
+			_pending.RemoveAt(i);
+			if (hit.Id != _strikeId || _health.IsDead || !_form.IsWolf) continue;
+			hit.Action();
+		}
 	}
 
 	/// <summary>
@@ -1047,6 +1139,9 @@ public partial class Weapon : Node3D
 	/// </summary>
 	private void OnDied(int killerId)
 	{
+		_strikeId++;
+		_strikeLeft = 0;
+		_pending.Clear();
 		if (IsReloading) CancelReload();
 		if (_form.IsWolf) return;
 

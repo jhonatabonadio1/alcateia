@@ -56,6 +56,12 @@ public partial class Hud : CanvasLayer
     private Label _shieldNumber;
     private HBoxContainer _shieldRow;
     private Tween _lowPulse;
+    private bool? _lowShown;
+
+    private static readonly StyleBoxFlat HpFill = UiTheme.Box(UiTokens.TextPrimary, default, 0, 0, 0, 0);
+    private static readonly StyleBoxFlat HpFillLow = UiTheme.Box(UiTokens.Danger, default, 0, 0, 0, 0);
+    private static readonly StyleBoxFlat SlotOn = UiTheme.Box(new Color(UiTokens.Accent, 0.2f), UiTokens.Accent, 1, 0, 0, 0);
+    private static readonly StyleBoxFlat SlotOff = UiTheme.Box(new Color(1, 1, 1, 0.04f), new Color(1, 1, 1, 0.1f), 1, 0, 0, 0);
     private TextureRect _vignette;
     private float _hurtFlash;
 
@@ -446,7 +452,7 @@ public partial class Hud : CanvasLayer
         }
 
         HBoxContainer howl = UiKit.Row(UiTokens.S2);
-        _howlLabel = UiKit.Caption("Uivo · segure R", UiTokens.TextPrimary);
+        _howlLabel = UiKit.Caption("Uivo · R", UiTokens.TextPrimary);
         _howlLabel.CustomMinimumSize = new Vector2(190, 0);
         howl.AddChild(_howlLabel);
         _howlBar = Bar(UiTokens.Accent, 6);
@@ -549,9 +555,15 @@ public partial class Hud : CanvasLayer
 
         // Vida baixa: a barra pulsa e a vinheta entra.
         bool low = !_health.IsDead && maxHp > 0 && hp / maxHp < LowHealth;
-        Color fill = low ? UiTokens.Danger : UiTokens.TextPrimary;
-        _hpBar.AddThemeStyleboxOverride("fill", UiTheme.Box(fill, default, 0, 0, 0, 0));
-        _hpNumber.AddThemeColorOverride("font_color", low ? UiTokens.Danger : UiTokens.TextPrimary);
+        // Os estilos são criados uma vez: a vida muda a cada quadro (o
+        // escudo do lobo escorre), e criar um estilo por quadro acumulava
+        // objetos do lado C# que derrubavam o jogo ao fechar.
+        if (low != _lowShown)
+        {
+            _lowShown = low;
+            _hpBar.AddThemeStyleboxOverride("fill", low ? HpFillLow : HpFill);
+            _hpNumber.AddThemeColorOverride("font_color", low ? UiTokens.Danger : UiTokens.TextPrimary);
+        }
 
         if (low && _lowPulse == null) _lowPulse = Motion.Pulse(_hpBar, 0.35f, 0.7f);
         if (!low && _lowPulse != null)
@@ -647,9 +659,7 @@ public partial class Hud : CanvasLayer
         foreach (var (s, chip) in _slots)
         {
             bool on = s == current;
-            chip.AddThemeStyleboxOverride("panel", UiTheme.Box(
-                on ? new Color(UiTokens.Accent, 0.2f) : new Color(1, 1, 1, 0.04f),
-                on ? UiTokens.Accent : new Color(1, 1, 1, 0.1f), 1, 0, 0, 0));
+            chip.AddThemeStyleboxOverride("panel", on ? SlotOn : SlotOff);
             chip.GetChild<Label>(0).AddThemeColorOverride("font_color", on ? UiTokens.Accent : UiTokens.TextSecondary);
         }
 
@@ -687,7 +697,7 @@ public partial class Hud : CanvasLayer
 
         float howl = _player?.HowlProgress ?? 0f;
         _howlBar.Value = howl;
-        _howlLabel.Text = howl > 0 ? "UIVANDO · ESCUDO VOLTANDO" : "UIVO · SEGURE R";
+        _howlLabel.Text = howl > 0 ? "UIVANDO · ESCUDO NO FIM" : "UIVO · R";
     }
 
     // ================================================================== forma

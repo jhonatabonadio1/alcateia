@@ -18,7 +18,7 @@ public static class ControlsTable
         ("3", "Virar lobo"),
         ("4", "Faca"),
         ("5", "Equipar granada"),
-        ("R", "Recarregar (humano) · uivar segurando (lobo)"),
+        ("R", "Recarregar (humano) · uivar (lobo, vai até o fim)"),
         ("B", "Soltar a arma da mão (cai à frente)"),
         ("W segurado", "Sustenta a corrida em parede"),
         ("Tab", "Placar (segurar)"),
