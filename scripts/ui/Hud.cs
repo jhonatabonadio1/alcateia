@@ -29,7 +29,13 @@ public partial class Hud : CanvasLayer
     [Export] public float HurtLife = 0.45f;
     [Export] public float HurtBand = 90f;
 
+    /// <summary>Tempo que a barra de slots fica na tela depois da
+    /// troca. Ela existe para o jogador conferir o que tem na mochila
+    /// sem abrir menu — então aparece no gesto e sai sozinha.</summary>
+    [Export] public float SlotBarLife = 1.8f;
+
     private const int Margin = 26;
+    private const int MinimapSide = 168;
 
     private Health _health;
     private FormController _form;
@@ -54,6 +60,10 @@ public partial class Hud : CanvasLayer
     private double _hurtTimer;
     private double _warningTimer;
 
+    private HBoxContainer _slotBar;
+    private PanelContainer[] _slotCells;
+    private double _slotBarTimer;
+
     public override void _Ready()
     {
         Node player = GetTree().GetFirstNodeInGroup("player") ?? FindPlayer(GetTree().CurrentScene);
@@ -70,6 +80,7 @@ public partial class Hud : CanvasLayer
 
         BuildVitals();
         BuildEquipment();
+        BuildSlotBar();
         BuildMinimap();
         BuildFeed();
         BuildHitMarker();
@@ -118,6 +129,15 @@ public partial class Hud : CanvasLayer
 
             float alpha = (float)Mathf.Max(_hurtTimer, 0) / HurtLife * 0.55f;
             foreach (ColorRect edge in _edges) edge.Color = new Color(HurtColor, alpha);
+        }
+
+        if (_slotBarTimer > 0)
+        {
+            _slotBarTimer -= delta;
+
+            // Some esmaecendo no último meio segundo.
+            float alpha = (float)Mathf.Clamp(_slotBarTimer / 0.5, 0, 1);
+            _slotBar.Modulate = new Color(1, 1, 1, alpha);
         }
 
         if (_warningTimer > 0)
@@ -203,13 +223,117 @@ public partial class Hud : CanvasLayer
         return label;
     }
 
+    /// <summary>
+    /// Barra de slots no rodapé. Aparece ao trocar de arma e some
+    /// sozinha: serve para o jogador ver o que tem sem abrir menu, e
+    /// uma barra permanente ocuparia tela o tempo todo para informar
+    /// algo que ele já sabe na maior parte do jogo.
+    /// </summary>
+    private void BuildSlotBar()
+    {
+        _slotBar = new HBoxContainer
+        {
+            AnchorLeft = 0.5f, AnchorRight = 0.5f,
+            AnchorTop = 1f, AnchorBottom = 1f,
+            GrowHorizontal = Control.GrowDirection.Both,
+            GrowVertical = Control.GrowDirection.Begin,
+            Position = new Vector2(0, -Margin - 56),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            Modulate = new Color(1, 1, 1, 0)
+        };
+        _slotBar.AddThemeConstantOverride("separation", 6);
+        AddChild(_slotBar);
+
+        Slot[] slots = { Slot.Primary, Slot.Secondary, Slot.Knife, Slot.Grenade };
+        _slotCells = new PanelContainer[slots.Length];
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            _slotCells[i] = SlotCell(slots[i]);
+            _slotBar.AddChild(_slotCells[i]);
+        }
+    }
+
+    private PanelContainer SlotCell(Slot slot)
+    {
+        var cell = new PanelContainer
+        {
+            CustomMinimumSize = new Vector2(104, 52),
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
+
+        var box = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        cell.AddChild(box);
+
+        var number = new Label
+        {
+            Text = ((int)slot).ToString(),
+            Modulate = new Color(1, 1, 1, 0.5f)
+        };
+        number.AddThemeFontSizeOverride("font_size", 11);
+        box.AddChild(number);
+
+        var name = new Label { Name = "SlotName" };
+        name.AddThemeFontSizeOverride("font_size", 14);
+        box.AddChild(name);
+
+        return cell;
+    }
+
+    private void RefreshSlotBar(Slot active)
+    {
+        if (_slotCells == null) return;
+
+        Slot[] slots = { Slot.Primary, Slot.Secondary, Slot.Knife, Slot.Grenade };
+
+        for (int i = 0; i < _slotCells.Length; i++)
+        {
+            bool selected = slots[i] == active && !_form.IsWolf;
+
+            var style = new StyleBoxFlat
+            {
+                BgColor = selected
+                    ? new Color(0.16f, 0.16f, 0.18f, 0.95f)
+                    : new Color(0.06f, 0.06f, 0.08f, 0.7f),
+                BorderColor = selected
+                    ? new Color(0.95f, 0.8f, 0.35f)
+                    : new Color(1, 1, 1, 0.12f),
+                ContentMarginLeft = 10, ContentMarginRight = 10,
+                ContentMarginTop = 6, ContentMarginBottom = 6
+            };
+            style.SetBorderWidthAll(selected ? 2 : 1);
+            _slotCells[i].AddThemeStyleboxOverride("panel", style);
+
+            var box = _slotCells[i].GetChild<VBoxContainer>(0);
+            var name = box.GetNode<Label>("SlotName");
+
+            name.Text = NameOf(slots[i]);
+            name.Modulate = selected ? Colors.White : new Color(1, 1, 1, 0.45f);
+        }
+
+        _slotBar.Modulate = new Color(1, 1, 1, 1);
+        _slotBarTimer = SlotBarLife;
+    }
+
+    private string NameOf(Slot slot) => slot switch
+    {
+        Slot.Primary => _weapon.Current?.PrimaryName ?? "PRINCIPAL",
+        Slot.Secondary => _weapon.Current?.SecondaryName ?? "SECUNDÁRIA",
+        Slot.Knife => "FACA",
+        Slot.Grenade => $"GRANADA {_weapon.Grenades}",
+        _ => ""
+    };
+
     private void BuildMinimap()
     {
         var map = new Minimap
         {
-            Position = new Vector2(Margin, Margin),
+            AnchorLeft = 1f, AnchorRight = 1f,
+            GrowHorizontal = Control.GrowDirection.Begin,
+            Position = new Vector2(-Margin - MinimapSide, Margin),
             MouseFilter = Control.MouseFilterEnum.Ignore
         };
+        map.Side = MinimapSide;
 
         AddChild(map);
     }
@@ -226,11 +350,11 @@ public partial class Hud : CanvasLayer
         {
             AnchorLeft = 1f, AnchorRight = 1f,
             GrowHorizontal = Control.GrowDirection.Begin,
-            Position = new Vector2(-Margin - 360, Margin),
-            CustomMinimumSize = new Vector2(360, 0),
+            Position = new Vector2(-Margin - 420, Margin + MinimapSide + 14),
+            CustomMinimumSize = new Vector2(420, 0),
             MouseFilter = Control.MouseFilterEnum.Ignore
         };
-        _feed.AddThemeConstantOverride("separation", 4);
+        _feed.AddThemeConstantOverride("separation", 6);
         AddChild(_feed);
 
         KillFeed.Reported += OnKill;
@@ -364,6 +488,8 @@ public partial class Hud : CanvasLayer
         _formLabel.Modulate = _form.IsWolf
             ? new Color(1f, 0.55f, 0.2f)
             : new Color(1, 1, 1, 0.7f);
+
+        RefreshSlotBar((Slot)slot);
     }
 
     private void OnGrenadesChanged(int left)
@@ -434,10 +560,10 @@ public partial class Hud : CanvasLayer
             FitContent = true,
             ScrollActive = false,
             AutowrapMode = TextServer.AutowrapMode.Off,
-            CustomMinimumSize = new Vector2(360, 0),
+            CustomMinimumSize = new Vector2(420, 0),
             MouseFilter = Control.MouseFilterEnum.Ignore
         };
-        line.AddThemeFontSizeOverride("normal_font_size", 14);
+        line.AddThemeFontSizeOverride("normal_font_size", 18);
 
         string killer = Teams.ColorOf(kill.KillerTeam).ToHtml(false);
         string victim = Teams.ColorOf(kill.VictimTeam).ToHtml(false);

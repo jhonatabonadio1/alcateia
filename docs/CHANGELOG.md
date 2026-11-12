@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.14.2 — 2026-11-11
+
+### Adicionado
+- **Barra de slots** no rodapé, aparecendo ao trocar de arma e sumindo
+  sozinha. Mostra os quatro itens com o atual destacado.
+
+### Alterado
+- Minimapa virou quadrado e foi para o canto superior direito.
+- Feed de abates desceu para baixo do minimapa e ficou maior.
+
 ## v0.14.1 — 2026-11-11
 
 ### Corrigido

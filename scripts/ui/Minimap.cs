@@ -19,7 +19,9 @@ using Godot;
 public partial class Minimap : Control
 {
     [Export] public float Range = 42f;
-    [Export] public float Radius = 78f;
+
+    /// <summary>Lado do quadrado, em pixels.</summary>
+    [Export] public float Side = 168f;
 
     [Export] public Color BackColor = new Color(0.05f, 0.06f, 0.08f, 0.72f);
     [Export] public Color EdgeColor = new Color(1f, 1f, 1f, 0.22f);
@@ -37,8 +39,9 @@ public partial class Minimap : Control
 
         _walls = GetTree().CurrentScene?.GetNodeOrNull<Node3D>("Walls");
 
-        CustomMinimumSize = new Vector2(Radius * 2, Radius * 2);
+        CustomMinimumSize = new Vector2(Side, Side);
         Size = CustomMinimumSize;
+        ClipContents = true;
         MouseFilter = MouseFilterEnum.Ignore;
     }
 
@@ -51,10 +54,17 @@ public partial class Minimap : Control
     {
         if (_player == null) return;
 
-        var center = new Vector2(Radius, Radius);
+        var center = new Vector2(Side * 0.5f, Side * 0.5f);
+        var frame = new Rect2(Vector2.Zero, new Vector2(Side, Side));
 
-        DrawCircle(center, Radius, BackColor);
-        DrawArc(center, Radius, 0, Mathf.Tau, 48, EdgeColor, 1.5f);
+        DrawRect(frame, BackColor);
+        DrawRect(frame, EdgeColor, false, 1.5f);
+
+        // Cruz discreta nos eixos: dá referência de distância sem
+        // competir com os pontos.
+        var faint = new Color(EdgeColor, EdgeColor.A * 0.4f);
+        DrawLine(new Vector2(center.X, 0), new Vector2(center.X, Side), faint, 1f);
+        DrawLine(new Vector2(0, center.Y), new Vector2(Side, center.Y), faint, 1f);
 
         // O mundo é girado pelo inverso do olhar: o que está à frente
         // sobe na tela.
@@ -78,9 +88,9 @@ public partial class Minimap : Control
 
         if (flat.Length() > Range) return false;
 
-        // -yaw porque girar o mundo é o oposto de girar a câmera.
+        // Girar o mundo é o oposto de girar a câmera.
         Vector2 rotated = flat.Rotated(yaw);
-        point = center + rotated / Range * Radius;
+        point = center + rotated / Range * (Side * 0.5f);
 
         return true;
     }
@@ -129,7 +139,7 @@ public partial class Minimap : Control
         Vector3 delta = world - _player.GlobalPosition;
         Vector2 rotated = new Vector2(delta.X, delta.Z).Rotated(yaw);
 
-        point = center + rotated / Range * Radius;
+        point = center + rotated / Range * (Side * 0.5f);
     }
 
     private void DrawActors(Vector2 center, float yaw)

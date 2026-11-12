@@ -381,6 +381,20 @@ um corpo rápido.
 com rifle não teria resposta nenhuma contra um lobo vindo de frente —
 e um inimigo sem resposta não é difícil, é injusto.
 
+### Layout da tela
+
+| Canto | O quê |
+|---|---|
+| Inferior esquerdo | Vida e escudo — o corpo |
+| Inferior direito | WP, munição e forma — o equipamento |
+| Superior direito | Minimapa quadrado, e o feed de abates abaixo dele |
+| Rodapé central | Barra de slots, só ao trocar de arma |
+
+A barra de slots aparece no gesto de trocar e some sozinha. Ela serve
+para o jogador conferir o que tem sem abrir menu; permanente,
+ocuparia tela o tempo todo para informar algo que ele já sabe na
+maior parte do jogo.
+
 ### O minimapa
 
 Desenhado em 2D a partir das posições, não por câmera ortogonal. Um
