@@ -600,6 +600,7 @@ public partial class WolfVisual : Node3D
             else if (Has("howl")) _tree.Set("parameters/Howl/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
         }
 
+        UpdateCharge(delta);
         UpdateLean((float)delta);
         UpdateWall((float)delta);
     }
@@ -787,6 +788,29 @@ public partial class WolfVisual : Node3D
             speed = WolfMoves.DiveSpeed(_weapon.DiveEta);
 
         Fire(clip, speed);
+        if ((WolfMove)move == WolfMove.Pounce) _pounceClock = 0;
+    }
+
+    /// <summary>Tempo desde que o salto começou a tocar.</summary>
+    private double _pounceClock = 99;
+    private bool _pounceHeld;
+
+    /// <summary>
+    /// Carregando o salto, o clipe para no fim do agachar — o lobo fica
+    /// encolhido, pronto — e segue quando o jogador solta. A arma conta o
+    /// resto do golpe a partir dali, então o salto e o dano continuam no
+    /// quadro certo.
+    /// </summary>
+    private void UpdateCharge(double delta)
+    {
+        _pounceClock += delta;
+        if (!Has("pounce")) return;
+
+        bool hold = _weapon.IsChargingPounce && _pounceClock >= WolfMoves.StepOf(WolfMove.Pounce).Delay;
+        if (hold == _pounceHeld) return;
+
+        _pounceHeld = hold;
+        _tree.Set("parameters/PounceSpeed/scale", hold ? 0f : WolfMoves.Of(WolfMove.Pounce).Speed);
     }
 
     /// <summary>O bote encostou: a aterrissagem entra por cima da queda,

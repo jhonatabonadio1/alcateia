@@ -182,6 +182,24 @@ public partial class Weapon : Node3D
 	/// limite.</summary>
 	[Export] public float PounceMaxDistance = 12f;
 
+	/// <summary>Segundos segurando o botão direito no chão até o salto
+	/// carregar inteiro (decisão do Jhon): segurar mais vai mais longe e
+	/// bate mais forte. Solto de leve, ele pula perto e fraco.</summary>
+	[Export] public float PounceChargeTime = 1.0f;
+
+	/// <summary>Até onde o salto vai sem carga nenhuma, em metros. A carga
+	/// leva daqui a <see cref="PounceMaxDistance"/>, e o ponto mirado é o
+	/// teto: para chegar no alvo é preciso carregar o bastante.</summary>
+	[Export] public float PounceMinDistance = 1.5f;
+
+	/// <summary>Fração do dano do salto sem carga. Carregado inteiro, o
+	/// dano é o cheio (<see cref="HeavyDamageBonus"/>).</summary>
+	[Export] public float PounceMinPower = 0.4f;
+
+	/// <summary>Quanto tempo o lobo segura a carga cheia antes de saltar
+	/// sozinho.</summary>
+	[Export] public float PounceChargeHold = 0.6f;
+
 	/// <summary>O que o salto passa por cima, em metros acima dos pés: um
 	/// contêiner (2,2 m) passa; um bloco (5 m) ou o muro, não — o salto
 	/// para antes dele.</summary>
@@ -193,9 +211,9 @@ public partial class Weapon : Node3D
 
 	/// <summary>Quanto o ponto de queda acompanha o alvo durante o voo, em
 	/// m/s. O alvo anda até 3 m no 1,1 s do salto e o golpe errava quem só
-	/// caminhava; mais devagar que o humano correndo (4,2), quem corre de
+	/// caminhava; mais devagar que o humano correndo (3,0), quem corre de
 	/// lado desde o começo ainda escapa.</summary>
-	[Export] public float PounceHoming = 3f;
+	[Export] public float PounceHoming = 2.4f;
 
 	/// <summary>Quão longe do centro da tela, em graus, um inimigo ainda
 	/// conta como "mirado" pelo salto. O lobo não tem mira na tela, e
@@ -515,6 +533,13 @@ public partial class Weapon : Node3D
 		if (_diving)
 			UpdateDive(delta);
 
+		if (_charging)
+		{
+			_chargeTime += delta;
+			if (!_form.IsWolf || _health.IsDead) CancelCharge();
+			else if (_chargeTime >= PounceChargeTime + PounceChargeHold) ReleaseCharge();
+		}
+
 		if (_flying)
 		{
 			HomePounce((float)delta);
@@ -656,7 +681,12 @@ public partial class Weapon : Node3D
 		if (_form.IsWolf)
 			WolfAttack();
 		else if (HumanSlot == Slot.Grenade)
-			ThrowGrenade();
+		{
+			// O jogador prepara e só arremessa ao soltar (decisão do Jhon);
+			// o bot arremessa direto.
+			if (_body is Player) PrepareGrenade();
+			else ThrowGrenade();
+		}
 		else if (HumanSlot == Slot.Knife)
 			Knife();
 		else
@@ -831,13 +861,80 @@ public partial class Weapon : Node3D
 	/// </summary>
 	public void TrySpecial()
 	{
-		if (_cooldown > 0) return;
+		if (_cooldown > 0 || _charging) return;
 		if (!_form.IsWolf || !_form.CanAttack) return;
 
 		if (_body.IsOnFloor())
-			Pounce();
+			BeginCharge();
 		else
 			Leap();
+	}
+
+	// --- A carga do salto ---
+
+	private bool _charging;
+	private double _chargeTime;
+	private float _pounceRange;
+
+	/// <summary>Agachado carregando o salto (botão direito seguro no chão).</summary>
+	public bool IsChargingPounce => _charging && _form != null && _form.IsWolf;
+
+	/// <summary>Carga do salto, de 0 a 1. É o que a barra de força mostra.</summary>
+	public float PounceCharge => _charging ? Mathf.Clamp((float)(_chargeTime / PounceChargeTime), 0f, 1f) : 0f;
+
+	/// <summary>Começa a carregar: o lobo agacha (o começo do clipe do
+	/// salto) e fica preso até soltar.</summary>
+	private void BeginCharge()
+	{
+		_charging = true;
+		_chargeTime = 0;
+		_comboIndex = 0;
+		_attackQueued = false;
+		_rootLeft = 99;
+		_strikeLeft = 99;
+		_cooldown = 99;
+		_strikeId++;
+		EmitSignal(SignalName.WolfMoveStarted, (int)WolfMove.Pounce);
+	}
+
+	/// <summary>
+	/// O salto do bot: sem botão para segurar, ele já sabe a carga — a
+	/// que leva até o alvo, com o erro da dificuldade. Mesmo golpe do
+	/// jogador, do agachar à queda.
+	/// </summary>
+	public bool BotPounce(Node3D target, float power)
+	{
+		if (_cooldown > 0 || _charging || !_form.IsWolf || !_form.CanAttack || !_body.IsOnFloor()) return false;
+		BeginCharge();
+		_chargeTime = Mathf.Clamp(power, 0f, 1f) * PounceChargeTime;
+		ReleaseCharge();
+		if (target != null) _pounceTarget = target;
+		return true;
+	}
+
+	/// <summary>Carga para o salto chegar a <paramref name="distance"/>
+	/// metros (o ponto de queda fica a uma garra do alvo).</summary>
+	public float PounceChargeFor(float distance) =>
+		Mathf.Clamp((distance - ClawReach - PounceMinDistance) / Mathf.Max(PounceMaxDistance - PounceMinDistance, 0.1f), 0f, 1f);
+
+	/// <summary>Soltou o botão: salta com a carga que tiver.</summary>
+	public void ReleaseCharge()
+	{
+		if (!_charging) return;
+
+		float power = PounceCharge;
+		float crouch = WolfMoves.StepOf(WolfMove.Pounce).Delay;
+		float elapsed = Mathf.Min((float)_chargeTime, crouch);
+		_charging = false;
+		Pounce(power, elapsed);
+	}
+
+	private void CancelCharge()
+	{
+		_charging = false;
+		_rootLeft = 0;
+		_strikeLeft = 0;
+		_cooldown = 0;
 	}
 
 	/// <summary>
@@ -846,24 +943,29 @@ public partial class Weapon : Node3D
 	/// chão na animação, não no clique. É o golpe de quem deixou o lobo
 	/// chegar parado: forte, mas lento e fácil de ver vindo.
 	/// </summary>
-	private void Pounce()
+	/// <param name="power">A carga, de 0 a 1: alcance e dano.</param>
+	/// <param name="elapsed">Quanto do clipe já tocou agachando (o começo
+	/// dele corre durante a carga): o resto do golpe conta daqui.</param>
+	private void Pounce(float power, float elapsed)
 	{
 		_comboIndex = 0;
 		_attackQueued = false;
-		_rootLeft = WolfMoves.Duration(WolfMove.Pounce);
+		_rootLeft = WolfMoves.Duration(WolfMove.Pounce) - elapsed;
 		_pounceFlew = false;
+		float damage = HeavyDamageBonus * Mathf.Lerp(PounceMinPower, 1f, power);
 		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown,
-			() => Claw(HeavyDamageBonus, ClawReach, ClawRadius, false, _pounceFlew ? _flyDir : null));
+			() => Claw(damage, ClawReach, ClawRadius, false, _pounceFlew ? _flyDir : null), elapsed);
 
 		// O salto é um pulo de verdade: do impulso até os pés tocarem o
-		// chão, o corpo voa num arco até as garras caírem no alvo. O ponto
-		// é o do clique (decisão do Jhon): mexer a câmera ou segurar W
-		// durante o agachar não muda a distância.
+		// chão, o corpo voa num arco até as garras caírem no alvo. Até onde,
+		// diz a carga; o ponto mirado é o teto — para chegar no alvo é
+		// preciso carregar o bastante (decisão do Jhon). Mirado no soltar.
 		_pounceTarget = FindPounceTarget();
 		var (delay, duration, clipDistance) = WolfMoves.StepOf(WolfMove.Pounce);
 		var (aimDistance, aimDirection) = PounceAim(clipDistance);
-		_pounceAimPoint = _body.GlobalPosition + aimDirection * aimDistance;
-		After(delay, id, () => BeginPounceFlight(duration));
+		_pounceRange = Mathf.Lerp(PounceMinDistance, PounceMaxDistance, power);
+		_pounceAimPoint = _body.GlobalPosition + aimDirection * Mathf.Min(aimDistance, _pounceRange);
+		After(Mathf.Max(delay - elapsed, 0f), id, () => BeginPounceFlight(duration));
 	}
 
 	private Node3D _pounceTarget;
@@ -912,7 +1014,7 @@ public partial class Weapon : Node3D
 		float reach = to.Length();
 		if (reach < 0.01f) return;
 
-		Vector3 wanted = _flyStart + to / reach * Mathf.Clamp(reach - ClawReach, 0f, PounceMaxDistance);
+		Vector3 wanted = _flyStart + to / reach * Mathf.Clamp(reach - ClawReach, 0f, _pounceRange);
 		wanted.Y = end.Y;
 		end = end.MoveToward(wanted, PounceHoming * delta);
 
@@ -1325,19 +1427,21 @@ public partial class Weapon : Node3D
 	/// dela — golpe não corta golpe. O dano (<paramref name="impact"/>)
 	/// sai no instante em que a garra chega na animação, não no clique.
 	/// </summary>
-	private ulong StartMove(WolfMove move, int kind, float minCooldown, System.Action impact)
+	/// <param name="elapsed">Segundos do golpe que já tocaram (a carga do
+	/// salto): o clipe já começou, e o dano e o fim contam do resto.</param>
+	private ulong StartMove(WolfMove move, int kind, float minCooldown, System.Action impact, float elapsed = 0f)
 	{
-		float duration = WolfMoves.Duration(move);
+		float duration = WolfMoves.Duration(move) - elapsed;
 		float cooldown = Mathf.Max(duration, minCooldown);
 
 		_cooldown = cooldown;
 		_strikeLeft = duration;
 		ulong id = ++_strikeId;
 
-		EmitSignal(SignalName.WolfMoveStarted, (int)move);
+		if (elapsed <= 0f) EmitSignal(SignalName.WolfMoveStarted, (int)move);
 		EmitSignal(SignalName.AttackCooldown, kind, cooldown);
 
-		After(WolfMoves.ImpactDelay(move), id, () =>
+		After(Mathf.Max(WolfMoves.ImpactDelay(move) - elapsed, 0f), id, () =>
 		{
 			// O som do golpe sai junto com o golpe.
 			EmitSignal(SignalName.Fired);
@@ -1536,6 +1640,30 @@ public partial class Weapon : Node3D
 	/// apertar 4 joga na hora e volta para a arma anterior, em vez de
 	/// deixar voce segurando granada no meio de um tiroteio.
 	/// </summary>
+	/// <summary>Granada pronta na mão, esperando o botão soltar.</summary>
+	public bool IsGrenadeReady => _grenadeReady && HumanSlot == Slot.Grenade && !_form.IsWolf;
+	private bool _grenadeReady;
+
+	/// <summary>
+	/// Apertou o ataque com a granada: ela fica pronta na mão. Sai quando o
+	/// botão soltar (<see cref="ReleaseGrenade"/>), na direção da mira
+	/// daquele instante — dá para apontar com calma, mais alto para ir
+	/// mais longe. A física do arremesso é a mesma de sempre.
+	/// </summary>
+	private void PrepareGrenade()
+	{
+		if (_form.IsWolf || !_form.CanAttack || Grenades <= 0 || GrenadeScene == null || _cooldown > 0) return;
+		_grenadeReady = true;
+	}
+
+	/// <summary>Soltou o botão: arremessa a granada preparada.</summary>
+	public void ReleaseGrenade()
+	{
+		if (!_grenadeReady) return;
+		_grenadeReady = false;
+		if (HumanSlot == Slot.Grenade) ThrowGrenade();
+	}
+
 	private void ThrowGrenade()
 	{
 		if (_form.IsWolf || !_form.CanAttack)
@@ -1707,6 +1835,8 @@ public partial class Weapon : Node3D
 		_stepLeft = 0;
 		_diving = false;
 		_flying = false;
+		_charging = false;
+		_grenadeReady = false;
 		_attackQueued = false;
 		_pending.Clear();
 		if (IsReloading) CancelReload();

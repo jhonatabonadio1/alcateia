@@ -37,6 +37,21 @@ public partial class CharacterAnimator : Node3D
     [Export] public float WalkReference = 2.1f;
 
     /// <summary>
+    /// A passada de cada clipe, em m/s a 1× — medida no quadril do X Bot.
+    /// O ponto da mistura sai da velocidade por estes números, trecho a
+    /// trecho: a 1,0 m/s para a frente é a caminhada pura, a 3,0 a corrida
+    /// pura, e no meio a mistura anda o que o corpo anda. O clipe nunca
+    /// acelera (decisão do Jhon): quem acompanha as pernas é o corpo.
+    /// Antes a caminhada ficava em 2,1 m/s e a corrida em 4,2, e o pé
+    /// patinava o dobro na caminhada.
+    /// </summary>
+    [Export] public float WalkClip = 1.0f;
+    [Export] public float RunClip = 3.02f;
+    [Export] public float BackWalkClip = 1.1f;
+    [Export] public float BackRunClip = 2.59f;
+    [Export] public float StrafeClip = 1.03f;
+
+    /// <summary>
     /// Inverte o eixo lateral do espaço de mistura.
     ///
     /// Os clipes de strafe do Mixamo vieram com o nome trocado e
@@ -44,8 +59,11 @@ public partial class CharacterAnimator : Node3D
     /// que a medição não resolve é a conversão de eixo do importador,
     /// que pode espelhar Z. Se no jogo o strafe sair para o lado
     /// errado, é só marcar isto — os pares estão certos entre si.
+    ///
+    /// Marcado: medido no pé apoiado, sem isto o strafe tocava ao
+    /// contrário — o pé andava junto com o corpo, 4 m/s de patinada.
     /// </summary>
-    [Export] public bool InvertStrafe = false;
+    [Export] public bool InvertStrafe = true;
 
     /// <summary>Suavização da entrada do espaço de mistura. Sem ela a
     /// troca de direção pisca entre clipes.</summary>
@@ -947,9 +965,10 @@ public partial class CharacterAnimator : Node3D
         // trocaria a animação sem o personagem mudar de direção.
         Vector3 local = _body.GlobalTransform.Basis.Inverse() * _body.Velocity;
 
+        float ahead = -local.Z;
         var target = new Vector2(
-            local.X / Mathf.Max(WalkReference, 0.01f),
-            -local.Z / Mathf.Max(WalkReference, 0.01f));
+            local.X / Mathf.Max(StrafeClip, 0.01f),
+            ahead >= 0f ? Axis(ahead, WalkClip, RunClip) : -Axis(-ahead, BackWalkClip, BackRunClip));
 
         if (InvertStrafe) target.X = -target.X;
 
@@ -968,6 +987,14 @@ public partial class CharacterAnimator : Node3D
         Position = new Vector3(Position.X, BaseY, Position.Z);
 
         ReportState();
+    }
+
+    /// <summary>Velocidade para o raio da mistura: 0 parado, 1 na
+    /// caminhada, 2 na corrida, em linha reta entre os clipes.</summary>
+    private static float Axis(float speed, float walk, float run)
+    {
+        if (speed <= walk) return speed / Mathf.Max(walk, 0.01f);
+        return 1f + (speed - walk) / Mathf.Max(run - walk, 0.01f);
     }
 
     /// <summary>

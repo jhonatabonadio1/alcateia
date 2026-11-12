@@ -13,7 +13,10 @@ using Godot;
 /// </summary>
 public partial class Player : CharacterBody3D
 {
-    [Export] public float HumanSpeed = 4.2f;
+    /// <summary>A passada da corrida do humano (o "run_fwd" anda 3,0 m/s
+    /// a 1×): o corpo anda o que as pernas andam, sem acelerar o clipe
+    /// (decisão do Jhon). Era 4,2, e o pé patinava.</summary>
+    [Export] public float HumanSpeed = 3.0f;
     [Export] public float JumpVelocity = 4.4f;
 
     // --- Agachar: vale nas duas formas ---
@@ -359,6 +362,15 @@ public partial class Player : CharacterBody3D
 
         SetProcessInput(IsMultiplayerAuthority());
         ApplyCamera();
+
+        // Só do dono: o cartão de duelo e a marca nos inimigos são da tela
+        // de quem joga.
+        if (IsMultiplayerAuthority() && GetTree().CurrentScene is Node scene)
+        {
+            scene.CallDeferred(Node.MethodName.AddChild, new DuelCard { Name = "DuelCard" });
+            scene.CallDeferred(Node.MethodName.AddChild, new EnemyMarks { Name = "EnemyMarks" });
+            scene.CallDeferred(Node.MethodName.AddChild, new ChargeBar { Name = "ChargeBar" });
+        }
 
         if (IsMultiplayerAuthority() && !UiState.AnyOpen)
             Input.MouseMode = Input.MouseModeEnum.Captured;
@@ -910,12 +922,19 @@ public partial class Player : CharacterBody3D
         if (firing)
             _weapon.TryAttack();
 
+        // A granada sai quando o botão solta.
+        if (Input.IsActionJustReleased("attack"))
+            _weapon.ReleaseGrenade();
+
         // Botão direito: salto no chão, bote no ar. Quem move o corpo
         // durante os dois é o passo de física, pela arma.
         //
         // Pulo e especial no mesmo quadro: quem apertou os dois quer o
         // bote, não o salto do chão. O pulo sai agora e o bote no quadro
         // seguinte, já no ar.
+        //
+        // No chão, segurar carrega o salto e soltar salta (decisão do
+        // Jhon). Apertar e soltar no mesmo quadro é o salto mais curto.
         if (_diveAfterJump)
         {
             _diveAfterJump = false;
@@ -929,12 +948,15 @@ public partial class Player : CharacterBody3D
                 _weapon.TrySpecial();
         }
 
+        if (Input.IsActionJustReleased("special"))
+            _weapon.ReleaseCharge();
+
         // R faz o que a forma permite: ruge de lobo, recarrega de
         // humano. Uma tecla, um gesto, dois corpos.
         if (Input.IsActionJustPressed("howl") && !_form.IsWolf)
             _weapon.TryReload();
 
-        // B: solta a arma da mão para frente e passa para a próxima.
+        // G: solta a arma da mão para frente e passa para a próxima.
         if (Input.IsActionJustPressed("drop"))
             _weapon.TryDrop();
 
