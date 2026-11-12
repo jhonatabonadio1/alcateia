@@ -117,9 +117,9 @@ public static class WolfMoves
     /// chegar em <paramref name="eta"/> segundos — com 10% de folga, para
     /// a queda nunca acabar antes de o lobo encostar (o corpo voltaria à
     /// pose parada no ar). Encostou antes, a aterrissagem entra por cima.
-    /// O piso de 0,6 cobre o mergulho mais longo (0,9 s).</summary>
+    /// O piso de 0,45 cobre o mergulho mais longo (1,1 s).</summary>
     public static float DiveSpeed(float eta) =>
-        System.Math.Clamp(Clips["dive"].Length / (System.Math.Max(eta, 0.05f) * 1.1f), 0.6f, 4f);
+        System.Math.Clamp(Clips["dive"].Length / (System.Math.Max(eta, 0.05f) * 1.1f), 0.45f, 4f);
 
     /// <summary>Quanto o golpe dura na tela, em segundos. O próximo só
     /// sai depois disso: golpe não interrompe golpe.</summary>

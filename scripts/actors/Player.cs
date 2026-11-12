@@ -904,7 +904,7 @@ public partial class Player : CharacterBody3D
             if (_form.IsWolf && IsOnFloor() && Input.IsActionJustPressed("jump"))
                 _diveAfterJump = true;
             else
-                _weapon.TrySpecial(Input.IsActionPressed("move_forward"));
+                _weapon.TrySpecial();
         }
 
         // R faz o que a forma permite: ruge de lobo, recarrega de

@@ -111,8 +111,9 @@ public partial class Weapon : Node3D
 
 	/// <summary>Velocidade do mergulho, em m/s. Constante, em linha reta:
 	/// sem gravidade, sem freio e sem desvio no meio. O ponto de impacto
-	/// é escolhido no clique, e é isso que deixa o bote preciso.</summary>
-	[Export] public float DiveSpeed = 17f;
+	/// é escolhido no clique, e é isso que deixa o bote preciso. Era 17:
+	/// rápido demais para quem está embaixo ver o lobo chegando.</summary>
+	[Export] public float DiveSpeed = 13f;
 
 	/// <summary>Inclinação mínima para baixo do mergulho. Mirando reto ou
 	/// para cima, o bote ainda desce: é um ataque de cima para baixo, não
@@ -120,8 +121,9 @@ public partial class Weapon : Node3D
 	[Export] public float DiveMinDrop = 0.35f;
 
 	/// <summary>Teto do mergulho, em segundos. Mirou no vazio e não
-	/// encostou em nada: bate no ar e volta a cair.</summary>
-	[Export] public float DiveMaxTime = 0.9f;
+	/// encostou em nada: bate no ar e volta a cair. Com o mergulho mais
+	/// lento, 1,1 s mantém o alcance de antes (14 m).</summary>
+	[Export] public float DiveMaxTime = 1.1f;
 
 	/// <summary>Volume do bote: um pouco maior que o do salto e das
 	/// garras (<see cref="ClawReach"/>, <see cref="ClawRadius"/>). Cair
@@ -171,10 +173,6 @@ public partial class Weapon : Node3D
 	/// cima do humano. Ele cai com as garras no ponto da mira, até este
 	/// limite.</summary>
 	[Export] public float PounceMaxDistance = 12f;
-
-	/// <summary>Segurando W, o salto anda pelo menos isto, mesmo mirando
-	/// o chão perto: quem aperta para frente quer avançar.</summary>
-	[Export] public float PounceAdvanceMin = 6f;
 
 	/// <summary>O que o salto passa por cima, em metros acima dos pés: um
 	/// contêiner (2,2 m) passa; um bloco (5 m) ou o muro, não — o salto
@@ -823,15 +821,13 @@ public partial class Weapon : Node3D
 	/// lobo até o fim — o salto no lugar, o bote na trajetória — e o
 	/// dano dos dois sai quando o lobo de fato cai.
 	/// </summary>
-	/// <param name="advancing">O jogador está segurando para frente: o
-	/// salto no chão avança mesmo sem alvo.</param>
-	public void TrySpecial(bool advancing = false)
+	public void TrySpecial()
 	{
 		if (_cooldown > 0) return;
 		if (!_form.IsWolf || !_form.CanAttack) return;
 
 		if (_body.IsOnFloor())
-			Pounce(advancing);
+			Pounce();
 		else
 			Leap();
 	}
@@ -842,7 +838,7 @@ public partial class Weapon : Node3D
 	/// chão na animação, não no clique. É o golpe de quem deixou o lobo
 	/// chegar parado: forte, mas lento e fácil de ver vindo.
 	/// </summary>
-	private void Pounce(bool advancing)
+	private void Pounce()
 	{
 		_comboIndex = 0;
 		_attackQueued = false;
@@ -852,17 +848,18 @@ public partial class Weapon : Node3D
 			() => Claw(HeavyDamageBonus, ClawReach, ClawRadius, false, _pounceFlew ? _flyDir : null));
 
 		// O salto é um pulo de verdade: do impulso até os pés tocarem o
-		// chão, o corpo voa num arco até as garras caírem no alvo. O alvo é
-		// escolhido no clique; onde ele está é lido no impulso, 0,32 s
-		// depois.
+		// chão, o corpo voa num arco até as garras caírem no alvo. O ponto
+		// é o do clique (decisão do Jhon): mexer a câmera ou segurar W
+		// durante o agachar não muda a distância.
 		_pounceTarget = FindPounceTarget();
-		_pounceAdvance = advancing;
 		var (delay, duration, clipDistance) = WolfMoves.StepOf(WolfMove.Pounce);
-		After(delay, id, () => BeginPounceFlight(duration, clipDistance));
+		var (aimDistance, aimDirection) = PounceAim(clipDistance);
+		_pounceAimPoint = _body.GlobalPosition + aimDirection * aimDistance;
+		After(delay, id, () => BeginPounceFlight(duration));
 	}
 
 	private Node3D _pounceTarget;
-	private bool _pounceAdvance;
+	private Vector3 _pounceAimPoint;
 	private bool _pounceFlew;
 
 	// --- O voo do salto ---
@@ -917,13 +914,16 @@ public partial class Weapon : Node3D
 		if (_flyDistance > 0.01f) _flyDir = flat / _flyDistance;
 	}
 
-	private void BeginPounceFlight(float duration, float clipDistance)
+	private void BeginPounceFlight(float duration)
 	{
-		var (distance, direction) = PounceAim(clipDistance);
-
-		// Segurando W, avança mesmo mirando o chão perto.
-		if (_pounceAdvance && _pounceTarget == null)
-			distance = Mathf.Max(distance, Mathf.Min(PounceAdvanceMin, PounceMaxDistance));
+		// O ponto do clique, visto de onde o corpo está agora (no agachar ele
+		// ainda desliza um pouco). Alvo vivo é seguido no voo (HomePounce).
+		Vector3 to = _pounceAimPoint - _body.GlobalPosition;
+		to.Y = 0;
+		float distance = Mathf.Min(to.Length(), PounceMaxDistance);
+		Vector3 direction = to.Length() > 0.01f ? to.Normalized() : -_body.GlobalTransform.Basis.Z with { Y = 0 };
+		if (direction.LengthSquared() < 0.01f) direction = Vector3.Forward;
+		direction = direction.Normalized();
 
 		float wanted = distance;
 		PlanPounce(ref distance, direction, out float land, out float arc);
