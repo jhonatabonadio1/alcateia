@@ -573,6 +573,19 @@ noventa graus não contorna vinte e quatro metros de concreto.
 Perto do alvo o bot volta ao vetor direto — navegação ponto a ponto
 estraga strafe e recuo, que são movimentos curtos e intencionais.
 
+**Cobertura** — descoberta, não marcada. O bot testa posições num
+anel em volta e dispara um raio de cada candidato até o peito do
+alvo: linha bloqueada significa parede no meio, e parede no meio é
+cobertura.
+
+Isso funciona em qualquer geometria, inclusive num `.glb` que ninguém
+anotou — e é a razão de não existir marcação de cobertura no mapa.
+Vence o candidato mais perto: fugir para o outro lado do mapa não é
+se proteger, é desaparecer da luta.
+
+O lobo nunca procura parede. Esconder um corpo-a-corpo é desperdiçar
+o que ele é.
+
 **Percepção** — visão e audição são sentidos independentes que
 alimentam uma única crença: onde o alvo *provavelmente* está. Visão
 exige distância, ângulo e linha de visada. Audição dá posição com

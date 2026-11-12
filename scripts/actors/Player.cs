@@ -677,12 +677,23 @@ public partial class Player : CharacterBody3D
             // mesma altura logo após o salto e a parede vira elevador.
             if (_wallCooldown > 0) return false;
 
+            // Subindo ainda não gruda. Pular colado numa parede trava
+            // a altura em zero no frame seguinte, e o pulo morre antes
+            // de acontecer: o jogador aperta pular e só cola.
+            //
+            // A partir do ápice a parede pega, que é o gesto desejado —
+            // pular contra ela e segurar.
+            if (Velocity.Y > 0.5f) return false;
+
             if (!found)
             {
-                if (Velocity.Y <= 0)
-                    WallLog($"nenhuma a menos de {WallCheckDistance}m");
+                WallLog($"nenhuma a menos de {WallCheckDistance}m");
                 return false;
             }
+
+            // E não gruda rente ao chão: a essa altura é mais provável
+            // que o jogador tenha esbarrado do que escolhido subir.
+            if (IsNearFloor()) return false;
 
 
             // A mesma parede, sem ter tocado o chão, viraria elevador:
@@ -969,6 +980,18 @@ public partial class Player : CharacterBody3D
         }
 
         return any;
+    }
+
+    /// <summary>Chão a menos de um passo abaixo dos pés.</summary>
+    private bool IsNearFloor()
+    {
+        Vector3 origin = GlobalPosition;
+
+        var query = PhysicsRayQueryParameters3D.Create(
+            origin, origin + Vector3.Down * (_height * 0.5f + 0.35f));
+        query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+
+        return GetWorld3D().DirectSpaceState.IntersectRay(query).Count > 0;
     }
 
     /// <summary>Há obstáculo no caminho à frente, ao longo da parede?</summary>

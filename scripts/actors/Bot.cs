@@ -87,6 +87,23 @@ public partial class Bot : CharacterBody3D
     /// <summary>Tempo olhando em volta ao chegar no destino.</summary>
     [Export] public float ScanTime = 2.5f;
 
+    // --- Cobertura ---
+    //
+    // Nenhum ponto é marcado no mapa. O bot descobre parede testando:
+    // se de um ponto a linha até o alvo está bloqueada, aquele ponto é
+    // cobertura. Funciona em qualquer geometria, inclusive num .glb
+    // que ninguém anotou.
+
+    /// <summary>Quantas posições testar ao procurar parede.</summary>
+    [Export] public int CoverSamples = 12;
+
+    /// <summary>Até onde procurar.</summary>
+    [Export] public float CoverSearchRadius = 11f;
+
+    /// <summary>Distância mínima do alvo que uma cobertura precisa ter.
+    /// Parede colada no inimigo não protege de nada.</summary>
+    [Export] public float CoverMinDistance = 6f;
+
     // --- Patrulha ---
     //
     // Bot parado no spawn denuncia que é script. Andar sem rumo também
@@ -194,6 +211,8 @@ public partial class Bot : CharacterBody3D
 
     private Action<Noise> _ear;
     private NavigationAgent3D _nav;
+    private Vector3 _cover;
+    private bool _hasCover;
     private double _threatAge = 99;
     private double _beliefAge = 99;
     private double _brainTimer;
@@ -318,6 +337,10 @@ public partial class Bot : CharacterBody3D
                 RunRetreat(delta);
                 break;
 
+            case BotAction.TakeCover:
+                RunTakeCover(delta);
+                break;
+
             case BotAction.Investigate:
                 RunSearch(delta);
                 break;
@@ -355,6 +378,8 @@ public partial class Bot : CharacterBody3D
             ? _weapon.SecondaryAmmo
             : _weapon.PrimaryAmmo;
 
+        _hasCover = canSee && !_form.IsWolf && FindCover(out _cover);
+
         var context = new BotContext
         {
             HasTarget = _target != null,
@@ -370,7 +395,11 @@ public partial class Bot : CharacterBody3D
             BeliefAge = (float)_beliefAge,
             HasBelief = _hasBelief && _memoryTimer > 0,
             Aggression = Aggression,
-            PreferredRange = PreferredRange
+            PreferredRange = PreferredRange,
+            HasCover = _hasCover,
+
+            // Protegido agora: o alvo existe e não há linha até ele.
+            InCover = _target != null && !canSee && distance < SightRange
         };
 
         BotAction next = BotBrain.Choose(context, Action);
@@ -389,6 +418,89 @@ public partial class Bot : CharacterBody3D
     {
         MoveTowards(Vector3.Zero, Speed, delta);
         _health.RestoreShield(_health.MaxShield * (float)delta * 1.2f);
+    }
+
+    /// <summary>
+    /// Procura um ponto de onde o alvo não enxerga.
+    ///
+    /// Testa posições num anel em volta: de cada candidato, dispara um
+    /// raio até o peito do alvo. Bloqueado significa parede no meio, e
+    /// parede no meio é cobertura — sem precisar que alguém tenha
+    /// marcado nada no mapa.
+    ///
+    /// Vence o candidato mais perto do bot: fugir para o outro lado do
+    /// mapa não é se proteger, é desaparecer da luta.
+    /// </summary>
+    private bool FindCover(out Vector3 point)
+    {
+        point = Vector3.Zero;
+
+        if (_target == null) return false;
+
+        Vector3 chest = _target.GlobalPosition + Vector3.Up * 0.5f;
+        float best = float.MaxValue;
+        bool found = false;
+
+        for (int i = 0; i < CoverSamples; i++)
+        {
+            float angle = Mathf.Tau * i / CoverSamples;
+            float radius = CoverSearchRadius * (0.45f + 0.55f * ((i % 3) / 2f));
+
+            Vector3 candidate = GlobalPosition + new Vector3(
+                Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
+
+            if (candidate.DistanceTo(_target.GlobalPosition) < CoverMinDistance)
+                continue;
+
+            var query = PhysicsRayQueryParameters3D.Create(
+                candidate + Vector3.Up * 0.5f, chest);
+
+            var exclude = new Godot.Collections.Array<Rid> { GetRid() };
+
+            if (_target is CollisionObject3D body)
+                exclude.Add(body.GetRid());
+
+            query.Exclude = exclude;
+
+            // Linha livre significa que dali ainda se é visto.
+            if (GetWorld3D().DirectSpaceState.IntersectRay(query).Count == 0)
+                continue;
+
+            float distance = GlobalPosition.DistanceTo(candidate);
+            if (distance >= best) continue;
+
+            best = distance;
+            point = candidate;
+            found = true;
+        }
+
+        return found;
+    }
+
+    private void RunTakeCover(double delta)
+    {
+        if (!_hasCover)
+        {
+            RunCombat(delta);
+            return;
+        }
+
+        Vector3 step = PathTo(_cover);
+
+        // Chegou: encara o alvo esperando para sair de novo.
+        if (step == Vector3.Zero)
+        {
+            if (_target != null)
+                FaceDirection(_target.GlobalPosition, delta);
+
+            MoveTowards(Vector3.Zero, Speed, delta);
+            return;
+        }
+
+        if (_target != null)
+            FaceDirection(_target.GlobalPosition, delta);
+
+        MoveTowards(step, Speed, delta);
     }
 
     /// <summary>Recuar quebrando a linha de visão: afasta-se do alvo
@@ -900,6 +1012,7 @@ public partial class Bot : CharacterBody3D
         // Recarregando ou recuando não se atira. É o cérebro que
         // decide, e a ação em curso é a decisão.
         if (Action == BotAction.Reload || Action == BotAction.Retreat) return;
+        if (Action == BotAction.TakeCover) return;
 
         float reach = _form.IsWolf
             ? _form.Breed.AttackRange

@@ -11,7 +11,8 @@ public enum BotAction
     Transform,
     Revert,
     Howl,
-    Retreat
+    Retreat,
+    TakeCover
 }
 
 /// <summary>Fotografia do mundo no instante da decisão. O cérebro lê
@@ -32,6 +33,12 @@ public struct BotContext
     public bool HasBelief;
     public float Aggression;
     public float PreferredRange;
+
+    /// <summary>Existe um ponto por trás de parede, alcançável.</summary>
+    public bool HasCover;
+
+    /// <summary>A linha de visão do alvo até aqui está bloqueada.</summary>
+    public bool InCover;
 }
 
 /// <summary>
@@ -95,6 +102,7 @@ public static class BotBrain
         BotAction.Revert => Revert(c),
         BotAction.Howl => Howl(c),
         BotAction.Retreat => Retreat(c),
+        BotAction.TakeCover => TakeCover(c),
         _ => 0f
     };
 
@@ -172,7 +180,9 @@ public static class BotBrain
         if (c.MagEmpty) return 0.95f;
 
         float safe = Utility.Normalize(c.ThreatAge, 1.5f, 4f);
-        float hidden = c.CanSee ? 0.25f : 1f;
+
+        // Atrás de parede recarregar é natural; exposto, é desespero.
+        float hidden = c.InCover ? 1f : c.CanSee ? 0.25f : 1f;
 
         return Utility.Compensate(0.7f * Utility.Quadratic(need) * safe * hidden, 4);
     }
@@ -214,11 +224,42 @@ public static class BotBrain
         return Utility.Compensate(0.8f * Utility.Quadratic(empty) * safe, 3);
     }
 
+    /// <summary>
+    /// Procurar parede.
+    ///
+    /// Vale quando há razão para sair da linha de tiro e ainda não se
+    /// está protegido: machucado, ou precisando recarregar sob fogo.
+    /// Não vale de lobo — a forma não tem o que fazer atrás de parede,
+    /// e esconder um corpo-a-corpo é desperdiçar o que ele é.
+    ///
+    /// A nota cai a zero já protegido. Sem isso o bot fica trocando de
+    /// esconderijo em vez de aproveitar o que achou.
+    /// </summary>
+    private static float TakeCover(in BotContext c)
+    {
+        if (c.IsWolf || !c.HasCover || c.InCover) return 0f;
+        if (!c.CanSee) return 0f;
+
+        float hurt = 1f - Utility.Normalize(c.HealthRatio, 0.2f, 0.75f);
+        float dry = 1f - c.AmmoRatio;
+        float pressed = 1f - Utility.Normalize(c.ThreatAge, 0f, 3f);
+
+        // Qualquer um dos três motivos basta, então somam-se antes de
+        // multiplicar pelo resto: usar produto aqui exigiria estar
+        // ferido E sem munição E sob fogo ao mesmo tempo.
+        float reason = Mathf.Clamp(hurt + dry * 0.8f + pressed * 0.6f, 0f, 1f);
+
+        return Utility.Compensate(0.8f * reason, 2);
+    }
+
     /// <summary>Quebrar a linha de visão quando não há mais o que
     /// fazer: vida baixa, sem lobo disponível.</summary>
     private static float Retreat(in BotContext c)
     {
         if (!c.CanSee || c.IsWolf || c.CanTransform) return 0f;
+
+        // Com parede por perto, esconder é melhor que correr no aberto.
+        if (c.HasCover && !c.InCover) return 0f;
 
         float desperate = 1f - Utility.Normalize(c.HealthRatio, 0.1f, 0.35f);
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.18.0 — 2026-11-11
+
+### Adicionado
+- **Cobertura nos bots**: ação `TakeCover` que procura, por raycast,
+  um ponto de onde o alvo não enxerga. Nada é marcado no mapa, então
+  funciona em qualquer geometria. Recarregar atrás de parede passa a
+  valer mais que recarregar exposto.
+
+### Corrigido
+- **Lobo colado na parede não conseguia pular**: a corrida grudava no
+  frame seguinte ao salto e travava a altura em zero, matando o pulo.
+  Agora só gruda a partir do ápice e não gruda rente ao chão.
+- Cartão de lote é clicável inteiro; o botão interno saiu.
+
 ## v0.17.1 — 2026-11-11
 
 ### Corrigido

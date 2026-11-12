@@ -211,21 +211,30 @@ public partial class LoadoutMenu : CanvasLayer
         bool grants = loadout.WpCost < 0;
         bool affordable = grants || _form.Wp >= loadout.WpCost;
 
-        var panel = new PanelContainer { CustomMinimumSize = new Vector2(230, 150) };
-
-        var style = new StyleBoxFlat
+        // O cartão inteiro é o botão. Um botão dentro do cartão
+        // cria um alvo pequeno dentro de um alvo grande, e o jogador
+        // clica no cartão esperando que funcione.
+        var panel = new Button
         {
-            BgColor = new Color(0.06f, 0.06f, 0.07f, 0.92f),
-            BorderColor = affordable
-                ? new Color(0.85f, 0.65f, 0.25f)
-                : new Color(0.3f, 0.3f, 0.32f),
-            ContentMarginLeft = 12, ContentMarginRight = 12,
-            ContentMarginTop = 10, ContentMarginBottom = 10
+            CustomMinimumSize = new Vector2(230, 150),
+            Disabled = !affordable,
+            Text = ""
         };
-        style.SetBorderWidthAll(1);
-        panel.AddThemeStyleboxOverride("panel", style);
 
-        var box = new VBoxContainer();
+        panel.AddThemeStyleboxOverride("normal", CardStyle(affordable, false));
+        panel.AddThemeStyleboxOverride("hover", CardStyle(affordable, true));
+        panel.AddThemeStyleboxOverride("pressed", CardStyle(affordable, true));
+        panel.AddThemeStyleboxOverride("disabled", CardStyle(false, false));
+        panel.AddThemeStyleboxOverride("focus", CardStyle(affordable, false));
+
+        panel.Pressed += () => Choose(loadout);
+
+        // O conteúdo não intercepta o clique: quem recebe é o cartão.
+        var box = new VBoxContainer
+        {
+            AnchorRight = 1f, AnchorBottom = 1f,
+            MouseFilter = Control.MouseFilterEnum.Ignore
+        };
         panel.AddChild(box);
 
         var head = new HBoxContainer();
@@ -234,6 +243,7 @@ public partial class LoadoutMenu : CanvasLayer
         var name = new Label
         {
             Text = loadout.DisplayName,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
             SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
             Modulate = affordable ? Colors.White : new Color(1, 1, 1, 0.4f)
         };
@@ -242,6 +252,7 @@ public partial class LoadoutMenu : CanvasLayer
 
         var cost = new Label
         {
+            MouseFilter = Control.MouseFilterEnum.Ignore,
             Text = grants ? $"+{-loadout.WpCost}" : $"{loadout.WpCost}",
             Modulate = grants
                 ? new Color(0.45f, 0.95f, 0.45f)
@@ -254,20 +265,43 @@ public partial class LoadoutMenu : CanvasLayer
 
         var detail = new Label
         {
+            MouseFilter = Control.MouseFilterEnum.Ignore,
             Text = $"{loadout.PrimaryName}\n{loadout.SecondaryName}\nFACA\n{loadout.Grenades} GRANADAS",
             Modulate = new Color(1, 1, 1, affordable ? 0.75f : 0.35f)
         };
         detail.AddThemeFontSizeOverride("font_size", 12);
         box.AddChild(detail);
 
-        var button = new Button
+        if (!affordable)
         {
-            Text = affordable ? "ESCOLHER" : "SEM WP",
-            Disabled = !affordable
-        };
-        button.Pressed += () => Choose(loadout);
-        box.AddChild(button);
+            var warn = new Label
+            {
+                Text = "SEM WP",
+                Modulate = new Color(0.9f, 0.35f, 0.3f),
+                MouseFilter = Control.MouseFilterEnum.Ignore
+            };
+            warn.AddThemeFontSizeOverride("font_size", 12);
+            box.AddChild(warn);
+        }
 
         return panel;
+    }
+
+    private StyleBoxFlat CardStyle(bool affordable, bool hover)
+    {
+        var style = new StyleBoxFlat
+        {
+            BgColor = hover
+                ? new Color(0.13f, 0.13f, 0.15f, 0.96f)
+                : new Color(0.06f, 0.06f, 0.07f, 0.92f),
+            BorderColor = affordable
+                ? new Color(0.85f, 0.65f, 0.25f, hover ? 1f : 0.75f)
+                : new Color(0.3f, 0.3f, 0.32f),
+            ContentMarginLeft = 12, ContentMarginRight = 12,
+            ContentMarginTop = 10, ContentMarginBottom = 10
+        };
+
+        style.SetBorderWidthAll(hover ? 2 : 1);
+        return style;
     }
 }
