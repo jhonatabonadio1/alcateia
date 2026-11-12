@@ -3,8 +3,9 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Câmera de morte: quem te matou fica com a **silhueta vermelha** — só
-/// para você, vista através das paredes — e a câmera vira para ele
-/// (decisão do Jhon). Dura até você renascer.
+/// para você, vista através das paredes — e a câmera vira para ele, com
+/// um cartão sobre ele com a patente e o nome (decisão do Jhon). Dura até
+/// você renascer.
 ///
 /// A silhueta é um <see cref="GeometryInstance3D.MaterialOverlay"/> nas
 /// malhas do matador: uma segunda passada vermelha, sem teste de
@@ -30,7 +31,8 @@ public partial class KillCam : Node3D
     private double _remark;
     private readonly Dictionary<GeometryInstance3D, Material> _marked = new();
 
-    private static ShaderMaterial _silhouette;
+    private CanvasLayer _tagLayer;
+    private Control _tag;
 
     public static KillCam Begin(Node parent, Node3D victim, Node3D killer, Camera3D current)
     {
@@ -54,6 +56,42 @@ public partial class KillCam : Node3D
         _camera.GlobalTransform = _from;
         _camera.MakeCurrent();
         Mark();
+        BuildTag();
+    }
+
+    /// <summary>O cartão sobre o matador: patente e nome.</summary>
+    private void BuildTag()
+    {
+        if (_killer?.GetNodeOrNull<Health>("Health") is not Health health) return;
+
+        _tagLayer = new CanvasLayer { Layer = 8 };
+        AddChild(_tagLayer);
+
+        var panel = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        panel.AddThemeStyleboxOverride("panel", UiTheme.Box(new Color(UiTokens.Bg, 0.85f), new Color(UiTokens.Danger, 0.8f), 1, 0, UiTokens.S2, UiTokens.S1));
+        HBoxContainer row = UiKit.Row(UiTokens.S2);
+        panel.AddChild(row);
+        row.AddChild(RankBadge.Make(DuelCard.RankOf(health.PublicName, false), 26));
+        VBoxContainer text = UiKit.Column(0);
+        text.AddChild(UiKit.Text(health.PublicName, null, UiTokens.Danger));
+        text.AddChild(UiKit.Caption(Ranks.NameOf(DuelCard.RankOf(health.PublicName, false))));
+        row.AddChild(text);
+
+        _tag = UiTheme.Apply(panel);
+        _tag.Visible = false;
+        _tagLayer.AddChild(_tag);
+    }
+
+    private void PlaceTag()
+    {
+        if (_tag == null) return;
+        Vector3 head = _killer.GlobalPosition + Vector3.Up * 1.4f;
+        bool shown = _time >= Hold && !_camera.IsPositionBehind(head);
+        _tag.Visible = shown;
+        if (!shown) return;
+
+        Vector2 at = _camera.UnprojectPosition(head);
+        _tag.Position = at - new Vector2(_tag.Size.X * 0.5f, _tag.Size.Y + 8f);
     }
 
     public override void _Process(double delta)
@@ -67,6 +105,7 @@ public partial class KillCam : Node3D
         _remark -= delta;
         if (_remark <= 0) { _remark = 0.5; Mark(); }
 
+        PlaceTag();
         if (_time < Hold) return;
 
         float weight = Mathf.Min(1f, (float)delta * TurnRate);
@@ -125,31 +164,7 @@ public partial class KillCam : Node3D
         {
             if (node is not MeshInstance3D mesh || _marked.ContainsKey(mesh)) continue;
             _marked[mesh] = mesh.MaterialOverlay;
-            mesh.MaterialOverlay = Silhouette();
+            mesh.MaterialOverlay = Silhouette.Killer;
         }
-    }
-
-    private static ShaderMaterial Silhouette()
-    {
-        if (_silhouette != null) return _silhouette;
-
-        var shader = new Shader
-        {
-            Code = """
-                shader_type spatial;
-                render_mode unshaded, depth_test_disabled, depth_draw_never, cull_back, blend_mix;
-
-                uniform vec4 color : source_color = vec4(1.0, 0.08, 0.05, 1.0);
-
-                void fragment() {
-                    float rim = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
-                    ALBEDO = color.rgb;
-                    ALPHA = 0.28 + 0.6 * rim * rim;
-                }
-                """
-        };
-
-        _silhouette = new ShaderMaterial { Shader = shader, RenderPriority = 10 };
-        return _silhouette;
     }
 }
