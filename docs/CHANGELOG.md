@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.13.1 — 2026-11-11
+
+### Alterado
+- O golpe especial do lobo passa a ser uma **investida**: ao apertar,
+  ele despenca na direção em que olha enquanto dá as duas patadas.
+
+### Adicionado
+- **Braços e garras do lobo** presos ao corpo, visíveis em terceira
+  pessoa e para os outros jogadores, com balanço ao correr e abertura
+  no golpe.
+
 ## v0.13.0 — 2026-11-11
 
 ### Adicionado

@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/actors/Bot.cs" id="1_bot"]
 [ext_resource type="Script" path="res://scripts/combat/Health.cs" id="2_health"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/combat/Weapon.cs" id="4_weapon"]
 [ext_resource type="Resource" path="res://resources/breeds/bruto.tres" id="5_breed"]
 [ext_resource type="Script" path="res://scripts/ui/HealthBar3D.cs" id="6_bar"]
+[ext_resource type="Script" path="res://scripts/ui/WolfVisual.cs" id="8_wolf"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_bot"]
 radius = 0.3
@@ -27,6 +28,9 @@ shape = SubResource("CapsuleShape3D_bot")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("CapsuleMesh_bot")
 material_override = SubResource("Material_bot")
+
+[node name="WolfVisual" type="Node3D" parent="."]
+script = ExtResource("8_wolf")
 
 [node name="Head" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)

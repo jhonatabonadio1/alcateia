@@ -390,10 +390,22 @@ Clique esquerdo: uma patada por clique, nunca automático.
 gente, não para duelar com outro lobo — sem isso, o encontro entre
 dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
 
-**Botão direito no ar: patada dupla.** Dois golpes em sequência, 1,45×
-de dano e cooldown quase o dobro. A condição de estar no ar não é
-decoração: amarra o golpe mais forte do lobo ao salto, que é a jogada
-que o jogo quer premiar. Errar no ar custa o dobro do tempo.
+**Botão direito no ar: investida.** O lobo despenca na direção em que
+olha e dá duas patadas em sequência, com 1,45× de dano e cooldown
+quase o dobro.
+
+O mergulho é o que transforma o golpe numa investida em vez de dois
+golpes dados no ar — e é também o compromisso: o jogador escolhe o
+ponto de impacto no clique e não controla mais nada até aterrissar.
+
+A condição de estar no ar amarra o golpe mais forte do lobo ao salto,
+que é a jogada que o jogo quer premiar. Errar custa o dobro do tempo.
+
+**Os braços do lobo ficam no corpo, não na câmera.** A forma é em
+terceira pessoa: o dono precisa ver os próprios braços e os outros
+precisam reconhecer a silhueta de longe. Numa luta rápida ninguém lê
+textura — o que separa um lobo de um humano a trinta metros é o
+contorno.
 
 ### O escudo do lobo
 

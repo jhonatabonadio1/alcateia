@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/actors/Player.cs" id="1_player"]
 [ext_resource type="Script" path="res://scripts/combat/Health.cs" id="2_health"]
@@ -7,6 +7,7 @@
 [ext_resource type="Resource" path="res://resources/breeds/bruto.tres" id="5_breed"]
 [ext_resource type="Script" path="res://scripts/ui/ViewModel.cs" id="7_view"]
 [ext_resource type="PackedScene" path="res://scenes/grenade.tscn" id="6_grenade"]
+[ext_resource type="Script" path="res://scripts/ui/WolfVisual.cs" id="8_wolf"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.3
@@ -24,6 +25,9 @@ shape = SubResource("CapsuleShape3D_body")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("CapsuleMesh_body")
+
+[node name="WolfVisual" type="Node3D" parent="."]
+script = ExtResource("8_wolf")
 
 [node name="Head" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)

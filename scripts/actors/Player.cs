@@ -48,6 +48,12 @@ public partial class Player : CharacterBody3D
     /// o lobo é puro movimento e não teria por que abrir mão disso.</summary>
     [Export] public float WalkSpeedFactor = 0.42f;
 
+    /// <summary>Velocidade de mergulho do golpe especial do lobo.</summary>
+    [Export] public float DiveSpeed = 14f;
+
+    /// <summary>Avanço na direção do olhar durante o mergulho.</summary>
+    [Export] public float DiveForward = 7f;
+
     /// <summary>Recuo vertical da câmera por disparo, em graus.</summary>
     [Export] public float CameraKick = 0.9f;
 
@@ -250,6 +256,26 @@ public partial class Player : CharacterBody3D
 
     /// <summary>Recuo de câmera: o cano sobe a cada tiro e volta
     /// sozinho. Sem isso, atirar não tem peso nenhum.</summary>
+    /// <summary>
+    /// Mergulho do golpe especial: o lobo despenca na direção em que
+    /// olha. É o que transforma a patada dupla numa investida em vez
+    /// de dois golpes dados no ar.
+    ///
+    /// Também é o compromisso: você escolhe o ponto de impacto no
+    /// momento do clique e não controla mais nada até aterrissar.
+    /// </summary>
+    private void Dive()
+    {
+        Vector3 look = -_head.GlobalTransform.Basis.Z;
+        Vector3 flat = new Vector3(look.X, 0, look.Z).Normalized();
+
+        Vector3 velocity = flat * DiveForward;
+        velocity.Y = -DiveSpeed;
+
+        Velocity = velocity;
+        ReleaseWall();
+    }
+
     private void OnWeaponFired()
     {
         if (_form.IsWolf) return;
@@ -521,8 +547,8 @@ public partial class Player : CharacterBody3D
             _weapon.TryAttack();
 
         // Patada dupla: só de lobo e só no ar.
-        if (Input.IsActionJustPressed("special"))
-            _weapon.TrySpecial();
+        if (Input.IsActionJustPressed("special") && _weapon.TrySpecial())
+            Dive();
 
         UpdateHowl(delta);
     }

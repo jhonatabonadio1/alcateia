@@ -282,13 +282,14 @@ public partial class Weapon : Node3D
 	/// A condição de estar no ar não é decoração: amarra o golpe mais
 	/// forte do lobo ao salto, que é a jogada que o jogo quer premiar.
 	/// </summary>
-	public void TrySpecial()
+	public bool TrySpecial()
 	{
-		if (_cooldown > 0) return;
-		if (!_form.IsWolf || !_form.CanAttack) return;
-		if (_body.IsOnFloor()) return;
+		if (_cooldown > 0) return false;
+		if (!_form.IsWolf || !_form.CanAttack) return false;
+		if (_body.IsOnFloor()) return false;
 
 		WolfAttack(true);
+		return true;
 	}
 
 	private void WolfAttack(bool special = false)
