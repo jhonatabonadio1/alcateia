@@ -186,6 +186,7 @@ public partial class Player : CharacterBody3D
         _springArm.AddExcludedObject(GetRid());
 
         _form.FormChanged += OnFormChanged;
+        _health.Respawned += OnRespawned;
 
         SetProcessInput(IsMultiplayerAuthority());
         ApplyCamera();
@@ -195,6 +196,19 @@ public partial class Player : CharacterBody3D
     }
 
     private void OnFormChanged(int form) => ApplyCamera();
+
+    /// <summary>Reviver no lugar onde se morreu devolve o jogador para
+    /// dentro do tiroteio que o matou. Volta ao spawn.</summary>
+    private void OnRespawned()
+    {
+        GlobalPosition = _spawn;
+        Velocity = Vector3.Zero;
+
+        ReleaseWall();
+        _wallSpent = false;
+        _stunTimer = 0;
+        _stunSlow = 1f;
+    }
 
     private void ApplyCamera()
     {

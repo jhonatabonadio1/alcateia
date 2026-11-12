@@ -13,9 +13,14 @@ public partial class Health : Node
 {
     [Signal] public delegate void ChangedEventHandler(float hp, float maxHp, float shield);
     [Signal] public delegate void DiedEventHandler(int killerId);
+    [Signal] public delegate void RespawnedEventHandler();
 
     [Export] public float MaxHp = 200f;
     [Export] public float RespawnDelay = 3f;
+
+    /// <summary>Segundos restantes até reviver. O HUD mostra isto —
+    /// morrer sem aviso na tela é indistinguível de travar.</summary>
+    public float RespawnIn => (float)Mathf.Max(_respawnTimer, 0);
 
     public float Hp { get; private set; }
     public float MaxShield { get; private set; }
@@ -122,6 +127,8 @@ public partial class Health : Node
         IsDead = false;
         Hp = MaxHp;
         Shield = MaxShield;
+
+        EmitSignal(SignalName.Respawned);
         EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
     }
 }

@@ -347,6 +347,14 @@ errado.
 Rajada e pausa existem para dar ao jogador janela de reagir e para
 deixar claro de onde vem o tiro. Fogo contínuo esconde as duas coisas.
 
+### Todo estado do jogador precisa aparecer na tela
+
+Morrer sem aviso é indistinguível de travar — o jogador relatou
+"fiquei congelado" quando na verdade estava morto e esperando os 3
+segundos de respawn. O mesmo vale para WP insuficiente, atordoamento
+e granadas acabando. Se um estado muda o que o jogador pode fazer,
+ele precisa estar visível.
+
 Todo disparo deixa traçante. Sem retorno visual o bot parecia
 inofensivo enquanto acertava — não havia como distinguir "não atirou"
 de "atirou e eu não vi".

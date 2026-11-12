@@ -29,6 +29,7 @@ public partial class Hud : CanvasLayer
     private Label _slotLabel;
     private Label _grenadeLabel;
     private Label _warning;
+    private Label _death;
 
     private double _warningTimer;
 
@@ -57,6 +58,8 @@ public partial class Hud : CanvasLayer
         Build();
 
         _health.Changed += OnHealthChanged;
+        _health.Died += OnDied;
+        _health.Respawned += OnRespawned;
         _form.WpChanged += OnWpChanged;
         _form.FormChanged += OnFormChanged;
         _form.TransformDenied += OnTransformDenied;
@@ -85,6 +88,9 @@ public partial class Hud : CanvasLayer
 
     public override void _Process(double delta)
     {
+        if (_death != null && _health != null && _health.IsDead)
+            _death.Text = $"ABATIDO\nvolta em {_health.RespawnIn:0.0}s";
+
         if (_warningTimer <= 0) return;
 
         _warningTimer -= delta;
@@ -121,6 +127,20 @@ public partial class Hud : CanvasLayer
             Modulate = new Color(1, 1, 1, 0.75f)
         };
         AddChild(_grenadeLabel);
+
+        _death = new Label
+        {
+            AnchorLeft = 0.5f,
+            AnchorRight = 0.5f,
+            AnchorTop = 0.42f,
+            AnchorBottom = 0.42f,
+            GrowHorizontal = Control.GrowDirection.Both,
+            Modulate = new Color(1f, 0.3f, 0.25f),
+            Text = "",
+            Visible = false
+        };
+        _death.AddThemeFontSizeOverride("font_size", 30);
+        AddChild(_death);
 
         _warning = new Label
         {
@@ -223,6 +243,23 @@ public partial class Hud : CanvasLayer
             Slot.Grenade => "4 · GRANADA",
             _ => ""
         };
+    }
+
+    private void OnDied(int killerId)
+    {
+        if (_death == null) return;
+
+        _death.Visible = true;
+        _warning.Text = "";
+        _warningTimer = 0;
+    }
+
+    private void OnRespawned()
+    {
+        if (_death == null) return;
+
+        _death.Visible = false;
+        _death.Text = "";
     }
 
     private void OnGrenadesChanged(int left)

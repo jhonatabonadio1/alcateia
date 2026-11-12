@@ -105,6 +105,7 @@ public partial class Bot : CharacterBody3D
         _spawn = GlobalPosition;
 
         _health.Died += OnDied;
+        _health.Respawned += OnRespawned;
 
         // O bot é dono de si: sem isto o Weapon e o FormController
         // rejeitariam os comandos num jogo em rede.
@@ -381,8 +382,18 @@ public partial class Bot : CharacterBody3D
     {
         if (Debug) GD.Print($"{Name} morreu");
 
+        _memoryTimer = 0;
+    }
+
+    /// <summary>Só volta ao spawn ao reviver, não ao morrer: o corpo
+    /// precisa ficar onde caiu durante a contagem.</summary>
+    private void OnRespawned()
+    {
         GlobalPosition = _spawn;
         Velocity = Vector3.Zero;
         _memoryTimer = 0;
+
+        if (_form.IsWolf)
+            _weapon.SelectSlot(Slot.Primary);
     }
 }

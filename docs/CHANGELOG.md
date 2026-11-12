@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.7.2 — 2026-11-11
+
+### Corrigido
+- Morrer era indistinguível de travar: a tela não dizia nada, o
+  controle parava e o jogador revivia no mesmo lugar 3 segundos
+  depois. Agora o HUD mostra "ABATIDO" com a contagem.
+- Reviver devolvia o jogador exatamente de onde ele tinha sido morto,
+  ou seja, de volta ao tiroteio e ao mesmo bot. Jogador e bot voltam
+  ao ponto de origem.
+- Bot que morria como lobo revivia como lobo. Volta a humano ao
+  renascer.
+
+### Adicionado
+- Sinal `Respawned` em `Health`.
+
 ## v0.7.1 — 2026-11-11
 
 ### Corrigido
