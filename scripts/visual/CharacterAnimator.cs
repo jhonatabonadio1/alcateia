@@ -141,6 +141,24 @@ public partial class CharacterAnimator : Node3D
     /// </summary>
     [Export] public float HitCooldown = 1.6f;
 
+    /// <summary>
+    /// Corte do clipe de andar agachado, em segundos. Zero não corta.
+    ///
+    /// O Mixamo não deu um ciclo de andar agachado: deu uma transição
+    /// que levanta e outra que ajoelha. A segunda anda agachada por
+    /// 1,7 s antes de ajoelhar — medi o quadril no arquivo, ele
+    /// oscila entre 79 e 83 cm até lá e depois despenca para 33.
+    ///
+    /// Cortar em 1,65 s deixa só o trecho andando, que fecha em laço
+    /// porque começa e termina na mesma altura. É remendo até aparecer
+    /// um "Crouched Walking" de verdade, e o remendo está aqui em vez
+    /// de no arquivo para que trocar o arquivo baste.
+    /// </summary>
+    [Export] public float CrouchWalkTrim = 1.65f;
+
+    /// <summary>Velocidade em que o agachado está andando a pleno.</summary>
+    [Export] public float CrouchWalkSpeed = 1.9f;
+
     [Export] public bool Debug = true;
 
     /// <summary>Arquivo do clipe, e o nome com que ele entra na
@@ -192,6 +210,7 @@ public partial class CharacterAnimator : Node3D
     private bool _hasDeath;
     private bool _airborne;
     private bool _crouched;
+    private float _crouchBlend;
     private double _hitTimer;
     private string _lastState = "";
     private static bool _reported;
@@ -311,6 +330,10 @@ public partial class CharacterAnimator : Node3D
                 StripRootMotion(animation);
 
                 // Locomoção precisa repetir; golpe e morte, não.
+                if (clip == "crouch_walk" && CrouchWalkTrim > 0
+                    && animation.Length > CrouchWalkTrim)
+                    animation.Length = CrouchWalkTrim;
+
                 animation.LoopMode = IsLooping(clip)
                     ? Animation.LoopModeEnum.Linear
                     : Animation.LoopModeEnum.None;
@@ -515,7 +538,7 @@ public partial class CharacterAnimator : Node3D
         var machine = new AnimationNodeStateMachine();
         machine.AddNode("Locomotion", locomotion, new Vector2(300, 100));
 
-        Single(machine, "Crouch", "crouch_idle", new Vector2(300, 240));
+        AddCrouch(machine);
         Single(machine, "Jump", "jump", new Vector2(520, -20));
         Single(machine, "Fall", "fall", new Vector2(720, 40));
         Single(machine, "Land", "land", new Vector2(720, 150));
@@ -568,6 +591,41 @@ public partial class CharacterAnimator : Node3D
         space.AddBlendPoint(
             new AnimationNodeAnimation { Animation = $"alcateia/{clip}" },
             new Vector2(x, y));
+    }
+
+    /// <summary>
+    /// Agachado: parado e andando na mesma mistura.
+    ///
+    /// Vira estado único com mistura interna, e não dois estados, pelo
+    /// mesmo motivo da locomoção — transição entre estados tem tempo
+    /// de cruzamento, e começar a andar agachado não é um evento, é um
+    /// contínuo. Sem o clipe de andar, sobra o parado e o estado
+    /// continua valendo.
+    /// </summary>
+    private void AddCrouch(AnimationNodeStateMachine machine)
+    {
+        bool hasIdle = _player.HasAnimation("alcateia/crouch_idle");
+        bool hasWalk = _player.HasAnimation("alcateia/crouch_walk");
+
+        if (!hasIdle && !hasWalk) return;
+
+        if (!hasWalk)
+        {
+            Single(machine, "Crouch", "crouch_idle", new Vector2(300, 240));
+            return;
+        }
+
+        var crouch = new AnimationNodeBlendSpace1D { MinSpace = 0f, MaxSpace = 1f };
+        crouch.Set("sync", true);
+
+        if (hasIdle)
+            crouch.AddBlendPoint(
+                new AnimationNodeAnimation { Animation = "alcateia/crouch_idle" }, 0f);
+
+        crouch.AddBlendPoint(
+            new AnimationNodeAnimation { Animation = "alcateia/crouch_walk" }, 1f);
+
+        machine.AddNode("Crouch", crouch, new Vector2(300, 240));
     }
 
     private void Single(AnimationNodeStateMachine machine, string state,
@@ -636,6 +694,7 @@ public partial class CharacterAnimator : Node3D
 
         UpdateAir(delta);
         UpdateStance();
+        UpdateCrouchBlend(delta);
 
         Position = new Vector3(Position.X, BaseY, Position.Z);
 
@@ -659,6 +718,18 @@ public partial class CharacterAnimator : Node3D
 
         _crouched = crouching;
         _playback?.Travel(crouching ? "Crouch" : "Locomotion");
+    }
+
+    /// <summary>Velocidade do agachado, de parado a andando.</summary>
+    private void UpdateCrouchBlend(double delta)
+    {
+        if (!_crouched) return;
+
+        Vector3 flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
+        float target = Mathf.Clamp(flat.Length() / Mathf.Max(CrouchWalkSpeed, 0.01f), 0f, 1f);
+
+        _crouchBlend = Mathf.MoveToward(_crouchBlend, target, 4f * (float)delta);
+        _tree.Set("parameters/Crouch/blend_position", _crouchBlend);
     }
 
     /// <summary>
