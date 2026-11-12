@@ -74,6 +74,8 @@ public static class Difficulty
                 bot.StrafeFactor = 0.5f;
                 bot.StrafeInterval = 2.2f;
                 bot.PreferredRange = 14f;
+                bot.PatrolSpeedFactor = 0.45f;
+                bot.PatrolPause = 2.2f;
                 break;
 
             case BotLevel.Medium:
@@ -99,6 +101,8 @@ public static class Difficulty
                 bot.StrafeFactor = 0.8f;
                 bot.StrafeInterval = 1.4f;
                 bot.PreferredRange = 12f;
+                bot.PatrolSpeedFactor = 0.55f;
+                bot.PatrolPause = 1.5f;
                 break;
 
             case BotLevel.Hard:
@@ -127,6 +131,8 @@ public static class Difficulty
                 bot.StrafeFactor = 1f;
                 bot.StrafeInterval = 0.9f;
                 bot.PreferredRange = 11f;
+                bot.PatrolSpeedFactor = 0.7f;
+                bot.PatrolPause = 0.9f;
                 break;
         }
     }

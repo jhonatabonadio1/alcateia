@@ -73,6 +73,30 @@ public partial class Bot : CharacterBody3D
     /// <summary>Tempo olhando em volta ao chegar no destino.</summary>
     [Export] public float ScanTime = 2.5f;
 
+    // --- Patrulha ---
+    //
+    // Bot parado no spawn denuncia que é script. Andar sem rumo também
+    // é informação para o jogador: um bot caminhando longe é uma
+    // oportunidade, e um bot chegando é uma ameaça.
+
+    /// <summary>Raio da área patrulhada, medido do centro do mapa.</summary>
+    [Export] public float PatrolRadius = 16f;
+
+    /// <summary>Centro da área patrulhada.</summary>
+    [Export] public Vector3 PatrolCenter = Vector3.Zero;
+
+    /// <summary>Pausa entre um destino e o próximo.</summary>
+    [Export] public float PatrolPause = 1.5f;
+
+    /// <summary>Fração da velocidade ao patrulhar. Andar devagar faz
+    /// menos barulho e deixa o bot menos previsível de ouvir.</summary>
+    [Export] public float PatrolSpeedFactor = 0.55f;
+
+    /// <summary>Tempo preso no mesmo lugar antes de desistir do
+    /// destino. Sem pathfinding, encostar numa quina é questão de
+    /// tempo — o que não pode é ficar empurrando a parede para sempre.</summary>
+    [Export] public float StuckTime = 1.2f;
+
     // --- Decisão de forma ---
     //
     // O bot é um atirador. Virar lobo é recurso de desespero: como o
@@ -141,6 +165,12 @@ public partial class Bot : CharacterBody3D
 
     private Action<Noise> _ear;
 
+    private Vector3 _patrolTarget;
+    private bool _hasPatrolTarget;
+    private double _patrolPause;
+    private double _stuckTimer;
+    private Vector3 _lastPosition;
+
     public override void _Ready()
     {
         _health = GetNode<Health>("Health");
@@ -183,7 +213,7 @@ public partial class Bot : CharacterBody3D
             case BotState.Combat: RunCombat(delta); break;
             case BotState.Investigate:
             case BotState.Search: RunSearch(delta); break;
-            default: RunIdle(delta); break;
+            default: RunPatrol(delta); break;
         }
     }
 
@@ -305,7 +335,13 @@ public partial class Bot : CharacterBody3D
         }
         else if (_memoryTimer <= 0)
         {
-            State = BotState.Idle;
+            if (State != BotState.Idle)
+            {
+                State = BotState.Idle;
+                _hasPatrolTarget = false;
+                _patrolPause = PatrolPause;
+            }
+
             _hasBelief = false;
         }
 
@@ -372,7 +408,77 @@ public partial class Bot : CharacterBody3D
         MoveTowards(Vector3.Zero, Speed, delta);
     }
 
-    private void RunIdle(double delta) => MoveTowards(Vector3.Zero, Speed, delta);
+    /// <summary>
+    /// Patrulha: escolhe um ponto, vai até ele, pausa e escolhe outro.
+    ///
+    /// Sem navmesh não há garantia de que o ponto seja alcançável, e é
+    /// por isso que existe o detector de travamento: em vez de tentar
+    /// provar que o caminho existe, o bot tenta e desiste quando para
+    /// de progredir. É mais barato e falha de forma visível, em vez de
+    /// empurrar a parede indefinidamente.
+    /// </summary>
+    private void RunPatrol(double delta)
+    {
+        if (_patrolPause > 0)
+        {
+            _patrolPause -= delta;
+            MoveTowards(Vector3.Zero, Speed, delta);
+            return;
+        }
+
+        if (!_hasPatrolTarget)
+        {
+            PickPatrolTarget();
+            return;
+        }
+
+        Vector3 flat = new Vector3(
+            _patrolTarget.X - GlobalPosition.X, 0,
+            _patrolTarget.Z - GlobalPosition.Z);
+
+        if (flat.Length() <= ArriveRadius)
+        {
+            _hasPatrolTarget = false;
+            _patrolPause = PatrolPause * GD.RandRange(0.6, 1.6);
+            return;
+        }
+
+        // Progrediu? Se não, o caminho não serve.
+        if (GlobalPosition.DistanceTo(_lastPosition) < 0.04f)
+        {
+            _stuckTimer += delta;
+
+            if (_stuckTimer >= StuckTime)
+            {
+                if (Debug) GD.Print($"{Name}: travado, trocando de destino");
+                _hasPatrolTarget = false;
+                _stuckTimer = 0;
+                return;
+            }
+        }
+        else
+        {
+            _stuckTimer = 0;
+        }
+
+        _lastPosition = GlobalPosition;
+
+        FaceDirection(_patrolTarget, delta);
+        MoveTowards(Avoid(flat.Normalized()), Speed * PatrolSpeedFactor, delta);
+    }
+
+    private void PickPatrolTarget()
+    {
+        float angle = (float)GD.RandRange(0, Mathf.Tau);
+        float radius = PatrolRadius * Mathf.Sqrt((float)GD.Randf());
+
+        _patrolTarget = PatrolCenter + new Vector3(
+            Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
+
+        _hasPatrolTarget = true;
+        _stuckTimer = 0;
+        _lastPosition = GlobalPosition;
+    }
 
     private void Maneuver(float distance, Vector3 toTarget, double delta)
     {
@@ -570,6 +676,7 @@ public partial class Bot : CharacterBody3D
         _hasBelief = false;
         _alerted = false;
         _reacting = false;
+        _hasPatrolTarget = false;
         State = BotState.Idle;
     }
 

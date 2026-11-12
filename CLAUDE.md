@@ -402,12 +402,22 @@ cirúrgica parece trapacear.
 **Estado** — máquina explícita com quatro estados:
 
 ```
-Idle  --[ouviu]-->      Investigate
-Idle  --[viu]-->        Combat
-Investigate --[viu]-->  Combat
-Combat --[perdeu]-->    Search
-Search --[desistiu]-->  Idle
+Idle (patrulha) --[ouviu]-->  Investigate
+Idle            --[viu]-->    Combat
+Investigate     --[viu]-->    Combat
+Combat          --[perdeu]--> Search
+Search          --[desistiu]--> Idle
 ```
+
+Em Idle o bot **patrulha**: escolhe um ponto aleatório da área, vai
+até ele devagar, pausa e escolhe outro. Bot parado no spawn denuncia
+que é script, e um bot caminhando também é informação — longe é
+oportunidade, chegando é ameaça.
+
+Sem navmesh não há garantia de que o ponto seja alcançável. Em vez de
+provar que o caminho existe, o bot tenta e desiste quando para de
+progredir (`StuckTime`). É mais barato e falha de forma visível, em
+vez de empurrar a parede indefinidamente.
 
 **Ação** — movimento e tiro decorrem do estado.
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.10.1 — 2026-11-11
+
+### Adicionado
+- **Patrulha**: em Idle o bot escolhe um ponto aleatório da área, vai
+  até ele devagar, pausa e escolhe outro. Patrulhar devagar também faz
+  menos barulho.
+- Detector de travamento: sem navmesh não há garantia de que o destino
+  seja alcançável, então o bot desiste quando para de progredir em vez
+  de empurrar a parede.
+- Velocidade e pausa de patrulha entram nos perfis de dificuldade.
+
 ## v0.10.0 — 2026-11-11
 
 ### Adicionado
