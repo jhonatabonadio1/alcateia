@@ -305,6 +305,11 @@ public partial class Player : CharacterBody3D
 
     private void OnFormChanged(int form) => ApplyCamera();
 
+    /// <summary>A câmera de onde o jogador mira: a de terceira pessoa no
+    /// lobo, a da cabeça no humano. Não é a câmera atual da tela — essa
+    /// pode ser a da morte ou outra qualquer.</summary>
+    public Camera3D AimCamera => _form.IsThirdPerson ? _wolfCamera : _camera;
+
     /// <summary>
     /// O bote em curso: o corpo segue a velocidade fixada no clique, em
     /// linha reta, até encostar em algo. É o compromisso do golpe — o
@@ -335,13 +340,19 @@ public partial class Player : CharacterBody3D
     [Export] public float FreezeBrake = 30f;
 
     /// <summary>Preso no lugar: sem andar nem pular, só a gravidade.
-    /// Rugir, o salto no chão e a aterrissagem do bote usam.</summary>
+    /// Rugir, o salto no chão e a aterrissagem do bote usam. O jogador
+    /// não anda, mas o golpe pode andar por ele (o avanço do salto).</summary>
     private void Freeze(double delta)
     {
         ReleaseWall();
 
         Vector3 frozen = Velocity;
-        var flat = new Vector3(frozen.X, 0, frozen.Z).MoveToward(Vector3.Zero, FreezeBrake * (float)delta);
+
+        // O salto preso ao chão ainda avança: o passo dele leva o corpo até
+        // o ponto da mira, por cima da freada.
+        var flat = _weapon.IsStepping
+            ? _weapon.StepVelocity
+            : new Vector3(frozen.X, 0, frozen.Z).MoveToward(Vector3.Zero, FreezeBrake * (float)delta);
         frozen.X = flat.X;
         frozen.Z = flat.Z;
         if (!IsOnFloor())

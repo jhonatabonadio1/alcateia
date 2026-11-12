@@ -156,6 +156,16 @@ public partial class Weapon : Node3D
 	/// ruim ainda conectar — o golpe leva o lobo até o alvo.</summary>
 	[Export] public float ClawLunge = 6.5f;
 
+	/// <summary>Clique na garrada guardado, em segundos: clicou com o golpe
+	/// anterior ainda no fim, o próximo sai no quadro em que ele acaba. Sem
+	/// isso o clique dado um pouco cedo se perdia e o lobo parecia não
+	/// responder.</summary>
+	[Export] public float AttackBuffer = 0.3f;
+
+	/// <summary>Até onde o salto no chão leva o lobo, em metros. Ele cai
+	/// com as garras no ponto da mira, até este limite.</summary>
+	[Export] public float PounceMaxDistance = 5f;
+
 	/// <summary>Multiplicador de dano na cabeça.</summary>
 	[Export] public float HeadshotMultiplier = 2.5f;
 
@@ -252,6 +262,7 @@ public partial class Weapon : Node3D
 	/// inteiro, e a aterrissagem do bote.</summary>
 	private double _rootLeft;
 
+	private bool _attackQueued;
 	private double _stepLeft;
 	private double _stepTotal = 1;
 	private float _stepPeak;
@@ -471,6 +482,13 @@ public partial class Weapon : Node3D
 		if (_pending.Count > 0)
 			RunPending(delta);
 
+		// O clique guardado sai assim que o golpe anterior acaba.
+		if (_attackQueued && _cooldown <= 0)
+		{
+			_attackQueued = false;
+			if (_form.IsWolf && _form.CanAttack && !_health.IsDead) WolfAttack();
+		}
+
 		if (_reloadTimer > 0)
 		{
 			_reloadTimer -= delta;
@@ -578,7 +596,12 @@ public partial class Weapon : Node3D
 
 	public void TryAttack()
 	{
-		if (_cooldown > 0) return;
+		if (_cooldown > 0)
+		{
+			// De lobo, o clique no fim de um golpe fica guardado.
+			if (_form.IsWolf && !_diving && _cooldown <= AttackBuffer) _attackQueued = true;
+			return;
+		}
 
 		if (!_form.CanAttack)
 		{
@@ -782,8 +805,41 @@ public partial class Weapon : Node3D
 	private void Pounce()
 	{
 		_comboIndex = 0;
+		_attackQueued = false;
 		_rootLeft = WolfMoves.Duration(WolfMove.Pounce);
-		StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown, () => Claw(HeavyDamageBonus, ClawReach, ClawRadius, false));
+		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown, () => Claw(HeavyDamageBonus, ClawReach, ClawRadius, false));
+
+		// O salto avança: do impulso até os pés tocarem o chão, o corpo anda
+		// até as garras caírem no ponto da mira.
+		var (delay, duration, clipDistance) = WolfMoves.StepOf(WolfMove.Pounce);
+		float distance = PounceDistance(clipDistance);
+		if (distance > 0.05f)
+			After(delay, id, () => BeginStep(duration, distance));
+	}
+
+	/// <summary>
+	/// Quanto o salto anda: até as garras (o volume, <see cref="ClawReach"/>
+	/// à frente do corpo) caírem no ponto para onde a câmera aponta. Mirou
+	/// em alguém, cai em cima dele; mirou no chão perto, quase não sai do
+	/// lugar; mirou no céu, vai até <see cref="PounceMaxDistance"/>. Sem
+	/// câmera (bot), a distância do próprio clipe.
+	/// </summary>
+	private float PounceDistance(float fallback)
+	{
+		Camera3D camera = (_body as Player)?.AimCamera;
+		if (camera == null) return Mathf.Min(fallback, PounceMaxDistance);
+
+		Vector3 from = camera.GlobalPosition;
+		Vector3 to = from - camera.GlobalBasis.Z * 80f;
+		var query = PhysicsRayQueryParameters3D.Create(from, to);
+		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+		var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
+		if (hit.Count == 0) return PounceMaxDistance;
+
+		Vector3 forward = -_body.GlobalTransform.Basis.Z;
+		forward.Y = 0;
+		float along = ((Vector3)hit["position"] - _body.GlobalPosition).Dot(forward.Normalized());
+		return Mathf.Clamp(along - ClawReach, 0f, PounceMaxDistance);
 	}
 
 	/// <summary>
@@ -921,6 +977,8 @@ public partial class Weapon : Node3D
 
 		// O combo zera se passar ComboReset depois do fim do golpe.
 		_comboTimer = WolfMoves.Duration(move) + ComboReset;
+
+		_attackQueued = false;
 
 		// Parado, o corpo dá o passo do golpe, em sino: as pernas andam
 		// um passo junto com o braço. Correndo, o empurrão de sempre leva
@@ -1339,6 +1397,7 @@ public partial class Weapon : Node3D
 		_rootLeft = 0;
 		_stepLeft = 0;
 		_diving = false;
+		_attackQueued = false;
 		_pending.Clear();
 		if (IsReloading) CancelReload();
 		if (_form.IsWolf) return;

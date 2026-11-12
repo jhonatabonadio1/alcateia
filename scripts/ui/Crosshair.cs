@@ -6,7 +6,8 @@ using Godot;
 /// recupera. Custa pouco e informa muito — o jogador vê, na mira, quando
 /// o próximo tiro vai sair torto.
 ///
-/// Na forma de lobo vira um ponto: o lobo não mira, ele chega.
+/// Na forma de lobo não aparece: o lobo não mira, ele chega — e em
+/// terceira pessoa o próprio lobo no meio da tela já diz para onde vai.
 /// </summary>
 public partial class Crosshair : Control
 {
@@ -41,12 +42,7 @@ public partial class Crosshair : Control
         Color line = new(1, 1, 1, 0.92f);
         Color shadow = new(0, 0, 0, 0.55f);
 
-        if (Form != null && Form.IsWolf)
-        {
-            DrawCircle(c, 3.5f, shadow);
-            DrawCircle(c, 2f, UiTokens.TeamOrange.Lightened(0.3f));
-            return;
-        }
+        if (Form != null && Form.IsWolf) return;
 
         foreach (Vector2 dir in new[] { Vector2.Up, Vector2.Down, Vector2.Left, Vector2.Right })
         {
