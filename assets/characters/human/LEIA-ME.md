@@ -46,7 +46,35 @@ escolha o que parecer melhor em movimento e descarte o outro.
 também anda briga com ele e o personagem patina. A trilha de posição
 do Hips é removida no carregamento, no `CharacterAnimator`.
 
-## O que falta para o jogo
+## Segunda leva
 
-Morte, agachado parado e agachado andando. O pack não tem nenhum dos
-três, e o jogo tem Ctrl para agachar e morte com overlay.
+Catorze arquivos a mais, todos do **mesmo rig** (65 ossos, assinatura
+conferida contra o xbot), então misturam com os primeiros sem
+retargeting.
+
+| Vira | Veio de | Duração |
+|---|---|---|
+| `death` | Walking To Dying | 3,07 s |
+| `crouch_idle` | Idle Crouching | 2,10 s |
+| `fall` | Jump Loop | 1,00 s |
+| `knife` | Stabbing | 2,63 s |
+| `equip` | Rifle Pull Out | 2,03 s |
+| `knife_idle` | Knife Idle | 4,47 s |
+
+Os `*_alt` são alternativas medidas e descartadas por ora, guardadas
+porque trocar é renomear: `idle_rifle_alt` (10,63 s, idle longo com
+mais variação), `fire_alt` (1,03 s — longo demais para a cadência de
+um rifle), `reload_alt` (6,87 s, idem), `reload_moving_alt` (recarga
+andando), `knife_alt`, `jump_up_alt` (só o impulso, sem o arco),
+`death_kneel_alt` (morre ajoelhado caindo para trás) e
+`kneel_stand_alt`.
+
+Treze dos catorze vieram **com malha** — cada um carrega uma cópia do
+Beta_Surface. Não quebra nada, porque o carregador arranca a animação
+e descarta a cena, mas é peso morto no disco.
+
+## O que ainda falta
+
+`crouch_walk` e `land`. O jogo agacha andando e já toca ruído de
+pouso; os dois estão listados no animador, então basta soltar o
+arquivo com esse nome.

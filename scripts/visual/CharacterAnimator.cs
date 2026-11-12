@@ -84,7 +84,10 @@ public partial class CharacterAnimator : Node3D
         // Ainda não baixados. Ficam listados de propósito: arquivo
         // que não existe é pulado sem erro, então basta soltar o .fbx
         // com este nome na pasta para ele entrar sozinho.
-        "death", "crouch_idle", "crouch_walk", "fall", "land", "knife"
+        "death", "crouch_idle", "fall", "knife", "equip",
+
+        // Ainda faltam de verdade.
+        "crouch_walk", "land"
     };
 
     private Node3D _model;
@@ -99,6 +102,7 @@ public partial class CharacterAnimator : Node3D
     private Vector2 _blend;
     private bool _dead;
     private bool _hasDeath;
+    private bool _airborne;
 
     public override void _Ready()
     {
@@ -121,6 +125,9 @@ public partial class CharacterAnimator : Node3D
         }
 
         int loaded = LoadClips();
+
+        _hasDeath = _player.HasAnimation("alcateia/death");
+
         BuildTree();
 
         _model.RotationDegrees = new Vector3(
@@ -195,8 +202,6 @@ public partial class CharacterAnimator : Node3D
 
                 library.AddAnimation(clip, animation);
                 count++;
-
-                if (clip == "death") _hasDeath = true;
             }
 
             temp.QueueFree();
@@ -322,16 +327,27 @@ public partial class CharacterAnimator : Node3D
         var machine = new AnimationNodeStateMachine();
         machine.AddNode("Locomotion", locomotion, new Vector2(300, 100));
 
-        Single(machine, "Jump", "jump", new Vector2(520, 40));
+        Single(machine, "Jump", "jump", new Vector2(520, -20));
+        Single(machine, "Fall", "fall", new Vector2(720, 40));
         Single(machine, "Hit", "hit", new Vector2(520, 160));
+        Single(machine, "Death", "death", new Vector2(520, 280));
 
-        if (_hasDeath)
-            Single(machine, "Death", "death", new Vector2(520, 280));
-
+        // O ar é uma sequência: salta, cai, aterrissa. O salto entrega
+        // para a queda sozinho quando acaba; a queda só sai quando o
+        // chão aparece, e por isso é ela que repete, não o salto.
         Link(machine, "Locomotion", "Jump");
-        Link(machine, "Jump", "Locomotion", auto: true);
+        Link(machine, "Jump", "Fall", auto: true);
+        Link(machine, "Locomotion", "Fall");
+        Link(machine, "Fall", "Locomotion");
+
         Link(machine, "Locomotion", "Hit");
         Link(machine, "Hit", "Locomotion", auto: true);
+
+        // Morrer interrompe qualquer coisa, e é por isso que precisa
+        // de uma aresta vinda de cada estado: Travel anda pelo grafo,
+        // e estado sem caminho de entrada é estado inalcançável.
+        foreach (string from in new[] { "Locomotion", "Jump", "Fall", "Hit" })
+            Link(machine, from, "Death");
 
         _tree = new AnimationTree { TreeRoot = machine };
 
@@ -414,6 +430,37 @@ public partial class CharacterAnimator : Node3D
         _blend = _blend.Lerp(target, Mathf.Min(1f, BlendSmoothing * (float)delta));
 
         _tree.Set("parameters/Locomotion/blend_position", _blend);
+
+        UpdateAir();
+    }
+
+    /// <summary>
+    /// Entra e sai do ar sozinho.
+    ///
+    /// Isto continua sendo leitura de estado, não decisão: quem
+    /// decide que o corpo está no ar é a física. O animador só
+    /// percebe a borda — e precisa percebê-la, porque cair de um
+    /// telhado não passa por Jump() e sem isso o boneco desceria os
+    /// dezessete metros do Arrival andando.
+    /// </summary>
+    private void UpdateAir()
+    {
+        bool grounded = _body.IsOnFloor();
+
+        if (!grounded && !_airborne)
+        {
+            _airborne = true;
+
+            // Só vai para a queda se não estiver saltando: o salto
+            // entrega para ela sozinho quando termina.
+            if (_playback?.GetCurrentNode().ToString() != "Jump")
+                _playback?.Travel("Fall");
+        }
+        else if (grounded && _airborne)
+        {
+            _airborne = false;
+            _playback?.Travel("Locomotion");
+        }
     }
 
     /// <summary>Dispara o estado do pulo. Chamado por quem pula, não
