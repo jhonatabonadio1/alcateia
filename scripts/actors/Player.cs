@@ -683,7 +683,11 @@ public partial class Player : CharacterBody3D
             //
             // A partir do ápice a parede pega, que é o gesto desejado —
             // pular contra ela e segurar.
-            if (Velocity.Y > 0.5f) return false;
+            if (Velocity.Y > 0.5f)
+            {
+                WallLog($"ainda subindo ({Velocity.Y:0.0} m/s) — gruda a partir do ápice");
+                return false;
+            }
 
             if (!found)
             {
@@ -693,7 +697,11 @@ public partial class Player : CharacterBody3D
 
             // E não gruda rente ao chão: a essa altura é mais provável
             // que o jogador tenha esbarrado do que escolhido subir.
-            if (IsNearFloor()) return false;
+            if (IsNearFloor())
+            {
+                WallLog("rente ao chão — pule mais alto antes de encostar");
+                return false;
+            }
 
 
             // A mesma parede, sem ter tocado o chão, viraria elevador:
@@ -982,13 +990,18 @@ public partial class Player : CharacterBody3D
         return any;
     }
 
-    /// <summary>Chão a menos de um passo abaixo dos pés.</summary>
+    /// <summary>Altura mínima dos pés ao chão para a parede pegar.
+    /// Baixa de propósito: alta demais mata a jogada em vez de
+    /// filtrar o esbarrão.</summary>
+    [Export] public float WallMinHeight = 0.18f;
+
+    /// <summary>Chão logo abaixo dos pés.</summary>
     private bool IsNearFloor()
     {
         Vector3 origin = GlobalPosition;
 
         var query = PhysicsRayQueryParameters3D.Create(
-            origin, origin + Vector3.Down * (_height * 0.5f + 0.35f));
+            origin, origin + Vector3.Down * (_height * 0.5f + WallMinHeight));
         query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
 
         return GetWorld3D().DirectSpaceState.IntersectRay(query).Count > 0;

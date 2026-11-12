@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://bdgl7cycg2spu"]
 
 [ext_resource type="PackedScene" uid="uid://bq5i3itdh4w5s" path="res://player.tscn" id="1_player"]
-[ext_resource type="PackedScene" uid="uid://dsbysahyhwcii" path="res://dummy.tscn" id="2_dummy"]
 [ext_resource type="Script" path="res://Hud.cs" id="3_hud"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
@@ -82,57 +81,8 @@ mesh = SubResource("BoxMesh_wall")
 
 [node name="Player" parent="." unique_id=669313655 groups=["player"] instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
-HumanSpeed = null
-JumpVelocity = null
-GroundAccel = null
-GroundFriction = null
-AirAccel = null
-HoldFallGravity = null
-AirFriction = null
-CrouchSpeedFactor = null
-StandHeight = null
-CrouchHeight = null
-StandEyeHeight = null
-CrouchEyeHeight = null
-CrouchLerpSpeed = null
-MouseSensitivity = null
-HowlShield = null
-HowlDuration = null
-WallCheckDistance = null
-WallRunMaxTime = null
-WallRunClearance = null
-WallRunVerticalDrift = null
-WallRunSpeedBonus = null
-WallStickForce = null
-CornerLookahead = null
-CornerGrace = null
-WallJumpPush = null
-WallJumpKeepSpeed = null
-RequireFloorBetweenWallRuns = null
-WallRunCooldown = null
-FallLimit = null
-WallDebug = null
-ThirdPersonDistance = null
 
 [node name="Dummies" type="Node3D" parent="." unique_id=79265705]
-
-[node name="Dummy" parent="Dummies" unique_id=1801564897 instance=ExtResource("2_dummy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, -8)
-BaseColor = null
-HitColor = null
-FlashDuration = null
-
-[node name="Dummy2" parent="Dummies" unique_id=1458561404 instance=ExtResource("2_dummy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, -10)
-BaseColor = null
-HitColor = null
-FlashDuration = null
-
-[node name="Dummy3" parent="Dummies" unique_id=944763479 instance=ExtResource("2_dummy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -14)
-BaseColor = null
-HitColor = null
-FlashDuration = null
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=601910200]
 script = ExtResource("3_hud")
