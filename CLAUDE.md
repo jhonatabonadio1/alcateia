@@ -203,7 +203,7 @@ alcateia/
 ├── AGENTS.md           atalho para o mesmo arquivo
 ├── project.godot
 ├── CONTRIBUTING.md     o passo a passo para trabalhar no projeto
-├── docs/               DESIGN, ARQUITETURA, AJUSTES, UI, ARSENAL, CONJUNTOS, MAPAS, PACOTES, SERVIDOR, CHANGELOG, decisoes/ (ADR)
+├── docs/               DESIGN, ARQUITETURA, AJUSTES, UI, ARSENAL, CONJUNTOS, MAPAS, PACOTES, SERVIDOR, PENDENCIAS, CHANGELOG, decisoes/ (ADR)
 ├── servidor/           o servidor (.NET + PostgreSQL) e as imagens Docker — fora do Godot (.gdignore)
 ├── docker-compose.yml  banco + servidor + servidor de partida
 ├── tests/              unit (C# puro) e regression (o jogo sem tela)
@@ -370,7 +370,9 @@ roda o mesmo script a cada push (`.github/workflows/testes.yml`).
 
 ## Estado atual e próximos marcos
 
-Veja `CHANGELOG.md` para o que já entrou.
+Veja `CHANGELOG.md` para o que já entrou e **`docs/PENDENCIAS.md` para
+o que falta** (defeitos relatados, pedidos ainda não feitos, pendências
+técnicas). Mantenha as duas listas em dia.
 
 **Fase 1 — falta:**
 - Rodar os quatro testes de validação do `docs/ARSENAL.md` (duelos,
