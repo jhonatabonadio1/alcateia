@@ -34,6 +34,9 @@ public partial class RegressionBench : Node
 	public Weapon Weapon => Player.GetNode<Weapon>("Weapon");
 	public Health Health => Player.GetNode<Health>("Health");
 
+	/// <summary>A semente dos testes de regressão.</summary>
+	public const ulong TestSeed = 20261112;
+
 	/// <summary>Segundos desde o início do teste.</summary>
 	public double Time { get; private set; }
 
@@ -44,6 +47,11 @@ public partial class RegressionBench : Node
 
 		string[] args = OS.GetCmdlineUserArgs();
 		var tests = AllTests();
+
+		// Teste sorteia sempre igual: a mesma semente a cada rodada, a não
+		// ser que se peça outra (-- --seed=N).
+		if (!args.Any(a => a.StartsWith("--seed=")))
+			MatchRandom.Begin(TestSeed);
 
 		if (args.Contains("--lista"))
 		{

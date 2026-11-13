@@ -86,6 +86,9 @@ public partial class Bot : CharacterBody3D
 	private Vector3 _spawn;
 
 	private CharacterAnimator _animator;
+	/// <summary>O sorteio deste bot (<see cref="GameRandom"/>): mira, reação,
+	/// ronda, especiais. Fluxo próprio, pelo nome.</summary>
+	private GameRandom _rng;
 	private BodyNoise _noise;
 	private WolfMoveMotor _moves;
 	private Corpse _corpse;
@@ -116,6 +119,7 @@ public partial class Bot : CharacterBody3D
 		_form = GetNode<FormController>("FormController");
 		_weapon = GetNode<Weapon>("Weapon");
 		_head = GetNode<Node3D>("Head");
+		_rng = MatchRandom.Stream(Name);
 		_noise = new BodyNoise(this, Noise);
 		_moves = new WolfMoveMotor(this, _weapon);
 		_corpse = new Corpse(this, GetNode<CollisionShape3D>("CollisionShape3D"));
@@ -128,7 +132,7 @@ public partial class Bot : CharacterBody3D
 
 		// Personalidade: cada bot nasce mais ou menos curioso.
 		Curiosity = Mathf.Clamp(
-			Curiosity + (float)GD.RandRange(-CuriositySpread, CuriositySpread), 0f, 1f);
+			Curiosity + _rng.Range(-CuriositySpread, CuriositySpread), 0f, 1f);
 
 		_health.Died += OnDied;
 		_health.Respawned += OnRespawned;
@@ -187,18 +191,7 @@ public partial class Bot : CharacterBody3D
 		// o renascimento uma emboscada.
 		if (_target == null || _targetHealth == null || _targetHealth.IsDead)
 		{
-			_hasBelief = false;
-			_memoryTimer = 0;
-			_alerted = false;
-			_reacting = false;
-
-			if (State != BotState.Idle)
-			{
-				State = BotState.Idle;
-				_hasPatrolTarget = false;
-				_patrolPause = PatrolPause;
-			}
-
+			ForgetTarget();
 			RunPatrol(delta);
 			return;
 		}
@@ -212,6 +205,27 @@ public partial class Bot : CharacterBody3D
 		UpdateState(delta);
 		UpdateBrain(delta);
 
+		RunAction(delta);
+	}
+
+	/// <summary>Sem alvo: esquece o que sabia e volta à ronda.</summary>
+	private void ForgetTarget()
+	{
+		_hasBelief = false;
+		_memoryTimer = 0;
+		_alerted = false;
+		_reacting = false;
+
+		if (State == BotState.Idle) return;
+
+		State = BotState.Idle;
+		_hasPatrolTarget = false;
+		_patrolPause = PatrolPause;
+	}
+
+	/// <summary>Executa a ação que o cérebro escolheu.</summary>
+	private void RunAction(double delta)
+	{
 		switch (Action)
 		{
 			case BotAction.Engage:

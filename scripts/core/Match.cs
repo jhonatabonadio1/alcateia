@@ -130,6 +130,10 @@ public partial class Match : Node
 			if (arg.StartsWith("--contagem=") && float.TryParse(arg["--contagem=".Length..], out float c)) CountdownTime = c;
 		}
 
+		// A semente da partida vai para o Output: um defeito que dependeu
+		// da sorte volta rodando com -- --seed=N (GameRandom).
+		GD.Print($"Semente da partida: {MatchRandom.Seed} (repita com -- --seed={MatchRandom.Seed})");
+
 		CountdownLeft = CountdownTime;
 		TimeLeft = Duration;
 

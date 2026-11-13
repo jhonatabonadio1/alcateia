@@ -116,7 +116,7 @@ public partial class Bot
 		if (flat.Length() <= ArriveRadius)
 		{
 			_hasPatrolTarget = false;
-			_patrolPause = PatrolPause * GD.RandRange(0.6, 1.6);
+			_patrolPause = PatrolPause * _rng.Range(0.6, 1.6);
 			return;
 		}
 
@@ -156,12 +156,12 @@ public partial class Bot
 	{
 		if (PickRouteTarget()) return;
 
-		float angle = (float)GD.RandRange(0, Mathf.Tau);
+		float angle = _rng.Range(0f, Mathf.Tau);
 
 		// Raiz quadrada distribui por área; elevar o expoente puxa os
 		// destinos para o meio do mapa, que é onde a luta acontece.
 		// Patrulha que vive na borda é patrulha que ninguém encontra.
-		float radius = PatrolRadius * Mathf.Pow((float)GD.Randf(), 0.85f);
+		float radius = PatrolRadius * Mathf.Pow(_rng.Unit(), 0.85f);
 
 		_patrolTarget = PatrolCenter + new Vector3(
 			Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
@@ -192,7 +192,7 @@ public partial class Bot
 			if (_route < 0) return false;
 
 			PatrolRoutes.ClosestPoint(_route, GlobalPosition, out _leg);
-			_legStep = GD.Randf() < 0.5f ? 1 : -1;
+			_legStep = _rng.Sign();
 
 			// Entrando pela ponta, metade dos sorteios apontava para
 			// fora da rota: o bot pegava um ponto só, a rota acabava

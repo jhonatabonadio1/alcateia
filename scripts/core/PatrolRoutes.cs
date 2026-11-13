@@ -90,7 +90,7 @@ public partial class PatrolRoutes : Node3D
 
 		for (int i = 0; i < samples; i++)
 		{
-			int route = (int)(GD.Randi() % (uint)RouteCount);
+			int route = MatchRandom.For("rotas").Index(RouteCount);
 			float distance = ClosestPoint(route, from, out _);
 
 			if (distance >= bestDistance) continue;

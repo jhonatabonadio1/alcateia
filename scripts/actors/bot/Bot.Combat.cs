@@ -131,8 +131,8 @@ public partial class Bot
 		_strafeTimer -= delta;
 		if (_strafeTimer > 0) return;
 
-		_strafeSide = GD.Randf() < 0.5f ? -1 : 1;
-		_strafeTimer = StrafeInterval * GD.RandRange(0.6, 1.4);
+		_strafeSide = _rng.Sign();
+		_strafeTimer = StrafeInterval * _rng.Range(0.6, 1.4);
 	}
 
 	/// <summary>
@@ -145,12 +145,12 @@ public partial class Bot
 	/// </summary>
 	private void ShuffleAim()
 	{
-		bool miss = GD.Randf() < MissChance;
+		bool miss = _rng.Chance(MissChance);
 		float spread = Mathf.DegToRad(miss ? MissSpread : AimError);
 
 		_aimOffset = new Vector3(
-			(float)GD.RandRange(-spread, spread),
-			(float)GD.RandRange(-spread, spread),
+			_rng.Range(-spread, spread),
+			_rng.Range(-spread, spread),
 			0);
 	}
 

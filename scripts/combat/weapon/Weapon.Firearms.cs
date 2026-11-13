@@ -89,7 +89,7 @@ public partial class Weapon
 		// o que faz o AK ser arma de rajada e não de spray.
 		bool wild = held.RecoilHorizontalAfter > 0 && _streak >= held.RecoilHorizontalAfter;
 		float side = wild ? held.RecoilHorizontalLate : held.RecoilHorizontal;
-		RecoilYaw = wild ? (float)GD.RandRange(-side, side) : (_streak % 2 == 0 ? side : -side);
+		RecoilYaw = wild ? _rng.Range(-side, side) : (_streak % 2 == 0 ? side : -side);
 
 		EmitSignal(SignalName.Fired);
 
@@ -156,13 +156,13 @@ public partial class Weapon
 	/// <summary>Direção sorteada num cone de meio-ângulo dado. A raiz no
 	/// raio distribui por área; sem ela os tiros se amontoam no centro e o
 	/// cone vale menos do que o número diz.</summary>
-	private static Vector3 Scatter(Basis aim, float halfAngleDegrees)
+	private Vector3 Scatter(Basis aim, float halfAngleDegrees)
 	{
 		Vector3 forward = -aim.Z;
 		if (halfAngleDegrees <= 0.001f) return forward.Normalized();
 
-		float radius = Mathf.Tan(Mathf.DegToRad(halfAngleDegrees)) * Mathf.Sqrt(GD.Randf());
-		float angle = GD.Randf() * Mathf.Tau;
+		float radius = Mathf.Tan(Mathf.DegToRad(halfAngleDegrees)) * Mathf.Sqrt(_rng.Unit());
+		float angle = _rng.Unit() * Mathf.Tau;
 
 		return (forward + aim.X * (Mathf.Cos(angle) * radius) + aim.Y * (Mathf.Sin(angle) * radius)).Normalized();
 	}

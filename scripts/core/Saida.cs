@@ -14,7 +14,7 @@ using Godot;
 ///
 /// Por que no PREDELETE: a raiz apaga os filhos do último para o
 /// primeiro, então a cena da partida some antes deste nó, que é
-/// autoload (primeiro filho). Aqui tudo o que a partida segurava já foi
+/// autoload (filho da raiz antes dela). Aqui tudo o que a partida segurava já foi
 /// solto.
 ///
 /// Por que em laço: soltar um objeto solta os que ele segurava (a

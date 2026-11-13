@@ -86,11 +86,11 @@ public partial class Bot
 		_specialRoll = 0.5;
 
 		if (!IsOnFloor() || _target == null || !CanSeeTarget()) return;
-		if (GD.Randf() > WolfSpecialRate * 0.5f) return;
+		if (!_rng.Chance(WolfSpecialRate * 0.5f)) return;
 
 		if (distance >= 4f && distance <= 11f)
 		{
-			float power = _weapon.PounceChargeFor(distance) + (float)GD.RandRange(-PounceError, PounceError);
+			float power = _weapon.PounceChargeFor(distance) + _rng.Range(-PounceError, PounceError);
 			bool went = _weapon.BotPounce(_target, power);
 			if (Debug) GD.Print($"{Name}: salto a {distance:0.0} m, carga {power:0.00}{(went ? "" : " (não deu)")}");
 		}

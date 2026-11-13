@@ -115,7 +115,7 @@ public partial class SpawnPoints : Node3D
 			foreach (Vector3 enemy in enemies)
 				nearest = Mathf.Min(nearest, point.DistanceTo(enemy));
 
-			float score = nearest + (float)GD.Randf() * jitter;
+			float score = nearest + MatchRandom.For("nascimento").Unit() * jitter;
 
 			if (score <= bestScore) continue;
 

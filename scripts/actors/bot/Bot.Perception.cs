@@ -145,7 +145,7 @@ public partial class Bot
 		float closeness = 1f - Mathf.Clamp(distance / (noise.Radius * Hearing), 0f, 1f);
 		float chance = Curiosity * interest * (0.45f + closeness * 0.55f);
 
-		if (GD.Randf() > chance)
+		if (!_rng.Chance(chance))
 		{
 			// Ouviu e decidiu ficar. Mesmo assim fica alerta: vira na
 			// direção do som sem abandonar a posição.
@@ -157,9 +157,9 @@ public partial class Bot
 		}
 
 		var error = new Vector3(
-			(float)GD.RandRange(-HearingError, HearingError),
+			_rng.Range(-HearingError, HearingError),
 			0,
-			(float)GD.RandRange(-HearingError, HearingError));
+			_rng.Range(-HearingError, HearingError));
 
 		Believe(noise.Position + error, Memory);
 
@@ -282,7 +282,7 @@ public partial class Bot
 
 		_threatAge = 0;
 		_reacting = true;
-		_reactionTimer = ReactionTime + GD.RandRange(0, ReactionJitter);
+		_reactionTimer = ReactionTime + _rng.Range(0.0, ReactionJitter);
 		Believe(from, Memory);
 	}
 

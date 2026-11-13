@@ -106,6 +106,10 @@ public partial class Weapon : Node3D
 		: HumanSlot == Slot.Secondary ? SecondaryDef
 		: null;
 
+	/// <summary>O sorteio desta arma (<see cref="GameRandom"/>): dispersão,
+	/// recuo sorteado, a arma solta. Fluxo próprio, pelo nome do dono.</summary>
+	private GameRandom _rng;
+
 	public override void _Ready()
 	{
 		_body = GetParent<CharacterBody3D>();
@@ -113,6 +117,7 @@ public partial class Weapon : Node3D
 		_camera = _body.GetNode<Camera3D>("Head/Camera3D");
 		_head = _body.GetNode<Node3D>("Head");
 		_health = _body.GetNode<Health>("Health");
+		_rng = MatchRandom.Stream($"{_body.Name}/arma");
 
 		// Quem ainda não escolheu nada — bot, ou o jogador antes da tela
 		// de conjunto — começa com o padrão.
@@ -334,7 +339,7 @@ public partial class Weapon : Node3D
 
 		int ammo = primary ? PrimaryAmmo : SecondaryAmmo;
 		Vector3 from = _body.GlobalPosition + Vector3.Up * 1.1f;
-		var spread = new Vector3((float)GD.RandRange(-1.0, 1.0), 0, (float)GD.RandRange(-1.0, 1.0));
+		var spread = new Vector3(_rng.Range(-1f, 1f), 0, _rng.Range(-1f, 1f));
 		Vector3 velocity = _body.Velocity * 0.4f + spread + Vector3.Up * 1.2f;
 		WeaponPickup.Spawn(_body, def, ammo, from, velocity);
 		EmitSignal(SignalName.Dropped, def.Id);
