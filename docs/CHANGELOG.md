@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.27.0 — 2026-11-12 (organização da casa)
+
+Série de commits que reorganiza o código sem mudar o jogo. Os testes
+desta versão provam que o comportamento continua o aprovado.
+
+### Adicionado
+- **Testes automatizados** (`tools/testar.sh`):
+  - de unidade (`tests/unit`): C# puro, sem Godot e sem pacote — rodam
+    em segundos, sem internet;
+  - de regressão (`tests/regression`): o jogo de verdade, sem tela —
+    distância do salto carregado em 8 situações, velocidades no chão,
+    altura do pulo, corrida na parede, passada do lobo em 5 direções e
+    na parada, granada, dano da garra, renascer humano, bots atirando,
+    lobos usando especiais, cenas abrindo sem erro.
+- **Testes no GitHub a cada push** (`.github/workflows/testes.yml`).
+
+### Mudado
+- **Indentação com tab em todo o C#**, fixada no `.editorconfig`.
+- **Bruto: dano 75, alcance 5, sem espera entre garradas** (os valores
+  com que o Jhon joga).
+
+### Removido
+- Cópias velhas de cenas e do Bruto na raiz do projeto.
+
 ## v0.26.12 — 2026-11-12
 
 ### Adicionado

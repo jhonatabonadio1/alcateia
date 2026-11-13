@@ -471,6 +471,32 @@ numa partida por pontos é abate jogado fora.
   passar, e o que sobra na fila quando o jogo fecha derruba a saída
   ("script_bindings is not empty"). O `Saida` limpa a fila no fim; não
   dependa dele para mais nada
+- Indentação com **tab** em todo `.cs` (fixado no `.editorconfig`)
+
+---
+
+## Testes
+
+**Rode antes de todo commit:** `tools/testar.sh` (com `GODOT=` apontando
+para o Godot .NET, se ele não estiver no PATH). `--rapido` pula os dois
+testes de partida; um nome filtra (`tools/testar.sh Salto`). O GitHub
+roda o mesmo script a cada push (`.github/workflows/testes.yml`).
+
+| Camada | Onde | O que prova |
+|---|---|---|
+| Unidade | `tests/unit` (C# puro, sem Godot nem pacote) | As regras: dano, WP, tempos dos golpes... Tudo de `scripts/domain` e o `WolfMoves` |
+| Regressão | `tests/regression` (o jogo de verdade, sem tela, 60 quadros fixos, um processo por teste) | O comportamento aprovado: distância do salto, velocidades, altura do pulo, parede, passada do lobo, granada, dano da garra, renascer, bots atirando, cenas sem erro |
+
+- **Mudou um comportamento de propósito?** Mude o teste no mesmo
+  commit, dizendo no teste por quê. Teste vermelho sem mudança
+  combinada é regressão: conserte o código, não o teste.
+- **Regra nova que dá para testar sem o Godot vai para `scripts/domain`**
+  (C# puro) com teste de unidade. O que precisa de física, animação ou
+  cena vira teste de regressão (`RegressionTest`, achado sozinho pela
+  bancada).
+- Um teste de regressão também reprova se o Output tiver `ERROR`.
+- Para medir velocidade, use `bench.Displacement(corpo, quadros)`, não
+  segundos: o cronômetro pode chegar um quadro depois e somar 3%.
 
 ---
 
