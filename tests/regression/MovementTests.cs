@@ -74,7 +74,7 @@ public sealed class JumpHeightTest : RegressionTest
 public sealed class WallRunTest : RegressionTest
 {
 	public override string Name => "CorridaNaParede";
-	public override string Description => "o Bruto corre na parede a 4,05 m/s sem subir nem descer";
+	public override string Description => "o Bruto corre na parede a 4,45 m/s sem subir nem descer";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -95,7 +95,7 @@ public sealed class WallRunTest : RegressionTest
 		RegressionBench.ReleaseAll();
 
 		b.Check(b.Player.IsWallRunning, "continuava na parede");
-		b.Near(4.045, moved.X / 0.5, 0.05, "velocidade na parede");
+		b.Near(4.45, moved.X / 0.5, 0.05, "velocidade na parede");
 		b.Near(0, moved.Y, 0.02, "altura travada");
 	}
 }

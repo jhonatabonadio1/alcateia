@@ -97,13 +97,13 @@ public static class CombatRulesTests
 			1e-3, "Bruto cheio contra humano");
 	}
 
-	[Test("a distância do salto é só a da barra: 1,5 m sem carga, 12 m cheio, nunca além")]
+	[Test("a distância do salto é só a da barra: 1,5 m sem carga, 8,4 m cheio, nunca além")]
 	public static void PounceRange()
 	{
-		Check.Near(1.5, CombatRules.PounceRange(1.5f, 12f, 0f), 1e-5, "sem carga");
-		Check.Near(6.75, CombatRules.PounceRange(1.5f, 12f, 0.5f), 1e-5, "metade");
-		Check.Near(12, CombatRules.PounceRange(1.5f, 12f, 1f), 1e-5, "cheio");
-		Check.Near(12, CombatRules.PounceRange(1.5f, 12f, 1.4f), 1e-5, "acima do cheio");
+		Check.Near(1.5, CombatRules.PounceRange(1.5f, 8.4f, 0f), 1e-5, "sem carga");
+		Check.Near(4.95, CombatRules.PounceRange(1.5f, 8.4f, 0.5f), 1e-5, "metade");
+		Check.Near(8.4, CombatRules.PounceRange(1.5f, 8.4f, 1f), 1e-5, "cheio");
+		Check.Near(8.4, CombatRules.PounceRange(1.5f, 8.4f, 1.4f), 1e-5, "acima do cheio");
 	}
 
 	[Test("a barra enche em 1 s e não passa de cheia")]
@@ -116,10 +116,10 @@ public static class CombatRulesTests
 	[Test("o bot carrega o bastante para cair a uma garra do alvo")]
 	public static void BotChoosesCharge()
 	{
-		float power = CombatRules.PounceChargeFor(9f, 1.5f, 1.5f, 12f);
-		Check.Near(9f - 1.5f, CombatRules.PounceRange(1.5f, 12f, power), 1e-4, "cai a uma garra de 9 m");
-		Check.Near(0, CombatRules.PounceChargeFor(2f, 1.5f, 1.5f, 12f), 1e-6, "perto demais: sem carga");
-		Check.Near(1, CombatRules.PounceChargeFor(30f, 1.5f, 1.5f, 12f), 1e-6, "longe demais: cheio");
+		float power = CombatRules.PounceChargeFor(7f, 1.5f, 1.5f, 8.4f);
+		Check.Near(7f - 1.5f, CombatRules.PounceRange(1.5f, 8.4f, power), 1e-4, "cai a uma garra de 7 m");
+		Check.Near(0, CombatRules.PounceChargeFor(2f, 1.5f, 1.5f, 8.4f), 1e-6, "perto demais: sem carga");
+		Check.Near(1, CombatRules.PounceChargeFor(30f, 1.5f, 1.5f, 8.4f), 1e-6, "longe demais: cheio");
 	}
 
 	// ------------------------------------------------------------ vida e escudo

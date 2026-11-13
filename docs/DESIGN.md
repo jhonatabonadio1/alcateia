@@ -394,7 +394,7 @@ corrija a linha dele.
 |---|---|---|---|
 | Garrada, braço 1 | swiping, 1,00–1,85 s, 2,2× | 0,14 s | 0,39 s |
 | Garrada, braço 2 | punch, 0–0,85 s, 2,2× | 0,14 s | 0,39 s |
-| Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso; voa até 12 m em arco |
+| Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso; voa até 8,4 m em arco |
 | Bote (direito no ar) | jump attack: a queda, depois a aterrissagem | quando encosta | aterrissagem de 0,78 s, presa; sem recarga |
 | Rugido (R, segurado) | roaring, 0,30–4,90 s, 2,3× | escudo no fim | 2,0 s; soltar cancela |
 
@@ -443,11 +443,12 @@ dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
 salta, cai. É a arma do lobo para **fechar distância**: aperta-se de
 longe e o lobo cai em cima do humano. O jogador não anda nem pula, mas
 o salto voa: do impulso até os pés tocarem o chão, o corpo anda a
-distância da carga, **até 12 m** (`PounceMaxDistance`).
+distância da carga, **até 8,4 m** (`PounceMaxDistance`; era 12, 30% a
+menos na v0.27.1).
 
 **Segurar carrega** (decisão do Jhon). Apertou, o lobo agacha e fica
 encolhido (o clipe para no fim do agachar); soltou, salta. Em 1 s
-(`PounceChargeTime`) a carga enche: o alcance vai de 1,5 m a 12 m e o
+(`PounceChargeTime`) a carga enche: o alcance vai de 1,5 m a 8,4 m e o
 dano de 40% a 100% do cheio. Uma barra de força aparece enquanto
 carrega (`ChargeBar`). Cheio, segura mais 0,6 s e salta sozinho. No ar
 não carrega: o especial no ar é o bote, direto.
@@ -632,7 +633,8 @@ bot não ouve.
 ### Como o bot pensa
 
 **O lobo do bot usa os especiais** (`Bot.WolfTactics`): o salto
-carregado de 4 a 11 m — com a carga que leva até uma garra do alvo,
+carregado de 4 m até 1 m antes do alcance cheio (7,4 m) — com a carga
+que leva até uma garra do alvo,
 errando `PounceError` — e, de 3 a 6 m, um pulo na direção do alvo com
 o bote no alto. Sorteado a cada meio segundo com `WolfSpecialRate`; o
 especial vem antes da garra (arranhar no meio do pulo deixava o golpe

@@ -80,7 +80,7 @@ o renascer do bot (6 s).
 | Velocidade | 3,0 m/s | 3,89 (×1,298) | 4,22 (×1,406) |
 | Agachado | 1,35 | 1,75 | 1,90 |
 | Shift | 1,26 | — | — |
-| Na parede | — | 4,05 | 4,38 |
+| Na parede | — | 4,45 | 4,82 |
 | Altura do pulo | 0,99 m | 1,62 m (×1,28) | 2,50 m (×1,59) |
 | Avanço do pulo correndo | ~2,7 m | ≈4,0 m | ≈5,4 m |
 
@@ -130,7 +130,7 @@ Multiplicam a classe do jogador (não a dos bots):
 
 | Campo | Valor | O que faz |
 |---|---|---|
-| `WallRunSpeedBonus` | 1,0388 | Velocidade na parede = `HumanSpeed` × classe × isto |
+| `WallRunSpeedBonus` | 1,1427 | Velocidade na parede = `HumanSpeed` × classe × isto |
 | `WallAccel` | 18 m/s² | Aceleração ao grudar |
 | `WallBrake` | 32 m/s² | Freada ao agarrar (botão de ataque na parede) |
 | `WallRunMaxTime` | 0 | Tempo máximo na parede (0 = sem limite) |
@@ -186,7 +186,7 @@ dano acompanham.
 |---|---|---|
 | `PounceChargeTime` | 1,0 s | Tempo segurando até a carga cheia |
 | `PounceMinDistance` | 1,5 m | Distância sem carga |
-| `PounceMaxDistance` | 12 m | Distância com carga cheia (em linha reta, sempre a mesma) |
+| `PounceMaxDistance` | 8,4 m | Distância com carga cheia (em linha reta, sempre a mesma). O bot só salta de até 1 m antes disso |
 | `PounceMinPower` | 0,4 | Fração do dano sem carga |
 | `HeavyDamageBonus` | 2,1 | Multiplicador do dano com carga cheia |
 | `PounceChargeHold` | 0,6 s | Segura cheio isso e salta sozinho |

@@ -16,8 +16,9 @@ public partial class Weapon
 
 	/// <summary>Até onde o salto no chão leva o lobo com a carga cheia, em
 	/// metros. É a arma do lobo para fechar distância: apertar de longe e
-	/// cair em cima do humano.</summary>
-	[Export] public float PounceMaxDistance = 12f;
+	/// cair em cima do humano. Era 12; 30% a menos desde a v0.27.1
+	/// (decisão do Jhon).</summary>
+	[Export] public float PounceMaxDistance = 8.4f;
 
 	/// <summary>Segundos segurando o botão direito no chão até o salto
 	/// carregar inteiro (decisão do Jhon): segurar mais vai mais longe e

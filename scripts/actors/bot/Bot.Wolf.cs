@@ -88,7 +88,7 @@ public partial class Bot
 		if (!IsOnFloor() || _target == null || !CanSeeTarget()) return;
 		if (!_rng.Chance(WolfSpecialRate * 0.5f)) return;
 
-		if (distance >= 4f && distance <= 11f)
+		if (distance >= 4f && distance <= _weapon.PounceMaxDistance - 1f)
 		{
 			float power = _weapon.PounceChargeFor(distance) + _rng.Range(-PounceError, PounceError);
 			bool went = _weapon.BotPounce(_target, power);

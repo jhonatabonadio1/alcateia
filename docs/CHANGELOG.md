@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.27.1 — 2026-11-13
+
+### Mudado
+- **Salto carregado 30% mais curto no fim da barra**: cheio, voa 8,4 m
+  (era 12). Sem carga continua 1,5 m. O bot só tenta o salto até 7,4 m
+  do alvo (era 11), para não cair longe dele.
+- **Lobo 10% mais rápido na parede**: Bruto 4,45 m/s (era 4,05),
+  Ligeiro 4,82 (era 4,38). O salto da parede leva 80% disso, então
+  sobe junto.
+
 ## v0.27.0 — 2026-11-12 (organização da casa)
 
 Série de commits que reorganiza o código sem mudar o jogo. Os testes
