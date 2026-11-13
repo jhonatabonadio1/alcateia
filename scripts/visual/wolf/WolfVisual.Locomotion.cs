@@ -71,23 +71,23 @@ public partial class WolfVisual
 	[Export] public float CrawlClipSpeed = 2.9f;
 
 	/// <summary>
-	/// Velocidade fixa da animação, em vezes a do clipe (1 = a normal).
-	/// 0 = acompanha a velocidade do corpo, pela passada do clipe (o
-	/// padrão: o pé não patina). Com um número, a animação toca sempre
-	/// nele, por mais rápido que o corpo ande — e a pata desliza a
-	/// diferença. Parado, a animação para de qualquer jeito.
+	/// Quanto a animação de andar corre em relação ao corpo. 1 = acompanha
+	/// a velocidade do corpo, pela passada do clipe (o pé não patina). 0,7
+	/// = 30% mais lenta; 1,2 = 20% mais rápida — e a pata desliza a
+	/// diferença. Só a animação: o corpo anda igual.
+	///
+	/// (Era "AnimSpeed", velocidade fixa do clipe; trocado em 13/11 porque
+	/// 1 ali já era menos da metade do ritmo normal da corrida, e qualquer
+	/// número parecia lento.)
 	/// </summary>
-	[Export(PropertyHint.Range, "0,3,0.05")] public float WalkAnimSpeed = 0f;
+	[Export(PropertyHint.Range, "0.2,2,0.05")] public float WalkAnimScale = 1f;
 
 	/// <summary>O mesmo para a corrida de quatro (W duas vezes). O
 	/// engatinhar agachado continua acompanhando o corpo.</summary>
-	[Export(PropertyHint.Range, "0,3,0.05")] public float SprintAnimSpeed = 0f;
+	[Export(PropertyHint.Range, "0.2,2,0.05")] public float SprintAnimScale = 1f;
 
-	/// <summary>Andando, a animação toca em <paramref name="fixedRate"/> se
-	/// ele estiver ligado (mantendo o sentido: para trás, ao contrário);
-	/// senão, no ritmo que a velocidade pede.</summary>
-	private static float AnimRate(float followRate, float fixedRate, float speed) =>
-		fixedRate > 0f && speed > 0.4f ? fixedRate * Mathf.Sign(followRate) : followRate;
+	/// <summary>O ritmo que a velocidade pede, vezes a escala do ajuste.</summary>
+	private static float AnimRate(float followRate, float scale) => followRate * Mathf.Max(scale, 0.05f);
 
 	private float _speed;
 	private float _moveMix;
@@ -168,9 +168,9 @@ public partial class WolfVisual
 
 		float stride = Mathf.Lerp(WalkClipSpeed, RunClipSpeed, _gait);
 		float sign = _backward ? -1f : 1f;
-		float cadence = AnimRate(Mathf.Clamp(speed / Mathf.Max(stride, 0.01f), 0f, 3f) * sign, WalkAnimSpeed, speed);
+		float cadence = AnimRate(Mathf.Clamp(speed / Mathf.Max(stride, 0.01f), 0f, 3f) * sign, WalkAnimScale);
 		float crawl = Mathf.Clamp(speed / Mathf.Max(CrawlClipSpeed, 0.01f), 0f, 3f) * sign;
-		if (sprinting) crawl = AnimRate(crawl, SprintAnimSpeed, speed);
+		if (sprinting) crawl = AnimRate(crawl, SprintAnimScale);
 
 		float mixTarget = Mathf.Clamp(speed / 0.5f, 0f, 1f);
 		float mixTime = mixTarget > _moveMix ? StartBlend : StopBlend;

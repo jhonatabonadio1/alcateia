@@ -67,7 +67,7 @@ o renascer do bot (6 s).
 | `CrouchSpeedFactor` | 0,45 | Velocidade agachado (as duas formas) |
 | `WolfSprintFactor` | 1,30 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal |
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
-| `WalkAnimSpeed` / `SprintAnimSpeed` / `WallAnimSpeed` (nó `WolfVisual`) | 0 | Velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
+| `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Quanto a animação do lobo (andando em pé / correndo de quatro / na parede) corre em relação ao corpo: 1 acompanha, 0,7 é 30% mais lenta. Só a animação; a pata desliza a diferença. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
 | `WalkSpeedFactor` | 0,42 | Velocidade andando com Shift (só humano) |
 | `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula (é o hitbox do corpo) |
 | `StandEyeHeight` / `CrouchEyeHeight` | 0,62 / 0,1 m | Altura do olho a partir do centro da cápsula |
@@ -144,7 +144,8 @@ Multiplicam a classe do jogador (não a dos bots):
 | `WallHoldDistance` | 0,34 m | Distância do corpo à parede correndo |
 | `WallStickForce` | 4 m/s | Força que segura o corpo na parede |
 | `WallMinHeight` | 0,18 m | Altura mínima dos pés para a parede pegar |
-| `WallGrabMaxRise` | 0,6 m/s | Subindo mais rápido que isto, ainda não gruda |
+| `WallGrabMaxRise` | 0,6 m/s | Subindo mais rápido que isto **e** abaixo de `WallGrabHeight`, ainda não gruda |
+| `WallGrabHeight` | 0,45 m | Com os pés a esta altura do chão, gruda mesmo subindo. Menor = agarra com um pulinho; maior = precisa pular mais alto |
 | `WallLeaveSpeed` | 0,5 m/s | Afastando-se mais rápido que isto, não gruda |
 | `WallRunClearance` | 0,7 m | Checagem à frente: bater em algo solta |
 | `WallEndMargin` | 0,1 m | Quanto passa da ponta antes de decidir a quina |

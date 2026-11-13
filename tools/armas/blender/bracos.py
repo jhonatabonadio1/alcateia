@@ -89,7 +89,10 @@ CONJUNTOS = {
     # lado; inspecionar é o giro da faca na mão (ainda sem tecla).
     "faca": dict(
         pacote="knife-animated", fbx="arms@knife.fbx", armas=["faca"], arma="knife", objeto="faca",
-        linha=dict(parado=(1, 40), golpe=(43, 62), golpe2=(62, 82), inspecionar=(83, 121), sacar=(126, 136)),
+        linha=dict(parado=(1, 40), golpe=(42, 62), golpe2=(62, 82), inspecionar=(83, 121), sacar=(126, 136)),
+        # O quadro em que a lâmina chega: o jogo corre a armada até aqui
+        # (o dano sai no clique) e toca o resto no tempo do clipe.
+        contato=dict(golpe=48, golpe2=67),
         olho=(0.025, 0.64, 0.22), ajuste=(0.0, 0.04, 0.0), texturas={"arms": BRACO, "knife": "knife"}),
 }
 
@@ -242,6 +245,9 @@ def converter(nome, c):
         fps = cena.render.fps
         for jogo, (a, b) in c["linha"].items():
             animacoes[jogo] = dict(clipe="Scene", de=round((a - cena.frame_start) / fps, 4), ate=round((b - cena.frame_start) / fps, 4))
+            if jogo in c.get("contato", {}):
+                # Quando, dentro do trecho, a lâmina chega no alvo.
+                animacoes[jogo]["contato"] = round((c["contato"][jogo] - a) / fps, 4)
         modo = "SCENE"
         pose = c["linha"]["parado"][0]
     else:

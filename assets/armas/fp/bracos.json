@@ -105,11 +105,13 @@
    "golpe": {
     "ate": 2.0333,
     "clipe": "Scene",
-    "de": 1.4
+    "contato": 0.2,
+    "de": 1.3667
    },
    "golpe2": {
     "ate": 2.7,
     "clipe": "Scene",
+    "contato": 0.1667,
     "de": 2.0333
    },
    "inspecionar": {

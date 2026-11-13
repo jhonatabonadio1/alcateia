@@ -147,5 +147,3 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   eram 146); na Vila, 5 de 7 saem da base.
 - **Modelos avulsos do Sketchfab** (AK-47, Beretta, SG552, UMP45, Benelli
   M3) baixados e não usados.
-- **Fase 1**: os quatro testes de validação do `docs/ARSENAL.md` e "A
-  pergunta que decide o projeto" (fim do `CLAUDE.md`).
