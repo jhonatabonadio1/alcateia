@@ -225,7 +225,13 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `actors/player/Player.Camera.cs` | Olhar com o mouse, câmeras de 1ª e 3ª pessoa, recuo, câmera da morte |
 | `actors/player/Player.Actions.cs` | Trocar arma, atacar, salto e bote, recarregar, soltar, rugir |
 | `actors/input/CharacterIntent.cs` | O que o jogador quer no quadro, lido uma vez do teclado (a costura para o multiplayer) |
-| `actors/Bot.cs` | Percepção, combate à distância, strafe, decisão de forma |
+| `actors/bot/Bot.cs` | O ciclo do bot, o estado (Idle/Investigate/Combat/Search) e o cérebro |
+| `actors/bot/Bot.Perception.cs` | Visão, audição, crença de onde o alvo está, escolha de alvo, reação |
+| `actors/bot/Bot.Combat.cs` | Rajadas, strafe, distância, mira que erra de propósito |
+| `actors/bot/Bot.Wolf.cs` | Quando virar lobo, salto carregado, pulo com bote, rugido |
+| `actors/bot/Bot.Navigation.cs` | Malha de navegação, desvio, pular obstáculo, virar o corpo |
+| `actors/bot/Bot.Cover.cs` | Achar cobertura testando a linha de tiro, recuar |
+| `actors/bot/Bot.Patrol.cs` | Ronda pelas rotas do mapa e busca onde o alvo sumiu |
 | `actors/body/` | O corpo que o jogador e o bot dividem: `WolfMoveMotor` (bote, voo do salto, preso ao chão), `BodyNoise` + `BodyNoiseProfile` (passo, baque, rugido; `resources/body/ruido.tres`), `Corpse` (cair e assentar morto), `BodyMotion.Hold` |
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
 | `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, munição, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfDive` (bote), `.Damage` (aplicar dano) |
