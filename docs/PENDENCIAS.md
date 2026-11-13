@@ -20,23 +20,99 @@ Ponha aqui, com o que se sabe dele.
 
 ## Pedido e ainda não feito
 
-- **Animações próprias das mãos** — hoje são as do Sketchfab (CC BY).
-- **Modelos próprios de armas** — hoje são os do Sketchfab nas armas de
-  fogo e os de código na faca e na granada.
-- **Modelos próprios de humano e de lobo** — hoje são do Mixamo.
-- **Comprar personagens novos e jogar com eles** — a loja precisa vender
-  personagem, o inventário guardar, e a partida usar o escolhido (no
-  corpo de primeira e de terceira pessoa, e na rede).
-- **Cada personagem com o seu próprio lobo** — o personagem escolhido
-  decide o lobo em que se transforma. Decidir: o lobo é só aparência ou
+Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
+
+### Arte própria
+
+- **Animações próprias das mãos.** Hoje: as do Sketchfab (CC BY) nas
+  armas de fogo, as de código na faca e na granada.
+- **Modelos próprios de armas.** Hoje: Sketchfab nas armas de fogo,
+  código na faca e na granada.
+- **Modelos próprios de humano e de lobo.** Hoje: Mixamo.
+- **Logotipo do jogo.** Hoje: só o nome escrito na fonte do menu.
+- **Imagens das patentes melhores.** Hoje: insígnias desenhadas por
+  código (`RankBadge`).
+- **Lootbox em 3D, com animação de abrir.**
+
+### Combate e visual
+
+- **Abrir a mira com o botão direito**, nas armas que têm mira (zoom,
+  arma no centro da tela, menos dispersão). Hoje não existe.
+- **Configurar a própria mira (crosshair)**: cor, tamanho, espessura,
+  ponto, distância. Hoje a mira existe (`Crosshair.cs`), mas é fixa.
+- **Efeito de sangue nos tiros** (no corpo atingido e no chão/parede
+  atrás).
+- **Efeito de tiro melhor** (clarão, fumaça, traçante, marca na parede).
+- **Animação de quadrúpede e de ataques do lobo melhores.**
+- **Sombreamento melhor nos mapas, levando em conta o personagem**
+  (sombra do personagem e luz do mapa sobre ele).
+- **Qualidade de textura baixa, média e alta** nas opções (e, junto,
+  sombra, oclusão, distância de desenho). Hoje não há opção gráfica.
+- **Áudios melhores e mais precisos.**
+- **HUD, fontes e menu melhores.**
+
+### Mapas e modos
+
+- **Mais mapas.**
+- **Modo bomba**, com mapas feitos para ele (áreas de plantio, ataque e
+  defesa, rodadas). Hoje só existe Equipe (mata-mata por time).
+
+### Personagens, loja e economia
+
+- **Comprar personagens novos e jogar com eles** — loja, inventário e
+  partida (primeira e terceira pessoa, e na rede).
+- **Cada personagem com o seu próprio lobo.** Decidir: só aparência ou
   também muda a raça (estatísticas, golpes)?
-- **Armaduras para personagens e lobos** — decidir: só aparência ou com
-  efeito de jogo (vida, escudo, velocidade)? Se tiver efeito, entra em
-  `docs/ARSENAL.md` e nos testes de equilíbrio.
+- **Armaduras em personagens e lobos.** Decidir: só aparência ou com
+  efeito de jogo? Com efeito, entra no `docs/ARSENAL.md` e nos testes de
+  equilíbrio.
+- **Cash: dinheiro que o jogador paga.** Hoje o desenho já prevê o
+  Sangue (moeda paga que nunca compra poder — `Catalog.cs`), mas não há
+  compra. Falta: loja de Sangue, pagamento (Pix, cartão), saldo no
+  servidor, recibo, estorno.
+- **Lootboxes**, com animação e modelo 3D. **Atenção legal:** o ECA
+  Digital (Lei 15.211/2025) proíbe caixas de recompensa em jogos voltados
+  a crianças e adolescentes ou de acesso provável por eles, e o governo
+  já cobra verificação de idade de quem as mantém. Antes de fazer, falar
+  com advogado e decidir: classificação etária, verificação de idade, ou
+  trocar por recompensa sem sorteio pago.
+- **Recompensa diária definida no servidor**: armas, WP, lootboxes etc.
+- **Desafios inseridos pelo servidor.** Hoje as missões existem, mas são
+  fixas no jogo (`Missions.cs`): passam a vir do servidor.
+
+### Contas e cliente
+
+- **Sistema de contas.** Hoje: criar conta e entrar já existem (aba
+  Online + servidor). Falta: e-mail, confirmação, recuperar senha, trocar
+  senha, apagar conta (LGPD), entrar logo ao abrir o jogo.
+- **Cliente do jogo onde o jogador entra na conta e dá play.** Decidir:
+  um launcher separado (que também atualiza o jogo) ou o login na
+  primeira tela do próprio jogo.
+- **Perfil, inventário e moedas no servidor** (hoje ficam no arquivo do
+  jogador — dá para editar à mão).
+
+### Ranking
+
+- **Ranking que dura anos: ~8 anos de jogo até a última patente.**
+  Hoje: 30 patentes, a última com ~150 mil XP; uma partida dá ~350 XP,
+  então ~430 partidas (~70 horas) chegam ao topo. Para 8 anos, a curva
+  precisa de outra conta: definir quanto o jogador típico joga por dia
+  (por exemplo, 5 partidas por dia × 8 anos ≈ 14.600 partidas ≈ 5 milhões
+  de XP) e, provavelmente, mais patentes. A curva fica em `Ranks.XpFor`
+  e no servidor.
+
+### Servidor e produção
+
 - **Anti-trapaça** — hoje a vida e o acerto moram na máquina de cada
-  jogador (`docs/decisoes/0008`). O passo um é levar a vida e o acerto
-  para o servidor de partida; depois, conferir velocidade e linha de
-  tiro no servidor.
+  jogador (`docs/decisoes/0008`). Passo um: vida e acerto no servidor de
+  partida; depois, conferir velocidade e linha de tiro no servidor.
+- **Subir em produção, na região do Brasil** (São Paulo), com domínio,
+  HTTPS, banco gerenciado com backup, e servidores de partida perto dos
+  jogadores.
+- **Aguentar muitos jogadores ao mesmo tempo**: teste de carga (contas,
+  saguão, partidas simultâneas), vários servidores de partida subindo
+  sozinhos conforme a fila, saguão em mais de uma máquina (hoje as salas
+  ficam na memória de um processo só), monitoramento.
 
 ## Pendências técnicas conhecidas
 
@@ -47,7 +123,7 @@ Ponha aqui, com o que se sabe dele.
 - **Partida online entre duas máquinas** nunca jogada (só dois jogos sem
   tela na mesma máquina).
 - **Online**: compensação de lag, predição, bots, reconexão, golpes
-  especiais do lobo pela rede, perfil da loja no servidor, HTTPS.
+  especiais do lobo pela rede.
 - **Mapas vistos só no renderizador Compatibility**: ajustar luz e
   sombra no Forward+.
 - **Bots** na Polar atiram metade do que atiravam (76 tiros em 40 s,
