@@ -44,7 +44,8 @@ using System.Threading.Tasks;
 /// Variáveis de ambiente: <c>ALCATEIA_API</c> (o servidor),
 /// <c>ALCATEIA_FLEET_KEY</c> (o segredo da frota),
 /// <c>ALCATEIA_PUBLIC_ADDRESS</c> (o endereço que os jogadores usam),
-/// <c>ALCATEIA_GAME_PORT</c> (a porta UDP, 7777),
+/// <c>ALCATEIA_GAME_PORT</c> (a porta UDP, 7777; ou uma faixa, 7777-7876,
+/// e ele fica com a primeira livre — é como vários sobem na mesma máquina),
 /// <c>ALCATEIA_MATCHES</c> (quantas partidas ao mesmo tempo, 4).
 /// </summary>
 public partial class MatchServer : Node, HostedMatch.IMatchLink
@@ -85,7 +86,7 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 
 		_fleetKey = OS.GetEnvironment("ALCATEIA_FLEET_KEY");
 		_address = OS.GetEnvironment("ALCATEIA_PUBLIC_ADDRESS");
-		_port = int.TryParse(OS.GetEnvironment("ALCATEIA_GAME_PORT"), out int port) ? port : DefaultPort;
+		var (first, last) = PortRange(OS.GetEnvironment("ALCATEIA_GAME_PORT"));
 		_capacity = int.TryParse(OS.GetEnvironment("ALCATEIA_MATCHES"), out int capacity) ? Math.Clamp(capacity, 1, 64) : DefaultCapacity;
 
 		foreach (string arg in OS.GetCmdlineUserArgs())
@@ -101,11 +102,18 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 			return;
 		}
 
-		_peer = new ENetMultiplayerPeer();
-		Error error = _peer.CreateServer(_port, 32 * _capacity);
+		// A primeira porta livre da faixa: vários servidores de partida na
+		// mesma máquina (docker compose --scale) não brigam pela mesma.
+		Error error = Error.Failed;
+		for (_port = first; _port <= last; _port++)
+		{
+			_peer = new ENetMultiplayerPeer();
+			error = _peer.CreateServer(_port, 32 * _capacity);
+			if (error == Error.Ok) break;
+		}
 		if (error != Error.Ok)
 		{
-			GD.PrintErr($"Servidor de partida: não consegui abrir a porta {_port}/UDP ({error}).");
+			GD.PrintErr($"Servidor de partida: não consegui abrir nenhuma porta de {first} a {last}/UDP ({error}).");
 			GetTree().Quit(1);
 			return;
 		}
@@ -303,6 +311,16 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		_strangers.Remove(peer);
 		_matchOf.Remove(peer);
 		_peer.DisconnectPeer((int)peer);
+	}
+
+	/// <summary>"7777" ou "7777-7876" (vazio: a porta padrão).</summary>
+	public static (int First, int Last) PortRange(string text)
+	{
+		if (string.IsNullOrWhiteSpace(text)) return (DefaultPort, DefaultPort);
+		string[] parts = text.Split('-', 2, StringSplitOptions.TrimEntries);
+		int first = int.TryParse(parts[0], out int a) ? a : DefaultPort;
+		int last = parts.Length > 1 && int.TryParse(parts[1], out int b) ? Math.Max(b, first) : first;
+		return (first, last);
 	}
 
 	/// <summary>A mesma assinatura do servidor (Passwords.Sign): HMAC-SHA256 em hexadecimal.</summary>

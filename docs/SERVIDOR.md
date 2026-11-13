@@ -89,12 +89,53 @@ rotas HTTP e as mensagens do saguão, em `servidor/LEIA-ME.md`.
 
 | Comando | O que prova |
 |---|---|
-| `tools/testar_servidor.sh` | 22 testes do servidor contra um PostgreSQL de verdade (sobe um descartável no Docker): banco, contas, salas, chat, partidas |
+| `tools/testar_servidor.sh` | Os testes do servidor contra um PostgreSQL de verdade (sobe um descartável no Docker): banco, contas, salas, chat, partidas, frota |
+| `tools/testar_carga.sh` | Carga: 3000 jogadores de verdade (conta, WebSocket), 1000 salas jogando ao mesmo tempo e 250 servidores de partida falsos. Mede o tempo de cada resposta (veja "Escala") |
 | `tools/testar.sh` | Inclui os testes de unidade do juiz (`RefereeTests`) |
 | `tools/testar_online.sh` | Ponta a ponta: um servidor de partida e **dois jogos de verdade, sem tela**, criam conta, abrem sala, jogam 35 s (um atira, o outro morre e renasce) e conferem conta, placar e saguão. Precisa do servidor no ar (`docker compose up -d`, depois `docker compose stop partida`) |
 
 O robô do teste é `scripts/net/OnlineRobot.cs` (`-- --robo=criar` /
 `--robo=entrar`).
+
+## Escala
+
+O que aguenta, medido (`tools/testar_carga.sh`, 13/11, numa máquina de
+**2 núcleos** dividida entre o servidor e o próprio teste):
+
+| | |
+|---|---|
+| Jogadores no saguão ao mesmo tempo | 3000, ligados em 1,5 s |
+| Salas e partidas ao mesmo tempo | 1000 (o limite do jogo), em 250 servidores de partida × 4 |
+| Criar sala / entrar / começar a partida | mediana 14 / 17 / 31 ms; p99 17 / 247 / 71 ms |
+| Ping do saguão com tudo acontecendo | mediana 0,8 ms, p99 22 ms |
+| Batida da frota / resultado da partida | mediana 0,4 / 3,3 ms |
+| Memória do servidor no pico | ~370 MB |
+| Erros | nenhum |
+
+Como chega lá:
+
+- **Saguão**: cada conexão tem a própria fila de envio — mandar para
+  milhares não espera nenhum deles; quem não dá conta da fila (512
+  mensagens) é desligado e reconecta. A lista de salas vai junta, duas
+  vezes por segundo, e só para quem está olhando para ela; mostra as 200
+  em que dá para entrar primeiro (e o total). **Até 1000 salas** ao mesmo
+  tempo (`Config.MaxRooms`).
+- **Frota**: um servidor de partida joga várias partidas
+  (`ALCATEIA_MATCHES`, 4); a frota acha cada partida pela chave, sem
+  varrer os servidores. **Milhares de partidas são centenas de
+  servidores de partida**, em quantas máquinas for preciso, todos
+  batendo no mesmo servidor — a frota se monta sozinha. Na mesma máquina:
+  `docker compose -f docker-compose.yml -f docker-compose.frota.yml up -d --scale partida=20`
+  (cada um pega a primeira porta livre de `ALCATEIA_GAME_PORT=7777-7876`).
+- **Banco**: o pool tem 32 ligações (`ALCATEIA_DB_POOL`); quem é dono de
+  cada token fica meio minuto em memória.
+- **O cadastro é lento de propósito** (PBKDF2, ~0,1 s de CPU por conta):
+  3000 contas novas de uma vez levaram 2 minutos em 2 núcleos. Login em
+  massa pesa o mesmo; mais núcleos, mais rápido.
+- **Um processo só** de servidor (as salas vivem na memória dele). Para
+  passar de dezenas de milhares no saguão, o próximo passo é dividir o
+  saguão entre vários processos com um canal entre eles — hoje não é
+  preciso.
 
 ## O que ainda não faz
 

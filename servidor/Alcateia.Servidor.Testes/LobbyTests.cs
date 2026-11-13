@@ -21,6 +21,23 @@ public static class LobbyTests
 
 	public static readonly (string, Func<Task>)[] All =
 	{
+		("saguão: limite de salas abertas ao mesmo tempo (mil no jogo); a lista diz quantas há", async () =>
+		{
+			await using World w = await World.Start(c => c.MaxRooms = 2);
+			await using Player a = await w.NewPlayer(), b = await w.NewPlayer(), c = await w.NewPlayer();
+			foreach (Player p in new[] { a, b, c }) { await p.Connect(); await p.Hear("rooms"); }
+
+			await a.Say(Msg("room.create", ("settings", Settings())));
+			await a.Hear("room");
+			await b.Say(Msg("room.create", ("settings", Settings())));
+			await b.Hear("room");
+			await c.Say(Msg("room.create", ("settings", Settings())));
+			Check.Equal("cheio", (await c.Hear("error"))["code"].GetValue<string>(), "a terceira sala não abre");
+
+			JsonObject list = await c.Hear("rooms", m => m["rooms"].AsArray().Count == 2);
+			Check.Equal(2, list["total"].GetValue<int>(), "a lista diz o total de salas");
+		}),
+
 		("saguão: sem token não entra; com token recebe olá e a lista", async () =>
 		{
 			await using World w = await World.Start();

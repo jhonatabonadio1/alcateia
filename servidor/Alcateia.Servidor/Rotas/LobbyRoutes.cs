@@ -1,5 +1,6 @@
 using System;
 using System.Net.WebSockets;
+using System.Threading.Channels;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -38,7 +39,8 @@ public static class LobbyRoutes
 	/// o saguão; caiu ou fechou, sai da sala.</summary>
 	private static async Task Run(LobbyService lobby, Account account, WebSocket socket)
 	{
-		LobbyService.Session session = await lobby.Connect(account, new SocketConnection(socket));
+		var connection = new SocketConnection(socket);
+		LobbyService.Session session = await lobby.Connect(account, connection);
 		var buffer = new byte[8 * 1024];
 		try
 		{
@@ -56,6 +58,7 @@ public static class LobbyRoutes
 		finally
 		{
 			await lobby.Disconnect(session);
+			connection.Stop();
 		}
 	}
 
@@ -72,31 +75,51 @@ public static class LobbyRoutes
 		}
 	}
 
-	/// <summary>A conexão de um jogador, como o saguão a vê. Uma mensagem
-	/// por vez: o WebSocket não aceita dois envios ao mesmo tempo.</summary>
+	/// <summary>
+	/// A conexão de um jogador, como o saguão a vê. Mandar é pôr na fila:
+	/// quem escreve no socket é um laço só desta conexão, uma mensagem por
+	/// vez (o WebSocket não aceita dois envios ao mesmo tempo). Assim uma
+	/// lista para milhares não espera a rede de nenhum deles.
+	///
+	/// Fila cheia (<see cref="MaxQueued"/>) é cliente que não dá conta: em
+	/// vez de guardar mensagem sem fim na memória do servidor, ele é
+	/// desligado e reconecta do zero.
+	/// </summary>
 	private sealed class SocketConnection : ILobbyConnection
 	{
-		private readonly WebSocket _socket;
-		private readonly SemaphoreSlim _sending = new(1, 1);
+		public const int MaxQueued = 512;
 
-		public SocketConnection(WebSocket socket) => _socket = socket;
+		private readonly WebSocket _socket;
+		private readonly Channel<string> _queue = Channel.CreateBounded<string>(
+			new BoundedChannelOptions(MaxQueued) { SingleReader = true, FullMode = BoundedChannelFullMode.Wait });
+
+		public SocketConnection(WebSocket socket)
+		{
+			_socket = socket;
+			_ = Write();
+		}
 
 		public bool IsOpen => _socket.State == WebSocketState.Open;
 
-		public async Task Send(string text)
+		public Task Send(string text)
 		{
-			await _sending.WaitAsync();
+			if (!_queue.Writer.TryWrite(text) && IsOpen) _ = Close("lento demais");
+			return Task.CompletedTask;
+		}
+
+		/// <summary>A conexão acabou: o laço de escrita para.</summary>
+		public void Stop() => _queue.Writer.TryComplete();
+
+		private async Task Write()
+		{
 			try
 			{
-				await _socket.SendAsync(Encoding.UTF8.GetBytes(text), WebSocketMessageType.Text, true, CancellationToken.None);
+				await foreach (string text in _queue.Reader.ReadAllAsync())
+					await _socket.SendAsync(Encoding.UTF8.GetBytes(text), WebSocketMessageType.Text, true, CancellationToken.None);
 			}
 			catch (Exception e) when (e is WebSocketException or ObjectDisposedException or InvalidOperationException)
 			{
 				// Quem caiu no meio é varrido pelo próprio laço de leitura.
-			}
-			finally
-			{
-				_sending.Release();
 			}
 		}
 

@@ -1,0 +1,21 @@
+# Muitos servidores de partida na mesma máquina (Linux), por cima do
+# docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.frota.yml up -d --build --scale partida=20
+#
+# Cada servidor de partida joga ALCATEIA_MATCHES partidas ao mesmo tempo
+# (4 por padrão): 20 deles são 80 partidas. Eles usam a rede da máquina
+# (network_mode: host) e cada um fica com a primeira porta UDP livre da
+# faixa ALCATEIA_GAME_PORT — libere a faixa inteira no firewall. Para
+# milhares de partidas, a mesma coisa em várias máquinas, todas apontando
+# ALCATEIA_API para o mesmo servidor: a frota se monta sozinha pelas
+# batidas. Veja docs/SERVIDOR.md.
+
+services:
+  partida:
+    network_mode: host
+    ports: !reset []
+    environment:
+      ALCATEIA_API: http://127.0.0.1:${ALCATEIA_PORT:-8080}
+      ALCATEIA_GAME_PORT: ${ALCATEIA_GAME_PORTS:-7777-7876}
+      ALCATEIA_MATCHES: ${ALCATEIA_MATCHES:-4}

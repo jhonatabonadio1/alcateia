@@ -31,6 +31,7 @@ Alcateia.Servidor/       a borda (o programa)
   Http/                  JSON, erros, chave da frota, freio de tentativas
   Rotas/                 contas, saguão (WebSocket), frota, partidas, saúde
 Alcateia.Servidor.Testes/   testes de integração (tools/testar_servidor.sh)
+Alcateia.Carga/             teste de carga: milhares de jogadores e partidas (tools/testar_carga.sh)
 Dockerfile                  a imagem do servidor
 partida.Dockerfile          a imagem do servidor de partida (o jogo sem tela)
 ```

@@ -54,6 +54,8 @@ services:
       # O endereço que os jogadores usam para chegar nesta máquina.
       ALCATEIA_PUBLIC_ADDRESS: ${ALCATEIA_PUBLIC_ADDRESS:-127.0.0.1}
       ALCATEIA_GAME_PORT: 7777
+      # Quantas partidas este servidor de partida joga ao mesmo tempo.
+      ALCATEIA_MATCHES: ${ALCATEIA_MATCHES:-4}
     ports:
       - "7777:7777/udp"
 

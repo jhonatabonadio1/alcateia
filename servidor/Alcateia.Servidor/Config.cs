@@ -28,6 +28,13 @@ public sealed class Config
 	/// <summary>Tentativas de login ou cadastro por minuto, por endereço.</summary>
 	public int LoginsPerMinute = 12;
 
+	/// <summary>De quanto em quanto tempo a lista de salas que mudou vai
+	/// para quem está no saguão.</summary>
+	public TimeSpan RoomListEvery = TimeSpan.FromMilliseconds(500);
+
+	/// <summary>Salas abertas ao mesmo tempo, no máximo.</summary>
+	public int MaxRooms = Aplicacao.Saguao.LobbyService.DefaultMaxRooms;
+
 	/// <summary>Sem batida há este tempo, o servidor de partida é dado
 	/// como caído.</summary>
 	public TimeSpan FleetTimeout = TimeSpan.FromSeconds(20);
@@ -46,6 +53,8 @@ public sealed class Config
 		c.Port = int.Parse(Env("ALCATEIA_PORT", "8080"));
 		c.FleetKey = Env("ALCATEIA_FLEET_KEY", c.FleetKey);
 		c.SessionDays = int.Parse(Env("ALCATEIA_SESSION_DAYS", "30"));
+		c.LoginsPerMinute = int.Parse(Env("ALCATEIA_LOGINS_PER_MINUTE", "12"));
+		c.Database.MaxConnections = int.Parse(Env("ALCATEIA_DB_POOL", "32"));
 		return c;
 	}
 

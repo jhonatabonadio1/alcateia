@@ -33,9 +33,17 @@ namespace Alcateia.Aplicacao.Saguao;
 /// e quem precisa saber do quê. A conexão em si (o WebSocket) é de fora:
 /// chega como <see cref="ILobbyConnection"/>.
 /// </summary>
-public sealed class LobbyService
+public sealed class LobbyService : IDisposable
 {
-	public const int MaxChat = 200, MaxRooms = 500;
+	public const int MaxChat = 200;
+
+	/// <summary>Salas abertas ao mesmo tempo, no máximo (decisão do Jhon, 13/11).</summary>
+	public const int DefaultMaxRooms = 1000;
+
+	/// <summary>Quantas salas a lista mostra: as que dá para entrar primeiro.
+	/// Com mil salas, mandar todas para cada um a cada mudança seria o
+	/// servidor inteiro ocupado em repetir a mesma lista.</summary>
+	public const int MaxListed = 200;
 
 	/// <summary>Um jogador ligado no saguão.</summary>
 	public sealed class Session
@@ -56,13 +64,42 @@ public sealed class LobbyService
 	private readonly Dictionary<int, Room> _rooms = new();
 	private int _nextRoom = 1;
 
-	public LobbyService(FleetService fleet, AccountService accounts, IClock clock, TimeSpan ticketLife)
+	// A lista de salas vai para quem está olhando para ela junta, de tempos
+	// em tempos (ListEvery), e não a cada mudança: com milhares no saguão,
+	// cada sala criada ou cheia seria uma lista inteira para cada um.
+	private readonly System.Threading.Timer _listTimer;
+	private bool _listChanged;
+	private readonly int _maxRooms;
+
+	/// <summary><paramref name="listEvery"/>: de quanto em quanto tempo a
+	/// lista de salas que mudou vai para quem está no saguão.</summary>
+	public LobbyService(FleetService fleet, AccountService accounts, IClock clock, TimeSpan ticketLife,
+		TimeSpan? listEvery = null, int maxRooms = DefaultMaxRooms)
 	{
+		_maxRooms = maxRooms;
 		_fleet = fleet;
 		_accounts = accounts;
 		_clock = clock;
 		_ticketLife = ticketLife;
 		_fleet.Lost += OnMatchLost;
+
+		TimeSpan every = listEvery ?? TimeSpan.FromMilliseconds(500);
+		_listTimer = new System.Threading.Timer(_ => _ = FlushList(), null, every, every);
+	}
+
+	public void Dispose() => _listTimer.Dispose();
+
+	/// <summary>Manda a lista de salas, se mudou, para quem está no saguão.</summary>
+	public async Task FlushList()
+	{
+		var outbox = new Outbox();
+		lock (_lock)
+		{
+			if (!_listChanged) return;
+			_listChanged = false;
+			outbox.To(_sessions.Values.Where(s => s.Room == null), RoomsMessage());
+		}
+		await outbox.Deliver();
 	}
 
 	public int Online { get { lock (_lock) return _sessions.Count; } }
@@ -172,7 +209,7 @@ public sealed class LobbyService
 					outbox.To(SessionOf(m), end);
 				}
 				RoomState(room, outbox);
-				RoomListToAll(outbox);
+				ListChanged();
 			}
 		}
 		await outbox.Deliver();
@@ -199,7 +236,7 @@ public sealed class LobbyService
 				: ErrorMessage("partida_encerrada", "A partida foi encerrada sem resultado. A sala voltou a esperar.");
 			foreach (RoomMember m in room.Members) outbox.To(SessionOf(m), why);
 			RoomState(room, outbox);
-			RoomListToAll(outbox);
+			ListChanged();
 		}
 		_ = outbox.Deliver();
 	}
@@ -271,7 +308,7 @@ public sealed class LobbyService
 
 	private void Create(Session c, JsonObject settings, Outbox outbox)
 	{
-		if (_rooms.Count >= MaxRooms) throw new Failure(FailureKind.Unavailable, "cheio", "O servidor está com salas demais.");
+		if (_rooms.Count >= _maxRooms) throw new Failure(FailureKind.Unavailable, "cheio", "O servidor está com salas demais.");
 		Leave(c, outbox);
 
 		Room room = Room.Create(_nextRoom++, c.Account, c.Xp, settings);
@@ -305,7 +342,7 @@ public sealed class LobbyService
 
 		if (room.IsEmpty) _rooms.Remove(room.Id);
 		else RoomState(room, outbox);
-		RoomListToAll(outbox);
+		ListChanged();
 	}
 
 	private void Start(Session c, Outbox outbox)
@@ -360,7 +397,7 @@ public sealed class LobbyService
 		IEnumerable<Session> to = c.Room != null
 			? c.Room.Members.Select(SessionOf).Where(s => s != null)
 			: _sessions.Values.Where(x => x.Room == null);
-		foreach (Session other in to) outbox.To(other, line);
+		outbox.To(to, line);
 	}
 
 	private static Room InRoom(Session c) =>
@@ -374,13 +411,19 @@ public sealed class LobbyService
 	private void Changed(Room room, Outbox outbox)
 	{
 		RoomState(room, outbox);
-		RoomListToAll(outbox);
+		ListChanged();
 	}
 
+	/// <summary>As salas que a lista mostra: primeiro as que esperam e têm
+	/// lugar, das mais novas para as mais velhas; até <see cref="MaxListed"/>.</summary>
 	private JsonArray RoomList()
 	{
 		var list = new JsonArray();
-		foreach (Room r in _rooms.Values.OrderByDescending(r => r.Id))
+		IEnumerable<Room> shown = _rooms.Values
+			.OrderByDescending(r => r.State == Dominio.Salas.RoomState.Waiting && r.Members.Count < r.Capacity)
+			.ThenByDescending(r => r.Id)
+			.Take(MaxListed);
+		foreach (Room r in shown)
 			list.Add(new JsonObject
 			{
 				["id"] = r.Id,
@@ -395,7 +438,7 @@ public sealed class LobbyService
 		return list;
 	}
 
-	private JsonObject RoomsMessage() => new() { ["t"] = "rooms", ["rooms"] = RoomList() };
+	private JsonObject RoomsMessage() => new() { ["t"] = "rooms", ["rooms"] = RoomList(), ["total"] = _rooms.Count };
 
 	/// <summary>O estado inteiro da sala, para todos nela.</summary>
 	private void RoomState(Room room, Outbox outbox)
@@ -435,15 +478,11 @@ public sealed class LobbyService
 			["state"] = room.StateName,
 			["members"] = members
 		};
-		foreach (RoomMember m in room.Members) outbox.To(SessionOf(m), state);
+		outbox.To(room.Members.Select(SessionOf), state);
 	}
 
-	/// <summary>A lista de salas, para quem está olhando para ela.</summary>
-	private void RoomListToAll(Outbox outbox)
-	{
-		JsonObject list = RoomsMessage();
-		foreach (Session s in _sessions.Values.Where(s => s.Room == null)) outbox.To(s, list);
-	}
+	/// <summary>A lista de salas mudou: vai na próxima leva (<see cref="FlushList"/>).</summary>
+	private void ListChanged() => _listChanged = true;
 
 	private static JsonObject ErrorMessage(string code, string message) =>
 		new() { ["t"] = "error", ["code"] = code, ["message"] = message };
@@ -459,6 +498,20 @@ public sealed class LobbyService
 			if (session != null) _items.Add((session, message.ToJsonString()));
 		}
 
+		/// <summary>A mesma mensagem para vários: vira texto uma vez só.</summary>
+		public void To(IEnumerable<Session> sessions, JsonObject message)
+		{
+			string text = null;
+			foreach (Session session in sessions)
+			{
+				if (session == null) continue;
+				text ??= message.ToJsonString();
+				_items.Add((session, text));
+			}
+		}
+
+		/// <summary>Entrega: cada conexão tem a própria fila (lá fora), então
+		/// mandar para milhares não espera nenhum deles.</summary>
 		public async Task Deliver()
 		{
 			foreach ((Session session, string text) in _items)

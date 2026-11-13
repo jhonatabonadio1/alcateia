@@ -73,7 +73,9 @@ public interface ILobbyConnection
 {
 	bool IsOpen { get; }
 
-	/// <summary>Manda uma mensagem. Quem caiu no meio só não recebe.</summary>
+	/// <summary>Põe uma mensagem na fila da conexão e volta logo, sem esperar
+	/// a rede: um jogador lento não segura os outros. Quem caiu no meio só
+	/// não recebe; quem não dá conta da própria fila é desligado.</summary>
 	Task Send(string text);
 
 	/// <summary>Fecha, avisando por quê.</summary>

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	Teste de carga do servidor: milhares de jogadores de verdade (conta,
+	login, WebSocket do saguão), centenas de servidores de partida falsos
+	(batida, entrega, resultado) e mil salas jogando ao mesmo tempo. Mede
+	quanto o servidor demora para responder a cada coisa.
+
+	Rodar: tools/testar_carga.sh, que sobe o banco e o servidor e roda
+	(as opções estão no começo de Program.cs).
+	-->
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<RootNamespace>Alcateia.Carga</RootNamespace>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<ServerGarbageCollection>true</ServerGarbageCollection>
+	</PropertyGroup>
+
+</Project>

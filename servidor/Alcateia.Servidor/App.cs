@@ -68,7 +68,11 @@ public static class App
 		if (config.FleetKey == Config.DevFleetKey)
 			log.LogWarning("ALCATEIA_FLEET_KEY está com o valor de desenvolvimento: troque antes de abrir para a internet");
 
-		app.Lifetime.ApplicationStopped.Register(() => services.Db.DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(3)));
+		app.Lifetime.ApplicationStopped.Register(() =>
+		{
+			services.Lobby.Dispose();
+			services.Db.DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(3));
+		});
 		app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(20) });
 		app.UseJsonErrors(log);
 
@@ -88,7 +92,7 @@ public static class App
 		var clock = new SystemClock();
 		var accounts = new AccountService(new PgAccountRepository(db), new Pbkdf2Hasher(), new Sha256Tokens(), clock, config.SessionDays);
 		var fleet = new FleetService(config.FleetTimeout, new FleetSigner(config.FleetKey), clock);
-		var lobby = new LobbyService(fleet, accounts, clock, config.TicketLife);
+		var lobby = new LobbyService(fleet, accounts, clock, config.TicketLife, config.RoomListEvery, config.MaxRooms);
 		var matches = new MatchService(new PgMatchRepository(db), fleet, lobby);
 		return new Services(config, db, accounts, lobby, fleet, matches, new RateLimit(config.LoginsPerMinute));
 	}

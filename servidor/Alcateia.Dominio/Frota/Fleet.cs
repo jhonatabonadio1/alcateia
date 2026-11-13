@@ -57,6 +57,10 @@ public sealed class Fleet
 	private readonly TimeSpan _timeout;
 	private readonly Dictionary<string, GameServer> _servers = new();
 
+	// Partida → servidor que a tem: com milhares de partidas, achar uma
+	// (o resultado, a liberação) não pode varrer a frota inteira.
+	private readonly Dictionary<string, GameServer> _byMatch = new();
+
 	public Fleet(TimeSpan timeout) => _timeout = timeout;
 
 	/// <summary>Batida de um servidor de partida. Devolve as partidas novas
@@ -86,6 +90,7 @@ public sealed class Fleet
 				if (!open && (slot.Seen || now - slot.DeliveredAt.Value > DeliveryGrace))
 				{
 					s.Slots.Remove(slot);
+					_byMatch.Remove(slot.Assignment.MatchKey);
 					lost.Add(new LostMatch(slot.Assignment, MatchLoss.Closed));
 				}
 			}
@@ -109,25 +114,23 @@ public sealed class Fleet
 		if (free == null) return null;
 
 		free.Slots.Add(new Slot { Assignment = assignment });
+		_byMatch[assignment.MatchKey] = free;
 		return (free.Address, free.Port);
 	}
 
 	/// <summary>A partida em curso com esta chave, e o servidor que a tem.</summary>
 	public (MatchAssignment Assignment, string ServerId)? Find(string matchKey)
 	{
-		foreach (GameServer s in _servers.Values)
-		{
-			Slot slot = s.Slots.FirstOrDefault(x => x.Assignment.MatchKey == matchKey);
-			if (slot != null) return (slot.Assignment, s.Id);
-		}
-		return null;
+		if (matchKey == null || !_byMatch.TryGetValue(matchKey, out GameServer s)) return null;
+		Slot slot = s.Slots.FirstOrDefault(x => x.Assignment.MatchKey == matchKey);
+		return slot == null ? null : (slot.Assignment, s.Id);
 	}
 
 	/// <summary>A partida acabou (com resultado): o lugar fica livre.</summary>
 	public void Release(string matchKey)
 	{
-		foreach (GameServer s in _servers.Values)
-			s.Slots.RemoveAll(x => x.Assignment.MatchKey == matchKey);
+		if (matchKey == null || !_byMatch.Remove(matchKey, out GameServer s)) return;
+		s.Slots.RemoveAll(x => x.Assignment.MatchKey == matchKey);
 	}
 
 	/// <summary>Tira quem parou de bater. Devolve as partidas que caíram junto.</summary>
@@ -137,6 +140,7 @@ public sealed class Fleet
 		foreach (GameServer s in _servers.Values.Where(s => now - s.LastSeen > _timeout).ToList())
 		{
 			lost.AddRange(s.Slots.Select(x => new LostMatch(x.Assignment, MatchLoss.ServerDown)));
+			foreach (Slot slot in s.Slots) _byMatch.Remove(slot.Assignment.MatchKey);
 			_servers.Remove(s.Id);
 		}
 		return lost;

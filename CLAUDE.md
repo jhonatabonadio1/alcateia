@@ -362,7 +362,9 @@ roda o mesmo script a cada push (`.github/workflows/testes.yml`).
 - **Mexeu no servidor ou na rede?** Rode também
   `tools/testar_servidor.sh` (o servidor contra um PostgreSQL de
   verdade) e `tools/testar_online.sh` (dois jogos sem tela jogando uma
-  partida pelo servidor). Os dois pedem Docker.
+  partida pelo servidor). Os dois pedem Docker. Mexeu no saguão ou na
+  frota? `tools/testar_carga.sh` (3000 jogadores e 1000 partidas ao
+  mesmo tempo; os números de referência estão em `docs/SERVIDOR.md`).
 - Para medir velocidade, use `bench.Displacement(corpo, quadros)`, não
   segundos: o cronômetro pode chegar um quadro depois e somar 3%.
 

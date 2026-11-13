@@ -22,6 +22,22 @@
 - Testes novos do servidor: duas salas no mesmo servidor de partida (e a
   terceira esperando) e partida fechada sem resultado liberando o lugar.
 
+### Servidor para milhares de jogadores e de partidas (13/11)
+- **Até 1000 salas** ao mesmo tempo (era 500; decisão do Jhon).
+- Saguão: cada conexão com a própria fila de envio (um jogador lento não
+  segura os outros; quem não dá conta é desligado); a lista de salas vai
+  junta duas vezes por segundo, para quem está olhando, com as 200 em que
+  dá para entrar primeiro e o total.
+- Frota: a partida é achada pela chave, sem varrer os servidores; o
+  servidor de partida pega a primeira porta livre de uma faixa
+  (`ALCATEIA_GAME_PORT=7777-7876`), e `docker-compose.frota.yml` sobe
+  vários na mesma máquina (`--scale partida=N`).
+- Banco: pool de 32 ligações (`ALCATEIA_DB_POOL`).
+- **Teste de carga** (`tools/testar_carga.sh`, `servidor/Alcateia.Carga`):
+  3000 jogadores, 1000 partidas ao mesmo tempo, 250 servidores de partida
+  falsos — sem nenhum erro, p99 abaixo de 350 ms em 2 núcleos. Os números
+  estão em `docs/SERVIDOR.md` ("Escala").
+
 ### Munição que acaba e zoom com mira circular (13/11)
 - **A munição acaba.** Cada arma tem o pente e a reserva (M16/SG/AK 90,
   UMP 100, M3 32, M9 60); recarregar tira da reserva e, sem ela, não
