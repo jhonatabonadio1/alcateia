@@ -105,28 +105,9 @@ public partial class Player : CharacterBody3D
 	/// </summary>
 	public static float HowlDuration => WolfMoves.Duration(WolfMove.Howl);
 
-	// --- Ruído ---
-	//
-	// Som é informação de jogo: o bot ouve o que o jogador ouviria.
-	// Agachar é silencioso, e é isso que torna o agachamento uma
-	// decisão tática em vez de um botão de encolher.
-
-	/// <summary>Raio do passo humano andando.</summary>
-	[Export] public float StepNoiseHuman = 13f;
-
-	/// <summary>Raio do passo do lobo. Mais alto: o corpo é maior e
-	/// mais rápido, e isso precisa ter um custo.</summary>
-	[Export] public float StepNoiseWolf = 20f;
-
-	/// <summary>Raio do baque ao aterrissar.</summary>
-	[Export] public float LandNoise = 17f;
-
-	/// <summary>Raio do rugido. Muito alto de propósito — entregar a
-	/// posição é metade do preço de recuperar o escudo.</summary>
-	[Export] public float HowlNoise = 45f;
-
-	/// <summary>Distância percorrida entre um passo e outro.</summary>
-	[Export] public float StepDistance = 2.2f;
+	/// <summary>Quanto barulho o corpo faz (resources/body/ruido.tres, o
+	/// mesmo do bot). Agachado e andando devagar não fazem passo.</summary>
+	[Export] public BodyNoiseProfile Noise;
 
 	// --- Corrida em parede (só na forma lobo) ---
 
@@ -247,9 +228,9 @@ public partial class Player : CharacterBody3D
 	private float _gravity = 9.8f;
 	private bool _howling;
 	private double _howlProgress;
-	private float _stepDistance;
-	private bool _wasAirborne;
-	private double _howlNoiseTimer;
+	private BodyNoise _noise;
+	private WolfMoveMotor _moves;
+	private Corpse _corpse;
 
 	private double _stunTimer;
 	private float _stunSlow = 1f;
@@ -288,7 +269,6 @@ public partial class Player : CharacterBody3D
 	private Vector3 _spawn;
 	private CollisionShape3D _collision;
 	private CharacterAnimator _animator;
-	private bool _settled;
 	private CapsuleShape3D _capsule;
 	private bool _crouching;
 
@@ -339,6 +319,9 @@ public partial class Player : CharacterBody3D
 		_spawn = GlobalPosition;
 
 		_collision = GetNode<CollisionShape3D>("CollisionShape3D");
+		_noise = new BodyNoise(this, Noise);
+		_moves = new WolfMoveMotor(this, _weapon) { FreezeBrake = FreezeBrake };
+		_corpse = new Corpse(this, _collision);
 
 		// Duplica a forma: sem isto todos os jogadores da cena
 		// compartilham a mesma cápsula e agacham juntos.
@@ -386,75 +369,10 @@ public partial class Player : CharacterBody3D
 	/// pode ser a da morte ou outra qualquer.</summary>
 	public Camera3D AimCamera => _form.IsThirdPerson ? _wolfCamera : _camera;
 
-	/// <summary>
-	/// O bote em curso: o corpo segue a velocidade fixada no clique, em
-	/// linha reta, até encostar em algo. É o compromisso do golpe — o
-	/// ponto de impacto é escolhido no clique e não se controla mais
-	/// nada até aterrissar. Encostou: para seco e avisa a arma, que bate.
-	/// </summary>
-	private void DiveMovement()
-	{
-		ReleaseWall();
-		Velocity = _weapon.DiveVelocity;
-		MoveAndSlide();
-
-		// Parede só conta se o bote vai de encontro a ela. Saindo de uma
-		// corrida na parede, o corpo ainda roça nela no primeiro quadro, e
-		// isso não pode virar impacto.
-		Vector3 heading = _weapon.DiveVelocity.Normalized();
-		bool wall = IsOnWall() && GetWallNormal().Dot(heading) < -0.3f;
-
-		if (!IsOnFloor() && !wall && !IsOnCeiling()) return;
-
-		_weapon.DiveContact();
-		Velocity = Vector3.Zero;
-	}
-
-	/// <summary>Estava no voo do salto no quadro anterior.</summary>
-	private bool _pounceFlying;
-
-	/// <summary>
-	/// O voo do salto: o corpo vai para o ponto do arco no próximo quadro.
-	/// Por posição e não por força, para o pulo cair exatamente onde foi
-	/// planejado; a física ainda manda — bater em algo no caminho para o
-	/// corpo ali. A velocidade é limitada para nunca atravessar parede.
-	/// </summary>
-	private void PounceFlight(double delta)
-	{
-		ReleaseWall();
-
-		Vector3 next = _weapon.PounceFlightPoint(delta);
-		Vector3 velocity = (next - GlobalPosition) / (float)delta;
-		Velocity = velocity.LimitLength(28f);
-		MoveAndSlide();
-	}
-
 	/// <summary>Freada de quem fica preso no lugar, em m/s². Parar seco a
 	/// 6,5 m/s era um tranco de câmera; assim o lobo desliza meio metro
 	/// enquanto agacha para o salto, que é o embalo que se espera ver.</summary>
 	[Export] public float FreezeBrake = 30f;
-
-	/// <summary>Preso no lugar: sem andar nem pular, só a gravidade.
-	/// Rugir, o salto no chão e a aterrissagem do bote usam. O jogador
-	/// não anda, mas o golpe pode andar por ele (o avanço do salto).</summary>
-	private void Freeze(double delta)
-	{
-		ReleaseWall();
-
-		Vector3 frozen = Velocity;
-
-		// O salto preso ao chão ainda avança: o passo dele leva o corpo até
-		// o ponto da mira, por cima da freada.
-		var flat = _weapon.IsStepping
-			? _weapon.StepVelocity
-			: new Vector3(frozen.X, 0, frozen.Z).MoveToward(Vector3.Zero, FreezeBrake * (float)delta);
-		frozen.X = flat.X;
-		frozen.Z = flat.Z;
-		if (!IsOnFloor())
-			frozen.Y -= _gravity * (float)delta;
-		Velocity = frozen;
-		MoveAndSlide();
-	}
 
 	/// <summary>Recuo de câmera: o cano sobe a cada tiro e volta
 	/// sozinho. Sem isso, atirar não tem peso nenhum.</summary>
@@ -521,7 +439,6 @@ public partial class Player : CharacterBody3D
 	{
 		ApplyCamera();
 		_cameraKick = 0;
-		_settled = false;
 
 		// Quem te matou: silhueta vermelha só para você, e a câmera vira
 		// para ele até você renascer.
@@ -533,57 +450,15 @@ public partial class Player : CharacterBody3D
 
 	private KillCam _killCam;
 
-	/// <summary>
-	/// Assenta o corpo morto.
-	///
-	/// São duas coisas em ordem, e inverter quebra as duas. Primeiro a
-	/// gravidade trabalha, com a colisão ligada, até o corpo tocar o
-	/// chão — quem morre no ar precisa cair. Só então a colisão
-	/// desliga e o corpo para onde parou.
-	///
-	/// Desligar antes, como eu fazia, derruba o corpo pelo cenário sem
-	/// nada para segurá-lo. Nunca desligar deixa o cadáver sendo
-	/// empurrado para fora do chão quadro a quadro, que com colisão de
-	/// dois lados pode resolver para o lado errado e afundar devagar.
-	/// </summary>
-	private void Settle(double delta)
-	{
-		// Assentado, o corpo não se move mais — nem a gravidade. Era o
-		// defeito: com a colisão desligada, IsOnFloor() responde falso
-		// no quadro seguinte, porque sem colisão não existe chão, e a
-		// gravidade voltava a puxar o corpo através do mapa.
-		if (_settled) return;
-
-		if (IsOnFloor())
-		{
-			Velocity = Vector3.Zero;
-
-			if (!_settled)
-			{
-				_settled = true;
-				_collision.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
-			}
-		}
-		else
-		{
-			Velocity = new Vector3(0, Velocity.Y - _gravity * (float)delta, 0);
-		}
-
-		MoveAndSlide();
-	}
-
-
+	/// <summary>Assenta o corpo morto (<see cref="Corpse"/>).</summary>
+	private void Settle(double delta) => _corpse.Settle(delta, _gravity);
 
 	/// <summary>Parado no lugar, com gravidade. Sem a gravidade quem
 	/// estivesse no ar quando a partida acabou ficaria pendurado.</summary>
 	private void Hold(double delta)
 	{
 		ReleaseWall();
-
-		Velocity = new Vector3(0,
-			IsOnFloor() ? 0 : Velocity.Y - _gravity * (float)delta, 0);
-
-		MoveAndSlide();
+		BodyMotion.Hold(this, delta, _gravity);
 	}
 
 	private void OnRespawned()
@@ -591,8 +466,7 @@ public partial class Player : CharacterBody3D
 		_killCam?.Finish();
 		_killCam = null;
 		ApplyCamera();
-		_settled = false;
-		_collision.SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
+		_corpse.Revive();
 
 		GlobalPosition = SpawnPoints.Pick(this, _spawn);
 		Velocity = Vector3.Zero;
@@ -745,37 +619,12 @@ public partial class Player : CharacterBody3D
 		UpdateNoise(delta);
 		UpdateCameraKick(delta);
 
-		// O bote segue a trajetória do clique até encostar.
-		if (_weapon.IsDiving)
-		{
-			DiveMovement();
+		// Os golpes especiais do lobo (bote, voo do salto, preso ao chão)
+		// movem o corpo pela arma; o resto do movimento espera.
+		if (_moves.Controls)
+			ReleaseWall();
+		if (_moves.Step(delta, _gravity))
 			return;
-		}
-
-		// O salto voa no arco que a arma planejou.
-		if (_weapon.IsPounceFlying)
-		{
-			PounceFlight(delta);
-			_pounceFlying = true;
-			return;
-		}
-
-		// Acabou o voo: o lobo fica onde caiu. Sem isto, o embalo de um voo
-		// barrado no caminho (alguém na frente) virava um deslize extra
-		// depois da queda, e o salto andava mais do que a barra mandou.
-		if (_pounceFlying)
-		{
-			_pounceFlying = false;
-			Velocity = new Vector3(0, Mathf.Min(Velocity.Y, 0), 0);
-		}
-
-		// O salto e a aterrissagem do bote prendem o lobo: golpe pesado
-		// não se faz andando. O rugido não: ruge-se em movimento.
-		if (_weapon.IsRooted)
-		{
-			Freeze(delta);
-			return;
-		}
 
 		if (TryWallRun(delta))
 			return;
@@ -793,46 +642,8 @@ public partial class Player : CharacterBody3D
 	/// Agachado não emite nada. É o que dá ao agachamento um propósito
 	/// além de ficar menor.
 	/// </summary>
-	private void UpdateNoise(double delta)
-	{
-		bool grounded = IsOnFloor();
-
-		// Baque de aterrissagem.
-		if (grounded && _wasAirborne)
-			NoiseBus.Emit(GlobalPosition, LandNoise, NoiseKind.Land, this);
-
-		_wasAirborne = !grounded;
-
-		if (_howling)
-		{
-			_howlNoiseTimer -= delta;
-
-			if (_howlNoiseTimer <= 0)
-			{
-				_howlNoiseTimer = 0.5;
-				NoiseBus.Emit(GlobalPosition, HowlNoise, NoiseKind.Howl, this);
-			}
-		}
-
-		// Agachado e andando devagar não fazem barulho. São as duas
-		// ferramentas de furtividade do humano, e é o que dá ao jogador
-		// escolha contra um inimigo que ouve.
-		if (!grounded || _crouching || _walking) return;
-
-		var flat = new Vector3(Velocity.X, 0, Velocity.Z);
-		if (flat.Length() < 0.5f) return;
-
-		_stepDistance += flat.Length() * (float)delta;
-		if (_stepDistance < StepDistance) return;
-
-		_stepDistance = 0;
-
-		NoiseBus.Emit(
-			GlobalPosition,
-			_form.IsWolf ? StepNoiseWolf : StepNoiseHuman,
-			NoiseKind.Step,
-			this);
-	}
+	private void UpdateNoise(double delta) =>
+		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, _howling, silent: _crouching || _walking);
 
 	private bool IsHowling => _howling;
 

@@ -406,19 +406,21 @@ Equipe; os outros existem em `RoomConfig.cs` mas estão desligados.
 
 ## 11. Ruído e som
 
-Raio em metros em que os bots ouvem (os mesmos no `Player` e no
-`Bot`):
+Raio em metros em que os bots ouvem. Um arquivo só para o jogador e
+para o bot: `resources/body/ruido.tres` (classe `BodyNoiseProfile`).
+Abra no Inspector e mude ali — vale para os dois.
 
 | Campo | Valor |
 |---|---|
-| `StepNoiseHuman` | 13 |
-| `StepNoiseWolf` | 20 |
-| `LandNoise` | 17 |
-| `HowlNoise` | 45 |
+| `StepHuman` | 13 |
+| `StepWolf` | 20 |
+| `Land` | 17 |
+| `Howl` | 45 (já no começo do rugido e a cada 0,5 s) |
 | `StepDistance` | 2,2 m entre passos |
 | `NoiseRadius` da arma | 30 a 60 (seção 7) |
 
-Agachado e com Shift não fazem ruído; a faca é silenciosa.
+Agachado e com Shift não fazem ruído; a faca é silenciosa. Teste:
+`Ruido`.
 `WorldAudio.ShotReach` 120 m (até onde você ouve o tiro de outro),
 `DistantShot` 35 m (troca para o som distante), `OwnStepVolume` −3 dB.
 

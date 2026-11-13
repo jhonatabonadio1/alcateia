@@ -102,19 +102,11 @@ public partial class Bot : CharacterBody3D
 	[Export] public float PounceError = 0.12f;
 
 	/// <summary>
-	/// Ruído dos passos, pouso e uivo do bot — os mesmos raios do
-	/// Player. Antes o bot andava em silêncio: os bots ouviam você, mas
-	/// nem você nem os outros bots ouviam o bot. Agora o que ele faz de
-	/// barulho entra no mesmo barramento, e o som que você ouve dele é
-	/// esse ruído.
+	/// Quanto barulho o corpo faz — o mesmo arquivo do jogador
+	/// (resources/body/ruido.tres). Os bots ouvem você, e você e os outros
+	/// bots ouvem o bot, pela mesma regra.
 	/// </summary>
-	[ExportGroup("Ruído")]
-	[Export] public float StepNoiseHuman = 13f;
-	[Export] public float StepNoiseWolf = 20f;
-	[Export] public float LandNoise = 17f;
-	[Export] public float HowlNoise = 45f;
-	[Export] public float StepDistance = 2.2f;
-	[ExportGroup("")]
+	[Export] public BodyNoiseProfile Noise;
 
 	/// <summary>Altura máxima do obstáculo que o bot tenta vencer
 	/// pulando.</summary>
@@ -275,8 +267,9 @@ public partial class Bot : CharacterBody3D
 	private double _memoryTimer;
 	private double _vigilTimer;
 	private CharacterAnimator _animator;
-	private CollisionShape3D _deadShape;
-	private bool _settled;
+	private BodyNoise _noise;
+	private WolfMoveMotor _moves;
+	private Corpse _corpse;
 
 	/// <summary>Rota de ronda atual e em que ponto dela o bot está.
 	/// −1 significa que ainda não pegou nenhuma.</summary>
@@ -336,6 +329,9 @@ public partial class Bot : CharacterBody3D
 		_form = GetNode<FormController>("FormController");
 		_weapon = GetNode<Weapon>("Weapon");
 		_head = GetNode<Node3D>("Head");
+		_noise = new BodyNoise(this, Noise);
+		_moves = new WolfMoveMotor(this, _weapon);
+		_corpse = new Corpse(this, GetNode<CollisionShape3D>("CollisionShape3D"));
 
 		_gravity = (float)ProjectSettings.GetSetting("physics/3d/default_gravity");
 		_spawn = GlobalPosition;
@@ -379,43 +375,16 @@ public partial class Bot : CharacterBody3D
 
 		if (!Match.IsLive)
 		{
-			Fall(delta);
-			return;
-		}
-
-		// Os golpes especiais do lobo movem o corpo, como no jogador.
-		if (_weapon.IsDiving)
-		{
-			BotDive();
-			return;
-		}
-
-		if (_weapon.IsPounceFlying)
-		{
-			Vector3 next = _weapon.PounceFlightPoint(delta);
-			Velocity = ((next - GlobalPosition) / (float)delta).LimitLength(28f);
-			MoveAndSlide();
-			_pounceFlying = true;
-			return;
-		}
-
-		// Acabou o voo: fica onde caiu, sem deslizar com o embalo.
-		if (_pounceFlying)
-		{
-			_pounceFlying = false;
-			Velocity = new Vector3(0, Mathf.Min(Velocity.Y, 0), 0);
-		}
-
-		if (_weapon.IsRooted)
-		{
-			Vector3 frozen = Velocity;
-			Vector3 flat = _weapon.IsStepping ? _weapon.StepVelocity : new Vector3(frozen.X, 0, frozen.Z).MoveToward(Vector3.Zero, 30f * (float)delta);
-			Velocity = new Vector3(flat.X, IsOnFloor() ? 0 : frozen.Y - _gravity * (float)delta, flat.Z);
-			MoveAndSlide();
+			BodyMotion.Hold(this, delta, _gravity);
 			return;
 		}
 
 		UpdateNoise(delta);
+
+		// Os golpes especiais do lobo movem o corpo pela arma, com o mesmo
+		// motor do jogador.
+		if (_moves.Step(delta, _gravity))
+			return;
 
 		_retargetTimer -= delta;
 
@@ -446,7 +415,6 @@ public partial class Bot : CharacterBody3D
 			RunPatrol(delta);
 			return;
 		}
-
 
 		_threatAge += delta;
 		_beliefAge += delta;
@@ -568,50 +536,10 @@ public partial class Bot : CharacterBody3D
 		UpdateStrafe(delta);
 	}
 
-	/// <summary>Rugir: parado, recuperando escudo.</summary>
-	private bool _wasAirborne;
-	private float _stepDistance;
-	private double _howlNoiseTimer;
-
-	/// <summary>Mesma regra do Player: passo por distância percorrida,
-	/// baque ao pousar, uivo a cada meio segundo enquanto dura.</summary>
-	private void UpdateNoise(double delta)
-	{
-		bool grounded = IsOnFloor();
-
-		if (grounded && _wasAirborne)
-			NoiseBus.Emit(GlobalPosition, LandNoise, NoiseKind.Land, this);
-		_wasAirborne = !grounded;
-
-		if (Action == BotAction.Howl)
-		{
-			_howlNoiseTimer -= delta;
-			if (_howlNoiseTimer <= 0)
-			{
-				_howlNoiseTimer = 0.5;
-				NoiseBus.Emit(GlobalPosition, HowlNoise, NoiseKind.Howl, this);
-			}
-		}
-		else
-		{
-			_howlNoiseTimer = 0;
-		}
-
-		if (!grounded) return;
-
-		var flat = new Vector3(Velocity.X, 0, Velocity.Z);
-		if (flat.Length() < 0.5f) return;
-
-		_stepDistance += flat.Length() * (float)delta;
-		if (_stepDistance < StepDistance) return;
-		_stepDistance = 0;
-
-		NoiseBus.Emit(
-			GlobalPosition,
-			_form.IsWolf ? StepNoiseWolf : StepNoiseHuman,
-			NoiseKind.Step,
-			this);
-	}
+	/// <summary>Mesma regra do jogador (<see cref="BodyNoise"/>): o bot
+	/// não agacha nem anda devagar, então o passo sempre sai.</summary>
+	private void UpdateNoise(double delta) =>
+		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, howling: Action == BotAction.Howl, silent: false);
 
 	/// <summary>
 	/// Rugido inteiro, parado, e o escudo cheio só no fim — a mesma regra
@@ -1321,61 +1249,11 @@ public partial class Bot : CharacterBody3D
 		return space.IntersectRay(ground).Count > 0;
 	}
 
-	/// <summary>
-	/// Assenta o corpo morto.
-	///
-	/// São duas coisas em ordem, e inverter quebra as duas. Primeiro a
-	/// gravidade trabalha, com a colisão ligada, até o corpo tocar o
-	/// chão — quem morre no ar precisa cair. Só então a colisão
-	/// desliga e o corpo para onde parou.
-	///
-	/// Desligar antes, como eu fazia, derruba o corpo pelo cenário sem
-	/// nada para segurá-lo. Nunca desligar deixa o cadáver sendo
-	/// empurrado para fora do chão quadro a quadro, que com colisão de
-	/// dois lados pode resolver para o lado errado e afundar devagar.
-	/// </summary>
-	private void Settle(double delta)
-	{
-		// Assentado, o corpo não se move mais — nem a gravidade. Era o
-		// defeito: com a colisão desligada, IsOnFloor() responde falso
-		// no quadro seguinte, porque sem colisão não existe chão, e a
-		// gravidade voltava a puxar o corpo através do mapa.
-		if (_settled) return;
-
-		if (IsOnFloor())
-		{
-			Velocity = Vector3.Zero;
-
-			if (!_settled)
-			{
-				_settled = true;
-				_deadShape ??= GetNode<CollisionShape3D>("CollisionShape3D");
-				_deadShape.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
-			}
-		}
-		else
-		{
-			Velocity = new Vector3(0, Velocity.Y - _gravity * (float)delta, 0);
-		}
-
-		MoveAndSlide();
-	}
-
-	/// <summary>O bote do bot: segue a velocidade do mergulho até encostar.</summary>
-	private void BotDive()
-	{
-		Velocity = _weapon.DiveVelocity;
-		MoveAndSlide();
-		if (IsOnFloor() || IsOnWall() || IsOnCeiling())
-		{
-			_weapon.DiveContact();
-			Velocity = Vector3.Zero;
-		}
-	}
+	/// <summary>Assenta o corpo morto (<see cref="Corpse"/>).</summary>
+	private void Settle(double delta) => _corpse.Settle(delta, _gravity);
 
 	private double _specialRoll;
 	private bool _wantDive;
-	private bool _pounceFlying;
 
 	/// <summary>
 	/// O lobo do bot com as jogadas do jogador, na medida da dificuldade:
@@ -1428,12 +1306,6 @@ public partial class Bot : CharacterBody3D
 			MoveAndSlide();
 			_wantDive = true;
 		}
-	}
-
-	private void Fall(double delta)
-	{
-		Velocity = new Vector3(0, Velocity.Y - _gravity * (float)delta, 0);
-		MoveAndSlide();
 	}
 
 	/// <summary>
@@ -1515,7 +1387,6 @@ public partial class Bot : CharacterBody3D
 		_head.Rotation = new Vector3(
 			Mathf.Clamp(pitch, Mathf.DegToRad(-70f), Mathf.DegToRad(70f)), 0, 0);
 	}
-
 
 	/// <summary>Rajada e pausa. Fogo contínuo não deixa o jogador
 	/// respirar e esconde de onde vem o tiro.</summary>
@@ -1626,9 +1497,6 @@ public partial class Bot : CharacterBody3D
 	{
 		if (Debug) GD.Print($"{Name} morreu");
 
-		_deadShape ??= GetNode<CollisionShape3D>("CollisionShape3D");
-		_settled = false;
-
 		_memoryTimer = 0;
 		_vigilTimer = 0;
 		_route = -1;
@@ -1642,9 +1510,7 @@ public partial class Bot : CharacterBody3D
 
 	private void OnRespawned()
 	{
-		_deadShape ??= GetNode<CollisionShape3D>("CollisionShape3D");
-		_settled = false;
-		_deadShape.SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
+		_corpse.Revive();
 
 		GlobalPosition = SpawnPoints.Pick(this, _spawn);
 		Velocity = Vector3.Zero;

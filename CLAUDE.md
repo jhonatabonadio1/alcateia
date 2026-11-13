@@ -221,6 +221,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 |---|---|
 | `actors/Player.cs` | Movimento, corrida em parede, câmeras, agachar, stun, input |
 | `actors/Bot.cs` | Percepção, combate à distância, strafe, decisão de forma |
+| `actors/body/` | O corpo que o jogador e o bot dividem: `WolfMoveMotor` (bote, voo do salto, preso ao chão), `BodyNoise` + `BodyNoiseProfile` (passo, baque, rugido; `resources/body/ruido.tres`), `Corpse` (cair e assentar morto), `BodyMotion.Hold` |
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
 | `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, munição, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfDive` (bote), `.Damage` (aplicar dano) |
 | `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
