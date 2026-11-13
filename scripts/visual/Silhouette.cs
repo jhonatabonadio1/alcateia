@@ -28,9 +28,16 @@ public static class Silhouette
 		{
 			Code = $$"""
 				shader_type spatial;
-				render_mode unshaded, {{depth}}depth_draw_never, cull_back, blend_mix;
+				render_mode unshaded, world_vertex_coords, {{depth}}depth_draw_never, cull_back, blend_mix;
 
 				uniform vec4 color : source_color = vec4(1.0, 0.08, 0.05, 1.0);
+
+				// Uma casca 4 mm para fora do corpo. Na mesma superfície,
+				// com teste de profundidade, a borda brigava com a pele
+				// pelo mesmo pixel e piscava com o boneco andando.
+				void vertex() {
+					VERTEX += normalize(NORMAL) * 0.004;
+				}
 
 				void fragment() {
 					float edge = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);

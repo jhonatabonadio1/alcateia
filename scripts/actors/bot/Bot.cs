@@ -160,6 +160,10 @@ public partial class Bot : CharacterBody3D
 			PathMaxDistance = 6f
 		};
 		AddChild(_nav);
+
+		// Desenho alisado entre os passos da física (VisualSmoothing): o
+		// bot e o boneco da rede tremiam numa tela mais rápida que ela.
+		AddChild(new VisualSmoothing { Name = "VisualSmoothing" });
 	}
 
 	public override void _ExitTree()

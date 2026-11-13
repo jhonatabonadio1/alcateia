@@ -97,6 +97,11 @@ public partial class Player : CharacterBody3D
 		SetProcessInput(IsMultiplayerAuthority());
 		ApplyCamera();
 
+		// O desenho entre um passo da física e o outro (VisualSmoothing):
+		// sem isto o corpo e a câmera andam aos trancos numa tela mais
+		// rápida que a física.
+		AddChild(new VisualSmoothing { Name = "VisualSmoothing" });
+
 		// Só do dono: o cartão de duelo e a marca nos inimigos são da tela
 		// de quem joga.
 		if (IsMultiplayerAuthority() && GetTree().CurrentScene is Node scene)

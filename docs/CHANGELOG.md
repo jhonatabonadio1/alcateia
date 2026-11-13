@@ -20,6 +20,17 @@
     são carregados ao entrar na partida;
   - parado e andar repetem sem tranco; quem não tem animação de sacar
     sobe de baixo; pistola, faca e granada um pouco mais altas.
+- **Personagens tremendo e piscando**: a física anda 60 passos por
+  segundo e a tela do Mac no ritmo dela (120 Hz, ou 60 Hz com quadros
+  desencontrados). O corpo era desenhado onde o último passo o deixou: a
+  120 quadros, o bot só andava em metade deles. Novo `VisualSmoothing`
+  desenha corpo, câmera, arma e lobo entre um passo e o outro (jogador,
+  bots e bonecos da rede); medido a 120 quadros, a variação da velocidade
+  na tela caiu de 106% para 38% (o resto é o bot mudando de rumo). A
+  jogabilidade continua lendo a posição da física, e o giro do mouse
+  continua na hora.
+- **Borda vermelha dos inimigos** numa casca 4 mm para fora da pele: na
+  mesma superfície ela brigava com o boneco pelo pixel e podia piscar.
 - **Mapas**: os letreiros ficavam a 1 cm da superfície e piscavam de
   longe; agora a 2 cm a mais. Na Polar, o piso dos cômodos novos ficava
   24 cm acima do chão (os pés afundavam). O piso do Hangar estava claro

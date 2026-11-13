@@ -14,7 +14,7 @@ Ponha aqui, com o que se sabe dele.
 | **Faca e granada** | Corrigido (13/11) com os modelos do Sketchfab na mão do braço da pistola. O Jhon pôs no Mac uma animação de faca própria: falta trazer e usar no lugar do golpe feito por código. |
 | **Glitches nos mapas** | Corrigidos os que se acharam (letreiro piscando, piso da Polar, cano atravessando a parede). Se ainda houver, falta print ou o lugar exato. |
 | **Glitches na troca de arma** | Corrigidos os que se acharam (tamanho e lugar dos braços, travada na primeira troca, sacar). Falta o Jhon conferir. |
-| **Personagens com glitch** | Não descrito ainda; nas fotos dos bots não apareceu nada. Precisa saber o que acontece e em que mapa. |
+| **Personagens tremendo e piscando** | Corrigido (13/11): o desenho agora anda entre os passos da física (`VisualSmoothing`) e a borda vermelha saiu de cima da pele. Não deu para ver no Mac daqui: falta o Jhon conferir; se continuar, um vídeo curto mostra se é tremor de posição, de animação ou de sombra. |
 
 ## Pedido e ainda não feito
 

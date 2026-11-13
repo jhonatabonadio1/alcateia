@@ -252,6 +252,14 @@ dois: vertical no `Head`, lateral no corpo.
 **Grupos.** O jogador entra no grupo `"player"`; os bots no `"bot"`. É
 assim que HUD, minimapa e menus acham você.
 
+**O desenho anda entre os passos.** Jogador e bot ganham, no `_Ready`, um
+filho `VisualSmoothing`. A física anda 60 passos por segundo e a tela no
+ritmo dela; ele empurra as partes que se veem (`Head`, `MeshInstance3D`,
+`Human`, `WolfVisual`, `Weapon`, `HealthBar`) para o ponto entre o passo
+anterior e o atual, só para o desenho. O deslocamento sai no começo de
+cada passo e de cada quadro, então a jogabilidade (e os testes) sempre
+leem a posição da física.
+
 ---
 
 ## 6. Os fluxos principais
@@ -516,6 +524,12 @@ mais longa ou com mais trilhas pega a errada e o boneco fica em T.
 **Mapa importado de uma face só.** Parede com uma face só colide de um
 lado só — o lobo atravessa ou não gruda. O `MapLoader.BuildCollision`
 gera colisão dos dois lados.
+
+**Interpolação da física do Godot está desligada, de propósito.** Ligada
+no projeto, ela atrasa o giro do mouse em até um passo e interpola tudo o
+que se mexe no `_Process` (a arma na tela, a câmera da morte). O
+`VisualSmoothing` faz só o que precisa: posição, partes visíveis, sem
+giro. Teleporte (mais de 2 m num passo) vai direto, sem deslizar.
 
 **Dano em dobro.** As armas usam os números do `ARSENAL.md` (feitos
 para 100 de vida) e o `Weapon` multiplica por `Arsenal.DamageScale = 2`
