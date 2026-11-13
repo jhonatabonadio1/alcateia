@@ -48,6 +48,11 @@ public static class Arsenal
 	/// que espaço entra uma arma pega do chão.</summary>
 	public static bool IsSecondary(string id) => System.Array.IndexOf(Secondaries, id) >= 0;
 
+	/// <summary>Ids da faca e da granada: o que o feed, o HUD e a arma na
+	/// mão usam para desenhar. As armas de fogo usam o id do .tres.</summary>
+	public const string KnifeId = "faca";
+	public const string GrenadeId = "choque";
+
 	public const string DefaultPrimary = "m16a2";
 	public const string DefaultSecondary = "m9";
 
@@ -55,7 +60,7 @@ public static class Arsenal
 	{
 		new UtilityInfo
 		{
-			Id = "choque",
+			Id = GrenadeId,
 			DisplayName = "Granada de choque",
 			WpCost = 60,
 			Count = 1,

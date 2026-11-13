@@ -50,7 +50,7 @@ public partial class Minimap : Control
 
 	public override void _Ready()
 	{
-		_player = GetTree().GetFirstNodeInGroup("player") as Node3D;
+		_player = Groups.LocalPlayer(GetTree()) as Node3D;
 		_playerHealth = _player?.GetNodeOrNull<Health>("Health");
 
 		CustomMinimumSize = new Vector2(Side, Side);
@@ -230,7 +230,7 @@ public partial class Minimap : Control
 
 	private void DrawActors(Vector2 center, float yaw)
 	{
-		foreach (Node node in GetTree().GetNodesInGroup("bot"))
+		foreach (Node node in GetTree().GetNodesInGroup(Groups.Bots))
 		{
 			if (node is not Node3D bot) continue;
 

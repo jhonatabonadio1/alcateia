@@ -25,7 +25,8 @@ Sem o Godot no PATH: `GODOT=/caminho/do/Godot tools/testar.sh`. No Mac
 o executável fica em `Godot_mono.app/Contents/MacOS/Godot`.
 
 O GitHub roda o mesmo script a cada push. Commit com teste vermelho não
-sobe.
+sobe. O script também procura **código repetido** (`tools/duplicados.py`):
+seis linhas iguais em dois lugares reprovam — junte numa peça só.
 
 ## Antes de mudar algo
 
@@ -48,6 +49,8 @@ sobe.
 | Um sistema novo num ator grande | uma parte nova da classe parcial (`Player.Coisa.cs`) com o seu `[ExportGroup]` |
 | Algo novo no HUD | um sinal no componente e um handler na parte do canto (`ui/hud/`) |
 | Um nível de bot, uma arma, uma classe | um `.tres` novo em `resources/` |
+| Uma peça de tela que se repete (cartão, grade, linha rótulo/valor) | `UiKit` |
+| Achar o jogador, os bots, um nó na árvore | `Groups` e `Nodes` (`scripts/core`), nunca o nome do grupo solto |
 | Uma decisão de arquitetura | um ADR novo em `docs/decisoes/` |
 
 ## Estilo

@@ -46,6 +46,14 @@ if ! dotnet run --project tests/unit/Alcateia.UnitTests.csproj -- ${FILTRO}; the
 fi
 
 echo
+echo "== Código repetido"
+if command -v python3 >/dev/null; then
+	python3 tools/duplicados.py || falhas=$((falhas + 1))
+else
+	echo "(sem python3: pulei)"
+fi
+
+echo
 echo "== Testes de regressão"
 lista=$("$GODOT" --headless --path . res://tests/regression/bench.tscn -- --lista 2>/dev/null \
 	| awk -F'\t' 'NF == 2 { print $1 }')

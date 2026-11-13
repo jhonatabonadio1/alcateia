@@ -144,11 +144,11 @@ public partial class CharacterPreview : SubViewportContainer
 		model.Scale = Vector3.One * scale;
 		_pivot.AddChild(model);
 
-		AnimationPlayer player = AnimationKit.FindFirst<AnimationPlayer>(model);
+		AnimationPlayer player = Nodes.FindFirst<AnimationPlayer>(model);
 		if (player == null || !ResourceLoader.Exists(idlePath)) return model;
 
 		Node temp = GD.Load<PackedScene>(idlePath).Instantiate();
-		Animation idle = AnimationKit.TakeAnimation(AnimationKit.FindFirst<AnimationPlayer>(temp), "idle", false);
+		Animation idle = AnimationKit.TakeAnimation(Nodes.FindFirst<AnimationPlayer>(temp), "idle", false);
 		temp.Free();
 		if (idle == null) return model;
 

@@ -82,13 +82,8 @@ public partial class WelcomeScreen : LobbyScreen
 
 	private static Control NewsPanel()
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
+		PanelContainer panel = UiKit.Card(out VBoxContainer column);
 		panel.CustomMinimumSize = new Vector2(420, 420);
-
-		MarginContainer margin = UiKit.Margin(UiTokens.S4);
-		panel.AddChild(margin);
-		VBoxContainer column = UiKit.Column(UiTokens.S3);
-		margin.AddChild(column);
 
 		column.AddChild(UiKit.Caption("Novidades"));
 

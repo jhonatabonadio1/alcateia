@@ -55,10 +55,7 @@ public partial class InventoryScreen : LobbyScreen
 
 	protected override void Build()
 	{
-		MarginContainer margin = UiKit.Fill(UiKit.Margin(UiTokens.S5, UiTokens.S4, UiTokens.S5, UiTokens.S4));
-		AddChild(margin);
-		HBoxContainer split = UiKit.Row(UiTokens.S4);
-		margin.AddChild(split);
+		HBoxContainer split = SplitPage();
 
 		split.AddChild(Equipment());
 		split.AddChild(Owned());
@@ -69,13 +66,8 @@ public partial class InventoryScreen : LobbyScreen
 
 	private Control Equipment()
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
+		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S3, UiTokens.S3);
 		panel.CustomMinimumSize = new Vector2(430, 0);
-
-		MarginContainer margin = UiKit.Margin(UiTokens.S3);
-		panel.AddChild(margin);
-		VBoxContainer column = UiKit.Column(UiTokens.S3);
-		margin.AddChild(column);
 
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
 		head.AddChild(UiKit.Text("Equipado", "Subtitle"));
@@ -160,7 +152,7 @@ public partial class InventoryScreen : LobbyScreen
 		column.AddChild(SlotRow("Primária", Catalog.Get(current.Primary), () => Filter(0, 1),
 			null));
 		column.AddChild(SlotRow("Secundária", Catalog.Get(current.Secondary), () => Filter(0, 2), null));
-		column.AddChild(SlotRow("Corpo a corpo", Catalog.Get("faca"), () => Filter(0, 4), null, fixedSlot: true));
+		column.AddChild(SlotRow("Corpo a corpo", Catalog.Get(Arsenal.KnifeId), () => Filter(0, 4), null, fixedSlot: true));
 
 		string utility = current.Utilities.FirstOrDefault();
 		column.AddChild(SlotRow("Granada", Catalog.Get(utility), () => Filter(0, 3),
@@ -311,18 +303,7 @@ public partial class InventoryScreen : LobbyScreen
 		if (SubTabs[_top].Length > 1)
 			column.AddChild(Tabs.Make(SubTabs[_top], Mathf.Min(_sub, SubTabs[_top].Length - 1), i => { _sub = i; Refresh(); }));
 
-		var scroll = new ScrollContainer
-		{
-			SizeFlagsVertical = SizeFlags.ExpandFill,
-			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
-		};
-		column.AddChild(scroll);
-
-		var grid = new GridContainer { Columns = 3 };
-		grid.AddThemeConstantOverride("h_separation", UiTokens.S3);
-		grid.AddThemeConstantOverride("v_separation", UiTokens.S3);
-		scroll.AddChild(UiKit.Margin(UiTokens.S2));
-		scroll.GetChild(0).AddChild(grid);
+		GridContainer grid = UiKit.ScrollGrid(column, 3);
 
 		List<CatalogItem> items = Items().ToList();
 		foreach (CatalogItem item in items)
@@ -346,7 +327,7 @@ public partial class InventoryScreen : LobbyScreen
 			(0, 1) => owned.Where(ItemInfo.IsPrimary),
 			(0, 2) => owned.Where(ItemInfo.IsSecondary),
 			(0, 3) => owned.Where(i => i.Kind == ItemKind.Utility),
-			(0, 4) => owned.Where(i => i.Id == "faca"),
+			(0, 4) => owned.Where(i => i.Id == Arsenal.KnifeId),
 			(0, _) => owned.Where(i => i.Kind is ItemKind.Weapon or ItemKind.Utility),
 			(1, 0) => owned.Where(i => i.Kind == ItemKind.Tattoo),
 			(1, _) => owned.Where(i => i.Kind == ItemKind.Breed),
@@ -388,7 +369,7 @@ public partial class InventoryScreen : LobbyScreen
 		bool expired = Profile.IsExpired(item.Id);
 
 		Button equip = UiKit.Button(EquipLabel(item), ButtonKind.Primary, () => Equip(item));
-		equip.Disabled = !usable || IsEquippedHere(item) || item.Kind == ItemKind.Service && !Profile.Owns(item.Id) || item.Id == "faca";
+		equip.Disabled = !usable || IsEquippedHere(item) || item.Kind == ItemKind.Service && !Profile.Owns(item.Id) || item.Id == Arsenal.KnifeId;
 		column.AddChild(equip);
 
 		HBoxContainer row = UiKit.Row(UiTokens.S2);

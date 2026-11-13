@@ -38,11 +38,25 @@ public abstract partial class LobbyScreen : Control
 	/// <summary>Margem padrão do miolo, com uma coluna dentro.</summary>
 	protected VBoxContainer Page(int separation = UiTokens.S3)
 	{
+		VBoxContainer column = UiKit.Column(separation);
+		Margined().AddChild(column);
+		return column;
+	}
+
+	/// <summary>Margem padrão do miolo, com colunas lado a lado dentro
+	/// (loja, inventário, perfil).</summary>
+	protected HBoxContainer SplitPage(int separation = UiTokens.S4)
+	{
+		HBoxContainer split = UiKit.Row(separation);
+		Margined().AddChild(split);
+		return split;
+	}
+
+	private MarginContainer Margined()
+	{
 		MarginContainer margin = UiKit.Fill(UiKit.Margin(UiTokens.S5, UiTokens.S4, UiTokens.S5, UiTokens.S4));
 		AddChild(margin);
-		VBoxContainer column = UiKit.Column(separation);
-		margin.AddChild(column);
-		return column;
+		return margin;
 	}
 
 	/// <summary>Cabeçalho de tela: título e, opcionalmente, um texto

@@ -51,13 +51,7 @@ public partial class Hud
 		WeaponDefinition held = _weapon.Held;
 		Slot current = _weapon.CurrentSlot;
 
-		string id = current switch
-		{
-			Slot.Knife => "faca",
-			Slot.Grenade => "choque",
-			_ => held?.Id ?? ""
-		};
-		_weaponArt.ItemId = id;
+		_weaponArt.ItemId = _weapon.HeldId;
 		_weaponName.Text = current switch
 		{
 			Slot.Knife => "FACA",

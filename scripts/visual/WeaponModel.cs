@@ -50,8 +50,8 @@ public static class WeaponModel
 			case "ump45": Ump45(root); break;
 			case "m3": M3(root); break;
 			case "m9": M9(root); break;
-			case "faca": Knife(root); break;
-			case "choque": Stun(root); break;
+			case Arsenal.KnifeId: Knife(root); break;
+			case Arsenal.GrenadeId: Stun(root); break;
 			default: M16(root); break;
 		}
 

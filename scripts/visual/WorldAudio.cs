@@ -83,7 +83,7 @@ public partial class WorldAudio : Node
 	{
 		if (_local != null && IsInstanceValid(_local)) return;
 
-		_local = GetTree().GetFirstNodeInGroup("player");
+		_local = Groups.LocalPlayer(GetTree());
 		_localHealth = _local?.GetNodeOrNull<Health>("Health");
 	}
 

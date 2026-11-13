@@ -385,7 +385,7 @@ public static class Profile
 	/// <summary>Está em uso em algum conjunto, ou equipado no lobo?</summary>
 	public static bool IsEquipped(string id) =>
 		Sets.Any(s => s.Primary == id || s.Secondary == id || s.Utilities.Contains(id))
-		|| Tattoos.Contains(id) || Breed == id || id == "faca";
+		|| Tattoos.Contains(id) || Breed == id || id == Arsenal.KnifeId;
 
 	// ------------------------------------------------------------------ moedas
 

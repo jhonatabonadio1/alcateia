@@ -323,7 +323,10 @@ partida). As razões estão em `docs/decisoes/`.
   com teste de unidade (ADR 0001). Número que se ajusta sem programar
   vai num `.tres` (ADR 0005)
 - O que o jogador e o bot fazem igual mora uma vez só
-  (`scripts/actors/body`, ADR 0003). Achou uma cópia? Junte
+  (`scripts/actors/body`, ADR 0003). Achou uma cópia? Junte — o
+  `tools/testar.sh` reprova seis linhas iguais em dois lugares
+  (`tools/duplicados.py`). Nome de grupo é `Groups`, peça de tela
+  repetida é `UiKit`
 - Método passou de uns 80 linhas? Quebre em passos com nome (a corrida
   na parede é o exemplo)
 

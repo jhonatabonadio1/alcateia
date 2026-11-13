@@ -127,7 +127,7 @@ public partial class Bot : CharacterBody3D
 		_gravity = (float)ProjectSettings.GetSetting("physics/3d/default_gravity");
 		_spawn = GlobalPosition;
 
-		AddToGroup("bot");
+		AddToGroup(Groups.Bots);
 		Difficulty.Apply(this);
 
 		// Personalidade: cada bot nasce mais ou menos curioso.

@@ -20,7 +20,7 @@ public partial class MatchSetup : Node
 	public override void _Ready()
 	{
 		var bots = GetNodeOrNull<Node3D>(BotsPath);
-		var player = GetTree().GetFirstNodeInGroup("player") as Node3D;
+		var player = Groups.LocalPlayer(GetTree()) as Node3D;
 
 		// Cada time distribui os próprios pontos em ordem, e ninguém nasce
 		// em cima de ninguém — dois corpos no mesmo ponto se empurram e

@@ -45,7 +45,7 @@ public partial class HeldWeapon : Node3D
 	/// <see cref="CharacterAnimator"/> depois que o modelo carrega.</summary>
 	public void Attach(Node3D model, CharacterBody3D body, uint layers)
 	{
-		_skeleton = FindSkeleton(model);
+		_skeleton = AnimationKit.FindSkeleton(model);
 		_body = body;
 		_layers = layers;
 		_weapon = body.GetNodeOrNull<Weapon>("Weapon");
@@ -87,14 +87,7 @@ public partial class HeldWeapon : Node3D
 		if (_weapon == null || (_form != null && _form.IsWolf) || (_health != null && _health.IsDead))
 			return "";
 
-		return _weapon.HumanSlot switch
-		{
-			Slot.Primary => _weapon.PrimaryDef?.Id ?? "",
-			Slot.Secondary => _weapon.SecondaryDef?.Id ?? "",
-			Slot.Knife => "faca",
-			Slot.Grenade => "choque",
-			_ => ""
-		};
+		return _weapon.HeldId;
 	}
 
 	private void Rebuild()
@@ -126,7 +119,7 @@ public partial class HeldWeapon : Node3D
 		Vector3 right = hand.Origin;
 
 		bool reloading = _weapon.IsReloading;
-		bool aimed = !reloading && _leftHand >= 0 && _id != "faca" && _id != "choque";
+		bool aimed = !reloading && _leftHand >= 0 && _id != Arsenal.KnifeId && _id != Arsenal.GrenadeId;
 
 		Transform3D placed;
 
@@ -172,16 +165,5 @@ public partial class HeldWeapon : Node3D
 		Basis basis = Basis.LookingAt(forward, up);
 		Vector3 origin = wrist + forward * GripForward - basis.Y * GripDown;
 		return new Transform3D(basis, origin);
-	}
-
-	private static Skeleton3D FindSkeleton(Node node)
-	{
-		if (node is Skeleton3D skeleton) return skeleton;
-		foreach (Node child in node.GetChildren())
-		{
-			Skeleton3D found = FindSkeleton(child);
-			if (found != null) return found;
-		}
-		return null;
 	}
 }

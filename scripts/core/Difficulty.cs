@@ -70,7 +70,7 @@ public static class Difficulty
 		SceneTree tree = Engine.GetMainLoop() as SceneTree;
 		if (tree == null) return;
 
-		foreach (Node node in tree.GetNodesInGroup("bot"))
+		foreach (Node node in tree.GetNodesInGroup(Groups.Bots))
 		{
 			if (node is Bot bot)
 				Apply(bot);

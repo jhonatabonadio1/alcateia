@@ -217,14 +217,9 @@ public partial class RoomListScreen : LobbyScreen
 
 	private Control SidePanel()
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
+		PanelContainer panel = UiKit.Card(out VBoxContainer column);
 		panel.CustomMinimumSize = new Vector2(380, 0);
 		panel.AddThemeStyleboxOverride("panel", SideStyle());
-
-		MarginContainer margin = UiKit.Margin(UiTokens.S4);
-		panel.AddChild(margin);
-		VBoxContainer column = UiKit.Column(UiTokens.S3);
-		margin.AddChild(column);
 
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
 		head.AddChild(UiKit.Caption("Missões do dia"));
@@ -290,14 +285,7 @@ public partial class RoomListScreen : LobbyScreen
 		return box;
 	}
 
-	private static Control Stat(string label, string value)
-	{
-		HBoxContainer row = UiKit.Row(UiTokens.S2);
-		row.AddChild(UiKit.Text(label, "Muted"));
-		row.AddChild(UiKit.Spacer());
-		row.AddChild(UiKit.Text(value, "Numeric"));
-		return row;
-	}
+	private static Control Stat(string label, string value) => UiKit.Stat(label, value);
 
 	// ------------------------------------------------------------------ ações
 

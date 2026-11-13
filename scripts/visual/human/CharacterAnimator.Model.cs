@@ -164,26 +164,8 @@ public partial class CharacterAnimator
 		Color body = _health.Team == Teams.Blue ? BlueBody : OrangeBody;
 		Color joints = body.Darkened(0.6f);
 
-		Paint(_model);
-
-		void Paint(Node node)
-		{
-			if (node is MeshInstance3D mesh && mesh.Mesh != null)
-			{
-				bool isJoint = mesh.Name.ToString().ToLowerInvariant().Contains("joint");
-
-				for (int surface = 0; surface < mesh.Mesh.GetSurfaceCount(); surface++)
-				{
-					if (mesh.GetActiveMaterial(surface) is not BaseMaterial3D source) continue;
-
-					var copy = (BaseMaterial3D)source.Duplicate();
-					copy.AlbedoColor = isJoint ? joints : body;
-					mesh.SetSurfaceOverrideMaterial(surface, copy);
-				}
-			}
-
-			foreach (Node child in node.GetChildren()) Paint(child);
-		}
+		MaterialTint.Paint(_model, (mesh, _) =>
+			mesh.Name.ToString().ToLowerInvariant().Contains("joint") ? joints : body);
 	}
 
 	private static VisualInstance3D FirstVisual(Node node)

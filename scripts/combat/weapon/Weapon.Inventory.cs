@@ -170,8 +170,7 @@ public partial class Weapon
 
 		HumanSlot = BestSlot();
 		_cooldown = 0.25f;
-		EmitSignal(SignalName.SlotChanged, (int)HumanSlot);
-		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
+		AnnounceHeld();
 		return true;
 	}
 
@@ -216,8 +215,7 @@ public partial class Weapon
 			_cooldown = 0.25f;
 		}
 
-		EmitSignal(SignalName.SlotChanged, (int)HumanSlot);
-		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
+		AnnounceHeld();
 		return true;
 	}
 

@@ -12,10 +12,7 @@ public partial class OptionsScreen : LobbyScreen
 
 	protected override void Build()
 	{
-		MarginContainer margin = UiKit.Fill(UiKit.Margin(UiTokens.S5, UiTokens.S4, UiTokens.S5, UiTokens.S4));
-		AddChild(margin);
-		VBoxContainer page = UiKit.Column(UiTokens.S3);
-		margin.AddChild(page);
+		VBoxContainer page = Page();
 
 		page.AddChild(UiKit.Text("Opções", "Title"));
 
@@ -101,11 +98,7 @@ public partial class OptionsScreen : LobbyScreen
 
 	private static (PanelContainer, VBoxContainer) Section(string title)
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
-		MarginContainer margin = UiKit.Margin(UiTokens.S4);
-		panel.AddChild(margin);
-		VBoxContainer column = UiKit.Column(UiTokens.S3);
-		margin.AddChild(column);
+		PanelContainer panel = UiKit.Card(out VBoxContainer column);
 		column.AddChild(UiKit.Caption(title));
 		return (panel, column);
 	}

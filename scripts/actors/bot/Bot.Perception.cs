@@ -209,7 +209,7 @@ public partial class Bot
 		Health bestHealth = null;
 		float bestScore = float.MaxValue;
 
-		foreach (string group in new[] { "player", "bot" })
+		foreach (string group in Groups.Fighters)
 		{
 			foreach (Node node in GetTree().GetNodesInGroup(group))
 			{

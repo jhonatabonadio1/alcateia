@@ -49,7 +49,7 @@ public partial class Hud : CanvasLayer
 
 	public override void _Ready()
 	{
-		Node player = GetTree().GetFirstNodeInGroup("player") ?? FindPlayer(GetTree().CurrentScene);
+		Node player = Groups.LocalPlayer(GetTree()) ?? Nodes.FindFirst<Player>(GetTree().CurrentScene);
 		if (player == null)
 		{
 			GD.PrintErr("Hud: nenhum Player encontrado na cena.");
@@ -132,18 +132,6 @@ public partial class Hud : CanvasLayer
 
 		UpdateTransform();
 		UpdateWolf((float)delta);
-	}
-
-	private static Node FindPlayer(Node from)
-	{
-		if (from == null) return null;
-		if (from is Player) return from;
-		foreach (Node child in from.GetChildren())
-		{
-			Node found = FindPlayer(child);
-			if (found != null) return found;
-		}
-		return null;
 	}
 
 	private void Warn(string text, float seconds = 1.6f, Color? color = null)

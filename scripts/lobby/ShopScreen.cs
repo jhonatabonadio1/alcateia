@@ -64,10 +64,7 @@ public partial class ShopScreen : LobbyScreen
 
 	protected override void Build()
 	{
-		MarginContainer margin = UiKit.Fill(UiKit.Margin(UiTokens.S5, UiTokens.S4, UiTokens.S5, UiTokens.S4));
-		AddChild(margin);
-		HBoxContainer split = UiKit.Row(UiTokens.S4);
-		margin.AddChild(split);
+		HBoxContainer split = SplitPage();
 
 		split.AddChild(Showcase());
 		split.AddChild(Catalogue());
@@ -164,19 +161,7 @@ public partial class ShopScreen : LobbyScreen
 		}
 		column.AddChild(subRow);
 
-		var scroll = new ScrollContainer
-		{
-			SizeFlagsVertical = SizeFlags.ExpandFill,
-			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
-		};
-		column.AddChild(scroll);
-
-		var grid = new GridContainer { Columns = 3 };
-		grid.AddThemeConstantOverride("h_separation", UiTokens.S3);
-		grid.AddThemeConstantOverride("v_separation", UiTokens.S3);
-		MarginContainer pad = UiKit.Margin(UiTokens.S2);
-		pad.AddChild(grid);
-		scroll.AddChild(pad);
+		GridContainer grid = UiKit.ScrollGrid(column, 3);
 
 		foreach (CatalogItem item in Items())
 			grid.AddChild(ItemCard.Make(item, CardMode.Shop, item.Id == _selectedId, Select));
@@ -350,10 +335,7 @@ public partial class ShopScreen : LobbyScreen
 
 	private static Control Line(string label, long value, Color color)
 	{
-		HBoxContainer row = UiKit.Row(UiTokens.S2);
-		row.AddChild(UiKit.Text(label, "Muted"));
-		row.AddChild(UiKit.Spacer());
-		row.AddChild(UiKit.Text(UiTokens.Thousands(value), "Numeric", color));
+		HBoxContainer row = UiKit.Stat(label, UiTokens.Thousands(value), color);
 		row.AddChild(Icon.Make(IconKind.Presa, 14, CurrencyLabel.ColorOf(Currency.Presas)));
 		return row;
 	}

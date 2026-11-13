@@ -10,13 +10,15 @@ diferenças de comportamento estão em "Mudado", com o porquê.
 - **Testes automatizados** (`tools/testar.sh`, ~1,5 min):
   - 33 de unidade (`tests/unit`): C# puro, sem Godot e sem pacote —
     contas do combate, tempo dos golpes, sorteio com semente;
-  - 20 de regressão (`tests/regression`): o jogo de verdade, sem tela —
-    salto carregado em 8 situações, velocidades no chão, altura do
+  - 21 de regressão (`tests/regression`): o jogo de verdade, sem tela —
+    todas as telas do lobby, salto carregado em 8 situações, velocidades no chão, altura do
     pulo, corrida na parede, salto da parede, agarrar na parede,
     passada do lobo, granada, dano da garra, ruído, níveis dos bots,
     clipes de animação, HUD, renascer humano, bots atirando, lobos
     usando especiais, cenas abrindo sem erro.
 - **Testes no GitHub a cada push** (`.github/workflows/testes.yml`).
+- **Detector de código repetido** (`tools/duplicados.py`), no
+  `testar.sh`: seis linhas iguais em dois lugares reprovam.
 - **Semente da partida**: a partida diz a semente no Output, e
   `-- --seed=N` repete a sorte (mira dos bots, dispersão, rotas).
 - **Documentação**: `CONTRIBUTING.md` (o passo a passo),
@@ -46,6 +48,13 @@ diferenças de comportamento estão em "Mudado", com o porquê.
 - **Ferramentas de animação num lugar só** (`AnimationKit`), que o
   humano, o lobo e o lobby usavam em cópias.
 - **Corrida na parede em passos com nome** (o método tinha 286 linhas).
+- **O resto do código repetido juntado**: o id do que está na mão
+  (`Weapon.HeldId`, que a arma na tela, a do corpo e o HUD calculavam
+  cada um), os ids da faca e da granada (`Arsenal.KnifeId`, `GrenadeId`),
+  a pintura do time (`MaterialTint`), os nomes de grupo (`Groups`), a
+  busca na árvore (`Nodes`), e no lobby o cartão, a grade com rolagem,
+  a linha rótulo/valor, a miniatura do mapa, a página e o botão do
+  header (`UiKit`, `LobbyScreen`).
 - `CLAUDE.md` com 390 linhas (era 1850): as regras ficam, as decisões
   de cada sistema foram para o `docs/DESIGN.md`.
 - `WolfVisual` saiu de `scripts/ui` para `scripts/visual/wolf`.

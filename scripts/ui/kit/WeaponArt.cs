@@ -80,8 +80,8 @@ public partial class WeaponArt : Control
 			case "ump45": Smg(); break;
 			case "m3": Shotgun(); break;
 			case "m9": Pistol(); break;
-			case "faca": Knife(); break;
-			case "choque": Grenade(); break;
+			case Arsenal.KnifeId: Knife(); break;
+			case Arsenal.GrenadeId: Grenade(); break;
 			case "troca_nome": NameTag(); break;
 			default:
 				if (_id.StartsWith("tat_")) Tattoo();

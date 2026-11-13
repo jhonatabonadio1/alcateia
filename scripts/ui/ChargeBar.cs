@@ -47,7 +47,7 @@ public partial class ChargeBar : CanvasLayer
 
 	public override void _Process(double delta)
 	{
-		_weapon ??= GetTree().GetFirstNodeInGroup("player")?.GetNodeOrNull<Weapon>("Weapon");
+		_weapon ??= Groups.LocalPlayer(GetTree())?.GetNodeOrNull<Weapon>("Weapon");
 		if (_weapon == null) return;
 
 		bool charging = _weapon.IsChargingPounce;

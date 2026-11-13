@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 
 /// <summary>
@@ -165,21 +166,24 @@ public partial class LobbyHeader : PanelContainer
 		return outer;
 	}
 
-	private Button NavButton(Nav nav)
+	/// <summary>
+	/// Botão do header: ícone em cima, rótulo embaixo. A largura vem do
+	/// rótulo: "INVENTÁRIO" não cabe no mesmo botão que "LOJA", e rótulo
+	/// que vaza encavala no vizinho.
+	/// </summary>
+	private static (Button Button, Icon Icon, Label Label) HeaderButton(IconKind kind, string text, string tooltip, Action pressed)
 	{
 		var button = new Button
 		{
 			ThemeTypeVariation = "TertiaryButton",
-			// Largura pelo rótulo: "INVENTÁRIO" não cabe no mesmo botão
-			// que "LOJA", e rótulo que vaza encavala no vizinho.
 			CustomMinimumSize = new Vector2(
-				Mathf.Max(72, UiFonts.Label.GetStringSize(nav.Label.ToUpperInvariant(), HorizontalAlignment.Left, -1, UiTokens.Caption).X + UiTokens.S4),
+				Mathf.Max(72, UiFonts.Label.GetStringSize(text.ToUpperInvariant(), HorizontalAlignment.Left, -1, UiTokens.Caption).X + UiTokens.S4),
 				UiTokens.HeaderHeight - 8),
 			FocusMode = FocusModeEnum.All,
 			MouseDefaultCursorShape = CursorShape.PointingHand,
-			TooltipText = nav.Label
+			TooltipText = tooltip
 		};
-		button.Pressed += nav.Go;
+		button.Pressed += pressed;
 		Sfx.Wire(button);
 
 		VBoxContainer stack = UiKit.Fill(UiKit.Column(2));
@@ -188,15 +192,22 @@ public partial class LobbyHeader : PanelContainer
 		stack.Name = "Column";
 		button.AddChild(stack);
 
-		Icon icon = Icon.Make(nav.Icon, 22, UiTokens.TextSecondary);
+		Icon icon = Icon.Make(kind, 22, UiTokens.TextSecondary);
 		icon.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
 		icon.Name = "Icon";
 		stack.AddChild(icon);
 
-		Label label = UiKit.Caption(nav.Label);
+		Label label = UiKit.Caption(text);
 		label.HorizontalAlignment = HorizontalAlignment.Center;
 		label.Name = "Label";
 		stack.AddChild(label);
+
+		return (button, icon, label);
+	}
+
+	private Button NavButton(Nav nav)
+	{
+		(Button button, _, _) = HeaderButton(nav.Icon, nav.Label, nav.Label, nav.Go);
 
 		if (nav.Icon == IconKind.Missions)
 		{
@@ -232,29 +243,7 @@ public partial class LobbyHeader : PanelContainer
 	/// </summary>
 	private Control ExitButton()
 	{
-		var button = new Button
-		{
-			ThemeTypeVariation = "TertiaryButton",
-			CustomMinimumSize = new Vector2(72, UiTokens.HeaderHeight - 8),
-			FocusMode = FocusModeEnum.All,
-			MouseDefaultCursorShape = CursorShape.PointingHand,
-			TooltipText = "Sair do jogo"
-		};
-		button.Pressed += ConfirmExit;
-		Sfx.Wire(button);
-
-		VBoxContainer stack = UiKit.Fill(UiKit.Column(2));
-		stack.Alignment = BoxContainer.AlignmentMode.Center;
-		stack.MouseFilter = MouseFilterEnum.Ignore;
-		button.AddChild(stack);
-
-		Icon icon = Icon.Make(IconKind.Power, 22, UiTokens.TextSecondary);
-		icon.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
-		stack.AddChild(icon);
-
-		Label label = UiKit.Caption("Sair");
-		label.HorizontalAlignment = HorizontalAlignment.Center;
-		stack.AddChild(label);
+		(Button button, Icon icon, Label label) = HeaderButton(IconKind.Power, "Sair", "Sair do jogo", ConfirmExit);
 
 		// Vermelho só no foco do mouse: em repouso é discreto como os outros.
 		button.MouseEntered += () =>

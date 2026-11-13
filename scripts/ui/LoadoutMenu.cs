@@ -62,7 +62,7 @@ public partial class LoadoutMenu : CanvasLayer
 		Layer = 9;
 		ProcessMode = ProcessModeEnum.Always;
 
-		Node player = GetTree().GetFirstNodeInGroup("player");
+		Node player = Groups.LocalPlayer(GetTree());
 
 		if (player == null)
 		{

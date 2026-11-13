@@ -143,24 +143,9 @@ public static class AnimationKit
 		return hips < 0 ? 0f : skeleton.GetBoneGlobalRest(hips).Origin.Y;
 	}
 
-	/// <summary>O primeiro nó do tipo pedido na árvore, em profundidade, ou
-	/// <c>null</c>.</summary>
-	public static T FindFirst<T>(Node root) where T : Node
-	{
-		if (root is T found) return found;
+	public static Skeleton3D FindSkeleton(Node root) => Nodes.FindFirst<Skeleton3D>(root);
 
-		foreach (Node child in root.GetChildren())
-		{
-			T inner = FindFirst<T>(child);
-			if (inner != null) return inner;
-		}
-
-		return null;
-	}
-
-	public static Skeleton3D FindSkeleton(Node root) => FindFirst<Skeleton3D>(root);
-
-	public static AnimationPlayer FindPlayer(Node root) => FindFirst<AnimationPlayer>(root);
+	public static AnimationPlayer FindPlayer(Node root) => Nodes.FindFirst<AnimationPlayer>(root);
 
 	/// <summary>A trilha é de um osso da metade de cima (coluna, pescoço,
 	/// cabeça, ombros, braços, mãos)? É o que deixa recarregar, jogar granada

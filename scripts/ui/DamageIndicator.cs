@@ -37,7 +37,7 @@ public partial class DamageIndicator : Control
 		AnchorBottom = 1f;
 		MouseFilter = MouseFilterEnum.Ignore;
 
-		var player = GetTree().GetFirstNodeInGroup("player");
+		var player = Groups.LocalPlayer(GetTree());
 		_health = player?.GetNodeOrNull<Health>("Health");
 
 		if (_health == null) return;

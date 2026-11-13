@@ -96,7 +96,7 @@ public static class Catalog
 		new() { Id = "m9", Name = "M9", Type = "Pistola", Kind = ItemKind.Weapon,
 			Rarity = 0, Starter = true,
 			Description = "A secundária de todo conjunto. Troca rápida para quando o pente acaba no meio da luta." },
-		new() { Id = "faca", Name = "Faca", Type = "Corpo a corpo", Kind = ItemKind.Weapon,
+		new() { Id = Arsenal.KnifeId, Name = "Faca", Type = "Corpo a corpo", Kind = ItemKind.Weapon,
 			Rarity = 0, Starter = true,
 			Description = "Silenciosa: não faz ruído para os bots. A arma de quem quer o abate sem entregar a posição." },
 		new() { Id = "ump45", Name = "UMP-45", Type = "Submetralhadora", Kind = ItemKind.Weapon,
@@ -113,7 +113,7 @@ public static class Catalog
 			Description = "O fuzil mais estável do arsenal: recuo baixo e linear. Pune quem atira andando." },
 
 		// ---------------------------------------------------- utilitário
-		new() { Id = "choque", Name = "Granada de choque", Type = "Granada", Kind = ItemKind.Utility,
+		new() { Id = Arsenal.GrenadeId, Name = "Granada de choque", Type = "Granada", Kind = ItemKind.Utility,
 			Rarity = 1, Prices = new[] { 60, 300, 900, 2000, 4500 },
 			Description = "Anti-lobo: atordoa e desacelera quem pega o estouro. Não existe para matar; existe para o lobo não chegar." },
 

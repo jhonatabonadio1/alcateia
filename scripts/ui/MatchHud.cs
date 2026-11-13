@@ -62,7 +62,7 @@ public partial class MatchHud : CanvasLayer
 
 		Layer = 8;
 
-		var local = GetTree().GetFirstNodeInGroup("player")?.GetNodeOrNull<Health>("Health");
+		var local = Groups.LocalPlayer(GetTree())?.GetNodeOrNull<Health>("Health");
 		if (local != null) _localTeam = local.Team;
 
 		_root = UiTheme.Apply(UiKit.Fill(new Control { MouseFilter = Control.MouseFilterEnum.Ignore }));

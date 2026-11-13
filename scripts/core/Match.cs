@@ -206,7 +206,7 @@ public partial class Match : Node
 	/// quem ainda não fez nada, que é metade da informação.</summary>
 	private void Roster()
 	{
-		foreach (string group in new[] { "player", "bot" })
+		foreach (string group in Groups.Fighters)
 		{
 			foreach (Node node in GetTree().GetNodesInGroup(group))
 			{
@@ -214,8 +214,8 @@ public partial class Match : Node
 				if (health == null) continue;
 
 				CombatantStats entry = Entry(health.PublicName, health.Team);
-				entry.IsLocal = group == "player";
-				entry.IsBot = group == "bot";
+				entry.IsLocal = group == Groups.Players;
+				entry.IsBot = group == Groups.Bots;
 				entry.Health = health;
 				entry.Form = node.GetNodeOrNull<FormController>("FormController");
 				entry.Rank = entry.IsLocal

@@ -221,18 +221,6 @@ public partial class WolfVisual
 		Color team = Teams.ColorOf(_health.Team);
 		Color tint = Colors.White.Lerp(team, TeamTint);
 
-		foreach (Node node in _model.FindChildren("*", nameof(MeshInstance3D), true, false))
-		{
-			if (node is not MeshInstance3D mesh || mesh.Mesh == null) continue;
-
-			for (int surface = 0; surface < mesh.Mesh.GetSurfaceCount(); surface++)
-			{
-				if (mesh.GetActiveMaterial(surface) is not BaseMaterial3D source) continue;
-
-				var copy = (BaseMaterial3D)source.Duplicate();
-				copy.AlbedoColor = source.AlbedoColor * tint;
-				mesh.SetSurfaceOverrideMaterial(surface, copy);
-			}
-		}
+		MaterialTint.Paint(_model, (_, source) => source.AlbedoColor * tint);
 	}
 }

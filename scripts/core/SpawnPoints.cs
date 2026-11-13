@@ -98,8 +98,8 @@ public partial class SpawnPoints : Node3D
 		if (candidates.Count == 0) return fallback;
 
 		var enemies = new List<Vector3>();
-		Collect("player", asker, team, enemies);
-		Collect("bot", asker, team, enemies);
+		Collect(Groups.Players, asker, team, enemies);
+		Collect(Groups.Bots, asker, team, enemies);
 
 		float jitter = _all.Count > 0 ? _all[0].Jitter : 6f;
 

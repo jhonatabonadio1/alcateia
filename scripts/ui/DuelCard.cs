@@ -57,7 +57,7 @@ public partial class DuelCard : CanvasLayer
 		var key = (kill.Killer, kill.Victim);
 		_kills[key] = _kills.GetValueOrDefault(key) + 1;
 
-		Health local = GetTree().GetFirstNodeInGroup("player")?.GetNodeOrNull<Health>("Health");
+		Health local = Groups.LocalPlayer(GetTree())?.GetNodeOrNull<Health>("Health");
 		if (local == null) return;
 
 		string me = local.PublicName;
@@ -150,7 +150,7 @@ public partial class DuelCard : CanvasLayer
 
 	private Node3D Find(string name)
 	{
-		foreach (string group in new[] { "player", "bot" })
+		foreach (string group in Groups.Fighters)
 			foreach (Node node in GetTree().GetNodesInGroup(group))
 				if (node is Node3D body && body.GetNodeOrNull<Health>("Health")?.PublicName == name)
 					return body;

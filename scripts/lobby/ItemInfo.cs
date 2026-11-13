@@ -22,7 +22,7 @@ public static class ItemInfo
 	{
 		if (item.Kind == ItemKind.Weapon)
 		{
-			if (item.Id == "faca") return "Corpo a corpo";
+			if (item.Id == Arsenal.KnifeId) return "Corpo a corpo";
 			return item.Weapon?.Class == WeaponClass.Pistol ? "Secundária" : "Primária";
 		}
 
@@ -77,7 +77,7 @@ public static class ItemInfo
 	{
 		if (item.Kind != ItemKind.Weapon && item.Kind != ItemKind.Utility) return "";
 		int cost = Arsenal.CostOf(item.Id);
-		return item.Id == "faca" ? "" : $"WP {cost}";
+		return item.Id == Arsenal.KnifeId ? "" : $"WP {cost}";
 	}
 
 	public static Color RarityColor(CatalogItem item) => UiTokens.Rarity[Mathf.Clamp(item.Rarity, 0, 4)];

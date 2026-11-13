@@ -21,10 +21,10 @@ public partial class EnemyMarks : Node
 		_timer = 0.5;
 
 		if (_local == null || !IsInstanceValid(_local))
-			_local = GetTree().GetFirstNodeInGroup("player")?.GetNodeOrNull<Health>("Health");
+			_local = Groups.LocalPlayer(GetTree())?.GetNodeOrNull<Health>("Health");
 		if (_local == null) return;
 
-		foreach (string group in new[] { "player", "bot" })
+		foreach (string group in Groups.Fighters)
 		{
 			foreach (Node body in GetTree().GetNodesInGroup(group))
 			{

@@ -113,7 +113,7 @@ public partial class Grenade : RigidBody3D
 		KillFeed.Report(new Kill(
 			Thrower.PublicName, Thrower.Team,
 			victim.PublicName, victim.Team,
-			KillCause.Grenade, "choque"));
+			KillCause.Grenade, Arsenal.GrenadeId));
 	}
 
 	/// <summary>Clarão que cresce e some. Peça descartável — vira

@@ -206,14 +206,7 @@ public partial class ViewModel : Node3D
 		bool wolf = _form.IsWolf;
 		_claws.Visible = wolf;
 
-		string id = wolf ? "" : _weapon.HumanSlot switch
-		{
-			Slot.Primary => _weapon.PrimaryDef?.Id ?? "",
-			Slot.Secondary => _weapon.SecondaryDef?.Id ?? "",
-			Slot.Knife => "faca",
-			Slot.Grenade => "choque",
-			_ => ""
-		};
+		string id = wolf ? "" : _weapon.HeldId;
 
 		if (id == _heldId && _held != null) return;
 
@@ -240,8 +233,8 @@ public partial class ViewModel : Node3D
 
 	private static Vector3 Anchor(string id) => id switch
 	{
-		"faca" => KnifeAnchor,
-		"choque" => GrenadeAnchor,
+		Arsenal.KnifeId => KnifeAnchor,
+		Arsenal.GrenadeId => GrenadeAnchor,
 		_ when WeaponModel.IsPistol(id) => PistolAnchor,
 		_ => RifleAnchor
 	};

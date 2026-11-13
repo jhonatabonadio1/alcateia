@@ -152,14 +152,8 @@ public partial class RoomRow : PanelContainer
 		box.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 		box.TooltipText = map.Name;
 
-		var thumb = new TextureRect
-		{
-			Texture = ResourceLoader.Exists(map.Thumbnail) ? GD.Load<Texture2D>(map.Thumbnail) : null,
-			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-			StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
-			CustomMinimumSize = new Vector2(56, 30),
-			MouseFilter = MouseFilterEnum.Ignore
-		};
+		TextureRect thumb = UiKit.Thumbnail(map.Thumbnail, new Vector2(56, 30));
+		thumb.MouseFilter = MouseFilterEnum.Ignore;
 		box.AddChild(thumb);
 		return box;
 	}

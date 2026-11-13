@@ -81,8 +81,8 @@ public static class KillFeed
 		string with = kill.Weapon switch
 		{
 			"lobo" => "de lobo",
-			"faca" => "na faca",
-			"choque" => "com granada",
+			Arsenal.KnifeId => "na faca",
+			Arsenal.GrenadeId => "com granada",
 			_ => Catalog.Get(kill.Weapon) is CatalogItem item ? $"com {item.Name}" : Describe(kill.Cause)
 		};
 

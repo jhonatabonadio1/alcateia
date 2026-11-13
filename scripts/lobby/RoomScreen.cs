@@ -386,13 +386,7 @@ public partial class RoomScreen : LobbyScreen
 		HBoxContainer body = UiKit.Row(UiTokens.S3);
 		var frame = new PanelContainer();
 		frame.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Bg, UiTokens.Border, 1, UiTokens.RadiusSmall, 0, 0));
-		var thumb = new TextureRect
-		{
-			Texture = ResourceLoader.Exists(map.Thumbnail) ? GD.Load<Texture2D>(map.Thumbnail) : null,
-			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-			StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
-			CustomMinimumSize = new Vector2(184, 104)
-		};
+		TextureRect thumb = UiKit.Thumbnail(map.Thumbnail, new Vector2(184, 104));
 		frame.AddChild(thumb);
 		body.AddChild(frame);
 
@@ -523,14 +517,7 @@ public partial class RoomScreen : LobbyScreen
 		return panel;
 	}
 
-	private static Control Info(string label, string value)
-	{
-		HBoxContainer row = UiKit.Row(UiTokens.S2);
-		row.AddChild(UiKit.Text(label, "Muted"));
-		row.AddChild(UiKit.Spacer());
-		row.AddChild(UiKit.Text(value, "Numeric"));
-		return row;
-	}
+	private static Control Info(string label, string value) => UiKit.Stat(label, value);
 
 	private Control Actions()
 	{

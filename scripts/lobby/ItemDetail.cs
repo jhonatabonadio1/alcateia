@@ -175,10 +175,7 @@ public partial class ItemDetail : PanelContainer
 				if (Mathf.IsEqualApprox(mult, 1f)) return;
 				float pct = (mult - 1f) * 100f;
 				bool good = lowerIsBetter ? pct < 0 : pct > 0;
-				HBoxContainer row = UiKit.Row(UiTokens.S2);
-				row.AddChild(UiKit.Text(label, "Muted"));
-				row.AddChild(UiKit.Spacer());
-				row.AddChild(UiKit.Text($"{(pct > 0 ? "+" : "")}{pct:0}%", "Numeric", good ? UiTokens.Success : UiTokens.Danger));
+				HBoxContainer row = UiKit.Stat(label, $"{(pct > 0 ? "+" : "")}{pct:0}%", good ? UiTokens.Success : UiTokens.Danger);
 				bars.Add(row);
 			}
 

@@ -80,7 +80,7 @@ public partial class Weapon
 	private string KillWeapon()
 	{
 		if (_form.IsWolf) return "lobo";
-		if (HumanSlot == Slot.Knife) return "faca";
+		if (HumanSlot == Slot.Knife) return Arsenal.KnifeId;
 		return Held?.Id ?? "";
 	}
 

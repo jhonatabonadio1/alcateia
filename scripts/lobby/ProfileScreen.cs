@@ -17,10 +17,7 @@ public partial class ProfileScreen : LobbyScreen
 
 	protected override void Build()
 	{
-		MarginContainer margin = UiKit.Fill(UiKit.Margin(UiTokens.S5, UiTokens.S4, UiTokens.S5, UiTokens.S4));
-		AddChild(margin);
-		HBoxContainer split = UiKit.Row(UiTokens.S4);
-		margin.AddChild(split);
+		HBoxContainer split = SplitPage();
 
 		split.AddChild(Identity());
 		split.AddChild(Stats());
@@ -31,12 +28,8 @@ public partial class ProfileScreen : LobbyScreen
 
 	private Control Identity()
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
+		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S5, UiTokens.S3);
 		panel.CustomMinimumSize = new Vector2(440, 0);
-		MarginContainer margin = UiKit.Margin(UiTokens.S5);
-		panel.AddChild(margin);
-		VBoxContainer column = UiKit.Column(UiTokens.S3);
-		margin.AddChild(column);
 
 		int rank = Profile.Rank;
 
@@ -228,12 +221,8 @@ public partial class ProfileScreen : LobbyScreen
 
 	private Control History()
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
+		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S4, UiTokens.S2);
 		panel.CustomMinimumSize = new Vector2(360, 0);
-		MarginContainer margin = UiKit.Margin(UiTokens.S4);
-		panel.AddChild(margin);
-		VBoxContainer column = UiKit.Column(UiTokens.S2);
-		margin.AddChild(column);
 
 		column.AddChild(UiKit.Caption("Histórico de patentes"));
 

@@ -16,10 +16,7 @@ public partial class MissionsScreen : LobbyScreen
 	{
 		Profile.Missions.Refresh(DateTime.Now);
 
-		MarginContainer margin = UiKit.Fill(UiKit.Margin(UiTokens.S5, UiTokens.S4, UiTokens.S5, UiTokens.S4));
-		AddChild(margin);
-		VBoxContainer page = UiKit.Column(UiTokens.S3);
-		margin.AddChild(page);
+		VBoxContainer page = Page();
 
 		HBoxContainer head = UiKit.Row(UiTokens.S3);
 		head.AddChild(UiKit.Text("Missões", "Title"));
@@ -44,12 +41,8 @@ public partial class MissionsScreen : LobbyScreen
 
 	private Control Section(string title, string note, List<MissionProgress> list)
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
+		PanelContainer panel = UiKit.Card(out VBoxContainer column);
 		panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		MarginContainer margin = UiKit.Margin(UiTokens.S4);
-		panel.AddChild(margin);
-		VBoxContainer column = UiKit.Column(UiTokens.S3);
-		margin.AddChild(column);
 
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
 		head.AddChild(UiKit.Text(title, "Subtitle"));

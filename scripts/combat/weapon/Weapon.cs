@@ -106,6 +106,28 @@ public partial class Weapon : Node3D
 		: HumanSlot == Slot.Secondary ? SecondaryDef
 		: null;
 
+	/// <summary>Id do que está na mão humana — a arma de fogo, a faca ou a
+	/// granada; vazio de lobo. É o que a arma na tela, a arma na mão do
+	/// corpo e o HUD desenham.</summary>
+	public string HeldId =>
+		_form == null || _form.IsWolf ? ""
+		: HumanSlot switch
+		{
+			Slot.Primary => PrimaryDef?.Id ?? "",
+			Slot.Secondary => SecondaryDef?.Id ?? "",
+			Slot.Knife => Arsenal.KnifeId,
+			Slot.Grenade => Arsenal.GrenadeId,
+			_ => ""
+		};
+
+	/// <summary>Avisa quem desenha (HUD, arma na tela) do que está na mão
+	/// agora: o slot e o pente.</summary>
+	private void AnnounceHeld()
+	{
+		EmitSignal(SignalName.SlotChanged, (int)HumanSlot);
+		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
+	}
+
 	/// <summary>O sorteio desta arma (<see cref="GameRandom"/>): dispersão,
 	/// recuo sorteado, a arma solta. Fluxo próprio, pelo nome do dono.</summary>
 	private GameRandom _rng;
@@ -205,13 +227,7 @@ public partial class Weapon : Node3D
 
 		if (slot == Slot.Knife)
 		{
-			HumanSlot = Slot.Knife;
-
-			if (_form.IsWolf)
-				_form.ToggleForm();
-
-			_cooldown = 0.2f;
-			EmitSignal(SignalName.SlotChanged, (int)Slot.Knife);
+			TakeInHand(Slot.Knife);
 			return;
 		}
 
@@ -228,13 +244,7 @@ public partial class Weapon : Node3D
 			}
 
 			_slotBeforeGrenade = HumanSlot == Slot.Grenade ? _slotBeforeGrenade : HumanSlot;
-			HumanSlot = Slot.Grenade;
-
-			if (_form.IsWolf)
-				_form.ToggleForm();
-
-			_cooldown = 0.2f;
-			EmitSignal(SignalName.SlotChanged, (int)Slot.Grenade);
+			TakeInHand(Slot.Grenade);
 			return;
 		}
 
@@ -266,15 +276,22 @@ public partial class Weapon : Node3D
 
 		if (slot != HumanSlot && IsReloading) CancelReload();
 
-		HumanSlot = slot;
 		_reloadTimer = 0;
+		TakeInHand(slot);
+		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
+	}
+
+	/// <summary>Põe na mão: volta a humano se estava de lobo, espera o
+	/// tempo da troca e avisa quem desenha.</summary>
+	private void TakeInHand(Slot slot)
+	{
+		HumanSlot = slot;
 
 		if (_form.IsWolf)
 			_form.ToggleForm();
 
 		_cooldown = 0.2f;
 		EmitSignal(SignalName.SlotChanged, (int)slot);
-		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
 	}
 
 	public void TryAttack()

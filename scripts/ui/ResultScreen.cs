@@ -370,13 +370,9 @@ public partial class ResultScreen : CanvasLayer
 
 	private Control RewardPanel()
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
+		PanelContainer panel = UiKit.Card(out VBoxContainer column);
 		panel.CustomMinimumSize = new Vector2(460, 0);
 		panel.SizeFlagsVertical = Control.SizeFlags.ShrinkBegin;
-		MarginContainer margin = UiKit.Margin(UiTokens.S4);
-		panel.AddChild(margin);
-		VBoxContainer column = UiKit.Column(UiTokens.S3);
-		margin.AddChild(column);
 
 		column.AddChild(UiKit.Caption("RECOMPENSA"));
 

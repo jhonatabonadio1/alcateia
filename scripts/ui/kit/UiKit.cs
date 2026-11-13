@@ -229,6 +229,60 @@ public static class UiKit
 		return chip;
 	}
 
+	/// <summary>Cartão: painel com margem e uma coluna dentro. Devolve o
+	/// painel (para dimensionar) e a coluna (para encher).</summary>
+	public static PanelContainer Card(out VBoxContainer column, int padding = UiTokens.S4,
+		int separation = UiTokens.S3, string variation = "Surface1")
+	{
+		PanelContainer panel = Panel(variation);
+		MarginContainer margin = Margin(padding);
+		panel.AddChild(margin);
+		column = Column(separation);
+		margin.AddChild(column);
+		return panel;
+	}
+
+	/// <summary>Grade que rola na vertical, dentro de <paramref name="parent"/>,
+	/// ocupando o resto da altura — a vitrine da loja e do inventário.</summary>
+	public static GridContainer ScrollGrid(Control parent, int columns)
+	{
+		var scroll = new ScrollContainer
+		{
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
+		};
+		parent.AddChild(scroll);
+
+		var grid = new GridContainer { Columns = columns };
+		grid.AddThemeConstantOverride("h_separation", UiTokens.S3);
+		grid.AddThemeConstantOverride("v_separation", UiTokens.S3);
+		MarginContainer pad = Margin(UiTokens.S2);
+		pad.AddChild(grid);
+		scroll.AddChild(pad);
+		return grid;
+	}
+
+	/// <summary>Linha "rótulo apagado à esquerda, número à direita" —
+	/// estatística, preço, detalhe da sala.</summary>
+	public static HBoxContainer Stat(string label, string value, Color? color = null)
+	{
+		HBoxContainer row = Row(UiTokens.S2);
+		row.AddChild(Text(label, "Muted"));
+		row.AddChild(Spacer());
+		row.AddChild(Text(value, "Numeric", color));
+		return row;
+	}
+
+	/// <summary>Imagem que cobre o espaço sem distorcer (miniatura de
+	/// mapa). Arquivo que não existe deixa o espaço vazio.</summary>
+	public static TextureRect Thumbnail(string path, Vector2 size) => new()
+	{
+		Texture = ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null,
+		ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+		StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+		CustomMinimumSize = size
+	};
+
 	/// <summary>Linha "rótulo à esquerda, valor à direita" — o formato
 	/// de formulário do painel de regras da sala.</summary>
 	public static HBoxContainer FormRow(string label, Control value, int labelWidth = 150)
