@@ -43,6 +43,7 @@ OwnerCameraPath = NodePath("../Head/Camera3D")
 
 [node name="WolfVisual" type="Node3D" parent="." unique_id=1727759676]
 script = ExtResource("8_wolf")
+WallClipSpeed = 1.5
 
 [node name="Head" type="Node3D" parent="." unique_id=1029924302]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
