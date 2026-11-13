@@ -1,4 +1,5 @@
 using Godot;
+using static AnimationKit;
 using System.Collections.Generic;
 
 /// <summary>
@@ -234,7 +235,7 @@ public partial class WolfVisual : Node3D
 		_model.RotationDegrees = new Vector3(0, ModelYaw, 0);
 		AddChild(_model);
 
-		_anims = CharacterAnimator.FindPlayer(_model);
+		_anims = FindPlayer(_model);
 
 		// Modelo exportado de outro programa (o Mutant vermelho veio do
 		// Blender) chega sem AnimationPlayer e com o esqueleto dentro de
@@ -324,11 +325,11 @@ public partial class WolfVisual : Node3D
 		Node temp = GD.Load<PackedScene>(path)?.Instantiate();
 		if (temp == null) return null;
 
-		Animation animation = CharacterAnimator.TakeAnimation(CharacterAnimator.FindPlayer(temp), file, Debug);
+		Animation animation = TakeAnimation(FindPlayer(temp), file, Debug);
 		temp.Free();
 		if (animation == null) return null;
 
-		CharacterAnimator.StripRootMotion(animation);
+		StripRootMotion(animation);
 		return animation;
 	}
 
@@ -398,17 +399,6 @@ public partial class WolfVisual : Node3D
 		}
 
 		return cut;
-	}
-
-	private static Skeleton3D FindSkeleton(Node node)
-	{
-		if (node is Skeleton3D skeleton) return skeleton;
-		foreach (Node child in node.GetChildren())
-		{
-			Skeleton3D found = FindSkeleton(child);
-			if (found != null) return found;
-		}
-		return null;
 	}
 
 	/// <summary>
@@ -519,11 +509,7 @@ public partial class WolfVisual : Node3D
 			if (!FullBody(shot))
 			{
 				Animation clip = _anims.GetAnimation($"lobo/{shot}");
-				for (int t = 0; t < clip.GetTrackCount(); t++)
-				{
-					NodePath path = clip.TrackGetPath(t);
-					if (UpperBody(path.ToString())) oneShot.SetFilterPath(path, true);
-				}
+				FilterUpperBody(oneShot, clip);
 			}
 
 			string name = Cap(shot);
@@ -559,20 +545,6 @@ public partial class WolfVisual : Node3D
 		foreach (string part in s.Split('_'))
 			if (part.Length > 0) name.Append(char.ToUpperInvariant(part[0])).Append(part[1..]);
 		return name.ToString();
-	}
-
-	private static bool UpperBody(string path)
-	{
-		int colon = path.LastIndexOf(':');
-		string bone = colon >= 0 ? path[(colon + 1)..] : path;
-		return bone.Contains("Spine") || bone.Contains("Neck") || bone.Contains("Head")
-			|| bone.Contains("Shoulder") || bone.Contains("Arm") || bone.Contains("Hand");
-	}
-
-	private static void Link(AnimationNodeStateMachine machine, string from, string to)
-	{
-		if (!machine.HasNode(from) || !machine.HasNode(to)) return;
-		machine.AddTransition(from, to, new AnimationNodeStateMachineTransition { XfadeTime = 0.15f });
 	}
 
 	/// <summary>

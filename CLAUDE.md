@@ -1695,7 +1695,7 @@ metros do corpo dele (quadril a 1,04 m). O Exo Gray (0,96 m) e a Ely
 (0,98 m) têm pernas mais curtas, e com o quadril do X Bot os pés
 ficavam 6 a 8 cm acima do chão. Cada clipe é ajustado na carga pela
 razão entre os dois quadris em repouso
-(`CharacterAnimator.MatchHips`). Os clipes do lobo são do próprio
+(`AnimationKit.MatchHips`). Os clipes do lobo são do próprio
 Mutant e já pisam no chão. Trocou o personagem? Não precisa mexer em
 nada: a razão é lida dos dois esqueletos. O `WolfVisual` faz o mesmo
 para o lobo. O `mutant_red.fbx` veio do Blender, sem `AnimationPlayer`

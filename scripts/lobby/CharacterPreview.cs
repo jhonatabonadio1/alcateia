@@ -144,15 +144,15 @@ public partial class CharacterPreview : SubViewportContainer
 		model.Scale = Vector3.One * scale;
 		_pivot.AddChild(model);
 
-		AnimationPlayer player = Find<AnimationPlayer>(model);
+		AnimationPlayer player = AnimationKit.FindFirst<AnimationPlayer>(model);
 		if (player == null || !ResourceLoader.Exists(idlePath)) return model;
 
 		Node temp = GD.Load<PackedScene>(idlePath).Instantiate();
-		Animation idle = CharacterAnimator.TakeAnimation(Find<AnimationPlayer>(temp), "idle", false);
+		Animation idle = AnimationKit.TakeAnimation(AnimationKit.FindFirst<AnimationPlayer>(temp), "idle", false);
 		temp.Free();
 		if (idle == null) return model;
 
-		CharacterAnimator.StripRootMotion(idle);
+		AnimationKit.StripRootMotion(idle);
 		idle.LoopMode = Animation.LoopModeEnum.Linear;
 
 		var library = new AnimationLibrary();
@@ -166,16 +166,5 @@ public partial class CharacterPreview : SubViewportContainer
 	{
 		if (_human != null) _human.Visible = !_wolf;
 		if (_wolfModel != null) _wolfModel.Visible = _wolf;
-	}
-
-	private static T Find<T>(Node node) where T : Node
-	{
-		if (node is T found) return found;
-		foreach (Node child in node.GetChildren())
-		{
-			T inner = Find<T>(child);
-			if (inner != null) return inner;
-		}
-		return null;
 	}
 }

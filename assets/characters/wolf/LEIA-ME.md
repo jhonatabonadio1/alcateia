@@ -36,7 +36,7 @@ no ar, que começa com o lobo já no ar — `FallOnly`) e, quando o bote
 encosta, a aterrissagem.
 
 Clipe com deslocamento de raiz tem o deslocamento horizontal zerado na
-carga (`CharacterAnimator.StripRootMotion`): quem move o corpo é a
+carga (`AnimationKit.StripRootMotion`): quem move o corpo é a
 física.
 
 **Golpes e rugido tocam um trecho medido**, não o arquivo inteiro: a
