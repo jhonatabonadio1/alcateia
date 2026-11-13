@@ -1,7 +1,7 @@
 using Godot;
 
 /// <summary>A tabela de controles, igual na tela de opções e no menu da
-/// partida. A fonte é o CLAUDE.md ("Controles"); mudou uma tecla em
+/// partida. A fonte é o docs/DESIGN.md ("Controles"); mudou uma tecla em
 /// InputSetup, muda aqui também.</summary>
 public static class ControlsTable
 {

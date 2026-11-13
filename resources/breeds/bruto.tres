@@ -10,4 +10,3 @@ JumpMultiplier = 1.28
 BodyResistance = 0.6
 AttackDamage = 75.0
 AttackRange = 5.0
-AttackCooldown = 0.0

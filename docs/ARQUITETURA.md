@@ -2,12 +2,13 @@
 
 Guia para quem vai abrir o código e mexer com as próprias mãos.
 
-O `CLAUDE.md` diz **o que** o jogo deve ser e **por que** cada regra
+O `CLAUDE.md` (as regras) e o `docs/DESIGN.md` (as decisões, sistema
+por sistema) dizem **o que** o jogo deve ser e **por que** cada regra
 existe. Este arquivo diz **como o código está montado**, por onde a
-informação passa e **onde mexer** para cada tipo de mudança. Quando os
-dois parecerem discordar, o `CLAUDE.md` manda nas regras de design e
-este manda na descrição do código — e um dos dois precisa ser
-corrigido.
+informação passa e **onde mexer** para cada tipo de mudança. Quando
+parecerem discordar, aqueles mandam nas regras de design e este manda
+na descrição do código — e um dos lados precisa ser corrigido. Por que
+o código é organizado assim está em `docs/decisoes/`.
 
 ---
 
@@ -90,13 +91,21 @@ mexer na árvore no meio de um sinal causaria erro.
 ```
 alcateia/
 ├── project.godot          configuração; cena principal = menu
-├── CLAUDE.md / AGENTS.md  regras de design e decisões (o mesmo arquivo)
+├── CLAUDE.md / AGENTS.md  guia para agentes: regras, arquitetura, testes
+├── CONTRIBUTING.md        como trabalhar no projeto (passo a passo)
 ├── docs/
 │   ├── ARQUITETURA.md     este guia
+│   ├── DESIGN.md          as decisões de jogo, sistema por sistema
+│   ├── AJUSTES.md         todo número regulável e onde mudar
 │   ├── ARSENAL.md         especificação das armas
 │   ├── CONJUNTOS.md       especificação de conjuntos e economia
 │   ├── UI.md              guia de interface: telas, HUD, tokens
+│   ├── decisoes/          registros de decisão de arquitetura (ADR)
 │   └── CHANGELOG.md
+├── tests/
+│   ├── unit/              C# puro, sem Godot (scripts/domain)
+│   └── regression/        o jogo de verdade, sem tela
+├── .github/workflows/     os testes a cada push
 ├── scenes/
 │   ├── menu/menu.tscn     entrada do jogo: o lobby inteiro
 │   ├── main.tscn          a partida
@@ -108,37 +117,51 @@ alcateia/
 │   └── maps/hangar.tscn   o mapa (gerado por tools/gerar_hangar.py)
 ├── resources/
 │   ├── weapons/*.tres     armas (geradas por tools/gerar_arsenal.py)
-│   └── breeds/*.tres      classes de lobo
+│   ├── breeds/*.tres      classes de lobo
+│   ├── bots/*.tres        níveis de dificuldade (fácil, médio, difícil)
+│   └── body/ruido.tres    quanto barulho o corpo faz
 ├── assets/                modelos, animações, texturas, sons, fontes,
 │                          miniaturas de mapa (assets/ui/mapas)
-├── tools/                 geradores: arsenal, hangar, miniaturas, sons
+├── tools/                 geradores e o testar.sh
 └── scripts/
-    ├── actors/            quem decide: Player (input) e Bot (IA)
-    ├── combat/            vida, armas, granada, arsenal, conjuntos
-    ├── forms/             transformação humano ↔ lobo e WP
-    ├── ai/                pontuação de decisões do bot
+    ├── domain/            regras em C# puro: contas do combate, sorteio
+    │                      com semente — sem Godot, com teste de unidade
+    ├── actors/
+    │   ├── player/        o jogador (Player.*.cs, classe parcial)
+    │   ├── bot/           o bot, nas camadas da IA (Bot.*.cs)
+    │   ├── body/          o corpo que os dois dividem: golpes do lobo,
+    │   │                  ruído, cadáver
+    │   └── input/         CharacterIntent: o que o jogador quer no quadro
+    ├── combat/            vida, arsenal, granada, conjuntos
+    │   └── weapon/        a arma na mão (Weapon.*.cs, por responsabilidade)
+    ├── forms/             transformação humano ↔ lobo, WP, tempo dos golpes
+    ├── ai/                pontuação de decisões e níveis do bot
     ├── core/              partida, sala e suas regras, perfil, opções,
     │                      mapa, som, barramentos
     ├── meta/              fora da partida: patentes, catálogo da loja,
     │                      missões, progressão, mapas, lista de salas
     ├── lobby/             as telas do lobby (LobbyShell e uma por tela)
-    ├── ui/                HUD, placar, resultado, respawn, Esc, minimapa
+    ├── ui/                placar, resultado, respawn, Esc, minimapa
+    │   ├── hud/           o HUD de combate, um arquivo por canto
     │   └── kit/           tokens, tema e componentes de interface
-    ├── visual/            animação e áudio dos personagens, modelo das
-    │                      armas (WeaponModel) e a arma na mão (HeldWeapon)
+    ├── visual/            áudio dos personagens, modelo das armas
+    │   ├── human/         o corpo humano animado (CharacterAnimator.*)
+    │   ├── wolf/          o corpo do lobo (WolfVisual.*)
+    │   └── anim/          AnimationKit: o que os dois dividem
     ├── net/               rede — dormente até a Fase 2
     └── debug/             peças descartáveis
 ```
 
-> **Lixo antigo na raiz.** `main.tscn`, `player.tscn`, `dummy.tscn` e
-> `bruto.tres` soltos na raiz são cópias da v0.2.0 que apontam para
-> scripts que não existem mais (`res://Player.cs`). Nada os usa. As
-> versões de verdade estão em `scenes/` e `resources/`. Podem ser
-> apagados.
+**Classes grandes são parciais, um arquivo por assunto.** `Player`,
+`Bot`, `Weapon`, `CharacterAnimator`, `WolfVisual` e `Hud` são uma
+classe só cada (a cena aponta para o arquivo principal), divididas em
+`Classe.Assunto.cs`. O arquivo principal diz no comentário do topo
+quais são as partes. No Inspector, cada parte é um grupo.
 
-A divisão é **por domínio, não por dono**. Não existe pasta `player/`
-porque `Health`, `Weapon` e `FormController` são usados igualzinho pelo
-jogador e pelo bot. Se um dia você escrever um `PlayerWeapon` separado
+A divisão é **por domínio, não por dono**. `actors/player/` só tem o
+que é do jogador; `Health`, `Weapon` e `FormController` ficam em
+`combat/` e `forms/` porque são usados igualzinho pelo jogador e pelo
+bot, e o corpo que os dois dividem fica em `actors/body/`. Se um dia você escrever um `PlayerWeapon` separado
 do `BotWeapon`, os dois passam a jogar jogos diferentes e o
 balanceamento contra bot deixa de valer contra gente.
 
@@ -148,20 +171,22 @@ balanceamento contra bot deixa de valer contra gente.
 
 ```
             ┌──────────────────────────────────────────┐
-  QUEM      │  Player.cs (lê teclado/mouse)            │
-  DECIDE    │  Bot.cs + BotBrain.cs (lê o mundo)       │
+  QUEM      │  Player (CharacterIntent ← teclado/mouse)│
+  DECIDE    │  Bot + BotBrain (lê o mundo)             │
             └──────────────┬───────────────────────────┘
                            │ chama métodos
             ┌──────────────▼───────────────────────────┐
   O QUE     │  Weapon      FormController     Health   │  ← os mesmos
   ACONTECE  │  (atirar)    (transformar, WP)  (vida)   │    para os dois
-            └──────────────┬───────────────────────────┘
-                           │ emite sinais / eventos estáticos
-            ┌──────────────▼───────────────────────────┐
-  QUEM      │  Hud, MatchHud, Minimap, DamageIndicator │
-  MOSTRA    │  ViewModel, WolfVisual, CharacterAnimator│
-  E TOCA    │  WorldAudio, CombatantAudio              │
-            └──────────────────────────────────────────┘
+            │  WolfMoveMotor · BodyNoise · Corpse      │──── pede as contas ───┐
+            └──────────────┬───────────────────────────┘                       │
+                           │ emite sinais / eventos estáticos                   │
+            ┌──────────────▼───────────────────────────┐   ┌───────────────────▼──┐
+  QUEM      │  Hud, MatchHud, Minimap, DamageIndicator │   │ REGRAS (C# puro,     │
+  MOSTRA    │  ViewModel, WolfVisual, CharacterAnimator│   │ scripts/domain):     │
+  E TOCA    │  WorldAudio, CombatantAudio              │   │ CombatRules,         │
+            └──────────────────────────────────────────┘   │ GameRandom, WolfMoves│
+                                                           └──────────────────────┘
 
   SERVIÇOS ESTÁTICOS (qualquer um consulta):
   Match.Current · KillFeed · NoiseBus · UiState · Arsenal · Profile
@@ -181,7 +206,13 @@ balanceamento contra bot deixa de valer contra gente.
    reescrita.
 4. **`Player._PhysicsProcess` precisa ser determinístico** — nada de
    `GD.Randf()` nem de leitura de estado visual ali. Na Fase 2 ele vira
-   a predição do cliente.
+   a predição do cliente. Ele lê a intenção (`CharacterIntent`) uma vez
+   no começo do quadro e nunca o `Input` direto.
+5. **Sorteio de regra de jogo é `GameRandom`**, com semente
+   (`MatchRandom.Stream(nome)`), nunca `GD.Randf()`. Enfeite pode usar o
+   do Godot.
+6. **Conta de regra mora em `scripts/domain`**, com teste de unidade.
+   O componente decide o que aconteceu e pede o número.
 
 ---
 
@@ -547,7 +578,7 @@ no Inspector com `player.tscn` aberto. As classes de lobo estão em
 
 1. `scripts/core/InputSetup.cs`: `Key("nome_da_acao", Godot.Key.F);`
 2. Leia onde fizer sentido: `Input.IsActionJustPressed("nome_da_acao")`.
-3. Atualize a tabela de controles do `CLAUDE.md`.
+3. Atualize a tabela de controles do `docs/DESIGN.md`.
 
 As ações são registradas por código, não pelo editor, para não depender
 do `project.godot` e para não haver duas fontes.
@@ -661,7 +692,7 @@ O caminho atual é gerar o `.tscn` por script, como
 Depois troque o mapa instanciado em `scenes/main.tscn` (nó `Map`).
 
 As alturas precisam conversar com a física: um degrau que o humano
-sobe, uma caixa que só o lobo alcança. O `CLAUDE.md`, seção "O mapa
+sobe, uma caixa que só o lobo alcança. O `docs/DESIGN.md`, seção "O mapa
 Hangar", tem as medidas.
 
 ### Ensinar uma decisão nova ao bot

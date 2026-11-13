@@ -16,9 +16,6 @@ public partial class WolfBreed : Resource
 	/// <summary>Custo em WP para assumir esta forma.</summary>
 	[Export] public float WpCost = 250f;
 
-	/// <summary>Vida da forma lobo (substitui a vida humana enquanto dura).</summary>
-	[Export] public float Hp = 300f;
-
 	/// <summary>Escudo do lobo, recarregado pelo rugido. Separado do
 	/// HP de propósito: é o recurso que define a forma.</summary>
 	[Export] public float Shield = 200f;
@@ -46,7 +43,6 @@ public partial class WolfBreed : Resource
 
 	[Export] public float AttackDamage = 120f;
 	[Export] public float AttackRange = 2.5f;
-	[Export] public float AttackCooldown = 0.8f;
 
 	/// <summary>Bônus de dano ao acertar caindo de altura. O documento
 	/// aponta o ataque aéreo como memória central do jogo.</summary>

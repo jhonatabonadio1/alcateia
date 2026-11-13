@@ -3,26 +3,60 @@
 ## v0.27.0 — 2026-11-12 (organização da casa)
 
 Série de commits que reorganiza o código sem mudar o jogo. Os testes
-desta versão provam que o comportamento continua o aprovado.
+desta versão provam que o comportamento continua o aprovado; as poucas
+diferenças de comportamento estão em "Mudado", com o porquê.
 
 ### Adicionado
-- **Testes automatizados** (`tools/testar.sh`):
-  - de unidade (`tests/unit`): C# puro, sem Godot e sem pacote — rodam
-    em segundos, sem internet;
-  - de regressão (`tests/regression`): o jogo de verdade, sem tela —
-    distância do salto carregado em 8 situações, velocidades no chão,
-    altura do pulo, corrida na parede, passada do lobo em 5 direções e
-    na parada, granada, dano da garra, renascer humano, bots atirando,
-    lobos usando especiais, cenas abrindo sem erro.
+- **Testes automatizados** (`tools/testar.sh`, ~1,5 min):
+  - 33 de unidade (`tests/unit`): C# puro, sem Godot e sem pacote —
+    contas do combate, tempo dos golpes, sorteio com semente;
+  - 20 de regressão (`tests/regression`): o jogo de verdade, sem tela —
+    salto carregado em 8 situações, velocidades no chão, altura do
+    pulo, corrida na parede, salto da parede, agarrar na parede,
+    passada do lobo, granada, dano da garra, ruído, níveis dos bots,
+    clipes de animação, HUD, renascer humano, bots atirando, lobos
+    usando especiais, cenas abrindo sem erro.
 - **Testes no GitHub a cada push** (`.github/workflows/testes.yml`).
+- **Semente da partida**: a partida diz a semente no Output, e
+  `-- --seed=N` repete a sorte (mira dos bots, dispersão, rotas).
+- **Documentação**: `CONTRIBUTING.md` (o passo a passo),
+  `docs/DESIGN.md` (as decisões de jogo, que saíram do `CLAUDE.md`) e
+  `docs/decisoes/` (os registros de arquitetura, ADR 0001 a 0007).
 
 ### Mudado
+- **Código dividido por assunto** (classes parciais): `Player`, `Bot`,
+  `Weapon`, `CharacterAnimator`, `WolfVisual` e `Hud`, cada um numa
+  pasta com um arquivo por responsabilidade. No Inspector os campos
+  aparecem em grupos. Nenhuma linha de código mudou nessas divisões.
+- **Jogador e bot dividem o corpo** (`scripts/actors/body`): o bote, o
+  voo do salto, o lobo preso ao chão, o ruído e o cadáver eram cópias.
+  Onde as cópias tinham divergido, valeu a regra do jogador:
+  - o bote do bot só bate em parede quando vai de encontro a ela;
+  - o pouso do salto do bot faz o baque (os outros ouvem);
+  - o rugido faz ruído já no começo, sempre.
+- **Ruído do corpo num arquivo só** (`resources/body/ruido.tres`), no
+  lugar dos cinco campos repetidos no jogador e no bot.
+- **Níveis dos bots viram dado** (`resources/bots/*.tres`), com o nome
+  e a linha do menu junto.
+- **Contas do combate em C# puro** (`scripts/domain/CombatRules.cs`):
+  dano, queda por distância, dispersão, recuo, garra, salto, escudo.
+- **O jogador lê o teclado uma vez por quadro** (`CharacterIntent`).
+- **Sorteio de regra com semente** (`GameRandom`), um fluxo por bot e
+  por arma, no lugar do sorteio global do Godot.
+- **Ferramentas de animação num lugar só** (`AnimationKit`), que o
+  humano, o lobo e o lobby usavam em cópias.
+- **Corrida na parede em passos com nome** (o método tinha 286 linhas).
+- `CLAUDE.md` com 390 linhas (era 1850): as regras ficam, as decisões
+  de cada sistema foram para o `docs/DESIGN.md`.
+- `WolfVisual` saiu de `scripts/ui` para `scripts/visual/wolf`.
+- `Player.WallDebug` vem desligado.
 - **Indentação com tab em todo o C#**, fixada no `.editorconfig`.
 - **Bruto: dano 75, alcance 5, sem espera entre garradas** (os valores
   com que o Jhon joga).
 
 ### Removido
 - Cópias velhas de cenas e do Bruto na raiz do projeto.
+- `WolfBreed.Hp` e `WolfBreed.AttackCooldown`, que nada usava.
 
 ## v0.26.12 — 2026-11-12
 

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 ///
 /// **Não inventa evento.** Escuta o <see cref="NoiseBus"/> — o mesmo
 /// barramento que os bots ouvem — e toca no ponto e no raio do ruído.
-/// É a regra do CLAUDE.md: o que o jogador ouve e o que o bot ouve são a
+/// É a regra do docs/DESIGN.md: o que o jogador ouve e o que o bot ouve são a
 /// mesma coisa, senão o jogador não consegue prever a reação de quem
 /// ouviu. Agachado e andando com Shift não emitem ruído, então também
 /// não fazem som.

@@ -6,7 +6,6 @@
 script = ExtResource("1_breed")
 DisplayName = "Ligeiro"
 WpCost = 0.0
-Hp = 160.0
 Shield = 140.0
 ShieldDecay = 13.0
 SpeedMultiplier = 1.406
@@ -14,5 +13,4 @@ JumpMultiplier = 1.59
 BodyResistance = 0.78
 AttackDamage = 55.0
 AttackRange = 3.2
-AttackCooldown = 0.35
 AirAttackBonus = 2.0

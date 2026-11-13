@@ -103,7 +103,7 @@ public partial class Player
 
 	/// <summary>Imprime por que a corrida em parede não começou. Só
 	/// imprime quando o motivo muda, então não enche o Output.</summary>
-	[Export] public bool WallDebug = true;
+	[Export] public bool WallDebug = false;
 
 	private bool _onWall;
 	private Vector3 _wallNormal;

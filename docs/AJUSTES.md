@@ -2,10 +2,10 @@
 
 Tudo o que dá para regular no jogo — altura, velocidade, golpes, armas,
 granada, vida, WP, bots e partida —, com o valor atual, onde mudar e o
-que acontece quando muda. Valores do repositório na v0.26.11.
+que acontece quando muda. Valores do repositório na v0.27.0.
 
 > Mexeu em algum número daqui? Atualize a linha dele neste guia e, se
-> for decisão de design, também no `CLAUDE.md`.
+> for decisão de design, também no `docs/DESIGN.md`.
 
 ---
 
@@ -105,12 +105,10 @@ jogador usa a classe escolhida no perfil, com as tatuagens aplicadas.
 | `Shield` | 200 | 140 | Escudo do lobo (a vida é a mesma do humano, 200) |
 | `ShieldDecay` | 9 /s | 13 /s | Quanto escudo escorre por segundo |
 | `BodyResistance` | 0,6 | 0,78 | Dano no corpo × isto (cabeça ignora). 0,6 = leva 60% |
-| `AttackDamage` | 150 (local 75) | 55 | Base de **todos** os golpes (seção 4) |
+| `AttackDamage` | 75 | 55 | Base de **todos** os golpes (seção 4) |
 | `AirAttackBonus` | 1,5 | 2,0 | × dano ao acertar caindo de ≥ 2,5 m |
-| `AttackRange` | 3,8 (local 5) | 3,2 | Só os bots usam: distância em que o bot lobo decide atacar |
+| `AttackRange` | 5 | 3,2 | Só os bots usam: distância em que o bot lobo decide atacar |
 | `WpCost` | 0 | 0 | WP para transformar |
-| `Hp` | 300 | 160 | **Não usado hoje** (vida é única) |
-| `AttackCooldown` | 1,0 (local 0) | 0,35 | **Não usado hoje** (o ritmo vem da animação) |
 
 ### Tatuagens (`scripts/meta/Catalog.cs`)
 
@@ -223,18 +221,18 @@ escorrer).
 
 ### Quanto dá hoje (contra humano, 200 de vida)
 
-| Golpe | Bruto (repo 150) | Bruto (sua cópia, 75) | Ligeiro (55) |
-|---|---|---|---|
-| Garra 1º/2º | 240 | 120 | 88 |
-| Garra 3º | 360 | 180 | 132 |
-| Salto sem carga | 202 | 101 | 74 |
-| Salto cheio | 504 | 252 | 185 |
-| Bote | 720 | 360 | 264 |
-| Bote caindo ≥ 2,5 m | 1080 | 540 | 528 |
+| Golpe | Bruto (75) | Ligeiro (55) |
+|---|---|---|
+| Garra 1º/2º | 120 | 88 |
+| Garra 3º | 180 | 132 |
+| Salto sem carga | 101 | 74 |
+| Salto cheio | 252 | 185 |
+| Bote | 360 | 264 |
+| Bote caindo ≥ 2,5 m | 540 | 528 |
 
-Contra lobo, tire o ×1,6 e aplique a `BodyResistance` dele. Com o
-valor do repositório, uma garra do Bruto mata um humano cheio — é o
-que sua cópia local corrige.
+Contra lobo, tire o ×1,6 e aplique a `BodyResistance` dele. As contas
+estão em `scripts/domain/CombatRules.cs`, com teste
+(`tests/unit/CombatRulesTests.cs`): mudou a fórmula, o teste diz.
 
 ---
 
@@ -465,6 +463,8 @@ Mexa com cuidado: muitos destes são medidas.
 
 ## 13. Diagnóstico (desligar para versão final)
 
-Imprimem no Output: `Player.WallDebug`, `Weapon.Debug` (desligado no
+Imprimem no Output: `Player.WallDebug` (desligado; ligue para ver por
+que a corrida na parede não começou), `Weapon.Debug` (desligado no
 bot), `Match.Debug`, `CharacterAnimator.Debug`, `WolfVisual.Debug`,
-`Bot.Debug`, `WorldAudio.Debug`.
+`Bot.Debug`, `WorldAudio.Debug`. A partida também imprime a semente do
+sorteio: `-- --seed=N` repete as decisões dos bots e a dispersão.
