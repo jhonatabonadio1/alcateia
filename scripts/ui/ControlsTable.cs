@@ -20,6 +20,7 @@ public static class ControlsTable
 		("5", "Equipar granada"),
 		("R", "Recarregar (humano) · uivar (lobo, segure até o fim)"),
 		("G", "Soltar a arma da mão (cai à frente)"),
+		("W W (segurando)", "Lobo: corrida de quatro, 15% mais rápida"),
 		("W segurado", "Sustenta a corrida em parede"),
 		("Tab", "Placar (segurar)"),
 		("Esc", "Menu da partida — não pausa"),

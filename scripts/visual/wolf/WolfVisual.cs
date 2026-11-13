@@ -122,7 +122,7 @@ public partial class WolfVisual : Node3D
 
 		// O lobo da cena fica no pé da cápsula, que encolhe ao agachar.
 		float feet = _player != null ? _player.FeetOffset : -0.875f;
-		Position = new Vector3(0, feet + CrawlLift * _crouch * _moveMix, 0);
+		Position = new Vector3(0, feet + CrawlLift * _crawl * _moveMix, 0);
 
 		if (_dead)
 		{

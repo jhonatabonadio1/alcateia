@@ -23,6 +23,10 @@ public readonly record struct CharacterIntent
 	/// isto (ou agarrada).</summary>
 	public bool Forward { get; init; }
 
+	/// <summary>Apertou para frente neste quadro. Duas vezes seguidas, de
+	/// lobo, é a corrida de quatro.</summary>
+	public bool ForwardTap { get; init; }
+
 	public bool Jump { get; init; }
 	public bool JumpHeld { get; init; }
 
@@ -58,6 +62,7 @@ public readonly record struct CharacterIntent
 	{
 		Move = Input.GetVector("move_left", "move_right", "move_forward", "move_back"),
 		Forward = Input.IsActionPressed("move_forward"),
+		ForwardTap = Input.IsActionJustPressed("move_forward"),
 		Jump = Input.IsActionJustPressed("jump"),
 		JumpHeld = Input.IsActionPressed("jump"),
 		CrouchHeld = Input.IsActionPressed("crouch"),

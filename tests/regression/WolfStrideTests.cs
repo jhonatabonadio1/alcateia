@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 /// Medido no esqueleto do WolfVisual: o pé (ou a mão, engatinhando) mais
 /// baixo, enquanto está no chão, não deveria andar. Os limites ficam um
 /// pouco acima do medido na aprovação (de frente 0,73 m/s, de lado 0,85,
-/// para trás 0,72, engatinhando 0,64).
+/// para trás 0,72, engatinhando 0,55, correndo de quatro 1,16).
 /// </summary>
 public sealed class WolfStrideTest : RegressionTest
 {
 	public override string Name => "PassadaDoLobo";
-	public override string Description => "o pé do lobo não patina andando para qualquer lado, agachado, nem ao parar";
+	public override string Description => "o pé do lobo não patina andando para qualquer lado, agachado, de quatro, nem ao parar";
 
 	private Skeleton3D _skeleton;
 	private int[] _contacts;
@@ -41,14 +41,24 @@ public sealed class WolfStrideTest : RegressionTest
 		await Phase(b, "para trás", 90f, 0.95, "move_back");
 		await Phase(b, "na diagonal", -45f, 1.1, "move_forward", "move_right");
 		await Phase(b, "engatinhando", -90f, 0.9, "move_forward", "crouch");
+		await Phase(b, "de quatro", -90f, 1.3, "move_forward", "sprint");
 	}
 
 	private async Task Phase(RegressionBench b, string what, float yaw, double slideLimit, params string[] keys)
 	{
 		bool crouch = keys.Contains("crouch");
+		bool sprint = keys.Contains("sprint");
+		keys = keys.Where(k => k != "sprint").ToArray();
 		await b.Place(new Vector3(-15, 1, 13), yaw);
 		if (crouch) RegressionBench.Press("crouch");
 		await b.Seconds(0.4);
+
+		// De quatro: o primeiro toque no W, e o segundo segura.
+		if (sprint)
+		{
+			await b.Tap("move_forward");
+			await b.Seconds(0.08);
+		}
 
 		RegressionBench.Press(keys);
 		await b.Seconds(0.5);
@@ -58,7 +68,9 @@ public sealed class WolfStrideTest : RegressionTest
 		var stop = await Record(b, 0.9);
 		RegressionBench.ReleaseAll();
 
-		b.AtMost(slideLimit, Slide(run), $"{what}: patinação do apoio (m/s)");
+		float slide = Slide(run);
+		RegressionBench.Note($"{what}: patinação {RegressionBench.F(slide)} m/s");
+		b.AtMost(slideLimit, slide, $"{what}: patinação do apoio (m/s)");
 
 		// Parando: o corpo para em menos de um décimo de segundo, e depois
 		// disso os pés só se juntam (sem correr no lugar). Engatinhando, as
@@ -66,7 +78,7 @@ public sealed class WolfStrideTest : RegressionTest
 		int stopped = stop.FindIndex(f => f.Speed < 0.05f);
 		b.Check(stopped >= 0 && stopped <= 6, $"{what}: o corpo parou em até 0,1 s");
 		float travel = Travel(stop.Skip(System.Math.Max(stopped, 0)).ToList());
-		b.AtMost(crouch ? 3.2 : 1.1, travel, $"{what}: o quanto os pés andam depois de o corpo parar (m)");
+		b.AtMost(crouch || sprint ? 3.2 : 1.1, travel, $"{what}: o quanto os pés andam depois de o corpo parar (m)");
 	}
 
 	private record struct Frame(float T, Vector3[] Contacts, float Ground, float Speed);

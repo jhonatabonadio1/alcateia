@@ -255,6 +255,7 @@ public partial class Player : CharacterBody3D
 			_jumpLock -= delta;
 
 		UpdateCrouch(delta);
+		UpdateSprint(delta);
 		UpdateNoise(delta);
 		UpdateCameraKick(delta);
 

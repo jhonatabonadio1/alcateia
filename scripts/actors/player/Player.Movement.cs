@@ -123,6 +123,39 @@ public partial class Player
 	/// pouco acima disso.</summary>
 	[Export] public float HumanSpeedBonus = 1.08f;
 
+	/// <summary>A corrida de quatro do lobo: W duas vezes seguidas e ele
+	/// cai nas quatro patas, isto mais rápido que a corrida normal
+	/// (decisão do Jhon, v0.27.1). Soltou o W, volta a correr em pé.
+	/// Agachar corta. Na parede não soma: a parede tem a velocidade dela.</summary>
+	[Export] public float WolfSprintFactor = 1.15f;
+
+	/// <summary>Tempo máximo entre os dois toques no W, em segundos.</summary>
+	[Export] public float DoubleTapWindow = 0.3f;
+
+	private bool _sprinting;
+	private double _sinceForwardTap = double.MaxValue;
+
+	/// <summary>Correndo de quatro? Leitura para o corpo animado.</summary>
+	public bool IsSprinting => _sprinting;
+
+	/// <summary>Liga a corrida de quatro no segundo toque do W e desliga
+	/// quando ele solta, quando agacha ou quando deixa de ser lobo.</summary>
+	private void UpdateSprint(double delta)
+	{
+		if (!_form.IsWolf || !_intent.Forward || _crouching)
+			_sprinting = false;
+
+		if (_sinceForwardTap < double.MaxValue)
+			_sinceForwardTap += delta;
+
+		if (!_intent.ForwardTap) return;
+
+		if (_form.IsWolf && !_crouching && _sinceForwardTap <= DoubleTapWindow)
+			_sprinting = true;
+
+		_sinceForwardTap = 0;
+	}
+
 	private float SpeedScale =>
 		(_form.IsWolf ? _form.Breed.SpeedMultiplier : HumanSpeedBonus)
 		* (IsStunned ? _stunSlow : 1f)
@@ -170,6 +203,7 @@ public partial class Player
 		Vector2 input = _intent.Move;
 		Vector3 direction = (Transform.Basis * new Vector3(input.X, 0, input.Y)).Normalized();
 		float speed = HumanSpeed * SpeedScale;
+		if (_sprinting) speed *= WolfSprintFactor;
 		if (_wolfJump) speed *= WolfJumpCarry;
 
 		bool grounded = IsOnFloor();

@@ -14,6 +14,22 @@
   humano). Os bots humanos seguem a velocidade da dificuldade.
 - **Com a faca, 12% mais rápido**: 3,36 m/s (era 3,0).
 
+### Adicionado
+- **Corrida de quatro do lobo**: W duas vezes (segurando no segundo) e
+  o lobo cai nas quatro patas, 15% mais rápido (Bruto 4,48 m/s, Ligeiro
+  4,85), tocando o "Running Crawl". Soltar o W ou agachar volta a
+  correr em pé. Só o jogador; os bots ainda não usam.
+- **C também agacha.**
+
+### Corrigido
+- **Mac: agachar no Ctrl e clicar não atirava.** O macOS (pelo Godot)
+  entrega Ctrl + clique esquerdo como clique direito; o humano não
+  atirava e o lobo carregava o salto em vez de arranhar. Agora o
+  clique direito com Ctrl vira ataque no Mac; o especial agachado sai
+  agachando no C.
+- **O andar de quatro (engatinhar) patina menos**: usava a passada da
+  parede (2,3 m/s); a medida no chão é 2,9 (`CrawlClipSpeed`).
+
 ## v0.27.0 — 2026-11-12 (organização da casa)
 
 Série de commits que reorganiza o código sem mudar o jogo. Os testes
