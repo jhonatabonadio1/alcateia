@@ -25,7 +25,7 @@ height = 1.75
 script = ExtResource("1_player")
 Noise = ExtResource("21_noise")
 HumanSpeed = 3.2
-WolfSprintFactor = 2.0
+WolfSprintFactor = 1.45
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=160111882]
 shape = SubResource("CapsuleShape3D_body")
@@ -44,6 +44,7 @@ OwnerCameraPath = NodePath("../Head/Camera3D")
 [node name="WolfVisual" type="Node3D" parent="." unique_id=1727759676]
 script = ExtResource("8_wolf")
 WallClipSpeed = 1.5
+SprintAnimScale = 0.5
 
 [node name="Head" type="Node3D" parent="." unique_id=1029924302]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
@@ -70,6 +71,8 @@ Breed = ExtResource("5_breed")
 [node name="Weapon" type="Node3D" parent="." unique_id=1727393476]
 script = ExtResource("4_weapon")
 GrenadeScene = ExtResource("6_grenade")
+DiveSpeed = 18.0
+DiveMaxTime = 1.0
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=464006149]
 
