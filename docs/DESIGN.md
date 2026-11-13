@@ -90,7 +90,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 4 | Faca |
 | 5 | Equipar granada (o ataque arremessa) |
 | Botão direito | Lobo: salto no chão, bote no ar |
-| W duas vezes (segurando) | Lobo: corrida de quatro patas, 15% mais rápida (`WolfSprintFactor`); soltar o W ou agachar volta a correr em pé |
+| W duas vezes (segurando) | Lobo: corrida de quatro patas, 30% mais rápida (`WolfSprintFactor`); soltar o W ou agachar volta a correr em pé |
 | W segurado | Sustenta a corrida em parede |
 | Ataque segurado | Agarra na parede sem avançar |
 | Clique esq. | Atacar |

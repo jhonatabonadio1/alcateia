@@ -16,8 +16,8 @@
 
 ### Adicionado
 - **Corrida de quatro do lobo**: W duas vezes (segurando no segundo) e
-  o lobo cai nas quatro patas, 15% mais rápido (Bruto 4,48 m/s, Ligeiro
-  4,85), tocando o "Running Crawl". Soltar o W ou agachar volta a
+  o lobo cai nas quatro patas, 30% mais rápido (Bruto 5,06 m/s, Ligeiro
+  5,48), tocando o "Running Crawl". Soltar o W ou agachar volta a
   correr em pé. Só o jogador; os bots ainda não usam.
 - **C também agacha.**
 

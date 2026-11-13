@@ -108,7 +108,7 @@ granadas mais fortes.
    | Pulo | 0,99 m | 1,62 m (1,28×) | 2,50 m (1,59×) |
    | Avanço do pulo correndo | ~2,7 m | ~3,9 m | ~5,0 m |
    | Agachado | 1,46 | 1,75 | 1,90 |
-   | De quatro (W W) | — | 4,48 | 4,85 |
+   | De quatro (W W) | — | 5,06 | 5,48 |
    | Na parede | — | 4,45 | 4,82 |
 
    **A velocidade do humano é a passada do X Bot**, medida no quadril:

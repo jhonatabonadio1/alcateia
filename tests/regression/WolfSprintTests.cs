@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 
 /// <summary>
 /// A corrida de quatro (v0.27.1): W duas vezes, de lobo, e ele corre de
-/// quatro 15% mais rápido; soltou o W, volta a correr em pé. Um toque só,
+/// quatro 30% mais rápido; soltou o W, volta a correr em pé. Um toque só,
 /// o humano ou agachado não correm de quatro.
 /// </summary>
 public sealed class WolfSprintTest : RegressionTest
 {
 	public override string Name => "CorridaDeQuatro";
-	public override string Description => "W duas vezes: o lobo corre de quatro 15% mais rápido, e solta ao soltar o W";
+	public override string Description => "W duas vezes: o lobo corre de quatro 30% mais rápido, e solta ao soltar o W";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -33,7 +33,7 @@ public sealed class WolfSprintTest : RegressionTest
 		b.Near(run, RegressionBench.Flat(await b.Displacement(p, 60)), 0.03, "corrida em pé (m/s)");
 		RegressionBench.ReleaseAll();
 
-		// Dois toques: de quatro, 15% mais rápido, no clipe de quatro patas.
+		// Dois toques: de quatro, 30% mais rápido, no clipe de quatro patas.
 		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.6);
 		await DoubleTap(b);
 		b.Check(p.IsSprinting, "dois toques: corre de quatro");

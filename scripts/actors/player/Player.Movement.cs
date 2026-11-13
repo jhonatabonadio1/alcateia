@@ -125,9 +125,9 @@ public partial class Player
 
 	/// <summary>A corrida de quatro do lobo: W duas vezes seguidas e ele
 	/// cai nas quatro patas, isto mais rápido que a corrida normal
-	/// (decisão do Jhon, v0.27.1). Soltou o W, volta a correr em pé.
+	/// (decisão do Jhon, v0.27.1: 30%; foi 15% na primeira versão). Soltou o W, volta a correr em pé.
 	/// Agachar corta. Na parede não soma: a parede tem a velocidade dela.</summary>
-	[Export] public float WolfSprintFactor = 1.15f;
+	[Export] public float WolfSprintFactor = 1.3f;
 
 	/// <summary>Tempo máximo entre os dois toques no W, em segundos.</summary>
 	[Export] public float DoubleTapWindow = 0.3f;

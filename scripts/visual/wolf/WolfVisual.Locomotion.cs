@@ -65,8 +65,8 @@ public partial class WolfVisual
 
 	/// <summary>A passada do "Running Crawl" no chão, em m/s: o andar de
 	/// quatro, agachado e na corrida de quatro. Medida no esqueleto: a 2,9 a
-	/// mão de apoio patina 0,55 m/s engatinhando e 1,16 correndo de quatro
-	/// (~25%, o clipe rola as mãos); com a passada da parede (2,3), que era a
+	/// mão de apoio patina 0,55 m/s engatinhando e 1,46 correndo de quatro
+	/// a 5,06 m/s (~29%, o clipe rola as mãos); com a passada da parede (2,3), que era a
 	/// usada, 0,64 e 1,64.</summary>
 	[Export] public float CrawlClipSpeed = 2.9f;
 

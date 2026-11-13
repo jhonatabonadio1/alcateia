@@ -65,7 +65,7 @@ o renascer do bot (6 s).
 | `HoldFallGravity` | 0,78 | Gravidade na queda segurando o pulo (menos que 1 = cai mais devagar) |
 | `WolfJumpCarry` | 0,9 | Quanto da velocidade do chão o lobo leva para o pulo |
 | `CrouchSpeedFactor` | 0,45 | Velocidade agachado (as duas formas) |
-| `WolfSprintFactor` | 1,15 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal |
+| `WolfSprintFactor` | 1,30 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal |
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
 | `WalkSpeedFactor` | 0,42 | Velocidade andando com Shift (só humano) |
 | `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula (é o hitbox do corpo) |
@@ -83,7 +83,7 @@ o renascer do bot (6 s).
 | Velocidade | 3,24 m/s (faca 3,36) | 3,89 (×1,298) | 4,22 (×1,406) |
 | Agachado | 1,46 | 1,75 | 1,90 |
 | Shift | 1,36 | — | — |
-| De quatro (W W) | — | 4,48 | 4,85 |
+| De quatro (W W) | — | 5,06 | 5,48 |
 | Na parede | — | 4,45 | 4,82 |
 | Altura do pulo | 0,99 m | 1,62 m (×1,28) | 2,50 m (×1,59) |
 | Avanço do pulo correndo | ~2,7 m | ≈4,0 m | ≈5,4 m |
