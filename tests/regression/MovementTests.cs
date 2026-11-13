@@ -6,15 +6,19 @@ using System.Threading.Tasks;
 public sealed class GroundSpeedTest : RegressionTest
 {
 	public override string Name => "VelocidadeNoChao";
-	public override string Description => "humano 3,0 m/s, agachado 1,35; Bruto 3,89, agachado 1,75";
+	public override string Description => "humano 3,24 m/s, agachado 1,46, faca 3,36; Bruto 3,89, agachado 1,75";
 
 	public override async Task Run(RegressionBench b)
 	{
 		b.RemoveBots();
 
-		b.Near(3.0, await Measure(b, "move_forward"), 0.02, "humano correndo");
-		b.Near(1.35, await Measure(b, "move_forward", "crouch"), 0.05, "humano agachado");
-		b.Near(1.26, await Measure(b, "move_forward", "walk"), 0.05, "humano andando (Shift)");
+		b.Near(3.24, await Measure(b, "move_forward"), 0.02, "humano correndo");
+		b.Near(1.458, await Measure(b, "move_forward", "crouch"), 0.05, "humano agachado");
+		b.Near(1.361, await Measure(b, "move_forward", "walk"), 0.05, "humano andando (Shift)");
+
+		b.Weapon.SelectSlot(Slot.Knife);
+		b.Near(3.36, await Measure(b, "move_forward"), 0.02, "humano com a faca");
+		b.Weapon.SelectSlot(Slot.Primary);
 
 		await b.BecomeWolf();
 		b.Near(3.894, await Measure(b, "move_forward"), 0.03, "Bruto correndo");

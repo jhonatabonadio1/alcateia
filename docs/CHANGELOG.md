@@ -9,6 +9,10 @@
 - **Lobo 10% mais rápido na parede**: Bruto 4,45 m/s (era 4,05),
   Ligeiro 4,82 (era 4,38). O salto da parede leva 80% disso, então
   sobe junto.
+- **Humano 8% mais rápido**: 3,24 m/s com o fuzil (era 3,0), agachado
+  1,46, com Shift 1,36. O lobo não muda (`HumanSpeedBonus`, só no
+  humano). Os bots humanos seguem a velocidade da dificuldade.
+- **Com a faca, 12% mais rápido**: 3,36 m/s (era 3,0).
 
 ## v0.27.0 — 2026-11-12 (organização da casa)
 

@@ -116,13 +116,21 @@ public partial class Player
 		_stunSlow = Mathf.Min(_stunSlow, Mathf.Clamp(slowFactor, 0.05f, 1f));
 	}
 
+	/// <summary>Só o humano: anda isto acima da base (<see cref="HumanSpeed"/>,
+	/// que é também a base do lobo e não muda). 1,08 desde a v0.27.1
+	/// (decisão do Jhon): 3,24 m/s com o fuzil, e agachado e com Shift
+	/// junto. A corrida do X Bot anda 3,02 a 1×, então o pé desliza um
+	/// pouco acima disso.</summary>
+	[Export] public float HumanSpeedBonus = 1.08f;
+
 	private float SpeedScale =>
-		(_form.IsWolf ? _form.Breed.SpeedMultiplier : 1f)
+		(_form.IsWolf ? _form.Breed.SpeedMultiplier : HumanSpeedBonus)
 		* (IsStunned ? _stunSlow : 1f)
 		* (_crouching ? CrouchSpeedFactor : 1f)
 		* (_walking ? WalkSpeedFactor : 1f)
-		// A arma na mão pesa: 1,12 com a M9, 0,9 com a M3. É metade do
-		// que faz trocar para a secundária ser fuga e não só munição.
+		// A arma na mão pesa: 1,12 com a M9, 0,9 com a M3, e a faca alivia.
+		// É metade do que faz trocar para a secundária ser fuga e não só
+		// munição.
 		* (_form.IsWolf ? 1f : _weapon.MoveSpeedMultiplier);
 	private float JumpScale => _form.IsWolf ? _form.Breed.JumpMultiplier : 1f;
 

@@ -8,6 +8,11 @@ public partial class Weapon
 {
 	[ExportGroup("Faca")]
 	[Export] public float KnifeDamage = 85f;
+
+	/// <summary>Velocidade com a faca na mão, sobre a do humano. 3,36 m/s
+	/// desde a v0.27.1, 12% acima dos 3,0 de antes (decisão do Jhon): como o
+	/// humano já anda 8% a mais, a faca soma 1,12 / 1,08.</summary>
+	[Export] public float KnifeSpeedMultiplier = 1.037037f;
 	[Export] public float KnifeRange = 2.2f;
 	[Export] public float KnifeCooldown = 0.55f;
 

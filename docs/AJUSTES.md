@@ -55,7 +55,8 @@ o renascer do bot (6 s).
 
 | Campo | Valor | O que faz |
 |---|---|---|
-| `HumanSpeed` | 3,0 m/s | Velocidade do humano correndo. **Base do lobo também.** É a passada do clipe de corrida: subir faz o pé patinar |
+| `HumanSpeed` | 3,0 m/s | Base da velocidade. **Base do lobo também.** É a passada do clipe de corrida: subir faz o pé patinar |
+| `HumanSpeedBonus` | 1,08 | Só o humano anda isto acima da base (3,24 m/s); o lobo não muda |
 | `JumpVelocity` | 4,4 m/s | Impulso do pulo. Altura = v² / 19,6 → 0,99 m no humano |
 | `GroundAccel` | 60 m/s² | Aceleração no chão (alto = resposta imediata) |
 | `GroundFriction` | 50 m/s² | Freada ao soltar as teclas (de 3,9 m/s para em 0,08 s) |
@@ -77,9 +78,9 @@ o renascer do bot (6 s).
 
 | | Humano | Bruto | Ligeiro |
 |---|---|---|---|
-| Velocidade | 3,0 m/s | 3,89 (×1,298) | 4,22 (×1,406) |
-| Agachado | 1,35 | 1,75 | 1,90 |
-| Shift | 1,26 | — | — |
+| Velocidade | 3,24 m/s (faca 3,36) | 3,89 (×1,298) | 4,22 (×1,406) |
+| Agachado | 1,46 | 1,75 | 1,90 |
+| Shift | 1,36 | — | — |
 | Na parede | — | 4,45 | 4,82 |
 | Altura do pulo | 0,99 m | 1,62 m (×1,28) | 2,50 m (×1,59) |
 | Avanço do pulo correndo | ~2,7 m | ≈4,0 m | ≈5,4 m |
@@ -330,6 +331,7 @@ Preços da loja e patente mínima: `scripts/meta/Catalog.cs`.
 | Campo | Valor | O que faz |
 |---|---|---|
 | `KnifeDamage` / `KnifeRange` / `KnifeCooldown` | 85 / 2,2 m / 0,55 s | Faca |
+| `KnifeSpeedMultiplier` | 1,037 | Velocidade com a faca na mão, sobre a do humano (3,36 m/s) |
 | `ThrowForce` | 14,5 m/s | Força do arremesso na mira (era 11) |
 | `ThrowArc` | 4 m/s | Empurrão para cima (era 3,5). Olhando reto cai a ~15,5 m |
 | `ThrowCooldown` | 0,9 s | Entre uma granada e outra |

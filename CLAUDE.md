@@ -87,7 +87,7 @@ granadas mais fortes.
 8. **Câmera: humano em primeira pessoa, lobo em terceira.** A câmera
    não inclina na corrida em parede.
 
-9. **O humano é deliberadamente lento e pesado.** Velocidade 3,0 m/s
+9. **O humano é deliberadamente lento e pesado.** Velocidade 3,24 m/s
    e pulo de 0,99 m. **As duas formas andam o que as pernas andam**
    (decisão do Jhon): a velocidade de cada uma é a passada do próprio
    clipe de corrida, sem acelerar a animação do humano. A mobilidade do
@@ -104,10 +104,10 @@ granadas mais fortes.
 
    | | Humano | Bruto | Ligeiro |
    |---|---|---|---|
-   | Velocidade | 3,0 | 3,89 (1,298×) | 4,22 (1,406×) |
+   | Velocidade | 3,24 (faca 3,36) | 3,89 (1,298×) | 4,22 (1,406×) |
    | Pulo | 0,99 m | 1,62 m (1,28×) | 2,50 m (1,59×) |
    | Avanço do pulo correndo | ~2,7 m | ~3,9 m | ~5,0 m |
-   | Agachado | 1,35 | 1,75 | 1,90 |
+   | Agachado | 1,46 | 1,75 | 1,90 |
    | Na parede | — | 4,45 | 4,82 |
 
    **A velocidade do humano é a passada do X Bot**, medida no quadril:

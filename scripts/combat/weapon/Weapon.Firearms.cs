@@ -39,7 +39,7 @@ public partial class Weapon
 	public float RecoilYaw { get; private set; }
 
 	/// <summary>Velocidade de caminhada com a arma da mão (1 = base).</summary>
-	public float MoveSpeedMultiplier => Held?.SpeedMultiplier ?? 1f;
+	public float MoveSpeedMultiplier => Held?.SpeedMultiplier ?? (HumanSlot == Slot.Knife ? KnifeSpeedMultiplier : 1f);
 
 	/// <summary>Dispersão de agora, em graus — para a mira poder crescer junto.</summary>
 	public float CurrentSpread => Held == null ? 0f : SpreadNow(Held);
