@@ -25,6 +25,23 @@
   estocada e o corte de lado, no tempo entre dois golpes; sacar e parado
   também são do conjunto. Sai a faca Gerber presa no braço da pistola e
   o golpe feito por código.
+- **Varredura dos quatro mapas** (`tools/mapas/conferir.py`, novo): lê a
+  geometria de cada mapa atrás do que vira defeito na tela. Achou e
+  corrigiu:
+  - **170 faces brigando** (duas peças de materiais diferentes com uma
+    face no mesmo plano — o pisca-pisca nas portas das oficinas e dos
+    alojamentos, onde o marco de aço empatava com a parede; tetos e
+    peitoris do Metrô, da Vila e da Polar). O kit agora desempata
+    sozinho ao gravar: a peça de enfeite cresce 3 mm.
+  - **31 letreiros mal assentados**: placas da Polar cortadas pelo friso
+    de aço, o número do portão do Hangar atravessado por uma coluna,
+    letras das bases do Metrô e da Vila soltas a um palmo da parede. O
+    kit assenta cada letreiro 2 cm à frente da superfície que tem atrás.
+  - **Polar**: o carrinho e os galões dos alojamentos flutuavam 24 cm
+    (ficaram na altura do piso antigo).
+  - Os testes de mapa agora conferem, com a física do jogo, que nenhum
+    ponto de nascimento fica dentro de parede e que não há buraco no
+    chão; e dão até 100 s para o primeiro tiro no mapa grande.
 - **Braços reiniciando**: no M16 (a arma com que se nasce) o trecho de
   "parado" pegava o fim do saque, e a cada 0,9 s os braços pulavam 10 cm.
   Trecho corrigido; nos conjuntos de linha do tempo única o parado vai e

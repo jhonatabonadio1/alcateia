@@ -777,7 +777,7 @@ size = Vector3(11, 6.8, 0.06)
 size = Vector3(11.6, 0.5, 0.3)
 
 [sub_resource type="BoxMesh" id="B54"]
-size = Vector3(0.3, 6.8, 0.12)
+size = Vector3(0.3, 6.8, 0.126)
 
 [sub_resource type="BoxMesh" id="B55"]
 size = Vector3(12.04, 2, 0.05)
@@ -810,22 +810,22 @@ size = Vector3(2.4, 0.08, 0.3)
 size = Vector3(0.08, 0.56, 21.1)
 
 [sub_resource type="BoxMesh" id="B65"]
-size = Vector3(0.08, 2.2, 0.6)
+size = Vector3(0.086, 2.2, 0.6)
 
 [sub_resource type="BoxMesh" id="B66"]
-size = Vector3(1.76, 0.08, 0.6)
+size = Vector3(1.76, 0.086, 0.6)
 
 [sub_resource type="BoxMesh" id="B67"]
-size = Vector3(0.08, 1.2, 0.6)
+size = Vector3(0.086, 1.2, 0.6)
 
 [sub_resource type="BoxMesh" id="B68"]
-size = Vector3(1.56, 0.08, 0.6)
+size = Vector3(1.56, 0.086, 0.6)
 
 [sub_resource type="BoxMesh" id="B69"]
-size = Vector3(0.6, 2.2, 0.08)
+size = Vector3(0.6, 2.2, 0.086)
 
 [sub_resource type="BoxMesh" id="B70"]
-size = Vector3(0.6, 0.08, 1.76)
+size = Vector3(0.6, 0.086, 1.76)
 
 [sub_resource type="BoxMesh" id="B71"]
 size = Vector3(12.3, 0.08, 9.3)
@@ -4136,12 +4136,12 @@ mesh = SubResource("B53")
 material_override = SubResource("M_aco")
 
 [node name="Portao1Guia0" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.65, 3.4, 23.95)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.65, 3.4, 23.947)
 mesh = SubResource("B54")
 material_override = SubResource("M_faixa")
 
 [node name="Portao1Guia1" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.65, 3.4, 23.95)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.65, 3.4, 23.947)
 mesh = SubResource("B54")
 material_override = SubResource("M_faixa")
 
@@ -4156,12 +4156,12 @@ mesh = SubResource("B53")
 material_override = SubResource("M_aco")
 
 [node name="Portao2Guia0" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.65, 3.4, -23.95)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.65, 3.4, -23.947)
 mesh = SubResource("B54")
 material_override = SubResource("M_faixa")
 
 [node name="Portao2Guia1" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.65, 3.4, -23.95)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.65, 3.4, -23.947)
 mesh = SubResource("B54")
 material_override = SubResource("M_faixa")
 
@@ -4336,77 +4336,77 @@ mesh = SubResource("B64")
 material_override = SubResource("M_aco")
 
 [node name="MarcoNorte00" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.84, 1.1, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.837, 1.1, 12.25)
 mesh = SubResource("B65")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoNorte01" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.16, 1.1, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.163, 1.1, 12.25)
 mesh = SubResource("B65")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaNorte0" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2.24, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2.237, 12.25)
 mesh = SubResource("B66")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoNorte10" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.54, 1.6, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.537, 1.6, 12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoNorte11" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.06, 1.6, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.063, 1.6, 12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaNorte1" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.8, 2.24, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.8, 2.237, 12.25)
 mesh = SubResource("B68")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoNorte20" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.94, 1.6, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.937, 1.6, 12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoNorte21" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.46, 1.6, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.463, 1.6, 12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaNorte2" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.2, 2.24, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.2, 2.237, 12.25)
 mesh = SubResource("B68")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoNorte00" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 1.1, 17.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 1.1, 17.763)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoNorte01" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 1.1, 19.44)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 1.1, 19.437)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoVergaNorte0" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 2.24, 18.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 2.237, 18.6)
 mesh = SubResource("B70")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoNorte10" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 1.1, 17.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 1.1, 17.763)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoNorte11" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 1.1, 19.44)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 1.1, 19.437)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoVergaNorte1" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 2.24, 18.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 2.237, 18.6)
 mesh = SubResource("B70")
 material_override = SubResource("M_ferro")
 
@@ -4447,77 +4447,77 @@ metadata/piso = "metal"
 shape = SubResource("S40")
 
 [node name="MarcoSul00" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.84, 1.1, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.837, 1.1, -12.25)
 mesh = SubResource("B65")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoSul01" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.16, 1.1, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.163, 1.1, -12.25)
 mesh = SubResource("B65")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaSul0" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2.24, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 2.237, -12.25)
 mesh = SubResource("B66")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoSul10" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.54, 1.6, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.537, 1.6, -12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoSul11" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.06, 1.6, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.063, 1.6, -12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaSul1" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.8, 2.24, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.8, 2.237, -12.25)
 mesh = SubResource("B68")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoSul20" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.94, 1.6, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.937, 1.6, -12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoSul21" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.46, 1.6, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.463, 1.6, -12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaSul2" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.2, 2.24, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.2, 2.237, -12.25)
 mesh = SubResource("B68")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoSul00" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 1.1, -19.44)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 1.1, -19.437)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoSul01" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 1.1, -17.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 1.1, -17.763)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoVergaSul0" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 2.24, -18.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.25, 2.237, -18.6)
 mesh = SubResource("B70")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoSul10" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 1.1, -19.44)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 1.1, -19.437)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoSul11" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 1.1, -17.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 1.1, -17.763)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoVergaSul1" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 2.24, -18.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.75, 2.237, -18.6)
 mesh = SubResource("B70")
 material_override = SubResource("M_ferro")
 
@@ -4593,77 +4593,77 @@ mesh = SubResource("B64")
 material_override = SubResource("M_aco")
 
 [node name="MarcoNorte00" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.16, 1.1, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.163, 1.1, 12.25)
 mesh = SubResource("B65")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoNorte01" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.84, 1.1, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.837, 1.1, 12.25)
 mesh = SubResource("B65")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaNorte0" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 2.24, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 2.237, 12.25)
 mesh = SubResource("B66")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoNorte10" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.06, 1.6, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.063, 1.6, 12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoNorte11" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.54, 1.6, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.537, 1.6, 12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaNorte1" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.8, 2.24, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.8, 2.237, 12.25)
 mesh = SubResource("B68")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoNorte20" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.46, 1.6, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.463, 1.6, 12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoNorte21" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.94, 1.6, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.937, 1.6, 12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaNorte2" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.2, 2.24, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.2, 2.237, 12.25)
 mesh = SubResource("B68")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoNorte00" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 1.1, 17.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 1.1, 17.763)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoNorte01" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 1.1, 19.44)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 1.1, 19.437)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoVergaNorte0" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 2.24, 18.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 2.237, 18.6)
 mesh = SubResource("B70")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoNorte10" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 1.1, 17.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 1.1, 17.763)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoNorte11" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 1.1, 19.44)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 1.1, 19.437)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoVergaNorte1" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 2.24, 18.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 2.237, 18.6)
 mesh = SubResource("B70")
 material_override = SubResource("M_ferro")
 
@@ -4704,77 +4704,77 @@ metadata/piso = "metal"
 shape = SubResource("S40")
 
 [node name="MarcoSul00" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.16, 1.1, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.163, 1.1, -12.25)
 mesh = SubResource("B65")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoSul01" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.84, 1.1, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.837, 1.1, -12.25)
 mesh = SubResource("B65")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaSul0" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 2.24, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 2.237, -12.25)
 mesh = SubResource("B66")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoSul10" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.06, 1.6, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.063, 1.6, -12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoSul11" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.54, 1.6, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.537, 1.6, -12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaSul1" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.8, 2.24, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.8, 2.237, -12.25)
 mesh = SubResource("B68")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoSul20" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.46, 1.6, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.463, 1.6, -12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoSul21" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.94, 1.6, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.937, 1.6, -12.25)
 mesh = SubResource("B67")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoVergaSul2" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.2, 2.24, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.2, 2.237, -12.25)
 mesh = SubResource("B68")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoSul00" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 1.1, -19.44)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 1.1, -19.437)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoSul01" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 1.1, -17.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 1.1, -17.763)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoVergaSul0" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 2.24, -18.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 2.237, -18.6)
 mesh = SubResource("B70")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoSul10" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 1.1, -19.44)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 1.1, -19.437)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoSul11" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 1.1, -17.76)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 1.1, -17.763)
 mesh = SubResource("B69")
 material_override = SubResource("M_ferro")
 
 [node name="MarcoLadoVergaSul1" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 2.24, -18.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 2.237, -18.6)
 mesh = SubResource("B70")
 material_override = SubResource("M_ferro")
 
@@ -4815,127 +4815,127 @@ metadata/piso = "metal"
 shape = SubResource("S40")
 
 [node name="Portao1Numero" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 9.5, 23.88)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 9.5, 23.84)
 mesh = SubResource("Q1")
 material_override = SubResource("L1")
 cast_shadow = 0
 
 [node name="Portao1Aviso" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.6, 2.4, 23.965)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.6, 2.4, 23.98)
 mesh = SubResource("Q2")
 material_override = SubResource("L2")
 cast_shadow = 0
 
 [node name="Portao1Faixa" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.35, 23.91)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.35, 23.92)
 mesh = SubResource("Q3")
 material_override = SubResource("L3")
 cast_shadow = 0
 
 [node name="Portao2Numero" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -23.88)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -23.84)
 mesh = SubResource("Q4")
 material_override = SubResource("L4")
 cast_shadow = 0
 
 [node name="Portao2Aviso" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.6, 2.4, -23.965)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.6, 2.4, -23.98)
 mesh = SubResource("Q2")
 material_override = SubResource("L2")
 cast_shadow = 0
 
 [node name="Portao2Faixa" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -23.91)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -23.92)
 mesh = SubResource("Q3")
 material_override = SubResource("L3")
 cast_shadow = 0
 
 [node name="Nome3" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -41.88, 9.4, 0)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -41.84, 9.4, 0)
 mesh = SubResource("Q5")
 material_override = SubResource("L5")
 cast_shadow = 0
 
 [node name="Nome4" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 41.88, 9.4, 0)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 41.84, 9.4, 0)
 mesh = SubResource("Q5")
 material_override = SubResource("L5")
 cast_shadow = 0
 
 [node name="Anel" type="MeshInstance3D" parent="Centro"]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.032, 0)
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.02, 0)
 mesh = SubResource("Q6")
 material_override = SubResource("L6")
 cast_shadow = 0
 
 [node name="FaixaPlataforma1" type="MeshInstance3D" parent="Centro"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6.07)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6.065)
 mesh = SubResource("Q7")
 material_override = SubResource("L3")
 cast_shadow = 0
 
 [node name="FaixaPlataforma-1" type="MeshInstance3D" parent="Centro"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.75, -6.07)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.75, -6.065)
 mesh = SubResource("Q7")
 material_override = SubResource("L3")
 cast_shadow = 0
 
 [node name="Letra" type="MeshInstance3D" parent="BaseA"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -32.1, 7.3, 0)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -32.11, 7.3, 0)
 mesh = SubResource("Q8")
 material_override = SubResource("L7")
 cast_shadow = 0
 
 [node name="LetreiroNorte" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -20, 3.2, 11.965)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -20, 3.2, 11.98)
 mesh = SubResource("Q9")
 material_override = SubResource("L8")
 cast_shadow = 0
 
 [node name="FumarNorte" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -25.2, 2.7, 11.965)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -25.2, 2.7, 11.98)
 mesh = SubResource("Q10")
 material_override = SubResource("L9")
 cast_shadow = 0
 
 [node name="LetreiroSul" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 3.2, -11.965)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 3.2, -11.98)
 mesh = SubResource("Q11")
 material_override = SubResource("L10")
 cast_shadow = 0
 
 [node name="FumarSul" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.2, 2.7, -11.965)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.2, 2.7, -11.98)
 mesh = SubResource("Q10")
 material_override = SubResource("L9")
 cast_shadow = 0
 
 [node name="Letra" type="MeshInstance3D" parent="BaseB"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 32.1, 7.3, 0)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 32.11, 7.3, 0)
 mesh = SubResource("Q12")
 material_override = SubResource("L11")
 cast_shadow = 0
 
 [node name="LetreiroNorte" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 20, 3.2, 11.965)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 20, 3.2, 11.98)
 mesh = SubResource("Q13")
 material_override = SubResource("L12")
 cast_shadow = 0
 
 [node name="FumarNorte" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 25.2, 2.7, 11.965)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 25.2, 2.7, 11.98)
 mesh = SubResource("Q10")
 material_override = SubResource("L9")
 cast_shadow = 0
 
 [node name="LetreiroSul" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3.2, -11.965)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3.2, -11.98)
 mesh = SubResource("Q14")
 material_override = SubResource("L13")
 cast_shadow = 0
 
 [node name="FumarSul" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.2, 2.7, -11.965)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.2, 2.7, -11.98)
 mesh = SubResource("Q10")
 material_override = SubResource("L9")
 cast_shadow = 0

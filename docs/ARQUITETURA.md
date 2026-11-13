@@ -742,6 +742,13 @@ Passo a passo em `docs/MAPAS.md`. Em resumo: um arquivo em
 na lista em `scripts/meta/Maps.cs`. A cena da partida carrega o mapa da
 sala pelo `MapSlot` (nó `Map` do `main.tscn`).
 
+**Antes de gravar, confira:** `python3 tools/mapas/conferir.py` lê a
+geometria dos quatro mapas e acusa face brigando com face (pisca-pisca),
+letreiro enterrado ou solto no ar, ponto de nascimento dentro de parede
+e objeto flutuando. O kit já acerta sozinho os dois primeiros ao gravar
+(`Mapa.acertar()`); o que o conferidor ainda acusar é para arrumar no
+gerador. `--cru` mostra o que havia antes do acerto.
+
 O que a cena do mapa precisa ter, seja gerada ou feita à mão:
 
 - **Geometria** em `StaticBody3D` com `BoxMesh` — o minimapa desenha
