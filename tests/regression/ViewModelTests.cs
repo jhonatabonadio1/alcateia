@@ -67,7 +67,8 @@ public sealed class ViewModelTest : RegressionTest
 			b.Check(held.FindChildren("*", "Skeleton3D", true, false).Count >= 1
 				&& held.FindChildren("*", "MeshInstance3D", true, false).Count >= 2, $"{id}: braços e arma do conjunto, com esqueleto");
 			Node3D muzzle = held.GetNodeOrNull<Node3D>(WeaponModel.MuzzleName);
-			b.Check(muzzle != null && view.ToLocal(muzzle.GlobalPosition).Z < -0.3f, $"{id}: a boca do cano fica à frente da câmera");
+			float ahead = muzzle == null ? 0f : -view.ToLocal(muzzle.GlobalPosition).Z;
+			b.Check(ahead > 0.15f && ahead < 0.7f, $"{id}: a boca do cano fica à frente do olho, sem atravessar a parede ({ahead:0.00} m)");
 			await Photo(b, $"{id}_1_parada");
 
 			// Um tiro: toca o disparo, e o carregador deixa de estar cheio.
@@ -99,21 +100,29 @@ public sealed class ViewModelTest : RegressionTest
 			b.Check(view.RigAnimation == "parado", $"{id}: terminada a recarga, volta a ficar parado (tocando: {view.RigAnimation})");
 		}
 
-		// Faca e granada: também na mão, com as duas mãos.
+		// Faca e granada: também com o braço animado, e o golpe ou o
+		// arremesso movem o conjunto.
 		foreach ((Slot slot, string id) in new[] { (Slot.Knife, Arsenal.KnifeId), (Slot.Grenade, Arsenal.GrenadeId) })
 		{
 			if (!Wanted(id)) continue;
 			b.Weapon.SelectSlot(slot);
 			await b.Seconds(0.6);
 			Node3D held = view.Held;
-			b.Check(held != null && held.Name == id && held.GetNodeOrNull("MaoDireita") != null && held.GetNodeOrNull("MaoEsquerda") != null,
-				$"{id}: na mão, com as duas mãos");
+			b.Check(held != null && held.Name == id && view.HasRig, $"{id}: na mão, com o braço animado");
+			if (held == null) continue;
 			await Photo(b, $"{id}_1_parada");
+			Vector3 rest = held.Position;
 			RegressionBench.Press("attack");
-			await b.Seconds(slot == Slot.Knife ? 0.12 : 0.5);
+			float moved = 0f;
+			for (int i = 0; i < (slot == Slot.Knife ? 8 : 30); i++)
+			{
+				await b.PhysicsFrame();
+				moved = Mathf.Max(moved, held.Position.DistanceTo(rest));
+			}
 			await Photo(b, $"{id}_2_ataque");
 			RegressionBench.Release("attack");
-			await b.Seconds(0.5);
+			b.AtLeast(0.04, moved, $"{id}: o {(slot == Slot.Knife ? "golpe" : "arremesso")} move o braço (m)");
+			await b.Seconds(0.8);
 		}
 	}
 

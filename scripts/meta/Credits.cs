@@ -54,7 +54,9 @@ public static class Credits
 			new Line("M16A2 com braços e animações", "user77 (Sketchfab)", "CC BY 4.0", Required: true),
 			new Line("Submetralhadora", "eNse7en (Sketchfab)", "CC BY 4.0", Required: true),
 			new Line("Pistola", "raimeiyonke (Sketchfab)", "CC BY 4.0", Required: true),
-			new Line("Escopeta semiautomática", "haoliu95 (Sketchfab)", "CC BY 4.0", Required: true)
+			new Line("Escopeta semiautomática", "haoliu95 (Sketchfab)", "CC BY 4.0", Required: true),
+			new Line("Faca de combate", "Lucas Soler (Sketchfab)", "CC BY 4.0", Required: true),
+			new Line("Granada de choque M84", "Coozy (Sketchfab)", "CC BY 4.0", Required: true)
 		}),
 		new("Personagens e animação", new[]
 		{

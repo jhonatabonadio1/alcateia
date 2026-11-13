@@ -24,12 +24,12 @@ public sealed class RoomListing
 }
 
 /// <summary>
-/// As salas do canal. Sem servidor, o canal é local: algumas salas de
-/// treino montadas com bots ao abrir o jogo, mais as que o jogador
-/// criar na sessão.
+/// As salas de treino com bots, offline: só as que o jogador cria nesta
+/// sessão. As salas de verdade, com outros jogadores, vêm do servidor
+/// (<see cref="LobbyLink"/>, tela <see cref="OnlineScreen"/>).
 ///
-/// Fase 2: a lista vem do servidor, e este é o ponto que troca de
-/// fonte. A tela não sabe de onde as salas vêm.
+/// Já houve aqui salas de mentira, montadas ao abrir o jogo para a lista
+/// não nascer vazia; saíram quando a lista de verdade passou a existir.
 /// </summary>
 public static class RoomDirectory
 {
@@ -44,11 +44,7 @@ public static class RoomDirectory
 
 	public static IReadOnlyList<RoomListing> Rooms
 	{
-		get
-		{
-			if (_rooms.Count == 0) Seed();
-			return _rooms;
-		}
+		get => _rooms;
 	}
 
 	public static RoomListing Find(int number) => Rooms.FirstOrDefault(r => r.Settings.Number == number);
@@ -126,48 +122,5 @@ public static class RoomDirectory
 				Rank = Ranks.ForBot(name, (int)room.Settings.Difficulty)
 			});
 		}
-	}
-
-	/// <summary>Salas de treino do canal local, variadas o bastante para
-	/// os filtros terem o que filtrar.</summary>
-	private static void Seed()
-	{
-		var rng = new RandomNumberGenerator { Seed = (ulong)System.DateTime.Now.Ticks };
-
-		(string title, int size, int score, int minutes, WeaponRule weapons, TransformRule transform, BotLevel level, bool playing, string pass)[] seeds =
-		{
-			("Treino rápido 4v4", 4, 20, 5, WeaponRule.Todas, TransformRule.Livre, BotLevel.Easy, false, ""),
-			("Hangar 8v8 lotado", 8, 40, 10, WeaponRule.Todas, TransformRule.Livre, BotLevel.Medium, false, ""),
-			("Duelo de pistolas", 6, 30, 10, WeaponRule.SoPistolas, TransformRule.Livre, BotLevel.Medium, false, ""),
-			("Humanos apenas", 6, 40, 10, WeaponRule.Todas, TransformRule.Bloqueada, BotLevel.Medium, true, ""),
-			("Bots difíceis", 8, 60, 15, WeaponRule.SemPesadas, TransformRule.Livre, BotLevel.Hard, false, ""),
-			("Sala do clã (senha)", 6, 40, 10, WeaponRule.Todas, TransformRule.Livre, BotLevel.Hard, false, "1234"),
-		};
-
-		foreach (var s in seeds)
-		{
-			var settings = new RoomSettings
-			{
-				Number = _nextNumber++,
-				Title = s.title,
-				TeamSize = s.size,
-				ScoreToWin = s.score,
-				Minutes = s.minutes,
-				Weapons = s.weapons,
-				Transform = s.transform,
-				Difficulty = s.level,
-				Password = s.pass
-			};
-
-			var room = new RoomListing { Settings = settings, State = s.playing ? RoomState.Playing : RoomState.Waiting };
-			int fill = rng.RandiRange(s.size, s.size * 2);
-			for (int i = 0; i < fill; i++)
-				AddBots(room, i % 2 == 0 ? Teams.Blue : Teams.Orange, 1);
-
-			_rooms.Add(room);
-		}
-
-		// Números saltados, como num canal de verdade.
-		_nextNumber += rng.RandiRange(2, 6);
 	}
 }

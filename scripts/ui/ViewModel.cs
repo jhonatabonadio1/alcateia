@@ -111,6 +111,11 @@ public partial class ViewModel : Node3D
 		_rest = Position;
 		_lastLook = _camera.GlobalRotation;
 
+		// A arma na mão fica a menos de meio metro do olho: o plano de corte
+		// da câmera não pode comê-la.
+		_camera.Near = Mathf.Min(_camera.Near, 0.03f);
+		PreloadRigs();
+
 		_weapon.SlotChanged += _ => Refresh();
 		_form.FormChanged += _ => Refresh();
 		_weapon.Fired += OnFired;
@@ -131,10 +136,13 @@ public partial class ViewModel : Node3D
 		UpdateLanding(dt);
 
 		// Com os braços animados, o tiro e o sacar já vêm da animação.
+		// O conjunto sem animação de sacar sobe de baixo, como as mãos de código.
 		float kick = Ease(_recoil) * (HasRig ? RigKick : 1f);
-		float draw = HasRig ? 0f : _draw;
-		Position = _rest + bob + new Vector3(0, -draw * 0.2f - _dip, Kick * kick);
-		RotationDegrees = new Vector3(_sway.Y + KickPitch * kick - draw * 24f, _sway.X, -_sway.X * 0.6f);
+		// O conjunto está a meio metro do olho, não a um: a subida é menor.
+		float draw = HasRig && _rigClips.ContainsKey("sacar") ? 0f : _draw;
+		float drop = HasRig ? 0.06f : 0.2f, tilt = HasRig ? 14f : 24f;
+		Position = _rest + bob + new Vector3(0, -draw * drop - _dip, Kick * kick);
+		RotationDegrees = new Vector3(_sway.Y + KickPitch * kick - draw * tilt, _sway.X, -_sway.X * 0.6f);
 
 		UpdateHands(dt);
 		UpdateEffects(dt);

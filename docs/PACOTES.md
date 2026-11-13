@@ -106,9 +106,10 @@ deixadas de fora de propósito.
 
 | 6 conjuntos de braços animados do Sketchfab | `assets/armas/fp/*.glb` — as armas de fogo em primeira pessoa | `tools/armas/blender/bracos.py` |
 
-Ainda não entraram: os modelos avulsos de arma (AK-47, Beretta, SG552,
-UMP45, Benelli M3, faca, M84) — os conjuntos animados já trazem uma arma
-cada um. A faca e a granada seguem feitas por código.
+A faca (Gerber) e a granada (M84) entraram na mão do braço da pistola
+(`OBJETOS` em `tools/armas/blender/bracos.py`). Ainda não entraram os
+modelos avulsos de arma (AK-47, Beretta, SG552, UMP45, Benelli M3) — os
+conjuntos animados já trazem uma arma cada um.
 Lembre: a pasta deles é `assets/pacotes/sketchfab/` (fora do Godot); se
 ficarem em `assets/sketchfab/`, o Godot tenta importar 750 MB.
 

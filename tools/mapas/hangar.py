@@ -64,7 +64,7 @@ def oficina(m, g, s, sz, t):
 def montar():
     m = Mapa("hangar", "Hangar", 84, 48)
 
-    m.material("piso", "piso_concreto", (0.92, 0.92, 0.94), 4.0)
+    m.material("piso", "piso_concreto", (0.62, 0.63, 0.66), 4.0)
     m.material("muro", "concreto_laje", (0.80, 0.80, 0.82), 4.0)
     m.material("tijolo", "tijolo_fabrica", (1.0, 0.98, 0.96), 2.4)
     m.material("aco", "metal_pintado", (0.42, 0.47, 0.54), 2.0, metal=0.4, aspereza=0.6)

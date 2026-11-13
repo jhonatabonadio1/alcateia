@@ -37,6 +37,25 @@ public partial class ViewModel
 	/// animação: fica só uma fração.</summary>
 	private const float RigKick = 0.3f;
 
+	/// <summary>
+	/// Os conjuntos foram animados para uma câmera de 50,5° na vertical
+	/// (80° na horizontal); a do jogo é mais aberta. Para a arma aparecer
+	/// do tamanho e no lugar em que o animador a pôs, o conjunto é esticado
+	/// na largura e na altura da tela na razão entre as duas aberturas — é
+	/// o mesmo que desenhá-lo com a câmera dele.
+	/// </summary>
+	[Export] public float RigFov = 50.5f;
+
+	/// <summary>
+	/// E encolhido na direção do olho: desenhado do mesmo tamanho na tela,
+	/// mas mais perto — o cano fica a meio metro, não a um, e para de
+	/// atravessar a parede quando se encosta nela.
+	/// </summary>
+	[Export] public float RigScale = 0.45f;
+
+	/// <summary>Os conjuntos já carregados: trocar de arma não lê do disco.</summary>
+	private static readonly Dictionary<string, PackedScene> RigScenes = new();
+
 	private static Godot.Collections.Dictionary _rigSheet;
 
 	private AnimationPlayer _rigPlayer;
@@ -60,6 +79,22 @@ public partial class ViewModel
 		return _rigSheet;
 	}
 
+	/// <summary>Carrega todos os conjuntos de uma vez, ao entrar na partida:
+	/// a primeira troca de arma não engasga lendo o arquivo.</summary>
+	private static void PreloadRigs()
+	{
+		foreach (Variant entry in RigSheet().Values)
+			RigScene(entry.AsGodotDictionary()["arquivo"].AsString());
+	}
+
+	private static PackedScene RigScene(string path)
+	{
+		if (RigScenes.TryGetValue(path, out PackedScene scene) && scene != null) return scene;
+		scene = ResourceLoader.Exists(path) ? GD.Load<PackedScene>(path) : null;
+		RigScenes[path] = scene;
+		return scene;
+	}
+
 	/// <summary>A entrada da ficha para esta arma, ou null se ela não tem conjunto.</summary>
 	private static Godot.Collections.Dictionary RigFor(string weaponId)
 	{
@@ -71,8 +106,11 @@ public partial class ViewModel
 		return null;
 	}
 
+	private Node3D _rigObject;
+
 	private void ForgetRig()
 	{
+		_rigObject = null;
 		_rigPlayer = null;
 		_rigClips.Clear();
 		_rigPlaying = "";
@@ -86,30 +124,40 @@ public partial class ViewModel
 		Godot.Collections.Dictionary rig = RigFor(id);
 		if (rig == null) return false;
 
-		var scene = GD.Load<PackedScene>(rig["arquivo"].AsString()).Instantiate<Node3D>();
+		PackedScene packed = RigScene(rig["arquivo"].AsString());
+		if (packed == null) return false;
+		var scene = packed.Instantiate<Node3D>();
+		float stretch = Mathf.Tan(Mathf.DegToRad(_camera.Fov * 0.5f)) / Mathf.Tan(Mathf.DegToRad(RigFov * 0.5f));
+		scene.Scale = new Vector3(stretch, stretch, 1f) * RigScale;
+		if (rig.ContainsKey("ajuste")) scene.Position = scene.Scale * ToVector(rig["ajuste"]);
 		_held = new Node3D { Name = id };
 		_held.AddChild(scene);
 		AddChild(_held);
+		_rigObject = scene.FindChild(id == Arsenal.GrenadeId ? "granada" : "faca", true, false) as Node3D;
 
 		foreach (Node node in scene.FindChildren("*", "MeshInstance3D", true, false))
 			((MeshInstance3D)node).CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
 
 		// A boca do cano e, um pouco atrás, a janela por onde sai a cápsula.
 		Vector3 muzzle = ToVector(rig["cano"]);
-		_held.AddChild(new Marker3D { Name = WeaponModel.MuzzleName, Position = muzzle });
-		_held.AddChild(new Marker3D
-		{
-			Name = WeaponModel.EjectName,
-			Position = new Vector3(muzzle.X + 0.02f, muzzle.Y + 0.03f, muzzle.Z + Mathf.Min(0.55f, -muzzle.Z * 0.5f))
-		});
+		// Os pontos ficam no nó da arma (é lá que o resto do código os
+		// procura), já na escala do conjunto.
+		Vector3 eject = new(muzzle.X + 0.02f, muzzle.Y + 0.03f, muzzle.Z + Mathf.Min(0.55f, -muzzle.Z * 0.5f));
+		_held.AddChild(new Marker3D { Name = WeaponModel.MuzzleName, Position = scene.Transform * muzzle });
+		_held.AddChild(new Marker3D { Name = WeaponModel.EjectName, Position = scene.Transform * eject });
 
 		_rigPlayer = scene.FindChild("AnimationPlayer", true, false) as AnimationPlayer;
 		foreach (var (name, value) in rig["animacoes"].AsGodotDictionary())
 		{
 			Godot.Collections.Dictionary a = value.AsGodotDictionary();
 			string clip = a["clipe"].AsString();
-			if (_rigPlayer != null && _rigPlayer.HasAnimation(clip))
-				_rigClips[name.AsString()] = new Clip(clip, a["de"].AsDouble(), a["ate"].AsDouble());
+			if (_rigPlayer == null || !_rigPlayer.HasAnimation(clip)) continue;
+			_rigClips[name.AsString()] = new Clip(clip, a["de"].AsDouble(), a["ate"].AsDouble());
+
+			// Parado, andar e correr se repetem sem emenda; o arquivo vem sem
+			// laço, e sem ele o fim de cada volta dá um tranco.
+			if (name.AsString() is "parado" or "andar" or "correr" || clip == "Scene")
+				_rigPlayer.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Linear;
 		}
 
 		if (_rigPlayer == null || !_rigClips.ContainsKey("parado"))
@@ -158,6 +206,23 @@ public partial class ViewModel
 	{
 		_rigBusy -= dt;
 		bool reloading = _weapon.IsReloading && _weapon.Held != null;
+
+		// Faca e granada: o golpe e o arremesso são movimento de código
+		// sobre o conjunto inteiro (o braço vai junto).
+		Vector3 position = Vector3.Zero, rotation = Vector3.Zero;
+		if (_heldId == Arsenal.GrenadeId)
+		{
+			bool winding = _weapon.IsGrenadeReady;
+			if (!winding && _windup > 0.5f) _throw = 1f;
+			_windup = Mathf.MoveToward(_windup, winding ? 1f : 0f, dt * (winding ? 4f : 10f));
+			float w = Smooth(_windup), t = Mathf.Sin(_throw * Mathf.Pi);
+			position += new Vector3(0.04f * w - 0.05f * t, 0.06f * w + 0.04f * t, 0.12f * w - 0.25f * t);
+			rotation += new Vector3(30f * w - 40f * t, -12f * w, -14f * w);
+			if (_rigObject != null) _rigObject.Visible = !(_throw > 0f && _throw < 0.75f);
+		}
+		Slash(ref position, ref rotation);
+		_held.Position = position;
+		_held.RotationDegrees = rotation;
 
 		if (reloading)
 		{

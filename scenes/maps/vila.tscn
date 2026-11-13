@@ -10359,109 +10359,109 @@ mesh = SubResource("B123")
 material_override = SubResource("M_telha")
 
 [node name="Letra" type="MeshInstance3D" parent="BaseA"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -35.82, 6.6, 0)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -35.8, 6.6, 0)
 mesh = SubResource("Q1")
 material_override = SubResource("L1")
 cast_shadow = 0
 
 [node name="Letra" type="MeshInstance3D" parent="BaseB"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 35.82, 6.6, 0)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 35.8, 6.6, 0)
 mesh = SubResource("Q2")
 material_override = SubResource("L2")
 cast_shadow = 0
 
 [node name="Loja" type="MeshInstance3D" parent="LadoANorte"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -17, 3.1, 10.985)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -17, 3.1, 10.965)
 mesh = SubResource("Q3")
 material_override = SubResource("L3")
 cast_shadow = 0
 
 [node name="PlacaPraca" type="MeshInstance3D" parent="LadoANorte"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -22, 2.75, 10.985)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -22, 2.75, 10.965)
 mesh = SubResource("Q4")
 material_override = SubResource("L4")
 cast_shadow = 0
 
 [node name="PlacaViela" type="MeshInstance3D" parent="LadoANorte"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -23.02, 2.75, 16.2)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -23.04, 2.75, 16.2)
 mesh = SubResource("Q5")
 material_override = SubResource("L5")
 cast_shadow = 0
 
 [node name="PlacaFundo" type="MeshInstance3D" parent="LadoANorte"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 2.75, 23.02)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 2.75, 23.04)
 mesh = SubResource("Q6")
 material_override = SubResource("L6")
 cast_shadow = 0
 
 [node name="Loja" type="MeshInstance3D" parent="LadoASul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 3.1, -10.985)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 3.1, -10.965)
 mesh = SubResource("Q7")
 material_override = SubResource("L7")
 cast_shadow = 0
 
 [node name="PlacaPraca" type="MeshInstance3D" parent="LadoASul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 2.75, -10.985)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 2.75, -10.965)
 mesh = SubResource("Q4")
 material_override = SubResource("L4")
 cast_shadow = 0
 
 [node name="PlacaViela" type="MeshInstance3D" parent="LadoASul"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -23.02, 2.75, -16.2)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -23.04, 2.75, -16.2)
 mesh = SubResource("Q8")
 material_override = SubResource("L8")
 cast_shadow = 0
 
 [node name="PlacaFundo" type="MeshInstance3D" parent="LadoASul"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -19.5, 2.75, -23.02)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -19.5, 2.75, -23.04)
 mesh = SubResource("Q9")
 material_override = SubResource("L9")
 cast_shadow = 0
 
 [node name="Loja" type="MeshInstance3D" parent="LadoBNorte"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 17, 3.1, 10.985)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 17, 3.1, 10.965)
 mesh = SubResource("Q10")
 material_override = SubResource("L10")
 cast_shadow = 0
 
 [node name="PlacaPraca" type="MeshInstance3D" parent="LadoBNorte"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 22, 2.75, 10.985)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 22, 2.75, 10.965)
 mesh = SubResource("Q4")
 material_override = SubResource("L4")
 cast_shadow = 0
 
 [node name="PlacaViela" type="MeshInstance3D" parent="LadoBNorte"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 23.02, 2.75, 16.2)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 23.04, 2.75, 16.2)
 mesh = SubResource("Q5")
 material_override = SubResource("L5")
 cast_shadow = 0
 
 [node name="PlacaFundo" type="MeshInstance3D" parent="LadoBNorte"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 2.75, 23.02)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 2.75, 23.04)
 mesh = SubResource("Q6")
 material_override = SubResource("L6")
 cast_shadow = 0
 
 [node name="Loja" type="MeshInstance3D" parent="LadoBSul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 3.1, -10.985)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 3.1, -10.965)
 mesh = SubResource("Q11")
 material_override = SubResource("L11")
 cast_shadow = 0
 
 [node name="PlacaPraca" type="MeshInstance3D" parent="LadoBSul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 2.75, -10.985)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 2.75, -10.965)
 mesh = SubResource("Q4")
 material_override = SubResource("L4")
 cast_shadow = 0
 
 [node name="PlacaViela" type="MeshInstance3D" parent="LadoBSul"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 23.02, 2.75, -16.2)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 23.04, 2.75, -16.2)
 mesh = SubResource("Q8")
 material_override = SubResource("L8")
 cast_shadow = 0
 
 [node name="PlacaFundo" type="MeshInstance3D" parent="LadoBSul"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 19.5, 2.75, -23.02)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 19.5, 2.75, -23.04)
 mesh = SubResource("Q9")
 material_override = SubResource("L9")
 cast_shadow = 0

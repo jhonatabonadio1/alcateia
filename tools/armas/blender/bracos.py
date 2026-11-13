@@ -11,7 +11,8 @@ Cada conjunto é um .fbx com os dois braços, uma arma e as animações
 (parado, sacar, tiro, recarga…). Este script abre cada um no Blender e:
 
 1. põe **o olho do jogador na origem, olhando para a frente do jogo** —
-   no jogo o conjunto entra na câmera sem ajuste;
+   no jogo o conjunto entra na câmera; `ajuste` (metros, no espaço do
+   conjunto) sobe ou desce o que o animador deixou baixo demais;
 2. acerta a escala para metros;
 3. monta os materiais com as texturas do pacote, reduzidas;
 4. dá às animações os nomes que o jogo usa e joga fora o resto;
@@ -73,13 +74,31 @@ CONJUNTOS = {
         pacote="fps-pistol-animations", fbx="Armpist.fbx", armas=["m9"], arma="xd_frame",
         acoes=dict(parado="FPS_Pistol_Idle", tiro="FPS_Pistol_Fire", recarga="FPS_Pistol_Reload_easy",
                    recarga_vazia="FPS_Pistol_Reload_full", andar="FPS_Pistol_Walk"),
-        texturas={"arms": BRACO, "Material": "for_texturing_None.001"}),
+        ajuste=(0.0, 0.06, 0.0), texturas={"arms": BRACO, "Material": "for_texturing_None.001"}),
     "escopeta": dict(
         pacote="fps-benelli-m4-animations", fbx="HandWithGloves_AnimateRDY.fbx", armas=["m3"], arma="benelli_m4",
         acoes=dict(parado="M4_Idle", tiro="M4_Fire", recarga_um="M4_ReloadOne_type1", andar="M4_Walk", correr="M4_Run"),
         comprimento=1.01, olho=(0.0, 2.0, 36.5),
         texturas={"12gauge": "12gauge", "TTI_Benelli_M4": "TTI_Benelli_M4", "matchsaverz": "matchsaverz",
                   "sleeve_st6_generalist": "sleeve_st6_generalist", "glove_hardknuckle": "glove_hardknuckle"}),
+}
+
+# Faca e granada não têm conjunto próprio: usam os braços da pistola,
+# sem a pistola e sem o braço esquerdo, com o objeto preso no osso em que
+# a pistola ia (PBody). `prender` é o objeto no espaço desse osso:
+# posição do meio do cabo, para onde aponta a ponta, e para onde vai o
+# lado largo (o fio da lâmina).
+OBJETOS = {
+    "faca": dict(
+        base="pistola", armas=["faca"], tirar=("xd_frame",), pacote="gerber-combat-knife-low-poly",
+        fbx="knife100.fbx", escala=0.03, eixo="-X", largo="Y", texturas={"*": "knife100_Material"},
+        prender=dict(meio=(0.0, 0.07, 0.005), ponta=(0.0, 0.62, 0.79), largo=(0.0, -0.79, 0.62)),
+        acoes=dict(parado="FPS_Pistol_Idle", andar="FPS_Pistol_Walk")),
+    "granada": dict(
+        base="pistola", armas=["choque"], tirar=("xd_frame",), pacote="m84-stun-grenade-flashbang",
+        fbx="M84 Stun Grenade.fbx", escala=1.0, eixo="Z", largo="Y", texturas={"*": "DefaultMaterial"},
+        prender=dict(meio=(0.0, 0.15, 0.02), ponta=(0.0, 1.0, 0.15), largo=(0.0, -0.15, 1.0)),
+        acoes=dict(parado="FPS_Pistol_Idle", andar="FPS_Pistol_Walk")),
 }
 
 PAPEIS = (("cor", ("basecolor", "base_color", "albedo", "diffuse", "color", "_base")),
@@ -159,6 +178,9 @@ def converter(nome, c):
     cena = bpy.context.scene
     esqueleto = next(o for o in cena.objects if o.type == "ARMATURE")
 
+    if "preparar" in c:
+        c["preparar"](cena, esqueleto)
+
     # --- O olho: a câmera do arquivo, ou o ponto dado na tabela.
     camera = next((o for o in cena.objects if o.type == "CAMERA"), None)
     osso = esqueleto.data.bones.get("Head_Cam")
@@ -192,10 +214,17 @@ def converter(nome, c):
 
     # --- Materiais.
     pasta = os.path.join(PACOTES, c["pacote"], "textures")
+    arma_obj = cena.objects.get(c["arma"]) if "objeto_pacote" in c else None
     for mat in bpy.data.materials:
         prefixo = c["texturas"].get(mat.name) or c["texturas"].get(mat.name.split(".")[0])
         if prefixo:
             vestir(mat, achar_texturas(pasta, prefixo))
+    if arma_obj is not None:
+        # O objeto preso (faca, granada): um material só, com as texturas do pacote dele.
+        mat = bpy.data.materials.new(c["arma"])
+        arma_obj.data.materials.clear()
+        arma_obj.data.materials.append(mat)
+        vestir(mat, achar_texturas(os.path.join(PACOTES, c["objeto_pacote"], "textures"), c["objeto_texturas"]))
 
     # --- Animações.
     animacoes = {}
@@ -262,17 +291,100 @@ def converter(nome, c):
 
     # No jogo: X é o mesmo, Y é o Z do Blender, Z é −Y.
     return dict(arquivo=f"res://assets/armas/fp/{nome}.glb", armas=c["armas"], animacoes=animacoes,
-                cano=[round(cano.x, 4), round(cano.z, 4), round(-cano.y, 4)])
+                cano=[round(cano.x, 4), round(cano.z, 4), round(-cano.y, 4)], ajuste=list(c.get("ajuste", (0.0, 0.0, 0.0))))
+
+
+def _vetor(eixo):
+    sinal = -1.0 if eixo.startswith("-") else 1.0
+    return Vector({"X": (1, 0, 0), "Y": (0, 1, 0), "Z": (0, 0, 1)}[eixo[-1]]) * sinal
+
+
+def montar_objeto(nome, o):
+    """A faca ou a granada nos braços da pistola: tira a pistola e o braço
+    esquerdo, prende o objeto no osso da pistola e segue como os outros."""
+    base = dict(CONJUNTOS[o["base"]])
+    fbx = os.path.join(PACOTES, base["pacote"], "source", base["fbx"])
+    objeto_fbx = os.path.join(PACOTES, o["pacote"], "source", o["fbx"])
+    if not (os.path.isfile(fbx) and os.path.isfile(objeto_fbx)):
+        print(f"{nome}: falta {fbx if not os.path.isfile(fbx) else objeto_fbx}")
+        return None
+
+    def preparar(cena, esqueleto):
+        # Sai a pistola.
+        for ob in [ob for ob in cena.objects if ob.type == "MESH" and ob.name.startswith(o["tirar"])]:
+            bpy.data.objects.remove(ob)
+        # Sai o braço esquerdo: os vértices que pesam mais nos ossos da esquerda.
+        bracos = next(ob for ob in cena.objects if ob.type == "MESH" and ob.name.startswith("arms"))
+        esquerda = {g.index for g in bracos.vertex_groups if g.name.endswith(("_L", ".L")) or "_L." in g.name or g.name.startswith("Bone_L")}
+        import bmesh
+        bm = bmesh.new()
+        bm.from_mesh(bracos.data)
+        camada = bm.verts.layers.deform.active
+        fora = []
+        for v in bm.verts:
+            pesos = v[camada]
+            total = sum(pesos.values()) or 1.0
+            if sum(w for g, w in pesos.items() if g in esquerda) / total > 0.5:
+                fora.append(v)
+        bmesh.ops.delete(bm, geom=fora, context="VERTS")
+        bm.to_mesh(bracos.data)
+        bm.free()
+
+        # Entra o objeto, numa malha só, em metros.
+        antes = set(cena.objects)
+        bpy.ops.import_scene.fbx(filepath=objeto_fbx)
+        novos = [ob for ob in cena.objects if ob not in antes]
+        for ob in [ob for ob in novos if ob.type != "MESH"]:
+            bpy.data.objects.remove(ob)
+        novos = [ob for ob in novos if ob.name in cena.objects and ob.type == "MESH"]
+        bpy.ops.object.select_all(action="DESELECT")
+        for ob in novos:
+            ob.select_set(True)
+        bpy.context.view_layer.objects.active = novos[0]
+        bpy.ops.object.parent_clear(type="CLEAR_KEEP_TRANSFORM")
+        if len(novos) > 1:
+            bpy.ops.object.join()
+        peca = bpy.context.view_layer.objects.active
+        peca.name = nome
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        peca.data.transform(Matrix.Scale(o["escala"], 4))
+
+        # O meio do cabo na origem, a ponta e o lado largo nos eixos pedidos.
+        ponta, largo = _vetor(o["eixo"]), _vetor(o["largo"])
+        pontos = [v.co for v in peca.data.vertices]
+        ao_longo = [p.dot(ponta) for p in pontos]
+        cabo = [p for p, t in zip(pontos, ao_longo) if t < min(ao_longo) + (max(ao_longo) - min(ao_longo)) * 0.4]
+        meio = sum(cabo, Vector()) / len(cabo) if o["eixo"].endswith("X") else sum(pontos, Vector()) / len(pontos)
+        de = Matrix((ponta.cross(largo), ponta, largo)).transposed().to_4x4().inverted()
+        p = o["prender"]
+        alvo_ponta, alvo_largo = Vector(p["ponta"]).normalized(), Vector(p["largo"]).normalized()
+        para = Matrix((alvo_ponta.cross(alvo_largo), alvo_ponta, alvo_largo)).transposed().to_4x4()
+        peca.data.transform(Matrix.Translation(Vector(p["meio"])) @ para @ de @ Matrix.Translation(-meio))
+
+        # Preso no osso da pistola, como ela estava.
+        peca.parent = esqueleto
+        peca.parent_type = "BONE"
+        peca.parent_bone = "PBody"
+        osso = esqueleto.data.bones["PBody"]
+        peca.matrix_parent_inverse = Matrix.Identity(4)
+        peca.matrix_basis = Matrix.Translation(Vector((0, -osso.length, 0)))
+        return peca
+
+    c = dict(base)
+    c.update(armas=o["armas"], acoes=o["acoes"], arma=nome, preparar=preparar,
+             texturas={**{k: v for k, v in base["texturas"].items() if k == "arms"}},
+             objeto_pacote=o["pacote"], objeto_texturas=o["texturas"]["*"])
+    return converter(nome, c)
 
 
 def main():
     filtro = sys.argv[1] if len(sys.argv) > 1 else ""
     ficha_em = os.path.join(DESTINO, "bracos.json")
     ficha = json.load(open(ficha_em, encoding="utf-8")) if os.path.isfile(ficha_em) else {}
-    for nome, c in CONJUNTOS.items():
+    for nome, c in list(CONJUNTOS.items()) + list(OBJETOS.items()):
         if not nome.startswith(filtro):
             continue
-        r = converter(nome, c)
+        r = montar_objeto(nome, c) if nome in OBJETOS else converter(nome, c)
         if r:
             ficha[nome] = r
             print(f"{nome}: {sorted(r['animacoes'])}, cano em {r['cano']}")

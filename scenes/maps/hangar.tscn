@@ -94,7 +94,7 @@
 [ext_resource type="ArrayMesh" path="res://assets/mapas/hangar/18a0bc3508.obj" id="o_18a0bc3508"]
 
 [sub_resource type="StandardMaterial3D" id="M_piso"]
-albedo_color = Color(0.92, 0.92, 0.94, 1)
+albedo_color = Color(0.62, 0.63, 0.66, 1)
 albedo_texture = ExtResource("t_piso_concreto_cor")
 roughness_texture = ExtResource("t_piso_concreto_arm")
 roughness_texture_channel = 1
@@ -4815,127 +4815,127 @@ metadata/piso = "metal"
 shape = SubResource("S40")
 
 [node name="Portao1Numero" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 9.5, 23.9)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 9.5, 23.88)
 mesh = SubResource("Q1")
 material_override = SubResource("L1")
 cast_shadow = 0
 
 [node name="Portao1Aviso" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.6, 2.4, 23.985)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.6, 2.4, 23.965)
 mesh = SubResource("Q2")
 material_override = SubResource("L2")
 cast_shadow = 0
 
 [node name="Portao1Faixa" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.35, 23.93)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0.35, 23.91)
 mesh = SubResource("Q3")
 material_override = SubResource("L3")
 cast_shadow = 0
 
 [node name="Portao2Numero" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -23.9)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.5, -23.88)
 mesh = SubResource("Q4")
 material_override = SubResource("L4")
 cast_shadow = 0
 
 [node name="Portao2Aviso" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.6, 2.4, -23.985)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.6, 2.4, -23.965)
 mesh = SubResource("Q2")
 material_override = SubResource("L2")
 cast_shadow = 0
 
 [node name="Portao2Faixa" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -23.93)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -23.91)
 mesh = SubResource("Q3")
 material_override = SubResource("L3")
 cast_shadow = 0
 
 [node name="Nome3" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -41.9, 9.4, 0)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -41.88, 9.4, 0)
 mesh = SubResource("Q5")
 material_override = SubResource("L5")
 cast_shadow = 0
 
 [node name="Nome4" type="MeshInstance3D" parent="Galpoes"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 41.9, 9.4, 0)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 41.88, 9.4, 0)
 mesh = SubResource("Q5")
 material_override = SubResource("L5")
 cast_shadow = 0
 
 [node name="Anel" type="MeshInstance3D" parent="Centro"]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.012, 0)
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.032, 0)
 mesh = SubResource("Q6")
 material_override = SubResource("L6")
 cast_shadow = 0
 
 [node name="FaixaPlataforma1" type="MeshInstance3D" parent="Centro"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6.05)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 6.07)
 mesh = SubResource("Q7")
 material_override = SubResource("L3")
 cast_shadow = 0
 
 [node name="FaixaPlataforma-1" type="MeshInstance3D" parent="Centro"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.75, -6.05)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 1.75, -6.07)
 mesh = SubResource("Q7")
 material_override = SubResource("L3")
 cast_shadow = 0
 
 [node name="Letra" type="MeshInstance3D" parent="BaseA"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -32.12, 7.3, 0)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -32.1, 7.3, 0)
 mesh = SubResource("Q8")
 material_override = SubResource("L7")
 cast_shadow = 0
 
 [node name="LetreiroNorte" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -20, 3.2, 11.985)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -20, 3.2, 11.965)
 mesh = SubResource("Q9")
 material_override = SubResource("L8")
 cast_shadow = 0
 
 [node name="FumarNorte" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -25.2, 2.7, 11.985)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -25.2, 2.7, 11.965)
 mesh = SubResource("Q10")
 material_override = SubResource("L9")
 cast_shadow = 0
 
 [node name="LetreiroSul" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 3.2, -11.985)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 3.2, -11.965)
 mesh = SubResource("Q11")
 material_override = SubResource("L10")
 cast_shadow = 0
 
 [node name="FumarSul" type="MeshInstance3D" parent="LadoA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.2, 2.7, -11.985)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.2, 2.7, -11.965)
 mesh = SubResource("Q10")
 material_override = SubResource("L9")
 cast_shadow = 0
 
 [node name="Letra" type="MeshInstance3D" parent="BaseB"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 32.12, 7.3, 0)
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 32.1, 7.3, 0)
 mesh = SubResource("Q12")
 material_override = SubResource("L11")
 cast_shadow = 0
 
 [node name="LetreiroNorte" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 20, 3.2, 11.985)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 20, 3.2, 11.965)
 mesh = SubResource("Q13")
 material_override = SubResource("L12")
 cast_shadow = 0
 
 [node name="FumarNorte" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 25.2, 2.7, 11.985)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 25.2, 2.7, 11.965)
 mesh = SubResource("Q10")
 material_override = SubResource("L9")
 cast_shadow = 0
 
 [node name="LetreiroSul" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3.2, -11.985)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3.2, -11.965)
 mesh = SubResource("Q14")
 material_override = SubResource("L13")
 cast_shadow = 0
 
 [node name="FumarSul" type="MeshInstance3D" parent="LadoB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.2, 2.7, -11.985)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.2, 2.7, -11.965)
 mesh = SubResource("Q10")
 material_override = SubResource("L9")
 cast_shadow = 0

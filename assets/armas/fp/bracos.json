@@ -1,5 +1,10 @@
 {
  "ak": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
   "animacoes": {
    "andar": {
     "ate": 0.9817,
@@ -48,6 +53,11 @@
   ]
  },
  "escopeta": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
   "animacoes": {
    "andar": {
     "ate": 0.9833,
@@ -85,7 +95,40 @@
    -0.8754
   ]
  },
+ "faca": {
+  "ajuste": [
+   0.0,
+   0.06,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 1.625,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 4.9583,
+    "clipe": "parado",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "faca"
+  ],
+  "arquivo": "res://assets/armas/fp/faca.glb",
+  "cano": [
+   0.0214,
+   -0.1195,
+   -0.599
+  ]
+ },
  "fuzil": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
   "animacoes": {
    "andar": {
     "ate": 0.8175,
@@ -128,7 +171,40 @@
    -1.0871
   ]
  },
+ "granada": {
+  "ajuste": [
+   0.0,
+   0.06,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 1.625,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 4.9583,
+    "clipe": "parado",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "choque"
+  ],
+  "arquivo": "res://assets/armas/fp/granada.glb",
+  "cano": [
+   0.0341,
+   -0.1097,
+   -0.4439
+  ]
+ },
  "m16": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
   "animacoes": {
    "parado": {
     "ate": 8.3,
@@ -167,6 +243,11 @@
   ]
  },
  "pistola": {
+  "ajuste": [
+   0.0,
+   0.06,
+   0.0
+  ],
   "animacoes": {
    "andar": {
     "ate": 0.65,
@@ -205,6 +286,11 @@
   ]
  },
  "smg": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
   "animacoes": {
    "andar": {
     "ate": 0.7317,

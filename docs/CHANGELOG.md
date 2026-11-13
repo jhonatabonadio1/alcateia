@@ -2,6 +2,29 @@
 
 ## Não lançado
 
+### Correções do que o Jhon viu jogando (13/11)
+- **Salas**: saem as salas de mentira. A aba Salas é a lista online; o
+  treino com bots (offline) ficou num botão, "Treino com bots".
+- **Trocar o mapa da sala**: o botão dizia "o Hangar é o único mapa";
+  agora abre a escolha entre os quatro.
+- **Faca e granada** com os modelos do Sketchfab (faca Gerber, granada
+  M84), na mão do braço animado da pistola (sem o braço esquerdo), com
+  o golpe e o arremesso.
+- **Braços em primeira pessoa**:
+  - estavam desenhados com a abertura de câmera do jogo (75°), não com a
+    do animador (50,5°): ficavam pequenos e no canto. O conjunto agora é
+    esticado na razão entre as duas;
+  - o cano ficava a um metro do olho e atravessava a parede: o conjunto
+    é trazido para perto do olho (45%), com a mesma aparência na tela;
+  - a primeira troca para cada arma travava lendo o arquivo: os conjuntos
+    são carregados ao entrar na partida;
+  - parado e andar repetem sem tranco; quem não tem animação de sacar
+    sobe de baixo; pistola, faca e granada um pouco mais altas.
+- **Mapas**: os letreiros ficavam a 1 cm da superfície e piscavam de
+  longe; agora a 2 cm a mais. Na Polar, o piso dos cômodos novos ficava
+  24 cm acima do chão (os pés afundavam). O piso do Hangar estava claro
+  demais ao sol.
+
 ### Braços animados em primeira pessoa (Sketchfab, CC BY)
 - As seis armas de fogo passam a usar os conjuntos animados baixados do
   Sketchfab: braços, arma e animações de animador (parado, sacar, tiro,

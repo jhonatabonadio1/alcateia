@@ -400,7 +400,10 @@ def acabamento(m):
                     costelas.juntar(F.caixa(0.14, 5.0, 0.07, (-8 + q * 4, 2.5, 0)))
                 m.forma(L, f"Costelas{n}", costelas, (s * 28, 0, zf - sz * 0.03), "aco")
                 m.forma(L, f"CostelasFundo{n}", costelas, (s * 28, 0, zt + sz * 0.03), "aco")
-                m.caixa(L, f"Sapata{n}", (s * 28, 0.12, sz * zc), (16.1, 0.24, 5.1), "aco", colide=False)
+                if n == 2:
+                    # Só na fileira fechada: na que se entra, a sapata ficaria
+                    # acima do piso de dentro, e os pés afundariam nela.
+                    m.caixa(L, f"Sapata{n}", (s * 28, 0.12, sz * zc), (16.1, 0.24, 5.1), "aco", colide=False)
                 for q, dx in enumerate((-6, -2, 2, 6)):
                     for andar, y in enumerate((1.55, 3.85)):
                         aceso = rnd.random() < 0.55
@@ -419,7 +422,7 @@ def acabamento(m):
                 for k, dx in enumerate((-1, 1)):
                     m.caixa(L, f"Marco{i}{k}", (s * x + dx * (larg / 2 + 0.04), (y0 + 2.2) / 2, sz * 15.75), (0.08, 2.2 - y0, 0.6), "moldura", colide=False)
                 m.caixa(L, f"MarcoVerga{i}", (s * x, 2.24, sz * 15.75), (larg + 0.16, 0.08, 0.6), "moldura", colide=False)
-            m.caixa(L, "PisoDentro", (s * 28, 0.25, sz * 18), (15, 0.02, 4), "chapa", colide=False)
+            m.caixa(L, "PisoDentro", (s * 28, 0.012, sz * 18), (15, 0.02, 4), "chapa", colide=False)
             m.caixa(L, "BancadaTampo", (s * 22.6, 0.92, sz * 19.5), (2.7, 0.04, 0.9), "prato", colide=False)
             m.letreiro(L, "Nome", f"polar_modulo_{lado}{'1' if sz > 0 else '2'}", (s * 28, 3.05, sz * 15.44), 2.6, de_frente)
             m.letreiro(L, "PlacaLab", "polar_lab", (s * 24.5, 2.55, sz * 15.44), 1.3, de_frente)

@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 /// <summary>
-/// A lista de salas: o hub, a tela onde o jogador passa mais tempo fora
-/// da partida.
+/// O treino com bots, offline: as salas que o jogador criou nesta sessão.
+/// As salas com outros jogadores ficam na aba Salas (<see cref="OnlineScreen"/>).
 ///
 /// Grade de 2 colunas × 5 linhas por página, com paginação em vez de
 /// rolagem infinita: a posição das salas fica estável entre
@@ -17,7 +17,7 @@ using System.Linq;
 /// </summary>
 public partial class RoomListScreen : LobbyScreen
 {
-	public override IconKind NavIcon => IconKind.Rooms;
+	public override IconKind NavIcon => IconKind.Bot;
 
 	/// <summary>Atualização automática enquanto a tela está aberta.</summary>
 	private const double AutoRefresh = 5.0;
@@ -81,7 +81,7 @@ public partial class RoomListScreen : LobbyScreen
 		HBoxContainer row = UiKit.Row(UiTokens.S3);
 
 		VBoxContainer title = UiKit.Column(0);
-		title.AddChild(UiKit.Text("Salas", "Title"));
+		title.AddChild(UiKit.Text("Treino com bots", "Title"));
 		_count = UiKit.Text("", "Muted");
 		title.AddChild(_count);
 		row.AddChild(title);
@@ -92,6 +92,10 @@ public partial class RoomListScreen : LobbyScreen
 		quick.CustomMinimumSize = new Vector2(150, UiTokens.ButtonHeight);
 		quick.TooltipText = "Entra na primeira sala aguardando com vaga, ou cria uma";
 		row.AddChild(quick);
+
+		Button online = UiKit.Button("Salas online", ButtonKind.Secondary, () => Shell.GoOnline());
+		online.CustomMinimumSize = new Vector2(150, UiTokens.ButtonHeight);
+		row.AddChild(online);
 
 		Button create = UiKit.Button("Criar sala", ButtonKind.Primary, Create);
 		create.CustomMinimumSize = new Vector2(150, UiTokens.ButtonHeight);
@@ -200,11 +204,13 @@ public partial class RoomListScreen : LobbyScreen
 		int pages = Mathf.Max(1, Mathf.CeilToInt(rooms.Count / (float)RoomDirectory.PageSize));
 		_page = Mathf.Clamp(_page, 0, pages - 1);
 		_pageLabel.Text = $"Página {_page + 1} de {pages}";
-		_count.Text = $"Canal local · {RoomDirectory.Rooms.Count} salas · {rooms.Count(r => r.EffectiveState == RoomState.Waiting)} aguardando";
+		_count.Text = $"Offline · {RoomDirectory.Rooms.Count} sala(s) suas";
 
 		if (rooms.Count == 0)
 		{
-			Label empty = UiKit.Paragraph("Nenhuma sala com esses filtros. Crie uma — você é o mestre, e os bots enchem os lugares.");
+			Label empty = UiKit.Paragraph(RoomDirectory.Rooms.Count == 0
+				? "Nenhuma sala de treino ainda. Crie uma — você é o mestre, e os bots enchem os lugares."
+				: "Nenhuma sala com esses filtros.");
 			_grid.AddChild(empty);
 			return;
 		}

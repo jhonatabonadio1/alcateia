@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 /// </summary>
 public partial class OnlineScreen : LobbyScreen
 {
-	public override IconKind NavIcon => IconKind.Users;
+	public override IconKind NavIcon => IconKind.Rooms;
 
 	private static readonly int[] TeamSizes = { 4, 6, 8 };
 	private static readonly int[] Scores = { 10, 20, 30, 40, 60, 80, 100 };
@@ -106,7 +106,7 @@ public partial class OnlineScreen : LobbyScreen
 		card.CustomMinimumSize = new Vector2(460, 0);
 		center.AddChild(card);
 
-		column.AddChild(UiKit.Text("Jogar online", "Title"));
+		column.AddChild(UiKit.Text("Salas", "Title"));
 		column.AddChild(UiKit.Paragraph("Entre com a sua conta do servidor, ou crie uma agora. " +
 			"A conta guarda a sua patente online e o seu lugar no ranking."));
 
@@ -124,6 +124,7 @@ public partial class OnlineScreen : LobbyScreen
 		column.AddChild(status);
 
 		HBoxContainer buttons = UiKit.Row(UiTokens.S2);
+		buttons.AddChild(UiKit.Button("Treino com bots", ButtonKind.Tertiary, () => Shell.GoRooms()));
 		buttons.AddChild(UiKit.Spacer());
 		Button create = UiKit.Button("Criar conta", ButtonKind.Secondary, () => Enter(server.Text, name.Text, password.Text, register: true));
 		Button enter = UiKit.Button("Entrar", ButtonKind.Primary, () => Enter(server.Text, name.Text, password.Text, register: false));
@@ -170,6 +171,7 @@ public partial class OnlineScreen : LobbyScreen
 		if (_connecting) return;
 
 		HBoxContainer buttons = UiKit.Row(UiTokens.S2);
+		buttons.AddChild(UiKit.Button("Treino com bots", ButtonKind.Tertiary, () => Shell.GoRooms()));
 		buttons.AddChild(UiKit.Spacer());
 		buttons.AddChild(UiKit.Button("Sair da conta", ButtonKind.Secondary, Logout));
 		buttons.AddChild(UiKit.Button("Tentar de novo", ButtonKind.Primary, () => _ = Connect()));
@@ -224,8 +226,9 @@ public partial class OnlineScreen : LobbyScreen
 
 	private void BuildRooms()
 	{
-		HBoxContainer head = Heading(_main, "Salas online", $"{Lobby.Rooms.Count} aberta(s) · você é {Backend.AccountName}");
+		HBoxContainer head = Heading(_main, "Salas", $"{Lobby.Rooms.Count} aberta(s) · você é {Backend.AccountName}");
 		head.AddChild(UiKit.Button("Sair da conta", ButtonKind.Secondary, Logout));
+		head.AddChild(UiKit.Button("Treino com bots", ButtonKind.Secondary, () => Shell.GoRooms()));
 		head.AddChild(UiKit.Button("Atualizar", ButtonKind.Secondary, Lobby.RefreshRooms));
 		head.AddChild(UiKit.Button("Criar sala", ButtonKind.Primary, AskNewRoom));
 

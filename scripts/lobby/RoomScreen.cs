@@ -376,8 +376,10 @@ public partial class RoomScreen : LobbyScreen
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
 		head.AddChild(UiKit.Caption("Mapa"));
 		head.AddChild(UiKit.Spacer());
-		Button change = UiKit.Button("Trocar", ButtonKind.Tertiary, () => Shell.Toast("O Hangar é o único mapa por enquanto"));
+		Button change = UiKit.Button("Trocar", ButtonKind.Tertiary, PickMap);
 		change.CustomMinimumSize = new Vector2(0, 28);
+		change.Disabled = !IsHost;
+		change.TooltipText = IsHost ? "" : "Só o mestre troca o mapa";
 		head.AddChild(change);
 		block.AddChild(head);
 
@@ -399,6 +401,62 @@ public partial class RoomScreen : LobbyScreen
 		body.AddChild(text);
 		block.AddChild(body);
 		return block;
+	}
+
+	/// <summary>A escolha do mapa: um cartão por mapa, com a miniatura,
+	/// o tamanho e a descrição. O atual vem marcado.</summary>
+	private void PickMap()
+	{
+		if (!IsHost) return;
+
+		Modal modal = null;
+		GridContainer grid = new() { Columns = 2 };
+		grid.AddThemeConstantOverride("h_separation", UiTokens.S3);
+		grid.AddThemeConstantOverride("v_separation", UiTokens.S3);
+
+		foreach (MapInfo map in Maps.All)
+		{
+			MapInfo chosen = map;
+			bool current = map.Id == S.Map;
+			var card = new Button
+			{
+				CustomMinimumSize = new Vector2(300, 0),
+				ToggleMode = true,
+				ButtonPressed = current,
+				FocusMode = FocusModeEnum.All,
+				MouseDefaultCursorShape = CursorShape.PointingHand
+			};
+			card.AddThemeStyleboxOverride("normal", UiTheme.Box(UiTokens.Surface2, current ? UiTokens.Accent : UiTokens.Border, current ? 2 : 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
+			card.AddThemeStyleboxOverride("hover", UiTheme.Box(UiTokens.Surface3, UiTokens.Accent, 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
+			card.AddThemeStyleboxOverride("pressed", UiTheme.Box(UiTokens.Surface3, UiTokens.Accent, 2, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
+
+			VBoxContainer inside = UiKit.Column(UiTokens.S1);
+			inside.MouseFilter = MouseFilterEnum.Ignore;
+			inside.SetAnchorsPreset(LayoutPreset.FullRect);
+			inside.OffsetLeft = inside.OffsetTop = UiTokens.S2;
+			inside.OffsetRight = inside.OffsetBottom = -UiTokens.S2;
+			TextureRect thumb = UiKit.Thumbnail(map.Thumbnail, new Vector2(284, 160));
+			thumb.MouseFilter = MouseFilterEnum.Ignore;
+			inside.AddChild(thumb);
+			HBoxContainer line = UiKit.Row(UiTokens.S2);
+			line.MouseFilter = MouseFilterEnum.Ignore;
+			line.AddChild(UiKit.Text(map.Name, "Subtitle"));
+			line.AddChild(UiKit.Spacer());
+			line.AddChild(UiKit.Chip(map.Size, UiTokens.TextSecondary));
+			inside.AddChild(line);
+			card.CustomMinimumSize = new Vector2(300, 212);
+			card.AddChild(inside);
+			card.Pressed += () =>
+			{
+				Change("Mapa", chosen.Name, () => S.Map = chosen.Id);
+				modal?.Close();
+				Refresh();
+			};
+			Sfx.Wire(card);
+			grid.AddChild(card);
+		}
+
+		modal = Shell.Modal("Escolha o mapa", grid, new Modal.Choice("Fechar", ButtonKind.Secondary, null));
 	}
 
 	private HBoxContainer Row(string label, Control value)

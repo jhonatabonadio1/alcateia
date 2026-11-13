@@ -11,12 +11,10 @@ Ponha aqui, com o que se sabe dele.
 
 | Defeito | O que se sabe |
 |---|---|
-| **Faca e granada não mudaram** | Ficaram com as mãos e os modelos feitos por código. Os modelos do Sketchfab (faca Gerber, granada M84) estão baixados, mas não têm braços nem animação: falta convertê-los e animar as mãos. |
-| **Glitches nos mapas** | Não descrito ainda. Suspeitos: as paredes com porta e janela novas (`m.parede`), os letreiros (planos encostados na parede podem piscar com ela), os objetos do Poly Haven. Precisa de print ou do lugar exato. |
-| **Glitches na troca de arma** | Provável: os braços animados (`ViewModel.Rig.cs`) — o conjunto novo entra sem a subida de "sacar" em algumas armas (pistola e escopeta não têm esse clipe), e a posição de cada conjunto não foi conferida na tela. |
-| **Personagens com glitch** | Não descrito ainda. Precisa saber se é o próprio corpo, os bots, o lobo, ou os bonecos da partida online. |
-| **Salas pré-criadas em vez das online** | A tela Salas ainda mostra as salas de mentira de `RoomDirectory.Seed()` (offline, com bots). As salas de verdade estão na aba Online. Decidir: a tela Salas passa a mostrar as do servidor quando houver conta, e as de mentira somem. |
-| **Os mapas não aparecem para trocar** | `Maps.All` tem os quatro, e o seletor de criar sala e o filtro da lista usam essa lista. Precisa ver em que tela não apareceu (criar sala offline? sala já criada? online?). |
+| **Faca e granada** | Corrigido (13/11) com os modelos do Sketchfab na mão do braço da pistola. O Jhon pôs no Mac uma animação de faca própria: falta trazer e usar no lugar do golpe feito por código. |
+| **Glitches nos mapas** | Corrigidos os que se acharam (letreiro piscando, piso da Polar, cano atravessando a parede). Se ainda houver, falta print ou o lugar exato. |
+| **Glitches na troca de arma** | Corrigidos os que se acharam (tamanho e lugar dos braços, travada na primeira troca, sacar). Falta o Jhon conferir. |
+| **Personagens com glitch** | Não descrito ainda; nas fotos dos bots não apareceu nada. Precisa saber o que acontece e em que mapa. |
 
 ## Pedido e ainda não feito
 

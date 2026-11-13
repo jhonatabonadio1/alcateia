@@ -96,7 +96,7 @@ public partial class LobbyShell : Control
 		if (target == ReturnTarget.Room && RoomDirectory.Current != null)
 			Go(new RoomScreen(RoomDirectory.Current));
 		else
-			GoRooms();
+			GoOnline();
 	}
 
 	// ------------------------------------------------------------------ navegação
@@ -126,12 +126,12 @@ public partial class LobbyShell : Control
 	public void GoOnline() => Go(new OnlineScreen());
 	public void GoCredits() => Go(new CreditsScreen());
 
-	/// <summary>Sair da sala volta à lista; o resto das abas volta para
-	/// onde o jogador estava — a sala, se estiver numa.</summary>
+	/// <summary>A aba Salas: a sala de treino em que o jogador está, se
+	/// estiver numa; senão, as salas online.</summary>
 	public void GoHome()
 	{
 		if (RoomDirectory.Current != null) GoRoom(RoomDirectory.Current);
-		else GoRooms();
+		else GoOnline();
 	}
 
 	// ------------------------------------------------------------------ avisos
@@ -148,7 +148,7 @@ public partial class LobbyShell : Control
 	/// <summary>
 	/// Abre uma tela direto pela linha de comando, para testar e
 	/// fotografar sem clicar: <c>-- --tela=loja</c>. Telas: entrada,
-	/// salas, sala, loja, inventario, perfil, missoes, opcoes, online, creditos.
+	/// salas, treino, sala, loja, inventario, perfil, missoes, opcoes, online, creditos.
 	/// </summary>
 	private bool DevScreen()
 	{
@@ -169,6 +169,7 @@ public partial class LobbyShell : Control
 			case "missoes": GoMissions(); break;
 			case "opcoes": GoOptions(); break;
 			case "online": GoOnline(); break;
+			case "treino": GoRooms(); break;
 			case "creditos": GoCredits(); break;
 			default: GoRooms(); break;
 		}

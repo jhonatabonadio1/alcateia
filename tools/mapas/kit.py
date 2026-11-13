@@ -57,6 +57,9 @@ def olhar(yaw, queda):
     return ((cy, sy * sp, sy * cp), (0, cp, -sp), (-sy, cy * sp, cy * cp))
 
 
+# Quanto um letreiro fica à frente da superfície em que está pintado.
+DESCOLA = 0.02
+
 # O que o jogo ouve ao pisar ou atirar numa peça (scripts/visual/Surfaces.cs):
 # sai da textura do material. Sem entrada aqui é concreto, o som padrão.
 SUPERFICIES = {"metal_pintado": "metal", "metal_ondulado": "metal", "metal_trapezio": "metal", "conteiner": "metal",
@@ -190,6 +193,11 @@ class Mapa:
             # Deita o plano: a frente (+Z) vira para cima, o alto da letra para −Z.
             (a, b, c), (d, e, f_), (g, h, i) = base
             base = ((a, -c, b), (d, -f_, e), (g, -i, h))
+        # Descola da superfície: a um centímetro, de longe a placa e a parede
+        # disputam o mesmo ponto e o letreiro pisca. Três centímetros não se
+        # vê de perto e não pisca de longe.
+        frente = (base[0][2], base[1][2], base[2][2])
+        pos = tuple(p + n * DESCOLA for p, n in zip(pos, frente))
         self.letreiros.append((grupo, nome, imagem, pos, largura, base, aceso))
 
     def modelo(self, grupo, nome, arquivo, pos, yaw=0.0, escala=1.0):
