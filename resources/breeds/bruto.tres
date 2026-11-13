@@ -1,18 +1,13 @@
-[gd_resource type="Resource" script_class="WolfBreed" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="WolfBreed" format=3 uid="uid://c1oart232v6is"]
 
-[ext_resource type="Script" path="res://scripts/forms/WolfBreed.cs" id="1_breed"]
+[ext_resource type="Script" uid="uid://63t2dfso106k" path="res://scripts/forms/WolfBreed.cs" id="1_breed"]
 
 [resource]
 script = ExtResource("1_breed")
-DisplayName = "Bruto"
 WpCost = 0.0
-Hp = 300.0
-Shield = 200.0
-ShieldDecay = 9.0
 SpeedMultiplier = 1.298
 JumpMultiplier = 1.28
 BodyResistance = 0.6
-AttackDamage = 150.0
-AttackRange = 3.8
-AttackCooldown = 1.0
-AirAttackBonus = 1.5
+AttackDamage = 75.0
+AttackRange = 5.0
+AttackCooldown = 0.0
