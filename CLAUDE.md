@@ -374,10 +374,11 @@ Veja `CHANGELOG.md` para o que já entrou e **`docs/PENDENCIAS.md` para
 o que falta** (defeitos relatados, pedidos ainda não feitos, pendências
 técnicas). Mantenha as duas listas em dia.
 
-**Fase 1 — falta:**
-- Rodar os quatro testes de validação do `docs/ARSENAL.md` (duelos,
-  lobo no corredor e em campo aberto, ritmo da economia).
-- Responder "A pergunta que decide o projeto", no fim deste guia.
+**Fase 1 — concluída** (Jhon, 13/11/2026): os quatro testes de
+validação do `docs/ARSENAL.md` (duelos, lobo no corredor e em campo
+aberto, ritmo da economia) foram jogados, e a pergunta que decide o
+projeto foi respondida — **sim, é gostoso**. Os últimos ajustes foram de
+animação.
 
 A tela de créditos existe (`CreditsScreen`, conteúdo em
 `scripts/meta/Credits.cs`): **todo material de terceiros novo ganha a
@@ -418,3 +419,6 @@ modo assimétrico, segunda classe, mapa com verticalidade real.
 
 Se não der prazer com cápsula cinza e sem som, não vai dar com modelo
 caro. Arte conserta mapa feio; não conserta mecânica morna.
+
+**Resposta do Jhon (13/11/2026): sim, é gostoso.** A mecânica fica; o
+trabalho agora é arte, som, interface e a Fase 2.

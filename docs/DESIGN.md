@@ -136,9 +136,11 @@ acabar.
 - Sem limite de tempo: corre enquanto a parede existir
 - Solta ao largar o W, na ponta da parede, num obstáculo sem saída,
   ou se atordoado
-- **Gruda no alto do pulo e fica na altura em que grudou.** Subindo
-  rápido (`WallGrabMaxRise`, 0,6 m/s) ele ainda não gruda: espera o
-  topo. Antes, grudava na subida e a velocidade do pulo se perdia aos
+- **Gruda a partir de 0,45 m do chão e fica na altura em que grudou**
+  (`WallGrabHeight`; decisão do Jhon, 13/11: colado na parede, um
+  pulinho basta — antes era preciso chegar ao alto do pulo). Abaixo
+  disso, subindo rápido (`WallGrabMaxRise`, 0,6 m/s), ele ainda não
+  gruda: espera subir. Antes, grudava na subida e a velocidade do pulo se perdia aos
   poucos — o lobo subia um pedaço depois de colar. Grudado, a altura
   não muda enquanto corre
 - **Direção travada**: escolhida uma vez, ao grudar, pelo **momento**

@@ -31,7 +31,9 @@ public partial class ViewModel
 
 	/// <summary>Um trecho de um clipe: a animação "recarga" do M16 é do
 	/// segundo 2,3 ao 4,5 da linha do tempo única dele.</summary>
-	private readonly record struct Clip(string Name, double From, double To)
+	/// <summary><c>Contact</c>: no golpe, quanto depois do começo a lâmina
+	/// chega no alvo (0 = o clipe não diz).</summary>
+	private readonly record struct Clip(string Name, double From, double To, double Contact = 0)
 	{
 		public double Length => To - From;
 	}
@@ -159,7 +161,8 @@ public partial class ViewModel
 			Godot.Collections.Dictionary a = value.AsGodotDictionary();
 			string clip = a["clipe"].AsString();
 			if (_rigPlayer == null || !_rigPlayer.HasAnimation(clip)) continue;
-			_rigClips[name.AsString()] = new Clip(clip, a["de"].AsDouble(), a["ate"].AsDouble());
+			_rigClips[name.AsString()] = new Clip(clip, a["de"].AsDouble(), a["ate"].AsDouble(),
+				a.ContainsKey("contato") ? a["contato"].AsDouble() : 0);
 
 			// Parado, andar e correr se repetem sem emenda; o arquivo vem sem
 			// laço, e sem ele o fim de cada volta dá um tranco.
@@ -183,8 +186,13 @@ public partial class ViewModel
 			return false;
 		}
 
-		PlayRig(_rigClips.ContainsKey("sacar") ? "sacar" : "parado", 0);
-		if (_rigPlaying == "sacar") _rigBusy = _rigClips["sacar"].Length;
+		// Arma principal não tem animação de pegar (decisão do Jhon,
+		// 13/11): sobe de baixo, como a pistola. Só a faca saca animado.
+		bool draws = _rigClips.ContainsKey("sacar") && _weapon.HumanSlot != Slot.Primary;
+		if (!draws) _rigClips.Remove("sacar");
+		_swingTail = null;
+		PlayRig(draws ? "sacar" : "parado", 0);
+		if (draws) _rigBusy = _rigClips["sacar"].Length;
 		return true;
 	}
 
@@ -210,9 +218,21 @@ public partial class ViewModel
 
 	private int _swing;
 
-	/// <summary>O golpe da faca animado: alterna os golpes do conjunto, no
-	/// tempo entre dois golpes de verdade. Falso se o conjunto não tem
-	/// golpe — aí vale o golpe de código.</summary>
+	/// <summary>Em quanto tempo a lâmina chega no alvo depois do clique. O
+	/// dano da faca sai no clique; a armada do clipe (0,2 s) corre nisto
+	/// para o golpe na tela bater com o golpe de verdade.</summary>
+	[Export] public float RigSwingLead = 0.07f;
+
+	/// <summary>O resto do golpe (a volta da lâmina), para tocar quando a
+	/// armada acabar: o trecho e em quanto tempo.</summary>
+	private Clip? _swingTail;
+	private double _swingTailIn, _swingTailSeconds;
+
+	/// <summary>O golpe da faca animado: alterna os golpes do conjunto.
+	/// A lâmina chega em <see cref="RigSwingLead"/> e a volta toca inteira,
+	/// no tempo do clipe — só encolhe se não couber no intervalo entre
+	/// dois golpes. Falso se o conjunto não tem golpe — aí vale o golpe de
+	/// código.</summary>
 	private bool RigSwing()
 	{
 		if (!HasRig) return false;
@@ -221,9 +241,25 @@ public partial class ViewModel
 		if (!_rigClips.TryGetValue(name, out Clip clip)) return false;
 
 		_swing++;
-		double seconds = Mathf.Min(clip.Length, _weapon.KnifeCooldown);
-		PlayRig(name, seconds, 0.05);
-		_rigBusy = seconds;
+		double lead = clip.Contact > 0 ? Mathf.Min(RigSwingLead, clip.Contact) : 0;
+		if (lead <= 0)
+		{
+			double seconds = Mathf.Min(clip.Length, _weapon.KnifeCooldown);
+			PlayRig(name, seconds, 0.05);
+			_rigBusy = seconds;
+			_swingTail = null;
+			return true;
+		}
+
+		// A armada, corrida; depois a volta.
+		double tail = Mathf.Min(clip.Length - clip.Contact, _weapon.KnifeCooldown - lead);
+		_rigClips["_armada"] = new Clip(clip.Name, clip.From, clip.From + clip.Contact);
+		PlayRig("_armada", lead, 0.03);
+		_rigPlaying = name;
+		_swingTail = new Clip(clip.Name, clip.From + clip.Contact, clip.To);
+		_swingTailIn = lead;
+		_swingTailSeconds = tail;
+		_rigBusy = lead + tail;
 		return true;
 	}
 
@@ -238,6 +274,13 @@ public partial class ViewModel
 	private void UpdateRig(float dt)
 	{
 		_rigBusy -= dt;
+
+		// A armada do golpe acabou: a volta da lâmina.
+		if (_swingTail is Clip tail && (_swingTailIn -= dt) <= 0)
+		{
+			_swingTail = null;
+			_rigPlayer.PlaySection(tail.Name, tail.From, tail.To, 0, (float)(tail.Length / Mathf.Max(_swingTailSeconds, 0.05)));
+		}
 		bool reloading = _weapon.IsReloading && _weapon.Held != null;
 
 		// Faca e granada: o golpe e o arremesso são movimento de código

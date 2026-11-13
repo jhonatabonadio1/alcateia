@@ -57,6 +57,12 @@ public partial class Player
 	/// nela. Grudar subindo carregava o impulso para cima da parede.</summary>
 	[Export] public float WallGrabMaxRise = 0.6f;
 
+	/// <summary>Com os pés a esta altura do chão, o lobo já gruda, mesmo
+	/// subindo: não precisa esperar o alto do pulo (pedido do Jhon,
+	/// 13/11 — colado na parede, um pulinho basta para agarrar). A subida
+	/// morre ali: ele fica na altura em que grudou.</summary>
+	[Export] public float WallGrabHeight = 0.45f;
+
 	/// <summary>Quanto o lobo passa da ponta da parede, em metros, antes
 	/// de decidir a quina: contornar para a face seguinte ou, se ela é
 	/// estreita, seguir reto.</summary>
@@ -226,12 +232,12 @@ public partial class Player
 			return false;
 		}
 
-		// Gruda no alto do pulo, não na subida: grudar subindo levava o
-		// impulso para cima da parede e o lobo subia em vez de ficar na
-		// altura em que encostou.
-		if (Velocity.Y > WallGrabMaxRise)
+		// Subindo, só gruda depois de tirar os pés do chão o bastante
+		// (WallGrabHeight); abaixo disso espera o alto do pulo. Grudar
+		// rente ao chão transformava todo esbarrão em corrida na parede.
+		if (Velocity.Y > WallGrabMaxRise && IsNearFloor(WallGrabHeight))
 		{
-			WallLog("subindo — gruda no alto do pulo");
+			WallLog("subindo — ainda baixo para grudar");
 			return false;
 		}
 
@@ -621,12 +627,15 @@ public partial class Player
 	[Export] public float WallMinHeight = 0.18f;
 
 	/// <summary>Chão logo abaixo dos pés.</summary>
-	private bool IsNearFloor()
+	private bool IsNearFloor() => IsNearFloor(WallMinHeight);
+
+	/// <summary>Chão a menos de <paramref name="height"/> dos pés.</summary>
+	private bool IsNearFloor(float height)
 	{
 		Vector3 origin = GlobalPosition;
 
 		var query = PhysicsRayQueryParameters3D.Create(
-			origin, origin + Vector3.Down * (_height * 0.5f + WallMinHeight));
+			origin, origin + Vector3.Down * (_height * 0.5f + height));
 		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
 
 		return GetWorld3D().DirectSpaceState.IntersectRay(query).Count > 0;

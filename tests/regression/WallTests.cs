@@ -81,3 +81,39 @@ public sealed class WallClingTest : WallTestBase
 		b.AtLeast(3.5, moved.X / 0.5, "voltou a correr");
 	}
 }
+
+/// <summary>Colado na parede, um pulo agarra logo: o lobo não precisa
+/// chegar ao alto do pulo (pedido do Jhon, 13/11).</summary>
+public sealed class WallLowGrabTest : RegressionTest
+{
+	public override string Name => "AgarraBaixo";
+	public override string Description => "colado na parede, o pulo agarra perto do chão, sem esperar o alto do pulo";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.RemoveBots();
+		await b.BecomeWolf();
+
+		// No chão, colado à parede da esquerda do treino (z = −5,5).
+		await b.Place(new Vector3(-8, 1, -5.1f), -90f, settle: 0.4);
+		Player p = b.Player;
+		float floor = p.GlobalPosition.Y;
+
+		RegressionBench.Press("move_forward");
+		await b.Frames(3);
+		RegressionBench.Press("jump");
+		await b.Frames(2);
+		RegressionBench.Release("jump");
+
+		bool grabbed = await b.Until(() => p.IsWallRunning, 1.0);
+		float height = p.GlobalPosition.Y - floor;
+		bool rising = p.Velocity.Y >= 0f;
+		RegressionBench.ReleaseAll();
+
+		float apex = Mathf.Pow(p.JumpVelocity * b.Form.Breed.JumpMultiplier, 2) / (2f * (float)ProjectSettings.GetSetting("physics/3d/default_gravity"));
+		b.Check(grabbed, "agarrou");
+		b.AtMost(apex * 0.75f, height, $"agarrou antes do alto do pulo (alto a {apex:0.00} m)");
+		b.AtLeast(p.WallGrabHeight - 0.05f, height, "mas não rente ao chão");
+		b.Check(rising, "agarrou ainda subindo");
+	}
+}

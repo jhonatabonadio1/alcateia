@@ -2,6 +2,25 @@
 
 ## Não lançado
 
+### Fase 1 concluída e ajustes do Jhon (13/11)
+- **Fase 1 concluída**: o Jhon jogou os quatro testes de validação do
+  arsenal e respondeu a pergunta que decide o projeto — sim, é gostoso.
+- **Agarrar a parede com um pulinho**: colado na parede, o lobo gruda a
+  partir de 0,45 m do chão, ainda subindo (`WallGrabHeight`). Antes
+  esperava o alto do pulo. Teste novo: `AgarraBaixo`.
+- **Velocidade da animação do lobo**: `SprintAnimSpeed`,
+  `WalkAnimSpeed` e `WallAnimSpeed` viraram `SprintAnimScale`,
+  `WalkAnimScale` e `WallAnimScale`: uma escala sobre o ritmo que
+  acompanha o corpo (1 = igual, 0,7 = 30% mais lenta), só na animação.
+  O ajuste antigo era velocidade fixa do clipe, e como a corrida de
+  quatro toca o clipe a ~1,7× o normal, qualquer valor ficava lento.
+- **Arma principal sem animação de pegar**: sobe de baixo, como a
+  pistola. Só a faca tem saque animado.
+- **Faca sincronizada com o golpe**: o dano sai no clique, mas a lâmina
+  só chegava na tela 0,2 s depois, e a volta era cortada para caber no
+  intervalo. Agora a armada corre em 0,07 s (`RigSwingLead`) e a volta
+  toca inteira.
+
 ### Bots no multiplayer (13/11)
 - **A sala online aceita bots.** O dono põe ("+ Bot" em cada time) e
   tira; quem entra na sala toma o lugar de um bot se o time estiver
