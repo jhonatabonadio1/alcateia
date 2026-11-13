@@ -156,7 +156,7 @@ Multiplicam a classe do jogador (não a dos bots):
 
 ## 4. Golpes do lobo
 
-Campos em `scripts/combat/Weapon.cs` → nó `Weapon`. Tempos em
+Campos em `scripts/combat/weapon/` (`Weapon.WolfClaws.cs`, `.WolfPounce.cs`, `.WolfDive.cs`) → nó `Weapon`, grupos "Lobo: ..." no Inspetor. Tempos em
 `scripts/forms/WolfMoves.cs`.
 
 **Fórmula:** dano = `AttackDamage` da classe × multiplicador do golpe
@@ -325,7 +325,7 @@ Preços da loja e patente mínima: `scripts/meta/Catalog.cs`.
 
 ## 8. Faca, granada e soltar arma
 
-`Weapon.cs` → nó `Weapon`, e `scripts/combat/Grenade.cs` (cena
+`scripts/combat/weapon/` (`Weapon.Knife.cs`, `.Grenade.cs`, `.Inventory.cs`) → nó `Weapon`, e `scripts/combat/Grenade.cs` (cena
 `scenes/grenade.tscn`).
 
 | Campo | Valor | O que faz |

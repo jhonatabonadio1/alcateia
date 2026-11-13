@@ -222,7 +222,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `actors/Player.cs` | Movimento, corrida em parede, câmeras, agachar, stun, input |
 | `actors/Bot.cs` | Percepção, combate à distância, strafe, decisão de forma |
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
-| `combat/Weapon.cs` | Slots, tiro hitscan, garrada, granada |
+| `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, munição, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfDive` (bote), `.Damage` (aplicar dano) |
 | `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
 | `core/Match.cs` | Fases da partida, placar, MVP, pagamento de XP e Presas no fim |
 | `core/Saida.cs` | Autoload: esvazia o coletor do C# na saída, para o jogo fechar sem abortar |
