@@ -2,3 +2,16 @@ root = true
 
 [*]
 charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+# C#: tab, como o Godot e o editor do Jhon gravam. Um estilo só no
+# repositório inteiro — misturar fazia todo arquivo aberto e salvo
+# aparecer como "modificado".
+[*.cs]
+indent_style = tab
+indent_size = 4
+tab_width = 4
+
+[*.{tscn,tres,godot,import}]
+indent_style = tab

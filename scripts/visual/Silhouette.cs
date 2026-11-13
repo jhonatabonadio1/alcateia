@@ -15,35 +15,35 @@ using Godot;
 /// </summary>
 public static class Silhouette
 {
-    private static ShaderMaterial _enemy;
-    private static ShaderMaterial _killer;
+	private static ShaderMaterial _enemy;
+	private static ShaderMaterial _killer;
 
-    public static ShaderMaterial Enemy => _enemy ??= Make(false, 0.0f, 0.38f, 5);
-    public static ShaderMaterial Killer => _killer ??= Make(true, 0.28f, 0.6f, 10);
+	public static ShaderMaterial Enemy => _enemy ??= Make(false, 0.0f, 0.38f, 5);
+	public static ShaderMaterial Killer => _killer ??= Make(true, 0.28f, 0.6f, 10);
 
-    private static ShaderMaterial Make(bool throughWalls, float fill, float rim, int priority)
-    {
-        string depth = throughWalls ? "depth_test_disabled, " : "";
-        var shader = new Shader
-        {
-            Code = $$"""
-                shader_type spatial;
-                render_mode unshaded, {{depth}}depth_draw_never, cull_back, blend_mix;
+	private static ShaderMaterial Make(bool throughWalls, float fill, float rim, int priority)
+	{
+		string depth = throughWalls ? "depth_test_disabled, " : "";
+		var shader = new Shader
+		{
+			Code = $$"""
+				shader_type spatial;
+				render_mode unshaded, {{depth}}depth_draw_never, cull_back, blend_mix;
 
-                uniform vec4 color : source_color = vec4(1.0, 0.08, 0.05, 1.0);
+				uniform vec4 color : source_color = vec4(1.0, 0.08, 0.05, 1.0);
 
-                void fragment() {
-                    float edge = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
-                    ALBEDO = color.rgb;
-                    ALPHA = {{F(fill)}} + {{F(rim)}} * edge * edge;
-                }
-                """
-        };
+				void fragment() {
+					float edge = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
+					ALBEDO = color.rgb;
+					ALPHA = {{F(fill)}} + {{F(rim)}} * edge * edge;
+				}
+				"""
+		};
 
-        return new ShaderMaterial { Shader = shader, RenderPriority = priority };
-    }
+		return new ShaderMaterial { Shader = shader, RenderPriority = priority };
+	}
 
-    /// <summary>Número com ponto decimal sempre: "0" seria inteiro no
-    /// shader, e int + float não compila.</summary>
-    private static string F(float value) => value.ToString("0.0###", System.Globalization.CultureInfo.InvariantCulture);
+	/// <summary>Número com ponto decimal sempre: "0" seria inteiro no
+	/// shader, e int + float não compila.</summary>
+	private static string F(float value) => value.ToString("0.0###", System.Globalization.CultureInfo.InvariantCulture);
 }

@@ -24,21 +24,21 @@ using Godot;
 /// </summary>
 public partial class Saida : Node
 {
-    private const int MaxPasses = 12;
+	private const int MaxPasses = 12;
 
-    public override void _Notification(int what)
-    {
-        if (what == NotificationPredelete) Flush();
-    }
+	public override void _Notification(int what)
+	{
+		if (what == NotificationPredelete) Flush();
+	}
 
-    public static void Flush()
-    {
-        for (int i = 0; i < MaxPasses; i++)
-        {
-            long before = System.GC.GetTotalMemory(false);
-            System.GC.Collect();
-            System.GC.WaitForPendingFinalizers();
-            if (i > 1 && System.GC.GetTotalMemory(false) >= before) break;
-        }
-    }
+	public static void Flush()
+	{
+		for (int i = 0; i < MaxPasses; i++)
+		{
+			long before = System.GC.GetTotalMemory(false);
+			System.GC.Collect();
+			System.GC.WaitForPendingFinalizers();
+			if (i > 1 && System.GC.GetTotalMemory(false) >= before) break;
+		}
+	}
 }

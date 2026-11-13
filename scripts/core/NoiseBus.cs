@@ -6,30 +6,30 @@ using System.Collections.Generic;
 /// aquilo é interessante, não só o quanto é alto.</summary>
 public enum NoiseKind
 {
-    Step,
-    Land,
-    Shot,
-    Howl,
-    Explosion
+	Step,
+	Land,
+	Shot,
+	Howl,
+	Explosion
 }
 
 public readonly struct Noise
 {
-    public readonly Vector3 Position;
+	public readonly Vector3 Position;
 
-    /// <summary>Raio em metros no qual o som ainda é audível.</summary>
-    public readonly float Radius;
+	/// <summary>Raio em metros no qual o som ainda é audível.</summary>
+	public readonly float Radius;
 
-    public readonly NoiseKind Kind;
-    public readonly Node Source;
+	public readonly NoiseKind Kind;
+	public readonly Node Source;
 
-    public Noise(Vector3 position, float radius, NoiseKind kind, Node source)
-    {
-        Position = position;
-        Radius = radius;
-        Kind = kind;
-        Source = source;
-    }
+	public Noise(Vector3 position, float radius, NoiseKind kind, Node source)
+	{
+		Position = position;
+		Radius = radius;
+		Kind = kind;
+		Source = source;
+	}
 }
 
 /// <summary>
@@ -47,26 +47,26 @@ public readonly struct Noise
 /// </summary>
 public static class NoiseBus
 {
-    private static readonly List<Action<Noise>> Listeners = new();
+	private static readonly List<Action<Noise>> Listeners = new();
 
-    public static void Subscribe(Action<Noise> listener)
-    {
-        if (!Listeners.Contains(listener))
-            Listeners.Add(listener);
-    }
+	public static void Subscribe(Action<Noise> listener)
+	{
+		if (!Listeners.Contains(listener))
+			Listeners.Add(listener);
+	}
 
-    public static void Unsubscribe(Action<Noise> listener)
-    {
-        Listeners.Remove(listener);
-    }
+	public static void Unsubscribe(Action<Noise> listener)
+	{
+		Listeners.Remove(listener);
+	}
 
-    public static void Emit(Noise noise)
-    {
-        // Cópia: um ouvinte pode se desinscrever ao reagir.
-        foreach (Action<Noise> listener in Listeners.ToArray())
-            listener(noise);
-    }
+	public static void Emit(Noise noise)
+	{
+		// Cópia: um ouvinte pode se desinscrever ao reagir.
+		foreach (Action<Noise> listener in Listeners.ToArray())
+			listener(noise);
+	}
 
-    public static void Emit(Vector3 position, float radius, NoiseKind kind, Node source)
-        => Emit(new Noise(position, radius, kind, source));
+	public static void Emit(Vector3 position, float radius, NoiseKind kind, Node source)
+		=> Emit(new Noise(position, radius, kind, source));
 }

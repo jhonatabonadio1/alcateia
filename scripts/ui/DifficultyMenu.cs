@@ -9,124 +9,124 @@ using Godot;
 /// </summary>
 public partial class DifficultyMenu : CanvasLayer
 {
-    private Control _root;
-    private bool _open;
+	private Control _root;
+	private bool _open;
 
-    public override void _Ready()
-    {
-        // Precisa continuar processando com a árvore pausada, senão o
-        // próprio menu congela junto com o jogo.
-        ProcessMode = ProcessModeEnum.Always;
+	public override void _Ready()
+	{
+		// Precisa continuar processando com a árvore pausada, senão o
+		// próprio menu congela junto com o jogo.
+		ProcessMode = ProcessModeEnum.Always;
 
-        Build();
-        Open();
-    }
+		Build();
+		Open();
+	}
 
-    public override void _Input(InputEvent @event)
-    {
-        if (!@event.IsActionPressed("menu")) return;
+	public override void _Input(InputEvent @event)
+	{
+		if (!@event.IsActionPressed("menu")) return;
 
-        if (_open) Close();
-        else Open();
+		if (_open) Close();
+		else Open();
 
-        GetViewport().SetInputAsHandled();
-    }
+		GetViewport().SetInputAsHandled();
+	}
 
-    private void Build()
-    {
-        _root = new Control
-        {
-            AnchorRight = 1f,
-            AnchorBottom = 1f,
-            MouseFilter = Control.MouseFilterEnum.Stop
-        };
-        AddChild(_root);
+	private void Build()
+	{
+		_root = new Control
+		{
+			AnchorRight = 1f,
+			AnchorBottom = 1f,
+			MouseFilter = Control.MouseFilterEnum.Stop
+		};
+		AddChild(_root);
 
-        var backdrop = new ColorRect
-        {
-            AnchorRight = 1f,
-            AnchorBottom = 1f,
-            Color = new Color(0.04f, 0.04f, 0.06f, 0.88f)
-        };
-        _root.AddChild(backdrop);
+		var backdrop = new ColorRect
+		{
+			AnchorRight = 1f,
+			AnchorBottom = 1f,
+			Color = new Color(0.04f, 0.04f, 0.06f, 0.88f)
+		};
+		_root.AddChild(backdrop);
 
-        var column = new VBoxContainer
-        {
-            AnchorLeft = 0.5f, AnchorRight = 0.5f,
-            AnchorTop = 0.5f, AnchorBottom = 0.5f,
-            GrowHorizontal = Control.GrowDirection.Both,
-            GrowVertical = Control.GrowDirection.Both,
-            CustomMinimumSize = new Vector2(340, 0)
-        };
-        column.AddThemeConstantOverride("separation", 10);
-        _root.AddChild(column);
+		var column = new VBoxContainer
+		{
+			AnchorLeft = 0.5f, AnchorRight = 0.5f,
+			AnchorTop = 0.5f, AnchorBottom = 0.5f,
+			GrowHorizontal = Control.GrowDirection.Both,
+			GrowVertical = Control.GrowDirection.Both,
+			CustomMinimumSize = new Vector2(340, 0)
+		};
+		column.AddThemeConstantOverride("separation", 10);
+		_root.AddChild(column);
 
-        var title = new Label
-        {
-            Text = "NÍVEL DOS BOTS",
-            HorizontalAlignment = HorizontalAlignment.Center
-        };
-        title.AddThemeFontSizeOverride("font_size", 26);
-        column.AddChild(title);
+		var title = new Label
+		{
+			Text = "NÍVEL DOS BOTS",
+			HorizontalAlignment = HorizontalAlignment.Center
+		};
+		title.AddThemeFontSizeOverride("font_size", 26);
+		column.AddChild(title);
 
-        var hint = new Label
-        {
-            Text = "Tab abre e fecha este menu",
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Modulate = new Color(1, 1, 1, 0.45f)
-        };
-        hint.AddThemeFontSizeOverride("font_size", 12);
-        column.AddChild(hint);
+		var hint = new Label
+		{
+			Text = "Tab abre e fecha este menu",
+			HorizontalAlignment = HorizontalAlignment.Center,
+			Modulate = new Color(1, 1, 1, 0.45f)
+		};
+		hint.AddThemeFontSizeOverride("font_size", 12);
+		column.AddChild(hint);
 
-        column.AddChild(new Control { CustomMinimumSize = new Vector2(0, 12) });
+		column.AddChild(new Control { CustomMinimumSize = new Vector2(0, 12) });
 
-        AddOption(column, BotLevel.Easy, "percebe tarde, erra muito, não insiste");
-        AddOption(column, BotLevel.Medium, "reage em meio segundo, erra um quinto dos tiros");
-        AddOption(column, BotLevel.Hard, "reage quase na hora, sustenta fogo, raramente erra");
-    }
+		AddOption(column, BotLevel.Easy, "percebe tarde, erra muito, não insiste");
+		AddOption(column, BotLevel.Medium, "reage em meio segundo, erra um quinto dos tiros");
+		AddOption(column, BotLevel.Hard, "reage quase na hora, sustenta fogo, raramente erra");
+	}
 
-    private void AddOption(Node parent, BotLevel level, string description)
-    {
-        var button = new Button
-        {
-            Text = Difficulty.Label(level),
-            CustomMinimumSize = new Vector2(0, 42)
-        };
-        button.AddThemeFontSizeOverride("font_size", 18);
-        button.Pressed += () => Choose(level);
-        parent.AddChild(button);
+	private void AddOption(Node parent, BotLevel level, string description)
+	{
+		var button = new Button
+		{
+			Text = Difficulty.Label(level),
+			CustomMinimumSize = new Vector2(0, 42)
+		};
+		button.AddThemeFontSizeOverride("font_size", 18);
+		button.Pressed += () => Choose(level);
+		parent.AddChild(button);
 
-        var note = new Label
-        {
-            Text = description,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Modulate = new Color(1, 1, 1, 0.5f)
-        };
-        note.AddThemeFontSizeOverride("font_size", 12);
-        parent.AddChild(note);
-    }
+		var note = new Label
+		{
+			Text = description,
+			HorizontalAlignment = HorizontalAlignment.Center,
+			Modulate = new Color(1, 1, 1, 0.5f)
+		};
+		note.AddThemeFontSizeOverride("font_size", 12);
+		parent.AddChild(note);
+	}
 
-    private void Choose(BotLevel level)
-    {
-        Difficulty.Set(level);
-        Close();
-    }
+	private void Choose(BotLevel level)
+	{
+		Difficulty.Set(level);
+		Close();
+	}
 
-    private void Open()
-    {
-        _open = true;
-        _root.Visible = true;
+	private void Open()
+	{
+		_open = true;
+		_root.Visible = true;
 
-        GetTree().Paused = true;
-        UiState.Push();
-    }
+		GetTree().Paused = true;
+		UiState.Push();
+	}
 
-    private void Close()
-    {
-        _open = false;
-        _root.Visible = false;
+	private void Close()
+	{
+		_open = false;
+		_root.Visible = false;
 
-        GetTree().Paused = false;
-        UiState.Pop();
-    }
+		GetTree().Paused = false;
+		UiState.Pop();
+	}
 }

@@ -3,22 +3,22 @@ using System.Collections.Generic;
 /// <summary>Os golpes do lobo e o uivo.</summary>
 public enum WolfMove
 {
-    /// <summary>Clique esquerdo, primeiro braço ("swiping").</summary>
-    Claw,
+	/// <summary>Clique esquerdo, primeiro braço ("swiping").</summary>
+	Claw,
 
-    /// <summary>Clique esquerdo, o outro braço ("punch").</summary>
-    Punch,
+	/// <summary>Clique esquerdo, o outro braço ("punch").</summary>
+	Punch,
 
-    /// <summary>Botão direito no chão: o salto inteiro do "jump attack",
-    /// com o dano na aterrissagem.</summary>
-    Pounce,
+	/// <summary>Botão direito no chão: o salto inteiro do "jump attack",
+	/// com o dano na aterrissagem.</summary>
+	Pounce,
 
-    /// <summary>Botão direito no ar: o bote, um mergulho na direção da
-    /// mira que bate quando encosta em algo.</summary>
-    Leap,
+	/// <summary>Botão direito no ar: o bote, um mergulho na direção da
+	/// mira que bate quando encosta em algo.</summary>
+	Leap,
 
-    /// <summary>R: o rugido que devolve o escudo.</summary>
-    Howl
+	/// <summary>R: o rugido que devolve o escudo.</summary>
+	Howl
 }
 
 /// <summary>Trecho de um clipe do lobo: de qual arquivo, de onde a onde
@@ -30,9 +30,9 @@ public enum WolfMove
 /// corpo é quem anda), então o corpo precisa andar essa distância nesse
 /// trecho para o pé não deslizar.</summary>
 public readonly record struct WolfClip(string Source, float Start, float End, float Impact,
-    bool FallOnly = false, float StepFrom = 0f, float StepTo = 0f, float Step = 0f)
+	bool FallOnly = false, float StepFrom = 0f, float StepTo = 0f, float Step = 0f)
 {
-    public float Length => End - Start;
+	public float Length => End - Start;
 }
 
 /// <summary>
@@ -63,81 +63,81 @@ public readonly record struct WolfClip(string Source, float Start, float End, fl
 /// </summary>
 public static class WolfMoves
 {
-    public static readonly Dictionary<string, WolfClip> Clips = new()
-    {
-        ["claw"] = new WolfClip("claw", 1.00f, 1.85f, 1.30f, StepFrom: 1.00f, StepTo: 1.43f, Step: 0.91f),
-        ["heavy"] = new WolfClip("heavy", 0f, 0.85f, 0.30f, StepFrom: 0.05f, StepTo: 0.40f, Step: 0.35f),
-        ["pounce"] = new WolfClip("leap", 0f, 3.0f, 1.60f, FallOnly: true, StepFrom: 0.45f, StepTo: 1.55f, Step: 1.71f),
-        ["dive"] = new WolfClip("leap", 1.03f, 1.60f, 1.60f, FallOnly: true),
-        ["dive_land"] = new WolfClip("leap", 1.60f, 2.77f, 1.60f, FallOnly: true),
-        ["howl"] = new WolfClip("howl", 0.30f, 4.90f, 4.90f),
-        ["jump"] = new WolfClip("jump", 1.27f, 1.87f, 1.60f, FallOnly: true),
-        ["jump_land"] = new WolfClip("jump", 1.87f, 2.80f, 1.87f, FallOnly: true),
-        ["death"] = new WolfClip("death", 0.55f, 4.60f, 0.55f),
-    };
+	public static readonly Dictionary<string, WolfClip> Clips = new()
+	{
+		["claw"] = new WolfClip("claw", 1.00f, 1.85f, 1.30f, StepFrom: 1.00f, StepTo: 1.43f, Step: 0.91f),
+		["heavy"] = new WolfClip("heavy", 0f, 0.85f, 0.30f, StepFrom: 0.05f, StepTo: 0.40f, Step: 0.35f),
+		["pounce"] = new WolfClip("leap", 0f, 3.0f, 1.60f, FallOnly: true, StepFrom: 0.45f, StepTo: 1.55f, Step: 1.71f),
+		["dive"] = new WolfClip("leap", 1.03f, 1.60f, 1.60f, FallOnly: true),
+		["dive_land"] = new WolfClip("leap", 1.60f, 2.77f, 1.60f, FallOnly: true),
+		["howl"] = new WolfClip("howl", 0.30f, 4.90f, 4.90f),
+		["jump"] = new WolfClip("jump", 1.27f, 1.87f, 1.60f, FallOnly: true),
+		["jump_land"] = new WolfClip("jump", 1.87f, 2.80f, 1.87f, FallOnly: true),
+		["death"] = new WolfClip("death", 0.55f, 4.60f, 0.55f),
+	};
 
-    /// <summary>Clipe e velocidade de cada golpe. A velocidade é a única
-    /// coisa a mexer para deixar um golpe mais rápido ou mais pesado: a
-    /// duração e o instante do dano acompanham sozinhos.
-    ///
-    /// O bote é a exceção: a queda toca na velocidade que fizer o
-    /// impacto da animação cair no quadro em que o lobo encosta
-    /// (<see cref="DiveSpeed"/>), e a aterrissagem, na de
-    /// <see cref="Land"/>.</summary>
-    public static (string Clip, float Speed) Of(WolfMove move) => move switch
-    {
-        WolfMove.Claw => ("claw", 2.2f),
-        WolfMove.Punch => ("heavy", 2.2f),
-        WolfMove.Pounce => ("pounce", 1.4f),
-        WolfMove.Leap => ("dive", 1f),
-        _ => ("howl", 2.3f)
-    };
+	/// <summary>Clipe e velocidade de cada golpe. A velocidade é a única
+	/// coisa a mexer para deixar um golpe mais rápido ou mais pesado: a
+	/// duração e o instante do dano acompanham sozinhos.
+	///
+	/// O bote é a exceção: a queda toca na velocidade que fizer o
+	/// impacto da animação cair no quadro em que o lobo encosta
+	/// (<see cref="DiveSpeed"/>), e a aterrissagem, na de
+	/// <see cref="Land"/>.</summary>
+	public static (string Clip, float Speed) Of(WolfMove move) => move switch
+	{
+		WolfMove.Claw => ("claw", 2.2f),
+		WolfMove.Punch => ("heavy", 2.2f),
+		WolfMove.Pounce => ("pounce", 1.4f),
+		WolfMove.Leap => ("dive", 1f),
+		_ => ("howl", 2.3f)
+	};
 
-    /// <summary>Escala do Mutant no jogo (<see cref="WolfVisual.ModelScale"/>):
-    /// o passo medido no modelo vira distância no mundo por ela.</summary>
-    public const float BodyScale = 1.1f;
+	/// <summary>Escala do Mutant no jogo (<see cref="WolfVisual.ModelScale"/>):
+	/// o passo medido no modelo vira distância no mundo por ela.</summary>
+	public const float BodyScale = 1.1f;
 
-    /// <summary>O passo do golpe no tempo do jogo: quando começa depois do
-    /// clique, quanto dura e quantos metros anda. Zero se o clipe não dá
-    /// passo.</summary>
-    public static (float Delay, float Duration, float Distance) StepOf(WolfMove move)
-    {
-        var (clip, speed) = Of(move);
-        WolfClip c = Clips[clip];
-        if (c.Step <= 0f) return (0f, 0f, 0f);
-        float from = System.Math.Max(c.StepFrom, c.Start);
-        return ((from - c.Start) / speed, (c.StepTo - from) / speed, c.Step * BodyScale);
-    }
+	/// <summary>O passo do golpe no tempo do jogo: quando começa depois do
+	/// clique, quanto dura e quantos metros anda. Zero se o clipe não dá
+	/// passo.</summary>
+	public static (float Delay, float Duration, float Distance) StepOf(WolfMove move)
+	{
+		var (clip, speed) = Of(move);
+		WolfClip c = Clips[clip];
+		if (c.Step <= 0f) return (0f, 0f, 0f);
+		float from = System.Math.Max(c.StepFrom, c.Start);
+		return ((from - c.Start) / speed, (c.StepTo - from) / speed, c.Step * BodyScale);
+	}
 
-    /// <summary>A aterrissagem do bote, do impacto até de pé.</summary>
-    public static (string Clip, float Speed) Land => ("dive_land", 1.5f);
+	/// <summary>A aterrissagem do bote, do impacto até de pé.</summary>
+	public static (string Clip, float Speed) Land => ("dive_land", 1.5f);
 
-    /// <summary>Quanto a aterrissagem do bote prende o lobo no chão.</summary>
-    public static float LandDuration => Clips[Land.Clip].Length / Land.Speed;
+	/// <summary>Quanto a aterrissagem do bote prende o lobo no chão.</summary>
+	public static float LandDuration => Clips[Land.Clip].Length / Land.Speed;
 
-    /// <summary>Velocidade da queda do bote para o impacto da animação
-    /// chegar em <paramref name="eta"/> segundos — com 10% de folga, para
-    /// a queda nunca acabar antes de o lobo encostar (o corpo voltaria à
-    /// pose parada no ar). Encostou antes, a aterrissagem entra por cima.
-    /// O piso de 0,45 cobre o mergulho mais longo (1,1 s).</summary>
-    public static float DiveSpeed(float eta) =>
-        System.Math.Clamp(Clips["dive"].Length / (System.Math.Max(eta, 0.05f) * 1.1f), 0.45f, 4f);
+	/// <summary>Velocidade da queda do bote para o impacto da animação
+	/// chegar em <paramref name="eta"/> segundos — com 10% de folga, para
+	/// a queda nunca acabar antes de o lobo encostar (o corpo voltaria à
+	/// pose parada no ar). Encostou antes, a aterrissagem entra por cima.
+	/// O piso de 0,45 cobre o mergulho mais longo (1,1 s).</summary>
+	public static float DiveSpeed(float eta) =>
+		System.Math.Clamp(Clips["dive"].Length / (System.Math.Max(eta, 0.05f) * 1.1f), 0.45f, 4f);
 
-    /// <summary>Quanto o golpe dura na tela, em segundos. O próximo só
-    /// sai depois disso: golpe não interrompe golpe.</summary>
-    public static float Duration(WolfMove move)
-    {
-        var (clip, speed) = Of(move);
-        return Clips[clip].Length / speed;
-    }
+	/// <summary>Quanto o golpe dura na tela, em segundos. O próximo só
+	/// sai depois disso: golpe não interrompe golpe.</summary>
+	public static float Duration(WolfMove move)
+	{
+		var (clip, speed) = Of(move);
+		return Clips[clip].Length / speed;
+	}
 
-    /// <summary>Do clique ao instante em que a garra chega, em segundos.
-    /// É quando o dano sai. Não vale para o bote, cujo dano sai quando
-    /// ele encosta.</summary>
-    public static float ImpactDelay(WolfMove move)
-    {
-        var (clip, speed) = Of(move);
-        WolfClip c = Clips[clip];
-        return (c.Impact - c.Start) / speed;
-    }
+	/// <summary>Do clique ao instante em que a garra chega, em segundos.
+	/// É quando o dano sai. Não vale para o bote, cujo dano sai quando
+	/// ele encosta.</summary>
+	public static float ImpactDelay(WolfMove move)
+	{
+		var (clip, speed) = Of(move);
+		WolfClip c = Clips[clip];
+		return (c.Impact - c.Start) / speed;
+	}
 }

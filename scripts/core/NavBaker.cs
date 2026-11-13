@@ -15,40 +15,40 @@ using Godot;
 /// </summary>
 public partial class NavBaker : Node3D
 {
-    [Export] public float AgentRadius = 0.5f;
-    [Export] public float AgentHeight = 1.8f;
-    [Export] public float AgentMaxClimb = 0.5f;
-    [Export] public float AgentMaxSlope = 45f;
+	[Export] public float AgentRadius = 0.5f;
+	[Export] public float AgentHeight = 1.8f;
+	[Export] public float AgentMaxClimb = 0.5f;
+	[Export] public float AgentMaxSlope = 45f;
 
-    /// <summary>Tamanho da célula. Menor acompanha melhor a geometria
-    /// e custa mais para assar.</summary>
-    [Export] public float CellSize = 0.25f;
+	/// <summary>Tamanho da célula. Menor acompanha melhor a geometria
+	/// e custa mais para assar.</summary>
+	[Export] public float CellSize = 0.25f;
 
-    [Export] public bool Debug = true;
+	[Export] public bool Debug = true;
 
-    public override void _Ready()
-    {
-        var region = new NavigationRegion3D();
-        AddChild(region);
+	public override void _Ready()
+	{
+		var region = new NavigationRegion3D();
+		AddChild(region);
 
-        var mesh = new NavigationMesh
-        {
-            AgentRadius = AgentRadius,
-            AgentHeight = AgentHeight,
-            AgentMaxClimb = AgentMaxClimb,
-            AgentMaxSlope = AgentMaxSlope,
-            CellSize = CellSize,
-            GeometryParsedGeometryType = NavigationMesh.ParsedGeometryType.StaticColliders
-        };
+		var mesh = new NavigationMesh
+		{
+			AgentRadius = AgentRadius,
+			AgentHeight = AgentHeight,
+			AgentMaxClimb = AgentMaxClimb,
+			AgentMaxSlope = AgentMaxSlope,
+			CellSize = CellSize,
+			GeometryParsedGeometryType = NavigationMesh.ParsedGeometryType.StaticColliders
+		};
 
-        var source = new NavigationMeshSourceGeometryData3D();
+		var source = new NavigationMeshSourceGeometryData3D();
 
-        NavigationServer3D.ParseSourceGeometryData(mesh, source, GetTree().CurrentScene);
-        NavigationServer3D.BakeFromSourceGeometryData(mesh, source);
+		NavigationServer3D.ParseSourceGeometryData(mesh, source, GetTree().CurrentScene);
+		NavigationServer3D.BakeFromSourceGeometryData(mesh, source);
 
-        region.NavigationMesh = mesh;
+		region.NavigationMesh = mesh;
 
-        if (Debug)
-            GD.Print($"NavBaker: {mesh.GetPolygonCount()} polígonos de navegação");
-    }
+		if (Debug)
+			GD.Print($"NavBaker: {mesh.GetPolygonCount()} polígonos de navegação");
+	}
 }

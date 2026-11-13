@@ -11,45 +11,45 @@ using Godot;
 /// </summary>
 public static class UiFonts
 {
-    private const string Dir = "res://assets/fonts/";
+	private const string Dir = "res://assets/fonts/";
 
-    public static readonly Font Regular = Load("Barlow-Regular.ttf");
-    public static readonly Font Medium = Load("Barlow-Medium.ttf");
-    public static readonly Font SemiBold = Load("Barlow-SemiBold.ttf");
-    public static readonly Font Bold = Load("Barlow-Bold.ttf");
-    public static readonly Font Display = Load("BarlowCondensed-Bold.ttf");
-    public static readonly Font DisplaySemi = Load("BarlowCondensed-SemiBold.ttf");
+	public static readonly Font Regular = Load("Barlow-Regular.ttf");
+	public static readonly Font Medium = Load("Barlow-Medium.ttf");
+	public static readonly Font SemiBold = Load("Barlow-SemiBold.ttf");
+	public static readonly Font Bold = Load("Barlow-Bold.ttf");
+	public static readonly Font Display = Load("BarlowCondensed-Bold.ttf");
+	public static readonly Font DisplaySemi = Load("BarlowCondensed-SemiBold.ttf");
 
-    /// <summary>Barlow Medium com algarismos tabulares.</summary>
-    public static readonly Font Numeric = Tabular(Medium);
+	/// <summary>Barlow Medium com algarismos tabulares.</summary>
+	public static readonly Font Numeric = Tabular(Medium);
 
-    /// <summary>Barlow Condensed Bold com algarismos tabulares.</summary>
-    public static readonly Font NumericDisplay = Tabular(Display);
+	/// <summary>Barlow Condensed Bold com algarismos tabulares.</summary>
+	public static readonly Font NumericDisplay = Tabular(Display);
 
-    /// <summary>Rótulo: Medium com 5% a mais de espaço entre letras,
-    /// para caixa alta pequena continuar legível.</summary>
-    public static readonly Font Label = Spaced(Medium, 1);
+	/// <summary>Rótulo: Medium com 5% a mais de espaço entre letras,
+	/// para caixa alta pequena continuar legível.</summary>
+	public static readonly Font Label = Spaced(Medium, 1);
 
-    private static Font Load(string file)
-    {
-        var font = GD.Load<Font>(Dir + file);
-        if (font == null) GD.PrintErr($"UiFonts: não achei {Dir}{file}");
-        return font ?? ThemeDB.FallbackFont;
-    }
+	private static Font Load(string file)
+	{
+		var font = GD.Load<Font>(Dir + file);
+		if (font == null) GD.PrintErr($"UiFonts: não achei {Dir}{file}");
+		return font ?? ThemeDB.FallbackFont;
+	}
 
-    private static Font Tabular(Font font)
-    {
-        long tnum = TextServerManager.GetPrimaryInterface().NameToTag("tnum");
-        return new FontVariation
-        {
-            BaseFont = font,
-            OpentypeFeatures = new Godot.Collections.Dictionary { { tnum, 1 } }
-        };
-    }
+	private static Font Tabular(Font font)
+	{
+		long tnum = TextServerManager.GetPrimaryInterface().NameToTag("tnum");
+		return new FontVariation
+		{
+			BaseFont = font,
+			OpentypeFeatures = new Godot.Collections.Dictionary { { tnum, 1 } }
+		};
+	}
 
-    private static Font Spaced(Font font, int glyphSpacing) => new FontVariation
-    {
-        BaseFont = font,
-        SpacingGlyph = glyphSpacing
-    };
+	private static Font Spaced(Font font, int glyphSpacing) => new FontVariation
+	{
+		BaseFont = font,
+		SpacingGlyph = glyphSpacing
+	};
 }

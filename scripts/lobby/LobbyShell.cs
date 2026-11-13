@@ -19,148 +19,148 @@ using System.Linq;
 /// </summary>
 public partial class LobbyShell : Control
 {
-    public static LobbyShell Instance { get; private set; }
+	public static LobbyShell Instance { get; private set; }
 
-    private LobbyHeader _header;
-    private Control _content;
-    private Control _overlay;
+	private LobbyHeader _header;
+	private Control _content;
+	private Control _overlay;
 
-    public LobbyScreen Current { get; private set; }
+	public LobbyScreen Current { get; private set; }
 
-    public override void _EnterTree() => Instance = this;
+	public override void _EnterTree() => Instance = this;
 
-    public override void _ExitTree()
-    {
-        if (Instance == this) Instance = null;
-    }
+	public override void _ExitTree()
+	{
+		if (Instance == this) Instance = null;
+	}
 
-    public override void _Ready()
-    {
-        UiTheme.Apply(this);
-        UiKit.Fill(this);
+	public override void _Ready()
+	{
+		UiTheme.Apply(this);
+		UiKit.Fill(this);
 
-        // Qualquer contagem de menu herdada da partida acaba aqui, e o
-        // cursor é sempre do lobby.
-        UiState.Reset();
-        Input.MouseMode = Input.MouseModeEnum.Visible;
-        InputSetup.EnsureActions();
-        Settings.ApplyAudio();
+		// Qualquer contagem de menu herdada da partida acaba aqui, e o
+		// cursor é sempre do lobby.
+		UiState.Reset();
+		Input.MouseMode = Input.MouseModeEnum.Visible;
+		InputSetup.EnsureActions();
+		Settings.ApplyAudio();
 
-        AddChild(UiKit.Fill(new ColorRect { Color = UiTokens.Bg, MouseFilter = MouseFilterEnum.Ignore }));
+		AddChild(UiKit.Fill(new ColorRect { Color = UiTokens.Bg, MouseFilter = MouseFilterEnum.Ignore }));
 
-        VBoxContainer frame = UiKit.Fill(UiKit.Column(0));
-        AddChild(frame);
+		VBoxContainer frame = UiKit.Fill(UiKit.Column(0));
+		AddChild(frame);
 
-        _header = new LobbyHeader();
-        frame.AddChild(_header);
+		_header = new LobbyHeader();
+		frame.AddChild(_header);
 
-        _content = new Control
-        {
-            SizeFlagsVertical = SizeFlags.ExpandFill,
-            SizeFlagsHorizontal = SizeFlags.ExpandFill,
-            ClipContents = true
-        };
-        frame.AddChild(_content);
+		_content = new Control
+		{
+			SizeFlagsVertical = SizeFlags.ExpandFill,
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			ClipContents = true
+		};
+		frame.AddChild(_content);
 
-        _overlay = UiKit.Fill(new Control { MouseFilter = MouseFilterEnum.Ignore });
-        AddChild(_overlay);
+		_overlay = UiKit.Fill(new Control { MouseFilter = MouseFilterEnum.Ignore });
+		AddChild(_overlay);
 
-        Sfx.Music(this, "musica_menu", -10f);
+		Sfx.Music(this, "musica_menu", -10f);
 
-        GoStart();
-    }
+		GoStart();
+	}
 
-    /// <summary>A primeira tela: entrada se ainda não há nome; a sala se
-    /// voltamos de uma partida; senão, a lista de salas.</summary>
-    private void GoStart()
-    {
-        if (DevScreen()) return;
+	/// <summary>A primeira tela: entrada se ainda não há nome; a sala se
+	/// voltamos de uma partida; senão, a lista de salas.</summary>
+	private void GoStart()
+	{
+		if (DevScreen()) return;
 
-        if (!Profile.HasName)
-        {
-            Go(new WelcomeScreen());
-            return;
-        }
+		if (!Profile.HasName)
+		{
+			Go(new WelcomeScreen());
+			return;
+		}
 
-        ReturnTarget target = RoomConfig.ReturnTo;
-        RoomConfig.ReturnTo = ReturnTarget.None;
+		ReturnTarget target = RoomConfig.ReturnTo;
+		RoomConfig.ReturnTo = ReturnTarget.None;
 
-        if (target == ReturnTarget.Room && RoomDirectory.Current != null)
-            Go(new RoomScreen(RoomDirectory.Current));
-        else
-            GoRooms();
-    }
+		if (target == ReturnTarget.Room && RoomDirectory.Current != null)
+			Go(new RoomScreen(RoomDirectory.Current));
+		else
+			GoRooms();
+	}
 
-    // ------------------------------------------------------------------ navegação
+	// ------------------------------------------------------------------ navegação
 
-    public void Go(LobbyScreen screen)
-    {
-        if (Current != null)
-        {
-            _content.RemoveChild(Current);
-            Current.QueueFree();
-        }
+	public void Go(LobbyScreen screen)
+	{
+		if (Current != null)
+		{
+			_content.RemoveChild(Current);
+			Current.QueueFree();
+		}
 
-        Current = screen;
-        _content.AddChild(screen);
-        _header.Visible = screen is not WelcomeScreen;
-        _header.SetActive(screen.NavIcon);
-        Motion.FadeIn(screen, UiTokens.Normal);
-    }
+		Current = screen;
+		_content.AddChild(screen);
+		_header.Visible = screen is not WelcomeScreen;
+		_header.SetActive(screen.NavIcon);
+		Motion.FadeIn(screen, UiTokens.Normal);
+	}
 
-    public void GoRooms() => Go(new RoomListScreen());
-    public void GoRoom(RoomListing room) => Go(new RoomScreen(room));
-    public void GoShop(string focus = null) => Go(new ShopScreen(focus));
-    public void GoInventory(string focus = null) => Go(new InventoryScreen(focus));
-    public void GoProfile() => Go(new ProfileScreen());
-    public void GoMissions() => Go(new MissionsScreen());
-    public void GoOptions() => Go(new OptionsScreen());
+	public void GoRooms() => Go(new RoomListScreen());
+	public void GoRoom(RoomListing room) => Go(new RoomScreen(room));
+	public void GoShop(string focus = null) => Go(new ShopScreen(focus));
+	public void GoInventory(string focus = null) => Go(new InventoryScreen(focus));
+	public void GoProfile() => Go(new ProfileScreen());
+	public void GoMissions() => Go(new MissionsScreen());
+	public void GoOptions() => Go(new OptionsScreen());
 
-    /// <summary>Sair da sala volta à lista; o resto das abas volta para
-    /// onde o jogador estava — a sala, se estiver numa.</summary>
-    public void GoHome()
-    {
-        if (RoomDirectory.Current != null) GoRoom(RoomDirectory.Current);
-        else GoRooms();
-    }
+	/// <summary>Sair da sala volta à lista; o resto das abas volta para
+	/// onde o jogador estava — a sala, se estiver numa.</summary>
+	public void GoHome()
+	{
+		if (RoomDirectory.Current != null) GoRoom(RoomDirectory.Current);
+		else GoRooms();
+	}
 
-    // ------------------------------------------------------------------ avisos
+	// ------------------------------------------------------------------ avisos
 
-    public void Toast(string text, Color? color = null) => global::Toast.Push(_overlay, text, color);
+	public void Toast(string text, Color? color = null) => global::Toast.Push(_overlay, text, color);
 
-    public Modal Modal(string title, Control body, params Modal.Choice[] choices) =>
-        global::Modal.Open(_overlay, title, body, choices);
+	public Modal Modal(string title, Control body, params Modal.Choice[] choices) =>
+		global::Modal.Open(_overlay, title, body, choices);
 
-    public Control Overlay => _overlay;
+	public Control Overlay => _overlay;
 
-    // ------------------------------------------------------------------ desenvolvimento
+	// ------------------------------------------------------------------ desenvolvimento
 
-    /// <summary>
-    /// Abre uma tela direto pela linha de comando, para testar e
-    /// fotografar sem clicar: <c>-- --tela=loja</c>. Telas: entrada,
-    /// salas, sala, loja, inventario, perfil, missoes, opcoes.
-    /// </summary>
-    private bool DevScreen()
-    {
-        string arg = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--tela="));
-        if (arg == null) return false;
+	/// <summary>
+	/// Abre uma tela direto pela linha de comando, para testar e
+	/// fotografar sem clicar: <c>-- --tela=loja</c>. Telas: entrada,
+	/// salas, sala, loja, inventario, perfil, missoes, opcoes.
+	/// </summary>
+	private bool DevScreen()
+	{
+		string arg = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--tela="));
+		if (arg == null) return false;
 
-        string screen = arg["--tela=".Length..];
-        string focus = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--foco="))?["--foco=".Length..];
-        if (!Profile.HasName && screen != "entrada") Profile.SetName("Jhon", out _);
+		string screen = arg["--tela=".Length..];
+		string focus = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--foco="))?["--foco=".Length..];
+		if (!Profile.HasName && screen != "entrada") Profile.SetName("Jhon", out _);
 
-        switch (screen)
-        {
-            case "entrada": Go(new WelcomeScreen()); break;
-            case "sala": GoRoom(RoomDirectory.Current ?? RoomDirectory.Create(new RoomSettings { Title = "Sala do Jhon" })); break;
-            case "loja": GoShop(focus); break;
-            case "inventario": GoInventory(focus); break;
-            case "perfil": GoProfile(); break;
-            case "missoes": GoMissions(); break;
-            case "opcoes": GoOptions(); break;
-            default: GoRooms(); break;
-        }
+		switch (screen)
+		{
+			case "entrada": Go(new WelcomeScreen()); break;
+			case "sala": GoRoom(RoomDirectory.Current ?? RoomDirectory.Create(new RoomSettings { Title = "Sala do Jhon" })); break;
+			case "loja": GoShop(focus); break;
+			case "inventario": GoInventory(focus); break;
+			case "perfil": GoProfile(); break;
+			case "missoes": GoMissions(); break;
+			case "opcoes": GoOptions(); break;
+			default: GoRooms(); break;
+		}
 
-        return true;
-    }
+		return true;
+	}
 }

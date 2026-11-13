@@ -14,38 +14,38 @@ using Godot;
 /// </summary>
 public static class UiState
 {
-    public static int Open { get; private set; }
+	public static int Open { get; private set; }
 
-    public static bool AnyOpen => Open > 0;
+	public static bool AnyOpen => Open > 0;
 
-    /// <summary>Verdadeiro quando só um menu está aberto — usado por
-    /// um menu para saber se ele está no topo e pode contar o tempo.</summary>
-    public static bool IsAlone => Open == 1;
+	/// <summary>Verdadeiro quando só um menu está aberto — usado por
+	/// um menu para saber se ele está no topo e pode contar o tempo.</summary>
+	public static bool IsAlone => Open == 1;
 
-    public static void Push()
-    {
-        Open++;
-        Apply();
-    }
+	public static void Push()
+	{
+		Open++;
+		Apply();
+	}
 
-    /// <summary>Zera a contagem. Só para troca de cena: menus que
-    /// somem junto com a cena antiga não chegam a chamar Pop.</summary>
-    public static void Reset()
-    {
-        Open = 0;
-        Apply();
-    }
+	/// <summary>Zera a contagem. Só para troca de cena: menus que
+	/// somem junto com a cena antiga não chegam a chamar Pop.</summary>
+	public static void Reset()
+	{
+		Open = 0;
+		Apply();
+	}
 
-    public static void Pop()
-    {
-        Open = Mathf.Max(Open - 1, 0);
-        Apply();
-    }
+	public static void Pop()
+	{
+		Open = Mathf.Max(Open - 1, 0);
+		Apply();
+	}
 
-    private static void Apply()
-    {
-        Input.MouseMode = AnyOpen
-            ? Input.MouseModeEnum.Visible
-            : Input.MouseModeEnum.Captured;
-    }
+	private static void Apply()
+	{
+		Input.MouseMode = AnyOpen
+			? Input.MouseModeEnum.Visible
+			: Input.MouseModeEnum.Captured;
+	}
 }

@@ -11,36 +11,36 @@ using Godot;
 /// </summary>
 public partial class EnemyMarks : Node
 {
-    private Health _local;
-    private double _timer;
+	private Health _local;
+	private double _timer;
 
-    public override void _Process(double delta)
-    {
-        _timer -= delta;
-        if (_timer > 0) return;
-        _timer = 0.5;
+	public override void _Process(double delta)
+	{
+		_timer -= delta;
+		if (_timer > 0) return;
+		_timer = 0.5;
 
-        if (_local == null || !IsInstanceValid(_local))
-            _local = GetTree().GetFirstNodeInGroup("player")?.GetNodeOrNull<Health>("Health");
-        if (_local == null) return;
+		if (_local == null || !IsInstanceValid(_local))
+			_local = GetTree().GetFirstNodeInGroup("player")?.GetNodeOrNull<Health>("Health");
+		if (_local == null) return;
 
-        foreach (string group in new[] { "player", "bot" })
-        {
-            foreach (Node body in GetTree().GetNodesInGroup(group))
-            {
-                if (body.GetNodeOrNull<Health>("Health") is not Health health || health == _local) continue;
-                bool enemy = health.Team != _local.Team;
+		foreach (string group in new[] { "player", "bot" })
+		{
+			foreach (Node body in GetTree().GetNodesInGroup(group))
+			{
+				if (body.GetNodeOrNull<Health>("Health") is not Health health || health == _local) continue;
+				bool enemy = health.Team != _local.Team;
 
-                foreach (Node node in body.FindChildren("*", nameof(MeshInstance3D), true, false))
-                {
-                    if (node is not MeshInstance3D mesh) continue;
+				foreach (Node node in body.FindChildren("*", nameof(MeshInstance3D), true, false))
+				{
+					if (node is not MeshInstance3D mesh) continue;
 
-                    if (enemy && mesh.MaterialOverlay == null)
-                        mesh.MaterialOverlay = Silhouette.Enemy;
-                    else if (!enemy && mesh.MaterialOverlay == Silhouette.Enemy)
-                        mesh.MaterialOverlay = null;
-                }
-            }
-        }
-    }
+					if (enemy && mesh.MaterialOverlay == null)
+						mesh.MaterialOverlay = Silhouette.Enemy;
+					else if (!enemy && mesh.MaterialOverlay == Silhouette.Enemy)
+						mesh.MaterialOverlay = null;
+				}
+			}
+		}
+	}
 }

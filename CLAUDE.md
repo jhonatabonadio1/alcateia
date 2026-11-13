@@ -132,20 +132,20 @@ granadas mais fortes.
    "Alturas amarradas à física").
 
 10. **O alcance do pulo é controlado pela tecla.** Segurar para frente
-    mantém o avanço até o fim; soltar encurta, via um arrasto suave no
-    ar (`AirFriction`). Não existe distância máxima fixa — quem decide
-    é o jogador, durante o salto. Os dois extremos são erros: zerar a
-    velocidade trava o corpo no ar, e conservar tudo tira a escolha.
-    O controle de direção no ar é parcial (`AirAccel`).
+	mantém o avanço até o fim; soltar encurta, via um arrasto suave no
+	ar (`AirFriction`). Não existe distância máxima fixa — quem decide
+	é o jogador, durante o salto. Os dois extremos são erros: zerar a
+	velocidade trava o corpo no ar, e conservar tudo tira a escolha.
+	O controle de direção no ar é parcial (`AirAccel`).
 
 11. **Agachar vale nas duas formas.** Encolhe a cápsula, baixa o olho
-    e corta a velocidade para 45%. Não se agacha na parede — a corrida
-    já é um estado de corpo inteiro. **O corpo visto agacha junto**: o
-    humano ajoelha com o fuzil no ombro (da cintura para cima, a pose
-    de mira do parado em pé, `CharacterAnimator.CrouchAim` — agacha e
-    atira, decisão do Jhon; os clipes agachados seguravam a arma na
-    cintura), e o lobo encolhe parado e engatinha andando (veja "Clipes
-    do lobo").
+	e corta a velocidade para 45%. Não se agacha na parede — a corrida
+	já é um estado de corpo inteiro. **O corpo visto agacha junto**: o
+	humano ajoelha com o fuzil no ombro (da cintura para cima, a pose
+	de mira do parado em pé, `CharacterAnimator.CrouchAim` — agacha e
+	atira, decisão do Jhon; os clipes agachados seguravam a arma na
+	cintura), e o lobo encolhe parado e engatinha andando (veja "Clipes
+	do lobo").
 
 ---
 
@@ -199,19 +199,19 @@ alcateia/
 │   └── player, bot, dummy, grenade
 ├── tools/              geradores: arsenal, hangar, miniaturas de mapa, sons
 └── scripts/
-    ├── actors/         Player, Bot — quem ocupa o mundo e decide
-    ├── ai/             o cérebro do bot
-    ├── combat/         Health, Weapon, Grenade, Arsenal, LoadoutSet
-    ├── forms/          FormController (transformação e WP), WolfBreed
-    ├── core/           partida, regras da sala, perfil, opções, som, input
-    ├── meta/           o que vive fora da partida: patentes, catálogo,
-    │                   missões, progressão, mapas, lista de salas
-    ├── lobby/          as telas do lobby
-    ├── ui/             HUD, placar, resultado, respawn, Esc
-    │   └── kit/        tokens, tema e componentes de interface
-    ├── visual/         animação e áudio dos personagens
-    ├── net/            dormente até a Fase 2
-    └── debug/          peças descartáveis
+	├── actors/         Player, Bot — quem ocupa o mundo e decide
+	├── ai/             o cérebro do bot
+	├── combat/         Health, Weapon, Grenade, Arsenal, LoadoutSet
+	├── forms/          FormController (transformação e WP), WolfBreed
+	├── core/           partida, regras da sala, perfil, opções, som, input
+	├── meta/           o que vive fora da partida: patentes, catálogo,
+	│                   missões, progressão, mapas, lista de salas
+	├── lobby/          as telas do lobby
+	├── ui/             HUD, placar, resultado, respawn, Esc
+	│   └── kit/        tokens, tema e componentes de interface
+	├── visual/         animação e áudio dos personagens
+	├── net/            dormente até a Fase 2
+	└── debug/          peças descartáveis
 ```
 
 O mapa completo, arquivo por arquivo, e o caminho de cada dado da
@@ -1384,10 +1384,10 @@ numa linha só.
 ```
 menu.tscn (LobbyShell)
   Entrada (apelido) ─> Lista de salas ─> Sala ── Iniciar (5 s) ──> main.tscn
-        header fixo: Salas · Loja · Inventário · Perfil · Missões · Opções
+		header fixo: Salas · Loja · Inventário · Perfil · Missões · Opções
 main.tscn ── fim ──> Resultado ── Jogar de novo ──> main.tscn
-                               ── Voltar à sala ──> menu.tscn, na sala
-                               ── Sair para o lobby ──> menu.tscn, na lista
+							   ── Voltar à sala ──> menu.tscn, na sala
+							   ── Sair para o lobby ──> menu.tscn, na lista
 ```
 
 O lobby é **uma cena só** com moldura fixa: o header nunca sai, o miolo
