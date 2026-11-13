@@ -236,6 +236,11 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
 | `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, munição, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfDive` (bote), `.Damage` (aplicar dano) |
 | `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
+| `domain/CombatRules.cs` | As contas do combate em C# puro (dano, queda, dispersão, recuo, golpes do lobo, salto, vida e escudo), com teste de unidade |
+| `ai/BotDifficulty.cs` | Um nível de dificuldade como dado (`resources/bots/*.tres`) |
+| `visual/human/CharacterAnimator*.cs` | O corpo humano animado: `.Model` e `.Tree` montam uma vez (clipes, modelo do time, árvore); `.Locomotion`, `.Actions` (recarga, granada, reação) e `.Death` tocam por quadro |
+| `visual/wolf/WolfVisual*.cs` | O corpo do lobo: `.Model` e `.Tree` montam; `.Locomotion`, `.Air` (parede, pulo, bote) e `.Moves` (golpes, rugido) tocam |
+| `visual/anim/AnimationKit.cs` | O que os dois corpos e o lobby dividem: clipe do Mixamo, raiz parada, quadril, esqueleto, filtro do tronco, transições |
 | `core/Match.cs` | Fases da partida, placar, MVP, pagamento de XP e Presas no fim |
 | `core/Saida.cs` | Autoload: esvazia o coletor do C# na saída, para o jogo fechar sem abortar |
 | `core/Profile.cs` | O perfil salvo: nome, patente, XP, moedas, inventário, conjuntos, missões |

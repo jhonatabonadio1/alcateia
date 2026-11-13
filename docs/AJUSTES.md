@@ -436,7 +436,7 @@ Agachado e com Shift não fazem ruído; a faca é silenciosa. Teste:
 
 Mexa com cuidado: muitos destes são medidas.
 
-**Lobo** (`scripts/ui/WolfVisual.cs`):
+**Lobo** (`scripts/visual/wolf/`, nó `WolfVisual`):
 
 | Campo | Valor | O que faz |
 |---|---|---|
@@ -450,7 +450,7 @@ Mexa com cuidado: muitos destes são medidas.
 | `DiveLeanMax` | 40° | Inclinação no bote |
 | `TeamTint` | 0,3 | Cor do time na pele |
 
-**Humano** (`scripts/visual/CharacterAnimator.cs`): `CrouchAim` 1
+**Humano** (`scripts/visual/human/`, nó `Human`): `CrouchAim` 1
 (fuzil no ombro agachado), `BlendSmoothing` 9, `HitCooldown` 1,6 s,
 `CorpseHold` / `CorpseFade` 1,2 s, `TintByTeam`, `BlueBody`,
 `OrangeBody`.
