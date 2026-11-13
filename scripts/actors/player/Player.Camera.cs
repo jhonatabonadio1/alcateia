@@ -39,6 +39,7 @@ public partial class Player
 	private SpringArm3D _springArm;
 	private float _cameraKick;
 	private double _sinceKick;
+
 	private void OnFormChanged(int form) => ApplyCamera();
 
 	/// <summary>A câmera de onde o jogador mira: a de terceira pessoa no

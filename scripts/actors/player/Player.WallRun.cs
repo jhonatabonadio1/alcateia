@@ -128,23 +128,59 @@ public partial class Player
 	private bool _rounding;
 
 	/// <summary>
-	/// Corrida em parede. Só no lobo, só no ar, só segurando para frente.
-	///
-	/// Retorna true se assumiu o controle do movimento neste frame.
-	/// </summary>
-	/// <summary>
 	/// Corrida em parede. Só no lobo, só no ar, só na descida do pulo,
 	/// só segurando para frente.
 	///
-	/// Retorna true se assumiu o controle do movimento neste frame.
+	/// Retorna true se assumiu o controle do movimento neste frame. Os
+	/// passos, na ordem: pode correr? → acha a parede → gruda, segue (quina
+	/// e canto) ou tolera um instante sem ela → tempo acabou? → salto da
+	/// parede → canto à frente → correr ao longo dela.
 	/// </summary>
 	private bool TryWallRun(double delta)
 	{
-		if (!_form.IsWolf || IsOnFloor() || IsStunned)
+		if (!WantsWallRun())
 		{
 			ReleaseWall();
 			return false;
 		}
+
+		bool found = ProbeWall(out Vector3 normal, out float wallDistance);
+
+		if (!_onWall)
+		{
+			if (!TryGrabWall(found, normal)) return false;
+		}
+		else if (found)
+		{
+			if (!FollowWall(ref normal, ref wallDistance)) return false;
+		}
+		else if (!KeepWithoutWall(delta))
+		{
+			return false;
+		}
+
+		if (WallRunTimedOut(delta)) return false;
+
+		// Salto da parede: empurra para fora e para cima. É a saída que
+		// transforma a corrida em jogada ofensiva.
+		if (WantsJump())
+		{
+			JumpOffWall();
+			return true;
+		}
+
+		Vector3 velocity = Velocity;
+		if (!TurnIntoCorner(ref velocity)) return false;
+
+		RunAlongWall(velocity, wallDistance, delta);
+		return true;
+	}
+
+	/// <summary>Lobo, no ar, sem atordoamento, e segurando W (ou agarrado
+	/// com o ataque).</summary>
+	private bool WantsWallRun()
+	{
+		if (!_form.IsWolf || IsOnFloor() || IsStunned) return false;
 
 		// A corrida é sustentada pelo W: pula-se contra a parede e
 		// segura para frente. Soltar solta a parede.
@@ -166,220 +202,242 @@ public partial class Player
 			// como se estivesse tudo bem.
 			if (!IsOnFloor()) WallLog("segure W para correr na parede");
 
-			ReleaseWall();
 			return false;
 		}
 
-		bool found = ProbeWall(out Vector3 normal, out float wallDistance);
+		return true;
+	}
 
-		if (!_onWall)
+	/// <summary>Gruda numa parede achada, se as regras deixam. Falso: não
+	/// grudou (e o motivo vai para o log).</summary>
+	private bool TryGrabWall(bool found, Vector3 normal)
+	{
+		// Uma corrida por ida ao ar. Sem isto o lobo regruda na
+		// mesma altura logo após o salto e a parede vira elevador.
+		if (_wallCooldown > 0)
 		{
-			// Uma corrida por ida ao ar. Sem isto o lobo regruda na
-			// mesma altura logo após o salto e a parede vira elevador.
-			if (_wallCooldown > 0)
+			WallLog("ainda em recarga desde a última corrida");
+			return false;
+		}
+
+		if (!found)
+		{
+			WallLog($"nenhuma a menos de {WallCheckDistance}m");
+			return false;
+		}
+
+		// Gruda no alto do pulo, não na subida: grudar subindo levava o
+		// impulso para cima da parede e o lobo subia em vez de ficar na
+		// altura em que encostou.
+		if (Velocity.Y > WallGrabMaxRise)
+		{
+			WallLog("subindo — gruda no alto do pulo");
+			return false;
+		}
+
+		if (IsNearFloor())
+		{
+			WallLog("perto demais do chão");
+			return false;
+		}
+
+		// Indo embora da parede não gruda: passou da ponta dela, ou
+		// saltou para longe. Sem isto a ponta que o lobo acabou de
+		// deixar o puxava de volta.
+		if (new Vector3(Velocity.X, 0, Velocity.Z).Dot(normal) > WallLeaveSpeed)
+		{
+			WallLog("indo para longe da parede");
+			return false;
+		}
+
+		// A mesma parede, sem ter tocado o chão, viraria elevador:
+		// sobe, salta, regruda mais alto, repete. Uma parede
+		// diferente é outra coisa — é a jogada de quicar entre as
+		// duas paredes de um corredor, e essa vale.
+		if (_lastWall != Vector3.Zero && normal.Dot(_lastWall) > SameWallThreshold)
+		{
+			WallLog("mesma parede — salte para outra ou toque o chão");
+			return false;
+		}
+
+		_onWall = true;
+		_wallTimer = WallRunMaxTime;
+		_wallNormal = normal;
+		_cornerGrace = 0;
+		_rounding = false;
+
+		// Numa quina côncava o sentido escolhido pode apontar para
+		// dentro da parede vizinha. Vira para o outro lado antes de
+		// desistir, senão o lobo solta no mesmo frame em que gruda.
+		if (!ResolveDirection(normal, out _wallAlong))
+		{
+			WallLog("os dois sentidos estão bloqueados");
+			_onWall = false;
+			return false;
+		}
+
+		WallLog($"grudou, normal {_wallNormal}, sentido {_wallAlong}");
+		return true;
+	}
+
+	/// <summary>Já na parede e ela continua ali: trata a quina (contorna ou
+	/// sai reto) e deita o sentido no plano da parede de agora. Falso: saiu
+	/// reto da ponta de uma parede fina.</summary>
+	private bool FollowWall(ref Vector3 normal, ref float wallDistance)
+	{
+		// O ponto de parede mais perto ficou para trás: ou a parede
+		// acabou (quina) ou o lobo acabou de virar num canto e a parede
+		// de trás é a antiga. No canto há outra parede ao lado.
+		if (normal.Dot(_wallAlong) * wallDistance > WallEndMargin
+			&& ProbeWall(out Vector3 beside, out float besideDistance, behind: true)
+			&& beside.Dot(_wallAlong) * besideDistance <= WallEndMargin)
+		{
+			normal = beside;
+			wallDistance = besideDistance;
+		}
+
+		// Passou da ponta: é uma quina. Face seguinte larga (bloco,
+		// contêiner, pilar), contorna e continua nela. Estreita (a ponta
+		// de uma parede fina), segue reto: contornar ali era voltar pelo
+		// outro lado.
+		float side = normal.Dot(_wallAlong);
+		if (side * wallDistance > WallEndMargin && !_rounding)
+		{
+			if (!NextFaceIsWide(normal, wallDistance))
 			{
-				WallLog("ainda em recarga desde a última corrida");
+				WallLog("ponta de parede fina: segue reto");
+				LeaveWallStraight();
 				return false;
 			}
 
-			if (!found)
-			{
-				WallLog($"nenhuma a menos de {WallCheckDistance}m");
-				return false;
-			}
+			_rounding = true;
+			WallLog("quina: contorna para a face seguinte");
+		}
 
-			// Gruda no alto do pulo, não na subida: grudar subindo levava o
-			// impulso para cima da parede e o lobo subia em vez de ficar na
-			// altura em que encostou.
-			if (Velocity.Y > WallGrabMaxRise)
-			{
-				WallLog("subindo — gruda no alto do pulo");
-				return false;
-			}
+		_wallNormal = normal;
+		_cornerGrace = 0;
 
-			if (IsNearFloor())
-			{
-				WallLog("perto demais do chão");
-				return false;
-			}
+		// O sentido deita no plano da parede de agora: no canto
+		// (côncavo) sempre, e na quina enquanto contorna — a normal gira
+		// em volta da aresta e o sentido gira junto, sem tranco. Chegou
+		// na face seguinte (a normal parou de girar), acabou a quina.
+		// Nunca vira para trás.
+		if (side < 0f || _rounding)
+		{
+			Vector3 along = _wallAlong - normal * side;
+			along.Y = 0;
+			if (along.LengthSquared() > 0.04f)
+				_wallAlong = along.Normalized();
+		}
 
-			// Indo embora da parede não gruda: passou da ponta dela, ou
-			// saltou para longe. Sem isto a ponta que o lobo acabou de
-			// deixar o puxava de volta.
-			if (new Vector3(Velocity.X, 0, Velocity.Z).Dot(normal) > WallLeaveSpeed)
-			{
-				WallLog("indo para longe da parede");
-				return false;
-			}
-
-			// A mesma parede, sem ter tocado o chão, viraria elevador:
-			// sobe, salta, regruda mais alto, repete. Uma parede
-			// diferente é outra coisa — é a jogada de quicar entre as
-			// duas paredes de um corredor, e essa vale.
-			if (_lastWall != Vector3.Zero && normal.Dot(_lastWall) > SameWallThreshold)
-			{
-				WallLog("mesma parede — salte para outra ou toque o chão");
-				return false;
-			}
-
-			_onWall = true;
-			_wallTimer = WallRunMaxTime;
-			_wallNormal = normal;
-			_cornerGrace = 0;
+		if (_rounding && Mathf.Abs(side) < 0.01f)
 			_rounding = false;
 
-			// Numa quina côncava o sentido escolhido pode apontar para
-			// dentro da parede vizinha. Vira para o outro lado antes de
-			// desistir, senão o lobo solta no mesmo frame em que gruda.
-			if (!ResolveDirection(normal, out _wallAlong))
-			{
-				WallLog("os dois sentidos estão bloqueados");
-				_onWall = false;
-				return false;
-			}
+		return true;
+	}
 
-			WallLog($"grudou, normal {_wallNormal}, sentido {_wallAlong}");
-		}
-		else if (found)
-		{
-			// O ponto de parede mais perto ficou para trás: ou a parede
-			// acabou (quina) ou o lobo acabou de virar num canto e a parede
-			// de trás é a antiga. No canto há outra parede ao lado.
-			if (normal.Dot(_wallAlong) * wallDistance > WallEndMargin
-				&& ProbeWall(out Vector3 beside, out float besideDistance, behind: true)
-				&& beside.Dot(_wallAlong) * besideDistance <= WallEndMargin)
-			{
-				normal = beside;
-				wallDistance = besideDistance;
-			}
-
-			// Passou da ponta: é uma quina. Face seguinte larga (bloco,
-			// contêiner, pilar), contorna e continua nela. Estreita (a ponta
-			// de uma parede fina), segue reto: contornar ali era voltar pelo
-			// outro lado.
-			float side = normal.Dot(_wallAlong);
-			if (side * wallDistance > WallEndMargin && !_rounding)
-			{
-				if (!NextFaceIsWide(normal, wallDistance))
-				{
-					WallLog("ponta de parede fina: segue reto");
-					LeaveWallStraight();
-					return false;
-				}
-
-				_rounding = true;
-				WallLog("quina: contorna para a face seguinte");
-			}
-
-			_wallNormal = normal;
-			_cornerGrace = 0;
-
-			// O sentido deita no plano da parede de agora: no canto
-			// (côncavo) sempre, e na quina enquanto contorna — a normal gira
-			// em volta da aresta e o sentido gira junto, sem tranco. Chegou
-			// na face seguinte (a normal parou de girar), acabou a quina.
-			// Nunca vira para trás.
-			if (side < 0f || _rounding)
-			{
-				Vector3 along = _wallAlong - normal * side;
-				along.Y = 0;
-				if (along.LengthSquared() > 0.04f)
-					_wallAlong = along.Normalized();
-			}
-
-			if (_rounding && Mathf.Abs(side) < 0.01f)
-				_rounding = false;
-		}
-		else if (_cornerGrace <= 0)
+	/// <summary>Já na parede e ela sumiu: segue reto por
+	/// <see cref="CornerGrace"/> antes de soltar. Falso: soltou.</summary>
+	private bool KeepWithoutWall(double delta)
+	{
+		if (_cornerGrace <= 0)
 		{
 			// Perdeu a parede: segue reto um instante antes de soltar.
 			_cornerGrace = CornerGrace;
 			WallLog("perdeu a parede");
-		}
-		else
-		{
-			_cornerGrace -= delta;
-
-			if (_cornerGrace <= 0)
-			{
-				WallLog("soltou: nada para encostar");
-				ReleaseWall();
-				return false;
-			}
-		}
-
-		if (WallRunMaxTime > 0)
-		{
-			_wallTimer -= delta;
-
-			if (_wallTimer <= 0)
-			{
-				ReleaseWall();
-				return false;
-			}
-		}
-
-		Vector3 velocity = Velocity;
-
-		// Salto da parede: empurra para fora e para cima. É a saída que
-		// transforma a corrida em jogada ofensiva.
-		if (WantsJump())
-		{
-			// Conserva o avanço ao longo da parede e soma o empurrão
-			// para fora. Sem isso o salto zera tudo que a corrida
-			// acumulou, e o lobo sai de lado em vez de seguir em frente
-			// — justamente o oposto da jogada de cair em cima de alguém.
-			float carried = HumanSpeed * SpeedScale * WallRunSpeedBonus * WallJumpKeepSpeed;
-
-			velocity = _wallAlong * carried + _wallNormal * WallJumpPush;
-
-			// Sai mais alto do que entrou. É o que permite escalar um
-			// corredor ricocheteando entre as duas paredes, e é essa
-			// subida que dá ao lobo o ângulo que as armas defendem mal:
-			// de cima e por trás.
-			velocity.Y = JumpVelocity * JumpScale * WallJumpClimb;
-			IsJumpAirborne = true;
-			_jumpFromWall = true;
-			JumpSpeed = velocity.Y;
-
-			// O salto de parede também é um pulo. Faltava avisar, e no
-			// modo lobo é justamente este o pulo que se usa o tempo
-			// todo — então o corpo saía da parede sem trocar de pose.
-			_animator ??= GetNodeOrNull<CharacterAnimator>("Human");
-			_animator?.Jump();
-
-			_lastWall = _wallNormal;
-
-			ReleaseWall();
-			_wallCooldown = WallRunCooldown;
-
-			Velocity = velocity;
-			MoveAndSlide();
 			return true;
 		}
 
+		_cornerGrace -= delta;
+
+		if (_cornerGrace <= 0)
+		{
+			WallLog("soltou: nada para encostar");
+			ReleaseWall();
+			return false;
+		}
+
+		return true;
+	}
+
+	/// <summary>Corrida com tempo máximo (<see cref="WallRunMaxTime"/>; zero
+	/// é sem limite). Verdadeiro: o tempo acabou e soltou.</summary>
+	private bool WallRunTimedOut(double delta)
+	{
+		if (WallRunMaxTime <= 0) return false;
+
+		_wallTimer -= delta;
+		if (_wallTimer > 0) return false;
+
+		ReleaseWall();
+		return true;
+	}
+
+	/// <summary>O salto da parede.</summary>
+	private void JumpOffWall()
+	{
+		// Conserva o avanço ao longo da parede e soma o empurrão
+		// para fora. Sem isso o salto zera tudo que a corrida
+		// acumulou, e o lobo sai de lado em vez de seguir em frente
+		// — justamente o oposto da jogada de cair em cima de alguém.
+		float carried = HumanSpeed * SpeedScale * WallRunSpeedBonus * WallJumpKeepSpeed;
+
+		Vector3 velocity = _wallAlong * carried + _wallNormal * WallJumpPush;
+
+		// Sai mais alto do que entrou. É o que permite escalar um
+		// corredor ricocheteando entre as duas paredes, e é essa
+		// subida que dá ao lobo o ângulo que as armas defendem mal:
+		// de cima e por trás.
+		velocity.Y = JumpVelocity * JumpScale * WallJumpClimb;
+		IsJumpAirborne = true;
+		_jumpFromWall = true;
+		JumpSpeed = velocity.Y;
+
+		// O salto de parede também é um pulo. Faltava avisar, e no
+		// modo lobo é justamente este o pulo que se usa o tempo
+		// todo — então o corpo saía da parede sem trocar de pose.
+		_animator ??= GetNodeOrNull<CharacterAnimator>("Human");
+		_animator?.Jump();
+
+		_lastWall = _wallNormal;
+
+		ReleaseWall();
+		_wallCooldown = WallRunCooldown;
+
+		Velocity = velocity;
+		MoveAndSlide();
+	}
+
+	/// <summary>Falso: o caminho está fechado à frente e soltou.</summary>
+	private bool TurnIntoCorner(ref Vector3 velocity)
+	{
 		// Parede à frente: é um canto. Ela vira a parede da corrida e o
 		// lobo segue por ela, para longe da antiga, no mesmo passo. Antes
 		// ele soltava e regrudava na parede de trás, voltando.
-		if (IsBlocked(_wallAlong, out Vector3 front))
+		if (!IsBlocked(_wallAlong, out Vector3 front)) return true;
+
+		Vector3 turn = _wallNormal - front * _wallNormal.Dot(front);
+		turn.Y = 0;
+
+		if (turn.LengthSquared() < 0.04f || IsBlocked(turn.Normalized(), out _))
 		{
-			Vector3 turn = _wallNormal - front * _wallNormal.Dot(front);
-			turn.Y = 0;
-
-			if (turn.LengthSquared() < 0.04f || IsBlocked(turn.Normalized(), out _))
-			{
-				WallLog("soltou, caminho bloqueado à frente");
-				ReleaseWall();
-				return false;
-			}
-
-			float pace = new Vector3(Velocity.X, 0, Velocity.Z).Dot(_wallAlong);
-			_wallAlong = turn.Normalized();
-			_wallNormal = front;
-			velocity = _wallAlong * Mathf.Max(pace, 0f) + Vector3.Up * velocity.Y;
-			WallLog("canto: segue pela parede da frente");
+			WallLog("soltou, caminho bloqueado à frente");
+			ReleaseWall();
+			return false;
 		}
 
+		float pace = new Vector3(Velocity.X, 0, Velocity.Z).Dot(_wallAlong);
+		_wallAlong = turn.Normalized();
+		_wallNormal = front;
+		velocity = _wallAlong * Mathf.Max(pace, 0f) + Vector3.Up * velocity.Y;
+		WallLog("canto: segue pela parede da frente");
+		return true;
+	}
+
+	/// <summary>Corre ao longo da parede, na altura em que grudou, colado a
+	/// <see cref="WallHoldDistance"/> dela.</summary>
+	private void RunAlongWall(Vector3 velocity, float wallDistance, double delta)
+	{
 		// A altura fica a do instante em que grudou. O pulo não é morto
 		// por isso: o lobo só gruda no alto do pulo (WallGrabMaxRise), e
 		// pular colado na parede sobe primeiro e gruda depois.
@@ -411,7 +469,6 @@ public partial class Player
 
 		Velocity = velocity;
 		MoveAndSlide();
-		return true;
 	}
 
 	/// <summary>Imprime só quando a mensagem muda. Sem isso cada frame
