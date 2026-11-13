@@ -2,6 +2,34 @@
 
 ## Não lançado
 
+### Mapas: material de verdade, lugares para entrar, trem e letreiros
+- **Texturas fotográficas** (Poly Haven, CC0) no lugar das desenhadas por
+  código: 44 materiais com cor, relevo e oclusão/aspereza. Tijolo,
+  reboco gasto, telha de barro, calçamento, contêiner, neve, brita.
+- **Céu fotografado** (HDRI) iluminando a Vila e a Estação Polar.
+- **Lugares para entrar**, todos com três entradas ou mais:
+  - **Metrô**: uma galeria de lojas atrás de cada plataforma (44 × 8 m),
+    com café, banca, sala de controle com janela de tiro e corredor
+    atrás dos balcões. O mapa passou de 48 × 30 para 48 × 50 m.
+  - **Vila**: as quatro casas grandes agora têm dois cômodos no térreo
+    (padaria, mercado, café, barbearia), com porta para a praça, para o
+    beco e para a viela, e janelas por onde se atira.
+  - **Estação Polar**: a fileira da frente de cada alojamento virou
+    laboratório e refeitório, atravessáveis por dentro.
+- **Trem de verdade** no Metrô, modelado no Blender: carroceria de inox,
+  janelas com borracha, portas de correr abertas, cabine com para-brisa
+  e faróis, truques com rodas no trilho, e o salão por dentro (bancos,
+  balaústres, corrimão com alças, luminárias).
+- **Letreiros com letra de verdade**: placa de estação, saída,
+  plataforma, mapa da linha, destino do trem, nome de loja pintado,
+  estêncil de galpão, cartazes, pichação, marcação de piso e a letra da
+  base — 66 imagens desenhadas por `tools/mapas/letreiros.py` com
+  Overpass, Saira Stencil, Alfa Slab, Bebas Neue e outras de uso livre.
+- **Objetos de cenário** do Poly Haven (barris, caixotes, estantes,
+  carrinho, gerador, sacos de cimento…), convertidos no Blender.
+- Kit: `m.parede` (parede com porta e janela), `m.letreiro`, `m.modelo`,
+  `P.objeto`. Sai o `Label3D` e sai `tools/gerar_texturas.py`.
+
 ### Jogo online
 - **Servidor** em .NET 8 + PostgreSQL, no Docker (`docker compose up`):
   contas com senha, sessões, perfil, ranking, salas e chat ao vivo

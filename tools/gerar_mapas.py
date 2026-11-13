@@ -3,7 +3,7 @@
 Gera os mapas do Alcateia (menos o Hangar, que tem o gerador dele):
 scenes/maps/<id>.tscn e a miniatura assets/ui/mapas/<id>.png.
 
-    python3 tools/gerar_texturas.py     # uma vez, ou quando mudar textura
+    python3 tools/mapas/texturas.py     # uma vez, ou quando mudar textura
     python3 tools/gerar_mapas.py        # todos
     python3 tools/gerar_mapas.py vila   # um só
 

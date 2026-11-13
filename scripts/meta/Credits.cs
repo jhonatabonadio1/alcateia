@@ -7,7 +7,8 @@
 /// jeito: é o certo, e ajuda quem for procurar a origem depois.
 ///
 /// A origem detalhada de cada som está em assets/audio/CREDITOS.md; a da
-/// arte que vier de pacote, em docs/PACOTES.md.
+/// arte que vem de pacote, em docs/PACOTES.md; as licenças das letras dos
+/// letreiros, em tools/mapas/fontes/licencas/.
 /// </summary>
 public static class Credits
 {
@@ -22,7 +23,19 @@ public static class Credits
 		new("Alcateia", new[]
 		{
 			new Line("Criação, design e programação", "Jhonata Bonadio"),
-			new Line("Mapas, armas, mãos e texturas", "feitos para o jogo, gerados por código (tools/)")
+			new Line("Mapas, armas e mãos", "feitos para o jogo, por código e no Blender (tools/)")
+		}),
+		new("Cenário", new[]
+		{
+			new Line("Texturas dos mapas, céus e objetos de cenário (barris, caixotes, estantes, pedras…)",
+				"Poly Haven (polyhaven.com)", "CC0"),
+			new Line("Letreiros: Overpass", "The Overpass Project Authors (Red Hat)", "SIL Open Font License 1.1", Required: true),
+			new Line("Letreiros: Saira Stencil One e Archivo Black", "Omnibus-Type", "SIL Open Font License 1.1", Required: true),
+			new Line("Letreiros: Bebas Neue", "Dharma Type", "SIL Open Font License 1.1", Required: true),
+			new Line("Letreiros: Alfa Slab One", "JM Solé", "SIL Open Font License 1.1", Required: true),
+			new Line("Letreiros: Stardos Stencil", "Vernon Adams", "SIL Open Font License 1.1", Required: true),
+			new Line("Letreiros: Share Tech Mono", "Carrois Type Design", "SIL Open Font License 1.1", Required: true),
+			new Line("Letreiros: Permanent Marker", "Font Diner", "Apache 2.0", Required: true)
 		}),
 		new("Sons", new[]
 		{

@@ -300,6 +300,37 @@ def toldo(m, grupo, nome, pos, face, largura=3.0, avanco=1.6, queda=0.5, mat="lo
                 (sx * largura / 2, 0, 0), haste)
 
 
+# Os objetos prontos (assets/mapas/pecas/<nome>.glb, do Poly Haven, CC0)
+# e o tamanho de cada um — largura, altura, fundo — para a colisão.
+# A tabela sai de tools/mapas/blender/pecas_polyhaven.py.
+OBJETOS = {
+    "ar_condicionado": (1.8, 0.93, 0.37), "barreira": (1.55, 0.83, 0.64), "barril_azul": (0.63, 0.93, 0.64),
+    "barril_metal": (0.56, 0.88, 0.56), "barril_vinho": (0.74, 0.87, 0.76), "bau_ferramenta": (0.69, 0.65, 0.41),
+    "botijao": (0.34, 0.55, 0.34), "caixa_militar": (1.82, 0.3, 0.98), "caixa_militar_madeira": (1.24, 0.46, 0.52),
+    "caixa_municao": (0.09, 0.18, 0.26), "caixa_papelao": (0.39, 0.34, 0.52), "caixote_a": (0.83, 0.35, 0.41),
+    "caixote_b": (0.53, 0.46, 1.17), "camera": (0.17, 0.29, 0.55), "carrinho": (0.59, 1.4, 0.69),
+    "carro_coberto": (1.79, 1.41, 4.38), "carro_ferramenta": (1.27, 0.96, 0.75), "compressor": (0.6, 1.18, 1.68),
+    "escada_madeira": (0.96, 1.33, 0.5), "estante_b": (0.59, 2.14, 0.5), "fogueira": (1.45, 0.39, 1.43),
+    "galao_plastico": (0.27, 0.32, 0.34), "galao_verde": (0.36, 0.5, 0.17), "gerador": (0.82, 0.58, 0.56),
+    "lixeira": (1.78, 0.91, 0.56), "luminaria_parede": (0.27, 0.43, 0.14), "mesa_aco": (2.0, 0.79, 0.95),
+    "pedra_a": (2.53, 0.88, 1.23), "pedra_b": (2.41, 1.47, 3.07), "pedra_c": (1.27, 1.0, 1.83),
+    "placa_piso": (0.3, 0.63, 0.36), "pneu": (0.6, 0.6, 0.16), "poste_rua": (0.7, 3.87, 0.39),
+    "quadro_forca": (0.52, 1.12, 0.43), "saco_cimento": (0.46, 0.18, 0.7), "saco_lixo": (0.53, 0.57, 0.46),
+}
+
+
+def objeto(m, grupo, nome, qual, pos, yaw=0.0, colide=True, escala=1.0, som="ferro"):
+    """Um objeto pronto, fotografado de coisa real. `pos` é o meio da
+    base. Com `colide`, uma caixa do tamanho dele barra o caminho (e
+    `som` é o material que se ouve ao pisar ou atirar nela); sem, é
+    enfeite — só para o que é pequeno ou fica em cima de outra coisa."""
+    m.modelo(grupo, nome, qual, pos, yaw, escala)
+    if colide:
+        w, h, d = (v * escala for v in OBJETOS[qual])
+        m.caixa(grupo, nome + "Colisao", (pos[0], pos[1] + h / 2, pos[2]), (w, h, d), som, True,
+                giro_y(yaw) if yaw else None, oculta=True)
+
+
 def materiais(m):
     """Os materiais que as peças prontas usam, se o mapa não tiver os dele."""
     padrao = {
@@ -308,10 +339,10 @@ def materiais(m):
         "vidro_aceso": dict(textura=None, cor=(0.3, 0.25, 0.15), aspereza=0.2, brilho=(1.0, 0.78, 0.45), energia=1.3),
         "ferro": dict(textura=None, cor=(0.13, 0.14, 0.15), aspereza=0.55, metal=0.6),
         "porta": dict(textura="madeira", cor=(0.55, 0.42, 0.32), ladrilho=1.4),
-        "madeira_escura": dict(textura="madeira", cor=(0.55, 0.47, 0.4), ladrilho=1.2),
+        "madeira_escura": dict(textura="madeira_escura", cor=(0.9, 0.86, 0.82), ladrilho=1.2),
         "barril": dict(textura="metal_pintado", cor=(0.25, 0.38, 0.5), ladrilho=1.0, metal=0.3, aspereza=0.7),
         "barril_vermelho": dict(textura="metal_pintado", cor=(0.62, 0.16, 0.12), ladrilho=1.0, metal=0.3, aspereza=0.7),
-        "saco": dict(textura="areia", cor=(0.62, 0.56, 0.44), ladrilho=0.8),
+        "saco": dict(textura="cascalho", cor=(0.7, 0.66, 0.56), ladrilho=0.8),
         "borracha": dict(textura=None, cor=(0.04, 0.04, 0.045), aspereza=0.9),
         "lampada": dict(textura=None, cor=(1, 1, 1), brilho=(1.0, 0.95, 0.85), energia=3.0),
     }

@@ -4,7 +4,7 @@ rampas, cilindros, luzes, placas, pontos de nascimento, rotas de ronda,
 o céu e o sol do mapa, e a miniatura vista de cima.
 
 Cada mapa é um arquivo em tools/mapas/ que monta um `Mapa` e chama
-`salvar()`. As texturas vêm de tools/gerar_texturas.py.
+`salvar()`. As texturas vêm de tools/mapas/texturas.py.
 
 Convenções que o jogo espera (não mude sem mudar o jogo):
 - X é o eixo dos times: o azul nasce em −X e olha para +X.
@@ -59,8 +59,11 @@ def olhar(yaw, queda):
 
 # O que o jogo ouve ao pisar ou atirar numa peça (scripts/visual/Surfaces.cs):
 # sai da textura do material. Sem entrada aqui é concreto, o som padrão.
-SUPERFICIES = {"metal_pintado": "metal", "metal_ondulado": "metal", "chapa_xadrez": "metal", "ferrugem": "metal",
-               "neve": "neve", "madeira": "madeira", "areia": "terra"}
+SUPERFICIES = {"metal_pintado": "metal", "metal_ondulado": "metal", "metal_trapezio": "metal", "conteiner": "metal",
+               "persiana": "metal", "chapa_xadrez": "metal", "grade_piso": "metal", "ferrugem": "metal",
+               "ferrugem_ondulada": "metal", "neve": "neve", "neve_pisada": "neve", "asfalto_neve": "neve",
+               "madeira": "madeira", "madeira_velha": "madeira", "madeira_escura": "madeira", "compensado": "madeira",
+               "areia": "terra", "terra": "terra", "cascalho": "terra", "brita": "terra"}
 
 
 def superficie(material):
@@ -76,7 +79,8 @@ class Mapa:
         self.materiais = {}
         self.pecas = []      # (grupo, nome, centro, tamanho, material, rotação, colide, forma)
         self.formas = []     # (grupo, nome, Malha, posição, material, rotação, colisão)
-        self.placas, self.luzes = [], []
+        self.letreiros, self.luzes = [], []   # letreiro: (grupo, nome, imagem, pos, largura, base, aceso)
+        self.modelos = []    # (grupo, nome, arquivo, posição, yaw, escala)
         self.cru_recursos, self.cru_nos = [], []     # linhas de .tscn prontas (partículas)
         self.spawns = {AZUL: [], LARANJA: []}
         self.rotas = []
@@ -99,6 +103,31 @@ class Mapa:
         """`oculta`: só a colisão, sem desenho — para quando o que se vê é
         uma forma mais rica por cima (degraus sobre a rampa, vagão)."""
         self.pecas.append((grupo, nome, centro, tamanho, material, rot, colide, "caixa_oculta" if oculta else "caixa"))
+
+    def parede(self, grupo, nome, eixo, fixo, de, ate, altura, material, vaos=(), espessura=0.5, base=0.0):
+        """Parede com portas e janelas de verdade (passa-se e atira-se por
+        elas). Corre ao longo de `eixo` ("x" ou "z"), de `de` a `ate`, na
+        coordenada `fixo` do outro eixo. `vaos`: (meio, largura, de_y,
+        ate_y) de cada abertura — porta é (meio, 1.6, 0, 2.2), janela é
+        (meio, 1.4, 1.0, 2.2)."""
+        a, b = min(de, ate), max(de, ate)
+
+        def peca(sufixo, c0, c1, y0, y1):
+            if c1 - c0 < 0.01 or y1 - y0 < 0.01:
+                return
+            meio, comp = (c0 + c1) / 2, c1 - c0
+            centro = (meio, (y0 + y1) / 2, fixo) if eixo == "x" else (fixo, (y0 + y1) / 2, meio)
+            tam = (comp, y1 - y0, espessura) if eixo == "x" else (espessura, y1 - y0, comp)
+            self.caixa(grupo, f"{nome}{sufixo}", centro, tam, material)
+
+        cursor = a
+        for i, (meio, largura, y0, y1) in enumerate(sorted(vaos)):
+            v0, v1 = meio - largura / 2, meio + largura / 2
+            peca(f"Pano{i}", cursor, v0, base, base + altura)
+            peca(f"Peitoril{i}", v0, v1, base, base + y0)
+            peca(f"Verga{i}", v0, v1, base + y1, base + altura)
+            cursor = v1
+        peca("PanoFim", cursor, b, base, base + altura)
 
     def forma(self, grupo, nome, malha, pos, material, yaw=0.0, colisao=None):
         """Uma forma de tools/mapas/formas.py. `colisao`: None (só
@@ -149,8 +178,25 @@ class Mapa:
         self.caixa(grupo, nome, (centro[0], centro[1] - 0.05, centro[2]), tam, painel)
         self.caixa(grupo, nome + "Corrimao", (centro[0], centro[1] + altura / 2 - 0.05, centro[2]), topo, corrimao, colide=False)
 
-    def placa(self, grupo, nome, pos, texto, tamanho, cor_, yaw):
-        self.placas.append((grupo, nome, pos, texto, tamanho, cor_, yaw))
+    def letreiro(self, grupo, nome, imagem, pos, largura, yaw=0.0, aceso=0.0, chao=False):
+        """Um letreiro pintado: a imagem assets/mapas/letreiros/<imagem>.png
+        (desenhada por tools/mapas/letreiros.py, com letra de verdade)
+        num plano de `largura` metros; a altura sai da proporção da
+        imagem. `pos` é o centro, encostado na parede; `yaw` é para onde
+        a frente olha (0 = +Z). `aceso`: quanto brilha (painel luminoso).
+        `chao`: pintado no piso; com yaw = 0 lê quem olha para −Z."""
+        base = giro_y(yaw)
+        if chao:
+            # Deita o plano: a frente (+Z) vira para cima, o alto da letra para −Z.
+            (a, b, c), (d, e, f_), (g, h, i) = base
+            base = ((a, -c, b), (d, -f_, e), (g, -i, h))
+        self.letreiros.append((grupo, nome, imagem, pos, largura, base, aceso))
+
+    def modelo(self, grupo, nome, arquivo, pos, yaw=0.0, escala=1.0):
+        """Um modelo pronto (assets/mapas/pecas/<arquivo>.glb): só o
+        desenho. Se precisa barrar o caminho, ponha uma
+        `caixa(..., oculta=True)` junto — veja `pecas.objeto`."""
+        self.modelos.append((grupo, nome, arquivo, pos, yaw, escala))
 
     def nevasca(self, altura=24.0, quantos=6000):
         """Neve caindo sobre o mapa todo (partículas; só enfeite)."""
@@ -204,10 +250,17 @@ class Mapa:
         texturas = sorted({m["textura"] for m in self.materiais.values() if m["textura"]})
         ext, tex_id = [], {}
         for t in texturas:
-            for sufixo in ("cor", "normal", "asp"):
+            for sufixo in ("cor", "normal", "arm"):
                 rid = f"t_{t}_{sufixo}"
                 tex_id[(t, sufixo)] = rid
                 ext.append(("Texture2D", f"res://assets/textures/pbr/{t}_{sufixo}.jpg", rid))
+        hdri = (self.ambiente.get("ceu") or {}).get("hdri")
+        if hdri:
+            ext.append(("Texture2D", f"res://assets/mapas/ceus/{hdri}.hdr", "t_ceu"))
+        for imagem in sorted({l[2] for l in self.letreiros}):
+            ext.append(("Texture2D", f"res://assets/mapas/letreiros/{imagem}.png", f"l_{imagem}"))
+        for arquivo in sorted({x[2] for x in self.modelos}):
+            ext.append(("PackedScene", f"res://assets/mapas/pecas/{arquivo}.glb", f"p_{arquivo}"))
         ext += [("Script", "res://scripts/core/SpawnPoints.cs", "s_spawns"),
                 ("Script", "res://scripts/core/PatrolRoutes.cs", "s_routes"),
                 ("Script", "res://scripts/core/NavBaker.cs", "s_nav")]
@@ -222,8 +275,12 @@ class Mapa:
             o.append(f"albedo_color = {cor(m['cor'])}")
             if m["textura"]:
                 t = m["textura"]
+                # O arquivo _arm traz oclusão (R), aspereza (G) e metal (B).
                 o += [f'albedo_texture = ExtResource("{tex_id[(t, "cor")]}")',
-                      f'roughness_texture = ExtResource("{tex_id[(t, "asp")]}")',
+                      f'roughness_texture = ExtResource("{tex_id[(t, "arm")]}")',
+                      "roughness_texture_channel = 1",
+                      "ao_enabled = true", "ao_light_affect = 0.25",
+                      f'ao_texture = ExtResource("{tex_id[(t, "arm")]}")',
                       "normal_enabled = true",
                       f"normal_scale = {f(m['relevo'])}",
                       f'normal_texture = ExtResource("{tex_id[(t, "normal")]}")',
@@ -266,6 +323,28 @@ class Mapa:
                 o += [f'[sub_resource type="ConcavePolygonShape3D" id="{rid}"]', "backface_collision = true",
                       f"data = PackedVector3Array({pts})", ""]
 
+        # Letreiros: um material por imagem (e por brilho), um plano por tamanho.
+        from PIL import Image
+        pinturas, quadros = {}, {}
+        for (_, _, imagem, _, largura, _, aceso) in self.letreiros:
+            if (imagem, aceso) not in pinturas:
+                rid = f"L{len(pinturas) + 1}"
+                pinturas[(imagem, aceso)] = rid
+                o += [f'[sub_resource type="StandardMaterial3D" id="{rid}"]', "transparency = 2",
+                      "alpha_scissor_threshold = 0.5", f'albedo_texture = ExtResource("l_{imagem}")',
+                      "roughness = 0.85", "texture_filter = 5"]
+                if aceso:
+                    o += ["emission_enabled = true", f'emission_texture = ExtResource("l_{imagem}")',
+                          f"emission_energy_multiplier = {f(aceso)}"]
+                o.append("")
+            chave = (imagem, round(largura, 3))
+            if chave not in quadros:
+                with Image.open(os.path.join(ROOT, "assets", "mapas", "letreiros", imagem + ".png")) as img:
+                    altura = largura * img.height / img.width
+                rid = f"Q{len(quadros) + 1}"
+                quadros[chave] = rid
+                o += [f'[sub_resource type="QuadMesh" id="{rid}"]', f"size = Vector2({f(largura)}, {f(altura)})", ""]
+
         o += self.cru_recursos
         o += self._ambiente()
         o += [f'[node name="{self.nome}" type="Node3D"]', ""]
@@ -285,7 +364,7 @@ class Mapa:
               "ambient_mode = 1" if not self.ambiente.get('ceu') else "ambient_mode = 0", ""]
 
         grupos = []
-        for item in self.pecas + self.formas + self.placas + self.luzes:
+        for item in self.pecas + self.formas + self.letreiros + self.modelos + self.luzes:
             if item[0] not in grupos:
                 grupos.append(item[0])
         for g in grupos:
@@ -329,10 +408,15 @@ class Mapa:
                 o += [f'[node name="{nome}" type="MeshInstance3D" parent="{g}"]', f"transform = {xform(c, rows)}",
                       f'mesh = SubResource("{malhas[chave]}")', f'material_override = SubResource("M_{mat}")', ""]
 
-        for (g, nome, pos, texto, tam, c, yaw) in self.placas:
-            o += [f'[node name="{nome}" type="Label3D" parent="{g}"]', f"transform = {xform(pos, giro_y(yaw))}",
-                  "pixel_size = 0.01", f"modulate = {cor(c)}", f'text = "{texto}"', f"font_size = {tam}",
-                  f"outline_size = {max(8, tam // 14)}", ""]
+        for (g, nome, imagem, pos, largura, base, aceso) in self.letreiros:
+            o += [f'[node name="{nome}" type="MeshInstance3D" parent="{g}"]', f"transform = {xform(pos, base)}",
+                  f'mesh = SubResource("{quadros[(imagem, round(largura, 3))]}")',
+                  f'material_override = SubResource("{pinturas[(imagem, aceso)]}")', "cast_shadow = 0", ""]
+
+        for (g, nome, arquivo, pos, yaw, escala) in self.modelos:
+            base = tuple(tuple(v * escala for v in linha) for linha in giro_y(yaw))
+            o += [f'[node name="{nome}" parent="{g}" instance=ExtResource("p_{arquivo}")]',
+                  f"transform = {xform(pos, base)}", ""]
 
         for (g, nome, pos, c, energia, alcance, sombra) in self.luzes:
             o += [f'[node name="{nome}" type="OmniLight3D" parent="{g}"]', f"transform = {xform(pos)}",
@@ -361,7 +445,14 @@ class Mapa:
     def _ambiente(self):
         a = self.ambiente
         o = []
-        if a.get("ceu"):
+        hdri = (a.get("ceu") or {}).get("hdri")
+        if hdri:
+            # O céu é uma fotografia (HDRI): ilumina e reflete como o lugar.
+            c = a["ceu"]
+            o += ['[sub_resource type="PanoramaSkyMaterial" id="CeuMat"]', 'panorama = ExtResource("t_ceu")',
+                  f"energy_multiplier = {f(c.get('energia', 1.0))}", "",
+                  '[sub_resource type="Sky" id="Ceu"]', 'sky_material = SubResource("CeuMat")', ""]
+        elif a.get("ceu"):
             c = a["ceu"]
             o += ['[sub_resource type="ProceduralSkyMaterial" id="CeuMat"]',
                   f"sky_top_color = {cor(c['topo'])}", f"sky_horizon_color = {cor(c['horizonte'])}",
@@ -371,13 +462,23 @@ class Mapa:
         o.append('[sub_resource type="Environment" id="Env"]')
         if a.get("ceu"):
             o += ["background_mode = 2", 'sky = SubResource("Ceu")']
+            if hdri:
+                o += [f"sky_rotation = Vector3(0, {f(math.radians(a['ceu'].get('giro', 0.0)))}, 0)"]
         else:
             o += ["background_mode = 1", f"background_color = {cor(a.get('fundo', (0, 0, 0)))}"]
-        o += ["ambient_light_source = 2", f"ambient_light_color = {cor(a.get('luz', (1, 1, 1)))}",
-              f"ambient_light_energy = {f(a.get('luz_energia', 0.5))}",
-              "tonemap_mode = 3", f"tonemap_exposure = {f(a.get('exposicao', 1.0))}",
-              "ssao_enabled = true", "ssao_intensity = 2.5",
-              "glow_enabled = true", f"glow_intensity = {f(a.get('brilho', 0.6))}", "glow_bloom = 0.08"]
+        if hdri:
+            o += ["ambient_light_source = 3", f"ambient_light_sky_contribution = {f(a['ceu'].get('ambiente', 0.7))}",
+                  f"ambient_light_color = {cor(a.get('luz', (1, 1, 1)))}",
+                  f"ambient_light_energy = {f(a.get('luz_energia', 0.5))}", "reflected_light_source = 2"]
+            o += ["tonemap_mode = 3", f"tonemap_exposure = {f(a.get('exposicao', 1.0))}",
+                  "ssao_enabled = true", "ssao_intensity = 2.5",
+                  "glow_enabled = true", f"glow_intensity = {f(a.get('brilho', 0.6))}", "glow_bloom = 0.08"]
+        else:
+            o += ["ambient_light_source = 2", f"ambient_light_color = {cor(a.get('luz', (1, 1, 1)))}",
+                  f"ambient_light_energy = {f(a.get('luz_energia', 0.5))}",
+                  "tonemap_mode = 3", f"tonemap_exposure = {f(a.get('exposicao', 1.0))}",
+                  "ssao_enabled = true", "ssao_intensity = 2.5",
+                  "glow_enabled = true", f"glow_intensity = {f(a.get('brilho', 0.6))}", "glow_bloom = 0.08"]
         if a.get("neblina"):
             n = a["neblina"]
             o += ["fog_enabled = true", f"fog_light_color = {cor(n['cor'])}", f"fog_density = {f(n['densidade'])}",

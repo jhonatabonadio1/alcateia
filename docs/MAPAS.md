@@ -20,13 +20,14 @@ Por script, não à mão no editor:
 
 ```sh
 pip install numpy pillow          # uma vez
-python3 tools/gerar_texturas.py   # as texturas (assets/textures/pbr)
+python3 tools/mapas/texturas.py   # as texturas (assets/textures/pbr), dos pacotes
+python3 tools/mapas/letreiros.py  # o que está escrito nos mapas (assets/mapas/letreiros)
 python3 tools/gerar_mapas.py      # todos os mapas; ou: gerar_mapas.py vila
 ```
 
 Cada mapa é um arquivo em `tools/mapas/` que usa o kit
 (`tools/mapas/kit.py`): `caixa`, `cilindro`, `rampa`, `parapeito`, `luz`,
-`placa`, `spawn`, `rota`, mais o céu, a neblina e o sol do mapa. O
+`parede`, `letreiro`, `modelo`, `spawn`, `rota`, mais o céu, a neblina e o sol do mapa. O
 gerador escreve `scenes/maps/<id>.tscn` e a miniatura
 `assets/ui/mapas/<id>.png`.
 
@@ -65,18 +66,84 @@ versione os `.obj` e os `.obj.import` junto com a cena.
 
 ### As texturas
 
-`tools/gerar_texturas.py` desenha 16 materiais por código — concreto,
-reboco, tijolo, bloco, asfalto, azulejo, piso, metal pintado, metal
-ondulado, ferrugem, madeira, areia, neve, chapa xadrez, rocha e pedra de
-calçada —, cada um com cor, relevo (normal) e aspereza, 512 px, sem
-emenda. Nada vem de foto nem de pacote de terceiros: não há licença para
-cumprir. Os tons neutros (reboco, metais) são tingidos pela cor do
-material do mapa.
+São fotografia de material de verdade: 44 conjuntos do
+[Poly Haven](https://polyhaven.com) (CC0), copiados de `assets/pacotes/`
+para `assets/textures/pbr/` por `tools/mapas/texturas.py`, com o nome
+que os mapas usam. Cada material são três arquivos de 1024 px:
+`<nome>_cor.jpg`, `<nome>_normal.jpg` e `<nome>_arm.jpg` (oclusão em R,
+aspereza em G, metal em B).
 
-Para trocar por texturas fotográficas (Poly Haven, ambientCG — CC0),
-salve os três arquivos com o mesmo nome em `assets/textures/pbr/`
-(`<nome>_cor.jpg`, `<nome>_normal.jpg`, `<nome>_asp.jpg`) e os mapas
-passam a usá-las sem mudar nada.
+A tabela no começo do script diz qual foto vira qual material e se ela
+entra **neutra**: sem a cor da foto, só com o claro-escuro (a junta, a
+sujeira, o risco). É neutro tudo o que o mapa pinta — o azulejo azul e o
+laranja do Metrô são o mesmo azulejo; o reboco de cada casa da Vila é o
+mesmo reboco; os módulos da Polar são o mesmo contêiner. Tijolo, madeira,
+telha, areia e neve entram com a cor da foto.
+
+Para trocar uma textura, mude o id na tabela e rode o script (precisa
+dos pacotes: `tools/baixar_pacotes.py texturas`).
+
+### O céu
+
+A Vila e a Estação Polar são iluminadas por uma fotografia do céu
+(HDRI, Poly Haven, CC0, em `assets/mapas/ceus/`): `ceu=dict(hdri="…",
+giro=…)` no `m.ambiente`. O `giro` põe o sol da foto onde está o sol do
+mapa — a conta está em `tools/mapas/vila.py`. O Metrô é fechado: não tem
+céu.
+
+### Os letreiros
+
+Tudo o que está escrito num mapa — placa de estação, saída, nome de
+loja, estêncil de galpão, cartaz, pichação, a letra da base — é uma
+imagem desenhada por `tools/mapas/letreiros.py` com letra de verdade
+(Overpass, a de sinalização; Saira Stencil; Alfa Slab; Bebas Neue;
+Permanent Marker — todas de uso livre, em `tools/mapas/fontes/` com as
+licenças) e gravada em `assets/mapas/letreiros/`. O mapa só diz onde:
+
+```python
+m.letreiro(grupo, "Nome", "metro_estacao", pos, largura, yaw)          # na parede
+m.letreiro(grupo, "Vao", "metro_vao", pos, 2.4, yaw, chao=True)        # pintado no piso
+m.letreiro(grupo, "Saida", "metro_saida_dir", pos, 1.6, 0, aceso=0.5)  # painel luminoso
+```
+
+`pos` é o centro, encostado na superfície (um ou dois centímetros para
+fora); a altura sai da proporção da imagem. Letreiro novo: uma linha em
+`_lista()`, rode o script, use o nome. Não há mais `Label3D` nos mapas.
+
+### Os objetos prontos e o trem (Blender)
+
+O que não dá para fazer bem com forma de código vem pronto, em
+`assets/mapas/pecas/<nome>.glb`:
+
+- **Objetos do Poly Haven** (barril, caixote, estante, gerador, carrinho,
+  saco de cimento…): `tools/mapas/blender/pecas_polyhaven.py` abre cada
+  um no Blender, junta, reduz a malha e as texturas e grava. O tamanho
+  de cada um fica em `pecas.OBJETOS`; põe-se com
+  `P.objeto(m, grupo, nome, "barril_vinho", pos, yaw)` — com colisão do
+  tamanho dele, ou `colide=False` para o que é enfeite.
+- **O trem do Metrô**: `tools/mapas/blender/trem.py` modela o vagão
+  inteiro no Blender (carroceria, janelas, portas abertas, cabine,
+  truques, o salão por dentro) com **as mesmas medidas da colisão** do
+  `metro.py`. Mudou uma, mude a outra.
+
+Os scripts rodam com `python3` e o módulo `bpy` (`pip install bpy`) ou
+com `blender -b -P`. `tools/mapas/blender/malha.py` tem as ferramentas
+(caixa chanfrada, cilindro, tubo, perfil) nas coordenadas do jogo.
+
+### Paredes com porta e janela
+
+`m.parede(grupo, nome, eixo, fixo, de, ate, altura, material, vaos)` faz
+uma parede com aberturas de verdade — passa-se e atira-se por elas. É
+com isso que se faz lugar de entrar: as casas da Vila
+(`casa_aberta`), a fileira da frente dos alojamentos da Polar
+(`alojamento_aberto`) e a galeria de lojas do Metrô (`galeria`).
+
+**Todo lugar de entrar tem pelo menos três entradas** (quem segura uma
+não segura as outras), nenhuma sala é beco sem saída, e o que há de um
+lado do mapa há do outro. As referências são os mapas de sala e
+corredor dos jogos táticos (plantas compartimentadas, janela para atirar
+de dentro e de fora, rotação entre cômodos) e os de mata-mata por
+equipe (três corredores, um prédio no meio, flanco por dentro).
 
 ### O que todo mapa precisa ter
 

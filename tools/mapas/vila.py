@@ -22,20 +22,53 @@ from . import pecas as P
 from .kit import Mapa, AZUL, LARANJA
 
 
+PORTA = lambda meio: (meio, 1.6, 0.0, 2.2)
+JANELA = lambda meio: (meio, 1.4, 1.0, 2.2)
+
+# O comércio de cada casa grande: (lado, norte/sul) -> letreiro.
+LOJAS = {(1, 1): "vila_padaria", (-1, 1): "vila_mercado", (1, -1): "vila_cafe", (-1, -1): "vila_barbearia"}
+
+
+def casa_aberta(m, g, s, sz, mat):
+    """
+    A casa grande, por dentro: dois cômodos no térreo, sob o terraço.
+
+    - a sala da frente dá para a praça por uma porta e duas janelas
+      (atira-se por elas, dos dois lados);
+    - o cômodo dos fundos sai para o beco de trás e para a viela do lado;
+    - uma porta liga os dois.
+    São três entradas e duas janelas: quem entra para se proteger da
+    praça tem de vigiar as costas. O terraço continua como era — só se
+    sobe pela escada de fora, à vista de todos.
+    """
+    m.caixa(g, "CasaLaje", (s * 17, 4.75, sz * 17), (12, 0.5, 12), mat)
+    m.parede(g, "CasaFrente", "x", sz * 11.25, s * 11, s * 23, 4.5, mat, [PORTA(s * 17), JANELA(s * 13.6), JANELA(s * 20.4)])
+    m.parede(g, "CasaFundo", "x", sz * 22.75, s * 11, s * 23, 4.5, mat, [PORTA(s * 14)])
+    m.parede(g, "CasaMeio", "z", s * 11.25, sz * 11.5, sz * 22.5, 4.5, mat)
+    m.parede(g, "CasaViela", "z", s * 22.75, sz * 11.5, sz * 22.5, 4.5, mat, [PORTA(sz * 19)])
+    m.parede(g, "CasaDivisa", "x", sz * 17, s * 11.5, s * 22.5, 4.5, mat, [PORTA(s * 19.5)], espessura=0.3)
+    # O que há dentro: balcão na sala, estante e saca no fundo.
+    m.caixa(g, "CasaBalcao", (s * 14, 0.5, sz * 14.6), (3.0, 1.0, 0.8), "madeira")
+    m.caixa(g, "CasaEstante", (s * 21.7, 1.0, sz * 21.9), (1.4, 2.0, 0.6), "madeira_escura")
+    m.caixa(g, "CasaSacas", (s * 12.4, 0.4, sz * 21.4), (1.3, 0.8, 1.6), "saco")
+    m.luz(g, "LuzSala", (s * 17, 3.5, sz * 14.2), (1.0, 0.80, 0.52), 1.5, 7)
+    m.luz(g, "LuzFundo", (s * 16.5, 3.5, sz * 20), (1.0, 0.76, 0.48), 1.3, 7)
+
+
 def montar():
     m = Mapa("vila", "Vila", 72, 52)
 
-    m.material("areia", "areia", (1.0, 0.96, 0.9), 4.0)
-    m.material("calcada", "pedra_calcada", (1.0, 0.95, 0.88), 3.0)
-    m.material("muro", "tijolo", (1.0, 0.92, 0.85), 2.4)
+    m.material("areia", "areia", (1.0, 0.97, 0.92), 3.0)
+    m.material("calcada", "pedra_calcada", (1.0, 0.96, 0.9), 2.4)
+    m.material("muro", "pedra_muro", (1.0, 0.95, 0.88), 2.6)
     m.material("creme", "reboco", (0.96, 0.87, 0.70), 3.0)
-    m.material("terracota", "reboco", (0.86, 0.56, 0.40), 3.0)
-    m.material("branco", "reboco", (0.86, 0.83, 0.77), 3.0)
+    m.material("terracota", "reboco_velho", (0.92, 0.62, 0.46), 3.2)
+    m.material("branco", "reboco_liso", (0.90, 0.87, 0.81), 3.0)
     m.material("anil", "reboco", (0.42, 0.58, 0.86), 3.0)
-    m.material("ocre", "reboco", (0.96, 0.62, 0.30), 3.0)
-    m.material("pedra", "rocha", (0.95, 0.90, 0.82), 2.0)
+    m.material("ocre", "reboco_velho", (1.0, 0.70, 0.38), 3.2)
+    m.material("pedra", "penhasco", (1.0, 0.95, 0.88), 3.0)
     m.material("madeira", "madeira", (1, 1, 1), 1.6)
-    m.material("madeira_escura", "madeira", (0.55, 0.45, 0.38), 1.6)
+    m.material("madeira_escura", "madeira_velha", (0.8, 0.72, 0.66), 1.6)
     m.material("toldo_vermelho", None, (0.72, 0.16, 0.12), aspereza=0.95)
     m.material("toldo_azul", None, (0.16, 0.36, 0.62), aspereza=0.95)
     m.material("toldo_areia", None, (0.90, 0.80, 0.55), aspereza=0.95)
@@ -75,7 +108,7 @@ def montar():
             g = f"Lado{lado}{t}"
             # Casa grande: terraço a 5 m com mureta para a praça, escada
             # vindo do meio, viela de 3 m atrás (até o muro).
-            m.caixa(g, "CasaGrande", (s * 17, 2.5, sz * 17), (12, 5, 12), "creme" if sz > 0 else "branco")
+            casa_aberta(m, g, s, sz, "creme" if sz > 0 else "branco")
             m.caixa(g, "Mureta", (s * 17, 5.3, sz * 11.25), (12, 0.6, 0.5), "terracota")
             m.caixa(g, "MuretaLado", (s * 11.25, 5.3, sz * 13.5), (0.5, 0.6, 4), "terracota")
             m.rampa(g, "Escada", s * 1.6, s * 11, 5, sz * 18.5, 2.6, "pedra", degraus=28)
@@ -109,7 +142,7 @@ def montar():
             m.caixa(g, f"Faixa{t}", (s * 35.9, 4.6, sz * 6), (0.1, 3.2, 1.6), "toldo_azul" if s < 0 else "toldo_vermelho", colide=False)
         for pz in (-7, 0, 7):
             m.caixa(g, f"PostePergola{pz}", (s * 30.2, 1.7, pz), (0.3, 3.4, 0.3), "madeira_escura")
-        m.placa(g, "Letra", (s * 35.9, 6.6, 0), lado, 460, cor, 90 if s < 0 else -90)
+        m.letreiro(g, "Letra", f"vila_base_{lado.lower()}", (s * 35.82, 6.6, 0), 3.0, 90 if s < 0 else -90)
         m.luz(g, "Luz", (s * 32.5, 2.8, 0), cor, 1.6, 12)
         time = AZUL if s < 0 else LARANJA
         for z in (-7.5, -2.5, 2.5, 7.5):
@@ -122,14 +155,20 @@ def montar():
     m.rota("alaSul", [(-27, 0.5, -9), (-14, 0.5, -9), (0, 0.5, -9.5), (14, 0.5, -9), (27, 0.5, -9)])
     m.rota("terracoNorte", [(-17, 5.5, 17), (-6, 2.5, 18.5), (0, 0.5, 15), (6, 2.5, 18.5), (17, 5.5, 17)])
     m.rota("terracoSul", [(-17, 5.5, -17), (-6, 2.5, -18.5), (0, 0.5, -15), (6, 2.5, -18.5), (17, 5.5, -17)])
+    for sz, t in ((1, "Norte"), (-1, "Sul")):
+        m.rota(f"casas{t}", [(-27, 0.5, sz * 9), (-17, 0.5, sz * 9.8), (-17, 0.5, sz * 14), (-19.5, 0.5, sz * 17), (-14, 0.5, sz * 20.5),
+                             (-14, 0.5, sz * 24.4), (0, 0.5, sz * 21), (14, 0.5, sz * 24.4), (14, 0.5, sz * 20.5), (19.5, 0.5, sz * 17),
+                             (17, 0.5, sz * 14), (17, 0.5, sz * 9.8), (27, 0.5, sz * 9)])
     m.rota("becoNorte", [(-30, 0.5, 24.5), (-17, 0.5, 24.5), (-6, 0.5, 22), (0, 0.5, 20.5), (6, 0.5, 22), (17, 0.5, 24.5), (30, 0.5, 24.5)])
     m.rota("becoSul", [(-30, 0.5, -24.5), (-17, 0.5, -24.5), (-6, 0.5, -22), (0, 0.5, -20.5), (6, 0.5, -22), (17, 0.5, -24.5), (30, 0.5, -24.5)])
     m.rota("vielaA", [(-24.5, 0.5, -24.5), (-24.5, 0.5, -13), (-26, 0.5, 0), (-24.5, 0.5, 13), (-24.5, 0.5, 24.5)])
     m.rota("vielaB", [(24.5, 0.5, -24.5), (24.5, 0.5, -13), (26, 0.5, 0), (24.5, 0.5, 13), (24.5, 0.5, 24.5)])
 
-    m.ambiente = dict(ceu=dict(topo=(0.24, 0.42, 0.74), horizonte=(0.98, 0.76, 0.52), chao=(0.45, 0.36, 0.28), energia=1.0),
-                      luz=(0.85, 0.74, 0.66), luz_energia=0.55, exposicao=1.0, brilho=0.5, contraste=1.08, saturacao=1.12,
-                      neblina=dict(cor=(0.98, 0.80, 0.60), densidade=0.0035, ceu=0.4))
+    # O céu é uma fotografia (Poly Haven, CC0); `giro` põe o sol da foto
+    # onde está o sol do mapa.
+    m.ambiente = dict(ceu=dict(hdri="dia_claro", giro=-106, energia=1.8, ambiente=0.8),
+                      luz=(0.85, 0.74, 0.66), luz_energia=1.0, exposicao=1.0, brilho=0.5, contraste=1.08, saturacao=1.12,
+                      neblina=dict(cor=(0.98, 0.84, 0.66), densidade=0.0022, ceu=0.06))
     m.sol = dict(yaw=38, queda=30, cor=(1.0, 0.84, 0.64), energia=1.2, alcance=110)
     acabamento(m)
     return m
@@ -213,6 +252,41 @@ def _fachada(m, grupo, nome, face, meio, largura, altura, cor, rnd, portas=1, ni
     r.forma(nome + "Vigas", vigas, (0, 0, 0), "madeira_escura")
 
 
+def _fachada_aberta(m, grupo, nome, face, meio, largura, altura, vaos):
+    """A frente de uma casa em que se entra: a parede já é a da casa, então
+    aqui vão só o rodapé (interrompido nas portas), a moldura de pedra de
+    cada porta e janela, as vigas e o beiral. `vaos`: os mesmos do
+    `m.parede`, com o meio em coordenada de mundo."""
+    r = P.Ref(m, grupo, meio, P.FACE[face])
+
+    def local(v):          # do mundo para a posição ao longo desta parede
+        dx, dz = r.p((1, 0, 0))[0] - meio[0], r.p((1, 0, 0))[2] - meio[2]
+        return (v - meio[0]) * dx if abs(dx) > 0.5 else (v - meio[2]) * dz
+
+    aberturas = sorted((local(c), larg, y0, y1) for c, larg, y0, y1 in vaos)
+    cursor = -largura / 2
+    for i, (x, larg, y0, y1) in enumerate(aberturas + [(largura / 2 + 9, 0, 0, 0)]):
+        fim = min(x - larg / 2, largura / 2) if y0 == 0 else None
+        if fim is not None and fim - cursor > 0.05:
+            r.caixa(f"{nome}Rodape{i}", ((cursor + fim) / 2, 0.25, 0.04), (fim - cursor, 0.5, 0.1), "pedra")
+        if fim is not None:
+            cursor = x + larg / 2
+        if larg == 0:
+            continue
+        # A moldura: dois montantes, a verga e, na janela, o peitoril.
+        for k, dx in enumerate((-1, 1)):
+            r.caixa(f"{nome}Montante{i}{k}", (x + dx * (larg / 2 + 0.07), (y0 + y1) / 2, 0.04), (0.16, y1 - y0, 0.62), "pedra_clara")
+        r.caixa(f"{nome}Verga{i}", (x, y1 + 0.09, 0.04), (larg + 0.34, 0.2, 0.62), "pedra_clara")
+        if y0 > 0:
+            r.caixa(f"{nome}Peitoril{i}", (x, y0 - 0.05, 0.08), (larg + 0.3, 0.1, 0.72), "pedra_clara")
+    r.caixa(nome + "Beiral", (0, altura + 0.07, 0.2), (largura + 0.1, 0.14, 0.5), "telha")
+    vigas = F.Malha()
+    n = max(int(largura // 0.9), 2)
+    for i in range(n):
+        vigas.juntar(F.caixa(0.14, 0.14, 0.34, (-largura / 2 + largura * (i + 0.5) / n, altura - 0.35, 0.25)))
+    r.forma(nome + "Vigas", vigas, (0, 0, 0), "madeira_escura")
+
+
 def acabamento(m):
     """Da caixa à vila: os muros viram frentes de casa, as casas ganham
     porta em arco, janela com veneziana, vigas e beiral; a praça tem
@@ -220,10 +294,10 @@ def acabamento(m):
     palmeiras e torres para além do muro fecham o horizonte."""
     P.materiais(m)
     rnd = random.Random(7)
-    m.material("pedra_clara", "rocha", (1.0, 0.96, 0.88), 1.2)
-    m.material("telha", "tijolo", (0.82, 0.42, 0.28), 0.9, relevo=1.2)
+    m.material("pedra_clara", "pedra_muro", (1.0, 0.97, 0.9), 1.6)
+    m.material("telha", "telha", (1, 1, 1), 1.6, relevo=1.2)
     m.material("veneziana", "madeira", (0.30, 0.52, 0.52), 1.2)
-    m.material("tronco", "madeira", (0.62, 0.52, 0.42), 0.6, relevo=1.4)
+    m.material("tronco", "madeira_velha", (0.8, 0.7, 0.6), 0.6, relevo=1.4)
     m.material("folha", None, (0.20, 0.36, 0.14), aspereza=0.8, dupla=True)
     m.material("lona_vermelha", None, (0.72, 0.16, 0.12), aspereza=0.95, dupla=True)
     m.material("lona_azul", None, (0.16, 0.36, 0.62), aspereza=0.95, dupla=True)
@@ -232,9 +306,9 @@ def acabamento(m):
     m.material("fruta_laranja", None, (0.95, 0.55, 0.12), aspereza=0.6)
     m.material("fruta_verde", None, (0.35, 0.60, 0.18), aspereza=0.6)
     m.material("bulbo", None, (1, 0.9, 0.6), brilho=(1.0, 0.80, 0.45), energia=2.6)
-    m.material("lajota", "pedra_calcada", (0.74, 0.50, 0.38), 2.0)
+    m.material("lajota", "lajota", (1, 0.96, 0.92), 2.2)
     m.material("rosa", "reboco", (0.90, 0.66, 0.60), 3.0)
-    m.material("areia_reboco", "reboco", (0.84, 0.72, 0.52), 3.0)
+    m.material("areia_reboco", "reboco_velho", (0.92, 0.80, 0.60), 3.2)
 
     # --- Chafariz: bacia com borda, fuste e duas taças.
     bacia = [(0, 0), (3.0, 0), (3.0, 0.62), (3.1, 0.7), (3.1, 0.9), (2.62, 0.9), (2.62, 0.3), (0, 0.3)]
@@ -310,10 +384,28 @@ def acabamento(m):
             para_meio = "x+" if s < 0 else "x-"
             para_base = "x-" if s < 0 else "x+"
             # Casa grande (12 × 12, 5 m): frente para a praça e para o meio, vielas atrás e do lado.
-            _fachada(m, g, "FrentePraca", para_praca, (s * 17, 0, sz * 11), 12, 5, cor_grande, rnd, portas=1, niveis=(2.2, 3.5))
+            _fachada_aberta(m, g, "FrentePraca", para_praca, (s * 17, 0, sz * 11), 12, 5, [PORTA(s * 17), JANELA(s * 13.6), JANELA(s * 20.4)])
             _fachada(m, g, "FrenteMeio", para_meio, (s * 11, 0, sz * 17), 12, 5, cor_grande, rnd, portas=0, niveis=(2.3, 9))
-            _fachada(m, g, "FrenteFundo", para_fundo, (s * 17, 0, sz * 23), 12, 5, cor_grande, rnd, portas=1, niveis=(2.4, 9))
-            _fachada(m, g, "FrenteViela", para_base, (s * 23, 0, sz * 17), 12, 5, cor_grande, rnd, portas=0, niveis=(2.4, 9))
+            _fachada_aberta(m, g, "FrenteFundo", para_fundo, (s * 17, 0, sz * 23), 12, 5, [PORTA(s * 14)])
+            _fachada_aberta(m, g, "FrenteViela", para_base, (s * 23, 0, sz * 17), 12, 5, [PORTA(sz * 19)])
+            # Por dentro: o piso de lajota, o tampo do balcão, a prateleira; por fora, o nome pintado.
+            m.caixa(g, "CasaPiso", (s * 17, 0.012, sz * 17), (11, 0.02, 11), "lajota", colide=False)
+            m.caixa(g, "CasaTampo", (s * 14, 1.02, sz * 14.6), (3.2, 0.05, 0.95), "madeira_escura", colide=False)
+            for i in range(3):
+                m.caixa(g, f"CasaPrateleira{i}", (s * 17, 1.0 + i * 0.6, sz * 16.72), (4.0, 0.05, 0.3), "madeira_escura", colide=False)
+            de_frente = 180 if sz > 0 else 0
+            m.letreiro(g, "Loja", LOJAS[(s, sz)], (s * 17, 3.1, sz * 10.985), 3.4, de_frente)
+            m.letreiro(g, "PlacaPraca", "vila_praca", (s * 22.0, 2.75, sz * 10.985), 1.3, de_frente)
+            m.letreiro(g, "PlacaViela", "vila_beco_sino" if sz > 0 else "vila_travessa", (s * 23.02, 2.75, sz * 16.2), 1.4, 90 if s > 0 else -90)
+            m.letreiro(g, "PlacaFundo", "vila_rua_fonte" if sz > 0 else "vila_rua_mercado", (s * 19.5, 2.75, sz * 23.02), 1.5, 180 - de_frente)
+            # Dentro da casa e na porta (objetos do Poly Haven).
+            P.objeto(m, g, "Pipa1", "barril_vinho", (s * 12.3, 0, sz * 18.2), som="madeira_escura")
+            P.objeto(m, g, "Pipa2", "barril_vinho", (s * 13.2, 0, sz * 18.25), 40, som="madeira_escura")
+            P.objeto(m, g, "CaixoteBalcao", "caixote_a", (s * 13.3, 1.05, sz * 14.6), 10, colide=False)
+            P.objeto(m, g, "SacoCimento1", "saco_cimento", (s * 14.2, 0, sz * 21.9), 0, colide=False)
+            P.objeto(m, g, "SacoCimento2", "saco_cimento", (s * 14.25, 0.18, sz * 21.85), 12, colide=False)
+            P.objeto(m, g, "Botijao", "botijao", (s * 21.9, 0, sz * 16.4), 0, colide=False)
+            P.objeto(m, g, "CaixoteFundo", "caixote_b", (s * 20.4, 0, sz * 22.0), 90, som="madeira_escura")
             # Casa da ponta (7 × 8).
             _fachada(m, g, "PontaPraca", para_praca, (s * 29.5, 0, sz * 15), 7, 5, cor_ponta, rnd, portas=1, niveis=(2.2, 3.5))
             _fachada(m, g, "PontaViela", para_meio, (s * 26, 0, sz * 19), 8, 5, cor_ponta, rnd, portas=0, niveis=(2.4, 9))

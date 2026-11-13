@@ -25,24 +25,54 @@ from . import pecas as PC
 from .kit import Mapa, AZUL, LARANJA, giro_y
 
 
+PORTA = lambda meio: (meio, 1.6, 0.0, 2.2)
+JANELA = lambda meio: (meio, 1.4, 1.0, 2.2)
+
+
+def alojamento_aberto(m, L, s, sz, mat):
+    """
+    A fileira da frente de cada alojamento, por dentro: dois cômodos de
+    7 × 4 m (laboratório e refeitório) sob o mesmo teto por onde passa o
+    caminho alto.
+
+    Cada cômodo tem porta para a ala e porta para o beco; o da ponta de
+    dentro tem mais uma, virada para a garagem; uma porta liga os dois, e
+    cada um tem janela para a ala. Dá para atravessar a fileira por dentro
+    em vez de contorná-la — e quem está no teto não vê quem passa.
+    """
+    frente, fundo = sz * 15.75, sz * 20.25
+    m.caixa(L, "Laje", (s * 28, 4.75, sz * 18), (16, 0.5, 5), mat)
+    m.parede(L, "Frente", "x", frente, s * 20, s * 36, 4.5, mat, [PORTA(s * 23), JANELA(s * 26), JANELA(s * 30), PORTA(s * 33)])
+    m.parede(L, "Fundo", "x", fundo, s * 20, s * 36, 4.5, mat, [PORTA(s * 25.5), PORTA(s * 30.5)])
+    m.parede(L, "PontaGaragem", "z", s * 20.25, sz * 16, sz * 20, 4.5, mat, [PORTA(sz * 18)])
+    m.parede(L, "PontaRampa", "z", s * 35.75, sz * 16, sz * 20, 4.5, mat)
+    m.parede(L, "Divisa", "z", s * 28, sz * 16, sz * 20, 4.5, mat, [PORTA(sz * 18)], espessura=0.3)
+    # Bancada do laboratório e mesa do refeitório.
+    m.caixa(L, "Bancada", (s * 22.6, 0.45, sz * 19.5), (2.6, 0.9, 0.8), "aco")
+    m.caixa(L, "Mesa", (s * 33.6, 0.4, sz * 19.3), (2.6, 0.8, 1.0), "madeira")
+    m.caixa(L, "Armario", (s * 35.1, 1.0, sz * 16.6), (0.6, 2.0, 1.0), "aco")
+    m.luz(L, "LuzLab", (s * 24, 3.6, sz * 18), (0.80, 0.92, 1.0), 1.5, 7)
+    m.luz(L, "LuzRefeitorio", (s * 32, 3.6, sz * 18), (1.0, 0.84, 0.62), 1.5, 7)
+
+
 def montar():
     m = Mapa("polar", "Polar", 110, 70)
 
-    m.material("neve", "neve", (0.80, 0.83, 0.88), 5.0, relevo=1.6)
-    m.material("gelo", "rocha", (0.70, 0.80, 0.94), 5.0, aspereza=0.7)
+    m.material("neve", "neve", (0.93, 0.95, 1.0), 6.0, relevo=1.3)
+    m.material("gelo", "penhasco", (0.74, 0.84, 0.98), 5.0, aspereza=0.6)
     m.material("concreto", "concreto", (0.70, 0.72, 0.75), 4.0)
-    m.material("garagem", "metal_ondulado", (0.62, 0.66, 0.72), 2.0, metal=0.25)
-    m.material("modulo_laranja", "metal_ondulado", (0.92, 0.42, 0.14), 2.0, metal=0.25)
-    m.material("modulo_branco", "metal_ondulado", (0.74, 0.77, 0.82), 2.0, metal=0.25)
-    m.material("modulo_vermelho", "metal_ondulado", (0.72, 0.16, 0.14), 2.0, metal=0.25)
-    m.material("base_azul", "metal_ondulado", (0.24, 0.44, 0.86), 2.0, metal=0.25)
-    m.material("base_laranja", "metal_ondulado", (0.95, 0.52, 0.18), 2.0, metal=0.25)
+    m.material("garagem", "metal_trapezio", (0.66, 0.70, 0.76), 2.4, metal=0.25)
+    m.material("modulo_laranja", "conteiner", (0.95, 0.46, 0.16), 2.6, metal=0.25)
+    m.material("modulo_branco", "conteiner", (0.80, 0.83, 0.88), 2.6, metal=0.25)
+    m.material("modulo_vermelho", "conteiner", (0.78, 0.18, 0.15), 2.6, metal=0.25)
+    m.material("base_azul", "conteiner", (0.26, 0.46, 0.88), 2.6, metal=0.25)
+    m.material("base_laranja", "conteiner", (0.97, 0.54, 0.2), 2.6, metal=0.25)
     m.material("chapa", "chapa_xadrez", (0.60, 0.63, 0.68), 1.0, metal=0.3)
     m.material("grade", None, (0.95, 0.74, 0.16), aspereza=0.5, metal=0.3)
     m.material("tanque", "metal_pintado", (0.90, 0.92, 0.94), 3.0, metal=0.6, aspereza=0.8)
     m.material("cano", "ferrugem", (1, 1, 1), 1.5, metal=0.25)
     m.material("veiculo", "metal_pintado", (0.90, 0.48, 0.10), 2.0, metal=0.25)
-    m.material("esteira", "asfalto", (1, 1, 1), 1.0)
+    m.material("esteira", "asfalto", (0.5, 0.5, 0.5), 1.0)
     m.material("vidro", None, (0.10, 0.16, 0.22), aspereza=0.08, metal=0.25)
     m.material("madeira", "madeira", (1, 1, 1), 1.6)
     m.material("aco", "metal_pintado", (0.40, 0.43, 0.48), 2.0, metal=0.3)
@@ -106,7 +136,7 @@ def montar():
         for sz, t in ((1, "Norte"), (-1, "Sul")):
             L = f"Alojamento{lado}{t}"
             # Duas fileiras de dois andares com 3 m de beco entre elas.
-            m.caixa(L, "Fileira1", (s * 28, 2.5, sz * 18), (16, 5, 5), "modulo_laranja" if sz > 0 else "modulo_branco")
+            alojamento_aberto(m, L, s, sz, "modulo_laranja" if sz > 0 else "modulo_branco")
             m.caixa(L, "Fileira2", (s * 28, 2.5, sz * 26), (16, 5, 5), "modulo_branco" if sz > 0 else "modulo_laranja")
             m.caixa(L, "Friso1", (s * 28, 2.5, sz * 15.45), (16, 0.25, 0.1), "aco", colide=False)
             m.caixa(L, "Ponte", (s * 30, 4.9, sz * 22), (2, 0.2, 3.6), "chapa")
@@ -141,7 +171,13 @@ def montar():
         m.caixa(g, "Piso", (s * 50, 0.012, 0), (10, 0.02, 21), "concreto", colide=False)
         PC.caixote(m, g, "CaixoteNorte", (s * 43, 0.4, 4), (2, 0.8, 2))
         PC.caixote(m, g, "CaixoteSul", (s * 43, 0.4, -4), (2, 0.8, 2))
-        m.placa(g, "Letra", (s * 44.8, 7.6, 0), lado, 520, cor, 90 if s < 0 else -90)
+        # A letra do time, num painel sobre a beira do teto.
+        m.caixa(g, "PainelLetra", (s * 45.2, 7.3, 0), (0.14, 3.3, 3.3), "aco", colide=False)
+        for pz in (-1.2, 1.2):
+            m.caixa(g, f"PainelPe{pz}", (s * 45.3, 5.6, pz), (0.12, 0.4, 0.12), "aco", colide=False)
+        m.letreiro(g, "Letra", f"polar_base_{lado.lower()}", (s * 45.2 - s * 0.08, 7.3, 0), 2.9, 90 if s < 0 else -90)
+        for sz in (1, -1):
+            m.letreiro(g, f"Estacao{sz}", "polar_estacao", (s * 50, 3.7, sz * 11.52), 7.0, 0 if sz > 0 else 180)
         m.luz(g, "Luz", (s * 50, 4.2, 0), cor, 2.0, 14)
         time = AZUL if s < 0 else LARANJA
         for z in (-7.5, -2.5, 2.5, 7.5):
@@ -155,15 +191,18 @@ def montar():
     m.rota("tanques", [(-18, 0.5, 30), (-6, 0.5, 30.5), (0, 0.5, 26), (6, 0.5, 30.5), (18, 0.5, 30)])
     m.rota("torre", [(-18, 0.5, -30), (-7, 0.5, -29), (0, 0.5, -31), (7, 0.5, -29), (18, 0.5, -30)])
     for s, lado in ((-1, "A"), (1, "B")):
+        for sz, t in ((1, "Norte"), (-1, "Sul")):
+            m.rota(f"dentro{lado}{t}", [(s * 17, 0.5, sz * 18), (s * 22, 0.5, sz * 18), (s * 26, 0.5, sz * 17.4), (s * 30, 0.5, sz * 18),
+                                        (s * 33, 0.5, sz * 17), (s * 33, 0.5, sz * 13.5), (s * 40, 0.5, sz * 13)])
         m.rota(f"beco{lado}Norte", [(s * 17, 0.5, 22), (s * 28, 0.5, 22), (s * 39, 0.5, 22)])
         m.rota(f"beco{lado}Sul", [(s * 17, 0.5, -22), (s * 28, 0.5, -22), (s * 39, 0.5, -22)])
         m.rota(f"tetos{lado}", [(s * 45, 0.5, 18), (s * 40, 2.5, 18), (s * 30, 5.5, 18), (s * 21.5, 5.5, 10),
                                 (s * 21.5, 5.5, -10), (s * 30, 5.5, -18), (s * 40, 2.5, -18), (s * 45, 0.5, -18)])
     m.rota("tetoGaragem", [(-12, 0.5, 9.9), (-4, 4.0, 9.9), (3, 6.9, 9.5), (0, 6.9, 0), (-3, 6.9, -9.5), (4, 4.0, -9.9), (12, 0.5, -9.9)])
 
-    m.ambiente = dict(ceu=dict(topo=(0.08, 0.14, 0.30), horizonte=(0.62, 0.66, 0.78), chao=(0.50, 0.55, 0.62), energia=0.9),
-                      luz=(0.52, 0.62, 0.86), luz_energia=0.45, exposicao=0.85, brilho=0.8, contraste=1.05, saturacao=1.0,
-                      neblina=dict(cor=(0.62, 0.70, 0.82), densidade=0.006, ceu=0.5))
+    m.ambiente = dict(ceu=dict(hdri="neve_nublada", giro=180, energia=0.8, ambiente=0.8),
+                      luz=(0.52, 0.62, 0.86), luz_energia=0.7, exposicao=0.85, brilho=0.8, contraste=1.05, saturacao=1.0,
+                      neblina=dict(cor=(0.70, 0.76, 0.86), densidade=0.005, ceu=0.15))
     m.sol = dict(yaw=-42, queda=22, cor=(1.0, 0.82, 0.70), energia=0.8, alcance=140)
     acabamento(m)
     return m
@@ -230,10 +269,10 @@ def acabamento(m):
     flange, refletores e neve caindo."""
     PC.materiais(m)
     rnd = random.Random(11)
-    m.material("neve_telhado", "neve", (0.88, 0.90, 0.94), 3.0, relevo=1.2)
+    m.material("neve_telhado", "neve", (0.94, 0.96, 1.0), 3.0, relevo=1.2)
     m.material("serra", "neve", (0.70, 0.74, 0.82), 26.0, relevo=2.0)
     m.material("sincelo", None, (0.78, 0.88, 0.98), aspereza=0.15, metal=0.2)
-    m.material("persiana", "metal_ondulado", (0.48, 0.52, 0.56), 1.2, metal=0.4, aspereza=0.6)
+    m.material("persiana", "persiana", (0.56, 0.6, 0.64), 1.6, metal=0.4, aspereza=0.6)
     m.material("moldura", None, (0.20, 0.22, 0.25), aspereza=0.6, metal=0.4)
     m.material("porta", "metal_pintado", (0.30, 0.34, 0.40), 1.2, metal=0.3)
     m.material("prato", None, (0.86, 0.88, 0.9), aspereza=0.4, metal=0.3, dupla=True)
@@ -277,7 +316,7 @@ def acabamento(m):
         m.caixa(g, f"Rolo{tx}", (sx * 12.6, 4.75, 0), (0.5, 0.5, 7.6), "aco", colide=False)
         for k2, dz in enumerate((-3.75, 3.75)):
             m.caixa(g, f"Guia{tx}{k2}", (sx * 13.33, 2.2, dz), (0.08, 4.4, 0.16), "faixa_risco", colide=False)
-        m.placa(g, f"Placa{tx}", (sx * 13.32, 5.25, 0), "GARAGEM 01", 110, (0.95, 0.96, 1.0), 90 if sx > 0 else -90)
+        m.letreiro(g, f"Placa{tx}", "polar_garagem", (sx * 13.32, 5.25, 0), 4.6, 90 if sx > 0 else -90)
     m.forma(g, "NeveTeto", F.caixa_chanfrada(25.6, 0.14, 15.2, 0.06), (0, 6.46, 0), "neve_telhado")
     m.forma(g, "AntenaMastro", F.tubo([(-8, 6.4, 3), (-8, 8.6, 3)], 0.08, 8), (0, 0, 0), "aco")
     prato = F.revolucao([(0.02, 0), (0.45, 0.04), (0.95, 0.2), (1.35, 0.42)], 20, suave=True).rodar("x", 62)
@@ -311,7 +350,7 @@ def acabamento(m):
             escada.juntar(F.tubo([(-0.22, 0.3 + q * 0.33, 0), (0.22, 0.3 + q * 0.33, 0)], 0.018, 5, tampas=False))
         m.forma("Tanques", f"TanqueEscada{t}", escada, (x, 0, 25 - 3.34), "aco")
         m.caixa("Tanques", f"TanqueFaixa{t}", (x, 1.2, 25 - 3.21), (2.2, 0.5, 0.03), "faixa_risco", colide=False)
-        m.placa("Tanques", f"TanqueNome{t}", (x, 3.0, 25 - 3.23), "DIESEL  0" + ("1" if sx > 0 else "2"), 120, (0.15, 0.17, 0.2), 180)
+        m.letreiro("Tanques", f"TanqueNome{t}", "polar_diesel_01" if sx > 0 else "polar_diesel_02", (x, 3.0, 25 - 3.23), 2.6, 180)
         PC.tubulacao(m, "Tanques", f"CanoTubo{t}", [(x + sx * 3.1, 0.55, 23.6), (sx * 9.2, 0.55, 23.6), (sx * 9.2, 0.55, 22), (sx * 19, 0.55, 22),
                                                     (sx * 19.5, 0.55, 22), (sx * 19.5, -0.3, 22)], 0.24, "cano", flange="aco", cada=2.4)
         m.forma("Tanques", f"Valvula{t}", F.toro(0.24, 0.03, 14, 6).rodar("x", 90), (sx * 12, 0.95, 22), "modulo_vermelho")
@@ -365,13 +404,40 @@ def acabamento(m):
                 for q, dx in enumerate((-6, -2, 2, 6)):
                     for andar, y in enumerate((1.55, 3.85)):
                         aceso = rnd.random() < 0.55
+                        if n == 1 and andar == 0:
+                            continue            # na fileira em que se entra, embaixo são portas e janelas de verdade
                         PC.janela(m, L, f"Janela{n}{q}{andar}", (s * 28 + dx, y, zf), frente, 1.3, 0.85, "moldura",
                                   "vidro_aceso" if aceso else "vidro", peitoril=False)
                 # Porta para o beco entre as fileiras, com degrau e luz.
                 lado_beco, face_beco = (zt, fundo) if n == 1 else (zf, frente)
-                PC.porta(m, L, f"Porta{n}", (s * 24, 0, lado_beco), face_beco, 0.95, 2.05, "moldura", "porta")
+                if n == 2:
+                    PC.porta(m, L, f"Porta{n}", (s * 24, 0, lado_beco), face_beco, 0.95, 2.05, "moldura", "porta")
                 PC.arandela(m, L, f"LuzPorta{n}", (s * 24, 2.45, lado_beco), face_beco, energia=0, mat="moldura")
-            m.placa(L, "Nome", (s * 28, 2.82, sz * 15.4), f"MÓDULO {lado}{'1' if sz > 0 else '2'}", 34, (0.9, 0.92, 0.95), 180 if sz > 0 else 0)
+            # A fileira aberta: marcos de aço nas portas e janelas, piso, e o que está escrito.
+            de_frente = 180 if sz > 0 else 0
+            for i, (x, larg, y0) in enumerate(((23, 1.6, 0), (26, 1.4, 1.0), (30, 1.4, 1.0), (33, 1.6, 0))):
+                for k, dx in enumerate((-1, 1)):
+                    m.caixa(L, f"Marco{i}{k}", (s * x + dx * (larg / 2 + 0.04), (y0 + 2.2) / 2, sz * 15.75), (0.08, 2.2 - y0, 0.6), "moldura", colide=False)
+                m.caixa(L, f"MarcoVerga{i}", (s * x, 2.24, sz * 15.75), (larg + 0.16, 0.08, 0.6), "moldura", colide=False)
+            m.caixa(L, "PisoDentro", (s * 28, 0.25, sz * 18), (15, 0.02, 4), "chapa", colide=False)
+            m.caixa(L, "BancadaTampo", (s * 22.6, 0.92, sz * 19.5), (2.7, 0.04, 0.9), "prato", colide=False)
+            m.letreiro(L, "Nome", f"polar_modulo_{lado}{'1' if sz > 0 else '2'}", (s * 28, 3.05, sz * 15.44), 2.6, de_frente)
+            m.letreiro(L, "PlacaLab", "polar_lab", (s * 24.5, 2.55, sz * 15.44), 1.3, de_frente)
+            m.letreiro(L, "PlacaRefeitorio", "polar_refeitorio", (s * 31.5, 2.55, sz * 15.44), 1.3, de_frente)
+            m.letreiro(L, "PlacaDeposito", "polar_deposito", (s * 28, 2.55, sz * 20.56), 1.3, 180 - de_frente)
+            # O que há nos cômodos e em volta (objetos do Poly Haven).
+            PC.objeto(m, L, "BauFerramenta", "bau_ferramenta", (s * 22.6, 0.94, sz * 19.5), 0, colide=False)
+            PC.objeto(m, L, "EstanteLab", "estante_b", (s * 27.4, 0, sz * 16.6), 90)
+            PC.objeto(m, L, "CarroFerramenta", "carro_ferramenta", (s * 26, 0.26, sz * 16.6), 0)
+            PC.objeto(m, L, "Municao", "caixa_municao", (s * 33.4, 0.8, sz * 19.3), 30, colide=False)
+            PC.objeto(m, L, "Galao1", "galao_verde", (s * 34.5, 0.26, sz * 17.7), 20, colide=False)
+            PC.objeto(m, L, "Galao2", "galao_verde", (s * 34.1, 0.26, sz * 17.5), -35, colide=False)
+            PC.objeto(m, L, "CaixaMilitar1", "caixa_militar_madeira", (s * 41.8, 0, sz * 11.6), 0, som="madeira")
+            PC.objeto(m, L, "CaixaMilitar2", "caixa_militar_madeira", (s * 41.8, 0.46, sz * 11.6), 8, colide=False)
+            PC.objeto(m, L, "TamborAzul1", "barril_azul", (s * 36.2, 0, sz * 8.2))
+            PC.objeto(m, L, "TamborAzul2", "barril_azul", (s * 36.25, 0, sz * 9.0), 50)
+            PC.objeto(m, L, "Barreira", "barreira", (s * 17, 0, sz * 5.6), 90, som="concreto")
+            PC.objeto(m, L, "Pedra", "pedra_c", (s * 49, 0, sz * 29), 30 * s, som="gelo")
             # A rampa de chapa: corrimão dos dois lados.
             for k2, dz in enumerate((-1.45, 1.45)):
                 PC.corrimao(m, L, f"CorrimaoRampa{k2}", [(s * 45.6, 0.1, sz * 18 + dz), (s * 36.2, 5.0, sz * 18 + dz)], "grade", 1.0, 0.03, 1.9)

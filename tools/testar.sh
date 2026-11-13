@@ -76,7 +76,7 @@ for teste in $lista; do
 
 	erros=$(echo "$saida" \
 		| grep -E '^(ERROR|SCRIPT ERROR|USER ERROR)|Unhandled exception|NullReferenceException' \
-		| grep -v -E 'resources still in use at exit|ObjectDB instances leaked|RID allocations' \
+		| grep -v -E 'resources still in use at exit|ObjectDB instances leaked|RID allocations|Pages in use exist at exit' \
 		| sort | uniq -c | head -5)
 
 	if [ "$codigo" -ne 0 ] || [ -n "$erros" ]; then

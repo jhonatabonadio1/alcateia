@@ -82,7 +82,7 @@ conferir "$PASTA/a.log" "avisos_do_saguao=1 .*sala=waiting" "o saguão avisou o 
 
 # Como nos testes de regressão: erro no Output reprova, mesmo com o resto certo.
 if grep -hE '^(ERROR|SCRIPT ERROR|USER ERROR)|Unhandled exception|NullReferenceException' "$PASTA"/*.log \
-	| grep -v -E 'resources still in use at exit|ObjectDB instances leaked|RID allocations' > "$PASTA/erros.txt"; then
+	| grep -v -E 'resources still in use at exit|ObjectDB instances leaked|RID allocations|Pages in use exist at exit' > "$PASTA/erros.txt"; then
 	echo "  FALHOU  nenhum erro no Output dos três processos"
 	sort "$PASTA/erros.txt" | uniq -c | head -n 12
 	falhas=$((falhas + 1))

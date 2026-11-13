@@ -96,6 +96,19 @@ Se algum for ruim ou não abrir, troca-se. Licenças diferentes de
 CC BY/CC0 (NonCommercial, "Free Standard" restrita a certos usos) foram
 deixadas de fora de propósito.
 
+## O que já está em uso
+
+| Do pacote | Onde entrou | Como |
+|---|---|---|
+| 44 texturas do Poly Haven | `assets/textures/pbr/` — todos os materiais dos mapas | `tools/mapas/texturas.py` |
+| 2 céus (dia claro, neve nublada) | `assets/mapas/ceus/` — Vila e Estação Polar | copiados; `ceu=dict(hdri=…)` no mapa |
+| 36 objetos do Poly Haven | `assets/mapas/pecas/*.glb` — nos cômodos e em volta | `tools/mapas/blender/pecas_polyhaven.py` |
+
+Os braços e as armas do Sketchfab **ainda não entraram** — é o próximo
+passo (trocar as mãos e as armas feitas por código pelas animadas).
+Lembre: a pasta deles é `assets/pacotes/sketchfab/` (fora do Godot); se
+ficarem em `assets/sketchfab/`, o Godot tenta importar 750 MB.
+
 ## Regras
 
 - Só CC0 ou CC BY (ou outra que permita uso comercial em jogo). Nunca
