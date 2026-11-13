@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.26.12 — 2026-11-12
+
+### Adicionado
+- **Guia de ajustes** (`docs/AJUSTES.md`): todo número regulável do
+  jogo — movimento, parede, classes de lobo, golpes, armas, granada,
+  vida, WP, bots, partida, som e animação —, com o valor atual, onde
+  mudar e o que acontece.
+
 ## v0.26.11 — 2026-11-12
 
 ### Mudado

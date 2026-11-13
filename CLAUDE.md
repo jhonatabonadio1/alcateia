@@ -10,6 +10,10 @@ Leia este arquivo inteiro antes de mexer em qualquer coisa.
 
 > Para entender como o código está montado e onde mexer em cada coisa,
 > veja `docs/ARQUITETURA.md`. Este guia trata das regras e decisões.
+> Todos os números reguláveis do jogo (movimento, golpes, armas,
+> granada, vida, WP, bots, partida), com o valor atual e onde mudar,
+> estão em `docs/AJUSTES.md`. **Mudou um número? Atualize a linha dele
+> lá.**
 
 ## Regra zero
 
@@ -182,7 +186,7 @@ alcateia/
 ├── CLAUDE.md           este guia (fica na raiz, é onde agentes olham)
 ├── AGENTS.md           atalho para o mesmo arquivo
 ├── project.godot
-├── docs/               ARQUITETURA, UI (guia de interface), ARSENAL, CONJUNTOS, CHANGELOG
+├── docs/               ARQUITETURA, AJUSTES, UI (guia de interface), ARSENAL, CONJUNTOS, CHANGELOG
 ├── assets/             audio, characters, fonts, maps, textures, ui (miniaturas de mapa)
 ├── resources/
 │   ├── breeds/         estatísticas das classes de lobo
