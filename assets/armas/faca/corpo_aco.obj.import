@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dylqberv20nnu"
+path="res://.godot/imported/corpo_aco.obj-eb0472e90b9f86010d1868f55c4ddf07.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_aco.obj-eb0472e90b9f86010d1868f55c4ddf07.mesh"]
+
+source_file="res://assets/armas/faca/corpo_aco.obj"
+dest_files=["res://.godot/imported/corpo_aco.obj-eb0472e90b9f86010d1868f55c4ddf07.mesh", "res://.godot/imported/corpo_aco.obj-eb0472e90b9f86010d1868f55c4ddf07.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

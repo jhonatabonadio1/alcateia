@@ -54,8 +54,11 @@ public sealed class RewardSummary
 /// </summary>
 public static class Progression
 {
-	public const int XpBase = 150, XpKill = 20, XpAssist = 10, XpWin = 120, XpDraw = 60, XpMvp = 80;
-	public const int PresasBase = 100, PresasKill = 8, PresasAssist = 4, PresasWin = 80, PresasDraw = 40, PresasMvp = 40;
+	// Os valores moram em Rewards (scripts/domain): o servidor usa os mesmos.
+	public const int XpBase = Rewards.XpBase, XpKill = Rewards.XpKill, XpAssist = Rewards.XpAssist,
+		XpWin = Rewards.XpWin, XpDraw = Rewards.XpDraw, XpMvp = Rewards.XpMvp;
+	public const int PresasBase = Rewards.PresasBase, PresasKill = Rewards.PresasKill, PresasAssist = Rewards.PresasAssist,
+		PresasWin = Rewards.PresasWin, PresasDraw = Rewards.PresasDraw, PresasMvp = Rewards.PresasMvp;
 
 	public static RewardSummary Apply(MatchResult r)
 	{

@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://c1j1qg613g8wg"
+path="res://.godot/imported/corpo_madeira_escura.obj-040530e8ab3b9d6684188de3f9ceb981.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_madeira_escura.obj-040530e8ab3b9d6684188de3f9ceb981.mesh"]
+
+source_file="res://assets/armas/ak47/corpo_madeira_escura.obj"
+dest_files=["res://.godot/imported/corpo_madeira_escura.obj-040530e8ab3b9d6684188de3f9ceb981.mesh", "res://.godot/imported/corpo_madeira_escura.obj-040530e8ab3b9d6684188de3f9ceb981.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

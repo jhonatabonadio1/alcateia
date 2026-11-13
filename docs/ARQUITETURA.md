@@ -542,11 +542,14 @@ só passe o valor final para o gerador depois.
    `Id`, `DisplayName`, `Class`, `WpCost` e os números. Rode o gerador.
 2. Em `scripts/combat/Arsenal.cs`, ponha o id em `Primaries` ou
    `Secondaries`.
-3. Em `scripts/visual/WeaponModel.cs`, acrescente o caso da arma em
-   `Build` — o modelo 3D que aparece na sua mão, na dos outros e no
-   chão. Sem ele, aparece um fuzil genérico. Ponha um nó `Muzzle` na
-   boca do cano e, se tiver carregador, um `Magazine` (a recarga tira e
-   põe esse nó).
+3. Em `tools/gerar_armas.py`, desenhe a arma (uma função como `ak47()`:
+   chapas de perfil, peças redondas, onde vai cada mão) e ponha na
+   lista do `main()`; rode o script e deixe o Godot importar os `.obj`.
+   É o modelo 3D que aparece na sua mão, na dos outros e no chão — sem
+   ele, aparece o M16. As peças que a animação mexe vão em nós com
+   nome: `Magazine` (a recarga tira e põe), `Ferrolho`, `Bomba`; e os
+   pontos `Muzzle` (boca do cano), `Ejecao` e `Carga`. Veja "A arma na
+   mão", abaixo.
 4. Para a loja: um item em `scripts/meta/Catalog.cs` e a silhueta 2D em
    `scripts/ui/kit/WeaponArt.cs`.
 5. Pronto: aparece no inventário, no editor de conjuntos e no catálogo.
@@ -557,7 +560,51 @@ Se a arma precisa de um comportamento novo (rajada, mira telescópica),
 o campo vai em `WeaponDefinition.cs` e o comportamento em
 `Weapon.Shoot()`/`TryAttack()`.
 
-### Trocar um personagem ou uma animação
+### A arma na mão
+
+O que se vê em primeira pessoa são três coisas que nascem do mesmo
+lugar, `tools/gerar_armas.py`:
+
+| O quê | Onde fica | Quem usa |
+|---|---|---|
+| As malhas de cada arma (`assets/armas/<id>/*.obj`) | uma por nó e por material | `WeaponModel.Build` |
+| As malhas das mãos (`assets/armas/bracos/`): luva, reforço e manga, em quatro poses (`punho`, `apoio`, `fechada`, `aberta`), direita e esquerda | | `WeaponModel.BuildHand` |
+| A ficha (`assets/armas/armas.json`): peças, materiais, pontos e, para cada mão, a pose, o ponto onde a palma encosta, para onde apontam os dedos e para onde olha a palma | | `WeaponModel.Hand` |
+
+Cada arma é desenhada de lado, em metros, com a origem no punho. No
+jogo o cano aponta para −Z. Os materiais são por nome (`metal`,
+`polimero`, `madeira`, `luva`...) e as cores estão em
+`WeaponModel.Material`.
+
+`ViewModel` (em `scripts/ui/`, três arquivos) monta a arma com as duas
+mãos como filhas dela — coice e inclinação levam as mãos junto — e
+anima:
+
+- `ViewModel.cs`: o corpo todo da arma na tela — coice, balanço do passo
+  (tirado da passada do corpo, `Player.StridePhase`, a mesma que solta
+  o som do pé), atraso ao olhar, afundar no pouso, subir ao sacar.
+- `ViewModel.Hands.cs`: a mão esquerda. Ela anda entre pontos
+  calculados na própria arma (o fundo do carregador, o ferrolho, a
+  janela de carga), então a coreografia é uma só para todas: troca de
+  carregador, cartucho a cartucho na escopeta, bombeada depois do tiro,
+  pino da granada, golpe de faca.
+- `ViewModel.Effects.cs`: clarão e luz do tiro, ferrolho que recua,
+  cápsula que salta.
+
+Nada disso decide tiro ou recarga: tudo segue o relógio da `Weapon`
+(`ReloadProgress`, `Fired`, `IsGrenadeReady`).
+
+**Para conferir sem abrir o editor**: o teste `BracosNaMao` fotografa
+cada arma parada, atirando e recarregando quando roda com tela e
+`--fotos=pasta` (o comando está no topo de
+`tests/regression/ViewModelTests.cs`).
+
+**Trocar por modelo de artista**: ponha os arquivos com os mesmos nomes
+em `assets/armas/` (ou aponte a ficha para um `.glb`) e mantenha os nós
+e pontos com nome. Os pacotes do Sketchfab listados em
+`docs/PACOTES.md` são candidatos.
+
+## Trocar um personagem ou uma animação
 
 - **Personagem de um time:** ponha o `.fbx` do Mixamo em
   `assets/characters/human/` (humano) ou `assets/characters/wolf/`

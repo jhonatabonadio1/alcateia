@@ -9,5 +9,8 @@
          (tests/unit/Alcateia.UnitTests.csproj). Os de regressão, em
          tests/regression, rodam dentro do jogo e ficam aqui. -->
     <Compile Remove="tests/unit/**" />
+    <!-- O servidor (contas, salas, frota) é outro programa, em ASP.NET:
+         servidor/Alcateia.Servidor. -->
+    <Compile Remove="servidor/**" />
   </ItemGroup>
 </Project>

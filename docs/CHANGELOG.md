@@ -2,6 +2,24 @@
 
 ## Não lançado
 
+### Braços e armas em primeira pessoa
+- **Duas mãos de luva na arma**, em vez de arma solta: a direita no
+  punho, a esquerda no guarda-mão (ou apoiando a pistola, ou em guarda
+  com a faca).
+- **Recarga animada**: a mão esquerda tira o carregador, some com ele,
+  volta com outro, encaixa e — se o pente esvaziou — puxa o ferrolho.
+  Na escopeta, um cartucho por vez pela janela de carga; depois de cada
+  tiro, a bombeada. A granada tem o pino puxado; a faca corta
+  atravessando a tela.
+- **Armas redesenhadas** (M16A2, SG552, AK-47, UMP45, M3, M9, faca,
+  granada de choque): silhueta de verdade em vez de caixas — alça de
+  transporte, carregador curvo, coronha vazada, guarda-mão estriado. O
+  mesmo modelo vale na mão dos outros e no chão.
+- Tiro: coice com o cano subindo, clarão em estrela com luz, ferrolho
+  recuando, cápsula saltando. A arma atrasa ao olhar, afunda no pouso,
+  e o balanço do passo cai junto com o som do pé.
+- `tools/gerar_armas.py` desenha tudo; teste novo `BracosNaMao`.
+
 ### Mapas remodelados
 - Metrô, Vila e Estação Polar ganharam uma camada de **acabamento** por
   cima do desenho de jogo (que não mudou — os testes de mapa passam

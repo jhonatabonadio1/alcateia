@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://v0mm7v8c7o47"
+path="res://.godot/imported/corpo_polimero_verde.obj-a103500989b32fec0ca276b7d5ff1bba.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_polimero_verde.obj-a103500989b32fec0ca276b7d5ff1bba.mesh"]
+
+source_file="res://assets/armas/sg552/corpo_polimero_verde.obj"
+dest_files=["res://.godot/imported/corpo_polimero_verde.obj-a103500989b32fec0ca276b7d5ff1bba.mesh", "res://.godot/imported/corpo_polimero_verde.obj-a103500989b32fec0ca276b7d5ff1bba.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

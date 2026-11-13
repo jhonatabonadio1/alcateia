@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dgtshuio7mpvv"
+path="res://.godot/imported/punho_esquerda_luva_reforco.obj-47d5872717c6dd14b6e7c81786b79c9c.mesh"
+
+[deps]
+
+files=["res://.godot/imported/punho_esquerda_luva_reforco.obj-47d5872717c6dd14b6e7c81786b79c9c.mesh"]
+
+source_file="res://assets/armas/bracos/punho_esquerda_luva_reforco.obj"
+dest_files=["res://.godot/imported/punho_esquerda_luva_reforco.obj-47d5872717c6dd14b6e7c81786b79c9c.mesh", "res://.godot/imported/punho_esquerda_luva_reforco.obj-47d5872717c6dd14b6e7c81786b79c9c.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

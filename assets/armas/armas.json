@@ -1,0 +1,847 @@
+{
+ "armas": {
+  "ak47": {
+   "limites": [
+    [
+     -0.025,
+     -0.24,
+     -0.7
+    ],
+    [
+     0.036,
+     0.118,
+     0.329
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.072,
+      0.01
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      -0.008,
+      -0.31
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/ak47/corpo_madeira.obj",
+     "material": "madeira",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/ak47/corpo_madeira_escura.obj",
+     "material": "madeira_escura",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/ak47/corpo_metal.obj",
+     "material": "metal",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/ak47/ferrolho_metal.obj",
+     "material": "metal",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://assets/armas/ak47/magazine_metal.obj",
+     "material": "metal",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.03,
+     0.05,
+     -0.11
+    ],
+    "Muzzle": [
+     0.0,
+     0.032,
+     -0.7
+    ]
+   }
+  },
+  "choque": {
+   "limites": [
+    [
+     -0.03,
+     -0.05,
+     -0.033
+    ],
+    [
+     0.036,
+     0.098,
+     0.026
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.026,
+      0.0,
+      -0.0
+     ],
+     "dedos": [
+      0.1,
+      0.1,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/choque/corpo_metal.obj",
+     "material": "metal",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/choque/corpo_metal_claro.obj",
+     "material": "metal_claro",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/choque/corpo_oliva.obj",
+     "material": "oliva",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/choque/pino_metal_claro.obj",
+     "material": "metal_claro",
+     "no": "Pino"
+    }
+   ],
+   "pontos": {}
+  },
+  "faca": {
+   "limites": [
+    [
+     -0.013,
+     -0.084,
+     -0.125
+    ],
+    [
+     0.013,
+     0.225,
+     0.061
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.013,
+      -0.02,
+      0.012
+     ],
+     "dedos": [
+      0.1,
+      0.15,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/faca/corpo_aco.obj",
+     "material": "aco",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/faca/corpo_borracha.obj",
+     "material": "borracha",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/faca/corpo_metal.obj",
+     "material": "metal",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/faca/corpo_polimero.obj",
+     "material": "polimero",
+     "no": ""
+    }
+   ],
+   "pontos": {}
+  },
+  "m16a2": {
+   "limites": [
+    [
+     -0.034,
+     -0.215,
+     -0.752
+    ],
+    [
+     0.036,
+     0.152,
+     0.347
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.014,
+      -0.36
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/m16a2/corpo_borracha.obj",
+     "material": "borracha",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/m16a2/corpo_metal.obj",
+     "material": "metal",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/m16a2/corpo_polimero.obj",
+     "material": "polimero",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/m16a2/ferrolho_metal.obj",
+     "material": "metal",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://assets/armas/m16a2/magazine_metal_claro.obj",
+     "material": "metal_claro",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.03,
+     0.035,
+     -0.11
+    ],
+    "Muzzle": [
+     0.0,
+     0.048,
+     -0.752
+    ]
+   }
+  },
+  "m3": {
+   "limites": [
+    [
+     -0.027,
+     -0.12,
+     -0.74
+    ],
+    [
+     0.036,
+     0.094,
+     0.345
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.022,
+      -0.07,
+      0.062
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      -0.01,
+      -0.4
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/m3/corpo_borracha.obj",
+     "material": "borracha",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/m3/corpo_metal.obj",
+     "material": "metal",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/m3/corpo_polimero.obj",
+     "material": "polimero",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/m3/bomba_polimero.obj",
+     "material": "polimero",
+     "no": "Bomba"
+    },
+    {
+     "malha": "res://assets/armas/m3/ferrolho_metal.obj",
+     "material": "metal",
+     "no": "Ferrolho"
+    }
+   ],
+   "pontos": {
+    "Carga": [
+     0.0,
+     -0.03,
+     -0.115
+    ],
+    "Ejecao": [
+     0.03,
+     0.045,
+     -0.12
+    ],
+    "Muzzle": [
+     0.0,
+     0.05,
+     -0.74
+    ]
+   }
+  },
+  "m9": {
+   "limites": [
+    [
+     -0.018,
+     -0.12,
+     -0.182
+    ],
+    [
+     0.018,
+     0.07,
+     0.066
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.018,
+      -0.055,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.004,
+      -0.118,
+      0.012
+     ],
+     "dedos": [
+      0.83,
+      0.25,
+      -0.5
+     ],
+     "palma": [
+      -0.2,
+      1,
+      -0.2
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/m9/corpo_borracha.obj",
+     "material": "borracha",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/m9/corpo_metal.obj",
+     "material": "metal",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/m9/corpo_polimero.obj",
+     "material": "polimero",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/m9/ferrolho_metal.obj",
+     "material": "metal",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://assets/armas/m9/ferrolho_metal_claro.obj",
+     "material": "metal_claro",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://assets/armas/m9/magazine_metal_claro.obj",
+     "material": "metal_claro",
+     "no": "Magazine"
+    },
+    {
+     "malha": "res://assets/armas/m9/magazine_polimero.obj",
+     "material": "polimero",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.02,
+     0.06,
+     -0.06
+    ],
+    "Muzzle": [
+     0.0,
+     0.045,
+     -0.182
+    ]
+   }
+  },
+  "sg552": {
+   "limites": [
+    [
+     -0.028,
+     -0.212,
+     -0.53
+    ],
+    [
+     0.036,
+     0.113,
+     0.296
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.075,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.004,
+      -0.29
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/sg552/corpo_borracha.obj",
+     "material": "borracha",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/sg552/corpo_metal.obj",
+     "material": "metal",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/sg552/corpo_polimero_verde.obj",
+     "material": "polimero_verde",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/sg552/ferrolho_metal.obj",
+     "material": "metal",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://assets/armas/sg552/magazine_ambar.obj",
+     "material": "ambar",
+     "no": "Magazine"
+    },
+    {
+     "malha": "res://assets/armas/sg552/magazine_polimero_verde.obj",
+     "material": "polimero_verde",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.03,
+     0.04,
+     -0.1
+    ],
+    "Muzzle": [
+     0.0,
+     0.04,
+     -0.53
+    ]
+   }
+  },
+  "ump45": {
+   "limites": [
+    [
+     -0.038,
+     -0.232,
+     -0.35
+    ],
+    [
+     0.024,
+     0.094,
+     0.28
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.018,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      -0.036,
+      -0.21
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/ump45/corpo_borracha.obj",
+     "material": "borracha",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/ump45/corpo_metal.obj",
+     "material": "metal",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/ump45/corpo_polimero.obj",
+     "material": "polimero",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/ump45/ferrolho_metal.obj",
+     "material": "metal",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://assets/armas/ump45/magazine_metal.obj",
+     "material": "metal",
+     "no": "Magazine"
+    },
+    {
+     "malha": "res://assets/armas/ump45/magazine_polimero.obj",
+     "material": "polimero",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.03,
+     0.04,
+     -0.1
+    ],
+    "Muzzle": [
+     0.0,
+     0.038,
+     -0.35
+    ]
+   }
+  }
+ },
+ "maos": {
+  "aberta": {
+   "direita": [
+    {
+     "malha": "res://assets/armas/bracos/aberta_direita_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://assets/armas/bracos/aberta_direita_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://assets/armas/bracos/aberta_direita_manga.obj",
+     "material": "manga"
+    }
+   ],
+   "esquerda": [
+    {
+     "malha": "res://assets/armas/bracos/aberta_esquerda_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://assets/armas/bracos/aberta_esquerda_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://assets/armas/bracos/aberta_esquerda_manga.obj",
+     "material": "manga"
+    }
+   ]
+  },
+  "apoio": {
+   "direita": [
+    {
+     "malha": "res://assets/armas/bracos/apoio_direita_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://assets/armas/bracos/apoio_direita_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://assets/armas/bracos/apoio_direita_manga.obj",
+     "material": "manga"
+    }
+   ],
+   "esquerda": [
+    {
+     "malha": "res://assets/armas/bracos/apoio_esquerda_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://assets/armas/bracos/apoio_esquerda_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://assets/armas/bracos/apoio_esquerda_manga.obj",
+     "material": "manga"
+    }
+   ]
+  },
+  "fechada": {
+   "direita": [
+    {
+     "malha": "res://assets/armas/bracos/fechada_direita_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://assets/armas/bracos/fechada_direita_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://assets/armas/bracos/fechada_direita_manga.obj",
+     "material": "manga"
+    }
+   ],
+   "esquerda": [
+    {
+     "malha": "res://assets/armas/bracos/fechada_esquerda_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://assets/armas/bracos/fechada_esquerda_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://assets/armas/bracos/fechada_esquerda_manga.obj",
+     "material": "manga"
+    }
+   ]
+  },
+  "punho": {
+   "direita": [
+    {
+     "malha": "res://assets/armas/bracos/punho_direita_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://assets/armas/bracos/punho_direita_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://assets/armas/bracos/punho_direita_manga.obj",
+     "material": "manga"
+    }
+   ],
+   "esquerda": [
+    {
+     "malha": "res://assets/armas/bracos/punho_esquerda_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://assets/armas/bracos/punho_esquerda_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://assets/armas/bracos/punho_esquerda_manga.obj",
+     "material": "manga"
+    }
+   ]
+  }
+ }
+}

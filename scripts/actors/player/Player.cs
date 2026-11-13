@@ -280,6 +280,11 @@ public partial class Player : CharacterBody3D
 	/// Agachado não emite nada. É o que dá ao agachamento um propósito
 	/// além de ficar menor.
 	/// </summary>
+	/// <summary>Os passos dados e o ponto da passada de agora — veja
+	/// <see cref="BodyNoise.StridePhase"/>.</summary>
+	public int Steps => _noise.Steps;
+	public float StridePhase => _noise.StridePhase;
+
 	private void UpdateNoise(double delta) =>
 		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, _howling, silent: _crouching || _walking, sprinting: IsSprinting);
 }

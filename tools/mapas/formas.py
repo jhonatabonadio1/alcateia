@@ -77,6 +77,22 @@ class Malha:
         m.tris = [tuple((g(p), g(n)) for p, n in t) for t in self.tris]
         return m
 
+    def euler(self, rx=0.0, ry=0.0, rz=0.0, desloca=(0, 0, 0)):
+        """Gira em X, depois em Y, depois em Z (graus) e desloca."""
+        m = self
+        if rx: m = m.rodar("x", rx)
+        if ry: m = m.mover(yaw=ry)
+        if rz: m = m.rodar("z", rz)
+        return m.mover(desloca) if any(desloca) or m is self else m
+
+    def espelhar_x(self):
+        """A imagem no espelho (mão esquerda a partir da direita)."""
+        m = Malha()
+        for a, b, c in self.tris:
+            f = lambda v: ((-v[0][0], v[0][1], v[0][2]), (-v[1][0], v[1][1], v[1][2]))
+            m.tris.append((f(a), f(c), f(b)))
+        return m
+
     def escala(self, sx, sy, sz):
         m = Malha()
         for t in self.tris:

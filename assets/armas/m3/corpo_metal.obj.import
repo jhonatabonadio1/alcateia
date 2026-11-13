@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://pcs8btf8f2qj"
+path="res://.godot/imported/corpo_metal.obj-532ff1805689d0f74cd30f1ee5147e82.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_metal.obj-532ff1805689d0f74cd30f1ee5147e82.mesh"]
+
+source_file="res://assets/armas/m3/corpo_metal.obj"
+dest_files=["res://.godot/imported/corpo_metal.obj-532ff1805689d0f74cd30f1ee5147e82.mesh", "res://.godot/imported/corpo_metal.obj-532ff1805689d0f74cd30f1ee5147e82.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

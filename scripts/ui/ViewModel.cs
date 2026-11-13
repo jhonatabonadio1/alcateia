@@ -1,64 +1,83 @@
 using Godot;
 
 /// <summary>
-/// O que o jogador vê nas próprias mãos: a arma que ele escolheu, não
-/// uma genérica. A AK aparece como AK, a M3 como M3 — o modelo vem de
-/// <see cref="WeaponModel"/>, o mesmo que os outros veem na sua mão e
-/// no chão quando você solta.
+/// O que o jogador vê nas próprias mãos: os dois braços segurando a arma
+/// que ele escolheu. A AK aparece como AK, a M3 como M3 — o modelo e a
+/// posição de cada mão vêm de <see cref="WeaponModel"/>, o mesmo que os
+/// outros veem na sua mão e no chão quando você solta.
 ///
-/// Reage a tudo o que a arma faz: coice e clarão no tiro, balanço no
-/// passo e a **recarga** — a arma inclina, o carregador sai por baixo e
-/// volta, e ela endireita no fim. A recarga segue o relógio da própria
-/// arma (<see cref="Weapon.ReloadProgress"/>), então uma recarga vazia
-/// mais longa dura mais na tela também. Na escopeta cada cartucho é um
-/// empurrão.
+/// Reage a tudo o que a arma e o corpo fazem:
+///
+/// - **Tiro**: coice para trás e para cima, clarão no cano, o ferrolho
+///   vai e volta, a cápsula salta (ViewModel.Effects).
+/// - **Recarga**: a mão esquerda larga o guarda-mão, tira o carregador,
+///   some com ele, volta com outro, encaixa e puxa o ferrolho se o pente
+///   esvaziou; na escopeta, um cartucho por vez (ViewModel.Hands). Segue
+///   o relógio da própria arma (<see cref="Weapon.ReloadProgress"/>):
+///   recarga mais longa dura mais na tela.
+/// - **Passo**: o balanço cai junto com o som do pé — os dois saem da
+///   mesma passada (<see cref="BodyNoise.StridePhase"/>).
+/// - **Olhar**: a arma atrasa um pouco em relação à câmera e alcança.
+/// - **Pouso**: afunda e volta.
+///
+/// É só o que se vê: nada aqui decide tiro, recarga ou movimento.
 /// </summary>
 public partial class ViewModel : Node3D
 {
-	[Export] public Color ClawColor = new Color(0.55f, 0.5f, 0.48f);
-
-	/// <summary>Recuo do disparo, em metros.</summary>
-	[Export] public float Kick = 0.08f;
-
-	/// <summary>Balanço do passo.</summary>
-	[Export] public float BobAmount = 0.015f;
-	[Export] public float BobSpeed = 9f;
+	/// <summary>Recuo do disparo, em metros, e o quanto o cano sobe, em graus.</summary>
+	[ExportGroup("Tiro")]
+	[Export] public float Kick = 0.055f;
+	[Export] public float KickPitch = 3.2f;
 
 	/// <summary>Duração do clarão do cano.</summary>
-	[Export] public float FlashLife = 0.045f;
+	[Export] public float FlashLife = 0.05f;
+	[Export] public Color FlashColor = new Color(1f, 0.82f, 0.45f);
 
-	[Export] public Color FlashColor = new Color(1f, 0.85f, 0.45f);
+	/// <summary>Balanço do passo: quanto sobe e quanto vai de lado, em metros.</summary>
+	[ExportGroup("Movimento")]
+	[Export] public float BobAmount = 0.011f;
+	[Export] public float BobSide = 0.007f;
+
+	/// <summary>Atraso da arma ao olhar: graus de arma por grau de
+	/// câmera num quadro, o teto em graus e a rapidez com que alcança.</summary>
+	[Export] public float SwayAmount = 0.55f;
+	[Export] public float SwayMax = 3.5f;
+	[Export] public float SwayReturn = 9f;
+
+	/// <summary>Quanto a arma afunda ao pousar, em metros por m/s de queda.</summary>
+	[Export] public float LandDip = 0.006f;
 
 	// Onde fica o punho de cada tipo de arma, a partir da câmera.
 	// O modelo é em tamanho real; na mão ele fica um pouco menor e
 	// levemente virado para o centro, para se ver o lado da arma e não
 	// só a coronha encostada na câmera.
-	private static readonly Vector3 RifleAnchor = new(0.17f, -0.17f, -0.44f);
-	private static readonly Vector3 PistolAnchor = new(0.14f, -0.16f, -0.34f);
-	private static readonly Vector3 KnifeAnchor = new(0.17f, -0.2f, -0.3f);
-	private static readonly Vector3 GrenadeAnchor = new(0.17f, -0.19f, -0.32f);
+	private static readonly Vector3 RifleAnchor = new(0.15f, -0.155f, -0.36f);
+	private static readonly Vector3 PistolAnchor = new(0.1f, -0.135f, -0.46f);
+	private static readonly Vector3 KnifeAnchor = new(0.2f, -0.13f, -0.38f);
+	private static readonly Vector3 GrenadeAnchor = new(0.19f, -0.12f, -0.38f);
 	private const float ModelScale = 0.72f;
 	private const float AimYaw = 4f;
 
 	private Weapon _weapon;
 	private FormController _form;
 	private CharacterBody3D _body;
+	private Player _player;
+	private Camera3D _camera;
 
 	private Node3D _held;
 	private string _heldId = "";
 	private Node3D _muzzle;
-	private Node3D _magazine;
-	private Vector3 _magRest;
-	private Node3D _claws;
-	private MeshInstance3D _flash;
-	private double _flashTimer;
 
 	private Vector3 _rest;
 	private float _recoil;
-	private float _bobTime;
-	private float _reloadPose;
 	private float _draw;
-	private float _windup;
+	private float _dip;
+	private float _dipSpeed;
+	private bool _wasOnFloor = true;
+	private float _fallSpeed;
+	private Vector2 _sway;
+	private Vector3 _lastLook;
+	private float _bobWeight;
 
 	/// <summary>
 	/// Ponta do cano da arma na mão, em coordenadas de mundo.
@@ -78,143 +97,123 @@ public partial class ViewModel : Node3D
 		return true;
 	}
 
+	/// <summary>A arma que está na mão agora (o modelo), ou null.</summary>
+	public Node3D Held => _held;
+
 	public override void _Ready()
 	{
+		_camera = GetParent<Camera3D>();
 		_body = GetParent().GetParent().GetParent<CharacterBody3D>();
+		_player = _body as Player;
 		_weapon = _body.GetNode<Weapon>("Weapon");
 		_form = _body.GetNode<FormController>("FormController");
 
 		_rest = Position;
-		_claws = BuildClaws();
+		_lastLook = _camera.GlobalRotation;
 
 		_weapon.SlotChanged += _ => Refresh();
 		_form.FormChanged += _ => Refresh();
 		_weapon.Fired += OnFired;
+		_weapon.AmmoChanged += OnAmmo;
 
-		_flash = new MeshInstance3D
-		{
-			Mesh = new SphereMesh { Radius = 0.055f, Height = 0.11f, RadialSegments = 8, Rings = 4 },
-			MaterialOverride = new StandardMaterial3D
-			{
-				AlbedoColor = FlashColor,
-				ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-				Transparency = BaseMaterial3D.TransparencyEnum.Alpha
-			},
-			Visible = false
-		};
-		AddChild(_flash);
-
+		BuildEffects();
 		Refresh();
 	}
 
 	public override void _Process(double delta)
 	{
 		float dt = (float)delta;
-		_recoil = Mathf.MoveToward(_recoil, 0f, dt * 1.4f);
-		_draw = Mathf.MoveToward(_draw, 0f, dt * 4f);
+		_recoil = Mathf.MoveToward(_recoil, 0f, dt * 5.5f);
+		_draw = Mathf.MoveToward(_draw, 0f, dt * 3.6f);
 
-		if (_flashTimer > 0)
-		{
-			_flashTimer -= delta;
-			if (_flashTimer <= 0) _flash.Visible = false;
-		}
+		Vector3 bob = UpdateBob(dt);
+		UpdateSway(dt);
+		UpdateLanding(dt);
 
-		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
-		bool walking = _body.IsOnFloor() && flat.Length() > 0.5f;
-		if (walking) _bobTime += dt * BobSpeed;
+		float kick = Ease(_recoil);
+		Position = _rest + bob + new Vector3(0, -_draw * 0.2f - _dip, Kick * kick);
+		RotationDegrees = new Vector3(_sway.Y + KickPitch * kick - _draw * 24f, _sway.X, -_sway.X * 0.6f);
 
-		float bobX = walking ? Mathf.Sin(_bobTime) * BobAmount : 0f;
-		float bobY = walking ? Mathf.Abs(Mathf.Cos(_bobTime)) * BobAmount : 0f;
-
-		Position = _rest + new Vector3(bobX, bobY - _draw * 0.18f, _recoil);
-
-		UpdateReload(dt);
+		UpdateHands(dt);
+		UpdateEffects(dt);
 	}
 
 	/// <summary>
-	/// A recarga em três tempos: inclina, o carregador sai e volta,
-	/// endireita. A pose inclinada entra e sai suave; o carregador
-	/// segue o progresso exato da recarga.
+	/// O balanço do passo, tirado da passada do corpo: zero em cada
+	/// pisada, no alto no meio dela, e de um lado para o outro a cada
+	/// passo. Como o som do pé sai da mesma conta, os dois caem juntos.
 	/// </summary>
-	private void UpdateReload(float dt)
+	private Vector3 UpdateBob(float dt)
 	{
-		if (_held == null) return;
+		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
+		bool walking = _body.IsOnFloor() && flat.Length() > 0.5f && _player != null;
+		_bobWeight = Mathf.MoveToward(_bobWeight, walking ? 1f : 0f, dt * 6f);
+		if (_player == null || _bobWeight <= 0f) return Vector3.Zero;
 
-		bool reloading = _weapon.IsReloading && _weapon.Held != null && !_form.IsWolf;
-		_reloadPose = Mathf.MoveToward(_reloadPose, reloading ? 1f : 0f, dt * 6f);
-
-		float p = reloading ? _weapon.ReloadProgress : 1f;
-		float jolt = 0f;
-
-		if (_magazine != null)
-		{
-			// 0–40%: sai por baixo. 40–55%: fora. 55–85%: volta. Depois,
-			// um tapa no carregador — o tranco que diz "pronto".
-			float drop = 0f;
-			if (reloading)
-			{
-				if (p < 0.4f) drop = Smooth(p / 0.4f);
-				else if (p < 0.55f) drop = 1f;
-				else if (p < 0.85f) drop = 1f - Smooth((p - 0.55f) / 0.3f);
-				else jolt = Mathf.Sin((p - 0.85f) / 0.15f * Mathf.Pi);
-			}
-
-			_magazine.Position = _magRest + new Vector3(0, -0.28f * drop, 0.04f * drop);
-			_magazine.Visible = drop < 0.95f;
-		}
-		else if (reloading)
-		{
-			// Escopeta: cada cartucho é um empurrão para dentro.
-			jolt = Mathf.Max(0f, Mathf.Sin(p * Mathf.Pi)) * 0.6f;
-		}
-
-		float r = Smooth(_reloadPose);
-
-		// Granada segura: o braço vai para trás e para cima, armando o
-		// arremesso, e fica lá até o botão soltar. Vai em 0,25 s; ao
-		// soltar ela sai da mão e a arma volta subindo.
-		bool winding = _weapon.IsGrenadeReady;
-		_windup = Mathf.MoveToward(_windup, winding ? 1f : 0f, dt * (winding ? 4f : 10f));
-		float w = Smooth(_windup);
-
-		_held.RotationDegrees = new Vector3(8f * r + 4f * jolt + 38f * w, AimYaw + 12f * r - 10f * w, 22f * r - 18f * w);
-		_held.Position = Anchor(_heldId)
-			+ new Vector3(-0.05f * r, -0.05f * r + 0.012f * jolt, 0.04f * r)
-			+ new Vector3(0.01f * w, 0.1f * w, 0.1f * w);
+		float stride = (_player.Steps + _player.StridePhase) * Mathf.Pi;
+		float speed = Mathf.Clamp(flat.Length() / 3.2f, 0.4f, 1.3f);
+		return new Vector3(Mathf.Sin(stride) * BobSide, Mathf.Abs(Mathf.Sin(stride)) * BobAmount - BobAmount * 0.5f, 0)
+			* (_bobWeight * speed);
 	}
 
-	private static float Smooth(float t)
+	/// <summary>A arma atrasa em relação ao olhar: virou a câmera, ela
+	/// fica um pouco para trás e alcança.</summary>
+	private void UpdateSway(float dt)
 	{
-		t = Mathf.Clamp(t, 0f, 1f);
-		return t * t * (3f - 2f * t);
+		Vector3 look = _camera.GlobalRotation;
+		float yaw = Mathf.RadToDeg(Mathf.AngleDifference(_lastLook.Y, look.Y));
+		float pitch = Mathf.RadToDeg(Mathf.AngleDifference(_lastLook.X, look.X));
+		_lastLook = look;
+
+		_sway.X = Mathf.Clamp(_sway.X - yaw * SwayAmount, -SwayMax, SwayMax);
+		_sway.Y = Mathf.Clamp(_sway.Y - pitch * SwayAmount, -SwayMax, SwayMax);
+		_sway = _sway.Lerp(Vector2.Zero, Mathf.Clamp(dt * SwayReturn, 0f, 1f));
+	}
+
+	/// <summary>Pousou: a arma afunda na proporção da queda e volta como mola.</summary>
+	private void UpdateLanding(float dt)
+	{
+		bool onFloor = _body.IsOnFloor();
+		if (!onFloor) _fallSpeed = Mathf.Max(_fallSpeed, -_body.Velocity.Y);
+		if (onFloor && !_wasOnFloor)
+		{
+			_dipSpeed += Mathf.Min(_fallSpeed, 12f) * LandDip * 14f;
+			_fallSpeed = 0;
+		}
+		_wasOnFloor = onFloor;
+
+		// Mola amortecida, sem passar do ponto mais de uma vez.
+		_dipSpeed += (-_dip * 160f - _dipSpeed * 16f) * dt;
+		_dip = Mathf.Clamp(_dip + _dipSpeed * dt, -0.02f, 0.08f);
 	}
 
 	private void OnFired()
 	{
-		_recoil = Kick;
-		if (_form.IsWolf || _muzzle == null || _weapon.Held == null) return;
+		if (_form.IsWolf) return;
 
-		_flash.Position = ToLocal(_muzzle.GlobalPosition);
-		_flash.Visible = true;
-		_flashTimer = FlashLife;
+		_recoil = 1f;
+		if (_weapon.HumanSlot == Slot.Knife)
+		{
+			StartSlash();
+			return;
+		}
+
+		if (_weapon.Held == null) return;
+		FireEffects();
 	}
 
 	/// <summary>Mostra só o que está na mão, com o modelo da arma
 	/// escolhida. Trocar de arma reconstrói e a nova sobe de baixo.</summary>
 	private void Refresh()
 	{
-		bool wolf = _form.IsWolf;
-		_claws.Visible = wolf;
-
-		string id = wolf ? "" : _weapon.HeldId;
-
+		string id = _form.IsWolf ? "" : _weapon.HeldId;
 		if (id == _heldId && _held != null) return;
 
 		_held?.QueueFree();
 		_held = null;
 		_muzzle = null;
-		_magazine = null;
 		_heldId = id;
+		ForgetHands();
 
 		if (id == "") return;
 
@@ -225,8 +224,7 @@ public partial class ViewModel : Node3D
 		AddChild(_held);
 
 		_muzzle = _held.GetNodeOrNull<Node3D>(WeaponModel.MuzzleName);
-		_magazine = _held.GetNodeOrNull<Node3D>(WeaponModel.MagazineName);
-		if (_magazine != null) _magRest = _magazine.Position;
+		BuildHands(id);
 
 		_draw = 1f;
 	}
@@ -239,31 +237,15 @@ public partial class ViewModel : Node3D
 		_ => RifleAnchor
 	};
 
-	// ------------------------------------------------------------------
-
-	/// <summary>Garras: três lâminas em leque, uma de cada lado.</summary>
-	private Node3D BuildClaws()
+	private static float Smooth(float t)
 	{
-		var root = new Node3D();
-		AddChild(root);
-
-		var material = new StandardMaterial3D { AlbedoColor = ClawColor, Roughness = 0.55f, Metallic = 0.1f };
-
-		for (int side = -1; side <= 1; side += 2)
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				var claw = new MeshInstance3D
-				{
-					Mesh = new BoxMesh { Size = new Vector3(0.025f, 0.025f, 0.22f) },
-					MaterialOverride = material,
-					Position = new Vector3(side * (0.18f + i * 0.05f), -0.26f + i * 0.02f, -0.34f),
-					RotationDegrees = new Vector3(-12f, side * (8f + i * 6f), 0)
-				};
-				root.AddChild(claw);
-			}
-		}
-
-		return root;
+		t = Mathf.Clamp(t, 0f, 1f);
+		return t * t * (3f - 2f * t);
 	}
+
+	/// <summary>Sai rápido e volta devagar: o coice.</summary>
+	private static float Ease(float t) => t * t * (3f - 2f * t);
+
+	/// <summary>Quanto de um trecho [de, até] já passou, alisado.</summary>
+	private static float Span(float p, float from, float to) => Smooth((p - from) / Mathf.Max(to - from, 0.0001f));
 }

@@ -25,6 +25,14 @@ public sealed class BodyNoise
 	private readonly BodyNoiseProfile _profile;
 	private bool _wasAirborne;
 	private float _walked;
+	private float _stride = 1f;
+
+	/// <summary>Quantos passos o corpo já deu, e em que ponto da passada
+	/// de agora ele está (0 logo depois da pisada, 1 na seguinte). Conta
+	/// também quando o passo é mudo (agachado, Shift). É por aqui que o
+	/// balanço da arma na mão cai junto com o som do pé.</summary>
+	public int Steps { get; private set; }
+	public float StridePhase => Mathf.Clamp(_walked / Mathf.Max(_stride, 0.01f), 0f, 1f);
 	private double _howlTimer;
 
 	public BodyNoise(Node3D source, BodyNoiseProfile profile)
@@ -53,10 +61,11 @@ public sealed class BodyNoise
 			_howlTimer = 0;
 		}
 
-		if (!grounded || silent) return;
+		if (!grounded) return;
 
 		float stride = !isWolf ? _profile.StrideHuman : sprinting ? _profile.StrideWolfSprint : _profile.StrideWolf;
 		float speed = new Vector3(velocity.X, 0, velocity.Z).Length();
+		_stride = stride;
 
 		// Parado, o próximo pé cai depois de meia passada: quem sai do
 		// lugar não espera um passo inteiro para fazer barulho.
@@ -69,6 +78,11 @@ public sealed class BodyNoise
 		_walked += speed * (float)delta;
 		if (_walked < stride) return;
 		_walked -= stride;
+		Steps++;
+
+		// O pé caiu de qualquer jeito; o ruído é que não sai de quem anda
+		// em silêncio.
+		if (silent) return;
 
 		NoiseBus.Emit(_source.GlobalPosition, isWolf ? _profile.StepWolf : _profile.StepHuman, NoiseKind.Step, _source);
 	}

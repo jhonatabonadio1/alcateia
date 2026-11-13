@@ -471,8 +471,13 @@ Mexa com cuidado: muitos destes são medidas.
 `CorpseHold` / `CorpseFade` 1,2 s, `TintByTeam`, `BlueBody`,
 `OrangeBody`.
 
-**Arma na tela** (`scripts/ui/ViewModel.cs`): `Kick` 0,08 m,
-`BobAmount` 0,015, `BobSpeed` 9, `FlashLife` 0,045 s.
+**Arma na tela** (`scripts/ui/ViewModel.cs`): `Kick` 0,055 m e
+`KickPitch` 3,2° (o coice: para trás e o cano para cima), `FlashLife`
+0,05 s, `BobAmount` 0,011 m e `BobSide` 0,007 m (balanço do passo, no
+ritmo da passada), `SwayAmount` 0,55 / `SwayMax` 3,5° / `SwayReturn` 9
+(atraso ao olhar), `LandDip` 0,006 m por m/s de queda. Onde a arma fica
+na tela: as âncoras no começo do arquivo (`RifleAnchor`...). Onde cada
+mão fica em cada arma, e o desenho das armas: `tools/gerar_armas.py`.
 
 **Mira** (`scripts/ui/Crosshair.cs`): `PixelsPerDegree` 9, `MinGap`
 5, `Length` 8, `Thickness` 2.

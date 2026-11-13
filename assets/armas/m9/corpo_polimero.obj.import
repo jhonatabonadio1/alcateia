@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://b6ivb7p84yq5r"
+path="res://.godot/imported/corpo_polimero.obj-e7caa60146be8c6d5c97710c07ff66fd.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_polimero.obj-e7caa60146be8c6d5c97710c07ff66fd.mesh"]
+
+source_file="res://assets/armas/m9/corpo_polimero.obj"
+dest_files=["res://.godot/imported/corpo_polimero.obj-e7caa60146be8c6d5c97710c07ff66fd.mesh", "res://.godot/imported/corpo_polimero.obj-e7caa60146be8c6d5c97710c07ff66fd.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
