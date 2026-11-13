@@ -2,6 +2,18 @@
 
 ## Não lançado
 
+### Opções → Vídeo: suavização e qualidade (13/11)
+- **Suavização (anti-aliasing)**: o jogo não tinha nenhuma — bordas
+  serrilhadas em grade, palmeira e corrimão. Agora: Desligada, FXAA,
+  MSAA 2×, **MSAA 4× (padrão)**, MSAA 4× + FXAA e TAA. Vale na janela
+  inteira, do menu à partida, na hora.
+- **Qualidade**: Baixa, Média, **Alta (padrão)** e Ultra. Mexe no tamanho
+  e no filtro das sombras e nos efeitos de tela: oclusão nos cantos
+  (SSAO) e brilho das luzes da Média para cima, luz que rebate nas
+  paredes (SSIL) da Alta para cima, reflexo no chão e nas superfícies
+  lisas (SSR) só na Ultra. Os efeitos só ligam onde o mapa os tem.
+- No menu e no Esc da partida. Teste novo: `Suavizacao`.
+
 ### Luz dos mapas no Forward+ (13/11)
 - **Vila, Hangar e Polar estavam estourados** (o Jhon: tudo branco,
   difícil de ver os outros jogadores). A luz tinha sido acertada no

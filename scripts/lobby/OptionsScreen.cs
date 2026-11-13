@@ -32,6 +32,7 @@ public partial class OptionsScreen : LobbyScreen
 		VBoxContainer middle = UiKit.Column(UiTokens.S4);
 		middle.CustomMinimumSize = new Vector2(540, 0);
 		columns.AddChild(middle);
+		middle.AddChild(VideoPanel());
 		middle.AddChild(CrosshairPanel());
 
 		columns.AddChild(ControlsPanel());
@@ -64,6 +65,33 @@ public partial class OptionsScreen : LobbyScreen
 		column.AddChild(Slider("Sensibilidade", v.Sensitivity, x => { v.Sensitivity = x; Settings.Save(); },
 			0.25f, 3f, x => $"{x:0.00}×"));
 		column.AddChild(UiKit.Paragraph("Vale também no meio da partida.", "Caption"));
+		return panel;
+	}
+
+	/// <summary>Vídeo: a suavização das bordas (anti-aliasing) e a
+	/// qualidade dos efeitos.</summary>
+	public static Control VideoPanel()
+	{
+		(PanelContainer panel, VBoxContainer column) = Section("Vídeo");
+		Label note = UiKit.Paragraph(Settings.AntiAliasNotes[Math.Clamp(Settings.Values.AntiAliasing, 0, Settings.AntiAliasNotes.Length - 1)], "Caption");
+		column.AddChild(Labeled("Suavização", UiKit.Picker(Settings.AntiAliasNames, Settings.Values.AntiAliasing, i =>
+		{
+			Settings.Values.AntiAliasing = i;
+			Settings.Save();
+			Settings.ApplyVideo(((SceneTree)Engine.GetMainLoop()).Root);
+			note.Text = Settings.AntiAliasNotes[i];
+		})));
+		column.AddChild(note);
+
+		Label quality = UiKit.Paragraph(Settings.QualityNotes[Math.Clamp(Settings.Values.Quality, 0, Settings.QualityNotes.Length - 1)], "Caption");
+		column.AddChild(Labeled("Qualidade", UiKit.Picker(Settings.QualityNames, Settings.Values.Quality, i =>
+		{
+			Settings.Values.Quality = i;
+			Settings.Save();
+			Settings.ApplyQuality((SceneTree)Engine.GetMainLoop());
+			quality.Text = Settings.QualityNotes[i];
+		})));
+		column.AddChild(quality);
 		return panel;
 	}
 

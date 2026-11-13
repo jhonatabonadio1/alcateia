@@ -21,6 +21,14 @@ public static class Settings
 		/// <summary>Multiplicador sobre a sensibilidade base do Player.</summary>
 		public float Sensitivity { get; set; } = 1f;
 
+		/// <summary>Suavização das bordas (anti-aliasing), um de
+		/// <see cref="AntiAliasNames"/>. MSAA 4× por padrão.</summary>
+		public int AntiAliasing { get; set; } = 3;
+
+		/// <summary>Qualidade dos efeitos, um de <see cref="QualityNames"/>.
+		/// Alta por padrão.</summary>
+		public int Quality { get; set; } = 2;
+
 		/// <summary>A mira do jogador. Arquivo antigo sem ela: a de sempre.</summary>
 		public CrosshairSettings Crosshair { get; set; } = new();
 	}
@@ -61,6 +69,98 @@ public static class Settings
 		}
 
 		Changed?.Invoke();
+	}
+
+	/// <summary>As opções de suavização, na ordem salva.</summary>
+	public static readonly string[] AntiAliasNames =
+		{ "Desligada", "FXAA (leve)", "MSAA 2×", "MSAA 4×", "MSAA 4× + FXAA", "TAA (mais lisa)" };
+
+	/// <summary>O que cada opção custa e como fica.</summary>
+	public static readonly string[] AntiAliasNotes =
+	{
+		"Bordas serrilhadas. A mais leve.",
+		"Filtro na tela inteira: quase de graça, mas borra um pouco.",
+		"Bordas lisas nos objetos, custo baixo.",
+		"Bordas lisas nos objetos. O padrão.",
+		"MSAA 4× e o filtro por cima, que pega também folha e grade.",
+		"A mais lisa, também em folha e grade; deixa um leve rastro no que se move rápido."
+	};
+
+	public static readonly string[] QualityNames = { "Baixa", "Média", "Alta", "Ultra" };
+
+	public static readonly string[] QualityNotes =
+	{
+		"Sombra simples, sem oclusão nem brilho. Para máquina fraca.",
+		"Sombra suave, oclusão nos cantos e brilho das luzes.",
+		"Mais a luz que rebate nas paredes e sombra mais nítida. O padrão.",
+		"Mais reflexo no chão e nas superfícies lisas, e a sombra mais fina."
+	};
+
+	/// <summary>
+	/// Aplica a qualidade: o tamanho e o filtro das sombras (no motor,
+	/// para todos os mapas) e os efeitos de cada ambiente aberto —
+	/// oclusão nos cantos (SSAO), luz que rebate (SSIL), reflexo na tela
+	/// (SSR) e brilho (glow). Os efeitos só ligam onde o mapa os quer: um
+	/// mapa sem brilho continua sem brilho na Ultra.
+	/// </summary>
+	public static void ApplyQuality(SceneTree tree)
+	{
+		int q = Math.Clamp(Values.Quality, 0, QualityNames.Length - 1);
+
+		RenderingServer.DirectionalShadowAtlasSetSize(q switch { 0 => 2048, 3 => 8192, _ => 4096 }, true);
+		var filter = q switch
+		{
+			0 => RenderingServer.ShadowQuality.Hard,
+			1 => RenderingServer.ShadowQuality.SoftLow,
+			2 => RenderingServer.ShadowQuality.SoftMedium,
+			_ => RenderingServer.ShadowQuality.SoftHigh
+		};
+		RenderingServer.DirectionalSoftShadowFilterSetQuality(filter);
+		RenderingServer.PositionalSoftShadowFilterSetQuality(filter);
+
+		if (tree?.Root == null) return;
+		tree.Root.MeshLodThreshold = q == 0 ? 2f : q == 3 ? 0.5f : 1f;
+		foreach (Node node in tree.Root.FindChildren("*", nameof(WorldEnvironment), true, false))
+			if (node is WorldEnvironment world) ApplyQuality(world.Environment);
+	}
+
+	/// <summary>Os efeitos de um ambiente na qualidade escolhida. Guarda,
+	/// na primeira vez, o que o mapa pediu.</summary>
+	public static void ApplyQuality(Godot.Environment env)
+	{
+		if (env == null) return;
+		int q = Math.Clamp(Values.Quality, 0, QualityNames.Length - 1);
+
+		if (!env.HasMeta("mapa_ssao"))
+		{
+			env.SetMeta("mapa_ssao", env.SsaoEnabled);
+			env.SetMeta("mapa_glow", env.GlowEnabled);
+		}
+		bool ssao = env.GetMeta("mapa_ssao").AsBool(), glow = env.GetMeta("mapa_glow").AsBool();
+
+		env.SsaoEnabled = ssao && q >= 1;
+		env.GlowEnabled = glow && q >= 1;
+		env.SsilEnabled = ssao && q >= 2;
+		env.SsilIntensity = 0.8f;
+		env.SsrEnabled = ssao && q >= 3;
+		env.SsrMaxSteps = 48;
+	}
+
+	/// <summary>Aplica a suavização na tela do jogo (a janela inteira:
+	/// vale do menu à partida, sem recarregar nada).</summary>
+	public static void ApplyVideo(Viewport view)
+	{
+		if (view == null) return;
+		int mode = Math.Clamp(Values.AntiAliasing, 0, AntiAliasNames.Length - 1);
+
+		view.Msaa3D = mode switch
+		{
+			2 => Viewport.Msaa.Msaa2X,
+			3 or 4 => Viewport.Msaa.Msaa4X,
+			_ => Viewport.Msaa.Disabled
+		};
+		view.ScreenSpaceAA = mode is 1 or 4 ? Viewport.ScreenSpaceAAEnum.Fxaa : Viewport.ScreenSpaceAAEnum.Disabled;
+		view.UseTaa = mode == 5;
 	}
 
 	/// <summary>Aplica os volumes nos canais de áudio. Os canais são

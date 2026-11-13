@@ -42,8 +42,9 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Animação de quadrúpede e de ataques do lobo melhores.**
 - **Sombreamento melhor nos mapas, levando em conta o personagem**
   (sombra do personagem e luz do mapa sobre ele).
-- **Qualidade de textura baixa, média e alta** nas opções (e, junto,
-  sombra, oclusão, distância de desenho). Hoje não há opção gráfica.
+- **Qualidade de textura baixa, média e alta** nas opções. Sombra,
+  oclusão, reflexo e suavização já têm opção (Opções → Vídeo, 13/11);
+  falta a resolução das texturas e a distância de desenho.
 - **Áudios melhores e mais precisos.**
 - **HUD, fontes e menu melhores.**
 

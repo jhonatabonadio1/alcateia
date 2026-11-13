@@ -124,3 +124,66 @@ public sealed class CrosshairOptionsTest : RegressionTest
 	private static T Find<T>(Node root, System.Func<T, bool> test) where T : Node =>
 		root.FindChildren("*", "", true, false).OfType<T>().FirstOrDefault(test);
 }
+
+/// <summary>A suavização (anti-aliasing) das Opções vai para a janela do
+/// jogo na hora, e o padrão é MSAA 4×.</summary>
+public sealed class AntiAliasTest : RegressionTest
+{
+	public override string Name => "Suavizacao";
+	public override string Description => "Opções → Vídeo: a suavização e a qualidade escolhidas valem na hora (MSAA 4× e Alta por padrão)";
+	// Num mapa de verdade: o treino não tem oclusão, e sem ela os efeitos não ligam.
+	public override string Scene => RegressionBench.Match;
+
+	public override async Task Run(RegressionBench b)
+	{
+		int saved = Settings.Values.AntiAliasing;
+		Viewport root = b.GetTree().Root;
+		try
+		{
+			b.Check(new Settings.Data().AntiAliasing == 3, "padrão: MSAA 4×");
+
+			(int mode, Viewport.Msaa msaa, Viewport.ScreenSpaceAAEnum fxaa, bool taa)[] cases =
+			{
+				(0, Viewport.Msaa.Disabled, Viewport.ScreenSpaceAAEnum.Disabled, false),
+				(1, Viewport.Msaa.Disabled, Viewport.ScreenSpaceAAEnum.Fxaa, false),
+				(2, Viewport.Msaa.Msaa2X, Viewport.ScreenSpaceAAEnum.Disabled, false),
+				(3, Viewport.Msaa.Msaa4X, Viewport.ScreenSpaceAAEnum.Disabled, false),
+				(4, Viewport.Msaa.Msaa4X, Viewport.ScreenSpaceAAEnum.Fxaa, false),
+				(5, Viewport.Msaa.Disabled, Viewport.ScreenSpaceAAEnum.Disabled, true),
+			};
+			foreach (var (mode, msaa, fxaa, taa) in cases)
+			{
+				Settings.Values.AntiAliasing = mode;
+				Settings.ApplyVideo(root);
+				await b.Frames(1);
+				b.Check(root.Msaa3D == msaa && root.ScreenSpaceAA == fxaa && root.UseTaa == taa,
+					$"{Settings.AntiAliasNames[mode]}: MSAA {root.Msaa3D}, filtro {root.ScreenSpaceAA}, TAA {root.UseTaa}");
+			}
+
+			// A qualidade liga e desliga os efeitos do mapa aberto.
+			int quality = Settings.Values.Quality;
+			Godot.Environment env = root.FindChildren("*", nameof(WorldEnvironment), true, false).OfType<WorldEnvironment>().FirstOrDefault()?.Environment;
+			b.Check(env != null, "o mapa tem ambiente");
+			if (env != null)
+			{
+				b.Check(new Settings.Data().Quality == 2, "padrão: qualidade alta");
+				Settings.Values.Quality = 0;
+				Settings.ApplyQuality(b.GetTree());
+				b.Check(!env.SsaoEnabled && !env.SsilEnabled && !env.SsrEnabled && !env.GlowEnabled, "baixa: sem efeitos");
+				Settings.Values.Quality = 2;
+				Settings.ApplyQuality(b.GetTree());
+				b.Check(env.SsaoEnabled && env.SsilEnabled && !env.SsrEnabled && env.GlowEnabled, "alta: oclusão, luz rebatida e brilho, sem reflexo");
+				Settings.Values.Quality = 3;
+				Settings.ApplyQuality(b.GetTree());
+				b.Check(env.SsrEnabled, "ultra: com reflexo");
+				Settings.Values.Quality = quality;
+				Settings.ApplyQuality(b.GetTree());
+			}
+		}
+		finally
+		{
+			Settings.Values.AntiAliasing = saved;
+			Settings.ApplyVideo(root);
+		}
+	}
+}

@@ -27,6 +27,18 @@ public partial class Inicio : Node
 
 	public override void _Ready()
 	{
+		// A suavização vale para a janela inteira, desde a primeira cena
+		// (também quando a partida é aberta direto do editor).
+		Settings.ApplyVideo(GetTree().Root);
+
+		// A qualidade: as sombras agora, e os efeitos de cada mapa quando
+		// o ambiente dele entra na cena.
+		Settings.ApplyQuality(GetTree());
+		GetTree().NodeAdded += node =>
+		{
+			if (node is WorldEnvironment world) Settings.ApplyQuality(world.Environment);
+		};
+
 		string[] args = OS.GetCmdlineUserArgs();
 		if (System.Array.IndexOf(args, "--servidor") >= 0) Callable.From(BecomeServer).CallDeferred();
 

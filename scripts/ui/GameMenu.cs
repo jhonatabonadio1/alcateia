@@ -170,6 +170,7 @@ public partial class GameMenu : CanvasLayer
 		left.CustomMinimumSize = new Vector2(440, 0);
 		left.AddChild(OptionsScreen.AudioPanel());
 		left.AddChild(OptionsScreen.MousePanel());
+		left.AddChild(OptionsScreen.VideoPanel());
 		columns.AddChild(left);
 		Control crosshair = OptionsScreen.CrosshairPanel();
 		crosshair.CustomMinimumSize = new Vector2(520, 0);
