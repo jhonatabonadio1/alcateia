@@ -36,8 +36,6 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 - **Abrir a mira com o botão direito**, nas armas que têm mira (zoom,
   arma no centro da tela, menos dispersão). Hoje não existe.
-- **Configurar a própria mira (crosshair)**: cor, tamanho, espessura,
-  ponto, distância. Hoje a mira existe (`Crosshair.cs`), mas é fixa.
 - **Efeito de sangue nos tiros** (no corpo atingido e no chão/parede
   atrás).
 - **Efeito de tiro melhor** (clarão, fumaça, traçante, marca na parede).
