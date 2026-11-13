@@ -18,6 +18,7 @@ do `docs/DESIGN.md` do sistema que for mexer.
 > | `docs/ARQUITETURA.md` | como o código está montado e onde mexer em cada coisa |
 > | `docs/AJUSTES.md` | todo número regulável, com o valor atual e onde mudar |
 > | `docs/MAPAS.md` | os mapas, como são gerados e como fazer um novo |
+> | `docs/PACOTES.md` | de onde vem a arte (texturas, objetos, céus, braços, armas), licenças e como baixar |
 > | `docs/decisoes/` | as decisões de arquitetura (ADR) |
 > | `docs/ARSENAL.md`, `docs/CONJUNTOS.md`, `docs/UI.md` | especificações de armas, economia e interface |
 > | `docs/CHANGELOG.md` | o que entrou em cada versão |

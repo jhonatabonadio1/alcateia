@@ -1,5 +1,15 @@
 # Changelog
 
+## Não lançado
+
+### Arte de verdade a caminho
+- `tools/baixar_pacotes.py`: um comando baixa do Poly Haven (CC0) as
+  texturas fotografadas, os objetos de cenário e os céus dos mapas para
+  `assets/pacotes/` (fora do git e do Godot).
+- `docs/PACOTES.md`: a lista do que baixar, de onde, com que licença —
+  incluindo os braços em primeira pessoa e as armas do Sketchfab
+  (CC BY, baixados à mão).
+
 ## v0.28.0 — 2026-11-13 (o jogo profissional, parte 1: mapas)
 
 ### Adicionado

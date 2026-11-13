@@ -28,3 +28,7 @@ assets/characters/**/*_[0-9].png
 assets/characters/**/*_[0-9].png.import
 assets/characters/**/*_alpha_[0-9].png
 assets/characters/**/*_alpha_[0-9].png.import
+
+# Pacotes de arte baixados (Poly Haven, Sketchfab): matéria-prima,
+# grande, refeita por tools/baixar_pacotes.py. Veja docs/PACOTES.md.
+assets/pacotes/
