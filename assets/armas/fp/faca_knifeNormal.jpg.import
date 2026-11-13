@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://oxqo4r7sn5uf"
-path="res://.godot/imported/faca_armRoughness.jpg-234f04affe4285f055a68119d023df86.ctex"
+uid="uid://da3xylwpwj4lw"
+path="res://.godot/imported/faca_knifeNormal.jpg-3a432ce29e98c495b1faaab4e6e214bf.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "d5e8f900cf3c008b4690d037b8a7d06d"
+"md5": "55816aa168317143cb356eb77df69e92"
 }
 
 [deps]
 
-source_file="res://assets/armas/fp/faca_armRoughness.jpg"
-dest_files=["res://.godot/imported/faca_armRoughness.jpg-234f04affe4285f055a68119d023df86.ctex"]
+source_file="res://assets/armas/fp/faca_knifeNormal.jpg"
+dest_files=["res://.godot/imported/faca_knifeNormal.jpg-3a432ce29e98c495b1faaab4e6e214bf.ctex"]
 
 [params]
 

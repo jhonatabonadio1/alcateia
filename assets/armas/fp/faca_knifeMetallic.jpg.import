@@ -2,19 +2,19 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bg8bg1sckjlmu"
-path="res://.godot/imported/faca_knife100_Material_Normal.jpg-f4cc86db8081f7efb2234d68049011af.ctex"
+uid="uid://nq11pwx8p2av"
+path="res://.godot/imported/faca_knifeMetallic.jpg-a44dd0f59ff0a6355589875437d93f17.ctex"
 metadata={
 "vram_texture": false
 }
 generator_parameters={
-"md5": "3de7739820a343a1fdf02ab4a0bc31fd"
+"md5": "c747a295fd494a159f700d71e98790ea"
 }
 
 [deps]
 
-source_file="res://assets/armas/fp/faca_knife100_Material_Normal.jpg"
-dest_files=["res://.godot/imported/faca_knife100_Material_Normal.jpg-f4cc86db8081f7efb2234d68049011af.ctex"]
+source_file="res://assets/armas/fp/faca_knifeMetallic.jpg"
+dest_files=["res://.godot/imported/faca_knifeMetallic.jpg-a44dd0f59ff0a6355589875437d93f17.ctex"]
 
 [params]
 

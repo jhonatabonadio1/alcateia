@@ -20,6 +20,17 @@
     são carregados ao entrar na partida;
   - parado e andar repetem sem tranco; quem não tem animação de sacar
     sobe de baixo; pistola, faca e granada um pouco mais altas.
+- **Faca com animação própria**: o conjunto "knife animated" (DJMaesen,
+  CC BY) que o Jhon trouxe — braços, faca e animações. Atacar alterna a
+  estocada e o corte de lado, no tempo entre dois golpes; sacar e parado
+  também são do conjunto. Sai a faca Gerber presa no braço da pistola e
+  o golpe feito por código.
+- **Braços reiniciando**: no M16 (a arma com que se nasce) o trecho de
+  "parado" pegava o fim do saque, e a cada 0,9 s os braços pulavam 10 cm.
+  Trecho corrigido; nos conjuntos de linha do tempo única o parado vai e
+  volta em vez de emendar; e a troca entre parado e andar espera 0,18 s
+  (perder o chão por um quadro recomeçava a animação). O teste agora
+  mede, arma por arma, que parado não há recomeço nem tranco.
 - **Personagens tremendo e piscando**: a física anda 60 passos por
   segundo e a tela do Mac no ritmo dela (120 Hz, ou 60 Hz com quadros
   desencontrados). O corpo era desenhado onde o último passo o deixou: a

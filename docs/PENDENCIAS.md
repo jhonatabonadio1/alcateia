@@ -11,9 +11,9 @@ Ponha aqui, com o que se sabe dele.
 
 | Defeito | O que se sabe |
 |---|---|
-| **Faca e granada** | Corrigido (13/11) com os modelos do Sketchfab na mão do braço da pistola. O Jhon pôs no Mac uma animação de faca própria: falta trazer e usar no lugar do golpe feito por código. |
+| **Faca e granada** | Corrigido (13/11) com os modelos do Sketchfab na mão do braço da pistola. A faca agora usa o conjunto animado que o Jhon trouxe (golpes animados). Falta o Jhon conferir. |
 | **Glitches nos mapas** | Corrigidos os que se acharam (letreiro piscando, piso da Polar, cano atravessando a parede). Se ainda houver, falta print ou o lugar exato. |
-| **Glitches na troca de arma** | Corrigidos os que se acharam (tamanho e lugar dos braços, travada na primeira troca, sacar). Falta o Jhon conferir. |
+| **Glitches na troca de arma / braços reiniciando** | Corrigidos os que se acharam (tamanho e lugar dos braços, travada na primeira troca, sacar; o pulo do M16 parado e o recomeço ao perder o chão). Falta o Jhon conferir. |
 | **Personagens tremendo e piscando** | Corrigido (13/11): o desenho agora anda entre os passos da física (`VisualSmoothing`) e a borda vermelha saiu de cima da pele. Não deu para ver no Mac daqui: falta o Jhon conferir; se continuar, um vídeo curto mostra se é tremor de posição, de animação ou de sombra. |
 
 ## Pedido e ainda não feito

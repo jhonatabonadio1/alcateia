@@ -17,10 +17,13 @@ using System.Collections.Generic;
 ///   com a recarga de verdade (<see cref="Weapon.ReloadDuration"/>) — o
 ///   de pente vazio quando o pente esvaziou; na escopeta, um ciclo por
 ///   cartucho;
+/// - **golpe** e **golpe2** na faca, um de cada vez (a estocada e o corte
+///   de lado), no tempo entre dois golpes;
 /// - **sacar** ao trocar de arma, **andar** ao andar, **parado** no resto.
 ///
-/// Faca e granada não têm conjunto: continuam com as mãos de
-/// <see cref="WeaponModel"/> (ViewModel.Hands).
+/// A granada não tem conjunto próprio: vai na mão do braço da pistola, e
+/// o arremesso é movimento de código. A faca sem "golpe" na ficha também
+/// cai no golpe de código.
 /// </summary>
 public partial class ViewModel
 {
@@ -69,6 +72,10 @@ public partial class ViewModel
 
 	/// <summary>A animação dos braços que está tocando ("parado", "tiro"...).</summary>
 	public string RigAnimation => _rigPlaying;
+
+	/// <summary>Quantas vezes uma animação dos braços começou do início.
+	/// Parado ou andando sem parar, não pode crescer: o teste confere.</summary>
+	public int RigStarts { get; private set; }
 
 	private static Godot.Collections.Dictionary RigSheet()
 	{
@@ -156,7 +163,13 @@ public partial class ViewModel
 
 			// Parado, andar e correr se repetem sem emenda; o arquivo vem sem
 			// laço, e sem ele o fim de cada volta dá um tranco.
-			if (name.AsString() is "parado" or "andar" or "correr" || clip == "Scene")
+			//
+			// Linha do tempo única ("Scene", o M16 e a faca): o trecho de
+			// parado não fecha em si mesmo (no M16 o fim fica a 10 cm do
+			// começo, e a cada volta os braços pulavam). Vai e volta.
+			if (clip == "Scene")
+				_rigPlayer.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Pingpong;
+			else if (name.AsString() is "parado" or "andar" or "correr")
 				_rigPlayer.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Linear;
 		}
 
@@ -192,6 +205,26 @@ public partial class ViewModel
 		bool sameClip = _rigPlayer.CurrentAnimation == clip.Name;
 		_rigPlayer.PlaySection(clip.Name, clip.From, clip.To, sameClip ? 0 : blend, speed);
 		_rigPlaying = name;
+		RigStarts++;
+	}
+
+	private int _swing;
+
+	/// <summary>O golpe da faca animado: alterna os golpes do conjunto, no
+	/// tempo entre dois golpes de verdade. Falso se o conjunto não tem
+	/// golpe — aí vale o golpe de código.</summary>
+	private bool RigSwing()
+	{
+		if (!HasRig) return false;
+
+		string name = _swing % 2 == 1 && _rigClips.ContainsKey("golpe2") ? "golpe2" : "golpe";
+		if (!_rigClips.TryGetValue(name, out Clip clip)) return false;
+
+		_swing++;
+		double seconds = Mathf.Min(clip.Length, _weapon.KnifeCooldown);
+		PlayRig(name, seconds, 0.05);
+		_rigBusy = seconds;
+		return true;
 	}
 
 	private void RigFired()
@@ -245,6 +278,24 @@ public partial class ViewModel
 
 		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
 		string rest = _body.IsOnFloor() && flat.Length() > 0.5f && _rigClips.ContainsKey("andar") ? "andar" : "parado";
-		if (_rigPlaying != rest || !_rigPlayer.IsPlaying()) PlayRig(rest, 0, 0.15);
+
+		// Só troca entre parado e andar depois de o novo estado durar um
+		// pouco. Descendo escada ou esbarrando numa quina o corpo perde o
+		// chão por um quadro, e cada troca recomeçava a animação do
+		// início: os braços ficavam reiniciando (Jhon, 13/11).
+		bool resting = _rigPlaying is "parado" or "andar";
+		if (resting && _rigPlaying != rest && _rigPlayer.IsPlaying())
+		{
+			_rigRestHold += dt;
+			if (_rigRestHold < RigRestDelay) return;
+		}
+		_rigRestHold = 0f;
+
+		if (_rigPlaying != rest || !_rigPlayer.IsPlaying()) PlayRig(rest, 0, 0.2);
 	}
+
+	/// <summary>Quanto o corpo tem de ficar andando (ou parado) para os
+	/// braços trocarem de animação, em segundos.</summary>
+	private const float RigRestDelay = 0.18f;
+	private float _rigRestHold;
 }
