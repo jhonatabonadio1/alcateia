@@ -20,6 +20,9 @@
   5,48), tocando o "Running Crawl". Soltar o W ou agachar volta a
   correr em pé. Só o jogador; os bots ainda não usam.
 - **C também agacha.**
+- **Velocidade fixa da animação do lobo**, se quiser: `WalkAnimSpeed`,
+  `SprintAnimSpeed` e `WallAnimSpeed` no nó `WolfVisual` (1 = normal).
+  Em 0 (padrão) a animação acompanha o corpo, como antes.
 
 ### Corrigido
 - **Mac: agachar no Ctrl e clicar não atirava.** O macOS (pelo Godot)

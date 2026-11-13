@@ -42,6 +42,14 @@ public sealed class WolfSprintTest : RegressionTest
 		var tree = p.GetNode("WolfVisual").FindChildren("*", nameof(AnimationTree), true, false)[0] as AnimationTree;
 		b.Near(1, (float)tree.Get("parameters/Machine/Locomotion/GaitCrouch/blend_amount"), 0.01, "toca o clipe de quatro patas");
 
+		// Velocidade fixa da animação: 1 toca o clipe na velocidade normal.
+		var visual = p.GetNode<WolfVisual>("WolfVisual");
+		visual.SprintAnimSpeed = 1f;
+		await b.PhysicsFrame();
+		await b.PhysicsFrame();
+		b.Near(1, (float)tree.Get("parameters/Machine/Locomotion/CrawlSpeed/scale"), 0.01, "SprintAnimSpeed 1: animação na velocidade normal");
+		visual.SprintAnimSpeed = 0f;
+
 		// Agachar corta; soltar o W também.
 		RegressionBench.Press("crouch");
 		await b.PhysicsFrame();

@@ -67,6 +67,7 @@ o renascer do bot (6 s).
 | `CrouchSpeedFactor` | 0,45 | Velocidade agachado (as duas formas) |
 | `WolfSprintFactor` | 1,30 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal |
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
+| `WalkAnimSpeed` / `SprintAnimSpeed` / `WallAnimSpeed` (nó `WolfVisual`) | 0 | Velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
 | `WalkSpeedFactor` | 0,42 | Velocidade andando com Shift (só humano) |
 | `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula (é o hitbox do corpo) |
 | `StandEyeHeight` / `CrouchEyeHeight` | 0,62 / 0,1 m | Altura do olho a partir do centro da cápsula |

@@ -14,6 +14,11 @@ public partial class WolfVisual
 	[ExportGroup("Parede, pulo e bote")]
 	[Export] public float WallClipSpeed = 2.3f;
 
+	/// <summary>Velocidade fixa da animação na parede, em vezes a do clipe
+	/// (1 = a normal). 0 = acompanha a velocidade do corpo (o padrão).
+	/// Agarrado, parado, a animação para de qualquer jeito.</summary>
+	[Export(PropertyHint.Range, "0,3,0.05")] public float WallAnimSpeed = 0f;
+
 	/// <summary>Tempo para deitar na parede e para voltar, em segundos.</summary>
 	[Export] public float WallTurnTime = 0.12f;
 
@@ -115,7 +120,8 @@ public partial class WolfVisual
 
 		// Engatinhar no ritmo da corrida; agarrado (parado), o clipe para.
 		float speed = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z).Length();
-		_tree.Set("parameters/Machine/Wall/Speed/scale", Mathf.Clamp(speed / Mathf.Max(WallClipSpeed, 0.01f), 0f, 2.5f));
+		float follow = Mathf.Clamp(speed / Mathf.Max(WallClipSpeed, 0.01f), 0f, 2.5f);
+		_tree.Set("parameters/Machine/Wall/Speed/scale", AnimRate(follow, WallAnimSpeed, speed));
 	}
 
 	/// <summary>Velocidade da aterrissagem do pulo: o clipe inteiro de
