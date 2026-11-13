@@ -112,7 +112,7 @@ public static class LobbyTests
 			Check.Equal(0, empty["rooms"].AsArray().Count, "sala vazia some da lista");
 		}),
 
-		("bots: só o dono põe e tira; time cheio não aceita; gente entrando toma o lugar do bot; sem XP nem patente", async () =>
+		("bots: só o dono põe e tira e escolhe a dificuldade; time cheio não aceita; gente entrando toma o lugar do bot; sem XP nem patente", async () =>
 		{
 			await using World w = await World.Start();
 			await using Player host = await w.NewPlayer(), guest = await w.NewPlayer();
@@ -134,6 +134,26 @@ public static class LobbyTests
 
 			await host.Say(Msg("room.bot.add", ("team", 2)));
 			Check.Equal("time_cheio", (await host.Hear("error"))["code"].GetValue<string>(), "quinto bot num time de quatro");
+
+			// A dificuldade dos bots: médios se ninguém disse, e o dono troca.
+			Check.Equal(1, full["settings"]["difficulty"].GetValue<int>(), "bots médios por padrão");
+			JsonObject hard = Settings();
+			hard["difficulty"] = 2;
+			host.Forget();
+			await host.Say(Msg("room.settings", ("settings", hard)));
+			Check.Equal(2, (await host.Hear("room"))["settings"]["difficulty"].GetValue<int>(), "o dono deixa os bots difíceis");
+			JsonObject low = Settings();
+			low["difficulty"] = -3;
+			host.Forget();
+			await host.Say(Msg("room.settings", ("settings", low)));
+			Check.True((await host.Hear("room"))["settings"]["difficulty"].GetValue<int>() == 0,
+				"dificuldade abaixo da faixa fica em fáceis");
+			JsonObject wild = Settings();
+			wild["difficulty"] = 9;
+			host.Forget();
+			await host.Say(Msg("room.settings", ("settings", wild)));
+			Check.True((await host.Hear("room"))["settings"]["difficulty"].GetValue<int>() == 2,
+				"dificuldade acima da faixa fica em difíceis");
 
 			// O convidado entra: vai para o laranja (menos gente) e um bot sai.
 			await guest.Say(Msg("room.join", ("id", id)));

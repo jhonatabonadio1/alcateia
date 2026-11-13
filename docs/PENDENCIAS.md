@@ -137,8 +137,7 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Online**: compensação de lag, predição, reconexão, golpes
   especiais do lobo pela rede.
 - **Bots online** (feito em 13/11) dependem da máquina do dono da sala:
-  falta passar os bots para outro jogador quando o dono cai, e a sala
-  online escolher a dificuldade deles.
+  falta passar os bots para outro jogador quando o dono cai.
 - **Mapas vistos só no renderizador Compatibility**: ajustar luz e
   sombra no Forward+.
 - **Bots** na Polar atiram metade do que atiravam (76 tiros em 40 s,

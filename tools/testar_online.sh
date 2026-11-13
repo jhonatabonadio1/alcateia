@@ -82,6 +82,7 @@ conferir "$PASTA/b.log" "acertos_levados=[1-9]" "o visitante levou o dano na má
 conferir "$PASTA/a.log" "vencedor=[012] " "o servidor deu o resultado da partida"
 conferir "$PASTA/a.log" "bots_meus=2 " "os dois bots da sala são bots de verdade na máquina do criador"
 conferir "$PASTA/b.log" "bonecos_bot=2 " "e bonecos na máquina do visitante"
+conferir "$PASTA/a.log" "dificuldade=Hard " "os bots jogam na dificuldade da sala (difíceis)"
 conferir "$PASTA/b.log" "bots_andaram=[12] " "o visitante viu os bots andarem"
 conferir "$PASTA/b.log" "tiros_de_bot=[1-9]" "o visitante viu bot atirar"
 conferir "$PASTA/b.log" "abateu_bot=[1-9]" "o visitante abateu um bot (o acerto foi até a máquina do criador, e a morte voltou pelo servidor)"

@@ -39,6 +39,9 @@ public sealed class RoomSettings
 	// ------------------------------------------------------------------ rótulos
 
 	public static readonly string[] ModeNames = { "Equipe", "Mata-mata", "Dominação", "Caçada", "Sobrevivência" };
+
+	/// <summary>A dificuldade dos bots, na ordem de <see cref="BotLevel"/>.</summary>
+	public static readonly string[] DifficultyNames = { "Fáceis", "Médios", "Difíceis" };
 	public static readonly string[] WeaponNames = { "Todas", "Sem pesadas", "Só pistolas", "Só faca" };
 	public static readonly string[] TransformNames = { "Livre", "Bloqueada", "Obrigatória", "Só um lado" };
 

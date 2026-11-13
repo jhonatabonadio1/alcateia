@@ -61,6 +61,10 @@ public static class OnlineMatch
 		Roster.Sort((a, b) => a.Id.CompareTo(b.Id));
 
 		RoomConfig.Settings = SettingsFrom(start["settings"] as JsonObject);
+
+		// Os bots da sala jogam na dificuldade que o dono escolheu. Só a
+		// máquina do dono os move, mas todas ficam com o mesmo número.
+		Difficulty.Set(RoomConfig.Settings.Difficulty);
 		RoomConfig.Members.Clear();
 		Seat me = Me;
 		RoomConfig.Members.Add(new RoomMember { Name = me?.Name ?? Backend.AccountName, Team = me?.Team ?? Teams.Blue, IsHost = true });
@@ -92,7 +96,8 @@ public static class OnlineMatch
 		["minutes"] = s.Minutes,
 		["weapons"] = (int)s.Weapons,
 		["transform"] = (int)s.Transform,
-		["friendlyFire"] = s.FriendlyFire
+		["friendlyFire"] = s.FriendlyFire,
+		["difficulty"] = (int)s.Difficulty
 	};
 
 	/// <summary>As regras como o servidor as devolve.</summary>
@@ -111,6 +116,9 @@ public static class OnlineMatch
 		int weapons = j["weapons"]?.GetValue<int>() ?? 0, transform = j["transform"]?.GetValue<int>() ?? 0;
 		if (System.Enum.IsDefined(typeof(WeaponRule), weapons)) s.Weapons = (WeaponRule)weapons;
 		if (System.Enum.IsDefined(typeof(TransformRule), transform)) s.Transform = (TransformRule)transform;
+
+		int difficulty = j["difficulty"]?.GetValue<int>() ?? (int)BotLevel.Medium;
+		if (System.Enum.IsDefined(typeof(BotLevel), difficulty)) s.Difficulty = (BotLevel)difficulty;
 		if (!Maps.All.Any(m => m.Id == s.Map)) s.Map = "hangar";
 		return s;
 	}
