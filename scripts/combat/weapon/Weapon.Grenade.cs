@@ -11,6 +11,7 @@ public partial class Weapon
 	[ExportGroup("Granada")]
 	[Export] public PackedScene GrenadeScene;
 	[Export] public int MaxGrenades = 2;
+
 	/// <summary>Velocidade do arremesso da granada na direção da mira, em
 	/// m/s, e o empurrão para cima. Mais forte desde a v0.26.10 (decisão do
 	/// Jhon; era 11 e 3,5): olhando reto, de pé, ela cai a uns 16 m em vez
@@ -18,12 +19,15 @@ public partial class Weapon
 	[Export] public float ThrowForce = 14.5f;
 	[Export] public float ThrowArc = 4f;
 	[Export] public float ThrowCooldown = 0.9f;
+
 	/// <summary>Granadas restantes. Reabastece ao renascer.</summary>
 	public int Grenades { get; private set; }
+
 	/// <summary>Volta para a arma anterior depois de arremessar: ficar
 	/// com a mão vazia no meio de um tiroteio não é escolha de
 	/// ninguém.</summary>
 	private Slot _slotBeforeGrenade = Slot.Primary;
+
 	/// <summary>
 	/// Arremesso em arco. A granada e um slot de acao, nao de arma:
 	/// apertar 4 joga na hora e volta para a arma anterior, em vez de
@@ -32,6 +36,7 @@ public partial class Weapon
 	/// <summary>Granada pronta na mão, esperando o botão soltar.</summary>
 	public bool IsGrenadeReady => _grenadeReady && HumanSlot == Slot.Grenade && !_form.IsWolf;
 	private bool _grenadeReady;
+
 	/// <summary>
 	/// Apertou o ataque com a granada: ela fica pronta na mão. Sai quando o
 	/// botão soltar (<see cref="ReleaseGrenade"/>), na direção da mira
@@ -43,6 +48,7 @@ public partial class Weapon
 		if (_form.IsWolf || !_form.CanAttack || Grenades <= 0 || GrenadeScene == null || _cooldown > 0) return;
 		_grenadeReady = true;
 	}
+
 	/// <summary>Soltou o botão: arremessa a granada preparada.</summary>
 	public void ReleaseGrenade()
 	{
@@ -50,6 +56,7 @@ public partial class Weapon
 		_grenadeReady = false;
 		if (HumanSlot == Slot.Grenade) ThrowGrenade();
 	}
+
 	private void ThrowGrenade()
 	{
 		if (_form.IsWolf || !_form.CanAttack)

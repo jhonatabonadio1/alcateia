@@ -219,7 +219,12 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 
 | Arquivo | Responsabilidade |
 |---|---|
-| `actors/Player.cs` | Movimento, corrida em parede, câmeras, agachar, stun, input |
+| `actors/player/Player.cs` | O ciclo do jogador: nascer, o passo de física, morrer e renascer |
+| `actors/player/Player.Movement.cs` | Andar, pular, agachar, Shift, atordoamento |
+| `actors/player/Player.WallRun.cs` | Corrida em parede do lobo (grudar, quinas, agarrar, saltar da parede) |
+| `actors/player/Player.Camera.cs` | Olhar com o mouse, câmeras de 1ª e 3ª pessoa, recuo, câmera da morte |
+| `actors/player/Player.Actions.cs` | Trocar arma, atacar, salto e bote, recarregar, soltar, rugir |
+| `actors/input/CharacterIntent.cs` | O que o jogador quer no quadro, lido uma vez do teclado (a costura para o multiplayer) |
 | `actors/Bot.cs` | Percepção, combate à distância, strafe, decisão de forma |
 | `actors/body/` | O corpo que o jogador e o bot dividem: `WolfMoveMotor` (bote, voo do salto, preso ao chão), `BodyNoise` + `BodyNoiseProfile` (passo, baque, rugido; `resources/body/ruido.tres`), `Corpse` (cair e assentar morto), `BodyMotion.Hold` |
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |

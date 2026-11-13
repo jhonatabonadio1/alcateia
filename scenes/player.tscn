@@ -1,6 +1,6 @@
 [gd_scene load_steps=15 format=3]
 
-[ext_resource type="Script" path="res://scripts/actors/Player.cs" id="1_player"]
+[ext_resource type="Script" path="res://scripts/actors/player/Player.cs" id="1_player"]
 [ext_resource type="Script" path="res://scripts/combat/Health.cs" id="2_health"]
 [ext_resource type="Script" path="res://scripts/forms/FormController.cs" id="3_form"]
 [ext_resource type="Script" path="res://scripts/combat/weapon/Weapon.cs" id="4_weapon"]

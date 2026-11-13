@@ -10,6 +10,7 @@ public partial class Weapon
 	[Export] public float KnifeDamage = 85f;
 	[Export] public float KnifeRange = 2.2f;
 	[Export] public float KnifeCooldown = 0.55f;
+
 	/// <summary>
 	/// Facada. Não faz ruído de tiro: é a arma de quem está se movendo
 	/// em silêncio e não quer entregar a posição por um abate.

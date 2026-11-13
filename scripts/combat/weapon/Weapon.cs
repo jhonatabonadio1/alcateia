@@ -73,8 +73,8 @@ public partial class Weapon : Node3D
 	// mais de baixo para cima do que de cima para baixo — o volume
 	// acompanha o corpo, não o olhar.
 
-	[ExportGroup("Diagnóstico")]
 	/// <summary>Diagnóstico. Desligue quando o tiro estiver confirmado.</summary>
+	[ExportGroup("Diagnóstico")]
 	[Export] public bool Debug = true;
 
 	/// <summary>Slot de arma guardado enquanto você está de lobo, para

@@ -8,9 +8,10 @@ using System.Collections.Generic;
 /// </summary>
 public partial class Weapon
 {
-	[ExportGroup("Dano")]
 	/// <summary>Multiplicador de dano na cabeça.</summary>
+	[ExportGroup("Dano")]
 	[Export] public float HeadshotMultiplier = 2.5f;
+
 	/// <summary>
 	/// Altura da zona de cabeça, medida do centro do corpo para cima.
 	/// A cápsula tem 1,75, então o topo fica em ~0,87: uma zona a
@@ -18,14 +19,17 @@ public partial class Weapon
 	/// uma cabeça humana, e não o terço superior do corpo.
 	/// </summary>
 	[Export] public float HeadZone = 0.72f;
+
 	/// <summary>Altura mínima de queda para contar como ataque aéreo.</summary>
 	[Export] public float AirAttackMinFall = 2.5f;
+
 	private static bool IsHumanForm(Node collider)
 	{
 		FormController form = collider?.GetNodeOrNull<FormController>("FormController");
 
 		return form == null || !form.IsWolf;
 	}
+
 	/// <summary>
 	/// Aplica o dano e, se o alvo cair, credita o abate. O crédito
 	/// sai daqui porque é aqui que se sabe quem bateu — fazer a vítima
@@ -71,6 +75,7 @@ public partial class Weapon
 			KillWeapon(),
 			assisters.ToArray()));
 	}
+
 	/// <summary>Id do que matou, para o feed e as estatísticas.</summary>
 	private string KillWeapon()
 	{
@@ -78,6 +83,7 @@ public partial class Weapon
 		if (HumanSlot == Slot.Knife) return "faca";
 		return Held?.Id ?? "";
 	}
+
 	private KillCause CauseOf(bool headshot)
 	{
 		if (_form.IsWolf) return KillCause.Wolf;
@@ -85,6 +91,7 @@ public partial class Weapon
 
 		return HumanSlot == Slot.Knife ? KillCause.Knife : KillCause.Gun;
 	}
+
 	/// <summary>
 	/// Cabeça é a faixa superior do corpo. Sem hitbox dedicada, a
 	/// altura do impacto resolve — e continua valendo quando o modelo

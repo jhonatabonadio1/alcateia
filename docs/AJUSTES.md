@@ -41,16 +41,16 @@ o renascer do bot (6 s).
   (0,8 m), não contêiner (2,2 m). O Bruto precisa de `JumpMultiplier`
   ≥ 1,2 para chegar ao contêiner a partir do caixote. Mexeu no pulo,
   confira isso.
-- **Sua cópia local do `bruto.tres`** está diferente do repositório:
-  `AttackDamage` 75 (repo 150), `AttackRange` 5 (repo 3,8),
-  `AttackCooldown` 0 (repo 1). Os demais campos que faltam nela usam o
-  padrão do script, que é igual ao do repositório.
+- **Tem teste.** Velocidades, pulo, corrida na parede, salto
+  carregado, dano da garra, granada e ruído têm teste
+  (`tools/testar.sh`, seção Testes do CLAUDE.md). Mudou um valor de
+  propósito, mude o número esperado no teste junto.
 
 ---
 
 ## 1. Movimento (humano e base do lobo)
 
-`scripts/actors/Player.cs` → nó `Player` em `scenes/player.tscn`.
+`scripts/actors/player/` (Player.cs e as partes Movement, WallRun, Camera, Actions) → nó `Player` em `scenes/player.tscn`. No Inspector os campos aparecem em grupos: Corpo, Movimento, Corrida na parede, Câmera e mira.
 
 | Campo | Valor | O que faz |
 |---|---|---|

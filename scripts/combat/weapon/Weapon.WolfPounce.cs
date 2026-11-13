@@ -8,37 +8,45 @@ using System.Collections.Generic;
 /// </summary>
 public partial class Weapon
 {
-	[ExportGroup("Lobo: salto carregado")]
 	/// <summary>Salto no chão: dano alto, o lobo preso no lugar até a
 	/// animação acabar.</summary>
+	[ExportGroup("Lobo: salto carregado")]
 	[Export] public float HeavyDamageBonus = 2.1f;
 	[Export] public float HeavyCooldown = 1f;
+
 	/// <summary>Até onde o salto no chão leva o lobo com a carga cheia, em
 	/// metros. É a arma do lobo para fechar distância: apertar de longe e
 	/// cair em cima do humano.</summary>
 	[Export] public float PounceMaxDistance = 12f;
+
 	/// <summary>Segundos segurando o botão direito no chão até o salto
 	/// carregar inteiro (decisão do Jhon): segurar mais vai mais longe e
 	/// bate mais forte. Solto de leve, ele pula perto e fraco.</summary>
 	[Export] public float PounceChargeTime = 1.0f;
+
 	/// <summary>Até onde o salto vai sem carga nenhuma, em metros. A carga
 	/// leva daqui a <see cref="PounceMaxDistance"/> em linha reta, e só ela
 	/// decide (decisão do Jhon): a mesma barra dá sempre o mesmo salto,
 	/// com ou sem inimigo na frente, olhando para o chão ou para o céu.</summary>
 	[Export] public float PounceMinDistance = 1.5f;
+
 	/// <summary>Fração do dano do salto sem carga. Carregado inteiro, o
 	/// dano é o cheio (<see cref="HeavyDamageBonus"/>).</summary>
 	[Export] public float PounceMinPower = 0.4f;
+
 	/// <summary>Quanto tempo o lobo segura a carga cheia antes de saltar
 	/// sozinho.</summary>
 	[Export] public float PounceChargeHold = 0.6f;
+
 	/// <summary>O que o salto passa por cima, em metros acima dos pés: um
 	/// contêiner (2,2 m) passa; um bloco (5 m) ou o muro, não — o salto
 	/// para antes dele.</summary>
 	[Export] public float PounceMaxClear = 2.6f;
+
 	/// <summary>Altura mínima do arco do salto, em metros. Cresce com a
 	/// distância e com o que houver no caminho.</summary>
 	[Export] public float PounceArc = 0.6f;
+
 	/// <summary>
 	/// Botão direito. No chão, o salto; no ar, o bote. Os dois prendem o
 	/// lobo até o fim — o salto no lugar, o bote na trajetória — e o
@@ -54,13 +62,17 @@ public partial class Weapon
 		else
 			Leap();
 	}
+
 	private bool _charging;
 	private double _chargeTime;
 	private float _pounceRange;
+
 	/// <summary>Agachado carregando o salto (botão direito seguro no chão).</summary>
 	public bool IsChargingPounce => _charging && _form != null && _form.IsWolf;
+
 	/// <summary>Carga do salto, de 0 a 1. É o que a barra de força mostra.</summary>
 	public float PounceCharge => _charging ? CombatRules.ChargePower(_chargeTime, PounceChargeTime) : 0f;
+
 	/// <summary>Começa a carregar: o lobo agacha (o começo do clipe do
 	/// salto) e fica preso até soltar.</summary>
 	private void BeginCharge()
@@ -75,6 +87,7 @@ public partial class Weapon
 		_strikeId++;
 		EmitSignal(SignalName.WolfMoveStarted, (int)WolfMove.Pounce);
 	}
+
 	/// <summary>
 	/// O salto do bot: sem botão para segurar, ele já sabe a carga — a
 	/// que leva até o alvo, com o erro da dificuldade — e mira no alvo como
@@ -100,12 +113,15 @@ public partial class Weapon
 		_botAim = null;
 		return true;
 	}
+
 	/// <summary>Direção do salto do bot, só durante <see cref="BotPounce"/>.</summary>
 	private Vector3? _botAim;
+
 	/// <summary>Carga para o salto chegar a <paramref name="distance"/>
 	/// metros (o ponto de queda fica a uma garra do alvo).</summary>
 	public float PounceChargeFor(float distance) =>
 		CombatRules.PounceChargeFor(distance, ClawReach, PounceMinDistance, PounceMaxDistance);
+
 	/// <summary>Soltou o botão: salta com a carga que tiver.</summary>
 	public void ReleaseCharge()
 	{
@@ -117,6 +133,7 @@ public partial class Weapon
 		_charging = false;
 		Pounce(power, elapsed);
 	}
+
 	private void CancelCharge()
 	{
 		_charging = false;
@@ -124,6 +141,7 @@ public partial class Weapon
 		_strikeLeft = 0;
 		_cooldown = 0;
 	}
+
 	/// <summary>
 	/// Salto no chão: o "jump attack" inteiro — agacha, salta, cai — com
 	/// o lobo preso no lugar. O dano sai no quadro em que os pés tocam o
@@ -154,8 +172,10 @@ public partial class Weapon
 		_pounceDir = PounceDirection();
 		After(Mathf.Max(delay - elapsed, 0f), id, () => BeginPounceFlight(duration));
 	}
+
 	private Vector3 _pounceDir = Vector3.Forward;
 	private bool _pounceFlew;
+
 	/// <summary>Para onde o salto vai, no chão: a direção da câmera do
 	/// próprio jogador (<see cref="Player.AimCamera"/>), não a da câmera que
 	/// estiver na tela; o bot, para o alvo; sem nenhuma, para a frente do
@@ -172,6 +192,7 @@ public partial class Weapon
 		if (direction.LengthSquared() < 0.0001f) direction = Vector3.Forward;
 		return direction.Normalized();
 	}
+
 	private bool _flying;
 	private double _flyTime;
 	private double _flyTotal = 1;
@@ -180,8 +201,10 @@ public partial class Weapon
 	private float _flyDistance;
 	private float _flyLand;
 	private float _flyArc;
+
 	/// <summary>No ar no salto: o corpo segue <see cref="PounceFlightPoint"/>.</summary>
 	public bool IsPounceFlying => _flying && _form != null && _form.IsWolf;
+
 	/// <summary>
 	/// Onde o corpo deve estar daqui a <paramref name="ahead"/> segundos
 	/// de voo. Para a frente em sino (sai devagar, voa, assenta), como o
@@ -196,6 +219,7 @@ public partial class Weapon
 		float y = _flyLand * u + 4f * _flyArc * u * (1f - u);
 		return _flyStart + _flyDir * (_flyDistance * s) + Vector3.Up * y;
 	}
+
 	private void BeginPounceFlight(float duration)
 	{
 		// Direção e distância guardadas no soltar, medidas de onde o corpo
@@ -221,6 +245,7 @@ public partial class Weapon
 		_flying = true;
 		_pounceFlew = distance > 0.05f;
 	}
+
 	/// <summary>
 	/// Mede o chão no caminho do salto e escolhe o arco. O que tem até
 	/// <see cref="PounceMaxClear"/> acima dos pés é pulado por cima (o
@@ -301,6 +326,7 @@ public partial class Weapon
 				: Mathf.Max(failX - 0.8f, 0f);
 		}
 	}
+
 	/// <summary>Altura do chão em <paramref name="at"/>, relativa a ele:
 	/// raio de cima para baixo. Começar dentro de algo (um muro mais alto
 	/// que o raio) devolve a altura do raio inteira — é obstáculo. Gente

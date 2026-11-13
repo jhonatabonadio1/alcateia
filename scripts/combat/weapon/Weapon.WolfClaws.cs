@@ -8,37 +8,48 @@ using System.Collections.Generic;
 /// </summary>
 public partial class Weapon
 {
-	[ExportGroup("Lobo: garras")]
 	/// <summary>Dano extra da patada contra um humano. O lobo é feito
 	/// para caçar gente, não para duelar com outro lobo.</summary>
+	[ExportGroup("Lobo: garras")]
 	[Export] public float ClawVsHumanBonus = 1.6f;
+
 	/// <summary>Raio do volume de acerto da garra.</summary>
 	[Export] public float ClawRadius = 1.15f;
+
 	/// <summary>Quanto à frente do corpo o volume nasce.</summary>
 	[Export] public float ClawReach = 1.5f;
+
 	/// <summary>Multiplicador de dano de cada golpe do combo.</summary>
 	[Export] public float[] ComboDamage = { 1f, 1f, 1.5f };
+
 	/// <summary>Tempo sem atacar, depois do fim do golpe, até o combo
 	/// voltar ao primeiro. O intervalo entre golpes é a própria animação
 	/// (<see cref="WolfMoves"/>).</summary>
 	[Export] public float ComboReset = 1.1f;
+
 	/// <summary>Empurrão para frente a cada golpe. É o que faz mira
 	/// ruim ainda conectar — o golpe leva o lobo até o alvo.</summary>
 	[Export] public float ClawLunge = 6.5f;
+
 	/// <summary>Clique na garrada guardado, em segundos: clicou com o golpe
 	/// anterior ainda no fim, o próximo sai no quadro em que ele acaba. Sem
 	/// isso o clique dado um pouco cedo se perdia e o lobo parecia não
 	/// responder.</summary>
 	[Export] public float AttackBuffer = 0.3f;
+
 	private int _comboIndex;
+
 	/// <summary>Próxima garrada com o outro braço.</summary>
 	private bool _nextPunch;
+
 	/// <summary>Tempo que falta da animação do golpe em curso.</summary>
 	private double _strikeLeft;
+
 	/// <summary>Muda a cada golpe e na morte: dano agendado de um golpe
 	/// que não vale mais (morreu, voltou a humano) não sai.</summary>
 	private ulong _strikeId;
 	private double _comboTimer;
+
 	/// <summary>Tempo que o lobo ainda fica preso no lugar: o salto
 	/// inteiro, e a aterrissagem do bote.</summary>
 	private double _rootLeft;
@@ -47,22 +58,28 @@ public partial class Weapon
 	private double _stepTotal = 1;
 	private float _stepPeak;
 	private Vector3 _stepForward;
+
 	/// <summary>No meio de um golpe do lobo. A animação não é cortada:
 	/// nem por outro golpe nem pela volta a humano.</summary>
 	public bool IsStriking => _form != null && _form.IsWolf && (_strikeLeft > 0 || _diving);
+
 	/// <summary>Preso no lugar: o salto no chão, ou a aterrissagem do bote.
 	/// O corpo não anda nem pula, só gira a mira.</summary>
 	public bool IsRooted => _form != null && _form.IsWolf && _rootLeft > 0;
+
 	/// <summary>No passo da garrada: o corpo anda nesta velocidade, por
 	/// cima do que o jogador estiver apertando.</summary>
 	public bool IsStepping => _form != null && _form.IsWolf && _stepLeft > 0;
+
 	/// <summary>Velocidade do passo neste instante: sobe e desce em
 	/// sino, sem degrau no começo nem no fim — o degrau era o que jogava
 	/// as pernas na pose de correr de uma vez.</summary>
 	public Vector3 StepVelocity =>
 		_stepForward * (_stepPeak * Mathf.Sin(Mathf.Pi * (float)(1.0 - _stepLeft / _stepTotal)));
+
 	/// <summary>Abaixo disto o lobo conta como parado ao bater.</summary>
 	private const float StandingSpeed = 1.5f;
+
 	/// <summary>
 	/// Garrada do clique esquerdo. Os braços alternam — o "swiping" e o
 	/// "punch" — e o combo continua contando: o terceiro golpe seguido
@@ -100,6 +117,7 @@ public partial class Weapon
 		if (standing && distance > 0f)
 			After(delay, id, () => BeginStep(duration, distance));
 	}
+
 	/// <summary>O passo da garrada e o avanço do salto: anda
 	/// <paramref name="distance"/> em <paramref name="duration"/>, para a
 	/// frente do corpo ou na <paramref name="direction"/> dada. O pico do
@@ -113,6 +131,7 @@ public partial class Weapon
 		_stepPeak = Mathf.Pi / 2f * distance / (float)_stepTotal;
 		_stepLeft = _stepTotal;
 	}
+
 	/// <summary>
 	/// Começa um golpe do lobo. A animação dura
 	/// <see cref="WolfMoves.Duration"/> e o próximo golpe só sai depois
@@ -142,6 +161,7 @@ public partial class Weapon
 
 		return id;
 	}
+
 	/// <summary>Roda <paramref name="action"/> depois de
 	/// <paramref name="delay"/> segundos, se o golpe ainda valer.
 	///
@@ -153,6 +173,7 @@ public partial class Weapon
 		_pending.Add(new PendingHit(delay, id, action));
 	private readonly record struct PendingHit(double Left, ulong Id, System.Action Action);
 	private readonly List<PendingHit> _pending = new();
+
 	private void RunPending(double delta)
 	{
 		for (int i = _pending.Count - 1; i >= 0; i--)
@@ -171,6 +192,7 @@ public partial class Weapon
 			hit.Action();
 		}
 	}
+
 	/// <summary>
 	/// Empurra o lobo para frente durante o golpe. Sem isso o combo
 	/// deixa o jogador parado batendo no ar enquanto o alvo anda.
@@ -187,6 +209,7 @@ public partial class Weapon
 
 		player.Velocity = velocity;
 	}
+
 	/// <summary>
 	/// Golpe de garra: um volume curto à frente do corpo, não um raio
 	/// a partir da câmera. Pega quem estiver perto da garra.

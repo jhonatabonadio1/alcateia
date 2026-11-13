@@ -8,33 +8,42 @@ using System.Collections.Generic;
 /// </summary>
 public partial class Weapon
 {
-	[ExportGroup("Armas de fogo")]
 	/// <summary>Traçante do disparo. Sem nenhum retorno visual não há
 	/// como saber que alguém atirou em você — o bot parecia inofensivo
 	/// enquanto acertava.</summary>
+	[ExportGroup("Armas de fogo")]
 	[Export] public bool ShowTracer = true;
 	[Export] public Color TracerColor = new Color(1f, 0.9f, 0.5f, 0.9f);
 	[Export] public float TracerLife = 0.08f;
+
 	/// <summary>Raio do estampido. Atirar sempre entrega a posição —
 	/// é o custo de usar a arma.</summary>
 	[Export] public float ShotNoise = 60f;
+
 	/// <summary>Dispara segurando o botão? Quem decide é a arma.</summary>
 	public bool IsAutomatic => Held != null && Held.IsAutomatic;
+
 	/// <summary>Dispersão acumulada pelos tiros, acima da base.</summary>
 	private float _bloom;
 	private double _sinceShot = 10;
+
 	/// <summary>Tiros seguidos: é o que decide em que fase do recuo a
 	/// arma está (o M16 coiceia forte nos quatro primeiros, o AK fica
 	/// imprevisível depois do sexto).</summary>
 	private int _streak;
+
 	/// <summary>Recuo vertical do último tiro, em graus.</summary>
 	public float Recoil { get; private set; }
+
 	/// <summary>Recuo horizontal do último tiro, em graus.</summary>
 	public float RecoilYaw { get; private set; }
+
 	/// <summary>Velocidade de caminhada com a arma da mão (1 = base).</summary>
 	public float MoveSpeedMultiplier => Held?.SpeedMultiplier ?? 1f;
+
 	/// <summary>Dispersão de agora, em graus — para a mira poder crescer junto.</summary>
 	public float CurrentSpread => Held == null ? 0f : SpreadNow(Held);
+
 	private void Shoot()
 	{
 		WeaponDefinition held = Held;
@@ -130,6 +139,7 @@ public partial class Weapon
 				StunWolf(target, held.WolfStun);
 		}
 	}
+
 	/// <summary>
 	/// Dispersão do próximo tiro: base, mais o acumulado, vezes o
 	/// movimento e a postura. Andar multiplica — e quanto multiplica é a
@@ -142,6 +152,7 @@ public partial class Weapon
 			flat.Length() > CombatRules.MovingSpreadSpeed, held.MoveSpreadMultiplier,
 			_body is Player player && player.IsCrouching, held.CrouchSpreadMultiplier);
 	}
+
 	/// <summary>Direção sorteada num cone de meio-ângulo dado. A raiz no
 	/// raio distribui por área; sem ela os tiros se amontoam no centro e o
 	/// cone vale menos do que o número diz.</summary>
@@ -155,6 +166,7 @@ public partial class Weapon
 
 		return (forward + aim.X * (Mathf.Cos(angle) * radius) + aim.Y * (Mathf.Sin(angle) * radius)).Normalized();
 	}
+
 	/// <summary>Escopeta no lobo: lentidão curta. Só em lobo, e só em
 	/// quem tem corpo que sabe ficar lento.</summary>
 	private static void StunWolf(Health target, float seconds)
@@ -166,6 +178,7 @@ public partial class Weapon
 
 		player.ApplyStun(seconds, 0.5f);
 	}
+
 	/// <summary>
 	/// Material único, compartilhado por todos os traçantes do jogo.
 	///
@@ -175,6 +188,7 @@ public partial class Weapon
 	/// instante em que levam tiro nele.
 	/// </summary>
 	private static StandardMaterial3D _tracerMaterial;
+
 	private static StandardMaterial3D TracerMaterial(Color color)
 	{
 		return _tracerMaterial ??= new StandardMaterial3D
@@ -185,6 +199,7 @@ public partial class Weapon
 			NoDepthTest = false
 		};
 	}
+
 	/// <summary>Ponta do cano, quando há arma visível na mão.</summary>
 	private Vector3 MuzzleOrigin(Vector3 fallback)
 	{
@@ -195,6 +210,7 @@ public partial class Weapon
 
 		return fallback;
 	}
+
 	/// <summary>Linha fina que aparece e some. Peça descartável — vira
 	/// efeito de verdade na fase de polimento.</summary>
 	private void Tracer(Vector3 from, Vector3 to)
@@ -217,6 +233,7 @@ public partial class Weapon
 		SceneTreeTimer timer = _body.GetTree().CreateTimer(TracerLife);
 		timer.Timeout += node.QueueFree;
 	}
+
 	private Health Raycast(Vector3 from, Vector3 to, out Vector3 impact, out Node collider)
 	{
 		impact = to;

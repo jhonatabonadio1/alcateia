@@ -8,11 +8,13 @@ using System.Collections.Generic;
 /// </summary>
 public partial class Weapon
 {
-	[ExportGroup("Soltar e pegar")]
 	/// <summary>Velocidade do arremesso ao soltar com B, para frente.</summary>
+	[ExportGroup("Soltar e pegar")]
 	[Export] public float DropThrow = 5.5f;
+
 	/// <summary>Quanto sobe o arremesso.</summary>
 	[Export] public float DropLift = 1.8f;
+
 	/// <summary>Armas em uso. Trocar reescreve as armas sem recriar nada.</summary>
 	public WeaponDefinition PrimaryDef { get; private set; }
 	public WeaponDefinition SecondaryDef { get; private set; }
@@ -24,17 +26,20 @@ public partial class Weapon
 	private double _reloadTimer;
 	private double _reloadTotal = 1;
 	private bool _shellReload;
+
 	/// <summary>Quanto da recarga em curso já passou, de 0 a 1. Na
 	/// escopeta é o ciclo do cartucho atual. A animação da recarga segue
 	/// este relógio, então recarga vazia mais longa dura mais na tela.</summary>
 	public float ReloadProgress =>
 		IsReloading ? Mathf.Clamp(1f - (float)(_reloadTimer / Mathf.Max(_reloadTotal, 0.01)), 0f, 1f) : 0f;
+
 	/// <summary>Duração total da recarga em curso, em segundos.</summary>
 	public float ReloadDuration => (float)_reloadTotal;
 	public bool HasPrimary => PrimaryDef != null;
 	public bool HasSecondary => SecondaryDef != null;
 	public int AmmoInMag => HumanSlot == Slot.Primary ? PrimaryAmmo : SecondaryAmmo;
 	public int MagSize => HumanSlot == Slot.Primary ? PrimaryMag : SecondaryMag;
+
 	/// <summary>Recarrega o carregador em uso. Só faz sentido com arma
 	/// de fogo na mão e com o carregador incompleto.</summary>
 	public bool TryReload()
@@ -54,6 +59,7 @@ public partial class Weapon
 		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, true);
 		return true;
 	}
+
 	private void FinishReload()
 	{
 		if (_shellReload)
@@ -77,16 +83,19 @@ public partial class Weapon
 		_reloadTimer = 0;
 		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
 	}
+
 	private void AddRound()
 	{
 		if (HumanSlot == Slot.Primary) PrimaryAmmo = Mathf.Min(PrimaryAmmo + 1, PrimaryMag);
 		else SecondaryAmmo = Mathf.Min(SecondaryAmmo + 1, SecondaryMag);
 	}
+
 	private void CancelReload()
 	{
 		_reloadTimer = 0;
 		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
 	}
+
 	/// <summary>Equipa primária, secundária e granadas. Nulo cai no
 	/// conjunto padrão, que é o que bot e jogador sem escolha usam.</summary>
 	public void Equip(WeaponDefinition primary, WeaponDefinition secondary, int grenades)
@@ -109,6 +118,7 @@ public partial class Weapon
 		EmitSignal(SignalName.SlotChanged, (int)Slot.Primary);
 		EmitSignal(SignalName.AmmoChanged, PrimaryAmmo, PrimaryMag, false);
 	}
+
 	public void Equip(LoadoutSet set)
 	{
 		if (set == null)
@@ -119,6 +129,7 @@ public partial class Weapon
 
 		Equip(Arsenal.Get(set.Primary), Arsenal.Get(set.Secondary), set.GrenadeCount());
 	}
+
 	private bool Usable(Slot slot) => slot switch
 	{
 		Slot.Primary => PrimaryDef != null,
@@ -127,9 +138,11 @@ public partial class Weapon
 		Slot.Knife => true,
 		_ => false
 	};
+
 	/// <summary>A melhor arma que sobrou: primária, secundária, faca.</summary>
 	private Slot BestSlot() =>
 		PrimaryDef != null ? Slot.Primary : SecondaryDef != null ? Slot.Secondary : Slot.Knife;
+
 	/// <summary>
 	/// Solta a arma da mão (G), jogando-a para frente, e passa para a
 	/// próxima: da primária vai à secundária, da secundária à faca.
@@ -161,6 +174,7 @@ public partial class Weapon
 		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
 		return true;
 	}
+
 	/// <summary>Cabe esta arma? Só se o espaço dela estiver vazio — como
 	/// no CS: para trocar, solte a sua primeiro.</summary>
 	public bool CanTake(WeaponDefinition def)
@@ -168,6 +182,7 @@ public partial class Weapon
 		if (def == null || _form.IsWolf || _health.IsDead) return false;
 		return Arsenal.IsSecondary(def.Id) ? SecondaryDef == null : PrimaryDef == null;
 	}
+
 	/// <summary>
 	/// Pega uma arma do chão para o espaço vazio. Vai para a mão quando
 	/// for a melhor que você tem — quem soltou a primária para pegar
@@ -205,6 +220,7 @@ public partial class Weapon
 		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
 		return true;
 	}
+
 	private void Remove(Slot slot)
 	{
 		if (slot == Slot.Primary)
