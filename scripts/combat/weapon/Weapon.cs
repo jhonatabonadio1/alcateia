@@ -182,7 +182,7 @@ public partial class Weapon : Node3D
 
 		WeaponDefinition held = Held;
 		if (held != null && _sinceShot > held.SpreadDelay)
-			_bloom = Mathf.Max(0f, _bloom - held.SpreadRecovery * (float)delta);
+			_bloom = CombatRules.BloomRecovered(_bloom, held.SpreadRecovery, (float)delta);
 
 		if (_sinceShot > 0.3) _streak = 0;
 

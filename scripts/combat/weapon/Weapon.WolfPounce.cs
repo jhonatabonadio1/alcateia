@@ -60,7 +60,7 @@ public partial class Weapon
 	/// <summary>Agachado carregando o salto (botão direito seguro no chão).</summary>
 	public bool IsChargingPounce => _charging && _form != null && _form.IsWolf;
 	/// <summary>Carga do salto, de 0 a 1. É o que a barra de força mostra.</summary>
-	public float PounceCharge => _charging ? Mathf.Clamp((float)(_chargeTime / PounceChargeTime), 0f, 1f) : 0f;
+	public float PounceCharge => _charging ? CombatRules.ChargePower(_chargeTime, PounceChargeTime) : 0f;
 	/// <summary>Começa a carregar: o lobo agacha (o começo do clipe do
 	/// salto) e fica preso até soltar.</summary>
 	private void BeginCharge()
@@ -105,7 +105,7 @@ public partial class Weapon
 	/// <summary>Carga para o salto chegar a <paramref name="distance"/>
 	/// metros (o ponto de queda fica a uma garra do alvo).</summary>
 	public float PounceChargeFor(float distance) =>
-		Mathf.Clamp((distance - ClawReach - PounceMinDistance) / Mathf.Max(PounceMaxDistance - PounceMinDistance, 0.1f), 0f, 1f);
+		CombatRules.PounceChargeFor(distance, ClawReach, PounceMinDistance, PounceMaxDistance);
 	/// <summary>Soltou o botão: salta com a carga que tiver.</summary>
 	public void ReleaseCharge()
 	{
@@ -139,7 +139,7 @@ public partial class Weapon
 		_attackQueued = false;
 		_rootLeft = WolfMoves.Duration(WolfMove.Pounce) - elapsed;
 		_pounceFlew = false;
-		float damage = HeavyDamageBonus * Mathf.Lerp(PounceMinPower, 1f, power);
+		float damage = CombatRules.PounceMultiplier(HeavyDamageBonus, PounceMinPower, power);
 		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown,
 			() => Claw(damage, ClawReach, ClawRadius, false, _pounceFlew ? _flyDir : null), elapsed);
 
@@ -150,7 +150,7 @@ public partial class Weapon
 		// mirado — salto que muda sozinho conforme quem está na frente é
 		// vantagem que o jogador não controla.
 		var (delay, duration, _) = WolfMoves.StepOf(WolfMove.Pounce);
-		_pounceRange = Mathf.Lerp(PounceMinDistance, PounceMaxDistance, Mathf.Clamp(power, 0f, 1f));
+		_pounceRange = CombatRules.PounceRange(PounceMinDistance, PounceMaxDistance, power);
 		_pounceDir = PounceDirection();
 		After(Mathf.Max(delay - elapsed, 0f), id, () => BeginPounceFlight(duration));
 	}

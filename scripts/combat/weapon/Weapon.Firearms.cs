@@ -72,9 +72,9 @@ public partial class Weapon
 
 		_streak++;
 		_sinceShot = 0;
-		_bloom = Mathf.Min(_bloom + held.SpreadPerShot, Mathf.Max(held.SpreadMax - held.SpreadBase, 0f));
+		_bloom = CombatRules.BloomAfterShot(_bloom, held.SpreadPerShot, held.SpreadMax, held.SpreadBase);
 
-		Recoil = _streak <= held.RecoilEarlyShots ? held.RecoilVertical : held.RecoilVerticalLate;
+		Recoil = CombatRules.RecoilVertical(_streak, held.RecoilEarlyShots, held.RecoilVertical, held.RecoilVerticalLate);
 
 		// Horizontal alternado é decorável; depois do limite, sorteado. É
 		// o que faz o AK ser arma de rajada e não de spray.
@@ -111,8 +111,8 @@ public partial class Weapon
 
 			bool headshot = IsHeadshot(collider, impact);
 
-			float damage = held.Damage * Arsenal.DamageScale * held.Falloff(from.DistanceTo(impact));
-			if (headshot) damage *= held.HeadshotMultiplier;
+			float damage = CombatRules.FirearmDamage(
+				held.Damage, held.Falloff(from.DistanceTo(impact)), headshot, held.HeadshotMultiplier);
 
 			dealt.TryGetValue(hit, out var sum);
 			dealt[hit] = (sum.Damage + damage, sum.Headshot || headshot);
@@ -137,15 +137,10 @@ public partial class Weapon
 	/// </summary>
 	private float SpreadNow(WeaponDefinition held)
 	{
-		float spread = held.SpreadBase + _bloom;
-
 		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
-		if (flat.Length() > 0.6f) spread *= held.MoveSpreadMultiplier;
-
-		if (_body is Player player && player.IsCrouching)
-			spread *= held.CrouchSpreadMultiplier;
-
-		return spread;
+		return CombatRules.Spread(held.SpreadBase, _bloom,
+			flat.Length() > CombatRules.MovingSpreadSpeed, held.MoveSpreadMultiplier,
+			_body is Player player && player.IsCrouching, held.CrouchSpreadMultiplier);
 	}
 	/// <summary>Direção sorteada num cone de meio-ângulo dado. A raiz no
 	/// raio distribui por área; sem ela os tiros se amontoam no centro e o

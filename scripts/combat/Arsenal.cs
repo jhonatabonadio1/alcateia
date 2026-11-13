@@ -39,7 +39,7 @@ public static class Arsenal
 	/// que é o balanceamento de verdade — sem mexer nos números
 	/// escritos, que continuam conferíveis contra o documento.
 	/// </summary>
-	public const float DamageScale = 2f;
+	public const float DamageScale = CombatRules.FirearmDamageScale;
 
 	public static readonly string[] Primaries = { "m16a2", "sg552", "ak47", "ump45", "m3" };
 	public static readonly string[] Secondaries = { "m9" };

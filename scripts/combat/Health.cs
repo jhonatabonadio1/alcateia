@@ -158,21 +158,11 @@ public partial class Health : Node
 	{
 		if (IsDead || amount <= 0 || IsProtected) return;
 
-		float dealt = amount * DamageMultiplier;
+		DamageOutcome outcome = CombatRules.ApplyDamage(Hp, Shield, amount, DamageMultiplier, BodyResistance, headshot);
+		EmitSignal(SignalName.Damaged, outcome.Dealt, from);
 
-		if (!headshot)
-			dealt *= BodyResistance;
-		EmitSignal(SignalName.Damaged, dealt, from);
-
-		// Escudo absorve primeiro.
-		if (Shield > 0)
-		{
-			float absorbed = Mathf.Min(Shield, dealt);
-			Shield -= absorbed;
-			dealt -= absorbed;
-		}
-
-		Hp -= dealt;
+		Shield = outcome.Shield;
+		Hp = outcome.Hp;
 		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
 
 		if (Hp <= 0)

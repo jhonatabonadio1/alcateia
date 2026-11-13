@@ -139,10 +139,6 @@ public partial class WeaponDefinition : Resource
 	/// <summary>Multiplicador de queda por distância.</summary>
 	public float Falloff(float distance)
 	{
-		if (distance <= FalloffStart) return 1f;
-		if (distance >= FalloffEnd) return FalloffMin;
-
-		float t = (distance - FalloffStart) / Mathf.Max(FalloffEnd - FalloffStart, 0.01f);
-		return Mathf.Lerp(1f, FalloffMin, t);
+		return CombatRules.Falloff(distance, FalloffStart, FalloffEnd, FalloffMin);
 	}
 }

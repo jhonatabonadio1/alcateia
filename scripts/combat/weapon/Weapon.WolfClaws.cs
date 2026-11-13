@@ -223,18 +223,13 @@ public partial class Weapon
 			Health target = collider.GetNodeOrNull<Health>("Health");
 			if (target == null) continue;
 
-			float damage = breed.AttackDamage * multiplier;
-
-			// Contra humano a patada vale mais: o lobo é feito para
-			// caçar gente, não para duelar com outro lobo.
-			if (IsHumanForm(collider))
-				damage *= ClawVsHumanBonus;
-
-			// Ataque aéreo: cair em cima de alguém é a jogada que as
-			// pessoas lembram. Vale bônus.
+			// Contra humano a patada vale mais: o lobo é feito para caçar
+			// gente, não para duelar com outro lobo. E cair em cima de
+			// alguém é a jogada que as pessoas lembram: vale o bônus aéreo.
 			float fallen = _fallStartY - _body.GlobalPosition.Y;
-			if (aerial || (!_body.IsOnFloor() && fallen >= AirAttackMinFall))
-				damage *= breed.AirAttackBonus;
+			bool fromAbove = aerial || (!_body.IsOnFloor() && fallen >= AirAttackMinFall);
+			float damage = CombatRules.WolfStrike(breed.AttackDamage, multiplier,
+				IsHumanForm(collider), ClawVsHumanBonus, fromAbove, breed.AirAttackBonus);
 
 			Damage(target, damage, _body.GlobalPosition, false);
 		}
