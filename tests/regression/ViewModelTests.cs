@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 /// <summary>
 /// Os braços em primeira pessoa: cada arma de fogo usa o seu conjunto
 /// animado (braços, arma, esqueleto), o tiro toca o disparo, a recarga
-/// toca a recarga até o fim e depois tudo volta a ficar parado; faca e
-/// granada ficam com as duas mãos de sempre. Com tela (xvfb) e <c>--fotos=pasta</c>, fotografa cada arma
+/// toca a recarga até o fim e depois tudo volta a ficar parado; a faca
+/// alterna os dois golpes animados do conjunto e a granada é arremessada. Com tela (xvfb) e <c>--fotos=pasta</c>, fotografa cada arma
 /// parada, atirando e recarregando — é como se confere o desenho sem
 /// abrir o editor:
 ///
@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 public sealed class ViewModelTest : RegressionTest
 {
 	public override string Name => "BracosNaMao";
-	public override string Description => "em primeira pessoa cada arma de fogo tem os braços animados, com tiro e recarga; faca e granada, as duas mãos";
+	public override string Description => "em primeira pessoa cada arma de fogo tem os braços animados, com tiro e recarga; a faca com os golpes animados e a granada arremessada";
 
 	private string _photos = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--fotos="))?["--fotos=".Length..];
 
@@ -71,6 +71,38 @@ public sealed class ViewModelTest : RegressionTest
 			b.Check(ahead > 0.15f && ahead < 0.7f, $"{id}: a boca do cano fica à frente do olho, sem atravessar a parede ({ahead:0.00} m)");
 			await Photo(b, $"{id}_1_parada");
 
+			// Parado, os braços ficam parados: a animação não recomeça nem
+			// dá tranco na emenda da volta (o M16 pulava 10 cm a cada 0,9 s).
+			if (_photos == null)
+			{
+				var camera = view.GetParent<Node3D>();
+				var skeleton = (Skeleton3D)held.FindChildren("*", "Skeleton3D", true, false)[0];
+				Vector3[] Pose()
+				{
+					var pose = new Vector3[skeleton.GetBoneCount()];
+					for (int i = 0; i < pose.Length; i++)
+						pose[i] = camera.ToLocal(skeleton.ToGlobal(skeleton.GetBoneGlobalPose(i).Origin));
+					return pose;
+				}
+
+				// O saque termina primeiro (o do AK passa de 0,6 s).
+				await b.Until(() => view.RigAnimation == "parado", 2.0);
+				await b.Frames(15);
+
+				int starts = view.RigStarts;
+				float jump = 0f;
+				Vector3[] last = Pose();
+				for (int frame = 0; frame < 150; frame++)
+				{
+					await b.PhysicsFrame();
+					Vector3[] now = Pose();
+					for (int i = 0; i < now.Length; i++) jump = Mathf.Max(jump, now[i].DistanceTo(last[i]));
+					last = now;
+				}
+				b.Check(view.RigStarts == starts, $"{id}: parado, a animação dos braços não recomeça ({view.RigStarts - starts} vezes em 2,5 s)");
+				b.Check(jump < 0.01f, $"{id}: parado, os braços não dão tranco ({jump * 100f:0.0} cm num quadro)");
+			}
+
 			// Um tiro: toca o disparo, e o carregador deixa de estar cheio.
 			RegressionBench.Press("attack");
 			await b.Frames(3);
@@ -111,17 +143,33 @@ public sealed class ViewModelTest : RegressionTest
 			b.Check(held != null && held.Name == id && view.HasRig, $"{id}: na mão, com o braço animado");
 			if (held == null) continue;
 			await Photo(b, $"{id}_1_parada");
-			Vector3 rest = held.Position;
+
+			// Onde a peça está para quem olha: no espaço da câmera. A faca
+			// anda pela animação do conjunto; a granada, pelo código, que
+			// move o conjunto inteiro.
+			var camera = view.GetParent<Node3D>();
+			var piece = held.FindChild(slot == Slot.Knife ? "faca" : "granada", true, false) as Node3D ?? held;
+			Vector3 Where() => camera.ToLocal(piece.GlobalPosition);
+			Vector3 rest = Where();
 			RegressionBench.Press("attack");
 			float moved = 0f;
 			for (int i = 0; i < (slot == Slot.Knife ? 8 : 30); i++)
 			{
 				await b.PhysicsFrame();
-				moved = Mathf.Max(moved, held.Position.DistanceTo(rest));
+				moved = Mathf.Max(moved, Where().DistanceTo(rest));
 			}
 			await Photo(b, $"{id}_2_ataque");
 			RegressionBench.Release("attack");
-			b.AtLeast(0.04, moved, $"{id}: o {(slot == Slot.Knife ? "golpe" : "arremesso")} move o braço (m)");
+			b.AtLeast(0.04, moved, $"{id}: o {(slot == Slot.Knife ? "golpe" : "arremesso")} move a peça na mão (m)");
+			if (slot == Slot.Knife)
+			{
+				b.Check(view.RigAnimation == "golpe", $"faca: o golpe toca a animação do conjunto (tocando: {view.RigAnimation})");
+				await b.Seconds(0.7);
+				RegressionBench.Press("attack");
+				await b.Frames(3);
+				RegressionBench.Release("attack");
+				b.Check(view.RigAnimation == "golpe2", $"faca: o golpe seguinte é o outro (tocando: {view.RigAnimation})");
+			}
 			await b.Seconds(0.8);
 		}
 	}

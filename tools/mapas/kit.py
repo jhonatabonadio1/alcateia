@@ -59,6 +59,8 @@ def olhar(yaw, queda):
 
 # Quanto um letreiro fica à frente da superfície em que está pintado.
 DESCOLA = 0.02
+# Quanto cresce a face que empata com outra (veja Mapa.acertar).
+DESEMPATE = 0.003
 
 # O que o jogo ouve ao pisar ou atirar numa peça (scripts/visual/Surfaces.cs):
 # sai da textura do material. Sem entrada aqui é concreto, o som padrão.
@@ -200,6 +202,74 @@ class Mapa:
         pos = tuple(p + n * DESCOLA for p, n in zip(pos, frente))
         self.letreiros.append((grupo, nome, imagem, pos, largura, base, aceso))
 
+    # --------------------------------------------------------------- acerto
+
+    def acertar(self):
+        """Acerta sozinho, antes de escrever, dois defeitos que a mão
+        erra fácil e que na tela viram pisca-pisca (veja
+        tools/mapas/conferir.py, que é quem os acha):
+
+        1. **Faces brigando**: duas caixas de materiais diferentes com uma
+           face no mesmo plano. A de enfeite (ou a menor) cresce 3 mm
+           nessa face e passa a ganhar sempre.
+        2. **Letreiro mal assentado**: placa enterrada numa peça, ou solta
+           a um palmo da parede. Vai para 2 cm à frente da superfície mais
+           saliente que tem atrás (procura de 30 cm atrás a 12 cm à
+           frente de onde foi posta). Sem caixa por perto — letreiro no
+           trem, no tanque — fica onde está.
+
+        Chamar duas vezes não muda nada."""
+        from . import conferir
+
+        for _ in range(4):
+            achadas = conferir.brigas(self)
+            if not achadas:
+                break
+            feitas = set()
+            for (_, eixo, lado, a, b) in achadas:
+                i = "xyz".index(eixo)
+                pa, pb = self.pecas[a["indice"]], self.pecas[b["indice"]]
+                # Cresce a de enfeite; entre duas iguais, a menor.
+                if pa[6] != pb[6]:
+                    alvo = a if not pa[6] else b
+                else:
+                    alvo = min((a, b), key=lambda c: (c["hi"][0] - c["lo"][0]) * (c["hi"][1] - c["lo"][1]) * (c["hi"][2] - c["lo"][2]))
+                if (alvo["indice"], i, lado) in feitas:
+                    continue
+                feitas.add((alvo["indice"], i, lado))
+                g, nome, c, tam, mat, rot, colide, forma = self.pecas[alvo["indice"]]
+                c, tam = list(c), list(tam)
+                tam[i] += DESEMPATE
+                c[i] += DESEMPATE / 2 if lado == "hi" else -DESEMPATE / 2
+                self.pecas[alvo["indice"]] = (g, nome, tuple(c), tuple(tam), mat, rot, colide, forma)
+
+        visiveis = list(conferir.caixas(self, so_visiveis=True))
+        for n, (g, nome, imagem, pos, largura, base, aceso) in enumerate(self.letreiros):
+            frente = (base[0][2], base[1][2], base[2][2])
+            eixo = max(range(3), key=lambda i: abs(frente[i]))
+            if abs(abs(frente[eixo]) - 1) > 1e-6:
+                continue
+            sinal = 1 if frente[eixo] > 0 else -1
+            altura = largura * conferir.proporcao(imagem)
+            direita = (base[0][0], base[1][0], base[2][0])
+            cima = (base[0][1], base[1][1], base[2][1])
+            pedido = pos[eixo] * sinal - DESCOLA       # onde a mão pôs, ao longo da frente
+            melhor = None
+            for a in (-0.46, 0, 0.46):
+                for b in (-0.42, 0, 0.42):
+                    p = [pos[i] + direita[i] * a * largura + cima[i] * b * altura for i in range(3)]
+                    for cx in visiveis:
+                        if any(i != eixo and not (cx["lo"][i] <= p[i] <= cx["hi"][i]) for i in range(3)):
+                            continue
+                        face = cx["hi"][eixo] if sinal > 0 else -cx["lo"][eixo]
+                        if pedido - 0.30 <= face <= pedido + 0.12 and (melhor is None or face > melhor):
+                            melhor = face
+            if melhor is None:
+                continue
+            nova = list(pos)
+            nova[eixo] = (melhor + DESCOLA) * sinal
+            self.letreiros[n] = (g, nome, imagem, tuple(nova), largura, base, aceso)
+
     def modelo(self, grupo, nome, arquivo, pos, yaw=0.0, escala=1.0):
         """Um modelo pronto (assets/mapas/pecas/<arquivo>.glb): só o
         desenho. Se precisa barrar o caminho, ponha uma
@@ -236,6 +306,7 @@ class Mapa:
     # ------------------------------------------------------------- escrita
 
     def tscn(self):
+        self.acertar()
         formas, malhas = {}, {}
         for (_, _, _, tam, _, _, colide, forma) in self.pecas:
             chave = (forma.replace("_oculta", ""), *[round(x, 4) for x in tam])

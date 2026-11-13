@@ -207,7 +207,7 @@ public partial class ViewModel : Node3D
 		_recoil = 1f;
 		if (_weapon.HumanSlot == Slot.Knife)
 		{
-			StartSlash();
+			if (!RigSwing()) StartSlash();
 			return;
 		}
 

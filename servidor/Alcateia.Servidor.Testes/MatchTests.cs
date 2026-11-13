@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -50,6 +51,49 @@ public static class MatchTests
 			Check.Equal(401, (await w.Server().Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"))).Status, "sem chave");
 			Check.Equal(401, (await w.Server().Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"), "chave-errada")).Status, "chave errada");
 			Check.Equal(200, (await w.Server().Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"), w.Config.FleetKey)).Status, "chave certa");
+		}),
+
+		("partida com bots: a escalação leva os bots com o dono; o resultado não paga nem grava bot", async () =>
+		{
+			await using World w = await World.Start();
+			Player fleet = w.Server();
+			await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"), w.Config.FleetKey);
+
+			await using Player host = await w.NewPlayer();
+			await host.Connect();
+			await host.Hear("rooms");
+			await host.Say(Msg("room.create", ("settings", Settings())));
+			await host.Hear("room");
+			await host.Say(Msg("room.bot.add", ("team", 2)));
+			await host.Say(Msg("room.bot.add", ("team", 2)));
+			await host.Hear("room", m => m["members"].AsArray().Count == 3);
+
+			// Sozinho com bots, o dono começa: bot está sempre pronto.
+			await host.Say(Msg("room.start"));
+			string key = (await host.Hear("match.start"))["matchKey"].GetValue<string>();
+
+			var (_, beat) = await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"), w.Config.FleetKey);
+			JsonArray players = beat["assignment"]["players"].AsArray();
+			Check.Equal(3, players.Count, "o dono e os dois bots");
+			JsonNode bot = players.First(p => p["accountId"].GetValue<long>() < 0);
+			Check.Equal(host.Id, bot["owner"].GetValue<long>(), "o bot vai com o dono da sala como dono");
+			Check.Equal(0L, players.First(p => p["accountId"].GetValue<long>() > 0)["owner"].GetValue<long>(), "gente não tem dono");
+
+			// O servidor de partida manda (por engano ou má-fé) uma linha de bot.
+			var (status, _) = await fleet.Call(HttpMethod.Post, "/v1/matches", new JsonObject
+			{
+				["matchKey"] = key, ["serverId"] = "gs-1", ["scoreBlue"] = 3, ["scoreOrange"] = 1,
+				["players"] = new JsonArray(
+					new JsonObject { ["accountId"] = host.Id, ["kills"] = 3, ["deaths"] = 1, ["assists"] = 0, ["headshots"] = 1, ["points"] = 30 },
+					new JsonObject { ["accountId"] = bot["accountId"].GetValue<long>(), ["kills"] = 1, ["deaths"] = 3, ["assists"] = 0, ["headshots"] = 0, ["points"] = 10 })
+			}, w.Config.FleetKey);
+			Check.Equal(200, status, "resultado aceito");
+
+			JsonObject end = await host.Hear("match.end");
+			Check.True(end["you"]["xp"].GetValue<long>() > 0, "o dono ganhou XP");
+			var (_, matches) = await host.Call(HttpMethod.Get, "/v1/matches");
+			Check.Equal(1, matches["matches"].AsArray().Count, "a partida está na conta do dono");
+			Check.True(!matches.ToJsonString().Contains(bot["name"].GetValue<string>()), "e o bot não aparece nela");
 		}),
 
 		("partida inteira: começa, cada um recebe o ingresso, o servidor de partida recebe a escalação, o resultado paga", async () =>

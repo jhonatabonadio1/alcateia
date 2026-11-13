@@ -32,6 +32,33 @@ public static class RefereeTests
 		Check.Equal(RefPhase.Live, r.Phase, "contagem acabou, vale");
 	}
 
+	[Test("bots: chegam e saem com o dono, só ele fala por eles, pontuam e não contam como gente")]
+	public static void BotsFollowTheirOwner()
+	{
+		var r = new Referee(new[] { (1L, "Ana", Referee.Blue, 0L), (2L, "Beto", Referee.Orange, 0L), (-1L, "Fenrir", Referee.Orange, 1L) },
+			3, 60, false, countdown: 2);
+
+		Check.True(!r.Join(-1), "bot não entra sozinho");
+		r.Join(1);
+		Check.True(r.Find(-1).Connected, "o bot chega com o dono");
+		Check.Equal(1, r.ConnectedCount, "bot não conta como gente ligada");
+		Check.True(r.Speaks(1, -1) && r.Speaks(1, 1), "o dono fala por si e pelo bot");
+		Check.True(!r.Speaks(2, -1) && !r.Speaks(2, 1), "o outro jogador não fala pelo bot nem pelo dono");
+
+		r.Join(2);
+		r.Tick(0.1);
+		r.Tick(2.5);
+		Check.Equal(RefPhase.Live, r.Phase, "com todos (bot incluído) dentro, vale");
+
+		Check.True(r.Hit(-1, 1, 50), "o bot acerta o inimigo");
+		Check.True(r.Death(1, -1, false, null) != null, "e o abate do bot vale");
+		Check.Equal(1, r.Score(Referee.Orange), "ponto para o time do bot");
+
+		r.Leave(1);
+		Check.True(!r.Find(-1).Connected, "o dono saiu, o bot saiu");
+		Check.True(!r.Hit(2, -1, 50), "e não leva mais acerto");
+	}
+
 	[Test("quem não chega não segura a partida para sempre")]
 	public static void StartsWithoutLatecomers()
 	{

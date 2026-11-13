@@ -166,7 +166,7 @@ equipe (três corredores, um prédio no meio, flanco por dentro).
 1. Copie um arquivo de `tools/mapas/`, mude o id e monte o seu.
 2. Registre em `tools/gerar_mapas.py` e em `scripts/meta/Maps.cs`.
 3. Acrescente um teste em `tests/regression/MapTests.cs` (três linhas).
-4. `python3 tools/gerar_mapas.py <id>` e `tools/testar.sh Mapa`.
+4. `python3 tools/mapas/conferir.py <id>` (faces brigando, letreiro mal assentado, objeto no ar), `python3 tools/gerar_mapas.py <id>` e `tools/testar.sh Mapa`.
 
 ## Testes
 

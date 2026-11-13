@@ -52,7 +52,7 @@ public partial class Weapon
 		if (target.IsRemote)
 		{
 			if (target.IsDead) return;
-			target.SendHit(amount, from, headshot, CauseOf(headshot), KillWeapon());
+			target.SendHit(amount, from, headshot, CauseOf(headshot), KillWeapon(), _body);
 			EmitSignal(SignalName.DamageDealt, amount);
 			EmitSignal(SignalName.HitConfirmed, headshot);
 			_form.OnDamageDealt(amount);
@@ -61,14 +61,27 @@ public partial class Weapon
 
 		bool wasAlive = !target.IsDead;
 
+		// Online, dois corpos desta máquina (o jogador e os bots que ela
+		// move): o dano é aplicado aqui, mas o juiz fica sabendo da autoria.
+		NetMatch net = NetMatch.Current;
+		net?.BeginLocalHit(_body, target, amount);
 		target.NoteAttacker(_body);
 		target.TakeDamage(amount, 0, from, headshot);
+		net?.EndLocalHit();
 
 		EmitSignal(SignalName.DamageDealt, amount);
 		EmitSignal(SignalName.HitConfirmed, headshot);
 		_form.OnDamageDealt(amount);
 
 		if (!wasAlive || !target.IsDead) return;
+
+		// Online o abate é do servidor: a vítima conta que morreu, e o
+		// feed, o placar e o WP voltam com a resposta dele.
+		if (net != null)
+		{
+			net.LocalKill(target, _body, CauseOf(headshot), KillWeapon(), headshot);
+			return;
+		}
 
 		_form.OnKill(_form.IsWolf);
 

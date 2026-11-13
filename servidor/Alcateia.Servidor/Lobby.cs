@@ -16,7 +16,8 @@ namespace Alcateia.Servidor;
 /// Mensagens em JSON com um campo <c>t</c> dizendo o que são. O cliente
 /// manda <c>rooms.list</c>, <c>room.create</c>, <c>room.join</c>,
 /// <c>room.leave</c>, <c>room.team</c>, <c>room.ready</c>,
-/// <c>room.settings</c>, <c>room.start</c>, <c>chat</c> e <c>ping</c>; o
+/// <c>room.settings</c>, <c>room.bot.add</c>, <c>room.bot.remove</c>,
+/// <c>room.start</c>, <c>chat</c> e <c>ping</c>; o
 /// servidor responde com <c>hello</c>, <c>rooms</c>, <c>room</c>,
 /// <c>left</c>, <c>chat</c>, <c>match.start</c>, <c>match.end</c>,
 /// <c>pong</c> e <c>error</c>. O formato de cada uma está em
@@ -47,6 +48,15 @@ public sealed class Lobby
 		public bool Ready;
 	}
 
+	/// <summary>Um bot posto na sala pelo dono. Número negativo, único na
+	/// sala; sem conta, sem XP, sem patente.</summary>
+	private sealed class BotSeat
+	{
+		public long Id;
+		public string Name;
+		public int Team;
+	}
+
 	private sealed class Room
 	{
 		public int Id;
@@ -54,12 +64,22 @@ public sealed class Lobby
 		public string Password = "";
 		public long HostId;
 		public readonly List<Member> Members = new();
+		public readonly List<BotSeat> Bots = new();
+		public long NextBot = -1;
 		public string State = "waiting";
 		public string MatchKey;
 
 		public int TeamSize => Settings["teamSize"]?.GetValue<int>() ?? 8;
 		public int Capacity => TeamSize * 2;
+
+		/// <summary>Quantos lugares o time tem ocupados, gente e bots.</summary>
+		public int Taken(int team, Member except = null) =>
+			Members.Count(m => m.Team == team && m != except) + Bots.Count(b => b.Team == team);
 	}
+
+	/// <summary>Os nomes dos bots, na ordem em que entram.</summary>
+	private static readonly string[] BotNames =
+		{ "Fenrir", "Lobo-Guará", "Presa", "Uivo", "Sombra", "Garra", "Alfa", "Matilha", "Caçador", "Lua", "Breu", "Rastro", "Faro", "Vulto", "Trovão", "Cinza" };
 
 	private readonly Fleet _fleet;
 	private readonly Accounts _accounts;
@@ -236,6 +256,14 @@ public sealed class Lobby
 					BroadcastList(outbox);
 					break;
 
+				case "room.bot.add":
+					AddBot(c, m["team"]?.GetValue<int>() ?? 0, outbox);
+					break;
+
+				case "room.bot.remove":
+					RemoveBot(c, m["id"]?.GetValue<long>() ?? 0, outbox);
+					break;
+
 				case "room.start":
 					Start(c, outbox);
 					break;
@@ -275,8 +303,13 @@ public sealed class Lobby
 			throw new ApiException(403, "senha_errada", "Senha da sala incorreta.");
 
 		Leave(c, outbox);
+
+		// Vai para o time com menos gente. Se o time está cheio de bots,
+		// um bot dá o lugar: gente tem preferência.
 		int blue = room.Members.Count(m => m.Team == 1), orange = room.Members.Count(m => m.Team == 2);
-		room.Members.Add(new Member { Client = c, Team = blue <= orange ? 1 : 2 });
+		int team = blue <= orange ? 1 : 2;
+		MakeRoom(room, team);
+		room.Members.Add(new Member { Client = c, Team = team });
 		c.Room = room;
 
 		Broadcast(room, outbox);
@@ -294,7 +327,7 @@ public sealed class Lobby
 		c.Room = null;
 		outbox.Add((c, Json(new JsonObject { ["t"] = "left", ["id"] = room.Id })));
 
-		if (room.Members.Count == 0) _rooms.Remove(room.Id);
+		if (room.Members.Count == 0) _rooms.Remove(room.Id);   // os bots vão junto
 		else
 		{
 			if (room.HostId == c.Account.Id) room.HostId = room.Members[0].Client.Account.Id;
@@ -312,9 +345,47 @@ public sealed class Lobby
 		if (c.Room.Members.Count(m => m.Team == team && m != seat) >= c.Room.TeamSize)
 			throw new ApiException(409, "time_cheio", "Esse time está cheio.");
 
+		MakeRoom(c.Room, team, seat);
 		seat.Team = team;
 		seat.Ready = false;
 		Broadcast(c.Room, outbox);
+	}
+
+	/// <summary>Abre um lugar no time para uma pessoa, tirando um bot se
+	/// o time estiver lotado.</summary>
+	private static void MakeRoom(Room room, int team, Member coming = null)
+	{
+		while (room.Taken(team, coming) >= room.TeamSize)
+		{
+			BotSeat last = room.Bots.LastOrDefault(b => b.Team == team);
+			if (last == null) return;
+			room.Bots.Remove(last);
+		}
+	}
+
+	private void AddBot(Client c, int team, List<(Client, string)> outbox)
+	{
+		Host(c);
+		Room room = c.Room;
+		if (room.State != "waiting") throw new ApiException(409, "em_partida", "A sala está em partida.");
+		if (team is not (1 or 2)) throw new ApiException(400, "time_invalido", "Time inválido.");
+		if (room.Taken(team) >= room.TeamSize) throw new ApiException(409, "time_cheio", "Esse time está cheio.");
+
+		string name = BotNames.FirstOrDefault(n => room.Bots.All(b => b.Name != n)) ?? $"Bot {-room.NextBot}";
+		room.Bots.Add(new BotSeat { Id = room.NextBot--, Name = name, Team = team });
+		Broadcast(room, outbox);
+		BroadcastList(outbox);
+	}
+
+	private void RemoveBot(Client c, long id, List<(Client, string)> outbox)
+	{
+		Host(c);
+		Room room = c.Room;
+		if (room.State != "waiting") throw new ApiException(409, "em_partida", "A sala está em partida.");
+		if (room.Bots.RemoveAll(b => b.Id == id) == 0) return;
+
+		Broadcast(room, outbox);
+		BroadcastList(outbox);
 	}
 
 	private void Start(Client c, List<(Client, string)> outbox)
@@ -330,7 +401,10 @@ public sealed class Lobby
 			MatchKey = Guid.NewGuid().ToString("N"),
 			RoomId = room.Id,
 			Settings = (JsonObject)room.Settings.DeepClone(),
-			Players = room.Members.Select(m => new MatchSeat(m.Client.Account.Id, m.Client.Account.Name, m.Team)).ToList()
+			// Os bots vão na escalação com o dono da sala como dono: é a
+			// máquina dele que os move durante a partida.
+			Players = room.Members.Select(m => new MatchSeat(m.Client.Account.Id, m.Client.Account.Name, m.Team))
+				.Concat(room.Bots.Select(b => new MatchSeat(b.Id, b.Name, b.Team, room.HostId))).ToList()
 		};
 
 		(string Address, int Port)? server = _fleet.Allocate(assignment);
@@ -436,6 +510,11 @@ public sealed class Lobby
 		if (room.Members.Count > teamSize * 2) throw new ApiException(409, "regras_invalidas", "Há mais gente na sala do que cabe nesses times.");
 		s["teamSize"] = teamSize;
 
+		// Time menor: os bots que não cabem mais saem.
+		foreach (int team in new[] { 1, 2 })
+			while (room.Bots.Any(b => b.Team == team) && room.Taken(team) > teamSize)
+				room.Bots.Remove(room.Bots.Last(b => b.Team == team));
+
 		s["minutes"] = Math.Clamp(s["minutes"]?.GetValue<int>() ?? 10, 3, 30);
 		s["scoreToWin"] = Math.Clamp(s["scoreToWin"]?.GetValue<int>() ?? 40, 10, 200);
 
@@ -464,6 +543,7 @@ public sealed class Lobby
 				["settings"] = r.Settings.DeepClone(),
 				["hasPassword"] = r.Password != "",
 				["players"] = r.Members.Count,
+				["bots"] = r.Bots.Count,
 				["capacity"] = r.Capacity,
 				["state"] = r.State,
 				["host"] = r.Members.FirstOrDefault(m => m.Client.Account.Id == r.HostId)?.Client.Account.Name ?? ""
@@ -484,6 +564,20 @@ public sealed class Lobby
 				["ready"] = m.Ready,
 				["host"] = m.Client.Account.Id == room.HostId,
 				["xp"] = m.Client.Xp
+			});
+
+		// Os bots entram na mesma lista, marcados: sempre prontos, sem XP
+		// (bot não tem patente), movidos pela máquina do dono da sala.
+		foreach (BotSeat b in room.Bots)
+			members.Add(new JsonObject
+			{
+				["id"] = b.Id,
+				["name"] = b.Name,
+				["team"] = b.Team,
+				["ready"] = true,
+				["host"] = false,
+				["bot"] = true,
+				["owner"] = room.HostId
 			});
 
 		string state = Json(new JsonObject

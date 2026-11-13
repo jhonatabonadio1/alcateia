@@ -2,6 +2,24 @@
 
 ## Não lançado
 
+### Bots no multiplayer (13/11)
+- **A sala online aceita bots.** O dono põe ("+ Bot" em cada time) e
+  tira; quem entra na sala toma o lugar de um bot se o time estiver
+  cheio; a lista de salas mostra "+N bots".
+- **Na partida**, os bots são movidos pela máquina do dono da sala, que
+  fala por eles com o servidor; para os outros jogadores são bonecos,
+  como qualquer jogador. Atiram, levam dano, morrem, renascem e pontuam
+  para o time. Se o dono cai, os bots saem com ele (pendência).
+- **Bot não tem patente**, em lugar nenhum (offline também): sem
+  insígnia no placar e na sala, "Bot" no cartão de duelo. Não ganha XP
+  nem entra na partida gravada no servidor.
+- Servidor: `room.bot.add` / `room.bot.remove`, bots na escalação com o
+  dono; servidor de partida: pacotes `BotState`, `BotAttack`, `BotHit`,
+  `BotDied`, `HitBot` e `Touch`. **Quem roda o servidor no Docker
+  precisa reconstruir as duas imagens** (`docker compose up -d --build`).
+- Teste de ponta a ponta (`tools/testar_online.sh`) agora joga com um
+  bot em cada time.
+
 ### Correções do que o Jhon viu jogando (13/11)
 - **Salas**: saem as salas de mentira. A aba Salas é a lista online; o
   treino com bots (offline) ficou num botão, "Treino com bots".
@@ -20,6 +38,34 @@
     são carregados ao entrar na partida;
   - parado e andar repetem sem tranco; quem não tem animação de sacar
     sobe de baixo; pistola, faca e granada um pouco mais altas.
+- **Faca com animação própria**: o conjunto "knife animated" (DJMaesen,
+  CC BY) que o Jhon trouxe — braços, faca e animações. Atacar alterna a
+  estocada e o corte de lado, no tempo entre dois golpes; sacar e parado
+  também são do conjunto. Sai a faca Gerber presa no braço da pistola e
+  o golpe feito por código.
+- **Varredura dos quatro mapas** (`tools/mapas/conferir.py`, novo): lê a
+  geometria de cada mapa atrás do que vira defeito na tela. Achou e
+  corrigiu:
+  - **170 faces brigando** (duas peças de materiais diferentes com uma
+    face no mesmo plano — o pisca-pisca nas portas das oficinas e dos
+    alojamentos, onde o marco de aço empatava com a parede; tetos e
+    peitoris do Metrô, da Vila e da Polar). O kit agora desempata
+    sozinho ao gravar: a peça de enfeite cresce 3 mm.
+  - **31 letreiros mal assentados**: placas da Polar cortadas pelo friso
+    de aço, o número do portão do Hangar atravessado por uma coluna,
+    letras das bases do Metrô e da Vila soltas a um palmo da parede. O
+    kit assenta cada letreiro 2 cm à frente da superfície que tem atrás.
+  - **Polar**: o carrinho e os galões dos alojamentos flutuavam 24 cm
+    (ficaram na altura do piso antigo).
+  - Os testes de mapa agora conferem, com a física do jogo, que nenhum
+    ponto de nascimento fica dentro de parede e que não há buraco no
+    chão; e dão até 100 s para o primeiro tiro no mapa grande.
+- **Braços reiniciando**: no M16 (a arma com que se nasce) o trecho de
+  "parado" pegava o fim do saque, e a cada 0,9 s os braços pulavam 10 cm.
+  Trecho corrigido; nos conjuntos de linha do tempo única o parado vai e
+  volta em vez de emendar; e a troca entre parado e andar espera 0,18 s
+  (perder o chão por um quadro recomeçava a animação). O teste agora
+  mede, arma por arma, que parado não há recomeço nem tranco.
 - **Personagens tremendo e piscando**: a física anda 60 passos por
   segundo e a tela do Mac no ritmo dela (120 Hz, ou 60 Hz com quadros
   desencontrados). O corpo era desenhado onde o último passo o deixou: a

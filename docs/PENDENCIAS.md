@@ -11,9 +11,9 @@ Ponha aqui, com o que se sabe dele.
 
 | Defeito | O que se sabe |
 |---|---|
-| **Faca e granada** | Corrigido (13/11) com os modelos do Sketchfab na mão do braço da pistola. O Jhon pôs no Mac uma animação de faca própria: falta trazer e usar no lugar do golpe feito por código. |
-| **Glitches nos mapas** | Corrigidos os que se acharam (letreiro piscando, piso da Polar, cano atravessando a parede). Se ainda houver, falta print ou o lugar exato. |
-| **Glitches na troca de arma** | Corrigidos os que se acharam (tamanho e lugar dos braços, travada na primeira troca, sacar). Falta o Jhon conferir. |
+| **Faca e granada** | Corrigido (13/11) com os modelos do Sketchfab na mão do braço da pistola. A faca agora usa o conjunto animado que o Jhon trouxe (golpes animados). Falta o Jhon conferir. |
+| **Glitches nos mapas** | Varridos os quatro (13/11) com `tools/mapas/conferir.py`: faces brigando, letreiros enterrados ou soltos, objetos flutuando na Polar — corrigidos. O conferidor só olha caixas retas: rampas, formas livres (trem, tanques, terreno) e os modelos prontos não são conferidos. Se ainda houver, falta print ou o lugar exato. |
+| **Glitches na troca de arma / braços reiniciando** | Corrigidos os que se acharam (tamanho e lugar dos braços, travada na primeira troca, sacar; o pulo do M16 parado e o recomeço ao perder o chão). Falta o Jhon conferir. |
 | **Personagens tremendo e piscando** | Corrigido (13/11): o desenho agora anda entre os passos da física (`VisualSmoothing`) e a borda vermelha saiu de cima da pele. Não deu para ver no Mac daqui: falta o Jhon conferir; se continuar, um vídeo curto mostra se é tremor de posição, de animação ou de sombra. |
 
 ## Pedido e ainda não feito
@@ -136,8 +136,11 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   é a primeira vez.
 - **Partida online entre duas máquinas** nunca jogada (só dois jogos sem
   tela na mesma máquina).
-- **Online**: compensação de lag, predição, bots, reconexão, golpes
+- **Online**: compensação de lag, predição, reconexão, golpes
   especiais do lobo pela rede.
+- **Bots online** (feito em 13/11) dependem da máquina do dono da sala:
+  falta passar os bots para outro jogador quando o dono cai, e a sala
+  online escolher a dificuldade deles.
 - **Mapas vistos só no renderizador Compatibility**: ajustar luz e
   sombra no Forward+.
 - **Bots** na Polar atiram metade do que atiravam (76 tiros em 40 s,

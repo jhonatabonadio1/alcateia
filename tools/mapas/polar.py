@@ -431,10 +431,10 @@ def acabamento(m):
             # O que há nos cômodos e em volta (objetos do Poly Haven).
             PC.objeto(m, L, "BauFerramenta", "bau_ferramenta", (s * 22.6, 0.94, sz * 19.5), 0, colide=False)
             PC.objeto(m, L, "EstanteLab", "estante_b", (s * 27.4, 0, sz * 16.6), 90)
-            PC.objeto(m, L, "CarroFerramenta", "carro_ferramenta", (s * 26, 0.26, sz * 16.6), 0)
+            PC.objeto(m, L, "CarroFerramenta", "carro_ferramenta", (s * 26, 0.02, sz * 16.6), 0)
             PC.objeto(m, L, "Municao", "caixa_municao", (s * 33.4, 0.8, sz * 19.3), 30, colide=False)
-            PC.objeto(m, L, "Galao1", "galao_verde", (s * 34.5, 0.26, sz * 17.7), 20, colide=False)
-            PC.objeto(m, L, "Galao2", "galao_verde", (s * 34.1, 0.26, sz * 17.5), -35, colide=False)
+            PC.objeto(m, L, "Galao1", "galao_verde", (s * 34.5, 0.02, sz * 17.7), 20, colide=False)
+            PC.objeto(m, L, "Galao2", "galao_verde", (s * 34.1, 0.02, sz * 17.5), -35, colide=False)
             PC.objeto(m, L, "CaixaMilitar1", "caixa_militar_madeira", (s * 41.8, 0, sz * 11.6), 0, som="madeira")
             PC.objeto(m, L, "CaixaMilitar2", "caixa_militar_madeira", (s * 41.8, 0.46, sz * 11.6), 8, colide=False)
             PC.objeto(m, L, "TamborAzul1", "barril_azul", (s * 36.2, 0, sz * 8.2))

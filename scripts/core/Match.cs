@@ -269,12 +269,12 @@ public partial class Match : Node
 				CombatantStats entry = Entry(health.PublicName, health.Team);
 				var remote = node as Bot is { Remote: true } puppet ? puppet : null;
 				entry.IsLocal = group == Groups.Players;
-				entry.IsBot = group == Groups.Bots && remote == null;
+				entry.IsBot = group == Groups.Bots && (remote == null || remote.RemoteIsBot);
 				entry.Health = health;
 				entry.Form = node.GetNodeOrNull<FormController>("FormController");
 				entry.Rank = entry.IsLocal ? Profile.Rank
 					: remote != null ? remote.RemoteRank
-					: Ranks.ForBot(entry.Name, (int)RoomConfig.Rules.Difficulty);
+					: Ranks.None;   // bot não tem patente
 
 				if (entry.IsLocal) _local = entry;
 			}

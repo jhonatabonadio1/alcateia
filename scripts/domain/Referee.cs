@@ -44,6 +44,11 @@ public sealed class Referee
 		public long Id;
 		public string Name;
 		public int Team;
+
+		/// <summary>Bot: a conta do jogador cuja máquina o move. Zero em
+		/// gente. Um bot está "ligado" enquanto o dono estiver.</summary>
+		public long Owner;
+		public bool IsBot => Owner != 0;
 		public bool Connected, EverConnected;
 		public int Kills, Deaths, Assists, Headshots;
 		public int Points => Kills * PointsPerKill + Assists * PointsPerAssist;
@@ -74,9 +79,14 @@ public sealed class Referee
 
 	public Referee(IEnumerable<(long Id, string Name, int Team)> seats, int scoreToWin, double seconds,
 		bool friendlyFire = false, double countdown = 10)
+		: this(seats.Select(s => (s.Id, s.Name, s.Team, 0L)), scoreToWin, seconds, friendlyFire, countdown) { }
+
+	/// <summary>Com bots: <c>Owner</c> é a conta do dono de cada bot (0 em gente).</summary>
+	public Referee(IEnumerable<(long Id, string Name, int Team, long Owner)> seats, int scoreToWin, double seconds,
+		bool friendlyFire = false, double countdown = 10)
 	{
-		foreach (var (id, name, team) in seats)
-			_seats[id] = new Seat { Id = id, Name = name, Team = team is Blue or Orange ? team : Blue };
+		foreach (var (id, name, team, owner) in seats)
+			_seats[id] = new Seat { Id = id, Name = name, Team = team is Blue or Orange ? team : Blue, Owner = owner };
 
 		ScoreToWin = Math.Max(scoreToWin, 1);
 		FriendlyFire = friendlyFire;
@@ -86,15 +96,24 @@ public sealed class Referee
 
 	public int Score(int team) => team is Blue or Orange ? _score[team] : 0;
 	public Seat Find(long id) => _seats.TryGetValue(id, out Seat s) ? s : null;
-	public int ConnectedCount => _seats.Values.Count(s => s.Connected);
+	/// <summary>Gente ligada. Bot não conta: sala só de bots está vazia.</summary>
+	public int ConnectedCount => _seats.Values.Count(s => s.Connected && !s.IsBot);
+
+	/// <summary>Os bots que a máquina desta conta move.</summary>
+	public IEnumerable<Seat> BotsOf(long owner) => _seats.Values.Where(s => s.IsBot && s.Owner == owner);
+
+	/// <summary>Esta conta fala por este lugar? Por si mesma, ou pelos bots dela.</summary>
+	public bool Speaks(long account, long seatId) =>
+		account == seatId || (Find(seatId) is { IsBot: true } bot && bot.Owner == account);
 
 	/// <summary>Um jogador escalado chegou. Falso se não é desta partida.</summary>
 	public bool Join(long id)
 	{
 		Seat seat = Find(id);
-		if (seat == null || Phase == RefPhase.Ended) return false;
+		if (seat == null || seat.IsBot || Phase == RefPhase.Ended) return false;
 
 		seat.Connected = seat.EverConnected = true;
+		foreach (Seat bot in BotsOf(id)) bot.Connected = bot.EverConnected = true;   // os bots chegam com o dono
 		if (_firstJoin < 0) _firstJoin = _now;
 		return true;
 	}
@@ -102,7 +121,10 @@ public sealed class Referee
 	public void Leave(long id)
 	{
 		Seat seat = Find(id);
-		if (seat != null) seat.Connected = false;
+		if (seat == null || seat.IsBot) return;
+
+		seat.Connected = false;
+		foreach (Seat bot in BotsOf(id)) bot.Connected = false;   // e vão embora com ele
 	}
 
 	/// <summary>Passa o tempo: começa quando todos chegam (ou a espera

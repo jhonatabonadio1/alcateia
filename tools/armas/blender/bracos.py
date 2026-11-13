@@ -25,7 +25,8 @@ e do módulo `bpy` (`pip install bpy`), ou rode com `blender -b -P`.
 
 **Conjunto novo:** uma entrada em CONJUNTOS. `olho` (nas unidades do
 arquivo) só é preciso quando o .fbx não traz câmera; `comprimento` é o
-tamanho real da arma, em metros, quando o arquivo não está em metros.
+tamanho real da arma, em metros, quando o arquivo não está em metros;
+`objeto` renomeia a peça que o jogo procura pelo nome (a faca).
 """
 import json
 import math
@@ -62,7 +63,7 @@ CONJUNTOS = {
         texturas={"arms": BRACO, "Rifle": "Rifle", "Silencer": "Silencer", "Scope": "Scope", "Foregrip": "Rifle", "Pmag": "Pmag"}),
     "m16": dict(
         pacote="m16-a2-assault-rifle-animated", fbx="M16 A2 Rifle - Animated.fbx", armas=["m16a2"], arma="m16a2_base",
-        linha=dict(parado=(224, 251), sacar=(206, 224), tiro=(2, 8), recarga=(71, 137), recarga_vazia=(8, 71)),
+        linha=dict(parado=(226, 246), sacar=(206, 225), tiro=(2, 8), recarga=(71, 137), recarga_vazia=(8, 71)),
         olho=(0.09, 0.22, 0.26), texturas={"arms": BRACO, "m16a2": "m16a2"}),
     "smg": dict(
         pacote="smg-fps-animations", fbx="PistolArm.fbx", armas=["ump45"], arma="LP SST30",
@@ -81,19 +82,22 @@ CONJUNTOS = {
         comprimento=1.01, olho=(0.0, 2.0, 36.5),
         texturas={"12gauge": "12gauge", "TTI_Benelli_M4": "TTI_Benelli_M4", "matchsaverz": "matchsaverz",
                   "sleeve_st6_generalist": "sleeve_st6_generalist", "glove_hardknuckle": "glove_hardknuckle"}),
+    # A faca que o Jhon trouxe ("knife animated", DJMaesen, CC BY): tudo
+    # numa linha do tempo de 136 quadros, a 30 por segundo. O arquivo não
+    # tem câmera: o olho fica entre os ombros, acima e à frente deles.
+    # golpe é a estocada (arma no alto e vai à frente), golpe2 o corte de
+    # lado; inspecionar é o giro da faca na mão (ainda sem tecla).
+    "faca": dict(
+        pacote="knife-animated", fbx="arms@knife.fbx", armas=["faca"], arma="knife", objeto="faca",
+        linha=dict(parado=(1, 40), golpe=(43, 62), golpe2=(62, 82), inspecionar=(83, 121), sacar=(126, 136)),
+        olho=(0.025, 0.64, 0.22), ajuste=(0.0, 0.04, 0.0), texturas={"arms": BRACO, "knife": "knife"}),
 }
 
-# Faca e granada não têm conjunto próprio: usam os braços da pistola,
-# sem a pistola e sem o braço esquerdo, com o objeto preso no osso em que
-# a pistola ia (PBody). `prender` é o objeto no espaço desse osso:
-# posição do meio do cabo, para onde aponta a ponta, e para onde vai o
-# lado largo (o fio da lâmina).
+# A granada não tem conjunto próprio: usa os braços da pistola, sem a
+# pistola e sem o braço esquerdo, com o objeto preso no osso em que a
+# pistola ia (PBody). `prender` é o objeto no espaço desse osso: posição
+# do meio, para onde aponta o topo, e para onde vai o lado largo.
 OBJETOS = {
-    "faca": dict(
-        base="pistola", armas=["faca"], tirar=("xd_frame",), pacote="gerber-combat-knife-low-poly",
-        fbx="knife100.fbx", escala=0.03, eixo="-X", largo="Y", texturas={"*": "knife100_Material"},
-        prender=dict(meio=(0.0, 0.07, 0.005), ponta=(0.0, 0.62, 0.79), largo=(0.0, -0.79, 0.62)),
-        acoes=dict(parado="FPS_Pistol_Idle", andar="FPS_Pistol_Walk")),
     "granada": dict(
         base="pistola", armas=["choque"], tirar=("xd_frame",), pacote="m84-stun-grenade-flashbang",
         fbx="M84 Stun Grenade.fbx", escala=1.0, eixo="Z", largo="Y", texturas={"*": "DefaultMaterial"},
@@ -197,6 +201,9 @@ def converter(nome, c):
 
     # --- A escala: pelo comprimento da arma, quando o arquivo não está em metros.
     arma = next(o for o in cena.objects if o.type == "MESH" and o.name.startswith(c["arma"]))
+    if "objeto" in c:
+        # A peça que o jogo procura pelo nome (a faca na mão).
+        arma.name = c["objeto"]
     escala = 1.0
     if "comprimento" in c:
         cantos = [arma.matrix_world @ Vector(k) for k in arma.bound_box]

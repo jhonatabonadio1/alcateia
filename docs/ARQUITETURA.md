@@ -742,6 +742,13 @@ Passo a passo em `docs/MAPAS.md`. Em resumo: um arquivo em
 na lista em `scripts/meta/Maps.cs`. A cena da partida carrega o mapa da
 sala pelo `MapSlot` (nó `Map` do `main.tscn`).
 
+**Antes de gravar, confira:** `python3 tools/mapas/conferir.py` lê a
+geometria dos quatro mapas e acusa face brigando com face (pisca-pisca),
+letreiro enterrado ou solto no ar, ponto de nascimento dentro de parede
+e objeto flutuando. O kit já acerta sozinho os dois primeiros ao gravar
+(`Mapa.acertar()`); o que o conferidor ainda acusar é para arrumar no
+gerador. `--cru` mostra o que havia antes do acerto.
+
 O que a cena do mapa precisa ter, seja gerada ou feita à mão:
 
 - **Geometria** em `StaticBody3D` com `BoxMesh` — o minimapa desenha
@@ -810,6 +817,15 @@ espelhada), `Weapon.Puppet` (o boneco não fere) e `Match.Online`
 (relógio, fase e placar vêm do servidor). Fora de partida online nada
 disso é exercitado — os testes de regressão rodam o jogo offline como
 sempre.
+
+**Bots online.** A sala online aceita bots (o dono põe e tira). Na
+partida eles são bots de verdade só na máquina do dono da sala
+(`MatchSetup.SetUpOnline` → `NetMatch.Own`), que fala por eles; nas
+outras são bonecos (`Bot.RemoteIsBot`). O jogador e os bots da mesma
+máquina se acertam ali mesmo: `Weapon.Damage` e `Grenade` avisam o
+`NetMatch` (`BeginLocalHit`/`LocalKill`) e o abate volta do servidor
+como qualquer outro. Bot não tem patente em lugar nenhum
+(`Ranks.None`).
 
 O `MultiplayerSynchronizer` do `player.tscn` é resto de um primeiro
 desenho e não é usado: a ligação é própria (`SceneMultiplayer` só do nó

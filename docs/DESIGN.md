@@ -1485,7 +1485,8 @@ versão 1 é migrado). Opções ficam à parte, em `user://opcoes.json`.
 - **Patentes** (`meta/Ranks.cs`): 30, em 10 famílias de 3 graus
   (Filhote I até Alfa III). XP para a patente *r*: 250·r^1,9. Cada
   promoção dá Presas (150 + 100 por família) e a tela de promoção.
-  Patente não cai.
+  Patente não cai. **Bot não tem patente** (decisão do Jhon, 13/11): no
+  placar, na sala e no cartão de duelo aparece sem insígnia, como "Bot".
 - **Partida rende** (`meta/Progression.cs`): 150 XP e 100 Presas por
   jogar, mais abate, assistência, vitória ou empate, e MVP. Abandonar
   não rende nada.

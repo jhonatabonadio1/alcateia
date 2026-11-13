@@ -98,19 +98,34 @@
  "faca": {
   "ajuste": [
    0.0,
-   0.06,
+   0.04,
    0.0
   ],
   "animacoes": {
-   "andar": {
-    "ate": 1.625,
-    "clipe": "andar",
-    "de": 0.0
+   "golpe": {
+    "ate": 2.0333,
+    "clipe": "Scene",
+    "de": 1.4
+   },
+   "golpe2": {
+    "ate": 2.7,
+    "clipe": "Scene",
+    "de": 2.0333
+   },
+   "inspecionar": {
+    "ate": 4.0,
+    "clipe": "Scene",
+    "de": 2.7333
    },
    "parado": {
-    "ate": 4.9583,
-    "clipe": "parado",
+    "ate": 1.3,
+    "clipe": "Scene",
     "de": 0.0
+   },
+   "sacar": {
+    "ate": 4.5,
+    "clipe": "Scene",
+    "de": 4.1667
    }
   },
   "armas": [
@@ -118,9 +133,9 @@
   ],
   "arquivo": "res://assets/armas/fp/faca.glb",
   "cano": [
-   0.0214,
-   -0.1195,
-   -0.599
+   0.1631,
+   -0.2152,
+   -0.6712
   ]
  },
  "fuzil": {
@@ -207,9 +222,9 @@
   ],
   "animacoes": {
    "parado": {
-    "ate": 8.3,
+    "ate": 8.1333,
     "clipe": "Scene",
-    "de": 7.4
+    "de": 7.4667
    },
    "recarga": {
     "ate": 4.5,
@@ -222,7 +237,7 @@
     "de": 0.2
    },
    "sacar": {
-    "ate": 7.4,
+    "ate": 7.4333,
     "clipe": "Scene",
     "de": 6.8
    },

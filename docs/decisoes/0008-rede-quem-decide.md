@@ -45,8 +45,17 @@ impossível e morte repetida.
 - **Sem compensação de lag.** Quem atira acerta o que vê na própria
   tela (bom para quem atira); a vítima pode levar dano já atrás da
   parede na tela dela.
-- **Partida online é só entre jogadores.** Bot precisaria de um dono
-  que o simulasse.
+- **Os bots são da máquina do dono da sala** (13/11/2026). A regra
+  "cada máquina manda no próprio corpo" foi estendida: o dono da sala
+  manda também nos bots dela. A máquina dele os move e fala por eles
+  (estado, ataque, acerto, morte) com pacotes que levam o número do bot;
+  o servidor confere que o bot é mesmo dele e trata o bot como jogador.
+  Nas outras máquinas, bot é boneco como qualquer jogador. Custos: os
+  bots jogam com a latência do dono (para ele, zero; para os outros, a
+  dele); **se o dono cai, os bots saem da partida** (não há troca de
+  dono); e o dono, adulterando o jogo, manda nos bots como manda em si.
+  Bot não é conta: não ganha XP, não tem patente, não entra no
+  resultado gravado.
 - Coisas do lobo que não passam pela rede ainda: o uivo, a corrida na
   parede e os golpes especiais aparecem para os outros como movimento e
   ataque comum.

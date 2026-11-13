@@ -2,24 +2,23 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdr5or6l3t00v"
-path.s3tc="res://.godot/imported/faca_knife100_Material_BaseColor.jpg-32afc098f713e04ac7422a54fb81d9de.s3tc.ctex"
+uid="uid://nq11pwx8p2av"
+path="res://.godot/imported/faca_knifeMetallic.jpg-a44dd0f59ff0a6355589875437d93f17.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 generator_parameters={
-"md5": "d8c23e9e06e84932c2dfdb10a0cfb98a"
+"md5": "c747a295fd494a159f700d71e98790ea"
 }
 
 [deps]
 
-source_file="res://assets/armas/fp/faca_knife100_Material_BaseColor.jpg"
-dest_files=["res://.godot/imported/faca_knife100_Material_BaseColor.jpg-32afc098f713e04ac7422a54fb81d9de.s3tc.ctex"]
+source_file="res://assets/armas/fp/faca_knifeMetallic.jpg"
+dest_files=["res://.godot/imported/faca_knifeMetallic.jpg-a44dd0f59ff0a6355589875437d93f17.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -41,4 +40,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1

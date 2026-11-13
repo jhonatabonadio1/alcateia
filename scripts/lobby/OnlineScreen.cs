@@ -282,7 +282,11 @@ public partial class OnlineScreen : LobbyScreen
 
 		row.AddChild(UiKit.Text(Maps.Get(s.Map).Name, "Muted"));
 		row.AddChild(UiKit.Text($"até {s.ScoreToWin} · {s.Minutes} min", "Muted"));
-		row.AddChild(UiKit.Text($"{players}/{capacity}", "Numeric", players >= capacity ? UiTokens.Danger : UiTokens.TextPrimary));
+		int bots = room["bots"]?.GetValue<int>() ?? 0;
+		Label count = UiKit.Text($"{players}/{capacity}", "Numeric", players >= capacity ? UiTokens.Danger : UiTokens.TextPrimary);
+		if (bots > 0) count.TooltipText = $"{players} jogador(es) e {bots} bot(s). Quem entra toma o lugar de um bot.";
+		row.AddChild(count);
+		if (bots > 0) row.AddChild(UiKit.Chip($"+{bots} bot{(bots > 1 ? "s" : "")}", UiTokens.TextSecondary));
 		row.AddChild(UiKit.Chip(playing ? "jogando" : "esperando", playing ? UiTokens.Warning : UiTokens.Success));
 
 		Button join = UiKit.Button("Entrar", ButtonKind.Primary, () => Join(id, locked));
@@ -386,8 +390,8 @@ public partial class OnlineScreen : LobbyScreen
 
 		HBoxContainer teams = UiKit.Row(UiTokens.S3);
 		teams.SizeFlagsVertical = SizeFlags.ExpandFill;
-		teams.AddChild(TeamCard("Time azul", Teams.Blue, members, s.TeamSize));
-		teams.AddChild(TeamCard("Time laranja", Teams.Orange, members, s.TeamSize));
+		teams.AddChild(TeamCard("Time azul", Teams.Blue, members, s.TeamSize, host && !playing));
+		teams.AddChild(TeamCard("Time laranja", Teams.Orange, members, s.TeamSize, host && !playing));
 		_main.AddChild(teams);
 
 		HBoxContainer actions = UiKit.Row(UiTokens.S2);
@@ -421,7 +425,9 @@ public partial class OnlineScreen : LobbyScreen
 		_main.AddChild(actions);
 	}
 
-	private static Control TeamCard(string title, int team, JsonArray members, int size)
+	/// <summary>Um time da sala. Com <paramref name="manage"/> (o dono,
+	/// sala esperando), dá para pôr bot nas vagas e tirar os que estão.</summary>
+	private Control TeamCard(string title, int team, JsonArray members, int size, bool manage)
 	{
 		Color color = Teams.ColorOf(team);
 		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S3, UiTokens.S2);
@@ -431,6 +437,12 @@ public partial class OnlineScreen : LobbyScreen
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
 		head.AddChild(UiKit.Text(title, "Subtitle", color));
 		head.AddChild(UiKit.Spacer());
+		if (manage && mine.Count < size)
+		{
+			Button add = UiKit.Button("+ Bot", ButtonKind.Secondary, () => Lobby.AddBot(team));
+			add.TooltipText = "Põe um bot neste time. Quem entrar na sala toma o lugar dele.";
+			head.AddChild(add);
+		}
 		head.AddChild(UiKit.Text($"{mine.Count}/{size}", "Numeric", UiTokens.TextSecondary));
 		column.AddChild(head);
 		column.AddChild(UiKit.Divider());
@@ -439,6 +451,25 @@ public partial class OnlineScreen : LobbyScreen
 		{
 			HBoxContainer row = UiKit.Row(UiTokens.S2);
 			row.CustomMinimumSize = new Vector2(0, UiTokens.ScoreRowHeight);
+
+			// Bot não tem patente: no lugar da insígnia, o ícone de bot.
+			if (m["bot"]?.GetValue<bool>() ?? false)
+			{
+				long bot = m["id"].GetValue<long>();
+				Control mark = Icon.Make(IconKind.Bot, 18, UiTokens.TextDisabled);
+				mark.CustomMinimumSize = new Vector2(24, 24);
+				row.AddChild(mark);
+
+				Label botName = UiKit.Truncated(m["name"].GetValue<string>(), null, UiTokens.TextSecondary);
+				botName.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+				row.AddChild(botName);
+				row.AddChild(UiKit.Chip("bot", UiTokens.TextSecondary));
+				if (manage) row.AddChild(UiKit.IconButton(IconKind.Close, "Tirar este bot", () => Lobby.RemoveBot(bot), 16));
+
+				column.AddChild(row);
+				continue;
+			}
+
 			row.AddChild(RankBadge.Make(Ranks.RankFor(m["xp"]?.GetValue<long>() ?? 0), 24));
 
 			Label name = UiKit.Truncated(m["name"].GetValue<string>(), null,

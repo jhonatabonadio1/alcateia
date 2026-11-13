@@ -5,8 +5,14 @@ using System.Text.Json.Nodes;
 
 namespace Alcateia.Servidor;
 
-/// <summary>Um jogador escalado para uma partida.</summary>
-public sealed record MatchSeat(long AccountId, string Name, int Team);
+/// <summary>Um lugar numa partida: um jogador, ou um bot. O bot tem
+/// número negativo no lugar da conta e um dono (<see cref="Owner"/>): a
+/// conta do jogador cuja máquina o move. Bot não é conta — não ganha XP,
+/// não tem patente e não entra no resultado.</summary>
+public sealed record MatchSeat(long AccountId, string Name, int Team, long Owner = 0)
+{
+	public bool IsBot => AccountId < 0;
+}
 
 /// <summary>Uma partida entregue a um servidor de partida.</summary>
 public sealed class Assignment

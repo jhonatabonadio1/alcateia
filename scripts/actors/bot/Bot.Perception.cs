@@ -215,6 +215,9 @@ public partial class Bot
 			{
 				if (node == this || node is not Node3D body) continue;
 
+				// Online: o boneco de quem ainda não chegou (ou já saiu) não está no mundo.
+				if (body is Bot { RemoteAbsent: true }) continue;
+
 				var health = body.GetNodeOrNull<Health>("Health");
 				if (health == null || health.IsDead || health.Team == _health.Team) continue;
 

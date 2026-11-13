@@ -87,7 +87,7 @@ Para trocar a arma que vem no pacote de animação pela arma certa.
 | UMP45 | [Low Poly UMP45](https://sketchfab.com/3d-models/none-391c9e2fc73046b798d64e169dff1f35) | Alpaca Studio |
 | M3 | [Benelli M3 Tactical](https://sketchfab.com/3d-models/none-1eaea0239fdf43ad92eb276fbf9c60dd) | Amapsis |
 | M9 | [Beretta M9](https://sketchfab.com/3d-models/none-d1200d9aa28f466484f7d3fdd7724e76) | emran.bayati |
-| Faca | [Gerber Combat knife Low-Poly](https://sketchfab.com/3d-models/none-f8991297774e415c976cc8d476ca21e0) | Lucas Soler |
+| Faca | [knife animated](https://sketchfab.com/3d-models/knife-animated-e5db6b73878f4123baa48cea6d9af84c) — braços, faca e animações (parado, estocada, corte, inspecionar, sacar); trazida pelo Jhon em 13/11, pasta `knife-animated/` | DJMaesen (bumstrum) |
 | Granada de choque | [M84 Stun Grenade - Flashbang](https://sketchfab.com/3d-models/none-81afe3b572ba4e2f92f2c001eaccb83d) | Coozy |
 
 **Estes modelos foram escolhidos pela licença, pela contagem de
@@ -106,8 +106,9 @@ deixadas de fora de propósito.
 
 | 6 conjuntos de braços animados do Sketchfab | `assets/armas/fp/*.glb` — as armas de fogo em primeira pessoa | `tools/armas/blender/bracos.py` |
 
-A faca (Gerber) e a granada (M84) entraram na mão do braço da pistola
-(`OBJETOS` em `tools/armas/blender/bracos.py`). Ainda não entraram os
+A faca é um conjunto próprio (`knife-animated`, com os golpes animados).
+A granada (M84) vai na mão do braço da pistola (`OBJETOS` em
+`tools/armas/blender/bracos.py`). Ainda não entraram os
 modelos avulsos de arma (AK-47, Beretta, SG552, UMP45, Benelli M3) — os
 conjuntos animados já trazem uma arma cada um.
 Lembre: a pasta deles é `assets/pacotes/sketchfab/` (fora do Godot); se

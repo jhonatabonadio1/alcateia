@@ -46,6 +46,7 @@ public sealed class Matches
 		{
 			long id = node["accountId"]?.GetValue<long>() ?? 0;
 			if (!seats.TryGetValue(id, out MatchSeat seat) || lines.Any(l => l.Seat.AccountId == id)) continue;
+			if (seat.IsBot) continue;   // bot não é conta: não ganha nada nem entra na partida gravada
 			int N(string field, int max) => Math.Clamp(node[field]?.GetValue<int>() ?? 0, 0, max);
 			lines.Add((seat, N("kills", Rewards.MaxKills), N("deaths", 999), N("assists", Rewards.MaxAssists), N("headshots", Rewards.MaxKills), N("points", 99999)));
 		}
