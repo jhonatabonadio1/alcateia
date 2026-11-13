@@ -4,17 +4,32 @@ ASP.NET (.NET 8) + PostgreSQL, sem pacote de fora. Como subir, como as
 peças se encaixam e o que falta: `docs/SERVIDOR.md`. Aqui fica a
 referência do que o servidor fala.
 
+Organizado em camadas (clean architecture): cada uma só conhece as de
+dentro, e a regra não sabe de banco nem de HTTP.
+
 ```
-Alcateia.Servidor/
-  Program.cs, App.cs   as rotas
-  Config.cs            variáveis de ambiente
-  Accounts.cs          contas, sessões, perfil, ranking
-  Passwords.cs         senha (PBKDF2), tokens, assinatura dos ingressos
-  Lobby.cs             salas e chat por WebSocket
-  Fleet.cs             servidores de partida: quem está livre, quem joga o quê
-  Matches.cs           recebe o resultado, paga os jogadores
-  Banco/Pg.cs          cliente do PostgreSQL (protocolo de fio)
-  Banco/Schema.cs      migrações
+Alcateia.Dominio/        as regras, puras (sem banco, rede ou ASP.NET)
+  Failure.cs             "não dá": tipo, código e frase (a API traduz em HTTP)
+  Contas/Account.cs      conta, nome e senha válidos, perfil, ranking
+  Salas/Room.cs          a sala: entrar, times, dono, bots, regras, começar
+  Partidas/Match.cs      escalação, resultado, quem ganha e quanto (Rewards.cs, do jogo)
+  Frota/Fleet.cs         servidores de partida: lugares, entrega, partidas fechadas
+Alcateia.Aplicacao/      os casos de uso
+  Portas/Ports.cs        o que a aplicação pede de fora: repositórios, senha, relógio, conexão
+  Contas/AccountService  criar conta, entrar, sair, perfil, ranking
+  Saguao/LobbyService    quem está ligado, salas e chat (o protocolo do WebSocket)
+  Frota/FleetService     a frota em uso (trava, relógio, partida perdida)
+  Partidas/MatchService  recebe o resultado, grava, paga, libera a sala
+Alcateia.Infra/          o mundo de fora
+  Banco/Pg.cs            cliente do PostgreSQL (protocolo de fio)
+  Banco/Schema.cs        migrações
+  Repositorios/          contas e partidas no PostgreSQL
+  Seguranca/Passwords.cs senha (PBKDF2), tokens, assinatura dos ingressos, relógio
+Alcateia.Servidor/       a borda (o programa)
+  Program.cs, App.cs     a montagem de tudo (raiz da composição)
+  Config.cs              variáveis de ambiente
+  Http/                  JSON, erros, chave da frota, freio de tentativas
+  Rotas/                 contas, saguão (WebSocket), frota, partidas, saúde
 Alcateia.Servidor.Testes/   testes de integração (tools/testar_servidor.sh)
 Dockerfile                  a imagem do servidor
 partida.Dockerfile          a imagem do servidor de partida (o jogo sem tela)
@@ -44,7 +59,7 @@ As rotas de jogador pedem `Authorization: Bearer <token>`; as de frota,
 | `GET /v1/ranking?limit=` | jogador | Os primeiros por XP |
 | `GET /v1/rooms` | jogador | As salas abertas |
 | `GET /v1/matches` | jogador | As últimas partidas da conta |
-| `POST /v1/fleet/heartbeat` `{id, address, port, players}` | frota | Um servidor de partida bate ponto. A resposta traz `assignment` quando há partida para ele; em `players[]`, bot tem `accountId` negativo e `owner` |
+| `POST /v1/fleet/heartbeat` `{id, address, port, players, capacity, matches[]}` | frota | Um servidor de partida bate ponto: quantas partidas aguenta (`capacity`, 1 se faltar) e as chaves das que tem abertas (`matches`). A resposta traz `assignments[]`, as partidas novas para ele (e `assignment`, a primeira, para servidor antigo); em `players[]`, bot tem `accountId` negativo e `owner`. Partida entregue que some de `matches` (fechou sem resultado: ninguém entrou, ou todos saíram) libera o lugar, e a sala volta a esperar |
 | `POST /v1/matches` `{matchKey, serverId, scoreBlue, scoreOrange, players[]}` | frota | O resultado. 409 se já foi entregue |
 
 ## Saguão — WebSocket em `/v1/lobby?token=`
@@ -76,5 +91,5 @@ segunda derruba a primeira.
 | `chat` | `from`, `text` |
 | `match.start` | `address`, `port`, `matchKey`, `accountId`, `expires`, `ticket`, `settings` — hora de ligar no servidor de partida |
 | `match.end` | O placar e o que você ganhou (`you{xp, presas}`) |
-| `error` | `code`, `message` |
+| `error` | `code`, `message`. Na sala em partida: `servidor_caiu` (o servidor de partida parou de bater) ou `partida_encerrada` (fechou sem resultado) — a sala já voltou a esperar |
 | `pong` | |

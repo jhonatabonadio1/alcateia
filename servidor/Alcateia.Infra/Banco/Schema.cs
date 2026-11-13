@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Alcateia.Servidor.Banco;
+namespace Alcateia.Infra.Banco;
 
 /// <summary>
 /// As tabelas, por versão. Cada passo roda uma vez, em ordem, dentro de

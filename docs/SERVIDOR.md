@@ -19,7 +19,7 @@ e o que ainda não faz. As decisões por trás estão em
 |---|---|---|
 | **Servidor** | ASP.NET (.NET 8). Contas, sessões, perfil, ranking, o saguão (salas e chat por WebSocket) e a frota de servidores de partida | `servidor/Alcateia.Servidor` |
 | **Banco** | PostgreSQL 16. Contas, sessões, perfis, partidas | contêiner `banco` |
-| **Servidor de partida** | O próprio jogo sem tela (`godot --headless -- --servidor`). Uma partida por vez: recebe os jogadores, repassa o que cada um faz, arbitra e entrega o resultado | `scripts/net/MatchServer.cs` |
+| **Servidor de partida** | O próprio jogo sem tela (`godot --headless -- --servidor`). Várias partidas ao mesmo tempo (4 por padrão, `ALCATEIA_MATCHES`), na mesma porta: recebe os jogadores de cada uma, repassa o que cada um faz, arbitra e entrega o resultado. Partida que todos abandonam acaba em 20 s e libera o lugar | `scripts/net/MatchServer.cs`, `HostedMatch.cs` |
 | **Jogo** | A tela Online (`OnlineScreen`), a conta (`Backend`), o saguão ao vivo (`LobbyLink`) e a partida em rede (`NetMatch`) | `scripts/net`, `scripts/lobby` |
 
 ## Subir tudo
@@ -59,6 +59,7 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
 | `ALCATEIA_PUBLIC_ADDRESS` | O endereço que os jogadores usam para chegar ao servidor de partida | `127.0.0.1` |
 | `ALCATEIA_PORT` | Porta HTTP do servidor na sua máquina | `8080` |
 | `ALCATEIA_GAME_PORT` | Porta UDP do servidor de partida | `7777` |
+| `ALCATEIA_MATCHES` | Quantas partidas o servidor de partida joga ao mesmo tempo | `4` |
 | `ALCATEIA_API` | (jogo e servidor de partida) onde fica o servidor; passa por cima do campo da tela | — |
 | `ALCATEIA_SESSION_DAYS` | Validade do login | `30` |
 

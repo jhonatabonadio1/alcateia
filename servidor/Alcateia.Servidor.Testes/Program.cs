@@ -10,7 +10,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Alcateia.Servidor.Banco;
+using Alcateia.Infra.Banco;
 using Microsoft.AspNetCore.Builder;
 
 namespace Alcateia.Servidor.Testes;

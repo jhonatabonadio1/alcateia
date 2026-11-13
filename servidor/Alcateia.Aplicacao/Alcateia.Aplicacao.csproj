@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	Os casos de uso do servidor: criar conta e entrar, o saguão (salas e
+	chat), a frota de servidores de partida e o fechamento de uma partida.
+	Fala com o mundo de fora só pelas portas (Portas/): banco, senha,
+	relógio, a conexão de cada jogador. Não conhece PostgreSQL nem HTTP.
+	-->
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<RootNamespace>Alcateia.Aplicacao</RootNamespace>
+		<InvariantGlobalization>true</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../Alcateia.Dominio/Alcateia.Dominio.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	O domínio do servidor: as regras, sem banco, sem rede, sem ASP.NET.
+	Contas (o que é um nome válido), salas (quem entra, times, bots,
+	regras), partidas (quem ganha, quanto cada um leva) e a frota (que
+	servidor de partida recebe qual partida). Só depende do .NET.
+
+	As regras de recompensa são as do jogo: o mesmo arquivo.
+	-->
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<RootNamespace>Alcateia.Dominio</RootNamespace>
+		<InvariantGlobalization>true</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="../../scripts/domain/Rewards.cs" Link="Partidas/Rewards.cs" />
+	</ItemGroup>
+
+</Project>

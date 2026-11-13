@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Alcateia.Infra.Seguranca;
 using static Alcateia.Servidor.Testes.LobbyTests;
 
 namespace Alcateia.Servidor.Testes;
@@ -13,6 +14,31 @@ public static class MatchTests
 {
 	private static JsonObject Beat(string id, int port = 7777) =>
 		new() { ["id"] = id, ["address"] = "10.0.0.5", ["port"] = port, ["players"] = 0 };
+
+	/// <summary>A batida de um servidor de partida de agora: quantas partidas
+	/// aguenta e quais tem abertas.</summary>
+	private static JsonObject BeatWith(string id, int capacity, params string[] open)
+	{
+		JsonObject beat = Beat(id);
+		beat["capacity"] = capacity;
+		var list = new JsonArray();
+		foreach (string key in open) list.Add(key);
+		beat["matches"] = list;
+		return beat;
+	}
+
+	/// <summary>Uma sala com um jogador só, que começa a partida. Devolve a chave.</summary>
+	private static async Task<(Player Host, string Key)> Solo(World w)
+	{
+		Player host = await w.NewPlayer();
+		await host.Connect();
+		await host.Hear("rooms");
+		await host.Say(Msg("room.create", ("settings", Settings())));
+		await host.Hear("room");
+		await host.Say(Msg("room.start"));
+		JsonObject start = await host.Hear("match.start");
+		return (host, start["matchKey"].GetValue<string>());
+	}
 
 	private static async Task<(Player Host, Player Guest, int Room)> Room(World w)
 	{
@@ -165,6 +191,54 @@ public static class MatchTests
 			Check.Equal(guest.Name, ranking["ranking"][0]["name"].GetValue<string>(), "o ranking é por XP");
 			var (_, history) = await host.Call(HttpMethod.Get, "/v1/matches");
 			Check.Equal(1, history["matches"].AsArray().Count, "a partida entra no histórico do jogador");
+		}),
+
+		("frota: um servidor de partida com dois lugares joga duas salas ao mesmo tempo; a terceira espera", async () =>
+		{
+			await using World w = await World.Start();
+			Player fleet = w.Server();
+			await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", BeatWith("gs-1", 2), w.Config.FleetKey);
+
+			var (a, keyA) = await Solo(w);
+			var (b, keyB) = await Solo(w);
+			await using Player pa = a, pb = b;
+			Check.True(keyA != keyB, "cada sala tem a sua partida");
+
+			var (_, beat) = await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", BeatWith("gs-1", 2), w.Config.FleetKey);
+			var keys = beat["assignments"].AsArray().Select(x => x["matchKey"].GetValue<string>()).ToList();
+			Check.True(keys.Count == 2 && keys.Contains(keyA) && keys.Contains(keyB), "a batida traz as duas partidas");
+
+			Player c = await w.NewPlayer();
+			await using Player pc = c;
+			await c.Connect();
+			await c.Hear("rooms");
+			await c.Say(Msg("room.create", ("settings", Settings())));
+			await c.Hear("room");
+			await c.Say(Msg("room.start"));
+			Check.Equal("sem_servidor", (await c.Hear("error"))["code"].GetValue<string>(), "com os dois lugares ocupados, a terceira sala espera");
+		}),
+
+		("frota: partida que o servidor de partida fecha sem resultado libera o lugar e a sala volta a esperar", async () =>
+		{
+			await using World w = await World.Start();
+			Player fleet = w.Server();
+			await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", BeatWith("gs-1", 1), w.Config.FleetKey);
+
+			var (host, key) = await Solo(w);
+			await using Player h = host;
+			await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", BeatWith("gs-1", 1), w.Config.FleetKey);   // entrega
+			await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", BeatWith("gs-1", 1, key), w.Config.FleetKey); // aberta
+
+			// Todo mundo saiu antes do fim e ninguém voltou: o servidor de partida fecha e a partida some da lista.
+			await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", BeatWith("gs-1", 1), w.Config.FleetKey);
+			Check.Equal("partida_encerrada", (await host.Hear("error"))["code"].GetValue<string>(), "o jogador é avisado");
+			await host.Hear("room", m => m["state"].GetValue<string>() == "waiting");
+
+			// O lugar vagou: dá para jogar de novo, sem reiniciar nada.
+			host.Forget();
+			await host.Say(Msg("room.start"));
+			JsonObject again = await host.Hear("match.start");
+			Check.True(again["matchKey"].GetValue<string>() != key, "a sala começa outra partida no mesmo servidor");
 		}),
 
 		("frota: servidor de partida que para de bater devolve a sala para a espera", async () =>

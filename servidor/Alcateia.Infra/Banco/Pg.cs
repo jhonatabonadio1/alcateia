@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Alcateia.Servidor.Banco;
+namespace Alcateia.Infra.Banco;
 
 /// <summary>Erro que o PostgreSQL devolveu: o código de cinco letras
 /// (23505 = chave repetida) e a mensagem.</summary>

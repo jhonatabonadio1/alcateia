@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Alcateia.Servidor;
+namespace Alcateia.Infra.Seguranca;
 
 /// <summary>
 /// Senhas e segredos. A senha nunca é guardada: guarda-se o resultado de
@@ -15,8 +15,6 @@ namespace Alcateia.Servidor;
 public static class Passwords
 {
 	public const int Iterations = 210_000;
-	public const int MinLength = 8;
-	public const int MaxLength = 128;
 
 	public static string Hash(string password)
 	{
@@ -47,6 +45,31 @@ public static class Passwords
 	public static string Sign(string secret, string text) =>
 		Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(text)));
 
-	public static bool SameSecret(string a, string b) =>
-		a != null && b != null && CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(a), Encoding.UTF8.GetBytes(b));
+	public static bool SameSecret(string a, string b) => Alcateia.Dominio.Secrets.Same(a, b);
+}
+
+/// <summary>As portas da aplicação, com as contas daqui.</summary>
+public sealed class Pbkdf2Hasher : Alcateia.Aplicacao.Portas.IPasswordHasher
+{
+	public string Hash(string password) => Passwords.Hash(password);
+	public bool Verify(string password, string stored) => Passwords.Verify(password, stored);
+}
+
+public sealed class Sha256Tokens : Alcateia.Aplicacao.Portas.ITokens
+{
+	public string NewToken() => Passwords.NewToken();
+	public string Hash(string token) => Passwords.TokenHash(token);
+}
+
+/// <summary>Assina com o segredo da frota: o servidor de partida confere sozinho.</summary>
+public sealed class FleetSigner : Alcateia.Aplicacao.Portas.ITicketSigner
+{
+	private readonly string _secret;
+	public FleetSigner(string secret) => _secret = secret;
+	public string Sign(string text) => Passwords.Sign(_secret, text);
+}
+
+public sealed class SystemClock : Alcateia.Aplicacao.Portas.IClock
+{
+	public System.DateTime UtcNow => System.DateTime.UtcNow;
 }

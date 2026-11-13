@@ -10,6 +10,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS construir
 WORKDIR /fonte
 COPY scripts/domain/Rewards.cs scripts/domain/Rewards.cs
+# As camadas: domínio, aplicação, infra e a API (que é o programa).
+COPY servidor/Alcateia.Dominio servidor/Alcateia.Dominio
+COPY servidor/Alcateia.Aplicacao servidor/Alcateia.Aplicacao
+COPY servidor/Alcateia.Infra servidor/Alcateia.Infra
 COPY servidor/Alcateia.Servidor servidor/Alcateia.Servidor
 RUN dotnet publish servidor/Alcateia.Servidor/Alcateia.Servidor.csproj -c Release -o /saida
 

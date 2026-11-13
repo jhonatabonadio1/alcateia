@@ -1,5 +1,5 @@
 using System;
-using Alcateia.Servidor.Banco;
+using Alcateia.Infra.Banco;
 
 namespace Alcateia.Servidor;
 

@@ -60,8 +60,10 @@ public sealed class Referee
 	/// <summary>Espera por todos este tempo depois do primeiro chegar.</summary>
 	public double StartAfter = 20;
 
-	/// <summary>Sem ninguém por este tempo, a partida acaba.</summary>
-	public double EmptyTimeout = 45;
+	/// <summary>Sem ninguém por este tempo, a partida acaba (e o lugar no
+	/// servidor de partida vaga). Curto: quem saiu de todo não volta, e a
+	/// sala precisa poder jogar de novo logo; dá para cair e voltar.</summary>
+	public double EmptyTimeout = 20;
 
 	public RefPhase Phase { get; private set; } = RefPhase.Waiting;
 	public double CountdownLeft { get; private set; }

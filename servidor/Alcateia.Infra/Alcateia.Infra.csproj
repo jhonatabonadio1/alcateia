@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	O que liga o servidor ao mundo: o PostgreSQL (cliente da casa, em
+	Banco/Pg.cs — veja servidor/LEIA-ME.md para o porquê), as tabelas
+	(Banco/Schema.cs), os repositórios que a aplicação pede (Repositorios/)
+	e senhas, tokens e assinaturas (Seguranca/). Só o que vem no .NET.
+	-->
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<RootNamespace>Alcateia.Infra</RootNamespace>
+		<InvariantGlobalization>true</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../Alcateia.Aplicacao/Alcateia.Aplicacao.csproj" />
+	</ItemGroup>
+
+</Project>

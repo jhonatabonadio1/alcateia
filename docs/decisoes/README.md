@@ -20,3 +20,4 @@ como "substituído por NNNN".
 | [0007](0007-testes.md) | Duas camadas de teste, e o teste muda junto com a regra |
 | [0008](0008-rede-quem-decide.md) | Online: cada jogo decide o próprio corpo, o servidor decide a partida |
 | [0009](0009-servidor-sem-pacotes.md) | O servidor não usa pacote de fora (cliente PostgreSQL próprio) |
+| [0010](0010-servidor-em-camadas.md) | O servidor em camadas: domínio, aplicação, infra e a API |

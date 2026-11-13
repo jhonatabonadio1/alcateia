@@ -590,7 +590,7 @@ jogo o cano aponta para −Z. Os materiais são por nome (`metal`,
 `polimero`, `madeira`, `luva`...) e as cores estão em
 `WeaponModel.Material`.
 
-`ViewModel` (em `scripts/ui/`, três arquivos) monta a arma com as duas
+`ViewModel` (em `scripts/ui/`, vários arquivos) monta a arma com as duas
 mãos como filhas dela — coice e inclinação levam as mãos junto — e
 anima:
 
@@ -604,6 +604,12 @@ anima:
   pino da granada, golpe de faca.
 - `ViewModel.Effects.cs`: clarão e luz do tiro, ferrolho que recua,
   cápsula que salta.
+- `ViewModel.Rig.cs`: os braços animados de cada arma (conjuntos do
+  Blender, `assets/armas/fp/bracos.json`).
+- No zoom (botão direito) a câmera fecha (`Weapon.AimFovFor`), mas a
+  arma na tela não pode crescer junto: o `ViewModel` encolhe na largura
+  e na altura na razão das aberturas, que é o mesmo que ter uma câmera
+  só para a arma.
 
 Nada disso decide tiro ou recarga: tudo segue o relógio da `Weapon`
 (`ReloadProgress`, `Fired`, `IsGrenadeReady`).
@@ -805,7 +811,8 @@ do código:
 | `net/OnlineMatch.cs` | A partida para a qual o saguão mandou o jogador (endereço, ingresso, escalação) |
 | `net/NetMatch.cs` | A partida em rede, do lado de quem joga: manda o meu estado, encena o dos outros |
 | `net/NetWire.cs` | O formato dos pacotes |
-| `net/MatchServer.cs` | O servidor de partida (`-- --servidor`) |
+| `net/MatchServer.cs` | O servidor de partida (`-- --servidor`): a porta, a batida na frota, o ingresso |
+| `net/HostedMatch.cs` | Uma partida dentro dele: o juiz, os jogadores dela e o que vai e volta |
 | `domain/Referee.cs` | O juiz: fases, placar, o que vale como abate. C# puro, com teste |
 | `actors/bot/Bot.Remote.cs` | O bot como boneco de outro jogador |
 | `combat/weapon/Weapon.Remote.cs` | A arma do boneco: encena, não fere |

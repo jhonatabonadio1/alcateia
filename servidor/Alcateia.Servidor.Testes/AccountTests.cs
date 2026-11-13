@@ -18,7 +18,7 @@ public static class AccountTests
 			var (status, body) = await w.Server().Call(HttpMethod.Get, "/health");
 			Check.Equal(200, status, "status");
 			Check.Equal("ok", body["status"].GetValue<string>(), "estado");
-			Check.Equal(Banco.Schema.Latest, body["schema"].GetValue<int>(), "versão do banco");
+			Check.Equal(Alcateia.Infra.Banco.Schema.Latest, body["schema"].GetValue<int>(), "versão do banco");
 		}),
 
 		("conta: criar já entra, com o perfil inicial (3000 Presas, XP 0)", async () =>
@@ -65,9 +65,9 @@ public static class AccountTests
 			Check.Equal(204, (await p.Call(HttpMethod.Delete, "/v1/sessions")).Status, "sair");
 			Check.Equal(401, (await p.Call(HttpMethod.Get, "/v1/profile")).Status, "o token antigo não vale mais");
 
-			Banco.PgResult stored = await w.Db.Query("select pass_hash from accounts where name_key = 'bruto'");
+			Alcateia.Infra.Banco.PgResult stored = await w.Db.Query("select pass_hash from accounts where name_key = 'bruto'");
 			Check.True(!stored.Text(0, "pass_hash").Contains("senha-boa-123") && stored.Text(0, "pass_hash").StartsWith("pbkdf2$"), "só o hash da senha no banco");
-			Banco.PgResult tokens = await w.Db.Query("select count(*) as n from sessions where token_hash = $1", second);
+			Alcateia.Infra.Banco.PgResult tokens = await w.Db.Query("select count(*) as n from sessions where token_hash = $1", second);
 			Check.Equal(0, tokens.Int(0, "n"), "o token não fica guardado em claro");
 		}),
 

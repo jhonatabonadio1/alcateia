@@ -2,9 +2,11 @@
 
 	<!--
 	O servidor do Alcateia: contas, perfil, salas, chat, ranking e a frota
-	de servidores de partida. ASP.NET Core puro, sem pacote nenhum: só o
-	que vem no .NET 8. O cliente de PostgreSQL é da casa (Banco/Pg.cs) —
-	veja servidor/LEIA-ME.md para o porquê.
+	de servidores de partida. Este projeto é a borda — HTTP, WebSocket,
+	configuração e a montagem de tudo (App.cs); as regras estão em
+	Alcateia.Dominio, os casos de uso em Alcateia.Aplicacao e o banco em
+	Alcateia.Infra. ASP.NET Core puro, sem pacote nenhum: só o que vem no
+	.NET 8 (veja servidor/LEIA-ME.md).
 
 	Rodar: docker compose up (na raiz) ou, com um Postgres à mão,
 	dotnet run dentro desta pasta com as variáveis de ALCATEIA_*.
@@ -21,8 +23,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- As regras de recompensa são as do jogo: o mesmo arquivo. -->
-		<Compile Include="../../scripts/domain/Rewards.cs" Link="Dominio/Rewards.cs" />
+		<!-- As camadas (clean architecture): esta é a de fora, a API.
+		     Dominio ← Aplicacao ← Infra ← Servidor; cada uma só conhece as
+		     de dentro. -->
+		<ProjectReference Include="../Alcateia.Infra/Alcateia.Infra.csproj" />
 	</ItemGroup>
 
 </Project>

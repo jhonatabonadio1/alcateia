@@ -2,6 +2,48 @@
 
 ## Não lançado
 
+### Servidor: várias partidas ao mesmo tempo e em camadas (13/11)
+- **Encerrar uma partida e não conseguir criar outra** (o Jhon: "não tinha
+  servidor", só voltava reiniciando). O servidor de partida jogava uma
+  partida por vez e só se liberava no fim pelo placar ou pelo tempo — com
+  todo mundo fora, ficava preso até 45 s depois, e se o resultado não
+  chegasse, para sempre. Agora:
+  - **um servidor de partida joga várias partidas ao mesmo tempo** (4 por
+    padrão, `ALCATEIA_MATCHES`), na mesma porta, cada uma com os seus
+    jogadores — várias salas jogam juntas;
+  - partida abandonada acaba em 20 s (era 45) e libera o lugar;
+  - a batida diz quais partidas o servidor de partida tem abertas: a que
+    some sem resultado libera o lugar sozinha, e a sala volta a esperar
+    com o aviso "a partida foi encerrada sem resultado".
+- **O servidor em camadas** (clean architecture, decisão 0010):
+  `Alcateia.Dominio` (regras puras), `Alcateia.Aplicacao` (casos de uso
+  e portas), `Alcateia.Infra` (PostgreSQL, senhas) e `Alcateia.Servidor`
+  (HTTP e WebSocket). Mesmas rotas, mesmas mensagens.
+- Testes novos do servidor: duas salas no mesmo servidor de partida (e a
+  terceira esperando) e partida fechada sem resultado liberando o lugar.
+
+### Munição que acaba e zoom com mira circular (13/11)
+- **A munição acaba.** Cada arma tem o pente e a reserva (M16/SG/AK 90,
+  UMP 100, M3 32, M9 60); recarregar tira da reserva e, sem ela, não
+  recarrega: o gatilho dá um clique seco (som novo, sintetizado) e o HUD
+  mostra "SEM MUNIÇÃO". O HUD mostra a reserva no lugar do `∞`, vermelha
+  quando zera. **Renascer enche tudo.** Passar por cima de uma arma igual
+  à sua, caída, junta a munição dela (aviso "Munição: M16A2"); a arma que
+  cai de quem morre leva o pente e a reserva que ele tinha.
+- Os bots trocam para a pistola quando a principal seca e, sem bala em
+  nenhuma, viram lobo.
+- **Zoom: segurar o botão direito, de humano.** A câmera fecha (55° nos
+  fuzis, 60° na UMP, 65° na M3 e na M9), a dispersão cai (sobra 35% nos
+  fuzis, 50% na UMP, 60% na M9, 80% na M3) e o passo fica 30% mais lento.
+  A cruz vira uma **mira circular** detalhada: anel, hastes com marcas e
+  um círculo fino com o cone de verdade do próximo tiro. A arma fica onde
+  está (não cresce com o zoom) e balança e coiceia menos; o mouse fica
+  proporcionalmente mais fino. Recarregar tira do zoom. De lobo, o botão
+  direito continua sendo o salto e o bote. (Mirar pela alça da arma foi
+  tentado antes e ficou ruim.)
+- Testes novos: `MunicaoFinita` e `ZoomNaMira` (com `--fotos=pasta`,
+  fotografa cada arma sem e com zoom).
+
 ### Opções → Vídeo: suavização e qualidade (13/11)
 - **Suavização (anti-aliasing)**: o jogo não tinha nenhuma — bordas
   serrilhadas em grade, palmeira e corrimão. Agora: Desligada, FXAA,
