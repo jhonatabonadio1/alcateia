@@ -971,7 +971,7 @@ size = Vector2(4.4, 1.2596)
 
 [sub_resource type="PanoramaSkyMaterial" id="CeuMat"]
 panorama = ExtResource("t_ceu")
-energy_multiplier = 1.7
+energy_multiplier = 1
 
 [sub_resource type="Sky" id="Ceu"]
 sky_material = SubResource("CeuMat")
@@ -981,12 +981,12 @@ background_mode = 2
 sky = SubResource("Ceu")
 sky_rotation = Vector3(0, 3.1067, 0)
 ambient_light_source = 3
-ambient_light_sky_contribution = 0.8
+ambient_light_sky_contribution = 0.5
 ambient_light_color = Color(0.8, 0.86, 0.95, 1)
-ambient_light_energy = 1
+ambient_light_energy = 0.35
 reflected_light_source = 2
 tonemap_mode = 3
-tonemap_exposure = 1
+tonemap_exposure = 0.85
 ssao_enabled = true
 ssao_intensity = 2.5
 glow_enabled = true
@@ -1008,7 +1008,7 @@ environment = SubResource("Env")
 [node name="Sol" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.788, 0.3353, -0.5163, 0, 0.8387, 0.5446, 0.6157, -0.4292, 0.6609, 0, 40, 0)
 light_color = Color(1, 0.95, 0.86, 1)
-light_energy = 1.15
+light_energy = 1.4
 shadow_enabled = true
 shadow_blur = 1.5
 directional_shadow_max_distance = 110

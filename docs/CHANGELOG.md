@@ -2,6 +2,17 @@
 
 ## Não lançado
 
+### Luz dos mapas no Forward+ (13/11)
+- **Vila, Hangar e Polar estavam estourados** (o Jhon: tudo branco,
+  difícil de ver os outros jogadores). A luz tinha sido acertada no
+  renderizador Compatibility, o único que fotografava aqui; no Forward+
+  do Mac o céu da foto (HDRI) a 1,7–1,8 também iluminava a cena inteira
+  e apagava as sombras. Agora: céu a 1 (0,8 na Polar), ambiente 0,35 com
+  metade vindo do céu, exposição 0,85 (0,8 na Polar) e sol 1,4 (1,1 na
+  Polar). As sombras voltam, o céu fica azul, e os corpos se destacam da
+  parede e do chão. O Metrô (fechado, sem céu) ficou como estava.
+- As fotos de conferência agora saem no Forward+ (Vulkan por software).
+
 ### Dificuldade dos bots na sala online (13/11)
 - O dono escolhe a dificuldade dos bots ao criar a sala online (Fáceis,
   Médios, Difíceis) e pode trocar na própria sala, ao lado das regras;

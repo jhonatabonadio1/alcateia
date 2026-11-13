@@ -200,10 +200,14 @@ def montar():
                                 (s * 21.5, 5.5, -10), (s * 30, 5.5, -18), (s * 40, 2.5, -18), (s * 45, 0.5, -18)])
     m.rota("tetoGaragem", [(-12, 0.5, 9.9), (-4, 4.0, 9.9), (3, 6.9, 9.5), (0, 6.9, 0), (-3, 6.9, -9.5), (4, 4.0, -9.9), (12, 0.5, -9.9)])
 
-    m.ambiente = dict(ceu=dict(hdri="neve_nublada", giro=180, energia=0.8, ambiente=0.8),
-                      luz=(0.52, 0.62, 0.86), luz_energia=0.7, exposicao=0.85, brilho=0.8, contraste=1.05, saturacao=1.0,
+    # Luz acertada no Forward+ (13/11, o Jhon achou estourado: tudo branco,
+    # difícil de ver os outros). O céu da foto também ilumina — com 1,8
+    # e ambiente cheio, a sombra sumia. Ambiente baixo, ambiente baixo, exposição
+    # 0,85 e mais sol: a sombra volta e o corpo se destaca da parede.
+    m.ambiente = dict(ceu=dict(hdri="neve_nublada", giro=180, energia=0.8, ambiente=0.5),
+                      luz=(0.52, 0.62, 0.86), luz_energia=0.35, exposicao=0.8, brilho=0.8, contraste=1.05, saturacao=1.0,
                       neblina=dict(cor=(0.70, 0.76, 0.86), densidade=0.005, ceu=0.15))
-    m.sol = dict(yaw=-42, queda=22, cor=(1.0, 0.82, 0.70), energia=0.8, alcance=140)
+    m.sol = dict(yaw=-42, queda=22, cor=(1.0, 0.82, 0.70), energia=1.1, alcance=140)
     acabamento(m)
     return m
 

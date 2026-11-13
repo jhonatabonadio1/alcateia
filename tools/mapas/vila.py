@@ -166,10 +166,14 @@ def montar():
 
     # O céu é uma fotografia (Poly Haven, CC0); `giro` põe o sol da foto
     # onde está o sol do mapa.
-    m.ambiente = dict(ceu=dict(hdri="dia_claro", giro=-106, energia=1.8, ambiente=0.8),
-                      luz=(0.85, 0.74, 0.66), luz_energia=1.0, exposicao=1.0, brilho=0.5, contraste=1.08, saturacao=1.12,
+    # Luz acertada no Forward+ (13/11, o Jhon achou estourado: tudo branco,
+    # difícil de ver os outros). O céu da foto também ilumina — com 1,8
+    # e ambiente cheio, a sombra sumia. Céu a 1, ambiente baixo, exposição
+    # 0,85 e mais sol: a sombra volta e o corpo se destaca da parede.
+    m.ambiente = dict(ceu=dict(hdri="dia_claro", giro=-106, energia=1.0, ambiente=0.5),
+                      luz=(0.85, 0.74, 0.66), luz_energia=0.35, exposicao=0.85, brilho=0.5, contraste=1.08, saturacao=1.12,
                       neblina=dict(cor=(0.98, 0.84, 0.66), densidade=0.0022, ceu=0.06))
-    m.sol = dict(yaw=38, queda=30, cor=(1.0, 0.84, 0.64), energia=1.2, alcance=110)
+    m.sol = dict(yaw=38, queda=30, cor=(1.0, 0.84, 0.64), energia=1.4, alcance=110)
     acabamento(m)
     return m
 
