@@ -10,7 +10,7 @@ public static class ControlsTable
 		("W A S D", "Andar"),
 		("Espaço", "Pular · saltar da parede"),
 		("Shift", "Andar devagar e em silêncio (humano)"),
-		("Ctrl", "Agachar"),
+		("Ctrl ou C", "Agachar"),
 		("Clique esquerdo", "Atacar"),
 		("Clique direito", "Lobo: salto no chão · bote no ar, na direção da mira"),
 		("1", "Arma principal"),

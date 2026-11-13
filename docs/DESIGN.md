@@ -93,7 +93,7 @@ export `RefillOnTransform`, desligado por padrão.
 | W segurado | Sustenta a corrida em parede |
 | Ataque segurado | Agarra na parede sem avançar |
 | Clique esq. | Atacar |
-| Ctrl | Agachar (nas duas formas) |
+| Ctrl ou C | Agachar (nas duas formas). No Mac, Ctrl + clique vira clique direito no sistema; o jogo trata como ataque (`MacCtrlClick`), e o especial agachado sai agachando no C |
 | Shift | Andar devagar e em silêncio (só humano) |
 | R | Rugir (lobo): segure até o fim para o escudo voltar · recarregar (humano) |
 | G | Soltar a arma da mão: cai à frente, e você passa para a próxima |

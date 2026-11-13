@@ -162,6 +162,22 @@ public partial class Player : CharacterBody3D
 		_stunSlow = 1f;
 	}
 
+	public override void _Input(InputEvent @event)
+	{
+		if (!IsMultiplayerAuthority()) return;
+
+		// Menu aberto: o mouse é do menu. Sem isto a câmera gira atrás
+		// da tela de lotes enquanto o jogador tenta clicar num cartão.
+		// Esc não solta o mouse aqui: abre o menu, e quem decide o cursor
+		// é o UiState.
+		if (UiState.AnyOpen) return;
+
+		MacCtrlClick.Translate(@event);
+
+		if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured)
+			Look(motion);
+	}
+
 	/// <summary>
 	/// Time da sala, aplicado antes de qualquer _Ready.
 	///

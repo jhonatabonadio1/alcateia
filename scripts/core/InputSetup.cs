@@ -20,6 +20,9 @@ public static class InputSetup
 		Key("jump", Godot.Key.Space);
 		Key("howl", Godot.Key.R);
 		Key("crouch", Godot.Key.Ctrl);
+		// C também agacha: no Mac, Ctrl + clique vira clique direito
+		// (MacCtrlClick), e quem quiser o especial agachado agacha no C.
+		Also("crouch", Godot.Key.C);
 		Key("walk", Godot.Key.Shift);
 		// Menu no Esc e placar no Tab, como em quase todo FPS — e como
 		// no WolfTeam. Tab abria o menu de dificuldade porque não havia
@@ -45,6 +48,15 @@ public static class InputSetup
 
 		InputMap.AddAction(action);
 		InputMap.ActionAddEvent(action, new InputEventKey { PhysicalKeycode = key });
+	}
+
+	/// <summary>Segunda tecla para uma ação que já existe.</summary>
+	private static void Also(string action, Key key)
+	{
+		var extra = new InputEventKey { PhysicalKeycode = key };
+		foreach (InputEvent existing in InputMap.ActionGetEvents(action))
+			if (existing is InputEventKey k && k.PhysicalKeycode == key) return;
+		InputMap.ActionAddEvent(action, extra);
 	}
 
 	private static void Mouse(string action, MouseButton button)

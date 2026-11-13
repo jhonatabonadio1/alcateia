@@ -129,36 +129,24 @@ public partial class Player
 			_mesh.Visible = third;
 	}
 
-	public override void _Input(InputEvent @event)
+	/// <summary>Olhar com o mouse: o corpo gira no eixo Y, a cabeça no X.</summary>
+	private void Look(InputEventMouseMotion motion)
 	{
-		if (!IsMultiplayerAuthority()) return;
+		RotateY(-motion.Relative.X * Sensitivity);
 
-		// Menu aberto: o mouse é do menu. Sem isto a câmera gira atrás
-		// da tela de lotes enquanto o jogador tenta clicar num cartão.
-		if (UiState.AnyOpen) return;
+		float pitch = motion.Relative.Y * Sensitivity;
 
-		if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured)
-		{
-			RotateY(-motion.Relative.X * Sensitivity);
+		// Puxar o mouse para baixo durante o recuo já é a volta,
+		// feita à mão. Desconta do que falta voltar, senão a volta
+		// automática soma em cima e a mira afunda abaixo do alvo.
+		if (pitch > 0 && _cameraKick > 0)
+			_cameraKick = Mathf.Max(_cameraKick - pitch, 0);
 
-			float pitch = motion.Relative.Y * Sensitivity;
-
-			// Puxar o mouse para baixo durante o recuo já é a volta,
-			// feita à mão. Desconta do que falta voltar, senão a volta
-			// automática soma em cima e a mira afunda abaixo do alvo.
-			if (pitch > 0 && _cameraKick > 0)
-				_cameraKick = Mathf.Max(_cameraKick - pitch, 0);
-
-			Vector3 headRot = _head.Rotation;
-			headRot.X = Mathf.Clamp(
-				headRot.X - pitch,
-				Mathf.DegToRad(-89f),
-				Mathf.DegToRad(89f));
-			_head.Rotation = headRot;
-		}
-
-		// Esc não solta mais o mouse aqui: abre o menu, e quem decide
-		// o cursor é o UiState. Dois donos do mesmo cursor foi o defeito
-		// que o UiState nasceu para resolver.
+		Vector3 headRot = _head.Rotation;
+		headRot.X = Mathf.Clamp(
+			headRot.X - pitch,
+			Mathf.DegToRad(-89f),
+			Mathf.DegToRad(89f));
+		_head.Rotation = headRot;
 	}
 }
