@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="BotDifficulty" format=3]
+
+[ext_resource type="Script" path="res://scripts/ai/BotDifficulty.cs" id="1_level"]
+
+[resource]
+script = ExtResource("1_level")
+Label = "MÉDIO"
+Summary = "reage em meio segundo, erra um quinto dos tiros"
+SightRange = 40.0
+FieldOfView = 140.0
+Memory = 3.0
+Hearing = 1.0
+HearingError = 2.5
+Curiosity = 0.6
+ReactionTime = 0.4
+ReactionJitter = 0.2
+AlertTurnSpeed = 4.5
+TurnSpeed = 8.0
+AimError = 4.5
+MissChance = 0.2
+BurstTime = 0.7
+BurstPause = 0.65
+EngageRange = 40.0
+Speed = 3.0
+StrafeFactor = 0.8
+StrafeInterval = 1.4
+PreferredRange = 9.0
+Aggression = 0.8
+WolfSpecialRate = 0.5
+PounceError = 0.12
+PatrolSpeedFactor = 0.55
+PatrolPause = 1.5

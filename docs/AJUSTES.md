@@ -14,8 +14,8 @@ que acontece quando muda. Valores do repositório na v0.26.11.
 | Onde | Como mudar | Vale para |
 |---|---|---|
 | **Inspetor do Godot** — campos `[Export]` dos scripts | Abra a cena (`scenes/player.tscn` para você, `scenes/bot.tscn` para os bots), selecione o nó (`Player`, `Weapon`, `Health`, `FormController`, `WolfVisual`, `Human`) e mude no Inspetor | Só aquela cena. O valor do script é o padrão; o da cena, quando existe, ganha |
-| **Recursos `.tres`** | Duplo clique no Godot, ou edite o texto | `resources/breeds/` (classes de lobo), `resources/weapons/` (armas de fogo) |
-| **Código** | Edite o `.cs` | `WolfMoves.cs` (tempo dos golpes), `Difficulty.cs` (bots), `Catalog.cs` (tatuagens e preços), `Arsenal.cs` (granada, faca), `RoomConfig.cs` (sala padrão) |
+| **Recursos `.tres`** | Duplo clique no Godot, ou edite o texto | `resources/breeds/` (classes de lobo), `resources/weapons/` (armas de fogo), `resources/bots/` (níveis de dificuldade), `resources/body/ruido.tres` (ruído do corpo) |
+| **Código** | Edite o `.cs` | `WolfMoves.cs` (tempo dos golpes), `Catalog.cs` (tatuagens e preços), `Arsenal.cs` (granada, faca), `RoomConfig.cs` (sala padrão) |
 
 Para mudar o padrão de todo mundo, mude no script; para mudar só o
 jogador ou só os bots, mude na cena. Hoje as cenas só sobrescrevem
@@ -27,10 +27,11 @@ o renascer do bot (6 s).
 - **O lobo é multiplicador do humano.** Velocidade e pulo do lobo são
   `HumanSpeed` e `JumpVelocity` vezes o `SpeedMultiplier` e o
   `JumpMultiplier` da classe. Mudou o humano, o lobo muda junto.
-- **Os bots ignoram parte do `bot.tscn`.** A dificuldade
-  (`Difficulty.cs`) sobrescreve visão, mira, reação, velocidade e
-  outros ao entrar na partida. Para esses campos, mude em
-  `Difficulty.cs` (tabela na seção [Bots](#9-bots-e-dificuldade)).
+- **Os bots ignoram parte do `bot.tscn`.** O nível de dificuldade
+  (`resources/bots/facil.tres`, `medio.tres`, `dificil.tres`)
+  sobrescreve visão, mira, reação, velocidade e outros ao entrar na
+  partida. Para esses campos, mude no `.tres` do nível (tabela na seção
+  [Bots](#9-bots-e-dificuldade)).
 - **Animação presa à velocidade.** O clipe toca na velocidade do corpo
   dividida pela passada medida. Acima de ~1,6× a corrida do lobo começa
   a parecer apressada; o pé não patina, mas a perna gira rápido. As
@@ -349,8 +350,13 @@ fica em `ViewModel.cs` (na tela) e `CharacterAnimator.cs` (no corpo).
 
 ## 9. Bots e dificuldade
 
-**Estes valores vêm de `scripts/core/Difficulty.cs`** e sobrescrevem o
-`bot.tscn`:
+**Estes valores vêm de `resources/bots/facil.tres`, `medio.tres` e
+`dificil.tres`** (classe `BotDifficulty`; abra no Inspector) e
+sobrescrevem o `bot.tscn`. O nome e a linha que aparecem no menu de
+dificuldade (`Label`, `Summary`) também moram ali. O teste
+`Dificuldade` confere que cada nível é mais competente que o anterior
+em cada alavanca e que o difícil ainda erra — mude à vontade, mas sem
+inverter a ordem:
 
 | Campo | Fácil | Médio | Difícil | O que faz |
 |---|---|---|---|---|

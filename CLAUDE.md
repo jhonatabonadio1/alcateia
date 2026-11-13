@@ -1036,7 +1036,7 @@ jogador confiar que esconder-se funciona.
 
 ### Dificuldade dos bots
 
-Três níveis, em `scripts/core/Difficulty.cs`. O que muda é
+Três níveis, como dado: `resources/bots/facil.tres`, `medio.tres` e `dificil.tres` (`BotDifficulty`; quem aplica é `scripts/core/Difficulty.cs`). O que muda é
 **competência, nunca vida ou dano**: inflar o inimigo produz luta
 longa, não luta difícil.
 

@@ -80,12 +80,12 @@ public partial class DifficultyMenu : CanvasLayer
 
 		column.AddChild(new Control { CustomMinimumSize = new Vector2(0, 12) });
 
-		AddOption(column, BotLevel.Easy, "percebe tarde, erra muito, não insiste");
-		AddOption(column, BotLevel.Medium, "reage em meio segundo, erra um quinto dos tiros");
-		AddOption(column, BotLevel.Hard, "reage quase na hora, sustenta fogo, raramente erra");
+		AddOption(column, BotLevel.Easy);
+		AddOption(column, BotLevel.Medium);
+		AddOption(column, BotLevel.Hard);
 	}
 
-	private void AddOption(Node parent, BotLevel level, string description)
+	private void AddOption(Node parent, BotLevel level)
 	{
 		var button = new Button
 		{
@@ -98,7 +98,7 @@ public partial class DifficultyMenu : CanvasLayer
 
 		var note = new Label
 		{
-			Text = description,
+			Text = Difficulty.Summary(level),
 			HorizontalAlignment = HorizontalAlignment.Center,
 			Modulate = new Color(1, 1, 1, 0.5f)
 		};

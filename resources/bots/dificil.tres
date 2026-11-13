@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="BotDifficulty" format=3]
+
+[ext_resource type="Script" path="res://scripts/ai/BotDifficulty.cs" id="1_level"]
+
+[resource]
+script = ExtResource("1_level")
+Label = "DIFÍCIL"
+Summary = "reage quase na hora, sustenta fogo, raramente erra"
+SightRange = 55.0
+FieldOfView = 170.0
+Memory = 5.0
+Hearing = 1.35
+HearingError = 1.2
+Curiosity = 0.85
+ReactionTime = 0.2
+ReactionJitter = 0.1
+AlertTurnSpeed = 7.5
+TurnSpeed = 11.0
+AimError = 2.0
+MissChance = 0.08
+BurstTime = 0.95
+BurstPause = 0.35
+EngageRange = 55.0
+Speed = 3.5
+StrafeFactor = 1.0
+StrafeInterval = 0.9
+PreferredRange = 7.0
+Aggression = 1.0
+WolfSpecialRate = 0.75
+PounceError = 0.06
+PatrolSpeedFactor = 0.7
+PatrolPause = 0.9
