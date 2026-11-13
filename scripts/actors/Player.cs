@@ -228,6 +228,9 @@ public partial class Player : CharacterBody3D
 	private float _gravity = 9.8f;
 	private bool _howling;
 	private double _howlProgress;
+	/// <summary>O que o jogador quer neste quadro (<see cref="CharacterIntent"/>):
+	/// lido uma vez no começo do passo de física.</summary>
+	private CharacterIntent _intent;
 	private BodyNoise _noise;
 	private WolfMoveMotor _moves;
 	private Corpse _corpse;
@@ -560,6 +563,8 @@ public partial class Player : CharacterBody3D
 	{
 		if (!IsMultiplayerAuthority()) return;
 
+		_intent = CharacterIntent.FromInput();
+
 		if (GlobalPosition.Y < FallLimit)
 		{
 			GlobalPosition = _spawn;
@@ -668,7 +673,7 @@ public partial class Player : CharacterBody3D
 	{
 		if (!_howling)
 		{
-			bool starts = Input.IsActionJustPressed("howl")
+			bool starts = _intent.Howl
 				&& _form.CanHowl
 				&& !_weapon.IsStriking
 				&& !_health.IsDead
@@ -682,7 +687,7 @@ public partial class Player : CharacterBody3D
 
 		// Segurar é o compromisso: soltar R no meio corta o rugido sem
 		// escudo (decisão do Jhon). Morrer ou deixar de ser lobo também.
-		if (_health.IsDead || !_form.IsWolf || !Input.IsActionPressed("howl"))
+		if (_health.IsDead || !_form.IsWolf || !_intent.HowlHeld)
 		{
 			_howling = false;
 			_howlProgress = 0;
@@ -734,23 +739,19 @@ public partial class Player : CharacterBody3D
 			return;
 		}
 
-		if (Input.IsActionJustPressed("slot_1")) _weapon.SelectSlot(Slot.Primary);
-		if (Input.IsActionJustPressed("slot_2")) _weapon.SelectSlot(Slot.Secondary);
-		if (Input.IsActionJustPressed("slot_3")) _weapon.SelectSlot(Slot.Wolf);
-		if (Input.IsActionJustPressed("slot_4")) _weapon.SelectSlot(Slot.Knife);
-		if (Input.IsActionJustPressed("slot_5")) _weapon.SelectSlot(Slot.Grenade);
+		if (_intent.Slot is Slot slot) _weapon.SelectSlot(slot);
 
 		// Só a arma principal é automática. A secundária e a garrada
 		// exigem um clique por golpe.
 		bool firing = _weapon.IsAutomatic
-			? Input.IsActionPressed("attack")
-			: Input.IsActionJustPressed("attack");
+			? _intent.AttackHeld
+			: _intent.Attack;
 
 		if (firing)
 			_weapon.TryAttack();
 
 		// A granada sai quando o botão solta.
-		if (Input.IsActionJustReleased("attack"))
+		if (_intent.AttackReleased)
 			_weapon.ReleaseGrenade();
 
 		// Botão direito: salto no chão, bote no ar. Quem move o corpo
@@ -767,24 +768,24 @@ public partial class Player : CharacterBody3D
 			_diveAfterJump = false;
 			if (!IsOnFloor()) _weapon.TrySpecial();
 		}
-		else if (Input.IsActionJustPressed("special"))
+		else if (_intent.Special)
 		{
-			if (_form.IsWolf && IsOnFloor() && Input.IsActionJustPressed("jump"))
+			if (_form.IsWolf && IsOnFloor() && _intent.Jump)
 				_diveAfterJump = true;
 			else
 				_weapon.TrySpecial();
 		}
 
-		if (Input.IsActionJustReleased("special"))
+		if (_intent.SpecialReleased)
 			_weapon.ReleaseCharge();
 
 		// R faz o que a forma permite: ruge de lobo, recarrega de
 		// humano. Uma tecla, um gesto, dois corpos.
-		if (Input.IsActionJustPressed("howl") && !_form.IsWolf)
+		if (_intent.Howl && !_form.IsWolf)
 			_weapon.TryReload();
 
 		// G: solta a arma da mão para frente e passa para a próxima.
-		if (Input.IsActionJustPressed("drop"))
+		if (_intent.Drop)
 			_weapon.TryDrop();
 
 		UpdateHowl(delta);
@@ -799,7 +800,7 @@ public partial class Player : CharacterBody3D
 			// Segurar o pulo durante a queda alivia um pouco a
 			// gravidade. É sutil de propósito: dá controle fino sobre
 			// onde aterrissar sem transformar o salto em planagem.
-			bool holding = velocity.Y < 0 && Input.IsActionPressed("jump");
+			bool holding = velocity.Y < 0 && _intent.JumpHeld;
 			float scale = holding ? HoldFallGravity : 1f;
 
 			velocity.Y -= _gravity * scale * (float)delta;
@@ -823,7 +824,7 @@ public partial class Player : CharacterBody3D
 			_animator?.Jump();
 		}
 
-		Vector2 input = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
+		Vector2 input = _intent.Move;
 		Vector3 direction = (Transform.Basis * new Vector3(input.X, 0, input.Y)).Normalized();
 		float speed = HumanSpeed * SpeedScale;
 		if (_wolfJump) speed *= WolfJumpCarry;
@@ -885,9 +886,9 @@ public partial class Player : CharacterBody3D
 		// O botão de ataque agarra sem avançar — é a pausa que permite
 		// escolher a hora de saltar em vez de correr até a parede
 		// acabar.
-		_clinging = Input.IsActionPressed("attack");
+		_clinging = _intent.AttackHeld;
 
-		if (!Input.IsActionPressed("move_forward") && !_clinging)
+		if (!_intent.Forward && !_clinging)
 		{
 			// Este era o caminho mudo, e é o mais provável de todos:
 			// chega-se à parede sem nada segurando a corrida e o
@@ -1115,7 +1116,7 @@ public partial class Player : CharacterBody3D
 		velocity.Y = WallRunVerticalDrift;
 
 		// Agarrado com o botão de ataque e sem o pulo: fica parado.
-		float target = _clinging && !Input.IsActionPressed("jump")
+		float target = _clinging && !_intent.JumpHeld
 			? 0f
 			: HumanSpeed * SpeedScale * WallRunSpeedBonus;
 
@@ -1150,12 +1151,12 @@ public partial class Player : CharacterBody3D
 	/// </summary>
 	private void UpdateCrouch(double delta)
 	{
-		_crouching = !_onWall && Input.IsActionPressed("crouch");
+		_crouching = !_onWall && _intent.CrouchHeld;
 
 		// Andar devagar é ferramenta do humano. O lobo vive de
 		// movimento; dar a ele a opção de abrir mão disso só criaria
 		// um lobo furtivo, que é o oposto da forma.
-		_walking = !_onWall && !_form.IsWolf && Input.IsActionPressed("walk");
+		_walking = !_onWall && !_form.IsWolf && _intent.WalkHeld;
 
 		float target = _crouching ? CrouchHeight : StandHeight;
 		float previous = _height;
@@ -1200,7 +1201,7 @@ public partial class Player : CharacterBody3D
 	private bool WantsJump()
 	{
 		if (_jumpLock > 0) return false;
-		if (!Input.IsActionJustPressed("jump")) return false;
+		if (!_intent.Jump) return false;
 
 		_jumpLock = 0.2;
 		return true;
