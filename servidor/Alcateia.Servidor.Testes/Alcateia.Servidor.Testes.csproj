@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	Testes do servidor: sobem o servidor de verdade, dentro deste
+	processo, contra um PostgreSQL de verdade, e falam com ele por HTTP e
+	WebSocket como o jogo fala. Sem pacote nenhum.
+
+	Rodar: tools/testar_servidor.sh (sobe um Postgres de teste se houver
+	um à mão) ou, com o banco já de pé:
+
+	    ALCATEIA_TEST_DB_PORT=5432 ALCATEIA_TEST_DB_PASSWORD=... dotnet run
+	-->
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<RootNamespace>Alcateia.Servidor.Testes</RootNamespace>
+		<InvariantGlobalization>true</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<ProjectReference Include="../Alcateia.Servidor/Alcateia.Servidor.csproj" />
+	</ItemGroup>
+
+</Project>

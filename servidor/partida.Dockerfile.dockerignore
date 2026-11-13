@@ -1,0 +1,11 @@
+# O jogo inteiro entra, menos o que é da máquina de quem desenvolve.
+.git
+.godot
+.synctmp
+**/bin
+**/obj
+assets/pacotes
+servidor/Alcateia.Servidor
+servidor/Alcateia.Servidor.Testes
+docs
+tests

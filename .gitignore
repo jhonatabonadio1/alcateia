@@ -32,3 +32,6 @@ assets/characters/**/*_alpha_[0-9].png.import
 # Pacotes de arte baixados (Poly Haven, Sketchfab): matéria-prima,
 # grande, refeita por tools/baixar_pacotes.py. Veja docs/PACOTES.md.
 assets/pacotes/
+
+# Os segredos do servidor (copie de .env.exemplo).
+.env

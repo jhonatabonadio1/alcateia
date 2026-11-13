@@ -1,0 +1,6 @@
+# Só o que o servidor precisa entra no contexto da imagem.
+*
+!scripts/domain/Rewards.cs
+!servidor/Alcateia.Servidor/**
+servidor/Alcateia.Servidor/bin
+servidor/Alcateia.Servidor/obj

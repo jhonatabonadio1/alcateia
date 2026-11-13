@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<!--
+	O servidor do Alcateia: contas, perfil, salas, chat, ranking e a frota
+	de servidores de partida. ASP.NET Core puro, sem pacote nenhum: só o
+	que vem no .NET 8. O cliente de PostgreSQL é da casa (Banco/Pg.cs) —
+	veja servidor/LEIA-ME.md para o porquê.
+
+	Rodar: docker compose up (na raiz) ou, com um Postgres à mão,
+	dotnet run dentro desta pasta com as variáveis de ALCATEIA_*.
+	-->
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<RootNamespace>Alcateia.Servidor</RootNamespace>
+		<AssemblyName>Alcateia.Servidor</AssemblyName>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- As regras de recompensa são as do jogo: o mesmo arquivo. -->
+		<Compile Include="../../scripts/domain/Rewards.cs" Link="Dominio/Rewards.cs" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,61 @@
+# O Alcateia online, inteiro, numa máquina:
+#
+#   cp .env.exemplo .env      (e troque as senhas)
+#   docker compose up -d --build
+#
+# Sobe o banco, o servidor (http://localhost:8080) e um servidor de
+# partida (porta 7777/UDP). Veja docs/SERVIDOR.md.
+
+name: alcateia
+
+services:
+  banco:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: alcateia
+      POSTGRES_PASSWORD: ${ALCATEIA_DB_PASSWORD:?defina ALCATEIA_DB_PASSWORD no arquivo .env}
+      POSTGRES_DB: alcateia
+    volumes:
+      - banco:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alcateia -d alcateia"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # O banco não é exposto para fora: só o servidor fala com ele.
+
+  servidor:
+    build:
+      context: .
+      dockerfile: servidor/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      banco:
+        condition: service_healthy
+    environment:
+      ALCATEIA_DB_HOST: banco
+      ALCATEIA_DB_PASSWORD: ${ALCATEIA_DB_PASSWORD}
+      ALCATEIA_FLEET_KEY: ${ALCATEIA_FLEET_KEY:?defina ALCATEIA_FLEET_KEY no arquivo .env}
+    ports:
+      - "${ALCATEIA_PORT:-8080}:8080"
+
+  partida:
+    build:
+      context: .
+      dockerfile: servidor/partida.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      servidor:
+        condition: service_healthy
+    environment:
+      ALCATEIA_API: http://servidor:8080
+      ALCATEIA_FLEET_KEY: ${ALCATEIA_FLEET_KEY}
+      # O endereço que os jogadores usam para chegar nesta máquina.
+      ALCATEIA_PUBLIC_ADDRESS: ${ALCATEIA_PUBLIC_ADDRESS:-127.0.0.1}
+      ALCATEIA_GAME_PORT: 7777
+    ports:
+      - "7777:7777/udp"
+
+volumes:
+  banco:
