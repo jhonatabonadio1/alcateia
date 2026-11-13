@@ -30,6 +30,8 @@ public sealed class LobbyScreensTest : RegressionTest
 			("perfil", shell.GoProfile),
 			("missões", shell.GoMissions),
 			("opções", shell.GoOptions),
+			("online", shell.GoOnline),
+			("créditos", shell.GoCredits),
 		};
 
 		foreach (var (name, go) in screens)

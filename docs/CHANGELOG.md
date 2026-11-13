@@ -2,6 +2,33 @@
 
 ## Não lançado
 
+### Jogo online
+- **Servidor** em .NET 8 + PostgreSQL, no Docker (`docker compose up`):
+  contas com senha, sessões, perfil, ranking, salas e chat ao vivo
+  (WebSocket), e a frota de servidores de partida. Sem pacote de fora —
+  o cliente do PostgreSQL é do projeto (`docs/decisoes/0009`).
+- **Tela Online** no menu: criar conta ou entrar, lista de salas, criar
+  sala (mapa, times, pontos, tempo, regras, senha), a sala com os dois
+  times, pronto/iniciar, chat e ranking.
+- **Servidor de partida**: o jogo sem tela (`-- --servidor`) recebe a
+  partida do servidor, confere o ingresso de cada jogador, repassa o
+  que cada um faz, arbitra os abates (`Referee`) e entrega o resultado,
+  que vira XP e ranking na conta.
+- **Partida em rede** entre jogadores: os outros aparecem como bonecos
+  com o mesmo corpo, arma e animação; tiro, faca, golpe de lobo e
+  granada são encenados; dano, morte, renascimento, placar e relógio
+  passam pelo servidor. Quem decide o quê: `docs/decisoes/0008`.
+- Testes: 22 do servidor contra PostgreSQL de verdade
+  (`tools/testar_servidor.sh`), 8 de unidade do juiz, e um de ponta a
+  ponta com dois jogos sem tela (`tools/testar_online.sh`).
+- Limites desta versão: sem bots online, não é à prova de trapaça, o
+  perfil da loja continua local. Tudo em `docs/SERVIDOR.md`.
+
+### Créditos
+- **Tela de créditos** (Opções → Créditos) com a origem e a licença de
+  cada material de terceiros — o que a CC BY do Oculus Audio Pack
+  exigia antes de publicar. O conteúdo fica em `scripts/meta/Credits.cs`.
+
 ### Braços e armas em primeira pessoa
 - **Duas mãos de luva na arma**, em vez de arma solta: a direita no
   punho, a esquerda no guarda-mão (ou apoiando a pistola, ou em guarda

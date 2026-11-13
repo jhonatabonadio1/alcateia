@@ -154,8 +154,40 @@ public partial class Health : Node
 		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
 	}
 
+	/// <summary>
+	/// Online: este é o corpo de outro jogador, e a vida dele mora na
+	/// máquina dele. Aqui o dano não se aplica — vai pela rede
+	/// (<see cref="SendHit"/>) e a vida volta espelhada
+	/// (<see cref="Mirror"/>). Nulo fora de partida online.
+	/// </summary>
+	public System.Action<RemoteHit> Remote { get; set; }
+	public bool IsRemote => Remote != null;
+
+	/// <summary>Manda um acerto para o dono deste corpo decidir.</summary>
+	public void SendHit(float amount, Vector3 from, bool headshot, KillCause cause, string weapon)
+	{
+		if (IsDead || amount <= 0) return;
+		Remote?.Invoke(new RemoteHit(amount, from, headshot, cause, weapon ?? ""));
+	}
+
+	/// <summary>Copia a vida que o dono do corpo informou, com morte e
+	/// renascimento.</summary>
+	public void Mirror(float hp, float maxHp, float shield, float maxShield, bool dead)
+	{
+		if (dead && !IsDead) Die(0);
+		else if (!dead && IsDead) Respawn();
+		if (dead) return;
+
+		MaxHp = maxHp;
+		MaxShield = maxShield;
+		Hp = Mathf.Clamp(hp, 0f, maxHp);
+		Shield = Mathf.Clamp(shield, 0f, maxShield);
+		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
+	}
+
 	public void TakeDamage(float amount, int attackerId = 0, Vector3 from = default, bool headshot = false)
 	{
+		if (IsRemote) return;
 		if (IsDead || amount <= 0 || IsProtected) return;
 
 		DamageOutcome outcome = CombatRules.ApplyDamage(Hp, Shield, amount, DamageMultiplier, BodyResistance, headshot);
@@ -255,3 +287,6 @@ public partial class Health : Node
 		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
 	}
 }
+
+/// <summary>Um acerto num corpo de outro jogador, a caminho da rede.</summary>
+public readonly record struct RemoteHit(float Amount, Vector3 From, bool Headshot, KillCause Cause, string Weapon);

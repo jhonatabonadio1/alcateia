@@ -84,7 +84,11 @@ public partial class Weapon
 		_cooldown = ThrowCooldown;
 
 		var grenade = GrenadeScene.Instantiate<RigidBody3D>();
-		if (grenade is Grenade armed) armed.Thrower = _health;
+		if (grenade is Grenade armed)
+		{
+			armed.Thrower = _health;
+			armed.Cosmetic = Puppet;
+		}
 		_body.GetTree().CurrentScene.AddChild(grenade);
 
 		// Nasce a frente da camera para nao colidir com o proprio corpo.
@@ -98,6 +102,7 @@ public partial class Weapon
 		grenade.AngularVelocity = new Vector3(4f, 2f, 1f);
 
 		EmitSignal(SignalName.GrenadesChanged, Grenades);
+		EmitSignal(SignalName.Thrown);
 
 		// Sem granadas restantes, volta sozinho para a arma.
 		HumanSlot = Usable(_slotBeforeGrenade) ? _slotBeforeGrenade : BestSlot();

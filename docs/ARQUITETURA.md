@@ -148,7 +148,7 @@ alcateia/
     │   ├── human/         o corpo humano animado (CharacterAnimator.*)
     │   ├── wolf/          o corpo do lobo (WolfVisual.*)
     │   └── anim/          AnimationKit: o que os dois dividem
-    ├── net/               rede — dormente até a Fase 2
+    ├── net/               rede: conta, saguão, partida online, servidor de partida
     └── debug/             peças descartáveis
 ```
 
@@ -771,12 +771,35 @@ Mantenha as pontuações entre 0 e 1. Uma ação que sempre ganha vira o
 
 ---
 
-## 12. O que está dormente
+## 12. A rede
 
-`scripts/net/GameManager.cs` e o `MultiplayerSynchronizer` do
-`player.tscn` são da Fase 2 (rede). Não estão ligados na partida. Não
-apague: a separação de responsabilidades da seção 4 existe para que
-essa fase seja uma migração, não uma reescrita.
+O jogo online tem guia próprio: `docs/SERVIDOR.md` (as peças, como
+subir, como testar) e `docs/decisoes/0008` (quem decide o quê). O mapa
+do código:
+
+| Arquivo | Papel |
+|---|---|
+| `net/Backend.cs` | Conta, perfil e ranking por HTTP. Nunca lança: devolve `Reply` |
+| `net/LobbyLink.cs` | Salas e chat ao vivo (WebSocket). Um nó na raiz, sobrevive à troca de cena |
+| `net/OnlineMatch.cs` | A partida para a qual o saguão mandou o jogador (endereço, ingresso, escalação) |
+| `net/NetMatch.cs` | A partida em rede, do lado de quem joga: manda o meu estado, encena o dos outros |
+| `net/NetWire.cs` | O formato dos pacotes |
+| `net/MatchServer.cs` | O servidor de partida (`-- --servidor`) |
+| `domain/Referee.cs` | O juiz: fases, placar, o que vale como abate. C# puro, com teste |
+| `actors/bot/Bot.Remote.cs` | O bot como boneco de outro jogador |
+| `combat/weapon/Weapon.Remote.cs` | A arma do boneco: encena, não fere |
+| `lobby/OnlineScreen.cs` | A tela Online |
+
+Os três pontos onde o jogo offline foi aberto para a rede, e só eles:
+`Health.Remote`/`SendHit`/`Mirror` (o dano sai e a vida volta
+espelhada), `Weapon.Puppet` (o boneco não fere) e `Match.Online`
+(relógio, fase e placar vêm do servidor). Fora de partida online nada
+disso é exercitado — os testes de regressão rodam o jogo offline como
+sempre.
+
+O `MultiplayerSynchronizer` do `player.tscn` é resto de um primeiro
+desenho e não é usado: a ligação é própria (`SceneMultiplayer` só do nó
+`NetMatch`), para o resto da cena continuar offline.
 
 `scripts/debug/` e o `Dummy` são descartáveis.
 

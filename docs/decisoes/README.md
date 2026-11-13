@@ -18,3 +18,5 @@ como "substituído por NNNN".
 | [0005](0005-dados-em-tres.md) | Números de ajuste são dado (.tres), não código |
 | [0006](0006-sorteio-com-semente.md) | Sorteio de regra com semente, um fluxo por dono |
 | [0007](0007-testes.md) | Duas camadas de teste, e o teste muda junto com a regra |
+| [0008](0008-rede-quem-decide.md) | Online: cada jogo decide o próprio corpo, o servidor decide a partida |
+| [0009](0009-servidor-sem-pacotes.md) | O servidor não usa pacote de fora (cliente PostgreSQL próprio) |

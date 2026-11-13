@@ -35,6 +35,11 @@ public partial class Grenade : RigidBody3D
 	/// </summary>
 	public Health Thrower { get; set; }
 
+	/// <summary>Online: a granada de outro jogador, encenada aqui. Faz o
+	/// clarão, o barulho e o atordoamento em você; o dano vem da máquina
+	/// de quem arremessou.</summary>
+	public bool Cosmetic { get; set; }
+
 	private double _timer;
 	private bool _exploded;
 
@@ -88,11 +93,20 @@ public partial class Grenade : RigidBody3D
 
 			bool wasAlive = health != null && !health.IsDead;
 
-			if (Thrower != null && health != Thrower) health?.NoteAttacker(Thrower.GetParent());
-			health?.TakeDamage(MaxDamage * falloff, 0, GlobalPosition);
+			if (Cosmetic)
+			{
+				// Nada de dano: só o atordoamento, logo abaixo.
+			}
+			else if (health != null && health.IsRemote)
+				health.SendHit(MaxDamage * falloff, GlobalPosition, false, KillCause.Grenade, Arsenal.GrenadeId);
+			else
+			{
+				if (Thrower != null && health != Thrower) health?.NoteAttacker(Thrower.GetParent());
+				health?.TakeDamage(MaxDamage * falloff, 0, GlobalPosition);
 
-			if (wasAlive && health.IsDead && Thrower != null && health != Thrower)
-				ReportKill(health);
+				if (wasAlive && health.IsDead && Thrower != null && health != Thrower)
+					ReportKill(health);
+			}
 
 			// O atordoamento é o ponto da granada, não o dano.
 			if (body is Player player)

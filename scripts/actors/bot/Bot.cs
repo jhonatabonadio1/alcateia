@@ -138,8 +138,16 @@ public partial class Bot : CharacterBody3D
 		_health.Respawned += OnRespawned;
 		_health.Damaged += OnDamaged;
 
-		_ear = OnNoise;
-		NoiseBus.Subscribe(_ear);
+		if (Remote)
+		{
+			// Boneco de outro jogador: sem ouvido e sem vontade própria.
+			BecomeRemote();
+		}
+		else
+		{
+			_ear = OnNoise;
+			NoiseBus.Subscribe(_ear);
+		}
 
 		// Navegação de verdade. O desvio raso funcionava em campo
 		// aberto e travava na primeira parede longa — rotacionar o
@@ -154,10 +162,19 @@ public partial class Bot : CharacterBody3D
 		AddChild(_nav);
 	}
 
-	public override void _ExitTree() => NoiseBus.Unsubscribe(_ear);
+	public override void _ExitTree()
+	{
+		if (_ear != null) NoiseBus.Unsubscribe(_ear);
+	}
 
 	public override void _PhysicsProcess(double delta)
 	{
+		if (Remote)
+		{
+			RemoteStep(delta);
+			return;
+		}
+
 		if (_health.IsDead)
 		{
 			Settle(delta);
@@ -404,6 +421,7 @@ public partial class Bot : CharacterBody3D
 	private void OnRespawned()
 	{
 		_corpse.Revive();
+		if (Remote) return;
 
 		GlobalPosition = SpawnPoints.Pick(this, _spawn);
 		Velocity = Vector3.Zero;

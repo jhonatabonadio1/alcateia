@@ -27,16 +27,22 @@ public partial class MatchSetup : Node
 		// um deles sai voando da base no primeiro quadro.
 		var used = new Dictionary<int, int>();
 
-		if (player != null)
-		{
-			int team = player.GetNodeOrNull<Health>("Health")?.Team ?? Teams.Blue;
-			Place(player, team, used);
-		}
-
 		if (bots == null || BotScene == null)
 		{
 			GD.PrintErr("MatchSetup: sem nó de bots ou sem cena de bot.");
 			return;
+		}
+
+		if (OnlineMatch.Active)
+		{
+			SetUpOnline(bots, player, used);
+			return;
+		}
+
+		if (player != null)
+		{
+			int team = player.GetNodeOrNull<Health>("Health")?.Team ?? Teams.Blue;
+			Place(player, team, used);
 		}
 
 		IEnumerable<(string Name, int Team)> roster = RoomConfig.Active
@@ -62,6 +68,43 @@ public partial class MatchSetup : Node
 			// A regra de armas da sala vale para os bots também.
 			RoomRules.EquipBot(bot.GetNode<Weapon>("Weapon"));
 		}
+	}
+
+	/// <summary>
+	/// Partida online: sem bots. Cada jogador escalado ganha um lugar na
+	/// base do time, na mesma ordem em todas as máquinas (pela conta), e
+	/// os outros jogadores viram bonecos que a rede move
+	/// (<see cref="NetMatch"/>).
+	/// </summary>
+	private void SetUpOnline(Node3D bots, Node3D player, Dictionary<int, int> used)
+	{
+		var net = new NetMatch { Name = "NetMatch" };
+		var puppets = new List<Bot>();
+
+		foreach (OnlineMatch.Seat seat in OnlineMatch.Roster)
+		{
+			if (seat.Id == OnlineMatch.AccountId)
+			{
+				if (player == null) continue;
+				if (player.GetNodeOrNull<Health>("Health") is Health mine) mine.DisplayName = seat.Name;
+				Place(player, seat.Team, used);
+				continue;
+			}
+
+			var puppet = BotScene.Instantiate<Bot>();
+			puppet.Name = $"Jogador{seat.Id}";
+			puppet.Team = seat.Team;
+			puppet.Callsign = seat.Name;
+			puppet.Remote = true;
+			puppet.RemoteId = seat.Id;
+			puppet.RemoteRank = Ranks.RankFor(seat.Xp);
+			Place(puppet, seat.Team, used);
+			bots.AddChild(puppet);
+			puppets.Add(puppet);
+		}
+
+		AddChild(net);
+		foreach (Bot puppet in puppets) net.Register(puppet);
 	}
 
 	private static void Place(Node3D body, int team, Dictionary<int, int> used)

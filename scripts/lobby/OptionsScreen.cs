@@ -14,7 +14,8 @@ public partial class OptionsScreen : LobbyScreen
 	{
 		VBoxContainer page = Page();
 
-		page.AddChild(UiKit.Text("Opções", "Title"));
+		HBoxContainer head = Heading(page, "Opções");
+		head.AddChild(UiKit.Button("Créditos", ButtonKind.Secondary, Shell.GoCredits));
 
 		HBoxContainer columns = UiKit.Row(UiTokens.S4);
 		columns.SizeFlagsVertical = SizeFlags.ExpandFill;

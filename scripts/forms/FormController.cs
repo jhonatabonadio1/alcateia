@@ -244,6 +244,14 @@ public partial class FormController : Node
 
 	private bool KeepRatio => !RefillOnTransform;
 
+	/// <summary>Online: põe o boneco de outro jogador na forma em que o
+	/// dono dele está, sem custo e sem regra.</summary>
+	public void RemoteSet(Form form)
+	{
+		if (form == Current || Breed == null) return;
+		Enter(form);
+	}
+
 	private void Enter(Form next)
 	{
 		Current = next;

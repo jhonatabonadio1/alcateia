@@ -136,6 +136,7 @@ public partial class Match : Node
 
 		CountdownLeft = CountdownTime;
 		TimeLeft = Duration;
+		Online = OnlineMatch.Active;
 
 		KillFeed.Reported += OnKill;
 	}
@@ -144,6 +145,38 @@ public partial class Match : Node
 	{
 		KillFeed.Reported -= OnKill;
 		if (Current == this) Current = null;
+	}
+
+	/// <summary>Partida online: o relógio, a fase e o placar vêm do
+	/// servidor (<see cref="NetSync"/>); daqui só se mostra.</summary>
+	public bool Online { get; private set; }
+
+	/// <summary>O servidor disse em que pé a partida está.</summary>
+	public void NetSync(RefPhase phase, double countdownLeft, double timeLeft, int blue, int orange)
+	{
+		NetScore(blue, orange);
+		TimeLeft = timeLeft;
+		CountdownLeft = phase == RefPhase.Waiting ? CountdownTime : countdownLeft;
+
+		MatchPhase now = phase switch
+		{
+			RefPhase.Live => MatchPhase.Live,
+			RefPhase.Ended => MatchPhase.Ended,
+			_ => MatchPhase.Countdown
+		};
+		if (now == Phase) return;
+
+		if (now == MatchPhase.Ended) End(byScore: Mathf.Max(blue, orange) >= ScoreToWin);
+		else SetPhase(now);
+	}
+
+	/// <summary>O placar que o servidor informou.</summary>
+	public void NetScore(int blue, int orange)
+	{
+		if (_score[Teams.Blue] == blue && _score[Teams.Orange] == orange) return;
+		_score[Teams.Blue] = blue;
+		_score[Teams.Orange] = orange;
+		EmitSignal(SignalName.ScoreChanged, blue, orange);
 	}
 
 	public override void _Process(double delta)
@@ -156,6 +189,19 @@ public partial class Match : Node
 		{
 			Roster();
 			_rostered = true;
+		}
+
+		if (Online)
+		{
+			// Entre um aviso do servidor e o próximo, o relógio daqui anda
+			// sozinho — mas quem muda de fase é só o servidor.
+			if (Phase == MatchPhase.Countdown) CountdownLeft = Mathf.Max(CountdownLeft - delta, 0);
+			if (Phase == MatchPhase.Live)
+			{
+				TimeLeft = Mathf.Max(TimeLeft - delta, 0);
+				TrackLocal(delta);
+			}
+			return;
 		}
 
 		switch (Phase)
@@ -184,6 +230,13 @@ public partial class Match : Node
 	/// <summary>Recomeça a mesma partida, com a mesma sala.</summary>
 	public void Restart()
 	{
+		// Online não se recomeça sozinho: volta-se para a sala.
+		if (Online)
+		{
+			Leave(ReturnTarget.Room);
+			return;
+		}
+
 		// O contador de menus é estático e sobrevive à troca de cena. Se
 		// algum menu estava aberto, a cena nova nasceria achando que já há
 		// menus por cima.
@@ -214,12 +267,13 @@ public partial class Match : Node
 				if (health == null) continue;
 
 				CombatantStats entry = Entry(health.PublicName, health.Team);
+				var remote = node as Bot is { Remote: true } puppet ? puppet : null;
 				entry.IsLocal = group == Groups.Players;
-				entry.IsBot = group == Groups.Bots;
+				entry.IsBot = group == Groups.Bots && remote == null;
 				entry.Health = health;
 				entry.Form = node.GetNodeOrNull<FormController>("FormController");
-				entry.Rank = entry.IsLocal
-					? Profile.Rank
+				entry.Rank = entry.IsLocal ? Profile.Rank
+					: remote != null ? remote.RemoteRank
 					: Ranks.ForBot(entry.Name, (int)RoomConfig.Rules.Difficulty);
 
 				if (entry.IsLocal) _local = entry;
@@ -280,6 +334,9 @@ public partial class Match : Node
 			if (!string.IsNullOrEmpty(kill.Weapon) && kill.Weapon != "lobo")
 				_localByWeapon[kill.Weapon] = (_localByWeapon.TryGetValue(kill.Weapon, out int n) ? n : 0) + 1;
 		}
+
+		// Online, o placar e o fim são do servidor (NetScore, NetSync).
+		if (Online) return;
 
 		_score[kill.KillerTeam]++;
 		EmitSignal(SignalName.ScoreChanged, _score[Teams.Blue], _score[Teams.Orange]);

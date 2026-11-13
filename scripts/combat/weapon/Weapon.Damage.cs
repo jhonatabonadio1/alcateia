@@ -37,11 +37,27 @@ public partial class Weapon
 	/// </summary>
 	private void Damage(Health target, float amount, Vector3 from, bool headshot)
 	{
+		// O boneco de outro jogador só encena o ataque: quem acerta é a
+		// máquina de quem atirou.
+		if (Puppet) return;
+
 		// Fogo amigo desligado por padrão: num jogo de duas formas,
 		// confundir aliado com inimigo já acontece demais pela silhueta.
 		// A sala pode ligar.
 		if (_health != null && target.Team == _health.Team && target != _health
 			&& !RoomConfig.Rules.FriendlyFire) return;
+
+		// Online: o corpo de outro jogador não leva dano aqui. O acerto
+		// vai para a máquina dele; o abate, se houver, volta pelo servidor.
+		if (target.IsRemote)
+		{
+			if (target.IsDead) return;
+			target.SendHit(amount, from, headshot, CauseOf(headshot), KillWeapon());
+			EmitSignal(SignalName.DamageDealt, amount);
+			EmitSignal(SignalName.HitConfirmed, headshot);
+			_form.OnDamageDealt(amount);
+			return;
+		}
 
 		bool wasAlive = !target.IsDead;
 

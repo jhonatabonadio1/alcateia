@@ -25,6 +25,9 @@ public partial class Weapon : Node3D
 {
 	[Signal] public delegate void DamageDealtEventHandler(float amount);
 	[Signal] public delegate void FiredEventHandler();
+
+	/// <summary>Arremessou a granada.</summary>
+	[Signal] public delegate void ThrownEventHandler();
 	[Signal] public delegate void SlotChangedEventHandler(int slot);
 
 	/// <summary>Acertou alguém. O HUD usa para marcar no crosshair —

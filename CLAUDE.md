@@ -203,7 +203,9 @@ alcateia/
 ├── AGENTS.md           atalho para o mesmo arquivo
 ├── project.godot
 ├── CONTRIBUTING.md     o passo a passo para trabalhar no projeto
-├── docs/               DESIGN, ARQUITETURA, AJUSTES, UI, ARSENAL, CONJUNTOS, CHANGELOG, decisoes/ (ADR)
+├── docs/               DESIGN, ARQUITETURA, AJUSTES, UI, ARSENAL, CONJUNTOS, MAPAS, PACOTES, SERVIDOR, CHANGELOG, decisoes/ (ADR)
+├── servidor/           o servidor (.NET + PostgreSQL) e as imagens Docker — fora do Godot (.gdignore)
+├── docker-compose.yml  banco + servidor + servidor de partida
 ├── tests/              unit (C# puro) e regression (o jogo sem tela)
 ├── assets/             audio, characters, fonts, maps, textures, ui (miniaturas de mapa)
 ├── resources/
@@ -232,7 +234,7 @@ alcateia/
 	├── ui/             hud/ (HUD por canto), placar, resultado, respawn, Esc
 	│   └── kit/        tokens, tema e componentes de interface
 	├── visual/         human/ e wolf/ (os corpos animados), anim/ (AnimationKit), áudio
-	├── net/            dormente até a Fase 2
+	├── net/            conta, saguão, partida online e servidor de partida
 	└── debug/          peças descartáveis
 ```
 
@@ -272,7 +274,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `ui/kit/*.cs` | Tokens, tema e componentes — toda tela usa estes |
 | `ui/hud/Hud*.cs` | HUD de combate, um arquivo por canto: `.Layout` monta; `.Vitals`, `.Equipment`, `.Form`, `.Feed` reagem aos sinais |
 | `core/InputSetup.cs` | Registra ações de input sem passar pelo editor |
-| `net/GameManager.cs` | Rede — dormente até a Fase 2 |
+| `net/` | Rede: `Backend` (conta), `LobbyLink` (salas), `NetMatch` (partida), `MatchServer` (servidor de partida) — veja `docs/SERVIDOR.md` |
 
 ### Por que `Health`, `Weapon` e `FormController` não ficam em `actors/player/`
 
@@ -357,6 +359,10 @@ roda o mesmo script a cada push (`.github/workflows/testes.yml`).
   cena vira teste de regressão (`RegressionTest`, achado sozinho pela
   bancada).
 - Um teste de regressão também reprova se o Output tiver `ERROR`.
+- **Mexeu no servidor ou na rede?** Rode também
+  `tools/testar_servidor.sh` (o servidor contra um PostgreSQL de
+  verdade) e `tools/testar_online.sh` (dois jogos sem tela jogando uma
+  partida pelo servidor). Os dois pedem Docker.
 - Para medir velocidade, use `bench.Displacement(corpo, quadros)`, não
   segundos: o cronômetro pode chegar um quadro depois e somar 3%.
 
@@ -367,22 +373,32 @@ roda o mesmo script a cada push (`.github/workflows/testes.yml`).
 Veja `CHANGELOG.md` para o que já entrou.
 
 **Fase 1 — falta:**
-- **Tela de créditos**, antes de qualquer publicação: o Oculus Audio
-  Pack é CC BY 4.0.
 - Rodar os quatro testes de validação do `docs/ARSENAL.md` (duelos,
   lobo no corredor e em campo aberto, ritmo da economia).
 - Responder "A pergunta que decide o projeto", no fim deste guia.
 
-**Fora do escopo enquanto não houver servidor** (o guia `docs/UI.md`
-descreve, mas depende de rede): login de verdade, canais, amigos,
-matilha, chat entre jogadores, ranking, compra paga (Sangue),
-temporadas e moderação. Na criação de sala, os modos além de Equipe, a
-regra "Só faca" e as transformações "Obrigatória" e "Só um lado"
-aparecem como "em breve".
+A tela de créditos existe (`CreditsScreen`, conteúdo em
+`scripts/meta/Credits.cs`): **todo material de terceiros novo ganha a
+linha dele ali no mesmo commit.**
 
-**Fase 2 — os quatro pilares de netcode**, nesta ordem:
-1. Predição no cliente
-2. Reconciliação por número de input
+**Fase 2 — o que já existe** (veja `docs/SERVIDOR.md`):
+- Servidor em .NET + PostgreSQL no Docker (`servidor/`,
+  `docker-compose.yml`): contas, salas, chat, ranking, frota.
+- Tela Online no jogo, servidor de partida (`-- --servidor`) e partida
+  em rede entre jogadores, com os outros como bonecos.
+- Quem decide o quê está em `docs/decisoes/0008`: **cada jogo decide o
+  próprio corpo e a própria vida; o servidor decide abate, placar e
+  resultado.** Não é à prova de trapaça.
+
+**Ainda fora** (o guia `docs/UI.md` descreve): canais, amigos, matilha,
+compra paga (Sangue), temporadas, moderação, perfil da loja no
+servidor. Na criação de sala, os modos além de Equipe, a regra "Só
+faca" e as transformações "Obrigatória" e "Só um lado" aparecem como
+"em breve".
+
+**Fase 2 — o que falta para abrir ao público**, nesta ordem:
+1. Vida e acerto no servidor (o `MatchServer` passa a guardar o HP)
+2. Predição no cliente e reconciliação por número de input
 3. Interpolação dos outros jogadores (~100ms no passado)
 4. Lag compensation no servidor (rebobinar hitboxes)
 
