@@ -1,0 +1,255 @@
+{
+ "ak": {
+  "animacoes": {
+   "andar": {
+    "ate": 0.9817,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.3983,
+    "clipe": "correr",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 1.9817,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "recarga": {
+    "ate": 2.6483,
+    "clipe": "recarga",
+    "de": 0.0
+   },
+   "recarga_vazia": {
+    "ate": 3.4983,
+    "clipe": "recarga_vazia",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.6483,
+    "clipe": "sacar",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.315,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "ak47"
+  ],
+  "arquivo": "res://assets/armas/fp/ak.glb",
+  "cano": [
+   0.0259,
+   -0.1168,
+   -1.0723
+  ]
+ },
+ "escopeta": {
+  "animacoes": {
+   "andar": {
+    "ate": 0.9833,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.4833,
+    "clipe": "correr",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 2.9833,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "recarga_um": {
+    "ate": 1.65,
+    "clipe": "recarga_um",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.65,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "m3"
+  ],
+  "arquivo": "res://assets/armas/fp/escopeta.glb",
+  "cano": [
+   0.0199,
+   -0.1173,
+   -0.8754
+  ]
+ },
+ "fuzil": {
+  "animacoes": {
+   "andar": {
+    "ate": 0.8175,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6507,
+    "clipe": "correr",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 1.318,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "recarga": {
+    "ate": 1.6517,
+    "clipe": "recarga",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.5672,
+    "clipe": "sacar",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.1502,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "sg552"
+  ],
+  "arquivo": "res://assets/armas/fp/fuzil.glb",
+  "cano": [
+   0.0554,
+   -0.1066,
+   -1.0871
+  ]
+ },
+ "m16": {
+  "animacoes": {
+   "parado": {
+    "ate": 8.3,
+    "clipe": "Scene",
+    "de": 7.4
+   },
+   "recarga": {
+    "ate": 4.5,
+    "clipe": "Scene",
+    "de": 2.3
+   },
+   "recarga_vazia": {
+    "ate": 2.3,
+    "clipe": "Scene",
+    "de": 0.2
+   },
+   "sacar": {
+    "ate": 7.4,
+    "clipe": "Scene",
+    "de": 6.8
+   },
+   "tiro": {
+    "ate": 0.2,
+    "clipe": "Scene",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "m16a2"
+  ],
+  "arquivo": "res://assets/armas/fp/m16.glb",
+  "cano": [
+   0.09,
+   -0.1135,
+   -1.0051
+  ]
+ },
+ "pistola": {
+  "animacoes": {
+   "andar": {
+    "ate": 0.65,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 1.9833,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "recarga": {
+    "ate": 1.3167,
+    "clipe": "recarga",
+    "de": 0.0
+   },
+   "recarga_vazia": {
+    "ate": 1.65,
+    "clipe": "recarga_vazia",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.2333,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "m9"
+  ],
+  "arquivo": "res://assets/armas/fp/pistola.glb",
+  "cano": [
+   0.0317,
+   -0.1324,
+   -0.5182
+  ]
+ },
+ "smg": {
+  "animacoes": {
+   "andar": {
+    "ate": 0.7317,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.4817,
+    "clipe": "correr",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 1.6483,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "recarga": {
+    "ate": 3.9483,
+    "clipe": "recarga",
+    "de": 0.0
+   },
+   "recarga_vazia": {
+    "ate": 4.3983,
+    "clipe": "recarga_vazia",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.6483,
+    "clipe": "sacar",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.315,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "ump45"
+  ],
+  "arquivo": "res://assets/armas/fp/smg.glb",
+  "cano": [
+   0.0351,
+   -0.0814,
+   -0.6187
+  ]
+ }
+}

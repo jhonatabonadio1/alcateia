@@ -130,9 +130,11 @@ public partial class ViewModel : Node3D
 		UpdateSway(dt);
 		UpdateLanding(dt);
 
-		float kick = Ease(_recoil);
-		Position = _rest + bob + new Vector3(0, -_draw * 0.2f - _dip, Kick * kick);
-		RotationDegrees = new Vector3(_sway.Y + KickPitch * kick - _draw * 24f, _sway.X, -_sway.X * 0.6f);
+		// Com os braços animados, o tiro e o sacar já vêm da animação.
+		float kick = Ease(_recoil) * (HasRig ? RigKick : 1f);
+		float draw = HasRig ? 0f : _draw;
+		Position = _rest + bob + new Vector3(0, -draw * 0.2f - _dip, Kick * kick);
+		RotationDegrees = new Vector3(_sway.Y + KickPitch * kick - draw * 24f, _sway.X, -_sway.X * 0.6f);
 
 		UpdateHands(dt);
 		UpdateEffects(dt);
@@ -149,6 +151,9 @@ public partial class ViewModel : Node3D
 		bool walking = _body.IsOnFloor() && flat.Length() > 0.5f && _player != null;
 		_bobWeight = Mathf.MoveToward(_bobWeight, walking ? 1f : 0f, dt * 6f);
 		if (_player == null || _bobWeight <= 0f) return Vector3.Zero;
+
+		// O conjunto animado que tem o próprio andar já balança sozinho.
+		if (HasRig && _rigClips.ContainsKey("andar")) return Vector3.Zero;
 
 		float stride = (_player.Steps + _player.StridePhase) * Mathf.Pi;
 		float speed = Mathf.Clamp(flat.Length() / 3.2f, 0.4f, 1.3f);
@@ -199,6 +204,7 @@ public partial class ViewModel : Node3D
 		}
 
 		if (_weapon.Held == null) return;
+		RigFired();
 		FireEffects();
 	}
 
@@ -214,8 +220,18 @@ public partial class ViewModel : Node3D
 		_muzzle = null;
 		_heldId = id;
 		ForgetHands();
+		ForgetRig();
 
 		if (id == "") return;
+
+		// Arma de fogo com conjunto animado: os braços do animador.
+		// O resto (faca, granada): o modelo e as mãos de código.
+		if (BuildRig(id))
+		{
+			_muzzle = _held.GetNodeOrNull<Node3D>(WeaponModel.MuzzleName);
+			_draw = 1f;
+			return;
+		}
 
 		_held = WeaponModel.Build(id);
 		_held.Position = Anchor(id);

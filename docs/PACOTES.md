@@ -104,8 +104,11 @@ deixadas de fora de propósito.
 | 2 céus (dia claro, neve nublada) | `assets/mapas/ceus/` — Vila e Estação Polar | copiados; `ceu=dict(hdri=…)` no mapa |
 | 36 objetos do Poly Haven | `assets/mapas/pecas/*.glb` — nos cômodos e em volta | `tools/mapas/blender/pecas_polyhaven.py` |
 
-Os braços e as armas do Sketchfab **ainda não entraram** — é o próximo
-passo (trocar as mãos e as armas feitas por código pelas animadas).
+| 6 conjuntos de braços animados do Sketchfab | `assets/armas/fp/*.glb` — as armas de fogo em primeira pessoa | `tools/armas/blender/bracos.py` |
+
+Ainda não entraram: os modelos avulsos de arma (AK-47, Beretta, SG552,
+UMP45, Benelli M3, faca, M84) — os conjuntos animados já trazem uma arma
+cada um. A faca e a granada seguem feitas por código.
 Lembre: a pasta deles é `assets/pacotes/sketchfab/` (fora do Godot); se
 ficarem em `assets/sketchfab/`, o Godot tenta importar 750 MB.
 

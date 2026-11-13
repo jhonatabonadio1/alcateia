@@ -3,9 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 
 /// <summary>
-/// Os braços em primeira pessoa: em cada arma há duas mãos, a recarga
-/// tira o carregador, some com ele e devolve, e no fim tudo volta para o
-/// lugar. Com tela (xvfb) e <c>--fotos=pasta</c>, fotografa cada arma
+/// Os braços em primeira pessoa: cada arma de fogo usa o seu conjunto
+/// animado (braços, arma, esqueleto), o tiro toca o disparo, a recarga
+/// toca a recarga até o fim e depois tudo volta a ficar parado; faca e
+/// granada ficam com as duas mãos de sempre. Com tela (xvfb) e <c>--fotos=pasta</c>, fotografa cada arma
 /// parada, atirando e recarregando — é como se confere o desenho sem
 /// abrir o editor:
 ///
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 public sealed class ViewModelTest : RegressionTest
 {
 	public override string Name => "BracosNaMao";
-	public override string Description => "em primeira pessoa há duas mãos em cada arma, e a recarga tira e devolve o carregador";
+	public override string Description => "em primeira pessoa cada arma de fogo tem os braços animados, com tiro e recarga; faca e granada, as duas mãos";
 
 	private string _photos = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--fotos="))?["--fotos=".Length..];
 
@@ -60,32 +61,31 @@ public sealed class ViewModelTest : RegressionTest
 			b.Check(held != null && held.Name == id, $"{id}: o modelo da arma está na mão");
 			if (held == null) continue;
 
-			Node3D right = held.GetNodeOrNull<Node3D>("MaoDireita"), left = held.GetNodeOrNull<Node3D>("MaoEsquerda");
-			b.Check(right != null && left != null && right.GetChildCount() >= 3 && left.GetChildCount() >= 3,
-				$"{id}: duas mãos de luva com manga");
-			b.Check(held.GetNodeOrNull<Node3D>(WeaponModel.MuzzleName) != null, $"{id}: tem boca do cano");
-			if (left == null) continue;
+			// Arma de fogo usa o conjunto animado: esqueleto, braços e arma.
+			b.Check(view.HasRig, $"{id}: usa os braços animados");
+			if (!view.HasRig) continue;
+			b.Check(held.FindChildren("*", "Skeleton3D", true, false).Count >= 1
+				&& held.FindChildren("*", "MeshInstance3D", true, false).Count >= 2, $"{id}: braços e arma do conjunto, com esqueleto");
+			Node3D muzzle = held.GetNodeOrNull<Node3D>(WeaponModel.MuzzleName);
+			b.Check(muzzle != null && view.ToLocal(muzzle.GlobalPosition).Z < -0.3f, $"{id}: a boca do cano fica à frente da câmera");
 			await Photo(b, $"{id}_1_parada");
 
-			// Um tiro: o carregador deixa de estar cheio e a recarga pode começar.
-			Vector3 leftRest = left.Position;
+			// Um tiro: toca o disparo, e o carregador deixa de estar cheio.
 			RegressionBench.Press("attack");
 			await b.Frames(3);
+			b.Check(view.RigAnimation == "tiro", $"{id}: o tiro toca a animação de disparo (tocando: {view.RigAnimation})");
 			await Photo(b, $"{id}_2_tiro");
 			RegressionBench.Release("attack");
 			await b.Seconds(id == "m3" ? 1.0 : 0.3);
 
 			b.Check(b.Weapon.TryReload(), $"{id}: recarrega");
-			Node3D magazine = held.GetNodeOrNull<Node3D>(WeaponModel.MagazineName);
-			Vector3 magRest = magazine?.Position ?? Vector3.Zero;
-			float farthest = 0f, handFarthest = 0f;
+			bool animated = true;
 			int shot = 0;
 			float[] marks = { 0.14f, 0.3f, 0.58f, 0.7f, 0.88f };
 			while (b.Weapon.IsReloading)
 			{
 				await b.PhysicsFrame();
-				if (magazine != null) farthest = Mathf.Max(farthest, magazine.Position.DistanceTo(magRest));
-				handFarthest = Mathf.Max(handFarthest, left.Position.DistanceTo(leftRest));
+				if (b.Weapon.IsReloading && !view.RigAnimation.StartsWith("recarga")) animated = false;
 				if (shot < marks.Length && b.Weapon.ReloadProgress >= marks[shot])
 				{
 					await Photo(b, $"{id}_3_recarga_{shot + 1}");
@@ -93,15 +93,10 @@ public sealed class ViewModelTest : RegressionTest
 				}
 				if (id == "m3" && shot >= 3) break;
 			}
+			b.Check(animated, $"{id}: a recarga toca a animação de recarga do começo ao fim");
 
-			if (magazine != null)
-				b.AtLeast(0.2, farthest, $"{id}: o carregador sai da arma na recarga (m)");
-			b.AtLeast(0.08, handFarthest, $"{id}: a mão esquerda sai do lugar para recarregar (m)");
-
-			await b.Seconds(id == "m3" ? 3.5 : 0.6);
-			if (magazine != null)
-				b.AtMost(0.001, magazine.Position.DistanceTo(magRest), $"{id}: o carregador volta para o lugar (m)");
-			b.AtMost(0.002, left.Position.DistanceTo(leftRest), $"{id}: a mão esquerda volta para o lugar (m)");
+			await b.Seconds(id == "m3" ? 3.5 : 0.8);
+			b.Check(view.RigAnimation == "parado", $"{id}: terminada a recarga, volta a ficar parado (tocando: {view.RigAnimation})");
 		}
 
 		// Faca e granada: também na mão, com as duas mãos.

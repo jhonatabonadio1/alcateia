@@ -117,6 +117,12 @@ public partial class ViewModel
 	{
 		if (_held == null) return;
 
+		if (HasRig)
+		{
+			UpdateRig(dt);
+			return;
+		}
+
 		bool reloading = _weapon.IsReloading && _weapon.Held != null && !_form.IsWolf;
 		_reloadPose = Mathf.MoveToward(_reloadPose, reloading ? 1f : 0f, dt * (reloading ? 7f : 5f));
 		_boltKick = Mathf.MoveToward(_boltKick, 0f, dt * 14f);

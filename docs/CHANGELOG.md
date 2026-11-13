@@ -2,6 +2,26 @@
 
 ## Não lançado
 
+### Braços animados em primeira pessoa (Sketchfab, CC BY)
+- As seis armas de fogo passam a usar os conjuntos animados baixados do
+  Sketchfab: braços, arma e animações de animador (parado, sacar, tiro,
+  recarga, recarga com pente vazio, andar). M16A2, AK, SG552 (fuzil
+  compacto do pacote de fuzis), UMP45 (submetralhadora do pacote), M9
+  (pistola do pacote) e M3 (escopeta do pacote Benelli).
+- `tools/armas/blender/bracos.py` converte cada .fbx no Blender: olho do
+  jogador na origem, escala em metros, materiais com as texturas,
+  animações com o nome que o jogo usa. Saída em `assets/armas/fp/` e a
+  ficha `bracos.json`.
+- `ViewModel.Rig.cs` toca a animação certa: o tiro a cada disparo, a
+  recarga na velocidade que termina junto com a recarga de verdade (a
+  de pente vazio quando esvaziou; na escopeta, um ciclo por cartucho).
+- Faca e granada continuam com as mãos feitas por código.
+- Teste `BracosNaMao` reescrito para os braços animados.
+- **Não conferido na tela**: o teste passa, mas as fotos não chegaram a
+  ser tiradas. Se algum conjunto aparecer torto, apague a entrada dele
+  em `assets/armas/fp/bracos.json` e a arma volta às mãos de código.
+- Créditos: os autores dos pacotes do Sketchfab.
+
 ### Hangar: de caixa cinza a base aérea
 - O primeiro mapa passou para o mesmo kit dos outros
   (`tools/mapas/hangar.py`; sai `tools/gerar_hangar.py` e a textura de

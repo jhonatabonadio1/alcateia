@@ -45,6 +45,17 @@ public static class Credits
 			new Line("Interface, acertos, faca, explosão", "Kenney (kenney.nl)", "CC0"),
 			new Line("Vento da Estação Polar e da Vila", "sintetizado para o jogo")
 		}),
+		new("Braços e armas em primeira pessoa", new[]
+		{
+			new Line("Animações dos braços (fuzis, submetralhadora, pistola, escopeta)", "Cransh (Sketchfab)", "CC BY 4.0", Required: true),
+			new Line("Braços e mãos", "bumstrum, DJMaesen e teenjust500 (Sketchfab)", "CC BY 4.0", Required: true),
+			new Line("AK-74M", "creationwasteland (Sketchfab)", "CC BY 4.0", Required: true),
+			new Line("Fuzil compacto com luneta", "doomsentinel (Sketchfab)", "CC BY 4.0", Required: true),
+			new Line("M16A2 com braços e animações", "user77 (Sketchfab)", "CC BY 4.0", Required: true),
+			new Line("Submetralhadora", "eNse7en (Sketchfab)", "CC BY 4.0", Required: true),
+			new Line("Pistola", "raimeiyonke (Sketchfab)", "CC BY 4.0", Required: true),
+			new Line("Escopeta semiautomática", "haoliu95 (Sketchfab)", "CC BY 4.0", Required: true)
+		}),
 		new("Personagens e animação", new[]
 		{
 			new Line("Modelos e animações do humano e do lobo", "Mixamo — Adobe", "licença de uso do Mixamo")
