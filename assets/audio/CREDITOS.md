@@ -16,7 +16,10 @@ Modificados.
 > na tela de créditos: "Sons: Oculus Audio Pack 1 por Meta Platforms,
 > CC BY 4.0 (modificados)".
 
-Usado em: `passo`, `pouso`, `lobo_passo`, `lobo_pouso` (com Kenney),
+Usado em: `passo`, `pouso`, `lobo_passo`, `lobo_pouso` (com Kenney) e
+as versões por superfície (`_metal`, `_neve`, `_madeira`, `_terra`),
+`capsula`, `impacto_metal` (com Kenney), `ambiente_metro`,
+`ambiente_hangar`, `metro_trem`,
 `pulo`, `lobo_pulo`, `lobo_garra`, `lobo_bote`, `lobo_garra_acerto`,
 `granada_lancar`, `dor`, `morte`, `lobo_dor`, `lobo_morte`,
 `lobo_transformar`, `lobo_destransformar`, `respawn`,
@@ -29,7 +32,7 @@ Usado em: `passo`, `pouso`, `lobo_passo`, `lobo_pouso` (com Kenney),
 
 | Arquivo | Gravação |
 |---|---|
-| `tiro_m16a2`, `tiro`, `recarga_m16a2`, `recarga`, `recarga_fim_m16a2`, `recarga_fim` | AR-15 |
+| `tiro_m16a2`, `tiro_proprio_m16a2`, `tiro`, `recarga_m16a2`, `recarga`, `recarga_fim_m16a2`, `recarga_fim` | AR-15 |
 | `tiro_sg552` | Norinco SKS |
 | `recarga_sg552`, `recarga_fim_sg552` | AR-15 (tom alterado) |
 | `tiro_ak47`, `tiro_distante_ak47`, `tiro_distante`, `recarga_ak47`, `recarga_fim_ak47` | AK-47 (pente saindo: AR-15) |
@@ -43,6 +46,17 @@ Usado em: `passo`, `pouso`, `lobo_passo`, `lobo_pouso` (com Kenney),
 `abate`, `contagem`), RPG Audio (`faca`, `trocar_arma`, `recarga_m3`),
 Impact Sounds (`acerto`, `acerto_cabeca`, `lobo_pouso`), Sci-Fi Sounds
 (`granada_explosao`). Via os espelhos no GitHub de Calinou e Boyquotes.
+
+Cada `tiro_<arma>_N` e `tiro_proprio_<arma>_N` é um dos tiros da mesma
+gravação de perto da arma (as gravações têm de dois a quatro); o
+`proprio` é a versão estéreo com reforço de grave.
+
+`impacto` vem do Impact Sounds da Kenney (CC0).
+
+## Gerados por código — sem fonte externa
+
+`ambiente_polar` e `ambiente_vila` são vento sintetizado (ruído filtrado
+com rajadas) por `tools/sons/processar.py`. São do projeto.
 
 ## O uivo
 

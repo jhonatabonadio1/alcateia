@@ -60,10 +60,44 @@ public partial class WorldAudio : Node
 	private MatchPhase _phase = MatchPhase.Countdown;
 	private int _countdownSecond = -1;
 
+	private MapInfo _map;
+	private GameRandom _rng;
+	private double _eventTimer;
+
 	public override void _Ready()
 	{
 		NoiseBus.Subscribe(OnNoise);
 		KillFeed.Reported += OnKill;
+		EnterMap();
+	}
+
+	/// <summary>
+	/// O som do lugar: a reverberação, o fundo em laço e o que acontece
+	/// de vez em quando (o trem no túnel ao lado). Vem do
+	/// <see cref="MapInfo"/> do mapa carregado; cena sem mapa (o treino)
+	/// fica com um ar livre neutro.
+	/// </summary>
+	private void EnterMap()
+	{
+		_map = Nodes.FindFirst<MapSlot>(GetTree().CurrentScene ?? GetParent())?.Info;
+		_rng = MatchRandom.Stream("ambiente");
+
+		Sfx.SetRoom(_map?.RoomSize ?? 0.3f, _map?.RoomWet ?? 0.06f);
+		if (_map == null) return;
+
+		Sfx.Ambience(this, _map.Ambience, _map.AmbienceDb);
+		_eventTimer = _rng.Range(_map.EventEvery.X * 0.4f, _map.EventEvery.Y * 0.6f);
+	}
+
+	private void UpdateAmbientEvent(double delta)
+	{
+		if (string.IsNullOrEmpty(_map?.EventSound)) return;
+
+		_eventTimer -= delta;
+		if (_eventTimer > 0) return;
+
+		_eventTimer = _rng.Range(_map.EventEvery.X, _map.EventEvery.Y);
+		Sfx.Own(_map.EventSound, _map.AmbienceDb);
 	}
 
 	public override void _ExitTree()
@@ -77,6 +111,7 @@ public partial class WorldAudio : Node
 		_clock += delta;
 		FindLocal();
 		UpdateMatch();
+		UpdateAmbientEvent(delta);
 	}
 
 	private void FindLocal()
@@ -96,11 +131,11 @@ public partial class WorldAudio : Node
 		switch (noise.Kind)
 		{
 			case NoiseKind.Step:
-				Play(wolf ? "lobo_passo" : "passo", noise, mine, mine ? OwnStepVolume : 0f);
+				Play(OnSurface(wolf ? "lobo_passo" : "passo", noise), noise, mine, mine ? OwnStepVolume : 0f);
 				break;
 
 			case NoiseKind.Land:
-				Play(wolf ? "lobo_pouso" : "pouso", noise, mine, mine ? OwnStepVolume : 0f);
+				Play(OnSurface(wolf ? "lobo_pouso" : "pouso", noise), noise, mine, mine ? OwnStepVolume : 0f);
 				break;
 
 			case NoiseKind.Howl:
@@ -121,6 +156,15 @@ public partial class WorldAudio : Node
 		}
 	}
 
+	/// <summary>O som do chão que está debaixo de quem pisou:
+	/// <c>passo_neve</c>, <c>passo_metal</c>... Sem arquivo para a
+	/// superfície (ou chão sem metadado), o som padrão.</summary>
+	private static string OnSurface(string name, Noise noise)
+	{
+		string surface = Surfaces.Under(noise.Position, noise.Source);
+		return surface == "" ? name : Sfx.First($"{name}_{surface}", name);
+	}
+
 	/// <summary>Cada arma tem a voz dela: <c>tiro_ak47</c>,
 	/// <c>tiro_m3</c>... Sem arquivo da arma, cai no <c>tiro</c>.
 	/// Longe, prefere <c>tiro_distante</c>: tiro distante é abafado,
@@ -135,7 +179,11 @@ public partial class WorldAudio : Node
 			if (far != null) return far;
 		}
 
-		return Sfx.First($"tiro_{id}", "tiro");
+		// O seu tiro é outra gravação: estéreo e com mais grave. Quem
+		// atira ouve o corpo da arma; quem está na frente, o estalo.
+		return mine
+			? Sfx.First($"tiro_proprio_{id}", $"tiro_{id}", "tiro")
+			: Sfx.First($"tiro_{id}", "tiro");
 	}
 
 	private void Play(string name, Noise noise, bool mine, float volumeDb = 0f, float reach = 0f)
@@ -146,7 +194,7 @@ public partial class WorldAudio : Node
 
 		if (name == null) return;
 
-		if (mine) Sfx.Local(name, volumeDb);
+		if (mine) Sfx.Own(name, volumeDb);
 		else Sfx.At(name, noise.Position, noise.Radius, volumeDb, reach);
 	}
 

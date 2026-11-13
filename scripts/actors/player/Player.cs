@@ -281,5 +281,5 @@ public partial class Player : CharacterBody3D
 	/// além de ficar menor.
 	/// </summary>
 	private void UpdateNoise(double delta) =>
-		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, _howling, silent: _crouching || _walking);
+		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, _howling, silent: _crouching || _walking, sprinting: IsSprinting);
 }

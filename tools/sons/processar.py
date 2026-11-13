@@ -94,30 +94,87 @@ kn = lambda n: f"kn_{n}"
 fw = lambda n: f"ff_{n}.wav"
 
 # ---------------------------------------------------------- passos e pouso
-series("passo", [oc(f"FEETHmn_ShoeConcreteRun_OS_0{i}") for i in range(1, 6)], -3, maxlen=0.35)
-series("pouso", [oc(f"FEETHmn_ShoeConcreteLand_OS_0{i}") for i in (1, 2)], -2, maxlen=0.5)
-# Lobo: passo de terra 5 semitons abaixo, sem agudo: pesado e abafado.
-series("lobo_passo", [oc(f"FEETHmn_ShoeDirtRun_OS_0{i}") for i in range(1, 6)], -2, maxlen=0.4, pitch=-5, lowpass=3200)
-for i in (1, 2):
-    a = clip(oc(f"FEETHmn_ShoeDirtLand_OS_0{i}"), pitch=-5, lowpass=3000, maxlen=0.6)
-    b = clip(kn(f"impact_soft_heavy_00{i}.ogg"), maxlen=0.5)
-    save(mix([(a, 0, 0), (b, 0, -4)]), f"lobo_pouso_{i}", -1)
+# Um conjunto por superfície. "passo" (concreto) é o padrão; os outros
+# tocam quando o chão diz o que é (metadado "piso" — veja WorldAudio).
+# Lobo: a mesma gravação 5 semitons abaixo, sem agudo: pesado e abafado.
+SURFACES = {"": "Concrete", "_metal": "Metal", "_neve": "Snow", "_madeira": "Wood", "_terra": "Dirt"}
+for suffix, surface in SURFACES.items():
+    run = [oc(f"FEETHmn_Shoe{surface}Run_OS_0{i}") for i in range(1, 6)]
+    land = [oc(f"FEETHmn_Shoe{surface}Land_OS_0{i}") for i in (1, 2)]
+    series(f"passo{suffix}", run, -3, maxlen=0.35)
+    series(f"pouso{suffix}", land, -2, maxlen=0.5)
+    # O lobo no concreto pisa com a gravação de terra, como sempre foi:
+    # sapato em concreto estala, e pata não estala.
+    wolf_run = [oc(f"FEETHmn_ShoeDirtRun_OS_0{i}") for i in range(1, 6)] if not suffix else run
+    wolf_land = [oc(f"FEETHmn_ShoeDirtLand_OS_0{i}") for i in (1, 2)] if not suffix else land
+    series(f"lobo_passo{suffix}", wolf_run, -2, maxlen=0.4, pitch=-5, lowpass=3200)
+    for i, src in enumerate(wolf_land, 1):
+        a = clip(src, pitch=-5, lowpass=3000, maxlen=0.6)
+        b = clip(kn(f"impact_soft_heavy_00{i}.ogg"), maxlen=0.5)
+        save(mix([(a, 0, 0), (b, 0, -4)]), f"lobo_pouso{suffix}_{i}", -1)
 
 # ---------------------------------------------------------- tiros
-# (perto, longe, duração perto)
+def onsets(src, min_gap=0.6, rel=0.3):
+    """Onde começa cada tiro de uma gravação com vários, em segundos."""
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", os.path.join(RAW, src), "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"],
+                         capture_output=True).stdout
+    x = np.abs(np.frombuffer(raw, dtype=np.float32))
+    win = int(SR * 0.004)
+    env = np.convolve(x, np.ones(win) / win, mode="same")
+    hot = np.flatnonzero(env > rel * env.max())
+    if not len(hot): return []
+    starts = [hot[0]] + [b for a, b in zip(hot[:-1], hot[1:]) if b - a > min_gap * SR]
+    return [max(t / SR - 0.004, 0) for t in starts]
+
+def takes(sources, count):
+    """Até `count` tiros, alternando entre as gravações."""
+    found = [[(src, t) for t in onsets(fw(src))] for src in sources]
+    out = []
+    while len(out) < count and any(found):
+        for group in found:
+            if group and len(out) < count: out.append(group.pop(0))
+    return out
+
+# Cada arma tem a gravação de perto (com dois a quatro tiros dentro) e a
+# de meia distância. Cada tiro da gravação vira uma variação: rajada
+# com um arquivo só soa como máquina de costura. São as versões
+# "Prepared" da biblioteca, já masterizadas — as "Master" são cruas, e
+# o tiro cru de microfone colado some em 50 ms.
+#
+# tiro_<arma>_N          mono: o tiro dos outros, num ponto do mapa
+# tiro_proprio_<arma>_N  estéreo, com mais grave: o seu tiro
 guns = {"m16a2": ("D_32P", "D_24P", 0.75), "sg552": ("U_14P", "U_19P", 0.75), "ak47": ("C_28P", "C_31P", 0.8),
-        "ump45": ("G_31P", "G_20P", 0.6), "m9": ("X_39P", "X_31P", 0.6)}
+        "ump45": ("G_31P", "G_20P", 0.6), "m9": ("X_39P", "X_31P", 0.6), "m3": ("O_21P", "O_17P", 0.6)}
 for gid, (near, far, ln) in guns.items():
-    save(clip(fw(near), maxlen=ln, fade=0.25, gate=-30), f"tiro_{gid}", -1)
+    for old in os.listdir(OUT):
+        if re.fullmatch(rf"tiro_(proprio_)?{gid}(_\d+)?\.wav", old): os.remove(os.path.join(OUT, old))
+    found = takes([near], 4)
+    for i, (src, t) in enumerate(found, 1):
+        for name, mono in ((f"tiro_{gid}_{i}", True), (f"tiro_proprio_{gid}_{i}", False)):
+            shot = clip(fw(src), start=t, maxlen=ln, fade=0.25, gate=-30, mono=mono)
+            # M3: tiro + bombeada logo depois (a cadência é de 0,86 s).
+            if gid == "m3":
+                pump = clip(fw("O_6"), maxlen=0.5, gate=-40, mono=mono)
+                shot = mix([(shot, 0, 0), (pump, 0.38, -6)], mono=mono)
+            if not mono:
+                out = tmp()
+                ff(["-i", shot, "-af", "bass=g=4:f=110:w=0.7", "-c:a", "pcm_s16le", out])
+                shot = out
+            save(shot, name, -1)
     save(clip(fw(far), maxlen=1.4, fade=0.5, gate=-34, lowpass=5000), f"tiro_distante_{gid}", -4)
-# M3: tiro + bombeada logo depois (a cadência é de 0,86 s).
-shot = clip(fw("O_21P"), maxlen=0.6, fade=0.25, gate=-30)
-pump = clip(fw("O_6"), maxlen=0.5, gate=-40)
-save(mix([(shot, 0, 0), (pump, 0.38, -6)]), "tiro_m3", -1)
-save(clip(fw("O_17P"), maxlen=1.4, fade=0.5, gate=-34, lowpass=5000), "tiro_distante_m3", -4)
+    print(f"tiro {gid}: {len(found)} variações")
 # Genéricos: tiro = M16; tiro_distante = AK longe.
-shutil.copy(os.path.join(OUT, "tiro_m16a2.wav"), os.path.join(OUT, "tiro.wav"))
+shutil.copy(os.path.join(OUT, "tiro_m16a2_1.wav"), os.path.join(OUT, "tiro.wav"))
 shutil.copy(os.path.join(OUT, "tiro_distante_ak47.wav"), os.path.join(OUT, "tiro_distante.wav"))
+
+# Cápsula no chão, um instante depois do tiro.
+series("capsula", [oc(f"BLLTShel_ShellCasingConcrete_OS_0{i}") for i in (1, 2, 3)], -14, maxlen=0.6)
+
+# Bala na parede: o estalo de onde ela bateu. Concreto/alvenaria e metal.
+series("impacto", [kn(f"impact_mining_00{i}.ogg") for i in range(3)] + [kn(f"impact_generic_light_00{i}.ogg") for i in range(3)],
+       -6, maxlen=0.3, highpass=300)
+series("impacto_metal", [kn(f"impact_plate_light_00{i}.ogg") for i in range(3)] + [oc(f"METLImpt_MetalHitSurface_OS_0{i}") for i in (1, 2, 3)],
+       -6, maxlen=0.35, highpass=400)
 
 # ---------------------------------------------------------- recarga
 def reload(gid, out_src, out_pitch, in_src, in_at, in_pitch=0):
@@ -204,6 +261,42 @@ series("ui_clique", [kn(f"click{i}.wav") for i in (1, 2, 3)], -12, mono=False)
 save(clip(kn("error_004.wav"), mono=False), "ui_negado", -12)
 # Ambiente noturno de floresta como fundo do menu: é loop pronto.
 shutil.copy(os.path.join(RAW, oc("AMBForst_Night_LOOP_01")), os.path.join(OUT, "musica_menu.ogg"))
+
+# ---------------------------------------------------------- ambiente
+def noise_loop(seconds, low, high, seed, gusts=0.5, tilt=1.0):
+    """Vento sintetizado que emenda sem costura: ruído montado na
+    frequência (periódico por construção), numa faixa, com rajadas
+    lentas também periódicas. Estéreo, um canal de cada sorteio."""
+    n = int(SR * seconds)
+    freqs = np.fft.rfftfreq(n, 1 / SR)
+    chans = []
+    for c in (0, 1):
+        rng = np.random.default_rng(seed + c)
+        band = np.exp(-0.5 * ((np.log(np.maximum(freqs, 1)) - np.log(np.sqrt(low * high))) / (np.log(high / low) / 2.5)) ** 2)
+        spec = band / np.maximum(freqs, 20) ** (0.5 * tilt) * np.exp(1j * rng.uniform(0, 2 * np.pi, len(freqs)))
+        x = np.fft.irfft(spec, n)
+        t = np.arange(n) / SR
+        env = np.ones(n)
+        for k in range(1, 7):
+            env += gusts / k * np.sin(2 * np.pi * k * t / seconds + rng.uniform(0, 2 * np.pi))
+        x *= np.maximum(env, 0.15)
+        chans.append(x / np.abs(x).max())
+    pcm = (np.stack(chans, 1) * 0.8 * 32767).astype("<i2")
+    out = tmp()
+    import wave
+    with wave.open(out, "wb") as w:
+        w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
+    return out
+
+# Um fundo por mapa (laço) — baixo, para dar ar ao lugar sem cobrir passo.
+save(noise_loop(24, 180, 1400, 11, gusts=0.7), "ambiente_polar", -12, ogg=True)
+save(noise_loop(24, 90, 600, 23, gusts=0.5, tilt=1.4), "ambiente_vila", -16, ogg=True)
+shutil.copy(os.path.join(RAW, oc("AMBInd_RoomToneMachineRoom_LOOP_01")), os.path.join(OUT, "ambiente_metro.ogg"))
+shutil.copy(os.path.join(RAW, oc("MACHHvac_HVAC_LOOP_01")), os.path.join(OUT, "ambiente_hangar.ogg"))
+# O trem que passa no túnel ao lado, de vez em quando: chega e vai embora.
+a = clip(oc("TRNSbwy_SubwayPassbyEnter_OS_01"), mono=False, lowpass=2500, gate=-60)
+b = clip(oc("TRNSbwy_SubwayPassbyExit_OS_01"), mono=False, lowpass=2500, gate=-60)
+save(mix([(a, 0, 0), (b, max(dur(a) - 1.0, 0), 0)], mono=False), "metro_trem", -8, ogg=True, fade_in=1.5)
 
 shutil.rmtree(TMP)
 files = sorted(f for f in os.listdir(OUT) if f.endswith((".wav", ".ogg")))

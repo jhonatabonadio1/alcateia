@@ -636,6 +636,7 @@ material_override = SubResource("M_trilho")
 
 [node name="Piso" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6, 0)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/Piso"]
 shape = SubResource("S9")
@@ -646,6 +647,7 @@ material_override = SubResource("M_vagao")
 
 [node name="Teto" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/Teto"]
 shape = SubResource("S10")
@@ -656,6 +658,7 @@ material_override = SubResource("M_vagao")
 
 [node name="LadoNorteOeste" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.25, 1, 2.7)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/LadoNorteOeste"]
 shape = SubResource("S11")
@@ -671,6 +674,7 @@ material_override = SubResource("M_vagao_faixa")
 
 [node name="LadoNorteMeio" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 2.7)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/LadoNorteMeio"]
 shape = SubResource("S12")
@@ -686,6 +690,7 @@ material_override = SubResource("M_vagao_faixa")
 
 [node name="LadoNorteLeste" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 1, 2.7)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/LadoNorteLeste"]
 shape = SubResource("S11")
@@ -701,6 +706,7 @@ material_override = SubResource("M_vagao_faixa")
 
 [node name="BancoNorte" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 2.25)
+metadata/piso = "madeira"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/BancoNorte"]
 shape = SubResource("S13")
@@ -711,6 +717,7 @@ material_override = SubResource("M_banco")
 
 [node name="LadoSulOeste" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.25, 1, -2.7)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/LadoSulOeste"]
 shape = SubResource("S11")
@@ -726,6 +733,7 @@ material_override = SubResource("M_vagao_faixa")
 
 [node name="LadoSulMeio" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -2.7)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/LadoSulMeio"]
 shape = SubResource("S12")
@@ -741,6 +749,7 @@ material_override = SubResource("M_vagao_faixa")
 
 [node name="LadoSulLeste" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 1, -2.7)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/LadoSulLeste"]
 shape = SubResource("S11")
@@ -756,6 +765,7 @@ material_override = SubResource("M_vagao_faixa")
 
 [node name="BancoSul" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, -2.25)
+metadata/piso = "madeira"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/BancoSul"]
 shape = SubResource("S13")
@@ -766,6 +776,7 @@ material_override = SubResource("M_banco")
 
 [node name="PontaLesteNorte" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.9, 1, 1.8)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/PontaLesteNorte"]
 shape = SubResource("S14")
@@ -776,6 +787,7 @@ material_override = SubResource("M_vagao")
 
 [node name="PontaLesteSul" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.9, 1, -1.8)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/PontaLesteSul"]
 shape = SubResource("S14")
@@ -786,6 +798,7 @@ material_override = SubResource("M_vagao")
 
 [node name="PontaOesteNorte" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9, 1, 1.8)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/PontaOesteNorte"]
 shape = SubResource("S14")
@@ -796,6 +809,7 @@ material_override = SubResource("M_vagao")
 
 [node name="PontaOesteSul" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9, 1, -1.8)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="Trem/PontaOesteSul"]
 shape = SubResource("S14")
@@ -856,6 +870,7 @@ material_override = SubResource("M_concreto")
 
 [node name="Galeria" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.8, 9.225)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/Galeria"]
 shape = SubResource("S16")
@@ -866,6 +881,7 @@ material_override = SubResource("M_chapa")
 
 [node name="ParapeitoOeste" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 5.45, 7.35)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/ParapeitoOeste"]
 shape = SubResource("S17")
@@ -881,6 +897,7 @@ material_override = SubResource("M_grade")
 
 [node name="ParapeitoMeio" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.45, 7.35)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/ParapeitoMeio"]
 shape = SubResource("S17")
@@ -896,6 +913,7 @@ material_override = SubResource("M_grade")
 
 [node name="ParapeitoLeste" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 5.45, 7.35)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/ParapeitoLeste"]
 shape = SubResource("S17")
@@ -931,6 +949,7 @@ material_override = SubResource("M_azulejo")
 
 [node name="CaixoteTrem" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0.4, 3.9)
+metadata/piso = "madeira"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/CaixoteTrem"]
 shape = SubResource("S19")
@@ -941,6 +960,7 @@ material_override = SubResource("M_madeira")
 
 [node name="CaixotePilar" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.4, 6.4)
+metadata/piso = "madeira"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/CaixotePilar"]
 shape = SubResource("S20")
@@ -951,6 +971,7 @@ material_override = SubResource("M_madeira")
 
 [node name="Banco" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.25, 10.6)
+metadata/piso = "madeira"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/Banco"]
 shape = SubResource("S21")
@@ -961,6 +982,7 @@ material_override = SubResource("M_banco")
 
 [node name="Maquina" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1, 10.8)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/Maquina"]
 shape = SubResource("S22")
@@ -1046,6 +1068,7 @@ material_override = SubResource("M_concreto")
 
 [node name="Galeria" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.8, -9.225)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/Galeria"]
 shape = SubResource("S16")
@@ -1056,6 +1079,7 @@ material_override = SubResource("M_chapa")
 
 [node name="ParapeitoOeste" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 5.45, -7.35)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/ParapeitoOeste"]
 shape = SubResource("S17")
@@ -1071,6 +1095,7 @@ material_override = SubResource("M_grade")
 
 [node name="ParapeitoMeio" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.45, -7.35)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/ParapeitoMeio"]
 shape = SubResource("S17")
@@ -1086,6 +1111,7 @@ material_override = SubResource("M_grade")
 
 [node name="ParapeitoLeste" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 5.45, -7.35)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/ParapeitoLeste"]
 shape = SubResource("S17")
@@ -1121,6 +1147,7 @@ material_override = SubResource("M_azulejo")
 
 [node name="CaixoteTrem" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 0.4, -3.9)
+metadata/piso = "madeira"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/CaixoteTrem"]
 shape = SubResource("S19")
@@ -1131,6 +1158,7 @@ material_override = SubResource("M_madeira")
 
 [node name="CaixotePilar" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.4, -6.4)
+metadata/piso = "madeira"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/CaixotePilar"]
 shape = SubResource("S20")
@@ -1141,6 +1169,7 @@ material_override = SubResource("M_madeira")
 
 [node name="Banco" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.25, -10.6)
+metadata/piso = "madeira"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/Banco"]
 shape = SubResource("S21")
@@ -1151,6 +1180,7 @@ material_override = SubResource("M_banco")
 
 [node name="Maquina" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1, -10.8)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/Maquina"]
 shape = SubResource("S22")
@@ -1186,6 +1216,7 @@ material_override = SubResource("M_lampada")
 
 [node name="EscadaNorte" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(0.8829, -0.4696, 0, 0.4696, 0.8829, 0, 0, 0, 1, -18.6061, 2.3234, 9.5)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseA/EscadaNorte"]
 shape = SubResource("S23")
@@ -1196,6 +1227,7 @@ material_override = SubResource("M_chapa")
 
 [node name="CatracaNorte1" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.6, 0.5, 5)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseA/CatracaNorte1"]
 shape = SubResource("S24")
@@ -1206,6 +1238,7 @@ material_override = SubResource("M_catraca")
 
 [node name="CatracaNorte2" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.6, 0.5, 7.2)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseA/CatracaNorte2"]
 shape = SubResource("S25")
@@ -1231,6 +1264,7 @@ material_override = SubResource("M_placa")
 
 [node name="EscadaSul" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(0.8829, -0.4696, 0, 0.4696, 0.8829, 0, 0, 0, 1, -18.6061, 2.3234, -9.5)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseA/EscadaSul"]
 shape = SubResource("S23")
@@ -1241,6 +1275,7 @@ material_override = SubResource("M_chapa")
 
 [node name="CatracaSul1" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.6, 0.5, -5)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseA/CatracaSul1"]
 shape = SubResource("S24")
@@ -1251,6 +1286,7 @@ material_override = SubResource("M_catraca")
 
 [node name="CatracaSul2" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.6, 0.5, -7.2)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseA/CatracaSul2"]
 shape = SubResource("S25")
@@ -1276,6 +1312,7 @@ material_override = SubResource("M_placa")
 
 [node name="EscadaNorte" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(0.8829, 0.4696, 0, -0.4696, 0.8829, 0, 0, 0, 1, 18.6061, 2.3234, 9.5)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseB/EscadaNorte"]
 shape = SubResource("S23")
@@ -1286,6 +1323,7 @@ material_override = SubResource("M_chapa")
 
 [node name="CatracaNorte1" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 0.5, 5)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseB/CatracaNorte1"]
 shape = SubResource("S24")
@@ -1296,6 +1334,7 @@ material_override = SubResource("M_catraca")
 
 [node name="CatracaNorte2" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 0.5, 7.2)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseB/CatracaNorte2"]
 shape = SubResource("S25")
@@ -1321,6 +1360,7 @@ material_override = SubResource("M_placa")
 
 [node name="EscadaSul" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(0.8829, 0.4696, 0, -0.4696, 0.8829, 0, 0, 0, 1, 18.6061, 2.3234, -9.5)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseB/EscadaSul"]
 shape = SubResource("S23")
@@ -1331,6 +1371,7 @@ material_override = SubResource("M_chapa")
 
 [node name="CatracaSul1" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 0.5, -5)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseB/CatracaSul1"]
 shape = SubResource("S24")
@@ -1341,6 +1382,7 @@ material_override = SubResource("M_catraca")
 
 [node name="CatracaSul2" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 0.5, -7.2)
+metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseB/CatracaSul2"]
 shape = SubResource("S25")

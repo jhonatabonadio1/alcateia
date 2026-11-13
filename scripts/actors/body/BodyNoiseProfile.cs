@@ -27,6 +27,19 @@ public partial class BodyNoiseProfile : Resource
 	/// posição é metade do preço de recuperar o escudo.</summary>
 	[Export] public float Howl = 45f;
 
-	/// <summary>Distância percorrida entre um passo e outro, em metros.</summary>
-	[Export] public float StepDistance = 2.2f;
+	/// <summary>
+	/// A passada: quantos metros o corpo anda entre um pé no chão e o
+	/// outro. O ruído do passo sai a cada passada, então o som cai junto
+	/// com o pé da animação — e acelera e desacelera com o corpo sozinho.
+	///
+	/// Os números saem dos clipes (velocidade em que o pé não patina ×
+	/// duração do ciclo ÷ 2 pisadas) e o teste PassoNoRitmo confere:
+	/// humano correndo, 3,24 m/s × 0,733 s ÷ 2; lobo, 2,42 × 0,867 ÷ 2;
+	/// corrida de quatro, 2,9 × 0,667 ÷ 2. Trocou o clipe ou a velocidade
+	/// de andar, refaça a conta.
+	/// </summary>
+	[ExportGroup("Passada")]
+	[Export] public float StrideHuman = 1.19f;
+	[Export] public float StrideWolf = 1.05f;
+	[Export] public float StrideWolfSprint = 0.97f;
 }

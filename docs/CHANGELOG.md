@@ -2,6 +2,22 @@
 
 ## Não lançado
 
+### Som
+- **Passo na passada.** O ruído do passo sai a cada passada do clipe
+  (1,19 m o humano, 1,05 m o lobo, 0,97 m de quatro) em vez de a cada
+  2,2 m: o som cai com o pé e acelera com o corpo. Os bots ouvem cada
+  pisada. Teste novo `PassoNoRitmo` amarra os números aos clipes.
+- **Passo conforme o chão**: metal, neve, madeira e terra, para humano e
+  lobo. O gerador de mapas marca cada peça pelo material.
+- **Tiros com variação**: de duas a quatro gravações por arma em vez de
+  uma, e o seu tiro é outra gravação (estéreo, mais grave).
+- Bala estalando na parede (concreto e metal) e a cápsula do seu tiro no
+  chão.
+- **O som do lugar**: cada mapa tem reverberação e fundo próprios — a
+  estação ecoa e tem trem passando no túnel ao lado, a neve abafa e
+  venta. Limitador na saída: tiroteio cheio não estoura.
+- Teste novo `SomDoMapa`.
+
 ### Arte de verdade a caminho
 - `tools/baixar_pacotes.py`: um comando baixa do Poly Haven (CC0) as
   texturas fotografadas, os objetos de cenário e os céus dos mapas para

@@ -25,6 +25,12 @@ public static class Sfx
 	public const string Folder = "res://assets/audio";
 
 	public const string BusSfx = "SFX";
+
+	/// <summary>O que soa dentro do mapa — passo, tiro, corpo — passa por
+	/// aqui e ganha a reverberação do lugar (<see cref="SetRoom"/>). O
+	/// retorno que é só seu (marcador de acerto, abate) vai direto ao
+	/// SFX, seco: ele não está no mundo.</summary>
+	public const string BusWorld = "Mundo";
 	public const string BusUi = "Interface";
 	public const string BusMusic = "Musica";
 
@@ -68,7 +74,7 @@ public static class Sfx
 		var player = new AudioStreamPlayer3D
 		{
 			Stream = stream,
-			Bus = BusSfx,
+			Bus = BusWorld,
 			VolumeDb = volumeDb,
 			MaxDistance = Mathf.Max(Mathf.Max(radius, reach), 1f),
 
@@ -86,6 +92,34 @@ public static class Sfx
 	/// marcador de acerto). Soa igual nos dois ouvidos.</summary>
 	public static void Local(string name, float volumeDb = 0f) => Flat(name, BusSfx, volumeDb);
 
+	/// <summary>Som do seu corpo no mundo (seu tiro, seu passo, sua
+	/// recarga): sem posição, mas com a reverberação do lugar.</summary>
+	public static void Own(string name, float volumeDb = 0f) => Flat(name, BusWorld, volumeDb);
+
+	/// <summary>
+	/// A acústica do lugar: <paramref name="size"/> de 0 (cubículo) a 1
+	/// (galpão), <paramref name="wet"/> quanto de reverberação entra (0
+	/// desliga). Cada mapa diz a sua (<see cref="MapInfo"/>); tiro em
+	/// estação de metrô e tiro na neve não soam igual.
+	/// </summary>
+	public static void SetRoom(float size, float wet)
+	{
+		EnsureBuses();
+
+		int bus = AudioServer.GetBusIndex(BusWorld);
+		if (bus < 0 || AudioServer.GetBusEffectCount(bus) == 0) return;
+		if (AudioServer.GetBusEffect(bus, 0) is not AudioEffectReverb reverb) return;
+
+		reverb.RoomSize = Mathf.Clamp(size, 0f, 1f);
+		reverb.Wet = Mathf.Clamp(wet, 0f, 1f);
+		AudioServer.SetBusEffectEnabled(bus, 0, wet > 0.001f);
+	}
+
+	/// <summary>Fundo do mapa em laço (vento, zumbido de máquina), filho
+	/// de <paramref name="owner"/>. Null se o arquivo não existir.</summary>
+	public static AudioStreamPlayer Ambience(Node owner, string name, float volumeDb = -14f) =>
+		Looped(owner, name, BusSfx, volumeDb);
+
 	/// <summary>Som de interface: cliques, passar o mouse.</summary>
 	public static void Ui(string name, float volumeDb = 0f) => Flat(name, BusUi, volumeDb);
 
@@ -93,9 +127,13 @@ public static class Sfx
 	/// Música em loop, filha de <paramref name="owner"/>: para quando o
 	/// dono sai de cena. Devolve null se o arquivo não existir.
 	/// </summary>
-	public static AudioStreamPlayer Music(Node owner, string name, float volumeDb = -8f)
+	public static AudioStreamPlayer Music(Node owner, string name, float volumeDb = -8f) =>
+		Looped(owner, name, BusMusic, volumeDb);
+
+	private static AudioStreamPlayer Looped(Node owner, string name, string bus, float volumeDb)
 	{
 		EnsureBuses();
+		if (string.IsNullOrEmpty(name)) return null;
 
 		AudioStream stream = LoadAny($"{Folder}/{name}");
 		if (stream == null) return null;
@@ -116,7 +154,7 @@ public static class Sfx
 			stream.Set("loop", true);
 		}
 
-		var player = new AudioStreamPlayer { Stream = stream, Bus = BusMusic, VolumeDb = volumeDb, Autoplay = true };
+		var player = new AudioStreamPlayer { Stream = stream, Bus = bus, VolumeDb = volumeDb, Autoplay = true };
 		owner.AddChild(player);
 		return player;
 	}
@@ -237,5 +275,26 @@ public static class Sfx
 			AudioServer.SetBusName(index, bus);
 			AudioServer.SetBusSend(index, "Master");
 		}
+
+		// O mundo desemboca no SFX (o volume de efeitos vale para os
+		// dois) e carrega a reverberação do mapa, desligada até alguém
+		// chamar SetRoom.
+		if (AudioServer.GetBusIndex(BusWorld) < 0)
+		{
+			int index = AudioServer.BusCount;
+			AudioServer.AddBus(index);
+			AudioServer.SetBusName(index, BusWorld);
+			AudioServer.SetBusSend(index, BusSfx);
+			AudioServer.AddBusEffect(index, new AudioEffectReverb
+			{
+				RoomSize = 0.3f, Damping = 0.6f, Spread = 0.9f, Hipass = 0.25f, Dry = 1f, Wet = 0f, PredelayMsec = 30f
+			}, 0);
+			AudioServer.SetBusEffectEnabled(index, 0, false);
+		}
+
+		// Teto na saída: dezesseis fuzis ao mesmo tempo não podem
+		// estourar a caixa de som.
+		if (AudioServer.GetBusEffectCount(0) == 0)
+			AudioServer.AddBusEffect(0, new AudioEffectHardLimiter { CeilingDb = -0.5f, PreGainDb = 0f, Release = 0.1f });
 	}
 }

@@ -4,8 +4,9 @@ using Godot;
 /// Os ruídos do corpo, publicados no <see cref="NoiseBus"/> — o mesmo
 /// para o jogador e para o bot, que ouvem e são ouvidos pela mesma regra:
 ///
-/// - **Passo** por distância percorrida, não por tempo: a cadência segue
-///   a velocidade sozinha, e andar devagar faz menos barulho.
+/// - **Passo** a cada passada (a distância entre um pé e o outro, do
+///   <see cref="BodyNoiseProfile"/>), não por tempo: o som cai com o pé
+///   da animação e a cadência segue a velocidade sozinha.
 /// - **Baque** ao pousar.
 /// - **Rugido** já no começo e a cada meio segundo enquanto dura.
 ///
@@ -32,7 +33,7 @@ public sealed class BodyNoise
 		_profile = profile ?? new BodyNoiseProfile();
 	}
 
-	public void Update(double delta, bool grounded, Vector3 velocity, bool isWolf, bool howling, bool silent)
+	public void Update(double delta, bool grounded, Vector3 velocity, bool isWolf, bool howling, bool silent, bool sprinting = false)
 	{
 		if (grounded && _wasAirborne)
 			NoiseBus.Emit(_source.GlobalPosition, _profile.Land, NoiseKind.Land, _source);
@@ -54,12 +55,20 @@ public sealed class BodyNoise
 
 		if (!grounded || silent) return;
 
+		float stride = !isWolf ? _profile.StrideHuman : sprinting ? _profile.StrideWolfSprint : _profile.StrideWolf;
 		float speed = new Vector3(velocity.X, 0, velocity.Z).Length();
-		if (speed < StillSpeed) return;
+
+		// Parado, o próximo pé cai depois de meia passada: quem sai do
+		// lugar não espera um passo inteiro para fazer barulho.
+		if (speed < StillSpeed)
+		{
+			_walked = stride * 0.5f;
+			return;
+		}
 
 		_walked += speed * (float)delta;
-		if (_walked < _profile.StepDistance) return;
-		_walked = 0;
+		if (_walked < stride) return;
+		_walked -= stride;
 
 		NoiseBus.Emit(_source.GlobalPosition, isWolf ? _profile.StepWolf : _profile.StepHuman, NoiseKind.Step, _source);
 	}

@@ -32,6 +32,11 @@ public partial class Weapon : Node3D
 	[Signal] public delegate void HitConfirmedEventHandler(bool headshot);
 	[Signal] public delegate void GrenadesChangedEventHandler(int left);
 
+	/// <summary>O tiro parou no cenário, neste ponto. Uma vez por
+	/// disparo (na escopeta, o primeiro chumbo). Só enfeite: o som e a
+	/// marca da bala na parede.</summary>
+	[Signal] public delegate void WorldHitEventHandler(Vector3 position, Vector3 normal, Node collider);
+
 	/// <summary>Munição do carregador mudou, ou a recarga começou.</summary>
 	[Signal] public delegate void AmmoChangedEventHandler(int inMag, int magSize, bool reloading);
 

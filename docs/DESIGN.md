@@ -582,12 +582,24 @@ de movimento, e dar a ele a opção de abrir mão disso criaria um lobo
 furtivo, que é o oposto da forma. É isso que dá ao agachamento um
 propósito tático em vez de ser só um botão de ficar menor.
 
-O passo sai por distância percorrida, não por tempo: a cadência
-acompanha a velocidade sozinha e andar devagar faz menos barulho.
+O passo sai a cada **passada** — a distância entre um pé no chão e o
+outro, que é a do clipe que está tocando (1,19 m o humano correndo,
+1,05 m o lobo, 0,97 m na corrida de quatro) — e não por tempo: o som
+cai com o pé da animação e a cadência acompanha a velocidade sozinha.
+Até a v0.27 era um ruído a cada 2,2 m, metade dos passos que se via; o
+bot agora ouve cada pisada, como o jogador. A fase da pisada não é
+amarrada ao clipe (o ruído é regra de jogo e não pode depender de
+animação, que o servidor não toca): só a cadência.
 
 O áudio acompanha o evento em vez de substituí-lo. O que o bot ouve
 e o que o jogador ouve precisam ser a mesma coisa, senão o jogador não
 consegue prever a reação.
+
+O que é só enfeite pode variar à vontade, porque não muda quem ouve
+quem: o som do passo conforme o chão (metal, neve, madeira, terra), a
+reverberação e o fundo de cada mapa, a bala estalando na parede, a
+cápsula no chão, e o seu tiro ser outra gravação (estéreo, com mais
+grave) que a do tiro dos outros.
 
 ### O áudio
 

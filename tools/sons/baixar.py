@@ -24,7 +24,13 @@ MUSCStngr_LossMallet_OS_01 MUSCStngr_LossOrchestral_OS_01 MUSCStngr_MarchingSnar
 SWSH_Swoosh_OS_01 SWSH_Swoosh_OS_02 SWSH_Swoosh_OS_03 SWSH_Swoosh_OS_04 SWSH_Swoosh_OS_05 SWSH_Swoosh_OS_06 UIMisc_BelltreeUp_OS_01
 VOXMale_Male01Death_OS_01 VOXMale_Male01Death_OS_02 VOXMale_Male01Death_OS_03 VOXMale_Male01Hurt_OS_01 VOXMale_Male01Hurt_OS_02 VOXMale_Male01Hurt_OS_03
 VOXMale_Male02Death_OS_01 VOXMale_Male02Death_OS_02 VOXMale_Male02Death_OS_03 VOXMale_Male02Hurt_OS_01 VOXMale_Male02Hurt_OS_02 VOXMale_Male02Hurt_OS_03
-WHSH_WhooshMedium_OS_01 WHSH_WhooshMedium_OS_02 WHSH_WhooshMedium_OS_03 WHSH_WhooshSmall_OS_01 WHSH_WhooshSmall_OS_02 WHSH_WhooshSmall_OS_03""".split()
+WHSH_WhooshMedium_OS_01 WHSH_WhooshMedium_OS_02 WHSH_WhooshMedium_OS_03 WHSH_WhooshSmall_OS_01 WHSH_WhooshSmall_OS_02 WHSH_WhooshSmall_OS_03
+AMBInd_RoomToneMachineRoom_LOOP_01 MACHHvac_HVAC_LOOP_01 TRNSbwy_SubwayPassbyEnter_OS_01 TRNSbwy_SubwayPassbyExit_OS_01
+BLLTShel_ShellCasingConcrete_OS_01 BLLTShel_ShellCasingConcrete_OS_02 BLLTShel_ShellCasingConcrete_OS_03
+METLImpt_MetalHitSurface_OS_01 METLImpt_MetalHitSurface_OS_02 METLImpt_MetalHitSurface_OS_03""".split()
+# Passos e pousos por superfície.
+for surface in ("Metal", "Snow", "Wood", "Grass"):
+    meta += [f"FEETHmn_Shoe{surface}Run_OS_0{i}" for i in range(1, 6)] + [f"FEETHmn_Shoe{surface}Land_OS_0{i}" for i in (1, 2)]
 for m in meta: items.append((META[0], META[1] + m + ".ogg", "oc_" + m + ".ogg"))
 fire_prep = {"AR-15": ["D_32P", "D_24P"], "SKS": ["U_14P", "U_19P"], "AK-47": ["C_28P", "C_31P"],
              "Carl Gustav M45": ["G_31P", "G_20P"], "Nova": ["O_21P", "O_17P"], "Walther PPQ": ["X_39P", "X_31P"]}
@@ -37,7 +43,7 @@ for d, fs in fire_master.items():
 ken = {"ui": "rollover1.wav rollover2.wav rollover3.wav click1.wav click2.wav click3.wav",
        "if": "error_004.wav tick_001.wav tick_002.wav tick_004.wav confirmation_002.wav bong_001.wav",
        "rpg": "cloth_1.ogg cloth_belt.ogg cloth_belt_2.ogg metal_click.ogg metal_latch.ogg knife_slice.ogg knife_slice_2.ogg",
-       "imp": "impact_generic_light_000.ogg impact_generic_light_001.ogg impact_generic_light_002.ogg impact_metal_light_000.ogg impact_metal_light_001.ogg impact_metal_light_002.ogg impact_soft_heavy_000.ogg impact_soft_heavy_001.ogg impact_soft_heavy_002.ogg",
+       "imp": "impact_plate_light_000.ogg impact_plate_light_001.ogg impact_plate_light_002.ogg impact_mining_000.ogg impact_mining_001.ogg impact_mining_002.ogg impact_generic_light_000.ogg impact_generic_light_001.ogg impact_generic_light_002.ogg impact_metal_light_000.ogg impact_metal_light_001.ogg impact_metal_light_002.ogg impact_soft_heavy_000.ogg impact_soft_heavy_001.ogg impact_soft_heavy_002.ogg",
        "sci": "explosion_crunch_000.ogg explosion_crunch_001.ogg explosion_crunch_002.ogg explosion_crunch_003.ogg explosion_crunch_004.ogg low_frequency_explosion_000.ogg low_frequency_explosion_001.ogg"}
 for k, names in ken.items():
     repo, base = K[k]

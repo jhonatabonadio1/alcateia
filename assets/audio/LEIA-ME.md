@@ -33,16 +33,35 @@ muito bem-vindas aqui.
 
 | Arquivo | Quando | Alcance |
 |---|---|---|
-| `passo` | Passo humano (correndo; agachado e Shift são mudos) | 13 m |
+| `passo` | Passo humano (correndo; agachado e Shift são mudos), um por passada | 13 m |
 | `lobo_passo` | Passo de lobo, mais pesado, com unha | 20 m |
 | `pouso` | Humano tocando o chão depois de pular ou cair | 17 m |
 | `lobo_pouso` | Lobo tocando o chão | 17 m |
+| `passo_metal` `passo_neve` `passo_madeira` `passo_terra` | O mesmo passo, conforme o chão. Vale para os quatro acima: `lobo_pouso_neve`... Sem o arquivo da superfície, toca o padrão (concreto) | igual |
 | `lobo_transformar` | Também é o uivo (R, de lobo), uma vez por uivo — veja `WorldAudio.HowlSound` | 45 m |
 | `tiro` | Tiro genérico, se a arma não tiver o seu | da arma |
-| `tiro_m16a2` `tiro_sg552` `tiro_ak47` `tiro_ump45` `tiro_m3` `tiro_m9` | Tiro de cada arma | da arma |
+| `tiro_m16a2` `tiro_sg552` `tiro_ak47` `tiro_ump45` `tiro_m3` `tiro_m9` | Tiro de cada arma, ouvido de fora. Com variações (`_1`, `_2`...): em rajada, um arquivo só soa como máquina | da arma |
+| `tiro_proprio_ak47` etc. | O **seu** tiro com aquela arma: estéreo, mais grave. Sem ele, usa o `tiro_` da arma | — |
 | `tiro_distante` | Tiro de longe (mais de 35 m), abafado | da arma |
 | `tiro_distante_ak47` etc. | Versão distante de uma arma específica | da arma |
 | `granada_explosao` | Explosão da granada de choque | ~39 m |
+
+## O lugar
+
+| Arquivo | Quando |
+|---|---|
+| `ambiente_hangar` `ambiente_metro` `ambiente_vila` `ambiente_polar` | Fundo do mapa, em laço (zumbido, vento). O nome e o volume estão no mapa, em `scripts/meta/Maps.cs` |
+| `metro_trem` | O trem no túnel ao lado, de vez em quando (`EventSound` do mapa) |
+| `impacto` / `impacto_metal` | A bala batendo na parede, no ponto (25 m) |
+| `capsula` | A cápsula do seu tiro tocando o chão |
+
+Cada mapa também tem a reverberação dele (`RoomSize` e `RoomWet` em
+`Maps.cs`): estação de metrô ecoa, neve abafa. Ela vale para tudo o que
+soa no mundo; o marcador de acerto e a interface ficam secos.
+
+O chão diz do que é feito por um metadado `piso` no corpo de colisão
+(`metal`, `neve`, `madeira`, `terra`; sem nada é concreto). O gerador
+de mapas põe sozinho, pelo material da peça.
 
 ## Corpo — só de perto (12 m)
 
@@ -91,7 +110,10 @@ Os bots não ouvem estes, então eles não carregam informação de longe.
 ## Volumes
 
 Os sons saem em três canais — **SFX**, **Interface** e **Musica** —
-criados por código (`scripts/core/Sfx.cs`) e ligados ao Master. Por
+criados por código (`scripts/core/Sfx.cs`) e ligados ao Master. O que
+soa dentro do mapa passa antes pelo canal **Mundo** (que carrega a
+reverberação e desemboca no SFX), e a saída tem um limitador: dezesseis
+fuzis juntos não estouram. Por
 isso eles não aparecem na aba Audio do editor. Quando houver tela de
 opções, cada canal ganha um controle de volume.
 

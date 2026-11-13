@@ -116,7 +116,12 @@ public partial class Weapon
 
 			// A linha para na parede em vez de atravessá-la.
 			if (i == 0) tracerEnd = impact;
-			if (hit == null) continue;
+			if (hit == null)
+			{
+				if (i == 0 && collider != null)
+					EmitSignal(SignalName.WorldHit, impact, _lastNormal, collider);
+				continue;
+			}
 
 			bool headshot = IsHeadshot(collider, impact);
 
@@ -234,6 +239,9 @@ public partial class Weapon
 		timer.Timeout += node.QueueFree;
 	}
 
+	/// <summary>A normal da superfície do último raio que bateu.</summary>
+	private Vector3 _lastNormal = Vector3.Up;
+
 	private Health Raycast(Vector3 from, Vector3 to, out Vector3 impact, out Node collider)
 	{
 		impact = to;
@@ -252,6 +260,7 @@ public partial class Weapon
 		}
 
 		impact = (Vector3)result["position"];
+		_lastNormal = (Vector3)result["normal"];
 
 		if (result["collider"].Obj is not Node node)
 			return null;

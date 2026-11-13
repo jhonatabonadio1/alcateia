@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 /// <summary>
-/// O barulho do corpo (resources/body/ruido.tres): passo a cada 2,2 m
-/// correndo, nada agachado nem andando devagar, baque ao pousar, rugido a
+/// O barulho do corpo (resources/body/ruido.tres): um passo por passada
+/// (1,19 m correndo), nada agachado nem andando devagar, baque ao pousar, rugido a
 /// cada meio segundo. É o que os bots ouvem — mudar isso muda a
 /// furtividade inteira.
 /// </summary>
 public sealed class NoiseTest : RegressionTest
 {
 	public override string Name => "Ruido";
-	public override string Description => "passo a cada 2,2 m correndo, silêncio agachado e com Shift, baque ao pousar, rugido";
+	public override string Description => "um passo por passada correndo, silêncio agachado e com Shift, baque ao pousar, rugido";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -25,9 +25,9 @@ public sealed class NoiseTest : RegressionTest
 
 		try
 		{
-			// Correndo 3 m/s por 3 s: 9 m, quatro passos de 2,2 m.
+			// Correndo 3,24 m/s por 3 s: uns 9,5 m, oito passadas de 1,19 m.
 			int steps = await Walk(b, heard, "move_forward");
-			b.Check(steps is 4 or 3, $"passos correndo em 3 s: {steps} (esperado 4)");
+			b.Check(steps is >= 7 and <= 9, $"passos correndo em 3 s: {steps} (esperado 8)");
 			float radius = heard.Find(n => n.Kind == NoiseKind.Step).Radius;
 			b.Near(13, radius, 0.01, "raio do passo humano");
 

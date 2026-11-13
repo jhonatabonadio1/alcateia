@@ -21,6 +21,14 @@ public partial class CombatantAudio : Node
 {
 	[Export] public float CosmeticRange = 12f;
 
+	/// <summary>Até onde se ouve a bala batendo na parede, em metros.</summary>
+	[Export] public float ImpactRange = 25f;
+
+	/// <summary>Quanto depois do tiro a cápsula toca o chão, em segundos,
+	/// e o intervalo mínimo entre duas (em rajada, uma a cada tanto).</summary>
+	[Export] public float CasingDelay = 0.42f;
+	[Export] public float CasingInterval = 0.28f;
+
 	/// <summary>Intervalo mínimo entre gemidos de dor. Uma rajada de
 	/// nove chumbos não pode virar nove gritos.</summary>
 	[Export] public float HurtInterval = 0.4f;
@@ -36,6 +44,7 @@ public partial class CombatantAudio : Node
 	private int _lastMag;
 	private int _lastGrenades = -1;
 	private double _hurtTimer;
+	private double _casingTimer;
 	private double _quiet = 0.5;
 
 	public override void _Ready()
@@ -51,6 +60,7 @@ public partial class CombatantAudio : Node
 
 		_weapon.Fired += OnFired;
 		_weapon.HitConfirmed += OnHit;
+		_weapon.WorldHit += OnWorldHit;
 		_weapon.AmmoChanged += OnAmmo;
 		_weapon.SlotChanged += OnSlot;
 		_weapon.GrenadesChanged += OnGrenades;
@@ -64,6 +74,7 @@ public partial class CombatantAudio : Node
 	{
 		_hurtTimer -= delta;
 		_quiet -= delta;
+		_casingTimer -= delta;
 
 		if (_health.IsDead) return;
 
@@ -86,7 +97,25 @@ public partial class CombatantAudio : Node
 		// O tiro toca pelo NoiseBus, no WorldAudio. A faca não faz ruído
 		// para os bots, então aqui ela é só o golpe de perto.
 		if (_weapon.HumanSlot == Slot.Knife)
+		{
 			Play("faca");
+			return;
+		}
+
+		// A cápsula no chão, só a sua: no meio do tiroteio ninguém ouve
+		// a dos outros.
+		if (_local && _weapon.Held != null && _casingTimer <= 0)
+		{
+			_casingTimer = CasingInterval;
+			GetTree().CreateTimer(CasingDelay).Timeout += () => Sfx.Own("capsula", -4f);
+		}
+	}
+
+	/// <summary>A bala na parede: o estalo no ponto onde bateu.</summary>
+	private void OnWorldHit(Vector3 position, Vector3 normal, Node collider)
+	{
+		string surface = Surfaces.Of(collider);
+		Sfx.At(Sfx.First($"impacto_{surface}", "impacto"), position, ImpactRange, -3f);
 	}
 
 	private void OnHit(bool headshot)
@@ -168,7 +197,7 @@ public partial class CombatantAudio : Node
 	{
 		if (name == null) return;
 
-		if (_local) Sfx.Local(name);
+		if (_local) Sfx.Own(name);
 		else Sfx.At(name, _body.GlobalPosition, CosmeticRange);
 	}
 }

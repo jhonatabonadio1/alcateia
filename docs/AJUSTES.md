@@ -426,8 +426,20 @@ Abra no Inspector e mude ali — vale para os dois.
 | `StepWolf` | 20 |
 | `Land` | 17 |
 | `Howl` | 45 (já no começo do rugido e a cada 0,5 s) |
-| `StepDistance` | 2,2 m entre passos |
+| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,05 / 0,97 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça |
 | `NoiseRadius` da arma | 30 a 60 (seção 7) |
+
+O som do lugar fica no mapa (`scripts/meta/Maps.cs`):
+
+| Campo | Hangar | Metrô | Vila | Polar | O que é |
+|---|---|---|---|---|---|
+| `RoomSize` / `RoomWet` | 0,75 / 0,16 | 0,7 / 0,24 | 0,45 / 0,1 | 0,3 / 0,05 | Reverberação: tamanho (0–1) e quanto entra |
+| `Ambience` / `AmbienceDb` | hangar / −26 | metro / −16 | vila / −12 | polar / −12 | Fundo em laço e volume |
+| `EventSound` / `EventEvery` | — | metro_trem / 70–140 s | — | — | Som eventual |
+
+No nó `CombatantAudio`: `ImpactRange` 25 m (bala na parede),
+`CasingDelay` 0,42 s e `CasingInterval` 0,28 s (cápsula no chão). No
+`WorldAudio`: `OwnStepVolume` −3 dB.
 
 Agachado e com Shift não fazem ruído; a faca é silenciosa. Teste:
 `Ruido`.

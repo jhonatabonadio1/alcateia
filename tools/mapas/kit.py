@@ -54,6 +54,18 @@ def olhar(yaw, queda):
     return ((cy, sy * sp, sy * cp), (0, cp, -sp), (-sy, cy * sp, cy * cp))
 
 
+# O que o jogo ouve ao pisar ou atirar numa peça (scripts/visual/Surfaces.cs):
+# sai da textura do material. Sem entrada aqui é concreto, o som padrão.
+SUPERFICIES = {"metal_pintado": "metal", "metal_ondulado": "metal", "chapa_xadrez": "metal", "ferrugem": "metal",
+               "neve": "neve", "madeira": "madeira", "areia": "terra"}
+
+
+def superficie(material):
+    if material.get("textura") in SUPERFICIES:
+        return SUPERFICIES[material["textura"]]
+    return "metal" if material.get("metal", 0) >= 0.5 else ""
+
+
 class Mapa:
     def __init__(self, ident, nome, largura, fundo):
         self.id, self.nome = ident, nome
@@ -209,7 +221,11 @@ class Mapa:
         for (g, nome, c, tam, mat, rows, colide, forma) in self.pecas:
             chave = (forma, *[round(x, 4) for x in tam])
             if colide:
-                o += [f'[node name="{nome}" type="StaticBody3D" parent="{g}"]', f"transform = {xform(c, rows)}", "",
+                piso = superficie(self.materiais.get(mat, {}))
+                o += [f'[node name="{nome}" type="StaticBody3D" parent="{g}"]', f"transform = {xform(c, rows)}"]
+                if piso:
+                    o.append(f'metadata/piso = "{piso}"')
+                o += ["",
                       f'[node name="Colisao" type="CollisionShape3D" parent="{g}/{nome}"]',
                       f'shape = SubResource("{formas[chave]}")', "",
                       f'[node name="Malha" type="MeshInstance3D" parent="{g}/{nome}"]',
