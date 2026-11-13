@@ -834,8 +834,6 @@ public partial class RoomScreen : LobbyScreen
 	private void SetDifficulty(int level)
 	{
 		Change("Bots", new[] { "fáceis", "médios", "difíceis" }[level], () => S.Difficulty = (BotLevel)level);
-		foreach (RoomMember bot in _room.Members.Where(m => m.IsBot))
-			bot.Rank = Ranks.ForBot(bot.Name, level);
 		Refresh();
 	}
 

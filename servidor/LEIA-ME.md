@@ -44,7 +44,7 @@ As rotas de jogador pedem `Authorization: Bearer <token>`; as de frota,
 | `GET /v1/ranking?limit=` | jogador | Os primeiros por XP |
 | `GET /v1/rooms` | jogador | As salas abertas |
 | `GET /v1/matches` | jogador | As últimas partidas da conta |
-| `POST /v1/fleet/heartbeat` `{id, address, port, players}` | frota | Um servidor de partida bate ponto. A resposta traz `assignment` quando há partida para ele |
+| `POST /v1/fleet/heartbeat` `{id, address, port, players}` | frota | Um servidor de partida bate ponto. A resposta traz `assignment` quando há partida para ele; em `players[]`, bot tem `accountId` negativo e `owner` |
 | `POST /v1/matches` `{matchKey, serverId, scoreBlue, scoreOrange, players[]}` | frota | O resultado. 409 se já foi entregue |
 
 ## Saguão — WebSocket em `/v1/lobby?token=`
@@ -61,7 +61,9 @@ segunda derruba a primeira.
 | `room.team` | `team` (1 azul, 2 laranja) | |
 | `room.ready` | `ready` | |
 | `room.settings` | `settings` | Só o dono |
-| `room.start` | | Só o dono, com todos prontos |
+| `room.bot.add` | `team` | Só o dono: põe um bot no time (se couber) |
+| `room.bot.remove` | `id` (negativo) | Só o dono: tira o bot |
+| `room.start` | | Só o dono, com todos prontos (bot está sempre pronto) |
 | `chat` | `text` | Na sala, para a sala; fora, para o saguão |
 | `ping` | | |
 
@@ -69,7 +71,7 @@ segunda derruba a primeira.
 |---|---|
 | `hello` | Quem você é e quantos estão online |
 | `rooms` | A lista de salas (a cada mudança) |
-| `room` | A sala em que você está: regras, membros, estado |
+| `room` | A sala em que você está: regras, membros, estado. Os bots vêm em `members` com `bot: true`, `id` negativo, `owner` (a conta do dono da sala, cuja máquina os move) e sem `xp` |
 | `left` | Você saiu da sala |
 | `chat` | `from`, `text` |
 | `match.start` | `address`, `port`, `matchKey`, `accountId`, `expires`, `ticket`, `settings` — hora de ligar no servidor de partida |

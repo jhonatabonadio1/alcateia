@@ -818,6 +818,15 @@ espelhada), `Weapon.Puppet` (o boneco não fere) e `Match.Online`
 disso é exercitado — os testes de regressão rodam o jogo offline como
 sempre.
 
+**Bots online.** A sala online aceita bots (o dono põe e tira). Na
+partida eles são bots de verdade só na máquina do dono da sala
+(`MatchSetup.SetUpOnline` → `NetMatch.Own`), que fala por eles; nas
+outras são bonecos (`Bot.RemoteIsBot`). O jogador e os bots da mesma
+máquina se acertam ali mesmo: `Weapon.Damage` e `Grenade` avisam o
+`NetMatch` (`BeginLocalHit`/`LocalKill`) e o abate volta do servidor
+como qualquer outro. Bot não tem patente em lugar nenhum
+(`Ranks.None`).
+
 O `MultiplayerSynchronizer` do `player.tscn` é resto de um primeiro
 desenho e não é usado: a ligação é própria (`SceneMultiplayer` só do nó
 `NetMatch`), para o resto da cena continuar offline.

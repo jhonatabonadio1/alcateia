@@ -19,6 +19,10 @@ public static class Ranks
 {
 	public const int Count = 30;
 
+	/// <summary>Sem patente: os bots (decisão do Jhon, 13/11). Patente é
+	/// de quem joga; o bot aparece sem insígnia, só com "Bot".</summary>
+	public const int None = -1;
+
 	private static readonly string[] Families =
 	{
 		"Filhote", "Batedor", "Rastreador", "Caçador", "Sentinela",
@@ -39,9 +43,9 @@ public static class Ranks
 	public static int Family(int rank) => Clamp(rank) / 3;
 	public static int Tier(int rank) => Clamp(rank) % 3;
 
-	public static string NameOf(int rank) => $"{Families[Family(rank)]} {Roman[Tier(rank)]}";
+	public static string NameOf(int rank) => rank < 0 ? "Bot" : $"{Families[Family(rank)]} {Roman[Tier(rank)]}";
 	public static string FamilyName(int rank) => Families[Family(rank)];
-	public static Color ColorOf(int rank) => FamilyColors[Family(rank)];
+	public static Color ColorOf(int rank) => rank < 0 ? new Color("8a93a0") : FamilyColors[Family(rank)];
 
 	/// <summary>XP acumulado necessário para chegar à patente.</summary>
 	public static long XpFor(int rank)
@@ -73,14 +77,4 @@ public static class Ranks
 	/// <summary>Presas de recompensa ao ser promovido para a patente.
 	/// Crescem com a família: promoção alta tem que valer a espera.</summary>
 	public static int PromotionReward(int rank) => 150 + 100 * Family(rank);
-
-	/// <summary>Patente fixa de um bot, derivada do nome — sempre a
-	/// mesma para o mesmo bot, para o placar não sortear a cada partida.</summary>
-	public static int ForBot(string name, int difficulty)
-	{
-		int hash = 0;
-		foreach (char c in name ?? "") hash = hash * 31 + c;
-		int baseRank = 2 + difficulty * 5;
-		return Clamp(baseRank + Mathf.Abs(hash) % 6);
-	}
 }

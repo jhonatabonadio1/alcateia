@@ -19,6 +19,15 @@ using System.Linq;
 /// - **o abate, o placar e o relógio** são do servidor
 ///   (<see cref="Referee"/>): a partida daqui só mostra o que ele diz.
 ///
+/// **Bots.** Os bots da sala são bots de verdade só na máquina do dono
+/// da sala (<see cref="Own"/>): ela os move, manda o estado e os ataques
+/// deles, aplica o dano que levam e conta quando morrem — fala por eles
+/// como fala por si. Nas outras máquinas são bonecos, iguais aos dos
+/// jogadores. Acerto entre dois corpos da mesma máquina (o jogador e um
+/// bot dele, ou dois bots) é aplicado ali mesmo, e o servidor só é
+/// avisado da autoria (<see cref="BeginLocalHit"/>) para o abate valer.
+/// Se o dono sai, os bots saem com ele.
+///
 /// Nasce dentro da cena da partida, criado pelo <see cref="MatchSetup"/>,
 /// e some com ela.
 /// </summary>
@@ -38,6 +47,7 @@ public partial class NetMatch : Node
 	private Weapon _weapon;
 	private FormController _form;
 	private readonly Dictionary<long, Bot> _puppets = new();
+	private readonly Dictionary<long, Bot> _owned = new();   // os bots que esta máquina move
 	private double _sendTimer, _joinTimer;
 	private bool _hitInProgress, _left;
 
@@ -83,6 +93,69 @@ public partial class NetMatch : Node
 		puppet.GetNode<Health>("Health").Remote = hit => SendHit(id, hit);
 	}
 
+	/// <summary>Um bot que esta máquina move e pelo qual ela fala.</summary>
+	public void Own(Bot bot)
+	{
+		long id = bot.NetId;
+		_owned[id] = bot;
+
+		var weapon = bot.GetNode<Weapon>("Weapon");
+		weapon.Fired += () => SendBotAttack(bot, weapon.CurrentSlot);
+		weapon.Thrown += () => SendBotAttack(bot, Slot.Grenade);
+
+		// Morte sem autor (queda, a própria granada): o servidor fica sabendo.
+		bot.GetNode<Health>("Health").Died += _ =>
+		{
+			if (!_hitInProgress && Joined) SendDied(id, 0, KillCause.Fall, "", false, new List<long>());
+		};
+	}
+
+	/// <summary>Como o servidor conhece este corpo: a minha conta, a do
+	/// dono do boneco, ou o número do bot. Zero se não é da partida.</summary>
+	private long IdOf(Node body) =>
+		body == null ? 0
+		: body == _player ? OnlineMatch.AccountId
+		: body is Bot bot ? bot.OnlineId
+		: 0;
+
+	/// <summary>O corpo desta máquina com este número: o jogador ou um bot dela.</summary>
+	private Node LocalBody(long id) =>
+		id == OnlineMatch.AccountId ? _player : _owned.TryGetValue(id, out Bot bot) ? bot : null;
+
+	// ------------------------------------------------------------ acerto entre dois corpos daqui
+
+	/// <summary>
+	/// Antes de aplicar, aqui mesmo, o dano de um corpo desta máquina em
+	/// outro (o jogador num bot dele, um bot no jogador, bot em bot):
+	/// avisa o servidor da autoria — sem isso o juiz não aceita o abate —
+	/// e marca que a morte que vier tem autor.
+	/// </summary>
+	public void BeginLocalHit(Node attacker, Health target, float amount)
+	{
+		long from = IdOf(attacker), to = IdOf(target?.GetParent());
+		if (!Joined || from == 0 || to == 0 || from == to) return;
+
+		_hitInProgress = true;
+		BinaryWriter w = NetWire.Begin(NetWire.Touch, out MemoryStream stream);
+		w.Write(from);
+		w.Write(to);
+		w.Write(amount);
+		Send(stream);
+	}
+
+	public void EndLocalHit() => _hitInProgress = false;
+
+	/// <summary>Um corpo desta máquina matou outro: a vítima conta ao
+	/// servidor, que devolve o abate para todos (inclusive para cá).</summary>
+	public void LocalKill(Health victim, Node killer, KillCause cause, string weapon, bool headshot)
+	{
+		long who = IdOf(victim.GetParent()), by = IdOf(killer);
+		if (!Joined || who == 0) return;
+
+		List<long> assisters = victim.TakeAssists(killer).Select(IdOf).Where(id => id != 0).ToList();
+		SendDied(who, by, cause, weapon, headshot, assisters);
+	}
+
 	public override void _ExitTree()
 	{
 		if (Current == this) Current = null;
@@ -110,6 +183,14 @@ public partial class NetMatch : Node
 		_sendTimer -= delta;
 		if (_sendTimer > 0) return;
 		_sendTimer = 1.0 / NetWire.StateRate;
+
+		foreach (var (id, bot) in _owned)
+		{
+			BinaryWriter bw = NetWire.Begin(NetWire.BotState, out MemoryStream botStream);
+			bw.Write(id);
+			bot.NetSnapshot().Write(bw);
+			Send(botStream, reliable: false);
+		}
 
 		var state = new NetState
 		{
@@ -157,11 +238,26 @@ public partial class NetMatch : Node
 		Send(stream);
 	}
 
+	private void SendBotAttack(Bot bot, Slot slot)
+	{
+		if (!Joined) return;
+
+		BinaryWriter w = NetWire.Begin(NetWire.BotAttack, out MemoryStream stream);
+		w.Write(bot.NetId);
+		w.Write((byte)slot);
+		w.Write(bot.Rotation.Y);
+		w.Write(bot.HeadPitch);
+		Send(stream);
+	}
+
 	private void SendHit(long target, RemoteHit hit)
 	{
 		if (!Joined) return;
 
-		BinaryWriter w = NetWire.Begin(NetWire.Hit, out MemoryStream stream);
+		// Quem acertou: eu, ou um bot que esta máquina move.
+		long shooter = hit.Attacker is Bot { Remote: false } bot ? bot.NetId : 0;
+		BinaryWriter w = NetWire.Begin(shooter != 0 ? NetWire.BotHit : NetWire.Hit, out MemoryStream stream);
+		if (shooter != 0) w.Write(shooter);
 		w.Write(target);
 		w.Write(hit.Amount);
 		w.Write(hit.Headshot);
@@ -171,9 +267,12 @@ public partial class NetMatch : Node
 		Send(stream);
 	}
 
-	private void SendDied(long killer, KillCause cause, string weapon, bool headshot, List<long> assisters)
+	/// <summary>Conta que <paramref name="victim"/> (eu ou um bot meu) morreu.</summary>
+	private void SendDied(long victim, long killer, KillCause cause, string weapon, bool headshot, List<long> assisters)
 	{
-		BinaryWriter w = NetWire.Begin(NetWire.Died, out MemoryStream stream);
+		bool me = victim == OnlineMatch.AccountId;
+		BinaryWriter w = NetWire.Begin(me ? NetWire.Died : NetWire.BotDied, out MemoryStream stream);
+		if (!me) w.Write(victim);
 		w.Write(killer);
 		w.Write((byte)cause);
 		w.Write(weapon ?? "");
@@ -187,7 +286,7 @@ public partial class NetMatch : Node
 	/// granada): o servidor fica sabendo, e não dá o abate a ninguém.</summary>
 	private void OnLocalDied(int killerId)
 	{
-		if (!_hitInProgress && Joined) SendDied(0, KillCause.Fall, "", false, new List<long>());
+		if (!_hitInProgress && Joined) SendDied(OnlineMatch.AccountId, 0, KillCause.Fall, "", false, new List<long>());
 	}
 
 	private void Send(MemoryStream stream, bool reliable = true) =>
@@ -224,7 +323,12 @@ public partial class NetMatch : Node
 					break;
 
 				case NetWire.Hit:
-					TakeHit(r.ReadInt64(), r.ReadSingle(), r.ReadBoolean(), (KillCause)r.ReadByte(), r.ReadString(), r.ReadVector());
+					TakeHit(OnlineMatch.AccountId, r.ReadInt64(), r.ReadSingle(), r.ReadBoolean(), (KillCause)r.ReadByte(), r.ReadString(), r.ReadVector());
+					break;
+
+				case NetWire.HitBot:
+					long shooter = r.ReadInt64();
+					TakeHit(r.ReadInt64(), shooter, r.ReadSingle(), r.ReadBoolean(), (KillCause)r.ReadByte(), r.ReadString(), r.ReadVector());
 					break;
 
 				case NetWire.Kill:
@@ -253,23 +357,25 @@ public partial class NetMatch : Node
 			s.Primary, s.Secondary, s.Hp, s.MaxHp, s.Shield, s.MaxShield, s.Dead);
 	}
 
-	/// <summary>Alguém me acertou: o dano é aplicado aqui, com as regras
-	/// do meu corpo. Se eu cair, conto ao servidor quem foi.</summary>
-	private void TakeHit(long attackerId, float amount, bool headshot, KillCause cause, string weapon, Vector3 from)
+	/// <summary>Alguém de outra máquina acertou um corpo daqui (eu, ou um
+	/// bot meu): o dano é aplicado aqui, com as regras do corpo. Se ele
+	/// cair, conto ao servidor quem foi.</summary>
+	private void TakeHit(long victimId, long attackerId, float amount, bool headshot, KillCause cause, string weapon, Vector3 from)
 	{
-		_puppets.TryGetValue(attackerId, out Bot attacker);
-		if (_health.IsDead) return;
+		Health health = LocalBody(victimId)?.GetNodeOrNull<Health>("Health");
+		if (health == null || health.IsDead) return;
 
-		if (attacker != null) _health.NoteAttacker(attacker);
+		_puppets.TryGetValue(attackerId, out Bot attacker);
+		if (attacker != null) health.NoteAttacker(attacker);
 
 		_hitInProgress = true;
-		_health.TakeDamage(amount, 0, from, headshot);
+		health.TakeDamage(amount, 0, from, headshot);
 		_hitInProgress = false;
 
-		if (!_health.IsDead) return;
+		if (!health.IsDead) return;
 
-		List<long> assisters = _health.TakeAssists(attacker).OfType<Bot>().Select(b => b.RemoteId).ToList();
-		SendDied(attackerId, cause, weapon, headshot, assisters);
+		List<long> assisters = health.TakeAssists(attacker).Select(IdOf).Where(id => id != 0).ToList();
+		SendDied(victimId, attackerId, cause, weapon, headshot, assisters);
 	}
 
 	private void ReadKill(BinaryReader r)
@@ -286,9 +392,11 @@ public partial class NetMatch : Node
 		KillFeed.Report(new Kill(killerName, killerTeam, victimName, victimTeam, cause, weapon,
 			assisters.Select(id => Who(id).Name).ToArray()));
 
-		// O WP do abate e da assistência é de quem fez, na máquina dele.
-		if (killer == OnlineMatch.AccountId) _form.OnKill(cause == KillCause.Wolf);
-		else if (assisters.Contains(OnlineMatch.AccountId)) _form.OnAssist();
+		// O WP do abate e da assistência é de quem fez, na máquina dele:
+		// o meu, e o dos bots que esta máquina move.
+		LocalBody(killer)?.GetNodeOrNull<FormController>("FormController")?.OnKill(cause == KillCause.Wolf);
+		foreach (long id in assisters)
+			if (id != killer) LocalBody(id)?.GetNodeOrNull<FormController>("FormController")?.OnAssist();
 
 		Match.Current?.NetScore(blue, orange);
 	}

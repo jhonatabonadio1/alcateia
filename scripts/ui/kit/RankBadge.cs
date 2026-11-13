@@ -16,7 +16,13 @@ public partial class RankBadge : Control
 	public int Rank
 	{
 		get => _rank;
-		set { _rank = Ranks.Clamp(value); TooltipText = Ranks.NameOf(_rank); QueueRedraw(); }
+		set
+		{
+			// Sem patente (bot): o espaço fica, a insígnia não.
+			_rank = value < 0 ? Ranks.None : Ranks.Clamp(value);
+			TooltipText = _rank < 0 ? "Bot — sem patente" : Ranks.NameOf(_rank);
+			QueueRedraw();
+		}
 	}
 
 	/// <summary>Sem moldura: só a marca, para caber em linha de placar.</summary>
@@ -44,7 +50,7 @@ public partial class RankBadge : Control
 	public override void _Draw()
 	{
 		float side = Mathf.Min(Size.X, Size.Y);
-		if (side <= 0) return;
+		if (side <= 0 || _rank < 0) return;
 
 		_s = side / 32f;
 		_o = (Size - new Vector2(side, side)) / 2f;

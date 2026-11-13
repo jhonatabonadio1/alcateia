@@ -103,6 +103,10 @@ public partial class LobbyLink : Node
 	public void SetTeam(int team) => Send("room.team", ("team", team));
 	public void SetReady(bool ready) => Send("room.ready", ("ready", ready));
 	public void StartMatch() => Send("room.start");
+
+	/// <summary>Bots na sala (só o dono): entram num time, saem pelo número.</summary>
+	public void AddBot(int team) => Send("room.bot.add", ("team", team));
+	public void RemoveBot(long id) => Send("room.bot.remove", ("id", id));
 	public void Say(string text) => Send("chat", ("text", text));
 	public void RefreshRooms() => Send("rooms.list");
 

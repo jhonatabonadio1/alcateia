@@ -164,10 +164,12 @@ public partial class Health : Node
 	public bool IsRemote => Remote != null;
 
 	/// <summary>Manda um acerto para o dono deste corpo decidir.</summary>
-	public void SendHit(float amount, Vector3 from, bool headshot, KillCause cause, string weapon)
+	/// <paramref name="attacker"/> é o corpo de quem acertou: online, pode
+	/// ser o jogador desta máquina ou um bot que ela move.
+	public void SendHit(float amount, Vector3 from, bool headshot, KillCause cause, string weapon, Node attacker = null)
 	{
 		if (IsDead || amount <= 0) return;
-		Remote?.Invoke(new RemoteHit(amount, from, headshot, cause, weapon ?? ""));
+		Remote?.Invoke(new RemoteHit(amount, from, headshot, cause, weapon ?? "", attacker));
 	}
 
 	/// <summary>Copia a vida que o dono do corpo informou, com morte e
@@ -289,4 +291,4 @@ public partial class Health : Node
 }
 
 /// <summary>Um acerto num corpo de outro jogador, a caminho da rede.</summary>
-public readonly record struct RemoteHit(float Amount, Vector3 From, bool Headshot, KillCause Cause, string Weapon);
+public readonly record struct RemoteHit(float Amount, Vector3 From, bool Headshot, KillCause Cause, string Weapon, Node Attacker = null);

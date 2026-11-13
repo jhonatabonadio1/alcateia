@@ -2,6 +2,24 @@
 
 ## Não lançado
 
+### Bots no multiplayer (13/11)
+- **A sala online aceita bots.** O dono põe ("+ Bot" em cada time) e
+  tira; quem entra na sala toma o lugar de um bot se o time estiver
+  cheio; a lista de salas mostra "+N bots".
+- **Na partida**, os bots são movidos pela máquina do dono da sala, que
+  fala por eles com o servidor; para os outros jogadores são bonecos,
+  como qualquer jogador. Atiram, levam dano, morrem, renascem e pontuam
+  para o time. Se o dono cai, os bots saem com ele (pendência).
+- **Bot não tem patente**, em lugar nenhum (offline também): sem
+  insígnia no placar e na sala, "Bot" no cartão de duelo. Não ganha XP
+  nem entra na partida gravada no servidor.
+- Servidor: `room.bot.add` / `room.bot.remove`, bots na escalação com o
+  dono; servidor de partida: pacotes `BotState`, `BotAttack`, `BotHit`,
+  `BotDied`, `HitBot` e `Touch`. **Quem roda o servidor no Docker
+  precisa reconstruir as duas imagens** (`docker compose up -d --build`).
+- Teste de ponta a ponta (`tools/testar_online.sh`) agora joga com um
+  bot em cada time.
+
 ### Correções do que o Jhon viu jogando (13/11)
 - **Salas**: saem as salas de mentira. A aba Salas é a lista online; o
   treino com bots (offline) ficou num botão, "Treino com bots".

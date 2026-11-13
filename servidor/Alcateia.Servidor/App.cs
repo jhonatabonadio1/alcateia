@@ -171,7 +171,7 @@ public static class App
 			{
 				var players = new JsonArray();
 				foreach (MatchSeat p in assignment.Players)
-					players.Add(new JsonObject { ["accountId"] = p.AccountId, ["name"] = p.Name, ["team"] = p.Team });
+					players.Add(new JsonObject { ["accountId"] = p.AccountId, ["name"] = p.Name, ["team"] = p.Team, ["owner"] = p.Owner });
 				reply["assignment"] = new JsonObject
 				{
 					["matchKey"] = assignment.MatchKey, ["settings"] = assignment.Settings.DeepClone(), ["players"] = players

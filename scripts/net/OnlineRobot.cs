@@ -11,10 +11,11 @@ using System.Threading.Tasks;
 /// o resultado.
 ///
 /// Existe para o teste de ponta a ponta (tools/testar_online.sh): é o
-/// jogo de verdade falando com o servidor de verdade. O que cria atira no
-/// boneco do outro com a arma de sempre; o que entra só fica de pé e
-/// renasce. No fim cada um imprime uma linha <c>ROBO ...</c> com o que
-/// viu, e o script confere as duas.
+/// jogo de verdade falando com o servidor de verdade. O que cria põe um
+/// bot em cada time e atira no boneco do outro com a arma de sempre; o
+/// que entra abate uma vez o bot inimigo (que a máquina do criador
+/// move) e depois só fica de pé e renasce. No fim cada um imprime uma
+/// linha <c>ROBO ...</c> com o que viu, e o script confere as duas.
 ///
 /// <c>--conta=Nome</c> escolhe o nome da conta.
 /// </summary>
@@ -27,6 +28,9 @@ public partial class OnlineRobot : Node
 	private string _name;
 	private bool _inMatch, _done, _started;
 	private int _puppetShots, _hitsTaken, _lobbyEnds;
+	private int _botPuppets, _botShots, _botKills, _killsOnBots, _myBots, _botsAdded;
+	private readonly System.Collections.Generic.Dictionary<Bot, Vector3> _botStart = new();
+	private readonly System.Collections.Generic.HashSet<string> _botsMoved = new();
 	private double _aimTimer, _matchTime, _endTime;
 	private JsonObject _lobbyResult;
 
@@ -86,6 +90,15 @@ public partial class OnlineRobot : Node
 		JsonNode me = members.FirstOrDefault(m => m["id"].GetValue<long>() == Backend.AccountId);
 		if (me == null) return;
 
+		// O criador põe um bot em cada time, uma vez.
+		if (Host && _botsAdded == 0)
+		{
+			_botsAdded = 2;
+			lobby.AddBot(Teams.Blue);
+			lobby.AddBot(Teams.Orange);
+		}
+		bool IsBot(JsonNode m) => m["bot"]?.GetValue<bool>() ?? false;
+
 		if (!Host)
 		{
 			if (!me["ready"].GetValue<bool>()) lobby.SetReady(true);
@@ -93,7 +106,8 @@ public partial class OnlineRobot : Node
 		}
 
 		// O criador começa quando o visitante chegou, do outro lado e pronto.
-		JsonNode guest = members.FirstOrDefault(m => m != me);
+		JsonNode guest = members.FirstOrDefault(m => m != me && !IsBot(m));
+		if (members.Count(IsBot) < 2) return;
 		if (guest == null || !guest["ready"].GetValue<bool>() || guest["team"].GetValue<int>() == me["team"].GetValue<int>()) return;
 
 		_started = true;
@@ -117,10 +131,30 @@ public partial class OnlineRobot : Node
 			_inMatch = true;
 			foreach (Bot puppet in GetTree().GetNodesInGroup(Groups.Bots).OfType<Bot>().Where(b => b.Remote))
 			{
-				puppet.GetNode<Weapon>("Weapon").Fired += () => _puppetShots++;
+				if (puppet.RemoteIsBot)
+				{
+					_botPuppets++;
+					_botStart[puppet] = puppet.GlobalPosition;
+					puppet.GetNode<Weapon>("Weapon").Fired += () => _botShots++;
+				}
+				else puppet.GetNode<Weapon>("Weapon").Fired += () => _puppetShots++;
 			}
+			_myBots = GetTree().GetNodesInGroup(Groups.Bots).OfType<Bot>().Count(b => !b.Remote);
+
+			// Os abates que o servidor anuncia: quantos têm bot, e quantos
+			// são meus em cima de um bot.
+			var bots = OnlineMatch.Roster.Where(s => s.IsBot).Select(s => s.Name).ToHashSet();
+			string mine = OnlineMatch.Me?.Name;
+			KillFeed.Reported += kill =>
+			{
+				if (bots.Contains(kill.Killer) || bots.Contains(kill.Victim)) _botKills++;
+				if (kill.Killer == mine && bots.Contains(kill.Victim)) _killsOnBots++;
+			};
 			(Groups.LocalPlayer(GetTree())?.GetNode<Health>("Health")).Damaged += (_, _) => _hitsTaken++;
 		}
+
+		foreach (var (puppet, start) in _botStart)
+			if (IsInstanceValid(puppet) && puppet.GlobalPosition.DistanceTo(start) > 2f) _botsMoved.Add(puppet.Name);
 
 		_matchTime += delta;
 		if (_matchTime > 150)
@@ -145,10 +179,14 @@ public partial class OnlineRobot : Node
 			return;
 		}
 
-		if (!Host || match.Phase != MatchPhase.Live) return;
+		if (match.Phase != MatchPhase.Live) return;
 
+		// O criador atira no boneco do visitante. O visitante atira no bot
+		// inimigo (que a máquina do criador move) até abatê-lo uma vez.
+		if (!Host && _killsOnBots > 0) return;
 		Bot target = GetTree().GetNodesInGroup(Groups.Bots).OfType<Bot>()
-			.FirstOrDefault(b => b.Remote && b.Visible && !b.GetNode<Health>("Health").IsDead);
+			.FirstOrDefault(b => b.Remote && b.Visible && !b.GetNode<Health>("Health").IsDead
+				&& (Host ? !b.RemoteIsBot : b.RemoteIsBot && b.Team != health.Team));
 		if (target == null) return;
 
 		// Para a uns metros do alvo, num ponto de onde dá para vê-lo, e
@@ -197,9 +235,12 @@ public partial class OnlineRobot : Node
 		string matches = stats?["matches"]?.ToString() ?? "?", kills = stats?["kills"]?.ToString() ?? "?", deaths = stats?["deaths"]?.ToString() ?? "?";
 
 		JsonNode m = _lobbyResult?["match"];
+		int botsMoved = _botsMoved.Count;
 		GD.Print($"ROBO {_name} fim: partidas={matches} xp={xp} abates={kills} mortes={deaths} " +
 			$"placar={m?["scoreBlue"]}x{m?["scoreOrange"]} vencedor={m?["winner"]} " +
 			$"tiros_do_boneco={_puppetShots} acertos_levados={_hitsTaken} avisos_do_saguao={_lobbyEnds} " +
+			$"bots_meus={_myBots} bonecos_bot={_botPuppets} bots_andaram={botsMoved} tiros_de_bot={_botShots} " +
+			$"abates_com_bot={_botKills} abateu_bot={_killsOnBots} " +
 			$"sala={(LobbyLink.Instance.Room != null ? LobbyLink.Instance.Room["state"] : "nenhuma")}");
 
 		GetTree().Quit(0);

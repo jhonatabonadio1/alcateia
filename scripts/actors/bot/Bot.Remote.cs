@@ -14,9 +14,47 @@ public partial class Bot
 	/// na cena, por quem monta a partida.</summary>
 	public bool Remote { get; set; }
 
-	/// <summary>A conta do dono e a patente dele, para o placar.</summary>
+	/// <summary>A conta do dono e a patente dele, para o placar. Boneco
+	/// de bot (o bot que a máquina do dono da sala move) tem número
+	/// negativo e não tem patente.</summary>
 	public long RemoteId { get; set; }
 	public int RemoteRank { get; set; }
+
+	/// <summary>Partida online, bot de verdade, movido por esta máquina:
+	/// o número dele na escalação (negativo). Zero fora disso.</summary>
+	public long NetId { get; set; }
+
+	/// <summary>Como o servidor conhece este corpo: o número do boneco, ou
+	/// o do bot que esta máquina move.</summary>
+	public long OnlineId => Remote ? RemoteId : NetId;
+
+	/// <summary>Boneco de um bot, não de gente.</summary>
+	public bool RemoteIsBot => Remote && RemoteId < 0;
+
+	/// <summary>O boneco está no mundo? Antes de o dono dar notícia (ou
+	/// depois de sair) ele não existe para ninguém — nem para os bots.</summary>
+	public bool RemoteAbsent => Remote && !Visible;
+
+	/// <summary>O que a rede precisa saber deste bot, movido aqui.</summary>
+	public NetState NetSnapshot() => new()
+	{
+		Position = GlobalPosition,
+		Velocity = Velocity,
+		Yaw = Rotation.Y,
+		Pitch = _head.Rotation.X,
+		Form = (byte)_form.Current,
+		Slot = (byte)_weapon.HumanSlot,
+		Grounded = IsOnFloor(),
+		Dead = _health.IsDead,
+		Hp = _health.Hp,
+		MaxHp = _health.MaxHp,
+		Shield = _health.Shield,
+		MaxShield = _health.MaxShield,
+		Primary = _weapon.PrimaryDef?.Id ?? "",
+		Secondary = _weapon.SecondaryDef?.Id ?? ""
+	};
+
+	public float HeadPitch => _head.Rotation.X;
 
 	/// <summary>Quão rápido o boneco alcança a posição noticiada, e o
 	/// quanto se adianta pela velocidade, em segundos.</summary>

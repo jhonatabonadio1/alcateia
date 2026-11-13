@@ -112,6 +112,51 @@ public static class LobbyTests
 			Check.Equal(0, empty["rooms"].AsArray().Count, "sala vazia some da lista");
 		}),
 
+		("bots: só o dono põe e tira; time cheio não aceita; gente entrando toma o lugar do bot; sem XP nem patente", async () =>
+		{
+			await using World w = await World.Start();
+			await using Player host = await w.NewPlayer(), guest = await w.NewPlayer();
+			foreach (Player p in new[] { host, guest }) { await p.Connect(); await p.Hear("rooms"); }
+			await host.Say(Msg("room.create", ("settings", Settings())));
+			int id = (await host.Hear("room"))["id"].GetValue<int>();
+
+			// O dono enche o time laranja de bots (4) e põe um no azul.
+			for (int i = 0; i < 4; i++) await host.Say(Msg("room.bot.add", ("team", 2)));
+			await host.Say(Msg("room.bot.add", ("team", 1)));
+			JsonObject full = await host.Hear("room", m => m["members"].AsArray().Count == 6);
+			JsonArray bots = new(full["members"].AsArray().Where(m => m["bot"]?.GetValue<bool>() == true).Select(m => m.DeepClone()).ToArray());
+			Check.Equal(5, bots.Count, "cinco bots na sala");
+			Check.True(bots.All(b => b["id"].GetValue<long>() < 0), "bot tem número negativo, não conta");
+			Check.True(bots.All(b => b["xp"] == null), "bot não tem XP (não tem patente)");
+			Check.True(bots.All(b => b["ready"].GetValue<bool>()), "bot está sempre pronto");
+			Check.Equal(host.Id, bots[0]["owner"].GetValue<long>(), "quem move os bots é a máquina do dono");
+			Check.Equal(5, bots.Select(b => b["name"].GetValue<string>()).Distinct().Count(), "cada bot com um nome");
+
+			await host.Say(Msg("room.bot.add", ("team", 2)));
+			Check.Equal("time_cheio", (await host.Hear("error"))["code"].GetValue<string>(), "quinto bot num time de quatro");
+
+			// O convidado entra: vai para o laranja (menos gente) e um bot sai.
+			await guest.Say(Msg("room.join", ("id", id)));
+			JsonObject joined = await guest.Hear("room");
+			Check.Equal(2, joined["members"].AsArray().First(m => m["id"].GetValue<long>() == guest.Id)["team"].GetValue<int>(), "convidado no laranja");
+			Check.Equal(3, joined["members"].AsArray().Count(m => m["bot"]?.GetValue<bool>() == true && m["team"].GetValue<int>() == 2), "um bot laranja deu o lugar");
+
+			await guest.Say(Msg("room.bot.add", ("team", 1)));
+			Check.Equal("nao_e_dono", (await guest.Hear("error"))["code"].GetValue<string>(), "convidado não põe bot");
+
+			long first = joined["members"].AsArray().First(m => m["bot"]?.GetValue<bool>() == true)["id"].GetValue<long>();
+			await host.Say(Msg("room.bot.remove", ("id", first)));
+			JsonObject removed = await guest.Hear("room", m => m["members"].AsArray().All(x => x["id"].GetValue<long>() != first));
+			Check.Equal(3, removed["members"].AsArray().Count(m => m["bot"]?.GetValue<bool>() == true), "o bot tirado saiu para todos");
+
+			host.Forget();
+			await host.Say(Msg("rooms.list"));
+			await host.Hear("room", timeoutMs: 300).ContinueWith(_ => { });
+			var (_, http) = await host.Call(HttpMethod.Get, "/v1/rooms");
+			Check.Equal(2, http["rooms"][0]["players"].GetValue<int>(), "a lista conta só gente em 'players'");
+			Check.Equal(3, http["rooms"][0]["bots"].GetValue<int>(), "e os bots à parte");
+		}),
+
 		("chat: na sala fala com a sala, fora dela com a lista; e tem freio", async () =>
 		{
 			await using World w = await World.Start();

@@ -71,15 +71,20 @@ public partial class MatchSetup : Node
 	}
 
 	/// <summary>
-	/// Partida online: sem bots. Cada jogador escalado ganha um lugar na
-	/// base do time, na mesma ordem em todas as máquinas (pela conta), e
-	/// os outros jogadores viram bonecos que a rede move
+	/// Partida online. Cada lugar da escalação ganha um ponto na base do
+	/// time, na mesma ordem em todas as máquinas (pelo número), e os
+	/// outros jogadores viram bonecos que a rede move
 	/// (<see cref="NetMatch"/>).
+	///
+	/// Os bots da sala são bots de verdade só na máquina do dono da sala,
+	/// que os move e fala por eles; nas outras, são bonecos como os dos
+	/// jogadores.
 	/// </summary>
 	private void SetUpOnline(Node3D bots, Node3D player, Dictionary<int, int> used)
 	{
 		var net = new NetMatch { Name = "NetMatch" };
 		var puppets = new List<Bot>();
+		var owned = new List<Bot>();
 
 		foreach (OnlineMatch.Seat seat in OnlineMatch.Roster)
 		{
@@ -91,13 +96,29 @@ public partial class MatchSetup : Node
 				continue;
 			}
 
+			if (seat.Mine)
+			{
+				var bot = BotScene.Instantiate<Bot>();
+				bot.Name = $"Bot{-seat.Id}";
+				bot.Team = seat.Team;
+				bot.Callsign = seat.Name;
+				bot.NetId = seat.Id;
+				bot.PatrolCenter = Vector3.Zero;
+				bot.PatrolRadius = 30f;
+				Place(bot, seat.Team, used);
+				bots.AddChild(bot);
+				RoomRules.EquipBot(bot.GetNode<Weapon>("Weapon"));
+				owned.Add(bot);
+				continue;
+			}
+
 			var puppet = BotScene.Instantiate<Bot>();
-			puppet.Name = $"Jogador{seat.Id}";
+			puppet.Name = seat.IsBot ? $"Bot{-seat.Id}" : $"Jogador{seat.Id}";
 			puppet.Team = seat.Team;
 			puppet.Callsign = seat.Name;
 			puppet.Remote = true;
 			puppet.RemoteId = seat.Id;
-			puppet.RemoteRank = Ranks.RankFor(seat.Xp);
+			puppet.RemoteRank = seat.IsBot ? Ranks.None : Ranks.RankFor(seat.Xp);
 			Place(puppet, seat.Team, used);
 			bots.AddChild(puppet);
 			puppets.Add(puppet);
@@ -105,6 +126,7 @@ public partial class MatchSetup : Node
 
 		AddChild(net);
 		foreach (Bot puppet in puppets) net.Register(puppet);
+		foreach (Bot bot in owned) net.Own(bot);
 	}
 
 	private static void Place(Node3D body, int team, Dictionary<int, int> used)

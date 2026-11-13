@@ -98,14 +98,22 @@ public partial class Grenade : RigidBody3D
 				// Nada de dano: só o atordoamento, logo abaixo.
 			}
 			else if (health != null && health.IsRemote)
-				health.SendHit(MaxDamage * falloff, GlobalPosition, false, KillCause.Grenade, Arsenal.GrenadeId);
+				health.SendHit(MaxDamage * falloff, GlobalPosition, false, KillCause.Grenade, Arsenal.GrenadeId, Thrower?.GetParent());
 			else
 			{
+				// Online: veja Weapon.Damage — o juiz anota a autoria e o
+				// abate volta do servidor.
+				NetMatch net = Thrower != null && health != null && health != Thrower ? NetMatch.Current : null;
+				net?.BeginLocalHit(Thrower.GetParent(), health, MaxDamage * falloff);
 				if (Thrower != null && health != Thrower) health?.NoteAttacker(Thrower.GetParent());
 				health?.TakeDamage(MaxDamage * falloff, 0, GlobalPosition);
+				net?.EndLocalHit();
 
 				if (wasAlive && health.IsDead && Thrower != null && health != Thrower)
-					ReportKill(health);
+				{
+					if (net != null) net.LocalKill(health, Thrower.GetParent(), KillCause.Grenade, Arsenal.GrenadeId, false);
+					else ReportKill(health);
+				}
 			}
 
 			// O atordoamento é o ponto da granada, não o dano.

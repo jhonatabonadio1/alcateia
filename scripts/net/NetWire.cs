@@ -22,13 +22,27 @@ using System.Text;
 /// | Clock | servidor | fase, contagem, tempo e placar |
 /// | Gone | servidor | alguém saiu |
 ///
+/// **Bots.** Quem move os bots é a máquina do dono da sala; ela fala por
+/// eles com os mesmos pacotes, mais o número do bot na frente. O
+/// servidor confere que o bot é mesmo de quem fala e passa adiante como
+/// se fosse um jogador — para os outros, bot e gente chegam iguais.
+///
+/// | Tipo | Quem manda | Conteúdo |
+/// |---|---|---|
+/// | BotState / BotAttack | dono → todos | bot + o mesmo de State / Attack |
+/// | BotHit | dono → vítima | bot que atirou + o mesmo de Hit |
+/// | BotDied | dono | bot que morreu + o mesmo de Died |
+/// | HitBot | servidor → dono | quem atirou, o bot atingido e o acerto |
+/// | Touch | dono | autor, vítima e dano de um acerto entre dois corpos da mesma máquina (o jogador e os bots dele): o dano já foi aplicado lá; o juiz só anota a autoria |
+///
 /// O que o servidor repassa de um jogador aos outros leva a conta do
 /// autor logo depois do tipo.
 /// </summary>
 public static class NetWire
 {
 	public const byte Hello = 1, Welcome = 2, Refused = 3, State = 4, Attack = 5,
-		Hit = 6, Died = 7, Kill = 8, Clock = 9, Gone = 10;
+		Hit = 6, Died = 7, Kill = 8, Clock = 9, Gone = 10,
+		BotState = 11, BotAttack = 12, BotHit = 13, BotDied = 14, HitBot = 15, Touch = 16;
 
 	/// <summary>Estados por segundo que cada jogo manda.</summary>
 	public const int StateRate = 20;
@@ -51,6 +65,15 @@ public static class NetWire
 	}
 
 	public static Vector3 ReadVector(this BinaryReader r) => new(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
+
+	/// <summary>O pacote que o dono mandou em nome de um bot, como o de um
+	/// jogador: troca o tipo e deixa o número do bot onde iria a conta.</summary>
+	public static byte[] AsPlayer(byte[] packet, byte type)
+	{
+		var copy = (byte[])packet.Clone();
+		copy[0] = type;
+		return copy;
+	}
 
 	/// <summary>O pacote de um jogador, repassado aos outros: o tipo, a
 	/// conta do autor e o resto como veio.</summary>

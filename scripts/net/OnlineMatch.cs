@@ -13,8 +13,16 @@ using System.Text.Json.Nodes;
 /// </summary>
 public static class OnlineMatch
 {
-	/// <summary>Um jogador escalado.</summary>
-	public sealed record Seat(long Id, string Name, int Team, long Xp);
+	/// <summary>Um lugar na partida: um jogador, ou um bot (número
+	/// negativo; <see cref="Owner"/> é a conta do jogador cuja máquina o
+	/// move). Bot não tem XP nem patente.</summary>
+	public sealed record Seat(long Id, string Name, int Team, long Xp, long Owner = 0)
+	{
+		public bool IsBot => Id < 0;
+
+		/// <summary>É esta máquina que move este bot.</summary>
+		public bool Mine => IsBot && Owner == AccountId;
+	}
 
 	public static bool Active { get; private set; }
 	public static string Address { get; private set; }
@@ -48,7 +56,8 @@ public static class OnlineMatch
 
 		Roster.Clear();
 		foreach (JsonNode m in room?["members"] as JsonArray ?? new JsonArray())
-			Roster.Add(new Seat(m["id"].GetValue<long>(), m["name"].GetValue<string>(), m["team"].GetValue<int>(), m["xp"]?.GetValue<long>() ?? 0));
+			Roster.Add(new Seat(m["id"].GetValue<long>(), m["name"].GetValue<string>(), m["team"].GetValue<int>(),
+				m["xp"]?.GetValue<long>() ?? 0, m["owner"]?.GetValue<long>() ?? 0));
 		Roster.Sort((a, b) => a.Id.CompareTo(b.Id));
 
 		RoomConfig.Settings = SettingsFrom(start["settings"] as JsonObject);

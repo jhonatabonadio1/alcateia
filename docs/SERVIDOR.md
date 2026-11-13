@@ -100,8 +100,12 @@ O robô do teste é `scripts/net/OnlineRobot.cs` (`-- --robo=criar` /
 - **Não é à prova de trapaça** — a vida e o acerto moram nas máquinas
   dos jogadores (`docs/decisoes/0008`). Bom para jogar entre
   conhecidos; não para ranking público.
-- **Sem bots online**, sem entrar no meio da partida vindo de fora da
-  sala, sem reconexão automática (quem cai volta para a sala).
+- **Bots online saem com o dono da sala**: é a máquina dele que os move
+  (`docs/decisoes/0008`); se ele cai, os bots somem até o fim. A
+  dificuldade dos bots online é a padrão (a sala online não tem esse
+  ajuste ainda).
+- Sem entrar no meio da partida vindo de fora da sala, sem reconexão
+  automática (quem cai volta para a sala).
 - **Do lobo**, o uivo, a corrida na parede e os golpes especiais
   aparecem para os outros como movimento e ataque comum.
 - **O perfil da loja continua local.** O servidor guarda a conta, o XP

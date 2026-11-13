@@ -119,7 +119,7 @@ public static class RoomDirectory
 				Team = team,
 				IsBot = true,
 				Ready = true,
-				Rank = Ranks.ForBot(name, (int)room.Settings.Difficulty)
+				Rank = Ranks.None
 			});
 		}
 	}

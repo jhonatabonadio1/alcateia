@@ -27,7 +27,9 @@ using System.Threading.Tasks;
 ///
 /// Não carrega mapa nem simula corpos: quem move cada corpo é a máquina
 /// do dono (veja <see cref="NetMatch"/> e docs/decisoes/0008). Por isso é
-/// leve — um processo aguenta a partida com folga.
+/// leve — um processo aguenta a partida com folga. Os bots da sala são
+/// movidos pela máquina do dono da sala, que fala por eles; aqui só se
+/// confere que o bot é mesmo de quem fala.
 ///
 /// Variáveis de ambiente: <c>ALCATEIA_API</c> (o servidor),
 /// <c>ALCATEIA_FLEET_KEY</c> (o segredo da frota),
@@ -165,9 +167,9 @@ public partial class MatchServer : Node
 	private void Open(JsonObject assignment)
 	{
 		JsonObject settings = assignment["settings"] as JsonObject ?? new JsonObject();
-		var seats = new List<(long, string, int)>();
+		var seats = new List<(long, string, int, long)>();
 		foreach (JsonNode p in assignment["players"] as JsonArray ?? new JsonArray())
-			seats.Add((p["accountId"].GetValue<long>(), p["name"].GetValue<string>(), p["team"].GetValue<int>()));
+			seats.Add((p["accountId"].GetValue<long>(), p["name"].GetValue<string>(), p["team"].GetValue<int>(), p["owner"]?.GetValue<long>() ?? 0));
 
 		double seconds = (settings["minutes"]?.GetValue<int>() ?? 10) * 60.0, countdown = 10;
 
@@ -191,14 +193,16 @@ public partial class MatchServer : Node
 			Welcome(peer, hello.Key, hello.Account, hello.Expires, hello.Ticket);
 		_early.Clear();
 
-		GD.Print($"Partida {_matchKey}: {seats.Count} jogador(es), mapa {settings["map"]}, até {_referee.ScoreToWin} pontos.");
+		int bots = seats.Count(s => s.Item4 != 0);
+		GD.Print($"Partida {_matchKey}: {seats.Count - bots} jogador(es) e {bots} bot(s), mapa {settings["map"]}, até {_referee.ScoreToWin} pontos.");
 	}
 
 	private async Task Report()
 	{
 		Referee r = _referee;
 		var players = new JsonArray();
-		foreach (Referee.Seat s in r.Seats.Where(s => s.EverConnected))
+		// Bot não é conta: não entra no resultado (não ganha XP nem patente).
+		foreach (Referee.Seat s in r.Seats.Where(s => s.EverConnected && !s.IsBot))
 			players.Add(new JsonObject
 			{
 				["accountId"] = s.Id, ["kills"] = s.Kills, ["deaths"] = s.Deaths, ["assists"] = s.Assists,
@@ -265,25 +269,38 @@ public partial class MatchServer : Node
 					break;
 
 				case NetWire.Hit:
-					long target = r.ReadInt64();
-					float amount = r.ReadSingle();
-					if (!_referee.Hit(account, target, amount) || !_peerOf.TryGetValue(target, out long victim)) break;
-
-					// Para a vítima vai o mesmo acerto, com o autor no lugar do alvo.
-					byte[] forward = (byte[])packet.Clone();
-					BitConverter.TryWriteBytes(new Span<byte>(forward, 1, 8), account);
-					Send(victim, forward);
+					ForwardHit(account, packet, r, 1);
 					break;
 
 				case NetWire.Died:
-					long killer = r.ReadInt64();
-					byte cause = r.ReadByte();
-					string weapon = r.ReadString();
-					bool headshot = r.ReadBoolean();
-					var assisters = new long[r.ReadByte()];
-					for (int i = 0; i < assisters.Length; i++) assisters[i] = r.ReadInt64();
+					ReadDeath(account, r);
+					break;
 
-					if (_referee.Death(account, killer, headshot, assisters) is RefKill kill) Announce(kill, cause, weapon);
+				// O dono falando por um bot dele: confere que é dele e trata
+				// como se o bot fosse um jogador.
+				case NetWire.BotState:
+				case NetWire.BotAttack:
+					if (!_referee.Speaks(account, r.ReadInt64())) break;
+					Broadcast(NetWire.AsPlayer(packet, type == NetWire.BotState ? NetWire.State : NetWire.Attack),
+						reliable: type != NetWire.BotState, except: peer);
+					break;
+
+				case NetWire.BotHit:
+					long shooter = r.ReadInt64();
+					if (_referee.Speaks(account, shooter)) ForwardHit(shooter, packet, r, 9);
+					break;
+
+				case NetWire.BotDied:
+					long fallen = r.ReadInt64();
+					if (_referee.Speaks(account, fallen)) ReadDeath(fallen, r);
+					break;
+
+				case NetWire.Touch:
+					// Acerto entre dois corpos da mesma máquina: já foi
+					// aplicado lá. Só a autoria fica anotada, para o abate valer.
+					long author = r.ReadInt64(), touched = r.ReadInt64();
+					if (_referee.Speaks(account, author) && _referee.Speaks(account, touched))
+						_referee.Hit(author, touched, r.ReadSingle());
 					break;
 			}
 		}
@@ -291,6 +308,42 @@ public partial class MatchServer : Node
 		{
 			// Pacote torto: ignora. Quem insiste em mandar lixo só perde o próprio jogo.
 		}
+	}
+
+	/// <summary>Um acerto de <paramref name="attacker"/>: se o juiz
+	/// aceita, segue para a máquina que manda no corpo atingido — a da
+	/// vítima, ou a do dono se a vítima é um bot. <paramref name="at"/> é
+	/// onde, no pacote, está a conta do alvo.</summary>
+	private void ForwardHit(long attacker, byte[] packet, BinaryReader r, int at)
+	{
+		long target = r.ReadInt64();
+		float amount = r.ReadSingle();
+		if (!_referee.Hit(attacker, target, amount)) return;
+
+		Referee.Seat seat = _referee.Find(target);
+		if (!_peerOf.TryGetValue(seat.IsBot ? seat.Owner : target, out long victim)) return;
+
+		// O resto do acerto (dano, cabeça, causa, arma, de onde veio) vai como veio.
+		int rest = at + 8;
+		using var stream = new MemoryStream(packet.Length + 8);
+		using var w = new BinaryWriter(stream);
+		w.Write(seat.IsBot ? NetWire.HitBot : NetWire.Hit);
+		w.Write(attacker);
+		if (seat.IsBot) w.Write(target);
+		w.Write(packet, rest, packet.Length - rest);
+		Send(victim, stream.ToArray());
+	}
+
+	private void ReadDeath(long victim, BinaryReader r)
+	{
+		long killer = r.ReadInt64();
+		byte cause = r.ReadByte();
+		string weapon = r.ReadString();
+		bool headshot = r.ReadBoolean();
+		var assisters = new long[r.ReadByte()];
+		for (int i = 0; i < assisters.Length; i++) assisters[i] = r.ReadInt64();
+
+		if (_referee.Death(victim, killer, headshot, assisters) is RefKill kill) Announce(kill, cause, weapon);
 	}
 
 	private void Welcome(long peer, string matchKey, long account, long expires, string ticket)
@@ -326,7 +379,7 @@ public partial class MatchServer : Node
 		_accountOf[peer] = account;
 		_peerOf[account] = peer;
 		Send(peer, ClockPacket(NetWire.Welcome));
-		GD.Print($"Entrou: {_referee.Find(account).Name} ({_referee.ConnectedCount} de {_referee.Seats.Count}).");
+		GD.Print($"Entrou: {_referee.Find(account).Name} ({_referee.ConnectedCount} de {_referee.Seats.Count(s => !s.IsBot)}).");
 	}
 
 	private void Refuse(long peer, long account, string why)
@@ -344,11 +397,13 @@ public partial class MatchServer : Node
 		if (!_accountOf.Remove(peer, out long account)) return;
 
 		if (_peerOf.TryGetValue(account, out long current) && current == peer) _peerOf.Remove(account);
-		_referee?.Leave(account);
 
 		// O aviso sai no quadro seguinte: quando dois saem juntos, o
-		// segundo ainda consta aqui mas já não recebe nada.
+		// segundo ainda consta aqui mas já não recebe nada. Os bots de
+		// quem saiu saem junto: não há mais máquina para movê-los.
 		_left.Add(account);
+		if (_referee != null) _left.AddRange(_referee.BotsOf(account).Select(b => b.Id));
+		_referee?.Leave(account);
 	}
 
 	private void AnnounceGone()

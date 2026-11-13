@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Teste de ponta a ponta do jogo online: o servidor, um servidor de
 # partida e dois jogos de verdade (sem tela), que criam conta, abrem
-# sala, jogam uma partida curta e conferem o resultado.
+# sala com um bot em cada time, jogam uma partida curta e conferem o
+# resultado — inclusive que os bots (movidos pela máquina de quem criou
+# a sala) andam, atiram, matam e morrem para os dois.
 #
 #   tools/testar_online.sh
 #
@@ -77,7 +79,13 @@ conferir "$PASTA/a.log" "abates=([2-9]|[1-9][0-9])" "o criador abateu o visitant
 conferir "$PASTA/b.log" "mortes=[1-9]" "as mortes do visitante estão na conta dele"
 conferir "$PASTA/b.log" "tiros_do_boneco=[1-9]" "o visitante viu o boneco do criador atirar"
 conferir "$PASTA/b.log" "acertos_levados=[1-9]" "o visitante levou o dano na máquina dele"
-conferir "$PASTA/a.log" "vencedor=1 " "o servidor deu a vitória ao time do criador"
+conferir "$PASTA/a.log" "vencedor=[012] " "o servidor deu o resultado da partida"
+conferir "$PASTA/a.log" "bots_meus=2 " "os dois bots da sala são bots de verdade na máquina do criador"
+conferir "$PASTA/b.log" "bonecos_bot=2 " "e bonecos na máquina do visitante"
+conferir "$PASTA/b.log" "bots_andaram=[12] " "o visitante viu os bots andarem"
+conferir "$PASTA/b.log" "tiros_de_bot=[1-9]" "o visitante viu bot atirar"
+conferir "$PASTA/b.log" "abateu_bot=[1-9]" "o visitante abateu um bot (o acerto foi até a máquina do criador, e a morte voltou pelo servidor)"
+conferir "$PASTA/a.log" "abates_com_bot=[1-9]" "o criador viu abates com bot no placar do servidor"
 conferir "$PASTA/a.log" "avisos_do_saguao=1 .*sala=waiting" "o saguão avisou o fim e a sala voltou a esperar"
 
 # Como nos testes de regressão: erro no Output reprova, mesmo com o resto certo.
