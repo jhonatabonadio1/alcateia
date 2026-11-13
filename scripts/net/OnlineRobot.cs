@@ -31,6 +31,7 @@ public partial class OnlineRobot : Node
 	private int _botPuppets, _botShots, _botKills, _killsOnBots, _myBots, _botsAdded;
 	private readonly System.Collections.Generic.Dictionary<Bot, Vector3> _botStart = new();
 	private readonly System.Collections.Generic.HashSet<string> _botsMoved = new();
+	private BotLevel _level;
 	private double _aimTimer, _matchTime, _endTime;
 	private JsonObject _lobbyResult;
 
@@ -70,7 +71,7 @@ public partial class OnlineRobot : Node
 		}
 
 		if (Host)
-			lobby.CreateRoom(OnlineMatch.SettingsTo(new RoomSettings { Title = "Sala dos robôs", TeamSize = 4, ScoreToWin = 10, Minutes = 3 }));
+			lobby.CreateRoom(OnlineMatch.SettingsTo(new RoomSettings { Title = "Sala dos robôs", TeamSize = 4, ScoreToWin = 10, Minutes = 3, Difficulty = BotLevel.Hard }));
 	}
 
 	private void OnLobbyChanged()
@@ -140,6 +141,7 @@ public partial class OnlineRobot : Node
 				else puppet.GetNode<Weapon>("Weapon").Fired += () => _puppetShots++;
 			}
 			_myBots = GetTree().GetNodesInGroup(Groups.Bots).OfType<Bot>().Count(b => !b.Remote);
+			_level = Difficulty.Current;
 
 			// Os abates que o servidor anuncia: quantos têm bot, e quantos
 			// são meus em cima de um bot.
@@ -239,7 +241,7 @@ public partial class OnlineRobot : Node
 		GD.Print($"ROBO {_name} fim: partidas={matches} xp={xp} abates={kills} mortes={deaths} " +
 			$"placar={m?["scoreBlue"]}x{m?["scoreOrange"]} vencedor={m?["winner"]} " +
 			$"tiros_do_boneco={_puppetShots} acertos_levados={_hitsTaken} avisos_do_saguao={_lobbyEnds} " +
-			$"bots_meus={_myBots} bonecos_bot={_botPuppets} bots_andaram={botsMoved} tiros_de_bot={_botShots} " +
+			$"bots_meus={_myBots} bonecos_bot={_botPuppets} bots_andaram={botsMoved} tiros_de_bot={_botShots} dificuldade={_level} " +
 			$"abates_com_bot={_botKills} abateu_bot={_killsOnBots} " +
 			$"sala={(LobbyLink.Instance.Room != null ? LobbyLink.Instance.Room["state"] : "nenhuma")}");
 

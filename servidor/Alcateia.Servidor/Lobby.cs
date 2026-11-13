@@ -516,6 +516,9 @@ public sealed class Lobby
 				room.Bots.Remove(room.Bots.Last(b => b.Team == team));
 
 		s["minutes"] = Math.Clamp(s["minutes"]?.GetValue<int>() ?? 10, 3, 30);
+
+		// Dificuldade dos bots: 0 fáceis, 1 médios, 2 difíceis.
+		s["difficulty"] = Math.Clamp(s["difficulty"]?.GetValue<int>() ?? 1, 0, 2);
 		s["scoreToWin"] = Math.Clamp(s["scoreToWin"]?.GetValue<int>() ?? 40, 10, 200);
 
 		string map = s["map"]?.GetValue<string>() ?? "hangar";

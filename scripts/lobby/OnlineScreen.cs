@@ -340,6 +340,7 @@ public partial class OnlineScreen : LobbyScreen
 			Enum.GetValues<WeaponRule>().Select(w => !RoomSettings.WeaponsAvailable(w)).ToArray()), 110));
 		form.AddChild(UiKit.FormRow("Lobo", UiKit.Picker(RoomSettings.TransformNames, (int)s.Transform, i => s.Transform = (TransformRule)i,
 			Enum.GetValues<TransformRule>().Select(t => !RoomSettings.TransformAvailable(t)).ToArray()), 110));
+		form.AddChild(UiKit.FormRow("Bots", UiKit.Picker(RoomSettings.DifficultyNames, (int)s.Difficulty, i => s.Difficulty = (BotLevel)i), 110));
 		form.AddChild(UiKit.FormRow("Senha", password, 110));
 		form.AddChild(UiKit.Check("Fogo amigo", s.FriendlyFire, on => s.FriendlyFire = on));
 
@@ -386,6 +387,28 @@ public partial class OnlineScreen : LobbyScreen
 		rules.AddChild(UiKit.Chip($"armas: {RoomSettings.WeaponNames[(int)s.Weapons]}", UiTokens.TextSecondary));
 		rules.AddChild(UiKit.Chip($"lobo: {RoomSettings.TransformNames[(int)s.Transform]}", UiTokens.TextSecondary));
 		if (s.FriendlyFire) rules.AddChild(UiKit.Chip("fogo amigo", UiTokens.Danger));
+		rules.AddChild(UiKit.Spacer());
+
+		// A dificuldade dos bots: o dono escolhe aqui mesmo, os outros veem.
+		if (host && !playing)
+		{
+			rules.AddChild(UiKit.Caption("bots"));
+			JsonObject current = room["settings"] as JsonObject;
+			OptionButton level = UiKit.Picker(RoomSettings.DifficultyNames, (int)s.Difficulty, i =>
+			{
+				var changed = (JsonObject)(current?.DeepClone() ?? OnlineMatch.SettingsTo(s));
+				changed["difficulty"] = i;
+				Lobby.ChangeSettings(changed);
+			});
+			level.SizeFlagsHorizontal = SizeFlags.ShrinkEnd;
+			level.CustomMinimumSize = new Vector2(150, UiTokens.FieldHeight);
+			level.TooltipText = Difficulty.Summary((BotLevel)(int)s.Difficulty);
+			rules.AddChild(level);
+		}
+		else
+		{
+			rules.AddChild(UiKit.Chip($"bots: {RoomSettings.DifficultyNames[(int)s.Difficulty].ToLowerInvariant()}", UiTokens.TextSecondary));
+		}
 		_main.AddChild(rules);
 
 		HBoxContainer teams = UiKit.Row(UiTokens.S3);

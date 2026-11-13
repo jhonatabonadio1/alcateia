@@ -55,7 +55,7 @@ segunda derruba a primeira.
 | Do jogo | Campos | |
 |---|---|---|
 | `rooms.list` | | Pede a lista |
-| `room.create` | `settings{title, password, map, teamSize, scoreToWin, minutes, weapons, transform, friendlyFire}` | Abre uma sala e entra nela como dono |
+| `room.create` | `settings{title, password, map, teamSize, scoreToWin, minutes, weapons, transform, friendlyFire, difficulty}` (difficulty: 0 fáceis, 1 médios, 2 difíceis) | Abre uma sala e entra nela como dono |
 | `room.join` | `id`, `password` | |
 | `room.leave` | | Saindo o dono, a sala passa para o próximo |
 | `room.team` | `team` (1 azul, 2 laranja) | |

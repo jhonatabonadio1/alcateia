@@ -102,8 +102,7 @@ O robô do teste é `scripts/net/OnlineRobot.cs` (`-- --robo=criar` /
   conhecidos; não para ranking público.
 - **Bots online saem com o dono da sala**: é a máquina dele que os move
   (`docs/decisoes/0008`); se ele cai, os bots somem até o fim. A
-  dificuldade dos bots online é a padrão (a sala online não tem esse
-  ajuste ainda).
+  dificuldade é da sala: o dono escolhe ao criar e muda na própria sala.
 - Sem entrar no meio da partida vindo de fora da sala, sem reconexão
   automática (quem cai volta para a sala).
 - **Do lobo**, o uivo, a corrida na parede e os golpes especiais

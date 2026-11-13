@@ -2,6 +2,15 @@
 
 ## Não lançado
 
+### Dificuldade dos bots na sala online (13/11)
+- O dono escolhe a dificuldade dos bots ao criar a sala online (Fáceis,
+  Médios, Difíceis) e pode trocar na própria sala, ao lado das regras;
+  os outros veem "bots: médios". Médios se ninguém escolheu. A sala de
+  treino offline já tinha.
+- Vai nas regras da sala (`difficulty`, 0 a 2, o servidor corrige fora
+  da faixa) e vale para os bots na partida. O teste de ponta a ponta
+  joga com bots difíceis.
+
 ### Mira do jogador (13/11)
 - **Opções → Mira**, no menu e no Esc da partida: estilo (cruz com
   ponto, cruz, ou só o ponto — este de um tamanho só, 4 px), cor (seis
