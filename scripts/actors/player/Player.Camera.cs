@@ -28,8 +28,24 @@ public partial class Player
 	[Export] public float RecoilReturnDelay = 0.12f;
 	[Export] public float MouseSensitivity = 0.002f;
 
-	/// <summary>Sensibilidade efetiva: a base daqui vezes a das opções.</summary>
-	private float Sensitivity => MouseSensitivity * Settings.Values.Sensitivity;
+	/// <summary>Sensibilidade efetiva: a base daqui vezes a das opções.
+	/// Na mira, cai na razão das aberturas: o mesmo movimento do mouse
+	/// anda a mesma distância na tela, com a câmera fechada ou aberta.</summary>
+	private float Sensitivity => MouseSensitivity * Settings.Values.Sensitivity * AimLookFactor;
+
+	/// <summary>Abertura da câmera da cabeça fora da mira (a da cena).</summary>
+	private float _baseFov = 75f;
+
+	private float AimLookFactor =>
+		_camera == null || _weapon == null || _weapon.AimBlend <= 0f ? 1f
+		: Mathf.Tan(Mathf.DegToRad(_camera.Fov * 0.5f)) / Mathf.Tan(Mathf.DegToRad(_baseFov * 0.5f));
+
+	/// <summary>A câmera fecha na mira e abre ao soltar.</summary>
+	private void UpdateAimCamera()
+	{
+		if (_camera == null) return;
+		_camera.Fov = _weapon.AimFovFor(_baseFov);
+	}
 
 	/// <summary>Distância da câmera na forma lobo.</summary>
 	[Export] public float ThirdPersonDistance = 3.5f;

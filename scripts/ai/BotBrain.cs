@@ -28,6 +28,12 @@ public struct BotContext
 	public bool IsWolf;
 	public bool CanTransform;
 	public bool MagEmpty;
+
+	/// <summary>Pente vazio e reserva da arma na mão também.</summary>
+	public bool ReserveEmpty;
+
+	/// <summary>Nenhuma arma de fogo tem bala: sobra o lobo.</summary>
+	public bool OutOfAmmo;
 	public float ThreatAge;      // segundos desde o último dano levado
 	public float BeliefAge;      // segundos desde a última informação
 	public bool HasBelief;
@@ -171,7 +177,7 @@ public static class BotBrain
 	/// </summary>
 	private static float Reload(in BotContext c)
 	{
-		if (c.IsWolf) return 0f;
+		if (c.IsWolf || c.ReserveEmpty) return 0f;
 
 		float need = 1f - c.AmmoRatio;
 		if (need <= 0.05f) return 0f;
@@ -195,6 +201,9 @@ public static class BotBrain
 	{
 		if (c.IsWolf || !c.CanTransform || !c.HasTarget) return 0f;
 
+		// Sem bala em arma nenhuma, o lobo é a única arma que sobra.
+		if (c.OutOfAmmo) return 0.9f;
+
 		float hurt = 1f - Utility.Normalize(c.HealthRatio, 0.15f, 0.55f);
 		float reachable = 1f - Utility.Normalize(c.Distance, 6f, 18f);
 
@@ -203,7 +212,7 @@ public static class BotBrain
 
 	private static float Revert(in BotContext c)
 	{
-		if (!c.IsWolf) return 0f;
+		if (!c.IsWolf || c.OutOfAmmo) return 0f;
 
 		// Alvo longe ou sumido: a garra não alcança, a arma sim.
 		float far = Utility.Normalize(c.Distance, 14f, 26f);

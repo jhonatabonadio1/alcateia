@@ -43,6 +43,10 @@ public partial class Weapon : Node3D
 	/// <summary>Munição do carregador mudou, ou a recarga começou.</summary>
 	[Signal] public delegate void AmmoChangedEventHandler(int inMag, int magSize, bool reloading);
 
+	/// <summary>Gatilho apertado sem bala no pente nem na reserva: o
+	/// clique seco.</summary>
+	[Signal] public delegate void DryFiredEventHandler();
+
 	/// <summary>Um ataque de lobo entrou em recarga: <paramref name="kind"/>
 	/// é 0 garrada, 1 salto, 2 bote. O HUD do lobo anima a volta a partir
 	/// daqui, sem consultar a arma a cada quadro.</summary>
@@ -52,6 +56,9 @@ public partial class Weapon : Node3D
 
 	/// <summary>Pegou uma arma do chão. O HUD avisa qual.</summary>
 	[Signal] public delegate void PickedUpEventHandler(string id);
+
+	/// <summary>Juntou a munição de uma arma igual à sua, caída.</summary>
+	[Signal] public delegate void AmmoTakenEventHandler(string id);
 
 	/// <summary>Soltou a arma da mão (G) ou deixou cair ao morrer.</summary>
 	[Signal] public delegate void DroppedEventHandler(string id);
@@ -103,9 +110,10 @@ public partial class Weapon : Node3D
 
 	// --- Munição ---
 	//
-	// Reserva infinita: o custo de atirar é o tempo de recarga, não o
-	// estoque. Contar balas no inventário pune quem já está perdendo.
-	// A reserva do documento existe na definição só para exibição.
+	// A munição acaba (decisão do Jhon, 13/11; antes era infinita): cada
+	// arma tem o pente e a reserva (WeaponDefinition.Reserve). Recarregar
+	// tira da reserva; sem reserva, não recarrega. Renascer enche tudo, e
+	// passar por cima de uma arma igual à sua, caída, junta a munição dela.
 
 	/// <summary>Arma de fogo na mão; nula com faca, granada ou de lobo.</summary>
 	public WeaponDefinition Held =>
@@ -156,10 +164,13 @@ public partial class Weapon : Node3D
 
 		_body.GetNode<Health>("Health").Changed += OnHealthChanged;
 		_health.Died += OnDied;
+		_health.Respawned += RefillAmmo;
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
+		UpdateAim(delta);
+
 		if (_cooldown > 0)
 			_cooldown -= delta;
 
@@ -363,10 +374,11 @@ public partial class Weapon : Node3D
 		if (def == null) return;
 
 		int ammo = primary ? PrimaryAmmo : SecondaryAmmo;
+		int reserve = primary ? PrimaryReserve : SecondaryReserve;
 		Vector3 from = _body.GlobalPosition + Vector3.Up * 1.1f;
 		var spread = new Vector3(_rng.Range(-1f, 1f), 0, _rng.Range(-1f, 1f));
 		Vector3 velocity = _body.Velocity * 0.4f + spread + Vector3.Up * 1.2f;
-		WeaponPickup.Spawn(_body, def, ammo, from, velocity);
+		WeaponPickup.Spawn(_body, def, ammo, reserve, from, velocity);
 		EmitSignal(SignalName.Dropped, def.Id);
 	}
 

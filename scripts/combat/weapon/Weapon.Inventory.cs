@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 /// <summary>
 /// O que está na mão: equipar o conjunto, munição, recarga, trocar,
-/// soltar (G) e pegar do chão. A reserva é infinita — o custo de atirar
-/// é o tempo de recarga, não o estoque.
+/// soltar (G) e pegar do chão. A munição acaba: pente e reserva, a
+/// reserva enche ao renascer e cresce com a de uma arma igual caída.
 /// </summary>
 public partial class Weapon
 {
@@ -22,6 +22,24 @@ public partial class Weapon
 	public int SecondaryMag => SecondaryDef?.Magazine ?? 0;
 	public int PrimaryAmmo { get; private set; }
 	public int SecondaryAmmo { get; private set; }
+
+	/// <summary>Balas de reserva de cada arma, fora o pente.</summary>
+	public int PrimaryReserve { get; private set; }
+	public int SecondaryReserve { get; private set; }
+
+	/// <summary>A reserva da arma na mão.</summary>
+	public int Reserve => HumanSlot == Slot.Primary ? PrimaryReserve : HumanSlot == Slot.Secondary ? SecondaryReserve : 0;
+
+	/// <summary>A arma na mão tem bala em algum lugar (pente ou reserva).</summary>
+	public bool HasAmmo => AmmoInMag > 0 || Reserve > 0;
+
+	/// <summary>A arma deste espaço existe e tem bala (pente ou reserva).</summary>
+	public bool HasAmmoIn(Slot slot) => slot switch
+	{
+		Slot.Primary => PrimaryDef != null && (PrimaryAmmo > 0 || PrimaryReserve > 0),
+		Slot.Secondary => SecondaryDef != null && (SecondaryAmmo > 0 || SecondaryReserve > 0),
+		_ => false
+	};
 	public bool IsReloading => _reloadTimer > 0;
 	private double _reloadTimer;
 	private double _reloadTotal = 1;
@@ -47,7 +65,7 @@ public partial class Weapon
 		if (_form.IsWolf || IsReloading) return false;
 
 		WeaponDefinition held = Held;
-		if (held == null || AmmoInMag >= MagSize) return false;
+		if (held == null || AmmoInMag >= MagSize || Reserve <= 0) return false;
 
 		// Vazia demora mais que tática: é o preço de esvaziar o pente.
 		_shellReload = held.ShellByShell;
@@ -69,7 +87,7 @@ public partial class Weapon
 			// define a escopeta: mais um cartucho ou atirar com o que tem.
 			AddRound();
 
-			if (AmmoInMag < MagSize && Held != null)
+			if (AmmoInMag < MagSize && Held != null && Reserve > 0)
 			{
 				_reloadTimer = Held.ShellTime;
 				_reloadTotal = _reloadTimer;
@@ -77,8 +95,18 @@ public partial class Weapon
 				return;
 			}
 		}
-		else if (HumanSlot == Slot.Primary) PrimaryAmmo = PrimaryMag;
-		else SecondaryAmmo = SecondaryMag;
+		else if (HumanSlot == Slot.Primary)
+		{
+			int moved = Mathf.Min(PrimaryMag - PrimaryAmmo, PrimaryReserve);
+			PrimaryAmmo += moved;
+			PrimaryReserve -= moved;
+		}
+		else
+		{
+			int moved = Mathf.Min(SecondaryMag - SecondaryAmmo, SecondaryReserve);
+			SecondaryAmmo += moved;
+			SecondaryReserve -= moved;
+		}
 
 		_reloadTimer = 0;
 		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
@@ -86,8 +114,26 @@ public partial class Weapon
 
 	private void AddRound()
 	{
-		if (HumanSlot == Slot.Primary) PrimaryAmmo = Mathf.Min(PrimaryAmmo + 1, PrimaryMag);
-		else SecondaryAmmo = Mathf.Min(SecondaryAmmo + 1, SecondaryMag);
+		if (HumanSlot == Slot.Primary && PrimaryReserve > 0 && PrimaryAmmo < PrimaryMag)
+		{
+			PrimaryAmmo++;
+			PrimaryReserve--;
+		}
+		else if (HumanSlot == Slot.Secondary && SecondaryReserve > 0 && SecondaryAmmo < SecondaryMag)
+		{
+			SecondaryAmmo++;
+			SecondaryReserve--;
+		}
+	}
+
+	/// <summary>Pente e reserva cheios nas duas armas (ao renascer).</summary>
+	public void RefillAmmo()
+	{
+		PrimaryAmmo = PrimaryMag;
+		SecondaryAmmo = SecondaryMag;
+		PrimaryReserve = PrimaryDef?.Reserve ?? 0;
+		SecondaryReserve = SecondaryDef?.Reserve ?? 0;
+		EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
 	}
 
 	private void CancelReload()
@@ -105,6 +151,8 @@ public partial class Weapon
 
 		PrimaryAmmo = PrimaryMag;
 		SecondaryAmmo = SecondaryMag;
+		PrimaryReserve = PrimaryDef?.Reserve ?? 0;
+		SecondaryReserve = SecondaryDef?.Reserve ?? 0;
 		_reloadTimer = 0;
 		_bloom = 0;
 		_streak = 0;
@@ -157,13 +205,13 @@ public partial class Weapon
 		WeaponDefinition def = HumanSlot == Slot.Primary ? PrimaryDef : SecondaryDef;
 		if (def == null) return false;
 
-		int ammo = AmmoInMag;
+		int ammo = AmmoInMag, reserve = Reserve;
 		if (IsReloading) CancelReload();
 
 		Vector3 forward = -_camera.GlobalTransform.Basis.Z;
 		Vector3 from = _camera.GlobalPosition + forward * 0.45f + Vector3.Down * 0.25f;
 		Vector3 velocity = _body.Velocity * 0.6f + forward * DropThrow + Vector3.Up * DropLift;
-		WeaponPickup.Spawn(_body, def, ammo, from, velocity);
+		WeaponPickup.Spawn(_body, def, ammo, reserve, from, velocity);
 
 		Remove(HumanSlot);
 		EmitSignal(SignalName.Dropped, def.Id);
@@ -175,11 +223,15 @@ public partial class Weapon
 	}
 
 	/// <summary>Cabe esta arma? Só se o espaço dela estiver vazio — como
-	/// no CS: para trocar, solte a sua primeiro.</summary>
+	/// no CS: para trocar, solte a sua primeiro. Ou é igual à sua e a
+	/// reserva não está cheia: aí vale a munição dela.</summary>
 	public bool CanTake(WeaponDefinition def)
 	{
 		if (def == null || _form.IsWolf || _health.IsDead) return false;
-		return Arsenal.IsSecondary(def.Id) ? SecondaryDef == null : PrimaryDef == null;
+		bool secondary = Arsenal.IsSecondary(def.Id);
+		WeaponDefinition mine = secondary ? SecondaryDef : PrimaryDef;
+		if (mine == null) return true;
+		return mine.Id == def.Id && (secondary ? SecondaryReserve : PrimaryReserve) < mine.Reserve;
 	}
 
 	/// <summary>
@@ -187,20 +239,35 @@ public partial class Weapon
 	/// for a melhor que você tem — quem soltou a primária para pegar
 	/// outra quer atirar com ela, não continuar de pistola.
 	/// </summary>
-	public bool TryPickUp(WeaponDefinition def, int ammo)
+	public bool TryPickUp(WeaponDefinition def, int ammo, int reserve)
 	{
 		if (!CanTake(def)) return false;
 
 		bool secondary = Arsenal.IsSecondary(def.Id);
+
+		// Igual à sua: só a munição dela (pente e reserva) entra na reserva.
+		WeaponDefinition mine = secondary ? SecondaryDef : PrimaryDef;
+		if (mine != null)
+		{
+			int gain = Mathf.Max(ammo, 0) + Mathf.Max(reserve, 0);
+			if (secondary) SecondaryReserve = Mathf.Min(SecondaryReserve + gain, mine.Reserve);
+			else PrimaryReserve = Mathf.Min(PrimaryReserve + gain, mine.Reserve);
+			EmitSignal(SignalName.AmmoTaken, def.Id);
+			EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, IsReloading);
+			return true;
+		}
+
 		if (secondary)
 		{
 			SecondaryDef = def;
 			SecondaryAmmo = Mathf.Clamp(ammo, 0, SecondaryMag);
+			SecondaryReserve = Mathf.Clamp(reserve, 0, def.Reserve);
 		}
 		else
 		{
 			PrimaryDef = def;
 			PrimaryAmmo = Mathf.Clamp(ammo, 0, PrimaryMag);
+			PrimaryReserve = Mathf.Clamp(reserve, 0, def.Reserve);
 		}
 
 		Slot target = secondary ? Slot.Secondary : Slot.Primary;
@@ -225,11 +292,13 @@ public partial class Weapon
 		{
 			PrimaryDef = null;
 			PrimaryAmmo = 0;
+			PrimaryReserve = 0;
 		}
 		else if (slot == Slot.Secondary)
 		{
 			SecondaryDef = null;
 			SecondaryAmmo = 0;
+			SecondaryReserve = 0;
 		}
 	}
 }

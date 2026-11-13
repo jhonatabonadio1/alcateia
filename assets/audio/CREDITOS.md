@@ -58,6 +58,9 @@ gravação de perto da arma (as gravações têm de dois a quatro); o
 `ambiente_polar` e `ambiente_vila` são vento sintetizado (ruído filtrado
 com rajadas) por `tools/sons/processar.py`. São do projeto.
 
+`arma_vazia` (o clique seco do gatilho sem bala) é sintetizado pelo mesmo
+script. É do projeto.
+
 ## O uivo
 
 Não tem arquivo próprio: o uivo (R, de lobo) toca o mesmo som da

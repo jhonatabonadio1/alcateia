@@ -262,6 +262,31 @@ save(clip(kn("error_004.wav"), mono=False), "ui_negado", -12)
 # Ambiente noturno de floresta como fundo do menu: é loop pronto.
 shutil.copy(os.path.join(RAW, oc("AMBForst_Night_LOOP_01")), os.path.join(OUT, "musica_menu.ogg"))
 
+# ---------------------------------------------------------- arma vazia
+def dry_click(seed=5):
+    """Clique seco do gatilho sem bala: um estalo curto de metal (dois
+    modos ressonantes e um pouco de ruído) e o retorno da mola, mais
+    fraco, logo atrás. Sintetizado — não tem fonte externa."""
+    rng = np.random.default_rng(seed)
+    n = int(SR * 0.16)
+    t = np.arange(n) / SR
+    def tick(at, gain, f1, f2, decay):
+        x = np.zeros(n)
+        k = t >= at
+        u = t[k] - at
+        env = np.exp(-u / decay)
+        x[k] = (np.sin(2 * np.pi * f1 * u) * 0.6 + np.sin(2 * np.pi * f2 * u) * 0.4 + rng.normal(0, 0.5, k.sum())) * env * gain
+        return x
+    x = tick(0.0, 1.0, 3100, 5300, 0.004) + tick(0.055, 0.45, 2300, 4100, 0.006)
+    pcm = (x / np.abs(x).max() * 0.8 * 32767).astype("<i2")
+    out = tmp()
+    import wave
+    with wave.open(out, "wb") as w:
+        w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
+    return out
+
+save(dry_click(), "arma_vazia", -9)
+
 # ---------------------------------------------------------- ambiente
 def noise_loop(seconds, low, high, seed, gusts=0.5, tilt=1.0):
     """Vento sintetizado que emenda sem costura: ruído montado na

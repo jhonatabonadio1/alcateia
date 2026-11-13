@@ -136,7 +136,9 @@ public partial class ViewModel
 		PackedScene packed = RigScene(rig["arquivo"].AsString());
 		if (packed == null) return false;
 		var scene = packed.Instantiate<Node3D>();
-		float stretch = Mathf.Tan(Mathf.DegToRad(_camera.Fov * 0.5f)) / Mathf.Tan(Mathf.DegToRad(RigFov * 0.5f));
+		// A abertura de fora do zoom: o zoom fecha a câmera, e quem o
+		// desfaz na arma é o _Process.
+		float stretch = Mathf.Tan(Mathf.DegToRad(_baseFov * 0.5f)) / Mathf.Tan(Mathf.DegToRad(RigFov * 0.5f));
 		scene.Scale = new Vector3(stretch, stretch, 1f) * RigScale;
 		if (rig.ContainsKey("ajuste")) scene.Position = scene.Scale * ToVector(rig["ajuste"]);
 		_held = new Node3D { Name = id };

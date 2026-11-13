@@ -266,7 +266,7 @@ public partial class Bot : CharacterBody3D
 				break;
 
 			case BotAction.Revert:
-				_weapon.SelectSlot(Slot.Primary);
+				_weapon.SelectSlot(LoadedFirearm());
 				RunCombat(delta);
 				break;
 
@@ -311,6 +311,14 @@ public partial class Bot : CharacterBody3D
 			? GlobalPosition.DistanceTo(_target.GlobalPosition)
 			: 999f;
 
+		// Arma seca na mão (pente e reserva): troca pela outra, se tiver bala.
+		if (!_form.IsWolf && _weapon.CurrentSlot is Slot.Primary or Slot.Secondary
+			&& !_weapon.HasAmmoIn(_weapon.CurrentSlot) && !_weapon.IsReloading)
+		{
+			Slot other = LoadedFirearm();
+			if (other != _weapon.CurrentSlot && _weapon.HasAmmoIn(other)) _weapon.SelectSlot(other);
+		}
+
 		int mag = _weapon.CurrentSlot == Slot.Secondary
 			? _weapon.SecondaryMag
 			: _weapon.PrimaryMag;
@@ -330,6 +338,8 @@ public partial class Bot : CharacterBody3D
 			ShieldRatio = _health.MaxShield > 0 ? _health.Shield / _health.MaxShield : 0f,
 			AmmoRatio = mag > 0 ? (float)ammo / mag : 1f,
 			MagEmpty = ammo <= 0,
+			ReserveEmpty = ammo <= 0 && _weapon.Reserve <= 0,
+			OutOfAmmo = !_weapon.HasAmmoIn(Slot.Primary) && !_weapon.HasAmmoIn(Slot.Secondary),
 			IsWolf = _form.IsWolf,
 			CanTransform = !_form.IsWolf && _form.Breed != null
 				&& RoomConfig.Rules.Transform != TransformRule.Bloqueada,
@@ -433,4 +443,9 @@ public partial class Bot : CharacterBody3D
 		if (_form.IsWolf)
 			_weapon.SelectSlot(Slot.Primary);
 	}
+
+	/// <summary>A arma de fogo para voltar: a principal, ou a pistola se
+	/// a principal secou.</summary>
+	private Slot LoadedFirearm() =>
+		!_weapon.HasAmmoIn(Slot.Primary) && _weapon.HasAmmoIn(Slot.Secondary) ? Slot.Secondary : Slot.Primary;
 }

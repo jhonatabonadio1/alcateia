@@ -65,8 +65,9 @@ public partial class WeaponDefinition : Resource
 	[Export] public FireMode Mode = FireMode.Auto;
 	[Export] public int Magazine = 30;
 
-	/// <summary>Reserva do documento. Só para exibição: a reserva é
-	/// infinita no jogo, regra que vale desde o primeiro lote.</summary>
+	/// <summary>Balas de reserva, fora o pente (decisão do Jhon, 13/11: a
+	/// munição acaba). É com quanto se nasce e o teto do que se junta do
+	/// chão. Renascer enche de novo.</summary>
 	[Export] public int Reserve = 90;
 
 	[Export] public float ReloadTactical = 2.3f;
@@ -122,6 +123,16 @@ public partial class WeaponDefinition : Resource
 
 	/// <summary>Raio do estampido para a audição dos bots, em metros.</summary>
 	[Export] public float NoiseRadius = 45f;
+
+	/// <summary>Mira (botão direito segurado): a abertura da câmera, em
+	/// graus na vertical (a normal é 75), quanto da dispersão sobra e
+	/// quanto da velocidade de caminhada. Fuzil fecha mais e fica mais
+	/// preciso; pistola e escopeta quase nada — é a assinatura de cada
+	/// uma.</summary>
+	[ExportGroup("Mira")]
+	[Export(PropertyHint.Range, "20,75,1")] public float AimFov = 55f;
+	[Export(PropertyHint.Range, "0.1,1,0.05")] public float AimSpreadMultiplier = 0.35f;
+	[Export(PropertyHint.Range, "0.2,1,0.05")] public float AimSpeedMultiplier = 0.7f;
 
 	[ExportGroup("Estrelas (0 a 5, alto é melhor)")]
 	[Export] public float StarDamage;

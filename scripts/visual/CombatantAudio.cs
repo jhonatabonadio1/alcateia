@@ -62,6 +62,7 @@ public partial class CombatantAudio : Node
 		_weapon.HitConfirmed += OnHit;
 		_weapon.WorldHit += OnWorldHit;
 		_weapon.AmmoChanged += OnAmmo;
+		_weapon.DryFired += () => Play("arma_vazia");
 		_weapon.SlotChanged += OnSlot;
 		_weapon.GrenadesChanged += OnGrenades;
 		_form.FormChanged += OnForm;

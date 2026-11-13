@@ -39,9 +39,14 @@ public partial class Hud
 	{
 		if (_mag == null || _form.IsWolf) return;
 
+		int reserve = _weapon.Reserve;
 		_mag.Text = inMag.ToString();
 		_mag.AddThemeColorOverride("font_color", inMag == 0 && !reloading ? UiTokens.Danger : UiTokens.TextPrimary);
-		_reloading.Text = reloading ? "RECARREGANDO" : inMag <= magSize / 4 && magSize > 0 ? "R · RECARREGAR" : "";
+		_reserve.Text = $"/ {reserve}";
+		_reserve.AddThemeColorOverride("font_color", reserve == 0 ? UiTokens.Danger : UiTokens.TextSecondary);
+		_reloading.Text = reloading ? "RECARREGANDO"
+			: inMag == 0 && reserve == 0 ? "SEM MUNIÇÃO"
+			: inMag <= magSize / 4 && magSize > 0 && reserve > 0 ? "R · RECARREGAR" : "";
 	}
 
 	private void OnSlotChanged(int slot)

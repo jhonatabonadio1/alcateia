@@ -219,8 +219,8 @@ public partial class Hud
 		_mag = UiKit.Text("30", "NumericLarge");
 		_mag.AddThemeFontSizeOverride("font_size", 52);
 		ammo.AddChild(_mag);
-		// Reserva infinita: o custo de atirar é o tempo de recarga.
-		_reserve = UiKit.Text("/ ∞", "Subtitle", UiTokens.TextSecondary);
+		// A reserva: o que sobra fora do pente.
+		_reserve = UiKit.Text("/ 90", "Subtitle", UiTokens.TextSecondary);
 		_reserve.SizeFlagsVertical = Control.SizeFlags.ShrinkEnd;
 		ammo.AddChild(_reserve);
 		column.AddChild(ammo);

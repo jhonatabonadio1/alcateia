@@ -56,6 +56,7 @@ public partial class Player : CharacterBody3D
 
 		_head = GetNode<Node3D>("Head");
 		_camera = GetNode<Camera3D>("Head/Camera3D");
+		_baseFov = _camera.Fov;
 		_springArm = GetNode<SpringArm3D>("Head/SpringArm3D");
 		_wolfCamera = GetNode<Camera3D>("Head/SpringArm3D/WolfCamera");
 		_mesh = GetNode<MeshInstance3D>("MeshInstance3D");
@@ -263,6 +264,7 @@ public partial class Player : CharacterBody3D
 		UpdateSprint(delta);
 		UpdateNoise(delta);
 		UpdateCameraKick(delta);
+		UpdateAimCamera();
 
 		// Os golpes especiais do lobo (bote, voo do salto, preso ao chão)
 		// movem o corpo pela arma; o resto do movimento espera.

@@ -5,10 +5,11 @@ using System.Collections.Generic;
 /// Arma caída no chão: solta com B ou deixada por quem morreu.
 ///
 /// Quem passa por cima com o espaço daquela arma vazio fica com ela, com
-/// o pente como estava (<see cref="Weapon.TryPickUp"/>). Com o espaço
-/// ocupado, nada acontece — para trocar, solte a sua primeiro. É a regra
-/// do CS, e é o que impede o jogador de trocar de arma sem querer ao
-/// passar por cima de um corpo.
+/// o pente e a reserva como estavam (<see cref="Weapon.TryPickUp"/>).
+/// Com o espaço ocupado pela mesma arma, junta a munição dela na reserva
+/// (até o teto). Com outra arma, nada acontece — para trocar, solte a sua
+/// primeiro. É a regra do CS, e é o que impede o jogador de trocar de
+/// arma sem querer ao passar por cima de um corpo.
 ///
 /// O voo é feito à mão, com raio de um quadro para o outro, e não com
 /// corpo rígido. Corpo rígido no chão vira obstáculo para todo raio do
@@ -40,6 +41,9 @@ public partial class WeaponPickup : Area3D
 	public WeaponDefinition Definition { get; private set; }
 	public int Ammo { get; private set; }
 
+	/// <summary>A reserva que vinha com a arma.</summary>
+	public int Reserve { get; private set; }
+
 	private Node3D _dropper;
 	private Node3D _model;
 	private Vector3 _velocity;
@@ -55,7 +59,7 @@ public partial class WeaponPickup : Area3D
 	}
 
 	/// <summary>Joga uma arma no mundo a partir de <paramref name="from"/>.</summary>
-	public static WeaponPickup Spawn(Node3D dropper, WeaponDefinition def, int ammo, Vector3 from, Vector3 velocity)
+	public static WeaponPickup Spawn(Node3D dropper, WeaponDefinition def, int ammo, int reserve, Vector3 from, Vector3 velocity)
 	{
 		if (def == null || dropper == null || !dropper.IsInsideTree()) return null;
 
@@ -66,6 +70,7 @@ public partial class WeaponPickup : Area3D
 		{
 			Definition = def,
 			Ammo = ammo,
+			Reserve = reserve,
 			_dropper = dropper,
 			_velocity = velocity,
 			_spin = (float)GD.RandRange(-1.0, 1.0) >= 0 ? 1 : -1,
@@ -164,7 +169,7 @@ public partial class WeaponPickup : Area3D
 			if (body == _dropper && _age < DropperDelay) continue;
 
 			var weapon = body.GetNodeOrNull<Weapon>("Weapon");
-			if (weapon == null || !weapon.TryPickUp(Definition, Ammo)) continue;
+			if (weapon == null || !weapon.TryPickUp(Definition, Ammo, Reserve)) continue;
 
 			QueueFree();
 			return;

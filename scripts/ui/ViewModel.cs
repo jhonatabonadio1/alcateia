@@ -69,6 +69,7 @@ public partial class ViewModel : Node3D
 	private Node3D _muzzle;
 
 	private Vector3 _rest;
+	private float _baseFov = 75f;
 	private float _recoil;
 	private float _draw;
 	private float _dip;
@@ -109,6 +110,7 @@ public partial class ViewModel : Node3D
 		_form = _body.GetNode<FormController>("FormController");
 
 		_rest = Position;
+		_baseFov = _camera.Fov;
 		_lastLook = _camera.GlobalRotation;
 
 		// A arma na mão fica a menos de meio metro do olho: o plano de corte
@@ -135,14 +137,28 @@ public partial class ViewModel : Node3D
 		UpdateSway(dt);
 		UpdateLanding(dt);
 
+		// No zoom (botão direito) a arma fica onde está, mas quase não
+		// balança: quem mira é a mira circular (Crosshair).
+		float aim = _weapon.AimEase;
+		float steady = 1f - 0.8f * aim;
+		bob *= steady;
+		Vector2 sway = _sway * (1f - 0.65f * aim);
+
 		// Com os braços animados, o tiro e o sacar já vêm da animação.
 		// O conjunto sem animação de sacar sobe de baixo, como as mãos de código.
-		float kick = Ease(_recoil) * (HasRig ? RigKick : 1f);
+		float kick = Ease(_recoil) * (HasRig ? RigKick : 1f) * (1f - 0.4f * aim);
 		// O conjunto está a meio metro do olho, não a um: a subida é menor.
 		float draw = HasRig && _rigClips.ContainsKey("sacar") ? 0f : _draw;
 		float drop = HasRig ? 0.06f : 0.2f, tilt = HasRig ? 14f : 24f;
-		Position = _rest + bob + new Vector3(0, -draw * drop - _dip, Kick * kick);
-		RotationDegrees = new Vector3(_sway.Y + KickPitch * kick - draw * tilt, _sway.X, -_sway.X * 0.6f);
+		var swing = new Vector3(sway.Y + KickPitch * kick - draw * tilt, sway.X, -sway.X * 0.6f);
+		Vector3 position = _rest + bob + new Vector3(0, -draw * drop - _dip, Kick * kick);
+
+		// A câmera fecha no zoom, mas a arma não pode crescer junto (é o
+		// mesmo que ter uma câmera só para ela, como todo FPS): encolhe na
+		// largura e na altura da tela na razão das aberturas.
+		float zoom = Mathf.Tan(Mathf.DegToRad(_camera.Fov * 0.5f)) / Mathf.Tan(Mathf.DegToRad(_baseFov * 0.5f));
+		Basis shrink = Basis.FromScale(new Vector3(zoom, zoom, 1f));
+		Transform = new Transform3D(shrink * Basis.FromEuler(swing * Mathf.DegToRad(1f)), shrink * position);
 
 		UpdateHands(dt);
 		UpdateEffects(dt);

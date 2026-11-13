@@ -43,6 +43,9 @@ public readonly record struct CharacterIntent
 	public bool Special { get; init; }
 	public bool SpecialReleased { get; init; }
 
+	/// <summary>Botão direito segurado: de humano, mirar pela arma.</summary>
+	public bool AimHeld { get; init; }
+
 	/// <summary>R: ruge de lobo, recarrega de humano.</summary>
 	public bool Howl { get; init; }
 	public bool HowlHeld { get; init; }
@@ -72,6 +75,7 @@ public readonly record struct CharacterIntent
 		AttackReleased = Input.IsActionJustReleased("attack"),
 		Special = Input.IsActionJustPressed("special"),
 		SpecialReleased = Input.IsActionJustReleased("special"),
+		AimHeld = Input.IsActionPressed("special"),
 		Howl = Input.IsActionJustPressed("howl"),
 		HowlHeld = Input.IsActionPressed("howl"),
 		Drop = Input.IsActionJustPressed("drop"),

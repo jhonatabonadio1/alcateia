@@ -315,9 +315,23 @@ Cabeça: `Weapon.HeadZone` 0,72 m acima do centro do corpo (a faca usa
 Outros campos: `Pellets` (chumbos por tiro), `WolfStun` (M3: 0,4 s de
 lentidão no lobo), `ShellByShell`/`ShellTime`/`ShellEnter` (recarga
 cartucho a cartucho), `RecoilEarlyShots` (tiros antes do recuo
-"Late"), `SpreadDelay` (espera para a dispersão voltar). `Reserve` e os
-`Star*` são só exibição (a reserva é infinita; as estrelas são da
-loja).
+"Late"), `SpreadDelay` (espera para a dispersão voltar). `Reserve` é a reserva
+com que se nasce e o teto do que se junta do chão (a munição acaba).
+Os `Star*` são só exibição (da loja).
+
+**Zoom** (botão direito segurado), no grupo "Mira" de cada
+`.tres` (gerados por `tools/gerar_arsenal.py`):
+
+| Campo | M16A2 | SG-552 | AK-47 | UMP-45 | M3 | M9 |
+|---|---|---|---|---|---|---|
+| `AimFov` (graus; fora da mira, 75) | 55 | 55 | 55 | 60 | 65 | 65 |
+| `AimSpreadMultiplier` (dispersão que sobra) | 0,35 | 0,35 | 0,35 | 0,5 | 0,8 | 0,6 |
+| `AimSpeedMultiplier` (passo que sobra) | 0,7 | 0,7 | 0,7 | 0,7 | 0,7 | 0,7 |
+
+`Weapon.AimTime` 0,16 s (entrar e sair). A sensibilidade do mouse cai na
+razão das aberturas, para o mesmo gesto andar o mesmo na tela. A mira
+circular: `Crosshair.PaintScope` (anel a 11% da altura da tela; a cor e
+a opacidade são as da mira do jogador).
 
 Ajustes globais do recuo, no `Player`: `RecoilScale` 1 (multiplica o de
 toda arma), `RecoilMax` 4,5° (teto acumulado), `RecoilReturnDelay`

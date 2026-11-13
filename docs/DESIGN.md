@@ -89,7 +89,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 3 | Virar lobo |
 | 4 | Faca |
 | 5 | Equipar granada (o ataque arremessa) |
-| Botão direito | Lobo: salto no chão, bote no ar |
+| Botão direito | Humano: zoom com mira circular (segurar). Lobo: salto no chão, bote no ar |
 | W duas vezes (segurando) | Lobo: corrida de quatro patas, 30% mais rápida (`WolfSprintFactor`); soltar o W ou agachar volta a correr em pé |
 | W segurado | Sustenta a corrida em parede |
 | Ataque segurado | Agarra na parede sem avançar |
@@ -253,13 +253,27 @@ transformar um segundo tanque de vida, o que esvazia a decisão.
 
 ### Munição e recuo
 
-Carregador por arma, **reserva infinita**: o custo de atirar é o tempo
-de recarga, não o estoque. Contar balas no inventário só pune quem já
-está perdendo a luta.
+Carregador por arma e **reserva que acaba** (decisão do Jhon, 13/11;
+antes era infinita): recarregar tira da reserva, e sem reserva a arma
+não recarrega — o gatilho dá o clique seco e o HUD mostra "SEM
+MUNIÇÃO". O que alivia quem está perdendo: **renascer enche tudo**, e
+passar por cima de uma arma igual à sua, caída (todo corpo deixa a
+dele), junta a munição dela na reserva, até o teto da arma. Arma
+diferente continua no chão (para trocar, solte a sua com G).
 
 Carregador vazio recarrega sozinho ao puxar o gatilho — obrigar o
 jogador a apertar R depois de ouvir o clique adiciona um passo que ele
 já quis dar.
+
+**Zoom (botão direito segurado, de humano)** (pedido do Jhon, 13/11):
+a câmera fecha, a dispersão cai e o passo fica mais lento — cada arma
+com os seus números (fuzil fecha mais e fica mais preciso; pistola e
+escopeta quase nada). A arma não vem para o olho (mirar pela alça foi
+tentado e ficou ruim): fica onde está, sem crescer com o zoom, e a cruz
+dá lugar a uma **mira circular** detalhada — anel, hastes com marcas e
+um círculo fino com o cone de verdade do próximo tiro. Entrar e sair
+levam 0,16 s, e recarregar tira do zoom. De lobo o botão direito
+continua sendo o salto e o bote.
 
 O recuo tem **teto** (`RecoilMax`). Sem teto, segurar o gatilho aponta
 a arma para o céu e ela vira inútil em vez de difícil. Cada arma traz
@@ -294,10 +308,10 @@ só mira e avisos críticos.
 | Centro | Mira com abertura dinâmica (o jogador monta a dele em Opções → Mira: cruz com ou sem ponto, ou só o ponto, de tamanho fixo; cor, opacidade, tamanho, espessura, espaço, contorno; a abertura pode ser desligada), marcador de acerto, dano direcional, avisos |
 | Inferior esquerdo | Forma atual (sempre visível), escudo e vida |
 | Inferior centro | Barra de transformação |
-| Inferior direito | WP, e o painel da forma: arma, pente `/ ∞`, granadas e slots no humano; recargas de garrada, salto, bote e uivo no lobo |
+| Inferior direito | WP, e o painel da forma: arma, pente `/ reserva` (vermelha quando acaba), granadas e slots no humano; recargas de garrada, salto, bote e uivo no lobo |
 
 **O HUD troca de forma.** Humano e lobo são dois painéis distintos,
-trocados com transição. O lobo não tem munição; mostrar "30 / ∞" num
+trocados com transição. O lobo não tem munição; mostrar "30 / 90" num
 lobo seria informação errada.
 
 **Vida abaixo de 30%** pulsa e põe a vinheta vermelha nas bordas. A

@@ -39,7 +39,7 @@ public partial class Weapon
 	public float RecoilYaw { get; private set; }
 
 	/// <summary>Velocidade de caminhada com a arma da mão (1 = base).</summary>
-	public float MoveSpeedMultiplier => Held?.SpeedMultiplier ?? (HumanSlot == Slot.Knife ? KnifeSpeedMultiplier : 1f);
+	public float MoveSpeedMultiplier => (Held?.SpeedMultiplier ?? (HumanSlot == Slot.Knife ? KnifeSpeedMultiplier : 1f)) * AimSpeedFactor;
 
 	/// <summary>Dispersão de agora, em graus — para a mira poder crescer junto.</summary>
 	public float CurrentSpread => Held == null ? 0f : SpreadNow(Held);
@@ -61,10 +61,14 @@ public partial class Weapon
 
 		// Carregador vazio recarrega sozinho: obrigar o jogador a
 		// apertar R depois de ouvir o clique só adiciona um passo que
-		// ele já quis dar.
+		// ele já quis dar. Sem reserva, é o clique seco.
 		if (AmmoInMag <= 0)
 		{
-			TryReload();
+			if (!TryReload())
+			{
+				_cooldown = 0.3f;
+				EmitSignal(SignalName.DryFired);
+			}
 			return;
 		}
 
@@ -155,7 +159,9 @@ public partial class Weapon
 		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
 		return CombatRules.Spread(held.SpreadBase, _bloom,
 			flat.Length() > CombatRules.MovingSpreadSpeed, held.MoveSpreadMultiplier,
-			_body is Player player && player.IsCrouching, held.CrouchSpreadMultiplier);
+			_body is Player player && player.IsCrouching, held.CrouchSpreadMultiplier)
+			// Na mira, o cone fecha (Weapon.Aim).
+			* AimSpreadFactor;
 	}
 
 	/// <summary>Direção sorteada num cone de meio-ângulo dado. A raiz no

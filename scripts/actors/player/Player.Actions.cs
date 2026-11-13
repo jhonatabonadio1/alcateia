@@ -73,6 +73,10 @@ public partial class Player
 
 	private void HandleActions(double delta)
 	{
+		// Botão direito segurado, de humano: zoom com mira circular (Weapon.Aim).
+		// Com menu aberto, solta a mira.
+		_weapon.SetAiming(!UiState.AnyOpen && !_form.IsWolf && _intent.AimHeld);
+
 		if (UiState.AnyOpen) return;
 
 		// Rugindo, o lobo não faz mais nada até o rugido acabar.
@@ -97,7 +101,7 @@ public partial class Player
 		if (_intent.AttackReleased)
 			_weapon.ReleaseGrenade();
 
-		// Botão direito: salto no chão, bote no ar. Quem move o corpo
+		// Botão direito, de lobo: salto no chão, bote no ar. Quem move o corpo
 		// durante os dois é o passo de física, pela arma.
 		//
 		// Pulo e especial no mesmo quadro: quem apertou os dois quer o

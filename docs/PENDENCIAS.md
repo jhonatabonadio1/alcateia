@@ -34,8 +34,10 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ### Combate e visual
 
-- **Abrir a mira com o botão direito**, nas armas que têm mira (zoom,
-  arma no centro da tela, menos dispersão). Hoje não existe.
+- **Mirar pela alça da arma (ADS de verdade).** Hoje o botão direito dá
+  zoom com mira circular (13/11). Mirar pela arma foi tentado e ficou
+  ruim: pede animação própria de mirar em cada conjunto dos braços.
+  Luneta de verdade para uma arma de precisão, também.
 - **Efeito de sangue nos tiros** (no corpo atingido e no chão/parede
   atrás).
 - **Efeito de tiro melhor** (clarão, fumaça, traçante, marca na parede).

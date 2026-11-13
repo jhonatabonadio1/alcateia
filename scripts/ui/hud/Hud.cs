@@ -87,6 +87,7 @@ public partial class Hud : CanvasLayer
 		_weapon.AmmoChanged += OnAmmoChanged;
 		_weapon.AttackCooldown += OnAttackCooldown;
 		_weapon.PickedUp += id => Warn($"Pegou: {Arsenal.NameOf(id)}", 1.6f, UiTokens.Success);
+		_weapon.AmmoTaken += id => Warn($"Munição: {Arsenal.NameOf(id)}", 1.2f, UiTokens.Success);
 		_weapon.Dropped += id =>
 		{
 			if (!_health.IsDead) Warn($"Soltou: {Arsenal.NameOf(id)}", 1.2f, UiTokens.TextSecondary);
