@@ -675,25 +675,26 @@ tema na raiz: `UiTheme.Apply(UiKit.Fill(new Control()))`.
 
 ### Criar um mapa
 
-O caminho atual é gerar o `.tscn` por script, como
-`tools/gerar_hangar.py`. A cena do mapa entra no `main.tscn` como o nó
-`Map` (o minimapa procura por esse nome) e precisa ter:
+Passo a passo em `docs/MAPAS.md`. Em resumo: um arquivo em
+`tools/mapas/` monta o mapa com o kit (`tools/mapas/kit.py`),
+`tools/gerar_mapas.py` escreve o `.tscn` e a miniatura, e o mapa entra
+na lista em `scripts/meta/Maps.cs`. A cena da partida carrega o mapa da
+sala pelo `MapSlot` (nó `Map` do `main.tscn`).
+
+O que a cena do mapa precisa ter, seja gerada ou feita à mão:
 
 - **Geometria** em `StaticBody3D` com `BoxMesh` — o minimapa desenha
   toda caixa que encontrar, com a cor do material dela, e ignora pisos
   maiores que 1200 m².
 - **Dois `SpawnPoints`**, um com `Team = 1` (azul) e outro com
-  `Team = 2` (laranja), com os pontos de nascimento de cada base.
-- **`PatrolRoutes`** com as rondas dos bots. Cada mapa traz as suas.
+  `Team = 2` (laranja).
+- **`PatrolRoutes`** com as rondas dos bots.
 - **`NavBaker`**, que gera a malha de navegação ao carregar.
 - **`Label3D`** com texto curto ("A", "B") onde quiser marca no
   minimapa.
-
-Depois troque o mapa instanciado em `scenes/main.tscn` (nó `Map`).
-
-As alturas precisam conversar com a física: um degrau que o humano
-sobe, uma caixa que só o lobo alcança. O `docs/DESIGN.md`, seção "O mapa
-Hangar", tem as medidas.
+- Opcional: **`Ambiente`** (`WorldEnvironment`) e **`Sol`**
+  (`DirectionalLight3D`) próprios; quando o mapa traz, os padrões da
+  cena da partida saem.
 
 ### Ensinar uma decisão nova ao bot
 

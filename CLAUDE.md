@@ -17,6 +17,7 @@ do `docs/DESIGN.md` do sistema que for mexer.
 > | `docs/DESIGN.md` | as decisões de jogo, sistema por sistema, e o porquê de cada uma |
 > | `docs/ARQUITETURA.md` | como o código está montado e onde mexer em cada coisa |
 > | `docs/AJUSTES.md` | todo número regulável, com o valor atual e onde mudar |
+> | `docs/MAPAS.md` | os mapas, como são gerados e como fazer um novo |
 > | `docs/decisoes/` | as decisões de arquitetura (ADR) |
 > | `docs/ARSENAL.md`, `docs/CONJUNTOS.md`, `docs/UI.md` | especificações de armas, economia e interface |
 > | `docs/CHANGELOG.md` | o que entrou em cada versão |
@@ -28,13 +29,14 @@ do `docs/DESIGN.md` do sistema que for mexer.
 
 ## Regra zero
 
-**Fase 1 é local, sem rede.** Não implemente multiplayer, RPC,
-`MultiplayerSynchronizer` ou qualquer sincronização até a Fase 1 estar
-fechada. O objetivo é descobrir se a mecânica é divertida antes de
-pagar o custo de sincronização — netcode em cima de gameplay não
-validado é retrabalho garantido.
+**A Fase 1 está fechada** (decisão do Jhon, v0.28.0): a mecânica local
+foi validada. Agora o trabalho é deixar o jogo profissional — mapas,
+arte, som, interface — e pôr o multiplayer de pé (Fase 2).
 
-`GameManager.cs` existe mas está dormente. Não o ative.
+O que continua valendo da regra antiga: **não misture rede no que é
+regra de jogo**. `Health`, `Weapon` e `FormController` não sabem de
+rede; o servidor roda o mesmo código sobre a intenção do jogador
+(`CharacterIntent`) e a semente da partida (`GameRandom`).
 
 ---
 

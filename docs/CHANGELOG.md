@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.28.0 — 2026-11-13 (o jogo profissional, parte 1: mapas)
+
+### Adicionado
+- **Três mapas novos**, de temas e tamanhos diferentes:
+  - **Metrô** (pequeno, 48 × 30 m): estação fechada com um trem parado
+    no meio, galerias a 5 m e corredores de serviço;
+  - **Vila** (médio, 72 × 52 m): vila de deserto no fim da tarde, com
+    praça, chafariz, feira, terraços e vielas;
+  - **Estação Polar** (grande, 110 × 70 m): base de pesquisa na neve,
+    com garagem atravessável, alojamentos, passarelas e tanques.
+- **16 texturas com relevo e aspereza**, desenhadas por código
+  (`tools/gerar_texturas.py`), sem arquivo de terceiros.
+- **Céu, neblina, sol e reflexos por mapa.**
+- **A partida carrega o mapa da sala** (`MapSlot`); antes o Hangar
+  estava preso na cena.
+- **Gerador de mapas** (`tools/gerar_mapas.py` e o kit em
+  `tools/mapas/`) e o guia `docs/MAPAS.md`.
+- Testes `MapaHangar`, `MapaMetro`, `MapaVila`, `MapaPolar`.
+
+### Mudado
+- **Fase 1 fechada** (decisão do Jhon). A "Regra zero" do `CLAUDE.md`
+  agora é: rede fora das regras de jogo.
+
 ## v0.27.1 — 2026-11-13
 
 ### Mudado

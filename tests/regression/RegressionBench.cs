@@ -71,6 +71,7 @@ public partial class RegressionBench : Node
 
 		try
 		{
+			test.Prepare();
 			await Load(test.Scene);
 			await test.Run(this);
 		}

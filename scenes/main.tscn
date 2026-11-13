@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://0gfgihi85g3c" path="res://scripts/ui/hud/Hud.cs" id="3_hud"]
 [ext_resource type="Script" uid="uid://drd37xrwbmrlb" path="res://scripts/ui/GameMenu.cs" id="4_gamemenu"]
 [ext_resource type="Script" uid="uid://ygsj71u1r7j3" path="res://scripts/ui/LoadoutMenu.cs" id="5_loadout"]
-[ext_resource type="PackedScene" path="res://scenes/maps/hangar.tscn" id="6_map"]
+[ext_resource type="Script" path="res://scripts/core/MapSlot.cs" id="6_map"]
 [ext_resource type="Script" uid="uid://d06lwh464r8of" path="res://scripts/core/Match.cs" id="7_match"]
 [ext_resource type="Script" uid="uid://cqv80rxanekdu" path="res://scripts/ui/MatchHud.cs" id="8_matchhud"]
 [ext_resource type="Script" uid="uid://dwfpokfkeb7je" path="res://scripts/core/MatchSetup.cs" id="9_setup"]
@@ -35,7 +35,8 @@ transform = Transform3D(0.81915, 0.43939, -0.36869, 0, 0.64279, 0.76604, 0.57358
 shadow_enabled = true
 directional_shadow_max_distance = 120.0
 
-[node name="Map" parent="." unique_id=1378511582 instance=ExtResource("6_map")]
+[node name="Map" type="Node3D" parent="." unique_id=1378511582]
+script = ExtResource("6_map")
 
 [node name="Match" type="Node" parent="." unique_id=978944452]
 script = ExtResource("7_match")

@@ -20,5 +20,9 @@ public abstract class RegressionTest
 	/// <summary>A cena em que o teste roda.</summary>
 	public virtual string Scene => RegressionBench.Training;
 
+	/// <summary>Antes de a cena carregar: o que precisa estar valendo
+	/// quando ela nasce (a sala, o mapa).</summary>
+	public virtual void Prepare() { }
+
 	public abstract Task Run(RegressionBench bench);
 }
