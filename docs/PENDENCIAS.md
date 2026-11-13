@@ -61,11 +61,17 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 - **Comprar personagens novos e jogar com eles** — loja, inventário e
   partida (primeira e terceira pessoa, e na rede).
-- **Cada personagem com o seu próprio lobo.** Decidir: só aparência ou
-  também muda a raça (estatísticas, golpes)?
-- **Armaduras em personagens e lobos.** Decidir: só aparência ou com
-  efeito de jogo? Com efeito, entra no `docs/ARSENAL.md` e nos testes de
-  equilíbrio.
+- **Cada personagem com o seu próprio lobo — e o lobo muda a raça**
+  (decidido pelo Jhon, 13/11): estatísticas e golpes de cada raça.
+  Cuidado com a regra de design 1 (um eixo de troca por classe) e com a
+  3 (nenhuma vantagem permanente): cada raça nova troca uma coisa por
+  outra, não é melhor que as outras.
+- **Armaduras em personagens e lobos, dando mais vida** (decidido pelo
+  Jhon, 13/11). Entra no `docs/ARSENAL.md` e nos testes de equilíbrio.
+  Proposta para não virar "paga para ganhar": a armadura se compra com
+  **Presas** (moeda de jogar), nunca com Sangue; o bônus é pequeno e com
+  teto (como as tatuagens de hoje); e, se der vida, tira alguma outra
+  coisa (velocidade, por exemplo) — regra 1.
 - **Cash: dinheiro que o jogador paga.** Hoje o desenho já prevê o
   Sangue (moeda paga que nunca compra poder — `Catalog.cs`), mas não há
   compra. Falta: loja de Sangue, pagamento (Pix, cartão), saldo no
@@ -85,11 +91,21 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Sistema de contas.** Hoje: criar conta e entrar já existem (aba
   Online + servidor). Falta: e-mail, confirmação, recuperar senha, trocar
   senha, apagar conta (LGPD), entrar logo ao abrir o jogo.
-- **Cliente do jogo onde o jogador entra na conta e dá play.** Decidir:
-  um launcher separado (que também atualiza o jogo) ou o login na
-  primeira tela do próprio jogo.
+- **Cliente do jogo onde o jogador entra na conta e dá play: o login fica
+  na primeira tela do próprio jogo** (decidido pelo Jhon, 13/11). Sem
+  launcher separado. A tela de entrada (`WelcomeScreen`) vira a de
+  login; o jogo offline com bots continua acessível (treino).
 - **Perfil, inventário e moedas no servidor** (hoje ficam no arquivo do
   jogador — dá para editar à mão).
+
+### Comunicação na partida
+
+- **Chat dentro da partida**: para o time e para todos, com o nome e a
+  cor do time, por cima do jogo sem tirar o controle. O saguão já tem
+  chat (`LobbyLink`); falta na partida, pelo servidor de partida.
+- **Rádio**: chamadas prontas para o time ("Preciso de ajuda", "Lobo
+  vindo", "Recuar", "Entendido"…), num menu rápido de teclas, com a voz
+  gravada e a frase no chat do time. Marca no mapa onde quem chamou está.
 
 ### Ranking
 
