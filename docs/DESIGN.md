@@ -291,7 +291,7 @@ só mira e avisos críticos.
 | Superior esquerdo | Minimapa e nome do mapa |
 | Superior centro | Placar dos times com barra até a meta, relógio e modo |
 | Superior direito | Feed de abates: 5 linhas, 5 s cada, ícone da arma, cor do time |
-| Centro | Mira com abertura dinâmica, marcador de acerto, dano direcional, avisos |
+| Centro | Mira com abertura dinâmica (o jogador monta a dele em Opções → Mira: cruz com ou sem ponto, ou só o ponto, de tamanho fixo; cor, opacidade, tamanho, espessura, espaço, contorno; a abertura pode ser desligada), marcador de acerto, dano direcional, avisos |
 | Inferior esquerdo | Forma atual (sempre visível), escudo e vida |
 | Inferior centro | Barra de transformação |
 | Inferior direito | WP, e o painel da forma: arma, pente `/ ∞`, granadas e slots no humano; recargas de garrada, salto, bote e uivo no lobo |
@@ -1175,7 +1175,7 @@ escolherem cor.
 pessoas na sala, e treinar com a regra certa evita o hábito de abrir
 o menu para fugir de uma luta. Com o menu aberto o corpo fica parado
 (o mouse é do menu), mas continua tomando tiro. O Esc tem Opções
-(volume por canal, sensibilidade) e Controles, os mesmos do lobby.
+(volume por canal, sensibilidade e a mira) e Controles, os mesmos do lobby.
 
 ---
 

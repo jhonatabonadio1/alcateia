@@ -2,6 +2,16 @@
 
 ## Não lançado
 
+### Mira do jogador (13/11)
+- **Opções → Mira**, no menu e no Esc da partida: estilo (cruz com
+  ponto, cruz, ou só o ponto — este de um tamanho só, 4 px), cor (seis
+  prontas e uma livre), opacidade, tamanho, espessura e espaço das
+  hastes, contorno escuro, e **abrir ao atirar e ao correr** (desligado,
+  a mira fica parada; a dispersão do tiro continua valendo). Prévia ao
+  lado, abrindo como num tiro seguido. "Mira padrão" volta à de sempre.
+- Salvo em `user://opcoes.json` com as outras opções; vale no quadro
+  seguinte, no meio da partida. Teste novo: `MiraDoJogador`.
+
 ### Fase 1 concluída e ajustes do Jhon (13/11)
 - **Fase 1 concluída**: o Jhon jogou os quatro testes de validação do
   arsenal e respondeu a pergunta que decide o projeto — sim, é gostoso.

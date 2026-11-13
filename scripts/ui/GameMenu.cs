@@ -163,10 +163,18 @@ public partial class GameMenu : CanvasLayer
 
 	private void Options()
 	{
-		VBoxContainer column = UiKit.Column(UiTokens.S3);
-		column.AddChild(OptionsScreen.AudioPanel());
-		column.AddChild(OptionsScreen.MousePanel());
-		ShowSub("Opções", column);
+		// Áudio e mouse de um lado, a mira do outro: de pé, os três não
+		// cabem numa tela de 1080.
+		HBoxContainer columns = UiKit.Row(UiTokens.S3);
+		VBoxContainer left = UiKit.Column(UiTokens.S3);
+		left.CustomMinimumSize = new Vector2(440, 0);
+		left.AddChild(OptionsScreen.AudioPanel());
+		left.AddChild(OptionsScreen.MousePanel());
+		columns.AddChild(left);
+		Control crosshair = OptionsScreen.CrosshairPanel();
+		crosshair.CustomMinimumSize = new Vector2(520, 0);
+		columns.AddChild(crosshair);
+		ShowSub("Opções", columns);
 	}
 
 	private void Controls()
