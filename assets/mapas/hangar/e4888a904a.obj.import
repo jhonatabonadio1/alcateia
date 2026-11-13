@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cky1gkgb4i6s3"
+path="res://.godot/imported/e4888a904a.obj-09d4a86b1de5ba5395d7d1c3bad6dccb.mesh"
+
+[deps]
+
+files=["res://.godot/imported/e4888a904a.obj-09d4a86b1de5ba5395d7d1c3bad6dccb.mesh"]
+
+source_file="res://assets/mapas/hangar/e4888a904a.obj"
+dest_files=["res://.godot/imported/e4888a904a.obj-09d4a86b1de5ba5395d7d1c3bad6dccb.mesh", "res://.godot/imported/e4888a904a.obj-09d4a86b1de5ba5395d7d1c3bad6dccb.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

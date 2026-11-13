@@ -192,6 +192,25 @@ def faixa(largura=1024, altura=96, a=AMARELO, b=PRETO, desgaste=0.2, semente=1):
     return _sujar(_gastar(img, desgaste, semente), 0.3, semente)
 
 
+def anel(lado=1024, cor=AMARELO, desgaste=0.35, semente=5):
+    """O anel pintado da plataforma de manobra: um círculo cheio, um
+    tracejado por dentro e quatro setas apontando para fora."""
+    import math
+    img = Image.new("RGBA", (lado, lado), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c = lado / 2
+    for raio, grossura in ((0.48, 0.04),):
+        d.ellipse((c - raio * lado, c - raio * lado, c + raio * lado, c + raio * lado), outline=cor + (255,), width=int(grossura * lado))
+    for i in range(24):
+        if i % 2:
+            continue
+        a0, a1 = i * 15, i * 15 + 15
+        d.arc((c - 0.36 * lado, c - 0.36 * lado, c + 0.36 * lado, c + 0.36 * lado), a0, a1, fill=cor + (255,), width=int(0.022 * lado))
+    for para, (dx, dy) in (("dir", (1, 0)), ("esq", (-1, 0)), ("cima", (0, -1)), ("baixo", (0, 1))):
+        _seta(d, c + dx * 0.24 * lado, c + dy * 0.24 * lado, 0.11 * lado, para, cor + (255,))
+    return _sujar(_gastar(img, desgaste, semente), 0.3, semente)
+
+
 def painel(texto, cor=(255, 170, 40), px=110, fundo=(8, 8, 9)):
     """Painel de pontos luminosos: o letreiro de destino do trem."""
     f = fonte("pontos", px)
@@ -299,8 +318,18 @@ def _lista():
     L["polar_gelo"] = lambda: placa("CUIDADO · GELO NA PISTA", px=110, cor=PRETO, fundo=AMARELO, borda=PRETO)
     L["polar_pouso"] = lambda: pintura("H", "overpass_preta", 420, (240, 200, 40), desgaste=0.4, semente=6)
 
+    # ---- Hangar
+    L["hangar_nome"] = lambda: pintura("HANGAR 7", "saira", 260, (232, 234, 238), desgaste=0.3, semente=8)
+    for n in "1234":
+        L[f"hangar_n{n}"] = (lambda n=n: pintura(n, "saira", 520, (232, 234, 238), desgaste=0.28, semente=30 + int(n)))
+    for nome, texto in (("oficina", "OFICINA"), ("almoxarifado", "ALMOXARIFADO"), ("ferramentaria", "FERRAMENTARIA"), ("pintura", "PINTURA")):
+        L[f"hangar_{nome}"] = (lambda t=texto, n=nome: pintura(t, "saira", 210, (236, 236, 230), desgaste=0.3, semente=len(n) * 3))
+    L["hangar_aviso"] = lambda: placa("CUIDADO · AERONAVES EM MANOBRA", px=100, cor=PRETO, fundo=AMARELO, borda=PRETO)
+    L["hangar_fumar"] = lambda: placa("PROIBIDO FUMAR", px=110, cor=BRANCO, fundo=(170, 26, 24), borda=BRANCO)
+    L["hangar_anel"] = lambda: anel()
+
     # ---- De todos: a letra da base de cada time e a faixa de perigo.
-    for mapa in ("metro", "vila", "polar"):
+    for mapa in ("metro", "vila", "polar", "hangar"):
         L[f"{mapa}_base_a"] = lambda: pintura("A", "overpass_preta", 520, AZUL_TIME, desgaste=0.18, semente=21, contorno=(12, 20, 40))
         L[f"{mapa}_base_b"] = lambda: pintura("B", "overpass_preta", 520, LARANJA_TIME, desgaste=0.18, semente=22, contorno=(40, 20, 8))
     L["faixa_perigo"] = lambda: faixa()

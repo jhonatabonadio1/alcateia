@@ -34,7 +34,7 @@ DESTINO = os.path.join(RAIZ, "assets", "textures", "pbr")
 TABELA = {
     # pisos
     "piso":            ("worn_tile_floor", 1.0, 0.74),
-    "piso_concreto":   ("hangar_concrete_floor", 0.0, None),
+    "piso_concreto":   ("hangar_concrete_floor", 0.75, 0.6),
     "granilite":       ("terrazzo_tiles", 0.85, 0.72),
     "asfalto":         ("asphalt_03", 0.5, 0.42),
     "asfalto_neve":    ("asphalt_snow", 0.0, None),

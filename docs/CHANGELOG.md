@@ -2,6 +2,21 @@
 
 ## Não lançado
 
+### Hangar: de caixa cinza a base aérea
+- O primeiro mapa passou para o mesmo kit dos outros
+  (`tools/mapas/hangar.py`; sai `tools/gerar_hangar.py` e a textura de
+  grade). **A colisão é a mesma, peça por peça** — conferida
+  automaticamente contra o gerador antigo —, com uma diferença de
+  propósito: as quatro oficinas, que eram bloco maciço, agora têm dois
+  cômodos, três portas e duas janelas cada. A parede de trás, a do beco
+  do lobo, ficou inteira.
+- Tijolo de fábrica, piso de concreto, chapa trapezoidal nos galpões em
+  volta com fita de janelas, portões de enrolar numerados, contêineres
+  com cantoneira, anel pintado e faixas de perigo na plataforma do
+  centro, farol com lanterna, céu fotografado.
+- Letreiros (HANGAR 7, OFICINA, ALMOXARIFADO, FERRAMENTARIA, PINTURA,
+  avisos) e objetos do Poly Haven nas oficinas.
+
 ### Mapas: material de verdade, lugares para entrar, trem e letreiros
 - **Texturas fotográficas** (Poly Haven, CC0) no lugar das desenhadas por
   código: 44 materiais com cor, relevo e oclusão/aspereza. Tijolo,

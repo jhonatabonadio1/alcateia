@@ -114,7 +114,7 @@ alcateia/
 │   ├── bot.tscn           o bot
 │   ├── dummy.tscn         boneco de tiro
 │   ├── grenade.tscn       granada de choque
-│   └── maps/hangar.tscn   o mapa (gerado por tools/gerar_hangar.py)
+│   └── maps/hangar.tscn   o mapa (gerado por tools/gerar_mapas.py)
 ├── resources/
 │   ├── weapons/*.tres     armas (geradas por tools/gerar_arsenal.py)
 │   ├── breeds/*.tres      classes de lobo

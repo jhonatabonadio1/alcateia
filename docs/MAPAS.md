@@ -4,7 +4,7 @@ Quatro mapas, todos de equipe, registrados em `scripts/meta/Maps.cs`:
 
 | Mapa | Tamanho | Tema | Gerador |
 |---|---|---|---|
-| Hangar | 84 × 48 m | Hangar de caixa cinza, heliponto no centro | `tools/gerar_hangar.py` |
+| Hangar | 84 × 48 m | Pátio de base aérea: plataforma de manobra no centro, oficinas de tijolo, galpões em volta | `tools/mapas/hangar.py` |
 | Metrô | 48 × 30 m (pequeno) | Estação fechada com um trem parado; luz fria de lâmpada | `tools/mapas/metro.py` |
 | Vila | 72 × 52 m (médio) | Vila de deserto no fim da tarde: praça, feira, terraços, vielas | `tools/mapas/vila.py` |
 | Estação Polar | 110 × 70 m (grande) | Base de pesquisa na neve, ao crepúsculo: garagem, alojamentos, passarelas | `tools/mapas/polar.py` |
@@ -136,7 +136,8 @@ com `blender -b -P`. `tools/mapas/blender/malha.py` tem as ferramentas
 uma parede com aberturas de verdade — passa-se e atira-se por elas. É
 com isso que se faz lugar de entrar: as casas da Vila
 (`casa_aberta`), a fileira da frente dos alojamentos da Polar
-(`alojamento_aberto`) e a galeria de lojas do Metrô (`galeria`).
+(`alojamento_aberto`), a galeria de lojas do Metrô (`galeria`) e as
+oficinas do Hangar (`oficina`).
 
 **Todo lugar de entrar tem pelo menos três entradas** (quem segura uma
 não segura as outras), nenhuma sala é beco sem saída, e o que há de um

@@ -978,11 +978,12 @@ esconde.
 
 ## O mapa Hangar
 
-Mapa próprio no espírito do Arrival. Caixa cinza, nenhuma peça vinda de
-outro jogo — é o primeiro mapa que pode ser publicado.
+Mapa próprio: o pátio de uma base aérea. Nasceu em caixa cinza e hoje
+tem material de verdade, oficinas em que se entra e letreiros — nenhuma
+peça vinda de outro jogo.
 
-Gerado por `tools/gerar_hangar.py`, que guarda cada medida com o motivo
-dela. **Rodar o script de novo sobrescreve o `.tscn`**: se o mapa for
+Gerado por `tools/mapas/hangar.py` (com `tools/gerar_mapas.py hangar`),
+que guarda cada medida com o motivo dela. **Rodar o script de novo sobrescreve o `.tscn`**: se o mapa for
 editado no Godot, o `.tscn` passa a ser a fonte e o script vira só o
 registro de como ele nasceu.
 
@@ -1020,11 +1021,14 @@ precisa pular 1,4 m — `JumpMultiplier` de pelo menos **1,2** (com
 1,28, 1,62 m). Ninguém alcança 5 m sem parede. **Mexeu no pulo, confira estes números** — um
 caixote 2 cm alto demais vira parede para o humano sem ninguém notar.
 
-### Textura de grade
+### As oficinas
 
-`assets/textures/grid.png`, projetada no espaço do mundo: um ladrilho a
-cada 2 m, subdivisão a cada 1 m. Em caixa cinza é o que dá escala e
-velocidade — parede lisa não mostra o quanto você andou.
+Os quatro blocos laterais eram maciços; agora cada um é uma oficina de
+dois cômodos: a sala da frente com porta e duas janelas para a ala, o
+depósito dos fundos com uma porta para o lado do centro e outra para o
+lado da base, e uma porta ligando os dois. **A parede de trás ficou
+inteira** — é uma das duas do beco, e o lobo precisa dela para subir.
+O telhado, a mureta e a rampa são os de antes.
 
 ---
 

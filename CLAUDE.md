@@ -217,7 +217,7 @@ alcateia/
 │   ├── menu/menu.tscn  o lobby inteiro (LobbyShell)
 │   ├── main.tscn       a partida
 │   ├── treino.tscn     campo de treino, sem partida
-│   ├── maps/           hangar.tscn (gerado por tools/gerar_hangar.py)
+│   ├── maps/           hangar, metro, vila, polar (.tscn gerados por tools/gerar_mapas.py)
 │   └── player, bot, dummy, grenade
 ├── tools/              geradores, e testar.sh (os testes)
 └── scripts/

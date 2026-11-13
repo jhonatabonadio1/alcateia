@@ -32,7 +32,7 @@ public sealed class MapInfo
 
 /// <summary>Os mapas jogáveis. Mapa novo entra aqui e já aparece na sala e
 /// na lista; a cena da partida carrega o da sala (<see cref="MapSlot"/>).
-/// O Hangar nasce de tools/gerar_hangar.py; os outros, de
+/// Todos nascem de tools/gerar_mapas.py — o Hangar também, desde que deixou de ser caixa cinza;
 /// tools/gerar_mapas.py.</summary>
 public static class Maps
 {
