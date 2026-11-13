@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ccqdui72wog3g"
-path="res://.godot/imported/camera_security_camera_01_diff_1k_3.jpg-44ee260e734de4256ac461ef8b4b560c.ctex"
+path.s3tc="res://.godot/imported/camera_security_camera_01_diff_1k_3.jpg-44ee260e734de4256ac461ef8b4b560c.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "6b782c44f722139edb006da9787547f6"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/camera_security_camera_01_diff_1k_3.jpg"
-dest_files=["res://.godot/imported/camera_security_camera_01_diff_1k_3.jpg-44ee260e734de4256ac461ef8b4b560c.ctex"]
+dest_files=["res://.godot/imported/camera_security_camera_01_diff_1k_3.jpg-44ee260e734de4256ac461ef8b4b560c.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

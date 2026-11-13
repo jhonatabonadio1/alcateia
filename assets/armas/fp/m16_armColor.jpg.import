@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://eyorspc6ytbw"
-path="res://.godot/imported/m16_armColor.jpg-4d7a7fda24cfbd0ffa34a9de26c38039.ctex"
+path.s3tc="res://.godot/imported/m16_armColor.jpg-4d7a7fda24cfbd0ffa34a9de26c38039.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "d5047b6ac1ecb98e8a086c2246edf7bd"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/armas/fp/m16_armColor.jpg"
-dest_files=["res://.godot/imported/m16_armColor.jpg-4d7a7fda24cfbd0ffa34a9de26c38039.ctex"]
+dest_files=["res://.godot/imported/m16_armColor.jpg-4d7a7fda24cfbd0ffa34a9de26c38039.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

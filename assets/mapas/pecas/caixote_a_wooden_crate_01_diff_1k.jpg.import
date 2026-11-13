@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://up1vythshanf"
-path="res://.godot/imported/caixote_a_wooden_crate_01_diff_1k.jpg-9f4e7a3f28f9da622edcb0fb42d5bb1c.ctex"
+path.s3tc="res://.godot/imported/caixote_a_wooden_crate_01_diff_1k.jpg-9f4e7a3f28f9da622edcb0fb42d5bb1c.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "3cf01d8a704177966351357687b1a6e3"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/caixote_a_wooden_crate_01_diff_1k.jpg"
-dest_files=["res://.godot/imported/caixote_a_wooden_crate_01_diff_1k.jpg-9f4e7a3f28f9da622edcb0fb42d5bb1c.ctex"]
+dest_files=["res://.godot/imported/caixote_a_wooden_crate_01_diff_1k.jpg-9f4e7a3f28f9da622edcb0fb42d5bb1c.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

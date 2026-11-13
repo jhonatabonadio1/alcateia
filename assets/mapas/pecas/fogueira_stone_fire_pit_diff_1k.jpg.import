@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ckrk8e1akwin5"
-path="res://.godot/imported/fogueira_stone_fire_pit_diff_1k.jpg-1f12fb8f252cf223bb9629e399f46cc4.ctex"
+path.s3tc="res://.godot/imported/fogueira_stone_fire_pit_diff_1k.jpg-1f12fb8f252cf223bb9629e399f46cc4.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "cd05e5ad4fa18b375065981d548748c3"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/fogueira_stone_fire_pit_diff_1k.jpg"
-dest_files=["res://.godot/imported/fogueira_stone_fire_pit_diff_1k.jpg-1f12fb8f252cf223bb9629e399f46cc4.ctex"]
+dest_files=["res://.godot/imported/fogueira_stone_fire_pit_diff_1k.jpg-1f12fb8f252cf223bb9629e399f46cc4.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

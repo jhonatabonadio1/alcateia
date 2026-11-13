@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cl6vf134lhi1k"
-path="res://.godot/imported/smg_SST30_Worn_ODGreen_Base.jpg-012eb9e3ce6f476db5fd6f4b9900d01e.ctex"
+path.s3tc="res://.godot/imported/smg_SST30_Worn_ODGreen_Base.jpg-012eb9e3ce6f476db5fd6f4b9900d01e.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "ab955b1ad4ca694f4a2ac8872693e035"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/armas/fp/smg_SST30_Worn_ODGreen_Base.jpg"
-dest_files=["res://.godot/imported/smg_SST30_Worn_ODGreen_Base.jpg-012eb9e3ce6f476db5fd6f4b9900d01e.ctex"]
+dest_files=["res://.godot/imported/smg_SST30_Worn_ODGreen_Base.jpg-012eb9e3ce6f476db5fd6f4b9900d01e.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

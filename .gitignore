@@ -35,3 +35,6 @@ assets/pacotes/
 
 # Os segredos do servidor (copie de .env.exemplo).
 .env
+
+# Pasta de troca de arquivos com o Claude (pacotes e bundles): não versionar.
+.synctmp/

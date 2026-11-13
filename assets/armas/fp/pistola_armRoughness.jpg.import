@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dejsuroacqvuo"
-path="res://.godot/imported/pistola_armRoughness.jpg-f66e9c9bdbbae06bbf2d66fb3b976160.ctex"
+path.s3tc="res://.godot/imported/pistola_armRoughness.jpg-f66e9c9bdbbae06bbf2d66fb3b976160.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "d5e8f900cf3c008b4690d037b8a7d06d"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/armas/fp/pistola_armRoughness.jpg"
-dest_files=["res://.godot/imported/pistola_armRoughness.jpg-f66e9c9bdbbae06bbf2d66fb3b976160.ctex"]
+dest_files=["res://.godot/imported/pistola_armRoughness.jpg-f66e9c9bdbbae06bbf2d66fb3b976160.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

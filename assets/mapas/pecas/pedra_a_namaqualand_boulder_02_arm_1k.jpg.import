@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c1oo1i56abhfn"
-path="res://.godot/imported/pedra_a_namaqualand_boulder_02_arm_1k.jpg-5927bf30193fd28e5305aeca0078dd0e.ctex"
+path.s3tc="res://.godot/imported/pedra_a_namaqualand_boulder_02_arm_1k.jpg-5927bf30193fd28e5305aeca0078dd0e.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "6df2827f21183536b3da340c18880b9a"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/pedra_a_namaqualand_boulder_02_arm_1k.jpg"
-dest_files=["res://.godot/imported/pedra_a_namaqualand_boulder_02_arm_1k.jpg-5927bf30193fd28e5305aeca0078dd0e.ctex"]
+dest_files=["res://.godot/imported/pedra_a_namaqualand_boulder_02_arm_1k.jpg-5927bf30193fd28e5305aeca0078dd0e.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

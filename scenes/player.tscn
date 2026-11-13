@@ -1,16 +1,16 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene format=3 uid="uid://6hw2iv1jto2i"]
 
-[ext_resource type="Script" path="res://scripts/actors/player/Player.cs" id="1_player"]
-[ext_resource type="Script" path="res://scripts/combat/Health.cs" id="2_health"]
-[ext_resource type="Script" path="res://scripts/forms/FormController.cs" id="3_form"]
-[ext_resource type="Script" path="res://scripts/combat/weapon/Weapon.cs" id="4_weapon"]
-[ext_resource type="Resource" path="res://resources/breeds/bruto.tres" id="5_breed"]
-[ext_resource type="Script" path="res://scripts/ui/ViewModel.cs" id="7_view"]
+[ext_resource type="Script" uid="uid://y56ptapsvwl5" path="res://scripts/actors/player/Player.cs" id="1_player"]
+[ext_resource type="Script" uid="uid://cocu0rruv5614" path="res://scripts/combat/Health.cs" id="2_health"]
+[ext_resource type="Script" uid="uid://c6tli11hhni6f" path="res://scripts/forms/FormController.cs" id="3_form"]
+[ext_resource type="Script" uid="uid://dbfqy5fkibsdc" path="res://scripts/combat/weapon/Weapon.cs" id="4_weapon"]
+[ext_resource type="Resource" uid="uid://c1oart232v6is" path="res://resources/breeds/bruto.tres" id="5_breed"]
 [ext_resource type="PackedScene" path="res://scenes/grenade.tscn" id="6_grenade"]
-[ext_resource type="Script" path="res://scripts/visual/wolf/WolfVisual.cs" id="8_wolf"]
-[ext_resource type="Script" path="res://scripts/visual/human/CharacterAnimator.cs" id="9_anim"]
-[ext_resource type="PackedScene" path="res://assets/characters/human/xbot.fbx" id="10_xbot"]
-[ext_resource type="Script" path="res://scripts/visual/CombatantAudio.cs" id="20_audio"]
+[ext_resource type="Script" uid="uid://gnxboyvajtew" path="res://scripts/ui/ViewModel.cs" id="7_view"]
+[ext_resource type="Script" uid="uid://c04nc6fnnihqa" path="res://scripts/visual/wolf/WolfVisual.cs" id="8_wolf"]
+[ext_resource type="Script" uid="uid://nbo6mhr46bxg" path="res://scripts/visual/human/CharacterAnimator.cs" id="9_anim"]
+[ext_resource type="PackedScene" uid="uid://5ykecnhakoky" path="res://assets/characters/human/xbot.fbx" id="10_xbot"]
+[ext_resource type="Script" uid="uid://co3itjvcn1qkp" path="res://scripts/visual/CombatantAudio.cs" id="20_audio"]
 [ext_resource type="Resource" path="res://resources/body/ruido.tres" id="21_noise"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
@@ -21,55 +21,56 @@ height = 1.75
 radius = 0.3
 height = 1.75
 
-[node name="Player" type="CharacterBody3D"]
+[node name="Player" type="CharacterBody3D" unique_id=1320262408]
 script = ExtResource("1_player")
 Noise = ExtResource("21_noise")
+HumanSpeed = 3.2
+WolfSprintFactor = 2.0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=160111882]
 shape = SubResource("CapsuleShape3D_body")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1884493748]
 mesh = SubResource("CapsuleMesh_body")
 
-[node name="Human" type="Node3D" parent="."]
+[node name="Human" type="Node3D" parent="." unique_id=1536428129]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.875, 0)
 script = ExtResource("9_anim")
-OwnerCameraPath = NodePath("../Head/Camera3D")
 HideOnSuccess = NodePath("../MeshInstance3D")
+OwnerCameraPath = NodePath("../Head/Camera3D")
 
-[node name="Model" parent="Human" instance=ExtResource("10_xbot")]
+[node name="Model" parent="Human" unique_id=1456673510 instance=ExtResource("10_xbot")]
 
-[node name="WolfVisual" type="Node3D" parent="."]
+[node name="WolfVisual" type="Node3D" parent="." unique_id=1727759676]
 script = ExtResource("8_wolf")
 
-[node name="Head" type="Node3D" parent="."]
+[node name="Head" type="Node3D" parent="." unique_id=1029924302]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
 
-[node name="Camera3D" type="Camera3D" parent="Head"]
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=1937097959]
 
-[node name="ViewModel" type="Node3D" parent="Head/Camera3D"]
+[node name="ViewModel" type="Node3D" parent="Head/Camera3D" unique_id=1796379931]
 script = ExtResource("7_view")
 
-[node name="SpringArm3D" type="SpringArm3D" parent="Head"]
+[node name="SpringArm3D" type="SpringArm3D" parent="Head" unique_id=2081165346]
 spring_length = 3.5
 margin = 0.2
 
-[node name="WolfCamera" type="Camera3D" parent="Head/SpringArm3D"]
+[node name="WolfCamera" type="Camera3D" parent="Head/SpringArm3D" unique_id=1300106469]
 
-[node name="Health" type="Node" parent="."]
+[node name="Health" type="Node" parent="." unique_id=1850449000]
 script = ExtResource("2_health")
-Team = 1
 DisplayName = "VOCÊ"
 
-[node name="FormController" type="Node" parent="."]
+[node name="FormController" type="Node" parent="." unique_id=1811875065]
 script = ExtResource("3_form")
 Breed = ExtResource("5_breed")
 
-[node name="Weapon" type="Node3D" parent="."]
+[node name="Weapon" type="Node3D" parent="." unique_id=1727393476]
 script = ExtResource("4_weapon")
 GrenadeScene = ExtResource("6_grenade")
 
-[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=464006149]
 
-[node name="CombatantAudio" type="Node" parent="."]
+[node name="CombatantAudio" type="Node" parent="." unique_id=109163607]
 script = ExtResource("20_audio")

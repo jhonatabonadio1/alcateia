@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dhiq84j7uq36u"
-path="res://.godot/imported/escada_madeira_wooden_ladder_arm_1k.jpg-078cc031b3f5884eaba66a2c34760a9e.ctex"
+path.s3tc="res://.godot/imported/escada_madeira_wooden_ladder_arm_1k.jpg-078cc031b3f5884eaba66a2c34760a9e.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "b049752fd48b34a13fb61b5789fb8c5b"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/escada_madeira_wooden_ladder_arm_1k.jpg"
-dest_files=["res://.godot/imported/escada_madeira_wooden_ladder_arm_1k.jpg-078cc031b3f5884eaba66a2c34760a9e.ctex"]
+dest_files=["res://.godot/imported/escada_madeira_wooden_ladder_arm_1k.jpg-078cc031b3f5884eaba66a2c34760a9e.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

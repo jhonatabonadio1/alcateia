@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dj27b0wtyrmi"
-path="res://.godot/imported/ar_condicionado_exterior_aircon_unit_01_diff_1k.jpg-46650786b337a4d0aee6d2f6cc224243.ctex"
+path.s3tc="res://.godot/imported/ar_condicionado_exterior_aircon_unit_01_diff_1k.jpg-46650786b337a4d0aee6d2f6cc224243.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "fc8c3a1f077f8e6a236843f0b7f0911d"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/ar_condicionado_exterior_aircon_unit_01_diff_1k.jpg"
-dest_files=["res://.godot/imported/ar_condicionado_exterior_aircon_unit_01_diff_1k.jpg-46650786b337a4d0aee6d2f6cc224243.ctex"]
+dest_files=["res://.godot/imported/ar_condicionado_exterior_aircon_unit_01_diff_1k.jpg-46650786b337a4d0aee6d2f6cc224243.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0
