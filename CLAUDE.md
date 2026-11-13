@@ -248,7 +248,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `meta/*.cs` | Patentes, catálogo da loja, missões, progressão, mapas, salas |
 | `lobby/LobbyShell.cs` | Moldura do lobby: header fixo, miolo trocando |
 | `ui/kit/*.cs` | Tokens, tema e componentes — toda tela usa estes |
-| `ui/Hud.cs` | HUD de combate |
+| `ui/hud/Hud*.cs` | HUD de combate, um arquivo por canto: `.Layout` monta; `.Vitals`, `.Equipment`, `.Form`, `.Feed` reagem aos sinais |
 | `core/InputSetup.cs` | Registra ações de input sem passar pelo editor |
 | `net/GameManager.cs` | Rede — dormente até a Fase 2 |
 
@@ -1570,7 +1570,7 @@ Morto, ela abre com "ABATIDO" e de quê.
 
 ## HUD de combate
 
-`scripts/ui/Hud.cs`, no layout da regra dos cantos (veja "Layout da
+`scripts/ui/hud/`, no layout da regra dos cantos (veja "Layout da
 tela"). Tudo chega por sinal — vida, munição, WP, forma, slot, abates —
 exceto o que é contínuo por natureza e é lido a cada quadro: abertura
 da mira, barra de transformação, recargas do lobo, uivo, relógio de

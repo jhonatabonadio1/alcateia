@@ -10,6 +10,7 @@ using System.Collections.Generic;
 public partial class WolfVisual
 {
 	private bool _howling;
+
 	private bool IsHowling() =>
 		_player != null ? _player.HowlProgress > 0f
 		: _bot != null && _bot.Action == BotAction.Howl;

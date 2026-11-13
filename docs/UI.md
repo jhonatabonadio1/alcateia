@@ -739,7 +739,7 @@ aparece desabilitado com "em breve" ou não aparece.
 | Inventário | `InventoryScreen.cs`, `ItemCard.cs`, `ItemDetail.cs`, `CharacterPreview.cs` |
 | Loja | `ShopScreen.cs`; catálogo e preços em `scripts/meta/Catalog.cs` |
 | Perfil, missões, opções | `ProfileScreen.cs`, `MissionsScreen.cs`, `OptionsScreen.cs` |
-| HUD de combate | `scripts/ui/Hud.cs`, `Crosshair.cs`, `HitMarker.cs`, `DamageIndicator.cs`, `Minimap.cs` |
+| HUD de combate | `scripts/ui/hud/Hud*.cs`, `Crosshair.cs`, `HitMarker.cs`, `DamageIndicator.cs`, `Minimap.cs` |
 | Placar e topo da partida | `scripts/ui/MatchHud.cs` e `Scoreboard.cs` |
 | Fim de partida | `scripts/ui/ResultScreen.cs` e `PromotionOverlay.cs`; recompensa em `scripts/meta/Progression.cs` |
 | Respawn e Esc | `scripts/ui/LoadoutMenu.cs` e `GameMenu.cs` |

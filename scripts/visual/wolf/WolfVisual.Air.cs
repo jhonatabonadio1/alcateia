@@ -172,5 +172,6 @@ public partial class WolfVisual
 
 	/// <summary>Distância do centro do corpo à parede: o raio da cápsula.</summary>
 	private const float WallGap = 0.3f;
+
 	private static float Smooth(float t) => t * t * (3f - 2f * t);
 }
