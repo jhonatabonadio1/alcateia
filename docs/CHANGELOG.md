@@ -2,6 +2,29 @@
 
 ## Não lançado
 
+### Mapas remodelados
+- Metrô, Vila e Estação Polar ganharam uma camada de **acabamento** por
+  cima do desenho de jogo (que não mudou — os testes de mapa passam
+  iguais): o que era caixa lisa agora é lugar.
+  - **Metrô**: abóbada de azulejo com nervuras, colunas redondas com
+    capitel, trem de teto curvo com janelas, faróis e balaústres,
+    escadas de degrau com corrimão, duto de ventilação, canos e quadros
+    no corredor de serviço, anúncios acesos, bilheteria com guichê,
+    portões de enrolar.
+  - **Vila**: os muros viraram frentes de casa (reboco de várias cores,
+    janelas com veneziana e grade, portas em arco, vigas e beiral),
+    chafariz torneado, bancas com lona e fruta, varal de luzes, torres
+    com sineira e cúpula, carroça, pérgola, palmeiras e minaretes para
+    além do muro.
+  - **Estação Polar**: paredões de gelo irregulares e serra nevada em
+    volta, neve caindo, neve nos telhados e sincelos, janelas acesas,
+    tratores de esteira, tanques com cúpula e escada, torre de rádio
+    treliçada com estais, canos com flange, refletores.
+- `tools/mapas/formas.py` (formas que não são caixa, gravadas como
+  .obj) e `tools/mapas/pecas.py` (peças prontas). Rampas podem ser
+  desenhadas como escada (`degraus=`); peças podem ser só colisão
+  (`oculta=True`).
+
 ### Som
 - **Passo na passada.** O ruído do passo sai a cada passada do clipe
   (1,19 m o humano, 1,05 m o lobo, 0,97 m de quatro) em vez de a cada

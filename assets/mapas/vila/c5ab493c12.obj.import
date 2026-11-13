@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cb7ckjrwhq7no"
+path="res://.godot/imported/c5ab493c12.obj-043edf2854b3ac3f0dee063df6f2f277.mesh"
+
+[deps]
+
+files=["res://.godot/imported/c5ab493c12.obj-043edf2854b3ac3f0dee063df6f2f277.mesh"]
+
+source_file="res://assets/mapas/vila/c5ab493c12.obj"
+dest_files=["res://.godot/imported/c5ab493c12.obj-043edf2854b3ac3f0dee063df6f2f277.mesh", "res://.godot/imported/c5ab493c12.obj-043edf2854b3ac3f0dee063df6f2f277.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

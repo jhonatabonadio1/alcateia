@@ -33,6 +33,36 @@ gerador escreve `scenes/maps/<id>.tscn` e a miniatura
 **Rodar o gerador sobrescreve o `.tscn`.** Se você editar um mapa no
 Godot, o `.tscn` passa a ser a fonte.
 
+### Jogo embaixo, acabamento em cima
+
+Cada mapa tem duas camadas, no mesmo arquivo:
+
+1. **`montar()` — o jogo.** Caixas, rampas e cilindros com colisão: o
+   que cobre, o que se sobe, onde o lobo ricocheteia, onde se nasce. É o
+   que os testes medem e o que o bot enxerga. Mexeu aqui, mudou o mapa.
+2. **`acabamento()` — o lugar.** O que faz a caixa virar estação, vila
+   ou base: abóbada, colunas, janelas, portas em arco, telhados com
+   neve, canos, corrimãos, trator, torre treliçada, palmeiras, serra ao
+   fundo. Quase tudo **sem colisão**; mexer aqui não muda o jogo.
+
+Quando a forma que se vê é mais rica que a caixa (o barril torneado, o
+vagão de teto curvo, a escada de degraus sobre a rampa), a caixa fica
+com `oculta=True`: continua sendo a colisão, só não é desenhada. O que
+se vê não pode fugir muito do que colide — tiro e corpo batem na caixa.
+
+As formas que não são caixa saem de `tools/mapas/formas.py` (extrusão
+de perfil, revolução, cano por um caminho, relevo, pedra, caixa
+chanfrada, abóbada, arco, escada, rosca) e viram arquivos `.obj` em
+`assets/mapas/<id>/` — um por forma diferente; vinte barris iguais são
+um arquivo só. As peças prontas estão em `tools/mapas/pecas.py`:
+janela, porta, beiral, coluna, tubulação com flange, cabo, corrimão,
+barril, caixote ripado, barreira de concreto, sacos de areia, pedra,
+pneus, palete, poste de luz, arandela, toldo.
+
+Depois de gerar, abra o projeto no Godot (ou rode
+`godot --headless --import`) para ele importar os `.obj` novos, e
+versione os `.obj` e os `.obj.import` junto com a cena.
+
 ### As texturas
 
 `tools/gerar_texturas.py` desenha 16 materiais por código — concreto,

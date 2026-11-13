@@ -15,8 +15,11 @@ Convenções que o jogo espera (não mude sem mudar o jogo):
 - Bot não sobe degrau maior que 0,5 m: todo desnível que ele precisa
   vencer tem rampa.
 """
+import hashlib
 import math
 import os
+
+from . import formas
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 AZUL, LARANJA = 1, 2
@@ -72,7 +75,9 @@ class Mapa:
         self.largura, self.fundo = largura, fundo      # X e Z, em metros
         self.materiais = {}
         self.pecas = []      # (grupo, nome, centro, tamanho, material, rotação, colide, forma)
+        self.formas = []     # (grupo, nome, Malha, posição, material, rotação, colisão)
         self.placas, self.luzes = [], []
+        self.cru_recursos, self.cru_nos = [], []     # linhas de .tscn prontas (partículas)
         self.spawns = {AZUL: [], LARANJA: []}
         self.rotas = []
         self.ambiente = {}
@@ -81,22 +86,34 @@ class Mapa:
     # ------------------------------------------------------------ materiais
 
     def material(self, nome, textura=None, cor=(1, 1, 1), ladrilho=2.0, aspereza=1.0,
-                 metal=0.0, relevo=1.0, brilho=None, energia=1.0):
+                 metal=0.0, relevo=1.0, brilho=None, energia=1.0, dupla=False):
         """textura: nome em assets/textures/pbr (ou None, cor lisa).
-        ladrilho: metros que a textura cobre antes de repetir."""
+        ladrilho: metros que a textura cobre antes de repetir.
+        dupla: desenha os dois lados (lona, folha, chapa fina)."""
         self.materiais[nome] = dict(textura=textura, cor=cor, ladrilho=ladrilho, aspereza=aspereza,
-                                    metal=metal, relevo=relevo, brilho=brilho, energia=energia)
+                                    metal=metal, relevo=relevo, brilho=brilho, energia=energia, dupla=dupla)
 
     # ---------------------------------------------------------------- peças
 
-    def caixa(self, grupo, nome, centro, tamanho, material, colide=True, rot=None):
-        self.pecas.append((grupo, nome, centro, tamanho, material, rot, colide, "caixa"))
+    def caixa(self, grupo, nome, centro, tamanho, material, colide=True, rot=None, oculta=False):
+        """`oculta`: só a colisão, sem desenho — para quando o que se vê é
+        uma forma mais rica por cima (degraus sobre a rampa, vagão)."""
+        self.pecas.append((grupo, nome, centro, tamanho, material, rot, colide, "caixa_oculta" if oculta else "caixa"))
 
-    def cilindro(self, grupo, nome, centro, raio, altura, material, colide=True):
-        self.pecas.append((grupo, nome, centro, (raio, altura, raio), material, None, colide, "cilindro"))
+    def forma(self, grupo, nome, malha, pos, material, yaw=0.0, colisao=None):
+        """Uma forma de tools/mapas/formas.py. `colisao`: None (só
+        enfeite), "convexa" (o casco da forma), "concava" (a própria
+        malha: terreno) — ou use uma `caixa(..., oculta=True)` à parte."""
+        self.formas.append((grupo, nome, malha, pos, material, giro_y(yaw) if yaw else None, colisao))
 
-    def rampa(self, grupo, nome, x_baixo, x_alto, h, zc, largura, material, t=0.4, base=0.0):
-        """Rampa ao longo de X: de `base` em x_baixo até base + h em x_alto."""
+    def cilindro(self, grupo, nome, centro, raio, altura, material, colide=True, oculta=False):
+        self.pecas.append((grupo, nome, centro, (raio, altura, raio), material, None, colide,
+                           "cilindro_oculta" if oculta else "cilindro"))
+
+    def rampa(self, grupo, nome, x_baixo, x_alto, h, zc, largura, material, t=0.4, base=0.0, degraus=0):
+        """Rampa ao longo de X: de `base` em x_baixo até base + h em x_alto.
+        Com `degraus`, o que se vê é uma escada; a colisão continua sendo
+        a rampa lisa (o bot e o jogador sobem sem tropeçar)."""
         dx = x_alto - x_baixo
         theta = math.copysign(math.atan2(h, abs(dx)), dx)
         c, s = math.cos(theta), math.sin(theta)
@@ -104,9 +121,13 @@ class Mapa:
         mx, my = (x_baixo + x_alto) / 2.0, base + h / 2.0
         centro = (mx - normal[0] * t / 2, my - normal[1] * t / 2, zc)
         self.caixa(grupo, nome, centro, (math.hypot(abs(dx), h) + 0.8, t, largura), material, True,
-                   ((c, -s, 0.0), (s, c, 0.0), (0.0, 0.0, 1.0)))
+                   ((c, -s, 0.0), (s, c, 0.0), (0.0, 0.0, 1.0)), oculta=degraus > 0)
+        if degraus:
+            # Meio degrau abaixo: a rampa passa pelo meio de cada espelho.
+            self.forma(grupo, nome + "Degraus", formas.escada(largura, h, abs(dx), degraus),
+                       (x_baixo, base - h / degraus / 2, zc), material, yaw=0 if dx > 0 else 180)
 
-    def rampa_z(self, grupo, nome, z_baixo, z_alto, h, xc, largura, material, t=0.4, base=0.0):
+    def rampa_z(self, grupo, nome, z_baixo, z_alto, h, xc, largura, material, t=0.4, base=0.0, degraus=0):
         """Rampa ao longo de Z."""
         dz = z_alto - z_baixo
         theta = math.copysign(math.atan2(h, abs(dz)), dz)
@@ -114,7 +135,10 @@ class Mapa:
         mz, my = (z_baixo + z_alto) / 2.0, base + h / 2.0
         centro = (xc, my - c * t / 2, mz + s * t / 2)
         self.caixa(grupo, nome, centro, (largura, t, math.hypot(abs(dz), h) + 0.8), material, True,
-                   ((1.0, 0.0, 0.0), (0.0, c, s), (0.0, -s, c)))
+                   ((1.0, 0.0, 0.0), (0.0, c, s), (0.0, -s, c)), oculta=degraus > 0)
+        if degraus:
+            self.forma(grupo, nome + "Degraus", formas.escada(largura, h, abs(dz), degraus),
+                       (xc, base - h / degraus / 2, z_baixo), material, yaw=-90 if dz > 0 else 90)
 
     def parapeito(self, grupo, nome, centro, comprimento, ao_longo="x", altura=1.0, painel="aco", corrimao="grade"):
         """Parapeito: painel baixo que cobre e um corrimão amarelo em cima.
@@ -127,6 +151,24 @@ class Mapa:
 
     def placa(self, grupo, nome, pos, texto, tamanho, cor_, yaw):
         self.placas.append((grupo, nome, pos, texto, tamanho, cor_, yaw))
+
+    def nevasca(self, altura=24.0, quantos=6000):
+        """Neve caindo sobre o mapa todo (partículas; só enfeite)."""
+        self.cru_recursos += [
+            '[sub_resource type="ParticleProcessMaterial" id="NevePM"]', "emission_shape = 3",
+            f"emission_box_extents = {vec((self.largura / 2 + 4, 1, self.fundo / 2 + 4))}",
+            "direction = Vector3(0.25, -1, 0.1)", "spread = 14.0", "initial_velocity_min = 1.2",
+            "initial_velocity_max = 2.4", "gravity = Vector3(0, -0.2, 0)", "scale_min = 0.6", "scale_max = 1.5", "",
+            '[sub_resource type="StandardMaterial3D" id="NeveMat"]', "transparency = 1", "shading_mode = 0",
+            "albedo_color = Color(1, 1, 1, 0.75)", "billboard_mode = 3", "billboard_keep_scale = true", "",
+            '[sub_resource type="QuadMesh" id="NeveQuad"]', 'material = SubResource("NeveMat")',
+            "size = Vector2(0.035, 0.035)", ""]
+        self.cru_nos += [
+            '[node name="Neve" type="GPUParticles3D" parent="."]', f"transform = {xform((0, altura, 0))}",
+            f"amount = {quantos}", "lifetime = 13.0", "preprocess = 13.0",
+            f"visibility_aabb = AABB({f(-self.largura / 2 - 8)}, {f(-altura - 4)}, {f(-self.fundo / 2 - 8)}, "
+            f"{f(self.largura + 16)}, {f(altura + 8)}, {f(self.fundo + 16)})",
+            'process_material = SubResource("NevePM")', 'draw_pass_1 = SubResource("NeveQuad")', ""]
 
     def luz(self, grupo, nome, pos, cor_, energia, alcance, sombra=False):
         self.luzes.append((grupo, nome, pos, cor_, energia, alcance, sombra))
@@ -142,10 +184,22 @@ class Mapa:
     def tscn(self):
         formas, malhas = {}, {}
         for (_, _, _, tam, _, _, colide, forma) in self.pecas:
-            chave = (forma, *[round(x, 4) for x in tam])
-            malhas.setdefault(chave, f"B{len(malhas) + 1}")
+            chave = (forma.replace("_oculta", ""), *[round(x, 4) for x in tam])
+            if not forma.endswith("_oculta"):
+                malhas.setdefault(chave, f"B{len(malhas) + 1}")
             if colide:
                 formas.setdefault(chave, f"S{len(formas) + 1}")
+
+        # As formas livres viram .obj em assets/mapas/<id>/ (uma por
+        # conteúdo: vinte barris iguais são um arquivo só).
+        self._objs, obj_id = {}, {}
+        for (_, _, malha, _, _, _, _) in self.formas:
+            texto = malha.obj()
+            h = hashlib.md5(texto.encode()).hexdigest()[:10]
+            if h not in self._objs:
+                self._objs[h] = texto
+                obj_id[h] = f"o_{h}"
+            malha._hash = h
 
         texturas = sorted({m["textura"] for m in self.materiais.values() if m["textura"]})
         ext, tex_id = [], {}
@@ -157,6 +211,8 @@ class Mapa:
         ext += [("Script", "res://scripts/core/SpawnPoints.cs", "s_spawns"),
                 ("Script", "res://scripts/core/PatrolRoutes.cs", "s_routes"),
                 ("Script", "res://scripts/core/NavBaker.cs", "s_nav")]
+
+        ext += [("ArrayMesh", f"res://assets/mapas/{self.id}/{h}.obj", rid) for h, rid in obj_id.items()]
 
         o = ["[gd_scene format=3]", ""]
         o += [f'[ext_resource type="{k}" path="{p}" id="{i}"]' for k, p, i in ext] + [""]
@@ -173,6 +229,8 @@ class Mapa:
                       f'normal_texture = ExtResource("{tex_id[(t, "normal")]}")',
                       f"uv1_scale = {vec((1.0 / m['ladrilho'],) * 3)}",
                       "uv1_triplanar = true", "uv1_world_triplanar = true"]
+            if m.get("dupla"):
+                o.append("cull_mode = 2")
             o.append(f"roughness = {f(m['aspereza'])}")
             if m["metal"]:
                 o.append(f"metallic = {f(m['metal'])}")
@@ -194,6 +252,21 @@ class Mapa:
                 o += [f'[sub_resource type="CylinderMesh" id="{rid}"]', f"top_radius = {f(chave[1])}",
                       f"bottom_radius = {f(chave[1])}", f"height = {f(chave[2])}", "radial_segments = 24", ""]
 
+        cascos = {}
+        for i, (_, _, malha, _, _, _, colisao) in enumerate(self.formas):
+            if not colisao or (malha._hash, colisao) in cascos:
+                continue
+            rid = f"C{len(cascos) + 1}"
+            cascos[(malha._hash, colisao)] = rid
+            if colisao == "convexa":
+                pts = ", ".join(f(x) for p in malha.pontos() for x in p)
+                o += [f'[sub_resource type="ConvexPolygonShape3D" id="{rid}"]', f"points = PackedVector3Array({pts})", ""]
+            else:
+                pts = ", ".join(f(x) for t in malha.tris for p, _ in t for x in p)
+                o += [f'[sub_resource type="ConcavePolygonShape3D" id="{rid}"]', "backface_collision = true",
+                      f"data = PackedVector3Array({pts})", ""]
+
+        o += self.cru_recursos
         o += self._ambiente()
         o += [f'[node name="{self.nome}" type="Node3D"]', ""]
         o += ['[node name="Ambiente" type="WorldEnvironment" parent="."]', 'environment = SubResource("Env")', ""]
@@ -212,15 +285,37 @@ class Mapa:
               "ambient_mode = 1" if not self.ambiente.get('ceu') else "ambient_mode = 0", ""]
 
         grupos = []
-        for item in self.pecas + self.placas + self.luzes:
+        for item in self.pecas + self.formas + self.placas + self.luzes:
             if item[0] not in grupos:
                 grupos.append(item[0])
         for g in grupos:
             o += [f'[node name="{g}" type="Node3D" parent="."]', ""]
 
+        for (g, nome, malha, pos, mat, rows, colisao) in self.formas:
+            desenho = [f'mesh = ExtResource("{obj_id[malha._hash]}")', f'material_override = SubResource("M_{mat}")', ""]
+            if colisao:
+                piso = superficie(self.materiais.get(mat, {}))
+                o += [f'[node name="{nome}" type="StaticBody3D" parent="{g}"]', f"transform = {xform(pos, rows)}"]
+                if piso:
+                    o.append(f'metadata/piso = "{piso}"')
+                o += ["", f'[node name="Colisao" type="CollisionShape3D" parent="{g}/{nome}"]',
+                      f'shape = SubResource("{cascos[(malha._hash, colisao)]}")', "",
+                      f'[node name="Malha" type="MeshInstance3D" parent="{g}/{nome}"]'] + desenho
+            else:
+                o += [f'[node name="{nome}" type="MeshInstance3D" parent="{g}"]', f"transform = {xform(pos, rows)}"] + desenho
+
         for (g, nome, c, tam, mat, rows, colide, forma) in self.pecas:
+            oculta = forma.endswith("_oculta")
+            forma = forma.replace("_oculta", "")
             chave = (forma, *[round(x, 4) for x in tam])
-            if colide:
+            if colide and oculta:
+                piso = superficie(self.materiais.get(mat, {}))
+                o += [f'[node name="{nome}" type="StaticBody3D" parent="{g}"]', f"transform = {xform(c, rows)}"]
+                if piso:
+                    o.append(f'metadata/piso = "{piso}"')
+                o += ["", f'[node name="Colisao" type="CollisionShape3D" parent="{g}/{nome}"]',
+                      f'shape = SubResource("{formas[chave]}")', ""]
+            elif colide:
                 piso = superficie(self.materiais.get(mat, {}))
                 o += [f'[node name="{nome}" type="StaticBody3D" parent="{g}"]', f"transform = {xform(c, rows)}"]
                 if piso:
@@ -245,6 +340,8 @@ class Mapa:
             if sombra:
                 o.append("shadow_enabled = true")
             o.append("")
+
+        o += self.cru_nos
 
         for time, tag in ((AZUL, "A"), (LARANJA, "B")):
             o += [f'[node name="Spawn{tag}" type="Node3D" parent="."]', 'script = ExtResource("s_spawns")',
@@ -304,7 +401,7 @@ class Mapa:
             return (w / 2 + x * escala, h / 2 + z * escala)
 
         def pegada(c, tam, rows, forma, dy=0.0):
-            if forma == "cilindro":
+            if forma.startswith("cilindro"):
                 r = tam[0]
                 return [px(c[0] + r * math.cos(a) + dy, c[2] + r * math.sin(a) + dy) for a in
                         [i * math.pi / 8 for i in range(16)]]
@@ -343,8 +440,22 @@ class Mapa:
 
     def salvar(self):
         cena = os.path.join(ROOT, "scenes", "maps", f"{self.id}.tscn")
+        texto = self.tscn()
         with open(cena, "w", encoding="utf-8") as fh:
-            fh.write(self.tscn())
+            fh.write(texto)
+
+        # As formas: só as que este mapa usa ficam na pasta (o .import de
+        # cada uma é do Godot e acompanha o arquivo).
+        pasta = os.path.join(ROOT, "assets", "mapas", self.id)
+        os.makedirs(pasta, exist_ok=True)
+        for nome in os.listdir(pasta):
+            if nome.split(".")[0] not in self._objs:
+                os.remove(os.path.join(pasta, nome))
+        for h, obj in self._objs.items():
+            destino = os.path.join(pasta, f"{h}.obj")
+            if not os.path.exists(destino):
+                with open(destino, "w", encoding="utf-8") as fh:
+                    fh.write(obj)
         self.miniatura(os.path.join(ROOT, "assets", "ui", "mapas", f"{self.id}.png"))
-        print(f"{self.id}: {len(self.pecas)} peças, {len(self.luzes)} luzes, "
+        print(f"{self.id}: {len(self.pecas)} peças, {len(self.formas)} formas ({len(self._objs)} arquivos), {len(self.luzes)} luzes, "
               f"{sum(len(v) for v in self.spawns.values())} spawns, {len(self.rotas)} rotas")

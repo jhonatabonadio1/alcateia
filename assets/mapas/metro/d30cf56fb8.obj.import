@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://0od1e0la4elx"
+path="res://.godot/imported/d30cf56fb8.obj-55c25c23e83ee60bc6fa39438c99139c.mesh"
+
+[deps]
+
+files=["res://.godot/imported/d30cf56fb8.obj-55c25c23e83ee60bc6fa39438c99139c.mesh"]
+
+source_file="res://assets/mapas/metro/d30cf56fb8.obj"
+dest_files=["res://.godot/imported/d30cf56fb8.obj-55c25c23e83ee60bc6fa39438c99139c.mesh", "res://.godot/imported/d30cf56fb8.obj-55c25c23e83ee60bc6fa39438c99139c.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

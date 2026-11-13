@@ -1,5 +1,8 @@
 [gd_scene format=3]
 
+[ext_resource type="Texture2D" path="res://assets/textures/pbr/areia_cor.jpg" id="t_areia_cor"]
+[ext_resource type="Texture2D" path="res://assets/textures/pbr/areia_normal.jpg" id="t_areia_normal"]
+[ext_resource type="Texture2D" path="res://assets/textures/pbr/areia_asp.jpg" id="t_areia_asp"]
 [ext_resource type="Texture2D" path="res://assets/textures/pbr/asfalto_cor.jpg" id="t_asfalto_cor"]
 [ext_resource type="Texture2D" path="res://assets/textures/pbr/asfalto_normal.jpg" id="t_asfalto_normal"]
 [ext_resource type="Texture2D" path="res://assets/textures/pbr/asfalto_asp.jpg" id="t_asfalto_asp"]
@@ -15,6 +18,9 @@
 [ext_resource type="Texture2D" path="res://assets/textures/pbr/madeira_cor.jpg" id="t_madeira_cor"]
 [ext_resource type="Texture2D" path="res://assets/textures/pbr/madeira_normal.jpg" id="t_madeira_normal"]
 [ext_resource type="Texture2D" path="res://assets/textures/pbr/madeira_asp.jpg" id="t_madeira_asp"]
+[ext_resource type="Texture2D" path="res://assets/textures/pbr/metal_ondulado_cor.jpg" id="t_metal_ondulado_cor"]
+[ext_resource type="Texture2D" path="res://assets/textures/pbr/metal_ondulado_normal.jpg" id="t_metal_ondulado_normal"]
+[ext_resource type="Texture2D" path="res://assets/textures/pbr/metal_ondulado_asp.jpg" id="t_metal_ondulado_asp"]
 [ext_resource type="Texture2D" path="res://assets/textures/pbr/metal_pintado_cor.jpg" id="t_metal_pintado_cor"]
 [ext_resource type="Texture2D" path="res://assets/textures/pbr/metal_pintado_normal.jpg" id="t_metal_pintado_normal"]
 [ext_resource type="Texture2D" path="res://assets/textures/pbr/metal_pintado_asp.jpg" id="t_metal_pintado_asp"]
@@ -24,6 +30,48 @@
 [ext_resource type="Script" path="res://scripts/core/SpawnPoints.cs" id="s_spawns"]
 [ext_resource type="Script" path="res://scripts/core/PatrolRoutes.cs" id="s_routes"]
 [ext_resource type="Script" path="res://scripts/core/NavBaker.cs" id="s_nav"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/4c04e196ff.obj" id="o_4c04e196ff"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/c4b12dfd28.obj" id="o_c4b12dfd28"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/6140a7804f.obj" id="o_6140a7804f"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/8c6e407e5c.obj" id="o_8c6e407e5c"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/6c7d09aebf.obj" id="o_6c7d09aebf"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/e53da2573b.obj" id="o_e53da2573b"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/9625a59959.obj" id="o_9625a59959"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/3363e71d17.obj" id="o_3363e71d17"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/e4b6b8936a.obj" id="o_e4b6b8936a"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/f0f16b65e9.obj" id="o_f0f16b65e9"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/296a4a1215.obj" id="o_296a4a1215"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/a643a6246c.obj" id="o_a643a6246c"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/a7ac0c3424.obj" id="o_a7ac0c3424"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/840a6401dd.obj" id="o_840a6401dd"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/18a8c2a844.obj" id="o_18a8c2a844"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/30b0de0747.obj" id="o_30b0de0747"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/4e8e30b8cf.obj" id="o_4e8e30b8cf"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/48b0d0e75f.obj" id="o_48b0d0e75f"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/d30cf56fb8.obj" id="o_d30cf56fb8"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/32b733ba28.obj" id="o_32b733ba28"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/a8495e6cfe.obj" id="o_a8495e6cfe"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/31893bf4a8.obj" id="o_31893bf4a8"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/f6750c69ef.obj" id="o_f6750c69ef"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/90931c8640.obj" id="o_90931c8640"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/f7d016ab55.obj" id="o_f7d016ab55"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/43382db54e.obj" id="o_43382db54e"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/b41372079c.obj" id="o_b41372079c"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/0ce50f14d6.obj" id="o_0ce50f14d6"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/1007ddef1b.obj" id="o_1007ddef1b"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/92b12c6c08.obj" id="o_92b12c6c08"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/6b1b7e415d.obj" id="o_6b1b7e415d"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/16073d73fa.obj" id="o_16073d73fa"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/092cc7833f.obj" id="o_092cc7833f"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/380d78bd9f.obj" id="o_380d78bd9f"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/e05552058d.obj" id="o_e05552058d"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/4c985ef5ab.obj" id="o_4c985ef5ab"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/d368ee2077.obj" id="o_d368ee2077"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/d9814f641b.obj" id="o_d9814f641b"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/3f1b6a150d.obj" id="o_3f1b6a150d"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/f8a6b8d14b.obj" id="o_f8a6b8d14b"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/15fdc1d3e7.obj" id="o_15fdc1d3e7"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/metro/84f732f91f.obj" id="o_84f732f91f"]
 
 [sub_resource type="StandardMaterial3D" id="M_azulejo"]
 albedo_color = Color(0.92, 0.94, 0.93, 1)
@@ -249,6 +297,211 @@ emission_enabled = true
 emission = Color(0.25, 0.75, 1, 1)
 emission_energy_multiplier = 1.4
 
+[sub_resource type="StandardMaterial3D" id="M_moldura"]
+albedo_color = Color(0.86, 0.85, 0.82, 1)
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="M_vidro"]
+albedo_color = Color(0.05, 0.07, 0.09, 1)
+roughness = 0.08
+metallic = 0.6
+
+[sub_resource type="StandardMaterial3D" id="M_vidro_aceso"]
+albedo_color = Color(0.3, 0.25, 0.15, 1)
+roughness = 0.2
+emission_enabled = true
+emission = Color(1, 0.78, 0.45, 1)
+emission_energy_multiplier = 1.3
+
+[sub_resource type="StandardMaterial3D" id="M_ferro"]
+albedo_color = Color(0.13, 0.14, 0.15, 1)
+roughness = 0.55
+metallic = 0.6
+
+[sub_resource type="StandardMaterial3D" id="M_porta"]
+albedo_color = Color(0.55, 0.42, 0.32, 1)
+albedo_texture = ExtResource("t_madeira_cor")
+roughness_texture = ExtResource("t_madeira_asp")
+normal_enabled = true
+normal_scale = 1
+normal_texture = ExtResource("t_madeira_normal")
+uv1_scale = Vector3(0.7143, 0.7143, 0.7143)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 1
+
+[sub_resource type="StandardMaterial3D" id="M_madeira_escura"]
+albedo_color = Color(0.55, 0.47, 0.4, 1)
+albedo_texture = ExtResource("t_madeira_cor")
+roughness_texture = ExtResource("t_madeira_asp")
+normal_enabled = true
+normal_scale = 1
+normal_texture = ExtResource("t_madeira_normal")
+uv1_scale = Vector3(0.8333, 0.8333, 0.8333)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 1
+
+[sub_resource type="StandardMaterial3D" id="M_barril"]
+albedo_color = Color(0.25, 0.38, 0.5, 1)
+albedo_texture = ExtResource("t_metal_pintado_cor")
+roughness_texture = ExtResource("t_metal_pintado_asp")
+normal_enabled = true
+normal_scale = 1
+normal_texture = ExtResource("t_metal_pintado_normal")
+uv1_scale = Vector3(1, 1, 1)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 0.7
+metallic = 0.3
+
+[sub_resource type="StandardMaterial3D" id="M_barril_vermelho"]
+albedo_color = Color(0.62, 0.16, 0.12, 1)
+albedo_texture = ExtResource("t_metal_pintado_cor")
+roughness_texture = ExtResource("t_metal_pintado_asp")
+normal_enabled = true
+normal_scale = 1
+normal_texture = ExtResource("t_metal_pintado_normal")
+uv1_scale = Vector3(1, 1, 1)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 0.7
+metallic = 0.3
+
+[sub_resource type="StandardMaterial3D" id="M_saco"]
+albedo_color = Color(0.62, 0.56, 0.44, 1)
+albedo_texture = ExtResource("t_areia_cor")
+roughness_texture = ExtResource("t_areia_asp")
+normal_enabled = true
+normal_scale = 1
+normal_texture = ExtResource("t_areia_normal")
+uv1_scale = Vector3(1.25, 1.25, 1.25)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 1
+
+[sub_resource type="StandardMaterial3D" id="M_borracha"]
+albedo_color = Color(0.04, 0.04, 0.045, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="M_abobada"]
+albedo_color = Color(0.8, 0.8, 0.77, 1)
+albedo_texture = ExtResource("t_azulejo_cor")
+roughness_texture = ExtResource("t_azulejo_asp")
+normal_enabled = true
+normal_scale = 0.7
+normal_texture = ExtResource("t_azulejo_normal")
+uv1_scale = Vector3(0.625, 0.625, 0.625)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 1
+
+[sub_resource type="StandardMaterial3D" id="M_nervura"]
+albedo_color = Color(0.55, 0.55, 0.57, 1)
+albedo_texture = ExtResource("t_concreto_cor")
+roughness_texture = ExtResource("t_concreto_asp")
+normal_enabled = true
+normal_scale = 1
+normal_texture = ExtResource("t_concreto_normal")
+uv1_scale = Vector3(0.3333, 0.3333, 0.3333)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 1
+
+[sub_resource type="StandardMaterial3D" id="M_azulejo_faixa"]
+albedo_color = Color(0.16, 0.3, 0.52, 1)
+albedo_texture = ExtResource("t_azulejo_cor")
+roughness_texture = ExtResource("t_azulejo_asp")
+normal_enabled = true
+normal_scale = 0.8
+normal_texture = ExtResource("t_azulejo_normal")
+uv1_scale = Vector3(0.625, 0.625, 0.625)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 1
+
+[sub_resource type="StandardMaterial3D" id="M_borda"]
+albedo_color = Color(0.86, 0.86, 0.84, 1)
+albedo_texture = ExtResource("t_concreto_cor")
+roughness_texture = ExtResource("t_concreto_asp")
+normal_enabled = true
+normal_scale = 1
+normal_texture = ExtResource("t_concreto_normal")
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 1
+
+[sub_resource type="StandardMaterial3D" id="M_persiana"]
+albedo_color = Color(0.52, 0.55, 0.58, 1)
+albedo_texture = ExtResource("t_metal_ondulado_cor")
+roughness_texture = ExtResource("t_metal_ondulado_asp")
+normal_enabled = true
+normal_scale = 1
+normal_texture = ExtResource("t_metal_ondulado_normal")
+uv1_scale = Vector3(0.8333, 0.8333, 0.8333)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 0.6
+metallic = 0.4
+
+[sub_resource type="StandardMaterial3D" id="M_duto"]
+albedo_color = Color(0.62, 0.64, 0.66, 1)
+albedo_texture = ExtResource("t_metal_pintado_cor")
+roughness_texture = ExtResource("t_metal_pintado_asp")
+normal_enabled = true
+normal_scale = 1
+normal_texture = ExtResource("t_metal_pintado_normal")
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 0.5
+metallic = 0.5
+
+[sub_resource type="StandardMaterial3D" id="M_cano_vermelho"]
+albedo_color = Color(0.62, 0.1, 0.08, 1)
+roughness = 0.5
+metallic = 0.3
+
+[sub_resource type="StandardMaterial3D" id="M_escuro"]
+albedo_color = Color(0.02, 0.02, 0.025, 1)
+roughness = 1
+
+[sub_resource type="StandardMaterial3D" id="M_luz_vagao"]
+albedo_color = Color(1, 1, 1, 1)
+roughness = 1
+emission_enabled = true
+emission = Color(1, 0.96, 0.88, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="StandardMaterial3D" id="M_farol"]
+albedo_color = Color(1, 1, 1, 1)
+roughness = 1
+emission_enabled = true
+emission = Color(1, 0.97, 0.85, 1)
+emission_energy_multiplier = 4
+
+[sub_resource type="StandardMaterial3D" id="M_anuncio1"]
+albedo_color = Color(0.25, 0.18, 0.075, 1)
+roughness = 1
+emission_enabled = true
+emission = Color(1, 0.72, 0.3, 1)
+emission_energy_multiplier = 1.1
+
+[sub_resource type="StandardMaterial3D" id="M_anuncio2"]
+albedo_color = Color(0.075, 0.2125, 0.25, 1)
+roughness = 1
+emission_enabled = true
+emission = Color(0.3, 0.85, 1, 1)
+emission_energy_multiplier = 1.1
+
+[sub_resource type="StandardMaterial3D" id="M_anuncio3"]
+albedo_color = Color(0.2375, 0.0875, 0.1375, 1)
+roughness = 1
+emission_enabled = true
+emission = Color(0.95, 0.35, 0.55, 1)
+emission_energy_multiplier = 1.1
+
 [sub_resource type="BoxShape3D" id="S1"]
 size = Vector3(48, 2, 12)
 
@@ -327,6 +580,10 @@ size = Vector3(0.4, 1, 1.2)
 [sub_resource type="BoxShape3D" id="S26"]
 size = Vector3(3, 2.6, 2.6)
 
+[sub_resource type="CylinderShape3D" id="S27"]
+height = 0.78
+radius = 0.25
+
 [sub_resource type="BoxMesh" id="B1"]
 size = Vector3(48, 2, 12)
 
@@ -361,73 +618,205 @@ size = Vector3(34, 0.16, 0.12)
 size = Vector3(18, 1.2, 5.6)
 
 [sub_resource type="BoxMesh" id="B12"]
-size = Vector3(18, 0.2, 5.6)
-
-[sub_resource type="BoxMesh" id="B13"]
 size = Vector3(3.5, 2, 0.2)
 
-[sub_resource type="BoxMesh" id="B14"]
+[sub_resource type="BoxMesh" id="B13"]
 size = Vector3(3.5, 0.35, 0.02)
 
-[sub_resource type="BoxMesh" id="B15"]
+[sub_resource type="BoxMesh" id="B14"]
 size = Vector3(7, 2, 0.2)
 
-[sub_resource type="BoxMesh" id="B16"]
+[sub_resource type="BoxMesh" id="B15"]
 size = Vector3(7, 0.35, 0.02)
 
-[sub_resource type="BoxMesh" id="B17"]
+[sub_resource type="BoxMesh" id="B16"]
 size = Vector3(5, 0.5, 0.6)
 
-[sub_resource type="BoxMesh" id="B18"]
+[sub_resource type="BoxMesh" id="B17"]
 size = Vector3(0.2, 2, 2)
 
-[sub_resource type="BoxMesh" id="B19"]
-size = Vector3(0.8, 9, 0.8)
-
-[sub_resource type="BoxMesh" id="B20"]
+[sub_resource type="BoxMesh" id="B18"]
 size = Vector3(28, 0.4, 4.05)
 
-[sub_resource type="BoxMesh" id="B21"]
+[sub_resource type="BoxMesh" id="B19"]
 size = Vector3(6, 0.9, 0.12)
 
-[sub_resource type="BoxMesh" id="B22"]
+[sub_resource type="BoxMesh" id="B20"]
 size = Vector3(6, 0.1, 0.192)
 
-[sub_resource type="BoxMesh" id="B23"]
+[sub_resource type="BoxMesh" id="B21"]
 size = Vector3(12.5, 5, 0.5)
 
-[sub_resource type="BoxMesh" id="B24"]
+[sub_resource type="BoxMesh" id="B22"]
 size = Vector3(1.2, 0.8, 1.2)
 
-[sub_resource type="BoxMesh" id="B25"]
+[sub_resource type="BoxMesh" id="B23"]
 size = Vector3(1.4, 0.8, 1.4)
 
-[sub_resource type="BoxMesh" id="B26"]
+[sub_resource type="BoxMesh" id="B24"]
 size = Vector3(2.6, 0.5, 0.7)
 
-[sub_resource type="BoxMesh" id="B27"]
+[sub_resource type="BoxMesh" id="B25"]
 size = Vector3(1.1, 2, 0.8)
 
-[sub_resource type="BoxMesh" id="B28"]
+[sub_resource type="BoxMesh" id="B26"]
 size = Vector3(0.8, 1.2, 0.04)
 
+[sub_resource type="BoxMesh" id="B27"]
+size = Vector3(2.4, 0.07, 0.22)
+
+[sub_resource type="BoxMesh" id="B28"]
+size = Vector3(2.6, 0.08, 0.34)
+
 [sub_resource type="BoxMesh" id="B29"]
-size = Vector3(2.4, 0.12, 0.3)
+size = Vector3(0.03, 1.3, 0.03)
 
 [sub_resource type="BoxMesh" id="B30"]
-size = Vector3(11.4471, 0.4, 2.6)
-
-[sub_resource type="BoxMesh" id="B31"]
 size = Vector3(0.4, 1, 1.6)
 
-[sub_resource type="BoxMesh" id="B32"]
+[sub_resource type="BoxMesh" id="B31"]
 size = Vector3(0.4, 1, 1.2)
 
-[sub_resource type="BoxMesh" id="B33"]
+[sub_resource type="BoxMesh" id="B32"]
 size = Vector3(3, 2.6, 2.6)
 
-[sub_resource type="BoxMesh" id="B34"]
+[sub_resource type="BoxMesh" id="B33"]
 size = Vector3(0.1, 0.4, 1.4)
+
+[sub_resource type="BoxMesh" id="B34"]
+size = Vector3(0.9, 0.2, 0.6)
+
+[sub_resource type="BoxMesh" id="B35"]
+size = Vector3(0.24, 0.1, 2.5)
+
+[sub_resource type="BoxMesh" id="B36"]
+size = Vector3(1.6, 0.75, 0.24)
+
+[sub_resource type="BoxMesh" id="B37"]
+size = Vector3(1.7, 0.75, 0.24)
+
+[sub_resource type="BoxMesh" id="B38"]
+size = Vector3(18, 0.4, 0.04)
+
+[sub_resource type="BoxMesh" id="B39"]
+size = Vector3(0.09, 2, 0.26)
+
+[sub_resource type="BoxMesh" id="B40"]
+size = Vector3(2, 0.025, 0.3)
+
+[sub_resource type="BoxMesh" id="B41"]
+size = Vector3(1.6, 0.05, 0.08)
+
+[sub_resource type="BoxMesh" id="B42"]
+size = Vector3(5, 0.6, 0.08)
+
+[sub_resource type="BoxMesh" id="B43"]
+size = Vector3(2.6, 0.04, 0.25)
+
+[sub_resource type="BoxMesh" id="B44"]
+size = Vector3(0.24, 0.7, 1.5)
+
+[sub_resource type="BoxMesh" id="B45"]
+size = Vector3(0.03, 0.16, 0.34)
+
+[sub_resource type="BoxMesh" id="B46"]
+size = Vector3(0.03, 0.22, 1.5)
+
+[sub_resource type="BoxMesh" id="B47"]
+size = Vector3(0.5, 0.3, 0.5)
+
+[sub_resource type="BoxMesh" id="B48"]
+size = Vector3(34, 0.012, 0.24)
+
+[sub_resource type="BoxMesh" id="B49"]
+size = Vector3(0.84, 0.25, 0.84)
+
+[sub_resource type="BoxMesh" id="B50"]
+size = Vector3(28, 0.5, 0.16)
+
+[sub_resource type="BoxMesh" id="B51"]
+size = Vector3(0.16, 0.24, 4)
+
+[sub_resource type="BoxMesh" id="B52"]
+size = Vector3(12.5, 0.25, 0.03)
+
+[sub_resource type="BoxMesh" id="B53"]
+size = Vector3(12.5, 0.18, 0.05)
+
+[sub_resource type="BoxMesh" id="B54"]
+size = Vector3(12.6, 0.08, 0.6)
+
+[sub_resource type="BoxMesh" id="B55"]
+size = Vector3(2.2, 1.3, 0.05)
+
+[sub_resource type="BoxMesh" id="B56"]
+size = Vector3(2.36, 1.46, 0.04)
+
+[sub_resource type="BoxMesh" id="B57"]
+size = Vector3(9.6, 0.95, 0.12)
+
+[sub_resource type="BoxMesh" id="B58"]
+size = Vector3(1.8, 0.4, 0.08)
+
+[sub_resource type="BoxMesh" id="B59"]
+size = Vector3(0.025, 0.6, 0.025)
+
+[sub_resource type="BoxMesh" id="B60"]
+size = Vector3(2.6, 0.5, 0.07)
+
+[sub_resource type="BoxMesh" id="B61"]
+size = Vector3(0.8, 1.3, 0.3)
+
+[sub_resource type="BoxMesh" id="B62"]
+size = Vector3(0.7, 1.2, 0.02)
+
+[sub_resource type="BoxMesh" id="B63"]
+size = Vector3(0.16, 0.22, 0.06)
+
+[sub_resource type="BoxMesh" id="B64"]
+size = Vector3(0.11, 0.16, 0.11)
+
+[sub_resource type="BoxMesh" id="B65"]
+size = Vector3(0.2, 0.03, 0.2)
+
+[sub_resource type="BoxMesh" id="B66"]
+size = Vector3(0.46, 0.05, 1.64)
+
+[sub_resource type="BoxMesh" id="B67"]
+size = Vector3(0.02, 0.1, 0.3)
+
+[sub_resource type="BoxMesh" id="B68"]
+size = Vector3(0.46, 0.05, 1.24)
+
+[sub_resource type="BoxMesh" id="B69"]
+size = Vector3(1.9, 0.9, 0.04)
+
+[sub_resource type="BoxMesh" id="B70"]
+size = Vector3(2.2, 0.06, 0.34)
+
+[sub_resource type="BoxMesh" id="B71"]
+size = Vector3(3.2, 0.24, 2.8)
+
+[sub_resource type="BoxMesh" id="B72"]
+size = Vector3(0.06, 3.4, 4.4)
+
+[sub_resource type="BoxMesh" id="B73"]
+size = Vector3(0.06, 3.2, 4)
+
+[sub_resource type="BoxMesh" id="B74"]
+size = Vector3(0.14, 3.4, 0.16)
+
+[sub_resource type="BoxMesh" id="B75"]
+size = Vector3(0.3, 0.36, 4.4)
+
+[sub_resource type="BoxMesh" id="B76"]
+size = Vector3(0.05, 1.5, 0.9)
+
+[sub_resource type="BoxMesh" id="B77"]
+size = Vector3(0.04, 1.62, 1.02)
+
+[sub_resource type="BoxMesh" id="B78"]
+size = Vector3(0.2, 0.012, 6)
 
 [sub_resource type="Environment" id="Env"]
 background_mode = 1
@@ -473,6 +862,901 @@ ambient_mode = 1
 [node name="BaseA" type="Node3D" parent="."]
 
 [node name="BaseB" type="Node3D" parent="."]
+
+[node name="EscadaNorteDegraus" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.4, -0.0893, 9.5)
+mesh = ExtResource("o_4c04e196ff")
+material_override = SubResource("M_chapa")
+
+[node name="EscadaSulDegraus" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.4, -0.0893, -9.5)
+mesh = ExtResource("o_4c04e196ff")
+material_override = SubResource("M_chapa")
+
+[node name="EscadaNorteDegraus" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 23.4, -0.0893, 9.5)
+mesh = ExtResource("o_4c04e196ff")
+material_override = SubResource("M_chapa")
+
+[node name="EscadaSulDegraus" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 23.4, -0.0893, -9.5)
+mesh = ExtResource("o_4c04e196ff")
+material_override = SubResource("M_chapa")
+
+[node name="Abobada" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, -37.25, 0)
+mesh = ExtResource("o_c4b12dfd28")
+material_override = SubResource("M_abobada")
+
+[node name="Nervura0" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -21, -37.25, 0)
+mesh = ExtResource("o_6140a7804f")
+material_override = SubResource("M_nervura")
+
+[node name="Nervura1" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -15, -37.25, 0)
+mesh = ExtResource("o_6140a7804f")
+material_override = SubResource("M_nervura")
+
+[node name="Nervura2" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -9, -37.25, 0)
+mesh = ExtResource("o_6140a7804f")
+material_override = SubResource("M_nervura")
+
+[node name="Nervura3" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -3, -37.25, 0)
+mesh = ExtResource("o_6140a7804f")
+material_override = SubResource("M_nervura")
+
+[node name="Nervura4" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 3, -37.25, 0)
+mesh = ExtResource("o_6140a7804f")
+material_override = SubResource("M_nervura")
+
+[node name="Nervura5" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9, -37.25, 0)
+mesh = ExtResource("o_6140a7804f")
+material_override = SubResource("M_nervura")
+
+[node name="Nervura6" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 15, -37.25, 0)
+mesh = ExtResource("o_6140a7804f")
+material_override = SubResource("M_nervura")
+
+[node name="Nervura7" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 21, -37.25, 0)
+mesh = ExtResource("o_6140a7804f")
+material_override = SubResource("M_nervura")
+
+[node name="Duto" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_8c6e407e5c")
+material_override = SubResource("M_duto")
+
+[node name="DutoFlange0" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.7353, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange1" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.9706, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange2" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.2059, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange3" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.4412, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange4" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.6765, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange5" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.9118, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange6" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.1471, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange7" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.3824, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange8" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.3824, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange9" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1471, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange10" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.9118, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange11" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.6765, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange12" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.4412, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange13" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.2059, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange14" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.9706, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="DutoFlange15" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.7353, 8.15, 0)
+mesh = ExtResource("o_6c7d09aebf")
+material_override = SubResource("M_aco")
+
+[node name="TetoCurvo" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0, 0)
+mesh = ExtResource("o_e53da2573b")
+material_override = SubResource("M_vagao")
+
+[node name="Balaustre0" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_9625a59959")
+material_override = SubResource("M_grade")
+
+[node name="Balaustre1" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_3363e71d17")
+material_override = SubResource("M_grade")
+
+[node name="Balaustre2" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_e4b6b8936a")
+material_override = SubResource("M_grade")
+
+[node name="Balaustre3" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_f0f16b65e9")
+material_override = SubResource("M_grade")
+
+[node name="Coluna1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, 7.6)
+mesh = ExtResource("o_296a4a1215")
+material_override = SubResource("M_azulejo")
+
+[node name="Coluna2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, 7.6)
+mesh = ExtResource("o_296a4a1215")
+material_override = SubResource("M_azulejo")
+
+[node name="Coluna3" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7.6)
+mesh = ExtResource("o_296a4a1215")
+material_override = SubResource("M_azulejo")
+
+[node name="Coluna4" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 7.6)
+mesh = ExtResource("o_296a4a1215")
+material_override = SubResource("M_azulejo")
+
+[node name="Coluna5" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 7.6)
+mesh = ExtResource("o_296a4a1215")
+material_override = SubResource("M_azulejo")
+
+[node name="Lixeira0" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, 6.75)
+mesh = ExtResource("o_a643a6246c")
+material_override = SubResource("M_duto")
+
+[node name="Lixeira1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 6.75)
+mesh = ExtResource("o_a643a6246c")
+material_override = SubResource("M_duto")
+
+[node name="CanoIncendio" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_a7ac0c3424")
+material_override = SubResource("M_cano_vermelho")
+
+[node name="CanoIncendioFlange0" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.1667, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.3333, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.5, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange3" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.6667, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange4" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.8333, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange5" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange6" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.8333, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange7" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6667, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange8" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange9" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.3333, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange10" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.1667, 2.7, 14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoAgua" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_18a8c2a844")
+material_override = SubResource("M_duto")
+
+[node name="CanoAguaFlange0" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 0.35, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0.35, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.5, 0.35, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange3" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.35, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange4" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0.35, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange5" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5714, 3.3, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange6" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.1429, 3.3, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange7" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.7143, 3.3, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange8" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.2857, 3.3, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange9" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.8571, 3.3, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange10" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.4286, 3.3, 14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="Eletroduto0" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_4e8e30b8cf")
+material_override = SubResource("M_ferro")
+
+[node name="Eletroduto1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_48b0d0e75f")
+material_override = SubResource("M_ferro")
+
+[node name="Eletroduto2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_d30cf56fb8")
+material_override = SubResource("M_ferro")
+
+[node name="Coluna1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, -7.6)
+mesh = ExtResource("o_296a4a1215")
+material_override = SubResource("M_azulejo")
+
+[node name="Coluna2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -7.6)
+mesh = ExtResource("o_296a4a1215")
+material_override = SubResource("M_azulejo")
+
+[node name="Coluna3" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -7.6)
+mesh = ExtResource("o_296a4a1215")
+material_override = SubResource("M_azulejo")
+
+[node name="Coluna4" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -7.6)
+mesh = ExtResource("o_296a4a1215")
+material_override = SubResource("M_azulejo")
+
+[node name="Coluna5" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -7.6)
+mesh = ExtResource("o_296a4a1215")
+material_override = SubResource("M_azulejo")
+
+[node name="Lixeira0" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, -6.75)
+mesh = ExtResource("o_a643a6246c")
+material_override = SubResource("M_duto")
+
+[node name="Lixeira1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, -6.75)
+mesh = ExtResource("o_a643a6246c")
+material_override = SubResource("M_duto")
+
+[node name="CanoIncendio" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_32b733ba28")
+material_override = SubResource("M_cano_vermelho")
+
+[node name="CanoIncendioFlange0" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.1667, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.3333, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.5, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange3" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.6667, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange4" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.8333, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange5" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange6" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.8333, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange7" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6667, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange8" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange9" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.3333, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoIncendioFlange10" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.1667, 2.7, -14.86)
+mesh = ExtResource("o_840a6401dd")
+material_override = SubResource("M_ferro")
+
+[node name="CanoAgua" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_a8495e6cfe")
+material_override = SubResource("M_duto")
+
+[node name="CanoAguaFlange0" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.5, 0.35, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0.35, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.5, 0.35, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange3" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.35, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange4" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0.35, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange5" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5714, 3.3, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange6" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.1429, 3.3, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange7" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.7143, 3.3, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange8" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.2857, 3.3, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange9" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.8571, 3.3, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="CanoAguaFlange10" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.4286, 3.3, -14.84)
+mesh = ExtResource("o_30b0de0747")
+material_override = SubResource("M_aco")
+
+[node name="Eletroduto0" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_31893bf4a8")
+material_override = SubResource("M_ferro")
+
+[node name="Eletroduto1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_f6750c69ef")
+material_override = SubResource("M_ferro")
+
+[node name="Eletroduto2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_90931c8640")
+material_override = SubResource("M_ferro")
+
+[node name="CorrimaoNorte0Alto" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_f7d016ab55")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Meio" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_43382db54e")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.3, 0, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.7667, 0.8333, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe2" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.2333, 1.6667, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe3" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.7, 2.5, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe4" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.1667, 3.3333, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe5" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.6333, 4.1667, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe6" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.1, 5, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Alto" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_0ce50f14d6")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Meio" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_1007ddef1b")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.3, 0, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.7667, 0.8333, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe2" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.2333, 1.6667, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe3" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.7, 2.5, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe4" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.1667, 3.3333, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe5" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.6333, 4.1667, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe6" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.1, 5, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="GuicheNorteMoldura" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -21.5, 1.5, 11.9)
+mesh = ExtResource("o_92b12c6c08")
+material_override = SubResource("M_duto")
+
+[node name="CorrimaoSul0Alto" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_6b1b7e415d")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Meio" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_16073d73fa")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.3, 0, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.7667, 0.8333, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe2" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.2333, 1.6667, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe3" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.7, 2.5, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe4" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.1667, 3.3333, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe5" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.6333, 4.1667, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe6" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.1, 5, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Alto" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_092cc7833f")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Meio" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_380d78bd9f")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.3, 0, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.7667, 0.8333, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe2" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.2333, 1.6667, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe3" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.7, 2.5, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe4" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.1667, 3.3333, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe5" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.6333, 4.1667, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe6" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.1, 5, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="GuicheSulMoldura" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.5, 1.5, -11.9)
+mesh = ExtResource("o_92b12c6c08")
+material_override = SubResource("M_duto")
+
+[node name="CorrimaoNorte0Alto" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_e05552058d")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Meio" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_4c985ef5ab")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.3, 0, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.7667, 0.8333, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe2" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.2333, 1.6667, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe3" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.7, 2.5, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe4" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1667, 3.3333, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe5" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.6333, 4.1667, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte0Pe6" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.1, 5, 8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Alto" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_d368ee2077")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Meio" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_d9814f641b")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.3, 0, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.7667, 0.8333, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe2" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.2333, 1.6667, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe3" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.7, 2.5, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe4" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1667, 3.3333, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe5" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.6333, 4.1667, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoNorte1Pe6" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.1, 5, 10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="GuicheNorteMoldura" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 21.5, 1.5, 11.9)
+mesh = ExtResource("o_92b12c6c08")
+material_override = SubResource("M_duto")
+
+[node name="CorrimaoSul0Alto" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_3f1b6a150d")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Meio" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_f8a6b8d14b")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.3, 0, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.7667, 0.8333, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe2" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.2333, 1.6667, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe3" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.7, 2.5, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe4" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1667, 3.3333, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe5" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.6333, 4.1667, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul0Pe6" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.1, 5, -10.74)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Alto" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_15fdc1d3e7")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Meio" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_84f732f91f")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.3, 0, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.7667, 0.8333, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe2" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.2333, 1.6667, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe3" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.7, 2.5, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe4" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1667, 3.3333, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe5" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.6333, 4.1667, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="CorrimaoSul1Pe6" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.1, 5, -8.26)
+mesh = ExtResource("o_b41372079c")
+material_override = SubResource("M_grade")
+
+[node name="GuicheSulMoldura" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 1.5, -11.9)
+mesh = ExtResource("o_92b12c6c08")
+material_override = SubResource("M_duto")
 
 [node name="PlataformaNorte" type="StaticBody3D" parent="Casca"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 9)
@@ -652,10 +1936,6 @@ metadata/piso = "metal"
 [node name="Colisao" type="CollisionShape3D" parent="Trem/Teto"]
 shape = SubResource("S10")
 
-[node name="Malha" type="MeshInstance3D" parent="Trem/Teto"]
-mesh = SubResource("B12")
-material_override = SubResource("M_vagao")
-
 [node name="LadoNorteOeste" type="StaticBody3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.25, 1, 2.7)
 metadata/piso = "metal"
@@ -664,12 +1944,12 @@ metadata/piso = "metal"
 shape = SubResource("S11")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/LadoNorteOeste"]
-mesh = SubResource("B13")
+mesh = SubResource("B12")
 material_override = SubResource("M_vagao")
 
 [node name="ListraNorteOeste" type="MeshInstance3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.25, 0.9, 2.81)
-mesh = SubResource("B14")
+mesh = SubResource("B13")
 material_override = SubResource("M_vagao_faixa")
 
 [node name="LadoNorteMeio" type="StaticBody3D" parent="Trem"]
@@ -680,12 +1960,12 @@ metadata/piso = "metal"
 shape = SubResource("S12")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/LadoNorteMeio"]
-mesh = SubResource("B15")
+mesh = SubResource("B14")
 material_override = SubResource("M_vagao")
 
 [node name="ListraNorteMeio" type="MeshInstance3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 2.81)
-mesh = SubResource("B16")
+mesh = SubResource("B15")
 material_override = SubResource("M_vagao_faixa")
 
 [node name="LadoNorteLeste" type="StaticBody3D" parent="Trem"]
@@ -696,12 +1976,12 @@ metadata/piso = "metal"
 shape = SubResource("S11")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/LadoNorteLeste"]
-mesh = SubResource("B13")
+mesh = SubResource("B12")
 material_override = SubResource("M_vagao")
 
 [node name="ListraNorteLeste" type="MeshInstance3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 0.9, 2.81)
-mesh = SubResource("B14")
+mesh = SubResource("B13")
 material_override = SubResource("M_vagao_faixa")
 
 [node name="BancoNorte" type="StaticBody3D" parent="Trem"]
@@ -712,7 +1992,7 @@ metadata/piso = "madeira"
 shape = SubResource("S13")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/BancoNorte"]
-mesh = SubResource("B17")
+mesh = SubResource("B16")
 material_override = SubResource("M_banco")
 
 [node name="LadoSulOeste" type="StaticBody3D" parent="Trem"]
@@ -723,12 +2003,12 @@ metadata/piso = "metal"
 shape = SubResource("S11")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/LadoSulOeste"]
-mesh = SubResource("B13")
+mesh = SubResource("B12")
 material_override = SubResource("M_vagao")
 
 [node name="ListraSulOeste" type="MeshInstance3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.25, 0.9, -2.81)
-mesh = SubResource("B14")
+mesh = SubResource("B13")
 material_override = SubResource("M_vagao_faixa")
 
 [node name="LadoSulMeio" type="StaticBody3D" parent="Trem"]
@@ -739,12 +2019,12 @@ metadata/piso = "metal"
 shape = SubResource("S12")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/LadoSulMeio"]
-mesh = SubResource("B15")
+mesh = SubResource("B14")
 material_override = SubResource("M_vagao")
 
 [node name="ListraSulMeio" type="MeshInstance3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, -2.81)
-mesh = SubResource("B16")
+mesh = SubResource("B15")
 material_override = SubResource("M_vagao_faixa")
 
 [node name="LadoSulLeste" type="StaticBody3D" parent="Trem"]
@@ -755,12 +2035,12 @@ metadata/piso = "metal"
 shape = SubResource("S11")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/LadoSulLeste"]
-mesh = SubResource("B13")
+mesh = SubResource("B12")
 material_override = SubResource("M_vagao")
 
 [node name="ListraSulLeste" type="MeshInstance3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 0.9, -2.81)
-mesh = SubResource("B14")
+mesh = SubResource("B13")
 material_override = SubResource("M_vagao_faixa")
 
 [node name="BancoSul" type="StaticBody3D" parent="Trem"]
@@ -771,7 +2051,7 @@ metadata/piso = "madeira"
 shape = SubResource("S13")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/BancoSul"]
-mesh = SubResource("B17")
+mesh = SubResource("B16")
 material_override = SubResource("M_banco")
 
 [node name="PontaLesteNorte" type="StaticBody3D" parent="Trem"]
@@ -782,7 +2062,7 @@ metadata/piso = "metal"
 shape = SubResource("S14")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/PontaLesteNorte"]
-mesh = SubResource("B18")
+mesh = SubResource("B17")
 material_override = SubResource("M_vagao")
 
 [node name="PontaLesteSul" type="StaticBody3D" parent="Trem"]
@@ -793,7 +2073,7 @@ metadata/piso = "metal"
 shape = SubResource("S14")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/PontaLesteSul"]
-mesh = SubResource("B18")
+mesh = SubResource("B17")
 material_override = SubResource("M_vagao")
 
 [node name="PontaOesteNorte" type="StaticBody3D" parent="Trem"]
@@ -804,7 +2084,7 @@ metadata/piso = "metal"
 shape = SubResource("S14")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/PontaOesteNorte"]
-mesh = SubResource("B18")
+mesh = SubResource("B17")
 material_override = SubResource("M_vagao")
 
 [node name="PontaOesteSul" type="StaticBody3D" parent="Trem"]
@@ -815,7 +2095,7 @@ metadata/piso = "metal"
 shape = SubResource("S14")
 
 [node name="Malha" type="MeshInstance3D" parent="Trem/PontaOesteSul"]
-mesh = SubResource("B18")
+mesh = SubResource("B17")
 material_override = SubResource("M_vagao")
 
 [node name="Pilar1" type="StaticBody3D" parent="PlataformaNorte"]
@@ -824,19 +2104,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 4.5, 7.6)
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/Pilar1"]
 shape = SubResource("S15")
 
-[node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/Pilar1"]
-mesh = SubResource("B19")
-material_override = SubResource("M_concreto")
-
 [node name="Pilar2" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 4.5, 7.6)
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/Pilar2"]
 shape = SubResource("S15")
-
-[node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/Pilar2"]
-mesh = SubResource("B19")
-material_override = SubResource("M_concreto")
 
 [node name="Pilar3" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 7.6)
@@ -844,29 +2116,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 7.6)
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/Pilar3"]
 shape = SubResource("S15")
 
-[node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/Pilar3"]
-mesh = SubResource("B19")
-material_override = SubResource("M_concreto")
-
 [node name="Pilar4" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4.5, 7.6)
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/Pilar4"]
 shape = SubResource("S15")
 
-[node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/Pilar4"]
-mesh = SubResource("B19")
-material_override = SubResource("M_concreto")
-
 [node name="Pilar5" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.5, 7.6)
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/Pilar5"]
 shape = SubResource("S15")
-
-[node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/Pilar5"]
-mesh = SubResource("B19")
-material_override = SubResource("M_concreto")
 
 [node name="Galeria" type="StaticBody3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.8, 9.225)
@@ -876,7 +2136,7 @@ metadata/piso = "metal"
 shape = SubResource("S16")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/Galeria"]
-mesh = SubResource("B20")
+mesh = SubResource("B18")
 material_override = SubResource("M_chapa")
 
 [node name="ParapeitoOeste" type="StaticBody3D" parent="PlataformaNorte"]
@@ -887,12 +2147,12 @@ metadata/piso = "metal"
 shape = SubResource("S17")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/ParapeitoOeste"]
-mesh = SubResource("B21")
+mesh = SubResource("B19")
 material_override = SubResource("M_aco")
 
 [node name="ParapeitoOesteCorrimao" type="MeshInstance3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 5.95, 7.35)
-mesh = SubResource("B22")
+mesh = SubResource("B20")
 material_override = SubResource("M_grade")
 
 [node name="ParapeitoMeio" type="StaticBody3D" parent="PlataformaNorte"]
@@ -903,12 +2163,12 @@ metadata/piso = "metal"
 shape = SubResource("S17")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/ParapeitoMeio"]
-mesh = SubResource("B21")
+mesh = SubResource("B19")
 material_override = SubResource("M_aco")
 
 [node name="ParapeitoMeioCorrimao" type="MeshInstance3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.95, 7.35)
-mesh = SubResource("B22")
+mesh = SubResource("B20")
 material_override = SubResource("M_grade")
 
 [node name="ParapeitoLeste" type="StaticBody3D" parent="PlataformaNorte"]
@@ -919,12 +2179,12 @@ metadata/piso = "metal"
 shape = SubResource("S17")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/ParapeitoLeste"]
-mesh = SubResource("B21")
+mesh = SubResource("B19")
 material_override = SubResource("M_aco")
 
 [node name="ParapeitoLesteCorrimao" type="MeshInstance3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 5.95, 7.35)
-mesh = SubResource("B22")
+mesh = SubResource("B20")
 material_override = SubResource("M_grade")
 
 [node name="ParedeServicoOeste" type="StaticBody3D" parent="PlataformaNorte"]
@@ -934,7 +2194,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.75, 2.5, 11.5)
 shape = SubResource("S18")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/ParedeServicoOeste"]
-mesh = SubResource("B23")
+mesh = SubResource("B21")
 material_override = SubResource("M_azulejo")
 
 [node name="ParedeServicoLeste" type="StaticBody3D" parent="PlataformaNorte"]
@@ -944,7 +2204,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, 2.5, 11.5)
 shape = SubResource("S18")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/ParedeServicoLeste"]
-mesh = SubResource("B23")
+mesh = SubResource("B21")
 material_override = SubResource("M_azulejo")
 
 [node name="CaixoteTrem" type="StaticBody3D" parent="PlataformaNorte"]
@@ -955,7 +2215,7 @@ metadata/piso = "madeira"
 shape = SubResource("S19")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/CaixoteTrem"]
-mesh = SubResource("B24")
+mesh = SubResource("B22")
 material_override = SubResource("M_madeira")
 
 [node name="CaixotePilar" type="StaticBody3D" parent="PlataformaNorte"]
@@ -966,7 +2226,7 @@ metadata/piso = "madeira"
 shape = SubResource("S20")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/CaixotePilar"]
-mesh = SubResource("B25")
+mesh = SubResource("B23")
 material_override = SubResource("M_madeira")
 
 [node name="Banco" type="StaticBody3D" parent="PlataformaNorte"]
@@ -977,7 +2237,7 @@ metadata/piso = "madeira"
 shape = SubResource("S21")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/Banco"]
-mesh = SubResource("B26")
+mesh = SubResource("B24")
 material_override = SubResource("M_banco")
 
 [node name="Maquina" type="StaticBody3D" parent="PlataformaNorte"]
@@ -988,33 +2248,93 @@ metadata/piso = "metal"
 shape = SubResource("S22")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaNorte/Maquina"]
-mesh = SubResource("B27")
+mesh = SubResource("B25")
 material_override = SubResource("M_maquina")
 
 [node name="Vitrine" type="MeshInstance3D" parent="PlataformaNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1.15, 10.38)
-mesh = SubResource("B28")
+mesh = SubResource("B26")
 material_override = SubResource("M_vitrine")
 
 [node name="Lampada1" type="MeshInstance3D" parent="PlataformaNorte"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 8.9, 5.2)
-mesh = SubResource("B29")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 7.2, 5.2)
+mesh = SubResource("B27")
 material_override = SubResource("M_lampada")
+
+[node name="Calha1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 7.27, 5.2)
+mesh = SubResource("B28")
+material_override = SubResource("M_aco")
+
+[node name="Haste10" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 7.95, 5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
+
+[node name="Haste11" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 7.95, 5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
 
 [node name="Lampada2" type="MeshInstance3D" parent="PlataformaNorte"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 8.9, 5.2)
-mesh = SubResource("B29")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 7.2, 5.2)
+mesh = SubResource("B27")
 material_override = SubResource("M_lampada")
+
+[node name="Calha2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 7.27, 5.2)
+mesh = SubResource("B28")
+material_override = SubResource("M_aco")
+
+[node name="Haste20" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 7.95, 5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
+
+[node name="Haste21" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 7.95, 5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
 
 [node name="Lampada3" type="MeshInstance3D" parent="PlataformaNorte"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 8.9, 5.2)
-mesh = SubResource("B29")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 7.2, 5.2)
+mesh = SubResource("B27")
 material_override = SubResource("M_lampada")
 
-[node name="Lampada4" type="MeshInstance3D" parent="PlataformaNorte"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 8.9, 5.2)
+[node name="Calha3" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 7.27, 5.2)
+mesh = SubResource("B28")
+material_override = SubResource("M_aco")
+
+[node name="Haste30" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 7.95, 5.2)
 mesh = SubResource("B29")
+material_override = SubResource("M_aco")
+
+[node name="Haste31" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 7.95, 5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
+
+[node name="Lampada4" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 7.2, 5.2)
+mesh = SubResource("B27")
 material_override = SubResource("M_lampada")
+
+[node name="Calha4" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 7.27, 5.2)
+mesh = SubResource("B28")
+material_override = SubResource("M_aco")
+
+[node name="Haste40" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 7.95, 5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
+
+[node name="Haste41" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 7.95, 5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
 
 [node name="Pilar1" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 4.5, -7.6)
@@ -1022,19 +2342,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 4.5, -7.6)
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/Pilar1"]
 shape = SubResource("S15")
 
-[node name="Malha" type="MeshInstance3D" parent="PlataformaSul/Pilar1"]
-mesh = SubResource("B19")
-material_override = SubResource("M_concreto")
-
 [node name="Pilar2" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 4.5, -7.6)
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/Pilar2"]
 shape = SubResource("S15")
-
-[node name="Malha" type="MeshInstance3D" parent="PlataformaSul/Pilar2"]
-mesh = SubResource("B19")
-material_override = SubResource("M_concreto")
 
 [node name="Pilar3" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, -7.6)
@@ -1042,29 +2354,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, -7.6)
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/Pilar3"]
 shape = SubResource("S15")
 
-[node name="Malha" type="MeshInstance3D" parent="PlataformaSul/Pilar3"]
-mesh = SubResource("B19")
-material_override = SubResource("M_concreto")
-
 [node name="Pilar4" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4.5, -7.6)
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/Pilar4"]
 shape = SubResource("S15")
 
-[node name="Malha" type="MeshInstance3D" parent="PlataformaSul/Pilar4"]
-mesh = SubResource("B19")
-material_override = SubResource("M_concreto")
-
 [node name="Pilar5" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.5, -7.6)
 
 [node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/Pilar5"]
 shape = SubResource("S15")
-
-[node name="Malha" type="MeshInstance3D" parent="PlataformaSul/Pilar5"]
-mesh = SubResource("B19")
-material_override = SubResource("M_concreto")
 
 [node name="Galeria" type="StaticBody3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.8, -9.225)
@@ -1074,7 +2374,7 @@ metadata/piso = "metal"
 shape = SubResource("S16")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaSul/Galeria"]
-mesh = SubResource("B20")
+mesh = SubResource("B18")
 material_override = SubResource("M_chapa")
 
 [node name="ParapeitoOeste" type="StaticBody3D" parent="PlataformaSul"]
@@ -1085,12 +2385,12 @@ metadata/piso = "metal"
 shape = SubResource("S17")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaSul/ParapeitoOeste"]
-mesh = SubResource("B21")
+mesh = SubResource("B19")
 material_override = SubResource("M_aco")
 
 [node name="ParapeitoOesteCorrimao" type="MeshInstance3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 5.95, -7.35)
-mesh = SubResource("B22")
+mesh = SubResource("B20")
 material_override = SubResource("M_grade")
 
 [node name="ParapeitoMeio" type="StaticBody3D" parent="PlataformaSul"]
@@ -1101,12 +2401,12 @@ metadata/piso = "metal"
 shape = SubResource("S17")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaSul/ParapeitoMeio"]
-mesh = SubResource("B21")
+mesh = SubResource("B19")
 material_override = SubResource("M_aco")
 
 [node name="ParapeitoMeioCorrimao" type="MeshInstance3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.95, -7.35)
-mesh = SubResource("B22")
+mesh = SubResource("B20")
 material_override = SubResource("M_grade")
 
 [node name="ParapeitoLeste" type="StaticBody3D" parent="PlataformaSul"]
@@ -1117,12 +2417,12 @@ metadata/piso = "metal"
 shape = SubResource("S17")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaSul/ParapeitoLeste"]
-mesh = SubResource("B21")
+mesh = SubResource("B19")
 material_override = SubResource("M_aco")
 
 [node name="ParapeitoLesteCorrimao" type="MeshInstance3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 5.95, -7.35)
-mesh = SubResource("B22")
+mesh = SubResource("B20")
 material_override = SubResource("M_grade")
 
 [node name="ParedeServicoOeste" type="StaticBody3D" parent="PlataformaSul"]
@@ -1132,7 +2432,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.75, 2.5, -11.5)
 shape = SubResource("S18")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaSul/ParedeServicoOeste"]
-mesh = SubResource("B23")
+mesh = SubResource("B21")
 material_override = SubResource("M_azulejo")
 
 [node name="ParedeServicoLeste" type="StaticBody3D" parent="PlataformaSul"]
@@ -1142,7 +2442,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, 2.5, -11.5)
 shape = SubResource("S18")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaSul/ParedeServicoLeste"]
-mesh = SubResource("B23")
+mesh = SubResource("B21")
 material_override = SubResource("M_azulejo")
 
 [node name="CaixoteTrem" type="StaticBody3D" parent="PlataformaSul"]
@@ -1153,7 +2453,7 @@ metadata/piso = "madeira"
 shape = SubResource("S19")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaSul/CaixoteTrem"]
-mesh = SubResource("B24")
+mesh = SubResource("B22")
 material_override = SubResource("M_madeira")
 
 [node name="CaixotePilar" type="StaticBody3D" parent="PlataformaSul"]
@@ -1164,7 +2464,7 @@ metadata/piso = "madeira"
 shape = SubResource("S20")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaSul/CaixotePilar"]
-mesh = SubResource("B25")
+mesh = SubResource("B23")
 material_override = SubResource("M_madeira")
 
 [node name="Banco" type="StaticBody3D" parent="PlataformaSul"]
@@ -1175,7 +2475,7 @@ metadata/piso = "madeira"
 shape = SubResource("S21")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaSul/Banco"]
-mesh = SubResource("B26")
+mesh = SubResource("B24")
 material_override = SubResource("M_banco")
 
 [node name="Maquina" type="StaticBody3D" parent="PlataformaSul"]
@@ -1186,33 +2486,93 @@ metadata/piso = "metal"
 shape = SubResource("S22")
 
 [node name="Malha" type="MeshInstance3D" parent="PlataformaSul/Maquina"]
-mesh = SubResource("B27")
+mesh = SubResource("B25")
 material_override = SubResource("M_maquina")
 
 [node name="Vitrine" type="MeshInstance3D" parent="PlataformaSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 1.15, -10.38)
-mesh = SubResource("B28")
+mesh = SubResource("B26")
 material_override = SubResource("M_vitrine")
 
 [node name="Lampada1" type="MeshInstance3D" parent="PlataformaSul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 8.9, -5.2)
-mesh = SubResource("B29")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 7.2, -5.2)
+mesh = SubResource("B27")
 material_override = SubResource("M_lampada")
+
+[node name="Calha1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 7.27, -5.2)
+mesh = SubResource("B28")
+material_override = SubResource("M_aco")
+
+[node name="Haste10" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 7.95, -5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
+
+[node name="Haste11" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 7.95, -5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
 
 [node name="Lampada2" type="MeshInstance3D" parent="PlataformaSul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 8.9, -5.2)
-mesh = SubResource("B29")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 7.2, -5.2)
+mesh = SubResource("B27")
 material_override = SubResource("M_lampada")
+
+[node name="Calha2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 7.27, -5.2)
+mesh = SubResource("B28")
+material_override = SubResource("M_aco")
+
+[node name="Haste20" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 7.95, -5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
+
+[node name="Haste21" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 7.95, -5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
 
 [node name="Lampada3" type="MeshInstance3D" parent="PlataformaSul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 8.9, -5.2)
-mesh = SubResource("B29")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 7.2, -5.2)
+mesh = SubResource("B27")
 material_override = SubResource("M_lampada")
 
-[node name="Lampada4" type="MeshInstance3D" parent="PlataformaSul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 8.9, -5.2)
+[node name="Calha3" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 7.27, -5.2)
+mesh = SubResource("B28")
+material_override = SubResource("M_aco")
+
+[node name="Haste30" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 7.95, -5.2)
 mesh = SubResource("B29")
+material_override = SubResource("M_aco")
+
+[node name="Haste31" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 7.95, -5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
+
+[node name="Lampada4" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 7.2, -5.2)
+mesh = SubResource("B27")
 material_override = SubResource("M_lampada")
+
+[node name="Calha4" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 7.27, -5.2)
+mesh = SubResource("B28")
+material_override = SubResource("M_aco")
+
+[node name="Haste40" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 7.95, -5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
+
+[node name="Haste41" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 7.95, -5.2)
+mesh = SubResource("B29")
+material_override = SubResource("M_aco")
 
 [node name="EscadaNorte" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(0.8829, -0.4696, 0, 0.4696, 0.8829, 0, 0, 0, 1, -18.6061, 2.3234, 9.5)
@@ -1220,10 +2580,6 @@ metadata/piso = "metal"
 
 [node name="Colisao" type="CollisionShape3D" parent="BaseA/EscadaNorte"]
 shape = SubResource("S23")
-
-[node name="Malha" type="MeshInstance3D" parent="BaseA/EscadaNorte"]
-mesh = SubResource("B30")
-material_override = SubResource("M_chapa")
 
 [node name="CatracaNorte1" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.6, 0.5, 5)
@@ -1233,7 +2589,7 @@ metadata/piso = "metal"
 shape = SubResource("S24")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseA/CatracaNorte1"]
-mesh = SubResource("B31")
+mesh = SubResource("B30")
 material_override = SubResource("M_catraca")
 
 [node name="CatracaNorte2" type="StaticBody3D" parent="BaseA"]
@@ -1244,7 +2600,7 @@ metadata/piso = "metal"
 shape = SubResource("S25")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseA/CatracaNorte2"]
-mesh = SubResource("B32")
+mesh = SubResource("B31")
 material_override = SubResource("M_catraca")
 
 [node name="BilheteriaNorte" type="StaticBody3D" parent="BaseA"]
@@ -1254,12 +2610,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.5, 1.3, 13.2)
 shape = SubResource("S26")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseA/BilheteriaNorte"]
-mesh = SubResource("B33")
+mesh = SubResource("B32")
 material_override = SubResource("M_azulejo_azul")
 
 [node name="SaidaNorte" type="MeshInstance3D" parent="BaseA"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.9, 3, 4)
-mesh = SubResource("B34")
+mesh = SubResource("B33")
 material_override = SubResource("M_placa")
 
 [node name="EscadaSul" type="StaticBody3D" parent="BaseA"]
@@ -1269,10 +2625,6 @@ metadata/piso = "metal"
 [node name="Colisao" type="CollisionShape3D" parent="BaseA/EscadaSul"]
 shape = SubResource("S23")
 
-[node name="Malha" type="MeshInstance3D" parent="BaseA/EscadaSul"]
-mesh = SubResource("B30")
-material_override = SubResource("M_chapa")
-
 [node name="CatracaSul1" type="StaticBody3D" parent="BaseA"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.6, 0.5, -5)
 metadata/piso = "metal"
@@ -1281,7 +2633,7 @@ metadata/piso = "metal"
 shape = SubResource("S24")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseA/CatracaSul1"]
-mesh = SubResource("B31")
+mesh = SubResource("B30")
 material_override = SubResource("M_catraca")
 
 [node name="CatracaSul2" type="StaticBody3D" parent="BaseA"]
@@ -1292,7 +2644,7 @@ metadata/piso = "metal"
 shape = SubResource("S25")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseA/CatracaSul2"]
-mesh = SubResource("B32")
+mesh = SubResource("B31")
 material_override = SubResource("M_catraca")
 
 [node name="BilheteriaSul" type="StaticBody3D" parent="BaseA"]
@@ -1302,12 +2654,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.5, 1.3, -13.2)
 shape = SubResource("S26")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseA/BilheteriaSul"]
-mesh = SubResource("B33")
+mesh = SubResource("B32")
 material_override = SubResource("M_azulejo_azul")
 
 [node name="SaidaSul" type="MeshInstance3D" parent="BaseA"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.9, 3, -4)
-mesh = SubResource("B34")
+mesh = SubResource("B33")
 material_override = SubResource("M_placa")
 
 [node name="EscadaNorte" type="StaticBody3D" parent="BaseB"]
@@ -1317,10 +2669,6 @@ metadata/piso = "metal"
 [node name="Colisao" type="CollisionShape3D" parent="BaseB/EscadaNorte"]
 shape = SubResource("S23")
 
-[node name="Malha" type="MeshInstance3D" parent="BaseB/EscadaNorte"]
-mesh = SubResource("B30")
-material_override = SubResource("M_chapa")
-
 [node name="CatracaNorte1" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 0.5, 5)
 metadata/piso = "metal"
@@ -1329,7 +2677,7 @@ metadata/piso = "metal"
 shape = SubResource("S24")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/CatracaNorte1"]
-mesh = SubResource("B31")
+mesh = SubResource("B30")
 material_override = SubResource("M_catraca")
 
 [node name="CatracaNorte2" type="StaticBody3D" parent="BaseB"]
@@ -1340,7 +2688,7 @@ metadata/piso = "metal"
 shape = SubResource("S25")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/CatracaNorte2"]
-mesh = SubResource("B32")
+mesh = SubResource("B31")
 material_override = SubResource("M_catraca")
 
 [node name="BilheteriaNorte" type="StaticBody3D" parent="BaseB"]
@@ -1350,12 +2698,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 1.3, 13.2)
 shape = SubResource("S26")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/BilheteriaNorte"]
-mesh = SubResource("B33")
+mesh = SubResource("B32")
 material_override = SubResource("M_azulejo_laranja")
 
 [node name="SaidaNorte" type="MeshInstance3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.9, 3, 4)
-mesh = SubResource("B34")
+mesh = SubResource("B33")
 material_override = SubResource("M_placa")
 
 [node name="EscadaSul" type="StaticBody3D" parent="BaseB"]
@@ -1365,10 +2713,6 @@ metadata/piso = "metal"
 [node name="Colisao" type="CollisionShape3D" parent="BaseB/EscadaSul"]
 shape = SubResource("S23")
 
-[node name="Malha" type="MeshInstance3D" parent="BaseB/EscadaSul"]
-mesh = SubResource("B30")
-material_override = SubResource("M_chapa")
-
 [node name="CatracaSul1" type="StaticBody3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 0.5, -5)
 metadata/piso = "metal"
@@ -1377,7 +2721,7 @@ metadata/piso = "metal"
 shape = SubResource("S24")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/CatracaSul1"]
-mesh = SubResource("B31")
+mesh = SubResource("B30")
 material_override = SubResource("M_catraca")
 
 [node name="CatracaSul2" type="StaticBody3D" parent="BaseB"]
@@ -1388,7 +2732,7 @@ metadata/piso = "metal"
 shape = SubResource("S25")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/CatracaSul2"]
-mesh = SubResource("B32")
+mesh = SubResource("B31")
 material_override = SubResource("M_catraca")
 
 [node name="BilheteriaSul" type="StaticBody3D" parent="BaseB"]
@@ -1398,13 +2742,1076 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 1.3, -13.2)
 shape = SubResource("S26")
 
 [node name="Malha" type="MeshInstance3D" parent="BaseB/BilheteriaSul"]
-mesh = SubResource("B33")
+mesh = SubResource("B32")
 material_override = SubResource("M_azulejo_laranja")
 
 [node name="SaidaSul" type="MeshInstance3D" parent="BaseB"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.9, 3, -4)
-mesh = SubResource("B34")
+mesh = SubResource("B33")
 material_override = SubResource("M_placa")
+
+[node name="BocaDuto0" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15, 7.68, 0)
+mesh = SubResource("B34")
+material_override = SubResource("M_aco")
+
+[node name="BocaDuto1" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 7.68, 0)
+mesh = SubResource("B34")
+material_override = SubResource("M_aco")
+
+[node name="BocaDuto2" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 7.68, 0)
+mesh = SubResource("B34")
+material_override = SubResource("M_aco")
+
+[node name="BocaDuto3" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 7.68, 0)
+mesh = SubResource("B34")
+material_override = SubResource("M_aco")
+
+[node name="DormenteO0" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.4, -1.15, 0)
+mesh = SubResource("B35")
+material_override = SubResource("M_madeira_escura")
+
+[node name="DormenteO1" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.1, -1.15, 0)
+mesh = SubResource("B35")
+material_override = SubResource("M_madeira_escura")
+
+[node name="DormenteO2" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.8, -1.15, 0)
+mesh = SubResource("B35")
+material_override = SubResource("M_madeira_escura")
+
+[node name="DormenteO3" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.5, -1.15, 0)
+mesh = SubResource("B35")
+material_override = SubResource("M_madeira_escura")
+
+[node name="DormenteO4" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.2, -1.15, 0)
+mesh = SubResource("B35")
+material_override = SubResource("M_madeira_escura")
+
+[node name="DormenteL0" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.4, -1.15, 0)
+mesh = SubResource("B35")
+material_override = SubResource("M_madeira_escura")
+
+[node name="DormenteL1" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.1, -1.15, 0)
+mesh = SubResource("B35")
+material_override = SubResource("M_madeira_escura")
+
+[node name="DormenteL2" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.8, -1.15, 0)
+mesh = SubResource("B35")
+material_override = SubResource("M_madeira_escura")
+
+[node name="DormenteL3" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -1.15, 0)
+mesh = SubResource("B35")
+material_override = SubResource("M_madeira_escura")
+
+[node name="DormenteL4" type="MeshInstance3D" parent="Casca"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.2, -1.15, 0)
+mesh = SubResource("B35")
+material_override = SubResource("M_madeira_escura")
+
+[node name="JanelaN0" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.25, 1.3, 2.7)
+mesh = SubResource("B36")
+material_override = SubResource("M_vidro")
+
+[node name="JanelaN1" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2, 1.3, 2.7)
+mesh = SubResource("B37")
+material_override = SubResource("M_vidro")
+
+[node name="JanelaN2" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 2.7)
+mesh = SubResource("B37")
+material_override = SubResource("M_vidro")
+
+[node name="JanelaN3" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 1.3, 2.7)
+mesh = SubResource("B37")
+material_override = SubResource("M_vidro")
+
+[node name="JanelaN4" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 1.3, 2.7)
+mesh = SubResource("B36")
+material_override = SubResource("M_vidro")
+
+[node name="SaiaN" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 2.82)
+mesh = SubResource("B38")
+material_override = SubResource("M_aco")
+
+[node name="BatenteN0" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 1, 2.7)
+mesh = SubResource("B39")
+material_override = SubResource("M_grade")
+
+[node name="BatenteN1" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 1, 2.7)
+mesh = SubResource("B39")
+material_override = SubResource("M_grade")
+
+[node name="BatenteN2" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 1, 2.7)
+mesh = SubResource("B39")
+material_override = SubResource("M_grade")
+
+[node name="BatenteN3" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 1, 2.7)
+mesh = SubResource("B39")
+material_override = SubResource("M_grade")
+
+[node name="SoleiraN0" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0.012, 2.75)
+mesh = SubResource("B40")
+material_override = SubResource("M_faixa")
+
+[node name="LuzPortaN0" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.96, 2.72)
+mesh = SubResource("B41")
+material_override = SubResource("M_lampada")
+
+[node name="SoleiraN1" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0.012, 2.75)
+mesh = SubResource("B40")
+material_override = SubResource("M_faixa")
+
+[node name="LuzPortaN1" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 1.96, 2.72)
+mesh = SubResource("B41")
+material_override = SubResource("M_lampada")
+
+[node name="EncostoN" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 2.52)
+mesh = SubResource("B42")
+material_override = SubResource("M_banco")
+
+[node name="JanelaS0" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.25, 1.3, -2.7)
+mesh = SubResource("B36")
+material_override = SubResource("M_vidro")
+
+[node name="JanelaS1" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2, 1.3, -2.7)
+mesh = SubResource("B37")
+material_override = SubResource("M_vidro")
+
+[node name="JanelaS2" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, -2.7)
+mesh = SubResource("B37")
+material_override = SubResource("M_vidro")
+
+[node name="JanelaS3" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2, 1.3, -2.7)
+mesh = SubResource("B37")
+material_override = SubResource("M_vidro")
+
+[node name="JanelaS4" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 1.3, -2.7)
+mesh = SubResource("B36")
+material_override = SubResource("M_vidro")
+
+[node name="SaiaS" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, -2.82)
+mesh = SubResource("B38")
+material_override = SubResource("M_aco")
+
+[node name="BatenteS0" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 1, -2.7)
+mesh = SubResource("B39")
+material_override = SubResource("M_grade")
+
+[node name="BatenteS1" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 1, -2.7)
+mesh = SubResource("B39")
+material_override = SubResource("M_grade")
+
+[node name="BatenteS2" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 1, -2.7)
+mesh = SubResource("B39")
+material_override = SubResource("M_grade")
+
+[node name="BatenteS3" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 1, -2.7)
+mesh = SubResource("B39")
+material_override = SubResource("M_grade")
+
+[node name="SoleiraS0" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0.012, -2.75)
+mesh = SubResource("B40")
+material_override = SubResource("M_faixa")
+
+[node name="LuzPortaS0" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.96, -2.72)
+mesh = SubResource("B41")
+material_override = SubResource("M_lampada")
+
+[node name="SoleiraS1" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0.012, -2.75)
+mesh = SubResource("B40")
+material_override = SubResource("M_faixa")
+
+[node name="LuzPortaS1" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 1.96, -2.72)
+mesh = SubResource("B41")
+material_override = SubResource("M_lampada")
+
+[node name="EncostoS" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, -2.52)
+mesh = SubResource("B42")
+material_override = SubResource("M_banco")
+
+[node name="LuzTeto0" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 1.96, 0)
+mesh = SubResource("B43")
+material_override = SubResource("M_luz_vagao")
+
+[node name="LuzTeto1" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.96, 0)
+mesh = SubResource("B43")
+material_override = SubResource("M_luz_vagao")
+
+[node name="LuzTeto2" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 1.96, 0)
+mesh = SubResource("B43")
+material_override = SubResource("M_luz_vagao")
+
+[node name="ParabrisaLN" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.9, 1.35, 1.8)
+mesh = SubResource("B44")
+material_override = SubResource("M_vidro")
+
+[node name="FarolLN" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.01, 0.45, 2)
+mesh = SubResource("B45")
+material_override = SubResource("M_farol")
+
+[node name="ParabrisaLS" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.9, 1.35, -1.8)
+mesh = SubResource("B44")
+material_override = SubResource("M_vidro")
+
+[node name="FarolLS" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.01, 0.45, -2)
+mesh = SubResource("B45")
+material_override = SubResource("M_farol")
+
+[node name="LetreiroL" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.01, 1.84, 0)
+mesh = SubResource("B46")
+material_override = SubResource("M_placa")
+
+[node name="EngateL" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.2, -0.5, 0)
+mesh = SubResource("B47")
+material_override = SubResource("M_aco")
+
+[node name="ParabrisaON" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9, 1.35, 1.8)
+mesh = SubResource("B44")
+material_override = SubResource("M_vidro")
+
+[node name="FarolON" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.01, 0.45, 2)
+mesh = SubResource("B45")
+material_override = SubResource("M_farol")
+
+[node name="ParabrisaOS" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.9, 1.35, -1.8)
+mesh = SubResource("B44")
+material_override = SubResource("M_vidro")
+
+[node name="FarolOS" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.01, 0.45, -2)
+mesh = SubResource("B45")
+material_override = SubResource("M_farol")
+
+[node name="LetreiroO" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.01, 1.84, 0)
+mesh = SubResource("B46")
+material_override = SubResource("M_placa")
+
+[node name="EngateO" type="MeshInstance3D" parent="Trem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.2, -0.5, 0)
+mesh = SubResource("B47")
+material_override = SubResource("M_aco")
+
+[node name="Borda" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, 3.12)
+mesh = SubResource("B48")
+material_override = SubResource("M_borda")
+
+[node name="Anel1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.25, 7.6)
+mesh = SubResource("B49")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="Anel2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.25, 7.6)
+mesh = SubResource("B49")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="Anel3" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 7.6)
+mesh = SubResource("B49")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="Anel4" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.25, 7.6)
+mesh = SubResource("B49")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="Anel5" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.25, 7.6)
+mesh = SubResource("B49")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="VigaGaleria" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 7.24)
+mesh = SubResource("B50")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal0" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.5, 4.5, 9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 4.5, 9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 4.5, 9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal3" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 4.5, 9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal4" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 4.5, 9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal5" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, 4.5, 9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="FaixaOeste" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.75, 1.25, 11.24)
+mesh = SubResource("B52")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="RodapeOeste" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.75, 0.09, 11.23)
+mesh = SubResource("B53")
+material_override = SubResource("M_nervura")
+
+[node name="TopoOeste" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.75, 5.04, 11.5)
+mesh = SubResource("B54")
+material_override = SubResource("M_borda")
+
+[node name="FaixaLeste" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, 1.25, 11.24)
+mesh = SubResource("B52")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="RodapeLeste" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, 0.09, 11.23)
+mesh = SubResource("B53")
+material_override = SubResource("M_nervura")
+
+[node name="TopoLeste" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, 5.04, 11.5)
+mesh = SubResource("B54")
+material_override = SubResource("M_borda")
+
+[node name="Anuncio0" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 2.55, 11.22)
+mesh = SubResource("B55")
+material_override = SubResource("M_anuncio1")
+
+[node name="AnuncioMoldura0" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 2.55, 11.235)
+mesh = SubResource("B56")
+material_override = SubResource("M_aco")
+
+[node name="Anuncio1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.55, 11.22)
+mesh = SubResource("B55")
+material_override = SubResource("M_anuncio2")
+
+[node name="AnuncioMoldura1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.55, 11.235)
+mesh = SubResource("B56")
+material_override = SubResource("M_aco")
+
+[node name="Anuncio2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.55, 11.22)
+mesh = SubResource("B55")
+material_override = SubResource("M_anuncio3")
+
+[node name="AnuncioMoldura2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.55, 11.235)
+mesh = SubResource("B56")
+material_override = SubResource("M_aco")
+
+[node name="Anuncio3" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 2.55, 11.22)
+mesh = SubResource("B55")
+material_override = SubResource("M_anuncio1")
+
+[node name="AnuncioMoldura3" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 2.55, 11.235)
+mesh = SubResource("B56")
+material_override = SubResource("M_aco")
+
+[node name="PlacaEstacao" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.4, 11.32)
+mesh = SubResource("B57")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="PlacaSaida0" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 3.75, 6.2)
+mesh = SubResource("B58")
+material_override = SubResource("M_placa")
+
+[node name="HastePlaca00" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.7, 4.25, 6.2)
+mesh = SubResource("B59")
+material_override = SubResource("M_aco")
+
+[node name="HastePlaca01" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.3, 4.25, 6.2)
+mesh = SubResource("B59")
+material_override = SubResource("M_aco")
+
+[node name="PlacaSaida1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 3.75, 6.2)
+mesh = SubResource("B58")
+material_override = SubResource("M_placa")
+
+[node name="HastePlaca10" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.3, 4.25, 6.2)
+mesh = SubResource("B59")
+material_override = SubResource("M_aco")
+
+[node name="HastePlaca11" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.7, 4.25, 6.2)
+mesh = SubResource("B59")
+material_override = SubResource("M_aco")
+
+[node name="BancoEncosto" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.72, 10.9)
+mesh = SubResource("B60")
+material_override = SubResource("M_banco")
+
+[node name="LixeiraColisao0" type="StaticBody3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.39, 6.75)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/LixeiraColisao0"]
+shape = SubResource("S27")
+
+[node name="LixeiraColisao1" type="StaticBody3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.39, 6.75)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="PlataformaNorte/LixeiraColisao1"]
+shape = SubResource("S27")
+
+[node name="Quadro0" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 1.5, 14.84)
+mesh = SubResource("B61")
+material_override = SubResource("M_duto")
+
+[node name="QuadroPorta0" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 1.5, 14.68)
+mesh = SubResource("B62")
+material_override = SubResource("M_aco")
+
+[node name="Quadro1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 1.5, 14.84)
+mesh = SubResource("B61")
+material_override = SubResource("M_duto")
+
+[node name="QuadroPorta1" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 1.5, 14.68)
+mesh = SubResource("B62")
+material_override = SubResource("M_aco")
+
+[node name="Quadro2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.5, 14.84)
+mesh = SubResource("B61")
+material_override = SubResource("M_duto")
+
+[node name="QuadroPorta2" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.5, 14.68)
+mesh = SubResource("B62")
+material_override = SubResource("M_aco")
+
+[node name="Arandela0Base" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -9, 3.9, 14.97)
+mesh = SubResource("B63")
+material_override = SubResource("M_ferro")
+
+[node name="Arandela0Lampada" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -9, 3.88, 14.88)
+mesh = SubResource("B64")
+material_override = SubResource("M_lampada")
+
+[node name="Arandela0Aba" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -9, 4.01, 14.88)
+mesh = SubResource("B65")
+material_override = SubResource("M_ferro")
+
+[node name="Arandela1Base" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 3.9, 14.97)
+mesh = SubResource("B63")
+material_override = SubResource("M_ferro")
+
+[node name="Arandela1Lampada" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 3.88, 14.88)
+mesh = SubResource("B64")
+material_override = SubResource("M_lampada")
+
+[node name="Arandela1Aba" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 4.01, 14.88)
+mesh = SubResource("B65")
+material_override = SubResource("M_ferro")
+
+[node name="Arandela2Base" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 9, 3.9, 14.97)
+mesh = SubResource("B63")
+material_override = SubResource("M_ferro")
+
+[node name="Arandela2Lampada" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 9, 3.88, 14.88)
+mesh = SubResource("B64")
+material_override = SubResource("M_lampada")
+
+[node name="Arandela2Aba" type="MeshInstance3D" parent="PlataformaNorte"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 9, 4.01, 14.88)
+mesh = SubResource("B65")
+material_override = SubResource("M_ferro")
+
+[node name="Borda" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, -3.12)
+mesh = SubResource("B48")
+material_override = SubResource("M_borda")
+
+[node name="Anel1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 1.25, -7.6)
+mesh = SubResource("B49")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="Anel2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1.25, -7.6)
+mesh = SubResource("B49")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="Anel3" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, -7.6)
+mesh = SubResource("B49")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="Anel4" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.25, -7.6)
+mesh = SubResource("B49")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="Anel5" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.25, -7.6)
+mesh = SubResource("B49")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="VigaGaleria" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, -7.24)
+mesh = SubResource("B50")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal0" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.5, 4.5, -9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 4.5, -9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 4.5, -9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal3" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 4.5, -9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal4" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 4.5, -9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="VigaTransversal5" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, 4.5, -9.25)
+mesh = SubResource("B51")
+material_override = SubResource("M_aco")
+
+[node name="FaixaOeste" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.75, 1.25, -11.24)
+mesh = SubResource("B52")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="RodapeOeste" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.75, 0.09, -11.23)
+mesh = SubResource("B53")
+material_override = SubResource("M_nervura")
+
+[node name="TopoOeste" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.75, 5.04, -11.5)
+mesh = SubResource("B54")
+material_override = SubResource("M_borda")
+
+[node name="FaixaLeste" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, 1.25, -11.24)
+mesh = SubResource("B52")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="RodapeLeste" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, 0.09, -11.23)
+mesh = SubResource("B53")
+material_override = SubResource("M_nervura")
+
+[node name="TopoLeste" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, 5.04, -11.5)
+mesh = SubResource("B54")
+material_override = SubResource("M_borda")
+
+[node name="Anuncio0" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 2.55, -11.22)
+mesh = SubResource("B55")
+material_override = SubResource("M_anuncio1")
+
+[node name="AnuncioMoldura0" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 2.55, -11.235)
+mesh = SubResource("B56")
+material_override = SubResource("M_aco")
+
+[node name="Anuncio1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.55, -11.22)
+mesh = SubResource("B55")
+material_override = SubResource("M_anuncio2")
+
+[node name="AnuncioMoldura1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 2.55, -11.235)
+mesh = SubResource("B56")
+material_override = SubResource("M_aco")
+
+[node name="Anuncio2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.55, -11.22)
+mesh = SubResource("B55")
+material_override = SubResource("M_anuncio3")
+
+[node name="AnuncioMoldura2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.55, -11.235)
+mesh = SubResource("B56")
+material_override = SubResource("M_aco")
+
+[node name="Anuncio3" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 2.55, -11.22)
+mesh = SubResource("B55")
+material_override = SubResource("M_anuncio1")
+
+[node name="AnuncioMoldura3" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 2.55, -11.235)
+mesh = SubResource("B56")
+material_override = SubResource("M_aco")
+
+[node name="PlacaEstacao" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.4, -11.32)
+mesh = SubResource("B57")
+material_override = SubResource("M_azulejo_faixa")
+
+[node name="PlacaSaida0" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 3.75, -6.2)
+mesh = SubResource("B58")
+material_override = SubResource("M_placa")
+
+[node name="HastePlaca00" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.7, 4.25, -6.2)
+mesh = SubResource("B59")
+material_override = SubResource("M_aco")
+
+[node name="HastePlaca01" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.3, 4.25, -6.2)
+mesh = SubResource("B59")
+material_override = SubResource("M_aco")
+
+[node name="PlacaSaida1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 3.75, -6.2)
+mesh = SubResource("B58")
+material_override = SubResource("M_placa")
+
+[node name="HastePlaca10" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.3, 4.25, -6.2)
+mesh = SubResource("B59")
+material_override = SubResource("M_aco")
+
+[node name="HastePlaca11" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.7, 4.25, -6.2)
+mesh = SubResource("B59")
+material_override = SubResource("M_aco")
+
+[node name="BancoEncosto" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.72, -10.9)
+mesh = SubResource("B60")
+material_override = SubResource("M_banco")
+
+[node name="LixeiraColisao0" type="StaticBody3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.39, -6.75)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/LixeiraColisao0"]
+shape = SubResource("S27")
+
+[node name="LixeiraColisao1" type="StaticBody3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0.39, -6.75)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="PlataformaSul/LixeiraColisao1"]
+shape = SubResource("S27")
+
+[node name="Quadro0" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 1.5, -14.84)
+mesh = SubResource("B61")
+material_override = SubResource("M_duto")
+
+[node name="QuadroPorta0" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5, 1.5, -14.68)
+mesh = SubResource("B62")
+material_override = SubResource("M_aco")
+
+[node name="Quadro1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 1.5, -14.84)
+mesh = SubResource("B61")
+material_override = SubResource("M_duto")
+
+[node name="QuadroPorta1" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 1.5, -14.68)
+mesh = SubResource("B62")
+material_override = SubResource("M_aco")
+
+[node name="Quadro2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.5, -14.84)
+mesh = SubResource("B61")
+material_override = SubResource("M_duto")
+
+[node name="QuadroPorta2" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.5, -14.68)
+mesh = SubResource("B62")
+material_override = SubResource("M_aco")
+
+[node name="Arandela0Base" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 3.9, -14.97)
+mesh = SubResource("B63")
+material_override = SubResource("M_ferro")
+
+[node name="Arandela0Lampada" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 3.88, -14.88)
+mesh = SubResource("B64")
+material_override = SubResource("M_lampada")
+
+[node name="Arandela0Aba" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 4.01, -14.88)
+mesh = SubResource("B65")
+material_override = SubResource("M_ferro")
+
+[node name="Arandela1Base" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.9, -14.97)
+mesh = SubResource("B63")
+material_override = SubResource("M_ferro")
+
+[node name="Arandela1Lampada" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.88, -14.88)
+mesh = SubResource("B64")
+material_override = SubResource("M_lampada")
+
+[node name="Arandela1Aba" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.01, -14.88)
+mesh = SubResource("B65")
+material_override = SubResource("M_ferro")
+
+[node name="Arandela2Base" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3.9, -14.97)
+mesh = SubResource("B63")
+material_override = SubResource("M_ferro")
+
+[node name="Arandela2Lampada" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3.88, -14.88)
+mesh = SubResource("B64")
+material_override = SubResource("M_lampada")
+
+[node name="Arandela2Aba" type="MeshInstance3D" parent="PlataformaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 4.01, -14.88)
+mesh = SubResource("B65")
+material_override = SubResource("M_ferro")
+
+[node name="CatracaTampoNorte0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.6, 1.02, 5)
+mesh = SubResource("B66")
+material_override = SubResource("M_duto")
+
+[node name="CatracaLuzNorte0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.36, 0.8, 5)
+mesh = SubResource("B67")
+material_override = SubResource("M_placa")
+
+[node name="CatracaTampoNorte1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.6, 1.02, 7.2)
+mesh = SubResource("B68")
+material_override = SubResource("M_duto")
+
+[node name="CatracaLuzNorte1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.36, 0.8, 7.2)
+mesh = SubResource("B67")
+material_override = SubResource("M_placa")
+
+[node name="GuicheNorteVidro" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -21.5, 1.5, 11.88)
+mesh = SubResource("B69")
+material_override = SubResource("M_vidro_aceso")
+
+[node name="BalcaoNorte" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.5, 0.98, 11.76)
+mesh = SubResource("B70")
+material_override = SubResource("M_duto")
+
+[node name="TestaBilheteriaNorte" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.5, 2.72, 13.2)
+mesh = SubResource("B71")
+material_override = SubResource("M_nervura")
+
+[node name="CatracaTampoSul0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.6, 1.02, -5)
+mesh = SubResource("B66")
+material_override = SubResource("M_duto")
+
+[node name="CatracaLuzSul0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.36, 0.8, -5)
+mesh = SubResource("B67")
+material_override = SubResource("M_placa")
+
+[node name="CatracaTampoSul1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.6, 1.02, -7.2)
+mesh = SubResource("B68")
+material_override = SubResource("M_duto")
+
+[node name="CatracaLuzSul1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.36, 0.8, -7.2)
+mesh = SubResource("B67")
+material_override = SubResource("M_placa")
+
+[node name="GuicheSulVidro" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.5, 1.5, -11.88)
+mesh = SubResource("B69")
+material_override = SubResource("M_vidro_aceso")
+
+[node name="BalcaoSul" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.5, 0.98, -11.76)
+mesh = SubResource("B70")
+material_override = SubResource("M_duto")
+
+[node name="TestaBilheteriaSul" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.5, 2.72, -13.2)
+mesh = SubResource("B71")
+material_override = SubResource("M_nervura")
+
+[node name="PortaoFundo" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.97, 1.7, 0)
+mesh = SubResource("B72")
+material_override = SubResource("M_escuro")
+
+[node name="Portao" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.93, 1.6, 0)
+mesh = SubResource("B73")
+material_override = SubResource("M_persiana")
+
+[node name="PortaoGuia0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.9, 1.7, -2.1)
+mesh = SubResource("B74")
+material_override = SubResource("M_aco")
+
+[node name="PortaoGuia1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.9, 1.7, 2.1)
+mesh = SubResource("B74")
+material_override = SubResource("M_aco")
+
+[node name="PortaoCaixa" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.86, 3.5, 0)
+mesh = SubResource("B75")
+material_override = SubResource("M_aco")
+
+[node name="MapaLinha0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.95, 1.7, -3.6)
+mesh = SubResource("B76")
+material_override = SubResource("M_anuncio2")
+
+[node name="MapaMoldura0" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.97, 1.7, -3.6)
+mesh = SubResource("B77")
+material_override = SubResource("M_aco")
+
+[node name="MapaLinha1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.95, 1.7, 3.6)
+mesh = SubResource("B76")
+material_override = SubResource("M_anuncio2")
+
+[node name="MapaMoldura1" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.97, 1.7, 3.6)
+mesh = SubResource("B77")
+material_override = SubResource("M_aco")
+
+[node name="BordaSaguao" type="MeshInstance3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.1, 0.006, 0)
+mesh = SubResource("B78")
+material_override = SubResource("M_faixa")
+
+[node name="CatracaTampoNorte0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 1.02, 5)
+mesh = SubResource("B66")
+material_override = SubResource("M_duto")
+
+[node name="CatracaLuzNorte0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.36, 0.8, 5)
+mesh = SubResource("B67")
+material_override = SubResource("M_placa")
+
+[node name="CatracaTampoNorte1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 1.02, 7.2)
+mesh = SubResource("B68")
+material_override = SubResource("M_duto")
+
+[node name="CatracaLuzNorte1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.36, 0.8, 7.2)
+mesh = SubResource("B67")
+material_override = SubResource("M_placa")
+
+[node name="GuicheNorteVidro" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 21.5, 1.5, 11.88)
+mesh = SubResource("B69")
+material_override = SubResource("M_vidro_aceso")
+
+[node name="BalcaoNorte" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 0.98, 11.76)
+mesh = SubResource("B70")
+material_override = SubResource("M_duto")
+
+[node name="TestaBilheteriaNorte" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 2.72, 13.2)
+mesh = SubResource("B71")
+material_override = SubResource("M_nervura")
+
+[node name="CatracaTampoSul0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 1.02, -5)
+mesh = SubResource("B66")
+material_override = SubResource("M_duto")
+
+[node name="CatracaLuzSul0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.36, 0.8, -5)
+mesh = SubResource("B67")
+material_override = SubResource("M_placa")
+
+[node name="CatracaTampoSul1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 1.02, -7.2)
+mesh = SubResource("B68")
+material_override = SubResource("M_duto")
+
+[node name="CatracaLuzSul1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.36, 0.8, -7.2)
+mesh = SubResource("B67")
+material_override = SubResource("M_placa")
+
+[node name="GuicheSulVidro" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 1.5, -11.88)
+mesh = SubResource("B69")
+material_override = SubResource("M_vidro_aceso")
+
+[node name="BalcaoSul" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 0.98, -11.76)
+mesh = SubResource("B70")
+material_override = SubResource("M_duto")
+
+[node name="TestaBilheteriaSul" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 2.72, -13.2)
+mesh = SubResource("B71")
+material_override = SubResource("M_nervura")
+
+[node name="PortaoFundo" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.97, 1.7, 0)
+mesh = SubResource("B72")
+material_override = SubResource("M_escuro")
+
+[node name="Portao" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.93, 1.6, 0)
+mesh = SubResource("B73")
+material_override = SubResource("M_persiana")
+
+[node name="PortaoGuia0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.9, 1.7, -2.1)
+mesh = SubResource("B74")
+material_override = SubResource("M_aco")
+
+[node name="PortaoGuia1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.9, 1.7, 2.1)
+mesh = SubResource("B74")
+material_override = SubResource("M_aco")
+
+[node name="PortaoCaixa" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.86, 3.5, 0)
+mesh = SubResource("B75")
+material_override = SubResource("M_aco")
+
+[node name="MapaLinha0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.95, 1.7, -3.6)
+mesh = SubResource("B76")
+material_override = SubResource("M_anuncio2")
+
+[node name="MapaMoldura0" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.97, 1.7, -3.6)
+mesh = SubResource("B77")
+material_override = SubResource("M_aco")
+
+[node name="MapaLinha1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.95, 1.7, 3.6)
+mesh = SubResource("B76")
+material_override = SubResource("M_anuncio2")
+
+[node name="MapaMoldura1" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.97, 1.7, 3.6)
+mesh = SubResource("B77")
+material_override = SubResource("M_aco")
+
+[node name="BordaSaguao" type="MeshInstance3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1, 0.006, 0)
+mesh = SubResource("B78")
+material_override = SubResource("M_faixa")
 
 [node name="Nome" type="Label3D" parent="PlataformaNorte"]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 3.4, 11.2)
@@ -1438,6 +3845,38 @@ text = "B"
 font_size = 420
 outline_size = 30
 
+[node name="BilhetesNorte" type="Label3D" parent="BaseA"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -21.5, 2.32, 11.87)
+pixel_size = 0.01
+modulate = Color(1, 0.95, 0.8, 1)
+text = "BILHETES"
+font_size = 70
+outline_size = 8
+
+[node name="BilhetesSul" type="Label3D" parent="BaseA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.5, 2.32, -11.87)
+pixel_size = 0.01
+modulate = Color(1, 0.95, 0.8, 1)
+text = "BILHETES"
+font_size = 70
+outline_size = 8
+
+[node name="BilhetesNorte" type="Label3D" parent="BaseB"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 21.5, 2.32, 11.87)
+pixel_size = 0.01
+modulate = Color(1, 0.95, 0.8, 1)
+text = "BILHETES"
+font_size = 70
+outline_size = 8
+
+[node name="BilhetesSul" type="Label3D" parent="BaseB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 2.32, -11.87)
+pixel_size = 0.01
+modulate = Color(1, 0.95, 0.8, 1)
+text = "BILHETES"
+font_size = 70
+outline_size = 8
+
 [node name="LuzLeste" type="OmniLight3D" parent="Trem"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 1.7, 0)
 light_color = Color(1, 0.95, 0.85, 1)
@@ -1451,25 +3890,25 @@ light_energy = 1
 omni_range = 6
 
 [node name="Luz1" type="OmniLight3D" parent="PlataformaNorte"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 7.6, 5.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 6.7, 5.2)
 light_color = Color(1, 0.95, 0.84, 1)
 light_energy = 2.2
 omni_range = 13
 
 [node name="Luz2" type="OmniLight3D" parent="PlataformaNorte"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 7.6, 5.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 6.7, 5.2)
 light_color = Color(1, 0.95, 0.84, 1)
 light_energy = 2.2
 omni_range = 13
 
 [node name="Luz3" type="OmniLight3D" parent="PlataformaNorte"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 7.6, 5.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 6.7, 5.2)
 light_color = Color(1, 0.95, 0.84, 1)
 light_energy = 2.2
 omni_range = 13
 
 [node name="Luz4" type="OmniLight3D" parent="PlataformaNorte"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 7.6, 5.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 6.7, 5.2)
 light_color = Color(1, 0.95, 0.84, 1)
 light_energy = 2.2
 omni_range = 13
@@ -1511,25 +3950,25 @@ light_energy = 0.9
 omni_range = 8
 
 [node name="Luz1" type="OmniLight3D" parent="PlataformaSul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 7.6, -5.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 6.7, -5.2)
 light_color = Color(1, 0.95, 0.84, 1)
 light_energy = 2.2
 omni_range = 13
 
 [node name="Luz2" type="OmniLight3D" parent="PlataformaSul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 7.6, -5.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 6.7, -5.2)
 light_color = Color(1, 0.95, 0.84, 1)
 light_energy = 2.2
 omni_range = 13
 
 [node name="Luz3" type="OmniLight3D" parent="PlataformaSul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 7.6, -5.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 6.7, -5.2)
 light_color = Color(1, 0.95, 0.84, 1)
 light_energy = 2.2
 omni_range = 13
 
 [node name="Luz4" type="OmniLight3D" parent="PlataformaSul"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 7.6, -5.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 6.7, -5.2)
 light_color = Color(1, 0.95, 0.84, 1)
 light_energy = 2.2
 omni_range = 13

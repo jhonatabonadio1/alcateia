@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dtds6j74ja75g"
+path="res://.godot/imported/ca03f0f241.obj-38b3a93ae4b864aad594bfaa16c7a16c.mesh"
+
+[deps]
+
+files=["res://.godot/imported/ca03f0f241.obj-38b3a93ae4b864aad594bfaa16c7a16c.mesh"]
+
+source_file="res://assets/mapas/polar/ca03f0f241.obj"
+dest_files=["res://.godot/imported/ca03f0f241.obj-38b3a93ae4b864aad594bfaa16c7a16c.mesh", "res://.godot/imported/ca03f0f241.obj-38b3a93ae4b864aad594bfaa16c7a16c.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
