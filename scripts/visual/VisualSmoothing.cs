@@ -37,6 +37,19 @@ public partial class VisualSmoothing : Node
 	private Vector3 _from, _applied;
 	private bool _shifted;
 
+	/// <summary>O que falta o desenho andar de uma correção da rede (no
+	/// mundo). Some aos poucos: em ~0,1 s o desenho alcança o corpo.</summary>
+	private Vector3 _correction;
+	private const float CorrectionFade = 25f;
+
+	/// <summary>
+	/// O corpo foi corrigido pelo servidor (partida autoritativa, decisão
+	/// 0011): andou <paramref name="moved"/> de uma vez. O desenho não pula
+	/// junto — fica onde estava e escorrega até o corpo em uma fração de
+	/// segundo, que é o que faz a correção passar despercebida.
+	/// </summary>
+	public void Absorb(Vector3 moved) => _correction -= moved;
+
 	public override void _Ready()
 	{
 		_body = GetParent<Node3D>();
@@ -72,14 +85,24 @@ public partial class VisualSmoothing : Node
 	public override void _Process(double delta)
 	{
 		Restore();
-		if (_health != null && _health.IsDead) return;
+		if (_health != null && _health.IsDead)
+		{
+			_correction = Vector3.Zero;
+			return;
+		}
+
+		Vector3 behind = _correction;
+		_correction *= Mathf.Exp(-CorrectionFade * (float)delta);
+		if (_correction.LengthSquared() < 1e-6f) _correction = Vector3.Zero;
 
 		Vector3 step = _body.GlobalPosition - _from;
-		if (step.LengthSquared() < 1e-8f || step.Length() > TeleportStep) return;
-
-		// Quanto do passo a tela já devia mostrar: o resto fica para trás.
-		float fraction = Mathf.Clamp((float)Engine.GetPhysicsInterpolationFraction(), 0f, 1f);
-		Vector3 behind = step * (fraction - 1f);
+		if (step.LengthSquared() >= 1e-8f && step.Length() <= TeleportStep)
+		{
+			// Quanto do passo a tela já devia mostrar: o resto fica para trás.
+			float fraction = Mathf.Clamp((float)Engine.GetPhysicsInterpolationFraction(), 0f, 1f);
+			behind += step * (fraction - 1f);
+		}
+		if (behind.LengthSquared() < 1e-8f) return;
 
 		_applied = _body.GlobalTransform.Basis.Inverse() * behind;
 		foreach (Node3D part in _parts)

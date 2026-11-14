@@ -261,6 +261,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, pente e reserva, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Aim` (zoom do botão direito), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfDive` (bote), `.Damage` (aplicar dano) |
 | `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
 | `domain/CombatRules.cs` | As contas do combate em C# puro (dano, queda, dispersão, recuo, golpes do lobo, salto, vida e escudo), com teste de unidade |
+| `domain/net/` | O núcleo da rede autoritativa (decisão 0011): pacote binário sem alocar, comando, fila de comandos, estado do mundo, história, interpolação, relógio do servidor e predição — C# puro, com teste de unidade |
 | `ai/BotDifficulty.cs` | Um nível de dificuldade como dado (`resources/bots/*.tres`) |
 | `visual/human/CharacterAnimator*.cs` | O corpo humano animado: `.Model` e `.Tree` montam uma vez (clipes, modelo do time, árvore); `.Locomotion`, `.Actions` (recarga, granada, reação) e `.Death` tocam por quadro |
 | `visual/wolf/WolfVisual*.cs` | O corpo do lobo: `.Model` e `.Tree` montam; `.Locomotion`, `.Air` (parede, pulo, bote) e `.Moves` (golpes, rugido) tocam |
@@ -274,7 +275,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `ui/kit/*.cs` | Tokens, tema e componentes — toda tela usa estes |
 | `ui/hud/Hud*.cs` | HUD de combate, um arquivo por canto: `.Layout` monta; `.Vitals`, `.Equipment`, `.Form`, `.Feed` reagem aos sinais |
 | `core/InputSetup.cs` | Registra ações de input sem passar pelo editor |
-| `net/` | Rede: `Backend` (conta), `LobbyLink` (salas), `NetMatch` (partida), `MatchServer` (servidor de partida, várias partidas ao mesmo tempo, cada uma um `HostedMatch`) — veja `docs/SERVIDOR.md` |
+| `net/` | Rede: `Backend` (conta), `LobbyLink` (salas), `NetMatch` (partida), `MatchServer` (servidor de partida, várias partidas ao mesmo tempo, cada uma um `HostedMatch`; na autoritativa, `MatchWorld` e `ServerBody`) — veja `docs/SERVIDOR.md` e a decisão 0011 |
 
 ### Por que `Health`, `Weapon` e `FormController` não ficam em `actors/player/`
 

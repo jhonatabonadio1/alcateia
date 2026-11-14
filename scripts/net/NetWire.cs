@@ -37,12 +37,28 @@ using System.Text;
 ///
 /// O que o servidor repassa de um jogador aos outros leva a conta do
 /// autor logo depois do tipo.
+///
+/// **Modo autoritativo** (decisão 0011, <c>ALCATEIA_NETCODE=autoritativo</c>
+/// no servidor de partida): o servidor move os corpos. O <c>Welcome</c>
+/// traz, depois do relógio, o modo e o número de cada corpo na escalação;
+/// o jogo para de mandar <c>State</c> e passa a mandar:
+///
+/// | Tipo | Quem manda | Conteúdo |
+/// |---|---|---|
+/// | Input | jogo, a cada passo | os últimos <see cref="InputCommand.Redundancy"/> comandos (<see cref="InputCommand"/>) |
+/// | Snapshot | servidor, 30 por segundo | o passo, o último comando seu simulado e cada corpo (<see cref="SnapshotWire"/>) |
+/// | Status | jogo → todos, 10 por segundo | vida, escudo, morto, armas (a vida ainda é do jogo nesta leva) |
+/// | Loadout | jogo, ao entrar | a classe de lobo e as tatuagens (mudam o movimento do lobo) |
 /// </summary>
 public static class NetWire
 {
 	public const byte Hello = 1, Welcome = 2, Refused = 3, State = 4, Attack = 5,
 		Hit = 6, Died = 7, Kill = 8, Clock = 9, Gone = 10,
-		BotState = 11, BotAttack = 12, BotHit = 13, BotDied = 14, HitBot = 15, Touch = 16;
+		BotState = 11, BotAttack = 12, BotHit = 13, BotDied = 14, HitBot = 15, Touch = 16,
+		Input = 17, Snapshot = 18, Status = 19, Loadout = 20;
+
+	/// <summary>O modo da partida, no <c>Welcome</c>.</summary>
+	public const byte ModeRelay = 0, ModeAuthoritative = 1;
 
 	/// <summary>Estados por segundo que cada jogo manda.</summary>
 	public const int StateRate = 20;

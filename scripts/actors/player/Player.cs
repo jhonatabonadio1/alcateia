@@ -50,6 +50,20 @@ public partial class Player : CharacterBody3D
 	private CollisionShape3D _collision;
 	private CharacterAnimator _animator;
 
+	/// <summary>
+	/// Corpo do servidor de partida (modo autoritativo, decisão 0011):
+	/// quem o move são os comandos que chegam da rede
+	/// (<see cref="Simulate"/>), não o teclado. Sem câmera, som, desenho
+	/// nem HUD — só o que mexe no corpo. Definido antes de entrar na cena.
+	/// </summary>
+	public bool Driven { get; set; }
+
+	/// <summary>O que o jogador quis no último passo (a rede manda isto).</summary>
+	public CharacterIntent Intent => _intent;
+
+	/// <summary>Para onde a cabeça olha (rotação X, em radianos).</summary>
+	public float HeadPitch => _head.Rotation.X;
+
 	public override void _Ready()
 	{
 		InputSetup.EnsureActions();
@@ -67,18 +81,12 @@ public partial class Player : CharacterBody3D
 		_gravity = (float)ProjectSettings.GetSetting("physics/3d/default_gravity");
 		_spawn = GlobalPosition;
 
-		_collision = GetNode<CollisionShape3D>("CollisionShape3D");
-		_noise = new BodyNoise(this, Noise);
-		_moves = new WolfMoveMotor(this, _weapon) { FreezeBrake = FreezeBrake };
-		_corpse = new Corpse(this, _collision);
-
-		// Duplica a forma: sem isto todos os jogadores da cena
-		// compartilham a mesma cápsula e agacham juntos.
-		_capsule = (CapsuleShape3D)_collision.Shape.Duplicate();
-		_collision.Shape = _capsule;
-
-		_height = StandHeight;
-		_capsule.Height = StandHeight;
+		BuildBody();
+		if (Driven)
+		{
+			ReadyDriven();
+			return;
+		}
 
 		// O braço recua sozinho quando há parede atrás — sem isso a
 		// câmera atravessa o cenário durante a corrida em parede.
@@ -114,6 +122,95 @@ public partial class Player : CharacterBody3D
 
 		if (IsMultiplayerAuthority() && !UiState.AnyOpen)
 			Input.MouseMode = Input.MouseModeEnum.Captured;
+	}
+
+	/// <summary>O que move o corpo, o mesmo no jogo e no servidor.</summary>
+	private void BuildBody()
+	{
+		_collision = GetNode<CollisionShape3D>("CollisionShape3D");
+		_noise = new BodyNoise(this, Noise);
+		_moves = new WolfMoveMotor(this, _weapon) { FreezeBrake = FreezeBrake };
+		_corpse = new Corpse(this, _collision);
+
+		// Duplica a forma: sem isto todos os jogadores da cena
+		// compartilham a mesma cápsula e agacham juntos.
+		_capsule = (CapsuleShape3D)_collision.Shape.Duplicate();
+		_collision.Shape = _capsule;
+
+		_height = StandHeight;
+		_capsule.Height = StandHeight;
+	}
+
+	/// <summary>
+	/// O corpo do servidor: o mesmo movimento, sem nada do que é só de
+	/// quem está jogando. O que desenha (modelo, lobo, arma na mão, som)
+	/// fica parado — no servidor ninguém vê, e cada passo economizado
+	/// ali é partida a mais na mesma máquina.
+	/// </summary>
+	private void ReadyDriven()
+	{
+		_weapon.Puppet = true;
+		_health.AutoRespawn = false;
+		_camera.Current = false;
+		_wolfCamera.Current = false;
+
+		foreach (string path in new[] { "Human", "WolfVisual", "MeshInstance3D", "Head/Camera3D/ViewModel", "Head/SpringArm3D" })
+			if (GetNodeOrNull(path) is Node node)
+			{
+				node.ProcessMode = ProcessModeEnum.Disabled;
+				if (node is Node3D visual) visual.Visible = false;
+			}
+
+		// Som não existe no servidor: o nó sai inteiro (parado, ainda
+		// tocaria quando um sinal chamasse).
+		GetNodeOrNull("CombatantAudio")?.QueueFree();
+
+		SetProcessInput(false);
+		SetPhysicsProcess(false);
+		_health.Respawned += () =>
+		{
+			_corpse.Revive();
+			ReleaseWall();
+		};
+	}
+
+	/// <summary>
+	/// Um passo do corpo do servidor: o comando de um passo do jogador,
+	/// com a cabeça para onde ele olhava. É o mesmo passo que o jogo dele
+	/// deu — por isso, com a mesma entrada, os dois chegam ao mesmo lugar.
+	/// </summary>
+	public void Simulate(in CharacterIntent intent, float yaw, float pitch, double delta, bool frozen = false)
+	{
+		Rotation = new Vector3(0, yaw, 0);
+		_head.Rotation = new Vector3(pitch, 0, 0);
+		_intent = intent;
+		_drivenFrozen = frozen;
+		Step(delta);
+	}
+
+	/// <summary>O jogador estava parado neste passo (contagem, menu): o
+	/// corpo do servidor segura junto.</summary>
+	private bool _drivenFrozen;
+
+	/// <summary>Neste passo o corpo fica parado, com gravidade.</summary>
+	public bool Frozen => Driven ? _drivenFrozen : !Match.IsLive || UiState.AnyOpen;
+
+	/// <summary>Põe o corpo do servidor onde o jogador nasceu (primeira
+	/// leva: quem diz é o jogo), parado e fora da parede.</summary>
+	public void PlaceDriven(Vector3 at)
+	{
+		GlobalPosition = at;
+		Velocity = Vector3.Zero;
+		_spawn = at;
+
+		// Já pisando: sem isto o primeiro passo é "no ar" (o corpo ainda
+		// não sabe do chão), acelera mais devagar que o do jogo e os dois
+		// começam a partida 7 cm separados.
+		ApplyFloorSnap();
+		ReleaseWall();
+		_lastWall = Vector3.Zero;
+		_stunTimer = 0;
+		_stunSlow = 1f;
 	}
 
 	/// <summary>
@@ -201,10 +298,30 @@ public partial class Player : CharacterBody3D
 
 	public override void _PhysicsProcess(double delta)
 	{
-		if (!IsMultiplayerAuthority()) return;
+		if (Driven || !IsMultiplayerAuthority()) return;
 
 		_intent = CharacterIntent.FromInput();
 
+		// Partida autoritativa: o jogo prevê com a mesma entrada que o
+		// servidor vai receber — o eixo do movimento e a cabeça já
+		// comprimidos como vão no pacote. Sem isto, 0,2% de diferença no
+		// passo vira uma correção a cada poucos segundos.
+		if (NetQuantize)
+		{
+			_intent = NetCommands.Quantize(_intent);
+			Rotation = new Vector3(0, Quant.Yaw(Quant.Yaw(Rotation.Y)), 0);
+			_head.Rotation = new Vector3(Quant.Pitch(Quant.Pitch(_head.Rotation.X)), 0, 0);
+		}
+		Step(delta);
+	}
+
+	/// <summary>Partida autoritativa em curso: a entrada é comprimida antes
+	/// de mover (veja <see cref="NetCommands"/>).</summary>
+	public static bool NetQuantize { get; set; }
+
+	/// <summary>Um passo do corpo, com a intenção já lida (do teclado ou da rede).</summary>
+	private void Step(double delta)
+	{
 		if (GlobalPosition.Y < FallLimit)
 		{
 			GlobalPosition = _spawn;
@@ -226,7 +343,7 @@ public partial class Player : CharacterBody3D
 		// jogo — a partida continua e você continua levando tiro —, mas
 		// uma tecla esquecida pressionada não pode levar o personagem
 		// andando sozinho enquanto o mouse está no menu.
-		if (!Match.IsLive || UiState.AnyOpen)
+		if (Frozen)
 		{
 			Hold(delta);
 			return;

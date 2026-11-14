@@ -47,7 +47,9 @@ limpar() {
 trap limpar EXIT
 
 echo "== Servidor de partida (porta $PORTA/UDP)"
-ALCATEIA_GAME_PORT="$PORTA" ALCATEIA_PUBLIC_ADDRESS=127.0.0.1 XDG_DATA_HOME="$PASTA/servidor" \
+# ALCATEIA_NETCODE=autoritativo testa a partida em que o servidor move os
+# corpos (decisão 0011); sem ele, o modo de repasse.
+ALCATEIA_GAME_PORT="$PORTA" ALCATEIA_PUBLIC_ADDRESS=127.0.0.1 XDG_DATA_HOME="$PASTA/servidor" ALCATEIA_NETCODE="${ALCATEIA_NETCODE:-}" \
 	"$GODOT" --headless --path . -- --servidor --duracao=35 --contagem=3 > "$PASTA/servidor.log" 2>&1 &
 PARTIDA=$!
 sleep 4
@@ -88,6 +90,11 @@ conferir "$PASTA/b.log" "tiros_de_bot=[1-9]" "o visitante viu bot atirar"
 conferir "$PASTA/b.log" "abateu_bot=[1-9]" "o visitante abateu um bot (o acerto foi até a máquina do criador, e a morte voltou pelo servidor)"
 conferir "$PASTA/a.log" "abates_com_bot=[1-9]" "o criador viu abates com bot no placar do servidor"
 conferir "$PASTA/a.log" "avisos_do_saguao=1 .*sala=waiting" "o saguão avisou o fim e a sala voltou a esperar"
+if [ "${ALCATEIA_NETCODE:-}" = "autoritativo" ]; then
+	conferir "$PASTA/a.log" "modo=autoritativo" "o criador jogou a partida autoritativa (o servidor moveu os corpos)"
+	conferir "$PASTA/b.log" "modo=autoritativo" "o visitante também"
+	conferir "$PASTA/servidor.log" "autoritativa" "o servidor de partida abriu a partida com mundo e corpos"
+fi
 
 # Como nos testes de regressão: erro no Output reprova, mesmo com o resto certo.
 if grep -hE '^(ERROR|SCRIPT ERROR|USER ERROR)|Unhandled exception|NullReferenceException' "$PASTA"/*.log \

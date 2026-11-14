@@ -62,6 +62,12 @@ impossível e morte repetida.
 
 ## O caminho daqui
 
+**Atualização (13/11/2026): começou.** A decisão 0011 traz o modo em que o
+servidor move os corpos (comandos, predição e correção, interpolação),
+ligado por `ALCATEIA_NETCODE=autoritativo`. Este modo de repasse continua o
+padrão até a vida, o tiro e os bots irem também para o servidor.
+
+
 Os pontos de troca já estão isolados: `Health.Remote`/`SendHit`
 (onde o dano sai), `Bot.RemoteUpdate` (onde o estado entra) e o
 `Referee` (onde se decide). Levar a vida para o servidor é fazer o

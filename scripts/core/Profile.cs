@@ -485,16 +485,25 @@ public static class Profile
 	/// <summary>A classe de lobo do jogador com as tatuagens aplicadas.
 	/// Cópia: o recurso original é compartilhado com os bots e não pode
 	/// mudar.</summary>
-	public static WolfBreed BuildBreed()
+	public static WolfBreed BuildBreed() => BuildBreed(Breed, OwnedTattoos());
+
+	/// <summary>As tatuagens equipadas que o jogador tem de fato.</summary>
+	public static System.Collections.Generic.List<string> OwnedTattoos() => Tattoos.Where(Owns).ToList();
+
+	/// <summary>A classe de lobo com as tatuagens somadas. Uma cópia: o
+	/// recurso original é o mesmo de todos. Também é como o servidor de
+	/// partida monta o lobo de cada jogador (o jogo conta qual classe e
+	/// quais tatuagens).</summary>
+	public static WolfBreed BuildBreed(string breedId, System.Collections.Generic.IEnumerable<string> tattoos)
 	{
-		CatalogItem item = Catalog.Get(Breed) ?? Catalog.Get("raca_bruto");
+		CatalogItem item = Catalog.Get(breedId);
+		if (item?.BreedPath == null) item = Catalog.Get("raca_bruto");
 		var source = GD.Load<WolfBreed>(item.BreedPath);
 		if (source == null) return null;
 
 		var breed = (WolfBreed)source.Duplicate();
-		foreach (string id in Tattoos)
+		foreach (string id in tattoos)
 		{
-			if (!Owns(id)) continue;
 			TattooEffect fx = Catalog.Get(id)?.Tattoo;
 			if (fx == null) continue;
 

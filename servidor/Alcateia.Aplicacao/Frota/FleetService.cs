@@ -49,7 +49,7 @@ public sealed class FleetService
 		lock (_lock)
 		{
 			lost = _fleet.Sweep(_clock.UtcNow);
-			place = _fleet.Allocate(assignment);
+			place = _fleet.Allocate(assignment, _clock.UtcNow);
 		}
 		Announce(lost);
 		return place;

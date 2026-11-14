@@ -14,6 +14,12 @@ using System.Text.Json.Nodes;
 /// Não fala com a rede diretamente: recebe do servidor de partida o que
 /// os seus jogadores mandam (<see cref="Receive"/>) e devolve por
 /// <see cref="IMatchLink"/>.
+///
+/// **Autoritativa** (decisão 0011): com um <see cref="World"/>, a partida
+/// tem o mapa e um corpo por jogador (<see cref="ServerBody"/>), movidos
+/// pelos comandos que chegam, a cada passo de física
+/// (<see cref="PhysicsStep"/>); a cada dois passos, todos recebem o estado
+/// do mundo, cada um com o número do último comando seu já simulado.
 /// </summary>
 public sealed class HostedMatch
 {
@@ -34,6 +40,21 @@ public sealed class HostedMatch
 	public string Key { get; }
 	public Referee Referee { get; }
 
+	/// <summary>O mundo da partida autoritativa (null no modo de repasse).
+	/// Quem põe na árvore é o servidor de partida.</summary>
+	public MatchWorld World { get; }
+	public bool Authoritative => World != null;
+
+	private readonly Dictionary<long, ServerBody> _bodies = new();
+	private readonly List<ServerBody> _bodyList = new();
+	private readonly Dictionary<long, byte> _indexOf = new();
+	private EntityState[] _states = new EntityState[16];
+	private byte[] _snapshotBody = new byte[1 + 16 * EntityState.Size];
+	private readonly byte[] _packet = new byte[2048];
+
+	/// <summary>Corpos simulados agora.</summary>
+	public int Bodies => _bodyList.Count;
+
 	/// <summary>Acabou e o placar já ficou na tela o bastante: pode fechar.</summary>
 	public bool Finished => _reported && _linger <= 0;
 
@@ -47,15 +68,21 @@ public sealed class HostedMatch
 	private double _clock, _linger;
 	private bool _reported;
 
-	public HostedMatch(string key, Referee referee, IMatchLink link)
+	public HostedMatch(string key, Referee referee, IMatchLink link, MatchWorld world = null)
 	{
 		Key = key;
 		Referee = referee;
 		_link = link;
+		World = world;
+
+		// O número de cada corpo no estado do mundo: o lugar na escalação.
+		byte index = 0;
+		foreach (Referee.Seat seat in referee.Seats) _indexOf[seat.Id] = index++;
 	}
 
 	/// <summary>Abre a partida que o servidor do Alcateia mandou.</summary>
-	public static HostedMatch FromAssignment(JsonObject assignment, IMatchLink link, double? seconds = null, double? countdown = null)
+	public static HostedMatch FromAssignment(JsonObject assignment, IMatchLink link, double? seconds = null, double? countdown = null,
+		bool authoritative = false)
 	{
 		JsonObject settings = assignment["settings"] as JsonObject ?? new JsonObject();
 		var seats = new List<(long, string, int, long)>();
@@ -68,9 +95,12 @@ public sealed class HostedMatch
 			settings["friendlyFire"]?.GetValue<bool>() ?? false,
 			countdown ?? 10);
 
-		var match = new HostedMatch(assignment["matchKey"].GetValue<string>(), referee, link);
+		string map = settings["map"]?.GetValue<string>() ?? "hangar";
+		var match = new HostedMatch(assignment["matchKey"].GetValue<string>(), referee, link,
+			authoritative ? new MatchWorld(map) : null);
 		int bots = seats.Count(s => s.Item4 != 0);
-		GD.Print($"Partida {match.Key}: {seats.Count - bots} jogador(es) e {bots} bot(s), mapa {settings["map"]}, até {referee.ScoreToWin} pontos.");
+		GD.Print($"Partida {match.Key}: {seats.Count - bots} jogador(es) e {bots} bot(s), mapa {map}, até {referee.ScoreToWin} pontos" +
+			(authoritative ? ", autoritativa." : "."));
 		return match;
 	}
 
@@ -117,7 +147,8 @@ public sealed class HostedMatch
 
 		_accountOf[peer] = account;
 		_peerOf[account] = peer;
-		_link.Send(peer, ClockPacket(NetWire.Welcome), true);
+		if (Authoritative && !_bodies.ContainsKey(account)) AddBody(account);
+		_link.Send(peer, WelcomePacket(), true);
 		GD.Print($"Entrou em {Key}: {Referee.Find(account).Name} ({Referee.ConnectedCount} de {Referee.Seats.Count(s => !s.IsBot)}).");
 		return true;
 	}
@@ -134,6 +165,7 @@ public sealed class HostedMatch
 		_left.Add(account);
 		_left.AddRange(Referee.BotsOf(account).Select(b => b.Id));
 		Referee.Leave(account);
+		RemoveBody(account);
 	}
 
 	/// <summary>Solta todo mundo.</summary>
@@ -163,6 +195,80 @@ public sealed class HostedMatch
 		};
 	}
 
+	// ------------------------------------------------------------ o mundo (autoritativa)
+
+	private void AddBody(long account)
+	{
+		Referee.Seat seat = Referee.Find(account);
+		Player body = World.SpawnBody($"Jogador{account}", seat?.Team ?? Referee.Blue);
+		var server = new ServerBody(account, _indexOf.GetValueOrDefault(account), body);
+		_bodies[account] = server;
+		_bodyList.Add(server);
+	}
+
+	private void RemoveBody(long account)
+	{
+		if (!_bodies.Remove(account, out ServerBody body)) return;
+		_bodyList.Remove(body);
+		body.Body.QueueFree();
+	}
+
+	/// <summary>Um passo de física: cada corpo consome o comando dele; a
+	/// cada <see cref="NetRates.SnapshotEvery"/> passos, o estado do mundo
+	/// vai para todos.</summary>
+	public void PhysicsStep(uint tick, double delta)
+	{
+		if (!Authoritative) return;
+
+		foreach (ServerBody body in _bodyList) body.Step(tick, delta);
+		if (tick % NetRates.SnapshotEvery == 0) SendSnapshots(tick);
+	}
+
+	/// <summary>O estado do mundo: o corpo comum é escrito uma vez; cada
+	/// jogador recebe o cabeçalho dele (o último comando seu simulado).</summary>
+	private void SendSnapshots(uint tick)
+	{
+		if (_accountOf.Count == 0) return;
+
+		int count = 0;
+		if (_states.Length < _bodyList.Count) _states = new EntityState[_bodyList.Count * 2];
+		foreach (ServerBody body in _bodyList)
+			if (body.Placed) _states[count++] = body.State();
+
+		int size = 1 + count * EntityState.Size;
+		if (_snapshotBody.Length < size) _snapshotBody = new byte[size * 2];
+		int bodyLength = SnapshotWire.WriteBody(_snapshotBody, _states.AsSpan(0, count));
+		ReadOnlySpan<byte> shared = _snapshotBody.AsSpan(0, bodyLength);
+
+		foreach (var (peer, account) in _accountOf)
+		{
+			uint ack = _bodies.TryGetValue(account, out ServerBody mine) ? mine.Commands.LastProcessed : 0;
+			int length = SnapshotWire.Compose(_packet, NetWire.Snapshot, tick, ack, shared);
+			_link.Send(peer, _packet.AsSpan(0, length).ToArray(), false);
+		}
+	}
+
+	/// <summary>O Welcome: o relógio, o modo e, na autoritativa, o número
+	/// de cada jogador no estado do mundo.</summary>
+	private byte[] WelcomePacket()
+	{
+		BinaryWriter w = NetWire.Begin(NetWire.Welcome, out MemoryStream stream);
+		WriteClock(w);
+		w.Write(Authoritative ? NetWire.ModeAuthoritative : NetWire.ModeRelay);
+		if (Authoritative)
+		{
+			w.Write((byte)NetRates.TickRate);
+			var humans = Referee.Seats.Where(s => !s.IsBot).ToList();
+			w.Write((byte)humans.Count);
+			foreach (Referee.Seat s in humans)
+			{
+				w.Write(_indexOf[s.Id]);
+				w.Write(s.Id);
+			}
+		}
+		return stream.ToArray();
+	}
+
 	// ------------------------------------------------------------ pacotes
 
 	/// <summary>Um pacote de um jogador desta partida.</summary>
@@ -173,7 +279,28 @@ public sealed class HostedMatch
 		switch (type)
 		{
 			case NetWire.State:
+				if (!Authoritative) Broadcast(NetWire.Relay(packet, account), reliable: false, except: peer);
+				break;
+
+			case NetWire.Input:
+				if (Authoritative && _bodies.TryGetValue(account, out ServerBody moving)) NetCommands.ReadInputPacket(packet, moving.Commands);
+				break;
+
+			case NetWire.Status:
+				if (!Authoritative) break;
 				Broadcast(NetWire.Relay(packet, account), reliable: false, except: peer);
+				float hp = r.ReadSingle(), maxHp = r.ReadSingle(), shield = r.ReadSingle(), maxShield = r.ReadSingle();
+				r.ReadBoolean();
+				string primary = r.ReadString(), secondary = r.ReadString();
+				if (_bodies.TryGetValue(account, out ServerBody status)) status.ApplyStatus(hp, maxHp, shield, maxShield, primary, secondary);
+				break;
+
+			case NetWire.Loadout:
+				if (!Authoritative || !_bodies.TryGetValue(account, out ServerBody loading)) break;
+				string breed = r.ReadString();
+				var tattoos = new List<string>();
+				for (int n = Math.Min((int)r.ReadByte(), 8); n > 0; n--) tattoos.Add(r.ReadString());
+				loading.ApplyLoadout(breed, tattoos);
 				break;
 
 			case NetWire.Attack:
@@ -281,12 +408,17 @@ public sealed class HostedMatch
 	private byte[] ClockPacket(byte type)
 	{
 		BinaryWriter w = NetWire.Begin(type, out MemoryStream stream);
+		WriteClock(w);
+		return stream.ToArray();
+	}
+
+	private void WriteClock(BinaryWriter w)
+	{
 		w.Write((byte)Referee.Phase);
 		w.Write((float)Referee.CountdownLeft);
 		w.Write((float)Referee.TimeLeft);
 		w.Write(Referee.Score(Referee.Blue));
 		w.Write(Referee.Score(Referee.Orange));
-		return stream.ToArray();
 	}
 
 	private void Broadcast(byte[] packet, bool reliable = true, long except = 0)

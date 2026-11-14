@@ -65,6 +65,46 @@ public partial class Bot
 	private bool _netGrounded = true, _netKnown;
 	private double _netAge;
 
+	// Partida autoritativa: a pose já vem interpolada (NetMatch), e a
+	// vida e as armas chegam à parte (Status).
+	private bool _netInterpolated;
+	private string _netPrimary = "", _netSecondary = "";
+
+	/// <summary>
+	/// Partida autoritativa (decisão 0011): a pose que o servidor deu,
+	/// já interpolada entre dois estados do mundo, um pouco no passado.
+	/// O boneco vai exatamente para lá a cada passo — o desenho entre
+	/// passos é do <see cref="VisualSmoothing"/>.
+	/// </summary>
+	public void RemoteSnapshot(Vector3 position, Vector3 velocity, float yaw, float pitch, bool grounded, Form form, Slot slot)
+	{
+		_netInterpolated = true;
+		_netPosition = position;
+		_netVelocity = velocity;
+		_netYaw = yaw;
+		_netPitch = pitch;
+		_netGrounded = grounded;
+
+		if (!_netKnown)
+		{
+			GlobalPosition = position;
+			Rotation = new Vector3(0, yaw, 0);
+			RemotePresent(true);
+			_netKnown = true;
+		}
+
+		_form.RemoteSet(form);
+		if (!_form.IsWolf) _weapon.RemoteHold(_netPrimary, _netSecondary, slot);
+	}
+
+	/// <summary>Partida autoritativa: vida, escudo e armas do dono (Status).</summary>
+	public void RemoteStatus(float hp, float maxHp, float shield, float maxShield, bool dead, string primary, string secondary)
+	{
+		_netPrimary = primary ?? "";
+		_netSecondary = secondary ?? "";
+		_health.Mirror(hp, maxHp, shield, maxShield, dead);
+	}
+
 	private void BecomeRemote()
 	{
 		_health.AutoRespawn = false;
@@ -138,14 +178,23 @@ public partial class Bot
 		float dt = (float)delta;
 		_netAge += delta;
 
-		Vector3 target = _netPosition + _netVelocity * Mathf.Min((float)_netAge, RemoteLead);
-		GlobalPosition = GlobalPosition.DistanceTo(target) > RemoteSnap
-			? target
-			: GlobalPosition.Lerp(target, 1f - Mathf.Exp(-RemoteCatchUp * dt));
+		if (_netInterpolated)
+		{
+			GlobalPosition = _netPosition;
+			Rotation = new Vector3(0, _netYaw, 0);
+			_head.Rotation = new Vector3(_netPitch, 0, 0);
+		}
+		else
+		{
+			Vector3 target = _netPosition + _netVelocity * Mathf.Min((float)_netAge, RemoteLead);
+			GlobalPosition = GlobalPosition.DistanceTo(target) > RemoteSnap
+				? target
+				: GlobalPosition.Lerp(target, 1f - Mathf.Exp(-RemoteCatchUp * dt));
 
-		float turn = 1f - Mathf.Exp(-18f * dt);
-		Rotation = new Vector3(0, Mathf.LerpAngle(Rotation.Y, _netYaw, turn), 0);
-		_head.Rotation = new Vector3(Mathf.LerpAngle(_head.Rotation.X, _netPitch, turn), 0, 0);
+			float turn = 1f - Mathf.Exp(-18f * dt);
+			Rotation = new Vector3(0, Mathf.LerpAngle(Rotation.Y, _netYaw, turn), 0);
+			_head.Rotation = new Vector3(Mathf.LerpAngle(_head.Rotation.X, _netPitch, turn), 0, 0);
+		}
 
 		// Um toque no chão (ou para fora dele) só para o corpo saber se
 		// está pisando: a animação e o som do passo perguntam isso.

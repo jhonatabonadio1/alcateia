@@ -60,6 +60,7 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
 | `ALCATEIA_PORT` | Porta HTTP do servidor na sua máquina | `8080` |
 | `ALCATEIA_GAME_PORT` | Porta UDP do servidor de partida | `7777` |
 | `ALCATEIA_MATCHES` | Quantas partidas o servidor de partida joga ao mesmo tempo | `4` |
+| `ALCATEIA_NETCODE` | `autoritativo`: o servidor de partida move os corpos (decisão 0011); vazio ou `repasse`: cada jogo move o seu (0008) | vazio |
 | `ALCATEIA_API` | (jogo e servidor de partida) onde fica o servidor; passa por cima do campo da tela | — |
 | `ALCATEIA_SESSION_DAYS` | Validade do login | `30` |
 
@@ -96,6 +97,25 @@ rotas HTTP e as mensagens do saguão, em `servidor/LEIA-ME.md`.
 
 O robô do teste é `scripts/net/OnlineRobot.cs` (`-- --robo=criar` /
 `--robo=entrar`).
+
+## Partida autoritativa (decisão 0011)
+
+Com `ALCATEIA_NETCODE=autoritativo` no servidor de partida, ele carrega o
+mapa (só o que colide), põe um corpo por jogador num mundo de física da
+partida e move cada um pelos comandos que chegam, 60 passos por segundo.
+O jogo adivinha o próprio movimento na hora e corrige quando o servidor
+discorda; os outros aparecem 100 ms no passado, interpolados. A cada 30 s
+o servidor escreve no log quanto o passo levou ("Passo do servidor:
+média … pior …"): tem de caber com folga nos 16,7 ms.
+
+| Medido (2 núcleos) | |
+|---|---|
+| Corpo do servidor × previsão do jogo | idênticos (com 100 ms de atraso e pacote perdido) |
+| 16 jogadores / 64 jogadores | 0,4 ms / 1,5 ms por passo |
+| Para cada jogador | ~4 KB/s de subida (comandos) e ~12 KB/s de descida numa sala cheia |
+
+Nesta primeira leva a vida, o tiro, a forma e os bots ainda são do jogo
+(como no repasse); a leva seguinte leva para o servidor.
 
 ## Escala
 

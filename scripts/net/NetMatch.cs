@@ -28,6 +28,18 @@ using System.Linq;
 /// avisado da autoria (<see cref="BeginLocalHit"/>) para o abate valer.
 /// Se o dono sai, os bots saem com ele.
 ///
+/// **Partida autoritativa** (decisão 0011; o servidor diz no Welcome):
+/// o meu corpo deixa de ser meu. Este jogo manda, a cada passo, o que
+/// apertei (<see cref="InputCommand"/>, com os últimos quatro de folga) e
+/// continua movendo o corpo na hora — a predição; quando o estado do
+/// mundo chega, compara onde o servidor pôs o corpo com onde eu achava
+/// que estava naquele comando e corrige a diferença
+/// (<see cref="Prediction"/>), com o desenho escorregando até o lugar
+/// (<see cref="VisualSmoothing.Absorb"/>). Os outros jogadores são
+/// desenhados 100 ms no passado, entre dois estados que já chegaram
+/// (<see cref="InterpolationBuffer"/>). A vida, o tiro e os bots ainda são
+/// como no modo de repasse (a leva seguinte leva para o servidor).
+///
 /// Nasce dentro da cena da partida, criado pelo <see cref="MatchSetup"/>,
 /// e some com ela.
 /// </summary>
@@ -51,18 +63,48 @@ public partial class NetMatch : Node
 	private double _sendTimer, _joinTimer;
 	private bool _hitInProgress, _left;
 
+	// ---- partida autoritativa
+	/// <summary>O servidor move os corpos (decisão 0011).</summary>
+	public bool Authoritative { get; private set; }
+
+	private Player _me;
+	private readonly Dictionary<byte, long> _byIndex = new();
+	private readonly Dictionary<long, InterpolationBuffer> _poses = new();
+	private readonly InputCommand[] _recent = new InputCommand[InputCommand.Redundancy];
+	private readonly Prediction _prediction = new();
+	private readonly ServerClock _clock = new();
+	private readonly byte[] _inputBuffer = new byte[2 + InputCommand.Redundancy * InputCommand.MaxSize];
+	private uint _seq;
+	private byte _epoch;
+	private Vector3 _spawn;
+	private bool _spawnConfirmed;
+	private double _statusTimer;
+
+	/// <summary>Quantas vezes o servidor corrigiu o meu corpo, e o tamanho
+	/// da última diferença (metros): o que o teste e o painel de rede leem.</summary>
+	public int Corrections => _prediction.Corrections;
+	public float LastError => _prediction.LastError;
+
+	private static double LocalSeconds => Time.GetTicksUsec() / 1_000_000.0;
+
 	public override void _EnterTree() => Current = this;
 
 	public override void _Ready()
 	{
 		_player = Groups.LocalPlayer(GetTree()) as Node3D;
 		_body = _player as CharacterBody3D;
+		_me = _player as Player;
+
+		// Depois do passo do jogador: o comando que sai é o do passo que
+		// ele acabou de dar, com a posição em que ficou.
+		ProcessPhysicsPriority = 100;
 		_head = _player.GetNode<Node3D>("Head");
 		_health = _player.GetNode<Health>("Health");
 		_weapon = _player.GetNode<Weapon>("Weapon");
 		_form = _player.GetNode<FormController>("FormController");
 
 		_health.Died += OnLocalDied;
+		_health.Respawned += OnLocalRespawned;
 		_weapon.Fired += () => SendAttack();
 		_weapon.Thrown += () => SendAttack(Slot.Grenade);
 
@@ -159,6 +201,7 @@ public partial class NetMatch : Node
 	public override void _ExitTree()
 	{
 		if (Current == this) Current = null;
+		Player.NetQuantize = false;
 		if (_net != null)
 		{
 			_peer.Close();
@@ -178,6 +221,18 @@ public partial class NetMatch : Node
 			_joinTimer += delta;
 			if (_joinTimer > 15) Abandon("O servidor da partida não respondeu.");
 			return;
+		}
+
+		if (Authoritative)
+		{
+			SendCommand();
+			UpdatePuppets();
+			_statusTimer -= delta;
+			if (_statusTimer <= 0)
+			{
+				_statusTimer = 0.1;
+				SendStatus();
+			}
 		}
 
 		_sendTimer -= delta;
@@ -210,9 +265,175 @@ public partial class NetMatch : Node
 			Secondary = _weapon.SecondaryDef?.Id ?? ""
 		};
 
+		if (Authoritative) return;
+
 		BinaryWriter w = NetWire.Begin(NetWire.State, out MemoryStream stream);
 		state.Write(w);
 		Send(stream, reliable: false);
+	}
+
+	// ------------------------------------------------------------ partida autoritativa
+
+	/// <summary>O comando do passo que o jogador acabou de dar, com os
+	/// últimos de folga. Guarda onde o corpo ficou, para comparar quando o
+	/// servidor responder.</summary>
+	private void SendCommand()
+	{
+		if (_me == null) return;
+
+		_seq++;
+		InputCommand c = NetCommands.From(_me.Intent, _seq, _me.Rotation.Y, _me.HeadPitch);
+		c.Form = (byte)_form.Current;
+		c.HeldSlot = (byte)_weapon.HumanSlot;
+		c.Epoch = _epoch;
+		c.Dead = _health.IsDead;
+		c.Frozen = _me.Frozen;
+		if (!_spawnConfirmed)
+		{
+			c.HasSpawn = true;
+			c.Spawn = _spawn.ToNumerics();
+		}
+
+		_recent[_seq % InputCommand.Redundancy] = c;
+		_prediction.Record(_seq, _me.GlobalPosition.ToNumerics(), _me.Velocity.ToNumerics());
+
+		_net.SendBytes(NetCommands.InputPacket(_recent, _seq, _inputBuffer), 1, MultiplayerPeer.TransferModeEnum.Unreliable);
+	}
+
+	/// <summary>Vida, escudo e armas: os outros desenham, o servidor copia
+	/// (a vida ainda é do jogo nesta leva).</summary>
+	private void SendStatus()
+	{
+		BinaryWriter w = NetWire.Begin(NetWire.Status, out MemoryStream stream);
+		w.Write(_health.Hp);
+		w.Write(_health.MaxHp);
+		w.Write(_health.Shield);
+		w.Write(_health.MaxShield);
+		w.Write(_health.IsDead);
+		w.Write(_weapon.PrimaryDef?.Id ?? "");
+		w.Write(_weapon.SecondaryDef?.Id ?? "");
+		Send(stream, reliable: false);
+	}
+
+	/// <summary>A classe de lobo e as tatuagens: o servidor precisa delas
+	/// para mover o lobo como este jogo move.</summary>
+	private void SendLoadout()
+	{
+		BinaryWriter w = NetWire.Begin(NetWire.Loadout, out MemoryStream stream);
+		w.Write(Profile.Breed ?? "");
+		List<string> tattoos = Profile.OwnedTattoos();
+		w.Write((byte)tattoos.Count);
+		foreach (string id in tattoos) w.Write(id);
+		Send(stream);
+	}
+
+	/// <summary>Renasci: vida nova. O servidor põe o corpo dele onde eu
+	/// nasci quando o primeiro comando desta vida chegar.</summary>
+	private void OnLocalRespawned()
+	{
+		if (!Authoritative) return;
+		NewLife(_player.GlobalPosition);
+	}
+
+	/// <summary>Põe o corpo noutro lugar de uma vez (o robô de teste). Na
+	/// autoritativa vale como renascer ali (nesta leva o servidor confia).</summary>
+	public void Teleport(Vector3 at)
+	{
+		_player.GlobalPosition = at;
+		if (Authoritative) NewLife(at);
+	}
+
+	private void NewLife(Vector3 at)
+	{
+		_epoch++;
+		_spawn = at;
+		_spawnConfirmed = false;
+		_prediction.Clear();
+	}
+
+	private void ReadWelcome(BinaryReader r)
+	{
+		ReadClock(r);
+		if (r.BaseStream.Position >= r.BaseStream.Length || r.ReadByte() != NetWire.ModeAuthoritative) return;
+
+		r.ReadByte();   // passos por segundo (60, NetRates.TickRate)
+		for (int n = r.ReadByte(); n > 0; n--) _byIndex[r.ReadByte()] = r.ReadInt64();
+
+		Authoritative = true;
+		Player.NetQuantize = true;
+		_spawn = _player.GlobalPosition;
+		_spawnConfirmed = false;
+		SendLoadout();
+		GD.Print("Partida online autoritativa: o servidor move os corpos.");
+	}
+
+	/// <summary>O estado do mundo: corrige o meu corpo e guarda a pose dos outros.</summary>
+	private void ReadSnapshot(byte[] packet)
+	{
+		var r = new PacketReader(packet, 1);
+		int count = SnapshotWire.ReadHeader(ref r, out uint tick, out uint ack);
+		_clock.Observe(tick, LocalSeconds);
+
+		for (int i = 0; i < count; i++)
+		{
+			EntityState e = EntityState.Read(ref r);
+			if (!_byIndex.TryGetValue(e.Index, out long id)) continue;
+
+			if (id == OnlineMatch.AccountId)
+			{
+				Reconcile(e, ack);
+				continue;
+			}
+
+			if (!_poses.TryGetValue(id, out InterpolationBuffer poses)) _poses[id] = poses = new InterpolationBuffer();
+			poses.Add(new NetPose
+			{
+				Time = tick * NetRates.TickSeconds,
+				Position = e.Position,
+				Velocity = e.Velocity,
+				Yaw = Quant.Yaw(e.Yaw),
+				Pitch = Quant.Pitch(e.Pitch),
+				Flags = e.Flags,
+				Form = e.Form,
+				Slot = e.Slot,
+				Epoch = e.Epoch
+			});
+		}
+	}
+
+	/// <summary>O servidor disse onde o meu corpo ficou depois do comando
+	/// <paramref name="ack"/>. Diferente do previsto: o corpo de agora anda
+	/// a diferença, e o desenho escorrega até lá.</summary>
+	private void Reconcile(EntityState e, uint ack)
+	{
+		if (e.Epoch != _epoch || !e.Has(EntityFlags.Present)) return;
+		_spawnConfirmed = true;
+		if (_health.IsDead || ack == 0) return;
+
+		System.Numerics.Vector3 fix = _prediction.Reconcile(ack, _seq, e.Position);
+		if (fix == System.Numerics.Vector3.Zero) return;
+
+		Vector3 moved = fix.ToGodot();
+		_player.GlobalPosition += moved;
+		if (moved.Length() < Prediction.SnapDistance)
+			_player.GetNodeOrNull<VisualSmoothing>("VisualSmoothing")?.Absorb(moved);
+	}
+
+	/// <summary>Os outros, um pouco no passado, entre dois estados que já chegaram.</summary>
+	private void UpdatePuppets()
+	{
+		if (!_clock.Known) return;
+		double renderTime = _clock.RenderTime(LocalSeconds);
+
+		foreach (var (id, poses) in _poses)
+		{
+			if (!_puppets.TryGetValue(id, out Bot puppet) || !poses.Sample(renderTime, out NetPose p)) continue;
+			if (!p.Has(EntityFlags.Present)) continue;
+
+			Form form = Enum.IsDefined(typeof(Form), (int)p.Form) ? (Form)p.Form : Form.Human;
+			puppet.RemoteSnapshot(p.Position.ToGodot(), p.Velocity.ToGodot(), p.Yaw, p.Pitch,
+				p.Has(EntityFlags.Grounded), form, (Slot)p.Slot);
+		}
 	}
 
 	// ------------------------------------------------------------ o que eu conto
@@ -306,7 +527,16 @@ public partial class NetMatch : Node
 			{
 				case NetWire.Welcome:
 					Joined = true;
-					ReadClock(r);
+					ReadWelcome(r);
+					break;
+
+				case NetWire.Snapshot:
+					if (Authoritative) ReadSnapshot(packet);
+					break;
+
+				case NetWire.Status:
+					if (_puppets.TryGetValue(r.ReadInt64(), out Bot statusOf))
+						statusOf.RemoteStatus(r.ReadSingle(), r.ReadSingle(), r.ReadSingle(), r.ReadSingle(), r.ReadBoolean(), r.ReadString(), r.ReadString());
 					break;
 
 				case NetWire.Refused:
@@ -340,11 +570,13 @@ public partial class NetMatch : Node
 					break;
 
 				case NetWire.Gone:
-					if (_puppets.TryGetValue(r.ReadInt64(), out Bot gone)) gone.RemotePresent(false);
+					long goneId = r.ReadInt64();
+					if (_puppets.TryGetValue(goneId, out Bot gone)) gone.RemotePresent(false);
+					_poses.Remove(goneId);
 					break;
 			}
 		}
-		catch (Exception e) when (e is EndOfStreamException or IOException or ArgumentException)
+		catch (Exception e) when (e is EndOfStreamException or IOException or ArgumentException or IndexOutOfRangeException)
 		{
 			GD.PushWarning($"NetMatch: pacote torto do servidor ({e.Message})");
 		}

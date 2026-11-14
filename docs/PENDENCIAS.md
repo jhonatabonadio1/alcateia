@@ -34,6 +34,12 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ### Combate e visual
 
+- **Partida autoritativa, segunda leva** (decisão 0011): a vida e o dano
+  no servidor, o tiro conferido lá voltando no tempo, a forma, a arma na
+  mão e o renascimento decididos pelo servidor, os bots no servidor, não
+  mandar inimigo fora de vista, ajuste do ritmo do jogo pela folga da fila
+  e compressão por diferença no estado do mundo. Até lá o modo
+  autoritativo fica desligado por padrão.
 - **Mirar pela alça da arma (ADS de verdade).** Hoje o botão direito dá
   zoom com mira circular (13/11). Mirar pela arma foi tentado e ficou
   ruim: pede animação própria de mirar em cada conjunto dos braços.

@@ -29,6 +29,11 @@ public partial class OnlineRobot : Node
 	private bool _inMatch, _done, _started;
 	private int _puppetShots, _hitsTaken, _lobbyEnds;
 	private int _botPuppets, _botShots, _botKills, _killsOnBots, _myBots, _botsAdded;
+
+	// Partida autoritativa (decisão 0011): o modo que o servidor disse e
+	// quantas vezes ele corrigiu o corpo deste robô.
+	private bool _authoritative;
+	private int _corrections;
 	private readonly System.Collections.Generic.Dictionary<Bot, Vector3> _botStart = new();
 	private readonly System.Collections.Generic.HashSet<string> _botsMoved = new();
 	private BotLevel _level;
@@ -127,6 +132,9 @@ public partial class OnlineRobot : Node
 			return;
 		}
 
+		_authoritative |= NetMatch.Current.Authoritative;
+		_corrections = Math.Max(_corrections, NetMatch.Current.Corrections);
+
 		if (!_inMatch)
 		{
 			_inMatch = true;
@@ -197,7 +205,11 @@ public partial class OnlineRobot : Node
 		if (_aimTimer <= 0)
 		{
 			_aimTimer = 0.4;
-			player.GlobalPosition = Vantage(player, target);
+			// Na partida autoritativa, mover o corpo à mão vale como
+			// renascer ali (é o servidor que move; nesta leva ele confia).
+			Vector3 spot = Vantage(player, target);
+			if (NetMatch.Current is { Authoritative: true } net) net.Teleport(spot);
+			else player.GlobalPosition = spot;
 			player.Velocity = Vector3.Zero;
 		}
 
@@ -243,6 +255,7 @@ public partial class OnlineRobot : Node
 			$"tiros_do_boneco={_puppetShots} acertos_levados={_hitsTaken} avisos_do_saguao={_lobbyEnds} " +
 			$"bots_meus={_myBots} bonecos_bot={_botPuppets} bots_andaram={botsMoved} tiros_de_bot={_botShots} dificuldade={_level} " +
 			$"abates_com_bot={_botKills} abateu_bot={_killsOnBots} " +
+			$"modo={(_authoritative ? "autoritativo" : "repasse")} correcoes={_corrections} " +
 			$"sala={(LobbyLink.Instance.Room != null ? LobbyLink.Instance.Room["state"] : "nenhuma")}");
 
 		GetTree().Quit(0);

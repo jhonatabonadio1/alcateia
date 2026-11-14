@@ -813,6 +813,9 @@ do código:
 | `net/NetWire.cs` | O formato dos pacotes |
 | `net/MatchServer.cs` | O servidor de partida (`-- --servidor`): a porta, a batida na frota, o ingresso |
 | `net/HostedMatch.cs` | Uma partida dentro dele: o juiz, os jogadores dela e o que vai e volta |
+| `net/MatchWorld.cs`, `net/ServerBody.cs` | Partida autoritativa: o mundo da partida (mapa só com colisão) e o corpo de cada jogador, movido pelos comandos |
+| `net/NetCommands.cs` | A intenção do jogador ↔ o comando da rede, nos dois sentidos |
+| `domain/net/` | O núcleo da rede autoritativa, C# puro com teste de unidade: pacote binário, comando, fila de comandos, estado do mundo, história, interpolação, relógio, predição |
 | `domain/Referee.cs` | O juiz: fases, placar, o que vale como abate. C# puro, com teste |
 | `actors/bot/Bot.Remote.cs` | O bot como boneco de outro jogador |
 | `combat/weapon/Weapon.Remote.cs` | A arma do boneco: encena, não fere |

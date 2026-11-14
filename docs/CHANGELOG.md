@@ -2,6 +2,23 @@
 
 ## Não lançado
 
+### Partida autoritativa: o servidor move os corpos (13/11, primeira leva)
+- Modo novo da partida online (`ALCATEIA_NETCODE=autoritativo` no servidor
+  de partida; o padrão continua o de hoje). Decisão 0011.
+- O servidor de partida carrega o mapa (só o que colide, num mundo de
+  física por partida) e move o corpo de cada jogador pelos comandos que
+  chegam, a 60 passos por segundo, com o mesmo código do jogo.
+- O jogo manda o que apertou a cada passo (17 bytes, com os três anteriores
+  de folga), continua movendo o corpo na hora e corrige quando o servidor
+  discorda, sem o desenho pular. Os outros jogadores aparecem 100 ms no
+  passado, interpolados entre dois estados do mundo.
+- Medido: corpo do servidor exatamente onde o jogo previu (com atraso e
+  pacote perdido); 16 jogadores custam 0,4 ms por passo, 64 custam 1,5 ms.
+- Ainda do jogo nesta leva: vida, forma, arma na mão, renascimento, tiro e
+  bots — a leva seguinte leva para o servidor.
+- Testes: `PredicaoNoServidor`, `PassoDoServidor`, 11 testes de unidade
+  do núcleo de rede e o ponta a ponta no modo autoritativo.
+
 ### Servidor: várias partidas ao mesmo tempo e em camadas (13/11)
 - **Encerrar uma partida e não conseguir criar outra** (o Jhon: "não tinha
   servidor", só voltava reiniciando). O servidor de partida jogava uma

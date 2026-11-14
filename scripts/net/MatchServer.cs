@@ -46,7 +46,14 @@ using System.Threading.Tasks;
 /// <c>ALCATEIA_PUBLIC_ADDRESS</c> (o endereço que os jogadores usam),
 /// <c>ALCATEIA_GAME_PORT</c> (a porta UDP, 7777; ou uma faixa, 7777-7876,
 /// e ele fica com a primeira livre — é como vários sobem na mesma máquina),
-/// <c>ALCATEIA_MATCHES</c> (quantas partidas ao mesmo tempo, 4).
+/// <c>ALCATEIA_MATCHES</c> (quantas partidas ao mesmo tempo, 4),
+/// <c>ALCATEIA_NETCODE</c> (<c>repasse</c>, o padrão: cada jogo move o
+/// próprio corpo; ou <c>autoritativo</c>: o servidor move os corpos a 60
+/// passos por segundo, decisão 0011).
+///
+/// Na autoritativa, o servidor mede quanto cada passo leva (todas as
+/// partidas juntas) e escreve a média e o pior a cada 30 s: o passo tem de
+/// caber com folga nos 16,7 ms, senão o servidor atrasa todo mundo.
 /// </summary>
 public partial class MatchServer : Node, HostedMatch.IMatchLink
 {
@@ -77,6 +84,16 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	private double _heartbeat;
 	private bool _beating;
 
+	private bool _authoritative;
+	private uint _tick;
+	private readonly System.Diagnostics.Stopwatch _stepWatch = new();
+	private double _stepTotalMs, _stepWorstMs, _statsTimer;
+	private int _stepCount;
+
+	/// <summary>Passos de física (todas as partidas): média e pior, em ms, na
+	/// última janela de 30 s.</summary>
+	public (double Average, double Worst, int Steps) StepStats { get; private set; }
+
 	/// <summary>Atalhos de teste, os mesmos da partida: -- --duracao=30 --contagem=2</summary>
 	private double? _seconds, _countdown;
 
@@ -88,6 +105,7 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		_address = OS.GetEnvironment("ALCATEIA_PUBLIC_ADDRESS");
 		var (first, last) = PortRange(OS.GetEnvironment("ALCATEIA_GAME_PORT"));
 		_capacity = int.TryParse(OS.GetEnvironment("ALCATEIA_MATCHES"), out int capacity) ? Math.Clamp(capacity, 1, 64) : DefaultCapacity;
+		_authoritative = OS.GetEnvironment("ALCATEIA_NETCODE").Trim().ToLowerInvariant() is "autoritativo" or "authoritative";
 
 		foreach (string arg in OS.GetCmdlineUserArgs())
 		{
@@ -125,7 +143,8 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		_net.PeerDisconnected += OnGone;
 		_net.PeerPacket += OnPacket;
 
-		GD.Print($"Servidor de partida {_id} na porta {_port}/UDP, até {_capacity} partida(s), falando com {Backend.Url}");
+		GD.Print($"Servidor de partida {_id} na porta {_port}/UDP, até {_capacity} partida(s)" +
+			(_authoritative ? ", autoritativo (60 passos/s)" : ", repasse") + $", falando com {Backend.Url}");
 	}
 
 	public override void _Process(double delta)
@@ -154,6 +173,32 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 			match.Tick(delta);
 			if (match.Finished) Close(match);
 		}
+
+		_statsTimer += delta;
+		if (_statsTimer >= 30 && _stepCount > 0)
+		{
+			StepStats = (_stepTotalMs / _stepCount, _stepWorstMs, _stepCount);
+			GD.Print($"Passo do servidor: média {StepStats.Average:0.00} ms, pior {StepStats.Worst:0.00} ms " +
+				$"({_matches.Count} partida(s), {_matches.Values.Sum(m => m.Bodies)} corpo(s))");
+			_statsTimer = 0;
+			_stepTotalMs = _stepWorstMs = 0;
+			_stepCount = 0;
+		}
+	}
+
+	/// <summary>O passo de física de todas as partidas autoritativas: cada
+	/// corpo consome o comando do passo; depois a física do Godot move.</summary>
+	public override void _PhysicsProcess(double delta)
+	{
+		if (_net == null || !_authoritative || _matches.Count == 0) return;
+
+		_tick++;
+		_stepWatch.Restart();
+		foreach (HostedMatch match in _matches.Values) match.PhysicsStep(_tick, delta);
+		double ms = _stepWatch.Elapsed.TotalMilliseconds;
+		_stepTotalMs += ms;
+		_stepWorstMs = Math.Max(_stepWorstMs, ms);
+		_stepCount++;
 	}
 
 	// ------------------------------------------------------------ o servidor do Alcateia
@@ -186,7 +231,8 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		string key = assignment["matchKey"]?.GetValue<string>();
 		if (key == null || _matches.ContainsKey(key) || _matches.Count >= _capacity) return;
 
-		HostedMatch match = HostedMatch.FromAssignment(assignment, this, _seconds, _countdown);
+		HostedMatch match = HostedMatch.FromAssignment(assignment, this, _seconds, _countdown, _authoritative);
+		if (match.World != null) AddChild(match.World);
 		_matches[key] = match;
 
 		foreach (var (peer, hello) in _early.Where(e => e.Value.Key == key).ToList())
@@ -226,6 +272,7 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	private void Close(HostedMatch match)
 	{
 		match.Close();
+		match.World?.QueueFree();
 		_matches.Remove(match.Key);
 		foreach (long peer in _matchOf.Where(e => e.Value == match).Select(e => e.Key).ToList()) _matchOf.Remove(peer);
 		_heartbeat = 0;   // avisa já que o lugar vagou
@@ -251,7 +298,7 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 			// Daqui para baixo, só quem já entrou — e só na partida dele.
 			if (_matchOf.TryGetValue(peer, out HostedMatch match)) match.Receive(peer, type, packet, r);
 		}
-		catch (Exception e) when (e is EndOfStreamException or IOException or ArgumentException)
+		catch (Exception e) when (e is EndOfStreamException or IOException or ArgumentException or IndexOutOfRangeException)
 		{
 			// Pacote torto: ignora. Quem insiste em mandar lixo só perde o próprio jogo.
 		}

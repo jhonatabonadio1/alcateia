@@ -56,6 +56,8 @@ services:
       ALCATEIA_GAME_PORT: 7777
       # Quantas partidas este servidor de partida joga ao mesmo tempo.
       ALCATEIA_MATCHES: ${ALCATEIA_MATCHES:-4}
+      # "autoritativo": o servidor de partida move os corpos (decisão 0011).
+      ALCATEIA_NETCODE: ${ALCATEIA_NETCODE:-}
     ports:
       - "7777:7777/udp"
 

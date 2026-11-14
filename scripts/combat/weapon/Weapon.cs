@@ -369,6 +369,10 @@ public partial class Weapon : Node3D
 		if (IsReloading) CancelReload();
 		if (_form.IsWolf) return;
 
+		// O corpo do servidor de partida não larga arma no chão: a arma
+		// que cai é a do jogo de quem morreu.
+		if (_body is Player { Driven: true }) return;
+
 		bool primary = PrimaryDef != null;
 		WeaponDefinition def = primary ? PrimaryDef : SecondaryDef;
 		if (def == null) return;

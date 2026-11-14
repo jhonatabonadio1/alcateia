@@ -38,6 +38,11 @@ public sealed class Fleet
 	/// resultado.</summary>
 	public static readonly TimeSpan DeliveryGrace = TimeSpan.FromSeconds(10);
 
+	/// <summary>Só recebe partida quem bateu há pouco (duas batidas): um
+	/// servidor que reiniciou deixa o registro velho até o prazo vencer, e
+	/// partida mandada para ele seria partida perdida.</summary>
+	public static readonly TimeSpan Fresh = TimeSpan.FromSeconds(5);
+
 	private sealed class Slot
 	{
 		public MatchAssignment Assignment;
@@ -107,9 +112,9 @@ public sealed class Fleet
 
 	/// <summary>Reserva lugar para a partida no servidor mais folgado.
 	/// Null se a frota inteira estiver cheia.</summary>
-	public (string Address, int Port)? Allocate(MatchAssignment assignment)
+	public (string Address, int Port)? Allocate(MatchAssignment assignment, DateTime now)
 	{
-		GameServer free = _servers.Values.Where(s => s.Free > 0)
+		GameServer free = _servers.Values.Where(s => s.Free > 0 && now - s.LastSeen <= Fresh)
 			.OrderByDescending(s => s.Free).ThenBy(s => s.Players).FirstOrDefault();
 		if (free == null) return null;
 
