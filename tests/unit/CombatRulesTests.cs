@@ -21,11 +21,13 @@ public static class CombatRulesTests
 
 	// ------------------------------------------------------------ dano de arma
 
-	[Test("um tiro de M16 no corpo tira 60 de 200; na cabeça, 150")]
+	[Test("um tiro de M16 no corpo tira 54 de 200 (4 matam); na cabeça, 135 (2 matam)")]
 	public static void M16Damage()
 	{
-		Check.Near(60, CombatRules.FirearmDamage(30, 1, false, 2.5f), 1e-4, "corpo");
-		Check.Near(150, CombatRules.FirearmDamage(30, 1, true, 2.5f), 1e-4, "cabeça");
+		Check.Near(54, CombatRules.FirearmDamage(27, 1, false, 2.5f), 1e-4, "corpo");
+		Check.Near(135, CombatRules.FirearmDamage(27, 1, true, 2.5f), 1e-4, "cabeça");
+		Check.True(4 * CombatRules.FirearmDamage(27, 1, false, 2.5f) >= 200, "4 no corpo matam");
+		Check.True(2 * CombatRules.FirearmDamage(27, 1, true, 2.5f) >= 200, "2 na cabeça matam");
 	}
 
 	[Test("a AK mata com um tiro na cabeça de perto (o documento do arsenal)")]
@@ -52,8 +54,8 @@ public static class CombatRulesTests
 	{
 		float bloom = 0;
 		for (int shot = 0; shot < 40; shot++)
-			bloom = CombatRules.BloomAfterShot(bloom, 0.22f, 4f, 0.35f);
-		Check.Near(3.65, bloom, 1e-5, "teto do M16 (4 − 0,35)");
+			bloom = CombatRules.BloomAfterShot(bloom, 0.09f, 1.8f, 0.15f);
+		Check.Near(1.65, bloom, 1e-5, "teto do M16 (1,8 − 0,15)");
 	}
 
 	[Test("parado de atirar, o acumulado volta até zero e não passa")]

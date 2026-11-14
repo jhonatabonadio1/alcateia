@@ -13,10 +13,12 @@ public partial class Weapon
 	[Export] public float HeadshotMultiplier = 2.5f;
 
 	/// <summary>
-	/// Altura da zona de cabeça, medida do centro do corpo para cima.
-	/// A cápsula tem 1,75, então o topo fica em ~0,87: uma zona a
-	/// partir de 0,72 deixa a cabeça com cerca de 15cm, proporcional a
-	/// uma cabeça humana, e não o terço superior do corpo.
+	/// Altura da zona de cabeça, medida do centro do corpo para cima, para
+	/// quem não tem modelo à vista (o boneco do treino, o corpo no
+	/// servidor). Quem tem leva tiro na cabeça pela cabeça do modelo
+	/// (<see cref="HeadHitbox"/>). A cápsula tem 1,75, então o topo fica
+	/// em ~0,87: uma zona a partir de 0,72 deixa a cabeça com cerca de
+	/// 15cm, e não o terço superior do corpo.
 	/// </summary>
 	[Export] public float HeadZone = 0.72f;
 
@@ -122,9 +124,8 @@ public partial class Weapon
 	}
 
 	/// <summary>
-	/// Cabeça é a faixa superior do corpo. Sem hitbox dedicada, a
-	/// altura do impacto resolve — e continua valendo quando o modelo
-	/// chegar, porque a zona é medida do centro do corpo.
+	/// Sem modelo à vista, cabeça é a faixa superior da cápsula: a altura
+	/// do impacto resolve.
 	/// </summary>
 	private bool IsHeadshot(Node collider, Vector3 impact)
 	{
@@ -132,4 +133,70 @@ public partial class Weapon
 
 		return impact.Y - body.GlobalPosition.Y >= HeadZone;
 	}
+
+	/// <summary>Uma cabeça no caminho dos tiros: de quem, a vida, onde está.</summary>
+	private readonly record struct Head(Node3D Body, Health Health, Vector3 Center, float Radius);
+
+	private readonly List<Head> _heads = new();
+
+	/// <summary>As cabeças de quem está vivo, menos a de quem atira. Uma
+	/// vez por disparo: os nove chumbos da escopeta usam a mesma lista.</summary>
+	private List<Head> Heads()
+	{
+		_heads.Clear();
+		SceneTree tree = _body.GetTree();
+		foreach (string group in Groups.Fighters)
+		{
+			foreach (Node node in tree.GetNodesInGroup(group))
+			{
+				if (node == _body || node is not Node3D body) continue;
+				if (body.GetNodeOrNull<Health>("Health") is not Health health || health.IsDead) continue;
+				if (HeadHitbox.TryGet(body, out Vector3 center, out float radius))
+					_heads.Add(new Head(body, health, center, radius));
+			}
+		}
+
+		return _heads;
+	}
+
+	/// <summary>
+	/// Um raio de ataque, com a cabeça do modelo. O raio da física acha o
+	/// corpo (a cápsula) ou a parede; a cabeça de quem tem modelo é a
+	/// esfera dela, mesmo onde sai da cápsula — a do lobo, curvado, fica
+	/// toda fora. Quem tem modelo só leva tiro na cabeça por ela; quem não
+	/// tem, pela faixa da cápsula (<see cref="IsHeadshot"/>).
+	/// </summary>
+	private Health Trace(Vector3 from, Vector3 to, List<Head> heads,
+		out Vector3 impact, out Node collider, out bool headshot)
+	{
+		Health hit = Raycast(from, to, out impact, out collider);
+
+		float range = from.DistanceTo(to);
+		Vector3 direction = (to - from) / Mathf.Max(range, 1e-4f);
+		float? at = collider != null || impact != to ? from.DistanceTo(impact) : null;
+
+		Head best = default;
+		float bestAt = float.MaxValue;
+		foreach (Head head in heads)
+		{
+			float? enter = HeadHit.Enter(N(from), N(direction), N(head.Center), head.Radius);
+			if (enter is not float t || t > range || t >= bestAt) continue;
+			if (!HeadHit.Counts(t, at, collider == head.Body)) continue;
+			best = head;
+			bestAt = t;
+		}
+
+		if (best.Body != null)
+		{
+			impact = from + direction * bestAt;
+			collider = best.Body;
+			headshot = true;
+			return best.Health;
+		}
+
+		headshot = hit != null && collider is Node3D body && !HeadHitbox.Has(body) && IsHeadshot(collider, impact);
+		return hit;
+	}
+
+	private static System.Numerics.Vector3 N(Vector3 v) => new(v.X, v.Y, v.Z);
 }

@@ -179,12 +179,14 @@ acabar.
   **conserva o avanço** da corrida (`WallJumpKeepSpeed`) e soma o
   empurrão perpendicular: sem isso o lobo sai de lado e perde tudo
   que acumulou, que é o oposto da jogada de cair em cima de alguém
-- **A mesma parede não serve duas vezes** sem tocar o chão: subir,
-  saltar e regrudar mais alto transformaria a parede em elevador.
-  Uma parede **diferente** vale — é a jogada de quicar entre as duas
-  paredes de um corredor, e ela é desejada. O que separa os dois casos
-  é a semelhança entre as normais (`SameWallThreshold`), não o tempo
-  nem o contato com o chão
+- **A mesma parede não serve para subir** sem tocar o chão: subir,
+  saltar e regrudar mais alto transformaria a parede em elevador. Nela o
+  lobo regruda, mas só descendo até a altura de onde saltou — saltar
+  olhando para a parede e voltar não o derruba até o chão (pedido do
+  Jhon, 14/11). Uma parede **diferente** vale de qualquer altura — é a
+  jogada de quicar entre as duas paredes de um corredor, e ela é
+  desejada. O que separa os dois casos é a semelhança entre as normais
+  (`SameWallThreshold`), não o tempo
 - Perdeu a parede de repente (um vão), tem `CornerGrace` (0,15 s)
   antes de soltar
 - **Fica a uma distância fixa da parede** (`WallHoldDistance`,
@@ -413,7 +415,7 @@ corrija a linha dele.
 | Garrada, braço 2 | punch, 0–0,85 s, 2,2× | 0,14 s | 0,39 s |
 | Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso; voa até 8,4 m em arco |
 | Bote (direito no ar) | jump attack: a queda, depois a aterrissagem | quando encosta | aterrissagem de 0,78 s, presa; sem recarga |
-| Rugido (R, segurado) | roaring, 0,30–4,90 s, 2,3× | escudo no fim | 2,0 s; soltar cancela |
+| Rugido (R, segurado) | roaring, 0,30–4,90 s, 2,875× | escudo no fim | 1,6 s; soltar cancela |
 
 Durante um golpe o lobo não volta a humano: a tecla espera o golpe
 acabar.
@@ -549,7 +551,7 @@ de um humano a trinta metros é o contorno.
 ### O escudo do lobo
 
 O escudo **escorre sozinho** enquanto o lobo está transformado. Não é
-vida extra: é um relógio. **Segurar R ruge**: 2,0 s do começo ao fim,
+vida extra: é um relógio. **Segurar R ruge**: 1,6 s do começo ao fim,
 e só então o escudo volta cheio. **Soltar antes cancela** sem pagar —
 o rugido é um compromisso, não um botão de disparo. **O lobo ruge em
 movimento** (decisão do Jhon): anda, pula e cai rugindo, sem frear —
@@ -826,8 +828,15 @@ câmera que volta sozinho. Sem isso atirar não tem peso.
 
 - **Acerto**: quatro riscos em volta do crosshair. Brancos no corpo,
   vermelhos e maiores na cabeça. Sem isso não se sabe se o tiro pegou.
-- **Dano na cabeça**: 2,5× o dano. A zona é a faixa superior do corpo,
-  medida a partir do centro — continua valendo quando houver modelo.
+- **Dano na cabeça**: 2,5× o dano. A cabeça é a do modelo que se vê
+  (14/11): uma esfera entre os ossos da cabeça, que segue a animação —
+  o humano mirando, o lobo curvado com a cabeça meio metro à frente,
+  fora da cápsula. A faixa de cima da cápsula, a de antes, pegava só a
+  metade de cima da cabeça do humano e nada da do lobo; fica para quem
+  não tem modelo.
+- **O tiro sai de onde a cruz está.** O recuo sobe a câmera depois do
+  tiro, para o próximo. Até 14/11 subia antes, e todo tiro ia 1° acima
+  da cruz — a 15 m, por cima da cabeça de quem se mirou nela.
 - **Levar dano**: vinheta vermelha nas bordas, que some em menos de
   meio segundo, e o arco em volta da mira apontando de onde veio.
 - **Bot alvejado**: não vira na hora. Marca a origem do tiro, espera

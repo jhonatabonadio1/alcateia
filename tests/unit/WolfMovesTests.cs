@@ -30,9 +30,9 @@ public static class WolfMovesTests
 		Check.Near(1.881, distance, 0.001, "passo do clipe na escala do jogo");
 	}
 
-	[Test("o rugido dura 2,0 s")]
+	[Test("o rugido dura 1,6 s")]
 	public static void HowlTiming() =>
-		Check.Near(2.0, WolfMoves.Duration(WolfMove.Howl), 0.001, "duração do rugido");
+		Check.Near(1.6, WolfMoves.Duration(WolfMove.Howl), 0.001, "duração do rugido");
 
 	[Test("a aterrissagem do bote prende o lobo 0,78 s")]
 	public static void DiveLanding() =>

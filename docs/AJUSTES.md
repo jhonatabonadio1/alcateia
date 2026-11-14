@@ -107,7 +107,7 @@ jogador usa a classe escolhida no perfil, com as tatuagens aplicadas.
 |---|---|---|---|
 | `SpeedMultiplier` | 1,298 | 1,406 | × `HumanSpeed` — velocidade no chão e (com `WallRunSpeedBonus`) na parede |
 | `JumpMultiplier` | 1,28 | 1,59 | × `JumpVelocity` — altura do pulo |
-| `Shield` | 200 | 140 | Escudo do lobo (a vida é a mesma do humano, 200) |
+| `Shield` | 200 | 200 | Escudo do lobo: começa em 200 nas duas (a vida é a mesma do humano, 200). O Ligeiro herda o padrão de `WolfBreed.cs` |
 | `ShieldDecay` | 9 /s | 13 /s | Quanto escudo escorre por segundo |
 | `BodyResistance` | 0,6 | 0,78 | Dano no corpo × isto (cabeça ignora). 0,6 = leva 60% |
 | `AttackDamage` | 75 | 55 | Base de **todos** os golpes (seção 4) |
@@ -154,7 +154,7 @@ Multiplicam a classe do jogador (não a dos bots):
 | `WallJumpClimb` | 1,02 | Altura do salto da parede (era 1,35; −40%) |
 | `WallJumpPush` | 6,5 m/s | Empurrão para fora no salto da parede |
 | `WallJumpKeepSpeed` | 0,8 | Quanto da velocidade da parede o salto leva |
-| `SameWallThreshold` | 0,85 | Semelhança para contar como a mesma parede (não regruda nela sem tocar o chão) |
+| `SameWallThreshold` | 0,85 | Semelhança para contar como a mesma parede. Nela, sem tocar o chão, o lobo só regruda descendo até a altura de onde saltou (nunca acima: sem elevador) |
 | `WallRunCooldown` | 0,12 s | Tempo mínimo entre duas corridas |
 
 ---
@@ -220,7 +220,7 @@ A aterrissagem prende o lobo 0,78 s (`WolfMoves.Land`, a 1,5×).
 
 ### Rugido (R)
 
-Dura **2,0 s** (clipe a 2,3×, em `WolfMoves.Of`) e devolve o escudo
+Dura **1,6 s** (clipe a 2,875×, em `WolfMoves.Of`) e devolve o escudo
 inteiro. Pode andar rugindo. `HowlNoise` 45 m (ouvido pelos bots) e
 `Health.ShieldDecayGrace` 1 s (o escudo espera isso para voltar a
 escorrer).
@@ -278,8 +278,14 @@ sempre humano.
 | `AutoRespawn` | sim (o jogador desliga) | Renascer sozinho |
 | `ShieldDecayGrace` | 1 s | Carência do escudo depois do rugido |
 
-Cabeça: `Weapon.HeadZone` 0,72 m acima do centro do corpo (a faca usa
-`Weapon.HeadshotMultiplier` 2,5; as armas, o delas). Câmera de morte:
+Cabeça: a do modelo que se vê (`HeadHitbox`): uma esfera no meio dos
+ossos `mixamorig_Head` e `mixamorig_HeadTop_End`, com raio de
+`HeadHit.RadiusFactor` 0,55 × a distância entre eles (12 cm no humano,
+12,5 no lobo). Parede na frente protege; a cápsula do próprio dono, até
+`HeadHit.Depth` 0,45 m (a cabeça do humano fica dentro dela). Sem modelo
+à vista (boneco do treino, corpo no servidor), vale `Weapon.HeadZone`
+0,72 m acima do centro do corpo. A faca usa `Weapon.HeadshotMultiplier`
+2,5; as armas, o delas. Câmera de morte:
 `LoadoutMenu.KillCamTime` 1,8 s, `KillCam.Hold` 0,35 s,
 `KillCam.TurnRate` 5.
 
@@ -293,16 +299,16 @@ Cabeça: `Weapon.HeadZone` 0,72 m acima do centro do corpo (a faca usa
 |---|---|---|---|---|---|---|
 | Classe | fuzil | fuzil | fuzil | SMG | escopeta | pistola |
 | `WpCost` | 0 | 380 | 320 | 280 | 350 | 0 |
-| `Damage` | 30 | 42 | 26 | 28 | 13 ×9 | 25 |
+| `Damage` | 27 | 42 | 26 | 28 | 13 ×9 | 25 |
 | `HeadshotMultiplier` | 2,5 | 2,4 | 2,5 | 1,8 | 1,5 | 2,4 |
 | `Rpm` | 650 | 500 | 550 | 750 | 70 | 420 |
 | `Mode` | Auto | Auto | Auto | Auto | Pump | Semi |
 | `Magazine` | 30 | 30 | 30 | 25 | 8 | 15 |
 | `ReloadTactical` / `Empty` (s) | 2,3 / 2,9 | 2,5 / 3,3 | 2,6 / 3,2 | 2,1 / 2,7 | 0,55 cartucho | 1,9 / 2,4 |
 | `DrawTime` (s) | 0,5 | 0,6 | 0,55 | 0,35 | 0,6 | 0,3 |
-| `SpreadBase` / `PerShot` / `Max` (°) | 0,35 / 0,22 / 4 | 0,45 / 0,4 / 6,5 | 0,25 / 0,15 / 2,8 | 0,55 / 0,18 / 3,5 | 4,5 / 0 / 4,5 | 0,5 / 0,3 / 4 |
-| `SpreadRecovery` (°/s) | 9 | 7 | 11 | 12 | 99 | 9 |
-| `MoveSpreadMultiplier` | 2,2 | 3,0 | 1,5 | 1,3 | 1,0 | 1,5 |
+| `SpreadBase` / `PerShot` / `Max` (°) | 0,15 / 0,09 / 1,8 | 0,45 / 0,4 / 6,5 | 0,25 / 0,15 / 2,8 | 0,55 / 0,18 / 3,5 | 4,5 / 0 / 4,5 | 0,5 / 0,3 / 4 |
+| `SpreadRecovery` (°/s) | 12 (espera 0,05 s) | 7 | 11 | 12 | 99 | 9 |
+| `MoveSpreadMultiplier` | 1,6 | 3,0 | 1,5 | 1,3 | 1,0 | 1,5 |
 | `CrouchSpreadMultiplier` | 0,7 | 0,6 | 0,65 | 0,8 | 1,0 | 0,8 |
 | `RecoilVertical` / `Late` | 1,0 / 0,55 | 1,8 / 0,9 | 0,65 | 0,5 | 3,5 | 1,2 |
 | `RecoilHorizontal` | 0,18 | 0,15 (0,7 após 6 tiros) | 0,08 | 0,25 | 0,3 | 0,15 |
@@ -325,7 +331,7 @@ Os `Star*` são só exibição (da loja).
 | Campo | M16A2 | SG-552 | AK-47 | UMP-45 | M3 | M9 |
 |---|---|---|---|---|---|---|
 | `AimFov` (graus; fora da mira, 75) | 55 | 55 | 55 | 60 | 65 | 65 |
-| `AimSpreadMultiplier` (dispersão que sobra) | 0,35 | 0,35 | 0,35 | 0,5 | 0,8 | 0,6 |
+| `AimSpreadMultiplier` (dispersão que sobra) | 0,2 | 0,35 | 0,35 | 0,5 | 0,8 | 0,6 |
 | `AimSpeedMultiplier` (passo que sobra) | 0,7 | 0,7 | 0,7 | 0,7 | 0,7 | 0,7 |
 
 `Weapon.AimTime` 0,16 s (entrar e sair). A sensibilidade do mouse cai na

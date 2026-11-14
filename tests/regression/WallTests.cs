@@ -117,3 +117,47 @@ public sealed class WallLowGrabTest : RegressionTest
 		b.Check(rising, "agarrou ainda subindo");
 	}
 }
+
+/// <summary>Olhando para a parede, saltar dela e voltar: o lobo gruda de
+/// novo quando desce até a altura de onde saltou, em vez de escorregar
+/// até o chão (bug do Jhon, 14/11). Mais alto que isso não gruda: a parede
+/// continua sem virar elevador.</summary>
+public sealed class WallRegrabTest : WallTestBase
+{
+	public override string Name => "RegrudaNaParede";
+	public override string Description => "saltar da parede olhando para ela e voltar gruda de novo, nunca mais alto que o salto";
+
+	public override async Task Run(RegressionBench b)
+	{
+		if (!await StartRun(b)) return;
+		await b.Seconds(0.3);
+
+		Player p = b.Player;
+		p.Rotation = Vector3.Zero; // olha para a parede (−Z)
+		await b.Frames(2);
+
+		float start = p.GlobalPosition.Y;
+		float highest = float.MinValue;
+
+		for (int hop = 1; hop <= 3; hop++)
+		{
+			float from = p.GlobalPosition.Y;
+			RegressionBench.Press("jump");
+			bool left = await b.Until(() => !p.IsWallRunning, 0.2);
+			RegressionBench.Release("jump");
+			b.Check(left, $"salto {hop}: soltou a parede");
+
+			bool back = await b.Until(() => p.IsWallRunning || p.IsOnFloor(), 2.5);
+			b.Check(back && p.IsWallRunning, $"salto {hop}: grudou de novo (não caiu)");
+			if (!p.IsWallRunning) break;
+
+			highest = Mathf.Max(highest, p.GlobalPosition.Y);
+			b.AtMost(from + 0.02, p.GlobalPosition.Y, $"salto {hop}: não grudou acima de onde saltou");
+			await b.Frames(6);
+		}
+
+		RegressionBench.ReleaseAll();
+		if (highest > float.MinValue)
+			b.AtMost(start + 0.02, highest, "três saltos não sobem a parede");
+	}
+}

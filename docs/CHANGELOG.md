@@ -2,6 +2,34 @@
 
 ## Não lançado
 
+### Ajustes de 14/11: tiro na cabeça, M16, parede, rugido, escudo
+- **Tiro na cabeça sem dano** (o Jhon: "mirei escopado exatamente na
+  cabeça do humano, e não deu dano"). Dois defeitos:
+  - o recuo subia a câmera **antes** de o tiro sair, então todo tiro ia
+    1° acima da cruz — a 15 m, 26 cm, por cima da cabeça. Agora a mira do
+    tiro é lida antes do recuo, que só move o próximo. Era também boa
+    parte da M16 "difícil de usar";
+  - a cabeça era a faixa de cima da cápsula (de 0,72 m para cima): pegava
+    só a metade de cima da cabeça do humano e nada da do lobo, curvado,
+    com a cabeça meio metro à frente, fora da cápsula. Agora a cabeça é a
+    do modelo que se vê (`HeadHitbox`): uma esfera entre os ossos da
+    cabeça, que segue a animação. Sem modelo (boneco do treino, servidor),
+    a faixa continua.
+  - A faca deixava a câmera dar o coice do último tiro; não dá mais.
+- **M16A2 mais fácil** (arma padrão): dispersão 0,35° → 0,15° (por tiro
+  0,22 → 0,09, teto 4 → 1,8, volta 9 → 12°/s depois de 0,05 s), andando
+  ×2,2 → ×1,6, no zoom ×0,35 → ×0,2. Dano 30 → 27: ainda 4 no corpo e 2
+  na cabeça; contra lobo, 10% a menos. O recuo ficou como estava.
+- **Lobo na parede**: saltar dela olhando para ela e voltar fazia o lobo
+  escorregar até o chão (a mesma parede não regrudava). Agora ele regruda
+  quando desce até a altura de onde saltou — nunca acima, para a parede
+  não virar elevador.
+- **Rugido 20% mais rápido**: 2,0 s → 1,6 s (clipe a 2,875×).
+- **Escudo do Ligeiro 140 → 200**, o mesmo do Bruto: o lobo começa com
+  200 sem tatuagem, e o Ligeiro não perde nada.
+- Testes: `TiroNaCabeca` (cintura e zoom, a 8 e 25 m, humano e lobo),
+  `RegrudaNaParede` e 3 testes de unidade da cabeça.
+
 ### Partida autoritativa: o servidor move os corpos (13/11, primeira leva)
 - Modo novo da partida online (`ALCATEIA_NETCODE=autoritativo` no servidor
   de partida; o padrão continua o de hoje). Decisão 0011.

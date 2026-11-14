@@ -28,10 +28,9 @@ public partial class Weapon
 		Vector3 from = _head.GlobalPosition;
 		Vector3 to = from - _head.GlobalTransform.Basis.Z * KnifeRange;
 
-		Health hit = Raycast(from, to, out Vector3 impact, out Node collider);
+		Health hit = Trace(from, to, Heads(), out _, out _, out bool headshot);
 		if (hit == null) return;
 
-		bool headshot = IsHeadshot(collider, impact);
 		float damage = KnifeDamage * (headshot ? HeadshotMultiplier : 1f);
 
 		Damage(hit, damage, from, headshot);

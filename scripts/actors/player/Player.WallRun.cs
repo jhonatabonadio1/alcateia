@@ -96,9 +96,12 @@ public partial class Player
 	[Export] public float WallJumpKeepSpeed = 0.8f;
 
 	/// <summary>
-	/// Impede regrudar na MESMA parede sem tocar o chão, mas libera
-	/// saltar para outra. Sem isso a parede vira elevador; com isso
-	/// demais, o lobo não consegue encadear paredes opostas.
+	/// Impede regrudar na MESMA parede mais alto do que de onde saltou,
+	/// sem tocar o chão, e libera saltar para outra. Sem isso a parede
+	/// vira elevador; com isso demais, o lobo não consegue encadear
+	/// paredes opostas. Na mesma parede ele gruda de novo quando desce
+	/// até a altura do salto (pedido do Jhon, 14/11: saltar olhando para
+	/// a parede e voltar fazia ele escorregar até o chão).
 	///
 	/// Duas normais acima desta semelhança contam como a mesma parede.
 	/// </summary>
@@ -116,6 +119,7 @@ public partial class Player
 	private Vector3 _wallAlong;
 	private double _cornerGrace;
 	private Vector3 _lastWall;
+	private float _lastWallHeight;
 	private bool _clinging;
 	private double _wallCooldown;
 	private string _lastWallLog = "";
@@ -257,12 +261,15 @@ public partial class Player
 		}
 
 		// A mesma parede, sem ter tocado o chão, viraria elevador:
-		// sobe, salta, regruda mais alto, repete. Uma parede
-		// diferente é outra coisa — é a jogada de quicar entre as
-		// duas paredes de um corredor, e essa vale.
-		if (_lastWall != Vector3.Zero && normal.Dot(_lastWall) > SameWallThreshold)
+		// sobe, salta, regruda mais alto, repete. Então nela o lobo só
+		// regruda descendo até a altura de onde saltou — nunca acima.
+		// Uma parede diferente é outra coisa — é a jogada de quicar
+		// entre as duas paredes de um corredor, e essa vale de qualquer
+		// altura.
+		if (_lastWall != Vector3.Zero && normal.Dot(_lastWall) > SameWallThreshold
+			&& GlobalPosition.Y > _lastWallHeight)
 		{
-			WallLog("mesma parede — salte para outra ou toque o chão");
+			WallLog("mesma parede, acima do salto — desça até onde saltou, salte para outra ou toque o chão");
 			return false;
 		}
 
@@ -406,6 +413,7 @@ public partial class Player
 		_animator?.Jump();
 
 		_lastWall = _wallNormal;
+		_lastWallHeight = GlobalPosition.Y;
 
 		ReleaseWall();
 		_wallCooldown = WallRunCooldown;

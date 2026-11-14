@@ -14,6 +14,9 @@ Ponha aqui, com o que se sabe dele.
 | **Faca e granada** | Corrigido (13/11) com os modelos do Sketchfab na mão do braço da pistola. A faca agora usa o conjunto animado que o Jhon trouxe (golpes animados). Falta o Jhon conferir. |
 | **Glitches nos mapas** | Varridos os quatro (13/11) com `tools/mapas/conferir.py`: faces brigando, letreiros enterrados ou soltos, objetos flutuando na Polar — corrigidos. O conferidor só olha caixas retas: rampas, formas livres (trem, tanques, terreno) e os modelos prontos não são conferidos. Se ainda houver, falta print ou o lugar exato. |
 | **Glitches na troca de arma / braços reiniciando** | Corrigidos os que se acharam (tamanho e lugar dos braços, travada na primeira troca, sacar; o pulo do M16 parado e o recomeço ao perder o chão). Falta o Jhon conferir. |
+| **Tiro na cabeça sem dano / M16 difícil** (14/11) | Corrigido: o tiro saía 1° acima da cruz (o recuo subia a câmera antes) e a cabeça era a faixa de cima da cápsula. Agora o tiro sai de onde a cruz está e a cabeça é a do modelo. Falta o Jhon conferir. |
+| **Corpo do lobo fora da cápsula** (achado em 14/11) | O lobo anda curvado: a cabeça (já corrigida) e o pescoço ficam até meio metro à frente da cápsula, e tiro no pescoço e no peito curvado passa direto. Próximo passo: esferas do tronco seguindo os ossos, como a da cabeça. |
+| **SG-552 contra a M16 nova** (14/11) | A M16 ficou mais precisa que a SG-552 (dispersão 0,15° contra 0,25°), que custa 320 WP e era a "arma de controle". Falta o Jhon decidir se a SG sobe junto. |
 | **Personagens tremendo e piscando** | Corrigido (13/11): o desenho agora anda entre os passos da física (`VisualSmoothing`) e a borda vermelha saiu de cima da pele. Não deu para ver no Mac daqui: falta o Jhon conferir; se continuar, um vídeo curto mostra se é tremor de posição, de animação ou de sombra. |
 
 ## Pedido e ainda não feito

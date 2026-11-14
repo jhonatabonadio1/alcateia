@@ -67,7 +67,9 @@ public partial class Player
 	/// sozinho. Sem isso, atirar não tem peso nenhum.</summary>
 	private void OnWeaponFired()
 	{
-		if (_form.IsWolf) return;
+		// Só arma de fogo dá coice. A faca também avisa Fired, e chutava a
+		// câmera com o recuo do último tiro.
+		if (_form.IsWolf || _weapon.Held == null) return;
 
 		float kick = Mathf.DegToRad(_weapon.Recoil * RecoilScale);
 		float room = Mathf.DegToRad(RecoilMax) - _cameraKick;

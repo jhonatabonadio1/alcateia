@@ -29,7 +29,7 @@ inclusive em recuo (5 = quase sem coice). Nunca misturar a convenção.
 
 ```
 Custo WP                0 (conjunto padrão)
-Dano                    30          Headshot ×2.5 (75)
+Dano                    27          Headshot ×2.5 (67.5)
 RPM                     650         (0.092s entre tiros)
 Pente / Reserva         30 / 90
 Tiros para matar        4 corpo / 2 cabeça
@@ -39,10 +39,11 @@ Reload tática           2.30s
 Reload vazia            2.90s
 Draw / Holster          0.50s / 0.35s
 
-Dispersão base          0.35°
-Dispersão por tiro      +0.22°       Máxima 4.0°
-Recuperação             9.0°/s       (inicia 0.12s após o último tiro)
-Mult. movimento         2.2×         Mult. agachado 0.7×
+Dispersão base          0.15°
+Dispersão por tiro      +0.09°       Máxima 1.8°
+Recuperação             12.0°/s      (inicia 0.05s após o último tiro)
+Mult. movimento         1.6×         Mult. agachado 0.7×
+Na mira (zoom)          dispersão ×0.2
 
 Recoil vertical         1.00° tiros 1-4, depois 0.55°
 Recoil horizontal       ±0.18° alternado
@@ -53,7 +54,12 @@ Mult. velocidade        1.00
 Raio de ruído           45m
 Modos de tiro           automático
 ```
-Estrelas: Dano 2.5 · Pen 2.5 · Precisão 2.5 · Cadência 3.0 · Mob 2.5 · Recuo 2.5 · Alcance 3.0
+Estrelas: Dano 2.0 · Pen 2.5 · Precisão 3.5 · Cadência 3.0 · Mob 2.5 · Recuo 2.5 · Alcance 3.0
+
+*14/11: o Jhon achou a M16 difícil de usar sendo a arma padrão. Ficou mais
+precisa (a dispersão que ele afinou no editor), com um pouco menos de dano
+(30 → 27, ainda 4 no corpo e 2 na cabeça; contra lobo, 10% a menos) e a mira
+mais fechada (×0.35 → ×0.2). O recuo ficou como estava.*
 
 ## SG-552 — fuzil de controle
 *A única arma que não pune atirar em movimento. Padrão de recoil quase reto,

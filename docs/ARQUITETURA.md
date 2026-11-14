@@ -186,6 +186,7 @@ balanceamento contra bot deixa de valer contra gente.
   MOSTRA    │  ViewModel, WolfVisual, CharacterAnimator│   │ scripts/domain):     │
   E TOCA    │  WorldAudio, CombatantAudio              │   │ CombatRules,         │
             └──────────────────────────────────────────┘   │ GameRandom, WolfMoves│
+                                                           │ HeadHit              │
                                                            └──────────────────────┘
 
   SERVIÇOS ESTÁTICOS (qualquer um consulta):

@@ -79,8 +79,16 @@ public partial class Weapon
 
 		_cooldown = held.Interval;
 
-		// A dispersão deste tiro é a de antes dele; o tiro só piora o
-		// próximo. Primeiro tiro parado é sempre o mais preciso.
+		// A mira deste tiro é a de antes dele. O recuo sobe a câmera no
+		// sinal Fired (Player.OnWeaponFired), então ela tem de ser lida
+		// antes: lida depois, todo tiro saía 1° acima da cruz — a 15 m,
+		// 26 cm, por cima da cabeça de quem se mirou nela (bug do Jhon,
+		// 14/11: "mirei escopado na cabeça e não deu dano").
+		Vector3 from = _camera.GlobalPosition;
+		Basis aim = _camera.GlobalTransform.Basis;
+
+		// A dispersão deste tiro também é a de antes dele; o tiro só
+		// piora o próximo. Primeiro tiro parado é sempre o mais preciso.
 		float spread = SpreadNow(held);
 
 		_streak++;
@@ -99,9 +107,6 @@ public partial class Weapon
 
 		NoiseBus.Emit(_body.GlobalPosition, held.NoiseRadius, NoiseKind.Shot, _body);
 
-		Vector3 from = _camera.GlobalPosition;
-		Basis aim = _camera.GlobalTransform.Basis;
-
 		// Um raio por chumbo — um só nas armas que não são escopeta. O
 		// dano de todos os chumbos que acertaram o mesmo alvo é somado
 		// antes de aplicar, para o abate e o marcador saírem uma vez por
@@ -110,13 +115,14 @@ public partial class Weapon
 		Vector3 tracerEnd = from - aim.Z * held.Range;
 
 		int pellets = Mathf.Max(held.Pellets, 1);
+		List<Head> heads = Heads();
 
 		for (int i = 0; i < pellets; i++)
 		{
 			Vector3 direction = Scatter(aim, spread);
 			Vector3 to = from + direction * held.Range;
 
-			Health hit = Raycast(from, to, out Vector3 impact, out Node collider);
+			Health hit = Trace(from, to, heads, out Vector3 impact, out Node collider, out bool headshot);
 
 			// A linha para na parede em vez de atravessá-la.
 			if (i == 0) tracerEnd = impact;
@@ -126,8 +132,6 @@ public partial class Weapon
 					EmitSignal(SignalName.WorldHit, impact, _lastNormal, collider);
 				continue;
 			}
-
-			bool headshot = IsHeadshot(collider, impact);
 
 			float damage = CombatRules.FirearmDamage(
 				held.Damage, held.Falloff(from.DistanceTo(impact)), headshot, held.HeadshotMultiplier);

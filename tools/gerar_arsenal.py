@@ -25,15 +25,18 @@ MODES = {"Auto": 0, "Semi": 1, "Pump": 2, "Bolt": 3}
 WEAPONS = [
     dict(Id="m16a2", DisplayName="M16A2", Class="Rifle", WpCost=0,
          Description="Fuzil padrão. Referência do arsenal: nada excepcional, e esse é o ponto.",
-         Damage=30, HeadshotMultiplier=2.5, Rpm=650, Mode="Auto", Magazine=30, Reserve=90,
+         # 14/11: o Jhon achou difícil de usar. Mais precisa (a dispersão que
+         # ele afinou no editor), um pouco menos de dano, mira mais fechada.
+         # O recuo ficou como estava.
+         Damage=27, HeadshotMultiplier=2.5, Rpm=650, Mode="Auto", Magazine=30, Reserve=90,
          ReloadTactical=2.3, ReloadEmpty=2.9, DrawTime=0.5,
-         SpreadBase=0.35, SpreadPerShot=0.22, SpreadMax=4.0, SpreadRecovery=9.0,
-         MoveSpreadMultiplier=2.2, CrouchSpreadMultiplier=0.7,
+         SpreadBase=0.15, SpreadPerShot=0.09, SpreadMax=1.8, SpreadRecovery=12.0, SpreadDelay=0.05,
+         MoveSpreadMultiplier=1.6, CrouchSpreadMultiplier=0.7,
          RecoilVertical=1.0, RecoilVerticalLate=0.55, RecoilEarlyShots=4,
          RecoilHorizontal=0.18, RecoilRecovery=7.0,
          Range=150, FalloffStart=35, FalloffEnd=60, FalloffMin=0.7,
-         SpeedMultiplier=1.0, NoiseRadius=45, AimFov=55, AimSpreadMultiplier=0.35, AimSpeedMultiplier=0.7,
-         stars=(2.5, 2.5, 2.5, 3.0, 2.5, 2.5, 3.0)),
+         SpeedMultiplier=1.0, NoiseRadius=45, AimFov=55, AimSpreadMultiplier=0.2, AimSpeedMultiplier=0.7,
+         stars=(2.0, 2.5, 3.5, 3.0, 2.5, 2.5, 3.0)),
     dict(Id="sg552", DisplayName="SG-552", Class="Rifle", WpCost=320,
          Description="Fuzil de controle. A única arma que não pune atirar em movimento; recuo quase reto, decorável. Pior arma do arsenal contra lobo em espaço fechado.",
          Damage=26, HeadshotMultiplier=2.5, Rpm=550, Mode="Auto", Magazine=30, Reserve=90,
