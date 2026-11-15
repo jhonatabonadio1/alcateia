@@ -60,21 +60,22 @@ public partial class WolfVisual
 	/// 1× até 7 m/s, e o corpo andava mais do dobro do que as pernas. O
 	/// limite do que fica natural é a passada: correr além de ~1,6× fica
 	/// corrido, e por isso o lobo anda a 3,6 m/s (decisão do Jhon).</summary>
-	[Export] public float WalkClipSpeed = 1.34f;
+	[Export] public float WalkClipSpeed = 1.36f;
 	[Export] public float RunClipSpeed = 2.42f;
 
-	/// <summary>A passada do "Running Crawl" no chão, em m/s: o andar de
-	/// quatro, agachado (e a corrida de quatro, quando falta o clipe dela).
-	/// Medida no esqueleto: a 2,9 a mão de apoio patina 0,55 m/s
-	/// engatinhando; com a passada da parede (2,3), que era a usada, 0,64.</summary>
-	[Export] public float CrawlClipSpeed = 2.9f;
+	/// <summary>A passada do andar agachado, em m/s (o "Crouch_Walk" do
+	/// Jhon, 1,43 s por ciclo; sem ele, o "Running Crawl" do Mixamo, que
+	/// pedia 2,9). O pé de apoio mede 1,36 m/s no clipe; varrida de 0,8 a
+	/// 2,9 no teste de patinação: o mínimo, 0,30 m/s, fica em 1,4.</summary>
+	[Export] public float CrawlClipSpeed = 1.4f;
 
-	/// <summary>A passada da corrida de quatro (o "Quadruped Run" do
-	/// Jhon, sprint.fbx, versão 3 de 15/11, ciclo de 0,867 s), em m/s: a
-	/// velocidade que menos patina o pé no jogo (varrida de 3,6 a 5,6 m/s no
-	/// teste de patinação: o mínimo, 1,4 m/s, fica em 4,6). A 6 m/s o
-	/// clipe toca a 1,3×.</summary>
-	[Export] public float SprintClipSpeed = 4.6f;
+	/// <summary>A passada da corrida de quatro (o "Run_Quad" do Jhon,
+	/// lobo_anim.glb, ciclo de 0,533 s), em m/s: a velocidade que menos
+	/// patina o pé no jogo. A regra é <c>SprintClipSpeed = velocidade do pé
+	/// no clipe × SprintAnimScale</c>: o pé do clipe anda a 5,4 m/s no
+	/// modelo, e com a escala 0,5 da cena o mínimo fica em 2,7 (0,19 m/s de
+	/// patinação a 6 m/s; 0,45 em 2,5 e 0,47 em 2,9). Com escala 1, 5,4.</summary>
+	[Export] public float SprintClipSpeed = 2.7f;
 
 	/// <summary>
 	/// Quanto a animação de andar corre em relação ao corpo. 1 = acompanha

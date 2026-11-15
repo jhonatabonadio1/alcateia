@@ -47,13 +47,17 @@ public sealed class WolfSprintTest : RegressionTest
 		// A escala da animação: metade deixa a animação na metade do ritmo,
 		// e o corpo anda igual.
 		var visual = p.GetNode<WolfVisual>("WolfVisual");
+		float sceneScale = visual.SprintAnimScale;
+		visual.SprintAnimScale = 1f;
+		await b.PhysicsFrame();
+		await b.PhysicsFrame();
 		float normal = (float)tree.Get("parameters/Machine/Locomotion/SprintSpeed/scale");
 		visual.SprintAnimScale = 0.5f;
 		await b.PhysicsFrame();
 		await b.PhysicsFrame();
 		b.Near(normal * 0.5, (float)tree.Get("parameters/Machine/Locomotion/SprintSpeed/scale"), 0.03, "SprintAnimScale 0,5: animação na metade do ritmo");
 		b.Near(run * p.WolfSprintFactor, RegressionBench.Flat(await b.Displacement(p, 60)), 0.04, "e o corpo corre igual (m/s)");
-		visual.SprintAnimScale = 1f;
+		visual.SprintAnimScale = sceneScale;
 
 		// Agachar corta; soltar o W também.
 		RegressionBench.Press("crouch");

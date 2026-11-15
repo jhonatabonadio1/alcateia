@@ -35,11 +35,13 @@ public partial class BodyNoiseProfile : Resource
 	/// Os números saem dos clipes (velocidade em que o pé não patina ×
 	/// duração do ciclo ÷ 2 pisadas) e o teste PassoNoRitmo confere:
 	/// humano correndo, 3,24 m/s × 0,733 s ÷ 2; lobo, 2,42 × 0,867 ÷ 2;
-	/// corrida de quatro (Quadruped Run v3), 4,6 × 0,867 ÷ 2. Trocou o clipe ou a velocidade
-	/// de andar, refaça a conta.
+	/// corrida de quatro (Run_Quad do Jhon), 2,7 × 0,533 ÷ 0,5 de escala
+	/// da animação, com uma batida por ciclo: o som sai quando mãos e pés se
+	/// juntam (pedido do Jhon). Trocou o clipe ou a velocidade de andar,
+	/// refaça a conta.
 	/// </summary>
 	[ExportGroup("Passada")]
 	[Export] public float StrideHuman = 1.19f;
 	[Export] public float StrideWolf = 1.05f;
-	[Export] public float StrideWolfSprint = 1.99f;
+	[Export] public float StrideWolfSprint = 2.88f;
 }

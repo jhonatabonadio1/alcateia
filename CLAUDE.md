@@ -268,6 +268,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `ai/BotDifficulty.cs` | Um nível de dificuldade como dado (`resources/bots/*.tres`) |
 | `visual/human/CharacterAnimator*.cs` | O corpo humano animado: `.Model` e `.Tree` montam uma vez (clipes, modelo do time, árvore); `.Locomotion`, `.Actions` (recarga, granada, reação) e `.Death` tocam por quadro |
 | `visual/wolf/WolfVisual*.cs` | O corpo do lobo: `.Model` e `.Tree` montam; `.Locomotion`, `.Air` (parede, pulo, bote) e `.Moves` (golpes, rugido) tocam |
+| `visual/wolf/WolfOwnClips.cs` | As animações do Jhon (`lobo_anim.glb`): abre o arquivo e encaixa cada clipe no corpo (eixos, quadril) |
 | `visual/anim/AnimationKit.cs` | O que os dois corpos e o lobby dividem: clipe do Mixamo, raiz parada, quadril, esqueleto, filtro do tronco, transições |
 | `core/Match.cs` | Fases da partida, placar, MVP, pagamento de XP e Presas no fim |
 | `core/Saida.cs` | Autoload: esvazia o coletor do C# na saída, para o jogo fechar sem abortar |

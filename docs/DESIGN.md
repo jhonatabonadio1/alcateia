@@ -543,7 +543,8 @@ opção de quem pulou. A condição de estar no ar amarra o golpe mais
 forte do lobo ao salto, que é a jogada que o jogo quer premiar.
 
 **O lobo é um corpo inteiro, em terceira pessoa** (`WolfVisual`, com o
-Mutant do Mixamo — veja "Personagens"). O dono vê o próprio lobo e os
+lobo tático do Meshy, animado com o Creature Pack do Mixamo — veja
+"Personagens"). O dono vê o próprio lobo e os
 outros reconhecem a silhueta de longe: curvado, largo, braços
 compridos. Numa luta rápida ninguém lê textura — o que separa um lobo
 de um humano a trinta metros é o contorno.
@@ -1468,15 +1469,18 @@ velocidade do corpo, que já é zero em 0,08 s — e as pernas se juntam em
 um mínimo de 0,6×: o lobo corria no lugar mais um quarto de segundo, os
 pés andando um metro com o corpo parado.
 
-**Agachado** o lobo encolhe, parado, no fim da aterrissagem do "jump
-attack" (1,95 a 2,25 s, indo e voltando): 0,98 m do chão ao topo da
-cabeça, a altura da cápsula agachada (1,0 m). Andando agachado ele
-**engatinha**: o Running Crawl da parede, no chão, na velocidade do
-corpo (1,75 m/s toca a 0,76×), 10 cm mais alto para as mãos não
-entrarem no chão (`CrawlLift`). **Na corrida de quatro** (W duas vezes)
-toca a corrida de quatro patas do Jhon (`sprint.fbx`, o "Quadruped Run"
-do Mixamo editado por ele, 15/11), também na velocidade do corpo;
-antes era o mesmo Running Crawl, mais rápido. Antes o lobo agachado continuava de pé,
+**Desde 15/11 o parado, o agachado, o engatinhar e a corrida de quatro
+são animações do Jhon** (`lobo_anim.glb`, feitas no lobo do Meshy:
+`Idle`, `Walk`, `Crouch_Idle`, `Crouch_Walk`, `Run_Quad`,
+`Special_Attack`); o resto segue do Mixamo. **Agachado** o lobo toca o
+`Crouch_Idle` (topo da cabeça a 1,25 m do chão; a cápsula agachada tem
+1,0 m, então a cabeça sai 25 cm acima dela — o tiro na cabeça segue o
+modelo). Andando agachado ele **engatinha** no `Crouch_Walk`, na
+velocidade do corpo (`CrawlClipSpeed` 1,4 m/s). **Na corrida de quatro**
+(W duas vezes) toca o `Run_Quad` (ciclo de 0,533 s, uma batida por
+ciclo quando mãos e pés se juntam), também na velocidade do corpo. Com
+o Mutant do Mixamo, o agachado era o fim do "jump attack" e o engatinhar
+o Running Crawl. Antes o lobo agachado continuava de pé,
 a cabeça a 1,7 m — fora da cápsula, e o tiro passava por cima do que se
 via. Testado e descartado: misturar a pose agachada no andar (o pé de
 apoio patinava 0,9 a 1,4 m/s em qualquer passada) e pôr só no tronco (a

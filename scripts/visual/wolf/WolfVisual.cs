@@ -122,7 +122,9 @@ public partial class WolfVisual : Node3D
 
 		// O lobo da cena fica no pé da cápsula, que encolhe ao agachar.
 		float feet = _player != null ? _player.FeetOffset : -0.875f;
-		Position = new Vector3(0, feet + CrawlLift * _crawl * _moveMix, 0);
+		// O "Running Crawl" apoia as mãos no chão com a mão grande do corpo:
+		// sobe CrawlLift. O andar agachado do Jhon tem os pés no chão.
+		Position = new Vector3(0, feet + (Has("crawl") ? 0f : CrawlLift) * _crawl * _moveMix, 0);
 
 		if (_dead)
 		{

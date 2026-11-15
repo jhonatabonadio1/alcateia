@@ -37,7 +37,10 @@ o renascer do bot (6 s).
   a parecer apressada; o pé não patina, mas a perna gira rápido. As
   passadas (`WalkClipSpeed`, `RunClipSpeed`, `WallClipSpeed`, `CrawlClipSpeed`, `SprintClipSpeed`,
   `WalkClip`, `RunClip`...) são medidas no esqueleto: não são botão de
-  ajuste.
+  ajuste. Exceção: a da corrida de quatro segue a escala da animação
+  (`SprintAnimScale`, que o `player.tscn` guarda): a regra é
+  `SprintClipSpeed` = velocidade do pé no clipe (5,4 m/s no lobo novo) ×
+  `SprintAnimScale`; com 0,5 dá 2,7, com 0,75, 4,05.
 - **Alturas presas ao mapa.** O humano pula 0,99 m e sobe caixote
   (0,8 m), não contêiner (2,2 m). O Bruto precisa de `JumpMultiplier`
   ≥ 1,2 para chegar ao contêiner a partir do caixote. Mexeu no pulo,
@@ -448,7 +451,7 @@ Abra no Inspector e mude ali — vale para os dois.
 | `StepWolf` | 20 |
 | `Land` | 17 |
 | `Howl` | 45 (já no começo do rugido e a cada 0,5 s) |
-| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,05 / 1,99 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça |
+| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,05 / 2,88 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça. A corrida de quatro dá uma batida por ciclo (mãos e pés juntos): `SprintClipSpeed × ciclo ÷ SprintAnimScale` |
 | `NoiseRadius` da arma | 30 a 60 (seção 7) |
 
 O som do lugar fica no mapa (`scripts/meta/Maps.cs`):
@@ -478,7 +481,7 @@ Mexa com cuidado: muitos destes são medidas.
 
 | Campo | Valor | O que faz |
 |---|---|---|
-| `ModelScale` | 1,1 | Tamanho do Mutant (o passo dos golpes acompanha) |
+| `ModelScale` | 1,1 | Tamanho do lobo (o passo dos golpes acompanha; o modelo tem 1,8 m, 1,98 m no jogo) |
 | `WalkSpeed` / `RunSpeed` | 2,0 / 2,6 m/s | Abaixo só anda, acima só corre |
 | `StartBlend` / `StopBlend` | 0,12 / 0,22 s | Sair do parado e voltar a ele |
 | `TurnRate` | 540°/s | Virar para o lado em que anda |

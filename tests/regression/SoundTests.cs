@@ -54,9 +54,12 @@ public sealed class StepRhythmTest : RegressionTest
 			// passada dele, então a distância por pisada é fixa.
 			var visual = p.GetNode<WolfVisual>("WolfVisual");
 			float run = ClipLength("res://assets/characters/wolf/run.fbx");
-			float sprint = ClipLength("res://assets/characters/wolf/sprint.fbx");
+			float sprint = WolfOwnClips.Length("sprint");
+			if (sprint <= 0f) sprint = ClipLength("res://assets/characters/wolf/sprint.fbx");
 			b.Near(visual.RunClipSpeed * run / 2, profile.StrideWolf, 0.04, "passada do lobo (m)");
-			b.Near(visual.SprintClipSpeed * sprint / 2, profile.StrideWolfSprint, 0.04, "passada da corrida de quatro (m)");
+			// De quatro, uma batida por ciclo (mãos e pés juntos); o clipe toca
+			// na velocidade do corpo × SprintAnimScale ÷ SprintClipSpeed.
+			b.Near(visual.SprintClipSpeed * sprint / visual.SprintAnimScale, profile.StrideWolfSprint, 0.04, "passada da corrida de quatro (m)");
 
 			// E correndo de lobo, o que se ouve bate com a conta.
 			await b.BecomeWolf();

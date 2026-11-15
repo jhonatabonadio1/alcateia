@@ -67,9 +67,12 @@ public partial class WolfVisual
 			locoSpeed.AddNode("CrouchIdle", Clip("crouch"), new Vector2(0, 100));
 			locoSpeed.ConnectNode("IdleCrouch", 1, "CrouchIdle");
 		}
-		if (Has("wallrun"))
+		// O engatinhar é o andar agachado do Jhon (crawl); sem ele, o
+		// "Running Crawl" da parede.
+		string crawlClip = Has("crawl") ? "crawl" : "wallrun";
+		if (Has(crawlClip))
 		{
-			locoSpeed.AddNode("Crawl", Clip("wallrun"), new Vector2(0, 300));
+			locoSpeed.AddNode("Crawl", Clip(crawlClip), new Vector2(0, 300));
 			locoSpeed.AddNode("CrawlSpeed", new AnimationNodeTimeScale(), new Vector2(200, 300));
 			locoSpeed.ConnectNode("CrawlSpeed", 0, "Crawl");
 			locoSpeed.ConnectNode("GaitCrouch", 1, "CrawlSpeed");

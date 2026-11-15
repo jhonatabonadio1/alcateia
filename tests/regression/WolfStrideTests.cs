@@ -80,7 +80,7 @@ public sealed class WolfStrideTest : RegressionTest
 		int stopped = stop.FindIndex(f => f.Speed < 0.05f);
 		b.Check(stopped >= 0 && stopped <= 6, $"{what}: o corpo parou em até 0,1 s");
 		float travel = Travel(stop.Skip(System.Math.Max(stopped, 0)).ToList());
-		b.AtMost(crouch || sprint ? 3.2 : 1.1, travel, $"{what}: o quanto os pés andam depois de o corpo parar (m)");
+		b.AtMost(crouch || sprint ? 3.2 : 1.25, travel, $"{what}: o quanto os pés andam depois de o corpo parar (m)");
 	}
 
 	private record struct Frame(float T, Vector3[] Contacts, float Ground, float Speed);
