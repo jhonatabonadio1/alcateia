@@ -1375,8 +1375,10 @@ segurava. Arma nova precisa de um caso em `WeaponModel.Build`; sem
 ele, aparece um fuzil genérico.
 
 **O AR-15 saca e guarda animado.** É o único fuzil com saque animado
-(o Jhon animou para isso): ao trocar para outra arma ele desce antes
-(0,16 s) e a outra sobe; ao voltar, ele sobe pela animação. As outras
+(o Jhon animou para isso): ao trocar para outra arma ele é guardado
+antes, no tempo da animação do Jhon (0,5 s, pedido dele em 15/11), e só
+então a outra sobe e, 0,2 s depois, atira; ao voltar, ele sobe pela
+animação. Trocar a partir do AR-15 leva 0,5 s a mais que das outras. As outras
 armas principais continuam subindo de baixo (decisão de 13/11).
 
 **Recarga animada.** Em primeira pessoa a arma inclina, o carregador

@@ -227,7 +227,8 @@ public partial class ViewModel
 	/// atira 0,2 s depois da troca, e o saque não pode ficar para trás.</summary>
 	[Export] public float RigDrawMax = 0.4f;
 
-	/// <summary>Quanto dura o guardar, antes de a outra arma subir.</summary>
+	/// <summary>Quanto dura o guardar, antes de a outra arma subir, quando
+	/// a arma não diz o dela (<see cref="WeaponDefinition.HolsterTime"/>).</summary>
 	[Export] public float RigHolsterTime = 0.16f;
 
 	/// <summary>O coice de código deste conjunto e se ele balança no passo
@@ -326,9 +327,12 @@ public partial class ViewModel
 	{
 		if (!HasRig || !_rigClips.ContainsKey("guardar") || _holster > 0f) return _holster > 0f;
 		_codeReload = false;
-		PlayRig("guardar", RigHolsterTime, 0.05);
-		_rigBusy = RigHolsterTime;
-		_holster = RigHolsterTime;
+		// O tempo é o da arma, o mesmo que ela espera para a próxima atirar.
+		float holster = Arsenal.Get(_heldId)?.HolsterTime ?? 0f;
+		if (holster <= 0f) holster = RigHolsterTime;
+		PlayRig("guardar", holster, 0.05);
+		_rigBusy = holster;
+		_holster = holster;
 		return true;
 	}
 

@@ -34,6 +34,10 @@ outra cara. A M16A2 continua no arsenal, agora à venda.
 O silenciador ainda é só visual: o som e o raio de ruído para os bots
 são os da M16A2.
 
+Guardar leva **0,5 s** (`HolsterTime`, o tempo da animação do Jhon): ao
+trocar do AR-15 para outra arma, a outra só sobe depois disso e atira
+0,2 s depois de subir.
+
 ## M16A2 — fuzil padrão até 15/11
 *Referência do arsenal. Nada excepcional, e esse é o ponto.* Saiu do
 conjunto padrão quando entrou o AR-15; à venda na loja (raridade 1, a

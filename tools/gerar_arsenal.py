@@ -30,6 +30,9 @@ WEAPONS = [
          Description="Fuzil padrão. Referência do arsenal: nada excepcional, e esse é o ponto.",
          Damage=27, HeadshotMultiplier=2.5, Rpm=650, Mode="Auto", Magazine=30, Reserve=90,
          ReloadTactical=2.3, ReloadEmpty=2.9, DrawTime=0.5,
+         # O guardar do Jhon, no tempo dele (15/11): 15 quadros a 30 por
+         # segundo. Igual ao "guardar" do ar15 em assets/armas/fp/bracos.json.
+         HolsterTime=0.5,
          SpreadBase=0.15, SpreadPerShot=0.09, SpreadMax=1.8, SpreadRecovery=12.0, SpreadDelay=0.05,
          MoveSpreadMultiplier=1.6, CrouchSpreadMultiplier=0.7,
          RecoilVertical=1.0, RecoilVerticalLate=0.55, RecoilEarlyShots=4,

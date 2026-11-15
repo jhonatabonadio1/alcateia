@@ -22,8 +22,10 @@
   a mão dos outros e o chão (`assets/armas/ar15/`); `tools/gerar_armas.py`
   passou a preservar modelos de artista.
 - Primeira pessoa (`ViewModel`): o AR-15 **saca animado** (até 0,4 s) e
-  **guarda animado** ao trocar para outra arma (0,16 s, antes de a outra
-  subir). Nada de código por cima da animação do Jhon (`"fiel"` na
+  **guarda animado** ao trocar para outra arma, no tempo da animação do
+  Jhon (0,5 s, pedido dele): a outra só sobe depois, e atira 0,2 s depois
+  de subir. O tempo é da arma (`WeaponDefinition.HolsterTime`, o mesmo
+  no servidor), igual ao do `guardar` na ficha. Nada de código por cima da animação do Jhon (`"fiel"` na
   ficha): sem balanço do passo, atraso ao olhar, coice nem afundar no
   pouso — andar, parado e tiro são exatamente os dele. O pacote não tem recarga: a do AR-15
   é de código (a arma inclina, o carregador cai e volta, o ferrolho é

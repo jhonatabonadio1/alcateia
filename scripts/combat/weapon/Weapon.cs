@@ -304,12 +304,15 @@ public partial class Weapon : Node3D
 	/// tempo da troca e avisa quem desenha.</summary>
 	private void TakeInHand(Slot slot)
 	{
+		// A arma que se guarda com animação (o AR-15) leva o tempo dela
+		// antes de a próxima subir; a próxima atira 0,2 s depois de subir.
+		float holster = !_form.IsWolf && slot != HumanSlot ? Held?.HolsterTime ?? 0f : 0f;
 		HumanSlot = slot;
 
 		if (_form.IsWolf)
 			_form.ToggleForm();
 
-		_cooldown = 0.2f;
+		_cooldown = holster + 0.2f;
 		EmitSignal(SignalName.SlotChanged, (int)slot);
 	}
 

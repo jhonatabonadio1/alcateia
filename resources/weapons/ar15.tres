@@ -18,6 +18,7 @@ Reserve = 90
 ReloadTactical = 2.3
 ReloadEmpty = 2.9
 DrawTime = 0.5
+HolsterTime = 0.5
 SpreadBase = 0.15
 SpreadPerShot = 0.09
 SpreadMax = 1.8

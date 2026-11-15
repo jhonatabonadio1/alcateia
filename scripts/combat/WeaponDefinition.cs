@@ -80,6 +80,11 @@ public partial class WeaponDefinition : Resource
 
 	[Export] public float DrawTime = 0.5f;
 
+	/// <summary>Quanto a arma leva para ser guardada, com animação, antes de
+	/// a próxima subir (o AR-15: o guardar do Jhon, no tempo dele). A
+	/// próxima só atira depois disso. 0: troca na hora.</summary>
+	[Export] public float HolsterTime;
+
 	[ExportGroup("Dispersão (graus de meio-ângulo)")]
 	[Export] public float SpreadBase = 0.35f;
 	[Export] public float SpreadPerShot = 0.22f;

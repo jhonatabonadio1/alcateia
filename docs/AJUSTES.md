@@ -306,6 +306,7 @@ ossos `mixamorig_Head` e `mixamorig_HeadTop_End`, com raio de
 | `Magazine` | 30 | 30 | 30 | 25 | 8 | 15 |
 | `ReloadTactical` / `Empty` (s) | 2,3 / 2,9 | 2,5 / 3,3 | 2,6 / 3,2 | 2,1 / 2,7 | 0,55 cartucho | 1,9 / 2,4 |
 | `DrawTime` (s) | 0,5 | 0,6 | 0,55 | 0,35 | 0,6 | 0,3 |
+| `HolsterTime` (s) | 0 (AR-15: 0,5) | 0 | 0 | 0 | 0 | 0 |
 | `SpreadBase` / `PerShot` / `Max` (°) | 0,15 / 0,09 / 1,8 | 0,45 / 0,4 / 6,5 | 0,25 / 0,15 / 2,8 | 0,55 / 0,18 / 3,5 | 4,5 / 0 / 4,5 | 0,5 / 0,3 / 4 |
 | `SpreadRecovery` (°/s) | 12 (espera 0,05 s) | 7 | 11 | 12 | 99 | 9 |
 | `MoveSpreadMultiplier` | 1,6 | 3,0 | 1,5 | 1,3 | 1,0 | 1,5 |
@@ -506,7 +507,8 @@ abertura para a qual os conjuntos foram animados; a ficha
 da câmera do Jhon: 95° na horizontal, 63,09° na vertical em 16:9), `RigScale` 0,45 (o conjunto encolhido na direção do
 olho), `RigKick` 0,3, `RigDrawMax` 0,4 s (o saque animado mais longo:
 a arma atira 0,2 s depois da troca), `RigHolsterTime` 0,16 s (quanto o
-guardar do AR-15 dura antes de a outra arma subir). Saque animado na
+guardar dura quando a arma não diz o dela; o AR-15 diz:
+`HolsterTime`, na seção 7). Saque animado na
 arma principal só com `"sacar": true` na ficha (o AR-15). Com `"fiel": true`
 (o AR-15, pedido do Jhon) o conjunto toca só a animação dele: sem balanço
 do passo, atraso ao olhar, coice nem afundar no pouso de código. A recarga de

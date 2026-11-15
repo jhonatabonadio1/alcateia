@@ -214,12 +214,24 @@ public sealed class Ar15ViewModelTest : RegressionTest
 		await b.Seconds(0.7);
 		b.Check(view.RigAnimation == "parado", $"depois do saque, parado (tocando: {view.RigAnimation})");
 
-		// Guarda antes de trocar: o AR-15 continua na mão um instante.
+		// Guarda antes de trocar, no tempo da animação do Jhon (pedido dele,
+		// 15/11): o AR-15 continua na mão, e a pistola não atira até subir.
+		float holster = Arsenal.Get("ar15").HolsterTime;
+		b.Near(AnimationLength("ar15", "guardar"), holster, 0.001, "o tempo de guardar da arma é o da animação (s)");
 		b.Weapon.SelectSlot(Slot.Secondary);
 		await b.Frames(3);
 		b.Check(view.Held?.Name == "ar15" && view.RigAnimation == "guardar", $"ao trocar, o AR-15 guarda primeiro (tocando: {view.RigAnimation})");
+		await b.Seconds(holster - 0.15);
+		b.Check(view.Held?.Name == "ar15", $"guardando ainda, o AR-15 na mão (na mão: {view.Held?.Name})");
+		int ammo = b.Weapon.AmmoInMag;
+		b.Weapon.TryAttack();
+		b.Check(b.Weapon.AmmoInMag == ammo, "enquanto o AR-15 é guardado, a pistola não atira");
 		await b.Seconds(0.3);
 		b.Check(view.Held?.Name == "m9", $"guardado, a pistola sobe (na mão: {view.Held?.Name})");
+		await b.Seconds(0.25);
+		b.Weapon.TryAttack();
+		b.Check(b.Weapon.AmmoInMag == ammo - 1, "e atira 0,2 s depois de subir");
+		await b.Seconds(0.3);
 
 		// De volta ao AR-15, e uma recarga.
 		b.Weapon.SelectSlot(Slot.Primary);
@@ -258,5 +270,13 @@ public sealed class Ar15ViewModelTest : RegressionTest
 		b.AtMost(0.005, Mag().DistanceTo(rest), "terminada a recarga, o carregador volta ao lugar (m)");
 		b.Check(clip == null || clip.Visible, "e aparece de novo");
 		b.Check(view.RigAnimation == "parado", $"e os braços voltam ao parado (tocando: {view.RigAnimation})");
+	}
+
+	/// <summary>A duração de uma animação do conjunto, na ficha bracos.json.</summary>
+	private static float AnimationLength(string rig, string animation)
+	{
+		var sheet = Json.ParseString(FileAccess.GetFileAsString("res://assets/armas/fp/bracos.json")).AsGodotDictionary();
+		var a = sheet[rig].AsGodotDictionary()["animacoes"].AsGodotDictionary()[animation].AsGodotDictionary();
+		return (float)(a["ate"].AsDouble() - a["de"].AsDouble());
 	}
 }

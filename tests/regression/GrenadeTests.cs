@@ -15,7 +15,9 @@ public sealed class GrenadeRangeTest : RegressionTest
 		await b.Place(new Vector3(-15, 1, 13), -90f);
 		b.Weapon.Equip(b.Weapon.PrimaryDef, b.Weapon.SecondaryDef, 2);
 		await b.Tap("slot_5");
-		await b.Seconds(0.6);
+		// Da arma principal para a granada: o tempo de guardá-la (o AR-15
+		// guarda no tempo da animação do Jhon) e os 0,2 s da troca.
+		await b.Seconds(0.6 + b.Weapon.PrimaryDef.HolsterTime);
 
 		RegressionBench.Press("attack");
 		await b.Seconds(1.2);
