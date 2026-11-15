@@ -74,8 +74,21 @@ public partial class WolfVisual
 			locoSpeed.ConnectNode("CrawlSpeed", 0, "Crawl");
 			locoSpeed.ConnectNode("GaitCrouch", 1, "CrawlSpeed");
 		}
+		// Corrida de quatro (W duas vezes): o clipe dela por cima de tudo,
+		// na velocidade do corpo. Sem ele, o "Running Crawl" de antes.
+		string moving = "GaitCrouch";
+		if (Has("sprint"))
+		{
+			locoSpeed.AddNode("Sprint", Clip("sprint"), new Vector2(0, 400));
+			locoSpeed.AddNode("SprintSpeed", new AnimationNodeTimeScale(), new Vector2(200, 400));
+			locoSpeed.AddNode("GaitSprint", new AnimationNodeBlend2(), new Vector2(500, 300));
+			locoSpeed.ConnectNode("SprintSpeed", 0, "Sprint");
+			locoSpeed.ConnectNode("GaitSprint", 0, "GaitCrouch");
+			locoSpeed.ConnectNode("GaitSprint", 1, "SprintSpeed");
+			moving = "GaitSprint";
+		}
 		locoSpeed.ConnectNode("Mix", 0, "IdleCrouch");
-		locoSpeed.ConnectNode("Mix", 1, "GaitCrouch");
+		locoSpeed.ConnectNode("Mix", 1, moving);
 		locoSpeed.ConnectNode("output", 0, "Mix");
 
 		var machine = new AnimationNodeStateMachine();

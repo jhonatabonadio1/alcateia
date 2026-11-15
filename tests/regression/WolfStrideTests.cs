@@ -10,8 +10,9 @@ using System.Threading.Tasks;
 /// Medido no esqueleto do WolfVisual: o pé (ou a mão, engatinhando) mais
 /// baixo, enquanto está no chão, não deveria andar. Os limites ficam um
 /// pouco acima do medido na aprovação (de frente 0,73 m/s, de lado 0,85,
-/// para trás 0,72, engatinhando 0,55, correndo de quatro 1,46 — ~29% da velocidade,
-/// o "Running Crawl" rola as mãos).
+/// para trás 0,72, engatinhando 0,55; correndo de quatro, no "Quadruped
+/// Run" desde 15/11, 2,3 — ~38% da velocidade: no galope a pata rola e
+/// fica pouco no chão).
 /// </summary>
 public sealed class WolfStrideTest : RegressionTest
 {
@@ -42,7 +43,7 @@ public sealed class WolfStrideTest : RegressionTest
 		await Phase(b, "para trás", 90f, 0.95, "move_back");
 		await Phase(b, "na diagonal", -45f, 1.1, "move_forward", "move_right");
 		await Phase(b, "engatinhando", -90f, 0.9, "move_forward", "crouch");
-		await Phase(b, "de quatro", -90f, 1.6, "move_forward", "sprint");
+		await Phase(b, "de quatro", -90f, 2.6, "move_forward", "sprint");
 	}
 
 	private async Task Phase(RegressionBench b, string what, float yaw, double slideLimit, params string[] keys)

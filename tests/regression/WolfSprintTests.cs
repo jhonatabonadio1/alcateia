@@ -33,23 +33,25 @@ public sealed class WolfSprintTest : RegressionTest
 		b.Near(run, RegressionBench.Flat(await b.Displacement(p, 60)), 0.03, "corrida em pé (m/s)");
 		RegressionBench.ReleaseAll();
 
-		// Dois toques: de quatro, 30% mais rápido, no clipe de quatro patas.
+		// Dois toques: de quatro, mais rápido, no clipe da corrida de quatro
+		// (o "Quadruped Run" do Jhon, 15/11).
 		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.6);
 		await DoubleTap(b);
 		b.Check(p.IsSprinting, "dois toques: corre de quatro");
 		await b.Seconds(0.6);
 		b.Near(run * p.WolfSprintFactor, RegressionBench.Flat(await b.Displacement(p, 60)), 0.04, "corrida de quatro (m/s)");
 		var tree = p.GetNode("WolfVisual").FindChildren("*", nameof(AnimationTree), true, false)[0] as AnimationTree;
-		b.Near(1, (float)tree.Get("parameters/Machine/Locomotion/GaitCrouch/blend_amount"), 0.01, "toca o clipe de quatro patas");
+		b.Near(1, (float)tree.Get("parameters/Machine/Locomotion/GaitSprint/blend_amount"), 0.01, "toca o clipe da corrida de quatro");
+		b.Near(0, (float)tree.Get("parameters/Machine/Locomotion/GaitCrouch/blend_amount"), 0.01, "e não o de engatinhar");
 
 		// A escala da animação: metade deixa a animação na metade do ritmo,
 		// e o corpo anda igual.
 		var visual = p.GetNode<WolfVisual>("WolfVisual");
-		float normal = (float)tree.Get("parameters/Machine/Locomotion/CrawlSpeed/scale");
+		float normal = (float)tree.Get("parameters/Machine/Locomotion/SprintSpeed/scale");
 		visual.SprintAnimScale = 0.5f;
 		await b.PhysicsFrame();
 		await b.PhysicsFrame();
-		b.Near(normal * 0.5, (float)tree.Get("parameters/Machine/Locomotion/CrawlSpeed/scale"), 0.03, "SprintAnimScale 0,5: animação na metade do ritmo");
+		b.Near(normal * 0.5, (float)tree.Get("parameters/Machine/Locomotion/SprintSpeed/scale"), 0.03, "SprintAnimScale 0,5: animação na metade do ritmo");
 		b.Near(run * p.WolfSprintFactor, RegressionBench.Flat(await b.Displacement(p, 60)), 0.04, "e o corpo corre igual (m/s)");
 		visual.SprintAnimScale = 1f;
 

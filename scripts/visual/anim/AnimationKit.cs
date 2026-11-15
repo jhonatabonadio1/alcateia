@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 /// <summary>
 /// Ferramentas de animação que o humano (<see cref="CharacterAnimator"/>),
@@ -130,6 +131,58 @@ public static class AnimationKit
 
 			for (int key = 0; key < animation.TrackGetKeyCount(track); key++)
 				animation.TrackSetKeyValue(track, key, (Vector3)animation.TrackGetKeyValue(track, key) * ratio);
+		}
+	}
+
+	/// <summary>
+	/// Prende no lugar os ossos que o clipe não anima: cada osso do corpo
+	/// que não tem trilha de giro ganha uma, parada no repouso do esqueleto
+	/// do próprio clipe.
+	///
+	/// Sem isso, o osso sem trilha cai no repouso do corpo que toca o
+	/// clipe. Nos clipes do Mixamo é o mesmo T dos dois lados e não muda
+	/// nada; num clipe salvo com a pose como repouso (a corrida de quatro
+	/// do Jhon, editada no Blender), os ombros iam para o T do Mutant e os
+	/// braços saíam do lugar.
+	/// </summary>
+	public static void KeepClipRest(Animation animation, Skeleton3D clip, Skeleton3D body)
+	{
+		if (clip == null || body == null) return;
+
+		string prefix = null;
+		var rotated = new HashSet<string>();
+		for (int track = 0; track < animation.GetTrackCount(); track++)
+		{
+			string path = animation.TrackGetPath(track).ToString();
+			int colon = path.LastIndexOf(':');
+			if (colon < 0) continue;
+			prefix ??= path[..colon];
+			if (animation.TrackGetType(track) == Animation.TrackType.Rotation3D)
+				rotated.Add(path[(colon + 1)..]);
+		}
+		if (prefix == null) return;
+
+		for (int bone = 0; bone < clip.GetBoneCount(); bone++)
+		{
+			string name = clip.GetBoneName(bone);
+			if (rotated.Contains(name) || body.FindBone(name) < 0) continue;
+
+			int track = animation.AddTrack(Animation.TrackType.Rotation3D);
+			animation.TrackSetPath(track, $"{prefix}:{name}");
+			animation.RotationTrackInsertKey(track, 0, clip.GetBoneRest(bone).Basis.GetRotationQuaternion());
+		}
+	}
+
+	/// <summary>Faz cada trilha de osso apontar para o esqueleto em
+	/// <paramref name="skeleton"/> (o caminho dele a partir da raiz do
+	/// tocador), seja qual for o caminho com que o arquivo veio.</summary>
+	public static void PointAt(Animation animation, string skeleton)
+	{
+		for (int track = 0; track < animation.GetTrackCount(); track++)
+		{
+			string path = animation.TrackGetPath(track).ToString();
+			int colon = path.LastIndexOf(':');
+			if (colon >= 0) animation.TrackSetPath(track, $"{skeleton}:{path[(colon + 1)..]}");
 		}
 	}
 

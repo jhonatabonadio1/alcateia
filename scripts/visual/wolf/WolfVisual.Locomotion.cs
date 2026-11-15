@@ -64,11 +64,17 @@ public partial class WolfVisual
 	[Export] public float RunClipSpeed = 2.42f;
 
 	/// <summary>A passada do "Running Crawl" no chão, em m/s: o andar de
-	/// quatro, agachado e na corrida de quatro. Medida no esqueleto: a 2,9 a
-	/// mão de apoio patina 0,55 m/s engatinhando e 1,46 correndo de quatro
-	/// a 5,06 m/s (~29%, o clipe rola as mãos); com a passada da parede (2,3), que era a
-	/// usada, 0,64 e 1,64.</summary>
+	/// quatro, agachado (e a corrida de quatro, quando falta o clipe dela).
+	/// Medida no esqueleto: a 2,9 a mão de apoio patina 0,55 m/s
+	/// engatinhando; com a passada da parede (2,3), que era a usada, 0,64.</summary>
 	[Export] public float CrawlClipSpeed = 2.9f;
+
+	/// <summary>A passada da corrida de quatro (o "Quadruped Run" do
+	/// Jhon, sprint.fbx), em m/s: a velocidade com que a pata de apoio vai
+	/// para trás com o clipe a 1× (2,26 m/s no esqueleto do Mutant), na
+	/// escala do modelo. Correndo de quatro a 6 m/s, o apoio patina 2,3 m/s
+	/// no esqueleto (~38%: no galope a pata rola e fica pouco no chão).</summary>
+	[Export] public float SprintClipSpeed = 2.5f;
 
 	/// <summary>
 	/// Quanto a animação de andar corre em relação ao corpo. 1 = acompanha
@@ -161,16 +167,20 @@ public partial class WolfVisual
 		bool crouching = (_player?.IsCrouching ?? false) && !onWall;
 		_crouch = Mathf.MoveToward(_crouch, crouching ? 1f : 0f, delta / 0.1f);
 
-		// De quatro: andando agachado (engatinha) e na corrida de quatro
-		// (W duas vezes) toca o "Running Crawl", na velocidade do corpo.
+		// De quatro: andando agachado o lobo engatinha (o "Running Crawl");
+		// na corrida de quatro (W duas vezes) toca o clipe dela, as duas na
+		// velocidade do corpo. Sem o clipe da corrida, ela engatinha rápido.
 		bool sprinting = (_player?.IsSprinting ?? false) && !onWall;
-		_crawl = Mathf.MoveToward(_crawl, crouching || sprinting ? 1f : 0f, delta / 0.1f);
+		bool sprintClip = Has("sprint");
+		_crawl = Mathf.MoveToward(_crawl, crouching || (sprinting && !sprintClip) ? 1f : 0f, delta / 0.1f);
+		_sprint = Mathf.MoveToward(_sprint, sprinting && sprintClip ? 1f : 0f, delta / 0.15f);
 
 		float stride = Mathf.Lerp(WalkClipSpeed, RunClipSpeed, _gait);
 		float sign = _backward ? -1f : 1f;
 		float cadence = AnimRate(Mathf.Clamp(speed / Mathf.Max(stride, 0.01f), 0f, 3f) * sign, WalkAnimScale);
 		float crawl = Mathf.Clamp(speed / Mathf.Max(CrawlClipSpeed, 0.01f), 0f, 3f) * sign;
 		if (sprinting) crawl = AnimRate(crawl, SprintAnimScale);
+		float gallop = AnimRate(Mathf.Clamp(speed / Mathf.Max(SprintClipSpeed, 0.01f), 0f, 3f) * sign, SprintAnimScale);
 
 		float mixTarget = Mathf.Clamp(speed / 0.5f, 0f, 1f);
 		float mixTime = mixTarget > _moveMix ? StartBlend : StopBlend;
@@ -182,9 +192,17 @@ public partial class WolfVisual
 		_tree.Set("parameters/Machine/Locomotion/IdleCrouch/blend_amount", _crouch);
 		_tree.Set("parameters/Machine/Locomotion/GaitCrouch/blend_amount", _crawl);
 		_tree.Set("parameters/Machine/Locomotion/CrawlSpeed/scale", crawl);
+		if (sprintClip)
+		{
+			_tree.Set("parameters/Machine/Locomotion/GaitSprint/blend_amount", _sprint);
+			_tree.Set("parameters/Machine/Locomotion/SprintSpeed/scale", gallop);
+		}
 	}
 
 	private float _crouch;
+
+	/// <summary>Quanto está na corrida de quatro (o clipe dela).</summary>
+	private float _sprint;
 
 	/// <summary>Quanto o andar está de quatro (o "Running Crawl"): agachado
 	/// andando ou na corrida de quatro.</summary>

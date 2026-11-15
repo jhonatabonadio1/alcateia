@@ -2,6 +2,21 @@
 
 ## Não lançado
 
+### Corrida de quatro nova do lobo (15/11)
+- O lobo correndo de quatro (W duas vezes) toca **a corrida de quatro
+  patas do Jhon**: o "Quadruped Run" do Mixamo com a bacia levantada no
+  Blender (`assets/characters/wolf/sprint.fbx`). Antes era o "Running
+  Crawl" acelerado; engatinhar agachado continua com ele.
+- O clipe é do esqueleto do X Bot e veio do Blender com a pose salva
+  como repouso. No Mutant: as trilhas passam a apontar para o esqueleto
+  dele (`AnimationKit.PointAt`), os ossos sem trilha ficam no repouso do
+  clipe (`AnimationKit.KeepClipRest`; sem isso os ombros iam para o T do
+  Mutant) e o quadril desce na razão das pernas e sobe 2 cm, para as
+  quatro patas tocarem o chão como no correr.
+- Passada medida: 2,5 m/s (`SprintClipSpeed`); o som do passo segue
+  (`StrideWolfSprint` 0,83 m). PassadaDoLobo aceita até 2,6 m/s de
+  patinação de quatro (2,3 medido: no galope a pata rola).
+
 ### AR-15, o fuzil padrão novo (15/11)
 - **Arma nova: AR-15**, o fuzil do conjunto padrão (no lugar da M16A2).
   Modelo de TastyTony (silenciador, mira red dot, coronha retrátil) e

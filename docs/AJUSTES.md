@@ -35,7 +35,7 @@ o renascer do bot (6 s).
 - **Animação presa à velocidade.** O clipe toca na velocidade do corpo
   dividida pela passada medida. Acima de ~1,6× a corrida do lobo começa
   a parecer apressada; o pé não patina, mas a perna gira rápido. As
-  passadas (`WalkClipSpeed`, `RunClipSpeed`, `WallClipSpeed`, `CrawlClipSpeed`,
+  passadas (`WalkClipSpeed`, `RunClipSpeed`, `WallClipSpeed`, `CrawlClipSpeed`, `SprintClipSpeed`,
   `WalkClip`, `RunClip`...) são medidas no esqueleto: não são botão de
   ajuste.
 - **Alturas presas ao mapa.** O humano pula 0,99 m e sobe caixote

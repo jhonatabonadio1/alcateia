@@ -17,7 +17,7 @@ public partial class WolfVisual
 	/// <summary>Clipes tocados como vêm do arquivo. Os golpes e o rugido
 	/// saem de <see cref="WolfMoves.Clips"/>, recortados.</summary>
 	private static readonly string[] Clips =
-		{ "idle", "walk", "run", "wallrun" };
+		{ "idle", "walk", "run", "wallrun", "sprint" };
 
 	/// <summary>Disparos por cima da locomoção, na ordem da pilha: o de
 	/// baixo é sobreposto pelos de cima.</summary>
@@ -87,7 +87,7 @@ public partial class WolfVisual
 			Animation animation = Source(clip);
 			if (animation == null) continue;
 
-			animation.LoopMode = clip is "idle" or "walk" or "run" or "wallrun"
+			animation.LoopMode = clip is "idle" or "walk" or "run" or "wallrun" or "sprint"
 				? Animation.LoopModeEnum.Linear
 				: Animation.LoopModeEnum.None;
 
@@ -134,6 +134,7 @@ public partial class WolfVisual
 		if (temp == null) return null;
 
 		Animation animation = TakeAnimation(FindPlayer(temp), file, Debug);
+		if (animation != null && file == "sprint") FitSprint(animation, temp);
 		temp.Free();
 		if (animation == null) return null;
 
@@ -142,6 +143,49 @@ public partial class WolfVisual
 	}
 
 	private bool Has(string clip) => _lengths.ContainsKey(clip);
+
+	/// <summary>O quadril do X Bot em pé (T), em metros: o corpo em que a
+	/// corrida de quatro foi feita. O arquivo dela não serve de medida — o
+	/// repouso salvo nele já é a pose de quatro.</summary>
+	private const float SprintSourceHips = 1.04f;
+
+	/// <summary>
+	/// A corrida de quatro (o "Quadruped Run" do Mixamo, com a bacia
+	/// levantada pelo Jhon no Blender, 15/11) é do esqueleto do X Bot, veio
+	/// do Blender e foi salva com a pose como repouso. No Mutant: as trilhas
+	/// passam a apontar para o esqueleto dele (o Blender põe o esqueleto
+	/// dentro de "Armature"), os ossos sem trilha ficam no repouso do clipe
+	/// (<see cref="KeepClipRest"/>), e o quadril desce na razão das pernas
+	/// (Mutant 0,93 m, X Bot 1,04) e sobe <see cref="SprintHipsLift"/> —
+	/// assim as quatro patas tocam o chão como no andar e no correr.
+	/// </summary>
+	private void FitSprint(Animation animation, Node clipScene)
+	{
+		Skeleton3D body = FindSkeleton(_model);
+		if (body == null) return;
+		PointAt(animation, _anims.GetNode(_anims.RootNode).GetPathTo(body).ToString());
+		KeepClipRest(animation, FindSkeleton(clipScene), body);
+		float hips = HipsRestHeight(_model);
+		if (hips > 0.01f) MatchHips(animation, hips / SprintSourceHips);
+		LiftHips(animation, SprintHipsLift);
+	}
+
+	/// <summary>Quanto o quadril da corrida de quatro sobe depois de
+	/// ajustado às pernas, em metros do esqueleto: com a razão das pernas o
+	/// apoio mais baixo ficava 2,6 cm abaixo do chão, e no andar e no
+	/// correr fica 0,5 cm.</summary>
+	private const float SprintHipsLift = 0.02f;
+
+	private static void LiftHips(Animation animation, float lift)
+	{
+		for (int track = 0; track < animation.GetTrackCount(); track++)
+		{
+			if (animation.TrackGetType(track) != Animation.TrackType.Position3D
+				|| !animation.TrackGetPath(track).ToString().Contains("Hips")) continue;
+			for (int key = 0; key < animation.TrackGetKeyCount(track); key++)
+				animation.TrackSetKeyValue(track, key, (Vector3)animation.TrackGetKeyValue(track, key) + Vector3.Up * lift);
+		}
+	}
 
 	/// <summary>
 	/// Recorta o clipe de <paramref name="start"/> a <paramref name="end"/>
