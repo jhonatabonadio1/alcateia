@@ -1,32 +1,9 @@
-# Lobo — o lobo do Meshy + Creature Pack
+# Lobo — Mixamo Mutant + Creature Pack
 
 `mutant.fbx` é o lobo do time azul; `mutant_red.fbx`, o do time
-laranja. Desde 15/11 os dois são o **lobo tático que o Jhon fez no
-Meshy** (o nome `mutant` ficou para não mexer no resto): o mesmo modelo,
-o laranja com a pelagem em ferrugem. Vêm com um esqueleto `mixamorig` de
-24 ossos (sem dedos, com um osso extra `headfront`), em pose A (braços
-caídos), em centímetros dentro de um nó de escala 0,01, com os pesos já
-feitos, e as texturas de 2048 px embutidas (o Meshy dá 4096; reduzidas
-para o arquivo ter 18 MB e não 53). Sem `AnimationPlayer`: o `WolfVisual`
-cria o tocador ao lado do esqueleto.
-
-**As animações não são mexidas: o jogo as adapta ao corpo** (`WolfVisual
-.FitClip`, `AnimationKit.RetargetPose`). Os clipes são do T do Mutant e
-este corpo está em A, com os eixos dos ossos girados de outro jeito, então
-copiar o giro dos ossos dobrava os braços errado. Em vez disso o clipe
-mantém a **direção de cada osso no mundo**: o giro que o osso faz do
-repouso do clipe (o esqueleto do `walk.fbx`) para a pose vale também
-para o osso do lobo, depois de ele ser girado do repouso dele para o do
-clipe. O quadril sobe na razão das alturas (1,0 m do lobo, 0,93 m do
-Mutant). Trocar o lobo por outro com os mesmos nomes de osso não exige
-refazer clipe nenhum; só medir de novo o apoio no chão (`PassadaDoLobo`)
-e a cápsula.
-
-Para um outro lobo do Meshy: baixe o FBX **rigado** (Mixamo, "character
-mixamo"), reduza as texturas (`tools/` não tem script: no Blender, dê
-`scale(2048, 2048)` nas imagens e exporte FBX com as texturas
-embutidas) e ponha aqui com o mesmo nome. O time laranja é o mesmo
-arquivo com a cor da pelagem trocada.
+laranja (veio do Blender: sem `AnimationPlayer` e com o esqueleto em
+`Armature` — o `WolfVisual` cria o tocador ao lado do esqueleto). Os
+dois têm o mesmo esqueleto `mixamorig` de 37 ossos.
 
 Os clipes são do **Creature Pack** do Mixamo, renomeados pelo papel
 que fazem no jogo:
@@ -44,7 +21,7 @@ que fazem no jogo:
 | `jump.fbx` | mutant jumping | pulo: só o voo, tocado pela velocidade vertical; a aterrissagem quando chega devagar |
 | `death.fbx` | mutant dying | morreu de lobo |
 | `wallrun.fbx` | Running Crawl | correndo na parede, deitado de lado com a barriga para ela; engatinhando no chão, agachado e andando |
-| `sprint.fbx` | Quadruped Run (editado pelo Jhon no Blender) | corrida de quatro (W duas vezes) |
+| `sprint.fbx` | Quadruped Run v3 (editado pelo Jhon no Blender) | corrida de quatro (W duas vezes) |
 | `idle_alerta.fbx` | mutant idle | reserva, não usado |
 
 **O pulo usa só o voo do `jump.fbx`** (de 1,27 a 1,87 s do arquivo):
@@ -81,11 +58,9 @@ nome. Clipe que falta é pulado sem erro.
 
 **O `sprint.fbx` não é do Creature Pack:** é do esqueleto do X Bot e veio
 do Blender, com o esqueleto dentro de `Armature` e a pose de quatro
-salva como repouso. O `WolfVisual` acerta isso na carga (`FitClip`):
-aponta as trilhas para o esqueleto do lobo, segura no repouso do clipe
-os ossos que ele não anima, reorienta os ossos ao lobo e ajusta o quadril
-às pernas dele (`SprintHipsLift` vem em metros e é convertido para as
-unidades do esqueleto). Trocou
+salva como repouso. O `WolfVisual` acerta isso na carga (`FitSprint`):
+aponta as trilhas para o esqueleto do Mutant, segura no repouso do clipe
+os ossos que ele não anima, ajusta o quadril às pernas do Mutant. Trocou
 o arquivo? Meça de novo a passada (`SprintClipSpeed`) e o apoio no chão
 (`SprintHipsLift`).
 

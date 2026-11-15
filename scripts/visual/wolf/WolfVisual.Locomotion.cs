@@ -70,10 +70,10 @@ public partial class WolfVisual
 	[Export] public float CrawlClipSpeed = 2.9f;
 
 	/// <summary>A passada da corrida de quatro (o "Quadruped Run" do
-	/// Jhon, sprint.fbx, versão 2 de 15/11, ciclo de 0,867 s), em m/s: a
-	/// velocidade que menos patina o pé no jogo (varrida de 3 a 6 m/s no
-	/// teste de patinação: o mínimo, 1,3 m/s, fica entre 4,5 e 4,8). A
-	/// 6 m/s o clipe toca a 1,3×.</summary>
+	/// Jhon, sprint.fbx, versão 3 de 15/11, ciclo de 0,867 s), em m/s: a
+	/// velocidade que menos patina o pé no jogo (varrida de 3,6 a 5,6 m/s no
+	/// teste de patinação: o mínimo, 1,4 m/s, fica em 4,6). A 6 m/s o
+	/// clipe toca a 1,3×.</summary>
 	[Export] public float SprintClipSpeed = 4.6f;
 
 	/// <summary>

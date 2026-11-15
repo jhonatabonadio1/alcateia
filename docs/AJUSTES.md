@@ -448,7 +448,7 @@ Abra no Inspector e mude ali — vale para os dois.
 | `StepWolf` | 20 |
 | `Land` | 17 |
 | `Howl` | 45 (já no começo do rugido e a cada 0,5 s) |
-| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,05 / 0,97 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça |
+| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,05 / 1,99 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça |
 | `NoiseRadius` da arma | 30 a 60 (seção 7) |
 
 O som do lugar fica no mapa (`scripts/meta/Maps.cs`):
@@ -478,7 +478,7 @@ Mexa com cuidado: muitos destes são medidas.
 
 | Campo | Valor | O que faz |
 |---|---|---|
-| `ModelScale` | 1,1 | Tamanho do lobo (o passo dos golpes acompanha; o modelo tem 1,8 m, 1,98 m no jogo) |
+| `ModelScale` | 1,1 | Tamanho do Mutant (o passo dos golpes acompanha) |
 | `WalkSpeed` / `RunSpeed` | 2,0 / 2,6 m/s | Abaixo só anda, acima só corre |
 | `StartBlend` / `StopBlend` | 0,12 / 0,22 s | Sair do parado e voltar a ele |
 | `TurnRate` | 540°/s | Virar para o lado em que anda |

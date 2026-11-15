@@ -83,8 +83,7 @@ public sealed class HeadshotTest : RegressionTest
 		await WolfHead(b, bot);
 	}
 
-	/// <summary>O lobo tem a cabeça à frente da cápsula (o do Meshy, mais
-	/// reto que o Mutant, a 0,43 m do eixo): o bot atira
+	/// <summary>O lobo, curvado, tem a cabeça fora da cápsula: o bot atira
 	/// nela (no jogador, de lobo) e acerta a cabeça; no corpo, não.</summary>
 	private static async Task WolfHead(RegressionBench b, CharacterBody3D bot)
 	{
@@ -102,7 +101,7 @@ public sealed class HeadshotTest : RegressionTest
 		b.Check(HeadHitbox.TryGet(b.Player, out Vector3 center, out float radius), "o lobo tem cabeça de modelo");
 		Vector3 flat = new Vector3(center.X - b.Player.GlobalPosition.X, 0, center.Z - b.Player.GlobalPosition.Z);
 		RegressionBench.Note($"cabeça do lobo a {RegressionBench.F(flat.Length())} m do eixo da cápsula (raio {RegressionBench.F(radius)})");
-		b.AtLeast(0.2 + radius, flat.Length(), "a cabeça do lobo fica fora da cápsula");
+		b.AtLeast(0.3 + radius, flat.Length(), "a cabeça do lobo fica fora da cápsula");
 
 		foreach (var (point, isHead, what) in new (Vector3, bool, string)[]
 		{

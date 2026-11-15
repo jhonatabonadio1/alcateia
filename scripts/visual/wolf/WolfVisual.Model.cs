@@ -63,8 +63,6 @@ public partial class WolfVisual
 		}
 
 		LoadClips();
-		_reference?.Free();
-		_reference = null;
 		ApplyTeamTint();
 		BuildTree();
 		return true;
@@ -136,52 +134,12 @@ public partial class WolfVisual
 		if (temp == null) return null;
 
 		Animation animation = TakeAnimation(FindPlayer(temp), file, Debug);
-		if (animation != null) FitClip(animation, temp, file);
+		if (animation != null && file == "sprint") FitSprint(animation, temp);
 		temp.Free();
 		if (animation == null) return null;
 
 		StripRootMotion(animation);
 		return animation;
-	}
-
-	/// <summary>O esqueleto do clipe em T de que os outros partem: o do
-	/// "walk" (o Mutant do Creature Pack).</summary>
-	private Node _reference;
-
-	/// <summary>
-	/// Ajusta um clipe ao corpo em uso. O corpo pode ser outro esqueleto
-	/// com os mesmos nomes de osso (o lobo do Meshy, em A e em centímetros):
-	/// então o clipe é reorientado por <see cref="RetargetPose"/> e o
-	/// quadril, na razão das alturas. Com o Mutant original isso não muda
-	/// nada.
-	/// </summary>
-	private void FitClip(Animation animation, Node clipScene, string file)
-	{
-		Skeleton3D body = FindSkeleton(_model);
-		if (body == null) return;
-
-		PointAt(animation, _anims.GetNode(_anims.RootNode).GetPathTo(body).ToString());
-
-		bool sprint = file == "sprint";
-		if (sprint) KeepClipRest(animation, FindSkeleton(clipScene), body);
-
-		_reference ??= GD.Load<PackedScene>($"{ClipFolder}/walk.fbx")?.Instantiate();
-		Skeleton3D reference = _reference != null ? FindSkeleton(_reference) : null;
-		RetargetPose(animation, reference, body);
-
-		float hips = HipsRestHeight(_model);
-		float source = sprint ? SprintSourceHips : HipsRestHeight(_reference);
-		if (hips > 0.01f && source > 0.01f) MatchHips(animation, hips / source);
-		if (sprint) LiftHips(animation, SprintHipsLift * UnitsPerMeter(body));
-	}
-
-	/// <summary>Unidades do esqueleto por metro do corpo (1 no Mutant; 100 no
-	/// lobo do Meshy, cujo esqueleto está em centímetros dentro de um nó
-	/// de escala 0,01).</summary>
-	private float UnitsPerMeter(Skeleton3D skeleton)
-	{
-		float scale = skeleton.GlobalBasis.Scale.Y / Mathf.Max(_model.GlobalBasis.Scale.Y, 1e-6f);
-		return scale > 1e-6f ? 1f / scale : 1f;
 	}
 
 	private bool Has(string clip) => _lengths.ContainsKey(clip);
@@ -190,6 +148,27 @@ public partial class WolfVisual
 	/// corrida de quatro foi feita. O arquivo dela não serve de medida — o
 	/// repouso salvo nele já é a pose de quatro.</summary>
 	private const float SprintSourceHips = 1.04f;
+
+	/// <summary>
+	/// A corrida de quatro (o "Quadruped Run" do Mixamo, editado pelo Jhon
+	/// no Blender, 15/11) é do esqueleto do X Bot, veio
+	/// do Blender e foi salva com a pose como repouso. No Mutant: as trilhas
+	/// passam a apontar para o esqueleto dele (o Blender põe o esqueleto
+	/// dentro de "Armature"), os ossos sem trilha ficam no repouso do clipe
+	/// (<see cref="KeepClipRest"/>), e o quadril desce na razão das pernas
+	/// (Mutant 0,93 m, X Bot 1,04) e sobe <see cref="SprintHipsLift"/> —
+	/// assim as quatro patas tocam o chão como no andar e no correr.
+	/// </summary>
+	private void FitSprint(Animation animation, Node clipScene)
+	{
+		Skeleton3D body = FindSkeleton(_model);
+		if (body == null) return;
+		PointAt(animation, _anims.GetNode(_anims.RootNode).GetPathTo(body).ToString());
+		KeepClipRest(animation, FindSkeleton(clipScene), body);
+		float hips = HipsRestHeight(_model);
+		if (hips > 0.01f) MatchHips(animation, hips / SprintSourceHips);
+		LiftHips(animation, SprintHipsLift);
+	}
 
 	/// <summary>Quanto o quadril da corrida de quatro sobe depois de
 	/// ajustado às pernas, em metros do esqueleto: só com a razão das

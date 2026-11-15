@@ -80,7 +80,7 @@ public partial class CharacterPreview : SubViewportContainer
 		_viewport.AddChild(_pivot);
 
 		_human = Load(ResourceLoader.Exists(HumanPath) ? HumanPath : HumanFallback, HumanIdle, 1f);
-		_wolfModel = Load(WolfPath, WolfIdle, 1.0f, refit: true);
+		_wolfModel = Load(WolfPath, WolfIdle, 1.0f);
 
 		ShowForm();
 	}
@@ -136,7 +136,7 @@ public partial class CharacterPreview : SubViewportContainer
 
 	/// <summary>Um corpo com o clipe de parado em laço. O clipe vem de
 	/// outro arquivo do Mixamo, escolhido como o CharacterAnimator escolhe.</summary>
-	private Node3D Load(string modelPath, string idlePath, float scale, bool refit = false)
+	private Node3D Load(string modelPath, string idlePath, float scale)
 	{
 		if (!ResourceLoader.Exists(modelPath)) return null;
 
@@ -145,28 +145,10 @@ public partial class CharacterPreview : SubViewportContainer
 		_pivot.AddChild(model);
 
 		AnimationPlayer player = Nodes.FindFirst<AnimationPlayer>(model);
-		Skeleton3D body = AnimationKit.FindSkeleton(model);
-
-		// O lobo do Meshy não traz tocador: ele nasce ao lado do esqueleto,
-		// onde o caminho "Skeleton3D:osso" dos clipes existe.
-		if (player == null && refit && body != null)
-		{
-			player = new AnimationPlayer { Name = "AnimationPlayer" };
-			body.GetParent().AddChild(player);
-		}
 		if (player == null || !ResourceLoader.Exists(idlePath)) return model;
 
 		Node temp = GD.Load<PackedScene>(idlePath).Instantiate();
 		Animation idle = AnimationKit.TakeAnimation(Nodes.FindFirst<AnimationPlayer>(temp), "idle", false);
-		if (idle != null && refit && body != null)
-		{
-			// Mesmo ajuste do jogo (WolfVisual.FitClip): reorienta os ossos
-			// ao corpo e leva o quadril à altura dele.
-			AnimationKit.PointAt(idle, player.GetNode(player.RootNode).GetPathTo(body).ToString());
-			AnimationKit.RetargetPose(idle, AnimationKit.FindSkeleton(temp), body);
-			float hips = AnimationKit.HipsRestHeight(model), source = AnimationKit.HipsRestHeight(temp);
-			if (hips > 0.01f && source > 0.01f) AnimationKit.MatchHips(idle, hips / source);
-		}
 		temp.Free();
 		if (idle == null) return model;
 
