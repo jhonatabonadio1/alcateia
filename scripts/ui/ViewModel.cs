@@ -150,14 +150,24 @@ public partial class ViewModel : Node3D
 		bob *= steady;
 		Vector2 sway = _sway * (1f - 0.65f * aim);
 
+		// Conjunto fiel (o AR-15, pedido do Jhon em 15/11: "não coloque nem
+		// acrescente nada pelo engine"): só a animação dele, sem balanço,
+		// atraso ao olhar, coice nem afundar no pouso de código.
+		bool raw = HasRig && _rigRaw;
+		if (raw)
+		{
+			bob = Vector3.Zero;
+			sway = Vector2.Zero;
+		}
+
 		// Com os braços animados, o tiro e o sacar já vêm da animação.
 		// O conjunto sem animação de sacar sobe de baixo, como as mãos de código.
-		float kick = Ease(_recoil) * (HasRig ? _rigKick : 1f) * (1f - 0.4f * aim);
+		float kick = raw ? 0f : Ease(_recoil) * (HasRig ? _rigKick : 1f) * (1f - 0.4f * aim);
 		// O conjunto está a meio metro do olho, não a um: a subida é menor.
 		float draw = HasRig && _rigClips.ContainsKey("sacar") ? 0f : _draw;
 		float drop = HasRig ? 0.06f : 0.2f, tilt = HasRig ? 14f : 24f;
 		var swing = new Vector3(sway.Y + KickPitch * kick - draw * tilt, sway.X, -sway.X * 0.6f);
-		Vector3 position = _rest + bob + new Vector3(0, -draw * drop - _dip, Kick * kick);
+		Vector3 position = _rest + bob + new Vector3(0, -draw * drop - (raw ? 0f : _dip), Kick * kick);
 
 		// A câmera fecha no zoom, mas a arma não pode crescer junto (é o
 		// mesmo que ter uma câmera só para ela, como todo FPS): encolhe na

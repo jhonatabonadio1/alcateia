@@ -26,8 +26,9 @@
   artista.
 - Primeira pessoa (`ViewModel`): o AR-15 **saca animado** (até 0,4 s) e
   **guarda animado** ao trocar para outra arma (0,16 s, antes de a outra
-  subir); o balanço do passo e mais coice de código, porque as animações
-  da Unreal mexem poucos milímetros. O pacote não tem recarga: a do AR-15
+  subir). Nada de código por cima da animação do Jhon (`"fiel"` na
+  ficha): sem balanço do passo, atraso ao olhar, coice nem afundar no
+  pouso — andar, parado e tiro são exatamente os dele. O pacote não tem recarga: a do AR-15
   é de código (a arma inclina, o carregador cai e volta, o ferrolho é
   puxado com o pente vazio — `RigPieces`, um modificador do esqueleto).
 - **Braços:** os nossos (CC BY), não os do manequim da Epic, que não

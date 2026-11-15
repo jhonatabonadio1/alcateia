@@ -99,11 +99,8 @@ POLEGAR = ("020", "021", "022")
 # Unreal, 90° na horizontal em 16:9.
 FOV = round(math.degrees(2 * math.atan(math.tan(math.radians(45)) * 9 / 16)), 1)
 
-# O pacote é da Unreal, onde o coice e o balanço do passo são de código:
-# as animações de tiro e de andar mexem poucos milímetros. No jogo, o
-# coice de código vale mais neste conjunto que nos outros (0,3), e o
-# balanço do passo continua ligado (bracos.json: "coice", "balanco").
-COICE = 0.4
+# "fiel" na ficha: no jogo, só a animação do Jhon, sem balanço, coice
+# nem atraso de código por cima (pedido dele, 15/11).
 
 
 # ===================================================================== arquivos
@@ -595,7 +592,7 @@ def main():
     # No jogo: X é o mesmo, Y é o Z do Blender, Z é −Y.
     ficha[NOME] = dict(arquivo=f"res://assets/armas/fp/{NOME}.glb", armas=ARMAS, animacoes=animacoes,
                        cano=[round(cano.x, 4), round(cano.z, 4), round(-cano.y, 4)], ajuste=[0.0, 0.0, 0.0],
-                       fov=FOV, sacar=True, coice=COICE, balanco=True)
+                       fov=FOV, sacar=True, fiel=True)
     with open(ficha_em, "w", encoding="utf-8") as f:
         json.dump(ficha, f, ensure_ascii=False, indent=1, sort_keys=True)
         f.write("\n")

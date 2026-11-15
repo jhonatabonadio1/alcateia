@@ -211,6 +211,7 @@ public partial class ViewModel
 		bool asks = rig.ContainsKey("sacar") && rig["sacar"].AsBool();
 		_rigKick = rig.ContainsKey("coice") ? (float)rig["coice"].AsDouble() : RigKick;
 		_rigBob = rig.ContainsKey("balanco") && rig["balanco"].AsBool();
+		_rigRaw = rig.ContainsKey("fiel") && rig["fiel"].AsBool();
 		bool draws = _rigClips.ContainsKey("sacar") && (_weapon.HumanSlot != Slot.Primary || asks);
 		if (!draws) _rigClips.Remove("sacar");
 		_swingTail = null;
@@ -233,6 +234,10 @@ public partial class ViewModel
 	/// mesmo tendo animação de andar (a ficha: "coice", "balanco").</summary>
 	private float _rigKick = RigKick;
 	private bool _rigBob;
+
+	/// <summary>Conjunto fiel (a ficha: "fiel"): a animação como foi feita,
+	/// sem nada de código por cima.</summary>
+	private bool _rigRaw;
 
 	private RigPieces _pieces;
 	private Skeleton3D _rigSkeleton;

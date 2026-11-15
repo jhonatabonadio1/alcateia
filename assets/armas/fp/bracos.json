@@ -89,13 +89,12 @@
    "ar15"
   ],
   "arquivo": "res://assets/armas/fp/ar15.glb",
-  "balanco": true,
   "cano": [
    0.0555,
    -0.0722,
    -0.6639
   ],
-  "coice": 0.4,
+  "fiel": true,
   "fov": 58.7,
   "sacar": true
  },

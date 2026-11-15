@@ -504,10 +504,12 @@ mão fica em cada arma, e o desenho das armas: `tools/gerar_armas.py`.
 abertura para a qual os conjuntos foram animados; a ficha
 `assets/armas/fp/bracos.json` pode trazer a sua em `fov` — o AR-15 usa a
 da Unreal, 58,7°), `RigScale` 0,45 (o conjunto encolhido na direção do
-olho), `RigKick` 0,3 (o AR-15 usa 0,4: `coice` na ficha), `RigDrawMax` 0,4 s (o saque animado mais longo:
+olho), `RigKick` 0,3, `RigDrawMax` 0,4 s (o saque animado mais longo:
 a arma atira 0,2 s depois da troca), `RigHolsterTime` 0,16 s (quanto o
 guardar do AR-15 dura antes de a outra arma subir). Saque animado na
-arma principal só com `"sacar": true` na ficha (o AR-15). A recarga de
+arma principal só com `"sacar": true` na ficha (o AR-15). Com `"fiel": true`
+(o AR-15, pedido do Jhon) o conjunto toca só a animação dele: sem balanço
+do passo, atraso ao olhar, coice nem afundar no pouso de código. A recarga de
 código (conjunto sem animação de recarga, o AR-15) está em
 `CodeReload`: a arma inclina 10° em torno do punho e desce em até 16% da recarga, o carregador cai
 24 cm entre 20% e 36%, some até 60% e volta até 74%; com o pente vazio,
