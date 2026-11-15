@@ -21,7 +21,7 @@ que fazem no jogo:
 | `jump.fbx` | mutant jumping | pulo: só o voo, tocado pela velocidade vertical; a aterrissagem quando chega devagar |
 | `death.fbx` | mutant dying | morreu de lobo |
 | `wallrun.fbx` | Running Crawl | correndo na parede, deitado de lado com a barriga para ela; engatinhando no chão, agachado e andando |
-| `sprint.fbx` | Quadruped Run (do Jhon, com a bacia levantada no Blender) | corrida de quatro (W duas vezes) |
+| `sprint.fbx` | Quadruped Run (editado pelo Jhon no Blender) | corrida de quatro (W duas vezes) |
 | `idle_alerta.fbx` | mutant idle | reserva, não usado |
 
 **O pulo usa só o voo do `jump.fbx`** (de 1,27 a 1,87 s do arquivo):

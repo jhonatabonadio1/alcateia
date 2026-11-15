@@ -602,7 +602,7 @@ propósito tático em vez de ser só um botão de ficar menor.
 
 O passo sai a cada **passada** — a distância entre um pé no chão e o
 outro, que é a do clipe que está tocando (1,19 m o humano correndo,
-1,05 m o lobo, 0,83 m na corrida de quatro) — e não por tempo: o som
+1,05 m o lobo, 1,77 m na corrida de quatro) — e não por tempo: o som
 cai com o pé da animação e a cadência acompanha a velocidade sozinha.
 Até a v0.27 era um ruído a cada 2,2 m, metade dos passos que se via; o
 bot agora ouve cada pisada, como o jogador. A fase da pisada não é
@@ -1475,7 +1475,7 @@ cabeça, a altura da cápsula agachada (1,0 m). Andando agachado ele
 corpo (1,75 m/s toca a 0,76×), 10 cm mais alto para as mãos não
 entrarem no chão (`CrawlLift`). **Na corrida de quatro** (W duas vezes)
 toca a corrida de quatro patas do Jhon (`sprint.fbx`, o "Quadruped Run"
-do Mixamo com a bacia levantada, 15/11), também na velocidade do corpo;
+do Mixamo editado por ele, 15/11), também na velocidade do corpo;
 antes era o mesmo Running Crawl, mais rápido. Antes o lobo agachado continuava de pé,
 a cabeça a 1,7 m — fora da cápsula, e o tiro passava por cima do que se
 via. Testado e descartado: misturar a pose agachada no andar (o pé de

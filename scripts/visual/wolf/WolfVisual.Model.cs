@@ -150,8 +150,8 @@ public partial class WolfVisual
 	private const float SprintSourceHips = 1.04f;
 
 	/// <summary>
-	/// A corrida de quatro (o "Quadruped Run" do Mixamo, com a bacia
-	/// levantada pelo Jhon no Blender, 15/11) é do esqueleto do X Bot, veio
+	/// A corrida de quatro (o "Quadruped Run" do Mixamo, editado pelo Jhon
+	/// no Blender, 15/11) é do esqueleto do X Bot, veio
 	/// do Blender e foi salva com a pose como repouso. No Mutant: as trilhas
 	/// passam a apontar para o esqueleto dele (o Blender põe o esqueleto
 	/// dentro de "Armature"), os ossos sem trilha ficam no repouso do clipe
@@ -171,10 +171,11 @@ public partial class WolfVisual
 	}
 
 	/// <summary>Quanto o quadril da corrida de quatro sobe depois de
-	/// ajustado às pernas, em metros do esqueleto: com a razão das pernas o
-	/// apoio mais baixo ficava 2,6 cm abaixo do chão, e no andar e no
-	/// correr fica 0,5 cm.</summary>
-	private const float SprintHipsLift = 0.02f;
+	/// ajustado às pernas, em metros do esqueleto: só com a razão das
+	/// pernas o pé de trás descia 4,7 cm abaixo do chão no impulso. Com
+	/// isto ele desce até 0,5 cm, como no andar e no correr; o pulso da
+	/// frente desce até 6 cm do chão, e a mão grande do Mutant encosta.</summary>
+	private const float SprintHipsLift = 0.058f;
 
 	private static void LiftHips(Animation animation, float lift)
 	{

@@ -35,11 +35,11 @@ public partial class BodyNoiseProfile : Resource
 	/// Os números saem dos clipes (velocidade em que o pé não patina ×
 	/// duração do ciclo ÷ 2 pisadas) e o teste PassoNoRitmo confere:
 	/// humano correndo, 3,24 m/s × 0,733 s ÷ 2; lobo, 2,42 × 0,867 ÷ 2;
-	/// corrida de quatro, 2,5 × 0,667 ÷ 2. Trocou o clipe ou a velocidade
+	/// corrida de quatro, 5,3 × 0,667 ÷ 2. Trocou o clipe ou a velocidade
 	/// de andar, refaça a conta.
 	/// </summary>
 	[ExportGroup("Passada")]
 	[Export] public float StrideHuman = 1.19f;
 	[Export] public float StrideWolf = 1.05f;
-	[Export] public float StrideWolfSprint = 0.83f;
+	[Export] public float StrideWolfSprint = 1.77f;
 }
