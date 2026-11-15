@@ -102,29 +102,47 @@ deixadas de fora de propósito.
 da InfimaGames (David Stenfors), **CC BY 4.0** ("You're free to use these
 files for both personal use AND commercial. All we ask is that you give
 credit"). Traz o fuzil de **TastyTony** (com carregador, cápsula e
-textura), o rig do manequim da UE5 para primeira pessoa e os braços
-exportados. As animações do AR-15 (parado, andar, sacar, guardar, tiro)
-foram **feitas pelo Jhon** em cima desse rig, em 15/11.
+textura) e o rig do manequim da UE5 para primeira pessoa. As animações do
+AR-15 (parado, andar, sacar, guardar, tiro) foram **feitas pelo Jhon** em
+cima desse rig, em 15/11, e os braços são os dele: **o X Bot do Mixamo**
+(a mesma licença dos nossos personagens) recortado e ligado aos ossos do
+manequim, no lugar da malha da Epic, que não entra no jogo.
 
-**Os braços do manequim não entram no jogo** (malha da Epic, que é para
-jogo feito na Unreal). O `infima.py` passa as animações do esqueleto do
-manequim para os braços CC BY do pacote da AK (`fps-ak-74m-animations`,
-os mesmos da SG, da UMP e da pistola): a mão no lugar e no giro da do
-manequim, o braço por IK do ombro dele, cada dedo na direção do dedo
-dele. Do pacote da Infima entram só as animações (do Jhon) e o fuzil.
+O `infima.py` exporta **a cena do Jhon como ela está**, sem retarget nem
+ajuste: abre `Animations_Assault_Rifle.blend`, toca cada ação no rig dele
+(com os constraints: a mão direita presa no `ik_hand_gun`, a esquerda no
+carregador), copia a pose final dos 89 ossos que deformam e dos ossos do
+fuzil para um esqueleto limpo, a 60 amostras por segundo, e põe tudo no
+espaço da câmera dele (o olho na origem). A abertura vem da câmera dele
+(lente de 16,5 mm: 95° na horizontal, 63,09° na vertical em 16:9). Os
+formatos de controle do rig (Helindu, CC BY) ficam só no Blender.
+Conferido renderizando a cena dele pela câmera dele e o `.glb` na mesma
+câmera: só diferem nas bordas, de ruído do render.
 
 Os arquivos vão em `assets/pacotes/infima/` (fora do git), em qualquer
-subpasta (o script procura pelo nome): as animações que o Jhon exportou
-(`A_FP_AssaultRifle_*.fbx` e `A_FP_WEP_AssaultRifle_Fire.fbx`), o fuzil
-(`SK_AssaultRifle.fbx`, `SM_AssaultRifle_Magazine.fbx`) e a textura dele
-(`T_AssaultRifle_D.png`, na pasta `Blender_Starter_Files_FPSTutorial`
-do Jhon). Os braços vêm de `assets/pacotes/sketchfab/fps-ak-74m-animations/`.
+subpasta (o script procura pelo nome e monta a estrutura de pastas que a
+cena espera): `Animations_Assault_Rifle.blend` (as ações, com um
+marcador `END_…` no fim de cada uma), `RIG_Manny.blend` (rig, braços e
+câmera) e `RIG_AssaultRifle.blend` (o fuzil). Sem o último, o fuzil vem
+de `SK_AssaultRifle.fbx` e `SM_AssaultRifle_Magazine.fbx` (o mesmo
+esqueleto). A textura do fuzil (`T_AssaultRifle_D.png`) não veio: os
+`.blend` apontam para a pasta do autor do pacote; sem ela o fuzil sai
+cinza.
 
     python3 tools/armas/blender/infima.py
 
 Grava o conjunto de primeira pessoa (`assets/armas/fp/ar15.glb` e a
 entrada `ar15` de `bracos.json`) e o modelo para a mão dos outros e o
 chão (`assets/armas/ar15/` e a entrada `ar15` de `armas.json`).
+
+**Para a próxima arma do Jhon** reaproveita-se: o `RIG_Manny.blend`
+inteiro (braços, material, câmera — trocar a malha ou a textura dos
+braços lá muda todas as armas na próxima exportação), as ações do AR-15
+como ponto de partida (duplicar a ação e mexer), o jeito de prender a arma
+(raiz da arma no `ik_hand_gun` por Copy Transforms) e este script, que
+passa a receber o nome da cena, das ações e do rig da arma. A arma nova
+precisa do seu `RIG_<Arma>.blend` (malha e esqueleto, com o punho na
+origem) e das animações dela.
 
 ## O que já está em uso
 
@@ -135,7 +153,7 @@ chão (`assets/armas/ar15/` e a entrada `ar15` de `armas.json`).
 | 36 objetos do Poly Haven | `assets/mapas/pecas/*.glb` — nos cômodos e em volta | `tools/mapas/blender/pecas_polyhaven.py` |
 
 | 6 conjuntos de braços animados do Sketchfab | `assets/armas/fp/*.glb` — as armas de fogo em primeira pessoa | `tools/armas/blender/bracos.py` |
-| O AR-15 da InfimaGames (fuzil e animações do Jhon, nos braços da AK) | `assets/armas/fp/ar15.glb` e `assets/armas/ar15/` | `tools/armas/blender/infima.py` |
+| O AR-15 da InfimaGames (fuzil, braços e animações do Jhon, como na cena dele) | `assets/armas/fp/ar15.glb` e `assets/armas/ar15/` | `tools/armas/blender/infima.py` |
 
 A faca é um conjunto próprio (`knife-animated`, com os golpes animados).
 A granada (M84) vai na mão do braço da pistola (`OBJETOS` em

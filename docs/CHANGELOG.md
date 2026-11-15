@@ -11,19 +11,16 @@
   da M16A2 de 14/11.
 - **A M16A2 continua**, agora à venda (raridade 1, a mais barata dos
   fuzis). Quem já tinha continua com ela.
-- `tools/armas/blender/infima.py` passa as animações do manequim da
-  Unreal para **os nossos braços CC BY** (os da AK, SG, UMP e pistola),
-  quadro a quadro: a mão no lugar e no giro da mão do manequim (alinhada
-  pelos nós dos dedos), o braço por IK a partir do ombro dele com o
-  cotovelo para o mesmo lado, o antebraço torcendo aos poucos com a mão,
-  e cada dedo na direção do dedo dele. O fuzil vai num osso que segue o
-  `ik_hand_gun` do manequim (onde a Unreal prende a arma), com o
-  esqueleto dele filho desse osso; o carregador pesado no osso dele; o
-  olho na câmera do pacote da AK, no lugar da cabeça do manequim; a
-  abertura de câmera da Unreal (58,7° na vertical) na ficha (`fov`). Também grava o
-  modelo para a mão dos outros e o chão (`assets/armas/ar15/`), com a
-  textura do fuzil; `tools/gerar_armas.py` passou a preservar modelos de
-  artista.
+- `tools/armas/blender/infima.py` exporta **a cena do Jhon como ela
+  está** (`Animations_Assault_Rifle.blend`, com `RIG_Manny.blend` e
+  `RIG_AssaultRifle.blend`): os braços dele (o X Bot do Mixamo nos ossos
+  do manequim), o material dele, a câmera dele (95° na horizontal, 63,09°
+  na vertical na ficha, `fov`) e as ações dele com os constraints do rig
+  (a mão esquerda presa no carregador), copiadas osso por osso a 60
+  amostras por segundo. Sem retarget e sem ajuste: renderizado pela
+  câmera dele e no jogo, só difere nas bordas. Também grava o modelo para
+  a mão dos outros e o chão (`assets/armas/ar15/`); `tools/gerar_armas.py`
+  passou a preservar modelos de artista.
 - Primeira pessoa (`ViewModel`): o AR-15 **saca animado** (até 0,4 s) e
   **guarda animado** ao trocar para outra arma (0,16 s, antes de a outra
   subir). Nada de código por cima da animação do Jhon (`"fiel"` na
@@ -31,9 +28,8 @@
   pouso — andar, parado e tiro são exatamente os dele. O pacote não tem recarga: a do AR-15
   é de código (a arma inclina, o carregador cai e volta, o ferrolho é
   puxado com o pente vazio — `RigPieces`, um modificador do esqueleto).
-- **Braços:** os nossos (CC BY), não os do manequim da Epic, que não
-  entra no jogo. Do pacote da Infima entram as animações (do Jhon) e o
-  fuzil.
+- **Braços:** os do Jhon (o X Bot do Mixamo recortado, no rig do
+  manequim), não a malha da Epic, que não entra no jogo.
 - HUD: desenho do AR-15 no ícone da arma.
 
 ### Ajustes de 14/11: tiro na cabeça, M16, parede, rugido, escudo

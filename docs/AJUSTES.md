@@ -503,7 +503,7 @@ mão fica em cada arma, e o desenho das armas: `tools/gerar_armas.py`.
 **Braços animados** (`scripts/ui/ViewModel.Rig.cs`): `RigFov` 50,5° (a
 abertura para a qual os conjuntos foram animados; a ficha
 `assets/armas/fp/bracos.json` pode trazer a sua em `fov` — o AR-15 usa a
-da Unreal, 58,7°), `RigScale` 0,45 (o conjunto encolhido na direção do
+da câmera do Jhon: 95° na horizontal, 63,09° na vertical em 16:9), `RigScale` 0,45 (o conjunto encolhido na direção do
 olho), `RigKick` 0,3, `RigDrawMax` 0,4 s (o saque animado mais longo:
 a arma atira 0,2 s depois da troca), `RigHolsterTime` 0,16 s (quanto o
 guardar do AR-15 dura antes de a outra arma subir). Saque animado na

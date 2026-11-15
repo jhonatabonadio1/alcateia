@@ -62,7 +62,7 @@ public static class Credits
 		}),
 		new("Personagens e animação", new[]
 		{
-			new Line("Modelos e animações do humano e do lobo", "Mixamo — Adobe", "licença de uso do Mixamo")
+			new Line("Modelos e animações do humano e do lobo; braços do AR-15 (X Bot)", "Mixamo — Adobe", "licença de uso do Mixamo")
 		}),
 		new("Letras", new[]
 		{
