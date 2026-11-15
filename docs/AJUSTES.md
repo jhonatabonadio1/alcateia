@@ -478,7 +478,7 @@ Mexa com cuidado: muitos destes são medidas.
 
 | Campo | Valor | O que faz |
 |---|---|---|
-| `ModelScale` | 1,1 | Tamanho do Mutant (o passo dos golpes acompanha) |
+| `ModelScale` | 1,1 | Tamanho do lobo (o passo dos golpes acompanha; o modelo tem 1,8 m, 1,98 m no jogo) |
 | `WalkSpeed` / `RunSpeed` | 2,0 / 2,6 m/s | Abaixo só anda, acima só corre |
 | `StartBlend` / `StopBlend` | 0,12 / 0,22 s | Sair do parado e voltar a ele |
 | `TurnRate` | 540°/s | Virar para o lado em que anda |

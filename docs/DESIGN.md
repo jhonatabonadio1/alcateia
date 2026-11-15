@@ -543,7 +543,8 @@ opção de quem pulou. A condição de estar no ar amarra o golpe mais
 forte do lobo ao salto, que é a jogada que o jogo quer premiar.
 
 **O lobo é um corpo inteiro, em terceira pessoa** (`WolfVisual`, com o
-Mutant do Mixamo — veja "Personagens"). O dono vê o próprio lobo e os
+lobo tático do Meshy, animado com o Creature Pack do Mixamo — veja
+"Personagens"). O dono vê o próprio lobo e os
 outros reconhecem a silhueta de longe: curvado, largo, braços
 compridos. Numa luta rápida ninguém lê textura — o que separa um lobo
 de um humano a trinta metros é o contorno.

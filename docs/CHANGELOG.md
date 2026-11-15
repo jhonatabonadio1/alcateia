@@ -2,6 +2,25 @@
 
 ## Não lançado
 
+### Lobo novo, do Meshy (15/11)
+- O lobo do jogo é agora o **lobo tático que o Jhon fez no Meshy**, no
+  lugar do Mutant do Mixamo: `mutant.fbx` (azul) e `mutant_red.fbx`
+  (laranja, a mesma malha com a pelagem em ferrugem). Esqueleto
+  `mixamorig` de 24 ossos, pose A, pesos do próprio Meshy; texturas
+  reduzidas de 4096 para 2048 px (18 MB cada FBX, não 53).
+- **Animações iguais, adaptadas ao corpo na carga**: `AnimationKit.
+  RetargetPose` mantém a direção de cada osso no mundo (os clipes são do
+  T do Mutant; o lobo novo é em A e com os eixos dos ossos girados), e o
+  quadril sobe na razão das alturas. `WolfVisual.FitClip` faz isso em
+  todos os clipes (antes só a corrida de quatro era ajustada). Com o
+  Mutant antigo o resultado é o mesmo de antes.
+- Medido: o pé mais baixo fica a −2 mm do chão no andar e no correr
+  (−17 mm engatinhando); patinação de 0,70 m/s (era 0,82) e 3,1 m/s na
+  corrida de quatro (era 3,25). `PassadaDoLobo` aceita 1,25 m de
+  deslize ao parar (eram 1,1).
+- Crédito do Meshy em `Credits.cs`; a licença do plano dele precisa ser
+  conferida antes de publicar (`PENDENCIAS.md`).
+
 ### Corrida de quatro do lobo, versão 2 (15/11)
 - `sprint.fbx` trocado pelo `Quadruped_Run_WolfTeam_v2` do Jhon: ciclo de
   0,867 s (era 0,667), com quatro pisadas — as duas mãos perto de 0,1 s

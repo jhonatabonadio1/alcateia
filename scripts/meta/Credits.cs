@@ -62,7 +62,8 @@ public static class Credits
 		}),
 		new("Personagens e animação", new[]
 		{
-			new Line("Modelos e animações do humano e do lobo; braços do AR-15 (X Bot)", "Mixamo — Adobe", "licença de uso do Mixamo")
+			new Line("Modelo e animações do humano, animações do lobo; braços do AR-15 (X Bot)", "Mixamo — Adobe", "licença de uso do Mixamo"),
+				new Line("Lobo (modelo, esqueleto e textura)", "gerado por Jhonata Bonadio no Meshy (meshy.ai)", "termos do plano do Meshy")
 		}),
 		new("Letras", new[]
 		{
