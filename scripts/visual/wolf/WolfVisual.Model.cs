@@ -173,9 +173,9 @@ public partial class WolfVisual
 	/// <summary>Quanto o quadril da corrida de quatro sobe depois de
 	/// ajustado às pernas, em metros do esqueleto: só com a razão das
 	/// pernas o pé de trás descia 4,7 cm abaixo do chão no impulso. Com
-	/// isto ele desce até 0,5 cm, como no andar e no correr; o pulso da
+	/// isto ele desce até 1 cm, como no andar e no correr; o pulso da
 	/// frente desce até 6 cm do chão, e a mão grande do Mutant encosta.</summary>
-	private const float SprintHipsLift = 0.058f;
+	private const float SprintHipsLift = 0.062f;
 
 	private static void LiftHips(Animation animation, float lift)
 	{

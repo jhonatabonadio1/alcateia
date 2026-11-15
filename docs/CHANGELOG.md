@@ -2,6 +2,15 @@
 
 ## Não lançado
 
+### Corrida de quatro do lobo, versão 2 (15/11)
+- `sprint.fbx` trocado pelo `Quadruped_Run_WolfTeam_v2` do Jhon: ciclo de
+  0,867 s (era 0,667), com quatro pisadas — as duas mãos perto de 0,1 s
+  e os dois pés perto de 0,45 s. O som do passo cai entre elas: duas
+  batidas por ciclo, a cada `StrideWolfSprint` = 1,99 m (era 1,77).
+- Velocidade do clipe `SprintClipSpeed` 4,6 m/s (era 5,3): varrida de 3 a
+  6 m/s no teste de patinação, o mínimo (1,3 m/s) fica entre 4,5 e 4,8.
+  Quadril sobe 6,2 cm (`SprintHipsLift`): o pé mais baixo fica a −1 cm.
+
 ### Corrida de quatro nova do lobo (15/11)
 - O lobo correndo de quatro (W duas vezes) toca **a corrida de quatro
   patas do Jhon**: o "Quadruped Run" do Mixamo editado por ele no

@@ -70,12 +70,11 @@ public partial class WolfVisual
 	[Export] public float CrawlClipSpeed = 2.9f;
 
 	/// <summary>A passada da corrida de quatro (o "Quadruped Run" do
-	/// Jhon, sprint.fbx), em m/s: a velocidade com que as patas de apoio
-	/// vão para trás com o clipe a 1×, na média do tempo de cada uma no
-	/// chão (no esqueleto do Mutant: pés 7,9 e 5,7 m/s, mãos 4,2 e 2,3),
-	/// na escala do modelo. A 6 m/s o clipe toca a 1,1×, quase o ritmo do
-	/// Blender.</summary>
-	[Export] public float SprintClipSpeed = 5.3f;
+	/// Jhon, sprint.fbx, versão 2 de 15/11, ciclo de 0,867 s), em m/s: a
+	/// velocidade que menos patina o pé no jogo (varrida de 3 a 6 m/s no
+	/// teste de patinação: o mínimo, 1,3 m/s, fica entre 4,5 e 4,8). A
+	/// 6 m/s o clipe toca a 1,3×.</summary>
+	[Export] public float SprintClipSpeed = 4.6f;
 
 	/// <summary>
 	/// Quanto a animação de andar corre em relação ao corpo. 1 = acompanha

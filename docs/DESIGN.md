@@ -602,7 +602,7 @@ propósito tático em vez de ser só um botão de ficar menor.
 
 O passo sai a cada **passada** — a distância entre um pé no chão e o
 outro, que é a do clipe que está tocando (1,19 m o humano correndo,
-1,05 m o lobo, 1,77 m na corrida de quatro) — e não por tempo: o som
+1,05 m o lobo, 1,99 m na corrida de quatro) — e não por tempo: o som
 cai com o pé da animação e a cadência acompanha a velocidade sozinha.
 Até a v0.27 era um ruído a cada 2,2 m, metade dos passos que se via; o
 bot agora ouve cada pisada, como o jogador. A fase da pisada não é
