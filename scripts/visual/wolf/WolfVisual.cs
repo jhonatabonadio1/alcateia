@@ -20,29 +20,25 @@ using System.Collections.Generic;
 /// em movimento. Virar lobo não tem animação (decisão do Jhon): o lobo
 /// aparece já andando.
 ///
-/// **O pulo usa só o voo do "mutant jumping"**: o clipe agacha, salta e
-/// aterrissa sozinho, e no jogo quem salta é a física, no quadro do
-/// clique — tocado inteiro, o bicho pularia duas vezes. Então o agachar
-/// fica de fora, e o voo não corre no relógio: anda pela velocidade
-/// vertical do corpo (saindo do chão, no topo, caindo), e o quadril fica
-/// na altura de pé (quem sobe é a cápsula). Chegou devagar, toca a
-/// aterrissagem; chegou correndo, volta direto para a corrida — agachar
-/// com o corpo a 5 m/s faria o pé patinar.
+/// **As animações são as do Jhon** (<c>lobo_anim.glb</c>, veja
+/// <see cref="WolfOwnClips"/>); os .fbx do Mixamo ficam para os papéis
+/// sem clipe dele (morte, parede) e de reserva.
 ///
-/// | Clipe | Arquivo do pack | Quando |
+/// | Clipe | Animação | Quando |
 /// |---|---|---|
-/// | idle | mutant breathing idle | parado |
-/// | walk / run | mutant walking / run | andando, correndo |
-/// | claw | mutant swiping | garrada (clique), alternando com o punch |
-/// | heavy | mutant punch | a outra garrada |
-/// | pounce | mutant jump attack, inteiro | salto (direito no chão) |
-/// | dive | mutant jump attack, só a queda | bote (direito no ar), até encostar |
-/// | dive_land | mutant jump attack, da pancada ao fim | bote, ao encostar |
-/// | howl | mutant roaring | uivando (R), da cintura para cima |
-/// | jump | mutant jumping, só o voo | no ar depois de um pulo (do chão ou da parede) |
-/// | jump_land | mutant jumping, a aterrissagem | tocou o chão depois do pulo, devagar |
-/// | wallrun | Running Crawl | correndo na parede, de barriga para ela |
-/// | death | mutant dying | morreu de lobo |
+/// | idle | Idle_Pose | parado |
+/// | walk, walk_back, walk_left, walk_right | Walk_Forward/Backward/Left/Right | andando em pé, de frente para a mira, acelerado até a velocidade do corpo |
+/// | crouch / crawl | Crouch_Idle / Crouch_Walk | agachado, parado e andando |
+/// | sprint | Run_Quad | corrida de quatro, a 1× |
+/// | claw / heavy | Attack_Primary / Attack_Secondary | as garradas, da cintura para cima |
+/// | pounce, dive, dive_land | Special_Attack, em trechos | salto (direito no chão); bote (direito no ar) e o pouso dele |
+/// | howl | Howl | uivando (R), da cintura para cima |
+/// | jump_start, jump_air, jump_land | Jump_Start / Jump_Air / Jump_Land | o impulso ao sair do chão pulando, o voo e o pouso devagar |
+/// | wallrun | Running Crawl (Mixamo) | correndo na parede, de barriga para ela |
+/// | death | mutant dying (Mixamo) | morreu de lobo |
+///
+/// Sem o Jump_Air do Jhon, o pulo usa só o voo do "mutant jumping" do
+/// Mixamo, tocado pela velocidade vertical (UpdateJump).
 ///
 /// Os golpes e o rugido tocam o trecho e a velocidade de
 /// <see cref="WolfMoves"/>, a mesma tabela que a arma usa para o dano
@@ -148,20 +144,24 @@ public partial class WolfVisual : Node3D
 		bool jumped = _player != null && _player.IsJumpAirborne;
 		bool falling = !_body.IsOnFloor() && (_airTime > 0.12f || _body.Velocity.Y < -2f);
 		bool special = _weapon.IsDiving || _weapon.IsPounceFlying || _weapon.IsRooted;
-		bool jumping = !onWall && !special && (jumped || falling) && Has("jump");
+		bool jumping = !onWall && !special && (jumped || falling) && (Has("jump") || Has("jump_air"));
 		if (onWall != _onWall || jumping != _jumping)
 		{
 			// Acabou o pulo no chão: chegou devagar, aterrissa; chegou
 			// correndo, a corrida já é a aterrissagem.
 			if (_jumping && !jumping && !onWall && _body.IsOnFloor() && _speed < MovingSpeed && !_weapon.IsStriking)
-				Fire("jump_land", JumpLandSpeed);
+				Fire("jump_land", Has("jump_air") ? 1f : JumpLandSpeed);
+
+			// Saiu do chão pulando (não caindo de uma beirada): o impulso.
+			if (jumping && !_jumping && jumped && _body.Velocity.Y > 0f && Has("jump_start"))
+				_tree.Set("parameters/Machine/Jump/StartShot/request", (int)AnimationNodeOneShot.OneShotRequest.Fire);
 
 			_onWall = onWall;
 			_jumping = jumping;
 			_playback?.Travel(onWall ? "Wall" : jumping ? "Jump" : "Locomotion");
 		}
 
-		if (_jumping) UpdateJump();
+		if (_jumping && !Has("jump_air")) UpdateJump();
 
 		// Aterrissando e já saiu andando: a aterrissagem sai.
 		if (Has("jump_land") && _speed > MovingSpeed

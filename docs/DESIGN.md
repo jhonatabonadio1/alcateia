@@ -411,11 +411,15 @@ corrija a linha dele.
 
 | Golpe | Clipe | Golpe na tela | Dura |
 |---|---|---|---|
-| Garrada, braço 1 | swiping, 1,00–1,85 s, 2,2× | 0,14 s | 0,39 s |
-| Garrada, braço 2 | punch, 0–0,85 s, 2,2× | 0,14 s | 0,39 s |
-| Salto (direito no chão) | jump attack inteiro, 0–3,00 s, 1,4× | 1,14 s, quando cai | 2,14 s, preso; voa até 8,4 m em arco |
-| Bote (direito no ar) | jump attack: a queda, depois a aterrissagem | quando encosta | aterrissagem de 0,78 s, presa; sem recarga |
-| Rugido (R, segurado) | roaring, 0,30–4,90 s, 2,875× | escudo no fim | 1,6 s; soltar cancela |
+| Garrada, braço 1 | Attack_Primary, inteiro, 1× | 0,20 s | 0,73 s |
+| Garrada, braço 2 | Attack_Secondary, inteiro, 1× | 0,20 s | 0,73 s |
+| Salto (direito no chão) | Special_Attack inteiro, 0–2,20 s, 1× | 1,33 s, quando as mãos batem no chão | 2,2 s, preso; voa até 8,4 m em arco |
+| Bote (direito no ar) | Special_Attack: a queda (0,80–1,33 s), depois a aterrissagem | quando encosta | aterrissagem de 0,87 s, presa; sem recarga |
+| Rugido (R, segurado) | Howl, inteiro, 1× | escudo no fim | 1,53 s; soltar cancela |
+
+**Desde 15/11 todos os golpes são as animações do Jhon, na velocidade
+em que ele as fez** (pedido dele): as garradas ficaram mais lentas
+(0,73 s, eram 0,39) e o rugido um pouco mais curto (1,53 s, era 1,6).
 
 Durante um golpe o lobo não volta a humano: a tecla espera o golpe
 acabar.
@@ -505,8 +509,8 @@ chão no caminho a cada 40 cm, com raios de cima para baixo:
 
 - A direção sai da câmera do próprio jogador (`Player.AimCamera`), não
   da câmera que estiver na tela. O
-dano (2,1×) sai **quando o lobo cai**, 1,14 s depois do clique. Preso
-por 2,14 s: forte, mas lento e fácil de ver vindo — a lentidão é o que
+dano (2,1×) sai **quando o lobo cai**, 1,33 s depois do clique. Preso
+por 2,2 s: forte, mas lento e fácil de ver vindo — a lentidão é o que
 impede que seja a resposta para tudo. O volume é o das garras.
 
 **Botão direito no ar: o bote.** Um mergulho **em linha reta** na
@@ -552,7 +556,7 @@ de um humano a trinta metros é o contorno.
 ### O escudo do lobo
 
 O escudo **escorre sozinho** enquanto o lobo está transformado. Não é
-vida extra: é um relógio. **Segurar R ruge**: 1,6 s do começo ao fim,
+vida extra: é um relógio. **Segurar R ruge**: 1,53 s do começo ao fim,
 e só então o escudo volta cheio. **Soltar antes cancela** sem pagar —
 o rugido é um compromisso, não um botão de disparo. **O lobo ruge em
 movimento** (decisão do Jhon): anda, pula e cai rugindo, sem frear —
@@ -1469,18 +1473,25 @@ velocidade do corpo, que já é zero em 0,08 s — e as pernas se juntam em
 um mínimo de 0,6×: o lobo corria no lugar mais um quarto de segundo, os
 pés andando um metro com o corpo parado.
 
-**Desde 15/11 o parado, o agachado, o engatinhar e a corrida de quatro
-são animações do Jhon** (`lobo_anim.glb`, feitas no lobo do Meshy:
-`Idle`, `Walk`, `Crouch_Idle`, `Crouch_Walk`, `Run_Quad`,
-`Special_Attack`); o resto segue do Mixamo. **Agachado** o lobo toca o
-`Crouch_Idle` (topo da cabeça a 1,25 m do chão; a cápsula agachada tem
-1,0 m, então a cabeça sai 25 cm acima dela — o tiro na cabeça segue o
-modelo). Andando agachado ele **engatinha** no `Crouch_Walk`, na
-velocidade do corpo (`CrawlClipSpeed` 1,4 m/s). **Na corrida de quatro**
-(W duas vezes) toca o `Run_Quad` (ciclo de 0,533 s, uma batida por
-ciclo quando mãos e pés se juntam), também na velocidade do corpo. Com
-o Mutant do Mixamo, o agachado era o fim do "jump attack" e o engatinhar
-o Running Crawl. Antes o lobo agachado continuava de pé,
+**Desde 15/11 quase tudo são animações do Jhon** (`lobo_anim.glb`,
+feitas no lobo do Meshy, 15 clipes); só a morte e a corrida na parede
+seguem do Mixamo. **Em pé o lobo não tem corrida, só andar**: os quatro
+andares (frente, trás, esquerda, direita) **aceleram até a velocidade
+do corpo** para o pé não deslizar (a 4,15 m/s, de frente toca a ~2,9×
+e de lado a ~5,5×; decisão do Jhon). O corpo fica de frente para a
+mira e o passo escolhe a direção; nas diagonais o corpo vira o resto
+(até 45°). **Agachado** toca o `Crouch_Idle` (topo da cabeça a 1,18 m
+do chão; a cápsula agachada tem 1,0 m, então a cabeça sai 18 cm acima —
+o tiro na cabeça segue o modelo). Andando agachado ele **engatinha** no
+`Crouch_Walk`, na velocidade do corpo (`CrawlClipSpeed` 1,05 m/s). **Na
+corrida de quatro** (W duas vezes) toca o `Run_Quad` **a 1×, no ritmo
+em que foi feito**, com o corpo na velocidade de sempre (6 m/s contra
+4,1 do pé: desliza a diferença, decisão do Jhon). O som do passo sai
+uma vez por ciclo, no quadro em que as patas da frente e as de trás se
+juntam. **O pulo** toca o impulso (`Jump_Start`) ao sair do chão, o voo
+em laço (`Jump_Air`) e o pouso (`Jump_Land`), todos a 1×. Com o Mutant
+do Mixamo, o agachado era o fim do "jump attack" e o engatinhar o
+Running Crawl. Antes o lobo agachado continuava de pé,
 a cabeça a 1,7 m — fora da cápsula, e o tiro passava por cima do que se
 via. Testado e descartado: misturar a pose agachada no andar (o pé de
 apoio patinava 0,9 a 1,4 m/s em qualquer passada) e pôr só no tronco (a

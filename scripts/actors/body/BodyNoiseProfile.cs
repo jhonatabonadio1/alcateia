@@ -34,14 +34,18 @@ public partial class BodyNoiseProfile : Resource
 	///
 	/// Os números saem dos clipes (velocidade em que o pé não patina ×
 	/// duração do ciclo ÷ 2 pisadas) e o teste PassoNoRitmo confere:
-	/// humano correndo, 3,24 m/s × 0,733 s ÷ 2; lobo, 2,42 × 0,867 ÷ 2;
-	/// corrida de quatro (Run_Quad do Jhon), 2,7 × 0,533 ÷ 0,5 de escala
-	/// da animação, com uma batida por ciclo: o som sai quando mãos e pés se
-	/// juntam (pedido do Jhon). Trocou o clipe ou a velocidade de andar,
-	/// refaça a conta.
+	/// humano correndo, 3,24 m/s × 0,733 s ÷ 2; lobo em pé, o andar do Jhon
+	/// de frente, 1,45 × 1,433 ÷ 2. Corrida de quatro: uma batida por ciclo
+	/// (o som sai quando as patas da frente e as de trás se juntam, pedido
+	/// do Jhon), com o clipe a 1× e o corpo a 6,02 m/s: 6,02 × 0,6.
+	///
+	/// No jogo o lobo usa estes só sem o modelo: com ele, a passada em pé
+	/// vem do andar que está tocando (frente, trás ou lado) e a corrida de
+	/// quatro bate pelo clipe (<see cref="WolfVisual.SprintBeats"/>).
+	/// Trocou o clipe ou a velocidade de andar, refaça a conta.
 	/// </summary>
 	[ExportGroup("Passada")]
 	[Export] public float StrideHuman = 1.19f;
-	[Export] public float StrideWolf = 1.05f;
-	[Export] public float StrideWolfSprint = 2.88f;
+	[Export] public float StrideWolf = 1.04f;
+	[Export] public float StrideWolfSprint = 3.61f;
 }

@@ -50,27 +50,60 @@ public sealed class StepRhythmTest : RegressionTest
 			b.Near(expected, steps.Count, 1.0, $"passos do humano em 3 s (ciclo de {RegressionBench.F(cycle)} s)");
 			b.Near(speed * cycle / 2, profile.StrideHuman, 0.05, "passada do humano (m)");
 
-			// Lobo: o clipe toca na velocidade do corpo dividida pela
-			// passada dele, então a distância por pisada é fixa.
+			// Lobo em pé: o andar do Jhon acelera até a velocidade do corpo
+			// (o clipe toca na velocidade dividida pela passada), então a
+			// distância por pisada é fixa: a passada do clipe × ciclo ÷ 2. O
+			// perfil guarda a de frente, para quem não tem o modelo.
 			var visual = p.GetNode<WolfVisual>("WolfVisual");
-			float run = ClipLength("res://assets/characters/wolf/run.fbx");
+			float walk = WolfOwnClips.Length("walk");
 			float sprint = WolfOwnClips.Length("sprint");
-			if (sprint <= 0f) sprint = ClipLength("res://assets/characters/wolf/sprint.fbx");
-			b.Near(visual.RunClipSpeed * run / 2, profile.StrideWolf, 0.04, "passada do lobo (m)");
-			// De quatro, uma batida por ciclo (mãos e pés juntos); o clipe toca
-			// na velocidade do corpo × SprintAnimScale ÷ SprintClipSpeed.
-			b.Near(visual.SprintClipSpeed * sprint / visual.SprintAnimScale, profile.StrideWolfSprint, 0.04, "passada da corrida de quatro (m)");
+			b.Near(visual.WalkClipSpeed * walk / 2, profile.StrideWolf, 0.04, "passada do lobo em pé (m)");
 
-			// E correndo de lobo, o que se ouve bate com a conta.
+			// E andando de lobo, o que se ouve bate com a conta.
 			await b.BecomeWolf();
 			await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.6);
 			RegressionBench.Press("move_forward");
 			await b.Seconds(0.8);
 			double wolfSpeed = RegressionBench.Flat(await b.Displacement(p, 60));
+			b.Near(visual.WalkClipSpeed * walk / 2, visual.StepStride, 0.02, "o corpo usa a passada do andar de frente (m)");
 			steps.Clear();
 			await b.Seconds(2.0);
 			RegressionBench.ReleaseAll();
-			b.Near(wolfSpeed * 2.0 / profile.StrideWolf, steps.Count, 1.0, "passos do lobo em 2 s");
+			RegressionBench.Note($"lobo em pé a {RegressionBench.F((float)wolfSpeed)} m/s: {steps.Count} passos em 2 s, passada {RegressionBench.F(visual.StepStride)} m");
+			b.Near(wolfSpeed * 2.0 / visual.StepStride, steps.Count, 1.0, "passos do lobo em 2 s");
+
+			// De quatro: o clipe toca a 1× (pedido do Jhon), e o som sai uma
+			// vez por ciclo, no quadro em que as patas da frente e as de trás
+			// se juntam (SprintGather) — o primeiro, contado do começo da
+			// corrida, que sempre começa do começo do clipe.
+			float sceneScale = visual.SprintAnimScale;
+			visual.SprintAnimScale = 1f;
+			await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.6);
+			steps.Clear();
+			await b.Tap("move_forward");
+			await b.Seconds(0.08);
+			double start = clock;
+			RegressionBench.Press("move_forward");
+			for (int i = 0; i < 150; i++)
+			{
+				await b.PhysicsFrame();
+				clock += 1.0 / 60.0;
+			}
+			float gallop = RegressionBench.Flat(p.Velocity);
+			RegressionBench.ReleaseAll();
+			visual.SprintAnimScale = sceneScale;
+
+			var beats = steps.Where(t => t >= start).ToList();
+			b.Check(beats.Count >= 3, $"de quatro: {beats.Count} passos em 2,5 s");
+			if (beats.Count >= 3)
+			{
+				RegressionBench.Note($"de quatro a {RegressionBench.F(gallop)} m/s: {beats.Count} passos, o primeiro {RegressionBench.F((float)(beats[0] - start))} s depois do W, um a cada {RegressionBench.F((float)((beats[^1] - beats[0]) / (beats.Count - 1)))} s");
+				b.Near(WolfVisual.SprintGather, beats[0] - start, 0.08, "o primeiro passo cai quando as patas se juntam (s; a corrida começa 2 a 3 quadros depois do W)");
+				b.Near(sprint, (beats[^1] - beats[0]) / (beats.Count - 1), 0.02, "um passo por ciclo do clipe (s)");
+			}
+
+			// Sem o modelo (o perfil): a mesma batida, em metros a 1×.
+			b.Near(gallop * sprint, profile.StrideWolfSprint, 0.1, "passada da corrida de quatro no perfil (m)");
 		}
 		finally
 		{

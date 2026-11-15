@@ -19,15 +19,26 @@ public static class WolfOwnClips
 	public const string Path = "res://assets/characters/wolf/lobo_anim.glb";
 
 	/// <summary>Papel no jogo → nome do clipe no arquivo (o Godot tira o
-	/// "-loop" do nome). "special" ainda não toca.</summary>
+	/// "_Loop" do nome e põe o clipe em laço). Os papéis são os nomes dos
+	/// arquivos do Mixamo que cada um substitui ("leap" é o "jump attack":
+	/// salto, bote e aterrissagem saem do Special_Attack).</summary>
 	private static readonly Dictionary<string, string> Names = new()
 	{
-		["idle"] = "Idle",
-		["walk"] = "Walk",
+		["idle"] = "Idle_Pose",
+		["walk"] = "Walk_Forward",
+		["walk_back"] = "Walk_Backward",
+		["walk_left"] = "Walk_Left",
+		["walk_right"] = "Walk_Right",
 		["sprint"] = "Run_Quad",
 		["crouch"] = "Crouch_Idle",
 		["crawl"] = "Crouch_Walk",
-		["special"] = "Special_Attack"
+		["claw"] = "Attack_Primary",
+		["heavy"] = "Attack_Secondary",
+		["howl"] = "Howl",
+		["leap"] = "Special_Attack",
+		["jump_start"] = "Jump_Start",
+		["jump_air"] = "Jump_Air",
+		["jump_land"] = "Jump_Land"
 	};
 
 	public static bool Has(string role) => Names.ContainsKey(role);

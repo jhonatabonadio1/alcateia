@@ -28,23 +28,35 @@ mixamo"), reduza as texturas (`tools/` não tem script: no Blender, dê
 embutidas) e ponha aqui com o mesmo nome. O time laranja é o mesmo
 arquivo com a cor da pelagem trocada.
 
-**Animações do Jhon (`lobo_anim.glb`, 15/11).** Parado, andar, agachado
-parado, andar agachado e corrida de quatro vêm do arquivo
-`lobo_anim.glb`, que o Jhon animou no próprio lobo do Meshy (esqueleto
-de 24 ossos, escala 0,01 e giro de 90° no `Armature`). O arquivo guarda
-só o esqueleto e os seis clipes (487 KB): malha, textura e material
+**Animações do Jhon (`lobo_anim.glb`, 15/11).** Vêm do
+`Wolf_animations.glb` que o Jhon animou no próprio lobo do Meshy
+(esqueleto de 24 ossos, escala 0,01 no `Armature`). O arquivo do jogo
+guarda só o esqueleto e os 15 clipes (722 KB): malha, textura e material
 saem (`gltf-transform`, mantendo a pele, sem a qual o Godot não cria o
-esqueleto). Os nomes: `Idle`, `Walk`, `Crouch_Idle`, `Crouch_Walk`,
-`Run_Quad` e `Special_Attack` (o sufixo `-loop` vira laço linear). O
-`WolfOwnClips` os encaixa no corpo do jogo: tira escala e posição que
+esqueleto). O Godot tira o `_Loop` do nome e põe o clipe em laço.
+
+| Clipe | Papel no jogo | Como toca |
+|---|---|---|
+| `Idle_Pose` | parado (e a vitrine do lobby) | 1× |
+| `Walk_Forward`, `Walk_Backward`, `Walk_Left`, `Walk_Right` | andar em pé, nas quatro direções, de frente para a mira | acelera até a velocidade do corpo (o lobo não tem corrida em pé) |
+| `Crouch_Idle` | agachado parado | 1× |
+| `Crouch_Walk` | andando agachado | na velocidade do corpo |
+| `Run_Quad` | corrida de quatro (W duas vezes) | 1×; o som do passo sai quando as patas se juntam (0,567 s) |
+| `Attack_Primary`, `Attack_Secondary` | as duas garradas | 1×, da cintura para cima |
+| `Howl` | rugido (R) | 1×, da cintura para cima |
+| `Special_Attack` | salto (direito no chão), bote (direito no ar) e a aterrissagem do bote | 1×; trechos em `WolfMoves.cs` |
+| `Jump_Start`, `Jump_Air`, `Jump_Land` | pulo: impulso, voo em laço e pouso | 1× |
+
+O `WolfOwnClips` os encaixa no corpo do jogo: tira escala e posição que
 não são do quadril, converte o quadril para a altura do corpo e corrige
 a diferença de eixos (`RetargetPose` com `referenceFrame` e
-`bodyFrame`). Papéis sem clipe dele (garrada, soco, rugido, pulo, bote,
-morte, correr em pé e na parede) continuam nos `.fbx` do Mixamo abaixo.
-Para trocar um clipe dele, exporte o GLB com os mesmos nomes. **O lobo
-azul veio com 1,80 m e o vermelho com 1,66 m: os dois foram normalizados
-para 1,66 m.** O `sprint.fbx` virou só reserva (versão 3 do "Quadruped
-Run"), usado se o `lobo_anim.glb` faltar.
+`bodyFrame`). Cada um vale no lugar do `.fbx` do Mixamo de mesmo papel;
+só a morte, a corrida na parede (e o `run`, o `jump` e o `sprint`, de
+reserva se o `lobo_anim.glb` faltar) continuam nos `.fbx` abaixo. Para
+trocar um clipe, exporte o GLB com os mesmos nomes e meça de novo a
+passada (`PassadaDoLobo`) e os tempos dos golpes (`WolfMoves.cs`). **O
+lobo azul veio com 1,80 m e o vermelho com 1,66 m: os dois foram
+normalizados para 1,66 m.**
 
 Os clipes são do **Creature Pack** do Mixamo, renomeados pelo papel
 que fazem no jogo:

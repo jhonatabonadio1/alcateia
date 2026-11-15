@@ -60,22 +60,45 @@ public partial class WolfVisual
 	/// 1× até 7 m/s, e o corpo andava mais do dobro do que as pernas. O
 	/// limite do que fica natural é a passada: correr além de ~1,6× fica
 	/// corrido, e por isso o lobo anda a 3,6 m/s (decisão do Jhon).</summary>
-	[Export] public float WalkClipSpeed = 1.36f;
+	///
+	/// Com os andares do Jhon (Walk_Forward, 1,43 s por ciclo) a de andar
+	/// para a frente é a do pé dele: o lobo não tem corrida em pé, então o
+	/// andar acelera até a velocidade do corpo (a 4,15 m/s toca a ~3×, pedido
+	/// do Jhon) e o pé não desliza. Varrida no teste de patinação a 4,15
+	/// m/s: de 1,1 (1,29 m/s de patinação) a 1,6; o mínimo, 0,66, fica entre
+	/// 1,4 e 1,6. RunClipSpeed é a do "mutant run", só sem os andares dele.</summary>
+	[Export] public float WalkClipSpeed = 1.45f;
 	[Export] public float RunClipSpeed = 2.42f;
 
-	/// <summary>A passada do andar agachado, em m/s (o "Crouch_Walk" do
-	/// Jhon, 1,43 s por ciclo; sem ele, o "Running Crawl" do Mixamo, que
-	/// pedia 2,9). O pé de apoio mede 1,36 m/s no clipe; varrida de 0,8 a
-	/// 2,9 no teste de patinação: o mínimo, 0,30 m/s, fica em 1,4.</summary>
-	[Export] public float CrawlClipSpeed = 1.4f;
+	/// <summary>A passada do andar para trás (Walk_Backward, 1,43 s) e de
+	/// lado (Walk_Left e Walk_Right, 0,6 s), em m/s: o mesmo que
+	/// <see cref="WalkClipSpeed"/>, na direção de cada um. Mínimos da
+	/// varrida a 4,15 m/s: para trás 0,89 m/s de patinação em 1,15 (1,40 em
+	/// 0,8; 1,76 em 1,7); de lado 1,35 em 0,75 (2,23 em 0,55; 1,61 em 0,95).
+	/// De lado o clipe toca a 5,5×: um ciclo a cada 0,11 s, e boa parte do
+	/// que se mede é o pé entre um quadro e outro.</summary>
+	[Export] public float WalkBackClipSpeed = 1.15f;
+	[Export] public float WalkSideClipSpeed = 0.75f;
 
-	/// <summary>A passada da corrida de quatro (o "Run_Quad" do Jhon,
-	/// lobo_anim.glb, ciclo de 0,533 s), em m/s: a velocidade que menos
-	/// patina o pé no jogo. A regra é <c>SprintClipSpeed = velocidade do pé
-	/// no clipe × SprintAnimScale</c>: o pé do clipe anda a 5,4 m/s no
-	/// modelo, e com a escala 0,5 da cena o mínimo fica em 2,7 (0,19 m/s de
-	/// patinação a 6 m/s; 0,45 em 2,5 e 0,47 em 2,9). Com escala 1, 5,4.</summary>
-	[Export] public float SprintClipSpeed = 2.7f;
+	/// <summary>A passada do andar agachado, em m/s (o Crouch_Walk do
+	/// Jhon, 1,33 s por ciclo; sem ele, o "Running Crawl" do Mixamo, que
+	/// pedia 2,9). Varrida a 1,87 m/s: 0,70 m/s de patinação em 0,8, o
+	/// mínimo (0,41) em 1,05, 0,50 em 1,2.</summary>
+	[Export] public float CrawlClipSpeed = 1.05f;
+
+	/// <summary>A velocidade do pé na corrida de quatro (o Run_Quad do
+	/// Jhon, ciclo de 0,6 s), em m/s: 3,3 a 3,9 no arquivo, ×1,09 no jogo
+	/// (a mesma razão medida nos andares). A corrida de quatro toca **na
+	/// velocidade em que foi feita** (1× de <see cref="SprintAnimScale"/>,
+	/// pedido do Jhon) com o corpo na velocidade do jogo — o pé desliza a
+	/// diferença. Só abaixo desta (parando) o clipe desacelera junto com o
+	/// corpo.</summary>
+	[Export] public float SprintClipSpeed = 4.1f;
+
+	/// <summary>Onde, no Run_Quad, as patas da frente e as de trás se
+	/// juntam embaixo do corpo (as de trás pousando atrás das mãos), em
+	/// segundos do clipe: é ali que sai o som do passo, uma vez por ciclo.</summary>
+	public const float SprintGather = 0.567f;
 
 	/// <summary>
 	/// Quanto a animação de andar corre em relação ao corpo. 1 = acompanha
@@ -89,8 +112,9 @@ public partial class WolfVisual
 	/// </summary>
 	[Export(PropertyHint.Range, "0.2,2,0.05")] public float WalkAnimScale = 1f;
 
-	/// <summary>O mesmo para a corrida de quatro (W duas vezes). O
-	/// engatinhar agachado continua acompanhando o corpo.</summary>
+	/// <summary>O ritmo da corrida de quatro (W duas vezes): 1 é a
+	/// velocidade em que o Jhon animou, seja qual for a do corpo. O
+	/// engatinhar agachado acompanha o corpo.</summary>
 	[Export(PropertyHint.Range, "0.2,2,0.05")] public float SprintAnimScale = 1f;
 
 	/// <summary>O ritmo que a velocidade pede, vezes a escala do ajuste.</summary>
@@ -133,8 +157,26 @@ public partial class WolfVisual
 		// Parado, fica virado para onde parou: girar de volta para a mira
 		// arrastaria os pés pelo chão sem passo nenhum. Volta quando anda
 		// para a frente ou ataca.
+		// Agachado ou de quatro, só há clipe para a frente: o corpo vira
+		// para onde anda. Em pé, com os quatro andares, fica de frente para
+		// a mira e o passo escolhe a direção.
+		bool crouching = (_player?.IsCrouching ?? false) && !onWall;
+		bool sprinting = (_player?.IsSprinting ?? false) && !onWall;
+		bool directional = Directional && !crouching && !sprinting;
+
 		float target = aiming ? 0f : _yawOffset;
-		if (!aiming && speed > 0.4f)
+		if (!aiming && speed > 0.4f && directional)
+		{
+			Vector3 local = _body.GlobalTransform.Basis.Inverse() * flat;
+			float angle = Mathf.Atan2(local.X, -local.Z);
+			_direction = PickDirection(angle, _direction);
+			_backward = false;
+
+			// O resto do ângulo (até 45°, nas diagonais) o corpo vira.
+			float rest = Mathf.Wrap(angle - DirectionAngle(_direction), -Mathf.Pi, Mathf.Pi);
+			target = -rest;
+		}
+		else if (!aiming && speed > 0.4f)
 		{
 			// No espaço do corpo: 0 é a frente, positivo é a direita.
 			Vector3 local = _body.GlobalTransform.Basis.Inverse() * flat;
@@ -165,29 +207,40 @@ public partial class WolfVisual
 
 		// Agachado acompanha a cápsula (que desce em 0,03 s) num décimo de
 		// segundo: rápido o bastante para a cabeça não ficar fora dela.
-		bool crouching = (_player?.IsCrouching ?? false) && !onWall;
 		_crouch = Mathf.MoveToward(_crouch, crouching ? 1f : 0f, delta / 0.1f);
 
 		// De quatro: andando agachado o lobo engatinha (o "Running Crawl");
 		// na corrida de quatro (W duas vezes) toca o clipe dela, as duas na
 		// velocidade do corpo. Sem o clipe da corrida, ela engatinha rápido.
-		bool sprinting = (_player?.IsSprinting ?? false) && !onWall;
 		bool sprintClip = Has("sprint");
 		_crawl = Mathf.MoveToward(_crawl, crouching || (sprinting && !sprintClip) ? 1f : 0f, delta / 0.1f);
 		_sprint = Mathf.MoveToward(_sprint, sprinting && sprintClip ? 1f : 0f, delta / 0.15f);
 
-		float stride = Mathf.Lerp(WalkClipSpeed, RunClipSpeed, _gait);
+		// A direção do passo vai até a escolhida em 0,15 s.
+		if (Directional)
+			_blend = _blend.MoveToward(DirectionVector(_direction), delta / 0.15f);
+
+		float stride = Directional ? DirectionStride(_blend) : Mathf.Lerp(WalkClipSpeed, RunClipSpeed, _gait);
 		float sign = _backward ? -1f : 1f;
-		float cadence = AnimRate(Mathf.Clamp(speed / Mathf.Max(stride, 0.01f), 0f, 3f) * sign, WalkAnimScale);
-		float crawl = Mathf.Clamp(speed / Mathf.Max(CrawlClipSpeed, 0.01f), 0f, 3f) * sign;
+		float cadence = AnimRate(Mathf.Clamp(speed / Mathf.Max(stride, 0.01f), 0f, MaxRate) * sign, WalkAnimScale);
+		float crawl = Mathf.Clamp(speed / Mathf.Max(CrawlClipSpeed, 0.01f), 0f, MaxRate) * sign;
 		if (sprinting) crawl = AnimRate(crawl, SprintAnimScale);
-		float gallop = AnimRate(Mathf.Clamp(speed / Mathf.Max(SprintClipSpeed, 0.01f), 0f, 3f) * sign, SprintAnimScale);
+
+		// A corrida de quatro no ritmo dela: 1× (vezes a escala) com o corpo
+		// em qualquer velocidade acima da do pé do clipe; abaixo, desacelera.
+		float gallop = AnimRate(Mathf.Clamp(speed / Mathf.Max(SprintClipSpeed, 0.01f), 0f, 1f) * sign, SprintAnimScale);
+		UpdateSprintBeat(sprinting && sprintClip, gallop, delta);
+
+		// A passada do som do passo em pé: dois pés por ciclo do clipe
+		// que está tocando.
+		StepStride = Directional ? DirectionStride(_blend) * DirectionCycle(_blend) / 2f : 0f;
 
 		float mixTarget = Mathf.Clamp(speed / 0.5f, 0f, 1f);
 		float mixTime = mixTarget > _moveMix ? StartBlend : StopBlend;
 		_moveMix = Mathf.MoveToward(_moveMix, mixTarget, delta / Mathf.Max(mixTime, 0.01f));
 
-		_tree.Set("parameters/Machine/Locomotion/Gait/blend_position", _gait);
+		if (Directional) _tree.Set("parameters/Machine/Locomotion/Gait/blend_position", _blend);
+		else _tree.Set("parameters/Machine/Locomotion/Gait/blend_position", _gait);
 		_tree.Set("parameters/Machine/Locomotion/Speed/scale", cadence);
 		_tree.Set("parameters/Machine/Locomotion/Mix/blend_amount", _moveMix);
 		_tree.Set("parameters/Machine/Locomotion/IdleCrouch/blend_amount", _crouch);
@@ -214,5 +267,105 @@ public partial class WolfVisual
 		_yawOffset = 0f;
 		_moveMix = 0f;
 		_backward = false;
+		_direction = 0;
+		_blend = new Vector2(0, 1);
+	}
+
+	/// <summary>Até quantas vezes o clipe acelera para acompanhar o corpo:
+	/// o andar de lado (0,71 m/s) a 4,15 m/s pede 5,8×.</summary>
+	private const float MaxRate = 8f;
+
+	/// <summary>Direção do passo em pé: 0 frente, 1 direita, 2 trás, 3
+	/// esquerda.</summary>
+	private int _direction;
+	private Vector2 _blend = new(0, 1);
+
+	/// <summary>A direção pelo ângulo do movimento (0 é a frente, positivo
+	/// a direita), com 10° de folga na divisa para não ficar trocando
+	/// nas diagonais.</summary>
+	private static int PickDirection(float angle, int current)
+	{
+		float slack = Mathf.DegToRad(10f);
+		float off = Mathf.Abs(Mathf.Wrap(angle - DirectionAngle(current), -Mathf.Pi, Mathf.Pi));
+		if (off <= Mathf.Pi / 4f + slack) return current;
+
+		float deg = Mathf.RadToDeg(angle);
+		if (Mathf.Abs(deg) <= 45f) return 0;
+		if (Mathf.Abs(deg) >= 135f) return 2;
+		return deg > 0 ? 1 : 3;
+	}
+
+	private static float DirectionAngle(int direction) => direction switch
+	{
+		1 => Mathf.Pi / 2f,
+		2 => Mathf.Pi,
+		3 => -Mathf.Pi / 2f,
+		_ => 0f
+	};
+
+	/// <summary>O ponto da direção no espaço 2D do passo (x direita, y
+	/// frente).</summary>
+	private static Vector2 DirectionVector(int direction) => direction switch
+	{
+		1 => new Vector2(1, 0),
+		2 => new Vector2(0, -1),
+		3 => new Vector2(-1, 0),
+		_ => new Vector2(0, 1)
+	};
+
+	/// <summary>Peso de cada andar no ponto do espaço 2D: frente, trás,
+	/// lado.</summary>
+	private static (float Front, float Back, float Side) DirectionWeights(Vector2 p)
+	{
+		float front = Mathf.Max(p.Y, 0f), back = Mathf.Max(-p.Y, 0f), side = Mathf.Abs(p.X);
+		float sum = Mathf.Max(front + back + side, 0.001f);
+		return (front / sum, back / sum, side / sum);
+	}
+
+	private float DirectionStride(Vector2 p)
+	{
+		var (front, back, side) = DirectionWeights(p);
+		return front * WalkClipSpeed + back * WalkBackClipSpeed + side * WalkSideClipSpeed;
+	}
+
+	private float DirectionCycle(Vector2 p)
+	{
+		var (front, back, side) = DirectionWeights(p);
+		float Len(string clip) => _lengths.TryGetValue(clip, out float l) ? l : 1f;
+		return front * Len("walk") + back * Len("walk_back") + side * Len("walk_left");
+	}
+
+	/// <summary>Metros entre um som de passo e o seguinte no andar em pé
+	/// (0 sem os andares do Jhon: vale o do <see cref="BodyNoiseProfile"/>).</summary>
+	public float StepStride { get; private set; }
+
+	/// <summary>Quantas vezes as patas se juntaram desde que a corrida de
+	/// quatro começou: o <see cref="Player"/> faz o som do passo a cada uma.</summary>
+	public int SprintBeats { get; private set; }
+
+	/// <summary>Se a corrida de quatro está dando o ritmo do som do passo.</summary>
+	public bool SprintDrivesSteps { get; private set; }
+
+	private bool _sprintRunning;
+	private float _sprintClock;
+
+	/// <summary>A corrida de quatro sempre começa do começo do clipe; daí
+	/// em diante o relógio dele anda no ritmo da animação, e cada vez que
+	/// passa por <see cref="SprintGather"/> conta uma batida.</summary>
+	private void UpdateSprintBeat(bool running, float rate, float delta)
+	{
+		if (running && !_sprintRunning)
+		{
+			_tree.Set("parameters/Machine/Locomotion/SprintSeek/seek_request", 0f);
+			_sprintClock = 0f;
+			SprintBeats = 0;
+		}
+		_sprintRunning = running;
+		SprintDrivesSteps = running;
+		if (!running) return;
+
+		float length = _lengths.TryGetValue("sprint", out float l) ? l : 0.6f;
+		_sprintClock += Mathf.Abs(rate) * delta;
+		SprintBeats = _sprintClock < SprintGather ? 0 : 1 + (int)((_sprintClock - SprintGather) / length);
 	}
 }

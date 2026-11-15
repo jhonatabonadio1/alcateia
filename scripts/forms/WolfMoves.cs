@@ -9,7 +9,7 @@ public enum WolfMove
 	/// <summary>Clique esquerdo, o outro braço ("punch").</summary>
 	Punch,
 
-	/// <summary>Botão direito no chão: o salto inteiro do "jump attack",
+	/// <summary>Botão direito no chão: o salto inteiro (o Special_Attack),
 	/// com o dano na aterrissagem.</summary>
 	Pounce,
 
@@ -42,55 +42,58 @@ public readonly record struct WolfClip(string Source, float Start, float End, fl
 /// (<see cref="WolfVisual"/>) toca o mesmo trecho na mesma velocidade.
 /// Como os dois leem daqui, não tem como sair de sincronia.
 ///
-/// Os números vieram de <c>tools/analisar_golpes.gd</c>, que reconstrói
-/// a posição das mãos, dos pés e do quadril quadro a quadro: o golpe é o
-/// pico de velocidade da mão que bate; o passo, quanto o quadril anda
-/// para a frente; no salto, o quadro em que os pés voltam ao chão.
+/// Desde 15/11 os golpes, o rugido, o salto e a aterrissagem são as
+/// animações do Jhon (<c>lobo_anim.glb</c>, veja <see cref="WolfOwnClips"/>),
+/// **tocadas na velocidade em que ele as fez** (1×, pedido do Jhon). O
+/// nome do arquivo de cada linha é o papel: "leap" é o Special_Attack. Os
+/// números vieram do esqueleto, quadro a quadro (mãos, pés e quadril): o
+/// golpe é o pico de velocidade da mão que bate; no salto, os pés saindo e
+/// voltando ao chão e as mãos batendo no chão.
 ///
-/// | Clipe | Arquivo | Medido | Trecho usado |
+/// | Clipe | Animação | Medido | Trecho usado |
 /// |---|---|---|---|
-/// | claw | mutant swiping (2,67 s) | mão esquerda recolhida e parada de 0,80 a 1,10 s, golpe a 22,5 m/s em 1,30 s; passo de 0,91 m de 0,97 s até o quadril parar em 1,43 s | 1,00–1,85 s: começa com a mão já recolhida, para a garra sair rápido |
-/// | heavy | mutant punch (1,10 s) | mão direita a 12,6 m/s em 0,30 s; o clipe só passa o peso (0,19 m) — o passo de 0,35 m é do jogo | 0–0,85 s |
-/// | pounce | mutant jump attack (3,70 s) | agacha até 0,5 s, topo em 0,97 s, pés no chão em 1,53 s, garras no chão em 1,60 s, de pé em 3,0 s; quadril anda 1,71 m | 0–3,00 s: o salto inteiro; o corpo voa do impulso (0,45 s) aos pés no chão (1,55 s) — quanto, quem diz é a carga. Só a descida do quadril vale (FallOnly): a subida é do corpo, no arco |
-/// | dive | o mesmo jump attack | do topo (1,03 s) às garras no chão (1,60 s) | só a queda |
-/// | dive_land | o mesmo jump attack | da pancada (1,60 s) a de pé | a aterrissagem do bote |
-/// | howl | mutant roaring (5,40 s) | parado até 0,4 s; a volta ao repouso, depois de 4,9 s, fica com a troca para o andar | 0,30–4,90 s, a 2,875×: 1,6 s (era 2,0 s; −20%, pedido do Jhon, 14/11) |
-/// | jump | mutant jumping (3,17 s) | parado até 0,5 s, agacha até 0,93 s, empurra, pés saem do chão em 1,27 s, topo em 1,60 s (quadril 0,49 acima de pé), pés no chão em 1,87 s | 1,27–1,87 s: só o voo, tocado pela velocidade vertical (o agachar não cabe: a física sai do chão no quadro do clique). Impact marca o topo |
-/// | death | mutant dying (4,60 s) | parado até 0,43 s, a queda começa de verdade em 0,6 s | 0,55–4,60 s: tocado inteiro, o lobo ficava meio segundo de pé depois de morto, como se nada tivesse acontecido |
-/// | jump_land | o mesmo jumping | da pancada (1,87 s): agacha até o quadril a 0,55 em 2,13 s, de pé em 2,80 s | 1,87–2,80 s, a aterrissagem quando o lobo chega devagar |
+/// | claw | Attack_Primary (0,73 s) | mão direita a 12,4 m/s em 0,20 s; pés parados | inteiro |
+/// | heavy | Attack_Secondary (0,73 s) | mão esquerda a 12,3 m/s em 0,20 s; pés parados | inteiro |
+/// | pounce | Special_Attack (2,20 s) | agacha até 0,40 s (quadril a 0,57 m), pés saem do chão em 0,50 s, topo em 1,00 s (quadril a 1,39 m), pés no chão em 1,27 s, mãos batem no chão em 1,33 s (15 m/s), de pé em 2,1 s; não anda (o clipe é no lugar) | inteiro; o corpo voa do fim do agachar (0,47 s) aos pés no chão (1,27 s) — quanto, quem diz é a carga. Só a descida do quadril vale (FallOnly): a subida é do corpo, no arco |
+/// | dive | o mesmo Special_Attack | do alto, encolhido (0,80 s), às mãos no chão (1,33 s) | só a queda |
+/// | dive_land | o mesmo Special_Attack | da pancada (1,33 s) a de pé | a aterrissagem do bote |
+/// | howl | Howl (1,53 s) | os braços sobem e descem; pés parados | inteiro |
+/// | jump_land | Jump_Land (0,77 s) | encolhe até o quadril a 0,65 m em 0,13 s, de pé no fim | inteiro, a aterrissagem quando o lobo chega devagar |
+/// | jump | mutant jumping do Mixamo (3,17 s) | só sem o Jump_Air do Jhon: o voo, de 1,27 a 1,87 s | reserva |
+/// | death | mutant dying do Mixamo (4,60 s) | parado até 0,43 s, a queda começa de verdade em 0,6 s | 0,55–4,60 s |
 ///
-/// Trocou um clipe? Rode a ferramenta de novo e corrija a linha dele.
+/// Trocou um clipe? Meça de novo e corrija a linha dele.
 /// </summary>
 public static class WolfMoves
 {
 	public static readonly Dictionary<string, WolfClip> Clips = new()
 	{
-		["claw"] = new WolfClip("claw", 1.00f, 1.85f, 1.30f, StepFrom: 1.00f, StepTo: 1.43f, Step: 0.91f),
-		["heavy"] = new WolfClip("heavy", 0f, 0.85f, 0.30f, StepFrom: 0.05f, StepTo: 0.40f, Step: 0.35f),
-		["pounce"] = new WolfClip("leap", 0f, 3.0f, 1.60f, FallOnly: true, StepFrom: 0.45f, StepTo: 1.55f, Step: 1.71f),
-		["dive"] = new WolfClip("leap", 1.03f, 1.60f, 1.60f, FallOnly: true),
-		["dive_land"] = new WolfClip("leap", 1.60f, 2.77f, 1.60f, FallOnly: true),
-		["howl"] = new WolfClip("howl", 0.30f, 4.90f, 4.90f),
+		["claw"] = new WolfClip("claw", 0f, 0.733f, 0.20f),
+		["heavy"] = new WolfClip("heavy", 0f, 0.733f, 0.20f),
+		["pounce"] = new WolfClip("leap", 0f, 2.2f, 1.33f, FallOnly: true, StepFrom: 0.47f, StepTo: 1.27f),
+		["dive"] = new WolfClip("leap", 0.80f, 1.33f, 1.33f, FallOnly: true),
+		["dive_land"] = new WolfClip("leap", 1.33f, 2.2f, 1.33f, FallOnly: true),
+		["howl"] = new WolfClip("howl", 0f, 1.533f, 1.533f),
 		["jump"] = new WolfClip("jump", 1.27f, 1.87f, 1.60f, FallOnly: true),
-		["jump_land"] = new WolfClip("jump", 1.87f, 2.80f, 1.87f, FallOnly: true),
+		["jump_land"] = new WolfClip("jump_land", 0f, 0.767f, 0f),
 		["death"] = new WolfClip("death", 0.55f, 4.60f, 0.55f),
 	};
 
-	/// <summary>Clipe e velocidade de cada golpe. A velocidade é a única
-	/// coisa a mexer para deixar um golpe mais rápido ou mais pesado: a
-	/// duração e o instante do dano acompanham sozinhos.
+	/// <summary>Clipe e velocidade de cada golpe: 1, a velocidade em que o
+	/// Jhon animou (pedido dele, 15/11). A velocidade é a única coisa a
+	/// mexer para deixar um golpe mais rápido ou mais pesado: a duração e o
+	/// instante do dano acompanham sozinhos.
 	///
 	/// O bote é a exceção: a queda toca na velocidade que fizer o
 	/// impacto da animação cair no quadro em que o lobo encosta
-	/// (<see cref="DiveSpeed"/>), e a aterrissagem, na de
-	/// <see cref="Land"/>.</summary>
+	/// (<see cref="DiveSpeed"/>).</summary>
 	public static (string Clip, float Speed) Of(WolfMove move) => move switch
 	{
-		WolfMove.Claw => ("claw", 2.2f),
-		WolfMove.Punch => ("heavy", 2.2f),
-		WolfMove.Pounce => ("pounce", 1.4f),
+		WolfMove.Claw => ("claw", 1f),
+		WolfMove.Punch => ("heavy", 1f),
+		WolfMove.Pounce => ("pounce", 1f),
 		WolfMove.Leap => ("dive", 1f),
-		_ => ("howl", 2.875f)
+		_ => ("howl", 1f)
 	};
 
 	/// <summary>Escala do Mutant no jogo (<see cref="WolfVisual.ModelScale"/>):
@@ -104,13 +107,13 @@ public static class WolfMoves
 	{
 		var (clip, speed) = Of(move);
 		WolfClip c = Clips[clip];
-		if (c.Step <= 0f) return (0f, 0f, 0f);
+		if (c.StepTo <= c.StepFrom) return (0f, 0f, 0f);
 		float from = System.Math.Max(c.StepFrom, c.Start);
 		return ((from - c.Start) / speed, (c.StepTo - from) / speed, c.Step * BodyScale);
 	}
 
 	/// <summary>A aterrissagem do bote, do impacto até de pé.</summary>
-	public static (string Clip, float Speed) Land => ("dive_land", 1.5f);
+	public static (string Clip, float Speed) Land => ("dive_land", 1f);
 
 	/// <summary>Quanto a aterrissagem do bote prende o lobo no chão.</summary>
 	public static float LandDuration => Clips[Land.Clip].Length / Land.Speed;
@@ -119,9 +122,9 @@ public static class WolfMoves
 	/// chegar em <paramref name="eta"/> segundos — com 10% de folga, para
 	/// a queda nunca acabar antes de o lobo encostar (o corpo voltaria à
 	/// pose parada no ar). Encostou antes, a aterrissagem entra por cima.
-	/// O piso de 0,45 cobre o mergulho mais longo (1,1 s).</summary>
+	/// O piso de 0,43 cobre o mergulho mais longo (1,1 s).</summary>
 	public static float DiveSpeed(float eta) =>
-		System.Math.Clamp(Clips["dive"].Length / (System.Math.Max(eta, 0.05f) * 1.1f), 0.45f, 4f);
+		System.Math.Clamp(Clips["dive"].Length / (System.Math.Max(eta, 0.05f) * 1.1f), 0.43f, 4f);
 
 	/// <summary>Quanto o golpe dura na tela, em segundos. O próximo só
 	/// sai depois disso: golpe não interrompe golpe.</summary>

@@ -9,10 +9,12 @@ using System.Threading.Tasks;
 ///
 /// Medido no esqueleto do WolfVisual: o pé (ou a mão, engatinhando) mais
 /// baixo, enquanto está no chão, não deveria andar. Os limites ficam um
-/// pouco acima do medido na aprovação (de frente 0,73 m/s, de lado 0,85,
-/// para trás 0,72, engatinhando 0,55; correndo de quatro, no "Quadruped
-/// Run" do Jhon desde 15/11, 3,25 a 6 m/s: no galope o pé de trás varre o
-/// chão no fim do impulso, e é isso que se mede).
+/// pouco acima do medido com os andares do Jhon (15/11, o lobo a 4,15
+/// m/s): de frente 0,66 m/s, para trás 0,89 a 0,92, engatinhando 0,41. De
+/// lado, 1,35 a 1,75: o Walk_Left toca a 5,5× (um ciclo a cada 0,11 s,
+/// seis quadros), e muito do que se mede é o pé entre um quadro e outro.
+/// De quatro o clipe toca a 1× com o corpo a 6 m/s e o pé a 4,1 (decisão
+/// do Jhon): desliza a diferença, 2,46 m/s.
 /// </summary>
 public sealed class WolfStrideTest : RegressionTest
 {
@@ -39,17 +41,23 @@ public sealed class WolfStrideTest : RegressionTest
 
 		// O corpo sempre anda para +X; o giro escolhe a tecla.
 		await Phase(b, "de frente", -90f, 0.95, "move_forward");
-		await Phase(b, "de lado", 0f, 1.1, "move_right");
-		await Phase(b, "para trás", 90f, 0.95, "move_back");
+		await Phase(b, "de lado", 0f, 2.0, "move_right");
+		await Phase(b, "para trás", 90f, 1.0, "move_back");
 		await Phase(b, "na diagonal", -45f, 1.1, "move_forward", "move_right");
 		await Phase(b, "engatinhando", -90f, 0.9, "move_forward", "crouch");
-		await Phase(b, "de quatro", -90f, 3.6, "move_forward", "sprint");
+		await Phase(b, "de quatro", -90f, 2.8, "move_forward", "sprint");
 	}
 
 	private async Task Phase(RegressionBench b, string what, float yaw, double slideLimit, params string[] keys)
 	{
 		bool crouch = keys.Contains("crouch");
 		bool sprint = keys.Contains("sprint");
+
+		// De quatro, no ritmo em que o Jhon animou (1×), seja qual for a
+		// escala que a cena traz.
+		var visual = b.Player.GetNode<WolfVisual>("WolfVisual");
+		float sceneScale = visual.SprintAnimScale;
+		if (sprint) visual.SprintAnimScale = 1f;
 		keys = keys.Where(k => k != "sprint").ToArray();
 		await b.Place(new Vector3(-15, 1, 13), yaw);
 		if (crouch) RegressionBench.Press("crouch");
@@ -69,6 +77,7 @@ public sealed class WolfStrideTest : RegressionTest
 		RegressionBench.Release(keys.Where(k => k != "crouch").ToArray());
 		var stop = await Record(b, 0.9);
 		RegressionBench.ReleaseAll();
+		visual.SprintAnimScale = sceneScale;
 
 		float slide = Slide(run);
 		RegressionBench.Note($"{what}: patinação {RegressionBench.F(slide)} m/s");
@@ -80,7 +89,9 @@ public sealed class WolfStrideTest : RegressionTest
 		int stopped = stop.FindIndex(f => f.Speed < 0.05f);
 		b.Check(stopped >= 0 && stopped <= 6, $"{what}: o corpo parou em até 0,1 s");
 		float travel = Travel(stop.Skip(System.Math.Max(stopped, 0)).ToList());
-		b.AtMost(crouch || sprint ? 3.2 : 1.25, travel, $"{what}: o quanto os pés andam depois de o corpo parar (m)");
+		// Em pé, os andares do Jhon param com 1,1 a 1,4 m de mãos e pés
+		// somados (a diagonal, de corpo virado 45°, é a que mais anda).
+		b.AtMost(crouch || sprint ? 3.2 : 1.5, travel, $"{what}: o quanto os pés andam depois de o corpo parar (m)");
 	}
 
 	private record struct Frame(float T, Vector3[] Contacts, float Ground, float Speed);

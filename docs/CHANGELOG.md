@@ -2,6 +2,37 @@
 
 ## Não lançado
 
+### Animações novas do lobo, todas do Jhon (15/11)
+- `lobo_anim.glb` trocado pelo `Wolf_animations.glb` do Jhon (15 clipes,
+  722 KB só com esqueleto e clipes). Entram: **andar nas quatro
+  direções** (de frente para a mira; nas diagonais o corpo vira o resto),
+  **garradas** (`Attack_Primary`/`Secondary`), **rugido** (`Howl`), **pulo**
+  em três partes (`Jump_Start` ao sair do chão pulando, `Jump_Air` em
+  laço, `Jump_Land`) e o **`Special_Attack`** como salto, bote e pouso do
+  bote. Atualizados: parado, agachado, engatinhar e corrida de quatro. Do
+  Mixamo ficam só a morte e a corrida na parede.
+- **Animações na velocidade em que foram feitas** (pedido do Jhon):
+  garradas 0,73 s com o dano em 0,20 s (eram 0,39 e 0,14), salto 2,2 s com
+  o dano em 1,33 s (eram 2,14 e 1,14), rugido 1,53 s (era 1,6), pouso do
+  bote 0,87 s (era 0,78), pouso do pulo 0,77 s.
+- **Em pé o lobo só anda, acelerado até a velocidade do corpo** (4,15
+  m/s): o pé não desliza. Passadas medidas no jogo: `WalkClipSpeed` 1,45,
+  `WalkBackClipSpeed` 1,15, `WalkSideClipSpeed` 0,75 (novos),
+  `CrawlClipSpeed` 1,05. Patinação: de frente 0,66 m/s, para trás 0,92,
+  engatinhando 0,41; de lado 1,35 a 1,75 (o clipe toca a 5,5×).
+- **Corrida de quatro a 1×** com a velocidade de sempre (6 m/s; o pé do
+  clipe anda 4,1, então desliza 2,5 m/s). `SprintAnimScale` agora é o
+  ritmo (1 = o do Jhon); o `player.tscn` traz 0,5 e precisa de 1.
+- **Som da corrida de quatro: um passo por ciclo, quando as patas da
+  frente e as de trás se juntam** (0,567 s do clipe). A corrida sempre
+  começa do começo do clipe e o som conta pelo relógio dele
+  (`WolfVisual.SprintBeats`), então cai no quadro certo. Em pé, a
+  passada do som é a do andar que está tocando.
+- Testes: `PassadaDoLobo` com os limites novos (de lado 2,0; para trás
+  1,0; de quatro 2,8 a 1×; parada em pé 1,5 m); `PassoNoRitmo` confere a
+  batida da corrida de quatro (primeiro passo em 0,57 s, um a cada 0,6 s);
+  `WolfMovesTests` com os tempos novos.
+
 ### Lobo do Meshy com as animações do Jhon (15/11)
 - O lobo do jogo é o do Meshy de novo, agora com as **animações que o
   Jhon fez nele** (`assets/characters/wolf/lobo_anim.glb`, 487 KB, só

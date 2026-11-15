@@ -5,8 +5,10 @@ using Godot;
 /// para o jogador e para o bot, que ouvem e são ouvidos pela mesma regra:
 ///
 /// - **Passo** a cada passada (a distância entre um pé e o outro, do
-///   <see cref="BodyNoiseProfile"/>), não por tempo: o som cai com o pé
-///   da animação e a cadência segue a velocidade sozinha.
+///   <see cref="BodyNoiseProfile"/> ou do clipe que o lobo está tocando),
+///   não por tempo: o som cai com o pé da animação e a cadência segue a
+///   velocidade sozinha. A exceção é a corrida de quatro, que toca a 1×:
+///   ali o passo é a batida do clipe, quando as patas se juntam.
 /// - **Baque** ao pousar.
 /// - **Rugido** já no começo e a cada meio segundo enquanto dura.
 ///
@@ -26,6 +28,7 @@ public sealed class BodyNoise
 	private bool _wasAirborne;
 	private float _walked;
 	private float _stride = 1f;
+	private int _beats = -1;
 
 	/// <summary>Quantos passos o corpo já deu, e em que ponto da passada
 	/// de agora ele está (0 logo depois da pisada, 1 na seguinte). Conta
@@ -41,7 +44,12 @@ public sealed class BodyNoise
 		_profile = profile ?? new BodyNoiseProfile();
 	}
 
-	public void Update(double delta, bool grounded, Vector3 velocity, bool isWolf, bool howling, bool silent, bool sprinting = false)
+	/// <param name="stride">Passada de quem sabe o clipe que toca (o
+	/// lobo em pé); 0 usa a do perfil.</param>
+	/// <param name="beats">Batidas contadas pela animação (a corrida de
+	/// quatro: uma quando as patas se juntam); −1 conta pela distância.</param>
+	public void Update(double delta, bool grounded, Vector3 velocity, bool isWolf, bool howling, bool silent,
+		bool sprinting = false, float stride = 0f, int beats = -1)
 	{
 		if (grounded && _wasAirborne)
 			NoiseBus.Emit(_source.GlobalPosition, _profile.Land, NoiseKind.Land, _source);
@@ -63,7 +71,23 @@ public sealed class BodyNoise
 
 		if (!grounded) return;
 
-		float stride = !isWolf ? _profile.StrideHuman : sprinting ? _profile.StrideWolfSprint : _profile.StrideWolf;
+		// O ritmo vem da animação: um passo a cada batida nova.
+		if (beats >= 0)
+		{
+			if (_beats < 0 || beats < _beats) _beats = beats;
+			while (_beats < beats)
+			{
+				_beats++;
+				Steps++;
+				if (!silent)
+					NoiseBus.Emit(_source.GlobalPosition, isWolf ? _profile.StepWolf : _profile.StepHuman, NoiseKind.Step, _source);
+			}
+			return;
+		}
+		_beats = -1;
+
+		if (stride <= 0f)
+			stride = !isWolf ? _profile.StrideHuman : sprinting ? _profile.StrideWolfSprint : _profile.StrideWolf;
 		float speed = new Vector3(velocity.X, 0, velocity.Z).Length();
 		_stride = stride;
 

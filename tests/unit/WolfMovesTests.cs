@@ -4,46 +4,46 @@ namespace Alcateia.UnitTests;
 /// mesmo lugar.</summary>
 public static class WolfMovesTests
 {
-	[Test("a garra dura 0,39 s e o dano sai 0,14 s depois do clique")]
+	[Test("a garra dura 0,73 s e o dano sai 0,20 s depois do clique (o Attack_Primary a 1×)")]
 	public static void ClawTiming()
 	{
-		Check.Near(0.386, WolfMoves.Duration(WolfMove.Claw), 0.001, "duração da garra");
-		Check.Near(0.136, WolfMoves.ImpactDelay(WolfMove.Claw), 0.001, "instante do dano");
+		Check.Near(0.733, WolfMoves.Duration(WolfMove.Claw), 0.001, "duração da garra");
+		Check.Near(0.20, WolfMoves.ImpactDelay(WolfMove.Claw), 0.001, "instante do dano");
 	}
 
 	[Test("o soco tem o mesmo ritmo da garra")]
 	public static void PunchTiming()
 	{
 		Check.Near(WolfMoves.Duration(WolfMove.Claw), WolfMoves.Duration(WolfMove.Punch), 0.001, "duração");
-		Check.Near(0.136, WolfMoves.ImpactDelay(WolfMove.Punch), 0.001, "instante do dano");
+		Check.Near(0.20, WolfMoves.ImpactDelay(WolfMove.Punch), 0.001, "instante do dano");
 	}
 
-	[Test("o salto dura 2,14 s, voa de 0,32 s em diante e bate em 1,14 s")]
+	[Test("o salto dura 2,2 s, voa de 0,47 s a 1,27 s e bate em 1,33 s (o Special_Attack a 1×)")]
 	public static void PounceTiming()
 	{
-		Check.Near(2.143, WolfMoves.Duration(WolfMove.Pounce), 0.001, "duração do salto");
-		Check.Near(1.143, WolfMoves.ImpactDelay(WolfMove.Pounce), 0.001, "instante do dano");
+		Check.Near(2.2, WolfMoves.Duration(WolfMove.Pounce), 0.001, "duração do salto");
+		Check.Near(1.33, WolfMoves.ImpactDelay(WolfMove.Pounce), 0.001, "instante do dano");
 
 		var (delay, duration, distance) = WolfMoves.StepOf(WolfMove.Pounce);
-		Check.Near(0.321, delay, 0.001, "início do voo");
-		Check.Near(0.786, duration, 0.001, "duração do voo do clipe");
-		Check.Near(1.881, distance, 0.001, "passo do clipe na escala do jogo");
+		Check.Near(0.47, delay, 0.001, "início do voo");
+		Check.Near(0.80, duration, 0.001, "duração do voo do clipe");
+		Check.Near(0, distance, 0.001, "o clipe é no lugar: quem anda é o corpo, pela carga");
 	}
 
-	[Test("o rugido dura 1,6 s")]
+	[Test("o rugido dura 1,53 s (o Howl a 1×)")]
 	public static void HowlTiming() =>
-		Check.Near(1.6, WolfMoves.Duration(WolfMove.Howl), 0.001, "duração do rugido");
+		Check.Near(1.533, WolfMoves.Duration(WolfMove.Howl), 0.001, "duração do rugido");
 
-	[Test("a aterrissagem do bote prende o lobo 0,78 s")]
+	[Test("a aterrissagem do bote prende o lobo 0,87 s")]
 	public static void DiveLanding() =>
-		Check.Near(0.78, WolfMoves.LandDuration, 0.001, "aterrissagem");
+		Check.Near(0.87, WolfMoves.LandDuration, 0.001, "aterrissagem");
 
-	[Test("a queda do bote acelera o clipe para o impacto chegar no contato, entre 0,45× e 4×")]
+	[Test("a queda do bote acelera o clipe para o impacto chegar no contato, entre 0,43× e 4×")]
 	public static void DiveSpeedFitsContact()
 	{
 		float clip = WolfMoves.Clips["dive"].Length;
 		Check.Near(clip / (0.5f * 1.1f), WolfMoves.DiveSpeed(0.5f), 0.001, "contato em 0,5 s");
-		Check.Near(0.45, WolfMoves.DiveSpeed(5f), 0.001, "mergulho longo usa o piso");
+		Check.Near(0.43, WolfMoves.DiveSpeed(5f), 0.001, "mergulho longo usa o piso");
 		Check.Near(4.0, WolfMoves.DiveSpeed(0.01f), 0.001, "contato imediato usa o teto");
 	}
 

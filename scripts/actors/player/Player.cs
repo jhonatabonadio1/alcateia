@@ -409,6 +409,18 @@ public partial class Player : CharacterBody3D
 	public int Steps => _noise.Steps;
 	public float StridePhase => _noise.StridePhase;
 
-	private void UpdateNoise(double delta) =>
-		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, _howling, silent: _crouching || _walking, sprinting: IsSprinting);
+	/// <summary>De lobo, o passo segue o clipe que está tocando: em pé, a
+	/// passada do andar na direção de agora; de quatro, uma batida quando
+	/// as patas se juntam (<see cref="WolfVisual.SprintBeats"/>). Sem o
+	/// corpo do lobo (servidor sem modelo), vale o <see cref="BodyNoiseProfile"/>.</summary>
+	private void UpdateNoise(double delta)
+	{
+		_wolfVisual ??= GetNodeOrNull<WolfVisual>("WolfVisual");
+		WolfVisual visual = _form.IsWolf ? _wolfVisual : null;
+		int beats = visual != null && IsSprinting && visual.SprintDrivesSteps ? visual.SprintBeats : -1;
+		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, _howling, silent: _crouching || _walking,
+			sprinting: IsSprinting, stride: visual?.StepStride ?? 0f, beats: beats);
+	}
+
+	private WolfVisual _wolfVisual;
 }

@@ -17,7 +17,12 @@ public partial class WolfVisual
 	/// <summary>Clipes tocados como vêm do arquivo. Os golpes e o rugido
 	/// saem de <see cref="WolfMoves.Clips"/>, recortados.</summary>
 	private static readonly string[] Clips =
-		{ "idle", "walk", "run", "wallrun", "sprint", "crawl" };
+		{ "idle", "walk", "walk_back", "walk_left", "walk_right", "run", "wallrun", "sprint", "crawl", "jump_start", "jump_air" };
+
+	/// <summary>Clipes em laço.</summary>
+	private static bool Loops(string clip) =>
+		clip is "idle" or "walk" or "walk_back" or "walk_left" or "walk_right" or "run" or "wallrun"
+			or "sprint" or "crawl" or "jump_air";
 
 	/// <summary>Disparos por cima da locomoção, na ordem da pilha: o de
 	/// baixo é sobreposto pelos de cima.</summary>
@@ -92,9 +97,7 @@ public partial class WolfVisual
 			Animation animation = Source(clip);
 			if (animation == null) continue;
 
-			animation.LoopMode = clip is "idle" or "walk" or "run" or "wallrun" or "sprint" or "crawl"
-				? Animation.LoopModeEnum.Linear
-				: Animation.LoopModeEnum.None;
+			animation.LoopMode = Loops(clip) ? Animation.LoopModeEnum.Linear : Animation.LoopModeEnum.None;
 
 			library.AddAnimation(clip, animation);
 			_lengths[clip] = (float)animation.Length;
@@ -123,6 +126,9 @@ public partial class WolfVisual
 		// a arma usa para saber quando o dano sai.
 		foreach ((string clip, WolfClip window) in WolfMoves.Clips)
 		{
+			// O voo do Mixamo só entra sem o Jump_Air do Jhon.
+			if (clip == "jump" && Has("jump_air")) continue;
+
 			Animation source = Source(window.Source);
 			if (source == null) continue;
 

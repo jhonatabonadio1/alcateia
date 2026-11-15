@@ -41,10 +41,36 @@ public partial class WolfVisual
 		// dele, e o passo toca na velocidade do corpo — zero quando ele
 		// para, negativa andando para trás. Na mesma escala, o parado
 		// congelava junto ou o passo corria no lugar.
-		var gait = new AnimationNodeBlendSpace1D { MinSpace = 0f, MaxSpace = 1f };
-		gait.Set("sync", true);
-		if (Has("walk")) gait.AddBlendPoint(Clip("walk"), 0f, -1, "walk");
-		if (Has("run")) gait.AddBlendPoint(Clip("run"), 1f, -1, "run");
+		//
+		// Com os quatro andares do Jhon (frente, trás, esquerda, direita) o
+		// passo é um espaço 2D pela direção, de frente para a mira; sem eles,
+		// andar e correr do Mixamo pela velocidade, virando o corpo.
+		AnimationRootNode gait;
+		if (Directional)
+		{
+			var directions = new AnimationNodeBlendSpace2D
+			{
+				MinSpace = new Vector2(-1, -1),
+				MaxSpace = new Vector2(1, 1),
+				BlendMode = AnimationNodeBlendSpace2D.BlendModeEnum.Interpolated
+			};
+			// Ciclos de tamanhos diferentes (1,43 s e 0,6 s): sem sync, cada
+			// um no seu ritmo, e a mistura só existe na troca de direção.
+			directions.Set("sync", false);
+			directions.AddBlendPoint(Clip("walk"), new Vector2(0, 1), -1, "walk");
+			directions.AddBlendPoint(Clip("walk_back"), new Vector2(0, -1), -1, "walk_back");
+			directions.AddBlendPoint(Clip("walk_left"), new Vector2(-1, 0), -1, "walk_left");
+			directions.AddBlendPoint(Clip("walk_right"), new Vector2(1, 0), -1, "walk_right");
+			gait = directions;
+		}
+		else
+		{
+			var speeds = new AnimationNodeBlendSpace1D { MinSpace = 0f, MaxSpace = 1f };
+			speeds.Set("sync", true);
+			if (Has("walk")) speeds.AddBlendPoint(Clip("walk"), 0f, -1, "walk");
+			if (Has("run")) speeds.AddBlendPoint(Clip("run"), 1f, -1, "run");
+			gait = speeds;
+		}
 
 		// Agachado entra por cima dos dois ramos. Parado, a pose agachada
 		// (0,98 m, a altura da cápsula). Andando, o lobo engatinha: o
@@ -82,10 +108,15 @@ public partial class WolfVisual
 		string moving = "GaitCrouch";
 		if (Has("sprint"))
 		{
+			// A corrida de quatro começa sempre do começo do clipe
+			// (SprintSeek): é assim que o som da passada cai no quadro em
+			// que as patas se juntam (SprintBeat).
 			locoSpeed.AddNode("Sprint", Clip("sprint"), new Vector2(0, 400));
+			locoSpeed.AddNode("SprintSeek", new AnimationNodeTimeSeek(), new Vector2(100, 400));
 			locoSpeed.AddNode("SprintSpeed", new AnimationNodeTimeScale(), new Vector2(200, 400));
 			locoSpeed.AddNode("GaitSprint", new AnimationNodeBlend2(), new Vector2(500, 300));
-			locoSpeed.ConnectNode("SprintSpeed", 0, "Sprint");
+			locoSpeed.ConnectNode("SprintSeek", 0, "Sprint");
+			locoSpeed.ConnectNode("SprintSpeed", 0, "SprintSeek");
 			locoSpeed.ConnectNode("GaitSprint", 0, "GaitCrouch");
 			locoSpeed.ConnectNode("GaitSprint", 1, "SprintSpeed");
 			moving = "GaitSprint";
@@ -98,7 +129,24 @@ public partial class WolfVisual
 		machine.AddNode("Locomotion", locoSpeed, new Vector2(200, 100));
 		if (Has("death")) machine.AddNode("Death", Clip("death"), new Vector2(600, 100));
 
-		if (Has("jump"))
+		if (Has("jump_air"))
+		{
+			// O pulo do Jhon: o voo em laço, na velocidade dele, e o impulso
+			// (Jump_Start) por cima quando o lobo sai do chão pulando — não
+			// caindo de uma beirada.
+			var jump = new AnimationNodeBlendTree();
+			jump.AddNode("Air", Clip("jump_air"), Vector2.Zero);
+			jump.AddNode("StartShot", new AnimationNodeOneShot { FadeInTime = 0.04f, FadeOutTime = 0.12f }, new Vector2(400, 0));
+			if (Has("jump_start"))
+			{
+				jump.AddNode("Start", Clip("jump_start"), new Vector2(0, 200));
+				jump.ConnectNode("StartShot", 1, "Start");
+			}
+			jump.ConnectNode("StartShot", 0, "Air");
+			jump.ConnectNode("output", 0, "StartShot");
+			machine.AddNode("Jump", jump, new Vector2(400, 300));
+		}
+		else if (Has("jump"))
 		{
 			// O voo não corre sozinho: a cada quadro o ponto do clipe é
 			// escolhido pela velocidade vertical (UpdateJump), e a escala
@@ -173,7 +221,7 @@ public partial class WolfVisual
 		_tree.AnimPlayer = _tree.GetPathTo(_anims);
 		_tree.Active = true;
 
-		if (Has("jump"))
+		if (Has("jump") && !Has("jump_air"))
 			_tree.Set("parameters/Machine/Jump/Speed/scale", 0f);
 
 		_playback = (AnimationNodeStateMachinePlayback)_tree.Get("parameters/Machine/playback");
@@ -181,6 +229,10 @@ public partial class WolfVisual
 	}
 
 	private static AnimationNodeAnimation Clip(string clip) => new() { Animation = $"lobo/{clip}" };
+
+	/// <summary>Com os quatro andares do Jhon: o passo vai pela direção, de
+	/// frente para a mira.</summary>
+	private bool Directional => Has("walk") && Has("walk_back") && Has("walk_left") && Has("walk_right");
 
 	/// <summary>Nome do nó do disparo: "dive_land" vira "DiveLand".</summary>
 	private static string Cap(string s)

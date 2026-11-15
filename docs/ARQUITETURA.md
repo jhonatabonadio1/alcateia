@@ -636,9 +636,8 @@ e pontos com nome. Os pacotes do Sketchfab listados em
   clipe que ela substitui (`run_fwd.fbx`, `wolf/claw.fbx`...). Clipe que
   falta é pulado sem erro.
 - **Animação do lobo feita à mão:** o `wolf/lobo_anim.glb` (esqueleto e
-  clipes `Idle`, `Walk`, `Crouch_Idle`, `Crouch_Walk`, `Run_Quad`,
-  `Special_Attack`) tem prioridade sobre o `.fbx` do mesmo papel
-  (`WolfOwnClips`). Depois de trocar um clipe, meça a passada de novo
+  os 15 clipes do Jhon, a tabela está no `LEIA-ME.md` da pasta) tem
+  prioridade sobre o `.fbx` do mesmo papel (`WolfOwnClips`). Depois de trocar um clipe, meça a passada de novo
   (`PassadaDoLobo`, `PassoNoRitmo`).
 
 ### Ajustar movimento, pulo, lobo
