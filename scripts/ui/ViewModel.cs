@@ -118,7 +118,7 @@ public partial class ViewModel : Node3D
 		_camera.Near = Mathf.Min(_camera.Near, 0.03f);
 		PreloadRigs();
 
-		_weapon.SlotChanged += _ => Refresh();
+		_weapon.SlotChanged += _ => SwitchWeapon();
 		_form.FormChanged += _ => Refresh();
 		_weapon.Fired += OnFired;
 		_weapon.AmmoChanged += OnAmmo;
@@ -130,6 +130,12 @@ public partial class ViewModel : Node3D
 	public override void _Process(double delta)
 	{
 		float dt = (float)delta;
+		// Guardou: a arma nova sobe (mesmo que seja a mesma, de volta).
+		if (_holster > 0f && (_holster -= dt) <= 0f)
+		{
+			_heldId = "\0";
+			Refresh();
+		}
 		_recoil = Mathf.MoveToward(_recoil, 0f, dt * 5.5f);
 		_draw = Mathf.MoveToward(_draw, 0f, dt * 3.6f);
 
@@ -146,7 +152,7 @@ public partial class ViewModel : Node3D
 
 		// Com os braços animados, o tiro e o sacar já vêm da animação.
 		// O conjunto sem animação de sacar sobe de baixo, como as mãos de código.
-		float kick = Ease(_recoil) * (HasRig ? RigKick : 1f) * (1f - 0.4f * aim);
+		float kick = Ease(_recoil) * (HasRig ? _rigKick : 1f) * (1f - 0.4f * aim);
 		// O conjunto está a meio metro do olho, não a um: a subida é menor.
 		float draw = HasRig && _rigClips.ContainsKey("sacar") ? 0f : _draw;
 		float drop = HasRig ? 0.06f : 0.2f, tilt = HasRig ? 14f : 24f;
@@ -176,8 +182,10 @@ public partial class ViewModel : Node3D
 		_bobWeight = Mathf.MoveToward(_bobWeight, walking ? 1f : 0f, dt * 6f);
 		if (_player == null || _bobWeight <= 0f) return Vector3.Zero;
 
-		// O conjunto animado que tem o próprio andar já balança sozinho.
-		if (HasRig && _rigClips.ContainsKey("andar")) return Vector3.Zero;
+		// O conjunto animado que tem o próprio andar já balança sozinho —
+		// menos o que a ficha diz que balança pouco (o AR-15: o pacote é
+		// da Unreal, onde o balanço é de código).
+		if (HasRig && _rigClips.ContainsKey("andar") && !_rigBob) return Vector3.Zero;
 
 		float stride = (_player.Steps + _player.StridePhase) * Mathf.Pi;
 		float speed = Mathf.Clamp(flat.Length() / 3.2f, 0.4f, 1.3f);
@@ -232,10 +240,20 @@ public partial class ViewModel : Node3D
 		FireEffects();
 	}
 
+	/// <summary>Trocou de arma: o conjunto que tem animação de guardar (o
+	/// AR-15) guarda antes; o resto troca já.</summary>
+	private void SwitchWeapon()
+	{
+		string id = _form.IsWolf ? "" : _weapon.HeldId;
+		if (id != _heldId && id != "" && StartHolster()) return;
+		Refresh();
+	}
+
 	/// <summary>Mostra só o que está na mão, com o modelo da arma
 	/// escolhida. Trocar de arma reconstrói e a nova sobe de baixo.</summary>
 	private void Refresh()
 	{
+		_holster = 0f;
 		string id = _form.IsWolf ? "" : _weapon.HeldId;
 		if (id == _heldId && _held != null) return;
 

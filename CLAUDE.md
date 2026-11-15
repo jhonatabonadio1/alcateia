@@ -262,6 +262,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `combat/HeadHitbox.cs` | A cabeça de quem leva tiro, no modelo que se vê (os ossos da cabeça do humano ou do lobo); sem modelo, a faixa de cima da cápsula |
 | `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
 | `domain/CombatRules.cs` | As contas do combate em C# puro (dano, queda, dispersão, recuo, golpes do lobo, salto, vida e escudo), com teste de unidade |
+| `visual/RigPieces.cs` | Peças do conjunto de primeira pessoa mexidas por código por cima da animação (o carregador e o ferrolho na recarga de código do AR-15) |
 | `domain/HeadHit.cs` | A cabeça como esfera e quando o raio a acerta (parede na frente protege), C# puro com teste |
 | `domain/net/` | O núcleo da rede autoritativa (decisão 0011): pacote binário sem alocar, comando, fila de comandos, estado do mundo, história, interpolação, relógio do servidor e predição — C# puro, com teste de unidade |
 | `ai/BotDifficulty.cs` | Um nível de dificuldade como dado (`resources/bots/*.tres`) |

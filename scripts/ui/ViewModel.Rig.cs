@@ -19,7 +19,13 @@ using System.Collections.Generic;
 ///   cartucho;
 /// - **golpe** e **golpe2** na faca, um de cada vez (a estocada e o corte
 ///   de lado), no tempo entre dois golpes;
-/// - **sacar** ao trocar de arma, **andar** ao andar, **parado** no resto.
+/// - **sacar** ao trocar de arma, **andar** ao andar, **parado** no resto;
+/// - **guardar** ao trocar para outra arma, quando o conjunto tem (o
+///   AR-15): a arma desce antes de a outra subir.
+///
+/// O AR-15 não tem animação de recarga no pacote: a recarga dele é de
+/// código, por cima do parado — o conjunto inclina, o carregador cai e
+/// volta, o ferrolho é puxado se o pente esvaziou (<see cref="RigPieces"/>).
 ///
 /// A granada não tem conjunto próprio: vai na mão do braço da pistola, e
 /// o arremesso é movimento de código. A faca sem "golpe" na ficha também
@@ -72,8 +78,9 @@ public partial class ViewModel
 	/// <summary>Os braços animados estão em uso (arma de fogo com conjunto).</summary>
 	public bool HasRig => _rigPlayer != null;
 
-	/// <summary>A animação dos braços que está tocando ("parado", "tiro"...).</summary>
-	public string RigAnimation => _rigPlaying;
+	/// <summary>A animação dos braços que está tocando ("parado", "tiro"...).
+	/// Na recarga de código, "recarga".</summary>
+	public string RigAnimation => _codeReload ? "recarga" : _rigPlaying;
 
 	/// <summary>Quantas vezes uma animação dos braços começou do início.
 	/// Parado ou andando sem parar, não pode crescer: o teste confere.</summary>
@@ -119,6 +126,12 @@ public partial class ViewModel
 
 	private void ForgetRig()
 	{
+		_pieces = null;
+		_rigSkeleton = null;
+		_codeReload = false;
+		_magazineBone = _boltBone = _gripBone = -1;
+		_rigScene = null;
+		_magazineNode = null;
 		_rigObject = null;
 		_rigPlayer = null;
 		_rigClips.Clear();
@@ -138,7 +151,10 @@ public partial class ViewModel
 		var scene = packed.Instantiate<Node3D>();
 		// A abertura de fora do zoom: o zoom fecha a câmera, e quem o
 		// desfaz na arma é o _Process.
-		float stretch = Mathf.Tan(Mathf.DegToRad(_baseFov * 0.5f)) / Mathf.Tan(Mathf.DegToRad(RigFov * 0.5f));
+		// Cada conjunto pode ter sido animado para outra abertura (o AR-15,
+		// para a da Unreal): a ficha diz.
+		float rigFov = rig.ContainsKey("fov") ? (float)rig["fov"].AsDouble() : RigFov;
+		float stretch = Mathf.Tan(Mathf.DegToRad(_baseFov * 0.5f)) / Mathf.Tan(Mathf.DegToRad(rigFov * 0.5f));
 		scene.Scale = new Vector3(stretch, stretch, 1f) * RigScale;
 		if (rig.ContainsKey("ajuste")) scene.Position = scene.Scale * ToVector(rig["ajuste"]);
 		_held = new Node3D { Name = id };
@@ -189,12 +205,125 @@ public partial class ViewModel
 		}
 
 		// Arma principal não tem animação de pegar (decisão do Jhon,
-		// 13/11): sobe de baixo, como a pistola. Só a faca saca animado.
-		bool draws = _rigClips.ContainsKey("sacar") && _weapon.HumanSlot != Slot.Primary;
+		// 13/11): sobe de baixo, como a pistola. Só a faca saca animado —
+		// e o conjunto cuja ficha pede ("sacar": o AR-15, que o Jhon
+		// animou para isso).
+		bool asks = rig.ContainsKey("sacar") && rig["sacar"].AsBool();
+		_rigKick = rig.ContainsKey("coice") ? (float)rig["coice"].AsDouble() : RigKick;
+		_rigBob = rig.ContainsKey("balanco") && rig["balanco"].AsBool();
+		bool draws = _rigClips.ContainsKey("sacar") && (_weapon.HumanSlot != Slot.Primary || asks);
 		if (!draws) _rigClips.Remove("sacar");
 		_swingTail = null;
-		PlayRig(draws ? "sacar" : "parado", 0);
-		if (draws) _rigBusy = _rigClips["sacar"].Length;
+		double drawSeconds = draws ? Mathf.Min(_rigClips["sacar"].Length, RigDrawMax) : 0;
+		PlayRig(draws ? "sacar" : "parado", drawSeconds);
+		if (draws) _rigBusy = drawSeconds;
+
+		FindPieces(scene);
+		return true;
+	}
+
+	/// <summary>O saque animado mais longo que se toca, em segundos: a arma
+	/// atira 0,2 s depois da troca, e o saque não pode ficar para trás.</summary>
+	[Export] public float RigDrawMax = 0.4f;
+
+	/// <summary>Quanto dura o guardar, antes de a outra arma subir.</summary>
+	[Export] public float RigHolsterTime = 0.16f;
+
+	/// <summary>O coice de código deste conjunto e se ele balança no passo
+	/// mesmo tendo animação de andar (a ficha: "coice", "balanco").</summary>
+	private float _rigKick = RigKick;
+	private bool _rigBob;
+
+	private RigPieces _pieces;
+	private Skeleton3D _rigSkeleton;
+	private Basis _skeletonToRig;
+	private int _magazineBone = -1, _boltBone = -1, _gripBone = -1;
+	private Node3D _rigScene;
+	private Node3D _magazineNode;
+	private bool _codeReload;
+
+	/// <summary>As peças que a recarga de código mexe: o carregador e o
+	/// ferrolho, se o esqueleto do conjunto os tem (o AR-15 tem).</summary>
+	private void FindPieces(Node3D scene)
+	{
+		if (_rigClips.ContainsKey("recarga") || _rigClips.ContainsKey("recarga_um")) return;
+		var skeleton = scene.FindChildren("*", "Skeleton3D", true, false).Count > 0
+			? (Skeleton3D)scene.FindChildren("*", "Skeleton3D", true, false)[0] : null;
+		if (skeleton == null) return;
+
+		_magazineBone = skeleton.FindBone("Magazine");
+		_boltBone = skeleton.FindBone("Bolt");
+		_gripBone = skeleton.FindBone("Grip");
+		_rigScene = scene;
+		if (_magazineBone < 0 && _boltBone < 0) return;
+
+		_pieces = RigPieces.Attach(skeleton, scene);
+		_rigSkeleton = skeleton;
+		_skeletonToRig = RigPieces.Relative(scene, skeleton).Basis.Orthonormalized();
+		_magazineNode = skeleton.FindChild("carregador", false, false) as Node3D;
+	}
+
+	/// <summary>Uma direção da tela (o conjunto entra sem girar: para baixo
+	/// é −Y, para trás é +Z) no espaço do osso pai de <paramref name="bone"/>,
+	/// na pose de agora — a arma está onde a animação a pôs.</summary>
+	private Vector3 InParentOf(int bone, Vector3 rigDirection)
+	{
+		int parent = _rigSkeleton.GetBoneParent(bone);
+		Basis pose = parent >= 0 ? _rigSkeleton.GetBoneGlobalPose(parent).Basis.Orthonormalized() : Basis.Identity;
+		return (pose.Inverse() * (_skeletonToRig.Inverse() * rigDirection)).Normalized();
+	}
+
+	/// <summary>
+	/// A recarga de código, para conjunto sem animação de recarga: inclina
+	/// a arma (girando em torno dela, não do olho), o carregador cai e some,
+	/// volta de baixo e encaixa; com o pente vazio, o ferrolho é puxado no
+	/// fim. <paramref name="p"/> é o progresso da recarga de verdade.
+	/// </summary>
+	private Transform3D CodeReload(float p, bool on)
+	{
+		_codeReload = on && _pieces != null;
+		if (!_codeReload)
+		{
+			if (_pieces != null)
+			{
+				_pieces.Offset(_magazineBone, Vector3.Zero);
+				_pieces.Offset(_boltBone, Vector3.Zero);
+				if (_magazineNode != null) _magazineNode.Visible = true;
+			}
+			return Transform3D.Identity;
+		}
+
+		float tilt = Span(p, 0f, 0.16f) * (1f - Span(p, 0.84f, 1f));
+		float drop = Span(p, 0.2f, 0.36f) * (1f - Span(p, 0.58f, 0.74f));
+		bool gone = p > 0.34f && p < 0.6f;
+		float pull = _emptyReload ? Span(p, 0.78f, 0.84f) * (1f - Span(p, 0.86f, 0.9f)) : 0f;
+
+		if (_magazineBone >= 0) _pieces.Offset(_magazineBone, InParentOf(_magazineBone, Vector3.Down) * 0.24f * drop);
+		if (_boltBone >= 0) _pieces.Offset(_boltBone, InParentOf(_boltBone, Vector3.Back) * 0.05f * pull);
+		if (_magazineNode != null) _magazineNode.Visible = !gone;
+
+		// Gira em torno do punho (onde a mão direita segura), não do olho:
+		// a arma inclina para mostrar o encaixe do carregador e desce um pouco.
+		Vector3 pivot = _gripBone >= 0
+			? _rigScene.Transform * (RigPieces.Relative(_rigScene, _rigSkeleton) * _rigSkeleton.GetBoneGlobalPose(_gripBone).Origin)
+			: (_muzzle?.Position ?? new Vector3(0, -0.05f, -0.4f)) * 0.5f;
+		var turn = new Basis(Basis.FromEuler(new Vector3(5f, 6f, 14f) * tilt * Mathf.DegToRad(1f)).GetRotationQuaternion());
+		return new Transform3D(Basis.Identity, new Vector3(-0.01f, -0.04f, 0.015f) * tilt)
+			* new Transform3D(Basis.Identity, pivot) * new Transform3D(turn, Vector3.Zero) * new Transform3D(Basis.Identity, -pivot);
+	}
+
+	/// <summary>Guardando a arma antes de a outra subir: quanto falta.</summary>
+	private float _holster;
+
+	/// <summary>Começa a guardar a arma, se o conjunto tem a animação. Falso:
+	/// troca já.</summary>
+	private bool StartHolster()
+	{
+		if (!HasRig || !_rigClips.ContainsKey("guardar") || _holster > 0f) return _holster > 0f;
+		_codeReload = false;
+		PlayRig("guardar", RigHolsterTime, 0.05);
+		_rigBusy = RigHolsterTime;
+		_holster = RigHolsterTime;
 		return true;
 	}
 
@@ -299,10 +428,11 @@ public partial class ViewModel
 			if (_rigObject != null) _rigObject.Visible = !(_throw > 0f && _throw < 0.75f);
 		}
 		Slash(ref position, ref rotation);
-		_held.Position = position;
-		_held.RotationDegrees = rotation;
+		bool codeReload = reloading && !_rigClips.ContainsKey("recarga") && !_rigClips.ContainsKey("recarga_um");
+		_held.Transform = new Transform3D(Basis.FromEuler(rotation * Mathf.DegToRad(1f)), position)
+			* CodeReload(_weapon.ReloadProgress, codeReload);
 
-		if (reloading)
+		if (reloading && !codeReload)
 		{
 			float p = _weapon.ReloadProgress;
 			bool shells = _weapon.Held.ShellByShell;

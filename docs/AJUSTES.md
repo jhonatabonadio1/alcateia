@@ -500,6 +500,19 @@ ritmo da passada), `SwayAmount` 0,55 / `SwayMax` 3,5° / `SwayReturn` 9
 na tela: as âncoras no começo do arquivo (`RifleAnchor`...). Onde cada
 mão fica em cada arma, e o desenho das armas: `tools/gerar_armas.py`.
 
+**Braços animados** (`scripts/ui/ViewModel.Rig.cs`): `RigFov` 50,5° (a
+abertura para a qual os conjuntos foram animados; a ficha
+`assets/armas/fp/bracos.json` pode trazer a sua em `fov` — o AR-15 usa a
+da Unreal, 58,7°), `RigScale` 0,45 (o conjunto encolhido na direção do
+olho), `RigKick` 0,3 (o AR-15 usa 0,4: `coice` na ficha), `RigDrawMax` 0,4 s (o saque animado mais longo:
+a arma atira 0,2 s depois da troca), `RigHolsterTime` 0,16 s (quanto o
+guardar do AR-15 dura antes de a outra arma subir). Saque animado na
+arma principal só com `"sacar": true` na ficha (o AR-15). A recarga de
+código (conjunto sem animação de recarga, o AR-15) está em
+`CodeReload`: a arma inclina 14° em torno do punho e desce em até 16% da recarga, o carregador cai
+24 cm entre 20% e 36%, some até 60% e volta até 74%; com o pente vazio,
+o ferrolho recua 5 cm entre 78% e 90%.
+
 **Mira** (`scripts/ui/Crosshair.cs`): `PixelsPerDegree` 9, `MinGap`
 5, `Length` 8, `Thickness` 2.
 

@@ -96,6 +96,33 @@ Se algum for ruim ou não abrir, troca-se. Licenças diferentes de
 CC BY/CC0 (NonCommercial, "Free Standard" restrita a certos usos) foram
 deixadas de fora de propósito.
 
+### O AR-15 (o fuzil padrão): pacote da InfimaGames
+
+[FPS Tutorial Blender Starter Files](https://infimagames.gumroad.com/l/fps-tutorial-blender-starter-files),
+da InfimaGames (David Stenfors), **CC BY 4.0** ("You're free to use these
+files for both personal use AND commercial. All we ask is that you give
+credit"). Traz o fuzil de **TastyTony** (com carregador, cápsula e
+textura), o rig do manequim da UE5 para primeira pessoa e os braços
+exportados. As animações do AR-15 (parado, andar, sacar, guardar, tiro)
+foram **feitas pelo Jhon** em cima desse rig, em 15/11.
+
+**Atenção:** os braços são o manequim da Unreal Engine 5, malha da
+**Epic**. A InfimaGames não tem como relicenciar o que é da Epic, e o
+conteúdo da Epic que vem com a engine é, até onde se sabe, para jogos
+feitos na Unreal. O Jhon decidiu usar assim mesmo por enquanto (15/11);
+está em `docs/PENDENCIAS.md` para resolver antes de publicar (trocar
+por braços CC BY passando as animações, ou confirmar com a Epic).
+
+A pasta vai em `assets/pacotes/infima/` (fora do git), copiada inteira
+de onde o Jhon a tem (`Blender_Starter_Files_FPSTutorial`): o script
+procura cada arquivo pelo nome, em qualquer subpasta.
+
+    python3 tools/armas/blender/infima.py
+
+Grava o conjunto de primeira pessoa (`assets/armas/fp/ar15.glb` e a
+entrada `ar15` de `bracos.json`) e o modelo para a mão dos outros e o
+chão (`assets/armas/ar15/` e a entrada `ar15` de `armas.json`).
+
 ## O que já está em uso
 
 | Do pacote | Onde entrou | Como |
@@ -105,6 +132,7 @@ deixadas de fora de propósito.
 | 36 objetos do Poly Haven | `assets/mapas/pecas/*.glb` — nos cômodos e em volta | `tools/mapas/blender/pecas_polyhaven.py` |
 
 | 6 conjuntos de braços animados do Sketchfab | `assets/armas/fp/*.glb` — as armas de fogo em primeira pessoa | `tools/armas/blender/bracos.py` |
+| O AR-15 da InfimaGames (fuzil, animações do Jhon, braços do manequim) | `assets/armas/fp/ar15.glb` e `assets/armas/ar15/` | `tools/armas/blender/infima.py` |
 
 A faca é um conjunto próprio (`knife-animated`, com os golpes animados).
 A granada (M84) vai na mão do braço da pistola (`OBJETOS` em

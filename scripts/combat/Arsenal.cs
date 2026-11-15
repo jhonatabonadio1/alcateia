@@ -41,7 +41,7 @@ public static class Arsenal
 	/// </summary>
 	public const float DamageScale = CombatRules.FirearmDamageScale;
 
-	public static readonly string[] Primaries = { "m16a2", "sg552", "ak47", "ump45", "m3" };
+	public static readonly string[] Primaries = { "ar15", "m16a2", "sg552", "ak47", "ump45", "m3" };
 	public static readonly string[] Secondaries = { "m9" };
 
 	/// <summary>A arma vai para o espaço da secundária? É o que decide em
@@ -53,7 +53,9 @@ public static class Arsenal
 	public const string KnifeId = "faca";
 	public const string GrenadeId = "choque";
 
-	public const string DefaultPrimary = "m16a2";
+	/// <summary>O fuzil de quem não escolheu outro: o AR-15 desde 15/11
+	/// (era a M16A2, que continua no arsenal).</summary>
+	public const string DefaultPrimary = "ar15";
 	public const string DefaultSecondary = "m9";
 
 	public static readonly UtilityInfo[] Utilities =

@@ -90,9 +90,14 @@ public static class Catalog
 	private static readonly List<CatalogItem> _items = new()
 	{
 		// ---------------------------------------------------- armas
-		new() { Id = "m16a2", Name = "M16A2", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
+		new() { Id = "ar15", Name = "AR-15", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
 			Rarity = 0, Starter = true,
 			Description = "O fuzil padrão. Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e não é ruim em nada." },
+		// Era a padrão até 15/11. Quem já tinha continua com ela (o
+		// inventário guarda os itens iniciais como próprios).
+		new() { Id = "m16a2", Name = "M16A2", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
+			Rarity = 1, Prices = new[] { 200, 1000, 3000, 6800, 15000 },
+			Description = "O fuzil padrão de antes: os mesmos números do AR-15, com alça de transporte e coronha fixa." },
 		new() { Id = "m9", Name = "M9", Type = "Pistola", Kind = ItemKind.Weapon,
 			Rarity = 0, Starter = true,
 			Description = "A secundária de todo conjunto. Troca rápida para quando o pente acaba no meio da luta." },

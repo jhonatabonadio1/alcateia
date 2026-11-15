@@ -386,13 +386,21 @@ def gravar(pasta, nome, malha):
 
 
 def main():
+    # As armas de modelo de artista (o AR-15, de tools/armas/blender/
+    # infima.py) ficam: a entrada delas na ficha e a pasta.
+    antiga = os.path.join(OUT, "armas.json")
+    externas = {}
+    if os.path.isfile(antiga):
+        externas = {k: v for k, v in json.load(open(antiga, encoding="utf-8"))["armas"].items() if v.get("externo")}
     # Só o que este script gera fica na pasta; os .import são do Godot.
     if os.path.isdir(OUT):
         for base, _, nomes in os.walk(OUT):
+            if os.path.basename(base) in externas or os.path.basename(base) == "fp":
+                continue
             for n in nomes:
                 if n.endswith(".obj"):
                     os.remove(os.path.join(base, n))
-    ficha = {"armas": {}, "maos": {}}
+    ficha = {"armas": dict(externas), "maos": {}}
     for fazer in (m16a2, ak47, sg552, ump45, m3, m9, faca, choque):
         a = fazer()
         partes = []

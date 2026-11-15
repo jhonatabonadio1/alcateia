@@ -183,3 +183,80 @@ public sealed class ViewModelTest : RegressionTest
 		b.GetViewport().GetTexture().GetImage().SaveJpg($"{_photos}/{name}.jpg", 0.9f);
 	}
 }
+
+/// <summary>
+/// O AR-15, o fuzil padrão (15/11): saca animado (é a única arma
+/// principal que saca), guarda animado antes de a outra arma subir, e
+/// recarrega por código — o pacote não tem recarga —, com o carregador
+/// caindo e voltando ao lugar.
+/// </summary>
+public sealed class Ar15ViewModelTest : RegressionTest
+{
+	public override string Name => "SacaEGuarda";
+	public override string Description => "o AR-15 saca e guarda animado; a recarga de código tira o carregador e o põe de volta";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.RemoveBots();
+		Player p = b.Player;
+		var view = p.GetNode<ViewModel>("Head/Camera3D/ViewModel");
+		var camera = view.GetParent<Node3D>();
+		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.4);
+
+		b.Check(Arsenal.DefaultPrimary == "ar15", "o AR-15 é o fuzil padrão");
+		b.Weapon.Equip(Arsenal.Get("ar15"), Arsenal.Get("m9"), 1);
+		b.Weapon.SelectSlot(Slot.Secondary);
+		await b.Seconds(0.6);
+
+		b.Weapon.SelectSlot(Slot.Primary);
+		await b.Frames(3);
+		b.Check(view.Held?.Name == "ar15" && view.RigAnimation == "sacar", $"ao pegar, o AR-15 saca animado (tocando: {view.RigAnimation})");
+		await b.Seconds(0.7);
+		b.Check(view.RigAnimation == "parado", $"depois do saque, parado (tocando: {view.RigAnimation})");
+
+		// Guarda antes de trocar: o AR-15 continua na mão um instante.
+		b.Weapon.SelectSlot(Slot.Secondary);
+		await b.Frames(3);
+		b.Check(view.Held?.Name == "ar15" && view.RigAnimation == "guardar", $"ao trocar, o AR-15 guarda primeiro (tocando: {view.RigAnimation})");
+		await b.Seconds(0.3);
+		b.Check(view.Held?.Name == "m9", $"guardado, a pistola sobe (na mão: {view.Held?.Name})");
+
+		// De volta ao AR-15, e uma recarga.
+		b.Weapon.SelectSlot(Slot.Primary);
+		await b.Seconds(0.8);
+		var skeleton = (Skeleton3D)view.Held.FindChildren("*", "Skeleton3D", true, false)[0];
+		int magazine = skeleton.FindBone("Magazine");
+		var clip = skeleton.FindChild("carregador", false, false) as Node3D;
+		// A pose com o que o código mexeu só existe logo depois de os
+		// modificadores do esqueleto rodarem: é lá que se mede.
+		Vector3 sampled = Vector3.Zero;
+		skeleton.SkeletonUpdated += () =>
+			sampled = camera.ToLocal(skeleton.ToGlobal(skeleton.GetBoneGlobalPose(magazine).Origin));
+		Vector3 Mag() => sampled;
+		await b.Frames(2);
+		Vector3 rest = Mag();
+		bool hidden = false;
+
+		RegressionBench.Press("attack");
+		await b.Frames(2);
+		RegressionBench.Release("attack");
+		await b.Seconds(0.7);
+		b.Check(b.Weapon.TryReload(), "recarrega");
+		float lowest = 0f;
+		bool named = true;
+		while (b.Weapon.IsReloading)
+		{
+			await b.PhysicsFrame();
+			if (b.Weapon.IsReloading && view.RigAnimation != "recarga") named = false;
+			lowest = Mathf.Max(lowest, rest.Y - Mag().Y);
+			if (clip != null && !clip.Visible) hidden = true;
+		}
+		b.Check(named, "durante a recarga, os braços estão na recarga");
+		b.AtLeast(0.05, lowest, "o carregador desce, na tela (m)");
+		b.Check(hidden, "no meio da recarga o carregador some (foi trocado)");
+		await b.Seconds(0.5);
+		b.AtMost(0.005, Mag().DistanceTo(rest), "terminada a recarga, o carregador volta ao lugar (m)");
+		b.Check(clip == null || clip.Visible, "e aparece de novo");
+		b.Check(view.RigAnimation == "parado", $"e os braços voltam ao parado (tocando: {view.RigAnimation})");
+	}
+}

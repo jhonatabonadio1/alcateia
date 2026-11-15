@@ -24,8 +24,20 @@ inclusive em recuo (5 = quase sem coice). Nunca misturar a convenção.
 
 # FUZIS DE ASSALTO
 
-## M16A2 — fuzil padrão
-*Referência do arsenal. Nada excepcional, e esse é o ponto.*
+## AR-15 — fuzil padrão (desde 15/11)
+*O fuzil de quem não escolheu outro.* Modelo de TastyTony (com
+silenciador, mira red dot e coronha retrátil), animações em primeira
+pessoa feitas pelo Jhon no pacote da InfimaGames. Começa com **os mesmos
+números da M16A2** (a tabela abaixo, a de 14/11): é o mesmo papel, com
+outra cara. A M16A2 continua no arsenal, agora à venda.
+
+O silenciador ainda é só visual: o som e o raio de ruído para os bots
+são os da M16A2.
+
+## M16A2 — fuzil padrão até 15/11
+*Referência do arsenal. Nada excepcional, e esse é o ponto.* Saiu do
+conjunto padrão quando entrou o AR-15; à venda na loja (raridade 1, a
+mais barata dos fuzis), e quem já tinha continua com ela.
 
 ```
 Custo WP                0 (conjunto padrão)

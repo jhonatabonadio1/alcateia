@@ -74,6 +74,7 @@ public partial class WeaponArt : Control
 
 		switch (_id)
 		{
+			case "ar15": RifleAr15(); break;
 			case "m16a2": RifleM16(); break;
 			case "ak47": RifleAk(); break;
 			case "sg552": RifleSg(); break;
@@ -103,6 +104,20 @@ public partial class WeaponArt : Control
 		Poly(Dark, 66, 44, 78, 44, 73, 62, 62, 60);                        // punho
 		Poly(Metal, 84, 44, 98, 44, 97, 68, 85, 68);                       // carregador reto
 		Line(Metal, 2.5f, 78, 44, 80, 52, 86, 52);                         // guarda-mato
+	}
+
+	private void RifleAr15()
+	{
+		Poly(Dark, 10, 31, 28, 31, 28, 46, 14, 52, 10, 50);                // coronha retrátil
+		Rect(Dark, 28, 33, 22, 4);                                         // tubo da coronha
+		Rect(Metal, 50, 28, 60, 16);                                       // caixa
+		Rect(Dark, 52, 24, 58, 4);                                         // trilho
+		Rect(Dark, 74, 15, 14, 9);                                         // mira red dot
+		Poly(Dark, 110, 28, 140, 28, 140, 42, 110, 42);                    // guarda-mão
+		Rect(Dark, 140, 30, 52, 10);                                       // silenciador
+		Poly(Dark, 64, 44, 76, 44, 71, 62, 60, 60);                        // punho
+		Poly(Metal, 84, 44, 98, 44, 98, 60, 85, 60);                       // carregador curto
+		Line(Metal, 2.5f, 76, 44, 78, 52, 84, 52);                         // guarda-mato
 	}
 
 	private void RifleAk()

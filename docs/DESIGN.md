@@ -1210,7 +1210,9 @@ Especificação: `docs/ARSENAL.md`. Implementação:
 `resources/weapons/*.tres`, gerados por `tools/gerar_arsenal.py`.
 
 Só a **primeira leva** do documento: M16A2, SG-552, AK-47, UMP-45 e M3,
-mais a M9 do conjunto padrão. O documento explica por quê — cinco armas
+mais a M9 do conjunto padrão. Desde 15/11 o fuzil do conjunto padrão é
+o **AR-15** (modelo e animações de primeira pessoa próprios, os números
+da M16A2); a M16A2 virou compra. O documento explica por quê — cinco armas
 bastam para saber se humano contra lobo funciona, e as outras bagunçam o
 balanceamento se entrarem antes.
 
@@ -1371,6 +1373,11 @@ na sua mão (`ViewModel`), na mão dos outros (`HeldWeapon`) e no chão
 (`WeaponPickup`) —, então a AK caída é a mesma AK que o inimigo
 segurava. Arma nova precisa de um caso em `WeaponModel.Build`; sem
 ele, aparece um fuzil genérico.
+
+**O AR-15 saca e guarda animado.** É o único fuzil com saque animado
+(o Jhon animou para isso): ao trocar para outra arma ele desce antes
+(0,16 s) e a outra sobe; ao voltar, ele sobe pela animação. As outras
+armas principais continuam subindo de baixo (decisão de 13/11).
 
 **Recarga animada.** Em primeira pessoa a arma inclina, o carregador
 sai por baixo e volta, e ela endireita; na escopeta cada cartucho é um

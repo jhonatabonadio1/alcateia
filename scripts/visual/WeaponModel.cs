@@ -14,7 +14,9 @@ using Godot.Collections;
 /// vai cada mão) saem de <c>tools/gerar_armas.py</c>, para
 /// <c>assets/armas/</c>. Trocar o desenho de uma arma é mexer lá e rodar
 /// o script; trocar por modelo de artista é pôr os arquivos com os
-/// mesmos nomes. Quem usa só pede <c>WeaponModel.Build("ak47")</c>.
+/// mesmos nomes — o AR-15 é assim: as peças saem do modelo de TastyTony
+/// por <c>tools/armas/blender/infima.py</c>, com a textura dele no lugar
+/// do nome do material. Quem usa só pede <c>WeaponModel.Build("ak47")</c>.
 ///
 /// Convenção: origem no punho, cano para −Z, em metros. As peças que a
 /// animação mexe ficam em nós com nome: <c>Magazine</c> (o carregador),
@@ -46,7 +48,7 @@ public static class WeaponModel
 	/// posição e o giro do pulso, no espaço da arma.</summary>
 	public readonly record struct HandPlace(string Pose, Transform3D Transform);
 
-	/// <summary>Monta o modelo da arma. Id desconhecido vira o M16:
+	/// <summary>Monta o modelo da arma. Id desconhecido vira o padrão:
 	/// melhor uma arma qualquer na mão do que mão vazia.</summary>
 	public static Node3D Build(string id)
 	{
@@ -171,7 +173,7 @@ public static class WeaponModel
 		Dictionary weapons = Sheet()?["armas"].AsGodotDictionary();
 		if (weapons == null) return null;
 		if (!string.IsNullOrEmpty(id) && weapons.ContainsKey(id)) return weapons[id].AsGodotDictionary();
-		return weapons.ContainsKey("m16a2") ? weapons["m16a2"].AsGodotDictionary() : null;
+		return weapons.ContainsKey(Arsenal.DefaultPrimary) ? weapons[Arsenal.DefaultPrimary].AsGodotDictionary() : null;
 	}
 
 	private static Dictionary Sheet()
@@ -198,6 +200,19 @@ public static class WeaponModel
 	private static StandardMaterial3D Material(string name)
 	{
 		if (Materials.TryGetValue(name, out StandardMaterial3D made)) return made;
+
+		// Modelo de artista (o AR-15): o nome é a textura de cor dele.
+		if (name.StartsWith("res://"))
+		{
+			made = new StandardMaterial3D
+			{
+				AlbedoTexture = GD.Load<Texture2D>(name),
+				Roughness = 0.6f,
+				MetallicSpecular = 0.5f
+			};
+			Materials[name] = made;
+			return made;
+		}
 
 		StandardMaterial3D m = name switch
 		{

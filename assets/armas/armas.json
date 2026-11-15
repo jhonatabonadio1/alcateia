@@ -91,6 +91,88 @@
     ]
    }
   },
+  "ar15": {
+   "externo": true,
+   "limites": [
+    [
+     -0.029,
+     -0.115,
+     -0.491
+    ],
+    [
+     0.024,
+     0.103,
+     0.27
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.014,
+      -0.36
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/ar15/corpo_ar15.obj",
+     "material": "metal",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/ar15/ferrolho_ar15.obj",
+     "material": "metal",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://assets/armas/ar15/magazine_ar15.obj",
+     "material": "metal",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.0163,
+     0.0286,
+     -0.0904
+    ],
+    "Muzzle": [
+     -0.0036,
+     0.0294,
+     -0.4913
+    ]
+   }
+  },
   "choque": {
    "limites": [
     [

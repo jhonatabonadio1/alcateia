@@ -2,6 +2,33 @@
 
 ## Não lançado
 
+### AR-15, o fuzil padrão novo (15/11)
+- **Arma nova: AR-15**, o fuzil do conjunto padrão (no lugar da M16A2).
+  Modelo de TastyTony (silenciador, mira red dot, coronha retrátil) e
+  animações de primeira pessoa **feitas pelo Jhon** com o pacote da
+  InfimaGames (CC BY 4.0): parado, andar, sacar, guardar e tiro, com o
+  ferrolho e o gatilho do fuzil animados no tiro. Começa com os números
+  da M16A2 de 14/11.
+- **A M16A2 continua**, agora à venda (raridade 1, a mais barata dos
+  fuzis). Quem já tinha continua com ela.
+- `tools/armas/blender/infima.py` monta o conjunto como a Unreal monta:
+  o esqueleto do fuzil entra no dos braços, filho de `ik_hand_gun`; o
+  carregador preso no osso dele; o olho no osso da cabeça; a abertura de
+  câmera da Unreal (58,7° na vertical) na ficha (`fov`). Também grava o
+  modelo para a mão dos outros e o chão (`assets/armas/ar15/`), com a
+  textura do fuzil; `tools/gerar_armas.py` passou a preservar modelos de
+  artista.
+- Primeira pessoa (`ViewModel`): o AR-15 **saca animado** (até 0,4 s) e
+  **guarda animado** ao trocar para outra arma (0,16 s, antes de a outra
+  subir); o balanço do passo e mais coice de código, porque as animações
+  da Unreal mexem poucos milímetros. O pacote não tem recarga: a do AR-15
+  é de código (a arma inclina, o carregador cai e volta, o ferrolho é
+  puxado com o pente vazio — `RigPieces`, um modificador do esqueleto).
+- **Braços:** por decisão do Jhon, os do manequim da UE5 que vêm no
+  pacote. A malha é da Epic; está em `PENDENCIAS.md` para resolver antes
+  de publicar.
+- HUD: desenho do AR-15 no ícone da arma.
+
 ### Ajustes de 14/11: tiro na cabeça, M16, parede, rugido, escudo
 - **Tiro na cabeça sem dano** (o Jhon: "mirei escopado exatamente na
   cabeça do humano, e não deu dano"). Dois defeitos:

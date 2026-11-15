@@ -190,7 +190,7 @@ public partial class Hud
 		column.MouseFilter = Control.MouseFilterEnum.Ignore;
 
 		HBoxContainer top = UiKit.Row(UiTokens.S2);
-		_weaponArt = WeaponArt.Make("m16a2", new Vector2(120, 44));
+		_weaponArt = WeaponArt.Make(Arsenal.DefaultPrimary, new Vector2(120, 44));
 		_weaponArt.SizeFlagsHorizontal = Control.SizeFlags.ShrinkBegin;
 		top.AddChild(_weaponArt);
 

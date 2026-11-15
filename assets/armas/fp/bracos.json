@@ -52,6 +52,53 @@
    -1.0723
   ]
  },
+ "ar15": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 0.8333,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "guardar": {
+    "ate": 0.5,
+    "clipe": "guardar",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 2.0,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.5,
+    "clipe": "sacar",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.5333,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "ar15"
+  ],
+  "arquivo": "res://assets/armas/fp/ar15.glb",
+  "balanco": true,
+  "cano": [
+   0.0555,
+   -0.0722,
+   -0.6639
+  ],
+  "coice": 0.4,
+  "fov": 58.7,
+  "sacar": true
+ },
  "escopeta": {
   "ajuste": [
    0.0,

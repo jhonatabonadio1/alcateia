@@ -4,7 +4,7 @@ Gera resources/weapons/*.tres a partir da tabela abaixo.
 
 Os números são os de docs/ARSENAL.md, primeira leva de implementação
 (M16A2, SG-552, AK-47, UMP-45, M3) mais a M9, que é a secundária do
-conjunto padrão. O dano está como no documento, calibrado para 100 HP;
+conjunto padrão, e o AR-15, o fuzil padrão desde 15/11. O dano está como no documento, calibrado para 100 HP;
 o jogo dobra na hora do tiro (Arsenal.DamageScale) porque o humano tem
 200, e assim "tiros para matar" e TTK ficam iguais aos do documento.
 
@@ -23,8 +23,22 @@ MODES = {"Auto": 0, "Semi": 1, "Pump": 2, "Bolt": 3}
 
 # estrelas: dano, penetração, precisão, cadência, mobilidade, recuo, alcance
 WEAPONS = [
-    dict(Id="m16a2", DisplayName="M16A2", Class="Rifle", WpCost=0,
+    # 15/11: o fuzil padrão passou a ser o AR-15 (modelo de TastyTony,
+    # animações do Jhon no pacote da InfimaGames). Começa com os números
+    # da M16A2 de 14/11, que era a padrão; a M16A2 continua no arsenal.
+    dict(Id="ar15", DisplayName="AR-15", Class="Rifle", WpCost=0,
          Description="Fuzil padrão. Referência do arsenal: nada excepcional, e esse é o ponto.",
+         Damage=27, HeadshotMultiplier=2.5, Rpm=650, Mode="Auto", Magazine=30, Reserve=90,
+         ReloadTactical=2.3, ReloadEmpty=2.9, DrawTime=0.5,
+         SpreadBase=0.15, SpreadPerShot=0.09, SpreadMax=1.8, SpreadRecovery=12.0, SpreadDelay=0.05,
+         MoveSpreadMultiplier=1.6, CrouchSpreadMultiplier=0.7,
+         RecoilVertical=1.0, RecoilVerticalLate=0.55, RecoilEarlyShots=4,
+         RecoilHorizontal=0.18, RecoilRecovery=7.0,
+         Range=150, FalloffStart=35, FalloffEnd=60, FalloffMin=0.7,
+         SpeedMultiplier=1.0, NoiseRadius=45, AimFov=55, AimSpreadMultiplier=0.2, AimSpeedMultiplier=0.7,
+         stars=(2.0, 2.5, 3.5, 3.0, 2.5, 2.5, 3.0)),
+    dict(Id="m16a2", DisplayName="M16A2", Class="Rifle", WpCost=0,
+         Description="O fuzil padrão de antes do AR-15: os mesmos números, com alça de transporte e coronha fixa.",
          # 14/11: o Jhon achou difícil de usar. Mais precisa (a dispersão que
          # ele afinou no editor), um pouco menos de dano, mira mais fechada.
          # O recuo ficou como estava.
