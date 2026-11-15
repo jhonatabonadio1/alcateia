@@ -509,7 +509,7 @@ a arma atira 0,2 s depois da troca), `RigHolsterTime` 0,16 s (quanto o
 guardar do AR-15 dura antes de a outra arma subir). Saque animado na
 arma principal só com `"sacar": true` na ficha (o AR-15). A recarga de
 código (conjunto sem animação de recarga, o AR-15) está em
-`CodeReload`: a arma inclina 14° em torno do punho e desce em até 16% da recarga, o carregador cai
+`CodeReload`: a arma inclina 10° em torno do punho e desce em até 16% da recarga, o carregador cai
 24 cm entre 20% e 36%, some até 60% e volta até 74%; com o pente vazio,
 o ferrolho recua 5 cm entre 78% e 90%.
 

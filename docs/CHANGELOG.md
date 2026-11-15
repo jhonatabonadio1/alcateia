@@ -11,10 +11,16 @@
   da M16A2 de 14/11.
 - **A M16A2 continua**, agora à venda (raridade 1, a mais barata dos
   fuzis). Quem já tinha continua com ela.
-- `tools/armas/blender/infima.py` monta o conjunto como a Unreal monta:
-  o esqueleto do fuzil entra no dos braços, filho de `ik_hand_gun`; o
-  carregador preso no osso dele; o olho no osso da cabeça; a abertura de
-  câmera da Unreal (58,7° na vertical) na ficha (`fov`). Também grava o
+- `tools/armas/blender/infima.py` passa as animações do manequim da
+  Unreal para **os nossos braços CC BY** (os da AK, SG, UMP e pistola),
+  quadro a quadro: a mão no lugar e no giro da mão do manequim (alinhada
+  pelos nós dos dedos), o braço por IK a partir do ombro dele com o
+  cotovelo para o mesmo lado, o antebraço torcendo aos poucos com a mão,
+  e cada dedo na direção do dedo dele. O fuzil vai num osso que segue o
+  `ik_hand_gun` do manequim (onde a Unreal prende a arma), com o
+  esqueleto dele filho desse osso; o carregador pesado no osso dele; o
+  olho na câmera do pacote da AK, no lugar da cabeça do manequim; a
+  abertura de câmera da Unreal (58,7° na vertical) na ficha (`fov`). Também grava o
   modelo para a mão dos outros e o chão (`assets/armas/ar15/`), com a
   textura do fuzil; `tools/gerar_armas.py` passou a preservar modelos de
   artista.
@@ -24,9 +30,9 @@
   da Unreal mexem poucos milímetros. O pacote não tem recarga: a do AR-15
   é de código (a arma inclina, o carregador cai e volta, o ferrolho é
   puxado com o pente vazio — `RigPieces`, um modificador do esqueleto).
-- **Braços:** por decisão do Jhon, os do manequim da UE5 que vêm no
-  pacote. A malha é da Epic; está em `PENDENCIAS.md` para resolver antes
-  de publicar.
+- **Braços:** os nossos (CC BY), não os do manequim da Epic, que não
+  entra no jogo. Do pacote da Infima entram as animações (do Jhon) e o
+  fuzil.
 - HUD: desenho do AR-15 no ícone da arma.
 
 ### Ajustes de 14/11: tiro na cabeça, M16, parede, rugido, escudo

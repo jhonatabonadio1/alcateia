@@ -307,7 +307,7 @@ public partial class ViewModel
 		Vector3 pivot = _gripBone >= 0
 			? _rigScene.Transform * (RigPieces.Relative(_rigScene, _rigSkeleton) * _rigSkeleton.GetBoneGlobalPose(_gripBone).Origin)
 			: (_muzzle?.Position ?? new Vector3(0, -0.05f, -0.4f)) * 0.5f;
-		var turn = new Basis(Basis.FromEuler(new Vector3(5f, 6f, 14f) * tilt * Mathf.DegToRad(1f)).GetRotationQuaternion());
+		var turn = new Basis(Basis.FromEuler(new Vector3(2f, 8f, 10f) * tilt * Mathf.DegToRad(1f)).GetRotationQuaternion());
 		return new Transform3D(Basis.Identity, new Vector3(-0.01f, -0.04f, 0.015f) * tilt)
 			* new Transform3D(Basis.Identity, pivot) * new Transform3D(turn, Vector3.Zero) * new Transform3D(Basis.Identity, -pivot);
 	}

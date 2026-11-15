@@ -60,7 +60,7 @@
   ],
   "animacoes": {
    "andar": {
-    "ate": 0.8333,
+    "ate": 0.8,
     "clipe": "andar",
     "de": 0.0
    },
