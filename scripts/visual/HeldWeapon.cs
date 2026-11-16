@@ -84,7 +84,7 @@ public partial class HeldWeapon : Node3D
 
 	private string WantedId()
 	{
-		if (_weapon == null || (_form != null && _form.IsWolf) || (_health != null && _health.IsDead))
+		if (_weapon == null || (_form != null && _form.ShowsWolf) || (_health != null && _health.IsDead))
 			return "";
 
 		return _weapon.HeldId;

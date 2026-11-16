@@ -48,6 +48,12 @@ public partial class CharacterAnimator
 	private double _corpseTimer;
 	private double _deathLength;
 	private readonly List<BaseMaterial3D> _fadeMaterials = new();
+
+	/// <summary>A força do brilho de cada material antes de desbotar: o
+	/// brilho (as faixas acesas da roupa da Ely) apaga junto com o corpo.
+	/// Antes ficava aceso no corpo transparente e parecia um objeto deixado
+	/// no inimigo morto (Jhon, 16/11).</summary>
+	private readonly List<float> _fadeEmission = new();
 	private bool _hasDeath;
 
 	private void OnDied()
@@ -94,11 +100,13 @@ public partial class CharacterAnimator
 
 		if (_fadeMaterials.Count == 0) PrepareFade();
 
-		foreach (BaseMaterial3D material in _fadeMaterials)
+		for (int i = 0; i < _fadeMaterials.Count; i++)
 		{
+			BaseMaterial3D material = _fadeMaterials[i];
 			Color color = material.AlbedoColor;
 			color.A = 1f - progress;
 			material.AlbedoColor = color;
+			material.EmissionEnergyMultiplier = _fadeEmission[i] * (1f - progress) * (1f - progress);
 		}
 
 		if (progress >= 1f) _model.Visible = false;
@@ -131,6 +139,7 @@ public partial class CharacterAnimator
 
 					mesh.SetSurfaceOverrideMaterial(surface, copy);
 					_fadeMaterials.Add(copy);
+					_fadeEmission.Add(copy.EmissionEnergyMultiplier);
 				}
 			}
 
@@ -148,11 +157,13 @@ public partial class CharacterAnimator
 
 		// Volta tudo: um corpo que renasce meio transparente e meio
 		// enterrado é o mesmo defeito, só adiado.
-		foreach (BaseMaterial3D material in _fadeMaterials)
+		for (int i = 0; i < _fadeMaterials.Count; i++)
 		{
+			BaseMaterial3D material = _fadeMaterials[i];
 			Color color = material.AlbedoColor;
 			color.A = 1f;
 			material.AlbedoColor = color;
+			material.EmissionEnergyMultiplier = _fadeEmission[i];
 		}
 
 		_model.Position = new Vector3(_model.Position.X, 0, _model.Position.Z);

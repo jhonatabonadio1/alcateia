@@ -170,6 +170,7 @@ public partial class CharacterAnimator : Node3D
 		if (_form != null)
 		{
 			_form.FormChanged += _ => Refresh();
+			_form.BodySwapped += Refresh;
 			Refresh();
 		}
 
@@ -258,6 +259,6 @@ public partial class CharacterAnimator : Node3D
 	/// <summary>O corpo humano some quando o dono vira lobo.</summary>
 	private void Refresh()
 	{
-		if (_form != null) Visible = !(HideInWolfForm && _form.IsWolf);
+		if (_form != null) Visible = !(HideInWolfForm && _form.ShowsWolf);
 	}
 }

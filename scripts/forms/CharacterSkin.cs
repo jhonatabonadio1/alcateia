@@ -53,6 +53,12 @@ public partial class CharacterSkin : Resource
 	/// (as animações do lobo_anim.glb valem sem conversão).</summary>
 	[Export(PropertyHint.File, "*.fbx,*.glb,*.tscn")] public string WolfModel = "";
 
+	[ExportGroup("Efeitos")]
+	/// <summary>A cor dos efeitos do lobo deste personagem: o rastro das
+	/// garras, a aura e o brilho da fumaça (scripts/visual/fx/WolfFx.cs).
+	/// Transparente (alfa 0) = a cor do time.</summary>
+	[Export] public Color EffectColor = new(0, 0, 0, 0);
+
 	[ExportGroup("Atributos")]
 	/// <summary>Multiplica a vida (a mesma nas duas formas,
 	/// FormController.HumanHp, 200). 1 = a vida de todo mundo.</summary>

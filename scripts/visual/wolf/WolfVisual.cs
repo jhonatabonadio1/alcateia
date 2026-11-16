@@ -107,6 +107,7 @@ public partial class WolfVisual : Node3D
 		if (!BuildModel()) return;
 
 		_form.FormChanged += OnFormChanged;
+		_form.BodySwapped += () => Visible = _form.ShowsWolf;
 		_weapon.WolfMoveStarted += OnMove;
 		_weapon.WolfDiveLanded += OnDiveLanded;
 		if (_health != null)
@@ -115,8 +116,20 @@ public partial class WolfVisual : Node3D
 			_health.Respawned += OnRespawned;
 		}
 
-		Visible = _form.IsWolf;
+		Visible = _form.ShowsWolf;
+
+		// Os efeitos (aura, ar de velocidade, garras, fumaça) ficam no
+		// corpo, não aqui: a fumaça aparece com o lobo ainda escondido.
+		// O corpo do servidor (Driven) não desenha nada.
+		if (WolfFx.Enabled && _body is not Player { Driven: true })
+			_body.CallDeferred(Node.MethodName.AddChild, new WolfFx { Name = "WolfFx" });
 	}
+
+	/// <summary>O lobo montado (a raiz do modelo), para os efeitos.</summary>
+	public Node3D Model => _model;
+
+	/// <summary>Rugindo agora (o clipe do rugido tocando).</summary>
+	public bool Howling => _howling;
 
 	public override void _Process(double delta)
 	{
@@ -194,7 +207,7 @@ public partial class WolfVisual : Node3D
 
 	private void OnFormChanged(int form)
 	{
-		Visible = _form.IsWolf;
+		Visible = _form.ShowsWolf;
 
 		if ((Form)form == Form.ShiftingToWolf)
 		{
@@ -222,6 +235,6 @@ public partial class WolfVisual : Node3D
 		_wallBlend = 0;
 		ResetLocomotion();
 		_playback?.Start("Locomotion");
-		Visible = _form.IsWolf;
+		Visible = _form.ShowsWolf;
 	}
 }

@@ -11,3 +11,4 @@ Rarity = 3
 HumanModel = "res://assets/personagens/eve/humano.fbx"
 WolfModel = "res://assets/personagens/eve/lobo.glb"
 HpMultiplier = 1.1
+EffectColor = Color(0.45, 1, 0.3, 1)

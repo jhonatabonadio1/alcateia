@@ -29,6 +29,10 @@ public partial class FormController : Node
 	[Signal] public delegate void FormChangedEventHandler(int form);
 	[Signal] public delegate void WpChangedEventHandler(float wp, float max);
 
+	/// <summary>A metade da transformação: o corpo que aparece troca aqui,
+	/// no meio da fumaça (<see cref="ShowsWolf"/>). Só visual.</summary>
+	[Signal] public delegate void BodySwappedEventHandler();
+
 	/// <summary>Tentou transformar sem WP. O HUD usa isto para avisar —
 	/// falha silenciosa faz o jogador achar que o botão está quebrado.</summary>
 	[Signal] public delegate void TransformDeniedEventHandler(float missing);
@@ -141,8 +145,13 @@ public partial class FormController : Node
 		if (Current != Form.ShiftingToWolf && Current != Form.ShiftingToHuman)
 			return;
 
+		bool shown = ShowsWolf;
 		_shiftTimer -= delta;
-		if (_shiftTimer > 0) return;
+		if (_shiftTimer > 0)
+		{
+			if (ShowsWolf != shown) EmitSignal(SignalName.BodySwapped);
+			return;
+		}
 
 		if (Current == Form.ShiftingToWolf)
 			Enter(Form.Wolf);
@@ -245,6 +254,21 @@ public partial class FormController : Node
 	public float ShiftTotal => Current == Form.ShiftingToWolf ? ShiftDuration : ShiftBackDuration;
 
 	public bool IsShifting => Current == Form.ShiftingToWolf || Current == Form.ShiftingToHuman;
+
+	/// <summary>
+	/// Qual corpo aparece: o do lobo ou o do humano. Na transformação, a
+	/// troca é na metade do tempo, quando a fumaça está mais densa
+	/// (scripts/visual/fx/TransformSmoke.cs) — ela esconde o corpo
+	/// trocando. Só visual: o estado do jogo (vida, dano, armas) é o de
+	/// <see cref="Current"/> e <see cref="IsWolf"/>, que mudam no começo.
+	/// </summary>
+	public bool ShowsWolf => Current switch
+	{
+		Form.Wolf => true,
+		Form.ShiftingToWolf => _shiftTimer <= ShiftDuration * 0.5,
+		Form.ShiftingToHuman => _shiftTimer > ShiftBackDuration * 0.5,
+		_ => false
+	};
 
 	private bool KeepRatio => !RefillOnTransform;
 
