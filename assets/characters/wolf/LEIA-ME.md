@@ -41,14 +41,15 @@ esqueleto). O Godot tira o `_Loop` do nome e põe o clipe em laço.
 | `Walk_Forward`, `Walk_Backward`, `Walk_Left`, `Walk_Right` | andar em pé, nas quatro direções, de frente para a mira | acelera até a velocidade do corpo (o lobo não tem corrida em pé) |
 | `Crouch_Idle` | agachado parado | 1× |
 | `Crouch_Walk` | andando agachado | na velocidade do corpo |
-| `Run_Quad` | corrida de quatro (W duas vezes) | 1×; o som do passo sai quando as patas se juntam (0,567 s) |
+| `Run_Quad` | corrida de quatro (W duas vezes) | na velocidade do corpo (a 5,4 m/s, 1,37×); o som do passo sai quando as patas se juntam (0,567 s do clipe) |
 | `Attack_Primary`, `Attack_Secondary` | as duas garradas | 1×, da cintura para cima |
 | `Howl` | rugido (R) | 1×, da cintura para cima |
 | `Special_Attack` | salto (direito no chão), bote (direito no ar) e a aterrissagem do bote | 1×; trechos em `WolfMoves.cs` |
 | `Jump_Start`, `Jump_Air`, `Jump_Land` | pulo: impulso, voo em laço e pouso | 1× |
 
 O `WolfOwnClips` os encaixa no corpo do jogo: tira escala e posição que
-não são do quadril, converte o quadril para a altura do corpo e corrige
+não são do quadril, converte o quadril para a altura do corpo (mantendo
+o vaivém dele dentro do ciclo: os clipes são no lugar) e corrige
 a diferença de eixos (`RetargetPose` com `referenceFrame` e
 `bodyFrame`). Cada um vale no lugar do `.fbx` do Mixamo de mesmo papel;
 só a morte, a corrida na parede (e o `run`, o `jump` e o `sprint`, de

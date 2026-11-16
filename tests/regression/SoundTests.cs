@@ -72,10 +72,10 @@ public sealed class StepRhythmTest : RegressionTest
 			RegressionBench.Note($"lobo em pé a {RegressionBench.F((float)wolfSpeed)} m/s: {steps.Count} passos em 2 s, passada {RegressionBench.F(visual.StepStride)} m");
 			b.Near(wolfSpeed * 2.0 / visual.StepStride, steps.Count, 1.0, "passos do lobo em 2 s");
 
-			// De quatro: o clipe toca a 1× (pedido do Jhon), e o som sai uma
-			// vez por ciclo, no quadro em que as patas da frente e as de trás
-			// se juntam (SprintGather) — o primeiro, contado do começo da
-			// corrida, que sempre começa do começo do clipe.
+			// De quatro: o clipe acompanha o corpo (velocidade ÷ SprintClipSpeed),
+			// e o som sai uma vez por ciclo, no quadro em que as patas da frente
+			// e as de trás se juntam (SprintGather) — o primeiro, contado do
+			// começo da corrida, que sempre começa do começo do clipe.
 			float sceneScale = visual.SprintAnimScale;
 			visual.SprintAnimScale = 1f;
 			await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.6);
@@ -94,16 +94,19 @@ public sealed class StepRhythmTest : RegressionTest
 			visual.SprintAnimScale = sceneScale;
 
 			var beats = steps.Where(t => t >= start).ToList();
+			float rate = gallop / visual.SprintClipSpeed;
 			b.Check(beats.Count >= 3, $"de quatro: {beats.Count} passos em 2,5 s");
 			if (beats.Count >= 3)
 			{
 				RegressionBench.Note($"de quatro a {RegressionBench.F(gallop)} m/s: {beats.Count} passos, o primeiro {RegressionBench.F((float)(beats[0] - start))} s depois do W, um a cada {RegressionBench.F((float)((beats[^1] - beats[0]) / (beats.Count - 1)))} s");
-				b.Near(WolfVisual.SprintGather, beats[0] - start, 0.08, "o primeiro passo cai quando as patas se juntam (s; a corrida começa 2 a 3 quadros depois do W)");
-				b.Near(sprint, (beats[^1] - beats[0]) / (beats.Count - 1), 0.02, "um passo por ciclo do clipe (s)");
+				// A corrida acelera do trote até a velocidade dela no começo: o
+				// primeiro passo chega um pouco depois da conta.
+				b.Near(WolfVisual.SprintGather / rate, beats[0] - start, 0.1, "o primeiro passo cai quando as patas se juntam (s; a corrida começa 2 a 3 quadros depois do W)");
+				b.Near(sprint / rate, (beats[^1] - beats[0]) / (beats.Count - 1), 0.02, "um passo por ciclo do clipe (s)");
 			}
 
-			// Sem o modelo (o perfil): a mesma batida, em metros a 1×.
-			b.Near(gallop * sprint, profile.StrideWolfSprint, 0.1, "passada da corrida de quatro no perfil (m)");
+			// Sem o modelo (o perfil): a mesma batida, em metros.
+			b.Near(visual.SprintClipSpeed * sprint, profile.StrideWolfSprint, 0.04, "passada da corrida de quatro no perfil (m)");
 		}
 		finally
 		{

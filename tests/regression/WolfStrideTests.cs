@@ -10,11 +10,10 @@ using System.Threading.Tasks;
 /// Medido no esqueleto do WolfVisual: o pé (ou a mão, engatinhando) mais
 /// baixo, enquanto está no chão, não deveria andar. Os limites ficam um
 /// pouco acima do medido com os andares do Jhon (15/11, o lobo a 4,15
-/// m/s): de frente 0,66 m/s, para trás 0,89 a 0,92, engatinhando 0,41. De
-/// lado, 1,35 a 1,75: o Walk_Left toca a 5,5× (um ciclo a cada 0,11 s,
-/// seis quadros), e muito do que se mede é o pé entre um quadro e outro.
-/// De quatro o clipe toca a 1× com o corpo a 6 m/s e o pé a 4,1 (decisão
-/// do Jhon): desliza a diferença, 2,46 m/s.
+/// m/s, com o vaivém do quadril dos clipes): de frente 0,16 m/s, na
+/// diagonal 0,14, para trás 0,19, engatinhando 0,25, de lado 0,50 a 0,67
+/// (o Walk_Left toca a 5,5×, um ciclo a cada 0,11 s) e de quatro 0,56 (a
+/// 5,4 m/s, o clipe a 1,37×).
 /// </summary>
 public sealed class WolfStrideTest : RegressionTest
 {
@@ -40,12 +39,12 @@ public sealed class WolfStrideTest : RegressionTest
 		b.Check(_contacts.Length == 4, "achou os dois pés e as duas mãos");
 
 		// O corpo sempre anda para +X; o giro escolhe a tecla.
-		await Phase(b, "de frente", -90f, 0.95, "move_forward");
-		await Phase(b, "de lado", 0f, 2.0, "move_right");
-		await Phase(b, "para trás", 90f, 1.0, "move_back");
-		await Phase(b, "na diagonal", -45f, 1.1, "move_forward", "move_right");
-		await Phase(b, "engatinhando", -90f, 0.9, "move_forward", "crouch");
-		await Phase(b, "de quatro", -90f, 2.8, "move_forward", "sprint");
+		await Phase(b, "de frente", -90f, 0.4, "move_forward");
+		await Phase(b, "de lado", 0f, 0.9, "move_right");
+		await Phase(b, "para trás", 90f, 0.4, "move_back");
+		await Phase(b, "na diagonal", -45f, 0.4, "move_forward", "move_right");
+		await Phase(b, "engatinhando", -90f, 0.45, "move_forward", "crouch");
+		await Phase(b, "de quatro", -90f, 0.9, "move_forward", "sprint");
 	}
 
 	private async Task Phase(RegressionBench b, string what, float yaw, double slideLimit, params string[] keys)
@@ -89,9 +88,10 @@ public sealed class WolfStrideTest : RegressionTest
 		int stopped = stop.FindIndex(f => f.Speed < 0.05f);
 		b.Check(stopped >= 0 && stopped <= 6, $"{what}: o corpo parou em até 0,1 s");
 		float travel = Travel(stop.Skip(System.Math.Max(stopped, 0)).ToList());
-		// Em pé, os andares do Jhon param com 1,1 a 1,4 m de mãos e pés
-		// somados (a diagonal, de corpo virado 45°, é a que mais anda).
-		b.AtMost(crouch || sprint ? 3.2 : 1.5, travel, $"{what}: o quanto os pés andam depois de o corpo parar (m)");
+		// Em pé, os andares do Jhon param com 1,1 a 1,7 m de mãos e pés
+		// somados: o passo congela onde o quadril estava no vaivém, e as
+		// pernas se juntam embaixo dele.
+		b.AtMost(crouch || sprint ? 3.2 : 1.9, travel, $"{what}: o quanto os pés andam depois de o corpo parar (m)");
 	}
 
 	private record struct Frame(float T, Vector3[] Contacts, float Ground, float Speed);

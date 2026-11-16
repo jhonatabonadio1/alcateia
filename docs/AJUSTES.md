@@ -37,14 +37,12 @@ o renascer do bot (6 s).
   a parecer apressada; o pé não patina, mas a perna gira rápido. As
   passadas (`WalkClipSpeed`, `RunClipSpeed`, `WallClipSpeed`, `CrawlClipSpeed`, `SprintClipSpeed`,
   `WalkClip`, `RunClip`...) são medidas no esqueleto: não são botão de
-  ajuste. Com os andares do Jhon: `WalkClipSpeed` 1,45 (frente),
-  `WalkBackClipSpeed` 1,15, `WalkSideClipSpeed` 0,75, `CrawlClipSpeed`
-  1,05. Exceção: **a corrida de quatro toca a 1×** (`SprintAnimScale` =
-  1, o ritmo em que o Jhon animou), seja qual for a velocidade do
-  corpo; `SprintClipSpeed` (4,1, o pé do clipe) só vale parando, quando o
-  corpo fica mais lento que o pé. O `player.tscn` precisa de
-  `SprintAnimScale = 1` para isso (0,5 deixa a corrida na metade do
-  ritmo).
+  ajuste. Com os andares do Jhon: `WalkClipSpeed` 1,4 (frente),
+  `WalkBackClipSpeed` 1,0, `WalkSideClipSpeed` 0,75, `CrawlClipSpeed`
+  1,05, `SprintClipSpeed` 3,95 (com o corpo a 5,4 m/s a corrida de quatro
+  toca a 1,37×). Os clipes do Jhon mantêm o vaivém do quadril: tirá-lo
+  fazia o pé de apoio andar junto (de frente, 0,66 m/s de patinação
+  contra 0,16).
 - **Alturas presas ao mapa.** O humano pula 0,99 m e sobe caixote
   (0,8 m), não contêiner (2,2 m). O Bruto precisa de `JumpMultiplier`
   ≥ 1,2 para chegar ao contêiner a partir do caixote. Mexeu no pulo,
@@ -72,9 +70,9 @@ o renascer do bot (6 s).
 | `HoldFallGravity` | 0,78 | Gravidade na queda segurando o pulo (menos que 1 = cai mais devagar) |
 | `WolfJumpCarry` | 0,9 | Quanto da velocidade do chão o lobo leva para o pulo |
 | `CrouchSpeedFactor` | 0,45 | Velocidade agachado (as duas formas) |
-| `WolfSprintFactor` | 1,30 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal |
+| `WolfSprintFactor` | 1,30 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal. 5,4 m/s, a velocidade em que o Run_Quad a 1,37× não patina; mais rápido, o clipe acelera junto (o `player.tscn` tinha 1,45, tirado em 15/11 com o aval do Jhon) |
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
-| `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Andando em pé e na parede: quanto a animação corre em relação ao corpo (1 acompanha, 0,7 é 30% mais lenta; a pata desliza a diferença). **De quatro: o ritmo da animação** — 1 é a velocidade em que o Jhon animou, seja qual for a do corpo (desde 15/11, pedido dele). Só a animação. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
+| `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Andando em pé e na parede: quanto a animação corre em relação ao corpo (1 acompanha, 0,7 é 30% mais lenta; a pata desliza a diferença). De quatro, o mesmo (acompanha o corpo). Só a animação. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
 | `WalkSpeedFactor` | 0,42 | Velocidade andando com Shift (só humano) |
 | `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula (é o hitbox do corpo) |
 | `StandEyeHeight` / `CrouchEyeHeight` | 0,62 / 0,1 m | Altura do olho a partir do centro da cápsula |
@@ -82,7 +80,8 @@ o renascer do bot (6 s).
 | `FreezeBrake` | 30 m/s² | Freada de quem fica preso no lugar (golpe, carga do salto) |
 | `FallLimit` | −25 m | Abaixo disto volta ao spawn |
 | `MouseSensitivity` | 0,002 | Sensibilidade base. O jogador multiplica nas Opções (`Settings.Sensitivity`, padrão 1) |
-| `ThirdPersonDistance` | 3,5 m | Distância da câmera do lobo |
+| `ThirdPersonDistance` | 2,5 m | Distância da câmera do lobo (era 3,5; longe demais, Jhon, 15/11) |
+| `FootSink` (nó `WolfVisual`) | 0,02 m | Quanto o lobo parado em pé desce: a pata do Idle_Pose só encosta pelas garras e ele parecia flutuar |
 
 ### Resultado de hoje
 
@@ -456,7 +455,7 @@ Abra no Inspector e mude ali — vale para os dois.
 | `StepWolf` | 20 |
 | `Land` | 17 |
 | `Howl` | 45 (já no começo do rugido e a cada 0,5 s) |
-| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,04 / 3,61 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça. De lobo, só vale sem o modelo: com ele, em pé a passada é a do andar que toca (frente, trás ou lado) e de quatro o som sai uma vez por ciclo do clipe, quando as patas se juntam (`WolfVisual.SprintGather`, 0,567 s) |
+| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,0 / 2,37 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça. De lobo, só vale sem o modelo: com ele, em pé a passada é a do andar que toca (frente, trás ou lado) e de quatro o som sai uma vez por ciclo do clipe, quando as patas se juntam (`WolfVisual.SprintGather`, 0,567 s) |
 | `NoiseRadius` da arma | 30 a 60 (seção 7) |
 
 O som do lugar fica no mapa (`scripts/meta/Maps.cs`):

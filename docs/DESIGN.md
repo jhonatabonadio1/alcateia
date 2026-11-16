@@ -1480,13 +1480,15 @@ andares (frente, trás, esquerda, direita) **aceleram até a velocidade
 do corpo** para o pé não deslizar (a 4,15 m/s, de frente toca a ~2,9×
 e de lado a ~5,5×; decisão do Jhon). O corpo fica de frente para a
 mira e o passo escolhe a direção; nas diagonais o corpo vira o resto
-(até 45°). **Agachado** toca o `Crouch_Idle` (topo da cabeça a 1,18 m
+(até 45°). Parado em pé ele desce 2 cm (`FootSink`): a pata só encostava
+pelas garras e, de longe, ele parecia flutuar. A câmera fica a 2,5 m
+(era 3,5). **Agachado** toca o `Crouch_Idle` (topo da cabeça a 1,18 m
 do chão; a cápsula agachada tem 1,0 m, então a cabeça sai 18 cm acima —
 o tiro na cabeça segue o modelo). Andando agachado ele **engatinha** no
 `Crouch_Walk`, na velocidade do corpo (`CrawlClipSpeed` 1,05 m/s). **Na
-corrida de quatro** (W duas vezes) toca o `Run_Quad` **a 1×, no ritmo
-em que foi feito**, com o corpo na velocidade de sempre (6 m/s contra
-4,1 do pé: desliza a diferença, decisão do Jhon). O som do passo sai
+corrida de quatro** (W duas vezes) toca o `Run_Quad` na velocidade do
+corpo, como o andar: a 5,4 m/s, 1,37× e sem patinar (o Jhon pediu o
+clipe um pouco mais rápido e o corpo um pouco mais lento). O som do passo sai
 uma vez por ciclo, no quadro em que as patas da frente e as de trás se
 juntam. **O pulo** toca o impulso (`Jump_Start`) ao sair do chão, o voo
 em laço (`Jump_Air`) e o pouso (`Jump_Land`), todos a 1×. Com o Mutant

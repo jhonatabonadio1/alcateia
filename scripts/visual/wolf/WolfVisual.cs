@@ -67,6 +67,12 @@ public partial class WolfVisual : Node3D
 	/// um homem.</summary>
 	[Export] public float ModelScale = WolfMoves.BodyScale;
 
+	/// <summary>Quanto o lobo parado em pé desce, em metros. A sola do
+	/// Idle_Pose encosta no chão só nas garras (a almofada da pata fica 1 a
+	/// 2 cm acima), e de longe, com a sombra, ele parecia flutuar (Jhon,
+	/// 15/11). Andando ou agachado, não desce.</summary>
+	[Export] public float FootSink = 0.02f;
+
 	/// <summary>Mixamo olha para +Z; o corpo, para −Z.</summary>
 	[Export] public float ModelYaw = 180f;
 
@@ -120,7 +126,8 @@ public partial class WolfVisual : Node3D
 		float feet = _player != null ? _player.FeetOffset : -0.875f;
 		// O "Running Crawl" apoia as mãos no chão com a mão grande do corpo:
 		// sobe CrawlLift. O andar agachado do Jhon tem os pés no chão.
-		Position = new Vector3(0, feet + (Has("crawl") ? 0f : CrawlLift) * _crawl * _moveMix, 0);
+		Position = new Vector3(0, feet + (Has("crawl") ? 0f : CrawlLift) * _crawl * _moveMix
+			- FootSink * (1f - _moveMix) * (1f - _crouch), 0);
 
 		if (_dead)
 		{

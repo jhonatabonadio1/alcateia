@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 /// Os clipes carregam de verdade: cada um com trilhas (clipe sem trilha é
 /// pose em T, sem erro nenhum no Output) e, na locomoção, sem o
 /// deslocamento da raiz (com ele o corpo anda duas vezes e o pé patina).
+/// Os clipes do lobo são os do Jhon, feitos no lugar: o quadril vai e vem
+/// dentro do ciclo (e isso fica, senão o pé de apoio anda junto), mas
+/// termina onde começou.
 /// Guarda o <see cref="AnimationKit"/>, que o humano, o lobo e o lobby
 /// dividem.
 /// </summary>
@@ -23,9 +26,18 @@ public sealed class AnimationTest : RegressionTest
 		{ "walk_fwd", "walk_back", "run_fwd", "run_back", "strafe_left", "strafe_right", "crouch_walk" };
 
 	private static readonly string[] Wolf =
-		{ "idle", "walk", "run", "wallrun", "claw", "heavy", "howl", "pounce", "dive", "dive_land", "jump_land" };
+	{
+		"idle", "walk", "walk_back", "walk_left", "walk_right", "crouch", "crawl", "sprint", "run", "wallrun",
+		"claw", "heavy", "howl", "pounce", "dive", "dive_land", "jump_start", "jump_air", "jump_land"
+	};
 
-	private static readonly string[] WolfLocomotion = { "walk", "run", "wallrun" };
+	private static readonly string[] WolfLocomotion =
+		{ "walk", "walk_back", "walk_left", "walk_right", "crawl", "sprint", "run", "wallrun" };
+
+	/// <summary>Os clipes do lobo feitos pelo Jhon (no lugar, com o vaivém do
+	/// quadril): para eles vale o quanto o quadril sai do lugar no fim do
+	/// ciclo.</summary>
+	private static readonly string[] WolfOwn = { "walk", "walk_back", "walk_left", "walk_right", "crawl", "sprint" };
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -58,8 +70,28 @@ public sealed class AnimationTest : RegressionTest
 		{
 			string name = $"{library}/{clip}";
 			if (!player.HasAnimation(name)) continue;
-			b.AtMost(0.001, RootTravel(player.GetAnimation(name)), $"{name}: a raiz não anda no chão");
+			if (library == "lobo" && System.Array.IndexOf(WolfOwn, clip) >= 0)
+				b.AtMost(0.01, LoopTravel(player.GetAnimation(name)), $"{name}: a raiz volta para onde começou");
+			else
+				b.AtMost(0.001, RootTravel(player.GetAnimation(name)), $"{name}: a raiz não anda no chão");
 		}
+	}
+
+	/// <summary>Do começo ao fim do clipe, quanto o quadril saiu do lugar
+	/// no plano do chão.</summary>
+	private static float LoopTravel(Animation animation)
+	{
+		for (int track = 0; track < animation.GetTrackCount(); track++)
+		{
+			if (animation.TrackGetType(track) != Animation.TrackType.Position3D) continue;
+			if (!animation.TrackGetPath(track).ToString().Contains("Hips")) continue;
+			int keys = animation.TrackGetKeyCount(track);
+			if (keys < 2) continue;
+			var first = (Vector3)animation.TrackGetKeyValue(track, 0);
+			var last = (Vector3)animation.TrackGetKeyValue(track, keys - 1);
+			return new Vector2(last.X - first.X, last.Z - first.Z).Length();
+		}
+		return 0f;
 	}
 
 	/// <summary>Quanto o quadril anda no plano do chão ao longo do clipe.</summary>

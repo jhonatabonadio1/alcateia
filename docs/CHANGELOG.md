@@ -2,6 +2,24 @@
 
 ## Não lançado
 
+### Lobo: pé no chão, câmera mais perto, corrida de quatro sem patinar (15/11)
+- **O pé parou de patinar**: os clipes do Jhon mantêm o vaivém do
+  quadril dentro do ciclo (antes era tirado como deslocamento de raiz, e
+  o pé de apoio andava junto). Patinação: de frente 0,16 m/s (era 0,66),
+  para trás 0,19 (0,92), de lado 0,67 (1,75), engatinhando 0,25 (0,41).
+  Passadas medidas de novo: `WalkClipSpeed` 1,4, `WalkBackClipSpeed` 1,0.
+- **Corrida de quatro acompanha o corpo**: 5,4 m/s (`WolfSprintFactor`
+  1,3, o padrão do código; o `player.tscn` tinha 1,45) e o clipe a 1,37×
+  (`SprintClipSpeed` 3,95): um pouco mais rápido e sem patinar (0,56 m/s,
+  era 2,46). O som continua uma vez por ciclo, quando as patas se juntam.
+  O `player.tscn` perdeu `WolfSprintFactor` e `SprintAnimScale` (aval do
+  Jhon).
+- **Parado em pé o lobo desce 2 cm** (`FootSink`): a pata só encostava no
+  chão pelas garras e ele parecia flutuar.
+- **Câmera do lobo mais perto**: `ThirdPersonDistance` 2,5 m (era 3,5).
+- `PassadaDoLobo` com limites bem mais apertados (de frente 0,4, de lado
+  0,9, de quatro 0,9) e passando inteiro.
+
 ### Animações novas do lobo, todas do Jhon (15/11)
 - `lobo_anim.glb` trocado pelo `Wolf_animations.glb` do Jhon (15 clipes,
   722 KB só com esqueleto e clipes). Entram: **andar nas quatro

@@ -65,35 +65,35 @@ public partial class WolfVisual
 	/// para a frente é a do pé dele: o lobo não tem corrida em pé, então o
 	/// andar acelera até a velocidade do corpo (a 4,15 m/s toca a ~3×, pedido
 	/// do Jhon) e o pé não desliza. Varrida no teste de patinação a 4,15
-	/// m/s: de 1,1 (1,29 m/s de patinação) a 1,6; o mínimo, 0,66, fica entre
-	/// 1,4 e 1,6. RunClipSpeed é a do "mutant run", só sem os andares dele.</summary>
-	[Export] public float WalkClipSpeed = 1.45f;
+	/// m/s: 0,68 m/s de patinação em 1,2, o mínimo (0,17) em 1,4, 0,38 em
+	/// 1,5. RunClipSpeed é a do "mutant run", só sem os andares dele.</summary>
+	[Export] public float WalkClipSpeed = 1.4f;
 	[Export] public float RunClipSpeed = 2.42f;
 
 	/// <summary>A passada do andar para trás (Walk_Backward, 1,43 s) e de
 	/// lado (Walk_Left e Walk_Right, 0,6 s), em m/s: o mesmo que
 	/// <see cref="WalkClipSpeed"/>, na direção de cada um. Mínimos da
-	/// varrida a 4,15 m/s: para trás 0,89 m/s de patinação em 1,15 (1,40 em
-	/// 0,8; 1,76 em 1,7); de lado 1,35 em 0,75 (2,23 em 0,55; 1,61 em 0,95).
-	/// De lado o clipe toca a 5,5×: um ciclo a cada 0,11 s, e boa parte do
-	/// que se mede é o pé entre um quadro e outro.</summary>
-	[Export] public float WalkBackClipSpeed = 1.15f;
+	/// varrida a 4,15 m/s: para trás 0,18 m/s de patinação em 1,0 (0,78 em
+	/// 0,85; 0,55 em 1,15); de lado 0,50 em 0,75 (1,13 em 0,65; 0,62 em
+	/// 0,85). De lado o clipe toca a 5,5×: um ciclo a cada 0,11 s.</summary>
+	[Export] public float WalkBackClipSpeed = 1.0f;
 	[Export] public float WalkSideClipSpeed = 0.75f;
 
 	/// <summary>A passada do andar agachado, em m/s (o Crouch_Walk do
 	/// Jhon, 1,33 s por ciclo; sem ele, o "Running Crawl" do Mixamo, que
-	/// pedia 2,9). Varrida a 1,87 m/s: 0,70 m/s de patinação em 0,8, o
-	/// mínimo (0,41) em 1,05, 0,50 em 1,2.</summary>
+	/// pedia 2,9). Varrida a 1,87 m/s: 0,52 m/s de patinação em 0,9, o
+	/// mínimo (0,25) em 1,05, 0,41 em 1,2.</summary>
 	[Export] public float CrawlClipSpeed = 1.05f;
 
-	/// <summary>A velocidade do pé na corrida de quatro (o Run_Quad do
-	/// Jhon, ciclo de 0,6 s), em m/s: 3,3 a 3,9 no arquivo, ×1,09 no jogo
-	/// (a mesma razão medida nos andares). A corrida de quatro toca **na
-	/// velocidade em que foi feita** (1× de <see cref="SprintAnimScale"/>,
-	/// pedido do Jhon) com o corpo na velocidade do jogo — o pé desliza a
-	/// diferença. Só abaixo desta (parando) o clipe desacelera junto com o
-	/// corpo.</summary>
-	[Export] public float SprintClipSpeed = 4.1f;
+	/// <summary>A passada da corrida de quatro (o Run_Quad do Jhon, ciclo
+	/// de 0,6 s), em m/s: a velocidade em que o pé não desliza com o clipe
+	/// a 1×. O clipe toca na velocidade do corpo dividida por ela — com o
+	/// corpo a 5,4 m/s (WolfSprintFactor 1,3), a 1,37×: um pouco mais rápido
+	/// que o feito e sem patinar (pedido do Jhon, 15/11; antes tocava a 1×
+	/// com o corpo a 6 m/s e o pé deslizava 2,5 m/s). Varrida a 5,4 m/s:
+	/// 1,31 m/s de patinação em 3,4, 0,77 em 3,8, o mínimo (0,58) em 3,95,
+	/// 0,85 em 4,25, 1,25 em 4,8.</summary>
+	[Export] public float SprintClipSpeed = 3.95f;
 
 	/// <summary>Onde, no Run_Quad, as patas da frente e as de trás se
 	/// juntam embaixo do corpo (as de trás pousando atrás das mãos), em
@@ -112,8 +112,7 @@ public partial class WolfVisual
 	/// </summary>
 	[Export(PropertyHint.Range, "0.2,2,0.05")] public float WalkAnimScale = 1f;
 
-	/// <summary>O ritmo da corrida de quatro (W duas vezes): 1 é a
-	/// velocidade em que o Jhon animou, seja qual for a do corpo. O
+	/// <summary>O mesmo para a corrida de quatro (W duas vezes). O
 	/// engatinhar agachado acompanha o corpo.</summary>
 	[Export(PropertyHint.Range, "0.2,2,0.05")] public float SprintAnimScale = 1f;
 
@@ -226,9 +225,9 @@ public partial class WolfVisual
 		float crawl = Mathf.Clamp(speed / Mathf.Max(CrawlClipSpeed, 0.01f), 0f, MaxRate) * sign;
 		if (sprinting) crawl = AnimRate(crawl, SprintAnimScale);
 
-		// A corrida de quatro no ritmo dela: 1× (vezes a escala) com o corpo
-		// em qualquer velocidade acima da do pé do clipe; abaixo, desacelera.
-		float gallop = AnimRate(Mathf.Clamp(speed / Mathf.Max(SprintClipSpeed, 0.01f), 0f, 1f) * sign, SprintAnimScale);
+		// A corrida de quatro acompanha o corpo, como o andar: a 5,4 m/s
+		// toca a 1,3× e o pé não desliza.
+		float gallop = AnimRate(Mathf.Clamp(speed / Mathf.Max(SprintClipSpeed, 0.01f), 0f, MaxRate) * sign, SprintAnimScale);
 		UpdateSprintBeat(sprinting && sprintClip, gallop, delta);
 
 		// A passada do som do passo em pé: dois pés por ciclo do clipe

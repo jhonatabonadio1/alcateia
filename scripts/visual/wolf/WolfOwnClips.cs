@@ -114,7 +114,10 @@ public static class WolfOwnClips
 
 		AnimationKit.RetargetPose(animation, reference, body,
 			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion());
-		AnimationKit.StripRootMotion(animation);
+
+		// Os clipes do Jhon são no lugar: o quadril vai e volta dentro do
+		// ciclo (11 cm no andar) sem sair do lugar. Esse vaivém fica — tirá-lo
+		// (StripRootMotion) fazia o pé de apoio andar junto com o quadril.
 		return animation;
 	}
 }

@@ -47,8 +47,9 @@ public partial class Player
 		_camera.Fov = _weapon.AimFovFor(_baseFov);
 	}
 
-	/// <summary>Distância da câmera na forma lobo.</summary>
-	[Export] public float ThirdPersonDistance = 3.5f;
+	/// <summary>Distância da câmera na forma lobo (era 3,5; o Jhon achou
+	/// longe demais, 15/11).</summary>
+	[Export] public float ThirdPersonDistance = 2.5f;
 
 	private Camera3D _camera;        // primeira pessoa — humano
 	private Camera3D _wolfCamera;    // terceira pessoa — lobo
