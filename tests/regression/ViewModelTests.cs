@@ -27,7 +27,7 @@ public sealed class ViewModelTest : RegressionTest
 	{
 		if (_photos == null) return;
 
-		RoomConfig.Settings = new RoomSettings { Map = "hangar", TeamSize = 4 };
+		RoomConfig.Settings = new RoomSettings { Map = "vila", TeamSize = 4 };
 		RoomConfig.Members.Clear();
 		RoomConfig.Members.Add(new RoomMember { Name = "Teste", Team = Teams.Blue });
 		RoomConfig.Active = true;
@@ -187,13 +187,13 @@ public sealed class ViewModelTest : RegressionTest
 /// <summary>
 /// O AR-15, o fuzil padrão (15/11): saca animado (é a única arma
 /// principal que saca), guarda animado antes de a outra arma subir, e
-/// recarrega por código — o pacote não tem recarga —, com o carregador
-/// caindo e voltando ao lugar.
+/// recarrega com a animação do Jhon (16/11), com o carregador saindo e
+/// voltando ao lugar.
 /// </summary>
 public sealed class Ar15ViewModelTest : RegressionTest
 {
 	public override string Name => "SacaEGuarda";
-	public override string Description => "o AR-15 saca e guarda animado; a recarga de código tira o carregador e o põe de volta";
+	public override string Description => "o AR-15 saca e guarda animado; a recarga animada tira o carregador e o põe de volta";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -241,13 +241,19 @@ public sealed class Ar15ViewModelTest : RegressionTest
 		var clip = skeleton.FindChild("carregador", false, false) as Node3D;
 		// A pose com o que o código mexeu só existe logo depois de os
 		// modificadores do esqueleto rodarem: é lá que se mede.
-		Vector3 sampled = Vector3.Zero;
+		Vector3 sampled = Vector3.Zero, frame = Vector3.Zero;
+		// O carregador em relação ao fuzil (o osso pai dele): longe do
+		// lugar dele, saiu da arma — a animação troca o pente.
+		int gun = skeleton.GetBoneParent(magazine);
 		skeleton.SkeletonUpdated += () =>
+		{
 			sampled = camera.ToLocal(skeleton.ToGlobal(skeleton.GetBoneGlobalPose(magazine).Origin));
+			frame = camera.ToLocal(skeleton.ToGlobal(skeleton.GetBoneGlobalPose(gun).Origin));
+		};
 		Vector3 Mag() => sampled;
 		await b.Frames(2);
 		Vector3 rest = Mag();
-		bool hidden = false;
+		float seated = rest.DistanceTo(frame), outOfGun = 0f;
 
 		RegressionBench.Press("attack");
 		await b.Frames(2);
@@ -261,11 +267,12 @@ public sealed class Ar15ViewModelTest : RegressionTest
 			await b.PhysicsFrame();
 			if (b.Weapon.IsReloading && view.RigAnimation != "recarga") named = false;
 			lowest = Mathf.Max(lowest, rest.Y - Mag().Y);
-			if (clip != null && !clip.Visible) hidden = true;
+			outOfGun = Mathf.Max(outOfGun, Mathf.Abs(Mag().DistanceTo(frame) - seated));
 		}
 		b.Check(named, "durante a recarga, os braços estão na recarga");
 		b.AtLeast(0.05, lowest, "o carregador desce, na tela (m)");
-		b.Check(hidden, "no meio da recarga o carregador some (foi trocado)");
+		RegressionBench.Note($"recarga: o carregador desce {RegressionBench.F(lowest)} m na tela e sai {RegressionBench.F(outOfGun)} m da arma");
+		b.AtLeast(0.1, outOfGun, "no meio da recarga o carregador sai da arma (m)");
 		await b.Seconds(0.5);
 		b.AtMost(0.005, Mag().DistanceTo(rest), "terminada a recarga, o carregador volta ao lugar (m)");
 		b.Check(clip == null || clip.Visible, "e aparece de novo");

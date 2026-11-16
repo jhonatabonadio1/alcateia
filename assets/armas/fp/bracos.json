@@ -74,6 +74,11 @@
     "clipe": "parado",
     "de": 0.0
    },
+   "recarga": {
+    "ate": 2.7,
+    "clipe": "recarga",
+    "de": 0.0
+   },
    "sacar": {
     "ate": 0.4,
     "clipe": "sacar",

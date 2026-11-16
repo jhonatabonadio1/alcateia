@@ -23,7 +23,8 @@ using System.Collections.Generic;
 /// - **guardar** ao trocar para outra arma, quando o conjunto tem (o
 ///   AR-15): a arma desce antes de a outra subir.
 ///
-/// O AR-15 não tem animação de recarga no pacote: a recarga dele é de
+/// O AR-15 recarrega com a animação do Jhon (16/11, 2,7 s, esticada para
+/// o tempo da recarga). Conjunto sem animação de recarga recarrega por
 /// código, por cima do parado — o conjunto inclina, o carregador cai e
 /// volta, o ferrolho é puxado se o pente esvaziou (<see cref="RigPieces"/>).
 ///
@@ -127,6 +128,7 @@ public partial class ViewModel
 	private void ForgetRig()
 	{
 		_pieces = null;
+		ForgetRigHands();
 		_rigSkeleton = null;
 		_codeReload = false;
 		_magazineBone = _boltBone = _gripBone = -1;
@@ -162,6 +164,7 @@ public partial class ViewModel
 		AddChild(_held);
 		_rigObject = scene.FindChild(id == Arsenal.GrenadeId ? "granada" : "faca", true, false) as Node3D;
 
+		AttachRigHands(scene);
 		foreach (Node node in scene.FindChildren("*", "MeshInstance3D", true, false))
 			((MeshInstance3D)node).CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
 

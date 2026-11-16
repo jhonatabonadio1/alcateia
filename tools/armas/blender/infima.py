@@ -14,7 +14,9 @@ script monta essa estrutura numa pasta temporária, abre a cena e:
 
 - toca cada ação do Jhon no rig dele, com os constraints dele (a mão
   esquerda presa no carregador, a direita no ``ik_hand_gun``), quadro a
-  quadro (a 60 por segundo, para as curvas chegarem inteiras);
+  quadro (a 60 por segundo, para as curvas chegarem inteiras): parado,
+  andar, sacar, guardar, tiro e recarga (a recarga desde 16/11, com a ação
+  do fuzil junto — o carregador sai e volta na mão esquerda);
 - copia a pose final de cada osso que deforma a malha (os 89 do manequim)
   e dos ossos do fuzil para um esqueleto limpo, sem os controles;
 - põe tudo no espaço da câmera dele: o olho na origem, olhando para a
@@ -76,9 +78,10 @@ ANIMACOES = dict(
     sacar=("A_FP_AssaultRifle_Equip", "END_EQUIP_ANIMATION"),
     guardar=("A_FP_AssaultRifle_Holster", "END_HOLSTER_ANIMATION"),
     tiro=("A_FP_AssaultRifle_Fire", "END_FIRE"),
+    recarga=("A_FP_AssaultRifle_Reload", "END_RELOAD"),
 )
 # A ação do próprio fuzil (ferrolho, gatilho, carregador), junto com a dos braços.
-ANIMACOES_ARMA = dict(tiro="A_FP_WEP_AssaultRifle_Fire")
+ANIMACOES_ARMA = dict(tiro="A_FP_WEP_AssaultRifle_Fire", recarga="A_FP_WEP_AssaultRifle_Reload")
 
 ESQUELETO = "Armature"
 CAMERA = "Camera"
@@ -118,11 +121,17 @@ def montar_pasta():
     os.makedirs(os.path.join(pasta, "Animations"))
     destino = os.path.join(pasta, "Animations", CENA)
     shutil.copy(cena, destino)
+    # Cada biblioteca vai onde a cena a procura (o Jhon já mudou isso uma
+    # vez: de ../Rigs/<rig>/ para a pasta da cena e a de cima).
+    bpy.ops.wm.open_mainfile(filepath=destino)
+    lugares = {os.path.basename(l.filepath.replace("\\", "/")): os.path.normpath(bpy.path.abspath(l.filepath))
+               for l in bpy.data.libraries}
     for nome, sub in BIBLIOTECAS.items():
         achado = achar(nome)
         if achado:
-            os.makedirs(os.path.join(pasta, sub), exist_ok=True)
-            shutil.copy(achado, os.path.join(pasta, sub, nome))
+            alvo = lugares.get(nome, os.path.join(pasta, sub, nome))
+            os.makedirs(os.path.dirname(alvo), exist_ok=True)
+            shutil.copy(achado, alvo)
         elif nome == "RIG_Manny.blend":
             raise SystemExit(f"falta {nome} em {PACOTE}")
         else:
@@ -263,7 +272,12 @@ def main():
         if acao not in bpy.data.actions or fim not in marcadores:
             raise SystemExit(f"{jogo}: falta a ação {acao} ou o marcador {fim} na cena")
         acoes[jogo] = (bpy.data.actions[acao], 0, marcadores[fim])
-    acoes_arma = {jogo: bpy.data.actions[n] for jogo, n in ANIMACOES_ARMA.items()}
+    # A ação do fuzil é opcional: sem ela (a cena de 16/11 à tarde não tem a
+    # da recarga), o fuzil fica na pose de referência durante o clipe.
+    acoes_arma = {jogo: bpy.data.actions[n] for jogo, n in ANIMACOES_ARMA.items() if n in bpy.data.actions}
+    for jogo, n in ANIMACOES_ARMA.items():
+        if n not in bpy.data.actions:
+            print(f"  sem a ação do fuzil {n}: em '{jogo}' o fuzil fica parado")
 
     # --- A câmera: tem de ficar parada (os braços vão no espaço dela).
     def olho():
