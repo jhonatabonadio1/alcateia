@@ -1,8 +1,10 @@
 using Godot;
 using System.Threading.Tasks;
 
-/// <summary>O salto carregado vai sempre a distância da barra (decisão do
-/// Jhon, v0.26.10): olhando para onde for, com ou sem inimigo na frente.</summary>
+/// <summary>O salto carregado vai a distância da barra (decisão do Jhon,
+/// v0.26.10), com ou sem inimigo na frente. Mirando o chão dentro do
+/// alcance, cai no ponto mirado (pedido do Jhon, 15/11): a barra é o
+/// limite.</summary>
 public sealed class ChargedPounceTest : RegressionTest
 {
 	public override string Name => "SaltoCarregado";
@@ -17,6 +19,9 @@ public sealed class ChargedPounceTest : RegressionTest
 		var enemy = b.Bots()[0];
 		RegressionBench.Freeze(enemy);
 		await b.BecomeWolf();
+		// Aqui se mede a distância de um salto atrás do outro: sem a recarga
+		// entre eles (PounceRecharge, 15 s na cena do jogador).
+		b.Weapon.PounceRecharge = 0f;
 
 		await Case(b, enemy, "cheio, olhando reto", 1f, 0f, null);
 		await Case(b, enemy, "cheio, olhando para o chão", 1f, -35f, null);
@@ -35,18 +40,28 @@ public sealed class ChargedPounceTest : RegressionTest
 
 	private static async Task Case(RegressionBench b, CharacterBody3D enemy, string what, float power, float pitch, Vector3? enemyAt)
 	{
-		float expected = Mathf.Lerp(b.Weapon.PounceMinDistance, b.Weapon.PounceMaxDistance, power);
-		float travelled = await Jump(b, enemy, power, pitch, enemyAt);
+		float reach = Mathf.Lerp(b.Weapon.PounceMinDistance, b.Weapon.PounceMaxDistance, power);
+		float expected = reach;
+		float travelled = await Jump(b, enemy, power, pitch, enemyAt, aim: start =>
+		{
+			// Mirando o chão ao alcance: o ponto mirado, limitado pela barra.
+			if (b.Weapon.PounceAimPoint is not Vector3 point) return;
+			Vector3 flat = point - start;
+			flat.Y = 0;
+			expected = Mathf.Clamp(flat.Length(), 0.5f, reach);
+		});
+		RegressionBench.Note($"{what}: barra {RegressionBench.F(reach)} m, esperado {RegressionBench.F(expected)} m, andou {RegressionBench.F(travelled)} m");
 		b.Near(expected, travelled, 0.12, what);
 	}
 
 	private static async Task<float> Jump(RegressionBench b, CharacterBody3D enemy, float power, float pitch,
-		Vector3? enemyAt, bool straight = true)
+		Vector3? enemyAt, bool straight = true, System.Action<Vector3> aim = null)
 	{
 		enemy.GlobalPosition = enemyAt ?? new Vector3(0, 1, 15);
 		await b.Place(Start, FacingMinusX, pitch);
 
 		Vector3 from = b.Player.GlobalPosition;
+		aim?.Invoke(from);
 		bool started = b.Weapon.BotPounce(null, power);
 		b.Check(started, "o salto saiu");
 		await b.Seconds(3.2);

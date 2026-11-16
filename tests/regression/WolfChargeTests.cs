@@ -23,6 +23,10 @@ public sealed class WolfChargeTest : RegressionTest
 		var skeleton = visual.FindChildren("*", "Skeleton3D", true, false).OfType<Skeleton3D>().First();
 		int hips = Bone(skeleton, "Hips"), hand = Bone(skeleton, "LeftHand"), chest = Bone(skeleton, "Spine2");
 		Vector3 Global(int bone) => skeleton.GlobalTransform * skeleton.GetBoneGlobalPose(bone).Origin;
+		// O quadril acima dos pés: em pé ~1 m, encolhido na carga ~0,63 m.
+		float HipsUp() => Global(hips).Y - (b.Player.GlobalPosition.Y + b.Player.FeetOffset);
+		await b.Seconds(0.4);
+		float standing = HipsUp();
 
 		// ---- andando e apertando R: o lobo para e ruge de corpo inteiro.
 		Vector3 idle = Global(hand) - Global(chest);
@@ -91,7 +95,10 @@ public sealed class WolfChargeTest : RegressionTest
 			chestLow = Mathf.Min(chestLow, c);
 			chestHigh = Mathf.Max(chestHigh, c);
 		}
-		RegressionBench.Note($"carga parada: quadril oscila {RegressionBench.F((high - low) * 1000)} mm, peito {RegressionBench.F((chestHigh - chestLow) * 1000)} mm");
+		RegressionBench.Note($"carga parada: quadril oscila {RegressionBench.F((high - low) * 1000)} mm, peito {RegressionBench.F((chestHigh - chestLow) * 1000)} mm, a {RegressionBench.F(HipsUp())} m (em pé, {RegressionBench.F(standing)} m)");
+		// Apertou o direito andando: parou de andar, fica encolhido, não em
+		// pé (Jhon, 16/11: o salto congelava no começo do agachar).
+		b.AtLeast(0.25, standing - HipsUp(), "andou, apertou o direito e parou: fica encolhido (quanto o quadril desce, m)");
 		b.AtMost(0.005, high - low, "carregando parado, mantém a pose do agachar: o quadril fica (m)");
 		b.AtLeast(0.004, chestHigh - chestLow, "carregando parado, respira: o peito sobe e desce (m)");
 
@@ -106,6 +113,9 @@ public sealed class WolfChargeTest : RegressionTest
 		RegressionBench.Note($"carga andando: {RegressionBench.F(walk)} m/s, andou {RegressionBench.F(RegressionBench.Flat(b.Player.GlobalPosition - start))} m");
 		b.Near(expected, walk, 0.1, "carregando, anda agachado, devagar (m/s)");
 		b.Check(w.IsChargingPounce, "andando, a carga continua");
+		await b.Seconds(0.3);
+		float afterWalk = HipsUp();
+		b.AtLeast(0.25, standing - afterWalk, "carregando, andou e parou: volta encolhido (quanto o quadril desce, m)");
 
 		// ---- a mira no chão
 		var aim = b.GetTree().Root.FindChild("PounceAim", true, false) as PounceAim;
@@ -127,6 +137,8 @@ public sealed class WolfChargeTest : RegressionTest
 		b.Check(ring != null && !ring.Visible, "fora da carga, a mira some");
 
 		// ---- em cima de uma superfície: um bloco de 1,5 m no ponto de queda.
+		// Antes, a recarga do salto (PounceRecharge, na cena) precisa acabar.
+		await b.Until(() => w.PounceReady, w.PounceRecharge + 2.0);
 		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 1.0);
 		float floorY = b.Player.GlobalPosition.Y + b.Player.FeetOffset;
 		var block = new StaticBody3D();
@@ -185,6 +197,7 @@ public sealed class WolfChargeTest : RegressionTest
 			camera.ClearCurrent();
 		}
 
+		await b.Until(() => w.PounceReady, w.PounceRecharge + 2.0);
 		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 1.2);
 		RegressionBench.Press("special");
 		await b.Seconds(0.75);

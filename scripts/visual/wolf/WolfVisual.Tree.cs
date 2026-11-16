@@ -196,7 +196,10 @@ public partial class WolfVisual
 			{
 				FadeInTime = fadeIn,
 				FadeOutTime = fadeOut,
-				FilterEnabled = !FullBody(shot)
+				FilterEnabled = !FullBody(shot),
+				// O salto e os que ficam acima dele correm mesmo cobertos pelo
+				// Charge_Walk (veja ChargeWalk, abaixo).
+				Sync = shot is "pounce" or "dive" or "dive_land"
 			};
 
 			if (!FullBody(shot))
@@ -223,7 +226,13 @@ public partial class WolfVisual
 		{
 			root.AddNode("ChargeWalkClip", Clip("charge_walk"), Vector2.Zero);
 			root.AddNode("ChargeWalkSpeed", new AnimationNodeTimeScale(), Vector2.Zero);
-			root.AddNode("ChargeWalk", new AnimationNodeBlend2(), Vector2.Zero);
+			// Sync (aqui e nos disparos do salto para cima): com o
+			// Charge_Walk cheio, o salto embaixo dele continua correndo até
+			// o fim do agachar. Sem isso, quem apertava o direito e já saía
+			// andando (ou andava e apertava) congelava o salto no começo do
+			// agachar, e ao parar de andar o lobo ficava em pé carregando
+			// (Jhon, 16/11).
+			root.AddNode("ChargeWalk", new AnimationNodeBlend2 { Sync = true }, Vector2.Zero);
 			root.ConnectNode("ChargeWalkSpeed", 0, "ChargeWalkClip");
 			root.ConnectNode("ChargeWalk", 0, last);
 			root.ConnectNode("ChargeWalk", 1, "ChargeWalkSpeed");
