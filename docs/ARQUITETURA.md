@@ -114,7 +114,7 @@ alcateia/
 │   ├── bot.tscn           o bot
 │   ├── dummy.tscn         boneco de tiro
 │   ├── grenade.tscn       granada de choque
-│   └── maps/hangar.tscn   o mapa (gerado por tools/gerar_mapas.py)
+│   └── maps/vila.tscn     um mapa (gerado por tools/gerar_mapas.py)
 ├── resources/
 │   ├── weapons/*.tres     armas (geradas por tools/gerar_arsenal.py)
 │   ├── breeds/*.tres      classes de lobo
@@ -508,7 +508,7 @@ no `_Ready` deles (o time, que define a cor), tem que ser no
 `_EnterTree`.
 
 **Arquivo gerado sobrescreve edição à mão.** `resources/weapons/*.tres`
-e `scenes/maps/hangar.tscn` saem dos scripts em `tools/`. Ajustou no
+e `scenes/maps/*.tscn` saem dos scripts em `tools/`. Ajustou no
 Inspector e depois rodou o gerador? Perdeu o ajuste. Mude no gerador.
 
 **Método com nome de tipo do Godot.** Um método chamado `Panel()` ou

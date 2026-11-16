@@ -21,7 +21,7 @@ public partial class MatchWorld : SubViewport
 	public string MapId { get; }
 	public int StrippedNodes { get; private set; }
 
-	public MatchWorld() : this("hangar") { }
+	public MatchWorld() : this("vila") { }
 
 	public MatchWorld(string mapId)
 	{

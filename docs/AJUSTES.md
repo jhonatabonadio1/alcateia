@@ -439,7 +439,7 @@ O cérebro (as notas de cada ação) está em `scripts/ai/BotBrain.cs`.
 | `Match.cs` | `Duration` | 600 s (a sala sobrescreve) |
 | `Match.cs` | `CountdownTime` | 10 s |
 | `LoadoutMenu.cs` | `ChooseTime` | 5 s para escolher o conjunto ao renascer |
-| `RoomConfig.cs` | `RoomSettings` | Equipe, 8 por time, Hangar, 40 pontos, 10 min, todas as armas, transformação livre, bots no Médio |
+| `RoomConfig.cs` | `RoomSettings` | Equipe, 8 por time, Vila, 40 pontos, 10 min, todas as armas, transformação livre, bots no Médio |
 
 Na tela da sala: mapa, pontos, minutos, armas (todas, sem pesadas ou
 só pistolas), transformação (livre ou bloqueada), fogo amigo, troca de
@@ -465,11 +465,11 @@ Abra no Inspector e mude ali — vale para os dois.
 
 O som do lugar fica no mapa (`scripts/meta/Maps.cs`):
 
-| Campo | Hangar | Metrô | Vila | Polar | O que é |
-|---|---|---|---|---|---|
-| `RoomSize` / `RoomWet` | 0,75 / 0,16 | 0,7 / 0,24 | 0,45 / 0,1 | 0,3 / 0,05 | Reverberação: tamanho (0–1) e quanto entra |
-| `Ambience` / `AmbienceDb` | hangar / −26 | metro / −16 | vila / −12 | polar / −12 | Fundo em laço e volume |
-| `EventSound` / `EventEvery` | — | metro_trem / 70–140 s | — | — | Som eventual |
+| Campo | Vila | Polar | O que é |
+|---|---|---|---|
+| `RoomSize` / `RoomWet` | 0,45 / 0,1 | 0,3 / 0,05 | Reverberação: tamanho (0–1) e quanto entra |
+| `Ambience` / `AmbienceDb` | vila / −12 | polar / −12 | Fundo em laço e volume |
+| `EventSound` / `EventEvery` | — | — | Som eventual (nenhum mapa usa hoje) |
 
 No nó `CombatantAudio`: `ImpactRange` 25 m (bala na parede),
 `CasingDelay` 0,42 s e `CasingInterval` 0,28 s (cápsula no chão). No

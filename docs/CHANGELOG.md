@@ -2,6 +2,40 @@
 
 ## Não lançado
 
+### Só dois mapas: Vila e Estação Polar (16/11)
+- Saíram o Hangar, o Metrô e a Rua Abandonada (esta entrou e saiu no
+  mesmo dia), a pedido: cenas, peças (o trem, os letreiros), geradores
+  e testes. O mapa padrão da sala, do servidor e dos testes passa a ser
+  a Vila.
+- A Vila tinha dois nós com o mesmo nome no mesmo lugar (as pipas da casa
+  e as da porta, `Pipa1`/`Pipa2`): no servidor, ao tirar do mapa o que
+  não colide, o Godot dava "Children name does not match parent name".
+  As da casa agora são `PipaCasa1`/`PipaCasa2`.
+- Ficou o "mapa feito no Blender" em docs/MAPAS.md (como trazer um mapa
+  pronto: escala, chão como malha, sentido dos triângulos para a
+  navegação, paredes invisíveis).
+
+### Mãos do arquivo do Jhon (16/11)
+- As mãos padrão (`assets/armas/fp/maos/`) agora são os braços do
+  `RIG_Manny.blend` (`SK_Manny_Arms`), os mesmos do Blender, com o
+  material dele (cor, normal, aspereza; sem AO). Saem do `ar15.glb` por
+  `tools/armas/blender/maos.py`. Continua valendo: trocar a textura em
+  `padrao.tres` troca as mãos de todas as armas.
+- O AR-15 foi reconvertido da versão final do Jhon (`AR15_FP`, 16/11 às
+  18h: cena e `RIG_Manny.blend` novos). As 6 animações (parado, andar,
+  sacar, guardar, tiro, recarga) são as dela. O `infima.py` agora lê da
+  cena onde ela procura cada biblioteca, e aceita cena sem a ação do
+  fuzil na recarga (esta não tem: o carregador vai na mão pela própria
+  cena).
+
+### AR-15 com a recarga do Jhon (16/11)
+- A recarga do AR-15 é a animação do Jhon (`A_FP_AssaultRifle_Reload`,
+  2,7 s), com a ação do fuzil junto: a mão esquerda tira o carregador e
+  põe de volta. Entra pelo `infima.py` (a recarga e a ação do fuzil
+  foram acrescentadas à lista) e substitui a recarga de código. O jogo
+  estica a animação para o tempo da recarga (2,3 s; 2,9 s com o pente
+  vazio).
+
 ### AR-15 com textura (16/11)
 - O fuzil saía cinza: a textura não veio no pacote. A do Jhon
   (`assets/armas/ar15/T_AssaultRifle_D.png`, uma paleta de 256 px que o

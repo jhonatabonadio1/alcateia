@@ -1,13 +1,15 @@
 # Mapas
 
-Quatro mapas, todos de equipe, registrados em `scripts/meta/Maps.cs`:
+Dois mapas, os dois de equipe, registrados em `scripts/meta/Maps.cs`:
 
 | Mapa | Tamanho | Tema | Gerador |
 |---|---|---|---|
-| Hangar | 84 × 48 m | Pátio de base aérea: plataforma de manobra no centro, oficinas de tijolo, galpões em volta | `tools/mapas/hangar.py` |
-| Metrô | 48 × 30 m (pequeno) | Estação fechada com um trem parado; luz fria de lâmpada | `tools/mapas/metro.py` |
 | Vila | 72 × 52 m (médio) | Vila de deserto no fim da tarde: praça, feira, terraços, vielas | `tools/mapas/vila.py` |
 | Estação Polar | 110 × 70 m (grande) | Base de pesquisa na neve, ao crepúsculo: garagem, alojamentos, passarelas | `tools/mapas/polar.py` |
+
+O Hangar, o Metrô e a Rua Abandonada saíram do jogo em 16/11 (a pedido).
+O Metrô tinha um evento de som (`EventSound`, o trem passando): o campo
+continua em `MapInfo` para o próximo mapa que quiser um.
 
 A sala escolhe o mapa; a cena da partida (`scenes/main.tscn`) tem um nó
 `Map` com o script `MapSlot`, que carrega a cena do mapa escolhido antes
@@ -75,8 +77,7 @@ aspereza em G, metal em B).
 
 A tabela no começo do script diz qual foto vira qual material e se ela
 entra **neutra**: sem a cor da foto, só com o claro-escuro (a junta, a
-sujeira, o risco). É neutro tudo o que o mapa pinta — o azulejo azul e o
-laranja do Metrô são o mesmo azulejo; o reboco de cada casa da Vila é o
+sujeira, o risco). É neutro tudo o que o mapa pinta — o reboco de cada casa da Vila é o
 mesmo reboco; os módulos da Polar são o mesmo contêiner. Tijolo, madeira,
 telha, areia e neve entram com a cor da foto.
 
@@ -88,8 +89,7 @@ dos pacotes: `tools/baixar_pacotes.py texturas`).
 A Vila e a Estação Polar são iluminadas por uma fotografia do céu
 (HDRI, Poly Haven, CC0, em `assets/mapas/ceus/`): `ceu=dict(hdri="…",
 giro=…)` no `m.ambiente`. O `giro` põe o sol da foto onde está o sol do
-mapa — a conta está em `tools/mapas/vila.py`. O Metrô é fechado: não tem
-céu.
+mapa — a conta está em `tools/mapas/vila.py`. Mapa fechado não tem céu.
 
 ### Os letreiros
 
@@ -101,9 +101,9 @@ Permanent Marker — todas de uso livre, em `tools/mapas/fontes/` com as
 licenças) e gravada em `assets/mapas/letreiros/`. O mapa só diz onde:
 
 ```python
-m.letreiro(grupo, "Nome", "metro_estacao", pos, largura, yaw)          # na parede
-m.letreiro(grupo, "Vao", "metro_vao", pos, 2.4, yaw, chao=True)        # pintado no piso
-m.letreiro(grupo, "Saida", "metro_saida_dir", pos, 1.6, 0, aceso=0.5)  # painel luminoso
+m.letreiro(grupo, "Nome", "polar_estacao", pos, largura, yaw)          # na parede
+m.letreiro(grupo, "Pouso", "polar_pouso", pos, 2.4, yaw, chao=True)    # pintado no piso
+m.letreiro(grupo, "Lab", "polar_lab", pos, 1.6, 0, aceso=0.5)          # painel luminoso
 ```
 
 `pos` é o centro, encostado na superfície (um ou dois centímetros para
@@ -121,10 +121,6 @@ O que não dá para fazer bem com forma de código vem pronto, em
   de cada um fica em `pecas.OBJETOS`; põe-se com
   `P.objeto(m, grupo, nome, "barril_vinho", pos, yaw)` — com colisão do
   tamanho dele, ou `colide=False` para o que é enfeite.
-- **O trem do Metrô**: `tools/mapas/blender/trem.py` modela o vagão
-  inteiro no Blender (carroceria, janelas, portas abertas, cabine,
-  truques, o salão por dentro) com **as mesmas medidas da colisão** do
-  `metro.py`. Mudou uma, mude a outra.
 
 Os scripts rodam com `python3` e o módulo `bpy` (`pip install bpy`) ou
 com `blender -b -P`. `tools/mapas/blender/malha.py` tem as ferramentas
@@ -136,8 +132,7 @@ com `blender -b -P`. `tools/mapas/blender/malha.py` tem as ferramentas
 uma parede com aberturas de verdade — passa-se e atira-se por elas. É
 com isso que se faz lugar de entrar: as casas da Vila
 (`casa_aberta`), a fileira da frente dos alojamentos da Polar
-(`alojamento_aberto`), a galeria de lojas do Metrô (`galeria`) e as
-oficinas do Hangar (`oficina`).
+(`alojamento_aberto`).
 
 **Todo lugar de entrar tem pelo menos três entradas** (quem segura uma
 não segura as outras), nenhuma sala é beco sem saída, e o que há de um
@@ -161,6 +156,25 @@ equipe (três corredores, um prédio no meio, flanco por dentro).
   faz, um lugar onde o humano vê o lobo chegando, um corredor que o
   humano deve evitar, e de onde cair em cima de quem não olha.
 
+### Mapa feito no Blender
+
+Quando o mapa vem pronto de fora (um modelo inteiro, não caixas), o
+desenho entra como um `m.modelo(...)` só, e a colisão sai do próprio
+modelo: `tools/mapas/blender/<id>.py` converte (escala, eixos, origem no
+meio do pátio, texturas menores), grava o `.glb` em
+`assets/mapas/pecas/` e um `.json` com uma caixa orientada por peça e
+o chão como malha; o `tools/mapas/<id>.py` lê esse `.json`. Cuidado com
+três coisas:
+
+- **Escala**: confira a altura de uma porta ou de um andar (2,2 m e uns
+  3 m). A Rua Abandonada (que saiu) veio em escala de maquete: ×3.
+- **O chão como malha**: o Godot quer a frente do triângulo em sentido
+  horário, o Blender anti-horário. Sem inverter, a física funciona (a
+  colisão é dos dois lados), mas a navegação acha que o chão está de
+  cabeça para baixo e os bots ficam parados.
+- **Paredes invisíveis** na beira do pátio, altas, para ninguém sair
+  pelos telhados.
+
 ### Mapa novo
 
 1. Copie um arquivo de `tools/mapas/`, mude o id e monte o seu.
@@ -170,6 +184,6 @@ equipe (três corredores, um prédio no meio, flanco por dentro).
 
 ## Testes
 
-`MapaHangar`, `MapaMetro`, `MapaVila` e `MapaPolar`: cada mapa carrega
+`MapaVila` e `MapaPolar`: cada mapa carrega
 na partida, os dois times nascem, ninguém cai do mapa, os bots saem da
 base pela malha de navegação e trocam tiro.

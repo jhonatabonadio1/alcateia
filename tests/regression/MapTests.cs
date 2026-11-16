@@ -101,12 +101,6 @@ public abstract class MapPlaysTest : RegressionTest
 	}
 }
 
-public sealed class MetroMapTest : MapPlaysTest
-{
-	public override string Name => "MapaMetro";
-	protected override string MapId => "metro";
-}
-
 public sealed class VilaMapTest : MapPlaysTest
 {
 	public override string Name => "MapaVila";
@@ -117,10 +111,4 @@ public sealed class PolarMapTest : MapPlaysTest
 {
 	public override string Name => "MapaPolar";
 	protected override string MapId => "polar";
-}
-
-public sealed class HangarMapTest : MapPlaysTest
-{
-	public override string Name => "MapaHangar";
-	protected override string MapId => "hangar";
 }

@@ -166,11 +166,14 @@ def montar():
 
     # O céu é uma fotografia (Poly Haven, CC0); `giro` põe o sol da foto
     # onde está o sol do mapa.
+    # No dia_claro, giro = yaw do sol + 36. Até 16/11 estava 180° fora: o sol
+    # da foto aparecia do lado oposto ao da luz, a sombra caía para longe de
+    # quem olhava o sol, e o lobo parecia flutuar (Jhon).
     # Luz acertada no Forward+ (13/11, o Jhon achou estourado: tudo branco,
     # difícil de ver os outros). O céu da foto também ilumina — com 1,8
     # e ambiente cheio, a sombra sumia. Céu a 1, ambiente baixo, exposição
     # 0,85 e mais sol: a sombra volta e o corpo se destaca da parede.
-    m.ambiente = dict(ceu=dict(hdri="dia_claro", giro=-106, energia=1.0, ambiente=0.5),
+    m.ambiente = dict(ceu=dict(hdri="dia_claro", giro=74, energia=1.0, ambiente=0.5),
                       luz=(0.85, 0.74, 0.66), luz_energia=0.35, exposicao=0.85, brilho=0.5, contraste=1.08, saturacao=1.12,
                       neblina=dict(cor=(0.98, 0.84, 0.66), densidade=0.0022, ceu=0.06))
     m.sol = dict(yaw=38, queda=30, cor=(1.0, 0.84, 0.64), energia=1.4, alcance=110)
@@ -403,8 +406,10 @@ def acabamento(m):
             m.letreiro(g, "PlacaViela", "vila_beco_sino" if sz > 0 else "vila_travessa", (s * 23.02, 2.75, sz * 16.2), 1.4, 90 if s > 0 else -90)
             m.letreiro(g, "PlacaFundo", "vila_rua_fonte" if sz > 0 else "vila_rua_mercado", (s * 19.5, 2.75, sz * 23.02), 1.5, 180 - de_frente)
             # Dentro da casa e na porta (objetos do Poly Haven).
-            P.objeto(m, g, "Pipa1", "barril_vinho", (s * 12.3, 0, sz * 18.2), som="madeira_escura")
-            P.objeto(m, g, "Pipa2", "barril_vinho", (s * 13.2, 0, sz * 18.25), 40, som="madeira_escura")
+            # (PipaCasa*, não Pipa*: as da porta, lá embaixo, já têm esse nome
+            # no mesmo grupo, e nome repetido quebra o mapa no servidor.)
+            P.objeto(m, g, "PipaCasa1", "barril_vinho", (s * 12.3, 0, sz * 18.2), som="madeira_escura")
+            P.objeto(m, g, "PipaCasa2", "barril_vinho", (s * 13.2, 0, sz * 18.25), 40, som="madeira_escura")
             P.objeto(m, g, "CaixoteBalcao", "caixote_a", (s * 13.3, 1.05, sz * 14.6), 10, colide=False)
             P.objeto(m, g, "SacoCimento1", "saco_cimento", (s * 14.2, 0, sz * 21.9), 0, colide=False)
             P.objeto(m, g, "SacoCimento2", "saco_cimento", (s * 14.25, 0.18, sz * 21.85), 12, colide=False)

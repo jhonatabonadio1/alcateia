@@ -34,7 +34,7 @@ import sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(AQUI)))
 
-MAPAS = ("hangar", "metro", "vila", "polar")
+MAPAS = ("vila", "polar")
 EPS = 0.004          # mesma face: até 4 mm
 AREA_MIN = 0.03      # sobreposição que se vê, m²
 

@@ -119,7 +119,7 @@ public static class OnlineMatch
 
 		int difficulty = j["difficulty"]?.GetValue<int>() ?? (int)BotLevel.Medium;
 		if (System.Enum.IsDefined(typeof(BotLevel), difficulty)) s.Difficulty = (BotLevel)difficulty;
-		if (!Maps.All.Any(m => m.Id == s.Map)) s.Map = "hangar";
+		if (!Maps.All.Any(m => m.Id == s.Map)) s.Map = "vila";
 		return s;
 	}
 }

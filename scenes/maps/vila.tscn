@@ -1284,7 +1284,7 @@ sky_material = SubResource("CeuMat")
 [sub_resource type="Environment" id="Env"]
 background_mode = 2
 sky = SubResource("Ceu")
-sky_rotation = Vector3(0, -1.85, 0)
+sky_rotation = Vector3(0, 1.2915, 0)
 ambient_light_source = 3
 ambient_light_sky_contribution = 0.5
 ambient_light_color = Color(0.85, 0.74, 0.66, 1)
@@ -7686,18 +7686,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 2.2, 16.72)
 mesh = SubResource("B66")
 material_override = SubResource("M_madeira_escura")
 
-[node name="Pipa1Colisao" type="StaticBody3D" parent="LadoANorte"]
+[node name="PipaCasa1Colisao" type="StaticBody3D" parent="LadoANorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.3, 0.435, 18.2)
 metadata/piso = "madeira"
 
-[node name="Colisao" type="CollisionShape3D" parent="LadoANorte/Pipa1Colisao"]
+[node name="Colisao" type="CollisionShape3D" parent="LadoANorte/PipaCasa1Colisao"]
 shape = SubResource("S42")
 
-[node name="Pipa2Colisao" type="StaticBody3D" parent="LadoANorte"]
+[node name="PipaCasa2Colisao" type="StaticBody3D" parent="LadoANorte"]
 transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, -13.2, 0.435, 18.25)
 metadata/piso = "madeira"
 
-[node name="Colisao" type="CollisionShape3D" parent="LadoANorte/Pipa2Colisao"]
+[node name="Colisao" type="CollisionShape3D" parent="LadoANorte/PipaCasa2Colisao"]
 shape = SubResource("S42")
 
 [node name="CaixoteFundoColisao" type="StaticBody3D" parent="LadoANorte"]
@@ -8077,18 +8077,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 2.2, -16.72)
 mesh = SubResource("B66")
 material_override = SubResource("M_madeira_escura")
 
-[node name="Pipa1Colisao" type="StaticBody3D" parent="LadoASul"]
+[node name="PipaCasa1Colisao" type="StaticBody3D" parent="LadoASul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.3, 0.435, -18.2)
 metadata/piso = "madeira"
 
-[node name="Colisao" type="CollisionShape3D" parent="LadoASul/Pipa1Colisao"]
+[node name="Colisao" type="CollisionShape3D" parent="LadoASul/PipaCasa1Colisao"]
 shape = SubResource("S42")
 
-[node name="Pipa2Colisao" type="StaticBody3D" parent="LadoASul"]
+[node name="PipaCasa2Colisao" type="StaticBody3D" parent="LadoASul"]
 transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, -13.2, 0.435, -18.25)
 metadata/piso = "madeira"
 
-[node name="Colisao" type="CollisionShape3D" parent="LadoASul/Pipa2Colisao"]
+[node name="Colisao" type="CollisionShape3D" parent="LadoASul/PipaCasa2Colisao"]
 shape = SubResource("S42")
 
 [node name="CaixoteFundoColisao" type="StaticBody3D" parent="LadoASul"]
@@ -8556,18 +8556,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 2.2, 16.72)
 mesh = SubResource("B66")
 material_override = SubResource("M_madeira_escura")
 
-[node name="Pipa1Colisao" type="StaticBody3D" parent="LadoBNorte"]
+[node name="PipaCasa1Colisao" type="StaticBody3D" parent="LadoBNorte"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.3, 0.435, 18.2)
 metadata/piso = "madeira"
 
-[node name="Colisao" type="CollisionShape3D" parent="LadoBNorte/Pipa1Colisao"]
+[node name="Colisao" type="CollisionShape3D" parent="LadoBNorte/PipaCasa1Colisao"]
 shape = SubResource("S42")
 
-[node name="Pipa2Colisao" type="StaticBody3D" parent="LadoBNorte"]
+[node name="PipaCasa2Colisao" type="StaticBody3D" parent="LadoBNorte"]
 transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, 13.2, 0.435, 18.25)
 metadata/piso = "madeira"
 
-[node name="Colisao" type="CollisionShape3D" parent="LadoBNorte/Pipa2Colisao"]
+[node name="Colisao" type="CollisionShape3D" parent="LadoBNorte/PipaCasa2Colisao"]
 shape = SubResource("S42")
 
 [node name="CaixoteFundoColisao" type="StaticBody3D" parent="LadoBNorte"]
@@ -8947,18 +8947,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 2.2, -16.72)
 mesh = SubResource("B66")
 material_override = SubResource("M_madeira_escura")
 
-[node name="Pipa1Colisao" type="StaticBody3D" parent="LadoBSul"]
+[node name="PipaCasa1Colisao" type="StaticBody3D" parent="LadoBSul"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.3, 0.435, -18.2)
 metadata/piso = "madeira"
 
-[node name="Colisao" type="CollisionShape3D" parent="LadoBSul/Pipa1Colisao"]
+[node name="Colisao" type="CollisionShape3D" parent="LadoBSul/PipaCasa1Colisao"]
 shape = SubResource("S42")
 
-[node name="Pipa2Colisao" type="StaticBody3D" parent="LadoBSul"]
+[node name="PipaCasa2Colisao" type="StaticBody3D" parent="LadoBSul"]
 transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, 13.2, 0.435, -18.25)
 metadata/piso = "madeira"
 
-[node name="Colisao" type="CollisionShape3D" parent="LadoBSul/Pipa2Colisao"]
+[node name="Colisao" type="CollisionShape3D" parent="LadoBSul/PipaCasa2Colisao"]
 shape = SubResource("S42")
 
 [node name="CaixoteFundoColisao" type="StaticBody3D" parent="LadoBSul"]
@@ -10469,10 +10469,10 @@ mesh = SubResource("Q9")
 material_override = SubResource("L9")
 cast_shadow = 0
 
-[node name="Pipa1" parent="LadoANorte" instance=ExtResource("p_barril_vinho")]
+[node name="PipaCasa1" parent="LadoANorte" instance=ExtResource("p_barril_vinho")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.3, 0, 18.2)
 
-[node name="Pipa2" parent="LadoANorte" instance=ExtResource("p_barril_vinho")]
+[node name="PipaCasa2" parent="LadoANorte" instance=ExtResource("p_barril_vinho")]
 transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, -13.2, 0, 18.25)
 
 [node name="CaixoteBalcao" parent="LadoANorte" instance=ExtResource("p_caixote_a")]
@@ -10490,10 +10490,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.9, 0, 16.4)
 [node name="CaixoteFundo" parent="LadoANorte" instance=ExtResource("p_caixote_b")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -20.4, 0, 22)
 
-[node name="Pipa1" parent="LadoASul" instance=ExtResource("p_barril_vinho")]
+[node name="PipaCasa1" parent="LadoASul" instance=ExtResource("p_barril_vinho")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.3, 0, -18.2)
 
-[node name="Pipa2" parent="LadoASul" instance=ExtResource("p_barril_vinho")]
+[node name="PipaCasa2" parent="LadoASul" instance=ExtResource("p_barril_vinho")]
 transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, -13.2, 0, -18.25)
 
 [node name="CaixoteBalcao" parent="LadoASul" instance=ExtResource("p_caixote_a")]
@@ -10511,10 +10511,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.9, 0, -16.4)
 [node name="CaixoteFundo" parent="LadoASul" instance=ExtResource("p_caixote_b")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -20.4, 0, -22)
 
-[node name="Pipa1" parent="LadoBNorte" instance=ExtResource("p_barril_vinho")]
+[node name="PipaCasa1" parent="LadoBNorte" instance=ExtResource("p_barril_vinho")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.3, 0, 18.2)
 
-[node name="Pipa2" parent="LadoBNorte" instance=ExtResource("p_barril_vinho")]
+[node name="PipaCasa2" parent="LadoBNorte" instance=ExtResource("p_barril_vinho")]
 transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, 13.2, 0, 18.25)
 
 [node name="CaixoteBalcao" parent="LadoBNorte" instance=ExtResource("p_caixote_a")]
@@ -10532,10 +10532,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.9, 0, 16.4)
 [node name="CaixoteFundo" parent="LadoBNorte" instance=ExtResource("p_caixote_b")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 20.4, 0, 22)
 
-[node name="Pipa1" parent="LadoBSul" instance=ExtResource("p_barril_vinho")]
+[node name="PipaCasa1" parent="LadoBSul" instance=ExtResource("p_barril_vinho")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.3, 0, -18.2)
 
-[node name="Pipa2" parent="LadoBSul" instance=ExtResource("p_barril_vinho")]
+[node name="PipaCasa2" parent="LadoBSul" instance=ExtResource("p_barril_vinho")]
 transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, 13.2, 0, -18.25)
 
 [node name="CaixoteBalcao" parent="LadoBSul" instance=ExtResource("p_caixote_a")]

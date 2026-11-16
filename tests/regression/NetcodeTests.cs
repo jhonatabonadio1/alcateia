@@ -18,7 +18,7 @@ public abstract class NetcodeTest : RegressionTest
 
 	public override void Prepare()
 	{
-		RoomConfig.Settings = new RoomSettings { Map = "hangar", TeamSize = 4 };
+		RoomConfig.Settings = new RoomSettings { Map = "vila", TeamSize = 4 };
 		RoomConfig.Members.Clear();
 		RoomConfig.Members.Add(new RoomMember { Name = "Teste", Team = Teams.Blue });
 		RoomConfig.Active = true;
@@ -48,7 +48,7 @@ public abstract class NetcodeTest : RegressionTest
 
 	protected static async Task<MatchWorld> StartServer(RegressionBench b)
 	{
-		var world = new MatchWorld("hangar");
+		var world = new MatchWorld("vila");
 		b.AddChild(world);
 		await b.Frames(2);
 		return world;

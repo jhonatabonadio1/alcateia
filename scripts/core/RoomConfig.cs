@@ -22,7 +22,7 @@ public sealed class RoomSettings
 	public GameMode Mode { get; set; } = GameMode.Equipe;
 	/// <summary>Jogadores por time: 4, 6 ou 8.</summary>
 	public int TeamSize { get; set; } = 8;
-	public string Map { get; set; } = "hangar";
+	public string Map { get; set; } = "vila";
 	public int ScoreToWin { get; set; } = 40;
 	public int Minutes { get; set; } = 10;
 	public WeaponRule Weapons { get; set; } = WeaponRule.Todas;

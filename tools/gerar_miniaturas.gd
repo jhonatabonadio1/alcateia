@@ -6,11 +6,10 @@ extends SceneTree
 ##
 ## Saída: assets/ui/mapas/<id>.png, 512 × 288.
 
-## As miniaturas dos mapas gerados (metro, vila, polar) saem do próprio
-## gerador (tools/gerar_mapas.py); esta ferramenta fica para o Hangar e
-## para mapas feitos à mão.
+## As miniaturas dos mapas gerados (vila, polar) saem do próprio
+## gerador (tools/gerar_mapas.py); esta ferramenta fica para mapas feitos
+## à mão (nenhum hoje).
 const MAPS := {
-	"hangar": "res://scenes/maps/hangar.tscn",
 }
 
 const SIZE := Vector2i(512, 288)

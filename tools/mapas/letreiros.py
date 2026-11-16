@@ -6,7 +6,7 @@ assets/mapas/letreiros/<nome>.png. O mapa só diz onde vai cada um
 (`m.letreiro(grupo, nome, "<nome>", pos, largura, yaw)`).
 
     python3 tools/mapas/letreiros.py            # todos
-    python3 tools/mapas/letreiros.py metro      # só os que começam assim
+    python3 tools/mapas/letreiros.py vila       # só os que começam assim
 
 As letras (tools/mapas/fontes/, licenças em fontes/licencas/) são de uso
 livre: Overpass (sinalização — a de estrada e de metrô), Bebas Neue e
@@ -226,70 +226,10 @@ def painel(texto, cor=(255, 170, 40), px=110, fundo=(8, 8, 9)):
     return img
 
 
-def linha_metro(estacoes, aqui, cor=(238, 120, 30), px=44):
-    """O mapa da linha: a faixa com as estações, a atual em destaque."""
-    w, h = 220 * len(estacoes) + 120, 230
-    img = Image.new("RGBA", (w, h), (244, 244, 240, 255))
-    d = ImageDraw.Draw(img)
-    y = 86
-    d.rounded_rectangle((60, y - 11, w - 60, y + 11), 11, fill=cor + (255,))
-    f, fb = fonte("overpass", px), fonte("overpass_preta", px)
-    for i, nome in enumerate(estacoes):
-        x = 60 + 110 + i * 220 - 50
-        atual = nome == aqui
-        r = 26 if atual else 18
-        d.ellipse((x - r, y - r, x + r, y + r), fill=(255, 255, 255, 255), outline=(PRETO if atual else cor) + (255,), width=8)
-        d.text((x, y + 70), nome, font=fb if atual else f, fill=PRETO + (255,), anchor="mm")
-    d.rectangle((0, 0, w - 1, h - 1), outline=(60, 60, 64, 255), width=5)
-    return _sujar(img, 0.15, 3)
-
-
 # ------------------------------------------------------------------ a lista
-
-ESTACOES = ["Jardim", "Mercado", "Alcateia", "Central", "Porto"]
-LINHA = (238, 120, 30)
-
 
 def _lista():
     L = {}
-
-    # ---- Metrô
-    L["metro_estacao"] = lambda: placa("ALCATEIA", "overpass_preta", 190, sub="Linha 7 · Laranja      ←  Jardim     Porto  →",
-                                       bola=(LINHA, "7"), fundo=(16, 30, 62), sujeira=0.2)
-    L["metro_saida_dir"] = lambda: placa("SAÍDA", px=150, cor=PRETO, fundo=AMARELO, seta="dir", sujeira=0.1)
-    L["metro_saida_esq"] = lambda: placa("SAÍDA", px=150, cor=PRETO, fundo=AMARELO, seta="esq", sujeira=0.1)
-    L["metro_plataforma_1"] = lambda: placa("Plataforma 1", px=130, sub="sentido Porto", bola=(LINHA, "7"), fundo=(22, 24, 28))
-    L["metro_plataforma_2"] = lambda: placa("Plataforma 2", px=130, sub="sentido Jardim", bola=(LINHA, "7"), fundo=(22, 24, 28))
-    L["metro_bilhetes"] = lambda: placa("BILHETES", px=140, fundo=(22, 24, 28), borda=(200, 200, 196))
-    L["metro_galeria"] = lambda: placa("Galeria · Lojas", px=130, fundo=(22, 24, 28), borda=(200, 200, 196))
-    L["metro_galeria_dir"] = lambda: placa("Galeria · Lojas", px=130, fundo=(22, 24, 28), seta="dir")
-    L["metro_galeria_esq"] = lambda: placa("Galeria · Lojas", px=130, fundo=(22, 24, 28), seta="esq")
-    L["metro_controle"] = lambda: placa("SALA DE CONTROLE", px=120, sub="Acesso restrito a funcionários", fundo=(120, 22, 20))
-    L["metro_tecnica"] = lambda: placa("ÁREA TÉCNICA", px=120, cor=PRETO, fundo=AMARELO, borda=PRETO)
-    L["metro_trem_destino"] = lambda: painel("7  PORTO")
-    L["metro_trem_numero"] = lambda: pintura("7031", "overpass_preta", 150, (28, 30, 34), desgaste=0.1)
-    L["metro_trem_marca"] = lambda: pintura("METRÔ", "overpass_preta", 170, BRANCO, desgaste=0.08)
-    L["metro_mapa_linha"] = lambda: linha_metro(ESTACOES, "Alcateia", LINHA)
-    L["metro_vao"] = lambda: pintura("CUIDADO COM O VÃO", "saira", 150, AMARELO, desgaste=0.45, semente=4)
-    L["metro_faixa"] = lambda: pintura("NÃO ULTRAPASSE A FAIXA AMARELA", "overpass", 110, AMARELO, desgaste=0.5, semente=5)
-    L["metro_cafe"] = lambda: placa("CAFÉ DA ESTAÇÃO", "alfa", 150, cor=(250, 236, 200), fundo=(92, 42, 26), borda=(250, 236, 200))
-    L["metro_banca"] = lambda: placa("BANCA 24H", "bebas", 190, cor=BRANCO, fundo=(176, 28, 30))
-    L["metro_farmacia"] = lambda: placa("FARMÁCIA", "archivo", 140, cor=BRANCO, fundo=(20, 120, 70))
-    L["metro_achados"] = lambda: placa("Achados e Perdidos", px=110, fundo=(22, 24, 28), borda=(200, 200, 196))
-    L["metro_picho"] = lambda: pintura("MATILHA", "marcador", 240, (230, 60, 150), desgaste=0.12, semente=9)
-    L["metro_picho2"] = lambda: pintura("7 é nossa", "marcador", 200, (240, 240, 235), desgaste=0.15, semente=11)
-    L["metro_anuncio_passe"] = lambda: cartaz((640, 900), (236, 232, 222), [
-        ("faixa", LINHA, 0.0, 0.34), ("texto", "PASSE", "bebas", 230, BRANCO, 0.13), ("texto", "MENSAL", "bebas", 150, BRANCO, 0.27),
-        ("texto", "a cidade", "alfa", 86, PRETO, 0.47), ("texto", "inteira,", "alfa", 86, PRETO, 0.57),
-        ("texto", "um cartão.", "alfa", 86, PRETO, 0.67), ("texto", "METRÔ · LINHA 7", "overpass", 46, (90, 90, 96), 0.9)], semente=2)
-    L["metro_anuncio_radio"] = lambda: cartaz((640, 900), (22, 26, 60), [
-        ("bola", (240, 196, 40), 0.5, 0.3, 0.3), ("texto", "97.3", "archivo", 170, (22, 26, 60), 0.3),
-        ("texto", "RÁDIO", "bebas", 190, BRANCO, 0.62), ("texto", "MADRUGADA", "bebas", 140, (240, 196, 40), 0.76),
-        ("texto", "a noite toda com você", "overpass_fina", 44, BRANCO, 0.9)], semente=3)
-    L["metro_anuncio_feira"] = lambda: cartaz((640, 900), (200, 60, 40), [
-        ("texto", "FEIRA", "alfa", 170, (250, 236, 200), 0.16), ("texto", "DO LIVRO", "alfa", 120, (250, 236, 200), 0.3),
-        ("faixa", (250, 236, 200), 0.42, 0.62), ("texto", "12 a 20 de junho", "overpass", 64, (200, 60, 40), 0.52),
-        ("texto", "Praça da Estação", "overpass", 60, (250, 236, 200), 0.74), ("texto", "entrada livre", "overpass_fina", 50, (250, 236, 200), 0.86)], semente=4)
 
     # ---- Vila
     for nome, texto, letra, cor in (
@@ -318,18 +258,9 @@ def _lista():
     L["polar_gelo"] = lambda: placa("CUIDADO · GELO NA PISTA", px=110, cor=PRETO, fundo=AMARELO, borda=PRETO)
     L["polar_pouso"] = lambda: pintura("H", "overpass_preta", 420, (240, 200, 40), desgaste=0.4, semente=6)
 
-    # ---- Hangar
-    L["hangar_nome"] = lambda: pintura("HANGAR 7", "saira", 260, (232, 234, 238), desgaste=0.3, semente=8)
-    for n in "1234":
-        L[f"hangar_n{n}"] = (lambda n=n: pintura(n, "saira", 520, (232, 234, 238), desgaste=0.28, semente=30 + int(n)))
-    for nome, texto in (("oficina", "OFICINA"), ("almoxarifado", "ALMOXARIFADO"), ("ferramentaria", "FERRAMENTARIA"), ("pintura", "PINTURA")):
-        L[f"hangar_{nome}"] = (lambda t=texto, n=nome: pintura(t, "saira", 210, (236, 236, 230), desgaste=0.3, semente=len(n) * 3))
-    L["hangar_aviso"] = lambda: placa("CUIDADO · AERONAVES EM MANOBRA", px=100, cor=PRETO, fundo=AMARELO, borda=PRETO)
-    L["hangar_fumar"] = lambda: placa("PROIBIDO FUMAR", px=110, cor=BRANCO, fundo=(170, 26, 24), borda=BRANCO)
-    L["hangar_anel"] = lambda: anel()
 
     # ---- De todos: a letra da base de cada time e a faixa de perigo.
-    for mapa in ("metro", "vila", "polar", "hangar"):
+    for mapa in ("vila", "polar"):
         L[f"{mapa}_base_a"] = lambda: pintura("A", "overpass_preta", 520, AZUL_TIME, desgaste=0.18, semente=21, contorno=(12, 20, 40))
         L[f"{mapa}_base_b"] = lambda: pintura("B", "overpass_preta", 520, LARANJA_TIME, desgaste=0.18, semente=22, contorno=(40, 20, 8))
     L["faixa_perigo"] = lambda: faixa()
