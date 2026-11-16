@@ -24,7 +24,8 @@ public sealed class GroundSpeedTest : RegressionTest
 		b.Near(3.894, await Measure(b, "move_forward"), 0.03, "Bruto correndo");
 		b.Near(1.752, await Measure(b, "move_forward", "crouch"), 0.05, "Bruto agachado");
 		b.Near(3.894, await Measure(b, "move_right"), 0.03, "Bruto de lado");
-		b.Near(3.894, await Measure(b, "move_back"), 0.03, "Bruto para trás");
+		// Para trás o lobo anda a 75% (WolfBackFactor, pedido do Jhon, 15/11).
+		b.Near(3.894 * b.Player.WolfBackFactor, await Measure(b, "move_back"), 0.03, "Bruto para trás");
 	}
 
 	/// <summary>Velocidade média depois de embalar, no campo aberto.</summary>

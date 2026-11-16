@@ -19,8 +19,9 @@ Ponha aqui, com o que se sabe dele.
 | **AR-15 sem animação de recarga** (15/11) | O pacote não tem recarga: a do AR-15 é de código (a arma inclina, o carregador cai e volta, o ferrolho é puxado com o pente vazio), com a mão esquerda parada no guarda-mão. Quando o Jhon animar a recarga no Blender (recarga e recarga vazia), entra no `infima.py` e substitui a de código sozinha. |
 | **Lobo do Meshy: licença e origem** (15/11) | O lobo vem do Meshy. No plano grátis a licença é CC BY 4.0 (com crédito, que já está em `Credits.cs`); nos pagos o uso comercial é do dono. Confirmar o plano em que foi gerado, e que o prompt ou imagem de referência não era arte do WolfTeam (regra de IP). Quase todas as animações já são do próprio Jhon (`lobo_anim.glb`); só a morte e a corrida na parede ainda são do Mixamo, adaptadas por código. |
 | **Lobo agachado: cabeça fora da cápsula** (15/11) | O `Crouch_Idle` do Jhon deixa a cabeça a 1,18 m do chão; a cápsula agachada tem 1,0 m. A cabeça tem esfera própria e o tiro nela acerta, mas o peito acima de 1,0 m passa direto. Decidir: agachar mais a pose, ou subir a cápsula agachada. |
-| **AR-15: textura do fuzil** (15/11) | A textura `T_AssaultRifle_D.png` não veio (os `.blend` apontam para a pasta do autor do pacote): o fuzil sai cinza. |
 | **SG-552 contra a M16 nova** (14/11) | A M16 (e agora o AR-15, com os mesmos números) ficou mais precisa que a SG-552 (dispersão 0,15° contra 0,25°), que custa 320 WP e era a "arma de controle". Falta o Jhon decidir se a SG sobe junto. |
+| **Lobo: garrada só da cintura para cima** (15/11 à noite) | O rugido toca de corpo inteiro (o lobo para para rugir). A garrada continua da cintura para cima (o lobo anda enquanto bate): a pisada do clipe não aparece. |
+| **Testes de velocidade 6,7% acima** (15/11) | `VelocidadeNoChao`, `CorridaNaParede` e a passada do humano no `PassoNoRitmo` falham com tudo 6,7% mais rápido que o esperado (humano 3,456 em vez de 3,24). Já falhava antes das animações novas; vem das mudanças sem commit ou do último commit. Em 16/11 também falham `AlturaDoPulo` (Bruto pula 1,87 m em vez de 1,62), `SaltoCarregado` e `CargaDoSalto` (a mira do salto não sobe no bloco; o lobo pousa a 18 m dela) — todos de movimento do lobo, nas mudanças sem commit. |
 | **Personagens tremendo e piscando** | Corrigido (13/11): o desenho agora anda entre os passos da física (`VisualSmoothing`) e a borda vermelha saiu de cima da pele. Não deu para ver no Mac daqui: falta o Jhon conferir; se continuar, um vídeo curto mostra se é tremor de posição, de animação ou de sombra. |
 
 ## Pedido e ainda não feito
@@ -34,6 +35,14 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Modelos próprios de armas.** Hoje: Sketchfab nas armas de fogo,
   código na faca e na granada.
 - **Modelos próprios de humano e de lobo.** Hoje: Mixamo.
+- **Personagem online: os outros te veem com o padrão do time.** A vida
+  do personagem vale online (cada jogo manda o máximo no status), mas a
+  escalação do servidor (`OnlineMatch.Seat`) não leva o personagem, e o
+  boneco dos outros nasce com o modelo do time. Precisa: o personagem na
+  sala (servidor) e o boneco montar com ele.
+- **Preço dos personagens.** Hoje todo personagem vem com o perfil
+  (`Starter`). Com vida a mais, a Eve é vantagem de quem a escolhe; ter
+  preço (em Presas, nunca em Sangue) é decisão de economia.
 - **Logotipo do jogo.** Hoje: só o nome escrito na fonte do menu.
 - **Imagens das patentes melhores.** Hoje: insígnias desenhadas por
   código (`RankBadge`).

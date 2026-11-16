@@ -108,6 +108,11 @@ public static class Profile
 	public static string Breed { get; private set; } = "raca_bruto";
 	public static List<string> Tattoos { get; private set; } = new();
 
+	/// <summary>O personagem de cada time (id do catálogo), ou nulo para o
+	/// de sempre (Exo Gray no azul, Ely no laranja).</summary>
+	public static string BlueCharacter { get; private set; }
+	public static string OrangeCharacter { get; private set; }
+
 	public static LifetimeStats Stats { get; private set; } = new();
 	public static MissionBook Missions { get; private set; } = new();
 
@@ -131,6 +136,8 @@ public static class Profile
 		public int LastUsed { get; set; }
 		public string Breed { get; set; }
 		public List<string> Tattoos { get; set; }
+		public string BlueCharacter { get; set; }
+		public string OrangeCharacter { get; set; }
 		public LifetimeStats Stats { get; set; }
 		public MissionBook Missions { get; set; }
 		public List<string> Titles { get; set; }
@@ -171,6 +178,8 @@ public static class Profile
 		LastUsed = data.LastUsed;
 		Breed = string.IsNullOrEmpty(data.Breed) ? "raca_bruto" : data.Breed;
 		Tattoos = data.Tattoos ?? new List<string>();
+		BlueCharacter = data.BlueCharacter;
+		OrangeCharacter = data.OrangeCharacter;
 		Stats = data.Stats ?? new LifetimeStats();
 		Missions = data.Missions ?? new MissionBook();
 		Titles = data.Titles ?? new List<string>();
@@ -242,6 +251,8 @@ public static class Profile
 				LastUsed = LastUsed,
 				Breed = Breed,
 				Tattoos = Tattoos,
+				BlueCharacter = BlueCharacter,
+				OrangeCharacter = OrangeCharacter,
 				Stats = Stats,
 				Missions = Missions,
 				Titles = Titles,
@@ -377,6 +388,8 @@ public static class Profile
 		Inventory.RemoveAll(i => i.Id == id);
 		Tattoos.Remove(id);
 		if (Breed == id) Breed = "raca_bruto";
+		if (BlueCharacter == id) BlueCharacter = null;
+		if (OrangeCharacter == id) OrangeCharacter = null;
 		Repair();
 		Save();
 		Changed?.Invoke();
@@ -385,7 +398,8 @@ public static class Profile
 	/// <summary>Está em uso em algum conjunto, ou equipado no lobo?</summary>
 	public static bool IsEquipped(string id) =>
 		Sets.Any(s => s.Primary == id || s.Secondary == id || s.Utilities.Contains(id))
-		|| Tattoos.Contains(id) || Breed == id || id == Arsenal.KnifeId;
+		|| Tattoos.Contains(id) || Breed == id || id == Arsenal.KnifeId
+		|| BlueCharacter == id || OrangeCharacter == id;
 
 	// ------------------------------------------------------------------ moedas
 
@@ -517,6 +531,47 @@ public static class Profile
 		return breed;
 	}
 
+	// ------------------------------------------------------------------ personagem
+
+	/// <summary>O id do personagem escolhido para o time, ou nulo.</summary>
+	public static string CharacterIdFor(int team) =>
+		team == Teams.Blue ? BlueCharacter : team == Teams.Orange ? OrangeCharacter : null;
+
+	/// <summary>O personagem que o jogador usa no time, ou nulo para o de
+	/// sempre. Só o que ele possui e que vale para aquele time.</summary>
+	public static CharacterSkin CharacterFor(int team)
+	{
+		CatalogItem item = Catalog.Get(CharacterIdFor(team));
+		return FitsTeam(item, team) && Owns(item.Id) ? item.Character : null;
+	}
+
+	/// <summary>Usar o personagem no time dele. Personagem dos dois times
+	/// entra nos dois.</summary>
+	public static bool SetCharacter(string id, out string error)
+	{
+		error = null;
+		CatalogItem item = Catalog.Get(id);
+		if (item?.Kind != ItemKind.Character) error = "Não é um personagem";
+		else if (!Owns(id)) error = "Personagem fora do inventário ou expirado";
+		if (error != null) return false;
+
+		if (FitsTeam(item, Teams.Blue)) BlueCharacter = id;
+		if (FitsTeam(item, Teams.Orange)) OrangeCharacter = id;
+		Save();
+		return true;
+	}
+
+	/// <summary>Volta o time ao personagem de sempre.</summary>
+	public static void ClearCharacter(int team)
+	{
+		if (team == Teams.Blue) BlueCharacter = null;
+		else if (team == Teams.Orange) OrangeCharacter = null;
+		Save();
+	}
+
+	private static bool FitsTeam(CatalogItem item, int team) =>
+		item?.Kind == ItemKind.Character && item.Character != null && (item.Team == 0 || item.Team == team);
+
 	// ------------------------------------------------------------------ consistência
 
 	/// <summary>
@@ -565,6 +620,10 @@ public static class Profile
 			Breed = "raca_bruto";
 
 		Tattoos = Tattoos.Where(id => Catalog.Get(id)?.Kind == ItemKind.Tattoo).Distinct().Take(MaxTattoos).ToList();
+
+		// Personagem que saiu da pasta, ou que não é daquele time, volta ao de sempre.
+		if (!FitsTeam(Catalog.Get(BlueCharacter), Teams.Blue)) BlueCharacter = null;
+		if (!FitsTeam(Catalog.Get(OrangeCharacter), Teams.Orange)) OrangeCharacter = null;
 
 		if (RankHistory.Count == 0)
 			RankHistory.Add(new RankEvent { Rank = 0, Utc = CreatedUtc });

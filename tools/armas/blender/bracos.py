@@ -119,6 +119,11 @@ def achar_texturas(pasta, prefixo):
         if ext.lower() not in (".png", ".jpg", ".jpeg") or not raiz.lower().startswith(prefixo.lower()):
             continue
         resto = raiz[len(prefixo):].lower()
+        # "_D" (diffuse) é a cor, como no T_AssaultRifle_D; igual, não
+        # contido, para não pegar "_Normal_DX".
+        if resto == "_d" and "cor" not in achadas:
+            achadas["cor"] = os.path.join(pasta, nome)
+            continue
         for papel, chaves in PAPEIS:
             if papel not in achadas and any(c in resto for c in chaves):
                 achadas[papel] = os.path.join(pasta, nome)

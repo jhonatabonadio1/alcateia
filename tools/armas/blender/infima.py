@@ -393,11 +393,15 @@ def main():
     cena.render.fps = fps * AMOSTRAS
 
     # --- As texturas: as que a cena aponta, achadas no pacote; o fuzil
-    # dos .fbx, sem textura nenhuma, ganha a do pacote se ela vier.
+    # dos .fbx, sem textura nenhuma, ganha a do pacote se ela vier. O
+    # pacote não trouxe a do fuzil: a que o Jhon pôs em assets/armas/ar15
+    # (T_AssaultRifle_D.png, a paleta de cores, 16/11) vale se faltar lá.
     resolver_imagens()
     texturas = {}
     for base, _, _ in os.walk(PACOTE):
         texturas.update({k: v for k, v in achar_texturas(base, TEXTURA).items() if k not in texturas})
+    if os.path.isdir(DESTINO_ARMA):
+        texturas.update({k: v for k, v in achar_texturas(DESTINO_ARMA, TEXTURA).items() if k not in texturas})
     for mat in {m for o in (fuzil, carregador) for m in o.data.materials if m}:
         if not tem_imagem(mat) and texturas:
             vestir(mat, texturas)
@@ -517,7 +521,9 @@ def modelo_do_mundo(fuzil, carregador, rig, texturas):
 
     # A textura, ao lado das peças.
     cor = None
-    if "cor" in texturas:
+    if "cor" in texturas and os.path.dirname(os.path.abspath(texturas["cor"])) == os.path.abspath(DESTINO_ARMA):
+        cor = texturas["cor"]  # já está ao lado das peças
+    elif "cor" in texturas:
         cor = os.path.join(DESTINO_ARMA, "ar15_cor.png")
         img = bpy.data.images.load(texturas["cor"])
         if img.size[0] > 1024:
@@ -525,7 +531,7 @@ def modelo_do_mundo(fuzil, carregador, rig, texturas):
         img.filepath_raw = cor
         img.file_format = "PNG"
         img.save()
-    material = "res://assets/armas/ar15/ar15_cor.png" if cor else "metal"
+    material = f"res://assets/armas/ar15/{os.path.basename(cor)}" if cor else "metal"
 
     partes = []
     for no, tris in pecas.items():

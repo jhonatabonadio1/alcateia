@@ -37,6 +37,14 @@ public partial class Weapon
 	/// responder.</summary>
 	[Export] public float AttackBuffer = 0.3f;
 
+	/// <summary>Quanto depois do impacto a próxima garrada pode cortar a
+	/// atual, em segundos (pedido do Jhon, 15/11: clicar rápido e a
+	/// animação responder). O golpe dura 0,733 s, mas o dano sai em 0,20 s:
+	/// com 0,08 a próxima sai em 0,28 s — até 3,6 garradas por segundo, em
+	/// vez de 1,4. O braço que estava no fim do golpe mistura com o outro
+	/// em 0,07 s.</summary>
+	[Export] public float ClawCancelAfter = 0.08f;
+
 	private int _comboIndex;
 
 	/// <summary>Próxima garrada com o outro braço.</summary>
@@ -116,6 +124,10 @@ public partial class Weapon
 		var (delay, duration, distance) = WolfMoves.StepOf(move);
 		if (standing && distance > 0f)
 			After(delay, id, () => BeginStep(duration, distance));
+
+		// A próxima garrada pode cortar esta logo depois do impacto.
+		_cooldown = Mathf.Min(_cooldown, WolfMoves.ImpactDelay(move) + ClawCancelAfter);
+		EmitSignal(SignalName.AttackCooldown, CooldownClaw, (float)_cooldown);
 	}
 
 	/// <summary>O passo da garrada e o avanço do salto: anda

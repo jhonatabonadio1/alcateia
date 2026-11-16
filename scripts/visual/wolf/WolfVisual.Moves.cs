@@ -11,6 +11,7 @@ public partial class WolfVisual
 {
 	private bool _howling;
 
+
 	private bool IsHowling() =>
 		_player != null ? _player.HowlProgress > 0f
 		: _bot != null && _bot.Action == BotAction.Howl;
@@ -62,11 +63,45 @@ public partial class WolfVisual
 		if (!Has("pounce")) return;
 
 		bool hold = _weapon.IsChargingPounce && _pounceClock >= WolfMoves.StepOf(WolfMove.Pounce).Delay;
+
+		// Encolhido, ele respira (pedido do Jhon, 15/11): parado de todo
+		// parecia travado. A respiração entra e sai em 0,2 s.
+		// Andando carregado, o lobo anda agachado (Charge_Walk) no passo do
+		// corpo; parou, volta à pose da carga em 0,15 s.
+		bool walking = _weapon.IsChargingPounce && _speed > 0.4f;
+		if (Has("charge_walk"))
+		{
+			_chargeWalk = Mathf.MoveToward(_chargeWalk, walking ? 1f : 0f, (float)delta / 0.15f);
+			_tree.Set("parameters/ChargeWalk/blend_amount", _chargeWalk);
+			_tree.Set("parameters/ChargeWalkSpeed/scale", Mathf.Clamp(_speed / ChargeWalkClipSpeed, 0f, 3f) * (_crawlRate < 0 ? -1f : 1f));
+		}
+
+		if (Has("breath_add"))
+		{
+			_chargeBreath = Mathf.MoveToward(_chargeBreath, hold && !walking ? 1f : 0f, (float)delta / 0.2f);
+			_tree.Set("parameters/ChargeBreath/add_amount", _chargeBreath);
+			_tree.Set("parameters/ChargeBreathSpeed/scale", ChargeBreathRate);
+		}
+
 		if (hold == _pounceHeld) return;
 
 		_pounceHeld = hold;
 		_tree.Set("parameters/PounceSpeed/scale", hold ? 0f : WolfMoves.Of(WolfMove.Pounce).Speed);
 	}
+
+	/// <summary>Ritmo da respiração do lobo encolhido na carga do salto, em
+	/// relação à do Idle_Pose (2 s por ciclo): 1,6 dá 1,25 s, de quem está
+	/// tenso. A profundidade está no clipe (5,5× a do parado).</summary>
+	[Export] public float ChargeBreathRate = 1.6f;
+
+	/// <summary>A passada do Charge_Walk, em m/s: o pé de apoio anda 0,80
+	/// m/s no arquivo, vezes 1,13 (a mesma razão dos outros andares). O
+	/// corpo carregando anda a 0,91 (WolfChargeMoveFactor 0,234): o clipe
+	/// toca a 1×.</summary>
+	[Export] public float ChargeWalkClipSpeed = 0.91f;
+
+	private float _chargeBreath;
+	private float _chargeWalk;
 
 	/// <summary>O bote encostou: a aterrissagem entra por cima da queda,
 	/// no mesmo quadro do dano — mesmo que tenha encostado antes do

@@ -31,11 +31,20 @@ public partial class WolfVisual
 	private readonly Dictionary<string, float> _lengths = new();
 	private bool _sharedModel = true;
 
+	/// <summary>O lobo do personagem escolhido (CharacterSkin), no lugar
+	/// do lobo do time. Quem define é o Player, antes do _Ready.</summary>
+	public string ModelOverride { get; set; }
+
 	private bool BuildModel()
 	{
 		bool orange = _health != null && _health.Team == Teams.Orange;
 		string path = orange && ResourceLoader.Exists(OrangeModel) ? OrangeModel : BlueModel;
 		_sharedModel = !ResourceLoader.Exists(OrangeModel) || OrangeModel == BlueModel;
+		if (!string.IsNullOrEmpty(ModelOverride) && ResourceLoader.Exists(ModelOverride))
+		{
+			path = ModelOverride;
+			_sharedModel = false;
+		}
 
 		if (!ResourceLoader.Exists(path) || GD.Load<PackedScene>(path)?.Instantiate() is not Node3D model)
 		{
@@ -120,6 +129,27 @@ public partial class WolfVisual
 			crouch.LoopMode = Animation.LoopModeEnum.Pingpong;
 			library.AddAnimation("crouch", crouch);
 			_lengths["crouch"] = (float)crouch.Length;
+		}
+
+		// O andar da carga do salto: agachado na pose em que a carga segura,
+		// passos curtos (Charge_Walk). Parar e andar misturam poses quase
+		// iguais; com o Crouch_Walk (um joelho no chão) ele "saía" da carga
+		// ao soltar o W (Jhon, 16/11).
+		if (Own("charge_walk") is Animation chargeWalk)
+		{
+			chargeWalk.LoopMode = Animation.LoopModeEnum.Linear;
+			library.AddAnimation("charge_walk", chargeWalk);
+			_lengths["charge_walk"] = (float)chargeWalk.Length;
+		}
+
+		// A respiração do lobo encolhido na carga do salto: só a diferença
+		// entre o Idle_Pose e a pose parada, 5,5× mais funda (Breath_Add),
+		// somada por cima da pose do agachar.
+		if (Own("breath_add") is Animation breath)
+		{
+			breath.LoopMode = Animation.LoopModeEnum.Linear;
+			library.AddAnimation("breath_add", breath);
+			_lengths["breath_add"] = (float)breath.Length;
 		}
 
 		// Golpes e rugido tocam o trecho medido em WolfMoves — o mesmo que

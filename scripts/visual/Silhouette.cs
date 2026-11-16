@@ -1,24 +1,19 @@
 using Godot;
 
 /// <summary>
-/// As duas marcas vermelhas sobre um corpo, como
+/// A silhueta vermelha de quem te matou, como
 /// <see cref="GeometryInstance3D.MaterialOverlay"/> — uma segunda passada
-/// por cima do material dele, que acompanha o esqueleto.
+/// por cima do material dele, que acompanha o esqueleto. Forte e **sem**
+/// teste de profundidade: visto através de tudo, só enquanto você está
+/// morto (<see cref="KillCam"/>).
 ///
-/// - <see cref="Enemy"/>: leve, só na borda, **com** teste de
-///   profundidade. Separa inimigo de aliado à primeira vista (decisão do
-///   Jhon) e não atravessa parede — através de parede seria ver quem está
-///   escondido.
-/// - <see cref="Killer"/>: forte e **sem** teste de profundidade: quem te
-///   matou, visto através de tudo, só enquanto você está morto
-///   (<see cref="KillCam"/>).
+/// Até 15/11 havia também uma versão leve, só na borda, em todo inimigo;
+/// o Jhon trocou por um brilho no ombro (<see cref="ShoulderMark"/>).
 /// </summary>
 public static class Silhouette
 {
-	private static ShaderMaterial _enemy;
 	private static ShaderMaterial _killer;
 
-	public static ShaderMaterial Enemy => _enemy ??= Make(false, 0.0f, 0.38f, 5);
 	public static ShaderMaterial Killer => _killer ??= Make(true, 0.28f, 0.6f, 10);
 
 	private static ShaderMaterial Make(bool throughWalls, float fill, float rim, int priority)

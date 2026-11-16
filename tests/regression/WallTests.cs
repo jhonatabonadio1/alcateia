@@ -161,3 +161,60 @@ public sealed class WallRegrabTest : WallTestBase
 			b.AtMost(start + 0.02, highest, "três saltos não sobem a parede");
 	}
 }
+
+/// <summary>Parede redonda (tonel, tanque): o lobo dá a volta inteira, sem
+/// soltar e grudar de novo a cada pedaço da curva (Jhon, 15/11, tonel da
+/// Estação Polar).</summary>
+public sealed class WallBarrelTest : RegressionTest
+{
+	public override string Name => "VoltaNoTonel";
+	public override string Description => "o lobo contorna um tonel na parede dele, a volta inteira, sem soltar";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.RemoveBots();
+		await b.BecomeWolf();
+
+		// Um tonel de 1,5 m de raio e 8 m de altura, acima de tudo.
+		var center = new Vector3(-15, 14, 13);
+		var barrel = new StaticBody3D();
+		barrel.AddChild(new CollisionShape3D { Shape = new CylinderShape3D { Radius = 1.5f, Height = 8f } });
+		b.Scene.AddChild(barrel);
+		barrel.GlobalPosition = center;
+
+		// Ao lado dele (+Z), no ar, correndo para +X ao longo da curva.
+		await b.Place(center + new Vector3(0, 1, 2.1f), -90f, settle: 0.05);
+		b.Player.Velocity = new Vector3(3.5f, 0, 0);
+		RegressionBench.Press("move_forward");
+		await b.Until(() => b.Player.IsWallRunning, 1.0);
+		b.Check(b.Player.IsWallRunning, "grudou no tonel");
+
+		int off = 0, frames = 0;
+		float swept = 0, last = Angle(b, center), lowest = b.Player.GlobalPosition.Y, highest = lowest;
+		double end = b.Time + 3.0;
+		while (b.Time < end)
+		{
+			await b.PhysicsFrame();
+			frames++;
+			if (!b.Player.IsWallRunning) off++;
+			float now = Angle(b, center);
+			swept += Mathf.Abs(Mathf.Wrap(now - last, -Mathf.Pi, Mathf.Pi));
+			last = now;
+			lowest = Mathf.Min(lowest, b.Player.GlobalPosition.Y);
+			highest = Mathf.Max(highest, b.Player.GlobalPosition.Y);
+		}
+		RegressionBench.ReleaseAll();
+		barrel.QueueFree();
+
+		RegressionBench.Note($"tonel: {RegressionBench.F(Mathf.RadToDeg(swept))}° em 3 s, {off} de {frames} quadros fora da parede, altura variou {RegressionBench.F(highest - lowest)} m");
+		b.Check(off == 0, "não soltou do tonel nenhuma vez");
+		b.AtLeast(360, Mathf.RadToDeg(swept), "deu a volta inteira (graus)");
+		b.AtMost(0.3, highest - lowest, "sem subir nem cair (m)");
+	}
+
+	private static float Angle(RegressionBench b, Vector3 center)
+	{
+		Vector3 d = b.Player.GlobalPosition - center;
+		return Mathf.Atan2(d.Z, d.X);
+	}
+}

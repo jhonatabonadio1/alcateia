@@ -19,6 +19,7 @@ do `docs/DESIGN.md` do sistema que for mexer.
 > | `docs/AJUSTES.md` | todo número regulável, com o valor atual e onde mudar |
 > | `docs/MAPAS.md` | os mapas, como são gerados e como fazer um novo |
 > | `docs/PACOTES.md` | de onde vem a arte (texturas, objetos, céus, braços, armas), licenças e como baixar |
+> | `docs/PERSONAGENS.md` | personagens jogáveis (`assets/personagens/`, uma pasta cada): como fazer um novo nas proporções certas |
 > | `docs/decisoes/` | as decisões de arquitetura (ADR) |
 > | `docs/ARSENAL.md`, `docs/CONJUNTOS.md`, `docs/UI.md` | especificações de armas, economia e interface |
 > | `docs/CHANGELOG.md` | o que entrou em cada versão |
@@ -207,7 +208,7 @@ alcateia/
 ├── servidor/           o servidor (.NET + PostgreSQL) e as imagens Docker — fora do Godot (.gdignore)
 ├── docker-compose.yml  banco + servidor + servidor de partida
 ├── tests/              unit (C# puro) e regression (o jogo sem tela)
-├── assets/             audio, characters, fonts, maps, textures, ui (miniaturas de mapa)
+├── assets/             audio, characters, personagens (uma pasta por personagem jogável), fonts, maps, textures, ui
 ├── resources/
 │   ├── breeds/         estatísticas das classes de lobo
 │   ├── weapons/        uma definição por arma (gerada por tools/gerar_arsenal.py)

@@ -63,6 +63,10 @@ public partial class CharacterAnimator
 	[Export] public Color BlueBody = new Color(0.22f, 0.45f, 0.95f);
 	[Export] public Color OrangeBody = new Color(1f, 0.48f, 0.16f);
 
+	/// <summary>O modelo do personagem escolhido (CharacterSkin), no lugar
+	/// do modelo do time. Quem define é o Player, antes do _Ready.</summary>
+	public string ModelOverride { get; set; }
+
 	private bool _teamModel;
 
 	/// <summary>
@@ -196,6 +200,7 @@ public partial class CharacterAnimator
 		if (_health == null) return;
 
 		string path = _health.Team == Teams.Orange ? OrangeModel : BlueModel;
+		if (!string.IsNullOrEmpty(ModelOverride) && ResourceLoader.Exists(ModelOverride)) path = ModelOverride;
 		if (string.IsNullOrEmpty(path) || !ResourceLoader.Exists(path)) return;
 
 		if (GD.Load<PackedScene>(path)?.Instantiate() is not Node3D model) return;

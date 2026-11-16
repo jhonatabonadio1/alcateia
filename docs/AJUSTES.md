@@ -37,10 +37,11 @@ o renascer do bot (6 s).
   a parecer apressada; o pé não patina, mas a perna gira rápido. As
   passadas (`WalkClipSpeed`, `RunClipSpeed`, `WallClipSpeed`, `CrawlClipSpeed`, `SprintClipSpeed`,
   `WalkClip`, `RunClip`...) são medidas no esqueleto: não são botão de
-  ajuste. Com os andares do Jhon: `WalkClipSpeed` 1,4 (frente),
-  `WalkBackClipSpeed` 1,0, `WalkSideClipSpeed` 0,75, `CrawlClipSpeed`
-  1,05, `SprintClipSpeed` 3,95 (com o corpo a 5,4 m/s a corrida de quatro
-  toca a 1,37×). Os clipes do Jhon mantêm o vaivém do quadril: tirá-lo
+  ajuste. Com os andares do Jhon (15/11 à noite, feitos na velocidade do jogo:
+  tocam perto de 1×): `WalkClipSpeed` 3,95 (frente), `WalkBackClipSpeed`
+  3,6, `WalkSideClipSpeed` 3,75, `CrawlClipSpeed` 1,62 (calculadas do
+  arquivo e conferidas na varrida do `PassadaDoLobo`), `SprintClipSpeed` 3,95 (com
+  o corpo a 5,4 m/s a corrida de quatro toca a 1,37×). Os clipes do Jhon mantêm o vaivém do quadril: tirá-lo
   fazia o pé de apoio andar junto (de frente, 0,66 m/s de patinação
   contra 0,16).
 - **Alturas presas ao mapa.** O humano pula 0,99 m e sobe caixote
@@ -70,7 +71,9 @@ o renascer do bot (6 s).
 | `HoldFallGravity` | 0,78 | Gravidade na queda segurando o pulo (menos que 1 = cai mais devagar) |
 | `WolfJumpCarry` | 0,9 | Quanto da velocidade do chão o lobo leva para o pulo |
 | `CrouchSpeedFactor` | 0,45 | Velocidade agachado (as duas formas) |
-| `WolfSprintFactor` | 1,30 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal. 5,4 m/s, a velocidade em que o Run_Quad a 1,37× não patina; mais rápido, o clipe acelera junto (o `player.tscn` tinha 1,45, tirado em 15/11 com o aval do Jhon) |
+| `WolfSprintFactor` | 1,495 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal. 6,2 m/s no Bruto, o `Run_Quad` a ~1,58× (era 1,3: +15% a pedido do Jhon, 16/11) |
+| `WolfChargeMoveFactor` | 0,234 | Lobo carregando o salto: × a velocidade normal. 0,91 m/s no Bruto, a passada do `Charge_Walk` (`ChargeWalkClipSpeed`, nó `WolfVisual`): mudou um, mude o outro |
+| `WolfBackFactor` | 0,75 | De lobo, andando para trás: × a velocidade normal (na diagonal de trás, em parte). O humano não muda |
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
 | `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Andando em pé e na parede: quanto a animação corre em relação ao corpo (1 acompanha, 0,7 é 30% mais lenta; a pata desliza a diferença). De quatro, o mesmo (acompanha o corpo). Só a animação. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
 | `WalkSpeedFactor` | 0,42 | Velocidade andando com Shift (só humano) |
@@ -170,6 +173,8 @@ Multiplicam a classe do jogador (não a dos bots):
 Campos em `scripts/combat/weapon/` (`Weapon.WolfClaws.cs`, `.WolfPounce.cs`, `.WolfDive.cs`) → nó `Weapon`, grupos "Lobo: ..." no Inspetor. Tempos em
 `scripts/forms/WolfMoves.cs`.
 
+`ClawCancelAfter` (nó `Weapon`, grupo da garra) = 0,08 s: quanto depois do impacto a próxima garrada pode cortar a atual (clicando rápido, uma a cada 0,28 s; pedido do Jhon, 16/11).
+
 **Fórmula:** dano = `AttackDamage` da classe × multiplicador do golpe
 × `ClawVsHumanBonus` (1,6, se o alvo é humano) × `AirAttackBonus` (se
 caindo de ≥ 2,5 m). Depois o alvo aplica a resistência dele (lobo:
@@ -255,7 +260,7 @@ estão em `scripts/domain/CombatRules.cs`, com teste
 
 | Campo | Valor | O que faz |
 |---|---|---|
-| `HumanHp` | 200 | Vida (a mesma nas duas formas) |
+| `HumanHp` | 200 | Vida (a mesma nas duas formas). O personagem multiplica (`HpMultiplier` no `personagem.tres` de cada pasta em `assets/personagens/`; Eve ×1,1 = 220) |
 | `MaxWp` | 2500 | Teto de WP |
 | `WpPerKill` | 100 | WP por abate de arma |
 | `WpPerWolfKill` | 70 | WP por abate de lobo |
@@ -455,7 +460,7 @@ Abra no Inspector e mude ali — vale para os dois.
 | `StepWolf` | 20 |
 | `Land` | 17 |
 | `Howl` | 45 (já no começo do rugido e a cada 0,5 s) |
-| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,0 / 2,37 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça. De lobo, só vale sem o modelo: com ele, em pé a passada é a do andar que toca (frente, trás ou lado) e de quatro o som sai uma vez por ciclo do clipe, quando as patas se juntam (`WolfVisual.SprintGather`, 0,567 s) |
+| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,32 / 2,37 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça. De lobo, só vale sem o modelo: com ele, em pé a passada é a do andar que toca (frente, trás ou lado) e de quatro o som sai uma vez por ciclo do clipe, quando as patas se juntam (`WolfVisual.SprintGather`, 0,567 s) |
 | `NoiseRadius` da arma | 30 a 60 (seção 7) |
 
 O som do lugar fica no mapa (`scripts/meta/Maps.cs`):
@@ -480,6 +485,16 @@ Agachado e com Shift não fazem ruído; a faca é silenciosa. Teste:
 ## 12. Animação e visual
 
 Mexa com cuidado: muitos destes são medidas.
+
+**Marca do inimigo** (`scripts/visual/ShoulderMark.cs`, constantes: o
+nó é criado por código):
+
+| Constante | Valor | O que faz |
+|---|---|---|
+| `Size` | 0,30 m | Lado do brilho do ombro (o halo inteiro); igual no humano e no lobo |
+| `Lift` | 0,11 m | Quanto fica acima da junta do ombro |
+| `TowardCamera` | 0,15 m | Quanto vem na direção da câmera: o próprio ombro não tampa, a parede tampa. Com 0,25 o brilho do ombro de lá passava na frente do rosto visto de lado |
+| `Energy` | 3,0 | Força do brilho (acima de 1 acende o bloom) |
 
 **Lobo** (`scripts/visual/wolf/`, nó `WolfVisual`):
 

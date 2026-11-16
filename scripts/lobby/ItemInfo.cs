@@ -31,6 +31,7 @@ public static class ItemInfo
 			ItemKind.Utility => "Granada",
 			ItemKind.Tattoo => "Tatuagem",
 			ItemKind.Breed => "Classe",
+			ItemKind.Character => "Personagem",
 			_ => "Serviço"
 		};
 	}

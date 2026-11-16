@@ -118,6 +118,7 @@ public partial class Player : CharacterBody3D
 			scene.CallDeferred(Node.MethodName.AddChild, new DuelCard { Name = "DuelCard" });
 			scene.CallDeferred(Node.MethodName.AddChild, new EnemyMarks { Name = "EnemyMarks" });
 			scene.CallDeferred(Node.MethodName.AddChild, new ChargeBar { Name = "ChargeBar" });
+			scene.CallDeferred(Node.MethodName.AddChild, new PounceAim { Name = "PounceAim" });
 		}
 
 		if (IsMultiplayerAuthority() && !UiState.AnyOpen)
@@ -290,10 +291,39 @@ public partial class Player : CharacterBody3D
 	/// </summary>
 	public override void _EnterTree()
 	{
-		if (!RoomConfig.Active) return;
-
 		var health = GetNodeOrNull<Health>("Health");
-		if (health != null) health.Team = RoomConfig.PlayerTeam;
+		if (RoomConfig.Active && health != null) health.Team = RoomConfig.PlayerTeam;
+
+		// O corpo do servidor não lê o perfil desta máquina: quem o cria
+		// diz o personagem (Character).
+		if (!Driven && health != null) Character ??= Profile.CharacterFor(health.Team);
+		ApplyCharacter();
+	}
+
+	/// <summary>
+	/// O personagem deste corpo (humano, lobo e vida), ou nulo para o de
+	/// sempre do time. Vale se definido antes de entrar na árvore.
+	/// </summary>
+	public CharacterSkin Character { get; set; }
+
+	private bool _characterApplied;
+
+	/// <summary>
+	/// Passa o personagem aos filhos antes do _Ready deles: o corpo
+	/// humano e o lobo montam o modelo no _Ready, e o FormController
+	/// enche a vida com o HumanHp no dele.
+	/// </summary>
+	private void ApplyCharacter()
+	{
+		if (Character == null || _characterApplied) return;
+		_characterApplied = true;
+
+		if (GetNodeOrNull<CharacterAnimator>("Human") is CharacterAnimator human)
+			human.ModelOverride = Character.HumanModel;
+		if (GetNodeOrNull<WolfVisual>("WolfVisual") is WolfVisual wolf)
+			wolf.ModelOverride = Character.WolfModel;
+		if (GetNodeOrNull<FormController>("FormController") is FormController form)
+			form.HumanHp *= Character.HpMultiplier;
 	}
 
 	public override void _PhysicsProcess(double delta)

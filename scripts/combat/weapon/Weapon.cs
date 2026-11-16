@@ -165,11 +165,13 @@ public partial class Weapon : Node3D
 		_body.GetNode<Health>("Health").Changed += OnHealthChanged;
 		_health.Died += OnDied;
 		_health.Respawned += RefillAmmo;
+		_health.Respawned += ResetPounceRecharge;
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
 		UpdateAim(delta);
+		TickPounceRecharge(delta);
 
 		if (_cooldown > 0)
 			_cooldown -= delta;
@@ -193,7 +195,7 @@ public partial class Weapon : Node3D
 		{
 			_chargeTime += delta;
 			if (!_form.IsWolf || _health.IsDead) CancelCharge();
-			else if (_chargeTime >= PounceChargeTime + PounceChargeHold) ReleaseCharge();
+			else if (PounceChargeHold >= 0f && _chargeTime >= PounceChargeTime + PounceChargeHold) ReleaseCharge();
 		}
 
 		if (_flying)

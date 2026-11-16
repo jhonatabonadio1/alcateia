@@ -87,6 +87,7 @@ public partial class WeaponArt : Control
 			default:
 				if (_id.StartsWith("tat_")) Tattoo();
 				else if (_id.StartsWith("raca_")) WolfHead();
+				else if (_id.StartsWith("pers_")) Person();
 				break;
 		}
 	}
@@ -221,6 +222,16 @@ public partial class WeaponArt : Control
 		Poly(UiTokens.Bg, 84, 40, 92, 38, 92, 44);
 		Poly(UiTokens.Bg, 116, 40, 108, 38, 108, 44);
 		Poly(Dark, 94, 60, 106, 60, 100, 66);
+	}
+
+	/// <summary>Personagem: o busto do humano e, atrás dele, a cabeça do
+	/// lobo que vem junto.</summary>
+	private void Person()
+	{
+		Poly(Dark, 104, 14, 118, 28, 136, 28, 150, 14, 152, 40, 136, 60, 118, 60, 102, 40);   // lobo atrás
+		DrawEllipse(84, 26, 13, 15, Metal);                                                    // cabeça
+		Poly(Metal, 76, 40, 92, 40, 94, 46, 116, 52, 122, 76, 46, 76, 52, 52, 74, 46);         // ombros
+		Rect(UiTokens.Accent, 64, 56, 40, 3);                                                  // faixa do time
 	}
 
 	// ------------------------------------------------------------------ apoio

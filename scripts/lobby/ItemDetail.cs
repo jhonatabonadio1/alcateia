@@ -65,10 +65,24 @@ public partial class ItemDetail : PanelContainer
 		if (wp != "") sub.AddChild(UiKit.Text(wp, "Numeric", UiTokens.Accent));
 		column.AddChild(sub);
 
-		var artFrame = new PanelContainer { CustomMinimumSize = new Vector2(0, 150) };
+		bool character = _item.Character != null;
+		var artFrame = new PanelContainer { CustomMinimumSize = new Vector2(0, character ? 300 : 150) };
 		artFrame.AddThemeStyleboxOverride("panel", UiTheme.Box(new Color(ItemInfo.RarityColor(_item), 0.07f),
-			new Color(ItemInfo.RarityColor(_item), 0.35f), 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3));
-		artFrame.AddChild(WeaponArt.Make(_item.Id, new Vector2(0, 120), dim: ItemInfo.Locked(_item) && !ItemInfo.Usable(_item)));
+			new Color(ItemInfo.RarityColor(_item), 0.35f), 1, UiTokens.RadiusPanel, character ? 0 : UiTokens.S3, character ? 0 : UiTokens.S3));
+		if (character)
+		{
+			// O personagem em 3D, humano e lobo: a silhueta não diz quem é.
+			var preview = new CharacterPreview
+			{
+				HumanModel = _item.Character.HumanModel,
+				WolfModel = _item.Character.WolfModel,
+				SizeFlagsVertical = SizeFlags.ExpandFill
+			};
+			artFrame.AddChild(preview);
+			column.AddChild(Tabs.Make(new[] { "Humano", "Lobo" }, 0, i => preview.Wolf = i == 1));
+		}
+		else
+			artFrame.AddChild(WeaponArt.Make(_item.Id, new Vector2(0, 120), dim: ItemInfo.Locked(_item) && !ItemInfo.Usable(_item)));
 		column.AddChild(artFrame);
 
 		string duration = ItemInfo.Duration(_item, out Color durationColor);
@@ -164,6 +178,21 @@ public partial class ItemDetail : PanelContainer
 			bars.Add(StatBar.Make("Garra", breed.AttackDamage / 160f, $"{breed.AttackDamage:0}", cmpBreed == null ? -1 : cmpBreed.AttackDamage / 160f));
 			bars.Add(StatBar.Make("Resistência", (1f - breed.BodyResistance) / 0.5f, $"{(1f - breed.BodyResistance) * 100:0}%",
 				cmpBreed == null ? -1 : (1f - cmpBreed.BodyResistance) / 0.5f));
+			return bars;
+		}
+
+		if (item.Character is CharacterSkin skin)
+		{
+			CharacterSkin current = compare?.Character != null && compare != item ? compare.Character : null;
+			float hp = FormController.DefaultHumanHp * skin.HpMultiplier;
+			// Sem personagem no time, compara com o de sempre (vida 200).
+			float otherHp = FormController.DefaultHumanHp * (current?.HpMultiplier ?? 1f);
+			bars.Add(StatBar.Make("Vida", hp / 300f, $"{hp:0}", Mathf.IsEqualApprox(hp, otherHp) ? -1 : otherHp / 300f));
+
+			string team = item.Team == Teams.Blue ? "Azul" : item.Team == Teams.Orange ? "Laranja" : "Os dois";
+			bars.Add(UiKit.Stat("Time", team));
+			bars.Add(UiKit.Stat("Vale nas duas formas", "humano e lobo"));
+			bars.Add(UiKit.Paragraph("A vida é a mesma como humano e como lobo; o lobo soma o escudo da classe por cima."));
 			return bars;
 		}
 

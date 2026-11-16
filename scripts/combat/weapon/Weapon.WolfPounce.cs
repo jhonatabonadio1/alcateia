@@ -37,7 +37,7 @@ public partial class Weapon
 
 	/// <summary>Quanto tempo o lobo segura a carga cheia antes de saltar
 	/// sozinho.</summary>
-	[Export] public float PounceChargeHold = 0.6f;
+	[Export] public float PounceChargeHold = -1f;
 
 	/// <summary>O que o salto passa por cima, em metros acima dos pés: um
 	/// contêiner (2,2 m) passa; um bloco (5 m) ou o muro, não — o salto
@@ -58,8 +58,13 @@ public partial class Weapon
 		if (_cooldown > 0 || _charging) return;
 		if (!_form.IsWolf || !_form.CanAttack) return;
 
+		// No chão, o salto espera a recarga; no ar, o bote é outra
+		// habilidade e sai sempre.
 		if (_body.IsOnFloor())
+		{
+			if (!PounceReady) return;
 			BeginCharge();
+		}
 		else
 			Leap();
 	}
@@ -73,6 +78,27 @@ public partial class Weapon
 
 	/// <summary>Carga do salto, de 0 a 1. É o que a barra de força mostra.</summary>
 	public float PounceCharge => _charging ? CombatRules.ChargePower(_chargeTime, PounceChargeTime) : 0f;
+
+	/// <summary>Onde os pés do lobo pousam se soltar agora: o mesmo plano
+	/// do salto de verdade (<see cref="PlanPounce"/>) — a carga dá a
+	/// distância, a mira a direção, e o mapa o resto: em cima do caixote
+	/// ou do teto que o arco alcança, ou antes do muro que ele não passa.
+	/// Null fora da carga. É o que a mira no chão mostra
+	/// (<see cref="PounceAim"/>).</summary>
+	public Vector3? PounceLanding
+	{
+		get
+		{
+			if (!IsChargingPounce) return null;
+
+			Vector3 direction = PounceDirection();
+			float distance = PounceReach(PounceCharge);
+			PlanPounce(ref distance, direction, out float land, out _);
+
+			float halfHeight = -((_body as Player)?.FeetOffset ?? -0.875f);
+			return _body.GlobalPosition + Vector3.Down * halfHeight + direction * distance + Vector3.Up * land;
+		}
+	}
 
 	/// <summary>Começa a carregar: o lobo agacha (o começo do clipe do
 	/// salto) e fica preso até soltar.</summary>
@@ -107,6 +133,8 @@ public partial class Weapon
 			to.Y = 0;
 			if (to.LengthSquared() > 0.0001f) _botAim = to.Normalized();
 		}
+		
+		if (!PounceReady) return false;
 
 		BeginCharge();
 		_chargeTime = Mathf.Clamp(power, 0f, 1f) * PounceChargeTime;
@@ -154,6 +182,7 @@ public partial class Weapon
 	/// dele corre durante a carga): o resto do golpe conta daqui.</param>
 	private void Pounce(float power, float elapsed)
 	{
+		StartPounceRecharge();
 		_comboIndex = 0;
 		_attackQueued = false;
 		_rootLeft = WolfMoves.Duration(WolfMove.Pounce) - elapsed;
@@ -169,25 +198,82 @@ public partial class Weapon
 		// mirado — salto que muda sozinho conforme quem está na frente é
 		// vantagem que o jogador não controla.
 		var (delay, duration, _) = WolfMoves.StepOf(WolfMove.Pounce);
-		_pounceRange = CombatRules.PounceRange(PounceMinDistance, PounceMaxDistance, power);
+		_pounceRange = PounceReach(power);
 		_pounceDir = PounceDirection();
 		After(Mathf.Max(delay - elapsed, 0f), id, () => BeginPounceFlight(duration));
 	}
 
 	private Vector3 _pounceDir = Vector3.Forward;
 	private bool _pounceFlew;
+	
+		/// <summary>Onde a mira (o centro da tela) toca o mapa, dentro do alcance
+	/// do salto: é onde o lobo quer cair. Null se o jogador não mira em
+	/// nada ao alcance (céu, longe demais), se é um bot, ou se o ponto fica
+	/// atrás do lobo (olhando quase reto para baixo), ou se a mira toca uma
+	/// parede em pé — aí vale a carga e a direção da câmera, como antes.</summary>
+	public Vector3? PounceAimPoint
+	{
+		get
+		{
+			if (_botAim != null || (_body as Player)?.AimCamera is not Camera3D camera) return null;
+
+			Vector3 forward = -camera.GlobalBasis.Z;
+			Vector3 from = camera.GlobalPosition;
+			var query = PhysicsRayQueryParameters3D.Create(from, from + forward * (PounceMaxDistance + 8f), 1);
+			query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+			var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
+			if (hit.Count == 0) return null;
+
+			// Só vale onde dá para pousar: chão, topo de caixote, teto. Mirar
+			// numa parede em pé não é pedir para cair nela — vale a carga,
+			// e o salto passa por cima do que for baixo ou para antes do
+			// que for alto.
+			if (((Vector3)hit["normal"]).Y < 0.5f) return null;
+
+			Vector3 point = (Vector3)hit["position"];
+			Vector3 flat = point - _body.GlobalPosition;
+			flat.Y = 0;
+			Vector3 look = forward with { Y = 0 };
+			if (flat.Length() > PounceMaxDistance + 1f) return null;
+			if (look.LengthSquared() > 0.0001f && flat.Dot(look.Normalized()) < 0.3f) return null;
+			return point;
+		}
+	}
+
+	/// <summary>Até onde o salto vai: o ponto mirado, limitado pelo que a
+	/// carga alcança (<see cref="CombatRules.PounceRange"/>). Sem ponto
+	/// mirado, é só o que a carga alcança.</summary>
+	private float PounceReach(float charge)
+	{
+		float reach = CombatRules.PounceRange(PounceMinDistance, PounceMaxDistance, charge);
+		if (PounceAimPoint is not Vector3 aim) return reach;
+
+		Vector3 flat = aim - _body.GlobalPosition;
+		flat.Y = 0;
+		return Mathf.Clamp(flat.Length(), 0.5f, reach);
+	}
 
 	/// <summary>Para onde o salto vai, no chão: a direção da câmera do
 	/// próprio jogador (<see cref="Player.AimCamera"/>), não a da câmera que
 	/// estiver na tela; o bot, para o alvo; sem nenhuma, para a frente do
 	/// corpo.</summary>
+	
 	private Vector3 PounceDirection()
 	{
 		Vector3 direction = _botAim
 			?? ((_body as Player)?.AimCamera is Camera3D camera
 				? -camera.GlobalBasis.Z
 				: -_body.GlobalTransform.Basis.Z);
-
+				
+		// Com ponto de queda mirado, o salto vai do lobo até ele, e não na
+		// direção da câmera: assim cai onde a mira está, e não ao lado.
+		if (PounceAimPoint is Vector3 aim)
+		{
+			Vector3 flat = aim - _body.GlobalPosition;
+			flat.Y = 0;
+			if (flat.LengthSquared() > 0.09f) direction = flat;
+		}
+		
 		direction.Y = 0;
 		if (direction.LengthSquared() < 0.0001f) direction = -_body.GlobalTransform.Basis.Z with { Y = 0 };
 		if (direction.LengthSquared() < 0.0001f) direction = Vector3.Forward;

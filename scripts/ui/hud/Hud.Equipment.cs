@@ -25,7 +25,8 @@ public partial class Hud
 	private readonly float[] _cooldownTotal = { 1, 1, 1 };
 	private ProgressBar _howlBar;
 	private Label _howlLabel;
-
+	private AbilityTile _pounceTile;
+		
 	private void OnWpChanged(float wp, float max)
 	{
 		if (_wp == null) return;
@@ -109,8 +110,9 @@ public partial class Hud
 			_cooldownLeft[i] = Mathf.Max(0, _cooldownLeft[i] - delta);
 			_cooldownBars[i].Value = 1f - _cooldownLeft[i] / _cooldownTotal[i];
 		}
-
+		_pounceTile.SetState(_weapon.PounceRechargeLeft, _weapon.PounceRechargeTotal);
 		float howl = _player?.HowlProgress ?? 0f;
+		
 		_howlBar.Value = howl;
 		_howlLabel.Text = howl > 0 ? "SEGURE R · ESCUDO NO FIM" : "UIVO · SEGURE R";
 	}

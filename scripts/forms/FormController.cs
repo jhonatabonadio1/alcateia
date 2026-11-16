@@ -63,7 +63,11 @@ public partial class FormController : Node
 	/// assistência, e só. Pagar por dano fazia spray em parede render WP.</summary>
 	[Export] public float WpPerDamageDealt = 0f;
 
-	[Export] public float HumanHp = 200f;
+	/// <summary>A vida de todo mundo, antes do personagem (CharacterSkin
+	/// .HpMultiplier). A interface lê daqui para mostrar a do personagem.</summary>
+	public const float DefaultHumanHp = 200f;
+
+	[Export] public float HumanHp = DefaultHumanHp;
 
 	/// <summary>Duração de cada transição. Curta o bastante para ser
 	/// um gesto, longa o bastante para o inimigo reagir.</summary>

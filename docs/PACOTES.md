@@ -125,9 +125,9 @@ cena espera): `Animations_Assault_Rifle.blend` (as ações, com um
 marcador `END_…` no fim de cada uma), `RIG_Manny.blend` (rig, braços e
 câmera) e `RIG_AssaultRifle.blend` (o fuzil). Sem o último, o fuzil vem
 de `SK_AssaultRifle.fbx` e `SM_AssaultRifle_Magazine.fbx` (o mesmo
-esqueleto). A textura do fuzil (`T_AssaultRifle_D.png`) não veio: os
-`.blend` apontam para a pasta do autor do pacote; sem ela o fuzil sai
-cinza.
+esqueleto). A textura do fuzil (`T_AssaultRifle_D.png`) não veio no pacote (os
+`.blend` apontam para a pasta do autor): o Jhon a pôs em
+`assets/armas/ar15/`, e o script a procura lá quando falta no pacote.
 
     python3 tools/armas/blender/infima.py
 

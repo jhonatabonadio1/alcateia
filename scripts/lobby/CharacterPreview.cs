@@ -10,7 +10,8 @@ using Godot;
 /// gira o modelo.
 ///
 /// Os mesmos corpos da partida: o soldado do time azul (Exo Gray) e o
-/// lobo (Mutant), cada um com o seu clipe de parado.
+/// lobo (Mutant), cada um com o seu clipe de parado — ou os de um
+/// personagem (HumanModel, WolfModel), no detalhe do inventário.
 /// </summary>
 public partial class CharacterPreview : SubViewportContainer
 {
@@ -19,6 +20,11 @@ public partial class CharacterPreview : SubViewportContainer
 	private const string HumanIdle = "res://assets/characters/human/idle_rifle.fbx";
 	private const string WolfPath = "res://assets/characters/wolf/mutant.fbx";
 	private const string WolfIdle = "res://assets/characters/wolf/idle.fbx";
+
+	/// <summary>Outro humano e outro lobo (um CharacterSkin). Antes de
+	/// entrar na árvore.</summary>
+	public string HumanModel { get; set; }
+	public string WolfModel { get; set; }
 
 	private SubViewport _viewport;
 	private Node3D _pivot;
@@ -79,8 +85,11 @@ public partial class CharacterPreview : SubViewportContainer
 		_pivot = new Node3D();
 		_viewport.AddChild(_pivot);
 
-		_human = Load(ResourceLoader.Exists(HumanPath) ? HumanPath : HumanFallback, HumanIdle, 1f);
-		_wolfModel = Load(WolfPath, WolfIdle, 1.0f, refit: true);
+		string human = !string.IsNullOrEmpty(HumanModel) && ResourceLoader.Exists(HumanModel) ? HumanModel
+			: ResourceLoader.Exists(HumanPath) ? HumanPath : HumanFallback;
+		string wolf = !string.IsNullOrEmpty(WolfModel) && ResourceLoader.Exists(WolfModel) ? WolfModel : WolfPath;
+		_human = Load(human, HumanIdle, 1f);
+		_wolfModel = Load(wolf, WolfIdle, 1.0f, refit: true);
 
 		ShowForm();
 	}

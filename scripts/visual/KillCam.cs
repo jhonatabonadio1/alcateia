@@ -163,6 +163,9 @@ public partial class KillCam : Node3D
 		foreach (Node node in _killer.FindChildren("*", nameof(MeshInstance3D), true, false))
 		{
 			if (node is not MeshInstance3D mesh || _marked.ContainsKey(mesh)) continue;
+			// O brilho do ombro já é vermelho e é um quadrado montado no
+			// shader: com a silhueta por cima virava um quadrado vermelho.
+			if (mesh.IsInGroup(EnemyMarks.MarkGroup)) continue;
 			_marked[mesh] = mesh.MaterialOverlay;
 			mesh.MaterialOverlay = Silhouette.Killer;
 		}

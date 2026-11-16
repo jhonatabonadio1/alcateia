@@ -38,3 +38,6 @@ assets/pacotes/
 
 # Pasta de troca de arquivos com o Claude (pacotes e bundles): não versionar.
 .synctmp/
+
+# Medidas locais do tools/medir_lobo.sh
+.medidas/

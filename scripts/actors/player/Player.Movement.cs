@@ -125,9 +125,23 @@ public partial class Player
 
 	/// <summary>A corrida de quatro do lobo: W duas vezes seguidas e ele
 	/// cai nas quatro patas, isto mais rápido que a corrida normal
-	/// (decisão do Jhon, v0.27.1: 30%; foi 15% na primeira versão). Soltou o W, volta a correr em pé.
+	/// (decisão do Jhon: 1,3 na v0.27.1; 15% a mais em 15/11, 1,495 — o
+	/// Run_Quad toca a ~1,58×). Soltou o W, volta a correr em pé.
 	/// Agachar corta. Na parede não soma: a parede tem a velocidade dela.</summary>
-	[Export] public float WolfSprintFactor = 1.3f;
+	[Export] public float WolfSprintFactor = 1.495f;
+
+	/// <summary>De lobo, andando para trás: × a velocidade normal (pedido
+	/// do Jhon, 15/11: recuar costuma ser mais lento que avançar, e recuar
+	/// batendo na velocidade de quem persegue deixava o lobo intocável).
+	/// Na diagonal de trás vale em parte, pela fração do passo que é para
+	/// trás. O humano não muda.</summary>
+	[Export] public float WolfBackFactor = 0.75f;
+
+	/// <summary>De lobo, carregando o salto: × a velocidade normal. Anda
+	/// agachado, devagar, à espreita (pedido do Jhon, 15/11: posicionar o
+	/// salto andando; 16/11: mais devagar). 0,91 m/s no Bruto, a passada do
+	/// Charge_Walk.</summary>
+	[Export] public float WolfChargeMoveFactor = 0.234f;
 
 	/// <summary>Tempo máximo entre os dois toques no W, em segundos.</summary>
 	[Export] public float DoubleTapWindow = 0.3f;
@@ -200,10 +214,16 @@ public partial class Player
 			_animator?.Jump();
 		}
 
-		Vector2 input = _intent.Move;
+		// Rugindo no chão o lobo fica preso no lugar: o rugido é de corpo
+		// inteiro, ele para para rugir (Jhon, 15/11). No ar ruge também, e o
+		// corpo segue o pulo para a frente como vinha até pousar (16/11).
+		Vector2 input = _howling && IsOnFloor() ? Vector2.Zero : _intent.Move;
 		Vector3 direction = (Transform.Basis * new Vector3(input.X, 0, input.Y)).Normalized();
 		float speed = HumanSpeed * SpeedScale;
 		if (_sprinting) speed *= WolfSprintFactor;
+		if (_weapon.IsChargingPounce) speed *= WolfChargeMoveFactor;
+		if (_form.IsWolf && input.Y > 0f)
+			speed *= Mathf.Lerp(1f, WolfBackFactor, input.Y / Mathf.Max(input.Length(), 0.001f));
 		if (_wolfJump) speed *= WolfJumpCarry;
 
 		bool grounded = IsOnFloor();

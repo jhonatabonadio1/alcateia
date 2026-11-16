@@ -32,7 +32,7 @@ using System.Collections.Generic;
 /// | sprint | Run_Quad | corrida de quatro, a 1× |
 /// | claw / heavy | Attack_Primary / Attack_Secondary | as garradas, da cintura para cima |
 /// | pounce, dive, dive_land | Special_Attack, em trechos | salto (direito no chão); bote (direito no ar) e o pouso dele |
-/// | howl | Howl | uivando (R), da cintura para cima |
+/// | howl | Howl | uivando (R), de corpo inteiro: o lobo para para rugir |
 /// | jump_start, jump_air, jump_land | Jump_Start / Jump_Air / Jump_Land | o impulso ao sair do chão pulando, o voo e o pouso devagar |
 /// | wallrun | Running Crawl (Mixamo) | correndo na parede, de barriga para ela |
 /// | death | mutant dying (Mixamo) | morreu de lobo |
@@ -175,7 +175,8 @@ public partial class WolfVisual : Node3D
 			&& (bool)_tree.Get("parameters/JumpLand/active"))
 			_tree.Set("parameters/JumpLand/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
 
-		// O rugido vai por cima do andar, uma vez, na velocidade de
+		// O rugido é de corpo inteiro (o lobo fica parado para rugir,
+		// decisão do Jhon, 15/11), uma vez, na velocidade de
 		// WolfMoves: acaba junto com o escudo voltando. Soltou R antes,
 		// ele sai.
 		bool howling = IsHowling();

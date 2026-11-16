@@ -17,6 +17,9 @@ using System.Linq;
 /// Esquerda, aba LOBO: a classe e as duas tatuagens. Humano e lobo nunca
 /// na mesma tela: o lobo tem lugares que o humano não tem.
 ///
+/// Esquerda, aba PERSONAGEM: o personagem de cada time. Humano e lobo
+/// vêm juntos (CharacterSkin), então é um lugar só por time.
+///
 /// Direita: os itens em cartões, com abas em dois níveis, e o painel de
 /// detalhe com Equipar, Renovar e Descartar.
 /// </summary>
@@ -24,18 +27,19 @@ public partial class InventoryScreen : LobbyScreen
 {
 	public override IconKind NavIcon => IconKind.Inventory;
 
-	private static int _side;          // 0 humano, 1 lobo
+	private static int _side;          // 0 humano, 1 lobo, 2 personagem
 	private static int _setIndex = 1;  // conjunto aberto
 	private static int _top;           // aba de 1º nível
 	private static int _sub;           // aba de 2º nível
 
 	private string _selectedId;
 
-	private static readonly string[] TopTabs = { "Armas", "Lobo", "Especial" };
+	private static readonly string[] TopTabs = { "Armas", "Lobo", "Personagens", "Especial" };
 	private static readonly string[][] SubTabs =
 	{
 		new[] { "Todas", "Primária", "Secundária", "Granada", "Corpo a corpo" },
 		new[] { "Tatuagens", "Classes" },
+		new[] { "Todos" },
 		new[] { "Todos" }
 	};
 
@@ -46,9 +50,15 @@ public partial class InventoryScreen : LobbyScreen
 		_selectedId = focus;
 		CatalogItem item = Catalog.Get(focus);
 		if (item == null) return;
-		_top = item.Kind is ItemKind.Tattoo or ItemKind.Breed ? 1 : item.Kind == ItemKind.Service ? 2 : 0;
+		_top = item.Kind switch
+		{
+			ItemKind.Tattoo or ItemKind.Breed => 1,
+			ItemKind.Character => 2,
+			ItemKind.Service => 3,
+			_ => 0
+		};
 		_sub = 0;
-		if (_top == 1) _side = 1;
+		if (_top is 1 or 2) _side = _top;
 	}
 
 	private LoadoutSet CurrentSet => Profile.Sets[Mathf.Clamp(_setIndex, 0, Profile.Sets.Count - 1)];
@@ -72,11 +82,12 @@ public partial class InventoryScreen : LobbyScreen
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
 		head.AddChild(UiKit.Text("Equipado", "Subtitle"));
 		head.AddChild(UiKit.Spacer());
-		head.AddChild(Tabs.Make(new[] { "Humano", "Lobo" }, _side, i => { _side = i; Refresh(); }));
+		head.AddChild(Tabs.Make(new[] { "Humano", "Lobo", "Personagem" }, _side, i => { _side = i; Refresh(); }));
 		column.AddChild(head);
 
 		if (_side == 0) HumanSide(column);
-		else WolfSide(column);
+		else if (_side == 1) WolfSide(column);
+		else CharacterSide(column);
 
 		return panel;
 	}
@@ -197,9 +208,27 @@ public partial class InventoryScreen : LobbyScreen
 			"Tudo do lobo se compra com Presas, nunca com dinheiro."));
 	}
 
+	private void CharacterSide(VBoxContainer column)
+	{
+		foreach (int team in new[] { Teams.Blue, Teams.Orange })
+		{
+			column.AddChild(UiKit.Caption($"Time {Teams.TitleOf(team).ToLowerInvariant()}"));
+			CatalogItem item = Catalog.Get(Profile.CharacterIdFor(team));
+			string standard = team == Teams.Blue ? "Padrão (Exo Gray)" : "Padrão (Ely)";
+			column.AddChild(SlotRow("Personagem", item, () => Filter(2, 0),
+				item == null ? null : () => { Profile.ClearCharacter(team); Refresh(); }, emptyName: standard));
+			column.AddChild(UiKit.Gap(UiTokens.S2));
+		}
+
+		column.AddChild(UiKit.Spacer());
+		column.AddChild(UiKit.Paragraph(
+			"O personagem vale no time dele, com o lobo dele: escolheu a pessoa, transforma no lobo dela. " +
+			"Sem personagem, o time usa o de sempre."));
+	}
+
 	/// <summary>Um lugar do conjunto: arte pequena, nome, tipo e custo.
 	/// Clicar filtra a grade da direita para o que cabe ali.</summary>
-	private Control SlotRow(string slot, CatalogItem item, Action browse, Action remove, bool fixedSlot = false)
+	private Control SlotRow(string slot, CatalogItem item, Action browse, Action remove, bool fixedSlot = false, string emptyName = "Vazio")
 	{
 		var row = new PanelContainer
 		{
@@ -242,7 +271,7 @@ public partial class InventoryScreen : LobbyScreen
 		text.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 		text.MouseFilter = MouseFilterEnum.Ignore;
 		text.AddChild(UiKit.Caption(slot));
-		Label name = UiKit.Truncated(item?.Name ?? "Vazio", null, item == null ? UiTokens.TextDisabled : UiTokens.TextPrimary);
+		Label name = UiKit.Truncated(item?.Name ?? emptyName, null, item == null ? UiTokens.TextDisabled : UiTokens.TextPrimary);
 		name.AddThemeFontOverride("font", UiFonts.SemiBold);
 		text.AddChild(name);
 		line.AddChild(text);
@@ -331,6 +360,7 @@ public partial class InventoryScreen : LobbyScreen
 			(0, _) => owned.Where(i => i.Kind is ItemKind.Weapon or ItemKind.Utility),
 			(1, 0) => owned.Where(i => i.Kind == ItemKind.Tattoo),
 			(1, _) => owned.Where(i => i.Kind == ItemKind.Breed),
+			(2, _) => owned.Where(i => i.Kind == ItemKind.Character),
 			_ => owned.Where(i => i.Kind == ItemKind.Service)
 		};
 	}
@@ -359,6 +389,8 @@ public partial class InventoryScreen : LobbyScreen
 		if (ItemInfo.IsPrimary(item)) return Catalog.Get(CurrentSet.Primary);
 		if (ItemInfo.IsSecondary(item)) return Catalog.Get(CurrentSet.Secondary);
 		if (item.Kind == ItemKind.Breed) return Catalog.Get(Profile.Breed);
+		if (item.Kind == ItemKind.Character)
+			return Catalog.Get(Profile.CharacterIdFor(item.Team == 0 ? Teams.Orange : item.Team));
 		return null;
 	}
 
@@ -391,6 +423,7 @@ public partial class InventoryScreen : LobbyScreen
 	{
 		ItemKind.Tattoo => Profile.Tattoos.Contains(item.Id) ? "Equipada" : "Equipar tatuagem",
 		ItemKind.Breed => Profile.Breed == item.Id ? "Classe em uso" : "Usar esta classe",
+		ItemKind.Character => IsEquippedHere(item) ? $"Em uso no {TeamLabel(item)}" : $"Usar no {TeamLabel(item)}",
 		ItemKind.Service => "Usar",
 		_ => IsEquippedHere(item) ? $"Equipada em {CurrentSet.Name}" : $"Equipar em {CurrentSet.Name}"
 	};
@@ -399,6 +432,8 @@ public partial class InventoryScreen : LobbyScreen
 	{
 		ItemKind.Tattoo => Profile.Tattoos.Contains(item.Id),
 		ItemKind.Breed => Profile.Breed == item.Id,
+		ItemKind.Character => (item.Team is 0 or Teams.Blue ? Profile.BlueCharacter == item.Id : true)
+			&& (item.Team is 0 or Teams.Orange ? Profile.OrangeCharacter == item.Id : true),
 		ItemKind.Service => false,
 		_ => CurrentSet.Primary == item.Id || CurrentSet.Secondary == item.Id || CurrentSet.Utilities.Contains(item.Id)
 	};
@@ -417,6 +452,11 @@ public partial class InventoryScreen : LobbyScreen
 				Shell.Toast($"Classe {item.Name} em uso");
 				break;
 
+			case ItemKind.Character:
+				if (!Profile.SetCharacter(item.Id, out string why)) { Shell.Toast(why, UiTokens.Danger); return; }
+				Shell.Toast($"{item.Name} em uso no {TeamLabel(item)}");
+				break;
+
 			case ItemKind.Service:
 				Shell.GoProfile();
 				return;
@@ -428,6 +468,9 @@ public partial class InventoryScreen : LobbyScreen
 
 		Refresh();
 	}
+
+	private static string TeamLabel(CatalogItem item) =>
+		item.Team == 0 ? "azul e no laranja" : $"time {Teams.TitleOf(item.Team).ToLowerInvariant()}";
 
 	private bool EquipInSet(CatalogItem item)
 	{

@@ -12,7 +12,7 @@ public partial class WolfVisual
 	/// <summary>Até que velocidade (m/s) o corpo só anda, e a partir de qual
 	/// só corre. Entre as duas, andar e correr se misturam — e nenhuma
 	/// velocidade do jogo fica nessa faixa, só se passa por ela: os dois
-	/// clipes têm ciclos de tamanhos diferentes (1,43 s e 0,87 s), e
+	/// clipes têm ciclos de tamanhos diferentes (0,67 s e 0,87 s), e
 	/// misturados o pé de um puxa o do outro e patina. Agachado (1,7 a
 	/// 1,85 m/s) o lobo só anda.</summary>
 	[ExportGroup("Locomoção")]
@@ -61,29 +61,38 @@ public partial class WolfVisual
 	/// limite do que fica natural é a passada: correr além de ~1,6× fica
 	/// corrido, e por isso o lobo anda a 3,6 m/s (decisão do Jhon).</summary>
 	///
-	/// Com os andares do Jhon (Walk_Forward, 1,43 s por ciclo) a de andar
-	/// para a frente é a do pé dele: o lobo não tem corrida em pé, então o
-	/// andar acelera até a velocidade do corpo (a 4,15 m/s toca a ~3×, pedido
-	/// do Jhon) e o pé não desliza. Varrida no teste de patinação a 4,15
-	/// m/s: 0,68 m/s de patinação em 1,2, o mínimo (0,17) em 1,4, 0,38 em
-	/// 1,5. RunClipSpeed é a do "mutant run", só sem os andares dele.</summary>
-	[Export] public float WalkClipSpeed = 1.4f;
+	/// Com os andares do Jhon (15/11 à noite: Walk_Forward é um trote curvado de
+	/// 0,67 s por ciclo, feito na velocidade do jogo) a de andar para a
+	/// frente é a do pé dele: o pé de apoio anda 3,50 m/s no arquivo, vezes
+	/// 1,13 (a razão entre o corpo do jogo e o do arquivo, tirada da corrida
+	/// de quatro: 3,50 no arquivo, 3,95 varrida aqui). O Bruto (3,89 m/s)
+	/// toca o clipe a ~1× e o Ligeiro (4,22) a ~1,07×; antes o andar de
+	/// 1,43 s tocava a ~3×. Varrida no teste de patinação a 4,15 m/s e a
+	/// conta fechou: 0,26 m/s de patinação em 3,75, 0,21 em 3,85, o mínimo
+	/// (0,13) em 3,95, 0,17 em 4,0, 0,28 em 4,15. RunClipSpeed é a do
+	/// "mutant run", só sem os andares dele.</summary>
+	[Export] public float WalkClipSpeed = 3.95f;
 	[Export] public float RunClipSpeed = 2.42f;
 
-	/// <summary>A passada do andar para trás (Walk_Backward, 1,43 s) e de
-	/// lado (Walk_Left e Walk_Right, 0,6 s), em m/s: o mesmo que
-	/// <see cref="WalkClipSpeed"/>, na direção de cada um. Mínimos da
-	/// varrida a 4,15 m/s: para trás 0,18 m/s de patinação em 1,0 (0,78 em
-	/// 0,85; 0,55 em 1,15); de lado 0,50 em 0,75 (1,13 em 0,65; 0,62 em
-	/// 0,85). De lado o clipe toca a 5,5×: um ciclo a cada 0,11 s.</summary>
-	[Export] public float WalkBackClipSpeed = 1.0f;
-	[Export] public float WalkSideClipSpeed = 0.75f;
+	/// <summary>A passada do andar para trás (Walk_Backward) e de lado
+	/// (Walk_Left e Walk_Right), em m/s: o mesmo que
+	/// <see cref="WalkClipSpeed"/>, na direção de cada um. Os três saem do
+	/// trote de frente (mesmo ciclo de 0,67 s, mesmo pé na mesma hora): para
+	/// trás o pé de apoio anda 3,20 m/s no arquivo e de lado 3,30, vezes
+	/// 1,13. Tocam entre 1,04× e 1,17× (de lado o antigo tocava a 5,5×).
+	/// Varridas a 4,15 m/s: para trás 0,37 m/s de patinação em 3,45, o
+	/// mínimo (0,22) em 3,6, 0,31 em 3,72; de lado 0,31 em 3,5, o mínimo
+	/// (0,14) em 3,75, 0,24 em 3,9.</summary>
+	[Export] public float WalkBackClipSpeed = 3.6f;
+	[Export] public float WalkSideClipSpeed = 3.75f;
 
 	/// <summary>A passada do andar agachado, em m/s (o Crouch_Walk do
-	/// Jhon, 1,33 s por ciclo; sem ele, o "Running Crawl" do Mixamo, que
-	/// pedia 2,9). Varrida a 1,87 m/s: 0,52 m/s de patinação em 0,9, o
-	/// mínimo (0,25) em 1,05, 0,41 em 1,2.</summary>
-	[Export] public float CrawlClipSpeed = 1.05f;
+	/// Jhon, 1,0 s por ciclo desde 15/11 à noite; sem ele, o "Running Crawl" do
+	/// Mixamo, que pedia 2,9): 1,42 m/s no arquivo, vezes 1,13. Agachado
+	/// (1,75 a 1,90 m/s) toca a 1,1× a 1,2×; o de 1,33 s tocava a 1,8×.
+	/// Varrida: 0,38 m/s de patinação em 1,45, 0,34 em 1,52, perto de 0,2
+	/// de 1,58 a 1,65, 0,34 em 1,75.</summary>
+	[Export] public float CrawlClipSpeed = 1.62f;
 
 	/// <summary>A passada da corrida de quatro (o Run_Quad do Jhon, ciclo
 	/// de 0,6 s), em m/s: a velocidade em que o pé não desliza com o clipe
@@ -150,7 +159,14 @@ public partial class WolfVisual
 		_speed = speed;
 
 		bool onWall = _player != null && _player.IsWallRunning;
-		bool aiming = onWall || _weapon.IsStriking || _weapon.IsChargingPounce || _weapon.IsRooted
+		// Carregando o salto o corpo vira para onde anda e, parando, fica
+		// como está (voltar para a mira arrastava os pés); o salto sai para a
+		// câmera, e ao soltar o corpo vira para ela.
+		// (A carga conta como golpe em curso e prende o corpo na arma: daí
+		// o "!charging" nos dois, senão andando de lado o corpo ficava
+		// virado para a mira e o engatinhar patinava 2,6 m/s.)
+		bool charging = _weapon.IsChargingPounce;
+		bool aiming = onWall || (_weapon.IsStriking && !charging) || (_weapon.IsRooted && !charging)
 			|| _weapon.IsPounceFlying || _weapon.IsDiving;
 
 		// Parado, fica virado para onde parou: girar de volta para a mira
@@ -159,7 +175,7 @@ public partial class WolfVisual
 		// Agachado ou de quatro, só há clipe para a frente: o corpo vira
 		// para onde anda. Em pé, com os quatro andares, fica de frente para
 		// a mira e o passo escolhe a direção.
-		bool crouching = (_player?.IsCrouching ?? false) && !onWall;
+		bool crouching = ((_player?.IsCrouching ?? false) || _weapon.IsChargingPounce) && !onWall;
 		bool sprinting = (_player?.IsSprinting ?? false) && !onWall;
 		bool directional = Directional && !crouching && !sprinting;
 
@@ -224,6 +240,7 @@ public partial class WolfVisual
 		float cadence = AnimRate(Mathf.Clamp(speed / Mathf.Max(stride, 0.01f), 0f, MaxRate) * sign, WalkAnimScale);
 		float crawl = Mathf.Clamp(speed / Mathf.Max(CrawlClipSpeed, 0.01f), 0f, MaxRate) * sign;
 		if (sprinting) crawl = AnimRate(crawl, SprintAnimScale);
+		_crawlRate = crawl;
 
 		// A corrida de quatro acompanha o corpo, como o andar: a 5,4 m/s
 		// toca a 1,3× e o pé não desliza.
@@ -254,6 +271,10 @@ public partial class WolfVisual
 
 	private float _crouch;
 
+	/// <summary>Ritmo do engatinhar neste quadro (com o sinal: negativo é
+	/// para trás). O andar da carga do salto usa o mesmo.</summary>
+	private float _crawlRate;
+
 	/// <summary>Quanto está na corrida de quatro (o clipe dela).</summary>
 	private float _sprint;
 
@@ -270,8 +291,9 @@ public partial class WolfVisual
 		_blend = new Vector2(0, 1);
 	}
 
-	/// <summary>Até quantas vezes o clipe acelera para acompanhar o corpo:
-	/// o andar de lado (0,71 m/s) a 4,15 m/s pede 5,8×.</summary>
+	/// <summary>Até quantas vezes o clipe acelera para acompanhar o corpo.
+	/// Com os andares de 15/11 à noite nenhum passa de ~1,4×; a folga fica para
+	/// velocidades fora do comum (empurrão, queda de bote).</summary>
 	private const float MaxRate = 8f;
 
 	/// <summary>Direção do passo em pé: 0 frente, 1 direita, 2 trás, 3

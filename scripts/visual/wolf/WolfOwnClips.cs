@@ -35,6 +35,8 @@ public static class WolfOwnClips
 		["claw"] = "Attack_Primary",
 		["heavy"] = "Attack_Secondary",
 		["howl"] = "Howl",
+		["breath_add"] = "Breath_Add",
+		["charge_walk"] = "Charge_Walk",
 		["leap"] = "Special_Attack",
 		["jump_start"] = "Jump_Start",
 		["jump_air"] = "Jump_Air",

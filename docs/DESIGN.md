@@ -1351,11 +1351,15 @@ Jhon): no centro de baixo, você à esquerda e o outro à direita, com a
 patente, o nome e **quantas vezes cada um matou o outro nesta
 partida**; no meio, o que aconteceu, a arma e a distância. Some em 4 s.
 
-**Inimigo tem a borda levemente vermelha** (`EnemyMarks`, decisão do
-Jhon), para separar de aliado à primeira vista. É a mesma marca do
-matador, mais fraca e **com** teste de profundidade: só onde você já
-vê o inimigo. Através de parede seria ver quem está escondido — isso
-fica só para o matador, e só enquanto você está morto (`Silhouette`).
+**Inimigo tem um brilho vermelho no ombro esquerdo** (`EnemyMarks` e
+`ShoulderMark`, decisão do Jhon, 15/11), para separar de aliado à
+primeira vista. Até então era uma borda vermelha no corpo inteiro. O
+brilho é preso ao osso do braço (segue a animação, no humano e no lobo),
+pulsa de leve e tem teste de profundidade: só onde você já vê o
+inimigo, e o ombro de lá some atrás da cabeça visto de lado. Morto, apaga
+na hora. Através de parede seria ver quem está escondido — isso fica só
+para o matador, com a silhueta vermelha, e só enquanto você está morto
+(`Silhouette`).
 
 **A morte começa no quadro da morte.** O "mutant dying" fica parado
 0,43 s antes de cair; tocado inteiro, o lobo morto ficava meio segundo
@@ -1434,6 +1438,23 @@ O `CharacterAnimator` troca o `xbot` da cena pelo personagem do time
 antes de carregar os clipes (`BlueModel`, `OrangeModel`); com
 personagem próprio o corpo não é pintado.
 
+**Personagens escolhidos (16/11).** Além dos de sempre, o jogador pode
+escolher um personagem para cada time no inventário. Cada um é uma pasta
+em `assets/personagens/` com o humano, o lobo e a vida
+(`personagem.tres`); o guia é o `docs/PERSONAGENS.md`. Decisões do Jhon:
+
+- **Humano e lobo vêm juntos.** Quem escolhe a Eve transforma na loba da
+  Eve. Escolher os dois separados deixaria o inimigo sem ligar o lobo à
+  pessoa que estava ali de fuzil.
+- **O personagem é do time.** A Eve só entra no time laranja.
+- **Pode mudar a vida** (`HpMultiplier`, nas duas formas). A Eve tem
+  ×1,1 (220). É vantagem de quem tem o personagem (regra 3): hoje todo
+  personagem vem com o perfil, e o preço fica para a economia decidir.
+  O personagem não mexe na classe de lobo (velocidade, pulo, garra).
+- **Mesma altura dos de sempre** (humano 1,79 m, lobo 1,66 m), porque a
+  cabeça que leva tiro é a do modelo. O teste `Personagens` reprova quem
+  fugir disso.
+
 **Os clipes humanos são do X Bot**, e a trilha do quadril vem em
 metros do corpo dele (quadril a 1,04 m). O Exo Gray (0,96 m) e a Ely
 (0,98 m) têm pernas mais curtas, e com o quadril do X Bot os pés
@@ -1485,7 +1506,7 @@ pelas garras e, de longe, ele parecia flutuar. A câmera fica a 2,5 m
 (era 3,5). **Agachado** toca o `Crouch_Idle` (topo da cabeça a 1,18 m
 do chão; a cápsula agachada tem 1,0 m, então a cabeça sai 18 cm acima —
 o tiro na cabeça segue o modelo). Andando agachado ele **engatinha** no
-`Crouch_Walk`, na velocidade do corpo (`CrawlClipSpeed` 1,05 m/s). **Na
+`Crouch_Walk`, na velocidade do corpo (`CrawlClipSpeed` 1,62 m/s). **Na
 corrida de quatro** (W duas vezes) toca o `Run_Quad` na velocidade do
 corpo, como o andar: a 5,4 m/s, 1,37× e sem patinar (o Jhon pediu o
 clipe um pouco mais rápido e o corpo um pouco mais lento). O som do passo sai

@@ -298,6 +298,22 @@ public partial class Player
 	/// reto da ponta de uma parede fina.</summary>
 	private bool FollowWall(ref Vector3 normal, ref float wallDistance)
 	{
+		// Parede redonda (tonel, tanque, pilar cilíndrico): não tem quina.
+		// A normal gira um pouco a cada quadro e o sentido gira junto, no
+		// plano dela — o lobo dá a volta inteira, sem soltar. Antes a curva
+		// contava como "ponta de parede fina": ele saía reto, caía,
+		// grudava de novo e repetia (Jhon, 15/11, tonel da Estação Polar).
+		if (_wallRound)
+		{
+			Vector3 around = _wallAlong - normal * normal.Dot(_wallAlong);
+			around.Y = 0;
+			if (around.LengthSquared() > 0.04f) _wallAlong = around.Normalized();
+			_wallNormal = normal;
+			_cornerGrace = 0;
+			_rounding = false;
+			return true;
+		}
+
 		// O ponto de parede mais perto ficou para trás: ou a parede
 		// acabou (quina) ou o lobo acabou de virar num canto e a parede
 		// de trás é a antiga. No canto há outra parede ao lado.
@@ -587,6 +603,10 @@ public partial class Player
 	/// </summary>
 	private Rid _wallBody;
 
+	/// <summary>A parede em que a sonda encostou é redonda (cilindro,
+	/// cápsula ou esfera de colisão).</summary>
+	private bool _wallRound;
+
 	private bool ProbeWall(out Vector3 normal, out float distance, bool behind = false)
 	{
 		normal = Vector3.Zero;
@@ -612,7 +632,14 @@ public partial class Player
 
 		var rest = space.GetRestInfo(_wallProbe);
 		if (rest.Count == 0) return false;
-		if (!behind) _wallBody = (Rid)rest["rid"];
+		if (!behind)
+		{
+			_wallBody = (Rid)rest["rid"];
+			Rid shape = PhysicsServer3D.BodyGetShape(_wallBody, (int)rest["shape"]);
+			var type = PhysicsServer3D.ShapeGetType(shape);
+			_wallRound = type == PhysicsServer3D.ShapeType.Cylinder || type == PhysicsServer3D.ShapeType.Capsule
+				|| type == PhysicsServer3D.ShapeType.Sphere;
+		}
 
 		Vector3 away = GlobalPosition - (Vector3)rest["point"];
 		away.Y = 0;

@@ -12,7 +12,7 @@ public partial class WolfVisual
 	/// <summary>Disparos que tomam o corpo inteiro. As garradas ficam só
 	/// no tronco: o "swiping" gira o quadril 90° e terminaria o golpe
 	/// com o lobo de lado, voltando num tranco.</summary>
-	private static bool FullBody(string shot) => shot is "pounce" or "dive" or "dive_land" or "jump_land";
+	private static bool FullBody(string shot) => shot is "pounce" or "dive" or "dive_land" or "jump_land" or "howl";
 
 	/// <summary>Entrada e saída de cada disparo, em segundos. A garrada
 	/// entra seca: a garra chega 0,14 s depois do clique, e uma entrada
@@ -54,8 +54,9 @@ public partial class WolfVisual
 				MaxSpace = new Vector2(1, 1),
 				BlendMode = AnimationNodeBlendSpace2D.BlendModeEnum.Interpolated
 			};
-			// Ciclos de tamanhos diferentes (1,43 s e 0,6 s): sem sync, cada
-			// um no seu ritmo, e a mistura só existe na troca de direção.
+			// Os quatro têm o mesmo ciclo (0,67 s) mas passadas diferentes:
+			// sem sync, cada um no seu ritmo, e a mistura só existe na troca
+			// de direção.
 			directions.Set("sync", false);
 			directions.AddBlendPoint(Clip("walk"), new Vector2(0, 1), -1, "walk");
 			directions.AddBlendPoint(Clip("walk_back"), new Vector2(0, -1), -1, "walk_back");
@@ -212,6 +213,35 @@ public partial class WolfVisual
 			root.ConnectNode(name, 0, last);
 			root.ConnectNode(name, 1, $"{name}Speed");
 			last = name;
+		}
+
+		// Andando com o salto carregado: o Charge_Walk (agachado na pose da
+		// carga, passos curtos) por cima dela, no passo do corpo. Clipe
+		// próprio, fora da locomoção (que está embaixo do salto): soltou, o
+		// salto segue de onde parou.
+		if (Has("charge_walk"))
+		{
+			root.AddNode("ChargeWalkClip", Clip("charge_walk"), Vector2.Zero);
+			root.AddNode("ChargeWalkSpeed", new AnimationNodeTimeScale(), Vector2.Zero);
+			root.AddNode("ChargeWalk", new AnimationNodeBlend2(), Vector2.Zero);
+			root.ConnectNode("ChargeWalkSpeed", 0, "ChargeWalkClip");
+			root.ConnectNode("ChargeWalk", 0, last);
+			root.ConnectNode("ChargeWalk", 1, "ChargeWalkSpeed");
+			last = "ChargeWalk";
+		}
+
+		// Carregando o salto, o lobo fica na pose do fim do agachar e
+		// respira nela: a respiração do Idle_Pose, mais funda, somada por
+		// cima (Breath_Add; só coluna, ombros, braços e cabeça).
+		if (Has("breath_add"))
+		{
+			root.AddNode("ChargeBreathClip", Clip("breath_add"), Vector2.Zero);
+			root.AddNode("ChargeBreathSpeed", new AnimationNodeTimeScale(), Vector2.Zero);
+			root.AddNode("ChargeBreath", new AnimationNodeAdd2(), Vector2.Zero);
+			root.ConnectNode("ChargeBreathSpeed", 0, "ChargeBreathClip");
+			root.ConnectNode("ChargeBreath", 0, last);
+			root.ConnectNode("ChargeBreath", 1, "ChargeBreathSpeed");
+			last = "ChargeBreath";
 		}
 
 		root.ConnectNode("output", 0, last);

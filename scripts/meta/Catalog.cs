@@ -9,6 +9,7 @@ public enum ItemKind
 	Utility,
 	Tattoo,
 	Breed,
+	Character,
 	Service
 }
 
@@ -58,6 +59,10 @@ public sealed class CatalogItem
 	public TattooEffect Tattoo;
 	/// <summary>Classe de lobo: o recurso com as estatísticas.</summary>
 	public string BreedPath;
+	/// <summary>Personagem: a pasta dele em assets/personagens.</summary>
+	public CharacterSkin Character;
+	/// <summary>Time em que o personagem pode ser usado (0 = os dois).</summary>
+	public int Team;
 
 	public bool ForSale => Prices != null && Prices.Any(p => p >= 0);
 
@@ -69,8 +74,10 @@ public sealed class CatalogItem
 
 /// <summary>
 /// Tudo o que existe para possuir: armas, granada, tatuagens, classes de
-/// lobo e serviços. É a fonte única de nome, raridade, patente mínima e
-/// preço — loja, inventário e editor de conjuntos leem daqui.
+/// lobo, personagens e serviços. Os personagens não estão escritos aqui:
+/// cada pasta de assets/personagens vira um item (CharacterSkin). É a
+/// fonte única de nome, raridade, patente mínima e preço — loja,
+/// inventário e editor de conjuntos leem daqui.
 ///
 /// Regra do guia que vale ouro: tudo que afeta o combate se compra com
 /// Presas, a moeda ganha jogando. Sangue (a moeda paga) nunca compra
@@ -87,7 +94,7 @@ public static class Catalog
 
 	public static int Days(Duration d) => DurationDays[(int)d];
 
-	private static readonly List<CatalogItem> _items = new()
+	private static readonly List<CatalogItem> _items = WithCharacters(new()
 	{
 		// ---------------------------------------------------- armas
 		new() { Id = "ar15", Name = "AR-15", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
@@ -156,7 +163,31 @@ public static class Catalog
 		new() { Id = "troca_nome", Name = "Troca de nome", Type = "Serviço", Kind = ItemKind.Service,
 			Rarity = 1, Consumable = true, Prices = new[] { -1, -1, -1, -1, 1500 },
 			Description = "Troca o seu nickname uma vez. O nome é fixo sem este item." }
-	};
+	});
+
+	/// <summary>
+	/// Um item por pasta de personagem, antes dos serviços. Por enquanto
+	/// todo personagem vem com o perfil (Starter): preço de personagem é
+	/// decisão de economia ainda não tomada.
+	/// </summary>
+	private static List<CatalogItem> WithCharacters(List<CatalogItem> items)
+	{
+		int at = items.FindIndex(i => i.Kind == ItemKind.Service);
+		if (at < 0) at = items.Count;
+
+		foreach (CharacterSkin skin in CharacterSkin.All())
+		{
+			string team = skin.Team == Teams.Blue ? "time azul" : skin.Team == Teams.Orange ? "time laranja" : "os dois times";
+			items.Insert(at++, new CatalogItem
+			{
+				Id = skin.Id, Name = skin.DisplayName, Type = $"Personagem · {team}", Kind = ItemKind.Character,
+				Rarity = skin.Rarity, Starter = true, Character = skin, Team = skin.Team,
+				Description = skin.Description
+			});
+		}
+
+		return items;
+	}
 
 	private static readonly Dictionary<string, CatalogItem> _byId = _items.ToDictionary(i => i.Id);
 

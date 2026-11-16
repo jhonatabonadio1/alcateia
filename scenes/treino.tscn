@@ -1,13 +1,13 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene format=3 uid="uid://de8rgto0a61xy"]
 
-[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://6hw2iv1jto2i" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/dummy.tscn" id="2_dummy"]
-[ext_resource type="Script" path="res://scripts/ui/hud/Hud.cs" id="3_hud"]
+[ext_resource type="Script" uid="uid://0gfgihi85g3c" path="res://scripts/ui/hud/Hud.cs" id="3_hud"]
 [ext_resource type="PackedScene" path="res://scenes/bot.tscn" id="4_bot"]
-[ext_resource type="Script" path="res://scripts/ui/DifficultyMenu.cs" id="5_menu"]
-[ext_resource type="Script" path="res://scripts/ui/LoadoutMenu.cs" id="6_loadout"]
-[ext_resource type="Script" path="res://scripts/core/NavBaker.cs" id="11_nav"]
-[ext_resource type="Script" path="res://scripts/visual/WorldAudio.cs" id="20_world_audio"]
+[ext_resource type="Script" uid="uid://crrtpglvllu56" path="res://scripts/ui/DifficultyMenu.cs" id="5_menu"]
+[ext_resource type="Script" uid="uid://ygsj71u1r7j3" path="res://scripts/ui/LoadoutMenu.cs" id="6_loadout"]
+[ext_resource type="Script" uid="uid://cicw4mkcy8ut" path="res://scripts/core/NavBaker.cs" id="11_nav"]
+[ext_resource type="Script" uid="uid://bsusfwiuoh8tk" path="res://scripts/visual/WorldAudio.cs" id="20_world_audio"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
 
@@ -18,7 +18,6 @@ sky_material = SubResource("SkyMaterial_main")
 background_mode = 2
 sky = SubResource("Sky_main")
 ambient_light_source = 3
-ambient_light_energy = 1.0
 tonemap_mode = 2
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
@@ -39,88 +38,88 @@ size = Vector3(24, 8, 1)
 [sub_resource type="BoxMesh" id="BoxMesh_wall"]
 size = Vector3(24, 8, 1)
 
-[node name="Treino" type="Node3D"]
+[node name="Treino" type="Node3D" unique_id=2027669895]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=337624462]
 environment = SubResource("Environment_main")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=52889585]
 transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 10, 0)
 shadow_enabled = true
 
-[node name="Floor" type="StaticBody3D" parent="."]
+[node name="Floor" type="StaticBody3D" parent="." unique_id=410519898]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor" unique_id=1591111106]
 shape = SubResource("BoxShape3D_floor")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor" unique_id=114940229]
 mesh = SubResource("BoxMesh_floor")
 
-[node name="Box" type="StaticBody3D" parent="."]
+[node name="Box" type="StaticBody3D" parent="." unique_id=2062033742]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Box"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Box" unique_id=1534257803]
 shape = SubResource("BoxShape3D_box")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Box"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Box" unique_id=574721860]
 mesh = SubResource("BoxMesh_box")
 
-[node name="Walls" type="Node3D" parent="."]
+[node name="Walls" type="Node3D" parent="." unique_id=1955837748]
 
-[node name="WallLeft" type="StaticBody3D" parent="Walls"]
+[node name="WallLeft" type="StaticBody3D" parent="Walls" unique_id=1682866841]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -6)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/WallLeft"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/WallLeft" unique_id=1889958558]
 shape = SubResource("BoxShape3D_wall")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallLeft"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallLeft" unique_id=487353744]
 mesh = SubResource("BoxMesh_wall")
 
-[node name="WallRight" type="StaticBody3D" parent="Walls"]
+[node name="WallRight" type="StaticBody3D" parent="Walls" unique_id=502336264]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 6)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/WallRight"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/WallRight" unique_id=1487815115]
 shape = SubResource("BoxShape3D_wall")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallRight"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/WallRight" unique_id=122521129]
 mesh = SubResource("BoxMesh_wall")
 
-[node name="NavBaker" type="Node3D" parent="."]
+[node name="NavBaker" type="Node3D" parent="." unique_id=755667616]
 script = ExtResource("11_nav")
 
-[node name="Player" parent="." instance=ExtResource("1_player") groups=["player"]]
+[node name="Player" parent="." unique_id=357245432 groups=["player"] instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
 
-[node name="Dummies" type="Node3D" parent="."]
+[node name="Dummies" type="Node3D" parent="." unique_id=2124546538]
 
-[node name="Dummy" parent="Dummies" instance=ExtResource("2_dummy")]
+[node name="Dummy" parent="Dummies" unique_id=576915029 instance=ExtResource("2_dummy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1, -8)
 
-[node name="Dummy2" parent="Dummies" instance=ExtResource("2_dummy")]
+[node name="Dummy2" parent="Dummies" unique_id=1838241684 instance=ExtResource("2_dummy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1, -10)
 
-[node name="Dummy3" parent="Dummies" instance=ExtResource("2_dummy")]
+[node name="Dummy3" parent="Dummies" unique_id=1358558285 instance=ExtResource("2_dummy")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -14)
 
-[node name="Bots" type="Node3D" parent="."]
+[node name="Bots" type="Node3D" parent="." unique_id=1441900148]
 
-[node name="Bot" parent="Bots" instance=ExtResource("4_bot")]
+[node name="Bot" parent="Bots" unique_id=124650449 instance=ExtResource("4_bot")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, -10)
 
-[node name="Bot2" parent="Bots" instance=ExtResource("4_bot")]
+[node name="Bot2" parent="Bots" unique_id=906108931 instance=ExtResource("4_bot")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1, -12)
 
-[node name="Menu" type="CanvasLayer" parent="."]
+[node name="Menu" type="CanvasLayer" parent="." unique_id=1814463675]
 layer = 10
 script = ExtResource("5_menu")
 
-[node name="LoadoutMenu" type="CanvasLayer" parent="."]
+[node name="LoadoutMenu" type="CanvasLayer" parent="." unique_id=1094840478]
 layer = 9
 script = ExtResource("6_loadout")
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=759283450]
 script = ExtResource("3_hud")
 
-[node name="WorldAudio" type="Node" parent="."]
+[node name="WorldAudio" type="Node" parent="." unique_id=388822528]
 script = ExtResource("20_world_audio")

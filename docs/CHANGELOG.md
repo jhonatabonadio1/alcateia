@@ -2,6 +2,145 @@
 
 ## Não lançado
 
+### AR-15 com textura (16/11)
+- O fuzil saía cinza: a textura não veio no pacote. A do Jhon
+  (`assets/armas/ar15/T_AssaultRifle_D.png`, uma paleta de 256 px que o
+  modelo pinta peça por peça pelo UV) está no fuzil da primeira pessoa
+  (embutida no `fp/ar15.glb`) e no da mão dos outros e do chão
+  (`armas.json`).
+- O `infima.py` acha a textura em `assets/armas/ar15/` quando o pacote
+  não a tem, e o sufixo `_D` (diffuse) agora conta como cor: na próxima
+  exportação ela não se perde.
+
+### Personagens: a Eve, uma pasta por personagem (16/11)
+- **Personagem jogável**: humano e lobo juntos, escolhidos no inventário
+  (aba **Personagem** no lado do equipado, um lugar por time; aba
+  **Personagens** na grade). Escolheu a pessoa, transforma no lobo dela.
+  Sem personagem, o time usa o de sempre (Exo Gray / Ely).
+- **Eve**, do time laranja: humano do Mixamo e loba do Meshy, com **10%
+  a mais de vida nas duas formas** (220; o AR-15 passa a precisar de 5
+  tiros no corpo em vez de 4). Vem com o perfil.
+- **Uma pasta por personagem** em `assets/personagens/` (`personagem.tres`
+  com nome, time, descrição, raridade e vida; `humano.fbx`; `lobo.glb`).
+  O catálogo acha as pastas sozinho.
+- **Mesmas proporções**: a Eve humana veio com 1,39 m e é levada a 1,79 m
+  na importação (`root_scale` 1,2868); a loba, de 1,68 m a 1,66 m. A
+  cabeça que leva tiro é a do modelo: personagem mais baixo seria mais
+  difícil de acertar.
+- **Guia** `docs/PERSONAGENS.md` e ferramenta `tools/personagem.sh`
+  (medir, preparar o lobo no Blender, a escala do humano). Teste
+  `Personagens`: altura, ossos, vida e o corpo montado com os modelos de
+  cada pasta.
+- O detalhe do item mostra o personagem em 3D, humano e lobo.
+
+### Lobo: andar agachado da carga do salto (16/11)
+- **`Charge_Walk`** (17º clipe do `lobo_anim.glb`): andando com o salto
+  carregado, o lobo anda agachado na mesma pose em que a carga segura,
+  passos curtos e pernas abertas. Antes tocava o `Crouch_Walk` (um joelho
+  no chão): ao soltar o W ele trocava de postura. Patinação 0,14 m/s de
+  frente, 0,11 de lado, 0,10 para trás.
+- **Mais devagar**: `WolfChargeMoveFactor` 0,45 → 0,234 (0,91 m/s no
+  Bruto, a passada do clipe, `ChargeWalkClipSpeed` 0,91).
+- **`Special_Attack`**: no ponto em que a carga segura (0,47 s) a pose é o
+  agachamento mais fundo, garras à frente; antes era um quadro de
+  passagem, com os braços subindo. O resto do salto e os tempos não
+  mudam.
+
+### Lobo: rugido no ar segue o pulo, carga sem patinar de lado (16/11)
+- **R no ar**: ruge no ar, e o corpo segue o pulo para a frente como
+  vinha até pousar (antes o comando de andar saía e ele perdia embalo no
+  ar); no chão, rugindo, para.
+- **Andando com o salto carregado de lado ou para trás, a pata patinava
+  2,6 m/s**: a carga conta como golpe e prendia o corpo virado para a
+  mira. Agora ele vira para onde anda (0,25 m/s de lado, 0,2 para trás,
+  como o engatinhar) e, parando, fica como está; ao soltar, vira para a
+  câmera. O `PassadaDoLobo` mede a carga nas três direções e o
+  engatinhar de lado.
+
+### Lobo: anda carregando o salto, garrada rápida, corrida de quatro +15% (16/11)
+- **Carregando o salto o lobo anda**, encolhido, no passo do agachado
+  (`WolfChargeMoveFactor` 0,45, ~1,75 m/s no Bruto): toca o `Crouch_Walk`
+  por cima da pose da carga e vira para onde anda; parado, volta à pose
+  do agachar respirando. A mira acompanha. Soltou, o salto sai de onde
+  ele está, para a câmera.
+- **Garrada rápida**: a próxima corta a atual 0,08 s depois do impacto
+  (`ClawCancelAfter`): clicando rápido sai uma a cada 0,28 s em vez de
+  0,733 s (até ~3,6 por segundo; o dano por segundo da garrada sobe na
+  mesma proporção, bots incluídos). Teste `GarradaRapida`.
+- **Corrida de quatro 15% mais rápida**: `WolfSprintFactor` 1,3 → 1,495
+  (Bruto a 6,2 m/s; o `Run_Quad` toca a ~1,58×). Patinação de quatro
+  0,64 m/s (era 0,56); a freada leva 7 quadros (o `PassadaDoLobo` aceita
+  até 9 de quatro).
+
+### Lobo: rugido parado, carga do salto com mira, braços no pulo (15/11)
+- **Rugindo o lobo para**: apertou R andando ou no ar, o comando de andar
+  sai e o `Howl` toca de corpo inteiro, como foi animado (decisão do
+  Jhon; o rugido somado ao passo, `Howl_Add`, saiu). No ar ele segue o
+  arco do pulo.
+- **Carga do salto**: o lobo fica preso no lugar (dava para andar
+  encolhido, deslizando), mantém a pose do fim do agachar e **respira**
+  nela: `Breath_Add` (o 16º clipe do `lobo_anim.glb`) é a respiração do
+  `Idle_Pose`, 5,5× mais funda, somada por cima; `ChargeBreathRate` 1,6.
+- **Mira do salto** (`PounceAim`): carregando, um anel marca onde o lobo
+  pousa se soltar agora — laranja, vermelho com a carga cheia. Usa o
+  plano do salto de verdade (`Weapon.PounceLanding`, pelo `PlanPounce`):
+  aparece em cima do caixote ou do teto que o arco alcança, e antes do
+  muro que ele não passa.
+- **Pulo e queda com os braços mais fechados** (`Jump_Start`, `Jump_Air`,
+  `Jump_Land`): abriam 54° para os lados, agora 22°, com o cotovelo mais
+  dobrado.
+- Teste `CargaDoSalto`: rugindo o lobo para e a mão sobe; carregando não
+  anda (mesmo vindo andando), o quadril fica e o peito respira; a mira
+  está no ponto da arma, o lobo pousa nela no chão e em cima de um bloco
+  de 1,5 m.
+
+### Lobo: volta no tonel, recuo mais lento, rugido de corpo inteiro (15/11)
+- **Parede redonda**: o lobo contorna tonel, tanque e pilar cilíndrico a
+  volta inteira. A curva contava como "ponta de parede fina": ele saía
+  reto, caía, grudava de novo e repetia (Jhon, tonel da Estação Polar).
+  Teste `VoltaNoTonel` (442° em 3 s sem soltar; sem a correção, 80° e
+  queda).
+- **Para trás o lobo anda a 75%** (`WolfBackFactor`, pedido do Jhon); na
+  diagonal de trás, em parte. O humano não muda. `VelocidadeNoChao`
+  espera a velocidade de frente × o fator.
+- **Rugido parado toca de corpo inteiro** (as pernas do `Howl`); andando,
+  da cintura para cima como antes. Saiu andando no meio, o rugido sai.
+- **`Special_Attack`**: a recuperação depois da pancada não fica mais
+  parada (0,3 s quase sem movimento): levanta de uma vez, com a cabeça
+  subindo e sacudindo. Pancada em 1,33 s e duração de 2,2 s, como antes.
+
+### Inimigo marcado com brilho no ombro (15/11)
+- **No lugar da borda vermelha no corpo inteiro, um brilho vermelho no
+  ombro esquerdo** do inimigo (pedido do Jhon). Preso ao osso do braço,
+  do mesmo tamanho no humano e no lobo (30 cm de halo, 11 cm acima da
+  junta), pulsa de leve, não atravessa parede e apaga quando ele morre.
+  A silhueta de quem te matou continua como era.
+- Teste `MarcaNoOmbro`: o brilho em cada esqueleto do inimigo, na junta
+  do ombro, sem a borda; apaga morto; aliado e o próprio jogador sem
+  brilho. Com `-- --fotos=pasta`, fotografa o humano e o lobo inimigos.
+
+### Lobo: animações refeitas na velocidade do jogo (15/11 à noite)
+- `lobo_anim.glb` trocado (mesmos 15 nomes, 691 KB). **Os quatro andares
+  em pé viraram um trote curvado** de 0,67 s por ciclo, feito na
+  velocidade em que o lobo anda: tocam perto de 1× (o de frente tocava a
+  ~3× e os de lado a 5,5×). O pé de apoio anda a velocidade constante no
+  arquivo. Passadas: `WalkClipSpeed` 3,95, `WalkBackClipSpeed` 3,6,
+  `WalkSideClipSpeed` 3,75; `StrideWolf` 1,32 m (som do passo).
+- **Agachado andando**: `Crouch_Walk` com ciclo de 1,0 s e passada maior
+  (`CrawlClipSpeed` 1,62): toca a ~1,1× em vez de 1,8×.
+- **Parado** sem o quadril deslizar de lado; **garradas** com giro de
+  tronco e a mão cruzando na altura do peito (acerto em 0,20 s, 0,733 s
+  no total: `WolfMoves` não muda); **rugido** com as pernas (1,533 s).
+- As passadas saíram da conta no arquivo (pé de apoio × 1,13) e a
+  varrida no `PassadaDoLobo` confirmou. Patinação: de frente 0,13 m/s
+  (era 0,16), de lado 0,14 (0,50 a 0,67), para trás 0,22 (0,19), na
+  diagonal 0,14, engatinhando 0,23 (0,25).
+- `PassadaDoLobo`: o limite de "pés depois de parar" em pé foi de 1,9
+  para 2,9 m (o trote para com as pernas mais abertas que o andar: 1,7
+  a 1,8 m de frente, 2,2 a 2,7 de lado). Com `-- --fotos=pasta` e tela,
+  o teste fotografa o lobo de lado em cada fase. `tools/medir_lobo.sh`
+  roda os testes do passo e guarda a saída em `.medidas/`.
+
 ### Lobo: pé no chão, câmera mais perto, corrida de quatro sem patinar (15/11)
 - **O pé parou de patinar**: os clipes do Jhon mantêm o vaivém do
   quadril dentro do ciclo (antes era tirado como deslocamento de raiz, e

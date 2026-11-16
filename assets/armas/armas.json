@@ -146,17 +146,17 @@
    "partes": [
     {
      "malha": "res://assets/armas/ar15/corpo_ar15.obj",
-     "material": "metal",
+     "material": "res://assets/armas/ar15/T_AssaultRifle_D.png",
      "no": ""
     },
     {
      "malha": "res://assets/armas/ar15/ferrolho_ar15.obj",
-     "material": "metal",
+     "material": "res://assets/armas/ar15/T_AssaultRifle_D.png",
      "no": "Ferrolho"
     },
     {
      "malha": "res://assets/armas/ar15/magazine_ar15.obj",
-     "material": "metal",
+     "material": "res://assets/armas/ar15/T_AssaultRifle_D.png",
      "no": "Magazine"
     }
    ],

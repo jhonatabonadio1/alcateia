@@ -30,7 +30,7 @@ public sealed class WolfMoveMotor
 	}
 
 	/// <summary>A arma está com o corpo neste quadro?</summary>
-	public bool Controls => _weapon.IsDiving || _weapon.IsPounceFlying || _weapon.IsRooted;
+	public bool Controls => _weapon.IsDiving || _weapon.IsPounceFlying || (_weapon.IsRooted && !_weapon.IsChargingPounce);
 
 	/// <summary>Move o corpo se a arma estiver com ele. Devolve verdadeiro
 	/// quando moveu — aí o resto do movimento fica para o próximo
@@ -60,8 +60,9 @@ public sealed class WolfMoveMotor
 		}
 
 		// O salto e a aterrissagem do bote prendem o lobo: golpe pesado não
-		// se faz andando.
-		if (_weapon.IsRooted)
+		// se faz andando. A carga não: carregando, ele anda encolhido para
+		// ajeitar o salto (pedido do Jhon, 15/11); prende ao soltar.
+		if (_weapon.IsRooted && !_weapon.IsChargingPounce)
 		{
 			Freeze(delta, gravity);
 			return true;

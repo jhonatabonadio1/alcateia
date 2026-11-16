@@ -31,19 +31,20 @@ arquivo com a cor da pelagem trocada.
 **Animações do Jhon (`lobo_anim.glb`, 15/11).** Vêm do
 `Wolf_animations.glb` que o Jhon animou no próprio lobo do Meshy
 (esqueleto de 24 ossos, escala 0,01 no `Armature`). O arquivo do jogo
-guarda só o esqueleto e os 15 clipes (722 KB): malha, textura e material
-saem (`gltf-transform`, mantendo a pele, sem a qual o Godot não cria o
-esqueleto). O Godot tira o `_Loop` do nome e põe o clipe em laço.
+guarda só o esqueleto e os 15 clipes (691 KB): malha, textura e material
+saem, mantendo a pele, sem a qual o Godot não cria o esqueleto. O Godot tira o `_Loop` do nome e põe o clipe em laço.
 
 | Clipe | Papel no jogo | Como toca |
 |---|---|---|
 | `Idle_Pose` | parado (e a vitrine do lobby) | 1× |
-| `Walk_Forward`, `Walk_Backward`, `Walk_Left`, `Walk_Right` | andar em pé, nas quatro direções, de frente para a mira | acelera até a velocidade do corpo (o lobo não tem corrida em pé) |
+| `Walk_Forward`, `Walk_Backward`, `Walk_Left`, `Walk_Right` | trote curvado em pé, nas quatro direções, de frente para a mira (ciclo de 0,67 s) | na velocidade do corpo, perto de 1× (feitos na velocidade do jogo) |
 | `Crouch_Idle` | agachado parado | 1× |
 | `Crouch_Walk` | andando agachado | na velocidade do corpo |
 | `Run_Quad` | corrida de quatro (W duas vezes) | na velocidade do corpo (a 5,4 m/s, 1,37×); o som do passo sai quando as patas se juntam (0,567 s do clipe) |
 | `Attack_Primary`, `Attack_Secondary` | as duas garradas | 1×, da cintura para cima |
-| `Howl` | rugido (R) | 1×, da cintura para cima |
+| `Howl` | rugido (R) | 1×, de corpo inteiro; o lobo para para rugir |
+| `Breath_Add` | respiração do lobo encolhido na carga do salto | em laço, somada à pose do agachar (é só a diferença entre o `Idle_Pose` e a pose parada, 5,5× mais funda) |
+| `Charge_Walk` | andando com o salto carregado | em laço, na velocidade do corpo (0,91 m/s a 1×); agachado na pose em que a carga segura |
 | `Special_Attack` | salto (direito no chão), bote (direito no ar) e a aterrissagem do bote | 1×; trechos em `WolfMoves.cs` |
 | `Jump_Start`, `Jump_Air`, `Jump_Land` | pulo: impulso, voo em laço e pouso | 1× |
 
@@ -55,7 +56,18 @@ a diferença de eixos (`RetargetPose` com `referenceFrame` e
 só a morte, a corrida na parede (e o `run`, o `jump` e o `sprint`, de
 reserva se o `lobo_anim.glb` faltar) continuam nos `.fbx` abaixo. Para
 trocar um clipe, exporte o GLB com os mesmos nomes e meça de novo a
-passada (`PassadaDoLobo`) e os tempos dos golpes (`WolfMoves.cs`). **O
+passada (`PassadaDoLobo`) e os tempos dos golpes (`WolfMoves.cs`).
+
+**Revisão de 15/11 à noite.** Os 15 clipes foram refeitos com os mesmos nomes:
+parado sem o quadril deslizar; os quatro andares viraram um trote curvado
+feito na velocidade do jogo, com o pé de apoio a velocidade constante;
+`Crouch_Walk` com ciclo de 1,0 s; garradas com o tronco girando e a
+pisada do lado oposto (acertam em 0,20 s e duram 0,733 s, como antes);
+`Howl` com as pernas (1,533 s, como antes). `Run_Quad`, `Special_Attack`
+e os três do pulo mantêm duração e momentos. As passadas novas estão em
+`WolfVisual.Locomotion.cs`, calculadas do arquivo e conferidas na
+varrida do `PassadaDoLobo` (patinação: de frente 0,13 m/s, de lado 0,14,
+para trás 0,22, engatinhando 0,23). **O
 lobo azul veio com 1,80 m e o vermelho com 1,66 m: os dois foram
 normalizados para 1,66 m.**
 

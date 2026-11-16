@@ -172,7 +172,12 @@ public partial class Hud
 		_wp = Outlined(UiKit.Text("0", "NumericLarge", UiTokens.Accent));
 		wpRow.AddChild(_wp);
 		side.AddChild(wpRow);
-
+		
+		// O salto carregado do lobo (botão direito no chão), no estilo de Overwatch.
+		_pounceTile = new AbilityTile { Title = "SALTO", Key = "M2", Kind = IconKind.Claw };
+		_pounceTile.SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd;
+		side.AddChild(_pounceTile);
+		
 		var panel = new PanelContainer { ThemeTypeVariation = "HudPanel" };
 		side.AddChild(panel);
 		var stack = new Control { CustomMinimumSize = new Vector2(0, 150), MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -263,6 +268,7 @@ public partial class Hud
 			_cooldownBars[i] = Bar(UiTokens.TeamOrange.Lightened(0.2f), 6);
 			_cooldownBars[i].Value = 1;
 			row.AddChild(_cooldownBars[i]);
+			row.Visible = i != 1;   // a barra do salto virou o ícone
 			column.AddChild(row);
 		}
 
