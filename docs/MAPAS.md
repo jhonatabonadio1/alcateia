@@ -227,7 +227,7 @@ de nascimento estão escritos no topo de `tools/mapas/armazem.py`.
 
 Cada mapa tem uma foto (1920 × 1080) tirada no próprio jogo, de um bom
 ângulo, para a escolha do mapa, a sala e a tela de carregamento
-(`MapInfo.Cover`, `assets/ui/mapas/<id>_foto.jpg`):
+(`MapInfo.Cover`, `assets/ui/mapas/<id>_foto.png`):
 
 ```sh
 godot --path . -s tools/fotos_mapas.gd            # todos

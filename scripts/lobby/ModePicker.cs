@@ -41,7 +41,7 @@ public static class ModePicker
 	{
 		var card = new Button
 		{
-			CustomMinimumSize = new Vector2(330, 64),
+			CustomMinimumSize = new Vector2(400, 72),
 			FocusMode = Control.FocusModeEnum.All,
 			MouseDefaultCursorShape = Control.CursorShape.PointingHand
 		};
@@ -68,7 +68,10 @@ public static class ModePicker
 		Label name = UiKit.Text(mode.Name, "Subtitle");
 		name.MouseFilter = Control.MouseFilterEnum.Ignore;
 		text.AddChild(name);
-		Label line = UiKit.Paragraph(mode.Line, "Muted");
+		// Uma linha só: o cartão não cresce com o texto (é um botão).
+		Label line = UiKit.Text(mode.Line, "Muted");
+		line.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
+		line.TooltipText = mode.Line;
 		line.MouseFilter = Control.MouseFilterEnum.Ignore;
 		line.AddThemeFontSizeOverride("font_size", UiTokens.Caption);
 		text.AddChild(line);

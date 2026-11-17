@@ -7,7 +7,7 @@ extends SceneTree
 ##     godot --path . -s tools/fotos_mapas.gd            # todos
 ##     godot --path . -s tools/fotos_mapas.gd -- armazem # um só
 ##
-## Saída: assets/ui/mapas/<id>_foto.jpg, 1920 × 1080.
+## Saída: assets/ui/mapas/<id>_foto.png, 1920 × 1080.
 ##
 ## Mapa novo: uma linha em FOTOS, com a cena, de onde a câmera olha e para
 ## onde (coordenadas do jogo: X dos times, Y para cima), e o campo de visão
@@ -62,8 +62,8 @@ func _foto(id: String, f: Dictionary) -> void:
 		await process_frame
 
 	var image := viewport.get_texture().get_image()
-	var out := "res://assets/ui/mapas/%s_foto.jpg" % id
-	image.save_jpg(ProjectSettings.globalize_path(out), 0.9)
+	var out := "res://assets/ui/mapas/%s_foto.png" % id
+	image.save_png(ProjectSettings.globalize_path(out))
 	print("foto: ", out)
 	viewport.queue_free()
 	await process_frame

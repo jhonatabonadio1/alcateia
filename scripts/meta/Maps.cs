@@ -12,7 +12,7 @@ public sealed class MapInfo
 	public string Thumbnail;
 
 	/// <summary>A foto do mapa, de um bom ângulo, tirada no próprio jogo por
-	/// tools/fotos_mapas.gd (1920 × 1080). Aparece na escolha do mapa, na
+	/// tools/fotos_mapas.gd (1920 × 1080, PNG). Aparece na escolha do mapa, na
 	/// sala e em tela cheia no carregamento (decisão do Jhon, 17/11).</summary>
 	public string Cover;
 
@@ -53,7 +53,7 @@ public static class Maps
 			Size = "Pequeno",
 			Scene = "res://scenes/maps/armazem.tscn",
 			Thumbnail = "res://assets/ui/mapas/armazem.png",
-			Cover = "res://assets/ui/mapas/armazem_foto.jpg",
+			Cover = "res://assets/ui/mapas/armazem_foto.png",
 			Description = "Pequeno, 46 × 30 m, galpão fechado. Contêineres que viram túnel, pilhas de dois com pranchas por cima e claraboias no teto.",
 			RoomSize = 0.6f, RoomWet = 0.3f, Ambience = "ambiente_hangar", AmbienceDb = -14f,
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
