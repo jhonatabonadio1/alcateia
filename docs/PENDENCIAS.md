@@ -126,8 +126,40 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   na primeira tela do próprio jogo** (decidido pelo Jhon, 13/11). Sem
   launcher separado. A tela de entrada (`WelcomeScreen`) vira a de
   login; o jogo offline com bots continua acessível (treino).
+- **Launcher externo, estilo Battle.net** (pedido em 17/11): programa à
+  parte que baixa e instala o jogo, atualiza sozinho, obriga a atualizar
+  quando o servidor exige, desinstala e abre o jogo. Contradiz a decisão
+  de 13/11 logo acima (sem launcher separado): confirmar quando chegar a
+  hora. Base que falta: preset de exportação para Mac e Windows (o jogo
+  nunca foi exportado), número de versão no projeto e checagem de versão
+  no servidor (cliente velho é recusado). O Mac exige assinatura e
+  notarização. Vem por último: só vale com uma versão estável para
+  distribuir.
 - **Perfil, inventário e moedas no servidor** (hoje ficam no arquivo do
   jogador — dá para editar à mão).
+
+### Alcance: idioma e acessibilidade (pedido em 17/11)
+
+- **Internacionalização.** Hoje: todo texto está escrito direto no código,
+  em português; não há tabela de tradução. A fazer: tirar os textos para
+  as tabelas de tradução do Godot (um arquivo por idioma), escolher o
+  idioma nas Opções, começar por português e inglês. Cuidar de: fonte
+  (acentos e, depois, outros alfabetos), texto que cresce e estoura botão,
+  formato de número e data, as frases e a voz do rádio. Quanto antes,
+  melhor: toda tela feita com texto fixo é tela a refazer. As telas em
+  HTML (plano do `GUIA_UI_HTML_CEF.md`) precisam da própria tradução.
+- **Acessibilidade.** Hoje: nenhuma opção feita para isso (o que já existe
+  em Opções → Controles não foi conferido para esta lista). Candidatos:
+  - **Daltonismo.** A vida do aliado verde e do inimigo vermelho (decidida
+    em 17/11) é justamente o par que mais se confunde: precisa de um sinal
+    além da cor (forma, ícone, marca) ou de uma paleta alternativa nas
+    Opções.
+  - Tamanho da fonte e da interface; contraste e cor da mira.
+  - **Som como informação** (`DESIGN.md`): aviso visual de direção para
+    passos, tiro e uivo, para quem não ouve bem; legendas nos sons
+    importantes.
+  - Reduzir tremor e balanço da câmera.
+  - Remapear todas as teclas; alternar em vez de segurar (agachar, mirar).
 
 ### Comunicação na partida
 
