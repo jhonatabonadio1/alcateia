@@ -2,6 +2,56 @@
 
 ## Não lançado
 
+### Mapa novo, o único da lista: Armazém (17/11)
+- Galpão fechado de 46 × 30 m, do pacote LowPolyFPS4 (Unity Asset Store)
+  que o Jhon trouxe: contêineres que viram túnel (as duas pontas abertas,
+  portas à parte), pilhas de dois a 5,8 m com pranchas por cima, teto a
+  9 m com claraboias.
+- O FBX exportado da cena da Unity veio sem UV (tudo cinza). O
+  `tools/mapas/blender/armazem.py` casa cada uma das 714 peças com o
+  modelo original do `.unitypackage` (713 exatas; um palete com 11 cm de
+  erro) e copia a UV de lá. Grava `assets/mapas/pecas/armazem.glb` (seis
+  pedaços de desenho + a casca do galpão como colisão de malha) e
+  `tools/mapas/armazem.json` (611 caixas de colisão orientadas, 24 luzes,
+  os vidros).
+- `tools/mapas/armazem.py` monta a cena: colisão, luminárias do teto, o
+  sol entrando pelas claraboias (vidro sem sombra), cada time
+  nasce junto (8 pontos, 4 × 2, a 1,5 m), no canto que o Jhon marcou
+  (azul em −X/+Z, laranja em +X/−Z) e sete
+  rotas de ronda. Teste `MapaArmazem` no lugar de `MapaVila` e `MapaPolar`.
+- As cores de cada peça vêm da cena da Unity (`LowPolyFPS4_Demo.unity`,
+  lida pelo conversor): contêiner vermelho, azul e amarelo, barris de
+  várias cores, parede cor de areia. Peças de mesma malha que só mudam
+  de cor (166 delas) tinham saído todas na primeira cor.
+- Facetado como o original: a solda dos vértices tinha apagado as
+  normais e deixado tudo com sombreado suave (o "embaçado"). A paleta
+  entra sem mipmap e sem compressão (de longe e em ângulo, o mipmap
+  misturava as cores vizinhas).
+- Renascer: cada um volta sempre ao ponto que recebeu na largada, na
+  base do time (`SpawnPoints.SetHome`), com os 3 s de proteção.
+- Só o Armazém está na lista (`Maps.All`). A Vila e a Estação Polar
+  ficaram em `Maps.Guardados`, com cena e gerador intactos. O mapa padrão
+  da sala, do servidor e dos testes passa a ser o Armazém.
+
+### Lobos novos dos times: azul e vermelho (17/11)
+- O lobo do time azul é o `lobo_azul.glb` e o do laranja o
+  `lobo_vermelho.glb` (os dois do Jhon, no Meshy). O antigo continua em
+  `mutant.fbx` / `mutant_red.fbx` e segue como referência de altura do
+  teste `Personagens`.
+- Três malhas: `corpo`, `roupa` e `equipamento`, com uma textura só.
+  Cada placa da armadura segue um osso só e não entorta; as joelheiras
+  ficam entre coxa e canela (70/30). A placa do peito saiu do osso da
+  cabeça (descolava do peito na corrida de quatro).
+- Embaixo das placas foi feito o corpo que faltava (vem do lobo "Clean"
+  do Meshy), preso à placa. Sob a roupa cortada do corpo (calça, alças)
+  há um forro na cor do pelo, com os mesmos vértices e pesos da roupa:
+  nada fica vazado por trás e ele não atravessa o tecido.
+- Importados sem LOD (`meshes/generate_lods=false`): com três malhas, o
+  Godot simplificava cada uma por conta própria e abria vãos nas emendas
+  (costas e frente pareciam transparentes).
+- Mesmo esqueleto de 24 ossos, 1,66 m, sem animações; cerca de 20 mil
+  triângulos por lobo (antes 15 mil).
+
 ### Só dois mapas: Vila e Estação Polar (16/11)
 - Saíram o Hangar, o Metrô e a Rua Abandonada (esta entrou e saiu no
   mesmo dia), a pedido: cenas, peças (o trem, os letreiros), geradores

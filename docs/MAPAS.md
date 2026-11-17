@@ -1,9 +1,14 @@
 # Mapas
 
-Dois mapas, os dois de equipe, registrados em `scripts/meta/Maps.cs`:
+Só um mapa está na lista do jogo (`Maps.All` em `scripts/meta/Maps.cs`),
+o Armazém. A Vila e a Estação Polar saíram da lista em 17/11 (a pedido)
+mas continuam no projeto, em `Maps.Guardados`: para voltar com uma, passe
+a linha dela para `Maps.All` e ponha o teste de volta em
+`tests/regression/MapTests.cs`.
 
 | Mapa | Tamanho | Tema | Gerador |
 |---|---|---|---|
+| **Armazém** (na lista) | 46 × 30 m (pequeno) | Galpão fechado de contêineres, claraboias no teto | `tools/mapas/blender/armazem.py` + `tools/mapas/armazem.py` |
 | Vila | 72 × 52 m (médio) | Vila de deserto no fim da tarde: praça, feira, terraços, vielas | `tools/mapas/vila.py` |
 | Estação Polar | 110 × 70 m (grande) | Base de pesquisa na neve, ao crepúsculo: garagem, alojamentos, passarelas | `tools/mapas/polar.py` |
 
@@ -175,6 +180,26 @@ três coisas:
 - **Paredes invisíveis** na beira do pátio, altas, para ninguém sair
   pelos telhados.
 
+### O Armazém (mapa pronto da Unity)
+
+Veio do pacote LowPolyFPS4 da Unity Asset Store. O FBX exportado da
+cena da Unity não tem UV; os modelos de dentro do `.unitypackage` têm.
+Para refazer:
+
+```sh
+pip install bpy numpy scipy
+python3 tools/mapas/blender/armazem.py <cena.fbx> <pacote.unitypackage>
+python3 tools/gerar_mapas.py armazem
+```
+
+O primeiro casa cada peça da cena com o modelo de origem e copia a UV,
+gira o galpão para o comprido ficar em X, junta tudo em seis pedaços e
+grava o `.glb` e o `.json` (colisão, luzes, vidros). A casca do galpão
+(paredes, telhado, sacos de areia) é colisão de malha dentro do `.glb`
+(nó `casca-colonly`); o resto é uma caixa orientada por peça, e o
+contêiner é um túnel de quatro caixas. O segundo monta a cena. Os pontos
+de nascimento estão escritos no topo de `tools/mapas/armazem.py`.
+
 ### Mapa novo
 
 1. Copie um arquivo de `tools/mapas/`, mude o id e monte o seu.
@@ -184,6 +209,6 @@ três coisas:
 
 ## Testes
 
-`MapaVila` e `MapaPolar`: cada mapa carrega
+`MapaArmazem`: o mapa carrega
 na partida, os dois times nascem, ninguém cai do mapa, os bots saem da
 base pela malha de navegação e trocam tiro.

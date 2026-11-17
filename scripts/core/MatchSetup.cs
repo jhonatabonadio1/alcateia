@@ -138,6 +138,7 @@ public partial class MatchSetup : Node
 		used[team] = next + 1;
 
 		Vector3 at = points[next % points.Count];
+		SpawnPoints.SetHome(body, at);
 
 		if (body.IsInsideTree()) body.GlobalPosition = at;
 		else body.Position = at;

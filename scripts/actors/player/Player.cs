@@ -203,6 +203,7 @@ public partial class Player : CharacterBody3D
 		GlobalPosition = at;
 		Velocity = Vector3.Zero;
 		_spawn = at;
+		SpawnPoints.SetHome(this, at);
 
 		// Já pisando: sem isto o primeiro passo é "no ar" (o corpo ainda
 		// não sabe do chão), acelera mais devagar que o do jogo e os dois
@@ -249,7 +250,8 @@ public partial class Player : CharacterBody3D
 	}
 
 	/// <summary>Reviver no lugar onde se morreu devolve o jogador para
-	/// dentro do tiroteio que o matou. Volta ao spawn.</summary>
+	/// dentro do tiroteio que o matou. Volta ao ponto dele na base
+	/// (sempre o mesmo, veja <see cref="SpawnPoints"/>).</summary>
 	private void OnRespawned()
 	{
 		_killCam?.Finish();

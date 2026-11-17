@@ -4,14 +4,17 @@ using System.Collections.Generic;
 /// <summary>
 /// Pontos de nascimento do mapa.
 ///
-/// Renascer onde se morreu devolve o jogador para dentro do tiroteio
-/// que o matou. Renascer sempre no mesmo canto é pior: quem decora o
-/// ponto de spawn ganha de graça.
+/// **Decisão do Jhon (17/11): cada um renasce sempre no mesmo ponto**,
+/// o que recebeu na largada, dentro da base do time (<see cref="SetHome"/>,
+/// chamado por quem distribui a largada). Renascer onde se morreu
+/// devolveria o jogador para dentro do tiroteio que o matou; a base fixa
+/// é a do WolfTeam. O risco conhecido é o inimigo acampar na base:
+/// quem segura isso é a proteção de nascimento do <see cref="Health"/>.
 ///
-/// A escolha é por distância: entre os pontos permitidos, nasce no mais
-/// longe do **inimigo** vivo mais próximo, com alguns metros de ruído.
-/// Só inimigo conta — fugir do próprio time espalharia a equipe pela
-/// base sem motivo nenhum.
+/// Quem não tem ponto próprio (cena de treino, bot criado fora da
+/// largada) cai na escolha antiga, por distância: entre os pontos
+/// permitidos, nasce no mais longe do **inimigo** vivo mais próximo, com
+/// alguns metros de ruído.
 ///
 /// Os pontos são os filhos <c>Node3D</c> deste nó. Pode haver vários
 /// nós destes na cena, um por time: <see cref="Team"/> diz para quem
@@ -35,6 +38,13 @@ public partial class SpawnPoints : Node3D
 
 	private static readonly List<SpawnPoints> _all = new();
 
+	/// <summary>O ponto de cada corpo, pelo id da instância.</summary>
+	private static readonly Dictionary<ulong, Vector3> _home = new();
+
+	/// <summary>Grava o ponto da largada de um corpo: é onde ele renasce
+	/// a partida inteira.</summary>
+	public static void SetHome(Node3D body, Vector3 at) => _home[body.GetInstanceId()] = at;
+
 	private readonly List<Vector3> _points = new();
 
 	public override void _Ready()
@@ -53,6 +63,9 @@ public partial class SpawnPoints : Node3D
 	public override void _ExitTree()
 	{
 		_all.Remove(this);
+		// Acabou a partida (saíram os conjuntos do mapa): os pontos de
+		// cada um não valem para a próxima.
+		if (_all.Count == 0) _home.Clear();
 	}
 
 	/// <summary>Registra um ponto vindo de fora — do mapa, por exemplo.
@@ -88,6 +101,8 @@ public partial class SpawnPoints : Node3D
 	/// </summary>
 	public static Vector3 Pick(Node3D asker, Vector3 fallback)
 	{
+		if (_home.TryGetValue(asker.GetInstanceId(), out Vector3 home)) return home;
+
 		int team = asker.GetNodeOrNull<Health>("Health")?.Team ?? 0;
 
 		var candidates = new List<Vector3>();

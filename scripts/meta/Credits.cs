@@ -27,6 +27,8 @@ public static class Credits
 		}),
 		new("Cenário", new[]
 		{
+			new Line("Mapa Armazém (galpão, contêineres, objetos e textura)",
+				"pacote LowPolyFPS4 da Unity Asset Store", "Licença da Asset Store"),
 			new Line("Texturas dos mapas, céus e objetos de cenário (barris, caixotes, estantes, pedras…)",
 				"Poly Haven (polyhaven.com)", "CC0"),
 			new Line("Letreiros: Overpass", "The Overpass Project Authors (Red Hat)", "SIL Open Font License 1.1", Required: true),
@@ -63,7 +65,7 @@ public static class Credits
 		new("Personagens e animação", new[]
 		{
 			new Line("Modelo e animações do humano, morte e corrida na parede do lobo; braços do AR-15 (X Bot); a Eve humana", "Mixamo — Adobe", "licença de uso do Mixamo"),
-			new Line("Lobo e a loba da Eve (modelo, esqueleto e textura)", "gerado por Jhonata Bonadio no Meshy (meshy.ai)", "termos do plano do Meshy"),
+			new Line("Lobos azul e vermelho e a loba da Eve (modelo, esqueleto e textura)", "gerado por Jhonata Bonadio no Meshy (meshy.ai)", "termos do plano do Meshy"),
 			new Line("Animações do lobo (andar, agachar, correr de quatro, golpes, uivo, pulo e salto)", "Jhonata Bonadio", "obra do autor")
 		}),
 		new("Letras", new[]

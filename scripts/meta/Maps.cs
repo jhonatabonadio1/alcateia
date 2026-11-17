@@ -39,6 +39,24 @@ public static class Maps
 	{
 		new()
 		{
+			Id = "armazem",
+			Name = "Armazém",
+			Size = "Pequeno",
+			Scene = "res://scenes/maps/armazem.tscn",
+			Thumbnail = "res://assets/ui/mapas/armazem.png",
+			Description = "Pequeno, 46 × 30 m, galpão fechado. Contêineres que viram túnel, pilhas de dois com pranchas por cima e claraboias no teto.",
+			RoomSize = 0.6f, RoomWet = 0.3f, Ambience = "ambiente_hangar", AmbienceDb = -14f,
+			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
+		}
+	};
+
+	/// <summary>Fora da lista por decisão do Jhon (17/11): só o Armazém
+	/// está disponível. As cenas e os geradores continuam no projeto; para
+	/// voltar com um, passe a linha dele para <see cref="All"/>.</summary>
+	public static readonly List<MapInfo> Guardados = new()
+	{
+		new()
+		{
 			Id = "vila",
 			Name = "Vila",
 			Size = "Médio",

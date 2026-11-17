@@ -52,13 +52,15 @@ using System.Collections.Generic;
 /// </summary>
 public partial class WolfVisual : Node3D
 {
-	/// <summary>O Mutant de cada time.</summary>
+	/// <summary>O lobo de cada time: o azul e o vermelho do Jhon (Meshy),
+	/// em três malhas (corpo, roupa, equipamento) com as placas da armadura
+	/// rígidas. O lobo antigo continua em mutant.fbx / mutant_red.fbx.</summary>
 	[ExportGroup("Modelo")]
 	[Export(PropertyHint.File, "*.fbx,*.glb,*.tscn")]
-	public string BlueModel = "res://assets/characters/wolf/mutant.fbx";
+	public string BlueModel = "res://assets/characters/wolf/lobo_azul.glb";
 
 	[Export(PropertyHint.File, "*.fbx,*.glb,*.tscn")]
-	public string OrangeModel = "res://assets/characters/wolf/mutant_red.fbx";
+	public string OrangeModel = "res://assets/characters/wolf/lobo_vermelho.glb";
 
 	[Export(PropertyHint.Dir)]
 	public string ClipFolder = "res://assets/characters/wolf";

@@ -151,6 +151,7 @@ origem) e das animações dela.
 | 44 texturas do Poly Haven | `assets/textures/pbr/` — todos os materiais dos mapas | `tools/mapas/texturas.py` |
 | 2 céus (dia claro, neve nublada) | `assets/mapas/ceus/` — Vila e Estação Polar | copiados; `ceu=dict(hdri=…)` no mapa |
 | 36 objetos do Poly Haven | `assets/mapas/pecas/*.glb` — nos cômodos e em volta | `tools/mapas/blender/pecas_polyhaven.py` |
+| Pacote LowPolyFPS4 (Unity Asset Store; o Jhon trouxe o `.unitypackage`) | `assets/mapas/pecas/armazem.glb` — o mapa Armazém inteiro | `tools/mapas/blender/armazem.py` |
 
 | 6 conjuntos de braços animados do Sketchfab | `assets/armas/fp/*.glb` — as armas de fogo em primeira pessoa | `tools/armas/blender/bracos.py` |
 | O AR-15 da InfimaGames (fuzil, braços e animações do Jhon, como na cena dele) | `assets/armas/fp/ar15.glb` e `assets/armas/ar15/` | `tools/armas/blender/infima.py` |

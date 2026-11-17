@@ -1,0 +1,4706 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/pbr/madeira_cor.jpg" id="t_madeira_cor"]
+[ext_resource type="Texture2D" path="res://assets/textures/pbr/madeira_normal.jpg" id="t_madeira_normal"]
+[ext_resource type="Texture2D" path="res://assets/textures/pbr/madeira_arm.jpg" id="t_madeira_arm"]
+[ext_resource type="PackedScene" path="res://assets/mapas/pecas/armazem.glb" id="p_armazem"]
+[ext_resource type="Script" path="res://scripts/core/SpawnPoints.cs" id="s_spawns"]
+[ext_resource type="Script" path="res://scripts/core/PatrolRoutes.cs" id="s_routes"]
+[ext_resource type="Script" path="res://scripts/core/NavBaker.cs" id="s_nav"]
+[ext_resource type="ArrayMesh" path="res://assets/mapas/armazem/c5cdbff245.obj" id="o_c5cdbff245"]
+
+[sub_resource type="StandardMaterial3D" id="M_concreto"]
+albedo_color = Color(0.55, 0.55, 0.55, 1)
+roughness = 1
+
+[sub_resource type="StandardMaterial3D" id="M_metal"]
+albedo_color = Color(0.5, 0.2, 0.15, 1)
+roughness = 1
+metallic = 1
+
+[sub_resource type="StandardMaterial3D" id="M_madeira"]
+albedo_color = Color(1, 1, 1, 1)
+albedo_texture = ExtResource("t_madeira_cor")
+roughness_texture = ExtResource("t_madeira_arm")
+roughness_texture_channel = 1
+ao_enabled = true
+ao_light_affect = 0.25
+ao_texture = ExtResource("t_madeira_arm")
+normal_enabled = true
+normal_scale = 1
+normal_texture = ExtResource("t_madeira_normal")
+uv1_scale = Vector3(0.625, 0.625, 0.625)
+uv1_triplanar = true
+uv1_world_triplanar = true
+roughness = 1
+
+[sub_resource type="StandardMaterial3D" id="M_vidro"]
+transparency = 1
+albedo_color = Color(0.4, 0.71, 1, 0.35)
+cull_mode = 2
+roughness = 0.1
+
+[sub_resource type="BoxShape3D" id="S1"]
+size = Vector3(48, 1, 32)
+
+[sub_resource type="BoxShape3D" id="S2"]
+size = Vector3(1, 14, 34)
+
+[sub_resource type="BoxShape3D" id="S3"]
+size = Vector3(50, 14, 1)
+
+[sub_resource type="BoxShape3D" id="S4"]
+size = Vector3(50, 1, 34)
+
+[sub_resource type="BoxShape3D" id="S5"]
+size = Vector3(1.1652, 2.6275, 0.0859)
+
+[sub_resource type="BoxShape3D" id="S6"]
+size = Vector3(2.258, 0.0513, 0.2345)
+
+[sub_resource type="BoxShape3D" id="S7"]
+size = Vector3(1.7638, 0.0513, 0.2345)
+
+[sub_resource type="BoxShape3D" id="S8"]
+size = Vector3(2.4354, 2.1615, 0.5767)
+
+[sub_resource type="BoxShape3D" id="S9"]
+size = Vector3(0.511, 0.35, 0.5042)
+
+[sub_resource type="BoxShape3D" id="S10"]
+size = Vector3(0.4772, 0.3159, 0.4708)
+
+[sub_resource type="BoxShape3D" id="S11"]
+size = Vector3(0.4772, 0.3268, 0.4708)
+
+[sub_resource type="BoxShape3D" id="S12"]
+size = Vector3(0.4772, 0.3496, 0.4708)
+
+[sub_resource type="BoxShape3D" id="S13"]
+size = Vector3(0.5487, 0.3758, 0.5414)
+
+[sub_resource type="BoxShape3D" id="S14"]
+size = Vector3(0.4915, 0.3617, 0.4849)
+
+[sub_resource type="BoxShape3D" id="S15"]
+size = Vector3(0.4772, 0.3268, 0.6263)
+
+[sub_resource type="BoxShape3D" id="S16"]
+size = Vector3(0.5884, 0.3268, 0.4708)
+
+[sub_resource type="BoxShape3D" id="S17"]
+size = Vector3(0.462, 0.34, 0.4558)
+
+[sub_resource type="BoxShape3D" id="S18"]
+size = Vector3(0.4915, 0.293, 0.4849)
+
+[sub_resource type="BoxShape3D" id="S19"]
+size = Vector3(0.8368, 0.3172, 0.8368)
+
+[sub_resource type="BoxShape3D" id="S20"]
+size = Vector3(0.7709, 0.2922, 0.7709)
+
+[sub_resource type="BoxShape3D" id="S21"]
+size = Vector3(0.7029, 0.2664, 0.7029)
+
+[sub_resource type="BoxShape3D" id="S22"]
+size = Vector3(0.703, 0.2664, 0.7029)
+
+[sub_resource type="BoxShape3D" id="S23"]
+size = Vector3(1.6643, 0.0513, 0.2352)
+
+[sub_resource type="BoxShape3D" id="S24"]
+size = Vector3(2.1307, 0.0513, 0.2352)
+
+[sub_resource type="BoxShape3D" id="S25"]
+size = Vector3(2.5, 0.138, 12.0548)
+
+[sub_resource type="BoxShape3D" id="S26"]
+size = Vector3(0.138, 2.9, 12.0548)
+
+[sub_resource type="BoxShape3D" id="S27"]
+size = Vector3(0.9605, 0.2443, 0.4673)
+
+[sub_resource type="BoxShape3D" id="S28"]
+size = Vector3(0.607, 0.88, 0.607)
+
+[sub_resource type="BoxShape3D" id="S29"]
+size = Vector3(1.2128, 0.1568, 1.1799)
+
+[sub_resource type="BoxShape3D" id="S30"]
+size = Vector3(1.4554, 0.1568, 1.1799)
+
+[sub_resource type="BoxShape3D" id="S31"]
+size = Vector3(1.4069, 0.1819, 1.3687)
+
+[sub_resource type="BoxShape3D" id="S32"]
+size = Vector3(1.2133, 0.1279, 1.1892)
+
+[sub_resource type="BoxShape3D" id="S33"]
+size = Vector3(1.4554, 0.1568, 1.4159)
+
+[sub_resource type="BoxShape3D" id="S34"]
+size = Vector3(0.7284, 0.88, 0.7284)
+
+[sub_resource type="BoxShape3D" id="S35"]
+size = Vector3(1.0107, 1.0057, 0.9898)
+
+[sub_resource type="BoxShape3D" id="S36"]
+size = Vector3(0.9438, 0.9395, 0.944)
+
+[sub_resource type="BoxShape3D" id="S37"]
+size = Vector3(2.5, 0.138, 6.0477)
+
+[sub_resource type="BoxShape3D" id="S38"]
+size = Vector3(0.138, 2.9, 6.0477)
+
+[sub_resource type="BoxShape3D" id="S39"]
+size = Vector3(2.0929, 1.9254, 2.0888)
+
+[sub_resource type="BoxShape3D" id="S40"]
+size = Vector3(0.2527, 2.4029, 0.4908)
+
+[sub_resource type="BoxShape3D" id="S41"]
+size = Vector3(0.4856, 0.8528, 0.4856)
+
+[sub_resource type="BoxShape3D" id="S42"]
+size = Vector3(0.6183, 1.7768, 0.4509)
+
+[sub_resource type="BoxShape3D" id="S43"]
+size = Vector3(3.1321, 0.0791, 0.4665)
+
+[sub_resource type="BoxShape3D" id="S44"]
+size = Vector3(4.1497, 0.0944, 0.5562)
+
+[sub_resource type="BoxShape3D" id="S45"]
+size = Vector3(2.2822, 0.0543, 0.2749)
+
+[sub_resource type="BoxShape3D" id="S46"]
+size = Vector3(1.7827, 0.0543, 0.2749)
+
+[sub_resource type="BoxShape3D" id="S47"]
+size = Vector3(0.2284, 0.5831, 0.1591)
+
+[sub_resource type="BoxShape3D" id="S48"]
+size = Vector3(4.631, 0.0791, 0.4876)
+
+[sub_resource type="BoxShape3D" id="S49"]
+size = Vector3(3.95, 0.0792, 0.4876)
+
+[sub_resource type="ProceduralSkyMaterial" id="CeuMat"]
+sky_top_color = Color(0.32, 0.47, 0.7, 1)
+sky_horizon_color = Color(0.7, 0.76, 0.82, 1)
+ground_bottom_color = Color(0.25, 0.24, 0.23, 1)
+ground_horizon_color = Color(0.7, 0.76, 0.82, 1)
+sky_energy_multiplier = 1
+
+[sub_resource type="Sky" id="Ceu"]
+sky_material = SubResource("CeuMat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Ceu")
+ambient_light_source = 2
+ambient_light_color = Color(0.86, 0.88, 0.95, 1)
+ambient_light_energy = 0.8
+tonemap_mode = 3
+tonemap_exposure = 1.1
+ssao_enabled = true
+ssao_intensity = 2.5
+glow_enabled = true
+glow_intensity = 0.4
+glow_bloom = 0.08
+adjustment_enabled = true
+adjustment_contrast = 1.05
+adjustment_saturation = 1.15
+
+[node name="Armazém" type="Node3D"]
+
+[node name="Ambiente" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="Sol" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8829, -0.3981, 0.2488, 0, 0.5299, 0.848, -0.4695, -0.7488, 0.4679, 0, 40, 0)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 1.7
+shadow_enabled = true
+shadow_blur = 1.5
+directional_shadow_max_distance = 60
+
+[node name="Reflexo" type="ReflectionProbe" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+size = Vector3(48, 14, 32)
+box_projection = true
+interior = false
+ambient_mode = 0
+
+[node name="Colisao" type="Node3D" parent="."]
+
+[node name="Vidro" type="Node3D" parent="."]
+
+[node name="Galpao" type="Node3D" parent="."]
+
+[node name="Luzes" type="Node3D" parent="."]
+
+[node name="Vidros" type="MeshInstance3D" parent="Vidro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = ExtResource("o_c5cdbff245")
+material_override = SubResource("M_vidro")
+cast_shadow = 0
+
+[node name="Piso" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Piso"]
+shape = SubResource("S1")
+
+[node name="LimiteOeste" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.2, 6, 0)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteOeste"]
+shape = SubResource("S2")
+
+[node name="LimiteLeste" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.2, 6, 0)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteLeste"]
+shape = SubResource("S2")
+
+[node name="LimiteSul" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, -16.2)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteSul"]
+shape = SubResource("S3")
+
+[node name="LimiteNorte" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 16.2)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteNorte"]
+shape = SubResource("S3")
+
+[node name="LimiteTeto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 13.5, 0)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteTeto"]
+shape = SubResource("S4")
+
+[node name="ShippingContainer_Door1_L_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.7012, 1.4483, 14.8075)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_1"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -10.5388, 1.4483, 8.7925)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_2"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8552, 0, 0.5182, 0, 1, 0, -0.5182, 0, 0.8552, -7.4239, 4.3483, 7.6491)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_3"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9524, 0, 0.3049, 0, 1, 0, -0.3049, 0, -0.9524, -12.7033, 4.3483, -3.6819)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_4"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 18.4075, 1.4483, -4.4288)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_5"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.3925, 1.4483, -5.5912)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_6"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -5.3525, 1.4483, -6.5088)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_7"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -11.3675, 1.4483, -7.6712)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_8"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.6793, 0, 0.7339, 0, 1, 0, -0.7339, 0, 0.6793, -10.0375, 4.3683, -6.2306)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_9"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6793, 0, -0.7339, 0, 1, 0, 0.7339, 0, -0.6793, -13.6625, 4.3683, -11.1694)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_10"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9.2275, 1.4483, 9.9796)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_11"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -2.7875, 1.4483, 8.8171)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_12"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.8212, 1.4483, -8.7225)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_13"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -20.6588, 1.4483, -14.7375)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_14"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -11.3825, 1.4483, -1.9723)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_15"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17.3975, 1.4483, -3.1348)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_16"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, -0.0008, 0, 1, 0, 0.0008, 0, 1, 11.1038, 4.3283, 2.3871)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_17"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9671, 0, -0.2542, 0, 1, 0, 0.2542, 0, -0.9671, 3.9923, 4.3283, 4.6932)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_18"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.0788, 1.4483, -8.7625)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_19"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_20" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 12.2412, 1.4483, -14.7775)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_20"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_21" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.9788, 1.4483, -6.4225)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_21"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_22" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.1412, 1.4483, -12.4375)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_22"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_23" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7412, 1.4483, 5.0675)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_23"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_L_24" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -1.5788, 1.4483, -0.9475)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_L_24"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -11.7012, 1.4483, 8.7925)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_1"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.5388, 1.4483, 14.8075)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_2"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8743, 0, -0.4854, 0, 1, 0, 0.4854, 0, -0.8743, -5.4874, 4.3483, 6.4825)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_3"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9897, 0, 0.1435, 0, 1, 0, -0.1435, 0, 0.9897, -14.6585, 4.3483, -2.2494)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_4"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 18.4075, 1.4483, -5.5912)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_5"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.3925, 1.4483, -4.4288)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_6"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -11.3675, 1.4483, -6.5088)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_7"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -5.3525, 1.4483, -7.6712)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_8"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6793, 0, -0.7339, 0, 1, 0, 0.7339, 0, -0.6793, -14.452, 4.3683, -10.3163)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_9"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.6793, 0, 0.7339, 0, 1, 0, -0.7339, 0, 0.6793, -9.248, 4.3683, -7.0837)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_10"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 9.2275, 1.4483, 8.8171)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_11"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -2.7875, 1.4483, 9.9796)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_12"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -21.8212, 1.4483, -14.7375)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_13"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.6588, 1.4483, -8.7225)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_14"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17.3975, 1.4483, -1.9723)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_15"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -11.3825, 1.4483, -3.1348)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_16"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9911, 0, 0.1328, 0, 1, 0, -0.1328, 0, -0.9911, 6.5402, 4.3283, 6.3444)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_17"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0668, 0, -0.9978, 0, 1, 0, 0.9978, 0, -0.0668, 9.1144, 4.3283, 0.1126)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_18"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 11.0788, 1.4483, -14.7775)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_19"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_20" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.2412, 1.4483, -8.7625)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_20"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_21" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 1.9788, 1.4483, -12.4375)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_21"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_22" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.1412, 1.4483, -6.4225)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_22"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_23" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -2.7412, 1.4483, -0.9475)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_23"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door1_R_24" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5788, 1.4483, 5.0675)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door1_R_24"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3188, 1.4483, 8.1575)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_1"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 5.4812, 1.4483, 2.1425)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_2"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -6.0325, 1.4483, 8.1212)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_3"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -18.0475, 1.4483, 6.9588)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_4"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9941, 0, 0.1085, 0, 1, 0, -0.1085, 0, 0.9941, 14.9268, 1.4483, -6.4317)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_5"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.905, 0, 0.4253, 0, 1, 0, -0.4253, 0, -0.905, 7.8862, 1.4483, -8.8808)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_6"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 3.5275, 1.4483, -4.5788)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_7"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -2.4875, 1.4483, -5.7412)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_8"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.6355, 0, -0.7721, 0, 1, 0, 0.7721, 0, 0.6355, 10.6222, 4.3383, -3.8925)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_9"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.7776, 0, 0.6288, 0, 1, 0, -0.6288, 0, -0.7776, -0.6413, 4.3383, -10.9098)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_10"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.7112, 1.4483, 0.1775)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_11"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_L_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -9.5488, 1.4483, -5.8375)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_L_12"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 4.3188, 1.4483, 2.1425)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_1"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.4812, 1.4483, 8.1575)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_2"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -6.0325, 1.4483, 6.9588)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_3"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -18.0475, 1.4483, 8.1212)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_4"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9764, 0, -0.2161, 0, 1, 0, 0.2161, 0, 0.9764, 7.8422, 1.4483, -6.4909)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_5"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9563, 0, -0.2924, 0, 1, 0, 0.2924, 0, -0.9563, 14.903, 1.4483, -8.8082)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_6"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -2.4875, 1.4483, -4.5788)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_7"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 3.5275, 1.4483, -5.7412)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_8"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9994, 0, -0.034, 0, 1, 0, 0.034, 0, -0.9994, 11.6026, 4.3383, -6.4714)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_9"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8161, 0, -0.5779, 0, 1, 0, 0.5779, 0, 0.8161, -1.4465, 4.3383, -8.7461)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_10"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -10.7112, 1.4483, -5.8375)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_11"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door2_R_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5488, 1.4483, 0.1775)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door2_R_12"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_L_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.9375, 1.4483, 4.4588)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_L_1"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_L_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9999, 0, 0.0169, 0, 1, 0, -0.0169, 0, 0.9999, -6.3808, 1.4483, 6.1686)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_L_2"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_L_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 7.8525, 1.4483, 1.1588)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_L_3"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_L_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 13.8675, 1.4483, 2.3212)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_L_4"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_L_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8088, 0, -0.5881, 0, 1, 0, 0.5881, 0, 0.8088, -4.353, 4.3383, 2.9471)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_L_5"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_L_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8088, 0, 0.5881, 0, 1, 0, -0.5881, 0, -0.8088, 3.653, 4.3383, -6.0871)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_L_6"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_L_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8079, 0.0007, 0.5894, 0.0049, 1, 0.0055, -0.5893, 0.0073, -0.8078, -14.4539, 1.451, -9.176)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_L_7"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_L_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9186, 0, -0.3952, 0, 1, 0, 0.3952, 0, 0.9186, -8.123, 1.4483, -12.1016)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_L_8"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_L_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9074, 0, -0.4202, 0, 1, 0, 0.4202, 0, 0.9074, 11.5587, 1.4483, 13.6448)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_L_9"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_L_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9074, 0, 0.4202, 0, 1, 0, -0.4202, 0, -0.9074, 15.1413, 1.4483, 8.6752)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_L_10"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_R_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.3123, 0, -0.95, 0, 1, 0, 0.95, 0, -0.3123, -6.7657, 1.4483, 3.3855)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_R_1"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_R_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.9375, 1.4483, 5.6212)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_R_2"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_R_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 13.8675, 1.4483, 1.1588)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_R_3"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_R_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 7.8525, 1.4483, 2.3212)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_R_4"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_R_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8088, 0, 0.5881, 0, 1, 0, -0.5881, 0, -0.8088, 2.7129, 4.3383, -6.7707)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_R_5"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_R_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8088, 0, -0.5881, 0, 1, 0, 0.5881, 0, 0.8088, -3.4129, 4.3383, 3.6307)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_R_6"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_R_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.4788, 0, -0.8779, 0, 1, 0, 0.8779, 0, -0.4788, -10.1837, 1.4483, -14.1585)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_R_7"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_R_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6135, 0, 0.7897, 0, 1, 0, -0.7897, 0, -0.6135, -11.8571, 1.4483, -7.0781)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_R_8"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_R_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9074, 0, 0.4202, 0, 1, 0, -0.4202, 0, -0.9074, 14.0865, 1.4483, 8.1867)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_R_9"]
+shape = SubResource("S5")
+
+[node name="ShippingContainer_Door3_R_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9074, 0, -0.4202, 0, 1, 0, 0.4202, 0, 0.9074, 12.6135, 1.4483, 14.1333)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_Door3_R_10"]
+shape = SubResource("S5")
+
+[node name="WoodenPlank_02_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0654, 0, -0.9979, 0, 1, 0, 0.9979, 0, 0.0654, 0.0438, 1.291, -9.8181)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_02_1"]
+shape = SubResource("S6")
+
+[node name="WoodenPlank_02_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1303, 0, -0.9915, 0, 1, 0, 0.9915, 0, -0.1303, 21.777, 1.028, -4.3561)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_02_2"]
+shape = SubResource("S7")
+
+[node name="WoodenPlank_02_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9349, 0, 0.355, 0, 1, 0, -0.355, 0, -0.9349, 20.1362, 0, 11.7511)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_02_3"]
+shape = SubResource("S7")
+
+[node name="WoodenPlank_02_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.2348, 0, -0.972, 0, 1, 0, 0.972, 0, 0.2348, 18.8254, 1.9199, -0.2353)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_02_4"]
+shape = SubResource("S7")
+
+[node name="Rack_02_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.16, 1.0808, 6.95)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Rack_02_1"]
+shape = SubResource("S8")
+
+[node name="Rack_02_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.16, 1.0808, 1.73)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Rack_02_2"]
+shape = SubResource("S8")
+
+[node name="Rack_01_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.16, 1.0808, 4.29)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Rack_01_1"]
+shape = SubResource("S8")
+
+[node name="PostBox_01_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.1081, 0, 0.9941, 0, 1, 0, -0.9941, 0, 0.1081, -22.152, 1.314, 6.682)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_1"]
+shape = SubResource("S9")
+
+[node name="PostBox_01_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -22.136, 1.297, 7.789)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_2"]
+shape = SubResource("S10")
+
+[node name="PostBox_01_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -22.136, 0.8084, 7.281)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_3"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.997, 0, -0.0776, 0, 1, 0, 0.0776, 0, -0.997, -22.136, 1.8048, 7.753)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_4"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -22.136, 1.8048, 6.237)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_5"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -22.136, 2.2874, 7.684)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_6"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9986, 0, 0.0521, 0, 1, 0, -0.0521, 0, 0.9986, -22.136, 0.8084, 6.71)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_7"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9793, 0, -0.2026, 0, 1, 0, 0.2026, 0, -0.9793, -22.136, 0.3244, 7.747)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_8"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 21.5726, 0.3429, 9.8296)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_9"]
+shape = SubResource("S13")
+
+[node name="PostBox_01_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9941, 0, -0.1084, 0, 1, 0, 0.1084, 0, 0.9941, 21.9526, 0.7199, 9.8606)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_10"]
+shape = SubResource("S13")
+
+[node name="PostBox_01_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22.1476, 0.3429, 9.8296)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_11"]
+shape = SubResource("S13")
+
+[node name="PostBox_01_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9852, 0, -0.1715, 0, 1, 0, 0.1715, 0, 0.9852, -22.168, 1.314, 1.998)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_12"]
+shape = SubResource("S9")
+
+[node name="PostBox_01_13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 1.297, 0.891)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_13"]
+shape = SubResource("S10")
+
+[node name="PostBox_01_14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.169, 0, -0.9856, 0, 1, 0, 0.9856, 0, -0.169, -22.184, 0.8084, 1.399)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_14"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.997, 0, 0.0776, 0, 1, 0, -0.0776, 0, 0.997, -22.184, 1.8048, 0.927)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_15"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 1.8048, 2.443)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_16"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 2.2874, 0.996)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_17"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9986, 0, -0.0521, 0, 1, 0, 0.0521, 0, -0.9986, -22.184, 0.8084, 1.97)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_18"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9793, 0, 0.2026, 0, 1, 0, -0.2026, 0, 0.9793, -22.184, 0.3244, 0.933)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_19"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_20" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.121, 0.3244, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_20"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_21" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 1.932, 1.8048, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_21"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_22" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.696, 2.2874, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_22"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_23" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9941, 0, -0.1081, 0, 1, 0, 0.1081, 0, 0.9941, 3.038, 1.314, 14.444)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_23"]
+shape = SubResource("S9")
+
+[node name="PostBox_01_24" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0521, 0, -0.9986, 0, 1, 0, 0.9986, 0, 0.0521, 2.975, 0.8084, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_24"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_25" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.644, 1.8048, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_25"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_26" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.404, 1.3138, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_26"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_27" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.404, 0.8084, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_27"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_28" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 17.533, 0.3429, 12.631)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_28"]
+shape = SubResource("S13")
+
+[node name="PostBox_01_29" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.1084, 0, 0.9941, 0, 1, 0, -0.9941, 0, 0.1084, 17.564, 0.7199, 12.251)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_29"]
+shape = SubResource("S13")
+
+[node name="PostBox_01_30" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 17.533, 0.3429, 12.056)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_30"]
+shape = SubResource("S13")
+
+[node name="PostBox_01_31" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5598, 0, -0.8286, 0, 1, 0, 0.8286, 0, 0.5598, 0.5301, 1.4815, -10.5291)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_31"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_32" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1081, 0, -0.9941, 0, 1, 0, 0.9941, 0, -0.1081, -22.168, 1.314, 4.558)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_32"]
+shape = SubResource("S9")
+
+[node name="PostBox_01_33" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 1.297, 3.451)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_33"]
+shape = SubResource("S10")
+
+[node name="PostBox_01_34" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 0.8084, 3.959)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_34"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_35" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.997, 0, 0.0776, 0, 1, 0, -0.0776, 0, 0.997, -22.184, 1.8048, 3.487)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_35"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_36" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 1.8048, 5.003)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_36"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_37" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 2.2874, 3.556)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_37"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_38" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9986, 0, -0.0521, 0, 1, 0, 0.0521, 0, -0.9986, -22.184, 0.8084, 4.53)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_38"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_39" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9793, 0, 0.2026, 0, 1, 0, -0.2026, 0, 0.9793, -22.184, 0.3244, 3.493)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_39"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_40" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.789, 0.3244, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_40"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_41" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.978, 1.8048, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_41"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_42" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.214, 2.2874, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_42"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_43" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9941, 0, 0.1081, 0, 1, 0, -0.1081, 0, -0.9941, 19.872, 1.314, 14.476)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_43"]
+shape = SubResource("S9")
+
+[node name="PostBox_01_44" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0521, 0, 0.9986, 0, 1, 0, -0.9986, 0, -0.0521, 19.935, 0.8084, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_44"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_45" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.266, 1.8048, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_45"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_46" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.506, 1.3138, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_46"]
+shape = SubResource("S12")
+
+[node name="PostBox_01_47" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.506, 0.8084, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_47"]
+shape = SubResource("S11")
+
+[node name="PostBox_01_48" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0345, 0, -0.9994, 0, 1, 0, 0.9994, 0, 0.0345, 22.1865, 0.3429, 11.5986)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_48"]
+shape = SubResource("S13")
+
+[node name="PostBox_01_49" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9973, 0, 0.074, 0, 1, 0, -0.074, 0, -0.9973, 21.8056, 0.7199, 11.5808)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_49"]
+shape = SubResource("S13")
+
+[node name="PostBox_01_50" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0345, 0, -0.9994, 0, 1, 0, 0.9994, 0, 0.0345, 21.6118, 0.3429, 11.6185)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_01_50"]
+shape = SubResource("S13")
+
+[node name="PostBox_02_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.1816, 0, 0.9834, 0, 1, 0, -0.9834, 0, 0.1816, -22.136, 2.3048, 6.412)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_1"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9954, 0, -0.0954, 0, 1, 0, 0.0954, 0, 0.9954, -22.136, 1.7934, 6.98)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_2"]
+shape = SubResource("S15")
+
+[node name="PostBox_02_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -22.136, 0.3244, 6.282)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_3"]
+shape = SubResource("S16")
+
+[node name="PostBox_02_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0324, 0, -0.9995, 0, 1, 0, 0.9995, 0, -0.0324, -22.115, 1.309, 6.054)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_4"]
+shape = SubResource("S17")
+
+[node name="PostBox_02_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9909, 0, -0.1348, 0, 1, 0, 0.1348, 0, 0.9909, -22.136, 0.8084, 7.789)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_5"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1734, 0, -0.9849, 0, 1, 0, 0.9849, 0, -0.1734, -22.136, 0.3418, 6.987)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_6"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0231, 0, 0.9997, 0, 1, 0, -0.9997, 0, 0.0231, -22.115, 0.8258, 6.054)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_7"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.1816, 0, 0.9834, 0, 1, 0, -0.9834, 0, 0.1816, -22.136, 2.2705, 6.998)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_8"]
+shape = SubResource("S18")
+
+[node name="PostBox_02_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -22.136, 1.3024, 7.252)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_9"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 21.5726, 0.3429, 10.4126)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_10"]
+shape = SubResource("S13")
+
+[node name="PostBox_02_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9608, 0, 0.2773, 0, 1, 0, -0.2773, 0, -0.9608, 21.7776, 0.7199, 10.3566)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_11"]
+shape = SubResource("S13")
+
+[node name="PostBox_02_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 22.1476, 0.3429, 10.4126)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_12"]
+shape = SubResource("S13")
+
+[node name="PostBox_02_13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1816, 0, -0.9834, 0, 1, 0, 0.9834, 0, -0.1816, -22.184, 2.3048, 2.268)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_13"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9954, 0, 0.0954, 0, 1, 0, -0.0954, 0, -0.9954, -22.184, 1.7934, 1.7)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_14"]
+shape = SubResource("S15")
+
+[node name="PostBox_02_15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 0.3244, 2.398)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_15"]
+shape = SubResource("S16")
+
+[node name="PostBox_02_16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0324, 0, 0.9995, 0, 1, 0, -0.9995, 0, 0.0324, -22.205, 1.309, 2.626)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_16"]
+shape = SubResource("S17")
+
+[node name="PostBox_02_17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9909, 0, 0.1348, 0, 1, 0, -0.1348, 0, -0.9909, -22.184, 0.8084, 0.891)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_17"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.1734, 0, 0.9849, 0, 1, 0, -0.9849, 0, 0.1734, -22.184, 0.3418, 1.693)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_18"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0231, 0, -0.9997, 0, 1, 0, 0.9997, 0, -0.0231, -22.205, 0.8258, 2.626)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_19"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_20" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1816, 0, -0.9834, 0, 1, 0, 0.9834, 0, -0.1816, -22.184, 2.2705, 1.682)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_20"]
+shape = SubResource("S18")
+
+[node name="PostBox_02_21" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 1.3024, 1.428)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_21"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_22" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9834, 0, -0.1816, 0, 1, 0, 0.1816, 0, 0.9834, 3.273, 2.3048, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_22"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_23" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.268, 0.3244, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_23"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_24" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 1.896, 1.3024, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_24"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_25" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1348, 0, -0.9909, 0, 1, 0, 0.9909, 0, -0.1348, 1.896, 0.8084, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_25"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_26" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0954, 0, -0.9954, 0, 1, 0, 0.9954, 0, -0.0954, 2.505, 1.7934, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_26"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_27" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9995, 0, 0.0324, 0, 1, 0, -0.0324, 0, -0.9995, 3.631, 1.309, 14.481)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_27"]
+shape = SubResource("S17")
+
+[node name="PostBox_02_28" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9834, 0, -0.1816, 0, 1, 0, 0.1816, 0, 0.9834, 2.698, 0.3418, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_28"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_29" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.136, 1.7934, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_29"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_30" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9997, 0, -0.0231, 0, 1, 0, 0.0231, 0, 0.9997, 3.631, 0.8258, 14.481)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_30"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_31" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.116, 0.3429, 12.631)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_31"]
+shape = SubResource("S13")
+
+[node name="PostBox_02_32" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.2773, 0, -0.9608, 0, 1, 0, 0.9608, 0, -0.2773, 18.06, 0.7199, 12.426)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_32"]
+shape = SubResource("S13")
+
+[node name="PostBox_02_33" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.116, 0.3429, 12.056)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_33"]
+shape = SubResource("S13")
+
+[node name="PostBox_02_34" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8749, 0, 0.4844, 0, 1, 0, -0.4844, 0, 0.8749, 0.576, 1.4815, -9.701)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_34"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_35" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1816, 0, -0.9834, 0, 1, 0, 0.9834, 0, -0.1816, -22.184, 2.3048, 4.828)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_35"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_36" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9954, 0, 0.0954, 0, 1, 0, -0.0954, 0, -0.9954, -22.184, 1.7934, 4.26)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_36"]
+shape = SubResource("S15")
+
+[node name="PostBox_02_37" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 0.3244, 4.958)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_37"]
+shape = SubResource("S16")
+
+[node name="PostBox_02_38" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0324, 0, 0.9995, 0, 1, 0, -0.9995, 0, 0.0324, -22.205, 1.309, 5.186)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_38"]
+shape = SubResource("S17")
+
+[node name="PostBox_02_39" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9909, 0, 0.1348, 0, 1, 0, -0.1348, 0, -0.9909, -22.184, 0.8084, 3.451)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_39"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_40" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.1734, 0, 0.9849, 0, 1, 0, -0.9849, 0, 0.1734, -22.184, 0.3418, 4.253)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_40"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_41" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0231, 0, -0.9997, 0, 1, 0, 0.9997, 0, -0.0231, -22.205, 0.8258, 5.186)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_41"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_42" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9856, 0, 0.169, 0, 1, 0, -0.169, 0, 0.9856, -22.184, 2.2705, 4.208)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_42"]
+shape = SubResource("S18")
+
+[node name="PostBox_02_43" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.184, 1.3024, 3.988)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_43"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_44" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9834, 0, 0.1816, 0, 1, 0, -0.1816, 0, -0.9834, 19.637, 2.3048, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_44"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_45" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.642, 0.3244, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_45"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_46" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.014, 1.3024, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_46"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_47" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.1348, 0, 0.9909, 0, 1, 0, -0.9909, 0, 0.1348, 21.014, 0.8084, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_47"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_48" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0954, 0, 0.9954, 0, 1, 0, -0.9954, 0, 0.0954, 20.405, 1.7934, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_48"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_49" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9995, 0, -0.0324, 0, 1, 0, 0.0324, 0, 0.9995, 19.279, 1.309, 14.439)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_49"]
+shape = SubResource("S17")
+
+[node name="PostBox_02_50" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9834, 0, 0.1816, 0, 1, 0, -0.1816, 0, -0.9834, 20.212, 0.3418, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_50"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_51" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.774, 1.7934, 14.46)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_51"]
+shape = SubResource("S11")
+
+[node name="PostBox_02_52" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9997, 0, 0.0231, 0, 1, 0, -0.0231, 0, -0.9997, 19.279, 0.8258, 14.439)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_52"]
+shape = SubResource("S14")
+
+[node name="PostBox_02_53" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0345, 0, 0.9994, 0, 1, 0, -0.9994, 0, -0.0345, 22.1663, 0.3429, 11.016)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_53"]
+shape = SubResource("S13")
+
+[node name="PostBox_02_54" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9698, 0, -0.2439, 0, 1, 0, 0.2439, 0, 0.9698, 21.9634, 0.7199, 11.079)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_54"]
+shape = SubResource("S13")
+
+[node name="PostBox_02_55" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0345, 0, 0.9994, 0, 1, 0, -0.9994, 0, -0.0345, 21.5917, 0.3429, 11.0359)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/PostBox_02_55"]
+shape = SubResource("S13")
+
+[node name="Wheel_01_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9953, 0, -0.0971, 0.0144, 0.9889, -0.1478, 0.096, -0.1485, -0.9842, -10.414, 3.395, 10.524)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_1"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.6184, 0, -0.7859, 0, 1, 0, 0.7859, 0, 0.6184, -22.0289, 1.098, -0.7749)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_2"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.842, 0, -0.5394, 0, 1, 0, 0.5394, 0, 0.842, -22.0906, 0.776, -2.4048)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_3"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9859, 0, 0.1674, 0, 1, 0, -0.1674, 0, -0.9859, -22.0289, 0.776, -0.7749)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_4"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5764, 0, -0.8172, 0, 1, 0, 0.8172, 0, -0.5764, -22.06, 0.776, -1.5974)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_5"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.6184, 0, -0.7859, 0, 1, 0, 0.7859, 0, 0.6184, -22.0289, 0.464, -0.7749)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_6"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.4577, 0, -0.8891, 0, 1, 0, 0.8891, 0, -0.4577, -22.06, 1.098, -1.5974)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_7"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9859, 0, 0.1674, 0, 1, 0, -0.1674, 0, -0.9859, -22.0289, 0.142, -0.7749)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_8"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5764, 0, -0.8172, 0, 1, 0, 0.8172, 0, -0.5764, -22.06, 0.142, -1.5974)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_9"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0378, 0, -0.9993, 0, 1, 0, 0.9993, 0, 0.0378, -22.0906, 1.098, -2.4048)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_10"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.842, 0, -0.5394, 0, 1, 0, 0.5394, 0, 0.842, -22.0906, 0.142, -2.4048)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_11"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0378, 0, -0.9993, 0, 1, 0, 0.9993, 0, 0.0378, -22.0906, 0.464, -2.4048)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_12"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.4577, 0, -0.8891, 0, 1, 0, 0.8891, 0, -0.4577, -22.06, 0.464, -1.5974)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_13"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5883, 0, -0.8087, 0, 1, 0, 0.8087, 0, 0.5883, 0, 1.098, -8.9306)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_14"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, 0.821, 0, 0.776, -10.5616)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_15"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9788, 0, 0.2046, 0, 1, 0, -0.2046, 0, -0.9788, 0, 0.776, -8.9306)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_16"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6069, 0, -0.7948, 0, 1, 0, 0.7948, 0, -0.6069, 0, 0.776, -9.7536)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_17"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5883, 0, -0.8087, 0, 1, 0, 0.8087, 0, 0.5883, 0, 0.464, -8.9306)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_18"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.491, 0, -0.8712, 0, 1, 0, 0.8712, 0, -0.491, 0, 1.098, -9.7536)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_19"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_20" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9788, 0, 0.2046, 0, 1, 0, -0.2046, 0, -0.9788, 0, 0.142, -8.9306)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_20"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_21" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6069, 0, -0.7948, 0, 1, 0, 0.7948, 0, -0.6069, 0, 0.142, -9.7536)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_21"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_22" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 1.098, -10.5616)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_22"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_23" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, 0.821, 0, 0.142, -10.5616)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_23"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_24" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0.464, -10.5616)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_24"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_25" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.491, 0, -0.8712, 0, 1, 0, 0.8712, 0, -0.491, 0, 0.464, -9.7536)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_25"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_26" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -9.844, 3.041, 8.372)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_26"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_27" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9629, 0, -0.2699, 0, 1, 0, 0.2699, 0, -0.9629, -0.4607, 4.0374, -8.68)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_27"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_28" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, -0.821, 0.9478, 3.7407, -8.1568)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_28"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_29" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5326, 0, 0.8464, 0, 1, 0, -0.8464, 0, 0.5326, -0.4607, 3.7407, -8.68)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_29"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_30" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5337, 0, 0.8457, 0, 1, 0, -0.8457, 0, -0.5337, 0.25, 3.7407, -8.416)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_30"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_31" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9629, 0, -0.2699, 0, 1, 0, 0.2699, 0, -0.9629, -0.4607, 3.4533, -8.68)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_31"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_32" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6457, 0, 0.7636, 0, 1, 0, -0.7636, 0, -0.6457, 0.25, 4.0374, -8.416)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_32"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_33" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5326, 0, 0.8464, 0, 1, 0, -0.8464, 0, 0.5326, -0.4607, 3.1567, -8.68)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_33"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_34" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5337, 0, 0.8457, 0, 1, 0, -0.8457, 0, -0.5337, 0.25, 3.1567, -8.416)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_34"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_35" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9374, 0, 0.3482, 0, 1, 0, -0.3482, 0, -0.9374, 0.9478, 4.0374, -8.1568)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_35"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_36" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, -0.821, 0.9478, 3.1567, -8.1568)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_36"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_37" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9374, 0, 0.3482, 0, 1, 0, -0.3482, 0, -0.9374, 0.9478, 3.4533, -8.1568)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_37"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_38" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6457, 0, 0.7636, 0, 1, 0, -0.7636, 0, -0.6457, 0.25, 3.4533, -8.416)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_38"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_39" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.535, 4.302, -8.278)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_39"]
+shape = SubResource("S21")
+
+[node name="Wheel_01_40" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5883, 0, -0.8087, 0, 1, 0, 0.8087, 0, 0.5883, 0.88, 1.098, -8.9306)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_40"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_41" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, 0.821, 0.88, 0.776, -10.5616)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_41"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_42" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9788, 0, 0.2046, 0, 1, 0, -0.2046, 0, -0.9788, 0.88, 0.776, -8.9306)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_42"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_43" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6069, 0, -0.7948, 0, 1, 0, 0.7948, 0, -0.6069, 0.88, 0.776, -9.7536)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_43"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_44" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5883, 0, -0.8087, 0, 1, 0, 0.8087, 0, 0.5883, 0.88, 0.464, -8.9306)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_44"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_45" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.491, 0, -0.8712, 0, 1, 0, 0.8712, 0, -0.491, 0.88, 1.098, -9.7536)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_45"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_46" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9788, 0, 0.2046, 0, 1, 0, -0.2046, 0, -0.9788, 0.88, 0.142, -8.9306)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_46"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_47" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6069, 0, -0.7948, 0, 1, 0, 0.7948, 0, -0.6069, 0.88, 0.142, -9.7536)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_47"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_48" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.88, 1.098, -10.5616)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_48"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_49" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, 0.821, 0.88, 0.142, -10.5616)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_49"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_50" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.88, 0.464, -10.5616)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_50"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_51" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.491, 0, -0.8712, 0, 1, 0, 0.8712, 0, -0.491, 0.88, 0.464, -9.7536)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_51"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_52" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17.64, 3.041, 6.81)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_52"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_53" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.491, 0, -0.8712, 0, 1, 0, 0.8712, 0, -0.491, -9.255, 3.354, -3.676)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_53"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_54" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9788, 0, 0.2046, 0, 1, 0, -0.2046, 0, -0.9788, -9.255, 3.989, -3.309)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_54"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_55" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5883, 0, -0.8087, 0, 1, 0, 0.8087, 0, 0.5883, -9.255, 3.354, -2.853)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_55"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_56" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6069, 0, -0.7948, 0, 1, 0, 0.7948, 0, -0.6069, -9.255, 3.989, -4.132)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_56"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_57" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6069, 0, -0.7948, 0, 1, 0, 0.7948, 0, -0.6069, -9.255, 3.666, -4.132)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_57"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_58" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6069, 0, -0.7948, 0, 1, 0, 0.7948, 0, -0.6069, -9.255, 3.032, -3.676)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_58"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_59" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -9.255, 3.354, -4.484)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_59"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_60" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9788, 0, 0.2046, 0, 1, 0, -0.2046, 0, -0.9788, -9.255, 3.666, -3.309)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_60"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_61" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, 0.821, -9.255, 3.032, -4.484)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_61"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_62" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9788, 0, 0.2046, 0, 1, 0, -0.2046, 0, -0.9788, -9.255, 3.032, -2.853)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_62"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_63" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9629, 0, -0.2699, 0, 1, 0, 0.2699, 0, -0.9629, 7.8793, 4.0374, -5.604)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_63"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_64" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, -0.821, 9.2878, 3.7407, -5.0808)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_64"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_65" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5326, 0, 0.8464, 0, 1, 0, -0.8464, 0, 0.5326, 7.8793, 3.7407, -5.604)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_65"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_66" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5337, 0, 0.8457, 0, 1, 0, -0.8457, 0, -0.5337, 8.59, 3.7407, -5.34)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_66"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_67" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9629, 0, -0.2699, 0, 1, 0, 0.2699, 0, -0.9629, 7.8793, 3.4533, -5.604)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_67"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_68" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6457, 0, 0.7636, 0, 1, 0, -0.7636, 0, -0.6457, 8.59, 4.0374, -5.34)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_68"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_69" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5326, 0, 0.8464, 0, 1, 0, -0.8464, 0, 0.5326, 7.8793, 3.1567, -5.604)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_69"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_70" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5337, 0, 0.8457, 0, 1, 0, -0.8457, 0, -0.5337, 8.59, 3.1567, -5.34)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_70"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_71" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9374, 0, 0.3482, 0, 1, 0, -0.3482, 0, -0.9374, 9.2878, 4.0374, -5.0808)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_71"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_72" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, -0.821, 9.2878, 3.1567, -5.0808)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_72"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_73" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9374, 0, 0.3482, 0, 1, 0, -0.3482, 0, -0.9374, 9.2878, 3.4533, -5.0808)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_73"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_74" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6457, 0, 0.7636, 0, 1, 0, -0.7636, 0, -0.6457, 8.59, 3.4533, -5.34)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_74"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_75" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0.5669, -0.8238, 0, 0.8238, 0.5669, 1, 0, 0, -17.185, 3.194, 6.81)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_75"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_76" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5599, 0, -0.8286, 0, 1, 0, 0.8286, 0, 0.5599, -3.2985, 1.098, -12.6975)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_76"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_77" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8007, 0, -0.599, 0, 1, 0, 0.599, 0, 0.8007, -3.242, 0.776, -14.3275)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_77"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_78" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9712, 0, 0.2384, 0, 1, 0, -0.2384, 0, -0.9712, -3.2985, 0.776, -12.6975)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_78"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_79" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6341, 0, -0.7733, 0, 1, 0, 0.7733, 0, -0.6341, -3.27, 0.776, -13.52)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_79"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_80" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5599, 0, -0.8286, 0, 1, 0, 0.8286, 0, 0.5599, -3.2985, 0.464, -12.6975)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_80"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_81" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5209, 0, -0.8536, 0, 1, 0, 0.8536, 0, -0.5209, -3.27, 1.098, -13.52)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_81"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_82" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9712, 0, 0.2384, 0, 1, 0, -0.2384, 0, -0.9712, -3.2985, 0.142, -12.6975)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_82"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_83" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6341, 0, -0.7733, 0, 1, 0, 0.7733, 0, -0.6341, -3.27, 0.142, -13.52)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_83"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_84" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0347, 0, -0.9994, 0, 1, 0, 0.9994, 0, -0.0347, -3.242, 1.098, -14.3275)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_84"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_85" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8007, 0, -0.599, 0, 1, 0, 0.599, 0, 0.8007, -3.242, 0.142, -14.3275)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_85"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_86" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0347, 0, -0.9994, 0, 1, 0, 0.9994, 0, -0.0347, -3.242, 0.464, -14.3275)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_86"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_87" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5209, 0, -0.8536, 0, 1, 0, 0.8536, 0, -0.5209, -3.27, 0.464, -13.52)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_87"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_88" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -10.414, 3.041, 10.232)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_88"]
+shape = SubResource("S19")
+
+[node name="Wheel_01_89" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9629, 0, -0.2699, 0, 1, 0, 0.2699, 0, -0.9629, 4.5693, 4.0374, -8.394)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_89"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_90" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, -0.821, 5.9778, 3.7407, -7.8708)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_90"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_91" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5326, 0, 0.8464, 0, 1, 0, -0.8464, 0, 0.5326, 4.5693, 3.7407, -8.394)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_91"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_92" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5337, 0, 0.8457, 0, 1, 0, -0.8457, 0, -0.5337, 5.28, 3.7407, -8.13)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_92"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_93" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9629, 0, -0.2699, 0, 1, 0, 0.2699, 0, -0.9629, 4.5693, 3.4533, -8.394)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_93"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_94" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6457, 0, 0.7636, 0, 1, 0, -0.7636, 0, -0.6457, 5.28, 4.0374, -8.13)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_94"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_95" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5326, 0, 0.8464, 0, 1, 0, -0.8464, 0, 0.5326, 4.5693, 3.1567, -8.394)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_95"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_96" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5337, 0, 0.8457, 0, 1, 0, -0.8457, 0, -0.5337, 5.28, 3.1567, -8.13)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_96"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_97" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9374, 0, 0.3482, 0, 1, 0, -0.3482, 0, -0.9374, 5.9778, 4.0374, -7.8708)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_97"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_98" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.821, 0, -0.5709, 0, 1, 0, 0.5709, 0, -0.821, 5.9778, 3.1567, -7.8708)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_98"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_99" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9374, 0, 0.3482, 0, 1, 0, -0.3482, 0, -0.9374, 5.9778, 3.4533, -7.8708)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_99"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_100" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6457, 0, 0.7636, 0, 1, 0, -0.7636, 0, -0.6457, 5.28, 3.4533, -8.13)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_100"]
+shape = SubResource("S20")
+
+[node name="Wheel_01_101" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.212, 4.302, -8.578)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Wheel_01_101"]
+shape = SubResource("S22")
+
+[node name="WoodenPlank_01_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9659, 0, 0.259, 0, 1, 0, -0.259, 0, 0.9659, 20.8739, 0, 12.6674)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_01_1"]
+shape = SubResource("S23")
+
+[node name="WoodenPlank_01_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1004, 0, -0.995, 0, 1, 0, 0.995, 0, -0.1004, 18.2699, 1.9199, -0.0521)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_01_2"]
+shape = SubResource("S23")
+
+[node name="WoodenPlank_01_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9789, 0, -0.2044, 0, 1, 0, 0.2044, 0, 0.9789, 17.5865, 2.921, -5.7068)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_01_3"]
+shape = SubResource("S23")
+
+[node name="WoodenPlank_01_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.8718, 1.2748, -9.8282)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_01_4"]
+shape = SubResource("S24")
+
+[node name="ShippingContainer_04_1Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8552, 0, -0.5182, 0, 1, 0, 0.5182, 0, -0.8552, -10.04, 2.969, 2.21)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_1Chao"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_04_1Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8552, 0, -0.5182, 0, 1, 0, 0.5182, 0, -0.8552, -10.04, 5.731, 2.21)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_1Teto"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_04_1LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8552, 0, -0.5182, 0, 1, 0, 0.5182, 0, -0.8552, -9.03, 4.35, 1.598)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_1LadoA"]
+shape = SubResource("S26")
+
+[node name="ShippingContainer_04_1LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8552, 0, -0.5182, 0, 1, 0, 0.5182, 0, -0.8552, -11.05, 4.35, 2.822)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_1LadoB"]
+shape = SubResource("S26")
+
+[node name="ShippingContainer_04_2Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 12.4, 0.069, -5.01)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_2Chao"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_04_2Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 12.4, 2.831, -5.01)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_2Teto"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_04_2LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 12.4, 1.45, -3.829)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_2LadoA"]
+shape = SubResource("S26")
+
+[node name="ShippingContainer_04_2LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 12.4, 1.45, -6.191)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_2LadoB"]
+shape = SubResource("S26")
+
+[node name="ShippingContainer_04_3Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 3.22, 0.069, 9.3983)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_3Chao"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_04_3Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 3.22, 2.831, 9.3983)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_3Teto"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_04_3LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 3.22, 1.45, 10.5793)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_3LadoA"]
+shape = SubResource("S26")
+
+[node name="ShippingContainer_04_3LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 3.22, 1.45, 8.2173)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_04_3LadoB"]
+shape = SubResource("S26")
+
+[node name="AmoBox_01_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9034, 0, 0.4287, 0, 1, 0, -0.4287, 0, -0.9034, 19.3505, 0.1022, 13.4231)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/AmoBox_01_1"]
+shape = SubResource("S27")
+
+[node name="AmoBox_01_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8711, 0, 0.4911, 0, 1, 0, -0.4911, 0, -0.8711, 19.2964, 0.5982, 13.3981)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/AmoBox_01_2"]
+shape = SubResource("S27")
+
+[node name="AmoBox_01_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.4894, 0, 0.8721, 0, 1, 0, -0.8721, 0, -0.4894, -21.5711, 0.1022, 8.0306)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/AmoBox_01_3"]
+shape = SubResource("S27")
+
+[node name="AmoBox_01_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.7814, 0, 0.624, 0, 1, 0, -0.624, 0, 0.7814, -21.9208, 0.3572, -8.201)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/AmoBox_01_4"]
+shape = SubResource("S27")
+
+[node name="AmoBox_01_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9783, 0, 0.2072, 0, 1, 0, -0.2072, 0, -0.9783, 0.0287, 4.5374, -8.4668)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/AmoBox_01_5"]
+shape = SubResource("S27")
+
+[node name="AmoBox_01_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.3404, 0, 0.9403, 0, 1, 0, -0.9403, 0, -0.3404, -21.5711, 0.3572, 8.0304)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/AmoBox_01_6"]
+shape = SubResource("S27")
+
+[node name="AmoBox_01_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6855, 0, 0.7281, 0, 1, 0, -0.7281, 0, -0.6855, 19.3501, 0.3572, 13.4228)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/AmoBox_01_7"]
+shape = SubResource("S27")
+
+[node name="AmoBox_01_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.6691, 0, 0.7432, 0, 1, 0, -0.7432, 0, 0.6691, -21.9209, 0.1022, -8.2008)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/AmoBox_01_8"]
+shape = SubResource("S27")
+
+[node name="Barrel_06_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -13.86, 0.44, 9.15)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_06_1"]
+shape = SubResource("S28")
+
+[node name="Barrel_06_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -14.55, 3.308, -1.7)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_06_2"]
+shape = SubResource("S28")
+
+[node name="Barrel_06_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 13.4, 3.337, 2.52)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_06_3"]
+shape = SubResource("S28")
+
+[node name="Barrel_06_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -10.4235, 3.34, 8.6471)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_06_4"]
+shape = SubResource("S28")
+
+[node name="Barrel_06_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.77, 0.44, 12.9)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_06_5"]
+shape = SubResource("S28")
+
+[node name="Barrel_06_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 21.93, 0.44, 13.18)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_06_6"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -7.797, 4.366, 7.4753)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_1"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -7.797, 3.4759, 7.4753)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_2"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.905, 0, 0.4254, 0, 1, 0, -0.4254, 0, 0.905, 17.45, 3.346, -4.3352)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_3"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9988, 0, 0.0487, 0, 1, 0, -0.0487, 0, -0.9988, -13.2437, 0.597, 9.0943)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_4"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.6427, 0.597, 9.0943)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_5"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.3129, 0, -0.9498, 0, 1, 0, 0.9498, 0, -0.3129, -13.2437, 0.597, 9.7193)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_6"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8534, 0, -0.5213, 0, 1, 0, 0.5213, 0, 0.8534, -12.6427, 0.597, 9.7193)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_7"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10.6452, 3.33, -9.0114)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_8"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -7.89, 4.366, 4.2)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_9"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -7.273, 3.4759, 7.181)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_10"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9775, 0, -0.2108, 0, 1, 0, 0.2108, 0, -0.9775, -8.249, 3.4759, 3.683)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_11"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9988, 0, -0.0487, 0, 1, 0, 0.0487, 0, 0.9988, -12.6457, 1.657, 12.171)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_12"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13.2467, 1.657, 12.171)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_13"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.3129, 0, 0.9498, 0, 1, 0, -0.9498, 0, 0.3129, -12.6457, 1.657, 11.546)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_14"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8534, 0, 0.5213, 0, 1, 0, -0.5213, 0, -0.8534, -13.2467, 1.657, 11.546)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_15"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9988, 0, 0.0487, 0, 1, 0, -0.0487, 0, -0.9988, -13.2437, 0.597, 11.549)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_16"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.6427, 0.597, 11.549)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_17"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.3129, 0, -0.9498, 0, 1, 0, 0.9498, 0, -0.3129, -13.2437, 0.597, 12.174)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_18"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8534, 0, -0.5213, 0, 1, 0, 0.5213, 0, 0.8534, -12.6427, 0.597, 12.174)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_19"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_20" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -21.493, 4.04, 14.475)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_20"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_21" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -7.89, 3.4759, 4.2)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_21"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_22" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9499, 0, 0.3127, 0, 1, 0, -0.3127, 0, -0.9499, -8.18, 3.4759, 6.91)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_22"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_23" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 18.0515, 3.346, -4.3352)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_23"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_24" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9103, 0, 0.414, 0, 1, 0, -0.414, 0, 0.9103, -22.1145, 4.04, 13.751)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_24"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_25" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, -1, 0, 0, 0, 1, 0, -10.3272, 3.138, 9.377)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_25"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_26" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9988, 0, -0.0487, 0, 1, 0, 0.0487, 0, 0.9988, -12.6457, 0.597, 10.951)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_26"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_27" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13.2467, 0.597, 10.951)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_27"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_28" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.3129, 0, 0.9498, 0, 1, 0, -0.9498, 0, 0.3129, -12.6457, 0.597, 10.326)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_28"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_29" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8534, 0, 0.5213, 0, 1, 0, -0.5213, 0, -0.8534, -13.2467, 0.597, 10.326)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_29"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_30" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9988, 0, 0.0487, 0, 1, 0, -0.0487, 0, -0.9988, -13.2437, 1.657, 9.117)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_30"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_31" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.6427, 1.657, 9.117)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_31"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_32" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.3129, 0, -0.9498, 0, 1, 0, 0.9498, 0, -0.3129, -13.2437, 1.657, 9.742)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_32"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_33" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8534, 0, -0.5213, 0, 1, 0, 0.5213, 0, 0.8534, -12.6427, 1.657, 9.742)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_33"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_34" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -22.1145, 4.04, 14.414)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_34"]
+shape = SubResource("S28")
+
+[node name="Barrel_05_35" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -21.493, 4.04, 13.813)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_05_35"]
+shape = SubResource("S28")
+
+[node name="Pallet_01_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 21.8676, 0.0782, 10.1086)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_1"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.31, 0.0782, -0.23)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_2"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.7715, 0, -0.6363, 0, 1, 0, 0.6363, 0, -0.7715, 8.904, 3.094, 1.449)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_3"]
+shape = SubResource("S30")
+
+[node name="Pallet_01_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -19.36, 0.0782, -13.71)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_4"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5126, 0, -0.8587, 0, 1, 0, 0.8587, 0, -0.5126, 0.323, 3.1165, -9.55)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_5"]
+shape = SubResource("S31")
+
+[node name="Pallet_01_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.1399, 0, -0.9902, 0, 1, 0, 0.9902, 0, 0.1399, -7.677, 1.0009, 9.208)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_6"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.812, 0.0782, 12.336)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_7"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.122, 0.0782, -14.109)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_8"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0081, -0.9853, -0.1707, 0.0016, 0.1707, -0.9853, 1, -0.0083, 0.0002, -17.4628, 0.4375, -0.642)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_9"]
+shape = SubResource("S32")
+
+[node name="Pallet_01_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.6795, 0.0782, -0.6177)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_10"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -15.44, 0.0782, -0.6177)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_11"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1623, 0, -0.9867, 0, 1, 0, 0.9867, 0, -0.1623, -18.024, 0.0782, -13.71)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_12"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.9447, 0.0782, 9.4053)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_13"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.31, 0.0782, 1.15)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_14"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.654, 1.1172, -0.6177)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_15"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9995, 0, -0.0325, 0, 1, 0, 0.0325, 0, -0.9995, 6.29, 1.1192, 14.023)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_16"]
+shape = SubResource("S33")
+
+[node name="Pallet_01_17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -12.9447, 1.1382, 11.86)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_17"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -12.001, 1.1202, -4.514)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_18"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.9447, 0.0782, 11.86)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_19"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_20" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.356, 0.0782, 14.023)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_20"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_21" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.2894, 0, -0.9572, 0, 1, 0, 0.9572, 0, 0.2894, -12.131, 0.0782, -12.777)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_21"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_22" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -12.001, 0.0782, -4.46)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_22"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_23" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -12.9447, 0.0782, 10.64)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_23"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_24" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -8.278, 0.0782, -2.8877)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_24"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_25" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0345, 0, 0.9994, 0, 1, 0, -0.9994, 0, -0.0345, 21.882, 0.0782, 11.33)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_25"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_26" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.9447, 1.1382, 9.428)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_26"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_27" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0204, 0, -0.9998, 0, 1, 0, 0.9998, 0, -0.0204, -7.716, 1.0009, 10.345)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_27"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_28" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1357, 0, 0.9908, 0, 1, 0, -0.9908, 0, -0.1357, -19.252, 1.1192, -13.71)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_28"]
+shape = SubResource("S29")
+
+[node name="Pallet_01_29" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.001, 0.0782, -5.71)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_01_29"]
+shape = SubResource("S29")
+
+[node name="Barrel_04_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 13.42, 1.479, -6.694)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_1"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.001, 0.597, -0.533)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_2"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.001, 0.597, 0.081)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_3"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.602, 0.597, -0.533)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_4"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.602, 0.597, 0.081)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_5"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 13.42, 0.5759, -6.694)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_6"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -17.711, 0.44, -1.4079)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_7"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9997, 0, -0.0239, 0, 1, 0, 0.0239, 0, -0.9997, 14.0117, 1.479, -6.683)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_8"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.3685, 0.597, -0.9207)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_9"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.3685, 0.597, -0.3067)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_10"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.9715, 0.597, -0.9207)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_11"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.9715, 0.597, -0.3067)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_12"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -15.137, 0.597, -0.3067)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_13"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -15.751, 0.597, -0.3067)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_14"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -15.137, 0.597, -0.9097)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_15"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -15.751, 0.597, -0.9097)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_16"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.621, 0.597, 1.453)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_17"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.621, 0.597, 0.839)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_18"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.018, 0.597, 1.453)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_19"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_20" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.018, 0.597, 0.839)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_20"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_21" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.343, 1.636, -0.9207)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_21"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_22" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.343, 1.636, -0.3067)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_22"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_23" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.946, 1.636, -0.9207)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_23"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_24" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.946, 1.636, -0.3067)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_24"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_25" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9995, 0, -0.0325, 0, 1, 0, 0.0325, 0, -0.9995, 6.6655, 1.638, 14.3842)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_25"]
+shape = SubResource("S34")
+
+[node name="Barrel_04_26" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9995, 0, -0.0325, 0, 1, 0, 0.0325, 0, -0.9995, 5.9291, 1.638, 14.4081)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_26"]
+shape = SubResource("S34")
+
+[node name="Barrel_04_27" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9995, 0, -0.0325, 0, 1, 0, 0.0325, 0, -0.9995, 6.642, 1.638, 13.661)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_27"]
+shape = SubResource("S34")
+
+[node name="Barrel_04_28" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9995, 0, -0.0325, 0, 1, 0, 0.0325, 0, -0.9995, 5.9056, 1.638, 13.6849)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_28"]
+shape = SubResource("S34")
+
+[node name="Barrel_04_29" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.667, 0.597, 13.72)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_29"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_30" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.667, 0.597, 14.334)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_30"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_31" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.064, 0.597, 13.72)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_31"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_32" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.064, 0.597, 14.334)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_32"]
+shape = SubResource("S28")
+
+[node name="Barrel_04_33" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 14.0117, 0.5759, -6.694)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_04_33"]
+shape = SubResource("S28")
+
+[node name="Pallet_02_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 21.9966, 0.5026, -4.7)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_02_1"]
+shape = SubResource("S35")
+
+[node name="Pallet_02_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0448, 0, -0.999, 0, 1, 0, 0.999, 0, -0.0448, 13.4437, 0.5026, -10.3101)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_02_2"]
+shape = SubResource("S35")
+
+[node name="Pallet_02_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22.0031, 0.5026, -3.668)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_02_3"]
+shape = SubResource("S35")
+
+[node name="Pallet_02_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0469, 0, -0.9989, 0, 1, 0, 0.9989, 0, 0.0469, 13.4137, 0.5026, -11.3018)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_02_4"]
+shape = SubResource("S35")
+
+[node name="Pallet_02_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 14.3767, 0.5026, -0.9585)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_02_5"]
+shape = SubResource("S35")
+
+[node name="Pallet_02_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 13.4127, 0.5026, -9.2778)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_02_6"]
+shape = SubResource("S35")
+
+[node name="Pallet_02_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1152, 0, -0.9933, 0, 1, 0, 0.9933, 0, -0.1152, 13.4128, 1.5406, -9.3094)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Pallet_02_7"]
+shape = SubResource("S35")
+
+[node name="Box_01_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9994, 0, 0.0349, 0, 1, 0, -0.0349, 0, -0.9994, -7.7572, 0.453, 10.29)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_01_1"]
+shape = SubResource("S36")
+
+[node name="Box_01_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.2596, 0, -0.9657, 0, 1, 0, 0.9657, 0, -0.2596, -21.749, 4.924, 14.087)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_01_2"]
+shape = SubResource("S36")
+
+[node name="Box_01_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 7.498, 4.1, 13.951)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_01_3"]
+shape = SubResource("S36")
+
+[node name="Box_01_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -7.7572, 0.453, 9.2895)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_01_4"]
+shape = SubResource("S36")
+
+[node name="Box_01_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -22.009, 4.047, -14.0737)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_01_5"]
+shape = SubResource("S36")
+
+[node name="Box_01_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -7.46, 4.06, -13.96)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_01_6"]
+shape = SubResource("S36")
+
+[node name="Box_01_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 7.437, 4.06, -13.96)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_01_7"]
+shape = SubResource("S36")
+
+[node name="Box_01_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 19.575, 0.457, -0.4415)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_01_8"]
+shape = SubResource("S36")
+
+[node name="Box_01_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9867, 0, -0.1628, 0, 1, 0, 0.1628, 0, -0.9867, -21.992, 4.945, -14.075)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_01_9"]
+shape = SubResource("S36")
+
+[node name="Box_01_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -7.5676, 4.1, 13.951)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_01_10"]
+shape = SubResource("S36")
+
+[node name="ShippingContainer_03_1Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -9.9538, 0.069, 5.04)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_1Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_03_1Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -9.9538, 2.831, 5.04)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_1Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_03_1LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -9.9538, 1.45, 3.859)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_1LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_03_1LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -9.9538, 1.45, 6.221)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_1LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_03_2Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10.8362, 0.069, 1.74)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_2Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_03_2Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10.8362, 2.831, 1.74)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_2Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_03_2LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10.8362, 1.45, 0.559)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_2LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_03_2LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10.8362, 1.45, 2.921)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_2LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_03_3Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8031, 0, -0.5959, 0, 1, 0, 0.5959, 0, 0.8031, -11.3342, 0.069, -10.5709)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_3Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_03_3Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8031, 0, -0.5959, 0, 1, 0, 0.5959, 0, 0.8031, -11.3342, 2.831, -10.5709)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_3Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_03_3LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8031, 0, -0.5959, 0, 1, 0, 0.5959, 0, 0.8031, -12.2826, 1.45, -11.2746)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_3LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_03_3LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8031, 0, -0.5959, 0, 1, 0, 0.5959, 0, 0.8031, -10.3858, 1.45, -9.8671)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_3LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_03_4Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9074, 0, -0.4202, 0, 1, 0, 0.4202, 0, 0.9074, 13.34, 0.069, 11.1816)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_4Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_03_4Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9074, 0, -0.4202, 0, 1, 0, 0.4202, 0, 0.9074, 13.34, 2.831, 11.1816)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_4Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_03_4LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9074, 0, -0.4202, 0, 1, 0, 0.4202, 0, 0.9074, 12.2683, 1.45, 10.6853)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_4LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_03_4LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9074, 0, -0.4202, 0, 1, 0, 0.4202, 0, 0.9074, 14.4116, 1.45, 11.6779)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_03_4LadoB"]
+shape = SubResource("S38")
+
+[node name="Box_02_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -16.3901, 0.9572, -4.8879)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_02_1"]
+shape = SubResource("S39")
+
+[node name="Box_02_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -21.5831, 0.9572, 9.5179)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_02_2"]
+shape = SubResource("S39")
+
+[node name="Box_02_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 17.8199, 0.9572, 13.8521)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_02_3"]
+shape = SubResource("S39")
+
+[node name="Box_02_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 12.8799, 0.9572, -0.5079)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_02_4"]
+shape = SubResource("S39")
+
+[node name="Box_02_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1, 0, 0.995, 0, 1, 0, -0.995, 0, -0.1, 18.2399, 0.9572, 0.0979)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Box_02_5"]
+shape = SubResource("S39")
+
+[node name="WallDecor_06_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 22.2655, 1.2015, 14.31)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WallDecor_06_1"]
+shape = SubResource("S40")
+
+[node name="WallDecor_06_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -21.81, 1.2015, 14.5305)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WallDecor_06_2"]
+shape = SubResource("S40")
+
+[node name="WallDecor_06_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 22.2655, 1.2015, 13.99)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WallDecor_06_3"]
+shape = SubResource("S40")
+
+[node name="WallDecor_06_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 22.2655, 1.2015, 13.66)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WallDecor_06_4"]
+shape = SubResource("S40")
+
+[node name="WallDecor_06_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -21.46, 1.2015, 14.5305)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WallDecor_06_5"]
+shape = SubResource("S40")
+
+[node name="WallDecor_06_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -21.109, 1.2015, 14.5305)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WallDecor_06_6"]
+shape = SubResource("S40")
+
+[node name="Barrel_01_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7.45, 1.5057, 8.9761)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_01_1"]
+shape = SubResource("S41")
+
+[node name="Barrel_01_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22.199, 1.4319, -3.836)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_01_2"]
+shape = SubResource("S41")
+
+[node name="Barrel_01_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22.199, 1.4319, -4.438)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_01_3"]
+shape = SubResource("S41")
+
+[node name="Barrel_01_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7.712, 1.5057, 9.417)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_01_4"]
+shape = SubResource("S41")
+
+[node name="Barrel_01_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7.963, 1.5057, 8.976)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_01_5"]
+shape = SubResource("S41")
+
+[node name="ShippingContainer_06_1Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8088, 0, 0.5881, 0, 1, 0, -0.5881, 0, -0.8088, -0.35, 2.959, -1.57)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_06_1Chao"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_06_1Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8088, 0, 0.5881, 0, 1, 0, -0.5881, 0, -0.8088, -0.35, 5.721, -1.57)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_06_1Teto"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_06_1LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8088, 0, 0.5881, 0, 1, 0, -0.5881, 0, -0.8088, 0.6052, 4.34, -0.8755)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_06_1LadoA"]
+shape = SubResource("S26")
+
+[node name="ShippingContainer_06_1LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8088, 0, 0.5881, 0, 1, 0, -0.5881, 0, -0.8088, -1.3052, 4.34, -2.2645)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_06_1LadoB"]
+shape = SubResource("S26")
+
+[node name="ShootingTarget_01_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5356, 0, -0.8444, 0, 1, 0, 0.8444, 0, 0.5356, -11.79, 0.8884, -0.55)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShootingTarget_01_1"]
+shape = SubResource("S42")
+
+[node name="ShootingTarget_01_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.4446, 0, -0.8958, 0, 1, 0, 0.8958, 0, 0.4446, 3.81, 3.9143, -8.65)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShootingTarget_01_2"]
+shape = SubResource("S42")
+
+[node name="Barrel_02_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9713, 0, 0.2377, 0, 1, 0, -0.2377, 0, -0.9713, 6.448, 3.4559, 5.443)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_1"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.309, 4.324, 5.67)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_2"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9743, 0, -0.2251, 0, 1, 0, 0.2251, 0, -0.9743, 16.48, 1.33, 14.488)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_3"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0098, 0, 1, 0, 1, 0, -1, 0, -0.0098, 6.949, 3.4559, 5.065)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_4"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9743, 0, -0.2251, 0, 1, 0, 0.2251, 0, -0.9743, 15.87, 0.44, 14.44)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_5"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.0114, 3.4559, 5.8726)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_6"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9837, 0, -0.1799, 0, 1, 0, 0.1799, 0, -0.9837, -11.701, 1.641, -4.814)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_7"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.5275, 0, 0.8496, 0, 1, 0, -0.8496, 0, -0.5275, -12.313, 1.641, -4.814)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_8"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -11.701, 1.641, -4.21)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_9"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.3271, 0, 0.945, 0, 1, 0, -0.945, 0, 0.3271, -12.313, 1.641, -4.21)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_10"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.1799, 0, -0.9837, 0, 1, 0, 0.9837, 0, 0.1799, -12.301, 0.599, -4.76)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_11"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8496, 0, -0.5275, 0, 1, 0, 0.5275, 0, -0.8496, -12.301, 0.599, -4.148)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_12"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -11.697, 0.599, -4.76)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_13"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.945, 0, 0.3271, 0, 1, 0, -0.3271, 0, -0.945, -11.697, 0.599, -4.148)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_14"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 16.51, 0.44, 14.44)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_15"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9837, 0, 0.1799, 0, 1, 0, -0.1799, 0, 0.9837, -12.301, 0.599, -5.41)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_16"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5275, 0, -0.8496, 0, 1, 0, 0.8496, 0, 0.5275, -11.689, 0.599, -5.41)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_17"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.301, 0.599, -6.014)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_18"]
+shape = SubResource("S28")
+
+[node name="Barrel_02_19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.3271, 0, -0.945, 0, 1, 0, 0.945, 0, -0.3271, -11.689, 0.599, -6.014)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_02_19"]
+shape = SubResource("S28")
+
+[node name="ShippingContainer_05_1Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -12.04, 0.069, 7.54)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_05_1Chao"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_05_1Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -12.04, 2.831, 7.54)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_05_1Teto"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_05_1LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -12.04, 1.45, 8.721)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_05_1LadoA"]
+shape = SubResource("S26")
+
+[node name="ShippingContainer_05_1LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -12.04, 1.45, 6.359)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_05_1LadoB"]
+shape = SubResource("S26")
+
+[node name="ShippingContainer_05_2Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.3428, 0, -0.9394, 0, 1, 0, 0.9394, 0, -0.3428, 5.03, 2.959, -7.44)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_05_2Chao"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_05_2Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.3428, 0, -0.9394, 0, 1, 0, 0.9394, 0, -0.3428, 5.03, 5.721, -7.44)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_05_2Teto"]
+shape = SubResource("S25")
+
+[node name="ShippingContainer_05_2LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.3428, 0, -0.9394, 0, 1, 0, 0.9394, 0, -0.3428, 5.4348, 4.34, -8.5494)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_05_2LadoA"]
+shape = SubResource("S26")
+
+[node name="ShippingContainer_05_2LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.3428, 0, -0.9394, 0, 1, 0, 0.9394, 0, -0.3428, 4.6252, 4.34, -6.3306)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_05_2LadoB"]
+shape = SubResource("S26")
+
+[node name="WoodenPlank_04_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8962, 0, 0.4436, 0, 1, 0, -0.4436, 0, 0.8962, 4.4876, 5.7761, -5.9563)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_04_1"]
+shape = SubResource("S43")
+
+[node name="WoodenPlank_04_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9394, 0, -0.3428, 0, 1, 0, 0.3428, 0, 0.9394, 10.6695, 2.9154, 10.5599)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_04_2"]
+shape = SubResource("S44")
+
+[node name="WoodenPlank_04_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9122, 0, -0.4098, 0, 1, 0, 0.4098, 0, -0.9122, 4.7022, 5.7761, -5.4248)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_04_3"]
+shape = SubResource("S43")
+
+[node name="WoodenPlank_03_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.424, 1.291, -9.7873)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_03_1"]
+shape = SubResource("S45")
+
+[node name="WoodenPlank_03_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8926, 0, 0.4509, 0, 1, 0, -0.4509, 0, -0.8926, 17.6439, 2.921, -5.1058)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_03_2"]
+shape = SubResource("S46")
+
+[node name="WoodenPlank_03_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5704, 0, -0.8214, 0, 1, 0, 0.8214, 0, 0.5704, 19.2252, 0, 11.9925)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_03_3"]
+shape = SubResource("S46")
+
+[node name="ShippingContainer_01_1Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -11.12, 0.069, 11.7762)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_1Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_1Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -11.12, 2.831, 11.7762)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_1Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_1LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -9.939, 1.45, 11.7762)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_1LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_1LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -12.301, 1.45, 11.7762)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_1LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_2Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -8.3838, 0.069, -7.09)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_2Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_2Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -8.3838, 2.831, -7.09)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_2Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_2LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -8.3838, 1.45, -8.271)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_2LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_2LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -8.3838, 1.45, -5.909)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_2LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_3Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6793, 0, -0.7339, 0, 1, 0, 0.7339, 0, -0.6793, -11.8675, 2.989, -8.7162)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_3Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_3Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6793, 0, -0.7339, 0, 1, 0, 0.7339, 0, -0.6793, -11.8675, 5.751, -8.7162)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_3Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_3LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6793, 0, -0.7339, 0, 1, 0, 0.7339, 0, -0.6793, -11.0653, 4.37, -9.5829)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_3LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_3LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6793, 0, -0.7339, 0, 1, 0, 0.7339, 0, -0.6793, -12.6697, 4.37, -7.8494)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_3LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_4Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -21.24, 0.069, -11.7538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_4Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_4Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -21.24, 2.831, -11.7538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_4Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_4LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -20.059, 1.45, -11.7538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_4LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_4LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -22.421, 1.45, -11.7538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_4LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_5Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -14.4138, 0.069, -2.5536)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_5Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_5Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -14.4138, 2.831, -2.5536)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_5Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_5LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -14.4138, 1.45, -3.7346)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_5LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_5LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -14.4138, 1.45, -1.3726)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_5LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_6Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.65, 0, -0.76, 0, 1, 0, 0.76, 0, 0.65, 7.5219, 2.949, 3.4855)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_6Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_6Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.65, 0, -0.76, 0, 1, 0, 0.76, 0, 0.65, 7.5219, 5.711, 3.4855)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_6Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_6LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.65, 0, -0.76, 0, 1, 0, 0.76, 0, 0.65, 6.7543, 4.33, 2.588)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_6LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_6LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.65, 0, -0.76, 0, 1, 0, 0.76, 0, 0.65, 8.2895, 4.33, 4.383)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_6LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_7Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 11.66, 0.069, -11.7938)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_7Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_7Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 11.66, 2.831, -11.7938)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_7Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_7LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 12.841, 1.45, -11.7938)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_7LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_7LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 10.479, 1.45, -11.7938)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_7LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_8Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.56, 0.069, -9.4538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_8Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_8Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.56, 2.831, -9.4538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_8Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_8LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.741, 1.45, -9.4538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_8LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_8LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 1.379, 1.45, -9.4538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_8LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_9Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -2.16, 0.069, 2.0362)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_9Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_9Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -2.16, 2.831, 2.0362)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_9Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_01_9LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -0.979, 1.45, 2.0362)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_9LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_01_9LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -3.341, 1.45, 2.0362)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_01_9LadoB"]
+shape = SubResource("S38")
+
+[node name="Rack_01_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 2.78, 1.0808, 14.46)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Rack_01_2"]
+shape = SubResource("S8")
+
+[node name="Rack_01_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 20.13, 1.0808, 14.46)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Rack_01_3"]
+shape = SubResource("S8")
+
+[node name="FireExtinguisher_01_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 22.454, 1.7412, 11.15)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/FireExtinguisher_01_1"]
+shape = SubResource("S47")
+
+[node name="FireExtinguisher_01_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -22.435, 1.4482, 13.188)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/FireExtinguisher_01_2"]
+shape = SubResource("S47")
+
+[node name="WoodenPlank_05_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.684, 0, -0.7295, 0, 1, 0, 0.7295, 0, -0.684, -5.2142, 5.7981, 4.4083)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_05_1"]
+shape = SubResource("S48")
+
+[node name="WoodenPlank_05_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9459, 0, -0.3244, 0, 1, 0, 0.3244, 0, 0.9459, -3.9035, 2.9191, -6.2516)
+metadata/piso = "madeira"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/WoodenPlank_05_2"]
+shape = SubResource("S49")
+
+[node name="Barrel_03_1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 21.39, 4.04, 14.47)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_1"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 22, 4.04, 14.12)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_2"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9423, 0, -0.3348, 0, 1, 0, 0.3348, 0, -0.9423, 8.607, 3.6124, 1.552)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_3"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8535, 0, -0.5212, 0, 1, 0, 0.5212, 0, -0.8535, -19.057, 0.597, -13.407)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_4"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9693, 0, 0.2459, 0, 1, 0, -0.2459, 0, -0.9693, -19.057, 0.597, -14.016)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_5"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -19.658, 0.597, -14.016)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_6"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.3425, 0, -0.9395, 0, 1, 0, 0.9395, 0, 0.3425, -19.658, 0.597, -13.407)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_7"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 21.273, 4.943, 14.175)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_8"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8535, 0, -0.5212, 0, 1, 0, 0.5212, 0, -0.8535, -11.819, 0.597, -13.806)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_9"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9693, 0, 0.2459, 0, 1, 0, -0.2459, 0, -0.9693, -11.819, 0.597, -14.415)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_10"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -12.42, 0.597, -14.415)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_11"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.3425, 0, -0.9395, 0, 1, 0, 0.9395, 0, 0.3425, -12.42, 0.597, -13.806)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_12"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9267, 0, -0.3757, 0, 1, 0, 0.3757, 0, -0.9267, -17.7742, 0.597, -13.3618)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_13"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9165, 0, 0.3999, 0, 1, 0, -0.3999, 0, -0.9165, -17.6754, 0.597, -13.9628)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_14"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1623, 0, -0.9867, 0, 1, 0, 0.9867, 0, -0.1623, -18.2684, 0.597, -14.0603)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_15"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.1855, 0, -0.9826, 0, 1, 0, 0.9826, 0, 0.1855, -18.3672, 0.597, -13.4594)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_16"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 21.39, 4.04, 13.8)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_17"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.6661, 0, -0.7459, 0, 1, 0, 0.7459, 0, -0.6661, -11.7533, 0.597, -12.5747)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_18"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.999, 0, -0.0452, 0, 1, 0, 0.0452, 0, -0.999, -11.9295, 0.597, -13.1576)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_19"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_20" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.2894, 0, -0.9572, 0, 1, 0, 0.9572, 0, 0.2894, -12.5048, 0.597, -12.9837)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_20"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_21" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.5998, 0, -0.8002, 0, 1, 0, 0.8002, 0, 0.5998, -12.3286, 0.597, -12.4007)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_21"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_22" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.7532, 0, -0.6578, 0, 1, 0, 0.6578, 0, -0.7532, -21.8246, 0.44, 13.9603)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_22"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_23" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 20.84, 4.04, 14.03)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_23"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_24" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8535, 0, -0.5212, 0, 1, 0, 0.5212, 0, -0.8535, -7.975, 0.597, -2.5847)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_24"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_25" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9693, 0, 0.2459, 0, 1, 0, -0.2459, 0, -0.9693, -7.975, 0.597, -3.1937)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_25"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_26" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -8.576, 0.597, -3.1937)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_26"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_27" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.3425, 0, -0.9395, 0, 1, 0, 0.9395, 0, 0.3425, -8.576, 0.597, -2.5847)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_27"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_28" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 9.029, 3.6124, 1.103)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_28"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_29" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.7748, 0, 0.6322, 0, 1, 0, -0.6322, 0, 0.7748, -19.5933, 1.638, -13.9691)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_29"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_30" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9937, 0, -0.1121, 0, 1, 0, 0.1121, 0, 0.9937, -19.5107, 1.638, -13.3657)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_30"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_31" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1357, 0, 0.9908, 0, 1, 0, -0.9908, 0, -0.1357, -18.9152, 1.638, -13.4473)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_31"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_32" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.4669, 0, 0.8843, 0, 1, 0, -0.8843, 0, -0.4669, -18.9979, 1.638, -14.0506)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_32"]
+shape = SubResource("S28")
+
+[node name="Barrel_03_33" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9423, 0, -0.3348, 0, 1, 0, 0.3348, 0, -0.9423, 8.796, 4.494, 1.252)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barrel_03_33"]
+shape = SubResource("S28")
+
+[node name="ShippingContainer_02_1Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 4.9, 0.069, 5.1262)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_1Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_02_1Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 4.9, 2.831, 5.1262)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_1Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_02_1LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 6.081, 1.45, 5.1262)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_1LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_02_1LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3.719, 1.45, 5.1262)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_1LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_02_2Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 11.3562, 0.069, -7.51)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_2Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_02_2Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 11.3562, 2.831, -7.51)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_2Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_02_2LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 11.3562, 1.45, -8.691)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_2LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_02_2LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 11.3562, 1.45, -6.329)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_2LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_02_3Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.4962, 0.069, -5.16)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_3Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_02_3Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.4962, 2.831, -5.16)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_3Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_02_3LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.4962, 1.45, -6.341)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_3LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_02_3LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.4962, 1.45, -3.979)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_3LadoB"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_02_4Chao" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -10.13, 0.069, -2.8538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_4Chao"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_02_4Teto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -10.13, 2.831, -2.8538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_4Teto"]
+shape = SubResource("S37")
+
+[node name="ShippingContainer_02_4LadoA" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.949, 1.45, -2.8538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_4LadoA"]
+shape = SubResource("S38")
+
+[node name="ShippingContainer_02_4LadoB" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -11.311, 1.45, -2.8538)
+metadata/piso = "metal"
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/ShippingContainer_02_4LadoB"]
+shape = SubResource("S38")
+
+[node name="Armazem" parent="Galpao" instance=ExtResource("p_armazem")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Luz1" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.78, 7.14, -0.825)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 1.3
+omni_range = 7
+
+[node name="Luz2" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.035, 7.111, -4.658)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 1.3
+omni_range = 7
+
+[node name="Luz3" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.141, 4.24, -8.039)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 1.3
+omni_range = 7
+
+[node name="Luz4" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.824, 7.125, -2.649)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 1.3
+omni_range = 7
+
+[node name="Luz5" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.055, 8.136, 7)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz6" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.995, 8.147, -8.83)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz7" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.555, 7.81, 7)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz8" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.971, 5.234, -9.1)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz9" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.461, 7.81, 0)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz10" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.055, 8.136, -7)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz11" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.303, 1.356, 8.623)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 1.3
+omni_range = 7
+
+[node name="Luz12" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.297, 1.356, 10.116)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 1.3
+omni_range = 7
+
+[node name="Luz13" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.455, 1.356, 5.827)
+light_color = Color(1, 0.86, 0.62, 1)
+light_energy = 1.3
+omni_range = 7
+
+[node name="Luz14" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.51, 7.81, -7)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz15" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.507, 7.81, -7)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz16" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.044, 8.147, 7)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz17" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.507, 7.81, 0)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz18" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.51, 7.81, 7)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz19" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.484, 5.234, -6.205)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz20" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.007, 8.136, 0)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz21" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.044, 8.147, 0)
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 1.6
+omni_range = 11
+
+[node name="Luz22" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.306, 2.915, -4.503)
+light_color = Color(1, 0.78, 0.5, 1)
+light_energy = 0.8
+omni_range = 4
+
+[node name="Luz23" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.385, 2.173, 10.844)
+light_color = Color(1, 0.78, 0.5, 1)
+light_energy = 0.8
+omni_range = 4
+
+[node name="Luz24" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.306, 2.915, 4.997)
+light_color = Color(1, 0.78, 0.5, 1)
+light_energy = 0.8
+omni_range = 4
+
+[node name="SpawnA" type="Node3D" parent="."]
+script = ExtResource("s_spawns")
+Team = 1
+
+[node name="p1" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 7.75)
+
+[node name="p2" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 9.25)
+
+[node name="p3" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 10.75)
+
+[node name="p4" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 12.25)
+
+[node name="p5" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 7.75)
+
+[node name="p6" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 9.25)
+
+[node name="p7" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 10.75)
+
+[node name="p8" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 12.25)
+
+[node name="SpawnB" type="Node3D" parent="."]
+script = ExtResource("s_spawns")
+Team = 2
+
+[node name="p1" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -12.25)
+
+[node name="p2" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -10.75)
+
+[node name="p3" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -9.25)
+
+[node name="p4" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -7.75)
+
+[node name="p5" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -12.25)
+
+[node name="p6" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -10.75)
+
+[node name="p7" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -9.25)
+
+[node name="p8" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -7.75)
+
+[node name="PatrolRoutes" type="Node3D" parent="."]
+script = ExtResource("s_routes")
+
+[node name="sul" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/sul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.1, 0.5, -11.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/sul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.1, 0.5, -11.1)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/sul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 0.5, -11.1)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/sul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0.5, -11.6)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/sul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9, 0.5, -11.1)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/sul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.9, 0.5, -11.1)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/sul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.9, 0.5, -11.1)
+
+[node name="meioSul" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/meioSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.6, 0.5, -5.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/meioSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.1, 0.5, -4.6)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/meioSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.9, 0.5, -5.1)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/meioSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.5, -5.1)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/meioSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9, 0.5, -5.1)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/meioSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.9, 0.5, -2.6)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/meioSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.6, 0.5, -5.1)
+
+[node name="centro" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/centro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.4, 0.5, 0.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/centro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.4, 0.5, 0.4)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/centro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 0.5, -0.1)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/centro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.5, -0.1)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/centro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9, 0.5, -0.1)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/centro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6, 0.5, -0.6)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/centro"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.1, 0.5, -0.1)
+
+[node name="meioNorte" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/meioNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.1, 0.5, 4.9)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/meioNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.1, 0.5, 5.1)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/meioNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 0.5, 4.9)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/meioNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.5, 4.9)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/meioNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9, 0.5, 4.9)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/meioNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.9, 0.5, 4.9)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/meioNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.9, 0.5, 4.9)
+
+[node name="norte" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/norte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.1, 0.5, 10.9)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/norte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.1, 0.5, 10.9)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/norte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.1, 0.5, 10.9)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/norte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0.5, 11.9)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/norte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9, 0.5, 11.9)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/norte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.9, 0.5, 10.9)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/norte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.9, 0.5, 10.6)
+
+[node name="diagonalA" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/diagonalA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.1, 0.5, -10.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/diagonalA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.1, 0.5, -4.6)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/diagonalA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.5, -0.1)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/diagonalA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.9, 0.5, 4.9)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/diagonalA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.9, 0.5, 9.9)
+
+[node name="diagonalB" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/diagonalB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.1, 0.5, 9.9)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/diagonalB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.1, 0.5, 5.1)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/diagonalB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.5, -0.1)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/diagonalB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.1, 0.5, -2.6)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/diagonalB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.9, 0.5, -10.1)
+
+[node name="NavBaker" type="Node3D" parent="."]
+script = ExtResource("s_nav")

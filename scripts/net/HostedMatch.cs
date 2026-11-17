@@ -95,7 +95,7 @@ public sealed class HostedMatch
 			settings["friendlyFire"]?.GetValue<bool>() ?? false,
 			countdown ?? 10);
 
-		string map = settings["map"]?.GetValue<string>() ?? "vila";
+		string map = settings["map"]?.GetValue<string>() ?? Maps.All[0].Id;
 		var match = new HostedMatch(assignment["matchKey"].GetValue<string>(), referee, link,
 			authoritative ? new MatchWorld(map) : null);
 		int bots = seats.Count(s => s.Item4 != 0);

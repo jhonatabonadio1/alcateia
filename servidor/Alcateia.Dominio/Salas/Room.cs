@@ -250,7 +250,7 @@ public sealed class Room
 		s["difficulty"] = Math.Clamp(s["difficulty"]?.GetValue<int>() ?? 1, 0, 2);
 		s["scoreToWin"] = Math.Clamp(s["scoreToWin"]?.GetValue<int>() ?? 40, 10, 200);
 
-		string map = s["map"]?.GetValue<string>() ?? "vila";
+		string map = s["map"]?.GetValue<string>() ?? "armazem";
 		if (map.Length is 0 or > 24) throw new Failure(FailureKind.Invalid, "regras_invalidas", "Mapa inválido.");
 		s["map"] = map;
 

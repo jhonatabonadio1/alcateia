@@ -930,10 +930,16 @@ muda nada no caso normal.
 escolhidos por terem 2 m de folga em volta e 3 m de teto livre — foram
 medidos no arquivo, não estimados a olho.
 
-Nasce-se no ponto mais longe do inimigo vivo mais próximo, com uns
-metros de ruído na escolha para o mesmo par de mortes não gerar sempre
-o mesmo spawn. A distância ao mais próximo é o número que decide, não
-a média: nascer longe de quatro e colado em um é nascer colado em um.
+**Decisão do Jhon (17/11): renasce-se sempre no mesmo ponto.** Cada um
+recebe um ponto da base do time na largada (o `MatchSetup` distribui e
+chama `SpawnPoints.SetHome`; no servidor, o `Player.PlaceDriven`) e
+volta para ele a partida inteira, como no WolfTeam. O time nasce junto,
+num grupo. O risco é o inimigo acampar na base; quem segura são os 3 s
+de proteção de nascimento (`Health.SpawnProtection`).
+
+Antes era por distância (o ponto mais longe do inimigo vivo mais
+próximo, com uns metros de ruído); continua valendo para quem não
+recebeu ponto na largada.
 
 Sem `SpawnPoints` na cena, cada ator volta ao próprio ponto inicial —
 é o que mantém `scenes/treino.tscn` funcionando sem configuração.

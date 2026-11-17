@@ -18,7 +18,7 @@ public partial class CharacterPreview : SubViewportContainer
 	private const string HumanPath = "res://assets/characters/human/exo_gray.fbx";
 	private const string HumanFallback = "res://assets/characters/human/xbot.fbx";
 	private const string HumanIdle = "res://assets/characters/human/idle_rifle.fbx";
-	private const string WolfPath = "res://assets/characters/wolf/mutant.fbx";
+	private const string WolfPath = "res://assets/characters/wolf/lobo_azul.glb";
 	private const string WolfIdle = "res://assets/characters/wolf/idle.fbx";
 
 	/// <summary>Outro humano e outro lobo (um CharacterSkin). Antes de
