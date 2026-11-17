@@ -64,8 +64,12 @@ public static class RoomDirectory
 			Rank = Profile.Rank
 		});
 
-		// Sem bots na sala: nos modos contra bots é a partida que completa
-		// os times (RoomConfig.FillBots), e não há botão de pôr bot.
+		// Contra bots, a sala já nasce com o laranja cheio de bots; o mestre
+		// põe e tira bots nos dois times à vontade (até o tamanho do time).
+		// Contra jogadores não há bot.
+		if (PlayModes.VsBots(settings.Play))
+			AddBots(room, Teams.Orange, settings.TeamSize);
+
 		_rooms.Insert(0, room);
 		return room;
 	}

@@ -240,7 +240,7 @@ public partial class OnlineScreen : LobbyScreen
 			var empty = new CenterContainer { SizeFlagsVertical = SizeFlags.ExpandFill };
 			VBoxContainer box = UiKit.Column(UiTokens.S2);
 			box.AddChild(UiKit.Text("Nenhuma sala aberta agora", "Subtitle"));
-			box.AddChild(UiKit.Paragraph("Crie a sua e chame alguém: a partida online é só entre jogadores, sem bots."));
+			box.AddChild(UiKit.Paragraph("Crie a sua e chame alguém. Nos modos contra bots, o dono da sala põe os bots que quiser em cada time."));
 			empty.AddChild(box);
 			column.AddChild(empty);
 			return;
@@ -446,8 +446,9 @@ public partial class OnlineScreen : LobbyScreen
 		frame.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Bg, UiTokens.Border, 1, UiTokens.RadiusSmall, 0, 0));
 		frame.AddChild(UiKit.Thumbnail(Maps.Get(s.Map).Picture, new Vector2(320, 180)));
 		teams.AddChild(frame);
-		teams.AddChild(TeamCard("Time azul", Teams.Blue, members, s.TeamSize, vsBots));
-		teams.AddChild(TeamCard("Time laranja", Teams.Orange, members, s.TeamSize, vsBots));
+		bool manage = vsBots && host && !playing;
+		teams.AddChild(TeamCard("Time azul", Teams.Blue, members, s.TeamSize, manage));
+		teams.AddChild(TeamCard("Time laranja", Teams.Orange, members, s.TeamSize, manage));
 		_main.AddChild(teams);
 
 		HBoxContainer actions = UiKit.Row(UiTokens.S2);
@@ -483,10 +484,10 @@ public partial class OnlineScreen : LobbyScreen
 		_main.AddChild(actions);
 	}
 
-	/// <summary>Um time da sala. Não há botão de pôr bot (decisão do Jhon):
-	/// nos modos contra bots (<paramref name="vsBots"/>) as vagas dizem que
-	/// viram bot na partida — o laranja inteiro e o que sobrar do azul.</summary>
-	private Control TeamCard(string title, int team, JsonArray members, int size, bool vsBots)
+	/// <summary>Um time da sala. Nos modos contra bots, o dono
+	/// (<paramref name="manage"/>, sala esperando) põe quantos bots quiser
+	/// em cada time e tira os que estão. Contra jogadores não há bot.</summary>
+	private Control TeamCard(string title, int team, JsonArray members, int size, bool manage)
 	{
 		Color color = Teams.ColorOf(team);
 		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S3, UiTokens.S2);
@@ -496,7 +497,12 @@ public partial class OnlineScreen : LobbyScreen
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
 		head.AddChild(UiKit.Text(title, "Subtitle", color));
 		head.AddChild(UiKit.Spacer());
-		if (vsBots) head.AddChild(UiKit.Caption(team == Teams.Orange ? "time de bots" : "vagas viram bot"));
+		if (manage && mine.Count < size)
+		{
+			Button add = UiKit.Button("+ Bot", ButtonKind.Secondary, () => Lobby.AddBot(team));
+			add.TooltipText = "Põe um bot neste time. Jogador que entrar toma o lugar de um bot do azul.";
+			head.AddChild(add);
+		}
 		head.AddChild(UiKit.Text($"{mine.Count}/{size}", "Numeric", UiTokens.TextSecondary));
 		column.AddChild(head);
 		column.AddChild(UiKit.Divider());
@@ -517,6 +523,8 @@ public partial class OnlineScreen : LobbyScreen
 				botName.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 				row.AddChild(botName);
 				row.AddChild(UiKit.Chip("bot", UiTokens.TextSecondary));
+				long bot = m["id"].GetValue<long>();
+				if (manage) row.AddChild(UiKit.IconButton(IconKind.Close, "Tirar este bot", () => Lobby.RemoveBot(bot), 16));
 
 				column.AddChild(row);
 				continue;
@@ -545,7 +553,7 @@ public partial class OnlineScreen : LobbyScreen
 
 		for (int i = mine.Count; i < size; i++)
 		{
-			Label empty = UiKit.Text(vsBots ? "— bot na partida —" : "— vaga —", "Muted", UiTokens.TextDisabled);
+			Label empty = UiKit.Text("— vaga —", "Muted", UiTokens.TextDisabled);
 			empty.CustomMinimumSize = new Vector2(0, UiTokens.ScoreRowHeight);
 			empty.VerticalAlignment = VerticalAlignment.Center;
 			column.AddChild(empty);

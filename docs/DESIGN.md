@@ -1210,11 +1210,15 @@ A forma permitida é por time e por momento (`PlayModes.RuleFor`); o
 lobo, sem custo, e quem não pode ser lobo é barrado na tecla 3. Na
 metade do Humanos × Lobos os papéis trocam na hora, com aviso no HUD.
 
-**Sem botão de bot.** Nos modos contra jogadores não entra bot. Nos
-contra bots, os jogadores ficam todos no azul e a partida completa os
-times sozinha: o laranja inteiro e as vagas do azul
-(`RoomConfig.FillBots`; online, o servidor de salas na escalação). O
-treino offline só oferece os modos contra bots.
+**Bots só contra bots.** Nos modos contra jogadores não entra bot. Nos
+contra bots, os jogadores ficam todos no azul e o mestre põe quantos
+bots quiser em cada time, até o tamanho do time (decisão do Jhon,
+17/11): "+ Adicionar bot" na vaga, "Encher com bots" no time, o X para
+tirar. A sala offline já nasce com o laranja cheio de bots. Online, o
+servidor de salas recusa bot fora desses modos, tira os bots ao trocar
+para um modo contra jogadores e, quando alguém entra com o azul cheio,
+um bot azul dá o lugar. O treino offline só oferece os modos contra
+bots.
 
 **Sala.** Times Azul e Laranja, de 1 a 6 em cada (decisão do Jhon,
 17/11). O mestre escolhe o modo, o tamanho, o objetivo, o tempo, a regra

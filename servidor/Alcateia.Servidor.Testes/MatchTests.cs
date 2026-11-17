@@ -88,7 +88,7 @@ public static class MatchTests
 			await using Player host = await w.NewPlayer();
 			await host.Connect();
 			await host.Hear("rooms");
-			await host.Say(Msg("room.create", ("settings", Settings())));
+			await host.Say(Msg("room.create", ("settings", Settings(play: LobbyTests.VsBots))));
 			await host.Hear("room");
 			await host.Say(Msg("room.bot.add", ("team", 2)));
 			await host.Say(Msg("room.bot.add", ("team", 2)));
@@ -147,7 +147,7 @@ public static class MatchTests
 			var (_, beat) = await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"), w.Config.FleetKey);
 			Check.Equal(key, beat["assignment"]["matchKey"].GetValue<string>(), "a batida seguinte traz a partida");
 			Check.Equal(2, beat["assignment"]["players"].AsArray().Count, "com os dois jogadores");
-			Check.Equal("vila", beat["assignment"]["settings"]["map"].GetValue<string>(), "e as regras da sala");
+			Check.Equal("armazem", beat["assignment"]["settings"]["map"].GetValue<string>(), "e as regras da sala");
 			var (_, again) = await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"), w.Config.FleetKey);
 			Check.True(again["assignment"] == null, "a partida é entregue uma vez só");
 

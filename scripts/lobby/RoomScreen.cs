@@ -187,10 +187,13 @@ public partial class RoomScreen : LobbyScreen
 		headRow.AddChild(UiKit.Text($"{members.Count}/{S.TeamSize}", "Numeric", UiTokens.TextSecondary));
 		headRow.AddChild(UiKit.Spacer());
 
-		// Contra bots: o laranja é o time dos bots, e as vagas do azul também
-		// viram bot na partida.
-		if (VsBots && members.Count < S.TeamSize)
-			headRow.AddChild(UiKit.Caption(team == Teams.Orange ? "time de bots" : "vagas viram bot"));
+		// Contra bots, o mestre põe quantos bots quiser em cada time.
+		if (VsBots && IsHost && members.Count < S.TeamSize)
+		{
+			Button fill = UiKit.Button("Encher com bots", ButtonKind.Tertiary, () => AddBot(team, S.TeamSize));
+			fill.CustomMinimumSize = new Vector2(0, 28);
+			headRow.AddChild(fill);
+		}
 
 		column.AddChild(head);
 
@@ -251,7 +254,16 @@ public partial class RoomScreen : LobbyScreen
 
 		row.AddChild(PingBars.Make(0));
 
-		row.AddChild(UiKit.Gap(28));
+		if (VsBots && IsHost && member.IsBot)
+		{
+			Button remove = UiKit.IconButton(IconKind.Close, $"Tirar {member.Name}", () => RemoveBot(member), 14);
+			remove.CustomMinimumSize = new Vector2(28, 28);
+			row.AddChild(remove);
+		}
+		else
+		{
+			row.AddChild(UiKit.Gap(28));
+		}
 		return slot;
 	}
 
@@ -261,21 +273,21 @@ public partial class RoomScreen : LobbyScreen
 		slot.AddThemeStyleboxOverride("panel", UiTheme.Box(Colors.Transparent, UiTokens.Border, 1, UiTokens.RadiusSmall, 0, 0));
 		slot.AddChild(new Striped());
 
-		// Sem botão de pôr bot (decisão do Jhon): a vaga diz o que vai ser.
+		// Contra bots, o mestre põe um bot na vaga. Contra jogadores não há
+		// bot: a vaga é de quem entrar.
+		if (VsBots && IsHost)
+		{
+			Button add = UiKit.Button("+  Adicionar bot", ButtonKind.Tertiary, () => AddBot(team, 1));
+			add.CustomMinimumSize = new Vector2(0, 38);
+			add.Alignment = HorizontalAlignment.Left;
+			slot.AddChild(add);
+			return slot;
+		}
+
 		MarginContainer margin = UiKit.Margin(UiTokens.S3, 0, UiTokens.S2, 0);
-		HBoxContainer row = UiKit.Row(UiTokens.S2);
-		if (VsBots)
-		{
-			row.AddChild(Icon.Make(IconKind.Bot, 16, UiTokens.TextDisabled));
-			row.AddChild(UiKit.Text("bot na partida", "Caption", UiTokens.TextDisabled));
-		}
-		else
-		{
-			row.AddChild(UiKit.Text("vaga", "Caption", UiTokens.TextDisabled));
-		}
-		row.Alignment = BoxContainer.AlignmentMode.Begin;
-		row.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		margin.AddChild(row);
+		Label free = UiKit.Text("vaga", "Caption", UiTokens.TextDisabled);
+		free.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+		margin.AddChild(free);
 		slot.AddChild(margin);
 		return slot;
 	}
@@ -638,7 +650,7 @@ public partial class RoomScreen : LobbyScreen
 		int orange = playing.Count(m => m.Team == Teams.Orange);
 
 		if (!IsHost) why = "Só o mestre inicia";
-		else if (VsBots) why = blue == 0 ? "Falta alguém no time azul" : null;
+		else if (VsBots) why = blue == 0 ? "Falta alguém no time azul" : orange == 0 ? "Ponha pelo menos um bot no time laranja" : null;
 		else if (blue == 0 || orange == 0)
 			why = AllReady ? "Os dois times precisam de alguém" : "Falta alguém pronto num dos times";
 		else if (!AllReady && Math.Abs(blue - orange) > 1)
@@ -717,7 +729,6 @@ public partial class RoomScreen : LobbyScreen
 		{
 			Name = m.Name, Team = m.Team, IsBot = m.IsBot, Ready = m.Ready, IsHost = m.IsHost, Rank = m.Rank
 		}));
-		RoomConfig.FillBots(RoomConfig.Members, S);
 		RoomConfig.ReturnTo = ReturnTarget.Room;
 
 		Difficulty.Set(S.Difficulty);
@@ -768,6 +779,21 @@ public partial class RoomScreen : LobbyScreen
 		Refresh();
 	}
 
+	private void AddBot(int team, int count)
+	{
+		if (!IsHost || !VsBots) return;
+		RoomDirectory.AddBots(_room, team, count);
+		Refresh();
+	}
+
+	private void RemoveBot(RoomMember bot)
+	{
+		if (!IsHost || !bot.IsBot) return;
+		_room.Members.Remove(bot);
+		if (_selected == bot) _selected = Me;
+		Refresh();
+	}
+
 	// ------------------------------------------------------------------ regras: mudanças
 
 	private void Change(string what, string value, Action apply)
@@ -812,6 +838,11 @@ public partial class RoomScreen : LobbyScreen
 	/// sairiam — não se expulsa ninguém mudando uma regra.</summary>
 	private void SetTeamSize(int size)
 	{
+		// Bot sai sozinho para caber; gente não se expulsa.
+		foreach (int team in new[] { Teams.Blue, Teams.Orange })
+			while (_room.Members.Count(m => m.Team == team) > size && _room.Members.LastOrDefault(m => m.Team == team && m.IsBot) is RoomMember extra)
+				_room.Members.Remove(extra);
+
 		if (_room.Members.Count(m => m.Team == Teams.Blue) > size || _room.Members.Count(m => m.Team == Teams.Orange) > size)
 		{
 			Shell.Toast("Tire jogadores antes de diminuir os times", UiTokens.Danger);

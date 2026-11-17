@@ -129,25 +129,6 @@ public static class RoomConfig
 		yield return ("Ferrugem", Teams.Orange);
 	}
 
-	/// <summary>
-	/// Nos modos contra bots, completa a escalação: o laranja inteiro de
-	/// bots e as vagas que sobram no azul (o time dos jogadores) também.
-	/// Quem completa é a partida, não o mestre — não há botão de pôr bot.
-	/// Nos modos contra jogadores não entra bot nenhum.
-	/// </summary>
-	public static void FillBots(List<RoomMember> members, RoomSettings rules)
-	{
-		if (!PlayModes.VsBots(rules.Play)) return;
-		foreach (int team in new[] { Teams.Blue, Teams.Orange })
-		{
-			while (members.Count(m => m.Team == team) < rules.TeamSize)
-			{
-				string name = BotNames.FirstOrDefault(n => members.All(m => m.Name != n)) ?? $"Bot {members.Count + 1}";
-				members.Add(new RoomMember { Name = name, Team = team, IsBot = true, Ready = true, Rank = Ranks.None });
-			}
-		}
-	}
-
 	/// <summary>Nomes de bot, na ordem em que entram na sala.</summary>
 	public static readonly string[] BotNames =
 	{

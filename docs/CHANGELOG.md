@@ -8,9 +8,9 @@
   Contra bots, Bots só humanos, Bots só lobos, Caçar lobos e Caçar
   humanos. A forma de cada time vale no `FormController` (nasce e
   renasce lobo quando o modo manda; tecla 3 barrada quando não pode).
-- Sem botão de pôr bot. Contra bots, os jogadores ficam no azul e a
-  partida completa o laranja e as vagas do azul com bots
-  (`RoomConfig.FillBots`; online, o servidor na escalação).
+- Bots só nos modos contra bots: os jogadores ficam no azul e o mestre
+  põe quantos bots quiser em cada time (offline e online); contra
+  jogadores não há bot nenhum (o servidor recusa).
 - Times de 1 a 6 jogadores, na criação e na sala; o servidor de salas
   aceita de 1 a 6 e o campo "play" (o modo). O Armazém tem 6 pontos de
   nascimento por time.
