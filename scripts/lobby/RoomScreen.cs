@@ -768,7 +768,7 @@ public partial class RoomScreen : LobbyScreen
 		if (!IsHost) why = "Só o mestre inicia";
 		else if (_online && _room.State == RoomState.Playing) why = "A partida está em andamento";
 		else if (_online && !AllReady) why = "Falta alguém marcar que está pronto";
-		else if (VsBots) why = blue == 0 ? "Falta alguém no time azul" : orange == 0 ? "Ponha pelo menos um bot no time laranja" : null;
+		else if (VsBots) why = blue == 0 || orange == 0 ? "Os dois times precisam de alguém: ponha um bot no time vazio" : null;
 		else if (blue == 0 || orange == 0)
 			why = AllReady ? "Os dois times precisam de alguém" : "Falta alguém pronto num dos times";
 		else if (!AllReady && Math.Abs(blue - orange) > 1)
@@ -898,13 +898,10 @@ public partial class RoomScreen : LobbyScreen
 		if (Me == null || _countdown >= 0) return;
 		int other = Teams.Other(Me.Team);
 
-		if (VsBots)
-		{
-			Shell.Toast("Contra bots, os jogadores ficam no time azul", UiTokens.TextSecondary);
-			return;
-		}
-
-		if (_room.Members.Count(m => m.Team == other) >= S.TeamSize)
+		// Time cheio só barra se for de gente: um bot dá o lugar (contra
+		// bots, o jogador fica no time que quiser).
+		RoomMember bot = _room.Members.LastOrDefault(m => m.Team == other && m.IsBot);
+		if (_room.Members.Count(m => m.Team == other) >= S.TeamSize && bot == null)
 		{
 			Shell.Toast($"O time {Teams.TitleOf(other)} está cheio", UiTokens.Danger);
 			return;
@@ -916,6 +913,7 @@ public partial class RoomScreen : LobbyScreen
 			return;
 		}
 
+		if (_room.Members.Count(m => m.Team == other) >= S.TeamSize) _room.Members.Remove(bot);
 		Me.Team = other;
 		Log($"{Me.Name} foi para o time {Teams.TitleOf(other)}.", system: true);
 		Refresh();

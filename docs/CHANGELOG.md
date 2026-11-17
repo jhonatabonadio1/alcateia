@@ -2,6 +2,22 @@
 
 ## Não lançado
 
+### Lobos fechados por baixo da armadura, e ajustes (17/11)
+- `lobo_azul.glb` e `lobo_vermelho.glb`: o forro (a pele inteira, uns
+  milímetros para dentro, na cor do pelo) agora existe sob TODA peça —
+  alças, peitoral, cinto, braçadeiras, bolsos —, uma folha só, com um
+  vértice por posição soldada. Antes só havia sob a roupa cortada do
+  corpo; sob as alças rígidas das costas e do peito não havia corpo, e
+  quando a alça descolava via-se através do lobo. Sem a armadura, o
+  corpo sozinho não tem mais furo (conferido no Blender, de costas e de
+  frente). Azul 26,5 mil triângulos, vermelho 28,3 mil.
+- Contra bots, cada jogador fica no time que quiser (não mais só no
+  azul); um bot dá o lugar no time cheio. Caçar lobos é azul humano
+  contra laranja lobo; Caçar humanos, o contrário.
+- A luz rebatida (SDFGI) e a névoa do Armazém seguem a opção de
+  qualidade (da Alta para cima); o atlas das sombras dos focos também.
+- Modo espectador anotado em `PENDENCIAS.md`.
+
 ### Luz do Armazém (17/11)
 - As luminárias do teto viraram focos para baixo com sombra
   (`kit.foco`): personagem e objeto fazem sombra no chão embaixo delas.

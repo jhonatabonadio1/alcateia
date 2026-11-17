@@ -120,6 +120,8 @@ public static class Settings
 
 		if (tree?.Root == null) return;
 		tree.Root.MeshLodThreshold = q == 0 ? 2f : q == 3 ? 0.5f : 1f;
+		// As sombras das luminárias (focos) dividem este atlas: maior, mais nítidas.
+		tree.Root.PositionalShadowAtlasSize = q switch { 0 => 2048, 3 => 8192, _ => 4096 };
 		foreach (Node node in tree.Root.FindChildren("*", nameof(WorldEnvironment), true, false))
 			if (node is WorldEnvironment world) ApplyQuality(world.Environment);
 	}
@@ -137,6 +139,16 @@ public static class Settings
 			env.SetMeta("mapa_glow", env.GlowEnabled);
 		}
 		bool ssao = env.GetMeta("mapa_ssao").AsBool(), glow = env.GetMeta("mapa_glow").AsBool();
+
+		// A luz rebatida (SDFGI) e a névoa com raio de sol são as mais
+		// caras: só da Alta para cima, e só no mapa que as pede.
+		if (!env.HasMeta("mapa_sdfgi"))
+		{
+			env.SetMeta("mapa_sdfgi", env.SdfgiEnabled);
+			env.SetMeta("mapa_nevoa", env.VolumetricFogEnabled);
+		}
+		env.SdfgiEnabled = env.GetMeta("mapa_sdfgi").AsBool() && q >= 2;
+		env.VolumetricFogEnabled = env.GetMeta("mapa_nevoa").AsBool() && q >= 2;
 
 		env.SsaoEnabled = ssao && q >= 1;
 		env.GlowEnabled = glow && q >= 1;

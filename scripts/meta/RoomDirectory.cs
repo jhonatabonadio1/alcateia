@@ -83,8 +83,7 @@ public static class RoomDirectory
 
 		int blue = room.Members.Count(m => m.Team == Teams.Blue);
 		int orange = room.Members.Count(m => m.Team == Teams.Orange);
-		// Contra bots, os jogadores ficam todos no azul.
-		int team = PlayModes.VsBots(room.Settings.Play) || blue <= orange ? Teams.Blue : Teams.Orange;
+		int team = blue <= orange ? Teams.Blue : Teams.Orange;
 
 		// Sala cheia: o jogador toma o lugar de um bot do time.
 		if (room.Occupancy >= room.Capacity)

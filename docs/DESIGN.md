@@ -1202,8 +1202,8 @@ em que forma cada time joga:
 | Contra bots | bots | humano e lobo liberados |
 | Bots, só humanos | bots | ninguém transforma |
 | Bots, só lobos | bots | todos lobos |
-| Caçar lobos | bots | vocês humanos, bots lobo |
-| Caçar humanos | bots | vocês lobos, bots humanos |
+| Caçar lobos | bots | azul humano, laranja lobo |
+| Caçar humanos | bots | azul lobo, laranja humano |
 
 A forma permitida é por time e por momento (`PlayModes.RuleFor`); o
 `FormController` a faz valer — quem tem de ser lobo nasce e renasce
@@ -1211,13 +1211,13 @@ lobo, sem custo, e quem não pode ser lobo é barrado na tecla 3. Na
 metade do Humanos × Lobos os papéis trocam na hora, com aviso no HUD.
 
 **Bots só contra bots.** Nos modos contra jogadores não entra bot. Nos
-contra bots, os jogadores ficam todos no azul e o mestre põe quantos
+contra bots, cada jogador fica no time que quiser e o mestre põe quantos
 bots quiser em cada time, até o tamanho do time (decisão do Jhon,
 17/11): "+ Adicionar bot" na vaga, "Encher com bots" no time, o X para
 tirar. A sala offline já nasce com o laranja cheio de bots. Online, o
 servidor de salas recusa bot fora desses modos, tira os bots ao trocar
-para um modo contra jogadores e, quando alguém entra com o azul cheio,
-um bot azul dá o lugar. O treino offline só oferece os modos contra
+para um modo contra jogadores e, quando alguém entra ou troca para um
+time cheio, um bot desse time dá o lugar. O treino offline só oferece os modos contra
 bots.
 
 **Sala.** Uma tela só, a `RoomScreen`, para a sala online e a offline
@@ -1226,8 +1226,7 @@ o servidor manda e cada ação vira um pedido a ele (regras, bots, time,
 pronto, iniciar, sair, chat). Times Azul e Laranja, de 1 a 6 em cada (decisão do Jhon,
 17/11). O mestre escolhe o modo, o tamanho, o objetivo, o tempo, a regra
 de armas, a dificuldade dos bots, a faixa de patente, a senha e o fogo
-amigo, na criação e depois dentro da sala; troca de lado (menos contra
-bots, em que todos ficam no azul). Cada jogador marca **Pronto**,
+amigo, na criação e depois dentro da sala; troca de lado. Cada jogador marca **Pronto**,
 menos o mestre: quem inicia é ele, então o botão some para ele. O
 mestre inicia quando todos estão prontos — ou quando os prontos já
 fecham times equilibrados, com no máximo **um a menos** de um lado

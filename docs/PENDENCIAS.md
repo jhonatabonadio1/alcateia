@@ -75,6 +75,16 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 ### Mapas e modos
 
 - **Mais mapas.**
+- **Modo espectador** (pedido em 17/11). Hoje a caixa "Espectador" da
+  sala só guarda a escolha: nada no jogo nem no servidor a lê. A fazer:
+  botão "Assistir" na lista de salas (o espectador não ocupa vaga nos
+  times e fica numa faixa à parte na sala); na partida, sem corpo e fora
+  do placar, com três câmeras — seguir um jogador (trocando com clique
+  e Q/E), câmera livre e vista de cima; entrar com a partida em
+  andamento; sem conversar com quem joga durante a partida (ele vê os
+  dois times). No servidor: a lista de espectadores da sala, mandar a
+  eles o estado de todos sem aceitar comando, e recusar ação de
+  espectador.
 - **Modo bomba**, com mapas feitos para ele (áreas de plantio, ataque e
   defesa, rodadas). Hoje só existe Equipe (mata-mata por time).
 

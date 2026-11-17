@@ -134,7 +134,7 @@ public static class LobbyTests
 			Check.Equal(0, empty["rooms"].AsArray().Count, "sala vazia some da lista");
 		}),
 
-		("bots: só nos modos contra bots, só o dono põe e tira e escolhe a dificuldade; time cheio não aceita; jogador fica no azul e toma o lugar de um bot; sem XP nem patente", async () =>
+		("bots: só nos modos contra bots, só o dono põe e tira e escolhe a dificuldade; time cheio não aceita; jogador fica no time que quiser e toma o lugar de um bot; sem XP nem patente", async () =>
 		{
 			await using World w = await World.Start();
 			await using Player host = await w.NewPlayer(), guest = await w.NewPlayer();
@@ -177,14 +177,18 @@ public static class LobbyTests
 			Check.True((await host.Hear("room"))["settings"]["difficulty"].GetValue<int>() == 2,
 				"dificuldade acima da faixa fica em difíceis");
 
-			// O convidado entra: contra bots, vai para o azul, e um bot azul sai.
+			// O convidado entra: vai para o laranja (menos gente) e um bot sai.
 			await guest.Say(Msg("room.join", ("id", id)));
 			JsonObject joined = await guest.Hear("room");
-			Check.Equal(1, joined["members"].AsArray().First(m => m["id"].GetValue<long>() == guest.Id)["team"].GetValue<int>(), "convidado no azul");
-			Check.Equal(2, joined["members"].AsArray().Count(m => m["bot"]?.GetValue<bool>() == true && m["team"].GetValue<int>() == 1), "um bot azul deu o lugar");
+			Check.Equal(2, joined["members"].AsArray().First(m => m["id"].GetValue<long>() == guest.Id)["team"].GetValue<int>(), "convidado no laranja");
+			Check.Equal(3, joined["members"].AsArray().Count(m => m["bot"]?.GetValue<bool>() == true && m["team"].GetValue<int>() == 2), "um bot laranja deu o lugar");
 
-			await guest.Say(Msg("room.team", ("team", 2)));
-			Check.Equal("time_de_bots", (await guest.Hear("error"))["code"].GetValue<string>(), "contra bots, jogador não vai para o laranja");
+			// Contra bots o jogador fica no time que quiser: vai para o azul, cheio, e um bot azul sai.
+			guest.Forget();
+			await guest.Say(Msg("room.team", ("team", 1)));
+			JsonObject moved = await guest.Hear("room", m => m["members"].AsArray().First(x => x["id"].GetValue<long>() == guest.Id)["team"].GetValue<int>() == 1);
+			Check.Equal(2, moved["members"].AsArray().Count(m => m["bot"]?.GetValue<bool>() == true && m["team"].GetValue<int>() == 1), "um bot azul deu o lugar");
+			joined = moved;
 
 			await guest.Say(Msg("room.bot.add", ("team", 1)));
 			Check.Equal("nao_e_dono", (await guest.Hear("error"))["code"].GetValue<string>(), "convidado não põe bot");
@@ -192,14 +196,14 @@ public static class LobbyTests
 			long first = joined["members"].AsArray().First(m => m["bot"]?.GetValue<bool>() == true)["id"].GetValue<long>();
 			await host.Say(Msg("room.bot.remove", ("id", first)));
 			JsonObject removed = await guest.Hear("room", m => m["members"].AsArray().All(x => x["id"].GetValue<long>() != first));
-			Check.Equal(5, removed["members"].AsArray().Count(m => m["bot"]?.GetValue<bool>() == true), "o bot tirado saiu para todos");
+			Check.Equal(4, removed["members"].AsArray().Count(m => m["bot"]?.GetValue<bool>() == true), "o bot tirado saiu para todos");
 
 			host.Forget();
 			await host.Say(Msg("rooms.list"));
 			await host.Hear("room", timeoutMs: 300).ContinueWith(_ => { });
 			var (_, http) = await host.Call(HttpMethod.Get, "/v1/rooms");
 			Check.Equal(2, http["rooms"][0]["players"].GetValue<int>(), "a lista conta só gente em 'players'");
-			Check.Equal(5, http["rooms"][0]["bots"].GetValue<int>(), "e os bots à parte");
+			Check.Equal(4, http["rooms"][0]["bots"].GetValue<int>(), "e os bots à parte");
 
 			// Contra jogadores não há bot: a troca de modo os tira, e não se põe outro.
 			host.Forget();

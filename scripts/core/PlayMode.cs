@@ -8,9 +8,8 @@ using System.Linq;
 /// Todos são por equipe: ganha quem chega primeiro aos pontos, ou quem
 /// tem mais quando o tempo acaba.
 ///
-/// Nos modos contra bots os jogadores ficam todos no azul; o laranja é
-/// inteiro de bots, e as vagas que sobram no azul também são de bots
-/// (quem completa é a partida, não o mestre: não há botão de pôr bot).
+/// Nos modos contra bots o mestre põe quantos bots quiser em cada time, e
+/// cada jogador fica no time que quiser. Nos outros modos não há bot.
 ///
 /// O número de cada modo vai pela rede ("play" nas regras da sala) e o
 /// servidor de salas sabe que de <see cref="PlayMode.BotsLivre"/> em
@@ -52,11 +51,11 @@ public static class PlayModes
 		new(PlayMode.SoHumanos, "Só humanos", "Ninguém transforma. Tiro puro.", IconKind.Human, false),
 		new(PlayMode.SoLobos, "Só lobos", "Todos nascem lobo. Garra e mobilidade.", IconKind.Wolf, false),
 		new(PlayMode.HumanosXLobos, "Humanos × Lobos", "Azul humano, laranja lobo. Trocam na metade.", IconKind.Wolf, false),
-		new(PlayMode.BotsLivre, "Contra bots", "Vocês contra bots, humano e lobo liberados.", IconKind.Bot, true),
-		new(PlayMode.BotsHumanos, "Bots, só humanos", "Vocês contra bots, ninguém transforma.", IconKind.Bot, true),
-		new(PlayMode.BotsLobos, "Bots, só lobos", "Vocês contra bots, todos lobos.", IconKind.Bot, true),
-		new(PlayMode.CacarLobos, "Caçar lobos", "Vocês humanos contra bots lobo.", IconKind.Human, true),
-		new(PlayMode.CacarHumanos, "Caçar humanos", "Vocês lobos contra bots humanos.", IconKind.Wolf, true)
+		new(PlayMode.BotsLivre, "Contra bots", "Com bots nos times, humano e lobo liberados.", IconKind.Bot, true),
+		new(PlayMode.BotsHumanos, "Bots, só humanos", "Com bots nos times, ninguém transforma.", IconKind.Bot, true),
+		new(PlayMode.BotsLobos, "Bots, só lobos", "Com bots nos times, todos lobos.", IconKind.Bot, true),
+		new(PlayMode.CacarLobos, "Caçar lobos", "Com bots: azul humano contra laranja lobo.", IconKind.Human, true),
+		new(PlayMode.CacarHumanos, "Caçar humanos", "Com bots: azul lobo contra laranja humano.", IconKind.Wolf, true)
 	};
 
 	public static Info Of(PlayMode mode) => All.FirstOrDefault(i => i.Mode == mode) ?? All[0];
@@ -70,8 +69,8 @@ public static class PlayModes
 	/// <summary>
 	/// A forma permitida a um time. No Humanos × Lobos o azul começa humano
 	/// e, passada a metade do tempo, os papéis trocam
-	/// (<paramref name="secondHalf"/>). Nos modos contra bots o azul é o
-	/// dos jogadores e o laranja o dos bots.
+	/// (<paramref name="secondHalf"/>). No Caçar lobos o azul é humano e o
+	/// laranja lobo; no Caçar humanos, o contrário.
 	/// </summary>
 	public static FormRule RuleFor(PlayMode mode, int team, bool secondHalf)
 	{
