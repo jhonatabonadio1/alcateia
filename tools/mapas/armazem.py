@@ -94,6 +94,11 @@ def montar():
         m.caixa("Colisao", c["nome"], tuple(c["centro"]), tuple(c["tamanho"]), mat,
                 rot=tuple(tuple(linha) for linha in c["base"]), oculta=True)
 
+    # As escadas de marinheiro das paredes compridas, até as passarelas
+    # (3,63 m). A escada é do jogo, igual em todo mapa (kit.escada).
+    for e in dados["escadas"]:
+        m.escada("Escadas", e["nome"], tuple(e["pe"]), e["yaw"], e["altura"], e["largura"])
+
     vidro = F.Malha()
     v = dados["vidros"]
     for i in range(0, len(v), 3):

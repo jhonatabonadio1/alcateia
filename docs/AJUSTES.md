@@ -86,6 +86,16 @@ o renascer do bot (6 s).
 | `ThirdPersonDistance` | 2,5 m | Distância da câmera do lobo (era 3,5; longe demais, Jhon, 15/11) |
 | `FootSink` (nó `WolfVisual`) | 0,02 m | Quanto o lobo parado em pé desce: a pata do Idle_Pose só encosta pelas garras e ele parecia flutuar |
 
+### Escada (`Player.Ladder.cs`)
+
+| Campo | Valor | O que faz |
+|---|---|---|
+| `LadderSpeed` | 2,2 m/s | Subida e descida (3,6 m em 1,6 s) |
+| `LadderLookDown` | 0,6 rad (~35°) | Olhando mais para baixo que isto, o W desce |
+| `LadderExitPush` | 2,5 m/s | Empurrão para a frente ao chegar no alto, para cima do piso |
+| `LadderJumpOff` | 3 m/s | Pulo para trás que solta da escada |
+| Volume (`Ladder.Size`, posto por `kit.escada`) | largura + 0,12 × altura + 1,03 × 1,05 m | Onde o corpo está na escada |
+
 ### Resultado de hoje
 
 | | Humano | Bruto | Ligeiro |

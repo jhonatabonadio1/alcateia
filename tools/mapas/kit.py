@@ -86,6 +86,7 @@ class Mapa:
         self.formas = []     # (grupo, nome, Malha, posição, material, rotação, colisão)
         self.letreiros, self.luzes = [], []   # letreiro: (grupo, nome, imagem, pos, largura, base, aceso)
         self.modelos = []    # (grupo, nome, arquivo, posição, yaw, escala)
+        self.escadas = []    # (grupo, nome, centro, base, tamanho) — o volume de subir
         self.cru_recursos, self.cru_nos = [], []     # linhas de .tscn prontas (partículas)
         self.spawns = {AZUL: [], LARANJA: []}
         self.rotas = []
@@ -276,6 +277,30 @@ class Mapa:
         `caixa(..., oculta=True)` junto — veja `pecas.objeto`."""
         self.modelos.append((grupo, nome, arquivo, pos, yaw, escala))
 
+    def escada(self, grupo, nome, pe, yaw, altura, largura=1.0):
+        """Escada de subir (de marinheiro), igual em todo mapa: o volume
+        onde o corpo sobe e desce (scripts/core/Ladder.cs; o que o corpo faz
+        está em Player.Ladder.cs) e uma chapa lisa de colisão no lugar dos
+        degraus, para o corpo deslizar sem enroscar. O desenho da escada é
+        do mapa (modelo, forma).
+
+        pe: o ponto no chão, no meio da escada, encostado na frente dos
+        degraus. yaw: para onde a escada olha (de onde vem quem sobe); com
+        yaw 0 a parede fica em −Z e quem sobe olha para −Z. altura: do chão
+        ao piso de cima (onde se sai). largura: entre os corrimãos."""
+        base = giro_y(yaw)
+        def ponto(x, y, z):        # do sistema da escada para o mundo
+            return tuple(pe[i] + base[i][0] * x + base[i][1] * y + base[i][2] * z for i in range(3))
+        if "escada_chapa" not in self.materiais:
+            self.material("escada_chapa", None, (0.3, 0.3, 0.32), metal=1.0)
+        # A chapa: atrás da frente dos degraus, do chão até 3 cm abaixo do piso de cima.
+        self.caixa(grupo, f"{nome}Chapa", ponto(0, (altura - 0.03) / 2, -0.115), (largura + 0.02, altura - 0.03, 0.29),
+                   "escada_chapa", rot=base, oculta=True)
+        # O volume: do chão até um corpo acima do piso de cima, de 33 cm
+        # atrás da frente dos degraus a 72 cm na frente deles.
+        alto = altura + 1.03
+        self.escadas.append((grupo, nome, ponto(0, alto / 2, 0.195), base, (largura + 0.12, alto, 1.05)))
+
     def nevasca(self, altura=24.0, quantos=6000):
         """Neve caindo sobre o mapa todo (partículas; só enfeite)."""
         self.cru_recursos += [
@@ -340,6 +365,8 @@ class Mapa:
             ext.append(("Texture2D", f"res://assets/mapas/letreiros/{imagem}.png", f"l_{imagem}"))
         for arquivo in sorted({x[2] for x in self.modelos}):
             ext.append(("PackedScene", f"res://assets/mapas/pecas/{arquivo}.glb", f"p_{arquivo}"))
+        if self.escadas:
+            ext.append(("Script", "res://scripts/core/Ladder.cs", "s_ladder"))
         ext += [("Script", "res://scripts/core/SpawnPoints.cs", "s_spawns"),
                 ("Script", "res://scripts/core/PatrolRoutes.cs", "s_routes"),
                 ("Script", "res://scripts/core/NavBaker.cs", "s_nav")]
@@ -443,7 +470,7 @@ class Mapa:
               "ambient_mode = 1" if not self.ambiente.get('ceu') else "ambient_mode = 0", ""]
 
         grupos = []
-        for item in self.pecas + self.formas + self.letreiros + self.modelos + self.luzes:
+        for item in self.pecas + self.formas + self.letreiros + self.modelos + self.luzes + self.escadas:
             if item[0] not in grupos:
                 grupos.append(item[0])
         for g in grupos:
@@ -503,6 +530,10 @@ class Mapa:
             if sombra:
                 o.append("shadow_enabled = true")
             o.append("")
+
+        for (g, nome, centro, base, tamanho) in self.escadas:
+            o += [f'[node name="{nome}" type="Area3D" parent="{g}"]', f"transform = {xform(centro, base)}",
+                  'script = ExtResource("s_ladder")', f"Size = {vec(tamanho)}", ""]
 
         o += self.cru_nos
 

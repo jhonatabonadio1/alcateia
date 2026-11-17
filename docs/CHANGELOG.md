@@ -2,6 +2,16 @@
 
 ## Não lançado
 
+### Escadas que sobem e descem, iguais em todo mapa (17/11)
+- `scripts/core/Ladder.cs` (o volume da escada) e `Player.Ladder.cs` (o
+  que o corpo faz nela): W sobe, S desce, olhando para baixo o W desce,
+  A/D de lado, pulo solta para trás, no alto sai para o piso de cima.
+  Humano e lobo. Números em `AJUSTES.md`.
+- `kit.escada(...)` põe a escada em qualquer mapa por código: o volume e
+  uma chapa lisa de colisão no lugar dos degraus.
+- Armazém: as 6 escadas de marinheiro das paredes compridas levam às
+  passarelas (3,63 m). Os bots ainda não usam escada.
+
 ### Mapa novo, o único da lista: Armazém (17/11)
 - Galpão fechado de 46 × 30 m, do pacote LowPolyFPS4 (Unity Asset Store)
   que o Jhon trouxe: contêineres que viram túnel (as duas pontas abertas,

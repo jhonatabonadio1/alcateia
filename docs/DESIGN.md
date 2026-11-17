@@ -944,6 +944,18 @@ recebeu ponto na largada.
 Sem `SpawnPoints` na cena, cada ator volta ao próprio ponto inicial —
 é o que mantém `scenes/treino.tscn` funcionando sem configuração.
 
+### Escadas: iguais em todo mapa
+
+`scripts/core/Ladder.cs` e `Player.Ladder.cs`. **Decisão do Jhon
+(17/11):** a escada de subir é uma peça do jogo e se comporta igual em
+qualquer mapa. W sobe, S desce (olhando bem para baixo, o W desce, como
+nos jogos de tiro de sempre), A e D de lado; parado na escada, fica
+parado; o pulo solta para trás; no alto, o corpo vai para cima do piso.
+Agarra no pé andando para ela, ou caindo dentro dela — quem sai da
+passarela pela abertura da escada fica nela, não cai. Na escada não há
+gravidade nem corrida na parede. A conta é pela posição do corpo, igual
+no jogo e no servidor. Os bots ainda não sobem.
+
 ### Rondas: cada mapa traz as suas
 
 `scripts/core/PatrolRoutes.cs`. Uma rota é uma sequência de pontos

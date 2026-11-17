@@ -261,6 +261,7 @@ public partial class Player : CharacterBody3D
 
 		GlobalPosition = SpawnPoints.Pick(this, _spawn);
 		Velocity = Vector3.Zero;
+		_onLadder = false;
 
 		ReleaseWall();
 		_lastWall = Vector3.Zero;
@@ -420,6 +421,9 @@ public partial class Player : CharacterBody3D
 		if (_moves.Controls)
 			ReleaseWall();
 		if (_moves.Step(delta, _gravity))
+			return;
+
+		if (TryLadder(delta))
 			return;
 
 		if (TryWallRun(delta))

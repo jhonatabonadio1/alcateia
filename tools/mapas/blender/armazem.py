@@ -18,8 +18,9 @@ Grava:
   telhado, sacos de areia) como colisão de malha (`-colonly`);
 - tools/mapas/armazem.json — a colisão do resto (uma caixa orientada
   por peça; o contêiner é um túnel de quatro caixas, porque as duas
-  pontas são abertas e as portas são peças à parte), as luzes do teto e
-  os vidros (que entram na cena à parte, sem sombra).
+  pontas são abertas e as portas são peças à parte), as luzes do teto,
+  onde ficam as escadas de marinheiro das paredes (pé, direção, altura)
+  e os vidros (que entram na cena à parte, sem sombra).
 
 Eixos: o galpão comprido fica em X (o eixo dos times), Y para cima, o
 chão em 0. Medidas em metros.
@@ -427,8 +428,20 @@ def main(fbx, pacote):
         lay.data.foreach_set("uv", uv.reshape(-1).astype(np.float32))
 
     # Colisão (caixas) e luzes, nas coordenadas do jogo.
-    caixas, luzes, contagem = [], [], {}
+    caixas, luzes, contagem, escadas = [], [], {}, []
     for o, (nome, M) in encaixe.items():
+        if nome == "Wall_01":
+            # A escada de marinheiro do meio da parede, do chão à passarela
+            # (3,63 m). Nas medidas do modelo (cm): degraus em x ±49, a
+            # frente deles em z 178 (a parede é z≈0, a sala fica em +z).
+            # Sai o pé da escada e para onde ela olha; a escada em si (o
+            # volume de subir e a chapa lisa no lugar dos degraus) é do
+            # jogo, igual em todo mapa: kit.Mapa.escada e scripts/core/Ladder.cs.
+            pe = (aplicar(M, np.array([[0.0, 0.0, 178.1]]))[0] * 0.01) @ GIRO.T
+            fora = GIRO @ (M[:3].T @ np.array([0.0, 0.0, 1.0]))
+            yaw = float(np.degrees(np.arctan2(fora[0], fora[2])))
+            escadas.append(dict(nome=f"Escada{len(escadas) + 1}", pe=[round(x, 4) for x in pe],
+                                yaw=round(yaw, 2), altura=3.63, largura=0.98))
         if nome.startswith(CASCA) or nome.startswith(SEM_COLISAO):
             if nome.startswith("Light_"):
                 S = origem[nome][0].reshape(-1, 3)
@@ -538,8 +551,8 @@ def main(fbx, pacote):
                               export_extras=False, export_animations=False)
     with open(JSON, "w", encoding="utf-8") as fh:
         json.dump(dict(origem="Low Poly FPS Map 4 (Unity), convertido por tools/mapas/blender/armazem.py",
-                       caixas=caixas, luzes=luzes, vidros=vidros), fh, ensure_ascii=False, indent=0)
-    print(f"{GLB}\n{JSON}: {len(caixas)} caixas, {len(luzes)} luzes, {len(vidros) // 3} triângulos de vidro")
+                       caixas=caixas, luzes=luzes, escadas=escadas, vidros=vidros), fh, ensure_ascii=False, indent=0)
+    print(f"{GLB}\n{JSON}: {len(caixas)} caixas, {len(luzes)} luzes, {len(escadas)} escadas, {len(vidros) // 3} triângulos de vidro")
     shutil.rmtree(tmp, ignore_errors=True)
 
 

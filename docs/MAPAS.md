@@ -8,7 +8,7 @@ a linha dela para `Maps.All` e ponha o teste de volta em
 
 | Mapa | Tamanho | Tema | Gerador |
 |---|---|---|---|
-| **Armazém** (na lista) | 46 × 30 m (pequeno) | Galpão fechado de contêineres, claraboias no teto | `tools/mapas/blender/armazem.py` + `tools/mapas/armazem.py` |
+| **Armazém** (na lista) | 46 × 30 m (pequeno) | Galpão fechado de contêineres, passarelas com escada nas paredes, claraboias no teto | `tools/mapas/blender/armazem.py` + `tools/mapas/armazem.py` |
 | Vila | 72 × 52 m (médio) | Vila de deserto no fim da tarde: praça, feira, terraços, vielas | `tools/mapas/vila.py` |
 | Estação Polar | 110 × 70 m (grande) | Base de pesquisa na neve, ao crepúsculo: garagem, alojamentos, passarelas | `tools/mapas/polar.py` |
 
@@ -34,7 +34,7 @@ python3 tools/gerar_mapas.py      # todos os mapas; ou: gerar_mapas.py vila
 
 Cada mapa é um arquivo em `tools/mapas/` que usa o kit
 (`tools/mapas/kit.py`): `caixa`, `cilindro`, `rampa`, `parapeito`, `luz`,
-`parede`, `letreiro`, `modelo`, `spawn`, `rota`, mais o céu, a neblina e o sol do mapa. O
+`parede`, `letreiro`, `modelo`, `escada`, `spawn`, `rota`, mais o céu, a neblina e o sol do mapa. O
 gerador escreve `scenes/maps/<id>.tscn` e a miniatura
 `assets/ui/mapas/<id>.png`.
 
@@ -130,6 +130,29 @@ O que não dá para fazer bem com forma de código vem pronto, em
 Os scripts rodam com `python3` e o módulo `bpy` (`pip install bpy`) ou
 com `blender -b -P`. `tools/mapas/blender/malha.py` tem as ferramentas
 (caixa chanfrada, cilindro, tubo, perfil) nas coordenadas do jogo.
+
+### Escadas
+
+A escada de subir (de marinheiro) é do jogo, não do mapa: em todo mapa
+ela sobe e desce igual (decisão do Jhon, 17/11). No gerador:
+
+```python
+m.escada(grupo, "Escada1", pe, yaw, altura, largura=1.0)
+```
+
+`pe` é o ponto no chão, no meio da escada, encostado na frente dos
+degraus; `yaw` é para onde ela olha (com 0, a parede fica em −Z); `altura`
+vai do chão ao piso de cima. O kit põe o volume de subir
+(`scripts/core/Ladder.cs`) e uma chapa lisa de colisão no lugar dos
+degraus; o desenho da escada é do mapa. Num mapa feito no editor, ponha
+um nó `Ladder` (Area3D com o script) e uma caixa de colisão atrás.
+
+Como se usa (`Player.Ladder.cs`): agarra andando para ela no pé, ou
+caindo dentro dela (quem sai da passarela pela abertura fica preso
+nela). W sobe, S desce, olhando bem para baixo o W desce; A e D de lado.
+No alto, o corpo é empurrado para cima do piso; o pulo solta para trás.
+Vale para humano e lobo. Os bots ainda não usam escada (a navegação não
+liga o pé ao topo).
 
 ### Paredes com porta e janela
 
