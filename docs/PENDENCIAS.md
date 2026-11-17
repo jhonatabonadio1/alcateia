@@ -46,6 +46,11 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Logotipo do jogo.** Hoje: só o nome escrito na fonte do menu.
 - **Imagens das patentes melhores.** Hoje: insígnias desenhadas por
   código (`RankBadge`).
+- **Dublagem dos personagens, em inglês** (pedido em 17/11): falas de
+  combate, dor, morte, transformação e uivo. Hoje: nenhuma voz de
+  personagem. Decidir a origem (dublador, voz sintética) e conferir a
+  licença de uso comercial e de voz antes de gravar; e ligar à
+  internacionalização (a dublagem fica em inglês, o texto muda de idioma).
 - **Lootbox em 3D, com animação de abrir.**
 
 ### Combate e visual
@@ -69,12 +74,27 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Qualidade de textura baixa, média e alta** nas opções. Sombra,
   oclusão, reflexo e suavização já têm opção (Opções → Vídeo, 13/11);
   falta a resolução das texturas e a distância de desenho.
-- **Áudios melhores e mais precisos.**
-- **HUD, fontes e menu melhores.**
+- **Áudios e sons de nível profissional** (17/11): armas, passos, lobo, ambiente, menu.
+- **Efeitos visuais (GFX) em geral** (17/11): o que já existe está em
+  `docs/EFEITOS.md`; faltam os do lobo (fumaça, ar, feixes nas garras,
+  brilho) e os de tiro, sangue e impacto listados acima.
+- **HUD, fontes e menu melhores — prioridade** (Jhon pediu foco nisso em 17/11).
 
 ### Mapas e modos
 
 - **Mais mapas.**
+- **Aumentar o mapa do Armazém, com IA** (pedido em 17/11). Mexe em tudo
+  que depende do tamanho: pontos de nascimento (hoje 6 por time), o
+  minimapa, a rota dos bots e a luz. A decidir como: eu gerando as peças
+  novas em `tools/mapas`, no mesmo kit, ou uma ferramenta externa de 3D.
+- **Campo de treinamento** (pedido em 17/11): lugar para treinar mira,
+  recuo, salto do lobo e movimento sem partida valendo. Hoje: a tela
+  "Treino com bots" foi removida em 17/11 e só resta a cena de treino
+  interna dos testes.
+- **Jogo rápido: buscar partida automaticamente** (pedido em 17/11): um
+  botão que põe o jogador numa partida aberta (ou cria uma) sem passar
+  pela lista de salas, equilibrando times e patente. Pede fila e
+  pareamento no servidor.
 - **Modo espectador** (pedido em 17/11). Hoje a caixa "Espectador" da
   sala só guarda a escolha: nada no jogo nem no servidor a lê. A fazer:
   botão "Assistir" na lista de salas (o espectador não ocupa vaga nos
@@ -103,7 +123,8 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   **Presas** (moeda de jogar), nunca com Sangue; o bônus é pequeno e com
   teto (como as tatuagens de hoje); e, se der vida, tira alguma outra
   coisa (velocidade, por exemplo) — regra 1.
-- **Cash: dinheiro que o jogador paga.** Hoje o desenho já prevê o
+- **Cash: dinheiro que o jogador paga** (17/11: o sistema de pagamento
+  entra na lista de prioridades). Hoje o desenho já prevê o
   Sangue (moeda paga que nunca compra poder — `Catalog.cs`), mas não há
   compra. Falta: loja de Sangue, pagamento (Pix, cartão), saldo no
   servidor, recibo, estorno.
@@ -161,6 +182,16 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   - Reduzir tremor e balanço da câmera.
   - Remapear todas as teclas; alternar em vez de segurar (agachar, mirar).
 
+### Social e salas (pedido em 17/11)
+
+- **Amigos**: lista, pedido de amizade, ver quem está online e em que
+  sala. Hoje: só o saguão com chat (`UI.md` lista canais, amigos e
+  matilha em "ainda fora").
+- **Convidar para o jogo**: convite direto para um amigo entrar na sala,
+  com aviso na tela dele.
+- **Sala pública e privada.** Hoje: a sala aceita senha na criação
+  (`Room.cs`), mas não há o conceito de pública ou privada: a lista mostra
+  tudo. A fazer: privada fora da lista, só por convite ou código.
 ### Comunicação na partida
 
 - **Chat dentro da partida**: para o time e para todos, com o nome e a
@@ -169,6 +200,11 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Rádio**: chamadas prontas para o time ("Preciso de ajuda", "Lobo
   vindo", "Recuar", "Entendido"…), num menu rápido de teclas, com a voz
   gravada e a frase no chat do time. Marca no mapa onde quem chamou está.
+
+- **Chat de voz** (pedido em 17/11): por time e na sala, com apertar para
+  falar, silenciar e denunciar jogador. Pede um serviço de voz em tempo
+  real (WebRTC) e moderação; as duas coisas entram junto com a
+  verificação de idade, já que há menores no público provável.
 
 ### Ranking
 
@@ -179,6 +215,9 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   (por exemplo, 5 partidas por dia × 8 anos ≈ 14.600 partidas ≈ 5 milhões
   de XP) e, provavelmente, mais patentes. A curva fica em `Ranks.XpFor`
   e no servidor.
+
+- **Revisar as patentes** (pedido em 17/11): nomes, quantidade, curva de
+  XP e imagens, junto com a conta dos 8 anos acima.
 
 ### Servidor e produção
 
@@ -192,6 +231,14 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   saguão, partidas simultâneas), vários servidores de partida subindo
   sozinhos conforme a fila, saguão em mais de uma máquina (hoje as salas
   ficam na memória de um processo só), monitoramento.
+
+- **Painel administrativo (backoffice)** (pedido em 17/11): contas,
+  banimento e moderação, denúncias, salas e partidas ao vivo, saldo e
+  compras, missões e recompensas diárias, versão mínima do cliente.
+  Precisa de login próprio e registro de quem fez o quê.
+- **Testar com 8 jogadores de verdade** (pedido em 17/11): uma partida com
+  oito pessoas, não bots, com latência real. Hoje: só dois jogos sem tela
+  na mesma máquina; o teste de carga está em `tools/testar_carga.sh`.
 
 ## Pendências técnicas conhecidas
 
