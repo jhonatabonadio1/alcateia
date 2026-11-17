@@ -2,6 +2,16 @@
 
 ## Não lançado
 
+### Luz do Armazém (17/11)
+- As luminárias do teto viraram focos para baixo com sombra
+  (`kit.foco`): personagem e objeto fazem sombra no chão embaixo delas.
+- Luz rebatida (SDFGI) e SSIL: a luz esquenta na parede cor de areia e
+  volta para o chão; o ambiente plano caiu de 0,8 para 0,25 (contraste).
+- Mapeamento de cor AgX (o da foto do mapa), sol mais forte e quente, e
+  uma névoa volumétrica fraca que mostra o raio de sol das claraboias.
+- Custa mais placa de vídeo: se pesar, `sdfgi` e `volumetrica` saem em
+  `tools/mapas/armazem.py`.
+
 ### A sala online no visual da sala, sem a tela de treino (17/11)
 - A sala online abre na `RoomScreen` (times grandes, regras à direita,
   chat embaixo), a mesma da sala offline; cada ação vai para o servidor

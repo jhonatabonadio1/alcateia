@@ -106,12 +106,16 @@ def montar():
         vidro.tri(tuple(v[i]), tuple(v[i + 1]), tuple(v[i + 2]))
     m.forma("Vidro", "Vidros", vidro, (0, 0, 0), "vidro")
 
-    # Luz: as luminárias do teto, os refletores de tripé e as arandelas.
-    tom = {"teto": ((1.0, 0.93, 0.82), 1.6, 11), "refletor": ((1.0, 0.86, 0.62), 1.3, 7),
-           "arandela": ((1.0, 0.78, 0.5), 0.8, 4)}
+    # Luz: as luminárias do teto são focos para baixo, com sombra (é o que
+    # põe sombra embaixo de quem passa); os refletores de tripé e as
+    # arandelas são luz de preenchimento, sem sombra.
+    tom = {"refletor": ((1.0, 0.86, 0.62), 1.0, 7), "arandela": ((1.0, 0.78, 0.5), 0.7, 4)}
     for i, l in enumerate(dados["luzes"], 1):
-        cor_, energia, alcance = tom[l["tipo"]]
-        m.luz("Luzes", f"Luz{i}", tuple(l["pos"]), cor_, energia, alcance)
+        if l["tipo"] == "teto":
+            m.foco("Luzes", f"Luz{i}", tuple(l["pos"]), (1.0, 0.92, 0.80), 5.0, 12, angulo=62)
+        else:
+            cor_, energia, alcance = tom[l["tipo"]]
+            m.luz("Luzes", f"Luz{i}", tuple(l["pos"]), cor_, energia, alcance)
 
     for time, pontos in NASCER.items():
         for x, z in pontos:
@@ -122,10 +126,15 @@ def montar():
     # Galpão fechado: o céu só aparece pelas claraboias, e o sol entra por
     # elas em manchas no chão. O resto é a luz das luminárias e um
     # ambiente baixo, frio.
-    # Perto das fotos do pacote: luz quente, sombra azulada, cor viva.
-    m.ambiente = dict(ceu=dict(topo=(0.32, 0.47, 0.70), horizonte=(0.70, 0.76, 0.82), chao=(0.25, 0.24, 0.23),
+    # Perto da foto do mapa: a luz do sol e das luminárias rebate na parede
+    # cor de areia e no chão (SDFGI) e esquenta o galpão; o ambiente plano
+    # fica baixo, para haver contraste e sombra. AgX é o mapeamento de cor
+    # da foto; a névoa fraca mostra o raio de sol das claraboias.
+    m.ambiente = dict(ceu=dict(topo=(0.36, 0.52, 0.78), horizonte=(0.72, 0.78, 0.86), chao=(0.25, 0.24, 0.23),
                                energia=1.0),
-                      luz=(0.86, 0.88, 0.95), luz_energia=0.8, exposicao=1.1, brilho=0.4,
-                      contraste=1.05, saturacao=1.15)
-    m.sol = dict(yaw=28, queda=58, cor=(1.0, 0.92, 0.80), energia=1.7, alcance=60)
+                      luz=(0.80, 0.84, 0.95), luz_energia=0.25, exposicao=1.0, brilho=0.35,
+                      contraste=1.08, saturacao=1.12, agx=True,
+                      sdfgi=dict(energia=1.2, rebote=0.6, celula=0.2), ssil=0.9,
+                      volumetrica=dict(densidade=0.006, cor=(1.0, 0.95, 0.88), anisotropia=0.55, alcance=48))
+    m.sol = dict(yaw=28, queda=52, cor=(1.0, 0.88, 0.70), energia=2.4, alcance=60)
     return m

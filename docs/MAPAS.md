@@ -34,7 +34,7 @@ python3 tools/gerar_mapas.py      # todos os mapas; ou: gerar_mapas.py vila
 
 Cada mapa é um arquivo em `tools/mapas/` que usa o kit
 (`tools/mapas/kit.py`): `caixa`, `cilindro`, `rampa`, `parapeito`, `luz`,
-`parede`, `letreiro`, `modelo`, `escada`, `spawn`, `rota`, mais o céu, a neblina e o sol do mapa. O
+`parede`, `letreiro`, `modelo`, `escada`, `foco` (luminária de teto com sombra), `spawn`, `rota`, mais o céu, a neblina e o sol do mapa. Para mapa fechado, `m.ambiente` aceita ainda `sdfgi` (luz rebatida), `ssil`, `agx` (mapeamento de cor) e `volumetrica` (névoa com raio de sol) — veja `tools/mapas/armazem.py`. O
 gerador escreve `scenes/maps/<id>.tscn` e a miniatura
 `assets/ui/mapas/<id>.png`.
 

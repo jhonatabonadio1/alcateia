@@ -87,6 +87,7 @@ class Mapa:
         self.letreiros, self.luzes = [], []   # letreiro: (grupo, nome, imagem, pos, largura, base, aceso)
         self.modelos = []    # (grupo, nome, arquivo, posição, yaw, escala)
         self.escadas = []    # (grupo, nome, centro, base, tamanho) — o volume de subir
+        self.focos = []      # (grupo, nome, pos, cor, energia, alcance, ângulo, sombra)
         self.cru_recursos, self.cru_nos = [], []     # linhas de .tscn prontas (partículas)
         self.spawns = {AZUL: [], LARANJA: []}
         self.rotas = []
@@ -322,6 +323,12 @@ class Mapa:
     def luz(self, grupo, nome, pos, cor_, energia, alcance, sombra=False):
         self.luzes.append((grupo, nome, pos, cor_, energia, alcance, sombra))
 
+    def foco(self, grupo, nome, pos, cor_, energia, alcance, angulo=60.0, sombra=True):
+        """Luz de cima para baixo (SpotLight3D), como luminária de teto. Com
+        sombra: quem passa embaixo projeta sombra no chão. Um foco só
+        desenha a cena uma vez para a sombra (a omni desenha seis)."""
+        self.focos.append((grupo, nome, pos, cor_, energia, alcance, angulo, sombra))
+
     def spawn(self, time, x, z, y=1.2):
         self.spawns[time].append((x, y, z))
 
@@ -470,7 +477,7 @@ class Mapa:
               "ambient_mode = 1" if not self.ambiente.get('ceu') else "ambient_mode = 0", ""]
 
         grupos = []
-        for item in self.pecas + self.formas + self.letreiros + self.modelos + self.luzes + self.escadas:
+        for item in self.pecas + self.formas + self.letreiros + self.modelos + self.luzes + self.escadas + self.focos:
             if item[0] not in grupos:
                 grupos.append(item[0])
         for g in grupos:
@@ -531,6 +538,16 @@ class Mapa:
                 o.append("shadow_enabled = true")
             o.append("")
 
+        # Foco: o −Z da luz aponta para baixo.
+        para_baixo = ((1, 0, 0), (0, 0, 1), (0, -1, 0))
+        for (g, nome, pos, c, energia, alcance, angulo, sombra) in self.focos:
+            o += [f'[node name="{nome}" type="SpotLight3D" parent="{g}"]', f"transform = {xform(pos, para_baixo)}",
+                  f"light_color = {cor(c)}", f"light_energy = {f(energia)}", f"spot_range = {f(alcance)}",
+                  f"spot_angle = {f(angulo)}", "spot_angle_attenuation = 0.6"]
+            if sombra:
+                o += ["shadow_enabled = true", "shadow_blur = 1.5"]
+            o.append("")
+
         for (g, nome, centro, base, tamanho) in self.escadas:
             o += [f'[node name="{nome}" type="Area3D" parent="{g}"]', f"transform = {xform(centro, base)}",
                   'script = ExtResource("s_ladder")', f"Size = {vec(tamanho)}", ""]
@@ -589,6 +606,23 @@ class Mapa:
                   "tonemap_mode = 3", f"tonemap_exposure = {f(a.get('exposicao', 1.0))}",
                   "ssao_enabled = true", "ssao_intensity = 2.5",
                   "glow_enabled = true", f"glow_intensity = {f(a.get('brilho', 0.6))}", "glow_bloom = 0.08"]
+        # Opções de acabamento de luz (o Armazém usa; os outros mapas não):
+        # luz rebatida (SDFGI), luz rebatida da tela (SSIL), o mapeamento
+        # de cor AgX e a névoa volumétrica (o raio de sol que se vê no ar).
+        if a.get("agx"):
+            o = [("tonemap_mode = 4" if linha == "tonemap_mode = 3" else linha) for linha in o]
+        if a.get("sdfgi"):
+            g = a["sdfgi"]
+            o += ["sdfgi_enabled = true", "sdfgi_use_occlusion = true", "sdfgi_read_sky_light = true",
+                  f"sdfgi_bounce_feedback = {f(g.get('rebote', 0.5))}", f"sdfgi_min_cell_size = {f(g.get('celula', 0.2))}",
+                  f"sdfgi_energy = {f(g.get('energia', 1.0))}"]
+        if a.get("ssil"):
+            o += ["ssil_enabled = true", f"ssil_intensity = {f(a['ssil'])}", "ssil_radius = 4.0"]
+        if a.get("volumetrica"):
+            v = a["volumetrica"]
+            o += ["volumetric_fog_enabled = true", f"volumetric_fog_density = {f(v.get('densidade', 0.01))}",
+                  f"volumetric_fog_albedo = {cor(v.get('cor', (1, 1, 1)))}", f"volumetric_fog_anisotropy = {f(v.get('anisotropia', 0.4))}",
+                  f"volumetric_fog_length = {f(v.get('alcance', 64))}", "volumetric_fog_gi_inject = 1.0"]
         if a.get("neblina"):
             n = a["neblina"]
             o += ["fog_enabled = true", f"fog_light_color = {cor(n['cor'])}", f"fog_density = {f(n['densidade'])}",
