@@ -121,6 +121,6 @@ public partial class WelcomeScreen : LobbyScreen
 			return;
 		}
 
-		Shell.GoRooms();
+		Shell.GoOnline();
 	}
 }

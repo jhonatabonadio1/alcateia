@@ -2,6 +2,16 @@
 
 ## Não lançado
 
+### A sala online no visual da sala, sem a tela de treino (17/11)
+- A sala online abre na `RoomScreen` (times grandes, regras à direita,
+  chat embaixo), a mesma da sala offline; cada ação vai para o servidor
+  e a tela se refaz com a resposta. Regras de patente, espectador e
+  troca de lado passam a ir pela rede também.
+- Saiu a lista "Treino com bots" (`RoomListScreen`, `RoomRow`) e os
+  botões que levavam a ela. A aba Salas abre a sala em que você está, ou
+  as salas online.
+- As missões do dia (`DailyMissions`) entram na lateral das salas online.
+
 ### Modos de jogo, times de 1 a 6, foto dos mapas e tela de carregamento (17/11)
 - Antes de criar a sala escolhe-se o modo (`PlayMode.cs`, `ModePicker`):
   Livre, Só humanos, Só lobos, Humanos × Lobos (trocam na metade),

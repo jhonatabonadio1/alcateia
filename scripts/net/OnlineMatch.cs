@@ -96,6 +96,10 @@ public static class OnlineMatch
 		["minutes"] = s.Minutes,
 		["weapons"] = (int)s.Weapons,
 		["play"] = (int)s.Play,
+		["minRank"] = s.MinRank,
+		["maxRank"] = s.MaxRank,
+		["spectators"] = s.Spectators,
+		["swapSides"] = s.SwapSides,
 		["friendlyFire"] = s.FriendlyFire,
 		["difficulty"] = (int)s.Difficulty
 	};
@@ -112,6 +116,10 @@ public static class OnlineMatch
 		s.ScoreToWin = j["scoreToWin"]?.GetValue<int>() ?? s.ScoreToWin;
 		s.Minutes = j["minutes"]?.GetValue<int>() ?? s.Minutes;
 		s.FriendlyFire = j["friendlyFire"]?.GetValue<bool>() ?? false;
+		s.MinRank = System.Math.Clamp(j["minRank"]?.GetValue<int>() ?? 0, 0, Ranks.Count - 1);
+		s.MaxRank = System.Math.Clamp(j["maxRank"]?.GetValue<int>() ?? Ranks.Count - 1, s.MinRank, Ranks.Count - 1);
+		s.Spectators = j["spectators"]?.GetValue<bool>() ?? true;
+		s.SwapSides = j["swapSides"]?.GetValue<bool>() ?? false;
 
 		int weapons = j["weapons"]?.GetValue<int>() ?? 0, play = j["play"]?.GetValue<int>() ?? 0;
 		if (System.Enum.IsDefined(typeof(WeaponRule), weapons)) s.Weapons = (WeaponRule)weapons;

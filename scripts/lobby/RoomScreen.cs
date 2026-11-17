@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Nodes;
 
 /// <summary>
 /// A sala antes da partida, em três áreas:
@@ -24,9 +25,14 @@ using System.Linq;
 /// quando os prontos já fecham times equilibrados, com no máximo um a
 /// menos de um lado. Quem não estava pronto fica na sala e não joga.
 ///
-/// Sem servidor só há um humano (você), sempre mestre. As regras de
-/// pronto e de mestre já são as do multijogador: na Fase 2 muda de onde
-/// vêm os jogadores, não como a sala funciona.
+/// A mesma tela serve à sala online (decisão do Jhon, 17/11: este visual
+/// fica): com <see cref="RoomScreen(JsonObject)"/> ela lê a sala que o
+/// servidor manda (<see cref="LobbyLink"/>) e cada ação vira um pedido a
+/// ele — regras, bots, time, pronto, iniciar, sair e o chat. O servidor
+/// confere tudo (só o dono muda regra, por exemplo) e manda a sala de
+/// volta; a tela se refaz com o que veio.
+///
+/// Offline (sem servidor) só há um humano (você), sempre mestre.
 /// </summary>
 public partial class RoomScreen : LobbyScreen
 {
@@ -50,6 +56,106 @@ public partial class RoomScreen : LobbyScreen
 
 	public RoomScreen() { }
 
+	/// <summary>A sala online, como o servidor a descreve.</summary>
+	public RoomScreen(JsonObject online)
+	{
+		_online = true;
+		_room = FromOnline(online);
+	}
+
+	private readonly bool _online;
+	private static LobbyLink Lobby => LobbyLink.Instance;
+
+	/// <summary>A senha de cada sala online que o dono pôs nesta sessão: o
+	/// servidor não a devolve, e mudar uma regra sem ela tiraria a senha.</summary>
+	public static readonly Dictionary<int, string> OnlinePasswords = new();
+
+	/// <summary>A senha escolhida ao criar a sala online, até o servidor dizer o número dela.</summary>
+	public static string PendingPassword;
+
+	private static RoomListing FromOnline(JsonObject room)
+	{
+		RoomSettings settings = OnlineMatch.SettingsFrom(room?["settings"] as JsonObject);
+		settings.Number = room?["id"]?.GetValue<int>() ?? 0;
+		var listing = new RoomListing
+		{
+			Settings = settings,
+			State = room?["state"]?.GetValue<string>() == "waiting" ? RoomState.Waiting : RoomState.Playing
+		};
+
+		foreach (JsonNode m in room?["members"] as JsonArray ?? new JsonArray())
+		{
+			bool bot = m["bot"]?.GetValue<bool>() ?? false;
+			bool host = m["host"]?.GetValue<bool>() ?? false;
+			long id = m["id"].GetValue<long>();
+			listing.Members.Add(new RoomMember
+			{
+				Id = id,
+				Name = m["name"]?.GetValue<string>() ?? "",
+				Team = m["team"]?.GetValue<int>() ?? Teams.Blue,
+				IsBot = bot,
+				Ready = bot || (m["ready"]?.GetValue<bool>() ?? false),
+				IsHost = host,
+				Rank = bot ? Ranks.None : Ranks.RankFor(m["xp"]?.GetValue<long>() ?? 0)
+			});
+			if (host && id == Backend.AccountId && PendingPassword != null)
+			{
+				OnlinePasswords[settings.Number] = PendingPassword;
+				PendingPassword = null;
+			}
+		}
+
+		settings.Password = OnlinePasswords.TryGetValue(settings.Number, out string password) ? password : "";
+		return listing;
+	}
+
+	public override void _Ready()
+	{
+		base._Ready();
+		if (!_online) return;
+		Lobby.Changed += OnLobbyChanged;
+		Lobby.ChatReceived += OnOnlineChat;
+		Lobby.Failed += OnOnlineFailed;
+	}
+
+	public override void _ExitTree()
+	{
+		if (!_online) return;
+		Lobby.Changed -= OnLobbyChanged;
+		Lobby.ChatReceived -= OnOnlineChat;
+		Lobby.Failed -= OnOnlineFailed;
+	}
+
+	private void OnLobbyChanged()
+	{
+		if (!IsInsideTree()) return;
+		if (Lobby.Room == null || !Lobby.Connected)
+		{
+			Callable.From(() => Shell.GoOnline()).CallDeferred();
+			return;
+		}
+
+		long selected = _selected?.Id ?? 0;
+		_room = FromOnline(Lobby.Room);
+		_selected = _room.Members.FirstOrDefault(m => m.Id == selected) ?? Me;
+		Refresh();
+	}
+
+	private void OnOnlineChat(string from, string text)
+	{
+		if (!IsInsideTree() || _chatLog == null || !IsInstanceValid(_chatLog)) return;
+		AddChatLine(from, text, false);
+		ScrollToEnd();
+	}
+
+	private void OnOnlineFailed(string code, string message)
+	{
+		if (IsInsideTree()) Shell.Toast(message, UiTokens.Danger);
+	}
+
+	/// <summary>Manda as regras da tela para o servidor (só o dono pode).</summary>
+	private void PushSettings() => Lobby.ChangeSettings(OnlineMatch.SettingsTo(S));
+
 	public RoomScreen(RoomListing room)
 	{
 		_room = room;
@@ -68,7 +174,9 @@ public partial class RoomScreen : LobbyScreen
 
 	private RoomSettings S => _room.Settings;
 	private bool VsBots => PlayModes.VsBots(S.Play);
-	private RoomMember Me => _room.Members.FirstOrDefault(m => !m.IsBot);
+	private RoomMember Me => _online
+		? _room.Members.FirstOrDefault(m => !m.IsBot && m.Id == Backend.AccountId)
+		: _room.Members.FirstOrDefault(m => !m.IsBot);
 	private bool IsHost => Me?.IsHost == true;
 
 	/// <summary>Quem entra na partida: o mestre, que não marca pronto, e
@@ -83,7 +191,7 @@ public partial class RoomScreen : LobbyScreen
 	{
 		if (_room == null)
 		{
-			Shell.GoRooms();
+			Shell.GoOnline();
 			return;
 		}
 
@@ -126,7 +234,7 @@ public partial class RoomScreen : LobbyScreen
 		title.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 		row.AddChild(title);
 
-		Label channel = UiKit.Caption("Canal local");
+		Label channel = UiKit.Caption(_online ? "Online" : "Canal local");
 		channel.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 		row.AddChild(channel);
 
@@ -327,8 +435,8 @@ public partial class RoomScreen : LobbyScreen
 		pass.FocusExited += () => SetPassword(pass.Text);
 		form.AddChild(Row("Senha", pass));
 
-		// O modo de jogo. Offline (esta sala é de treino) só há os contra bots.
-		PlayModes.Info[] modes = PlayModes.VersusBots;
+		// O modo de jogo. Offline (sem outros jogadores) só há os contra bots.
+		PlayModes.Info[] modes = _online ? PlayModes.All : PlayModes.VersusBots;
 		OptionButton mode = Picker(modes.Select(m => m.Name).ToArray(), Mathf.Max(0, Array.FindIndex(modes, m => m.Mode == S.Play)),
 			i => { Change("Modo", modes[i].Name, () => S.Play = modes[i].Mode); Refresh(); });
 		mode.TooltipText = PlayModes.Of(S.Play).Line;
@@ -530,7 +638,10 @@ public partial class RoomScreen : LobbyScreen
 		_chatScroll.AddChild(_chatLog);
 		column.AddChild(_chatScroll);
 
-		foreach (var line in Chats[S.Number]) AddChatLine(line.Who, line.Text, line.System);
+		if (_online)
+			foreach ((string from, string text) in Lobby.Chat) AddChatLine(from, text, false);
+		else
+			foreach (var line in Chats[S.Number]) AddChatLine(line.Who, line.Text, line.System);
 
 		HBoxContainer input = UiKit.Row(UiTokens.S2);
 		LineEdit field = UiKit.Field("", "Escreva para a sala…", 120);
@@ -574,6 +685,11 @@ public partial class RoomScreen : LobbyScreen
 			column.AddChild(Info("Dificuldade", new[] { "Fácil", "Médio", "Difícil" }[(int)S.Difficulty]));
 			column.AddChild(Info("Arma", S.Weapons == WeaponRule.SoPistolas ? "M9" : "M16A2"));
 		}
+		else if (_online && m != Me)
+		{
+			column.AddChild(Info("Patente", Ranks.NameOf(m.Rank)));
+			column.AddChild(Info("Situação", m.IsHost ? "Dono da sala" : m.Ready ? "Pronto" : "Aguardando"));
+		}
 		else
 		{
 			LifetimeStats s = Profile.Stats;
@@ -595,7 +711,7 @@ public partial class RoomScreen : LobbyScreen
 
 		Button invite = UiKit.Button("Convidar", ButtonKind.Secondary);
 		invite.Disabled = true;
-		invite.TooltipText = "Convidar amigos exige servidor";
+		invite.TooltipText = _online ? $"Passe o número da sala: {S.Number}" : "Convidar amigos exige servidor";
 		column.AddChild(invite);
 
 		_ready = UiKit.Button("Pronto", ButtonKind.Secondary, ToggleReady);
@@ -650,6 +766,8 @@ public partial class RoomScreen : LobbyScreen
 		int orange = playing.Count(m => m.Team == Teams.Orange);
 
 		if (!IsHost) why = "Só o mestre inicia";
+		else if (_online && _room.State == RoomState.Playing) why = "A partida está em andamento";
+		else if (_online && !AllReady) why = "Falta alguém marcar que está pronto";
 		else if (VsBots) why = blue == 0 ? "Falta alguém no time azul" : orange == 0 ? "Ponha pelo menos um bot no time laranja" : null;
 		else if (blue == 0 || orange == 0)
 			why = AllReady ? "Os dois times precisam de alguém" : "Falta alguém pronto num dos times";
@@ -688,6 +806,11 @@ public partial class RoomScreen : LobbyScreen
 	private void ToggleReady()
 	{
 		if (Me == null || IsHost) return;
+		if (_online)
+		{
+			Lobby.SetReady(!Me.Ready);
+			return;
+		}
 		Me.Ready = !Me.Ready;
 		Log(Me.Ready ? $"{Me.Name} está pronto." : $"{Me.Name} não está mais pronto.", system: true);
 		Refresh();
@@ -706,6 +829,13 @@ public partial class RoomScreen : LobbyScreen
 		if (!CanStart(out string why))
 		{
 			Shell.Toast(why, UiTokens.Danger);
+			return;
+		}
+
+		// Online quem começa é o servidor, para todos ao mesmo tempo.
+		if (_online)
+		{
+			Lobby.StartMatch();
 			return;
 		}
 
@@ -749,12 +879,18 @@ public partial class RoomScreen : LobbyScreen
 	private void Leave()
 	{
 		_countdown = -1;
+		if (_online)
+		{
+			Lobby.LeaveRoom();     // o servidor responde, e a tela volta às salas
+			return;
+		}
+
 		if (_room.Mine) RoomDirectory.Remove(_room);
 		else _room.Members.RemoveAll(m => !m.IsBot);
 
 		Chats.Remove(S.Number);
 		RoomDirectory.Current = null;
-		Shell.GoRooms();
+		Shell.GoOnline();
 	}
 
 	private void SwapSide()
@@ -774,6 +910,12 @@ public partial class RoomScreen : LobbyScreen
 			return;
 		}
 
+		if (_online)
+		{
+			Lobby.SetTeam(other);
+			return;
+		}
+
 		Me.Team = other;
 		Log($"{Me.Name} foi para o time {Teams.TitleOf(other)}.", system: true);
 		Refresh();
@@ -782,6 +924,12 @@ public partial class RoomScreen : LobbyScreen
 	private void AddBot(int team, int count)
 	{
 		if (!IsHost || !VsBots) return;
+		if (_online)
+		{
+			int free = S.TeamSize - _room.Members.Count(m => m.Team == team);
+			for (int i = 0; i < Math.Min(count, free); i++) Lobby.AddBot(team);
+			return;
+		}
 		RoomDirectory.AddBots(_room, team, count);
 		Refresh();
 	}
@@ -789,6 +937,11 @@ public partial class RoomScreen : LobbyScreen
 	private void RemoveBot(RoomMember bot)
 	{
 		if (!IsHost || !bot.IsBot) return;
+		if (_online)
+		{
+			Lobby.RemoveBot(bot.Id);
+			return;
+		}
 		_room.Members.Remove(bot);
 		if (_selected == bot) _selected = Me;
 		Refresh();
@@ -800,6 +953,11 @@ public partial class RoomScreen : LobbyScreen
 	{
 		if (!IsHost) return;
 		apply();
+		if (_online)
+		{
+			PushSettings();
+			return;
+		}
 		Log($"{what}: {value}.", system: true);
 		SaveRules();
 		RefreshActions();
@@ -831,6 +989,7 @@ public partial class RoomScreen : LobbyScreen
 			return;
 		}
 
+		if (_online) OnlinePasswords[S.Number] = text;
 		Change("Senha", text.Length == 0 ? "removida" : "definida", () => S.Password = text);
 	}
 
@@ -873,11 +1032,18 @@ public partial class RoomScreen : LobbyScreen
 	{
 		text = (text ?? "").Trim();
 		if (text.Length == 0) return;
+		if (_online)
+		{
+			Lobby.Say(text);       // volta pelo servidor, para todos
+			return;
+		}
 		Log(text, system: false, who: Profile.PlayerName);
 	}
 
 	private void Log(string text, bool system, string who = null)
 	{
+		// Online, o que se conta na sala é o chat do servidor.
+		if (_online) return;
 		if (!Chats.TryGetValue(S.Number, out var lines)) return;
 		lines.Add((who ?? "", text, system));
 		if (lines.Count > 200) lines.RemoveAt(0);

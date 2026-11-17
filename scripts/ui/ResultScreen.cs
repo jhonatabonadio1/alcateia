@@ -489,7 +489,7 @@ public partial class ResultScreen : CanvasLayer
 		row.AddChild(lobby);
 
 		Button room = UiKit.Button("Voltar à sala", ButtonKind.Secondary, () => Leave(ReturnTarget.Room));
-		room.Disabled = !RoomConfig.Active || RoomDirectory.Current == null;
+		room.Disabled = !RoomConfig.Active || (RoomDirectory.Current == null && !LobbyLink.InRoom);
 		if (room.Disabled) room.TooltipText = "Partida aberta direto no editor: não há sala.";
 		row.AddChild(room);
 

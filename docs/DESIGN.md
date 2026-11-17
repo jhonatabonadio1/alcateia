@@ -1184,9 +1184,9 @@ troca (`LobbyShell.Go`). Loja e inventário não são cenas separadas. O
 fim da partida **volta à sala**, não à lista: manter o grupo junto é o
 que segura a sessão longa.
 
-**Lista de salas.** Grade 2 × 5 por página, filtros, "ir para a sala
-nº", atualização a cada 5 s. As salas dos outros são simuladas
-(`RoomDirectory`), com bots dentro; entrar numa delas funciona.
+**Lista de salas.** As salas online (`OnlineScreen`), com as missões do
+dia, o ranking e a conversa na lateral. A lista de treino offline
+("Treino com bots") saiu em 17/11, a pedido.
 
 **Modo de jogo (decisão do Jhon, 17/11).** Antes de criar a sala, o
 mestre escolhe o modo (`scripts/core/PlayMode.cs`, tela
@@ -1220,7 +1220,10 @@ para um modo contra jogadores e, quando alguém entra com o azul cheio,
 um bot azul dá o lugar. O treino offline só oferece os modos contra
 bots.
 
-**Sala.** Times Azul e Laranja, de 1 a 6 em cada (decisão do Jhon,
+**Sala.** Uma tela só, a `RoomScreen`, para a sala online e a offline
+(decisão do Jhon, 17/11: o visual dela fica). Online, ela lê a sala que
+o servidor manda e cada ação vira um pedido a ele (regras, bots, time,
+pronto, iniciar, sair, chat). Times Azul e Laranja, de 1 a 6 em cada (decisão do Jhon,
 17/11). O mestre escolhe o modo, o tamanho, o objetivo, o tempo, a regra
 de armas, a dificuldade dos bots, a faixa de patente, a senha e o fogo
 amigo, na criação e depois dentro da sala; troca de lado (menos contra

@@ -734,7 +734,7 @@ aparece desabilitado com "em breve" ou não aparece.
 | Theme | `scripts/ui/kit/UiTheme.cs` — feito em código e aplicado por raiz (`UiTheme.Apply`), porque `CanvasLayer` corta a herança de tema |
 | Componentes | `scripts/ui/kit/`: `UiKit` (texto, botão, campo, seletor, painel, chip), `Icon`, `Motion`, `RankBadge`, `CurrencyLabel`, `StatBar`, `WeaponArt`, `Tabs`, `Modal`, `CountdownRing`, `PingBars`, `Toast` |
 | Fluxo de telas e header | `scripts/lobby/LobbyShell.cs` (moldura fixa, miolo trocando) e `LobbyHeader.cs` |
-| Lista de salas | `RoomListScreen.cs` e `RoomRow.cs`; dados em `scripts/meta/RoomDirectory.cs` |
+| Lista de salas | a das salas online, em `OnlineScreen.cs` (a lista de treino offline saiu em 17/11); a sala, online ou não, é a `RoomScreen.cs` |
 | Tela de sala | `RoomScreen.cs`; regras em `scripts/core/RoomConfig.cs` e `RoomRules.cs` |
 | Inventário | `InventoryScreen.cs`, `ItemCard.cs`, `ItemDetail.cs`, `CharacterPreview.cs` |
 | Loja | `ShopScreen.cs`; catálogo e preços em `scripts/meta/Catalog.cs` |

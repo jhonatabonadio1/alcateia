@@ -23,7 +23,6 @@ public sealed class LobbyScreensTest : RegressionTest
 		var screens = new (string Name, Action Go)[]
 		{
 			("entrada", () => shell.Go(new WelcomeScreen())),
-			("salas", shell.GoRooms),
 			("sala", () => shell.GoRoom(RoomDirectory.Current ?? RoomDirectory.Create(new RoomSettings { Title = "Teste" }))),
 			("loja", () => shell.GoShop()),
 			("inventário", () => shell.GoInventory()),

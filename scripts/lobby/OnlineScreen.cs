@@ -87,6 +87,7 @@ public partial class OnlineScreen : LobbyScreen
 		side.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		side.CustomMinimumSize = new Vector2(320, 0);
 		split.AddChild(side);
+		side.AddChild(DailyMissions.Card(Shell));
 		side.AddChild(RankingCard());
 		side.AddChild(ChatCard());
 
@@ -123,7 +124,6 @@ public partial class OnlineScreen : LobbyScreen
 		column.AddChild(status);
 
 		HBoxContainer buttons = UiKit.Row(UiTokens.S2);
-		buttons.AddChild(UiKit.Button("Treino com bots", ButtonKind.Tertiary, () => Shell.GoRooms()));
 		buttons.AddChild(UiKit.Spacer());
 		Button create = UiKit.Button("Criar conta", ButtonKind.Secondary, () => Enter(server.Text, name.Text, password.Text, register: true));
 		Button enter = UiKit.Button("Entrar", ButtonKind.Primary, () => Enter(server.Text, name.Text, password.Text, register: false));
@@ -170,7 +170,6 @@ public partial class OnlineScreen : LobbyScreen
 		if (_connecting) return;
 
 		HBoxContainer buttons = UiKit.Row(UiTokens.S2);
-		buttons.AddChild(UiKit.Button("Treino com bots", ButtonKind.Tertiary, () => Shell.GoRooms()));
 		buttons.AddChild(UiKit.Spacer());
 		buttons.AddChild(UiKit.Button("Sair da conta", ButtonKind.Secondary, Logout));
 		buttons.AddChild(UiKit.Button("Tentar de novo", ButtonKind.Primary, () => _ = Connect()));
@@ -219,15 +218,19 @@ public partial class OnlineScreen : LobbyScreen
 		if (!Alive || _main == null) return;
 		UiKit.Clear(_main);
 
-		if (Lobby.Room != null) BuildRoom(Lobby.Room);
-		else BuildRooms();
+		// Dentro de uma sala: a tela da sala (o mesmo visual do treino).
+		if (Lobby.Room != null)
+		{
+			Callable.From(() => Shell.GoOnlineRoom()).CallDeferred();
+			return;
+		}
+		BuildRooms();
 	}
 
 	private void BuildRooms()
 	{
 		HBoxContainer head = Heading(_main, "Salas", $"{Lobby.Rooms.Count} aberta(s) · você é {Backend.AccountName}");
 		head.AddChild(UiKit.Button("Sair da conta", ButtonKind.Secondary, Logout));
-		head.AddChild(UiKit.Button("Treino com bots", ButtonKind.Secondary, () => Shell.GoRooms()));
 		head.AddChild(UiKit.Button("Atualizar", ButtonKind.Secondary, Lobby.RefreshRooms));
 		head.AddChild(UiKit.Button("Criar sala", ButtonKind.Primary, AskNewRoom));
 
@@ -381,6 +384,7 @@ public partial class OnlineScreen : LobbyScreen
 			{
 				s.Title = title.Text;
 				s.Password = password.Text;
+				RoomScreen.PendingPassword = password.Text;
 				Lobby.CreateRoom(OnlineMatch.SettingsTo(s));
 			}));
 	}
@@ -391,175 +395,6 @@ public partial class OnlineScreen : LobbyScreen
 		for (int i = 1; i < options.Length; i++)
 			if (Math.Abs(options[i] - value) < Math.Abs(options[best] - value)) best = i;
 		return best;
-	}
-
-	// ------------------------------------------------------------------ a sala
-
-	private void BuildRoom(JsonObject room)
-	{
-		RoomSettings s = OnlineMatch.SettingsFrom(room["settings"] as JsonObject);
-		var members = room["members"] as JsonArray ?? new JsonArray();
-		JsonNode me = members.FirstOrDefault(m => m["id"].GetValue<long>() == Backend.AccountId);
-		bool host = me?["host"]?.GetValue<bool>() ?? false, ready = me?["ready"]?.GetValue<bool>() ?? false;
-		bool playing = room["state"]?.GetValue<string>() != "waiting";
-
-		HBoxContainer head = Heading(_main, s.Title, $"sala {room["id"]} · {Maps.Get(s.Map).Name}");
-		if (room["hasPassword"]?.GetValue<bool>() ?? false) head.AddChild(UiKit.Chip("com senha", UiTokens.TextSecondary));
-		head.AddChild(UiKit.Chip(playing ? "em partida" : "esperando", playing ? UiTokens.Warning : UiTokens.Success));
-
-		bool vsBots = PlayModes.VsBots(s.Play);
-		HBoxContainer rules = UiKit.Row(UiTokens.S2);
-		rules.AddChild(UiKit.Chip(PlayModes.Of(s.Play).Name, UiTokens.Accent));
-		rules.AddChild(UiKit.Chip($"{s.TeamSize} contra {s.TeamSize}", UiTokens.Accent));
-		rules.AddChild(UiKit.Chip($"até {s.ScoreToWin} abates", UiTokens.Accent));
-		rules.AddChild(UiKit.Chip($"{s.Minutes} min", UiTokens.Accent));
-		rules.AddChild(UiKit.Chip($"armas: {RoomSettings.WeaponNames[(int)s.Weapons]}", UiTokens.TextSecondary));
-		if (s.FriendlyFire) rules.AddChild(UiKit.Chip("fogo amigo", UiTokens.Danger));
-		rules.AddChild(UiKit.Spacer());
-
-		// A dificuldade dos bots: o dono escolhe aqui mesmo, os outros veem.
-		if (host && !playing)
-		{
-			rules.AddChild(UiKit.Caption("bots"));
-			JsonObject current = room["settings"] as JsonObject;
-			OptionButton level = UiKit.Picker(RoomSettings.DifficultyNames, (int)s.Difficulty, i =>
-			{
-				var changed = (JsonObject)(current?.DeepClone() ?? OnlineMatch.SettingsTo(s));
-				changed["difficulty"] = i;
-				Lobby.ChangeSettings(changed);
-			});
-			level.SizeFlagsHorizontal = SizeFlags.ShrinkEnd;
-			level.CustomMinimumSize = new Vector2(150, UiTokens.FieldHeight);
-			level.TooltipText = Difficulty.Summary((BotLevel)(int)s.Difficulty);
-			rules.AddChild(level);
-		}
-		else
-		{
-			rules.AddChild(UiKit.Chip($"bots: {RoomSettings.DifficultyNames[(int)s.Difficulty].ToLowerInvariant()}", UiTokens.TextSecondary));
-		}
-		_main.AddChild(rules);
-
-		HBoxContainer teams = UiKit.Row(UiTokens.S3);
-		teams.SizeFlagsVertical = SizeFlags.ExpandFill;
-		// A foto do mapa ao lado dos times.
-		var frame = new PanelContainer { SizeFlagsVertical = SizeFlags.ShrinkBegin };
-		frame.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Bg, UiTokens.Border, 1, UiTokens.RadiusSmall, 0, 0));
-		frame.AddChild(UiKit.Thumbnail(Maps.Get(s.Map).Picture, new Vector2(320, 180)));
-		teams.AddChild(frame);
-		bool manage = vsBots && host && !playing;
-		teams.AddChild(TeamCard("Time azul", Teams.Blue, members, s.TeamSize, manage));
-		teams.AddChild(TeamCard("Time laranja", Teams.Orange, members, s.TeamSize, manage));
-		_main.AddChild(teams);
-
-		HBoxContainer actions = UiKit.Row(UiTokens.S2);
-		actions.AddChild(UiKit.Button("Sair da sala", ButtonKind.Secondary, Lobby.LeaveRoom));
-		actions.AddChild(UiKit.Spacer());
-
-		if (playing)
-		{
-			actions.AddChild(UiKit.Text("A partida está em andamento. A sala volta a esperar quando ela acabar.", "Muted"));
-		}
-		else
-		{
-			int team = me?["team"]?.GetValue<int>() ?? Teams.Blue;
-			// Contra bots, os jogadores ficam todos no azul.
-			if (!vsBots)
-				actions.AddChild(UiKit.Button("Trocar de time", ButtonKind.Secondary, () => Lobby.SetTeam(team == Teams.Blue ? Teams.Orange : Teams.Blue)));
-
-			if (host)
-			{
-				bool everyone = members.All(m => m == me || m["ready"].GetValue<bool>());
-				Button start = UiKit.Button("Iniciar partida", ButtonKind.Primary, Lobby.StartMatch);
-				start.Disabled = !everyone;
-				start.TooltipText = everyone ? "" : "Falta alguém marcar que está pronto.";
-				actions.AddChild(start);
-			}
-			else
-			{
-				actions.AddChild(UiKit.Button(ready ? "Não estou pronto" : "Estou pronto",
-					ready ? ButtonKind.Secondary : ButtonKind.Primary, () => Lobby.SetReady(!ready)));
-			}
-		}
-
-		_main.AddChild(actions);
-	}
-
-	/// <summary>Um time da sala. Nos modos contra bots, o dono
-	/// (<paramref name="manage"/>, sala esperando) põe quantos bots quiser
-	/// em cada time e tira os que estão. Contra jogadores não há bot.</summary>
-	private Control TeamCard(string title, int team, JsonArray members, int size, bool manage)
-	{
-		Color color = Teams.ColorOf(team);
-		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S3, UiTokens.S2);
-		panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-
-		var mine = members.Where(m => m["team"].GetValue<int>() == team).ToList();
-		HBoxContainer head = UiKit.Row(UiTokens.S2);
-		head.AddChild(UiKit.Text(title, "Subtitle", color));
-		head.AddChild(UiKit.Spacer());
-		if (manage && mine.Count < size)
-		{
-			Button add = UiKit.Button("+ Bot", ButtonKind.Secondary, () => Lobby.AddBot(team));
-			add.TooltipText = "Põe um bot neste time. Jogador que entrar toma o lugar de um bot do azul.";
-			head.AddChild(add);
-		}
-		head.AddChild(UiKit.Text($"{mine.Count}/{size}", "Numeric", UiTokens.TextSecondary));
-		column.AddChild(head);
-		column.AddChild(UiKit.Divider());
-
-		foreach (JsonNode m in mine)
-		{
-			HBoxContainer row = UiKit.Row(UiTokens.S2);
-			row.CustomMinimumSize = new Vector2(0, UiTokens.ScoreRowHeight);
-
-			// Bot não tem patente: no lugar da insígnia, o ícone de bot.
-			if (m["bot"]?.GetValue<bool>() ?? false)
-			{
-				Control mark = Icon.Make(IconKind.Bot, 18, UiTokens.TextDisabled);
-				mark.CustomMinimumSize = new Vector2(24, 24);
-				row.AddChild(mark);
-
-				Label botName = UiKit.Truncated(m["name"].GetValue<string>(), null, UiTokens.TextSecondary);
-				botName.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-				row.AddChild(botName);
-				row.AddChild(UiKit.Chip("bot", UiTokens.TextSecondary));
-				long bot = m["id"].GetValue<long>();
-				if (manage) row.AddChild(UiKit.IconButton(IconKind.Close, "Tirar este bot", () => Lobby.RemoveBot(bot), 16));
-
-				column.AddChild(row);
-				continue;
-			}
-
-			row.AddChild(RankBadge.Make(Ranks.RankFor(m["xp"]?.GetValue<long>() ?? 0), 24));
-
-			Label name = UiKit.Truncated(m["name"].GetValue<string>(), null,
-				m["id"].GetValue<long>() == Backend.AccountId ? UiTokens.Accent : (Color?)null);
-			name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-			row.AddChild(name);
-
-			if (m["host"].GetValue<bool>())
-			{
-				row.AddChild(Icon.Make(IconKind.Crown, 16, UiTokens.Accent));
-				row.AddChild(UiKit.Caption("dono"));
-			}
-			else
-			{
-				bool ready = m["ready"].GetValue<bool>();
-				row.AddChild(UiKit.Chip(ready ? "pronto" : "esperando", ready ? UiTokens.Success : UiTokens.TextSecondary));
-			}
-
-			column.AddChild(row);
-		}
-
-		for (int i = mine.Count; i < size; i++)
-		{
-			Label empty = UiKit.Text("— vaga —", "Muted", UiTokens.TextDisabled);
-			empty.CustomMinimumSize = new Vector2(0, UiTokens.ScoreRowHeight);
-			empty.VerticalAlignment = VerticalAlignment.Center;
-			column.AddChild(empty);
-		}
-
-		return panel;
 	}
 
 	// ------------------------------------------------------------------ ranking e chat

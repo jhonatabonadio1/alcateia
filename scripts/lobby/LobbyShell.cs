@@ -116,8 +116,14 @@ public partial class LobbyShell : Control
 		Motion.FadeIn(screen, UiTokens.Normal);
 	}
 
-	public void GoRooms() => Go(new RoomListScreen());
 	public void GoRoom(RoomListing room) => Go(new RoomScreen(room));
+
+	/// <summary>A sala online em que o jogador está, no visual da sala.</summary>
+	public void GoOnlineRoom()
+	{
+		if (LobbyLink.InRoom) Go(new RoomScreen(LobbyLink.Instance.Room));
+		else GoOnline();
+	}
 	public void GoShop(string focus = null) => Go(new ShopScreen(focus));
 	public void GoInventory(string focus = null) => Go(new InventoryScreen(focus));
 	public void GoProfile() => Go(new ProfileScreen());
@@ -126,11 +132,12 @@ public partial class LobbyShell : Control
 	public void GoOnline() => Go(new OnlineScreen());
 	public void GoCredits() => Go(new CreditsScreen());
 
-	/// <summary>A aba Salas: a sala de treino em que o jogador está, se
-	/// estiver numa; senão, as salas online.</summary>
+	/// <summary>A aba Salas: a sala em que o jogador está, se estiver numa;
+	/// senão, as salas online.</summary>
 	public void GoHome()
 	{
-		if (RoomDirectory.Current != null) GoRoom(RoomDirectory.Current);
+		if (LobbyLink.InRoom) GoOnlineRoom();
+		else if (RoomDirectory.Current != null) GoRoom(RoomDirectory.Current);
 		else GoOnline();
 	}
 
@@ -169,9 +176,8 @@ public partial class LobbyShell : Control
 			case "missoes": GoMissions(); break;
 			case "opcoes": GoOptions(); break;
 			case "online": GoOnline(); break;
-			case "treino": GoRooms(); break;
 			case "creditos": GoCredits(); break;
-			default: GoRooms(); break;
+			default: GoOnline(); break;
 		}
 
 		return true;

@@ -63,6 +63,8 @@ public sealed class RoomSettings
 /// <summary>Um lugar ocupado na sala.</summary>
 public sealed class RoomMember
 {
+	/// <summary>Online: a conta (bot, número negativo). Offline, 0.</summary>
+	public long Id;
 	public string Name;
 	public int Team;
 	public bool IsBot;
