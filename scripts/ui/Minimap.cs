@@ -42,6 +42,10 @@ public partial class Minimap : Control
 		public Vector3[] Corners;
 		public Color Color;
 		public float Top;
+
+		/// <summary>Contorno escuro em volta: só nas peças grandes. Nas
+		/// pequenas ele cobriria a cor.</summary>
+		public bool Outline;
 	}
 
 	private readonly System.Collections.Generic.List<Piece> _pieces = new();
@@ -82,6 +86,12 @@ public partial class Minimap : Control
 	/// minimapa mostra o mesmo mapa que o jogador vê, base azul azul,
 	/// base vermelha vermelha, e um mapa novo não precisa de nada
 	/// para aparecer.
+	///
+	/// Mapa feito de modelo pronto (o Armazém) não tem caixa desenhada:
+	/// o que se vê é um GLB, e as caixas são só colisão. Essas entram
+	/// também, pela forma de colisão, com a cor que o mapa gravou na
+	/// caixa (<c>metadata/mapa_cor</c>, a cor da peça no modelo). Sem
+	/// isso o minimapa do Armazém ficava vazio (print do Jhon, 17/11).
 	/// </summary>
 	private void Scan()
 	{
@@ -100,7 +110,14 @@ public partial class Minimap : Control
 		if (node is CharacterBody3D || node is RigidBody3D) return;
 
 		if (node is MeshInstance3D mesh && mesh.Mesh is BoxMesh box)
-			AddPiece(mesh, box.Size);
+			AddPiece(mesh.GlobalTransform, box.Size, mesh.MaterialOverride is BaseMaterial3D material
+				? material.AlbedoColor
+				: DefaultPiece);
+		else if (node is CollisionShape3D { Shape: BoxShape3D shape } hidden && !hidden.Disabled
+			&& hidden.GetParent() is StaticBody3D body && !HasDrawnBox(body))
+			AddPiece(hidden.GlobalTransform, shape.Size, body.HasMeta(ColorMeta)
+				? body.GetMeta(ColorMeta).AsColor()
+				: DefaultPiece);
 
 		// Letras curtas no mapa viram marcas no minimapa: é assim que
 		// "A" e "B" aparecem sem o minimapa saber o que é uma base.
@@ -111,13 +128,31 @@ public partial class Minimap : Control
 			Collect(child);
 	}
 
-	private void AddPiece(MeshInstance3D mesh, Vector3 size)
+	/// <summary>Onde o mapa grava a cor da caixa só de colisão
+	/// (<c>kit.caixa(..., cor=)</c> em tools/mapas).</summary>
+	private const string ColorMeta = "mapa_cor";
+
+	private static readonly Color DefaultPiece = new Color(0.6f, 0.6f, 0.62f);
+
+	/// <summary>Menor área vista de cima que entra, em m²: garrafa, lata
+	/// e ferramenta solta só sujariam um quadro de 168 px.</summary>
+	[Export] public float SmallestPiece = 0.12f;
+
+	/// <summary>A caixa já tem malha de caixa ao lado da colisão? Então
+	/// ela entrou pela malha, com a cor do material.</summary>
+	private static bool HasDrawnBox(Node body)
+	{
+		foreach (Node child in body.GetChildren())
+			if (child is MeshInstance3D { Mesh: BoxMesh }) return true;
+		return false;
+	}
+
+	private void AddPiece(Transform3D xform, Vector3 size, Color color)
 	{
 		// O chão cobre o mapa inteiro; desenhá-lo só escureceria tudo.
 		if (size.X * size.Z > 1200f) return;
 
 		Vector3 half = size * 0.5f;
-		Transform3D xform = mesh.GlobalTransform;
 
 		var corners = new Vector3[]
 		{
@@ -129,11 +164,14 @@ public partial class Minimap : Control
 
 		float top = Mathf.Max(Mathf.Max(corners[0].Y, corners[1].Y), Mathf.Max(corners[2].Y, corners[3].Y));
 
-		Color color = mesh.MaterialOverride is BaseMaterial3D material
-			? material.AlbedoColor
-			: new Color(0.6f, 0.6f, 0.62f);
+		// Caixa deitada de lado ou em pé (uma tábua encostada, uma porta
+		// aberta): o que conta é a sombra dela no chão, não o tamanho.
+		Vector2 a = new Vector2(corners[1].X - corners[0].X, corners[1].Z - corners[0].Z);
+		Vector2 b = new Vector2(corners[3].X - corners[0].X, corners[3].Z - corners[0].Z);
+		float footprint = Mathf.Abs(a.Cross(b));
+		if (footprint < SmallestPiece) return;
 
-		_pieces.Add(new Piece { Corners = corners, Color = color, Top = top });
+		_pieces.Add(new Piece { Corners = corners, Color = color, Top = top, Outline = footprint >= 0.6f });
 	}
 
 	public override void _Draw()
@@ -193,9 +231,17 @@ public partial class Minimap : Control
 			Vector3 gap = mid - _player.GlobalPosition;
 			if (new Vector2(gap.X, gap.Z).Length() > reach + 30f) continue;
 
-			var points = new Vector2[4];
+			// Os mesmos dois vetores para todas as peças: o Armazém tem
+			// centenas, e um par novo por peça por quadro era lixo para o
+			// coletor. O desenho copia os pontos na chamada.
+			Vector2[] points = _quad;
+			bool inside = false;
 			for (int i = 0; i < 4; i++)
+			{
 				ToMapUnclamped(piece.Corners[i], center, yaw, out points[i]);
+				inside |= points[i].X > -Side && points[i].X < Side * 2f && points[i].Y > -Side && points[i].Y < Side * 2f;
+			}
+			if (!inside) continue;
 
 			// Quem está bem acima do jogador aparece mais claro: é o
 			// único jeito de um desenho plano dizer "isto é telhado".
@@ -203,9 +249,16 @@ public partial class Minimap : Control
 			Color fill = new Color(piece.Color, MapAlpha);
 			if (above > 2.5f) fill = fill.Lightened(0.18f);
 
-			DrawColoredPolygon(points, fill);
-			DrawPolyline(new[] { points[0], points[1], points[2], points[3], points[0] },
-				new Color(0, 0, 0, 0.45f), 1f);
+			// Quadrilátero direto, sem triangulação: uma tábua vista de
+			// quina vira um risco de área quase zero, e o polígono comum
+			// falharia nela com um erro por quadro.
+			_fill[0] = fill;
+			DrawPrimitive(points, _fill, _noUv);
+			if (!piece.Outline) continue;
+
+			for (int i = 0; i < 4; i++) _loop[i] = points[i];
+			_loop[4] = points[0];
+			DrawPolyline(_loop, new Color(0, 0, 0, 0.45f), 1f);
 		}
 
 		Font font = ThemeDB.FallbackFont;
@@ -219,6 +272,11 @@ public partial class Minimap : Control
 				24, 20, new Color(1, 1, 1, 0.95f));
 		}
 	}
+
+	private readonly Vector2[] _quad = new Vector2[4];
+	private readonly Vector2[] _loop = new Vector2[5];
+	private readonly Color[] _fill = new Color[1];
+	private static readonly Vector2[] _noUv = System.Array.Empty<Vector2>();
 
 	private void ToMapUnclamped(Vector3 world, Vector2 center, float yaw, out Vector2 point)
 	{

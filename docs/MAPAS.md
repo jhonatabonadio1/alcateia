@@ -57,6 +57,9 @@ Quando a forma que se vê é mais rica que a caixa (o barril torneado, o
 vagão de teto curvo, a escada de degraus sobre a rampa), a caixa fica
 com `oculta=True`: continua sendo a colisão, só não é desenhada. O que
 se vê não pode fugir muito do que colide — tiro e corpo batem na caixa.
+A caixa oculta aparece no minimapa em cinza; `cor=(r, g, b)` dá a cor
+dela ali (o Armazém passa a cor de cada peça, tirada da paleta do
+modelo pelo conversor).
 
 As formas que não são caixa saem de `tools/mapas/formas.py` (extrusão
 de perfil, revolução, cano por um caminho, relevo, pedra, caixa

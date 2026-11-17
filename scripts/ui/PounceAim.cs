@@ -2,9 +2,9 @@ using Godot;
 
 /// <summary>
 /// A mira do salto no chão (pedido do Jhon, 15/11): carregando o especial,
-/// um anel marca onde o lobo cai se soltar agora. A carga decide a
-/// distância e a câmera a direção, então o anel anda para longe enquanto a
-/// barra enche e gira com a mira. Só na tela do dono.
+/// um anel marca onde o lobo cai se soltar agora: no ponto que a mira
+/// toca (decisão do Jhon, 17/11), até o alcance do salto. O anel anda com
+/// a mira; a barra só muda a cor dele (a força). Só na tela do dono.
 ///
 /// O ponto vem da própria arma (<see cref="Weapon.PounceLanding"/>, o
 /// mesmo plano do salto de verdade): em cima do caixote ou do teto que o

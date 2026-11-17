@@ -465,18 +465,30 @@ dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
 **Botão direito no chão: o salto.** O "jump attack" inteiro — agacha,
 salta, cai. É a arma do lobo para **fechar distância**: aperta-se de
 longe e o lobo cai em cima do humano. O jogador não anda nem pula, mas
-o salto voa: do impulso até os pés tocarem o chão, o corpo anda a
-distância da carga, **até 8,4 m** (`PounceMaxDistance`; era 12, 30% a
+o salto voa: do impulso até os pés tocarem o chão, o corpo vai até o
+ponto mirado, **até 8,4 m** (`PounceMaxDistance`; era 12, 30% a
 menos na v0.27.1).
 
 **Segurar carrega** (decisão do Jhon). Apertou, o lobo agacha e fica
 encolhido (o clipe para no fim do agachar); soltou, salta. Em 1 s
-(`PounceChargeTime`) a carga enche: o alcance vai de 1,5 m a 8,4 m e o
-dano de 40% a 100% do cheio. Uma barra de força aparece enquanto
+(`PounceChargeTime`) a carga enche: o dano vai de 40% a 100% do cheio
+(e o alcance de 1,5 m a 8,4 m quando a mira não toca nada). Uma barra de força aparece enquanto
 carrega (`ChargeBar`). Cheio, segura mais 0,6 s e salta sozinho. No ar
 não carrega: o especial no ar é o bote, direto.
 
-**A distância é só a da barra** (decisão do Jhon): a mesma carga dá
+**O salto cai onde a mira aponta** (decisão do Jhon, 17/11, no lugar
+de "a distância é só a da barra"). O ponto em que o centro da tela toca
+o mundo (`Weapon.PounceAimPoint`) dá a direção, a distância e a altura
+da queda, fixadas ao soltar: no chão ou em cima de um contêiner, esse
+ponto; em alguém, os pés dele; numa parede ou teto, o chão ao pé dela.
+Além de 8,4 m, o lobo salta 8,4 m naquela direção. O anel no chão
+(`PounceAim`) mostra o ponto. A carga só dá o dano — e a distância
+quando a mira não toca nada (céu) ou com `PounceChargeLimitsReach`
+ligado, que é a regra antiga. O voo dura sempre o tempo do clipe
+(0,8 s), para o dano sair quando os pés tocam o chão; distância e
+desnível dão as velocidades de saída (no chão D/T, para cima
+(H + 4·arco)/T). O bot não tem mira: continua escolhendo a carga que
+leva até o alvo. A regra antiga, para registro: a mesma carga dava
 sempre o mesmo salto, em linha reta na direção da mira no instante de
 soltar — olhando para o chão ou para o céu, com ou sem inimigo na
 frente. Antes o salto parava no ponto mirado, ia até o inimigo perto
@@ -495,8 +507,9 @@ sino (sai devagar, voa, assenta), como o quadril do clipe; para cima,
 em parábola, subindo rápido no impulso. Antes de sair, o salto mede o
 chão no caminho a cada 40 cm, com raios de cima para baixo:
 
-- **O que tem até 2,6 m acima dos pés passa por cima**
-  (`PounceMaxClear`): o arco sobe o bastante para os pés passarem
+- **O que tem até 3,2 m acima dos pés passa por cima**
+  (`PounceMaxClear`; 2,6 até 17/11, e o contêiner de 2,9 m do Armazém
+  barrava o salto): o arco sobe o bastante para os pés passarem
   15 cm acima. Caixote, mureta, contêiner.
 - **Algo no fim do caminho que dá para alcançar vira o lugar de cair**:
   saltando além de um contêiner perto, o lobo cai **em cima dele**.
@@ -1375,6 +1388,12 @@ quando você vira, continuando a apontar para o atirador.
 **Recargas do lobo** chegam pelo sinal `Weapon.AttackCooldown(tipo,
 segundos)` — garrada, salto e bote —, e o uivo por
 `Player.HowlProgress`.
+
+**Minimapa em mapa de modelo pronto.** O Armazém é um GLB com caixas
+só de colisão, e o minimapa ficava vazio. Ele desenha também a caixa de
+colisão sem malha (`StaticBody3D` com `BoxShape3D`), na cor gravada em
+`metadata/mapa_cor` (a cor da peça no modelo; sem ela, cinza). Peça com
+menos de 0,12 m² vista de cima não entra (`SmallestPiece`).
 
 **Minimapa** desenha toda caixa do mapa com a cor do material dela, as
 mais altas por cima (telhado cobre o que está embaixo) e mais claras

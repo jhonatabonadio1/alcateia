@@ -106,9 +106,16 @@ class Mapa:
 
     # ---------------------------------------------------------------- peças
 
-    def caixa(self, grupo, nome, centro, tamanho, material, colide=True, rot=None, oculta=False):
+    def caixa(self, grupo, nome, centro, tamanho, material, colide=True, rot=None, oculta=False, cor=None):
         """`oculta`: só a colisão, sem desenho — para quando o que se vê é
-        uma forma mais rica por cima (degraus sobre a rampa, vagão)."""
+        uma forma mais rica por cima (degraus sobre a rampa, vagão).
+        `cor`: (r, g, b) com que a caixa oculta aparece no minimapa, que
+        desenha as caixas do mapa e não tem malha de onde tirar a cor
+        (`metadata/mapa_cor`; sem ela, cinza)."""
+        if cor is not None:
+            if not hasattr(self, "cores"):
+                self.cores = {}
+            self.cores[(grupo, nome)] = tuple(cor)
         self.pecas.append((grupo, nome, centro, tamanho, material, rot, colide, "caixa_oculta" if oculta else "caixa"))
 
     def parede(self, grupo, nome, eixo, fixo, de, ate, altura, material, vaos=(), espessura=0.5, base=0.0):
@@ -505,6 +512,9 @@ class Mapa:
                 o += [f'[node name="{nome}" type="StaticBody3D" parent="{g}"]', f"transform = {xform(c, rows)}"]
                 if piso:
                     o.append(f'metadata/piso = "{piso}"')
+                tom = getattr(self, "cores", {}).get((g, nome))
+                if tom:
+                    o.append(f"metadata/mapa_cor = Color({f(tom[0])}, {f(tom[1])}, {f(tom[2])}, 1)")
                 o += ["", f'[node name="Colisao" type="CollisionShape3D" parent="{g}/{nome}"]',
                       f'shape = SubResource("{formas[chave]}")', ""]
             elif colide:

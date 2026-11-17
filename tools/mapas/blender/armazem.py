@@ -427,6 +427,19 @@ def main(fbx, pacote):
         lay = o.data.uv_layers.new(name="UVMap")
         lay.data.foreach_set("uv", uv.reshape(-1).astype(np.float32))
 
+    # A cor de cada modelo, para o minimapa: a cor da paleta que mais
+    # aparece nele (o contêiner vermelho é vermelho no minimapa).
+    from PIL import Image
+    pal = np.asarray(Image.open(paleta).convert("RGB"))
+    cor_de = {}
+    for nome, (_, U) in origem.items():
+        uv = U.reshape(-1, 2)
+        px = np.clip((uv[:, 0] % 1.0) * pal.shape[1], 0, pal.shape[1] - 1).astype(int)
+        py = np.clip((1.0 - uv[:, 1] % 1.0) * pal.shape[0], 0, pal.shape[0] - 1).astype(int)
+        cores = pal[py, px] // 8
+        chave, vezes = np.unique(cores, axis=0, return_counts=True)
+        cor_de[nome] = [round(float(x) * 8 / 255, 3) for x in chave[vezes.argmax()]]
+
     # Colisão (caixas) e luzes, nas coordenadas do jogo.
     caixas, luzes, contagem, escadas = [], [], {}, []
     for o, (nome, M) in encaixe.items():
@@ -467,7 +480,8 @@ def main(fbx, pacote):
             c, tam, R = caixa_orientada(M, pts)
             caixas.append(dict(nome=f"{nome}_{contagem[nome]}{sufixo}", centro=[round(x, 4) for x in c],
                                tamanho=[round(max(x, 0.02), 4) for x in tam],
-                               base=[[round(x, 5) for x in linha] for linha in R], piso=piso_de(nome)))
+                               base=[[round(x, 5) for x in linha] for linha in R], piso=piso_de(nome),
+                               cor=cor_de[nome]))
 
     # Vidros: triângulos soltos (posição e normal), para a cena.
     vidros = []

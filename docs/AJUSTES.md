@@ -213,12 +213,14 @@ dano acompanham.
 | Campo | Valor | O que faz |
 |---|---|---|
 | `PounceChargeTime` | 1,0 s | Tempo segurando até a carga cheia |
-| `PounceMinDistance` | 1,5 m | Distância sem carga |
-| `PounceMaxDistance` | 8,4 m | Distância com carga cheia (em linha reta, sempre a mesma). O bot só salta de até 1 m antes disso |
+| `PounceChargeLimitsReach` | desligado | Desligado: o salto cai onde a mira aponta, com qualquer carga. Ligado: a barra é o limite (regra antiga) |
+| `PounceMinDistance` | 1,5 m | Distância sem carga, quando a mira não toca nada (céu) e para o bot |
+| `PounceMaxDistance` | 8,4 m | Alcance do salto: o mais longe que o ponto mirado pode estar. O bot só salta de até 1 m antes disso |
 | `PounceMinPower` | 0,4 | Fração do dano sem carga |
 | `HeavyDamageBonus` | 2,1 | Multiplicador do dano com carga cheia |
 | `PounceChargeHold` | 0,6 s | Segura cheio isso e salta sozinho |
-| `PounceMaxClear` | 2,6 m | Altura que o salto passa por cima (contêiner passa, bloco não) |
+| `PounceMaxClear` | 3,2 m | Altura em que o salto pousa ou que ele passa por cima (contêiner de 2,9 m sim, dois empilhados não) |
+| `PounceMaxDrop` | 6,5 m | Quanto o salto pode descer até o ponto de queda |
 | `PounceArc` | 0,6 m | Altura mínima do arco |
 | `HeavyCooldown` | 1,0 s | Espera depois do salto |
 

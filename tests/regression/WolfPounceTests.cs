@@ -1,14 +1,13 @@
 using Godot;
 using System.Threading.Tasks;
 
-/// <summary>O salto carregado vai a distância da barra (decisão do Jhon,
-/// v0.26.10), com ou sem inimigo na frente. Mirando o chão dentro do
-/// alcance, cai no ponto mirado (pedido do Jhon, 15/11): a barra é o
-/// limite.</summary>
+/// <summary>O salto cai onde a mira aponta (decisão do Jhon, 17/11): o
+/// ponto mirado dá a distância, até o alcance do salto, com qualquer
+/// carga. Sem ponto mirado (céu), vale a distância da barra.</summary>
 public sealed class ChargedPounceTest : RegressionTest
 {
 	public override string Name => "SaltoCarregado";
-	public override string Description => "o salto carregado anda só o que a barra manda, em linha reta";
+	public override string Description => "o salto cai no ponto mirado, em linha reta; sem ponto, anda o que a barra manda";
 
 	private static readonly Vector3 Start = new(4, 1, -3.5f);
 	private const float FacingMinusX = 90f;
@@ -44,11 +43,12 @@ public sealed class ChargedPounceTest : RegressionTest
 		float expected = reach;
 		float travelled = await Jump(b, enemy, power, pitch, enemyAt, aim: start =>
 		{
-			// Mirando o chão ao alcance: o ponto mirado, limitado pela barra.
+			// Com ponto mirado, é a distância dele, até o alcance do salto.
 			if (b.Weapon.PounceAimPoint is not Vector3 point) return;
 			Vector3 flat = point - start;
 			flat.Y = 0;
-			expected = Mathf.Clamp(flat.Length(), 0.5f, reach);
+			expected = Mathf.Clamp(flat.Length(), 0.5f,
+				b.Weapon.PounceChargeLimitsReach ? reach : b.Weapon.PounceMaxDistance);
 		});
 		RegressionBench.Note($"{what}: barra {RegressionBench.F(reach)} m, esperado {RegressionBench.F(expected)} m, andou {RegressionBench.F(travelled)} m");
 		b.Near(expected, travelled, 0.12, what);

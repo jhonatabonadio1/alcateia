@@ -14,21 +14,20 @@ public partial class Weapon
 	[Export] public float HeavyDamageBonus = 2.1f;
 	[Export] public float HeavyCooldown = 1f;
 
-	/// <summary>Até onde o salto no chão leva o lobo com a carga cheia, em
-	/// metros. É a arma do lobo para fechar distância: apertar de longe e
-	/// cair em cima do humano. Era 12; 30% a menos desde a v0.27.1
-	/// (decisão do Jhon).</summary>
+	/// <summary>O alcance do salto no chão, em metros: o mais longe que
+	/// o ponto mirado pode estar. Mirando além disso, o lobo salta até
+	/// aqui naquela direção.</summary>
 	[Export] public float PounceMaxDistance = 8.4f;
 
 	/// <summary>Segundos segurando o botão direito no chão até o salto
-	/// carregar inteiro (decisão do Jhon): segurar mais vai mais longe e
-	/// bate mais forte. Solto de leve, ele pula perto e fraco.</summary>
+	/// carregar inteiro (decisão do Jhon): segurar mais bate mais forte
+	/// (e, sem ponto mirado, vai mais longe). Solto de leve, bate fraco.</summary>
 	[Export] public float PounceChargeTime = 1.0f;
 
-	/// <summary>Até onde o salto vai sem carga nenhuma, em metros. A carga
-	/// leva daqui a <see cref="PounceMaxDistance"/> em linha reta, e só ela
-	/// decide (decisão do Jhon): a mesma barra dá sempre o mesmo salto,
-	/// com ou sem inimigo na frente, olhando para o chão ou para o céu.</summary>
+	/// <summary>Até onde o salto vai sem carga nenhuma quando a mira não
+	/// toca nada (céu) ou para o bot, em metros: aí a carga decide a
+	/// distância, entre isto e <see cref="PounceMaxDistance"/>. Com ponto
+	/// mirado, quem decide é ele (<see cref="PounceChargeLimitsReach"/>).</summary>
 	[Export] public float PounceMinDistance = 1.5f;
 
 	/// <summary>Fração do dano do salto sem carga. Carregado inteiro, o
@@ -39,10 +38,22 @@ public partial class Weapon
 	/// sozinho.</summary>
 	[Export] public float PounceChargeHold = -1f;
 
+	/// <summary>Quem decide até onde o salto vai. Falso (decisão do Jhon,
+	/// 17/11): a mira — o lobo cai onde o centro da tela aponta, até
+	/// <see cref="PounceMaxDistance"/>, e a carga só dá o dano. Verdadeiro:
+	/// a regra de antes, a barra é o limite e a mira escolhe o ponto dentro
+	/// dele.</summary>
+	[Export] public bool PounceChargeLimitsReach = false;
+
+	/// <summary>Quanto o salto pode descer, em metros abaixo dos pés: de
+	/// cima de dois contêineres até o chão. Mais fundo que isso, o voo
+	/// acaba no ar e o lobo cai o resto.</summary>
+	[Export] public float PounceMaxDrop = 6.5f;
+
 	/// <summary>O que o salto passa por cima, em metros acima dos pés: um
 	/// contêiner (2,2 m) passa; um bloco (5 m) ou o muro, não — o salto
 	/// para antes dele.</summary>
-	[Export] public float PounceMaxClear = 2.6f;
+	[Export] public float PounceMaxClear = 3.2f;
 
 	/// <summary>Altura mínima do arco do salto, em metros. Cresce com a
 	/// distância e com o que houver no caminho.</summary>
@@ -80,9 +91,10 @@ public partial class Weapon
 	public float PounceCharge => _charging ? CombatRules.ChargePower(_chargeTime, PounceChargeTime) : 0f;
 
 	/// <summary>Onde os pés do lobo pousam se soltar agora: o mesmo plano
-	/// do salto de verdade (<see cref="PlanPounce"/>) — a carga dá a
-	/// distância, a mira a direção, e o mapa o resto: em cima do caixote
-	/// ou do teto que o arco alcança, ou antes do muro que ele não passa.
+	/// do salto de verdade (<see cref="PlanPounce"/>) — a mira dá o
+	/// ponto (<see cref="PounceTarget"/>) e o mapa o resto: em cima do
+	/// caixote ou do contêiner que o arco alcança, ou antes do muro que
+	/// ele não passa.
 	/// Null fora da carga. É o que a mira no chão mostra
 	/// (<see cref="PounceAim"/>).</summary>
 	public Vector3? PounceLanding
@@ -91,9 +103,8 @@ public partial class Weapon
 		{
 			if (!IsChargingPounce) return null;
 
-			Vector3 direction = PounceDirection();
-			float distance = PounceReach(PounceCharge);
-			PlanPounce(ref distance, direction, out float land, out _);
+			var (direction, distance, aimY) = PounceTarget(PounceCharge);
+			PlanPounce(ref distance, direction, out float land, out _, aimY);
 
 			float halfHeight = -((_body as Player)?.FeetOffset ?? -0.875f);
 			return _body.GlobalPosition + Vector3.Down * halfHeight + direction * distance + Vector3.Up * land;
@@ -192,25 +203,34 @@ public partial class Weapon
 			() => Claw(damage, ClawReach, ClawRadius, false, _pounceFlew ? _flyDir : null), elapsed);
 
 		// O salto é um pulo de verdade: do impulso até os pés tocarem o
-		// chão, o corpo voa num arco. Para onde, diz a mira no instante de
-		// soltar; até onde, só a carga (decisão do Jhon): a mesma barra dá
-		// sempre o mesmo salto. Nada de seguir inimigo nem de parar no ponto
-		// mirado — salto que muda sozinho conforme quem está na frente é
-		// vantagem que o jogador não controla.
+		// chão, o corpo voa num arco. Para onde e até onde, diz a mira no
+		// instante de soltar (decisão do Jhon, 17/11): o ponto em que o
+		// centro da tela toca o mapa, na distância e na altura dele. Fica
+		// fixado aqui — nada segue o alvo durante o voo.
 		var (delay, duration, _) = WolfMoves.StepOf(WolfMove.Pounce);
-		_pounceRange = PounceReach(power);
-		_pounceDir = PounceDirection();
+		(_pounceDir, _pounceRange, _pounceAimY) = PounceTarget(power);
 		After(Mathf.Max(delay - elapsed, 0f), id, () => BeginPounceFlight(duration));
 	}
 
 	private Vector3 _pounceDir = Vector3.Forward;
+	private float? _pounceAimY;
 	private bool _pounceFlew;
 	
-		/// <summary>Onde a mira (o centro da tela) toca o mapa, dentro do alcance
-	/// do salto: é onde o lobo quer cair. Null se o jogador não mira em
-	/// nada ao alcance (céu, longe demais), se é um bot, ou se o ponto fica
-	/// atrás do lobo (olhando quase reto para baixo), ou se a mira toca uma
-	/// parede em pé — aí vale a carga e a direção da câmera, como antes.</summary>
+	/// <summary>
+	/// Onde o lobo quer cair: o ponto em que a mira (o centro da tela)
+	/// toca o mundo.
+	///
+	/// - No chão, em cima de um caixote ou de um contêiner: esse ponto.
+	/// - Em alguém: os pés dele. Mirar no inimigo é pedir para cair nele;
+	///   antes o raio batia no corpo, que é uma "parede", e a mira era
+	///   ignorada — o salto ia o que a barra mandava, passando do alvo ou
+	///   ficando no caminho.
+	/// - Numa parede ou num teto: o chão ao pé dela, meio metro à frente.
+	///
+	/// Null se a mira não toca nada (céu), se é um bot, ou se o ponto fica
+	/// atrás do lobo (olhando quase reto para baixo): aí valem a carga e a
+	/// direção da câmera.
+	/// </summary>
 	public Vector3? PounceAimPoint
 	{
 		get
@@ -219,61 +239,115 @@ public partial class Weapon
 
 			Vector3 forward = -camera.GlobalBasis.Z;
 			Vector3 from = camera.GlobalPosition;
-			var query = PhysicsRayQueryParameters3D.Create(from, from + forward * (PounceMaxDistance + 8f), 1);
+			var space = _body.GetWorld3D().DirectSpaceState;
+
+			// Em terceira pessoa a câmera fica atrás do lobo: o raio começa
+			// na altura dele, para o que estiver entre os dois não contar.
+			from += forward * Mathf.Max((_body.GlobalPosition - from).Dot(forward), 0f);
+
+			var query = PhysicsRayQueryParameters3D.Create(from, from + forward * (PounceMaxDistance + 10f));
 			query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
-			var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
+			var hit = space.IntersectRay(query);
 			if (hit.Count == 0) return null;
 
-			// Só vale onde dá para pousar: chão, topo de caixote, teto. Mirar
-			// numa parede em pé não é pedir para cair nela — vale a carga,
-			// e o salto passa por cima do que for baixo ou para antes do
-			// que for alto.
-			if (((Vector3)hit["normal"]).Y < 0.5f) return null;
-
 			Vector3 point = (Vector3)hit["position"];
+			Vector3 normal = (Vector3)hit["normal"];
+
+			if (hit["collider"].Obj is CharacterBody3D someone)
+			{
+				point = FloorBelow(space, someone.GlobalPosition, 4f) ?? someone.GlobalPosition + Vector3.Down * 0.9f;
+			}
+			else if (normal.Y < 0.5f)
+			{
+				// Parede em pé (ou teto): não dá para pousar nela. O pé dela.
+				Vector3 away = normal with { Y = 0 };
+				if (away.LengthSquared() < 0.01f) away = -forward with { Y = 0 };
+				if (away.LengthSquared() < 0.01f) return null;
+
+				float feetY = _body.GlobalPosition.Y + ((_body as Player)?.FeetOffset ?? -0.875f);
+				Vector3 probe = point + away.Normalized() * 0.5f + normal * 0.05f;
+				if (FloorBelow(space, probe, Mathf.Max(probe.Y - feetY, 0f) + PounceMaxDrop) is not Vector3 foot) return null;
+				point = foot;
+			}
+
 			Vector3 flat = point - _body.GlobalPosition;
 			flat.Y = 0;
 			Vector3 look = forward with { Y = 0 };
-			if (flat.Length() > PounceMaxDistance + 1f) return null;
 			if (look.LengthSquared() > 0.0001f && flat.Dot(look.Normalized()) < 0.3f) return null;
 			return point;
 		}
 	}
 
-	/// <summary>Até onde o salto vai: o ponto mirado, limitado pelo que a
-	/// carga alcança (<see cref="CombatRules.PounceRange"/>). Sem ponto
-	/// mirado, é só o que a carga alcança.</summary>
-	private float PounceReach(float charge)
+	/// <summary>O chão embaixo de <paramref name="from"/>, até
+	/// <paramref name="depth"/> metros. Gente não conta como chão.</summary>
+	private Vector3? FloorBelow(PhysicsDirectSpaceState3D space, Vector3 from, float depth)
 	{
-		float reach = CombatRules.PounceRange(PounceMinDistance, PounceMaxDistance, charge);
-		if (PounceAimPoint is not Vector3 aim) return reach;
+		var query = PhysicsRayQueryParameters3D.Create(from, from + Vector3.Down * depth);
+		var exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
 
-		Vector3 flat = aim - _body.GlobalPosition;
-		flat.Y = 0;
-		return Mathf.Clamp(flat.Length(), 0.5f, reach);
+		for (int tries = 0; tries < 4; tries++)
+		{
+			query.Exclude = exclude;
+			var hit = space.IntersectRay(query);
+			if (hit.Count == 0) return null;
+
+			if (hit["collider"].Obj is CharacterBody3D)
+			{
+				exclude.Add((Rid)hit["rid"]);
+				continue;
+			}
+
+			return (Vector3)hit["position"];
+		}
+
+		return null;
 	}
 
-	/// <summary>Para onde o salto vai, no chão: a direção da câmera do
-	/// próprio jogador (<see cref="Player.AimCamera"/>), não a da câmera que
-	/// estiver na tela; o bot, para o alvo; sem nenhuma, para a frente do
-	/// corpo.</summary>
-	
-	private Vector3 PounceDirection()
+	/// <summary>
+	/// O plano do salto com esta carga: para que lado, quantos metros no
+	/// chão e a altura do ponto mirado (null se não há ponto, ou se ele
+	/// fica além do alcance — aí o salto vai até o limite naquela direção
+	/// e cai no que houver ali).
+	///
+	/// Com ponto mirado, a distância é a dele: perto, salto curto; longe,
+	/// salto longo, até <see cref="PounceMaxDistance"/>. A carga só entra
+	/// na distância sem ponto mirado (céu, bot) ou com
+	/// <see cref="PounceChargeLimitsReach"/> ligado.
+	/// </summary>
+	private (Vector3 Direction, float Distance, float? AimY) PounceTarget(float charge)
+	{
+		Vector3? aim = PounceAimPoint;
+		Vector3 direction = PounceDirection(aim);
+		float reach = CombatRules.PounceRange(PounceMinDistance, PounceMaxDistance, charge);
+		if (aim is not Vector3 point) return (direction, reach, null);
+
+		Vector3 flat = point - _body.GlobalPosition;
+		flat.Y = 0;
+		float wanted = flat.Length();
+		float limit = PounceChargeLimitsReach ? reach : PounceMaxDistance;
+		return (direction, Mathf.Clamp(wanted, 0.5f, limit), wanted <= limit + 0.01f ? point.Y : null);
+	}
+
+	/// <summary>Para onde o salto vai, no chão: do lobo ao ponto mirado;
+	/// sem ponto, a direção da câmera do próprio jogador
+	/// (<see cref="Player.AimCamera"/>, não a da câmera que estiver na
+	/// tela); o bot, para o alvo; sem nenhuma, para a frente do corpo.</summary>
+	private Vector3 PounceDirection(Vector3? aim)
 	{
 		Vector3 direction = _botAim
 			?? ((_body as Player)?.AimCamera is Camera3D camera
 				? -camera.GlobalBasis.Z
 				: -_body.GlobalTransform.Basis.Z);
-				
+
 		// Com ponto de queda mirado, o salto vai do lobo até ele, e não na
 		// direção da câmera: assim cai onde a mira está, e não ao lado.
-		if (PounceAimPoint is Vector3 aim)
+		if (aim is Vector3 point)
 		{
-			Vector3 flat = aim - _body.GlobalPosition;
+			Vector3 flat = point - _body.GlobalPosition;
 			flat.Y = 0;
 			if (flat.LengthSquared() > 0.09f) direction = flat;
 		}
-		
+
 		direction.Y = 0;
 		if (direction.LengthSquared() < 0.0001f) direction = -_body.GlobalTransform.Basis.Z with { Y = 0 };
 		if (direction.LengthSquared() < 0.0001f) direction = Vector3.Forward;
@@ -298,6 +372,13 @@ public partial class Weapon
 	/// quadril do clipe; para cima em parábola no tempo, subindo rápido no
 	/// impulso — é o que passa por cima de um caixote logo à frente sem
 	/// precisar de um arco enorme.
+	///
+	/// É um arremesso de verdade com o tempo de voo fixo (o do clipe, T,
+	/// para o dano sair quando os pés tocam o chão): a distância D e o
+	/// desnível H do ponto de queda dão as velocidades — no chão D/T em
+	/// média, para cima (H + 4·arco)/T na saída — e a "gravidade" do salto
+	/// é 8·arco/T². Longe ou alto, o lobo sai mais rápido; perto, mais
+	/// devagar; e chega sempre no mesmo instante.
 	/// </summary>
 	public Vector3 PounceFlightPoint(double ahead)
 	{
@@ -316,11 +397,15 @@ public partial class Weapon
 		float distance = _pounceRange;
 
 		float wanted = distance;
-		PlanPounce(ref distance, direction, out float land, out float arc);
+		PlanPounce(ref distance, direction, out float land, out float arc, _pounceAimY);
 
 		if (Debug)
+		{
+			float time = Mathf.Max(duration, 0.05f);
 			GD.Print($"salto: anda {distance:0.0} m{(distance < wanted - 0.05f ? $" (queria {wanted:0.0}: obstáculo no caminho)" : "")}, " +
-				$"arco {arc:0.0} m, cai {land:+0.0;-0.0} m");
+				$"arco {arc:0.0} m, cai {land:+0.0;-0.0} m em {time:0.00} s " +
+				$"(sai a {distance / time:0.0} m/s no chão e {(land + 4f * arc) / time:0.0} m/s para cima)");
+		}
 
 		_flyStart = _body.GlobalPosition;
 		_flyDir = direction;
@@ -339,19 +424,42 @@ public partial class Weapon
 	/// arco sobe o bastante para passar); o que é mais alto (bloco, muro)
 	/// encurta o salto para cair antes dele. Cair em cima de um contêiner
 	/// também vale: o arco termina na altura dele.
+	///
+	/// <paramref name="aimY"/> é a altura do ponto mirado: o salto cai
+	/// nessa superfície, e não na mais alta que houver naquele lugar
+	/// (mirando o chão de dentro de um contêiner, é dentro que ele cai, e
+	/// não no teto). Com teto baixo sobre o lobo ou sobre o ponto mirado, o
+	/// salto é rasante: o arco cabe embaixo dele.
 	/// </summary>
-	private void PlanPounce(ref float distance, Vector3 direction, out float land, out float arc)
+	private void PlanPounce(ref float distance, Vector3 direction, out float land, out float arc, float? aimY = null)
 	{
 		var space = _body.GetWorld3D().DirectSpaceState;
 		float halfHeight = -((_body as Player)?.FeetOffset ?? -0.875f);
 		Vector3 feet = _body.GlobalPosition + Vector3.Down * halfHeight;
 		float top = PounceMaxClear + 0.4f;
+		float arcMax = PounceMaxClear + 0.6f;
+		float aimed = distance;
+		float? aimRel = aimY - feet.Y;
+
+		// Teto: o que há sobre a cabeça aqui e sobre o ponto mirado.
+		float height = halfHeight * 2f;
+		float roof = Headroom(space, feet, top + height);
+		if (aimRel is float up)
+			roof = Mathf.Min(roof, up + Headroom(space, feet + direction * distance + Vector3.Up * up, top + height));
+		if (roof < top + height)
+		{
+			top = Mathf.Clamp(roof - 0.05f, 0.5f, top);
+			arcMax = Mathf.Clamp(roof - height - 0.1f, 0.15f, arcMax);
+		}
+
+		// Mais alto que isto, não se pula por cima nem se pousa em cima.
+		float limit = Mathf.Min(PounceMaxClear, top - 0.4f);
 
 		var path = new List<(float X, float H)>();
 		for (float x = 0.4f; x <= distance + 0.01f; x += 0.4f)
 		{
 			float h = GroundAt(space, feet + direction * x, top);
-			if (h > PounceMaxClear)
+			if (h > limit)
 			{
 				distance = Mathf.Max(x - 0.8f, 0f);
 				break;
@@ -359,7 +467,6 @@ public partial class Weapon
 			path.Add((x, h));
 		}
 
-		float arcMax = PounceMaxClear + 0.6f;
 		land = 0f;
 		arc = PounceArc;
 
@@ -375,12 +482,16 @@ public partial class Weapon
 			land = 0f;
 			while (distance > 0.05f)
 			{
-				land = GroundAt(space, feet + direction * distance, top);
-				if (land <= PounceMaxClear) break;
+				// No ponto mirado, o raio desce de logo acima dele: é nessa
+				// superfície que se cai. Encurtou, vale a mais alta do lugar.
+				bool atAim = aimRel != null && Mathf.Abs(distance - aimed) < 0.01f;
+				float from = atAim ? Mathf.Clamp(aimRel.Value + 0.4f, 0.5f - PounceMaxDrop, top) : top;
+				land = GroundAt(space, feet + direction * distance, from);
+				if (land <= limit) break;
 				distance = Mathf.Max(distance - 0.4f, 0f);
 			}
-			land = distance > 0.05f ? Mathf.Clamp(land, -1.5f, PounceMaxClear) : 0f;
-			arc = Mathf.Clamp(PounceArc + 0.07f * distance, PounceArc, 1.6f);
+			land = distance > 0.05f ? Mathf.Clamp(land, -PounceMaxDrop, limit) : 0f;
+			arc = Mathf.Min(Mathf.Clamp(PounceArc + 0.07f * distance, PounceArc, 1.6f), arcMax);
 
 			float failX = -1f;
 			float failH = 0f;
@@ -414,21 +525,23 @@ public partial class Weapon
 		}
 	}
 
-	/// <summary>Altura do chão em <paramref name="at"/>, relativa a ele:
-	/// raio de cima para baixo. Começar dentro de algo (um muro mais alto
-	/// que o raio) devolve a altura do raio inteira — é obstáculo. Gente
-	/// não conta: cair em cima de alguém é o objetivo, não um degrau.</summary>
-	private float GroundAt(PhysicsDirectSpaceState3D space, Vector3 at, float top)
+	/// <summary>Sem chão nenhum até <see cref="PounceMaxDrop"/>: o voo
+	/// desce só isto e o lobo cai o resto.</summary>
+	private const float NoGroundDrop = 1.5f;
+
+	/// <summary>Quanto há de vão sobre <paramref name="at"/> (os pés), em
+	/// metros, olhando até <paramref name="reach"/>: a altura do teto. Sem
+	/// teto, infinito. Gente não é teto.</summary>
+	private float Headroom(PhysicsDirectSpaceState3D space, Vector3 at, float reach)
 	{
-		var query = PhysicsRayQueryParameters3D.Create(at + Vector3.Up * top, at + Vector3.Down * 1.6f);
-		query.HitFromInside = true;
+		var query = PhysicsRayQueryParameters3D.Create(at + Vector3.Up * 0.3f, at + Vector3.Up * reach);
 		var exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
 
 		for (int tries = 0; tries < 4; tries++)
 		{
 			query.Exclude = exclude;
 			var hit = space.IntersectRay(query);
-			if (hit.Count == 0) return -1.6f;
+			if (hit.Count == 0) return float.PositiveInfinity;
 
 			if (hit["collider"].Obj is CharacterBody3D)
 			{
@@ -439,6 +552,34 @@ public partial class Weapon
 			return ((Vector3)hit["position"]).Y - at.Y;
 		}
 
-		return -1.6f;
+		return float.PositiveInfinity;
+	}
+
+	/// <summary>Altura do chão em <paramref name="at"/>, relativa a ele:
+	/// raio de cima para baixo. Começar dentro de algo (um muro mais alto
+	/// que o raio) devolve a altura do raio inteira — é obstáculo. Gente
+	/// não conta: cair em cima de alguém é o objetivo, não um degrau.</summary>
+	private float GroundAt(PhysicsDirectSpaceState3D space, Vector3 at, float top)
+	{
+		var query = PhysicsRayQueryParameters3D.Create(at + Vector3.Up * top, at + Vector3.Down * PounceMaxDrop);
+		query.HitFromInside = true;
+		var exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+
+		for (int tries = 0; tries < 4; tries++)
+		{
+			query.Exclude = exclude;
+			var hit = space.IntersectRay(query);
+			if (hit.Count == 0) return -NoGroundDrop;
+
+			if (hit["collider"].Obj is CharacterBody3D)
+			{
+				exclude.Add((Rid)hit["rid"]);
+				continue;
+			}
+
+			return ((Vector3)hit["position"]).Y - at.Y;
+		}
+
+		return -NoGroundDrop;
 	}
 }

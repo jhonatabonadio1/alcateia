@@ -2,6 +2,46 @@
 
 ## Não lançado
 
+### Lobo sem rachaduras, salto na mira, minimapa do Armazém (17/11)
+- **Lobos (`lobo_azul.glb`, `lobo_vermelho.glb`): as "partes
+  transparentes" nas costas e nos braços.** Três causas, as três no
+  arquivo e nenhuma no jogo:
+  1. As juntas (ombro, cotovelo, quadril, joelho) ganham triângulos
+     extras, e a rotina que os cria dividia só uma aresta por triângulo
+     (somava booleanos do numpy, que "somam" como OU). Sobravam 838
+     vértices no meio da aresta do vizinho; com o corte para 4 ossos por
+     vértice do arquivo, cada um abria uma fenda em cunha no movimento.
+     Agora são 2, os mesmos do modelo original do Meshy.
+  2. As peças do tronco (arnês das costas, peitoral, cinto) eram
+     rígidas, presas a um osso só. O tronco dobra em três, e parado na
+     pose do jogo a pele das costas cobria metade do arnês. Elas voltam
+     a seguir a pele, como no modelo original; braçadeiras, joelheiras
+     e caneleiras continuam rígidas.
+  3. Onde uma peça é a própria pele (borda do cinto), o forro era o
+     mesmo triângulo outra vez, na cor do pelo, e os dois brigavam.
+     Esses triângulos do forro saíram.
+  Cópias do mesmo vértice têm agora exatamente os mesmos pesos, já
+  cortados para 4 ossos. Conferido em 12 poses dos clipes do jogo, com e
+  sem as faces de trás: zero pixel com o interior à mostra no azul
+  (eram 863); no vermelho, só a barra solta do colete, como no original.
+- **Salto do lobo (botão direito no chão) cai onde a mira aponta.** O
+  ponto em que o centro da tela toca o mundo dá a distância e a altura
+  da queda, até 8,4 m; a carga só dá o dano. Mirando em alguém, o salto
+  cai nos pés dele (antes o corpo contava como parede e a mira era
+  ignorada); numa parede, ao pé dela; no céu, vale a barra, como antes.
+  Sobe em contêiner de 2,9 m (`PounceMaxClear` 2,6 → 3,2), desce até
+  6,5 m (`PounceMaxDrop`) e passa rasante embaixo de teto baixo. O tempo
+  de voo continua o do clipe (0,8 s), para o dano sair quando os pés
+  tocam o chão: distância e desnível dão as velocidades de saída.
+  `PounceChargeLimitsReach` volta à regra de antes (a barra é o limite).
+  Bots não mudam: escolhem a carga que leva até o alvo.
+- **Minimapa do Armazém.** Estava vazio: ele só desenhava caixa com
+  malha de caixa, e o Armazém é um modelo com caixas só de colisão.
+  Agora desenha também essas, com a cor da peça no modelo (contêiner
+  vermelho é vermelho), gravada pelo conversor em `armazem.json` e pelo
+  gerador em `metadata/mapa_cor`. Peça com menos de 0,12 m² vista de
+  cima não entra.
+
 ### Barra de vida verde e vermelha, Armazém menos escuro (17/11)
 - A barra de vida sobre os personagens é verde no aliado e vermelha no
   inimigo, sempre, para quem olha (`HealthBar3D`); antes era a cor do

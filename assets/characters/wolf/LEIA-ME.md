@@ -3,8 +3,11 @@
 **Desde 17/11 os lobos dos times são `lobo_azul.glb` (azul) e
 `lobo_vermelho.glb` (laranja)**: os dois do Jhon, no Meshy, mesmo
 esqueleto de 24 ossos e 1,66 m, em três malhas (`corpo`, `roupa`,
-`equipamento`) com uma textura. As placas da armadura são rígidas (um
-osso por peça) e embaixo delas há corpo. O texto abaixo é do lobo
+`equipamento`) com uma textura. As placas dos braços e das pernas são
+rígidas (um osso por peça); as do tronco (arnês, peitoral, cinto) seguem
+a pele, porque o tronco dobra em três ossos e uma placa dura afundava
+nas costas. Embaixo de toda peça há corpo. Cópias do mesmo vértice têm
+os mesmos pesos, no máximo 4 ossos: é o que impede a malha de abrir. O texto abaixo é do lobo
 anterior (`mutant*.fbx`), que ficou como referência de altura.
 
 `mutant.fbx` é o lobo do time azul; `mutant_red.fbx`, o do time
