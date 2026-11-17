@@ -56,6 +56,9 @@ public partial class RoomScreen : LobbyScreen
 
 		// Voltando de uma partida: a sala espera de novo, e ninguém está
 		// pronto — prontidão vale para uma partida, não para a sala.
+		// Times de 1 a 6: sala antiga (de 8) cabe no máximo de agora.
+		if (_room != null) _room.Settings.TeamSize = Mathf.Clamp(_room.Settings.TeamSize, 1, RoomSettings.MaxTeamSize);
+
 		if (_room != null && _room.State == RoomState.Playing)
 		{
 			_room.State = RoomState.Waiting;
@@ -64,6 +67,7 @@ public partial class RoomScreen : LobbyScreen
 	}
 
 	private RoomSettings S => _room.Settings;
+	private bool VsBots => PlayModes.VsBots(S.Play);
 	private RoomMember Me => _room.Members.FirstOrDefault(m => !m.IsBot);
 	private bool IsHost => Me?.IsHost == true;
 
@@ -183,12 +187,10 @@ public partial class RoomScreen : LobbyScreen
 		headRow.AddChild(UiKit.Text($"{members.Count}/{S.TeamSize}", "Numeric", UiTokens.TextSecondary));
 		headRow.AddChild(UiKit.Spacer());
 
-		if (IsHost && members.Count < S.TeamSize)
-		{
-			Button fill = UiKit.Button("Encher com bots", ButtonKind.Tertiary, () => { AddBot(team, S.TeamSize); });
-			fill.CustomMinimumSize = new Vector2(0, 28);
-			headRow.AddChild(fill);
-		}
+		// Contra bots: o laranja é o time dos bots, e as vagas do azul também
+		// viram bot na partida.
+		if (VsBots && members.Count < S.TeamSize)
+			headRow.AddChild(UiKit.Caption(team == Teams.Orange ? "time de bots" : "vagas viram bot"));
 
 		column.AddChild(head);
 
@@ -249,17 +251,7 @@ public partial class RoomScreen : LobbyScreen
 
 		row.AddChild(PingBars.Make(0));
 
-		if (IsHost && member.IsBot)
-		{
-			Button remove = UiKit.IconButton(IconKind.Close, $"Tirar {member.Name}", () => RemoveBot(member), 14);
-			remove.CustomMinimumSize = new Vector2(28, 28);
-			row.AddChild(remove);
-		}
-		else
-		{
-			row.AddChild(UiKit.Gap(28));
-		}
-
+		row.AddChild(UiKit.Gap(28));
 		return slot;
 	}
 
@@ -269,14 +261,22 @@ public partial class RoomScreen : LobbyScreen
 		slot.AddThemeStyleboxOverride("panel", UiTheme.Box(Colors.Transparent, UiTokens.Border, 1, UiTokens.RadiusSmall, 0, 0));
 		slot.AddChild(new Striped());
 
-		if (IsHost)
+		// Sem botão de pôr bot (decisão do Jhon): a vaga diz o que vai ser.
+		MarginContainer margin = UiKit.Margin(UiTokens.S3, 0, UiTokens.S2, 0);
+		HBoxContainer row = UiKit.Row(UiTokens.S2);
+		if (VsBots)
 		{
-			Button add = UiKit.Button("+  Adicionar bot", ButtonKind.Tertiary, () => AddBot(team, 1));
-			add.CustomMinimumSize = new Vector2(0, 38);
-			add.Alignment = HorizontalAlignment.Left;
-			slot.AddChild(add);
+			row.AddChild(Icon.Make(IconKind.Bot, 16, UiTokens.TextDisabled));
+			row.AddChild(UiKit.Text("bot na partida", "Caption", UiTokens.TextDisabled));
 		}
-
+		else
+		{
+			row.AddChild(UiKit.Text("vaga", "Caption", UiTokens.TextDisabled));
+		}
+		row.Alignment = BoxContainer.AlignmentMode.Begin;
+		row.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+		margin.AddChild(row);
+		slot.AddChild(margin);
 		return slot;
 	}
 
@@ -315,13 +315,16 @@ public partial class RoomScreen : LobbyScreen
 		pass.FocusExited += () => SetPassword(pass.Text);
 		form.AddChild(Row("Senha", pass));
 
-		form.AddChild(Row("Modo", Picker(RoomSettings.ModeNames.Select((n, i) => RoomSettings.ModeAvailable((GameMode)i) ? n : $"{n} (em breve)").ToArray(),
-			(int)S.Mode, i => Change("Modo", RoomSettings.ModeNames[i], () => S.Mode = (GameMode)i),
-			RoomSettings.ModeNames.Select((_, i) => !RoomSettings.ModeAvailable((GameMode)i)).ToArray())));
+		// O modo de jogo. Offline (esta sala é de treino) só há os contra bots.
+		PlayModes.Info[] modes = PlayModes.VersusBots;
+		OptionButton mode = Picker(modes.Select(m => m.Name).ToArray(), Mathf.Max(0, Array.FindIndex(modes, m => m.Mode == S.Play)),
+			i => { Change("Modo", modes[i].Name, () => S.Play = modes[i].Mode); Refresh(); });
+		mode.TooltipText = PlayModes.Of(S.Play).Line;
+		form.AddChild(Row("Modo", mode));
 
-		int[] sizes = { 4, 6, 8 };
+		int[] sizes = RoomSettings.TeamSizes;
 		form.AddChild(Row("Jogadores", Picker(sizes.Select(n => $"{n} contra {n}").ToArray(),
-			Array.IndexOf(sizes, S.TeamSize), i => SetTeamSize(sizes[i]))));
+			Mathf.Max(0, Array.IndexOf(sizes, S.TeamSize)), i => SetTeamSize(sizes[i]))));
 
 		int[] scores = { 20, 40, 60, 100 };
 		form.AddChild(Row("Objetivo", Picker(scores.Select(n => $"{n} pontos").ToArray(),
@@ -334,10 +337,6 @@ public partial class RoomScreen : LobbyScreen
 		form.AddChild(Row("Armas", Picker(RoomSettings.WeaponNames.Select((n, i) => RoomSettings.WeaponsAvailable((WeaponRule)i) ? n : $"{n} (em breve)").ToArray(),
 			(int)S.Weapons, i => Change("Armas", RoomSettings.WeaponNames[i], () => S.Weapons = (WeaponRule)i),
 			RoomSettings.WeaponNames.Select((_, i) => !RoomSettings.WeaponsAvailable((WeaponRule)i)).ToArray())));
-
-		form.AddChild(Row("Transformação", Picker(RoomSettings.TransformNames.Select((n, i) => RoomSettings.TransformAvailable((TransformRule)i) ? n : $"{n} (em breve)").ToArray(),
-			(int)S.Transform, i => Change("Transformação", RoomSettings.TransformNames[i], () => S.Transform = (TransformRule)i),
-			RoomSettings.TransformNames.Select((_, i) => !RoomSettings.TransformAvailable((TransformRule)i)).ToArray())));
 
 		form.AddChild(Row("Bots", Picker(new[] { "Fáceis", "Médios", "Difíceis" }, (int)S.Difficulty, SetDifficulty)));
 
@@ -388,7 +387,7 @@ public partial class RoomScreen : LobbyScreen
 		HBoxContainer body = UiKit.Row(UiTokens.S3);
 		var frame = new PanelContainer();
 		frame.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Bg, UiTokens.Border, 1, UiTokens.RadiusSmall, 0, 0));
-		TextureRect thumb = UiKit.Thumbnail(map.Thumbnail, new Vector2(184, 104));
+		TextureRect thumb = UiKit.Thumbnail(map.Picture, new Vector2(184, 104));
 		frame.AddChild(thumb);
 		body.AddChild(frame);
 
@@ -435,7 +434,7 @@ public partial class RoomScreen : LobbyScreen
 			inside.SetAnchorsPreset(LayoutPreset.FullRect);
 			inside.OffsetLeft = inside.OffsetTop = UiTokens.S2;
 			inside.OffsetRight = inside.OffsetBottom = -UiTokens.S2;
-			TextureRect thumb = UiKit.Thumbnail(map.Thumbnail, new Vector2(284, 160));
+			TextureRect thumb = UiKit.Thumbnail(map.Picture, new Vector2(284, 160));
 			thumb.MouseFilter = MouseFilterEnum.Ignore;
 			inside.AddChild(thumb);
 			HBoxContainer line = UiKit.Row(UiTokens.S2);
@@ -639,6 +638,7 @@ public partial class RoomScreen : LobbyScreen
 		int orange = playing.Count(m => m.Team == Teams.Orange);
 
 		if (!IsHost) why = "Só o mestre inicia";
+		else if (VsBots) why = blue == 0 ? "Falta alguém no time azul" : null;
 		else if (blue == 0 || orange == 0)
 			why = AllReady ? "Os dois times precisam de alguém" : "Falta alguém pronto num dos times";
 		else if (!AllReady && Math.Abs(blue - orange) > 1)
@@ -717,6 +717,7 @@ public partial class RoomScreen : LobbyScreen
 		{
 			Name = m.Name, Team = m.Team, IsBot = m.IsBot, Ready = m.Ready, IsHost = m.IsHost, Rank = m.Rank
 		}));
+		RoomConfig.FillBots(RoomConfig.Members, S);
 		RoomConfig.ReturnTo = ReturnTarget.Room;
 
 		Difficulty.Set(S.Difficulty);
@@ -731,7 +732,7 @@ public partial class RoomScreen : LobbyScreen
 		}
 
 		UiState.Reset();
-		GetTree().ChangeSceneToFile("res://scenes/main.tscn");
+		LoadingScreen.Open(GetTree());
 	}
 
 	private void Leave()
@@ -750,6 +751,12 @@ public partial class RoomScreen : LobbyScreen
 		if (Me == null || _countdown >= 0) return;
 		int other = Teams.Other(Me.Team);
 
+		if (VsBots)
+		{
+			Shell.Toast("Contra bots, os jogadores ficam no time azul", UiTokens.TextSecondary);
+			return;
+		}
+
 		if (_room.Members.Count(m => m.Team == other) >= S.TeamSize)
 		{
 			Shell.Toast($"O time {Teams.TitleOf(other)} está cheio", UiTokens.Danger);
@@ -758,21 +765,6 @@ public partial class RoomScreen : LobbyScreen
 
 		Me.Team = other;
 		Log($"{Me.Name} foi para o time {Teams.TitleOf(other)}.", system: true);
-		Refresh();
-	}
-
-	private void AddBot(int team, int count)
-	{
-		if (!IsHost) return;
-		RoomDirectory.AddBots(_room, team, count);
-		Refresh();
-	}
-
-	private void RemoveBot(RoomMember bot)
-	{
-		if (!IsHost || !bot.IsBot) return;
-		_room.Members.Remove(bot);
-		if (_selected == bot) _selected = Me;
 		Refresh();
 	}
 

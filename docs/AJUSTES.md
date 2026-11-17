@@ -449,12 +449,13 @@ O cérebro (as notas de cada ação) está em `scripts/ai/BotBrain.cs`.
 | `Match.cs` | `Duration` | 600 s (a sala sobrescreve) |
 | `Match.cs` | `CountdownTime` | 10 s |
 | `LoadoutMenu.cs` | `ChooseTime` | 5 s para escolher o conjunto ao renascer |
-| `RoomConfig.cs` | `RoomSettings` | Equipe, 8 por time, Vila, 40 pontos, 10 min, todas as armas, transformação livre, bots no Médio |
+| `RoomConfig.cs` | `RoomSettings` | Modo Livre, 6 por time (de 1 a 6, `TeamSizes`), Armazém, 40 pontos, 10 min, todas as armas, bots no Médio |
+| `LoadingScreen.cs` | `MinShown` | 2 s mínimos na tela de carregamento |
 
-Na tela da sala: mapa, pontos, minutos, armas (todas, sem pesadas ou
-só pistolas), transformação (livre ou bloqueada), fogo amigo, troca de
-lado, espectadores e dificuldade dos bots. Modo, por enquanto, só
-Equipe; os outros existem em `RoomConfig.cs` mas estão desligados.
+Na tela da sala: modo de jogo (`PlayMode.cs`), jogadores por time,
+mapa, pontos, minutos, armas (todas, sem pesadas ou só pistolas), fogo
+amigo, troca de lado, espectadores e dificuldade dos bots. Todos os
+modos são mata-mata em equipe.
 
 ---
 

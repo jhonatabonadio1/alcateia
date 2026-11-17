@@ -307,8 +307,13 @@ public partial class LoadoutMenu : CanvasLayer
 		HBoxContainer wolf = UiKit.Row(UiTokens.S2);
 		wolf.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
 		wolf.AddChild(Icon.Make(IconKind.Wolf, 18, UiTokens.TeamOrange));
-		bool blocked = RoomConfig.Rules.Transform == TransformRule.Bloqueada;
-		wolf.AddChild(UiKit.Text(blocked ? "Lobo bloqueado nesta sala" : "Lobo: grátis, a qualquer hora — tecla 3", "Muted"));
+		FormRule formRule = _form.Rule;
+		wolf.AddChild(UiKit.Text(formRule switch
+		{
+			FormRule.Humano => "Lobo bloqueado neste modo",
+			FormRule.Lobo => "Neste modo você é lobo a partida toda",
+			_ => "Lobo: grátis, a qualquer hora — tecla 3"
+		}, "Muted"));
 		foot.AddChild(wolf);
 		box.AddChild(foot);
 

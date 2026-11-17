@@ -2,6 +2,24 @@
 
 ## Não lançado
 
+### Modos de jogo, times de 1 a 6, foto dos mapas e tela de carregamento (17/11)
+- Antes de criar a sala escolhe-se o modo (`PlayMode.cs`, `ModePicker`):
+  Livre, Só humanos, Só lobos, Humanos × Lobos (trocam na metade),
+  Contra bots, Bots só humanos, Bots só lobos, Caçar lobos e Caçar
+  humanos. A forma de cada time vale no `FormController` (nasce e
+  renasce lobo quando o modo manda; tecla 3 barrada quando não pode).
+- Sem botão de pôr bot. Contra bots, os jogadores ficam no azul e a
+  partida completa o laranja e as vagas do azul com bots
+  (`RoomConfig.FillBots`; online, o servidor na escalação).
+- Times de 1 a 6 jogadores, na criação e na sala; o servidor de salas
+  aceita de 1 a 6 e o campo "play" (o modo). O Armazém tem 6 pontos de
+  nascimento por time.
+- Foto de cada mapa (`MapInfo.Cover`) na escolha do mapa, na sala e no
+  carregamento; `tools/fotos_mapas.gd` tira no próprio jogo.
+- Tela de carregamento (`LoadingScreen`): foto em tela cheia, nome,
+  modo, tempo, pontos e times, descrição e barra com o progresso real;
+  some quando a partida está montada.
+
 ### Escadas que sobem e descem, iguais em todo mapa (17/11)
 - `scripts/core/Ladder.cs` (o volume da escada) e `Player.Ladder.cs` (o
   que o corpo faz nela): W sobe, S desce, olhando para baixo o W desce,

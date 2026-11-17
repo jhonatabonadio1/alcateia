@@ -96,7 +96,14 @@ public partial class Hud : CanvasLayer
 
 		// No fim da partida a tela de resultado assume a tela inteira.
 		if (Match.Current != null)
+		{
 			Match.Current.PhaseChanged += phase => Visible = (MatchPhase)phase != MatchPhase.Ended;
+			Match.Current.HalfTime += () =>
+			{
+				if (RoomConfig.Rules.Play == PlayMode.HumanosXLobos)
+					Warn("METADE DO TEMPO · OS PAPÉIS TROCARAM", 3.5f, UiTokens.Accent);
+			};
+		}
 
 		OnHealthChanged(_health.Hp, _health.MaxHp, _health.Shield);
 		OnWpChanged(_form.Wp, _form.MaxWp);

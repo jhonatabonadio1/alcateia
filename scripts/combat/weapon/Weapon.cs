@@ -246,6 +246,13 @@ public partial class Weapon : Node3D
 		// Golpe de lobo não se interrompe, nem para voltar a humano.
 		if (IsStriking) return;
 
+		// Modo em que este time é lobo a partida toda: as armas não saem.
+		if (_form.Rule == FormRule.Lobo && slot != Slot.Wolf)
+		{
+			_form.ToggleForm();      // só avisa (o HUD diz por quê)
+			return;
+		}
+
 		if (slot == Slot.Knife)
 		{
 			TakeInHand(Slot.Knife);

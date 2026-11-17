@@ -4582,56 +4582,44 @@ script = ExtResource("s_spawns")
 Team = 1
 
 [node name="p1" type="Marker3D" parent="SpawnA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 7.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 8.5)
 
 [node name="p2" type="Marker3D" parent="SpawnA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 9.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 10)
 
 [node name="p3" type="Marker3D" parent="SpawnA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 10.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 11.5)
 
 [node name="p4" type="Marker3D" parent="SpawnA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.2, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 8.5)
 
 [node name="p5" type="Marker3D" parent="SpawnA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 7.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 10)
 
 [node name="p6" type="Marker3D" parent="SpawnA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 9.25)
-
-[node name="p7" type="Marker3D" parent="SpawnA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 10.75)
-
-[node name="p8" type="Marker3D" parent="SpawnA"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 1.2, 11.5)
 
 [node name="SpawnB" type="Node3D" parent="."]
 script = ExtResource("s_spawns")
 Team = 2
 
 [node name="p1" type="Marker3D" parent="SpawnB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -11.5)
 
 [node name="p2" type="Marker3D" parent="SpawnB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -10.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -10)
 
 [node name="p3" type="Marker3D" parent="SpawnB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -9.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -8.5)
 
 [node name="p4" type="Marker3D" parent="SpawnB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 1.2, -7.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -11.5)
 
 [node name="p5" type="Marker3D" parent="SpawnB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -12.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -10)
 
 [node name="p6" type="Marker3D" parent="SpawnB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -10.75)
-
-[node name="p7" type="Marker3D" parent="SpawnB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -9.25)
-
-[node name="p8" type="Marker3D" parent="SpawnB"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -7.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.2, -8.5)
 
 [node name="PatrolRoutes" type="Node3D" parent="."]
 script = ExtResource("s_routes")

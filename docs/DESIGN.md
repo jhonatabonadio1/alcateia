@@ -1172,7 +1172,7 @@ numa linha só.
 
 ```
 menu.tscn (LobbyShell)
-  Entrada (apelido) ─> Lista de salas ─> Sala ── Iniciar (5 s) ──> main.tscn
+  Entrada (apelido) ─> Lista de salas ─> Modo de jogo ─> Sala ── Iniciar (5 s) ──> Carregamento ──> main.tscn
 		header fixo: Salas · Loja · Inventário · Perfil · Missões · Opções
 main.tscn ── fim ──> Resultado ── Jogar de novo ──> main.tscn
 							   ── Voltar à sala ──> menu.tscn, na sala
@@ -1188,10 +1188,39 @@ que segura a sessão longa.
 nº", atualização a cada 5 s. As salas dos outros são simuladas
 (`RoomDirectory`), com bots dentro; entrar numa delas funciona.
 
-**Sala.** Times Azul e Laranja, até 8 em cada. O mestre (quem criou —
-hoje, você) escolhe modo, tamanho, objetivo, tempo, regra de armas, de
-transformação, dificuldade dos bots, faixa de patente, senha e fogo
-amigo; enche com bots e troca de lado. Cada jogador marca **Pronto**,
+**Modo de jogo (decisão do Jhon, 17/11).** Antes de criar a sala, o
+mestre escolhe o modo (`scripts/core/PlayMode.cs`, tela
+`ModePicker`). Todos são mata-mata em equipe; o modo diz contra quem e
+em que forma cada time joga:
+
+| Modo | Contra | Forma |
+|---|---|---|
+| Livre | jogadores | humano e lobo, cada um transforma quando quiser |
+| Só humanos | jogadores | ninguém transforma |
+| Só lobos | jogadores | todos nascem lobo e não voltam |
+| Humanos × Lobos | jogadores | azul humano, laranja lobo; trocam na metade do tempo |
+| Contra bots | bots | humano e lobo liberados |
+| Bots, só humanos | bots | ninguém transforma |
+| Bots, só lobos | bots | todos lobos |
+| Caçar lobos | bots | vocês humanos, bots lobo |
+| Caçar humanos | bots | vocês lobos, bots humanos |
+
+A forma permitida é por time e por momento (`PlayModes.RuleFor`); o
+`FormController` a faz valer — quem tem de ser lobo nasce e renasce
+lobo, sem custo, e quem não pode ser lobo é barrado na tecla 3. Na
+metade do Humanos × Lobos os papéis trocam na hora, com aviso no HUD.
+
+**Sem botão de bot.** Nos modos contra jogadores não entra bot. Nos
+contra bots, os jogadores ficam todos no azul e a partida completa os
+times sozinha: o laranja inteiro e as vagas do azul
+(`RoomConfig.FillBots`; online, o servidor de salas na escalação). O
+treino offline só oferece os modos contra bots.
+
+**Sala.** Times Azul e Laranja, de 1 a 6 em cada (decisão do Jhon,
+17/11). O mestre escolhe o modo, o tamanho, o objetivo, o tempo, a regra
+de armas, a dificuldade dos bots, a faixa de patente, a senha e o fogo
+amigo, na criação e depois dentro da sala; troca de lado (menos contra
+bots, em que todos ficam no azul). Cada jogador marca **Pronto**,
 menos o mestre: quem inicia é ele, então o botão some para ele. O
 mestre inicia quando todos estão prontos — ou quando os prontos já
 fecham times equilibrados, com no máximo **um a menos** de um lado
@@ -1565,6 +1594,20 @@ Texturas embutidas nos `.fbx` são extraídas pelo Godot na importação
 (`exo_gray_0.png`...) e ficam fora do git: cada máquina gera as suas.
 
 ---
+
+**Carregamento (decisão do Jhon, 17/11).** Entre a sala e a partida, a
+`LoadingScreen` cobre a tela com a foto do mapa (`MapInfo.Cover`), o
+nome, uma linha com o modo, o tempo, os pontos e o tamanho dos times, a
+descrição curta e a barra. A barra é o progresso real do carregamento
+em segundo plano do mapa e da cena da partida; depois da troca ela
+espera o `MatchSetup` pôr cada um no seu ponto e a navegação ser
+assada, e some. A contagem offline só começa depois dela. Quando o
+servidor passar a servir o mapa e as posições, é nela que se espera.
+
+**A foto do mapa.** Cada mapa tem a sua (1920 × 1080), de um ângulo
+bom, tirada no próprio jogo por `tools/fotos_mapas.gd`. Aparece na
+escolha do mapa, na sala e no carregamento. Sem foto, vale a planta
+vista de cima do gerador.
 
 ## Fora da partida: perfil, patentes, loja e missões
 

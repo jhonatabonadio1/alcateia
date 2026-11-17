@@ -103,8 +103,8 @@ public static class LobbyTests
 			JsonObject changed = await guest.Hear("room", m => m["settings"]["title"].GetValue<string>() == "Nova regra");
 			Check.Equal(6, changed["settings"]["teamSize"].GetValue<int>(), "a regra nova chega ao convidado");
 
-			await host.Say(Msg("room.settings", ("settings", Settings(teamSize: 5))));
-			Check.Equal("regras_invalidas", (await host.Hear("error"))["code"].GetValue<string>(), "time de 5 não existe");
+			await host.Say(Msg("room.settings", ("settings", Settings(teamSize: 7))));
+			Check.Equal("regras_invalidas", (await host.Hear("error"))["code"].GetValue<string>(), "time de 7 não existe (de 1 a 6)");
 		}),
 
 		("sala: o dono sai e o próximo assume; o último sai e a sala some", async () =>

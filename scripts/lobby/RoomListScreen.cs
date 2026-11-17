@@ -109,7 +109,7 @@ public partial class RoomListScreen : LobbyScreen
 		HBoxContainer row = UiKit.Row(UiTokens.S3);
 
 		var modes = new List<string> { "Todos os modos" };
-		modes.AddRange(RoomSettings.ModeNames);
+		modes.AddRange(PlayModes.VersusBots.Select(m => m.Name));
 		OptionButton mode = UiKit.Picker(modes.ToArray(), _modeFilter, i => { _modeFilter = i; _page = 0; RenderRooms(); });
 		mode.CustomMinimumSize = new Vector2(170, UiTokens.FieldHeight);
 		mode.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
@@ -181,7 +181,7 @@ public partial class RoomListScreen : LobbyScreen
 	{
 		IEnumerable<RoomListing> rooms = RoomDirectory.Rooms;
 
-		if (_modeFilter > 0) rooms = rooms.Where(r => (int)r.Settings.Mode == _modeFilter - 1);
+		if (_modeFilter > 0) rooms = rooms.Where(r => r.Settings.Play == PlayModes.VersusBots[_modeFilter - 1].Mode);
 		if (_mapFilter > 0) rooms = rooms.Where(r => r.Settings.Map == Maps.All[_mapFilter - 1].Id);
 		if (_onlyFree) rooms = rooms.Where(r => r.EffectiveState == RoomState.Waiting);
 		if (_hidePlaying) rooms = rooms.Where(r => r.EffectiveState != RoomState.Playing);
@@ -295,12 +295,22 @@ public partial class RoomListScreen : LobbyScreen
 
 	// ------------------------------------------------------------------ ações
 
+	/// <summary>Criar sala: primeiro o modo (aqui, offline, só os contra
+	/// bots), depois a sala, onde o mestre ajusta o resto.</summary>
 	private void Create()
 	{
-		RoomSettings settings = Profile.LastRoom?.Clone() ?? new RoomSettings();
+		RoomSettings last = Profile.LastRoom?.Clone() ?? new RoomSettings();
+		PlayMode current = PlayModes.VsBots(last.Play) ? last.Play : PlayMode.BotsLivre;
+		ModePicker.Ask(Shell, "Escolha o modo de jogo", PlayModes.VersusBots, current, mode => CreateWith(last, mode));
+	}
+
+	private void CreateWith(RoomSettings settings, PlayMode mode)
+	{
 		if (string.IsNullOrWhiteSpace(settings.Title) || settings.Title == "Sala de treino")
 			settings.Title = $"Sala de {Profile.PlayerName}";
 		settings.Password = "";
+		settings.Play = mode;
+		settings.TeamSize = Mathf.Clamp(settings.TeamSize, 1, RoomSettings.MaxTeamSize);
 
 		RoomListing room = RoomDirectory.Create(settings);
 		RoomDirectory.Current = room;
@@ -314,7 +324,8 @@ public partial class RoomListScreen : LobbyScreen
 
 		if (room == null)
 		{
-			Create();
+			RoomSettings last = Profile.LastRoom?.Clone() ?? new RoomSettings();
+			CreateWith(last, PlayModes.VsBots(last.Play) ? last.Play : PlayMode.BotsLivre);
 			return;
 		}
 

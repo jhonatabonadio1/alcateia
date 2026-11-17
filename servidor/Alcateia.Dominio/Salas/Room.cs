@@ -58,7 +58,15 @@ public sealed class Room
 	public IReadOnlyList<RoomMember> Members => _members;
 	public IReadOnlyList<BotSeat> Bots => _bots;
 
-	public int TeamSize => Settings["teamSize"]?.GetValue<int>() ?? 8;
+	public int TeamSize => Settings["teamSize"]?.GetValue<int>() ?? 6;
+
+	/// <summary>O modo de jogo é contra bots ("play" de 4 em diante, a
+	/// ordem de PlayMode no jogo): os jogadores ficam todos no azul, e os
+	/// bots completam os dois times na escalação.</summary>
+	public bool VsBots => (Settings["play"]?.GetValue<int>() ?? 0) >= FirstBotMode;
+	public const int FirstBotMode = 4;
+	public const int LastMode = 8;
+	public const int MaxTeamSize = 6;
 	public int Capacity => TeamSize * 2;
 	public bool HasPassword => Password != "";
 	public bool IsEmpty => _members.Count == 0;
@@ -95,7 +103,8 @@ public sealed class Room
 			throw new Failure(FailureKind.Forbidden, "senha_errada", "Senha da sala incorreta.");
 
 		int blue = _members.Count(m => m.Team == Blue), orange = _members.Count(m => m.Team == Orange);
-		int team = blue <= orange ? Blue : Orange;
+		int team = VsBots || blue <= orange ? Blue : Orange;
+		if (VsBots && blue >= TeamSize) throw new Failure(FailureKind.Conflict, "sala_cheia", "O time dos jogadores está cheio.");
 		MakeRoom(team);
 		_members.Add(new RoomMember { Account = account, Xp = xp, Team = team });
 	}
@@ -113,6 +122,7 @@ public sealed class Room
 		RoomMember seat = Seat(accountId);
 		if (team is not (Blue or Orange)) throw new Failure(FailureKind.Invalid, "time_invalido", "Time inválido.");
 		RequireWaiting("A sala está em partida.");
+		if (VsBots && team != Blue) throw new Failure(FailureKind.Conflict, "time_de_bots", "Contra bots, os jogadores ficam no azul.");
 		if (_members.Count(m => m.Team == team && m != seat) >= TeamSize)
 			throw new Failure(FailureKind.Conflict, "time_cheio", "Esse time está cheio.");
 
@@ -164,13 +174,29 @@ public sealed class Room
 		if (_members.Any(m => !m.Ready && m.Account.Id != HostId))
 			throw new Failure(FailureKind.Conflict, "nem_todos_prontos", "Nem todos estão prontos.");
 
+		// Contra bots, a escalação completa os dois times: o laranja inteiro
+		// e as vagas do azul. Esses bots são só da partida, não da sala.
+		var bots = _bots.ToList();
+		if (VsBots)
+		{
+			long next = _nextBot;
+			foreach (int team in new[] { Blue, Orange })
+			{
+				while (_members.Count(m => m.Team == team) + bots.Count(b => b.Team == team) < TeamSize)
+				{
+					string name = BotNames.FirstOrDefault(n => bots.All(b => b.Name != n)) ?? $"Bot {-next}";
+					bots.Add(new BotSeat { Id = next--, Name = name, Team = team });
+				}
+			}
+		}
+
 		return new MatchAssignment
 		{
 			MatchKey = matchKey,
 			RoomId = Id,
 			Settings = (JsonObject)Settings.DeepClone(),
 			Players = _members.Select(m => new MatchSeat(m.Account.Id, m.Account.Name, m.Team))
-				.Concat(_bots.Select(b => new MatchSeat(b.Id, b.Name, b.Team, HostId))).ToList()
+				.Concat(bots.Select(b => new MatchSeat(b.Id, b.Name, b.Team, HostId))).ToList()
 		};
 	}
 
@@ -234,10 +260,23 @@ public sealed class Room
 		if (title.Length > MaxTitle) title = title[..MaxTitle];
 		s["title"] = title;
 
-		int teamSize = s["teamSize"]?.GetValue<int>() ?? 8;
-		if (teamSize is not (4 or 6 or 8)) throw new Failure(FailureKind.Invalid, "regras_invalidas", "Times de 4, 6 ou 8.");
+		// Times de 1 a 6 jogadores (decisão do Jhon, 17/11).
+		int teamSize = s["teamSize"]?.GetValue<int>() ?? 6;
+		if (teamSize is < 1 or > MaxTeamSize) throw new Failure(FailureKind.Invalid, "regras_invalidas", "Times de 1 a 6.");
 		if (_members.Count > teamSize * 2) throw new Failure(FailureKind.Conflict, "regras_invalidas", "Há mais gente na sala do que cabe nesses times.");
 		s["teamSize"] = teamSize;
+
+		// O modo de jogo (PlayMode no jogo). Contra bots, todos os jogadores
+		// vão para o azul — se couberem.
+		int play = s["play"]?.GetValue<int>() ?? 0;
+		if (play is < 0 or > LastMode) throw new Failure(FailureKind.Invalid, "regras_invalidas", "Modo de jogo inválido.");
+		s["play"] = play;
+		if (play >= FirstBotMode)
+		{
+			if (_members.Count > teamSize) throw new Failure(FailureKind.Conflict, "regras_invalidas", "Contra bots, todos os jogadores ficam no azul: não cabem nesse time.");
+			foreach (RoomMember m in _members) m.Team = Blue;
+			_bots.Clear();
+		}
 
 		// Time menor: os bots que não cabem mais saem.
 		foreach (int team in new[] { Blue, Orange })

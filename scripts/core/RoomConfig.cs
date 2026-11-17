@@ -3,7 +3,6 @@ using System.Linq;
 
 public enum GameMode { Equipe, MataMata, Dominacao, Cacada, Sobrevivencia }
 public enum WeaponRule { Todas, SemPesadas, SoPistolas, SoFaca }
-public enum TransformRule { Livre, Bloqueada, Obrigatoria, UmLado }
 
 /// <summary>
 /// As regras de uma sala — o formulário do painel direito da tela de
@@ -20,13 +19,22 @@ public sealed class RoomSettings
 	public string Title { get; set; } = "Sala de treino";
 	public string Password { get; set; } = "";
 	public GameMode Mode { get; set; } = GameMode.Equipe;
-	/// <summary>Jogadores por time: 4, 6 ou 8.</summary>
-	public int TeamSize { get; set; } = 8;
+
+	/// <summary>O modo de jogo (<see cref="PlayModes"/>): contra quem e em
+	/// que forma cada time joga. Escolhido antes de criar a sala.</summary>
+	public PlayMode Play { get; set; } = PlayMode.Livre;
+
+	/// <summary>Jogadores por time, de 1 a 6 (decisão do Jhon, 17/11): o
+	/// mestre escolhe ao criar a sala e pode mudar dentro dela.</summary>
+	public int TeamSize { get; set; } = 6;
+
+	/// <summary>Os tamanhos de time que se pode escolher.</summary>
+	public static readonly int[] TeamSizes = { 1, 2, 3, 4, 5, 6 };
+	public const int MaxTeamSize = 6;
 	public string Map { get; set; } = "armazem";
 	public int ScoreToWin { get; set; } = 40;
 	public int Minutes { get; set; } = 10;
 	public WeaponRule Weapons { get; set; } = WeaponRule.Todas;
-	public TransformRule Transform { get; set; } = TransformRule.Livre;
 	public int MinRank { get; set; }
 	public int MaxRank { get; set; } = Ranks.Count - 1;
 	public bool FriendlyFire { get; set; }
@@ -43,13 +51,11 @@ public sealed class RoomSettings
 	/// <summary>A dificuldade dos bots, na ordem de <see cref="BotLevel"/>.</summary>
 	public static readonly string[] DifficultyNames = { "Fáceis", "Médios", "Difíceis" };
 	public static readonly string[] WeaponNames = { "Todas", "Sem pesadas", "Só pistolas", "Só faca" };
-	public static readonly string[] TransformNames = { "Livre", "Bloqueada", "Obrigatória", "Só um lado" };
 
 	/// <summary>O que já existe de jogo para cada opção. O resto aparece
 	/// desabilitado na interface, com "em breve".</summary>
 	public static bool ModeAvailable(GameMode m) => m == GameMode.Equipe;
 	public static bool WeaponsAvailable(WeaponRule w) => w != WeaponRule.SoFaca;
-	public static bool TransformAvailable(TransformRule t) => t is TransformRule.Livre or TransformRule.Bloqueada;
 
 	public static string ModeName(GameMode m) => ModeNames[(int)m];
 }
@@ -121,6 +127,25 @@ public static class RoomConfig
 		yield return ("Lâmina", Teams.Orange);
 		yield return ("Sombra", Teams.Orange);
 		yield return ("Ferrugem", Teams.Orange);
+	}
+
+	/// <summary>
+	/// Nos modos contra bots, completa a escalação: o laranja inteiro de
+	/// bots e as vagas que sobram no azul (o time dos jogadores) também.
+	/// Quem completa é a partida, não o mestre — não há botão de pôr bot.
+	/// Nos modos contra jogadores não entra bot nenhum.
+	/// </summary>
+	public static void FillBots(List<RoomMember> members, RoomSettings rules)
+	{
+		if (!PlayModes.VsBots(rules.Play)) return;
+		foreach (int team in new[] { Teams.Blue, Teams.Orange })
+		{
+			while (members.Count(m => m.Team == team) < rules.TeamSize)
+			{
+				string name = BotNames.FirstOrDefault(n => members.All(m => m.Name != n)) ?? $"Bot {members.Count + 1}";
+				members.Add(new RoomMember { Name = name, Team = team, IsBot = true, Ready = true, Rank = Ranks.None });
+			}
+		}
 	}
 
 	/// <summary>Nomes de bot, na ordem em que entram na sala.</summary>

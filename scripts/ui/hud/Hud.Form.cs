@@ -51,7 +51,7 @@ public partial class Hud
 	{
 		if (_shiftBar == null) return;
 
-		bool blocked = RoomConfig.Rules.Transform == TransformRule.Bloqueada;
+		bool blocked = _form.Rule != FormRule.Livre;
 
 		if (_form.IsShifting)
 		{
@@ -74,7 +74,14 @@ public partial class Hud
 
 		_shiftBar.Value = blocked ? 0 : 1;
 
-		if (_form.IsWolf)
+		if (_form.IsWolf && _form.Rule == FormRule.Lobo)
+		{
+			_shiftKey.Text = "3";
+			_shiftText.Text = "LOBO";
+			_shiftState.Text = "A PARTIDA TODA NESTE MODO";
+			_shiftState.AddThemeColorOverride("font_color", UiTokens.TextSecondary);
+		}
+		else if (_form.IsWolf)
 		{
 			_shiftKey.Text = "1";
 			_shiftText.Text = "VOLTAR A HUMANO";
@@ -85,14 +92,14 @@ public partial class Hud
 		{
 			_shiftKey.Text = "3";
 			_shiftText.Text = "VIRAR LOBO";
-			_shiftState.Text = blocked ? "BLOQUEADO NESTA SALA" : "PRONTO";
+			_shiftState.Text = blocked ? "BLOQUEADO NESTE MODO" : "PRONTO";
 			_shiftState.AddThemeColorOverride("font_color", blocked ? UiTokens.TextDisabled : UiTokens.Success);
 		}
 	}
 
 	private void OnTransformDenied(float missing)
 	{
-		if (missing < 0) Warn("Lobo bloqueado nesta sala", 1.6f, UiTokens.TextSecondary);
+		if (missing < 0) Warn(_form.Rule == FormRule.Lobo ? "Neste modo você é lobo a partida toda" : "Lobo bloqueado neste modo", 1.6f, UiTokens.TextSecondary);
 		else Warn($"Faltam {missing:0} WP para transformar");
 	}
 }

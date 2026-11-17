@@ -223,10 +223,25 @@ grava o `.glb` e o `.json` (colisão, luzes, vidros). A casca do galpão
 contêiner é um túnel de quatro caixas. O segundo monta a cena. Os pontos
 de nascimento estão escritos no topo de `tools/mapas/armazem.py`.
 
+### A foto do mapa
+
+Cada mapa tem uma foto (1920 × 1080) tirada no próprio jogo, de um bom
+ângulo, para a escolha do mapa, a sala e a tela de carregamento
+(`MapInfo.Cover`, `assets/ui/mapas/<id>_foto.jpg`):
+
+```sh
+godot --path . -s tools/fotos_mapas.gd            # todos
+godot --path . -s tools/fotos_mapas.gd -- armazem # um só
+```
+
+O ângulo de cada mapa (de onde a câmera olha e para onde) está em
+`FOTOS`, no topo do script. A do Armazém que está no projeto foi
+renderizada no Blender, do mesmo ângulo, até ser tirada no Godot.
+
 ### Mapa novo
 
 1. Copie um arquivo de `tools/mapas/`, mude o id e monte o seu.
-2. Registre em `tools/gerar_mapas.py` e em `scripts/meta/Maps.cs`.
+2. Registre em `tools/gerar_mapas.py` e em `scripts/meta/Maps.cs` (com a `Cover`), e ponha o ângulo da foto em `tools/fotos_mapas.gd`.
 3. Acrescente um teste em `tests/regression/MapTests.cs` (três linhas).
 4. `python3 tools/mapas/conferir.py <id>` (faces brigando, letreiro mal assentado, objeto no ar), `python3 tools/gerar_mapas.py <id>` e `tools/testar.sh Mapa`.
 

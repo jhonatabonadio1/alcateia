@@ -61,6 +61,10 @@ public partial class Match : Node
 	[Signal] public delegate void PhaseChangedEventHandler(int phase);
 	[Signal] public delegate void ScoreChangedEventHandler(int blue, int orange);
 
+	/// <summary>Passou a metade do tempo. No Humanos × Lobos é quando os
+	/// papéis trocam (<see cref="PlayModes.RuleFor"/>).</summary>
+	[Signal] public delegate void HalfTimeEventHandler();
+
 	public const int PointsPerKill = 10;
 	public const int PointsPerAssist = 5;
 
@@ -81,6 +85,11 @@ public partial class Match : Node
 	/// <summary>Pode-se andar e atirar? Verdadeiro também quando não
 	/// há partida nenhuma na cena.</summary>
 	public static bool IsLive => Current == null || Current.Phase == MatchPhase.Live;
+
+	/// <summary>Já passou da metade do tempo da partida em curso.</summary>
+	public static bool SecondHalf => Current != null && Current.Phase != MatchPhase.Countdown
+		&& Current.TimeLeft <= Current.Duration / 2.0;
+	private bool _halfAnnounced;
 
 	public MatchPhase Phase { get; private set; } = MatchPhase.Countdown;
 	public double CountdownLeft { get; private set; }
@@ -181,6 +190,12 @@ public partial class Match : Node
 
 	public override void _Process(double delta)
 	{
+		if (!_halfAnnounced && SecondHalf && Current == this && Phase == MatchPhase.Live)
+		{
+			_halfAnnounced = true;
+			EmitSignal(SignalName.HalfTime);
+		}
+
 		// A lista sai no primeiro quadro e é refeita durante a contagem:
 		// os bots nascem no _Ready do MatchSetup, e confiar que isso
 		// acontece antes do primeiro quadro daqui seria apostar na ordem
@@ -207,6 +222,8 @@ public partial class Match : Node
 		switch (Phase)
 		{
 			case MatchPhase.Countdown:
+				// A contagem só anda depois da tela de carregamento.
+				if (LoadingScreen.Busy) break;
 				CountdownLeft -= delta;
 				if (CountdownLeft <= 0)
 				{

@@ -64,12 +64,8 @@ public static class RoomDirectory
 			Rank = Profile.Rank
 		});
 
-		// Começa com metade dos lugares ocupada por bots, equilibrada —
-		// ninguém quer criar sala e ter de adicionar oito bots à mão.
-		int perTeam = Mathf.Max(settings.TeamSize / 2, 2);
-		AddBots(room, Teams.Blue, perTeam - 1);
-		AddBots(room, Teams.Orange, perTeam);
-
+		// Sem bots na sala: nos modos contra bots é a partida que completa
+		// os times (RoomConfig.FillBots), e não há botão de pôr bot.
 		_rooms.Insert(0, room);
 		return room;
 	}
@@ -83,7 +79,8 @@ public static class RoomDirectory
 
 		int blue = room.Members.Count(m => m.Team == Teams.Blue);
 		int orange = room.Members.Count(m => m.Team == Teams.Orange);
-		int team = blue <= orange ? Teams.Blue : Teams.Orange;
+		// Contra bots, os jogadores ficam todos no azul.
+		int team = PlayModes.VsBots(room.Settings.Play) || blue <= orange ? Teams.Blue : Teams.Orange;
 
 		// Sala cheia: o jogador toma o lugar de um bot do time.
 		if (room.Occupancy >= room.Capacity)

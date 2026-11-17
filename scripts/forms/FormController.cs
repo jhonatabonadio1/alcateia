@@ -131,17 +131,39 @@ public partial class FormController : Node
 
 		// Renasce sempre humano (decisão do Jhon): o lobo é pago com WP e
 		// morre com o corpo. Conectado antes do Player e do Bot (o filho
-		// fica pronto primeiro), então eles já veem a forma humana.
+		// fica pronto primeiro), então eles já veem a forma certa. A exceção
+		// é o modo em que o time é lobo a partida toda: renasce lobo.
 		_health.Respawned += () =>
 		{
-			if (Current != Form.Human) Enter(Form.Human);
+			Form start = Rule == FormRule.Lobo && Breed != null ? Form.Wolf : Form.Human;
+			if (Current != start) Enter(start);
 		};
 
 		EmitSignal(SignalName.WpChanged, Wp, MaxWp);
 	}
 
+	/// <summary>A forma que o modo de jogo permite ao time deste corpo agora
+	/// (<see cref="PlayModes.Now"/>): livre, só humano ou só lobo.</summary>
+	public FormRule Rule => PlayModes.Now(_health?.Team ?? 0);
+
+	/// <summary>
+	/// Faz valer o modo de jogo: quem tem de ser lobo vira lobo na hora —
+	/// sem custo e sem transição, é como ele nasce — e quem não pode ser
+	/// lobo volta a humano. É o mesmo caminho para a largada, o renascer e
+	/// a troca de papéis na metade do Humanos × Lobos.
+	/// </summary>
+	private void EnforceRule()
+	{
+		if (_health == null || _health.IsDead || Breed == null) return;
+		FormRule rule = Rule;
+		if (rule == FormRule.Lobo && Current == Form.Human) Enter(Form.Wolf);
+		else if (rule == FormRule.Humano && Current == Form.Wolf) Enter(Form.Human);
+	}
+
 	public override void _Process(double delta)
 	{
+		EnforceRule();
+
 		if (Current != Form.ShiftingToWolf && Current != Form.ShiftingToHuman)
 			return;
 
@@ -168,9 +190,9 @@ public partial class FormController : Node
 		switch (Current)
 		{
 			case Form.Human:
-				// A sala pode proibir o lobo. Faltando −1 é o código de
+				// O modo pode proibir o lobo. Faltando −1 é o código de
 				// "bloqueado" para o HUD, que não é falta de WP.
-				if (RoomConfig.Rules.Transform == TransformRule.Bloqueada)
+				if (Rule == FormRule.Humano)
 				{
 					EmitSignal(SignalName.TransformDenied, -1f);
 					return;
@@ -193,6 +215,12 @@ public partial class FormController : Node
 				break;
 
 			case Form.Wolf:
+				// Modo em que o time é lobo a partida toda: não volta.
+				if (Rule == FormRule.Lobo)
+				{
+					EmitSignal(SignalName.TransformDenied, -1f);
+					return;
+				}
 				Enter(Form.ShiftingToHuman);
 				break;
 

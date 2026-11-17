@@ -33,16 +33,17 @@ from .kit import Mapa, AZUL, LARANJA
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 
-# Cada time nasce junto, num grupo de 4 × 2 com 1,5 m entre um e outro,
+# Cada time nasce junto, num grupo de 2 × 3 com 1,5 m entre um e outro,
 # no canto que o Jhon marcou na planta: o azul em −X/+Z, o laranja no
-# canto oposto (+X/−Z). Um ponto por jogador (8 contra 8). O grupo está
-# onde o chão é livre a 1,5 m em volta, até 2,6 m de altura (tirado do
-# .json). Mudou o .json? Confira (tools/testar.sh MapaArmazem).
+# canto oposto (+X/−Z). Um ponto por jogador: 6, o máximo de um time
+# (RoomSettings.MaxTeamSize). O grupo está onde o chão é livre a 1,5 m
+# em volta, até 2,6 m de altura (tirado do .json). Mudou o .json?
+# Confira (tools/testar.sh MapaArmazem).
 NASCER = {
-    AZUL: [(-18.75, 7.75), (-18.75, 9.25), (-18.75, 10.75), (-18.75, 12.25),
-           (-17.25, 7.75), (-17.25, 9.25), (-17.25, 10.75), (-17.25, 12.25)],
-    LARANJA: [(17.25, -12.25), (17.25, -10.75), (17.25, -9.25), (17.25, -7.75),
-              (18.75, -12.25), (18.75, -10.75), (18.75, -9.25), (18.75, -7.75)],
+    AZUL: [(-18.75, 8.5), (-18.75, 10.0), (-18.75, 11.5),
+           (-17.25, 8.5), (-17.25, 10.0), (-17.25, 11.5)],
+    LARANJA: [(17.25, -11.5), (17.25, -10.0), (17.25, -8.5),
+              (18.75, -11.5), (18.75, -10.0), (18.75, -8.5)],
 }
 ROTAS = {
     "sul": [(-18.1, -11.1), (-11.1, -11.1), (-5.1, -11.1), (-0.9, -11.6), (4.9, -11.1), (10.9, -11.1), (17.9, -11.1)],

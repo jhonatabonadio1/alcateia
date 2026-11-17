@@ -27,6 +27,9 @@ public struct BotContext
 	public float AmmoRatio;
 	public bool IsWolf;
 	public bool CanTransform;
+
+	/// <summary>O modo de jogo prende o time no lobo: não volta a humano.</summary>
+	public bool WolfLocked;
 	public bool MagEmpty;
 
 	/// <summary>Pente vazio e reserva da arma na mão também.</summary>
@@ -212,7 +215,7 @@ public static class BotBrain
 
 	private static float Revert(in BotContext c)
 	{
-		if (!c.IsWolf || c.OutOfAmmo) return 0f;
+		if (!c.IsWolf || c.OutOfAmmo || c.WolfLocked) return 0f;
 
 		// Alvo longe ou sumido: a garra não alcança, a arma sim.
 		float far = Utility.Normalize(c.Distance, 14f, 26f);

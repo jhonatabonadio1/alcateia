@@ -74,7 +74,7 @@ public static class OnlineMatch
 		Active = true;
 		Notice = null;
 		UiState.Reset();
-		tree.ChangeSceneToFile("res://scenes/main.tscn");
+		LoadingScreen.Open(tree);
 	}
 
 	/// <summary>Saiu da partida (acabou, desistiu ou caiu).</summary>
@@ -95,7 +95,7 @@ public static class OnlineMatch
 		["scoreToWin"] = s.ScoreToWin,
 		["minutes"] = s.Minutes,
 		["weapons"] = (int)s.Weapons,
-		["transform"] = (int)s.Transform,
+		["play"] = (int)s.Play,
 		["friendlyFire"] = s.FriendlyFire,
 		["difficulty"] = (int)s.Difficulty
 	};
@@ -113,9 +113,9 @@ public static class OnlineMatch
 		s.Minutes = j["minutes"]?.GetValue<int>() ?? s.Minutes;
 		s.FriendlyFire = j["friendlyFire"]?.GetValue<bool>() ?? false;
 
-		int weapons = j["weapons"]?.GetValue<int>() ?? 0, transform = j["transform"]?.GetValue<int>() ?? 0;
+		int weapons = j["weapons"]?.GetValue<int>() ?? 0, play = j["play"]?.GetValue<int>() ?? 0;
 		if (System.Enum.IsDefined(typeof(WeaponRule), weapons)) s.Weapons = (WeaponRule)weapons;
-		if (System.Enum.IsDefined(typeof(TransformRule), transform)) s.Transform = (TransformRule)transform;
+		if (System.Enum.IsDefined(typeof(PlayMode), play)) s.Play = (PlayMode)play;
 
 		int difficulty = j["difficulty"]?.GetValue<int>() ?? (int)BotLevel.Medium;
 		if (System.Enum.IsDefined(typeof(BotLevel), difficulty)) s.Difficulty = (BotLevel)difficulty;

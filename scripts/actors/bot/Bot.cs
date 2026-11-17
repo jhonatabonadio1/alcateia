@@ -342,7 +342,8 @@ public partial class Bot : CharacterBody3D
 			OutOfAmmo = !_weapon.HasAmmoIn(Slot.Primary) && !_weapon.HasAmmoIn(Slot.Secondary),
 			IsWolf = _form.IsWolf,
 			CanTransform = !_form.IsWolf && _form.Breed != null
-				&& RoomConfig.Rules.Transform != TransformRule.Bloqueada,
+				&& _form.Rule == FormRule.Livre,
+			WolfLocked = _form.Rule == FormRule.Lobo,
 			ThreatAge = (float)_threatAge,
 			BeliefAge = (float)_beliefAge,
 			HasBelief = _hasBelief && _memoryTimer > 0,
@@ -440,7 +441,7 @@ public partial class Bot : CharacterBody3D
 		GlobalPosition = SpawnPoints.Pick(this, _spawn);
 		Velocity = Vector3.Zero;
 
-		if (_form.IsWolf)
+		if (_form.IsWolf && _form.Rule != FormRule.Lobo)
 			_weapon.SelectSlot(Slot.Primary);
 	}
 

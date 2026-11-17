@@ -71,12 +71,12 @@ public partial class RoomRow : PanelContainer
 		titleBox.AddChild(sub);
 		row.AddChild(titleBox);
 
-		row.AddChild(UiKit.Chip(RoomSettings.ModeName(s.Mode), UiTokens.TextSecondary));
+		row.AddChild(UiKit.Chip(PlayModes.Of(s.Play).Name, UiTokens.TextSecondary));
 
 		row.AddChild(MapThumb(s.Map));
 		row.AddChild(Occupancy());
 
-		row.AddChild(TransformIcon(s.Transform));
+		row.AddChild(ModeIcon(s.Play));
 
 		if (s.MinRank > 0 || s.MaxRank < Ranks.Count - 1)
 		{
@@ -152,7 +152,7 @@ public partial class RoomRow : PanelContainer
 		box.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 		box.TooltipText = map.Name;
 
-		TextureRect thumb = UiKit.Thumbnail(map.Thumbnail, new Vector2(56, 30));
+		TextureRect thumb = UiKit.Thumbnail(map.Picture, new Vector2(56, 30));
 		thumb.MouseFilter = MouseFilterEnum.Ignore;
 		box.AddChild(thumb);
 		return box;
@@ -183,16 +183,10 @@ public partial class RoomRow : PanelContainer
 		return box;
 	}
 
-	public static Control TransformIcon(TransformRule rule)
+	public static Control ModeIcon(PlayMode mode)
 	{
-		(IconKind icon, Color color, string tip) = rule switch
-		{
-			TransformRule.Bloqueada => (IconKind.Human, UiTokens.TextSecondary, "Lobo bloqueado: só humanos"),
-			TransformRule.Obrigatoria => (IconKind.Wolf, UiTokens.Danger, "Só lobo"),
-			TransformRule.UmLado => (IconKind.Wolf, UiTokens.Warning, "Um time só de lobos"),
-			_ => (IconKind.Wolf, UiTokens.Accent, "Lobo liberado")
-		};
-
+		PlayModes.Info info = PlayModes.Of(mode);
+		(IconKind icon, Color color, string tip) = (info.Icon, info.VsBots ? UiTokens.TextSecondary : UiTokens.Accent, $"{info.Name}: {info.Line}");
 		Icon glyph = Icon.Make(icon, 18, color);
 		glyph.TooltipText = tip;
 		glyph.MouseFilter = MouseFilterEnum.Pass;
