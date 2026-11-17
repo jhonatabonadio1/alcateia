@@ -2,6 +2,13 @@
 
 ## Não lançado
 
+### Barra de vida verde e vermelha, Armazém menos escuro (17/11)
+- A barra de vida sobre os personagens é verde no aliado e vermelha no
+  inimigo, sempre, para quem olha (`HealthBar3D`); antes era a cor do
+  time. A cor do time segue no corpo e no placar.
+- Armazém: a sombra estava preta (ambiente 0,25). Ambiente 0,6,
+  exposição 1,3, contraste 1,02, luz rebatida 1,5 e focos mais fortes.
+
 ### Lobos fechados por baixo da armadura, e ajustes (17/11)
 - `lobo_azul.glb` e `lobo_vermelho.glb`: o forro (a pele inteira, uns
   milímetros para dentro, na cor do pelo) agora existe sob TODA peça —

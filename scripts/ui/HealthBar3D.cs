@@ -19,12 +19,19 @@ public partial class HealthBar3D : Node3D
 	[Export] public float VisibleRange = 45f;
 
 	[Export] public Color BackColor = new Color(0.05f, 0.05f, 0.06f, 0.75f);
+	/// <summary>Inimigo: sempre vermelha.</summary>
 	[Export] public Color HpColor = new Color(0.9f, 0.2f, 0.15f);
+
+	/// <summary>Aliado: sempre verde.</summary>
+	[Export] public Color AllyColor = new Color(0.25f, 0.85f, 0.35f);
 	[Export] public Color ShieldColor = new Color(1f, 0.55f, 0.15f);
 
 	private Health _health;
 	private MeshInstance3D _hpFill;
 	private MeshInstance3D _shieldFill;
+	private StandardMaterial3D _hpMaterial;
+	private int _shownAlly = -1;
+	private double _colorCheck;
 
 	public override void _Ready()
 	{
@@ -32,13 +39,13 @@ public partial class HealthBar3D : Node3D
 
 		Position = new Vector3(0, HeightAbove, 0);
 
-		// Na cor do time, aliado ou inimigo. A barra é a segunda coisa
-		// que se lê num encontro, depois da cor do corpo, e as duas
-		// precisam dizer a mesma coisa.
-		Color hp = Teams.ColorOf(_health.Team);
-
+		// Verde no aliado, vermelha no inimigo, sempre (decisão do Jhon,
+		// 17/11) — para quem olha, seja qual for o time dele. A cor do
+		// time (azul, laranja) continua no corpo e no placar.
 		Make(BackColor, Width, Height, 0f, out _);
-		Make(hp, Width, Height, 0.001f, out _hpFill);
+		Make(HpColor, Width, Height, 0.001f, out _hpFill);
+		_hpMaterial = (StandardMaterial3D)_hpFill.MaterialOverride;
+		UpdateColor();
 		Make(ShieldColor, Width, Height * 0.55f, 0.002f, out _shieldFill);
 
 		_shieldFill.Position = new Vector3(0, -Height * 0.85f, 0.002f);
@@ -47,8 +54,34 @@ public partial class HealthBar3D : Node3D
 		OnChanged(_health.Hp, _health.MaxHp, _health.Shield);
 	}
 
+	/// <summary>O time de quem está jogando nesta máquina: o do jogador
+	/// local na cena; sem ele (ainda), o da sala.</summary>
+	private int LocalTeam()
+	{
+		foreach (Node node in GetTree().GetNodesInGroup(Groups.Players))
+			if (node is Player player && player.GetNodeOrNull<Health>("Health") is Health health)
+				return health.Team;
+		return RoomConfig.PlayerTeam;
+	}
+
+	private void UpdateColor()
+	{
+		int ally = _health.Team == LocalTeam() ? 1 : 0;
+		if (ally == _shownAlly) return;
+		_shownAlly = ally;
+		_hpMaterial.AlbedoColor = ally == 1 ? AllyColor : HpColor;
+	}
+
 	public override void _Process(double delta)
 	{
+		// O jogador local pode nascer depois da barra: confere de vez em quando.
+		_colorCheck -= delta;
+		if (_colorCheck <= 0)
+		{
+			_colorCheck = 0.5;
+			UpdateColor();
+		}
+
 		Camera3D camera = GetViewport().GetCamera3D();
 
 		Visible = camera != null

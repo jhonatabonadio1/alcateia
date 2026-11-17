@@ -112,7 +112,7 @@ def montar():
     tom = {"refletor": ((1.0, 0.86, 0.62), 1.0, 7), "arandela": ((1.0, 0.78, 0.5), 0.7, 4)}
     for i, l in enumerate(dados["luzes"], 1):
         if l["tipo"] == "teto":
-            m.foco("Luzes", f"Luz{i}", tuple(l["pos"]), (1.0, 0.92, 0.80), 5.0, 12, angulo=62)
+            m.foco("Luzes", f"Luz{i}", tuple(l["pos"]), (1.0, 0.92, 0.80), 6.0, 14, angulo=66)
         else:
             cor_, energia, alcance = tom[l["tipo"]]
             m.luz("Luzes", f"Luz{i}", tuple(l["pos"]), cor_, energia, alcance)
@@ -129,12 +129,14 @@ def montar():
     # Perto da foto do mapa: a luz do sol e das luminárias rebate na parede
     # cor de areia e no chão (SDFGI) e esquenta o galpão; o ambiente plano
     # fica baixo, para haver contraste e sombra. AgX é o mapeamento de cor
-    # da foto; a névoa fraca mostra o raio de sol das claraboias.
+    # da foto; a névoa fraca mostra o raio de sol das claraboias. O
+    # ambiente a 0,25 deixava a sombra preta (dentro dos contêineres não se
+    # via nada, print do Jhon de 17/11): 0,6, com a exposição mais alta.
     m.ambiente = dict(ceu=dict(topo=(0.36, 0.52, 0.78), horizonte=(0.72, 0.78, 0.86), chao=(0.25, 0.24, 0.23),
                                energia=1.0),
-                      luz=(0.80, 0.84, 0.95), luz_energia=0.25, exposicao=1.0, brilho=0.35,
-                      contraste=1.08, saturacao=1.12, agx=True,
-                      sdfgi=dict(energia=1.2, rebote=0.6, celula=0.2), ssil=0.9,
+                      luz=(0.84, 0.87, 0.96), luz_energia=0.6, exposicao=1.3, brilho=0.35,
+                      contraste=1.02, saturacao=1.12, agx=True,
+                      sdfgi=dict(energia=1.5, rebote=0.6, celula=0.2), ssil=0.9,
                       volumetrica=dict(densidade=0.006, cor=(1.0, 0.95, 0.88), anisotropia=0.55, alcance=48))
     m.sol = dict(yaw=28, queda=52, cor=(1.0, 0.88, 0.70), energia=2.4, alcance=60)
     return m
