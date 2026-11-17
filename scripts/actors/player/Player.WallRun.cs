@@ -96,16 +96,40 @@ public partial class Player
 	[Export] public float WallJumpKeepSpeed = 0.8f;
 
 	/// <summary>
-	/// Impede regrudar na MESMA parede mais alto do que de onde saltou,
-	/// sem tocar o chão, e libera saltar para outra. Sem isso a parede
-	/// vira elevador; com isso demais, o lobo não consegue encadear
-	/// paredes opostas. Na mesma parede ele gruda de novo quando desce
-	/// até a altura do salto (pedido do Jhon, 14/11: saltar olhando para
-	/// a parede e voltar fazia ele escorregar até o chão).
+	/// **Só gruda numa parede diferente** da última (decisão do Jhon,
+	/// 17/11): deixou uma parede — saltando ou soltando —, só volta a ela
+	/// depois de tocar o chão. É o que faz escalar de parede em parede:
+	/// cada salto leva a outra parede, e a mesma não vira elevador. Até
+	/// 17/11 a mesma parede valia de novo abaixo da altura do salto.
 	///
-	/// Duas normais acima desta semelhança contam como a mesma parede.
+	/// Duas normais acima desta semelhança, e a menos de
+	/// <see cref="SameWallGap"/> uma da outra, contam como a mesma parede.
 	/// </summary>
 	[Export] public float SameWallThreshold = 0.85f;
+
+	/// <summary>Duas paredes viradas para o mesmo lado contam como
+	/// diferentes se estão a mais que isto uma da outra, em metros: o
+	/// degrau de uma fachada, a parede de um contêiner à frente de outro.</summary>
+	[Export] public float SameWallGap = 0.8f;
+
+	/// <summary>
+	/// O salto da parede segue a câmera (pedido do Jhon, 17/11: mais
+	/// maleável, para subir em lugar alto). Olhando para a parede, ele
+	/// empurra pouco para fora e sobe mais; olhando para longe dela, sai
+	/// como antes; olhando ao longo dela, vai para esse lado. Fração do
+	/// empurrão para fora quando se olha reto para a parede.
+	/// </summary>
+	[Export] public float WallJumpPushFacing = 0.3f;
+
+	/// <summary>Quanto mais alto o salto da parede sai olhando para cima
+	/// (a 45° acima do horizonte, o máximo): 0,35 é 35% a mais.</summary>
+	[Export] public float WallJumpLookLift = 0.35f;
+
+	/// <summary>Quina de cima ao alcance: saltando da parede com o topo
+	/// dela até esta altura acima dos pés, o lobo sobe no topo em vez de
+	/// sair para fora — é como se chega no alto de um contêiner correndo
+	/// pela lateral dele.</summary>
+	[Export] public float WallMantleReach = 1.9f;
 
 	/// <summary>Tempo mínimo entre uma corrida e a seguinte.</summary>
 	[Export] public float WallRunCooldown = 0.12f;
@@ -266,10 +290,9 @@ public partial class Player
 		// Uma parede diferente é outra coisa — é a jogada de quicar
 		// entre as duas paredes de um corredor, e essa vale de qualquer
 		// altura.
-		if (_lastWall != Vector3.Zero && normal.Dot(_lastWall) > SameWallThreshold
-			&& GlobalPosition.Y > _lastWallHeight)
+		if (IsLastWall(normal))
 		{
-			WallLog("mesma parede, acima do salto — desça até onde saltou, salte para outra ou toque o chão");
+			WallLog("mesma parede — salte para outra ou toque o chão");
 			return false;
 		}
 
@@ -411,13 +434,33 @@ public partial class Player
 		// — justamente o oposto da jogada de cair em cima de alguém.
 		float carried = HumanSpeed * SpeedScale * WallRunSpeedBonus * WallJumpKeepSpeed;
 
-		Vector3 velocity = _wallAlong * carried + _wallNormal * WallJumpPush;
+		// Para onde a câmera olha, no chão e para cima.
+		Vector3 look = AimCamera is Camera3D aim ? -aim.GlobalBasis.Z : -GlobalBasis.Z;
+		float lookUp = Mathf.Clamp(look.Y / 0.7071f, 0f, 1f);
+		var flat = new Vector3(look.X, 0, look.Z);
+		flat = flat.LengthSquared() > 0.0001f ? flat.Normalized() : _wallAlong;
+		float facing = Mathf.Clamp(-flat.Dot(_wallNormal), 0f, 1f);   // 1 = olhando para a parede
+
+		// Ao longo da parede: o lado para onde se olha; olhando reto para
+		// ela, o sentido da corrida.
+		Vector3 along = flat - _wallNormal * flat.Dot(_wallNormal);
+		along = along.LengthSquared() > 0.04f ? along.Normalized() : _wallAlong;
+		float push = WallJumpPush * Mathf.Lerp(1f, WallJumpPushFacing, facing);
+		Vector3 velocity = along * carried + _wallNormal * push;
 
 		// Sai mais alto do que entrou. É o que permite escalar um
 		// corredor ricocheteando entre as duas paredes, e é essa
 		// subida que dá ao lobo o ângulo que as armas defendem mal:
-		// de cima e por trás.
-		velocity.Y = JumpVelocity * JumpScale * WallJumpClimb;
+		// de cima e por trás. Olhando para cima, mais.
+		velocity.Y = JumpVelocity * JumpScale * WallJumpClimb * (1f + WallJumpLookLift * lookUp);
+
+		// O topo da parede ao alcance: sobe nele.
+		if (MantleTop() is float rise)
+		{
+			velocity = along * (carried * 0.3f) - _wallNormal * 3.2f;
+			velocity.Y = Mathf.Sqrt(2f * _gravity * (rise + 0.45f));
+			WallLog($"subindo no topo, {rise:0.00} m acima dos pés");
+		}
 		IsJumpAirborne = true;
 		_jumpFromWall = true;
 		JumpSpeed = velocity.Y;
@@ -428,14 +471,46 @@ public partial class Player
 		_animator ??= GetNodeOrNull<CharacterAnimator>("Human");
 		_animator?.Jump();
 
-		_lastWall = _wallNormal;
-		_lastWallHeight = GlobalPosition.Y;
+		RememberWall();
 
 		ReleaseWall();
 		_wallCooldown = WallRunCooldown;
 
 		Velocity = velocity;
 		MoveAndSlide();
+	}
+
+	/// <summary>Quanto o topo da parede está acima dos pés, se dá para
+	/// subir nele saltando: chão firme logo atrás da quina, até
+	/// <see cref="WallMantleReach"/> acima, com espaço para o corpo em pé.
+	/// Null se a parede continua alta ou o topo não serve de chão.</summary>
+	private float? MantleTop()
+	{
+		var space = GetWorld3D().DirectSpaceState;
+		float feet = GlobalPosition.Y + FeetOffset;
+		Vector3 over = GlobalPosition - _wallNormal * (WallHoldDistance + 0.55f);
+		Vector3 from = new Vector3(over.X, feet + WallMantleReach + 0.3f, over.Z);
+
+		var query = PhysicsRayQueryParameters3D.Create(from, new Vector3(from.X, feet - 0.1f, from.Z));
+		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		// Começando dentro de algo (muro mais alto que o alcance, o
+		// contêiner de cima de uma pilha), o raio para ali, sem normal:
+		// não é topo.
+		query.HitFromInside = true;
+		var hit = space.IntersectRay(query);
+		if (hit.Count == 0 || hit["collider"].Obj is CharacterBody3D) return null;
+		if (((Vector3)hit["normal"]).Y < 0.7f) return null;
+
+		float rise = ((Vector3)hit["position"]).Y - feet;
+		if (rise < 0.3f || rise > WallMantleReach) return null;
+
+		// Espaço em pé em cima.
+		Vector3 top = (Vector3)hit["position"];
+		var head = PhysicsRayQueryParameters3D.Create(top + Vector3.Up * 0.05f, top + Vector3.Up * (StandHeight - 0.1f));
+		head.Exclude = query.Exclude;
+		if (space.IntersectRay(head).Count > 0) return null;
+
+		return rise;
 	}
 
 	/// <summary>Falso: o caminho está fechado à frente e soltou.</summary>
@@ -511,8 +586,28 @@ public partial class Player
 		GD.Print($"parede: {message}");
 	}
 
+	/// <summary>É a parede que o lobo acabou de deixar? Mesma direção e
+	/// mesmo plano (o corpo estava à mesma distância dela).</summary>
+	private bool IsLastWall(Vector3 normal)
+	{
+		if (_lastWall == Vector3.Zero || normal.Dot(_lastWall) <= SameWallThreshold) return false;
+		return Mathf.Abs(_lastWall.Dot(GlobalPosition) - _lastWallPlane) < SameWallGap;
+	}
+
+	/// <summary>Lembra a parede deixada agora: só uma outra vale até tocar
+	/// o chão.</summary>
+	private void RememberWall()
+	{
+		_lastWall = _wallNormal;
+		_lastWallHeight = GlobalPosition.Y;
+		_lastWallPlane = _wallNormal.Dot(GlobalPosition);
+	}
+
+	private float _lastWallPlane;
+
 	private void ReleaseWall()
 	{
+		if (_onWall && !IsOnFloor()) RememberWall();
 		_onWall = false;
 		_cornerGrace = 0;
 		_rounding = false;

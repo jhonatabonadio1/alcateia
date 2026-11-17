@@ -14,7 +14,7 @@ public sealed class WolfMoveMotor
 	/// <summary>Teto da velocidade no voo do salto: o corpo vai ao ponto
 	/// do arco no quadro seguinte, mas nunca rápido a ponto de atravessar
 	/// parede.</summary>
-	public const float MaxFlightSpeed = 28f;
+	public const float MaxFlightSpeed = 45f;
 
 	private readonly CharacterBody3D _body;
 	private readonly Weapon _weapon;

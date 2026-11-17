@@ -8,9 +8,13 @@ using Godot;
 /// cima desenharia o chão, as sombras e a iluminação, e nada disso
 /// ajuda a ler posição. Um minimapa é um diagrama, não uma foto.
 ///
-/// Gira com o jogador — o que está em cima do mapa é o que está à
-/// frente. Minimapa fixo obriga o jogador a traduzir mentalmente
-/// enquanto corre, e ninguém faz isso no meio de um tiroteio.
+/// **Fixo e cheio (decisão do Jhon, 17/11):** o norte do mapa fica para
+/// cima, quem gira é a seta do jogador, e o mapa ocupa o quadrado
+/// inteiro. A janela tem o lado menor do mapa (32 m no Armazém), segue o
+/// jogador e para na borda do mapa — perto de um canto a seta sai do
+/// centro, mas o quadrado nunca fica vazio. Antes ele girava com o
+/// jogador centrado, e no canto de nascer três quartos do quadrado eram
+/// fundo. <see cref="Rotate"/> volta ao jeito antigo.
 ///
 /// Só mostra quem está dentro do alcance. Saber onde está todo mundo
 /// o tempo todo destruiria a razão de existir do agachar, do andar
@@ -18,7 +22,13 @@ using Godot;
 /// </summary>
 public partial class Minimap : Control
 {
+	/// <summary>Até onde se vê os outros, em metros a partir do
+	/// jogador. No modo girando, também é meio lado do quadrado.</summary>
 	[Export] public float Range = 30f;
+
+	/// <summary>O jeito antigo: o mundo gira em volta do jogador, que fica
+	/// no centro apontando para cima.</summary>
+	[Export] public bool Rotate = false;
 
 	/// <summary>Lado do quadrado, em pixels.</summary>
 	[Export] public float Side = 168f;
@@ -49,6 +59,15 @@ public partial class Minimap : Control
 	}
 
 	private readonly System.Collections.Generic.List<Piece> _pieces = new();
+
+	/// <summary>O retângulo do mapa visto de cima (x, z), das peças lidas.</summary>
+	private Rect2 _bounds;
+
+	// A janela deste quadro: o ponto do mundo no centro do quadrado, meio
+	// lado em metros e o giro.
+	private Vector2 _viewCenter;
+	private float _viewHalf = 30f;
+	private float _viewYaw;
 	private readonly System.Collections.Generic.List<(Vector3 Position, string Text, Color Color)> _marks = new();
 	private bool _scanned;
 
@@ -101,6 +120,15 @@ public partial class Minimap : Control
 		// Mais baixo primeiro: o telhado pinta por cima do que está
 		// embaixo dele, como visto do alto.
 		_pieces.Sort((a, b) => a.Top.CompareTo(b.Top));
+
+		bool first = true;
+		foreach (Piece piece in _pieces)
+			foreach (Vector3 c in piece.Corners)
+			{
+				var at = new Vector2(c.X, c.Z);
+				_bounds = first ? new Rect2(at, Vector2.Zero) : _bounds.Expand(at);
+				first = false;
+			}
 	}
 
 	private void Collect(Node node)
@@ -178,57 +206,76 @@ public partial class Minimap : Control
 	{
 		if (_player == null) return;
 
-		var center = new Vector2(Side * 0.5f, Side * 0.5f);
 		var frame = new Rect2(Vector2.Zero, new Vector2(Side, Side));
 
 		DrawRect(frame, BackColor);
 		DrawRect(frame, EdgeColor, false, 1.5f);
 
-		// Cruz discreta nos eixos: dá referência de distância sem
-		// competir com os pontos.
+		var me = new Vector2(_player.GlobalPosition.X, _player.GlobalPosition.Z);
+		if (Rotate || _bounds.Size.X < 1f || _bounds.Size.Y < 1f)
+		{
+			// O mundo é girado pelo inverso do olhar: o que está à frente
+			// sobe na tela.
+			_viewCenter = me;
+			_viewHalf = Range;
+			_viewYaw = _player.Rotation.Y;
+		}
+		else
+		{
+			// O lado menor do mapa enche o quadrado; a janela segue o
+			// jogador e para na borda.
+			_viewHalf = Mathf.Min(Mathf.Min(_bounds.Size.X, _bounds.Size.Y) * 0.5f, Range);
+			_viewCenter = new Vector2(Follow(me.X, _bounds.Position.X, _bounds.End.X),
+				Follow(me.Y, _bounds.Position.Y, _bounds.End.Y));
+			_viewYaw = 0f;
+		}
+
+		// Cruz discreta passando pelo jogador: dá referência sem competir
+		// com os pontos.
+		Vector2 self = ToMapUnclamped(_player.GlobalPosition);
 		var faint = new Color(EdgeColor, EdgeColor.A * 0.4f);
-		DrawLine(new Vector2(center.X, 0), new Vector2(center.X, Side), faint, 1f);
-		DrawLine(new Vector2(0, center.Y), new Vector2(Side, center.Y), faint, 1f);
+		DrawLine(new Vector2(self.X, 0), new Vector2(self.X, Side), faint, 1f);
+		DrawLine(new Vector2(0, self.Y), new Vector2(Side, self.Y), faint, 1f);
 
-		// O mundo é girado pelo inverso do olhar: o que está à frente
-		// sobe na tela.
-		float yaw = _player.Rotation.Y;
+		DrawWalls();
+		DrawActors();
+		DrawSelf(self, Rotate ? 0f : _player.Rotation.Y);
+	}
 
-		DrawWalls(center, yaw);
-		DrawActors(center, yaw);
-		DrawSelf(center);
+	/// <summary>O centro da janela num eixo: o jogador, sem deixar a
+	/// janela passar da borda do mapa.</summary>
+	private float Follow(float at, float min, float max)
+	{
+		if (max - min <= _viewHalf * 2f) return (min + max) * 0.5f;
+		return Mathf.Clamp(at, min + _viewHalf, max - _viewHalf);
 	}
 
 	// ------------------------------------------------------------------
 
 	/// <summary>Converte uma posição do mundo em ponto do minimapa, ou
-	/// devolve falso se estiver fora do alcance.</summary>
-	private bool ToMap(Vector3 world, Vector2 center, float yaw, out Vector2 point)
+	/// devolve falso se estiver longe demais do jogador para ser visto.</summary>
+	private bool ToMap(Vector3 world, out Vector2 point)
 	{
 		point = Vector2.Zero;
 
 		Vector3 delta = world - _player.GlobalPosition;
-		var flat = new Vector2(delta.X, delta.Z);
+		if (new Vector2(delta.X, delta.Z).Length() > Range) return false;
 
-		if (flat.Length() > Range) return false;
-
-		// Girar o mundo é o oposto de girar a câmera.
-		Vector2 rotated = flat.Rotated(yaw);
-		point = center + rotated / Range * (Side * 0.5f);
-
+		point = ToMapUnclamped(world);
 		return true;
 	}
 
-	private void DrawWalls(Vector2 center, float yaw)
+	private void DrawWalls()
 	{
-		float reach = Range * 1.6f;
+		float reach = _viewHalf * 1.6f;
+		var view = new Vector3(_viewCenter.X, _player.GlobalPosition.Y, _viewCenter.Y);
 
 		foreach (Piece piece in _pieces)
 		{
 			// Peça inteira longe demais não entra. Perto, entra mesmo com
 			// cantos fora do quadro — o recorte do controle corta a sobra.
 			Vector3 mid = (piece.Corners[0] + piece.Corners[2]) * 0.5f;
-			Vector3 gap = mid - _player.GlobalPosition;
+			Vector3 gap = mid - view;
 			if (new Vector2(gap.X, gap.Z).Length() > reach + 30f) continue;
 
 			// Os mesmos dois vetores para todas as peças: o Armazém tem
@@ -238,7 +285,7 @@ public partial class Minimap : Control
 			bool inside = false;
 			for (int i = 0; i < 4; i++)
 			{
-				ToMapUnclamped(piece.Corners[i], center, yaw, out points[i]);
+				points[i] = ToMapUnclamped(piece.Corners[i]);
 				inside |= points[i].X > -Side && points[i].X < Side * 2f && points[i].Y > -Side && points[i].Y < Side * 2f;
 			}
 			if (!inside) continue;
@@ -265,7 +312,7 @@ public partial class Minimap : Control
 
 		foreach (var mark in _marks)
 		{
-			ToMapUnclamped(mark.Position, center, yaw, out Vector2 at);
+			Vector2 at = ToMapUnclamped(mark.Position);
 			if (at.X < -10 || at.Y < -10 || at.X > Side + 10 || at.Y > Side + 10) continue;
 
 			DrawString(font, at + new Vector2(-12, 7), mark.Text, HorizontalAlignment.Center,
@@ -278,15 +325,16 @@ public partial class Minimap : Control
 	private readonly Color[] _fill = new Color[1];
 	private static readonly Vector2[] _noUv = System.Array.Empty<Vector2>();
 
-	private void ToMapUnclamped(Vector3 world, Vector2 center, float yaw, out Vector2 point)
+	/// <summary>Ponto do minimapa de uma posição do mundo, dentro ou fora
+	/// do quadrado. Girar o mundo é o oposto de girar a câmera.</summary>
+	private Vector2 ToMapUnclamped(Vector3 world)
 	{
-		Vector3 delta = world - _player.GlobalPosition;
-		Vector2 rotated = new Vector2(delta.X, delta.Z).Rotated(yaw);
-
-		point = center + rotated / Range * (Side * 0.5f);
+		var flat = new Vector2(world.X - _viewCenter.X, world.Z - _viewCenter.Y);
+		if (_viewYaw != 0f) flat = flat.Rotated(_viewYaw);
+		return new Vector2(Side * 0.5f, Side * 0.5f) + flat / _viewHalf * (Side * 0.5f);
 	}
 
-	private void DrawActors(Vector2 center, float yaw)
+	private void DrawActors()
 	{
 		foreach (Node node in GetTree().GetNodesInGroup(Groups.Bots))
 		{
@@ -295,7 +343,7 @@ public partial class Minimap : Control
 			var health = bot.GetNodeOrNull<Health>("Health");
 			if (health == null || health.IsDead) continue;
 
-			if (!ToMap(bot.GlobalPosition, center, yaw, out Vector2 point)) continue;
+			if (!ToMap(bot.GlobalPosition, out Vector2 point)) continue;
 
 			Color color = Teams.ColorOf(health.Team);
 
@@ -308,19 +356,22 @@ public partial class Minimap : Control
 		}
 	}
 
-	/// <summary>O jogador é um triângulo no centro, sempre apontando
-	/// para cima: ele é a referência, não um ponto entre outros.</summary>
-	private void DrawSelf(Vector2 center)
+	/// <summary>O jogador é um triângulo apontando para onde ele olha
+	/// (no modo girando, sempre para cima, no centro): ele é a referência,
+	/// não um ponto entre outros.</summary>
+	private void DrawSelf(Vector2 center, float yaw)
 	{
 		Color color = _playerHealth != null
 			? Teams.ColorOf(_playerHealth.Team)
 			: SelfColor;
 
+		// O olhar do jogador é -Z girado pelo yaw; no quadrado, z cresce
+		// para baixo, então girar pelo inverso aponta a seta certa.
 		var points = new[]
 		{
-			center + new Vector2(0, -8),
-			center + new Vector2(-5.5f, 6),
-			center + new Vector2(5.5f, 6)
+			center + new Vector2(0, -8).Rotated(-yaw),
+			center + new Vector2(-5.5f, 6).Rotated(-yaw),
+			center + new Vector2(5.5f, 6).Rotated(-yaw)
 		};
 
 		DrawColoredPolygon(points, color);

@@ -83,11 +83,18 @@ public partial class WolfVisual
 			_tree.Set("parameters/ChargeBreathSpeed/scale", ChargeBreathRate);
 		}
 
-		if (hold == _pounceHeld) return;
+		// No voo, o clipe acelera no ritmo do voo (o salto carregado voa
+		// mais rápido que o clipe): pousa no quadro em que o corpo pousa.
+		float rate = hold ? 0f
+			: WolfMoves.Of(WolfMove.Pounce).Speed * (_weapon.IsPounceFlying ? _weapon.PounceFlightRate : 1f);
+		if (hold == _pounceHeld && Mathf.IsEqualApprox(rate, _pounceRate)) return;
 
 		_pounceHeld = hold;
-		_tree.Set("parameters/PounceSpeed/scale", hold ? 0f : WolfMoves.Of(WolfMove.Pounce).Speed);
+		_pounceRate = rate;
+		_tree.Set("parameters/PounceSpeed/scale", rate);
 	}
+
+	private float _pounceRate = 1f;
 
 	/// <summary>Ritmo da respiração do lobo encolhido na carga do salto, em
 	/// relação à do Idle_Pose (2 s por ciclo): 1,6 dá 1,25 s, de quem está

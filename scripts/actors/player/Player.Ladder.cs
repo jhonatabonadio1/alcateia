@@ -15,8 +15,9 @@ using Godot;
 public partial class Player
 {
 	[ExportGroup("Escada")]
-	/// <summary>Velocidade de subida e descida, em m/s (3,6 m em 1,6 s).</summary>
-	[Export] public float LadderSpeed = 2.2f;
+	/// <summary>Velocidade de subida e descida, em m/s: 3,6 m em 1,1 s
+	/// (era 2,2, 1,6 s; pedido do Jhon, 17/11).</summary>
+	[Export] public float LadderSpeed = 3.4f;
 
 	/// <summary>Olhando mais para baixo que isto (radianos, ~35°), o W desce.</summary>
 	[Export] public float LadderLookDown = 0.6f;

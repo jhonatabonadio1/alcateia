@@ -63,7 +63,11 @@ o renascer do bot (6 s).
 |---|---|---|
 | `HumanSpeed` | 3,0 m/s | Base da velocidade. **Base do lobo também.** É a passada do clipe de corrida: subir faz o pé patinar |
 | `HumanSpeedBonus` | 1,08 | Só o humano anda isto acima da base (3,24 m/s); o lobo não muda |
-| `JumpVelocity` | 4,4 m/s | Impulso do pulo. Altura = v² / 19,6 → 0,99 m no humano |
+| `JumpVelocity` | 4,4 m/s | Impulso do pulo do lobo (vezes `JumpMultiplier`) e base do salto da parede |
+| `HumanJumpVelocity` | 4,75 m/s | Impulso do pulo do humano. Com `HumanGravityScale`, sobe 0,80 m e volta em 0,67 s |
+| `HumanGravityScale` | 1,45 | Gravidade do humano no ar (o lobo usa 1). Pulo mais rápido e queda mais seca |
+| `StepHeight` / `WolfStepHeight` | 0,30 / 0,45 m | Degrau que se sobe andando, sem pular (a borda do contêiner tem 14 cm) |
+| `StepEase` | 2,2 m/s | Quão rápido o olho alcança o corpo depois de um degrau |
 | `GroundAccel` | 60 m/s² | Aceleração no chão (alto = resposta imediata) |
 | `GroundFriction` | 50 m/s² | Freada ao soltar as teclas (de 3,9 m/s para em 0,08 s) |
 | `AirAccel` | 18 m/s² | Controle de direção no ar |
@@ -90,7 +94,7 @@ o renascer do bot (6 s).
 
 | Campo | Valor | O que faz |
 |---|---|---|
-| `LadderSpeed` | 2,2 m/s | Subida e descida (3,6 m em 1,6 s) |
+| `LadderSpeed` | 3,4 m/s | Subida e descida (3,6 m em 1,1 s; era 2,2) |
 | `LadderLookDown` | 0,6 rad (~35°) | Olhando mais para baixo que isto, o W desce |
 | `LadderExitPush` | 2,5 m/s | Empurrão para a frente ao chegar no alto, para cima do piso |
 | `LadderJumpOff` | 3 m/s | Pulo para trás que solta da escada |
@@ -173,7 +177,11 @@ Multiplicam a classe do jogador (não a dos bots):
 | `WallJumpClimb` | 1,02 | Altura do salto da parede (era 1,35; −40%) |
 | `WallJumpPush` | 6,5 m/s | Empurrão para fora no salto da parede |
 | `WallJumpKeepSpeed` | 0,8 | Quanto da velocidade da parede o salto leva |
-| `SameWallThreshold` | 0,85 | Semelhança para contar como a mesma parede. Nela, sem tocar o chão, o lobo só regruda descendo até a altura de onde saltou (nunca acima: sem elevador) |
+| `SameWallThreshold` | 0,85 | Semelhança para contar como a mesma parede. Deixou uma parede, só gruda numa diferente até tocar o chão |
+| `SameWallGap` | 0,8 m | Viradas para o mesmo lado, mas mais longe que isto uma da outra, são paredes diferentes |
+| `WallJumpPushFacing` | 0,3 | Fração do empurrão para fora quando se salta olhando reto para a parede (sobe mais, afasta menos) |
+| `WallJumpLookLift` | 0,35 | Quanto o salto da parede sobe a mais olhando 45° para cima |
+| `WallMantleReach` | 1,9 m | Topo da parede até esta altura acima dos pés: o salto da parede sobe nele |
 | `WallRunCooldown` | 0,12 s | Tempo mínimo entre duas corridas |
 
 ---
@@ -221,6 +229,8 @@ dano acompanham.
 | `PounceChargeHold` | 0,6 s | Segura cheio isso e salta sozinho |
 | `PounceMaxClear` | 3,2 m | Altura em que o salto pousa ou que ele passa por cima (contêiner de 2,9 m sim, dois empilhados não) |
 | `PounceMaxDrop` | 6,5 m | Quanto o salto pode descer até o ponto de queda |
+| `PounceMaxClimb` | 6,2 m | Mirando em cima de algo, o salto sobe até isto (dois contêineres empilhados, 5,8 m) |
+| `PounceFullFlight` | 0,45 | Tempo de voo com a carga cheia, em fração do clipe (0,8 s → 0,36 s). Sem carga, 1 |
 | `PounceArc` | 0,6 m | Altura mínima do arco |
 | `HeavyCooldown` | 1,0 s | Espera depois do salto |
 

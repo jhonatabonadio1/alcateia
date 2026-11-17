@@ -2,6 +2,31 @@
 
 ## Não lançado
 
+### Minimapa cheio, luz, degrau, salto rápido, paredes e morte do humano (17/11)
+- **Minimapa** fixo (norte para cima, a seta gira) e cheio: a janela
+  tem o lado menor do mapa, segue o jogador e para na borda.
+- **Armazém mais claro**: ambiente 0,85, exposição 1,45, oclusão 1,6
+  (era 2,5) e uma luz de preenchimento sem sombra do lado oposto ao sol
+  (`kit.preenchimento`). **Mãos e arma** ganham uma lâmpada fraca só
+  delas (`ViewModel.HandFillEnergy`, camada 20): na sombra escurecem,
+  mas não ficam pretas.
+- **Degrau**: andando, o corpo sobe degrau de até 30 cm (lobo 45 cm),
+  como a borda do contêiner; o olho vem atrás, sem tranco.
+- **Salto do lobo**: carregado inteiro, voa em 0,36 s em vez de 0,8
+  (`PounceFullFlight`); a animação do voo acelera junto e o dano sai no
+  pouso. Mirando em cima de algo, sobe até 6,2 m (dois contêineres).
+- **Parede do lobo**: o salto segue a câmera — olhando para a parede,
+  sobe mais e afasta menos; ao longo dela, vai para aquele lado; olhando
+  para cima, mais alto. Com o topo da parede ao alcance (1,9 m), o salto
+  sobe nele. E só gruda numa parede **diferente** da última, até tocar
+  o chão: escala-se de parede em parede.
+- **Escada** 3,4 m/s (era 2,2). **Pulo do humano** mais baixo e mais
+  rápido: 0,80 m em 0,67 s (era 0,99 m em 0,90 s); o lobo não muda.
+- **Morte do humano** voltou: o `death.fbx` tinha saído no commit
+  08a63e8 (16/11) junto com outros clipes, e sem ele o humano não
+  tocava morte nenhuma. Restaurado. Saíram no mesmo commit, e seguem
+  fora: `crouch_idle`, `fall`, `equip` e os `*_alt`.
+
 ### Lobo sem rachaduras, salto na mira, minimapa do Armazém (17/11)
 - **Lobos (`lobo_azul.glb`, `lobo_vermelho.glb`): as "partes
   transparentes" nas costas e nos braços.** Três causas, as três no

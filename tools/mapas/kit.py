@@ -93,6 +93,10 @@ class Mapa:
         self.rotas = []
         self.ambiente = {}
         self.sol = None
+        # Luz de preenchimento: direcional fraca, sem sombra, do lado oposto
+        # ao sol. Acende o que está na sombra por igual (dentro de um
+        # contêiner, atrás de uma pilha) sem apagar a sombra.
+        self.preenchimento = None
 
     # ------------------------------------------------------------ materiais
 
@@ -477,6 +481,13 @@ class Mapa:
                   "shadow_enabled = true", "shadow_blur = 1.5",
                   f"directional_shadow_max_distance = {f(s.get('alcance', 120))}", ""]
 
+        if self.preenchimento:
+            p = self.preenchimento
+            o += ['[node name="Preenchimento" type="DirectionalLight3D" parent="."]',
+                  f"transform = {xform((0, 40, 0), olhar(p['yaw'], p['queda']))}",
+                  f"light_color = {cor(p['cor'])}", f"light_energy = {f(p['energia'])}",
+                  "light_specular = 0.2", "shadow_enabled = false", ""]
+
         # Reflexos: sem isto, metal não tem o que refletir e fica preto.
         o += ['[node name="Reflexo" type="ReflectionProbe" parent="."]',
               f"transform = {xform((0, 4, 0))}", f"size = {vec((self.largura + 2, 14, self.fundo + 2))}",
@@ -608,13 +619,13 @@ class Mapa:
                   f"ambient_light_color = {cor(a.get('luz', (1, 1, 1)))}",
                   f"ambient_light_energy = {f(a.get('luz_energia', 0.5))}", "reflected_light_source = 2"]
             o += ["tonemap_mode = 3", f"tonemap_exposure = {f(a.get('exposicao', 1.0))}",
-                  "ssao_enabled = true", "ssao_intensity = 2.5",
+                  "ssao_enabled = true", f"ssao_intensity = {f(a.get('ssao', 2.5))}",
                   "glow_enabled = true", f"glow_intensity = {f(a.get('brilho', 0.6))}", "glow_bloom = 0.08"]
         else:
             o += ["ambient_light_source = 2", f"ambient_light_color = {cor(a.get('luz', (1, 1, 1)))}",
                   f"ambient_light_energy = {f(a.get('luz_energia', 0.5))}",
                   "tonemap_mode = 3", f"tonemap_exposure = {f(a.get('exposicao', 1.0))}",
-                  "ssao_enabled = true", "ssao_intensity = 2.5",
+                  "ssao_enabled = true", f"ssao_intensity = {f(a.get('ssao', 2.5))}",
                   "glow_enabled = true", f"glow_intensity = {f(a.get('brilho', 0.6))}", "glow_bloom = 0.08"]
         # Opções de acabamento de luz (o Armazém usa; os outros mapas não):
         # luz rebatida (SDFGI), luz rebatida da tela (SSIL), o mapeamento

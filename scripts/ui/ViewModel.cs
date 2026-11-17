@@ -47,6 +47,20 @@ public partial class ViewModel : Node3D
 	/// <summary>Quanto a arma afunda ao pousar, em metros por m/s de queda.</summary>
 	[Export] public float LandDip = 0.006f;
 
+	/// <summary>A luz só das mãos e da arma (pedido do Jhon, 17/11: na
+	/// sombra elas ficavam quase pretas). Uma lâmpada fraca presa à câmera,
+	/// sem sombra, que só acende o que está na camada da mão
+	/// (<see cref="HandLayer"/>): o mapa e os outros não mudam. A sombra do
+	/// mundo continua escurecendo a arma — entrar num contêiner ainda se
+	/// nota —, só não chega ao preto.</summary>
+	[ExportGroup("Luz da mão")]
+	[Export] public float HandFillEnergy = 0.8f;
+	[Export] public Color HandFillColor = new Color(1f, 0.96f, 0.9f);
+
+	/// <summary>Camada de desenho das mãos e da arma em primeira pessoa
+	/// (a 20, a última): só a luz da mão a acende sozinha.</summary>
+	public const uint HandLayer = 1u << 19;
+
 	// Onde fica o punho de cada tipo de arma, a partir da câmera.
 	// O modelo é em tamanho real; na mão ele fica um pouco menor e
 	// levemente virado para o centro, para se ver o lado da arma e não
@@ -124,7 +138,35 @@ public partial class ViewModel : Node3D
 		_weapon.AmmoChanged += OnAmmo;
 
 		BuildEffects();
+		BuildHandFill();
 		Refresh();
+	}
+
+	private void BuildHandFill()
+	{
+		// Acima e um pouco atrás do olho, como a luz do teto chegando por
+		// cima do ombro: ilumina o lado de cima da arma, que é o que se vê.
+		_camera.AddChild(new OmniLight3D
+		{
+			Name = "LuzDaMao",
+			Position = new Vector3(0.15f, 0.35f, 0.15f),
+			LightEnergy = HandFillEnergy,
+			LightColor = HandFillColor,
+			OmniRange = 1.6f,
+			OmniAttenuation = 0.6f,
+			LightCullMask = HandLayer,
+			ShadowEnabled = false,
+			LightSpecular = 0.3f
+		});
+		MoveToHandLayer(this);
+	}
+
+	/// <summary>Tudo o que se desenha embaixo de <paramref name="node"/>
+	/// passa para a camada da mão (e só para ela).</summary>
+	private static void MoveToHandLayer(Node node)
+	{
+		if (node is VisualInstance3D visual && node is not Light3D) visual.Layers = HandLayer;
+		foreach (Node child in node.GetChildren()) MoveToHandLayer(child);
 	}
 
 	public override void _Process(double delta)
@@ -282,6 +324,7 @@ public partial class ViewModel : Node3D
 		{
 			_muzzle = _held.GetNodeOrNull<Node3D>(WeaponModel.MuzzleName);
 			_draw = 1f;
+			MoveToHandLayer(this);
 			return;
 		}
 
@@ -293,6 +336,7 @@ public partial class ViewModel : Node3D
 
 		_muzzle = _held.GetNodeOrNull<Node3D>(WeaponModel.MuzzleName);
 		BuildHands(id);
+		MoveToHandLayer(this);
 
 		_draw = 1f;
 	}

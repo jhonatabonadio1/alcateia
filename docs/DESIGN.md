@@ -179,11 +179,13 @@ acabar.
   **conserva o avanço** da corrida (`WallJumpKeepSpeed`) e soma o
   empurrão perpendicular: sem isso o lobo sai de lado e perde tudo
   que acumulou, que é o oposto da jogada de cair em cima de alguém
-- **A mesma parede não serve para subir** sem tocar o chão: subir,
-  saltar e regrudar mais alto transformaria a parede em elevador. Nela o
-  lobo regruda, mas só descendo até a altura de onde saltou — saltar
-  olhando para a parede e voltar não o derruba até o chão (pedido do
-  Jhon, 14/11). Uma parede **diferente** vale de qualquer altura — é a
+- **Só gruda numa parede diferente** (decisão do Jhon, 17/11): deixou
+  uma parede — saltando ou soltando o W —, só volta a ela depois de
+  tocar o chão. Assim se escala de parede em parede, e a mesma não vira
+  elevador. Até 17/11 a mesma parede valia de novo abaixo da altura do
+  salto. Viradas para o mesmo lado mas a mais de 0,8 m uma da outra
+  (`SameWallGap`) contam como diferentes. Uma parede **diferente** vale
+  de qualquer altura — é a
   jogada de quicar entre as duas paredes de um corredor, e ela é
   desejada. O que separa os dois casos é a semelhança entre as normais
   (`SameWallThreshold`), não o tempo
@@ -327,9 +329,13 @@ Desenhado em 2D a partir das posições, não por câmera ortogonal. Um
 minimapa é um diagrama, não uma foto: câmera de cima desenharia chão,
 sombra e iluminação, e nada disso ajuda a ler posição.
 
-Gira com o jogador — o que está em cima é o que está à frente. Mapa
-fixo obriga a traduzir mentalmente enquanto corre, e ninguém faz isso
-num tiroteio.
+**Fixo e cheio** (decisão do Jhon, 17/11): o norte do mapa para cima,
+a seta do jogador gira, e o mapa ocupa o quadrado inteiro. A janela tem
+o lado menor do mapa (32 m no Armazém), segue o jogador e para na
+borda; perto de um canto a seta sai do centro, mas o quadrado nunca
+fica vazio. Antes ele girava com o jogador no centro, e no canto de
+nascer três quartos do quadrado eram fundo. `Minimap.Rotate` volta ao
+jeito antigo.
 
 **Só mostra quem está dentro do alcance.** Saber onde está todo mundo
 o tempo todo destruiria a razão de existir do agachar, do andar

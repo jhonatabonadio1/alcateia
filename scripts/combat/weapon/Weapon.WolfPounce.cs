@@ -45,6 +45,20 @@ public partial class Weapon
 	/// dele.</summary>
 	[Export] public bool PounceChargeLimitsReach = false;
 
+	/// <summary>O tempo de voo com a carga cheia, em fração do tempo do
+	/// clipe (0,8 s). Pedido do Jhon (17/11): carregado inteiro, o lobo
+	/// chega bem mais rápido ao alvo, para não morrer no ar. Sem carga, o
+	/// voo dura o clipe; cheio, 0,45 dele (0,36 s); no meio, no meio. A
+	/// animação do voo acelera junto, e o dano sai quando os pés tocam o
+	/// chão.</summary>
+	[Export] public float PounceFullFlight = 0.45f;
+
+	/// <summary>O mais alto que o salto sobe quando a mira está em cima de
+	/// algo, em metros acima dos pés: dois contêineres empilhados (5,8 m).
+	/// Mirando em cima, o lobo vai (pedido do Jhon, 17/11). Sem mirar em
+	/// cima, vale <see cref="PounceMaxClear"/>.</summary>
+	[Export] public float PounceMaxClimb = 6.2f;
+
 	/// <summary>Quanto o salto pode descer, em metros abaixo dos pés: de
 	/// cima de dois contêineres até o chão. Mais fundo que isso, o voo
 	/// acaba no ar e o lobo cai o resto.</summary>
@@ -196,11 +210,13 @@ public partial class Weapon
 		StartPounceRecharge();
 		_comboIndex = 0;
 		_attackQueued = false;
-		_rootLeft = WolfMoves.Duration(WolfMove.Pounce) - elapsed;
+		float saved = WolfMoves.StepOf(WolfMove.Pounce).Duration
+			* (1f - Mathf.Lerp(1f, Mathf.Clamp(PounceFullFlight, 0.2f, 1f), Mathf.Clamp(power, 0f, 1f)));
+		_rootLeft = WolfMoves.Duration(WolfMove.Pounce) - elapsed - saved;
 		_pounceFlew = false;
 		float damage = CombatRules.PounceMultiplier(HeavyDamageBonus, PounceMinPower, power);
 		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown,
-			() => Claw(damage, ClawReach, ClawRadius, false, _pounceFlew ? _flyDir : null), elapsed);
+			() => Claw(damage, ClawReach, ClawRadius, false, _pounceFlew ? _flyDir : null), elapsed + saved);
 
 		// O salto é um pulo de verdade: do impulso até os pés tocarem o
 		// chão, o corpo voa num arco. Para onde e até onde, diz a mira no
@@ -209,8 +225,14 @@ public partial class Weapon
 		// fixado aqui — nada segue o alvo durante o voo.
 		var (delay, duration, _) = WolfMoves.StepOf(WolfMove.Pounce);
 		(_pounceDir, _pounceRange, _pounceAimY) = PounceTarget(power);
-		After(Mathf.Max(delay - elapsed, 0f), id, () => BeginPounceFlight(duration));
+		float flight = duration * Mathf.Lerp(1f, Mathf.Clamp(PounceFullFlight, 0.2f, 1f), Mathf.Clamp(power, 0f, 1f));
+		PounceFlightRate = duration / Mathf.Max(flight, 0.05f);
+		After(Mathf.Max(delay - elapsed, 0f), id, () => BeginPounceFlight(flight));
 	}
+
+	/// <summary>Quantas vezes mais rápido que o clipe o voo deste salto
+	/// anda (1 sem carga): a animação do voo toca nesse ritmo.</summary>
+	public float PounceFlightRate { get; private set; } = 1f;
 
 	private Vector3 _pounceDir = Vector3.Forward;
 	private float? _pounceAimY;
@@ -436,10 +458,15 @@ public partial class Weapon
 		var space = _body.GetWorld3D().DirectSpaceState;
 		float halfHeight = -((_body as Player)?.FeetOffset ?? -0.875f);
 		Vector3 feet = _body.GlobalPosition + Vector3.Down * halfHeight;
-		float top = PounceMaxClear + 0.4f;
-		float arcMax = PounceMaxClear + 0.6f;
 		float aimed = distance;
 		float? aimRel = aimY - feet.Y;
+
+		// Mirando em cima de algo mais alto que o normal (dois contêineres),
+		// o salto sobe até lá: o limite vira a altura mirada.
+		float clear = PounceMaxClear;
+		if (aimRel is float wantUp && wantUp > clear && wantUp <= PounceMaxClimb) clear = wantUp + 0.2f;
+		float top = clear + 0.4f;
+		float arcMax = clear + 0.6f;
 
 		// Teto: o que há sobre a cabeça aqui e sobre o ponto mirado.
 		float height = halfHeight * 2f;
@@ -453,7 +480,7 @@ public partial class Weapon
 		}
 
 		// Mais alto que isto, não se pula por cima nem se pousa em cima.
-		float limit = Mathf.Min(PounceMaxClear, top - 0.4f);
+		float limit = Mathf.Min(clear, top - 0.4f);
 
 		var path = new List<(float X, float H)>();
 		for (float x = 0.4f; x <= distance + 0.01f; x += 0.4f)

@@ -11,7 +11,20 @@ public partial class Player
 	/// (decisão do Jhon). Era 4,2, e o pé patinava.</summary>
 	[ExportGroup("Movimento")]
 	[Export] public float HumanSpeed = 3.0f;
+
+	/// <summary>Impulso do pulo do lobo (vezes o da raça) e do salto da
+	/// parede. O humano tem o dele, abaixo.</summary>
 	[Export] public float JumpVelocity = 4.4f;
+
+	/// <summary>
+	/// O pulo do humano: um pouco mais baixo e bem mais rápido que o do
+	/// lobo (pedido do Jhon, 17/11). Com a gravidade do humano a 1,45×,
+	/// sobe 0,80 m (era 0,99) e volta ao chão em 0,67 s (era 0,90). A
+	/// gravidade maior vale para todo o humano no ar: cair de uma beirada
+	/// também é mais seco. O lobo não muda.
+	/// </summary>
+	[Export] public float HumanJumpVelocity = 4.75f;
+	[Export] public float HumanGravityScale = 1.45f;
 
 	/// <summary>Aceleração no chão, em m/s². Alta deixa o controle
 	/// responsivo sem virar teletransporte.</summary>
@@ -57,6 +70,17 @@ public partial class Player
 
 	/// <summary>Velocidade da transição entre em pé e agachado.</summary>
 	[Export] public float CrouchLerpSpeed = 22f;
+
+	/// <summary>Degrau que se sobe andando, sem pular, em metros: a borda
+	/// do contêiner (14 cm), um estrado, um degrau de escada (pedido do
+	/// Jhon, 17/11: o lobo correndo parava na borda do contêiner). O
+	/// lobo sobe mais alto, de quatro.</summary>
+	[Export] public float StepHeight = 0.3f;
+	[Export] public float WolfStepHeight = 0.45f;
+
+	/// <summary>Quão rápido a câmera alcança o corpo depois de um degrau,
+	/// em m/s: o corpo sobe de uma vez, o olho vem logo atrás.</summary>
+	[Export] public float StepEase = 2.2f;
 
 	private double _stunTimer;
 	private float _stunSlow = 1f;
@@ -183,6 +207,7 @@ public partial class Player
 
 	private void NormalMovement(double delta)
 	{
+		EaseStep(delta);
 		Vector3 velocity = Velocity;
 
 		if (!IsOnFloor())
@@ -191,13 +216,13 @@ public partial class Player
 			// gravidade. É sutil de propósito: dá controle fino sobre
 			// onde aterrissar sem transformar o salto em planagem.
 			bool holding = velocity.Y < 0 && _intent.JumpHeld;
-			float scale = holding ? HoldFallGravity : 1f;
+			float scale = (holding ? HoldFallGravity : 1f) * (_form.IsWolf ? 1f : HumanGravityScale);
 
 			velocity.Y -= _gravity * scale * (float)delta;
 		}
 		else if (WantsJump())
 		{
-			velocity.Y = JumpVelocity * JumpScale;
+			velocity.Y = _form.IsWolf ? JumpVelocity * JumpScale : HumanJumpVelocity;
 			IsJumpAirborne = true;
 			_jumpFromWall = false;
 			JumpSpeed = velocity.Y;
@@ -251,7 +276,69 @@ public partial class Player
 		velocity.Z = horizontal.Z;
 
 		Velocity = velocity;
+		Vector3 before = GlobalPosition;
 		MoveAndSlide();
+		if (grounded && direction != Vector3.Zero && velocity.Y <= 0.01f)
+			TryStepUp(before, horizontal * (float)delta);
+	}
+
+	private float _stepLift;
+
+	/// <summary>
+	/// Subir um degrau baixo andando. O <c>MoveAndSlide</c> trata a quina
+	/// do degrau como parede e para o corpo nela. Então, se o corpo no
+	/// chão andou bem menos do que queria e bateu em parede: tenta o mesmo
+	/// passo de um degrau acima e desce até achar chão. Achou chão, firme e
+	/// mais alto que antes, o corpo fica lá; a câmera desce o que subiu e
+	/// vem atrás (<see cref="EaseStep"/>), para o degrau não dar tranco.
+	/// </summary>
+	private void TryStepUp(Vector3 from, Vector3 wanted)
+	{
+		var flatWanted = new Vector3(wanted.X, 0, wanted.Z);
+		float want = flatWanted.Length();
+		if (want < 0.0005f || !IsOnWall()) return;
+
+		Vector3 moved = GlobalPosition - from;
+		if (new Vector2(moved.X, moved.Z).Length() > want * 0.6f) return;
+
+		float height = _form.IsWolf ? WolfStepHeight : StepHeight;
+		Vector3 up = Vector3.Up * height;
+		// No mínimo alguns centímetros: andando devagar o passo do quadro
+		// não passaria da quina.
+		Vector3 ahead = flatWanted.Normalized() * Mathf.Max(want, 0.12f);
+
+		Transform3D at = GlobalTransform;
+		at.Origin = from;
+		if (TestMove(at, up)) return;                 // teto em cima
+		at.Origin += up;
+		if (TestMove(at, ahead)) return;              // mais alto que um degrau
+		at.Origin += ahead;
+
+		var floor = new KinematicCollision3D();
+		if (!TestMove(at, -up - Vector3.Up * 0.05f, floor)) return;
+		if (floor.GetNormal().Dot(Vector3.Up) < Mathf.Cos(FloorMaxAngle)) return;
+
+		Vector3 landed = at.Origin + floor.GetTravel();
+		float rise = landed.Y - from.Y;
+		if (rise < 0.02f) return;
+
+		GlobalPosition = landed;
+		_stepLift -= rise;
+		Vector3 head = _head.Position;
+		head.Y -= rise;
+		_head.Position = head;
+	}
+
+	/// <summary>O olho alcança o corpo depois de um degrau.</summary>
+	private void EaseStep(double delta)
+	{
+		if (_stepLift == 0f) return;
+
+		float previous = _stepLift;
+		_stepLift = Mathf.MoveToward(_stepLift, 0f, StepEase * (float)delta);
+		Vector3 head = _head.Position;
+		head.Y += _stepLift - previous;
+		_head.Position = head;
 	}
 
 	/// <summary>
@@ -290,7 +377,7 @@ public partial class Player
 		float t = Mathf.InverseLerp(CrouchHeight, StandHeight, _height);
 
 		Vector3 head = _head.Position;
-		head.Y = Mathf.Lerp(CrouchEyeHeight, StandEyeHeight, t);
+		head.Y = Mathf.Lerp(CrouchEyeHeight, StandEyeHeight, t) + _stepLift;
 		_head.Position = head;
 	}
 
