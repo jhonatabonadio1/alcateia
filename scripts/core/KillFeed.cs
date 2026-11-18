@@ -141,11 +141,11 @@ public static class KillFeed
 			"lobo" => "de lobo",
 			Arsenal.KnifeId => "na faca",
 			Arsenal.GrenadeId => "com granada",
-			_ => Catalog.Get(kill.Weapon) is CatalogItem item ? $"com {item.Name}" : Describe(kill.Cause)
+			_ => Catalog.Get(kill.Weapon) is CatalogItem item ? Loc.F("com {0}", item.Name) : Describe(kill.Cause)
 		};
 
 		string head = kill.Cause == KillCause.Headshot ? ", na cabeça" : "";
-		return $"por {kill.Killer} {with}{head}";
+		return Loc.F("por {0} {1}{2}", kill.Killer, with, head);
 	}
 }
 

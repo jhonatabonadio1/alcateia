@@ -93,8 +93,8 @@ public partial class LockMark : CanvasLayer
 		{
 			Vector2 mid = _canvas.Size / 2f + new Vector2(-160f, 80f);
 			const string none = "SEM ALVO · CLIQUE SALTA NA MIRA";
-			_canvas.DrawStringOutline(font, mid, none, HorizontalAlignment.Center, 320f, 20, 5, outline);
-			_canvas.DrawString(font, mid, none, HorizontalAlignment.Center, 320f, 20, UiTokens.TextSecondary);
+			_canvas.DrawStringOutline(font, mid, Loc.T(none), HorizontalAlignment.Center, 320f, 20, 5, outline);
+			_canvas.DrawString(font, mid, Loc.T(none), HorizontalAlignment.Center, 320f, 20, UiTokens.TextSecondary);
 		}
 
 		if (!_hasMain) return;
@@ -111,7 +111,7 @@ public partial class LockMark : CanvasLayer
 
 		if (_locked) Diamond(_center, 9f, _spin, color, outline);
 
-		string text = _locked ? $"CLIQUE: SALTAR  {_distance:0} M" : "CLIQUE: ALVO";
+		string text = _locked ? Loc.F("CLIQUE: SALTAR  {0:0} M", _distance) : Loc.T("CLIQUE: ALVO");
 		Vector2 label = _center + new Vector2(-120f, _half.Y + 26f);
 		_canvas.DrawStringOutline(font, label, text, HorizontalAlignment.Center, 240f, 20, 5, outline);
 		_canvas.DrawString(font, label, text, HorizontalAlignment.Center, 240f, 20, color);

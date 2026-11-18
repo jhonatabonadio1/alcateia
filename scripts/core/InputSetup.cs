@@ -36,6 +36,8 @@ public static class InputSetup
 		// Q: o especial do lobo, num toque (decisão do Jhon, 18/11; era
 		// segurar o botão direito no chão para carregar).
 		Key("pounce", Godot.Key.Q);
+		// O guia das habilidades: aparece enquanto se segura (18/11, "igual Overwatch").
+		Key("guide", Godot.Key.E);
 
 		// Slots: o lobo é o 3, na mesma memória muscular das armas.
 		Key("slot_1", Godot.Key.Key1);

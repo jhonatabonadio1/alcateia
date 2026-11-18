@@ -100,7 +100,7 @@ public partial class MatchHud : CanvasLayer
 			{
 				_boardRefresh = 0.25;
 				_scoreboard.Refresh(_match);
-				_boardInfo.Text = $"{Maps.Get(RoomConfig.Rules.Map).Name}  ·  {RoomSettings.ModeName(RoomConfig.Rules.Mode)}  ·  primeiro a {_match.ScoreToWin}  ·  {Clock(time)}";
+				_boardInfo.Text = Loc.F("{0}  ·  {1}  ·  primeiro a {2}  ·  {3}", Maps.Get(RoomConfig.Rules.Map).Name, RoomSettings.ModeName(RoomConfig.Rules.Mode), _match.ScoreToWin, Clock(time));
 			}
 		}
 	}
@@ -204,7 +204,7 @@ public partial class MatchHud : CanvasLayer
 		_clock.CustomMinimumSize = new Vector2(120, 0);
 		stack.AddChild(_clock);
 
-		Label mode = UiKit.Caption($"{RoomSettings.ModeName(RoomConfig.Rules.Mode)} · {_match.ScoreToWin}");
+		Label mode = UiKit.Caption($"{Loc.T(RoomSettings.ModeName(RoomConfig.Rules.Mode))} · {_match.ScoreToWin}");
 		mode.HorizontalAlignment = HorizontalAlignment.Center;
 		stack.AddChild(mode);
 

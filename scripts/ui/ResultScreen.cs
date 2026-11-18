@@ -151,7 +151,7 @@ public partial class ResultScreen : CanvasLayer
 		long presasGain = reward.PresasAfter - reward.PresasBefore;
 		t.TweenCallback(Callable.From(() =>
 		{
-			_xpGain.Text = $"+{UiTokens.Thousands(xpGain)} XP";
+			_xpGain.Text = Loc.F("+{0} XP", UiTokens.Thousands(xpGain));
 			_presasGain.Text = $"+{UiTokens.Thousands(presasGain)}";
 			Motion.Pop(_xpGain, 1.2f);
 			Motion.Pop(_presasGain, 1.2f);
@@ -207,15 +207,15 @@ public partial class ResultScreen : CanvasLayer
 
 		if (rank >= Ranks.Count - 1)
 		{
-			_xpText.Text = $"{UiTokens.Thousands(xp)} XP";
+			_xpText.Text = Loc.F("{0} XP", UiTokens.Thousands(xp));
 			_xpNext.Text = "patente máxima";
 			return;
 		}
 
 		long from = Ranks.XpFor(rank);
 		long to = Ranks.XpFor(rank + 1);
-		_xpText.Text = $"{UiTokens.Thousands(xp - from)} / {UiTokens.Thousands(to - from)} XP";
-		_xpNext.Text = $"próxima: {Ranks.NameOf(rank + 1)}";
+		_xpText.Text = Loc.F("{0} / {1} XP", UiTokens.Thousands(xp - from), UiTokens.Thousands(to - from));
+		_xpNext.Text = Loc.F("próxima: {0}", Ranks.NameOf(rank + 1));
 	}
 
 	// ================================================================== veredito
@@ -234,7 +234,7 @@ public partial class ResultScreen : CanvasLayer
 		return won ? "VITÓRIA" : "DERROTA";
 	}
 
-	private string How => _match.EndedByScore ? $"primeiro a {_match.ScoreToWin}" : "fim do tempo";
+	private string How => _match.EndedByScore ? Loc.F("primeiro a {0}", _match.ScoreToWin) : "fim do tempo";
 
 	private Control BuildHero()
 	{
@@ -308,7 +308,7 @@ public partial class ResultScreen : CanvasLayer
 		head.AddChild(UiKit.Spacer());
 
 		MapInfo map = Maps.Get(RoomConfig.Rules.Map);
-		Label where = UiKit.Caption($"{map.Name}  ·  {RoomSettings.ModeName(RoomConfig.Rules.Mode)}");
+		Label where = UiKit.Caption($"{Loc.T(map.Name)}  ·  {Loc.T(RoomSettings.ModeName(RoomConfig.Rules.Mode))}");
 		where.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
 		head.AddChild(where);
 		page.AddChild(head);
@@ -476,7 +476,7 @@ public partial class ResultScreen : CanvasLayer
 		label.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		row.AddChild(label);
 
-		Label xp = UiKit.Text(line.Xp > 0 ? $"+{UiTokens.Thousands(line.Xp)} XP" : "", "Numeric", UiTokens.TextPrimary);
+		Label xp = UiKit.Text(line.Xp > 0 ? Loc.F("+{0} XP", UiTokens.Thousands(line.Xp)) : "", "Numeric", UiTokens.TextPrimary);
 		xp.CustomMinimumSize = new Vector2(100, 0);
 		xp.HorizontalAlignment = HorizontalAlignment.Right;
 		row.AddChild(xp);

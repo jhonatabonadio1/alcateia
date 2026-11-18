@@ -30,7 +30,7 @@ public static class Backend
 		public bool Ok => Status is >= 200 and < 300;
 		public string Code => Body?["error"]?["code"]?.GetValue<string>() ?? (Status == 0 ? "sem_servidor" : "");
 		public string Error => Body?["error"]?["message"]?.GetValue<string>()
-			?? (Status == 0 ? "Sem resposta do servidor." : Ok ? "" : $"O servidor respondeu {Status}.");
+			?? (Status == 0 ? "Sem resposta do servidor." : Ok ? "" : Loc.F("O servidor respondeu {0}.", Status));
 	}
 
 	private static readonly System.Net.Http.HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(8) };

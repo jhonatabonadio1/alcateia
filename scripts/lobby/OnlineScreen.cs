@@ -147,7 +147,7 @@ public partial class OnlineScreen : LobbyScreen
 
 		_busy = false;
 		_status = reply.Ok ? "" : reply.Status == 0
-			? $"Não achei o servidor em {Backend.Url}. Ele está no ar? (docker compose up -d)"
+			? Loc.F("Não achei o servidor em {0}. Ele está no ar? (docker compose up -d)", Backend.Url)
 			: reply.Error;
 		if (reply.Ok) Sfx.Ui("abate");
 		if (Alive) Refresh();
@@ -164,8 +164,8 @@ public partial class OnlineScreen : LobbyScreen
 
 		column.AddChild(UiKit.Text(_connecting ? "Conectando…" : "Sem ligação com o servidor", "Subtitle"));
 		column.AddChild(UiKit.Paragraph(_connecting
-			? $"Entrando como {Backend.AccountName} em {Backend.Url}."
-			: _status.Length > 0 ? _status : $"Não consegui falar com {Backend.Url}."));
+			? Loc.F("Entrando como {0} em {1}.", Backend.AccountName, Backend.Url)
+			: _status.Length > 0 ? _status : Loc.F("Não consegui falar com {0}.", Backend.Url)));
 
 		if (_connecting) return;
 
@@ -188,7 +188,7 @@ public partial class OnlineScreen : LobbyScreen
 
 		_connecting = false;
 		if (!profile.Ok && profile.Status == 401) _status = "A sua sessão venceu. Entre de novo.";
-		else if (!open) _status = $"Não consegui falar com {Backend.Url}. O servidor está no ar?";
+		else if (!open) _status = Loc.F("Não consegui falar com {0}. O servidor está no ar?", Backend.Url);
 		if (Alive) Refresh();
 	}
 
@@ -229,7 +229,7 @@ public partial class OnlineScreen : LobbyScreen
 
 	private void BuildRooms()
 	{
-		HBoxContainer head = Heading(_main, "Salas", $"{Lobby.Rooms.Count} aberta(s) · você é {Backend.AccountName}");
+		HBoxContainer head = Heading(_main, "Salas", Loc.F("{0} aberta(s) · você é {1}", Lobby.Rooms.Count, Backend.AccountName));
 		head.AddChild(UiKit.Button("Sair da conta", ButtonKind.Secondary, Logout));
 		head.AddChild(UiKit.Button("Atualizar", ButtonKind.Secondary, Lobby.RefreshRooms));
 		head.AddChild(UiKit.Button("Criar sala", ButtonKind.Primary, AskNewRoom));
@@ -283,10 +283,10 @@ public partial class OnlineScreen : LobbyScreen
 		row.AddChild(title);
 
 		row.AddChild(UiKit.Text(Maps.Get(s.Map).Name, "Muted"));
-		row.AddChild(UiKit.Text($"até {s.ScoreToWin} · {s.Minutes} min", "Muted"));
+		row.AddChild(UiKit.Text(Loc.F("até {0} · {1} min", s.ScoreToWin, s.Minutes), "Muted"));
 		int bots = room["bots"]?.GetValue<int>() ?? 0;
 		Label count = UiKit.Text($"{players}/{capacity}", "Numeric", players >= capacity ? UiTokens.Danger : UiTokens.TextPrimary);
-		if (bots > 0) count.TooltipText = $"{players} jogador(es) e {bots} bot(s). Quem entra toma o lugar de um bot.";
+		if (bots > 0) count.TooltipText = Loc.F("{0} jogador(es) e {1} bot(s). Quem entra toma o lugar de um bot.", players, bots);
 		row.AddChild(count);
 		if (bots > 0) row.AddChild(UiKit.Chip($"+{bots} bot{(bots > 1 ? "s" : "")}", UiTokens.TextSecondary));
 		row.AddChild(UiKit.Chip(playing ? "jogando" : "esperando", playing ? UiTokens.Warning : UiTokens.Success));
@@ -331,7 +331,7 @@ public partial class OnlineScreen : LobbyScreen
 
 	private void AskRoomRules(RoomSettings s)
 	{
-		if (string.IsNullOrWhiteSpace(s.Title) || s.Title == "Sala de treino") s.Title = $"Sala de {Backend.AccountName}";
+		if (string.IsNullOrWhiteSpace(s.Title) || s.Title == "Sala de treino") s.Title = Loc.F("Sala de {0}", Backend.AccountName);
 		s.Password = "";
 		s.TeamSize = Math.Clamp(s.TeamSize, 1, RoomSettings.MaxTeamSize);
 
@@ -362,11 +362,11 @@ public partial class OnlineScreen : LobbyScreen
 			string path = Maps.All[i].Picture;
 			picture.Texture = ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null;
 		}), 110));
-		form.AddChild(UiKit.FormRow("Times", UiKit.Picker(sizes.Select(n => $"{n} contra {n}").ToArray(),
+		form.AddChild(UiKit.FormRow("Times", UiKit.Picker(sizes.Select(n => Loc.F("{0} contra {1}", n, n)).ToArray(),
 			Math.Max(0, Array.IndexOf(sizes, s.TeamSize)), i => s.TeamSize = sizes[i]), 110));
-		form.AddChild(UiKit.FormRow("Pontos", UiKit.Picker(Scores.Select(n => $"{n} abates").ToArray(),
+		form.AddChild(UiKit.FormRow("Pontos", UiKit.Picker(Scores.Select(n => Loc.F("{0} abates", n)).ToArray(),
 			Nearest(Scores, s.ScoreToWin), i => s.ScoreToWin = Scores[i]), 110));
-		form.AddChild(UiKit.FormRow("Tempo", UiKit.Picker(Durations.Select(n => $"{n} minutos").ToArray(),
+		form.AddChild(UiKit.FormRow("Tempo", UiKit.Picker(Durations.Select(n => Loc.F("{0} minutos", n)).ToArray(),
 			Nearest(Durations, s.Minutes), i => s.Minutes = Durations[i]), 110));
 		form.AddChild(UiKit.FormRow("Armas", UiKit.Picker(RoomSettings.WeaponNames, (int)s.Weapons, i => s.Weapons = (WeaponRule)i,
 			Enum.GetValues<WeaponRule>().Select(w => !RoomSettings.WeaponsAvailable(w)).ToArray()), 110));
@@ -438,7 +438,7 @@ public partial class OnlineScreen : LobbyScreen
 			Label who = UiKit.Truncated(name, null, name == Backend.AccountName ? UiTokens.Accent : (Color?)null);
 			who.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 			row.AddChild(who);
-			row.AddChild(UiKit.Text($"{UiTokens.Thousands(xp)} XP", "Numeric", UiTokens.TextSecondary));
+			row.AddChild(UiKit.Text(Loc.F("{0} XP", UiTokens.Thousands(xp)), "Numeric", UiTokens.TextSecondary));
 			_ranking.AddChild(row);
 		}
 	}
@@ -508,7 +508,7 @@ public partial class OnlineScreen : LobbyScreen
 
 		JsonNode you = end["you"];
 		if (you != null)
-			Shell.Toast($"Partida registrada no servidor: +{you["xp"]} XP de patente online", UiTokens.Success);
+			Shell.Toast(Loc.F("Partida registrada no servidor: +{0} XP de patente online", you["xp"]), UiTokens.Success);
 		_ = LoadRanking();
 		_ = Backend.RefreshProfile();
 	}

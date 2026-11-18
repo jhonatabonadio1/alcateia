@@ -1,0 +1,943 @@
+texto,pt_BR,en,es,onde
+"Anti-lobo. Pouco dano, muita lentidão: não mata, tira a mobilidade que define a forma.",,,,scripts/combat/Arsenal.cs
+Granada de choque,,,,scripts/combat/Arsenal.cs
+Human,,,,scripts/combat/HeadHitbox.cs
+Skeleton3D,,,,scripts/combat/HeadHitbox.cs
+Item fora do inventário,,,,scripts/combat/LoadoutSet.cs
+Item repetido no mesmo conjunto,,,,scripts/combat/LoadoutSet.cs
+Máximo {0} utilitários,,,,scripts/combat/LoadoutSet.cs
+Novo conjunto,,,,scripts/combat/LoadoutSet.cs
+O conjunto padrão só aceita itens gratuitos,,,,scripts/combat/LoadoutSet.cs
+O segundo utilitário só aceita granada de luz ou de fumaça,,,,scripts/combat/LoadoutSet.cs
+Primária obrigatória,,,,scripts/combat/LoadoutSet.cs
+Secundária obrigatória,,,,scripts/combat/LoadoutSet.cs
+", na cabeça",,,,scripts/core/KillFeed.cs
+com granada,,,,scripts/core/KillFeed.cs
+com {0},,,,scripts/core/KillFeed.cs
+de granada,,,,scripts/core/KillFeed.cs
+de lobo,,,,scripts/core/KillFeed.cs
+Morte acidental,,,,scripts/core/KillFeed.cs
+na faca,,,,scripts/core/KillFeed.cs
+por {0} {1}{2},,,,scripts/core/KillFeed.cs
+Queda,,,,scripts/core/KillFeed.cs
+SINDICATO,,,,scripts/core/KillFeed.cs
+VANGUARDA,,,,scripts/core/KillFeed.cs
+DOUBLE KILL,,,,scripts/core/KillStory.cs
+HEPTA KILL,,,,scripts/core/KillStory.cs
+HEXA KILL,,,,scripts/core/KillStory.cs
+OCTA KILL,,,,scripts/core/KillStory.cs
+PENTA KILL,,,,scripts/core/KillStory.cs
+QUADRA KILL,,,,scripts/core/KillStory.cs
+TRIPLE KILL,,,,scripts/core/KillStory.cs
+../Bots,,,,scripts/core/MatchSetup.cs
+"Bots, só humanos",,,,scripts/core/PlayMode.cs
+"Bots, só lobos",,,,scripts/core/PlayMode.cs
+Caçar humanos,,,,scripts/core/PlayMode.cs
+Caçar lobos,,,,scripts/core/PlayMode.cs
+"Com bots nos times, humano e lobo liberados.",,,,scripts/core/PlayMode.cs
+"Com bots nos times, ninguém transforma.",,,,scripts/core/PlayMode.cs
+"Com bots nos times, todos lobos.",,,,scripts/core/PlayMode.cs
+Com bots: Vanguarda de humano contra Sindicato de lobo.,,,,scripts/core/PlayMode.cs
+Com bots: Vanguarda de lobo contra Sindicato de humano.,,,,scripts/core/PlayMode.cs
+Humano e lobo: cada um transforma quando quiser.,,,,scripts/core/PlayMode.cs
+Humanos × Lobos,,,,scripts/core/PlayMode.cs
+Livre,,,,scripts/core/PlayMode.cs
+Ninguém transforma. Tiro puro.,,,,scripts/core/PlayMode.cs
+Só humanos,,,,scripts/core/PlayMode.cs
+Só lobos,,,,scripts/core/PlayMode.cs
+Todos nascem lobo. Garra e mobilidade.,,,,scripts/core/PlayMode.cs
+"Vanguarda de humano, Sindicato de lobo. Trocam na metade.",,,,scripts/core/PlayMode.cs
+"Vanguarda {0}, Sindicato {1}",,,,scripts/core/PlayMode.cs
+Item fora do inventário ou expirado,,,,scripts/core/Profile.cs
+Item não está à venda nessa duração,,,,scripts/core/Profile.cs
+Já equipada,,,,scripts/core/Profile.cs
+Máximo de {0} caracteres,,,,scripts/core/Profile.cs
+Máximo de {0} tatuagens,,,,scripts/core/Profile.cs
+Mínimo de {0} caracteres,,,,scripts/core/Profile.cs
+Nome reservado,,,,scripts/core/Profile.cs
+Não é um personagem,,,,scripts/core/Profile.cs
+Não é uma tatuagem,,,,scripts/core/Profile.cs
+Personagem fora do inventário ou expirado,,,,scripts/core/Profile.cs
+Precisa do item Troca de nome,,,,scripts/core/Profile.cs
+"Use só letras, números, _ e -",,,,scripts/core/Profile.cs
+Brasa,,,,scripts/core/RoomConfig.cs
+Caçada,,,,scripts/core/RoomConfig.cs
+Cinza,,,,scripts/core/RoomConfig.cs
+Corvo,,,,scripts/core/RoomConfig.cs
+Dominação,,,,scripts/core/RoomConfig.cs
+Equipe,,,,scripts/core/RoomConfig.cs
+Faísca,,,,scripts/core/RoomConfig.cs
+Ferrugem,,,,scripts/core/RoomConfig.cs
+Garoa,,,,scripts/core/RoomConfig.cs
+Granito,,,,scripts/core/RoomConfig.cs
+Lâmina,,,,scripts/core/RoomConfig.cs
+Mata-mata,,,,scripts/core/RoomConfig.cs
+Neblina,,,,scripts/core/RoomConfig.cs
+Pólvora,,,,scripts/core/RoomConfig.cs
+Raposa,,,,scripts/core/RoomConfig.cs
+Sala de treino,,,,scripts/core/RoomConfig.cs
+Sem pesadas,,,,scripts/core/RoomConfig.cs
+Sobrevivência,,,,scripts/core/RoomConfig.cs
+Sombra,,,,scripts/core/RoomConfig.cs
+Só faca,,,,scripts/core/RoomConfig.cs
+Só pistolas,,,,scripts/core/RoomConfig.cs
+Tormenta,,,,scripts/core/RoomConfig.cs
+Trovão,,,,scripts/core/RoomConfig.cs
+Urtiga,,,,scripts/core/RoomConfig.cs
+Víbora,,,,scripts/core/RoomConfig.cs
+Arma pesada proibida nesta sala,,,,scripts/core/RoomRules.cs
+Sala sem armas pesadas,,,,scripts/core/RoomRules.cs
+Sala só de pistolas: todo conjunto vira pistola,,,,scripts/core/RoomRules.cs
+"A mais lisa, também em folha e grade; deixa um leve rastro no que se move rápido.",,,,scripts/core/Settings.cs
+Alta,,,,scripts/core/Settings.cs
+Amarelo,,,,scripts/core/Settings.cs
+Baixa,,,,scripts/core/Settings.cs
+"Bordas lisas nos objetos, custo baixo.",,,,scripts/core/Settings.cs
+Bordas lisas nos objetos. O padrão.,,,,scripts/core/Settings.cs
+Bordas serrilhadas. A mais leve.,,,,scripts/core/Settings.cs
+Branco,,,,scripts/core/Settings.cs
+Ciano,,,,scripts/core/Settings.cs
+Desligada,,,,scripts/core/Settings.cs
+"Filtro na tela inteira: quase de graça, mas borra um pouco.",,,,scripts/core/Settings.cs
+FXAA (leve),,,,scripts/core/Settings.cs
+Magenta,,,,scripts/core/Settings.cs
+Mais a luz que rebate nas paredes e sombra mais nítida. O padrão.,,,,scripts/core/Settings.cs
+"Mais reflexo no chão e nas superfícies lisas, e a sombra mais fina.",,,,scripts/core/Settings.cs
+Master,,,,scripts/core/Settings.cs
+MSAA 2×,,,,scripts/core/Settings.cs
+MSAA 4×,,,,scripts/core/Settings.cs
+MSAA 4× + FXAA,,,,scripts/core/Settings.cs
+"MSAA 4× e o filtro por cima, que pega também folha e grade.",,,,scripts/core/Settings.cs
+Média,,,,scripts/core/Settings.cs
+"Sombra simples, sem oclusão nem brilho. Para máquina fraca.",,,,scripts/core/Settings.cs
+"Sombra suave, oclusão nos cantos e brilho das luzes.",,,,scripts/core/Settings.cs
+TAA (mais lisa),,,,scripts/core/Settings.cs
+Ultra,,,,scripts/core/Settings.cs
+Verde,,,,scripts/core/Settings.cs
+Vermelho,,,,scripts/core/Settings.cs
+As licenças completas e a origem de cada arquivo estão na pasta do jogo: ,,,,scripts/lobby/CreditsScreen.cs
+"assets/audio/CREDITOS.md, assets/fonts/OFL.txt e docs/PACOTES.md.",,,,scripts/lobby/CreditsScreen.cs
+Créditos,,,,scripts/lobby/CreditsScreen.cs
+quem fez e de onde veio cada coisa,,,,scripts/lobby/CreditsScreen.cs
+Voltar às opções,,,,scripts/lobby/CreditsScreen.cs
+Missões do dia,,,,scripts/lobby/DailyMissions.cs
+troca em {0} h {1:00} min,,,,scripts/lobby/DailyMissions.cs
+Ver todas as missões,,,,scripts/lobby/DailyMissions.cs
+"1. Escolha o conjunto.
+2. Clique no espaço que quer trocar.
+3. Clique na arma: aqui aparecem os atributos e o botão Equipar.",,,,scripts/lobby/InventoryScreen.cs
+"A classe define escudo, velocidade, pulo e garra. As tatuagens são ajustes pequenos por cima dela. ",,,,scripts/lobby/InventoryScreen.cs
+Classe,,,,scripts/lobby/InventoryScreen.cs
+Classe em uso,,,,scripts/lobby/InventoryScreen.cs
+Classe {0} em uso,,,,scripts/lobby/InventoryScreen.cs
+Classes,,,,scripts/lobby/InventoryScreen.cs
+Clique no espaço que quer trocar,,,,scripts/lobby/InventoryScreen.cs
+clique num deles e depois em Usar.,,,,scripts/lobby/InventoryScreen.cs
+Clique num espaço à esquerda e depois num item: aqui aparecem os detalhes e o botão de usar.,,,,scripts/lobby/InventoryScreen.cs
+Corpo a corpo,,,,scripts/lobby/InventoryScreen.cs
+Custo do conjunto,,,,scripts/lobby/InventoryScreen.cs
+Descartar,,,,scripts/lobby/InventoryScreen.cs
+Descartar item?,,,,scripts/lobby/InventoryScreen.cs
+Em uso {0},,,,scripts/lobby/InventoryScreen.cs
+Equipada,,,,scripts/lobby/InventoryScreen.cs
+Equipada em {0},,,,scripts/lobby/InventoryScreen.cs
+Equipar em {0},,,,scripts/lobby/InventoryScreen.cs
+Equipar tatuagem,,,,scripts/lobby/InventoryScreen.cs
+Escolha a classe do lobo,,,,scripts/lobby/InventoryScreen.cs
+Escolha a granada,,,,scripts/lobby/InventoryScreen.cs
+Escolha a primária,,,,scripts/lobby/InventoryScreen.cs
+Escolha a secundária,,,,scripts/lobby/InventoryScreen.cs
+Escolha as tatuagens,,,,scripts/lobby/InventoryScreen.cs
+Escolha o personagem,,,,scripts/lobby/InventoryScreen.cs
+Fixo em todo conjunto,,,,scripts/lobby/InventoryScreen.cs
+Granada 2,,,,scripts/lobby/InventoryScreen.cs
+Grátis,,,,scripts/lobby/InventoryScreen.cs
+Grátis  ·  +50 WP,,,,scripts/lobby/InventoryScreen.cs
+Inventário,,,,scripts/lobby/InventoryScreen.cs
+Ir à loja,,,,scripts/lobby/InventoryScreen.cs
+Luz e fumaça: em breve,,,,scripts/lobby/InventoryScreen.cs
+Mais tempo,,,,scripts/lobby/InventoryScreen.cs
+Manter,,,,scripts/lobby/InventoryScreen.cs
+na Vanguarda,,,,scripts/lobby/InventoryScreen.cs
+na Vanguarda e no Sindicato,,,,scripts/lobby/InventoryScreen.cs
+"Nada aqui ainda. A loja vende armas, granadas e tatuagens por Presas.",,,,scripts/lobby/InventoryScreen.cs
+no Sindicato,,,,scripts/lobby/InventoryScreen.cs
+Nome do conjunto,,,,scripts/lobby/InventoryScreen.cs
+O conjunto padrão é fixo. Escolha outro conjunto para equipar.,,,,scripts/lobby/InventoryScreen.cs
+"O conjunto padrão é fixo: grátis, sempre disponível, rende +50 WP",,,,scripts/lobby/InventoryScreen.cs
+O padrão é fixo: veja o que vem nele,,,,scripts/lobby/InventoryScreen.cs
+"O personagem vale no time dele, com o lobo dele: escolheu a pessoa, transforma no lobo dela. ",,,,scripts/lobby/InventoryScreen.cs
+Padrão (Ely),,,,scripts/lobby/InventoryScreen.cs
+Padrão (Exo Gray),,,,scripts/lobby/InventoryScreen.cs
+Personagem,,,,scripts/lobby/InventoryScreen.cs
+Primária,,,,scripts/lobby/InventoryScreen.cs
+Pronto para usar na partida,,,,scripts/lobby/InventoryScreen.cs
+Renovar,,,,scripts/lobby/InventoryScreen.cs
+Secundária,,,,scripts/lobby/InventoryScreen.cs
+"Sem personagem, o time usa o de sempre.",,,,scripts/lobby/InventoryScreen.cs
+Serviços,,,,scripts/lobby/InventoryScreen.cs
+"Serviços são itens de usar uma vez, como a troca de nome. Os que você comprou aparecem ao lado: ",,,,scripts/lobby/InventoryScreen.cs
+Seu lobo,,,,scripts/lobby/InventoryScreen.cs
+Seus conjuntos,,,,scripts/lobby/InventoryScreen.cs
+Seus personagens,,,,scripts/lobby/InventoryScreen.cs
+Seus serviços,,,,scripts/lobby/InventoryScreen.cs
+Tatuagem {0},,,,scripts/lobby/InventoryScreen.cs
+Tatuagens,,,,scripts/lobby/InventoryScreen.cs
+Tatuagens  ·  {0}/{1},,,,scripts/lobby/InventoryScreen.cs
+Tirar,,,,scripts/lobby/InventoryScreen.cs
+Todas,,,,scripts/lobby/InventoryScreen.cs
+Todas as suas armas,,,,scripts/lobby/InventoryScreen.cs
+Todos,,,,scripts/lobby/InventoryScreen.cs
+"Tudo do lobo se compra com Presas, nunca com dinheiro.",,,,scripts/lobby/InventoryScreen.cs
+Usar,,,,scripts/lobby/InventoryScreen.cs
+Usar esta classe,,,,scripts/lobby/InventoryScreen.cs
+Usar {0},,,,scripts/lobby/InventoryScreen.cs
+Vazio,,,,scripts/lobby/InventoryScreen.cs
+Ver itens para {0},,,,scripts/lobby/InventoryScreen.cs
+WP {0},,,,scripts/lobby/InventoryScreen.cs
+WP é o que você gasta cada vez que renasce com este conjunto. Ganha-se WP jogando a partida.,,,,scripts/lobby/InventoryScreen.cs
+{0} descartada,,,,scripts/lobby/InventoryScreen.cs
+{0} em uso {1},,,,scripts/lobby/InventoryScreen.cs
+{0} equipada,,,,scripts/lobby/InventoryScreen.cs
+{0} equipada em {1},,,,scripts/lobby/InventoryScreen.cs
+"{0} sai do inventário. Se estiver num conjunto, o conjunto volta para o padrão naquele lugar. Não há reembolso.",,,,scripts/lobby/InventoryScreen.cs
+Destaque,,,,scripts/lobby/ItemCard.cs
+Equipado,,,,scripts/lobby/ItemCard.cs
+Expirado,,,,scripts/lobby/ItemCard.cs
+Incluído,,,,scripts/lobby/ItemCard.cs
+Por patente,,,,scripts/lobby/ItemCard.cs
+Possui,,,,scripts/lobby/ItemCard.cs
+Possui · renovar,,,,scripts/lobby/ItemCard.cs
+−20% hoje,,,,scripts/lobby/ItemCard.cs
+A vida é a mesma como humano e como lobo; o lobo soma o escudo da classe por cima.,,,,scripts/lobby/ItemDetail.cs
+Alcance,,,,scripts/lobby/ItemDetail.cs
+Atributos,,,,scripts/lobby/ItemDetail.cs
+Até {0} tatuagens equipadas ao mesmo tempo. Vale só para você.,,,,scripts/lobby/ItemDetail.cs
+Cadência,,,,scripts/lobby/ItemDetail.cs
+"Comparando com {0}, equipada no mesmo lugar",,,,scripts/lobby/ItemDetail.cs
+Controle,,,,scripts/lobby/ItemDetail.cs
+Dano,,,,scripts/lobby/ItemDetail.cs
+Dano da garra,,,,scripts/lobby/ItemDetail.cs
+Decaimento do escudo,,,,scripts/lobby/ItemDetail.cs
+Descrição,,,,scripts/lobby/ItemDetail.cs
+Escudo,,,,scripts/lobby/ItemDetail.cs
+Escudo máximo,,,,scripts/lobby/ItemDetail.cs
+Exige a patente {0},,,,scripts/lobby/ItemDetail.cs
+Garra,,,,scripts/lobby/ItemDetail.cs
+humano e lobo,,,,scripts/lobby/ItemDetail.cs
+Mobilidade,,,,scripts/lobby/ItemDetail.cs
+Os dois,,,,scripts/lobby/ItemDetail.cs
+Pente,,,,scripts/lobby/ItemDetail.cs
+Precisão,,,,scripts/lobby/ItemDetail.cs
+Pulo,,,,scripts/lobby/ItemDetail.cs
+Pulo do lobo,,,,scripts/lobby/ItemDetail.cs
+Recarga,,,,scripts/lobby/ItemDetail.cs
+Resistência,,,,scripts/lobby/ItemDetail.cs
+Time,,,,scripts/lobby/ItemDetail.cs
+Vale nas duas formas,,,,scripts/lobby/ItemDetail.cs
+Velocidade,,,,scripts/lobby/ItemDetail.cs
+Velocidade do lobo,,,,scripts/lobby/ItemDetail.cs
+Vida,,,,scripts/lobby/ItemDetail.cs
+{0:0} por min,,,,scripts/lobby/ItemDetail.cs
+1 uso,,,,scripts/lobby/ItemInfo.cs
+Destrava em {0},,,,scripts/lobby/ItemInfo.cs
+Permanente,,,,scripts/lobby/ItemInfo.cs
+Serviço,,,,scripts/lobby/ItemInfo.cs
+Tatuagem,,,,scripts/lobby/ItemInfo.cs
+{0} d {1} h,,,,scripts/lobby/ItemInfo.cs
+{0} h {1} min,,,,scripts/lobby/ItemInfo.cs
+{0} usos,,,,scripts/lobby/ItemInfo.cs
+Abrir o perfil,,,,scripts/lobby/LobbyHeader.cs
+Expandir a barra,,,,scripts/lobby/LobbyHeader.cs
+LEAGUE,,,,scripts/lobby/LobbyHeader.cs
+Loja,,,,scripts/lobby/LobbyHeader.cs
+Missões,,,,scripts/lobby/LobbyHeader.cs
+MÁX,,,,scripts/lobby/LobbyHeader.cs
+Perfil,,,,scripts/lobby/LobbyHeader.cs
+Recolher a barra,,,,scripts/lobby/LobbyHeader.cs
+Sair,,,,scripts/lobby/LobbyHeader.cs
+Salas,,,,scripts/lobby/LobbyHeader.cs
+"Seu perfil, inventário e missões ficam salvos neste computador.",,,,scripts/lobby/LobbyHeader.cs
+WOLF,,,,scripts/lobby/LobbyHeader.cs
+Jhon,,,,scripts/lobby/LobbyShell.cs
+Sala do Jhon,,,,scripts/lobby/LobbyShell.cs
+cada uma dá um título,,,,scripts/lobby/MissionsScreen.cs
+Diárias,,,,scripts/lobby/MissionsScreen.cs
+Permanentes,,,,scripts/lobby/MissionsScreen.cs
+Progresso conta em toda partida terminada,,,,scripts/lobby/MissionsScreen.cs
+Resgatada,,,,scripts/lobby/MissionsScreen.cs
+"Resgatada: +{0} Presas, +{1} XP",,,,scripts/lobby/MissionsScreen.cs
+Resgatar,,,,scripts/lobby/MissionsScreen.cs
+Semanais,,,,scripts/lobby/MissionsScreen.cs
+Surface2,,,,scripts/lobby/MissionsScreen.cs
+trocam em {0} d {1} h,,,,scripts/lobby/MissionsScreen.cs
+trocam em {0} h {1:00} min,,,,scripts/lobby/MissionsScreen.cs
+título: {0},,,,scripts/lobby/MissionsScreen.cs
+{0} pronta(s) para resgatar,,,,scripts/lobby/MissionsScreen.cs
+Cancelar,,,,scripts/lobby/ModePicker.cs
+Contra bots,,,,scripts/lobby/ModePicker.cs
+Contra jogadores,,,,scripts/lobby/ModePicker.cs
+A conta guarda a sua patente online e o seu lugar no ranking.,,,,scripts/lobby/OnlineScreen.cs
+A sua sessão venceu. Entre de novo.,,,,scripts/lobby/OnlineScreen.cs
+Atualizar,,,,scripts/lobby/OnlineScreen.cs
+até {0} · {1} min,,,,scripts/lobby/OnlineScreen.cs
+Bots,,,,scripts/lobby/OnlineScreen.cs
+Carregando…,,,,scripts/lobby/OnlineScreen.cs
+Conectando…,,,,scripts/lobby/OnlineScreen.cs
+Conversa,,,,scripts/lobby/OnlineScreen.cs
+Criar,,,,scripts/lobby/OnlineScreen.cs
+Criar conta,,,,scripts/lobby/OnlineScreen.cs
+Criar sala,,,,scripts/lobby/OnlineScreen.cs
+Criar sala online,,,,scripts/lobby/OnlineScreen.cs
+"Crie a sua e chame alguém. Nos modos contra bots, o dono da sala põe os bots que quiser em cada time.",,,,scripts/lobby/OnlineScreen.cs
+Entrando como {0} em {1}.,,,,scripts/lobby/OnlineScreen.cs
+Entrar,,,,scripts/lobby/OnlineScreen.cs
+"Entre com a sua conta do servidor, ou crie uma agora. ",,,,scripts/lobby/OnlineScreen.cs
+Escolha o modo de jogo,,,,scripts/lobby/OnlineScreen.cs
+Escreva e aperte Enter,,,,scripts/lobby/OnlineScreen.cs
+Falando com o servidor…,,,,scripts/lobby/OnlineScreen.cs
+Mapa,,,,scripts/lobby/OnlineScreen.cs
+Modo,,,,scripts/lobby/OnlineScreen.cs
+Nenhuma sala aberta agora,,,,scripts/lobby/OnlineScreen.cs
+Ninguém jogou ainda.,,,,scripts/lobby/OnlineScreen.cs
+Nome,,,,scripts/lobby/OnlineScreen.cs
+Nome da sala,,,,scripts/lobby/OnlineScreen.cs
+Não achei o servidor em {0}. Ele está no ar? (docker compose up -d),,,,scripts/lobby/OnlineScreen.cs
+Não consegui carregar.,,,,scripts/lobby/OnlineScreen.cs
+Não consegui falar com {0}.,,,,scripts/lobby/OnlineScreen.cs
+Não consegui falar com {0}. O servidor está no ar?,,,,scripts/lobby/OnlineScreen.cs
+Partida registrada no servidor: +{0} XP de patente online,,,,scripts/lobby/OnlineScreen.cs
+Pontos,,,,scripts/lobby/OnlineScreen.cs
+Ranking,,,,scripts/lobby/OnlineScreen.cs
+Sair da conta,,,,scripts/lobby/OnlineScreen.cs
+Sala com senha,,,,scripts/lobby/OnlineScreen.cs
+Sala de {0},,,,scripts/lobby/OnlineScreen.cs
+Sem ligação com o servidor,,,,scripts/lobby/OnlineScreen.cs
+Sem senha,,,,scripts/lobby/OnlineScreen.cs
+Senha,,,,scripts/lobby/OnlineScreen.cs
+Senha (8 ou mais),,,,scripts/lobby/OnlineScreen.cs
+Senha da sala,,,,scripts/lobby/OnlineScreen.cs
+Servidor,,,,scripts/lobby/OnlineScreen.cs
+Tempo,,,,scripts/lobby/OnlineScreen.cs
+Tentar de novo,,,,scripts/lobby/OnlineScreen.cs
+Times,,,,scripts/lobby/OnlineScreen.cs
+{0} abates,,,,scripts/lobby/OnlineScreen.cs
+{0} aberta(s) · você é {1},,,,scripts/lobby/OnlineScreen.cs
+{0} jogador(es) e {1} bot(s). Quem entra toma o lugar de um bot.,,,,scripts/lobby/OnlineScreen.cs
+{0} minutos,,,,scripts/lobby/OnlineScreen.cs
+Cor,,,,scripts/lobby/OptionsScreen.cs
+Cruz,,,,scripts/lobby/OptionsScreen.cs
+Cruz com ponto,,,,scripts/lobby/OptionsScreen.cs
+Efeitos,,,,scripts/lobby/OptionsScreen.cs
+Espaço no centro,,,,scripts/lobby/OptionsScreen.cs
+Espessura,,,,scripts/lobby/OptionsScreen.cs
+Estilo,,,,scripts/lobby/OptionsScreen.cs
+Geral,,,,scripts/lobby/OptionsScreen.cs
+Idioma,,,,scripts/lobby/OptionsScreen.cs
+Interface,,,,scripts/lobby/OptionsScreen.cs
+Mira,,,,scripts/lobby/OptionsScreen.cs
+Mira padrão,,,,scripts/lobby/OptionsScreen.cs
+Mouse,,,,scripts/lobby/OptionsScreen.cs
+Música e ambiente,,,,scripts/lobby/OptionsScreen.cs
+"O perfil fica salvo neste computador. Recomeçar apaga patente, XP, Presas, inventário, conjuntos e missões.",,,,scripts/lobby/OptionsScreen.cs
+O ponto tem um tamanho só.,,,,scripts/lobby/OptionsScreen.cs
+Opacidade,,,,scripts/lobby/OptionsScreen.cs
+Outra cor,,,,scripts/lobby/OptionsScreen.cs
+Ponto,,,,scripts/lobby/OptionsScreen.cs
+Qualidade,,,,scripts/lobby/OptionsScreen.cs
+Recomeçar,,,,scripts/lobby/OptionsScreen.cs
+Recomeçar perfil,,,,scripts/lobby/OptionsScreen.cs
+Recomeçar perfil?,,,,scripts/lobby/OptionsScreen.cs
+Sensibilidade,,,,scripts/lobby/OptionsScreen.cs
+Suavização,,,,scripts/lobby/OptionsScreen.cs
+Tamanho,,,,scripts/lobby/OptionsScreen.cs
+"Tudo volta ao começo: Filhote I, 3.000 Presas, só o equipamento inicial. Não dá para desfazer.",,,,scripts/lobby/OptionsScreen.cs
+Vale também no meio da partida.,,,,scripts/lobby/OptionsScreen.cs
+Vídeo,,,,scripts/lobby/OptionsScreen.cs
+{0:0} px,,,,scripts/lobby/OptionsScreen.cs
+Áudio,,,,scripts/lobby/OptionsScreen.cs
+Abates,,,,scripts/lobby/ProfileScreen.cs
+Abates como humano,,,,scripts/lobby/ProfileScreen.cs
+Abates como lobo,,,,scripts/lobby/ProfileScreen.cs
+Ainda nenhuma,,,,scripts/lobby/ProfileScreen.cs
+Arma favorita,,,,scripts/lobby/ProfileScreen.cs
+Assistências,,,,scripts/lobby/ProfileScreen.cs
+Classe de lobo favorita,,,,scripts/lobby/ProfileScreen.cs
+Consome um item Troca de nome.,,,,scripts/lobby/ProfileScreen.cs
+Derrotas · empates,,,,scripts/lobby/ProfileScreen.cs
+Estatísticas,,,,scripts/lobby/ProfileScreen.cs
+Experiência,,,,scripts/lobby/ProfileScreen.cs
+faltam {0} XP,,,,scripts/lobby/ProfileScreen.cs
+Histórico de patentes,,,,scripts/lobby/ProfileScreen.cs
+Humano contra lobo,,,,scripts/lobby/ProfileScreen.cs
+K/D {0:0.00},,,,scripts/lobby/ProfileScreen.cs
+Mortes,,,,scripts/lobby/ProfileScreen.cs
+MVP,,,,scripts/lobby/ProfileScreen.cs
+Na cabeça,,,,scripts/lobby/ProfileScreen.cs
+Nenhum,,,,scripts/lobby/ProfileScreen.cs
+Nome trocado,,,,scripts/lobby/ProfileScreen.cs
+Novo nome,,,,scripts/lobby/ProfileScreen.cs
+Partidas,,,,scripts/lobby/ProfileScreen.cs
+Patente máxima,,,,scripts/lobby/ProfileScreen.cs
+"Patente não cai: ela mede o caminho percorrido, não a fase atual.",,,,scripts/lobby/ProfileScreen.cs
+Perfil criado em {0:dd/MM/yyyy},,,,scripts/lobby/ProfileScreen.cs
+Próxima:,,,,scripts/lobby/ProfileScreen.cs
+Próximas patentes,,,,scripts/lobby/ProfileScreen.cs
+Tempo jogado,,,,scripts/lobby/ProfileScreen.cs
+Trocar,,,,scripts/lobby/ProfileScreen.cs
+Trocar nome,,,,scripts/lobby/ProfileScreen.cs
+Trocar nome (item da loja),,,,scripts/lobby/ProfileScreen.cs
+Título,,,,scripts/lobby/ProfileScreen.cs
+Títulos vêm das missões permanentes,,,,scripts/lobby/ProfileScreen.cs
+Vitórias,,,,scripts/lobby/ProfileScreen.cs
+{0:0}% das partidas,,,,scripts/lobby/ProfileScreen.cs
+{0:0}% dos abates,,,,scripts/lobby/ProfileScreen.cs
+{0} como humano,,,,scripts/lobby/ProfileScreen.cs
+{0} como lobo,,,,scripts/lobby/ProfileScreen.cs
+{0} h {1:00} min,,,,scripts/lobby/ProfileScreen.cs
++  Adicionar bot,,,,scripts/lobby/RoomScreen.cs
+4 a 8 caracteres. Vale quando houver multijogador.,,,,scripts/lobby/RoomScreen.cs
+A partida está em andamento,,,,scripts/lobby/RoomScreen.cs
+A PARTIDA VAI COMEÇAR,,,,scripts/lobby/RoomScreen.cs
+A senha tem de 4 a 8 caracteres,,,,scripts/lobby/RoomScreen.cs
+Abates / mortes,,,,scripts/lobby/RoomScreen.cs
+Aguardando,,,,scripts/lobby/RoomScreen.cs
+Arma,,,,scripts/lobby/RoomScreen.cs
+Bare,,,,scripts/lobby/RoomScreen.cs
+Bot,,,,scripts/lobby/RoomScreen.cs
+Canal local,,,,scripts/lobby/RoomScreen.cs
+Convidar,,,,scripts/lobby/RoomScreen.cs
+Convidar amigos exige servidor,,,,scripts/lobby/RoomScreen.cs
+Dificuldade,,,,scripts/lobby/RoomScreen.cs
+Difíceis,,,,scripts/lobby/RoomScreen.cs
+difíceis,,,,scripts/lobby/RoomScreen.cs
+Difícil,,,,scripts/lobby/RoomScreen.cs
+Dono da sala,,,,scripts/lobby/RoomScreen.cs
+Em breve: a partida ainda não tem rodadas.,,,,scripts/lobby/RoomScreen.cs
+Encher com bots,,,,scripts/lobby/RoomScreen.cs
+Enviar,,,,scripts/lobby/RoomScreen.cs
+Escolha o mapa,,,,scripts/lobby/RoomScreen.cs
+Escreva para a sala…,,,,scripts/lobby/RoomScreen.cs
+Espectador,,,,scripts/lobby/RoomScreen.cs
+Falta alguém marcar que está pronto,,,,scripts/lobby/RoomScreen.cs
+Falta alguém pronto num dos times,,,,scripts/lobby/RoomScreen.cs
+Fechar,,,,scripts/lobby/RoomScreen.cs
+Fogo amigo,,,,scripts/lobby/RoomScreen.cs
+Fáceis,,,,scripts/lobby/RoomScreen.cs
+fáceis,,,,scripts/lobby/RoomScreen.cs
+Fácil,,,,scripts/lobby/RoomScreen.cs
+Iniciar partida,,,,scripts/lobby/RoomScreen.cs
+Jogador,,,,scripts/lobby/RoomScreen.cs
+Jogadores,,,,scripts/lobby/RoomScreen.cs
+M16A2,,,,scripts/lobby/RoomScreen.cs
+Marcar pronto,,,,scripts/lobby/RoomScreen.cs
+Médio,,,,scripts/lobby/RoomScreen.cs
+Médios,,,,scripts/lobby/RoomScreen.cs
+médios,,,,scripts/lobby/RoomScreen.cs
+O time {0} está cheio,,,,scripts/lobby/RoomScreen.cs
+Objetivo,,,,scripts/lobby/RoomScreen.cs
+Online,,,,scripts/lobby/RoomScreen.cs
+Os dois times precisam de alguém,,,,scripts/lobby/RoomScreen.cs
+Os dois times precisam de alguém: ponha um bot no time vazio,,,,scripts/lobby/RoomScreen.cs
+Passe o número da sala: {0},,,,scripts/lobby/RoomScreen.cs
+Patente,,,,scripts/lobby/RoomScreen.cs
+Pronto  »,,,,scripts/lobby/RoomScreen.cs
+Prontos: {0} contra {1} — espere mais alguém ficar pronto,,,,scripts/lobby/RoomScreen.cs
+Regras da sala,,,,scripts/lobby/RoomScreen.cs
+Sair da sala,,,,scripts/lobby/RoomScreen.cs
+SALA,,,,scripts/lobby/RoomScreen.cs
+Sala,,,,scripts/lobby/RoomScreen.cs
+Situação,,,,scripts/lobby/RoomScreen.cs
+só o mestre altera,,,,scripts/lobby/RoomScreen.cs
+Só o mestre inicia,,,,scripts/lobby/RoomScreen.cs
+Só o mestre troca o mapa,,,,scripts/lobby/RoomScreen.cs
+Tipo,,,,scripts/lobby/RoomScreen.cs
+Tirar {0},,,,scripts/lobby/RoomScreen.cs
+Tire jogadores antes de diminuir os times,,,,scripts/lobby/RoomScreen.cs
+Troca de lado,,,,scripts/lobby/RoomScreen.cs
+Trocar de lado,,,,scripts/lobby/RoomScreen.cs
+Vale quando houver multijogador.,,,,scripts/lobby/RoomScreen.cs
+Ver perfil,,,,scripts/lobby/RoomScreen.cs
+{0}  ·  {1:0}% de vitórias,,,,scripts/lobby/RoomScreen.cs
+{0} (em breve),,,,scripts/lobby/RoomScreen.cs
+{0} entrou na sala.,,,,scripts/lobby/RoomScreen.cs
+{0} está pronto.,,,,scripts/lobby/RoomScreen.cs
+{0} ficou de fora: não estava pronto.,,,,scripts/lobby/RoomScreen.cs
+{0} foi para o time {1}.,,,,scripts/lobby/RoomScreen.cs
+{0} não está mais pronto.,,,,scripts/lobby/RoomScreen.cs
+1 item,,,,scripts/lobby/ShopScreen.cs
+A moeda paga só existe com servidor. E ela nunca compra poder.,,,,scripts/lobby/ShopScreen.cs
+Abrir no inventário,,,,scripts/lobby/ShopScreen.cs
+Classes de lobo,,,,scripts/lobby/ShopScreen.cs
+Comprado: {0} · {1},,,,scripts/lobby/ShopScreen.cs
+Comprar,,,,scripts/lobby/ShopScreen.cs
+Comprar mais tempo,,,,scripts/lobby/ShopScreen.cs
+Comprar Sangue,,,,scripts/lobby/ShopScreen.cs
+Confirmar,,,,scripts/lobby/ShopScreen.cs
+Confirmar compra,,,,scripts/lobby/ShopScreen.cs
+Conta,,,,scripts/lobby/ShopScreen.cs
+Destaques,,,,scripts/lobby/ShopScreen.cs
+Destrava na patente {0} — não está à venda.,,,,scripts/lobby/ShopScreen.cs
+Duração,,,,scripts/lobby/ShopScreen.cs
+Em destaque,,,,scripts/lobby/ShopScreen.cs
+"Escolha a categoria à esquerda e clique num item: aqui aparecem os atributos, por quanto tempo comprar e o preço.",,,,scripts/lobby/ShopScreen.cs
+Exige {0},,,,scripts/lobby/ShopScreen.cs
+Faltam {0} Presas,,,,scripts/lobby/ShopScreen.cs
+Granadas,,,,scripts/lobby/ShopScreen.cs
+Já é permanente,,,,scripts/lobby/ShopScreen.cs
+"Já é sua. Escolha no inventário, aba Lobo.",,,,scripts/lobby/ShopScreen.cs
+Melhor valor,,,,scripts/lobby/ShopScreen.cs
+Melhor valor: menor preço por dia,,,,scripts/lobby/ShopScreen.cs
+Nada à venda aqui agora.,,,,scripts/lobby/ShopScreen.cs
+Oferta do dia,,,,scripts/lobby/ShopScreen.cs
+Para sempre,,,,scripts/lobby/ShopScreen.cs
+Presas insuficientes,,,,scripts/lobby/ShopScreen.cs
+Presas insuficientes. Jogue partidas e resgate missões para ganhar mais.,,,,scripts/lobby/ShopScreen.cs
+Preço,,,,scripts/lobby/ShopScreen.cs
+Primárias,,,,scripts/lobby/ShopScreen.cs
+Saldo atual,,,,scripts/lobby/ShopScreen.cs
+Saldo depois,,,,scripts/lobby/ShopScreen.cs
+Secundárias,,,,scripts/lobby/ShopScreen.cs
+Troca em {0} h {1:00} min  ·  20% de desconto,,,,scripts/lobby/ShopScreen.cs
+"Tudo aqui custa Presas, a moeda que você ganha jogando.",,,,scripts/lobby/ShopScreen.cs
+Um uso,,,,scripts/lobby/ShopScreen.cs
+Vem com todo perfil.,,,,scripts/lobby/ShopScreen.cs
+Você tem,,,,scripts/lobby/ShopScreen.cs
+{0:0} Presas por dia,,,,scripts/lobby/ShopScreen.cs
+{0} itens,,,,scripts/lobby/ShopScreen.cs
+3 a 16 caracteres,,,,scripts/lobby/WelcomeScreen.cs
+"Arsenal, conjuntos e a economia de WP.",,,,scripts/lobby/WelcomeScreen.cs
+Dois times: Vanguarda e Sindicato.,,,,scripts/lobby/WelcomeScreen.cs
+HUD de combate e placar refeitos.,,,,scripts/lobby/WelcomeScreen.cs
+"Humano contra lobo. Escolha o nome que vai aparecer no placar, no feed e para quem estiver na sua sala.",,,,scripts/lobby/WelcomeScreen.cs
+"Letras, números, _ e -. O nome é fixo: trocar depois exige o item Troca de nome, da loja.",,,,scripts/lobby/WelcomeScreen.cs
+"Lobby novo: salas, loja, inventário, perfil, missões e opções.",,,,scripts/lobby/WelcomeScreen.cs
+Nickname,,,,scripts/lobby/WelcomeScreen.cs
+Novidades,,,,scripts/lobby/WelcomeScreen.cs
+"Patentes, XP e Presas: cada partida rende progresso.",,,,scripts/lobby/WelcomeScreen.cs
+"Sons para tudo: armas, passos, lobo, interface.",,,,scripts/lobby/WelcomeScreen.cs
++10% de escudo máximo do lobo.,,,,scripts/meta/Catalog.cs
++5% de velocidade na forma de lobo.,,,,scripts/meta/Catalog.cs
++6% de dano da garra.,,,,scripts/meta/Catalog.cs
++6% de força no pulo do lobo.,,,,scripts/meta/Catalog.cs
+1 dia,,,,scripts/meta/Catalog.cs
+30 dias,,,,scripts/meta/Catalog.cs
+7 dias,,,,scripts/meta/Catalog.cs
+90 dias,,,,scripts/meta/Catalog.cs
+A secundária de todo conjunto. Troca rápida para quando o pente acaba no meio da luta.,,,,scripts/meta/Catalog.cs
+AK-47,,,,scripts/meta/Catalog.cs
+Anti-lobo: atordoa e desacelera quem pega o estouro. Não existe para matar; existe para o lobo não chegar.,,,,scripts/meta/Catalog.cs
+AR-15,,,,scripts/meta/Catalog.cs
+AR-15 Ultimate,,,,scripts/meta/Catalog.cs
+Bruto,,,,scripts/meta/Catalog.cs
+Classe de lobo,,,,scripts/meta/Catalog.cs
+Couro Grosso,,,,scripts/meta/Catalog.cs
+Escopeta,,,,scripts/meta/Catalog.cs
+"Escopeta de bombeada, recarga cartucho a cartucho. Decide corredor; não existe em campo aberto.",,,,scripts/meta/Catalog.cs
+Fuzil de assalto,,,,scripts/meta/Catalog.cs
+Fuzil de controle,,,,scripts/meta/Catalog.cs
+Garra Afiada,,,,scripts/meta/Catalog.cs
+Impacto bruto: mata com um tiro na cabeça. Paga com recuo pesado e um estampido que se ouve de longe.,,,,scripts/meta/Catalog.cs
+Ligeiro,,,,scripts/meta/Catalog.cs
+"Linha de frente: escudo alto, garra pesada, resiste a tiro no corpo. Mais lento no chão.",,,,scripts/meta/Catalog.cs
+"O AR-15 no limite: um pouco mais de dano, cadência e pente, e o recuo mais domado. Pele roxa com flames que brilham.",,,,scripts/meta/Catalog.cs
+O escudo do lobo se desfaz 20% mais devagar.,,,,scripts/meta/Catalog.cs
+O fuzil mais estável do arsenal: recuo baixo e linear. Pune quem atira andando.,,,,scripts/meta/Catalog.cs
+"O fuzil padrão de antes: os mesmos números do AR-15, com alça de transporte e coronha fixa.",,,,scripts/meta/Catalog.cs
+"O fuzil padrão. Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e não é ruim em nada.",,,,scripts/meta/Catalog.cs
+os dois times,,,,scripts/meta/Catalog.cs
+Pata Leve,,,,scripts/meta/Catalog.cs
+Pelo Denso,,,,scripts/meta/Catalog.cs
+Perm,,,,scripts/meta/Catalog.cs
+Personagem · {0},,,,scripts/meta/Catalog.cs
+Pistola,,,,scripts/meta/Catalog.cs
+Salto Longo,,,,scripts/meta/Catalog.cs
+SG-552,,,,scripts/meta/Catalog.cs
+Silenciosa: não faz ruído para os bots. A arma de quem quer o abate sem entregar a posição.,,,,scripts/meta/Catalog.cs
+Sindicato,,,,scripts/meta/Catalog.cs
+"SMG de dano, a arma anti-lobo. Rápida na mão e forte de perto — a que você puxa quando ouve o uivo.",,,,scripts/meta/Catalog.cs
+Submetralhadora,,,,scripts/meta/Catalog.cs
+Tatuagem · lobo,,,,scripts/meta/Catalog.cs
+Troca de nome,,,,scripts/meta/Catalog.cs
+Troca o seu nickname uma vez. O nome é fixo sem este item.,,,,scripts/meta/Catalog.cs
+UMP-45,,,,scripts/meta/Catalog.cs
+Vanguarda,,,,scripts/meta/Catalog.cs
+"Velocidade e flanco: o lobo mais rápido e o pulo mais longo, com pouco escudo. Destrava em Batedor I.",,,,scripts/meta/Catalog.cs
+.NET — .NET Foundation e colaboradores,,,,scripts/meta/Credits.cs
+"Acertos, faca e explosão",,,,scripts/meta/Credits.cs
+AK-74M,,,,scripts/meta/Credits.cs
+Animações do AR-15,,,,scripts/meta/Credits.cs
+"Animações do lobo (andar, agachar, correr de quatro, golpes, uivo, pulo e salto)",,,,scripts/meta/Credits.cs
+"Animações dos braços (fuzis, submetralhadora, pistola, escopeta)",,,,scripts/meta/Credits.cs
+Apache 2.0,,,,scripts/meta/Credits.cs
+"AR-15 (modelo, carregador e cápsula)",,,,scripts/meta/Credits.cs
+"AR-15: tiros, recarga e manuseio",,,,scripts/meta/Credits.cs
+Banco de dados,,,,scripts/meta/Credits.cs
+Barlow e Barlow Condensed,,,,scripts/meta/Credits.cs
+Braços e armas em primeira pessoa,,,,scripts/meta/Credits.cs
+Braços e mãos,,,,scripts/meta/Credits.cs
+"bumstrum, DJMaesen e teenjust500 (Sketchfab)",,,,scripts/meta/Credits.cs
+Cadson Demak,,,,scripts/meta/Credits.cs
+Carrois Type Design,,,,scripts/meta/Credits.cs
+CC BY 4.0,,,,scripts/meta/Credits.cs
+CC0,,,,scripts/meta/Credits.cs
+Cenário,,,,scripts/meta/Credits.cs
+Coozy (Sketchfab),,,,scripts/meta/Credits.cs
+Cransh (Sketchfab),,,,scripts/meta/Credits.cs
+creationwasteland (Sketchfab),,,,scripts/meta/Credits.cs
+"Criação, design e programação",,,,scripts/meta/Credits.cs
+Dharma Type,,,,scripts/meta/Credits.cs
+DJMaesen / bumstrum (Sketchfab),,,,scripts/meta/Credits.cs
+doomsentinel (Sketchfab),,,,scripts/meta/Credits.cs
+eNse7en (Sketchfab),,,,scripts/meta/Credits.cs
+Erik Kennedy,,,,scripts/meta/Credits.cs
+Escopeta semiautomática,,,,scripts/meta/Credits.cs
+Faca com braços e animações,,,,scripts/meta/Credits.cs
+"feitas para o jogo (tools/patentes.py, fotos_armas.tscn)",,,,scripts/meta/Credits.cs
+"feitos para o jogo, por código e no Blender (tools/)",,,,scripts/meta/Credits.cs
+Figtree,,,,scripts/meta/Credits.cs
+Font Diner,,,,scripts/meta/Credits.cs
+Free Firearm Sound Library,,,,scripts/meta/Credits.cs
+Free Sounds Pack,,,,scripts/meta/Credits.cs
+"Free Weapon SFX v1.1 (amostra do Weapon Sound Effects Bundle, GameDev Market)",,,,scripts/meta/Credits.cs
+Fuzil compacto com luneta,,,,scripts/meta/Credits.cs
+Física,,,,scripts/meta/Credits.cs
+gerado por Jhonata Bonadio no Meshy (meshy.ai),,,,scripts/meta/Credits.cs
+"Godot Engine — Juan Linietsky, Ariel Manzur e colaboradores",,,,scripts/meta/Credits.cs
+Granada de choque M84,,,,scripts/meta/Credits.cs
+haoliu95 (Sketchfab),,,,scripts/meta/Credits.cs
+Insígnias de patente e fotos das armas,,,,scripts/meta/Credits.cs
+Jeremy Tribby,,,,scripts/meta/Credits.cs
+Jhonata Bonadio,,,,scripts/meta/Credits.cs
+"Jhonata Bonadio, no rig do FPS Tutorial da InfimaGames",,,,scripts/meta/Credits.cs
+JM Solé,,,,scripts/meta/Credits.cs
+Jolt Physics — Jorrit Rouwe,,,,scripts/meta/Credits.cs
+Kanit,,,,scripts/meta/Credits.cs
+Kenney (kenney.nl),,,,scripts/meta/Credits.cs
+Letras,,,,scripts/meta/Credits.cs
+Letreiros: Alfa Slab One,,,,scripts/meta/Credits.cs
+Letreiros: Bebas Neue,,,,scripts/meta/Credits.cs
+Letreiros: Overpass,,,,scripts/meta/Credits.cs
+Letreiros: Permanent Marker,,,,scripts/meta/Credits.cs
+Letreiros: Saira Stencil One e Archivo Black,,,,scripts/meta/Credits.cs
+Letreiros: Share Tech Mono,,,,scripts/meta/Credits.cs
+Letreiros: Stardos Stencil,,,,scripts/meta/Credits.cs
+Licença da Asset Store,,,,scripts/meta/Credits.cs
+licença de uso do Mixamo,,,,scripts/meta/Credits.cs
+licença do GameDev Market,,,,scripts/meta/Credits.cs
+"Lobos azul e vermelho e a loba da Eve (modelo, esqueleto e textura)",,,,scripts/meta/Credits.cs
+M16A2 com braços e animações,,,,scripts/meta/Credits.cs
+"Mapa Armazém (galpão, contêineres, objetos e textura)",,,,scripts/meta/Credits.cs
+"Mapas, armas e mãos",,,,scripts/meta/Credits.cs
+MIT,,,,scripts/meta/Credits.cs
+Mixamo — Adobe,,,,scripts/meta/Credits.cs
+"Modelo e animações do humano, morte e corrida na parede do lobo; braços do AR-15 (X Bot); a Eve humana",,,,scripts/meta/Credits.cs
+Motor do jogo,,,,scripts/meta/Credits.cs
+"Músicas, vinhetas de início e de fim, sons da interface e a voz da locutora Iris",,,,scripts/meta/Credits.cs
+obra do autor,,,,scripts/meta/Credits.cs
+Oculus Audio Pack 1 — Meta Platforms,,,,scripts/meta/Credits.cs
+Omnibus-Type,,,,scripts/meta/Credits.cs
+pacote gratuito,,,,scripts/meta/Credits.cs
+pacote LowPolyFPS4 da Unity Asset Store,,,,scripts/meta/Credits.cs
+"Passos, pulos, lobo, vozes, ambiente do hangar e do metrô (modificados)",,,,scripts/meta/Credits.cs
+Personagens e animação,,,,scripts/meta/Credits.cs
+Phosphor Icons (phosphoricons.com),,,,scripts/meta/Credits.cs
+Poly Haven (polyhaven.com),,,,scripts/meta/Credits.cs
+PostgreSQL Global Development Group,,,,scripts/meta/Credits.cs
+PostgreSQL License,,,,scripts/meta/Credits.cs
+raimeiyonke (Sketchfab),,,,scripts/meta/Credits.cs
+Raios do especial,,,,scripts/meta/Credits.cs
+Rugido do lobo e faca,,,,scripts/meta/Credits.cs
+SIL Open Font License 1.1,,,,scripts/meta/Credits.cs
+sintetizado para o jogo,,,,scripts/meta/Credits.cs
+sintetizados por código (tools/sons/raios.py),,,,scripts/meta/Credits.cs
+Sons,,,,scripts/meta/Credits.cs
+"TastyTony, no FPS Tutorial da InfimaGames",,,,scripts/meta/Credits.cs
+Tecnologia,,,,scripts/meta/Credits.cs
+termos do plano do Meshy,,,,scripts/meta/Credits.cs
+"Texturas dos mapas, céus e objetos de cenário (barris, caixotes, estantes, pedras…)",,,,scripts/meta/Credits.cs
+The Overpass Project Authors (Red Hat),,,,scripts/meta/Credits.cs
+Tiros e recargas,,,,scripts/meta/Credits.cs
+user77 (Sketchfab),,,,scripts/meta/Credits.cs
+Vento da Estação Polar e da Vila,,,,scripts/meta/Credits.cs
+Vernon Adams,,,,scripts/meta/Credits.cs
+WolfLeague (gerados para o jogo),,,,scripts/meta/Credits.cs
+Ícones,,,,scripts/meta/Credits.cs
+Ícones da interface,,,,scripts/meta/Credits.cs
+Armazém,,,,scripts/meta/Maps.cs
+Armazém (original),,,,scripts/meta/Maps.cs
+Estação Polar,,,,scripts/meta/Maps.cs
+Grande,,,,scripts/meta/Maps.cs
+"Grande, 110 × 70 m, neve e crepúsculo. Garagem central atravessável, alojamentos em fileiras, passarelas suspensas, tanques e torre de rádio.",,,,scripts/meta/Maps.cs
+"Médio, 72 × 52 m, fim de tarde. Praça com chafariz e feira, casas de reboco com terraço e vielas estreitas entre elas.",,,,scripts/meta/Maps.cs
+"Médio, 75 × 45 m, galpão de contêineres de 13 m de altura. Túneis, pilhas com pranchas por cima, duas alas com pirâmides de contêineres até 8,7 m e corredores compridos junto às paredes.",,,,scripts/meta/Maps.cs
+Pequeno,,,,scripts/meta/Maps.cs
+"Pequeno, 46 × 30 m, galpão fechado. Contêineres que viram túnel, pilhas de dois com pranchas por cima e claraboias no teto.",,,,scripts/meta/Maps.cs
+Vila,,,,scripts/meta/Maps.cs
+Acerte 30 tiros na cabeça que matam,,,,scripts/meta/Missions.cs
+Acerte 5 tiros na cabeça que matam,,,,scripts/meta/Missions.cs
+Acerte 500 tiros na cabeça que matam,,,,scripts/meta/Missions.cs
+Faça 1.000 abates,,,,scripts/meta/Missions.cs
+Faça 1.000 abates como lobo,,,,scripts/meta/Missions.cs
+Faça 10 abates como lobo,,,,scripts/meta/Missions.cs
+Faça 120 abates,,,,scripts/meta/Missions.cs
+Faça 15 abates como humano,,,,scripts/meta/Missions.cs
+Faça 20 abates,,,,scripts/meta/Missions.cs
+Faça 25 assistências,,,,scripts/meta/Missions.cs
+Faça 250 assistências,,,,scripts/meta/Missions.cs
+Faça 5 assistências,,,,scripts/meta/Missions.cs
+Faça 60 abates como lobo,,,,scripts/meta/Missions.cs
+Fera,,,,scripts/meta/Missions.cs
+Frequentador,,,,scripts/meta/Missions.cs
+Jogue 15 partidas,,,,scripts/meta/Missions.cs
+Jogue 3 partidas,,,,scripts/meta/Missions.cs
+Jogue 50 partidas,,,,scripts/meta/Missions.cs
+Jogue 90 minutos,,,,scripts/meta/Missions.cs
+Matador,,,,scripts/meta/Missions.cs
+Olho de Águia,,,,scripts/meta/Missions.cs
+Parceiro,,,,scripts/meta/Missions.cs
+Seja o MVP de 25 partidas,,,,scripts/meta/Missions.cs
+Seja o MVP de 3 partidas,,,,scripts/meta/Missions.cs
+Vença 1 partida,,,,scripts/meta/Missions.cs
+Vença 100 partidas,,,,scripts/meta/Missions.cs
+Vença 7 partidas,,,,scripts/meta/Missions.cs
+Veterano,,,,scripts/meta/Missions.cs
+Abates ×{0},,,,scripts/meta/Progression.cs
+Assistências ×{0},,,,scripts/meta/Progression.cs
+Empate,,,,scripts/meta/Progression.cs
+MVP da partida,,,,scripts/meta/Progression.cs
+Participação,,,,scripts/meta/Progression.cs
+Promoção: {0},,,,scripts/meta/Progression.cs
+Vitória,,,,scripts/meta/Progression.cs
+Alfa,,,,scripts/meta/Ranks.cs
+Ancião,,,,scripts/meta/Ranks.cs
+Batedor,,,,scripts/meta/Ranks.cs
+Caçador,,,,scripts/meta/Ranks.cs
+Filhote,,,,scripts/meta/Ranks.cs
+II,,,,scripts/meta/Ranks.cs
+III,,,,scripts/meta/Ranks.cs
+Lua Cheia,,,,scripts/meta/Ranks.cs
+Presa de Ferro,,,,scripts/meta/Ranks.cs
+Rastreador,,,,scripts/meta/Ranks.cs
+Sentinela,,,,scripts/meta/Ranks.cs
+Uivador,,,,scripts/meta/Ranks.cs
+Bot {0},,,,scripts/meta/RoomDirectory.cs
+O servidor respondeu {0}.,,,,scripts/net/Backend.cs
+Sem resposta do servidor.,,,,scripts/net/Backend.cs
+A ligação com o servidor caiu.,,,,scripts/net/LobbyLink.cs
+ALVO TRAVADO · TAB: VOLTAR AO CHÃO,,,,scripts/ui/ChargeBar.cs
+CLIQUE NO ALVO · TAB: VOLTAR AO CHÃO,,,,scripts/ui/ChargeBar.cs
+FORÇA DO SALTO,,,,scripts/ui/ChargeBar.cs
+TAB: ESCOLHER ALVO,,,,scripts/ui/ChargeBar.cs
+Agachar,,,,scripts/ui/ControlsTable.cs
+Andar,,,,scripts/ui/ControlsTable.cs
+Andar devagar e em silêncio (humano),,,,scripts/ui/ControlsTable.cs
+Arma principal,,,,scripts/ui/ControlsTable.cs
+Arma secundária,,,,scripts/ui/ControlsTable.cs
+Atacar,,,,scripts/ui/ControlsTable.cs
+Clique direito,,,,scripts/ui/ControlsTable.cs
+Clique esquerdo,,,,scripts/ui/ControlsTable.cs
+Ctrl ou C,,,,scripts/ui/ControlsTable.cs
+Equipar granada,,,,scripts/ui/ControlsTable.cs
+Esc,,,,scripts/ui/ControlsTable.cs
+Espaço,,,,scripts/ui/ControlsTable.cs
+Faca,,,,scripts/ui/ControlsTable.cs
+"Lobo: corrida de quatro, 30% mais rápida",,,,scripts/ui/ControlsTable.cs
+"Lobo: especial — salta na mira (também no ar). Enche com abates e, devagar, com o tempo",,,,scripts/ui/ControlsTable.cs
+Menu da partida — não pausa,,,,scripts/ui/ControlsTable.cs
+Mirar (humano) · bote no ar (lobo),,,,scripts/ui/ControlsTable.cs
+Placar (segurar),,,,scripts/ui/ControlsTable.cs
+Pular · saltar da parede,,,,scripts/ui/ControlsTable.cs
+"Recarregar (humano) · uivar (lobo, segure até o fim)",,,,scripts/ui/ControlsTable.cs
+Shift,,,,scripts/ui/ControlsTable.cs
+Soltar a arma da mão (cai à frente),,,,scripts/ui/ControlsTable.cs
+Sustenta a corrida em parede,,,,scripts/ui/ControlsTable.cs
+Tab,,,,scripts/ui/ControlsTable.cs
+Virar lobo,,,,scripts/ui/ControlsTable.cs
+W A S D,,,,scripts/ui/ControlsTable.cs
+W segurado,,,,scripts/ui/ControlsTable.cs
+W W (segurando),,,,scripts/ui/ControlsTable.cs
+NÍVEL DOS BOTS,,,,scripts/ui/DifficultyMenu.cs
+Tab abre e fecha este menu,,,,scripts/ui/DifficultyMenu.cs
+ABATE,,,,scripts/ui/DuelCard.cs
+ABATES,,,,scripts/ui/DuelCard.cs
+ABATIDO POR,,,,scripts/ui/DuelCard.cs
+Muted,,,,scripts/ui/DuelCard.cs
+VOCÊ ABATEU,,,,scripts/ui/DuelCard.cs
+a partida continua rodando,,,,scripts/ui/GameMenu.cs
+A partida continua sem você e não rende XP nem Presas. Missões também não contam.,,,,scripts/ui/GameMenu.cs
+Abandonar,,,,scripts/ui/GameMenu.cs
+Continuar,,,,scripts/ui/GameMenu.cs
+Controles,,,,scripts/ui/GameMenu.cs
+Esc volta,,,,scripts/ui/GameMenu.cs
+Ficar,,,,scripts/ui/GameMenu.cs
+Modal,,,,scripts/ui/GameMenu.cs
+Opções,,,,scripts/ui/GameMenu.cs
+Partida,,,,scripts/ui/GameMenu.cs
+Reiniciar a partida?,,,,scripts/ui/GameMenu.cs
+Reiniciar partida,,,,scripts/ui/GameMenu.cs
+Sair do jogo,,,,scripts/ui/GameMenu.cs
+Sair do jogo?,,,,scripts/ui/GameMenu.cs
+Sair para a sala,,,,scripts/ui/GameMenu.cs
+Sair para a sala?,,,,scripts/ui/GameMenu.cs
+Voltar,,,,scripts/ui/GameMenu.cs
+Carregando o mapa…,,,,scripts/ui/LoadingScreen.cs
+Mata-mata em equipe,,,,scripts/ui/LoadingScreen.cs
+Posicionando os jogadores…,,,,scripts/ui/LoadingScreen.cs
+Preparando a partida…,,,,scripts/ui/LoadingScreen.cs
+Pronto,,,,scripts/ui/LoadingScreen.cs
+Subtitle,,,,scripts/ui/LoadingScreen.cs
+Title,,,,scripts/ui/LoadingScreen.cs
+{0} contra {1},,,,scripts/ui/LoadingScreen.cs
+{0} min,,,,scripts/ui/LoadingScreen.cs
+{0} pontos,,,,scripts/ui/LoadingScreen.cs
++{0} WP,,,,scripts/ui/LoadoutMenu.cs
+1 a 4 ou clique. O equipamento se paga ao renascer.,,,,scripts/ui/LoadoutMenu.cs
+ABATIDO,,,,scripts/ui/LoadoutMenu.cs
+disponível,,,,scripts/ui/LoadoutMenu.cs
+Entra em {0} s: {1},,,,scripts/ui/LoadoutMenu.cs
+Escolha o conjunto,,,,scripts/ui/LoadoutMenu.cs
+Faltam {0:0} WP,,,,scripts/ui/LoadoutMenu.cs
+GRÁTIS,,,,scripts/ui/LoadoutMenu.cs
+Item vencido ou fora do inventário,,,,scripts/ui/LoadoutMenu.cs
+Lobo bloqueado neste modo,,,,scripts/ui/LoadoutMenu.cs
+"Lobo: grátis, a qualquer hora — tecla 3",,,,scripts/ui/LoadoutMenu.cs
+Neste modo você é lobo a partida toda,,,,scripts/ui/LoadoutMenu.cs
+Numeric,,,,scripts/ui/LoadoutMenu.cs
+WP DISPONÍVEL,,,,scripts/ui/LoadoutMenu.cs
+{0} (as duas mãos),,,,scripts/ui/LoadoutMenu.cs
+{0} WP,,,,scripts/ui/LoadoutMenu.cs
+ÚLTIMO,,,,scripts/ui/LoadoutMenu.cs
+CLIQUE: ALVO,,,,scripts/ui/LockMark.cs
+CLIQUE: SALTAR  {0:0} M,,,,scripts/ui/LockMark.cs
+ · VOCÊ,,,,scripts/ui/MatchHud.cs
+A PARTIDA COMEÇA EM,,,,scripts/ui/MatchHud.cs
+Caption,,,,scripts/ui/MatchHud.cs
+Segure Tab para ver o placar,,,,scripts/ui/MatchHud.cs
+VALENDO!,,,,scripts/ui/MatchHud.cs
+{0}  ·  {1}  ·  primeiro a {2}  ·  {3},,,,scripts/ui/MatchHud.cs
+Destravado: ,,,,scripts/ui/PromotionOverlay.cs
+PROMOVIDO,,,,scripts/ui/PromotionOverlay.cs
++{0} XP,,,,scripts/ui/ResultScreen.cs
+DERROTA,,,,scripts/ui/ResultScreen.cs
+EMPATE,,,,scripts/ui/ResultScreen.cs
+Esta partida não rendeu XP nem Presas.,,,,scripts/ui/ResultScreen.cs
+fim do tempo,,,,scripts/ui/ResultScreen.cs
+Jogar de novo,,,,scripts/ui/ResultScreen.cs
+melhor sequência,,,,scripts/ui/ResultScreen.cs
+MISSÕES CONCLUÍDAS,,,,scripts/ui/ResultScreen.cs
+MVP DA PARTIDA,,,,scripts/ui/ResultScreen.cs
+Partida aberta direto no editor: não há sala.,,,,scripts/ui/ResultScreen.cs
+patente máxima,,,,scripts/ui/ResultScreen.cs
+Presas,,,,scripts/ui/ResultScreen.cs
+primeiro a {0},,,,scripts/ui/ResultScreen.cs
+próxima: {0},,,,scripts/ui/ResultScreen.cs
+RECOMPENSA,,,,scripts/ui/ResultScreen.cs
+"Resgate a recompensa em Missões, no lobby.",,,,scripts/ui/ResultScreen.cs
+Sair para o lobby,,,,scripts/ui/ResultScreen.cs
+Sem MVP: ninguém pontuou nesta partida.,,,,scripts/ui/ResultScreen.cs
+VITÓRIA,,,,scripts/ui/ResultScreen.cs
+VOCÊ,,,,scripts/ui/ResultScreen.cs
+Voltar à sala,,,,scripts/ui/ResultScreen.cs
+{0} / {1} XP,,,,scripts/ui/ResultScreen.cs
+{0} XP,,,,scripts/ui/ResultScreen.cs
+ASSIST.,,,,scripts/ui/Scoreboard.cs
+FORMA,,,,scripts/ui/Scoreboard.cs
+JOGADOR,,,,scripts/ui/Scoreboard.cs
+MORTES,,,,scripts/ui/Scoreboard.cs
+PING,,,,scripts/ui/Scoreboard.cs
+PONTOS,,,,scripts/ui/Scoreboard.cs
+Bolt,,,,scripts/ui/ViewModel.Rig.cs
+Grip,,,,scripts/ui/ViewModel.Rig.cs
+Magazine,,,,scripts/ui/ViewModel.Rig.cs
+ARMADO · CLIQUE SALTA,,,,scripts/ui/hud/Hud.Equipment.cs
+ESPECIAL,,,,scripts/ui/hud/Hud.Equipment.cs
+FACA,,,,scripts/ui/hud/Hud.Equipment.cs
+GRANADA DE CHOQUE,,,,scripts/ui/hud/Hud.Equipment.cs
+PRONTO · Q ARMA,,,,scripts/ui/hud/Hud.Equipment.cs
+PRONTO · VIRE LOBO,,,,scripts/ui/hud/Hud.Equipment.cs
+R · RECARREGAR,,,,scripts/ui/hud/Hud.Equipment.cs
+RECARREGANDO,,,,scripts/ui/hud/Hud.Equipment.cs
+SEGURE E · HABILIDADES,,,,scripts/ui/hud/Hud.Equipment.cs
+SEGURE R · ESCUDO NO FIM,,,,scripts/ui/hud/Hud.Equipment.cs
+SEM MUNIÇÃO,,,,scripts/ui/hud/Hud.Equipment.cs
+VINGANÇA,,,,scripts/ui/hud/Hud.Feed.cs
+A PARTIDA TODA NESTE MODO,,,,scripts/ui/hud/Hud.Form.cs
+BLOQUEADO NESTE MODO,,,,scripts/ui/hud/Hud.Form.cs
+Faltam {0:0} WP para transformar,,,,scripts/ui/hud/Hud.Form.cs
+HUMANO,,,,scripts/ui/hud/Hud.Form.cs
+Lobo,,,,scripts/ui/hud/Hud.Form.cs
+LOBO,,,,scripts/ui/hud/Hud.Form.cs
+LOBO · {0},,,,scripts/ui/hud/Hud.Form.cs
+OU 2 · 4 · 5,,,,scripts/ui/hud/Hud.Form.cs
+PRONTO,,,,scripts/ui/hud/Hud.Form.cs
+TRANSFORMANDO,,,,scripts/ui/hud/Hud.Form.cs
+VIRANDO LOBO,,,,scripts/ui/hud/Hud.Form.cs
+VIRAR LOBO,,,,scripts/ui/hud/Hud.Form.cs
+VOLTANDO,,,,scripts/ui/hud/Hud.Form.cs
+VOLTANDO A HUMANO,,,,scripts/ui/hud/Hud.Form.cs
+VOLTAR A HUMANO,,,,scripts/ui/hud/Hud.Form.cs
+{0:0.0} S  ·  VULNERÁVEL,,,,scripts/ui/hud/Hud.Form.cs
+A arma da mão cai à frente; dá para pegar outra do chão.,,,,scripts/ui/hud/Hud.Guide.cs
+"A carga enche com abates também de humano. Cheia, vire lobo para usar.",,,,scripts/ui/hud/Hud.Guide.cs
+A reserva para quando o pente da principal acaba.,,,,scripts/ui/hud/Hud.Guide.cs
+Andar em silêncio,,,,scripts/ui/hud/Hud.Guide.cs
+Armas,,,,scripts/ui/hud/Hud.Guide.cs
+Ataque,,,,scripts/ui/hud/Hud.Guide.cs
+Bote,,,,scripts/ui/hud/Hud.Guide.cs
+"Clique atira, clique direito mira, R recarrega.",,,,scripts/ui/hud/Hud.Guide.cs
+"Clique direito, no ar",,,,scripts/ui/hud/Hud.Guide.cs
+"Com a carga cheia, Q arma os raios e trava no inimigo mais perto da mira. O clique salta nele, mesmo que ele se mexa. Do Q até cair, você leva metade do dano. Enche com abates e, devagar, com o tempo.",,,,scripts/ui/hud/Hud.Guide.cs
+Corpo,,,,scripts/ui/hud/Hud.Guide.cs
+Corrida de quatro,,,,scripts/ui/hud/Hud.Guide.cs
+Corrida na parede,,,,scripts/ui/hud/Hud.Guide.cs
+"Custa WP. De lobo você é mais rápido, tem escudo e garras — e não atira.",,,,scripts/ui/hud/Hud.Guide.cs
+De perto e em silêncio.,,,,scripts/ui/hud/Hud.Guide.cs
+Devagar e sem barulho de passo. Ctrl ou C agacha.,,,,scripts/ui/hud/Hud.Guide.cs
+Dois toques no W e segure: 30% mais rápido.,,,,scripts/ui/hud/Hud.Guide.cs
+Equipe e clique para arremessar.,,,,scripts/ui/hud/Hud.Guide.cs
+Especial,,,,scripts/ui/hud/Hud.Guide.cs
+Garrada,,,,scripts/ui/hud/Hud.Guide.cs
+Granada,,,,scripts/ui/hud/Hud.Guide.cs
+Habilidades,,,,scripts/ui/hud/Hud.Guide.cs
+Poder e movimento,,,,scripts/ui/hud/Hud.Guide.cs
+Pule numa parede e segure W para correr por ela. Espaço salta da parede.,,,,scripts/ui/hud/Hud.Guide.cs
+Pulou ou caiu de cima? Mergulha em quem está embaixo de você.,,,,scripts/ui/hud/Hud.Guide.cs
+"Q, de lobo",,,,scripts/ui/hud/Hud.Guide.cs
+"Q, depois clique",,,,scripts/ui/hud/Hud.Guide.cs
+Segure até o fim ({0:0.0} s) e o escudo volta inteiro. Soltar antes cancela. O rugido entrega onde você está.,,,,scripts/ui/hud/Hud.Guide.cs
+Segure R,,,,scripts/ui/hud/Hud.Guide.cs
+Soltar a arma,,,,scripts/ui/hud/Hud.Guide.cs
+Solte E para fechar,,,,scripts/ui/hud/Hud.Guide.cs
+Uivo,,,,scripts/ui/hud/Hud.Guide.cs
+"Um golpe por clique, uma mão de cada vez.",,,,scripts/ui/hud/Hud.Guide.cs
+"Um golpe por clique, uma mão de cada vez. {0:0} de dano.",,,,scripts/ui/hud/Hud.Guide.cs
+W na parede · Espaço,,,,scripts/ui/hud/Hud.Guide.cs
+"W W, segurando",,,,scripts/ui/hud/Hud.Guide.cs
+CLIQUE,,,,scripts/ui/hud/Hud.Layout.cs
+DIREITO,,,,scripts/ui/hud/Hud.Layout.cs
+Humano,,,,scripts/ui/hud/Hud.Layout.cs
+Segure E · habilidades,,,,scripts/ui/hud/Hud.Layout.cs
+WP,,,,scripts/ui/hud/Hud.Layout.cs
+METADE DO TEMPO · OS PAPÉIS TROCARAM,,,,scripts/ui/hud/Hud.cs
+Munição: {0},,,,scripts/ui/hud/Hud.cs
+Pegou: {0},,,,scripts/ui/hud/Hud.cs
+Renasce em {0:0.0} s,,,,scripts/ui/hud/Hud.cs
+Soltou: {0},,,,scripts/ui/hud/Hud.cs
+Display,,,,scripts/ui/hud/KillBanner.cs
+ELIMINOU,,,,scripts/ui/hud/KillBanner.cs
+na cabeça,,,,scripts/ui/hud/KillBanner.cs
+Presas — ganhas jogando. Compram armas e tatuagens.,,,,scripts/ui/kit/CurrencyLabel.cs
+Sangue,,,,scripts/ui/kit/CurrencyLabel.cs
+Sangue — moeda comprada. Disponível quando houver servidor.,,,,scripts/ui/kit/CurrencyLabel.cs
+Local,,,,scripts/ui/kit/PingBars.cs
+Bot — sem patente,,,,scripts/ui/kit/RankBadge.cs
+Surface1,,,,scripts/ui/kit/UiKit.cs
+Comum,,,,scripts/ui/kit/UiTokens.cs
+Incomum,,,,scripts/ui/kit/UiTokens.cs
+Lendário,,,,scripts/ui/kit/UiTokens.cs
+Raro,,,,scripts/ui/kit/UiTokens.cs
+Épico,,,,scripts/ui/kit/UiTokens.cs
+"depth_test_disabled, ",,,,scripts/visual/Silhouette.cs
+Head,,,,scripts/visual/VisualSmoothing.cs
+Weapon,,,,scripts/visual/VisualSmoothing.cs

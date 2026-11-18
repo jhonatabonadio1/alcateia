@@ -17,7 +17,7 @@ public partial class StatBar : Control
 	{
 		var bar = new StatBar
 		{
-			_name = name.ToUpperInvariant(),
+			_name = Loc.Upper(name),
 			_value = Mathf.Clamp(value01, 0f, 1f),
 			_compare = compare01 < 0 ? -1f : Mathf.Clamp(compare01, 0f, 1f),
 			_text = valueText ?? "",

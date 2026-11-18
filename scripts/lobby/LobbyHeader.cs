@@ -183,7 +183,7 @@ public partial class LobbyHeader : PanelContainer
 		{
 			ThemeTypeVariation = "TertiaryButton",
 			CustomMinimumSize = new Vector2(
-				Mathf.Max(72, UiFonts.Label.GetStringSize(text.ToUpperInvariant(), HorizontalAlignment.Left, -1, UiTokens.Caption).X + UiTokens.S4),
+				Mathf.Max(72, UiFonts.Label.GetStringSize(Loc.Upper(text), HorizontalAlignment.Left, -1, UiTokens.Caption).X + UiTokens.S4),
 				UiTokens.HeaderHeight - 8),
 			FocusMode = FocusModeEnum.All,
 			MouseDefaultCursorShape = CursorShape.PointingHand,
@@ -318,13 +318,13 @@ public partial class LobbyHeader : PanelContainer
 		int rank = Profile.Rank;
 		_badge.Rank = rank;
 		_name.Text = string.IsNullOrEmpty(Profile.Title) ? Profile.PlayerName : $"{Profile.PlayerName}";
-		_rank.Text = Ranks.NameOf(rank).ToUpperInvariant();
+		_rank.Text = Loc.Upper(Ranks.NameOf(rank));
 		_rank.AddThemeColorOverride("font_color", Ranks.InkOf(rank));
 
 		long into = Profile.RankXp - Ranks.XpFor(rank);
 		long span = Ranks.XpFor(rank + 1) - Ranks.XpFor(rank);
 		_xp.Value = Ranks.Progress(Profile.RankXp);
-		_xpText.Text = rank >= Ranks.Count - 1 ? "MÁX" : $"{UiTokens.Thousands(into)} / {UiTokens.Thousands(span)} XP";
+		_xpText.Text = rank >= Ranks.Count - 1 ? "MÁX" : Loc.F("{0} / {1} XP", UiTokens.Thousands(into), UiTokens.Thousands(span));
 
 		_presas.SetValue(Profile.Presas);
 		_sangue.SetValue(Profile.Sangue);

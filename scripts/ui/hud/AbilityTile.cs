@@ -293,10 +293,11 @@ void fragment() {
 		// O nome, embaixo.
 		Font titleFont = HudStyle.Slanted(UiFonts.DisplaySemi);
 		const int titleSize = 15;
-		Vector2 size = titleFont.GetStringSize(Title, HorizontalAlignment.Center, -1, titleSize);
+		string title = Loc.T(Title);
+		Vector2 size = titleFont.GetStringSize(title, HorizontalAlignment.Center, -1, titleSize);
 		var where = new Vector2(Center.X - size.X / 2f, Side + CaptionHeight - 6);
-		_cover.DrawString(titleFont, where + new Vector2(1, 1), Title, HorizontalAlignment.Left, -1, titleSize, new Color(0, 0, 0, 0.8f));
-		_cover.DrawString(titleFont, where, Title, HorizontalAlignment.Left, -1, titleSize,
+		_cover.DrawString(titleFont, where + new Vector2(1, 1), title, HorizontalAlignment.Left, -1, titleSize, new Color(0, 0, 0, 0.8f));
+		_cover.DrawString(titleFont, where, title, HorizontalAlignment.Left, -1, titleSize,
 			_cooling ? UiTokens.TextSecondary : UiTokens.TextPrimary);
 	}
 }

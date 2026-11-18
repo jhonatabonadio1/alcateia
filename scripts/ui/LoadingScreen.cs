@@ -179,7 +179,7 @@ public partial class LoadingScreen : CanvasLayer
 		text.CustomMinimumSize = new Vector2(760, 0);
 		_root.AddChild(text);
 
-		Label name = UiKit.Text(map.Name.ToUpperInvariant(), "Title", UiTokens.TextPrimary);
+		Label name = UiKit.Text(Loc.Upper(map.Name), "Title", UiTokens.TextPrimary);
 		name.AddThemeFontOverride("font", UiFonts.Display);
 		name.AddThemeFontSizeOverride("font_size", 72);
 		text.AddChild(name);
@@ -188,7 +188,7 @@ public partial class LoadingScreen : CanvasLayer
 		string game = rules.Mode == GameMode.Equipe ? "Mata-mata em equipe" : RoomSettings.ModeName(rules.Mode);
 		string line = string.Join("  ·  ", new[]
 		{
-			game, mode.Name, $"{rules.Minutes} min", $"{rules.ScoreToWin} pontos", $"{rules.TeamSize} contra {rules.TeamSize}"
+			Loc.T(game), Loc.T(mode.Name), Loc.F("{0} min", rules.Minutes), Loc.F("{0} pontos", rules.ScoreToWin), Loc.F("{0} contra {1}", rules.TeamSize, rules.TeamSize)
 		}.Where(s => !string.IsNullOrEmpty(s)));
 		Label rulesLine = UiKit.Text(line.ToUpperInvariant(), "Subtitle", UiTokens.Accent);
 		rulesLine.AddThemeFontOverride("font", UiFonts.DisplaySemi);

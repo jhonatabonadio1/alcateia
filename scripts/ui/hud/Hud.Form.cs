@@ -30,10 +30,10 @@ public partial class Hud
 		{
 			Form.ShiftingToWolf => "VIRANDO LOBO",
 			Form.ShiftingToHuman => "VOLTANDO A HUMANO",
-			Form.Wolf => $"LOBO · {(_form.Breed?.DisplayName ?? "").ToUpperInvariant()}",
+			Form.Wolf => Loc.F("LOBO · {0}", Loc.Upper(_form.Breed?.DisplayName ?? "")),
 			_ => "HUMANO"
 		};
-		_breedName.Text = (_form.Breed?.DisplayName ?? "Lobo").ToUpperInvariant();
+		_breedName.Text = Loc.Upper(_form.Breed?.DisplayName ?? "Lobo");
 		
 		// Dois painéis, um sai e o outro entra.
 		VBoxContainer show = wolf ? _wolf : _human;
@@ -59,7 +59,7 @@ public partial class Hud
 			float total = Mathf.Max(_form.ShiftTotal, 0.01f);
 			_shiftBar.Value = 1f - _form.ShiftLeft / total;
 			_shiftText.Text = _form.Current == Form.ShiftingToWolf ? "TRANSFORMANDO" : "VOLTANDO";
-			_shiftState.Text = $"{_form.ShiftLeft:0.0} S  ·  VULNERÁVEL";
+			_shiftState.Text = Loc.F("{0:0.0} S  ·  VULNERÁVEL", _form.ShiftLeft);
 			_shiftState.AddThemeColorOverride("font_color", UiTokens.Danger);
 			// O momento de maior risco da partida pulsa.
 			_shiftPulse ??= Motion.Pulse(_shiftPanel, 0.55f, 0.35f);
@@ -101,6 +101,6 @@ public partial class Hud
 	private void OnTransformDenied(float missing)
 	{
 		if (missing < 0) Warn(_form.Rule == FormRule.Lobo ? "Neste modo você é lobo a partida toda" : "Lobo bloqueado neste modo", 1.6f, UiTokens.TextSecondary);
-		else Warn($"Faltam {missing:0} WP para transformar");
+		else Warn(Loc.F("Faltam {0:0} WP para transformar", missing));
 	}
 }

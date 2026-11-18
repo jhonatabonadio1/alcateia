@@ -18,6 +18,9 @@ public partial class Inicio : Node
 {
 	public override void _EnterTree()
 	{
+		// Os textos, antes de qualquer tela montar.
+		Loc.Start();
+
 		foreach (string arg in OS.GetCmdlineUserArgs())
 		{
 			if (arg.StartsWith("--seed=") && ulong.TryParse(arg["--seed=".Length..], out ulong seed))

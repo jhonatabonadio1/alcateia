@@ -111,7 +111,7 @@ public static class RoomDirectory
 			if (room.Members.Count(m => m.Team == team) >= room.Settings.TeamSize) return;
 
 			string name = RoomConfig.BotNames.FirstOrDefault(n => room.Members.All(m => m.Name != n))
-						  ?? $"Bot {room.Members.Count + 1}";
+						  ?? Loc.F("Bot {0}", room.Members.Count + 1);
 
 			room.Members.Add(new RoomMember
 			{

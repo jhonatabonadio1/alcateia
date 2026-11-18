@@ -20,10 +20,12 @@ public partial class Hud
 	private Label _grenades;
 	private readonly Dictionary<Slot, PanelContainer> _slots = new();
 	private Label _breedName;
-	private readonly ProgressBar[] _cooldownBars = new ProgressBar[3];
+	/// <summary>Os quadradinhos das habilidades do lobo: 0 a garrada, 2 o
+	/// bote (o 1, o especial, é o disco do meio).</summary>
+	private readonly SkillSquare[] _skills = new SkillSquare[3];
+	private SkillSquare _howlSquare;
 	private readonly float[] _cooldownLeft = new float[3];
 	private readonly float[] _cooldownTotal = { 1, 1, 1 };
-	private ProgressBar _howlBar;
 	private Label _howlLabel;
 	private AbilityTile _pounceTile;
 		
@@ -62,7 +64,7 @@ public partial class Hud
 		{
 			Slot.Knife => "FACA",
 			Slot.Grenade => "GRANADA DE CHOQUE",
-			_ => (held?.DisplayName ?? "").ToUpperInvariant()
+			_ => Loc.Upper(held?.DisplayName ?? "")
 		};
 
 		bool showAmmo = current is Slot.Primary or Slot.Secondary;
@@ -121,11 +123,12 @@ public partial class Hud
 		for (int i = 0; i < 3; i++)
 		{
 			_cooldownLeft[i] = Mathf.Max(0, _cooldownLeft[i] - delta);
-			_cooldownBars[i].Value = 1f - _cooldownLeft[i] / _cooldownTotal[i];
+			_skills[i]?.Set(1f - _cooldownLeft[i] / _cooldownTotal[i]);
 		}
 		float howl = _player?.HowlProgress ?? 0f;
-		
-		_howlBar.Value = howl;
-		_howlLabel.Text = howl > 0 ? "SEGURE R · ESCUDO NO FIM" : "UIVO · SEGURE R";
+
+		// O uivo: enche enquanto se segura o R; com o escudo cheio não há o que recarregar.
+		_howlSquare.Set(_form.CanHowl || howl > 0 ? 1f : 0f, howl);
+		_howlLabel.Text = howl > 0 ? "SEGURE R · ESCUDO NO FIM" : "SEGURE E · HABILIDADES";
 	}
 }

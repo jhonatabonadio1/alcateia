@@ -41,7 +41,7 @@ public partial class ProfileScreen : LobbyScreen
 		name.HorizontalAlignment = HorizontalAlignment.Center;
 		column.AddChild(name);
 
-		Label rankName = UiKit.Text(Ranks.NameOf(rank).ToUpperInvariant(), "Subtitle", Ranks.InkOf(rank));
+		Label rankName = UiKit.Text(Loc.Upper(Ranks.NameOf(rank)), "Subtitle", Ranks.InkOf(rank));
 		rankName.HorizontalAlignment = HorizontalAlignment.Center;
 		column.AddChild(rankName);
 
@@ -75,7 +75,7 @@ public partial class ProfileScreen : LobbyScreen
 			next.AddChild(RankBadge.Make(rank + 1, 24, true));
 			next.AddChild(UiKit.Text(Ranks.NameOf(rank + 1), null, Ranks.InkOf(rank + 1)));
 			next.AddChild(UiKit.Spacer());
-			next.AddChild(UiKit.Text($"faltam {UiTokens.Thousands(span - into)} XP", "Caption"));
+			next.AddChild(UiKit.Text(Loc.F("faltam {0} XP", UiTokens.Thousands(span - into)), "Caption"));
 			column.AddChild(next);
 		}
 
@@ -104,7 +104,7 @@ public partial class ProfileScreen : LobbyScreen
 			canRename ? Rename : () => Shell.GoShop("troca_nome"));
 		column.AddChild(rename);
 
-		Label created = UiKit.Text($"Perfil criado em {Profile.CreatedUtc.ToLocalTime():dd/MM/yyyy}", "Caption");
+		Label created = UiKit.Text(Loc.F("Perfil criado em {0:dd/MM/yyyy}", Profile.CreatedUtc.ToLocalTime()), "Caption");
 		created.HorizontalAlignment = HorizontalAlignment.Center;
 		column.AddChild(created);
 
@@ -148,12 +148,12 @@ public partial class ProfileScreen : LobbyScreen
 		column.AddChild(grid);
 
 		Tile(grid, "Partidas", s.Matches.ToString());
-		Tile(grid, "Vitórias", s.Wins.ToString(), $"{s.WinRate * 100:0}% das partidas");
+		Tile(grid, "Vitórias", s.Wins.ToString(), Loc.F("{0:0}% das partidas", s.WinRate * 100));
 		Tile(grid, "Derrotas · empates", $"{s.Losses} · {s.Draws}");
 		Tile(grid, "Abates", UiTokens.Thousands(s.Kills));
-		Tile(grid, "Mortes", UiTokens.Thousands(s.Deaths), $"K/D {s.KillDeath:0.00}");
+		Tile(grid, "Mortes", UiTokens.Thousands(s.Deaths), Loc.F("K/D {0:0.00}", s.KillDeath));
 		Tile(grid, "Assistências", UiTokens.Thousands(s.Assists));
-		Tile(grid, "Na cabeça", UiTokens.Thousands(s.Headshots), s.Kills > 0 ? $"{s.Headshots * 100f / s.Kills:0}% dos abates" : null);
+		Tile(grid, "Na cabeça", UiTokens.Thousands(s.Headshots), s.Kills > 0 ? Loc.F("{0:0}% dos abates", s.Headshots * 100f / s.Kills) : null);
 		Tile(grid, "MVP", s.Mvps.ToString());
 		Tile(grid, "Tempo jogado", Hours(s.SecondsPlayed));
 
@@ -165,8 +165,8 @@ public partial class ProfileScreen : LobbyScreen
 		forms.AddThemeConstantOverride("v_separation", UiTokens.S3);
 		column.AddChild(forms);
 
-		Tile(forms, "Abates como humano", UiTokens.Thousands(s.KillsHuman), $"{Hours(s.SecondsHuman)} como humano", IconKind.Human);
-		Tile(forms, "Abates como lobo", UiTokens.Thousands(s.KillsWolf), $"{Hours(s.SecondsWolf)} como lobo", IconKind.Wolf);
+		Tile(forms, "Abates como humano", UiTokens.Thousands(s.KillsHuman), Loc.F("{0} como humano", Hours(s.SecondsHuman)), IconKind.Human);
+		Tile(forms, "Abates como lobo", UiTokens.Thousands(s.KillsWolf), Loc.F("{0} como lobo", Hours(s.SecondsWolf)), IconKind.Wolf);
 
 		HBoxContainer favorites = UiKit.Row(UiTokens.S3);
 		column.AddChild(favorites);
@@ -179,7 +179,7 @@ public partial class ProfileScreen : LobbyScreen
 	private static string Hours(double seconds)
 	{
 		var t = TimeSpan.FromSeconds(seconds);
-		return t.TotalHours >= 1 ? $"{(int)t.TotalHours} h {t.Minutes:00} min" : $"{t.Minutes} min";
+		return t.TotalHours >= 1 ? Loc.F("{0} h {1:00} min", (int)t.TotalHours, t.Minutes) : Loc.F("{0} min", t.Minutes);
 	}
 
 	private static void Tile(GridContainer grid, string label, string value, string note = null, IconKind icon = IconKind.None)
@@ -244,7 +244,7 @@ public partial class ProfileScreen : LobbyScreen
 			HBoxContainer row = UiKit.Row(UiTokens.S2);
 			row.AddChild(RankBadge.Make(r, 28));
 			row.AddChild(UiKit.Truncated(Ranks.NameOf(r), null, UiTokens.TextSecondary));
-			row.AddChild(UiKit.Text($"{UiTokens.Thousands(Ranks.XpFor(r))} XP", "Numeric", UiTokens.TextDisabled));
+			row.AddChild(UiKit.Text(Loc.F("{0} XP", UiTokens.Thousands(Ranks.XpFor(r))), "Numeric", UiTokens.TextDisabled));
 			column.AddChild(row);
 		}
 

@@ -90,7 +90,7 @@ public partial class DuelCard : CanvasLayer
 		Label what = UiKit.Text(won ? "VOCÊ ABATEU" : "ABATIDO POR", "Subtitle", edge);
 		what.HorizontalAlignment = HorizontalAlignment.Center;
 		middle.AddChild(what);
-		string detail = (string.IsNullOrEmpty(weapon) ? "" : weapon.ToUpperInvariant())
+		string detail = (string.IsNullOrEmpty(weapon) ? "" : Loc.Upper(weapon))
 			+ (distance >= 0 ? $"{(string.IsNullOrEmpty(weapon) ? "" : "  ·  ")}{distance:0} m" : "");
 		Label how = UiKit.Text(detail, "Muted");
 		how.HorizontalAlignment = HorizontalAlignment.Center;

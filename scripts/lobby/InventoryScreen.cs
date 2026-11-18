@@ -172,7 +172,7 @@ public partial class InventoryScreen : LobbyScreen
 			name.HorizontalAlignment = HorizontalAlignment.Center;
 			name.AddThemeFontOverride("font", UiFonts.SemiBold);
 			label.AddChild(name);
-			Label cost = UiKit.Text(set.IsDefault ? "Grátis" : $"WP {set.TotalCost()}", "Numeric",
+			Label cost = UiKit.Text(set.IsDefault ? "Grátis" : Loc.F("WP {0}", set.TotalCost()), "Numeric",
 				set.IsDefault ? UiTokens.Success : UiTokens.Accent);
 			cost.HorizontalAlignment = HorizontalAlignment.Center;
 			cost.AddThemeFontSizeOverride("font_size", UiTokens.Caption);
@@ -222,7 +222,7 @@ public partial class InventoryScreen : LobbyScreen
 		costLabel.MouseFilter = MouseFilterEnum.Stop;
 		total.AddChild(costLabel);
 		total.AddChild(UiKit.Spacer());
-		total.AddChild(UiKit.Text(current.IsDefault ? "Grátis  ·  +50 WP" : $"WP {current.TotalCost()}", "NumericLarge",
+		total.AddChild(UiKit.Text(current.IsDefault ? "Grátis  ·  +50 WP" : Loc.F("WP {0}", current.TotalCost()), "NumericLarge",
 			current.IsDefault ? UiTokens.Success : UiTokens.Accent));
 		column.AddChild(total);
 
@@ -241,12 +241,12 @@ public partial class InventoryScreen : LobbyScreen
 		column.AddChild(SlotRow("Classe", breed, () => Filter(1, 1), null, choosing: _sub == 1));
 
 		column.AddChild(UiKit.Gap(UiTokens.S2));
-		column.AddChild(UiKit.Caption($"Tatuagens  ·  {Profile.Tattoos.Count}/{Profile.MaxTattoos}"));
+		column.AddChild(UiKit.Caption(Loc.F("Tatuagens  ·  {0}/{1}", Profile.Tattoos.Count, Profile.MaxTattoos)));
 
 		for (int i = 0; i < Profile.MaxTattoos; i++)
 		{
 			string id = i < Profile.Tattoos.Count ? Profile.Tattoos[i] : null;
-			column.AddChild(SlotRow($"Tatuagem {i + 1}", Catalog.Get(id), () => Filter(1, 0),
+			column.AddChild(SlotRow(Loc.F("Tatuagem {0}", i + 1), Catalog.Get(id), () => Filter(1, 0),
 				id == null ? null : () => { Profile.UnequipTattoo(id); Refresh(); }, choosing: _sub == 0));
 		}
 
@@ -284,7 +284,7 @@ public partial class InventoryScreen : LobbyScreen
 			CustomMinimumSize = new Vector2(0, UiTokens.SlotHeight + 8),
 			MouseFilter = MouseFilterEnum.Stop,
 			MouseDefaultCursorShape = CursorShape.PointingHand,
-			TooltipText = fixedSlot ? "Fixo em todo conjunto" : $"Ver itens para {slot.ToLowerInvariant()}"
+			TooltipText = fixedSlot ? "Fixo em todo conjunto" : Loc.F("Ver itens para {0}", slot.ToLowerInvariant())
 		};
 		// Marcado: é o espaço cujos itens estão na grade do meio.
 		row.AddThemeStyleboxOverride("panel", UiTheme.Box(
@@ -493,9 +493,9 @@ public partial class InventoryScreen : LobbyScreen
 	{
 		ItemKind.Tattoo => Profile.Tattoos.Contains(item.Id) ? "Equipada" : "Equipar tatuagem",
 		ItemKind.Breed => Profile.Breed == item.Id ? "Classe em uso" : "Usar esta classe",
-		ItemKind.Character => IsEquippedHere(item) ? $"Em uso {TeamLabel(item)}" : $"Usar {TeamLabel(item)}",
+		ItemKind.Character => IsEquippedHere(item) ? Loc.F("Em uso {0}", TeamLabel(item)) : Loc.F("Usar {0}", TeamLabel(item)),
 		ItemKind.Service => "Usar",
-		_ => IsEquippedHere(item) ? $"Equipada em {CurrentSet.Name}" : $"Equipar em {CurrentSet.Name}"
+		_ => IsEquippedHere(item) ? Loc.F("Equipada em {0}", CurrentSet.Name) : Loc.F("Equipar em {0}", CurrentSet.Name)
 	};
 
 	private bool IsEquippedHere(CatalogItem item) => item.Kind switch
@@ -514,17 +514,17 @@ public partial class InventoryScreen : LobbyScreen
 		{
 			case ItemKind.Tattoo:
 				if (!Profile.EquipTattoo(item.Id, out string error)) { Shell.Toast(error, UiTokens.Danger); return; }
-				Shell.Toast($"{item.Name} equipada");
+				Shell.Toast(Loc.F("{0} equipada", item.Name));
 				break;
 
 			case ItemKind.Breed:
 				Profile.SetBreed(item.Id);
-				Shell.Toast($"Classe {item.Name} em uso");
+				Shell.Toast(Loc.F("Classe {0} em uso", item.Name));
 				break;
 
 			case ItemKind.Character:
 				if (!Profile.SetCharacter(item.Id, out string why)) { Shell.Toast(why, UiTokens.Danger); return; }
-				Shell.Toast($"{item.Name} em uso {TeamLabel(item)}");
+				Shell.Toast(Loc.F("{0} em uso {1}", item.Name, TeamLabel(item)));
 				break;
 
 			case ItemKind.Service:
@@ -567,13 +567,13 @@ public partial class InventoryScreen : LobbyScreen
 		set.Secondary = test.Secondary;
 		set.Utilities = test.Utilities;
 		Profile.Save();
-		Shell.Toast($"{item.Name} equipada em {set.Name}");
+		Shell.Toast(Loc.F("{0} equipada em {1}", item.Name, set.Name));
 		return true;
 	}
 
 	private void ConfirmDiscard(CatalogItem item)
 	{
-		Label body = UiKit.Paragraph($"{item.Name} sai do inventário. Se estiver num conjunto, o conjunto volta para o padrão naquele lugar. Não há reembolso.");
+		Label body = UiKit.Paragraph(Loc.F("{0} sai do inventário. Se estiver num conjunto, o conjunto volta para o padrão naquele lugar. Não há reembolso.", item.Name));
 		body.CustomMinimumSize = new Vector2(380, 0);
 
 		// Destrutivo à esquerda e o botão seguro à direita, onde o olho
@@ -589,7 +589,7 @@ public partial class InventoryScreen : LobbyScreen
 				}
 				Profile.Discard(item.Id);
 				_selectedId = null;
-				Shell.Toast($"{item.Name} descartada");
+				Shell.Toast(Loc.F("{0} descartada", item.Name));
 				Refresh();
 			}),
 			new Modal.Choice("Manter", ButtonKind.Primary, null));

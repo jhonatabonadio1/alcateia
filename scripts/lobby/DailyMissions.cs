@@ -16,7 +16,7 @@ public static class DailyMissions
 		head.AddChild(UiKit.Caption("Missões do dia"));
 		head.AddChild(UiKit.Spacer());
 		TimeSpan left = MissionBook.UntilDailyReset(DateTime.Now);
-		head.AddChild(UiKit.Text($"troca em {left.Hours} h {left.Minutes:00} min", "Caption"));
+		head.AddChild(UiKit.Text(Loc.F("troca em {0} h {1:00} min", left.Hours, left.Minutes), "Caption"));
 		column.AddChild(head);
 
 		Profile.Missions.Refresh(DateTime.Now);

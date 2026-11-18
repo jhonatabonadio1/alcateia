@@ -138,7 +138,7 @@ public partial class LoadoutMenu : CanvasLayer
 		if (set.IsDefault) return null;
 		if (!RoomRules.Allows(set, out string why)) return why;
 		if (!set.Validate(out string error)) return error == "Item fora do inventário" ? "Item vencido ou fora do inventário" : error;
-		if (!set.IsAffordable(_form.Wp)) return $"Faltam {set.TotalCost() - _form.Wp:0} WP";
+		if (!set.IsAffordable(_form.Wp)) return Loc.F("Faltam {0:0} WP", set.TotalCost() - _form.Wp);
 		return null;
 	}
 
@@ -337,7 +337,7 @@ public partial class LoadoutMenu : CanvasLayer
 		double left = Mathf.Max(_remaining, 0);
 		_ring.Total = ChooseTime;
 		_ring.Left = left;
-		_timer.Text = $"Entra em {Mathf.CeilToInt((float)left)} s: {Profile.Sets[fallback].Name}";
+		_timer.Text = Loc.F("Entra em {0} s: {1}", Mathf.CeilToInt((float)left), Profile.Sets[fallback].Name);
 	}
 
 	private Control Card(int index)
@@ -396,7 +396,7 @@ public partial class LoadoutMenu : CanvasLayer
 		stack.AddChild(primary);
 
 		VBoxContainer items = UiKit.Column(2);
-		items.AddChild(Item(IconKind.Gun, pistols ? $"{Arsenal.NameOf(set.Secondary)} (as duas mãos)" : Arsenal.NameOf(set.Primary)));
+		items.AddChild(Item(IconKind.Gun, pistols ? Loc.F("{0} (as duas mãos)", Arsenal.NameOf(set.Secondary)) : Arsenal.NameOf(set.Primary)));
 		if (!pistols) items.AddChild(Item(IconKind.Gun, Arsenal.NameOf(set.Secondary)));
 		if (!pistols)
 			foreach (string id in set.Utilities)
@@ -410,11 +410,11 @@ public partial class LoadoutMenu : CanvasLayer
 		{
 			price.AddChild(UiKit.Text("GRÁTIS", "Subtitle", UiTokens.Success));
 			price.AddChild(UiKit.Spacer());
-			price.AddChild(UiKit.Text($"+{DefaultBonus} WP", "Numeric", UiTokens.Success));
+			price.AddChild(UiKit.Text(Loc.F("+{0} WP", DefaultBonus), "Numeric", UiTokens.Success));
 		}
 		else
 		{
-			price.AddChild(UiKit.Text($"{set.TotalCost()} WP", "Subtitle", UiTokens.Accent));
+			price.AddChild(UiKit.Text(Loc.F("{0} WP", set.TotalCost()), "Subtitle", UiTokens.Accent));
 			price.AddChild(UiKit.Spacer());
 		}
 		stack.AddChild(price);

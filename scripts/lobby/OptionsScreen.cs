@@ -93,6 +93,25 @@ public partial class OptionsScreen : LobbyScreen
 		})));
 		column.AddChild(quality);
 
+		// O idioma: as colunas de assets/i18n/textos.csv. O que não tem
+		// tradução aparece em português.
+		// Só entra na lista o idioma que já tem texto traduzido (uma coluna vazia
+		// mostraria o jogo inteiro em português com outro nome).
+		var languages = new System.Collections.Generic.List<string>(Loc.Languages)
+			.FindAll(code => code == Loc.Source || Loc.Count(code) > 0);
+		if (languages.Count > 1)
+		{
+			string[] names = languages.ConvertAll(Loc.NameOf).ToArray();
+			column.AddChild(Labeled("Idioma", UiKit.Picker(names, Math.Max(languages.IndexOf(Settings.Values.Language), 0), i =>
+			{
+				Settings.Values.Language = languages[i];
+				Settings.Save();
+				Loc.Apply(languages[i]);
+				// Os textos montados em código só mudam quando a tela é refeita.
+				LobbyShell.Instance?.GoOptions();
+			})));
+		}
+
 		column.AddChild(UiKit.Check("Sangue ao acertar", Settings.Values.Blood, on =>
 		{
 			Settings.Values.Blood = on;
@@ -230,7 +249,7 @@ public partial class OptionsScreen : LobbyScreen
 		reset.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
 		controls.AddChild(reset);
 
-		static string Pixels(float x) => $"{x:0} px";
+		static string Pixels(float x) => Loc.F("{0:0} px", x);
 	}
 
 	/// <summary>Um rótulo e o controle, no mesmo alinhamento dos deslizantes.</summary>

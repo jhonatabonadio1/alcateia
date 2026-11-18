@@ -75,6 +75,7 @@ public partial class Hud : CanvasLayer
 		BuildVitals();
 		BuildEquipment();
 		BuildTransform();
+		BuildGuide();
 
 		_health.Changed += OnHealthChanged;
 		_health.Damaged += OnDamaged;
@@ -88,11 +89,11 @@ public partial class Hud : CanvasLayer
 		_weapon.HitConfirmed += OnHitConfirmed;
 		_weapon.AmmoChanged += OnAmmoChanged;
 		_weapon.AttackCooldown += OnAttackCooldown;
-		_weapon.PickedUp += id => Warn($"Pegou: {Arsenal.NameOf(id)}", 1.6f, UiTokens.Success);
-		_weapon.AmmoTaken += id => Warn($"Munição: {Arsenal.NameOf(id)}", 1.2f, UiTokens.Success);
+		_weapon.PickedUp += id => Warn(Loc.F("Pegou: {0}", Arsenal.NameOf(id)), 1.6f, UiTokens.Success);
+		_weapon.AmmoTaken += id => Warn(Loc.F("Munição: {0}", Arsenal.NameOf(id)), 1.2f, UiTokens.Success);
 		_weapon.Dropped += id =>
 		{
-			if (!_health.IsDead) Warn($"Soltou: {Arsenal.NameOf(id)}", 1.2f, UiTokens.TextSecondary);
+			if (!_health.IsDead) Warn(Loc.F("Soltou: {0}", Arsenal.NameOf(id)), 1.2f, UiTokens.TextSecondary);
 		};
 		KillFeed.Reported += OnKill;
 
@@ -126,7 +127,7 @@ public partial class Hud : CanvasLayer
 		// mínimo para renascer não passou.
 		_death.Visible = _health.IsDead && !UiState.AnyOpen;
 		if (_death.Visible)
-			_deathTimer.Text = _health.RespawnIn > 0.05f ? $"Renasce em {_health.RespawnIn:0.0} s" : "Escolha o conjunto";
+			_deathTimer.Text = _health.RespawnIn > 0.05f ? Loc.F("Renasce em {0:0.0} s", _health.RespawnIn) : "Escolha o conjunto";
 
 		if (_warningTimer > 0)
 		{
@@ -143,6 +144,7 @@ public partial class Hud : CanvasLayer
 		UpdateTransform();
 		UpdateSpecial();
 		UpdateWolf((float)delta);
+		UpdateGuide();
 	}
 
 	private void Warn(string text, float seconds = 1.6f, Color? color = null)

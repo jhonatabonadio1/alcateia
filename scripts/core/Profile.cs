@@ -318,8 +318,8 @@ public static class Profile
 	public static string ValidateName(string name)
 	{
 		name = (name ?? "").Trim();
-		if (name.Length < NameMin) return $"Mínimo de {NameMin} caracteres";
-		if (name.Length > NameMax) return $"Máximo de {NameMax} caracteres";
+		if (name.Length < NameMin) return Loc.F("Mínimo de {0} caracteres", NameMin);
+		if (name.Length > NameMax) return Loc.F("Máximo de {0} caracteres", NameMax);
 		foreach (char c in name)
 			if (!char.IsLetterOrDigit(c) && c != '_' && c != '-')
 				return "Use só letras, números, _ e -";
@@ -452,7 +452,7 @@ public static class Profile
 		int price = Catalog.Price(item, duration);
 
 		if (item == null || price < 0) error = "Item não está à venda nessa duração";
-		else if (Rank < item.MinRank) error = $"Exige a patente {Ranks.NameOf(item.MinRank)}";
+		else if (Rank < item.MinRank) error = Loc.F("Exige a patente {0}", Ranks.NameOf(item.MinRank));
 		else if (Presas < price) error = "Presas insuficientes";
 
 		if (error != null) return false;
@@ -504,7 +504,7 @@ public static class Profile
 		if (Catalog.Get(id)?.Kind != ItemKind.Tattoo) error = "Não é uma tatuagem";
 		else if (!Owns(id)) error = "Item fora do inventário ou expirado";
 		else if (Tattoos.Contains(id)) error = "Já equipada";
-		else if (Tattoos.Count >= MaxTattoos) error = $"Máximo de {MaxTattoos} tatuagens";
+		else if (Tattoos.Count >= MaxTattoos) error = Loc.F("Máximo de {0} tatuagens", MaxTattoos);
 
 		if (error != null) return false;
 		Tattoos.Add(id);

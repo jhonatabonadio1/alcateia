@@ -145,7 +145,7 @@ public partial class Hud
 
 		MapInfo info = Maps.Get(RoomConfig.Rules.Map);
 		string mode = RoomSettings.ModeName(RoomConfig.Rules.Mode);
-		Label where = Outlined(UiKit.Caption($"{info.Name}  ·  {mode}".ToUpperInvariant(), UiTokens.TextPrimary));
+		Label where = Outlined(UiKit.Caption($"{Loc.T(info.Name)}  ·  {Loc.T(mode)}", UiTokens.TextPrimary));
 		where.AddThemeFontOverride("font", HudStyle.Slanted(UiFonts.DisplaySemi));
 		where.AddThemeFontSizeOverride("font_size", 16);
 		box.AddChild(where);
@@ -318,27 +318,27 @@ public partial class Hud
 		head.AddChild(UiKit.Spacer());
 		column.AddChild(head);
 
-		string[] names = { "Garrada · clique", "Especial · Q", "Bote · direito no ar" };
-		for (int i = 0; i < 3; i++)
-		{
-			HBoxContainer row = UiKit.Row(UiTokens.S2);
-			Label label = Outlined(UiKit.Caption(names[i], UiTokens.TextPrimary));
-			label.CustomMinimumSize = new Vector2(190, 0);
-			row.AddChild(label);
-			_cooldownBars[i] = Bar(UiTokens.TeamOrange.Lightened(0.2f), 7);
-			_cooldownBars[i].Value = 1;
-			row.AddChild(_cooldownBars[i]);
-			row.Visible = i != 1;   // a recarga do salto é o disco do meio
-			column.AddChild(row);
-		}
+		// As habilidades em quadradinhos, à direita (18/11, "igual
+		// Overwatch"): a garrada, o bote e o uivo — que estava escondido
+		// numa linha de texto e muita gente não sabia que existia. O
+		// especial (Q) continua no disco do meio. O que cada uma faz está
+		// no guia (segurar E).
+		HBoxContainer squares = UiKit.Row(UiTokens.S2);
+		squares.MouseFilter = Control.MouseFilterEnum.Ignore;
+		squares.Alignment = BoxContainer.AlignmentMode.End;
+		_skills[0] = new SkillSquare { Kind = IconKind.Claw, Key = "CLIQUE" };
+		_skills[2] = new SkillSquare { Kind = IconKind.FromAbove, Key = "DIREITO" };
+		_howlSquare = new SkillSquare { Kind = IconKind.Shield, Key = "R", Hot = UiTokens.Accent };
+		squares.AddChild(_skills[0]);
+		squares.AddChild(_skills[2]);
+		squares.AddChild(_howlSquare);
+		column.AddChild(squares);
 
-		HBoxContainer howl = UiKit.Row(UiTokens.S2);
-		_howlLabel = Outlined(UiKit.Caption("Uivo · segure R", UiTokens.TextPrimary));
-		_howlLabel.CustomMinimumSize = new Vector2(190, 0);
-		howl.AddChild(_howlLabel);
-		_howlBar = Bar(UiTokens.Accent, 7);
-		howl.AddChild(_howlBar);
-		column.AddChild(howl);
+		HBoxContainer hint = UiKit.Row(UiTokens.S1);
+		hint.Alignment = BoxContainer.AlignmentMode.End;
+		_howlLabel = Outlined(UiKit.Caption("Segure E · habilidades", UiTokens.TextSecondary));
+		hint.AddChild(_howlLabel);
+		column.AddChild(hint);
 
 		return column;
 	}

@@ -94,6 +94,6 @@ public static class PlayModes
 	{
 		FormRule blue = RuleFor(mode, Teams.Blue, false), orange = RuleFor(mode, Teams.Orange, false);
 		static string Of(FormRule r) => r switch { FormRule.Humano => "humanos", FormRule.Lobo => "lobos", _ => "humano e lobo" };
-		return blue == orange ? Of(blue) : $"Vanguarda {Of(blue)}, Sindicato {Of(orange)}";
+		return blue == orange ? Of(blue) : Loc.F("Vanguarda {0}, Sindicato {1}", Of(blue), Of(orange));
 	}
 }

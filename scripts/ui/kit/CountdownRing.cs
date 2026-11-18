@@ -39,8 +39,9 @@ public partial class CountdownRing : Control
 
 		if (!string.IsNullOrEmpty(Caption))
 		{
-			Vector2 capSize = UiFonts.Label.GetStringSize(Caption, HorizontalAlignment.Center, -1, UiTokens.Caption);
-			DrawString(UiFonts.Label, new Vector2(c.X - capSize.X / 2f, c.Y + r * 0.62f), Caption,
+			string caption = Loc.T(Caption);
+			Vector2 capSize = UiFonts.Label.GetStringSize(caption, HorizontalAlignment.Center, -1, UiTokens.Caption);
+			DrawString(UiFonts.Label, new Vector2(c.X - capSize.X / 2f, c.Y + r * 0.62f), caption,
 				HorizontalAlignment.Left, -1, UiTokens.Caption, UiTokens.TextSecondary);
 		}
 	}

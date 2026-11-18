@@ -2,6 +2,35 @@
 
 ## Não lançado
 
+### Habilidades do lobo no HUD e guia no E (18/11)
+- As habilidades do lobo viraram **quadradinhos** no canto direito, com a
+  tecla embaixo: garrada (clique), bote (direito, no ar) e **uivo (R)** —
+  que estava numa linha de texto e pouca gente sabia que existia. O
+  quadradinho escurece enquanto recarrega e enche de cor enquanto se
+  segura o R. O especial (Q) continua no disco do meio.
+- **Segurar E** abre o guia das habilidades da forma atual (lobo ou
+  humano): ícone, nome, tecla e uma frase para cada uma. Não pausa; soltou,
+  some. Os números (dano da garra, duração do uivo) vêm da raça e do jogo.
+- Ícone novo: escudo com raio (`IconKind.Shield`).
+
+### Textos num arquivo só, pronto para outros idiomas (18/11)
+- `assets/i18n/textos.csv` tem **todos os textos do jogo** (940): a coluna
+  `texto` é o texto como está no código; `pt_BR` troca o que aparece em
+  português sem mexer no código (renomear arma, botão, patente); `en`,
+  `es`... são as traduções — vazia, aparece em português. Idioma novo é só
+  mais uma coluna com o código dele.
+- `Loc` (scripts/core/Loc.cs) carrega o arquivo no começo do jogo. Rótulo
+  e botão com texto fixo o Godot traduz sozinho; texto montado com número
+  ou nome passa por `Loc.F("... {0} ...", valor)` (113 foram convertidos) e
+  caixa alta por `Loc.Upper`.
+- Opções → **Idioma** aparece quando alguma coluna além do português tiver
+  tradução (hoje estão vazias).
+- `python3 tools/i18n/extrair.py` varre o código e atualiza o arquivo sem
+  perder o que já foi traduzido; `--ligar` converte texto montado novo.
+- Fora por enquanto: ItemCard, WeaponArt, Arsenal e os outros arquivos que
+  estão com mudança local do AR-15 Ultimate (entram quando ele for
+  commitado e o extrator rodar de novo).
+
 ### Sangue refeito e som de acerto no corpo (18/11)
 - **Sangue sem formas geométricas**: antes tudo era disco (gota redonda,
   névoa redonda, mancha de círculos). Agora as formas são campos de

@@ -73,8 +73,8 @@ public static class Progression
 		}
 
 		Line("Participação", XpBase, PresasBase);
-		Line($"Abates ×{r.Kills}", XpKill * r.Kills, PresasKill * r.Kills);
-		Line($"Assistências ×{r.Assists}", XpAssist * r.Assists, PresasAssist * r.Assists);
+		Line(Loc.F("Abates ×{0}", r.Kills), XpKill * r.Kills, PresasKill * r.Kills);
+		Line(Loc.F("Assistências ×{0}", r.Assists), XpAssist * r.Assists, PresasAssist * r.Assists);
 		if (r.Won) Line("Vitória", XpWin, PresasWin);
 		else if (r.Draw) Line("Empate", XpDraw, PresasDraw);
 		if (r.Mvp) Line("MVP da partida", XpMvp, PresasMvp);
@@ -109,7 +109,7 @@ public static class Progression
 		summary.Promotions = Profile.AddXp(xp);
 
 		foreach (int rank in summary.Promotions)
-			Line($"Promoção: {Ranks.NameOf(rank)}", 0, Ranks.PromotionReward(rank));
+			Line(Loc.F("Promoção: {0}", Ranks.NameOf(rank)), 0, Ranks.PromotionReward(rank));
 
 		Profile.Missions.Refresh(System.DateTime.Now);
 		summary.MissionsCompleted = Profile.Missions.Record(r);

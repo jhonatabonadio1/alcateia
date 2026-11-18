@@ -183,14 +183,14 @@ public partial class ShopScreen : LobbyScreen
 
 		HBoxContainer head = UiKit.Row(UiTokens.S3);
 		head.AddChild(UiKit.Text(category.Name, "Subtitle"));
-		Label count = UiKit.Text(items.Count == 1 ? "1 item" : $"{items.Count} itens", "Muted");
+		Label count = UiKit.Text(items.Count == 1 ? "1 item" : Loc.F("{0} itens", items.Count), "Muted");
 		count.SizeFlagsVertical = SizeFlags.ShrinkEnd;
 		head.AddChild(count);
 		head.AddChild(UiKit.Spacer());
 		if (_category == Daily)
 		{
 			TimeSpan left = MissionBook.UntilDailyReset(DateTime.Now);
-			head.AddChild(UiKit.Text($"Troca em {left.Hours} h {left.Minutes:00} min  ·  20% de desconto", "Caption", UiTokens.Warning));
+			head.AddChild(UiKit.Text(Loc.F("Troca em {0} h {1:00} min  ·  20% de desconto", left.Hours, left.Minutes), "Caption", UiTokens.Warning));
 		}
 		column.AddChild(head);
 
@@ -244,7 +244,7 @@ public partial class ShopScreen : LobbyScreen
 		if (!item.ForSale)
 		{
 			string why = item.Kind == ItemKind.Breed
-				? ItemInfo.IsBreedUnlocked(item) ? "Já é sua. Escolha no inventário, aba Lobo." : $"Destrava na patente {Ranks.NameOf(item.MinRank)} — não está à venda."
+				? ItemInfo.IsBreedUnlocked(item) ? "Já é sua. Escolha no inventário, aba Lobo." : Loc.F("Destrava na patente {0} — não está à venda.", Ranks.NameOf(item.MinRank))
 				: "Vem com todo perfil.";
 			column.AddChild(UiKit.Paragraph(why));
 			if (item.Kind == ItemKind.Breed && ItemInfo.IsBreedUnlocked(item))
@@ -297,7 +297,7 @@ public partial class ShopScreen : LobbyScreen
 		column.AddChild(priceRow);
 
 		float perDay = Catalog.PerDay(item, _duration);
-		column.AddChild(UiKit.Text(perDay > 0 ? $"{perDay:0} Presas por dia" : item.Consumable ? "Um uso" : "Para sempre", "Caption"));
+		column.AddChild(UiKit.Text(perDay > 0 ? Loc.F("{0:0} Presas por dia", perDay) : item.Consumable ? "Um uso" : "Para sempre", "Caption"));
 
 		bool locked = ItemInfo.Locked(item);
 		bool affordable = Profile.Presas >= selectedPrice;
@@ -309,12 +309,12 @@ public partial class ShopScreen : LobbyScreen
 			ButtonKind.Primary, () => Confirm(item, _duration, selectedPrice));
 		purchase.CustomMinimumSize = new Vector2(200, UiTokens.ButtonHeight);
 		purchase.Disabled = locked || ownedForever;
-		purchase.TooltipText = locked ? $"Exige {Ranks.NameOf(item.MinRank)}" : !affordable ? "Presas insuficientes" : "";
+		purchase.TooltipText = locked ? Loc.F("Exige {0}", Ranks.NameOf(item.MinRank)) : !affordable ? "Presas insuficientes" : "";
 		buy.AddChild(purchase);
 		column.AddChild(buy);
 
 		if (!affordable && !locked)
-			column.AddChild(UiKit.Text($"Faltam {UiTokens.Thousands(selectedPrice - Profile.Presas)} Presas", "Caption", UiTokens.Danger));
+			column.AddChild(UiKit.Text(Loc.F("Faltam {0} Presas", UiTokens.Thousands(selectedPrice - Profile.Presas)), "Caption", UiTokens.Danger));
 
 		return column;
 	}
@@ -367,7 +367,7 @@ public partial class ShopScreen : LobbyScreen
 		}
 
 		Sfx.Ui(Sfx.First("ui_compra", "abate"));
-		Shell.Toast($"Comprado: {item.Name} · {Catalog.DurationLabels[(int)duration]}", UiTokens.Success);
+		Shell.Toast(Loc.F("Comprado: {0} · {1}", item.Name, Catalog.DurationLabels[(int)duration]), UiTokens.Success);
 		Refresh();
 	}
 }

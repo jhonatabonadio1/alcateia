@@ -21,7 +21,7 @@ public partial class MissionsScreen : LobbyScreen
 		HBoxContainer head = UiKit.Row(UiTokens.S3);
 		head.AddChild(UiKit.Text("Missões", "Title"));
 		int ready = Profile.Missions.ClaimableCount;
-		Label summary = UiKit.Text(ready > 0 ? $"{ready} pronta(s) para resgatar" : "Progresso conta em toda partida terminada", "Muted",
+		Label summary = UiKit.Text(ready > 0 ? Loc.F("{0} pronta(s) para resgatar", ready) : "Progresso conta em toda partida terminada", "Muted",
 			ready > 0 ? UiTokens.Accent : (Color?)null);
 		summary.SizeFlagsVertical = SizeFlags.ShrinkEnd;
 		head.AddChild(summary);
@@ -34,8 +34,8 @@ public partial class MissionsScreen : LobbyScreen
 		TimeSpan daily = MissionBook.UntilDailyReset(DateTime.Now);
 		TimeSpan weekly = MissionBook.UntilWeeklyReset(DateTime.Now);
 
-		columns.AddChild(Section("Diárias", $"trocam em {daily.Hours} h {daily.Minutes:00} min", Profile.Missions.Daily));
-		columns.AddChild(Section("Semanais", $"trocam em {(int)weekly.TotalDays} d {weekly.Hours} h", Profile.Missions.Weekly));
+		columns.AddChild(Section("Diárias", Loc.F("trocam em {0} h {1:00} min", daily.Hours, daily.Minutes), Profile.Missions.Daily));
+		columns.AddChild(Section("Semanais", Loc.F("trocam em {0} d {1} h", (int)weekly.TotalDays, weekly.Hours), Profile.Missions.Weekly));
 		columns.AddChild(Section("Permanentes", "cada uma dá um título", Profile.Missions.Permanent));
 	}
 
@@ -102,8 +102,8 @@ public partial class MissionsScreen : LobbyScreen
 		HBoxContainer bottom = UiKit.Row(UiTokens.S2);
 		bottom.AddChild(UiKit.Text($"+{UiTokens.Thousands(def.Presas)}", "Numeric"));
 		bottom.AddChild(Icon.Make(IconKind.Presa, 13, CurrencyLabel.ColorOf(Currency.Presas)));
-		bottom.AddChild(UiKit.Text($"+{UiTokens.Thousands(def.Xp)} XP", "Numeric", UiTokens.TextSecondary));
-		if (!string.IsNullOrEmpty(def.Title)) bottom.AddChild(UiKit.Chip($"título: {def.Title}", UiTokens.Accent));
+		bottom.AddChild(UiKit.Text(Loc.F("+{0} XP", UiTokens.Thousands(def.Xp)), "Numeric", UiTokens.TextSecondary));
+		if (!string.IsNullOrEmpty(def.Title)) bottom.AddChild(UiKit.Chip(Loc.F("título: {0}", def.Title), UiTokens.Accent));
 		bottom.AddChild(UiKit.Spacer());
 
 		Button claim = UiKit.Button(p.Claimed ? "Resgatada" : "Resgatar", done && !p.Claimed ? ButtonKind.Primary : ButtonKind.Secondary,
@@ -122,7 +122,7 @@ public partial class MissionsScreen : LobbyScreen
 			return;
 
 		Sfx.Ui(Sfx.First("ui_recompensa", "abate"));
-		Shell.Toast($"Resgatada: +{UiTokens.Thousands(def.Presas)} Presas, +{UiTokens.Thousands(def.Xp)} XP", UiTokens.Success);
+		Shell.Toast(Loc.F("Resgatada: +{0} Presas, +{1} XP", UiTokens.Thousands(def.Presas), UiTokens.Thousands(def.Xp)), UiTokens.Success);
 		Profile.NotifyChanged();
 		Refresh();
 

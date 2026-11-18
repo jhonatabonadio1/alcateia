@@ -63,7 +63,7 @@ public sealed class LoadoutSet
 		else if (string.IsNullOrEmpty(Secondary) || Arsenal.Get(Secondary) == null)
 			error = "Secundária obrigatória";
 		else if (Utilities.Count > MaxUtilities)
-			error = $"Máximo {MaxUtilities} utilitários";
+			error = Loc.F("Máximo {0} utilitários", MaxUtilities);
 		else if (HasDuplicates())
 			error = "Item repetido no mesmo conjunto";
 		else if (Utilities.Count == MaxUtilities && Arsenal.GetUtility(Utilities[1]) is UtilityInfo second

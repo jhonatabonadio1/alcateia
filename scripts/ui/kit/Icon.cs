@@ -9,7 +9,9 @@ public enum IconKind
 	Plus, Minus, Trophy, Chat, Play, Users, Map, Bot, Info, Warning, Gun, Key, Power,
 	SkullSolid,
 	// O feed de abates: o especial do lobo, de cima, pelas costas, vingança.
-	Pounce, FromAbove, Behind, Revenge
+	Pounce, FromAbove, Behind, Revenge,
+	// O uivo, que enche o escudo (18/11): escudo com um raio.
+	Shield
 }
 
 /// <summary>

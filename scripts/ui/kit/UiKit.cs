@@ -39,7 +39,7 @@ public static class UiKit
 	/// <summary>Rótulo pequeno em caixa alta, para cabeçalho de coluna e
 	/// nome de campo.</summary>
 	public static Label Caption(string text, Color? color = null) =>
-		Text((text ?? "").ToUpperInvariant(), "Caption", color);
+		Text(Loc.Upper(text), "Caption", color);
 
 	/// <summary>Texto que corta com reticências em vez de quebrar linha
 	/// ou empurrar o resto.</summary>
@@ -82,7 +82,7 @@ public static class UiKit
 			MouseDefaultCursorShape = Control.CursorShape.PointingHand
 		};
 
-		if (kind == ButtonKind.Tab) button.Text = text.ToUpperInvariant();
+		if (kind == ButtonKind.Tab) button.Text = Loc.Upper(text);
 		if (pressed != null) button.Pressed += pressed;
 
 		Sfx.Wire(button);
@@ -224,7 +224,7 @@ public static class UiKit
 		chip.AddThemeStyleboxOverride("panel", UiTheme.Box(
 			solid ? color : new Color(color, 0.14f),
 			new Color(color, solid ? 1f : 0.45f), 1, UiTokens.RadiusSmall, UiTokens.S2, 2));
-		chip.AddChild(Text(text.ToUpperInvariant(), "Caption", solid ? UiTokens.AccentText : color));
+		chip.AddChild(Text(Loc.Upper(text), "Caption", solid ? UiTokens.AccentText : color));
 		chip.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
 		return chip;
 	}

@@ -33,6 +33,11 @@ public static class Settings
 		/// Ligado por padrão; arquivo antigo sem o campo, também.</summary>
 		public bool Blood { get; set; } = true;
 
+		/// <summary>O idioma dos textos, um dos de <see cref="Loc.Languages"/>
+		/// (as colunas de assets/i18n/textos.csv). Português por padrão,
+		/// seja qual for o idioma do sistema.</summary>
+		public string Language { get; set; } = Loc.Source;
+
 		/// <summary>A mira do jogador. Arquivo antigo sem ela: a de sempre.</summary>
 		public CrosshairSettings Crosshair { get; set; } = new();
 	}

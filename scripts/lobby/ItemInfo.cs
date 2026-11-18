@@ -50,13 +50,13 @@ public static class ItemInfo
 		{
 			if (IsBreedUnlocked(item)) return "Permanente";
 			color = UiTokens.TextDisabled;
-			return $"Destrava em {Ranks.NameOf(item.MinRank)}";
+			return Loc.F("Destrava em {0}", Ranks.NameOf(item.MinRank));
 		}
 
 		OwnedItem owned = Profile.Find(item.Id);
 		if (owned == null) return "";
 
-		if (item.Consumable) return owned.Uses == 1 ? "1 uso" : $"{owned.Uses} usos";
+		if (item.Consumable) return owned.Uses == 1 ? "1 uso" : Loc.F("{0} usos", owned.Uses);
 		if (owned.IsPermanent) return "Permanente";
 
 		if (owned.IsExpired)
@@ -68,9 +68,9 @@ public static class ItemInfo
 		TimeSpan left = owned.Remaining;
 		if (left < ExpiringSoon) color = UiTokens.Warning;
 
-		if (left.TotalDays >= 1) return $"{(int)left.TotalDays} d {left.Hours} h";
-		if (left.TotalHours >= 1) return $"{(int)left.TotalHours} h {left.Minutes} min";
-		return $"{Math.Max(1, left.Minutes)} min";
+		if (left.TotalDays >= 1) return Loc.F("{0} d {1} h", (int)left.TotalDays, left.Hours);
+		if (left.TotalHours >= 1) return Loc.F("{0} h {1} min", (int)left.TotalHours, left.Minutes);
+		return Loc.F("{0} min", Math.Max(1, left.Minutes));
 	}
 
 	/// <summary>Custo do item na partida, em WP (arma e granada).</summary>
@@ -78,7 +78,7 @@ public static class ItemInfo
 	{
 		if (item.Kind != ItemKind.Weapon && item.Kind != ItemKind.Utility) return "";
 		int cost = Arsenal.CostOf(item.Id);
-		return item.Id == Arsenal.KnifeId ? "" : $"WP {cost}";
+		return item.Id == Arsenal.KnifeId ? "" : Loc.F("WP {0}", cost);
 	}
 
 	public static Color RarityColor(CatalogItem item) => UiTokens.Rarity[Mathf.Clamp(item.Rarity, 0, 4)];

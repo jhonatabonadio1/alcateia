@@ -199,7 +199,7 @@ public partial class RoomScreen : LobbyScreen
 		if (!Chats.ContainsKey(S.Number))
 		{
 			Chats[S.Number] = new List<(string, string, bool)>();
-			Log($"{Profile.PlayerName} entrou na sala.", system: true);
+			Log(Loc.F("{0} entrou na sala.", Profile.PlayerName), system: true);
 		}
 
 		VBoxContainer page = Page(UiTokens.S3);
@@ -364,7 +364,7 @@ public partial class RoomScreen : LobbyScreen
 
 		if (VsBots && IsHost && member.IsBot)
 		{
-			Button remove = UiKit.IconButton(IconKind.Close, $"Tirar {member.Name}", () => RemoveBot(member), 14);
+			Button remove = UiKit.IconButton(IconKind.Close, Loc.F("Tirar {0}", member.Name), () => RemoveBot(member), 14);
 			remove.CustomMinimumSize = new Vector2(28, 28);
 			row.AddChild(remove);
 		}
@@ -443,18 +443,18 @@ public partial class RoomScreen : LobbyScreen
 		form.AddChild(Row("Modo", mode));
 
 		int[] sizes = RoomSettings.TeamSizes;
-		form.AddChild(Row("Jogadores", Picker(sizes.Select(n => $"{n} contra {n}").ToArray(),
+		form.AddChild(Row("Jogadores", Picker(sizes.Select(n => Loc.F("{0} contra {1}", n, n)).ToArray(),
 			Mathf.Max(0, Array.IndexOf(sizes, S.TeamSize)), i => SetTeamSize(sizes[i]))));
 
 		int[] scores = { 20, 40, 60, 100 };
-		form.AddChild(Row("Objetivo", Picker(scores.Select(n => $"{n} pontos").ToArray(),
-			Mathf.Max(0, Array.IndexOf(scores, S.ScoreToWin)), i => Change("Objetivo", $"{scores[i]} pontos", () => S.ScoreToWin = scores[i]))));
+		form.AddChild(Row("Objetivo", Picker(scores.Select(n => Loc.F("{0} pontos", n)).ToArray(),
+			Mathf.Max(0, Array.IndexOf(scores, S.ScoreToWin)), i => Change("Objetivo", Loc.F("{0} pontos", scores[i]), () => S.ScoreToWin = scores[i]))));
 
 		int[] minutes = { 5, 10, 15, 20 };
-		form.AddChild(Row("Tempo", Picker(minutes.Select(n => $"{n} min").ToArray(),
-			Mathf.Max(0, Array.IndexOf(minutes, S.Minutes)), i => Change("Tempo", $"{minutes[i]} min", () => S.Minutes = minutes[i]))));
+		form.AddChild(Row("Tempo", Picker(minutes.Select(n => Loc.F("{0} min", n)).ToArray(),
+			Mathf.Max(0, Array.IndexOf(minutes, S.Minutes)), i => Change("Tempo", Loc.F("{0} min", minutes[i]), () => S.Minutes = minutes[i]))));
 
-		form.AddChild(Row("Armas", Picker(RoomSettings.WeaponNames.Select((n, i) => RoomSettings.WeaponsAvailable((WeaponRule)i) ? n : $"{n} (em breve)").ToArray(),
+		form.AddChild(Row("Armas", Picker(RoomSettings.WeaponNames.Select((n, i) => RoomSettings.WeaponsAvailable((WeaponRule)i) ? n : Loc.F("{0} (em breve)", n)).ToArray(),
 			(int)S.Weapons, i => Change("Armas", RoomSettings.WeaponNames[i], () => S.Weapons = (WeaponRule)i),
 			RoomSettings.WeaponNames.Select((_, i) => !RoomSettings.WeaponsAvailable((WeaponRule)i)).ToArray())));
 
@@ -694,7 +694,7 @@ public partial class RoomScreen : LobbyScreen
 		{
 			LifetimeStats s = Profile.Stats;
 			if (!string.IsNullOrEmpty(Profile.Title)) column.AddChild(Info("Título", Profile.Title));
-			column.AddChild(Info("Partidas", $"{s.Matches}  ·  {s.WinRate * 100:0}% de vitórias"));
+			column.AddChild(Info("Partidas", Loc.F("{0}  ·  {1:0}% de vitórias", s.Matches, s.WinRate * 100)));
 			column.AddChild(Info("Abates / mortes", $"{s.Kills} / {s.Deaths}  ·  {s.KillDeath:0.00}"));
 			column.AddChild(UiKit.Button("Ver perfil", ButtonKind.Tertiary, () => Shell.GoProfile()));
 		}
@@ -711,7 +711,7 @@ public partial class RoomScreen : LobbyScreen
 
 		Button invite = UiKit.Button("Convidar", ButtonKind.Secondary);
 		invite.Disabled = true;
-		invite.TooltipText = _online ? $"Passe o número da sala: {S.Number}" : "Convidar amigos exige servidor";
+		invite.TooltipText = _online ? Loc.F("Passe o número da sala: {0}", S.Number) : "Convidar amigos exige servidor";
 		column.AddChild(invite);
 
 		_ready = UiKit.Button("Pronto", ButtonKind.Secondary, ToggleReady);
@@ -772,7 +772,7 @@ public partial class RoomScreen : LobbyScreen
 		else if (blue == 0 || orange == 0)
 			why = AllReady ? "Os dois times precisam de alguém" : "Falta alguém pronto num dos times";
 		else if (!AllReady && Math.Abs(blue - orange) > 1)
-			why = $"Prontos: {blue} contra {orange} — espere mais alguém ficar pronto";
+			why = Loc.F("Prontos: {0} contra {1} — espere mais alguém ficar pronto", blue, orange);
 
 		return why == null;
 	}
@@ -812,7 +812,7 @@ public partial class RoomScreen : LobbyScreen
 			return;
 		}
 		Me.Ready = !Me.Ready;
-		Log(Me.Ready ? $"{Me.Name} está pronto." : $"{Me.Name} não está mais pronto.", system: true);
+		Log(Me.Ready ? Loc.F("{0} está pronto.", Me.Name) : Loc.F("{0} não está mais pronto.", Me.Name), system: true);
 		Refresh();
 	}
 
@@ -854,7 +854,7 @@ public partial class RoomScreen : LobbyScreen
 		RoomConfig.Settings = S.Clone();
 		// Quem não estava pronto fica na sala.
 		foreach (RoomMember left in _room.Members.Where(m => !m.IsHost && !m.Ready))
-			Log($"{left.Name} ficou de fora: não estava pronto.", system: true);
+			Log(Loc.F("{0} ficou de fora: não estava pronto.", left.Name), system: true);
 
 		RoomConfig.Members.Clear();
 		RoomConfig.Members.AddRange(Playing.Select(m => new RoomMember
@@ -905,7 +905,7 @@ public partial class RoomScreen : LobbyScreen
 		RoomMember bot = _room.Members.LastOrDefault(m => m.Team == other && m.IsBot);
 		if (_room.Members.Count(m => m.Team == other) >= S.TeamSize && bot == null)
 		{
-			Shell.Toast($"O time {Teams.TitleOf(other)} está cheio", UiTokens.Danger);
+			Shell.Toast(Loc.F("O time {0} está cheio", Teams.TitleOf(other)), UiTokens.Danger);
 			return;
 		}
 
@@ -917,7 +917,7 @@ public partial class RoomScreen : LobbyScreen
 
 		if (_room.Members.Count(m => m.Team == other) >= S.TeamSize) _room.Members.Remove(bot);
 		Me.Team = other;
-		Log($"{Me.Name} foi para o time {Teams.TitleOf(other)}.", system: true);
+		Log(Loc.F("{0} foi para o time {1}.", Me.Name, Loc.T(Teams.TitleOf(other))), system: true);
 		Refresh();
 	}
 
@@ -958,7 +958,7 @@ public partial class RoomScreen : LobbyScreen
 			PushSettings();
 			return;
 		}
-		Log($"{what}: {value}.", system: true);
+		Log($"{Loc.T(what)}: {Loc.T(value)}.", system: true);
 		SaveRules();
 		RefreshActions();
 	}
@@ -1009,7 +1009,7 @@ public partial class RoomScreen : LobbyScreen
 			return;
 		}
 
-		Change("Jogadores", $"{size} contra {size}", () => S.TeamSize = size);
+		Change("Jogadores", Loc.F("{0} contra {1}", size, size), () => S.TeamSize = size);
 		Refresh();
 	}
 
