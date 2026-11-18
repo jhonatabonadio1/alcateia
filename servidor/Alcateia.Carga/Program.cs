@@ -235,7 +235,7 @@ public static class Program
 			await Say(new JsonObject
 			{
 				["t"] = "room.create",
-				["settings"] = new JsonObject { ["title"] = "Carga " + Name, ["teamSize"] = 4, ["map"] = "armazem", ["minutes"] = 3, ["scoreToWin"] = 40 }
+				["settings"] = new JsonObject { ["title"] = "Carga " + Name, ["teamSize"] = 4, ["map"] = "armazem_estendido", ["minutes"] = 3, ["scoreToWin"] = 40 }
 			});
 			JsonObject got = await room;
 			if (got == null) return 0;

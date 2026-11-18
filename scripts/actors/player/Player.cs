@@ -193,11 +193,11 @@ public partial class Player : CharacterBody3D
 	/// corpo do servidor segura junto.</summary>
 	private bool _drivenFrozen;
 
-	/// <summary>Neste passo o corpo fica parado, com gravidade (contagem e
-	/// fim de partida). O menu do Esc não congela: o corpo segue, com a
-	/// intenção vazia (pedido do Jhon, 17/11: a animação continuava parada
-	/// no meio de um golpe ou de um pulo).</summary>
-	public bool Frozen => Driven ? _drivenFrozen : !Match.IsLive;
+	/// <summary>Neste passo o corpo fica parado, com gravidade: só na
+	/// contagem. O menu do Esc e o fim da partida não congelam: o corpo
+	/// segue, com a intenção vazia (pedidos do Jhon, 17/11: a animação
+	/// parava no meio de um golpe ou de um pulo).</summary>
+	public bool Frozen => Driven ? _drivenFrozen : Match.IsCountdown;
 
 	/// <summary>Põe o corpo do servidor onde o jogador nasceu (primeira
 	/// leva: quem diz é o jogo), parado e fora da parede.</summary>
@@ -339,7 +339,8 @@ public partial class Player : CharacterBody3D
 		// Menu aberto: ninguém aperta nada. O corpo continua (cai, termina o
 		// golpe, a animação segue), mas uma tecla esquecida embaixo não leva
 		// o personagem andando sozinho.
-		_intent = UiState.AnyOpen ? CharacterIntent.None : CharacterIntent.FromInput();
+		// Fim de partida, o mesmo: ninguém comanda mais.
+		_intent = UiState.AnyOpen || Match.IsOver ? CharacterIntent.None : CharacterIntent.FromInput();
 
 		// Partida autoritativa: o jogo prevê com a mesma entrada que o
 		// servidor vai receber — o eixo do movimento e a cabeça já
@@ -376,10 +377,10 @@ public partial class Player : CharacterBody3D
 			return;
 		}
 
-		// Contagem e fim de partida: o corpo fica, a cabeça gira. Olhar
-		// em volta durante a contagem é como se lê o mapa antes de valer.
-		// O menu do Esc não segura o corpo: ele segue com a intenção vazia
-		// (veja _PhysicsProcess).
+		// Contagem: o corpo fica, a cabeça gira. Olhar em volta durante a
+		// contagem é como se lê o mapa antes de valer. O menu do Esc e o
+		// fim da partida não seguram o corpo: ele segue com a intenção
+		// vazia (veja _PhysicsProcess).
 		if (Frozen)
 		{
 			Hold(delta);

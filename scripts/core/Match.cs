@@ -86,6 +86,13 @@ public partial class Match : Node
 	/// há partida nenhuma na cena.</summary>
 	public static bool IsLive => Current == null || Current.Phase == MatchPhase.Live;
 
+	/// <summary>Contagem antes de valer: os corpos ficam parados.</summary>
+	public static bool IsCountdown => Current != null && Current.Phase == MatchPhase.Countdown;
+
+	/// <summary>A partida acabou: ninguém comanda mais nada, mas o que
+	/// estava em curso (pulo, golpe, queda) termina, com a animação.</summary>
+	public static bool IsOver => Current != null && Current.Phase == MatchPhase.Ended;
+
 	/// <summary>Já passou da metade do tempo da partida em curso.</summary>
 	public static bool SecondHalf => Current != null && Current.Phase != MatchPhase.Countdown
 		&& Current.TimeLeft <= Current.Duration / 2.0;

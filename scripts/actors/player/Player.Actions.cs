@@ -77,9 +77,9 @@ public partial class Player
 		// Com menu aberto, solta a mira.
 		_weapon.SetAiming(!UiState.AnyOpen && !_form.IsWolf && _intent.AimHeld);
 
-		// Menu aberto: o que estava sendo segurado é largado sem disparar
-		// (o salto carregado não sai, o rugido é cortado).
-		if (UiState.AnyOpen)
+		// Menu aberto ou partida acabada: o que estava sendo segurado é
+		// largado sem disparar (o salto carregado não sai, o rugido é cortado).
+		if (UiState.AnyOpen || Match.IsOver)
 		{
 			_weapon.CancelCharge();
 			_howling = false;

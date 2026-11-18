@@ -48,8 +48,34 @@ public static class Maps
 	{
 		new()
 		{
-			Id = "armazem",
+			// O Armazém maior e mais alto (pedido do Jhon, 17/11): o mesmo miolo,
+			// paredes para fora, teto a 13 m e alas novas com contêineres até
+			// 8,7 m. Desde 17/11 (22h) é "o" Armazém; o original, menor, está
+			// em Guardados. O id continua armazem_estendido (salas e perfis
+			// antigos com "armazem" caem nele por Get).
+			Id = "armazem_estendido",
 			Name = "Armazém",
+			Size = "Médio",
+			Scene = "res://scenes/maps/armazem_estendido.tscn",
+			Thumbnail = "res://assets/ui/mapas/armazem_estendido.png",
+			Cover = "res://assets/ui/mapas/armazem_estendido_foto.png",
+			Description = "Médio, 75 × 45 m, galpão de contêineres de 13 m de altura. Túneis, pilhas com pranchas por cima, duas alas com pirâmides de contêineres até 8,7 m e corredores compridos junto às paredes.",
+			RoomSize = 0.75f, RoomWet = 0.35f, Ambience = "ambiente_hangar", AmbienceDb = -14f,
+			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
+		}
+	};
+
+	/// <summary>Fora da lista por decisão do Jhon (17/11): só o Armazém
+	/// (o estendido) está disponível. O Armazém original, menor, saiu na
+	/// noite de 17/11. As cenas e os geradores continuam no projeto; para
+	/// voltar com um, passe a linha dele para <see cref="All"/> (e o teste
+	/// para tests/regression/MapTests.cs).</summary>
+	public static readonly List<MapInfo> Guardados = new()
+	{
+		new()
+		{
+			Id = "armazem",
+			Name = "Armazém (original)",
 			Size = "Pequeno",
 			Scene = "res://scenes/maps/armazem.tscn",
 			Thumbnail = "res://assets/ui/mapas/armazem.png",
@@ -58,28 +84,6 @@ public static class Maps
 			RoomSize = 0.6f, RoomWet = 0.3f, Ambience = "ambiente_hangar", AmbienceDb = -14f,
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
 		},
-		new()
-		{
-			// O Armazém maior e mais alto (pedido do Jhon, 17/11): o mesmo miolo,
-			// paredes para fora, teto a 13 m e alas novas com contêineres até
-			// 8,7 m. O original continua acima, igual.
-			Id = "armazem_estendido",
-			Name = "Armazém (Extended)",
-			Size = "Médio",
-			Scene = "res://scenes/maps/armazem_estendido.tscn",
-			Thumbnail = "res://assets/ui/mapas/armazem_estendido.png",
-			Cover = "res://assets/ui/mapas/armazem_estendido_foto.png",
-			Description = "Médio, 75 × 45 m, galpão de 13 m de altura. O Armazém no meio e duas alas novas, com pirâmides de contêineres até 8,7 m e corredores compridos junto às paredes.",
-			RoomSize = 0.75f, RoomWet = 0.35f, Ambience = "ambiente_hangar", AmbienceDb = -14f,
-			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
-		}
-	};
-
-	/// <summary>Fora da lista por decisão do Jhon (17/11): só o Armazém (e,
-	/// desde a noite de 17/11, o Armazém Extended) está disponível. As cenas e os geradores continuam no projeto; para
-	/// voltar com um, passe a linha dele para <see cref="All"/>.</summary>
-	public static readonly List<MapInfo> Guardados = new()
-	{
 		new()
 		{
 			Id = "vila",

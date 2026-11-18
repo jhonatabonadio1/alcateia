@@ -23,7 +23,7 @@ public sealed class RigHandsTest : RegressionTest
 	{
 		if (_photos == null) return;
 
-		RoomConfig.Settings = new RoomSettings { Map = "armazem", TeamSize = 4 };
+		RoomConfig.Settings = new RoomSettings { Map = "armazem_estendido", TeamSize = 4 };
 		RoomConfig.Members.Clear();
 		RoomConfig.Members.Add(new RoomMember { Name = "Teste", Team = Teams.Blue });
 		RoomConfig.Active = true;

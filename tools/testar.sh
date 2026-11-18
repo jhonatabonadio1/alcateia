@@ -28,7 +28,7 @@ for arg in "$@"; do
 done
 
 # Os testes de partida simulam minutos de jogo; o --rapido os pula.
-LENTOS="BotsAtiram LobosUsamEspeciais MapaArmazem MapaArmazemEstendido"
+LENTOS="BotsAtiram LobosUsamEspeciais MapaArmazemEstendido"
 
 falhas=0
 inicio=$(date +%s)

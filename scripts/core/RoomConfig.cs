@@ -31,7 +31,7 @@ public sealed class RoomSettings
 	/// <summary>Os tamanhos de time que se pode escolher.</summary>
 	public static readonly int[] TeamSizes = { 1, 2, 3, 4, 5, 6 };
 	public const int MaxTeamSize = 6;
-	public string Map { get; set; } = "armazem";
+	public string Map { get; set; } = "armazem_estendido";
 	public int ScoreToWin { get; set; } = 40;
 	public int Minutes { get; set; } = 10;
 	public WeaponRule Weapons { get; set; } = WeaponRule.Todas;

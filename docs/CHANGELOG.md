@@ -2,6 +2,16 @@
 
 ## Não lançado
 
+### O Armazém maior vira o Armazém; fim de partida sem congelar (17/11)
+- **Só um Armazém na lista: o maior**, com o nome "Armazém" (o id segue
+  `armazem_estendido`). O original, menor, foi para `Maps.Guardados`
+  com o teste dele; a sala padrão, o servidor e os testes passam a usar
+  o novo. Sala ou perfil antigo com `armazem` cai no novo.
+- **Fim de partida não congela**: como no menu do Esc, o corpo segue com
+  a intenção vazia — o pulo, o golpe e a queda terminam, com a animação.
+  Os bots terminam o golpe em curso e param. Só a contagem segura o
+  corpo parado.
+
 ### A vida volta sozinha (17/11)
 - 15 s sem levar dano e a vida sobe aos poucos, 8% da máxima por
   segundo, até encher (`Health.RegenDelay`, `RegenRate`). Vale para

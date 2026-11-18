@@ -61,7 +61,7 @@ ROTAS = {
 
 
 def montar():
-    m = Armazem("armazem_estendido", "Armazém (Extended)", 75, 45)
+    m = Armazem("armazem_estendido", "Armazém", 75, 45)
     with open(os.path.join(AQUI, "armazem_estendido.json"), encoding="utf-8") as fh:
         dados = json.load(fh)
 

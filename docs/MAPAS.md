@@ -1,16 +1,18 @@
 # Mapas
 
-Dois mapas estão na lista do jogo (`Maps.All` em `scripts/meta/Maps.cs`):
-o Armazém e o Armazém (Extended), a versão maior e mais alta dele (17/11).
-A Vila e a Estação Polar saíram da lista em 17/11 (a pedido)
+Um mapa está na lista do jogo (`Maps.All` em `scripts/meta/Maps.cs`): o
+**Armazém**, que é a versão maior e mais alta (id `armazem_estendido`). O
+Armazém original, menor (id `armazem`), saiu da lista na noite de 17/11
+e foi para `Maps.Guardados`; salas e perfis antigos com `armazem` caem no
+novo (`Maps.Get`). A Vila e a Estação Polar saíram da lista em 17/11 (a pedido)
 mas continuam no projeto, em `Maps.Guardados`: para voltar com uma, passe
 a linha dela para `Maps.All` e ponha o teste de volta em
 `tests/regression/MapTests.cs`.
 
 | Mapa | Tamanho | Tema | Gerador |
 |---|---|---|---|
-| **Armazém** (na lista) | 46 × 30 m (pequeno) | Galpão fechado de contêineres, passarelas com escada nas paredes, claraboias no teto | `tools/mapas/blender/armazem.py` + `tools/mapas/armazem.py` |
-| **Armazém (Extended)** (na lista) | 75 × 45 m (médio), 13 m de altura | O Armazém no meio, paredes para fora e para cima, alas novas com pirâmides de contêineres até 8,7 m | `tools/mapas/blender/armazem_estendido.py` + `tools/mapas/armazem_estendido.py` |
+| Armazém original | 46 × 30 m (pequeno) | Galpão fechado de contêineres, passarelas com escada nas paredes, claraboias no teto | `tools/mapas/blender/armazem.py` + `tools/mapas/armazem.py` |
+| **Armazém** (na lista; id `armazem_estendido`) | 75 × 45 m (médio), 13 m de altura | O Armazém no meio, paredes para fora e para cima, alas novas com pirâmides de contêineres até 8,7 m | `tools/mapas/blender/armazem_estendido.py` + `tools/mapas/armazem_estendido.py` |
 | Vila | 72 × 52 m (médio) | Vila de deserto no fim da tarde: praça, feira, terraços, vielas | `tools/mapas/vila.py` |
 | Estação Polar | 110 × 70 m (grande) | Base de pesquisa na neve, ao crepúsculo: garagem, alojamentos, passarelas | `tools/mapas/polar.py` |
 
@@ -293,6 +295,6 @@ renderizada no Blender, do mesmo ângulo, até ser tirada no Godot.
 
 ## Testes
 
-`MapaArmazem` e `MapaArmazemEstendido`: o mapa carrega
+`MapaArmazemEstendido`: o mapa carrega
 na partida, os dois times nascem, ninguém cai do mapa, os bots saem da
 base pela malha de navegação e trocam tiro.

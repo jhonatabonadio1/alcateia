@@ -187,6 +187,9 @@ public partial class Bot : CharacterBody3D
 
 		if (!Match.IsLive)
 		{
+			// Fim de partida: o golpe ou o salto em curso termina (a animação
+			// não para no meio); depois, parado.
+			if (Match.IsOver && _moves.Step(delta, _gravity)) return;
 			BodyMotion.Hold(this, delta, _gravity);
 			return;
 		}
