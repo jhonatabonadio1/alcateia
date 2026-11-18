@@ -192,7 +192,7 @@ public partial class LobbyShell : Control
 
 	/// <summary>Volume das músicas do lobby, em dB (o canal Música soma o
 	/// das opções por cima).</summary>
-	private const float MusicDb = -10f;
+	private const float MusicDb = -2f;
 
 	/// <summary>Tempo da troca de uma música para a outra.</summary>
 	private const float MusicFade = 1.2f;

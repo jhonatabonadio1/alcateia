@@ -136,6 +136,13 @@ public partial class Weapon
 			float damage = CombatRules.FirearmDamage(
 				held.Damage, held.Falloff(from.DistanceTo(impact)), headshot, held.HeadshotMultiplier);
 
+			// Sangue no ponto do acerto, uma vez por alvo por disparo (a
+			// escopeta não faz nove esguichos), empurrado na direção do
+			// tiro. Antes do dano, porque o boneco de outro jogador
+			// também atira e não aplica dano — mas o sangue se vê.
+			if (!dealt.ContainsKey(hit))
+				Bleed(hit, impact, direction, headshot ? 1.6f : 1f);
+
 			dealt.TryGetValue(hit, out var sum);
 			dealt[hit] = (sum.Damage + damage, sum.Headshot || headshot);
 		}

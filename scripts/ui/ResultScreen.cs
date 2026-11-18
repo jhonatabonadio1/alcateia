@@ -60,7 +60,7 @@ public partial class ResultScreen : CanvasLayer
 	}
 
 	/// <summary>Volume da música da tela de resultado, em dB.</summary>
-	private const float ResultMusicDb = -12f;
+	private const float ResultMusicDb = -6f;
 
 	public override void _Ready()
 	{

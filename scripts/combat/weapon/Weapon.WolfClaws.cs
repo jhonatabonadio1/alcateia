@@ -291,6 +291,19 @@ public partial class Weapon
 				IsHumanForm(collider), ClawVsHumanBonus, fromAbove, breed.AirAttackBonus);
 			if (splash < 1f && collider != main) damage *= splash;
 
+			// Sangue no peito de quem levou, saindo para o lado do corte (a
+			// mão que bate alterna) e um pouco para a frente. O salto, que
+			// cai em cima, espirra mais.
+			if (collider is Node3D struck)
+			{
+				Vector3 ahead = (struck.GlobalPosition - _body.GlobalPosition) with { Y = 0 };
+				if (ahead.LengthSquared() < 0.01f) ahead = -_body.GlobalBasis.Z;
+				ahead = ahead.Normalized();
+				Vector3 side = ahead.Cross(Vector3.Up) * (_comboIndex % 2 == 0 ? 1f : -1f);
+				Bleed(target, struck.GlobalPosition + Vector3.Up * 0.35f,
+					ahead + side * 0.8f + Vector3.Up * 0.25f, multiplier > 1.5f ? 2.2f : 1.7f);
+			}
+
 			Damage(target, damage, _body.GlobalPosition, false);
 		}
 	}

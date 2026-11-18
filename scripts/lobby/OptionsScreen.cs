@@ -92,6 +92,12 @@ public partial class OptionsScreen : LobbyScreen
 			quality.Text = Settings.QualityNotes[i];
 		})));
 		column.AddChild(quality);
+
+		column.AddChild(UiKit.Check("Sangue ao acertar", Settings.Values.Blood, on =>
+		{
+			Settings.Values.Blood = on;
+			Settings.Save();
+		}));
 		return panel;
 	}
 

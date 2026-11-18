@@ -29,6 +29,10 @@ public static class Settings
 		/// Alta por padrão.</summary>
 		public int Quality { get; set; } = 2;
 
+		/// <summary>Sangue ao acertar tiro e garra (<see cref="Blood"/>).
+		/// Ligado por padrão; arquivo antigo sem o campo, também.</summary>
+		public bool Blood { get; set; } = true;
+
 		/// <summary>A mira do jogador. Arquivo antigo sem ela: a de sempre.</summary>
 		public CrosshairSettings Crosshair { get; set; } = new();
 	}

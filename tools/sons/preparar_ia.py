@@ -37,7 +37,7 @@ MAP = [
     ("Final minute tension music", "musica_fim_proximo", "musica", -25, 1.0),
     ("Short battle start orchestral stinger", "partida_inicio", "vinheta", -16, 0),
     ("Subtle dark fantasy UI hover", "ui_passar", "sfx", -42, 0),
-    ("Tense pre-battle lobby music", "musica_sala", "musica", -24, 2.0),
+    ("Tense pre-battle lobby music", "musica_sala", "musica", -21, 2.0),
     ("Victory fanfare", "vitoria", "vinheta", -15, 0),
     ("XP bar complete", "ui_xp_fim", "sfx", -22, 0),
 ]

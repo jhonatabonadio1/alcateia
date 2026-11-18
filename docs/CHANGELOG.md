@@ -2,6 +2,18 @@
 
 ## Não lançado
 
+### Sangue ao acertar; música do lobby mais alta (18/11)
+- **Sangue** (`Blood`): tiro que acerta gente ou lobo solta um esguicho
+  de gotas na direção do tiro, uma névoa vermelha curta e uma mancha na
+  parede ou no chão logo atrás, que some depois de 12 s (no máximo 48 no
+  mapa). A garra do lobo espirra para o lado do corte, maior; o salto do
+  especial, maior ainda. Só sai quando o golpe fere: sem fogo amigo, sem
+  a proteção de quem acabou de nascer. Dá para desligar em Opções →
+  Vídeo → "Sangue ao acertar".
+- **Música do menu e da sala 8 dB mais alta** (estavam bem abaixo da
+  música de início da partida); a da sala subiu mais 3 dB para empatar
+  com a do menu. A do resultado subiu 6 dB.
+
 ### A Iris narra a partida (18/11)
 - **11 falas da Iris** no jogo: "Prepare for combat", 3-2-1, double,
   triple, quadra, penta e hexa kill, vitória e derrota (os nomes vieram

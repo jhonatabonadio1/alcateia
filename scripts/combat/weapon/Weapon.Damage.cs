@@ -25,6 +25,26 @@ public partial class Weapon
 	/// <summary>Altura mínima de queda para contar como ataque aéreo.</summary>
 	[Export] public float AirAttackMinFall = 2.5f;
 
+	/// <summary>
+	/// Este acerto tira sangue? Só o que de fato fere: vivo, fora da
+	/// proteção de quem acabou de nascer, e não aliado com o fogo amigo
+	/// desligado (o tiro passa sem efeito, então sem sangue também).
+	/// </summary>
+	private bool Bleeds(Health target)
+	{
+		if (target == null || target.IsDead || target.IsProtected) return false;
+		if (_health != null && target.Team == _health.Team && target != _health
+			&& !RoomConfig.Rules.FriendlyFire) return false;
+		return true;
+	}
+
+	/// <summary>Sangue no ponto do acerto (<see cref="Blood"/>).</summary>
+	private void Bleed(Health target, Vector3 at, Vector3 direction, float size)
+	{
+		if (!Bleeds(target)) return;
+		Blood.Spray(_body.GetParent(), at, direction, size, target.GetParent() as CollisionObject3D);
+	}
+
 	private static bool IsHumanForm(Node collider)
 	{
 		FormController form = collider?.GetNodeOrNull<FormController>("FormController");
