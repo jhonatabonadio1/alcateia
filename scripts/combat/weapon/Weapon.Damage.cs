@@ -38,10 +38,32 @@ public partial class Weapon
 		return true;
 	}
 
-	/// <summary>Sangue no ponto do acerto (<see cref="Blood"/>).</summary>
+	/// <summary>O som do golpe entrando no corpo (pedido do Jhon, 18/11:
+	/// "tem que ter o barulho de sangue ao atirar e acertar alguém,
+	/// barulho de hit também"). Toca no ponto do acerto, para quem está
+	/// por perto; de longe chega fraco. Não é o marcador de acerto, que é
+	/// só de quem atirou (<see cref="CombatantAudio"/>).</summary>
+	[Export] public string FleshSound = "impacto_carne";
+	[Export] public float FleshRadius = 26f;
+	[Export] public float FleshReach = 60f;
+
+	/// <summary>Uma rajada não empilha dez impactos no mesmo instante.</summary>
+	private const ulong FleshGapMsec = 45;
+	private static ulong _lastFlesh;
+
+	/// <summary>O acerto no corpo: o som do impacto e o sangue
+	/// (<see cref="Blood"/>).</summary>
 	private void Bleed(Health target, Vector3 at, Vector3 direction, float size)
 	{
 		if (!Bleeds(target)) return;
+
+		ulong now = Time.GetTicksMsec();
+		if (now - _lastFlesh >= FleshGapMsec)
+		{
+			_lastFlesh = now;
+			Sfx.At(FleshSound, at, FleshRadius, size > 1.2f ? 0f : -2f, FleshReach);
+		}
+
 		Blood.Spray(_body.GetParent(), at, direction, size, target.GetParent() as CollisionObject3D);
 	}
 

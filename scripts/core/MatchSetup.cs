@@ -19,6 +19,10 @@ public partial class MatchSetup : Node
 
 	public override void _Ready()
 	{
+		// As formas do sangue são geradas uma vez: aqui, na carga, e não no
+		// primeiro tiro que acerta.
+		if (Blood.Enabled) Blood.Warm();
+
 		var bots = GetNodeOrNull<Node3D>(BotsPath);
 		var player = Groups.LocalPlayer(GetTree()) as Node3D;
 

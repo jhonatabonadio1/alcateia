@@ -2,6 +2,26 @@
 
 ## Não lançado
 
+### Sangue refeito e som de acerto no corpo (18/11)
+- **Sangue sem formas geométricas**: antes tudo era disco (gota redonda,
+  névoa redonda, mancha de círculos). Agora as formas são campos de
+  metabolas gerados em código — borrões tortos, fios que afinam e se
+  partem em gotas — e o material corta o campo num limiar: a borda é
+  nítida em qualquer tamanho e o sangue **afina e se desfaz** em vez de só
+  ficar transparente. Camadas: estouro no ponto, jato para onde o golpe
+  empurra, gotas e respingo fino esticados no sentido em que voam, névoa.
+- **Mancha molhada**: recebe a luz do lugar, brilha, e na parede
+  **escorre** (dois ou três fios descem devagar). Seca encolhendo para
+  dentro depois de 12 s.
+- **Som do golpe entrando no corpo** (`impacto_carne_1..3`), no ponto do
+  acerto, para quem está perto (26 m; de longe chega fraco até 60 m), e o
+  **molhado do sangue** (`sangue_1..2`) por cima. Uma rajada não empilha
+  dez impactos no mesmo instante. O marcador de acerto de quem atirou
+  continua igual. Arquivos do "Free Sounds Pack" que o Jhon mandou,
+  preparados por `tools/sons/acertos.py`.
+- As formas do sangue são geradas na carga da partida, não no primeiro
+  tiro que acerta.
+
 ### Uivo: pose, luz de regeneração, eletricidade e som de poder (18/11)
 - **Pose do rugido** refeita nas pernas: um pé dá um passo curto à frente,
   os dois ficam chapados no chão e os joelhos apontam para a frente (o
