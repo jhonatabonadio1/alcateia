@@ -22,10 +22,10 @@ using Godot;
 public static class UiTheme
 {
 	private static Theme _dark;
-	private static Theme _light;
+	private static Theme _menu;
 
-	/// <summary>O tema da paleta em uso (<see cref="UiTokens.Light"/>).</summary>
-	public static Theme Get() => UiTokens.Light ? _light ??= Build() : _dark ??= Build();
+	/// <summary>O tema em uso: o dos menus ou o da partida (<see cref="UiTokens.Menu"/>).</summary>
+	public static Theme Get() => UiTokens.Menu ? _menu ??= Build() : _dark ??= Build();
 
 	/// <summary>Aplica o tema e devolve o próprio controle, para encadear.</summary>
 	public static T Apply<T>(T control) where T : Control
@@ -48,34 +48,55 @@ public static class UiTheme
 			ContentMarginTop = padV,
 			ContentMarginBottom = padV,
 			AntiAliasing = true,
-			AntiAliasingSize = 0.6f,
-			// Facetado (pedido do Jhon, 17/11: menus mais low poly, estilo
-			// Overwatch): o "raio" vira um corte reto a 45°, só no canto de
-			// cima à esquerda e no de baixo à direita.
-			CornerDetail = 1
+			AntiAliasingSize = 0.6f
 		};
 		box.SetBorderWidthAll(borderWidth);
+
+		if (UiTokens.Menu)
+		{
+			// Menus (pedido do Jhon, 17/11: "mais suave, tá muito
+			// grosseiro"): os quatro cantos arredondados, sem corte.
+			box.CornerDetail = 8;
+			box.SetCornerRadiusAll(Soft(radius));
+			box.AntiAliasingSize = 1f;
+			return box;
+		}
+
+		// Na partida, facetado (low poly, estilo Overwatch): o "raio" vira
+		// um corte reto a 45°, só no canto de cima à esquerda e no de
+		// baixo à direita.
+		box.CornerDetail = 1;
 		int cut = Facet(radius);
 		box.CornerRadiusTopLeft = cut;
 		box.CornerRadiusBottomRight = cut;
 		return box;
 	}
 
-	/// <summary>Na paleta clara, uma sombra curta embaixo do painel.</summary>
+	/// <summary>Nos menus, uma sombra larga embaixo do painel: ele
+	/// flutua sobre o fundo, sem linha dura em volta.</summary>
 	private static StyleBoxFlat Lifted(StyleBoxFlat box)
 	{
-		if (!UiTokens.Light) return box;
-		box.ShadowColor = new Color(0.06f, 0.1f, 0.16f, 0.12f);
-		box.ShadowSize = 8;
-		box.ShadowOffset = new Vector2(0, 3);
+		if (!UiTokens.Menu) return box;
+		box.ShadowColor = new Color(0f, 0.01f, 0.03f, 0.32f);
+		box.ShadowSize = 26;
+		box.ShadowOffset = new Vector2(0, 10);
 		return box;
 	}
 
 	/// <summary>O tamanho do corte de um canto, a partir do raio de antes.</summary>
 	public static int Facet(int radius) => radius <= 0 ? 0 : Mathf.RoundToInt(radius * 2.5f);
 
-	/// <summary>Inclinação dos botões e abas: o topo anda para a direita.</summary>
-	public const float ButtonSkew = 0.14f;
+	/// <summary>O raio de um canto arredondado dos menus, a partir do raio
+	/// de antes: 6 nos pequenos (botão, campo), 10 nos painéis.</summary>
+	public static int Soft(int radius) => radius <= 0 ? 0 : radius <= UiTokens.RadiusSmall ? 6 : 10;
+
+	/// <summary>Inclinação dos botões e abas: o topo anda para a direita.
+	/// Só na partida; nos menus os botões são retos.</summary>
+	public static float ButtonSkew => UiTokens.Menu ? 0f : 0.14f;
+
+	/// <summary>Um véu claro sobre o fundo, para estado de "passou o
+	/// mouse" e trilhos de barra.</summary>
+	public static Color Veil(float alpha) => UiTokens.Menu ? new Color(0.8f, 0.9f, 1f, alpha) : new Color(1, 1, 1, alpha);
 
 	private static StyleBoxFlat Focus()
 	{
@@ -108,8 +129,9 @@ public static class UiTheme
 	// ------------------------------------------------------------------ botões
 
 	private static void ButtonStyle(Theme t, string type, Color bg, Color hover, Color pressed,
-		Color text, Color border, int borderWidth, Font font, int fontSize = UiTokens.Body, float skew = ButtonSkew)
+		Color text, Color border, int borderWidth, Font font, int fontSize = UiTokens.Body, float? slant = null)
 	{
+		float skew = slant ?? ButtonSkew;
 		StyleBoxFlat Skewed(StyleBoxFlat box)
 		{
 			box.Skew = new Vector2(skew, 0);
@@ -122,7 +144,7 @@ public static class UiTheme
 		// Desabilitado sempre tem contorno: sem ele, um primário
 		// desabilitado some no painel e o jogador não sabe que o botão
 		// existe.
-		t.SetStylebox("disabled", type, Skewed(Box(UiTokens.Surface2, UiTokens.Border, 1)));
+		t.SetStylebox("disabled", type, Skewed(Box(UiTokens.Menu ? Veil(0.03f) : UiTokens.Surface2, UiTokens.Border, 1)));
 		t.SetStylebox("focus", type, Focus());
 
 		t.SetColor("font_color", type, text);
@@ -145,18 +167,34 @@ public static class UiTheme
 	{
 		// Secundário é o padrão: contorno, fundo discreto. Primário só
 		// existe um por tela.
-		ButtonStyle(t, "Button",
-			UiTokens.Surface2, UiTokens.Surface3, UiTokens.Surface1,
-			UiTokens.TextPrimary, UiTokens.BorderStrong, 1, UiFonts.SemiBold);
+		bool light = UiTokens.Menu;   // nos menus
+		if (light)
+			// Nos menus: um véu claro sobre o vidro, borda fina.
+			ButtonStyle(t, "Button",
+				Veil(0.07f), Veil(0.14f), Veil(0.04f),
+				UiTokens.TextPrimary, UiTokens.BorderStrong, 1, UiFonts.SemiBold);
+		else
+			ButtonStyle(t, "Button",
+				UiTokens.Surface2, UiTokens.Surface3, UiTokens.Surface1,
+				UiTokens.TextPrimary, UiTokens.BorderStrong, 1, UiFonts.SemiBold);
 
 		t.SetTypeVariation("PrimaryButton", "Button");
 		ButtonStyle(t, "PrimaryButton",
 			UiTokens.Accent, UiTokens.Accent.Lightened(0.12f), UiTokens.Accent.Darkened(0.15f),
-			UiTokens.AccentText, Colors.Transparent, 0, HudStyle.Slanted(UiFonts.Display), UiTokens.Body + 3);
+			UiTokens.AccentText, Colors.Transparent, 0, HudStyle.Slanted(UiFonts.Display), UiTokens.Body + (light ? 2 : 3));
+		if (light)
+			// O primário brilha um pouco: sombra da própria cor embaixo.
+			foreach (string state in new[] { "normal", "hover" })
+			{
+				var box = (StyleBoxFlat)t.GetStylebox(state, "PrimaryButton");
+				box.ShadowColor = new Color(UiTokens.Accent, state == "hover" ? 0.42f : 0.3f);
+				box.ShadowSize = 12;
+				box.ShadowOffset = new Vector2(0, 4);
+			}
 
 		t.SetTypeVariation("TertiaryButton", "Button");
 		ButtonStyle(t, "TertiaryButton",
-			Colors.Transparent, new Color(1, 1, 1, 0.05f), new Color(1, 1, 1, 0.08f),
+			Colors.Transparent, Veil(0.05f), Veil(0.08f),
 			UiTokens.TextSecondary, Colors.Transparent, 0, UiFonts.Medium);
 		t.SetColor("font_hover_color", "TertiaryButton", UiTokens.TextPrimary);
 		t.SetStylebox("disabled", "TertiaryButton", Box(Colors.Transparent));
@@ -169,10 +207,11 @@ public static class UiTheme
 		// Aba: texto em caixa alta, sublinhado de destaque quando ativa.
 		t.SetTypeVariation("TabButton", "Button");
 		ButtonStyle(t, "TabButton",
-			Colors.Transparent, new Color(1, 1, 1, 0.04f), Colors.Transparent,
+			Colors.Transparent, Veil(0.04f), Colors.Transparent,
 			UiTokens.TextSecondary, Colors.Transparent, 0, UiFonts.Label, UiTokens.Caption);
-		var active = Box(new Color(UiTokens.Accent, 0.1f), UiTokens.Accent, 0, 0, UiTokens.S3, UiTokens.S2);
-		active.BorderWidthBottom = 3;
+		// Ativa: nos menus só o traço embaixo; na partida, também o fundo.
+		var active = Box(light ? Colors.Transparent : new Color(UiTokens.Accent, 0.1f), UiTokens.Accent, 0, 0, UiTokens.S3, UiTokens.S2);
+		active.BorderWidthBottom = light ? 2 : 3;
 		active.Skew = new Vector2(ButtonSkew, 0);
 		t.SetStylebox("pressed", "TabButton", active);
 		t.SetStylebox("hover_pressed", "TabButton", active);
@@ -182,8 +221,8 @@ public static class UiTheme
 
 		t.SetTypeVariation("IconButton", "Button");
 		ButtonStyle(t, "IconButton",
-			Colors.Transparent, new Color(1, 1, 1, 0.06f), new Color(1, 1, 1, 0.1f),
-			UiTokens.TextSecondary, Colors.Transparent, 0, UiFonts.Medium, skew: 0f);
+			Colors.Transparent, Veil(0.06f), Veil(0.1f),
+			UiTokens.TextSecondary, Colors.Transparent, 0, UiFonts.Medium, slant: 0f);
 		foreach (string state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled" })
 		{
 			var box = (StyleBoxFlat)t.GetStylebox(state, "IconButton");
@@ -194,7 +233,8 @@ public static class UiTheme
 
 		// OptionButton é um Button por baixo, mas tem tipo próprio no tema.
 		ButtonStyle(t, "OptionButton",
-			UiTokens.Surface1, UiTokens.Surface2, UiTokens.Surface1,
+			light ? new Color(0, 0.01f, 0.03f, 0.32f) : UiTokens.Surface1, light ? Veil(0.08f) : UiTokens.Surface2,
+			light ? new Color(0, 0.01f, 0.03f, 0.4f) : UiTokens.Surface1,
 			UiTokens.TextPrimary, UiTokens.BorderStrong, 1, UiFonts.Medium);
 		t.SetConstant("arrow_margin", "OptionButton", UiTokens.S2);
 	}
@@ -219,7 +259,7 @@ public static class UiTheme
 		// Títulos inclinados e condensados, como os números do HUD.
 		LabelVariant(t, "Display", HudStyle.Slanted(UiFonts.Display), UiTokens.Display, UiTokens.TextPrimary);
 		LabelVariant(t, "Title", HudStyle.Slanted(UiFonts.Display), UiTokens.Title + 2, UiTokens.TextPrimary);
-		LabelVariant(t, "Subtitle", UiFonts.SemiBold, UiTokens.Subtitle, UiTokens.TextPrimary);
+		LabelVariant(t, "Subtitle", UiTokens.Menu ? UiFonts.Bold : UiFonts.SemiBold, UiTokens.Subtitle, UiTokens.TextPrimary);
 		LabelVariant(t, "Caption", UiFonts.Label, UiTokens.Caption, UiTokens.TextSecondary);
 		LabelVariant(t, "Muted", UiFonts.Regular, UiTokens.Body, UiTokens.TextSecondary);
 		LabelVariant(t, "Numeric", UiFonts.Numeric, UiTokens.Body, UiTokens.TextPrimary);
@@ -247,12 +287,10 @@ public static class UiTheme
 
 		// Translúcidos: em cima do fundo borrado do menu (MenuBackdrop),
 		// viram vidro.
-		// No claro, os cartões são brancos quase opacos, com uma sombra
-		// curta embaixo (o volume de Overwatch).
-		PanelVariant(t, "Surface1", Lifted(Box(new Color(UiTokens.Surface1, UiTokens.Light ? 0.9f : 0.8f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3)));
-		PanelVariant(t, "Surface2", Lifted(Box(new Color(UiTokens.Surface2, UiTokens.Light ? 0.92f : 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3)));
-		PanelVariant(t, "Surface3", Box(new Color(UiTokens.Surface3, UiTokens.Light ? 0.95f : 0.86f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
-		PanelVariant(t, "Card", Lifted(Box(new Color(UiTokens.Surface2, UiTokens.Light ? 0.92f : 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, 0, 0)));
+		PanelVariant(t, "Surface1", Lifted(Box(new Color(UiTokens.Surface1, UiTokens.Menu ? 0.88f : 0.8f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3)));
+		PanelVariant(t, "Surface2", Lifted(Box(new Color(UiTokens.Surface2, UiTokens.Menu ? 0.88f : 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3)));
+		PanelVariant(t, "Surface3", Box(new Color(UiTokens.Surface3, UiTokens.Menu ? 0.94f : 0.86f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
+		PanelVariant(t, "Card", Lifted(Box(new Color(UiTokens.Surface2, UiTokens.Menu ? 0.88f : 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, 0, 0)));
 		PanelVariant(t, "Bare", Box(Colors.Transparent, default, 0, 0, 0, 0));
 		// HudPanel sem vidro (o vidro precisa de material: HudStyle.Panel).
 		PanelVariant(t, "HudPanel", HudStyle.Facet(new Color(UiTokens.Bg, 0.72f), new Color(1, 1, 1, 0.06f), 1, HudStyle.Skew, HudStyle.Cut, UiTokens.S3, UiTokens.S2));
@@ -285,7 +323,8 @@ public static class UiTheme
 
 	private static void Inputs(Theme t)
 	{
-		t.SetStylebox("normal", "LineEdit", Box(UiTokens.Surface1, UiTokens.BorderStrong, 1, UiTokens.RadiusSmall, UiTokens.S2, UiTokens.S1));
+		t.SetStylebox("normal", "LineEdit", Box(UiTokens.Menu ? new Color(0, 0.01f, 0.03f, 0.32f) : UiTokens.Surface1,
+			UiTokens.BorderStrong, 1, UiTokens.RadiusSmall, UiTokens.Menu ? UiTokens.S3 - 4 : UiTokens.S2, UiTokens.S1));
 		t.SetStylebox("focus", "LineEdit", Focus());
 		t.SetStylebox("read_only", "LineEdit", Box(UiTokens.Surface1, UiTokens.Border, 1, UiTokens.RadiusSmall, UiTokens.S2, UiTokens.S1));
 		t.SetColor("font_color", "LineEdit", UiTokens.TextPrimary);
@@ -299,9 +338,9 @@ public static class UiTheme
 		foreach (string type in new[] { "CheckBox", "CheckButton" })
 		{
 			t.SetStylebox("normal", type, Box(Colors.Transparent, default, 0, 0, UiTokens.S1, UiTokens.S1));
-			t.SetStylebox("hover", type, Box(new Color(1, 1, 1, 0.04f), default, 0, UiTokens.RadiusSmall, UiTokens.S1, UiTokens.S1));
+			t.SetStylebox("hover", type, Box(Veil(0.04f), default, 0, UiTokens.RadiusSmall, UiTokens.S1, UiTokens.S1));
 			t.SetStylebox("pressed", type, Box(Colors.Transparent, default, 0, 0, UiTokens.S1, UiTokens.S1));
-			t.SetStylebox("hover_pressed", type, Box(new Color(1, 1, 1, 0.04f), default, 0, UiTokens.RadiusSmall, UiTokens.S1, UiTokens.S1));
+			t.SetStylebox("hover_pressed", type, Box(Veil(0.04f), default, 0, UiTokens.RadiusSmall, UiTokens.S1, UiTokens.S1));
 			t.SetStylebox("disabled", type, Box(Colors.Transparent, default, 0, 0, UiTokens.S1, UiTokens.S1));
 			t.SetStylebox("focus", type, Focus());
 			t.SetColor("font_color", type, UiTokens.TextPrimary);
@@ -325,8 +364,10 @@ public static class UiTheme
 		t.SetStylebox("grabber_area", "HSlider", area);
 		t.SetStylebox("grabber_area_highlight", "HSlider", Box(UiTokens.Accent.Lightened(0.1f), default, 0, UiTokens.RadiusSmall, 0, 2));
 
-		t.SetStylebox("background", "ProgressBar", Box(UiTokens.Surface3, default, 0, 0, 0, 0));
-		t.SetStylebox("fill", "ProgressBar", Box(UiTokens.Accent, default, 0, 0, 0, 0));
+		// Nos menus a barra é uma pílula; na partida, reta.
+		int pill = UiTokens.Menu ? UiTokens.RadiusSmall : 0;
+		t.SetStylebox("background", "ProgressBar", Box(UiTokens.Menu ? Veil(0.1f) : UiTokens.Surface3, default, 0, pill, 0, 0));
+		t.SetStylebox("fill", "ProgressBar", Box(UiTokens.Accent, default, 0, pill, 0, 0));
 		t.SetColor("font_color", "ProgressBar", UiTokens.TextPrimary);
 	}
 
@@ -386,9 +427,9 @@ public static class UiTheme
 		t.SetStylebox("panel", "ScrollContainer", Box(Colors.Transparent, default, 0, 0, 0, 0));
 		foreach (string type in new[] { "VScrollBar", "HScrollBar" })
 		{
-			t.SetStylebox("scroll", type, Box(new Color(1, 1, 1, 0.03f), default, 0, UiTokens.RadiusSmall, 3, 3));
-			t.SetStylebox("grabber", type, Box(new Color(1, 1, 1, 0.16f), default, 0, UiTokens.RadiusSmall, 3, 3));
-			t.SetStylebox("grabber_highlight", type, Box(new Color(1, 1, 1, 0.26f), default, 0, UiTokens.RadiusSmall, 3, 3));
+			t.SetStylebox("scroll", type, Box(Veil(0.03f), default, 0, UiTokens.RadiusSmall, 3, 3));
+			t.SetStylebox("grabber", type, Box(Veil(0.16f), default, 0, UiTokens.RadiusSmall, 3, 3));
+			t.SetStylebox("grabber_highlight", type, Box(Veil(0.26f), default, 0, UiTokens.RadiusSmall, 3, 3));
 			t.SetStylebox("grabber_pressed", type, Box(UiTokens.Accent, default, 0, UiTokens.RadiusSmall, 3, 3));
 		}
 	}

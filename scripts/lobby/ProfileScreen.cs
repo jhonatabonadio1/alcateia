@@ -41,7 +41,7 @@ public partial class ProfileScreen : LobbyScreen
 		name.HorizontalAlignment = HorizontalAlignment.Center;
 		column.AddChild(name);
 
-		Label rankName = UiKit.Text(Ranks.NameOf(rank).ToUpperInvariant(), "Subtitle", Ranks.ColorOf(rank));
+		Label rankName = UiKit.Text(Ranks.NameOf(rank).ToUpperInvariant(), "Subtitle", Ranks.InkOf(rank));
 		rankName.HorizontalAlignment = HorizontalAlignment.Center;
 		column.AddChild(rankName);
 
@@ -73,7 +73,7 @@ public partial class ProfileScreen : LobbyScreen
 			HBoxContainer next = UiKit.Row(UiTokens.S2);
 			next.AddChild(UiKit.Text("Próxima:", "Muted"));
 			next.AddChild(RankBadge.Make(rank + 1, 24, true));
-			next.AddChild(UiKit.Text(Ranks.NameOf(rank + 1), null, Ranks.ColorOf(rank + 1)));
+			next.AddChild(UiKit.Text(Ranks.NameOf(rank + 1), null, Ranks.InkOf(rank + 1)));
 			next.AddChild(UiKit.Spacer());
 			next.AddChild(UiKit.Text($"faltam {UiTokens.Thousands(span - into)} XP", "Caption"));
 			column.AddChild(next);
@@ -230,7 +230,7 @@ public partial class ProfileScreen : LobbyScreen
 		{
 			HBoxContainer row = UiKit.Row(UiTokens.S2);
 			row.AddChild(RankBadge.Make(e.Rank, 28));
-			row.AddChild(UiKit.Truncated(Ranks.NameOf(e.Rank), null, Ranks.ColorOf(e.Rank)));
+			row.AddChild(UiKit.Truncated(Ranks.NameOf(e.Rank), null, Ranks.InkOf(e.Rank)));
 			row.AddChild(UiKit.Text(e.Utc.ToLocalTime().ToString("dd/MM/yy"), "Numeric", UiTokens.TextSecondary));
 			column.AddChild(row);
 		}

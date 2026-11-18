@@ -7,7 +7,7 @@ using Godot;
 /// </summary>
 public partial class Striped : Control
 {
-	public Color StripeColor { get; set; } = UiTokens.Light ? new Color(0.06f, 0.1f, 0.14f, 0.05f) : new Color(1, 1, 1, 0.035f);
+	public Color StripeColor { get; set; } = new Color(1, 1, 1, 0.035f);
 	public float Spacing { get; set; } = 10f;
 
 	public Striped()

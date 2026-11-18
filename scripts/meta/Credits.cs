@@ -70,7 +70,14 @@ public static class Credits
 		}),
 		new("Letras", new[]
 		{
-			new Line("Barlow e Barlow Condensed", "Jeremy Tribby", "SIL Open Font License 1.1", Required: true)
+			new Line("Barlow e Barlow Condensed", "Jeremy Tribby", "SIL Open Font License 1.1", Required: true),
+			new Line("Kanit", "Cadson Demak", "SIL Open Font License 1.1", Required: true),
+			new Line("Figtree", "Erik Kennedy", "SIL Open Font License 1.1", Required: true)
+		}),
+		new("Ícones", new[]
+		{
+			new Line("Ícones da interface", "Phosphor Icons (phosphoricons.com)", "MIT", Required: true),
+			new Line("Insígnias de patente e fotos das armas", "feitas para o jogo (tools/patentes.py, fotos_armas.tscn)")
 		}),
 		new("Tecnologia", new[]
 		{

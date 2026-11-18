@@ -61,6 +61,10 @@ public static class Ranks
 	public static string FamilyName(int rank) => Families[Family(rank)];
 	public static Color ColorOf(int rank) => rank < 0 ? new Color("8a93a0") : FamilyColors[Family(rank)];
 
+	/// <summary>A cor da família para **texto**: a mesma, um pouco mais
+	/// clara, para as famílias de bronze não ficarem apagadas no escuro.</summary>
+	public static Color InkOf(int rank) => ColorOf(rank).Lightened(0.18f);
+
 	/// <summary>XP acumulado necessário para chegar à patente.</summary>
 	public static long XpFor(int rank)
 	{

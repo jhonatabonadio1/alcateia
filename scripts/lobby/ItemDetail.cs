@@ -189,7 +189,7 @@ public partial class ItemDetail : PanelContainer
 			float otherHp = FormController.DefaultHumanHp * (current?.HpMultiplier ?? 1f);
 			bars.Add(StatBar.Make("Vida", hp / 300f, $"{hp:0}", Mathf.IsEqualApprox(hp, otherHp) ? -1 : otherHp / 300f));
 
-			string team = item.Team == Teams.Blue ? "Azul" : item.Team == Teams.Orange ? "Laranja" : "Os dois";
+			string team = item.Team == Teams.Blue ? Teams.TitleOf(Teams.Blue) : item.Team == Teams.Orange ? Teams.TitleOf(Teams.Orange) : "Os dois";
 			bars.Add(UiKit.Stat("Time", team));
 			bars.Add(UiKit.Stat("Vale nas duas formas", "humano e lobo"));
 			bars.Add(UiKit.Paragraph("A vida é a mesma como humano e como lobo; o lobo soma o escudo da classe por cima."));

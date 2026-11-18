@@ -418,6 +418,6 @@ public partial class Match : Node
 		EmitSignal(SignalName.PhaseChanged, (int)phase);
 
 		if (Debug)
-			GD.Print($"Partida: {phase}  (AZUL {_score[Teams.Blue]} x {_score[Teams.Orange]} LARANJA)");
+			GD.Print($"Partida: {phase}  (VANGUARDA {_score[Teams.Blue]} x {_score[Teams.Orange]} SINDICATO)");
 	}
 }

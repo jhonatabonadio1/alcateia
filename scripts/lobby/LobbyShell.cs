@@ -34,15 +34,15 @@ public partial class LobbyShell : Control
 	{
 		if (Instance == this) Instance = null;
 		GetTree().NodeAdded -= OnNodeAdded;
-		// A partida volta à paleta escura (HUD e menus por cima do jogo).
-		UiTokens.Light = false;
+		// A partida volta à paleta e ao estilo do jogo (HUD, menu do Esc).
+		UiTokens.Menu = false;
 	}
 
 	public override void _Ready()
 	{
-		// Os menus usam a paleta clara (UiTokens.Light), antes de montar
-		// qualquer coisa.
-		UiTokens.Light = true;
+		// Os menus têm paleta e estilo próprios (UiTokens.Menu): antes de
+		// montar qualquer coisa.
+		UiTokens.Menu = true;
 		UiTheme.Apply(this);
 		UiKit.Fill(this);
 
@@ -53,7 +53,7 @@ public partial class LobbyShell : Control
 		InputSetup.EnsureActions();
 		Settings.ApplyAudio();
 
-		// O fundo claro, estilo Overwatch com o corte de Valorant (MenuBackdrop).
+		// O fundo: azul-noite com névoa e feixes de luz (MenuBackdrop).
 		AddChild(new MenuBackdrop());
 
 		// Os cartões são vidro fosco sobre esse fundo: antes de montar
@@ -114,14 +114,14 @@ public partial class LobbyShell : Control
 	// ------------------------------------------------------------------ vidro fosco
 
 	/// <summary>Os painéis do tema que viram vidro fosco nos menus
-	/// (pedido do Jhon, 17/11: "esses fundos brancos podem ser com blur,
-	/// foscos"), com o tom de cada um.</summary>
+	/// (pedido do Jhon, 17/11: fundos "com blur, foscos"), com o tom de cada
+	/// um — vidro escuro.</summary>
 	private static readonly Dictionary<string, Color> Frosted = new()
 	{
 		["Surface1"] = HudStyle.Frost,
-		["Surface2"] = new Color(0.96f, 0.97f, 0.99f, 0.4f),
-		["Card"] = new Color(0.96f, 0.97f, 0.99f, 0.4f),
-		["Header"] = new Color(1f, 1f, 1f, 0.58f)
+		["Surface2"] = new Color(0.075f, 0.115f, 0.17f, 0.5f),
+		["Card"] = new Color(0.075f, 0.115f, 0.17f, 0.5f),
+		["Header"] = new Color(0.025f, 0.045f, 0.075f, 0.74f)
 	};
 
 	private readonly Dictionary<string, StyleBoxFlat> _frostBoxes = new();
@@ -152,8 +152,8 @@ public partial class LobbyShell : Control
 			if (panel.GetThemeStylebox("panel") is not StyleBoxFlat themed) return;
 			box = (StyleBoxFlat)themed.Duplicate();
 			box.BgColor = HudStyle.GlassMark;
-			// A beira do vidro pega luz.
-			if (kind != "Header") box.BorderColor = new Color(1, 1, 1, 0.75f);
+			// A beira do vidro pega um fio de luz.
+			box.BorderColor = new Color(0.75f, 0.88f, 1f, kind == "Header" ? 0.1f : 0.13f);
 			_frostBoxes[kind] = box;
 		}
 

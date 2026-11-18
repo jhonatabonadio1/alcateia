@@ -37,8 +37,8 @@ public static class HudStyle
 	/// transparente.</summary>
 	public static readonly Color Shade = new(0.03f, 0.04f, 0.06f, 0.5f);
 
-	/// <summary>O tom do vidro fosco dos menus claros.</summary>
-	public static readonly Color Frost = new(1f, 1f, 1f, 0.5f);
+	/// <summary>O tom do vidro fosco dos menus: azul-noite.</summary>
+	public static readonly Color Frost = new(0.055f, 0.09f, 0.14f, 0.6f);
 
 	// Quanto de magenta há no pixel (t) é quanto de vidro ele leva: na
 	// beira suavizada entre a borda e o fundo a cor vem misturada, e um
@@ -49,7 +49,7 @@ public static class HudStyle
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap, repeat_disable;
 uniform float blur = 3.5;
-uniform float grain = 0.02;
+uniform float grain = 0.014;
 uniform vec4 tint : source_color = vec4(1.0, 1.0, 1.0, 0.5);
 void fragment() {
 	vec4 c = COLOR;
@@ -67,7 +67,7 @@ void fragment() {
 		bg += textureLod(screen_tex, SCREEN_UV + px * vec2(-0.7, -0.7), blur).rgb * 0.075;
 		float n = fract(sin(dot(floor(FRAGCOORD.xy), vec2(12.9898, 78.233))) * 43758.5453) - 0.5;
 		// Um brilho fraco no alto, como uma face de vidro inclinada.
-		float sheen = 0.04 * (1.0 - clamp(UV.y * 1.6, 0.0, 1.0));
+		float sheen = 0.03 * (1.0 - clamp(UV.y * 1.6, 0.0, 1.0));
 		vec3 glass = mix(bg, tint.rgb, tint.a) + sheen + n * grain;
 		// O que não é magenta (a borda, na beira) fica como veio.
 		vec3 rest = clamp((c.rgb - t * vec3(1.0, 0.0, 1.0)) / max(1.0 - t, 0.001), 0.0, 1.0);
@@ -179,6 +179,8 @@ void fragment() {
 	/// números e títulos do HUD.</summary>
 	public static Font Slanted(Font font)
 	{
+		// A Kanit dos menus já é itálica de desenho.
+		if (UiFonts.IsItalic(font)) return font;
 		if (Slants.TryGetValue(font, out FontVariation v)) return v;
 		v = new FontVariation { BaseFont = font, VariationTransform = new Transform2D(1f, 0.2f, 0f, 1f, 0f, 0f) };
 		Slants[font] = v;

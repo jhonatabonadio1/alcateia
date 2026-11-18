@@ -2,6 +2,28 @@
 
 ## Não lançado
 
+### Menus escuros, letras, ícones, patentes e fotos das armas novas (17/11)
+- **Menus no escuro** (o claro ficou perto demais de Overwatch; Valorant
+  e League of Legends de referência): azul-noite, cartões de vidro
+  escuro, destaque em ouro, cantos arredondados e botões retos. A chave
+  é `UiTokens.Menu` (era `Light`), que troca paleta, estilo e letras; a
+  partida não muda. `MenuBackdrop` novo: névoa, clarão frio, brasa.
+- **Letras** dos menus: Kanit (títulos e números, itálico de verdade) e
+  Figtree (texto), as duas OFL, em `assets/fonts/`. A partida continua
+  em Barlow.
+- **Ícones** do Phosphor Icons (MIT) no lugar dos riscados por código:
+  PNG em `assets/ui/icones/`, SVG e roteiro em `tools/icones/`.
+- **Patentes**: 30 insígnias novas em imagem (`assets/ui/patentes/`),
+  brasões facetados em metal com emblema e grau; `tools/patentes.py`.
+- **Armas de verdade na interface**: fotos do próprio modelo do jogo
+  (`assets/ui/armas/`, tiradas por `scenes/tools/fotos_armas.tscn`) na
+  loja, no inventário, no HUD e no feed de abates.
+- **Inventário** em três passos numerados (conjunto → espaço → item),
+  com uma escolha só no alto (Armas · Lobo · Personagem · Especial).
+- **Loja** com a lista de categorias à esquerda (com contagem e o
+  saldo), no lugar das abas em dois níveis e do personagem em 3D.
+- **Times**: o azul é a **Vanguarda**, o laranja é o **Sindicato**.
+
 ### HUD sem fundo, especial que acende, "ELIMINOU", vidro fosco no menu (17/11)
 - **HUD da partida sem painel**: vida, munição e transformação direto
   sobre o jogo (contorno escuro, gomos com sombra), os blocos de baixo

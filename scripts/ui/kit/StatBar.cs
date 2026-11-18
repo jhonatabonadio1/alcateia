@@ -42,21 +42,33 @@ public partial class StatBar : Control
 		DrawString(numeric, new Vector2(0, 12), _text, HorizontalAlignment.Right, Size.X, captionSize, UiTokens.TextPrimary);
 
 		var track = new Rect2(0, 18, Size.X, 6);
-		DrawRect(track, UiTokens.Surface3);
+		Pill(track, UiTokens.Menu ? UiTheme.Veil(0.1f) : UiTokens.Surface3);
 
 		float now = track.Size.X * _value;
+		// Nos menus a barra é da cor da marca; na partida, clara.
+		Color fill = UiTokens.Menu ? UiTokens.Accent : UiTokens.TextPrimary;
 
 		if (_compare < 0 || Mathf.IsEqualApprox(_compare, _value))
 		{
-			DrawRect(new Rect2(track.Position, new Vector2(now, track.Size.Y)), UiTokens.TextPrimary);
+			Pill(new Rect2(track.Position, new Vector2(now, track.Size.Y)), fill);
 			return;
 		}
 
 		float was = track.Size.X * _compare;
 		float low = Mathf.Min(now, was);
-		DrawRect(new Rect2(track.Position, new Vector2(low, track.Size.Y)), UiTokens.TextPrimary);
-
 		Color delta = _value > _compare ? UiTokens.Success : UiTokens.Danger;
-		DrawRect(new Rect2(track.Position.X + low, track.Position.Y, Mathf.Abs(now - was), track.Size.Y), delta);
+		Pill(new Rect2(track.Position, new Vector2(Mathf.Max(now, was), track.Size.Y)), delta);
+		Pill(new Rect2(track.Position, new Vector2(low, track.Size.Y)), fill);
+	}
+
+	private static readonly StyleBoxFlat PillBox = new() { CornerDetail = 6, AntiAliasing = true };
+
+	/// <summary>Um trecho de barra com as pontas redondas.</summary>
+	private void Pill(Rect2 rect, Color color)
+	{
+		if (rect.Size.X < 1f) return;
+		PillBox.BgColor = color;
+		PillBox.SetCornerRadiusAll(Mathf.CeilToInt(rect.Size.Y / 2f));
+		DrawStyleBox(PillBox, rect);
 	}
 }

@@ -247,7 +247,7 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	{
 		Referee r = match.Referee;
 		JsonObject body = match.Result(_id);
-		GD.Print($"Partida {match.Key} acabou: AZUL {r.Score(Referee.Blue)} x {r.Score(Referee.Orange)} LARANJA.");
+		GD.Print($"Partida {match.Key} acabou: VANGUARDA {r.Score(Referee.Blue)} x {r.Score(Referee.Orange)} SINDICATO.");
 
 		// O resultado é o que paga os jogadores: insiste um pouco.
 		_reporting.Add(match.Key);

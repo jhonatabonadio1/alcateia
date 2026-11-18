@@ -177,7 +177,7 @@ public static class Catalog
 
 		foreach (CharacterSkin skin in CharacterSkin.All())
 		{
-			string team = skin.Team == Teams.Blue ? "time azul" : skin.Team == Teams.Orange ? "time laranja" : "os dois times";
+			string team = skin.Team == Teams.Blue ? "Vanguarda" : skin.Team == Teams.Orange ? "Sindicato" : "os dois times";
 			items.Insert(at++, new CatalogItem
 			{
 				Id = skin.Id, Name = skin.DisplayName, Type = $"Personagem · {team}", Kind = ItemKind.Character,

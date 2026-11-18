@@ -11,13 +11,19 @@ public enum IconKind
 }
 
 /// <summary>
-/// Ícones vetoriais desenhados por código, numa grade de 24×24 que
-/// escala para o tamanho do controle.
+/// Os ícones da interface, numa cor só (<see cref="Tint"/>), no tamanho
+/// do controle.
 ///
-/// Desenhados aqui, e não importados de um pacote, por dois motivos: o
-/// projeto não pode usar ícone de outro jogo, e traço fino de cor única
-/// combina com o canto duro do resto da interface. Ícone novo entra no
-/// enum e ganha um <c>case</c> em <see cref="DrawKind"/>.
+/// Os de uso geral vêm do **Phosphor Icons** (MIT; pedido do Jhon,
+/// 17/11: ícones de verdade no lugar dos riscados à mão): um PNG branco
+/// de 96 px por ícone em assets/ui/icones/, com o nome do
+/// <see cref="IconKind"/> em minúsculas, pintado na cor pedida. Os SVG de
+/// origem e o roteiro que gera os PNG estão em tools/icones/.
+///
+/// Os que são do jogo (lobo, presa, garra, granada de choque, arma,
+/// caveira do abate) continuam desenhados por código, numa grade de
+/// 24×24 — é o que acontece com qualquer ícone sem PNG. Ícone novo entra
+/// no enum e ganha um PNG ou um <c>case</c> em <see cref="DrawKind"/>.
 /// </summary>
 public partial class Icon : Control
 {
@@ -44,6 +50,22 @@ public partial class Icon : Control
 	{
 		MouseFilter = MouseFilterEnum.Ignore;
 		CustomMinimumSize = new Vector2(20, 20);
+		// O PNG tem 96 px e quase sempre aparece com 20 a 40: sem mipmap
+		// o traço serrilha.
+		TextureFilter = TextureFilterEnum.LinearWithMipmaps;
+	}
+
+	private const string ArtDir = "res://assets/ui/icones/";
+	private static readonly System.Collections.Generic.Dictionary<IconKind, Texture2D> Art = new();
+
+	/// <summary>O PNG do ícone, ou null se ele é dos desenhados por código.</summary>
+	private static Texture2D ArtOf(IconKind kind)
+	{
+		if (Art.TryGetValue(kind, out Texture2D texture)) return texture;
+		string path = ArtDir + kind.ToString().ToLowerInvariant() + ".png";
+		texture = ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null;
+		Art[kind] = texture;
+		return texture;
 	}
 
 	public static Icon Make(IconKind kind, int size = 20, Color? tint = null) => new()
@@ -61,6 +83,12 @@ public partial class Icon : Control
 
 		_scale = side / 24f;
 		_origin = (Size - new Vector2(side, side)) / 2f;
+
+		if (ArtOf(_kind) is Texture2D art)
+		{
+			DrawTextureRect(art, new Rect2(_origin, new Vector2(side, side)), false, _tint);
+			return;
+		}
 		_stroke = Mathf.Max(1.5f, 2f * _scale);
 		DrawKind();
 	}

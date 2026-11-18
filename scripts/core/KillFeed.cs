@@ -92,7 +92,8 @@ public static class KillFeed
 }
 
 /// <summary>
-/// Os dois times: azul e laranja. Laranja e não vermelho porque
+/// Os dois times: a **Vanguarda** (azul) e o **Sindicato** (laranja) —
+/// os nomes são do Jhon (17/11). Laranja e não vermelho porque
 /// daltônicos distinguem azul de laranja com folga, e vermelho de verde
 /// (ou de outro vermelho) não — e a cor do time é a primeira coisa que
 /// se lê num encontro.
@@ -104,10 +105,10 @@ public static class Teams
 
 	public static Color ColorOf(int team) => team == Blue ? UiTokens.TeamBlue : UiTokens.TeamOrange;
 
-	public static string NameOf(int team) => team == Blue ? "AZUL" : "LARANJA";
+	public static string NameOf(int team) => team == Blue ? "VANGUARDA" : "SINDICATO";
 
 	/// <summary>Nome com só a inicial maiúscula, para texto corrido.</summary>
-	public static string TitleOf(int team) => team == Blue ? "Azul" : "Laranja";
+	public static string TitleOf(int team) => team == Blue ? "Vanguarda" : "Sindicato";
 
 	public static int Other(int team) => team == Blue ? Orange : Blue;
 }

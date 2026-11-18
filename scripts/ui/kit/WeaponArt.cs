@@ -1,17 +1,18 @@
 using Godot;
 
 /// <summary>
-/// A arte de um item no cartão: silhueta desenhada por código, numa área
-/// de 200×80 que escala mantendo a proporção.
+/// A arte de um item no cartão, numa área que escala mantendo a proporção.
 ///
-/// Nesse gênero o inventário é parte da fantasia de poder — a arte ocupa
-/// mais da metade do cartão. Enquanto não houver ilustração de verdade,
-/// cada arma tem uma silhueta própria (alça de transporte no M16,
-/// carregador curvo e madeira no AK, tubo e telha na M3) para o jogador
-/// reconhecer a arma pela forma antes de ler o nome.
+/// **As armas são fotos do próprio modelo do jogo** (pedido do Jhon,
+/// 17/11: "as armas que são utilizadas mesmo"): assets/ui/armas/&lt;id&gt;.png,
+/// tiradas por scenes/tools/fotos_armas.tscn (<see cref="WeaponPhotos"/>)
+/// do mesmo <see cref="WeaponModel"/> que vai na mão. A foto aparece
+/// clareada (<see cref="BleachCode"/>): as armas são quase pretas, e
+/// sobre os painéis escuros e sobre o jogo sumiriam.
 ///
-/// Quando a arte final existir, ela entra aqui (uma textura por id) e o
-/// resto da interface não muda.
+/// O que não tem foto (tatuagem, classe de lobo, serviço, ou uma arma
+/// nova antes de fotografar) continua na silhueta desenhada por código,
+/// na grade de 200×80.
 /// </summary>
 public partial class WeaponArt : Control
 {
@@ -33,14 +34,53 @@ public partial class WeaponArt : Control
 		Dim = dim,
 		MouseFilter = MouseFilterEnum.Ignore,
 		SizeFlagsHorizontal = SizeFlags.ExpandFill,
-		SizeFlagsVertical = SizeFlags.ExpandFill
+		SizeFlagsVertical = SizeFlags.ExpandFill,
+		// A foto tem 768 px e no feed aparece com 70.
+		TextureFilter = TextureFilterEnum.LinearWithMipmaps,
+		// A foto clareada: o jogo inteiro é escuro, e a arma também.
+		Material = Bleach()
 	};
 
+	private const string PhotoDir = "res://assets/ui/armas/";
+	private static readonly System.Collections.Generic.Dictionary<string, Texture2D> Photos = new();
+
+	/// <summary>A foto do modelo, ou null se o item não tem.</summary>
+	public static Texture2D PhotoOf(string id)
+	{
+		if (string.IsNullOrEmpty(id)) return null;
+		if (Photos.TryGetValue(id, out Texture2D photo)) return photo;
+		string path = PhotoDir + id + ".png";
+		photo = ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null;
+		Photos[id] = photo;
+		return photo;
+	}
+
+	// Clareia a foto para ela se destacar no escuro: o metal quase preto
+	// vira cinza, e a madeira, o verde e o bege continuam com a cor.
+	private const string BleachCode = @"
+shader_type canvas_item;
+varying vec4 tint;
+void vertex() {
+	tint = COLOR;
+}
+void fragment() {
+	// COLOR já chega multiplicado pela textura: a cor do desenho (o
+	// esmaecido de item bloqueado) vem pelo vértice.
+	vec4 c = texture(TEXTURE, UV);
+	vec3 lit = c.rgb + (1.0 - c.rgb) * 0.3;
+	COLOR = vec4(lit, c.a) * tint;
+}";
+
+	private static ShaderMaterial _bleach;
+
+	private static ShaderMaterial Bleach() =>
+		_bleach ??= new ShaderMaterial { Shader = new Shader { Code = BleachCode } };
+
 	// No claro (menus), o desenho é escuro: claro sobre o cartão branco sumia.
-	private static Color Metal => UiTokens.Light ? new Color("5d6774") : new Color("c3c9d2");
-	private static Color Dark => UiTokens.Light ? new Color("2c333d") : new Color("7d8693");
-	private static Color Wood => UiTokens.Light ? new Color("8a5a33") : new Color("a8744a");
-	private static Color Polymer => UiTokens.Light ? new Color("1f252d") : new Color("5f6773");
+	private static Color Metal => new("c3c9d2");
+	private static Color Dark => new("7d8693");
+	private static Color Wood => new("a8744a");
+	private static Color Polymer => new("5f6773");
 
 	private float _s;
 	private Vector2 _o;
@@ -72,6 +112,16 @@ public partial class WeaponArt : Control
 		_s = Mathf.Min(Size.X / 200f, Size.Y / 80f);
 		_o = (Size - new Vector2(200, 80) * _s) / 2f;
 		_alpha = Dim ? 0.35f : 1f;
+
+		if (PhotoOf(_id) is Texture2D photo)
+		{
+			// A foto inteira, sem distorcer, no meio da área.
+			Vector2 native = photo.GetSize();
+			float fit = Mathf.Min(Size.X / native.X, Size.Y / native.Y);
+			Vector2 size = native * fit;
+			DrawTextureRect(photo, new Rect2((Size - size) / 2f, size), false, new Color(1, 1, 1, _alpha));
+			return;
+		}
 
 		switch (_id)
 		{
@@ -208,7 +258,7 @@ public partial class WeaponArt : Control
 
 	private void Tattoo()
 	{
-		Color ink = UiTokens.Light ? new Color("8a6f3e") : new Color("d9c7a3");
+		Color ink = new Color("d9c7a3");
 		DrawArcAt(100, 40, 30, ink);
 		for (int i = 0; i < 3; i++)
 		{

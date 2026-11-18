@@ -4,37 +4,39 @@ using System.Collections.Generic;
 using System.Linq;
 
 /// <summary>
-/// O inventário, em duas colunas: à esquerda o que está equipado, à
-/// direita o que você possui.
+/// O inventário, feito para se ler em três passos (pedido do Jhon, 17/11:
+/// "um inventário mais fácil de entender"):
 ///
-/// Esquerda, aba HUMANO: os quatro conjuntos em abas, cada uma com o
-/// custo total em WP embaixo do nome — a peça central da economia: o
-/// jogador monta quatro e escolhe um ao renascer. Abaixo, os lugares do
-/// conjunto em coluna (primária, secundária, faca, granadas). Lugar que
-/// existe mas ainda não pode ser usado mostra cadeado sobre listras —
-/// diferente de lugar vazio.
+/// No alto, **uma** escolha: Armas, Lobo, Personagem ou Especial. Antes
+/// eram duas fileiras de abas independentes (o que está equipado de um
+/// lado, o que você tem do outro), e dava para olhar o lobo equipado com
+/// a grade mostrando armas.
 ///
-/// Esquerda, aba LOBO: a classe e as duas tatuagens. Humano e lobo nunca
-/// na mesma tela: o lobo tem lugares que o humano não tem.
+/// Embaixo, da esquerda para a direita:
 ///
-/// Esquerda, aba PERSONAGEM: o personagem de cada time. Humano e lobo
-/// vêm juntos (CharacterSkin), então é um lugar só por time.
-///
-/// Direita: os itens em cartões, com abas em dois níveis, e o painel de
-/// detalhe com Equipar, Renovar e Descartar.
+/// 1. **O que está equipado.** Em Armas, os quatro conjuntos (com o
+///    custo em WP de cada um — a peça central da economia: o jogador
+///    monta quatro e escolhe um ao renascer) e os espaços do conjunto
+///    aberto. Em Lobo, a classe e as tatuagens. Em Personagem, o de cada
+///    time.
+/// 2. **Clicar num espaço** mostra, no meio, só o que cabe nele — o
+///    espaço fica marcado e o título do meio diz o que se está
+///    escolhendo. Espaço que existe mas ainda não pode ser usado mostra
+///    cadeado sobre listras, diferente de espaço vazio.
+/// 3. **Clicar num item** abre o detalhe à direita, com Equipar, Renovar
+///    e Descartar.
 /// </summary>
 public partial class InventoryScreen : LobbyScreen
 {
 	public override IconKind NavIcon => IconKind.Inventory;
 
-	private static int _side;          // 0 humano, 1 lobo, 2 personagem
+	private static int _side;          // a seção: 0 armas, 1 lobo, 2 personagem, 3 especial
 	private static int _setIndex = 1;  // conjunto aberto
-	private static int _top;           // aba de 1º nível
-	private static int _sub;           // aba de 2º nível
+	private static int _sub;           // o filtro dentro da seção (o espaço escolhido)
 
 	private string _selectedId;
 
-	private static readonly string[] TopTabs = { "Armas", "Lobo", "Personagens", "Especial" };
+	private static readonly string[] Sections = { "Armas", "Lobo", "Personagem", "Especial" };
 	private static readonly string[][] SubTabs =
 	{
 		new[] { "Todas", "Primária", "Secundária", "Granada", "Corpo a corpo" },
@@ -50,26 +52,56 @@ public partial class InventoryScreen : LobbyScreen
 		_selectedId = focus;
 		CatalogItem item = Catalog.Get(focus);
 		if (item == null) return;
-		_top = item.Kind switch
+		_side = item.Kind switch
 		{
 			ItemKind.Tattoo or ItemKind.Breed => 1,
 			ItemKind.Character => 2,
 			ItemKind.Service => 3,
 			_ => 0
 		};
-		_sub = 0;
-		if (_top is 1 or 2) _side = _top;
+		_sub = item.Kind == ItemKind.Breed ? 1 : 0;
 	}
 
 	private LoadoutSet CurrentSet => Profile.Sets[Mathf.Clamp(_setIndex, 0, Profile.Sets.Count - 1)];
 
 	protected override void Build()
 	{
-		HBoxContainer split = SplitPage();
+		VBoxContainer page = Page(UiTokens.S3);
+
+		// Uma escolha só no alto: o que se está arrumando.
+		HBoxContainer head = UiKit.Row(UiTokens.S4);
+		head.AddChild(UiKit.Text("Inventário", "Title"));
+		Control sections = Tabs.Make(Sections, _side, i => { _side = i; _sub = 0; _selectedId = null; Refresh(); });
+		sections.SizeFlagsVertical = SizeFlags.ShrinkEnd;
+		head.AddChild(sections);
+		head.AddChild(UiKit.Spacer());
+		head.AddChild(UiKit.Button("Ir à loja", ButtonKind.Secondary, () => Shell.GoShop()));
+		page.AddChild(head);
+
+		HBoxContainer split = UiKit.Row(UiTokens.S4);
+		split.SizeFlagsVertical = SizeFlags.ExpandFill;
+		page.AddChild(split);
 
 		split.AddChild(Equipment());
 		split.AddChild(Owned());
 		split.AddChild(Detail());
+	}
+
+	/// <summary>O título de um passo: o número numa ficha e o que fazer.</summary>
+	private static Control Step(int number, string text)
+	{
+		HBoxContainer row = UiKit.Row(UiTokens.S2);
+		var chip = new PanelContainer { CustomMinimumSize = new Vector2(22, 22), SizeFlagsVertical = SizeFlags.ShrinkCenter, MouseFilter = MouseFilterEnum.Ignore };
+		chip.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Accent, default, 0, UiTokens.RadiusSmall, 0, 0));
+		Label digit = UiKit.Text(number.ToString(), "Numeric", UiTokens.AccentText);
+		digit.HorizontalAlignment = HorizontalAlignment.Center;
+		digit.AddThemeFontOverride("font", UiFonts.Bold);
+		chip.AddChild(digit);
+		row.AddChild(chip);
+		Label label = UiKit.Text(text, null, UiTokens.TextPrimary);
+		label.AddThemeFontOverride("font", UiFonts.SemiBold);
+		row.AddChild(label);
+		return row;
 	}
 
 	// ------------------------------------------------------------------ esquerda
@@ -79,15 +111,24 @@ public partial class InventoryScreen : LobbyScreen
 		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S3, UiTokens.S3);
 		panel.CustomMinimumSize = new Vector2(430, 0);
 
-		HBoxContainer head = UiKit.Row(UiTokens.S2);
-		head.AddChild(UiKit.Text("Equipado", "Subtitle"));
-		head.AddChild(UiKit.Spacer());
-		head.AddChild(Tabs.Make(new[] { "Humano", "Lobo", "Personagem" }, _side, i => { _side = i; Refresh(); }));
-		column.AddChild(head);
+		column.AddChild(UiKit.Text(_side switch
+		{
+			0 => "Seus conjuntos",
+			1 => "Seu lobo",
+			2 => "Seus personagens",
+			_ => "Serviços"
+		}, "Subtitle"));
 
 		if (_side == 0) HumanSide(column);
 		else if (_side == 1) WolfSide(column);
-		else CharacterSide(column);
+		else if (_side == 2) CharacterSide(column);
+		else
+		{
+			column.AddChild(UiKit.Paragraph(
+				"Serviços são itens de usar uma vez, como a troca de nome. Os que você comprou aparecem ao lado: " +
+				"clique num deles e depois em Usar."));
+			column.AddChild(UiKit.Spacer());
+		}
 
 		return panel;
 	}
@@ -95,6 +136,7 @@ public partial class InventoryScreen : LobbyScreen
 	private void HumanSide(VBoxContainer column)
 	{
 		// Abas dos conjuntos, com o custo total embaixo do nome.
+		column.AddChild(Step(1, "Escolha o conjunto"));
 		HBoxContainer sets = UiKit.Row(UiTokens.S1);
 		for (int i = 0; i < Profile.Sets.Count; i++)
 		{
@@ -160,20 +202,25 @@ public partial class InventoryScreen : LobbyScreen
 		column.AddChild(field);
 
 		// Lugares do conjunto.
+		column.AddChild(UiKit.Gap(UiTokens.S1));
+		column.AddChild(Step(2, current.IsDefault ? "O padrão é fixo: veja o que vem nele" : "Clique no espaço que quer trocar"));
 		column.AddChild(SlotRow("Primária", Catalog.Get(current.Primary), () => Filter(0, 1),
-			null));
-		column.AddChild(SlotRow("Secundária", Catalog.Get(current.Secondary), () => Filter(0, 2), null));
-		column.AddChild(SlotRow("Corpo a corpo", Catalog.Get(Arsenal.KnifeId), () => Filter(0, 4), null, fixedSlot: true));
+			null, choosing: _sub == 1));
+		column.AddChild(SlotRow("Secundária", Catalog.Get(current.Secondary), () => Filter(0, 2), null, choosing: _sub == 2));
+		column.AddChild(SlotRow("Corpo a corpo", Catalog.Get(Arsenal.KnifeId), () => Filter(0, 4), null, fixedSlot: true, choosing: _sub == 4));
 
 		string utility = current.Utilities.FirstOrDefault();
 		column.AddChild(SlotRow("Granada", Catalog.Get(utility), () => Filter(0, 3),
-			utility == null || current.IsDefault ? null : () => { current.Utilities.Clear(); Profile.Save(); Refresh(); }));
+			utility == null || current.IsDefault ? null : () => { current.Utilities.Clear(); Profile.Save(); Refresh(); }, choosing: _sub == 3));
 		column.AddChild(LockedRow("Granada 2", "Luz e fumaça: em breve"));
 
 		column.AddChild(UiKit.Spacer());
 
 		HBoxContainer total = UiKit.Row(UiTokens.S2);
-		total.AddChild(UiKit.Caption("Custo do conjunto"));
+		Label costLabel = UiKit.Caption("Custo do conjunto");
+		costLabel.TooltipText = "WP é o que você gasta cada vez que renasce com este conjunto. Ganha-se WP jogando a partida.";
+		costLabel.MouseFilter = MouseFilterEnum.Stop;
+		total.AddChild(costLabel);
 		total.AddChild(UiKit.Spacer());
 		total.AddChild(UiKit.Text(current.IsDefault ? "Grátis  ·  +50 WP" : $"WP {current.TotalCost()}", "NumericLarge",
 			current.IsDefault ? UiTokens.Success : UiTokens.Accent));
@@ -188,9 +235,10 @@ public partial class InventoryScreen : LobbyScreen
 
 	private void WolfSide(VBoxContainer column)
 	{
+		column.AddChild(Step(1, "Clique no espaço que quer trocar"));
 		column.AddChild(UiKit.Caption("Classe"));
 		CatalogItem breed = Catalog.Get(Profile.Breed);
-		column.AddChild(SlotRow("Classe", breed, () => Filter(1, 1), null));
+		column.AddChild(SlotRow("Classe", breed, () => Filter(1, 1), null, choosing: _sub == 1));
 
 		column.AddChild(UiKit.Gap(UiTokens.S2));
 		column.AddChild(UiKit.Caption($"Tatuagens  ·  {Profile.Tattoos.Count}/{Profile.MaxTattoos}"));
@@ -199,7 +247,7 @@ public partial class InventoryScreen : LobbyScreen
 		{
 			string id = i < Profile.Tattoos.Count ? Profile.Tattoos[i] : null;
 			column.AddChild(SlotRow($"Tatuagem {i + 1}", Catalog.Get(id), () => Filter(1, 0),
-				id == null ? null : () => { Profile.UnequipTattoo(id); Refresh(); }));
+				id == null ? null : () => { Profile.UnequipTattoo(id); Refresh(); }, choosing: _sub == 0));
 		}
 
 		column.AddChild(UiKit.Spacer());
@@ -212,7 +260,7 @@ public partial class InventoryScreen : LobbyScreen
 	{
 		foreach (int team in new[] { Teams.Blue, Teams.Orange })
 		{
-			column.AddChild(UiKit.Caption($"Time {Teams.TitleOf(team).ToLowerInvariant()}"));
+			column.AddChild(UiKit.Caption(Teams.TitleOf(team), Teams.ColorOf(team)));
 			CatalogItem item = Catalog.Get(Profile.CharacterIdFor(team));
 			string standard = team == Teams.Blue ? "Padrão (Exo Gray)" : "Padrão (Ely)";
 			column.AddChild(SlotRow("Personagem", item, () => Filter(2, 0),
@@ -228,7 +276,8 @@ public partial class InventoryScreen : LobbyScreen
 
 	/// <summary>Um lugar do conjunto: arte pequena, nome, tipo e custo.
 	/// Clicar filtra a grade da direita para o que cabe ali.</summary>
-	private Control SlotRow(string slot, CatalogItem item, Action browse, Action remove, bool fixedSlot = false, string emptyName = "Vazio")
+	private Control SlotRow(string slot, CatalogItem item, Action browse, Action remove, bool fixedSlot = false, string emptyName = "Vazio",
+		bool choosing = false)
 	{
 		var row = new PanelContainer
 		{
@@ -237,9 +286,10 @@ public partial class InventoryScreen : LobbyScreen
 			MouseDefaultCursorShape = CursorShape.PointingHand,
 			TooltipText = fixedSlot ? "Fixo em todo conjunto" : $"Ver itens para {slot.ToLowerInvariant()}"
 		};
-		bool selected = item != null && item.Id == _selectedId;
-		row.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Surface2,
-			selected ? UiTokens.Accent : UiTokens.Border, selected ? 2 : 1, UiTokens.RadiusSmall, UiTokens.S2, UiTokens.S1));
+		// Marcado: é o espaço cujos itens estão na grade do meio.
+		row.AddThemeStyleboxOverride("panel", UiTheme.Box(
+			choosing ? new Color(UiTokens.Accent, 0.1f) : UiTheme.Veil(0.04f),
+			choosing ? UiTokens.Accent : UiTokens.Border, choosing ? 2 : 1, UiTokens.RadiusSmall, UiTokens.S2, UiTokens.S1));
 		row.GuiInput += e =>
 		{
 			if (e is not InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) return;
@@ -289,6 +339,10 @@ public partial class InventoryScreen : LobbyScreen
 			line.AddChild(x);
 		}
 
+		// A seta diz que o espaço abre uma escolha; o fixo leva cadeado.
+		Icon hint = Icon.Make(fixedSlot ? IconKind.Lock : IconKind.Expand, 14, choosing ? UiTokens.Accent : UiTokens.TextDisabled);
+		line.AddChild(hint);
+
 		return row;
 	}
 
@@ -307,12 +361,26 @@ public partial class InventoryScreen : LobbyScreen
 		return row;
 	}
 
-	private void Filter(int top, int sub)
+	private void Filter(int section, int sub)
 	{
-		_top = top;
+		_side = section;
 		_sub = sub;
 		Refresh();
 	}
+
+	/// <summary>O que a grade do meio está mostrando, em palavras.</summary>
+	private string Choosing() => (_side, _sub) switch
+	{
+		(0, 1) => "Escolha a primária",
+		(0, 2) => "Escolha a secundária",
+		(0, 3) => "Escolha a granada",
+		(0, 4) => "Corpo a corpo",
+		(0, _) => "Todas as suas armas",
+		(1, 0) => "Escolha as tatuagens",
+		(1, _) => "Escolha a classe do lobo",
+		(2, _) => "Escolha o personagem",
+		_ => "Seus serviços"
+	};
 
 	// ------------------------------------------------------------------ grade
 
@@ -321,16 +389,16 @@ public partial class InventoryScreen : LobbyScreen
 		VBoxContainer column = UiKit.Column(UiTokens.S2);
 		column.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
+		int step = _side == 0 ? 3 : _side == 3 ? 1 : 2;
 		HBoxContainer head = UiKit.Row(UiTokens.S3);
-		head.AddChild(UiKit.Text("Inventário", "Title"));
-		head.AddChild(UiKit.Spacer());
-		head.AddChild(UiKit.Button("Ir à loja", ButtonKind.Secondary, () => Shell.GoShop()));
+		head.AddChild(Step(step, Choosing()));
 		column.AddChild(head);
 
-		column.AddChild(Tabs.Make(TopTabs, _top, i => { _top = i; _sub = 0; Refresh(); }));
-		// Segundo nível só quando há o que escolher.
-		if (SubTabs[_top].Length > 1)
-			column.AddChild(Tabs.Make(SubTabs[_top], Mathf.Min(_sub, SubTabs[_top].Length - 1), i => { _sub = i; Refresh(); }));
+		// O filtro (o mesmo que os espaços da esquerda ligam), numa linha
+		// própria: ao lado do título a tela não cabia em 1920.
+		string[] filters = SubTabs[Mathf.Clamp(_side, 0, SubTabs.Length - 1)];
+		if (filters.Length > 1)
+			column.AddChild(Tabs.Make(filters, Mathf.Min(_sub, filters.Length - 1), i => { _sub = i; Refresh(); }));
 
 		GridContainer grid = UiKit.ScrollGrid(column, 3);
 
@@ -351,7 +419,7 @@ public partial class InventoryScreen : LobbyScreen
 			|| Profile.Find(i.Id) != null
 			|| i.Starter);
 
-		return (_top, _sub) switch
+		return (_side, _sub) switch
 		{
 			(0, 1) => owned.Where(ItemInfo.IsPrimary),
 			(0, 2) => owned.Where(ItemInfo.IsSecondary),
@@ -377,7 +445,9 @@ public partial class InventoryScreen : LobbyScreen
 	{
 		CatalogItem item = Catalog.Get(_selectedId);
 		if (item == null)
-			return ItemDetail.Empty("Escolha um item para ver os atributos e equipar.");
+			return ItemDetail.Empty(_side == 0
+				? "1. Escolha o conjunto.\n2. Clique no espaço que quer trocar.\n3. Clique na arma: aqui aparecem os atributos e o botão Equipar."
+				: "Clique num espaço à esquerda e depois num item: aqui aparecem os detalhes e o botão de usar.");
 
 		return ItemDetail.Make(item, CompareTarget(item), Actions(item));
 	}
@@ -423,7 +493,7 @@ public partial class InventoryScreen : LobbyScreen
 	{
 		ItemKind.Tattoo => Profile.Tattoos.Contains(item.Id) ? "Equipada" : "Equipar tatuagem",
 		ItemKind.Breed => Profile.Breed == item.Id ? "Classe em uso" : "Usar esta classe",
-		ItemKind.Character => IsEquippedHere(item) ? $"Em uso no {TeamLabel(item)}" : $"Usar no {TeamLabel(item)}",
+		ItemKind.Character => IsEquippedHere(item) ? $"Em uso {TeamLabel(item)}" : $"Usar {TeamLabel(item)}",
 		ItemKind.Service => "Usar",
 		_ => IsEquippedHere(item) ? $"Equipada em {CurrentSet.Name}" : $"Equipar em {CurrentSet.Name}"
 	};
@@ -454,7 +524,7 @@ public partial class InventoryScreen : LobbyScreen
 
 			case ItemKind.Character:
 				if (!Profile.SetCharacter(item.Id, out string why)) { Shell.Toast(why, UiTokens.Danger); return; }
-				Shell.Toast($"{item.Name} em uso no {TeamLabel(item)}");
+				Shell.Toast($"{item.Name} em uso {TeamLabel(item)}");
 				break;
 
 			case ItemKind.Service:
@@ -470,7 +540,7 @@ public partial class InventoryScreen : LobbyScreen
 	}
 
 	private static string TeamLabel(CatalogItem item) =>
-		item.Team == 0 ? "azul e no laranja" : $"time {Teams.TitleOf(item.Team).ToLowerInvariant()}";
+		item.Team == 0 ? "na Vanguarda e no Sindicato" : item.Team == Teams.Blue ? "na Vanguarda" : "no Sindicato";
 
 	private bool EquipInSet(CatalogItem item)
 	{

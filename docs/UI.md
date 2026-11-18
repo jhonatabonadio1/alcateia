@@ -265,6 +265,16 @@ em `scripts/ui/kit/HudStyle.cs`:
 - **Menus por cima da partida** (Esc, conjunto, resultado): o mapa
   borrado de fundo (`HudStyle.Backdrop`), no lugar do escuro chapado.
 
+**Estado atual dos menus (17/11, fim do dia).** Depois de uma volta pelo
+claro, os menus ficaram **escuros**: azul-noite, vidro escuro, ouro no
+destaque, cantos arredondados, botões retos, Kanit nos títulos e Figtree
+no texto. `UiTokens.Menu` (ligada pelo `LobbyShell`) troca paleta
+(`UiTokens`), estilo (`UiTheme`) e letras (`UiFonts`); na partida vale o
+conjunto do jogo (facetado, Barlow). Ícones: Phosphor (`Icon`,
+`assets/ui/icones/`). Patentes: imagens (`RankBadge`,
+`assets/ui/patentes/`). Armas: fotos do modelo (`WeaponArt`,
+`assets/ui/armas/`). O que está abaixo sobre a paleta clara é histórico.
+
 **Vidro fosco nos menus** (17/11: "esses fundos brancos podem ser com
 blur, foscos"): os cartões do tema (`Surface1`, `Surface2`, `Card`,
 `Header`) viram vidro sobre o `MenuBackdrop` — o fundo borrado, puxado

@@ -78,6 +78,13 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Efeitos visuais (GFX) em geral** (17/11): o que já existe está em
   `docs/EFEITOS.md`; faltam os do lobo (fumaça, ar, feixes nas garras,
   brilho) e os de tiro, sangue e impacto listados acima.
+- **Feed de abates e sequências (pedido do Jhon, 17/11) — a fazer.**
+  Ícone próprio no feed para: ataque de lobo, ataque pelas costas,
+  ataque por cima (o bote), o especial do lobo, abate do rival (quem te
+  matou por último). Avisos e **voz** de double, triple, quadra, penta
+  kill, 6, 7, 8 e "team kill" (o time inimigo inteiro). Precisa de o
+  `Kill` levar mais detalhe (de onde veio o golpe) e de gravar ou gerar
+  as falas.
 - **HUD, fontes e menu melhores — prioridade** (Jhon pediu foco nisso em 17/11).
   Primeira passada no HUD de combate feita em 17/11 (vidro, facetado,
   números inclinados, vida em gomos — `docs/UI.md`) e nos menus (fundo do

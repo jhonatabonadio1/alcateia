@@ -4,16 +4,18 @@ using System.Collections.Generic;
 using System.Linq;
 
 /// <summary>
-/// A loja: o inventário invertido. Mesma grade, mesmo cartão, com preço e
-/// seletor de duração no lugar da duração restante — custo cognitivo zero
-/// para quem já conhece o inventário.
+/// A loja, em três colunas que se leem da esquerda para a direita
+/// (pedido do Jhon, 17/11: "uma loja mais fácil de entender"):
 ///
-/// À esquerda, o personagem em 3D (humano ou lobo) e um painel com os
-/// atributos do que você usa hoje. No meio, as abas (DESTAQUE e DO DIA
-/// são as comerciais; o resto espelha as categorias do inventário) e a
-/// grade de três colunas. À direita, o detalhe do item com o seletor de
-/// duração: 1d · 7d · 30d · 90d · Perm, preço ao vivo, preço por dia e o
-/// selo "melhor valor".
+/// 1. **Categorias** numa lista só, à esquerda, agrupadas — Destaques,
+///    Humano (primárias, secundárias, granadas), Lobo (tatuagens,
+///    classes) e Conta —, cada uma com quantos itens tem. Antes eram
+///    abas em dois níveis mais um personagem em 3D que não tinha a ver
+///    com a compra.
+/// 2. **Os itens** da categoria, em cartões com a foto da arma.
+/// 3. **O item escolhido**: atributos, o seletor de duração
+///    (1d · 7d · 30d · 90d · Perm), preço ao vivo, preço por dia, o selo
+///    "melhor valor" e o Comprar.
 ///
 /// Comprar abre uma confirmação com o saldo antes e depois — loja que
 /// esconde o saldo depois da compra é desenhada para arrepender. E o
@@ -27,22 +29,30 @@ public partial class ShopScreen : LobbyScreen
 {
 	public override IconKind NavIcon => IconKind.Shop;
 
-	private static int _top;
-	private static int _sub;
-	private static bool _wolfView;
+	private static int _category;
 
 	private string _selectedId;
 	private Duration _duration = Duration.Day7;
 
-	private static readonly string[] TopTabs = { "Destaque", "Do dia", "Armas", "Lobo", "Especial" };
-	private static readonly string[][] SubTabs =
+	/// <summary>Uma categoria da lista: o grupo em que aparece, o nome e
+	/// o que entra nela.</summary>
+	private readonly record struct Category(string Group, string Name, Func<IEnumerable<CatalogItem>> Items);
+
+	private static IEnumerable<CatalogItem> ForSale => Catalog.All.Where(i => !i.Starter || i.Kind == ItemKind.Breed);
+
+	private static readonly Category[] Categories =
 	{
-		new[] { "Todos" },
-		new[] { "Hoje" },
-		new[] { "Todas", "Primária", "Secundária", "Granada" },
-		new[] { "Tatuagens", "Classes" },
-		new[] { "Todos" }
+		new("Destaques", "Em destaque", () => ForSale.Where(i => i.Hot)),
+		new("Destaques", "Oferta do dia", () => Catalog.Daily(DateTime.Now)),
+		new("Humano", "Primárias", () => ForSale.Where(i => ItemInfo.IsPrimary(i) && i.Kind == ItemKind.Weapon)),
+		new("Humano", "Secundárias", () => ForSale.Where(i => ItemInfo.IsSecondary(i) && i.Kind == ItemKind.Weapon)),
+		new("Humano", "Granadas", () => ForSale.Where(i => i.Kind == ItemKind.Utility)),
+		new("Lobo", "Tatuagens", () => ForSale.Where(i => i.Kind == ItemKind.Tattoo)),
+		new("Lobo", "Classes de lobo", () => ForSale.Where(i => i.Kind == ItemKind.Breed)),
+		new("Conta", "Serviços", () => ForSale.Where(i => i.Kind == ItemKind.Service))
 	};
+
+	private const int Daily = 1;
 
 	public ShopScreen() { }
 
@@ -52,139 +62,146 @@ public partial class ShopScreen : LobbyScreen
 		if (item == null) return;
 
 		_selectedId = item.Id;
-		_top = item.Kind switch
+		_category = item.Kind switch
 		{
-			ItemKind.Tattoo or ItemKind.Breed => 3,
-			ItemKind.Service => 4,
-			_ => 2
+			ItemKind.Tattoo => 5,
+			ItemKind.Breed => 6,
+			ItemKind.Service => 7,
+			ItemKind.Utility => 4,
+			_ => ItemInfo.IsSecondary(item) ? 3 : 2
 		};
-		_sub = 0;
 		_duration = DefaultDuration(item);
 	}
 
 	protected override void Build()
 	{
-		HBoxContainer split = SplitPage();
+		VBoxContainer page = Page(UiTokens.S3);
 
-		split.AddChild(Showcase());
+		HBoxContainer head = UiKit.Row(UiTokens.S3);
+		head.AddChild(UiKit.Text("Loja", "Title"));
+		Label about = UiKit.Text("Tudo aqui custa Presas, a moeda que você ganha jogando.", "Muted");
+		about.SizeFlagsVertical = SizeFlags.ShrinkEnd;
+		head.AddChild(about);
+		head.AddChild(UiKit.Spacer());
+		Button sangue = UiKit.Button("Comprar Sangue", ButtonKind.Tertiary);
+		sangue.Disabled = true;
+		sangue.TooltipText = "A moeda paga só existe com servidor. E ela nunca compra poder.";
+		head.AddChild(sangue);
+		page.AddChild(head);
+
+		HBoxContainer split = UiKit.Row(UiTokens.S4);
+		split.SizeFlagsVertical = SizeFlags.ExpandFill;
+		page.AddChild(split);
+
+		split.AddChild(Sidebar());
 		split.AddChild(Catalogue());
 		split.AddChild(Detail());
 	}
 
-	// ------------------------------------------------------------------ vitrine
+	// ------------------------------------------------------------------ categorias
 
-	private Control Showcase()
+	private Control Sidebar()
 	{
-		VBoxContainer column = UiKit.Column(UiTokens.S3);
-		column.CustomMinimumSize = new Vector2(470, 0);
+		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S3, UiTokens.S1);
+		panel.CustomMinimumSize = new Vector2(280, 0);
 
-		HBoxContainer head = UiKit.Row(UiTokens.S2);
-		head.AddChild(UiKit.Text("Loja", "Title"));
-		head.AddChild(UiKit.Spacer());
-		head.AddChild(Tabs.Make(new[] { "Humano", "Lobo" }, _wolfView ? 1 : 0, i => { _wolfView = i == 1; Refresh(); }));
-		column.AddChild(head);
-
-		var frame = new PanelContainer { SizeFlagsVertical = SizeFlags.ExpandFill };
-		frame.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Surface1, UiTokens.Border, 1, UiTokens.RadiusPanel, 0, 0));
-		var preview = new CharacterPreview { Wolf = _wolfView, SizeFlagsVertical = SizeFlags.ExpandFill };
-		frame.AddChild(preview);
-		column.AddChild(frame);
-
-		column.AddChild(StatsPanel());
-		return column;
-	}
-
-	/// <summary>O que você usa hoje, em barras: a arma principal do
-	/// último conjunto (humano) ou a classe com as tatuagens (lobo).</summary>
-	private Control StatsPanel()
-	{
-		PanelContainer panel = UiKit.Panel("Surface2");
-		VBoxContainer column = UiKit.Column(UiTokens.S1);
-		panel.AddChild(column);
-
-		if (_wolfView)
+		string group = null;
+		for (int i = 0; i < Categories.Length; i++)
 		{
-			WolfBreed breed = Profile.BuildBreed();
-			CatalogItem item = Catalog.Get(Profile.Breed);
-			column.AddChild(UiKit.Caption($"Seu lobo · {item?.Name}" + (Profile.Tattoos.Count > 0 ? $" + {Profile.Tattoos.Count} tatuagem(ns)" : "")));
-			if (breed != null)
+			Category category = Categories[i];
+			if (category.Group != group)
 			{
-				column.AddChild(StatBar.Make("Escudo", breed.Shield / 300f, $"{breed.Shield:0}"));
-				column.AddChild(StatBar.Make("Velocidade", breed.SpeedMultiplier / 2f, $"×{breed.SpeedMultiplier:0.00}"));
-				column.AddChild(StatBar.Make("Pulo", breed.JumpMultiplier / 2f, $"×{breed.JumpMultiplier:0.00}"));
-				column.AddChild(StatBar.Make("Garra", breed.AttackDamage / 160f, $"{breed.AttackDamage:0}"));
+				if (group != null) column.AddChild(UiKit.Gap(UiTokens.S2));
+				group = category.Group;
+				column.AddChild(UiKit.Caption(group));
 			}
-			return panel;
+
+			int index = i;
+			column.AddChild(NavItem(category.Name, category.Items().Count(), i == _category, () =>
+			{
+				_category = index;
+				Refresh();
+			}));
 		}
 
-		LoadoutSet set = Profile.Sets[Mathf.Clamp(Profile.LastUsed, 0, Profile.Sets.Count - 1)];
-		CatalogItem primary = Catalog.Get(set.Primary);
-		column.AddChild(UiKit.Caption($"Conjunto em uso · {set.Name} · {primary?.Name}"));
-		WeaponDefinition def = primary?.Weapon;
-		if (def != null)
-		{
-			column.AddChild(StatBar.Stars("Dano", def.StarDamage));
-			column.AddChild(StatBar.Stars("Precisão", def.StarAccuracy));
-			column.AddChild(StatBar.Stars("Cadência", def.StarRate));
-			column.AddChild(StatBar.Stars("Mobilidade", def.StarMobility));
-		}
+		column.AddChild(UiKit.Spacer());
+
+		// O saldo, onde o olho volta antes de comprar.
+		column.AddChild(UiKit.Divider());
+		HBoxContainer wallet = UiKit.Row(UiTokens.S2);
+		wallet.AddChild(UiKit.Caption("Você tem"));
+		wallet.AddChild(UiKit.Spacer());
+		wallet.AddChild(UiKit.Text(UiTokens.Thousands(Profile.Presas), "NumericLarge", CurrencyLabel.ColorOf(Currency.Presas)));
+		wallet.AddChild(Icon.Make(IconKind.Presa, 20, CurrencyLabel.ColorOf(Currency.Presas)));
+		column.AddChild(wallet);
 		return panel;
 	}
 
-	// ------------------------------------------------------------------ catálogo
+	/// <summary>Uma linha da lista de categorias: nome à esquerda, a
+	/// contagem à direita; a ativa leva a barra da cor da marca.</summary>
+	public static Button NavItem(string name, int count, bool active, Action pressed)
+	{
+		var button = new Button
+		{
+			CustomMinimumSize = new Vector2(0, 42),
+			FocusMode = FocusModeEnum.All,
+			MouseDefaultCursorShape = CursorShape.PointingHand,
+			ThemeTypeVariation = "TertiaryButton"
+		};
+		if (active)
+		{
+			StyleBoxFlat on = UiTheme.Box(new Color(UiTokens.Accent, 0.12f), UiTokens.Accent, 0, UiTokens.RadiusSmall, UiTokens.S3, UiTokens.S1);
+			on.BorderWidthLeft = 3;
+			foreach (string state in new[] { "normal", "hover", "pressed" })
+				button.AddThemeStyleboxOverride(state, on);
+		}
+		button.Pressed += pressed;
+		Sfx.Wire(button);
+
+		HBoxContainer row = UiKit.Fill(UiKit.Row(UiTokens.S2));
+		row.OffsetLeft = UiTokens.S3;
+		row.OffsetRight = -UiTokens.S3;
+		row.MouseFilter = MouseFilterEnum.Ignore;
+		Label label = UiKit.Text(name, null, active ? UiTokens.TextPrimary : UiTokens.TextSecondary);
+		label.AddThemeFontOverride("font", active ? UiFonts.Bold : UiFonts.Medium);
+		label.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		row.AddChild(label);
+		row.AddChild(UiKit.Text(count.ToString(), "Numeric", active ? UiTokens.Accent : UiTokens.TextDisabled));
+		button.AddChild(row);
+		return button;
+	}
+
+	// ------------------------------------------------------------------ itens
 
 	private Control Catalogue()
 	{
 		VBoxContainer column = UiKit.Column(UiTokens.S2);
 		column.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
+		Category category = Categories[Mathf.Clamp(_category, 0, Categories.Length - 1)];
+		List<CatalogItem> items = category.Items().ToList();
+
 		HBoxContainer head = UiKit.Row(UiTokens.S3);
-		head.AddChild(UiKit.Text("Presas compram tudo que afeta o combate", "Muted"));
+		head.AddChild(UiKit.Text(category.Name, "Subtitle"));
+		Label count = UiKit.Text(items.Count == 1 ? "1 item" : $"{items.Count} itens", "Muted");
+		count.SizeFlagsVertical = SizeFlags.ShrinkEnd;
+		head.AddChild(count);
 		head.AddChild(UiKit.Spacer());
-		Button sangue = UiKit.Button("Comprar Sangue", ButtonKind.Tertiary);
-		sangue.Disabled = true;
-		sangue.TooltipText = "A moeda paga só existe com servidor. E ela nunca compra poder.";
-		head.AddChild(sangue);
-		column.AddChild(head);
-
-		column.AddChild(Tabs.Make(TopTabs, _top, i => { _top = i; _sub = 0; Refresh(); }));
-
-		HBoxContainer subRow = UiKit.Row(UiTokens.S3);
-		// Segundo nível só quando há o que escolher.
-		if (SubTabs[_top].Length > 1)
-			subRow.AddChild(Tabs.Make(SubTabs[_top], Mathf.Min(_sub, SubTabs[_top].Length - 1), i => { _sub = i; Refresh(); }));
-		subRow.AddChild(UiKit.Spacer());
-		if (_top == 1)
+		if (_category == Daily)
 		{
 			TimeSpan left = MissionBook.UntilDailyReset(DateTime.Now);
-			subRow.AddChild(UiKit.Text($"Troca em {left.Hours} h {left.Minutes:00} min  ·  20% de desconto", "Caption", UiTokens.Warning));
+			head.AddChild(UiKit.Text($"Troca em {left.Hours} h {left.Minutes:00} min  ·  20% de desconto", "Caption", UiTokens.Warning));
 		}
-		column.AddChild(subRow);
+		column.AddChild(head);
 
 		GridContainer grid = UiKit.ScrollGrid(column, 3);
-
-		foreach (CatalogItem item in Items())
+		foreach (CatalogItem item in items)
 			grid.AddChild(ItemCard.Make(item, CardMode.Shop, item.Id == _selectedId, Select));
 
+		if (items.Count == 0)
+			column.AddChild(UiKit.Paragraph("Nada à venda aqui agora."));
+
 		return column;
-	}
-
-	private IEnumerable<CatalogItem> Items()
-	{
-		IEnumerable<CatalogItem> all = Catalog.All.Where(i => !i.Starter || i.Kind == ItemKind.Breed);
-
-		return (_top, _sub) switch
-		{
-			(0, _) => all.Where(i => i.Hot),
-			(1, _) => Catalog.Daily(DateTime.Now),
-			(2, 1) => all.Where(i => ItemInfo.IsPrimary(i) && i.Kind == ItemKind.Weapon),
-			(2, 2) => all.Where(i => ItemInfo.IsSecondary(i) && i.Kind == ItemKind.Weapon),
-			(2, 3) => all.Where(i => i.Kind == ItemKind.Utility),
-			(2, _) => all.Where(i => i.Kind is ItemKind.Weapon or ItemKind.Utility),
-			(3, 0) => all.Where(i => i.Kind == ItemKind.Tattoo),
-			(3, _) => all.Where(i => i.Kind == ItemKind.Breed),
-			_ => all.Where(i => i.Kind == ItemKind.Service)
-		};
 	}
 
 	private void Select(CatalogItem item)
@@ -209,7 +226,7 @@ public partial class ShopScreen : LobbyScreen
 	{
 		CatalogItem item = Catalog.Get(_selectedId);
 		if (item == null)
-			return ItemDetail.Empty("Escolha um item para ver os atributos, as durações e o preço.");
+			return ItemDetail.Empty("Escolha a categoria à esquerda e clique num item: aqui aparecem os atributos, por quanto tempo comprar e o preço.");
 
 		CatalogItem compare = null;
 		LoadoutSet set = Profile.Sets[Mathf.Clamp(Profile.LastUsed, 0, Profile.Sets.Count - 1)];

@@ -675,7 +675,7 @@ public partial class RoomScreen : LobbyScreen
 		VBoxContainer names = UiKit.Column(0);
 		names.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		names.AddChild(UiKit.Truncated(m.Name, "Subtitle", Teams.ColorOf(m.Team)));
-		names.AddChild(UiKit.Text(Ranks.NameOf(m.Rank), "Caption", Ranks.ColorOf(m.Rank)));
+		names.AddChild(UiKit.Text(Ranks.NameOf(m.Rank), "Caption", Ranks.InkOf(m.Rank)));
 		who.AddChild(names);
 		column.AddChild(who);
 

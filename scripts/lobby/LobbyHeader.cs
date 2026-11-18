@@ -313,7 +313,7 @@ public partial class LobbyHeader : PanelContainer
 		_badge.Rank = rank;
 		_name.Text = string.IsNullOrEmpty(Profile.Title) ? Profile.PlayerName : $"{Profile.PlayerName}";
 		_rank.Text = Ranks.NameOf(rank).ToUpperInvariant();
-		_rank.AddThemeColorOverride("font_color", Ranks.ColorOf(rank));
+		_rank.AddThemeColorOverride("font_color", Ranks.InkOf(rank));
 
 		long into = Profile.RankXp - Ranks.XpFor(rank);
 		long span = Ranks.XpFor(rank + 1) - Ranks.XpFor(rank);
