@@ -29,6 +29,8 @@ public partial class AbilityTile : Control
 	{
 		MouseFilter = MouseFilterEnum.Ignore;
 		CustomMinimumSize = new Vector2(Square, Square + CaptionHeight);
+		// O fundo é vidro (o mapa borrado), como os painéis do HUD.
+		Material = HudStyle.Glass();
 
 		_icon = Icon.Make(Kind, 38, UiTokens.TextPrimary);
 		_icon.Position = new Vector2((Square - 38) / 2f, (Square - 38) / 2f - 2);
@@ -77,16 +79,28 @@ public partial class AbilityTile : Control
 		}
 	}
 
+	/// <summary>O quadrado com dois cantos cortados (o facetado do HUD).</summary>
+	private static Vector2[] Shape(float inset = 0f)
+	{
+		float c = HudStyle.Cut + 2, a = inset, b = Square - inset;
+		return new Vector2[]
+		{
+			new(a + c, a), new(b, a), new(b, b - c), new(b - c, b), new(a, b), new(a, a + c)
+		};
+	}
+
 	// Fundo e nome: por baixo do ícone.
 	public override void _Draw()
 	{
-		DrawRect(new Rect2(0, 0, Square, Square), new Color(UiTokens.Bg, 0.82f));
+		DrawColoredPolygon(Shape(), HudStyle.GlassMark);
 
 		Color color = _cooling ? UiTokens.TextSecondary : UiTokens.TextPrimary;
-		Vector2 size = UiFonts.Label.GetStringSize(Title, HorizontalAlignment.Center, -1, UiTokens.Caption);
-		var at = new Vector2((Square - size.X) / 2f, Square + CaptionHeight - 4);
-		DrawString(UiFonts.Label, at + new Vector2(1, 1), Title, HorizontalAlignment.Left, -1, UiTokens.Caption, new Color(0, 0, 0, 0.8f));
-		DrawString(UiFonts.Label, at, Title, HorizontalAlignment.Left, -1, UiTokens.Caption, color);
+		Font font = HudStyle.Slanted(UiFonts.DisplaySemi);
+		const int fontSize = 15;
+		Vector2 size = font.GetStringSize(Title, HorizontalAlignment.Center, -1, fontSize);
+		var at = new Vector2((Square - size.X) / 2f, Square + CaptionHeight - 3);
+		DrawString(font, at + new Vector2(1, 1), Title, HorizontalAlignment.Left, -1, fontSize, new Color(0, 0, 0, 0.8f));
+		DrawString(font, at, Title, HorizontalAlignment.Left, -1, fontSize, color);
 	}
 
 	private void DrawCover()
@@ -114,7 +128,7 @@ public partial class AbilityTile : Control
 			}
 
 			string number = Mathf.CeilToInt(_left).ToString();
-			Font font = UiFonts.NumericDisplay;
+			Font font = HudStyle.Slanted(UiFonts.NumericDisplay);
 			const int fontSize = 38;
 			Vector2 text = font.GetStringSize(number, HorizontalAlignment.Center, -1, fontSize);
 			Vector2 at = new Vector2(center.X - text.X / 2f, center.Y + fontSize * 0.36f);
@@ -124,7 +138,11 @@ public partial class AbilityTile : Control
 
 		// Borda: laranja pronta, apagada em recarga.
 		Color border = _cooling ? UiTokens.Surface3 : UiTokens.TeamOrange;
-		_cover.DrawRect(new Rect2(1, 1, Square - 2, Square - 2), border, false, 2f);
+		Vector2[] edge = Shape(1f);
+		var loop = new Vector2[edge.Length + 1];
+		edge.CopyTo(loop, 0);
+		loop[^1] = edge[0];
+		_cover.DrawPolyline(loop, border, 2.5f);
 
 		// Tecla, no canto de baixo.
 		Vector2 key = UiFonts.Bold.GetStringSize(Key, HorizontalAlignment.Center, -1, 12);

@@ -218,7 +218,8 @@ public static class UiTheme
 		PanelVariant(t, "Surface3", Box(UiTokens.Surface3, UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
 		PanelVariant(t, "Card", Box(UiTokens.Surface2, UiTokens.Border, 1, UiTokens.RadiusPanel, 0, 0));
 		PanelVariant(t, "Bare", Box(Colors.Transparent, default, 0, 0, 0, 0));
-		PanelVariant(t, "HudPanel", Box(new Color(UiTokens.Bg, 0.72f), new Color(1, 1, 1, 0.06f), 1, UiTokens.RadiusHud, UiTokens.S3, UiTokens.S2));
+		// HudPanel sem vidro (o vidro precisa de material: HudStyle.Panel).
+		PanelVariant(t, "HudPanel", HudStyle.Facet(new Color(UiTokens.Bg, 0.72f), new Color(1, 1, 1, 0.06f), 1, HudStyle.Skew, HudStyle.Cut, UiTokens.S3, UiTokens.S2));
 		PanelVariant(t, "Modal", Box(UiTokens.Surface2, UiTokens.BorderStrong, 1, UiTokens.RadiusPanel, UiTokens.S5, UiTokens.S4));
 
 		var header = Box(UiTokens.Surface1, default, 0, 0, UiTokens.S3, 0);

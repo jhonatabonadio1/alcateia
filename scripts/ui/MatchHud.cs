@@ -193,13 +193,11 @@ public partial class MatchHud : CanvasLayer
 
 		bar.AddChild(TeamBox(Teams.Blue, out _blueScore, out _blueBar));
 
-		var middle = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
-		middle.AddThemeStyleboxOverride("panel", UiTheme.Box(new Color(UiTokens.Bg, 0.8f), new Color(1, 1, 1, 0.08f), 1, 0, UiTokens.S3, UiTokens.S1));
+		PanelContainer middle = HudStyle.Panel(new Color(1, 1, 1, 0.5f), skewed: false, padH: UiTokens.S4, padV: UiTokens.S1);
 		VBoxContainer stack = UiKit.Column(0);
 		middle.AddChild(stack);
 
-		_clock = UiKit.Text("10:00", "NumericLarge");
-		_clock.AddThemeFontSizeOverride("font_size", 34);
+		_clock = HudStyle.Number(UiKit.Text("10:00", "NumericLarge"), 36);
 		_clock.HorizontalAlignment = HorizontalAlignment.Center;
 		_clock.CustomMinimumSize = new Vector2(120, 0);
 		stack.AddChild(_clock);
@@ -220,9 +218,11 @@ public partial class MatchHud : CanvasLayer
 		Color color = Teams.ColorOf(team);
 		bool mine = team == _localTeam;
 
-		var panel = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
-		StyleBoxFlat style = UiTheme.Box(new Color(color.Darkened(0.7f), 0.85f), mine ? color : new Color(color, 0.3f), 1, 0, UiTokens.S3, UiTokens.S1);
-		panel.AddThemeStyleboxOverride("panel", style);
+		// Vidro tingido da cor do time, inclinado para fora (o azul para a
+		// esquerda, o laranja para a direita), como o placar de Overwatch.
+		PanelContainer panel = HudStyle.Panel(mine ? color : new Color(color, 0.45f), skewed: true,
+			skew: team == Teams.Blue ? HudStyle.Skew : -HudStyle.Skew, tint: new Color(color.Darkened(0.72f), 0.62f),
+			padH: UiTokens.S4, padV: UiTokens.S1);
 
 		VBoxContainer stack = UiKit.Column(2);
 		panel.AddChild(stack);
@@ -233,8 +233,7 @@ public partial class MatchHud : CanvasLayer
 		Label name = UiKit.Text(Teams.NameOf(team) + (mine ? " · VOCÊ" : ""), "Caption", color);
 		name.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
 		name.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		score = UiKit.Text("", "NumericLarge");
-		score.AddThemeFontSizeOverride("font_size", 34);
+		score = HudStyle.Number(UiKit.Text("", "NumericLarge"), 38);
 		score.CustomMinimumSize = new Vector2(52, 0);
 		score.PivotOffset = new Vector2(26, 20);
 
@@ -264,8 +263,7 @@ public partial class MatchHud : CanvasLayer
 			FillMode = team == Teams.Blue ? (int)ProgressBar.FillModeEnum.EndToBegin : (int)ProgressBar.FillModeEnum.BeginToEnd,
 			MouseFilter = Control.MouseFilterEnum.Ignore
 		};
-		fill.AddThemeStyleboxOverride("background", UiTheme.Box(new Color(1, 1, 1, 0.12f), default, 0, 0, 0, 0));
-		fill.AddThemeStyleboxOverride("fill", UiTheme.Box(color, default, 0, 0, 0, 0));
+		HudStyle.SlantBar(fill, color);
 		stack.AddChild(fill);
 
 		return panel;
@@ -286,8 +284,7 @@ public partial class MatchHud : CanvasLayer
 		Outline(_countdownTitle, 6);
 		box.AddChild(_countdownTitle);
 
-		_countdownNumber = UiKit.Text("10", "Display");
-		_countdownNumber.AddThemeFontSizeOverride("font_size", 120);
+		_countdownNumber = HudStyle.Number(UiKit.Text("10", "Display"), 120);
 		_countdownNumber.HorizontalAlignment = HorizontalAlignment.Center;
 		_countdownNumber.PivotOffset = new Vector2(150, 70);
 		Outline(_countdownNumber, 10);

@@ -7,8 +7,8 @@ using System.Collections.Generic;
 /// </summary>
 public partial class Hud
 {
-	private static readonly StyleBoxFlat SlotOn = UiTheme.Box(new Color(UiTokens.Accent, 0.2f), UiTokens.Accent, 1, 0, 0, 0);
-	private static readonly StyleBoxFlat SlotOff = UiTheme.Box(new Color(1, 1, 1, 0.04f), new Color(1, 1, 1, 0.1f), 1, 0, 0, 0);
+	private static readonly StyleBoxFlat SlotOn = HudStyle.Facet(new Color(UiTokens.Accent, 0.25f), UiTokens.Accent, 1, HudStyle.Skew, 5);
+	private static readonly StyleBoxFlat SlotOff = HudStyle.Facet(new Color(0.03f, 0.04f, 0.06f, 0.55f), new Color(1, 1, 1, 0.14f), 1, HudStyle.Skew, 5);
 	private Label _wp;
 	private VBoxContainer _human;
 	private VBoxContainer _wolf;

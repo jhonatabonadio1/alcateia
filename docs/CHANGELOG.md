@@ -2,6 +2,19 @@
 
 ## Não lançado
 
+### HUD mais low poly, estilo Overwatch (17/11)
+- Painéis de **vidro**: o mapa borrado e escurecido de fundo, em vez da
+  caixa preta (`HudStyle`). Cantos cortados a 45° e painéis inclinados.
+- **Números inclinados** e grandes: vida (58), munição (64), relógio,
+  placar, WP, contagem.
+- **Vida em gomos** de 25 pontos (`SegmentBar`), com o pedaço perdido em
+  vermelho escorrendo; escudo do lobo em gomos laranja.
+- Placar de cima com vidro tingido da cor de cada time, inclinado para
+  fora; ícones de habilidade facetados com vidro; feed de abates em
+  vidro; barras finas inclinadas.
+- Menus por cima da partida (Esc, conjunto, resultado) com o mapa
+  borrado de fundo.
+
 ### Patente bem mais lenta; a patente do topo bate com a da sala (17/11)
 - **XP por partida caiu para um quarto**: 30 por participar, 4 por
   abate, 2 por assistência, 24 pela vitória, 12 pelo empate, 15 pelo MVP

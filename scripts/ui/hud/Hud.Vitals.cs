@@ -14,14 +14,12 @@ public partial class Hud
 
 	private Label _hpNumber;
 	private Label _hpMax;
-	private ProgressBar _hpBar;
-	private ProgressBar _shieldBar;
+	private SegmentBar _hpBar;
+	private SegmentBar _shieldBar;
 	private Label _shieldNumber;
 	private HBoxContainer _shieldRow;
 	private Tween _lowPulse;
 	private bool? _lowShown;
-	private static readonly StyleBoxFlat HpFill = UiTheme.Box(UiTokens.TextPrimary, default, 0, 0, 0, 0);
-	private static readonly StyleBoxFlat HpFillLow = UiTheme.Box(UiTokens.Danger, default, 0, 0, 0, 0);
 	private TextureRect _vignette;
 	private float _hurtFlash;
 	private VBoxContainer _death;
@@ -34,10 +32,10 @@ public partial class Hud
 
 		_hpNumber.Text = $"{Mathf.Ceil(Mathf.Max(hp, 0)):0}";
 		_hpMax.Text = $"/ {maxHp:0}";
-		_hpBar.Value = maxHp > 0 ? hp / maxHp : 0;
+		_hpBar.Set(Mathf.Max(hp, 0), maxHp);
 
 		_shieldRow.Visible = _health.MaxShield > 0;
-		_shieldBar.Value = _health.MaxShield > 0 ? shield / _health.MaxShield : 0;
+		_shieldBar.Set(shield, Mathf.Max(_health.MaxShield, 1f));
 		_shieldNumber.Text = $"{Mathf.Ceil(shield):0}";
 
 		// Vida baixa: a barra pulsa e a vinheta entra.
@@ -48,7 +46,9 @@ public partial class Hud
 		if (low != _lowShown)
 		{
 			_lowShown = low;
-			_hpBar.AddThemeStyleboxOverride("fill", low ? HpFillLow : HpFill);
+			_hpBar.Fill = low ? UiTokens.Danger : UiTokens.TextPrimary;
+			_hpBar.Trail = low ? UiTokens.Danger.Darkened(0.5f) : UiTokens.Danger;
+			_hpBar.QueueRedraw();
 			_hpNumber.AddThemeColorOverride("font_color", low ? UiTokens.Danger : UiTokens.TextPrimary);
 		}
 

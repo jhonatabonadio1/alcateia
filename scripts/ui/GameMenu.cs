@@ -187,7 +187,8 @@ public partial class GameMenu : CanvasLayer
 
 	private void Build()
 	{
-		_root = UiTheme.Apply(UiKit.Fill(new ColorRect { Color = new Color(UiTokens.Bg, 0.6f) }));
+		// O mapa borrado de fundo (a partida continua rodando atrás).
+		_root = UiTheme.Apply(UiKit.Fill(new ColorRect { Color = UiTokens.Bg, Material = HudStyle.Backdrop(0.5f) }));
 		AddChild(_root);
 
 		var center = UiKit.Fill(new CenterContainer());

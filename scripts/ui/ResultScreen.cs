@@ -68,7 +68,7 @@ public partial class ResultScreen : CanvasLayer
 		_root = UiTheme.Apply(UiKit.Fill(new Control()));
 		AddChild(_root);
 
-		var dim = UiKit.Fill(new ColorRect { Color = new Color(UiTokens.Bg, 0.94f), MouseFilter = Control.MouseFilterEnum.Stop });
+		var dim = UiKit.Fill(new ColorRect { Color = UiTokens.Bg, Material = HudStyle.Backdrop(0.82f), MouseFilter = Control.MouseFilterEnum.Stop });
 		_root.AddChild(dim);
 
 		_hero = BuildHero();

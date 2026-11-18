@@ -78,7 +78,7 @@ public partial class Hud
 		_death.MouseFilter = Control.MouseFilterEnum.Ignore;
 		_death.Visible = false;
 
-		Label title = UiKit.Text("ABATIDO", "Display", UiTokens.Danger);
+		Label title = HudStyle.Number(UiKit.Text("ABATIDO", "Display"), 72, UiTokens.Danger);
 		title.HorizontalAlignment = HorizontalAlignment.Center;
 		_death.AddChild(title);
 		_deathBy = UiKit.Text("", "Subtitle");
@@ -95,8 +95,8 @@ public partial class Hud
 		VBoxContainer box = Corner(UiKit.Column(UiTokens.S1), Control.LayoutPreset.TopLeft);
 		box.Position = new Vector2(Edge, Edge);
 
-		var frame = new PanelContainer { ThemeTypeVariation = "HudPanel", MouseFilter = Control.MouseFilterEnum.Ignore };
-		frame.AddThemeStyleboxOverride("panel", UiTheme.Box(new Color(UiTokens.Bg, 0.55f), new Color(1, 1, 1, 0.08f), 1, 0, 0, 0));
+		// Vidro sem inclinar: o mapa dentro não pode entortar.
+		PanelContainer frame = HudStyle.Panel(new Color(1, 1, 1, 0.45f), skewed: false, padH: 0, padV: 0);
 		var map = new Minimap { MouseFilter = Control.MouseFilterEnum.Ignore };
 		map.Side = MinimapSide;
 		frame.AddChild(map);
@@ -104,7 +104,10 @@ public partial class Hud
 
 		MapInfo info = Maps.Get(RoomConfig.Rules.Map);
 		string mode = RoomSettings.ModeName(RoomConfig.Rules.Mode);
-		box.AddChild(Outlined(UiKit.Caption($"{info.Name}  ·  {mode}", UiTokens.TextPrimary)));
+		Label where = Outlined(UiKit.Caption($"{info.Name}  ·  {mode}".ToUpperInvariant(), UiTokens.TextPrimary));
+		where.AddThemeFontOverride("font", HudStyle.Slanted(UiFonts.DisplaySemi));
+		where.AddThemeFontSizeOverride("font_size", 16);
+		box.AddChild(where);
 	}
 
 	private void BuildFeed()
@@ -118,7 +121,8 @@ public partial class Hud
 
 	private void BuildVitals()
 	{
-		var panel = new PanelContainer { ThemeTypeVariation = "HudPanel", CustomMinimumSize = new Vector2(360, 0) };
+		PanelContainer panel = HudStyle.Panel(new Color(1, 1, 1, 0.55f), padH: UiTokens.S4, padV: UiTokens.S2);
+		panel.CustomMinimumSize = new Vector2(380, 0);
 		Corner(panel, Control.LayoutPreset.BottomLeft);
 		panel.OffsetLeft = Edge;
 		panel.OffsetBottom = -Edge;
@@ -136,24 +140,34 @@ public partial class Hud
 		column.AddChild(form);
 
 		_shieldRow = UiKit.Row(UiTokens.S2);
-		_shieldBar = Bar(UiTokens.TeamOrange.Lightened(0.15f), 6);
+		_shieldBar = new SegmentBar
+		{
+			CustomMinimumSize = new Vector2(0, 9),
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter,
+			Fill = UiTokens.TeamOrange.Lightened(0.15f),
+			Trail = UiTokens.TeamOrange.Darkened(0.4f)
+		};
 		_shieldRow.AddChild(_shieldBar);
-		_shieldNumber = UiKit.Text("", "Numeric", UiTokens.TeamOrange.Lightened(0.25f));
+		_shieldNumber = HudStyle.Number(UiKit.Text("", "Numeric"), 20, UiTokens.TeamOrange.Lightened(0.25f));
 		_shieldNumber.CustomMinimumSize = new Vector2(44, 0);
 		_shieldNumber.HorizontalAlignment = HorizontalAlignment.Right;
 		_shieldRow.AddChild(_shieldNumber);
 		column.AddChild(_shieldRow);
 
 		HBoxContainer hp = UiKit.Row(UiTokens.S2);
-		_hpNumber = UiKit.Text("200", "NumericLarge");
-		_hpNumber.AddThemeFontSizeOverride("font_size", UiTokens.Display);
+		_hpNumber = HudStyle.Number(UiKit.Text("200", "NumericLarge"), 58);
 		hp.AddChild(_hpNumber);
-		_hpMax = UiKit.Text("/ 200", "Numeric", UiTokens.TextSecondary);
+		_hpMax = HudStyle.Number(UiKit.Text("/ 200", "Numeric"), 24, UiTokens.TextSecondary);
 		_hpMax.SizeFlagsVertical = Control.SizeFlags.ShrinkEnd;
 		hp.AddChild(_hpMax);
 		column.AddChild(hp);
 
-		_hpBar = Bar(UiTokens.TextPrimary, 10);
+		_hpBar = new SegmentBar
+		{
+			CustomMinimumSize = new Vector2(0, 16),
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
+		};
 		column.AddChild(_hpBar);
 	}
 
@@ -168,8 +182,8 @@ public partial class Hud
 		// WP, perto da munição: é o que se gasta ao renascer.
 		HBoxContainer wpRow = UiKit.Row(UiTokens.S2);
 		wpRow.Alignment = BoxContainer.AlignmentMode.End;
-		wpRow.AddChild(Outlined(UiKit.Caption("WP", UiTokens.Accent)));
-		_wp = Outlined(UiKit.Text("0", "NumericLarge", UiTokens.Accent));
+		wpRow.AddChild(HudStyle.Number(UiKit.Caption("WP"), 18, UiTokens.Accent));
+		_wp = HudStyle.Number(UiKit.Text("0", "NumericLarge"), 34, UiTokens.Accent);
 		wpRow.AddChild(_wp);
 		side.AddChild(wpRow);
 		
@@ -178,7 +192,7 @@ public partial class Hud
 		_pounceTile.SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd;
 		side.AddChild(_pounceTile);
 		
-		var panel = new PanelContainer { ThemeTypeVariation = "HudPanel" };
+		PanelContainer panel = HudStyle.Panel(new Color(UiTokens.Accent, 0.8f), padH: UiTokens.S4, padV: UiTokens.S2);
 		side.AddChild(panel);
 		var stack = new Control { CustomMinimumSize = new Vector2(0, 150), MouseFilter = Control.MouseFilterEnum.Ignore };
 		panel.AddChild(stack);
@@ -201,7 +215,7 @@ public partial class Hud
 
 		VBoxContainer names = UiKit.Column(0);
 		names.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		_weaponName = UiKit.Text("", "Subtitle");
+		_weaponName = HudStyle.Number(UiKit.Text("", "Subtitle"), 22);
 		_weaponName.HorizontalAlignment = HorizontalAlignment.Right;
 		names.AddChild(_weaponName);
 		_reloading = UiKit.Caption("", UiTokens.Warning);
@@ -221,11 +235,10 @@ public partial class Hud
 		ammo.AddChild(grenade);
 		ammo.AddChild(UiKit.Spacer());
 
-		_mag = UiKit.Text("30", "NumericLarge");
-		_mag.AddThemeFontSizeOverride("font_size", 52);
+		_mag = HudStyle.Number(UiKit.Text("30", "NumericLarge"), 64);
 		ammo.AddChild(_mag);
 		// A reserva: o que sobra fora do pente.
-		_reserve = UiKit.Text("/ 90", "Subtitle", UiTokens.TextSecondary);
+		_reserve = HudStyle.Number(UiKit.Text("/ 90", "Subtitle"), 26, UiTokens.TextSecondary);
 		_reserve.SizeFlagsVertical = Control.SizeFlags.ShrinkEnd;
 		ammo.AddChild(_reserve);
 		column.AddChild(ammo);
@@ -235,7 +248,7 @@ public partial class Hud
 		foreach (var (slot, label) in new[] { (Slot.Primary, "1"), (Slot.Secondary, "2"), (Slot.Wolf, "3"), (Slot.Knife, "4"), (Slot.Grenade, "5") })
 		{
 			var chip = new PanelContainer { CustomMinimumSize = new Vector2(28, 22), MouseFilter = Control.MouseFilterEnum.Ignore };
-			Label text = UiKit.Text(label, "Numeric");
+			Label text = HudStyle.Number(UiKit.Text(label, "Numeric"), 15);
 			text.HorizontalAlignment = HorizontalAlignment.Center;
 			chip.AddChild(text);
 			_slots[slot] = chip;
@@ -252,7 +265,7 @@ public partial class Hud
 
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
 		head.AddChild(Icon.Make(IconKind.Wolf, 22, UiTokens.TeamOrange));
-		_breedName = UiKit.Text("", "Subtitle", UiTokens.TextPrimary);
+		_breedName = HudStyle.Number(UiKit.Text("", "Subtitle"), 22);
 		head.AddChild(_breedName);
 		head.AddChild(UiKit.Spacer());
 		head.AddChild(UiKit.Caption("sem munição", UiTokens.TextDisabled));
@@ -285,7 +298,8 @@ public partial class Hud
 
 	private void BuildTransform()
 	{
-		_shiftPanel = new PanelContainer { ThemeTypeVariation = "HudPanel", CustomMinimumSize = new Vector2(380, 0) };
+		_shiftPanel = HudStyle.Panel(UiTokens.TeamOrange, padH: UiTokens.S4, padV: UiTokens.S2);
+		_shiftPanel.CustomMinimumSize = new Vector2(380, 0);
 		Corner(_shiftPanel, Control.LayoutPreset.CenterBottom);
 		_shiftPanel.OffsetBottom = -Edge;
 		_shiftPanel.OffsetLeft = -190;
@@ -296,8 +310,8 @@ public partial class Hud
 
 		HBoxContainer row = UiKit.Row(UiTokens.S2);
 		var key = new PanelContainer { CustomMinimumSize = new Vector2(24, 22) };
-		key.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Surface3, UiTokens.BorderStrong, 1, UiTokens.RadiusSmall, 6, 0));
-		_shiftKey = UiKit.Text("3", "Numeric");
+		key.AddThemeStyleboxOverride("panel", HudStyle.Facet(UiTokens.Surface3, UiTokens.BorderStrong, 1, HudStyle.Skew, 4, 6, 0));
+		_shiftKey = HudStyle.Number(UiKit.Text("3", "Numeric"), 16);
 		_shiftKey.HorizontalAlignment = HorizontalAlignment.Center;
 		key.AddChild(_shiftKey);
 		row.AddChild(key);
@@ -325,8 +339,7 @@ public partial class Hud
 			ShowPercentage = false,
 			MouseFilter = Control.MouseFilterEnum.Ignore
 		};
-		bar.AddThemeStyleboxOverride("background", UiTheme.Box(new Color(1, 1, 1, 0.1f), default, 0, 0, 0, 0));
-		bar.AddThemeStyleboxOverride("fill", UiTheme.Box(fill, default, 0, 0, 0, 0));
+		HudStyle.SlantBar(bar, fill);
 		return bar;
 	}
 

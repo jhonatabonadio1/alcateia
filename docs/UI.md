@@ -236,6 +236,26 @@ Modal com: item, duração, preço, saldo atual, saldo depois da compra. Botão 
 
 ## HUD de combate
 
+**O visual (17/11, pedido do Jhon: mais low poly, mais Overwatch).** Tudo
+em `scripts/ui/kit/HudStyle.cs`:
+
+- **Vidro**: o fundo dos painéis é o próprio mapa, borrado e escurecido
+  (shader de leitura da tela). O painel pinta o fundo de magenta e o
+  shader troca o magenta pelo mapa; borda e texto passam como estão. Use
+  `HudStyle.Panel(...)` — o tema não guarda material, então o
+  `HudPanel` do tema é só a versão chapada.
+- **Facetado**: cantos cortados a 45° (o de cima à esquerda e o de
+  baixo à direita) e painéis inclinados como paralelogramos. No placar
+  de cima, o azul inclina para a esquerda e o laranja para a direita.
+- **Números inclinados** e grossos (`HudStyle.Number`): vida, munição,
+  relógio, placar, WP.
+- **Vida em gomos** (`SegmentBar`): um gomo por 25 pontos, cada um um
+  paralelogramo; o que acabou de ser perdido fica vermelho um instante
+  e escorre. O escudo do lobo também em gomos, laranja.
+- **Menus por cima da partida** (Esc, conjunto, resultado): o mapa
+  borrado de fundo (`HudStyle.Backdrop`), no lugar do escuro chapado.
+
+
 O HUD in-game segue a regra dos cantos: informação de sobrevivência embaixo à esquerda, recursos embaixo à direita, estado da partida em cima, eventos à direita no meio. O centro fica livre — só mira e avisos críticos.
 
 | Canto | Elementos |

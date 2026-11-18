@@ -245,7 +245,7 @@ public partial class LoadoutMenu : CanvasLayer
 
 	private void Build()
 	{
-		_root = UiTheme.Apply(UiKit.Fill(new ColorRect { Color = new Color(UiTokens.Bg, 0.82f) }));
+		_root = UiTheme.Apply(UiKit.Fill(new ColorRect { Color = UiTokens.Bg, Material = HudStyle.Backdrop(0.72f) }));
 		AddChild(_root);
 
 		var center = UiKit.Fill(new CenterContainer { MouseFilter = Control.MouseFilterEnum.Ignore });

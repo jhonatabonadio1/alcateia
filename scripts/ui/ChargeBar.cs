@@ -37,8 +37,8 @@ public partial class ChargeBar : CanvasLayer
 		column.AddChild(head);
 
 		_bar = new ProgressBar { MinValue = 0, MaxValue = 1, Step = 0.001, ShowPercentage = false, CustomMinimumSize = new Vector2(280, 10), MouseFilter = Control.MouseFilterEnum.Ignore };
-		_bar.AddThemeStyleboxOverride("background", UiTheme.Box(new Color(UiTokens.Bg, 0.7f), new Color(1, 1, 1, 0.15f), 1, 0, 0, 0));
-		_fill = UiTheme.Box(UiTokens.Accent, default, 0, 0, 0, 0);
+		_bar.AddThemeStyleboxOverride("background", HudStyle.Facet(new Color(UiTokens.Bg, 0.7f), new Color(1, 1, 1, 0.15f), 1, 0.9f, 0));
+		_fill = HudStyle.Facet(UiTokens.Accent, default, 0, 0.9f, 0);
 		_bar.AddThemeStyleboxOverride("fill", _fill);
 		column.AddChild(_bar);
 		_hint = UiKit.Caption("BOTÃO DO MEIO: TRAVAR NO INIMIGO", UiTokens.TextSecondary);

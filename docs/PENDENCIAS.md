@@ -79,6 +79,9 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   `docs/EFEITOS.md`; faltam os do lobo (fumaça, ar, feixes nas garras,
   brilho) e os de tiro, sangue e impacto listados acima.
 - **HUD, fontes e menu melhores — prioridade** (Jhon pediu foco nisso em 17/11).
+  Primeira passada no HUD de combate feita em 17/11 (vidro, facetado,
+  números inclinados, vida em gomos — `docs/UI.md`); falta conferir na
+  tela e levar o mesmo estilo aos menus de fora da partida.
 
 ### Mapas e modos
 
@@ -259,8 +262,9 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ### Ranking
 
-- **Revisar as patentes** (pedido em 17/11): nomes, quantidade, curva de
-  XP e imagens, junto com a conta dos 8 anos acima.
+- **Revisar as patentes** (pedido em 17/11): nomes, quantidade e
+  imagens. A curva dos ~8 anos e o XP por partida menor já entraram
+  (17/11, `Ranks.cs`, `Rewards.cs`).
 
 ### Servidor e produção
 

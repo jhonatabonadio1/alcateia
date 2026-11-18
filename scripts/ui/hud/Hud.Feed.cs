@@ -27,8 +27,9 @@ public partial class Hud
 
 		// A linha em que você aparece leva borda dourada: é a que importa.
 		var line = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore, SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd };
-		line.AddThemeStyleboxOverride("panel", UiTheme.Box(new Color(UiTokens.Bg, 0.66f),
-			mine || died ? UiTokens.Accent : new Color(1, 1, 1, 0.06f), 1, 0, UiTokens.S2, 3));
+		line.Material = HudStyle.Glass();
+		line.AddThemeStyleboxOverride("panel", HudStyle.Plate(mine || died ? UiTokens.Accent : new Color(1, 1, 1, 0.25f),
+			padH: UiTokens.S3, padV: 3, accentWidth: mine || died ? 3 : 1));
 
 		HBoxContainer row = UiKit.Row(UiTokens.S2);
 		line.AddChild(row);
