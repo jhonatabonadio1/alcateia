@@ -366,7 +366,7 @@ public partial class ShopScreen : LobbyScreen
 			return;
 		}
 
-		Sfx.Ui("abate");
+		Sfx.Ui(Sfx.First("ui_compra", "abate"));
 		Shell.Toast($"Comprado: {item.Name} · {Catalog.DurationLabels[(int)duration]}", UiTokens.Success);
 		Refresh();
 	}

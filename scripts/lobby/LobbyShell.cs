@@ -77,8 +77,6 @@ public partial class LobbyShell : Control
 		_overlay = UiKit.Fill(new Control { MouseFilter = MouseFilterEnum.Ignore });
 		AddChild(_overlay);
 
-		Sfx.Music(this, "musica_menu", -10f);
-
 		GoStart();
 	}
 
@@ -165,17 +163,64 @@ public partial class LobbyShell : Control
 
 	public void Go(LobbyScreen screen)
 	{
+		bool wasPanel = IsPanel(Current);
 		if (Current != null)
 		{
 			_content.RemoveChild(Current);
 			Current.QueueFree();
 		}
 
+		// Loja, inventário, perfil e missões abrem como painel; voltar
+		// deles fecha. Trocar entre dois painéis só abre.
+		if (IsPanel(screen)) Sfx.Ui("ui_abrir");
+		else if (wasPanel) Sfx.Ui("ui_fechar");
+
+		// A sala tem a música dela, mais tensa; o resto, a do menu.
+		PlayMusic(screen is RoomScreen && Sfx.Has("musica_sala") ? "musica_sala" : "musica_menu");
+
 		Current = screen;
 		_content.AddChild(screen);
 		_header.Visible = screen is not WelcomeScreen;
 		_header.SetActive(screen.NavIcon);
 		Motion.FadeIn(screen, UiTokens.Normal);
+	}
+
+	private static bool IsPanel(LobbyScreen screen) =>
+		screen is ShopScreen or InventoryScreen or ProfileScreen or MissionsScreen;
+
+	// ------------------------------------------------------------------ música
+
+	/// <summary>Volume das músicas do lobby, em dB (o canal Música soma o
+	/// das opções por cima).</summary>
+	private const float MusicDb = -10f;
+
+	/// <summary>Tempo da troca de uma música para a outra.</summary>
+	private const float MusicFade = 1.2f;
+
+	private AudioStreamPlayer _music;
+	private string _musicName;
+
+	/// <summary>
+	/// Troca a música do lobby, uma saindo enquanto a outra entra. Pedir a
+	/// que já toca não faz nada — navegar entre telas não recomeça o tema.
+	/// </summary>
+	private void PlayMusic(string name)
+	{
+		if (name == _musicName) return;
+		_musicName = name;
+
+		if (_music != null && IsInstanceValid(_music))
+		{
+			AudioStreamPlayer old = _music;
+			Tween fade = old.CreateTween();
+			fade.TweenProperty(old, "volume_db", -60f, MusicFade);
+			fade.TweenCallback(Callable.From(old.QueueFree));
+		}
+
+		_music = Sfx.Music(this, name, -40f);
+		if (_music == null) return;
+		_music.CreateTween().TweenProperty(_music, "volume_db", MusicDb, MusicFade)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
 	}
 
 	public void GoRoom(RoomListing room) => Go(new RoomScreen(room));

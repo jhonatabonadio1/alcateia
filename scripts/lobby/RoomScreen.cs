@@ -832,6 +832,8 @@ public partial class RoomScreen : LobbyScreen
 			return;
 		}
 
+		Sfx.Ui("ui_jogar");
+
 		// Online quem começa é o servidor, para todos ao mesmo tempo.
 		if (_online)
 		{

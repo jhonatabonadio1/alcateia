@@ -536,6 +536,7 @@ public partial class InventoryScreen : LobbyScreen
 				break;
 		}
 
+		Sfx.Ui("ui_equipar");
 		Refresh();
 	}
 

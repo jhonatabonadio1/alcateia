@@ -5,6 +5,20 @@ Todos os arquivos desta pasta foram gerados por
 convertidos para mono, com volume normalizado e, em vários casos, com
 tom alterado ou misturados em camadas.
 
+## Gerados para o jogo (IA, 18/11)
+
+Feitos pelo Jhon com um gerador de áudio por IA, a partir dos prompts do
+guia `docs/SONS_IA.md`, e preparados por `tools/sons/preparar_ia.py`
+(cortados, volume igualado, laço fechado nas músicas):
+`musica_menu`, `musica_sala`, `musica_fim_proximo`, `musica_resultado`,
+`partida_inicio`, `vitoria`, `derrota_1`, `derrota_2`, `empate`,
+`ui_passar`, `ui_clique`, `ui_negado`, `ui_abrir`, `ui_fechar`,
+`ui_equipar`, `ui_compra`, `ui_jogar`, `ui_xp_fim`, `ui_patente`,
+`ui_recompensa_1`, `ui_recompensa_2`.
+
+> **Antes de publicar:** anotar aqui qual ferramenta gerou e conferir
+> que o plano usado permite uso comercial.
+
 ## Exige crédito — CC BY 4.0
 
 **Oculus Audio Pack 1**, Meta Platforms (equipe de som da Oculus),

@@ -59,6 +59,9 @@ public partial class ResultScreen : CanvasLayer
 		return screen;
 	}
 
+	/// <summary>Volume da música da tela de resultado, em dB.</summary>
+	private const float ResultMusicDb = -12f;
+
 	public override void _Ready()
 	{
 		// Acima do menu de conjuntos (9) e do Esc (10).
@@ -98,6 +101,11 @@ public partial class ResultScreen : CanvasLayer
 	{
 		_hero.Visible = false;
 		_page.Visible = true;
+
+		// A música calma entra devagar, por baixo da vinheta de vitória ou
+		// derrota que ainda está terminando.
+		AudioStreamPlayer music = Sfx.Music(this, "musica_resultado", -40f);
+		music?.CreateTween().TweenProperty(music, "volume_db", ResultMusicDb, 3.0);
 		Motion.FadeIn(_page, UiTokens.Normal);
 
 		// O primário nasce sob o cursor: jogar de novo é um clique, sem
@@ -158,6 +166,7 @@ public partial class ResultScreen : CanvasLayer
 
 		t.TweenCallback(Callable.From(() =>
 		{
+			if (xpGain > 0) Sfx.Ui("ui_xp_fim");
 			if (reward.MissionsCompleted.Count > 0)
 			{
 				_missions.Visible = true;

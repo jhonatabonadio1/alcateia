@@ -71,7 +71,7 @@ public partial class PromotionOverlay : Control
 		Tween tween = badge.CreateTween();
 		tween.TweenProperty(badge, "scale", Vector2.One, 0.45f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 		Motion.FadeIn(this, UiTokens.Normal);
-		Sfx.Ui("vitoria");
+		Sfx.Ui(Sfx.First("ui_patente", "vitoria"));
 	}
 
 	/// <summary>O que a patente nova destrava na loja, se algo.</summary>

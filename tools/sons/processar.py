@@ -297,10 +297,8 @@ series("acerto_cabeca", [kn(f"impact_metal_light_00{i}.ogg") for i in range(3)],
 save(clip(kn("confirmation_002.wav"), mono=False), "abate", -8)
 save(clip(oc("UIMisc_BelltreeUp_OS_01"), mono=False, maxlen=2.0, fade=0.8), "respawn", -12)
 save(clip(kn("bong_001.wav"), mono=False), "contagem", -10)
-save(clip(oc("MUSCStngr_MarchingSnare_OS_01"), mono=False, maxlen=2.4, fade=0.6), "partida_inicio", -6)
-save(clip(oc("MUSCStngr_VictoryOrchestral_OS_01"), mono=False), "vitoria", -6, ogg=True)
-save(clip(oc("MUSCStngr_LossOrchestral_OS_01"), mono=False), "derrota", -6, ogg=True)
-save(clip(oc("MUSCStngr_LossMallet_OS_01"), mono=False), "empate", -6, ogg=True)
+# partida_inicio, vitoria, derrota e empate: desde 18/11 são os gerados
+# pelo Jhon (tools/sons/preparar_ia.py). Não refazer aqui.
 
 # ---------------------------------------------------------- locutor
 # A narração da partida (18/11): Voiceover Pack Fighter, da Kenney (CC0),
@@ -323,11 +321,11 @@ for name, src in VOZES.items():
     save(wet, name, -3, ogg=False)
 
 # ---------------------------------------------------------- interface
-series("ui_passar", [kn(f"rollover{i}.wav") for i in (1, 2, 3)], -18, mono=False)
-series("ui_clique", [kn(f"click{i}.wav") for i in (1, 2, 3)], -12, mono=False)
-save(clip(kn("error_004.wav"), mono=False), "ui_negado", -12)
+# ui_passar, ui_clique e ui_negado: desde 18/11 são os gerados pelo Jhon
+# (tools/sons/preparar_ia.py). Não refazer aqui — as variações _1, _2, _3
+# daqui tocariam sorteadas junto com os novos.
 # Ambiente noturno de floresta como fundo do menu: é loop pronto.
-shutil.copy(os.path.join(RAW, oc("AMBForst_Night_LOOP_01")), os.path.join(OUT, "musica_menu.ogg"))
+# musica_menu: desde 18/11 é o tema gerado pelo Jhon (tools/sons/preparar_ia.py).
 
 # ---------------------------------------------------------- arma vazia
 def dry_click(seed=5):

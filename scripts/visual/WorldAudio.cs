@@ -213,10 +213,46 @@ public partial class WorldAudio : Node
 			Sfx.Local("abate");
 	}
 
+	/// <summary>A música de tensão entra quando falta isto da partida, em
+	/// segundos — só em partida que durou mais que isso e um pouco.</summary>
+	[Export] public float TensionTime = 60f;
+
+	/// <summary>Volume da música de tensão, em dB: por baixo do tiro.</summary>
+	[Export] public float TensionDb = -14f;
+
+	private AudioStreamPlayer _tension;
+
+	/// <summary>
+	/// O último minuto tem música (a única dentro da partida): entra em 3 s
+	/// e sai em 1,5 s no fim, antes da vinheta de vitória ou derrota.
+	/// </summary>
+	private void UpdateTension(Match match)
+	{
+		bool wanted = match.Phase == MatchPhase.Live
+			&& match.Duration > TensionTime + 30f
+			&& match.TimeLeft <= TensionTime;
+
+		if (wanted && _tension == null)
+		{
+			_tension = Sfx.Music(this, "musica_fim_proximo", -40f);
+			_tension?.CreateTween().TweenProperty(_tension, "volume_db", TensionDb, 3.0);
+		}
+		else if (!wanted && _tension != null && IsInstanceValid(_tension))
+		{
+			AudioStreamPlayer leaving = _tension;
+			Tween fade = leaving.CreateTween();
+			fade.TweenProperty(leaving, "volume_db", -60f, 1.5);
+			fade.TweenCallback(Callable.From(leaving.QueueFree));
+			_tension = null;
+		}
+	}
+
 	private void UpdateMatch()
 	{
 		Match match = Match.Current;
 		if (match == null) return;
+
+		UpdateTension(match);
 
 		// A narração (18/11): o locutor avisa o começo, conta 3, 2, 1,
 		// manda lutar e diz o resultado. Cada fala só toca se o arquivo

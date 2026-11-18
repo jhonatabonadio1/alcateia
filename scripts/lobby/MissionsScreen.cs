@@ -121,7 +121,7 @@ public partial class MissionsScreen : LobbyScreen
 		if (!Profile.Missions.Claim(def.Id, out List<int> promotions))
 			return;
 
-		Sfx.Ui("abate");
+		Sfx.Ui(Sfx.First("ui_recompensa", "abate"));
 		Shell.Toast($"Resgatada: +{UiTokens.Thousands(def.Presas)} Presas, +{UiTokens.Thousands(def.Xp)} XP", UiTokens.Success);
 		Profile.NotifyChanged();
 		Refresh();

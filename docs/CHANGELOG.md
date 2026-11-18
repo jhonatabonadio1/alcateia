@@ -2,6 +2,24 @@
 
 ## Não lançado
 
+### Primeiros sons gerados por IA: músicas, vinhetas e interface (18/11)
+- **21 sons do Jhon** no jogo: tema do menu, música da sala, do último
+  minuto e do resultado; vinhetas de início, vitória (uma), derrota (duas,
+  sorteadas) e empate; e a interface inteira (passar, clicar, negado,
+  abrir e fechar painel, equipar, comprar, jogar, fim da barra de XP,
+  nova patente, recompensa). Convertidos de .opus, sem silêncio no
+  começo, volume igualado ao resto do jogo (o clique estava 17 dB acima
+  do antigo, o tema 13 dB) e as músicas com o laço fechado.
+- **Ligados no código**: a música troca entre menu e sala com fade; a
+  do último minuto entra faltando 60 s e sai no fim; a do resultado sobe
+  por baixo da vinheta; loja, inventário, perfil e missões tocam abrir e
+  fechar; equipar, comprar, resgatar missão, começar a partida, nova
+  patente e o fim da barra de XP têm som próprio.
+- Os sons antigos que eles substituem saíram (as variações de clique e de
+  passar o mouse tocariam sorteadas junto) e `tools/sons/processar.py`
+  não os refaz mais. `tools/sons/preparar_ia.py` prepara os próximos
+  lotes.
+
 ### Especial em %, também no ar (18/11)
 - **Carga em vez de recarga** (pedido do Jhon): o especial do lobo enche
   com abates (25% cada), assistências (10%) e, sozinho, bem devagar
