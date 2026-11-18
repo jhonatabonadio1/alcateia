@@ -162,7 +162,7 @@ public partial class Weapon : Node3D
 		if (PrimaryDef == null)
 			Equip(null, null, MaxGrenades);
 
-		_body.GetNode<Health>("Health").Changed += OnHealthChanged;
+		_health.Respawned += RefillGrenades;
 		_health.Died += OnDied;
 		_health.Respawned += RefillAmmo;
 		_health.Respawned += ResetPounceRecharge;
@@ -398,12 +398,12 @@ public partial class Weapon : Node3D
 		EmitSignal(SignalName.Dropped, def.Id);
 	}
 
-	/// <summary>Renascer devolve o estoque de granadas.</summary>
-	private void OnHealthChanged(float hp, float maxHp, float shield)
+	/// <summary>Renascer devolve o estoque de granadas. Antes era "a vida
+	/// chegou ao máximo", o que com a vida voltando sozinha (17/11) daria
+	/// granada de graça a quem espera.</summary>
+	private void RefillGrenades()
 	{
-		var health = _body.GetNode<Health>("Health");
-
-		if (!health.IsDead && Grenades < MaxGrenades && Mathf.IsEqualApprox(hp, maxHp))
+		if (Grenades < MaxGrenades)
 		{
 			Grenades = MaxGrenades;
 			EmitSignal(SignalName.GrenadesChanged, Grenades);

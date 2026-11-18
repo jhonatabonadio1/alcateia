@@ -255,6 +255,13 @@ Lobo e humano **compartilham a vida**. O que a forma lobo acrescenta é
 o escudo, e é ele que define a forma. Vida separada faria de
 transformar um segundo tanque de vida, o que esvazia a decisão.
 
+**A vida volta sozinha** (decisão do Jhon, 17/11): 15 s sem levar dano
+(`Health.RegenDelay`) e ela sobe aos poucos, 8% da máxima por segundo
+(`RegenRate`). Qualquer dano zera a espera. O escudo não volta assim —
+continua sendo do rugido. As granadas voltam só ao renascer (antes,
+"vida cheia" devolvia as granadas; com a vida voltando, seria granada de
+graça para quem espera).
+
 ### Munição e recuo
 
 Carregador por arma e **reserva que acaba** (decisão do Jhon, 13/11;

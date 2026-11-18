@@ -312,6 +312,8 @@ sempre humano.
 | `MaxHp` | 200 | Vida máxima (o `FormController` define a pool) |
 | `RespawnDelay` | 3 s (bots: 6 s na cena) | Espera para renascer |
 | `SpawnProtection` | 3 s | Imortal ao renascer |
+| `RegenDelay` | 15 s | Sem levar dano por este tempo, a vida começa a voltar (0 desliga). O escudo não volta sozinho |
+| `RegenRate` | 0,08 | Fração da vida máxima que volta por segundo (do zero ao cheio em 12,5 s) |
 | `AutoRespawn` | sim (o jogador desliga) | Renascer sozinho |
 | `ShieldDecayGrace` | 1 s | Carência do escudo depois do rugido |
 

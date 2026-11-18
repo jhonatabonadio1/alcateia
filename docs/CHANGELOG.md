@@ -2,6 +2,13 @@
 
 ## Não lançado
 
+### A vida volta sozinha (17/11)
+- 15 s sem levar dano e a vida sobe aos poucos, 8% da máxima por
+  segundo, até encher (`Health.RegenDelay`, `RegenRate`). Vale para
+  jogador e bots, de humano e de lobo; o escudo não volta assim.
+- As granadas agora voltam só ao renascer (antes voltavam ao chegar à
+  vida cheia, o que com a regeneração viraria granada de graça).
+
 ### Salto da parede com folga, menu sem congelar, salto maior, sombra nítida (17/11)
 - **Salto da parede com folga**: soltou o W (ou a parede acabou) e
   apertou espaço até 0,22 s depois, ainda no ar: sai o salto da parede,

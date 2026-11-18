@@ -57,6 +57,15 @@ public partial class Health : Node
 	/// a cair no mesmo instante — o jogador não vê o que ganhou.</summary>
 	[Export] public float ShieldDecayGrace = 1f;
 
+	/// <summary>Segundos sem levar dano até a vida começar a voltar
+	/// (pedido do Jhon, 17/11). Zero desliga. O escudo não volta: é do
+	/// rugido.</summary>
+	[Export] public float RegenDelay = 15f;
+
+	/// <summary>Fração da vida máxima que volta por segundo, passada a
+	/// espera: 0,08 enche do zero em 12,5 s.</summary>
+	[Export] public float RegenRate = 0.08f;
+
 	/// <summary>Escudo perdido por segundo. Zero para quem não tem
 	/// escudo que vaza, como o humano.</summary>
 	public float ShieldDecay { get; set; }
@@ -83,6 +92,7 @@ public partial class Health : Node
 	private double _respawnTimer;
 	private double _protection;
 	private double _decayHold;
+	private double _sinceHit;
 
 	public override void _Ready()
 	{
@@ -107,12 +117,26 @@ public partial class Health : Node
 		if (_protection > 0)
 			_protection -= delta;
 
+		// A vida de um corpo de outro jogador vem espelhada da máquina dele.
+		if (!IsDead && !IsRemote) Regenerate(delta);
+
 		if (!IsDead) return;
 
 		_respawnTimer -= delta;
 
 		if (_respawnTimer <= 0 && AutoRespawn)
 			Respawn();
+	}
+
+	/// <summary>Sem levar dano por <see cref="RegenDelay"/>, a vida volta
+	/// aos poucos até o máximo.</summary>
+	private void Regenerate(double delta)
+	{
+		_sinceHit += delta;
+		if (RegenDelay <= 0 || _sinceHit < RegenDelay || Hp >= MaxHp) return;
+
+		Hp = Mathf.Min(Hp + MaxHp * RegenRate * (float)delta, MaxHp);
+		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
 	}
 
 	/// <summary>Troca o pool de vida ao mudar de forma. O lobo não
@@ -193,6 +217,7 @@ public partial class Health : Node
 		if (IsDead || amount <= 0 || IsProtected) return;
 
 		DamageOutcome outcome = CombatRules.ApplyDamage(Hp, Shield, amount, DamageMultiplier, BodyResistance, headshot);
+		_sinceHit = 0;
 		EmitSignal(SignalName.Damaged, outcome.Dealt, from);
 
 		Shield = outcome.Shield;
@@ -284,6 +309,7 @@ public partial class Health : Node
 		Hp = MaxHp;
 		Shield = MaxShield;
 		_protection = SpawnProtection;
+		_sinceHit = 0;
 
 		EmitSignal(SignalName.Respawned);
 		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
