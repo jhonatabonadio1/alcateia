@@ -141,25 +141,72 @@ def takes(sources, count):
 # "Prepared" da biblioteca, já masterizadas — as "Master" são cruas, e
 # o tiro cru de microfone colado some em 50 ms.
 #
+# O tiro é montado em camadas (18/11, pedido do Jhon: "melhore o tiro").
+# Medido antes: 93 a 99% da energia do tiro ficava nos primeiros 30 ms,
+# e menos de 3% abaixo de 150 Hz (fora o M16) — um estalo, sem corpo e
+# sem cauda. As camadas, como se faz em jogo de tiro:
+#
+#   estalo  a gravação de perto: o ataque, o caráter da arma
+#   soco    uma varredura grave sintetizada (o peito do tiro)
+#   cauda   a gravação de meia distância da mesma arma, abafada e um
+#           pouco atrasada: é a sala respondendo
+#   ferro   um clique metálico baixinho logo depois (o mecanismo)
+#
+# e por fim um limitador, que junta as camadas e sobe o volume médio.
+#
 # tiro_<arma>_N          mono: o tiro dos outros, num ponto do mapa
-# tiro_proprio_<arma>_N  estéreo, com mais grave: o seu tiro
-guns = {"m16a2": ("D_32P", "D_24P", 0.75), "sg552": ("U_14P", "U_19P", 0.75), "ak47": ("C_28P", "C_31P", 0.8),
-        "ump45": ("G_31P", "G_20P", 0.6), "m9": ("X_39P", "X_31P", 0.6), "m3": ("O_21P", "O_17P", 0.6)}
-for gid, (near, far, ln) in guns.items():
+# tiro_proprio_<arma>_N  estéreo, mais grave e com a cauda aberta: o seu
+def thump(f0, f1, length, decay):
+    """O soco: seno que desce de f0 a f1 Hz, morrendo em `decay` s."""
+    t = np.arange(int(SR * length)) / SR
+    freq = f1 + (f0 - f1) * np.exp(-t / (decay * 0.6))
+    wave = np.sin(2 * np.pi * np.cumsum(freq) / SR) * np.exp(-t / decay)
+    wave[:int(SR * 0.002)] *= np.linspace(0, 1, int(SR * 0.002))
+    out = tmp("raw")
+    (wave * 0.9).astype(np.float32).tofile(out)
+    wav = tmp()
+    ff(["-f", "f32le", "-ar", str(SR), "-ac", "1", "-i", out, "-c:a", "pcm_s16le", wav])
+    return wav
+
+def widen(src, ms=11):
+    """Mono para estéreo com o lado direito um nada atrasado: abre a cauda."""
+    out = tmp()
+    ff(["-i", src, "-af", f"pan=stereo|c0=c0|c1=c0,adelay=0|{ms}", "-c:a", "pcm_s16le", out])
+    return out
+
+def glue(src, drive, mono):
+    """Limitador: empurra `drive` dB contra o teto e junta as camadas."""
+    out = tmp()
+    ff(["-i", src, "-af", f"volume={drive}dB,alimiter=limit=0.9:attack=2:release=70:level=disabled",
+        "-ac", "1" if mono else "2", "-c:a", "pcm_s16le", out])
+    return out
+
+# arma: (perto, meia distância, duração, soco [f0, f1, s, dB], cauda dB, ferro dB)
+guns = {"m16a2": ("D_32P", "D_24P", 0.95, (150, 52, 0.05, -5), -9, -17),
+        "sg552": ("U_14P", "U_19P", 0.95, (160, 50, 0.055, -10), -9, -17),
+        "ak47": ("C_28P", "C_31P", 1.0, (140, 45, 0.065, -10), -8, -16),
+        "ump45": ("G_31P", "G_20P", 0.8, (170, 60, 0.045, -10), -10, -15),
+        "m9": ("X_39P", "X_31P", 0.7, (190, 70, 0.035, -12), -11, -14),
+        "m3": ("O_21P", "O_17P", 1.1, (130, 40, 0.085, 0), -7, None)}
+iron = clip(kn("metal_click.ogg"), maxlen=0.12, highpass=1200, gate=-45)
+for gid, (near, far, ln, (f0, f1, decay, punch), tail_db, iron_db) in guns.items():
     for old in os.listdir(OUT):
         if re.fullmatch(rf"tiro_(proprio_)?{gid}(_\d+)?\.wav", old): os.remove(os.path.join(OUT, old))
     found = takes([near], 4)
+    tail = clip(fw(far), maxlen=ln, fade=ln * 0.6, gate=-34, lowpass=4200)
+    soco = thump(f0, f1, 0.26, decay)
     for i, (src, t) in enumerate(found, 1):
         for name, mono in ((f"tiro_{gid}_{i}", True), (f"tiro_proprio_{gid}_{i}", False)):
-            shot = clip(fw(src), start=t, maxlen=ln, fade=0.25, gate=-30, mono=mono)
-            # M3: tiro + bombeada logo depois (a cadência é de 0,86 s).
+            shot = clip(fw(src), start=t, maxlen=ln, fade=0.35, gate=-30, mono=mono)
+            # O dos outros leva menos soco e menos cauda: a sala de
+            # verdade (a reverberação do mapa) já entra por cima dele.
+            less = 3 if mono else 0
+            parts = [(shot, 0, 0), (soco, 0.001, punch - less), (tail if mono else widen(tail), 0.022, tail_db - less)]
+            if iron_db is not None: parts.append((iron, 0.045, iron_db))
+            # M3: a bombeada logo depois (a cadência é de 0,86 s).
             if gid == "m3":
-                pump = clip(fw("O_6"), maxlen=0.5, gate=-40, mono=mono)
-                shot = mix([(shot, 0, 0), (pump, 0.38, -6)], mono=mono)
-            if not mono:
-                out = tmp()
-                ff(["-i", shot, "-af", "bass=g=4:f=110:w=0.7", "-c:a", "pcm_s16le", out])
-                shot = out
+                parts.append((clip(fw("O_6"), maxlen=0.5, gate=-40, mono=mono), 0.38, -6))
+            shot = glue(mix(parts, mono=mono), 3 if mono else 4, mono)
             save(shot, name, -1)
     save(clip(fw(far), maxlen=1.4, fade=0.5, gate=-34, lowpass=5000), f"tiro_distante_{gid}", -4)
     print(f"tiro {gid}: {len(found)} variações")
@@ -254,6 +301,26 @@ save(clip(oc("MUSCStngr_MarchingSnare_OS_01"), mono=False, maxlen=2.4, fade=0.6)
 save(clip(oc("MUSCStngr_VictoryOrchestral_OS_01"), mono=False), "vitoria", -6, ogg=True)
 save(clip(oc("MUSCStngr_LossOrchestral_OS_01"), mono=False), "derrota", -6, ogg=True)
 save(clip(oc("MUSCStngr_LossMallet_OS_01"), mono=False), "empate", -6, ogg=True)
+
+# ---------------------------------------------------------- locutor
+# A narração da partida (18/11): Voiceover Pack Fighter, da Kenney (CC0),
+# gravado por um ator. Aqui fica um pouco mais grave e mais lento,
+# comprimido e com uma sala curta — voz de arena, que corta a mistura.
+# As chamadas de sequência (double kill, triple kill…) têm arquivo
+# próprio quando houver gravação (docs/AUDIO.md); até lá, todas usam
+# voz_multi_kill.
+kv = lambda n: f"kv_{n}.ogg"
+VOZES = {"voz_prepare": "prepare_yourself", "voz_lutar": "fight", "voz_3": "3", "voz_2": "2", "voz_1": "1",
+         "voz_vitoria": "you_win", "voz_derrota": "you_lose", "voz_empate": "it's_a_tie",
+         "voz_multi_kill": "multi_kill", "voz_tempo": "time"}
+for name, src in VOZES.items():
+    dry = clip(kv(src), gate=-45)
+    wet = tmp()
+    ff(["-i", dry, "-af", f"asetrate={int(SR * 0.94)},aresample={SR},highpass=f=90,"
+        "acompressor=threshold=-20dB:ratio=3:attack=4:release=120:makeup=4dB,"
+        "aecho=0.85:0.6:48|97:0.16|0.09,alimiter=limit=0.9:level=disabled",
+        "-ac", "1", "-c:a", "pcm_s16le", wet])
+    save(wet, name, -3, ogg=False)
 
 # ---------------------------------------------------------- interface
 series("ui_passar", [kn(f"rollover{i}.wav") for i in (1, 2, 3)], -18, mono=False)

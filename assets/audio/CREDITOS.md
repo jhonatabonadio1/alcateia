@@ -45,11 +45,22 @@ as versões por superfície (`_metal`, `_neve`, `_madeira`, `_terra`),
 (`ui_passar`, `ui_clique`), Interface Sounds (`ui_negado`, `acerto`,
 `abate`, `contagem`), RPG Audio (`faca`, `trocar_arma`, `recarga_m3`),
 Impact Sounds (`acerto`, `acerto_cabeca`, `lobo_pouso`), Sci-Fi Sounds
-(`granada_explosao`). Via os espelhos no GitHub de Calinou e Boyquotes.
+(`granada_explosao`), Voiceover Pack Fighter (a voz do locutor:
+`voz_prepare`, `voz_lutar`, `voz_3`, `voz_2`, `voz_1`, `voz_vitoria`,
+`voz_derrota`, `voz_empate`, `voz_multi_kill`, `voz_tempo` — deixada
+mais grave e lenta, comprimida, com uma sala curta). Via os espelhos no
+GitHub de Calinou e Boyquotes. O espelho da voz
+(`Boyquotes/kenney-voiceover-for-godot`) traz uma licença GPL v3 para o
+*addon* de Godot que o acompanha; usamos só as gravações, que são da
+Kenney e CC0 — vale conferir na página do pacote em kenney.nl antes de
+publicar.
 
-Cada `tiro_<arma>_N` e `tiro_proprio_<arma>_N` é um dos tiros da mesma
-gravação de perto da arma (as gravações têm de dois a quatro); o
-`proprio` é a versão estéreo com reforço de grave.
+Cada `tiro_<arma>_N` e `tiro_proprio_<arma>_N` parte de um dos tiros da
+mesma gravação de perto da arma (as gravações têm de dois a quatro),
+montado em camadas: o estalo da gravação, um soco grave sintetizado, a
+gravação de meia distância da mesma arma como cauda e um clique
+metálico. O `proprio` é a versão estéreo, com a cauda aberta. O porquê
+e as medidas estão em `docs/AUDIO.md`.
 
 `impacto` vem do Impact Sounds da Kenney (CC0).
 

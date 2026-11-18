@@ -2,6 +2,20 @@
 
 ## Não lançado
 
+### Tiros refeitos, voz do locutor, plano de áudio (18/11)
+- **Tiros em camadas** (todas as armas, o seu e o dos outros): estalo da
+  gravação + soco grave + cauda (a gravação de meia distância) + clique
+  do mecanismo. Antes, 93–99% da energia ficava nos primeiros 30 ms e
+  menos de 3% abaixo de 150 Hz; agora 54–80% e 11–15%. Ajustado por
+  medida, sem ouvir — conferir no jogo. A escopeta ficou bem mais alta.
+- **Locutor com voz**: `voz_prepare`, `voz_3/2/1`, `voz_lutar`,
+  `voz_vitoria/derrota/empate`, `voz_multi_kill` (Kenney Voiceover Pack
+  Fighter, CC0, em inglês). As falas próprias de cada sequência (double,
+  triple…) e a música do menu continuam faltando.
+- **`docs/AUDIO.md`**: referências (Overwatch, LoL), como cada som é
+  feito, onde buscar as falas e a música que faltam, com as licenças, e
+  o nome de arquivo que o jogo espera.
+
 ### Especial no Q com raios, menu do Esc no estilo do jogo (18/11)
 - **O especial do lobo é o Q, num toque** (era segurar o botão direito
   no chão para carregar): salta na hora, com a carga cheia, para onde a

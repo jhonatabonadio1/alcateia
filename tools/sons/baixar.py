@@ -11,6 +11,8 @@ K = {
  "imp": ("Boyquotes/kenney-impact-sounds-for-godot", "addons/kenney impact sounds/"),
  "sci": ("Boyquotes/kenney-sci-fi-sounds-for-godot", "addons/kenney sci-fi sounds/"),
 }
+# A voz do locutor: Voiceover Pack Fighter, da Kenney (CC0).
+VOZ = ("Boyquotes/kenney-voiceover-for-godot", "kenney voiceover pack fighter/")
 items = []
 meta = """AMBForst_Night_LOOP_01 CLOTHMvmt_MovementWithGear_OS_01 CLOTHMvmt_MovementWithGear_OS_02 CLOTHMvmt_MovementWithGear_OS_03 CLOTHMvmt_MovementWithGear_OS_04
 CREAHmn_OgreDeath_OS_01 CREAHmn_OgreDeath_OS_02 CREAHmn_OgreDeath_OS_03 CREAHmn_OgreEffort_OS_01 CREAHmn_OgreHurt_OS_01 CREAHmn_OgreHurt_OS_02 CREAHmn_OgreHurt_OS_03
@@ -48,6 +50,10 @@ ken = {"ui": "rollover1.wav rollover2.wav rollover3.wav click1.wav click2.wav cl
 for k, names in ken.items():
     repo, base = K[k]
     for n in names.split(): items.append((repo, base + n, f"kn_{n}"))
+
+for n in ["prepare_yourself", "fight", "1", "2", "3", "you_win", "you_lose", "it's_a_tie", "multi_kill", "time",
+          "winner", "begin", "flawless_victory", "sudden_death", "final_round", "game_over"]:
+    items.append((VOZ[0], VOZ[1] + n + ".ogg", f"kv_{n}.ogg"))
 
 def get(it):
     repo, path, out = it

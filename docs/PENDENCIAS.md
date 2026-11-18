@@ -85,7 +85,10 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   `voz_triple_kill`, `voz_quadra_kill`, `voz_penta_kill`,
   `voz_hexa_kill`, `voz_hepta_kill`, `voz_octa_kill`, `voz_team_kill`,
   `voz_vinganca`. Falta a voz: gravar, comprar ou gerar (uma tentativa
-  de gerar com voz sintética em 17/11 foi barrada pelo ambiente).
+  de gerar com voz sintética em 17/11 foi barrada pelo ambiente). Desde
+  18/11 toda sequência toca um "multi kill" genérico (`voz_multi_kill`).
+  Onde buscar as falas certas, e a **música do menu** (hoje é só um
+  ambiente de floresta): `docs/AUDIO.md`.
 - **HUD, fontes e menu melhores — prioridade** (Jhon pediu foco nisso em 17/11).
   Primeira passada no HUD de combate feita em 17/11 (vidro, facetado,
   números inclinados, vida em gomos — `docs/UI.md`) e nos menus (fundo do

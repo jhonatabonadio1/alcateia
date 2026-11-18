@@ -49,7 +49,7 @@ public static class Credits
 			new Line("Passos, pulos, lobo, vozes, vinhetas, música do menu, ambiente do hangar e do metrô (modificados)",
 				"Oculus Audio Pack 1 — Meta Platforms", "CC BY 4.0", Required: true),
 			new Line("Tiros e recargas", "Free Firearm Sound Library", "CC0"),
-			new Line("Interface, acertos, faca, explosão", "Kenney (kenney.nl)", "CC0"),
+			new Line("Interface, acertos, faca, explosão e a voz do locutor", "Kenney (kenney.nl)", "CC0"),
 			new Line("Vento da Estação Polar e da Vila", "sintetizado para o jogo")
 		}),
 		new("Braços e armas em primeira pessoa", new[]
