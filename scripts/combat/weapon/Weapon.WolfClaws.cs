@@ -237,6 +237,30 @@ public partial class Weapon
 		player.Velocity = velocity;
 	}
 
+	/// <summary>A esfera do golpe encosta na cápsula do corpo? Pela forma
+	/// de colisão dele (cápsula em pé); sem ela, a medida padrão do jogo
+	/// (1,75 m de altura, 0,4 de raio).</summary>
+	private static bool TouchesBody(Vector3 center, float radius, CharacterBody3D body)
+	{
+		float capsuleRadius = 0.4f, half = 0.875f;
+		Vector3 origin = body.GlobalPosition;
+		foreach (Node child in body.GetChildren())
+		{
+			if (child is not CollisionShape3D { Disabled: false, Shape: CapsuleShape3D capsule } shape) continue;
+			capsuleRadius = capsule.Radius;
+			half = capsule.Height * 0.5f;
+			origin = shape.GlobalPosition;
+			break;
+		}
+
+		// O ponto do eixo da cápsula mais perto do centro da esfera.
+		float spine = Mathf.Max(half - capsuleRadius, 0f);
+		float y = Mathf.Clamp(center.Y, origin.Y - spine, origin.Y + spine);
+		var nearest = new Vector3(origin.X, y, origin.Z);
+		float reach = radius + capsuleRadius;
+		return nearest.DistanceSquaredTo(center) <= reach * reach;
+	}
+
 	/// <summary>
 	/// Golpe de garra: um volume curto à frente do corpo, não um raio
 	/// a partir da câmera. Pega quem estiver perto da garra.
@@ -261,6 +285,32 @@ public partial class Weapon
 		Vector3 forward = facing ?? -_body.GlobalTransform.Basis.Z;
 		Vector3 center = _body.GlobalPosition + forward * reach + Vector3.Up * 0.2f;
 
+		// Quem está na área. Os lutadores (jogadores e bots) entram por
+		// conta de geometria — a esfera do golpe contra a cápsula do corpo —
+		// e não pela consulta de física.
+		//
+		// 18/11 (Jhon: "dei o especial, dei lock num inimigo, mas não deu
+		// dano algum; isso não pode acontecer"): a consulta devolve no máximo
+		// N contatos, de qualquer coisa. Perto de um contêiner, a área do
+		// salto pegava 48 pedaços de cenário e a lista acabava antes de
+		// chegar no inimigo — o golpe saía, caía em cima dele e não feria. A
+		// garrada, com teto de 8, tinha o mesmo furo. A consulta fica só
+		// para o que tem vida e não é lutador (o boneco do treino).
+		var struckNow = new List<Node3D>();
+		foreach (string group in Groups.Fighters)
+		{
+			foreach (Node node in _body.GetTree().GetNodesInGroup(group))
+			{
+				if (node == _body || node is not CharacterBody3D other || !other.IsInsideTree()) continue;
+				// Boneco de jogador que ainda não chegou (sem camada) não está no mundo.
+				if (other.CollisionLayer == 0 || other.GetNodeOrNull<Health>("Health") == null) continue;
+				// O travado, se o lobo caiu perto dele, sempre leva: um palmo
+				// de folga para o passo que ele deu entre a queda e a pancada.
+				float slack = other == focus ? 0.6f : 0f;
+				if (TouchesBody(center, radius + slack, other)) struckNow.Add(other);
+			}
+		}
+
 		var query = new PhysicsShapeQueryParameters3D
 		{
 			Shape = new SphereShape3D { Radius = radius },
@@ -269,19 +319,21 @@ public partial class Weapon
 			CollideWithAreas = false,
 			Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() }
 		};
-
-		// O cenário também entra na lista (chão, caixotes): numa área grande,
-		// como a do salto, 8 resultados podiam acabar antes de chegar em
-		// alguém.
-		var hits = _body.GetWorld3D().DirectSpaceState.IntersectShape(query, radius > 1.5f ? 48 : 8);
+		foreach (var entry in _body.GetWorld3D().DirectSpaceState.IntersectShape(query, 32))
+		{
+			if (entry["collider"].Obj is Node3D thing && !struckNow.Contains(thing)
+				&& !thing.IsInGroup(Groups.Players) && !thing.IsInGroup(Groups.Bots)
+				&& thing.GetNodeOrNull<Health>("Health") != null)
+				struckNow.Add(thing);
+		}
 
 		Node main = null;
 		if (splash < 1f)
 		{
 			float best = float.MaxValue;
-			foreach (var entry in hits)
+			foreach (Node3D body in struckNow)
 			{
-				if (entry["collider"].Obj is not Node3D body || body.GetNodeOrNull<Health>("Health") is not Health h) continue;
+				Health h = body.GetNode<Health>("Health");
 				if (h.IsDead || (_health != null && h.Team == _health.Team)) continue;
 				if (body == focus) { main = body; break; }
 				float d = body.GlobalPosition.DistanceSquaredTo(center);
@@ -289,9 +341,8 @@ public partial class Weapon
 			}
 		}
 
-		foreach (var entry in hits)
+		foreach (Node3D collider in struckNow)
 		{
-			if (entry["collider"].Obj is not Node collider) continue;
 
 			Health target = collider.GetNodeOrNull<Health>("Health");
 			if (target == null) continue;
@@ -308,7 +359,7 @@ public partial class Weapon
 			// Sangue no peito de quem levou, saindo para o lado do corte (a
 			// mão que bate alterna) e um pouco para a frente. O salto, que
 			// cai em cima, espirra mais.
-			if (collider is Node3D struck)
+			Node3D struck = collider;
 			{
 				Vector3 ahead = (struck.GlobalPosition - _body.GlobalPosition) with { Y = 0 };
 				if (ahead.LengthSquared() < 0.01f) ahead = -_body.GlobalBasis.Z;

@@ -2,6 +2,17 @@
 
 ## Não lançado
 
+### Golpe do lobo que não feria perto de cenário (18/11)
+- **O especial travado (e a garrada) podiam não dar dano nenhum.** A área
+  do golpe era uma consulta de física com teto de contatos (8 na garrada,
+  48 no salto) que misturava cenário e gente: perto de um contêiner, a
+  lista enchia de peças de cenário e o inimigo ficava de fora — o lobo
+  caía em cima dele e nada. Agora jogadores e bots entram por geometria
+  (a esfera do golpe contra a cápsula do corpo), sem teto; a consulta fica
+  só para o boneco do treino. O alvo travado tem 0,6 m de folga.
+- Teste novo, `GolpeNoCenario`: inimigo cercado de 80 peças sólidas, a
+  garrada e o especial têm de ferir. Falha no código antigo.
+
 ### Marcador de acerto mais alto, com "tic" na cabeça (18/11)
 - Acertou alguém: um estalo seco com um "tuc" curto, bem mais alto que o
   antigo (`marcador_1..3`). Na cabeça, um "tic" de metal agudo por cima

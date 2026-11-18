@@ -58,6 +58,8 @@ public sealed class SpecialArmedTest : RegressionTest
 		await b.Frames(3);
 		b.Check(b.Player.LockTarget == enemy, "armado, trava no inimigo perto da mira");
 
+		Health enemyHp = enemy.GetNode<Health>("Health");
+		float enemyBefore = enemyHp.Hp + enemyHp.Shield;
 		await b.Tap("attack");
 		b.Check(await b.Until(() => w.IsPounceFlying, 1.0), "o clique salta");
 		b.Check(!w.SpecialArmed && w.SpecialGuarded, "saltando: desarmou e a guarda segue");
@@ -77,6 +79,9 @@ public sealed class SpecialArmedTest : RegressionTest
 		b.AtMost(1.6, miss, "caiu em cima do alvo que se mexeu (m)");
 		b.Check(w.SpecialGuarded, "caído, ainda no golpe: a guarda (e os raios) seguem");
 		await b.Until(() => !w.IsRooted, 2.0);
+		float dealt = enemyBefore - (enemyHp.Hp + enemyHp.Shield);
+		RegressionBench.Note($"especial: o alvo travado perdeu {RegressionBench.F(dealt)} (vida {RegressionBench.F(enemyHp.Hp)}, morto {enemyHp.IsDead})");
+		b.Check(dealt > 50f || enemyHp.IsDead, "o especial dá dano no alvo travado");
 		await b.Frames(3);
 		b.Check(!w.SpecialGuarded, "acabou o especial: a guarda desliga");
 		b.Check(!w.PounceReady, "o salto gasta a carga");
