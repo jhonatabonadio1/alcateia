@@ -2,6 +2,21 @@
 
 ## Não lançado
 
+### Salto da parede com folga, menu sem congelar, salto maior, sombra nítida (17/11)
+- **Salto da parede com folga**: soltou o W (ou a parede acabou) e
+  apertou espaço até 0,22 s depois, ainda no ar: sai o salto da parede,
+  como se ainda estivesse nela (`WallJumpGrace`). Antes era preciso
+  apertar no mesmo instante.
+- **O menu do Esc não congela o personagem**: o corpo segue com a
+  intenção vazia — termina o golpe ou o pulo, cai, a animação continua —
+  em vez de parar no lugar. O salto carregado é largado sem sair e o
+  rugido é cortado. A contagem e o fim da partida continuam segurando o
+  corpo.
+- **Mira do salto do lobo** vai até 12 m (era 8,4; `PounceMaxDistance`).
+- **Sombra mais marcada nos dois Armazéns**, sem mexer na luz: borda
+  nítida (`shadow_blur` 0,5, era 1,5; `kit.borrao_sombra`) e contraste
+  1,12 (era 1,02).
+
 ### Armazém (Extended): o Armazém maior e mais alto (17/11)
 - **Mapa novo na lista**, ao lado do Armazém, que continua igual:
   75 × 45 m (era 46 × 30) e teto a 13 m (era 9). O miolo é o Armazém

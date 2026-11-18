@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://xvyh3r5wwecc"
+path="res://.godot/imported/23ed5fb9b0.obj-b77aadaf7739264938e91454c482e1dc.mesh"
+
+[deps]
+
+files=["res://.godot/imported/23ed5fb9b0.obj-b77aadaf7739264938e91454c482e1dc.mesh"]
+
+source_file="res://assets/mapas/armazem_estendido/23ed5fb9b0.obj"
+dest_files=["res://.godot/imported/23ed5fb9b0.obj-b77aadaf7739264938e91454c482e1dc.mesh", "res://.godot/imported/23ed5fb9b0.obj-b77aadaf7739264938e91454c482e1dc.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

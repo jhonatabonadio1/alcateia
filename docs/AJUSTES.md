@@ -183,6 +183,7 @@ Multiplicam a classe do jogador (não a dos bots):
 | `WallJumpLookLift` | 0,35 | Quanto o salto da parede sobe a mais olhando 45° para cima |
 | `WallMantleReach` | 1,9 m | Topo da parede até esta altura acima dos pés: o salto da parede sobe nele |
 | `WallRunCooldown` | 0,12 s | Tempo mínimo entre duas corridas |
+| `WallJumpGrace` | 0,22 s | Saiu da parede sem saltar (soltou o W, a parede acabou): o pulo dentro deste tempo ainda é o salto da parede |
 
 ---
 
@@ -223,7 +224,7 @@ dano acompanham.
 | `PounceChargeTime` | 1,0 s | Tempo segurando até a carga cheia |
 | `PounceChargeLimitsReach` | desligado | Desligado: o salto cai onde a mira aponta, com qualquer carga. Ligado: a barra é o limite (regra antiga) |
 | `PounceMinDistance` | 1,5 m | Distância sem carga, quando a mira não toca nada (céu) e para o bot |
-| `PounceMaxDistance` | 8,4 m | Alcance do salto: o mais longe que o ponto mirado pode estar. O bot só salta de até 1 m antes disso |
+| `PounceMaxDistance` | 12 m (era 8,4) | Alcance do salto: o mais longe que o ponto mirado pode estar. O bot só salta de até 1 m antes disso |
 | `PounceMinPower` | 0,4 | Fração do dano sem carga |
 | `HeavyDamageBonus` | 2,1 | Multiplicador do dano com carga cheia |
 | `PounceChargeHold` | 0,6 s | Segura cheio isso e salta sozinho |

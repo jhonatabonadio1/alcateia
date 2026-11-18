@@ -17,7 +17,7 @@ public partial class Weapon
 	/// <summary>O alcance do salto no chão, em metros: o mais longe que
 	/// o ponto mirado pode estar. Mirando além disso, o lobo salta até
 	/// aqui naquela direção.</summary>
-	[Export] public float PounceMaxDistance = 8.4f;
+	[Export] public float PounceMaxDistance = 12f;
 
 	/// <summary>Segundos segurando o botão direito no chão até o salto
 	/// carregar inteiro (decisão do Jhon): segurar mais bate mais forte
@@ -188,8 +188,11 @@ public partial class Weapon
 		Pounce(power, elapsed);
 	}
 
-	private void CancelCharge()
+	/// <summary>Larga a carga do salto sem saltar (morreu, deixou de ser
+	/// lobo, abriu o menu).</summary>
+	public void CancelCharge()
 	{
+		if (!_charging) return;
 		_charging = false;
 		_rootLeft = 0;
 		_strikeLeft = 0;

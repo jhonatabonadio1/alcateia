@@ -472,8 +472,8 @@ dois lobos vira o combate padrão do jogo, que é o oposto do desenho.
 salta, cai. É a arma do lobo para **fechar distância**: aperta-se de
 longe e o lobo cai em cima do humano. O jogador não anda nem pula, mas
 o salto voa: do impulso até os pés tocarem o chão, o corpo vai até o
-ponto mirado, **até 8,4 m** (`PounceMaxDistance`; era 12, 30% a
-menos na v0.27.1).
+ponto mirado, **até 12 m** (`PounceMaxDistance`; era 12, caiu para
+8,4 na v0.27.1 e voltou a 12 em 17/11, a pedido do Jhon).
 
 **Segurar carrega** (decisão do Jhon). Apertou, o lobo agacha e fica
 encolhido (o clipe para no fim do agachar); soltou, salta. Em 1 s

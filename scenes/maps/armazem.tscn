@@ -235,7 +235,7 @@ volumetric_fog_anisotropy = 0.55
 volumetric_fog_length = 48
 volumetric_fog_gi_inject = 1.0
 adjustment_enabled = true
-adjustment_contrast = 1.02
+adjustment_contrast = 1.12
 adjustment_saturation = 1.12
 
 [node name="Armazém" type="Node3D"]
@@ -248,7 +248,7 @@ transform = Transform3D(0.8829, -0.3699, 0.289, 0, 0.6157, 0.788, -0.4695, -0.69
 light_color = Color(1, 0.88, 0.7, 1)
 light_energy = 2.4
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 directional_shadow_max_distance = 60
 
 [node name="Preenchimento" type="DirectionalLight3D" parent="."]
@@ -5104,7 +5104,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz6" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -14.995, 8.147, -8.83)
@@ -5114,7 +5114,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz7" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 7.555, 7.81, 7)
@@ -5124,7 +5124,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz8" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.971, 5.234, -9.1)
@@ -5134,7 +5134,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz9" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -7.461, 7.81, 0)
@@ -5144,7 +5144,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz10" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 15.055, 8.136, -7)
@@ -5154,7 +5154,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz14" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -7.51, 7.81, -7)
@@ -5164,7 +5164,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz15" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 7.507, 7.81, -7)
@@ -5174,7 +5174,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz16" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -15.044, 8.147, 7)
@@ -5184,7 +5184,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz17" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 7.507, 7.81, 0)
@@ -5194,7 +5194,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz18" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -7.51, 7.81, 7)
@@ -5204,7 +5204,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz19" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 8.484, 5.234, -6.205)
@@ -5214,7 +5214,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz20" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 15.007, 8.136, 0)
@@ -5224,7 +5224,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Luz21" type="SpotLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, -15.044, 8.147, 0)
@@ -5234,7 +5234,7 @@ spot_range = 14
 spot_angle = 66
 spot_angle_attenuation = 0.6
 shadow_enabled = true
-shadow_blur = 1.5
+shadow_blur = 0.5
 
 [node name="Escada1" type="Area3D" parent="Escadas"]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 2.33, 13.024)

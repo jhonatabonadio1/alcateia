@@ -111,7 +111,7 @@ pula e só então aperta W, ou ricocheteia entre paredes.
 
 | | Medida | De onde |
 |---|---|---|
-| Salto carregado (direito no chão) | de 1,5 a 8,4 conforme a carga | `PounceMinDistance`, `PounceMaxDistance` |
+| Salto carregado (direito no chão) | de 1,5 a 12 conforme a carga | `PounceMinDistance`, `PounceMaxDistance` |
 | Mirando o chão dentro do alcance | cai no ponto mirado | `Weapon.PounceAimPoint` |
 | O salto passa por cima de | até 2,6 acima dos pés | `PounceMaxClear` |
 | Arco mínimo do salto | 0,6 de altura | `PounceArc` |

@@ -77,7 +77,15 @@ public partial class Player
 		// Com menu aberto, solta a mira.
 		_weapon.SetAiming(!UiState.AnyOpen && !_form.IsWolf && _intent.AimHeld);
 
-		if (UiState.AnyOpen) return;
+		// Menu aberto: o que estava sendo segurado é largado sem disparar
+		// (o salto carregado não sai, o rugido é cortado).
+		if (UiState.AnyOpen)
+		{
+			_weapon.CancelCharge();
+			_howling = false;
+			_howlProgress = 0;
+			return;
+		}
 
 		// Rugindo, o lobo não faz mais nada até o rugido acabar.
 		if (_howling)

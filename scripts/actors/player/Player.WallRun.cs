@@ -134,6 +134,12 @@ public partial class Player
 	/// <summary>Tempo mínimo entre uma corrida e a seguinte.</summary>
 	[Export] public float WallRunCooldown = 0.12f;
 
+	/// <summary>Segundos depois de sair da parede (soltou o W, a parede
+	/// acabou) em que o pulo ainda vale como salto da parede. Antes era
+	/// preciso apertar espaço no mesmo instante em que soltava (pedido do
+	/// Jhon, 17/11).</summary>
+	[Export] public float WallJumpGrace = 0.22f;
+
 	/// <summary>Imprime por que a corrida em parede não começou. Só
 	/// imprime quando o motivo muda, então não enche o Output.</summary>
 	[Export] public bool WallDebug = false;
@@ -148,6 +154,7 @@ public partial class Player
 	private double _wallCooldown;
 	private string _lastWallLog = "";
 	private double _wallTimer;
+	private double _wallJumpGrace;
 	public bool IsWallRunning => _onWall;
 
 	/// <summary>Normal da parede em que o lobo corre (para fora dela).
@@ -172,28 +179,30 @@ public partial class Player
 	/// </summary>
 	private bool TryWallRun(double delta)
 	{
+		if (_wallJumpGrace > 0) _wallJumpGrace -= delta;
+
 		if (!WantsWallRun())
 		{
 			ReleaseWall();
-			return false;
+			return TryLateWallJump();
 		}
 
 		bool found = ProbeWall(out Vector3 normal, out float wallDistance);
 
 		if (!_onWall)
 		{
-			if (!TryGrabWall(found, normal)) return false;
+			if (!TryGrabWall(found, normal)) return TryLateWallJump();
 		}
 		else if (found)
 		{
-			if (!FollowWall(ref normal, ref wallDistance)) return false;
+			if (!FollowWall(ref normal, ref wallDistance)) return TryLateWallJump();
 		}
 		else if (!KeepWithoutWall(delta))
 		{
-			return false;
+			return TryLateWallJump();
 		}
 
-		if (WallRunTimedOut(delta)) return false;
+		if (WallRunTimedOut(delta)) return TryLateWallJump();
 
 		// Salto da parede: empurra para fora e para cima. É a saída que
 		// transforma a corrida em jogada ofensiva.
@@ -207,6 +216,20 @@ public partial class Player
 		if (!TurnIntoCorner(ref velocity)) return false;
 
 		RunAlongWall(velocity, wallDistance, delta);
+		return true;
+	}
+
+	/// <summary>O salto da parede logo depois de sair dela: dentro de
+	/// <see cref="WallJumpGrace"/>, ainda no ar, o pulo sai como se o lobo
+	/// estivesse na parede (pela última parede, para onde a câmera olha).
+	/// É o que deixa soltar o W e apertar espaço um instante depois.</summary>
+	private bool TryLateWallJump()
+	{
+		if (_wallJumpGrace <= 0 || !_form.IsWolf || IsOnFloor() || IsStunned) return false;
+		if (!WantsJump()) return false;
+
+		WallLog("salto da parede logo depois de soltar");
+		JumpOffWall();
 		return true;
 	}
 
@@ -474,6 +497,7 @@ public partial class Player
 		RememberWall();
 
 		ReleaseWall();
+		_wallJumpGrace = 0;          // já saltou: a folga é para quem soltou sem saltar
 		_wallCooldown = WallRunCooldown;
 
 		Velocity = velocity;
@@ -607,7 +631,15 @@ public partial class Player
 
 	private void ReleaseWall()
 	{
-		if (_onWall && !IsOnFloor()) RememberWall();
+		if (_onWall && !IsOnFloor())
+		{
+			RememberWall();
+			_wallJumpGrace = WallJumpGrace;
+		}
+		else if (IsOnFloor())
+		{
+			_wallJumpGrace = 0;
+		}
 		_onWall = false;
 		_cornerGrace = 0;
 		_rounding = false;

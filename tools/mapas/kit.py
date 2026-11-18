@@ -97,6 +97,9 @@ class Mapa:
         # ao sol. Acende o que está na sombra por igual (dentro de um
         # contêiner, atrás de uma pilha) sem apagar a sombra.
         self.preenchimento = None
+        # Quanto a borda da sombra (sol e focos) se espalha: 1,5 é macia e
+        # larga; menor fica nítida e marca mais o contorno.
+        self.borrao_sombra = 1.5
 
     # ------------------------------------------------------------ materiais
 
@@ -478,7 +481,7 @@ class Mapa:
             o += ['[node name="Sol" type="DirectionalLight3D" parent="."]',
                   f"transform = {xform((0, 40, 0), olhar(s['yaw'], s['queda']))}",
                   f"light_color = {cor(s['cor'])}", f"light_energy = {f(s['energia'])}",
-                  "shadow_enabled = true", "shadow_blur = 1.5",
+                  "shadow_enabled = true", f"shadow_blur = {f(self.borrao_sombra)}",
                   f"directional_shadow_max_distance = {f(s.get('alcance', 120))}", ""]
 
         if self.preenchimento:
@@ -566,7 +569,7 @@ class Mapa:
                   f"light_color = {cor(c)}", f"light_energy = {f(energia)}", f"spot_range = {f(alcance)}",
                   f"spot_angle = {f(angulo)}", "spot_angle_attenuation = 0.6"]
             if sombra:
-                o += ["shadow_enabled = true", "shadow_blur = 1.5"]
+                o += ["shadow_enabled = true", f"shadow_blur = {f(self.borrao_sombra)}"]
             o.append("")
 
         for (g, nome, centro, base, tamanho) in self.escadas:
