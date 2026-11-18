@@ -222,7 +222,7 @@ public partial class CharacterAnimator
 		if (_weapon == null) return;
 
 		var camera = GetNodeOrNull<Camera3D>(OwnerCameraPath);
-		uint layers = camera != null ? 1u << (BodyLayer - 1) : 1u;
+		uint layers = camera != null ? 1u << (BodyLayer - 1) : 1u | ViewModel.CharacterLayer;
 
 		var held = new HeldWeapon { Name = "HeldWeapon" };
 		AddChild(held);

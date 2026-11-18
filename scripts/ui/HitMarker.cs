@@ -39,19 +39,35 @@ public partial class HitMarker : Control
 	{
 		// A caveira, com uma sombra escura por baixo (vermelho some em
 		// parede vermelha), parada no centro e invisível até o abate.
+		//
+		// 18/11 ("coloque uma caveira mais bem polida"): desenho novo
+		// (tools/icones/skullsolid.svg), contorno escuro em volta em vez
+		// de só a sombra de um lado, e um clarão branco por cima que some
+		// num instante — ela "acende" no abate e assenta no vermelho.
 		_skull = new Control { MouseFilter = MouseFilterEnum.Ignore, Modulate = new Color(1, 1, 1, 0) };
-		foreach (var (color, offset) in new[] { (new Color(0, 0, 0, 0.6f), new Vector2(2, 2.5f)), (SkullColor, Vector2.Zero) })
-		{
-			Icon layer = Icon.Make(IconKind.SkullSolid, SkullSide, color);
-			layer.Position = offset;
-			layer.Size = new Vector2(SkullSide, SkullSide);
-			_skull.AddChild(layer);
-		}
+		var side = new Vector2(SkullSide, SkullSide);
+		var dark = new Color(0.02f, 0.02f, 0.03f, 0.85f);
+		foreach (Vector2 offset in new[] { new Vector2(-2, 0), new Vector2(2, 0), new Vector2(0, -2), new Vector2(0, 2), new Vector2(1.5f, 3f) })
+			_skull.AddChild(SkullLayer(dark, offset, side));
+		_skull.AddChild(SkullLayer(SkullColor, Vector2.Zero, side));
+		_skullFlash = SkullLayer(Colors.White, Vector2.Zero, side);
+		_skull.AddChild(_skullFlash);
 		AddChild(_skull);
 	}
 
 	/// <summary>O pulso: nasce pequena, estoura maior que o tamanho,
 	/// assenta e some.</summary>
+	private static Icon SkullLayer(Color color, Vector2 offset, Vector2 side)
+	{
+		Icon layer = Icon.Make(IconKind.SkullSolid, (int)side.X, color);
+		layer.Position = offset;
+		layer.Size = side;
+		return layer;
+	}
+
+	private Icon _skullFlash;
+	private bool _killRing;
+
 	private void PulseSkull()
 	{
 		if (_skull == null) return;
@@ -70,6 +86,11 @@ public partial class HitMarker : Control
 			.SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.InOut);
 		_skullPulse.TweenInterval(SkullLife * 0.23f);
 		_skullPulse.TweenProperty(_skull, "modulate:a", 0f, SkullLife * 0.35f);
+
+		// O clarão: branca na hora do abate, vermelha logo depois.
+		_skullFlash.Modulate = Colors.White;
+		_skullFlash.CreateTween().TweenProperty(_skullFlash, "modulate:a", 0f, SkullLife * 0.3f)
+			.SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.Out);
 	}
 
 	public void Flash(bool headshot, bool kill = false)
@@ -77,6 +98,7 @@ public partial class HitMarker : Control
 		_total = _left = kill ? KillLife : Life;
 		_color = headshot || kill ? UiTokens.Danger.Lightened(0.15f) : Colors.White;
 		_size = headshot ? 14f : 10f;
+		_killRing = kill;
 		if (kill)
 		{
 			_size = 16f;
@@ -102,6 +124,15 @@ public partial class HitMarker : Control
 		float outer = inner + _size * grow * 0.6f;
 		Vector2 c = Size / 2f;
 		var color = new Color(_color, Mathf.Clamp(t * 1.6f, 0, 1));
+
+		// No abate, um aro abre em volta da caveira e some.
+		if (_killRing)
+		{
+			float open = 1f - t;                     // 0 → 1
+			float eased = 1f - (1f - open) * (1f - open);
+			float radius = SkullSide * (0.55f + 0.75f * eased);
+			DrawArc(c, radius, 0, Mathf.Tau, 48, new Color(SkullColor, 0.8f * t * t), 1.5f + 3.5f * t, true);
+		}
 
 		foreach (Vector2 dir in new[] { new Vector2(1, 1), new Vector2(-1, 1), new Vector2(1, -1), new Vector2(-1, -1) })
 		{

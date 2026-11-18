@@ -128,3 +128,10 @@ Do **Free Sounds Pack** (o mesmo pacote do rugido e da faca), preparados por
 `impacto_carne_2` (Hit Generic 2-1), `impacto_carne_3` (Punch 2-1) e
 `sangue_1..2` (Stab 4-1, só a parte do golpe; a segunda, mais grave).
 Vale a mesma pendência de licença e crédito do pacote.
+
+## Ambiente do Armazém (18/11)
+
+`ambiente_armazem.ogg` é o **Ambient Wind Loop 1** do Free Sounds Pack (sem o
+ronco abaixo de 70 Hz, com a faixa de 300 Hz a 2 kHz levantada e as rajadas
+amansadas), com o `ambiente_hangar` antigo por baixo, 60 s em laço. Montado
+por `tools/sons/ambiente.py`. Vale a pendência de licença do pacote.

@@ -53,9 +53,41 @@ public partial class ViewModel : Node3D
 	/// (<see cref="HandLayer"/>): o mapa e os outros não mudam. A sombra do
 	/// mundo continua escurecendo a arma — entrar num contêiner ainda se
 	/// nota —, só não chega ao preto.</summary>
+	///
+	/// **18/11: ela nunca tinha acendido.** A lâmpada era posta na câmera
+	/// dentro do <c>_Ready</c> deste nó, que é filho da câmera: o Godot
+	/// recusa ("Parent node is busy setting up children") e a luz não
+	/// entrava na cena. Por isso o Jhon continuou vendo a arma e a mão
+	/// pretas nos becos. Agora entra no quadro seguinte.
 	[ExportGroup("Luz da mão")]
-	[Export] public float HandFillEnergy = 0.8f;
+	[Export] public float HandFillEnergy = 0.6f;
 	[Export] public Color HandFillColor = new Color(1f, 0.96f, 0.9f);
+
+	/// <summary>A luz dos personagens (pedido do Jhon, 18/11: "tem alguns
+	/// becos muito escuros no mapa que deixam a arma, a mão e o personagem
+	/// praticamente escuros; a luz do mapa tá excelente, só uns pequenos
+	/// ajustes nesses detalhes"). Outra lâmpada fraca na câmera, sem
+	/// sombra, que só acende quem está na camada dos personagens
+	/// (<see cref="CharacterLayer"/>): lobos e humanos perto de você não
+	/// somem no escuro, e o mapa não muda. Fraca de propósito: no claro
+	/// quase não se nota; no beco é o que separa o personagem do preto.</summary>
+	[ExportGroup("Luz dos personagens")]
+	[Export] public float CharacterFillEnergy = 0.38f;
+	[Export] public float CharacterFillRange = 13f;
+	[Export] public Color CharacterFillColor = new Color(0.92f, 0.95f, 1f);
+
+	/// <summary>Camada de desenho a mais dos personagens (a 18): é por ela
+	/// que a luz dos personagens os acha. Eles continuam na camada 1.</summary>
+	public const uint CharacterLayer = 1u << 17;
+
+	/// <summary>Põe tudo o que se desenha embaixo de <paramref name="model"/>
+	/// também na camada dos personagens. Não usar no corpo que o dono não
+	/// vê (o humano em primeira pessoa): ele voltaria a aparecer.</summary>
+	public static void MarkCharacter(Node model)
+	{
+		if (model is VisualInstance3D visual && model is not Light3D) visual.Layers |= CharacterLayer;
+		foreach (Node child in model.GetChildren()) MarkCharacter(child);
+	}
 
 	/// <summary>Camada de desenho das mãos e da arma em primeira pessoa
 	/// (a 20, a última): só a luz da mão a acende sozinha.</summary>
@@ -146,7 +178,7 @@ public partial class ViewModel : Node3D
 	{
 		// Acima e um pouco atrás do olho, como a luz do teto chegando por
 		// cima do ombro: ilumina o lado de cima da arma, que é o que se vê.
-		_camera.AddChild(new OmniLight3D
+		var hand = new OmniLight3D
 		{
 			Name = "LuzDaMao",
 			Position = new Vector3(0.15f, 0.35f, 0.15f),
@@ -157,7 +189,22 @@ public partial class ViewModel : Node3D
 			LightCullMask = HandLayer,
 			ShadowEnabled = false,
 			LightSpecular = 0.3f
-		});
+		};
+		var characters = new OmniLight3D
+		{
+			Name = "LuzDosPersonagens",
+			LightEnergy = CharacterFillEnergy,
+			LightColor = CharacterFillColor,
+			OmniRange = CharacterFillRange,
+			OmniAttenuation = 0.8f,
+			LightCullMask = CharacterLayer,
+			ShadowEnabled = false,
+			LightSpecular = 0.15f
+		};
+		// No quadro seguinte: agora a câmera ainda está montando os filhos
+		// (este nó é um deles) e recusaria as lâmpadas.
+		_camera.CallDeferred(Node.MethodName.AddChild, hand);
+		_camera.CallDeferred(Node.MethodName.AddChild, characters);
 		MoveToHandLayer(this);
 	}
 

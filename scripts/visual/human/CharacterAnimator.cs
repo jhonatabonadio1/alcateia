@@ -147,6 +147,9 @@ public partial class CharacterAnimator : Node3D
 
 		HideFromOwner();
 		ApplyTeamTint();
+		// Quem os outros veem entra na luz dos personagens. O corpo do dono
+		// (que a câmera dele não desenha) fica de fora, ou voltaria a aparecer.
+		if (GetNodeOrNull<Camera3D>(OwnerCameraPath) == null) ViewModel.MarkCharacter(_model);
 		AttachWeapon();
 
 		if (_weapon != null)

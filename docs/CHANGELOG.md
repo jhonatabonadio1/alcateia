@@ -2,6 +2,21 @@
 
 ## Não lançado
 
+### Becos escuros, caveira do abate e som ambiente (18/11)
+- **Arma e mão pretas no escuro**: a luz da mão (de 17/11) nunca tinha
+  acendido — era posta na câmera dentro do `_Ready` de um filho dela, e o
+  Godot recusava. Agora entra no quadro seguinte (energia 0,6).
+- **Personagens no escuro**: uma luz fraca presa à câmera que só acende
+  lobos e humanos (camada 18), sem sombra: perto de você eles não somem no
+  beco, e o mapa não muda. `ViewModel.CharacterFillEnergy` (0,38) regula.
+- **Caveira do abate** redesenhada (`tools/icones/skullsolid.svg`): mais
+  limpa, com contorno escuro em volta, um clarão branco na hora do abate e
+  um aro que abre e some.
+- **Som ambiente do Armazém**: `ambiente_armazem` (o vento do pacote
+  entrando pelo galpão, com o zumbido antigo por baixo), bem baixo. O
+  fundo antigo era só grave (60 a 200 Hz) e em caixa pequena não se ouvia.
+  `tools/sons/ambiente.py`; o volume é `AmbienceDb` em `Maps.cs`.
+
 ### Habilidades do lobo no HUD e guia no E (18/11)
 - As habilidades do lobo viraram **quadradinhos** no canto direito, com a
   tecla embaixo: garrada (clique), bote (direito, no ar) e **uivo (R)** —

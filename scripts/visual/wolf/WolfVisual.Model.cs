@@ -85,6 +85,8 @@ public partial class WolfVisual
 		ApplyTeamTint();
 		// Por último: o material do lobo lê a cor que o tom do time deixou.
 		WolfSkin.Apply(_model);
+		// O lobo é visto de fora até pelo dono: entra na luz dos personagens.
+		ViewModel.MarkCharacter(_model);
 		BuildTree();
 		return true;
 	}

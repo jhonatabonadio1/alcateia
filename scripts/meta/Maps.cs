@@ -60,7 +60,9 @@ public static class Maps
 			Thumbnail = "res://assets/ui/mapas/armazem_estendido.png",
 			Cover = "res://assets/ui/mapas/armazem_estendido_foto.png",
 			Description = "Médio, 75 × 45 m, galpão de contêineres de 13 m de altura. Túneis, pilhas com pranchas por cima, duas alas com pirâmides de contêineres até 8,7 m e corredores compridos junto às paredes.",
-			RoomSize = 0.75f, RoomWet = 0.35f, Ambience = "ambiente_hangar", AmbienceDb = -14f,
+			// O vento entrando pelo galpão (18/11): o zumbido antigo (ambiente_hangar)
+			// era todo grave e em caixa pequena não se ouvia nada.
+			RoomSize = 0.75f, RoomWet = 0.35f, Ambience = "ambiente_armazem", AmbienceDb = -12f,
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
 		}
 	};
@@ -81,7 +83,7 @@ public static class Maps
 			Thumbnail = "res://assets/ui/mapas/armazem.png",
 			Cover = "res://assets/ui/mapas/armazem_foto.png",
 			Description = "Pequeno, 46 × 30 m, galpão fechado. Contêineres que viram túnel, pilhas de dois com pranchas por cima e claraboias no teto.",
-			RoomSize = 0.6f, RoomWet = 0.3f, Ambience = "ambiente_hangar", AmbienceDb = -14f,
+			RoomSize = 0.6f, RoomWet = 0.3f, Ambience = "ambiente_armazem", AmbienceDb = -12f,
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
 		},
 		new()
