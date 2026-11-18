@@ -2,6 +2,12 @@
 
 ## Não lançado
 
+### Locutora: uma fala por vez (18/11)
+- Abate novo durante uma fala corta a que está tocando e diz a próxima
+  (o "triple kill" se perdia embaixo do "double kill"), e abates quase
+  juntos (escopeta, granada, 0,12 s) viram uma fala só, a maior: três de
+  uma vez é "triple kill" direto. Teste `Locutora`.
+
 ### Sangue ao acertar; música do lobby mais alta (18/11)
 - **Sangue** (`Blood`): tiro que acerta gente ou lobo solta um esguicho
   de gotas na direção do tiro, uma névoa vermelha curta e uma mancha na

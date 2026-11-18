@@ -318,12 +318,52 @@ public partial class WorldAudio : Node
 		}
 	}
 
-	/// <summary>A voz do locutor: seca (não está no mundo) e um pouco
-	/// acima dos efeitos.</summary>
+	/// <summary>
+	/// A voz da locutora: seca (não está no mundo), um pouco acima dos
+	/// efeitos, e **uma fala por vez** (pedido do Jhon, 18/11).
+	///
+	/// - Fala nova corta a que está tocando: matou o terceiro enquanto ela
+	///   ainda dizia "double kill", ela para e diz "triple kill". Antes as
+	///   duas tocavam juntas e a segunda se perdia embaixo da primeira.
+	/// - Falas pedidas quase juntas (<see cref="VoiceGather"/>) viram uma
+	///   só, a última: três abates no mesmo tiro de escopeta ou na mesma
+	///   granada chegam como 1, 2, 3 no mesmo quadro, e ela diz direto
+	///   "triple kill".
+	/// </summary>
 	public static void Say(string voice)
 	{
-		if (!string.IsNullOrEmpty(voice) && Sfx.Has(voice)) Sfx.Local(voice, VoiceDb);
+		if (string.IsNullOrEmpty(voice) || !Sfx.Has(voice)) return;
+		if ((Engine.GetMainLoop() as SceneTree)?.Root is not Window root) return;
+
+		bool waiting = _pendingVoice != null;
+		_pendingVoice = voice;
+		if (waiting) return;
+
+		root.GetTree().CreateTimer(VoiceGather, true, false, true).Timeout += () =>
+		{
+			string say = _pendingVoice;
+			_pendingVoice = null;
+			if (say == null) return;
+
+			if (_voice == null || !GodotObject.IsInstanceValid(_voice))
+			{
+				_voice = new AudioStreamPlayer { Name = "Locutora", Bus = Sfx.BusSfx, VolumeDb = VoiceDb };
+				root.AddChild(_voice);
+			}
+
+			_voice.Stop();
+			_voice.Stream = Sfx.Stream(say);
+			_voice.Play();
+		};
 	}
+
+	/// <summary>Janela em que falas seguidas viram uma só, em segundos.
+	/// Curta o bastante para não atrasar a fala; longa o bastante para
+	/// pegar abates do mesmo disparo.</summary>
+	public const float VoiceGather = 0.12f;
+
+	private static AudioStreamPlayer _voice;
+	private static string _pendingVoice;
 
 	/// <summary>Volume das falas do locutor, em dB.</summary>
 	public const float VoiceDb = 1f;

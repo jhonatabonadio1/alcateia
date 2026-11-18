@@ -49,6 +49,10 @@ public static class Sfx
 	private static int _voices;
 	private static bool _busesReady;
 
+	/// <summary>O som deste nome (com as variações sorteadas), para quem
+	/// tem o próprio tocador. Null se não houver arquivo.</summary>
+	public static AudioStream Stream(string name) => Get(name);
+
 	/// <summary>Existe algum arquivo para este nome?</summary>
 	public static bool Has(string name) => Get(name) != null;
 
