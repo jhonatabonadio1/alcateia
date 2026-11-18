@@ -55,18 +55,21 @@ public partial class ItemCard : PanelContainer
 		var art = new Control { CustomMinimumSize = new Vector2(0, 116), MouseFilter = MouseFilterEnum.Ignore, ClipContents = true };
 		column.AddChild(art);
 
-		var backdrop = UiKit.Fill(new ColorRect { Color = new Color(rarity, 0.06f), MouseFilter = MouseFilterEnum.Ignore });
+		// A vitrine: fundo escuro com o clarão da raridade (ItemBackdrop).
+		// Dois pixels para dentro, para não cobrir a moldura do cartão.
+		ItemBackdrop backdrop = UiKit.Fill(ItemBackdrop.Make(rarity, Item.Rarity, expired, Item.Id));
+		backdrop.OffsetLeft = 2;
+		backdrop.OffsetTop = 2;
+		backdrop.OffsetRight = -2;
 		art.AddChild(backdrop);
 
-		if (locked)
-		{
-			art.AddChild(UiKit.Fill(new Striped()));
-		}
+		// Bloqueado por patente: a arma continua acesa na vitrine (é o que
+		// faz querer chegar lá); quem diz que falta patente é o cadeado.
 
-		WeaponArt picture = UiKit.Fill(WeaponArt.Make(Item.Id, Vector2.Zero, dim: locked || expired));
-		picture.OffsetLeft = UiTokens.S3;
-		picture.OffsetRight = -UiTokens.S3;
-		picture.OffsetTop = UiTokens.S3;
+		WeaponArt picture = UiKit.Fill(WeaponArt.Make(Item.Id, Vector2.Zero, dim: expired, showcase: true));
+		picture.OffsetLeft = UiTokens.S2;
+		picture.OffsetRight = -UiTokens.S2;
+		picture.OffsetTop = UiTokens.S3 + 6;
 		picture.OffsetBottom = -UiTokens.S2;
 		art.AddChild(picture);
 

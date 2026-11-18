@@ -20,7 +20,7 @@ public partial class WeaponPhotos : Node
 
 	/// <summary>As armas fotografadas: todas as de assets/armas/armas.json
 	/// que aparecem na interface.</summary>
-	private static readonly string[] Ids = { "ar15", "m16a2", "ak47", "sg552", "ump45", "m3", "m9", "faca", "choque" };
+	private static readonly string[] Ids = { "ar15", "ar15_ultimate", "m16a2", "ak47", "sg552", "ump45", "m3", "m9", "faca", "choque" };
 
 	public override async void _Ready()
 	{

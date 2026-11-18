@@ -38,6 +38,56 @@ Guardar leva **0,5 s** (`HolsterTime`, o tempo da animação do Jhon): ao
 trocar do AR-15 para outra arma, a outra só sobe depois disso e atira
 0,2 s depois de subir.
 
+## AR-15 Ultimate — o AR-15 no limite (18/11)
+*O mesmo fuzil, um degrau acima.* Está à venda na loja (raridade épica, patente 3
+e Presas, como as outras armas de combate: nada de Sangue). É o AR-15 com a pele
+roxa de flames: o mesmo modelo, o mesmo rig e as mesmas animações do Jhon (o
+`ar15_ultimate.glb` só troca a malha e a textura do fuzil e do carregador). "Um
+pouco mais forte que a padrão", pedido do Jhon: números de ponto de partida, para
+afinar no teste.
+
+```
+Custo WP                300
+Dano                    30          Headshot ×2.5 (75)
+RPM                     700         (0.086s entre tiros)
+Pente / Reserva         35 / 105
+Tiros para matar        4 corpo / 2 cabeça
+TTK                     0.26s       (o AR-15: 0.28s)
+
+Reload tática           2.30s       (a animação do AR-15)
+Reload vazia            2.90s
+Draw / Holster          0.50s / 0.50s
+
+Dispersão base          0.13°
+Dispersão por tiro      +0.08°      Máxima 1.6°
+Recuperação             12.5°/s     (inicia 0.05s após o último tiro)
+Mult. movimento         1.5×        Mult. agachado 0.7×
+Na mira (zoom)          dispersão ×0.2
+
+Recoil vertical         0.90° tiros 1-4, depois 0.50°
+Recoil horizontal       ±0.16° alternado
+Recuperação de recoil   7.5°/s
+
+Falloff                 100% até 40m → 75% a 65m
+Mult. velocidade        1.00
+Raio de ruído           45m
+Modos de tiro           automático
+```
+Estrelas: Dano 2.5 · Pen 2.5 · Precisão 3.8 · Cadência 3.3 · Mob 2.5 · Recuo 3.0 · Alcance 3.3
+
+Contra o AR-15: +11% de dano (30, ainda 4 no corpo e 2 na cabeça), +8% de
+cadência, pente 5 maior, dispersão e recuo cerca de 10% menores e alcance um
+pouco maior. Não tem um eixo de troca novo: é o AR-15 melhor, e o preço está em
+Presas e patente, nunca em vantagem permanente de quem pagou.
+
+**A pele** (`tools/armas/blender/ar15_ultimate.py`): base roxa e índigo, flames
+de lado nos dois lados da arma (silenciador, guarda-mão e caixa), quinas com
+brilho e um padrão hexagonal discreto; as peças pequenas de metal claro viram
+douradas. A cor está em `assets/armas/ar15_ultimate/T_AR15_Ultimate_D.png` e a
+emissão (só as flames e as quinas) em `T_AR15_Ultimate_E.png`;
+`WeaponModel.Material` liga a emissão sozinho quando acha o `_E.png` ao lado do
+`_D.png`. O desenho das flames está em `FLAMES` no script: mexeu, rode de novo.
+
 ## M16A2 — fuzil padrão até 15/11
 *Referência do arsenal. Nada excepcional, e esse é o ponto.* Saiu do
 conjunto padrão quando entrou o AR-15; à venda na loja (raridade 1, a
@@ -531,6 +581,7 @@ mas tira a vantagem que define a forma.
 | M16A2 | 0 | padrão |
 | M9 | 0 | padrão |
 | UMP-45 | 280 | SMG |
+| AR-15 Ultimate | 300 | fuzil |
 | SG-552 | 320 | fuzil |
 | P90 | 330 | SMG |
 | G36C | 340 | fuzil |

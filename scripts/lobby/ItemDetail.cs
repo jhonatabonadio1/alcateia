@@ -66,9 +66,9 @@ public partial class ItemDetail : PanelContainer
 		column.AddChild(sub);
 
 		bool character = _item.Character != null;
-		var artFrame = new PanelContainer { CustomMinimumSize = new Vector2(0, character ? 300 : 150) };
+		var artFrame = new PanelContainer { CustomMinimumSize = new Vector2(0, character ? 300 : 190) };
 		artFrame.AddThemeStyleboxOverride("panel", UiTheme.Box(new Color(ItemInfo.RarityColor(_item), 0.07f),
-			new Color(ItemInfo.RarityColor(_item), 0.35f), 1, UiTokens.RadiusPanel, character ? 0 : UiTokens.S3, character ? 0 : UiTokens.S3));
+			new Color(ItemInfo.RarityColor(_item), 0.5f), 1, UiTokens.RadiusPanel, 0, 0));
 		if (character)
 		{
 			// O personagem em 3D, humano e lobo: a silhueta não diz quem é.
@@ -82,7 +82,22 @@ public partial class ItemDetail : PanelContainer
 			column.AddChild(Tabs.Make(new[] { "Humano", "Lobo" }, 0, i => preview.Wolf = i == 1));
 		}
 		else
-			artFrame.AddChild(WeaponArt.Make(_item.Id, new Vector2(0, 120), dim: ItemInfo.Locked(_item) && !ItemInfo.Usable(_item)));
+		{
+			// A vitrine: o fundo da raridade e a arma grande, por cima.
+			bool dim = Profile.IsExpired(_item.Id);
+			var stage = new Control { MouseFilter = MouseFilterEnum.Ignore, ClipContents = true };
+			ItemBackdrop backdrop = UiKit.Fill(ItemBackdrop.Make(ItemInfo.RarityColor(_item), _item.Rarity, dim, _item.Id));
+			backdrop.OffsetLeft = backdrop.OffsetTop = 1;
+			backdrop.OffsetRight = backdrop.OffsetBottom = -1;
+			stage.AddChild(backdrop);
+			WeaponArt art = UiKit.Fill(WeaponArt.Make(_item.Id, Vector2.Zero, dim, showcase: true));
+			art.OffsetLeft = UiTokens.S2;
+			art.OffsetRight = -UiTokens.S2;
+			art.OffsetTop = UiTokens.S3;
+			art.OffsetBottom = -UiTokens.S3;
+			stage.AddChild(art);
+			artFrame.AddChild(stage);
+		}
 		column.AddChild(artFrame);
 
 		string duration = ItemInfo.Duration(_item, out Color durationColor);
@@ -98,7 +113,7 @@ public partial class ItemDetail : PanelContainer
 		{
 			HBoxContainer lockLine = UiKit.Row(UiTokens.S2);
 			lockLine.AddChild(Icon.Make(IconKind.Lock, 14, UiTokens.Warning));
-			lockLine.AddChild(UiKit.Text($"Exige a patente {Ranks.NameOf(_item.MinRank)}", null, UiTokens.Warning));
+			lockLine.AddChild(UiKit.Text(Loc.F("Exige a patente {0}", Ranks.NameOf(_item.MinRank)), null, UiTokens.Warning));
 			column.AddChild(lockLine);
 		}
 
@@ -151,14 +166,14 @@ public partial class ItemDetail : PanelContainer
 			facts.AddThemeConstantOverride("h_separation", UiTokens.S4);
 			facts.AddThemeConstantOverride("v_separation", 2);
 			Fact(facts, "Pente", def.Magazine.ToString());
-			Fact(facts, "Cadência", $"{def.Rpm:0} por min");
+			Fact(facts, "Cadência", Loc.F("{0:0} por min", def.Rpm));
 			Fact(facts, "Recarga", $"{def.ReloadTactical:0.0} s");
 			Fact(facts, "Velocidade", $"{def.SpeedMultiplier * 100:0}%");
 			bars.Add(facts);
 
 			if (cmp)
 			{
-				Label note = UiKit.Text($"Comparando com {compare.Name}, equipada no mesmo lugar", "Caption");
+				Label note = UiKit.Text(Loc.F("Comparando com {0}, equipada no mesmo lugar", compare.Name), "Caption");
 				note.AutowrapMode = TextServer.AutowrapMode.WordSmart;
 				bars.Add(note);
 			}
@@ -213,7 +228,7 @@ public partial class ItemDetail : PanelContainer
 			Effect("Escudo máximo", fx.Shield);
 			Effect("Dano da garra", fx.ClawDamage);
 			Effect("Decaimento do escudo", fx.ShieldDecay, lowerIsBetter: true);
-			bars.Add(UiKit.Paragraph($"Até {Profile.MaxTattoos} tatuagens equipadas ao mesmo tempo. Vale só para você."));
+			bars.Add(UiKit.Paragraph(Loc.F("Até {0} tatuagens equipadas ao mesmo tempo. Vale só para você.", Profile.MaxTattoos)));
 			return bars;
 		}
 

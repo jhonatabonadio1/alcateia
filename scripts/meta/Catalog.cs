@@ -123,6 +123,11 @@ public static class Catalog
 		new() { Id = "sg552", Name = "SG-552", Type = "Fuzil de controle", Kind = ItemKind.Weapon,
 			Rarity = 3, MinRank = 4, Prices = new[] { 320, 1600, 4800, 10800, 26000 }, Hot = true,
 			Description = "O fuzil mais estável do arsenal: recuo baixo e linear. Pune quem atira andando." },
+		// O AR-15 um degrau acima (18/11): mesmo fuzil, mesmas animações, um pouco
+		// mais forte em tudo. Pele roxa com flames (tools/armas/blender/ar15_ultimate.py).
+		new() { Id = "ar15_ultimate", Name = "AR-15 Ultimate", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
+			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 }, Hot = true,
+			Description = "O AR-15 no limite: um pouco mais de dano, cadência e pente, e o recuo mais domado. Pele roxa com flames que brilham." },
 
 		// ---------------------------------------------------- utilitário
 		new() { Id = Arsenal.GrenadeId, Name = "Granada de choque", Type = "Granada", Kind = ItemKind.Utility,
@@ -180,7 +185,7 @@ public static class Catalog
 			string team = skin.Team == Teams.Blue ? "Vanguarda" : skin.Team == Teams.Orange ? "Sindicato" : "os dois times";
 			items.Insert(at++, new CatalogItem
 			{
-				Id = skin.Id, Name = skin.DisplayName, Type = $"Personagem · {team}", Kind = ItemKind.Character,
+				Id = skin.Id, Name = skin.DisplayName, Type = Loc.F("Personagem · {0}", team), Kind = ItemKind.Character,
 				Rarity = skin.Rarity, Starter = true, Character = skin, Team = skin.Team,
 				Description = skin.Description
 			});

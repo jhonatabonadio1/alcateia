@@ -103,6 +103,57 @@
   "fov": 63.09,
   "sacar": true
  },
+ "ar15_ultimate": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 0.8,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "guardar": {
+    "ate": 0.5,
+    "clipe": "guardar",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 2.0,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "recarga": {
+    "ate": 2.7,
+    "clipe": "recarga",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.4,
+    "clipe": "sacar",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.5333,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "ar15_ultimate"
+  ],
+  "arquivo": "res://assets/armas/fp/ar15_ultimate.glb",
+  "cano": [
+   0.0555,
+   -0.0722,
+   -0.6639
+  ],
+  "fiel": true,
+  "fov": 63.09,
+  "sacar": true
+ },
  "escopeta": {
   "ajuste": [
    0.0,

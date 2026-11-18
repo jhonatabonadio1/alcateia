@@ -210,6 +210,24 @@ public static class WeaponModel
 				Roughness = 0.6f,
 				MetallicSpecular = 0.5f
 			};
+
+			// Skin que brilha (o AR-15 Ultimate): ao lado da cor (X_D.png) pode
+			// haver a emissão (X_E.png), só com as flames e as quinas acesas.
+			string emissive = name.EndsWith("_D.png") ? name[..^6] + "_E.png" : null;
+			if (emissive != null && ResourceLoader.Exists(emissive))
+			{
+				made.EmissionEnabled = true;
+				// Multiplicar, não somar: no padrão (Add) o Godot soma a cor à
+				// textura, e com a cor branca a arma inteira brilhava branca
+				// (a foto do inventário saía lavada, 18/11).
+				made.EmissionOperator = BaseMaterial3D.EmissionOperatorEnum.Multiply;
+				made.Emission = Colors.White;
+				made.EmissionEnergyMultiplier = 1.6f;
+				made.EmissionTexture = GD.Load<Texture2D>(emissive);
+				made.Roughness = 0.38f;
+				made.Metallic = 0.35f;
+			}
+
 			Materials[name] = made;
 			return made;
 		}

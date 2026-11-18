@@ -40,6 +40,23 @@ WEAPONS = [
          Range=150, FalloffStart=35, FalloffEnd=60, FalloffMin=0.7,
          SpeedMultiplier=1.0, NoiseRadius=45, AimFov=55, AimSpreadMultiplier=0.2, AimSpeedMultiplier=0.7,
          stars=(2.0, 2.5, 3.5, 3.0, 2.5, 2.5, 3.0)),
+    # 18/11: o AR-15 Ultimate, à venda na loja. O AR-15 um degrau acima, "um pouco
+    # mais forte" (pedido do Jhon): mesmo papel, mesmo rig e mesmas animações, com
+    # +11% de dano (30: ainda 4 no corpo e 2 na cabeça), +8% de cadência (700 RPM,
+    # TTK 0,26 s contra 0,28 s), pente de 35, dispersão e recuo ~10% menores e
+    # alcance um pouco maior. Fica no mesmo tempo de recarga, de sacar e de guardar
+    # (são as animações do AR-15). Pele roxa com flames: ar15_ultimate.py.
+    dict(Id="ar15_ultimate", DisplayName="AR-15 Ultimate", Class="Rifle", WpCost=300,
+         Description="O AR-15 no limite. Um pouco mais de dano, cadência e pente, e o recuo mais domado.",
+         Damage=30, HeadshotMultiplier=2.5, Rpm=700, Mode="Auto", Magazine=35, Reserve=105,
+         ReloadTactical=2.3, ReloadEmpty=2.9, DrawTime=0.5, HolsterTime=0.5,
+         SpreadBase=0.13, SpreadPerShot=0.08, SpreadMax=1.6, SpreadRecovery=12.5, SpreadDelay=0.05,
+         MoveSpreadMultiplier=1.5, CrouchSpreadMultiplier=0.7,
+         RecoilVertical=0.9, RecoilVerticalLate=0.5, RecoilEarlyShots=4,
+         RecoilHorizontal=0.16, RecoilRecovery=7.5,
+         Range=160, FalloffStart=40, FalloffEnd=65, FalloffMin=0.75,
+         SpeedMultiplier=1.0, NoiseRadius=45, AimFov=55, AimSpreadMultiplier=0.2, AimSpeedMultiplier=0.7,
+         stars=(2.5, 2.5, 3.8, 3.3, 2.5, 3.0, 3.3)),
     dict(Id="m16a2", DisplayName="M16A2", Class="Rifle", WpCost=0,
          Description="O fuzil padrão de antes do AR-15: os mesmos números, com alça de transporte e coronha fixa.",
          # 14/11: o Jhon achou difícil de usar. Mais precisa (a dispersão que

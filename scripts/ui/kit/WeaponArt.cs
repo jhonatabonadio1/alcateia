@@ -27,18 +27,27 @@ public partial class WeaponArt : Control
 	/// <summary>Acinzenta: item bloqueado, expirado ou indisponível.</summary>
 	public bool Dim { get; set; }
 
-	public static WeaponArt Make(string id, Vector2 size, bool dim = false) => new()
+	/// <summary>Na vitrine (cartão e detalhe da loja e do inventário): a
+	/// foto é recortada no que a arma ocupa, para ela encher a área ("a
+	/// arma pode estar mais próxima", Jhon, 18/11), e um brilho passa por
+	/// ela de tempos em tempos. No HUD e no feed, não.</summary>
+	public bool Showcase { get; set; }
+
+	public static WeaponArt Make(string id, Vector2 size, bool dim = false, bool showcase = false) => new()
 	{
 		ItemId = id,
 		CustomMinimumSize = size,
 		Dim = dim,
+		Showcase = showcase,
 		MouseFilter = MouseFilterEnum.Ignore,
 		SizeFlagsHorizontal = SizeFlags.ExpandFill,
 		SizeFlagsVertical = SizeFlags.ExpandFill,
 		// A foto tem 768 px e no feed aparece com 70.
 		TextureFilter = TextureFilterEnum.LinearWithMipmaps,
-		// A foto clareada: o jogo inteiro é escuro, e a arma também.
-		Material = Bleach()
+		// A foto clareada: o jogo inteiro é escuro, e a arma também. A
+		// skin colorida (o AR-15 Ultimate) não: clareada, o roxo virava
+		// lilás lavado ("muito branca no inventário", Jhon, 18/11).
+		Material = Vivid(id) ? (showcase ? Shine() : null) : Bleach()
 	};
 
 	private const string PhotoDir = "res://assets/ui/armas/";
@@ -54,6 +63,69 @@ public partial class WeaponArt : Control
 		Photos[id] = photo;
 		return photo;
 	}
+
+	private static readonly System.Collections.Generic.Dictionary<string, (Rect2 Used, bool Vivid)> Infos = new();
+
+	/// <summary>O que a foto tem dentro: o retângulo que a arma ocupa (o
+	/// resto é transparente) e se ela é colorida (skin) ou cinza (as armas
+	/// de sempre). Medido uma vez por foto.</summary>
+	private static (Rect2 Used, bool Vivid) InfoOf(string id)
+	{
+		if (Infos.TryGetValue(id ?? "", out var info)) return info;
+
+		info = (new Rect2(), false);
+		if (PhotoOf(id) is Texture2D photo && photo.GetImage() is Image image)
+		{
+			if (image.IsCompressed()) image.Decompress();
+			Rect2I used = image.GetUsedRect();
+			if (used.Size.X > 0 && used.Size.Y > 0)
+			{
+				double saturation = 0;
+				int count = 0;
+				for (int y = used.Position.Y; y < used.End.Y; y += 6)
+				{
+					for (int x = used.Position.X; x < used.End.X; x += 6)
+					{
+						Color c = image.GetPixel(x, y);
+						if (c.A < 0.6f) continue;
+						saturation += c.S;
+						count++;
+					}
+				}
+				info = (new Rect2(used.Position, used.Size), count > 0 && saturation / count > 0.32);
+			}
+		}
+
+		Infos[id ?? ""] = info;
+		return info;
+	}
+
+	/// <summary>A foto é de uma skin colorida: não se clareia.</summary>
+	public static bool Vivid(string id) => InfoOf(id).Vivid;
+
+	// A skin na vitrine: a cor como é, um pouco mais viva, e um brilho que
+	// atravessa a arma em diagonal a cada poucos segundos.
+	private const string ShineCode = @"
+shader_type canvas_item;
+varying vec4 tint;
+void vertex() {
+	tint = COLOR;
+}
+void fragment() {
+	vec4 c = texture(TEXTURE, UV);
+	float grey = dot(c.rgb, vec3(0.299, 0.587, 0.114));
+	vec3 lit = mix(vec3(grey), c.rgb, 1.18);
+	float sweep = fract(TIME / 3.6);
+	float band = (UV.x + UV.y * 0.35) - (sweep * 2.2 - 0.6);
+	float shine = exp(-band * band * 180.0);
+	lit += vec3(1.0, 0.95, 1.0) * shine * 0.55;
+	COLOR = vec4(clamp(lit, 0.0, 1.0), c.a) * tint;
+}";
+
+	private static ShaderMaterial _shine;
+
+	private static ShaderMaterial Shine() =>
+		_shine ??= new ShaderMaterial { Shader = new Shader { Code = ShineCode } };
 
 	// Clareia a foto para ela se destacar no escuro: o metal quase preto
 	// vira cinza, e a madeira, o verde e o bege continuam com a cor.
@@ -115,7 +187,18 @@ void fragment() {
 
 		if (PhotoOf(_id) is Texture2D photo)
 		{
-			// A foto inteira, sem distorcer, no meio da área.
+			// Na vitrine, só o que a arma ocupa na foto, para ela encher a
+			// área; fora dela, a foto inteira. Sem distorcer, no meio.
+			Rect2 used = Showcase ? InfoOf(_id).Used : new Rect2();
+			if (used.Size.X > 0 && used.Size.Y > 0)
+			{
+				used = used.Grow(4f).Intersection(new Rect2(Vector2.Zero, photo.GetSize()));
+				float close = Mathf.Min(Size.X / used.Size.X, Size.Y / used.Size.Y);
+				Vector2 shown = used.Size * close;
+				DrawTextureRectRegion(photo, new Rect2((Size - shown) / 2f, shown), used, new Color(1, 1, 1, _alpha));
+				return;
+			}
+
 			Vector2 native = photo.GetSize();
 			float fit = Mathf.Min(Size.X / native.X, Size.Y / native.Y);
 			Vector2 size = native * fit;
@@ -125,7 +208,8 @@ void fragment() {
 
 		switch (_id)
 		{
-			case "ar15": RifleAr15(); break;
+			case "ar15":
+			case "ar15_ultimate": RifleAr15(); break;
 			case "m16a2": RifleM16(); break;
 			case "ak47": RifleAk(); break;
 			case "sg552": RifleSg(); break;
