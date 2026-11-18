@@ -47,6 +47,18 @@ public partial class WolfVisual
 		if ((WolfMove)move == WolfMove.Pounce) _pounceClock = 0;
 	}
 
+	/// <summary>O golpe foi largado antes de sair (a carga do salto
+	/// cancelada): o clipe dele sai, e o corpo volta ao andar.</summary>
+	private void OnMoveCancelled(int move)
+	{
+		if (_tree == null) return;
+
+		var (clip, _) = WolfMoves.Of((WolfMove)move);
+		if (!Has(clip)) return;
+		_tree.Set($"parameters/{Cap(clip)}/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
+		if ((WolfMove)move == WolfMove.Pounce) _pounceClock = 99;
+	}
+
 	/// <summary>Tempo desde que o salto começou a tocar.</summary>
 	private double _pounceClock = 99;
 	private bool _pounceHeld;

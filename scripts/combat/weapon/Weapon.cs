@@ -67,6 +67,10 @@ public partial class Weapon : Node3D
 	/// toca a animação daqui; o dano sai depois, no instante do golpe.</summary>
 	[Signal] public delegate void WolfMoveStartedEventHandler(int move);
 
+	/// <summary>Um golpe do lobo foi largado antes de sair (a carga do
+	/// salto cancelada): o corpo para o clipe dele.</summary>
+	[Signal] public delegate void WolfMoveCancelledEventHandler(int move);
+
 	/// <summary>O bote encostou em algo (chão, parede, alguém) e bateu. O
 	/// corpo troca a queda pela aterrissagem neste instante.</summary>
 	[Signal] public delegate void WolfDiveLandedEventHandler();

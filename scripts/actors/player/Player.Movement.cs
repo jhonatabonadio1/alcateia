@@ -177,7 +177,8 @@ public partial class Player
 	public bool IsSprinting => _sprinting;
 
 	/// <summary>Liga a corrida de quatro no segundo toque do W e desliga
-	/// quando ele solta, quando agacha ou quando deixa de ser lobo.</summary>
+	/// quando ele solta, quando agacha ou quando deixa de ser lobo. Se
+	/// estava carregando o salto, o W duplo cancela a carga.</summary>
 	private void UpdateSprint(double delta)
 	{
 		if (!_form.IsWolf || !_intent.Forward || _crouching)
@@ -189,7 +190,13 @@ public partial class Player
 		if (!_intent.ForwardTap) return;
 
 		if (_form.IsWolf && !_crouching && _sinceForwardTap <= DoubleTapWindow)
+		{
+			// Carregando o salto, o W duplo desiste dele e sai correndo de
+			// quatro (pedido do Jhon, 17/11): é o jeito de largar o especial
+			// sem saltar. Não gasta a recarga.
+			if (_weapon.IsChargingPounce) _weapon.CancelCharge();
 			_sprinting = true;
+		}
 
 		_sinceForwardTap = 0;
 	}

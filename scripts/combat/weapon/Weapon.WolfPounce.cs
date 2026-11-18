@@ -207,6 +207,8 @@ public partial class Weapon
 		_rootLeft = 0;
 		_strikeLeft = 0;
 		_cooldown = 0;
+		_strikeId++;
+		EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Pounce);
 	}
 
 	/// <summary>

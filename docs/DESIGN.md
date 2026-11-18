@@ -91,7 +91,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 5 | Equipar granada (o ataque arremessa) |
 | Botão direito | Humano: zoom com mira circular (segurar). Lobo: salto no chão, bote no ar |
 | Botão do meio (segurando o salto) | Lobo: trava no inimigo mais perto da mira — a mira segue ele e o salto cai nos pés dele; soltar destrava |
-| W duas vezes (segurando) | Lobo: corrida de quatro patas, 30% mais rápida (`WolfSprintFactor`); soltar o W ou agachar volta a correr em pé |
+| W duas vezes (segurando) | Lobo: corrida de quatro patas, 30% mais rápida (`WolfSprintFactor`); soltar o W ou agachar volta a correr em pé. Carregando o salto, cancela o salto (sem gastar a recarga) e sai correndo |
 | W segurado | Sustenta a corrida em parede |
 | Ataque segurado | Agarra na parede sem avançar |
 | Clique esq. | Atacar |

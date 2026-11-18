@@ -111,6 +111,7 @@ public partial class WolfVisual : Node3D
 		_form.FormChanged += OnFormChanged;
 		_form.BodySwapped += () => Visible = _form.ShowsWolf;
 		_weapon.WolfMoveStarted += OnMove;
+		_weapon.WolfMoveCancelled += OnMoveCancelled;
 		_weapon.WolfDiveLanded += OnDiveLanded;
 		if (_health != null)
 		{

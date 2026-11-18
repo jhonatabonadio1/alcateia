@@ -2,6 +2,13 @@
 
 ## Não lançado
 
+### W duplo cancela o salto carregado (17/11)
+- Carregando o especial do lobo (botão direito no chão), apertar W duas
+  vezes desiste do salto, sem saltar e sem gastar a recarga, e sai
+  correndo de quatro. A carga cancelada (aqui, no menu do Esc ou no fim
+  da partida) agora também para o clipe do salto (`WolfMoveCancelled`):
+  antes o lobo podia tocar o pulo no lugar.
+
 ### HUD mais low poly, estilo Overwatch (17/11)
 - Painéis de **vidro**: o mapa borrado e escurecido de fundo, em vez da
   caixa preta (`HudStyle`). Cantos cortados a 45° e painéis inclinados.
