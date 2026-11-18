@@ -106,3 +106,9 @@ public sealed class ArmazemMapTest : MapPlaysTest
 	public override string Name => "MapaArmazem";
 	protected override string MapId => "armazem";
 }
+
+public sealed class ArmazemEstendidoMapTest : MapPlaysTest
+{
+	public override string Name => "MapaArmazemEstendido";
+	protected override string MapId => "armazem_estendido";
+}

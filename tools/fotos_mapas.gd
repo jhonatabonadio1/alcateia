@@ -22,6 +22,13 @@ const FOTOS := {
 		"para": Vector3(-2.0, 0.5, 2.0),
 		"fov": 59.0,
 	},
+	"armazem_estendido": {
+		"cena": "res://scenes/maps/armazem_estendido.tscn",
+		# Do canto do time laranja, no alto, junto à passarela sul.
+		"de": Vector3(36.2, 9.6, -19.6),
+		"para": Vector3(-4.0, 1.0, 4.0),
+		"fov": 59.0,
+	},
 }
 
 const SIZE := Vector2i(1920, 1080)

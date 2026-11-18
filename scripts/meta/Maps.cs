@@ -57,11 +57,26 @@ public static class Maps
 			Description = "Pequeno, 46 × 30 m, galpão fechado. Contêineres que viram túnel, pilhas de dois com pranchas por cima e claraboias no teto.",
 			RoomSize = 0.6f, RoomWet = 0.3f, Ambience = "ambiente_hangar", AmbienceDb = -14f,
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
+		},
+		new()
+		{
+			// O Armazém maior e mais alto (pedido do Jhon, 17/11): o mesmo miolo,
+			// paredes para fora, teto a 13 m e alas novas com contêineres até
+			// 8,7 m. O original continua acima, igual.
+			Id = "armazem_estendido",
+			Name = "Armazém (Extended)",
+			Size = "Médio",
+			Scene = "res://scenes/maps/armazem_estendido.tscn",
+			Thumbnail = "res://assets/ui/mapas/armazem_estendido.png",
+			Cover = "res://assets/ui/mapas/armazem_estendido_foto.png",
+			Description = "Médio, 75 × 45 m, galpão de 13 m de altura. O Armazém no meio e duas alas novas, com pirâmides de contêineres até 8,7 m e corredores compridos junto às paredes.",
+			RoomSize = 0.75f, RoomWet = 0.35f, Ambience = "ambiente_hangar", AmbienceDb = -14f,
+			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
 		}
 	};
 
-	/// <summary>Fora da lista por decisão do Jhon (17/11): só o Armazém
-	/// está disponível. As cenas e os geradores continuam no projeto; para
+	/// <summary>Fora da lista por decisão do Jhon (17/11): só o Armazém (e,
+	/// desde a noite de 17/11, o Armazém Extended) está disponível. As cenas e os geradores continuam no projeto; para
 	/// voltar com um, passe a linha dele para <see cref="All"/>.</summary>
 	public static readonly List<MapInfo> Guardados = new()
 	{

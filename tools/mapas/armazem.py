@@ -68,6 +68,31 @@ class Armazem(Mapa):
         return texto
 
 
+def iluminar(m):
+    """A luz do galpão (céu das claraboias, sol, ambiente, preenchimento).
+    O Armazém (estendido) usa a mesma, com os alcances esticados."""
+    # Galpão fechado: o céu só aparece pelas claraboias, e o sol entra por
+    # elas em manchas no chão. O resto é a luz das luminárias e um
+    # ambiente baixo, frio.
+    # Perto da foto do mapa: a luz do sol e das luminárias rebate na parede
+    # cor de areia e no chão (SDFGI) e esquenta o galpão; o ambiente plano
+    # fica baixo, para haver contraste e sombra. AgX é o mapeamento de cor
+    # da foto; a névoa fraca mostra o raio de sol das claraboias. O
+    # ambiente a 0,25 deixava a sombra preta (dentro dos contêineres não se
+    # via nada, print do Jhon de 17/11): 0,6, com a exposição mais alta.
+    # Ainda escuro (17/11, 20h): ambiente 0,85, exposição 1,45, oclusão
+    # 1,6 (era 2,5: escurecia todo canto) e uma luz de preenchimento sem
+    # sombra, fria, do lado oposto ao sol.
+    m.ambiente = dict(ceu=dict(topo=(0.36, 0.52, 0.78), horizonte=(0.72, 0.78, 0.86), chao=(0.25, 0.24, 0.23),
+                               energia=1.0),
+                      luz=(0.84, 0.87, 0.96), luz_energia=0.85, exposicao=1.45, brilho=0.35, ssao=1.6,
+                      contraste=1.02, saturacao=1.12, agx=True,
+                      sdfgi=dict(energia=1.5, rebote=0.6, celula=0.2), ssil=0.9,
+                      volumetrica=dict(densidade=0.006, cor=(1.0, 0.95, 0.88), anisotropia=0.55, alcance=48))
+    m.sol = dict(yaw=28, queda=52, cor=(1.0, 0.88, 0.70), energia=2.4, alcance=60)
+    m.preenchimento = dict(yaw=208, queda=58, cor=(0.86, 0.9, 1.0), energia=0.45)
+
+
 def montar():
     m = Armazem("armazem", "Armazém", 46, 30)
     with open(os.path.join(AQUI, "armazem.json"), encoding="utf-8") as fh:
@@ -123,24 +148,5 @@ def montar():
     for nome, pontos in ROTAS.items():
         m.rota(nome, [(x, 0.5, z) for x, z in pontos])
 
-    # Galpão fechado: o céu só aparece pelas claraboias, e o sol entra por
-    # elas em manchas no chão. O resto é a luz das luminárias e um
-    # ambiente baixo, frio.
-    # Perto da foto do mapa: a luz do sol e das luminárias rebate na parede
-    # cor de areia e no chão (SDFGI) e esquenta o galpão; o ambiente plano
-    # fica baixo, para haver contraste e sombra. AgX é o mapeamento de cor
-    # da foto; a névoa fraca mostra o raio de sol das claraboias. O
-    # ambiente a 0,25 deixava a sombra preta (dentro dos contêineres não se
-    # via nada, print do Jhon de 17/11): 0,6, com a exposição mais alta.
-    # Ainda escuro (17/11, 20h): ambiente 0,85, exposição 1,45, oclusão
-    # 1,6 (era 2,5: escurecia todo canto) e uma luz de preenchimento sem
-    # sombra, fria, do lado oposto ao sol.
-    m.ambiente = dict(ceu=dict(topo=(0.36, 0.52, 0.78), horizonte=(0.72, 0.78, 0.86), chao=(0.25, 0.24, 0.23),
-                               energia=1.0),
-                      luz=(0.84, 0.87, 0.96), luz_energia=0.85, exposicao=1.45, brilho=0.35, ssao=1.6,
-                      contraste=1.02, saturacao=1.12, agx=True,
-                      sdfgi=dict(energia=1.5, rebote=0.6, celula=0.2), ssil=0.9,
-                      volumetrica=dict(densidade=0.006, cor=(1.0, 0.95, 0.88), anisotropia=0.55, alcance=48))
-    m.sol = dict(yaw=28, queda=52, cor=(1.0, 0.88, 0.70), energia=2.4, alcance=60)
-    m.preenchimento = dict(yaw=208, queda=58, cor=(0.86, 0.9, 1.0), energia=0.45)
+    iluminar(m)
     return m

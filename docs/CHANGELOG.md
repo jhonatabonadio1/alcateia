@@ -2,6 +2,22 @@
 
 ## Não lançado
 
+### Armazém (Extended): o Armazém maior e mais alto (17/11)
+- **Mapa novo na lista**, ao lado do Armazém, que continua igual:
+  75 × 45 m (era 46 × 30) e teto a 13 m (era 9). O miolo é o Armazém
+  inteiro; as paredes andam para fora e esticam acima da passarela
+  (janelas mais altas, passarela e escadas iguais); o telhado sobe
+  junto. Nas pontas, alas novas com uma pirâmide de contêineres até
+  8,7 m e corredores compridos junto às paredes. Detalhes em
+  `docs/MAPAS.md`.
+- Montado com as peças do mesmo pacote por
+  `tools/mapas/blender/armazem_estendido.py`; o conversor do Armazém
+  foi dividido em funções para os dois usarem a mesma leitura (o
+  Armazém sai igual, byte a byte).
+- Teste `MapaArmazemEstendido` (carrega, nascem os dois times, bots
+  saem da base e trocam tiro). A foto do mapa foi feita no Blender;
+  `tools/fotos_mapas.gd` já tem o ângulo para tirá-la no Godot.
+
 ### Minimapa cheio, luz, degrau, salto rápido, paredes e morte do humano (17/11)
 - **Minimapa** fixo (norte para cima, a seta gira) e cheio: a janela
   tem o lado menor do mapa, segue o jogador e para na borda.

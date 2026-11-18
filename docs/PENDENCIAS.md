@@ -83,10 +83,6 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 ### Mapas e modos
 
 - **Mais mapas.**
-- **Aumentar o mapa do Armazém, com IA** (pedido em 17/11). Mexe em tudo
-  que depende do tamanho: pontos de nascimento (hoje 6 por time), o
-  minimapa, a rota dos bots e a luz. A decidir como: eu gerando as peças
-  novas em `tools/mapas`, no mesmo kit, ou uma ferramenta externa de 3D.
 - **Campo de treinamento** (pedido em 17/11): lugar para treinar mira,
   recuo, salto do lobo e movimento sem partida valendo. Hoje: a tela
   "Treino com bots" foi removida em 17/11 e só resta a cena de treino

@@ -344,7 +344,62 @@ def piso_de(nome):
 
 # ---------------------------------------------------------------- main
 
-def main(fbx, pacote):
+def juntar(objs, nome):
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in objs:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = objs[0]
+    bpy.ops.object.join()
+    # O FBX da Unity chega com cada canto de triângulo solto: solda os
+    # iguais. A normal de cada canto (o facetado do low poly) é lida
+    # antes e posta de volta depois: soldar sem isso deixa tudo com
+    # sombreado suave, borrado.
+    me = objs[0].data
+    normais = np.zeros(len(me.loops) * 3, np.float32)
+    me.corner_normals.foreach_get("vector", normais)
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-5)
+    bm.to_mesh(me)
+    bm.free()
+    if len(me.loops) * 3 == len(normais):
+        me.normals_split_custom_set(normais.reshape(-1, 3).tolist())
+    else:
+        print(f"  {nome}: a solda mudou os cantos; normais recalculadas")
+    objs[0].name = nome
+    objs[0].data.name = nome
+    return objs[0]
+
+
+def pintar(paleta):
+    """A paleta do pacote como cor de base do material principal."""
+    img = bpy.data.images.load(paleta)
+    img.pack()
+    for m in bpy.data.materials:
+        nt = m.node_tree
+        b = nt.nodes.get("Principled BSDF")
+        if "MAIN" in m.name:
+            m.name = "armazem_paleta"
+            t = nt.nodes.new("ShaderNodeTexImage")
+            t.image = img
+            nt.links.new(t.outputs[0], b.inputs["Base Color"])
+            b.inputs["Roughness"].default_value = 0.85
+            b.inputs["Metallic"].default_value = 0.0
+
+
+def exportar(glb):
+    os.makedirs(os.path.dirname(glb), exist_ok=True)
+    bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB", export_yup=True, export_apply=True,
+                              export_materials="EXPORT", export_cameras=False, export_lights=False,
+                              export_extras=False, export_animations=False)
+
+
+def carregar(fbx, pacote):
+    """A parte comum aos dois Armazéns: abre o pacote, casa cada peça da
+    cena com o modelo de origem (o de mesma cor), copia a UV e tira a cor
+    de cada modelo para o minimapa. Devolve o estado, para quem monta o
+    mapa (este arquivo, e armazem_estendido.py, que remonta as peças num
+    galpão maior)."""
     tmp = tempfile.mkdtemp(prefix="armazem_")
     modelos, paleta, caminho_de, cenas = abrir_pacote(pacote, tmp)
     if not modelos or not paleta:
@@ -439,49 +494,77 @@ def main(fbx, pacote):
         cores = pal[py, px] // 8
         chave, vezes = np.unique(cores, axis=0, return_counts=True)
         cor_de[nome] = [round(float(x) * 8 / 255, 3) for x in chave[vezes.argmax()]]
+    return dict(tmp=tmp, paleta=paleta, cena=cena, pecas=pecas, origem=origem, vidro=vidro,
+                encaixe=encaixe, cor_de=cor_de)
+
+
+def escada_da_parede(M, n):
+    """A escada de marinheiro do meio da parede (Wall_01), do chão à
+    passarela (3,63 m). Nas medidas do modelo (cm): degraus em x ±49, a
+    frente deles em z 178 (a parede é z≈0, a sala fica em +z). Sai o pé da
+    escada e para onde ela olha; a escada em si (o volume de subir e a chapa
+    lisa no lugar dos degraus) é do jogo, igual em todo mapa:
+    kit.Mapa.escada e scripts/core/Ladder.cs."""
+    pe = (aplicar(M, np.array([[0.0, 0.0, 178.1]]))[0] * 0.01) @ GIRO.T
+    fora = GIRO @ (M[:3].T @ np.array([0.0, 0.0, 1.0]))
+    yaw = float(np.degrees(np.arctan2(fora[0], fora[2])))
+    return dict(nome=f"Escada{n}", pe=[round(x, 4) for x in pe], yaw=round(yaw, 2), altura=3.63, largura=0.98)
+
+
+def luz_da_peca(nome, M, origem):
+    """Onde fica a luz de uma luminária (Light_*): as do teto, um pouco
+    abaixo da peça; o refletor e a arandela, no alto dela."""
+    S = origem[nome][0].reshape(-1, 3)
+    c, tam, R = caixa_orientada(M, cantos(S.min(0), S.max(0)))
+    tipo = "teto" if nome in ("Light_03", "Light_04") else ("refletor" if nome in ("Light_01", "Light_02") else "arandela")
+    pos = c - np.array([0, 0.35, 0]) if tipo == "teto" else c + np.array([0, tam[1] * 0.4, 0])
+    return dict(tipo=tipo, pos=[round(x, 3) for x in pos])
+
+
+def caixas_da_peca(nome, M, origem, cor):
+    """A colisão de uma peça: uma caixa orientada (no jogo); o contêiner é
+    um túnel de quatro (chão, teto e os dois lados, de 13,8 cm de chapa),
+    porque as pontas são abertas e as portas são peças à parte. Devolve
+    (sufixo, centro, tamanho, base)."""
+    S = origem[nome][0].reshape(-1, 3)
+    lo, hi = S.min(0), S.max(0)
+    partes = [("", lo, hi)]
+    if nome in CONTEINER:
+        e = 13.8
+        partes = [("Chao", lo, np.array([hi[0], lo[1] + e, hi[2]])),
+                  ("Teto", np.array([lo[0], hi[1] - e, lo[2]]), hi),
+                  ("LadoA", lo, np.array([lo[0] + e, hi[1], hi[2]])),
+                  ("LadoB", np.array([hi[0] - e, lo[1], lo[2]]), hi)]
+    saida = []
+    for sufixo, a, b in partes:
+        pts = S if not sufixo and nome not in CONTEINER else cantos(a, b)
+        c, tam, R = caixa_orientada(M, pts)
+        saida.append((sufixo, c, tam, R))
+    return saida
+
+
+def caixa_json(nome, c, tam, R, piso, cor):
+    return dict(nome=nome, centro=[round(x, 4) for x in c], tamanho=[round(max(x, 0.02), 4) for x in tam],
+                base=[[round(x, 5) for x in linha] for linha in R], piso=piso, cor=cor)
+
+
+def main(fbx, pacote):
+    est = carregar(fbx, pacote)
+    tmp, paleta, cena, pecas, origem, vidro, encaixe, cor_de = (
+        est[k] for k in ("tmp", "paleta", "cena", "pecas", "origem", "vidro", "encaixe", "cor_de"))
 
     # Colisão (caixas) e luzes, nas coordenadas do jogo.
     caixas, luzes, contagem, escadas = [], [], {}, []
     for o, (nome, M) in encaixe.items():
         if nome == "Wall_01":
-            # A escada de marinheiro do meio da parede, do chão à passarela
-            # (3,63 m). Nas medidas do modelo (cm): degraus em x ±49, a
-            # frente deles em z 178 (a parede é z≈0, a sala fica em +z).
-            # Sai o pé da escada e para onde ela olha; a escada em si (o
-            # volume de subir e a chapa lisa no lugar dos degraus) é do
-            # jogo, igual em todo mapa: kit.Mapa.escada e scripts/core/Ladder.cs.
-            pe = (aplicar(M, np.array([[0.0, 0.0, 178.1]]))[0] * 0.01) @ GIRO.T
-            fora = GIRO @ (M[:3].T @ np.array([0.0, 0.0, 1.0]))
-            yaw = float(np.degrees(np.arctan2(fora[0], fora[2])))
-            escadas.append(dict(nome=f"Escada{len(escadas) + 1}", pe=[round(x, 4) for x in pe],
-                                yaw=round(yaw, 2), altura=3.63, largura=0.98))
+            escadas.append(escada_da_parede(M, len(escadas) + 1))
         if nome.startswith(CASCA) or nome.startswith(SEM_COLISAO):
             if nome.startswith("Light_"):
-                S = origem[nome][0].reshape(-1, 3)
-                c, tam, R = caixa_orientada(M, cantos(S.min(0), S.max(0)))
-                tipo = "teto" if nome in ("Light_03", "Light_04") else ("refletor" if nome in ("Light_01", "Light_02") else "arandela")
-                pos = c - np.array([0, 0.35, 0]) if tipo == "teto" else c + np.array([0, tam[1] * 0.4, 0])
-                luzes.append(dict(tipo=tipo, pos=[round(x, 3) for x in pos]))
+                luzes.append(luz_da_peca(nome, M, origem))
             continue
-        S = origem[nome][0].reshape(-1, 3)
-        lo, hi = S.min(0), S.max(0)
-        partes = [("", lo, hi)]
-        if nome in CONTEINER:
-            # Túnel: chão, teto e os dois lados (13,8 cm de chapa); as
-            # pontas são abertas e as portas são peças à parte.
-            e = 13.8
-            partes = [("Chao", lo, np.array([hi[0], lo[1] + e, hi[2]])),
-                      ("Teto", np.array([lo[0], hi[1] - e, lo[2]]), hi),
-                      ("LadoA", lo, np.array([lo[0] + e, hi[1], hi[2]])),
-                      ("LadoB", np.array([hi[0] - e, lo[1], lo[2]]), hi)]
         contagem[nome] = contagem.get(nome, 0) + 1
-        for sufixo, a, b in partes:
-            pts = S if not sufixo and nome not in CONTEINER else cantos(a, b)
-            c, tam, R = caixa_orientada(M, pts)
-            caixas.append(dict(nome=f"{nome}_{contagem[nome]}{sufixo}", centro=[round(x, 4) for x in c],
-                               tamanho=[round(max(x, 0.02), 4) for x in tam],
-                               base=[[round(x, 5) for x in linha] for linha in R], piso=piso_de(nome),
-                               cor=cor_de[nome]))
+        for sufixo, c, tam, R in caixas_da_peca(nome, M, origem, cor_de[nome]):
+            caixas.append(caixa_json(f"{nome}_{contagem[nome]}{sufixo}", c, tam, R, piso_de(nome), cor_de[nome]))
 
     # Vidros: triângulos soltos (posição e normal), para a cena.
     vidros = []
@@ -500,18 +583,7 @@ def main(fbx, pacote):
     bpy.context.view_layer.objects.active = cena[0]
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
-    img = bpy.data.images.load(paleta)
-    img.pack()
-    for m in bpy.data.materials:
-        nt = m.node_tree
-        b = nt.nodes.get("Principled BSDF")
-        if "MAIN" in m.name:
-            m.name = "armazem_paleta"
-            t = nt.nodes.new("ShaderNodeTexImage")
-            t.image = img
-            nt.links.new(t.outputs[0], b.inputs["Base Color"])
-            b.inputs["Roughness"].default_value = 0.85
-            b.inputs["Metallic"].default_value = 0.0
+    pintar(paleta)
 
     casca = []
     for o, (nome, M) in encaixe.items():
@@ -524,32 +596,6 @@ def main(fbx, pacote):
     for o in vidro:
         bpy.data.objects.remove(o, do_unlink=True)
 
-    def juntar(objs, nome):
-        bpy.ops.object.select_all(action="DESELECT")
-        for o in objs:
-            o.select_set(True)
-        bpy.context.view_layer.objects.active = objs[0]
-        bpy.ops.object.join()
-        # O FBX da Unity chega com cada canto de triângulo solto: solda os
-        # iguais. A normal de cada canto (o facetado do low poly) é lida
-        # antes e posta de volta depois: soldar sem isso deixa tudo com
-        # sombreado suave, borrado.
-        me = objs[0].data
-        normais = np.zeros(len(me.loops) * 3, np.float32)
-        me.corner_normals.foreach_get("vector", normais)
-        bm = bmesh.new()
-        bm.from_mesh(me)
-        bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-5)
-        bm.to_mesh(me)
-        bm.free()
-        if len(me.loops) * 3 == len(normais):
-            me.normals_split_custom_set(normais.reshape(-1, 3).tolist())
-        else:
-            print(f"  {nome}: a solda mudou os cantos; normais recalculadas")
-        objs[0].name = nome
-        objs[0].data.name = nome
-        return objs[0]
-
     pedacos = {}
     for o in desenho:
         cx = np.mean([v.co[0] for v in o.data.vertices])       # Blender X = X do jogo
@@ -559,10 +605,7 @@ def main(fbx, pacote):
         juntar(objs, f"armazem_{i}{j}")
     juntar(casca, "casca-colonly")
 
-    os.makedirs(os.path.dirname(GLB), exist_ok=True)
-    bpy.ops.export_scene.gltf(filepath=GLB, export_format="GLB", export_yup=True, export_apply=True,
-                              export_materials="EXPORT", export_cameras=False, export_lights=False,
-                              export_extras=False, export_animations=False)
+    exportar(GLB)
     with open(JSON, "w", encoding="utf-8") as fh:
         json.dump(dict(origem="Low Poly FPS Map 4 (Unity), convertido por tools/mapas/blender/armazem.py",
                        caixas=caixas, luzes=luzes, escadas=escadas, vidros=vidros), fh, ensure_ascii=False, indent=0)

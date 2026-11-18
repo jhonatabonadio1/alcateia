@@ -1,7 +1,8 @@
 # Mapas
 
-Só um mapa está na lista do jogo (`Maps.All` em `scripts/meta/Maps.cs`),
-o Armazém. A Vila e a Estação Polar saíram da lista em 17/11 (a pedido)
+Dois mapas estão na lista do jogo (`Maps.All` em `scripts/meta/Maps.cs`):
+o Armazém e o Armazém (Extended), a versão maior e mais alta dele (17/11).
+A Vila e a Estação Polar saíram da lista em 17/11 (a pedido)
 mas continuam no projeto, em `Maps.Guardados`: para voltar com uma, passe
 a linha dela para `Maps.All` e ponha o teste de volta em
 `tests/regression/MapTests.cs`.
@@ -9,6 +10,7 @@ a linha dela para `Maps.All` e ponha o teste de volta em
 | Mapa | Tamanho | Tema | Gerador |
 |---|---|---|---|
 | **Armazém** (na lista) | 46 × 30 m (pequeno) | Galpão fechado de contêineres, passarelas com escada nas paredes, claraboias no teto | `tools/mapas/blender/armazem.py` + `tools/mapas/armazem.py` |
+| **Armazém (Extended)** (na lista) | 75 × 45 m (médio), 13 m de altura | O Armazém no meio, paredes para fora e para cima, alas novas com pirâmides de contêineres até 8,7 m | `tools/mapas/blender/armazem_estendido.py` + `tools/mapas/armazem_estendido.py` |
 | Vila | 72 × 52 m (médio) | Vila de deserto no fim da tarde: praça, feira, terraços, vielas | `tools/mapas/vila.py` |
 | Estação Polar | 110 × 70 m (grande) | Base de pesquisa na neve, ao crepúsculo: garagem, alojamentos, passarelas | `tools/mapas/polar.py` |
 
@@ -226,6 +228,47 @@ grava o `.glb` e o `.json` (colisão, luzes, vidros). A casca do galpão
 contêiner é um túnel de quatro caixas. O segundo monta a cena. Os pontos
 de nascimento estão escritos no topo de `tools/mapas/armazem.py`.
 
+### O Armazém (Extended)
+
+O Armazém maior e mais alto, montado com as peças do mesmo pacote (sem
+modelo novo). O original continua igual. Para refazer:
+
+```sh
+python3 tools/mapas/blender/armazem_estendido.py <cena.fbx> <pacote.unitypackage>
+python3 tools/gerar_mapas.py armazem_estendido
+```
+
+O script usa a mesma leitura do conversor do Armazém
+(`armazem.carregar`: cada peça com a UV e a cor certas) e remonta:
+
+- **O miolo** de 45 × 30 m é o do Armazém, peça por peça, no mesmo lugar
+  (as rotas dos bots ali são as mesmas).
+- **As paredes andam para fora**: as compridas 7,5 m (45 m de fundo) e
+  as das pontas 15 m (75 m de comprido). Cada parede é um módulo de 15 m
+  do pacote, com a passarela, a escada, as janelas e o que está
+  encostado nela (prateleiras, extintor, caixas na passarela),
+  repetido; um pilar em cada emenda. São 10 escadas (5 por parede
+  comprida).
+- **Mais alto**: o teto sobe de 9 para 13 m. A parede estica só acima
+  de 5 m — as janelas ficam mais altas; a passarela (3,63 m), o
+  corrimão e a escada não mudam. O telhado, com as claraboias e as
+  vigas, sobe inteiro e se alarga para os 45 m.
+- **Alas novas** (os 15 m de cada ponta): uma pirâmide de contêineres
+  1-2-3-2-1 (até 8,7 m, degraus de 2,9 m para o lobo; cinco túneis por
+  baixo), uma pilha de dois e contêineres soltos, com enfeites copiados
+  do miolo (barris, pneus, sacos de areia, refletores). A oeste é a
+  leste girada 180°: o azul nasce no canto −X/+Z, o laranja no oposto.
+- **Corredores** novos de ponta a ponta junto às paredes compridas, com
+  pouca cobertura.
+
+As medidas estão no topo do script (`CONTEINERES`, `ENFEITES`,
+`ALTURA`). As rotas das alas foram achadas por busca de caminho com
+0,5 m de folga, longe das escadas das paredes. As 25 luminárias do teto
+estão a 12 m (mais alcance e força que no Armazém); só as das fileiras
+ímpares fazem sombra, para o custo não dobrar. As janelas sem vidro do
+Armazém (uma em cada parede da ponta) vêm do pacote e continuam assim
+nas cópias; as paredes invisíveis por fora seguram quem pula nelas.
+
 ### A foto do mapa
 
 Cada mapa tem uma foto (1920 × 1080) tirada no próprio jogo, de um bom
@@ -250,6 +293,6 @@ renderizada no Blender, do mesmo ângulo, até ser tirada no Godot.
 
 ## Testes
 
-`MapaArmazem`: o mapa carrega
+`MapaArmazem` e `MapaArmazemEstendido`: o mapa carrega
 na partida, os dois times nascem, ninguém cai do mapa, os bots saem da
 base pela malha de navegação e trocam tiro.
