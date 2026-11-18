@@ -103,6 +103,24 @@ void fragment() {
 		return m;
 	}
 
+	/// <summary>Faz de um painel do tema um cartão de vidro fosco (o que o
+	/// LobbyShell faz sozinho nos menus), para telas por cima da partida:
+	/// o mesmo desenho da variação, com o fundo trocado pelo que está
+	/// atrás, borrado.</summary>
+	public static T Frosted<T>(T panel, Color? tint = null) where T : PanelContainer
+	{
+		string variation = panel.ThemeTypeVariation.ToString();
+		if (UiTheme.Get().GetStylebox("panel", variation == "" ? "PanelContainer" : variation) is StyleBoxFlat themed)
+		{
+			var box = (StyleBoxFlat)themed.Duplicate();
+			box.BgColor = GlassMark;
+			box.BorderColor = new Color(0.75f, 0.88f, 1f, 0.14f);
+			panel.AddThemeStyleboxOverride("panel", box);
+			panel.Material = Glass(tint);
+		}
+		return panel;
+	}
+
 	/// <summary>O fundo dos menus por cima da partida: o mapa borrado,
 	/// puxado para a cor do ColorRect em <paramref name="strength"/>.
 	/// Use num ColorRect de cor opaca.</summary>

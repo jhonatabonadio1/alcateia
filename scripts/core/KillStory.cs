@@ -60,4 +60,8 @@ public sealed class KillStory
 	public const string TeamKillName = "TEAM KILL";
 	public const string TeamKillVoice = "voz_team_kill";
 	public const string RevengeVoice = "voz_vinganca";
+
+	/// <summary>A fala que vale para qualquer sequência enquanto a
+	/// específica não foi gravada.</summary>
+	public const string FallbackVoice = "voz_multi_kill";
 }

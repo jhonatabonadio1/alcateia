@@ -218,11 +218,21 @@ public partial class WorldAudio : Node
 		Match match = Match.Current;
 		if (match == null) return;
 
+		// A narração (18/11): o locutor avisa o começo, conta 3, 2, 1,
+		// manda lutar e diz o resultado. Cada fala só toca se o arquivo
+		// existir (assets/audio/voz_*; docs/AUDIO.md).
 		if (match.Phase == MatchPhase.Countdown)
 		{
 			int second = Mathf.CeilToInt((float)match.CountdownLeft);
-			if (second != _countdownSecond && second is >= 1 and <= 3)
-				Sfx.Local("contagem");
+			if (second != _countdownSecond)
+			{
+				if (_countdownSecond < 0 && second >= 5) Say("voz_prepare");
+				if (second is >= 1 and <= 3)
+				{
+					Sfx.Local("contagem");
+					Say($"voz_{second}");
+				}
+			}
 			_countdownSecond = second;
 		}
 
@@ -230,9 +240,28 @@ public partial class WorldAudio : Node
 		_phase = match.Phase;
 
 		if (_phase == MatchPhase.Live)
+		{
 			Sfx.Local("partida_inicio");
+			Say("voz_lutar");
+		}
 		else if (_phase == MatchPhase.Ended)
-			Sfx.Local(match.Winner == 0 ? "empate"
-				: match.Winner == (_localHealth?.Team ?? 0) ? "vitoria" : "derrota");
+		{
+			bool draw = match.Winner == 0;
+			bool won = match.Winner == (_localHealth?.Team ?? 0);
+			Sfx.Local(draw ? "empate" : won ? "vitoria" : "derrota");
+			// A fala entra depois do acorde, não em cima dele.
+			string voice = draw ? "voz_empate" : won ? "voz_vitoria" : "voz_derrota";
+			GetTree().CreateTimer(1.1).Timeout += () => Say(voice);
+		}
 	}
+
+	/// <summary>A voz do locutor: seca (não está no mundo) e um pouco
+	/// acima dos efeitos.</summary>
+	public static void Say(string voice)
+	{
+		if (!string.IsNullOrEmpty(voice) && Sfx.Has(voice)) Sfx.Local(voice, VoiceDb);
+	}
+
+	/// <summary>Volume das falas do locutor, em dB.</summary>
+	public const float VoiceDb = 1f;
 }

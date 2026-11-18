@@ -77,6 +77,7 @@ public partial class GameMenu : CanvasLayer
 
 	private void Abandon(string title, Action then)
 	{
+		using var style = UiTokens.MenuScope();
 		bool live = Match.Current != null && Match.Current.Phase != MatchPhase.Ended;
 		if (!live)
 		{
@@ -124,11 +125,12 @@ public partial class GameMenu : CanvasLayer
 
 	private void ShowSub(string title, Control content)
 	{
+		using var style = UiTokens.MenuScope();
 		Back();
 		_main.Visible = false;
 
 		var center = UiKit.Fill(new CenterContainer());
-		PanelContainer panel = UiKit.Panel("Modal");
+		PanelContainer panel = HudStyle.Frosted(UiKit.Panel("Modal"), Glass);
 		panel.CustomMinimumSize = new Vector2(620, 0);
 		center.AddChild(panel);
 
@@ -163,6 +165,7 @@ public partial class GameMenu : CanvasLayer
 
 	private void Options()
 	{
+		using var style = UiTokens.MenuScope();
 		// Áudio e mouse de um lado, a mira do outro: de pé, os três não
 		// cabem numa tela de 1080.
 		HBoxContainer columns = UiKit.Row(UiTokens.S3);
@@ -180,28 +183,41 @@ public partial class GameMenu : CanvasLayer
 
 	private void Controls()
 	{
+		using var style = UiTokens.MenuScope();
 		ShowSub("Controles", ControlsTable.Build());
 	}
 
 	// ------------------------------------------------------------------ montagem
 
+	/// <summary>O tom do vidro dos cartões deste menu.</summary>
+	private static readonly Color Glass = new(0.05f, 0.085f, 0.13f, 0.66f);
+
 	private void Build()
 	{
-		// O mapa borrado de fundo (a partida continua rodando atrás).
-		_root = UiTheme.Apply(UiKit.Fill(new ColorRect { Color = UiTokens.Bg, Material = HudStyle.Backdrop(0.5f) }));
+		// No estilo dos menus (pedido do Jhon, 18/11: o menu do Esc era um
+		// fundo preto sem relação com o resto): a partida aparece atrás,
+		// borrada e puxada para o azul-noite, e os cartões são de vidro,
+		// com as letras, os cantos e os botões do menu.
+		using var style = UiTokens.MenuScope();
+		_root = UiTheme.Apply(UiKit.Fill(new ColorRect { Color = UiTokens.Bg, Material = HudStyle.Backdrop(0.38f) }));
 		AddChild(_root);
 
 		var center = UiKit.Fill(new CenterContainer());
 		_root.AddChild(center);
 		_main = center;
 
-		PanelContainer panel = UiKit.Panel("Modal");
+		PanelContainer panel = HudStyle.Frosted(UiKit.Panel("Modal"), Glass);
 		panel.CustomMinimumSize = new Vector2(380, 0);
 		center.AddChild(panel);
 
 		VBoxContainer stack = UiKit.Column(UiTokens.S2);
 		panel.AddChild(stack);
 
+		// A marca no alto, como no menu de fora.
+		HBoxContainer brand = UiKit.Row(UiTokens.S2);
+		brand.AddChild(Icon.Make(IconKind.Wolf, 22, UiTokens.Accent));
+		brand.AddChild(UiKit.Caption(Credits.GameName, UiTokens.TextSecondary));
+		stack.AddChild(brand);
 		stack.AddChild(UiKit.Text("Partida", "Title"));
 		HBoxContainer note = UiKit.Row(UiTokens.S1);
 		note.AddChild(Icon.Make(IconKind.Warning, 14, UiTokens.Warning));

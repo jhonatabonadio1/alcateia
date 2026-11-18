@@ -15,6 +15,8 @@ using System.Linq;
 ///   que bate, na janela do golpe — garrada, salto e bote.
 /// - **Fumaça da transformação** (<see cref="TransformSmoke"/>): o corpo
 ///   troca na metade dela (<see cref="FormController.ShowsWolf"/>).
+/// - **Raios do especial** (<see cref="LightningBurst"/>): saem do corpo
+///   quando o especial dispara e correm pelo chão quando o lobo cai.
 ///
 /// **A cor é do personagem** (<see cref="CharacterSkin.EffectColor"/>);
 /// sem personagem, a do time.
@@ -236,7 +238,30 @@ public partial class WolfFx : Node3D
 				float impact = WolfMoves.ImpactDelay((WolfMove)move);
 				StrikeWindow(0f, impact + 0.3f);
 				break;
+
+			// O especial: raios saindo do corpo no disparo (e de novo na
+			// queda, rente ao chão — veja _Process).
+			case WolfMove.Pounce:
+				LightningBurst.Spawn(_body, new Vector3(0, 0.1f, 0), EffectColor, flat: false);
+				break;
 		}
+	}
+
+	private bool _wasFlying;
+
+	/// <summary>O lobo acabou de cair do especial: raios pelo chão.</summary>
+	private void WatchLanding()
+	{
+		bool flying = _weapon.IsPounceFlying;
+		if (_wasFlying && !flying && _form.IsWolf && (_health == null || !_health.IsDead)
+			&& _body.GetParent() is Node3D world)
+		{
+			// Solto no mundo, não no corpo: o lobo sai andando e os raios ficam.
+			float feet = _player?.FeetOffset ?? -0.875f;
+			LightningBurst burst = LightningBurst.Spawn(world, Vector3.Zero, EffectColor, flat: true);
+			burst.GlobalPosition = _body.GlobalPosition + new Vector3(0, feet + 0.08f, 0);
+		}
+		_wasFlying = flying;
 	}
 
 	private async void StrikeWindow(float delay, float length)
@@ -257,6 +282,7 @@ public partial class WolfFx : Node3D
 
 	public override void _Process(double delta)
 	{
+		WatchLanding();
 		float dt = (float)delta;
 		bool shown = _form.ShowsWolf && (_health == null || !_health.IsDead);
 

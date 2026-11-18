@@ -20,7 +20,8 @@ public enum InputButtons : ushort
 	Aim = 1 << 11,
 	Howl = 1 << 12,
 	HowlHeld = 1 << 13,
-	Drop = 1 << 14
+	Drop = 1 << 14,
+	Pounce = 1 << 15
 }
 
 /// <summary>

@@ -108,11 +108,13 @@ public partial class Hud
 		}
 	}
 
-	/// <summary>Toca a fala, se o arquivo existir em assets/audio (as
-	/// falas entram quando forem gravadas: docs/PENDENCIAS.md).</summary>
+	/// <summary>Toca a fala da sequência. Cada uma tem o seu arquivo
+	/// (voz_double_kill…) quando houver gravação; enquanto não há, todas
+	/// caem na fala genérica que existe (voz_multi_kill). docs/AUDIO.md.</summary>
 	private static void Say(string voice)
 	{
-		if (!string.IsNullOrEmpty(voice) && Sfx.Has(voice)) Sfx.Local(voice, 2f);
+		if (string.IsNullOrEmpty(voice)) return;
+		WorldAudio.Say(Sfx.Has(voice) ? voice : voice == KillStory.RevengeVoice ? "" : KillStory.FallbackVoice);
 	}
 
 	/// <summary>Quantos inimigos estão de pé, e quantos há no outro time.</summary>

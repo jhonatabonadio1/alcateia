@@ -64,6 +64,18 @@ public static class UiTokens
 	/// </summary>
 	public static bool Menu { get; set; }
 
+	/// <summary>Liga o estilo dos menus só enquanto se monta uma tela por
+	/// cima da partida (o menu do Esc), e devolve o que estava ao sair:
+	/// <c>using var _ = UiTokens.MenuScope();</c></summary>
+	public static System.IDisposable MenuScope() => new Scope();
+
+	private sealed class Scope : System.IDisposable
+	{
+		private readonly bool _was = Menu;
+		public Scope() => Menu = true;
+		public void Dispose() => Menu = _was;
+	}
+
 	// Jogo: fundo cinza quase preto, levemente azulado — não preto puro.
 	// Menus: azul-noite.
 	private static readonly Color DarkBg = new("0f1318"), MenuBg = new("0a1119");

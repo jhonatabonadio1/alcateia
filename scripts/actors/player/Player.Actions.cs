@@ -111,15 +111,11 @@ public partial class Player
 		if (_intent.AttackReleased)
 			_weapon.ReleaseGrenade();
 
-		// Botão direito, de lobo: salto no chão, bote no ar. Quem move o corpo
-		// durante os dois é o passo de física, pela arma.
+		// Botão direito, de lobo: o bote, no ar. Quem move o corpo durante
+		// ele é o passo de física, pela arma.
 		//
-		// Pulo e especial no mesmo quadro: quem apertou os dois quer o
-		// bote, não o salto do chão. O pulo sai agora e o bote no quadro
-		// seguinte, já no ar.
-		//
-		// No chão, segurar carrega o salto e soltar salta (decisão do
-		// Jhon). Apertar e soltar no mesmo quadro é o salto mais curto.
+		// Pulo e botão direito no mesmo quadro: o pulo sai agora e o bote
+		// no quadro seguinte, já no ar.
 		if (_diveAfterJump)
 		{
 			_diveAfterJump = false;
@@ -133,8 +129,15 @@ public partial class Player
 				_weapon.TrySpecial();
 		}
 
-		if (_intent.SpecialReleased)
-			_weapon.ReleaseCharge();
+		// Q, de lobo: o especial, num toque. Se há um inimigo na mira, o
+		// salto vai nele; senão, para onde a mira toca o mapa.
+		if (_intent.Pounce && _form.IsWolf)
+		{
+			AimPounce();
+			_weapon.TryPounce();
+			// A arma já guardou o alvo; a mira volta a ser do mouse.
+			LockTarget = null;
+		}
 
 		// R faz o que a forma permite: ruge de lobo, recarrega de
 		// humano. Uma tecla, um gesto, dois corpos.

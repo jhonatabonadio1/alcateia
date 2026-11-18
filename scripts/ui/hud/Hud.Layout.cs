@@ -318,7 +318,7 @@ public partial class Hud
 		head.AddChild(UiKit.Spacer());
 		column.AddChild(head);
 
-		string[] names = { "Garrada · clique", "Salto · direito no chão", "Bote · direito no ar" };
+		string[] names = { "Garrada · clique", "Especial · Q", "Bote · direito no ar" };
 		for (int i = 0; i < 3; i++)
 		{
 			HBoxContainer row = UiKit.Row(UiTokens.S2);
@@ -352,7 +352,7 @@ public partial class Hud
 		column.OffsetLeft = -170;
 		column.OffsetRight = 170;
 
-		_pounceTile = new AbilityTile { Title = "SALTO", Key = "M2", Kind = IconKind.Claw };
+		_pounceTile = new AbilityTile { Title = "ESPECIAL", Key = "Q", Kind = IconKind.Claw };
 		_pounceTile.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 		column.AddChild(_pounceTile);
 

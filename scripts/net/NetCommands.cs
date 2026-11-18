@@ -23,6 +23,7 @@ public static class NetCommands
 		if (i.AttackReleased) b |= InputButtons.AttackReleased;
 		if (i.Special) b |= InputButtons.Special;
 		if (i.SpecialReleased) b |= InputButtons.SpecialReleased;
+		if (i.Pounce) b |= InputButtons.Pounce;
 		if (i.AimHeld) b |= InputButtons.Aim;
 		if (i.Howl) b |= InputButtons.Howl;
 		if (i.HowlHeld) b |= InputButtons.HowlHeld;
@@ -60,6 +61,7 @@ public static class NetCommands
 		AttackReleased = c.Has(InputButtons.AttackReleased),
 		Special = c.Has(InputButtons.Special),
 		SpecialReleased = c.Has(InputButtons.SpecialReleased),
+		Pounce = c.Has(InputButtons.Pounce),
 		AimHeld = c.Has(InputButtons.Aim),
 		Howl = c.Has(InputButtons.Howl),
 		HowlHeld = c.Has(InputButtons.HowlHeld)

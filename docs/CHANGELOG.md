@@ -2,6 +2,21 @@
 
 ## Não lançado
 
+### Especial no Q com raios, menu do Esc no estilo do jogo (18/11)
+- **O especial do lobo é o Q, num toque** (era segurar o botão direito
+  no chão para carregar): salta na hora, com a carga cheia, para onde a
+  mira aponta — ou em cima do inimigo que estiver na mira (até 8° do
+  centro, `Player.PounceAssistAngle`). O botão direito, de lobo, ficou
+  só com o bote no ar. O modo alvo do Tab saiu: sem carga, não há quando
+  escolher; o Tab voltou a ser só o placar.
+- **Raios** (`LightningBurst`): saem do corpo quando o especial dispara
+  e correm pelo chão quando o lobo cai, na cor do personagem.
+- **Menu do Esc** no estilo dos menus: a partida borrada e azulada atrás,
+  cartões de vidro, as letras e os botões do menu (`UiTokens.MenuScope`).
+- **Locutor**: o jogo passa a tocar `voz_prepare`, `voz_3/2/1`,
+  `voz_lutar`, `voz_vitoria/derrota/empate` e `voz_multi_kill` (a fala
+  de qualquer sequência enquanto as específicas não existem).
+
 ### WolfLeague, caveira na mira, DOUBLE KILL no alto (18/11)
 - **O jogo se chama WolfLeague** na tela (topo do menu, entrada,
   créditos, título da janela: `Credits.GameName`). A pasta, o

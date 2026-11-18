@@ -89,24 +89,34 @@ public partial class Weapon
 	[Export] public float PounceSplash = 0.3f;
 
 	/// <summary>
-	/// Botão direito. No chão, o salto; no ar, o bote. Os dois prendem o
-	/// lobo até o fim — o salto no lugar, o bote na trajetória — e o
-	/// dano dos dois sai quando o lobo de fato cai.
+	/// Botão direito, no ar: o bote. Prende o lobo na trajetória até o
+	/// fim, e o dano sai quando ele de fato cai. No chão o botão direito
+	/// não faz mais nada: o salto é o especial, no Q
+	/// (<see cref="TryPounce"/>).
 	/// </summary>
 	public void TrySpecial()
 	{
 		if (_cooldown > 0 || _charging) return;
 		if (!_form.IsWolf || !_form.CanAttack) return;
+		if (!_body.IsOnFloor()) Leap();
+	}
 
-		// No chão, o salto espera a recarga; no ar, o bote é outra
-		// habilidade e sai sempre.
-		if (_body.IsOnFloor())
-		{
-			if (!PounceReady) return;
-			BeginCharge();
-		}
-		else
-			Leap();
+	/// <summary>
+	/// O especial do lobo, num toque (Q; decisão do Jhon, 18/11): o salto
+	/// sai na hora, com a carga cheia, para onde a mira aponta — ou em
+	/// cima do inimigo que estiver na mira (quem chama diz qual:
+	/// <see cref="Player.LockTarget"/>). Só no chão e com a recarga pronta.
+	/// Antes era segurar o botão direito para carregar e soltar.
+	/// </summary>
+	public bool TryPounce()
+	{
+		if (_cooldown > 0 || _charging) return false;
+		if (!_form.IsWolf || !_form.CanAttack || !_body.IsOnFloor() || !PounceReady) return false;
+
+		BeginCharge();
+		_chargeTime = PounceChargeTime;
+		ReleaseCharge();
+		return true;
 	}
 
 	private bool _charging;

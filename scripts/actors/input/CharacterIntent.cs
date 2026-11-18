@@ -39,9 +39,12 @@ public readonly record struct CharacterIntent
 	public bool AttackHeld { get; init; }
 	public bool AttackReleased { get; init; }
 
-	/// <summary>Botão direito: salto do lobo (segurar carrega) ou bote no ar.</summary>
+	/// <summary>Botão direito, de lobo: o bote, no ar.</summary>
 	public bool Special { get; init; }
 	public bool SpecialReleased { get; init; }
+
+	/// <summary>Q, de lobo: o especial (o salto), num toque.</summary>
+	public bool Pounce { get; init; }
 
 	/// <summary>Botão direito segurado: de humano, mirar pela arma.</summary>
 	public bool AimHeld { get; init; }
@@ -50,8 +53,9 @@ public readonly record struct CharacterIntent
 	public bool Howl { get; init; }
 	public bool HowlHeld { get; init; }
 
-	/// <summary>Apertou o Tab: carregando o salto do lobo, liga ou desliga o
-	/// modo alvo (<see cref="Player.TargetMode"/>) em vez do placar.</summary>
+	/// <summary>Apertou o Tab. Ligava o modo alvo enquanto o salto
+	/// carregava; com o especial num toque (Q) não há mais carga, e o Tab
+	/// é só o placar.</summary>
 	public bool TargetToggle { get; init; }
 
 	/// <summary>G: soltar a arma da mão.</summary>
@@ -78,6 +82,7 @@ public readonly record struct CharacterIntent
 		AttackHeld = Input.IsActionPressed("attack"),
 		AttackReleased = Input.IsActionJustReleased("attack"),
 		Special = Input.IsActionJustPressed("special"),
+		Pounce = Input.IsActionJustPressed("pounce"),
 		SpecialReleased = Input.IsActionJustReleased("special"),
 		AimHeld = Input.IsActionPressed("special"),
 		Howl = Input.IsActionJustPressed("howl"),
