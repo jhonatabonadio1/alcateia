@@ -2,6 +2,22 @@
 
 ## Não lançado
 
+### Mira animada do AR-15 (18/11)
+- **Mirar com o AR-15 (e o Ultimate) leva a arma ao olho.** Antes o botão
+  direito só fechava a câmera e desenhava uma mira circular; agora a arma
+  sobe da cintura, a alça e a massa ficam em linha no centro da tela e a
+  cruz some. Cinco clipes novos no conjunto (`tools/armas/mira.py`):
+  `mirar` (0,26 s, sobe num arco, inclinada, e assenta), `desmirar`
+  (0,24 s), `mira` (respiração com um quarto do tamanho), `mira_andar`
+  (balanço com 35%) e `mira_tiro` (coice com 60%).
+- Soltar no meio da subida (ou apertar no meio da descida) continua de
+  onde a arma está. Recarregar, guardar e sacar tiram da mira.
+- A boca do cano (clarão, traçante, cápsula) segue o osso da arma
+  (`cano_osso` na ficha), então o tiro na mira sai do cano e não da
+  cintura.
+- As outras armas miram como antes, até ganharem os clipes.
+- Teste novo, `MiraDaArma`.
+
 ### Lobo agachado refeito; bater na corrida de quatro; pulo, mira e Shift do humano (18/11)
 - **Lobo agachado e andando agachado** refeitos
   (`tools/rugido/agachar.py`). Antes: braços congelados (as mãos andavam

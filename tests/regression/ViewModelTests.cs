@@ -66,6 +66,8 @@ public sealed class ViewModelTest : RegressionTest
 			if (!view.HasRig) continue;
 			b.Check(held.FindChildren("*", "Skeleton3D", true, false).Count >= 1
 				&& held.FindChildren("*", "MeshInstance3D", true, false).Count >= 2, $"{id}: braços e arma do conjunto, com esqueleto");
+			// A boca do cano segue a arma na animação: mede com ela já sacada.
+			await b.Until(() => view.RigAnimation == "parado", 2);
 			Node3D muzzle = held.GetNodeOrNull<Node3D>(WeaponModel.MuzzleName);
 			float ahead = muzzle == null ? 0f : -view.ToLocal(muzzle.GlobalPosition).Z;
 			b.Check(ahead > 0.15f && ahead < 0.7f, $"{id}: a boca do cano fica à frente do olho, sem atravessar a parede ({ahead:0.00} m)");

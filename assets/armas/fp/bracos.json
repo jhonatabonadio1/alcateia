@@ -64,9 +64,34 @@
     "clipe": "andar",
     "de": 0.0
    },
+   "desmirar": {
+    "ate": 0.24,
+    "clipe": "desmirar",
+    "de": 0.0
+   },
    "guardar": {
     "ate": 0.5,
     "clipe": "guardar",
+    "de": 0.0
+   },
+   "mira": {
+    "ate": 2.0,
+    "clipe": "mira",
+    "de": 0.0
+   },
+   "mira_andar": {
+    "ate": 0.8,
+    "clipe": "mira_andar",
+    "de": 0.0
+   },
+   "mira_tiro": {
+    "ate": 0.5333,
+    "clipe": "mira_tiro",
+    "de": 0.0
+   },
+   "mirar": {
+    "ate": 0.26,
+    "clipe": "mirar",
     "de": 0.0
    },
    "parado": {
@@ -99,6 +124,14 @@
    -0.0722,
    -0.6639
   ],
+  "cano_osso": {
+   "osso": "ik_hand_gun",
+   "ponto": [
+    0.3652,
+    -49.1314,
+    2.9288
+   ]
+  },
   "fiel": true,
   "fov": 63.09,
   "sacar": true
@@ -115,9 +148,34 @@
     "clipe": "andar",
     "de": 0.0
    },
+   "desmirar": {
+    "ate": 0.24,
+    "clipe": "desmirar",
+    "de": 0.0
+   },
    "guardar": {
     "ate": 0.5,
     "clipe": "guardar",
+    "de": 0.0
+   },
+   "mira": {
+    "ate": 2.0,
+    "clipe": "mira",
+    "de": 0.0
+   },
+   "mira_andar": {
+    "ate": 0.8,
+    "clipe": "mira_andar",
+    "de": 0.0
+   },
+   "mira_tiro": {
+    "ate": 0.5333,
+    "clipe": "mira_tiro",
+    "de": 0.0
+   },
+   "mirar": {
+    "ate": 0.26,
+    "clipe": "mirar",
     "de": 0.0
    },
    "parado": {
@@ -150,6 +208,14 @@
    -0.0722,
    -0.6639
   ],
+  "cano_osso": {
+   "osso": "ik_hand_gun",
+   "ponto": [
+    0.3652,
+    -49.1314,
+    2.9288
+   ]
+  },
   "fiel": true,
   "fov": 63.09,
   "sacar": true

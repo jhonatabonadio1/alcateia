@@ -30,6 +30,10 @@ public partial class Weapon
 	/// sem estar recarregando.</summary>
 	public bool CanAim => !_form.IsWolf && !_health.IsDead && Held != null && !IsReloading;
 
+	/// <summary>O dono está pedindo a mira e dá para mirar agora: é o que
+	/// a arma na mão segue para subir ao olho (<see cref="ViewModel"/>).</summary>
+	public bool WantsAim => _aimWanted && CanAim;
+
 	/// <summary>O dono pede (ou solta) a mira. Só o jogador chama.</summary>
 	public void SetAiming(bool on) => _aimWanted = on;
 

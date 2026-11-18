@@ -139,6 +139,7 @@ public partial class ViewModel
 		_rigClips.Clear();
 		_rigPlaying = "";
 		_rigBusy = 0;
+		ForgetMuzzle();
 	}
 
 	/// <summary>Monta os braços animados desta arma. Falso se ela não tem
@@ -175,6 +176,7 @@ public partial class ViewModel
 		Vector3 eject = new(muzzle.X + 0.02f, muzzle.Y + 0.03f, muzzle.Z + Mathf.Min(0.55f, -muzzle.Z * 0.5f));
 		_held.AddChild(new Marker3D { Name = WeaponModel.MuzzleName, Position = scene.Transform * muzzle });
 		_held.AddChild(new Marker3D { Name = WeaponModel.EjectName, Position = scene.Transform * eject });
+		AttachMuzzle(rig, scene);
 
 		_rigPlayer = scene.FindChild("AnimationPlayer", true, false) as AnimationPlayer;
 		foreach (var (name, value) in rig["animacoes"].AsGodotDictionary())
@@ -193,7 +195,7 @@ public partial class ViewModel
 			// começo, e a cada volta os braços pulavam). Vai e volta.
 			if (clip == "Scene")
 				_rigPlayer.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Pingpong;
-			else if (name.AsString() is "parado" or "andar" or "correr")
+			else if (name.AsString() is "parado" or "andar" or "correr" or "mira" or "mira_andar")
 				_rigPlayer.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Linear;
 		}
 
@@ -334,6 +336,7 @@ public partial class ViewModel
 		float holster = Arsenal.Get(_heldId)?.HolsterTime ?? 0f;
 		if (holster <= 0f) holster = RigHolsterTime;
 		PlayRig("guardar", holster, 0.05);
+		_rigAiming = false;
 		_rigBusy = holster;
 		_holster = holster;
 		return true;
@@ -408,15 +411,22 @@ public partial class ViewModel
 
 	private void RigFired()
 	{
-		if (!HasRig || !_rigClips.TryGetValue("tiro", out Clip shot)) return;
+		if (!HasRig) return;
 
-		PlayRig("tiro", 0, 0.02);
+		// Na mira, o tiro da mira: a arma fica no olho.
+		string name = _rigAiming && _rigClips.ContainsKey("mira_tiro") ? "mira_tiro" : "tiro";
+		if (!_rigClips.TryGetValue(name, out Clip shot)) return;
+
+		// Atirou no meio do caminho (subindo ou descendo): a arma chega um pouco mais devagar.
+		bool moving = _rigPlaying is "mirar" or "desmirar" && _rigPlayer.IsPlaying();
+		PlayRig(name, 0, moving ? 0.07 : 0.02);
 		_rigBusy = shot.Length;
 	}
 
 	private void UpdateRig(float dt)
 	{
 		_rigBusy -= dt;
+		FollowMuzzle();
 
 		// A armada do golpe acabou: a volta da lâmina.
 		if (_swingTail is Clip tail && (_swingTailIn -= dt) <= 0)
@@ -457,20 +467,26 @@ public partial class ViewModel
 				PlayRig(name, _weapon.ReloadDuration * (1f - p));
 			_rigLastReload = p;
 			_rigBusy = 0;
+			// A recarga tira da mira: quando acabar, a arma está na cintura.
+			_rigAiming = false;
 			return;
 		}
 
 		_rigLastReload = 0f;
+		if (UpdateRigAim()) return;
 		if (_rigBusy > 0 && _rigPlayer.IsPlaying()) return;
 
 		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
-		string rest = _body.IsOnFloor() && flat.Length() > 0.5f && _rigClips.ContainsKey("andar") ? "andar" : "parado";
+		bool moving = _body.IsOnFloor() && flat.Length() > 0.5f;
+		string rest = _rigAiming
+			? moving && _rigClips.ContainsKey("mira_andar") ? "mira_andar" : "mira"
+			: moving && _rigClips.ContainsKey("andar") ? "andar" : "parado";
 
 		// Só troca entre parado e andar depois de o novo estado durar um
 		// pouco. Descendo escada ou esbarrando numa quina o corpo perde o
 		// chão por um quadro, e cada troca recomeçava a animação do
 		// início: os braços ficavam reiniciando (Jhon, 13/11).
-		bool resting = _rigPlaying is "parado" or "andar";
+		bool resting = _rigPlaying is "parado" or "andar" or "mira" or "mira_andar";
 		if (resting && _rigPlaying != rest && _rigPlayer.IsPlaying())
 		{
 			_rigRestHold += dt;

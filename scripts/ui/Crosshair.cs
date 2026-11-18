@@ -52,6 +52,17 @@ public partial class Crosshair : Control
 	{
 		if (Form != null && Form.IsWolf) return;
 		float aim = Weapon?.AimEase ?? 0f;
+
+		// A arma que mira pela própria mira (o AR-15, 18/11): a cruz some
+		// e quem aponta é a alça e a massa da arma, no centro da tela.
+		bool sights = aim > 0f && ViewModel.HasSights(Weapon?.HeldId);
+		SelfModulate = new Color(1, 1, 1, sights ? 1f - aim : 1f);
+		if (sights)
+		{
+			if (aim < 1f) Paint(this, Size / 2f, Settings.Values.Crosshair, _spread * PixelsPerDegree);
+			return;
+		}
+
 		Paint(this, Size / 2f, Settings.Values.Crosshair, _spread * PixelsPerDegree, aim);
 		if (aim > 0f) PaintScope(this, Size / 2f, Size.Y, Settings.Values.Crosshair, ScopeSpread(), aim);
 	}
