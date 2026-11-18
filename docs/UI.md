@@ -258,11 +258,21 @@ em `scripts/ui/kit/HudStyle.cs`:
 **Os menus de fora da partida (17/11)**, no mesmo estilo — e era isto
 que o Jhon queria dizer com "HUD" (o de combate ficou, ele gostou):
 
-- **Fundo**: a foto do mapa da lista, borrada e escurecida, com um
-  mosaico de triângulos bem fraco por cima (o low poly), vinheta e um
-  zoom lento sem fim (`MenuBackdrop`, no `LobbyShell`).
-- **Painéis translúcidos** (Surface1/2/3, Card, Header, Modal): em cima
-  do fundo borrado, viram vidro, sem shader.
+- **Paleta clara nos menus** (17/11, depois de ver o fundo do mapa: "pode
+  ser uma cor clara igual Overwatch, Valorant de inspiração"):
+  `UiTokens.Light`, ligada pelo `LobbyShell` ao abrir e desligada ao sair.
+  Fundo quase branco e frio, cartões brancos com sombra curta, texto
+  azul-marinho (#0f1923, o de Valorant), destaque no laranja de
+  Overwatch (#f06a1d, texto branco no botão). Os tokens de cor viraram
+  propriedades: são lidos na hora de montar o controle, e o tema tem uma
+  versão de cada paleta. Na partida (HUD, Esc, conjunto, resultado) a
+  paleta continua a escura, por cima do jogo.
+- **Fundo** (`MenuBackdrop`): degradê frio quase branco, mosaico de
+  triângulos bem fraco (o low poly), duas faixas largas na diagonal e
+  um fio laranja (o corte de Valorant), que andam devagar. Sem imagem.
+- **Ficam escuros de propósito**: a placa das insígnias de patente (as
+  cores das patentes são claras) e o desenho das armas, que no claro usa
+  tons escuros.
 - **Facetado em tudo**: `UiTheme.Box` corta o canto de cima à esquerda e
   o de baixo à direita a 45° (o raio de antes × 2,5) no lugar de
   arredondar. Vale para todo painel, botão, campo e ficha do jogo.

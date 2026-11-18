@@ -1,44 +1,44 @@
 using Godot;
 
 /// <summary>
-/// O fundo dos menus (pedido do Jhon, 17/11): a foto do mapa, borrada e
-/// escurecida, com um mosaico de triângulos bem fraco por cima (o low
-/// poly) e um zoom lento que não para — o menu parece vivo sem distrair.
-/// Os painéis do tema são translúcidos: em cima deste fundo, viram vidro.
+/// O fundo dos menus (pedido do Jhon, 17/11): claro, como o de Overwatch,
+/// com o corte de Valorant — um degradê frio quase branco, um mosaico de
+/// triângulos bem fraco (o low poly), duas faixas largas na diagonal um
+/// pouco mais escuras e um fio laranja cruzando a tela. Tudo desenhado
+/// por shader, sem imagem.
+///
+/// O conteúdo das telas fica num palco escuro por cima (LobbyShell): o
+/// texto do jogo é claro, e direto no fundo claro ele sumiria.
 /// </summary>
 public partial class MenuBackdrop : Control
 {
-	/// <summary>Raio do borrão, em fração da largura da foto.</summary>
-	[Export] public float Blur = 0.0055f;
+	/// <summary>Cor do alto, à esquerda.</summary>
+	[Export] public Color Top = new("eef2f7");
 
-	/// <summary>Quanto o fundo puxa para a cor escura do tema (0 = a foto,
-	/// 1 = só a cor).</summary>
-	[Export] public float Darken = 0.58f;
+	/// <summary>Cor de baixo, à direita.</summary>
+	[Export] public Color Bottom = new("c9d3df");
+
+	/// <summary>O fio da diagonal.</summary>
+	[Export] public Color Accent = UiTokens.TeamOrange;
 
 	/// <summary>Força do mosaico de triângulos.</summary>
-	[Export] public float Facets = 0.045f;
+	[Export] public float Facets = 0.035f;
 
 	private const string Code = @"
 shader_type canvas_item;
-uniform float radius = 0.0055;
-uniform vec4 tint : source_color = vec4(0.06, 0.075, 0.095, 1.0);
-uniform float darken = 0.58;
-uniform float facet = 0.045;
-uniform float cell = 120.0;
+uniform vec4 top_color : source_color = vec4(0.933, 0.949, 0.969, 1.0);
+uniform vec4 bottom_color : source_color = vec4(0.788, 0.827, 0.875, 1.0);
+uniform vec4 accent : source_color = vec4(1.0, 0.478, 0.184, 1.0);
+uniform float facet = 0.035;
+uniform float cell = 140.0;
+uniform float aspect = 1.777;
+uniform float drift = 0.0;
 void fragment() {
-	vec3 acc = vec3(0.0);
-	float total = 0.0;
-	for (int x = -3; x <= 3; x++) {
-		for (int y = -3; y <= 3; y++) {
-			float k = exp(-float(x * x + y * y) / 8.0);
-			acc += texture(TEXTURE, UV + vec2(float(x), float(y)) * radius).rgb * k;
-			total += k;
-		}
-	}
-	vec3 col = mix(acc / total, tint.rgb, darken);
+	vec2 uv = UV;
+	vec3 col = mix(top_color.rgb, bottom_color.rgb, clamp(uv.y * 0.75 + uv.x * 0.35, 0.0, 1.0));
 
-	// Mosaico: a tela em quadrados cortados na diagonal, cada triângulo
-	// um pouco mais claro ou escuro.
+	// Mosaico: quadrados cortados na diagonal, cada triângulo um pouco
+	// mais claro ou escuro.
 	vec2 p = FRAGCOORD.xy / cell;
 	vec2 id = floor(p);
 	vec2 f = fract(p);
@@ -46,56 +46,44 @@ void fragment() {
 	float h = fract(sin(dot(id + half_ * vec2(17.0, 31.0), vec2(12.9898, 78.233))) * 43758.5453);
 	col += (h - 0.5) * facet;
 
-	// Vinheta: as bordas mais escuras, o olho vai para o meio.
-	vec2 q = UV - 0.5;
-	col *= 1.0 - dot(q, q) * 0.9;
+	// Faixas diagonais (o corte de Valorant): duas largas, levemente mais
+	// escuras, e o fio laranja entre elas. Andam devagar.
+	float d = uv.x * aspect * 0.55 - uv.y + drift;
+	float slab = smoothstep(0.58, 0.585, d) * (1.0 - smoothstep(0.86, 0.865, d));
+	float slab2 = smoothstep(1.02, 1.025, d) * (1.0 - smoothstep(1.12, 1.125, d));
+	col *= 1.0 - 0.06 * slab - 0.04 * slab2;
+	float wire = smoothstep(0.935, 0.937, d) * (1.0 - smoothstep(0.943, 0.945, d));
+	col = mix(col, accent.rgb, wire * 0.9);
+
+	// Vinheta leve nas bordas.
+	vec2 q = uv - 0.5;
+	col *= 1.0 - dot(q, q) * 0.25;
 	COLOR = vec4(col, 1.0);
 }";
 
-	private TextureRect _photo;
-	private Tween _drift;
+	private ShaderMaterial _material;
+	private float _time;
 
 	public override void _Ready()
 	{
 		MouseFilter = MouseFilterEnum.Ignore;
-		ClipContents = true;
 		UiKit.Fill(this);
-		AddChild(UiKit.Fill(new ColorRect { Color = UiTokens.Bg, MouseFilter = MouseFilterEnum.Ignore }));
 
-		string cover = Maps.All.Count > 0 ? Maps.All[0].Picture : null;
-		if (string.IsNullOrEmpty(cover) || !ResourceLoader.Exists(cover)) return;
+		_material = new ShaderMaterial { Shader = new Shader { Code = Code } };
+		_material.SetShaderParameter("top_color", Top);
+		_material.SetShaderParameter("bottom_color", Bottom);
+		_material.SetShaderParameter("accent", Accent);
+		_material.SetShaderParameter("facet", Facets);
 
-		var material = new ShaderMaterial { Shader = new Shader { Code = Code } };
-		material.SetShaderParameter("radius", Blur);
-		material.SetShaderParameter("darken", Darken);
-		material.SetShaderParameter("facet", Facets);
-		material.SetShaderParameter("tint", UiTokens.Bg);
-
-		_photo = UiKit.Fill(new TextureRect
-		{
-			Texture = GD.Load<Texture2D>(cover),
-			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-			StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
-			MouseFilter = MouseFilterEnum.Ignore,
-			Material = material
-		});
-		AddChild(_photo);
-
-		Resized += Center;
-		Center();
-		Drift();
+		var fill = UiKit.Fill(new ColorRect { Color = Colors.White, MouseFilter = MouseFilterEnum.Ignore, Material = _material });
+		AddChild(fill);
+		Resized += () => _material.SetShaderParameter("aspect", Size.Y > 0 ? Size.X / Size.Y : 1.777f);
 	}
 
-	private void Center() { if (_photo != null) _photo.PivotOffset = Size / 2f; }
-
-	/// <summary>Zoom e deslize lentos, ida e volta, sem fim.</summary>
-	private void Drift()
+	public override void _Process(double delta)
 	{
-		_drift = CreateTween().SetLoops();
-		_drift.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
-		_drift.TweenProperty(_photo, "scale", new Vector2(1.08f, 1.08f), 18.0);
-		_drift.Parallel().TweenProperty(_photo, "position", new Vector2(-24, -10), 18.0);
-		_drift.TweenProperty(_photo, "scale", Vector2.One, 18.0);
-		_drift.Parallel().TweenProperty(_photo, "position", Vector2.Zero, 18.0);
+		// As faixas vão e voltam bem devagar: o menu parece vivo sem distrair.
+		_time += (float)delta;
+		_material?.SetShaderParameter("drift", Mathf.Sin(_time * 0.12f) * 0.04f);
 	}
 }

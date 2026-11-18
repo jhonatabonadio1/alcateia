@@ -21,9 +21,11 @@ using Godot;
 /// </summary>
 public static class UiTheme
 {
-	private static Theme _theme;
+	private static Theme _dark;
+	private static Theme _light;
 
-	public static Theme Get() => _theme ??= Build();
+	/// <summary>O tema da paleta em uso (<see cref="UiTokens.Light"/>).</summary>
+	public static Theme Get() => UiTokens.Light ? _light ??= Build() : _dark ??= Build();
 
 	/// <summary>Aplica o tema e devolve o próprio controle, para encadear.</summary>
 	public static T Apply<T>(T control) where T : Control
@@ -56,6 +58,16 @@ public static class UiTheme
 		int cut = Facet(radius);
 		box.CornerRadiusTopLeft = cut;
 		box.CornerRadiusBottomRight = cut;
+		return box;
+	}
+
+	/// <summary>Na paleta clara, uma sombra curta embaixo do painel.</summary>
+	private static StyleBoxFlat Lifted(StyleBoxFlat box)
+	{
+		if (!UiTokens.Light) return box;
+		box.ShadowColor = new Color(0.06f, 0.1f, 0.16f, 0.12f);
+		box.ShadowSize = 8;
+		box.ShadowOffset = new Vector2(0, 3);
 		return box;
 	}
 
@@ -235,10 +247,12 @@ public static class UiTheme
 
 		// Translúcidos: em cima do fundo borrado do menu (MenuBackdrop),
 		// viram vidro.
-		PanelVariant(t, "Surface1", Box(new Color(UiTokens.Surface1, 0.8f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3));
-		PanelVariant(t, "Surface2", Box(new Color(UiTokens.Surface2, 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3));
-		PanelVariant(t, "Surface3", Box(new Color(UiTokens.Surface3, 0.86f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
-		PanelVariant(t, "Card", Box(new Color(UiTokens.Surface2, 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, 0, 0));
+		// No claro, os cartões são brancos quase opacos, com uma sombra
+		// curta embaixo (o volume de Overwatch).
+		PanelVariant(t, "Surface1", Lifted(Box(new Color(UiTokens.Surface1, UiTokens.Light ? 0.9f : 0.8f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3)));
+		PanelVariant(t, "Surface2", Lifted(Box(new Color(UiTokens.Surface2, UiTokens.Light ? 0.92f : 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3)));
+		PanelVariant(t, "Surface3", Box(new Color(UiTokens.Surface3, UiTokens.Light ? 0.95f : 0.86f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
+		PanelVariant(t, "Card", Lifted(Box(new Color(UiTokens.Surface2, UiTokens.Light ? 0.92f : 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, 0, 0)));
 		PanelVariant(t, "Bare", Box(Colors.Transparent, default, 0, 0, 0, 0));
 		// HudPanel sem vidro (o vidro precisa de material: HudStyle.Panel).
 		PanelVariant(t, "HudPanel", HudStyle.Facet(new Color(UiTokens.Bg, 0.72f), new Color(1, 1, 1, 0.06f), 1, HudStyle.Skew, HudStyle.Cut, UiTokens.S3, UiTokens.S2));

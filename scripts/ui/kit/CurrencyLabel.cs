@@ -28,7 +28,7 @@ public partial class CurrencyLabel : HBoxContainer
 	private Tween _count;
 
 	public static Color ColorOf(Currency kind) =>
-		kind == Currency.Presas ? new Color("e9dcc0") : new Color("e5484d");
+		kind == Currency.Presas ? (UiTokens.Light ? new Color("8f6d2a") : new Color("e9dcc0")) : new Color("e5484d");
 
 	public static string Sigla(Currency kind) => kind == Currency.Presas ? "P" : "S";
 	public static string NameOf(Currency kind) => kind == Currency.Presas ? "Presas" : "Sangue";

@@ -36,10 +36,11 @@ public partial class WeaponArt : Control
 		SizeFlagsVertical = SizeFlags.ExpandFill
 	};
 
-	private static readonly Color Metal = new("c3c9d2");
-	private static readonly Color Dark = new("7d8693");
-	private static readonly Color Wood = new("a8744a");
-	private static readonly Color Polymer = new("5f6773");
+	// No claro (menus), o desenho é escuro: claro sobre o cartão branco sumia.
+	private static Color Metal => UiTokens.Light ? new Color("5d6774") : new Color("c3c9d2");
+	private static Color Dark => UiTokens.Light ? new Color("2c333d") : new Color("7d8693");
+	private static Color Wood => UiTokens.Light ? new Color("8a5a33") : new Color("a8744a");
+	private static Color Polymer => UiTokens.Light ? new Color("1f252d") : new Color("5f6773");
 
 	private float _s;
 	private Vector2 _o;
@@ -207,7 +208,7 @@ public partial class WeaponArt : Control
 
 	private void Tattoo()
 	{
-		Color ink = new("d9c7a3");
+		Color ink = UiTokens.Light ? new Color("8a6f3e") : new Color("d9c7a3");
 		DrawArcAt(100, 40, 30, ink);
 		for (int i = 0; i < 3; i++)
 		{

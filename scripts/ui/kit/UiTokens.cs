@@ -45,27 +45,55 @@ public static class UiTokens
 	public const int Caption = 13;
 
 	// ---------------------------------------------------------------- paleta
-	// Fundo cinza quase preto, levemente azulado — não preto puro.
-	public static readonly Color Bg = new("0f1318");
-	public static readonly Color Surface1 = new("161b22");
-	public static readonly Color Surface2 = new("1c222b");
-	public static readonly Color Surface3 = new("242b35");
-	public static readonly Color Border = new(1, 1, 1, 0.09f);
-	public static readonly Color BorderStrong = new(1, 1, 1, 0.18f);
+	/// <summary>
+	/// Paleta clara (pedido do Jhon, 17/11: os menus claros como os de
+	/// Overwatch, com Valorant de inspiração): fundo quase branco e frio,
+	/// cartões brancos, texto azul-marinho (o de Valorant) e o laranja de
+	/// Overwatch no destaque. Vale nos menus fora da partida: o LobbyShell
+	/// liga ao abrir e desliga ao sair. Na partida (HUD, menu do Esc,
+	/// resultado) a paleta é a escura, por cima do jogo.
+	///
+	/// As cores são lidas na hora de montar cada controle: troque o modo
+	/// antes de montar a tela.
+	/// </summary>
+	public static bool Light { get; set; }
 
-	public static readonly Color TextPrimary = new("e9ecf0");
-	public static readonly Color TextSecondary = new("a1a9b4");
-	public static readonly Color TextDisabled = new("5c6470");
+	// Escura: fundo cinza quase preto, levemente azulado — não preto puro.
+	private static readonly Color DarkBg = new("0f1318"), LightBg = new("e9edf2");
+	private static readonly Color DarkSurface1 = new("161b22"), LightSurface1 = new("ffffff");
+	private static readonly Color DarkSurface2 = new("1c222b"), LightSurface2 = new("f5f7fa");
+	private static readonly Color DarkSurface3 = new("242b35"), LightSurface3 = new("e4e9ef");
+	private static readonly Color DarkBorder = new(1, 1, 1, 0.09f), LightBorder = new(0.06f, 0.1f, 0.14f, 0.12f);
+	private static readonly Color DarkBorderStrong = new(1, 1, 1, 0.18f), LightBorderStrong = new(0.06f, 0.1f, 0.14f, 0.26f);
+	private static readonly Color DarkTextPrimary = new("e9ecf0"), LightTextPrimary = new("0f1923");
+	private static readonly Color DarkTextSecondary = new("a1a9b4"), LightTextSecondary = new("4b5a69");
+	private static readonly Color DarkTextDisabled = new("5c6470"), LightTextDisabled = new("9aa5b1");
+	private static readonly Color DarkAccent = new("e3b04b"), LightAccent = new("f06a1d");
+	private static readonly Color DarkAccentText = new("17130a"), LightAccentText = new("ffffff");
+	private static readonly Color DarkDanger = new("e5484d"), LightDanger = new("e0323d");
+	private static readonly Color DarkSuccess = new("46a758"), LightSuccess = new("23874a");
+	private static readonly Color DarkWarning = new("f0c24b"), LightWarning = new("c98600");
 
-	/// <summary>A cor da marca: âmbar-ouro. Botão primário, aba ativa,
-	/// foco. Puxada para o amarelo de propósito, para não se confundir
-	/// com o laranja do time.</summary>
-	public static readonly Color Accent = new("e3b04b");
-	public static readonly Color AccentText = new("17130a");
+	public static Color Bg => Light ? LightBg : DarkBg;
+	public static Color Surface1 => Light ? LightSurface1 : DarkSurface1;
+	public static Color Surface2 => Light ? LightSurface2 : DarkSurface2;
+	public static Color Surface3 => Light ? LightSurface3 : DarkSurface3;
+	public static Color Border => Light ? LightBorder : DarkBorder;
+	public static Color BorderStrong => Light ? LightBorderStrong : DarkBorderStrong;
 
-	public static readonly Color Danger = new("e5484d");
-	public static readonly Color Success = new("46a758");
-	public static readonly Color Warning = new("f0c24b");
+	public static Color TextPrimary => Light ? LightTextPrimary : DarkTextPrimary;
+	public static Color TextSecondary => Light ? LightTextSecondary : DarkTextSecondary;
+	public static Color TextDisabled => Light ? LightTextDisabled : DarkTextDisabled;
+
+	/// <summary>A cor da marca. Escura: âmbar-ouro, puxada para o amarelo
+	/// para não se confundir com o laranja do time. Clara: o laranja de
+	/// Overwatch (no claro o ouro some).</summary>
+	public static Color Accent => Light ? LightAccent : DarkAccent;
+	public static Color AccentText => Light ? LightAccentText : DarkAccentText;
+
+	public static Color Danger => Light ? LightDanger : DarkDanger;
+	public static Color Success => Light ? LightSuccess : DarkSuccess;
+	public static Color Warning => Light ? LightWarning : DarkWarning;
 
 	/// <summary>Times: azul e laranja, que daltônicos distinguem bem —
 	/// vermelho e verde, não.</summary>

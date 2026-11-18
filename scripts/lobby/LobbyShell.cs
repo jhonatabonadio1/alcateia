@@ -32,10 +32,15 @@ public partial class LobbyShell : Control
 	public override void _ExitTree()
 	{
 		if (Instance == this) Instance = null;
+		// A partida volta à paleta escura (HUD e menus por cima do jogo).
+		UiTokens.Light = false;
 	}
 
 	public override void _Ready()
 	{
+		// Os menus usam a paleta clara (UiTokens.Light), antes de montar
+		// qualquer coisa.
+		UiTokens.Light = true;
 		UiTheme.Apply(this);
 		UiKit.Fill(this);
 
@@ -46,7 +51,7 @@ public partial class LobbyShell : Control
 		InputSetup.EnsureActions();
 		Settings.ApplyAudio();
 
-		// O mapa borrado de fundo, com o mosaico low poly (MenuBackdrop).
+		// O fundo claro, estilo Overwatch com o corte de Valorant (MenuBackdrop).
 		AddChild(new MenuBackdrop());
 
 		VBoxContainer frame = UiKit.Fill(UiKit.Column(0));

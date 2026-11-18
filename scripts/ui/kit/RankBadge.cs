@@ -59,7 +59,9 @@ public partial class RankBadge : Control
 		if (!Bare)
 		{
 			var frame = new Rect2(_o, new Vector2(side, side));
-			DrawRect(frame, new Color(UiTokens.Bg, 0.85f));
+			// A placa é sempre escura: as cores das patentes são claras e
+			// sumiriam no branco dos menus.
+			DrawRect(frame, new Color(0.06f, 0.09f, 0.13f, 0.9f));
 			DrawRect(frame.Grow(-0.5f), new Color(_c, 0.55f), false, 1f);
 		}
 

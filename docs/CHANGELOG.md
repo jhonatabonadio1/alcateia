@@ -2,6 +2,15 @@
 
 ## Não lançado
 
+### Menus claros, estilo Overwatch com Valorant de inspiração (17/11)
+- Os menus fora da partida passam à **paleta clara** (`UiTokens.Light`):
+  fundo quase branco, cartões brancos com sombra curta, texto
+  azul-marinho, destaque laranja. A partida continua na escura.
+- **Fundo novo** sem o mapa: degradê claro, mosaico de triângulos, faixas
+  diagonais e um fio laranja que andam devagar (`MenuBackdrop`).
+- Insígnias de patente com placa sempre escura; desenho das armas, as
+  Presas e as listras das vagas ajustados para o claro.
+
 ### Modo alvo no Tab, salto de um alvo só, mira redonda (17/11)
 - **Modo alvo** no lugar da trava do botão do meio: carregando o salto,
   o Tab liga o modo alvo (não abre o placar) e marca os inimigos à vista;
