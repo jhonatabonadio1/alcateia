@@ -8,6 +8,8 @@ using System.Collections.Generic;
 /// </summary>
 public partial class Weapon
 {
+	public const string DefaultGrenadeScene = "res://scenes/grenade.tscn";
+
 	[ExportGroup("Granada")]
 	[Export] public PackedScene GrenadeScene;
 	[Export] public int MaxGrenades = 2;

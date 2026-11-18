@@ -43,6 +43,11 @@ public struct BotContext
 	public float Aggression;
 	public float PreferredRange;
 
+	/// <summary>Vontade de estar de lobo agora, de 0 a 1 — o humor do
+	/// bot, não a necessidade. Em 1 ele transforma por gosto e não volta
+	/// a humano enquanto durar.</summary>
+	public float WolfUrge;
+
 	/// <summary>Existe um ponto por trás de parede, alcançável.</summary>
 	public bool HasCover;
 
@@ -132,8 +137,10 @@ public static class BotBrain
 		if (!c.HasBelief || c.CanSee) return 0f;
 
 		// Informação fresca vale mais. Depois de alguns segundos o
-		// palpite envelhece e patrulhar volta a competir.
-		float freshness = 1f - Utility.Normalize(c.BeliefAge, 0f, 6f);
+		// palpite envelhece — mas não a zero: enquanto o bot ainda
+		// acredita em alguma coisa, ir ver ganha da ronda. Zerando, quem
+		// ia para uma briga a 30 m desistia no meio do caminho.
+		float freshness = Mathf.Max(1f - Utility.Normalize(c.BeliefAge, 0f, 6f), 0.15f);
 
 		return Utility.Compensate(0.75f * freshness, 2);
 	}
@@ -196,9 +203,24 @@ public static class BotBrain
 		return Utility.Compensate(0.7f * Utility.Quadratic(need) * safe * hidden, 4);
 	}
 
+	/// <summary>Até onde o lobo por gosto sai correndo com o alvo à
+	/// vista. Mais longe que isto é atravessar campo aberto levando tiro:
+	/// melhor atirar e esperar ele chegar.</summary>
+	public const float WolfRushRange = 28f;
+
 	/// <summary>
-	/// Virar lobo é aposta de desespero: vida baixa e alvo ao alcance.
-	/// Transformar cedo gruda o bot no jogador e tira dele a arma.
+	/// Virar lobo por dois motivos.
+	///
+	/// **Por gosto** (<see cref="BotContext.WolfUrge"/>): o bot está no
+	/// humor de lobo. Transforma e vai — sem alvo à vista, para chegar
+	/// correndo; com alvo, se der para alcançar. Ganha de qualquer outra
+	/// ação porque é uma decisão já tomada, não uma comparação.
+	///
+	/// **Por desespero**, como sempre foi: vida baixa e alvo ao alcance,
+	/// ou nenhuma bala em arma nenhuma.
+	///
+	/// Antes só existia o segundo, e o medido era bot 1% do tempo de lobo
+	/// num jogo de lobo.
 	/// </summary>
 	private static float Transform(in BotContext c)
 	{
@@ -206,6 +228,9 @@ public static class BotBrain
 
 		// Sem bala em arma nenhuma, o lobo é a única arma que sobra.
 		if (c.OutOfAmmo) return 0.9f;
+
+		if (c.WolfUrge > 0f && (!c.CanSee || c.Distance <= WolfRushRange))
+			return 1.2f * c.WolfUrge;
 
 		float hurt = 1f - Utility.Normalize(c.HealthRatio, 0.15f, 0.55f);
 		float reachable = 1f - Utility.Normalize(c.Distance, 6f, 18f);
@@ -221,7 +246,10 @@ public static class BotBrain
 		float far = Utility.Normalize(c.Distance, 14f, 26f);
 		float lost = c.CanSee ? 0f : 0.6f;
 
-		return Utility.Compensate(0.7f * Mathf.Max(far, lost), 2);
+		// No humor de lobo, fica de lobo: alvo sumido é para caçar de
+		// quatro, não para voltar à arma (e transformar de novo no
+		// segundo seguinte).
+		return Utility.Compensate(0.7f * Mathf.Max(far, lost), 2) * (1f - c.WolfUrge);
 	}
 
 	/// <summary>Rugir é cura que custa ficar parado e barulhento.

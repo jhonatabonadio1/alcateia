@@ -61,9 +61,8 @@ public sealed class WolfStrideTest : RegressionTest
 		await Phase(b, "engatinhando", -90f, 0.45, "move_forward", "crouch");
 		await Phase(b, "de quatro", -90f, 0.9, "move_forward", "sprint");
 		await Phase(b, "engatinhando de lado", 0f, 0.45, "move_right", "crouch");
-		await Phase(b, "carregando o salto", -90f, 0.45, "move_forward", "special");
-		await Phase(b, "carregando de lado", 0f, 0.45, "move_right", "special");
-		await Phase(b, "carregando para trás", 90f, 0.45, "move_back", "special");
+		// As três fases "carregando o salto" saíram em 18/11: com o especial
+		// no Q, num toque, o lobo não anda mais carregando.
 	}
 
 	private async Task Phase(RegressionBench b, string what, float yaw, double slideLimit, params string[] keys)

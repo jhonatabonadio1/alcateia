@@ -2,6 +2,41 @@
 
 ## Não lançado
 
+### Bots que caçam, viram lobo e jogam granada (18/11)
+Pedido do Jhon: bots burros, previsíveis, sem se espalhar, sem granada,
+sem lobo. Medido antes, em 90 s de partida com 7 bots: de 71 a 81% do
+tempo em ronda, 1% de lobo, nenhuma granada.
+- **Humor de lobo**: cada bot decide de tempos em tempos se é hora de
+  lobo ou de arma (antes só virava lobo quase morto). De lobo, corre
+  (1,3×) e chega em ziguezague. Medido depois: de 35 a 46% do tempo de
+  lobo, 10 transformações por minuto.
+- **Rádio do time e faro** (`TeamIntel`, `Bot.Persona.cs`): quem está à
+  toa vai para onde um aliado viu inimigo, chegando pelo lado; sem
+  notícia por 5 s, vai atrás de um inimigo sorteado. Em ronda: 29% do
+  tempo. Tiros em 40 s: de 74 para 152.
+- **Granada** (`Bot.Grenade.cs`): no alvo à vista, onde ele acabou de
+  sumir e, em dobro, no lobo que vem. A cena do bot não tinha a granada
+  atribuída — por isso, no online, a granada dos outros jogadores também
+  não aparecia; a arma agora carrega a cena sozinha.
+- **Personalidade**: distância preferida, gosto por lobo e lado do
+  flanco sorteados por bot.
+- **Rotas espalhadas**: cada bot numa rota a encarece para o próximo
+  (`PatrolRoutes.Spread`); ronda mais rápida e sem parar em todo ponto.
+- **Strafe consertado**: o relógio do lado do strafe só andava um quadro
+  a cada decisão — o bot circulava para o mesmo lado por mais de meio
+  minuto. Agora troca a cada 1 a 2 s, com um pulo de esquiva de vez em
+  quando; rajadas de tamanho desigual; fogo no canto onde o alvo sumiu.
+- **Erros do Output**: o clarão da granada animava uma propriedade que
+  malha 3D não tem (um erro por explosão, e o clarão não desbotava); o
+  boneco pedia o estado "Fall" que não existe sem o clipe (três erros a
+  cada corpo no ar).
+- **Aura no especial**: com o especial no Q a aura da carga tinha sumido;
+  agora acende no voo.
+- **Testes**: `BotsCacam` e `BotsJogamGranada` novos. `CargaDoSalto`,
+  `CtrlCliqueNoMac`, `EfeitosDoLobo` e `PassadaDoLobo` ainda mediam o
+  salto carregado no botão direito e quebraram com o Q (commit
+  anterior, sem rodar os testes): reescritos para o Q.
+
 ### Tiros refeitos, voz do locutor, plano de áudio (18/11)
 - **Tiros em camadas** (todas as armas, o seu e o dos outros): estalo da
   gravação + soco grave + cauda (a gravação de meia distância) + clique

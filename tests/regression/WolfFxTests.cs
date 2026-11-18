@@ -107,18 +107,25 @@ public sealed class WolfFxTest : RegressionTest
 		await b.Seconds(0.8);
 		b.Check(!fx.TrailsActive, "fora do golpe, as garras não riscam");
 
-		// ---- carregando o salto: a aura acende; o outro lobo não.
+		// ---- o especial (Q): a aura acende no voo; a do outro lobo não.
 		var otherFx = other.GetNodeOrNull<WolfFx>("WolfFx");
-		RegressionBench.Press("special");
-		await b.Seconds(0.6);
-		b.AtLeast(0.9, fx.AuraAmount, "carregando o salto, a aura acende");
-		float mine = meshes[0].GetInstanceShaderParameter("aura_amount").AsSingle();
-		b.AtLeast(0.9, mine, "a aura chega à malha do lobo (instance uniform)");
-		if (otherFx != null)
+		await b.Tap("pounce");
+		await b.Until(() => b.Weapon.IsPounceFlying, 1.5);
+		float aura = 0f, mine = 0f, theirsMax = 0f;
+		var theirMesh = otherFx != null
+			? other.GetNode<WolfVisual>("WolfVisual").Model.FindChildren("*", "MeshInstance3D", true, false).OfType<MeshInstance3D>().First()
+			: null;
+		while (b.Weapon.IsPounceFlying)
 		{
-			var theirs = other.GetNode<WolfVisual>("WolfVisual").Model.FindChildren("*", "MeshInstance3D", true, false).OfType<MeshInstance3D>().First();
-			b.AtMost(0.01, theirs.GetInstanceShaderParameter("aura_amount").AsSingle(), "a aura de um lobo não acende a do outro");
+			await b.PhysicsFrame();
+			aura = Mathf.Max(aura, fx.AuraAmount);
+			mine = Mathf.Max(mine, meshes[0].GetInstanceShaderParameter("aura_amount").AsSingle());
+			if (theirMesh != null) theirsMax = Mathf.Max(theirsMax, theirMesh.GetInstanceShaderParameter("aura_amount").AsSingle());
 		}
+		b.AtLeast(0.9, aura, "no especial, a aura acende");
+		b.AtLeast(0.9, mine, "a aura chega à malha do lobo (instance uniform)");
+		if (theirMesh != null)
+			b.AtMost(0.01, theirsMax, "a aura de um lobo não acende a do outro");
 		await Photo(b, "5_aura_carga", new Vector3(0.8f, 1.0f, 3.2f));
 		RegressionBench.ReleaseAll();
 		await b.Seconds(2.5);

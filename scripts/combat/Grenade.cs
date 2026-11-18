@@ -142,15 +142,17 @@ public partial class Grenade : RigidBody3D
 	/// partícula de verdade na fase de polimento.</summary>
 	private void SpawnFlash()
 	{
+		var material = new StandardMaterial3D
+		{
+			AlbedoColor = new Color(1f, 0.95f, 0.75f, 0.45f),
+			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded
+		};
+
 		var flash = new MeshInstance3D
 		{
 			Mesh = new SphereMesh { Radius = Radius, Height = Radius * 2f },
-			MaterialOverride = new StandardMaterial3D
-			{
-				AlbedoColor = new Color(1f, 0.95f, 0.75f, 0.45f),
-				Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-				ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded
-			}
+			MaterialOverride = material
 		};
 
 		GetParent().AddChild(flash);
@@ -160,7 +162,11 @@ public partial class Grenade : RigidBody3D
 		Tween tween = flash.CreateTween();
 		tween.SetParallel();
 		tween.TweenProperty(flash, "scale", Vector3.One, 0.25);
-		tween.TweenProperty(flash, "modulate:a", 0.0f, 0.3);
+
+		// Some pela cor do material: malha 3D não tem "modulate" (isso é
+		// de 2D), e o clarão nunca desbotava — sumia de uma vez, com um
+		// erro no Output a cada explosão.
+		tween.TweenProperty(material, "albedo_color:a", 0.0f, 0.3);
 		tween.Chain().TweenCallback(Callable.From(flash.QueueFree));
 	}
 }

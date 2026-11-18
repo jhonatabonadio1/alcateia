@@ -42,8 +42,11 @@ public partial class Bot
 		velocity.Z = Mathf.MoveToward(velocity.Z, direction.Z * speed, speed * 6f * (float)delta);
 		velocity.Y = IsOnFloor() ? 0 : velocity.Y - _gravity * (float)delta;
 
-		if (IsOnFloor() && ShouldJump(direction))
+		bool dodge = _dodge && !_form.IsWolf;
+
+		if (IsOnFloor() && (dodge || ShouldJump(direction)))
 		{
+			_dodge = false;
 			velocity.Y = JumpVelocity;
 
 			_animator ??= GetNodeOrNull<CharacterAnimator>("Human");

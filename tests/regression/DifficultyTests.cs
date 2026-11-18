@@ -35,6 +35,7 @@ public sealed class DifficultyTest : RegressionTest
 		("StrafeFactor", d => d.StrafeFactor, +1),
 		("StrafeInterval", d => d.StrafeInterval, -1),
 		("Aggression", d => d.Aggression, +1),
+		("GrenadeRate", d => d.GrenadeRate, +1),
 		("WolfSpecialRate", d => d.WolfSpecialRate, +1),
 		("PounceError", d => d.PounceError, -1),
 	};

@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// PERCEPÇÃO: visão e audição independentes alimentando uma crença só —
@@ -106,6 +107,7 @@ public partial class Bot
 		if (!HasLineOfSight()) return;
 
 		Believe(_target.GlobalPosition, Memory);
+		TeamIntel.Report(_health.Team, _target, _target.GlobalPosition);
 	}
 
 	/// <summary>
@@ -209,30 +211,21 @@ public partial class Bot
 		Health bestHealth = null;
 		float bestScore = float.MaxValue;
 
-		foreach (string group in Groups.Fighters)
+		foreach (var (body, health) in OtherFighters())
 		{
-			foreach (Node node in GetTree().GetNodesInGroup(group))
-			{
-				if (node == this || node is not Node3D body) continue;
+			if (health.Team == _health.Team) continue;
 
-				// Online: o boneco de quem ainda não chegou (ou já saiu) não está no mundo.
-				if (body is Bot { RemoteAbsent: true }) continue;
+			float distance = GlobalPosition.DistanceTo(body.GlobalPosition);
+			float score = distance;
 
-				var health = body.GetNodeOrNull<Health>("Health");
-				if (health == null || health.IsDead || health.Team == _health.Team) continue;
+			if (distance <= SightRange && CanSee(body)) score -= 1000f;
+			if (body == _target) score -= TargetStickiness;
 
-				float distance = GlobalPosition.DistanceTo(body.GlobalPosition);
-				float score = distance;
+			if (score >= bestScore) continue;
 
-				if (distance <= SightRange && CanSee(body)) score -= 1000f;
-				if (body == _target) score -= TargetStickiness;
-
-				if (score >= bestScore) continue;
-
-				bestScore = score;
-				best = body;
-				bestHealth = health;
-			}
+			bestScore = score;
+			best = body;
+			bestHealth = health;
 		}
 
 		// A crença não é zerada na troca, de propósito. Com vários
@@ -243,6 +236,27 @@ public partial class Bot
 		// onde o tiro veio.
 		_target = best;
 		_targetHealth = bestHealth;
+	}
+
+	/// <summary>Os outros corpos vivos da partida — dos dois times —, com
+	/// a vida de cada um.</summary>
+	private IEnumerable<(Node3D Body, Health Health)> OtherFighters()
+	{
+		foreach (string group in Groups.Fighters)
+		{
+			foreach (Node node in GetTree().GetNodesInGroup(group))
+			{
+				if (node == this || node is not Node3D body) continue;
+
+				// Online: o boneco de quem ainda não chegou (ou já saiu) não está no mundo.
+				if (body is Bot { RemoteAbsent: true }) continue;
+
+				var health = body.GetNodeOrNull<Health>("Health");
+				if (health == null || health.IsDead) continue;
+
+				yield return (body, health);
+			}
+		}
 	}
 
 	/// <summary>Linha de visão até um corpo qualquer, da cabeça ao peito.</summary>
@@ -287,6 +301,7 @@ public partial class Bot
 		_reacting = true;
 		_reactionTimer = ReactionTime + _rng.Range(0.0, ReactionJitter);
 		Believe(from, Memory);
+		TeamIntel.Report(_health.Team, null, from);
 	}
 
 	private void UpdateReaction(double delta)

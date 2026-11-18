@@ -45,13 +45,23 @@ public sealed class MacCtrlClickTest : RegressionTest
 			b.Check(struck, "o lobo arranhou");
 			b.Check(!charged, "não carregou o salto");
 
-			// Sem Ctrl, o clique direito continua sendo o especial.
+			// O especial saiu do botão direito (18/11): é o Q, num toque.
+			// No chão o direito não salta mais, com ou sem Ctrl.
 			RegressionBench.ReleaseAll();
 			await b.Seconds(1.5);
+			bool leapt = false;
 			Input.ParseInputEvent(new InputEventMouseButton { ButtonIndex = MouseButton.Right, Pressed = true });
-			await b.Seconds(0.2);
-			b.Check(b.Weapon.IsChargingPounce, "sem Ctrl, o direito carrega o salto");
+			for (int frame = 0; frame < 30; frame++)
+			{
+				await b.PhysicsFrame();
+				leapt |= b.Weapon.IsChargingPounce || b.Weapon.IsPounceFlying;
+			}
 			Input.ParseInputEvent(new InputEventMouseButton { ButtonIndex = MouseButton.Right, Pressed = false });
+			b.Check(!leapt, "no chão, o botão direito não salta");
+
+			await b.Tap("pounce");
+			b.Check(await b.Until(() => b.Weapon.IsPounceFlying, 1.5), "o Q salta");
+			await b.Until(() => !b.Weapon.IsPounceFlying, 3.0);
 			await b.Seconds(0.5);
 		}
 		finally

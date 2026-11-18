@@ -238,14 +238,34 @@ numa partida por pontos é abate jogado fora.
 
 ## O bot
 
-**O bot é um atirador, não um perseguidor.** Na distância certa ele
+**O bot atira, vira lobo e vai atrás.** De arma, na distância certa ele
 circula e atira em rajadas; longe, aproxima; perto demais, recua sem
 dar as costas.
 
-Virar lobo é recurso de desespero: só abaixo de 40% de vida e com o
-alvo ao alcance. Um bot que vira lobo cedo gruda no jogador e nunca
-mais atira — foi o primeiro comportamento implementado, e estava
-errado.
+**Virar lobo deixou de ser só desespero (18/11).** Era: só abaixo de
+40% de vida e com o alvo ao alcance, porque um bot que vira lobo cedo
+gruda no jogador e nunca mais atira. Medido numa partida de 90 s, isso
+dava bot 1% do tempo de lobo, num jogo de lobo — o Jhon não via lobo
+atacando nem correndo. Agora cada bot tem um **humor**: de tempos em
+tempos sorteia se a próxima meia-minuto é de lobo ou de arma, com uma
+vontade que varia de bot para bot. De lobo, transforma e vem correndo,
+em ziguezague; o desespero continua valendo por cima.
+
+**Ninguém fica à toa.** Quem não tem alvo ouve o time (`TeamIntel`: onde
+um aliado viu ou levou tiro de um inimigo, valendo 5 s) e vai para a
+briga, chegando pelo lado; sem notícia por 5 s, vai atrás de um inimigo
+sorteado com um palpite largo de onde ele anda. Antes eram de 71 a 81%
+da partida em ronda. O palpite é de região, não de posição: o bot ainda
+tem de achar o alvo quando chega.
+
+**Granada.** O bot não jogava nenhuma (a cena dele nem tinha a granada).
+Joga no alvo à vista a meia distância, onde o alvo acabou de sumir e,
+com o dobro da vontade, no lobo que vem correndo — é a resposta do
+humano ao lobo. Mira parado 0,4 s antes de soltar: é o aviso.
+
+**Cada bot é um.** Distância preferida, gosto por lobo e lado por onde
+chega são sorteados por bot. Os números do nível (fácil, médio,
+difícil) não mudam: a personalidade multiplica por cima.
 
 Rajada e pausa existem para dar ao jogador janela de reagir e para
 deixar claro de onde vem o tiro. Fogo contínuo esconde as duas coisas.

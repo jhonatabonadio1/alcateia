@@ -102,6 +102,65 @@ public partial class PatrolRoutes : Node3D
 		return best;
 	}
 
+	/// <summary>Quantos metros vale cada bot que já está numa rota, na
+	/// conta de <see cref="Spread"/>: uma rota ocupada só ganha de uma
+	/// vazia se estiver isto mais perto.</summary>
+	public const float CrowdCost = 18f;
+
+	/// <summary>Acaso da escolha, em metros: sem ele o mesmo bot, no mesmo
+	/// lugar, pegaria sempre a mesma rota.</summary>
+	public const float SpreadJitter = 10f;
+
+	private readonly Dictionary<int, int> _load = new();
+
+	/// <summary>
+	/// A rota para quem vai começar uma ronda, espalhando o time.
+	///
+	/// <see cref="Nearest"/> sozinha manda todo mundo que nasceu junto
+	/// para a mesma rota — a mais perto é a mesma para os quatro —, e o
+	/// time anda em fila pelo mapa. Aqui cada bot que já está numa rota
+	/// a encarece (<see cref="CrowdCost"/>), então o segundo pega outra.
+	/// Quem escolhe avisa com <see cref="Take"/> e devolve com
+	/// <see cref="Leave"/>.
+	/// </summary>
+	public static int Spread(Vector3 from, GameRandom rng)
+	{
+		if (RouteCount == 0) return -1;
+
+		int best = -1;
+		float bestScore = float.MaxValue;
+
+		for (int route = 0; route < RouteCount; route++)
+		{
+			float score = ClosestPoint(route, from, out _)
+				+ Load(route) * CrowdCost
+				+ rng.Range(0f, SpreadJitter);
+
+			if (score >= bestScore) continue;
+
+			bestScore = score;
+			best = route;
+		}
+
+		return best;
+	}
+
+	/// <summary>Quantos bots estão na rota agora.</summary>
+	public static int Load(int route) =>
+		_instance != null && _instance._load.TryGetValue(route, out int load) ? load : 0;
+
+	public static void Take(int route)
+	{
+		if (_instance == null || route < 0) return;
+		_instance._load[route] = Load(route) + 1;
+	}
+
+	public static void Leave(int route)
+	{
+		if (_instance == null || route < 0) return;
+		_instance._load[route] = Mathf.Max(Load(route) - 1, 0);
+	}
+
 	/// <summary>Distância até o ponto mais próximo da rota, e qual é.</summary>
 	public static float ClosestPoint(int route, Vector3 from, out int index)
 	{

@@ -37,8 +37,32 @@ public partial class Bot
 	[Export] public float MissChance = 0.2f;
 	[Export] public float MissSpread = 14f;
 
+	/// <summary>Chance de pular ao trocar o lado do strafe, levando
+	/// tiro. Pouco: é esquiva, não coelho.</summary>
+	[Export] public float DodgeJump = 0.18f;
+
+	/// <summary>De lobo, corre isto mais rápido enquanto o alvo está
+	/// além de <see cref="WolfSprintFrom"/> metros — a corrida de quatro
+	/// do jogador, um pouco abaixo dela (1,495): o bot não cansa.</summary>
+	[Export] public float WolfSprintFactor = 1.3f;
+	[Export] public float WolfSprintFrom = 7f;
+
+	/// <summary>Quanto o lobo ziguezagueia chegando (0 = linha reta).
+	/// Lobo que vem em linha reta é alvo parado que cresce.</summary>
+	[Export] public float WolfWeave = 0.5f;
+
+	/// <summary>Chance de, ao perder o alvo de vista, atirar onde ele
+	/// sumiu por <see cref="SuppressTime"/> segundos.</summary>
+	[Export] public float SuppressChance = 0.5f;
+	[Export] public float SuppressTime = 1.2f;
+
 	private double _burstTimer;
 	private bool _firing;
+	private bool _suppress;
+
+	/// <summary>Esquiva pedida: o próximo passo no chão sai com um pulo
+	/// (<see cref="MoveTowards"/>).</summary>
+	private bool _dodge;
 	private double _strafeTimer;
 	private int _strafeSide = 1;
 	private Vector3 _aimOffset;
@@ -52,6 +76,7 @@ public partial class Bot
 		}
 
 		UpdateBurst(delta);
+		UpdateStrafe(delta);
 
 		Vector3 toTarget = _target.GlobalPosition - GlobalPosition;
 		float distance = new Vector3(toTarget.X, 0, toTarget.Z).Length();
@@ -78,7 +103,9 @@ public partial class Bot
 
 		if (_form.IsWolf)
 		{
-			desired = flat;
+			// De longe vem em ziguezague; no fim, reto para a garra.
+			float weave = distance > WolfSprintFrom ? WolfWeave : 0f;
+			desired = (flat + side * weave).Normalized();
 		}
 		else if (distance < MinRange)
 		{
@@ -91,17 +118,18 @@ public partial class Bot
 			// quanto da intenção é ir para cima e o quanto é lateral.
 			float push = Action == BotAction.Push
 				? 1f
-				: distance > PreferredRange ? 1f : Aggression;
+				: distance > TasteRange ? 1f : Aggression;
 
 			desired = (flat * push + side * StrafeFactor).Normalized();
 		}
 
-		float speed = Speed * (_form.IsWolf ? _form.Breed.SpeedMultiplier : 1f);
+		float speed = FormSpeed;
+		if (_form.IsWolf && distance > WolfSprintFrom) speed *= WolfSprintFactor;
 
 		// Longe do alvo, segue o caminho: ir em linha reta esbarra em
 		// parede. Perto, manda a intenção direta, porque navegação
 		// ponto a ponto estraga strafe e recuo.
-		if (distance > PreferredRange * 1.5f)
+		if (distance > TasteRange * 1.5f)
 		{
 			Vector3 step = PathTo(_target.GlobalPosition);
 
@@ -122,17 +150,29 @@ public partial class Bot
 		_burstTimer -= delta;
 		if (_burstTimer > 0) return;
 
+		// Rajadas de tamanho desigual: no relógio, dava para contar a
+		// pausa e sair da parede na hora certa, toda vez.
 		_firing = !_firing;
-		_burstTimer = _firing ? BurstTime : BurstPause;
+		_burstTimer = (_firing ? BurstTime : BurstPause) * _rng.Range(0.7, 1.4);
 	}
 
+	/// <summary>
+	/// Troca o lado do strafe a cada <see cref="StrafeInterval"/>.
+	///
+	/// Roda a cada quadro de combate. Rodava dentro da decisão do cérebro,
+	/// que acontece a cada 0,4 s mas descontava só um quadro do relógio:
+	/// o intervalo de 1,4 s levava mais de meio minuto para vencer, e o
+	/// bot circulava o alvo sempre para o mesmo lado.
+	/// </summary>
 	private void UpdateStrafe(double delta)
 	{
 		_strafeTimer -= delta;
 		if (_strafeTimer > 0) return;
 
 		_strafeSide = _rng.Sign();
-		_strafeTimer = StrafeInterval * _rng.Range(0.6, 1.4);
+		_strafeTimer = StrafeInterval * _rng.Range(0.6, 1.4) * (_form.IsWolf ? 0.5 : 1.0);
+
+		if (!_form.IsWolf && _threatAge < 1.5 && _rng.Chance(DodgeJump)) _dodge = true;
 	}
 
 	/// <summary>

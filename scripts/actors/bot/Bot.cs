@@ -133,6 +133,7 @@ public partial class Bot : CharacterBody3D
 		// Personalidade: cada bot nasce mais ou menos curioso.
 		Curiosity = Mathf.Clamp(
 			Curiosity + _rng.Range(-CuriositySpread, CuriositySpread), 0f, 1f);
+		RollPersona();
 
 		_health.Died += OnDied;
 		_health.Respawned += OnRespawned;
@@ -169,6 +170,7 @@ public partial class Bot : CharacterBody3D
 	public override void _ExitTree()
 	{
 		if (_ear != null) NoiseBus.Unsubscribe(_ear);
+		SetRoute(-1);
 	}
 
 	public override void _PhysicsProcess(double delta)
@@ -227,7 +229,14 @@ public partial class Bot : CharacterBody3D
 		UpdateReaction(delta);
 		UpdateSight(delta);
 		UpdateState(delta);
+		UpdateMood(delta);
+		SeekAction(delta);
 		UpdateBrain(delta);
+
+		// O arremesso da granada é um gesto inteiro: enquanto dura, o
+		// corpo é dele.
+		if (GrenadeStep(delta)) return;
+		ConsiderGrenade(delta);
 
 		RunAction(delta);
 	}
@@ -344,14 +353,17 @@ public partial class Bot : CharacterBody3D
 			ReserveEmpty = ammo <= 0 && _weapon.Reserve <= 0,
 			OutOfAmmo = !_weapon.HasAmmoIn(Slot.Primary) && !_weapon.HasAmmoIn(Slot.Secondary),
 			IsWolf = _form.IsWolf,
+			// Com WP para pagar: sem esta conta o bot escolhia virar lobo,
+			// a forma negava e ele ficava "transformando" a partida toda.
 			CanTransform = !_form.IsWolf && _form.Breed != null
-				&& _form.Rule == FormRule.Livre,
+				&& _form.Rule == FormRule.Livre && _form.Wp >= _form.Breed.WpCost,
+			WolfUrge = _wolfMood ? 1f : 0f,
 			WolfLocked = _form.Rule == FormRule.Lobo,
 			ThreatAge = (float)_threatAge,
 			BeliefAge = (float)_beliefAge,
 			HasBelief = _hasBelief && _memoryTimer > 0,
 			Aggression = Aggression,
-			PreferredRange = PreferredRange,
+			PreferredRange = TasteRange,
 			HasCover = _hasCover,
 
 			// Protegido agora: o alvo existe e não há linha até ele.
@@ -369,7 +381,6 @@ public partial class Bot : CharacterBody3D
 		Action = next;
 
 		ShuffleAim();
-		UpdateStrafe(delta);
 	}
 
 	/// <summary>Mesma regra do jogador (<see cref="BodyNoise"/>): o bot
@@ -396,6 +407,7 @@ public partial class Bot : CharacterBody3D
 			// Perdeu de vista: vai até onde o alvo estava.
 			State = BotState.Search;
 			_scanTimer = ScanTime;
+			_suppress = _rng.Chance(SuppressChance);
 		}
 		else if (_hasBelief && _memoryTimer > 0)
 		{
@@ -406,9 +418,12 @@ public partial class Bot : CharacterBody3D
 		{
 			if (State != BotState.Idle)
 			{
+				// Não achou nada: uma olhada curta e volta a andar. A pausa
+				// inteira aqui, somada à de cada busca, era um sexto da
+				// partida parado.
 				State = BotState.Idle;
 				_hasPatrolTarget = false;
-				_patrolPause = PatrolPause;
+				_patrolPause = PatrolPause * 0.3f;
 			}
 
 			_hasBelief = false;
@@ -427,7 +442,8 @@ public partial class Bot : CharacterBody3D
 
 		_memoryTimer = 0;
 		_vigilTimer = 0;
-		_route = -1;
+		SetRoute(-1);
+		DropGrenade();
 		_hasBelief = false;
 		_alerted = false;
 		_reacting = false;
@@ -443,6 +459,10 @@ public partial class Bot : CharacterBody3D
 
 		GlobalPosition = SpawnPoints.Pick(this, _spawn);
 		Velocity = Vector3.Zero;
+
+		// Vida nova, humor novo: quem morreu de lobo pode voltar de arma.
+		RollMood();
+		_idleFor = 0;
 
 		if (_form.IsWolf && _form.Rule != FormRule.Lobo)
 			_weapon.SelectSlot(Slot.Primary);

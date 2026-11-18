@@ -95,6 +95,11 @@ public partial class BotDifficulty : Resource
 	/// <summary>Pausa entre um ponto da ronda e o próximo, em segundos.</summary>
 	[Export] public float PatrolPause = 1.5f;
 
+	/// <summary>Chance por segundo de jogar granada quando dá para jogar
+	/// (dobra contra lobo).</summary>
+	[ExportGroup("Granada")]
+	[Export] public float GrenadeRate = 0.3f;
+
 	/// <summary>Chance por segundo de tentar um especial com o alvo à vista.</summary>
 	[ExportGroup("Lobo")]
 	[Export] public float WolfSpecialRate = 0.5f;
@@ -132,6 +137,7 @@ public partial class BotDifficulty : Resource
 		bot.PatrolSpeedFactor = PatrolSpeedFactor;
 		bot.PatrolPause = PatrolPause;
 
+		bot.GrenadeRate = GrenadeRate;
 		bot.WolfSpecialRate = WolfSpecialRate;
 		bot.PounceError = PounceError;
 	}

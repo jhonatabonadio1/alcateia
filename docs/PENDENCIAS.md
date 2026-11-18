@@ -78,6 +78,29 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Efeitos visuais (GFX) em geral** (17/11): o que já existe está em
   `docs/EFEITOS.md`; faltam os do lobo (fumaça, ar, feixes nas garras,
   brilho) e os de tiro, sangue e impacto listados acima.
+- **Testes de regressão vermelhos — 7 de 47 (medido em 18/11, Godot
+  4.7.0 no Linux).** Todos pelo mesmo motivo, anterior a esta leva: o
+  `HumanSpeed = 3.2` da cena do jogador (commit "eve", 16/11) e o pulo
+  mais baixo, com os testes e o `docs/MEDIDAS.md` ainda esperando 3,0:
+  `VelocidadeNoChao`, `AlturaDoPulo`, `Medidas`, `CorridaNaParede`,
+  `PassadaDoLobo`, `PassoNoRitmo`. E `Animacoes`, pelos clipes que ainda
+  faltam (`crouch_idle`, `fall`, `land`). Decidir: os números novos são
+  os certos (atualizar testes e MEDIDAS) ou foi sem querer?
+- **Luz da mão nunca acendeu.** `ViewModel.BuildHandFill` faz `AddChild`
+  na câmera com ela ainda montando os filhos: o Godot recusa e dá um
+  erro no Output a cada partida (por isso o `tools/testar.sh` marca
+  quase todo teste com "erro no Output"). Trocar por `CallDeferred`
+  acende a luz — e muda a cara da arma em primeira pessoa, que hoje o
+  Jhon aprova sem ela. Decidir: acender ou tirar o código.
+- **Sobras do salto carregado.** Com o especial no Q, a carga andando
+  (`Charge_Walk`), o anel de mira no chão (`PounceAim`) e
+  `PounceChargeHold` não têm mais como acontecer para o jogador. Tirar,
+  ou guardar para outro golpe.
+- **Bots: o que ainda falta.** Espalhar de verdade (o aliado mais próximo
+  segue a uns 8 m em média: nascem juntos e convergem para a mesma
+  briga), usar escada e passarela de propósito, recuar em grupo, e um
+  papel por bot (atirador de longe, flanco, linha de frente) em vez de
+  só gostos sorteados.
 - **Falas das sequências (pedido do Jhon, 17/11) — falta gravar.** O
   feed, os ícones e as chamadas de DOUBLE/TRIPLE/… KILL, TEAM KILL e
   VINGANÇA estão prontos (`KillStory`, `KillBanner`), e o jogo já toca a

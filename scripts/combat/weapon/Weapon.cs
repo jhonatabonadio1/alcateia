@@ -161,6 +161,12 @@ public partial class Weapon : Node3D
 		_health = _body.GetNode<Health>("Health");
 		_rng = MatchRandom.Stream($"{_body.Name}/arma");
 
+		// Só a cena do jogador trazia a granada atribuída. A do bot — que
+		// também é o boneco dos outros jogadores no online — ficava sem:
+		// o bot não tinha o que arremessar, e a granada de outro jogador
+		// não aparecia para ninguém.
+		GrenadeScene ??= GD.Load<PackedScene>(DefaultGrenadeScene);
+
 		// Quem ainda não escolheu nada — bot, ou o jogador antes da tela
 		// de conjunto — começa com o padrão.
 		if (PrimaryDef == null)

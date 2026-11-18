@@ -128,7 +128,10 @@ public partial class CharacterAnimator
 
 			// Só vai para a queda se não estiver saltando: o salto
 			// entrega para ela sozinho quando termina.
-			if (_jumpGrace <= 0 && _playback?.GetCurrentNode().ToString() != "Jump")
+			// E só se o estado existe: sem o clipe "fall" (ainda falta) ele
+			// não é montado, e pedir a viagem dava três erros no Output a
+			// cada corpo que saía do chão.
+			if (_jumpGrace <= 0 && _hasFall && _playback?.GetCurrentNode().ToString() != "Jump")
 				_playback?.Travel("Fall");
 		}
 		else if (grounded && _airborne)

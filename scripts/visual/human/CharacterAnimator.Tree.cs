@@ -254,6 +254,10 @@ public partial class CharacterAnimator
 
 	private bool _crouchAim;
 	private bool _crouchWalk;
+
+	/// <summary>O estado "Fall" foi montado (o clipe existe).</summary>
+	private bool _hasFall;
+
 	private void Single(AnimationNodeStateMachine machine, string state,
 		string clip, Vector2 position)
 	{
@@ -262,5 +266,7 @@ public partial class CharacterAnimator
 		machine.AddNode(state,
 			new AnimationNodeAnimation { Animation = $"alcateia/{clip}" },
 			position);
+
+		if (state == "Fall") _hasFall = true;
 	}
 }

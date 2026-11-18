@@ -59,6 +59,74 @@ public sealed class WolfBotsTest : RegressionTest
 	}
 }
 
+/// <summary>Bots jogam granada (18/11): não jogavam nenhuma — a cena do
+/// bot nem tinha a granada atribuída.</summary>
+public sealed class BotsThrowTest : RegressionTest
+{
+	public override string Name => "BotsJogamGranada";
+	public override string Description => "numa partida, os bots arremessam granada e ela explode sem erro";
+	public override string Scene => RegressionBench.Match;
+
+	public override async Task Run(RegressionBench b)
+	{
+		int thrown = 0;
+		await b.Until(() => b.Bots().Length >= 4, 5.0);
+		foreach (var bot in b.Bots())
+			bot.GetNode<Weapon>("Weapon").Thrown += () => thrown++;
+
+		bool any = await b.Until(() => thrown >= 2, 150.0);
+		RegressionBench.Note($"{thrown} granadas até {RegressionBench.F(b.Time)} s");
+		b.Check(any, "os bots arremessaram granada em até 150 s");
+
+		// Deixa a última explodir: o clarão dela dava erro no Output.
+		await b.Seconds(3.0);
+	}
+}
+
+/// <summary>Bots viram lobo por conta própria e saem da ronda (18/11).
+/// Medido antes: 1% do tempo de lobo e de 71 a 81% em ronda.</summary>
+public sealed class BotsHuntTest : RegressionTest
+{
+	public override string Name => "BotsCacam";
+	public override string Description => "numa partida, os bots viram lobo sozinhos, andam e não passam a partida em ronda";
+	public override string Scene => RegressionBench.Match;
+
+	public override async Task Run(RegressionBench b)
+	{
+		await b.Until(() => b.Bots().Length >= 4, 5.0);
+		await b.Until(() => Match.IsLive, 15.0);
+		var bots = b.Bots();
+		int wolves = 0, samples = 0, patrol = 0, wolfSamples = 0;
+		float walked = 0f;
+		var last = bots.ToDictionary(bot => bot, bot => bot.GlobalPosition);
+		foreach (var bot in bots)
+			bot.GetNode<FormController>("FormController").FormChanged += form => { if (form == (int)Form.Wolf) wolves++; };
+
+		double end = b.Time + 60;
+		while (b.Time < end)
+		{
+			await b.Seconds(0.5);
+			foreach (var bot in bots)
+			{
+				if (bot.GetNode<Health>("Health").IsDead) { last[bot] = bot.GlobalPosition; continue; }
+				float step = RegressionBench.Flat(bot.GlobalPosition - last[bot]);
+				if (step < 8f) walked += step;
+				last[bot] = bot.GlobalPosition;
+				samples++;
+				if (((Bot)bot).Action == BotAction.Patrol) patrol++;
+				if (bot.GetNode<FormController>("FormController").IsWolf) wolfSamples++;
+			}
+		}
+
+		float perBot = walked / bots.Length;
+		RegressionBench.Note($"60 s: {wolves} transformações, de lobo {100 * wolfSamples / Mathf.Max(samples, 1)}% do tempo, em ronda {100 * patrol / Mathf.Max(samples, 1)}%, {RegressionBench.F(perBot)} m por bot");
+		b.AtLeast(3, wolves, "transformações em lobo por conta própria em 60 s");
+		b.AtLeast(10, 100.0 * wolfSamples / Mathf.Max(samples, 1), "% do tempo de lobo");
+		b.AtMost(60, 100.0 * patrol / Mathf.Max(samples, 1), "% do tempo em ronda");
+		b.AtLeast(70, perBot, "metros andados por bot em 60 s");
+	}
+}
+
 /// <summary>Humano agacha e atira (v0.26.10): o tronco agachado usa a
 /// pose de mira de pé, fuzil no ombro.</summary>
 public sealed class CrouchAimTest : RegressionTest

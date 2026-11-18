@@ -219,7 +219,12 @@ depois do clique (eram 2,2×, 0,39 s e 0,14 s, com o Mixamo). Para golpe mais
 rápido ou mais pesado, mude só essa velocidade: duração e instante do
 dano acompanham.
 
-### Salto carregado (botão direito no chão)
+### Especial do lobo (Q, num toque)
+
+Desde 18/11 o especial sai no Q, na hora, sempre com a carga cheia —
+não se segura mais o botão direito. `PounceChargeTime`,
+`PounceMinPower` e `PounceChargeHold` continuam valendo só para o bot,
+que escolhe a carga pela distância.
 
 | Campo | Valor | O que faz |
 |---|---|---|
@@ -447,9 +452,10 @@ inverter a ordem:
 | `StrafeFactor` / `StrafeInterval` | 0,5 / 2,2 | 0,8 / 1,4 | 1,0 / 0,9 | Movimento lateral atirando |
 | `PreferredRange` | 11 | 9 | 7 m | Distância que tenta manter |
 | `Aggression` | 0,5 | 0,8 | 1,0 | Quanto avança em vez de circular |
+| `GrenadeRate` | 0,12 | 0,3 | 0,5 | Chance por segundo de jogar granada quando dá (dobra contra lobo) |
 | `WolfSpecialRate` | 0,25 | 0,5 | 0,75 | Frequência dos especiais do lobo |
 | `PounceError` | 25% | 12% | 6% | Erro da carga do salto |
-| `PatrolSpeedFactor` / `PatrolPause` | 0,45 / 2,2 | 0,55 / 1,5 | 0,7 / 0,9 | Patrulha |
+| `PatrolSpeedFactor` / `PatrolPause` | 0,7 / 2,2 | 0,85 / 1,5 | 1,0 / 0,9 | Ronda (a velocidade era 0,45 / 0,55 / 0,7 até 18/11; a pausa agora só no fim da rota) |
 
 Ficam no `bot.tscn` (a dificuldade não mexe): `MissSpread` 14°,
 `TargetStickiness` 6 m, `RetargetInterval` 0,5 s, `DecisionInterval`
@@ -459,6 +465,29 @@ Ficam no `bot.tscn` (a dificuldade não mexe): `MissSpread` 14°,
 `NoCoverTime` 3 s, `ArriveRadius` 2,5 m, `ScanTime` 2,5 s,
 `PatrolRadius` 16 m, `StuckTime` 1,2 s, `JumpMaxHeight` 1,1 m,
 `CuriositySpread` 0,35.
+
+Desde 18/11, também no `bot.tscn` (padrões no código, `Bot.Persona.cs`,
+`Bot.Grenade.cs` e `Bot.Combat.cs`):
+
+| Campo | Padrão | O que faz |
+|---|---|---|
+| `WolfLove` (± `WolfLoveSpread`) | 0,38 (± 0,3) | Chance de o próximo humor do bot ser de lobo; cada bot sorteia a sua |
+| `WolfMoodTime` / `HumanMoodTime` | 20 / 16 s | Duração média de um humor de lobo e de um de arma |
+| `RangeSpread` | 0,35 | Quanto a distância preferida varia de um bot para o outro |
+| `Teamwork` | 0,7 | Chance de largar a ronda para ajudar quando o time avisa de um inimigo |
+| `IntelRange` | 45 m | Até onde um aviso do time interessa |
+| `FlankWidth` | 12 m | Chegando de longe, mira um ponto até isto de lado do aviso |
+| `HuntAfter` / `HuntError` | 5 s / 10 m | Sem notícia por esse tempo, vai atrás de um inimigo sorteado, com esse erro no palpite |
+| `GrenadeMinRange` / `GrenadeMaxRange` | 8 / 20 m | De onde arremessa (o mínimo fica além do raio da explosão) |
+| `GrenadeWindup` / `GrenadeRest` | 0,4 / 9 s | Tempo mirando antes de soltar; descanso entre granadas |
+| `GrenadeFriendRadius` | 6 m | Não arremessa com aliado a menos disto da queda |
+| `WolfSprintFactor` / `WolfSprintFrom` | 1,3 / 7 m | O lobo do bot corre isto mais rápido com o alvo além dessa distância |
+| `WolfWeave` | 0,5 | Quanto o lobo ziguezagueia chegando |
+| `DodgeJump` | 0,18 | Chance de pular ao trocar o lado do strafe, levando tiro |
+| `SuppressChance` / `SuppressTime` | 0,5 / 1,2 s | Perdeu o alvo de vista: atira onde ele sumiu |
+
+`PatrolRoutes.CrowdCost` (18 m) e `SpreadJitter` (10 m) espalham o time
+pelas rotas: cada bot numa rota a encarece para o próximo.
 
 O cérebro (as notas de cada ação) está em `scripts/ai/BotBrain.cs`.
 

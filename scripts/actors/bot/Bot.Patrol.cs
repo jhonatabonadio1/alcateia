@@ -31,6 +31,7 @@ public partial class Bot
 	private int _leg;
 	private int _legStep = 1;
 	private double _scanTimer;
+	private double _searchStuck;
 	private float _scanAngle;
 	private Vector3 _patrolTarget;
 	private bool _hasPatrolTarget;
@@ -59,7 +60,40 @@ public partial class Bot
 			Vector3 step = PathTo(_lastKnown);
 
 			FaceDirection(_lastKnown, delta);
-			MoveTowards(step, Speed * 0.85f, delta);
+
+			// Acabou de perder o alvo: às vezes segura o canto a tiro
+			// antes de ir atrás. É o que faz a parede não ser um botão de
+			// "pausa" para quem se esconde.
+			if (_suppress && State == BotState.Search && !_form.IsWolf)
+			{
+				if (_beliefAge < SuppressTime && _form.CanAttack && !_weapon.IsReloading)
+				{
+					UpdateBurst(delta);
+					if (_firing) _weapon.TryAttack();
+					MoveTowards(Vector3.Zero, Speed, delta);
+					return;
+				}
+
+				_suppress = false;
+			}
+
+			// Sem caminho até lá (o palpite caiu dentro de uma parede) ou
+			// sem sair do lugar: vale como ter chegado, e a busca passa a
+			// ser daqui. Sem isto o bot ficava parado de frente para a
+			// parede até a crença vencer.
+			_searchStuck = GlobalPosition.DistanceTo(_lastPosition) < 0.02f ? _searchStuck + delta : 0;
+			_lastPosition = GlobalPosition;
+
+			if (step == Vector3.Zero || _searchStuck > StuckTime)
+			{
+				_searchStuck = 0;
+				_lastKnown = GlobalPosition;
+				return;
+			}
+
+			// Quem vai ver uma coisa vai com pressa; de lobo, correndo.
+			float speed = _form.IsWolf ? FormSpeed * WolfSprintFactor : Speed;
+			MoveTowards(step, speed, delta);
 			return;
 		}
 
@@ -116,7 +150,12 @@ public partial class Bot
 		if (flat.Length() <= ArriveRadius)
 		{
 			_hasPatrolTarget = false;
-			_patrolPause = PatrolPause * _rng.Range(0.6, 1.6);
+
+			// Para só no fim da rota, e de vez em quando no meio. Parar em
+			// todo ponto era o anda-e-para que denunciava o roteiro.
+			_patrolPause = _route < 0 || _rng.Chance(0.2f)
+				? PatrolPause * _rng.Range(0.4, 1.2)
+				: 0;
 			return;
 		}
 
@@ -149,7 +188,20 @@ public partial class Bot
 		}
 
 		FaceDirection(GlobalPosition + step * 4f, delta);
-		MoveTowards(step, Speed * PatrolSpeedFactor, delta);
+
+		// De lobo não se passeia: quem está de quatro, corre.
+		MoveTowards(step, _form.IsWolf ? FormSpeed : Speed * PatrolSpeedFactor, delta);
+	}
+
+	/// <summary>Troca de rota avisando <see cref="PatrolRoutes"/>, que
+	/// usa a lotação para espalhar o time.</summary>
+	private void SetRoute(int route)
+	{
+		if (route == _route) return;
+
+		if (_route >= 0) PatrolRoutes.Leave(_route);
+		_route = route;
+		if (_route >= 0) PatrolRoutes.Take(_route);
 	}
 
 	private void PickPatrolTarget()
@@ -188,7 +240,7 @@ public partial class Bot
 
 		if (_route < 0 || _leg < 0 || _leg >= PatrolRoutes.Length(_route))
 		{
-			_route = PatrolRoutes.Nearest(GlobalPosition);
+			SetRoute(PatrolRoutes.Spread(GlobalPosition, _rng));
 			if (_route < 0) return false;
 
 			PatrolRoutes.ClosestPoint(_route, GlobalPosition, out _leg);
@@ -210,7 +262,7 @@ public partial class Bot
 
 		// Acabou a rota: na próxima vez pega outra.
 		if (_leg < 0 || _leg >= PatrolRoutes.Length(_route))
-			_route = -1;
+			SetRoute(-1);
 
 		_hasPatrolTarget = true;
 		_stuckTimer = 0;
