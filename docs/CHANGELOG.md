@@ -2,6 +2,14 @@
 
 ## Não lançado
 
+### Rugido com as pernas (18/11)
+- **`Howl` mais agressivo** (pedido do Jhon): agacha fundo com os
+  joelhos abertos, bate o pé esquerdo à frente, sobe na ponta do direito
+  e projeta o quadril. O joelho passa a ir de 73° a 150° (ia de 129° a
+  151°). Só quadril e pernas mudam; duração, braços e momentos são os
+  mesmos. Feito por `tools/rugido/rugido.py` em cima do clipe do Jhon —
+  detalhes em `assets/characters/wolf/LEIA-ME.md`.
+
 ### Bots que caçam, viram lobo e jogam granada (18/11)
 Pedido do Jhon: bots burros, previsíveis, sem se espalhar, sem granada,
 sem lobo. Medido antes, em 90 s de partida com 7 bots: de 71 a 81% do
