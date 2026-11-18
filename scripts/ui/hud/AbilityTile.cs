@@ -1,59 +1,135 @@
 using Godot;
 
 /// <summary>
-/// O ícone de uma habilidade do lobo, no estilo dos de Overwatch: um
-/// quadrado com o desenho, a tecla num cantinho e o nome embaixo. Pronta,
-/// ele fica aceso com a borda laranja. Em recarga, escurece, uma varredura
-/// em círculo libera o ícone no sentido horário e o número grande no meio
-/// conta os segundos. Ao voltar, pisca e dá um pulinho.
+/// O especial do lobo (o salto carregado), no inferior centro, como a
+/// suprema de Overwatch (pedido do Jhon, 17/11): um disco. Em recarga é
+/// escuro, com um aro que fecha no sentido horário e os segundos no meio.
+/// Pronto, **acende**: o disco fica laranja cheio, com o ícone branco, um
+/// halo que respira e raios girando devagar em volta (shader aditivo), e
+/// no instante em que volta solta uma onda e dá um pulinho.
+///
+/// A tecla fica numa ficha embaixo, com o nome.
 ///
 /// Quem manda o estado é o Hud, uma vez por quadro: <see cref="SetState"/>.
 /// </summary>
 public partial class AbilityTile : Control
 {
-	private const float Square = 72f;
-	private const float CaptionHeight = 18f;
+	private const float Side = 96f;
+	private const float Radius = 42f;
+	private const float GlowSide = 240f;
+	private const float CaptionHeight = 42f;
+
+	/// <summary>A cor do disco aceso.</summary>
+	public Color Hot { get; set; } = UiTokens.TeamOrange;
+
+	/// <summary>A cor do halo.</summary>
+	public Color Glow { get; set; } = new(1f, 0.6f, 0.18f);
 
 	public string Title { get; set; } = "";
 	public string Key { get; set; } = "";
 	public IconKind Kind { get; set; } = IconKind.Claw;
 
+	private const string GlowCode = @"
+shader_type canvas_item;
+render_mode blend_add;
+uniform vec4 glow : source_color = vec4(1.0, 0.6, 0.18, 1.0);
+uniform float power = 0.0;
+uniform float burst = 0.0;
+uniform float disc = 0.175;
+void fragment() {
+	vec2 p = UV - 0.5;
+	float r = length(p);
+	float a = atan(p.y, p.x);
+	float pulse = 0.5 + 0.5 * sin(TIME * 3.0);
+	float d = max(r - disc, 0.0);
+	float outside = smoothstep(disc - 0.012, disc, r);
+	// Halo: cai com a distância da borda do disco, e respira.
+	float halo = exp(-d * (13.0 - 4.0 * pulse)) * (0.6 + 0.22 * pulse);
+	// Raios: dois leques girando em sentidos opostos.
+	float rays = pow(max(0.0, sin(a * 6.0 + TIME * 0.8)), 3.0) * 0.6
+		+ pow(max(0.0, sin(a * 10.0 - TIME * 0.55)), 4.0) * 0.4;
+	float ray = rays * exp(-d * 8.0) * 0.42;
+	float fade = 1.0 - smoothstep(0.38, 0.5, r);
+	// E um clarão largo e fraco, que é o que se vê de canto de olho.
+	float bloom = exp(-d * 5.0) * (0.22 + 0.08 * pulse);
+	float v = (halo + ray + bloom) * outside * power * fade;
+	// Por dentro do disco, um sopro de luz.
+	float inner = (1.0 - outside) * (0.08 + 0.1 * pulse) * power;
+	// A onda de quando fica pronto.
+	float ring = disc + (1.0 - burst) * 0.25;
+	float wave = smoothstep(0.035, 0.0, abs(r - ring)) * burst * fade;
+	vec3 col = mix(glow.rgb, vec3(1.0, 0.95, 0.85), clamp(v * 0.6 + wave, 0.0, 1.0));
+	COLOR = vec4(col, clamp(v + inner + wave, 0.0, 1.0));
+}";
+
+	private static Shader _glowShader;
+
 	private Icon _icon;
 	private Control _cover;
+	private ShaderMaterial _glow;
 	private float _left;
 	private float _total = 1f;
-	private float _flash;
+	private float _power;
+	private float _burst;
 	private bool _cooling;
+
+	private static Vector2 Center => new(Side / 2f, Side / 2f);
 
 	public override void _Ready()
 	{
 		MouseFilter = MouseFilterEnum.Ignore;
-		CustomMinimumSize = new Vector2(Square, Square + CaptionHeight);
-		// O fundo é vidro (o mapa borrado), como os painéis do HUD.
-		Material = HudStyle.Glass();
+		CustomMinimumSize = new Vector2(Side, Side + CaptionHeight);
 
-		_icon = Icon.Make(Kind, 38, UiTokens.TextPrimary);
-		_icon.Position = new Vector2((Square - 38) / 2f, (Square - 38) / 2f - 2);
-		_icon.Size = new Vector2(38, 38);
+		// O brilho: maior que o disco, por baixo do ícone, somando luz.
+		_glowShader ??= new Shader { Code = GlowCode };
+		_glow = new ShaderMaterial { Shader = _glowShader };
+		_glow.SetShaderParameter("glow", Glow);
+		_glow.SetShaderParameter("disc", Radius / GlowSide);
+		var light = new ColorRect
+		{
+			Color = Colors.White,
+			Material = _glow,
+			MouseFilter = MouseFilterEnum.Ignore,
+			Position = Center - new Vector2(GlowSide, GlowSide) / 2f,
+			Size = new Vector2(GlowSide, GlowSide)
+		};
+		AddChild(light);
+
+		_icon = Icon.Make(Kind, 46, Colors.White);
+		_icon.Position = Center - new Vector2(23, 23);
+		_icon.Size = new Vector2(46, 46);
 		AddChild(_icon);
 
-		// Por cima do ícone: varredura, número, borda, tecla e o brilho.
+		// Por cima de tudo: aro, número, tecla e nome.
 		_cover = new Control
 		{
 			MouseFilter = MouseFilterEnum.Ignore,
-			ClipContents = true,
 			Position = Vector2.Zero,
-			Size = new Vector2(Square, Square)
+			Size = new Vector2(Side, Side + CaptionHeight)
 		};
 		_cover.Draw += DrawCover;
 		AddChild(_cover);
+
+		_power = 1f;
+		_glow.SetShaderParameter("power", _power);
 	}
 
 	public override void _Process(double delta)
 	{
-		if (_flash <= 0) return;
-		_flash = Mathf.Max(0, _flash - (float)delta * 3f);
-		_cover.QueueRedraw();
+		if (_glow == null) return;
+
+		float target = _cooling ? 0f : 1f;
+		if (!Mathf.IsEqualApprox(_power, target))
+		{
+			_power = Mathf.MoveToward(_power, target, (float)delta * 5f);
+			_glow.SetShaderParameter("power", _power);
+		}
+
+		if (_burst > 0)
+		{
+			_burst = Mathf.Max(0, _burst - (float)delta * 1.8f);
+			_glow.SetShaderParameter("burst", _burst);
+		}
 	}
 
 	public void SetState(float left, float total)
@@ -63,15 +139,15 @@ public partial class AbilityTile : Control
 		bool cooling = left > 0.0001f;
 		if (_cooling && !cooling)
 		{
-			_flash = 1f;
-			Motion.Pop(this, 1.15f);
+			_burst = 1f;
+			Motion.Pop(this, 1.2f, 0.3f);
 		}
 
 		bool changed = cooling != _cooling || Mathf.Abs(left - _left) > 0.0005f;
 		_cooling = cooling;
 		_left = left;
 		_total = Mathf.Max(total, 0.01f);
-		_icon.Modulate = cooling ? new Color(1, 1, 1, 0.4f) : Colors.White;
+		_icon.Visible = !cooling;
 		if (changed)
 		{
 			_cover.QueueRedraw();
@@ -79,79 +155,72 @@ public partial class AbilityTile : Control
 		}
 	}
 
-	/// <summary>O quadrado com dois cantos cortados (o facetado do HUD).</summary>
-	private static Vector2[] Shape(float inset = 0f)
-	{
-		float c = HudStyle.Cut + 2, a = inset, b = Square - inset;
-		return new Vector2[]
-		{
-			new(a + c, a), new(b, a), new(b, b - c), new(b - c, b), new(a, b), new(a, a + c)
-		};
-	}
-
-	// Fundo e nome: por baixo do ícone.
+	// O disco: por baixo do brilho e do ícone.
 	public override void _Draw()
 	{
-		DrawColoredPolygon(Shape(), HudStyle.GlassMark);
+		if (_cooling)
+		{
+			DrawCircle(Center, Radius, new Color(0.02f, 0.03f, 0.05f, 0.6f));
+			return;
+		}
 
-		Color color = _cooling ? UiTokens.TextSecondary : UiTokens.TextPrimary;
-		Font font = HudStyle.Slanted(UiFonts.DisplaySemi);
-		const int fontSize = 15;
-		Vector2 size = font.GetStringSize(Title, HorizontalAlignment.Center, -1, fontSize);
-		var at = new Vector2((Square - size.X) / 2f, Square + CaptionHeight - 3);
-		DrawString(font, at + new Vector2(1, 1), Title, HorizontalAlignment.Left, -1, fontSize, new Color(0, 0, 0, 0.8f));
-		DrawString(font, at, Title, HorizontalAlignment.Left, -1, fontSize, color);
+		DrawCircle(Center, Radius, Hot);
+
+		// Uma face mais clara em cima, à esquerda: o disco é facetado,
+		// não uma bola lisa.
+		const int steps = 20;
+		var face = new Vector2[steps + 1];
+		for (int i = 0; i <= steps; i++)
+		{
+			float angle = Mathf.DegToRad(150f + 180f * i / steps);
+			face[i] = Center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * (Radius - 0.5f);
+		}
+		DrawColoredPolygon(face, Hot.Lightened(0.16f));
 	}
 
 	private void DrawCover()
 	{
-		Vector2 center = new Vector2(Square, Square) / 2f;
+		const float top = -Mathf.Pi / 2f;
 
 		if (_cooling)
 		{
-			// O que ainda falta fica escuro; a parte já liberada abre no
-			// sentido horário, a partir do topo.
-			float remaining = Mathf.Clamp(_left / _total, 0f, 1f);
-			if (remaining > 0.005f)
-			{
-				float start = -Mathf.Pi / 2f + Mathf.Tau * (1f - remaining);
-				float end = -Mathf.Pi / 2f + Mathf.Tau;
-				int steps = Mathf.Max(3, Mathf.CeilToInt(64f * remaining));
-				var points = new Vector2[steps + 2];
-				points[0] = center;
-				for (int i = 0; i <= steps; i++)
-				{
-					float angle = Mathf.Lerp(start, end, i / (float)steps);
-					points[i + 1] = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * Square;
-				}
-				_cover.DrawColoredPolygon(points, new Color(0.02f, 0.03f, 0.05f, 0.72f));
-			}
+			// O aro fecha no sentido horário, a partir do topo.
+			float done = 1f - Mathf.Clamp(_left / _total, 0f, 1f);
+			_cover.DrawArc(Center, Radius - 2.5f, 0, Mathf.Tau, 64, new Color(1, 1, 1, 0.2f), 5f, true);
+			if (done > 0.003f)
+				_cover.DrawArc(Center, Radius - 2.5f, top, top + Mathf.Tau * done, Mathf.Max(4, Mathf.CeilToInt(64 * done)),
+					UiTokens.TextPrimary, 5f, true);
 
 			string number = Mathf.CeilToInt(_left).ToString();
 			Font font = HudStyle.Slanted(UiFonts.NumericDisplay);
-			const int fontSize = 38;
+			const int fontSize = 42;
 			Vector2 text = font.GetStringSize(number, HorizontalAlignment.Center, -1, fontSize);
-			Vector2 at = new Vector2(center.X - text.X / 2f, center.Y + fontSize * 0.36f);
+			var at = new Vector2(Center.X - text.X / 2f, Center.Y + fontSize * 0.36f);
 			_cover.DrawString(font, at + new Vector2(1.5f, 1.5f), number, HorizontalAlignment.Left, -1, fontSize, new Color(0, 0, 0, 0.7f));
 			_cover.DrawString(font, at, number, HorizontalAlignment.Left, -1, fontSize, UiTokens.TextPrimary);
 		}
+		else
+		{
+			_cover.DrawArc(Center, Radius - 1.5f, 0, Mathf.Tau, 64, new Color(1f, 0.97f, 0.9f), 3f, true);
+		}
 
-		// Borda: laranja pronta, apagada em recarga.
-		Color border = _cooling ? UiTokens.Surface3 : UiTokens.TeamOrange;
-		Vector2[] edge = Shape(1f);
-		var loop = new Vector2[edge.Length + 1];
-		edge.CopyTo(loop, 0);
-		loop[^1] = edge[0];
-		_cover.DrawPolyline(loop, border, 2.5f);
+		// A tecla, numa ficha que morde a beira de baixo do disco.
+		Font keyFont = UiFonts.Bold;
+		const int keySize = 13;
+		Vector2 key = keyFont.GetStringSize(Key, HorizontalAlignment.Center, -1, keySize);
+		var chip = new Rect2(Center.X - key.X / 2f - 7, Side - 9, key.X + 14, 19);
+		_cover.DrawRect(chip, new Color(0.03f, 0.04f, 0.06f, 0.92f));
+		_cover.DrawRect(chip, _cooling ? new Color(1, 1, 1, 0.25f) : Hot, false, 1.5f);
+		_cover.DrawString(keyFont, new Vector2(chip.Position.X + 7, chip.Position.Y + 14), Key,
+			HorizontalAlignment.Left, -1, keySize, _cooling ? UiTokens.TextSecondary : Colors.White);
 
-		// Tecla, no canto de baixo.
-		Vector2 key = UiFonts.Bold.GetStringSize(Key, HorizontalAlignment.Center, -1, 12);
-		var chip = new Rect2(Square - key.X - 10, Square - 17, key.X + 8, 15);
-		_cover.DrawRect(chip, new Color(UiTokens.Bg, 0.92f));
-		_cover.DrawString(UiFonts.Bold, new Vector2(chip.Position.X + 4, chip.Position.Y + 12), Key,
-			HorizontalAlignment.Left, -1, 12, _cooling ? UiTokens.TextSecondary : UiTokens.Accent);
-
-		if (_flash > 0)
-			_cover.DrawRect(new Rect2(0, 0, Square, Square), new Color(1, 1, 1, _flash * 0.5f));
+		// O nome, embaixo.
+		Font titleFont = HudStyle.Slanted(UiFonts.DisplaySemi);
+		const int titleSize = 15;
+		Vector2 size = titleFont.GetStringSize(Title, HorizontalAlignment.Center, -1, titleSize);
+		var where = new Vector2(Center.X - size.X / 2f, Side + CaptionHeight - 6);
+		_cover.DrawString(titleFont, where + new Vector2(1, 1), Title, HorizontalAlignment.Left, -1, titleSize, new Color(0, 0, 0, 0.8f));
+		_cover.DrawString(titleFont, where, Title, HorizontalAlignment.Left, -1, titleSize,
+			_cooling ? UiTokens.TextSecondary : UiTokens.TextPrimary);
 	}
 }

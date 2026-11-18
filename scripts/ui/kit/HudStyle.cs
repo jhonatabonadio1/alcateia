@@ -2,51 +2,76 @@ using Godot;
 using System.Collections.Generic;
 
 /// <summary>
-/// O visual do HUD de combate (pedido do Jhon, 17/11): mais low poly e
-/// mais Overwatch.
+/// O visual do HUD de combate e o vidro dos menus (pedidos do Jhon, 17/11).
 ///
-/// - **Vidro**: o fundo dos painéis é o próprio mapa, desfocado e
-///   escurecido (<see cref="Glass"/>), em vez de uma caixa preta chapada.
-///   O painel pinta o fundo de magenta (<see cref="GlassMark"/>) e o
-///   shader troca o magenta pelo mapa borrado; o resto (borda, texto)
-///   passa como está.
-/// - **Facetado**: cantos cortados a 45° (sem arredondar) e painéis
-///   inclinados, como paralelogramos (<see cref="Skew"/>). A borda
-///   suavizada continua magenta (só a transparência cai), então o vidro
-///   chega liso até a beira inclinada.
+/// - **HUD sem fundo**: em primeira pessoa nada de painel atrás da vida,
+///   da munição e do especial — número grosso com contorno direto sobre
+///   o jogo, como em Overwatch. Só o que é lista (feed de abates, placar)
+///   leva uma placa chapada e translúcida (<see cref="Plate"/>), sem
+///   borrar nada.
+/// - **Facetado**: cantos cortados a 45° (sem arredondar) e placas
+///   inclinadas, como paralelogramos (<see cref="Skew"/>).
 /// - **Números inclinados**, grossos e grandes (<see cref="Slanted"/>).
+/// - **Vidro fosco** (<see cref="Glass"/>): o que está atrás, borrado e
+///   puxado para um tom. É o fundo dos cartões dos menus (claro, o
+///   LobbyShell aplica). O painel pinta o fundo de magenta
+///   (<see cref="GlassMark"/>) e o shader troca o magenta pelo fundo
+///   borrado; o resto (borda, sombra, texto) passa como está.
 ///
 /// Os menus por cima da partida (Esc, conjunto, resultado) usam o mapa
 /// borrado de fundo (<see cref="Backdrop"/>).
 /// </summary>
 public static class HudStyle
 {
-	/// <summary>A cor que o shader de vidro troca pelo mapa borrado.</summary>
+	/// <summary>A cor que o shader de vidro troca pelo fundo borrado.</summary>
 	public static readonly Color GlassMark = new(1, 0, 1);
 
-	/// <summary>Inclinação dos painéis: quanto o topo anda para a direita
+	/// <summary>Inclinação das placas: quanto o topo anda para a direita
 	/// em relação à base, por pixel de altura.</summary>
 	public const float Skew = 0.16f;
 
 	/// <summary>O corte dos cantos, em pixels.</summary>
 	public const int Cut = 10;
 
-	/// <summary>O tom do vidro: escuro e frio, como o painel de antes.</summary>
-	public static readonly Color Tint = new(0.035f, 0.05f, 0.075f, 0.58f);
+	/// <summary>O tom das placas chapadas do HUD: escuro, frio, meio
+	/// transparente.</summary>
+	public static readonly Color Shade = new(0.03f, 0.04f, 0.06f, 0.5f);
 
+	/// <summary>O tom do vidro fosco dos menus claros.</summary>
+	public static readonly Color Frost = new(1f, 1f, 1f, 0.5f);
+
+	// Quanto de magenta há no pixel (t) é quanto de vidro ele leva: na
+	// beira suavizada entre a borda e o fundo a cor vem misturada, e um
+	// teste de "é magenta ou não" deixava um fio rosa nos cantos cortados.
+	// O borrão soma nove amostras de um mip baixo, para não aparecer o
+	// quadriculado do mip; o grão é o que deixa fosco.
 	private const string GlassCode = @"
 shader_type canvas_item;
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear_mipmap, repeat_disable;
-uniform float blur = 3.2;
-uniform vec4 tint : source_color = vec4(0.035, 0.05, 0.075, 0.58);
+uniform float blur = 3.5;
+uniform float grain = 0.02;
+uniform vec4 tint : source_color = vec4(1.0, 1.0, 1.0, 0.5);
 void fragment() {
 	vec4 c = COLOR;
-	float glass = step(0.97, c.r) * step(0.97, c.b) * (1.0 - step(0.03, c.g));
-	if (glass > 0.5) {
-		vec3 bg = textureLod(screen_tex, SCREEN_UV, blur).rgb;
+	float t = clamp(min(c.r, c.b) - c.g, 0.0, 1.0);
+	if (t > 0.01) {
+		vec2 px = SCREEN_PIXEL_SIZE * exp2(blur);
+		vec3 bg = textureLod(screen_tex, SCREEN_UV, blur).rgb * 0.2;
+		bg += textureLod(screen_tex, SCREEN_UV + px * vec2(1.0, 0.0), blur).rgb * 0.125;
+		bg += textureLod(screen_tex, SCREEN_UV + px * vec2(-1.0, 0.0), blur).rgb * 0.125;
+		bg += textureLod(screen_tex, SCREEN_UV + px * vec2(0.0, 1.0), blur).rgb * 0.125;
+		bg += textureLod(screen_tex, SCREEN_UV + px * vec2(0.0, -1.0), blur).rgb * 0.125;
+		bg += textureLod(screen_tex, SCREEN_UV + px * vec2(0.7, 0.7), blur).rgb * 0.075;
+		bg += textureLod(screen_tex, SCREEN_UV + px * vec2(-0.7, 0.7), blur).rgb * 0.075;
+		bg += textureLod(screen_tex, SCREEN_UV + px * vec2(0.7, -0.7), blur).rgb * 0.075;
+		bg += textureLod(screen_tex, SCREEN_UV + px * vec2(-0.7, -0.7), blur).rgb * 0.075;
+		float n = fract(sin(dot(floor(FRAGCOORD.xy), vec2(12.9898, 78.233))) * 43758.5453) - 0.5;
 		// Um brilho fraco no alto, como uma face de vidro inclinada.
-		float sheen = 0.05 * (1.0 - clamp(UV.y * 1.6, 0.0, 1.0));
-		COLOR = vec4(mix(bg, tint.rgb, tint.a) + sheen, c.a);
+		float sheen = 0.04 * (1.0 - clamp(UV.y * 1.6, 0.0, 1.0));
+		vec3 glass = mix(bg, tint.rgb, tint.a) + sheen + n * grain;
+		// O que não é magenta (a borda, na beira) fica como veio.
+		vec3 rest = clamp((c.rgb - t * vec3(1.0, 0.0, 1.0)) / max(1.0 - t, 0.001), 0.0, 1.0);
+		COLOR = vec4(mix(rest, glass, t), c.a);
 	}
 }";
 
@@ -64,10 +89,11 @@ void fragment() {
 	private static Shader _backdropShader;
 	private static readonly Dictionary<Color, ShaderMaterial> Glasses = new();
 
-	/// <summary>O material de vidro, com o tom (um por cor, reaproveitado).</summary>
+	/// <summary>O material de vidro fosco, com o tom (um por cor,
+	/// reaproveitado). Quem usa pinta o fundo com <see cref="GlassMark"/>.</summary>
 	public static ShaderMaterial Glass(Color? tint = null)
 	{
-		Color t = tint ?? Tint;
+		Color t = tint ?? Frost;
 		if (Glasses.TryGetValue(t, out ShaderMaterial m)) return m;
 
 		_glassShader ??= new Shader { Code = GlassCode };
@@ -78,7 +104,7 @@ void fragment() {
 	}
 
 	/// <summary>O fundo dos menus por cima da partida: o mapa borrado,
-	/// puxado para <paramref name="color"/> em <paramref name="strength"/>.
+	/// puxado para a cor do ColorRect em <paramref name="strength"/>.
 	/// Use num ColorRect de cor opaca.</summary>
 	public static ShaderMaterial Backdrop(float strength = 0.55f)
 	{
@@ -88,15 +114,17 @@ void fragment() {
 		return m;
 	}
 
-	/// <summary>O desenho de um painel: vidro, dois cantos cortados (o de
-	/// cima à esquerda e o de baixo à direita), inclinado, e uma linha de
-	/// destaque embaixo se <paramref name="accent"/> tiver cor.</summary>
+	/// <summary>O desenho de uma placa do HUD: chapada e translúcida
+	/// (<paramref name="bg"/>, por padrão <see cref="Shade"/>), dois cantos
+	/// cortados (o de cima à esquerda e o de baixo à direita), inclinada,
+	/// e uma linha de destaque embaixo se <paramref name="accent"/> tiver
+	/// cor.</summary>
 	public static StyleBoxFlat Plate(Color accent = default, bool skewed = true, float skew = Skew,
-		int padH = UiTokens.S3, int padV = UiTokens.S2, int accentWidth = 3)
+		int padH = UiTokens.S3, int padV = UiTokens.S2, int accentWidth = 3, Color? bg = null)
 	{
 		var box = new StyleBoxFlat
 		{
-			BgColor = GlassMark,
+			BgColor = bg ?? Shade,
 			BorderColor = accent,
 			CornerDetail = 1,
 			AntiAliasing = true,
@@ -112,18 +140,17 @@ void fragment() {
 		return box;
 	}
 
-	/// <summary>Um painel de vidro pronto (sem tema): o material e o
-	/// desenho de <see cref="Plate"/>.</summary>
+	/// <summary>Uma placa pronta (sem tema): o desenho de
+	/// <see cref="Plate"/>, com o tom <paramref name="tint"/>.</summary>
 	public static PanelContainer Panel(Color accent = default, bool skewed = true, float skew = Skew, Color? tint = null,
 		int padH = UiTokens.S3, int padV = UiTokens.S2)
 	{
-		var panel = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore, Material = Glass(tint) };
-		panel.AddThemeStyleboxOverride("panel", Plate(accent, skewed, skew, padH, padV));
+		var panel = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+		panel.AddThemeStyleboxOverride("panel", Plate(accent, skewed, skew, padH, padV, bg: tint));
 		return panel;
 	}
 
-	/// <summary>Caixa chapada facetada (sem vidro): fichas de tecla,
-	/// barras.</summary>
+	/// <summary>Caixa chapada facetada: fichas de tecla, barras.</summary>
 	public static StyleBoxFlat Facet(Color bg, Color border = default, int borderWidth = 0, float skew = Skew, int cut = 5,
 		int padH = 0, int padV = 0)
 	{
@@ -164,16 +191,25 @@ void fragment() {
 	{
 		label.AddThemeFontOverride("font", Slanted(UiFonts.Display));
 		label.AddThemeFontSizeOverride("font_size", size);
-		label.AddThemeConstantOverride("outline_size", Mathf.Max(4, size / 10));
-		label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.55f));
+		label.AddThemeConstantOverride("outline_size", Mathf.Max(4, size / 8));
+		label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.6f));
 		if (color is Color c) label.AddThemeColorOverride("font_color", c);
+		return label;
+	}
+
+	/// <summary>Contorno escuro no texto solto sobre o mundo — sem painel
+	/// atrás, texto claro some em parede clara.</summary>
+	public static T Outlined<T>(T label, int size = 5) where T : Label
+	{
+		label.AddThemeConstantOverride("outline_size", size);
+		label.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.75f));
 		return label;
 	}
 
 	/// <summary>Barra fina inclinada (recarga, uivo, força do salto).</summary>
 	public static void SlantBar(ProgressBar bar, Color fill)
 	{
-		bar.AddThemeStyleboxOverride("background", Facet(new Color(1, 1, 1, 0.12f), default, 0, 0.9f, 0));
+		bar.AddThemeStyleboxOverride("background", Facet(new Color(0, 0, 0, 0.45f), new Color(1, 1, 1, 0.16f), 1, 0.9f, 0));
 		bar.AddThemeStyleboxOverride("fill", Facet(fill, default, 0, 0.9f, 0));
 	}
 }

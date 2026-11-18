@@ -239,11 +239,21 @@ Modal com: item, duração, preço, saldo atual, saldo depois da compra. Botão 
 **O visual (17/11, pedido do Jhon: mais low poly, mais Overwatch).** Tudo
 em `scripts/ui/kit/HudStyle.cs`:
 
-- **Vidro**: o fundo dos painéis é o próprio mapa, borrado e escurecido
-  (shader de leitura da tela). O painel pinta o fundo de magenta e o
-  shader troca o magenta pelo mapa; borda e texto passam como estão. Use
-  `HudStyle.Panel(...)` — o tema não guarda material, então o
-  `HudPanel` do tema é só a versão chapada.
+- **Sem fundo** (17/11, segunda passada, com Overwatch de referência:
+  "a HUD em primeira pessoa não precisa de fundo blur"): vida, munição e
+  transformação ficam direto sobre o jogo, com contorno escuro no texto
+  e sombra nos gomos. Só o que é lista (feed de abates, placar) leva uma
+  placa chapada e translúcida (`HudStyle.Panel` / `Plate`), sem borrar.
+  Os dois blocos de baixo giram 3° para dentro (`Hud.TiltDegrees`).
+- **Insígnia da forma** (`HexBadge`): um hexágono com a borda da cor do
+  time e o ícone de humano ou lobo, ao lado da vida.
+- **O especial do lobo** (`AbilityTile`), no inferior centro, como a
+  suprema de Overwatch: um disco. Em recarga, escuro, com um aro que
+  fecha e os segundos no meio. Pronto, acende: laranja cheio, halo que
+  respira, raios girando (shader aditivo) e uma onda no instante em que
+  volta.
+- **Aviso de abate** (`KillBanner`): caveira e "ELIMINOU <jogador>"
+  abaixo da mira, só para quem matou; "NA CABEÇA" ao lado quando for.
 - **Facetado**: cantos cortados a 45° (o de cima à esquerda e o de
   baixo à direita) e painéis inclinados como paralelogramos. No placar
   de cima, o azul inclina para a esquerda e o laranja para a direita.
@@ -254,6 +264,14 @@ em `scripts/ui/kit/HudStyle.cs`:
   e escorre. O escudo do lobo também em gomos, laranja.
 - **Menus por cima da partida** (Esc, conjunto, resultado): o mapa
   borrado de fundo (`HudStyle.Backdrop`), no lugar do escuro chapado.
+
+**Vidro fosco nos menus** (17/11: "esses fundos brancos podem ser com
+blur, foscos"): os cartões do tema (`Surface1`, `Surface2`, `Card`,
+`Header`) viram vidro sobre o `MenuBackdrop` — o fundo borrado, puxado
+para o branco, com um grão fino. O `LobbyShell` aplica em todo painel
+que entra no lobby (`Frost`): troca o fundo por magenta e põe o material
+`HudStyle.Glass`, que troca o magenta pelo fundo borrado. Painel com
+estilo ou material próprio fica como está.
 
 **Os menus de fora da partida (17/11)**, no mesmo estilo — e era isto
 que o Jhon queria dizer com "HUD" (o de combate ficou, ele gostou):

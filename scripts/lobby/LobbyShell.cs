@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 /// <summary>
@@ -32,6 +33,7 @@ public partial class LobbyShell : Control
 	public override void _ExitTree()
 	{
 		if (Instance == this) Instance = null;
+		GetTree().NodeAdded -= OnNodeAdded;
 		// A partida volta à paleta escura (HUD e menus por cima do jogo).
 		UiTokens.Light = false;
 	}
@@ -53,6 +55,10 @@ public partial class LobbyShell : Control
 
 		// O fundo claro, estilo Overwatch com o corte de Valorant (MenuBackdrop).
 		AddChild(new MenuBackdrop());
+
+		// Os cartões são vidro fosco sobre esse fundo: antes de montar
+		// qualquer painel.
+		GetTree().NodeAdded += OnNodeAdded;
 
 		VBoxContainer frame = UiKit.Fill(UiKit.Column(0));
 		AddChild(frame);
@@ -103,6 +109,56 @@ public partial class LobbyShell : Control
 			Go(new RoomScreen(RoomDirectory.Current));
 		else
 			GoOnline();
+	}
+
+	// ------------------------------------------------------------------ vidro fosco
+
+	/// <summary>Os painéis do tema que viram vidro fosco nos menus
+	/// (pedido do Jhon, 17/11: "esses fundos brancos podem ser com blur,
+	/// foscos"), com o tom de cada um.</summary>
+	private static readonly Dictionary<string, Color> Frosted = new()
+	{
+		["Surface1"] = HudStyle.Frost,
+		["Surface2"] = new Color(0.96f, 0.97f, 0.99f, 0.4f),
+		["Card"] = new Color(0.96f, 0.97f, 0.99f, 0.4f),
+		["Header"] = new Color(1f, 1f, 1f, 0.58f)
+	};
+
+	private readonly Dictionary<string, StyleBoxFlat> _frostBoxes = new();
+
+	// Todo painel que entra no lobby passa por aqui, venha de onde vier
+	// (UiKit.Panel, uma tela, um modal). Adiado: quem monta o painel
+	// costuma dar a variação e o estilo logo depois de criar.
+	private void OnNodeAdded(Node node)
+	{
+		if (node is PanelContainer panel && IsAncestorOf(panel))
+			Callable.From(() => Frost(panel)).CallDeferred();
+	}
+
+	/// <summary>Troca o fundo chapado de um painel do tema por vidro: o
+	/// mesmo desenho (cantos, borda, sombra), com o fundo marcado para o
+	/// shader (<see cref="HudStyle.Glass"/>). Painel com estilo ou
+	/// material próprio fica como está.</summary>
+	private void Frost(PanelContainer panel)
+	{
+		if (!IsInstanceValid(panel) || !panel.IsInsideTree()) return;
+		if (panel.Material != null || panel.HasThemeStyleboxOverride("panel")) return;
+
+		string kind = panel.ThemeTypeVariation.ToString();
+		if (!Frosted.TryGetValue(kind, out Color tint)) return;
+
+		if (!_frostBoxes.TryGetValue(kind, out StyleBoxFlat box))
+		{
+			if (panel.GetThemeStylebox("panel") is not StyleBoxFlat themed) return;
+			box = (StyleBoxFlat)themed.Duplicate();
+			box.BgColor = HudStyle.GlassMark;
+			// A beira do vidro pega luz.
+			if (kind != "Header") box.BorderColor = new Color(1, 1, 1, 0.75f);
+			_frostBoxes[kind] = box;
+		}
+
+		panel.AddThemeStyleboxOverride("panel", box);
+		panel.Material = HudStyle.Glass(tint);
 	}
 
 	// ------------------------------------------------------------------ navegação

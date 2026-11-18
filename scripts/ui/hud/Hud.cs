@@ -9,9 +9,9 @@ using System.Collections.Generic;
 /// | Superior esquerdo | Minimapa e nome do mapa |
 /// | Superior centro | Placar e relógio (MatchHud) |
 /// | Superior direito | Feed de abates |
-/// | Centro | Mira, marcador de acerto, dano direcional, avisos |
+/// | Centro | Mira, marcador de acerto, dano direcional, avisos, "ELIMINOU" |
 /// | Inferior esquerdo | Vida, escudo e a forma atual |
-/// | Inferior centro | Barra de transformação |
+/// | Inferior centro | O especial do lobo (o disco) e a barra de transformação |
 /// | Inferior direito | Arma, munição, granadas, slots e WP — ou, no lobo, as recargas dos ataques |
 ///
 /// O centro fica livre: só mira e avisos críticos.
@@ -46,6 +46,7 @@ public partial class Hud : CanvasLayer
 	private HitMarker _hitMarker;
 	private Label _warning;
 	private double _warningTimer;
+	private KillBanner _killBanner;
 
 	public override void _Ready()
 	{

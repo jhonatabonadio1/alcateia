@@ -21,13 +21,18 @@ public partial class Hud
 		bool mine = kill.Killer == me;
 		bool died = kill.Victim == me;
 
-		if (mine && kill.Victim != me) _hitMarker?.Flash(kill.Cause == KillCause.Headshot, kill: true);
+		if (mine && kill.Victim != me)
+		{
+			_hitMarker?.Flash(kill.Cause == KillCause.Headshot, kill: true);
+			// A caveira e "ELIMINOU <jogador>", abaixo da mira.
+			_killBanner?.Add(kill.Victim, kill.Cause == KillCause.Headshot);
+		}
 
 		if (died) _deathBy.Text = KillFeed.HowDied(kill);
 
-		// A linha em que você aparece leva borda dourada: é a que importa.
+		// Placa chapada (sem borrar o fundo). A linha em que você aparece
+		// leva borda dourada: é a que importa.
 		var line = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore, SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd };
-		line.Material = HudStyle.Glass();
 		line.AddThemeStyleboxOverride("panel", HudStyle.Plate(mine || died ? UiTokens.Accent : new Color(1, 1, 1, 0.25f),
 			padH: UiTokens.S3, padV: 3, accentWidth: mine || died ? 3 : 1));
 

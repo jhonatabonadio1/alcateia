@@ -220,8 +220,9 @@ public partial class MatchHud : CanvasLayer
 		Color color = Teams.ColorOf(team);
 		bool mine = team == _localTeam;
 
-		// Vidro tingido da cor do time, inclinado para fora (o azul para a
-		// esquerda, o laranja para a direita), como o placar de Overwatch.
+		// Placa chapada tingida da cor do time, inclinada para fora (o azul
+		// para a esquerda, o laranja para a direita), como o placar de
+		// Overwatch. Sem borrar o fundo.
 		PanelContainer panel = HudStyle.Panel(mine ? color : new Color(color, 0.45f), skewed: true,
 			skew: team == Teams.Blue ? HudStyle.Skew : -HudStyle.Skew, tint: new Color(color.Darkened(0.72f), 0.62f),
 			padH: UiTokens.S4, padV: UiTokens.S1);

@@ -2,19 +2,21 @@ using Godot;
 using System.Collections.Generic;
 
 /// <summary>
-/// A forma: o ícone de humano ou lobo, a troca de painel e a barra de
-/// transformação no inferior centro (andamento, recusa e o porquê).
+/// A forma: o ícone de humano ou lobo (na insígnia ao lado da vida), a
+/// troca de painel e a barra de transformação no inferior centro
+/// (andamento, recusa e o porquê).
 /// </summary>
 public partial class Hud
 {
 	private Icon _formIcon;
+	private HexBadge _formBadge;
 	private Label _formLabel;
 	private Label _shiftKey;
 	private Label _shiftText;
 	private Label _shiftState;
 	private ProgressBar _shiftBar;
 	private Tween _shiftPulse;
-	private PanelContainer _shiftPanel;
+	private VBoxContainer _shiftPanel;
 
 	private void OnFormChanged(int form) => OnFormChanged(form, animate: true);
 

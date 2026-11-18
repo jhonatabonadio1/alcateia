@@ -6,7 +6,8 @@ public enum IconKind
 	Rooms, Shop, Inventory, Profile, Missions, Options, Collapse, Expand,
 	Lock, Crown, Wolf, Human, Refresh, Go, Back, Close, Check, Chevrons,
 	Presa, Sangue, Star, Clock, Skull, Knife, Grenade, Claw, Fall, Headshot,
-	Plus, Minus, Trophy, Chat, Play, Users, Map, Bot, Info, Warning, Gun, Key, Power
+	Plus, Minus, Trophy, Chat, Play, Users, Map, Bot, Info, Warning, Gun, Key, Power,
+	SkullSolid
 }
 
 /// <summary>
@@ -260,6 +261,23 @@ public partial class Icon : Control
 				Arc(12, 11, 7.5f, 160, 380);
 				Poly(false, 5, 13.5f, 8, 17, 8, 21, 16, 21, 16, 17, 19, 13.5f);
 				Dot(9, 12, 1.8f); Dot(15, 12, 1.8f);
+				break;
+
+			case IconKind.SkullSolid:
+				// Caveira cheia e facetada (o aviso de abate). Os olhos, o
+				// nariz e os vãos dos dentes são buracos de verdade: o
+				// desenho é montado em peças em volta deles.
+				Fill(7, 2.5f, 17, 2.5f, 21, 6.5f, 21, 9.5f, 3, 9.5f, 3, 6.5f);
+				Fill(3, 9.5f, 5.8f, 9.5f, 5.8f, 14, 3.875f, 14, 3, 13);
+				Fill(10.4f, 9.5f, 13.6f, 9.5f, 13.6f, 12.6f, 15, 14, 9, 14, 10.4f, 12.6f);
+				Fill(18.2f, 9.5f, 21, 9.5f, 21, 13, 20.125f, 14, 18.2f, 14);
+				Fill(3.875f, 14, 12, 14, 12, 14.8f, 10.5f, 17.4f, 12, 17.4f, 12, 18.6f, 6.5f, 18.6f, 6.5f, 17);
+				Fill(20.125f, 14, 17.5f, 17, 17.5f, 18.6f, 12, 18.6f, 12, 17.4f, 13.5f, 17.4f, 12, 14.8f, 12, 14);
+				for (int i = 0; i < 4; i++)
+				{
+					float x = 6.5f + i * 2.87f;
+					Fill(x, 19.2f, x + 2.4f, 19.2f, x + 2.4f, 21.8f, x, 21.8f);
+				}
 				break;
 
 			case IconKind.Knife:

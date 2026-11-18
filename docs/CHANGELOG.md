@@ -2,6 +2,20 @@
 
 ## Não lançado
 
+### HUD sem fundo, especial que acende, "ELIMINOU", vidro fosco no menu (17/11)
+- **HUD da partida sem painel**: vida, munição e transformação direto
+  sobre o jogo (contorno escuro, gomos com sombra), os blocos de baixo
+  girados 3° para dentro, uma insígnia hexagonal da forma ao lado da
+  vida (`HexBadge`). Feed e placar em placa chapada, sem borrar o mapa.
+- **Especial do lobo** no inferior centro, como a suprema de Overwatch
+  (`AbilityTile`): disco com aro e segundos em recarga; pronto, acende
+  com halo, raios e uma onda.
+- **Aviso de abate** (`KillBanner`): caveira e "ELIMINOU <jogador>"
+  abaixo da mira para quem matou. Ícone novo `IconKind.SkullSolid`.
+- **Menus**: os cartões brancos viraram **vidro fosco** sobre o fundo
+  (`LobbyShell.Frost` + `HudStyle.Glass`); o `MenuBackdrop` ganhou uma
+  luz quente no alto e um tom lilás embaixo, para o vidro ter o que borrar.
+
 ### Menus claros, estilo Overwatch com Valorant de inspiração (17/11)
 - Os menus fora da partida passam à **paleta clara** (`UiTokens.Light`):
   fundo quase branco, cartões brancos com sombra curta, texto
