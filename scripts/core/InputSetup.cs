@@ -33,8 +33,6 @@ public static class InputSetup
 		Key("drop", Godot.Key.G);
 		Mouse("attack", MouseButton.Left);
 		Mouse("special", MouseButton.Right);
-		// Botão do meio: carregando o salto do lobo, trava no inimigo.
-		Mouse("lock", MouseButton.Middle);
 
 		// Slots: o lobo é o 3, na mesma memória muscular das armas.
 		Key("slot_1", Godot.Key.Key1);

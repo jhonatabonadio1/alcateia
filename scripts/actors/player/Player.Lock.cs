@@ -1,25 +1,30 @@
 using Godot;
+using System.Collections.Generic;
 
 /// <summary>
-/// A trava do salto do lobo (pedido do Jhon, 17/11): carregando o salto
-/// (botão direito seguro no chão), segurar o botão do meio trava no
-/// inimigo mais perto do centro da tela. Travado, a mira segue o inimigo
-/// sozinha (o mouse não gira) e o salto vai nos pés dele; a tela marca
-/// quem está travado (<see cref="LockMark"/>). Soltar o botão do meio, ou
-/// soltar o salto, destrava.
+/// O modo alvo do salto do lobo (pedido do Jhon, 17/11):
+///
+/// - Carregando o salto (botão direito seguro no chão), o **Tab** liga o
+///   modo alvo — e não abre o placar. Os inimigos à vista ganham uma marca;
+///   o mais perto do centro da tela fica destacado.
+/// - Com o modo ligado, o **clique** trava no destacado: a mira segue ele
+///   sozinha (o mouse não gira), o salto vai nos pés dele e o anel da mira
+///   no chão some.
+/// - **Tab de novo** desliga: destrava e o anel no chão volta.
+/// - Soltar o salto, cancelar a carga ou morrer também desliga.
 ///
 /// A trava gira o corpo e a cabeça, não o salto: o salto continua mirando
-/// pela câmera, como sempre. Por isso ela vale igual na rede — o que vai
-/// no pacote é para onde se olha.
+/// pela câmera, como sempre. Por isso vale igual na rede — o que vai no
+/// pacote é para onde se olha.
 /// </summary>
 public partial class Player
 {
-	[ExportGroup("Lobo: trava do salto")]
-	/// <summary>O quanto o inimigo pode estar fora do centro da tela para
-	/// ser travado, em graus.</summary>
-	[Export] public float LockAngle = 30f;
+	[ExportGroup("Lobo: alvo do salto")]
+	/// <summary>O quanto um inimigo pode estar fora do centro da tela para
+	/// ser destacado, em graus.</summary>
+	[Export] public float LockAngle = 35f;
 
-	/// <summary>Até onde se trava, em metros. Mais longe que o salto
+	/// <summary>Até onde se escolhe alvo, em metros. Mais longe que o salto
 	/// (<see cref="Weapon.PounceMaxDistance"/>), o lobo salta até o alcance
 	/// na direção dele.</summary>
 	[Export] public float LockRange = 18f;
@@ -32,33 +37,68 @@ public partial class Player
 	/// mais seco).</summary>
 	[Export] public float LockTurnRate = 16f;
 
+	/// <summary>O modo alvo está ligado (Tab durante a carga).</summary>
+	public bool TargetMode { get; private set; }
+
+	/// <summary>Os inimigos que podem ser escolhidos agora (modo alvo).</summary>
+	public IReadOnlyList<Node3D> TargetCandidates => _candidates;
+
+	/// <summary>O destacado: o que o clique trava.</summary>
+	public Node3D TargetHover { get; private set; }
+
 	/// <summary>O inimigo travado, ou nulo.</summary>
 	public Node3D LockTarget { get; private set; }
 
+	/// <summary>O Tab é do modo alvo, não do placar: carregando o salto ou
+	/// com o modo ligado.</summary>
+	public bool TabTaken => TargetMode || (_form.IsWolf && _weapon.IsChargingPounce);
+
+	private readonly List<Node3D> _candidates = new();
+
 	private void UpdateLock(double delta)
 	{
-		bool wants = _intent.LockHeld && _form.IsWolf && _weapon.IsChargingPounce && !_health.IsDead;
-		if (!wants)
+		bool charging = _form.IsWolf && _weapon.IsChargingPounce && !_health.IsDead;
+		if (!charging)
 		{
-			LockTarget = null;
+			ExitTargetMode();
 			return;
 		}
 
+		if (_intent.TargetToggle)
+		{
+			if (TargetMode) ExitTargetMode();
+			else TargetMode = true;
+		}
+		if (!TargetMode) return;
+
 		if (LockTarget != null && !StillLocked(LockTarget)) LockTarget = null;
 
-		// Apertou sem ninguém na mira: continua procurando enquanto segura.
-		LockTarget ??= PickLock();
+		FindCandidates();
+
+		// Clique: trava no destacado.
+		if (_intent.Attack && TargetHover != null) LockTarget = TargetHover;
+
 		if (LockTarget != null) TurnToLock(delta);
 	}
 
-	/// <summary>O inimigo vivo, à vista, mais perto do centro da tela.</summary>
-	private Node3D PickLock()
+	private void ExitTargetMode()
 	{
-		if (AimCamera is not Camera3D camera) return null;
+		TargetMode = false;
+		LockTarget = null;
+		TargetHover = null;
+		_candidates.Clear();
+	}
+
+	/// <summary>Os inimigos vivos e à vista dentro do alcance; o destacado é
+	/// o mais perto do centro da tela (travado, é o próprio travado).</summary>
+	private void FindCandidates()
+	{
+		_candidates.Clear();
+		TargetHover = LockTarget;
+		if (AimCamera is not Camera3D camera) return;
 
 		Vector3 eye = camera.GlobalPosition;
 		Vector3 forward = -camera.GlobalBasis.Z;
-		Node3D best = null;
 		float bestAngle = LockAngle;
 
 		foreach (string group in Groups.Fighters)
@@ -68,17 +108,16 @@ public partial class Player
 				if (node == this || node is not Node3D body || !IsEnemy(body)) continue;
 
 				Vector3 to = body.GlobalPosition - eye;
-				if (to.Length() > LockRange) continue;
+				if (to.Length() > LockRange || !InSight(eye, body)) continue;
+				_candidates.Add(body);
 
+				if (LockTarget != null) continue;
 				float angle = Mathf.RadToDeg(forward.AngleTo(to));
-				if (angle >= bestAngle || !InSight(eye, body)) continue;
-
+				if (angle >= bestAngle) continue;
 				bestAngle = angle;
-				best = body;
+				TargetHover = body;
 			}
 		}
-
-		return best;
 	}
 
 	private bool StillLocked(Node3D body) =>

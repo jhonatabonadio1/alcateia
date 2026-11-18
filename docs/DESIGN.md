@@ -90,7 +90,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 4 | Faca |
 | 5 | Equipar granada (o ataque arremessa) |
 | Botão direito | Humano: zoom com mira circular (segurar). Lobo: salto no chão, bote no ar |
-| Botão do meio (segurando o salto) | Lobo: trava no inimigo mais perto da mira — a mira segue ele e o salto cai nos pés dele; soltar destrava |
+| Tab (segurando o salto) | Lobo: modo alvo, em vez do placar — marca os inimigos à vista; o clique trava no destacado (a mira segue ele, o salto cai nos pés dele, o anel no chão some); Tab de novo volta à mira no chão |
 | W duas vezes (segurando) | Lobo: corrida de quatro patas, 30% mais rápida (`WolfSprintFactor`); soltar o W ou agachar volta a correr em pé. Carregando o salto, cancela o salto (sem gastar a recarga) e sai correndo |
 | W segurado | Sustenta a corrida em parede |
 | Ataque segurado | Agarra na parede sem avançar |
@@ -483,18 +483,21 @@ o salto voa: do impulso até os pés tocarem o chão, o corpo vai até o
 ponto mirado, **até 12 m** (`PounceMaxDistance`; era 12, caiu para
 8,4 na v0.27.1 e voltou a 12 em 17/11, a pedido do Jhon).
 
-**A área do salto** (17/11): ao cair, pega quem estiver a até 2 m do
-lobo, em volta dele (`PounceHitRadius`), e não só à frente como a garra.
-O lobo pousa em cima ou do lado de quem mirou; a garra (de 0,35 a 2,65 m
-à frente) errava justamente aí. O anel da mira tem esse tamanho.
+**O salto é de um alvo só** (17/11): ao cair, procura em volta do lobo
+(1,8 m, `PounceHitRadius`, e não só à frente como a garra — o lobo pousa
+em cima ou do lado de quem mirou). O principal — o travado no modo
+alvo, senão o inimigo mais perto de onde caiu — leva o dano cheio; quem
+estiver do lado leva 30% (`PounceSplash`). O anel da mira tem o tamanho
+da área.
 
-**A trava** (17/11): carregando o salto, segurar o botão do meio trava
-no inimigo vivo e à vista mais perto do centro da tela (até 30° e 18 m,
-`LockAngle`, `LockRange`). Travado, o corpo e a cabeça giram sozinhos
-para ele (o mouse não gira), o salto cai nos pés dele e a tela marca
-quem está travado (`LockMark`). Soltar o meio, soltar o salto, o alvo
-morrer ou passar de 24 m destrava. A trava gira a mira, não o salto: o
-que vai na rede continua sendo para onde se olha.
+**O modo alvo** (17/11): carregando o salto, o **Tab** liga o modo alvo
+(e não abre o placar). Os inimigos vivos e à vista até 18 m ganham um
+losango; o mais perto do centro da tela (até 35°) fica destacado. O
+**clique** trava nele: o corpo e a cabeça giram sozinhos para ele (o
+mouse não gira), o salto cai nos pés dele e o anel no chão some. **Tab
+de novo** desliga e o anel volta. Soltar ou cancelar o salto, morrer ou
+o alvo passar de 24 m também desliga. A trava gira a mira, não o salto:
+o que vai na rede continua sendo para onde se olha.
 
 **Segurar carrega** (decisão do Jhon). Apertou, o lobo agacha e fica
 encolhido (o clipe para no fim do agachar); soltou, salta. Em 1 s

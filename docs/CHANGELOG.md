@@ -2,6 +2,19 @@
 
 ## Não lançado
 
+### Modo alvo no Tab, salto de um alvo só, mira redonda (17/11)
+- **Modo alvo** no lugar da trava do botão do meio: carregando o salto,
+  o Tab liga o modo alvo (não abre o placar) e marca os inimigos à vista;
+  o clique trava no destacado (a mira segue ele, o anel no chão some);
+  Tab de novo volta à mira no chão.
+- **Salto de um alvo só**: o principal (o travado, senão o mais perto de
+  onde caiu) leva o dano cheio; quem estiver do lado leva 30%
+  (`PounceSplash`). A área caiu de 2 para 1,8 m.
+- **Mira**: o ponto agora é redondo (era um quadrado).
+- **Topo do menu**: a barra de XP mostrava XP negativo (-8.170 /
+  11.960) — usava o XP local com a patente da conta. Agora usa o mesmo
+  XP da patente (`Profile.RankXp`); o Perfil também.
+
 ### Menus no estilo low poly / Overwatch (17/11)
 - **Fundo dos menus**: a foto do mapa borrada e escurecida, com mosaico
   de triângulos fraco, vinheta e zoom lento (`MenuBackdrop`).

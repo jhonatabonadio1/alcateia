@@ -235,9 +235,10 @@ dano acompanham.
 | `PounceMaxClimb` | 6,2 m | Mirando em cima de algo, o salto sobe até isto (dois contêineres empilhados, 5,8 m) |
 | `PounceFullFlight` | 0,45 | Tempo de voo com a carga cheia, em fração do clipe (0,8 s → 0,36 s). Sem carga, 1 |
 | `PounceArc` | 0,6 m | Altura mínima do arco |
-| `PounceHitRadius` | 2 m | Quem o salto pega ao cair: em volta do lobo (era a garra: 1,15 m de raio, 1,5 m à frente). O anel da mira tem este tamanho |
+| `PounceHitRadius` | 1,8 m | Quem o salto pega ao cair: em volta do lobo (era a garra: 1,15 m de raio, 1,5 m à frente). O anel da mira tem este tamanho |
+| `PounceSplash` | 0,3 | O salto é de um alvo só: o principal leva o dano cheio, quem estiver do lado na área leva esta fração |
 | `PounceHitReach` | 0,4 m | Quanto o centro da área do salto fica à frente do lobo |
-| `LockAngle` (nó `Player`) | 30° | Trava do salto (botão do meio): o quanto o inimigo pode estar fora do centro da tela |
+| `LockAngle` (nó `Player`) | 35° | Modo alvo do salto (Tab): o quanto o inimigo pode estar fora do centro da tela para ficar destacado |
 | `LockRange` / `LockKeepRange` | 18 / 24 m | Até onde trava / a que distância a trava cai |
 | `LockTurnRate` | 16 /s | Quão rápido a mira vai até o travado |
 | `HeavyCooldown` | 1,0 s | Espera depois do salto |

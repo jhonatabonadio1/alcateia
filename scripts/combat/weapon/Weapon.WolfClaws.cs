@@ -228,8 +228,14 @@ public partial class Weapon
 	///
 	/// <paramref name="aerial"/>: o golpe veio de uma queda alta e vale
 	/// o bônus aéreo mesmo já no chão — o bote bate quando aterrissa.
+	///
+	/// <paramref name="splash"/> abaixo de 1: o golpe é de um alvo só (o
+	/// salto). O principal — <paramref name="focus"/>, se estiver na área,
+	/// senão o inimigo mais perto do centro — leva o dano cheio; os outros
+	/// na área levam só esta fração.
 	/// </summary>
-	private void Claw(float multiplier, float reach, float radius, bool aerial, Vector3? facing = null)
+	private void Claw(float multiplier, float reach, float radius, bool aerial, Vector3? facing = null,
+		Node3D focus = null, float splash = 1f)
 	{
 		WolfBreed breed = _form.Breed;
 
@@ -254,6 +260,20 @@ public partial class Weapon
 		// alguém.
 		var hits = _body.GetWorld3D().DirectSpaceState.IntersectShape(query, radius > 1.5f ? 48 : 8);
 
+		Node main = null;
+		if (splash < 1f)
+		{
+			float best = float.MaxValue;
+			foreach (var entry in hits)
+			{
+				if (entry["collider"].Obj is not Node3D body || body.GetNodeOrNull<Health>("Health") is not Health h) continue;
+				if (h.IsDead || (_health != null && h.Team == _health.Team)) continue;
+				if (body == focus) { main = body; break; }
+				float d = body.GlobalPosition.DistanceSquaredTo(center);
+				if (d < best) { best = d; main = body; }
+			}
+		}
+
 		foreach (var entry in hits)
 		{
 			if (entry["collider"].Obj is not Node collider) continue;
@@ -268,6 +288,7 @@ public partial class Weapon
 			bool fromAbove = aerial || (!_body.IsOnFloor() && fallen >= AirAttackMinFall);
 			float damage = CombatRules.WolfStrike(breed.AttackDamage, multiplier,
 				IsHumanForm(collider), ClawVsHumanBonus, fromAbove, breed.AirAttackBonus);
+			if (splash < 1f && collider != main) damage *= splash;
 
 			Damage(target, damage, _body.GlobalPosition, false);
 		}

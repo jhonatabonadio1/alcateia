@@ -315,9 +315,9 @@ public partial class LobbyHeader : PanelContainer
 		_rank.Text = Ranks.NameOf(rank).ToUpperInvariant();
 		_rank.AddThemeColorOverride("font_color", Ranks.ColorOf(rank));
 
-		long into = Profile.Xp - Ranks.XpFor(rank);
+		long into = Profile.RankXp - Ranks.XpFor(rank);
 		long span = Ranks.XpFor(rank + 1) - Ranks.XpFor(rank);
-		_xp.Value = Ranks.Progress(Profile.Xp);
+		_xp.Value = Ranks.Progress(Profile.RankXp);
 		_xpText.Text = rank >= Ranks.Count - 1 ? "MÁX" : $"{UiTokens.Thousands(into)} / {UiTokens.Thousands(span)} XP";
 
 		_presas.SetValue(Profile.Presas);

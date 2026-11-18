@@ -87,7 +87,9 @@ public partial class MatchHud : CanvasLayer
 
 		UpdateCountdown(delta);
 
-		bool showBoard = _match.Phase != MatchPhase.Ended && (Input.IsActionPressed("scoreboard") || _forceBoard);
+		// Carregando o salto do lobo, o Tab é do modo alvo, não do placar.
+		bool tabTaken = Groups.LocalPlayer(GetTree()) is Player { TabTaken: true };
+		bool showBoard = _match.Phase != MatchPhase.Ended && ((Input.IsActionPressed("scoreboard") && !tabTaken) || _forceBoard);
 		if (showBoard && !_board.Visible) _boardRefresh = 0;
 		_board.Visible = showBoard;
 

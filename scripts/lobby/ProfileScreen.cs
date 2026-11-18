@@ -55,7 +55,7 @@ public partial class ProfileScreen : LobbyScreen
 		column.AddChild(UiKit.Gap(UiTokens.S2));
 
 		// XP: barra grande, quanto falta e qual é a próxima.
-		long into = Profile.Xp - Ranks.XpFor(rank);
+		long into = Profile.RankXp - Ranks.XpFor(rank);
 		long span = Ranks.XpFor(rank + 1) - Ranks.XpFor(rank);
 		bool max = rank >= Ranks.Count - 1;
 
@@ -65,7 +65,7 @@ public partial class ProfileScreen : LobbyScreen
 		xpHead.AddChild(UiKit.Text(max ? "Patente máxima" : $"{UiTokens.Thousands(into)} / {UiTokens.Thousands(span)}", "Numeric"));
 		column.AddChild(xpHead);
 
-		var bar = new ProgressBar { CustomMinimumSize = new Vector2(0, 8), MaxValue = 1, Step = 0.001, Value = Ranks.Progress(Profile.Xp), ShowPercentage = false };
+		var bar = new ProgressBar { CustomMinimumSize = new Vector2(0, 8), MaxValue = 1, Step = 0.001, Value = Ranks.Progress(Profile.RankXp), ShowPercentage = false };
 		column.AddChild(bar);
 
 		if (!max)

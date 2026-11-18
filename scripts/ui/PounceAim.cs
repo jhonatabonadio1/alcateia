@@ -38,7 +38,10 @@ public partial class PounceAim : Node3D
 		_weapon ??= Groups.LocalPlayer(GetTree())?.GetNodeOrNull<Weapon>("Weapon");
 		if (_weapon == null || !IsInstanceValid(_weapon)) { _weapon = null; _ring.Visible = false; return; }
 
-		if (_weapon.PounceLanding is not Vector3 landing || _weapon.GetParent() is not CharacterBody3D body)
+		// Com alvo travado (modo alvo, Tab), a mira no chão some: quem marca
+		// é o alvo (LockMark).
+		if (_weapon.PounceLanding is not Vector3 landing || _weapon.GetParent() is not CharacterBody3D body
+			|| body is Player { LockTarget: not null })
 		{
 			_ring.Visible = false;
 			return;

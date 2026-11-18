@@ -78,10 +78,15 @@ public partial class Weapon
 	/// em alguém e caía sem dar dano — o lobo pousa em cima ou do lado do
 	/// alvo, e a garra só pegava de 0,35 a 2,65 m à frente. O anel da mira
 	/// tem este tamanho.</summary>
-	[Export] public float PounceHitRadius = 2.0f;
+	[Export] public float PounceHitRadius = 1.8f;
 
 	/// <summary>Quanto o centro da área do salto fica à frente do lobo.</summary>
 	[Export] public float PounceHitReach = 0.4f;
+
+	/// <summary>O salto é de um alvo só (pedido do Jhon, 17/11): o principal
+	/// (o travado no modo alvo, senão o inimigo mais perto de onde caiu)
+	/// leva o dano cheio; quem estiver do lado, na área, leva esta fração.</summary>
+	[Export] public float PounceSplash = 0.3f;
 
 	/// <summary>
 	/// Botão direito. No chão, o salto; no ar, o bote. Os dois prendem o
@@ -231,7 +236,8 @@ public partial class Weapon
 		_pounceFlew = false;
 		float damage = CombatRules.PounceMultiplier(HeavyDamageBonus, PounceMinPower, power);
 		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown,
-			() => Claw(damage, PounceHitReach, PounceHitRadius, false, _pounceFlew ? _flyDir : null), elapsed + saved);
+			() => Claw(damage, PounceHitReach, PounceHitRadius, false, _pounceFlew ? _flyDir : null,
+				focus: _pounceFocus, splash: PounceSplash), elapsed + saved);
 
 		// O salto é um pulo de verdade: do impulso até os pés tocarem o
 		// chão, o corpo voa num arco. Para onde e até onde, diz a mira no
@@ -240,6 +246,8 @@ public partial class Weapon
 		// fixado aqui — nada segue o alvo durante o voo.
 		var (delay, duration, _) = WolfMoves.StepOf(WolfMove.Pounce);
 		(_pounceDir, _pounceRange, _pounceAimY) = PounceTarget(power);
+		// O travado no modo alvo é o principal do golpe (Player.Lock).
+		_pounceFocus = (_body as Player)?.LockTarget;
 		float flight = duration * Mathf.Lerp(1f, Mathf.Clamp(PounceFullFlight, 0.2f, 1f), Mathf.Clamp(power, 0f, 1f));
 		PounceFlightRate = duration / Mathf.Max(flight, 0.05f);
 		After(Mathf.Max(delay - elapsed, 0f), id, () => BeginPounceFlight(flight));
@@ -250,6 +258,7 @@ public partial class Weapon
 	public float PounceFlightRate { get; private set; } = 1f;
 
 	private Vector3 _pounceDir = Vector3.Forward;
+	private Node3D _pounceFocus;
 	private float? _pounceAimY;
 	private bool _pounceFlew;
 	

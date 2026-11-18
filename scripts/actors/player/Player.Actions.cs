@@ -103,7 +103,8 @@ public partial class Player
 			? _intent.AttackHeld
 			: _intent.Attack;
 
-		if (firing)
+		// No modo alvo do salto, o clique escolhe o alvo (Player.Lock), não ataca.
+		if (firing && !TargetMode)
 			_weapon.TryAttack();
 
 		// A granada sai quando o botão solta.

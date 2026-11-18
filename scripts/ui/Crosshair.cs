@@ -106,10 +106,9 @@ public partial class Crosshair : Control
 		float radius = Mathf.Clamp(cone, 3f, ring - 2f);
 		canvas.DrawArc(center, radius, 0, Mathf.Tau, 48, soft, 1f, true);
 
-		// O ponto.
-		var dot = new Rect2(center - Vector2.One, Vector2.One * 2f);
-		canvas.DrawRect(dot.Grow(1f), shadow);
-		canvas.DrawRect(dot, line);
+		// O ponto, redondo (pedido do Jhon, 17/11: era um quadrado).
+		canvas.DrawCircle(center, 2.2f, shadow, true, -1f, true);
+		canvas.DrawCircle(center, 1.4f, line, true, -1f, true);
 	}
 
 	/// <summary>Desenha a mira em <paramref name="center"/>.
@@ -143,11 +142,12 @@ public partial class Crosshair : Control
 			shadow = new Color(shadow, shadow.A * aim);
 		}
 
-		// O ponto: 2 px na cruz (o de sempre), o tamanho fixo quando é só ele.
+		// O ponto, redondo (pedido do Jhon, 17/11: era um quadrado): 2 px na
+		// cruz (o de sempre), o tamanho fixo quando é só ele.
 		float side = s.Style == CrosshairSettings.Shape.Dot ? CrosshairSettings.DotSize : 2f;
-		var dot = new Rect2(center - Vector2.One * side / 2f, Vector2.One * side);
-		if (s.Outline) canvas.DrawRect(dot.Grow(1f), shadow);
-		canvas.DrawRect(dot, line);
+		float radius = side / 2f + 0.4f;
+		if (s.Outline) canvas.DrawCircle(center, radius + 1f, shadow, true, -1f, true);
+		canvas.DrawCircle(center, radius, line, true, -1f, true);
 	}
 
 	/// <summary>Uma haste como retângulo alinhado ao pixel: linha com

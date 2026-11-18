@@ -41,7 +41,7 @@ public partial class ChargeBar : CanvasLayer
 		_fill = HudStyle.Facet(UiTokens.Accent, default, 0, 0.9f, 0);
 		_bar.AddThemeStyleboxOverride("fill", _fill);
 		column.AddChild(_bar);
-		_hint = UiKit.Caption("BOTÃO DO MEIO: TRAVAR NO INIMIGO", UiTokens.TextSecondary);
+		_hint = UiKit.Caption("TAB: ESCOLHER ALVO", UiTokens.TextSecondary);
 		column.AddChild(_hint);
 
 		_box = UiTheme.Apply(column);
@@ -66,8 +66,11 @@ public partial class ChargeBar : CanvasLayer
 
 		_player ??= _weapon.GetParent() as Player;
 		bool locked = _player?.LockTarget != null;
-		_hint.Text = locked ? "TRAVADO" : "BOTÃO DO MEIO: TRAVAR NO INIMIGO";
-		_hint.AddThemeColorOverride("font_color", locked ? UiTokens.Danger : UiTokens.TextSecondary);
+		bool targeting = _player?.TargetMode ?? false;
+		_hint.Text = locked ? "ALVO TRAVADO · TAB: VOLTAR AO CHÃO"
+			: targeting ? "CLIQUE NO ALVO · TAB: VOLTAR AO CHÃO"
+			: "TAB: ESCOLHER ALVO";
+		_hint.AddThemeColorOverride("font_color", locked ? UiTokens.Danger : targeting ? UiTokens.TextPrimary : UiTokens.TextSecondary);
 
 		float charge = _weapon.PounceCharge;
 		_bar.Value = charge;
