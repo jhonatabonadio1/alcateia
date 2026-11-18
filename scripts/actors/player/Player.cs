@@ -285,8 +285,9 @@ public partial class Player : CharacterBody3D
 
 		MacCtrlClick.Translate(@event);
 
-		// Travado num inimigo, quem gira a mira é a trava (Player.Lock).
-		if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured && LockTarget == null)
+		// A mira é sempre do mouse: no modo alvo do especial, a trava segue
+		// quem estiver perto do centro da tela (Player.Lock).
+		if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured)
 			Look(motion);
 	}
 

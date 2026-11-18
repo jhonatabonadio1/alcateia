@@ -212,8 +212,14 @@ public partial class Weapon : Node3D
 		{
 			_flyTime += delta;
 			if (_flyTime >= _flyTotal || !_form.IsWolf || _health.IsDead)
+			{
 				_flying = false;
+				_pounceGuard = false;
+			}
+			else ChaseFocus();
 		}
+
+		UpdateArmed();
 
 		if (_pending.Count > 0)
 			RunPending(delta);
@@ -385,6 +391,8 @@ public partial class Weapon : Node3D
 		_diving = false;
 		_flying = false;
 		_charging = false;
+		SpecialArmed = false;
+		_pounceGuard = false;
 		_grenadeReady = false;
 		_attackQueued = false;
 		_pending.Clear();

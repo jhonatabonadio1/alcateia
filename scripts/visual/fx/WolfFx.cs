@@ -300,7 +300,7 @@ public partial class WolfFx : Node3D
 		// Aura: poder em uso (rugido e o especial, da saída à queda). Com
 		// o especial no Q a carga não dura um quadro; sem o voo aqui, a
 		// aura do especial tinha sumido junto com ela.
-		bool power = shown && ((_visual?.Howling ?? false) || _weapon.IsChargingPounce || _weapon.IsPounceFlying);
+		bool power = shown && ((_visual?.Howling ?? false) || _weapon.IsChargingPounce || _weapon.SpecialArmed || _weapon.IsPounceFlying);
 		_aura = Mathf.MoveToward(_aura, power ? PowerAura : 0f, dt / 0.3f);
 
 		// Vento: velocidade acima de AirFrom da máxima (a de quatro).

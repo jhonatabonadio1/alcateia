@@ -111,6 +111,7 @@ public sealed class WolfFxTest : RegressionTest
 		var otherFx = other.GetNodeOrNull<WolfFx>("WolfFx");
 		b.Weapon.FillSpecial();
 		await b.Tap("pounce");
+		await b.Tap("attack"); // Q arma, o clique salta (18/11)
 		await b.Until(() => b.Weapon.IsPounceFlying, 1.5);
 		float aura = 0f, mine = 0f, theirsMax = 0f;
 		var theirMesh = otherFx != null

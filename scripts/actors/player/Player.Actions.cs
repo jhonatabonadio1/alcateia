@@ -103,8 +103,13 @@ public partial class Player
 			? _intent.AttackHeld
 			: _intent.Attack;
 
-		// No modo alvo do salto, o clique escolhe o alvo (Player.Lock), não ataca.
-		if (firing && !TargetMode)
+		// Especial armado: o clique salta (no alvo travado, se houver), não
+		// arranha.
+		if (_weapon.SpecialArmed)
+		{
+			if (_intent.Attack) _weapon.TryPounce();
+		}
+		else if (firing)
 			_weapon.TryAttack();
 
 		// A granada sai quando o botão solta.
@@ -129,16 +134,10 @@ public partial class Player
 				_weapon.TrySpecial();
 		}
 
-		// Q, de lobo: o especial, num toque — no chão ou no ar, com a carga
-		// cheia. Se há um inimigo na mira, o salto vai nele; senão, para
-		// onde a mira toca o mapa.
+		// Q, de lobo: arma o especial (o lobo segue andando, com o modo alvo
+		// aberto) ou desarma. Quem salta é o clique (acima).
 		if (_intent.Pounce && _form.IsWolf)
-		{
-			AimPounce();
-			_weapon.TryPounce();
-			// A arma já guardou o alvo; a mira volta a ser do mouse.
-			LockTarget = null;
-		}
+			_weapon.ToggleSpecial();
 
 		// R faz o que a forma permite: ruge de lobo, recarrega de
 		// humano. Uma tecla, um gesto, dois corpos.

@@ -89,6 +89,11 @@ public partial class Health : Node
 	/// resistente.</summary>
 	public float BodyResistance { get; set; } = 1f;
 
+	/// <summary>Fração do dano que passa com o especial do lobo ativo (o
+	/// "escudo extra": armado e saltando). 1 fora dele. Quem liga é a arma
+	/// (<see cref="Weapon.SpecialGuard"/>).</summary>
+	public float GuardMultiplier { get; set; } = 1f;
+
 	private double _respawnTimer;
 	private double _protection;
 	private double _decayHold;
@@ -216,7 +221,7 @@ public partial class Health : Node
 		if (IsRemote) return;
 		if (IsDead || amount <= 0 || IsProtected) return;
 
-		DamageOutcome outcome = CombatRules.ApplyDamage(Hp, Shield, amount, DamageMultiplier, BodyResistance, headshot);
+		DamageOutcome outcome = CombatRules.ApplyDamage(Hp, Shield, amount * GuardMultiplier, DamageMultiplier, BodyResistance, headshot);
 		_sinceHit = 0;
 		EmitSignal(SignalName.Damaged, outcome.Dealt, from);
 

@@ -109,7 +109,9 @@ public partial class Hud
 	private void UpdateSpecial()
 	{
 		_pounceTile.SetCharge(_weapon.SpecialCharge);
-		_pounceTile.Title = _form.IsWolf || !_weapon.PounceReady ? "ESPECIAL" : "PRONTO · VIRE LOBO";
+		_pounceTile.Title = _weapon.SpecialArmed ? "ARMADO · CLIQUE SALTA"
+			: !_weapon.PounceReady ? "ESPECIAL"
+			: _form.IsWolf ? "PRONTO · Q ARMA" : "PRONTO · VIRE LOBO";
 	}
 
 	private void UpdateWolf(float delta)

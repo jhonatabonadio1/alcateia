@@ -101,24 +101,96 @@ public partial class Weapon
 		if (!_body.IsOnFloor()) Leap();
 	}
 
+	/// <summary>Fração do dano que o lobo leva com o especial ativo
+	/// (armado e no salto): o "escudo extra" (pedido do Jhon, 18/11).</summary>
+	[Export] public float SpecialGuard = 0.5f;
+
+	/// <summary>Até quantos metros do ponto de partida o salto persegue o
+	/// alvo que se mexeu no voo.</summary>
+	[Export] public float PounceChaseRange = 18f;
+
 	/// <summary>
-	/// O especial do lobo, num toque (Q; decisão do Jhon, 18/11): o salto
-	/// sai na hora, com a força cheia, para onde a mira aponta — ou em
-	/// cima do inimigo que estiver na mira (quem chama diz qual:
-	/// <see cref="Player.LockTarget"/>). Com a carga do especial cheia
-	/// (<see cref="SpecialCharge"/>), no chão **ou no ar** (pedido do Jhon,
-	/// 18/11: pulou e apertou Q, sai o especial dali). Antes era segurar o
-	/// botão direito no chão para carregar e soltar.
+	/// Especial armado (Q; pedido do Jhon, 18/11): o lobo fica pronto para
+	/// saltar, **andando livre pelo mapa**, com o modo alvo aberto
+	/// (<see cref="Player.TargetMode"/>). O clique esquerdo salta
+	/// (<see cref="TryPounce"/>); Q de novo desarma sem gastar. Armado, o
+	/// lobo leva menos dano (<see cref="SpecialGuard"/>).
+	/// </summary>
+	public bool SpecialArmed { get; private set; }
+
+	/// <summary>Q: arma o especial (carga cheia, lobo, sem golpe pesado em
+	/// andamento) ou, armado, desarma. Verdadeiro se ficou armado.</summary>
+	public bool ToggleSpecial()
+	{
+		if (SpecialArmed)
+		{
+			SpecialArmed = false;
+			return false;
+		}
+
+		if (_charging || _diving || _flying) return false;
+		if (!_form.IsWolf || !_form.CanAttack || !PounceReady) return false;
+		SpecialArmed = true;
+		return true;
+	}
+
+	/// <summary>Armado e o lobo deixou de poder saltar (morreu, virou
+	/// humano, perdeu a carga): desarma. E a guarda do especial.</summary>
+	private void UpdateArmed()
+	{
+		if (SpecialArmed && (!_form.IsWolf || _health.IsDead || !PounceReady)) SpecialArmed = false;
+		if (_pounceGuard && (!_form.IsWolf || (!_flying && _rootLeft <= 0))) _pounceGuard = false;
+		_health.GuardMultiplier = SpecialArmed || _pounceGuard ? Mathf.Clamp(SpecialGuard, 0f, 1f) : 1f;
+	}
+
+	/// <summary>Armado ou no salto do especial: a guarda está ligada.</summary>
+	public bool SpecialGuarded => SpecialArmed || _pounceGuard;
+
+	private bool _pounceGuard;
+
+	/// <summary>
+	/// O salto do especial, com a força cheia, para onde a mira aponta — ou
+	/// em cima do alvo travado (<see cref="Player.LockTarget"/>), e aí o voo
+	/// o persegue até cair onde ele estiver (<see cref="ChaseFocus"/>). Com a
+	/// carga do especial cheia, no chão ou no ar. O jogador chega aqui pelo
+	/// clique com o especial armado; testes e o bot, direto.
 	/// </summary>
 	public bool TryPounce()
 	{
 		if (_cooldown > 0 || _charging || _diving) return false;
 		if (!_form.IsWolf || !_form.CanAttack || !PounceReady) return false;
 
+		SpecialArmed = false;
 		BeginCharge();
 		_chargeTime = PounceChargeTime;
 		ReleaseCharge();
 		return true;
+	}
+
+	/// <summary>
+	/// O voo persegue o alvo (pedido do Jhon, 18/11): o ponto de queda é
+	/// onde ele está agora — andou para a frente, para o lado ou para trás,
+	/// o lobo cai em cima dele. Até <see cref="PounceChaseRange"/> metros
+	/// de onde saltou; o alvo morto, vale onde ele estava.
+	/// </summary>
+	private void ChaseFocus()
+	{
+		if (_pounceFocus is not Node3D focus || !IsInstanceValid(focus) || !focus.IsInsideTree()) return;
+		if (focus.GetNodeOrNull<Health>("Health") is { IsDead: true }) return;
+
+		var space = _body.GetWorld3D().DirectSpaceState;
+		float halfHeight = -((_body as Player)?.FeetOffset ?? -0.875f);
+		Vector3 floor = FloorBelow(space, focus.GlobalPosition, 4f) ?? focus.GlobalPosition + Vector3.Down * 0.9f;
+		Vector3 end = floor + Vector3.Up * halfHeight;
+
+		Vector3 flat = end - _flyStart;
+		flat.Y = 0;
+		float distance = flat.Length();
+		if (distance > PounceChaseRange) flat *= PounceChaseRange / distance;
+		if (flat.LengthSquared() > 0.0001f) _flyDir = flat.Normalized();
+		_flyEnd = new Vector3(_flyStart.X + flat.X, end.Y, _flyStart.Z + flat.Z);
+		_flyDistance = flat.Length();
+		_flyLand = Mathf.Clamp(_flyEnd.Y - _flyStart.Y, -PounceMaxDrop, PounceMaxClimb);
 	}
 
 	private bool _charging;
@@ -240,6 +312,7 @@ public partial class Weapon
 	private void Pounce(float power, float elapsed)
 	{
 		SpendSpecial();
+		_pounceGuard = true;
 		_comboIndex = 0;
 		_attackQueued = false;
 		float saved = WolfMoves.StepOf(WolfMove.Pounce).Duration
@@ -429,6 +502,7 @@ public partial class Weapon
 	private float _flyDistance;
 	private float _flyLand;
 	private float _flyArc;
+	private Vector3 _flyEnd;
 
 	/// <summary>No ar no salto: o corpo segue <see cref="PounceFlightPoint"/>.</summary>
 	public bool IsPounceFlying => _flying && _form != null && _form.IsWolf;
@@ -452,7 +526,8 @@ public partial class Weapon
 		float u = Mathf.Clamp((float)((_flyTime + ahead) / _flyTotal), 0f, 1f);
 		float s = (1f - Mathf.Cos(Mathf.Pi * u)) * 0.5f;
 		float y = _flyLand * u + 4f * _flyArc * u * (1f - u);
-		return _flyStart + _flyDir * (_flyDistance * s) + Vector3.Up * y;
+		Vector3 flat = new Vector3(_flyEnd.X - _flyStart.X, 0, _flyEnd.Z - _flyStart.Z);
+		return _flyStart + flat * s + Vector3.Up * y;
 	}
 
 	private void BeginPounceFlight(float duration)
@@ -479,6 +554,7 @@ public partial class Weapon
 		_flyDistance = distance;
 		_flyLand = land;
 		_flyArc = arc;
+		_flyEnd = _flyStart + direction * distance + Vector3.Up * land;
 		_flyTotal = Mathf.Max(duration, 0.05f);
 		_flyTime = 0;
 		_flying = true;

@@ -61,6 +61,7 @@ public sealed class MacCtrlClickTest : RegressionTest
 
 			b.Weapon.FillSpecial();
 			await b.Tap("pounce");
+			await b.Tap("attack"); // Q arma, o clique salta (18/11)
 			b.Check(await b.Until(() => b.Weapon.IsPounceFlying, 1.5), "o Q salta");
 			await b.Until(() => !b.Weapon.IsPounceFlying, 3.0);
 			await b.Seconds(0.5);

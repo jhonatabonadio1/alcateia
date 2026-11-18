@@ -2,6 +2,44 @@
 
 ## Não lançado
 
+### Especial armado, com trava e perseguição (18/11)
+- Q **arma** o especial (carga cheia): o lobo segue andando pelo mapa, com
+  a aura acesa, e o modo alvo abre — losango nos inimigos à vista, trava
+  no mais perto da mira (até 20°; segura o mesmo até 32°). O clique
+  esquerdo salta; Q de novo desarma sem gastar. Sem alvo, o salto vai
+  para onde a mira toca o mapa, como antes.
+- O voo **persegue o alvo**: andou para a frente, de lado ou para trás, o
+  lobo cai onde ele está (até 18 m de onde saltou).
+- **Escudo extra**: armado e no salto, o lobo leva metade do dano
+  (`Weapon.SpecialGuard`, via `Health.GuardMultiplier`).
+- A mira deixa de ser presa pela trava: o mouse gira sempre.
+- Testes: `EspecialArmado` (novo); `CargaDoSalto`, `CtrlCliqueNoMac` e
+  `EfeitosDoLobo` agora apertam Q e clicam.
+
+### Luz do Armazém (18/11)
+- ACES (branco 6, exposição 0,95) no lugar do AgX lavado; sol mais forte
+  e quente (3,4) contra ambiente frio e baixo (0,38); oclusão forte e
+  larga; GI 0,7; névoa com feixe de sol nas claraboias; brilho nas
+  luminárias; contraste 1,1 e saturação 1,2. Gerador (`tools/mapas`) e as
+  duas cenas regeradas.
+
+### AR-15 Ultimate: a skin roxa com flames, na loja (18/11)
+- **Arma nova à venda**, `ar15_ultimate` ("AR-15 Ultimate"): o AR-15 um pouco
+  mais forte (dano 30, 700 RPM, pente 35, dispersão e recuo menores; números em
+  `docs/ARSENAL.md` e `tools/gerar_arsenal.py`). Raridade épica, patente 3, em
+  Presas. Entrou em `Arsenal.Primaries`, `Catalog`, `WeaponArt` e `WeaponPhotos`.
+- **Pele roxa com flames, estilo Valorant**, nos dois modelos da arma: o rig de
+  primeira pessoa (`assets/armas/fp/ar15_ultimate.glb`, com as animações do
+  Jhon, sem mexer no `ar15.glb`) e o modelo da mão dos outros e do chão
+  (`assets/armas/ar15_ultimate/`). Sai de `tools/armas/blender/ar15_ultimate.py`,
+  que dá UV de verdade ao fuzil (a paleta não comporta desenho) e pinta a
+  textura sobre a malha, mais uma textura de emissão.
+- `WeaponModel.Material` liga a emissão quando existe um `_E.png` ao lado da
+  textura de cor `_D.png`: as flames e as quinas brilham.
+- Fichas: `armas.json` e `bracos.json` ganharam `ar15_ultimate` (copiadas do
+  `ar15`). A foto da loja (`assets/ui/armas/ar15_ultimate.png`) é provisória,
+  renderizada no Blender: rode `fotos_armas.tscn` para a do jogo.
+
 ### Locutora: uma fala por vez (18/11)
 - Abate novo durante uma fala corta a que está tocando e diz a próxima
   (o "triple kill" se perdia embaixo do "double kill"), e abates quase

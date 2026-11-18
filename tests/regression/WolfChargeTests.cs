@@ -79,12 +79,14 @@ public sealed class WolfChargeTest : RegressionTest
 		w.SpecialFree = false;
 		w.AddSpecial(0.5f);
 		await b.Tap("pounce");
+		await b.Tap("attack"); // Q arma, o clique salta (18/11)
 		await b.Seconds(0.3);
 		b.Check(!w.IsPounceFlying && !w.IsChargingPounce, "com a carga pela metade, o Q não salta");
 
 		w.FillSpecial();
 		Vector3 start = b.Player.GlobalPosition;
 		await b.Tap("pounce");
+		await b.Tap("attack"); // Q arma, o clique salta (18/11)
 		b.Check(await b.Until(() => w.IsPounceFlying, 1.0), "apertou o Q no chão: salta");
 		b.Check(!w.IsChargingPounce, "não fica carregando");
 		await b.Until(() => !w.IsPounceFlying, 3.0);
@@ -105,6 +107,7 @@ public sealed class WolfChargeTest : RegressionTest
 		await b.Until(() => !b.Player.IsOnFloor() && b.Player.GlobalPosition.Y > ground.Y + 0.4f, 1.0);
 		float jumpedTo = b.Player.GlobalPosition.Y - ground.Y;
 		await b.Tap("pounce");
+		await b.Tap("attack"); // Q arma, o clique salta (18/11)
 		b.Check(await b.Until(() => w.IsPounceFlying, 0.5), $"no ar ({RegressionBench.F(jumpedTo)} m acima do chão), o Q salta");
 		await b.Until(() => !w.IsPounceFlying, 3.0);
 		await b.Seconds(0.4);

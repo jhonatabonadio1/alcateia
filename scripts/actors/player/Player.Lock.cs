@@ -2,46 +2,46 @@ using Godot;
 using System.Collections.Generic;
 
 /// <summary>
-/// O alvo do especial do lobo.
+/// O modo alvo do especial do lobo (pedido do Jhon, 18/11).
 ///
-/// O especial sai num toque (Q; decisão do Jhon, 18/11), então não há mais
-/// a carga em que se escolhia o alvo com o Tab (o "modo alvo" de 17/11).
-/// No lugar: **se há um inimigo na mira** quando o Q é apertado — à
-/// vista, dentro do alcance e a poucos graus do centro da tela
-/// (<see cref="PounceAssistAngle"/>) —, o salto vai em cima dele e ele é o
-/// alvo principal do golpe. Sem ninguém na mira, o salto vai para onde a
-/// mira toca o mapa, como sempre.
-///
-/// O alvo vale só no instante do disparo: a arma guarda quem é
-/// (<see cref="Weapon.TryPounce"/>) e a mira volta a ser do mouse.
+/// Q arma o especial (<see cref="Weapon.SpecialArmed"/>) e abre o modo
+/// alvo: o lobo anda livre e a mira continua do mouse; os inimigos à
+/// vista e no alcance ganham um losango (<see cref="TargetCandidates"/>),
+/// e o mais perto do centro da tela, até <see cref="LockAngle"/> graus,
+/// fica travado (<see cref="LockTarget"/>, cantos vermelhos). A trava
+/// segura o mesmo alvo até <see cref="LockKeepAngle"/> graus, para não
+/// pular de um para outro com dois juntos. O clique salta em cima do
+/// travado — e o voo o persegue (<see cref="Weapon.TryPounce"/>). Sem
+/// ninguém travado, o salto vai para onde a mira toca o mapa.
 /// </summary>
 public partial class Player
 {
 	[ExportGroup("Lobo: alvo do especial")]
 	/// <summary>O quanto um inimigo pode estar fora do centro da tela para
-	/// o especial ir nele, em graus. Pequeno de propósito: é para quem
-	/// mirou no inimigo e errou por pouco, não para mirar sozinho.</summary>
-	[Export] public float PounceAssistAngle = 8f;
+	/// ser travado, em graus.</summary>
+	[Export] public float LockAngle = 20f;
+
+	/// <summary>Já travado, até onde ele pode sair do centro antes de a
+	/// trava passar para outro (ou soltar), em graus.</summary>
+	[Export] public float LockKeepAngle = 32f;
 
 	/// <summary>Até onde o especial pega alvo, em metros (o alcance do
 	/// salto, <see cref="Weapon.PounceMaxDistance"/>, e uma folga).</summary>
 	[Export] public float LockRange = 14f;
 
-	/// <summary>Travado e o inimigo se afastando: a trava cai a esta
-	/// distância.</summary>
-	[Export] public float LockKeepRange = 24f;
+	/// <summary>Até onde o losango aparece, em graus do centro da tela.</summary>
+	[Export] public float CandidateAngle = 60f;
 
-	/// <summary>O modo alvo do Tab não existe mais (o especial é num
-	/// toque); fica a propriedade, sempre falsa, para quem a consulta.</summary>
-	public bool TargetMode => false;
+	/// <summary>O modo alvo está aberto: o especial está armado.</summary>
+	public bool TargetMode => _weapon != null && _weapon.SpecialArmed && _form.IsWolf;
 
-	/// <summary>Sem modo alvo, não há lista de candidatos.</summary>
+	/// <summary>Os inimigos que podem ser travados agora.</summary>
 	public IReadOnlyList<Node3D> TargetCandidates => _candidates;
 
 	public Node3D TargetHover => null;
 
-	/// <summary>O inimigo em que o especial vai cair, só no instante do
-	/// disparo; fora dele, nulo.</summary>
+	/// <summary>O inimigo em que o especial vai cair; nulo fora do modo
+	/// alvo ou sem ninguém perto do centro.</summary>
 	public Node3D LockTarget { get; private set; }
 
 	/// <summary>O Tab é sempre do placar.</summary>
@@ -51,40 +51,41 @@ public partial class Player
 
 	private void UpdateLock(double delta)
 	{
-		if (LockTarget != null && !StillLocked(LockTarget)) LockTarget = null;
-	}
-
-	/// <summary>Escolhe o alvo do especial: o inimigo à vista mais perto do
-	/// centro da tela, dentro do ângulo e do alcance. Fica em
-	/// <see cref="LockTarget"/> (nulo se não há ninguém na mira).</summary>
-	private void AimPounce()
-	{
-		LockTarget = null;
-		if (AimCamera is not Camera3D camera) return;
+		_candidates.Clear();
+		if (!TargetMode || AimCamera is not Camera3D camera)
+		{
+			LockTarget = null;
+			return;
+		}
 
 		Vector3 eye = camera.GlobalPosition;
 		Vector3 forward = -camera.GlobalBasis.Z;
-		float bestAngle = PounceAssistAngle;
+		Node3D best = null;
+		float bestAngle = LockAngle;
+		bool keep = false;
 
 		foreach (string group in Groups.Fighters)
 		{
 			foreach (Node node in GetTree().GetNodesInGroup(group))
 			{
 				if (node == this || node is not Node3D body || !IsEnemy(body)) continue;
+				if (body.GlobalPosition.DistanceTo(GlobalPosition) > LockRange) continue;
 
-				Vector3 to = body.GlobalPosition - eye;
-				if (to.Length() > LockRange) continue;
-				float angle = Mathf.RadToDeg(forward.AngleTo(to));
-				if (angle >= bestAngle || !InSight(eye, body)) continue;
-				bestAngle = angle;
-				LockTarget = body;
+				float angle = Mathf.RadToDeg(forward.AngleTo(body.GlobalPosition - eye));
+				if (angle > CandidateAngle || !InSight(eye, body)) continue;
+				_candidates.Add(body);
+
+				if (body == LockTarget && angle <= LockKeepAngle) keep = true;
+				if (angle < bestAngle)
+				{
+					bestAngle = angle;
+					best = body;
+				}
 			}
 		}
-	}
 
-	private bool StillLocked(Node3D body) =>
-		IsInstanceValid(body) && body.IsInsideTree() && IsEnemy(body)
-		&& body.GlobalPosition.DistanceTo(GlobalPosition) <= LockKeepRange;
+		if (!keep) LockTarget = best;
+	}
 
 	private bool IsEnemy(Node3D body)
 	{
