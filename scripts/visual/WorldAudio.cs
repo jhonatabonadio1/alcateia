@@ -50,7 +50,10 @@ public partial class WorldAudio : Node
 	/// usa a mesma voz. Para um uivo próprio, ponha o arquivo em
 	/// <c>assets/audio/</c> e troque este nome.
 	/// </summary>
-	[Export] public string HowlSound = "lobo_transformar";
+	/// <summary>O rugido (18/11: gravação própria, do pacote que o Jhon
+	/// mandou; antes era o som da transformação, que fica de reserva).</summary>
+	[Export] public string HowlSound = "lobo_rugido";
+	[Export] public string HowlFallback = "lobo_transformar";
 
 	private Node _local;
 	private Health _localHealth;
@@ -143,7 +146,7 @@ public partial class WorldAudio : Node
 				ulong id = source.GetInstanceId();
 				if (_lastHowl.TryGetValue(id, out double last) && _clock - last < HowlRetrigger) break;
 				_lastHowl[id] = _clock;
-				Play(HowlSound, noise, mine);
+				Play(Sfx.First(HowlSound, HowlFallback), noise, mine);
 				break;
 
 			case NoiseKind.Shot:
@@ -172,18 +175,20 @@ public partial class WorldAudio : Node
 	private string ShotName(Node source, Vector3 position, bool mine)
 	{
 		string id = source?.GetNodeOrNull<Weapon>("Weapon")?.Held?.Id ?? "";
+		// Uma skin (ar15_ultimate) tem a voz da arma dela (ar15).
+		string model = Sfx.ModelOf(id);
 
 		if (!mine && Listener(out Vector3 ear) && ear.DistanceTo(position) > DistantShot)
 		{
-			string far = Sfx.First($"tiro_distante_{id}", "tiro_distante");
+			string far = Sfx.First($"tiro_distante_{id}", $"tiro_distante_{model}", "tiro_distante");
 			if (far != null) return far;
 		}
 
 		// O seu tiro é outra gravação: estéreo e com mais grave. Quem
 		// atira ouve o corpo da arma; quem está na frente, o estalo.
 		return mine
-			? Sfx.First($"tiro_proprio_{id}", $"tiro_{id}", "tiro")
-			: Sfx.First($"tiro_{id}", "tiro");
+			? Sfx.First($"tiro_proprio_{id}", $"tiro_proprio_{model}", $"tiro_{id}", $"tiro_{model}", "tiro")
+			: Sfx.First($"tiro_{id}", $"tiro_{model}", "tiro");
 	}
 
 	private void Play(string name, Noise noise, bool mine, float volumeDb = 0f, float reach = 0f)

@@ -95,3 +95,19 @@ transformação, `lobo_transformar`, por decisão do Jhon
 `lobo_especial_queda_1..2` são **sintetizados por código**
 (`tools/sons/raios.py`: ruído filtrado e senoides, numpy e scipy). Nenhuma
 gravação; sem licença de terceiros.
+
+## Pacotes que o Jhon mandou (18/11)
+
+Preparados por `tools/sons/pacote_armas.py`:
+
+- **Free Weapon SFX v1.1** (amostra grátis do *Weapon Sound Effects Bundle*,
+  GameDev Market — gamedevmarket.net/asset/weapon-sound-effects-bundle):
+  `tiro_ar15_1..3`, `tiro_proprio_ar15_1..3`, `tiro_distante_ar15`,
+  `recarga_ar15`, `recarga_fim_ar15`, `trocar_arma_3..4`.
+- **Free Sounds Pack**: `lobo_rugido_1` (Creature 1-21) e `faca_acerto_1`
+  (Stab 4-1).
+
+**A conferir antes de publicar:** o zip não trouxe arquivo de licença nem o
+nome do autor. O Jhon precisa confirmar a licença e o crédito de cada pacote
+(a tela de créditos usa o texto de `scripts/meta/Credits.cs`).
+

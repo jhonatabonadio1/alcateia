@@ -50,6 +50,9 @@ public static class Credits
 			new Line("Passos, pulos, lobo, vozes, ambiente do hangar e do metrô (modificados)",
 				"Oculus Audio Pack 1 — Meta Platforms", "CC BY 4.0", Required: true),
 			new Line("Tiros e recargas", "Free Firearm Sound Library", "CC0"),
+			new Line("AR-15: tiros, recarga e manuseio", "Free Weapon SFX v1.1 (amostra do Weapon Sound Effects Bundle, GameDev Market)", "licença do GameDev Market"),
+			new Line("Rugido do lobo e faca", "Free Sounds Pack", "pacote gratuito"),
+			new Line("Raios do especial", "sintetizados por código (tools/sons/raios.py)"),
 			new Line("Acertos, faca e explosão", "Kenney (kenney.nl)", "CC0"),
 			new Line("Vento da Estação Polar e da Vila", "sintetizado para o jogo")
 		}),

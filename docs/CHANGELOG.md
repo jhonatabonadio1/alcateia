@@ -2,6 +2,16 @@
 
 ## Não lançado
 
+### Sons do pacote do Jhon (18/11)
+- **AR-15 com voz própria** (era a única arma no tiro e na recarga
+  genéricos): tiro seu em estéreo, o dos outros, o distante, recarga em
+  três passos e o ferrolho no fim (Free Weapon SFX v1.1). A skin usa os
+  sons da arma dela (`Sfx.ModelOf`: `ar15_ultimate` → `ar15`).
+- **Rugido do lobo** com gravação própria (`lobo_rugido`; antes tocava o
+  som da transformação), **faca acertando** (`faca_acerto`) e mais duas
+  variações de trocar de arma. Preparo em `tools/sons/pacote_armas.py`.
+- Falta confirmar autor e licença dos dois pacotes (`assets/audio/CREDITOS.md`).
+
 ### Lobos polidos, rugido novo, efeitos novos (18/11, tarde)
 - **Modelo** (`tools/lobo/polir.py`): cores mais vivas, pelo pintado (fios,
   mechas, raiz escura e ponta clara), oclusão assada, **neon de verdade**

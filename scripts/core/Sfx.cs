@@ -53,6 +53,14 @@ public static class Sfx
 	/// tem o próprio tocador. Null se não houver arquivo.</summary>
 	public static AudioStream Stream(string name) => Get(name);
 
+	/// <summary>A arma de uma skin: "ar15_ultimate" soa como "ar15". Os
+	/// sons levam o id da arma no nome; a skin usa os da arma dela.</summary>
+	public static string ModelOf(string id)
+	{
+		int cut = string.IsNullOrEmpty(id) ? -1 : id.IndexOf('_');
+		return cut > 0 ? id[..cut] : id ?? "";
+	}
+
 	/// <summary>Existe algum arquivo para este nome?</summary>
 	public static bool Has(string name) => Get(name) != null;
 

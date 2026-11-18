@@ -123,6 +123,8 @@ public partial class CombatantAudio : Node
 	{
 		if (_form.IsWolf)
 			Play("lobo_garra_acerto");
+		else if (_weapon.HumanSlot == Slot.Knife && Sfx.Has("faca_acerto"))
+			Play("faca_acerto");
 
 		// O marcador de acerto é só seu: é retorno, não som do mundo.
 		if (_local)
@@ -134,11 +136,11 @@ public partial class CombatantAudio : Node
 		string id = _weapon.Held?.Id ?? "";
 
 		if (reloading && !_wasReloading)
-			Play(Sfx.First($"recarga_{id}", "recarga"));
+			Play(Sfx.First($"recarga_{id}", $"recarga_{Sfx.ModelOf(id)}", "recarga"));
 		else if (reloading && _wasReloading && inMag > _lastMag)
 			Play("cartucho");
 		else if (!reloading && _wasReloading && inMag >= magSize && magSize > 0)
-			Play(Sfx.First($"recarga_fim_{id}", "recarga_fim"));
+			Play(Sfx.First($"recarga_fim_{id}", $"recarga_fim_{Sfx.ModelOf(id)}", "recarga_fim"));
 
 		_wasReloading = reloading;
 		_lastMag = inMag;
