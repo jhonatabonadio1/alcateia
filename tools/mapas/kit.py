@@ -482,7 +482,10 @@ class Mapa:
                   f"transform = {xform((0, 40, 0), olhar(s['yaw'], s['queda']))}",
                   f"light_color = {cor(s['cor'])}", f"light_energy = {f(s['energia'])}",
                   "shadow_enabled = true", f"shadow_blur = {f(self.borrao_sombra)}",
-                  f"directional_shadow_max_distance = {f(s.get('alcance', 120))}", ""]
+                  f"directional_shadow_max_distance = {f(s.get('alcance', 120))}"]
+            if "neblina" in s:
+                o += [f"light_volumetric_fog_energy = {f(s['neblina'])}"]
+            o += [""]
 
         if self.preenchimento:
             p = self.preenchimento
@@ -635,6 +638,20 @@ class Mapa:
         # de cor AgX e a névoa volumétrica (o raio de sol que se vê no ar).
         if a.get("agx"):
             o = [("tonemap_mode = 4" if linha == "tonemap_mode = 3" else linha) for linha in o]
+        # Acabamento fino (o Armazém, 18/11): branco do ACES, raio, força e
+        # alcance na luz da oclusão, e o brilho (bloom) das luzes.
+        if "branco" in a:
+            o += [f"tonemap_white = {f(a['branco'])}"]
+        if "ssao_raio" in a:
+            o += [f"ssao_radius = {f(a['ssao_raio'])}"]
+        if "ssao_potencia" in a:
+            o += [f"ssao_power = {f(a['ssao_potencia'])}"]
+        if "ssao_luz" in a:
+            o += [f"ssao_light_affect = {f(a['ssao_luz'])}"]
+        if "brilho_bloom" in a:
+            o = [(f"glow_bloom = {f(a['brilho_bloom'])}" if linha == "glow_bloom = 0.08" else linha) for linha in o]
+        if "brilho_limiar" in a:
+            o += [f"glow_hdr_threshold = {f(a['brilho_limiar'])}"]
         if a.get("sdfgi"):
             g = a["sdfgi"]
             o += ["sdfgi_enabled = true", "sdfgi_use_occlusion = true", "sdfgi_read_sky_light = true",
@@ -647,6 +664,8 @@ class Mapa:
             o += ["volumetric_fog_enabled = true", f"volumetric_fog_density = {f(v.get('densidade', 0.01))}",
                   f"volumetric_fog_albedo = {cor(v.get('cor', (1, 1, 1)))}", f"volumetric_fog_anisotropy = {f(v.get('anisotropia', 0.4))}",
                   f"volumetric_fog_length = {f(v.get('alcance', 64))}", "volumetric_fog_gi_inject = 1.0"]
+            if "ambiente" in v:
+                o += [f"volumetric_fog_ambient_inject = {f(v['ambiente'])}"]
         if a.get("neblina"):
             n = a["neblina"]
             o += ["fog_enabled = true", f"fog_light_color = {cor(n['cor'])}", f"fog_density = {f(n['densidade'])}",

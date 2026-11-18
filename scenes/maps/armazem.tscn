@@ -210,33 +210,39 @@ sky_material = SubResource("CeuMat")
 background_mode = 2
 sky = SubResource("Ceu")
 ambient_light_source = 2
-ambient_light_color = Color(0.84, 0.87, 0.96, 1)
-ambient_light_energy = 0.85
-tonemap_mode = 4
-tonemap_exposure = 1.45
+ambient_light_color = Color(0.52, 0.62, 0.95, 1)
+ambient_light_energy = 0.38
+tonemap_mode = 3
+tonemap_exposure = 0.95
 ssao_enabled = true
-ssao_intensity = 1.6
+ssao_intensity = 2.5
 glow_enabled = true
-glow_intensity = 0.35
-glow_bloom = 0.08
+glow_intensity = 0.7
+glow_bloom = 0.1
+tonemap_white = 6
+ssao_radius = 2
+ssao_power = 2.2
+ssao_light_affect = 0.2
+glow_hdr_threshold = 1
 sdfgi_enabled = true
 sdfgi_use_occlusion = true
 sdfgi_read_sky_light = true
 sdfgi_bounce_feedback = 0.6
 sdfgi_min_cell_size = 0.2
-sdfgi_energy = 1.5
+sdfgi_energy = 0.7
 ssil_enabled = true
-ssil_intensity = 0.9
+ssil_intensity = 1
 ssil_radius = 4.0
 volumetric_fog_enabled = true
-volumetric_fog_density = 0.006
-volumetric_fog_albedo = Color(1, 0.95, 0.88, 1)
+volumetric_fog_density = 0.009
+volumetric_fog_albedo = Color(1, 0.92, 0.8, 1)
 volumetric_fog_anisotropy = 0.55
 volumetric_fog_length = 48
 volumetric_fog_gi_inject = 1.0
+volumetric_fog_ambient_inject = 0.1
 adjustment_enabled = true
-adjustment_contrast = 1.02
-adjustment_saturation = 1.12
+adjustment_contrast = 1.1
+adjustment_saturation = 1.2
 
 [node name="Armazém" type="Node3D"]
 
@@ -245,16 +251,17 @@ environment = SubResource("Env")
 
 [node name="Sol" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8829, -0.3699, 0.289, 0, 0.6157, 0.788, -0.4695, -0.6958, 0.5436, 0, 40, 0)
-light_color = Color(1, 0.88, 0.7, 1)
-light_energy = 2.4
+light_color = Color(1, 0.8, 0.58, 1)
+light_energy = 3.4
 shadow_enabled = true
 shadow_blur = 0.5
 directional_shadow_max_distance = 60
+light_volumetric_fog_energy = 1.6
 
 [node name="Preenchimento" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.8829, 0.3981, -0.2488, 0, 0.5299, 0.848, 0.4695, 0.7488, -0.4679, 0, 40, 0)
-light_color = Color(0.86, 0.9, 1, 1)
-light_energy = 0.45
+light_color = Color(0.6, 0.72, 1, 1)
+light_energy = 0.15
 light_specular = 0.2
 shadow_enabled = false
 
@@ -5039,61 +5046,61 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 [node name="Luz1" type="OmniLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.78, 7.14, -0.825)
 light_color = Color(1, 0.86, 0.62, 1)
-light_energy = 1
+light_energy = 1.5
 omni_range = 7
 
 [node name="Luz2" type="OmniLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.035, 7.111, -4.658)
 light_color = Color(1, 0.86, 0.62, 1)
-light_energy = 1
+light_energy = 1.5
 omni_range = 7
 
 [node name="Luz3" type="OmniLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.141, 4.24, -8.039)
 light_color = Color(1, 0.86, 0.62, 1)
-light_energy = 1
+light_energy = 1.5
 omni_range = 7
 
 [node name="Luz4" type="OmniLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.824, 7.125, -2.649)
 light_color = Color(1, 0.86, 0.62, 1)
-light_energy = 1
+light_energy = 1.5
 omni_range = 7
 
 [node name="Luz11" type="OmniLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.303, 1.356, 8.623)
 light_color = Color(1, 0.86, 0.62, 1)
-light_energy = 1
+light_energy = 1.5
 omni_range = 7
 
 [node name="Luz12" type="OmniLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.297, 1.356, 10.116)
 light_color = Color(1, 0.86, 0.62, 1)
-light_energy = 1
+light_energy = 1.5
 omni_range = 7
 
 [node name="Luz13" type="OmniLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.455, 1.356, 5.827)
 light_color = Color(1, 0.86, 0.62, 1)
-light_energy = 1
+light_energy = 1.5
 omni_range = 7
 
 [node name="Luz22" type="OmniLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.306, 2.915, -4.503)
 light_color = Color(1, 0.78, 0.5, 1)
-light_energy = 0.7
+light_energy = 1.1
 omni_range = 4
 
 [node name="Luz23" type="OmniLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.385, 2.173, 10.844)
 light_color = Color(1, 0.78, 0.5, 1)
-light_energy = 0.7
+light_energy = 1.1
 omni_range = 4
 
 [node name="Luz24" type="OmniLight3D" parent="Luzes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.306, 2.915, 4.997)
 light_color = Color(1, 0.78, 0.5, 1)
-light_energy = 0.7
+light_energy = 1.1
 omni_range = 4
 
 [node name="Luz5" type="SpotLight3D" parent="Luzes"]

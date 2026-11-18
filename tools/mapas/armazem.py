@@ -83,14 +83,25 @@ def iluminar(m):
     # Ainda escuro (17/11, 20h): ambiente 0,85, exposição 1,45, oclusão
     # 1,6 (era 2,5: escurecia todo canto) e uma luz de preenchimento sem
     # sombra, fria, do lado oposto ao sol.
+    # "Não está profissional" (Jhon, 18/11, com referências estilizadas):
+    # o AgX com exposição 1,45, ambiente 0,85 e GI 1,5 lavava tudo de
+    # cinza — chão estourado, sombra sem peso. Testado em fotos Forward+
+    # (tests/regression, FotoLuz, só na nuvem): ACES com branco 6 e
+    # exposição 0,95; sol mais forte e quente contra ambiente frio e baixo
+    # (0,38: a 0,25 a sombra ficou preta em 17/11); oclusão forte e larga
+    # (2,5, raio 2, potência 2,2) que também escurece o que está no sol; GI
+    # 0,7; névoa um pouco mais densa, com o sol pesando nela: o feixe das
+    # claraboias aparece; brilho nas luminárias.
     m.ambiente = dict(ceu=dict(topo=(0.36, 0.52, 0.78), horizonte=(0.72, 0.78, 0.86), chao=(0.25, 0.24, 0.23),
                                energia=1.0),
-                      luz=(0.84, 0.87, 0.96), luz_energia=0.85, exposicao=1.45, brilho=0.35, ssao=1.6,
-                      contraste=1.02, saturacao=1.12, agx=True,
-                      sdfgi=dict(energia=1.5, rebote=0.6, celula=0.2), ssil=0.9,
-                      volumetrica=dict(densidade=0.006, cor=(1.0, 0.95, 0.88), anisotropia=0.55, alcance=48))
-    m.sol = dict(yaw=28, queda=52, cor=(1.0, 0.88, 0.70), energia=2.4, alcance=60)
-    m.preenchimento = dict(yaw=208, queda=58, cor=(0.86, 0.9, 1.0), energia=0.45)
+                      luz=(0.52, 0.62, 0.95), luz_energia=0.38, exposicao=0.95, branco=6.0,
+                      brilho=0.7, brilho_bloom=0.1, brilho_limiar=1.0,
+                      ssao=2.5, ssao_raio=2.0, ssao_potencia=2.2, ssao_luz=0.2,
+                      contraste=1.1, saturacao=1.2,
+                      sdfgi=dict(energia=0.7, rebote=0.6, celula=0.2), ssil=1.0,
+                      volumetrica=dict(densidade=0.009, cor=(1.0, 0.92, 0.8), anisotropia=0.55, alcance=48, ambiente=0.1))
+    m.sol = dict(yaw=28, queda=52, cor=(1.0, 0.8, 0.58), energia=3.4, alcance=60, neblina=1.6)
+    m.preenchimento = dict(yaw=208, queda=58, cor=(0.6, 0.72, 1.0), energia=0.15)
     # Sombra mais marcada sem mexer na luz (pedido do Jhon, 17/11, 22h):
     # borda nítida (era 1,5). O contraste subiu para 1,12 junto e escureceu
     # demais: voltou a 1,02.
@@ -138,7 +149,7 @@ def montar():
     # Luz: as luminárias do teto são focos para baixo, com sombra (é o que
     # põe sombra embaixo de quem passa); os refletores de tripé e as
     # arandelas são luz de preenchimento, sem sombra.
-    tom = {"refletor": ((1.0, 0.86, 0.62), 1.0, 7), "arandela": ((1.0, 0.78, 0.5), 0.7, 4)}
+    tom = {"refletor": ((1.0, 0.86, 0.62), 1.5, 7), "arandela": ((1.0, 0.78, 0.5), 1.1, 4)}
     for i, l in enumerate(dados["luzes"], 1):
         if l["tipo"] == "teto":
             m.foco("Luzes", f"Luz{i}", tuple(l["pos"]), (1.0, 0.92, 0.80), 6.0, 14, angulo=66)
