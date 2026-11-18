@@ -95,7 +95,28 @@ public static class Profile
 	public static DateTime CreatedUtc { get; private set; }
 
 	public static long Xp { get; private set; }
-	public static int Rank => Ranks.RankFor(Xp);
+
+	/// <summary>O XP da conta no servidor, quando se está logado (nulo
+	/// fora). Online quem vale é ele: é o que os outros veem na sala. Antes
+	/// o topo do menu mostrava a patente do XP local e a sala a do
+	/// servidor, e as duas não batiam (Jhon, 17/11).</summary>
+	public static long? OnlineXp { get; private set; }
+
+	/// <summary>O XP que dá a patente mostrada: o da conta, logado; o
+	/// local, fora.</summary>
+	public static long RankXp => OnlineXp ?? Xp;
+	public static int Rank => Ranks.RankFor(RankXp);
+
+	/// <summary>A patente do XP local (a das partidas offline).</summary>
+	public static int LocalRank => Ranks.RankFor(Xp);
+
+	/// <summary>O XP da conta mudou (entrou, saiu, terminou partida online).</summary>
+	public static void SetOnlineXp(long? xp)
+	{
+		if (OnlineXp == xp) return;
+		OnlineXp = xp;
+		Changed?.Invoke();
+	}
 	public static List<RankEvent> RankHistory { get; private set; } = new();
 
 	public static long Presas { get; private set; }
@@ -452,9 +473,9 @@ public static class Profile
 		var promotions = new List<int>();
 		if (amount <= 0) return promotions;
 
-		int before = Rank;
+		int before = LocalRank;
 		Xp += amount;
-		int after = Rank;
+		int after = LocalRank;
 
 		for (int rank = before + 1; rank <= after; rank++)
 		{

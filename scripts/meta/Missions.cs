@@ -95,14 +95,19 @@ public sealed class MissionBook
 		P("p_mvp", "Seja o MVP de 25 partidas", MissionMetric.Mvps, 25, 4000, 1600, "Destaque"),
 	};
 
+	/// <summary>O XP das missões caiu junto com o das partidas (17/11, um
+	/// quarto do de antes): os números da lista são os antigos, e a missão
+	/// rende um quarto deles, de 5 em 5. As Presas não mudaram.</summary>
+	private static int MissionXp(int xp) => System.Math.Max(5, (int)System.Math.Round(xp / 4.0 / 5.0) * 5);
+
 	private static MissionDef D(string id, string text, MissionMetric m, int target, int presas, int xp) =>
-		new() { Id = id, Text = text, Metric = m, Target = target, Presas = presas, Xp = xp, Period = MissionPeriod.Daily };
+		new() { Id = id, Text = text, Metric = m, Target = target, Presas = presas, Xp = MissionXp(xp), Period = MissionPeriod.Daily };
 
 	private static MissionDef W(string id, string text, MissionMetric m, int target, int presas, int xp) =>
-		new() { Id = id, Text = text, Metric = m, Target = target, Presas = presas, Xp = xp, Period = MissionPeriod.Weekly };
+		new() { Id = id, Text = text, Metric = m, Target = target, Presas = presas, Xp = MissionXp(xp), Period = MissionPeriod.Weekly };
 
 	private static MissionDef P(string id, string text, MissionMetric m, int target, int presas, int xp, string title) =>
-		new() { Id = id, Text = text, Metric = m, Target = target, Presas = presas, Xp = xp, Period = MissionPeriod.Permanent, Title = title };
+		new() { Id = id, Text = text, Metric = m, Target = target, Presas = presas, Xp = MissionXp(xp), Period = MissionPeriod.Permanent, Title = title };
 
 	public static MissionDef Def(string id) => Defs.FirstOrDefault(d => d.Id == id);
 

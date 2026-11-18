@@ -510,5 +510,6 @@ public partial class OnlineScreen : LobbyScreen
 		if (you != null)
 			Shell.Toast($"Partida registrada no servidor: +{you["xp"]} XP de patente online", UiTokens.Success);
 		_ = LoadRanking();
+		_ = Backend.RefreshProfile();
 	}
 }

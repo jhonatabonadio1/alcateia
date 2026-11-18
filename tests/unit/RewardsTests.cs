@@ -4,19 +4,19 @@ namespace Alcateia.UnitTests;
 /// mesma conta no jogo e no servidor.</summary>
 public static class RewardsTests
 {
-	[Test("participar rende 150 de XP e 100 Presas")]
+	[Test("participar rende 30 de XP e 100 Presas")]
 	public static void Participation()
 	{
 		Rewards.Gain g = Rewards.ForMatch(0, 0, won: false, draw: false, mvp: false);
-		Check.Equal(150L, g.Xp, "XP");
+		Check.Equal(30L, g.Xp, "XP");
 		Check.Equal(100L, g.Presas, "Presas");
 	}
 
-	[Test("dez abates, quatro assistências, vitória e MVP: 590 de XP e 316 Presas")]
+	[Test("dez abates, quatro assistências, vitória e MVP: 117 de XP e 316 Presas")]
 	public static void FullMatch()
 	{
 		Rewards.Gain g = Rewards.ForMatch(10, 4, won: true, draw: false, mvp: true);
-		Check.Equal(150L + 200 + 40 + 120 + 80, g.Xp, "XP");
+		Check.Equal(30L + 40 + 8 + 24 + 15, g.Xp, "XP");
 		Check.Equal(100L + 80 + 16 + 80 + 40, g.Presas, "Presas");
 	}
 
@@ -25,8 +25,8 @@ public static class RewardsTests
 	{
 		Rewards.Gain draw = Rewards.ForMatch(0, 0, won: false, draw: true, mvp: false);
 		Rewards.Gain both = Rewards.ForMatch(0, 0, won: true, draw: true, mvp: false);
-		Check.Equal(150L + 60, draw.Xp, "XP do empate");
-		Check.Equal(150L + 120, both.Xp, "vitória e empate marcados juntos valem só a vitória");
+		Check.Equal(30L + 12, draw.Xp, "XP do empate");
+		Check.Equal(30L + 24, both.Xp, "vitória e empate marcados juntos valem só a vitória");
 	}
 
 	[Test("o servidor não paga por abate que não cabe numa partida")]

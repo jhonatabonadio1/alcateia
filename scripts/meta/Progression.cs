@@ -45,10 +45,8 @@ public sealed class RewardSummary
 /// loja. Também é aqui que as estatísticas vitalícias e as missões
 /// recebem a partida.
 ///
-/// A conta (por partida, no ritmo de uma partida de 10 minutos): uns 150
-/// de XP por participar, mais 20 por abate e 10 por assistência, mais
-/// vitória e MVP. Dá entre 300 e 600 por partida — o que faz as três
-/// primeiras patentes saírem numa sessão (veja <see cref="Ranks"/>).
+/// A conta está em <see cref="Rewards"/> (uns 100 de XP numa partida
+/// comum) e a curva das patentes em <see cref="Ranks"/>.
 ///
 /// Partida abandonada não chama isto: sair no meio não rende nada.
 /// </summary>

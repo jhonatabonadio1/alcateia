@@ -133,8 +133,17 @@ public static class Backend
 		Token = token;
 		AccountId = profile?["id"]?.GetValue<long>() ?? 0;
 		AccountName = profile?["name"]?.GetValue<string>() ?? "";
+		if (profile?["xp"] is JsonNode xp) global::Profile.SetOnlineXp(xp.GetValue<long>());
 		Save();
 		SessionChanged?.Invoke();
+	}
+
+	/// <summary>Lê de novo o perfil da conta (o XP, depois de uma partida).</summary>
+	public static async Task RefreshProfile()
+	{
+		if (!LoggedIn) return;
+		Reply profile = await Profile();
+		if (profile.Ok && profile.Body?["xp"] is JsonNode xp) global::Profile.SetOnlineXp(xp.GetValue<long>());
 	}
 
 	private static void Forget()
@@ -142,6 +151,7 @@ public static class Backend
 		Token = null;
 		AccountId = 0;
 		AccountName = "";
+		global::Profile.SetOnlineXp(null);
 		Save();
 		SessionChanged?.Invoke();
 	}

@@ -6,13 +6,16 @@
 /// prêmio de verdade numa partida online — o cliente não é confiável
 /// para dizer quanto ganhou.
 ///
-/// A conta (no ritmo de uma partida de 10 minutos): uns 150 de XP por
-/// participar, mais 20 por abate e 10 por assistência, mais vitória e
-/// MVP. Dá entre 300 e 600 por partida.
+/// A conta (no ritmo de uma partida de 10 minutos): 30 de XP por
+/// participar, mais 4 por abate e 2 por assistência, mais vitória (24) e
+/// MVP (15). Dá entre 60 e 150 por partida, uns 100 numa partida comum.
+/// Era 150/20/10/120/80 (300 a 600): subia-se de patente rápido demais
+/// (pedido do Jhon, 17/11). A curva está em Ranks.XpFor. As Presas não
+/// mudaram.
 /// </summary>
 public static class Rewards
 {
-	public const int XpBase = 150, XpKill = 20, XpAssist = 10, XpWin = 120, XpDraw = 60, XpMvp = 80;
+	public const int XpBase = 30, XpKill = 4, XpAssist = 2, XpWin = 24, XpDraw = 12, XpMvp = 15;
 	public const int PresasBase = 100, PresasKill = 8, PresasAssist = 4, PresasWin = 80, PresasDraw = 40, PresasMvp = 40;
 
 	/// <summary>Teto do que conta numa partida: uma partida de dez

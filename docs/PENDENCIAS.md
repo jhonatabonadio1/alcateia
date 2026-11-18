@@ -259,14 +259,6 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ### Ranking
 
-- **Ranking que dura anos: ~8 anos de jogo até a última patente.**
-  Hoje: 30 patentes, a última com ~150 mil XP; uma partida dá ~350 XP,
-  então ~430 partidas (~70 horas) chegam ao topo. Para 8 anos, a curva
-  precisa de outra conta: definir quanto o jogador típico joga por dia
-  (por exemplo, 5 partidas por dia × 8 anos ≈ 14.600 partidas ≈ 5 milhões
-  de XP) e, provavelmente, mais patentes. A curva fica em `Ranks.XpFor`
-  e no servidor.
-
 - **Revisar as patentes** (pedido em 17/11): nomes, quantidade, curva de
   XP e imagens, junto com a conta dos 8 anos acima.
 

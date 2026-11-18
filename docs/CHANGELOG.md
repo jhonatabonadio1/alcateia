@@ -2,6 +2,23 @@
 
 ## Não lançado
 
+### Patente bem mais lenta; a patente do topo bate com a da sala (17/11)
+- **XP por partida caiu para um quarto**: 30 por participar, 4 por
+  abate, 2 por assistência, 24 pela vitória, 12 pelo empate, 15 pelo MVP
+  (`Rewards`, o mesmo no jogo e no servidor) — uns 100 numa partida
+  comum, eram ~400. As missões também rendem um quarto do XP; as Presas
+  não mudaram.
+- **Curva mais íngreme e cada vez mais longa**: 230 × r^2,6 (era
+  250 × r^1,9). A segunda patente sai em ~2 partidas, a terceira em ~14,
+  Batedor I em ~40, e a última em ~14.600 (uns 8 anos a 5 partidas por
+  dia). De uma patente para a outra, no fim, são ~1.270 partidas. Tabela
+  em `Ranks.cs`. Quem já tinha XP pode cair de patente na tela, porque a
+  curva mudou.
+- **A patente do topo do menu não batia com a da sala**: o topo usava o
+  XP local e a sala online o XP da conta no servidor. Logado, tudo usa o
+  da conta (`Profile.OnlineXp`, lido ao entrar e depois de cada partida
+  online); fora da conta, o local.
+
 ### Salto com área maior, trava no botão do meio, uivo cancela na parede (17/11)
 - **Área do salto**: ao cair, pega quem estiver a até 2 m em volta do
   lobo (`PounceHitRadius`), em vez da garra à frente (que errava quem
