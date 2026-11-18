@@ -117,6 +117,45 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   Cuidado com a regra de design 1 (um eixo de troca por classe) e com a
   3 (nenhuma vantagem permanente): cada raça nova troca uma coisa por
   outra, não é melhor que as outras.
+- **Lobo com poderes** (pedido em 17/11): poderes ativos de cada lobo,
+  além das garras e do salto, com o brilho de poder que você pediu em
+  16/11. Liga ao "cada personagem com o seu lobo". Cada poder troca uma
+  coisa por outra (regra 1) e não pode ser vantagem comprada (regra 3).
+- **Habilidade suprema** (pedido em 17/11): uma habilidade forte que
+  carrega durante a partida (por abates, dano ou tempo) e se usa uma vez
+  por vida. A definir: uma para o humano, uma para o lobo, ou uma por
+  personagem; quanto carrega; o que a cancela. O servidor decide o uso
+  (como o resto da Fase 2), e ela precisa de efeito e som próprios para o
+  adversário ver que veio.
+- **Sistema de bag** (pedido em 17/11). A definir pelo Jhon o que a bag
+  guarda: a `UI.md` cita a aba `BAG` da loja do WolfTeam, mas aqui o jogo
+  ainda não tem bag. Perguntas: é a mochila do inventário (limite de
+  espaço, itens de consumo), ou um item de equipar com efeito?
+- **Health packs** (pedido em 17/11): item que devolve vida. A definir:
+  achado no mapa (ponto fixo que volta depois de um tempo), carregado
+  como consumível (na bag) ou comprado no respawn com a moeda de partida.
+  A vida é única entre humano e lobo (`DESIGN.md`, "Vida é uma só"), então
+  o pacote cura os dois.
+- **Badge packs** (pedido em 17/11). A definir pelo Jhon: pacote de
+  insígnias/emblemas para o perfil e a patente, ou outra coisa. Sem
+  definição ainda; não dá para estimar.
+- **Outro nome para as tatuagens** (pedido em 17/11): hoje são bônus
+  pequenos de atributo, no máximo duas por jogador (`Profile.MaxTattoos`),
+  e o nome vem da loja do WolfTeam. Junto com o sistema de armaduras
+  (item abaixo): decidir se as duas viram a mesma coisa, num único
+  sistema de equipamento com nome próprio.
+- **Outro nome para Sangue e para WP** (pedido em 17/11). WP (Weapon
+  Points) é termo do WolfTeam e aparece em cerca de 40 pontos do código,
+  nos textos das telas e em `CONJUNTOS.md`; Sangue é a moeda paga. Trocar
+  é só nome, mas toca na interface inteira, no servidor e nos documentos:
+  melhor decidir antes de fazer a internacionalização, para o nome entrar
+  já nas tabelas de tradução. Presas (a moeda de jogar) fica a decidir
+  junto, para os três nomes combinarem.
+- **Revisar o funcionamento da loja e do inventário** (pedido em 17/11):
+  conferir compra, duração e vencimento do item, equipar e desequipar,
+  limite de tatuagens, o que o inventário mostra para cada categoria e o
+  que chega à partida (e à rede). Hoje o perfil mora no arquivo do jogador,
+  que se edita à mão (ver "Perfil, inventário e moedas no servidor").
 - **Armaduras em personagens e lobos, dando mais vida** (decidido pelo
   Jhon, 13/11). Entra no `docs/ARSENAL.md` e nos testes de equilíbrio.
   Proposta para não virar "paga para ganhar": a armadura se compra com
@@ -169,6 +208,13 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   formato de número e data, as frases e a voz do rádio. Quanto antes,
   melhor: toda tela feita com texto fixo é tela a refazer. As telas em
   HTML (plano do `GUIA_UI_HTML_CEF.md`) precisam da própria tradução.
+- **Editar controles e teclas** (pedido em 17/11). Hoje: as teclas moram
+  no código (`InputSetup`) e a tabela de Opções (`ControlsTable`) só as
+  mostra, não deixa mudar. A fazer: tela de Opções → Controles para
+  remapear cada ação (teclado e botões do mouse), avisar de conflito,
+  restaurar o padrão, guardar no arquivo de opções do jogador, e a tabela
+  passar a ler as teclas de verdade em vez de uma lista escrita à mão.
+  Sensibilidade e inversão do mouse entram aqui.
 - **Acessibilidade.** Hoje: nenhuma opção feita para isso (o que já existe
   em Opções → Controles não foi conferido para esta lista). Candidatos:
   - **Daltonismo.** A vida do aliado verde e do inimigo vermelho (decidida
@@ -180,7 +226,8 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
     passos, tiro e uivo, para quem não ouve bem; legendas nos sons
     importantes.
   - Reduzir tremor e balanço da câmera.
-  - Remapear todas as teclas; alternar em vez de segurar (agachar, mirar).
+  - Alternar em vez de segurar (agachar, mirar); o remapeamento é o
+    item acima.
 
 ### Social e salas (pedido em 17/11)
 
@@ -192,6 +239,14 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Sala pública e privada.** Hoje: a sala aceita senha na criação
   (`Room.cs`), mas não há o conceito de pública ou privada: a lista mostra
   tudo. A fazer: privada fora da lista, só por convite ou código.
+- **Reportar usuário** (pedido em 17/11): denunciar um jogador pelo placar,
+  pelo fim da partida, pelo chat e pelo perfil, com motivo (trapaça,
+  ofensa, nome impróprio, outro) e um campo de texto. O servidor guarda a
+  denúncia com o contexto (sala, partida, últimas mensagens) e ela chega
+  ao painel administrativo; quem denuncia recebe a resposta. Cuidar de
+  denúncia falsa em massa. Liga ao chat de voz (silenciar e denunciar) e
+  à moderação.
+
 ### Comunicação na partida
 
 - **Chat dentro da partida**: para o time e para todos, com o nome e a
