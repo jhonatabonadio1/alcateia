@@ -85,9 +85,8 @@ script. É do projeto.
 
 ## O uivo
 
-Não tem arquivo próprio: o uivo (R, de lobo) toca o mesmo som da
-transformação, `lobo_transformar`, por decisão do Jhon
-(`WorldAudio.HowlSound`).
+O uivo (R, de lobo) toca `lobo_rugido` (`WorldAudio.HowlSound`); sem ele, cai
+no som da transformação, `lobo_transformar`. Ver "Poder do uivo" abaixo.
 
 ## Raios do especial do lobo (18/11)
 
@@ -111,3 +110,21 @@ Preparados por `tools/sons/pacote_armas.py`:
 nome do autor. O Jhon precisa confirmar a licença e o crédito de cada pacote
 (a tela de créditos usa o texto de `scripts/meta/Credits.cs`).
 
+## Poder do uivo (18/11)
+
+`lobo_uivo_energia_1..2` (o poder carregando, junto com o rugido) e
+`lobo_uivo_escudo_1..2` (o escudo cheio, no fim) são **sintetizados por
+código** (`tools/sons/uivo.py`: senoides, serras e ruído filtrado, numpy e
+scipy). Nenhuma gravação; sem licença de terceiros.
+
+O rugido em si, `lobo_rugido_1`, é montado por `tools/sons/rugido.py` a partir
+de duas gravações do **Free Sounds Pack** (Creature 1-21 e Zombie 1 - Short
+1-01), em camadas e com distorção. Vale a pendência de licença do pacote.
+
+## Acertos e sangue (18/11)
+
+Do **Free Sounds Pack** (o mesmo pacote do rugido e da faca), preparados por
+`tools/sons/acertos.py`: `impacto_carne_1` (Hit Generic 5-1),
+`impacto_carne_2` (Hit Generic 2-1), `impacto_carne_3` (Punch 2-1) e
+`sangue_1..2` (Stab 4-1, só a parte do golpe; a segunda, mais grave).
+Vale a mesma pendência de licença e crédito do pacote.

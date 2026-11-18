@@ -133,6 +133,39 @@ public sealed class WolfFxTest : RegressionTest
 		RegressionBench.ReleaseAll();
 		await b.Seconds(2.5);
 
+		// ---- o uivo (R): a luz de regeneração acende, os arcos saltam, e o
+		// escudo cheio fecha com o anel. Soltar no meio não dá o anel.
+		b.Check(fx.Roar.Glow <= 0.01f && !fx.Roar.Sweeping, "sem rugir, nada da luz do uivo");
+		Input.ActionPress("howl");
+		await b.Seconds(0.5);
+		b.Check(fx.Roar.Active, "segurando R, o rugido aparece");
+		b.AtLeast(0.5, fx.Roar.Glow, "a luz de regeneração acende durante o uivo");
+		int arcs = 0;
+		for (int i = 0; i < 30; i++)
+		{
+			await b.PhysicsFrame();
+			arcs = Mathf.Max(arcs, fx.Roar.Arcs);
+		}
+		b.AtLeast(1, arcs, "arcos elétricos saltam para o corpo no uivo");
+		b.AtMost(2.5, RoarBurst.ShaftTop, "a luz do uivo é baixa (não passa de 2,5 m dos pés)");
+		Input.ActionRelease("howl");
+		await b.Seconds(0.1);
+		b.Check(!fx.Roar.Sweeping, "soltou no meio: sem o anel de escudo cheio");
+		b.Check(!fx.EnergyPlaying, "soltou no meio: o som da energia é cortado");
+		await b.Seconds(1.0);
+
+		bool swept = false;
+		Input.ActionPress("howl");
+		for (int i = 0; i < 150 && !swept; i++)
+		{
+			await b.PhysicsFrame();
+			swept = fx.Roar.Sweeping;
+		}
+		Input.ActionRelease("howl");
+		b.Check(swept, "rugiu até o fim: o anel de escudo cheio sobe");
+		await b.Seconds(1.2);
+		b.Check(fx.Roar.Glow <= 0.01f && fx.Roar.Arcs == 0, "acabou o uivo, a luz e os arcos somem");
+
 		// ---- a cor do personagem: a Eve é verde.
 		var eve = CharacterSkin.All().FirstOrDefault(s => s.Id == "pers_eve");
 		if (eve != null)

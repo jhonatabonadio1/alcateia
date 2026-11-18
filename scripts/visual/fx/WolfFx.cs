@@ -327,6 +327,49 @@ public partial class WolfFx : Node3D
 
 	private double _armedHum;
 
+	/// <summary>Os sons de energia do uivo (pedido do Jhon, 18/11: "faltam
+	/// sons de brilho, energia para complementar"): a energia carregando
+	/// enquanto ele ruge, e o escudo cheio quando termina. Ficam por baixo
+	/// do rugido e chegam bem menos longe que ele: quem entrega a posição
+	/// de longe continua sendo o rugido (<see cref="WorldAudio"/>).</summary>
+	[Export] public string HowlEnergySound = "lobo_uivo_energia";
+	[Export] public string HowlShieldSound = "lobo_uivo_escudo";
+	[Export] public float HowlEnergyRadius = 22f;
+
+	private Node _energy;
+	private bool _wasRoaring, _wasSweeping;
+
+	/// <summary>O som da energia está tocando. Para os testes.</summary>
+	public bool EnergyPlaying => _energy != null && IsInstanceValid(_energy);
+
+	private void UpdateHowlSound(bool roaring)
+	{
+		bool mine = _body == Groups.LocalPlayer(GetTree());
+		if (roaring && !_wasRoaring)
+		{
+			CutEnergy(0.05f);
+			_energy = Sfx.Attached(_body, HowlEnergySound, HowlEnergyRadius, mine, -1f);
+		}
+		// Soltou o rugido no meio: a energia some junto, sem escudo.
+		if (!roaring && _wasRoaring && !_roar.Sweeping) CutEnergy(0.15f);
+		_wasRoaring = roaring;
+
+		// Rugiu até o fim: o escudo encheu.
+		bool sweeping = _roar.Sweeping;
+		if (sweeping && !_wasSweeping) Sound(HowlShieldSound, HowlEnergyRadius);
+		_wasSweeping = sweeping;
+	}
+
+	private void CutEnergy(float seconds)
+	{
+		if (!EnergyPlaying) { _energy = null; return; }
+		Node player = _energy;
+		_energy = null;
+		Tween fade = player.CreateTween();
+		fade.TweenProperty(player, "volume_db", -50f, seconds);
+		fade.TweenCallback(Callable.From(player.QueueFree));
+	}
+
 	private void Sound(string name, float radius, float volumeDb = 0f)
 	{
 		if (string.IsNullOrEmpty(name) || !Sfx.Has(name)) return;
@@ -370,6 +413,7 @@ public partial class WolfFx : Node3D
 			_roar.Mouth = _roar.ToLocal(muzzle + forward * 0.25f);
 			_roar.Forward = _roar.GlobalBasis.Inverse() * (forward + Vector3.Up * 0.12f).Normalized();
 		}
+		UpdateHowlSound(roaring);
 	}
 
 	/// <summary>Quanto o pelo deita por m/s de velocidade (correndo, o
@@ -401,6 +445,8 @@ public partial class WolfFx : Node3D
 		// Mola amortecida curta: o pelo não teleporta quando a velocidade pula.
 		_furPush = _furPush.Lerp(push, 1f - Mathf.Exp(-14f * dt));
 		_neon = Mathf.MoveToward(_neon, power ? 1f : 0f, dt / 0.25f);
+		// No uivo o neon do corpo acende junto com a luz, e estoura quando o escudo enche.
+		float neon = Mathf.Max(_neon, _roar != null ? _roar.Glow * 1.35f + _roar.Flash * 1.6f : 0f);
 
 		float gust = Mathf.Clamp(velocity.Length() / Mathf.Max(MaxSpeed(), 0.1f), 0f, 1.2f);
 		foreach (MeshInstance3D mesh in _meshes)
@@ -409,7 +455,7 @@ public partial class WolfFx : Node3D
 			// O empurrão vai no espaço da malha (com a escala dela).
 			mesh.SetInstanceShaderParameter("fur_push", mesh.GlobalBasis.Inverse() * _furPush);
 			mesh.SetInstanceShaderParameter("fur_gust", gust);
-			mesh.SetInstanceShaderParameter("neon_boost", _neon);
+			mesh.SetInstanceShaderParameter("neon_boost", neon);
 		}
 	}
 

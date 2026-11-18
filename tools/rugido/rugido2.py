@@ -6,11 +6,12 @@ inimigo, em quatro tempos, nos mesmos 1,533 s:
 
 1. arma (0 a 0,22 s): afunda, curva o tronco, recolhe os braços ao peito e
    abaixa a cabeça — puxa o ar;
-2. explode (0,22 a 0,42 s): o pé da frente bate no chão, o quadril avança, o
-   peito abre, os braços abrem para os lados com as garras à frente e a
-   cabeça é jogada para cima e para a frente;
-3. sustenta (0,42 a 1,08 s): inclinado para a frente, baixo e largo, varrendo
-   a cabeça de um lado ao outro, tremendo de força;
+2. explode (0,22 a 0,42 s): um pé dá um passo curto à frente e bate no chão,
+   o quadril avança, o peito abre, os braços abrem para os lados com as
+   garras à frente e a cabeça é jogada para cima e para a frente;
+3. sustenta (0,42 a 1,08 s): inclinado para a frente, baixo, um pé à frente
+   do outro e os dois chapados no chão, varrendo a cabeça de um lado ao
+   outro, tremendo de força;
 4. volta (1,08 a 1,53 s): recolhe e fica de pé, na pose em que começou.
 
 O clipe é montado em cima do primeiro quadro do "Howl" de lobo_anim.glb (a
@@ -38,7 +39,9 @@ def curve(keys):
 
 # ---- o desenho do movimento (s; metros; graus) ---------------------------
 A, B_, S0, S1, R0 = 0.22, 0.42, 0.60, 1.08, 1.36          # arma, explode, sustenta (de/até), de pé
-hip_y = curve([(0, 0), (A, -0.160), (B_, -0.070), (S0, -0.125), (S1, -0.120), (R0, -0.02), (END, 0)])
+# Ajuste do Jhon (18/11, depois de ver no jogo): "desça um pouco a postura dele" — o quadril fica
+# mais baixo do começo ao fim do rugido (era -0,125 no sustento) e avança menos, com o peso entre os pés.
+hip_y = curve([(0, 0), (A, -0.190), (B_, -0.110), (S0, -0.180), (S1, -0.175), (R0, -0.03), (END, 0)])
 hip_z = curve([(0, 0), (A, -0.070), (B_, 0.150), (S0, 0.130), (S1, 0.120), (R0, 0.02), (END, 0)])
 hip_x = curve([(0, 0), (A, 0.020), (B_, -0.030), (S1, -0.030), (R0, 0), (END, 0)])
 # tronco: + curva para a frente. Arma curvado, abre o peito na explosão, e ruge inclinado.
@@ -59,14 +62,17 @@ ARM_LAG = {1.0: 0.0, -1.0: 0.03}                          # o braço direito che
 
 # o pé da frente (o direito: parado ele já está à frente): levanta, avança e BATE no chão junto com a explosão
 LEAD = 'Right'
-lead_z = curve([(0, 0), (A, 0), (B_, 0.21), (S1, 0.21), (R0, 0), (END, 0)])
-lead_x = curve([(0, 0), (A, 0), (B_, 0.07), (S1, 0.07), (R0, 0), (END, 0)])
+# Ajuste do Jhon (18/11): "a perna dele no uivo tá meio torta, só avance uma das pernas um pouco para
+# frente". O que entortava era o pé de trás na ponta, virado para fora, com o joelho aberto. Agora um pé
+# avança (um passo curto, quase reto) e os dois ficam chapados no chão, com os joelhos para a frente.
+lead_z = curve([(0, 0), (A, 0), (B_, 0.27), (S1, 0.27), (R0, 0), (END, 0)])
+lead_x = curve([(0, 0), (A, 0), (B_, 0.035), (S1, 0.035), (R0, 0), (END, 0)])
 lead_y = curve([(0, 0), (A, 0.01), (0.32, 0.15), (B_ - 0.03, 0.07), (B_, 0), (S1, 0), (1.22, 0.06), (R0, 0), (END, 0)])
 lead_pitch = curve([(0, 0), (A, 0), (0.33, -22), (B_, 0), (S1, 0), (1.22, 10), (R0, 0), (END, 0)])
 # o pé de trás: fica e sobe na ponta, empurrando
-rear_heel = curve([(0, 0), (A, 4), (B_ + 0.04, 32), (S1, 27), (R0, 0), (END, 0)])
-rear_out = curve([(0, 0), (A, 0), (B_ + 0.04, 9), (S1, 9), (R0, 0), (END, 0)])
-knee_out = curve([(0, 0), (A, 0.60), (B_, 0.35), (S1, 0.32), (R0, 0.1), (END, 0)])
+rear_heel = curve([(0, 0), (A, 3), (B_ + 0.04, 12), (S1, 10), (R0, 0), (END, 0)])
+rear_out = curve([(0, 0), (A, 0), (B_ + 0.04, 4), (S1, 4), (R0, 0), (END, 0)])
+knee_out = curve([(0, 0), (A, 0.22), (B_, 0.10), (S1, 0.06), (R0, 0.02), (END, 0)])
 
 def gate(t):
     """O auge do rugido: sobe em 0,06 s na explosão e some antes de voltar."""
@@ -175,7 +181,12 @@ for f in range(r.n):
         if d > reach:
             An = H + d_vec / d * reach; d_vec = An - H; d = reach
         n = d_vec / d
-        pole = (kn0 - up0) + float(knee_out(t)) * np.array([sign * 0.25, 0, 0.05])
+        # Para onde o joelho dobra: para a frente (como ele já dobra parado) e, no rugido, aberto para
+        # fora. A direção de parado é tirada FORA da linha quadril-tornozelo; usar o joelho inteiro, como
+        # antes, deixava o joelho sem lado certo quando o pé ia longe do quadril (dobrava para trás).
+        n0 = (an0 - up0) / np.linalg.norm(an0 - up0)
+        fwd = (kn0 - up0) - np.dot(kn0 - up0, n0) * n0; fwd /= np.linalg.norm(fwd)
+        pole = fwd + float(knee_out(t)) * np.array([sign, 0, 0])
         p = pole - np.dot(pole, n) * n; p /= np.linalg.norm(p)
         a = (L1 * L1 - L2 * L2 + d * d) / (2 * d)
         h = np.sqrt(max(L1 * L1 - a * a, 0.0))

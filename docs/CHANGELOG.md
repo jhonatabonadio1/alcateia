@@ -2,6 +2,34 @@
 
 ## Não lançado
 
+### Uivo: pose, luz de regeneração, eletricidade e som de poder (18/11)
+- **Pose do rugido** refeita nas pernas: um pé dá um passo curto à frente,
+  os dois ficam chapados no chão e os joelhos apontam para a frente (o
+  joelho era calculado para o lado errado quando o pé ia longe do quadril
+  e dobrava para fora e para trás). A postura fica 5,5 cm mais baixa.
+  Mesma duração (1,53 s), mesmo primeiro e último quadro.
+- Saíram os **anéis de choque** na frente da boca; ficam os riscos de ar.
+- **Luz de regeneração** (rugir enche o escudo): raios de luz descem em
+  volta do lobo, fagulhas sobem do chão, uma poça de luz acende nos pés e
+  **arcos elétricos** saltam do chão para o corpo, cada vez mais juntos.
+  A luz é baixa de propósito (2,35 m dos pés, já transparente no topo):
+  não passa por cima de parede nem entrega lobo escondido. O neon do
+  corpo acende junto.
+- **Escudo cheio**: rugiu até o fim, um anel sobe dos pés à cabeça com uma
+  descarga elétrica para todos os lados. Soltar o R no meio não dá nada
+  disso.
+- **Som de poder** por cima do rugido: `lobo_uivo_energia` (o poder
+  carregando: grave que sobe, bobina elétrica acelerando, estalos) e
+  `lobo_uivo_escudo` (o poder solto: pancada grave, trovão, raio e o
+  chiado do escudo — sem nota nem sino). Chegam a 22 m; quem entrega a
+  posição de longe continua sendo o rugido. Soltar no meio corta o som da
+  energia. Sintetizados por `tools/sons/uivo.py`.
+- **Rugido mais agressivo** (`lobo_rugido_1`, por `tools/sons/rugido.py`):
+  a criatura do pacote em camadas — mais grave, com a garganta rasgada do
+  zumbi, a aspereza do rosnado e a faixa de 1,5 a 5 kHz que a gravação não
+  tinha. Rosna baixo puxando o ar, explode junto com o pé batendo no chão
+  (0,22 s) e cai de tom no fim.
+
 ### Sons do pacote do Jhon (18/11)
 - **AR-15 com voz própria** (era a única arma no tiro e na recarga
   genéricos): tiro seu em estéreo, o dos outros, o distante, recarga em

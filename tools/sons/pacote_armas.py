@@ -96,11 +96,8 @@ def main(armas, geral):
         gravar(f"trocar_arma_{i}", pico(cortar(mono(ler(os.path.join(ar, "Foley", f"sfx_wpn_ar_foley_equip_0{n}.wav"))), 0.55, some=0.12), -10.0))
 
     if geral:
-        rug = mono(ler(os.path.join(geral, "Creature 1-21.wav")))
-        rug = cortar(rug, 1.75, some=0.4)
-        rug *= db(-17.0) / (np.sqrt((rug ** 2).mean()) + 1e-9)
-        teto = db(-1.5)
-        gravar("lobo_rugido_1", np.tanh(rug / teto) * teto)
+        # O rugido do lobo saía daqui (Creature 1-21, cru). Desde 18/11 quem o monta,
+        # em camadas e mais agressivo, é tools/sons/rugido.py.
         gravar("faca_acerto_1", pico(cortar(mono(ler(os.path.join(geral, "Stab 4-1.wav"))), 0.6, some=0.2), -4.0))
 
 if __name__ == "__main__":

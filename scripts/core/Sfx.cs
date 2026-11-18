@@ -100,6 +100,45 @@ public static class Sfx
 		Start(root, player, () => player.Play(), () => player.Finished += () => Release(player));
 	}
 
+	/// <summary>
+	/// Som preso a um nó: anda com ele e dá para cortar no meio (devolve o
+	/// tocador, que se solta sozinho quando o som acaba).
+	/// <paramref name="own"/>: é o corpo de quem joga, então toca sem
+	/// posição, como <see cref="Own"/>. Null se o arquivo não existir.
+	/// </summary>
+	public static Node Attached(Node3D owner, string name, float radius, bool own, float volumeDb = 0f)
+	{
+		EnsureBuses();
+		AudioStream stream = Get(name);
+		if (stream == null || owner == null) return null;
+
+		Node player;
+		if (own)
+		{
+			var flat = new AudioStreamPlayer { Stream = stream, Bus = BusWorld, VolumeDb = volumeDb, Autoplay = true };
+			flat.Finished += flat.QueueFree;
+			player = flat;
+		}
+		else
+		{
+			var spot = new AudioStreamPlayer3D
+			{
+				Stream = stream,
+				Bus = BusWorld,
+				VolumeDb = volumeDb,
+				MaxDistance = Mathf.Max(radius, 1f),
+				UnitSize = Mathf.Max(radius * 0.15f, 1.5f),
+				DopplerTracking = AudioStreamPlayer3D.DopplerTrackingEnum.Disabled,
+				Autoplay = true
+			};
+			spot.Finished += spot.QueueFree;
+			player = spot;
+		}
+
+		owner.AddChild(player);
+		return player;
+	}
+
 	/// <summary>Som sem posição: o que é seu (seu tiro, seu passo, o
 	/// marcador de acerto). Soa igual nos dois ouvidos.</summary>
 	public static void Local(string name, float volumeDb = 0f) => Flat(name, BusSfx, volumeDb);
