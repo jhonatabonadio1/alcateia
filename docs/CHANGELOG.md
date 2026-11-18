@@ -2,6 +2,13 @@
 
 ## Não lançado
 
+### Marcador de acerto mais alto, com "tic" na cabeça (18/11)
+- Acertou alguém: um estalo seco com um "tuc" curto, bem mais alto que o
+  antigo (`marcador_1..3`). Na cabeça, um "tic" de metal agudo por cima
+  (`marcador_cabeca_1..2`). Só quem atirou ouve. Volume em
+  `CombatantAudio.MarkerDb` e `HeadMarkerDb`. Sintetizados por
+  `tools/sons/marcador.py`.
+
 ### Becos escuros, caveira do abate e som ambiente (18/11)
 - **Arma e mão pretas no escuro**: a luz da mão (de 17/11) nunca tinha
   acendido — era posta na câmera dentro do `_Ready` de um filho dela, e o

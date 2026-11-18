@@ -135,3 +135,9 @@ Vale a mesma pendência de licença e crédito do pacote.
 ronco abaixo de 70 Hz, com a faixa de 300 Hz a 2 kHz levantada e as rajadas
 amansadas), com o `ambiente_hangar` antigo por baixo, 60 s em laço. Montado
 por `tools/sons/ambiente.py`. Vale a pendência de licença do pacote.
+
+## Marcador de acerto (18/11)
+
+`marcador_1..3` (corpo) e `marcador_cabeca_1..2` (cabeça, com o "tic") são
+**sintetizados por código** (`tools/sons/marcador.py`). Nenhuma gravação; sem
+licença de terceiros. Os antigos `acerto` e `acerto_cabeca` ficam como reserva.

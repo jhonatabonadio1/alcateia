@@ -119,6 +119,10 @@ public partial class CombatantAudio : Node
 		Sfx.At(Sfx.First($"impacto_{surface}", "impacto"), position, ImpactRange, -3f);
 	}
 
+	/// <summary>Volume do marcador de acerto no corpo e na cabeça (dB).</summary>
+	[Export] public float MarkerDb = -2f;
+	[Export] public float HeadMarkerDb = 0f;
+
 	private void OnHit(bool headshot)
 	{
 		if (_form.IsWolf)
@@ -126,9 +130,13 @@ public partial class CombatantAudio : Node
 		else if (_weapon.HumanSlot == Slot.Knife && Sfx.Has("faca_acerto"))
 			Play("faca_acerto");
 
-		// O marcador de acerto é só seu: é retorno, não som do mundo.
+		// O marcador de acerto é só seu: é retorno, não som do mundo. Desde
+		// 18/11 mais alto ("preciso de um feedback auditivo de quando acerto
+		// alguém, um pouco mais alto") e, na cabeça, com um "tic" de metal
+		// por cima (tools/sons/marcador.py).
 		if (_local)
-			Sfx.Local(headshot ? Sfx.First("acerto_cabeca", "acerto") : "acerto");
+			Sfx.Local(headshot ? Sfx.First("marcador_cabeca", "acerto_cabeca", "acerto") : Sfx.First("marcador", "acerto"),
+				headshot ? HeadMarkerDb : MarkerDb);
 	}
 
 	private void OnAmmo(int inMag, int magSize, bool reloading)
