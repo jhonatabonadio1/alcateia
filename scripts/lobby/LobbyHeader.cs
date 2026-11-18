@@ -69,11 +69,17 @@ public partial class LobbyHeader : PanelContainer
 		margin.AddChild(row);
 
 		row.AddChild(Icon.Make(IconKind.Wolf, 28, UiTokens.Accent));
-		Label word = UiKit.Text("ALCATEIA", "Subtitle");
-		word.AddThemeFontOverride("font", UiFonts.Display);
-		word.AddThemeFontSizeOverride("font_size", 26);
-		word.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		row.AddChild(word);
+		// WOLF claro, LEAGUE na cor da marca: duas palavras, um nome só.
+		HBoxContainer name = UiKit.Row(0);
+		foreach (var (part, color) in new[] { ("WOLF", UiTokens.TextPrimary), ("LEAGUE", UiTokens.Accent) })
+		{
+			Label word = UiKit.Text(part, "Subtitle", color);
+			word.AddThemeFontOverride("font", UiFonts.Display);
+			word.AddThemeFontSizeOverride("font_size", 26);
+			word.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+			name.AddChild(word);
+		}
+		row.AddChild(name);
 		return margin;
 	}
 

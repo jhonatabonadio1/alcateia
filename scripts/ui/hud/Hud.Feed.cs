@@ -32,7 +32,7 @@ public partial class Hud
 		if (mine && kill.Victim != me)
 		{
 			_hitMarker?.Flash(kill.Cause == KillCause.Headshot, kill: true);
-			// A caveira e "ELIMINOU <jogador>", abaixo da mira.
+			// A caveira pulsa na mira (HitMarker); "ELIMINOU <jogador>" embaixo.
 			_killBanner?.Add(kill.Victim, kill.Cause == KillCause.Headshot);
 			Celebrate(kill, note);
 		}
@@ -93,17 +93,17 @@ public partial class Hud
 		int enemies = EnemiesAlive(out int total);
 		if (note.Streak >= 2 && total >= 2 && enemies == 0 && note.Streak >= total)
 		{
-			_killBanner?.Announce(KillStory.TeamKillName, note.Streak + 1);
+			_streakCall?.Announce(KillStory.TeamKillName, note.Streak + 1);
 			Say(KillStory.TeamKillVoice);
 		}
 		else if (note.Streak >= 2)
 		{
-			_killBanner?.Announce(KillStory.StreakName(note.Streak), note.Streak);
+			_streakCall?.Announce(KillStory.StreakName(note.Streak), note.Streak);
 			Say(KillStory.StreakVoice(note.Streak));
 		}
 		else if (note.Revenge)
 		{
-			_killBanner?.Announce("VINGANÇA", 1, UiTokens.Warning);
+			_streakCall?.Announce("VINGANÇA", 1, UiTokens.Warning);
 			Say(KillStory.RevengeVoice);
 		}
 	}

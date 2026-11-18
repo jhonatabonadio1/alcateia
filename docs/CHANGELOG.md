@@ -2,6 +2,21 @@
 
 ## Não lançado
 
+### WolfLeague, caveira na mira, DOUBLE KILL no alto (18/11)
+- **O jogo se chama WolfLeague** na tela (topo do menu, entrada,
+  créditos, título da janela: `Credits.GameName`). A pasta, o
+  repositório, o nome do projeto no Godot e as variáveis `ALCATEIA_*`
+  continuam como estão — trocar o nome do projeto mudaria a pasta do
+  perfil salvo.
+- **Escolha de modo**: cartões mais altos, com folga dos lados e o ícone
+  numa ficha própria; os textos falam em Vanguarda e Sindicato.
+- **Abate**: a caveira pulsa no centro da mira (estoura, assenta e some
+  em 0,4 s: `HitMarker`); "ELIMINOU <jogador>" continua embaixo, acima
+  do especial, agora só texto.
+- **DOUBLE KILL** e as outras chamadas aparecem no alto, abaixo da barra
+  do placar.
+- **Cartão de duelo** só quando você morre; ao matar, não aparece mais.
+
 ### Feed de abates com história e sequências (17/11)
 - **O abate leva mais detalhe** (`Kill`): o golpe do lobo (`WolfHit`:
   garra, o especial, o bote), **pelas costas** e **de cima**. Viaja no

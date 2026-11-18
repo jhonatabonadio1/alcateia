@@ -2,10 +2,11 @@ using Godot;
 using System.Collections.Generic;
 
 /// <summary>
-/// O placar do duelo: toda vez que você mata ou morre, um cartão no
-/// centro de baixo mostra a sua patente e a do outro, e quantas vezes cada
-/// um já matou o outro nesta partida (decisão do Jhon). É a rivalidade que
-/// a partida já contém, posta na tela no instante em que ela muda.
+/// O placar do duelo: quando você morre, um cartão no centro de baixo
+/// mostra a sua patente e a de quem te matou, e quantas vezes cada um já
+/// matou o outro nesta partida (decisão do Jhon). É a rivalidade que a
+/// partida já contém, posta na tela no instante em que ela muda. Ao
+/// matar, o cartão não aparece mais (18/11); a contagem continua.
 ///
 /// Você à esquerda, o outro à direita; no meio, o que aconteceu, a arma e
 /// a distância. Some sozinho em alguns segundos.
@@ -64,6 +65,9 @@ public partial class DuelCard : CanvasLayer
 		if (kill.Killer != me && kill.Victim != me) return;
 
 		bool won = kill.Killer == me;
+		// Só quando você morre (o Jhon, 18/11: ao matar, o cartão sobrava —
+		// o abate já tem a caveira, o "ELIMINOU" e o feed).
+		if (won) return;
 		string other = won ? kill.Victim : kill.Killer;
 		Show(me, other, won, kill.Weapon, DistanceBetween(kill.Killer, kill.Victim));
 	}

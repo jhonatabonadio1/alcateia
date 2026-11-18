@@ -13,15 +13,15 @@ public static class ModePicker
 	public static void Ask(LobbyShell shell, string title, PlayModes.Info[] options, PlayMode current, Action<PlayMode> chosen)
 	{
 		Modal modal = null;
-		VBoxContainer body = UiKit.Column(UiTokens.S3);
+		VBoxContainer body = UiKit.Column(UiTokens.S3 + 4);
 
 		void Group(string caption, PlayModes.Info[] modes)
 		{
 			if (modes.Length == 0) return;
 			body.AddChild(UiKit.Caption(caption));
 			GridContainer grid = new() { Columns = 2 };
-			grid.AddThemeConstantOverride("h_separation", UiTokens.S2);
-			grid.AddThemeConstantOverride("v_separation", UiTokens.S2);
+			grid.AddThemeConstantOverride("h_separation", UiTokens.S3);
+			grid.AddThemeConstantOverride("v_separation", UiTokens.S3);
 			foreach (PlayModes.Info mode in modes)
 				grid.AddChild(Card(mode, mode.Mode == current, () =>
 				{
@@ -41,7 +41,7 @@ public static class ModePicker
 	{
 		var card = new Button
 		{
-			CustomMinimumSize = new Vector2(400, 72),
+			CustomMinimumSize = new Vector2(440, 92),
 			FocusMode = Control.FocusModeEnum.All,
 			MouseDefaultCursorShape = Control.CursorShape.PointingHand
 		};
@@ -53,15 +53,29 @@ public static class ModePicker
 		HBoxContainer row = UiKit.Row(UiTokens.S3);
 		row.MouseFilter = Control.MouseFilterEnum.Ignore;
 		row.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-		row.OffsetLeft = row.OffsetTop = UiTokens.S2;
-		row.OffsetRight = row.OffsetBottom = -UiTokens.S2;
+		// Folga de verdade em volta (o ícone ficava colado na beira): 20 px
+		// dos lados, e o ícone numa ficha própria de 52 px.
+		row.OffsetLeft = 20;
+		row.OffsetRight = -20;
+		row.OffsetTop = UiTokens.S3;
+		row.OffsetBottom = -UiTokens.S3;
 
-		Control icon = Icon.Make(mode.Icon, 26, mode.VsBots ? UiTokens.TextSecondary : UiTokens.Accent);
+		Color tone = mode.VsBots ? UiTokens.TextSecondary : UiTokens.Accent;
+		var tile = new PanelContainer
+		{
+			CustomMinimumSize = new Vector2(52, 52),
+			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter,
+			MouseFilter = Control.MouseFilterEnum.Ignore
+		};
+		tile.AddThemeStyleboxOverride("panel", UiTheme.Box(new Color(tone, 0.12f), new Color(tone, 0.3f), 1, UiTokens.RadiusSmall, 0, 0));
+		var center = new CenterContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+		Control icon = Icon.Make(mode.Icon, 28, tone);
 		icon.MouseFilter = Control.MouseFilterEnum.Ignore;
-		icon.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
-		row.AddChild(icon);
+		center.AddChild(icon);
+		tile.AddChild(center);
+		row.AddChild(tile);
 
-		VBoxContainer text = UiKit.Column(2);
+		VBoxContainer text = UiKit.Column(UiTokens.S1);
 		text.MouseFilter = Control.MouseFilterEnum.Ignore;
 		text.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		text.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;

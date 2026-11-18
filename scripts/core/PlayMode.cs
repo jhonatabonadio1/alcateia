@@ -50,12 +50,12 @@ public static class PlayModes
 		new(PlayMode.Livre, "Livre", "Humano e lobo: cada um transforma quando quiser.", IconKind.Wolf, false),
 		new(PlayMode.SoHumanos, "Só humanos", "Ninguém transforma. Tiro puro.", IconKind.Human, false),
 		new(PlayMode.SoLobos, "Só lobos", "Todos nascem lobo. Garra e mobilidade.", IconKind.Wolf, false),
-		new(PlayMode.HumanosXLobos, "Humanos × Lobos", "Azul humano, laranja lobo. Trocam na metade.", IconKind.Wolf, false),
+		new(PlayMode.HumanosXLobos, "Humanos × Lobos", "Vanguarda de humano, Sindicato de lobo. Trocam na metade.", IconKind.Wolf, false),
 		new(PlayMode.BotsLivre, "Contra bots", "Com bots nos times, humano e lobo liberados.", IconKind.Bot, true),
 		new(PlayMode.BotsHumanos, "Bots, só humanos", "Com bots nos times, ninguém transforma.", IconKind.Bot, true),
 		new(PlayMode.BotsLobos, "Bots, só lobos", "Com bots nos times, todos lobos.", IconKind.Bot, true),
-		new(PlayMode.CacarLobos, "Caçar lobos", "Com bots: azul humano contra laranja lobo.", IconKind.Human, true),
-		new(PlayMode.CacarHumanos, "Caçar humanos", "Com bots: azul lobo contra laranja humano.", IconKind.Wolf, true)
+		new(PlayMode.CacarLobos, "Caçar lobos", "Com bots: Vanguarda de humano contra Sindicato de lobo.", IconKind.Human, true),
+		new(PlayMode.CacarHumanos, "Caçar humanos", "Com bots: Vanguarda de lobo contra Sindicato de humano.", IconKind.Wolf, true)
 	};
 
 	public static Info Of(PlayMode mode) => All.FirstOrDefault(i => i.Mode == mode) ?? All[0];
@@ -94,6 +94,6 @@ public static class PlayModes
 	{
 		FormRule blue = RuleFor(mode, Teams.Blue, false), orange = RuleFor(mode, Teams.Orange, false);
 		static string Of(FormRule r) => r switch { FormRule.Humano => "humanos", FormRule.Lobo => "lobos", _ => "humano e lobo" };
-		return blue == orange ? Of(blue) : $"azul {Of(blue)}, laranja {Of(orange)}";
+		return blue == orange ? Of(blue) : $"Vanguarda {Of(blue)}, Sindicato {Of(orange)}";
 	}
 }

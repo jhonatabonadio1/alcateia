@@ -1,13 +1,18 @@
 using Godot;
 
 /// <summary>
-/// O aviso de abate, logo abaixo da mira (pedido do Jhon, 17/11): uma
-/// caveira e "ELIMINOU &lt;jogador&gt;", como em Overwatch. Só para quem
-/// matou. A caveira nasce grande e encolhe; a linha fica uns segundos e
-/// some. Abates seguidos empilham (até <see cref="Lines"/>).
+/// Os avisos de abate em texto (pedidos do Jhon, 17 e 18/11):
+///
+/// - **"ELIMINOU &lt;jogador&gt;"**, embaixo, logo acima do especial, só
+///   para quem matou. A linha fica uns segundos e some; abates seguidos
+///   empilham (até <see cref="Lines"/>). A caveira não fica aqui: ela
+///   pulsa no centro da mira (<see cref="HitMarker"/>).
+/// - **A chamada da sequência** (<see cref="Announce"/>: DOUBLE KILL,
+///   TEAM KILL, VINGANÇA), que o Hud põe numa segunda instância, no alto,
+///   abaixo da barra do placar.
 ///
 /// O feed do canto continua contando o que acontece na partida; isto é a
-/// confirmação para quem atirou, sem tirar o olho do meio da tela.
+/// confirmação para quem atirou.
 /// </summary>
 public partial class KillBanner : VBoxContainer
 {
@@ -69,25 +74,6 @@ public partial class KillBanner : VBoxContainer
 		row.Alignment = AlignmentMode.Center;
 		row.MouseFilter = MouseFilterEnum.Ignore;
 
-		// A caveira, com uma sombra escura por baixo (sem painel atrás,
-		// vermelho some em parede vermelha).
-		const int side = 38;
-		var skull = new Control
-		{
-			CustomMinimumSize = new Vector2(side, side),
-			SizeFlagsVertical = SizeFlags.ShrinkCenter,
-			PivotOffset = new Vector2(side, side) / 2f,
-			MouseFilter = MouseFilterEnum.Ignore
-		};
-		foreach (var (color, offset) in new[] { (new Color(0, 0, 0, 0.6f), new Vector2(2, 2.5f)), (Red, Vector2.Zero) })
-		{
-			Icon layer = Icon.Make(IconKind.SkullSolid, side, color);
-			layer.Position = offset;
-			layer.Size = new Vector2(side, side);
-			skull.AddChild(layer);
-		}
-		row.AddChild(skull);
-
 		row.AddChild(HudStyle.Number(UiKit.Text("ELIMINOU", "Display"), 30, UiTokens.TextPrimary));
 		row.AddChild(HudStyle.Number(UiKit.Text((victim ?? "").ToUpperInvariant(), "Display"), 30, Red));
 		if (headshot)
@@ -105,12 +91,6 @@ public partial class KillBanner : VBoxContainer
 			RemoveChild(old);
 			old.QueueFree();
 		}
-
-		// A caveira bate na tela: nasce grande e assenta.
-		skull.Scale = new Vector2(2.1f, 2.1f);
-		Tween pop = skull.CreateTween();
-		pop.TweenProperty(skull, "scale", Vector2.One, 0.28f)
-			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 
 		row.Modulate = new Color(1, 1, 1, 0);
 		Tween life = row.CreateTween();

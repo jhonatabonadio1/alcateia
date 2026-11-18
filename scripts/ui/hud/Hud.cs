@@ -47,6 +47,7 @@ public partial class Hud : CanvasLayer
 	private Label _warning;
 	private double _warningTimer;
 	private KillBanner _killBanner;
+	private KillBanner _streakCall;
 
 	public override void _Ready()
 	{

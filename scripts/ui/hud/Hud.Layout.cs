@@ -16,6 +16,10 @@ public partial class Hud
 	/// direita) giram, em graus: a base sobe em direção ao meio da tela.</summary>
 	private const float TiltDegrees = 3f;
 
+	/// <summary>Onde começa a chamada da sequência, a partir do alto: logo
+	/// abaixo da barra do placar (MatchHud).</summary>
+	private const int StreakCallTop = 104;
+
 	private T Corner<T>(T control, Control.LayoutPreset preset) where T : Control
 	{
 		control.SetAnchorsPreset(preset);
@@ -98,6 +102,15 @@ public partial class Hud
 		_killBanner.GrowHorizontal = Control.GrowDirection.Both;
 		_killBanner.GrowVertical = Control.GrowDirection.Begin;
 		_root.AddChild(_killBanner);
+
+		// A chamada da sequência (DOUBLE KILL…), no alto, logo abaixo da
+		// barra do placar (pedido do Jhon, 18/11).
+		_streakCall = new KillBanner { Alignment = BoxContainer.AlignmentMode.Begin };
+		_streakCall.SetAnchorsPreset(Control.LayoutPreset.CenterTop);
+		_streakCall.OffsetTop = StreakCallTop;
+		_streakCall.GrowHorizontal = Control.GrowDirection.Both;
+		_streakCall.GrowVertical = Control.GrowDirection.End;
+		_root.AddChild(_streakCall);
 
 		_death = UiKit.Column(UiTokens.S1);
 		_death.Alignment = BoxContainer.AlignmentMode.Center;

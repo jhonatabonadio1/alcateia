@@ -12,6 +12,11 @@
 /// </summary>
 public static class Credits
 {
+	/// <summary>O nome do jogo, como aparece na tela (decisão do Jhon,
+	/// 18/11; antes, "Alcateia" — que continua sendo o nome da pasta, do
+	/// repositório e das variáveis de ambiente).</summary>
+	public const string GameName = "WolfLeague";
+
 	/// <summary>Uma linha: o quê, de quem, sob qual licença.</summary>
 	public readonly record struct Line(string What, string Who, string License = "", bool Required = false);
 
@@ -20,7 +25,7 @@ public static class Credits
 
 	public static readonly Section[] All =
 	{
-		new("Alcateia", new[]
+		new(GameName, new[]
 		{
 			new Line("Criação, design e programação", "Jhonata Bonadio"),
 			new Line("Mapas, armas e mãos", "feitos para o jogo, por código e no Blender (tools/)")

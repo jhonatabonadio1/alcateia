@@ -22,7 +22,7 @@ public partial class WelcomeScreen : LobbyScreen
 		{
 			"Lobby novo: salas, loja, inventário, perfil, missões e opções.",
 			"Patentes, XP e Presas: cada partida rende progresso.",
-			"Times azul e laranja.",
+			"Dois times: Vanguarda e Sindicato.",
 			"HUD de combate e placar refeitos.",
 		}),
 		("v0.23", new[] { "Sons para tudo: armas, passos, lobo, interface." }),
@@ -54,7 +54,7 @@ public partial class WelcomeScreen : LobbyScreen
 
 		HBoxContainer brand = UiKit.Row(UiTokens.S3);
 		brand.AddChild(Icon.Make(IconKind.Wolf, 48, UiTokens.Accent));
-		Label title = UiKit.Text("ALCATEIA", "Display");
+		Label title = UiKit.Text(Credits.GameName.ToUpperInvariant(), "Display");
 		brand.AddChild(title);
 		column.AddChild(brand);
 

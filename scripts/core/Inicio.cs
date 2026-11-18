@@ -27,6 +27,10 @@ public partial class Inicio : Node
 
 	public override void _Ready()
 	{
+		// O nome do jogo na janela. O nome do projeto no Godot continua
+		// "alcateia": trocar ele mudaria a pasta onde o perfil é salvo.
+		DisplayServer.WindowSetTitle(Credits.GameName);
+
 		// A suavização vale para a janela inteira, desde a primeira cena
 		// (também quando a partida é aberta direto do editor).
 		Settings.ApplyVideo(GetTree().Root);
