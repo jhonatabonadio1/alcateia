@@ -2,6 +2,27 @@
 
 ## Não lançado
 
+### Lobo agachado refeito; bater na corrida de quatro; pulo, mira e Shift do humano (18/11)
+- **Lobo agachado e andando agachado** refeitos
+  (`tools/rugido/agachar.py`). Antes: braços congelados (as mãos andavam
+  de 1 a 4 cm no ciclo), quadril a 0,49 m sem subir nem descer e coxas
+  abertas na horizontal, que esticavam o short. Agora é uma espreita:
+  quadril a 0,63 m, tronco deitado, cabeça erguida (mesma altura de
+  antes), braços soltos balançando ao contrário das pernas, joelhos para
+  a frente. `CrawlClipSpeed` 1,5.
+- **Bater correndo de quatro (W W)**: o golpe já saía e feria, mas a
+  garrada por cima do galope dobrava o lobo no chão e não se via nada.
+  Agora o corpo se ergue para o golpe e volta a correr de quatro, sem
+  perder velocidade.
+- **Pulo do humano**: de 0,80 m para 0,99 m (volta a subir num caixote de
+  1 m).
+- **Mirar agachado no Ctrl (Mac)**: o botão direito de verdade com Ctrl
+  agora mira; o Ctrl-clique (esquerdo) continua atirando. Separados pelo
+  botão que está de fato apertado no mouse.
+- **Shift preso**: se o "soltou" do Shift (ou do Ctrl) não chega do
+  sistema, o próximo evento de mouse ou teclado solta a ação
+  (`StuckKeys`). Teste novo, `ShiftPreso`.
+
 ### Sons de acerto, X vermelho e voz do lobo (18/11)
 - **Acerto**: a cada bala que pega, em qualquer parte do corpo, o som que
   o Jhon escolheu (Hit Generic 2-1, `marcador_1`). **Headshot**: o "plin"

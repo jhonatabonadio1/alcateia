@@ -17,13 +17,14 @@ public partial class Player
 	[Export] public float JumpVelocity = 4.4f;
 
 	/// <summary>
-	/// O pulo do humano: um pouco mais baixo e bem mais rápido que o do
-	/// lobo (pedido do Jhon, 17/11). Com a gravidade do humano a 1,45×,
-	/// sobe 0,80 m (era 0,99) e volta ao chão em 0,67 s (era 0,90). A
+	/// O pulo do humano: mais baixo e bem mais rápido que o do lobo (pedido
+	/// do Jhon, 17/11), com a gravidade do humano a 1,45×. Em 18/11 subiu
+	/// um pouco ("o pulo do humano pode ser um pouco mais alto"): de 0,80 m
+	/// para 0,99 m, 0,73 s no ar — volta a subir num caixote de 1 m. A
 	/// gravidade maior vale para todo o humano no ar: cair de uma beirada
 	/// também é mais seco. O lobo não muda.
 	/// </summary>
-	[Export] public float HumanJumpVelocity = 4.75f;
+	[Export] public float HumanJumpVelocity = 5.2f;
 	[Export] public float HumanGravityScale = 1.45f;
 
 	/// <summary>Aceleração no chão, em m/s². Alta deixa o controle

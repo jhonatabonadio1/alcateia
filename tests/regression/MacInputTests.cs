@@ -28,6 +28,26 @@ public sealed class MacCtrlClickTest : RegressionTest
 			b.Check(b.Player.IsCrouching, "agachado");
 			b.Check(b.Weapon.PrimaryAmmo < before, $"atirou agachado ({before} → {b.Weapon.PrimaryAmmo})");
 
+			// Humano agachado no Ctrl, com o botão DIREITO de verdade: mira, não atira.
+			RegressionBench.ReleaseAll();
+			await b.Seconds(0.4);
+			RegressionBench.Press("crouch");
+			await b.Seconds(0.4);
+			var hardware = MacCtrlClick.Hardware;
+			MacCtrlClick.Hardware = () => MouseButtonMask.Right;
+			try
+			{
+				int ammo = b.Weapon.PrimaryAmmo;
+				Input.ParseInputEvent(Click(pressed: true));
+				await b.Seconds(0.3);
+				b.Check(b.Weapon.IsAiming, "agachado no Ctrl, o botão direito de verdade mira");
+				b.Check(b.Weapon.PrimaryAmmo == ammo, "e não atira");
+				Input.ParseInputEvent(Click(pressed: false));
+				await b.Seconds(0.2);
+				b.Check(!b.Weapon.IsAiming, "soltou o botão, saiu da mira");
+			}
+			finally { MacCtrlClick.Hardware = hardware; }
+
 			// Lobo agachado: arranha, não carrega o salto.
 			RegressionBench.ReleaseAll();
 			await b.BecomeWolf();

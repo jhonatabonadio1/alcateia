@@ -277,6 +277,9 @@ public partial class Player : CharacterBody3D
 	{
 		if (!IsMultiplayerAuthority()) return;
 
+		// Shift ou Ctrl cujo "soltou" o sistema engoliu: solta aqui.
+		StuckKeys.Watch(@event);
+
 		// Menu aberto: o mouse é do menu. Sem isto a câmera gira atrás
 		// da tela de lotes enquanto o jogador tenta clicar num cartão.
 		// Esc não solta o mouse aqui: abre o menu, e quem decide o cursor

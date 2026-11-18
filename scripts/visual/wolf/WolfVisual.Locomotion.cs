@@ -91,8 +91,12 @@ public partial class WolfVisual
 	/// Mixamo, que pedia 2,9): 1,42 m/s no arquivo, vezes 1,13. Agachado
 	/// (1,75 a 1,90 m/s) toca a 1,1× a 1,2×; o de 1,33 s tocava a 1,8×.
 	/// Varrida: 0,38 m/s de patinação em 1,45, 0,34 em 1,52, perto de 0,2
-	/// de 1,58 a 1,65, 0,34 em 1,75.</summary>
-	[Export] public float CrawlClipSpeed = 1.62f;
+	/// de 1,58 a 1,65, 0,34 em 1,75.
+	///
+	/// 18/11: o andar agachado foi refeito (tools/rugido/agachar.py) e o pé
+	/// de apoio anda a 1,5 m/s cravado (0,84 m em 0,56 s, em linha reta):
+	/// é este o número, sem varrida.</summary>
+	[Export] public float CrawlClipSpeed = 1.5f;
 
 	/// <summary>A passada da corrida de quatro (o Run_Quad do Jhon, ciclo
 	/// de 0,6 s), em m/s: a velocidade em que o pé não desliza com o clipe
@@ -176,7 +180,14 @@ public partial class WolfVisual
 		// para onde anda. Em pé, com os quatro andares, fica de frente para
 		// a mira e o passo escolhe a direção.
 		bool crouching = ((_player?.IsCrouching ?? false) || _weapon.IsChargingPounce) && !onWall;
-		bool sprinting = (_player?.IsSprinting ?? false) && !onWall;
+		// Batendo na corrida de quatro, o corpo se ergue para o golpe e volta
+		// a correr de quatro depois (18/11, Jhon: "não posso bater com o lobo
+		// enquanto estou correndo com o W W"). O golpe saía e feria, mas a
+		// garrada é só da cintura para cima, e por cima do galope — tronco
+		// deitado — o lobo se dobrava no chão: não se via golpe nenhum. A
+		// velocidade continua a da corrida de quatro; só a pose muda.
+		bool striking = _weapon.IsStriking && !_weapon.IsPounceFlying && !_weapon.IsDiving;
+		bool sprinting = (_player?.IsSprinting ?? false) && !onWall && !striking;
 		bool directional = Directional && !crouching && !sprinting;
 
 		float target = aiming ? 0f : _yawOffset;
@@ -229,7 +240,8 @@ public partial class WolfVisual
 		// velocidade do corpo. Sem o clipe da corrida, ela engatinha rápido.
 		bool sprintClip = Has("sprint");
 		_crawl = Mathf.MoveToward(_crawl, crouching || (sprinting && !sprintClip) ? 1f : 0f, delta / 0.1f);
-		_sprint = Mathf.MoveToward(_sprint, sprinting && sprintClip ? 1f : 0f, delta / 0.15f);
+		// Ergue rápido para o golpe (a garra chega em 0,13 s); deita no ritmo de sempre.
+		_sprint = Mathf.MoveToward(_sprint, sprinting && sprintClip ? 1f : 0f, delta / (striking ? 0.07f : 0.15f));
 
 		// A direção do passo vai até a escolhida em 0,15 s.
 		if (Directional)
