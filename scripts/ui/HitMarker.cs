@@ -27,6 +27,8 @@ public partial class HitMarker : Control
 	[Export] public float SkullLife = 0.42f;
 
 	private static readonly Color SkullColor = new("ff4a4f");
+	private static readonly Color BodyColor = new("ff3b3f");
+	private static readonly Color HeadColor = new("ff6a5c");
 	private Control _skull;
 	private Tween _skullPulse;
 
@@ -96,7 +98,9 @@ public partial class HitMarker : Control
 	public void Flash(bool headshot, bool kill = false)
 	{
 		_total = _left = kill ? KillLife : Life;
-		_color = headshot || kill ? UiTokens.Danger.Lightened(0.15f) : Colors.White;
+		// Vermelho em todo acerto (pedido do Jhon, 18/11); na cabeça e no
+		// abate, mais vivo e maior.
+		_color = headshot || kill ? HeadColor : BodyColor;
 		_size = headshot ? 14f : 10f;
 		_killRing = kill;
 		if (kill)

@@ -67,9 +67,14 @@ public partial class CombatantAudio : Node
 		_weapon.GrenadesChanged += OnGrenades;
 		_form.FormChanged += OnForm;
 		_health.Damaged += OnDamaged;
-		_health.Died += _ => Play(_form.IsWolf ? "lobo_morte" : "morte");
+		_health.Died += _ => Play(SoundsWolf ? "lobo_morte" : "morte");
 		_health.Respawned += OnRespawned;
 	}
+
+	/// <summary>A voz é a do corpo que se vê (18/11): voltando a humano, o
+	/// corpo ainda é o do lobo na primeira metade da fumaça — pulo, dor e
+	/// morte nesse instante são do lobo, não do humano.</summary>
+	private bool SoundsWolf => _form.ShowsWolf;
 
 	public override void _PhysicsProcess(double delta)
 	{
@@ -82,7 +87,7 @@ public partial class CombatantAudio : Node
 		// Pulo: saiu do chão subindo. Cair de uma beirada não é pulo.
 		bool onFloor = _body.IsOnFloor();
 		if (_wasOnFloor && !onFloor && _body.Velocity.Y > 1f)
-			Play(_form.IsWolf ? "lobo_pulo" : "pulo");
+			Play(SoundsWolf ? "lobo_pulo" : "pulo");
 		_wasOnFloor = onFloor;
 	}
 
@@ -120,7 +125,7 @@ public partial class CombatantAudio : Node
 	}
 
 	/// <summary>Volume do marcador de acerto no corpo e na cabeça (dB).</summary>
-	[Export] public float MarkerDb = -2f;
+	[Export] public float MarkerDb = 0f;
 	[Export] public float HeadMarkerDb = 0f;
 
 	private void OnHit(bool headshot)
@@ -130,13 +135,13 @@ public partial class CombatantAudio : Node
 		else if (_weapon.HumanSlot == Slot.Knife && Sfx.Has("faca_acerto"))
 			Play("faca_acerto");
 
-		// O marcador de acerto é só seu: é retorno, não som do mundo. Desde
-		// 18/11 mais alto ("preciso de um feedback auditivo de quando acerto
-		// alguém, um pouco mais alto") e, na cabeça, com um "tic" de metal
-		// por cima (tools/sons/marcador.py).
-		if (_local)
-			Sfx.Local(headshot ? Sfx.First("marcador_cabeca", "acerto_cabeca", "acerto") : Sfx.First("marcador", "acerto"),
-				headshot ? HeadMarkerDb : MarkerDb);
+		// O marcador de acerto é só seu: é retorno, não som do mundo (18/11).
+		// A cada bala que acerta, em qualquer parte do corpo, o som que o
+		// Jhon escolheu (marcador). Na cabeça, e só nela, o "plin" por cima,
+		// a cada headshot (marcador_cabeca).
+		if (!_local) return;
+		Sfx.Local(Sfx.First("marcador", "acerto"), MarkerDb);
+		if (headshot) Sfx.Local(Sfx.First("marcador_cabeca", "acerto_cabeca"), HeadMarkerDb);
 	}
 
 	private void OnAmmo(int inMag, int magSize, bool reloading)
@@ -190,7 +195,7 @@ public partial class CombatantAudio : Node
 		if (_hurtTimer > 0 || _health.IsDead) return;
 		_hurtTimer = HurtInterval;
 
-		Play(_form.IsWolf ? "lobo_dor" : "dor");
+		Play(SoundsWolf ? "lobo_dor" : "dor");
 	}
 
 	private void OnRespawned()

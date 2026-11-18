@@ -141,3 +141,14 @@ por `tools/sons/ambiente.py`. Vale a pendência de licença do pacote.
 `marcador_1..3` (corpo) e `marcador_cabeca_1..2` (cabeça, com o "tic") são
 **sintetizados por código** (`tools/sons/marcador.py`). Nenhuma gravação; sem
 licença de terceiros. Os antigos `acerto` e `acerto_cabeca` ficam como reserva.
+
+## Marcador de acerto e voz do lobo (18/11, à tarde)
+
+Substitui a seção "Marcador de acerto" acima: `marcador_1` é o **Hit Generic
+2-1** do Free Sounds Pack (aparado para 0,20 s), por escolha do Jhon;
+`marcador_cabeca_1..2` (o "plin" do headshot) é sintetizado
+(`tools/sons/marcador.py`).
+
+`lobo_pulo_1..3` e `lobo_morte_1..3` saem de Creature 1-21 e Zombie 1 - Short
+do mesmo pacote (`tools/sons/lobo_voz.py`); não usam mais o Oculus Audio Pack.
+Vale a pendência de licença do Free Sounds Pack.

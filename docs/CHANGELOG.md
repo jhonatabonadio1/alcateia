@@ -2,6 +2,19 @@
 
 ## Não lançado
 
+### Sons de acerto, X vermelho e voz do lobo (18/11)
+- **Acerto**: a cada bala que pega, em qualquer parte do corpo, o som que
+  o Jhon escolheu (Hit Generic 2-1, `marcador_1`). **Headshot**: o "plin"
+  por cima, só na cabeça, a cada um (`marcador_cabeca_1..2`). Só quem
+  atirou ouve; o impacto no mundo (`impacto_carne`) fica para os outros.
+- O **X em volta da mira** é vermelho em todo acerto (era branco no corpo).
+- **Pulo e morte do lobo** refeitos (`lobo_pulo_1..3`, `lobo_morte_1..3`,
+  `tools/sons/lobo_voz.py`): os de antes eram gravações de "troll" e
+  "ogro" (gente fazendo voz de criatura) e algumas variações soavam como
+  o humano. Os novos saem do mesmo bicho do rugido.
+- A voz (pulo, dor, morte) é a do corpo que se vê: voltando a humano, na
+  primeira metade da fumaça ainda é a do lobo.
+
 ### Golpe do lobo que não feria perto de cenário (18/11)
 - **O especial travado (e a garrada) podiam não dar dano nenhum.** A área
   do golpe era uma consulta de física com teto de contatos (8 na garrada,

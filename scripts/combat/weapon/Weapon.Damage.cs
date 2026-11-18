@@ -58,7 +58,10 @@ public partial class Weapon
 		if (!Bleeds(target)) return;
 
 		ulong now = Time.GetTicksMsec();
-		if (now - _lastFlesh >= FleshGapMsec)
+		// Quem deu o golpe já ouve o marcador de acerto (CombatantAudio), a
+		// cada bala: o impacto no mundo é para os outros, senão dobraria.
+		bool mine = _body == Groups.LocalPlayer(_body.GetTree());
+		if (!mine && now - _lastFlesh >= FleshGapMsec)
 		{
 			_lastFlesh = now;
 			Sfx.At(FleshSound, at, FleshRadius, size > 1.2f ? 0f : -2f, FleshReach);
