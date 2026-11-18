@@ -129,8 +129,9 @@ public partial class Player
 				_weapon.TrySpecial();
 		}
 
-		// Q, de lobo: o especial, num toque. Se há um inimigo na mira, o
-		// salto vai nele; senão, para onde a mira toca o mapa.
+		// Q, de lobo: o especial, num toque — no chão ou no ar, com a carga
+		// cheia. Se há um inimigo na mira, o salto vai nele; senão, para
+		// onde a mira toca o mapa.
 		if (_intent.Pounce && _form.IsWolf)
 		{
 			AimPounce();

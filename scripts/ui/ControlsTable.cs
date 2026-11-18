@@ -12,7 +12,7 @@ public static class ControlsTable
 		("Shift", "Andar devagar e em silêncio (humano)"),
 		("Ctrl ou C", "Agachar"),
 		("Clique esquerdo", "Atacar"),
-		("Q", "Lobo: especial — salta na mira, ou no inimigo que estiver nela"),
+		("Q", "Lobo: especial — salta na mira (também no ar). Enche com abates e, devagar, com o tempo"),
 		("Clique direito", "Mirar (humano) · bote no ar (lobo)"),
 		("1", "Arma principal"),
 		("2", "Arma secundária"),

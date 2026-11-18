@@ -70,11 +70,19 @@ public sealed class WolfChargeTest : RegressionTest
 		await b.Seconds(0.8);
 
 		// ---- o especial (Q, 18/11): um toque e o lobo salta na hora, com
-		// a carga cheia, para onde a mira aponta. Sem segurar, sem carga
+		// a força cheia, para onde a mira aponta. Sem segurar, sem carga
 		// andando e sem anel no chão — o que este teste media antes.
 		Weapon w = b.Weapon;
-		await b.Until(() => w.PounceReady, w.PounceRecharge + 2.0);
 		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.8);
+
+		// Sem a carga do especial cheia, o Q não faz nada.
+		w.SpecialFree = false;
+		w.AddSpecial(0.5f);
+		await b.Tap("pounce");
+		await b.Seconds(0.3);
+		b.Check(!w.IsPounceFlying && !w.IsChargingPounce, "com a carga pela metade, o Q não salta");
+
+		w.FillSpecial();
 		Vector3 start = b.Player.GlobalPosition;
 		await b.Tap("pounce");
 		b.Check(await b.Until(() => w.IsPounceFlying, 1.0), "apertou o Q no chão: salta");
@@ -86,7 +94,24 @@ public sealed class WolfChargeTest : RegressionTest
 		b.AtLeast(w.PounceMaxDistance * 0.6, flown.X, "o salto vai longe, para onde a mira aponta (m)");
 		b.AtMost(w.PounceMaxDistance + 2.5, RegressionBench.Flat(flown), "e não passa do alcance (m)");
 		b.AtMost(1.0, Mathf.Abs(flown.Z), "em linha reta (m para o lado)");
-		b.Check(!w.PounceReady, "o especial entra em recarga");
+		b.Check(!w.PounceReady, "o especial gasta a carga");
+		b.AtMost(0.01, w.SpecialCharge, "a carga zera");
+
+		// ---- no ar (pedido do Jhon, 18/11): pulou e apertou Q, sai dali.
+		w.FillSpecial();
+		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.8);
+		Vector3 ground = b.Player.GlobalPosition;
+		await b.Tap("jump");
+		await b.Until(() => !b.Player.IsOnFloor() && b.Player.GlobalPosition.Y > ground.Y + 0.4f, 1.0);
+		float jumpedTo = b.Player.GlobalPosition.Y - ground.Y;
+		await b.Tap("pounce");
+		b.Check(await b.Until(() => w.IsPounceFlying, 0.5), $"no ar ({RegressionBench.F(jumpedTo)} m acima do chão), o Q salta");
+		await b.Until(() => !w.IsPounceFlying, 3.0);
+		await b.Seconds(0.4);
+		Vector3 air = b.Player.GlobalPosition - ground;
+		RegressionBench.Note($"especial no ar: caiu a {RegressionBench.F(RegressionBench.Flat(air))} m, {RegressionBench.F(air.Y)} m de altura");
+		b.AtLeast(w.PounceMaxDistance * 0.6, air.X, "do ar, também vai longe para onde a mira aponta (m)");
+		b.Check(b.Player.IsOnFloor() && Mathf.Abs(air.Y) < 0.3f, "e cai no chão");
 
 		// O botão direito no chão não carrega mais nada.
 		await b.Seconds(0.5);
@@ -100,3 +125,47 @@ public sealed class WolfChargeTest : RegressionTest
 	private static int Bone(Skeleton3D skeleton, string end) =>
 		Enumerable.Range(0, skeleton.GetBoneCount()).First(i => skeleton.GetBoneName(i).EndsWith(end));
 }
+
+/// <summary>O especial é carga em % (decisão do Jhon, 18/11): abate enche
+/// um bom pedaço, assistência menos, e sozinha enche bem devagar.</summary>
+public sealed class SpecialChargeTest : RegressionTest
+{
+	public override string Name => "CargaDoEspecial";
+	public override string Description => "abate e assistência enchem a carga do especial, e o tempo enche devagar; morrer não tira";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.RemoveBots();
+		Weapon w = b.Weapon;
+		var form = b.Form;
+		var health = b.Player.GetNode<Health>("Health");
+
+		// O tempo: em 5 s, 5 / SpecialFillTime.
+		float before = w.SpecialCharge;
+		await b.Seconds(5);
+		float passive = w.SpecialCharge - before;
+		RegressionBench.Note($"em 5 s, sozinha: +{RegressionBench.F(passive * 100)}% (cheia em {RegressionBench.F(w.SpecialFillTime)} s)");
+		b.Near(5.0 / w.SpecialFillTime, passive, 0.004, "enche sozinha, devagar");
+
+		// Abate e assistência, pelo mesmo caminho do WP.
+		before = w.SpecialCharge;
+		form.OnKill();
+		b.Near(w.SpecialPerKill, w.SpecialCharge - before, 0.002, "um abate enche");
+		before = w.SpecialCharge;
+		form.OnAssist();
+		b.Near(w.SpecialPerAssist, w.SpecialCharge - before, 0.002, "uma assistência enche menos");
+		b.AtLeast(w.SpecialPerAssist * 2f, w.SpecialPerKill, "abate vale bem mais que assistência");
+
+		// Não passa de 100%.
+		for (int i = 0; i < 6; i++) form.OnKill();
+		b.Near(1.0, w.SpecialCharge, 1e-6, "para em 100%");
+		b.Check(w.PounceReady, "cheia, o especial está pronto");
+
+		// Morrer não tira a carga.
+		health.TakeDamage(99999, 0, b.Player.GlobalPosition, false);
+		await b.Until(() => !health.IsDead, 12.0);
+		await b.Seconds(0.5);
+		b.Near(1.0, w.SpecialCharge, 1e-6, "renasce com a carga que tinha");
+	}
+}
+

@@ -59,6 +59,7 @@ public sealed class MacCtrlClickTest : RegressionTest
 			Input.ParseInputEvent(new InputEventMouseButton { ButtonIndex = MouseButton.Right, Pressed = false });
 			b.Check(!leapt, "no chão, o botão direito não salta");
 
+			b.Weapon.FillSpecial();
 			await b.Tap("pounce");
 			b.Check(await b.Until(() => b.Weapon.IsPounceFlying, 1.5), "o Q salta");
 			await b.Until(() => !b.Weapon.IsPounceFlying, 3.0);

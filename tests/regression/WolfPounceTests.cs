@@ -18,9 +18,9 @@ public sealed class ChargedPounceTest : RegressionTest
 		var enemy = b.Bots()[0];
 		RegressionBench.Freeze(enemy);
 		await b.BecomeWolf();
-		// Aqui se mede a distância de um salto atrás do outro: sem a recarga
-		// entre eles (PounceRecharge, 15 s na cena do jogador).
-		b.Weapon.PounceRecharge = 0f;
+		// Aqui se mede a distância de um salto atrás do outro: sem esperar a
+		// carga do especial encher entre eles.
+		b.Weapon.SpecialFree = true;
 
 		await Case(b, enemy, "cheio, olhando reto", 1f, 0f, null);
 		await Case(b, enemy, "cheio, olhando para o chão", 1f, -35f, null);

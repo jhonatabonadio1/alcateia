@@ -46,6 +46,8 @@ public sealed class WolfBotsTest : RegressionTest
 		{
 			foreach (var bot in b.Bots())
 			{
+				// O especial é carga (18/11): cheia, para medir se o bot usa.
+				bot.GetNode<Weapon>("Weapon").FillSpecial();
 				var form = bot.GetNode<FormController>("FormController");
 				if (form.Current != Form.Human || bot.GetNode<Health>("Health").IsDead) continue;
 				form.AddWp(5000);

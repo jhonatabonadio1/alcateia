@@ -109,6 +109,7 @@ public sealed class WolfFxTest : RegressionTest
 
 		// ---- o especial (Q): a aura acende no voo; a do outro lobo não.
 		var otherFx = other.GetNodeOrNull<WolfFx>("WolfFx");
+		b.Weapon.FillSpecial();
 		await b.Tap("pounce");
 		await b.Until(() => b.Weapon.IsPounceFlying, 1.5);
 		float aura = 0f, mine = 0f, theirsMax = 0f;

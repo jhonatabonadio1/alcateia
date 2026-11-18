@@ -221,8 +221,20 @@ dano acompanham.
 
 ### Especial do lobo (Q, num toque)
 
-Desde 18/11 o especial sai no Q, na hora, sempre com a carga cheia —
-não se segura mais o botão direito. `PounceChargeTime`,
+Desde 18/11 o especial sai no Q, na hora, sempre com a força cheia —
+não se segura mais o botão direito. Sai no chão ou no ar.
+
+**Não tem mais recarga de tempo** (eram 15 s, `PounceRecharge`): é uma
+carga em %, como a suprema de Overwatch, no `Weapon`
+(`Weapon.SpecialCharge.cs`). Cheia, o Q salta e ela zera. Morrer não
+tira; morto ou fora da partida valendo, não enche.
+
+| Campo | Valor | O que faz |
+|---|---|---|
+| `SpecialPerKill` | 0,25 | Quanto um abate enche (quatro abates enchem do zero) |
+| `SpecialPerAssist` | 0,1 | Quanto uma assistência enche |
+| `SpecialFillTime` | 240 s | Tempo para encher sozinha, sem abate nenhum |
+ `PounceChargeTime`,
 `PounceMinPower` e `PounceChargeHold` continuam valendo só para o bot,
 que escolhe a carga pela distância.
 

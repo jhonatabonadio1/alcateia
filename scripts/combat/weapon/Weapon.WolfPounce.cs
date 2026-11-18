@@ -103,15 +103,17 @@ public partial class Weapon
 
 	/// <summary>
 	/// O especial do lobo, num toque (Q; decisão do Jhon, 18/11): o salto
-	/// sai na hora, com a carga cheia, para onde a mira aponta — ou em
+	/// sai na hora, com a força cheia, para onde a mira aponta — ou em
 	/// cima do inimigo que estiver na mira (quem chama diz qual:
-	/// <see cref="Player.LockTarget"/>). Só no chão e com a recarga pronta.
-	/// Antes era segurar o botão direito para carregar e soltar.
+	/// <see cref="Player.LockTarget"/>). Com a carga do especial cheia
+	/// (<see cref="SpecialCharge"/>), no chão **ou no ar** (pedido do Jhon,
+	/// 18/11: pulou e apertou Q, sai o especial dali). Antes era segurar o
+	/// botão direito no chão para carregar e soltar.
 	/// </summary>
 	public bool TryPounce()
 	{
-		if (_cooldown > 0 || _charging) return false;
-		if (!_form.IsWolf || !_form.CanAttack || !_body.IsOnFloor() || !PounceReady) return false;
+		if (_cooldown > 0 || _charging || _diving) return false;
+		if (!_form.IsWolf || !_form.CanAttack || !PounceReady) return false;
 
 		BeginCharge();
 		_chargeTime = PounceChargeTime;
@@ -237,7 +239,7 @@ public partial class Weapon
 	/// dele corre durante a carga): o resto do golpe conta daqui.</param>
 	private void Pounce(float power, float elapsed)
 	{
-		StartPounceRecharge();
+		SpendSpecial();
 		_comboIndex = 0;
 		_attackQueued = false;
 		float saved = WolfMoves.StepOf(WolfMove.Pounce).Duration

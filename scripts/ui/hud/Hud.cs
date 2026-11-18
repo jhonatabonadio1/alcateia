@@ -141,6 +141,7 @@ public partial class Hud : CanvasLayer
 		}
 
 		UpdateTransform();
+		UpdateSpecial();
 		UpdateWolf((float)delta);
 	}
 

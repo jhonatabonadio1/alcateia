@@ -1,16 +1,17 @@
 using Godot;
 
 /// <summary>
-/// O especial do lobo (o salto carregado), no inferior centro, como a
-/// suprema de Overwatch (pedido do Jhon, 17/11): um disco. Em recarga é
-/// escuro, com um aro que fecha no sentido horário e os segundos no meio.
-/// Pronto, **acende**: o disco fica laranja cheio, com o ícone branco, um
+/// O especial do lobo (o salto do Q), no inferior centro, como a suprema
+/// de Overwatch (pedido do Jhon, 17/11): um disco. Enchendo é escuro, com
+/// um aro que fecha no sentido horário e a carga em % no meio (desde
+/// 18/11 o especial é carga, não tempo: <see cref="Weapon.SpecialCharge"/>).
+/// Cheio, **acende**: o disco fica laranja cheio, com o ícone branco, um
 /// halo que respira e raios girando devagar em volta (shader aditivo), e
-/// no instante em que volta solta uma onda e dá um pulinho.
+/// no instante em que enche solta uma onda e dá um pulinho.
 ///
 /// A tecla fica numa ficha embaixo, com o nome.
 ///
-/// Quem manda o estado é o Hud, uma vez por quadro: <see cref="SetState"/>.
+/// Quem manda o estado é o Hud, uma vez por quadro: <see cref="SetCharge"/>.
 /// </summary>
 public partial class AbilityTile : Control
 {
@@ -25,7 +26,20 @@ public partial class AbilityTile : Control
 	/// <summary>A cor do halo.</summary>
 	public Color Glow { get; set; } = new(1f, 0.6f, 0.18f);
 
-	public string Title { get; set; } = "";
+	private string _title = "";
+
+	/// <summary>O nome embaixo do disco.</summary>
+	public string Title
+	{
+		get => _title;
+		set
+		{
+			if (value == _title) return;
+			_title = value;
+			_cover?.QueueRedraw();
+		}
+	}
+
 	public string Key { get; set; } = "";
 	public IconKind Kind { get; set; } = IconKind.Claw;
 
@@ -67,8 +81,8 @@ void fragment() {
 	private Icon _icon;
 	private Control _cover;
 	private ShaderMaterial _glow;
-	private float _left;
-	private float _total = 1f;
+	private float _charge = 1f;
+	private int _percent = 100;
 	private float _power;
 	private float _burst;
 	private bool _cooling;
@@ -132,21 +146,27 @@ void fragment() {
 		}
 	}
 
-	public void SetState(float left, float total)
+	/// <summary>A carga, de 0 a 1. Cheia, o disco acende (e, no instante
+	/// em que enche, solta a onda e dá o pulinho).</summary>
+	public void SetCharge(float charge)
 	{
 		if (_cover == null) return;
 
-		bool cooling = left > 0.0001f;
+		charge = Mathf.Clamp(charge, 0f, 1f);
+		bool cooling = charge < 1f;
 		if (_cooling && !cooling)
 		{
 			_burst = 1f;
 			Motion.Pop(this, 1.2f, 0.3f);
 		}
 
-		bool changed = cooling != _cooling || Mathf.Abs(left - _left) > 0.0005f;
+		// Redesenha quando o número muda, não a cada quadro: sem abate, a
+		// carga anda 1% a cada 2,4 s.
+		int percent = Mathf.FloorToInt(charge * 100f);
+		bool changed = cooling != _cooling || percent != _percent;
 		_cooling = cooling;
-		_left = left;
-		_total = Mathf.Max(total, 0.01f);
+		_charge = charge;
+		_percent = percent;
 		_icon.Visible = !cooling;
 		if (changed)
 		{
@@ -185,19 +205,26 @@ void fragment() {
 		if (_cooling)
 		{
 			// O aro fecha no sentido horário, a partir do topo.
-			float done = 1f - Mathf.Clamp(_left / _total, 0f, 1f);
+			float done = _charge;
 			_cover.DrawArc(Center, Radius - 2.5f, 0, Mathf.Tau, 64, new Color(1, 1, 1, 0.2f), 5f, true);
 			if (done > 0.003f)
 				_cover.DrawArc(Center, Radius - 2.5f, top, top + Mathf.Tau * done, Mathf.Max(4, Mathf.CeilToInt(64 * done)),
 					UiTokens.TextPrimary, 5f, true);
 
-			string number = Mathf.CeilToInt(_left).ToString();
+			// A carga, com o "%" menor ao lado do número.
+			string number = _percent.ToString();
 			Font font = HudStyle.Slanted(UiFonts.NumericDisplay);
-			const int fontSize = 42;
-			Vector2 text = font.GetStringSize(number, HorizontalAlignment.Center, -1, fontSize);
-			var at = new Vector2(Center.X - text.X / 2f, Center.Y + fontSize * 0.36f);
-			_cover.DrawString(font, at + new Vector2(1.5f, 1.5f), number, HorizontalAlignment.Left, -1, fontSize, new Color(0, 0, 0, 0.7f));
+			const int fontSize = 36;
+			const int signSize = 18;
+			Vector2 text = font.GetStringSize(number, HorizontalAlignment.Left, -1, fontSize);
+			Vector2 sign = font.GetStringSize("%", HorizontalAlignment.Left, -1, signSize);
+			var at = new Vector2(Center.X - (text.X + sign.X) / 2f, Center.Y + fontSize * 0.36f);
+			var signAt = at + new Vector2(text.X + 1f, 0f);
+			var shadow = new Color(0, 0, 0, 0.7f);
+			_cover.DrawString(font, at + new Vector2(1.5f, 1.5f), number, HorizontalAlignment.Left, -1, fontSize, shadow);
 			_cover.DrawString(font, at, number, HorizontalAlignment.Left, -1, fontSize, UiTokens.TextPrimary);
+			_cover.DrawString(font, signAt + new Vector2(1f, 1f), "%", HorizontalAlignment.Left, -1, signSize, shadow);
+			_cover.DrawString(font, signAt, "%", HorizontalAlignment.Left, -1, signSize, UiTokens.TextSecondary);
 		}
 		else
 		{

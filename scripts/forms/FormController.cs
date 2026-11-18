@@ -267,9 +267,22 @@ public partial class FormController : Node
 		EmitSignal(SignalName.WpChanged, Wp, MaxWp);
 	}
 
-	public void OnKill(bool asWolf = false) => AddWp(asWolf ? WpPerWolfKill : WpPerKill);
+	/// <summary>Um abate (verdadeiro) ou uma assistência (falso) deste
+	/// corpo. Quem mais conta pontos por isso escuta aqui — a carga do
+	/// especial (<see cref="Weapon.SpecialCharge"/>).</summary>
+	public event System.Action<bool> Scored;
 
-	public void OnAssist() => AddWp(WpPerAssist);
+	public void OnKill(bool asWolf = false)
+	{
+		AddWp(asWolf ? WpPerWolfKill : WpPerKill);
+		Scored?.Invoke(true);
+	}
+
+	public void OnAssist()
+	{
+		AddWp(WpPerAssist);
+		Scored?.Invoke(false);
+	}
 
 	/// <summary>Uivo: recarrega escudo em troca de ficar parado e
 	/// denunciar a posição pelo som. Só faz sentido na forma lobo.</summary>

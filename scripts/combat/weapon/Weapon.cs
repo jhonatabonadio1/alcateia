@@ -175,13 +175,13 @@ public partial class Weapon : Node3D
 		_health.Respawned += RefillGrenades;
 		_health.Died += OnDied;
 		_health.Respawned += RefillAmmo;
-		_health.Respawned += ResetPounceRecharge;
+		_form.Scored += OnScored;
 	}
 
 	public override void _PhysicsProcess(double delta)
 	{
 		UpdateAim(delta);
-		TickPounceRecharge(delta);
+		TickSpecial(delta);
 
 		if (_cooldown > 0)
 			_cooldown -= delta;

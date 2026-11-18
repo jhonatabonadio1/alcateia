@@ -34,7 +34,6 @@ public partial class Hud
 			_ => "HUMANO"
 		};
 		_breedName.Text = (_form.Breed?.DisplayName ?? "Lobo").ToUpperInvariant();
-		_pounceTile.Visible = wolf;
 		
 		// Dois painéis, um sai e o outro entra.
 		VBoxContainer show = wolf ? _wolf : _human;

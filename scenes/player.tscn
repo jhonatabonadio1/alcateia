@@ -70,7 +70,6 @@ Breed = ExtResource("5_breed")
 [node name="Weapon" type="Node3D" parent="." unique_id=1727393476]
 script = ExtResource("4_weapon")
 GrenadeScene = ExtResource("6_grenade")
-PounceRecharge = 15.0
 DiveSpeed = 18.0
 DiveMaxTime = 1.0
 

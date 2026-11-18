@@ -2,6 +2,18 @@
 
 ## Não lançado
 
+### Especial em %, também no ar (18/11)
+- **Carga em vez de recarga** (pedido do Jhon): o especial do lobo enche
+  com abates (25% cada), assistências (10%) e, sozinho, bem devagar
+  (cheio em 4 min). Cheio, o Q salta e zera. A carga enche também de
+  humano e não cai ao morrer. O disco do especial mostra o % e fica
+  sempre na tela; cheio e de humano, diz "PRONTO · VIRE LOBO".
+- **Q no ar**: pulou e apertou Q, o especial sai dali, para onde a mira
+  aponta (antes só no chão).
+- Os bots seguem a mesma regra, então usam o especial bem menos.
+- Teste novo `CargaDoEspecial`; `CargaDoSalto` mede o Q no ar e o Q sem
+  carga.
+
 ### Rugido com as pernas (18/11)
 - **`Howl` mais agressivo** (pedido do Jhon): agacha fundo com os
   joelhos abertos, bate o pé esquerdo à frente, sobe na ponta do direito

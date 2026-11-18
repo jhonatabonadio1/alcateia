@@ -101,6 +101,17 @@ public partial class Hud
 		_cooldownLeft[kind] = seconds;
 	}
 
+	/// <summary>
+	/// O disco do especial, nas duas formas: a carga enche também de
+	/// humano (abate é abate), e cheia ela espera o jogador virar lobo.
+	/// De humano, cheio, o nome lembra disso.
+	/// </summary>
+	private void UpdateSpecial()
+	{
+		_pounceTile.SetCharge(_weapon.SpecialCharge);
+		_pounceTile.Title = _form.IsWolf || !_weapon.PounceReady ? "ESPECIAL" : "PRONTO · VIRE LOBO";
+	}
+
 	private void UpdateWolf(float delta)
 	{
 		if (!_wolf.Visible) return;
@@ -110,7 +121,6 @@ public partial class Hud
 			_cooldownLeft[i] = Mathf.Max(0, _cooldownLeft[i] - delta);
 			_cooldownBars[i].Value = 1f - _cooldownLeft[i] / _cooldownTotal[i];
 		}
-		_pounceTile.SetState(_weapon.PounceRechargeLeft, _weapon.PounceRechargeTotal);
 		float howl = _player?.HowlProgress ?? 0f;
 		
 		_howlBar.Value = howl;
