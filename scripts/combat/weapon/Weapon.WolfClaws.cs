@@ -249,7 +249,10 @@ public partial class Weapon
 			Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() }
 		};
 
-		var hits = _body.GetWorld3D().DirectSpaceState.IntersectShape(query, 8);
+		// O cenário também entra na lista (chão, caixotes): numa área grande,
+		// como a do salto, 8 resultados podiam acabar antes de chegar em
+		// alguém.
+		var hits = _body.GetWorld3D().DirectSpaceState.IntersectShape(query, radius > 1.5f ? 48 : 8);
 
 		foreach (var entry in hits)
 		{

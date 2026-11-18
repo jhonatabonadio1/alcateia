@@ -2,6 +2,16 @@
 
 ## Não lançado
 
+### Salto com área maior, trava no botão do meio, uivo cancela na parede (17/11)
+- **Área do salto**: ao cair, pega quem estiver a até 2 m em volta do
+  lobo (`PounceHitRadius`), em vez da garra à frente (que errava quem
+  ficava embaixo ou do lado). O anel da mira tem esse tamanho.
+- **Trava**: carregando o salto, segurar o botão do meio trava no
+  inimigo mais perto da mira; a mira segue ele sozinha, o salto cai nos
+  pés dele e a tela marca o travado (cantos vermelhos, "TRAVADO" e a
+  distância). Soltar destrava. A barra de força avisa a tecla.
+- **Uivo**: grudar numa parede corta o uivo (sem escudo).
+
 ### O Armazém maior vira o Armazém; fim de partida sem congelar (17/11)
 - **Só um Armazém na lista: o maior**, com o nome "Armazém" (o id segue
   `armazem_estendido`). O original, menor, foi para `Maps.Guardados`

@@ -13,6 +13,7 @@ public static class ControlsTable
 		("Ctrl ou C", "Agachar"),
 		("Clique esquerdo", "Atacar"),
 		("Clique direito", "Lobo: salto no chão · bote no ar, na direção da mira"),
+		("Botão do meio (segurando o salto)", "Lobo: trava no inimigo mais perto da mira; soltar destrava"),
 		("1", "Arma principal"),
 		("2", "Arma secundária"),
 		("3", "Virar lobo"),

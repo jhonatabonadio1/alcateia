@@ -51,8 +51,9 @@ public partial class Player
 		}
 
 		// Segurar é o compromisso: soltar R no meio corta o rugido sem
-		// escudo (decisão do Jhon). Morrer ou deixar de ser lobo também.
-		if (_health.IsDead || !_form.IsWolf || !_intent.HowlHeld)
+		// escudo (decisão do Jhon). Morrer ou deixar de ser lobo também, e
+		// grudar numa parede (pedido do Jhon, 17/11): na parede, corre.
+		if (_health.IsDead || !_form.IsWolf || !_intent.HowlHeld || _onWall)
 		{
 			_howling = false;
 			_howlProgress = 0;

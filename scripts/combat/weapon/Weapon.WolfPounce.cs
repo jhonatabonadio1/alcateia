@@ -73,6 +73,16 @@ public partial class Weapon
 	/// distância e com o que houver no caminho.</summary>
 	[Export] public float PounceArc = 0.6f;
 
+	/// <summary>O raio de quem o salto pega ao cair, em metros, em volta do
+	/// lobo (não só à frente, como a garra). Pedido do Jhon (17/11): mirava
+	/// em alguém e caía sem dar dano — o lobo pousa em cima ou do lado do
+	/// alvo, e a garra só pegava de 0,35 a 2,65 m à frente. O anel da mira
+	/// tem este tamanho.</summary>
+	[Export] public float PounceHitRadius = 2.0f;
+
+	/// <summary>Quanto o centro da área do salto fica à frente do lobo.</summary>
+	[Export] public float PounceHitReach = 0.4f;
+
 	/// <summary>
 	/// Botão direito. No chão, o salto; no ar, o bote. Os dois prendem o
 	/// lobo até o fim — o salto no lugar, o bote na trajetória — e o
@@ -219,7 +229,7 @@ public partial class Weapon
 		_pounceFlew = false;
 		float damage = CombatRules.PounceMultiplier(HeavyDamageBonus, PounceMinPower, power);
 		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown,
-			() => Claw(damage, ClawReach, ClawRadius, false, _pounceFlew ? _flyDir : null), elapsed + saved);
+			() => Claw(damage, PounceHitReach, PounceHitRadius, false, _pounceFlew ? _flyDir : null), elapsed + saved);
 
 		// O salto é um pulo de verdade: do impulso até os pés tocarem o
 		// chão, o corpo voa num arco. Para onde e até onde, diz a mira no
@@ -265,6 +275,11 @@ public partial class Weapon
 			Vector3 forward = -camera.GlobalBasis.Z;
 			Vector3 from = camera.GlobalPosition;
 			var space = _body.GetWorld3D().DirectSpaceState;
+
+			// Travado num inimigo (botão do meio): os pés dele, olhe para
+			// onde olhar.
+			if ((_body as Player)?.LockTarget is Node3D locked && IsInstanceValid(locked))
+				return FloorBelow(space, locked.GlobalPosition, 4f) ?? locked.GlobalPosition + Vector3.Down * 0.9f;
 
 			// Em terceira pessoa a câmera fica atrás do lobo: o raio começa
 			// na altura dele, para o que estiver entre os dois não contar.

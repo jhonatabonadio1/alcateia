@@ -56,7 +56,7 @@ public partial class PounceAim : Node3D
 
 		Vector3 side = normal.Cross(Vector3.Forward).LengthSquared() > 0.01f ? normal.Cross(Vector3.Forward).Normalized() : Vector3.Right;
 		_ring.GlobalTransform = new Transform3D(
-			new Basis(side, normal, side.Cross(normal)).Scaled(Vector3.One * Size),
+			new Basis(side, normal, side.Cross(normal)).Scaled(Vector3.One * Mathf.Max(Size, _weapon.PounceHitRadius * 2f)),
 			at + normal * 0.04f);
 		((ShaderMaterial)_ring.MaterialOverride).SetShaderParameter("charge", _weapon.PounceCharge);
 		_ring.Visible = true;

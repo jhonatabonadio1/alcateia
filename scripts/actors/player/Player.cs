@@ -119,6 +119,7 @@ public partial class Player : CharacterBody3D
 			scene.CallDeferred(Node.MethodName.AddChild, new EnemyMarks { Name = "EnemyMarks" });
 			scene.CallDeferred(Node.MethodName.AddChild, new ChargeBar { Name = "ChargeBar" });
 			scene.CallDeferred(Node.MethodName.AddChild, new PounceAim { Name = "PounceAim" });
+			scene.CallDeferred(Node.MethodName.AddChild, new LockMark { Name = "LockMark" });
 		}
 
 		if (IsMultiplayerAuthority() && !UiState.AnyOpen)
@@ -284,7 +285,8 @@ public partial class Player : CharacterBody3D
 
 		MacCtrlClick.Translate(@event);
 
-		if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured)
+		// Travado num inimigo, quem gira a mira é a trava (Player.Lock).
+		if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured && LockTarget == null)
 			Look(motion);
 	}
 
@@ -341,6 +343,7 @@ public partial class Player : CharacterBody3D
 		// o personagem andando sozinho.
 		// Fim de partida, o mesmo: ninguém comanda mais.
 		_intent = UiState.AnyOpen || Match.IsOver ? CharacterIntent.None : CharacterIntent.FromInput();
+		UpdateLock(delta);
 
 		// Partida autoritativa: o jogo prevê com a mesma entrada que o
 		// servidor vai receber — o eixo do movimento e a cabeça já

@@ -50,6 +50,10 @@ public readonly record struct CharacterIntent
 	public bool Howl { get; init; }
 	public bool HowlHeld { get; init; }
 
+	/// <summary>Botão do meio segurado: carregando o salto do lobo, trava no
+	/// inimigo mais perto da mira (<see cref="Player.LockTarget"/>).</summary>
+	public bool LockHeld { get; init; }
+
 	/// <summary>G: soltar a arma da mão.</summary>
 	public bool Drop { get; init; }
 
@@ -79,6 +83,7 @@ public readonly record struct CharacterIntent
 		Howl = Input.IsActionJustPressed("howl"),
 		HowlHeld = Input.IsActionPressed("howl"),
 		Drop = Input.IsActionJustPressed("drop"),
+		LockHeld = Input.IsActionPressed("lock"),
 		Slot = SlotPressed(),
 	};
 

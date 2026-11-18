@@ -15,6 +15,8 @@ public partial class ChargeBar : CanvasLayer
 	private Label _value;
 	private StyleBoxFlat _fill;
 	private Tween _pulse;
+	private Label _hint;
+	private Player _player;
 
 	public override void _Ready()
 	{
@@ -39,6 +41,8 @@ public partial class ChargeBar : CanvasLayer
 		_fill = UiTheme.Box(UiTokens.Accent, default, 0, 0, 0, 0);
 		_bar.AddThemeStyleboxOverride("fill", _fill);
 		column.AddChild(_bar);
+		_hint = UiKit.Caption("BOTÃO DO MEIO: TRAVAR NO INIMIGO", UiTokens.TextSecondary);
+		column.AddChild(_hint);
 
 		_box = UiTheme.Apply(column);
 		_box.Visible = false;
@@ -59,6 +63,11 @@ public partial class ChargeBar : CanvasLayer
 			_box.Modulate = Colors.White;
 			return;
 		}
+
+		_player ??= _weapon.GetParent() as Player;
+		bool locked = _player?.LockTarget != null;
+		_hint.Text = locked ? "TRAVADO" : "BOTÃO DO MEIO: TRAVAR NO INIMIGO";
+		_hint.AddThemeColorOverride("font_color", locked ? UiTokens.Danger : UiTokens.TextSecondary);
 
 		float charge = _weapon.PounceCharge;
 		_bar.Value = charge;

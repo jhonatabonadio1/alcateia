@@ -90,6 +90,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 4 | Faca |
 | 5 | Equipar granada (o ataque arremessa) |
 | Botão direito | Humano: zoom com mira circular (segurar). Lobo: salto no chão, bote no ar |
+| Botão do meio (segurando o salto) | Lobo: trava no inimigo mais perto da mira — a mira segue ele e o salto cai nos pés dele; soltar destrava |
 | W duas vezes (segurando) | Lobo: corrida de quatro patas, 30% mais rápida (`WolfSprintFactor`); soltar o W ou agachar volta a correr em pé |
 | W segurado | Sustenta a corrida em parede |
 | Ataque segurado | Agarra na parede sem avançar |
@@ -481,6 +482,19 @@ longe e o lobo cai em cima do humano. O jogador não anda nem pula, mas
 o salto voa: do impulso até os pés tocarem o chão, o corpo vai até o
 ponto mirado, **até 12 m** (`PounceMaxDistance`; era 12, caiu para
 8,4 na v0.27.1 e voltou a 12 em 17/11, a pedido do Jhon).
+
+**A área do salto** (17/11): ao cair, pega quem estiver a até 2 m do
+lobo, em volta dele (`PounceHitRadius`), e não só à frente como a garra.
+O lobo pousa em cima ou do lado de quem mirou; a garra (de 0,35 a 2,65 m
+à frente) errava justamente aí. O anel da mira tem esse tamanho.
+
+**A trava** (17/11): carregando o salto, segurar o botão do meio trava
+no inimigo vivo e à vista mais perto do centro da tela (até 30° e 18 m,
+`LockAngle`, `LockRange`). Travado, o corpo e a cabeça giram sozinhos
+para ele (o mouse não gira), o salto cai nos pés dele e a tela marca
+quem está travado (`LockMark`). Soltar o meio, soltar o salto, o alvo
+morrer ou passar de 24 m destrava. A trava gira a mira, não o salto: o
+que vai na rede continua sendo para onde se olha.
 
 **Segurar carrega** (decisão do Jhon). Apertou, o lobo agacha e fica
 encolhido (o clipe para no fim do agachar); soltou, salta. Em 1 s
