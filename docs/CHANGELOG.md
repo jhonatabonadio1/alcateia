@@ -2,6 +2,13 @@
 
 ## Não lançado
 
+### Música de início durante a contagem (18/11)
+- `partida_inicio` (pedido do Jhon): entra quando a tela de carregamento
+  sai, toca durante a contagem e acaba com ela, num fade de 0,8 s. Antes
+  tocava na largada, e os 13 s dela caíam em cima dos primeiros tiros.
+  `Sfx.Once` toca uma música uma vez devolvendo o tocador, para quem
+  chama poder terminá-la.
+
 ### Primeiros sons gerados por IA: músicas, vinhetas e interface (18/11)
 - **21 sons do Jhon** no jogo: tema do menu, música da sala, do último
   minuto e do resultado; vinhetas de início, vitória (uma), derrota (duas,

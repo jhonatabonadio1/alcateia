@@ -130,6 +130,24 @@ public static class Sfx
 	public static AudioStreamPlayer Music(Node owner, string name, float volumeDb = -8f) =>
 		Looped(owner, name, BusMusic, volumeDb);
 
+	/// <summary>
+	/// Música que toca uma vez só (uma vinheta que precisa ser cortada no
+	/// meio), filha de <paramref name="owner"/>. Diferente de
+	/// <see cref="Local"/>, devolve o tocador para quem chamou poder
+	/// abaixar o volume e terminar quando quiser. Null se o arquivo não
+	/// existir.
+	/// </summary>
+	public static AudioStreamPlayer Once(Node owner, string name, float volumeDb = 0f)
+	{
+		EnsureBuses();
+		AudioStream stream = Get(name);
+		if (stream == null) return null;
+		var player = new AudioStreamPlayer { Stream = stream, Bus = BusMusic, VolumeDb = volumeDb, Autoplay = true };
+		player.Finished += player.QueueFree;
+		owner.AddChild(player);
+		return player;
+	}
+
 	private static AudioStreamPlayer Looped(Node owner, string name, string bus, float volumeDb)
 	{
 		EnsureBuses();

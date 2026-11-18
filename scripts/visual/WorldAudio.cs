@@ -222,6 +222,35 @@ public partial class WorldAudio : Node
 
 	private AudioStreamPlayer _tension;
 
+	/// <summary>A música de início (<c>partida_inicio</c>): entra quando a
+	/// tela de carregamento sai, toca durante a contagem e acaba com ela
+	/// (pedido do Jhon, 18/11). Era tocada na largada, e seus 13 s caíam em
+	/// cima dos primeiros tiros.</summary>
+	private AudioStreamPlayer _intro;
+	private bool _introPlayed;
+
+	/// <summary>Volume da música de início, em dB.</summary>
+	[Export] public float IntroDb = -2f;
+
+	private void UpdateIntro(Match match)
+	{
+		if (match.Phase == MatchPhase.Countdown)
+		{
+			if (_introPlayed || LoadingScreen.Busy || match.CountdownLeft < 1.5) return;
+			_introPlayed = true;
+			_intro = Sfx.Once(this, "partida_inicio", IntroDb);
+			return;
+		}
+
+		// Acabou a contagem: a música acaba junto, num fade curto.
+		if (_intro == null || !IsInstanceValid(_intro)) return;
+		AudioStreamPlayer ending = _intro;
+		_intro = null;
+		Tween fade = ending.CreateTween();
+		fade.TweenProperty(ending, "volume_db", -60f, 0.8);
+		fade.TweenCallback(Callable.From(ending.QueueFree));
+	}
+
 	/// <summary>
 	/// O último minuto tem música (a única dentro da partida): entra em 3 s
 	/// e sai em 1,5 s no fim, antes da vinheta de vitória ou derrota.
@@ -253,6 +282,7 @@ public partial class WorldAudio : Node
 		if (match == null) return;
 
 		UpdateTension(match);
+		UpdateIntro(match);
 
 		// A narração (18/11): o locutor avisa o começo, conta 3, 2, 1,
 		// manda lutar e diz o resultado. Cada fala só toca se o arquivo
@@ -276,10 +306,7 @@ public partial class WorldAudio : Node
 		_phase = match.Phase;
 
 		if (_phase == MatchPhase.Live)
-		{
-			Sfx.Local("partida_inicio");
 			Say("voz_lutar");
-		}
 		else if (_phase == MatchPhase.Ended)
 		{
 			bool draw = match.Winner == 0;
