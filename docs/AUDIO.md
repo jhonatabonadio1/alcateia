@@ -5,6 +5,9 @@ onde vem cada som e o que falta. Pedido do Jhon em 18/11: tema do menu,
 tiros, passos, narração e uma pesquisa de fontes, com Overwatch e League
 of Legends de referência.
 
+**Para gerar sons com IA:** `docs/SONS_IA.md` tem cada som com o nome de
+arquivo, quando toca, como deve soar, o prompt em inglês e o que já existe.
+
 Todo som do jogo é **gerado por roteiro** — `tools/sons/baixar.py` baixa
 as gravações de origem e `tools/sons/processar.py` corta, mistura e
 normaliza para `assets/audio/`, com o nome que o `Sfx` procura. Para
