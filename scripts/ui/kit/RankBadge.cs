@@ -7,7 +7,7 @@ using System.Collections.Generic;
 ///
 /// O desenho é uma imagem por patente (assets/ui/patentes/NN.png, 256 px;
 /// pedido do Jhon, 17/11): um brasão facetado em metal da cor da família,
-/// miolo de esmalte escuro e o emblema no meio — pata, divisas, mira,
+/// miolo de esmalte escuro e o emblema no meio — garras, divisas, mira,
 /// ponta de flecha, torre, lua crescente, presas, lua cheia, estrela e a
 /// cabeça de lobo. O brasão cresce com a família (ombros, asas, coroa).
 /// Quem gera as imagens é tools/patentes.py.

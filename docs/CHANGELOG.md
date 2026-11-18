@@ -14,6 +14,9 @@
   HEPTA e OCTA KILL (até 5 s entre um abate e outro), TEAM KILL quando o
   time inimigo inteiro cai na sua sequência, e VINGANÇA — numa chamada
   grande no meio da tela (`KillBanner.Announce`).
+- **Garras, não patas** (o Jhon: "lobo não tem patinhas fofinhas"): o
+  ícone da garrada e o do especial do lobo são arranhões (`claw.svg`,
+  `pounce.svg`), e a insígnia de Filhote troca a pata por três garras.
 - **Falas**: o jogo toca `assets/audio/voz_double_kill` (…`triple`,
   `quadra`, `penta`, `hexa`, `hepta`, `octa`, `voz_team_kill`,
   `voz_vinganca`) se o arquivo existir. Os arquivos ainda não existem.

@@ -22,9 +22,11 @@ public enum IconKind
 /// <see cref="IconKind"/> em minúsculas, pintado na cor pedida. Os SVG de
 /// origem e o roteiro que gera os PNG estão em tools/icones/.
 ///
-/// Os que são do jogo (lobo, presa, garra, granada de choque, arma,
-/// caveira do abate) continuam desenhados por código, numa grade de
-/// 24×24 — é o que acontece com qualquer ícone sem PNG. Ícone novo entra
+/// A garra e o especial do lobo (<c>claw</c>, <c>pounce</c>) são
+/// arranhões desenhados para o jogo, em SVG na mesma pasta. Os outros do
+/// jogo (lobo, presa, granada de choque, arma, caveira do abate)
+/// continuam desenhados por código, numa grade de 24×24 — é o que
+/// acontece com qualquer ícone sem PNG. Ícone novo entra
 /// no enum e ganha um PNG ou um <c>case</c> em <see cref="DrawKind"/>.
 /// </summary>
 public partial class Icon : Control

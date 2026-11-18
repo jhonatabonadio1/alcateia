@@ -2,7 +2,9 @@
 
 Os SVG desta pasta vêm do **Phosphor Icons** (https://phosphoricons.com,
 licença MIT — `LICENSE-phosphor.txt`), pesos *bold* e *fill*, já com a
-cor trocada para branco. O nome do arquivo é o do `IconKind` em
+cor trocada para branco. Dois são do jogo, feitos aqui: `claw.svg` (a
+garrada: três arranhões) e `pounce.svg` (o especial do lobo: os
+arranhões dentro de um aro). O nome do arquivo é o do `IconKind` em
 minúsculas (`scripts/ui/kit/Icon.cs`): `shop.svg` é `IconKind.Shop`.
 
 O jogo não lê os SVG: lê um PNG branco de 96 px por ícone, em

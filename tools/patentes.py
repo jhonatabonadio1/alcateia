@@ -106,6 +106,27 @@ def encolher(p, d):
     return out
 
 
+def lamina(a, b, curva, largura, n=20):
+    """Um arranhão: lâmina afilada nas duas pontas, de a até b, curvada."""
+    import math
+    ax, ay = a; bx, by = b
+    dx, dy = bx - ax, by - ay
+    comp = math.hypot(dx, dy)
+    cx, cy = (ax + bx) / 2 - dy / comp * curva, (ay + by) / 2 + dx / comp * curva
+    esq, dirt = [], []
+    for i in range(n + 1):
+        t = i / n
+        x = (1 - t) ** 2 * ax + 2 * (1 - t) * t * cx + t * t * bx
+        y = (1 - t) ** 2 * ay + 2 * (1 - t) * t * cy + t * t * by
+        tx = 2 * (1 - t) * (cx - ax) + 2 * t * (bx - cx)
+        ty = 2 * (1 - t) * (cy - ay) + 2 * t * (by - cy)
+        tl = math.hypot(tx, ty)
+        w = largura * math.sin(math.pi * t ** 0.7) ** 0.9 / 2
+        esq.append((x - ty / tl * w, y + tx / tl * w))
+        dirt.append((x + ty / tl * w, y - tx / tl * w))
+    return esq + dirt[::-1]
+
+
 def losango(s, x, y, r, fill):
     s.poly([(x, y - r), (x + r * 0.72, y), (x, y + r), (x - r * 0.72, y)], fill)
 
@@ -113,10 +134,9 @@ def losango(s, x, y, r, fill):
 def emblema(s, fam, metal, sombra):
     """O desenho do meio, em torno de (128, 104)."""
     f = lambda p: s.poly(p, metal)
-    if fam == 0:      # pata
-        s.raw(f'<ellipse cx="128" cy="122" rx="24" ry="19" fill="{metal}"/>')
-        for x, y, r in [(96, 96, 10), (116, 78, 11), (140, 78, 11), (160, 96, 10)]:
-            s.raw(f'<ellipse cx="{x}" cy="{y}" rx="{r}" ry="{r * 1.25:.1f}" fill="{metal}"/>')
+    if fam == 0:      # arranhões: três garras (o Jhon, 17/11: lobo não tem patinha)
+        for topo, base in zip([(118, 54), (146, 58), (172, 70)], [(74, 142), (102, 154), (132, 158)]):
+            f(lamina(topo, base, 7, 19))
     elif fam == 1:    # divisas duplas
         for y in (0, 30):
             f([(128, 66 + y), (166, 100 + y), (166, 120 + y), (128, 88 + y), (90, 120 + y), (90, 100 + y)])
