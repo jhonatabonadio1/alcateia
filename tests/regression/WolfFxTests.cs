@@ -124,8 +124,9 @@ public sealed class WolfFxTest : RegressionTest
 			mine = Mathf.Max(mine, meshes[0].GetInstanceShaderParameter("aura_amount").AsSingle());
 			if (theirMesh != null) theirsMax = Mathf.Max(theirsMax, theirMesh.GetInstanceShaderParameter("aura_amount").AsSingle());
 		}
-		b.AtLeast(0.9, aura, "no especial, a aura acende");
-		b.AtLeast(0.9, mine, "a aura chega à malha do lobo (instance uniform)");
+		// A aura cheia é a do efeito (PowerAura; 0,7 desde 18/11: só o contorno).
+		b.AtLeast(0.9 * fx.PowerAura, aura, "no especial, a aura acende");
+		b.AtLeast(0.9 * fx.PowerAura, mine, "a aura chega à malha do lobo (instance uniform)");
 		if (theirMesh != null)
 			b.AtMost(0.01, theirsMax, "a aura de um lobo não acende a do outro");
 		await Photo(b, "5_aura_carga", new Vector3(0.8f, 1.0f, 3.2f));

@@ -88,3 +88,10 @@ script. É do projeto.
 Não tem arquivo próprio: o uivo (R, de lobo) toca o mesmo som da
 transformação, `lobo_transformar`, por decisão do Jhon
 (`WorldAudio.HowlSound`).
+
+## Raios do especial do lobo (18/11)
+
+`lobo_especial_armar_1..2`, `lobo_especial_raio_1..3` e
+`lobo_especial_queda_1..2` são **sintetizados por código**
+(`tools/sons/raios.py`: ruído filtrado e senoides, numpy e scipy). Nenhuma
+gravação; sem licença de terceiros.

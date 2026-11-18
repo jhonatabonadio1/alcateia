@@ -35,15 +35,18 @@ public partial class Weapon
 	/// anterior ainda no fim, o próximo sai no quadro em que ele acaba. Sem
 	/// isso o clique dado um pouco cedo se perdia e o lobo parecia não
 	/// responder.</summary>
-	[Export] public float AttackBuffer = 0.3f;
+	[Export] public float AttackBuffer = 0.45f;
 
-	/// <summary>Quanto depois do impacto a próxima garrada pode cortar a
-	/// atual, em segundos (pedido do Jhon, 15/11: clicar rápido e a
-	/// animação responder). O golpe dura 0,733 s, mas o dano sai em 0,20 s:
-	/// com 0,08 a próxima sai em 0,28 s — até 3,6 garradas por segundo, em
-	/// vez de 1,4. O braço que estava no fim do golpe mistura com o outro
-	/// em 0,07 s.</summary>
-	[Export] public float ClawCancelAfter = 0.08f;
+	/// <summary>Quanto depois do impacto a próxima garrada pode sair, em
+	/// segundos. Um clique, um golpe inteiro de um braço (pedido do Jhon,
+	/// 18/11): o golpe chega em 0,15 s e a mão ainda termina de passar;
+	/// com 0,19 o outro braço entra em 0,34 s — até 2,9 garradas por
+	/// segundo, cada uma visível do começo ao fim do corte. Antes (0,08)
+	/// a próxima cortava a atual no meio do movimento, e como os dois
+	/// braços tocavam um por cima do outro, uma garrada em cada duas nem
+	/// aparecia. O clique dado durante o golpe fica guardado
+	/// (<see cref="AttackBuffer"/>) e sai nesse instante.</summary>
+	[Export] public float ClawCancelAfter = 0.19f;
 
 	private int _comboIndex;
 
@@ -61,7 +64,16 @@ public partial class Weapon
 	/// <summary>Tempo que o lobo ainda fica preso no lugar: o salto
 	/// inteiro, e a aterrissagem do bote.</summary>
 	private double _rootLeft;
-	private bool _attackQueued;
+	/// <summary>Cliques guardados à espera do golpe em curso acabar: um
+	/// clique, um golpe (pedido do Jhon, 18/11). Dois cliques rápidos são
+	/// duas garradas, uma de cada braço; mais que isso não empilha (soltar
+	/// o botão tem de parar o lobo logo).</summary>
+	public const int MaxQueuedAttacks = 2;
+
+	private int _attackQueue;
+
+	/// <summary>Zera a fila de cliques (golpe pesado, morte).</summary>
+	private bool _attackQueued { set { if (!value) _attackQueue = 0; } }
 	private double _stepLeft;
 	private double _stepTotal = 1;
 	private float _stepPeak;
@@ -105,8 +117,6 @@ public partial class Weapon
 
 		// O combo zera se passar ComboReset depois do fim do golpe.
 		_comboTimer = WolfMoves.Duration(move) + ComboReset;
-
-		_attackQueued = false;
 
 		// Parado, o corpo dá o passo do golpe, em sino: as pernas andam
 		// um passo junto com o braço. Correndo, o empurrão de sempre leva
@@ -153,9 +163,13 @@ public partial class Weapon
 	/// </summary>
 	/// <param name="elapsed">Segundos do golpe que já tocaram (a carga do
 	/// salto): o clipe já começou, e o dano e o fim contam do resto.</param>
-	private ulong StartMove(WolfMove move, int kind, float minCooldown, System.Action impact, float elapsed = 0f)
+	/// <param name="length">Quanto o golpe dura daqui em diante, se não
+	/// for o do clipe (o especial acelera a queda).</param>
+	/// <param name="impactAt">Daqui a quanto o dano sai, idem.</param>
+	private ulong StartMove(WolfMove move, int kind, float minCooldown, System.Action impact, float elapsed = 0f,
+		float? length = null, float? impactAt = null)
 	{
-		float duration = WolfMoves.Duration(move) - elapsed;
+		float duration = length ?? WolfMoves.Duration(move) - elapsed;
 		float cooldown = Mathf.Max(duration, minCooldown);
 
 		_cooldown = cooldown;
@@ -165,7 +179,7 @@ public partial class Weapon
 		if (elapsed <= 0f) EmitSignal(SignalName.WolfMoveStarted, (int)move);
 		EmitSignal(SignalName.AttackCooldown, kind, cooldown);
 
-		After(Mathf.Max(WolfMoves.ImpactDelay(move) - elapsed, 0f), id, () =>
+		After(Mathf.Max(impactAt ?? WolfMoves.ImpactDelay(move) - elapsed, 0f), id, () =>
 		{
 			// O som do golpe sai junto com o golpe.
 			EmitSignal(SignalName.Fired);

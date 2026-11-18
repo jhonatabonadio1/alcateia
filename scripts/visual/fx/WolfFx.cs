@@ -44,7 +44,7 @@ public partial class WolfFx : Node3D
 	[Export] public float AirFrom = 0.35f;
 
 	/// <summary>Quanto a aura aparece no rugido e carregando o salto (0 a 1).</summary>
-	[Export] public float PowerAura = 1f;
+	[Export] public float PowerAura = 0.7f;
 
 	/// <summary>Quanto a câmera do dono abre (graus) com o vento cheio.</summary>
 	[Export] public float AirFovKick = 5f;
@@ -69,8 +69,17 @@ public partial class WolfFx : Node3D
 	private ClawTrail _left, _right;
 	private double _strikeLeft;
 	private TransformSmoke _smoke;
-	private GpuParticles3D _streaks;
-	private ParticleProcessMaterial _streakProcess;
+	private WindWisps _wisps;
+	private LightningAura _sparks;
+	private RoarBurst _roar;
+	private Skeleton3D _skeleton;
+	private int _muzzle = -1;
+	private bool _wasArmed;
+
+	/// <summary>Os raios do especial armado, o rugido e o vento. Para os testes.</summary>
+	public LightningAura Sparks => _sparks;
+	public RoarBurst Roar => _roar;
+	public WindWisps Wisps => _wisps;
 
 	private Camera3D _wolfCamera;
 	private float _wolfCameraFov;
@@ -114,7 +123,13 @@ public partial class WolfFx : Node3D
 
 		_smoke = new TransformSmoke { Name = "Fumaca" };
 		AddChild(_smoke);
-		BuildStreaks();
+		_wisps = new WindWisps { Name = "Vento" };
+		AddChild(_wisps);
+		float feet = _player?.FeetOffset ?? -0.875f;
+		_sparks = new LightningAura { Name = "Raios", Feet = feet };
+		AddChild(_sparks);
+		_roar = new RoarBurst { Name = "Rugido", Feet = feet };
+		AddChild(_roar);
 
 		if (_visual?.Model is Node3D model)
 		{
@@ -123,6 +138,16 @@ public partial class WolfFx : Node3D
 			_overlay = ResourceLoader.Exists(AuraPath) ? GD.Load<Material>(AuraPath) : null;
 
 			var skeleton = model.FindChildren("*", "Skeleton3D", true, false).OfType<Skeleton3D>().FirstOrDefault();
+			_skeleton = skeleton;
+			if (skeleton != null)
+			{
+				for (int i = 0; i < skeleton.GetBoneCount(); i++)
+				{
+					string bone = skeleton.GetBoneName(i);
+					if (bone.EndsWith("headfront")) { _muzzle = i; break; }
+					if (bone.EndsWith("Head") && _muzzle < 0) _muzzle = i;
+				}
+			}
 			Material trail = ResourceLoader.Exists(TrailPath) ? GD.Load<Material>(TrailPath) : null;
 			if (skeleton != null && trail != null)
 			{
@@ -147,55 +172,6 @@ public partial class WolfFx : Node3D
 		SetOverlay(_overlay != null && _meshes.Count > 0);
 	}
 
-	/// <summary>Os riscos de vento: traços finos que nascem numa caixa em
-	/// volta do corpo e ficam no mundo — o lobo passa por eles, e eles
-	/// escorrem para trás. Alinhados com a velocidade.</summary>
-	private void BuildStreaks()
-	{
-		_streakProcess = new ParticleProcessMaterial
-		{
-			EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box,
-			EmissionBoxExtents = new Vector3(0.7f, 0.6f, 0.7f),
-			Direction = Vector3.Back,
-			Spread = 4f,
-			InitialVelocityMin = 0.3f,
-			InitialVelocityMax = 1f,
-			Gravity = Vector3.Zero,
-			ScaleMin = 0.6f,
-			ScaleMax = 1.2f,
-		};
-		var fade = new Gradient();
-		fade.SetColor(0, new Color(1, 1, 1, 0));
-		fade.SetColor(1, new Color(1, 1, 1, 0));
-		fade.AddPoint(0.3f, new Color(1, 1, 1, 0.18f));
-		_streakProcess.ColorRamp = new GradientTexture1D { Gradient = fade };
-
-		var material = new StandardMaterial3D
-		{
-			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-			BlendMode = BaseMaterial3D.BlendModeEnum.Add,
-			VertexColorUseAsAlbedo = true,
-			AlbedoColor = new Color(0.85f, 0.93f, 1f),
-			CullMode = BaseMaterial3D.CullModeEnum.Disabled,
-		};
-		_streaks = new GpuParticles3D
-		{
-			Name = "Riscos",
-			Emitting = false,
-			Amount = 12,
-			Lifetime = 0.18f,
-			LocalCoords = false,
-			ProcessMaterial = _streakProcess,
-			TransformAlign = GpuParticles3D.TransformAlignEnum.ZBillboardYToVelocity,
-			DrawPass1 = new QuadMesh { Size = new Vector2(0.012f, 0.4f), Material = material },
-			VisibilityAabb = new Aabb(new Vector3(-3, -2, -3), new Vector3(6, 4, 6)),
-			CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-			Position = new Vector3(0, 0.1f, 0),
-		};
-		AddChild(_streaks);
-	}
-
 	/// <summary>Quantidade de cada efeito pela qualidade (Configurações).</summary>
 	private void ApplyQuality()
 	{
@@ -204,7 +180,8 @@ public partial class WolfFx : Node3D
 		if (_left != null) _left.MaxPoints = points;
 		if (_right != null) _right.MaxPoints = points;
 		if (_smoke != null) _smoke.Amount = q switch { 0 => 6, 1 => 10, _ => 16 };
-		if (_streaks != null) _streaks.Amount = q switch { 0 => 4, 1 => 8, _ => 12 };
+		if (_wisps != null) _wisps.Max = q switch { 0 => 0, 1 => 5, _ => 8 };
+		if (_sparks != null) _sparks.Arcs = q switch { 0 => 3, 1 => 5, _ => 7 };
 	}
 
 	private static float SmokeRatio => Mathf.Clamp(Settings.Values.Quality, 0, 3) switch { 0 => 0.35f, 1 => 0.65f, _ => 1f };
@@ -237,12 +214,15 @@ public partial class WolfFx : Node3D
 				// a preparação e o recolher, lentos, não riscam.
 				float impact = WolfMoves.ImpactDelay((WolfMove)move);
 				StrikeWindow(0f, impact + 0.3f);
+				// O corte: três riscos de neon na frente, quando a garra chega.
+				Slash(impact - 0.03f, (WolfMove)move == WolfMove.Claw);
 				break;
 
 			// O especial: raios saindo do corpo no disparo (e de novo na
 			// queda, rente ao chão — veja _Process).
 			case WolfMove.Pounce:
 				LightningBurst.Spawn(_body, new Vector3(0, 0.1f, 0), EffectColor, flat: false);
+				Sound(BoltSound, SpecialSoundRadius);
 				break;
 		}
 	}
@@ -260,9 +240,23 @@ public partial class WolfFx : Node3D
 			float feet = _player?.FeetOffset ?? -0.875f;
 			LightningBurst burst = LightningBurst.Spawn(world, Vector3.Zero, EffectColor, flat: true);
 			burst.GlobalPosition = _body.GlobalPosition + new Vector3(0, feet + 0.08f, 0);
+			Sound(StrikeSound, SpecialSoundRadius);
 		}
 		_wasFlying = flying;
 	}
+
+	/// <summary>Os três riscos de neon do golpe (<see cref="NeonSlash"/>),
+	/// soltos no mundo no instante em que a garra chega.</summary>
+	private async void Slash(float delay, bool rightHand)
+	{
+		if (delay > 0f) await ToSignal(GetTree().CreateTimer(delay, false), SceneTreeTimer.SignalName.Timeout);
+		if (!IsInstanceValid(this) || !IsInsideTree() || !_form.ShowsWolf || (_health != null && _health.IsDead)) return;
+		if (_body.GetParent() is not Node3D world) return;
+		LastSlash = NeonSlash.Spawn(world, _body.GlobalTransform, EffectColor, rightHand);
+	}
+
+	/// <summary>O último corte solto. Para os testes.</summary>
+	public NeonSlash LastSlash { get; private set; }
 
 	private async void StrikeWindow(float delay, float length)
 	{
@@ -276,6 +270,9 @@ public partial class WolfFx : Node3D
 		_strikeLeft = 0;
 		_left?.Clear();
 		_right?.Clear();
+		_wisps?.Clear();
+		if (_sparks != null) _sparks.Active = false;
+		if (_roar != null) _roar.Active = false;
 		_aura = _air = 0f;
 		Push();
 	}
@@ -311,23 +308,116 @@ public partial class WolfFx : Node3D
 		_air = Mathf.MoveToward(_air, air, dt / (air > _air ? 0.15f : 0.3f));
 
 		Push();
+		PushFur(dt, shown, power);
+		UpdatePower(shown, color);
 		UpdateStreaks();
 		UpdateCamera(dt);
 	}
 
+	/// <summary>Os sons de raio do especial (pedido do Jhon, 18/11: "um
+	/// barulho que todos podem ouvir"): ao armar, no salto e na queda. Como
+	/// os efeitos, tocam em cada máquina a partir do estado do lobo: quem
+	/// é o dono ouve de dentro; os outros, do lugar onde ele está, até
+	/// <see cref="SpecialSoundRadius"/> metros (o mapa inteiro).</summary>
+	[Export] public string ArmSound = "lobo_especial_armar";
+	[Export] public string BoltSound = "lobo_especial_raio";
+	[Export] public string StrikeSound = "lobo_especial_queda";
+	[Export] public float ArmSoundRadius = 40f;
+	[Export] public float SpecialSoundRadius = 95f;
+
+	private double _armedHum;
+
+	private void Sound(string name, float radius, float volumeDb = 0f)
+	{
+		if (string.IsNullOrEmpty(name) || !Sfx.Has(name)) return;
+		if (_body == Groups.LocalPlayer(GetTree())) Sfx.Own(name, volumeDb);
+		else Sfx.At(name, _body.GlobalPosition, radius, volumeDb, radius);
+	}
+
+	/// <summary>Os raios do especial (do Q até o lobo cair) e o rugido.</summary>
+	private void UpdatePower(bool shown, Color color)
+	{
+		bool armed = shown && _weapon.SpecialArmed;
+		// Armou: um estalo de raios na hora, e eles ficam no corpo. O chiado
+		// elétrico se repete enquanto o especial está armado.
+		if (armed && !_wasArmed)
+		{
+			LightningBurst.Spawn(_body, new Vector3(0, 0.1f, 0), color, flat: false);
+			_armedHum = 0;
+		}
+		if (armed)
+		{
+			_armedHum -= GetProcessDeltaTime();
+			if (_armedHum <= 0)
+			{
+				_armedHum = 1.0;
+				Sound(ArmSound, ArmSoundRadius, _wasArmed ? -5f : 0f);
+			}
+		}
+		_wasArmed = armed;
+
+		_sparks.Tint = color;
+		_sparks.Active = armed || (shown && (_weapon.IsPounceFlying || _weapon.SpecialGuarded));
+
+		bool roaring = shown && (_visual?.Howling ?? false);
+		_roar.Tint = color;
+		_roar.Active = roaring;
+		if (roaring && _skeleton != null && _muzzle >= 0 && IsInstanceValid(_skeleton))
+		{
+			// A boca, pelo osso do focinho; o rugido vai para onde o corpo olha.
+			Vector3 muzzle = (_skeleton.GlobalTransform * _skeleton.GetBoneGlobalPose(_muzzle)).Origin;
+			Vector3 forward = -_body.GlobalBasis.Z;
+			_roar.Mouth = _roar.ToLocal(muzzle + forward * 0.25f);
+			_roar.Forward = _roar.GlobalBasis.Inverse() * (forward + Vector3.Up * 0.12f).Normalized();
+		}
+	}
+
+	/// <summary>Quanto o pelo deita por m/s de velocidade (correndo, o
+	/// vento o leva para trás), em metros.</summary>
+	[Export] public float FurDrag = 0.0026f;
+
+	/// <summary>Quanto o pelo sobra por m/s de mudança de velocidade
+	/// (arrancou, ele fica para trás; freou, vai para a frente).</summary>
+	[Export] public float FurInertia = 0.0075f;
+
+	/// <summary>O máximo que a ponta de um tufo sai do lugar, em metros.</summary>
+	[Export] public float FurMaxPush = 0.045f;
+
+	private Vector3 _furLag;
+	private Vector3 _furPush;
+	private float _neon;
+
+	/// <summary>O pelo e o neon do corpo (assets/efeitos/lobo.gdshader):
+	/// o empurrão do movimento nas pontas dos tufos, a força do vento e o
+	/// neon aceso com o poder em uso. Parâmetros de instância: cada lobo o
+	/// seu.</summary>
+	private void PushFur(float dt, bool shown, bool power)
+	{
+		if (_meshes.Count == 0) return;
+
+		Vector3 velocity = shown ? _body.Velocity : Vector3.Zero;
+		_furLag = _furLag.Lerp(velocity, 1f - Mathf.Exp(-7f * dt));
+		Vector3 push = ((_furLag - velocity) * FurInertia - velocity * FurDrag).LimitLength(FurMaxPush);
+		// Mola amortecida curta: o pelo não teleporta quando a velocidade pula.
+		_furPush = _furPush.Lerp(push, 1f - Mathf.Exp(-14f * dt));
+		_neon = Mathf.MoveToward(_neon, power ? 1f : 0f, dt / 0.25f);
+
+		float gust = Mathf.Clamp(velocity.Length() / Mathf.Max(MaxSpeed(), 0.1f), 0f, 1.2f);
+		foreach (MeshInstance3D mesh in _meshes)
+		{
+			if (!IsInstanceValid(mesh)) continue;
+			// O empurrão vai no espaço da malha (com a escala dela).
+			mesh.SetInstanceShaderParameter("fur_push", mesh.GlobalBasis.Inverse() * _furPush);
+			mesh.SetInstanceShaderParameter("fur_gust", gust);
+			mesh.SetInstanceShaderParameter("neon_boost", _neon);
+		}
+	}
+
 	private void UpdateStreaks()
 	{
-		if (_streaks == null) return;
-		bool on = _air > 0.05f;
-		if (on)
-		{
-			Vector3 velocity = _body.Velocity;
-			Vector3 back = velocity.LengthSquared() > 0.01f ? -velocity.Normalized() : _body.GlobalBasis.Z;
-			// A direção do processo é no espaço do emissor (que gira com o corpo).
-			_streakProcess.Direction = (_streaks.GlobalBasis.Inverse() * back).Normalized();
-			_streaks.AmountRatio = Mathf.Clamp(_air, 0.05f, 1f);
-		}
-		if (_streaks.Emitting != on) _streaks.Emitting = on;
+		if (_wisps == null) return;
+		_wisps.Amount = _air;
+		_wisps.Velocity = _body.Velocity;
 	}
 
 	/// <summary>A velocidade de quatro deste lobo: a do vento cheio.</summary>

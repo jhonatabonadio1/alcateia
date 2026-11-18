@@ -40,7 +40,9 @@ public sealed class WolfChargeTest : RegressionTest
 		Vector3 before = b.Player.GlobalPosition;
 		await b.Seconds(0.4);
 		RegressionBench.Note($"rugido andando: a mão sobe {RegressionBench.F(full.Y - idle.Y)} m, corpo a {RegressionBench.F(howlSpeed)} m/s, andou {RegressionBench.F(RegressionBench.Flat(b.Player.GlobalPosition - before))} m em 0,4 s");
-		b.AtLeast(0.25, full.Y - idle.Y, "o rugido toca inteiro: a mão sobe (m)");
+		// O rugido novo (18/11) abre os braços baixos e largos, em vez de os
+		// erguer para o céu: a mão sobe menos em relação ao peito.
+		b.AtLeast(0.10, full.Y - idle.Y, "o rugido toca inteiro: a mão sobe (m)");
 		b.AtMost(0.05, howlSpeed, "rugindo, o lobo para (m/s)");
 		Input.ActionRelease("howl");
 		RegressionBench.ReleaseAll();

@@ -214,7 +214,7 @@ public partial class Weapon : Node3D
 			if (_flyTime >= _flyTotal || !_form.IsWolf || _health.IsDead)
 			{
 				_flying = false;
-				_pounceGuard = false;
+				_pounceLanded = true;
 			}
 			else ChaseFocus();
 		}
@@ -225,10 +225,11 @@ public partial class Weapon : Node3D
 			RunPending(delta);
 
 		// O clique guardado sai assim que o golpe anterior acaba.
-		if (_attackQueued && _cooldown <= 0)
+		if (_attackQueue > 0 && _cooldown <= 0)
 		{
-			_attackQueued = false;
+			_attackQueue--;
 			if (_form.IsWolf && _form.CanAttack && !_health.IsDead) WolfAttack();
+			else _attackQueue = 0;
 		}
 
 		if (_reloadTimer > 0)
@@ -346,7 +347,8 @@ public partial class Weapon : Node3D
 		if (_cooldown > 0)
 		{
 			// De lobo, o clique no fim de um golpe fica guardado.
-			if (_form.IsWolf && !_diving && _cooldown <= AttackBuffer) _attackQueued = true;
+			if (_form.IsWolf && !_diving && _cooldown <= AttackBuffer)
+				_attackQueue = Mathf.Min(_attackQueue + 1, MaxQueuedAttacks);
 			return;
 		}
 

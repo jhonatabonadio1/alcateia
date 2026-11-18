@@ -46,6 +46,7 @@ public static class Blood
 	private static int _bursts;
 	private static StandardMaterial3D _drop;
 	private static StandardMaterial3D _mist;
+	private static StandardMaterial3D _streak;
 	private static StandardMaterial3D[] _stain;
 	private static readonly RandomNumberGenerator Rng = new();
 
@@ -71,6 +72,10 @@ public static class Blood
 
 		root.AddChild(Drops(direction, size));
 		root.AddChild(Mist(direction, size));
+		// Os esguichos e o estouro no ponto (18/11, "FX melhores"): é o que
+		// dá o sentido do golpe e marca o instante do acerto.
+		root.AddChild(Streaks(direction, size));
+		root.AddChild(Pop(size));
 
 		// Mancha atrás de quem levou, ou no chão logo abaixo.
 		Stain(world, at, direction, size, ignore);
@@ -109,6 +114,65 @@ public static class Blood
 			ColorRamp = Ramp(Bright, Dark, 1f, 0.85f)
 		};
 		return drops;
+	}
+
+	/// <summary>Esguichos: gotas esticadas no sentido em que voam, rápidas,
+	/// num leque estreito para onde o golpe empurra.</summary>
+	private static GpuParticles3D Streaks(Vector3 direction, float size)
+	{
+		var process = new ParticleProcessMaterial
+		{
+			Direction = direction,
+			Spread = 20f,
+			InitialVelocityMin = 3.5f * Mathf.Sqrt(size),
+			InitialVelocityMax = 8.5f * Mathf.Sqrt(size),
+			Gravity = new Vector3(0, -12f, 0),
+			DampingMin = 2f,
+			DampingMax = 5f,
+			ScaleMin = 0.6f,
+			ScaleMax = 1.35f,
+			Color = Bright,
+			ColorRamp = new GradientTexture1D { Gradient = Ramp(Bright, Dark, 1f, 0f) }
+		};
+		return new GpuParticles3D
+		{
+			Emitting = true,
+			OneShot = true,
+			Amount = Mathf.Clamp(Mathf.RoundToInt(12 * size), 6, 28),
+			Lifetime = 0.42,
+			Explosiveness = 0.96f,
+			Randomness = 0.5f,
+			LocalCoords = false,
+			ProcessMaterial = process,
+			TransformAlign = GpuParticles3D.TransformAlignEnum.ZBillboardYToVelocity,
+			DrawPass1 = new QuadMesh { Size = new Vector2(0.035f, 0.26f) * Mathf.Sqrt(size), Material = _streak },
+			CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+			VisibilityAabb = new Aabb(new Vector3(-4, -4, -4), new Vector3(8, 8, 8))
+		};
+	}
+
+	/// <summary>O estouro no ponto do acerto: um borrão que abre e some em
+	/// um décimo de segundo.</summary>
+	private static MeshInstance3D Pop(float size)
+	{
+		var material = (StandardMaterial3D)_mist.Duplicate();
+		material.AlbedoColor = new Color(Bright.R * 1.25f, Bright.G, Bright.B, 0.85f);
+		material.BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled;
+		material.VertexColorUseAsAlbedo = false;
+		var pop = new MeshInstance3D
+		{
+			Mesh = new QuadMesh { Size = Vector2.One * 0.34f * Mathf.Sqrt(size) },
+			MaterialOverride = material,
+			CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+			Scale = Vector3.One * 0.35f
+		};
+		pop.Ready += () =>
+		{
+			Tween tween = pop.CreateTween().SetParallel();
+			tween.TweenProperty(pop, "scale", Vector3.One * 1.25f, 0.11).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Cubic);
+			tween.TweenProperty(material, "albedo_color:a", 0f, 0.13);
+		};
+		return pop;
 	}
 
 	private static CpuParticles3D Mist(Vector3 direction, float size)
@@ -200,6 +264,9 @@ public static class Blood
 		Texture2D dot = Dot();
 		_drop = Particle(dot, 1f);
 		_mist = Particle(dot, 1f);
+		// O esguicho: o alinhamento é das partículas (Y na velocidade), não do material.
+		_streak = Particle(dot, 1f);
+		_streak.BillboardMode = BaseMaterial3D.BillboardModeEnum.Disabled;
 
 		_stain = new StandardMaterial3D[3];
 		for (int i = 0; i < _stain.Length; i++)

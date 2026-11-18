@@ -43,8 +43,27 @@ public partial class WolfVisual
 		if ((WolfMove)move == WolfMove.Leap)
 			speed = WolfMoves.DiveSpeed(_weapon.DiveEta);
 
+		// Uma garrada de cada vez na tela: os dois braços tocam um por cima
+		// do outro, e o de cima, ainda voltando, escondia o golpe seguinte
+		// (uma garrada em cada duas não aparecia; Jhon, 18/11). O anterior
+		// sai enquanto o novo entra.
+		if ((WolfMove)move is WolfMove.Claw or WolfMove.Punch && _tree != null)
+		{
+			string other = (WolfMove)move == WolfMove.Claw ? "heavy" : "claw";
+			if (Has(other))
+				_tree.Set($"parameters/{Cap(other)}/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
+		}
+
 		Fire(clip, speed);
-		if ((WolfMove)move == WolfMove.Pounce) _pounceClock = 0;
+		if ((WolfMove)move == WolfMove.Pounce)
+		{
+			// O especial sai voando: o clipe começa no impulso, não no
+			// agachar (Weapon.PounceSkip).
+			float skip = _weapon.PounceSkip;
+			_pounceClock = skip;
+			if (skip > 0.01f && _tree != null && Has("pounce"))
+				_tree.Set("parameters/PounceSeek/seek_request", skip);
+		}
 	}
 
 	/// <summary>O golpe foi largado antes de sair (a carga do salto
@@ -97,8 +116,7 @@ public partial class WolfVisual
 
 		// No voo, o clipe acelera no ritmo do voo (o salto carregado voa
 		// mais rápido que o clipe): pousa no quadro em que o corpo pousa.
-		float rate = hold ? 0f
-			: WolfMoves.Of(WolfMove.Pounce).Speed * (_weapon.IsPounceFlying ? _weapon.PounceFlightRate : 1f);
+		float rate = hold ? 0f : WolfMoves.Of(WolfMove.Pounce).Speed * _weapon.PounceClipRate;
 		if (hold == _pounceHeld && Mathf.IsEqualApprox(rate, _pounceRate)) return;
 
 		_pounceHeld = hold;

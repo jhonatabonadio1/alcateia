@@ -161,11 +161,32 @@ public partial class Weapon
 		if (!_form.IsWolf || !_form.CanAttack || !PounceReady) return false;
 
 		SpecialArmed = false;
+		// Sai na hora: o clipe começa já no impulso, sem o agachar.
+		PounceSkip = WolfMoves.StepOf(WolfMove.Pounce).Delay;
 		BeginCharge();
 		_chargeTime = PounceChargeTime;
 		ReleaseCharge();
 		return true;
 	}
+
+	/// <summary>Quantos segundos do começo do clipe do salto este salto
+	/// pula (o agachar): o corpo já sai voando, então a animação começa no
+	/// impulso. Sem isto (até 18/11) o clipe começava agachando com o lobo
+	/// já no ar, e a pancada no chão aparecia meio segundo depois de ele
+	/// cair e de o dano sair ("a animação não coincide com a velocidade",
+	/// Jhon). Zero na carga segurada.</summary>
+	public float PounceSkip { get; private set; }
+
+	/// <summary>Quantas vezes mais rápido que o clipe a parte de depois
+	/// do voo toca (a pancada e o levantar): 0,93 s viram 0,55 s. O golpe
+	/// e o fim do golpe da arma contam com isso.</summary>
+	[Export] public float PounceRecoverRate = 1.7f;
+
+	private bool _pounceLanded;
+
+	/// <summary>O ritmo do clipe do salto agora: o do voo, o da queda, ou 1.</summary>
+	public float PounceClipRate =>
+		_flying ? PounceFlightRate : _pounceLanded && _rootLeft > 0 ? Mathf.Max(PounceRecoverRate, 0.1f) : 1f;
 
 	/// <summary>
 	/// O voo persegue o alvo (pedido do Jhon, 18/11): o ponto de queda é
@@ -200,6 +221,13 @@ public partial class Weapon
 	/// <summary>Agachado carregando o salto (botão direito seguro no chão).</summary>
 	public bool IsChargingPounce => _charging && _form != null && _form.IsWolf;
 
+	/// <summary>Começou a carregar segurando o botão (sem pular o agachar).</summary>
+	private void HoldCharge()
+	{
+		PounceSkip = 0f;
+		BeginCharge();
+	}
+
 	/// <summary>Carga do salto, de 0 a 1. É o que a barra de força mostra.</summary>
 	public float PounceCharge => _charging ? CombatRules.ChargePower(_chargeTime, PounceChargeTime) : 0f;
 
@@ -228,6 +256,7 @@ public partial class Weapon
 	/// salto) e fica preso até soltar.</summary>
 	private void BeginCharge()
 	{
+		_pounceLanded = false;
 		_charging = true;
 		_chargeTime = 0;
 		_comboIndex = 0;
@@ -260,6 +289,7 @@ public partial class Weapon
 		
 		if (!PounceReady) return false;
 
+		PounceSkip = Mathf.Min(Mathf.Clamp(power, 0f, 1f) * PounceChargeTime, WolfMoves.StepOf(WolfMove.Pounce).Delay);
 		BeginCharge();
 		_chargeTime = Mathf.Clamp(power, 0f, 1f) * PounceChargeTime;
 		ReleaseCharge();
@@ -315,9 +345,20 @@ public partial class Weapon
 		_pounceGuard = true;
 		_comboIndex = 0;
 		_attackQueued = false;
-		float saved = WolfMoves.StepOf(WolfMove.Pounce).Duration
-			* (1f - Mathf.Lerp(1f, Mathf.Clamp(PounceFullFlight, 0.2f, 1f), Mathf.Clamp(power, 0f, 1f)));
-		_rootLeft = WolfMoves.Duration(WolfMove.Pounce) - elapsed - saved;
+		_pounceLanded = false;
+
+		// O relógio do salto, em tempo de jogo: o resto do agachar, o voo
+		// (mais curto com a carga) e o que vem depois dele (a pancada e o
+		// levantar), acelerado. O dano sai quando as mãos batem no chão.
+		var (crouch, airborne, _) = WolfMoves.StepOf(WolfMove.Pounce);
+		float wait = Mathf.Max(crouch - elapsed, 0f);
+		float air = airborne * Mathf.Lerp(1f, Mathf.Clamp(PounceFullFlight, 0.2f, 1f), Mathf.Clamp(power, 0f, 1f));
+		float recover = Mathf.Max(PounceRecoverRate, 0.1f);
+		float landed = crouch + airborne;
+		float impactAt = wait + air + Mathf.Max(WolfMoves.ImpactDelay(WolfMove.Pounce) - landed, 0f) / recover;
+		float total = wait + air + Mathf.Max(WolfMoves.Duration(WolfMove.Pounce) - landed, 0f) / recover;
+
+		_rootLeft = total;
 		_pounceFlew = false;
 		float damage = CombatRules.PounceMultiplier(HeavyDamageBonus, PounceMinPower, power);
 		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown,
@@ -326,7 +367,7 @@ public partial class Weapon
 				_wolfHit = Kill.WolfPounceId;
 				Claw(damage, PounceHitReach, PounceHitRadius, false, _pounceFlew ? _flyDir : null,
 					focus: _pounceFocus, splash: PounceSplash);
-			}, elapsed + saved);
+			}, Mathf.Max(elapsed, 0.001f), total, impactAt);
 
 		// O salto é um pulo de verdade: do impulso até os pés tocarem o
 		// chão, o corpo voa num arco. Para onde e até onde, diz a mira no

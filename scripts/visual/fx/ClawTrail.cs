@@ -63,6 +63,7 @@ public partial class ClawTrail : Node3D
 	private double _clock;
 	private Vector3 _lastTip;
 	private bool _hasLast;
+	private bool _wasActive;
 
 	/// <summary>Monta o rastro na mão <paramref name="hand"/> do esqueleto.</summary>
 	public static ClawTrail For(Skeleton3D skeleton, string handSuffix, Material material)
@@ -118,6 +119,11 @@ public partial class ClawTrail : Node3D
 		_lastTip = tip;
 		TipSpeed = speed;
 		_hasLast = true;
+
+		// Golpe novo: o rastro começa do zero. Sem isto a fita ligava o fim
+		// do golpe anterior ao começo deste com um risco reto.
+		if (Active && !_wasActive) _samples.Clear();
+		_wasActive = Active;
 
 		if (Active)
 		{

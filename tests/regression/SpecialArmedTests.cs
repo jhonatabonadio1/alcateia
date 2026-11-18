@@ -75,7 +75,10 @@ public sealed class SpecialArmedTest : RegressionTest
 		float miss = RegressionBench.Flat(b.Player.GlobalPosition - enemy.GlobalPosition);
 		RegressionBench.Note($"especial perseguindo: alvo andou 3,9 m no voo; o lobo caiu a {RegressionBench.F(miss)} m dele");
 		b.AtMost(1.6, miss, "caiu em cima do alvo que se mexeu (m)");
-		b.Check(!w.SpecialGuarded, "caiu: a guarda desliga");
+		b.Check(w.SpecialGuarded, "caído, ainda no golpe: a guarda (e os raios) seguem");
+		await b.Until(() => !w.IsRooted, 2.0);
+		await b.Frames(3);
+		b.Check(!w.SpecialGuarded, "acabou o especial: a guarda desliga");
 		b.Check(!w.PounceReady, "o salto gasta a carga");
 	}
 }

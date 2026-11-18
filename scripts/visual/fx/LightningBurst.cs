@@ -1,16 +1,15 @@
 using Godot;
 
 /// <summary>
-/// Os raios do especial do lobo (pedido do Jhon, 18/11: "deve ter efeito
-/// visual, uns raios, saindo"): relâmpagos quebrados que saem do corpo
-/// para todos os lados, tremem e somem em menos de um segundo, com um
-/// clarão. Duas vezes por especial: quando ele dispara (em volta do
-/// corpo) e quando o lobo cai (rente ao chão, mais largo).
+/// O estouro de raios do especial do lobo: relâmpagos quebrados que saem
+/// do corpo para todos os lados, tremem e somem em meio segundo, com um
+/// clarão. Quando o especial dispara (em volta do corpo) e quando o lobo
+/// cai (rente ao chão, mais largo, com uma onda de choque).
 ///
-/// Cada raio é uma fita dupla em cruz (para ter largura de qualquer
-/// ângulo), sem sombra e somando luz. O desenho é refeito várias vezes
-/// por segundo — é isso que faz o raio tremer. Montado por código; some
-/// sozinho no fim.
+/// Refeito em 18/11 (pedido do Jhon: "FX melhores"): cada raio é uma fita
+/// de neon de frente para a câmera — clarão macio na cor, miolo branco —
+/// com galhos, em vez das duas tiras duras em cruz. O desenho é refeito
+/// várias vezes por segundo: é o que faz o raio tremer.
 /// </summary>
 public partial class LightningBurst : Node3D
 {
@@ -29,13 +28,12 @@ public partial class LightningBurst : Node3D
 	public Color Tint { get; set; } = new(1f, 0.6f, 0.2f);
 
 	/// <summary>De quanto em quanto tempo o desenho muda.</summary>
-	private const double Flicker = 0.045;
+	private const double Flicker = 0.04;
 
-	private const int Segments = 7;
-	private const float Width = 0.07f;
+	private const int Segments = 8;
+	private const float Width = 0.05f;
 
 	private ImmediateMesh _mesh;
-	private StandardMaterial3D _material;
 	private OmniLight3D _flash;
 	private readonly RandomNumberGenerator _rng = new();
 	private double _age, _nextDraw;
@@ -50,9 +48,9 @@ public partial class LightningBurst : Node3D
 			Tint = tint,
 			Flat = flat,
 			Position = local,
-			Bolts = flat ? 14 : 12,
-			Radius = flat ? 3.2f : 2.4f,
-			Life = flat ? 0.5f : 0.6f
+			Bolts = flat ? 16 : 12,
+			Radius = flat ? 3.4f : 2.4f,
+			Life = flat ? 0.55f : 0.6f
 		};
 		parent.AddChild(burst);
 		return burst;
@@ -62,26 +60,12 @@ public partial class LightningBurst : Node3D
 	{
 		_rng.Randomize();
 		_mesh = new ImmediateMesh();
-		_material = new StandardMaterial3D
-		{
-			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-			BlendMode = BaseMaterial3D.BlendModeEnum.Add,
-			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-			CullMode = BaseMaterial3D.CullModeEnum.Disabled,
-			VertexColorUseAsAlbedo = true,
-			AlbedoColor = Colors.White
-		};
-		AddChild(new MeshInstance3D
-		{
-			Mesh = _mesh,
-			MaterialOverride = _material,
-			CastShadow = GeometryInstance3D.ShadowCastingSetting.Off
-		});
+		AddChild(FxRibbon.Canvas(_mesh, world: false));
 
 		_flash = new OmniLight3D
 		{
 			LightColor = Tint.Lerp(Colors.White, 0.4f),
-			LightEnergy = 5f,
+			LightEnergy = 6f,
 			OmniRange = Radius * 2.2f,
 			ShadowEnabled = false
 		};
@@ -92,7 +76,7 @@ public partial class LightningBurst : Node3D
 		for (int i = 0; i < Bolts; i++)
 		{
 			float angle = Mathf.Tau * (i + _rng.Randf() * 0.7f) / Bolts;
-			float up = Flat ? _rng.RandfRange(0.02f, 0.22f) : _rng.RandfRange(-0.25f, 0.95f);
+			float up = Flat ? _rng.RandfRange(0.02f, 0.2f) : _rng.RandfRange(-0.25f, 0.95f);
 			_directions[i] = new Vector3(Mathf.Cos(angle), up, Mathf.Sin(angle)).Normalized();
 		}
 	}
@@ -107,84 +91,64 @@ public partial class LightningBurst : Node3D
 		}
 
 		float t = (float)(_age / Life);
-		// Estoura cheio e apaga; o clarão vai mais rápido que os raios.
-		float strength = 1f - t * t;
-		_flash.LightEnergy = 5f * Mathf.Max(0f, 1f - t * 2.2f);
+		_flash.LightEnergy = 6f * Mathf.Max(0f, 1f - t * 2.2f);
 
-		if (_age < _nextDraw) return;
-		_nextDraw = _age + Flicker;
-		Draw(strength, t);
+		// A onda de choque anda todo quadro; os raios só tremem de tanto em tanto.
+		if (_age >= _nextDraw)
+		{
+			_nextDraw = _age + Flicker;
+			_seed = _rng.Randi();
+		}
+		Draw(1f - t * t, t);
 	}
+
+	private uint _seed;
 
 	private void Draw(float strength, float t)
 	{
 		_mesh.ClearSurfaces();
 		_mesh.SurfaceBegin(Mesh.PrimitiveType.Triangles);
 
+		Vector3 eye = GetViewport().GetCamera3D() is Camera3D camera ? ToLocal(camera.GlobalPosition) : new Vector3(0, 2, 6);
+		var rng = new RandomNumberGenerator { Seed = _seed };
+
 		// Os raios crescem para fora no começo.
 		float reach = Radius * Mathf.Min(1f, 0.35f + t * 4f);
-		var core = new Color(1f, 0.97f, 0.9f, strength);
-		var glow = new Color(Tint.R, Tint.G, Tint.B, strength * 0.55f);
 
 		for (int b = 0; b < Bolts; b++)
 		{
 			// Uns falham a cada desenho: relâmpago não é contínuo.
-			if (_rng.Randf() < 0.2f) continue;
+			if (rng.Randf() < 0.22f) continue;
 
 			Vector3 dir = _directions[b];
-			float length = reach * _rng.RandfRange(0.55f, 1f);
-			Vector3 side = dir.Cross(Vector3.Up);
-			if (side.LengthSquared() < 0.001f) side = Vector3.Right;
-			side = side.Normalized();
-			Vector3 lift = dir.Cross(side).Normalized();
-
-			var points = new Vector3[Segments + 1];
-			for (int i = 0; i <= Segments; i++)
-			{
-				float along = i / (float)Segments;
-				// Quebra mais no meio, firme nas pontas.
-				float jag = length * 0.11f * Mathf.Sin(along * Mathf.Pi);
-				points[i] = dir * (0.25f + length * along)
-					+ side * _rng.RandfRange(-jag, jag) + lift * _rng.RandfRange(-jag, jag);
-			}
-
-			Ribbon(points, side, Width * 2.6f, glow);
-			Ribbon(points, lift, Width * 2.6f, glow);
-			Ribbon(points, side, Width, core);
-			Ribbon(points, lift, Width, core);
+			float length = reach * rng.RandfRange(0.55f, 1f);
+			Vector3[] points = FxRibbon.Jagged(rng, dir * 0.2f, dir * (0.2f + length), Segments, length * 0.12f);
+			FxRibbon.Bolt(_mesh, points, eye, Width, Tint, strength);
 
 			// Um galho curto em metade dos raios.
-			if (_rng.Randf() < 0.5f)
+			if (rng.Randf() < 0.55f)
 			{
-				int from = _rng.RandiRange(2, Segments - 2);
-				Vector3 fork = (dir + side * _rng.RandfRange(-0.9f, 0.9f) + lift * _rng.RandfRange(-0.9f, 0.9f)).Normalized();
-				var branch = new Vector3[4];
-				for (int i = 0; i < 4; i++)
-					branch[i] = points[from] + fork * (length * 0.1f * i)
-						+ side * _rng.RandfRange(-0.04f, 0.04f) * i;
-				Ribbon(branch, side, Width * 0.7f, core);
-				Ribbon(branch, lift, Width * 0.7f, core);
+				int from = rng.RandiRange(2, Segments - 2);
+				Vector3 fork = (dir + new Vector3(rng.RandfRange(-0.9f, 0.9f), rng.RandfRange(-0.4f, 0.9f), rng.RandfRange(-0.9f, 0.9f))).Normalized();
+				Vector3[] branch = FxRibbon.Jagged(rng, points[from], points[from] + fork * length * 0.35f, 4, length * 0.05f);
+				FxRibbon.Bolt(_mesh, branch, eye, Width * 0.6f, Tint, strength * 0.8f);
 			}
+		}
+
+		// Na queda: a onda de choque abrindo pelo chão, e um segundo anel atrás.
+		if (Flat)
+		{
+			float grow = 1f - Mathf.Pow(1f - t, 3f);
+			var ring = new Color(Tint.R, Tint.G, Tint.B, 0.75f * (1f - t));
+			FxRibbon.Ring(_mesh, Vector3.Up * 0.03f, Vector3.Up, Radius * 1.25f * grow, 0.5f * (1f - t * 0.5f), ring);
+			var hot = new Color(1f, 0.96f, 0.92f, 0.8f * (1f - t));
+			FxRibbon.Ring(_mesh, Vector3.Up * 0.04f, Vector3.Up, Radius * 1.25f * grow, 0.12f, hot);
+			float late = Mathf.Clamp(t * 1.6f - 0.25f, 0f, 1f);
+			if (late > 0f)
+				FxRibbon.Ring(_mesh, Vector3.Up * 0.03f, Vector3.Up, Radius * 0.8f * (1f - Mathf.Pow(1f - late, 3f)), 0.3f,
+					new Color(Tint.R, Tint.G, Tint.B, 0.4f * (1f - late)));
 		}
 
 		_mesh.SurfaceEnd();
-	}
-
-	/// <summary>Uma fita ao longo dos pontos, afilando até a ponta.</summary>
-	private void Ribbon(Vector3[] points, Vector3 across, float width, Color color)
-	{
-		for (int i = 0; i < points.Length - 1; i++)
-		{
-			float w0 = width * (1f - i / (float)points.Length) * 0.5f;
-			float w1 = width * (1f - (i + 1) / (float)points.Length) * 0.5f;
-			Vector3 a = points[i] - across * w0, b = points[i] + across * w0;
-			Vector3 c = points[i + 1] - across * w1, d = points[i + 1] + across * w1;
-
-			foreach (Vector3 v in new[] { a, b, c, b, d, c })
-			{
-				_mesh.SurfaceSetColor(color);
-				_mesh.SurfaceAddVertex(v);
-			}
-		}
 	}
 }

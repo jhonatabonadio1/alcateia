@@ -2,6 +2,36 @@
 
 ## Não lançado
 
+### Lobos polidos, rugido novo, efeitos novos (18/11, tarde)
+- **Modelo** (`tools/lobo/polir.py`): cores mais vivas, pelo pintado (fios,
+  mechas, raiz escura e ponta clara), oclusão assada, **neon de verdade**
+  (textura de emissão: olhos, braceletes, peitoral, joelheiras,
+  tornozeleiras, e nas costas do azul o LED vazando por baixo da placa);
+  órbita escura em volta dos olhos do azul; poucos tufos pontudos no corpo
+  do azul (malha `pelo`). O vermelho quase não muda de cor nem ganha tufo.
+- **Material** `assets/efeitos/lobo.gdshader` (`WolfSkin`): o pelo balança
+  (sopro + empurrão do movimento), o neon respira e acende com o poder,
+  brilho de contorno no pelo. Vale também na vitrine do lobby.
+- **Rugido** refeito de corpo inteiro (`tools/rugido/rugido2.py`): arma,
+  explode, sustenta inclinado para a frente varrendo a cabeça, volta; os
+  mesmos 1,533 s. No jogo, anéis de choque saem da boca, onda pelo chão e
+  riscos de força (`RoarBurst`); a aura virou só contorno.
+- **Especial**: os raios aparecem no lobo ao armar (Q) e ficam até o fim
+  do golpe (`LightningAura`); o clipe do salto começa no impulso e a queda
+  toca 1,7× mais rápida: a pancada cai junto com a chegada e o dano; **som
+  de raio** ao armar, no salto e na queda, que o mapa inteiro ouve
+  (`lobo_especial_*`, sintetizados por `tools/sons/raios.py`).
+- **Garrada**: um clique, um golpe inteiro de um braço; 1,3× mais rápida
+  (dano em 0,15 s), encadeia a cada 0,34 s; cliques rápidos ficam
+  guardados (até 2); o golpe de um braço não esconde mais o do outro. Três
+  riscos de neon no rastro da garra e no corte (`NeonSlash`).
+- **Efeitos**: raios em fita de neon com galhos e onda de choque na queda;
+  vento em fios finos que ondulam (`WindWisps`, no lugar dos traços retos);
+  sangue com esguichos e estouro no ponto; eletricidade em volta do botão
+  do especial pronto.
+- Testes: `CliquesDaGarra` (novo); `EspecialArmado`, `CargaDoSalto` e
+  `EfeitosDoLobo` acompanham.
+
 ### Especial armado, com trava e perseguição (18/11)
 - Q **arma** o especial (carga cheia): o lobo segue andando pelo mapa, com
   a aura acesa, e o modo alvo abre — losango nos inimigos à vista, trava

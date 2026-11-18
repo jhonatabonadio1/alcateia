@@ -90,6 +90,8 @@ public partial class CharacterPreview : SubViewportContainer
 		string wolf = !string.IsNullOrEmpty(WolfModel) && ResourceLoader.Exists(WolfModel) ? WolfModel : WolfPath;
 		_human = Load(human, HumanIdle, 1f);
 		_wolfModel = Load(wolf, WolfIdle, 1.0f, refit: true);
+		// O mesmo material do jogo: neon aceso e pelo mexendo na vitrine.
+		WolfSkin.Apply(_wolfModel);
 
 		ShowForm();
 	}

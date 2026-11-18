@@ -83,6 +83,8 @@ public partial class WolfVisual
 		_own?.Free();
 		_own = null;
 		ApplyTeamTint();
+		// Por último: o material do lobo lê a cor que o tom do time deixou.
+		WolfSkin.Apply(_model);
 		BuildTree();
 		return true;
 	}

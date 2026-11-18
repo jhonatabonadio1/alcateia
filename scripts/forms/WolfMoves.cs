@@ -89,8 +89,10 @@ public static class WolfMoves
 	/// (<see cref="DiveSpeed"/>).</summary>
 	public static (string Clip, float Speed) Of(WolfMove move) => move switch
 	{
-		WolfMove.Claw => ("claw", 1f),
-		WolfMove.Punch => ("heavy", 1f),
+		// As garradas a 1,3× (pedido do Jhon, 18/11: mais fluido, sem
+		// demorar): o golpe chega em 0,15 s e o braço volta em 0,56 s.
+		WolfMove.Claw => ("claw", 1.3f),
+		WolfMove.Punch => ("heavy", 1.3f),
 		WolfMove.Pounce => ("pounce", 1f),
 		WolfMove.Leap => ("dive", 1f),
 		_ => ("howl", 1f)

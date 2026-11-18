@@ -1,5 +1,14 @@
 # Lobo — o lobo do Meshy + Creature Pack
 
+**Desde 18/11 os dois lobos estão polidos** (`tools/lobo/polir.py`, veja o
+LEIA-ME de lá): cores mais vivas, pelo pintado, oclusão assada, textura de
+emissão (`*_lobo_emissao.jpg`: olhos, braceletes, peitoral, joelheiras,
+tornozeleiras e o LED das costas), máscaras na cor de vértice e, no azul,
+uma quarta malha (`pelo`) com poucos tufos pontudos. O material no jogo é
+`assets/efeitos/lobo.gdshader` (`WolfSkin`). **O rugido (`Howl` de
+`lobo_anim.glb`) foi refeito de corpo inteiro** por `tools/rugido/rugido2.py`:
+arma, explode, sustenta inclinado para a frente e volta, nos mesmos 1,533 s.
+
 **Desde 17/11 os lobos dos times são `lobo_azul.glb` (azul) e
 `lobo_vermelho.glb` (laranja)**: os dois do Jhon, no Meshy, mesmo
 esqueleto de 24 ossos e 1,66 m, em três malhas (`corpo`, `roupa`,
@@ -73,8 +82,7 @@ parado sem o quadril deslizar; os quatro andares viraram um trote curvado
 feito na velocidade do jogo, com o pé de apoio a velocidade constante;
 `Crouch_Walk` com ciclo de 1,0 s; garradas com o tronco girando e a
 pisada do lado oposto (acertam em 0,20 s e duram 0,733 s, como antes);
-`Howl` com as pernas (1,533 s, como antes; em 18/11 as pernas do `Howl`
-foram refeitas por `tools/rugido/rugido.py` — veja abaixo). `Run_Quad`, `Special_Attack`
+`Howl` com as pernas (1,533 s, como antes). `Run_Quad`, `Special_Attack`
 e os três do pulo mantêm duração e momentos. As passadas novas estão em
 `WolfVisual.Locomotion.cs`, calculadas do arquivo e conferidas na
 varrida do `PassadaDoLobo` (patinação: de frente 0,13 m/s, de lado 0,14,
@@ -145,20 +153,3 @@ o arquivo? Meça de novo a passada (`SprintClipSpeed`) e o apoio no chão
 
 **Licença:** Mixamo (Adobe) — uso livre no jogo, inclusive comercial;
 não redistribuir os arquivos crus.
-
-
-**Pernas do rugido (18/11, pedido do Jhon: mais agressivo e articulado
-nas pernas).** No `Howl` original o joelho variava 22° e os pés não
-saíam do lugar. `tools/rugido/rugido.py` reescreve, só nesse clipe, o
-quadril e os oito ossos das pernas: agacha fundo com os joelhos abertos
-(o quadril desce 16 cm em vez de 4,5), levanta o pé esquerdo e bate 17 cm
-à frente, sobe na ponta do pé direito e projeta o quadril 10 cm, com um
-tremor curto no auge. Tronco, braços e cabeça ficam como estavam (o
-tronco só inclina junto com o quadril), e o primeiro e o último quadros
-são idênticos aos de antes. Os outros 16 clipes não mudam um byte.
-
-O `.blend` do Jhon **não** tem essa mudança. Exportando o `lobo_anim.glb`
-de novo do Blender, rode `python3 tools/rugido/rugido.py lobo_anim.glb
-lobo_anim.glb` para refazer as pernas (uma vez só: o arquivo fica
-marcado e o roteiro recusa a segunda). Os números do movimento estão no
-começo do roteiro.

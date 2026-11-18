@@ -20,7 +20,7 @@ public partial class WolfVisual
 	/// A aterrissagem do bote também entra quase seca: é o impacto.</summary>
 	private static (float In, float Out) Fades(string shot) => shot switch
 	{
-		"claw" or "heavy" => (0.07f, 0.12f),
+		"claw" or "heavy" => (0.06f, 0.1f),
 		"howl" => (0.15f, 0.2f),
 		"jump_land" => (0.05f, 0.25f),
 		"pounce" => (0.12f, 0.25f),
@@ -212,7 +212,15 @@ public partial class WolfVisual
 			root.AddNode($"{name}Clip", Clip(shot), Vector2.Zero);
 			root.AddNode($"{name}Speed", new AnimationNodeTimeScale(), Vector2.Zero);
 			root.AddNode(name, oneShot, Vector2.Zero);
-			root.ConnectNode($"{name}Speed", 0, $"{name}Clip");
+			if (shot == "pounce")
+			{
+				// O especial começa o clipe no impulso (WolfVisual.OnMove).
+				root.AddNode($"{name}Seek", new AnimationNodeTimeSeek(), Vector2.Zero);
+				root.ConnectNode($"{name}Seek", 0, $"{name}Clip");
+				root.ConnectNode($"{name}Speed", 0, $"{name}Seek");
+			}
+			else
+				root.ConnectNode($"{name}Speed", 0, $"{name}Clip");
 			root.ConnectNode(name, 0, last);
 			root.ConnectNode(name, 1, $"{name}Speed");
 			last = name;
