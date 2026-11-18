@@ -417,7 +417,9 @@ def polir(time, src, ao_path, out_glb, previa=None):
     from scipy.spatial import cKDTree
     vaza = np.zeros(peca.shape, np.float32)
     if time == "azul":
-        fontes = [eq & (np.abs(x) < 0.13) & (y > 1.02) & (y < 1.33) & (z < -0.10)]
+        # tirado no mesmo dia (pedido do Jhon, 18/11: "pode tirar o LED de trás
+        # da armadura do lobo azul, quero ver como fica")
+        fontes = []
     else:
         fontes = [eq & (w_ombro > 0.5) & (y > 1.22) & (x * lado > 0.1) for lado in (-1, 1)]
     for fonte in fontes:
