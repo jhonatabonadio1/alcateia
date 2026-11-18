@@ -14,8 +14,12 @@
   corpo.
 - **Mira do salto do lobo** vai até 12 m (era 8,4; `PounceMaxDistance`).
 - **Sombra mais marcada nos dois Armazéns**, sem mexer na luz: borda
-  nítida (`shadow_blur` 0,5, era 1,5; `kit.borrao_sombra`) e contraste
-  1,12 (era 1,02).
+  nítida (`shadow_blur` 0,5, era 1,5; `kit.borrao_sombra`). O contraste
+  chegou a ir a 1,12, escureceu demais e voltou a 1,02.
+- **Parede: batendo em algo, o lobo cai.** Correndo na parede e travado
+  num obstáculo que não se contorna, em 0,15 s solta e cai
+  (`WallStallTime`), em vez de ficar pendurado parado; por 0,35 s não
+  gruda de novo (`WallStallCooldown`).
 
 ### Armazém (Extended): o Armazém maior e mais alto (17/11)
 - **Mapa novo na lista**, ao lado do Armazém, que continua igual:

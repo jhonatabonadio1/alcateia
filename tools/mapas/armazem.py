@@ -86,13 +86,14 @@ def iluminar(m):
     m.ambiente = dict(ceu=dict(topo=(0.36, 0.52, 0.78), horizonte=(0.72, 0.78, 0.86), chao=(0.25, 0.24, 0.23),
                                energia=1.0),
                       luz=(0.84, 0.87, 0.96), luz_energia=0.85, exposicao=1.45, brilho=0.35, ssao=1.6,
-                      contraste=1.12, saturacao=1.12, agx=True,
+                      contraste=1.02, saturacao=1.12, agx=True,
                       sdfgi=dict(energia=1.5, rebote=0.6, celula=0.2), ssil=0.9,
                       volumetrica=dict(densidade=0.006, cor=(1.0, 0.95, 0.88), anisotropia=0.55, alcance=48))
     m.sol = dict(yaw=28, queda=52, cor=(1.0, 0.88, 0.70), energia=2.4, alcance=60)
     m.preenchimento = dict(yaw=208, queda=58, cor=(0.86, 0.9, 1.0), energia=0.45)
     # Sombra mais marcada sem mexer na luz (pedido do Jhon, 17/11, 22h):
-    # borda nítida (era 1,5) e contraste 1,12 (era 1,02).
+    # borda nítida (era 1,5). O contraste subiu para 1,12 junto e escureceu
+    # demais: voltou a 1,02.
     m.borrao_sombra = 0.5
 
 

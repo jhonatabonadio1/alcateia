@@ -140,6 +140,16 @@ public partial class Player
 	/// Jhon, 17/11).</summary>
 	[Export] public float WallJumpGrace = 0.22f;
 
+	/// <summary>Correndo na parede e batendo em algo que não se contorna
+	/// (caixote, quina baixa que a sonda à frente não pega): o corpo parado
+	/// por este tempo solta a parede e cai, em vez de ficar pendurado
+	/// (pedido do Jhon, 17/11).</summary>
+	[Export] public float WallStallTime = 0.15f;
+
+	/// <summary>Depois de soltar por ter batido, o tempo sem grudar de
+	/// novo (senão gruda no próprio obstáculo e continua parado).</summary>
+	[Export] public float WallStallCooldown = 0.35f;
+
 	/// <summary>Imprime por que a corrida em parede não começou. Só
 	/// imprime quando o motivo muda, então não enche o Output.</summary>
 	[Export] public bool WallDebug = false;
@@ -155,6 +165,7 @@ public partial class Player
 	private string _lastWallLog = "";
 	private double _wallTimer;
 	private double _wallJumpGrace;
+	private double _wallStall;
 	public bool IsWallRunning => _onWall;
 
 	/// <summary>Normal da parede em que o lobo corre (para fora dela).
@@ -598,6 +609,19 @@ public partial class Player
 
 		Velocity = velocity;
 		MoveAndSlide();
+
+		// Bateu em algo à frente e não anda: solta e cai. Mede-se o quanto o
+		// corpo de fato andou ao longo da parede contra o que devia andar
+		// (no começo da corrida, acelerando, os dois andam juntos).
+		Vector3 real = GetRealVelocity();
+		float moved = new Vector3(real.X, 0, real.Z).Dot(_wallAlong);
+		_wallStall = target > 1f && moved < target * 0.3f ? _wallStall + delta : 0;
+		if (_wallStall >= WallStallTime)
+		{
+			WallLog("soltou, travado em algo à frente");
+			ReleaseWall();
+			_wallCooldown = Mathf.Max(_wallCooldown, WallStallCooldown);
+		}
 	}
 
 	/// <summary>Imprime só quando a mensagem muda. Sem isso cada frame
@@ -643,6 +667,7 @@ public partial class Player
 		_onWall = false;
 		_cornerGrace = 0;
 		_rounding = false;
+		_wallStall = 0;
 	}
 
 	/// <summary>

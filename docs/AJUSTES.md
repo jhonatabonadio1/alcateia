@@ -183,6 +183,8 @@ Multiplicam a classe do jogador (não a dos bots):
 | `WallJumpLookLift` | 0,35 | Quanto o salto da parede sobe a mais olhando 45° para cima |
 | `WallMantleReach` | 1,9 m | Topo da parede até esta altura acima dos pés: o salto da parede sobe nele |
 | `WallRunCooldown` | 0,12 s | Tempo mínimo entre duas corridas |
+| `WallStallTime` | 0,15 s | Correndo na parede e travado em algo à frente por este tempo: solta e cai |
+| `WallStallCooldown` | 0,35 s | Depois de soltar por ter batido, o tempo sem grudar de novo |
 | `WallJumpGrace` | 0,22 s | Saiu da parede sem saltar (soltou o W, a parede acabou): o pulo dentro deste tempo ainda é o salto da parede |
 
 ---
