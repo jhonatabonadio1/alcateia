@@ -2,6 +2,17 @@
 
 ## Não lançado
 
+### A Iris narra a partida (18/11)
+- **11 falas da Iris** no jogo: "Prepare for combat", 3-2-1, double,
+  triple, quadra, penta e hexa kill, vitória e derrota (os nomes vieram
+  do Jhon; os cortes, do áudio dele). Volume igualado e silêncio do
+  começo cortado.
+- **A voz da Kenney saiu**: "Fight", empate, um minuto e a reserva das
+  sequências eram dela, e duas vozes na mesma partida soavam erradas. O
+  que a Iris ainda não gravou fica em silêncio (lista em
+  `docs/SONS_IA.md`), e `tools/sons/processar.py` não refaz mais as
+  falas antigas.
+
 ### Música de início durante a contagem (18/11)
 - `partida_inicio` (pedido do Jhon): entra quando a tela de carregamento
   sai, toca durante a contagem e acaba com ela, num fade de 0,8 s. Antes

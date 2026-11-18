@@ -46,11 +46,11 @@ public static class Credits
 		}),
 		new("Sons", new[]
 		{
-			new Line("Músicas, vinhetas de início e de fim e sons da interface", "WolfLeague (gerados para o jogo)"),
+			new Line("Músicas, vinhetas de início e de fim, sons da interface e a voz da locutora Iris", "WolfLeague (gerados para o jogo)"),
 			new Line("Passos, pulos, lobo, vozes, ambiente do hangar e do metrô (modificados)",
 				"Oculus Audio Pack 1 — Meta Platforms", "CC BY 4.0", Required: true),
 			new Line("Tiros e recargas", "Free Firearm Sound Library", "CC0"),
-			new Line("Acertos, faca, explosão e a voz do locutor", "Kenney (kenney.nl)", "CC0"),
+			new Line("Acertos, faca e explosão", "Kenney (kenney.nl)", "CC0"),
 			new Line("Vento da Estação Polar e da Vila", "sintetizado para o jogo")
 		}),
 		new("Braços e armas em primeira pessoa", new[]

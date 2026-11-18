@@ -301,30 +301,15 @@ save(clip(kn("bong_001.wav"), mono=False), "contagem", -10)
 # pelo Jhon (tools/sons/preparar_ia.py). Não refazer aqui.
 
 # ---------------------------------------------------------- locutor
-# A narração da partida (18/11): Voiceover Pack Fighter, da Kenney (CC0),
-# gravado por um ator. Aqui fica um pouco mais grave e mais lento,
-# comprimido e com uma sala curta — voz de arena, que corta a mistura.
-# As chamadas de sequência (double kill, triple kill…) têm arquivo
-# próprio quando houver gravação (docs/AUDIO.md); até lá, todas usam
-# voz_multi_kill.
-kv = lambda n: f"kv_{n}.ogg"
-VOZES = {"voz_prepare": "prepare_yourself", "voz_lutar": "fight", "voz_3": "3", "voz_2": "2", "voz_1": "1",
-         "voz_vitoria": "you_win", "voz_derrota": "you_lose", "voz_empate": "it's_a_tie",
-         "voz_multi_kill": "multi_kill", "voz_tempo": "time"}
-for name, src in VOZES.items():
-    dry = clip(kv(src), gate=-45)
-    wet = tmp()
-    ff(["-i", dry, "-af", f"asetrate={int(SR * 0.94)},aresample={SR},highpass=f=90,"
-        "acompressor=threshold=-20dB:ratio=3:attack=4:release=120:makeup=4dB,"
-        "aecho=0.85:0.6:48|97:0.16|0.09,alimiter=limit=0.9:level=disabled",
-        "-ac", "1", "-c:a", "pcm_s16le", wet])
-    save(wet, name, -3, ogg=False)
+# A narração é da Iris desde 18/11 (falas geradas pelo Jhon, nomes em
+# docs/SONS_IA.md). A voz provisória da Kenney (Voiceover Pack Fighter)
+# saiu de vez: duas vozes misturadas na mesma partida soavam erradas.
+# Nada a refazer aqui.
 
 # ---------------------------------------------------------- interface
 # ui_passar, ui_clique e ui_negado: desde 18/11 são os gerados pelo Jhon
 # (tools/sons/preparar_ia.py). Não refazer aqui — as variações _1, _2, _3
 # daqui tocariam sorteadas junto com os novos.
-# Ambiente noturno de floresta como fundo do menu: é loop pronto.
 # musica_menu: desde 18/11 é o tema gerado pelo Jhon (tools/sons/preparar_ia.py).
 
 # ---------------------------------------------------------- arma vazia

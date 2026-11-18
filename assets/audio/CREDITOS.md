@@ -14,7 +14,10 @@ guia `docs/SONS_IA.md`, e preparados por `tools/sons/preparar_ia.py`
 `partida_inicio`, `vitoria`, `derrota_1`, `derrota_2`, `empate`,
 `ui_passar`, `ui_clique`, `ui_negado`, `ui_abrir`, `ui_fechar`,
 `ui_equipar`, `ui_compra`, `ui_jogar`, `ui_xp_fim`, `ui_patente`,
-`ui_recompensa_1`, `ui_recompensa_2`.
+`ui_recompensa_1`, `ui_recompensa_2`; e a voz da locutora **Iris**:
+`voz_prepare`, `voz_3`, `voz_2`, `voz_1`, `voz_double_kill`,
+`voz_triple_kill`, `voz_quadra_kill`, `voz_penta_kill`, `voz_hexa_kill`,
+`voz_vitoria`, `voz_derrota` (cortadas de um áudio só, volume igualado).
 
 > **Antes de publicar:** anotar aqui qual ferramenta gerou e conferir
 > que o plano usado permite uso comercial.
@@ -59,15 +62,9 @@ as versões por superfície (`_metal`, `_neve`, `_madeira`, `_terra`),
 (`ui_passar`, `ui_clique`), Interface Sounds (`ui_negado`, `acerto`,
 `abate`, `contagem`), RPG Audio (`faca`, `trocar_arma`, `recarga_m3`),
 Impact Sounds (`acerto`, `acerto_cabeca`, `lobo_pouso`), Sci-Fi Sounds
-(`granada_explosao`), Voiceover Pack Fighter (a voz do locutor:
-`voz_prepare`, `voz_lutar`, `voz_3`, `voz_2`, `voz_1`, `voz_vitoria`,
-`voz_derrota`, `voz_empate`, `voz_multi_kill`, `voz_tempo` — deixada
-mais grave e lenta, comprimida, com uma sala curta). Via os espelhos no
-GitHub de Calinou e Boyquotes. O espelho da voz
-(`Boyquotes/kenney-voiceover-for-godot`) traz uma licença GPL v3 para o
-*addon* de Godot que o acompanha; usamos só as gravações, que são da
-Kenney e CC0 — vale conferir na página do pacote em kenney.nl antes de
-publicar.
+(`granada_explosao`). Via os espelhos no GitHub de Calinou e
+Boyquotes. (A voz provisória do locutor, do Voiceover Pack Fighter, saiu
+em 18/11: a narração agora é da Iris.)
 
 Cada `tiro_<arma>_N` e `tiro_proprio_<arma>_N` parte de um dos tiros da
 mesma gravação de perto da arma (as gravações têm de dois a quatro),

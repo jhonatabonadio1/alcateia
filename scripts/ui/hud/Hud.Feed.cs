@@ -108,9 +108,10 @@ public partial class Hud
 		}
 	}
 
-	/// <summary>Toca a fala da sequência. Cada uma tem o seu arquivo
-	/// (voz_double_kill…) quando houver gravação; enquanto não há, todas
-	/// caem na fala genérica que existe (voz_multi_kill). docs/AUDIO.md.</summary>
+	/// <summary>Toca a fala da sequência, na voz da Iris: cada uma tem o seu
+	/// arquivo (voz_double_kill…; docs/SONS_IA.md). Sem o arquivo, cai na
+	/// fala genérica (voz_multi_kill) se existir, senão fica em silêncio —
+	/// melhor que outra voz.</summary>
 	private static void Say(string voice)
 	{
 		if (string.IsNullOrEmpty(voice)) return;

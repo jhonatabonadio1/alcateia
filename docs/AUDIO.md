@@ -71,27 +71,24 @@ Depois: o grave ficou entre 11 e 15% da energia, e o ataque entre 54 e
 0,4 a 0,85). A escopeta (M3) ficou bem mais alta que antes na média —
 se incomodar, é o primeiro número a baixar (`guns["m3"]`, o soco).
 
-## O locutor
+## A locutora: Iris
 
-A voz é a do **Voiceover Pack Fighter, da Kenney (CC0)**, gravada por um
-ator. O roteiro deixa um pouco mais grave e lenta, comprime e põe uma
-sala curta.
+Desde 18/11 a narração é da **Iris**, voz gerada pelo Jhon. A voz
+provisória da Kenney saiu de vez: duas vozes na mesma partida soavam
+erradas. Hoje ela diz:
 
 | Arquivo | Fala | Quando toca |
 |---|---|---|
-| `voz_prepare` | "Prepare yourself" | começo da contagem |
+| `voz_prepare` | "Prepare for combat" | começo da contagem |
 | `voz_3`, `voz_2`, `voz_1` | "3", "2", "1" | os três últimos segundos |
-| `voz_lutar` | "Fight" | a partida começa |
-| `voz_vitoria` / `voz_derrota` / `voz_empate` | "You win" / "You lose" / "It's a tie" | fim, depois do acorde |
-| `voz_multi_kill` | "Multi kill" | qualquer sequência sua, enquanto não há fala própria |
-| `voz_tempo` | "Time" | ainda sem uso |
+| `voz_double_kill` … `voz_hexa_kill` | "Double kill" … "Sextuple kill" | 2 a 6 abates seguidos |
+| `voz_vitoria` / `voz_derrota` | "Victory" / "Defeat" | fim, depois do acorde |
 
-**Faltam as falas das sequências**, cada uma com o seu arquivo. O jogo
-já procura por estes nomes e usa o que existir:
-
-`voz_double_kill`, `voz_triple_kill`, `voz_quadra_kill`,
-`voz_penta_kill`, `voz_hexa_kill`, `voz_hepta_kill`, `voz_octa_kill`,
-`voz_team_kill`, `voz_vinganca`.
+**Faltam** (sem o arquivo, fica em silêncio): `voz_lutar` ("Fight!"),
+`voz_empate`, `voz_hepta_kill`, `voz_octa_kill`, `voz_team_kill`,
+`voz_vinganca` e `voz_multi_kill` (a reserva de qualquer sequência sem
+fala própria). A lista completa, com os prompts, está em
+`docs/SONS_IA.md`.
 
 Onde buscar (o Jhon baixa; o ambiente do Claude só alcança o GitHub):
 
