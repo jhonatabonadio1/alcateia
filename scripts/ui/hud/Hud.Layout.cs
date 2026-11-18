@@ -89,13 +89,14 @@ public partial class Hud
 		_warning.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.8f));
 		_root.AddChild(_warning);
 
-		// "ELIMINOU <jogador>", com a caveira: abaixo da mira, dos avisos
-		// e da barra de força do salto.
+		// "ELIMINOU <jogador>", com a caveira, e a chamada da sequência
+		// (DOUBLE KILL…): abaixo da mira, crescendo para cima a partir de
+		// logo acima do disco do especial, para nunca cobrir ele.
 		_killBanner = new KillBanner();
 		_killBanner.SetAnchorsPreset(Control.LayoutPreset.CenterTop);
-		_killBanner.AnchorTop = _killBanner.AnchorBottom = 0.7f;
+		_killBanner.AnchorTop = _killBanner.AnchorBottom = 0.77f;
 		_killBanner.GrowHorizontal = Control.GrowDirection.Both;
-		_killBanner.GrowVertical = Control.GrowDirection.End;
+		_killBanner.GrowVertical = Control.GrowDirection.Begin;
 		_root.AddChild(_killBanner);
 
 		_death = UiKit.Column(UiTokens.S1);

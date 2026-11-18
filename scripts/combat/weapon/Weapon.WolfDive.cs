@@ -180,6 +180,7 @@ public partial class Weapon
 		bool aerial = _fallStartY - _body.GlobalPosition.Y >= AirAttackMinFall;
 
 		EmitSignal(SignalName.Fired);
+		_wolfHit = Kill.WolfDiveId;
 		Claw(LeapDamageBonus, LeapReach, LeapRadius, aerial);
 
 		float land = WolfMoves.LandDuration;

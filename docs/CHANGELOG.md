@@ -2,6 +2,22 @@
 
 ## Não lançado
 
+### Feed de abates com história e sequências (17/11)
+- **O abate leva mais detalhe** (`Kill`): o golpe do lobo (`WolfHit`:
+  garra, o especial, o bote), **pelas costas** e **de cima**. Viaja no
+  mesmo texto da arma ("ak47#c"), sem campo novo na rede.
+- **Feed**: ícone próprio para a garra, o especial do lobo e o bote;
+  marcas de pelas costas, de cima, na cabeça e **vingança** (a vítima
+  era quem tinha te matado por último); a sequência de quem matou
+  (×2, ×3…); e a foto da arma de verdade.
+- **Sequências** (`KillStory`): DOUBLE, TRIPLE, QUADRA, PENTA, HEXA,
+  HEPTA e OCTA KILL (até 5 s entre um abate e outro), TEAM KILL quando o
+  time inimigo inteiro cai na sua sequência, e VINGANÇA — numa chamada
+  grande no meio da tela (`KillBanner.Announce`).
+- **Falas**: o jogo toca `assets/audio/voz_double_kill` (…`triple`,
+  `quadra`, `penta`, `hexa`, `hepta`, `octa`, `voz_team_kill`,
+  `voz_vinganca`) se o arquivo existir. Os arquivos ainda não existem.
+
 ### Menus escuros, letras, ícones, patentes e fotos das armas novas (17/11)
 - **Menus no escuro** (o claro ficou perto demais de Overwatch; Valorant
   e League of Legends de referência): azul-noite, cartões de vidro

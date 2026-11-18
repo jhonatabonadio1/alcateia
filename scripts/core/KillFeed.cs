@@ -11,8 +11,38 @@ public enum KillCause
 	Fall
 }
 
+/// <summary>Com que golpe o lobo matou.</summary>
+public enum WolfHit
+{
+	None,
+
+	/// <summary>A garrada (clique).</summary>
+	Claw,
+
+	/// <summary>O especial: o salto carregado (botão direito no chão).</summary>
+	Pounce,
+
+	/// <summary>O bote (botão direito no ar): veio de cima.</summary>
+	Dive
+}
+
 public readonly struct Kill
 {
+	/// <summary>O que o lobo manda no campo da arma, por golpe. Tudo
+	/// vira "lobo" em <see cref="Weapon"/>; o golpe fica em
+	/// <see cref="Wolf"/>.</summary>
+	public const string WolfClawId = "lobo";
+	public const string WolfPounceId = "lobo_salto";
+	public const string WolfDiveId = "lobo_bote";
+
+	/// <summary>Separa o id da arma das marcas do golpe ("ak47#c":
+	/// <c>c</c> pelas costas, <c>a</c> de cima). As marcas viajam no
+	/// mesmo texto da arma, então o abate online não precisou de campo
+	/// novo na rede.</summary>
+	public const char MarkSeparator = '#';
+	public const char BehindMark = 'c';
+	public const char AboveMark = 'a';
+
 	public readonly string Killer;
 	public readonly string Victim;
 	public readonly int KillerTeam;
@@ -27,6 +57,15 @@ public readonly struct Kill
 	/// matou. Entram no placar como assistência.</summary>
 	public readonly string[] Assisters;
 
+	/// <summary>O golpe do lobo que matou (ou None, se não foi lobo).</summary>
+	public readonly WolfHit Wolf;
+
+	/// <summary>Quem matou estava atrás da vítima.</summary>
+	public readonly bool FromBehind;
+
+	/// <summary>Quem matou estava bem acima da vítima.</summary>
+	public readonly bool FromAbove;
+
 	public Kill(string killer, int killerTeam, string victim, int victimTeam, KillCause cause,
 		string weapon = "", string[] assisters = null)
 	{
@@ -35,8 +74,27 @@ public readonly struct Kill
 		Victim = victim;
 		VictimTeam = victimTeam;
 		Cause = cause;
-		Weapon = weapon ?? "";
 		Assisters = assisters ?? System.Array.Empty<string>();
+
+		weapon ??= "";
+		string marks = "";
+		int cut = weapon.IndexOf(MarkSeparator);
+		if (cut >= 0)
+		{
+			marks = weapon[(cut + 1)..];
+			weapon = weapon[..cut];
+		}
+
+		FromBehind = marks.Contains(BehindMark);
+		FromAbove = marks.Contains(AboveMark);
+		Wolf = weapon switch
+		{
+			WolfPounceId => WolfHit.Pounce,
+			WolfDiveId => WolfHit.Dive,
+			WolfClawId => WolfHit.Claw,
+			_ => cause == KillCause.Wolf ? WolfHit.Claw : WolfHit.None
+		};
+		Weapon = Wolf != WolfHit.None ? WolfClawId : weapon;
 	}
 
 	public bool ByWolf => Cause == KillCause.Wolf;

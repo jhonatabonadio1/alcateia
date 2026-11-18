@@ -17,11 +17,49 @@ public partial class KillBanner : VBoxContainer
 	[Export] public int Lines = 3;
 
 	private static readonly Color Red = new("ff4a4f");
+	private static readonly Color Gold = new("ffc94d");
+
+	private Control _call;
+
+	/// <summary>A chamada grande, acima das linhas: DOUBLE KILL, TEAM
+	/// KILL, VINGANÇA. Uma por vez; a nova troca a anterior. Quanto maior
+	/// a sequência, maior a letra.</summary>
+	public void Announce(string title, int weight = 2, Color? color = null)
+	{
+		if (string.IsNullOrEmpty(title)) return;
+		if (_call != null && IsInstanceValid(_call)) _call.QueueFree();
+
+		int size = Mathf.Min(40 + weight * 5, 78);
+		Label call = HudStyle.Number(UiKit.Text(title, "Display"), size, color ?? Gold);
+		call.HorizontalAlignment = HorizontalAlignment.Center;
+		call.AddThemeConstantOverride("outline_size", 10);
+		call.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.7f));
+		AddChild(call);
+		MoveChild(call, 0);
+		_call = call;
+
+		// Entra estourando e assenta; fica um pouco e some.
+		call.Modulate = new Color(1, 1, 1, 0);
+		Tween life = call.CreateTween();
+		life.TweenProperty(call, "modulate:a", 1f, 0.08f);
+		life.TweenInterval(1.7f);
+		life.TweenProperty(call, "modulate:a", 0f, 0.45f);
+		life.TweenCallback(Callable.From(call.QueueFree));
+
+		Callable.From(() =>
+		{
+			if (!IsInstanceValid(call)) return;
+			call.PivotOffset = call.Size / 2f;
+			call.Scale = new Vector2(1.7f, 1.7f);
+			Tween pop = call.CreateTween();
+			pop.TweenProperty(call, "scale", Vector2.One, 0.3f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		}).CallDeferred();
+	}
 
 	public KillBanner()
 	{
 		MouseFilter = MouseFilterEnum.Ignore;
-		Alignment = AlignmentMode.Begin;
+		Alignment = AlignmentMode.End;
 		AddThemeConstantOverride("separation", UiTokens.S1);
 	}
 
@@ -60,9 +98,10 @@ public partial class KillBanner : VBoxContainer
 		}
 
 		AddChild(row);
-		while (GetChildCount() > Lines)
+		int first = _call != null && IsInstanceValid(_call) ? 1 : 0;
+		while (GetChildCount() - first > Lines)
 		{
-			Node old = GetChild(0);
+			Node old = GetChild(first);
 			RemoveChild(old);
 			old.QueueFree();
 		}

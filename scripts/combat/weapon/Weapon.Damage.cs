@@ -54,7 +54,7 @@ public partial class Weapon
 		if (target.IsRemote)
 		{
 			if (target.IsDead) return;
-			target.SendHit(amount, from, headshot, CauseOf(headshot), KillWeapon(), _body);
+			target.SendHit(amount, from, headshot, CauseOf(headshot), KillWeapon(target), _body);
 			EmitSignal(SignalName.DamageDealt, amount);
 			EmitSignal(SignalName.HitConfirmed, headshot);
 			_form.OnDamageDealt(amount);
@@ -81,7 +81,7 @@ public partial class Weapon
 		// feed, o placar e o WP voltam com a resposta dele.
 		if (net != null)
 		{
-			net.LocalKill(target, _body, CauseOf(headshot), KillWeapon(), headshot);
+			net.LocalKill(target, _body, CauseOf(headshot), KillWeapon(target), headshot);
 			return;
 		}
 
@@ -103,16 +103,44 @@ public partial class Weapon
 			target.PublicName,
 			target.Team,
 			CauseOf(headshot),
-			KillWeapon(),
+			KillWeapon(target),
 			assisters.ToArray()));
 	}
 
-	/// <summary>Id do que matou, para o feed e as estatísticas.</summary>
-	private string KillWeapon()
+	/// <summary>Atrás é quando a vítima olha para longe de quem bate: o
+	/// quanto a frente dela aponta na direção do golpe (1 = de costas).</summary>
+	[Export] public float BehindDot = 0.45f;
+
+	/// <summary>De cima: quem bate está pelo menos isto acima da vítima.</summary>
+	[Export] public float AboveHeight = 1.8f;
+
+	/// <summary>O golpe do lobo em curso (<see cref="Kill.WolfClawId"/>…):
+	/// quem chama a garra diz qual é.</summary>
+	private string _wolfHit = Kill.WolfClawId;
+
+	/// <summary>Id do que matou, para o feed e as estatísticas, com as
+	/// marcas do golpe: pelas costas, de cima (<see cref="Kill"/>).</summary>
+	private string KillWeapon(Health target)
 	{
-		if (_form.IsWolf) return "lobo";
-		if (HumanSlot == Slot.Knife) return Arsenal.KnifeId;
-		return Held?.Id ?? "";
+		string id = _form.IsWolf ? _wolfHit
+			: HumanSlot == Slot.Knife ? Arsenal.KnifeId
+			: Held?.Id ?? "";
+
+		string marks = "";
+		if (target?.GetParent() is Node3D victim && _body != null && victim != _body)
+		{
+			Vector3 toVictim = victim.GlobalPosition - _body.GlobalPosition;
+			if (-toVictim.Y >= AboveHeight) marks += Kill.AboveMark;
+
+			toVictim.Y = 0;
+			Vector3 facing = -victim.GlobalTransform.Basis.Z;
+			facing.Y = 0;
+			if (toVictim.LengthSquared() > 0.01f && facing.LengthSquared() > 0.01f
+				&& facing.Normalized().Dot(toVictim.Normalized()) >= BehindDot)
+				marks += Kill.BehindMark;
+		}
+
+		return marks == "" ? id : id + Kill.MarkSeparator + marks;
 	}
 
 	private KillCause CauseOf(bool headshot)

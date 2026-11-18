@@ -78,13 +78,14 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Efeitos visuais (GFX) em geral** (17/11): o que já existe está em
   `docs/EFEITOS.md`; faltam os do lobo (fumaça, ar, feixes nas garras,
   brilho) e os de tiro, sangue e impacto listados acima.
-- **Feed de abates e sequências (pedido do Jhon, 17/11) — a fazer.**
-  Ícone próprio no feed para: ataque de lobo, ataque pelas costas,
-  ataque por cima (o bote), o especial do lobo, abate do rival (quem te
-  matou por último). Avisos e **voz** de double, triple, quadra, penta
-  kill, 6, 7, 8 e "team kill" (o time inimigo inteiro). Precisa de o
-  `Kill` levar mais detalhe (de onde veio o golpe) e de gravar ou gerar
-  as falas.
+- **Falas das sequências (pedido do Jhon, 17/11) — falta gravar.** O
+  feed, os ícones e as chamadas de DOUBLE/TRIPLE/… KILL, TEAM KILL e
+  VINGANÇA estão prontos (`KillStory`, `KillBanner`), e o jogo já toca a
+  fala se o arquivo existir: `assets/audio/voz_double_kill.wav`,
+  `voz_triple_kill`, `voz_quadra_kill`, `voz_penta_kill`,
+  `voz_hexa_kill`, `voz_hepta_kill`, `voz_octa_kill`, `voz_team_kill`,
+  `voz_vinganca`. Falta a voz: gravar, comprar ou gerar (uma tentativa
+  de gerar com voz sintética em 17/11 foi barrada pelo ambiente).
 - **HUD, fontes e menu melhores — prioridade** (Jhon pediu foco nisso em 17/11).
   Primeira passada no HUD de combate feita em 17/11 (vidro, facetado,
   números inclinados, vida em gomos — `docs/UI.md`) e nos menus (fundo do

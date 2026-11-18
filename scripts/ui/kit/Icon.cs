@@ -7,7 +7,9 @@ public enum IconKind
 	Lock, Crown, Wolf, Human, Refresh, Go, Back, Close, Check, Chevrons,
 	Presa, Sangue, Star, Clock, Skull, Knife, Grenade, Claw, Fall, Headshot,
 	Plus, Minus, Trophy, Chat, Play, Users, Map, Bot, Info, Warning, Gun, Key, Power,
-	SkullSolid
+	SkullSolid,
+	// O feed de abates: o especial do lobo, de cima, pelas costas, vingança.
+	Pounce, FromAbove, Behind, Revenge
 }
 
 /// <summary>

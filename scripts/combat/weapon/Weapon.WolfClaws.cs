@@ -118,6 +118,7 @@ public partial class Weapon
 		ulong id = StartMove(move, CooldownClaw, 0f, () =>
 		{
 			if (!standing) Lunge();
+			_wolfHit = Kill.WolfClawId;
 			Claw(multiplier, ClawReach, ClawRadius, false);
 		});
 

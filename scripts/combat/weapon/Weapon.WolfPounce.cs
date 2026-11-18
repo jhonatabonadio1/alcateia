@@ -236,8 +236,12 @@ public partial class Weapon
 		_pounceFlew = false;
 		float damage = CombatRules.PounceMultiplier(HeavyDamageBonus, PounceMinPower, power);
 		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown,
-			() => Claw(damage, PounceHitReach, PounceHitRadius, false, _pounceFlew ? _flyDir : null,
-				focus: _pounceFocus, splash: PounceSplash), elapsed + saved);
+			() =>
+			{
+				_wolfHit = Kill.WolfPounceId;
+				Claw(damage, PounceHitReach, PounceHitRadius, false, _pounceFlew ? _flyDir : null,
+					focus: _pounceFocus, splash: PounceSplash);
+			}, elapsed + saved);
 
 		// O salto é um pulo de verdade: do impulso até os pés tocarem o
 		// chão, o corpo voa num arco. Para onde e até onde, diz a mira no
