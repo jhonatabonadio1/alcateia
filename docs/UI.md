@@ -255,6 +255,23 @@ em `scripts/ui/kit/HudStyle.cs`:
 - **Menus por cima da partida** (Esc, conjunto, resultado): o mapa
   borrado de fundo (`HudStyle.Backdrop`), no lugar do escuro chapado.
 
+**Os menus de fora da partida (17/11)**, no mesmo estilo — e era isto
+que o Jhon queria dizer com "HUD" (o de combate ficou, ele gostou):
+
+- **Fundo**: a foto do mapa da lista, borrada e escurecida, com um
+  mosaico de triângulos bem fraco por cima (o low poly), vinheta e um
+  zoom lento sem fim (`MenuBackdrop`, no `LobbyShell`).
+- **Painéis translúcidos** (Surface1/2/3, Card, Header, Modal): em cima
+  do fundo borrado, viram vidro, sem shader.
+- **Facetado em tudo**: `UiTheme.Box` corta o canto de cima à esquerda e
+  o de baixo à direita a 45° (o raio de antes × 2,5) no lugar de
+  arredondar. Vale para todo painel, botão, campo e ficha do jogo.
+- **Botões e abas inclinados** (`UiTheme.ButtonSkew`); o botão primário
+  com a fonte condensada inclinada; aba ativa com fundo e linha de
+  destaque.
+- **Títulos** (Display, Title) e números grandes na condensada inclinada.
+- **Janela de confirmação** (`Modal`) com o fundo borrado.
+
 
 O HUD in-game segue a regra dos cantos: informação de sobrevivência embaixo à esquerda, recursos embaixo à direita, estado da partida em cima, eventos à direita no meio. O centro fica livre — só mira e avisos críticos.
 

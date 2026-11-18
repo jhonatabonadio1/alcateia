@@ -80,8 +80,9 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   brilho) e os de tiro, sangue e impacto listados acima.
 - **HUD, fontes e menu melhores — prioridade** (Jhon pediu foco nisso em 17/11).
   Primeira passada no HUD de combate feita em 17/11 (vidro, facetado,
-  números inclinados, vida em gomos — `docs/UI.md`); falta conferir na
-  tela e levar o mesmo estilo aos menus de fora da partida.
+  números inclinados, vida em gomos — `docs/UI.md`) e nos menus (fundo do
+  mapa borrado, painéis de vidro, facetado, botões inclinados). Falta
+  conferir na tela e acertar tela por tela (loja, inventário, salas).
 
 ### Mapas e modos
 

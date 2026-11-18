@@ -2,6 +2,14 @@
 
 ## Não lançado
 
+### Menus no estilo low poly / Overwatch (17/11)
+- **Fundo dos menus**: a foto do mapa borrada e escurecida, com mosaico
+  de triângulos fraco, vinheta e zoom lento (`MenuBackdrop`).
+- **Painéis translúcidos** sobre esse fundo (vidro), **cantos facetados**
+  em todo o tema (`UiTheme.Box`), **botões e abas inclinados**, títulos
+  e números na fonte condensada inclinada, botão primário mais forte.
+- Janela de confirmação com o fundo borrado.
+
 ### W duplo cancela o salto carregado (17/11)
 - Carregando o especial do lobo (botão direito no chão), apertar W duas
   vezes desiste do salto, sem saltar e sem gastar a recarga, e sai

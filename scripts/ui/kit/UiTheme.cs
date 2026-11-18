@@ -45,12 +45,25 @@ public static class UiTheme
 			ContentMarginRight = padH,
 			ContentMarginTop = padV,
 			ContentMarginBottom = padV,
-			AntiAliasing = false
+			AntiAliasing = true,
+			AntiAliasingSize = 0.6f,
+			// Facetado (pedido do Jhon, 17/11: menus mais low poly, estilo
+			// Overwatch): o "raio" vira um corte reto a 45°, só no canto de
+			// cima à esquerda e no de baixo à direita.
+			CornerDetail = 1
 		};
 		box.SetBorderWidthAll(borderWidth);
-		box.SetCornerRadiusAll(radius);
+		int cut = Facet(radius);
+		box.CornerRadiusTopLeft = cut;
+		box.CornerRadiusBottomRight = cut;
 		return box;
 	}
+
+	/// <summary>O tamanho do corte de um canto, a partir do raio de antes.</summary>
+	public static int Facet(int radius) => radius <= 0 ? 0 : Mathf.RoundToInt(radius * 2.5f);
+
+	/// <summary>Inclinação dos botões e abas: o topo anda para a direita.</summary>
+	public const float ButtonSkew = 0.14f;
 
 	private static StyleBoxFlat Focus()
 	{
@@ -83,16 +96,21 @@ public static class UiTheme
 	// ------------------------------------------------------------------ botões
 
 	private static void ButtonStyle(Theme t, string type, Color bg, Color hover, Color pressed,
-		Color text, Color border, int borderWidth, Font font, int fontSize = UiTokens.Body)
+		Color text, Color border, int borderWidth, Font font, int fontSize = UiTokens.Body, float skew = ButtonSkew)
 	{
-		t.SetStylebox("normal", type, Box(bg, border, borderWidth));
-		t.SetStylebox("hover", type, Box(hover, border.A > 0 ? border.Lightened(0.2f) : border, borderWidth));
-		t.SetStylebox("pressed", type, Box(pressed, border, borderWidth));
-		t.SetStylebox("hover_pressed", type, Box(pressed, border, borderWidth));
+		StyleBoxFlat Skewed(StyleBoxFlat box)
+		{
+			box.Skew = new Vector2(skew, 0);
+			return box;
+		}
+		t.SetStylebox("normal", type, Skewed(Box(bg, border, borderWidth)));
+		t.SetStylebox("hover", type, Skewed(Box(hover, border.A > 0 ? border.Lightened(0.2f) : border, borderWidth)));
+		t.SetStylebox("pressed", type, Skewed(Box(pressed, border, borderWidth)));
+		t.SetStylebox("hover_pressed", type, Skewed(Box(pressed, border, borderWidth)));
 		// Desabilitado sempre tem contorno: sem ele, um primário
 		// desabilitado some no painel e o jogador não sabe que o botão
 		// existe.
-		t.SetStylebox("disabled", type, Box(UiTokens.Surface2, UiTokens.Border, 1));
+		t.SetStylebox("disabled", type, Skewed(Box(UiTokens.Surface2, UiTokens.Border, 1)));
 		t.SetStylebox("focus", type, Focus());
 
 		t.SetColor("font_color", type, text);
@@ -122,7 +140,7 @@ public static class UiTheme
 		t.SetTypeVariation("PrimaryButton", "Button");
 		ButtonStyle(t, "PrimaryButton",
 			UiTokens.Accent, UiTokens.Accent.Lightened(0.12f), UiTokens.Accent.Darkened(0.15f),
-			UiTokens.AccentText, Colors.Transparent, 0, UiFonts.Bold);
+			UiTokens.AccentText, Colors.Transparent, 0, HudStyle.Slanted(UiFonts.Display), UiTokens.Body + 3);
 
 		t.SetTypeVariation("TertiaryButton", "Button");
 		ButtonStyle(t, "TertiaryButton",
@@ -141,8 +159,9 @@ public static class UiTheme
 		ButtonStyle(t, "TabButton",
 			Colors.Transparent, new Color(1, 1, 1, 0.04f), Colors.Transparent,
 			UiTokens.TextSecondary, Colors.Transparent, 0, UiFonts.Label, UiTokens.Caption);
-		var active = Box(Colors.Transparent, UiTokens.Accent, 0, 0, UiTokens.S3, UiTokens.S2);
-		active.BorderWidthBottom = 2;
+		var active = Box(new Color(UiTokens.Accent, 0.1f), UiTokens.Accent, 0, 0, UiTokens.S3, UiTokens.S2);
+		active.BorderWidthBottom = 3;
+		active.Skew = new Vector2(ButtonSkew, 0);
 		t.SetStylebox("pressed", "TabButton", active);
 		t.SetStylebox("hover_pressed", "TabButton", active);
 		t.SetColor("font_pressed_color", "TabButton", UiTokens.TextPrimary);
@@ -152,7 +171,7 @@ public static class UiTheme
 		t.SetTypeVariation("IconButton", "Button");
 		ButtonStyle(t, "IconButton",
 			Colors.Transparent, new Color(1, 1, 1, 0.06f), new Color(1, 1, 1, 0.1f),
-			UiTokens.TextSecondary, Colors.Transparent, 0, UiFonts.Medium);
+			UiTokens.TextSecondary, Colors.Transparent, 0, UiFonts.Medium, skew: 0f);
 		foreach (string state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled" })
 		{
 			var box = (StyleBoxFlat)t.GetStylebox(state, "IconButton");
@@ -185,13 +204,14 @@ public static class UiTheme
 		t.SetColor("font_color", "Label", UiTokens.TextPrimary);
 		t.SetColor("font_shadow_color", "Label", Colors.Transparent);
 
-		LabelVariant(t, "Display", UiFonts.Display, UiTokens.Display, UiTokens.TextPrimary);
-		LabelVariant(t, "Title", UiFonts.Bold, UiTokens.Title, UiTokens.TextPrimary);
+		// Títulos inclinados e condensados, como os números do HUD.
+		LabelVariant(t, "Display", HudStyle.Slanted(UiFonts.Display), UiTokens.Display, UiTokens.TextPrimary);
+		LabelVariant(t, "Title", HudStyle.Slanted(UiFonts.Display), UiTokens.Title + 2, UiTokens.TextPrimary);
 		LabelVariant(t, "Subtitle", UiFonts.SemiBold, UiTokens.Subtitle, UiTokens.TextPrimary);
 		LabelVariant(t, "Caption", UiFonts.Label, UiTokens.Caption, UiTokens.TextSecondary);
 		LabelVariant(t, "Muted", UiFonts.Regular, UiTokens.Body, UiTokens.TextSecondary);
 		LabelVariant(t, "Numeric", UiFonts.Numeric, UiTokens.Body, UiTokens.TextPrimary);
-		LabelVariant(t, "NumericLarge", UiFonts.NumericDisplay, UiTokens.Title, UiTokens.TextPrimary);
+		LabelVariant(t, "NumericLarge", HudStyle.Slanted(UiFonts.NumericDisplay), UiTokens.Title, UiTokens.TextPrimary);
 
 		t.SetFont("normal_font", "RichTextLabel", UiFonts.Regular);
 		t.SetFont("bold_font", "RichTextLabel", UiFonts.Bold);
@@ -213,16 +233,18 @@ public static class UiTheme
 		t.SetStylebox("panel", "PanelContainer", Box(UiTokens.Surface1, default, 0, UiTokens.RadiusPanel, 0, 0));
 		t.SetStylebox("panel", "Panel", Box(UiTokens.Surface1, default, 0, UiTokens.RadiusPanel, 0, 0));
 
-		PanelVariant(t, "Surface1", Box(UiTokens.Surface1, UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3));
-		PanelVariant(t, "Surface2", Box(UiTokens.Surface2, UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3));
-		PanelVariant(t, "Surface3", Box(UiTokens.Surface3, UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
-		PanelVariant(t, "Card", Box(UiTokens.Surface2, UiTokens.Border, 1, UiTokens.RadiusPanel, 0, 0));
+		// Translúcidos: em cima do fundo borrado do menu (MenuBackdrop),
+		// viram vidro.
+		PanelVariant(t, "Surface1", Box(new Color(UiTokens.Surface1, 0.8f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3));
+		PanelVariant(t, "Surface2", Box(new Color(UiTokens.Surface2, 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3));
+		PanelVariant(t, "Surface3", Box(new Color(UiTokens.Surface3, 0.86f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
+		PanelVariant(t, "Card", Box(new Color(UiTokens.Surface2, 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, 0, 0));
 		PanelVariant(t, "Bare", Box(Colors.Transparent, default, 0, 0, 0, 0));
 		// HudPanel sem vidro (o vidro precisa de material: HudStyle.Panel).
 		PanelVariant(t, "HudPanel", HudStyle.Facet(new Color(UiTokens.Bg, 0.72f), new Color(1, 1, 1, 0.06f), 1, HudStyle.Skew, HudStyle.Cut, UiTokens.S3, UiTokens.S2));
-		PanelVariant(t, "Modal", Box(UiTokens.Surface2, UiTokens.BorderStrong, 1, UiTokens.RadiusPanel, UiTokens.S5, UiTokens.S4));
+		PanelVariant(t, "Modal", Box(new Color(UiTokens.Surface2, 0.92f), UiTokens.BorderStrong, 1, UiTokens.RadiusPanel, UiTokens.S5, UiTokens.S4));
 
-		var header = Box(UiTokens.Surface1, default, 0, 0, UiTokens.S3, 0);
+		var header = Box(new Color(UiTokens.Surface1, 0.86f), default, 0, 0, UiTokens.S3, 0);
 		header.BorderColor = UiTokens.Border;
 		header.BorderWidthBottom = 1;
 		PanelVariant(t, "Header", header);

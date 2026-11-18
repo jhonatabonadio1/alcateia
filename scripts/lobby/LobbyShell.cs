@@ -46,7 +46,8 @@ public partial class LobbyShell : Control
 		InputSetup.EnsureActions();
 		Settings.ApplyAudio();
 
-		AddChild(UiKit.Fill(new ColorRect { Color = UiTokens.Bg, MouseFilter = MouseFilterEnum.Ignore }));
+		// O mapa borrado de fundo, com o mosaico low poly (MenuBackdrop).
+		AddChild(new MenuBackdrop());
 
 		VBoxContainer frame = UiKit.Fill(UiKit.Column(0));
 		AddChild(frame);

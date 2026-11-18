@@ -26,7 +26,7 @@ public partial class Modal : Control
 		modal.MouseFilter = MouseFilterEnum.Stop;
 		modal.ZIndex = 50;
 
-		var dim = UiKit.Fill(new ColorRect { Color = new Color(0, 0, 0, 0.62f) });
+		var dim = UiKit.Fill(new ColorRect { Color = Colors.Black, Material = HudStyle.Backdrop(0.55f) });
 		modal.AddChild(dim);
 
 		var center = UiKit.Fill(new CenterContainer());
