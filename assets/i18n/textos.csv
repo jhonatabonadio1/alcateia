@@ -289,50 +289,37 @@ A conta guarda a sua patente online e o seu lugar no ranking.,,,,scripts/lobby/O
 A sua sessão venceu. Entre de novo.,,,,scripts/lobby/OnlineScreen.cs
 Atualizar,,,,scripts/lobby/OnlineScreen.cs
 até {0} · {1} min,,,,scripts/lobby/OnlineScreen.cs
-Bots,,,,scripts/lobby/OnlineScreen.cs
 Carregando…,,,,scripts/lobby/OnlineScreen.cs
 Conectando…,,,,scripts/lobby/OnlineScreen.cs
 Conversa,,,,scripts/lobby/OnlineScreen.cs
-Criar,,,,scripts/lobby/OnlineScreen.cs
 Criar conta,,,,scripts/lobby/OnlineScreen.cs
 Criar sala,,,,scripts/lobby/OnlineScreen.cs
-Criar sala online,,,,scripts/lobby/OnlineScreen.cs
 "Crie a sua e chame alguém. Nos modos contra bots, o dono da sala põe os bots que quiser em cada time.",,,,scripts/lobby/OnlineScreen.cs
 Entrando como {0} em {1}.,,,,scripts/lobby/OnlineScreen.cs
 Entrar,,,,scripts/lobby/OnlineScreen.cs
 "Entre com a sua conta do servidor, ou crie uma agora. ",,,,scripts/lobby/OnlineScreen.cs
-Escolha o modo de jogo,,,,scripts/lobby/OnlineScreen.cs
 Escreva e aperte Enter,,,,scripts/lobby/OnlineScreen.cs
 Falando com o servidor…,,,,scripts/lobby/OnlineScreen.cs
-Mapa,,,,scripts/lobby/OnlineScreen.cs
-Modo,,,,scripts/lobby/OnlineScreen.cs
 Nenhuma sala aberta agora,,,,scripts/lobby/OnlineScreen.cs
 Ninguém jogou ainda.,,,,scripts/lobby/OnlineScreen.cs
 Nome,,,,scripts/lobby/OnlineScreen.cs
-Nome da sala,,,,scripts/lobby/OnlineScreen.cs
 Não achei o servidor em {0}. Ele está no ar? (docker compose up -d),,,,scripts/lobby/OnlineScreen.cs
 Não consegui carregar.,,,,scripts/lobby/OnlineScreen.cs
 Não consegui falar com {0}.,,,,scripts/lobby/OnlineScreen.cs
 Não consegui falar com {0}. O servidor está no ar?,,,,scripts/lobby/OnlineScreen.cs
 Partida registrada no servidor: +{0} XP de patente online,,,,scripts/lobby/OnlineScreen.cs
-Pontos,,,,scripts/lobby/OnlineScreen.cs
 Ranking,,,,scripts/lobby/OnlineScreen.cs
 Sair da conta,,,,scripts/lobby/OnlineScreen.cs
 Sala com senha,,,,scripts/lobby/OnlineScreen.cs
 Sala de {0},,,,scripts/lobby/OnlineScreen.cs
 Sem ligação com o servidor,,,,scripts/lobby/OnlineScreen.cs
-Sem senha,,,,scripts/lobby/OnlineScreen.cs
 Senha,,,,scripts/lobby/OnlineScreen.cs
 Senha (8 ou mais),,,,scripts/lobby/OnlineScreen.cs
 Senha da sala,,,,scripts/lobby/OnlineScreen.cs
 Servidor,,,,scripts/lobby/OnlineScreen.cs
-Tempo,,,,scripts/lobby/OnlineScreen.cs
 Tentar de novo,,,,scripts/lobby/OnlineScreen.cs
-Times,,,,scripts/lobby/OnlineScreen.cs
-{0} abates,,,,scripts/lobby/OnlineScreen.cs
 {0} aberta(s) · você é {1},,,,scripts/lobby/OnlineScreen.cs
 {0} jogador(es) e {1} bot(s). Quem entra toma o lugar de um bot.,,,,scripts/lobby/OnlineScreen.cs
-{0} minutos,,,,scripts/lobby/OnlineScreen.cs
 Cor,,,,scripts/lobby/OptionsScreen.cs
 Cruz,,,,scripts/lobby/OptionsScreen.cs
 Cruz com ponto,,,,scripts/lobby/OptionsScreen.cs
@@ -413,6 +400,7 @@ Aguardando,,,,scripts/lobby/RoomScreen.cs
 Arma,,,,scripts/lobby/RoomScreen.cs
 Bare,,,,scripts/lobby/RoomScreen.cs
 Bot,,,,scripts/lobby/RoomScreen.cs
+Bots,,,,scripts/lobby/RoomScreen.cs
 Canal local,,,,scripts/lobby/RoomScreen.cs
 Convidar,,,,scripts/lobby/RoomScreen.cs
 Convidar amigos exige servidor,,,,scripts/lobby/RoomScreen.cs
@@ -438,7 +426,9 @@ Iniciar partida,,,,scripts/lobby/RoomScreen.cs
 Jogador,,,,scripts/lobby/RoomScreen.cs
 Jogadores,,,,scripts/lobby/RoomScreen.cs
 M16A2,,,,scripts/lobby/RoomScreen.cs
+Mapa,,,,scripts/lobby/RoomScreen.cs
 Marcar pronto,,,,scripts/lobby/RoomScreen.cs
+Modo,,,,scripts/lobby/RoomScreen.cs
 Médio,,,,scripts/lobby/RoomScreen.cs
 Médios,,,,scripts/lobby/RoomScreen.cs
 médios,,,,scripts/lobby/RoomScreen.cs
@@ -455,10 +445,12 @@ Regras da sala,,,,scripts/lobby/RoomScreen.cs
 Sair da sala,,,,scripts/lobby/RoomScreen.cs
 SALA,,,,scripts/lobby/RoomScreen.cs
 Sala,,,,scripts/lobby/RoomScreen.cs
+Sem senha,,,,scripts/lobby/RoomScreen.cs
 Situação,,,,scripts/lobby/RoomScreen.cs
 só o mestre altera,,,,scripts/lobby/RoomScreen.cs
 Só o mestre inicia,,,,scripts/lobby/RoomScreen.cs
 Só o mestre troca o mapa,,,,scripts/lobby/RoomScreen.cs
+Tempo,,,,scripts/lobby/RoomScreen.cs
 Tipo,,,,scripts/lobby/RoomScreen.cs
 Tirar {0},,,,scripts/lobby/RoomScreen.cs
 Tire jogadores antes de diminuir os times,,,,scripts/lobby/RoomScreen.cs

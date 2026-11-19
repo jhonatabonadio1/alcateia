@@ -46,6 +46,9 @@ public partial class RoarBurst : Node3D
 	/// <summary>Ondas vivas no chão agora. Para os testes.</summary>
 	public int Rings => _rings.Count;
 
+	/// <summary>A onda do chão em volta do lobo. Desligada.</summary>
+	public static bool SpawnGroundWaves = false;
+
 	private const float GroundEvery = 0.5f;
 	private const float GroundLife = 0.6f;
 
@@ -170,7 +173,10 @@ public partial class RoarBurst : Node3D
 			else _arcs[i] = arc;
 		}
 
-		if (Active)
+		// A onda do chão (um círculo com borda abrindo em volta) saiu a
+		// pedido do Jhon (18/11: "o rugido não precisa ter círculo com
+		// borda no chão"). Fica a poça de luz nos pés, macia.
+		if (Active && SpawnGroundWaves)
 		{
 			_groundClock -= delta;
 			if (_groundClock <= 0)

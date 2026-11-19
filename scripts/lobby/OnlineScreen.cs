@@ -23,7 +23,7 @@ public partial class OnlineScreen : LobbyScreen
 	public override IconKind NavIcon => IconKind.Rooms;
 
 	private static readonly int[] Scores = { 10, 20, 30, 40, 60, 80, 100 };
-	private static readonly int[] Durations = { 3, 5, 10, 15, 20, 30 };
+	private static readonly int[] Durations = { 5, 10, 15, 20, 25, 30 };
 
 	private VBoxContainer _main;
 	private VBoxContainer _chatLog;
@@ -317,76 +317,24 @@ public partial class OnlineScreen : LobbyScreen
 
 	private const int MaxPassword = 32;
 
-	/// <summary>Criar sala: primeiro o modo de jogo, depois o resto das
-	/// regras (decisão do Jhon, 17/11).</summary>
+	/// <summary>
+	/// Criar sala: vai direto para a sala, com as regras da última sala
+	/// criada (ou as de sempre), e lá o dono muda o que quiser — modo,
+	/// mapa, times, pontos, tempo, senha (decisão do Jhon, 18/11: "ao criar
+	/// sala não precisa do modal, pode ir direto para a sala"). Antes eram
+	/// duas janelas, a do modo e a das regras.
+	/// </summary>
 	private void AskNewRoom()
 	{
-		RoomSettings last = (Profile.LastRoom ?? new RoomSettings()).Clone();
-		ModePicker.Ask(Shell, "Escolha o modo de jogo", PlayModes.All, last.Play, mode =>
-		{
-			last.Play = mode;
-			AskRoomRules(last);
-		});
-	}
-
-	private void AskRoomRules(RoomSettings s)
-	{
+		RoomSettings s = (Profile.LastRoom ?? new RoomSettings()).Clone();
 		if (string.IsNullOrWhiteSpace(s.Title) || s.Title == "Sala de treino") s.Title = Loc.F("Sala de {0}", Backend.AccountName);
 		s.Password = "";
 		s.TeamSize = Math.Clamp(s.TeamSize, 1, RoomSettings.MaxTeamSize);
-
-		VBoxContainer form = UiKit.Column(UiTokens.S2);
-		form.CustomMinimumSize = new Vector2(440, 0);
-
-		LineEdit title = UiKit.Field(s.Title, "Nome da sala", 40);
-		LineEdit password = UiKit.Field("", "Sem senha", MaxPassword);
-		string[] maps = Maps.All.Select(m => m.Name).ToArray();
-
-		int[] sizes = RoomSettings.TeamSizes;
-		PlayModes.Info[] modes = PlayModes.All;
 		if (!Maps.All.Any(m => m.Id == s.Map)) s.Map = Maps.All[0].Id;
-
-		// A foto do mapa em cima do formulário: a escolha do mapa é por ela.
-		var frame = new PanelContainer();
-		frame.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Bg, UiTokens.Border, 1, UiTokens.RadiusSmall, 0, 0));
-		TextureRect picture = UiKit.Thumbnail(Maps.Get(s.Map).Picture, new Vector2(440, 248));
-		frame.AddChild(picture);
-		form.AddChild(frame);
-
-		form.AddChild(UiKit.FormRow("Nome", title, 110));
-		form.AddChild(UiKit.FormRow("Modo", UiKit.Picker(modes.Select(m => m.Name).ToArray(), Math.Max(0, Array.FindIndex(modes, m => m.Mode == s.Play)),
-			i => s.Play = modes[i].Mode), 110));
-		form.AddChild(UiKit.FormRow("Mapa", UiKit.Picker(maps, Maps.All.FindIndex(m => m.Id == s.Map), i =>
-		{
-			s.Map = Maps.All[i].Id;
-			string path = Maps.All[i].Picture;
-			picture.Texture = ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null;
-		}), 110));
-		form.AddChild(UiKit.FormRow("Times", UiKit.Picker(sizes.Select(n => Loc.F("{0} contra {1}", n, n)).ToArray(),
-			Math.Max(0, Array.IndexOf(sizes, s.TeamSize)), i => s.TeamSize = sizes[i]), 110));
-		form.AddChild(UiKit.FormRow("Pontos", UiKit.Picker(Scores.Select(n => Loc.F("{0} abates", n)).ToArray(),
-			Nearest(Scores, s.ScoreToWin), i => s.ScoreToWin = Scores[i]), 110));
-		form.AddChild(UiKit.FormRow("Tempo", UiKit.Picker(Durations.Select(n => Loc.F("{0} minutos", n)).ToArray(),
-			Nearest(Durations, s.Minutes), i => s.Minutes = Durations[i]), 110));
-		form.AddChild(UiKit.FormRow("Armas", UiKit.Picker(RoomSettings.WeaponNames, (int)s.Weapons, i => s.Weapons = (WeaponRule)i,
-			Enum.GetValues<WeaponRule>().Select(w => !RoomSettings.WeaponsAvailable(w)).ToArray()), 110));
-		form.AddChild(UiKit.FormRow("Bots", UiKit.Picker(RoomSettings.DifficultyNames, (int)s.Difficulty, i => s.Difficulty = (BotLevel)i), 110));
-		form.AddChild(UiKit.FormRow("Senha", password, 110));
-		form.AddChild(UiKit.Check("Fogo amigo", s.FriendlyFire, on => s.FriendlyFire = on));
-
-		// O valor dos seletores é o que estava mostrando, mesmo sem mexer.
 		s.ScoreToWin = Scores[Nearest(Scores, s.ScoreToWin)];
 		s.Minutes = Durations[Nearest(Durations, s.Minutes)];
-
-		Shell.Modal("Criar sala online", form,
-			new Modal.Choice("Cancelar", ButtonKind.Secondary, null),
-			new Modal.Choice("Criar", ButtonKind.Primary, () =>
-			{
-				s.Title = title.Text;
-				s.Password = password.Text;
-				RoomScreen.PendingPassword = password.Text;
-				Lobby.CreateRoom(OnlineMatch.SettingsTo(s));
-			}));
+		RoomScreen.PendingPassword = "";
+		Lobby.CreateRoom(OnlineMatch.SettingsTo(s));
 	}
 
 	private static int Nearest(int[] options, int value)

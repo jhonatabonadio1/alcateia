@@ -120,6 +120,25 @@ public partial class Hud : CanvasLayer
 
 	public override void _ExitTree() => KillFeed.Reported -= OnKill;
 
+	/// <summary>A vida, a arma, a faixa do lobo: o que é só de quem joga.
+	/// Saem da tela enquanto a câmera de abate ou o espectador mostram o
+	/// HUD de outro (<see cref="KillCam"/>).</summary>
+	private readonly System.Collections.Generic.List<Control> _personal = new();
+	private bool _watchingShown;
+
+	private void UpdateWatching()
+	{
+		bool watching = KillCam.Active;
+		if (watching != _watchingShown)
+		{
+			_watchingShown = watching;
+			foreach (Control panel in _personal) panel.Visible = !watching;
+			if (_hitMarker != null) _hitMarker.Visible = !watching;
+		}
+		if (watching) _death.Visible = false;
+		RestyleFeed();
+	}
+
 	public override void _Process(double delta)
 	{
 		if (_health == null) return;
@@ -144,6 +163,7 @@ public partial class Hud : CanvasLayer
 		}
 
 		UpdateDanger((float)delta);
+		UpdateWatching();
 		UpdateRadio(delta);
 		UpdateTransform();
 		UpdateSpecial();

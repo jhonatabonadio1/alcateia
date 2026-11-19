@@ -450,7 +450,8 @@ public partial class RoomScreen : LobbyScreen
 		form.AddChild(Row("Objetivo", Picker(scores.Select(n => Loc.F("{0} pontos", n)).ToArray(),
 			Mathf.Max(0, Array.IndexOf(scores, S.ScoreToWin)), i => Change("Objetivo", Loc.F("{0} pontos", scores[i]), () => S.ScoreToWin = scores[i]))));
 
-		int[] minutes = { 5, 10, 15, 20 };
+		// Até 30 minutos (decisão do Jhon, 18/11).
+		int[] minutes = { 5, 10, 15, 20, 25, 30 };
 		form.AddChild(Row("Tempo", Picker(minutes.Select(n => Loc.F("{0} min", n)).ToArray(),
 			Mathf.Max(0, Array.IndexOf(minutes, S.Minutes)), i => Change("Tempo", Loc.F("{0} min", minutes[i]), () => S.Minutes = minutes[i]))));
 

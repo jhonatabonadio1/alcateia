@@ -44,13 +44,13 @@ public partial class Health : Node
 	/// A espera para renascer, na partida (pedido do Jhon, 18/11): no
 	/// mínimo <see cref="RespawnDelay"/> para todo mundo, e cada morte
 	/// soma <see cref="RespawnGrowth"/>, até <see cref="RespawnMax"/>.
-	/// Com 10 / 2,5 / 30: 10 s, 12,5 s, 15 s… e 30 s da nona morte em
-	/// diante. Fora de partida (treino) vale
+	/// Com 10 / 1 / 15 (decisão do Jhon, 18/11, à noite): 10 s, 11 s,
+	/// 12 s… e 15 s da sexta morte em diante. Fora de partida (treino) vale
 	/// <see cref="TrainingRespawnDelay"/>, curto, sem crescer.
 	/// </summary>
 	[Export] public float RespawnDelay = 10f;
-	[Export] public float RespawnGrowth = 2.5f;
-	[Export] public float RespawnMax = 30f;
+	[Export] public float RespawnGrowth = 1f;
+	[Export] public float RespawnMax = 15f;
 	[Export] public float TrainingRespawnDelay = 3f;
 
 	/// <summary>Quantas vezes este corpo morreu na partida.</summary>

@@ -17,8 +17,8 @@ public partial class Weapon
 	[ExportGroup("Coronhada")]
 	[Export] public float ButtDamage = 55f;
 	[Export] public float ButtRange = 1.9f;
-	[Export] public float ButtCooldown = 0.45f;
-	[Export] public float ButtHitDelay = 0.09f;
+	[Export] public float ButtCooldown = 0.55f;
+	[Export] public float ButtHitDelay = 0.11f;
 
 	/// <summary>A coronhada começou (a arma na mão anima, o som sai).</summary>
 	[Signal] public delegate void ButtedEventHandler();
@@ -39,7 +39,7 @@ public partial class Weapon
 		_buttLeft = ButtCooldown;
 		_buttHitIn = ButtHitDelay;
 		EmitSignal(SignalName.Butted);
-		Sfx.At(Sfx.First("coronhada", "faca"), _body.GlobalPosition, 6f, -3f, 16f);
+		Sfx.At("coronhada", _body.GlobalPosition, 6f, -2f, 16f);
 		return true;
 	}
 

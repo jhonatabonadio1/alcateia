@@ -25,12 +25,11 @@ public sealed class DangerTest : RegressionTest
 			await b.Seconds(2.2);
 			b.AtMost(0.02, hud.Danger, $"{who}, vida cheia: sem vermelho");
 
-			// Sem escudo e com a vida a 15% (o lobo: 15% da soma de vida e escudo).
-			for (int i = 0; i < 20 && hp.Shield > 0.5f; i++) hp.TakeDamage(hp.Shield + 5f);
-			hp.SetHp((hp.MaxHp + hp.MaxShield) * 0.15f);
+			// A vida a 15%; o lobo com o escudo por cima, inteiro.
+			hp.SetHp(hp.MaxHp * 0.15f);
 			await b.Seconds(0.6);
 			RegressionBench.Note($"{who}: vida {RegressionBench.F(hp.Hp)} de {RegressionBench.F(hp.MaxHp)}, escudo {RegressionBench.F(hp.Shield)}, perigo {RegressionBench.F(hud.Danger)}");
-			b.AtLeast(0.3, hud.Danger, $"{who} com 15% de vida (e escudo): a tela avermelha");
+			b.AtLeast(0.3, hud.Danger, $"{who} com 15% de vida: a tela avermelha (o escudo do lobo não apaga)");
 			b.Check(hud.Breathing, $"{who} com 15% de vida: a respiração ofegante toca");
 		}
 	}

@@ -220,6 +220,39 @@ public partial class WolfVisual : Node3D
 		}
 	}
 
+	/// <summary>
+	/// Uma cópia só de enfeite do lobo, para a câmera de abate (o replay de
+	/// quem matou, quando ele era lobo): o mesmo modelo, a mesma pele e os
+	/// mesmos clipes, num tocador próprio, sem física nem árvore de
+	/// animação. Quem a usa põe no lugar e escolhe o passo
+	/// (<see cref="GhostStep"/>). Null se o modelo ainda não existe.
+	/// </summary>
+	public Node3D MakeGhost(out Transform3D offset)
+	{
+		offset = Transform3D.Identity;
+		if (_model == null || !IsInstanceValid(_model) || GetParent() is not Node3D body) return null;
+		offset = body.GlobalTransform.AffineInverse() * _model.GlobalTransform;
+		var ghost = (Node3D)_model.Duplicate();
+		ghost.Visible = true;
+		ghost.TopLevel = true;
+		return ghost;
+	}
+
+	/// <summary>Põe o lobo de enfeite no passo da velocidade: parado,
+	/// andando, correndo ou de quatro.</summary>
+	public static void GhostStep(Node3D ghost, float speed)
+	{
+		if (ghost.FindChild("AnimationPlayer", true, false) is not AnimationPlayer player) return;
+		string want = speed < 0.4f ? "idle" : speed < 3.2f ? "walk" : speed < 5.5f ? "run" : "sprint";
+		foreach (string clip in new[] { want, "run", "walk", "idle" })
+		{
+			string name = $"lobo/{clip}";
+			if (!player.HasAnimation(name)) continue;
+			if (player.CurrentAnimation != name || !player.IsPlaying()) player.Play(name, 0.15);
+			return;
+		}
+	}
+
 	/// <summary>A câmera de abate reencena o corpo: de pé e andando
 	/// (verdadeiro) ou caindo de novo (falso).</summary>
 	public void ReplayAlive(bool alive)

@@ -165,3 +165,9 @@ primeiros ciclos, 12% mais rápidos, em laço (`tools/sons/respiracao.py`).
 and Tough**) foram gerados pelo Jhon no **ElevenLabs** e cortados por
 `tools/sons/radio.py`. Vale a mesma observação das outras falas geradas lá
 (docs/SONS_IA.md): conferir o plano da conta para uso comercial.
+
+## Câmera de abate e coronhada (18/11, à noite)
+
+`musica_camera_abate.ogg` é sintetizada (`tools/sons/camera_abate.py`), sem
+material de terceiros. `coronhada_1..3` saem do **Oculus Audio Pack 1**
+(MovementWithGear, Swoosh e VOXMale Hurt; `tools/sons/coronhada.py`).

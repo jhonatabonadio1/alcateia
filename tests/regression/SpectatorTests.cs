@@ -3,15 +3,17 @@ using System.Linq;
 using System.Threading.Tasks;
 
 /// <summary>
-/// Morto: a câmera de abate (a visão de quem matou) passa e pode ser pulada
-/// com Espaço; depois a câmera segue um aliado vivo, Espaço troca de aliado,
-/// F solta a câmera livre e volta; renasceu, tudo se desfaz. E a bala de
-/// raspão tem os seus sons.
+/// Morto: 1 s no próprio corpo; depois a câmera de abate — o replay pelo
+/// olho de quem matou, em primeira pessoa com a arma dele, o HUD dele e o
+/// nome no alto —; Espaço vai para o espectador, direto na primeira pessoa
+/// de um aliado; Espaço troca para de cima e para a câmera livre, que não
+/// sai do mapa; morto, o rádio não fala; a escolha de conjunto só aparece
+/// na hora de renascer.
 /// </summary>
 public sealed class SpectatorTest : RegressionTest
 {
 	public override string Name => "Espectador";
-	public override string Description => "morto: câmera de abate que Espaço pula, depois assiste os aliados (Espaço troca, F câmera livre) até renascer";
+	public override string Description => "morto: 1 s no corpo, replay do abate em primeira pessoa (Espaço pula), espectador em primeira pessoa, de cima e livre dentro do mapa";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -20,14 +22,16 @@ public sealed class SpectatorTest : RegressionTest
 		b.Check(bots.Length >= 2, $"há bots no treino ({bots.Length})");
 		if (bots.Length < 2) return;
 		foreach (var bot in bots) RegressionBench.Freeze(bot);
-		CharacterBody3D killer = bots[0], mate = bots[1];
+		// O aliado é um bot humano (o lobo é visto de fora, pela câmera de lobo).
+		CharacterBody3D mate = bots.FirstOrDefault(x => !x.GetNode<FormController>("FormController").IsWolf) ?? bots[1];
+		CharacterBody3D killer = bots.First(x => x != mate);
 		killer.GetNode<Health>("Health").Team = b.Health.Team == Teams.Blue ? Teams.Orange : Teams.Blue;
 		mate.GetNode<Health>("Health").Team = b.Health.Team;
 		for (int i = 2; i < bots.Length; i++) bots[i].GetNode<Health>("Health").Team = killer.GetNode<Health>("Health").Team;
-		b.Check(Sfx.Has("bala_raspao"), "o som da bala de raspão existe");
+		b.Check(Sfx.Has("musica_camera_abate"), "a música da câmera de abate existe");
 
 		// Espera longa para renascer, como na partida (no treino são 3 s).
-		b.Health.TrainingRespawnDelay = 12f;
+		b.Health.TrainingRespawnDelay = 14f;
 
 		// Anda um pouco antes de morrer, para a fita ter o que mostrar.
 		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.3);
@@ -41,49 +45,64 @@ public sealed class SpectatorTest : RegressionTest
 		b.Health.TakeDamage(99999f);
 		await b.Frames(3);
 		KillCam cam = b.GetTree().Root.FindChildren("*", "", true, false).OfType<KillCam>().FirstOrDefault();
-		b.Check(cam != null && cam.Mode == "abate" && KillCam.InKillPhase, "morreu: a câmera de abate começa");
+		b.Check(cam != null && cam.Mode == "morte", "morreu: primeiro, o próprio corpo");
 		if (cam == null) return;
-		b.Check(cam.Replaying && b.Player.Replaying, "com a fita gravada, é o replay do abate");
+		b.Check(KillCam.Active, "o HUD de quem joga sai (o de quem se vê toma o lugar)");
 
-		// No meio do replay o corpo está de volta ao caminho que fez, e a
-		// câmera está no olho de quem matou.
-		await b.Seconds(0.9);
-		b.AtLeast(1.0, RegressionBench.Flat(b.Player.GlobalPosition - fell), "no replay, o corpo volta para onde estava antes (m)");
-		Camera3D replayView = b.GetViewport().GetCamera3D();
-		b.AtMost(1.2, replayView.GlobalPosition.DistanceTo(killer.GlobalPosition + Vector3.Up * 0.72f), "a câmera do replay fica no olho do matador (m)");
+		await b.Seconds(1.1);
+		b.Check(cam.Mode == "abate" && KillCam.InKillPhase, $"1 s depois: a câmera de abate (modo {cam.Mode})");
+		b.Check(cam.Replaying && b.Player.Replaying, "com a fita gravada, é o replay");
+		b.Check(KillCam.Focus == killer.GetNode<Health>("Health").PublicName, "o feed marca o nome de quem matou");
+
+		await b.Seconds(0.6);
+		if (killer.GetNode<FormController>("FormController").ShowsWolf)
+		{
+			// Quem matou era lobo: a câmera de lobo, atrás da cópia que refaz o caminho.
+			b.Check(!cam.FirstPerson && cam.Ghost != null, "quem matou era lobo: câmera de lobo, com o lobo reencenado");
+			Camera3D wolfView = b.GetViewport().GetCamera3D();
+			b.AtMost(3.2, wolfView.GlobalPosition.DistanceTo(cam.Ghost.GlobalPosition + Vector3.Up * 0.6f), "a câmera de lobo fica atrás dele (m)");
+		}
+		else
+			b.Check(cam.FirstPerson && cam.PovWeapon == killer.GetNode<Weapon>("Weapon").HeldId, $"em primeira pessoa, com a arma dele na mão ({cam.PovWeapon})");
+		b.AtLeast(0.6, RegressionBench.Flat(b.Player.GlobalPosition - fell), "no replay, o corpo volta para onde estava antes (m)");
+
+		// Morto, o rádio não fala.
+		Radio.Reset();
+		b.Check(!Radio.Send(b.Player, 0), "morto, o rádio não fala");
 
 		await b.Tap("jump");
 		await b.Frames(3);
-		b.Check(cam.Mode == "aliado" && !KillCam.InKillPhase, $"Espaço pula a câmera de abate (modo {cam.Mode})");
-		b.Check(cam.Watching == mate, "e a câmera passa a seguir o aliado vivo");
-		b.Check(!b.Player.Replaying, "pulou: o corpo deixa de ser reencenado");
+		b.Check(cam.Mode == "primeira" && cam.Watching == mate, $"Espaço: espectador, direto na primeira pessoa do aliado (modo {cam.Mode})");
+		b.Check(!b.Player.Replaying, "saiu do replay: o corpo deixa de ser reencenado");
 		b.AtMost(0.3, RegressionBench.Flat(b.Player.GlobalPosition - fell), "e volta para onde caiu (m)");
-		b.CloseLoadout();
-
-		await b.Seconds(0.8);
+		b.Check(KillCam.Focus == mate.GetNode<Health>("Health").PublicName, "o feed passa a marcar o aliado");
+		await b.Seconds(0.3);
 		Camera3D view = b.GetViewport().GetCamera3D();
+		b.AtMost(0.3, view.GlobalPosition.DistanceTo(mate.GlobalPosition + Vector3.Up * mate.GetNode<Node3D>("Head").Position.Y), "a câmera fica no olho do aliado (m)");
+		b.Check(cam.FirstPerson && cam.PovWeapon != null, $"com a arma dele na mão ({cam.PovWeapon})");
+
+		await b.Tap("jump");
+		await b.Seconds(0.8);
+		b.Check(cam.Mode == "cima", "Espaço: vista de cima do aliado");
 		b.AtMost(6.0, view.GlobalPosition.DistanceTo(mate.GlobalPosition), "a câmera fica por cima do aliado (m)");
 
-		// Espaço troca a visão: de cima → primeira pessoa → livre.
-		await b.Tap("jump");
-		await b.Seconds(0.5);
-		b.Check(cam.Mode == "primeira" && cam.Watching == mate, $"Espaço: primeira pessoa do aliado (modo {cam.Mode})");
-		b.AtMost(0.6, view.GlobalPosition.DistanceTo(mate.GlobalPosition + Vector3.Up * 0.72f), "a câmera fica no olho do aliado (m)");
-		await b.Tap("attack");
-		await b.Frames(3);
-		b.Check(cam.Watching == mate && cam.Mode == "primeira", "o clique troca de aliado (só há um: fica nele)");
 		await b.Tap("jump");
 		await b.Frames(3);
 		b.Check(cam.Mode == "livre", "Espaço de novo: câmera livre");
 		Vector3 before = view.GlobalPosition;
 		RegressionBench.Press("move_forward");
 		await b.Seconds(0.5);
-		RegressionBench.Release("move_forward");
 		b.AtLeast(2.5, view.GlobalPosition.DistanceTo(before), "livre, o W anda pelo mapa (m)");
+		// Segura o W até bater na borda: a câmera não sai do mapa.
+		RegressionBench.Press("walk");
+		await b.Seconds(8);
+		RegressionBench.ReleaseAll();
+		Aabb box = MapBounds.Of(b.GetTree());
+		b.Check(box.Grow(0.05f).HasPoint(view.GlobalPosition), $"a câmera livre não sai do mapa ({view.GlobalPosition})");
 
 		await b.Tap("jump");
 		await b.Frames(3);
-		b.Check(cam.Mode == "aliado", "Espaço de novo volta aos aliados, de cima");
+		b.Check(cam.Mode == "primeira", "Espaço de novo volta aos aliados, em primeira pessoa");
 		var menu = b.GetTree().Root.FindChildren("*", "", true, false).OfType<LoadoutMenu>().FirstOrDefault();
 		b.Check(menu != null && !menu.IsOpen, "morto e assistindo, a escolha de conjunto não aparece");
 
@@ -93,5 +112,6 @@ public sealed class SpectatorTest : RegressionTest
 		await b.Seconds(0.5);
 		b.Check(!b.Health.IsDead, "escolheu: renasce");
 		b.Check(!GodotObject.IsInstanceValid(cam) || cam.IsQueuedForDeletion(), "e a câmera de espectador some");
+		b.Check(!KillCam.Active, "e o HUD de quem joga volta");
 	}
 }

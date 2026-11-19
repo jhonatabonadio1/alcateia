@@ -29,7 +29,13 @@ public partial class ViewModel
 	public bool HasRigHands => _rigHands != null && IsInstanceValid(_rigHands);
 
 	/// <summary>Põe as mãos padrão no esqueleto desta arma, se ele for o do AR-15.</summary>
-	private void AttachRigHands(Node3D scene)
+	private void AttachRigHands(Node3D scene) => _rigHands = PutStandardHands(scene);
+
+	/// <summary>As mãos padrão no esqueleto do conjunto (o do AR-15), no
+	/// lugar dos braços que vieram nele. Serve também à câmera de abate e
+	/// ao espectador (<see cref="KillCam"/>). Null se o esqueleto não é
+	/// esse.</summary>
+	internal static MeshInstance3D PutStandardHands(Node3D scene)
 	{
 		Skeleton3D skeleton = null;
 		foreach (Node node in scene.FindChildren("*", "Skeleton3D", true, false))
@@ -37,16 +43,16 @@ public partial class ViewModel
 			skeleton = (Skeleton3D)node;
 			break;
 		}
-		if (skeleton == null || skeleton.FindBone("upperarm_l") < 0 || skeleton.FindBone("hand_l") < 0) return;
+		if (skeleton == null || skeleton.FindBone("upperarm_l") < 0 || skeleton.FindBone("hand_l") < 0) return null;
 
 		_rigHandsScene ??= ResourceLoader.Exists(RigHandsScenePath) ? GD.Load<PackedScene>(RigHandsScenePath) : null;
-		if (_rigHandsScene == null) return;
+		if (_rigHandsScene == null) return null;
 
 		Node loaded = _rigHandsScene.Instantiate();
 		if (loaded.FindChild("maos", true, false) is not MeshInstance3D hands)
 		{
 			loaded.Free();
-			return;
+			return null;
 		}
 
 		hands.GetParent().RemoveChild(hands);
@@ -54,10 +60,10 @@ public partial class ViewModel
 		skeleton.AddChild(hands);
 		hands.Skeleton = new NodePath("..");
 		if (ResourceLoader.Exists(RigHandsMaterialPath)) hands.MaterialOverride = GD.Load<Material>(RigHandsMaterialPath);
-		_rigHands = hands;
 
 		// Os braços que vieram na arma saem de cena; a arma e o carregador ficam.
 		if (scene.FindChild("bracos", true, false) is Node3D xbot) xbot.Visible = false;
+		return hands;
 	}
 
 	private void ForgetRigHands() => _rigHands = null;

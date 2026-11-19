@@ -237,6 +237,7 @@ public partial class Minimap : Control
 		DrawLine(new Vector2(self.X, 0), new Vector2(self.X, Side), faint, 1f);
 		DrawLine(new Vector2(0, self.Y), new Vector2(Side, self.Y), faint, 1f);
 
+		DrawEnemyZone();
 		DrawWalls();
 		DrawActors();
 		DrawSelf(self, _player.Rotation.Y - _viewYaw);
@@ -343,6 +344,43 @@ public partial class Minimap : Control
 	[Export] public Color EnemyColor = new Color("ff2d3d");
 
 	private bool _yawKnown;
+
+	/// <summary>A área do inimigo no mapa (onde o time dele nasce), em
+	/// metros: pintada de vermelho no minimapa (pedido do Jhon, 18/11).</summary>
+	private Rect2? _enemyZone;
+
+	/// <summary>A folga em volta dos pontos onde o inimigo nasce (m).</summary>
+	[Export] public float EnemyZonePad = 7f;
+
+	/// <summary>A área do inimigo está marcada. Para os testes.</summary>
+	public bool HasEnemyZone => _enemyZone.HasValue;
+
+	/// <summary>O meio da área do inimigo cai na metade de cima. Para os testes.</summary>
+	public bool EnemyZoneOnTop
+	{
+		get
+		{
+			if (_enemyZone is not Rect2 zone || _player == null) return false;
+			Vector2 c = zone.GetCenter();
+			return ToMapUnclamped(new Vector3(c.X, 0, c.Y)).Y < Side * 0.5f + 1f;
+		}
+	}
+
+	/// <summary>A área do inimigo: um vermelho suave, com a borda um pouco
+	/// mais forte e a palavra "INIMIGO" pequena dentro.</summary>
+	private void DrawEnemyZone()
+	{
+		if (_enemyZone is not Rect2 zone) return;
+		var corners = new[]
+		{
+			ToMapUnclamped(new Vector3(zone.Position.X, 0, zone.Position.Y)),
+			ToMapUnclamped(new Vector3(zone.End.X, 0, zone.Position.Y)),
+			ToMapUnclamped(new Vector3(zone.End.X, 0, zone.End.Y)),
+			ToMapUnclamped(new Vector3(zone.Position.X, 0, zone.End.Y))
+		};
+		DrawColoredPolygon(corners, new Color(EnemyColor, 0.24f));
+		DrawPolyline(new[] { corners[0], corners[1], corners[2], corners[3], corners[0] }, new Color(EnemyColor, 0.65f), 1.4f, true);
+	}
 	private float _teamYaw;
 
 	/// <summary>
@@ -376,6 +414,22 @@ public partial class Minimap : Control
 		{
 			home /= homes;
 			away /= aways;
+		}
+
+		// A área do inimigo: onde o time dele nasce, com folga.
+		var awayPoints = new System.Collections.Generic.List<Vector3>();
+		foreach (string group in Groups.Fighters)
+			foreach (Node node in GetTree().GetNodesInGroup(group))
+				if (node is Node3D body && body.GetNodeOrNull<Health>("Health") is Health h && h.Team != mine
+					&& SpawnPoints.TryHome(body, out Vector3 at)) awayPoints.Add(at);
+		if (awayPoints.Count == 0)
+			foreach (Vector3 p in SpawnPoints.PointsFor(other)) awayPoints.Add(p);
+		_enemyZone = null;
+		if (awayPoints.Count > 0)
+		{
+			var zone = new Rect2(awayPoints[0].X, awayPoints[0].Z, 0, 0);
+			foreach (Vector3 p in awayPoints) zone = zone.Expand(new Vector2(p.X, p.Z));
+			_enemyZone = zone.Grow(EnemyZonePad);
 		}
 		else
 		{

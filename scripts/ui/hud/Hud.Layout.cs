@@ -166,6 +166,7 @@ public partial class Hud
 		// sobre o jogo.
 		HBoxContainer block = UiKit.Row(UiTokens.S3);
 		Corner(block, Control.LayoutPreset.BottomLeft);
+		_personal.Add(block);
 		block.OffsetLeft = Edge;
 		block.OffsetBottom = -Edge;
 		Tilt(block, -TiltDegrees, right: false);
@@ -226,6 +227,7 @@ public partial class Hud
 		side.CustomMinimumSize = new Vector2(380, 0);
 		side.OffsetLeft = -Edge - 380;
 		Tilt(side, TiltDegrees, right: true);
+		_personal.Add(side);
 
 		// WP, perto da munição: é o que se gasta ao renascer.
 		HBoxContainer wpRow = UiKit.Row(UiTokens.S2);
@@ -348,6 +350,7 @@ public partial class Hud
 		// Inferior centro: o especial do lobo (o disco que acende) e,
 		// embaixo, a faixa da transformação. Sem painel.
 		VBoxContainer column = Corner(UiKit.Column(UiTokens.S2), Control.LayoutPreset.CenterBottom);
+		_personal.Add(column);
 		column.OffsetBottom = -Edge;
 		column.OffsetLeft = -170;
 		column.OffsetRight = 170;

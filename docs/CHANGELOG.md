@@ -2,6 +2,51 @@
 
 ## Não lançado
 
+### Câmera de abate e espectador refeitos, bordas de time, sala direta (18/11, à noite)
+- **Câmera de abate em primeira pessoa** (`KillCam`, com o Overwatch de
+  referência): ao morrer, 1 s no próprio corpo; depois o **replay pelo
+  olho de quem te matou**, com a **arma dele na mão** (o mesmo conjunto de
+  primeira pessoa do jogo, com as mãos padrão), parado, andando e
+  atirando, a **mira** dele (giro e inclinação da cabeça) e o **HUD dele**:
+  nome, vida em gomos e escudo embaixo à esquerda, arma e munição embaixo
+  à direita, a mira no meio. Faixas escuras em cima e embaixo, a imagem
+  levemente tingida, **"CÂMERA DE ABATE"** grande e "RENASCE EM" com os
+  segundos, uma **música** por trás (`musica_camera_abate`, sintetizada em
+  `tools/sons/camera_abate.py`; trocar o arquivo troca a música) e o nome
+  dele marcado no feed. **Espaço pula.**
+- A fita (`ReplayTape`) agora guarda também a inclinação da cabeça, a arma,
+  a munição, a vida, o escudo, a forma e os tiros de cada corpo.
+- **Quem matou era lobo**: a câmera é a de lobo do jogo (atrás dele, na
+  mola, sem atravessar parede), e o lobo é uma cópia que refaz o caminho
+  (`WolfVisual.MakeGhost`).
+- **Espectador** direto em **primeira pessoa** de um aliado, com o HUD
+  dele. Clique esquerdo/direito trocam de aliado; Espaço: primeira pessoa
+  → de cima → câmera livre. Aliado lobo: câmera de lobo.
+- **A câmera livre não sai do mapa** (`MapBounds`): a caixa é o lado de
+  dentro das paredes `Limite…` (Oeste, Leste, Norte, Sul, Teto) e o topo
+  do `Piso`. **Todo mapa novo deve ter essas paredes**; sem elas, vale a
+  colisão inteira do mapa com 6 m de folga em cima.
+- Morto, o HUD de quem joga esconde a vida, a arma e a mira (o placar, o
+  relógio, o minimapa e o feed ficam). O rádio não fala morto.
+- **Bordas de time** (`TeamOutlines`): aliado com borda branca suave
+  (vista através da parede), inimigo com borda vermelha suave e leve (só
+  à vista).
+- **Minimapa**: a área onde o inimigo nasce pintada de vermelho, em cima.
+  Teste novo, `ZonaInimigaNoMapa`.
+- **Tela vermelha de quase morrendo pela vida, nas duas formas**: o escudo
+  do lobo por cima não apaga mais o aviso.
+- **Coronhada do AR-15 refeita**: o golpe chega em 0,11 s, a arma segue
+  numa leve empurrada, segura e volta (0,62 s no total). Som próprio
+  (`coronhada_1..3`, `tools/sons/coronhada.py`): o equipamento, o ar e
+  um "uh" curto. Sem o som da faca.
+- **Granada**: o arremesso mais fraco (o teto é um braço, ~15 m); quem
+  lança continua levando dano e choque da própria granada.
+- **Renascer**: 10 s, +1 s por morte, no máximo 15 s.
+- **Rugido sem o círculo com borda no chão**; fica a luz macia nos pés.
+- **Criar sala vai direto para a sala** (sem as janelas de modo e de
+  regras), com as regras da última sala; lá o dono muda o que quiser. O
+  tempo na sala vai até **30 minutos**.
+
 ### Tatuagem vira melhoria (18/11, à noite)
 - Nos textos da loja, do inventário e das mensagens, **"tatuagem" passa a
   ser "melhoria"** (pedido do Jhon). Os identificadores do código e dos

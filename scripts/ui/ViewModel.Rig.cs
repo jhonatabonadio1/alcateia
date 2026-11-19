@@ -104,7 +104,7 @@ public partial class ViewModel
 			RigScene(entry.AsGodotDictionary()["arquivo"].AsString());
 	}
 
-	private static PackedScene RigScene(string path)
+	internal static PackedScene RigScene(string path)
 	{
 		if (RigScenes.TryGetValue(path, out PackedScene scene) && scene != null) return scene;
 		scene = ResourceLoader.Exists(path) ? GD.Load<PackedScene>(path) : null;
@@ -113,7 +113,7 @@ public partial class ViewModel
 	}
 
 	/// <summary>A entrada da ficha para esta arma, ou null se ela não tem conjunto.</summary>
-	private static Godot.Collections.Dictionary RigFor(string weaponId)
+	internal static Godot.Collections.Dictionary RigFor(string weaponId)
 	{
 		foreach (Variant entry in RigSheet().Values)
 		{

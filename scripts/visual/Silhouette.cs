@@ -16,6 +16,22 @@ public static class Silhouette
 
 	public static ShaderMaterial Killer => _killer ??= Make(true, 0.28f, 0.6f, 10);
 
+	private static ShaderMaterial _ally, _enemy;
+
+	/// <summary>Aliado: uma borda branca suave, vista também através das
+	/// paredes (achar o time é o ponto). Só a borda, sem preencher.</summary>
+	public static ShaderMaterial Ally => _ally ??= Tint(Make(true, 0f, 0.26f, 6), new Color(1f, 1f, 1f));
+
+	/// <summary>Inimigo: uma borda vermelha suave e leve, só onde ele está
+	/// à vista (através da parede seria entregar posição).</summary>
+	public static ShaderMaterial Enemy => _enemy ??= Tint(Make(false, 0f, 0.3f, 6), new Color(1f, 0.22f, 0.2f));
+
+	private static ShaderMaterial Tint(ShaderMaterial material, Color color)
+	{
+		material.SetShaderParameter("color", color);
+		return material;
+	}
+
 	private static ShaderMaterial Make(bool throughWalls, float fill, float rim, int priority)
 	{
 		string depth = throughWalls ? "depth_test_disabled, " : "";

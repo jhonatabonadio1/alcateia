@@ -118,6 +118,8 @@ public partial class Player : CharacterBody3D
 			// O cartão de duelo ("abatido por", com o placar entre os dois)
 			// saiu a pedido do Jhon (18/11): a câmera de abate conta isso.
 			scene.CallDeferred(Node.MethodName.AddChild, new EnemyMarks { Name = "EnemyMarks" });
+			// As bordas: aliado branca, inimigo vermelha (TeamOutlines).
+			scene.CallDeferred(Node.MethodName.AddChild, new TeamOutlines { Name = "TeamOutlines" });
 			// A fita da câmera de abate: grava os últimos segundos de todo mundo.
 			scene.CallDeferred(Node.MethodName.AddChild, new ReplayTape { Name = "ReplayTape" });
 			scene.CallDeferred(Node.MethodName.AddChild, new ChargeBar { Name = "ChargeBar" });
