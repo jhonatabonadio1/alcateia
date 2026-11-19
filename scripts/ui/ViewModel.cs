@@ -161,7 +161,10 @@ public partial class ViewModel : Node3D
 
 		// A arma na mão fica a menos de meio metro do olho: o plano de corte
 		// da câmera não pode comê-la.
-		_camera.Near = Mathf.Min(_camera.Near, 0.03f);
+		// 1,5 cm: o conjunto é desenhado encolhido para perto do olho
+		// (RigScale), e na mira a alça do AR-15 fica a 6 cm do olho no
+		// modelo — menos de 3 cm na tela. Com 3 cm de corte a alça sumia.
+		_camera.Near = Mathf.Min(_camera.Near, 0.015f);
 		PreloadRigs();
 
 		_weapon.SlotChanged += _ => SwitchWeapon();

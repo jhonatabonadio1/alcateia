@@ -2,6 +2,21 @@
 
 ## Não lançado
 
+### Mira do AR-15 alinhada de verdade (18/11, à noite)
+- **A alça e a massa agora se alinham no alvo.** A primeira versão media o
+  meio da "caixa" de cada mira, 5 mm abaixo do furo do anel: o olho ficava
+  olhando para o metal e a mira só atrapalhava (relato do Jhon). Agora a
+  linha passa pelo **centro do furo da alça** e pela **ponta do poste da
+  massa**, e as duas ficam no centro da tela (`tools/armas/mira.py`).
+- **Mais perto do olho**: a alça fica a 6,2 cm (era 10,5), então o anel
+  aparece maior e se vê a massa e o alvo por dentro dele.
+- **O anel da alça foi aberto** na malha (furo de 2,3 para 4,6 mm de raio,
+  aro fino): de fábrica era um buraco de fechadura.
+- Respiração e balanço na mira menores (10% e 16% do clipe de origem), para
+  as duas miras não se desencontrarem.
+- O corte de perto da câmera foi de 3 para 1,5 cm: o conjunto é desenhado
+  encolhido (`RigScale`) e a alça, tão perto, sumia.
+
 ### Rádio do time (18/11, à noite)
 - **Z abre a lista de calls** no canto inferior esquerdo, acima da vida;
   **1 a 9 e 0** (o décimo) falam e fecham. Z de novo, Esc ou 5 s sem

@@ -45,9 +45,10 @@ FPS = 60.0
 NOVOS = ("mirar", "desmirar", "mira", "mira_andar", "mira_tiro")
 
 # ---- o desenho (metros no espaço do olho: x direita, y cima, −z frente; graus) ----
-PERTO = 0.050          # quanto a arma vem para o olho ao mirar
+OLHO = 0.062           # a que distância do olho fica a alça ao mirar (m); a câmera corta a 3 cm
+FURO, ARO = 0.0046, 0.0017    # o furo da alça aberta (raio) e a espessura do aro (m)
 ENTRAR, SAIR = 0.26, 0.24
-RESPIRA, BALANCA, RECUA = 0.25, 0.35, 0.60      # quanto do movimento do clipe de origem fica na mira
+RESPIRA, BALANCA, RECUA = 0.10, 0.16, 0.55      # quanto do movimento do clipe de origem fica na mira
 
 
 # ---------------------------------------------------------------- contas
@@ -196,24 +197,93 @@ class Conjunto:
         j['animations'].append({'name': name, 'channels': channels, 'samplers': samplers, 'extras': {'mira': 1}})
 
 
-def medir(c, parado):
-    """A linha de mira na pose parada, no espaço do olho: o centro do anel da alça e o da massa."""
-    v = c.skinned(parado, 'fuzil', 0.0)
+def _miras(v):
+    """Os vértices do topo de cada mira (só elas chegam tão alto): (os da alça, os da massa)."""
     topo = v[:, 1].max()
-    def centro(z0, z1):
-        s = v[(v[:, 2] > z0) & (v[:, 2] < z1) & (v[:, 1] > topo - 0.024)]
-        return np.array([(s[:, 0].min() + s[:, 0].max()) / 2, (s[:, 1].min() + s[:, 1].max()) / 2, s[:, 2].mean()]), s
-    alto = v[v[:, 1] > topo - 0.012]                    # só as duas miras chegam aqui
+    alto = v[v[:, 1] > topo - 0.012]
     zs = np.sort(alto[:, 2]); corte = (zs[0] + zs[-1]) / 2
-    massa, _ = centro(zs[0] - 0.01, corte)             # a da frente (mais longe do olho)
-    alca, _ = centro(corte, zs[-1] + 0.01)
-    return alca, massa, v
+    perto = (v[:, 1] > topo - 0.024)
+    tras = perto & (v[:, 2] > corte) & (v[:, 2] < zs[-1] + 0.01)
+    frente = perto & (v[:, 2] < corte) & (v[:, 2] > zs[0] - 0.01)
+    return tras, frente
+
+
+def medir(c, parado):
+    """
+    A linha de mira, no espaço do olho: **o centro do furo da alça** (o anel de trás) e
+    **a ponta do poste da massa** (a da frente). É por esses dois pontos que se mira; a
+    primeira versão pegava o meio da caixa de cada peça, 5 mm abaixo do furo, e o olho
+    ficava olhando para o metal (relato do Jhon, 18/11: "precisa pegar a mira de trás e a
+    da frente e alinhar perfeitamente").
+    Devolve (alça, massa, malha, raio de dentro do anel, raio de fora).
+    """
+    v = c.skinned(parado, 'fuzil', 0.0)
+    tras, frente = _miras(v)
+    a = v[tras]; topo_a = a[:, 1].max()
+    largo = a[a[:, 1] > topo_a - 0.0075]                       # o anel na parte mais larga
+    diam = np.ptp(largo[:, 0]); xa = (largo[:, 0].min() + largo[:, 0].max()) / 2
+    alca = np.array([xa, topo_a - diam / 2, a[a[:, 1] > topo_a - diam][:, 2].mean()])
+    r = np.hypot(a[:, 0] - alca[0], a[:, 1] - alca[1])
+    dentro = float(r.min()); fora = diam / 2
+
+    m = v[frente]; topo_m = m[:, 1].max()
+    orelhas = m[m[:, 1] > topo_m - 0.004]
+    xm = (orelhas[:, 0].min() + orelhas[:, 0].max()) / 2
+    poste = m[np.abs(m[:, 0] - xm) < 0.0013]                   # o poste fino entre as duas orelhas
+    ponta = poste[:, 1].max()
+    massa = np.array([poste[poste[:, 1] > ponta - 0.001][:, 0].mean(), ponta, poste[poste[:, 1] > ponta - 0.003][:, 2].mean()])
+    return alca, massa, v, dentro, fora
+
+
+def abrir_alca(c, parado):
+    """
+    Abre o anel da alça (uma "ghost ring"): o furo de fábrica tem 2 mm de raio, e a
+    6 cm do olho isso é um buraco de fechadura — não se vê o alvo. O furo vai a
+    FURO de raio e o anel fica fino (ARO de espessura), para a massa e o alvo
+    aparecerem inteiros lá dentro. Mexe na malha (os vértices do anel abrem em volta
+    do centro do furo); marca o arquivo para não abrir duas vezes.
+    """
+    j, g = c.j, c.g
+    node = [n for n in j['nodes'] if 'mesh' in n and n.get('name') == 'fuzil'][0]
+    mesh = j['meshes'][node['mesh']]
+    if mesh.get('extras', {}).get('alca_aberta'): return False
+    alca, _, v, dentro, fora = medir(c, parado)
+    tras, _ = _miras(v)
+    skin = j['skins'][node['skin']]
+    ibm = g.acc(skin['inverseBindMatrices']).reshape(-1, 4, 4).transpose(0, 2, 1)
+    cache = {}
+    def w(i):
+        if i not in cache: cache[i] = (w(c.parent[i]) if i in c.parent else np.eye(4)) @ c.local(parado, i, 0.0)
+        return cache[i]
+    J = np.array([w(jn) @ ibm[k] for k, jn in enumerate(skin['joints'])])
+    off = 0; mexidos = 0
+    for p in mesh['primitives']:
+        a = p['attributes']
+        pos = g.acc(a['POSITION']).astype(float); jn = g.acc(a['JOINTS_0']).astype(int); wt = g.acc(a['WEIGHTS_0']).astype(float)
+        wt /= {5121: 255.0, 5123: 65535.0}.get(j['accessors'][a['WEIGHTS_0']]['componentType'], 1.0)
+        n = len(pos); vv = v[off:off + n]; sel = tras[off:off + n].copy(); off += n
+        dx = vv[:, 0] - alca[0]; dy = vv[:, 1] - alca[1]; r = np.hypot(dx, dy)
+        sel &= (r <= fora * 1.1) & (r > 1e-6)
+        if not sel.any(): continue
+        novo_r = FURO + (np.clip(r, dentro, fora) - dentro) / max(fora - dentro, 1e-6) * ARO
+        d = np.zeros((n, 3)); k = np.where(sel)[0]
+        d[k, 0] = dx[k] / r[k] * (novo_r[k] - r[k]); d[k, 1] = dy[k] / r[k] * (novo_r[k] - r[k])
+        M = np.zeros((n, 3, 3))
+        for q in range(4): M += wt[:, q, None, None] * J[jn[:, q]][:, :3, :3]
+        pos[k] += np.einsum('nij,nj->ni', np.linalg.inv(M[k]), d[k])
+        a['POSITION'] = g.add_acc(pos.astype(np.float32), 'VEC3')
+        j['accessors'][a['POSITION']].update(min=pos.min(0).tolist(), max=pos.max(0).tolist())
+        mexidos += len(k)
+    mesh.setdefault('extras', {})['alca_aberta'] = 1
+    print(f"   alça aberta: furo de {dentro * 1000:.1f} para {FURO * 1000:.1f} mm de raio, aro de {ARO * 1000:.1f} mm ({mexidos} vértices)")
+    return True
 
 
 def fazer(path, ficha=None, previa=None):
     c = Conjunto(path)
     parado, andar, tiro = c.clip('parado'), c.clip('andar'), c.clip('tiro')
-    alca, massa, malha = medir(c, parado)
+    abrir_alca(c, parado)
+    alca, massa, malha, furo, _ = medir(c, parado)
     print(f"{os.path.basename(path)}: alça {alca.round(4)}, massa {massa.round(4)} (m, do olho)")
 
     # A raiz parada e o que a leva ao espaço do olho.
@@ -226,7 +296,7 @@ def fazer(path, ficha=None, previa=None):
     vira = np.degrees(np.arctan2(massa[0] - alca[0], alca[2] - massa[2]))
     giro_mira = euler(-desce, vira, 0.0)
     alca_girada = pivo + giro_mira @ (alca - pivo)
-    move_mira = np.array([-alca_girada[0], -alca_girada[1], PERTO])
+    move_mira = np.array([-alca_girada[0], -alca_girada[1], -alca_girada[2] - OLHO])      # a alça a OLHO metros do olho
 
     def raiz(D):
         """A raiz local que põe o conjunto em D · (onde ele estava)."""
@@ -286,7 +356,7 @@ def fazer(path, ficha=None, previa=None):
 
     # ---- confere: na mira, a alça e a massa no eixo do olho
     feito = Conjunto(path, limpar=False); mira = feito.clip('mira'); v = feito.skinned(mira, 'fuzil', 0.0)
-    a2, m2, _ = medir(feito, mira)
+    a2, m2, _, furo2, _ = medir(feito, mira)
     print(f"   na mira: alça {a2.round(4)}, massa {m2.round(4)}; fora do eixo {np.abs([a2[0], a2[1], m2[0], m2[1]]).max() * 1000:.2f} mm")
     assert np.abs([a2[0], a2[1], m2[0], m2[1]]).max() < 5e-4, "a mira não ficou no eixo do olho"
     for nome in ('mira', 'mira_andar', 'mira_tiro'):
