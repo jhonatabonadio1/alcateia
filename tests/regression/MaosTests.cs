@@ -53,8 +53,11 @@ public sealed class RigHandsTest : RegressionTest
 		var hands = held.FindChild("maos", true, false) as MeshInstance3D;
 		b.Check(hands != null && view.HasRigHands && hands.GetParent() is Skeleton3D, "as mãos padrão entram no esqueleto da arma");
 		if (hands == null) return;
-		b.Check(hands.MaterialOverride is StandardMaterial3D { AlbedoTexture: not null, NormalTexture: not null },
-			"as mãos usam o material padrao.tres, com textura");
+		b.Check(hands.MaterialOverride is StandardMaterial3D { AlbedoTexture: not null },
+			"as mãos usam o material padrao.tres, com a paleta");
+		// Low poly (18/11): poucas faces, cada uma com a sua normal.
+		int faces = hands.Mesh.SurfaceGetArrays(0)[(int)Mesh.ArrayType.Index].AsInt32Array().Length / 3;
+		b.Check(faces > 800 && faces < 4000, $"as mãos são low poly ({faces} triângulos)");
 		b.Check(held.FindChild("bracos", true, false) is Node3D { Visible: false }, "os braços do X Bot ficam escondidos");
 
 		foreach (int team in new[] { Teams.Blue, Teams.Orange })

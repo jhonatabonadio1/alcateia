@@ -2,6 +2,22 @@
 
 ## Não lançado
 
+### Mãos low poly (18/11, à noite)
+- As mãos de primeira pessoa (as de todas as armas do esqueleto do AR-15)
+  ficaram **low poly, na pegada do lobo e das armas**: de 7.240 para 3.200
+  triângulos, com **cores chapadas** — uma tira de 8 cores
+  (`maos_paleta.png`) tirada da média da pele e da luva antigas, no lugar
+  da pele fotográfica. Superfícies suaves ficam lisas e só as quinas de
+  verdade (acima de 50°) viram faceta: a primeira tentativa, toda facetada
+  com 2.000 triângulos e um tom por face, ficou "quadriculada demais".
+- `tools/armas/maos_lowpoly.py` refaz tudo a partir das mãos originais,
+  guardadas em `tools/armas/fontes/` (fora do projeto do Godot). O esqueleto
+  e os pesos são os mesmos: as animações não mudam.
+- Saíram `maos_cor.jpg`, `maos_normal.jpg` e `maos_aspereza.jpg`. Para
+  trocar a cor das mãos: editar a tira ou o `padrao.tres`, como antes.
+- **O mapa e a textura do AR-15 ficam como estão** (o Jhon desistiu de
+  retexturizar os dois no mesmo dia).
+
 ### Mira do AR-15 alinhada de verdade (18/11, à noite)
 - **A alça e a massa agora se alinham no alvo.** A primeira versão media o
   meio da "caixa" de cada mira, 5 mm abaixo do furo do anel: o olho ficava
