@@ -2,6 +2,17 @@
 
 ## Não lançado
 
+- Eve no inventário: personagem do time azul, com o soldado e o lobo azul de sempre.
+
+- Faca com todos os movimentos da animação de referência: parado com a mão esquerda à vista, estocada, corte, o giro de inspecionar e o saque.
+- Desert Eagle com as animações da pistola de referência: tiro com mais coice, recarga com e sem bala (o carregador novo vem na mão esquerda), andar e inspecionar; coronhada com a lateral da arma.
+- A M4A4 é a arma padrão. O conjunto padrão aceita qualquer arma comum (M4A4, AK-74, SCAR-H, SVD, Desert Eagle) e continua de graça, rendendo +50 WP; o AR-15 e as skins dele não vão mais no padrão.
+- Armas novas, com os modelos que o Jhon trouxe: M4A4, AK-74, SCAR-H (a arma pesada), SVD Dragunov (fuzil de precisão, com luneta) e Desert Eagle (a pistola padrão, no lugar da M9). A granada agora é a V40. Todas com as mesmas mãos, o dedo no gatilho, ferrolho que anda no tiro, recarga, saque, mira e coronhada.
+- Fuzil de precisão: a luneta sobe ao olho e a tela corta para a mira redonda branca em fundo preto, com zoom.
+- Granada: a mão esquerda arranca o pino, a direita vai lá atrás e arremessa; a arma seguinte só sobe depois.
+- Faca: dois ataques curtos e rápidos que se alternam (o corte na diagonal e a estocada), com as mãos padrão.
+- A câmera acompanha a animação da arma (saque, recarga, tiro, golpe).
+
 - Bots lobo correm de quatro com a animação de galope, como o jogador.
 
 - Ao renascer, o espectador sai de vez (antes a tela do aliado podia ficar misturada com a sua).

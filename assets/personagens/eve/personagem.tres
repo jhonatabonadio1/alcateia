@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CharacterSkin" format=3]
+
+[ext_resource type="Script" path="res://scripts/forms/CharacterSkin.cs" id="1_pers"]
+
+[resource]
+script = ExtResource("1_pers")
+DisplayName = "Eve"
+Description = "Da Vanguarda. O soldado de sempre do time azul e o lobo azul dele, com o neon azul nas garras e no rugido."
+Team = 1
+Rarity = 2
+HumanModel = "res://assets/characters/human/exo_gray.fbx"
+WolfModel = "res://assets/characters/wolf/lobo_azul.glb"
+EffectColor = Color(0.25, 0.65, 1, 1)
+HpMultiplier = 1.0
