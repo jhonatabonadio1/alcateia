@@ -214,7 +214,8 @@ public partial class Weapon
 
 	private readonly List<Head> _heads = new();
 
-	/// <summary>As cabeças de quem está vivo, menos a de quem atira. Uma
+	/// <summary>As cabeças de quem está vivo, menos a de quem atira e a dos
+	/// aliados (o tiro atravessa o time). Uma
 	/// vez por disparo: os nove chumbos da escopeta usam a mesma lista.</summary>
 	private List<Head> Heads()
 	{
@@ -226,6 +227,8 @@ public partial class Weapon
 			{
 				if (node == _body || node is not Node3D body) continue;
 				if (body.GetNodeOrNull<Health>("Health") is not Health health || health.IsDead) continue;
+				// A cabeça do aliado também não segura o tiro.
+				if (PassesThrough(health)) continue;
 				if (HeadHitbox.TryGet(body, out Vector3 center, out float radius))
 					_heads.Add(new Head(body, health, center, radius));
 			}

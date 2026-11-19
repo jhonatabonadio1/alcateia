@@ -264,32 +264,41 @@ public partial class Bot
 	}
 
 	/// <summary>Linha de visão até um corpo qualquer, da cabeça ao peito.</summary>
-	private bool CanSee(Node3D body)
+	private bool CanSee(Node3D body) => ClearShot(body);
+
+	private bool HasLineOfSight() => _target != null && ClearShot(_target);
+
+	/// <summary>Da cabeça ao peito do corpo, nada no meio — fora os aliados
+	/// com o fogo amigo desligado: o tiro passa por eles (19/11), então o
+	/// bot também não espera o aliado sair da frente para atirar.</summary>
+	private bool ClearShot(Node3D body)
 	{
 		var query = PhysicsRayQueryParameters3D.Create(
 			_head.GlobalPosition, body.GlobalPosition + Vector3.Up * 0.4f);
 
 		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		PhysicsDirectSpaceState3D space = GetWorld3D().DirectSpaceState;
 
-		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
-		if (hit.Count == 0) return true;
+		for (int pass = 0; pass < 6; pass++)
+		{
+			var hit = space.IntersectRay(query);
+			if (hit.Count == 0) return true;
+			if (hit["collider"].Obj == body) return true;
 
-		return hit["collider"].Obj == body;
-	}
+			if (hit["collider"].Obj is CollisionObject3D other && other != body
+				&& other.GetNodeOrNull<Health>("Health") is Health health
+				&& _health != null && health.Team == _health.Team && !RoomConfig.Rules.FriendlyFire)
+			{
+				Godot.Collections.Array<Rid> exclude = query.Exclude;
+				exclude.Add(other.GetRid());
+				query.Exclude = exclude;
+				continue;
+			}
 
-	private bool HasLineOfSight()
-	{
-		if (_target == null) return false;
+			return false;
+		}
 
-		var query = PhysicsRayQueryParameters3D.Create(
-			_head.GlobalPosition, _target.GlobalPosition + Vector3.Up * 0.4f);
-
-		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
-
-		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
-		if (hit.Count == 0) return true;
-
-		return hit["collider"].Obj == _target;
+		return false;
 	}
 
 	/// <summary>

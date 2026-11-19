@@ -2,6 +2,17 @@
 
 ## Não lançado
 
+- O tiro atravessa aliados (com o fogo amigo desligado) e acerta o inimigo atrás deles; os bots também atiram por cima do time.
+
+- A granada é explosiva (antes era a de choque) e cai onde a mira aponta, até 16 m; ao tocar o chão ela fica, não rola. Já vem no conjunto padrão de todo mundo.
+- Granada na mão refeita: a mão fecha em volta dela sem atravessar, com a alavanca na forquilha do polegar; o indicador esquerdo entra na argola e arranca o pino; a mão fica à vista enquanto se mira o arremesso; pulso reto ao arremessar. Ela é 18% maior na primeira pessoa.
+- Faca mais rápida (0,40 s entre golpes) e cada clique vale um golpe, mesmo dado no meio do anterior.
+- Tecla F olha a arma na mão (a faca e a Desert Eagle); parado por um tempo, o jogador faz isso sozinho.
+- Desert Eagle: na recarga o carregador sai e entra reto pelo punho, com a mão esquerda segurando; parada, a arma fica um pouco mais alta e à frente; mirada, mais perto e mais baixa.
+- M4A4 mirada: mais estável ao atirar e com o campo acima da massa mais livre.
+- AK-74 mirada: não se vê mais a arma por dentro, e o pino da massa aparece por cima da alça.
+- Recarga dos fuzis sem o braço passar na frente da câmera.
+
 - Vitória e derrota aparecem já sobre o fundo escuro e desfocado da tela de resultado.
 
 - Eve no inventário: personagem do time azul, com o soldado e o lobo azul de sempre.

@@ -316,6 +316,15 @@ public partial class Weapon
 	/// <summary>A normal da superfície do último raio que bateu.</summary>
 	private Vector3 _lastNormal = Vector3.Up;
 
+	/// <summary>
+	/// Aliado com o fogo amigo desligado: o tiro passa por ele (19/11, Jhon:
+	/// "a bala deve atravessar o meu time"). Antes o raio parava no aliado
+	/// da frente e o tiro se perdia sem ferir ninguém.
+	/// </summary>
+	private bool PassesThrough(Health target) =>
+		target != null && _health != null && target != _health
+		&& target.Team == _health.Team && !RoomConfig.Rules.FriendlyFire;
+
 	private Health Raycast(Vector3 from, Vector3 to, out Vector3 impact, out Node collider)
 	{
 		impact = to;
@@ -325,31 +334,46 @@ public partial class Weapon
 		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
 		query.CollideWithAreas = false;
 
-		var result = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
-
-		if (result.Count == 0)
+		PhysicsDirectSpaceState3D space = _body.GetWorld3D().DirectSpaceState;
+		// Um aliado atrás do outro: no máximo alguns, o resto é parede.
+		for (int pass = 0; pass < 8; pass++)
 		{
-			if (Debug) GD.Print("ataque: não acertou nada");
-			return null;
+			var result = space.IntersectRay(query);
+
+			if (result.Count == 0)
+			{
+				if (Debug) GD.Print("ataque: não acertou nada");
+				return null;
+			}
+
+			impact = (Vector3)result["position"];
+			_lastNormal = (Vector3)result["normal"];
+
+			if (result["collider"].Obj is not Node node)
+				return null;
+
+			Health health = node.GetNodeOrNull<Health>("Health");
+			if (PassesThrough(health) && node is CollisionObject3D ally)
+			{
+				Godot.Collections.Array<Rid> exclude = query.Exclude;
+				exclude.Add(ally.GetRid());
+				query.Exclude = exclude;
+				impact = to;
+				continue;
+			}
+
+			collider = node;
+
+			if (Debug)
+			{
+				GD.Print(health == null
+					? $"ataque: acertou '{node.Name}', que não tem um filho chamado Health"
+					: $"ataque: acertou '{node.Name}'");
+			}
+
+			return health;
 		}
 
-		impact = (Vector3)result["position"];
-		_lastNormal = (Vector3)result["normal"];
-
-		if (result["collider"].Obj is not Node node)
-			return null;
-
-		collider = node;
-
-		Health health = node.GetNodeOrNull<Health>("Health");
-
-		if (Debug)
-		{
-			GD.Print(health == null
-				? $"ataque: acertou '{node.Name}', que não tem um filho chamado Health"
-				: $"ataque: acertou '{node.Name}'");
-		}
-
-		return health;
+		return null;
 	}
 }
