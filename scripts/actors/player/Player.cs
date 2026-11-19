@@ -239,8 +239,11 @@ public partial class Player : CharacterBody3D
 		// para ele até você renascer.
 		_killCam?.Finish();
 		_killCam = null;
-		if (IsMultiplayerAuthority() && _health.Killer is Node3D killer && killer != this)
-			_killCam = KillCam.Begin(GetTree().CurrentScene ?? GetParent(), this, killer, GetViewport().GetCamera3D());
+		// Sem matador (queda, a própria granada), vai direto a assistir os
+		// aliados (KillCam, modo espectador).
+		if (IsMultiplayerAuthority())
+			_killCam = KillCam.Begin(GetTree().CurrentScene ?? GetParent(), this,
+				_health.Killer is Node3D killer && killer != this ? killer : null, GetViewport().GetCamera3D());
 	}
 
 	/// <summary>Assenta o corpo morto (<see cref="Corpse"/>).</summary>

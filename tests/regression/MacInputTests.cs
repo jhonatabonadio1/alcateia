@@ -42,6 +42,20 @@ public sealed class MacCtrlClickTest : RegressionTest
 				await b.Seconds(0.3);
 				b.Check(b.Weapon.IsAiming, "agachado no Ctrl, o botão direito de verdade mira");
 				b.Check(b.Weapon.PrimaryAmmo == ammo, "e não atira");
+
+				// Mirando agachado, o clique esquerdo (que o Mac entrega como
+				// direito): atira e a mira fica, durante e depois do tiro.
+				MacCtrlClick.Hardware = () => MouseButtonMask.Right | MouseButtonMask.Left;
+				Input.ParseInputEvent(Click(pressed: true));
+				await b.Seconds(0.25);
+				b.Check(b.Weapon.PrimaryAmmo < ammo, "mirando agachado, o clique esquerdo atira");
+				b.Check(b.Weapon.IsAiming, "e não sai da mira atirando");
+				MacCtrlClick.Hardware = () => MouseButtonMask.Right;
+				Input.ParseInputEvent(Click(pressed: false));
+				await b.Seconds(0.25);
+				b.Check(b.Weapon.IsAiming && !Input.IsActionPressed("attack"), "soltou o tiro: segue na mira, sem atirar");
+
+				MacCtrlClick.Hardware = () => 0;
 				Input.ParseInputEvent(Click(pressed: false));
 				await b.Seconds(0.2);
 				b.Check(!b.Weapon.IsAiming, "soltou o botão, saiu da mira");

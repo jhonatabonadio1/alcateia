@@ -28,7 +28,7 @@ public partial class Weapon
 
 	/// <summary>Dá para mirar agora: humano, vivo, arma de fogo na mão,
 	/// sem estar recarregando.</summary>
-	public bool CanAim => !_form.IsWolf && !_health.IsDead && Held != null && !IsReloading;
+	public bool CanAim => !_form.IsWolf && !_health.IsDead && Held != null && !IsReloading && !IsButting;
 
 	/// <summary>O dono está pedindo a mira e dá para mirar agora: é o que
 	/// a arma na mão segue para subir ao olho (<see cref="ViewModel"/>).</summary>

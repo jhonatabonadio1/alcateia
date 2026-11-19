@@ -125,7 +125,11 @@ public partial class Weapon
 			Health hit = Trace(from, to, heads, out Vector3 impact, out Node collider, out bool headshot);
 
 			// A linha para na parede em vez de atravessá-la.
-			if (i == 0) tracerEnd = impact;
+			if (i == 0)
+			{
+				tracerEnd = impact;
+				Whiz(from, impact);
+			}
 			if (hit == null)
 			{
 				if (i == 0 && collider != null)
@@ -191,6 +195,48 @@ public partial class Weapon
 
 	/// <summary>Escopeta no lobo: lentidão curta. Só em lobo, e só em
 	/// quem tem corpo que sabe ficar lento.</summary>
+	/// <summary>Até que distância da cabeça a bala "passa de raspão" (m).</summary>
+	[Export] public float WhizRange = 1.7f;
+
+	private static ulong _lastWhiz;
+
+	/// <summary>
+	/// A bala passando de raspão (pedido do Jhon, 18/11): se o tiro de
+	/// outro corpo passa a menos de <see cref="WhizRange"/> da cabeça de
+	/// quem joga nesta máquina — pegando ou não —, toca o "vuum" no ponto
+	/// mais próximo da linha do tiro, mais alto quanto mais perto. Tiro de
+	/// aliado (sem fogo amigo) não assobia. No máximo um a cada 70 ms: uma
+	/// rajada vira uma sequência, não um chiado só.
+	/// </summary>
+	private void Whiz(Vector3 from, Vector3 to)
+	{
+		if (_body is Player shooter && shooter.IsMultiplayerAuthority()) return;
+		Camera3D ear = _body.GetViewport()?.GetCamera3D();
+		if (ear == null) return;
+
+		Player me = null;
+		foreach (Node node in _body.GetTree().GetNodesInGroup(Groups.Players))
+			if (node is Player player && player.IsMultiplayerAuthority()) { me = player; break; }
+		if (me == null || me == _body || me.GetNodeOrNull<Health>("Health") is not Health mine || mine.IsDead) return;
+		if (_health != null && mine.Team == _health.Team && !RoomConfig.Rules.FriendlyFire) return;
+
+		Vector3 head = ear.GlobalPosition;
+		Vector3 line = to - from;
+		float length = line.Length();
+		if (length < 2f) return;
+		float along = Mathf.Clamp((head - from).Dot(line) / (length * length), 0f, 1f);
+		// O tiro que morre antes de chegar perto (parede no caminho) não passou.
+		if (along * length < 1.5f) return;
+		Vector3 nearest = from + line * along;
+		float miss = nearest.DistanceTo(head);
+		if (miss > WhizRange) return;
+
+		ulong now = Time.GetTicksMsec();
+		if (now - _lastWhiz < 70) return;
+		_lastWhiz = now;
+		Sfx.At("bala_raspao", nearest, 5f, Mathf.Lerp(1f, -7f, miss / WhizRange), 8f);
+	}
+
 	private static void StunWolf(Health target, float seconds)
 	{
 		if (target.GetParent() is not Player player) return;

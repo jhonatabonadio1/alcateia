@@ -2,6 +2,42 @@
 
 ## Não lançado
 
+### Coronhada, granada, câmera de abate e espectador (18/11, à noite)
+- **Coronhada (V)**: com arma de fogo na mão, um golpe rápido com a arma
+  (55 de dano, 1,9 m, 0,45 s; `Weapon.Butt.cs`). Não gasta munição, corta
+  a recarga e tira da mira. Na mão, a arma recolhe, gira e soca
+  (`ViewModel.Butt`, de código: vale para todas as armas). Em terceira
+  pessoa ainda não há animação própria. Teste novo, `Coronhada`.
+- **Granada**:
+  - **cai onde a mira aponta**: a força do arremesso é calculada para o
+    ponto mirado (`Weapon.ThrowVelocity`); encostou, quica pouco e para.
+    No teste, explode a ~0,5 m do ponto a 5,5 m e a 12 m;
+  - **voa o modelo da granada**, não mais a bola;
+  - **explosão de fogo** (`Explosion`): clarão, línguas de fogo que incham
+    e escurecem, onda de choque até o raio, fagulhas, fumaça e estilhaços;
+  - **dano em área que mata**: 260 no centro, caindo até a borda (6,5 m).
+    Ao lado de alguém, mata de primeira. Era 70.
+  - Teste novo, `GranadaNaMira`.
+- **Câmera de abate**: ao morrer, a câmera vai para o olho de quem te
+  matou, olhando para onde você caiu, com o nome dele no alto. Dura 2,6 s
+  e **Espaço pula**. É a visão dele ao vivo, não uma repetição gravada do
+  tiro.
+- **Espectador**: depois da câmera de abate, até renascer, a câmera fica
+  **por cima de um aliado vivo**; Espaço ou clique passam para o próximo;
+  **F solta a câmera** para andar pelo mapa (WASD, mouse, Shift corre,
+  Espaço sobe, Ctrl desce) e F de novo volta aos aliados. Teste novo,
+  `Espectador`.
+- **Bala de raspão**: tiro inimigo que passa a menos de 1,7 m da cabeça
+  (pegando ou não) faz o "vuum" (`bala_raspao_1..4`, sintetizados por
+  `tools/sons/raspao.py`), mais alto quanto mais perto.
+- **Rádio**: quem fala ganha o **ícone do rádio em cima da cabeça** (visto
+  pelo time, através da parede) e **pulsa no minimapa** por 2,6 s.
+- **Mirando agachado no Mac, atirar não tira mais da mira**: o clique
+  esquerdo com Ctrl chega como "direito", e soltá-lo soltava a mira.
+- **Música do fim mais alta** (de −14 para −5 dB).
+- **Vermelho de quase morrendo** só abaixo de 30% da vida (era 55%).
+- Ajuda de teclas: V (coronhada) e Z (rádio).
+
 ### Mãos low poly (18/11, à noite)
 - As mãos de primeira pessoa (as de todas as armas do esqueleto do AR-15)
   ficaram **low poly, na pegada do lobo e das armas**: de 7.240 para 3.200

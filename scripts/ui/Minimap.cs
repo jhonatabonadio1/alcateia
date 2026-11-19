@@ -240,6 +240,7 @@ public partial class Minimap : Control
 		DrawWalls();
 		DrawActors();
 		DrawSelf(self, _player.Rotation.Y - _viewYaw);
+		DrawRadio(self, Radio.Talking(_player));
 	}
 
 	/// <summary>O centro da janela num eixo: o jogador, sem deixar a
@@ -400,6 +401,19 @@ public partial class Minimap : Control
 		return sum / points.Count;
 	}
 
+	/// <summary>Quem está falando no rádio pulsa no mapa: duas ondas
+	/// abrindo em volta do ponto, enquanto o ícone está em cima dele.</summary>
+	private void DrawRadio(Vector2 point, float talking)
+	{
+		if (talking <= 0f) return;
+		float beat = Time.GetTicksMsec() / 450f;
+		for (int i = 0; i < 2; i++)
+		{
+			float wave = beat + i * 0.5f; wave -= Mathf.Floor(wave);
+			DrawArc(point, 6f + wave * 12f, 0, Mathf.Tau, 24, new Color(1f, 1f, 1f, (1f - wave) * 0.9f * Mathf.Min(talking * 4f, 1f)), 1.6f, true);
+		}
+	}
+
 	private void DrawActors()
 	{
 		int mine = _playerHealth?.Team ?? 0;
@@ -425,6 +439,7 @@ public partial class Minimap : Control
 
 					DrawCircle(point, size + 1.6f, new Color(0, 0, 0, 0.75f));
 					DrawCircle(point, size, enemy ? EnemyColor : AllyColor);
+					if (!enemy) DrawRadio(point, Radio.Talking(body));
 				}
 	}
 

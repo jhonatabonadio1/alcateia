@@ -52,6 +52,8 @@ public sealed class RadioTest : RegressionTest
 		botHealth.Team = b.Health.Team;
 		Radio.Receive(bot, 4);
 		b.Check(heard == "Go, Go, Go!", "call do aliado toca");
+		b.Check(bot.GetNodeOrNull<Sprite3D>("RadioIcone") != null && Radio.Talking(bot) > 0.5f, "o ícone do rádio aparece em cima do aliado que falou (e ele pulsa no minimapa)");
+		b.Check(b.Player.GetNodeOrNull("RadioIcone") == null && Radio.Talking(b.Player) > 0f, "quem falou não tem ícone na própria cabeça, mas pulsa no minimapa");
 
 		// Fecha sozinha.
 		await b.Seconds(Radio.Cooldown);

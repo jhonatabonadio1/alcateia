@@ -38,16 +38,31 @@ public static class MacCtrlClick
 		{
 			// O botão direito de verdade (e não o esquerdo com Ctrl): é a mira.
 			MouseButtonMask held = Hardware();
-			if ((held & MouseButtonMask.Right) != 0 && (held & MouseButtonMask.Left) == 0) return;
+			bool right = (held & MouseButtonMask.Right) != 0, left = (held & MouseButtonMask.Left) != 0;
+			if (right && !left) return;
 
+			// O esquerdo com Ctrl: atira. Com o direito de verdade também
+			// apertado (mirando agachado e atirando), a mira fica — antes
+			// este clique soltava a mira e o tiro tirava da mira (relato do
+			// Jhon, 18/11: "escopado agachado, atiro e ele sai do escopo").
 			_active = true;
-			Input.ActionRelease("special");
+			if (!right) Input.ActionRelease("special");
 			Input.ActionPress("attack");
 		}
 		else if (!button.Pressed && _active)
 		{
+			MouseButtonMask held = Hardware();
+			bool right = (held & MouseButtonMask.Right) != 0, left = (held & MouseButtonMask.Left) != 0;
+
+			// Quem soltou foi o direito de verdade, com o esquerdo ainda
+			// atirando: o tiro segue, só a mira sai.
+			if (left && !right) return;
+
 			_active = false;
 			Input.ActionRelease("attack");
+			// Soltou o esquerdo e o direito segue apertado: o sistema avisou
+			// "soltou o direito" e o jogo tirou a mira. Devolve.
+			if (right) Input.ActionPress("special");
 		}
 	}
 }

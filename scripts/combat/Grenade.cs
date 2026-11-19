@@ -20,7 +20,7 @@ public partial class Grenade : RigidBody3D
 	[Export] public float Radius = 6.5f;
 
 	/// <summary>Dano no centro da explosão. Cai linearmente até a borda.</summary>
-	[Export] public float MaxDamage = 70f;
+	[Export] public float MaxDamage = 260f;
 
 	/// <summary>Duração do atordoamento no centro.</summary>
 	[Export] public float StunDuration = 2.5f;
@@ -48,6 +48,28 @@ public partial class Grenade : RigidBody3D
 		_timer = Fuse;
 		ContactMonitor = true;
 		MaxContactsReported = 4;
+
+		// No ar, sem freio: o arremesso é calculado para cair onde se mira
+		// (Weapon.Grenade). Encostou, quica pouco e para logo, para ficar
+		// perto de onde caiu.
+		LinearDampMode = DampMode.Replace;
+		LinearDamp = 0f;
+		PhysicsMaterialOverride = new PhysicsMaterial { Bounce = 0.05f, Friction = 1f };
+		BodyEntered += _ =>
+		{
+			LinearDamp = 7f;
+			AngularDamp = 9f;
+		};
+
+		// A granada de verdade no lugar da bola (pedido do Jhon, 18/11).
+		Node3D model = WeaponModel.Build(Arsenal.GrenadeId);
+		if (model.GetChildCount() > 0)
+		{
+			model.Name = "Modelo";
+			AddChild(model);
+			if (GetNodeOrNull<MeshInstance3D>("MeshInstance3D") is MeshInstance3D ball) ball.Visible = false;
+		}
+		else model.Free();
 	}
 
 	public override void _PhysicsProcess(double delta)
@@ -140,33 +162,8 @@ public partial class Grenade : RigidBody3D
 
 	/// <summary>Clarão que cresce e some. Peça descartável — vira
 	/// partícula de verdade na fase de polimento.</summary>
-	private void SpawnFlash()
-	{
-		var material = new StandardMaterial3D
-		{
-			AlbedoColor = new Color(1f, 0.95f, 0.75f, 0.45f),
-			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded
-		};
-
-		var flash = new MeshInstance3D
-		{
-			Mesh = new SphereMesh { Radius = Radius, Height = Radius * 2f },
-			MaterialOverride = material
-		};
-
-		GetParent().AddChild(flash);
-		flash.GlobalPosition = GlobalPosition;
-		flash.Scale = Vector3.One * 0.2f;
-
-		Tween tween = flash.CreateTween();
-		tween.SetParallel();
-		tween.TweenProperty(flash, "scale", Vector3.One, 0.25);
-
-		// Some pela cor do material: malha 3D não tem "modulate" (isso é
-		// de 2D), e o clarão nunca desbotava — sumia de uma vez, com um
-		// erro no Output a cada explosão.
-		tween.TweenProperty(material, "albedo_color:a", 0.0f, 0.3);
-		tween.Chain().TweenCallback(Callable.From(flash.QueueFree));
-	}
+	/// <summary>A explosão que se vê (<see cref="Explosion"/>): clarão,
+	/// bola de fogo, onda de choque até o raio, fagulhas, fumaça e
+	/// estilhaços.</summary>
+	private void SpawnFlash() => Explosion.Spawn(GetParent(), GlobalPosition, Radius);
 }

@@ -114,10 +114,15 @@ public partial class Weapon : Node3D
 
 	// --- Munição ---
 	//
-	// A munição acaba (decisão do Jhon, 13/11; antes era infinita): cada
-	// arma tem o pente e a reserva (WeaponDefinition.Reserve). Recarregar
-	// tira da reserva; sem reserva, não recarrega. Renascer enche tudo, e
-	// passar por cima de uma arma igual à sua, caída, junta a munição dela.
+	// Cada arma tem o pente e a reserva (WeaponDefinition.Reserve). A
+	// munição **voltou a ser infinita** (decisão do Jhon, 18/11; de 13/11
+	// até aí ela acabava): recarregar enche o pente e a reserva não desce.
+	// Com InfiniteAmmo desligado vale a regra de 13/11: recarregar tira da
+	// reserva; sem reserva, não recarrega; renascer enche tudo, e passar
+	// por cima de uma arma igual à sua, caída, junta a munição dela.
+
+	/// <summary>A reserva não acaba: recarregar não tira nada dela.</summary>
+	[Export] public bool InfiniteAmmo = true;
 
 	/// <summary>Arma de fogo na mão; nula com faca, granada ou de lobo.</summary>
 	public WeaponDefinition Held =>
@@ -220,6 +225,7 @@ public partial class Weapon : Node3D
 		}
 
 		UpdateArmed(delta);
+		TickButt(delta);
 
 		if (_pending.Count > 0)
 			RunPending(delta);

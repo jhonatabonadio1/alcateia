@@ -170,6 +170,7 @@ public partial class ViewModel : Node3D
 		_weapon.SlotChanged += _ => SwitchWeapon();
 		_form.FormChanged += _ => Refresh();
 		_weapon.Fired += OnFired;
+		_weapon.Butted += () => _butt = 0f;
 		_weapon.AmmoChanged += OnAmmo;
 
 		BuildEffects();
@@ -260,6 +261,7 @@ public partial class ViewModel : Node3D
 		float drop = HasRig ? 0.06f : 0.2f, tilt = HasRig ? 14f : 24f;
 		var swing = new Vector3(sway.Y + KickPitch * kick - draw * tilt, sway.X, -sway.X * 0.6f);
 		Vector3 position = _rest + bob + new Vector3(0, -draw * drop - (raw ? 0f : _dip), Kick * kick);
+		if (_butt >= 0f) Butt(dt, ref swing, ref position);
 
 		// A câmera fecha no zoom, mas a arma não pode crescer junto (é o
 		// mesmo que ter uma câmera só para ela, como todo FPS): encolhe na
@@ -270,6 +272,65 @@ public partial class ViewModel : Node3D
 
 		UpdateHands(dt);
 		UpdateEffects(dt);
+	}
+
+	// ------------------------------------------------------------ a coronhada
+
+	/// <summary>Duração da coronhada na mão, em segundos.</summary>
+	[Export] public float ButtTime = 0.34f;
+
+	private float _butt = -1f;
+
+	/// <summary>A coronhada está tocando na mão. Para os testes.</summary>
+	public bool Butting => _butt >= 0f;
+
+	/// <summary>
+	/// A coronhada (V), em cima de qualquer arma de fogo: a arma recolhe um
+	/// instante para o ombro, gira (o cano sai para a esquerda e a coronha
+	/// vem para a frente) e soca no meio da tela; depois volta. Três
+	/// tempos: arma (22%), bate (até 46%), volta (o resto, devagar no fim).
+	/// É de código, por cima do conjunto animado — vale para todas as
+	/// armas sem mexer nos arquivos delas.
+	/// </summary>
+	private void Butt(float dt, ref Vector3 swing, ref Vector3 position)
+	{
+		_butt += dt / Mathf.Max(ButtTime, 0.05f);
+		if (_butt >= 1f) { _butt = -1f; return; }
+
+		// Os dois extremos: recolhida e batendo (graus; metros).
+		// O giro é contido: os braços do conjunto acabam no cotovelo, e
+		// girando demais o corte aparecia no meio da tela.
+		// E o avanço é de poucos centímetros: o conjunto fica colado no
+		// olho (RigScale), e 20 cm para a frente era a arma indo embora.
+		var windTurn = new Vector3(5f, -4f, -7f); var windMove = new Vector3(0.012f, -0.012f, 0.03f);
+		var hitTurn = new Vector3(-9f, 13f, 16f); var hitMove = new Vector3(-0.022f, 0.016f, -0.05f);
+
+		Vector3 turn, move;
+		if (_butt < 0.22f)
+		{
+			float u = ButtEase(_butt / 0.22f);
+			turn = windTurn * u; move = windMove * u;
+		}
+		else if (_butt < 0.46f)
+		{
+			float u = (_butt - 0.22f) / 0.24f;
+			u = 1f - (1f - u) * (1f - u);                       // sai rápido, chega seco
+			turn = windTurn.Lerp(hitTurn, u); move = windMove.Lerp(hitMove, u);
+		}
+		else
+		{
+			float u = ButtEase((_butt - 0.46f) / 0.54f);
+			turn = hitTurn * (1f - u); move = hitMove * (1f - u);
+		}
+
+		swing += turn;
+		position += move;
+	}
+
+	private static float ButtEase(float x)
+	{
+		x = Mathf.Clamp(x, 0f, 1f);
+		return x * x * (3f - 2f * x);
 	}
 
 	/// <summary>

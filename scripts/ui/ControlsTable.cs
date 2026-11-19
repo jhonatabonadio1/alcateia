@@ -11,6 +11,8 @@ public static class ControlsTable
 		("Espaço", "Pular · saltar da parede"),
 		("Shift", "Andar devagar e em silêncio (humano)"),
 		("Ctrl", "Agachar"),
+		("V", "Coronhada (com arma de fogo)"),
+		("Z", "Rádio do time (1 a 0 escolhe a fala)"),
 		("Clique esquerdo", "Atacar"),
 		("Q", "Lobo: especial — salta na mira (também no ar). Enche com abates e, devagar, com o tempo"),
 		("Clique direito", "Mirar (humano) · bote no ar (lobo)"),

@@ -39,6 +39,10 @@ public static class InputSetup
 		Key("guide", Godot.Key.E);
 		// Z: a lista dos calls de rádio do time (Radio, Hud.Radio).
 		Key("radio", Godot.Key.Z);
+		// V: a coronhada (Weapon.Butt).
+		Key("melee", Godot.Key.V);
+		// F, morto: solta a câmera de espectador (KillCam).
+		Key("spectate_free", Godot.Key.F);
 
 		// Slots: o lobo é o 3, na mesma memória muscular das armas.
 		Key("slot_1", Godot.Key.Key1);

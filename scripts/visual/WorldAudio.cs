@@ -227,7 +227,7 @@ public partial class WorldAudio : Node
 	[Export] public float TensionScore = 0.1f;
 
 	/// <summary>Volume da música de tensão, em dB: por baixo do tiro.</summary>
-	[Export] public float TensionDb = -14f;
+	[Export] public float TensionDb = -5f;
 
 	private AudioStreamPlayer _tension;
 

@@ -746,6 +746,7 @@ Arma secundária,,,,scripts/ui/ControlsTable.cs
 Atacar,,,,scripts/ui/ControlsTable.cs
 Clique direito,,,,scripts/ui/ControlsTable.cs
 Clique esquerdo,,,,scripts/ui/ControlsTable.cs
+Coronhada (com arma de fogo),,,,scripts/ui/ControlsTable.cs
 Ctrl,,,,scripts/ui/ControlsTable.cs
 Equipar granada,,,,scripts/ui/ControlsTable.cs
 Esc,,,,scripts/ui/ControlsTable.cs
@@ -758,6 +759,7 @@ Mirar (humano) · bote no ar (lobo),,,,scripts/ui/ControlsTable.cs
 Placar (segurar),,,,scripts/ui/ControlsTable.cs
 Pular · saltar da parede,,,,scripts/ui/ControlsTable.cs
 "Recarregar (humano) · uivar (lobo, segure até o fim)",,,,scripts/ui/ControlsTable.cs
+Rádio do time (1 a 0 escolhe a fala),,,,scripts/ui/ControlsTable.cs
 Shift,,,,scripts/ui/ControlsTable.cs
 Soltar a arma da mão (cai à frente),,,,scripts/ui/ControlsTable.cs
 Sustenta a corrida em parede,,,,scripts/ui/ControlsTable.cs

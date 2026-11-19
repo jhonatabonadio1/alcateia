@@ -46,6 +46,9 @@ public readonly record struct CharacterIntent
 	/// <summary>Q, de lobo: o especial (o salto), num toque.</summary>
 	public bool Pounce { get; init; }
 
+	/// <summary>V: a coronhada.</summary>
+	public bool Melee { get; init; }
+
 	/// <summary>Botão direito segurado: de humano, mirar pela arma.</summary>
 	public bool AimHeld { get; init; }
 
@@ -83,6 +86,7 @@ public readonly record struct CharacterIntent
 		AttackReleased = Input.IsActionJustReleased("attack"),
 		Special = Input.IsActionJustPressed("special"),
 		Pounce = Input.IsActionJustPressed("pounce"),
+		Melee = Input.IsActionJustPressed("melee"),
 		SpecialReleased = Input.IsActionJustReleased("special"),
 		AimHeld = Input.IsActionPressed("special"),
 		Howl = Input.IsActionJustPressed("howl"),

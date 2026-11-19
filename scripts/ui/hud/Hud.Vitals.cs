@@ -82,7 +82,7 @@ public partial class Hud
 
 	/// <summary>Abaixo desta fração de vida a tela começa a avermelhar;
 	/// em <see cref="LowHealth"/> entra a respiração.</summary>
-	[Export] public float DangerFrom = 0.55f;
+	[Export] public float DangerFrom = 0.3f;
 
 	/// <summary>Volume da respiração ofegante, do começo ao quase morto.</summary>
 	[Export] public float BreathQuietDb = -20f;

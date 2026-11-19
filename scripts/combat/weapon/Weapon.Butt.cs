@@ -1,0 +1,61 @@
+using Godot;
+
+/// <summary>
+/// A coronhada (V; pedido do Jhon, 18/11: "crie a animação de coronhada,
+/// ao apertar V, bem rápida"): com uma arma de fogo na mão, um golpe curto
+/// com a arma no que está colado na cara. É a saída para o lobo que
+/// chegou perto demais ou para o pente vazio — bate rápido, tira pouco e
+/// não gasta munição.
+///
+/// O golpe sai em <see cref="ButtHitDelay"/> (o tempo de a arma ir para a
+/// frente) e a arma fica ocupada por <see cref="ButtCooldown"/>: não
+/// atira nem mira nesse tempo. Corta a recarga. Sem tiro na cabeça: é
+/// pancada, não mira.
+/// </summary>
+public partial class Weapon
+{
+	[ExportGroup("Coronhada")]
+	[Export] public float ButtDamage = 55f;
+	[Export] public float ButtRange = 1.9f;
+	[Export] public float ButtCooldown = 0.45f;
+	[Export] public float ButtHitDelay = 0.09f;
+
+	/// <summary>A coronhada começou (a arma na mão anima, o som sai).</summary>
+	[Signal] public delegate void ButtedEventHandler();
+
+	private double _buttLeft, _buttHitIn = -1;
+
+	/// <summary>No meio da coronhada: a arma está ocupada.</summary>
+	public bool IsButting => _buttLeft > 0;
+
+	/// <summary>V: a coronhada, se há arma de fogo na mão e ela está livre.</summary>
+	public bool TryButt()
+	{
+		if (_form == null || _form.IsWolf || !_form.CanAttack || _health.IsDead) return false;
+		if (Held == null || _cooldown > 0 || _buttLeft > 0 || !Match.IsLive) return false;
+
+		if (IsReloading) CancelReload();
+		_cooldown = ButtCooldown;
+		_buttLeft = ButtCooldown;
+		_buttHitIn = ButtHitDelay;
+		EmitSignal(SignalName.Butted);
+		Sfx.At(Sfx.First("coronhada", "faca"), _body.GlobalPosition, 6f, -3f, 16f);
+		return true;
+	}
+
+	private void TickButt(double delta)
+	{
+		if (_buttLeft > 0) _buttLeft -= delta;
+		if (_buttHitIn < 0) return;
+
+		_buttHitIn -= delta;
+		if (_buttHitIn > 0) return;
+		_buttHitIn = -1;
+		if (_health.IsDead || _form.IsWolf) return;
+
+		Vector3 from = _head.GlobalPosition;
+		Vector3 to = from - _head.GlobalTransform.Basis.Z * ButtRange;
+		Health hit = Trace(from, to, Heads(), out _, out _, out _);
+		if (hit != null) Damage(hit, ButtDamage, from, false);
+	}
+}

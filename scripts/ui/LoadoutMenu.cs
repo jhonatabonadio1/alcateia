@@ -34,7 +34,7 @@ public partial class LoadoutMenu : CanvasLayer
 	[Export] public float ChooseTime = 15f;
 
 	/// <summary>Segundos vendo quem te matou antes da escolha abrir.</summary>
-	[Export] public float KillCamTime = 1.8f;
+	[Export] public float KillCamTime = 3f;
 
 	/// <summary>WP concedido ao escolher o padrão. É a rede de segurança:
 	/// o padrão não só é grátis, ele paga — quem está sem pontos tem
@@ -157,7 +157,14 @@ public partial class LoadoutMenu : CanvasLayer
 			return;
 		}
 
-		await ToSignal(GetTree().CreateTimer(KillCamTime), SceneTreeTimer.SignalName.Timeout);
+		// Espera a câmera de abate acabar — ou o jogador pular com Espaço.
+		double waited = 0;
+		await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+		while (IsInstanceValid(this) && waited < KillCamTime && KillCam.InKillPhase)
+		{
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			waited += GetProcessDeltaTime();
+		}
 		if (!IsInstanceValid(this) || !_health.IsDead || _open) return;
 		Open();
 	}

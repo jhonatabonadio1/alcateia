@@ -59,7 +59,7 @@ public static class Radio
 		if (now - _lastSent < Cooldown) return false;
 		_lastSent = now;
 
-		Play(health.PublicName, health.Team, call);
+		Play(speaker, health, call, mine: true);
 		NetMatch.Current?.SendRadio(call);
 		return true;
 	}
@@ -71,7 +71,7 @@ public static class Radio
 		if (call < 0 || call >= Calls.Length || speaker == null) return;
 		if (speaker.GetNodeOrNull<Health>("Health") is not Health health) return;
 		if (health.Team != LocalTeam(speaker)) return;
-		Play(health.PublicName, health.Team, call);
+		Play(speaker, health, call, mine: false);
 	}
 
 	private static int LocalTeam(Node from)
@@ -82,10 +82,69 @@ public static class Radio
 		return RoomConfig.PlayerTeam;
 	}
 
-	private static void Play(string who, int team, int call)
+	/// <summary>Segundos com o ícone do rádio em cima de quem falou (e
+	/// no minimapa).</summary>
+	public const float TalkTime = 2.6f;
+
+	private const string IconPath = "res://assets/ui/icones/radio.png";
+	private const string IconName = "RadioIcone";
+
+	private static readonly System.Collections.Generic.Dictionary<ulong, ulong> _talking = new();
+	private static Texture2D _icon;
+
+	/// <summary>Este corpo está falando no rádio agora? De 1 (acabou de
+	/// falar) a 0 (não está). Para o minimapa.</summary>
+	public static float Talking(Node body)
 	{
-		Sfx.Ui(SoundOf(team, call), VolumeDb);
-		Heard?.Invoke(who, team, call);
+		if (body == null || !_talking.TryGetValue(body.GetInstanceId(), out ulong until)) return 0f;
+		ulong now = Time.GetTicksMsec();
+		return now >= until ? 0f : (until - now) / (TalkTime * 1000f);
+	}
+
+	private static void Play(Node3D speaker, Health health, int call, bool mine)
+	{
+		Sfx.Ui(SoundOf(health.Team, call), VolumeDb);
+		_talking[speaker.GetInstanceId()] = Time.GetTicksMsec() + (ulong)(TalkTime * 1000f);
+		// Em cima de quem falou (o próprio jogador não se vê: só no minimapa).
+		if (!mine) ShowIcon(speaker, health.Team);
+		Heard?.Invoke(health.PublicName, health.Team, call);
+	}
+
+	/// <summary>
+	/// O ícone do rádio flutuando em cima de quem falou (pedido do Jhon,
+	/// 18/11: "ao dar rádio, aparece um ícone em cima do player que está
+	/// falando, e no minimapa também"): sempre de frente para a câmera e
+	/// visível através da parede — é um aliado, e o ponto é achar quem
+	/// chamou. Entra com um pulo, fica, e some.
+	/// </summary>
+	private static void ShowIcon(Node3D speaker, int team)
+	{
+		speaker.GetNodeOrNull(IconName)?.Free();
+		_icon ??= ResourceLoader.Exists(IconPath) ? GD.Load<Texture2D>(IconPath) : null;
+		if (_icon == null) return;
+
+		var icon = new Sprite3D
+		{
+			Name = IconName,
+			Texture = _icon,
+			PixelSize = 0.0042f,
+			Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+			NoDepthTest = true,
+			Shaded = false,
+			FixedSize = false,
+			RenderPriority = 10,
+			Modulate = Teams.ColorOf(team).Lightened(0.55f),
+			Position = new Vector3(0, 1.62f, 0),
+			Scale = Vector3.One * 0.4f
+		};
+		speaker.AddChild(icon);
+
+		Tween life = icon.CreateTween();
+		life.TweenProperty(icon, "scale", Vector3.One * 1.15f, 0.12).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		life.TweenProperty(icon, "scale", Vector3.One, 0.1);
+		life.TweenInterval(TalkTime - 0.6f);
+		life.TweenProperty(icon, "modulate:a", 0f, 0.35);
+		life.TweenCallback(Callable.From(icon.QueueFree));
 	}
 
 	/// <summary>Para os testes: zera o intervalo.</summary>

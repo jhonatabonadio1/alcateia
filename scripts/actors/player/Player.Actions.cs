@@ -138,6 +138,10 @@ public partial class Player
 				_weapon.TrySpecial();
 		}
 
+		// V, de humano com arma de fogo: a coronhada.
+		if (_intent.Melee && !_form.IsWolf)
+			_weapon.TryButt();
+
 		// Q, de lobo: arma o especial (o lobo segue andando, com o modo alvo
 		// aberto) ou desarma. Quem salta é o clique (acima).
 		if (_intent.Pounce && _form.IsWolf)

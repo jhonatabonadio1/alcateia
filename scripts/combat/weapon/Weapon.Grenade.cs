@@ -59,6 +59,54 @@ public partial class Weapon
 		if (HumanSlot == Slot.Grenade) ThrowGrenade();
 	}
 
+	/// <summary>Até onde a mira vale como alvo da granada (m).</summary>
+	[Export] public float ThrowMaxRange = 32f;
+
+	/// <summary>O ângulo do arremesso acima da linha até o alvo (graus):
+	/// um arco de mão, que cai em cima do ponto em vez de passar rasante.</summary>
+	[Export] public float ThrowLoft = 24f;
+
+	/// <summary>
+	/// A velocidade que faz a granada **cair onde a mira aponta** (pedido
+	/// do Jhon, 18/11: "melhore a precisão do lançamento para ficar mais
+	/// fiel à distância que estou mirando"). Antes era sempre a mesma
+	/// força: mirar perto ou longe mudava pouco, e correr mudava muito.
+	///
+	/// Um raio da mira acha o ponto; a conta da parábola dá a velocidade
+	/// para chegar lá saindo <see cref="ThrowLoft"/> graus acima da linha
+	/// até ele. Longe demais para a força máxima
+	/// (<see cref="ThrowForce"/> × 1,35): sai a 45°, o mais longe que dá.
+	/// Mirando o céu (sem ponto): o arremesso de antes.
+	/// </summary>
+	private Vector3 ThrowVelocity(RigidBody3D grenade, Vector3 forward)
+	{
+		Vector3 eye = _camera.GlobalPosition;
+		var query = PhysicsRayQueryParameters3D.Create(eye, eye + forward * ThrowMaxRange);
+		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid(), grenade.GetRid() };
+		var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
+		if (hit.Count == 0) return forward * ThrowForce + Vector3.Up * ThrowArc;
+
+		Vector3 to = hit["position"].AsVector3() - grenade.GlobalPosition;
+		var flat = new Vector3(to.X, 0, to.Z);
+		float x = flat.Length(), y = to.Y;
+		if (x < 0.6f) return forward * 4f + Vector3.Up * 1.5f;
+
+		float g = (float)ProjectSettings.GetSetting("physics/3d/default_gravity", 9.8) * grenade.GravityScale;
+		float max = ThrowForce * 1.35f;
+		float angle = Mathf.Clamp(Mathf.Atan2(y, x) + Mathf.DegToRad(ThrowLoft), Mathf.DegToRad(8f), Mathf.DegToRad(70f));
+		float drop = x * Mathf.Tan(angle) - y;
+		float cos = Mathf.Cos(angle);
+		float speed = drop > 0.01f ? Mathf.Sqrt(g * x * x / (2f * cos * cos * drop)) : max;
+		if (speed > max)
+		{
+			speed = max;
+			angle = Mathf.DegToRad(45f);
+		}
+
+		Vector3 dir = flat / x;
+		return dir * (Mathf.Cos(angle) * speed) + Vector3.Up * (Mathf.Sin(angle) * speed);
+	}
+
 	private void ThrowGrenade()
 	{
 		if (_form.IsWolf || !_form.CanAttack)
@@ -98,9 +146,7 @@ public partial class Weapon
 		grenade.GlobalPosition = _camera.GlobalPosition + forward * 0.8f;
 		grenade.AddCollisionExceptionWith(_body);
 
-		// Soma a velocidade do jogador: correr e arremessar joga mais longe.
-		Vector3 impulse = forward * ThrowForce + Vector3.Up * ThrowArc;
-		grenade.LinearVelocity = _body.Velocity + impulse;
+		grenade.LinearVelocity = ThrowVelocity(grenade, forward);
 		grenade.AngularVelocity = new Vector3(4f, 2f, 1f);
 
 		EmitSignal(SignalName.GrenadesChanged, Grenades);
