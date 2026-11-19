@@ -26,10 +26,23 @@ public partial class KillCam : Node3D
 	/// Curta: o tempo de renascer já é espera bastante. Espaço pula.</summary>
 	[Export] public float KillTime = 2.6f;
 
+	/// <summary>Quantos segundos antes do abate o replay mostra, e o
+	/// tempo parado no fim, vendo a queda.</summary>
+	[Export] public float ReplayLength = 3f;
+	[Export] public float ReplayTail = 0.5f;
+
+	private bool _replaying, _fell;
+	private double _replayClock, _replayEnd;
+	private Vector3 _lastVictimAt;
+	private bool _hasLast;
+
+	/// <summary>O replay gravado está passando (e não a visão ao vivo). Para os testes.</summary>
+	public bool Replaying => _replaying;
+
 	/// <summary>Velocidade da câmera livre (m/s); com Shift, o dobro.</summary>
 	[Export] public float FreeSpeed = 9f;
 
-	private enum Phase { Kill, Mate, Free }
+	private enum Phase { Kill, Mate, First, Free }
 	private Phase _phase = Phase.Kill;
 	private Node3D _mate;
 	private Label _hint;
@@ -40,10 +53,10 @@ public partial class KillCam : Node3D
 	public static bool InKillPhase { get; private set; }
 
 	/// <summary>Em que modo está: "abate", "aliado" ou "livre". Para os testes.</summary>
-	public string Mode => _phase switch { Phase.Kill => "abate", Phase.Mate => "aliado", _ => "livre" };
+	public string Mode => _phase switch { Phase.Kill => "abate", Phase.Mate => "aliado", Phase.First => "primeira", _ => "livre" };
 
 	/// <summary>Quem a câmera segue no modo aliado. Para os testes.</summary>
-	public Node3D Watching => _phase == Phase.Mate ? _mate : null;
+	public Node3D Watching => _phase is Phase.Mate or Phase.First ? _mate : null;
 
 	private Node3D _killer;
 	private Node3D _victim;
@@ -82,7 +95,86 @@ public partial class KillCam : Node3D
 		BuildTag();
 		BuildHint();
 		if (_killer == null) EnterSpectate();
-		else InKillPhase = true;
+		else
+		{
+			InKillPhase = true;
+			StartReplay();
+		}
+	}
+
+	// ------------------------------------------------------------ o replay
+
+	/// <summary>
+	/// O replay do abate (pedido do Jhon, 18/11: "pode gravar a partida"):
+	/// os últimos <see cref="ReplayLength"/> segundos, **do olho de quem te
+	/// matou**. A fita (<see cref="ReplayTape"/>) dá o caminho dele e o
+	/// seu; a câmera anda pelo caminho dele olhando para você, e o seu
+	/// corpo é posto de pé e refaz o que fez até cair de novo no mesmo
+	/// lugar. Os outros corpos aparecem onde estão agora — só os dois do
+	/// abate são reencenados. Sem fita bastante (morreu logo ao nascer),
+	/// fica a visão ao vivo do matador.
+	/// </summary>
+	private void StartReplay()
+	{
+		ReplayTape tape = ReplayTape.Current;
+		if (tape == null || _victim is not Player victim) return;
+
+		double have = Mathf.Min(tape.Recorded(_killer), tape.Recorded(_victim));
+		if (have < 0.8) return;
+
+		_replayEnd = tape.Now;
+		_replayClock = _replayEnd - Mathf.Min(ReplayLength, have);
+		_replaying = true;
+		_fell = false;
+		_hasLast = false;
+		victim.ReplayHold(true);
+		_camera.Near = 0.3f;
+	}
+
+	private void StopReplay()
+	{
+		if (!_replaying) return;
+		_replaying = false;
+		if (_victim is Player victim && IsInstanceValid(victim)) victim.ReplayHold(false);
+		if (_camera != null) _camera.Near = 0.05f;
+	}
+
+	/// <summary>Um quadro do replay. Falso quando acabou.</summary>
+	private bool ReplayStep(double delta)
+	{
+		ReplayTape tape = ReplayTape.Current;
+		if (tape == null || _victim is not Player victim || !IsInstanceValid(victim)) return false;
+
+		_replayClock += delta;
+		double t = System.Math.Min(_replayClock, _replayEnd);
+		if (!tape.Sample(_killer, t, out Vector3 killerAt, out _) || !tape.Sample(_victim, t, out Vector3 victimAt, out float victimYaw)) return false;
+
+		if (!_fell)
+		{
+			Vector3 velocity = _hasLast && delta > 0 ? (victimAt - _lastVictimAt) / (float)delta : Vector3.Zero;
+			_lastVictimAt = victimAt;
+			_hasLast = true;
+			victim.ReplayPose(victimAt, victimYaw, velocity);
+
+			// O instante do abate: o corpo cai de novo, onde caiu.
+			if (_replayClock >= _replayEnd)
+			{
+				_fell = true;
+				victim.ReplayHold(false);
+			}
+		}
+
+		Vector3 eye = killerAt + Vector3.Up * 0.72f;
+		Vector3 target = (_fell ? victim.GlobalPosition : victimAt) + Vector3.Up * 0.3f;
+		_camera.GlobalPosition = eye;
+		if (eye.DistanceSquaredTo(target) > 0.04f)
+		{
+			Basis look = Basis.LookingAt(target - eye, Vector3.Up);
+			float weight = _hasLast ? Mathf.Min(1f, (float)delta * 14f) : 1f;
+			_camera.GlobalBasis = new Basis(_camera.GlobalBasis.GetRotationQuaternion().Slerp(look.GetRotationQuaternion(), weight));
+		}
+		_camera.Fov = 70f;
+		return _replayClock < _replayEnd + ReplayTail;
 	}
 
 	private void BuildHint()
@@ -101,12 +193,10 @@ public partial class KillCam : Node3D
 	// ------------------------------------------------------------ espectador
 
 	/// <summary>
-	/// Depois da câmera de abate (ou de pular com Espaço), enquanto não
-	/// renasce, o morto assiste (pedido do Jhon, 18/11): a câmera fica
-	/// **por cima de um aliado vivo**, Espaço ou clique passam para o
-	/// próximo, e **F solta a câmera** para andar pelo mapa (WASD e mouse;
-	/// Shift corre). F de novo volta aos aliados. Sem aliado vivo, fica
-	/// livre.
+	/// Depois do replay do abate (ou de pular com Espaço), enquanto não
+	/// renasce, o morto assiste (pedido do Jhon, 18/11): a câmera segue um
+	/// aliado vivo — de cima ou em primeira pessoa — ou anda solta pelo
+	/// mapa (<see cref="Spectate"/>). Sem aliado vivo, fica livre.
 	/// </summary>
 	private void EnterSpectate()
 	{
@@ -125,7 +215,7 @@ public partial class KillCam : Node3D
 		_yaw = e.Y;
 	}
 
-	private Node3D NextMate(Node3D after)
+	private Node3D NextMate(Node3D after, int step = 1)
 	{
 		if (_victim == null || !IsInstanceValid(_victim) || _victim.GetNodeOrNull<Health>("Health") is not Health mine) return null;
 
@@ -136,26 +226,53 @@ public partial class KillCam : Node3D
 					&& health.Team == mine.Team && !health.IsDead)
 					mates.Add(body);
 		if (mates.Count == 0) return null;
-		int at = after == null ? -1 : mates.IndexOf(after);
-		return mates[(at + 1) % mates.Count];
+		int at = after == null ? (step > 0 ? -1 : 0) : mates.IndexOf(after);
+		return mates[((at + step) % mates.Count + mates.Count) % mates.Count];
 	}
 
+	/// <summary>
+	/// O espectador, quadro a quadro. **Clique esquerdo: próximo aliado;
+	/// direito: o anterior. Espaço troca a visão**: de cima → primeira
+	/// pessoa → câmera livre → de cima (pedido do Jhon, 18/11). O F
+	/// também solta e prende a câmera livre.
+	/// </summary>
 	private void Spectate(double delta, bool blocked)
 	{
-		bool next = !blocked && (Input.IsActionJustPressed("jump") || Input.IsActionJustPressed("attack"));
+		bool next = !blocked && Input.IsActionJustPressed("attack");
+		bool previous = !blocked && Input.IsActionJustPressed("special");
+		bool cycle = !blocked && Input.IsActionJustPressed("jump");
 		bool toggle = !blocked && Input.IsActionJustPressed("spectate_free");
 
-		if (_phase == Phase.Mate)
+		if (_phase is Phase.Mate or Phase.First)
 		{
 			bool gone = _mate == null || !IsInstanceValid(_mate) || (_mate.GetNodeOrNull<Health>("Health")?.IsDead ?? true);
-			if (next || gone) _mate = NextMate(gone ? null : _mate);
-			if (toggle || _mate == null) { EnterFree(); return; }
+			if (gone) _mate = NextMate(null);
+			else if (next) _mate = NextMate(_mate, 1);
+			else if (previous) _mate = NextMate(_mate, -1);
+			if (toggle || _mate == null || (cycle && _phase == Phase.First)) { EnterFree(); return; }
+			if (cycle) _phase = Phase.First;
 
-			// Por cima e atrás do aliado, olhando para onde ele vai.
 			Vector3 forward = -_mate.GlobalBasis.Z; forward.Y = 0;
 			forward = forward.LengthSquared() > 0.001f ? forward.Normalized() : Vector3.Forward;
-			Vector3 perch = _mate.GlobalPosition + Vector3.Up * 1.9f - forward * 3.4f;
+			string name = _mate.GetNodeOrNull<Health>("Health")?.PublicName ?? "";
 			float weight = Mathf.Min(1f, (float)delta * 6f);
+
+			if (_phase == Phase.First)
+			{
+				// No olho do aliado, olhando para onde ele vira.
+				Vector3 eye = _mate.GlobalPosition + Vector3.Up * 0.72f + forward * 0.1f;
+				_camera.GlobalPosition = _camera.GlobalPosition.DistanceTo(eye) > 6f ? eye : _camera.GlobalPosition.Lerp(eye, Mathf.Min(1f, (float)delta * 22f));
+				Basis ahead = Basis.LookingAt(forward, Vector3.Up);
+				_camera.GlobalBasis = new Basis(_camera.GlobalBasis.GetRotationQuaternion().Slerp(ahead.GetRotationQuaternion(), Mathf.Min(1f, (float)delta * 14f)));
+				_camera.Near = 0.3f;
+				_camera.Fov = Mathf.Lerp(_camera.Fov, 80f, weight);
+				_hint.Text = Loc.F("ASSISTINDO {0}  ·  PRIMEIRA PESSOA  ·  CLIQUES: TROCAR ALIADO  ·  ESPAÇO: VISÃO", name);
+				return;
+			}
+
+			// Por cima e atrás do aliado, olhando para onde ele vai.
+			_camera.Near = 0.05f;
+			Vector3 perch = _mate.GlobalPosition + Vector3.Up * 1.9f - forward * 3.4f;
 			_camera.GlobalPosition = _camera.GlobalPosition.DistanceTo(perch) > 25f ? perch : _camera.GlobalPosition.Lerp(perch, weight);
 			Vector3 target = _mate.GlobalPosition + Vector3.Up * 0.7f + forward * 2f;
 			if (_camera.GlobalPosition.DistanceSquaredTo(target) > 0.01f)
@@ -164,29 +281,29 @@ public partial class KillCam : Node3D
 				_camera.GlobalBasis = new Basis(_camera.GlobalBasis.GetRotationQuaternion().Slerp(look.GetRotationQuaternion(), weight));
 			}
 			_camera.Fov = Mathf.Lerp(_camera.Fov, 75f, weight);
-			string name = _mate.GetNodeOrNull<Health>("Health")?.PublicName ?? "";
-			_hint.Text = Loc.F("ASSISTINDO {0}  ·  ESPAÇO: PRÓXIMO  ·  F: CÂMERA LIVRE", name);
+			_hint.Text = Loc.F("ASSISTINDO {0}  ·  DE CIMA  ·  CLIQUES: TROCAR ALIADO  ·  ESPAÇO: VISÃO", name);
 			return;
 		}
 
-		// Livre: WASD no plano do olhar, mouse vira.
-		if (toggle && NextMate(null) is Node3D first)
+		// Livre: WASD para onde se olha, mouse vira. Espaço (ou um clique)
+		// volta aos aliados.
+		if ((cycle || toggle || next || previous) && NextMate(null) is Node3D)
 		{
 			_phase = Phase.Mate;
-			_mate = first;
+			_mate = NextMate(previous ? null : _mate, previous ? -1 : 1) ?? NextMate(null);
 			return;
 		}
 
+		_camera.Near = 0.05f;
 		_camera.Fov = Mathf.Lerp(_camera.Fov, 75f, Mathf.Min(1f, (float)delta * 6f));
 		_camera.GlobalBasis = Basis.FromEuler(new Vector3(_pitch, _yaw, 0));
 		if (!blocked)
 		{
 			Vector2 move = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
-			float lift = (Input.IsActionPressed("jump") ? 1f : 0f) - (Input.IsActionPressed("crouch") ? 1f : 0f);
-			Vector3 step = _camera.GlobalBasis * new Vector3(move.X, 0, move.Y) + Vector3.Up * lift;
+			Vector3 step = _camera.GlobalBasis * new Vector3(move.X, 0, move.Y);
 			_camera.GlobalPosition += step * FreeSpeed * (Input.IsActionPressed("walk") ? 2f : 1f) * (float)delta;
 		}
-		_hint.Text = "CÂMERA LIVRE  ·  WASD E MOUSE  ·  F: VOLTAR AOS ALIADOS";
+		_hint.Text = "CÂMERA LIVRE  ·  WASD E MOUSE  ·  ESPAÇO: VOLTAR AOS ALIADOS";
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
@@ -244,9 +361,23 @@ public partial class KillCam : Node3D
 		}
 
 		bool skip = !blocked && _time > 0.15 && Input.IsActionJustPressed("jump");
-		if (_killer == null || !IsInstanceValid(_killer) || _time >= KillTime || skip)
+		if (_killer == null || !IsInstanceValid(_killer) || (!_replaying && _time >= KillTime) || skip)
 		{
+			StopReplay();
 			EnterSpectate();
+			return;
+		}
+
+		if (_replaying)
+		{
+			PlaceTag();
+			_hint.Text = "REPLAY DO ABATE  ·  ESPAÇO PULA";
+			if (_time < Hold) return;
+			if (!ReplayStep(delta))
+			{
+				StopReplay();
+				EnterSpectate();
+			}
 			return;
 		}
 
@@ -281,6 +412,7 @@ public partial class KillCam : Node3D
 	/// <summary>Tira a silhueta e devolve a câmera ao corpo.</summary>
 	public void Finish()
 	{
+		StopReplay();
 		foreach (var (mesh, previous) in _marked)
 			if (IsInstanceValid(mesh)) mesh.MaterialOverlay = previous;
 		_marked.Clear();
@@ -290,6 +422,7 @@ public partial class KillCam : Node3D
 	public override void _ExitTree()
 	{
 		InKillPhase = false;
+		StopReplay();
 		foreach (var (mesh, previous) in _marked)
 			if (IsInstanceValid(mesh)) mesh.MaterialOverlay = previous;
 		_marked.Clear();

@@ -47,7 +47,10 @@ public partial class WeaponArt : Control
 		// A foto clareada: o jogo inteiro é escuro, e a arma também. A
 		// skin colorida (o AR-15 Ultimate) não: clareada, o roxo virava
 		// lilás lavado ("muito branca no inventário", Jhon, 18/11).
-		Material = Vivid(id) ? (showcase ? Shine() : null) : Bleach()
+		// Na vitrine (loja e inventário), a foto como ela é, nítida, sem
+		// clarear e sem o brilho que passava ("nenhuma arma do inventário
+		// pode ter esse brilho branco; tem que ser nítido", Jhon, 18/11).
+		Material = showcase || Vivid(id) ? null : Bleach()
 	};
 
 	private const string PhotoDir = "res://assets/ui/armas/";

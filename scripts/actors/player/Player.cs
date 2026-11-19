@@ -118,6 +118,8 @@ public partial class Player : CharacterBody3D
 			// O cartão de duelo ("abatido por", com o placar entre os dois)
 			// saiu a pedido do Jhon (18/11): a câmera de abate conta isso.
 			scene.CallDeferred(Node.MethodName.AddChild, new EnemyMarks { Name = "EnemyMarks" });
+			// A fita da câmera de abate: grava os últimos segundos de todo mundo.
+			scene.CallDeferred(Node.MethodName.AddChild, new ReplayTape { Name = "ReplayTape" });
 			scene.CallDeferred(Node.MethodName.AddChild, new ChargeBar { Name = "ChargeBar" });
 			scene.CallDeferred(Node.MethodName.AddChild, new PounceAim { Name = "PounceAim" });
 			scene.CallDeferred(Node.MethodName.AddChild, new LockMark { Name = "LockMark" });
@@ -244,6 +246,45 @@ public partial class Player : CharacterBody3D
 		if (IsMultiplayerAuthority())
 			_killCam = KillCam.Begin(GetTree().CurrentScene ?? GetParent(), this,
 				_health.Killer is Node3D killer && killer != this ? killer : null, GetViewport().GetCamera3D());
+	}
+
+	// ------------------------------------------------------------ o replay do abate
+
+	/// <summary>O corpo está sendo reencenado pela câmera de abate.</summary>
+	public bool Replaying { get; private set; }
+
+	private Transform3D _fallen;
+
+	/// <summary>
+	/// A câmera de abate põe o corpo de pé de novo para passar os últimos
+	/// segundos (<see cref="ReplayTape"/>): o boneco sai da pose de morto
+	/// e passa a seguir a fita (<see cref="ReplayPose"/>). Desligando,
+	/// volta para onde caiu e cai de novo.
+	/// </summary>
+	public void ReplayHold(bool on)
+	{
+		if (on == Replaying) return;
+		Replaying = on;
+		if (on) _fallen = GlobalTransform;
+		else
+		{
+			GlobalTransform = _fallen;
+			Velocity = Vector3.Zero;
+		}
+
+		bool wolf = _form.ShowsWolf;
+		if (!wolf && GetNodeOrNull<CharacterAnimator>("Human") is CharacterAnimator human) human.ReplayAlive(on);
+		if (wolf && GetNodeOrNull<WolfVisual>("WolfVisual") is WolfVisual visual) visual.ReplayAlive(on);
+	}
+
+	/// <summary>Um quadro da fita: onde o corpo estava, para onde virava
+	/// e a que velocidade andava (é ela que faz as pernas andarem).</summary>
+	public void ReplayPose(Vector3 at, float yaw, Vector3 velocity)
+	{
+		if (!Replaying) return;
+		GlobalPosition = at;
+		GlobalRotation = new Vector3(0, yaw, 0);
+		Velocity = velocity;
 	}
 
 	/// <summary>Assenta o corpo morto (<see cref="Corpse"/>).</summary>
@@ -384,7 +425,8 @@ public partial class Player : CharacterBody3D
 
 		if (_health.IsDead)
 		{
-			Settle(delta);
+			// Na câmera de abate o corpo é reencenado: quem o move é a fita.
+			if (!Replaying) Settle(delta);
 			return;
 		}
 

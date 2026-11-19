@@ -153,7 +153,12 @@ void fragment() {
 	{
 		if (_danger == null) return;
 
-		float frac = _health.IsDead || _health.MaxHp <= 0 ? 1f : _health.Hp / _health.MaxHp;
+		// De lobo conta o escudo junto: a vida dele é a soma (pedido do
+		// Jhon, 18/11: "as áreas vermelhas de vida acabando devem aparecer
+		// para o lobo também" — só pela vida, o lobo sem escudo e com meia
+		// vida, que já está morrendo, não via nada).
+		float pool = _health.MaxHp + _health.MaxShield;
+		float frac = _health.IsDead || pool <= 0 ? 1f : (_health.Hp + _health.Shield) / pool;
 		float target = Mathf.Clamp((DangerFrom - frac) / Mathf.Max(DangerFrom, 0.01f), 0f, 1f);
 		// Sobe depressa (apanhou), desce devagar (a vida voltando).
 		_dangerShown = Mathf.MoveToward(_dangerShown, target, delta * (target > _dangerShown ? 3f : 0.6f));

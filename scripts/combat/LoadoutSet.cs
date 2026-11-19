@@ -69,12 +69,25 @@ public sealed class LoadoutSet
 		else if (Utilities.Count == MaxUtilities && Arsenal.GetUtility(Utilities[1]) is UtilityInfo second
 				 && !second.AllowedInSecondSlot)
 			error = "O segundo utilitário só aceita granada de luz ou de fumaça";
-		else if (IsDefault && RawCost() > 0)
-			error = "O conjunto padrão só aceita itens gratuitos";
+		else if (IsDefault && !DefaultAllows())
+			error = "Este item não pode ir no conjunto padrão";
 		else if (!OwnsAll())
 			error = "Item fora do inventário";
 
 		return error == null;
+	}
+
+	/// <summary>No conjunto padrão só entra o que é gratuito ou o que o
+	/// catálogo libera para ele (<see cref="CatalogItem.DefaultOk"/>).</summary>
+	public static bool AllowedInDefault(string id) =>
+		string.IsNullOrEmpty(id) || Arsenal.CostOf(id) <= 0 || Catalog.Get(id)?.DefaultOk == true;
+
+	private bool DefaultAllows()
+	{
+		if (!AllowedInDefault(Primary) || !AllowedInDefault(Secondary)) return false;
+		foreach (string id in Utilities)
+			if (!AllowedInDefault(id)) return false;
+		return true;
 	}
 
 	private int RawCost()

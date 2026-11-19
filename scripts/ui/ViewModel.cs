@@ -170,7 +170,7 @@ public partial class ViewModel : Node3D
 		_weapon.SlotChanged += _ => SwitchWeapon();
 		_form.FormChanged += _ => Refresh();
 		_weapon.Fired += OnFired;
-		_weapon.Butted += () => _butt = 0f;
+		_weapon.Butted += OnButted;
 		_weapon.AmmoChanged += OnAmmo;
 
 		BuildEffects();
@@ -282,7 +282,26 @@ public partial class ViewModel : Node3D
 	private float _butt = -1f;
 
 	/// <summary>A coronhada está tocando na mão. Para os testes.</summary>
-	public bool Butting => _butt >= 0f;
+	public bool Butting => _butt >= 0f || (_rigPlaying == "coronhada" && _rigBusy > 0);
+
+	/// <summary>
+	/// A coronhada começou. O conjunto que tem o clipe próprio (o AR-15:
+	/// <c>tools/armas/coronhada.py</c> — a arma atravessa na frente do
+	/// rosto e bate com a lateral, com os braços acompanhando) toca o
+	/// clipe; os outros usam o movimento de código (<see cref="Butt"/>).
+	/// </summary>
+	private void OnButted()
+	{
+		if (HasRig && _rigClips.TryGetValue("coronhada", out Clip clip))
+		{
+			_rigAiming = false;
+			PlayRig("coronhada", 0, 0.04);
+			_rigBusy = clip.Length;
+			return;
+		}
+
+		_butt = 0f;
+	}
 
 	/// <summary>
 	/// A coronhada (V), em cima de qualquer arma de fogo: a arma recolhe um

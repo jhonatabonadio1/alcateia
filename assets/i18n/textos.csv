@@ -3,11 +3,11 @@ texto,pt_BR,en,es,onde
 Granada de choque,,,,scripts/combat/Arsenal.cs
 Human,,,,scripts/combat/HeadHitbox.cs
 Skeleton3D,,,,scripts/combat/HeadHitbox.cs
+Este item não pode ir no conjunto padrão,,,,scripts/combat/LoadoutSet.cs
 Item fora do inventário,,,,scripts/combat/LoadoutSet.cs
 Item repetido no mesmo conjunto,,,,scripts/combat/LoadoutSet.cs
 Máximo {0} utilitários,,,,scripts/combat/LoadoutSet.cs
 Novo conjunto,,,,scripts/combat/LoadoutSet.cs
-O conjunto padrão só aceita itens gratuitos,,,,scripts/combat/LoadoutSet.cs
 O segundo utilitário só aceita granada de luz ou de fumaça,,,,scripts/combat/LoadoutSet.cs
 Primária obrigatória,,,,scripts/combat/LoadoutSet.cs
 Secundária obrigatória,,,,scripts/combat/LoadoutSet.cs
@@ -172,9 +172,7 @@ na Vanguarda e no Sindicato,,,,scripts/lobby/InventoryScreen.cs
 "Nada aqui ainda. A loja vende armas, granadas e tatuagens por Presas.",,,,scripts/lobby/InventoryScreen.cs
 no Sindicato,,,,scripts/lobby/InventoryScreen.cs
 Nome do conjunto,,,,scripts/lobby/InventoryScreen.cs
-O conjunto padrão é fixo. Escolha outro conjunto para equipar.,,,,scripts/lobby/InventoryScreen.cs
-"O conjunto padrão é fixo: grátis, sempre disponível, rende +50 WP",,,,scripts/lobby/InventoryScreen.cs
-O padrão é fixo: veja o que vem nele,,,,scripts/lobby/InventoryScreen.cs
+"O conjunto padrão: grátis, sempre disponível, rende +50 WP. Aceita itens gratuitos e os liberados para o padrão (a AR-15 Ultimate, a granada de choque)",,,,scripts/lobby/InventoryScreen.cs
 "O personagem vale no time dele, com o lobo dele: escolheu a pessoa, transforma no lobo dela. ",,,,scripts/lobby/InventoryScreen.cs
 Padrão (Ely),,,,scripts/lobby/InventoryScreen.cs
 Padrão (Exo Gray),,,,scripts/lobby/InventoryScreen.cs
@@ -209,6 +207,7 @@ WP é o que você gasta cada vez que renasce com este conjunto. Ganha-se WP joga
 {0} em uso {1},,,,scripts/lobby/InventoryScreen.cs
 {0} equipada,,,,scripts/lobby/InventoryScreen.cs
 {0} equipada em {1},,,,scripts/lobby/InventoryScreen.cs
+{0} não pode ir no conjunto padrão. Escolha outro conjunto para equipar.,,,,scripts/lobby/InventoryScreen.cs
 "{0} sai do inventário. Se estiver num conjunto, o conjunto volta para o padrão naquele lugar. Não há reembolso.",,,,scripts/lobby/InventoryScreen.cs
 Destaque,,,,scripts/lobby/ItemCard.cs
 Equipado,,,,scripts/lobby/ItemCard.cs

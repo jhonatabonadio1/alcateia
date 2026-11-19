@@ -26,44 +26,72 @@ public sealed class SpectatorTest : RegressionTest
 		for (int i = 2; i < bots.Length; i++) bots[i].GetNode<Health>("Health").Team = killer.GetNode<Health>("Health").Team;
 		b.Check(Sfx.Has("bala_raspao"), "o som da bala de raspão existe");
 
+		// Espera longa para renascer, como na partida (no treino são 3 s).
+		b.Health.TrainingRespawnDelay = 12f;
+
+		// Anda um pouco antes de morrer, para a fita ter o que mostrar.
+		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.3);
+		RegressionBench.Press("move_forward");
+		await b.Seconds(1.6);
+		RegressionBench.Release("move_forward");
+		await b.Seconds(0.2);
+		Vector3 fell = b.Player.GlobalPosition;
+
 		b.Health.NoteAttacker(killer);
 		b.Health.TakeDamage(99999f);
 		await b.Frames(3);
 		KillCam cam = b.GetTree().Root.FindChildren("*", "", true, false).OfType<KillCam>().FirstOrDefault();
 		b.Check(cam != null && cam.Mode == "abate" && KillCam.InKillPhase, "morreu: a câmera de abate começa");
 		if (cam == null) return;
+		b.Check(cam.Replaying && b.Player.Replaying, "com a fita gravada, é o replay do abate");
 
-		await b.Seconds(0.3);
+		// No meio do replay o corpo está de volta ao caminho que fez, e a
+		// câmera está no olho de quem matou.
+		await b.Seconds(0.9);
+		b.AtLeast(1.0, RegressionBench.Flat(b.Player.GlobalPosition - fell), "no replay, o corpo volta para onde estava antes (m)");
+		Camera3D replayView = b.GetViewport().GetCamera3D();
+		b.AtMost(1.2, replayView.GlobalPosition.DistanceTo(killer.GlobalPosition + Vector3.Up * 0.72f), "a câmera do replay fica no olho do matador (m)");
+
 		await b.Tap("jump");
 		await b.Frames(3);
 		b.Check(cam.Mode == "aliado" && !KillCam.InKillPhase, $"Espaço pula a câmera de abate (modo {cam.Mode})");
 		b.Check(cam.Watching == mate, "e a câmera passa a seguir o aliado vivo");
+		b.Check(!b.Player.Replaying, "pulou: o corpo deixa de ser reencenado");
+		b.AtMost(0.3, RegressionBench.Flat(b.Player.GlobalPosition - fell), "e volta para onde caiu (m)");
 		b.CloseLoadout();
 
 		await b.Seconds(0.8);
 		Camera3D view = b.GetViewport().GetCamera3D();
 		b.AtMost(6.0, view.GlobalPosition.DistanceTo(mate.GlobalPosition), "a câmera fica por cima do aliado (m)");
 
-		Input.ActionPress("spectate_free");
-		await b.Frames(2);
-		Input.ActionRelease("spectate_free");
-		await b.Frames(2);
-		b.Check(cam.Mode == "livre", "F solta a câmera livre");
+		// Espaço troca a visão: de cima → primeira pessoa → livre.
+		await b.Tap("jump");
+		await b.Seconds(0.5);
+		b.Check(cam.Mode == "primeira" && cam.Watching == mate, $"Espaço: primeira pessoa do aliado (modo {cam.Mode})");
+		b.AtMost(0.6, view.GlobalPosition.DistanceTo(mate.GlobalPosition + Vector3.Up * 0.72f), "a câmera fica no olho do aliado (m)");
+		await b.Tap("attack");
+		await b.Frames(3);
+		b.Check(cam.Watching == mate && cam.Mode == "primeira", "o clique troca de aliado (só há um: fica nele)");
+		await b.Tap("jump");
+		await b.Frames(3);
+		b.Check(cam.Mode == "livre", "Espaço de novo: câmera livre");
 		Vector3 before = view.GlobalPosition;
 		RegressionBench.Press("move_forward");
 		await b.Seconds(0.5);
 		RegressionBench.Release("move_forward");
 		b.AtLeast(2.5, view.GlobalPosition.DistanceTo(before), "livre, o W anda pelo mapa (m)");
 
-		Input.ActionPress("spectate_free");
-		await b.Frames(2);
-		Input.ActionRelease("spectate_free");
-		await b.Frames(2);
-		b.Check(cam.Mode == "aliado", "F de novo volta aos aliados");
+		await b.Tap("jump");
+		await b.Frames(3);
+		b.Check(cam.Mode == "aliado", "Espaço de novo volta aos aliados, de cima");
+		var menu = b.GetTree().Root.FindChildren("*", "", true, false).OfType<LoadoutMenu>().FirstOrDefault();
+		b.Check(menu != null && !menu.IsOpen, "morto e assistindo, a escolha de conjunto não aparece");
 
-		await b.Seconds(b.Health.RespawnWait + 0.3);
-		b.Health.TryRespawn();
-		await b.Seconds(0.4);
-		b.Check(!b.Health.IsDead && !GodotObject.IsInstanceValid(cam) || cam.IsQueuedForDeletion(), "renasceu: a câmera de espectador some");
+		// Chegou a hora de renascer: aí sim a escolha aparece, e escolher renasce.
+		b.Check(await b.Until(() => menu != null && menu.IsOpen, b.Health.RespawnWait + 1.0), "na hora de renascer, a escolha de conjunto abre");
+		b.CloseLoadout();
+		await b.Seconds(0.5);
+		b.Check(!b.Health.IsDead, "escolheu: renasce");
+		b.Check(!GodotObject.IsInstanceValid(cam) || cam.IsQueuedForDeletion(), "e a câmera de espectador some");
 	}
 }

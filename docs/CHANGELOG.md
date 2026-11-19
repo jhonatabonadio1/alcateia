@@ -2,6 +2,42 @@
 
 ## Não lançado
 
+### Replay do abate, espectador, granada de choque e coronhada do AR-15 (18/11, à noite)
+- **A partida é gravada para o replay do abate** (`ReplayTape`): os últimos
+  5 s de posição e giro de todo mundo. Ao morrer, a câmera de abate passa
+  **os 3 s antes do abate, do olho de quem te matou**: a câmera anda pelo
+  caminho dele olhando para você, e o seu corpo é posto de pé e refaz o
+  que fez até cair de novo. Só os dois do abate são reencenados (os
+  outros corpos aparecem onde estão agora), e a câmera olha para a vítima
+  — a mira exata do matador não é gravada. Espaço pula. Sem fita
+  bastante (morreu ao nascer), fica a visão ao vivo.
+- **Espectador**: clique esquerdo passa ao próximo aliado, direito ao
+  anterior; **Espaço troca a visão**: de cima → primeira pessoa do aliado
+  → câmera livre → de cima.
+- **A escolha de conjunto só aparece na hora de renascer**: morto, a tela
+  é do replay e do espectador. O relógio dela corre mesmo com o menu do
+  Esc aberto — o Esc não segura nada: não escolheu, vai o padrão e renasce.
+- **Granada de choque**: o estouro é elétrico (`ShockBlast`: clarão frio,
+  raios pelo chão, dois anéis azuis até o raio, faíscas), **desacelera e
+  atordoa** jogador e bot (o bot atordoado anda devagar e não ataca) e
+  tira pouco (60 no centro). A explosão de fogo que mata (260) ficou
+  guardada como tipo **fragmentação** (`Grenade.Kind`), para a granada
+  desse tipo que ainda vai entrar.
+- **O pavio só conta depois que a granada encosta** em algo (1,2 s).
+- **Coronhada do AR-15 com animação própria** (`tools/armas/coronhada.py`):
+  a arma atravessa na frente do rosto e bate com a lateral, com os braços
+  acompanhando (cinemática inversa: só a arma se move, os ombros ficam).
+  As outras armas seguem com o movimento de código.
+- **Conjunto padrão editável**: aceita itens gratuitos e os liberados no
+  catálogo (`CatalogItem.DefaultOk`): hoje a **AR-15 Ultimate** e a
+  **granada de choque**. No padrão eles não custam WP. A mesma arma pode
+  estar em mais de um conjunto (nunca houve trava).
+- **Armas na loja e no inventário nítidas**: saíram o clareamento e o
+  brilho branco que passava; a foto aparece como é.
+- **Vermelho de quase morrendo para o lobo**: conta a vida mais o escudo
+  (o lobo sem escudo e com meia vida não via nada).
+- Testes novos: `PerigoNaTela`; `Espectador` e `GranadaNaMira` ampliados.
+
 ### Coronhada, granada, câmera de abate e espectador (18/11, à noite)
 - **Coronhada (V)**: com arma de fogo na mão, um golpe rápido com a arma
   (55 de dano, 1,9 m, 0,45 s; `Weapon.Butt.cs`). Não gasta munição, corta

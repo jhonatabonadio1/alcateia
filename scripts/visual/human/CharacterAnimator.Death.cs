@@ -56,6 +56,18 @@ public partial class CharacterAnimator
 	private readonly List<float> _fadeEmission = new();
 	private bool _hasDeath;
 
+	/// <summary>A câmera de abate reencena o corpo: de pé e andando
+	/// (verdadeiro) ou caindo de novo (falso).</summary>
+	public void ReplayAlive(bool alive)
+	{
+		if (alive)
+		{
+			OnRespawned();
+			_playback?.Start("Locomotion");
+		}
+		else OnDied();
+	}
+
 	private void OnDied()
 	{
 		StopReload();

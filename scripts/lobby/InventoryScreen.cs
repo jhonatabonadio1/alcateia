@@ -188,7 +188,7 @@ public partial class InventoryScreen : LobbyScreen
 		// Nome do conjunto (o padrão tem nome fixo).
 		LineEdit field = UiKit.Field(current.Name, "Nome do conjunto", LoadoutSet.MaxNameLength);
 		field.Editable = !current.IsDefault;
-		field.TooltipText = current.IsDefault ? "O conjunto padrão é fixo: grátis, sempre disponível, rende +50 WP" : "";
+		field.TooltipText = current.IsDefault ? "O conjunto padrão: grátis, sempre disponível, rende +50 WP. Aceita itens gratuitos e os liberados para o padrão (a AR-15 Ultimate, a granada de choque)" : "";
 		void Rename()
 		{
 			string name = field.Text.Trim();
@@ -203,7 +203,7 @@ public partial class InventoryScreen : LobbyScreen
 
 		// Lugares do conjunto.
 		column.AddChild(UiKit.Gap(UiTokens.S1));
-		column.AddChild(Step(2, current.IsDefault ? "O padrão é fixo: veja o que vem nele" : "Clique no espaço que quer trocar"));
+		column.AddChild(Step(2, "Clique no espaço que quer trocar"));
 		column.AddChild(SlotRow("Primária", Catalog.Get(current.Primary), () => Filter(0, 1),
 			null, choosing: _sub == 1));
 		column.AddChild(SlotRow("Secundária", Catalog.Get(current.Secondary), () => Filter(0, 2), null, choosing: _sub == 2));
@@ -211,7 +211,7 @@ public partial class InventoryScreen : LobbyScreen
 
 		string utility = current.Utilities.FirstOrDefault();
 		column.AddChild(SlotRow("Granada", Catalog.Get(utility), () => Filter(0, 3),
-			utility == null || current.IsDefault ? null : () => { current.Utilities.Clear(); Profile.Save(); Refresh(); }, choosing: _sub == 3));
+			utility == null ? null : () => { current.Utilities.Clear(); Profile.Save(); Refresh(); }, choosing: _sub == 3));
 		column.AddChild(LockedRow("Granada 2", "Luz e fumaça: em breve"));
 
 		column.AddChild(UiKit.Spacer());
@@ -546,9 +546,11 @@ public partial class InventoryScreen : LobbyScreen
 	private bool EquipInSet(CatalogItem item)
 	{
 		LoadoutSet set = CurrentSet;
-		if (set.IsDefault)
+		// O padrão aceita o que é gratuito e o que o catálogo libera para
+		// ele (a AR-15 Ultimate, a granada de choque).
+		if (set.IsDefault && !LoadoutSet.AllowedInDefault(item.Id))
 		{
-			Shell.Toast("O conjunto padrão é fixo. Escolha outro conjunto para equipar.", UiTokens.Danger);
+			Shell.Toast(Loc.F("{0} não pode ir no conjunto padrão. Escolha outro conjunto para equipar.", item.Name), UiTokens.Danger);
 			return false;
 		}
 

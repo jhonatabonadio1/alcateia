@@ -89,17 +89,22 @@ public sealed class GrenadeAimTest : RegressionTest
 			b.Check(grenade.GetNodeOrNull("Modelo") != null, "voa o modelo da granada, não a bola");
 
 			Vector3 last = grenade.GlobalPosition;
+			float fuse = grenade.Fuse;
+			double flown = 0, fused = 0;
 			await b.Until(() =>
 			{
 				if (!GodotObject.IsInstanceValid(grenade)) return true;
 				last = grenade.GlobalPosition;
+				if (grenade.Landed) fused += 1.0 / 60.0; else flown += 1.0 / 60.0;
 				return false;
-			}, 4.0);
+			}, 6.0);
+			b.Check(flown > 0.15, $"no ar o pavio não conta ({RegressionBench.F(flown)} s de voo)");
+			b.Near(fuse, fused, 0.2, "encostou, explode depois do pavio (s)");
 			RegressionBench.Note($"mirou a {RegressionBench.F(far)} m; explodiu a {RegressionBench.F(RegressionBench.Flat(last - aim))} m do ponto");
 			b.AtMost(1.2, RegressionBench.Flat(last - aim), $"a {RegressionBench.F(far)} m: distância entre a explosão e o ponto mirado (m)");
-			b.Check(Explosion.Alive > 0, "a explosão nova está no ar");
+			b.Check(ShockBlast.Alive > 0, "o estouro de choque está no ar");
 			await b.Seconds(2.3);
 		}
-		b.Check(Explosion.Alive == 0, "as explosões se desfazem sozinhas");
+		b.Check(ShockBlast.Alive == 0, "os estouros se desfazem sozinhos");
 	}
 }

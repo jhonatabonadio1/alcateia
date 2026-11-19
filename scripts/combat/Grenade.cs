@@ -14,13 +14,40 @@ using Godot;
 /// </summary>
 public partial class Grenade : RigidBody3D
 {
-	/// <summary>Tempo até explodir, em segundos.</summary>
-	[Export] public float Fuse = 1.8f;
+	/// <summary>Tempo até explodir depois de encostar em algo, em segundos.</summary>
+	[Export] public float Fuse = 1.2f;
+
+	/// <summary>O pavio só começa a contar quando a granada encosta em
+	/// algo (pedido do Jhon, 18/11: "só começa o timer de explodir ao cair
+	/// no chão"). Se nunca encostar (caiu para fora do mapa), explode
+	/// depois deste tempo de voo.</summary>
+	[Export] public float MaxFlight = 6f;
+
+	/// <summary>Já encostou: o pavio está contando. Para os testes.</summary>
+	public bool Landed { get; private set; }
 
 	[Export] public float Radius = 6.5f;
 
 	/// <summary>Dano no centro da explosão. Cai linearmente até a borda.</summary>
 	[Export] public float MaxDamage = 260f;
+
+	/// <summary>
+	/// O tipo da granada (18/11). **Choque** (a do jogo hoje): um estouro
+	/// elétrico que **desacelera quem está perto e atordoa o inimigo**,
+	/// com pouco dano (<see cref="ShockDamage"/>). **Fragmentação**: a
+	/// explosão de fogo que mata de perto (<see cref="MaxDamage"/>) —
+	/// pronta, guardada para a granada desse tipo que ainda vai entrar.
+	/// </summary>
+	public enum GrenadeKind { Shock, Frag }
+
+	[Export] public GrenadeKind Kind = GrenadeKind.Shock;
+
+	/// <summary>Dano da granada de choque no centro (o ponto dela é o
+	/// atordoamento, não o dano).</summary>
+	[Export] public float ShockDamage = 60f;
+
+	/// <summary>O dano no centro, pelo tipo.</summary>
+	public float CenterDamage => Kind == GrenadeKind.Frag ? MaxDamage : ShockDamage;
 
 	/// <summary>Duração do atordoamento no centro.</summary>
 	[Export] public float StunDuration = 2.5f;
@@ -45,7 +72,7 @@ public partial class Grenade : RigidBody3D
 
 	public override void _Ready()
 	{
-		_timer = Fuse;
+		_timer = MaxFlight;
 		ContactMonitor = true;
 		MaxContactsReported = 4;
 
@@ -57,6 +84,11 @@ public partial class Grenade : RigidBody3D
 		PhysicsMaterialOverride = new PhysicsMaterial { Bounce = 0.05f, Friction = 1f };
 		BodyEntered += _ =>
 		{
+			if (!Landed)
+			{
+				Landed = true;
+				_timer = Fuse;
+			}
 			LinearDamp = 7f;
 			AngularDamp = 9f;
 		};
@@ -120,15 +152,15 @@ public partial class Grenade : RigidBody3D
 				// Nada de dano: só o atordoamento, logo abaixo.
 			}
 			else if (health != null && health.IsRemote)
-				health.SendHit(MaxDamage * falloff, GlobalPosition, false, KillCause.Grenade, Arsenal.GrenadeId, Thrower?.GetParent());
+				health.SendHit(CenterDamage * falloff, GlobalPosition, false, KillCause.Grenade, Arsenal.GrenadeId, Thrower?.GetParent());
 			else
 			{
 				// Online: veja Weapon.Damage — o juiz anota a autoria e o
 				// abate volta do servidor.
 				NetMatch net = Thrower != null && health != null && health != Thrower ? NetMatch.Current : null;
-				net?.BeginLocalHit(Thrower.GetParent(), health, MaxDamage * falloff);
+				net?.BeginLocalHit(Thrower.GetParent(), health, CenterDamage * falloff);
 				if (Thrower != null && health != Thrower) health?.NoteAttacker(Thrower.GetParent());
-				health?.TakeDamage(MaxDamage * falloff, 0, GlobalPosition);
+				health?.TakeDamage(CenterDamage * falloff, 0, GlobalPosition);
 				net?.EndLocalHit();
 
 				if (wasAlive && health.IsDead && Thrower != null && health != Thrower)
@@ -139,8 +171,12 @@ public partial class Grenade : RigidBody3D
 			}
 
 			// O atordoamento é o ponto da granada, não o dano.
-			if (body is Player player)
-				player.ApplyStun(StunDuration * falloff, StunSlowFactor);
+			// Só a de choque atordoa: jogador e bot, na medida da distância.
+			if (Kind == GrenadeKind.Shock)
+			{
+				if (body is Player player) player.ApplyStun(StunDuration * falloff, StunSlowFactor);
+				else if (body is Bot bot) bot.ApplyStun(StunDuration * falloff, StunSlowFactor);
+			}
 		}
 
 		NoiseBus.Emit(GlobalPosition, Radius * 6f, NoiseKind.Explosion, this);
@@ -162,8 +198,12 @@ public partial class Grenade : RigidBody3D
 
 	/// <summary>Clarão que cresce e some. Peça descartável — vira
 	/// partícula de verdade na fase de polimento.</summary>
-	/// <summary>A explosão que se vê (<see cref="Explosion"/>): clarão,
-	/// bola de fogo, onda de choque até o raio, fagulhas, fumaça e
-	/// estilhaços.</summary>
-	private void SpawnFlash() => Explosion.Spawn(GetParent(), GlobalPosition, Radius);
+	/// <summary>A explosão que se vê. Fragmentação: o fogo
+	/// (<see cref="Explosion"/>). Choque: o estouro elétrico
+	/// (<see cref="ShockBlast"/>).</summary>
+	private void SpawnFlash()
+	{
+		if (Kind == GrenadeKind.Frag) Explosion.Spawn(GetParent(), GlobalPosition, Radius);
+		else ShockBlast.Spawn(GetParent(), GlobalPosition, Radius);
+	}
 }

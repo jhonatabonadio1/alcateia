@@ -34,8 +34,30 @@ public partial class Bot
 	private double _stuckTimer;
 	private Vector3 _lastPosition;
 
+	private double _stunLeft;
+	private float _stunSlow = 1f;
+
+	/// <summary>Atordoado (granada de choque): anda devagar e não ataca.</summary>
+	public bool IsStunned => _stunLeft > 0;
+
+	/// <summary>O atordoamento da granada de choque, como o do jogador
+	/// (<see cref="Player.ApplyStun"/>): o mais forte vence.</summary>
+	public void ApplyStun(float duration, float slowFactor)
+	{
+		if (duration <= 0) return;
+		if (duration > _stunLeft) _stunLeft = duration;
+		_stunSlow = Mathf.Min(_stunSlow, Mathf.Clamp(slowFactor, 0.05f, 1f));
+	}
+
 	private void MoveTowards(Vector3 direction, float speed, double delta)
 	{
+		if (_stunLeft > 0)
+		{
+			_stunLeft -= delta;
+			speed *= _stunSlow;
+			if (_stunLeft <= 0) _stunSlow = 1f;
+		}
+
 		Vector3 velocity = Velocity;
 
 		velocity.X = Mathf.MoveToward(velocity.X, direction.X * speed, speed * 6f * (float)delta);

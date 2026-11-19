@@ -64,6 +64,11 @@
     "clipe": "andar",
     "de": 0.0
    },
+   "coronhada": {
+    "ate": 0.4,
+    "clipe": "coronhada",
+    "de": 0.0
+   },
    "desmirar": {
     "ate": 0.24,
     "clipe": "desmirar",
@@ -146,6 +151,11 @@
    "andar": {
     "ate": 0.8,
     "clipe": "andar",
+    "de": 0.0
+   },
+   "coronhada": {
+    "ate": 0.4,
+    "clipe": "coronhada",
     "de": 0.0
    },
    "desmirar": {

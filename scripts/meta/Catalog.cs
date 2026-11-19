@@ -52,6 +52,11 @@ public sealed class CatalogItem
 	public int[] Prices;
 	/// <summary>Vem com todo perfil, permanente e grátis.</summary>
 	public bool Starter;
+	/// <summary>Pode ir no conjunto padrão mesmo custando WP (decisão do
+	/// Jhon, 18/11: "algumas armas podem ser equipadas no padrão, outras
+	/// não; isso deve ser configurável por arma"). No padrão ela não
+	/// custa WP. Item gratuito sempre pode.</summary>
+	public bool DefaultOk;
 	/// <summary>Vai para a aba DESTAQUE da loja.</summary>
 	public bool Hot;
 	/// <summary>Consumível: some ao usar (troca de nome).</summary>
@@ -126,12 +131,12 @@ public static class Catalog
 		// O AR-15 um degrau acima (18/11): mesmo fuzil, mesmas animações, um pouco
 		// mais forte em tudo. Pele roxa com flames (tools/armas/blender/ar15_ultimate.py).
 		new() { Id = "ar15_ultimate", Name = "AR-15 Ultimate", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
-			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 }, Hot = true,
+			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 }, Hot = true, DefaultOk = true,
 			Description = "O AR-15 no limite: um pouco mais de dano, cadência e pente, e o recuo mais domado. Pele roxa com flames que brilham." },
 
 		// ---------------------------------------------------- utilitário
 		new() { Id = Arsenal.GrenadeId, Name = "Granada de choque", Type = "Granada", Kind = ItemKind.Utility,
-			Rarity = 1, Prices = new[] { 60, 300, 900, 2000, 4500 },
+			Rarity = 1, Prices = new[] { 60, 300, 900, 2000, 4500 }, DefaultOk = true,
 			Description = "Anti-lobo: atordoa e desacelera quem pega o estouro. Não existe para matar; existe para o lobo não chegar." },
 
 		// ---------------------------------------------------- tatuagens

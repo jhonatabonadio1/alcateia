@@ -227,6 +227,8 @@ public partial class Bot
 		if (distance > reach) return;
 		if (!_form.IsWolf && !_firing) return;
 		if (!HasLineOfSight()) return;
+		// Atordoado pela granada de choque: não ataca.
+		if (IsStunned) return;
 
 		_weapon.TryAttack();
 	}

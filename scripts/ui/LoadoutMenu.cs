@@ -34,7 +34,7 @@ public partial class LoadoutMenu : CanvasLayer
 	[Export] public float ChooseTime = 15f;
 
 	/// <summary>Segundos vendo quem te matou antes da escolha abrir.</summary>
-	[Export] public float KillCamTime = 3f;
+	[Export] public float KillCamTime = 4.2f;
 
 	/// <summary>WP concedido ao escolher o padrão. É a rede de segurança:
 	/// o padrão não só é grátis, ele paga — quem está sem pontos tem
@@ -59,6 +59,9 @@ public partial class LoadoutMenu : CanvasLayer
 	private double _remaining;
 	private bool _open;
 
+	/// <summary>A escolha está na tela. Para os testes.</summary>
+	public bool IsOpen => _open;
+
 	public override void _Ready()
 	{
 		Layer = 9;
@@ -79,7 +82,10 @@ public partial class LoadoutMenu : CanvasLayer
 		// O jogador controla o próprio renascimento: só volta quando
 		// tiver escolhido o conjunto.
 		_health.AutoRespawn = false;
-		_health.Died += _ => OpenAfterKillCam();
+		// A escolha de conjunto só aparece na hora de renascer (pedido do
+		// Jhon, 18/11): morto, a tela é da câmera de abate e do espectador.
+		_health.Died += _ => _awaiting = true;
+		_health.Respawned += () => _awaiting = false;
 		KillFeed.Reported += OnKill;
 
 		Build();
@@ -98,14 +104,19 @@ public partial class LoadoutMenu : CanvasLayer
 
 	public override void _Process(double delta)
 	{
-		if (!_open) return;
-
 		// Acabou a partida: a tela de resultado assume.
 		if (Match.Current?.Phase == MatchPhase.Ended) return;
 
-		// O relógio só corre quando esta é a tela de cima.
-		if (!UiState.IsAlone) return;
+		// Morto e o tempo de renascer acabou: agora sim, a escolha.
+		if (_awaiting && !_open && _health.IsDead && _health.RespawnIn <= 0f)
+		{
+			_awaiting = false;
+			Open();
+		}
+		if (!_open) return;
 
+		// O relógio corre mesmo com o menu do Esc por cima: o Esc não
+		// segura o jogo (não escolheu a tempo, vai o padrão e renasce).
 		_remaining -= delta;
 		RefreshTimer();
 
@@ -149,25 +160,8 @@ public partial class LoadoutMenu : CanvasLayer
 	/// primária na mão (pedido do Jhon, 18/11).</summary>
 	private int Fallback() => 0;
 
-	private async void OpenAfterKillCam()
-	{
-		if (_health.Killer == null || KillCamTime <= 0f)
-		{
-			Open();
-			return;
-		}
-
-		// Espera a câmera de abate acabar — ou o jogador pular com Espaço.
-		double waited = 0;
-		await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-		while (IsInstanceValid(this) && waited < KillCamTime && KillCam.InKillPhase)
-		{
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			waited += GetProcessDeltaTime();
-		}
-		if (!IsInstanceValid(this) || !_health.IsDead || _open) return;
-		Open();
-	}
+	/// <summary>Morreu e ainda não chegou a hora de renascer.</summary>
+	private bool _awaiting;
 
 	private void Open()
 	{
