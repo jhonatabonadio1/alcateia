@@ -10,7 +10,7 @@ using Godot;
 /// clareada (<see cref="BleachCode"/>): as armas são quase pretas, e
 /// sobre os painéis escuros e sobre o jogo sumiriam.
 ///
-/// O que não tem foto (tatuagem, classe de lobo, serviço, ou uma arma
+/// O que não tem foto (melhoria, classe de lobo, serviço, ou uma arma
 /// nova antes de fotografar) continua na silhueta desenhada por código,
 /// na grade de 200×80.
 /// </summary>

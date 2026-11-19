@@ -2,6 +2,12 @@
 
 ## Não lançado
 
+### Tatuagem vira melhoria (18/11, à noite)
+- Nos textos da loja, do inventário e das mensagens, **"tatuagem" passa a
+  ser "melhoria"** (pedido do Jhon). Os identificadores do código e dos
+  itens (`ItemKind.Tattoo`, `tat_*`) ficam como estão; a planilha de
+  textos foi atualizada (13 chaves trocadas).
+
 ### Replay do abate, espectador, granada de choque e coronhada do AR-15 (18/11, à noite)
 - **A partida é gravada para o replay do abate** (`ReplayTape`): os últimos
   5 s de posição e giro de todo mundo. Ao morrer, a câmera de abate passa

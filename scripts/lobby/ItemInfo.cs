@@ -29,7 +29,7 @@ public static class ItemInfo
 		return item.Kind switch
 		{
 			ItemKind.Utility => "Granada",
-			ItemKind.Tattoo => "Tatuagem",
+			ItemKind.Tattoo => "Melhoria",
 			ItemKind.Breed => "Classe",
 			ItemKind.Character => "Personagem",
 			_ => "Serviço"

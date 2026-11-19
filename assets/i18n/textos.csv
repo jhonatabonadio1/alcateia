@@ -51,11 +51,11 @@ Item fora do inventário ou expirado,,,,scripts/core/Profile.cs
 Item não está à venda nessa duração,,,,scripts/core/Profile.cs
 Já equipada,,,,scripts/core/Profile.cs
 Máximo de {0} caracteres,,,,scripts/core/Profile.cs
-Máximo de {0} tatuagens,,,,scripts/core/Profile.cs
+Máximo de {0} melhorias,,,,scripts/core/Profile.cs
 Mínimo de {0} caracteres,,,,scripts/core/Profile.cs
 Nome reservado,,,,scripts/core/Profile.cs
 Não é um personagem,,,,scripts/core/Profile.cs
-Não é uma tatuagem,,,,scripts/core/Profile.cs
+Não é uma melhoria,,,,scripts/core/Profile.cs
 Personagem fora do inventário ou expirado,,,,scripts/core/Profile.cs
 Precisa do item Troca de nome,,,,scripts/core/Profile.cs
 "Use só letras, números, _ e -",,,,scripts/core/Profile.cs
@@ -135,7 +135,7 @@ Ver todas as missões,,,,scripts/lobby/DailyMissions.cs
 "1. Escolha o conjunto.
 2. Clique no espaço que quer trocar.
 3. Clique na arma: aqui aparecem os atributos e o botão Equipar.",,,,scripts/lobby/InventoryScreen.cs
-"A classe define escudo, velocidade, pulo e garra. As tatuagens são ajustes pequenos por cima dela. ",,,,scripts/lobby/InventoryScreen.cs
+"A classe define escudo, velocidade, pulo e garra. As melhorias são ajustes pequenos por cima dela. ",,,,scripts/lobby/InventoryScreen.cs
 Classe,,,,scripts/lobby/InventoryScreen.cs
 Classe em uso,,,,scripts/lobby/InventoryScreen.cs
 Classe {0} em uso,,,,scripts/lobby/InventoryScreen.cs
@@ -151,12 +151,12 @@ Em uso {0},,,,scripts/lobby/InventoryScreen.cs
 Equipada,,,,scripts/lobby/InventoryScreen.cs
 Equipada em {0},,,,scripts/lobby/InventoryScreen.cs
 Equipar em {0},,,,scripts/lobby/InventoryScreen.cs
-Equipar tatuagem,,,,scripts/lobby/InventoryScreen.cs
+Equipar melhoria,,,,scripts/lobby/InventoryScreen.cs
 Escolha a classe do lobo,,,,scripts/lobby/InventoryScreen.cs
 Escolha a granada,,,,scripts/lobby/InventoryScreen.cs
 Escolha a primária,,,,scripts/lobby/InventoryScreen.cs
 Escolha a secundária,,,,scripts/lobby/InventoryScreen.cs
-Escolha as tatuagens,,,,scripts/lobby/InventoryScreen.cs
+Escolha as melhorias,,,,scripts/lobby/InventoryScreen.cs
 Escolha o personagem,,,,scripts/lobby/InventoryScreen.cs
 Fixo em todo conjunto,,,,scripts/lobby/InventoryScreen.cs
 Granada 2,,,,scripts/lobby/InventoryScreen.cs
@@ -167,9 +167,12 @@ Ir à loja,,,,scripts/lobby/InventoryScreen.cs
 Luz e fumaça: em breve,,,,scripts/lobby/InventoryScreen.cs
 Mais tempo,,,,scripts/lobby/InventoryScreen.cs
 Manter,,,,scripts/lobby/InventoryScreen.cs
+Melhoria {0},,,,scripts/lobby/InventoryScreen.cs
+Melhorias,,,,scripts/lobby/InventoryScreen.cs
+Melhorias  ·  {0}/{1},,,,scripts/lobby/InventoryScreen.cs
 na Vanguarda,,,,scripts/lobby/InventoryScreen.cs
 na Vanguarda e no Sindicato,,,,scripts/lobby/InventoryScreen.cs
-"Nada aqui ainda. A loja vende armas, granadas e tatuagens por Presas.",,,,scripts/lobby/InventoryScreen.cs
+"Nada aqui ainda. A loja vende armas, granadas e melhorias por Presas.",,,,scripts/lobby/InventoryScreen.cs
 no Sindicato,,,,scripts/lobby/InventoryScreen.cs
 Nome do conjunto,,,,scripts/lobby/InventoryScreen.cs
 "O conjunto padrão: grátis, sempre disponível, rende +50 WP. Aceita itens gratuitos e os liberados para o padrão (a AR-15 Ultimate, a granada de choque)",,,,scripts/lobby/InventoryScreen.cs
@@ -188,9 +191,6 @@ Seu lobo,,,,scripts/lobby/InventoryScreen.cs
 Seus conjuntos,,,,scripts/lobby/InventoryScreen.cs
 Seus personagens,,,,scripts/lobby/InventoryScreen.cs
 Seus serviços,,,,scripts/lobby/InventoryScreen.cs
-Tatuagem {0},,,,scripts/lobby/InventoryScreen.cs
-Tatuagens,,,,scripts/lobby/InventoryScreen.cs
-Tatuagens  ·  {0}/{1},,,,scripts/lobby/InventoryScreen.cs
 Tirar,,,,scripts/lobby/InventoryScreen.cs
 Todas,,,,scripts/lobby/InventoryScreen.cs
 Todas as suas armas,,,,scripts/lobby/InventoryScreen.cs
@@ -220,7 +220,7 @@ Possui · renovar,,,,scripts/lobby/ItemCard.cs
 A vida é a mesma como humano e como lobo; o lobo soma o escudo da classe por cima.,,,,scripts/lobby/ItemDetail.cs
 Alcance,,,,scripts/lobby/ItemDetail.cs
 Atributos,,,,scripts/lobby/ItemDetail.cs
-Até {0} tatuagens equipadas ao mesmo tempo. Vale só para você.,,,,scripts/lobby/ItemDetail.cs
+Até {0} melhorias equipadas ao mesmo tempo. Vale só para você.,,,,scripts/lobby/ItemDetail.cs
 Cadência,,,,scripts/lobby/ItemDetail.cs
 "Comparando com {0}, equipada no mesmo lugar",,,,scripts/lobby/ItemDetail.cs
 Controle,,,,scripts/lobby/ItemDetail.cs
@@ -249,9 +249,9 @@ Vida,,,,scripts/lobby/ItemDetail.cs
 {0:0} por min,,,,scripts/lobby/ItemDetail.cs
 1 uso,,,,scripts/lobby/ItemInfo.cs
 Destrava em {0},,,,scripts/lobby/ItemInfo.cs
+Melhoria,,,,scripts/lobby/ItemInfo.cs
 Permanente,,,,scripts/lobby/ItemInfo.cs
 Serviço,,,,scripts/lobby/ItemInfo.cs
-Tatuagem,,,,scripts/lobby/ItemInfo.cs
 {0} d {1} h,,,,scripts/lobby/ItemInfo.cs
 {0} h {1} min,,,,scripts/lobby/ItemInfo.cs
 {0} usos,,,,scripts/lobby/ItemInfo.cs
@@ -548,6 +548,7 @@ Garra Afiada,,,,scripts/meta/Catalog.cs
 Impacto bruto: mata com um tiro na cabeça. Paga com recuo pesado e um estampido que se ouve de longe.,,,,scripts/meta/Catalog.cs
 Ligeiro,,,,scripts/meta/Catalog.cs
 "Linha de frente: escudo alto, garra pesada, resiste a tiro no corpo. Mais lento no chão.",,,,scripts/meta/Catalog.cs
+Melhoria · lobo,,,,scripts/meta/Catalog.cs
 "O AR-15 no limite: um pouco mais de dano, cadência e pente, e o recuo mais domado. Pele roxa com flames que brilham.",,,,scripts/meta/Catalog.cs
 O escudo do lobo se desfaz 20% mais devagar.,,,,scripts/meta/Catalog.cs
 O fuzil mais estável do arsenal: recuo baixo e linear. Pune quem atira andando.,,,,scripts/meta/Catalog.cs
@@ -565,7 +566,6 @@ Silenciosa: não faz ruído para os bots. A arma de quem quer o abate sem entreg
 Sindicato,,,,scripts/meta/Catalog.cs
 "SMG de dano, a arma anti-lobo. Rápida na mão e forte de perto — a que você puxa quando ouve o uivo.",,,,scripts/meta/Catalog.cs
 Submetralhadora,,,,scripts/meta/Catalog.cs
-Tatuagem · lobo,,,,scripts/meta/Catalog.cs
 Troca de nome,,,,scripts/meta/Catalog.cs
 Troca o seu nickname uma vez. O nome é fixo sem este item.,,,,scripts/meta/Catalog.cs
 UMP-45,,,,scripts/meta/Catalog.cs
@@ -939,7 +939,7 @@ Soltou: {0},,,,scripts/ui/hud/Hud.cs
 Display,,,,scripts/ui/hud/KillBanner.cs
 ELIMINOU,,,,scripts/ui/hud/KillBanner.cs
 na cabeça,,,,scripts/ui/hud/KillBanner.cs
-Presas — ganhas jogando. Compram armas e tatuagens.,,,,scripts/ui/kit/CurrencyLabel.cs
+Presas — ganhas jogando. Compram armas e melhorias.,,,,scripts/ui/kit/CurrencyLabel.cs
 Sangue,,,,scripts/ui/kit/CurrencyLabel.cs
 Sangue — moeda comprada. Disponível quando houver servidor.,,,,scripts/ui/kit/CurrencyLabel.cs
 Local,,,,scripts/ui/kit/PingBars.cs

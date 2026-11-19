@@ -39,7 +39,7 @@ public partial class CurrencyLabel : HBoxContainer
 		label.AddThemeConstantOverride("separation", UiTokens.S1 + 2);
 		label.MouseFilter = MouseFilterEnum.Pass;
 		label.TooltipText = kind == Currency.Presas
-			? "Presas — ganhas jogando. Compram armas e tatuagens."
+			? "Presas — ganhas jogando. Compram armas e melhorias."
 			: "Sangue — moeda comprada. Disponível quando houver servidor.";
 
 		label.AddChild(Icon.Make(kind == Currency.Presas ? IconKind.Presa : IconKind.Sangue, large ? 22 : 16, ColorOf(kind)));

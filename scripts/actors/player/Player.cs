@@ -93,7 +93,7 @@ public partial class Player : CharacterBody3D
 		_springArm.SpringLength = ThirdPersonDistance;
 		_springArm.AddExcludedObject(GetRid());
 
-		// A classe de lobo e as tatuagens vêm do perfil. Cópia do recurso:
+		// A classe de lobo e as melhorias vêm do perfil. Cópia do recurso:
 		// o original é o mesmo dos bots.
 		WolfBreed breed = Profile.BuildBreed();
 		if (breed != null) _form.Breed = breed;

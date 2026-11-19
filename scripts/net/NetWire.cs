@@ -48,7 +48,7 @@ using System.Text;
 /// | Input | jogo, a cada passo | os últimos <see cref="InputCommand.Redundancy"/> comandos (<see cref="InputCommand"/>) |
 /// | Snapshot | servidor, 30 por segundo | o passo, o último comando seu simulado e cada corpo (<see cref="SnapshotWire"/>) |
 /// | Status | jogo → todos, 10 por segundo | vida, escudo, morto, armas (a vida ainda é do jogo nesta leva) |
-/// | Loadout | jogo, ao entrar | a classe de lobo e as tatuagens (mudam o movimento do lobo) |
+/// | Loadout | jogo, ao entrar | a classe de lobo e as melhorias (mudam o movimento do lobo) |
 /// | Radio | jogo → todos, repassado | o call de rádio (1 byte: qual fala); cada máquina toca se for do time |
 /// </summary>
 public static class NetWire

@@ -17,7 +17,7 @@ using System.Linq;
 /// 1. **O que está equipado.** Em Armas, os quatro conjuntos (com o
 ///    custo em WP de cada um — a peça central da economia: o jogador
 ///    monta quatro e escolhe um ao renascer) e os espaços do conjunto
-///    aberto. Em Lobo, a classe e as tatuagens. Em Personagem, o de cada
+///    aberto. Em Lobo, a classe e as melhorias. Em Personagem, o de cada
 ///    time.
 /// 2. **Clicar num espaço** mostra, no meio, só o que cabe nele — o
 ///    espaço fica marcado e o título do meio diz o que se está
@@ -40,7 +40,7 @@ public partial class InventoryScreen : LobbyScreen
 	private static readonly string[][] SubTabs =
 	{
 		new[] { "Todas", "Primária", "Secundária", "Granada", "Corpo a corpo" },
-		new[] { "Tatuagens", "Classes" },
+		new[] { "Melhorias", "Classes" },
 		new[] { "Todos" },
 		new[] { "Todos" }
 	};
@@ -241,18 +241,18 @@ public partial class InventoryScreen : LobbyScreen
 		column.AddChild(SlotRow("Classe", breed, () => Filter(1, 1), null, choosing: _sub == 1));
 
 		column.AddChild(UiKit.Gap(UiTokens.S2));
-		column.AddChild(UiKit.Caption(Loc.F("Tatuagens  ·  {0}/{1}", Profile.Tattoos.Count, Profile.MaxTattoos)));
+		column.AddChild(UiKit.Caption(Loc.F("Melhorias  ·  {0}/{1}", Profile.Tattoos.Count, Profile.MaxTattoos)));
 
 		for (int i = 0; i < Profile.MaxTattoos; i++)
 		{
 			string id = i < Profile.Tattoos.Count ? Profile.Tattoos[i] : null;
-			column.AddChild(SlotRow(Loc.F("Tatuagem {0}", i + 1), Catalog.Get(id), () => Filter(1, 0),
+			column.AddChild(SlotRow(Loc.F("Melhoria {0}", i + 1), Catalog.Get(id), () => Filter(1, 0),
 				id == null ? null : () => { Profile.UnequipTattoo(id); Refresh(); }, choosing: _sub == 0));
 		}
 
 		column.AddChild(UiKit.Spacer());
 		column.AddChild(UiKit.Paragraph(
-			"A classe define escudo, velocidade, pulo e garra. As tatuagens são ajustes pequenos por cima dela. " +
+			"A classe define escudo, velocidade, pulo e garra. As melhorias são ajustes pequenos por cima dela. " +
 			"Tudo do lobo se compra com Presas, nunca com dinheiro."));
 	}
 
@@ -376,7 +376,7 @@ public partial class InventoryScreen : LobbyScreen
 		(0, 3) => "Escolha a granada",
 		(0, 4) => "Corpo a corpo",
 		(0, _) => "Todas as suas armas",
-		(1, 0) => "Escolha as tatuagens",
+		(1, 0) => "Escolha as melhorias",
 		(1, _) => "Escolha a classe do lobo",
 		(2, _) => "Escolha o personagem",
 		_ => "Seus serviços"
@@ -407,7 +407,7 @@ public partial class InventoryScreen : LobbyScreen
 			grid.AddChild(ItemCard.Make(item, CardMode.Inventory, item.Id == _selectedId, Select));
 
 		if (items.Count == 0)
-			column.AddChild(UiKit.Paragraph("Nada aqui ainda. A loja vende armas, granadas e tatuagens por Presas."));
+			column.AddChild(UiKit.Paragraph("Nada aqui ainda. A loja vende armas, granadas e melhorias por Presas."));
 
 		return column;
 	}
@@ -491,7 +491,7 @@ public partial class InventoryScreen : LobbyScreen
 
 	private string EquipLabel(CatalogItem item) => item.Kind switch
 	{
-		ItemKind.Tattoo => Profile.Tattoos.Contains(item.Id) ? "Equipada" : "Equipar tatuagem",
+		ItemKind.Tattoo => Profile.Tattoos.Contains(item.Id) ? "Equipada" : "Equipar melhoria",
 		ItemKind.Breed => Profile.Breed == item.Id ? "Classe em uso" : "Usar esta classe",
 		ItemKind.Character => IsEquippedHere(item) ? Loc.F("Em uso {0}", TeamLabel(item)) : Loc.F("Usar {0}", TeamLabel(item)),
 		ItemKind.Service => "Usar",

@@ -24,7 +24,7 @@ public enum Duration
 	Permanent
 }
 
-/// <summary>Efeito de uma tatuagem: multiplicadores sobre a classe de
+/// <summary>Efeito de uma melhoria: multiplicadores sobre a classe de
 /// lobo. Pequenos de propósito — ajuste fino, não poder.</summary>
 public sealed class TattooEffect
 {
@@ -78,7 +78,7 @@ public sealed class CatalogItem
 }
 
 /// <summary>
-/// Tudo o que existe para possuir: armas, granada, tatuagens, classes de
+/// Tudo o que existe para possuir: armas, granada, melhorias, classes de
 /// lobo, personagens e serviços. Os personagens não estão escritos aqui:
 /// cada pasta de assets/personagens vira um item (CharacterSkin). É a
 /// fonte única de nome, raridade, patente mínima e preço — loja,
@@ -139,24 +139,24 @@ public static class Catalog
 			Rarity = 1, Prices = new[] { 60, 300, 900, 2000, 4500 }, DefaultOk = true,
 			Description = "Anti-lobo: atordoa e desacelera quem pega o estouro. Não existe para matar; existe para o lobo não chegar." },
 
-		// ---------------------------------------------------- tatuagens
-		new() { Id = "tat_pata", Name = "Pata Leve", Type = "Tatuagem · lobo", Kind = ItemKind.Tattoo,
+		// ---------------------------------------------------- melhorias
+		new() { Id = "tat_pata", Name = "Pata Leve", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
 			Rarity = 1, MinRank = 1, Prices = new[] { 120, 600, 1800, 4000, 9500 },
 			Tattoo = new TattooEffect { Speed = 1.05f },
 			Description = "+5% de velocidade na forma de lobo." },
-		new() { Id = "tat_salto", Name = "Salto Longo", Type = "Tatuagem · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "tat_salto", Name = "Salto Longo", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
 			Rarity = 1, MinRank = 2, Prices = new[] { 120, 600, 1800, 4000, 9500 },
 			Tattoo = new TattooEffect { Jump = 1.06f },
 			Description = "+6% de força no pulo do lobo." },
-		new() { Id = "tat_couro", Name = "Couro Grosso", Type = "Tatuagem · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "tat_couro", Name = "Couro Grosso", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
 			Rarity = 2, MinRank = 3, Prices = new[] { 150, 750, 2200, 5000, 12000 }, Hot = true,
 			Tattoo = new TattooEffect { Shield = 1.10f },
 			Description = "+10% de escudo máximo do lobo." },
-		new() { Id = "tat_garra", Name = "Garra Afiada", Type = "Tatuagem · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "tat_garra", Name = "Garra Afiada", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
 			Rarity = 2, MinRank = 4, Prices = new[] { 150, 750, 2200, 5000, 12000 },
 			Tattoo = new TattooEffect { ClawDamage = 1.06f },
 			Description = "+6% de dano da garra." },
-		new() { Id = "tat_pelo", Name = "Pelo Denso", Type = "Tatuagem · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "tat_pelo", Name = "Pelo Denso", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
 			Rarity = 3, MinRank = 6, Prices = new[] { 180, 900, 2700, 6000, 14000 },
 			Tattoo = new TattooEffect { ShieldDecay = 0.8f },
 			Description = "O escudo do lobo se desfaz 20% mais devagar." },

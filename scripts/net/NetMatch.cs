@@ -315,7 +315,7 @@ public partial class NetMatch : Node
 		Send(stream, reliable: false);
 	}
 
-	/// <summary>A classe de lobo e as tatuagens: o servidor precisa delas
+	/// <summary>A classe de lobo e as melhorias: o servidor precisa delas
 	/// para mover o lobo como este jogo move.</summary>
 	private void SendLoadout()
 	{

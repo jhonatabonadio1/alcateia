@@ -8,7 +8,7 @@ using System.Linq;
 /// (pedido do Jhon, 17/11: "uma loja mais fácil de entender"):
 ///
 /// 1. **Categorias** numa lista só, à esquerda, agrupadas — Destaques,
-///    Humano (primárias, secundárias, granadas), Lobo (tatuagens,
+///    Humano (primárias, secundárias, granadas), Lobo (melhorias,
 ///    classes) e Conta —, cada uma com quantos itens tem. Antes eram
 ///    abas em dois níveis mais um personagem em 3D que não tinha a ver
 ///    com a compra.
@@ -47,7 +47,7 @@ public partial class ShopScreen : LobbyScreen
 		new("Humano", "Primárias", () => ForSale.Where(i => ItemInfo.IsPrimary(i) && i.Kind == ItemKind.Weapon)),
 		new("Humano", "Secundárias", () => ForSale.Where(i => ItemInfo.IsSecondary(i) && i.Kind == ItemKind.Weapon)),
 		new("Humano", "Granadas", () => ForSale.Where(i => i.Kind == ItemKind.Utility)),
-		new("Lobo", "Tatuagens", () => ForSale.Where(i => i.Kind == ItemKind.Tattoo)),
+		new("Lobo", "Melhorias", () => ForSale.Where(i => i.Kind == ItemKind.Tattoo)),
 		new("Lobo", "Classes de lobo", () => ForSale.Where(i => i.Kind == ItemKind.Breed)),
 		new("Conta", "Serviços", () => ForSale.Where(i => i.Kind == ItemKind.Service))
 	};

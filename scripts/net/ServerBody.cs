@@ -98,7 +98,7 @@ public sealed class ServerBody
 		if (Placed && !_health.IsDead) _health.Mirror(hp, maxHp, shield, maxShield, false);
 	}
 
-	/// <summary>A classe de lobo e as tatuagens (Loadout): mudam a
+	/// <summary>A classe de lobo e as melhorias (Loadout): mudam a
 	/// velocidade e o pulo do lobo, então o servidor precisa delas.</summary>
 	public void ApplyLoadout(string breed, IEnumerable<string> tattoos)
 	{

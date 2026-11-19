@@ -228,7 +228,7 @@ public partial class ItemDetail : PanelContainer
 			Effect("Escudo máximo", fx.Shield);
 			Effect("Dano da garra", fx.ClawDamage);
 			Effect("Decaimento do escudo", fx.ShieldDecay, lowerIsBetter: true);
-			bars.Add(UiKit.Paragraph(Loc.F("Até {0} tatuagens equipadas ao mesmo tempo. Vale só para você.", Profile.MaxTattoos)));
+			bars.Add(UiKit.Paragraph(Loc.F("Até {0} melhorias equipadas ao mesmo tempo. Vale só para você.", Profile.MaxTattoos)));
 			return bars;
 		}
 

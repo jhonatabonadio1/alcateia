@@ -60,7 +60,7 @@ public sealed class LifetimeStats
 ///
 /// Guarda o que sobrevive entre partidas: nickname, patente e XP, as
 /// duas moedas, o inventário com a duração de cada item, os quatro
-/// conjuntos, a classe de lobo e as tatuagens, as estatísticas vitalícias
+/// conjuntos, a classe de lobo e as melhorias, as estatísticas vitalícias
 /// e as missões.
 ///
 /// O WP não mora aqui: ele nasce em zero a cada partida e morre com ela
@@ -501,10 +501,10 @@ public static class Profile
 	public static bool EquipTattoo(string id, out string error)
 	{
 		error = null;
-		if (Catalog.Get(id)?.Kind != ItemKind.Tattoo) error = "Não é uma tatuagem";
+		if (Catalog.Get(id)?.Kind != ItemKind.Tattoo) error = "Não é uma melhoria";
 		else if (!Owns(id)) error = "Item fora do inventário ou expirado";
 		else if (Tattoos.Contains(id)) error = "Já equipada";
-		else if (Tattoos.Count >= MaxTattoos) error = Loc.F("Máximo de {0} tatuagens", MaxTattoos);
+		else if (Tattoos.Count >= MaxTattoos) error = Loc.F("Máximo de {0} melhorias", MaxTattoos);
 
 		if (error != null) return false;
 		Tattoos.Add(id);
@@ -517,18 +517,18 @@ public static class Profile
 		if (Tattoos.Remove(id)) Save();
 	}
 
-	/// <summary>A classe de lobo do jogador com as tatuagens aplicadas.
+	/// <summary>A classe de lobo do jogador com as melhorias aplicadas.
 	/// Cópia: o recurso original é compartilhado com os bots e não pode
 	/// mudar.</summary>
 	public static WolfBreed BuildBreed() => BuildBreed(Breed, OwnedTattoos());
 
-	/// <summary>As tatuagens equipadas que o jogador tem de fato.</summary>
+	/// <summary>As melhorias equipadas que o jogador tem de fato.</summary>
 	public static System.Collections.Generic.List<string> OwnedTattoos() => Tattoos.Where(Owns).ToList();
 
-	/// <summary>A classe de lobo com as tatuagens somadas. Uma cópia: o
+	/// <summary>A classe de lobo com as melhorias somadas. Uma cópia: o
 	/// recurso original é o mesmo de todos. Também é como o servidor de
 	/// partida monta o lobo de cada jogador (o jogo conta qual classe e
-	/// quais tatuagens).</summary>
+	/// quais melhorias).</summary>
 	public static WolfBreed BuildBreed(string breedId, System.Collections.Generic.IEnumerable<string> tattoos)
 	{
 		CatalogItem item = Catalog.Get(breedId);
