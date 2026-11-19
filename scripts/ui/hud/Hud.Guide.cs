@@ -30,7 +30,7 @@ public partial class Hud
 	private void UpdateGuide()
 	{
 		if (_guide == null) return;
-		bool hold = Input.IsActionPressed("guide") && !UiState.AnyOpen && !_health.IsDead && !Match.IsOver;
+		bool hold = Subject == null && Input.IsActionPressed("guide") && !UiState.AnyOpen && !_health.IsDead && !Match.IsOver;
 		bool wolf = _form.IsWolf;
 		if (hold && (!_guide.Visible || wolf != _guideForWolf))
 		{

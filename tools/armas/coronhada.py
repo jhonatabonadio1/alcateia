@@ -28,19 +28,19 @@ import mira
 from mira import Conjunto, euler, rigido, matq, FPS
 
 NOME = 'coronhada'
-DURA = 0.62
+DURA = 0.40
 # tempo (s): (pitch, yaw, roll) em graus; (x, y, z) em metros, no espaço do olho
 # (x direita, y cima, -z frente). yaw +: cano para a esquerda.
-# Refeita no mesmo dia a pedido do Jhon ("mais rápida e durar mais: uma coronhada
-# rápida e uma leve empurrada com a arma"): o golpe chega em 0,11 s, a arma
-# segue empurrando um pouco, fica um instante e volta devagar.
+# Refeita a pedido do Jhon (18/11: "mais rápida, uma coronhada rápida e uma leve
+# empurrada com a arma"; 19/11: "coronhada deve ser mais rápida"): o golpe chega
+# em 0,075 s, a arma segue empurrando um pouco, fica um instante e volta.
 CHAVES = [
-    (0.00, (0, 0, 0), (0.00, 0.00, 0.00)),
-    (0.05, (5, 26, -8), (-0.02, 0.015, 0.035)),      # recolhe, já virando
-    (0.11, (-3, 74, -15), (-0.09, 0.045, -0.07)),    # o golpe, com a lateral
-    (0.22, (-4, 78, -16), (-0.095, 0.05, -0.11)),    # a empurrada
-    (0.32, (-3, 76, -15), (-0.09, 0.047, -0.10)),    # segura
-    (0.62, (0, 0, 0), (0.00, 0.00, 0.00)),
+    (0.000, (0, 0, 0), (0.00, 0.00, 0.00)),
+    (0.035, (5, 26, -8), (-0.02, 0.015, 0.035)),     # recolhe, já virando
+    (0.075, (-3, 74, -15), (-0.09, 0.045, -0.07)),   # o golpe, com a lateral
+    (0.140, (-4, 78, -16), (-0.095, 0.05, -0.11)),   # a empurrada
+    (0.200, (-3, 76, -15), (-0.09, 0.047, -0.10)),   # segura
+    (0.400, (0, 0, 0), (0.00, 0.00, 0.00)),
 ]
 
 

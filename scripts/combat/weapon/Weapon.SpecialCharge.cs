@@ -88,6 +88,12 @@ public partial class Weapon
 		if (!SpecialFree) SpecialCharge = 0f;
 	}
 
+	/// <summary>Põe a carga num valor (a cópia do replay).</summary>
+	private void SetSpecialCharge(float value)
+	{
+		AddSpecial(Mathf.Clamp(value, 0f, 1f) - SpecialCharge);
+	}
+
 	private void TickSpecial(double delta)
 	{
 		float time = PassiveFillTime;

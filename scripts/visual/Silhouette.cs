@@ -18,17 +18,46 @@ public static class Silhouette
 
 	private static ShaderMaterial _ally, _enemy;
 
-	/// <summary>Aliado: uma borda branca suave, vista também através das
-	/// paredes (achar o time é o ponto). Só a borda, sem preencher.</summary>
-	public static ShaderMaterial Ally => _ally ??= Tint(Make(true, 0f, 0.26f, 6), new Color(1f, 1f, 1f));
+	/// <summary>Aliado: um contorno branco suave, só em volta do corpo.</summary>
+	public static ShaderMaterial Ally => _ally ??= Outline(new Color(1f, 1f, 1f), 0.55f, 7);
 
-	/// <summary>Inimigo: uma borda vermelha suave e leve, só onde ele está
-	/// à vista (através da parede seria entregar posição).</summary>
-	public static ShaderMaterial Enemy => _enemy ??= Tint(Make(false, 0f, 0.3f, 6), new Color(1f, 0.22f, 0.2f));
+	/// <summary>Inimigo: um contorno vermelho suave e leve.</summary>
+	public static ShaderMaterial Enemy => _enemy ??= Outline(new Color(1f, 0.22f, 0.2f), 0.6f, 6);
 
-	private static ShaderMaterial Tint(ShaderMaterial material, Color color)
+	/// <summary>
+	/// O contorno dos times (pedido do Jhon, 19/11: "a borda deve ser só ao
+	/// redor dos personagens, não pode sobrepor a minha arma, sem borda no
+	/// esqueleto"): a casca do corpo **virada do avesso** e um pouco maior
+	/// — só aparece onde passa da beirada dele. Com teste de profundidade:
+	/// a arma na mão, as paredes e o próprio corpo ficam por cima, então não
+	/// há linha nenhuma por dentro dele nem através de nada. A espessura
+	/// cresce com a distância, para a linha ter a mesma largura na tela.
+	/// </summary>
+	private static ShaderMaterial Outline(Color color, float alpha, int priority)
 	{
+		var shader = new Shader
+		{
+			Code = """
+				shader_type spatial;
+				render_mode unshaded, world_vertex_coords, depth_draw_never, cull_front, blend_mix, shadows_disabled;
+
+				uniform vec4 color : source_color = vec4(1.0);
+				uniform float alpha = 0.5;
+
+				void vertex() {
+					float far = length(VERTEX - CAMERA_POSITION_WORLD);
+					VERTEX += normalize(NORMAL) * clamp(far * 0.0022, 0.006, 0.06);
+				}
+
+				void fragment() {
+					ALBEDO = color.rgb;
+					ALPHA = alpha;
+				}
+				"""
+		};
+		var material = new ShaderMaterial { Shader = shader, RenderPriority = priority };
 		material.SetShaderParameter("color", color);
+		material.SetShaderParameter("alpha", alpha);
 		return material;
 	}
 

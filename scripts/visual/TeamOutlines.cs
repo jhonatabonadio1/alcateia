@@ -3,8 +3,9 @@ using System.Collections.Generic;
 
 /// <summary>
 /// As bordas dos corpos para quem joga (pedido do Jhon, 18/11): **aliado
-/// com borda branca suave** (vista também através das paredes, para achar
-/// o time) e **inimigo com borda vermelha suave e leve** (só à vista).
+/// com contorno branco suave** e **inimigo com contorno vermelho suave e
+/// leve** — só em volta do corpo, à vista (19/11: nada através da parede,
+/// nada por cima da arma na mão, nenhuma linha por dentro do corpo).
 /// Só na tela de quem joga, nunca no próprio corpo.
 ///
 /// A borda é a segunda passada da malha (<c>MaterialOverlay</c>,

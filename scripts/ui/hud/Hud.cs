@@ -49,9 +49,24 @@ public partial class Hud : CanvasLayer
 	private KillBanner _killBanner;
 	private KillBanner _streakCall;
 
+	/// <summary>
+	/// O HUD de outro corpo (a câmera de abate e o espectador,
+	/// <see cref="KillCam"/>): o mesmo HUD do jogo, ligado à vida, à arma e
+	/// à forma de quem se vê — o feed marca ele como "você". Definido antes
+	/// de entrar na cena. Null: o HUD de quem joga.
+	/// </summary>
+	public Node3D Subject { get; set; }
+
+	/// <summary>HUD de replay: o feed só recebe o que a gravação manda
+	/// (<see cref="ReplayKill"/>), não o que acontece agora.</summary>
+	public bool ReplayFeed { get; set; }
+
+	/// <summary>Um abate gravado, no feed do HUD de replay.</summary>
+	public void ReplayKill(Kill kill) => OnKill(kill);
+
 	public override void _Ready()
 	{
-		Node player = Groups.LocalPlayer(GetTree()) ?? Nodes.FindFirst<Player>(GetTree().CurrentScene);
+		Node player = Subject ?? Groups.LocalPlayer(GetTree()) ?? Nodes.FindFirst<Player>(GetTree().CurrentScene);
 		if (player == null)
 		{
 			GD.PrintErr("Hud: nenhum Player encontrado na cena.");
@@ -97,7 +112,7 @@ public partial class Hud : CanvasLayer
 		{
 			if (!_health.IsDead) Warn(Loc.F("Soltou: {0}", Arsenal.NameOf(id)), 1.2f, UiTokens.TextSecondary);
 		};
-		KillFeed.Reported += OnKill;
+		if (!ReplayFeed) KillFeed.Reported += OnKill;
 
 		// No fim da partida a tela de resultado assume a tela inteira.
 		if (Match.Current != null)
@@ -120,23 +135,20 @@ public partial class Hud : CanvasLayer
 
 	public override void _ExitTree() => KillFeed.Reported -= OnKill;
 
-	/// <summary>A vida, a arma, a faixa do lobo: o que é só de quem joga.
-	/// Saem da tela enquanto a câmera de abate ou o espectador mostram o
-	/// HUD de outro (<see cref="KillCam"/>).</summary>
-	private readonly System.Collections.Generic.List<Control> _personal = new();
 	private bool _watchingShown;
 
+	/// <summary>
+	/// Morto, a câmera de abate e o espectador põem na tela o HUD de quem
+	/// se vê (outro <see cref="Hud"/>, com <see cref="Subject"/>); o de quem
+	/// joga sai inteiro enquanto isso.
+	/// </summary>
 	private void UpdateWatching()
 	{
+		if (Subject != null) return;
 		bool watching = KillCam.Active;
-		if (watching != _watchingShown)
-		{
-			_watchingShown = watching;
-			foreach (Control panel in _personal) panel.Visible = !watching;
-			if (_hitMarker != null) _hitMarker.Visible = !watching;
-		}
-		if (watching) _death.Visible = false;
-		RestyleFeed();
+		if (watching == _watchingShown) return;
+		_watchingShown = watching;
+		Visible = !watching;
 	}
 
 	public override void _Process(double delta)

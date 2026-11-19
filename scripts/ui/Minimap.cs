@@ -71,9 +71,13 @@ public partial class Minimap : Control
 	private readonly System.Collections.Generic.List<(Vector3 Position, string Text, Color Color)> _marks = new();
 	private bool _scanned;
 
+	/// <summary>O minimapa de outro corpo (o HUD da câmera de abate e do
+	/// espectador). Null: o de quem joga.</summary>
+	public Node3D Subject { get; set; }
+
 	public override void _Ready()
 	{
-		_player = Groups.LocalPlayer(GetTree()) as Node3D;
+		_player = Subject ?? Groups.LocalPlayer(GetTree()) as Node3D;
 		_playerHealth = _player?.GetNodeOrNull<Health>("Health");
 
 		CustomMinimumSize = new Vector2(Side, Side);

@@ -28,7 +28,6 @@ public sealed class SpectatorTest : RegressionTest
 		killer.GetNode<Health>("Health").Team = b.Health.Team == Teams.Blue ? Teams.Orange : Teams.Blue;
 		mate.GetNode<Health>("Health").Team = b.Health.Team;
 		for (int i = 2; i < bots.Length; i++) bots[i].GetNode<Health>("Health").Team = killer.GetNode<Health>("Health").Team;
-		b.Check(Sfx.Has("musica_camera_abate"), "a música da câmera de abate existe");
 
 		// Espera longa para renascer, como na partida (no treino são 3 s).
 		b.Health.TrainingRespawnDelay = 14f;
@@ -53,14 +52,19 @@ public sealed class SpectatorTest : RegressionTest
 		b.Check(cam.Mode == "abate" && KillCam.InKillPhase, $"1 s depois: a câmera de abate (modo {cam.Mode})");
 		b.Check(cam.Replaying && b.Player.Replaying, "com a fita gravada, é o replay");
 		b.Check(KillCam.Focus == killer.GetNode<Health>("Health").PublicName, "o feed marca o nome de quem matou");
+		b.Check(cam.Copy != null && cam.Copy.ReplayCopy && !cam.Copy.IsInGroup(Groups.Bots), "o replay é uma cópia de quem matou, fora da partida");
+		b.Check(cam.Copy != null && cam.Copy.GetNode<Health>("Health").PublicName == killer.GetNode<Health>("Health").PublicName, "a cópia tem o nome dele");
+		Hud mine = b.GetTree().Root.FindChildren("*", "", true, false).OfType<Hud>().FirstOrDefault(h => h.Subject == null);
+		b.Check(mine != null && !mine.Visible, "o HUD de quem joga sai da tela");
+		b.Check(cam.SubjectHud != null && cam.SubjectHud.Subject == cam.Copy && cam.SubjectHud.Visible, "na tela, o HUD do jogo ligado a ele");
 
 		await b.Seconds(0.6);
 		if (killer.GetNode<FormController>("FormController").ShowsWolf)
 		{
 			// Quem matou era lobo: a câmera de lobo, atrás da cópia que refaz o caminho.
-			b.Check(!cam.FirstPerson && cam.Ghost != null, "quem matou era lobo: câmera de lobo, com o lobo reencenado");
+			b.Check(!cam.FirstPerson, "quem matou era lobo: câmera de lobo");
 			Camera3D wolfView = b.GetViewport().GetCamera3D();
-			b.AtMost(3.2, wolfView.GlobalPosition.DistanceTo(cam.Ghost.GlobalPosition + Vector3.Up * 0.6f), "a câmera de lobo fica atrás dele (m)");
+			b.AtMost(3.2, wolfView.GlobalPosition.DistanceTo(cam.Copy.GlobalPosition + Vector3.Up * 0.6f), "a câmera de lobo fica atrás da cópia (m)");
 		}
 		else
 			b.Check(cam.FirstPerson && cam.PovWeapon == killer.GetNode<Weapon>("Weapon").HeldId, $"em primeira pessoa, com a arma dele na mão ({cam.PovWeapon})");
@@ -76,6 +80,8 @@ public sealed class SpectatorTest : RegressionTest
 		b.Check(!b.Player.Replaying, "saiu do replay: o corpo deixa de ser reencenado");
 		b.AtMost(0.3, RegressionBench.Flat(b.Player.GlobalPosition - fell), "e volta para onde caiu (m)");
 		b.Check(KillCam.Focus == mate.GetNode<Health>("Health").PublicName, "o feed passa a marcar o aliado");
+		b.Check(cam.Copy == null, "a cópia do replay sai");
+		b.Check(cam.SubjectHud != null && cam.SubjectHud.Subject == mate, "na tela, o HUD do aliado");
 		await b.Seconds(0.3);
 		Camera3D view = b.GetViewport().GetCamera3D();
 		b.AtMost(0.3, view.GlobalPosition.DistanceTo(mate.GlobalPosition + Vector3.Up * mate.GetNode<Node3D>("Head").Position.Y), "a câmera fica no olho do aliado (m)");
@@ -84,6 +90,7 @@ public sealed class SpectatorTest : RegressionTest
 		await b.Tap("jump");
 		await b.Seconds(0.8);
 		b.Check(cam.Mode == "cima", "Espaço: vista de cima do aliado");
+		view = b.GetViewport().GetCamera3D();
 		b.AtMost(6.0, view.GlobalPosition.DistanceTo(mate.GlobalPosition), "a câmera fica por cima do aliado (m)");
 
 		await b.Tap("jump");

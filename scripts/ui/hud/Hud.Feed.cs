@@ -47,8 +47,6 @@ public partial class Hud
 
 		HBoxContainer row = UiKit.Row(UiTokens.S2);
 		line.AddChild(row);
-		line.SetMeta("quem", new Godot.Collections.Array { kill.Killer ?? "", kill.Victim ?? "" });
-		line.SetMeta("minha", mine || died);
 		Shine(line, kill);
 
 		if (kill.KillerTeam != 0 && kill.Killer != kill.Victim)
@@ -191,32 +189,6 @@ public partial class Hud
 		Tween sweep = glint.CreateTween().SetLoops(legendary ? 4 : 2);
 		sweep.TweenProperty(glint, "position:x", 520f, legendary ? 0.7 : 0.9).From(-120f).SetTrans(Tween.TransitionType.Quad).SetEase(Tween.EaseType.InOut);
 		sweep.TweenInterval(legendary ? 0.5 : 0.9);
-	}
-
-	private string _feedFocus;
-
-	/// <summary>
-	/// Na câmera de abate e no espectador, a linha do feed com o nome de
-	/// quem se vê ganha a borda vermelha (pedido do Jhon, 18/11: "feed com
-	/// o nome dele marcado"); volta ao normal quando a câmera sai. As
-	/// linhas de arma épica ou lendária (com o brilho) ficam como estão.
-	/// </summary>
-	private void RestyleFeed()
-	{
-		string focus = KillCam.Focus;
-		if (focus == _feedFocus || _feed == null) return;
-		_feedFocus = focus;
-
-		foreach (Node node in _feed.GetChildren())
-		{
-			if (node is not PanelContainer line || !line.HasMeta("quem") || line.ClipContents) continue;
-			var who = line.GetMeta("quem").AsGodotArray();
-			bool marked = !string.IsNullOrEmpty(focus) && (who[0].AsString() == focus || who[1].AsString() == focus);
-			bool mine = line.GetMeta("minha").AsBool();
-			line.AddThemeStyleboxOverride("panel", marked
-				? HudStyle.Plate(UiTokens.Danger, padH: UiTokens.S3, padV: 3, accentWidth: 3)
-				: HudStyle.Plate(mine ? UiTokens.Accent : new Color(1, 1, 1, 0.25f), padH: UiTokens.S3, padV: 3, accentWidth: mine ? 3 : 1));
-		}
 	}
 
 	private static Icon Mark(IconKind kind, Color color) => Icon.Make(kind, 16, color);

@@ -14,6 +14,12 @@ public partial class Bot
 	/// na cena, por quem monta a partida.</summary>
 	public bool Remote { get; set; }
 
+	/// <summary>A cópia de quem te matou, para o replay da câmera de abate
+	/// (<see cref="KillCam"/>): um boneco como o de outro jogador, movido
+	/// pela gravação. Fica fora dos grupos (ninguém mira nele, o placar e o
+	/// minimapa não o veem) e sem colisão.</summary>
+	public bool ReplayCopy { get; set; }
+
 	/// <summary>A conta do dono e a patente dele, para o placar. Boneco
 	/// de bot (o bot que a máquina do dono da sala move) tem número
 	/// negativo e não tem patente.</summary>
@@ -124,7 +130,8 @@ public partial class Bot
 	public void RemotePresent(bool present)
 	{
 		Visible = present;
-		CollisionLayer = present ? _layer : 0;
+		// A cópia do replay nunca colide: tiro de verdade passa por ela.
+		CollisionLayer = present && !ReplayCopy ? _layer : 0;
 		if (!present) _netKnown = false;
 	}
 

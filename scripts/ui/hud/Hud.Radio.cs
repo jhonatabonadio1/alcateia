@@ -95,7 +95,7 @@ public partial class Hud
 			if (_radioSaidLeft <= 0) _radioSaid.Visible = false;
 		}
 
-		bool can = !_health.IsDead && !UiState.AnyOpen && Match.Current?.Phase != MatchPhase.Ended;
+		bool can = Subject == null && !_health.IsDead && !UiState.AnyOpen && Match.Current?.Phase != MatchPhase.Ended;
 		if (RadioOpen && !can) SetRadio(false);
 		if (can && Input.IsActionJustPressed("radio")) SetRadio(!RadioOpen);
 		if (!RadioOpen) return;
@@ -106,6 +106,7 @@ public partial class Hud
 
 	public override void _Input(InputEvent @event)
 	{
+		if (Subject != null) return;
 		if (!RadioOpen || @event is not InputEventKey { Pressed: true, Echo: false } key) return;
 
 		Key code = key.PhysicalKeycode != Key.None ? key.PhysicalKeycode : key.Keycode;

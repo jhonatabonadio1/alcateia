@@ -315,6 +315,15 @@ public partial class FormController : Node
 
 	/// <summary>Online: põe o boneco de outro jogador na forma em que o
 	/// dono dele está, sem custo e sem regra.</summary>
+	/// <summary>A cópia do replay espelha os WP gravados (o HUD mostra a
+	/// barra de virar lobo).</summary>
+	public void MirrorWp(float wp)
+	{
+		if (Mathf.IsEqualApprox(wp, Wp)) return;
+		Wp = Mathf.Clamp(wp, 0f, MaxWp);
+		EmitSignal(SignalName.WpChanged, Wp, MaxWp);
+	}
+
 	public void RemoteSet(Form form)
 	{
 		if (form == Current || Breed == null) return;

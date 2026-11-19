@@ -15,10 +15,10 @@ using Godot;
 public partial class Weapon
 {
 	[ExportGroup("Coronhada")]
-	[Export] public float ButtDamage = 55f;
+	[Export] public float ButtDamage = 10f;
 	[Export] public float ButtRange = 1.9f;
-	[Export] public float ButtCooldown = 0.55f;
-	[Export] public float ButtHitDelay = 0.11f;
+	[Export] public float ButtCooldown = 0.4f;
+	[Export] public float ButtHitDelay = 0.075f;
 
 	/// <summary>A coronhada começou (a arma na mão anima, o som sai).</summary>
 	[Signal] public delegate void ButtedEventHandler();

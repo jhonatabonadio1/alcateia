@@ -176,7 +176,8 @@ void fragment() {
 		}
 
 		// A respiração: entra abaixo de LowHealth, com um pouco de folga para sair.
-		bool gasping = !_health.IsDead && frac < (Breathing ? LowHealth + 0.08f : LowHealth) && !UiState.AnyOpen;
+		// A respiração é de quem joga: no HUD de outro, só a tela.
+		bool gasping = Subject == null && !_health.IsDead && frac < (Breathing ? LowHealth + 0.08f : LowHealth) && !UiState.AnyOpen;
 		if (gasping && !Breathing)
 		{
 			_breath = Sfx.Ambience(this, "respiracao_ofegante", -40f);

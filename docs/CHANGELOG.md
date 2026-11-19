@@ -2,6 +2,12 @@
 
 ## Não lançado
 
+- Câmera de abate: o replay é a tela de quem te matou — a arma na mão dele com tiro, clarão, recarga e coronhada, o som, o HUD do jogo dele (vida, munição, especial, WP, minimapa) e o feed dele; se era lobo, a câmera de lobo com o HUD de lobo. Sem música.
+- Espectador: a tela do aliado, com a arma e o HUD dele.
+- Contorno dos aliados (branco) e inimigos (vermelho): só em volta do corpo, sem passar por cima da arma nem marcar linhas por dentro.
+- Coronhada mais rápida (0,40 s) e com 10 de dano.
+- O círculo no chão do uivo do lobo voltou.
+
 ### Câmera de abate e espectador refeitos, bordas de time, sala direta (18/11, à noite)
 - **Câmera de abate em primeira pessoa** (`KillCam`, com o Overwatch de
   referência): ao morrer, 1 s no próprio corpo; depois o **replay pelo
