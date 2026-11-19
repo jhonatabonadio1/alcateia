@@ -14,12 +14,6 @@ public partial class Bot
 	/// na cena, por quem monta a partida.</summary>
 	public bool Remote { get; set; }
 
-	/// <summary>A cópia de quem te matou, para o replay da câmera de abate
-	/// (<see cref="KillCam"/>): um boneco como o de outro jogador, movido
-	/// pela gravação. Fica fora dos grupos (ninguém mira nele, o placar e o
-	/// minimapa não o veem) e sem colisão.</summary>
-	public bool ReplayCopy { get; set; }
-
 	/// <summary>A conta do dono e a patente dele, para o placar. Boneco
 	/// de bot (o bot que a máquina do dono da sala move) tem número
 	/// negativo e não tem patente.</summary>
@@ -57,10 +51,22 @@ public partial class Bot
 		Shield = _health.Shield,
 		MaxShield = _health.MaxShield,
 		Primary = _weapon.PrimaryDef?.Id ?? "",
-		Secondary = _weapon.SecondaryDef?.Id ?? ""
+		Secondary = _weapon.SecondaryDef?.Id ?? "",
+		HasGear = true,
+		Ammo = (short)_weapon.AmmoInMag,
+		Reloading = _weapon.IsReloading,
+		Grenades = (byte)Mathf.Clamp(_weapon.Grenades, 0, 255),
+		Wp = _form.Wp,
+		Charge = _weapon.SpecialCharge
 	};
 
 	public float HeadPitch => _head.Rotation.X;
+
+	/// <summary>A passada do corpo (a mesma conta do som do passo): a arma
+	/// na mão balança com ela quando alguém assiste este bot em primeira
+	/// pessoa (o espectador).</summary>
+	public int Steps => _noise.Steps;
+	public float StridePhase => _noise.StridePhase;
 
 	/// <summary>Quão rápido o boneco alcança a posição noticiada, e o
 	/// quanto se adianta pela velocidade, em segundos.</summary>
@@ -139,7 +145,7 @@ public partial class Bot
 	{
 		Visible = present;
 		// A cópia do replay nunca colide: tiro de verdade passa por ela.
-		CollisionLayer = present && !ReplayCopy ? _layer : 0;
+		CollisionLayer = present ? _layer : 0;
 		if (!present) _netKnown = false;
 	}
 

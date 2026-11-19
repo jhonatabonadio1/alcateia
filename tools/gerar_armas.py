@@ -401,7 +401,10 @@ def main():
                 if n.endswith(".obj"):
                     os.remove(os.path.join(base, n))
     ficha = {"armas": dict(externas), "maos": {}}
-    for fazer in (m16a2, ak47, sg552, ump45, m3, m9, faca, choque):
+    # Desde 19/11 o jogo só tem a família AR-15 (modelo de artista, fora
+    # daqui), a pistola, a faca e a granada. As funções das outras armas
+    # ficam como estão, sem rodar.
+    for fazer in (m9, faca, choque):
         a = fazer()
         partes = []
         for i, ((no, material), malha) in enumerate(sorted(a.partes.items())):

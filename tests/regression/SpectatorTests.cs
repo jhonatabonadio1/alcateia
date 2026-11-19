@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 public sealed class SpectatorTest : RegressionTest
 {
 	public override string Name => "Espectador";
-	public override string Description => "morto: 1 s no corpo, replay do abate em primeira pessoa (Espaço pula), espectador em primeira pessoa, de cima e livre dentro do mapa";
+	public override string Description => "morto: 1 s no corpo e o espectador em primeira pessoa do aliado, de cima e livre dentro do mapa";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -48,45 +48,19 @@ public sealed class SpectatorTest : RegressionTest
 		if (cam == null) return;
 		b.Check(KillCam.Active, "o HUD de quem joga sai (o de quem se vê toma o lugar)");
 
+		// Desde 19/11 sem câmera de abate: passou o segundo no corpo, direto
+		// no espectador.
 		await b.Seconds(1.1);
-		b.Check(cam.Mode == "abate" && KillCam.InKillPhase, $"1 s depois: a câmera de abate (modo {cam.Mode})");
-		b.Check(cam.Replaying && b.Player.Replaying, "com a fita gravada, é o replay");
-		b.Check(KillCam.Focus == killer.GetNode<Health>("Health").PublicName, "o feed marca o nome de quem matou");
-		b.Check(cam.Copy != null && cam.Copy.ReplayCopy && !cam.Copy.IsInGroup(Groups.Bots), "o replay é uma cópia de quem matou, fora da partida");
-		b.Check(cam.Copy != null && cam.Copy.GetNode<Health>("Health").PublicName == killer.GetNode<Health>("Health").PublicName, "a cópia tem o nome dele");
+		b.Check(cam.Mode == "primeira" && cam.Watching == mate, $"1 s depois: espectador, direto na primeira pessoa do aliado (modo {cam.Mode})");
 		Hud mine = b.GetTree().Root.FindChildren("*", "", true, false).OfType<Hud>().FirstOrDefault(h => h.Subject == null);
 		b.Check(mine != null && !mine.Visible, "o HUD de quem joga sai da tela");
-		b.Check(cam.SubjectHud != null && cam.SubjectHud.Subject == cam.Copy && cam.SubjectHud.Visible, "na tela, o HUD do jogo ligado a ele");
-
-		await b.Seconds(0.6);
-		uint mask = b.GetViewport().GetCamera3D().CullMask;
-		b.Check(killer.FindChildren("*", nameof(MeshInstance3D), true, false).OfType<MeshInstance3D>().Where(m => m.IsVisibleInTree()).All(m => (m.Layers & mask) == 0),
-			"no replay, o corpo de verdade de quem matou não aparece (só a cópia)");
-		if (killer.GetNode<FormController>("FormController").ShowsWolf)
-		{
-			// Quem matou era lobo: a câmera de lobo, atrás da cópia que refaz o caminho.
-			b.Check(!cam.FirstPerson, "quem matou era lobo: câmera de lobo");
-			Camera3D wolfView = b.GetViewport().GetCamera3D();
-			b.AtMost(3.2, wolfView.GlobalPosition.DistanceTo(cam.Copy.GlobalPosition + Vector3.Up * 0.6f), "a câmera de lobo fica atrás da cópia (m)");
-		}
-		else
-			b.Check(cam.FirstPerson && cam.PovWeapon == killer.GetNode<Weapon>("Weapon").HeldId, $"em primeira pessoa, com a arma dele na mão ({cam.PovWeapon})");
-		b.AtLeast(0.6, RegressionBench.Flat(b.Player.GlobalPosition - fell), "no replay, o corpo volta para onde estava antes (m)");
+		b.AtMost(0.3, RegressionBench.Flat(b.Player.GlobalPosition - fell), "o corpo fica onde caiu (m)");
+		b.Check(KillCam.Focus == mate.GetNode<Health>("Health").PublicName, "o feed marca o aliado");
+		b.Check(cam.SubjectHud != null && cam.SubjectHud.Subject == mate && cam.SubjectHud.Visible, "na tela, o HUD do aliado");
 
 		// Morto, o rádio não fala.
 		Radio.Reset();
 		b.Check(!Radio.Send(b.Player, 0), "morto, o rádio não fala");
-
-		await b.Tap("jump");
-		await b.Frames(3);
-		b.Check(cam.Mode == "primeira" && cam.Watching == mate, $"Espaço: espectador, direto na primeira pessoa do aliado (modo {cam.Mode})");
-		b.Check(!b.Player.Replaying, "saiu do replay: o corpo deixa de ser reencenado");
-		b.Check(killer.FindChildren("*", nameof(VisualInstance3D), true, false).OfType<VisualInstance3D>().All(v => (v.Layers & KillCam.WatchedLayer) == 0),
-			"o corpo de quem matou volta a aparecer");
-		b.AtMost(0.3, RegressionBench.Flat(b.Player.GlobalPosition - fell), "e volta para onde caiu (m)");
-		b.Check(KillCam.Focus == mate.GetNode<Health>("Health").PublicName, "o feed passa a marcar o aliado");
-		b.Check(cam.Copy == null, "a cópia do replay sai");
-		b.Check(cam.SubjectHud != null && cam.SubjectHud.Subject == mate, "na tela, o HUD do aliado");
 		await b.Seconds(0.3);
 		Camera3D view = b.GetViewport().GetCamera3D();
 		b.AtMost(0.3, view.GlobalPosition.DistanceTo(mate.GlobalPosition + Vector3.Up * mate.GetNode<Node3D>("Head").Position.Y), "a câmera fica no olho do aliado (m)");
@@ -134,10 +108,17 @@ public sealed class SpectatorTest : RegressionTest
 		var menu = b.GetTree().Root.FindChildren("*", "", true, false).OfType<LoadoutMenu>().FirstOrDefault();
 		b.Check(menu != null && !menu.IsOpen, "morto e assistindo, a escolha de conjunto não aparece");
 
-		// Chegou a hora de renascer: aí sim a escolha aparece, e escolher renasce.
+		// Chegou a hora de renascer: aí sim a escolha aparece. Sem escolher,
+		// o tempo acaba, vai o padrão e renasce — e o espectador sai
+		// (19/11: "o modo espectador deve sair quando eu renascer").
+		menu.ChooseTime = 1.5f;
 		b.Check(await b.Until(() => menu != null && menu.IsOpen, b.Health.RespawnWait + 1.0), "na hora de renascer, a escolha de conjunto abre");
-		b.CloseLoadout();
-		await b.Seconds(0.5);
+		b.Check(await b.Until(() => !b.Health.IsDead, 4.0), "não escolheu: o tempo acaba e renasce com o padrão");
+		await b.Frames(3);
+		b.Check(!KillCam.Active && KillCam.Eyes == null, "renasceu: o espectador sai");
+		b.Check(b.GetViewport().GetCamera3D() == b.Player.GetNode<Camera3D>("Head/Camera3D"), $"a câmera volta a ser a sua ({b.GetViewport().GetCamera3D()?.GetPath()})");
+		b.Check(mate.GetNodeOrNull("Head/Camera3D/ViewModel") == null, "a arma emprestada sai do olho do aliado");
+		b.Check(mate.FindChildren("*", nameof(VisualInstance3D), true, false).OfType<VisualInstance3D>().All(v => (v.Layers & KillCam.WatchedLayer) == 0), "o corpo do aliado volta a aparecer");
 		b.Check(!b.Health.IsDead, "escolheu: renasce");
 		b.Check(!GodotObject.IsInstanceValid(cam) || cam.IsQueuedForDeletion(), "e a câmera de espectador some");
 		b.Check(!KillCam.Active, "e o HUD de quem joga volta");
@@ -203,6 +184,9 @@ public sealed class WatchedHudLiveTest : RegressionTest
 		mate.GetNode<Health>("Health").Team = b.Health.Team;
 		foreach (var bot in bots) if (bot != mate) bot.GetNode<Health>("Health").Team = b.Health.Team == Teams.Orange ? Teams.Blue : Teams.Orange;
 		b.Health.TrainingRespawnDelay = 20f;
+		// Um abate de antes de morrer: o feed dele continua no espectador.
+		Health other = bots.First(x => x != mate).GetNode<Health>("Health");
+		KillFeed.Report(new Kill(mate.GetNode<Health>("Health").PublicName, b.Health.Team, other.PublicName, other.Team, KillCause.Gun, "ar15"));
 		b.Health.TakeDamage(99999f);
 		await b.Seconds(0.3);
 		await b.Tap("jump");
@@ -211,6 +195,7 @@ public sealed class WatchedHudLiveTest : RegressionTest
 		b.Check(cam != null && cam.Mode == "primeira" && cam.Watching == mate, $"espectador na tela do aliado ({cam?.Mode})");
 		Hud hud = cam?.SubjectHud;
 		if (hud == null) { b.Check(false, "há o HUD do aliado"); return; }
+		b.Check(hud.FeedShown >= 1, $"o feed continua no espectador ({hud.FeedShown} linhas)");
 
 		Weapon gun = mate.GetNode<Weapon>("Weapon");
 		gun.ProcessMode = Node.ProcessModeEnum.Always;
@@ -228,5 +213,56 @@ public sealed class WatchedHudLiveTest : RegressionTest
 		b.Check(hud.ShownReload == "RECARREGANDO", $"ele recarrega: aparece ({hud.ShownReload})");
 		await b.Seconds(3.5);
 		b.Check(hud.ShownMag == gun.MagSize.ToString(), $"e o pente enche ({hud.ShownMag})");
+	}
+}
+
+/// <summary>
+/// No Armazém, a câmera livre do espectador fica dentro do galpão (19/11:
+/// "não posso sair pelas paredes, chão e teto"): voando para cima, para os
+/// lados e para baixo, ela para no cenário.
+/// </summary>
+public sealed class SpectatorInsideTest : RegressionTest
+{
+	public override string Scene => RegressionBench.Match;
+	public override string Name => "EspectadorNoArmazem";
+	public override string Description => "a câmera livre do espectador não atravessa parede, chão nem teto do Armazém";
+
+	public override async Task Run(RegressionBench b)
+	{
+		await b.Until(() => Match.IsLive, 15.0);
+		b.CloseLoadout();
+		await b.Seconds(0.5);
+		b.Health.TrainingRespawnDelay = 60f;
+		b.Health.TakeDamage(99999f);
+		await b.Seconds(0.3);
+		KillCam cam = b.GetTree().Root.FindChildren("*", "", true, false).OfType<KillCam>().FirstOrDefault();
+		b.Check(cam != null, "morreu: há câmera");
+		if (cam == null) return;
+		for (int i = 0; i < 4 && cam.Mode != "livre"; i++) { await b.Tap("jump"); await b.Frames(3); }
+		b.Check(cam.Mode == "livre", $"chegou na câmera livre ({cam.Mode})");
+		Vector3 inside = b.Player.GlobalPosition + Vector3.Up * 1.2f;
+
+		var space = b.Player.GetWorld3D().DirectSpaceState;
+		Godot.Collections.Array<Rid> skip = new();
+		foreach (string group in Groups.Fighters)
+			foreach (Node node in b.GetTree().GetNodesInGroup(group))
+				if (node is CollisionObject3D body) skip.Add(body.GetRid());
+
+		foreach (var (name, yaw, pitch) in new[] { ("teto", 0f, 89f), ("parede", 0f, 0f), ("parede do lado", 90f, 0f), ("chão", 30f, -89f) })
+		{
+			cam.AimFree(yaw, pitch);
+			RegressionBench.Press("move_forward");
+			RegressionBench.Press("walk");
+			await b.Seconds(6);
+			RegressionBench.ReleaseAll();
+			await b.Frames(2);
+			Vector3 at = b.GetViewport().GetCamera3D().GlobalPosition;
+			// Do ponto de dentro até a câmera não pode haver casca no meio.
+			var q = PhysicsRayQueryParameters3D.Create(inside, at, 1);
+			q.Exclude = skip;
+			var hit = space.IntersectRay(q);
+			string wall = hit.Count > 0 ? ((Node)hit["collider"]).Name : "";
+			b.Check(!wall.StartsWith("casca") && at.Y > -0.1f, $"{name}: a câmera fica dentro do galpão ({at}, no caminho: {(wall == "" ? "nada" : wall)})");
+		}
 	}
 }

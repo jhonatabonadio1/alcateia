@@ -65,7 +65,7 @@ Um tema só, repetido em todas: o do menu (já feito) é a referência, e a melo
 
 | Arquivo | No jogo | Quando toca | Como deve soar | Prompt (inglês) | Duração |
 | --- | --- | --- | --- | --- | --- |
-| `musica_menu` | ✅ IA | Menu principal, em laço | Tema do jogo: noturno e heróico, orquestra e percussão grande, coro grave, um uivo distante como motivo. Calmo o bastante para ficar minutos tocando | Epic dark orchestral main menu theme for a werewolf versus soldiers action game, heroic and nocturnal, low male choir, taiko and war drums, strings ostinato, subtle hybrid electronic pulse, distant wolf howl motif, moderate tempo, seamless loop | 2–3 min, laço (o atual tem 30 s) |
+| `musica_menu` | — | Saiu em 19/11 | O lobby inteiro toca `musica_sala` | | |
 | `musica_sala` | ✅ IA | Sala, em laço (troca com o menu num fade) | O mesmo tema, mais tenso e mais rítmico, sem melodia na frente | Tense pre-battle lobby music, same dark heroic theme reduced to rhythm, pulsing low strings, ticking percussion, building anticipation, no lead melody, seamless loop | 1–2 min, laço (o atual tem 30 s) |
 | `musica_carregando` **novo** | falta | Tela de carregamento da partida | Ambiente grave e tenso que cresce devagar | Dark cinematic loading screen ambience, low drones, slow distant drums, wind, growing tension, seamless loop | 30–60 s, laço |
 | `partida_inicio` | ✅ IA | Começo da partida | Chamada curta de guerra: tambor, metais e um rugido | Short battle start orchestral stinger, huge drum hit, heroic brass call, wolf roar layered underneath, ends cleanly | 3–5 s (o atual tem 13 s) |
@@ -85,28 +85,28 @@ Como descrever a voz, se a ferramenta pedir: *confident female arena announcer, 
 
 | Arquivo | No jogo | Quando toca | Fala (PT-BR) | Fala (inglês) |
 | --- | --- | --- | --- | --- |
-| `voz_prepare` | ✅ IA | Começa a contagem | Preparem-se! | Prepare yourselves! |
-| `voz_3`, `voz_2`, `voz_1` | ✅ IA | Últimos 3 segundos | Três · Dois · Um | Three · Two · One |
-| `voz_lutar` | falta | A partida começa | Lutem! | Fight! |
+| `voz_prepare` | provisório | Começa a contagem | Preparem-se! | Prepare yourselves! |
+| `voz_3`, `voz_2`, `voz_1` | provisório | Últimos 3 segundos | Três · Dois · Um | Three · Two · One |
+| `voz_lutar` | provisório | A partida começa | Lutem! | Fight! |
 | `voz_primeiro_abate` **novo** | falta | Primeiro abate da partida | Primeiro sangue! | First blood! |
-| `voz_double_kill` | ✅ IA | 2 abates seguidos (5 s entre eles) | Abate duplo! | Double kill! |
-| `voz_triple_kill` | ✅ IA | 3 seguidos | Abate triplo! | Triple kill! |
-| `voz_quadra_kill` | ✅ IA | 4 seguidos | Abate quádruplo! | Quadra kill! |
-| `voz_penta_kill` | ✅ IA | 5 seguidos | Penta abate! | Penta kill! |
-| `voz_hexa_kill` | ✅ IA | 6 seguidos | Hexa abate! | Hexa kill! |
+| `voz_double_kill` | falta | 2 abates seguidos (5 s entre eles) | Abate duplo! | Double kill! |
+| `voz_triple_kill` | falta | 3 seguidos | Abate triplo! | Triple kill! |
+| `voz_quadra_kill` | falta | 4 seguidos | Abate quádruplo! | Quadra kill! |
+| `voz_penta_kill` | falta | 5 seguidos | Penta abate! | Penta kill! |
+| `voz_hexa_kill` | falta | 6 seguidos | Hexa abate! | Hexa kill! |
 | `voz_hepta_kill` | falta | 7 seguidos | Hepta abate! | Hepta kill! |
 | `voz_octa_kill` | falta | 8 seguidos | Octa abate! Imbatível! | Octa kill! Unstoppable! |
 | `voz_team_kill` | falta | Você derrubou o time inimigo inteiro | Time eliminado! | Team wiped! |
 | `voz_vinganca` | falta | Matou quem tinha te matado | Vingança! | Revenge! |
-| `voz_multi_kill` | falta | Reserva: qualquer sequência que não tenha fala própria | Sequência! | Multi kill! |
+| `voz_multi_kill` | provisório | Reserva: qualquer sequência que não tenha fala própria | Sequência! | Multi kill! |
 | `voz_especial_pronto` **novo** | falta | Sua carga do especial chegou a 100% | Especial pronto! | Special ready! |
-| `voz_tempo` | falta | Falta 1 minuto | Um minuto restante! | One minute remaining! |
+| `voz_tempo` | provisório | Falta 1 minuto | Um minuto restante! | One minute remaining! |
 | `voz_dez_segundos` **novo** | falta | Faltam 10 segundos | Dez segundos! | Ten seconds! |
-| `voz_vitoria` | ✅ IA | Fim, seu time venceu | Vitória! | Victory! |
-| `voz_derrota` | ✅ IA | Fim, seu time perdeu | Derrota. | Defeat. |
-| `voz_empate` | falta | Fim, empate | Empate! | Draw! |
+| `voz_vitoria` | provisório | Fim, seu time venceu | Vitória! | Victory! |
+| `voz_derrota` | provisório | Fim, seu time perdeu | Derrota. | Defeat. |
+| `voz_empate` | provisório | Fim, empate | Empate! | Draw! |
 
-As 11 primeiras falas da Iris (em inglês) entraram em 18/11, e a voz provisória da Kenney saiu: o que falta fica em silêncio até ser gerado. A Iris fala inglês, então siga a coluna em inglês.
+Os provisórios são a voz masculina da Kenney, em inglês. As 11 falas da Iris já geradas estão separadas e esperam só o texto de cada uma para entrar no lugar delas.
 
 Escolha um idioma e mantenha. Os nomes de arquivo são os mesmos nos dois.
 
@@ -210,7 +210,7 @@ O início, a vitória e a derrota estão em Músicas; o renascer, em Humano; as 
 
 Do que mais muda a sensação do jogo para o que menos muda:
 
-1. **Iris** — as que faltam: "Fight!", empate, hepta, octa, team kill, vingança, primeiro sangue, especial pronto e a reserva `voz_multi_kill`.
+1. **Iris** — mandar o texto das 11 falas já gravadas e gerar as que faltam (sequências, primeiro sangue, especial pronto).
 2. **Abate, acerto e acerto na cabeça** — o "tic" da caveira é o que mais se ouve quando o jogo está bom.
 3. ~~`musica_menu`~~ — feito em 18/11 (uma versão de 1–2 min ainda ajudaria).
 4. **Tiros das seis armas** (as três versões de cada).

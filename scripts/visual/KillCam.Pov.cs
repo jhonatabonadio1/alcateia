@@ -15,19 +15,14 @@ using System.Collections.Generic;
 ///   acerto, feed com ele como "você", minimapa dele;
 /// - o som sai da arma dele, que está ali.
 ///
-/// No espectador o corpo visto é o aliado de verdade. No replay da câmera
-/// de abate é a **cópia** de quem matou (<see cref="Bot.ReplayCopy"/>),
-/// movida pela gravação (<see cref="ReplayTape"/>), que repete os
-/// acontecimentos com o mesmo código do jogo — então tem o mesmo tiro, o
-/// mesmo som e a mesma animação, sem ferir ninguém.
+/// O corpo visto é o aliado de verdade, e os sinais da arma e da vida
+/// dele chegam direto ao HUD e à arma na mão.
 /// </summary>
 public partial class KillCam
 {
 	/// <summary>Distância e folga da câmera de lobo (as do jogador:
 	/// <see cref="Player.ThirdPersonDistance"/> e a mola da cena).</summary>
 	private const float WolfDistance = 2.5f, WolfMargin = 0.2f;
-
-	private const string BotScene = "res://scenes/bot.tscn";
 
 	/// <summary>Marca da arma na mão posta por esta visão (e não a do jogador).</summary>
 	private const string LentView = "vista_emprestada";
@@ -37,7 +32,6 @@ public partial class KillCam
 	private ViewModel _subjectView;
 	private Camera3D _subjectCamera;
 	private bool _subjectFirst;
-	private Bot _copy;
 
 	/// <summary>De quem são os olhos da tela agora (a primeira pessoa de
 	/// outro corpo). Null fora disso. O som dele vira o "seu"
@@ -54,20 +48,17 @@ public partial class KillCam
 	/// <summary>O HUD de quem se vê. Para os testes.</summary>
 	public Hud SubjectHud => _subjectHud;
 
-	/// <summary>No replay, a cópia de quem matou. Para os testes.</summary>
-	public Bot Copy => _copy;
-
 	// ------------------------------------------------------------ quem se vê
 
 	/// <summary>Passa a ver por este corpo (com o HUD dele). Null: ninguém.</summary>
-	private void Watch(Node3D subject, bool replay = false)
+	private void Watch(Node3D subject)
 	{
 		if (subject == _subject) return;
 		Unwatch();
 		_subject = subject;
 		if (subject == null) return;
 
-		_subjectHud = new Hud { Name = "HudDeQuemSeVe", Subject = subject, ReplayFeed = replay };
+		_subjectHud = new Hud { Name = "HudDeQuemSeVe", Subject = subject };
 		GetParent().AddChild(_subjectHud);
 	}
 
@@ -120,7 +111,9 @@ public partial class KillCam
 		{
 			// Com o nome de sempre: a arma dele acha a ponta do cano por ele
 			// (o tiro sai da arma na tela).
-			_subjectView = new ViewModel { Name = "ViewModel" };
+			// Anda sempre, mesmo que o corpo dele esteja parado (no fim da
+			// partida, nos testes): sem isso a arma não subia para a mão.
+			_subjectView = new ViewModel { Name = "ViewModel", ProcessMode = ProcessModeEnum.Always };
 			_subjectView.SetMeta(LentView, true);
 			_subjectCamera.AddChild(_subjectView);
 		}
@@ -201,63 +194,6 @@ public partial class KillCam
 		_camera.Near = 0.05f;
 		_camera.GlobalTransform = new Transform3D(look, at);
 		_camera.Fov = Mathf.Lerp(_camera.Fov, 75f, Mathf.Min(1f, (float)delta * 8f));
-	}
-
-	// ------------------------------------------------------------ a cópia do replay
-
-	/// <summary>Monta a cópia de quem matou: o mesmo time, o mesmo nome,
-	/// fora dos grupos e sem colisão.</summary>
-	private Bot MakeCopy(Node3D killer)
-	{
-		if (!ResourceLoader.Exists(BotScene)) return null;
-		var copy = GD.Load<PackedScene>(BotScene).Instantiate<Bot>();
-		Health health = killer.GetNodeOrNull<Health>("Health");
-		copy.ReplayCopy = true;
-		copy.Name = $"Replay_{killer.Name}";
-		copy.Team = health?.Team ?? 0;
-		copy.Callsign = health?.PublicName ?? "";
-		killer.GetParent().AddChild(copy);
-		copy.GlobalPosition = killer.GlobalPosition;
-		if (copy.GetNodeOrNull<Node3D>("HealthBar") is Node3D bar) bar.Visible = false;
-		return copy;
-	}
-
-	private void RemoveCopy()
-	{
-		if (_copy != null && IsInstanceValid(_copy))
-		{
-			if (_subject == _copy) Unwatch();
-			_copy.QueueFree();
-		}
-		_copy = null;
-	}
-
-	/// <summary>Põe a cópia no instante gravado e repete o que aconteceu
-	/// desde o quadro anterior.</summary>
-	private void DriveCopy(ReplayTape tape, ReplayTape.Frame f, double from, double to)
-	{
-		if (_copy == null || !IsInstanceValid(_copy)) return;
-		_copy.RemoteStatus(f.Hp, f.MaxHp, f.Shield, f.MaxShield, false, f.Primary, f.Secondary);
-		_copy.RemoteSnapshot(f.At, f.Velocity, f.Yaw, f.Pitch, f.Grounded, (Form)f.Form, (Slot)f.Slot);
-		_copy.GetNodeOrNull<FormController>("FormController")?.MirrorWp(f.Wp);
-		Weapon weapon = _copy.GetNodeOrNull<Weapon>("Weapon");
-		if (weapon == null) return;
-		foreach (ReplayTape.Event e in tape.EventsBetween(_killer, from, to))
-		{
-			weapon.ReplayEvent(e.Kind, e.A, e.B);
-			// O marcador de acerto toca para quem acertou: na câmera de
-			// abate, quem acertou é ele.
-			if (e.Kind == ReplayTape.Kind.Hit)
-			{
-				Sfx.Local(Sfx.First("marcador", "acerto"), -3f);
-				if (e.A != 0) Sfx.Local("marcador_cabeca", 0f);
-			}
-		}
-		weapon.ReplayMirror(f.Ammo, f.Charge, f.Grenades);
-
-		if (_subjectHud != null && IsInstanceValid(_subjectHud))
-			foreach (Kill kill in tape.KillsBetween(from, to))
-				_subjectHud.ReplayKill(kill);
 	}
 
 	// ------------------------------------------------------------ esconder o corpo visto

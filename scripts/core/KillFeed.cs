@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public enum KillCause
 {
@@ -116,7 +117,16 @@ public static class KillFeed
 {
 	public static event Action<Kill> Reported;
 
-	public static void Report(Kill kill) => Reported?.Invoke(kill);
+	/// <summary>Os últimos abates, com o relógio (ms) de quando saíram: o
+	/// HUD que entra no meio (o do espectador) mostra o feed que já estava.</summary>
+	public static readonly List<(ulong Ms, Kill Kill)> Recent = new();
+
+	public static void Report(Kill kill)
+	{
+		Recent.Add((Godot.Time.GetTicksMsec(), kill));
+		if (Recent.Count > 12) Recent.RemoveAt(0);
+		Reported?.Invoke(kill);
+	}
 
 	public static string Describe(KillCause cause) => cause switch
 	{

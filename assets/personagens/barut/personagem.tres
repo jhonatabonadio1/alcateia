@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CharacterSkin" format=3]
+
+[ext_resource type="Script" path="res://scripts/forms/CharacterSkin.cs" id="1_pers"]
+
+[resource]
+script = ExtResource("1_pers")
+DisplayName = "Barut"
+Description = "Do Sindicato. O soldado de sempre do time vermelho e o lobo vermelho dele, com o neon laranja nas garras e no rugido."
+Team = 2
+Rarity = 2
+HumanModel = "res://assets/characters/human/ely.fbx"
+WolfModel = "res://assets/characters/wolf/lobo_vermelho.glb"
+EffectColor = Color(1, 0.35, 0.12, 1)
+HpMultiplier = 1.0

@@ -303,3 +303,34 @@ public sealed class ServerStepCostTest : NetcodeTest
 		}
 	}
 }
+
+/// <summary>
+/// O estado de um corpo pela rede leva o que o HUD dele mostra (19/11:
+/// quem assiste um bot de outra máquina no espectador vê o pente, a
+/// recarga, as granadas, o WP e a carga certos) — e quem manda a mensagem
+/// antiga, sem isso, ainda é lido.
+/// </summary>
+public sealed class NetGearTest : RegressionTest
+{
+	public override string Name => "EstadoComEquipamento";
+	public override string Description => "o estado pela rede leva pente, recarga, granadas, WP e carga, e a mensagem antiga ainda é lida";
+
+	public override async Task Run(RegressionBench b)
+	{
+		var sent = new NetState { Position = new Vector3(1, 2, 3), Hp = 150, MaxHp = 200, Primary = "ar15", Secondary = "m9",
+			HasGear = true, Ammo = 17, Reloading = true, Grenades = 1, Wp = 420, Charge = 0.75f };
+		var stream = new System.IO.MemoryStream();
+		sent.Write(new System.IO.BinaryWriter(stream));
+		NetState got = NetState.Read(new System.IO.BinaryReader(new System.IO.MemoryStream(stream.ToArray())));
+		b.Check(got.HasGear && got.Ammo == 17 && got.Reloading && got.Grenades == 1 && Mathf.IsEqualApprox(got.Wp, 420) && Mathf.IsEqualApprox(got.Charge, 0.75f),
+			"pente, recarga, granadas, WP e carga chegam");
+		b.Check(got.Primary == "ar15" && Mathf.IsEqualApprox(got.Hp, 150), "e o resto do estado também");
+
+		var old = new NetState { Position = Vector3.One, Hp = 90, MaxHp = 200, Primary = "ar15", Secondary = "m9" };
+		stream = new System.IO.MemoryStream();
+		old.Write(new System.IO.BinaryWriter(stream));
+		got = NetState.Read(new System.IO.BinaryReader(new System.IO.MemoryStream(stream.ToArray())));
+		b.Check(!got.HasGear && Mathf.IsEqualApprox(got.Hp, 90), "a mensagem sem equipamento continua sendo lida");
+		await b.Frames(1);
+	}
+}

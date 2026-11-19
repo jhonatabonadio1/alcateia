@@ -210,39 +210,33 @@ sky_material = SubResource("CeuMat")
 background_mode = 2
 sky = SubResource("Ceu")
 ambient_light_source = 2
-ambient_light_color = Color(0.52, 0.62, 0.95, 1)
-ambient_light_energy = 0.38
-tonemap_mode = 3
-tonemap_exposure = 0.95
+ambient_light_color = Color(0.84, 0.87, 0.96, 1)
+ambient_light_energy = 0.85
+tonemap_mode = 4
+tonemap_exposure = 1.45
 ssao_enabled = true
-ssao_intensity = 2.5
+ssao_intensity = 1.6
 glow_enabled = true
-glow_intensity = 0.7
-glow_bloom = 0.1
-tonemap_white = 6
-ssao_radius = 2
-ssao_power = 2.2
-ssao_light_affect = 0.2
-glow_hdr_threshold = 1
+glow_intensity = 0.35
+glow_bloom = 0.08
 sdfgi_enabled = true
 sdfgi_use_occlusion = true
 sdfgi_read_sky_light = true
 sdfgi_bounce_feedback = 0.6
 sdfgi_min_cell_size = 0.2
-sdfgi_energy = 0.7
+sdfgi_energy = 1.5
 ssil_enabled = true
-ssil_intensity = 1
+ssil_intensity = 0.9
 ssil_radius = 4.0
 volumetric_fog_enabled = true
-volumetric_fog_density = 0.009
-volumetric_fog_albedo = Color(1, 0.92, 0.8, 1)
+volumetric_fog_density = 0.006
+volumetric_fog_albedo = Color(1, 0.95, 0.88, 1)
 volumetric_fog_anisotropy = 0.55
 volumetric_fog_length = 72
 volumetric_fog_gi_inject = 1.0
-volumetric_fog_ambient_inject = 0.1
 adjustment_enabled = true
-adjustment_contrast = 1.1
-adjustment_saturation = 1.2
+adjustment_contrast = 1.02
+adjustment_saturation = 1.12
 
 [node name="Armazém" type="Node3D"]
 
@@ -251,17 +245,16 @@ environment = SubResource("Env")
 
 [node name="Sol" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.8829, -0.3699, 0.289, 0, 0.6157, 0.788, -0.4695, -0.6958, 0.5436, 0, 40, 0)
-light_color = Color(1, 0.8, 0.58, 1)
-light_energy = 3.4
+light_color = Color(1, 0.88, 0.7, 1)
+light_energy = 2.4
 shadow_enabled = true
 shadow_blur = 0.5
 directional_shadow_max_distance = 90
-light_volumetric_fog_energy = 1.6
 
 [node name="Preenchimento" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.8829, 0.3981, -0.2488, 0, 0.5299, 0.848, 0.4695, 0.7488, -0.4679, 0, 40, 0)
-light_color = Color(0.6, 0.72, 1, 1)
-light_energy = 0.15
+light_color = Color(0.86, 0.9, 1, 1)
+light_energy = 0.45
 light_specular = 0.2
 shadow_enabled = false
 
@@ -319,7 +312,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 23.7)
 shape = SubResource("S3")
 
 [node name="LimiteTeto" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 17.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 13.5, 0)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteTeto"]
 shape = SubResource("S4")
@@ -9042,3 +9035,257 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.9, 0.5, -17.5)
 
 [node name="NavBaker" type="Node3D" parent="."]
 script = ExtResource("s_nav")
+
+[node name="LuzesFracas" type="Node3D" parent="."]
+
+[node name="Fraca1" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.14, 3.2, -16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca2" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.14, 3.2, -5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca3" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.14, 3.2, 5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca4" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.14, 3.2, 16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca5" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.43, 3.2, -16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca6" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.43, 3.2, -5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca7" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.43, 3.2, 5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca8" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.43, 3.2, 16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca9" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.71, 3.2, -16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca10" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.71, 3.2, -5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca11" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.71, 3.2, 5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca12" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.71, 3.2, 16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca13" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00, 3.2, -16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca14" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00, 3.2, -5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca15" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00, 3.2, 5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca16" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00, 3.2, 16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca17" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.71, 3.2, -16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca18" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.71, 3.2, -5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca19" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.71, 3.2, 5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca20" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.71, 3.2, 16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca21" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.43, 3.2, -16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca22" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.43, 3.2, -5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca23" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.43, 3.2, 5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca24" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.43, 3.2, 16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca25" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.14, 3.2, -16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca26" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.14, 3.2, -5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca27" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.14, 3.2, 5.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3
+
+[node name="Fraca28" type="OmniLight3D" parent="LuzesFracas"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.14, 3.2, 16.50)
+light_color = Color(1, 0.92, 0.8, 1)
+light_energy = 0.32
+light_specular = 0.1
+light_volumetric_fog_energy = 0.0
+omni_range = 9.0
+omni_attenuation = 1.3

@@ -114,6 +114,14 @@ public struct NetState
 	public float Hp, MaxHp, Shield, MaxShield;
 	public string Primary, Secondary;
 
+	/// <summary>O que o HUD mostra (desde 19/11, no fim da mensagem: quem
+	/// assiste esse corpo no espectador vê o mesmo): pente, recarga,
+	/// granadas, WP e a carga do especial.</summary>
+	public bool HasGear, Reloading;
+	public short Ammo;
+	public byte Grenades;
+	public float Wp, Charge;
+
 	public void Write(BinaryWriter w)
 	{
 		w.Write(Position);
@@ -129,6 +137,12 @@ public struct NetState
 		w.Write(MaxShield);
 		w.Write(Primary ?? "");
 		w.Write(Secondary ?? "");
+		if (!HasGear) return;
+		w.Write(Ammo);
+		w.Write(Reloading);
+		w.Write(Grenades);
+		w.Write(Wp);
+		w.Write(Charge);
 	}
 
 	public static NetState Read(BinaryReader r)
@@ -151,6 +165,15 @@ public struct NetState
 		s.MaxShield = r.ReadSingle();
 		s.Primary = r.ReadString();
 		s.Secondary = r.ReadString();
+		if (r.BaseStream.Length - r.BaseStream.Position >= 2 + 1 + 1 + 4 + 4)
+		{
+			s.HasGear = true;
+			s.Ammo = r.ReadInt16();
+			s.Reloading = r.ReadBoolean();
+			s.Grenades = r.ReadByte();
+			s.Wp = r.ReadSingle();
+			s.Charge = r.ReadSingle();
+		}
 		return s;
 	}
 }

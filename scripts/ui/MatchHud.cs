@@ -141,11 +141,7 @@ public partial class MatchHud : CanvasLayer
 		if (current == MatchPhase.Ended)
 		{
 			_root.Visible = false;
-			// Antes do resultado, a jogada da partida (19/11), se houve uma.
-			PlayOfTheGame.TryStart(this, () =>
-			{
-				if (IsInstanceValid(this)) ResultScreen.Open(this, _match, _localTeam);
-			});
+			ResultScreen.Open(this, _match, _localTeam);
 		}
 	}
 

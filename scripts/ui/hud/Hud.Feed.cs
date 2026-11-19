@@ -18,6 +18,23 @@ public partial class Hud
 	private VBoxContainer _feed;
 	private readonly KillStory _story = new();
 
+	private bool _prefilling;
+
+	/// <summary>
+	/// O HUD do espectador entra com o feed que já estava na tela (19/11:
+	/// "morto, o feed continua no espectador, com destaque em quem estou
+	/// vendo, só para mim"): as linhas dos últimos segundos, com quem se vê
+	/// marcado — sem chamada, voz nem marcador de acerto, que já passaram.
+	/// </summary>
+	private void PrefillFeed()
+	{
+		ulong now = Time.GetTicksMsec();
+		_prefilling = true;
+		foreach (var (ms, kill) in KillFeed.Recent)
+			if (now - ms < (ulong)((FeedLife - 0.5f) * 1000f)) OnKill(kill);
+		_prefilling = false;
+	}
+
 	private void OnKill(Kill kill)
 	{
 		if (_feed == null) return;
@@ -29,7 +46,7 @@ public partial class Hud
 		// Sequência (double, triple…) e vingança, de quem for.
 		KillStory.Note note = _story.Add(kill.Killer, kill.Victim, Time.GetTicksMsec() / 1000.0);
 
-		if (mine && kill.Victim != me)
+		if (mine && kill.Victim != me && !_prefilling)
 		{
 			_hitMarker?.Flash(kill.Cause == KillCause.Headshot, kill: true);
 			// A caveira pulsa na mira (HitMarker); "ELIMINOU <jogador>" embaixo.

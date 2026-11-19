@@ -15,18 +15,20 @@ public sealed class LanguageTests : RegressionTest
 	public override async Task Run(RegressionBench b)
 	{
 		Loc.Load();
+		string before = TranslationServer.GetLocale();
+		Loc.Apply(Loc.Source);
 		b.AtLeast(500, Loc.Total, "o arquivo de textos tem os textos do jogo");
 		b.Check(Loc.Languages.Count >= 1 && Loc.Languages[0] == Loc.Source, "o português é o primeiro idioma");
 		b.Check(Loc.T("Opções") == "Opções", "sem tradução, o texto é o do código");
 		b.Check(Loc.F("{0} contra {1}", 3, 3) == "3 contra 3", "texto montado, em português");
 
 		// Um idioma de teste, registrado na hora: é o que uma coluna nova do arquivo faz.
-		var test = new Translation { Locale = "eo" };
-		test.AddMessage("Opções", "Agordoj");
-		test.AddMessage("{0} contra {1}", "{1} kontraŭ {0}");
-		test.AddMessage("Faltam {0:0} WP", "Mankas {0:0} WP {9}");       // tradução com a chave errada
-		TranslationServer.AddTranslation(test);
-		string before = TranslationServer.GetLocale();
+		Translation test = Loc.AddLanguage("eo", new System.Collections.Generic.Dictionary<string, string>
+		{
+			["Opções"] = "Agordoj",
+			["{0} contra {1}"] = "{1} kontraŭ {0}",
+			["Faltam {0:0} WP"] = "Mankas {0:0} WP {9}"        // tradução com a chave errada
+		});
 		TranslationServer.SetLocale("eo");
 
 		b.Check(Loc.T("Opções") == "Agordoj", "com o idioma, o texto traduz");
@@ -42,8 +44,20 @@ public sealed class LanguageTests : RegressionTest
 		b.Check(label.Tr(label.Text) == "Agordoj", "rótulo com texto fixo é traduzido pelo Godot");
 		label.QueueFree();
 
-		TranslationServer.SetLocale(before);
+		TranslationServer.SetLocale(Loc.Source);
 		TranslationServer.RemoveTranslation(test);
 		b.Check(Loc.T("Opções") == "Opções", "de volta ao português");
+
+		// Os idiomas do arquivo: inglês e espanhol preenchidos, e o português
+		// não cai no inglês (o idioma reserva do Godot).
+		b.Check(System.Linq.Enumerable.Contains(Loc.Languages, "en") && System.Linq.Enumerable.Contains(Loc.Languages, "es"), "o arquivo tem inglês e espanhol");
+		b.AtLeast(Loc.Total, Loc.Count("en"), "todo texto tem inglês");
+		b.AtLeast(Loc.Total, Loc.Count("es"), "todo texto tem espanhol");
+		b.Check(Loc.T("Créditos") == "Créditos", "em português, o texto é o português (não o inglês)");
+		TranslationServer.SetLocale("en");
+		b.Check(Loc.T("Créditos") == "Credits", "em inglês, traduz");
+		TranslationServer.SetLocale("es");
+		b.Check(Loc.T("Voltar às opções") == "Volver a opciones", "em espanhol, traduz");
+		TranslationServer.SetLocale(before);
 	}
 }

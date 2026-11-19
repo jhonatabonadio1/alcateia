@@ -57,18 +57,12 @@ public partial class Hud : CanvasLayer
 	/// </summary>
 	public Node3D Subject { get; set; }
 
-	/// <summary>HUD de replay: o feed só recebe o que a gravação manda
-	/// (<see cref="ReplayKill"/>), não o que acontece agora.</summary>
-	public bool ReplayFeed { get; set; }
-
 	/// <summary>O que o HUD mostra agora: vida, munição no pente, WP e o
 	/// estado da recarga. Para os testes.</summary>
 	public string ShownHp => _hpNumber?.Text;
 	public string ShownMag => _mag?.Text;
 	public string ShownReload => _reloading?.Text;
-
-	/// <summary>Um abate gravado, no feed do HUD de replay.</summary>
-	public void ReplayKill(Kill kill) => OnKill(kill);
+	public int FeedShown => _feed?.GetChildCount() ?? 0;
 
 	public override void _Ready()
 	{
@@ -117,7 +111,8 @@ public partial class Hud : CanvasLayer
 		_weapon.PickedUp += OnPickedUp;
 		_weapon.AmmoTaken += OnAmmoTaken;
 		_weapon.Dropped += OnDropped;
-		if (!ReplayFeed) KillFeed.Reported += OnKill;
+		KillFeed.Reported += OnKill;
+		if (Subject != null) PrefillFeed();
 
 		// No fim da partida a tela de resultado assume a tela inteira.
 		if (Match.Current != null)

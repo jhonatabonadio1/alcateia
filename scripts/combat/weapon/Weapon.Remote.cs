@@ -48,29 +48,7 @@ public partial class Weapon
 		TryAttack();
 	}
 
-	// ------------------------------------------------------------ o replay
-
-	/// <summary>
-	/// A cópia do replay (<see cref="KillCam"/>) espelha o que a gravação
-	/// diz: a munição no pente, a carga do especial e as granadas — o que o
-	/// HUD mostra. Só avisa quem escuta quando muda.
-	/// </summary>
-	public void ReplayMirror(int ammo, float charge, int grenades)
-	{
-		if (!Puppet) return;
-		if (!IsReloading && ammo != AmmoInMag && ammo >= 0)
-		{
-			if (HumanSlot == Slot.Secondary) SecondaryAmmo = ammo;
-			else PrimaryAmmo = ammo;
-			EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, false);
-		}
-		if (!Mathf.IsEqualApprox(charge, SpecialCharge)) SetSpecialCharge(charge);
-		if (grenades != Grenades)
-		{
-			Grenades = grenades;
-			EmitSignal(SignalName.GrenadesChanged, Grenades);
-		}
-	}
+	// ------------------------------------------------------------ o boneco online
 
 	private bool _mirrorReloading;
 
@@ -94,33 +72,6 @@ public partial class Weapon
 		{
 			Grenades = grenades;
 			EmitSignal(SignalName.GrenadesChanged, Grenades);
-		}
-	}
-
-	/// <summary>A cópia do replay repete um acontecimento gravado: o golpe
-	/// do lobo, a recarga de habilidade, o acerto, a coronhada, a recarga.</summary>
-	public void ReplayEvent(ReplayTape.Kind kind, int a, float b)
-	{
-		if (!Puppet) return;
-		switch (kind)
-		{
-			case ReplayTape.Kind.Fired: RemoteAttack((Slot)a); break;
-			case ReplayTape.Kind.Thrown: RemoteAttack(Slot.Grenade); break;
-			case ReplayTape.Kind.WolfMove: EmitSignal(SignalName.WolfMoveStarted, a); break;
-			case ReplayTape.Kind.Cooldown: EmitSignal(SignalName.AttackCooldown, a, b); break;
-			case ReplayTape.Kind.Hit: EmitSignal(SignalName.HitConfirmed, a != 0); break;
-			case ReplayTape.Kind.Butt:
-				_cooldown = 0;
-				TryButt();
-				break;
-			case ReplayTape.Kind.Reload:
-				if (AmmoInMag >= MagSize)
-				{
-					if (HumanSlot == Slot.Secondary) SecondaryAmmo = Mathf.Max(0, MagSize - 1);
-					else PrimaryAmmo = Mathf.Max(0, MagSize - 1);
-				}
-				TryReload();
-				break;
 		}
 	}
 }

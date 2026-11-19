@@ -590,6 +590,16 @@ public static class Profile
 		Save();
 	}
 
+	/// <summary>Esta arma pode estar neste espaço de um conjunto: existe,
+	/// é do espaço certo, o jogador a tem e, no padrão, ela é liberada.</summary>
+	private static bool Fits(string id, bool secondary, bool isDefault)
+	{
+		if (string.IsNullOrEmpty(id) || Arsenal.Get(id) == null || Catalog.Get(id) is not CatalogItem item) return false;
+		if (Arsenal.IsSecondary(id) != secondary) return false;
+		if (!Owns(id) && !item.Starter) return false;
+		return !isDefault || LoadoutSet.AllowedInDefault(id);
+	}
+
 	private static bool FitsTeam(CatalogItem item, int team) =>
 		item?.Kind == ItemKind.Character && item.Character != null && (item.Team == 0 || item.Team == team);
 
@@ -625,11 +635,22 @@ public static class Profile
 		if (Sets.Count > SetCount)
 			Sets.RemoveRange(SetCount, Sets.Count - SetCount);
 
+		// O que o jogador escolheu fica (19/11: "as mudanças no inventário
+		// não persistem quando fecho e abro o jogo" — até aqui o padrão
+		// voltava sempre para AR-15 e M9 sem granada, mesmo com a AR-15
+		// Ultimate e a granada liberadas para ele). Só sai o que não existe
+		// mais, não é dele ou não cabe no espaço.
+		foreach (LoadoutSet set in Sets)
+		{
+			set.Utilities ??= new List<string>();
+			if (!Fits(set.Primary, secondary: false, set == Sets[0])) set.Primary = Arsenal.DefaultPrimary;
+			if (!Fits(set.Secondary, secondary: true, set == Sets[0])) set.Secondary = Arsenal.DefaultSecondary;
+			set.Utilities.RemoveAll(id => Arsenal.GetUtility(id) == null || Catalog.Get(id) == null
+				|| (!Owns(id) && !Catalog.Get(id).Starter) || (set == Sets[0] && !LoadoutSet.AllowedInDefault(id)));
+		}
+
 		LoadoutSet first = Sets[0];
 		first.IsDefault = true;
-		first.Primary = Arsenal.DefaultPrimary;
-		first.Secondary = Arsenal.DefaultSecondary;
-		first.Utilities.Clear();
 		if (string.IsNullOrEmpty(first.Name)) first.Name = "Padrão";
 
 		for (int i = 1; i < Sets.Count; i++)

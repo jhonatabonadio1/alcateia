@@ -23,7 +23,12 @@ using System.Linq;
 public partial class ResultScreen : CanvasLayer
 {
 	/// <summary>Quanto tempo o veredito fica sozinho.</summary>
-	[Export] public float VerdictAlone = 1.5f;
+	[Export] public float VerdictAlone = 4f;
+
+	/// <summary>A velocidade do jogo enquanto a VITÓRIA ou a DERROTA está na
+	/// tela, por cima da partida (19/11: "o victory e o defeat devem ficar uns
+	/// 4 segundos no jogo antes do resultado, e todo mundo em câmera lenta").</summary>
+	[Export] public float VerdictTimeScale = 0.3f;
 
 	/// <summary>Intervalo entre uma linha de recompensa e a próxima.</summary>
 	[Export] public float LineStep = 0.28f;
@@ -71,8 +76,13 @@ public partial class ResultScreen : CanvasLayer
 		_root = UiTheme.Apply(UiKit.Fill(new Control()));
 		AddChild(_root);
 
-		var dim = UiKit.Fill(new ColorRect { Color = UiTokens.Bg, Material = HudStyle.Backdrop(0.82f), MouseFilter = Control.MouseFilterEnum.Stop });
-		_root.AddChild(dim);
+		// O fundo escuro só entra com a página: antes, a vitória ou a
+		// derrota fica por cima da partida, em câmera lenta.
+		_dim = UiKit.Fill(new ColorRect { Color = UiTokens.Bg, Material = HudStyle.Backdrop(0.82f), MouseFilter = Control.MouseFilterEnum.Stop });
+		_dim.Modulate = new Color(1, 1, 1, 0);
+		_root.AddChild(_dim);
+		Engine.TimeScale = VerdictTimeScale;
+		AudioServer.PlaybackSpeedScale = 0.85f;
 
 		_hero = BuildHero();
 		_root.AddChild(_hero);
@@ -86,7 +96,8 @@ public partial class ResultScreen : CanvasLayer
 		Motion.FadeIn(_hero, UiTokens.Normal);
 		Motion.Pop(_hero.GetChild<Control>(0), 1.08f, 0.35f);
 
-		Tween flow = CreateTween();
+		// No relógio de verdade: o jogo está em câmera lenta.
+		Tween flow = CreateTween().SetIgnoreTimeScale(true);
 		flow.TweenInterval(VerdictAlone);
 		flow.TweenProperty(_hero, "modulate:a", 0f, 0.25f);
 		flow.TweenCallback(Callable.From(ShowPage));
@@ -97,8 +108,20 @@ public partial class ResultScreen : CanvasLayer
 
 	// ================================================================== tempos
 
+	private Control _dim;
+
+	private static void NormalSpeed()
+	{
+		Engine.TimeScale = 1.0;
+		AudioServer.PlaybackSpeedScale = 1f;
+	}
+
+	public override void _ExitTree() => NormalSpeed();
+
 	private void ShowPage()
 	{
+		NormalSpeed();
+		_dim.CreateTween().TweenProperty(_dim, "modulate:a", 1f, 0.35f);
 		_hero.Visible = false;
 		_page.Visible = true;
 
@@ -247,6 +270,9 @@ public partial class ResultScreen : CanvasLayer
 		string verdict = Verdict(out Color color);
 		Label title = UiKit.Text(verdict, "Display", color);
 		title.AddThemeFontSizeOverride("font_size", 132);
+		// Por cima da partida (sem fundo escuro): contorno para ler.
+		title.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 0.85f));
+		title.AddThemeConstantOverride("outline_size", 14);
 		title.HorizontalAlignment = HorizontalAlignment.Center;
 		title.PivotOffset = new Vector2(300, 80);
 		column.AddChild(title);

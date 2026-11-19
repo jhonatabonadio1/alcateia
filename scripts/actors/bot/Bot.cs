@@ -127,17 +127,7 @@ public partial class Bot : CharacterBody3D
 		_gravity = (float)ProjectSettings.GetSetting("physics/3d/default_gravity");
 		_spawn = GlobalPosition;
 
-		// A cópia do replay: a cena já põe o bot no grupo; ela sai dele e
-		// ninguém bate nela. Ela só sente o cenário (camada 1): sem chão,
-		// o lobo achava que estava no ar e não andava (19/11).
-		if (ReplayCopy)
-		{
-			Remote = true;
-			RemoveFromGroup(Groups.Bots);
-			CollisionLayer = 0;
-			CollisionMask = 1;
-		}
-		else AddToGroup(Groups.Bots);
+		AddToGroup(Groups.Bots);
 		Difficulty.Apply(this);
 
 		// Personalidade: cada bot nasce mais ou menos curioso.

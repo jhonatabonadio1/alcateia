@@ -19,12 +19,26 @@ Ponha aqui, com o que se sabe dele.
 | **AR-15: recarga vazia** (16/11) | A recarga do AR-15 agora é a animação do Jhon (2,7 s, esticada para 2,3 s ou 2,9 s com o pente vazio). Falta uma "recarga vazia" própria (puxando o ferrolho): quando o Jhon animar, entra no `infima.py` como `recarga_vazia` e o jogo usa sozinho. |
 | **Lobo do Meshy: licença e origem** (15/11) | O lobo vem do Meshy. No plano grátis a licença é CC BY 4.0 (com crédito, que já está em `Credits.cs`); nos pagos o uso comercial é do dono. Confirmar o plano em que foi gerado, e que o prompt ou imagem de referência não era arte do WolfTeam (regra de IP). Quase todas as animações já são do próprio Jhon (`lobo_anim.glb`); só a morte e a corrida na parede ainda são do Mixamo, adaptadas por código. |
 | **Lobo agachado: cabeça fora da cápsula** (15/11) | O `Crouch_Idle` do Jhon deixa a cabeça a 1,18 m do chão; a cápsula agachada tem 1,0 m. A cabeça tem esfera própria e o tiro nela acerta, mas o peito acima de 1,0 m passa direto. Decidir: agachar mais a pose, ou subir a cápsula agachada. |
-| **SG-552 contra a M16 nova** (14/11) | A M16 (e agora o AR-15, com os mesmos números) ficou mais precisa que a SG-552 (dispersão 0,15° contra 0,25°), que custa 320 WP e era a "arma de controle". Falta o Jhon decidir se a SG sobe junto. |
 | **Lobo: garrada só da cintura para cima** (15/11 à noite) | O rugido toca de corpo inteiro (o lobo para para rugir). A garrada continua da cintura para cima (o lobo anda enquanto bate): a pisada do clipe não aparece. |
 | **Testes de velocidade 6,7% acima** (15/11) | `VelocidadeNoChao`, `CorridaNaParede` e a passada do humano no `PassoNoRitmo` falham com tudo 6,7% mais rápido que o esperado (humano 3,456 em vez de 3,24). Já falhava antes das animações novas; vem das mudanças sem commit ou do último commit. Em 16/11 também falham `AlturaDoPulo` (Bruto pula 1,87 m em vez de 1,62), `SaltoCarregado` e `CargaDoSalto` (a mira do salto não sobe no bloco; o lobo pousa a 18 m dela) — todos de movimento do lobo, nas mudanças sem commit. |
 | **Personagens tremendo e piscando** | Corrigido (13/11): o desenho agora anda entre os passos da física (`VisualSmoothing`) e a borda vermelha saiu de cima da pele. Não deu para ver no Mac daqui: falta o Jhon conferir; se continuar, um vídeo curto mostra se é tremor de posição, de animação ou de sombra. |
 
 ## Pedido e ainda não feito
+
+### Para depois (anotado em 19/11)
+
+- **Moldura do personagem no HUD pela patente.** A moldura do retrato
+  (embaixo à esquerda, ao lado da barra de vida) evolui com a patente:
+  mais robusta a cada patente, com a patente escrita no centro de baixo.
+- **Câmera de abate e jogada da partida — de volta.** Removidas por
+  inteiro em 19/11 (`ReplayTape`, `PlayOfTheGame` e a fase de replay da
+  `KillCam` saíram; a partida não é gravada). Hoje, morto: o corpo por um
+  instante e o espectador. Para voltar, fazer do jeito do Overwatch: o
+  servidor guarda os últimos segundos do estado de todos e o cliente
+  remonta a cena com os modelos de verdade.
+- **Tradução revisada por nativo.** Inglês e espanhol estão preenchidos em
+  `assets/i18n/textos.csv` (946 textos); falta alguém nativo passar o olho
+  nos nomes (Presas = Fangs/Colmillos, Sangue = Blood/Sangre, patentes).
 
 Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
@@ -234,14 +248,12 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ### Alcance: idioma e acessibilidade (pedido em 17/11)
 
-- **Internacionalização.** Hoje: todo texto está escrito direto no código,
-  em português; não há tabela de tradução. A fazer: tirar os textos para
-  as tabelas de tradução do Godot (um arquivo por idioma), escolher o
-  idioma nas Opções, começar por português e inglês. Cuidar de: fonte
-  (acentos e, depois, outros alfabetos), texto que cresce e estoura botão,
-  formato de número e data, as frases e a voz do rádio. Quanto antes,
-  melhor: toda tela feita com texto fixo é tela a refazer. As telas em
-  HTML (plano do `GUIA_UI_HTML_CEF.md`) precisam da própria tradução.
+- **Internacionalização.** Hoje: os 946 textos de tela estão em
+  `assets/i18n/textos.csv` (gerado por `tools/i18n/extrair.py`), com
+  português, inglês e espanhol, e o idioma se escolhe nas Opções. Falta:
+  revisão de nativo, conferir texto que cresce e estoura botão em inglês e
+  espanhol, formato de número e data, as falas do rádio, e a tradução das
+  telas em HTML (plano do `GUIA_UI_HTML_CEF.md`) quando existirem.
 - **Editar controles e teclas** (pedido em 17/11). Hoje: as teclas moram
   no código (`InputSetup`) e a tabela de Opções (`ControlsTable`) só as
   mostra, não deixa mudar. A fazer: tela de Opções → Controles para

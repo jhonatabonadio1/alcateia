@@ -167,8 +167,8 @@ public partial class ViewModel : Node3D
 		_camera.Near = Mathf.Min(_camera.Near, 0.015f);
 		PreloadRigs();
 
-		_weapon.SlotChanged += _ => SwitchWeapon();
-		_form.FormChanged += _ => Refresh();
+		_weapon.SlotChanged += OnSlot;
+		_form.FormChanged += OnForm;
 		_weapon.Fired += OnFired;
 		_weapon.Butted += OnButted;
 		_weapon.AmmoChanged += OnAmmo;
@@ -176,6 +176,25 @@ public partial class ViewModel : Node3D
 		BuildEffects();
 		BuildHandFill();
 		Refresh();
+	}
+
+	private void OnSlot(int _) => SwitchWeapon();
+	private void OnForm(int _) => Refresh();
+
+	/// <summary>A arma e a forma são do corpo e vivem mais que esta mão (a
+	/// emprestada ao espectador some antes): sem soltar os sinais, o próximo
+	/// tiro chamava uma mão já apagada.</summary>
+	public override void _Notification(int what)
+	{
+		if (what != NotificationPredelete) return;
+		if (IsInstanceValid(_weapon))
+		{
+			_weapon.SlotChanged -= OnSlot;
+			_weapon.Fired -= OnFired;
+			_weapon.Butted -= OnButted;
+			_weapon.AmmoChanged -= OnAmmo;
+		}
+		if (IsInstanceValid(_form)) _form.FormChanged -= OnForm;
 	}
 
 	private void BuildHandFill()
@@ -194,6 +213,7 @@ public partial class ViewModel : Node3D
 			ShadowEnabled = false,
 			LightSpecular = 0.3f
 		};
+		_handLight = hand;
 		var characters = new OmniLight3D
 		{
 			Name = "LuzDosPersonagens",
@@ -237,6 +257,22 @@ public partial class ViewModel : Node3D
 	}
 
 	private OmniLight3D _charactersLight;
+	private OmniLight3D _handLight;
+
+	/// <summary>Na mira, a luz da mão vem para perto do olho e acende
+	/// mais: a alça e a massa ficam de frente para quem mira, e com a luz
+	/// lá no alto, atrás, elas ficavam escuras contra o cenário (pedido do
+	/// Jhon, 18/11: "luz na arma ao mirar").</summary>
+	private static readonly Vector3 HandLightHip = new(0.15f, 0.35f, 0.15f), HandLightAim = new(0.02f, 0.14f, 0.06f);
+	[Export] public float AimLightEnergy = 1.25f;
+
+	private void AimLight()
+	{
+		if (_handLight == null || !IsInstanceValid(_handLight) || _weapon == null) return;
+		float aim = _form != null && _form.IsWolf ? 0f : Mathf.Clamp(_weapon.AimBlend, 0f, 1f);
+		_handLight.Position = HandLightHip.Lerp(HandLightAim, aim);
+		_handLight.LightEnergy = Mathf.Lerp(HandFillEnergy, AimLightEnergy, aim);
+	}
 
 	/// <summary>A luz dos personagens sai da câmera que está desenhando.</summary>
 	private void FollowView()
@@ -249,6 +285,7 @@ public partial class ViewModel : Node3D
 	public override void _Process(double delta)
 	{
 		FollowView();
+		AimLight();
 		if (--_maskEvery <= 0) { _maskEvery = 12; MaskHands(this); }
 		float dt = (float)delta;
 		// Guardou: a arma nova sobe (mesmo que seja a mesma, de volta).
@@ -388,16 +425,19 @@ public partial class ViewModel : Node3D
 	private Vector3 UpdateBob(float dt)
 	{
 		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
-		bool walking = _body.IsOnFloor() && flat.Length() > 0.5f && _player != null;
+		// O jogador ou um bot (visto pelo espectador, em primeira pessoa).
+		Bot bot = _body as Bot;
+		bool stepping = _player != null || bot != null;
+		bool walking = _body.IsOnFloor() && flat.Length() > 0.5f && stepping;
 		_bobWeight = Mathf.MoveToward(_bobWeight, walking ? 1f : 0f, dt * 6f);
-		if (_player == null || _bobWeight <= 0f) return Vector3.Zero;
+		if (!stepping || _bobWeight <= 0f) return Vector3.Zero;
 
 		// O conjunto animado que tem o próprio andar já balança sozinho —
 		// menos o que a ficha diz que balança pouco (o AR-15: o pacote é
 		// da Unreal, onde o balanço é de código).
 		if (HasRig && _rigClips.ContainsKey("andar") && !_rigBob) return Vector3.Zero;
 
-		float stride = (_player.Steps + _player.StridePhase) * Mathf.Pi;
+		float stride = _player != null ? (_player.Steps + _player.StridePhase) * Mathf.Pi : (bot.Steps + bot.StridePhase) * Mathf.Pi;
 		float speed = Mathf.Clamp(flat.Length() / 3.2f, 0.4f, 1.3f);
 		return new Vector3(Mathf.Sin(stride) * BobSide, Mathf.Abs(Mathf.Sin(stride)) * BobAmount - BobAmount * 0.5f, 0)
 			* (_bobWeight * speed);

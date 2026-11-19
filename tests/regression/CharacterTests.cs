@@ -18,7 +18,9 @@ public sealed class CharacterTest : RegressionTest
 
 	/// <summary>Os de sempre, a régua dos novos.</summary>
 	private const string ReferenceHuman = "res://assets/characters/human/ely.fbx";
-	private const string ReferenceWolf = "res://assets/characters/wolf/mutant.fbx";
+	// Os lobos dos times desde 17/11 (o mutant.fbx ficou só de referência antiga).
+	private const string ReferenceWolf = "res://assets/characters/wolf/lobo_azul.glb";
+	private const string ReferenceWolfOrange = "res://assets/characters/wolf/lobo_vermelho.glb";
 
 	private static readonly string[] HumanBones =
 		{ "mixamorig_Hips", "mixamorig_Head", "mixamorig_HeadTop_End", "mixamorig_RightHand", "mixamorig_LeftHand", "mixamorig_LeftFoot", "mixamorig_RightFoot" };
@@ -43,7 +45,10 @@ public sealed class CharacterTest : RegressionTest
 
 			// Cabeça a até 4 cm da dos de sempre: é ela que leva o tiro.
 			b.Near(humanTop, HeadTop(skin.HumanModel, out Skeleton3D human, HumanBones, b, $"{who} humano"), 0.04, $"{who}: topo da cabeça do humano");
-			b.Near(wolfTop, HeadTop(skin.WolfModel, out Skeleton3D wolf, WolfBones, b, $"{who} lobo"), 0.04, $"{who}: topo da cabeça do lobo");
+			// A régua do lobo é o lobo do time dele (o vermelho é mais baixo
+			// de cabeça que o azul): o personagem não pode ser menor que o de sempre.
+			float teamWolfTop = skin.Team == Teams.Orange ? HeadTop(ReferenceWolfOrange, out _) : wolfTop;
+			b.Near(teamWolfTop, HeadTop(skin.WolfModel, out Skeleton3D wolf, WolfBones, b, $"{who} lobo"), 0.04, $"{who}: topo da cabeça do lobo");
 			b.Check(wolf?.GetBoneCount() == 24, $"{who}: o lobo tem os 24 ossos do lobo do jogo ({wolf?.GetBoneCount()})");
 			human?.Owner?.Free();
 			wolf?.Owner?.Free();

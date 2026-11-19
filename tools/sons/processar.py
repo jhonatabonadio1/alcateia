@@ -376,3 +376,11 @@ save(mix([(a, 0, 0), (b, max(dur(a) - 1.0, 0), 0)], mono=False), "metro_trem", -
 shutil.rmtree(TMP)
 files = sorted(f for f in os.listdir(OUT) if f.endswith((".wav", ".ogg")))
 print(len(files), "sons,", sum(os.path.getsize(os.path.join(OUT, f)) for f in files) // 1024, "KB")
+
+
+# As armas que saíram do jogo em 19/11: os sons delas serviram de base para
+# os genéricos (tiro, recarga…) e não ficam na pasta.
+for gid in ("m16a2", "sg552", "ak47", "ump45", "m3"):
+    for nome in os.listdir(OUT):
+        if re.search(rf"_{gid}(_\d+)?\.wav$", nome):
+            os.remove(os.path.join(OUT, nome))

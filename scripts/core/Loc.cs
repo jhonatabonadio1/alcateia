@@ -85,21 +85,52 @@ public static class Loc
 			Filled[code] = 0;
 		}
 
+		int sourceColumn = Array.IndexOf(header, Source);
 		while (!file.EofReached())
 		{
 			string[] row = file.GetCsvLine();
 			if (row.Length == 0 || row[0] == "") continue;
 			Total++;
+			// O que aparece em português: a coluna pt_BR, ou a própria chave.
+			string portuguese = sourceColumn >= 0 && sourceColumn < row.Length && row[sourceColumn] != "" ? row[sourceColumn] : row[0];
 			foreach (var (column, translation) in translations)
 			{
-				if (column >= row.Length || row[column] == "") continue;
-				translation.AddMessage(row[0], row[column]);
-				Filled[translation.Locale]++;
+				bool filled = column < row.Length && row[column] != "";
+				// Célula vazia vira o português, e não "sem tradução": sem tradução
+				// o Godot cai no idioma reserva do projeto, que é o inglês — e o
+				// jogo em português (ou um texto novo ainda sem espanhol) aparecia
+				// em inglês.
+				translation.AddMessage(row[0], filled ? row[column] : portuguese);
+				if (filled) Filled[translation.Locale]++;
 			}
 		}
 
 		foreach (Translation translation in translations.Values)
 			TranslationServer.AddTranslation(translation);
+	}
+
+	/// <summary>Um idioma montado na hora (o que uma coluna nova do arquivo
+	/// faz), com a mesma regra do arquivo: o que falta aparece em português.
+	/// Para os testes.</summary>
+	public static Translation AddLanguage(string locale, IReadOnlyDictionary<string, string> texts)
+	{
+		Load();
+		var translation = new Translation { Locale = locale };
+		if (FileAccess.FileExists(FilePath))
+		{
+			using FileAccess file = FileAccess.Open(FilePath, FileAccess.ModeFlags.Read);
+			string[] header = file.GetCsvLine();
+			int sourceColumn = Array.IndexOf(header, Source);
+			while (!file.EofReached())
+			{
+				string[] row = file.GetCsvLine();
+				if (row.Length == 0 || row[0] == "" || texts.ContainsKey(row[0])) continue;
+				translation.AddMessage(row[0], sourceColumn >= 0 && sourceColumn < row.Length && row[sourceColumn] != "" ? row[sourceColumn] : row[0]);
+			}
+		}
+		foreach (var (key, text) in texts) translation.AddMessage(key, text);
+		TranslationServer.AddTranslation(translation);
+		return translation;
 	}
 
 	/// <summary>Carrega e põe o idioma das opções. No começo do jogo.</summary>

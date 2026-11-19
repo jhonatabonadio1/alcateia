@@ -2,6 +2,18 @@
 
 ## Não lançado
 
+- Câmera de abate e jogada da partida removidas; ao morrer, espectador direto.
+- Espectador sai sozinho quando você renasce, inclusive na escolha automática.
+- Espectador não atravessa parede, chão nem teto; teto do armazém estendido a 13 m.
+- Primeira pessoa do espectador com HUD, mira, tiro, recuo e animações da arma de quem você assiste.
+- Feed de abates continua no espectador, destacando quem você assiste.
+- Vitória/derrota fica 4 s em câmera lenta antes do resultado.
+- Mudanças no inventário persistem ao fechar e abrir o jogo.
+- Calça dos lobos não abre mais no pulo.
+- Textos em inglês e espanhol.
+
+- Recarga do AR-15 refeita a partir da recarga de referência do tutorial da InfimaGames (`tools/armas/recarga.py`): a mão esquerda vai ao carregador pela frente, por baixo da arma, tira, traz o novo por baixo e encaixa. A arma, o corpo e a pegada das duas mãos partem do parado do Jhon e voltam a ele; a mão direita não sai do punho. O clipe tem os 2,3 s da recarga do jogo, com a saída (0,32 s) e o encaixe (1,42 s) do carregador em cima das batidas do som. Vale para o AR-15 e as cinco skins.
+
 - AR-15 Ouro e AR-15 Diamante bem mais fortes que as épicas: mais dano ou cadência, pente maior, recarga mais rápida e menos recuo.
 
 - Jogada da partida no fim, antes do resultado: os melhores segundos pela tela de quem fez. Espaço pula.

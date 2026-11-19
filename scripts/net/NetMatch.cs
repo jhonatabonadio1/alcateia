@@ -262,7 +262,13 @@ public partial class NetMatch : Node
 			Shield = _health.Shield,
 			MaxShield = _health.MaxShield,
 			Primary = _weapon.PrimaryDef?.Id ?? "",
-			Secondary = _weapon.SecondaryDef?.Id ?? ""
+			Secondary = _weapon.SecondaryDef?.Id ?? "",
+			HasGear = true,
+			Ammo = (short)_weapon.AmmoInMag,
+			Reloading = _weapon.IsReloading,
+			Grenades = (byte)Mathf.Clamp(_weapon.Grenades, 0, 255),
+			Wp = _form.Wp,
+			Charge = _weapon.SpecialCharge
 		};
 
 		if (Authoritative) return;
@@ -613,6 +619,7 @@ public partial class NetMatch : Node
 		Form form = Enum.IsDefined(typeof(Form), (int)s.Form) ? (Form)s.Form : Form.Human;
 		body.RemoteUpdate(s.Position, s.Velocity, s.Yaw, s.Pitch, s.Grounded, form, (Slot)s.Slot,
 			s.Primary, s.Secondary, s.Hp, s.MaxHp, s.Shield, s.MaxShield, s.Dead);
+		if (s.HasGear && !s.Dead) body.RemoteGear(s.Ammo, s.Reloading, s.Grenades, s.Wp, s.Charge);
 	}
 
 	/// <summary>Alguém de outra máquina acertou um corpo daqui (eu, ou um

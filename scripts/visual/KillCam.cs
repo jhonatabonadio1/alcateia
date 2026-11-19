@@ -6,20 +6,14 @@ using System.Collections.Generic;
 /// Overwatch de referência):
 ///
 /// 1. **Morte** (1 s): a câmera fica no próprio corpo caindo.
-/// 2. **Câmera de abate**: o **replay** dos últimos segundos **pela tela
-///    de quem te matou** — a câmera, a arma na mão, os tiros, o som, as
-///    recargas, as animações e o HUD dele, com o feed dele (ele é o
-///    "você") —, montado numa cópia dele movida pela gravação
-///    (<c>KillCam.Pov.cs</c>). Se ele era lobo, a câmera de lobo do jogo.
-///    O seu corpo é posto de pé e refaz o caminho até cair. Faixas escuras,
-///    a imagem levemente tingida e **"CÂMERA DE ABATE"** escrito. Sem fita
-///    bastante, a tela dele ao vivo. **Espaço pula.**
-/// 3. **Espectador**: direto na **tela de um aliado vivo** (a mesma coisa,
-///    ao vivo). Clique esquerdo: próximo aliado; direito: o anterior.
+/// 2. **Espectador**: direto na **tela de um aliado vivo**: a arma na mão
+///    dele, o HUD dele, o som dele (<c>KillCam.Pov.cs</c>). Clique esquerdo: próximo aliado; direito: o anterior.
 ///    **Espaço troca a visão**: a tela dele → de cima → câmera livre (WASD
 ///    e mouse, presa dentro do mapa, <see cref="MapBounds"/>) → de volta.
 ///
-/// O HUD de quem joga sai da tela enquanto isto existe; a escolha de
+/// Até 19/11 havia entre os dois a câmera de abate (o replay pela tela de
+/// quem te matou); saiu a pedido do Jhon. O HUD de quem joga sai da tela
+/// enquanto isto existe; a escolha de
 /// conjunto só aparece na hora de renascer (<see cref="LoadoutMenu"/>).
 /// Morto, o rádio não fala.
 ///
@@ -28,21 +22,13 @@ using System.Collections.Generic;
 /// </summary>
 public partial class KillCam : Node3D
 {
-	/// <summary>Segundos vendo o próprio corpo antes da câmera de abate.</summary>
+	/// <summary>Segundos vendo o próprio corpo antes do espectador.</summary>
 	[Export] public float DeathTime = 1f;
-
-	/// <summary>Sem fita: segundos da tela de quem matou, ao vivo.</summary>
-	[Export] public float KillTime = 3f;
-
-	/// <summary>Quantos segundos antes do abate o replay mostra, e o
-	/// tempo no fim, vendo a queda.</summary>
-	[Export] public float ReplayLength = 3.5f;
-	[Export] public float ReplayTail = 1f;
 
 	/// <summary>Velocidade da câmera livre (m/s); com Shift, o dobro.</summary>
 	[Export] public float FreeSpeed = 9f;
 
-	private enum Phase { Death, Kill, First, Above, Free }
+	private enum Phase { Death, First, Above, Free }
 	private Phase _phase = Phase.Death;
 
 	private Node3D _killer, _victim, _mate;
@@ -52,15 +38,6 @@ public partial class KillCam : Node3D
 	private double _time, _remark;
 	private float _yaw, _pitch;
 	private readonly Dictionary<GeometryInstance3D, Material> _marked = new();
-
-	// O replay.
-	private bool _replaying, _fell, _hasLast;
-	private double _replayClock, _replayEnd;
-	private Vector3 _lastVictimAt;
-
-	/// <summary>A câmera de abate está passando agora (a escolha de
-	/// conjunto espera por ela).</summary>
-	public static bool InKillPhase { get; private set; }
 
 	/// <summary>O nome de quem a câmera mostra agora. Null fora disso.</summary>
 	public static string Focus { get; private set; }
@@ -72,14 +49,11 @@ public partial class KillCam : Node3D
 	/// "livre". Para os testes.</summary>
 	public string Mode => _phase switch
 	{
-		Phase.Death => "morte", Phase.Kill => "abate", Phase.First => "primeira", Phase.Above => "cima", _ => "livre"
+		Phase.Death => "morte", Phase.First => "primeira", Phase.Above => "cima", _ => "livre"
 	};
 
 	/// <summary>Quem a câmera segue no espectador. Para os testes.</summary>
 	public Node3D Watching => _phase is Phase.First or Phase.Above ? _mate : null;
-
-	/// <summary>O replay gravado está passando (e não a tela ao vivo). Para os testes.</summary>
-	public bool Replaying => _replaying;
 
 	public static KillCam Begin(Node parent, Node3D victim, Node3D killer, Camera3D current)
 	{
@@ -128,11 +102,8 @@ public partial class KillCam : Node3D
 	{
 		if (_cleaned) return;
 		_cleaned = true;
-		StopReplay();
 		Unwatch();
-		RemoveCopy();
 		ShowBodies();
-		InKillPhase = false;
 		Focus = null;
 		Active = false;
 		foreach (var (mesh, previous) in _marked)
@@ -156,18 +127,8 @@ public partial class KillCam : Node3D
 		{
 			case Phase.Death:
 				Focus = null;
-				// Espaço já vai para o espectador; passou o segundo, o abate.
-				if (!blocked && Input.IsActionJustPressed("jump")) { EnterSpectate(); break; }
-				if (_time >= DeathTime)
-				{
-					if (_killer != null && IsInstanceValid(_killer)) EnterKill();
-					else EnterSpectate();
-				}
-				break;
-
-			case Phase.Kill:
-				if (!blocked && Input.IsActionJustPressed("jump")) { EnterSpectate(); break; }
-				if (!KillStep(delta)) EnterSpectate();
+				// Espaço já vai para o espectador; passou o segundo, também.
+				if ((!blocked && Input.IsActionJustPressed("jump")) || _time >= DeathTime) EnterSpectate();
 				break;
 
 			default:
@@ -178,33 +139,10 @@ public partial class KillCam : Node3D
 		UpdateHud();
 	}
 
-	private void EnterKill()
-	{
-		_phase = Phase.Kill;
-		_time = 0;
-		InKillPhase = true;
-		Focus = _killer.GetNodeOrNull<Health>("Health")?.PublicName;
-		StartReplay();
-		// Sem fita: a tela dele, ao vivo.
-		if (!_replaying) Watch(_killer);
-	}
-
-	/// <summary>Um quadro da câmera de abate. Falso quando acabou.</summary>
-	private bool KillStep(double delta)
-	{
-		if (_replaying) return ReplayStep(delta);
-		if (_killer == null || !IsInstanceValid(_killer)) return false;
-		ViewSubject(delta);
-		return _time < KillTime;
-	}
-
 	private void EnterSpectate()
 	{
-		StopReplay();
 		Unwatch();
-		RemoveCopy();
 		ShowBodies();
-		InKillPhase = false;
 		_time = 0;
 		_phase = Phase.First;
 		_mate = NextMate(null);
@@ -221,74 +159,6 @@ public partial class KillCam : Node3D
 		Vector3 e = _camera.GlobalBasis.GetEuler();
 		_pitch = e.X;
 		_yaw = e.Y;
-	}
-
-	// ------------------------------------------------------------ o replay
-
-	/// <summary>Começa o replay se há fita dos dois. Sem fita, fica a tela
-	/// ao vivo (<see cref="KillStep"/>).</summary>
-	private void StartReplay()
-	{
-		ReplayTape tape = ReplayTape.Current;
-		if (tape == null || _victim is not Player victim) return;
-
-		double have = Mathf.Min(tape.Recorded(_killer), tape.Recorded(_victim));
-		if (have < 1.0) return;
-
-		// O fim é o instante da morte (a fita do morto parou ali).
-		_replayEnd = tape.Now - (_time + DeathTime);
-		_replayClock = _replayEnd - Mathf.Min(ReplayLength, have - DeathTime - 0.1);
-		if (_replayClock >= _replayEnd - 0.3) return;
-
-		_copy = MakeCopy(_killer);
-		if (_copy == null) return;
-		_replaying = true;
-		_fell = false;
-		_hasLast = false;
-		victim.ReplayHold(true);
-		Watch(_copy, replay: true);
-	}
-
-	private void StopReplay()
-	{
-		if (!_replaying) return;
-		_replaying = false;
-		if (_victim is Player victim && IsInstanceValid(victim)) victim.ReplayHold(false);
-		RemoveCopy();
-	}
-
-	private bool ReplayStep(double delta)
-	{
-		ReplayTape tape = ReplayTape.Current;
-		if (tape == null || _victim is not Player victim || !IsInstanceValid(victim)) return false;
-		if (_killer == null || !IsInstanceValid(_killer)) return false;
-
-		double before = _replayClock;
-		_replayClock += delta;
-		double t = System.Math.Min(_replayClock, _replayEnd);
-		if (!tape.Sample(_killer, t, out ReplayTape.Frame killer) || !tape.Sample(_victim, t, out ReplayTape.Frame dead)) return false;
-
-		if (!_fell)
-		{
-			Vector3 velocity = _hasLast && delta > 0 ? (dead.At - _lastVictimAt) / (float)delta : Vector3.Zero;
-			_lastVictimAt = dead.At;
-			_hasLast = true;
-			victim.ReplayPose(dead.At, dead.Yaw, velocity);
-
-			// O instante do abate: o corpo cai de novo, onde caiu.
-			if (_replayClock >= _replayEnd)
-			{
-				_fell = true;
-				victim.ReplayHold(false);
-			}
-		}
-
-		// O corpo de verdade de quem matou está em outro lugar agora: some
-		// da tela; quem aparece é a cópia, no lugar gravado.
-		HideBody(_killer);
-		if (before < _replayEnd) DriveCopy(tape, killer, before, System.Math.Min(_replayClock, _replayEnd));
-		ViewSubject(delta);
-		return _replayClock < _replayEnd + ReplayTail;
 	}
 
 	// ------------------------------------------------------------ espectador
@@ -370,9 +240,56 @@ public partial class KillCam : Node3D
 		{
 			Vector2 move = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
 			Vector3 step = _camera.GlobalBasis * new Vector3(move.X, 0, move.Y);
-			_camera.GlobalPosition += step * FreeSpeed * (Input.IsActionPressed("walk") ? 2f : 1f) * (float)delta;
+			_camera.GlobalPosition = Fly(_camera.GlobalPosition, step * FreeSpeed * (Input.IsActionPressed("walk") ? 2f : 1f) * (float)delta);
 		}
 		_camera.GlobalPosition = MapBounds.Clamp(GetTree(), _camera.GlobalPosition);
+	}
+
+	/// <summary>Aponta a câmera livre (graus). Para os testes.</summary>
+	public void AimFree(float yawDegrees, float pitchDegrees)
+	{
+		_yaw = Mathf.DegToRad(yawDegrees);
+		_pitch = Mathf.DegToRad(pitchDegrees);
+	}
+
+	/// <summary>Raio da bola que a câmera livre é para o cenário.</summary>
+	private const float FlyRadius = 0.3f;
+
+	private SphereShape3D _flyShape;
+
+	/// <summary>
+	/// A câmera livre bate no cenário (19/11: "tenho que ficar dentro do
+	/// Armazém, não posso sair pelas paredes, chão e teto"): anda como uma
+	/// bola de 30 cm, eixo por eixo, então escorrega na parede em vez de
+	/// parar seco. Só o cenário conta (camada 1), não os corpos.
+	/// </summary>
+	private Vector3 Fly(Vector3 from, Vector3 motion)
+	{
+		_flyShape ??= new SphereShape3D { Radius = FlyRadius };
+		PhysicsDirectSpaceState3D space = GetWorld3D().DirectSpaceState;
+		// Os corpos também estão na camada 1: ficam de fora.
+		var skip = new Godot.Collections.Array<Rid>();
+		foreach (string group in Groups.Fighters)
+			foreach (Node node in GetTree().GetNodesInGroup(group))
+				if (node is CollisionObject3D body) skip.Add(body.GetRid());
+		Vector3 at = from;
+		foreach (Vector3 axis in new[] { Vector3.Right, Vector3.Up, Vector3.Back })
+		{
+			Vector3 part = axis * motion.Dot(axis);
+			if (part.LengthSquared() < 1e-10f) continue;
+			var query = new PhysicsShapeQueryParameters3D
+			{
+				Shape = _flyShape,
+				Transform = new Transform3D(Basis.Identity, at),
+				Motion = part,
+				CollisionMask = 1,
+				Exclude = skip
+			};
+			float[] cast = space.CastMotion(query);
+			float safe = cast.Length > 0 ? cast[0] : 1f;
+			at += part * safe;
+		}
+		return at;
 	}
 
 	/// <summary>O ponto da vista de cima, puxado para perto do aliado se
