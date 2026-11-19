@@ -92,7 +92,7 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Efeitos visuais (GFX) em geral** (17/11): o que já existe está em
   `docs/EFEITOS.md`; faltam os do lobo (fumaça, ar, feixes nas garras,
   brilho) e os de tiro, sangue e impacto listados acima.
-- **Testes de regressão vermelhos — 7 de 47 (medido em 18/11, Godot
+- **Testes de regressão vermelhos — 7 de 70 (medido em 19/11, Godot
   4.7.0 no Linux).** Todos pelo mesmo motivo, anterior a esta leva: o
   `HumanSpeed = 3.2` da cena do jogador (commit "eve", 16/11) e o pulo
   mais baixo, com os testes e o `docs/MEDIDAS.md` ainda esperando 3,0:
@@ -143,7 +143,9 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   botão que põe o jogador numa partida aberta (ou cria uma) sem passar
   pela lista de salas, equilibrando times e patente. Pede fila e
   pareamento no servidor.
-- **Modo espectador** (pedido em 17/11). Hoje a caixa "Espectador" da
+- **Modo espectador pela sala** (pedido em 17/11). Morto, o espectador já
+  existe (19/11: primeira pessoa do aliado com o HUD dele, vista de cima e
+  câmera livre presa no mapa — `KillCam`). Mas a caixa "Espectador" da
   sala só guarda a escolha: nada no jogo nem no servidor a lê. A fazer:
   botão "Assistir" na lista de salas (o espectador não ocupa vaga nos
   times e fica numa faixa à parte na sala); na partida, sem corpo e fora
@@ -348,5 +350,3 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   falta passar os bots para outro jogador quando o dono cai.
 - **Bots** na Polar atiram metade do que atiravam (76 tiros em 40 s,
   eram 146); na Vila, 5 de 7 saem da base.
-- **Modelos avulsos do Sketchfab** (AK-47, Beretta, SG552, UMP45, Benelli
-  M3) baixados e não usados.

@@ -91,6 +91,13 @@ public partial class KillCam : Node3D
 	public void Finish()
 	{
 		Cleanup();
+		// O QueueFree só apaga no fim do quadro: até lá esta câmera ainda
+		// andaria, e renascer pela escolha de conjunto (que anda antes dela
+		// na cena) a fazia voltar a assistir — HUD e arma do aliado de novo
+		// por cima da sua tela, sem ninguém para tirar (19/11).
+		SetProcess(false);
+		SetProcessInput(false);
+		SetProcessUnhandledInput(false);
 		QueueFree();
 	}
 
@@ -115,6 +122,7 @@ public partial class KillCam : Node3D
 
 	public override void _Process(double delta)
 	{
+		if (_cleaned) return;
 		_time += delta;
 		bool blocked = UiState.AnyOpen;
 

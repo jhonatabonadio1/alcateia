@@ -112,6 +112,10 @@ public sealed class SpectatorTest : RegressionTest
 		// o tempo acaba, vai o padrão e renasce — e o espectador sai
 		// (19/11: "o modo espectador deve sair quando eu renascer").
 		menu.ChooseTime = 1.5f;
+		// Na partida a câmera de espectador é a última da cena: anda DEPOIS
+		// da escolha de conjunto no mesmo quadro (19/11: ainda espectador
+		// depois de renascer, "mistura a câmera de espectador com a minha").
+		cam.ProcessPriority = 1000;
 		b.Check(await b.Until(() => menu != null && menu.IsOpen, b.Health.RespawnWait + 1.0), "na hora de renascer, a escolha de conjunto abre");
 		b.Check(await b.Until(() => !b.Health.IsDead, 4.0), "não escolheu: o tempo acaba e renasce com o padrão");
 		await b.Frames(3);
@@ -122,6 +126,10 @@ public sealed class SpectatorTest : RegressionTest
 		b.Check(!b.Health.IsDead, "escolheu: renasce");
 		b.Check(!GodotObject.IsInstanceValid(cam) || cam.IsQueuedForDeletion(), "e a câmera de espectador some");
 		b.Check(!KillCam.Active, "e o HUD de quem joga volta");
+		await b.Seconds(0.5);
+		b.Check(!b.GetTree().Root.FindChildren("*", "", true, false).OfType<Hud>().Any(h => h.Subject != null), "nenhum HUD de outro fica na tela");
+		b.Check(mate.GetNodeOrNull("Head/Camera3D/ViewModel") == null && b.GetViewport().GetCamera3D() == b.Player.GetNode<Camera3D>("Head/Camera3D"),
+			"meio segundo depois, a câmera ainda é a sua e a arma emprestada não voltou");
 	}
 }
 

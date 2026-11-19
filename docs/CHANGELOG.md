@@ -2,6 +2,9 @@
 
 ## Não lançado
 
+- Ao renascer, o espectador sai de vez (antes a tela do aliado podia ficar misturada com a sua).
+- No minimapa, a sua seta é branca.
+
 - Câmera de abate e jogada da partida removidas; ao morrer, espectador direto.
 - Espectador sai sozinho quando você renasce, inclusive na escolha automática.
 - Espectador não atravessa parede, chão nem teto; teto do armazém estendido a 13 m.

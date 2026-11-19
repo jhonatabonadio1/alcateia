@@ -53,7 +53,7 @@ public partial class KillCam
 	/// <summary>Passa a ver por este corpo (com o HUD dele). Null: ninguém.</summary>
 	private void Watch(Node3D subject)
 	{
-		if (subject == _subject) return;
+		if (subject == _subject || _cleaned) return;
 		Unwatch();
 		_subject = subject;
 		if (subject == null) return;
@@ -97,6 +97,7 @@ public partial class KillCam
 	/// <summary>A câmera da cabeça de quem se vê, com a arma na mão do jogo.</summary>
 	private void EnterFirstPerson()
 	{
+		if (_cleaned) return;
 		if (_subjectFirst && _subjectCamera != null && IsInstanceValid(_subjectCamera))
 		{
 			if (!_subjectCamera.Current) _subjectCamera.MakeCurrent();

@@ -36,7 +36,7 @@ public partial class Minimap : Control
 	[Export] public Color BackColor = new Color(0.05f, 0.06f, 0.08f, 0.72f);
 	[Export] public Color EdgeColor = new Color(1f, 1f, 1f, 0.22f);
 	[Export] public Color WallColor = new Color(1f, 1f, 1f, 0.3f);
-	[Export] public Color SelfColor = new Color(0.95f, 0.95f, 0.95f);
+	[Export] public Color SelfColor = Colors.White;
 
 	/// <summary>Opacidade das peças do mapa. Abaixo de 1 para os pontos
 	/// dos jogadores sempre se destacarem por cima.</summary>
@@ -506,10 +506,9 @@ public partial class Minimap : Control
 	/// não um ponto entre outros.</summary>
 	private void DrawSelf(Vector2 center, float yaw)
 	{
-		Color color = _playerHealth != null
-			? Teams.ColorOf(_playerHealth.Team)
-			: SelfColor;
-
+		// Branca sempre (pedido do Jhon, 19/11): a cor do time é dos outros
+		// pontos; a seta branca se acha de relance. O contorno escuro a
+		// separa do mapa claro.
 		// O olhar do jogador é -Z girado pelo yaw; no quadrado, z cresce
 		// para baixo, então girar pelo inverso aponta a seta certa.
 		var points = new[]
@@ -519,6 +518,7 @@ public partial class Minimap : Control
 			center + new Vector2(5.5f, 6).Rotated(-yaw)
 		};
 
-		DrawColoredPolygon(points, color);
+		DrawPolyline(new[] { points[0], points[1], points[2], points[0] }, new Color(0, 0, 0, 0.8f), 2.4f, true);
+		DrawColoredPolygon(points, SelfColor);
 	}
 }
