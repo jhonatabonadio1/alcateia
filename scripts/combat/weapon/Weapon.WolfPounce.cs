@@ -11,7 +11,7 @@ public partial class Weapon
 	/// <summary>Salto no chão: dano alto, o lobo preso no lugar até a
 	/// animação acabar.</summary>
 	[ExportGroup("Lobo: salto carregado")]
-	[Export] public float HeavyDamageBonus = 2.1f;
+	[Export] public float HeavyDamageBonus = 2.6f;
 	[Export] public float HeavyCooldown = 1f;
 
 	/// <summary>O alcance do salto no chão, em metros: o mais longe que
@@ -102,43 +102,74 @@ public partial class Weapon
 	}
 
 	/// <summary>Fração do dano que o lobo leva com o especial ativo
-	/// (armado e no salto): o "escudo extra" (pedido do Jhon, 18/11).</summary>
-	[Export] public float SpecialGuard = 0.5f;
+	/// (armado e no salto): o "escudo extra" (pedido do Jhon, 18/11; de
+	/// 0,5 para 0,4 no mesmo dia: "um pouco mais resistente").</summary>
+	[Export] public float SpecialGuard = 0.4f;
 
 	/// <summary>Até quantos metros do ponto de partida o salto persegue o
 	/// alvo que se mexeu no voo.</summary>
 	[Export] public float PounceChaseRange = 18f;
 
+	/// <summary>Segundos para usar o especial depois de armar (Q). Passou,
+	/// perde a carga (pedido do Jhon, 18/11: "depois que eu apertar Q,
+	/// tenho 5 s para usar o especial, se não eu perco"). Zero ou menos:
+	/// sem prazo.</summary>
+	[Export] public float SpecialArmTime = 5f;
+
 	/// <summary>
 	/// Especial armado (Q; pedido do Jhon, 18/11): o lobo fica pronto para
 	/// saltar, **andando livre pelo mapa**, com o modo alvo aberto
 	/// (<see cref="Player.TargetMode"/>). O clique esquerdo salta
-	/// (<see cref="TryPounce"/>); Q de novo desarma sem gastar. Armado, o
-	/// lobo leva menos dano (<see cref="SpecialGuard"/>).
+	/// (<see cref="TryPounce"/>). **Armou, não desarma** ("apertei Q uma
+	/// vez, ele usou, não posso parar"): ou salta dentro de
+	/// <see cref="SpecialArmTime"/>, ou perde a carga. Armado, o lobo leva
+	/// menos dano (<see cref="SpecialGuard"/>).
 	/// </summary>
 	public bool SpecialArmed { get; private set; }
 
+	/// <summary>Segundos que restam para saltar, armado.</summary>
+	public float SpecialArmLeft { get; private set; }
+
+	/// <summary>O prazo estourou e a carga foi embora (HUD, som).</summary>
+	[Signal] public delegate void SpecialLostEventHandler();
+
 	/// <summary>Q: arma o especial (carga cheia, lobo, sem golpe pesado em
-	/// andamento) ou, armado, desarma. Verdadeiro se ficou armado.</summary>
+	/// andamento). Já armado, não faz nada. Verdadeiro se está armado.</summary>
 	public bool ToggleSpecial()
 	{
-		if (SpecialArmed)
-		{
-			SpecialArmed = false;
-			return false;
-		}
+		if (SpecialArmed) return true;
 
 		if (_charging || _diving || _flying) return false;
 		if (!_form.IsWolf || !_form.CanAttack || !PounceReady) return false;
 		SpecialArmed = true;
+		SpecialArmLeft = SpecialArmTime;
 		return true;
 	}
 
 	/// <summary>Armado e o lobo deixou de poder saltar (morreu, virou
-	/// humano, perdeu a carga): desarma. E a guarda do especial.</summary>
-	private void UpdateArmed()
+	/// humano, perdeu a carga): desarma. O prazo de usar. E a guarda do
+	/// especial.</summary>
+	private void UpdateArmed(double delta)
 	{
-		if (SpecialArmed && (!_form.IsWolf || _health.IsDead || !PounceReady)) SpecialArmed = false;
+		if (SpecialArmed && SpecialArmTime > 0f && !SpecialFree)
+		{
+			SpecialArmLeft -= (float)delta;
+			if (SpecialArmLeft <= 0f)
+			{
+				SpecialArmed = false;
+				SpendSpecial();
+				EmitSignal(SignalName.SpecialLost);
+			}
+		}
+
+		// Morreu ou virou humano armado: a carga também vai (armou, usou).
+		if (SpecialArmed && (!_form.IsWolf || _health.IsDead))
+		{
+			SpecialArmed = false;
+			SpendSpecial();
+		}
+
+		if (SpecialArmed && !PounceReady) SpecialArmed = false;
 		if (_pounceGuard && (!_form.IsWolf || (!_flying && _rootLeft <= 0))) _pounceGuard = false;
 		_health.GuardMultiplier = SpecialArmed || _pounceGuard ? Mathf.Clamp(SpecialGuard, 0f, 1f) : 1f;
 	}

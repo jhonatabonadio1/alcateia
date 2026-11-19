@@ -63,7 +63,7 @@ public partial class Hud
 
 		// O cabeçalho: quem você é agora.
 		HBoxContainer head = UiKit.Row(UiTokens.S3);
-		Color tint = wolf ? UiTokens.TeamOrange : UiTokens.Accent;
+		Color tint = wolf ? UiTokens.WolfOrange : UiTokens.Accent;
 		head.AddChild(Icon.Make(wolf ? IconKind.Wolf : IconKind.Human, 40, tint));
 		VBoxContainer names = UiKit.Column(0);
 		string who = wolf ? Loc.F("LOBO · {0}", Loc.Upper(_form.Breed?.DisplayName ?? "")) : Loc.T("HUMANO");
@@ -109,11 +109,11 @@ public partial class Hud
 				Loc.T("Equipe e clique para arremessar."), tint);
 
 			GuideLine(right, IconKind.Wolf, "Virar lobo", "3",
-				Loc.T("Custa WP. De lobo você é mais rápido, tem escudo e garras — e não atira."), UiTokens.TeamOrange);
+				Loc.T("Custa WP. De lobo você é mais rápido, tem escudo e garras — e não atira."), UiTokens.WolfOrange);
 			GuideLine(right, IconKind.Pounce, "Especial", "Q, de lobo",
-				Loc.T("A carga enche com abates também de humano. Cheia, vire lobo para usar."), UiTokens.TeamOrange);
+				Loc.T("A carga enche com abates também de humano. Cheia, vire lobo para usar."), UiTokens.WolfOrange);
 			GuideLine(right, IconKind.Human, "Andar em silêncio", "Shift",
-				Loc.T("Devagar e sem barulho de passo. Ctrl ou C agacha."), tint);
+				Loc.T("Devagar e sem barulho de passo. Ctrl agacha."), tint);
 			GuideLine(right, IconKind.Go, "Soltar a arma", "G",
 				Loc.T("A arma da mão cai à frente; dá para pegar outra do chão."), tint);
 		}

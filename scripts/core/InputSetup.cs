@@ -20,9 +20,8 @@ public static class InputSetup
 		Key("jump", Godot.Key.Space);
 		Key("howl", Godot.Key.R);
 		Key("crouch", Godot.Key.Ctrl);
-		// C também agacha: no Mac, Ctrl + clique vira clique direito
-		// (MacCtrlClick), e quem quiser o especial agachado agacha no C.
-		Also("crouch", Godot.Key.C);
+		// Só o Ctrl agacha (o C saiu a pedido do Jhon, 18/11). No Mac,
+		// agachado no Ctrl, o botão direito de verdade mira (MacCtrlClick).
 		Key("walk", Godot.Key.Shift);
 		// Menu no Esc e placar no Tab, como em quase todo FPS — e como
 		// no WolfTeam. Tab abria o menu de dificuldade porque não havia
@@ -38,6 +37,8 @@ public static class InputSetup
 		Key("pounce", Godot.Key.Q);
 		// O guia das habilidades: aparece enquanto se segura (18/11, "igual Overwatch").
 		Key("guide", Godot.Key.E);
+		// Z: a lista dos calls de rádio do time (Radio, Hud.Radio).
+		Key("radio", Godot.Key.Z);
 
 		// Slots: o lobo é o 3, na mesma memória muscular das armas.
 		Key("slot_1", Godot.Key.Key1);

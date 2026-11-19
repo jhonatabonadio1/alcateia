@@ -45,8 +45,7 @@ public static class StuckKeys
 		if (_ctrlDown && !now.CtrlPressed)
 		{
 			_ctrlDown = false;
-			// O agachar também tem o C: só solta se o C não estiver segurando.
-			if (!Input.IsPhysicalKeyPressed(Key.C)) Free("crouch");
+			Free("crouch");
 		}
 	}
 

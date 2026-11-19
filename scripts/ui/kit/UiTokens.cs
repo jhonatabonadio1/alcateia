@@ -117,7 +117,15 @@ public static class UiTokens
 	/// <summary>Times: azul e laranja, que daltônicos distinguem bem —
 	/// vermelho e verde, não.</summary>
 	public static readonly Color TeamBlue = new("3d8bff");
-	public static readonly Color TeamOrange = new("ff7a2f");
+	/// <summary>O Sindicato é vermelho (decisão do Jhon, 18/11; era
+	/// laranja). O nome do campo fica: o time 2 ainda se chama
+	/// <c>Teams.Orange</c> no código e na rede.</summary>
+	public static readonly Color TeamOrange = new("f0383f");
+
+	/// <summary>O laranja do lobo: o especial, a transformação, o escudo,
+	/// os golpes no feed. Era a mesma cor do Sindicato; o time virou
+	/// vermelho e o lobo continua laranja.</summary>
+	public static readonly Color WolfOrange = new("ff7a2f");
 
 	/// <summary>Raridade: escala própria de cinco passos, separada do
 	/// resto da paleta.</summary>

@@ -54,7 +54,51 @@ public partial class Bot
 		}
 
 		Velocity = velocity;
+		Vector3 before = GlobalPosition;
+		bool grounded = IsOnFloor();
 		MoveAndSlide();
+		if (grounded && velocity.Y <= 0.01f)
+			TryStepUp(before, new Vector3(velocity.X, 0, velocity.Z) * (float)delta);
+	}
+
+	/// <summary>Degrau que o bot sobe andando, sem pular. Igual ao da
+	/// navegação (<see cref="MapLoader.AgentStepHeight"/>): o caminho que
+	/// ela traça conta com isso.</summary>
+	[Export] public float StepHeight = 0.5f;
+
+	/// <summary>
+	/// Subir um degrau baixo andando, como o jogador
+	/// (<see cref="Player"/>, <c>TryStepUp</c>). O bot não tinha isto: a
+	/// navegação mandava subir a borda de um contêiner baixo (ela aceita
+	/// até 0,5 m) e o corpo parava na quina, empurrando (relato do Jhon,
+	/// 18/11: "os bots não estão conseguindo subir pequenos degraus dos
+	/// contêineres").
+	/// </summary>
+	private void TryStepUp(Vector3 from, Vector3 wanted)
+	{
+		float want = wanted.Length();
+		if (want < 0.0005f || !IsOnWall()) return;
+
+		Vector3 moved = GlobalPosition - from;
+		if (new Vector2(moved.X, moved.Z).Length() > want * 0.6f) return;
+
+		Vector3 up = Vector3.Up * StepHeight;
+		Vector3 ahead = wanted.Normalized() * Mathf.Max(want, 0.12f);
+
+		Transform3D at = GlobalTransform;
+		at.Origin = from;
+		if (TestMove(at, up)) return;
+		at.Origin += up;
+		if (TestMove(at, ahead)) return;
+		at.Origin += ahead;
+
+		var floor = new KinematicCollision3D();
+		if (!TestMove(at, -up - Vector3.Up * 0.05f, floor)) return;
+		if (floor.GetNormal().Dot(Vector3.Up) < Mathf.Cos(FloorMaxAngle)) return;
+
+		Vector3 landed = at.Origin + floor.GetTravel();
+		if (landed.Y - from.Y < 0.02f) return;
+		GlobalPosition = landed;
 	}
 
 	/// <summary>

@@ -18,6 +18,23 @@ public partial class Weapon
 	/// espera o golpe acabar.</summary>
 	[Export] public float LeapCooldown = 0f;
 
+	/// <summary>Segundos entre o dano do bote e a garra poder sair.</summary>
+	[Export] public float DiveFollowUp = 0.05f;
+
+	/// <summary>Até quando (relógio do jogo, ms) dura a aterrissagem do
+	/// último bote: nesse tempo a garra corta a aterrissagem.</summary>
+	private ulong _diveLandUntil;
+
+	/// <summary>A garra saindo por cima da aterrissagem do bote: solta o
+	/// lobo do chão.</summary>
+	private void CutDiveLanding()
+	{
+		if (_diveLandUntil == 0 || Time.GetTicksMsec() >= _diveLandUntil) return;
+		_diveLandUntil = 0;
+		_rootLeft = 0;
+		_strikeLeft = 0;
+	}
+
 	/// <summary>Velocidade do mergulho, em m/s. Constante, em linha reta:
 	/// sem gravidade, sem freio e sem desvio no meio. O ponto de impacto
 	/// é escolhido no clique, e é isso que deixa o bote preciso. Era 17:
@@ -183,10 +200,16 @@ public partial class Weapon
 		_wolfHit = Kill.WolfDiveId;
 		Claw(LeapDamageBonus, LeapReach, LeapRadius, aerial);
 
+		// Bateu, a garra já pode sair (pedido do Jhon, 18/11: "na hora que
+		// eu der o dano com o secundário no pulo, já posso apertar o
+		// primário para continuar batendo; é um jogo rápido"). A
+		// aterrissagem segue tocando e prendendo o lobo só enquanto ele não
+		// clica: o clique corta a aterrissagem (WolfAttack).
 		float land = WolfMoves.LandDuration;
 		_strikeLeft = land;
 		_rootLeft = land;
-		_cooldown = Mathf.Max(land, LeapCooldown - (float)_diveElapsed);
+		_cooldown = Mathf.Max(DiveFollowUp, LeapCooldown - (float)_diveElapsed);
+		_diveLandUntil = Time.GetTicksMsec() + (ulong)(land * 1000f);
 
 		EmitSignal(SignalName.WolfDiveLanded);
 		EmitSignal(SignalName.AttackCooldown, CooldownLeap, (float)_cooldown);

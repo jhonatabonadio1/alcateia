@@ -107,6 +107,7 @@ public partial class Weapon
 	/// </summary>
 	private void WolfAttack()
 	{
+		CutDiveLanding();
 		if (_comboTimer <= 0) _comboIndex = 0;
 
 		float multiplier = ComboDamage[Mathf.Min(_comboIndex, ComboDamage.Length - 1)];

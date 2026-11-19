@@ -57,7 +57,7 @@ public sealed class FiniteAmmoTest : RegressionTest
 		// Renascer enche tudo.
 		w.TryPickUp(m16, 0, 0);
 		b.Health.TakeDamage(99999f);
-		await b.Seconds(b.Health.RespawnDelay + 0.2);
+		await b.Seconds(b.Health.RespawnWait + 0.2);
 		b.Health.TryRespawn();
 		await b.Seconds(0.3);
 		w.SelectSlot(Slot.Primary);
@@ -120,7 +120,12 @@ public sealed class AimZoomTest : RegressionTest
 
 			// A arma não vem para o olho nem cresce com o zoom: fica no
 			// mesmo lugar da tela (quem mira é a mira circular).
-			b.AtMost(0.03, (OnScreen(view, camera) - hipMuzzle).Length(), $"{id}: a arma fica no lugar da tela no zoom (fração da tela)");
+			// A que tem mira própria (o AR-15) sobe ao olho: o cano vai para
+			// o meio da tela (o teste dela é o MiraDaArma).
+			if (ViewModel.HasSights(id))
+				b.AtLeast(0.03, (OnScreen(view, camera) - hipMuzzle).Length(), $"{id}: a arma sobe ao olho na mira (fração da tela)");
+			else
+				b.AtMost(0.03, (OnScreen(view, camera) - hipMuzzle).Length(), $"{id}: a arma fica no lugar da tela no zoom (fração da tela)");
 			await Photo(b, $"{id}_2_zoom");
 
 			// Recarregar tira da mira; acabou a recarga, volta.

@@ -16,6 +16,11 @@ public partial class Bot
 	[Export] public float StrafeFactor = 0.8f;
 	[Export] public float StrafeInterval = 1.4f;
 
+	/// <summary>Lobo no alcance da garra: até quantos metros ele roda em
+	/// volta do alvo, e o peso do passo de lado.</summary>
+	[Export] public float WolfCircleRange = 2.4f;
+	[Export] public float WolfCircle = 0.9f;
+
 	/// <summary>
 	/// Quanto o bot avança em vez de circular. Deathmatch não premia
 	/// quem administra distância: premia quem vai atrás. Em 1 ele
@@ -103,9 +108,21 @@ public partial class Bot
 
 		if (_form.IsWolf)
 		{
-			// De longe vem em ziguezague; no fim, reto para a garra.
-			float weave = distance > WolfSprintFrom ? WolfWeave : 0f;
-			desired = (flat + side * weave).Normalized();
+			// De longe vem em ziguezague; no fim, reto para a garra. Já
+			// no alcance da garra, não fica parado empurrando o alvo:
+			// roda em volta dele, entrando e saindo (pedido do Jhon,
+			// 18/11: dois lobos colados ficavam fixos, um batendo no
+			// outro).
+			if (distance <= WolfCircleRange)
+			{
+				float inward = distance > WolfCircleRange * 0.7f ? 0.55f : distance < WolfCircleRange * 0.45f ? -0.45f : 0.1f;
+				desired = (flat * inward + side * WolfCircle).Normalized();
+			}
+			else
+			{
+				float weave = distance > WolfSprintFrom ? WolfWeave : 0f;
+				desired = (flat + side * weave).Normalized();
+			}
 		}
 		else if (distance < MinRange)
 		{

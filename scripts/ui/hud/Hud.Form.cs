@@ -25,7 +25,7 @@ public partial class Hud
 		bool wolf = _form.IsWolf;
 
 		_formIcon.Kind = wolf ? IconKind.Wolf : IconKind.Human;
-		_formIcon.Tint = wolf ? UiTokens.TeamOrange : UiTokens.TextPrimary;
+		_formIcon.Tint = wolf ? UiTokens.WolfOrange : UiTokens.TextPrimary;
 		_formLabel.Text = (Form)form switch
 		{
 			Form.ShiftingToWolf => "VIRANDO LOBO",
@@ -53,6 +53,10 @@ public partial class Hud
 		if (_shiftBar == null) return;
 
 		bool blocked = _form.Rule != FormRule.Livre;
+
+		// Modo sem lobo: nada de "virar lobo" na tela (pedido do Jhon, 18/11).
+		_shiftPanel.Visible = _form.Rule != FormRule.Humano;
+		if (!_shiftPanel.Visible) return;
 
 		if (_form.IsShifting)
 		{

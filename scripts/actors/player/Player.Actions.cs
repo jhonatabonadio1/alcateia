@@ -109,7 +109,11 @@ public partial class Player
 		{
 			if (_intent.Attack) _weapon.TryPounce();
 		}
-		else if (firing)
+		// Correndo de quatro (W W) o lobo não arranha: tem de sair da
+		// corrida para bater (regra do Jhon, 18/11: "se eu estiver andando
+		// de quadrúpede não posso atacar, tenho que parar; não posso estar
+		// no W W").
+		else if (firing && !(_form.IsWolf && _sprinting))
 			_weapon.TryAttack();
 
 		// A granada sai quando o botão solta.

@@ -110,8 +110,13 @@ public partial class Hud
 	/// </summary>
 	private void UpdateSpecial()
 	{
+		// Modo sem lobo: o especial não existe, não carrega e não aparece.
+		_pounceTile.Visible = _weapon.WolfInPlay;
+		if (!_pounceTile.Visible) return;
+
 		_pounceTile.SetCharge(_weapon.SpecialCharge);
-		_pounceTile.Title = _weapon.SpecialArmed ? "ARMADO · CLIQUE SALTA"
+		_pounceTile.Title = _weapon.SpecialArmed
+			? (_weapon.SpecialArmTime > 0f ? Loc.F("CLIQUE SALTA · {0:0.0} S", _weapon.SpecialArmLeft) : "ARMADO · CLIQUE SALTA")
 			: !_weapon.PounceReady ? "ESPECIAL"
 			: _form.IsWolf ? "PRONTO · Q ARMA" : "PRONTO · VIRE LOBO";
 	}

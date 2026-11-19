@@ -40,9 +40,15 @@ public sealed class SpecialArmedTest : RegressionTest
 		float armedLoss = full - (hp.Hp + hp.Shield);
 		b.Check(w.SpecialGuarded, "armado, a guarda está ligada");
 
-		// ---- Q de novo desarma, sem gastar.
+		// ---- Q de novo não desarma: armou, é saltar ou perder.
 		await b.Tap("pounce");
-		b.Check(!w.SpecialArmed && w.PounceReady && !b.Player.TargetMode, "Q de novo desarma, sem gastar a carga");
+		b.Check(w.SpecialArmed && w.PounceReady, "Q de novo não desarma");
+		b.Check(w.SpecialArmLeft > 0f && w.SpecialArmLeft < w.SpecialArmTime, $"o prazo de usar corre ({RegressionBench.F(w.SpecialArmLeft)} s)");
+
+		// ---- passou o prazo sem saltar: perde a carga.
+		await b.Seconds(w.SpecialArmLeft + 0.15);
+		b.Check(!w.SpecialArmed && !b.Player.TargetMode, "passou o prazo: desarma");
+		b.AtMost(0.01, w.SpecialCharge, "passou o prazo: a carga foi embora");
 		await b.PhysicsFrame();
 		full = hp.Hp + hp.Shield;
 		hp.TakeDamage(20f);
@@ -54,6 +60,7 @@ public sealed class SpecialArmedTest : RegressionTest
 		await b.Place(new Vector3(4, 1, -3.5f), 90f);
 		enemy.GlobalPosition = new Vector3(-4, 1, -3.5f);
 		await b.Seconds(0.3);
+		w.FillSpecial();
 		await b.Tap("pounce");
 		await b.Frames(3);
 		b.Check(b.Player.LockTarget == enemy, "armado, trava no inimigo perto da mira");

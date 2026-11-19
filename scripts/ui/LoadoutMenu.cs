@@ -29,7 +29,9 @@ using Godot;
 /// </summary>
 public partial class LoadoutMenu : CanvasLayer
 {
-	[Export] public float ChooseTime = 5f;
+	/// <summary>Tempo máximo para escolher (pedido do Jhon, 18/11: 15 s;
+	/// não escolheu, vai o conjunto padrão, com a primária).</summary>
+	[Export] public float ChooseTime = 15f;
 
 	/// <summary>Segundos vendo quem te matou antes da escolha abrir.</summary>
 	[Export] public float KillCamTime = 1.8f;
@@ -143,11 +145,9 @@ public partial class LoadoutMenu : CanvasLayer
 	}
 
 	/// <summary>O último usado, se puder; senão o padrão.</summary>
-	private int Fallback()
-	{
-		int last = Mathf.Clamp(Profile.LastUsed, 0, Profile.Sets.Count - 1);
-		return Blocker(Profile.Sets[last]) == null ? last : 0;
-	}
+	/// <summary>O tempo estourou: vai o conjunto padrão (o primeiro), com a
+	/// primária na mão (pedido do Jhon, 18/11).</summary>
+	private int Fallback() => 0;
 
 	private async void OpenAfterKillCam()
 	{
@@ -306,7 +306,7 @@ public partial class LoadoutMenu : CanvasLayer
 
 		HBoxContainer wolf = UiKit.Row(UiTokens.S2);
 		wolf.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
-		wolf.AddChild(Icon.Make(IconKind.Wolf, 18, UiTokens.TeamOrange));
+		wolf.AddChild(Icon.Make(IconKind.Wolf, 18, UiTokens.WolfOrange));
 		FormRule formRule = _form.Rule;
 		wolf.AddChild(UiKit.Text(formRule switch
 		{

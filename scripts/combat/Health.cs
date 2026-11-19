@@ -40,7 +40,28 @@ public partial class Health : Node
 		: DisplayName;
 
 	[Export] public float MaxHp = 200f;
-	[Export] public float RespawnDelay = 3f;
+	/// <summary>
+	/// A espera para renascer, na partida (pedido do Jhon, 18/11): no
+	/// mínimo <see cref="RespawnDelay"/> para todo mundo, e cada morte
+	/// soma <see cref="RespawnGrowth"/>, até <see cref="RespawnMax"/>.
+	/// Com 10 / 2,5 / 30: 10 s, 12,5 s, 15 s… e 30 s da nona morte em
+	/// diante. Fora de partida (treino) vale
+	/// <see cref="TrainingRespawnDelay"/>, curto, sem crescer.
+	/// </summary>
+	[Export] public float RespawnDelay = 10f;
+	[Export] public float RespawnGrowth = 2.5f;
+	[Export] public float RespawnMax = 30f;
+	[Export] public float TrainingRespawnDelay = 3f;
+
+	/// <summary>Quantas vezes este corpo morreu na partida.</summary>
+	public int Deaths { get; private set; }
+
+	/// <summary>A espera da morte de agora (ou da última).</summary>
+	public float RespawnWait { get; private set; }
+
+	private float WaitFor(int deaths) => Match.Current == null
+		? TrainingRespawnDelay
+		: Mathf.Min(RespawnDelay + RespawnGrowth * Mathf.Max(deaths - 1, 0), Mathf.Max(RespawnMax, RespawnDelay));
 
 	/// <summary>Segundos de imortalidade ao renascer. Sem isso, quem
 	/// morre perto de um inimigo volta direto para a mesma morte.</summary>
@@ -251,6 +272,12 @@ public partial class Health : Node
 	public Node Killer { get; private set; }
 
 	private Node _lastAttacker;
+
+	/// <summary>Quem acertou este corpo por último (o corpo de quem
+	/// atirou) e há quantos segundos. Para a barra de vida, que só aparece
+	/// no alvo de quem joga.</summary>
+	public Node LastAttacker => _lastAttacker != null && GodotObject.IsInstanceValid(_lastAttacker) ? _lastAttacker : null;
+	public double SinceLastAttack => Time.GetTicksMsec() / 1000.0 - _lastAttackAt;
 	private double _lastAttackAt;
 
 	private void Die(int killerId)
@@ -261,7 +288,9 @@ public partial class Health : Node
 		IsDead = true;
 		Hp = 0;
 		Shield = 0;
-		_respawnTimer = RespawnDelay;
+		Deaths++;
+		RespawnWait = WaitFor(Deaths);
+		_respawnTimer = RespawnWait;
 
 		EmitSignal(SignalName.Died, killerId);
 		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);

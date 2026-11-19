@@ -219,7 +219,7 @@ public partial class Weapon : Node3D
 			else ChaseFocus();
 		}
 
-		UpdateArmed();
+		UpdateArmed(delta);
 
 		if (_pending.Count > 0)
 			RunPending(delta);

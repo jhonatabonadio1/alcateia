@@ -295,6 +295,8 @@ public partial class Bot
 	/// </summary>
 	private void OnDamaged(float amount, Vector3 from)
 	{
+		// Lobo que apanha não fica plantado: troca o lado na hora.
+		if (_form != null && _form.IsWolf) { _strafeSide = -_strafeSide; _strafeTimer = StrafeInterval * 0.5; }
 		if (_health.IsDead || from == Vector3.Zero || _reacting) return;
 
 		_threatAge = 0;

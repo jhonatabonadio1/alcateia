@@ -20,7 +20,7 @@ public sealed class RespawnTest : RegressionTest
 		b.Check(b.Health.IsDead, "morreu");
 		b.Near(wp - 100f, b.Form.Wp, 0.01, "WP depois de morrer");
 
-		await b.Seconds(b.Health.RespawnDelay + 0.2);
+		await b.Seconds(b.Health.RespawnWait + 0.2);
 		b.Check(b.Health.TryRespawn(), "renasceu");
 		await b.Seconds(0.3);
 

@@ -2,6 +2,38 @@
 
 ## Não lançado
 
+### Regras de partida (18/11, à noite)
+- **Especial (Q) com prazo e sem volta**: armou, tem 5 s para saltar
+  (`Weapon.SpecialArmTime`); passou, perde a carga. Q de novo não desarma
+  mais. O disco mostra o tempo que resta. Morrer ou virar humano armado
+  também gasta.
+- **A carga demora bem mais e segue a sala**: abates para encher = 20% da
+  pontuação da sala (40 pontos = 8 abates; nunca menos de 6), e sozinha
+  enche em 70% do tempo da partida (10 min = 7 min). Assistência = 40% do
+  abate. Tudo exportado em `Weapon.SpecialCharge.cs`.
+- **Especial mais forte**: armado e no salto o lobo leva 40% do dano (era
+  50%) e o salto bate 2,6× (era 2,1×).
+- **Modo sem lobo** (só humanos): o especial não carrega e o HUD não mostra
+  nem o disco nem a faixa "virar lobo".
+- **Renascer**: 10 s no mínimo para todo mundo (bots também), +2,5 s a cada
+  morte, até 30 s (`Health.RespawnDelay/Growth/Max`). No treino continua 3 s.
+- **Escolha de conjunto**: 15 s no máximo; não escolheu, vai o conjunto
+  padrão.
+- **Bots sobem degrau baixo andando** (até 0,5 m, o mesmo que a navegação
+  aceita): antes paravam na quina dos contêineres baixos.
+- **Lobos colados não ficam mais parados**: o bot lobo, no alcance da
+  garra, roda em volta do alvo entrando e saindo, e troca de lado quando
+  apanha.
+- **Garra logo depois do bote**: o dano do bote (pulo + botão direito)
+  caiu, 0,05 s depois o clique esquerdo já arranha e corta a aterrissagem
+  (`Weapon.DiveFollowUp`). Antes a garra esperava a aterrissagem inteira.
+  Teste novo, `GarraDepoisDoBote`.
+- **Sem garra na corrida de quatro**: no W W o clique não arranha; tem de
+  sair da corrida para bater. (Desfaz o "bater correndo" da tarde, que foi
+  uma leitura errada do pedido.) Teste novo, `SemGarraNaCorrida`.
+- **O C não agacha mais**: só o Ctrl (pedido do Jhon). No Mac, agachado no
+  Ctrl, o botão direito de verdade mira.
+
 ### Mira animada do AR-15 (18/11)
 - **Mirar com o AR-15 (e o Ultimate) leva a arma ao olho.** Antes o botão
   direito só fechava a câmera e desenhava uma mira circular; agora a arma

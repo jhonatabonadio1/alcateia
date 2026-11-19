@@ -149,20 +149,20 @@ public sealed class SpecialChargeTest : RegressionTest
 		float before = w.SpecialCharge;
 		await b.Seconds(5);
 		float passive = w.SpecialCharge - before;
-		RegressionBench.Note($"em 5 s, sozinha: +{RegressionBench.F(passive * 100)}% (cheia em {RegressionBench.F(w.SpecialFillTime)} s)");
-		b.Near(5.0 / w.SpecialFillTime, passive, 0.004, "enche sozinha, devagar");
+		RegressionBench.Note($"em 5 s, sozinha: +{RegressionBench.F(passive * 100)}% (cheia em {RegressionBench.F(w.PassiveFillTime)} s)");
+		b.Near(5.0 / w.PassiveFillTime, passive, 0.004, "enche sozinha, devagar");
 
 		// Abate e assistência, pelo mesmo caminho do WP.
 		before = w.SpecialCharge;
 		form.OnKill();
-		b.Near(w.SpecialPerKill, w.SpecialCharge - before, 0.002, "um abate enche");
+		b.Near(w.KillFill, w.SpecialCharge - before, 0.002, "um abate enche");
 		before = w.SpecialCharge;
 		form.OnAssist();
 		b.Near(w.SpecialPerAssist, w.SpecialCharge - before, 0.002, "uma assistência enche menos");
-		b.AtLeast(w.SpecialPerAssist * 2f, w.SpecialPerKill, "abate vale bem mais que assistência");
+		b.AtLeast(w.SpecialPerAssist * 2f, w.KillFill, "abate vale bem mais que assistência");
 
 		// Não passa de 100%.
-		for (int i = 0; i < 6; i++) form.OnKill();
+		for (int i = 0; i < 12; i++) form.OnKill();
 		b.Near(1.0, w.SpecialCharge, 1e-6, "para em 100%");
 		b.Check(w.PounceReady, "cheia, o especial está pronto");
 
