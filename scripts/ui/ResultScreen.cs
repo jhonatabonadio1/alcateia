@@ -76,8 +76,9 @@ public partial class ResultScreen : CanvasLayer
 		_root = UiTheme.Apply(UiKit.Fill(new Control()));
 		AddChild(_root);
 
-		// O fundo escuro só entra com a página: antes, a vitória ou a
-		// derrota fica por cima da partida, em câmera lenta.
+		// O fundo escuro com desfoque (o da página de resultado) entra junto
+		// com a vitória ou a derrota (19/11, Jhon); a partida segue atrás
+		// dele, em câmera lenta.
 		_dim = UiKit.Fill(new ColorRect { Color = UiTokens.Bg, Material = HudStyle.Backdrop(0.82f), MouseFilter = Control.MouseFilterEnum.Stop });
 		_dim.Modulate = new Color(1, 1, 1, 0);
 		_root.AddChild(_dim);
@@ -95,6 +96,7 @@ public partial class ResultScreen : CanvasLayer
 
 		Motion.FadeIn(_hero, UiTokens.Normal);
 		Motion.Pop(_hero.GetChild<Control>(0), 1.08f, 0.35f);
+		_dim.CreateTween().SetIgnoreTimeScale(true).TweenProperty(_dim, "modulate:a", 1f, 0.4f);
 
 		// No relógio de verdade: o jogo está em câmera lenta.
 		Tween flow = CreateTween().SetIgnoreTimeScale(true);
@@ -110,6 +112,9 @@ public partial class ResultScreen : CanvasLayer
 
 	private Control _dim;
 
+	/// <summary>Quanto o fundo escuro com desfoque já entrou, 0 a 1. Para os testes.</summary>
+	public float BackdropAlpha => _dim?.Modulate.A ?? 0f;
+
 	private static void NormalSpeed()
 	{
 		Engine.TimeScale = 1.0;
@@ -121,7 +126,7 @@ public partial class ResultScreen : CanvasLayer
 	private void ShowPage()
 	{
 		NormalSpeed();
-		_dim.CreateTween().TweenProperty(_dim, "modulate:a", 1f, 0.35f);
+		_dim.Modulate = Colors.White;
 		_hero.Visible = false;
 		_page.Visible = true;
 

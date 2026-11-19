@@ -256,6 +256,7 @@ public sealed class VerdictSlowMotionTest : RegressionTest
 		b.Near(0.3, Engine.TimeScale, 0.01, "todo mundo em câmera lenta");
 		await b.Frames(60 * 3);
 		b.Near(0.3, Engine.TimeScale, 0.01, "3 s depois, ainda a vitória em câmera lenta");
+		b.Near(1.0, screen.BackdropAlpha, 0.01, "já com o fundo escuro e desfocado do resultado");
 		await b.Frames(60 * 2);
 		b.Near(1.0, Engine.TimeScale, 0.01, "uns 4 s depois, o resultado, na velocidade normal");
 		Engine.TimeScale = 1.0;

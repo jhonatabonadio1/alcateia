@@ -2,6 +2,8 @@
 
 ## Não lançado
 
+- Vitória e derrota aparecem já sobre o fundo escuro e desfocado da tela de resultado.
+
 - Eve no inventário: personagem do time azul, com o soldado e o lobo azul de sempre.
 
 - Faca com todos os movimentos da animação de referência: parado com a mão esquerda à vista, estocada, corte, o giro de inspecionar e o saque.
