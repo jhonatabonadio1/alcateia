@@ -130,10 +130,10 @@ public static class Catalog
 			Description = "Um pouco mais de dano por tiro, um pouco menos de cadência. Rocha escura com lava acesa nas rachaduras." },
 		new() { Id = "ar15_ouro", Name = "AR-15 Ouro", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
 			Rarity = 4, MinRank = 5, Prices = new[] { 450, 2200, 6600, 14500, 35000 }, Hot = true,
-			Description = "Lendária. O AR-15 mais forte por tiro, com o recuo domado. Ouro inteiro, polido e gravado." },
+			Description = "Lendária. O mais forte por tiro do arsenal, pente de 40, recarga rápida e o recuo mais domado. Ouro inteiro, polido e gravado." },
 		new() { Id = "ar15_diamante", Name = "AR-15 Diamante", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
 			Rarity = 4, MinRank = 5, Prices = new[] { 450, 2200, 6600, 14500, 35000 }, Hot = true,
-			Description = "Lendária. Pente maior e o tiro mais preciso do arsenal. Facetas de cristal que brilham." },
+			Description = "Lendária. O tiro mais preciso e a maior cadência do arsenal, pente de 42 e recarga rápida. Facetas de cristal que brilham." },
 
 		// ---------------------------------------------------- utilitário
 		new() { Id = Arsenal.GrenadeId, Name = "Granada de choque", Type = "Granada", Kind = ItemKind.Utility,

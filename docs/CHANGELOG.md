@@ -2,6 +2,8 @@
 
 ## Não lançado
 
+- AR-15 Ouro e AR-15 Diamante bem mais fortes que as épicas: mais dano ou cadência, pente maior, recarga mais rápida e menos recuo.
+
 - Jogada da partida no fim, antes do resultado: os melhores segundos pela tela de quem fez. Espaço pula.
 - Câmera de abate: "VOCÊ" com uma seta no seu corpo; o corpo de quem matou não aparece duplicado; o lobo anda no replay; a câmera de lobo não olha para o teto.
 - Espectador: não sai mais do mapa pela vista de cima; o tiro sai da arma dos bots; a tela do aliado acompanha pente, vida, recarga, dano e som como a sua.

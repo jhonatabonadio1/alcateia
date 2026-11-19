@@ -540,20 +540,18 @@ Bruto,,,,scripts/meta/Catalog.cs
 Caçador Noturno,,,,scripts/meta/Catalog.cs
 Classe de lobo,,,,scripts/meta/Catalog.cs
 Couro Grosso,,,,scripts/meta/Catalog.cs
-"Escopeta de bombeada, recarga cartucho a cartucho. Decide corredor; não existe em campo aberto.",,,,scripts/meta/Catalog.cs
 Fuzil de assalto,,,,scripts/meta/Catalog.cs
 Fúria da Lua,,,,scripts/meta/Catalog.cs
 Garra Afiada,,,,scripts/meta/Catalog.cs
 "Lendária. +12% de escudo máximo do lobo, e ele se desfaz 20% mais devagar.",,,,scripts/meta/Catalog.cs
 Lendária. +7% de dano da garra e +5% de velocidade na forma de lobo.,,,,scripts/meta/Catalog.cs
-"Lendária. O AR-15 mais forte por tiro, com o recuo domado. Ouro inteiro, polido e gravado.",,,,scripts/meta/Catalog.cs
-Lendária. Pente maior e o tiro mais preciso do arsenal. Facetas de cristal que brilham.,,,,scripts/meta/Catalog.cs
+"Lendária. O mais forte por tiro do arsenal, pente de 40, recarga rápida e o recuo mais domado. Ouro inteiro, polido e gravado.",,,,scripts/meta/Catalog.cs
+"Lendária. O tiro mais preciso e a maior cadência do arsenal, pente de 42 e recarga rápida. Facetas de cristal que brilham.",,,,scripts/meta/Catalog.cs
 Ligeiro,,,,scripts/meta/Catalog.cs
 "Linha de frente: escudo alto, garra pesada, resiste a tiro no corpo. Mais lento no chão.",,,,scripts/meta/Catalog.cs
 Melhoria · lobo,,,,scripts/meta/Catalog.cs
 "O AR-15 no limite: um pouco mais de dano, cadência e pente, e o recuo mais domado. Pele roxa com flames que brilham.",,,,scripts/meta/Catalog.cs
 O escudo do lobo se desfaz 20% mais devagar.,,,,scripts/meta/Catalog.cs
-"O fuzil padrão de antes: os mesmos números do AR-15, com alça de transporte e coronha fixa.",,,,scripts/meta/Catalog.cs
 "O fuzil padrão. Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e não é ruim em nada.",,,,scripts/meta/Catalog.cs
 os dois times,,,,scripts/meta/Catalog.cs
 Pata Leve,,,,scripts/meta/Catalog.cs
@@ -565,7 +563,6 @@ Presas de Aço,,,,scripts/meta/Catalog.cs
 Salto Longo,,,,scripts/meta/Catalog.cs
 Silenciosa: não faz ruído para os bots. A arma de quem quer o abate sem entregar a posição.,,,,scripts/meta/Catalog.cs
 Sindicato,,,,scripts/meta/Catalog.cs
-"SMG de dano, a arma anti-lobo. Rápida na mão e forte de perto — a que você puxa quando ouve o uivo.",,,,scripts/meta/Catalog.cs
 Troca de nome,,,,scripts/meta/Catalog.cs
 Troca o seu nickname uma vez. O nome é fixo sem este item.,,,,scripts/meta/Catalog.cs
 "Um pouco mais de dano por tiro, um pouco menos de cadência. Rocha escura com lava acesa nas rachaduras.",,,,scripts/meta/Catalog.cs
