@@ -76,6 +76,25 @@ public partial class Bot
 	private float FormSpeed =>
 		Speed * (_form.IsWolf && _form.Breed != null ? _form.Breed.SpeedMultiplier : 1f);
 
+	/// <summary>Correndo de quatro (o "W W" do jogador): lobo no chão,
+	/// mais rápido que o passo de lobo. Pela velocidade, e não pela ordem
+	/// do cérebro, para valer também no bot que chega pela rede. A
+	/// animação de galope e a poeira perguntam isto (19/11: o lobo dos bots
+	/// só andava muito rápido, sem correr de quatro).</summary>
+	public bool IsSprinting
+	{
+		get
+		{
+			if (!_form.IsWolf || !IsOnFloor()) return false;
+			Vector3 flat = new Vector3(Velocity.X, 0, Velocity.Z);
+			return flat.Length() > FormSpeed * SprintSpeedMark;
+		}
+	}
+
+	/// <summary>Acima de quanto da velocidade de lobo já é galope (a corrida
+	/// de quatro do bot é <see cref="WolfSprintFactor"/> = 1,3×).</summary>
+	private const float SprintSpeedMark = 1.12f;
+
 	private void RollPersona()
 	{
 		_wolfLove = Mathf.Clamp(WolfLove + _rng.Range(-WolfLoveSpread, WolfLoveSpread), 0.05f, 0.95f);

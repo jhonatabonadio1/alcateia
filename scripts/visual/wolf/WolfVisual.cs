@@ -87,6 +87,10 @@ public partial class WolfVisual : Node3D
 	private Health _health;
 	private CharacterBody3D _body;
 	private Player _player;
+
+	/// <summary>Correndo de quatro: o jogador pelo "W W", o bot pela
+	/// velocidade (<see cref="Bot.IsSprinting"/>).</summary>
+	private bool Sprinting => _player?.IsSprinting ?? (_body as Bot)?.IsSprinting ?? false;
 	private Bot _bot;
 
 	private Node3D _model;

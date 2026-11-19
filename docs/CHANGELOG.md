@@ -2,6 +2,8 @@
 
 ## Não lançado
 
+- Bots lobo correm de quatro com a animação de galope, como o jogador.
+
 - Ao renascer, o espectador sai de vez (antes a tela do aliado podia ficar misturada com a sua).
 - No minimapa, a sua seta é branca.
 

@@ -187,7 +187,7 @@ public partial class WolfVisual
 		// deitado — o lobo se dobrava no chão: não se via golpe nenhum. A
 		// velocidade continua a da corrida de quatro; só a pose muda.
 		bool striking = _weapon.IsStriking && !_weapon.IsPounceFlying && !_weapon.IsDiving;
-		bool sprinting = (_player?.IsSprinting ?? false) && !onWall && !striking;
+		bool sprinting = Sprinting && !onWall && !striking;
 		bool directional = Directional && !crouching && !sprinting;
 
 		float target = aiming ? 0f : _yawOffset;
@@ -289,6 +289,9 @@ public partial class WolfVisual
 
 	/// <summary>Quanto está na corrida de quatro (o clipe dela).</summary>
 	private float _sprint;
+
+	/// <summary>Quanto o galope (corrida de quatro) está tocando, 0 a 1. Para os testes.</summary>
+	public float Gallop => _sprint;
 
 	/// <summary>Quanto o andar está de quatro (o "Running Crawl"): agachado
 	/// andando ou na corrida de quatro.</summary>

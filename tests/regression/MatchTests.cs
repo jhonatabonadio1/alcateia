@@ -61,6 +61,47 @@ public sealed class WolfBotsTest : RegressionTest
 	}
 }
 
+/// <summary>O lobo dos bots corre de quatro (19/11, Jhon: "os bots quando
+/// são lobos e estão usando o W W não vejo ela no lobo deles, só fica
+/// andando bem rápido"): a animação de galope perguntava só ao jogador.</summary>
+public sealed class BotWolfGallopTest : RegressionTest
+{
+	public override string Name => "GalopeDosBots";
+	public override string Description => "bot lobo correndo rápido toca o galope (a corrida de quatro), como o jogador";
+	public override string Scene => RegressionBench.Match;
+
+	public override async Task Run(RegressionBench b)
+	{
+		await b.Until(() => b.Bots().Length >= 4, 5.0);
+		int fast = 0, galloping = 0, stray = 0;
+		double end = b.Time + 25;
+		while (b.Time < end)
+		{
+			foreach (var bot in b.Bots())
+			{
+				var form = bot.GetNode<FormController>("FormController");
+				if (form.Current == Form.Human && !bot.GetNode<Health>("Health").IsDead)
+				{
+					form.AddWp(5000);
+					form.ToggleForm();
+				}
+				if (bot is not Bot brain || bot.GetNodeOrNull<WolfVisual>("WolfVisual") is not WolfVisual visual || !form.ShowsWolf) continue;
+				if (brain.IsSprinting)
+				{
+					fast++;
+					if (visual.Gallop > 0.6f) galloping++;
+				}
+				else if (visual.Gallop > 0.9f && new Vector3(bot.Velocity.X, 0, bot.Velocity.Z).Length() < 1f) stray++;
+			}
+			await b.Seconds(0.25);
+		}
+		RegressionBench.Note($"{fast} amostras correndo de quatro, {galloping} com o galope tocando");
+		b.AtLeast(20, fast, "os bots lobo correm de quatro (amostras)");
+		b.AtLeast(0.75, fast > 0 ? galloping / (double)fast : 0, "correndo de quatro, o galope toca (fração)");
+		b.AtMost(4, stray, "parado, o bot não fica galopando");
+	}
+}
+
 /// <summary>Bots jogam granada (18/11): não jogavam nenhuma — a cena do
 /// bot nem tinha a granada atribuída.</summary>
 public sealed class BotsThrowTest : RegressionTest

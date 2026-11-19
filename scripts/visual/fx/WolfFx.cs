@@ -60,6 +60,9 @@ public partial class WolfFx : Node3D
 	private WolfVisual _visual;
 	private Player _player;
 
+	/// <summary>Correndo de quatro: o jogador pelo "W W", o bot pela velocidade.</summary>
+	private bool Sprinting => _player?.IsSprinting ?? (_body as Bot)?.IsSprinting ?? false;
+
 	private readonly List<MeshInstance3D> _meshes = new();
 	private Material _overlay;
 	private bool _overlayOn;
@@ -477,7 +480,7 @@ public partial class WolfFx : Node3D
 	private void UpdateDust(double delta)
 	{
 		if (_dust == null || _body == null) return;
-		bool running = _form.IsWolf && (_player?.IsSprinting ?? false) && _body.IsOnFloor();
+		bool running = _form.IsWolf && Sprinting && _body.IsOnFloor();
 		Vector3 feet = _body.GlobalPosition + Vector3.Up * (_player?.FeetOffset ?? -0.875f);
 		_dust.Tick(_body, running, feet, delta);
 	}
