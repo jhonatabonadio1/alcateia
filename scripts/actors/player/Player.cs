@@ -115,7 +115,8 @@ public partial class Player : CharacterBody3D
 		// de quem joga.
 		if (IsMultiplayerAuthority() && GetTree().CurrentScene is Node scene)
 		{
-			scene.CallDeferred(Node.MethodName.AddChild, new DuelCard { Name = "DuelCard" });
+			// O cartão de duelo ("abatido por", com o placar entre os dois)
+			// saiu a pedido do Jhon (18/11): a câmera de abate conta isso.
 			scene.CallDeferred(Node.MethodName.AddChild, new EnemyMarks { Name = "EnemyMarks" });
 			scene.CallDeferred(Node.MethodName.AddChild, new ChargeBar { Name = "ChargeBar" });
 			scene.CallDeferred(Node.MethodName.AddChild, new PounceAim { Name = "PounceAim" });

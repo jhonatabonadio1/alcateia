@@ -21,7 +21,7 @@ public partial class AbilityTile : Control
 	private const float CaptionHeight = 42f;
 
 	/// <summary>A cor do disco aceso.</summary>
-	public Color Hot { get; set; } = UiTokens.TeamOrange;
+	public Color Hot { get; set; } = UiTokens.WolfOrange;
 
 	/// <summary>A cor do halo.</summary>
 	public Color Glow { get; set; } = new(1f, 0.6f, 0.18f);

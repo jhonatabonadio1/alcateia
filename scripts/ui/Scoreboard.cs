@@ -193,7 +193,7 @@ public partial class Scoreboard : HBoxContainer
 			else
 			{
 				_form.Kind = c.IsWolf ? IconKind.Wolf : IconKind.Human;
-				_form.Tint = c.IsWolf ? UiTokens.TeamOrange : UiTokens.TextSecondary;
+				_form.Tint = c.IsWolf ? UiTokens.WolfOrange : UiTokens.TextSecondary;
 			}
 
 			_ping.Visible = !c.IsBot;

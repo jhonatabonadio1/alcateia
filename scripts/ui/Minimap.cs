@@ -227,7 +227,7 @@ public partial class Minimap : Control
 			_viewHalf = Mathf.Min(Mathf.Min(_bounds.Size.X, _bounds.Size.Y) * 0.5f, Range);
 			_viewCenter = new Vector2(Follow(me.X, _bounds.Position.X, _bounds.End.X),
 				Follow(me.Y, _bounds.Position.Y, _bounds.End.Y));
-			_viewYaw = 0f;
+			_viewYaw = TeamYaw();
 		}
 
 		// Cruz discreta passando pelo jogador: dá referência sem competir
@@ -239,7 +239,7 @@ public partial class Minimap : Control
 
 		DrawWalls();
 		DrawActors();
-		DrawSelf(self, Rotate ? 0f : _player.Rotation.Y);
+		DrawSelf(self, _player.Rotation.Y - _viewYaw);
 	}
 
 	/// <summary>O centro da janela num eixo: o jogador, sem deixar a
@@ -334,26 +334,98 @@ public partial class Minimap : Control
 		return new Vector2(Side * 0.5f, Side * 0.5f) + flat / _viewHalf * (Side * 0.5f);
 	}
 
+	/// <summary>Aliado no mapa: sempre azul. Inimigo: sempre vermelho, com
+	/// contorno escuro — os contêineres do mapa são laranja e vermelho, e
+	/// o ponto da cor do time sumia em cima deles (relato do Jhon, 18/11:
+	/// "não estou conseguindo ver inimigos no minimapa").</summary>
+	[Export] public Color AllyColor = new Color("4d9bff");
+	[Export] public Color EnemyColor = new Color("ff2d3d");
+
+	private bool _yawKnown;
+	private float _teamYaw;
+
+	/// <summary>
+	/// O mapa fica virado para o time de quem joga: **a nossa base
+	/// embaixo, a do inimigo em cima** (pedido do Jhon, 18/11: "começamos
+	/// sempre de baixo, o inimigo vem sempre de cima"). É um giro de 0,
+	/// 90, 180 ou 270 graus, fixo na partida, tirado das duas bases; sem
+	/// bases separadas (treino), o mapa fica como está.
+	/// </summary>
+	private float TeamYaw()
+	{
+		if (_yawKnown) return _teamYaw;
+		if (_playerHealth == null || _playerHealth.Team == 0) return 0f;
+
+		// As bases são onde cada time largou (o ponto de cada corpo); sem
+		// isso, os conjuntos de pontos do mapa marcados por time.
+		int mine = _playerHealth.Team;
+		int other = mine == Teams.Blue ? Teams.Orange : Teams.Blue;
+		Vector3 home = Vector3.Zero, away = Vector3.Zero;
+		int homes = 0, aways = 0;
+		foreach (string group in Groups.Fighters)
+			foreach (Node node in GetTree().GetNodesInGroup(group))
+			{
+				if (node is not Node3D body || body.GetNodeOrNull<Health>("Health") is not Health health) continue;
+				if (!SpawnPoints.TryHome(body, out Vector3 at)) continue;
+				if (health.Team == mine) { home += at; homes++; }
+				else { away += at; aways++; }
+			}
+
+		if (homes > 0 && aways > 0)
+		{
+			home /= homes;
+			away /= aways;
+		}
+		else
+		{
+			home = Middle(SpawnPoints.PointsFor(mine));
+			away = Middle(SpawnPoints.PointsFor(other));
+		}
+
+		var toward = new Vector2(away.X - home.X, away.Z - home.Z);
+		// Ainda sem as duas bases (a partida está montando): tenta de novo.
+		if (toward.Length() < 6f) return 0f;
+
+		// O giro que leva "da nossa base à deles" para cima na tela.
+		_yawKnown = true;
+		float yaw = -Mathf.Pi * 0.5f - toward.Angle();
+		return _teamYaw = Mathf.Round(yaw / (Mathf.Pi * 0.5f)) * (Mathf.Pi * 0.5f);
+	}
+
+	private static Vector3 Middle(System.Collections.Generic.List<Vector3> points)
+	{
+		if (points == null || points.Count == 0) return Vector3.Zero;
+		Vector3 sum = Vector3.Zero;
+		foreach (Vector3 p in points) sum += p;
+		return sum / points.Count;
+	}
+
 	private void DrawActors()
 	{
-		foreach (Node node in GetTree().GetNodesInGroup(Groups.Bots))
-		{
-			if (node is not Node3D bot) continue;
+		int mine = _playerHealth?.Team ?? 0;
 
-			var health = bot.GetNodeOrNull<Health>("Health");
-			if (health == null || health.IsDead) continue;
+		// Aliados primeiro, inimigos por cima.
+		for (int pass = 0; pass < 2; pass++)
+			foreach (string group in Groups.Fighters)
+				foreach (Node node in GetTree().GetNodesInGroup(group))
+				{
+					if (node is not Node3D body || body == _player) continue;
 
-			if (!ToMap(bot.GlobalPosition, out Vector2 point)) continue;
+					var health = body.GetNodeOrNull<Health>("Health");
+					if (health == null || health.IsDead) continue;
 
-			Color color = Teams.ColorOf(health.Team);
+					bool enemy = mine == 0 || health.Team != mine;
+					if (enemy != (pass == 1)) continue;
+					if (!ToMap(body.GlobalPosition, out Vector2 point)) continue;
 
-			// Altura relativa: quem está acima aparece maior. É a única
-			// dica de verticalidade que um mapa de cima consegue dar.
-			float height = bot.GlobalPosition.Y - _player.GlobalPosition.Y;
-			float size = Mathf.Clamp(4f + height * 0.6f, 2.5f, 7f);
+					// Altura relativa: quem está acima aparece maior. É a única
+					// dica de verticalidade que um mapa de cima consegue dar.
+					float height = body.GlobalPosition.Y - _player.GlobalPosition.Y;
+					float size = Mathf.Clamp(4f + height * 0.6f, 2.5f, 7f) + (enemy ? 0.8f : 0f);
 
-			DrawCircle(point, size, color);
-		}
+					DrawCircle(point, size + 1.6f, new Color(0, 0, 0, 0.75f));
+					DrawCircle(point, size, enemy ? EnemyColor : AllyColor);
+				}
 	}
 
 	/// <summary>O jogador é um triângulo apontando para onde ele olha

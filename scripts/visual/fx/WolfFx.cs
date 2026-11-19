@@ -125,6 +125,8 @@ public partial class WolfFx : Node3D
 		AddChild(_smoke);
 		_wisps = new WindWisps { Name = "Vento" };
 		AddChild(_wisps);
+		_dust = new SprintDust { Name = "Poeira" };
+		AddChild(_dust);
 		float feet = _player?.FeetOffset ?? -0.875f;
 		_sparks = new LightningAura { Name = "Raios", Feet = feet };
 		AddChild(_sparks);
@@ -311,6 +313,7 @@ public partial class WolfFx : Node3D
 		PushFur(dt, shown, power);
 		UpdatePower(shown, color);
 		UpdateStreaks();
+		UpdateDust(delta);
 		UpdateCamera(dt);
 	}
 
@@ -464,6 +467,19 @@ public partial class WolfFx : Node3D
 		if (_wisps == null) return;
 		_wisps.Amount = _air;
 		_wisps.Velocity = _body.Velocity;
+	}
+
+	private SprintDust _dust;
+
+	/// <summary>A poeira da corrida de quatro. Para os testes.</summary>
+	public SprintDust Dust => _dust;
+
+	private void UpdateDust(double delta)
+	{
+		if (_dust == null || _body == null) return;
+		bool running = _form.IsWolf && (_player?.IsSprinting ?? false) && _body.IsOnFloor();
+		Vector3 feet = _body.GlobalPosition + Vector3.Up * (_player?.FeetOffset ?? -0.875f);
+		_dust.Tick(_body, running, feet, delta);
 	}
 
 	/// <summary>A velocidade de quatro deste lobo: a do vento cheio.</summary>

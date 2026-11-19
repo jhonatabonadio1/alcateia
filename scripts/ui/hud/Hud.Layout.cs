@@ -187,11 +187,11 @@ public partial class Hud
 			CustomMinimumSize = new Vector2(0, 11),
 			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
 			SizeFlagsVertical = Control.SizeFlags.ShrinkCenter,
-			Fill = UiTokens.TeamOrange.Lightened(0.15f),
-			Trail = UiTokens.TeamOrange.Darkened(0.4f)
+			Fill = UiTokens.WolfOrange.Lightened(0.15f),
+			Trail = UiTokens.WolfOrange.Darkened(0.4f)
 		};
 		_shieldRow.AddChild(_shieldBar);
-		_shieldNumber = HudStyle.Number(UiKit.Text("", "Numeric"), 20, UiTokens.TeamOrange.Lightened(0.25f));
+		_shieldNumber = HudStyle.Number(UiKit.Text("", "Numeric"), 20, UiTokens.WolfOrange.Lightened(0.25f));
 		_shieldNumber.CustomMinimumSize = new Vector2(44, 0);
 		_shieldNumber.HorizontalAlignment = HorizontalAlignment.Right;
 		_shieldRow.AddChild(_shieldNumber);
@@ -312,7 +312,7 @@ public partial class Hud
 		column.Alignment = BoxContainer.AlignmentMode.End;
 
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
-		head.AddChild(Icon.Make(IconKind.Wolf, 24, UiTokens.TeamOrange));
+		head.AddChild(Icon.Make(IconKind.Wolf, 24, UiTokens.WolfOrange));
 		_breedName = HudStyle.Number(UiKit.Text("", "Subtitle"), 26);
 		head.AddChild(_breedName);
 		head.AddChild(UiKit.Spacer());
@@ -374,7 +374,7 @@ public partial class Hud
 		row.AddChild(_shiftState);
 		_shiftPanel.AddChild(row);
 
-		_shiftBar = Bar(UiTokens.TeamOrange, 7);
+		_shiftBar = Bar(UiTokens.WolfOrange, 7);
 		_shiftBar.Value = 1;
 		_shiftPanel.AddChild(_shiftBar);
 	}

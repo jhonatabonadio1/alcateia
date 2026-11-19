@@ -125,8 +125,11 @@ public partial class CombatantAudio : Node
 	}
 
 	/// <summary>Volume do marcador de acerto no corpo e na cabeça (dB).</summary>
-	[Export] public float MarkerDb = 0f;
+	[Export] public float MarkerDb = -3f;
 	[Export] public float HeadMarkerDb = 0f;
+
+	/// <summary>Volume do sangue espirrando em cada acerto (dB).</summary>
+	[Export] public float SplashDb = 1.5f;
 
 	private void OnHit(bool headshot)
 	{
@@ -141,6 +144,9 @@ public partial class CombatantAudio : Node
 		// a cada headshot (marcador_cabeca).
 		if (!_local) return;
 		Sfx.Local(Sfx.First("marcador", "acerto"), MarkerDb);
+		// E o sangue saindo, molhado, por cima (pedido do Jhon, 18/11: "o
+		// barulho de hit no inimigo deve ser de sangue saindo, splash").
+		if (Sfx.Has("sangue")) Sfx.Local("sangue", SplashDb);
 		if (headshot) Sfx.Local(Sfx.First("marcador_cabeca", "acerto_cabeca"), HeadMarkerDb);
 	}
 

@@ -45,6 +45,9 @@ public partial class SpawnPoints : Node3D
 	/// a partida inteira.</summary>
 	public static void SetHome(Node3D body, Vector3 at) => _home[body.GetInstanceId()] = at;
 
+	/// <summary>O ponto da largada de um corpo, se já foi gravado.</summary>
+	public static bool TryHome(Node3D body, out Vector3 at) => _home.TryGetValue(body.GetInstanceId(), out at);
+
 	private readonly List<Vector3> _points = new();
 
 	public override void _Ready()

@@ -152,3 +152,9 @@ Substitui a seção "Marcador de acerto" acima: `marcador_1` é o **Hit Generic
 `lobo_pulo_1..3` e `lobo_morte_1..3` saem de Creature 1-21 e Zombie 1 - Short
 do mesmo pacote (`tools/sons/lobo_voz.py`); não usam mais o Oculus Audio Pack.
 Vale a pendência de licença do Free Sounds Pack.
+
+## Respiração ofegante (18/11, à noite)
+
+`respiracao_ofegante.ogg` sai de `oc_HMNBrth_MaleBreathing_OS_01` do **Oculus
+Audio Pack 1** (a mesma licença do resto do pacote, acima): os quatro
+primeiros ciclos, 12% mais rápidos, em laço (`tools/sons/respiracao.py`).

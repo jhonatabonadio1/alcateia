@@ -222,6 +222,10 @@ public partial class WorldAudio : Node
 	/// segundos — só em partida que durou mais que isso e um pouco.</summary>
 	[Export] public float TensionTime = 60f;
 
+	/// <summary>A música do fim também entra quando um time chega a esta
+	/// fração da pontuação da vitória (0,1 = faltando 10% dos pontos).</summary>
+	[Export] public float TensionScore = 0.1f;
+
 	/// <summary>Volume da música de tensão, em dB: por baixo do tiro.</summary>
 	[Export] public float TensionDb = -14f;
 
@@ -262,9 +266,14 @@ public partial class WorldAudio : Node
 	/// </summary>
 	private void UpdateTension(Match match)
 	{
-		bool wanted = match.Phase == MatchPhase.Live
-			&& match.Duration > TensionTime + 30f
-			&& match.TimeLeft <= TensionTime;
+		// Pelo relógio (o último minuto) ou pelo placar: um time a
+		// TensionScore da vitória. Sem o placar, a partida que acabava por
+		// pontos nunca tocava a música (relato do Jhon, 18/11: acabou em
+		// 100 pontos com 11 minutos no relógio, em silêncio).
+		int lead = Mathf.Max(match.ScoreOf(Teams.Blue), match.ScoreOf(Teams.Orange));
+		bool byScore = match.ScoreToWin >= 10 && lead >= match.ScoreToWin - Mathf.Max(3, Mathf.RoundToInt(match.ScoreToWin * TensionScore));
+		bool byClock = match.Duration > TensionTime + 30f && match.TimeLeft <= TensionTime;
+		bool wanted = match.Phase == MatchPhase.Live && (byClock || byScore);
 
 		if (wanted && _tension == null)
 		{

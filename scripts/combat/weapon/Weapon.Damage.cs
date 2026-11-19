@@ -99,6 +99,8 @@ public partial class Weapon
 		if (target.IsRemote)
 		{
 			if (target.IsDead) return;
+			// Só para a barra de vida do alvo aparecer na tela de quem acertou.
+			target.NoteAttacker(_body);
 			target.SendHit(amount, from, headshot, CauseOf(headshot), KillWeapon(target), _body);
 			EmitSignal(SignalName.DamageDealt, amount);
 			EmitSignal(SignalName.HitConfirmed, headshot);

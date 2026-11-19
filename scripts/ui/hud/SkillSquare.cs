@@ -26,7 +26,7 @@ public partial class SkillSquare : Control
 	public string Key { get; set; } = "";
 
 	/// <summary>A cor do "em uso".</summary>
-	public Color Hot { get; set; } = UiTokens.TeamOrange;
+	public Color Hot { get; set; } = UiTokens.WolfOrange;
 
 	/// <summary>De 0 (acabou de usar) a 1 (pronto). Para os testes.</summary>
 	public float Ready { get; private set; } = 1f;

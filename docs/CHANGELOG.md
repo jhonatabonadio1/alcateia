@@ -2,6 +2,39 @@
 
 ## Não lançado
 
+### HUD e retorno (18/11, à noite)
+- **Quase morrendo**: abaixo de 55% da vida a borda da tela avermelha e
+  fecha, com veios escuros, pulsando num coração que acelera; cada golpe dá
+  um clarão vermelho. Abaixo de 30% entra a **respiração ofegante**
+  (`respiracao_ofegante`, `tools/sons/respiracao.py`), mais alta quanto
+  menos vida.
+- **Minimapa**: virado para o time de quem joga — a nossa base embaixo, a
+  do inimigo em cima. Aliados em azul, **inimigos em vermelho com contorno
+  escuro** (o ponto laranja sumia em cima dos contêineres) e desenhados por
+  cima. Jogadores de verdade também aparecem (antes só bots).
+- **O Sindicato é vermelho** (`UiTokens.TeamOrange`), não mais laranja.
+- **Barra de vida no mundo** refeita: fina, inclinada, em gomos de 25,
+  com o escudo numa faixa em cima e o "fantasma" do dano. **Só aparece
+  quando você acerta o inimigo** (ou quando o aliado apanha) e some 2,4 s
+  depois. Inimigo vermelha, aliado branca.
+- **Feed de abates**: arma épica ou lendária acende a linha inteira na cor
+  da raridade — borda, halo pulsando e um reflexo varrendo.
+- **Saiu o cartão "abatido por"** (o duelo com o placar entre os dois).
+- **Acerto**: por cima do som de acerto, o sangue espirrando
+  (`CombatantAudio.SplashDb`).
+- **Música do fim** também toca quando um time chega a 10% da vitória por
+  pontos; antes só no último minuto do relógio, e partida que acabava por
+  pontos ficava muda.
+- **Poeira da corrida de quatro** (`SprintDust`): pontinhos redondos e
+  macios, de 2 a 6 cm, da cor do chão que o lobo pisa, saindo das patas.
+- **Abate com o especial do lobo no feed**: no lugar do ícone simples, o
+  selo do especial (`SpecialBadge`) — o disco laranja com a garra, raios
+  girando e faíscas, como o disco do especial pronto. Todo mundo vê que
+  foi com o especial.
+- **O laranja do lobo ficou separado do time** (`UiTokens.WolfOrange`): o
+  especial, a transformação, o escudo e os golpes no feed seguem laranja;
+  só o Sindicato virou vermelho.
+
 ### Regras de partida (18/11, à noite)
 - **Especial (Q) com prazo e sem volta**: armou, tem 5 s para saltar
   (`Weapon.SpecialArmTime`); passou, perde a carga. Q de novo não desarma
