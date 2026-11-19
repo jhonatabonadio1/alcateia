@@ -105,6 +105,9 @@ public readonly record struct CharacterIntent
 	/// era quando cada uma trocava a arma em sequência.</summary>
 	private static Slot? SlotPressed()
 	{
+		// Com a lista do rádio aberta, os números escolhem a fala.
+		if (Radio.HoldsNumbers) return null;
+
 		Slot? chosen = null;
 		foreach (var (action, slot) in SlotKeys)
 			if (Input.IsActionJustPressed(action))

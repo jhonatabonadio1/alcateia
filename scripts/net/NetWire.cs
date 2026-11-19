@@ -49,13 +49,14 @@ using System.Text;
 /// | Snapshot | servidor, 30 por segundo | o passo, o último comando seu simulado e cada corpo (<see cref="SnapshotWire"/>) |
 /// | Status | jogo → todos, 10 por segundo | vida, escudo, morto, armas (a vida ainda é do jogo nesta leva) |
 /// | Loadout | jogo, ao entrar | a classe de lobo e as tatuagens (mudam o movimento do lobo) |
+/// | Radio | jogo → todos, repassado | o call de rádio (1 byte: qual fala); cada máquina toca se for do time |
 /// </summary>
 public static class NetWire
 {
 	public const byte Hello = 1, Welcome = 2, Refused = 3, State = 4, Attack = 5,
 		Hit = 6, Died = 7, Kill = 8, Clock = 9, Gone = 10,
 		BotState = 11, BotAttack = 12, BotHit = 13, BotDied = 14, HitBot = 15, Touch = 16,
-		Input = 17, Snapshot = 18, Status = 19, Loadout = 20;
+		Input = 17, Snapshot = 18, Status = 19, Loadout = 20, Radio = 21;
 
 	/// <summary>O modo da partida, no <c>Welcome</c>.</summary>
 	public const byte ModeRelay = 0, ModeAuthoritative = 1;

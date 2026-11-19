@@ -2,6 +2,22 @@
 
 ## Não lançado
 
+### Rádio do time (18/11, à noite)
+- **Z abre a lista de calls** no canto inferior esquerdo, acima da vida;
+  **1 a 9 e 0** (o décimo) falam e fecham. Z de novo, Esc ou 5 s sem
+  escolher fecham. Com a lista aberta os números não trocam de arma.
+- As dez falas: Enemy Spotted!, Roger That!, Follow Me!, Cover Me!, Go,
+  Go, Go!, Fall Back!, Hold Position!, Need Backup!, Sector Clear!, Nice
+  Shot!
+- **A fala toca para todo o time de quem falou, e só para ele**, sem
+  posição (é rádio), e aparece escrita no canto com o nome. Online o call
+  viaja pela partida (`NetWire.Radio`).
+- **Time azul, voz feminina; time vermelho, voz masculina**
+  (`radio_f_1..10`, `radio_m_1..10`): os dois áudios do Jhon cortados nas
+  pausas, com som de rádio (`tools/sons/radio.py`).
+- 1,2 s de intervalo entre um call e outro do mesmo jogador.
+- Teste novo, `RadioDoTime`. Planilha de textos atualizada (12 novos).
+
 ### HUD e retorno (18/11, à noite)
 - **Quase morrendo**: abaixo de 55% da vida a borda da tela avermelha e
   fecha, com veios escuros, pulsando num coração que acelera; cada golpe dá

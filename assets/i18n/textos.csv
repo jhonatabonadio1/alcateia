@@ -29,7 +29,6 @@ OCTA KILL,,,,scripts/core/KillStory.cs
 PENTA KILL,,,,scripts/core/KillStory.cs
 QUADRA KILL,,,,scripts/core/KillStory.cs
 TRIPLE KILL,,,,scripts/core/KillStory.cs
-../Bots,,,,scripts/core/MatchSetup.cs
 "Bots, só humanos",,,,scripts/core/PlayMode.cs
 "Bots, só lobos",,,,scripts/core/PlayMode.cs
 Caçar humanos,,,,scripts/core/PlayMode.cs
@@ -60,6 +59,16 @@ Não é uma tatuagem,,,,scripts/core/Profile.cs
 Personagem fora do inventário ou expirado,,,,scripts/core/Profile.cs
 Precisa do item Troca de nome,,,,scripts/core/Profile.cs
 "Use só letras, números, _ e -",,,,scripts/core/Profile.cs
+Cover Me!,,,,scripts/core/Radio.cs
+Enemy Spotted!,,,,scripts/core/Radio.cs
+Fall Back!,,,,scripts/core/Radio.cs
+Follow Me!,,,,scripts/core/Radio.cs
+"Go, Go, Go!",,,,scripts/core/Radio.cs
+Hold Position!,,,,scripts/core/Radio.cs
+Need Backup!,,,,scripts/core/Radio.cs
+Nice Shot!,,,,scripts/core/Radio.cs
+Roger That!,,,,scripts/core/Radio.cs
+Sector Clear!,,,,scripts/core/Radio.cs
 Brasa,,,,scripts/core/RoomConfig.cs
 Caçada,,,,scripts/core/RoomConfig.cs
 Cinza,,,,scripts/core/RoomConfig.cs
@@ -737,7 +746,7 @@ Arma secundária,,,,scripts/ui/ControlsTable.cs
 Atacar,,,,scripts/ui/ControlsTable.cs
 Clique direito,,,,scripts/ui/ControlsTable.cs
 Clique esquerdo,,,,scripts/ui/ControlsTable.cs
-Ctrl ou C,,,,scripts/ui/ControlsTable.cs
+Ctrl,,,,scripts/ui/ControlsTable.cs
 Equipar granada,,,,scripts/ui/ControlsTable.cs
 Esc,,,,scripts/ui/ControlsTable.cs
 Espaço,,,,scripts/ui/ControlsTable.cs
@@ -851,6 +860,7 @@ Bolt,,,,scripts/ui/ViewModel.Rig.cs
 Grip,,,,scripts/ui/ViewModel.Rig.cs
 Magazine,,,,scripts/ui/ViewModel.Rig.cs
 ARMADO · CLIQUE SALTA,,,,scripts/ui/hud/Hud.Equipment.cs
+CLIQUE SALTA · {0:0.0} S,,,,scripts/ui/hud/Hud.Equipment.cs
 ESPECIAL,,,,scripts/ui/hud/Hud.Equipment.cs
 FACA,,,,scripts/ui/hud/Hud.Equipment.cs
 GRANADA DE CHOQUE,,,,scripts/ui/hud/Hud.Equipment.cs
@@ -893,7 +903,7 @@ Corrida de quatro,,,,scripts/ui/hud/Hud.Guide.cs
 Corrida na parede,,,,scripts/ui/hud/Hud.Guide.cs
 "Custa WP. De lobo você é mais rápido, tem escudo e garras — e não atira.",,,,scripts/ui/hud/Hud.Guide.cs
 De perto e em silêncio.,,,,scripts/ui/hud/Hud.Guide.cs
-Devagar e sem barulho de passo. Ctrl ou C agacha.,,,,scripts/ui/hud/Hud.Guide.cs
+Devagar e sem barulho de passo. Ctrl agacha.,,,,scripts/ui/hud/Hud.Guide.cs
 Dois toques no W e segure: 30% mais rápido.,,,,scripts/ui/hud/Hud.Guide.cs
 Equipe e clique para arremessar.,,,,scripts/ui/hud/Hud.Guide.cs
 Especial,,,,scripts/ui/hud/Hud.Guide.cs
@@ -919,6 +929,7 @@ DIREITO,,,,scripts/ui/hud/Hud.Layout.cs
 Humano,,,,scripts/ui/hud/Hud.Layout.cs
 Segure E · habilidades,,,,scripts/ui/hud/Hud.Layout.cs
 WP,,,,scripts/ui/hud/Hud.Layout.cs
+RÁDIO DO TIME,,,,scripts/ui/hud/Hud.Radio.cs
 METADE DO TEMPO · OS PAPÉIS TROCARAM,,,,scripts/ui/hud/Hud.cs
 Munição: {0},,,,scripts/ui/hud/Hud.cs
 Pegou: {0},,,,scripts/ui/hud/Hud.cs
@@ -938,6 +949,3 @@ Incomum,,,,scripts/ui/kit/UiTokens.cs
 Lendário,,,,scripts/ui/kit/UiTokens.cs
 Raro,,,,scripts/ui/kit/UiTokens.cs
 Épico,,,,scripts/ui/kit/UiTokens.cs
-"depth_test_disabled, ",,,,scripts/visual/Silhouette.cs
-Head,,,,scripts/visual/VisualSmoothing.cs
-Weapon,,,,scripts/visual/VisualSmoothing.cs

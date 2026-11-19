@@ -459,6 +459,17 @@ public partial class NetMatch : Node
 		Send(stream);
 	}
 
+	/// <summary>O call de rádio do jogador desta máquina, para a partida
+	/// repassar (<see cref="Radio"/>).</summary>
+	public void SendRadio(int call)
+	{
+		if (!Joined) return;
+
+		BinaryWriter w = NetWire.Begin(NetWire.Radio, out MemoryStream stream);
+		w.Write((byte)call);
+		Send(stream);
+	}
+
 	private void SendBotAttack(Bot bot, Slot slot)
 	{
 		if (!Joined) return;
@@ -550,6 +561,10 @@ public partial class NetMatch : Node
 				case NetWire.Attack:
 					if (_puppets.TryGetValue(r.ReadInt64(), out Bot attacker))
 						attacker.RemoteAttack((Slot)r.ReadByte(), r.ReadSingle(), r.ReadSingle());
+					break;
+
+				case NetWire.Radio:
+					if (_puppets.TryGetValue(r.ReadInt64(), out Bot caller)) Radio.Receive(caller, r.ReadByte());
 					break;
 
 				case NetWire.Hit:

@@ -158,3 +158,10 @@ Vale a pendência de licença do Free Sounds Pack.
 `respiracao_ofegante.ogg` sai de `oc_HMNBrth_MaleBreathing_OS_01` do **Oculus
 Audio Pack 1** (a mesma licença do resto do pacote, acima): os quatro
 primeiros ciclos, 12% mais rápidos, em laço (`tools/sons/respiracao.py`).
+
+## Calls de rádio (18/11, à noite)
+
+`radio_f_1..10` (voz **Iris**) e `radio_m_1..10` (voz **Adam — American, Dark
+and Tough**) foram gerados pelo Jhon no **ElevenLabs** e cortados por
+`tools/sons/radio.py`. Vale a mesma observação das outras falas geradas lá
+(docs/SONS_IA.md): conferir o plano da conta para uso comercial.

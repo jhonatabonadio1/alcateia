@@ -69,6 +69,7 @@ public partial class Hud : CanvasLayer
 		MoveChild(_root, 0);
 
 		BuildVignette();
+		BuildDanger();
 		BuildCenter();
 		BuildMinimap();
 		BuildFeed();
@@ -76,6 +77,7 @@ public partial class Hud : CanvasLayer
 		BuildEquipment();
 		BuildTransform();
 		BuildGuide();
+		BuildRadio();
 
 		_health.Changed += OnHealthChanged;
 		_health.Damaged += OnDamaged;
@@ -141,6 +143,8 @@ public partial class Hud : CanvasLayer
 			UpdateVignette();
 		}
 
+		UpdateDanger((float)delta);
+		UpdateRadio(delta);
 		UpdateTransform();
 		UpdateSpecial();
 		UpdateWolf((float)delta);

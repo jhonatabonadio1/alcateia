@@ -307,6 +307,11 @@ public sealed class HostedMatch
 				Broadcast(NetWire.Relay(packet, account), except: peer);
 				break;
 
+			// O call de rádio: vai a todos; cada máquina toca se for do time.
+			case NetWire.Radio:
+				Broadcast(NetWire.Relay(packet, account), except: peer);
+				break;
+
 			case NetWire.Hit:
 				ForwardHit(account, packet, r, 1);
 				break;
