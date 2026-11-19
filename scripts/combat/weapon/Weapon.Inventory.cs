@@ -31,13 +31,13 @@ public partial class Weapon
 	public int Reserve => HumanSlot == Slot.Primary ? PrimaryReserve : HumanSlot == Slot.Secondary ? SecondaryReserve : 0;
 
 	/// <summary>A arma na mão tem bala em algum lugar (pente ou reserva).</summary>
-	public bool HasAmmo => AmmoInMag > 0 || Reserve > 0;
+	public bool HasAmmo => AmmoInMag > 0 || Reserve > 0 || InfiniteAmmo;
 
 	/// <summary>A arma deste espaço existe e tem bala (pente ou reserva).</summary>
 	public bool HasAmmoIn(Slot slot) => slot switch
 	{
-		Slot.Primary => PrimaryDef != null && (PrimaryAmmo > 0 || PrimaryReserve > 0),
-		Slot.Secondary => SecondaryDef != null && (SecondaryAmmo > 0 || SecondaryReserve > 0),
+		Slot.Primary => PrimaryDef != null && (PrimaryAmmo > 0 || PrimaryReserve > 0 || InfiniteAmmo),
+		Slot.Secondary => SecondaryDef != null && (SecondaryAmmo > 0 || SecondaryReserve > 0 || InfiniteAmmo),
 		_ => false
 	};
 	public bool IsReloading => _reloadTimer > 0;
@@ -65,7 +65,7 @@ public partial class Weapon
 		if (_form.IsWolf || IsReloading) return false;
 
 		WeaponDefinition held = Held;
-		if (held == null || AmmoInMag >= MagSize || Reserve <= 0) return false;
+		if (held == null || AmmoInMag >= MagSize || (Reserve <= 0 && !InfiniteAmmo)) return false;
 
 		// Vazia demora mais que tática: é o preço de esvaziar o pente.
 		_shellReload = held.ShellByShell;
@@ -87,7 +87,7 @@ public partial class Weapon
 			// define a escopeta: mais um cartucho ou atirar com o que tem.
 			AddRound();
 
-			if (AmmoInMag < MagSize && Held != null && Reserve > 0)
+			if (AmmoInMag < MagSize && Held != null && (Reserve > 0 || InfiniteAmmo))
 			{
 				_reloadTimer = Held.ShellTime;
 				_reloadTotal = _reloadTimer;
@@ -97,15 +97,15 @@ public partial class Weapon
 		}
 		else if (HumanSlot == Slot.Primary)
 		{
-			int moved = Mathf.Min(PrimaryMag - PrimaryAmmo, PrimaryReserve);
+			int moved = InfiniteAmmo ? PrimaryMag - PrimaryAmmo : Mathf.Min(PrimaryMag - PrimaryAmmo, PrimaryReserve);
 			PrimaryAmmo += moved;
-			PrimaryReserve -= moved;
+			if (!InfiniteAmmo) PrimaryReserve -= moved;
 		}
 		else
 		{
-			int moved = Mathf.Min(SecondaryMag - SecondaryAmmo, SecondaryReserve);
+			int moved = InfiniteAmmo ? SecondaryMag - SecondaryAmmo : Mathf.Min(SecondaryMag - SecondaryAmmo, SecondaryReserve);
 			SecondaryAmmo += moved;
-			SecondaryReserve -= moved;
+			if (!InfiniteAmmo) SecondaryReserve -= moved;
 		}
 
 		_reloadTimer = 0;
@@ -114,15 +114,15 @@ public partial class Weapon
 
 	private void AddRound()
 	{
-		if (HumanSlot == Slot.Primary && PrimaryReserve > 0 && PrimaryAmmo < PrimaryMag)
+		if (HumanSlot == Slot.Primary && (PrimaryReserve > 0 || InfiniteAmmo) && PrimaryAmmo < PrimaryMag)
 		{
 			PrimaryAmmo++;
-			PrimaryReserve--;
+			if (!InfiniteAmmo) PrimaryReserve--;
 		}
-		else if (HumanSlot == Slot.Secondary && SecondaryReserve > 0 && SecondaryAmmo < SecondaryMag)
+		else if (HumanSlot == Slot.Secondary && (SecondaryReserve > 0 || InfiniteAmmo) && SecondaryAmmo < SecondaryMag)
 		{
 			SecondaryAmmo++;
-			SecondaryReserve--;
+			if (!InfiniteAmmo) SecondaryReserve--;
 		}
 	}
 

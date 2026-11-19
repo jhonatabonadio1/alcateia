@@ -136,7 +136,7 @@ public partial class KillCam : Node3D
 		Focus = null;
 		Active = false;
 		foreach (var (mesh, previous) in _marked)
-			if (IsInstanceValid(mesh)) mesh.MaterialOverlay = previous;
+			if (IsInstanceValid(mesh)) BodyOverlay.SetEdge(mesh, previous);
 		_marked.Clear();
 	}
 
@@ -336,9 +336,12 @@ public partial class KillCam : Node3D
 			Vector3 forward = -_mate.GlobalBasis.Z; forward.Y = 0;
 			forward = forward.LengthSquared() > 0.001f ? forward.Normalized() : Vector3.Forward;
 			float weight = Mathf.Min(1f, (float)delta * 6f);
-			Vector3 perch = _mate.GlobalPosition + Vector3.Up * 1.9f - forward * 3.4f;
+			Vector3 perch = SafePerch(_mate, _mate.GlobalPosition + Vector3.Up * 1.9f - forward * 3.4f);
 			_camera.Near = 0.05f;
-			_camera.GlobalPosition = _camera.GlobalPosition.DistanceTo(perch) > 25f ? perch : _camera.GlobalPosition.Lerp(perch, weight);
+			Vector3 glide = _camera.GlobalPosition.DistanceTo(perch) > 25f ? perch : _camera.GlobalPosition.Lerp(perch, weight);
+			// Nunca fora do mapa nem atrás de parede (19/11: com o aliado
+			// encostado na borda, a vista de cima saía do mapa).
+			_camera.GlobalPosition = MapBounds.Clamp(GetTree(), glide);
 			Vector3 target = _mate.GlobalPosition + Vector3.Up * 0.7f + forward * 2f;
 			if (_camera.GlobalPosition.DistanceSquaredTo(target) > 0.01f)
 			{
@@ -372,6 +375,23 @@ public partial class KillCam : Node3D
 		_camera.GlobalPosition = MapBounds.Clamp(GetTree(), _camera.GlobalPosition);
 	}
 
+	/// <summary>O ponto da vista de cima, puxado para perto do aliado se
+	/// houver parede no caminho.</summary>
+	private Vector3 SafePerch(Node3D mate, Vector3 want)
+	{
+		Vector3 eye = mate.GlobalPosition + Vector3.Up * 1.5f;
+		var query = PhysicsRayQueryParameters3D.Create(eye, want);
+		var skip = new Godot.Collections.Array<Rid>();
+		foreach (string group in Groups.Fighters)
+			foreach (Node node in GetTree().GetNodesInGroup(group))
+				if (node is CollisionObject3D fighter) skip.Add(fighter.GetRid());
+		query.Exclude = skip;
+		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+		if (hit.Count == 0) return want;
+		Vector3 at = hit["position"].AsVector3();
+		return at + (eye - at).Normalized() * WolfMargin;
+	}
+
 	public override void _UnhandledInput(InputEvent @event)
 	{
 		if (_phase != Phase.Free || UiState.AnyOpen || @event is not InputEventMouseMotion motion) return;
@@ -393,8 +413,8 @@ public partial class KillCam : Node3D
 			// O brilho do ombro já é vermelho e é um quadrado montado no
 			// shader: com a silhueta por cima virava um quadrado vermelho.
 			if (mesh.IsInGroup(EnemyMarks.MarkGroup)) continue;
-			_marked[mesh] = mesh.MaterialOverlay;
-			mesh.MaterialOverlay = Silhouette.Killer;
+			_marked[mesh] = BodyOverlay.Edge(mesh);
+			BodyOverlay.SetEdge(mesh, Silhouette.Killer);
 		}
 	}
 }

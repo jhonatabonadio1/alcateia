@@ -61,6 +61,12 @@ public partial class Hud : CanvasLayer
 	/// (<see cref="ReplayKill"/>), não o que acontece agora.</summary>
 	public bool ReplayFeed { get; set; }
 
+	/// <summary>O que o HUD mostra agora: vida, munição no pente, WP e o
+	/// estado da recarga. Para os testes.</summary>
+	public string ShownHp => _hpNumber?.Text;
+	public string ShownMag => _mag?.Text;
+	public string ShownReload => _reloading?.Text;
+
 	/// <summary>Um abate gravado, no feed do HUD de replay.</summary>
 	public void ReplayKill(Kill kill) => OnKill(kill);
 
@@ -80,7 +86,9 @@ public partial class Hud : CanvasLayer
 
 		_root = UiTheme.Apply(UiKit.Fill(new Control { MouseFilter = Control.MouseFilterEnum.Ignore }));
 		AddChild(_root);
-		// O DamageIndicator da cena fica por cima do resto.
+		// O DamageIndicator da cena fica por cima do resto. O HUD de outro
+		// corpo traz o dele (de onde veio o tiro que ele levou).
+		if (Subject != null) AddChild(new DamageIndicator { Name = "DamageIndicator", Subject = Subject });
 		MoveChild(_root, 0);
 
 		BuildVignette();
@@ -106,23 +114,17 @@ public partial class Hud : CanvasLayer
 		_weapon.HitConfirmed += OnHitConfirmed;
 		_weapon.AmmoChanged += OnAmmoChanged;
 		_weapon.AttackCooldown += OnAttackCooldown;
-		_weapon.PickedUp += id => Warn(Loc.F("Pegou: {0}", Arsenal.NameOf(id)), 1.6f, UiTokens.Success);
-		_weapon.AmmoTaken += id => Warn(Loc.F("Munição: {0}", Arsenal.NameOf(id)), 1.2f, UiTokens.Success);
-		_weapon.Dropped += id =>
-		{
-			if (!_health.IsDead) Warn(Loc.F("Soltou: {0}", Arsenal.NameOf(id)), 1.2f, UiTokens.TextSecondary);
-		};
+		_weapon.PickedUp += OnPickedUp;
+		_weapon.AmmoTaken += OnAmmoTaken;
+		_weapon.Dropped += OnDropped;
 		if (!ReplayFeed) KillFeed.Reported += OnKill;
 
 		// No fim da partida a tela de resultado assume a tela inteira.
 		if (Match.Current != null)
 		{
-			Match.Current.PhaseChanged += phase => Visible = (MatchPhase)phase != MatchPhase.Ended;
-			Match.Current.HalfTime += () =>
-			{
-				if (RoomConfig.Rules.Play == PlayMode.HumanosXLobos)
-					Warn("METADE DO TEMPO · OS PAPÉIS TROCARAM", 3.5f, UiTokens.Accent);
-			};
+			_match = Match.Current;
+			_match.PhaseChanged += OnMatchPhase;
+			_match.HalfTime += OnHalfTime;
 		}
 
 		OnHealthChanged(_health.Hp, _health.MaxHp, _health.Shield);
@@ -133,7 +135,63 @@ public partial class Hud : CanvasLayer
 		OnFormChanged((int)_form.Current, animate: false);
 	}
 
-	public override void _ExitTree() => KillFeed.Reported -= OnKill;
+	private Match _match;
+
+	private void OnPickedUp(string id) => Warn(Loc.F("Pegou: {0}", Arsenal.NameOf(id)), 1.6f, UiTokens.Success);
+	private void OnAmmoTaken(string id) => Warn(Loc.F("Munição: {0}", Arsenal.NameOf(id)), 1.2f, UiTokens.Success);
+
+	private void OnDropped(string id)
+	{
+		if (!_health.IsDead) Warn(Loc.F("Soltou: {0}", Arsenal.NameOf(id)), 1.2f, UiTokens.TextSecondary);
+	}
+
+	private void OnMatchPhase(int phase) => Visible = (MatchPhase)phase != MatchPhase.Ended && (Subject != null || !KillCam.Active);
+
+	private void OnHalfTime()
+	{
+		if (RoomConfig.Rules.Play == PlayMode.HumanosXLobos)
+			Warn("METADE DO TEMPO · OS PAPÉIS TROCARAM", 3.5f, UiTokens.Accent);
+	}
+
+	/// <summary>
+	/// Solta tudo o que ligou. O HUD de quem se vê (<see cref="Subject"/>)
+	/// sai antes do corpo que ele mostra, e um sinal de lá chegando num HUD
+	/// já desmontado derrubava o jogo.
+	/// </summary>
+	public override void _ExitTree()
+	{
+		KillFeed.Reported -= OnKill;
+		Radio.Heard -= OnRadioHeard;
+		if (_match != null && IsInstanceValid(_match))
+		{
+			_match.PhaseChanged -= OnMatchPhase;
+			_match.HalfTime -= OnHalfTime;
+		}
+		if (_health != null && IsInstanceValid(_health))
+		{
+			_health.Changed -= OnHealthChanged;
+			_health.Damaged -= OnDamaged;
+			_health.Died -= OnDied;
+			_health.Respawned -= OnRespawned;
+		}
+		if (_form != null && IsInstanceValid(_form))
+		{
+			_form.WpChanged -= OnWpChanged;
+			_form.FormChanged -= OnFormChanged;
+			_form.TransformDenied -= OnTransformDenied;
+		}
+		if (_weapon != null && IsInstanceValid(_weapon))
+		{
+			_weapon.SlotChanged -= OnSlotChanged;
+			_weapon.GrenadesChanged -= OnGrenadesChanged;
+			_weapon.HitConfirmed -= OnHitConfirmed;
+			_weapon.AmmoChanged -= OnAmmoChanged;
+			_weapon.AttackCooldown -= OnAttackCooldown;
+			_weapon.PickedUp -= OnPickedUp;
+			_weapon.AmmoTaken -= OnAmmoTaken;
+			_weapon.Dropped -= OnDropped;
+		}
+	}
 
 	private bool _watchingShown;
 

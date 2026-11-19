@@ -48,7 +48,7 @@ public partial class AbilityTile : Control
 	// para fora, redesenhados várias vezes por segundo (pedido do Jhon,
 	// 18/11: o raio do botão mais profissional; antes eram dois leques
 	// girando).
-	private const string GlowCode = @"
+	internal const string GlowCode = @"
 shader_type canvas_item;
 render_mode blend_add;
 uniform vec4 glow : source_color = vec4(1.0, 0.6, 0.18, 1.0);
@@ -126,6 +126,9 @@ void fragment() {
 }";
 
 	private static Shader _glowShader;
+
+	/// <summary>O shader do brilho, para quem desenha o mesmo disco (o selo do feed).</summary>
+	internal static Shader GlowShader => _glowShader ??= new Shader { Code = GlowCode };
 
 	private Icon _icon;
 	private Control _cover;

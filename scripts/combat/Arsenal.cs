@@ -41,7 +41,7 @@ public static class Arsenal
 	/// </summary>
 	public const float DamageScale = CombatRules.FirearmDamageScale;
 
-	public static readonly string[] Primaries = { "ar15", "ar15_ultimate", "m16a2", "sg552", "ak47", "ump45", "m3" };
+	public static readonly string[] Primaries = { "ar15", "ar15_ultimate", "ar15_ouro", "ar15_diamante", "ar15_8bit", "ar15_lava" };
 	public static readonly string[] Secondaries = { "m9" };
 
 	/// <summary>A arma vai para o espaço da secundária? É o que decide em

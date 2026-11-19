@@ -517,7 +517,7 @@ public partial class WolfFx : Node3D
 	{
 		_overlayOn = on;
 		foreach (MeshInstance3D mesh in _meshes)
-			if (IsInstanceValid(mesh)) mesh.MaterialOverlay = on ? _overlay : null;
+			if (IsInstanceValid(mesh)) BodyOverlay.SetAura(mesh, on ? _overlay : null);
 	}
 
 	/// <summary>Para o dono do lobo, a câmera abre um pouco com o vento: é

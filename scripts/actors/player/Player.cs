@@ -103,7 +103,7 @@ public partial class Player : CharacterBody3D
 		_health.Respawned += OnRespawned;
 		_health.Died += _ => OnDied();
 
-		SetProcessInput(IsMultiplayerAuthority());
+		SetProcessInput(IsMultiplayerAuthority() && !Driven);
 		ApplyCamera();
 
 		// O desenho entre um passo da física e o outro (VisualSmoothing):
@@ -113,13 +113,17 @@ public partial class Player : CharacterBody3D
 
 		// Só do dono: o cartão de duelo e a marca nos inimigos são da tela
 		// de quem joga.
-		if (IsMultiplayerAuthority() && GetTree().CurrentScene is Node scene)
+		// (Driven: o corpo de outra pessoa que esta máquina move, no servidor;
+		// não é a tela de ninguém aqui.)
+		if (IsMultiplayerAuthority() && !Driven && GetTree().CurrentScene is Node scene)
 		{
 			// O cartão de duelo ("abatido por", com o placar entre os dois)
 			// saiu a pedido do Jhon (18/11): a câmera de abate conta isso.
 			scene.CallDeferred(Node.MethodName.AddChild, new EnemyMarks { Name = "EnemyMarks" });
 			// As bordas: aliado branca, inimigo vermelha (TeamOutlines).
 			scene.CallDeferred(Node.MethodName.AddChild, new TeamOutlines { Name = "TeamOutlines" });
+			// O rádio dos bots (com moderação).
+			scene.CallDeferred(Node.MethodName.AddChild, new BotRadio { Name = "BotRadio" });
 			// A fita da câmera de abate: grava os últimos segundos de todo mundo.
 			scene.CallDeferred(Node.MethodName.AddChild, new ReplayTape { Name = "ReplayTape" });
 			scene.CallDeferred(Node.MethodName.AddChild, new ChargeBar { Name = "ChargeBar" });
@@ -127,7 +131,7 @@ public partial class Player : CharacterBody3D
 			scene.CallDeferred(Node.MethodName.AddChild, new LockMark { Name = "LockMark" });
 		}
 
-		if (IsMultiplayerAuthority() && !UiState.AnyOpen)
+		if (IsMultiplayerAuthority() && !Driven && !UiState.AnyOpen)
 			Input.MouseMode = Input.MouseModeEnum.Captured;
 	}
 
@@ -245,7 +249,10 @@ public partial class Player : CharacterBody3D
 		_killCam = null;
 		// Sem matador (queda, a própria granada), vai direto a assistir os
 		// aliados (KillCam, modo espectador).
-		if (IsMultiplayerAuthority())
+		// Só de quem joga nesta máquina: no servidor, os corpos dos outros
+		// (Driven) também são "daqui", e cada morte deles abria a câmera de
+		// abate na tela de quem hospeda (o "abatido por" de 19/11).
+		if (IsMultiplayerAuthority() && !Driven)
 			_killCam = KillCam.Begin(GetTree().CurrentScene ?? GetParent(), this,
 				_health.Killer is Node3D killer && killer != this ? killer : null, GetViewport().GetCamera3D());
 	}
@@ -322,7 +329,7 @@ public partial class Player : CharacterBody3D
 
 	public override void _Input(InputEvent @event)
 	{
-		if (!IsMultiplayerAuthority()) return;
+		if (!IsMultiplayerAuthority() || Driven) return;
 
 		// Shift ou Ctrl cujo "soltou" o sistema engoliu: solta aqui.
 		StuckKeys.Watch(@event);

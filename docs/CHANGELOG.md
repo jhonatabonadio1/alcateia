@@ -2,6 +2,20 @@
 
 ## Não lançado
 
+- Jogada da partida no fim, antes do resultado: os melhores segundos pela tela de quem fez. Espaço pula.
+- Câmera de abate: "VOCÊ" com uma seta no seu corpo; o corpo de quem matou não aparece duplicado; o lobo anda no replay; a câmera de lobo não olha para o teto.
+- Espectador: não sai mais do mapa pela vista de cima; o tiro sai da arma dos bots; a tela do aliado acompanha pente, vida, recarga, dano e som como a sua.
+- A câmera de abate só abre quando você morre.
+- Bordas só no contorno: aliados em branco visíveis no mapa todo, inimigos em vermelho; nunca por cima da sua arma; lobos também.
+- Bots falam no rádio, sem exagero.
+- A voz de abate duplo, triplo… é só para quem fez.
+- O especial do lobo no feed com o mesmo brilho do botão.
+- Armas novas: AR-15 Ouro e AR-15 Diamante (lendárias), AR-15 8 Bit e AR-15 Lava (épicas). Melhorias novas de lobo: Caçador Noturno, Presas de Aço (épicas), Alfa e Fúria da Lua (lendárias).
+- Ficam só os AR-15, a pistola, a faca e a granada: M16A2, UMP-45, AK-47, M3 e SG-552 saíram.
+- A Eve saiu do jogo.
+- O menu toca o tema da sala; as músicas do fim da partida e do resultado estão mais altas.
+- Armazém com sombras menos escuras; sem a mancha de luz nas costas do lobo.
+
 - Câmera de abate: o replay é a tela de quem te matou — a arma na mão dele com tiro, clarão, recarga e coronhada, o som, o HUD do jogo dele (vida, munição, especial, WP, minimapa) e o feed dele; se era lobo, a câmera de lobo com o HUD de lobo. Sem música.
 - Espectador: a tela do aliado, com a arma e o HUD dele.
 - Contorno dos aliados (branco) e inimigos (vermelho): só em volta do corpo, sem passar por cima da arma nem marcar linhas por dentro.

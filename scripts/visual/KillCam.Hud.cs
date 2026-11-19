@@ -29,6 +29,7 @@ void fragment() {
 	private CanvasLayer _hudLayer;
 	private ColorRect _tint, _barTop, _barBottom;
 	private Label _whoCaption, _whoName, _whoForm, _respawnCaption, _respawnNumber, _title, _hint;
+	private Control _you;
 
 	private void BuildHud()
 	{
@@ -56,6 +57,11 @@ void fragment() {
 		who.AddChild(_whoName);
 		_whoForm = HudStyle.Outlined(UiKit.Caption("", UiTokens.TextSecondary));
 		who.AddChild(_whoForm);
+
+		// "VOCÊ" e uma seta em cima do seu corpo, na câmera de abate (pedido
+		// do Jhon, 19/11).
+		_you = new YouMark { MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+		root.AddChild(_you);
 
 		// No meio de baixo, acima do HUD de quem se vê: quando renasce, o
 		// título e as teclas.
@@ -115,6 +121,8 @@ void fragment() {
 		_barTop.Visible = _barBottom.Visible = kill;
 		((ShaderMaterial)_tint.Material).SetShaderParameter("amount", Mathf.Clamp((float)_time * 3f, 0f, 1f));
 
+		UpdateYou();
+
 		// Quem.
 		Node3D who = watching ? _mate : _killer;
 		Health whoHealth = who != null && IsInstanceValid(who) && _phase != Phase.Free ? who.GetNodeOrNull<Health>("Health") : null;
@@ -149,5 +157,52 @@ void fragment() {
 			Phase.Above => "CLIQUES: TROCAR ALIADO  ·  ESPAÇO: CÂMERA LIVRE",
 			_ => "WASD E MOUSE  ·  ESPAÇO: VOLTAR AOS ALIADOS"
 		};
+	}
+
+	/// <summary>Põe o "VOCÊ" em cima da cabeça do seu corpo, na tela.</summary>
+	private void UpdateYou()
+	{
+		bool show = _phase is Phase.Death or Phase.Kill && _victim != null && IsInstanceValid(_victim);
+		Camera3D view = show ? GetViewport().GetCamera3D() : null;
+		if (view == null) { _you.Visible = false; return; }
+
+		// A cabeça, de pé ou caído: o osso da cabeça se houver; senão,
+		// acima do corpo.
+		Vector3 head = _victim.GlobalPosition + Vector3.Up * 2.05f;
+		if (_victim.GetNodeOrNull<Node3D>("Human") is Node3D human && human.FindChild("Skeleton3D", true, false) is Skeleton3D bones
+			&& bones.FindBone("mixamorig_Head") is int bone and >= 0)
+			head = (bones.GlobalTransform * bones.GetBoneGlobalPose(bone)).Origin + Vector3.Up * 0.45f;
+
+		if (view.IsPositionBehind(head)) { _you.Visible = false; return; }
+		Vector2 at = view.UnprojectPosition(head);
+		Vector2 size = GetViewport().GetVisibleRect().Size;
+		at = new Vector2(Mathf.Clamp(at.X, 60f, size.X - 60f), Mathf.Clamp(at.Y, 70f, size.Y - 40f));
+		_you.Visible = true;
+		_you.Position = at;
+	}
+
+	/// <summary>"VOCÊ" com uma seta para baixo; a ponta da seta é a origem.</summary>
+	private partial class YouMark : Control
+	{
+		private Label _label;
+
+		public override void _Ready()
+		{
+			_label = HudStyle.Number(UiKit.Text("VOCÊ", "Display"), 22, UiTokens.TextPrimary);
+			_label.HorizontalAlignment = HorizontalAlignment.Center;
+			_label.Size = new Vector2(120, 28);
+			_label.Position = new Vector2(-60, -58);
+			AddChild(_label);
+		}
+
+		public override void _Draw()
+		{
+			var tip = new Vector2(0, 0);
+			Vector2[] arrow = { tip, new(-11, -16), new(-4, -16), new(-4, -26), new(4, -26), new(4, -16), new(11, -16) };
+			var shadow = new Vector2[arrow.Length];
+			for (int i = 0; i < arrow.Length; i++) shadow[i] = arrow[i] + new Vector2(1.5f, 2f);
+			DrawColoredPolygon(shadow, new Color(0, 0, 0, 0.55f));
+			DrawColoredPolygon(arrow, UiTokens.Accent);
+		}
 	}
 }

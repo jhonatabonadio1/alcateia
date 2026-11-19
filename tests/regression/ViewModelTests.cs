@@ -46,14 +46,14 @@ public sealed class ViewModelTest : RegressionTest
 		}
 		else await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.4);
 
-		// --armas=ak47,m9 fotografa só essas (a foto é lenta sem placa de vídeo).
+		// --armas=ar15,m9 fotografa só essas (a foto é lenta sem placa de vídeo).
 		string only = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--armas="))?["--armas=".Length..];
 		bool Wanted(string id) => only == null || only.Split(',').Contains(id);
 
 		foreach (string id in Arsenal.Primaries.Append("m9").Where(Wanted))
 		{
 			bool pistol = Arsenal.IsSecondary(id);
-			b.Weapon.Equip(pistol ? Arsenal.Get("m16a2") : Arsenal.Get(id), Arsenal.Get("m9"), 1);
+			b.Weapon.Equip(pistol ? Arsenal.Get("ar15") : Arsenal.Get(id), Arsenal.Get("m9"), 1);
 			b.Weapon.SelectSlot(pistol ? Slot.Secondary : Slot.Primary);
 			await b.Seconds(0.6);
 

@@ -102,37 +102,38 @@ public static class Catalog
 	private static readonly List<CatalogItem> _items = WithCharacters(new()
 	{
 		// ---------------------------------------------------- armas
+		// Desde 19/11 só a família AR-15 (com as skins), a pistola, a faca e a
+		// granada: as outras armas saíram a pedido do Jhon.
 		new() { Id = "ar15", Name = "AR-15", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
 			Rarity = 0, Starter = true,
 			Description = "O fuzil padrão. Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e não é ruim em nada." },
-		// Era a padrão até 15/11. Quem já tinha continua com ela (o
-		// inventário guarda os itens iniciais como próprios).
-		new() { Id = "m16a2", Name = "M16A2", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
-			Rarity = 1, Prices = new[] { 200, 1000, 3000, 6800, 15000 },
-			Description = "O fuzil padrão de antes: os mesmos números do AR-15, com alça de transporte e coronha fixa." },
 		new() { Id = "m9", Name = "M9", Type = "Pistola", Kind = ItemKind.Weapon,
 			Rarity = 0, Starter = true,
 			Description = "A secundária de todo conjunto. Troca rápida para quando o pente acaba no meio da luta." },
 		new() { Id = Arsenal.KnifeId, Name = "Faca", Type = "Corpo a corpo", Kind = ItemKind.Weapon,
 			Rarity = 0, Starter = true,
 			Description = "Silenciosa: não faz ruído para os bots. A arma de quem quer o abate sem entregar a posição." },
-		new() { Id = "ump45", Name = "UMP-45", Type = "Submetralhadora", Kind = ItemKind.Weapon,
-			Rarity = 1, MinRank = 1, Prices = new[] { 250, 1200, 3600, 8000, 18000 },
-			Description = "SMG de dano, a arma anti-lobo. Rápida na mão e forte de perto — a que você puxa quando ouve o uivo." },
-		new() { Id = "ak47", Name = "AK-47", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
-			Rarity = 2, MinRank = 2, Prices = new[] { 300, 1500, 4500, 10000, 24000 }, Hot = true,
-			Description = "Impacto bruto: mata com um tiro na cabeça. Paga com recuo pesado e um estampido que se ouve de longe." },
-		new() { Id = "m3", Name = "M3", Type = "Escopeta", Kind = ItemKind.Weapon,
-			Rarity = 2, MinRank = 3, Prices = new[] { 280, 1350, 4000, 9000, 21000 },
-			Description = "Escopeta de bombeada, recarga cartucho a cartucho. Decide corredor; não existe em campo aberto." },
-		new() { Id = "sg552", Name = "SG-552", Type = "Fuzil de controle", Kind = ItemKind.Weapon,
-			Rarity = 3, MinRank = 4, Prices = new[] { 320, 1600, 4800, 10800, 26000 }, Hot = true,
-			Description = "O fuzil mais estável do arsenal: recuo baixo e linear. Pune quem atira andando." },
 		// O AR-15 um degrau acima (18/11): mesmo fuzil, mesmas animações, um pouco
 		// mais forte em tudo. Pele roxa com flames (tools/armas/blender/ar15_ultimate.py).
 		new() { Id = "ar15_ultimate", Name = "AR-15 Ultimate", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
 			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 }, Hot = true, DefaultOk = true,
 			Description = "O AR-15 no limite: um pouco mais de dano, cadência e pente, e o recuo mais domado. Pele roxa com flames que brilham." },
+		// As skins de 19/11 ("crie as outras armas, épicas e lendárias"; à
+		// tarde: "uma toda dourada, outra diamante, outra 8 bit"): o mesmo
+		// fuzil e as mesmas animações, cada uma com um jeito (dano, cadência,
+		// precisão, pente) e uma pintura (tools/armas/blender/ar15_ultimate.py --tema).
+		new() { Id = "ar15_8bit", Name = "AR-15 8 Bit", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
+			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 },
+			Description = "Cadência mais alta e tiro mais junto, com um pouco menos de dano. Pintado em pixel, como nos jogos de antigamente." },
+		new() { Id = "ar15_lava", Name = "AR-15 Lava", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
+			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 },
+			Description = "Um pouco mais de dano por tiro, um pouco menos de cadência. Rocha escura com lava acesa nas rachaduras." },
+		new() { Id = "ar15_ouro", Name = "AR-15 Ouro", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
+			Rarity = 4, MinRank = 5, Prices = new[] { 450, 2200, 6600, 14500, 35000 }, Hot = true,
+			Description = "Lendária. O AR-15 mais forte por tiro, com o recuo domado. Ouro inteiro, polido e gravado." },
+		new() { Id = "ar15_diamante", Name = "AR-15 Diamante", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
+			Rarity = 4, MinRank = 5, Prices = new[] { 450, 2200, 6600, 14500, 35000 }, Hot = true,
+			Description = "Lendária. Pente maior e o tiro mais preciso do arsenal. Facetas de cristal que brilham." },
 
 		// ---------------------------------------------------- utilitário
 		new() { Id = Arsenal.GrenadeId, Name = "Granada de choque", Type = "Granada", Kind = ItemKind.Utility,
@@ -160,6 +161,24 @@ public static class Catalog
 			Rarity = 3, MinRank = 6, Prices = new[] { 180, 900, 2700, 6000, 14000 },
 			Tattoo = new TattooEffect { ShieldDecay = 0.8f },
 			Description = "O escudo do lobo se desfaz 20% mais devagar." },
+		// Épicas e lendárias (19/11): duas coisas de uma vez, ainda ajuste
+		// fino — a maior soma fica perto de duas comuns.
+		new() { Id = "tat_cacador", Name = "Caçador Noturno", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+			Rarity = 3, MinRank = 5, Prices = new[] { 220, 1100, 3300, 7300, 17000 },
+			Tattoo = new TattooEffect { Speed = 1.06f, Jump = 1.05f },
+			Description = "+6% de velocidade e +5% de força no pulo, na forma de lobo." },
+		new() { Id = "tat_presas", Name = "Presas de Aço", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+			Rarity = 3, MinRank = 5, Prices = new[] { 220, 1100, 3300, 7300, 17000 },
+			Tattoo = new TattooEffect { ClawDamage = 1.09f },
+			Description = "+9% de dano da garra." },
+		new() { Id = "tat_alfa", Name = "Alfa", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+			Rarity = 4, MinRank = 7, Prices = new[] { 280, 1400, 4200, 9300, 22000 }, Hot = true,
+			Tattoo = new TattooEffect { Shield = 1.12f, ShieldDecay = 0.8f },
+			Description = "Lendária. +12% de escudo máximo do lobo, e ele se desfaz 20% mais devagar." },
+		new() { Id = "tat_lua", Name = "Fúria da Lua", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+			Rarity = 4, MinRank = 7, Prices = new[] { 280, 1400, 4200, 9300, 22000 }, Hot = true,
+			Tattoo = new TattooEffect { ClawDamage = 1.07f, Speed = 1.05f },
+			Description = "Lendária. +7% de dano da garra e +5% de velocidade na forma de lobo." },
 
 		// ---------------------------------------------------- classes de lobo
 		new() { Id = "raca_bruto", Name = "Bruto", Type = "Classe de lobo", Kind = ItemKind.Breed,

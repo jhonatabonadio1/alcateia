@@ -271,10 +271,21 @@ public partial class Weapon
 	/// <summary>Ponta do cano, quando há arma visível na mão.</summary>
 	private Vector3 MuzzleOrigin(Vector3 fallback)
 	{
+		// A arma na mão em primeira pessoa (a de quem joga, ou a que a
+		// câmera de abate e o espectador põem no olho de um bot) pode
+		// entrar e sair: confere de novo quando some.
+		if (_viewModel != null && !IsInstanceValid(_viewModel)) _viewModel = null;
 		_viewModel ??= _body.GetNodeOrNull<Node3D>("Head/Camera3D/ViewModel") as ViewModel;
 
 		if (_viewModel != null && _viewModel.TryGetMuzzle(out Vector3 muzzle))
 			return muzzle;
+
+		// Visto de fora (o bot, o boneco de outro jogador): o cano da arma
+		// na mão do corpo. Antes saía do olho, e o tiro dos bots parecia
+		// não sair da arma.
+		if (!_form.IsWolf && _body.GetNodeOrNull("Human/HeldWeapon") is Node held
+			&& held.FindChild(WeaponModel.MuzzleName, true, false) is Node3D tip && tip.IsVisibleInTree())
+			return tip.GlobalPosition;
 
 		return fallback;
 	}

@@ -35,7 +35,7 @@ public readonly struct Kill
 	public const string WolfPounceId = "lobo_salto";
 	public const string WolfDiveId = "lobo_bote";
 
-	/// <summary>Separa o id da arma das marcas do golpe ("ak47#c":
+	/// <summary>Separa o id da arma das marcas do golpe ("ar15#c":
 	/// <c>c</c> pelas costas, <c>a</c> de cima). As marcas viajam no
 	/// mesmo texto da arma, então o abate online não precisou de campo
 	/// novo na rede.</summary>
@@ -49,7 +49,7 @@ public readonly struct Kill
 	public readonly int VictimTeam;
 	public readonly KillCause Cause;
 
-	/// <summary>Com o quê: id da arma ("ak47", "faca", "choque") ou
+	/// <summary>Com o quê: id da arma ("ar15", "faca", "choque") ou
 	/// "lobo". É o ícone do feed e a estatística de arma favorita.</summary>
 	public readonly string Weapon;
 

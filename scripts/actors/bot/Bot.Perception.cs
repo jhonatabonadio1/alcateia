@@ -234,6 +234,10 @@ public partial class Bot
 		// pelas costas que a vigília existe para lembrar: o bot levava
 		// tiro de um, trocava de alvo meio segundo depois e esquecia de
 		// onde o tiro veio.
+		// Achou alguém depois de um tempo sem ninguém: avisa no rádio
+		// (às vezes; BotRadio segura o flood).
+		if (best != null && _target == null && _radioQuiet > 6.0) BotRadio.Instance?.OnSpotted(this);
+		if (best != null) _radioQuiet = 0;
 		_target = best;
 		_targetHealth = bestHealth;
 	}
@@ -297,6 +301,7 @@ public partial class Bot
 	{
 		// Lobo que apanha não fica plantado: troca o lado na hora.
 		if (_form != null && _form.IsWolf) { _strafeSide = -_strafeSide; _strafeTimer = StrafeInterval * 0.5; }
+		if (!_health.IsDead && _health.Hp < _health.MaxHp * 0.35f) BotRadio.Instance?.OnHurt(this);
 		if (_health.IsDead || from == Vector3.Zero || _reacting) return;
 
 		_threatAge = 0;

@@ -24,27 +24,53 @@ public partial class SpecialBadge : Control
 		MouseFilter = MouseFilterEnum.Ignore;
 	}
 
+	/// <summary>Lado do quadro do brilho: o disco ocupa a mesma fração
+	/// dele que no botão do especial.</summary>
+	private const float GlowSide = 76f;
+
 	public override void _Ready()
 	{
+		// O mesmo brilho do botão do especial pronto (AbilityTile): halo,
+		// arcos elétricos e raios saltando — em miniatura.
+		var glow = new ShaderMaterial { Shader = AbilityTile.GlowShader };
+		glow.SetShaderParameter("glow", UiTokens.WolfOrange);
+		glow.SetShaderParameter("disc", Radius / GlowSide);
+		glow.SetShaderParameter("power", 1f);
+		glow.SetShaderParameter("burst", 0f);
+		AddChild(new ColorRect
+		{
+			Color = Colors.White,
+			Material = glow,
+			MouseFilter = MouseFilterEnum.Ignore,
+			Position = CustomMinimumSize / 2f - new Vector2(GlowSide, GlowSide) / 2f,
+			Size = new Vector2(GlowSide, GlowSide),
+			ShowBehindParent = true
+		});
+
+		_disc = new Control { MouseFilter = MouseFilterEnum.Ignore, Size = CustomMinimumSize };
+		_disc.Draw += DrawDisc;
+		AddChild(_disc);
+
 		Icon claw = Icon.Make(IconKind.Claw, 15, Colors.White);
 		AddChild(claw);
-		claw.SetAnchorsAndOffsetsPreset(LayoutPreset.Center);
 		claw.Position = (CustomMinimumSize - new Vector2(15, 15)) / 2f;
 	}
+
+	private Control _disc;
 
 	public override void _Process(double delta)
 	{
 		_time += delta;
-		QueueRedraw();
+		_disc?.QueueRedraw();
 	}
 
-	public override void _Draw()
+	private void DrawDisc()
 	{
-		Vector2 c = Size / 2f;
+		Vector2 c = _disc.Size / 2f;
 		Color orange = UiTokens.WolfOrange;
 		float breath = 0.5f + 0.5f * Mathf.Sin((float)_time * 4.2f);
 
-		// Raios girando.
+		// Raios girando atrás do disco.
 		var ray = new Vector2[3];
 		for (int i = 0; i < Rays; i++)
 		{
@@ -53,28 +79,12 @@ public partial class SpecialBadge : Control
 			ray[0] = c + Vector2.FromAngle(a - 0.13f) * (Radius * 0.9f);
 			ray[1] = c + Vector2.FromAngle(a + 0.13f) * (Radius * 0.9f);
 			ray[2] = c + Vector2.FromAngle(a) * reach;
-			DrawColoredPolygon(ray, new Color(1f, 0.78f, 0.35f, i % 2 == 0 ? 0.7f : 0.45f));
+			_disc.DrawColoredPolygon(ray, new Color(1f, 0.78f, 0.35f, i % 2 == 0 ? 0.55f : 0.35f));
 		}
 
-		// O halo.
-		DrawCircle(c, Radius + 4f + breath * 2f, new Color(orange, 0.22f));
-		DrawCircle(c, Radius + 2f, new Color(orange, 0.35f));
-
-		// O disco e o aro.
-		DrawCircle(c, Radius, orange);
-		DrawCircle(c, Radius - 3f, orange.Lightened(0.12f));
-		DrawArc(c, Radius - 1f, 0, Mathf.Tau, 32, new Color(1f, 0.97f, 0.9f), 1.6f, true);
-
-		// Faíscas piscando.
-		for (int i = 0; i < 4; i++)
-		{
-			float a = i * 1.7f + 0.6f;
-			float blink = Mathf.Max(0f, Mathf.Sin((float)_time * 5f + i * 1.9f));
-			Vector2 at = c + Vector2.FromAngle(a) * (Radius + 6f + (i % 2) * 3f);
-			float s = 1.2f + 2.6f * blink;
-			var white = new Color(1f, 0.96f, 0.8f, 0.35f + 0.65f * blink);
-			DrawLine(at - new Vector2(s, 0), at + new Vector2(s, 0), white, 1.2f, true);
-			DrawLine(at - new Vector2(0, s), at + new Vector2(0, s), white, 1.2f, true);
-		}
+		// O disco e o aro claro.
+		_disc.DrawCircle(c, Radius, orange);
+		_disc.DrawCircle(c, Radius - 3f, orange.Lightened(0.12f));
+		_disc.DrawArc(c, Radius - 1f, 0, Mathf.Tau, 32, new Color(1f, 0.97f, 0.9f), 1.6f, true);
 	}
 }

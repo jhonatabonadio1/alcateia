@@ -175,8 +175,10 @@ public partial class LobbyShell : Control
 		if (IsPanel(screen)) Sfx.Ui("ui_abrir");
 		else if (wasPanel) Sfx.Ui("ui_fechar");
 
-		// A sala tem a música dela, mais tensa; o resto, a do menu.
-		PlayMusic(screen is RoomScreen && Sfx.Has("musica_sala") ? "musica_sala" : "musica_menu");
+		// Uma música só no lobby inteiro: o tema da sala (19/11: "a música
+		// da sala pode ser a do menu principal também; essa é bem melhor").
+		// Navegar entre telas não recomeça o tema.
+		PlayMusic("musica_sala");
 
 		Current = screen;
 		_content.AddChild(screen);

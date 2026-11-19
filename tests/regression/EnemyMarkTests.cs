@@ -57,7 +57,7 @@ public sealed class EnemyMarkTest : RegressionTest
 		// 18/11): a do inimigo, e nenhuma outra (a forte, que atravessa
 		// parede, é só de quem te matou).
 		bool other = bot.FindChildren("*", nameof(MeshInstance3D), true, false).OfType<MeshInstance3D>()
-			.Any(m => m.MaterialOverlay != null && m.MaterialOverlay != Silhouette.Enemy);
+			.Any(m => BodyOverlay.Edge(m) is Material edge && edge != Silhouette.Enemy);
 		b.Check(!other, "no corpo, só a borda suave de inimigo");
 
 		await Photo(b, bot, "inimigo_frente", new Vector3(0, 0.2f, -3.2f));

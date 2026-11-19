@@ -72,6 +72,31 @@ public partial class Weapon
 		}
 	}
 
+	private bool _mirrorReloading;
+
+	/// <summary>
+	/// O boneco de outro jogador, online: o pente, a recarga, a carga do
+	/// especial e as granadas que o dono informa (o status, a cada 0,1 s).
+	/// É o que o HUD dele mostra a quem o assiste no espectador.
+	/// </summary>
+	public void MirrorGear(int ammo, bool reloading, float charge, int grenades)
+	{
+		if (!Puppet) return;
+		if (ammo >= 0 && (ammo != AmmoInMag || reloading != _mirrorReloading))
+		{
+			if (HumanSlot == Slot.Secondary) SecondaryAmmo = ammo;
+			else if (HumanSlot == Slot.Primary) PrimaryAmmo = ammo;
+			_mirrorReloading = reloading;
+			EmitSignal(SignalName.AmmoChanged, AmmoInMag, MagSize, reloading);
+		}
+		if (!Mathf.IsEqualApprox(charge, SpecialCharge)) SetSpecialCharge(charge);
+		if (grenades != Grenades)
+		{
+			Grenades = grenades;
+			EmitSignal(SignalName.GrenadesChanged, Grenades);
+		}
+	}
+
 	/// <summary>A cópia do replay repete um acontecimento gravado: o golpe
 	/// do lobo, a recarga de habilidade, o acerto, a coronhada, a recarga.</summary>
 	public void ReplayEvent(ReplayTape.Kind kind, int a, float b)

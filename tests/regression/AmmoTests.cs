@@ -17,7 +17,19 @@ public sealed class FiniteAmmoTest : RegressionTest
 		b.RemoveBots();
 		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.4);
 		Weapon w = b.Weapon;
-		WeaponDefinition m16 = Arsenal.Get("m16a2");
+
+		// O padrão do jogo (18/11): a reserva não desce ao recarregar.
+		b.Check(w.InfiniteAmmo, "a munição é infinita por padrão");
+		int full = w.Reserve;
+		await b.Tap("attack");
+		await b.Seconds(0.3);
+		b.Check(w.TryReload(), "recarrega");
+		await b.Until(() => !w.IsReloading, 5);
+		b.Check(w.Reserve == full && w.AmmoInMag == w.MagSize, $"recarregou e a reserva não desceu ({w.AmmoInMag} / {w.Reserve})");
+
+		// Daqui em diante, a regra de munição que acaba (continua existindo, desligada).
+		w.InfiniteAmmo = false;
+		WeaponDefinition m16 = Arsenal.Get("ar15");
 
 		w.Equip(m16, Arsenal.Get("m9"), 1);
 		w.SelectSlot(Slot.Primary);
@@ -49,10 +61,10 @@ public sealed class FiniteAmmoTest : RegressionTest
 		b.Check(clicks == 1 && !w.IsReloading && w.AmmoInMag == 0, $"o gatilho dá o clique seco ({clicks} cliques)");
 
 		// A mesma arma, caída: a munição dela entra na reserva, até o teto.
-		b.Check(w.CanTake(m16) && w.TryPickUp(m16, 30, 90), "junta a munição de um M16 caído");
+		b.Check(w.CanTake(m16) && w.TryPickUp(m16, 30, 90), "junta a munição de um AR-15 caído");
 		b.Check(w.Reserve == m16.Reserve && w.AmmoInMag == 0, $"a reserva enche até o teto ({w.Reserve})");
-		b.Check(!w.CanTake(m16), "com a reserva cheia, outro M16 fica no chão");
-		b.Check(!w.CanTake(Arsenal.Get("ak47")), "arma diferente com o espaço ocupado fica no chão");
+		b.Check(!w.CanTake(m16), "com a reserva cheia, outro AR-15 fica no chão");
+		b.Check(!w.CanTake(Arsenal.Get("ar15_ouro")), "arma diferente com o espaço ocupado fica no chão");
 
 		// Renascer enche tudo.
 		w.TryPickUp(m16, 0, 0);
@@ -103,7 +115,7 @@ public sealed class AimZoomTest : RegressionTest
 		{
 			bool pistol = Arsenal.IsSecondary(id);
 			WeaponDefinition def = Arsenal.Get(id);
-			w.Equip(pistol ? Arsenal.Get("m16a2") : def, Arsenal.Get("m9"), 1);
+			w.Equip(pistol ? Arsenal.Get("ar15") : def, Arsenal.Get("m9"), 1);
 			w.SelectSlot(pistol ? Slot.Secondary : Slot.Primary);
 			await b.Seconds(0.8);
 

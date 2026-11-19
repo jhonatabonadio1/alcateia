@@ -41,8 +41,8 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   boneco dos outros nasce com o modelo do time. Precisa: o personagem na
   sala (servidor) e o boneco montar com ele.
 - **Preço dos personagens.** Hoje todo personagem vem com o perfil
-  (`Starter`). Com vida a mais, a Eve é vantagem de quem a escolhe; ter
-  preço (em Presas, nunca em Sangue) é decisão de economia.
+  (`Starter`). Personagem com vida a mais seria vantagem de quem o
+  escolhe; ter preço (em Presas, nunca em Sangue) é decisão de economia.
 - **Logotipo do jogo.** Hoje: só o nome escrito na fonte do menu.
 - **Imagens das patentes melhores.** Hoje: insígnias desenhadas por
   código (`RankBadge`).

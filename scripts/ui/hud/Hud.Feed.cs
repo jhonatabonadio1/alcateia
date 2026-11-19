@@ -113,9 +113,11 @@ public partial class Hud
 	/// arquivo (voz_double_kill…; docs/SONS_IA.md). Sem o arquivo, cai na
 	/// fala genérica (voz_multi_kill) se existir, senão fica em silêncio —
 	/// melhor que outra voz.</summary>
-	private static void Say(string voice)
+	private void Say(string voice)
 	{
-		if (string.IsNullOrEmpty(voice)) return;
+		// A voz é só de quem fez (19/11): o HUD de quem se vê (a câmera de
+		// abate, o espectador num aliado) mostra a chamada, mas não fala.
+		if (string.IsNullOrEmpty(voice) || Subject != null) return;
 		WorldAudio.Say(Sfx.Has(voice) ? voice : voice == KillStory.RevengeVoice ? "" : KillStory.FallbackVoice);
 	}
 

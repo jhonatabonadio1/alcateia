@@ -128,13 +128,14 @@ public partial class Bot : CharacterBody3D
 		_spawn = GlobalPosition;
 
 		// A cópia do replay: a cena já põe o bot no grupo; ela sai dele e
-		// não bate em nada.
+		// ninguém bate nela. Ela só sente o cenário (camada 1): sem chão,
+		// o lobo achava que estava no ar e não andava (19/11).
 		if (ReplayCopy)
 		{
 			Remote = true;
 			RemoveFromGroup(Groups.Bots);
 			CollisionLayer = 0;
-			CollisionMask = 0;
+			CollisionMask = 1;
 		}
 		else AddToGroup(Groups.Bots);
 		Difficulty.Apply(this);
@@ -182,6 +183,9 @@ public partial class Bot : CharacterBody3D
 		SetRoute(-1);
 	}
 
+	/// <summary>Segundos sem alvo (para o "Enemy Spotted!" do rádio).</summary>
+	private double _radioQuiet = 10;
+
 	public override void _PhysicsProcess(double delta)
 	{
 		if (Remote)
@@ -206,6 +210,7 @@ public partial class Bot : CharacterBody3D
 		}
 
 		UpdateNoise(delta);
+		if (_target == null) _radioQuiet += delta;
 
 		// Os golpes especiais do lobo movem o corpo pela arma, com o mesmo
 		// motor do jogador.
@@ -359,7 +364,7 @@ public partial class Bot : CharacterBody3D
 			ShieldRatio = _health.MaxShield > 0 ? _health.Shield / _health.MaxShield : 0f,
 			AmmoRatio = mag > 0 ? (float)ammo / mag : 1f,
 			MagEmpty = ammo <= 0,
-			ReserveEmpty = ammo <= 0 && _weapon.Reserve <= 0,
+			ReserveEmpty = ammo <= 0 && _weapon.Reserve <= 0 && !_weapon.InfiniteAmmo,
 			OutOfAmmo = !_weapon.HasAmmoIn(Slot.Primary) && !_weapon.HasAmmoIn(Slot.Secondary),
 			IsWolf = _form.IsWolf,
 			// Com WP para pagar: sem esta conta o bot escolhia virar lobo,

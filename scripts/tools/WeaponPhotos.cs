@@ -20,14 +20,22 @@ public partial class WeaponPhotos : Node
 
 	/// <summary>As armas fotografadas: todas as de assets/armas/armas.json
 	/// que aparecem na interface.</summary>
-	private static readonly string[] Ids = { "ar15", "ar15_ultimate", "m16a2", "ak47", "sg552", "ump45", "m3", "m9", "faca", "choque" };
+	private static readonly string[] Ids = { "ar15", "ar15_ultimate", "ar15_ouro", "ar15_diamante", "ar15_8bit", "ar15_lava", "m9", "faca", "choque" };
+
+	/// <summary>Só estas (<c>-- --armas=ar15_ouro,ar15_8bit</c>); sem isso, todas.</summary>
+	private static string[] Wanted()
+	{
+		foreach (string arg in OS.GetCmdlineUserArgs())
+			if (arg.StartsWith("--armas=")) return arg["--armas=".Length..].Split(',');
+		return Ids;
+	}
 
 	public override async void _Ready()
 	{
 		string dir = ProjectSettings.GlobalizePath("res://assets/ui/armas/");
 		DirAccess.MakeDirRecursiveAbsolute(dir);
 
-		foreach (string id in Ids)
+		foreach (string id in Wanted())
 		{
 			SubViewport stage = Stage(id);
 			AddChild(stage);

@@ -1,52 +1,76 @@
 using Godot;
 
 /// <summary>
-/// A silhueta vermelha de quem te matou, como
-/// <see cref="GeometryInstance3D.MaterialOverlay"/> — uma segunda passada
-/// por cima do material dele, que acompanha o esqueleto. Forte e **sem**
-/// teste de profundidade: visto através de tudo, só enquanto você está
-/// morto (<see cref="KillCam"/>).
+/// As bordas dos corpos (pedidos do Jhon, 18 e 19/11): **só a borda**, sem
+/// pintar o corpo por dentro e sem linhas por dentro dele, e nunca por
+/// cima da arma na mão.
 ///
-/// Até 15/11 havia também uma versão leve, só na borda, em todo inimigo;
-/// o Jhon trocou por um brilho no ombro (<see cref="ShoulderMark"/>).
+/// Como: duas passadas por cima da malha (<see cref="BodyOverlay"/>).
+/// A primeira (<see cref="Mask"/>) não pinta nada; só marca no *stencil*
+/// os pixels do corpo, através de tudo. A segunda é a casca do corpo
+/// virada do avesso e um pouco maior, que só pinta onde **não** está
+/// marcado — sobra a beirada. A arma na mão marca o stencil também
+/// (<see cref="ViewModel"/>), então nenhuma borda passa por cima dela.
+///
+/// - <see cref="Ally"/>: branca, vista em qualquer parte do mapa.
+/// - <see cref="Enemy"/>: vermelha suave, só onde ele está à vista.
+/// - <see cref="Killer"/>: vermelha forte, através de tudo, de quem te
+///   matou, enquanto você está morto (<see cref="KillCam"/>).
 /// </summary>
 public static class Silhouette
 {
-	private static ShaderMaterial _killer;
+	private const int StencilRef = 1;
 
-	public static ShaderMaterial Killer => _killer ??= Make(true, 0.28f, 0.6f, 10);
+	private static ShaderMaterial _mask, _killer, _ally, _enemy;
 
-	private static ShaderMaterial _ally, _enemy;
+	/// <summary>Só marca o stencil (o corpo, a arma na mão): onde está
+	/// marcado, borda nenhuma pinta.</summary>
+	public static ShaderMaterial Mask => _mask ??= MakeMask();
 
-	/// <summary>Aliado: um contorno branco suave, só em volta do corpo.</summary>
-	public static ShaderMaterial Ally => _ally ??= Outline(new Color(1f, 1f, 1f), 0.55f, 7);
+	public static ShaderMaterial Killer => _killer ??= Edge(new Color(1f, 0.12f, 0.08f), 0.95f, throughWalls: true, width: 1.4f);
 
-	/// <summary>Inimigo: um contorno vermelho suave e leve.</summary>
-	public static ShaderMaterial Enemy => _enemy ??= Outline(new Color(1f, 0.22f, 0.2f), 0.6f, 6);
+	public static ShaderMaterial Ally => _ally ??= Edge(new Color(1f, 1f, 1f), 0.8f, throughWalls: true, width: 1f);
 
-	/// <summary>
-	/// O contorno dos times (pedido do Jhon, 19/11: "a borda deve ser só ao
-	/// redor dos personagens, não pode sobrepor a minha arma, sem borda no
-	/// esqueleto"): a casca do corpo **virada do avesso** e um pouco maior
-	/// — só aparece onde passa da beirada dele. Com teste de profundidade:
-	/// a arma na mão, as paredes e o próprio corpo ficam por cima, então não
-	/// há linha nenhuma por dentro dele nem através de nada. A espessura
-	/// cresce com a distância, para a linha ter a mesma largura na tela.
-	/// </summary>
-	private static ShaderMaterial Outline(Color color, float alpha, int priority)
+	public static ShaderMaterial Enemy => _enemy ??= Edge(new Color(1f, 0.22f, 0.2f), 0.75f, throughWalls: false, width: 1f);
+
+	private static ShaderMaterial MakeMask()
 	{
 		var shader = new Shader
 		{
-			Code = """
+			Code = $$"""
 				shader_type spatial;
-				render_mode unshaded, world_vertex_coords, depth_draw_never, cull_front, blend_mix, shadows_disabled;
+				render_mode unshaded, depth_test_disabled, depth_draw_never, cull_back, blend_mix, shadows_disabled;
+				stencil_mode write, compare_always, {{StencilRef}};
+
+				void fragment() {
+					ALBEDO = vec3(0.0);
+					ALPHA = 0.0;
+				}
+				"""
+		};
+		// Antes de qualquer borda.
+		return new ShaderMaterial { Shader = shader, RenderPriority = -40 };
+	}
+
+	/// <summary>A marca do corpo seguida da casca de fora. A espessura
+	/// cresce com a distância, para a linha ter a mesma largura na tela.</summary>
+	private static ShaderMaterial Edge(Color color, float alpha, bool throughWalls, float width)
+	{
+		string depth = throughWalls ? "depth_test_disabled, " : "";
+		var shader = new Shader
+		{
+			Code = $$"""
+				shader_type spatial;
+				render_mode unshaded, world_vertex_coords, {{depth}}depth_draw_never, cull_front, blend_mix, shadows_disabled;
+				stencil_mode read, compare_not_equal, {{StencilRef}};
 
 				uniform vec4 color : source_color = vec4(1.0);
-				uniform float alpha = 0.5;
+				uniform float alpha = 0.8;
+				uniform float width = 1.0;
 
 				void vertex() {
 					float far = length(VERTEX - CAMERA_POSITION_WORLD);
-					VERTEX += normalize(NORMAL) * clamp(far * 0.0022, 0.006, 0.06);
+					VERTEX += normalize(NORMAL) * clamp(far * 0.0024 * width, 0.005, 0.15);
 				}
 
 				void fragment() {
@@ -55,42 +79,12 @@ public static class Silhouette
 				}
 				"""
 		};
-		var material = new ShaderMaterial { Shader = shader, RenderPriority = priority };
-		material.SetShaderParameter("color", color);
-		material.SetShaderParameter("alpha", alpha);
-		return material;
+		var edge = new ShaderMaterial { Shader = shader, RenderPriority = 30 };
+		edge.SetShaderParameter("color", color);
+		edge.SetShaderParameter("alpha", alpha);
+		edge.SetShaderParameter("width", width);
+
+		var mask = new ShaderMaterial { Shader = Mask.Shader, RenderPriority = Mask.RenderPriority, NextPass = edge };
+		return mask;
 	}
-
-	private static ShaderMaterial Make(bool throughWalls, float fill, float rim, int priority)
-	{
-		string depth = throughWalls ? "depth_test_disabled, " : "";
-		var shader = new Shader
-		{
-			Code = $$"""
-				shader_type spatial;
-				render_mode unshaded, world_vertex_coords, {{depth}}depth_draw_never, cull_back, blend_mix;
-
-				uniform vec4 color : source_color = vec4(1.0, 0.08, 0.05, 1.0);
-
-				// Uma casca 4 mm para fora do corpo. Na mesma superfície,
-				// com teste de profundidade, a borda brigava com a pele
-				// pelo mesmo pixel e piscava com o boneco andando.
-				void vertex() {
-					VERTEX += normalize(NORMAL) * 0.004;
-				}
-
-				void fragment() {
-					float edge = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
-					ALBEDO = color.rgb;
-					ALPHA = {{F(fill)}} + {{F(rim)}} * edge * edge;
-				}
-				"""
-		};
-
-		return new ShaderMaterial { Shader = shader, RenderPriority = priority };
-	}
-
-	/// <summary>Número com ponto decimal sempre: "0" seria inteiro no
-	/// shader, e int + float não compila.</summary>
-	private static string F(float value) => value.ToString("0.0###", System.Globalization.CultureInfo.InvariantCulture);
 }

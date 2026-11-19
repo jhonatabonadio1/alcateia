@@ -29,6 +29,9 @@ public partial class KillCam
 
 	private const string BotScene = "res://scenes/bot.tscn";
 
+	/// <summary>Marca da arma na mão posta por esta visão (e não a do jogador).</summary>
+	private const string LentView = "vista_emprestada";
+
 	private Node3D _subject;
 	private Hud _subjectHud;
 	private ViewModel _subjectView;
@@ -36,7 +39,10 @@ public partial class KillCam
 	private bool _subjectFirst;
 	private Bot _copy;
 
-	private readonly List<(Node3D Owner, Node3D Node, bool Was)> _hidden = new();
+	/// <summary>De quem são os olhos da tela agora (a primeira pessoa de
+	/// outro corpo). Null fora disso. O som dele vira o "seu"
+	/// (<see cref="WorldAudio"/>).</summary>
+	public static Node3D Eyes { get; private set; }
 
 	/// <summary>A visão está na primeira pessoa de alguém, com a arma na
 	/// mão dele. Para os testes.</summary>
@@ -94,6 +100,7 @@ public partial class KillCam
 
 		EnterFirstPerson();
 		HideBody(_subject);
+		StepKick(delta);
 	}
 
 	/// <summary>A câmera da cabeça de quem se vê, com a arma na mão do jogo.</summary>
@@ -111,17 +118,57 @@ public partial class KillCam
 		if (_subjectCamera.GetNodeOrNull<ViewModel>("ViewModel") is ViewModel own) _subjectView = own;
 		else
 		{
-			_subjectView = new ViewModel { Name = "VistaDeQuemSeVe" };
+			// Com o nome de sempre: a arma dele acha a ponta do cano por ele
+			// (o tiro sai da arma na tela).
+			_subjectView = new ViewModel { Name = "ViewModel" };
+			_subjectView.SetMeta(LentView, true);
 			_subjectCamera.AddChild(_subjectView);
 		}
 		_subjectCamera.MakeCurrent();
 		_subjectFirst = true;
+		Eyes = _subject;
+		Weapon gun = _subject.GetNodeOrNull<Weapon>("Weapon");
+		if (gun != null)
+		{
+			_kickWeapon = gun;
+			gun.Fired += OnSubjectFired;
+		}
+	}
+
+	// O tranco da câmera no tiro, como na sua (Player.Camera): o corpo de
+	// outro não tem isso — a cabeça dele só segue a mira.
+	private const float KickScale = 0.55f, KickMax = 4f, KickRecover = 9f;
+	private Weapon _kickWeapon;
+	private float _kick;
+
+	private void OnSubjectFired()
+	{
+		if (_kickWeapon == null || !IsInstanceValid(_kickWeapon)) return;
+		_kick = Mathf.Min(_kick + Mathf.DegToRad(_kickWeapon.Recoil * KickScale), Mathf.DegToRad(KickMax));
+	}
+
+	private void StepKick(double delta)
+	{
+		if (_subjectCamera == null || !IsInstanceValid(_subjectCamera)) return;
+		_kick = Mathf.MoveToward(_kick, 0f, _kick * KickRecover * (float)delta + 0.0005f);
+		_subjectCamera.Rotation = new Vector3(_kick, _subjectCamera.Rotation.Y, _subjectCamera.Rotation.Z);
 	}
 
 	private void LeaveFirstPerson()
 	{
-		if (_subjectView != null && IsInstanceValid(_subjectView) && _subjectView.Name == "VistaDeQuemSeVe")
+		if (_kickWeapon != null && IsInstanceValid(_kickWeapon)) _kickWeapon.Fired -= OnSubjectFired;
+		_kickWeapon = null;
+		if (_subjectCamera != null && IsInstanceValid(_subjectCamera))
+			_subjectCamera.Rotation = new Vector3(0, _subjectCamera.Rotation.Y, _subjectCamera.Rotation.Z);
+		_kick = 0;
+		Eyes = null;
+		if (_subjectView != null && IsInstanceValid(_subjectView) && _subjectView.HasMeta(LentView))
+		{
+			// Sai já do lugar: o nome fica livre e a arma dele para de
+			// achar a ponta do cano nela.
+			_subjectView.GetParent()?.RemoveChild(_subjectView);
 			_subjectView.QueueFree();
+		}
 		_subjectView = null;
 		_subjectFirst = false;
 		_subjectCamera = null;
@@ -133,7 +180,10 @@ public partial class KillCam
 	private void WolfCamera(Node3D body, double delta)
 	{
 		float eyeHeight = body.GetNodeOrNull<Node3D>("Head")?.Position.Y ?? 0.62f;
-		float pitch = body.GetNodeOrNull<Node3D>("Head")?.Rotation.X ?? 0f;
+		// A inclinação da cabeça, no limite da câmera de lobo do jogador:
+		// o bot mira para cima e para baixo bem mais que isso, e a câmera
+		// ia parar olhando o teto.
+		float pitch = Mathf.Clamp(body.GetNodeOrNull<Node3D>("Head")?.Rotation.X ?? 0f, Mathf.DegToRad(-45f), Mathf.DegToRad(30f));
 		Vector3 eye = body.GlobalPosition + Vector3.Up * eyeHeight;
 		Basis look = Basis.FromEuler(new Vector3(pitch, body.GlobalRotation.Y, 0));
 		Vector3 back = look.Z * WolfDistance;
@@ -146,6 +196,7 @@ public partial class KillCam
 		query.Exclude = skip;
 		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
 		Vector3 at = hit.Count > 0 ? hit["position"].AsVector3() - back.Normalized() * WolfMargin : eye + back;
+		at = MapBounds.Clamp(GetTree(), at);
 
 		_camera.Near = 0.05f;
 		_camera.GlobalTransform = new Transform3D(look, at);
@@ -211,36 +262,79 @@ public partial class KillCam
 
 	// ------------------------------------------------------------ esconder o corpo visto
 
-	private static readonly string[] BodyParts = { "Human", "WolfVisual", "MeshInstance3D", "HealthBar", "RadioIcone" };
+	/// <summary>
+	/// A camada de desenho dos corpos que a câmera não mostra (quem se vê
+	/// em primeira pessoa; no replay, o corpo de verdade de quem matou). As
+	/// câmeras desta visão não desenham essa camada; o resto do mundo, sim
+	/// (a sombra continua).
+	///
+	/// Até 19/11 escondia trocando o <c>Visible</c> das partes e voltava o
+	/// que estava antes — e se o corpo virou lobo no meio, voltava o humano
+	/// à vista e o lobo escondido (o "lobo bugado" do espectador).
+	/// </summary>
+	public const uint WatchedLayer = 1u << 20;
+
+	private static readonly string[] BodyParts = { "Human", "WolfVisual", "WolfFx", "MeshInstance3D", "HealthBar", "RadioIcone" };
+	private readonly HashSet<Node3D> _hidden = new();
+	private int _rehide;
 
 	private void HideBody(Node3D body)
 	{
 		if (body == null || !IsInstanceValid(body)) return;
-		foreach (string part in BodyParts)
-		{
-			if (body.GetNodeOrNull<Node3D>(part) is not Node3D node) continue;
-			bool known = false;
-			foreach (var (_, n, _) in _hidden) if (n == node) { known = true; break; }
-			if (!known) _hidden.Add((body, node, node.Visible));
-			node.Visible = false;
-		}
+		bool fresh = _hidden.Add(body);
+		CullWatched(_camera);
+		CullWatched(_subjectCamera);
+		// Partes novas aparecem (a arma trocada, o lobo): confere de novo
+		// a cada poucos quadros.
+		if (!fresh && --_rehide > 0) return;
+		_rehide = 6;
+		foreach (Node3D hidden in _hidden) Mark(hidden, true);
 	}
 
 	private void ShowBody(Node3D body)
 	{
-		for (int i = _hidden.Count - 1; i >= 0; i--)
-		{
-			var (owner, node, was) = _hidden[i];
-			if (owner != body) continue;
-			if (IsInstanceValid(node)) node.Visible = was;
-			_hidden.RemoveAt(i);
-		}
+		if (body == null || !_hidden.Remove(body)) return;
+		if (IsInstanceValid(body)) Mark(body, false);
 	}
 
 	private void ShowBodies()
 	{
-		foreach (var (_, node, was) in _hidden)
-			if (IsInstanceValid(node)) node.Visible = was;
+		foreach (Node3D body in _hidden)
+			if (IsInstanceValid(body)) Mark(body, false);
 		_hidden.Clear();
+	}
+
+	private static void CullWatched(Camera3D camera)
+	{
+		if (camera != null && IsInstanceValid(camera)) camera.CullMask &= ~WatchedLayer;
+	}
+
+	internal static void Mark(Node3D body, bool hide)
+	{
+		foreach (string part in BodyParts)
+			if (body.GetNodeOrNull(part) is Node node) MarkTree(node, hide);
+	}
+
+	private const string LayersBefore = "camadas_antes_da_camera";
+
+	/// <summary>A câmera desenha o que tiver qualquer camada dela: para
+	/// sumir, o corpo fica **só** na camada escondida, e a de antes fica
+	/// guardada para voltar.</summary>
+	private static void MarkTree(Node node, bool hide)
+	{
+		if (node is VisualInstance3D visual && node is not Light3D)
+		{
+			if (hide && !visual.HasMeta(LayersBefore))
+			{
+				visual.SetMeta(LayersBefore, (long)visual.Layers);
+				visual.Layers = WatchedLayer;
+			}
+			else if (!hide && visual.HasMeta(LayersBefore))
+			{
+				visual.Layers = (uint)visual.GetMeta(LayersBefore).AsInt64();
+				visual.RemoveMeta(LayersBefore);
+			}
+		}
+		foreach (Node child in node.GetChildren()) MarkTree(child, hide);
 	}
 }

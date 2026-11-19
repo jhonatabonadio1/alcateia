@@ -28,6 +28,10 @@ public partial class DamageIndicator : Control
 
 	[Export] public Color ArcColor = new Color(0.95f, 0.1f, 0.08f);
 
+	/// <summary>O indicador de outro corpo (o HUD da câmera de abate e do
+	/// espectador). Null: o de quem joga.</summary>
+	public Node3D Subject { get; set; }
+
 	private Health _health;
 	private readonly List<(Vector3 From, double Age, float Strength)> _hits = new();
 
@@ -37,7 +41,7 @@ public partial class DamageIndicator : Control
 		AnchorBottom = 1f;
 		MouseFilter = MouseFilterEnum.Ignore;
 
-		var player = Groups.LocalPlayer(GetTree());
+		Node player = Subject ?? Groups.LocalPlayer(GetTree());
 		_health = player?.GetNodeOrNull<Health>("Health");
 
 		if (_health == null) return;

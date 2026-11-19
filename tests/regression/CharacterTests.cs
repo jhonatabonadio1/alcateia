@@ -29,7 +29,8 @@ public sealed class CharacterTest : RegressionTest
 	{
 		b.RemoveBots();
 		var skins = CharacterSkin.All();
-		b.Check(skins.Count > 0, "há pelo menos um personagem em assets/personagens");
+		// A Eve saiu (19/11): pode não haver nenhum; os de sempre não são pastas.
+		RegressionBench.Note($"{skins.Count} personagem(ns) em assets/personagens");
 
 		float humanTop = HeadTop(ReferenceHuman, out _), wolfTop = HeadTop(ReferenceWolf, out _);
 		RegressionBench.Note($"régua: topo da cabeça {RegressionBench.F(humanTop)} m (Ely), {RegressionBench.F(wolfTop)} m (lobo)");

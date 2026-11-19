@@ -310,7 +310,7 @@ save(clip(kn("bong_001.wav"), mono=False), "contagem", -10)
 # ui_passar, ui_clique e ui_negado: desde 18/11 são os gerados pelo Jhon
 # (tools/sons/preparar_ia.py). Não refazer aqui — as variações _1, _2, _3
 # daqui tocariam sorteadas junto com os novos.
-# musica_menu: desde 18/11 é o tema gerado pelo Jhon (tools/sons/preparar_ia.py).
+# musica_menu saiu em 19/11: o lobby inteiro toca musica_sala.
 
 # ---------------------------------------------------------- arma vazia
 def dry_click(seed=5):

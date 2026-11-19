@@ -111,6 +111,14 @@ public partial class Bot
 		_health.Mirror(hp, maxHp, shield, maxShield, dead);
 	}
 
+	/// <summary>Partida autoritativa: o pente, a recarga, a carga do
+	/// especial, as granadas e o WP do dono (o fim do Status, desde 19/11).</summary>
+	public void RemoteGear(int ammo, bool reloading, int grenades, float wp, float charge)
+	{
+		_weapon.MirrorGear(ammo, reloading, charge, grenades);
+		_form.MirrorWp(wp);
+	}
+
 	private void BecomeRemote()
 	{
 		_health.AutoRespawn = false;

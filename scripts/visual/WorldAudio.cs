@@ -128,7 +128,10 @@ public partial class WorldAudio : Node
 	private void OnNoise(Noise noise)
 	{
 		Node source = noise.Source;
-		bool mine = source != null && source == _local;
+		// Na primeira pessoa de outro (câmera de abate, espectador), o som
+		// dele é o "seu": o tiro com o corpo da arma, o passo no ouvido.
+		Node own = KillCam.Eyes ?? (KillCam.Active ? null : _local);
+		bool mine = source != null && source == own;
 		bool wolf = source?.GetNodeOrNull<FormController>("FormController")?.IsWolf ?? false;
 
 		switch (noise.Kind)
@@ -168,7 +171,7 @@ public partial class WorldAudio : Node
 		return surface == "" ? name : Sfx.First($"{name}_{surface}", name);
 	}
 
-	/// <summary>Cada arma tem a voz dela: <c>tiro_ak47</c>,
+	/// <summary>Cada arma tem a voz dela: <c>tiro_ar15</c>,
 	/// <c>tiro_m3</c>... Sem arquivo da arma, cai no <c>tiro</c>.
 	/// Longe, prefere <c>tiro_distante</c>: tiro distante é abafado,
 	/// não só mais baixo.</summary>
@@ -227,7 +230,7 @@ public partial class WorldAudio : Node
 	[Export] public float TensionScore = 0.1f;
 
 	/// <summary>Volume da música de tensão, em dB: por baixo do tiro.</summary>
-	[Export] public float TensionDb = -5f;
+	[Export] public float TensionDb = 1f;
 
 	private AudioStreamPlayer _tension;
 

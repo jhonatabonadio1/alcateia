@@ -16,7 +16,7 @@ using Godot.Collections;
 /// o script; trocar por modelo de artista é pôr os arquivos com os
 /// mesmos nomes — o AR-15 é assim: as peças saem do modelo de TastyTony
 /// por <c>tools/armas/blender/infima.py</c>, com a textura dele no lugar
-/// do nome do material. Quem usa só pede <c>WeaponModel.Build("ak47")</c>.
+/// do nome do material. Quem usa só pede <c>WeaponModel.Build("ar15")</c>.
 ///
 /// Convenção: origem no punho, cano para −Z, em metros. As peças que a
 /// animação mexe ficam em nós com nome: <c>Magazine</c> (o carregador),
@@ -210,6 +210,8 @@ public static class WeaponModel
 				Roughness = 0.6f,
 				MetallicSpecular = 0.5f
 			};
+			// A skin 8 bit é de pixel: sem suavizar os blocos.
+			if (name.Contains("8Bit")) made.TextureFilter = BaseMaterial3D.TextureFilterEnum.NearestWithMipmaps;
 
 			// Skin que brilha (o AR-15 Ultimate): ao lado da cor (X_D.png) pode
 			// haver a emissão (X_E.png), só com as flames e as quinas acesas.
@@ -226,6 +228,14 @@ public static class WeaponModel
 				made.EmissionTexture = GD.Load<Texture2D>(emissive);
 				made.Roughness = 0.38f;
 				made.Metallic = 0.35f;
+			}
+
+			// O 8 bit é fosco: brilho de metal desmancha o pixel.
+			if (name.Contains("8Bit"))
+			{
+				made.Metallic = 0f;
+				made.Roughness = 0.9f;
+				made.MetallicSpecular = 0.2f;
 			}
 
 			Materials[name] = made;

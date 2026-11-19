@@ -520,30 +520,39 @@ Novidades,,,,scripts/lobby/WelcomeScreen.cs
 +5% de velocidade na forma de lobo.,,,,scripts/meta/Catalog.cs
 +6% de dano da garra.,,,,scripts/meta/Catalog.cs
 +6% de força no pulo do lobo.,,,,scripts/meta/Catalog.cs
+"+6% de velocidade e +5% de força no pulo, na forma de lobo.",,,,scripts/meta/Catalog.cs
++9% de dano da garra.,,,,scripts/meta/Catalog.cs
 1 dia,,,,scripts/meta/Catalog.cs
 30 dias,,,,scripts/meta/Catalog.cs
 7 dias,,,,scripts/meta/Catalog.cs
 90 dias,,,,scripts/meta/Catalog.cs
 A secundária de todo conjunto. Troca rápida para quando o pente acaba no meio da luta.,,,,scripts/meta/Catalog.cs
-AK-47,,,,scripts/meta/Catalog.cs
+Alfa,,,,scripts/meta/Catalog.cs
 Anti-lobo: atordoa e desacelera quem pega o estouro. Não existe para matar; existe para o lobo não chegar.,,,,scripts/meta/Catalog.cs
 AR-15,,,,scripts/meta/Catalog.cs
+AR-15 8 Bit,,,,scripts/meta/Catalog.cs
+AR-15 Diamante,,,,scripts/meta/Catalog.cs
+AR-15 Lava,,,,scripts/meta/Catalog.cs
+AR-15 Ouro,,,,scripts/meta/Catalog.cs
 AR-15 Ultimate,,,,scripts/meta/Catalog.cs
 Bruto,,,,scripts/meta/Catalog.cs
+"Cadência mais alta e tiro mais junto, com um pouco menos de dano. Pintado em pixel, como nos jogos de antigamente.",,,,scripts/meta/Catalog.cs
+Caçador Noturno,,,,scripts/meta/Catalog.cs
 Classe de lobo,,,,scripts/meta/Catalog.cs
 Couro Grosso,,,,scripts/meta/Catalog.cs
-Escopeta,,,,scripts/meta/Catalog.cs
 "Escopeta de bombeada, recarga cartucho a cartucho. Decide corredor; não existe em campo aberto.",,,,scripts/meta/Catalog.cs
 Fuzil de assalto,,,,scripts/meta/Catalog.cs
-Fuzil de controle,,,,scripts/meta/Catalog.cs
+Fúria da Lua,,,,scripts/meta/Catalog.cs
 Garra Afiada,,,,scripts/meta/Catalog.cs
-Impacto bruto: mata com um tiro na cabeça. Paga com recuo pesado e um estampido que se ouve de longe.,,,,scripts/meta/Catalog.cs
+"Lendária. +12% de escudo máximo do lobo, e ele se desfaz 20% mais devagar.",,,,scripts/meta/Catalog.cs
+Lendária. +7% de dano da garra e +5% de velocidade na forma de lobo.,,,,scripts/meta/Catalog.cs
+"Lendária. O AR-15 mais forte por tiro, com o recuo domado. Ouro inteiro, polido e gravado.",,,,scripts/meta/Catalog.cs
+Lendária. Pente maior e o tiro mais preciso do arsenal. Facetas de cristal que brilham.,,,,scripts/meta/Catalog.cs
 Ligeiro,,,,scripts/meta/Catalog.cs
 "Linha de frente: escudo alto, garra pesada, resiste a tiro no corpo. Mais lento no chão.",,,,scripts/meta/Catalog.cs
 Melhoria · lobo,,,,scripts/meta/Catalog.cs
 "O AR-15 no limite: um pouco mais de dano, cadência e pente, e o recuo mais domado. Pele roxa com flames que brilham.",,,,scripts/meta/Catalog.cs
 O escudo do lobo se desfaz 20% mais devagar.,,,,scripts/meta/Catalog.cs
-O fuzil mais estável do arsenal: recuo baixo e linear. Pune quem atira andando.,,,,scripts/meta/Catalog.cs
 "O fuzil padrão de antes: os mesmos números do AR-15, com alça de transporte e coronha fixa.",,,,scripts/meta/Catalog.cs
 "O fuzil padrão. Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e não é ruim em nada.",,,,scripts/meta/Catalog.cs
 os dois times,,,,scripts/meta/Catalog.cs
@@ -552,15 +561,14 @@ Pelo Denso,,,,scripts/meta/Catalog.cs
 Perm,,,,scripts/meta/Catalog.cs
 Personagem · {0},,,,scripts/meta/Catalog.cs
 Pistola,,,,scripts/meta/Catalog.cs
+Presas de Aço,,,,scripts/meta/Catalog.cs
 Salto Longo,,,,scripts/meta/Catalog.cs
-SG-552,,,,scripts/meta/Catalog.cs
 Silenciosa: não faz ruído para os bots. A arma de quem quer o abate sem entregar a posição.,,,,scripts/meta/Catalog.cs
 Sindicato,,,,scripts/meta/Catalog.cs
 "SMG de dano, a arma anti-lobo. Rápida na mão e forte de perto — a que você puxa quando ouve o uivo.",,,,scripts/meta/Catalog.cs
-Submetralhadora,,,,scripts/meta/Catalog.cs
 Troca de nome,,,,scripts/meta/Catalog.cs
 Troca o seu nickname uma vez. O nome é fixo sem este item.,,,,scripts/meta/Catalog.cs
-UMP-45,,,,scripts/meta/Catalog.cs
+"Um pouco mais de dano por tiro, um pouco menos de cadência. Rocha escura com lava acesa nas rachaduras.",,,,scripts/meta/Catalog.cs
 Vanguarda,,,,scripts/meta/Catalog.cs
 "Velocidade e flanco: o lobo mais rápido e o pulo mais longo, com pouco escudo. Destrava em Batedor I.",,,,scripts/meta/Catalog.cs
 .NET — .NET Foundation e colaboradores,,,,scripts/meta/Credits.cs
@@ -625,13 +633,13 @@ Letreiros: Stardos Stencil,,,,scripts/meta/Credits.cs
 Licença da Asset Store,,,,scripts/meta/Credits.cs
 licença de uso do Mixamo,,,,scripts/meta/Credits.cs
 licença do GameDev Market,,,,scripts/meta/Credits.cs
-"Lobos azul e vermelho e a loba da Eve (modelo, esqueleto e textura)",,,,scripts/meta/Credits.cs
+"Lobos azul e vermelho (modelo, esqueleto e textura)",,,,scripts/meta/Credits.cs
 M16A2 com braços e animações,,,,scripts/meta/Credits.cs
 "Mapa Armazém (galpão, contêineres, objetos e textura)",,,,scripts/meta/Credits.cs
 "Mapas, armas e mãos",,,,scripts/meta/Credits.cs
 MIT,,,,scripts/meta/Credits.cs
 Mixamo — Adobe,,,,scripts/meta/Credits.cs
-"Modelo e animações do humano, morte e corrida na parede do lobo; braços do AR-15 (X Bot); a Eve humana",,,,scripts/meta/Credits.cs
+"Modelo e animações do humano, morte e corrida na parede do lobo; braços do AR-15 (X Bot)",,,,scripts/meta/Credits.cs
 Motor do jogo,,,,scripts/meta/Credits.cs
 "Músicas, vinhetas de início e de fim, sons da interface e a voz da locutora Iris",,,,scripts/meta/Credits.cs
 obra do autor,,,,scripts/meta/Credits.cs
@@ -652,6 +660,7 @@ SIL Open Font License 1.1,,,,scripts/meta/Credits.cs
 sintetizado para o jogo,,,,scripts/meta/Credits.cs
 sintetizados por código (tools/sons/raios.py),,,,scripts/meta/Credits.cs
 Sons,,,,scripts/meta/Credits.cs
+Submetralhadora,,,,scripts/meta/Credits.cs
 "TastyTony, no FPS Tutorial da InfimaGames",,,,scripts/meta/Credits.cs
 Tecnologia,,,,scripts/meta/Credits.cs
 termos do plano do Meshy,,,,scripts/meta/Credits.cs
@@ -709,7 +718,6 @@ MVP da partida,,,,scripts/meta/Progression.cs
 Participação,,,,scripts/meta/Progression.cs
 Promoção: {0},,,,scripts/meta/Progression.cs
 Vitória,,,,scripts/meta/Progression.cs
-Alfa,,,,scripts/meta/Ranks.cs
 Ancião,,,,scripts/meta/Ranks.cs
 Batedor,,,,scripts/meta/Ranks.cs
 Caçador,,,,scripts/meta/Ranks.cs

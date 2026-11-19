@@ -1,57 +1,4 @@
 {
- "ak": {
-  "ajuste": [
-   0.0,
-   0.0,
-   0.0
-  ],
-  "animacoes": {
-   "andar": {
-    "ate": 0.9817,
-    "clipe": "andar",
-    "de": 0.0
-   },
-   "correr": {
-    "ate": 0.3983,
-    "clipe": "correr",
-    "de": 0.0
-   },
-   "parado": {
-    "ate": 1.9817,
-    "clipe": "parado",
-    "de": 0.0
-   },
-   "recarga": {
-    "ate": 2.6483,
-    "clipe": "recarga",
-    "de": 0.0
-   },
-   "recarga_vazia": {
-    "ate": 3.4983,
-    "clipe": "recarga_vazia",
-    "de": 0.0
-   },
-   "sacar": {
-    "ate": 0.6483,
-    "clipe": "sacar",
-    "de": 0.0
-   },
-   "tiro": {
-    "ate": 0.315,
-    "clipe": "tiro",
-    "de": 0.0
-   }
-  },
-  "armas": [
-   "ak47"
-  ],
-  "arquivo": "res://assets/armas/fp/ak.glb",
-  "cano": [
-   0.0259,
-   -0.1168,
-   -1.0723
-  ]
- },
  "ar15": {
   "ajuste": [
    0.0,
@@ -124,6 +71,362 @@
    "ar15"
   ],
   "arquivo": "res://assets/armas/fp/ar15.glb",
+  "cano": [
+   0.0555,
+   -0.0722,
+   -0.6639
+  ],
+  "cano_osso": {
+   "osso": "ik_hand_gun",
+   "ponto": [
+    0.3652,
+    -49.1314,
+    2.9288
+   ]
+  },
+  "fiel": true,
+  "fov": 63.09,
+  "sacar": true
+ },
+ "ar15_8bit": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 0.8,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "coronhada": {
+    "ate": 0.4,
+    "clipe": "coronhada",
+    "de": 0.0
+   },
+   "desmirar": {
+    "ate": 0.24,
+    "clipe": "desmirar",
+    "de": 0.0
+   },
+   "guardar": {
+    "ate": 0.5,
+    "clipe": "guardar",
+    "de": 0.0
+   },
+   "mira": {
+    "ate": 2.0,
+    "clipe": "mira",
+    "de": 0.0
+   },
+   "mira_andar": {
+    "ate": 0.8,
+    "clipe": "mira_andar",
+    "de": 0.0
+   },
+   "mira_tiro": {
+    "ate": 0.5333,
+    "clipe": "mira_tiro",
+    "de": 0.0
+   },
+   "mirar": {
+    "ate": 0.26,
+    "clipe": "mirar",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 2.0,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "recarga": {
+    "ate": 2.7,
+    "clipe": "recarga",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.4,
+    "clipe": "sacar",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.5333,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "ar15_8bit"
+  ],
+  "arquivo": "res://assets/armas/fp/ar15_8bit.glb",
+  "cano": [
+   0.0555,
+   -0.0722,
+   -0.6639
+  ],
+  "cano_osso": {
+   "osso": "ik_hand_gun",
+   "ponto": [
+    0.3652,
+    -49.1314,
+    2.9288
+   ]
+  },
+  "fiel": true,
+  "fov": 63.09,
+  "sacar": true
+ },
+ "ar15_diamante": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 0.8,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "coronhada": {
+    "ate": 0.4,
+    "clipe": "coronhada",
+    "de": 0.0
+   },
+   "desmirar": {
+    "ate": 0.24,
+    "clipe": "desmirar",
+    "de": 0.0
+   },
+   "guardar": {
+    "ate": 0.5,
+    "clipe": "guardar",
+    "de": 0.0
+   },
+   "mira": {
+    "ate": 2.0,
+    "clipe": "mira",
+    "de": 0.0
+   },
+   "mira_andar": {
+    "ate": 0.8,
+    "clipe": "mira_andar",
+    "de": 0.0
+   },
+   "mira_tiro": {
+    "ate": 0.5333,
+    "clipe": "mira_tiro",
+    "de": 0.0
+   },
+   "mirar": {
+    "ate": 0.26,
+    "clipe": "mirar",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 2.0,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "recarga": {
+    "ate": 2.7,
+    "clipe": "recarga",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.4,
+    "clipe": "sacar",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.5333,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "ar15_diamante"
+  ],
+  "arquivo": "res://assets/armas/fp/ar15_diamante.glb",
+  "cano": [
+   0.0555,
+   -0.0722,
+   -0.6639
+  ],
+  "cano_osso": {
+   "osso": "ik_hand_gun",
+   "ponto": [
+    0.3652,
+    -49.1314,
+    2.9288
+   ]
+  },
+  "fiel": true,
+  "fov": 63.09,
+  "sacar": true
+ },
+ "ar15_lava": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 0.8,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "coronhada": {
+    "ate": 0.4,
+    "clipe": "coronhada",
+    "de": 0.0
+   },
+   "desmirar": {
+    "ate": 0.24,
+    "clipe": "desmirar",
+    "de": 0.0
+   },
+   "guardar": {
+    "ate": 0.5,
+    "clipe": "guardar",
+    "de": 0.0
+   },
+   "mira": {
+    "ate": 2.0,
+    "clipe": "mira",
+    "de": 0.0
+   },
+   "mira_andar": {
+    "ate": 0.8,
+    "clipe": "mira_andar",
+    "de": 0.0
+   },
+   "mira_tiro": {
+    "ate": 0.5333,
+    "clipe": "mira_tiro",
+    "de": 0.0
+   },
+   "mirar": {
+    "ate": 0.26,
+    "clipe": "mirar",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 2.0,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "recarga": {
+    "ate": 2.7,
+    "clipe": "recarga",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.4,
+    "clipe": "sacar",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.5333,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "ar15_lava"
+  ],
+  "arquivo": "res://assets/armas/fp/ar15_lava.glb",
+  "cano": [
+   0.0555,
+   -0.0722,
+   -0.6639
+  ],
+  "cano_osso": {
+   "osso": "ik_hand_gun",
+   "ponto": [
+    0.3652,
+    -49.1314,
+    2.9288
+   ]
+  },
+  "fiel": true,
+  "fov": 63.09,
+  "sacar": true
+ },
+ "ar15_ouro": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 0.8,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "coronhada": {
+    "ate": 0.4,
+    "clipe": "coronhada",
+    "de": 0.0
+   },
+   "desmirar": {
+    "ate": 0.24,
+    "clipe": "desmirar",
+    "de": 0.0
+   },
+   "guardar": {
+    "ate": 0.5,
+    "clipe": "guardar",
+    "de": 0.0
+   },
+   "mira": {
+    "ate": 2.0,
+    "clipe": "mira",
+    "de": 0.0
+   },
+   "mira_andar": {
+    "ate": 0.8,
+    "clipe": "mira_andar",
+    "de": 0.0
+   },
+   "mira_tiro": {
+    "ate": 0.5333,
+    "clipe": "mira_tiro",
+    "de": 0.0
+   },
+   "mirar": {
+    "ate": 0.26,
+    "clipe": "mirar",
+    "de": 0.0
+   },
+   "parado": {
+    "ate": 2.0,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "recarga": {
+    "ate": 2.7,
+    "clipe": "recarga",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.4,
+    "clipe": "sacar",
+    "de": 0.0
+   },
+   "tiro": {
+    "ate": 0.5333,
+    "clipe": "tiro",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "ar15_ouro"
+  ],
+  "arquivo": "res://assets/armas/fp/ar15_ouro.glb",
   "cano": [
    0.0555,
    -0.0722,
@@ -230,49 +533,6 @@
   "fov": 63.09,
   "sacar": true
  },
- "escopeta": {
-  "ajuste": [
-   0.0,
-   0.0,
-   0.0
-  ],
-  "animacoes": {
-   "andar": {
-    "ate": 0.9833,
-    "clipe": "andar",
-    "de": 0.0
-   },
-   "correr": {
-    "ate": 0.4833,
-    "clipe": "correr",
-    "de": 0.0
-   },
-   "parado": {
-    "ate": 2.9833,
-    "clipe": "parado",
-    "de": 0.0
-   },
-   "recarga_um": {
-    "ate": 1.65,
-    "clipe": "recarga_um",
-    "de": 0.0
-   },
-   "tiro": {
-    "ate": 0.65,
-    "clipe": "tiro",
-    "de": 0.0
-   }
-  },
-  "armas": [
-   "m3"
-  ],
-  "arquivo": "res://assets/armas/fp/escopeta.glb",
-  "cano": [
-   0.0199,
-   -0.1173,
-   -0.8754
-  ]
- },
  "faca": {
   "ajuste": [
    0.0,
@@ -318,54 +578,6 @@
    -0.6712
   ]
  },
- "fuzil": {
-  "ajuste": [
-   0.0,
-   0.0,
-   0.0
-  ],
-  "animacoes": {
-   "andar": {
-    "ate": 0.8175,
-    "clipe": "andar",
-    "de": 0.0
-   },
-   "correr": {
-    "ate": 0.6507,
-    "clipe": "correr",
-    "de": 0.0
-   },
-   "parado": {
-    "ate": 1.318,
-    "clipe": "parado",
-    "de": 0.0
-   },
-   "recarga": {
-    "ate": 1.6517,
-    "clipe": "recarga",
-    "de": 0.0
-   },
-   "sacar": {
-    "ate": 0.5672,
-    "clipe": "sacar",
-    "de": 0.0
-   },
-   "tiro": {
-    "ate": 0.1502,
-    "clipe": "tiro",
-    "de": 0.0
-   }
-  },
-  "armas": [
-   "sg552"
-  ],
-  "arquivo": "res://assets/armas/fp/fuzil.glb",
-  "cano": [
-   0.0554,
-   -0.1066,
-   -1.0871
-  ]
- },
  "granada": {
   "ajuste": [
    0.0,
@@ -392,49 +604,6 @@
    0.0341,
    -0.1097,
    -0.4439
-  ]
- },
- "m16": {
-  "ajuste": [
-   0.0,
-   0.0,
-   0.0
-  ],
-  "animacoes": {
-   "parado": {
-    "ate": 8.1333,
-    "clipe": "Scene",
-    "de": 7.4667
-   },
-   "recarga": {
-    "ate": 4.5,
-    "clipe": "Scene",
-    "de": 2.3
-   },
-   "recarga_vazia": {
-    "ate": 2.3,
-    "clipe": "Scene",
-    "de": 0.2
-   },
-   "sacar": {
-    "ate": 7.4333,
-    "clipe": "Scene",
-    "de": 6.8
-   },
-   "tiro": {
-    "ate": 0.2,
-    "clipe": "Scene",
-    "de": 0.0
-   }
-  },
-  "armas": [
-   "m16a2"
-  ],
-  "arquivo": "res://assets/armas/fp/m16.glb",
-  "cano": [
-   0.09,
-   -0.1135,
-   -1.0051
   ]
  },
  "pistola": {
@@ -478,59 +647,6 @@
    0.0317,
    -0.1324,
    -0.5182
-  ]
- },
- "smg": {
-  "ajuste": [
-   0.0,
-   0.0,
-   0.0
-  ],
-  "animacoes": {
-   "andar": {
-    "ate": 0.7317,
-    "clipe": "andar",
-    "de": 0.0
-   },
-   "correr": {
-    "ate": 0.4817,
-    "clipe": "correr",
-    "de": 0.0
-   },
-   "parado": {
-    "ate": 1.6483,
-    "clipe": "parado",
-    "de": 0.0
-   },
-   "recarga": {
-    "ate": 3.9483,
-    "clipe": "recarga",
-    "de": 0.0
-   },
-   "recarga_vazia": {
-    "ate": 4.3983,
-    "clipe": "recarga_vazia",
-    "de": 0.0
-   },
-   "sacar": {
-    "ate": 0.6483,
-    "clipe": "sacar",
-    "de": 0.0
-   },
-   "tiro": {
-    "ate": 0.315,
-    "clipe": "tiro",
-    "de": 0.0
-   }
-  },
-  "armas": [
-   "ump45"
-  ],
-  "arquivo": "res://assets/armas/fp/smg.glb",
-  "cano": [
-   0.0351,
-   -0.0814,
-   -0.6187
   ]
  }
 }

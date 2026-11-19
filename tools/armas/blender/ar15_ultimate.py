@@ -1,7 +1,10 @@
 """
-A skin do AR-15 Ultimate: roxo, com flames, no estilo de arma de Valorant.
+As skins do AR-15: a Ultimate (roxa, com flames, no estilo de arma de
+Valorant) e as de 19/11 — Ouro e Diamante (lendárias), 8 Bit e Lava (épicas).
 
-    /Applications/Blender.app/Contents/MacOS/Blender -b -P tools/armas/blender/ar15_ultimate.py
+    /Applications/Blender.app/Contents/MacOS/Blender -b -P tools/armas/blender/ar15_ultimate.py -- --tema ouro
+
+(``--tema``: ultimate, ouro, diamante, 8bit, lava; cada uma em ``TEMAS``.) Abaixo, "ultimate" vale por qualquer tema: ``ar15_<tema>``.
 
 Parte do ``assets/armas/fp/ar15.glb`` (o fuzil e o carregador do Jhon, pintados
 por paleta) e grava:
@@ -55,8 +58,32 @@ TAMANHO = int(opcao("--tamanho", 2048))
 GLB = os.path.join(RAIZ, "assets", "armas", "fp", "ar15.glb")
 PALETA = os.path.join(RAIZ, "assets", "armas", "ar15", "T_AssaultRifle_D.png")
 PASTA_OBJ = os.path.join(RAIZ, "assets", "armas", "ar15")
-SAIDA_GLB = os.path.join(RAIZ, "assets", "armas", "fp", "ar15_ultimate.glb")
-SAIDA_TEX = os.path.join(RAIZ, "assets", "armas", "ar15_ultimate")
+# As skins: a mesma pintura (flames de lado, quinas, padrão hexagonal), com
+# outra paleta. "ultimate" é a primeira (roxa, 18/11); as outras vieram em 19/11
+# ("crie as outras armas, épicas e lendárias").
+TEMAS = {
+    "ultimate": dict(  # roxo e rosa
+        corpo=("#1b0542", "#4b1fa6"), escuro=("#0a0618", "#221247"), metal=("#8a5a12", "#fde68a"),
+        latao=("#a21caf", "#f0abfc"), hex="#7c3aed", brilho="#c026d3", contorno="#0a0414",
+        fogo_fora=("#7a1fe0", "#f03cff"), fogo_meio=("#ff5ff0", "#ffd6fb"), fogo_dentro=("#f5d0fe", "#ffffff"),
+        quina=("#8b5cf6", "#e9d5ff"), cavidade="#05010d", fundo="#12081f"),
+    # 19/11, à tarde ("mude a textura de cada arma nova: uma toda dourada,
+    # outra diamante, outra 8 bit"): cada uma com um desenho próprio, não
+    # só outra cor de flames (``estilo``; ver ``pintar_estilo``).
+    "ouro": dict(estilo="ouro", metalico=1.0, rugosidade=0.22, fundo="#6b4a10"),
+    "diamante": dict(estilo="diamante", metalico=0.15, rugosidade=0.05, fundo="#b9d9ee"),
+    "8bit": dict(estilo="pixel", metalico=0.0, rugosidade=0.85, fundo="#1d1d1d", pixel=True),
+    "lava": dict(estilo="lava", metalico=0.05, rugosidade=0.7, fundo="#140d0b"),
+}
+TEMA = opcao("--tema", "ultimate")
+if TEMA not in TEMAS:
+    print(f"SKIN ERRO: tema '{TEMA}' não existe ({', '.join(TEMAS)})")
+    sys.exit(1)
+T = TEMAS[TEMA]
+ID = f"ar15_{TEMA}"
+TEX = "T_AR15_" + ("8Bit" if TEMA == "8bit" else TEMA.capitalize())
+SAIDA_GLB = os.path.join(RAIZ, "assets", "armas", "fp", f"{ID}.glb")
+SAIDA_TEX = os.path.join(RAIZ, "assets", "armas", ID)
 
 PECAS = ("fuzil", "carregador")
 MATERIAL = "M_AssaultRifle"
@@ -346,6 +373,129 @@ def padrao_hex(u, v, s):
     return np.minimum(dist(0.0, 0.0), dist(0.5, 0.5)) / s
 
 
+def ruido(*coords, semente=0.0):
+    """Um número de 0 a 1 por célula inteira (o mesmo para a mesma célula)."""
+    h = np.full(coords[0].shape, semente * 12.9898, np.float64)
+    for k, c in enumerate(coords):
+        h = h + c * (127.1 + 41.3 * k)
+    return np.modf(np.abs(np.sin(h) * 43758.5453))[0]
+
+
+def voronoi(a, b, escala, semente=0.0):
+    """Distância ao ponto mais perto (f1), ao segundo (f2) e a célula do
+    mais perto, numa grade de pontos sorteados (a, b em cm)."""
+    u, v = a / escala, b / escala
+    iu, iv = np.floor(u), np.floor(v)
+    f1 = np.full(u.shape, 9.0); f2 = np.full(u.shape, 9.0)
+    cel = np.zeros(u.shape)
+    for du in (-1, 0, 1):
+        for dv in (-1, 0, 1):
+            cu, cv = iu + du, iv + dv
+            pu = cu + 0.15 + 0.7 * ruido(cu, cv, semente=semente)
+            pv = cv + 0.15 + 0.7 * ruido(cu, cv, semente=semente + 3.1)
+            d = np.hypot(u - pu, v - pv)
+            menor = d < f1
+            f2 = np.where(menor, f1, np.minimum(f2, d))
+            cel = np.where(menor, ruido(cu, cv, semente=semente + 7.7), cel)
+            f1 = np.where(menor, d, f1)
+    return f1, f2, cel
+
+
+def pintar_estilo(estilo, y, z, x, nx, nz, corpo, metal, latao, escuro, dx, dv):
+    """As skins que não são de flames: ouro, diamante, 8 bit e lava. Devolve
+    a cor e a emissão, por pixel pintado."""
+    n = len(y)
+    luz = (0.9 + 0.16 * np.clip(nz, -1, 1))[:, None]
+    quina = 1 - ss(0.05, 0.17, dx)            # perto de aresta viva
+    canto = 1 - ss(0.04, 0.22, dv)            # canto fundo
+    em = np.zeros((n, 3), np.float32)
+
+    if estilo == "ouro":
+        # Ouro inteiro: polido no corpo, mais escuro nas peças que eram
+        # pretas, escovado ao longo do cano e com um arabesco gravado de lado.
+        claro, medio, escuro_ = hexc("#fff1a8"), hexc("#e0a91f"), hexc("#7a4f0c")
+        escova = 0.5 + 0.5 * np.sin(z * 9.0 + 2.0 * np.sin(y * 0.35))
+        t = 0.45 + 0.3 * ss(-6, 9, z) + 0.08 * escova
+        t = np.where(escuro, t - 0.22, t)
+        t = np.where(metal | latao, t + 0.12, t)
+        rgb = mix(np.tile(escuro_, (n, 1)), medio, ss(0.0, 0.6, t)) * (1 - ss(0.6, 1.0, t))[:, None] \
+            + mix(np.tile(medio, (n, 1)), claro, ss(0.6, 1.0, t)) * ss(0.6, 1.0, t)[:, None]
+        lado = ss(0.4, 0.75, np.abs(nx))
+        grav = ss(0.42, 0.47, padrao_hex(y, z, 1.3)) * lado * corpo
+        rgb = rgb * (1 - 0.35 * grav[:, None])
+        rgb = rgb * luz
+        rgb = rgb * (1 - quina[:, None] * 0.0) + claro * (quina * 0.6)[:, None] * (1 - rgb.mean(1, keepdims=True) * 0.3)
+        rgb = rgb * (1 - 0.5 * canto[:, None])
+        em = claro * (quina * 0.18)[:, None]
+        return rgb, em
+
+    if estilo == "diamante":
+        # Cristal: facetas (células) de brilhos diferentes, aresta branca
+        # entre elas e um brilho que acende nas mais claras.
+        f1, f2, cel = voronoi(y, z + 0.3 * x, 1.6, semente=1.0)
+        borda = 1 - ss(0.02, 0.09, f2 - f1)
+        gelo, azul, lilas = hexc("#eaf6ff"), hexc("#7cc4f2"), hexc("#c7b8ff")
+        base = mix(np.tile(azul, (n, 1)), gelo, cel * 0.85 + 0.15 * ss(-6, 9, z))
+        base = mix(base, lilas, np.where(cel > 0.82, 0.55, 0.0))
+        base = np.where(escuro[:, None], base * 0.62 + hexc("#1c3f63") * 0.38, base)
+        rgb = base * luz
+        rgb = rgb * (1 - borda[:, None]) + np.ones(3) * borda[:, None]
+        rgb = rgb * (1 - quina[:, None] * 0.5) + np.ones(3) * (quina * 0.5)[:, None]
+        rgb = rgb * (1 - 0.35 * canto[:, None])
+        brilho = np.where(cel > 0.9, 1.0, 0.0) * (1 - ss(0.0, 0.35, f1))
+        em = np.ones(3) * (0.35 * borda + 0.8 * brilho + 0.15 * quina)[:, None] * hexc("#dff3ff")
+        return rgb, em
+
+    if estilo == "pixel":
+        # 8 bit (a referência do Jhon: guarda-mão, coronha, empunhadura e
+        # carregador laranja; caixa e cano pretos; mira amarela): blocos de
+        # 1,3 cm, a luz em degraus e contorno preto de um bloco.
+        tam = 1.3
+        qy, qz, qx = np.floor(y / tam), np.floor(z / tam), np.floor(x / tam)
+        sorteio = ruido(qy, qz, qx, semente=5.0)
+        laranja = [hexc("#8f3410"), hexc("#d4501c"), hexc("#f0702e")]
+        creme = [hexc("#b8730f"), hexc("#f0a92e"), hexc("#ffd06b")]
+        preto = [hexc("#141414"), hexc("#2a2a2a"), hexc("#454545")]
+        amarelo = [hexc("#a88600"), hexc("#f2cf1d"), hexc("#fff27a")]
+        silenciador = y < -32
+        guarda = (y >= -32) & (y < -6)
+        coronha = y >= 13
+        empunhadura = (y >= 0) & (y < 13) & (z < -3.5)
+        laranjas = (guarda | coronha | latao) & ~metal
+        cremes = empunhadura & ~metal & ~latao
+        degrau = np.where(nz > 0.3, 2, np.where(nz < -0.3, 0, 1))
+        degrau = np.clip(degrau + (sorteio > 0.88) - (sorteio < 0.06), 0, 2)
+        rgb = np.zeros((n, 3), np.float32)
+        for k in range(3):
+            sel = degrau == k
+            rgb[sel] = preto[k]
+            rgb[sel & laranjas] = laranja[k]
+            rgb[sel & cremes] = creme[k]
+            rgb[sel & metal & ~silenciador] = amarelo[k]
+        # Uma linha clara de "brilho de pixel" no alto das peças laranja.
+        topo = laranjas & (nz > 0.6) & (np.mod(qy, 4) == 0)
+        rgb[topo] = hexc("#ffb27a")
+        # Contorno: a aresta viva e o canto fundo viram preto.
+        rgb = np.where(((dx < 0.16) | (dv < 0.1))[:, None], hexc("#050505"), rgb)
+        return rgb, em
+
+    if estilo == "lava":
+        # Rocha escura rachada, com a lava acesa nas rachaduras.
+        f1, f2, cel = voronoi(y + 0.4 * x, z, 2.3, semente=2.0)
+        racha = 1 - ss(0.03, 0.16, f2 - f1)
+        quente = 1 - ss(0.0, 0.05, f2 - f1)
+        rocha = mix(np.tile(hexc("#120c0a"), (n, 1)), hexc("#3a2a24"), cel * 0.7 + 0.2 * ss(-6, 9, z))
+        rocha = np.where(metal[:, None], mix(np.tile(hexc("#3b2410"), (n, 1)), hexc("#9a6a2c"), cel), rocha)
+        rgb = rocha * luz
+        lava = mix(np.tile(hexc("#c2410c"), (n, 1)), hexc("#ffd36b"), quente)
+        rgb = rgb * (1 - racha[:, None]) + lava * racha[:, None]
+        rgb = rgb * (1 - 0.4 * canto[:, None])
+        em = lava * (racha * 0.9)[:, None]
+        return rgb, em
+
+    falhar(f"estilo desconhecido: {estilo}")
+
+
 def pintar(UV, POS, EDGE, NRM, COL, OBJ, N):
     P, NR, CO, DX, DV, OB, FILL = rasterizar(UV, POS, EDGE, NRM, COL, OBJ, N)
     idx = np.nonzero(FILL)
@@ -362,18 +512,27 @@ def pintar(UV, POS, EDGE, NRM, COL, OBJ, N):
     latao = (ob == 2) & (sat >= 0.2)
     escuro = ~(corpo | metal | latao)
 
+    estilo = T.get("estilo", "fogo")
+    if estilo != "fogo":
+        rgb, em = pintar_estilo(estilo, y, z, x, nx, nz, corpo, metal, latao, escuro, dx, dv)
+        cor_img = np.zeros((N, N, 3), np.float32)
+        em_img = np.zeros((N, N, 3), np.float32)
+        cor_img[idx] = np.clip(rgb, 0, 1)
+        em_img[idx] = np.clip(em, 0, 1)
+        return sangrar(cor_img, FILL, hexc(T['fundo']), N), sangrar(em_img, FILL, np.zeros(3, np.float32), N)
+
     rgb = np.zeros((n, 3), np.float32)
     tz = ss(-5, 9, z)
-    rgb[corpo] = mix(hexc('#1b0542'), hexc('#4b1fa6'), tz[corpo] * 0.85 + 0.1 * ss(-50, 25, y[corpo]))
-    rgb[escuro] = mix(hexc('#0a0618'), hexc('#221247'), 0.25 * tz[escuro] + 0.33 * ss(-49, -40, -y[escuro]))
-    rgb[metal] = mix(hexc('#8a5a12'), hexc('#fde68a'), tz[metal])
-    rgb[latao] = mix(hexc('#a21caf'), hexc('#f0abfc'), tz[latao])
+    rgb[corpo] = mix(hexc(T['corpo'][0]), hexc(T['corpo'][1]), tz[corpo] * 0.85 + 0.1 * ss(-50, 25, y[corpo]))
+    rgb[escuro] = mix(hexc(T['escuro'][0]), hexc(T['escuro'][1]), 0.25 * tz[escuro] + 0.33 * ss(-49, -40, -y[escuro]))
+    rgb[metal] = mix(hexc(T['metal'][0]), hexc(T['metal'][1]), tz[metal])
+    rgb[latao] = mix(hexc(T['latao'][0]), hexc(T['latao'][1]), tz[latao])
     rgb *= (0.92 + 0.14 * np.clip(nz, -1, 1))[:, None]
 
     lado = ss(0.35, 0.7, np.abs(nx))
     hexlinha = ss(0.40, 0.48, padrao_hex(y, z, 1.5))
     a = (0.14 * hexlinha * lado) * (escuro | metal)
-    rgb = rgb * (1 - a[:, None]) + hexc('#7c3aed') * a[:, None]
+    rgb = rgb * (1 - a[:, None]) + hexc(T['hex']) * a[:, None]
 
     # flames
     portao = ss(0.30, 0.62, np.abs(nx))
@@ -399,23 +558,23 @@ def pintar(UV, POS, EDGE, NRM, COL, OBJ, N):
         f_halo = np.maximum(f_halo, mh)
     f_out, f_edge, f_mid, f_in, f_halo = (f * portao for f in (f_out, f_edge, f_mid, f_in, f_halo))
 
-    brilho = hexc('#c026d3')
+    brilho = hexc(T['brilho'])
     rgb = rgb * (1 - 0.35 * f_halo[:, None]) + brilho * 0.35 * f_halo[:, None]
     k = np.clip(f_edge - f_out, 0, 1) * 0.95
-    rgb = rgb * (1 - k[:, None]) + hexc('#0a0414') * k[:, None]
-    cor_out = mix(np.tile(hexc('#7a1fe0'), (n, 1)), hexc('#f03cff'), ss(0.0, 0.9, fa))
-    cor_mid = mix(np.tile(hexc('#ff5ff0'), (n, 1)), hexc('#ffd6fb'), ss(0.0, 1.0, fa))
-    cor_in = mix(np.tile(hexc('#f5d0fe'), (n, 1)), hexc('#ffffff'), ss(0.0, 1.0, fa))
+    rgb = rgb * (1 - k[:, None]) + hexc(T['contorno']) * k[:, None]
+    cor_out = mix(np.tile(hexc(T['fogo_fora'][0]), (n, 1)), hexc(T['fogo_fora'][1]), ss(0.0, 0.9, fa))
+    cor_mid = mix(np.tile(hexc(T['fogo_meio'][0]), (n, 1)), hexc(T['fogo_meio'][1]), ss(0.0, 1.0, fa))
+    cor_in = mix(np.tile(hexc(T['fogo_dentro'][0]), (n, 1)), hexc(T['fogo_dentro'][1]), ss(0.0, 1.0, fa))
     for f, c in ((f_out, cor_out), (f_mid, cor_mid), (f_in, cor_in)):
         rgb = rgb * (1 - f[:, None]) + c * f[:, None]
 
     # quinas e cantos
     rim = 1 - ss(0.05, 0.17, dx)
-    cor_rim = np.where(escuro[:, None], hexc('#8b5cf6'), hexc('#e9d5ff'))
+    cor_rim = np.where(escuro[:, None], hexc(T['quina'][0]), hexc(T['quina'][1]))
     ra = rim * np.where(escuro, 0.55, 0.8) * (1 - 0.85 * f_out)
     rgb = rgb * (1 - ra[:, None]) + cor_rim * ra[:, None]
     cav = (1 - ss(0.04, 0.22, dv)) * 0.55
-    rgb = rgb * (1 - cav[:, None]) + hexc('#05010d') * cav[:, None]
+    rgb = rgb * (1 - cav[:, None]) + hexc(T['cavidade']) * cav[:, None]
 
     # emissão: só o que brilha
     em = brilho * 0.10 * f_halo[:, None]
@@ -427,7 +586,7 @@ def pintar(UV, POS, EDGE, NRM, COL, OBJ, N):
     em_img = np.zeros((N, N, 3), np.float32)
     cor_img[idx] = np.clip(rgb, 0, 1)
     em_img[idx] = np.clip(em, 0, 1)
-    return sangrar(cor_img, FILL, hexc('#12081f'), N), sangrar(em_img, FILL, np.zeros(3, np.float32), N)
+    return sangrar(cor_img, FILL, hexc(T['fundo']), N), sangrar(em_img, FILL, np.zeros(3, np.float32), N)
 
 
 def sangrar(img, fill, fundo, N, passos=10):
@@ -565,19 +724,22 @@ def regravar(doc, binario, objs, imagens):
     antigas = [(im, bytes_por_vertice_view(doc, binario, im)) for im in doc.get("images", [])]
     doc["images"] = []
     doc["samplers"] = [{"magFilter": 9729, "minFilter": 9987, "wrapS": 10497, "wrapT": 10497}]
+    # O 8 bit é de pixel: sem suavizar os blocos.
+    if T.get("pixel"):
+        doc["samplers"].append({"magFilter": 9728, "minFilter": 9984, "wrapS": 10497, "wrapT": 10497})
     for im, dados in antigas:
         novo = {k: v for k, v in im.items() if k != "bufferView"}
         novo["bufferView"] = anexar(dados)
         doc["images"].append(novo)
     tex = {}
     for nome, dados in imagens.items():
-        doc["images"].append({"name": f"ar15_ultimate_{nome}", "mimeType": "image/png", "bufferView": anexar(dados)})
-        doc["textures"].append({"sampler": 0, "source": len(doc["images"]) - 1})
+        doc["images"].append({"name": f"{ID}_{nome}", "mimeType": "image/png", "bufferView": anexar(dados)})
+        doc["textures"].append({"sampler": 1 if T.get("pixel") else 0, "source": len(doc["images"]) - 1})
         tex[nome] = len(doc["textures"]) - 1
     for m in doc["materials"]:
         if m["name"].startswith(MATERIAL):
             m["pbrMetallicRoughness"] = {"baseColorFactor": [1, 1, 1, 1], "baseColorTexture": {"index": tex["cor"]},
-                                         "metallicFactor": 0.35, "roughnessFactor": 0.38}
+                                         "metallicFactor": T.get("metalico", 0.35), "roughnessFactor": T.get("rugosidade", 0.38)}
             m["emissiveTexture"] = {"index": tex["emissiva"]}
             m["emissiveFactor"] = [1.0, 1.0, 1.0]
 
@@ -632,7 +794,9 @@ def uv_do_obj(caminho, pos_tri, uv_tri):
             for c in range(3):
                 dc = np.linalg.norm(pos_tri[t] - no_fuzil[ini + k, c], axis=1)
                 novo_vt[ini + k, c] = uv_tri[t, dc.argmin()]
-    if pior > 0.02:
+    # Até 19/11 era 0,02 cm; desde que a mira do ar15.glb foi alinhada
+    # (tools/armas/mira.py) o fuzil da mão e o .obj diferem uns milímetros.
+    if pior > 0.6:
         falhar(f"{os.path.basename(caminho)}: uma face não achou o triângulo ({pior:.3f} cm)")
     it = iter(novo_vt.reshape(-1, 2))
     saida = []
@@ -665,8 +829,8 @@ def main():
     png_cor, png_em = png_bytes(cor), png_bytes(emissao)
 
     os.makedirs(SAIDA_TEX, exist_ok=True)
-    open(os.path.join(SAIDA_TEX, "T_AR15_Ultimate_D.png"), "wb").write(png_cor)
-    open(os.path.join(SAIDA_TEX, "T_AR15_Ultimate_E.png"), "wb").write(png_em)
+    open(os.path.join(SAIDA_TEX, f"{TEX}_D.png"), "wb").write(png_cor)
+    open(os.path.join(SAIDA_TEX, f"{TEX}_E.png"), "wb").write(png_em)
 
     novo = regravar(doc, binario, objs, {"cor": png_cor, "emissiva": png_em})
     with open(SAIDA_GLB, "wb") as fh:
@@ -679,7 +843,7 @@ def main():
     for nome, (a, b) in partes.items():
         caminho = os.path.join(PASTA_OBJ, nome + ".obj")
         texto = uv_do_obj(caminho, POS[a:b], UV[a:b])
-        destino = os.path.join(SAIDA_TEX, nome.replace("_ar15", "_ar15_ultimate") + ".obj")
+        destino = os.path.join(SAIDA_TEX, nome.replace("_ar15", "_" + ID) + ".obj")
         open(destino, "w", encoding="utf-8").write(texto)
         print(f"ULTIMATE {destino}")
 

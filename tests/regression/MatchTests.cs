@@ -186,3 +186,57 @@ public sealed class TrainingSceneTest : SceneLoadsTest
 	public override string Name => "CenaTreino";
 	public override string Description => "o treino abre e roda sem erro";
 }
+
+/// <summary>
+/// A jogada da partida (19/11): no fim, antes do resultado, os melhores
+/// segundos pela tela de quem fez — um abate duplo vale mais que um só —,
+/// e depois a tela de resultado. Espaço pula.
+/// </summary>
+public sealed class PlayOfTheGameTest : RegressionTest
+{
+	public override string Scene => RegressionBench.Match;
+	public override string Name => "JogadaDaPartida";
+	public override string Description => "no fim da partida, a jogada da partida (o abate duplo) passa antes da tela de resultado";
+
+	public override async Task Run(RegressionBench b)
+	{
+		await b.Until(() => b.Bots().Length >= 2, 5.0);
+		await b.Until(() => Match.IsLive, 15.0);
+		b.CloseLoadout();
+		await b.Seconds(1.0);
+		Match match = Match.Current;
+		var me = b.Health;
+		var enemies = b.Bots().Where(x => x.GetNode<Health>("Health").Team != me.Team).ToArray();
+		b.Check(enemies.Length >= 2, $"há inimigos ({enemies.Length})");
+		if (enemies.Length < 2) return;
+
+		// Um abate simples, depois um duplo: o duplo é a jogada.
+		match.ScoreToWin = match.ScoreOf(me.Team) + 3;
+		Report(b, enemies[0], KillCause.Gun);
+		await b.Seconds(2.5);
+		Report(b, enemies[1], KillCause.Headshot);
+		await b.Seconds(0.4);
+		Report(b, enemies[0], KillCause.Gun);
+		await b.Frames(3);
+
+		b.Check(match.Phase == MatchPhase.Ended, "a partida acabou no placar");
+		b.Check(PlayOfTheGame.Showing, "acabou: a jogada da partida passa");
+		var potg = b.GetTree().Root.FindChildren("*", "", true, false).OfType<PlayOfTheGame>().FirstOrDefault();
+		b.Check(ReplayTape.Current?.Best?.Label == "ABATE DUPLO", $"a jogada é o abate duplo ({ReplayTape.Current?.Best?.Label})");
+		b.Check(!b.GetTree().Root.FindChildren("*", "", true, false).OfType<ResultScreen>().Any(), "o resultado espera a jogada");
+		await b.Seconds(2.5);
+		Camera3D view = b.GetViewport().GetCamera3D();
+		b.Check(view != null && view.GetParent()?.GetParent() is Bot { ReplayCopy: true }, $"pela tela de quem fez (câmera: {view?.GetPath()})");
+
+		await b.Until(() => !PlayOfTheGame.Showing, 12.0);
+		await b.Frames(3);
+		b.Check(b.GetTree().Root.FindChildren("*", "", true, false).OfType<ResultScreen>().Any(), "depois, a tela de resultado");
+		b.Check(!b.GetTree().Root.FindChildren("Jogada_*", "", true, false).Any(), "e as cópias saem");
+	}
+
+	private static void Report(RegressionBench b, CharacterBody3D victim, KillCause cause)
+	{
+		Health me = b.Health, him = victim.GetNode<Health>("Health");
+		KillFeed.Report(new Kill(me.PublicName, me.Team, him.PublicName, him.Team, cause, "ar15"));
+	}
+}

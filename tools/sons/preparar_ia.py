@@ -33,7 +33,6 @@ MAP = [
     ("Draw stinger", "empate", "vinheta", -16, 0),
     ("Epic dark fantasy play button", "ui_jogar", "sfx", -16, 0),
     ("Epic dark fantasy purchase", "ui_compra", "sfx", -17, 0),
-    ("Epic dark orchestral main menu theme", "musica_menu", "musica", -21, 2.0),
     ("Final minute tension music", "musica_fim_proximo", "musica", -25, 1.0),
     ("Short battle start orchestral stinger", "partida_inicio", "vinheta", -16, 0),
     ("Subtle dark fantasy UI hover", "ui_passar", "sfx", -42, 0),

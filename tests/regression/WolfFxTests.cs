@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 /// Os efeitos do lobo (scripts/visual/fx): a fumaça cobre a troca do
 /// corpo na metade da transformação; o vento aparece de quatro e some ao
 /// frear; a garra risca na janela do golpe; a aura acende carregando o
-/// salto e no rugido; a cor é a do personagem (a Eve é verde) ou a do
+/// salto e no rugido; a cor é a do personagem ou a do
 /// time; e o efeito de um lobo não passa para o outro.
 ///
 /// Com <c>-- --fotos=pasta</c> fotografa cada efeito de fora.
@@ -60,7 +60,7 @@ public sealed class WolfFxTest : RegressionTest
 
 		// ---- correndo: um pouco de vento; de quatro, cheio; parado, nada.
 		b.AtMost(0.01, fx.AirAmount, "parado, sem vento");
-		b.Check(meshes.All(m => m.MaterialOverlay == null), "parado e sem poder, nada por cima do lobo (não gasta placa)");
+		b.Check(meshes.All(m => BodyOverlay.Aura(m) == null), "parado e sem poder, nada por cima do lobo (não gasta placa)");
 		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.4);
 		RegressionBench.Press("move_forward");
 		await b.Seconds(0.8);
@@ -77,7 +77,7 @@ public sealed class WolfFxTest : RegressionTest
 		await b.Seconds(0.9);
 		RegressionBench.Note($"de quatro a {RegressionBench.F(RegressionBench.Flat(p.Velocity))} m/s: vento {RegressionBench.F(fx.AirAmount)}");
 		b.AtLeast(0.95, fx.AirAmount, "de quatro, o vento é cheio");
-		b.Check(meshes.All(m => m.MaterialOverlay != null), "com vento, o material vai por cima do lobo");
+		b.Check(meshes.All(m => BodyOverlay.Aura(m) != null), "com vento, o material vai por cima do lobo");
 		await Photo(b, "3_vento_de_quatro", new Vector3(0, 0.8f, 3.4f), follow: true);
 		RegressionBench.ReleaseAll();
 		await b.Seconds(0.8);
@@ -165,16 +165,6 @@ public sealed class WolfFxTest : RegressionTest
 		b.Check(swept, "rugiu até o fim: o anel de escudo cheio sobe");
 		await b.Seconds(1.2);
 		b.Check(fx.Roar.Glow <= 0.01f && fx.Roar.Arcs == 0, "acabou o uivo, a luz e os arcos somem");
-
-		// ---- a cor do personagem: a Eve é verde.
-		var eve = CharacterSkin.All().FirstOrDefault(s => s.Id == "pers_eve");
-		if (eve != null)
-		{
-			p.Character = eve;
-			b.Check(fx.EffectColor.IsEqualApprox(new Color(eve.EffectColor, 1f)), "com a Eve, os efeitos são da cor dela");
-			b.Check(eve.EffectColor.G > eve.EffectColor.R, "a Eve é verde");
-			p.Character = null;
-		}
 
 		// ---- voltando a humano: fumaça de novo, curta.
 		form.ToggleForm();

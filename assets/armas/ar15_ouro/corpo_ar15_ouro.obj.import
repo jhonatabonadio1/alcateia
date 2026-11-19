@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://bijs2mxw6ok0n"
+path="res://.godot/imported/corpo_ar15_ouro.obj-389dad0490df89d114402ec173374dbb.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_ar15_ouro.obj-389dad0490df89d114402ec173374dbb.mesh"]
+
+source_file="res://assets/armas/ar15_ouro/corpo_ar15_ouro.obj"
+dest_files=["res://.godot/imported/corpo_ar15_ouro.obj-389dad0490df89d114402ec173374dbb.mesh", "res://.godot/imported/corpo_ar15_ouro.obj-389dad0490df89d114402ec173374dbb.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

@@ -212,12 +212,11 @@ void fragment() {
 		switch (_id)
 		{
 			case "ar15":
-			case "ar15_ultimate": RifleAr15(); break;
-			case "m16a2": RifleM16(); break;
-			case "ak47": RifleAk(); break;
-			case "sg552": RifleSg(); break;
-			case "ump45": Smg(); break;
-			case "m3": Shotgun(); break;
+			case "ar15_ultimate":
+			case "ar15_ouro":
+			case "ar15_diamante":
+			case "ar15_8bit":
+			case "ar15_lava": RifleAr15(); break;
 			case "m9": Pistol(); break;
 			case Arsenal.KnifeId: Knife(); break;
 			case Arsenal.GrenadeId: Grenade(); break;
@@ -232,19 +231,6 @@ void fragment() {
 
 	// ------------------------------------------------------------------ armas
 
-	private void RifleM16()
-	{
-		Poly(Dark, 8, 30, 50, 31, 50, 43, 12, 52, 7, 49);                 // coronha
-		Rect(Metal, 50, 28, 62, 16);                                       // caixa
-		Line(Metal, 4, 60, 28, 63, 19, 99, 19, 102, 28);                   // alça
-		Poly(Dark, 112, 29, 152, 31, 152, 42, 112, 44);                    // guarda-mão
-		Rect(Metal, 152, 34, 38, 4);                                       // cano
-		Poly(Metal, 160, 34, 163, 24, 166, 24, 168, 34);                   // massa de mira
-		Poly(Dark, 66, 44, 78, 44, 73, 62, 62, 60);                        // punho
-		Poly(Metal, 84, 44, 98, 44, 97, 68, 85, 68);                       // carregador reto
-		Line(Metal, 2.5f, 78, 44, 80, 52, 86, 52);                         // guarda-mato
-	}
-
 	private void RifleAr15()
 	{
 		Poly(Dark, 10, 31, 28, 31, 28, 46, 14, 52, 10, 50);                // coronha retrátil
@@ -257,53 +243,6 @@ void fragment() {
 		Poly(Dark, 64, 44, 76, 44, 71, 62, 60, 60);                        // punho
 		Poly(Metal, 84, 44, 98, 44, 98, 60, 85, 60);                       // carregador curto
 		Line(Metal, 2.5f, 76, 44, 78, 52, 84, 52);                         // guarda-mato
-	}
-
-	private void RifleAk()
-	{
-		Poly(Wood, 6, 31, 50, 31, 50, 42, 10, 54, 5, 50);                  // coronha de madeira
-		Rect(Metal, 50, 28, 58, 15);
-		Poly(Wood, 108, 30, 146, 31, 146, 42, 108, 43);                    // guarda-mão de madeira
-		Rect(Dark, 108, 25, 46, 4);                                        // tubo de gás
-		Rect(Metal, 146, 33, 44, 4);
-		Poly(Metal, 152, 33, 154, 26, 157, 26, 159, 33);
-		Poly(Dark, 64, 43, 76, 43, 70, 62, 59, 60);
-		Poly(Metal, 82, 43, 96, 43, 104, 60, 107, 70, 95, 73, 88, 60);    // carregador curvo
-		Line(Metal, 2.5f, 76, 43, 78, 51, 83, 51);
-	}
-
-	private void RifleSg()
-	{
-		Line(Polymer, 4, 10, 30, 46, 30, 46, 44, 12, 50, 10, 30);          // coronha vazada
-		Rect(Polymer, 46, 27, 74, 16);
-		Rect(Dark, 54, 22, 40, 5);                                         // trilho
-		Poly(Polymer, 120, 29, 150, 30, 150, 42, 120, 43);
-		Rect(Metal, 150, 34, 26, 4);
-		Poly(Dark, 64, 43, 76, 43, 71, 61, 60, 59);
-		Poly(new Color(Metal, 0.65f), 84, 43, 97, 43, 99, 66, 86, 66);     // carregador translúcido
-		Line(Metal, 2.5f, 76, 43, 78, 51, 84, 51);
-	}
-
-	private void Smg()
-	{
-		Line(Dark, 4, 8, 32, 40, 32, 40, 42, 10, 46, 8, 32);               // coronha rebatível
-		Poly(Polymer, 40, 25, 132, 25, 132, 46, 40, 46);                    // caixa quadrada
-		Rect(Dark, 48, 20, 60, 5);
-		Rect(Metal, 132, 32, 22, 6);
-		Poly(Dark, 58, 46, 70, 46, 66, 66, 55, 64);
-		Poly(Polymer, 88, 46, 101, 46, 100, 72, 89, 72);
-		Line(Metal, 2.5f, 70, 46, 72, 54, 78, 54);
-	}
-
-	private void Shotgun()
-	{
-		Poly(Polymer, 6, 32, 52, 33, 52, 44, 10, 55, 5, 51);
-		Rect(Dark, 52, 29, 40, 15);
-		Rect(Metal, 92, 30, 98, 5);                                        // cano
-		Rect(Dark, 92, 37, 78, 5);                                         // tubo
-		Poly(Polymer, 112, 35, 150, 35, 150, 46, 112, 46);                 // telha
-		Poly(Dark, 60, 44, 72, 44, 67, 62, 56, 60);
-		Line(Metal, 2.5f, 72, 44, 74, 52, 80, 52);
 	}
 
 	private void Pistol()

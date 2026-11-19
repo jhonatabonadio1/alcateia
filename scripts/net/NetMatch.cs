@@ -312,6 +312,13 @@ public partial class NetMatch : Node
 		w.Write(_health.IsDead);
 		w.Write(_weapon.PrimaryDef?.Id ?? "");
 		w.Write(_weapon.SecondaryDef?.Id ?? "");
+		// O que o HUD mostra (19/11): quem te assiste no espectador vê o
+		// mesmo. No fim, para quem lê só o começo continuar lendo.
+		w.Write((short)_weapon.AmmoInMag);
+		w.Write(_weapon.IsReloading);
+		w.Write((byte)Mathf.Clamp(_weapon.Grenades, 0, 255));
+		w.Write(_form.Wp);
+		w.Write(_weapon.SpecialCharge);
 		Send(stream, reliable: false);
 	}
 
@@ -547,7 +554,11 @@ public partial class NetMatch : Node
 
 				case NetWire.Status:
 					if (_puppets.TryGetValue(r.ReadInt64(), out Bot statusOf))
+					{
 						statusOf.RemoteStatus(r.ReadSingle(), r.ReadSingle(), r.ReadSingle(), r.ReadSingle(), r.ReadBoolean(), r.ReadString(), r.ReadString());
+						if (r.BaseStream.Length - r.BaseStream.Position >= 2 + 1 + 1 + 4 + 4)
+							statusOf.RemoteGear(r.ReadInt16(), r.ReadBoolean(), r.ReadByte(), r.ReadSingle(), r.ReadSingle());
+					}
 					break;
 
 				case NetWire.Refused:

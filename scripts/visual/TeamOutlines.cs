@@ -2,17 +2,15 @@ using Godot;
 using System.Collections.Generic;
 
 /// <summary>
-/// As bordas dos corpos para quem joga (pedido do Jhon, 18/11): **aliado
-/// com contorno branco suave** e **inimigo com contorno vermelho suave e
-/// leve** — só em volta do corpo, à vista (19/11: nada através da parede,
-/// nada por cima da arma na mão, nenhuma linha por dentro do corpo).
-/// Só na tela de quem joga, nunca no próprio corpo.
+/// As bordas dos corpos para quem joga (pedidos do Jhon, 18 e 19/11):
+/// **aliado com borda branca**, vista em qualquer parte do mapa, e
+/// **inimigo com borda vermelha suave**, só à vista — humano e lobo. Só a
+/// borda, nunca por cima da arma na mão (<see cref="Silhouette"/>). Só na
+/// tela de quem joga, nunca no próprio corpo.
 ///
-/// A borda é a segunda passada da malha (<c>MaterialOverlay</c>,
-/// <see cref="Silhouette.Ally"/> e <see cref="Silhouette.Enemy"/>). Quem já
-/// usa essa passada tem preferência e não é coberto: a silhueta vermelha
-/// de quem te matou (<see cref="KillCam"/>) e o brilho do lobo
-/// (<see cref="WolfFx"/>). Corpo morto perde a borda.
+/// A borda vai pela passada de cima da malha junto com o brilho do lobo
+/// (<see cref="BodyOverlay"/>); a de quem te matou (<see cref="KillCam"/>)
+/// tem preferência. Corpo morto perde a borda.
 /// </summary>
 public partial class TeamOutlines : Node
 {
@@ -51,10 +49,10 @@ public partial class TeamOutlines : Node
 		foreach (MeshInstance3D mesh in _scratch)
 		{
 			if (mesh.IsInGroup(EnemyMarks.MarkGroup)) continue;
-			Material now = mesh.MaterialOverlay;
-			// Só mexe na passada vazia ou numa borda nossa.
-			if (now != null && now != Silhouette.Ally && now != Silhouette.Enemy) continue;
-			if (now != want) mesh.MaterialOverlay = want;
+			// A de quem te matou tem preferência.
+			Material now = BodyOverlay.Edge(mesh);
+			if (now == Silhouette.Killer) continue;
+			if (now != want) BodyOverlay.SetEdge(mesh, want);
 		}
 	}
 }

@@ -203,8 +203,13 @@ public partial class ViewModel : Node3D
 			OmniAttenuation = 0.8f,
 			LightCullMask = CharacterLayer,
 			ShadowEnabled = false,
-			LightSpecular = 0.15f
+			LightSpecular = 0.15f,
+			// Solta da cabeça: vai para onde a câmera de verdade está (abaixo,
+			// FollowView). De lobo a câmera fica atrás, e a luz presa na
+			// cabeça acendia uma mancha nas costas do próprio lobo (19/11).
+			TopLevel = true
 		};
+		_charactersLight = characters;
 		// No quadro seguinte: agora a câmera ainda está montando os filhos
 		// (este nó é um deles) e recusaria as lâmpadas.
 		_camera.CallDeferred(Node.MethodName.AddChild, hand);
@@ -220,8 +225,31 @@ public partial class ViewModel : Node3D
 		foreach (Node child in node.GetChildren()) MoveToHandLayer(child);
 	}
 
+	private int _maskEvery;
+
+	/// <summary>A mão e a arma marcam o stencil (<see cref="Silhouette.Mask"/>):
+	/// a borda dos corpos nunca passa por cima delas. Confere a cada
+	/// poucos quadros, porque a arma na mão troca.</summary>
+	private static void MaskHands(Node node)
+	{
+		if (node is GeometryInstance3D mesh && mesh.MaterialOverlay == null) mesh.MaterialOverlay = Silhouette.Mask;
+		foreach (Node child in node.GetChildren()) MaskHands(child);
+	}
+
+	private OmniLight3D _charactersLight;
+
+	/// <summary>A luz dos personagens sai da câmera que está desenhando.</summary>
+	private void FollowView()
+	{
+		if (_charactersLight == null || !IsInstanceValid(_charactersLight) || !_charactersLight.IsInsideTree()) return;
+		Camera3D view = GetViewport().GetCamera3D();
+		_charactersLight.GlobalPosition = (view ?? _camera).GlobalPosition;
+	}
+
 	public override void _Process(double delta)
 	{
+		FollowView();
+		if (--_maskEvery <= 0) { _maskEvery = 12; MaskHands(this); }
 		float dt = (float)delta;
 		// Guardou: a arma nova sobe (mesmo que seja a mesma, de volta).
 		if (_holster > 0f && (_holster -= dt) <= 0f)
