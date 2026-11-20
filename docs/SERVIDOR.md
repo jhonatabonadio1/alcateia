@@ -68,7 +68,7 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
 | `ALCATEIA_PORT` | Porta HTTP do servidor na sua máquina | `8080` |
 | `ALCATEIA_GAME_PORT` | Porta UDP do servidor de partida | `7777` |
 | `ALCATEIA_MATCHES` | Quantas partidas o servidor de partida joga ao mesmo tempo | `4` |
-| `ALCATEIA_NETCODE` | `autoritativo`: o servidor de partida move os corpos (decisão 0011); vazio ou `repasse`: cada jogo move o seu (0008) | vazio |
+| `ALCATEIA_NETCODE` | `autoritativo`: o servidor de partida move os corpos (decisão 0011) e decide vida, acerto e morte (0016); vazio ou `repasse`: cada jogo move o seu e decide a própria vida (0008) | vazio |
 | `ALCATEIA_API` | (jogo e servidor de partida) onde fica o servidor; passa por cima do campo da tela | — |
 | `ALCATEIA_SESSION_DAYS` | Validade do login | `30` |
 | `ALCATEIA_MASTER_KEY` | Cifra o que não pode ficar legível no banco (o segredo das duas etapas) | obrigatória |
@@ -136,8 +136,17 @@ média … pior …"): tem de caber com folga nos 16,7 ms.
 | 16 jogadores / 64 jogadores | 0,4 ms / 1,5 ms por passo |
 | Para cada jogador | ~4 KB/s de subida (comandos) e ~12 KB/s de descida numa sala cheia |
 
-Nesta primeira leva a vida, o tiro, a forma e os bots ainda são do jogo
-(como no repasse); a leva seguinte leva para o servidor.
+**Vida e acerto** (decisão 0016): o servidor guarda a vida de cada um,
+confere cada acerto voltando o alvo no tempo (parede, mira, alcance,
+ritmo, arma, de onde saiu), aplica o dano e decide a morte; renascer só
+passada a espera e na base do time. No fim de cada partida escreve no log
+quantos acertos valeram e os recusados por motivo ("Acertos em …"); cada
+recusa suspeita conta contra quem atirou e vai no resultado
+(`rejectedHits`). A forma, a arma na mão e os bots ainda são do jogo.
+
+`ALCATEIA_TESTE_TELEPORTE=1` deixa o jogador "renascer" vivo em qualquer
+lugar: só o teste de ponta a ponta liga (o robô se põe de frente para o
+alvo). Nunca em produção.
 
 ## Escala
 
@@ -181,9 +190,12 @@ Como chega lá:
 
 ## O que ainda não faz
 
-- **Não é à prova de trapaça** — a vida e o acerto moram nas máquinas
-  dos jogadores (`docs/decisoes/0008`). Bom para jogar entre
-  conhecidos; não para ranking público.
+- **No modo de repasse (o padrão) não é à prova de trapaça** — a vida e
+  o acerto moram nas máquinas dos jogadores (`docs/decisoes/0008`). Para
+  ranking público, `ALCATEIA_NETCODE=autoritativo`: lá o servidor decide
+  vida, acerto e morte (decisão 0016). Mesmo nela, a forma, a arma na
+  mão e as armas do conjunto ainda vêm do jogo, e todos recebem todos os
+  corpos.
 - **Bots online saem com o dono da sala**: é a máquina dele que os move
   (`docs/decisoes/0008`); se ele cai, os bots somem até o fim. A
   dificuldade é da sala: o dono escolhe ao criar e muda na própria sala.
@@ -196,6 +208,3 @@ Como chega lá:
   não rende nada.
 - As estatísticas da tela de perfil do jogo ainda são as locais; as da
   conta aparecem no ranking e no painel.
-- **Abates como lobo** ainda não vão no resultado da partida
-  (`killsWolf`): os desafios "como lobo" e "como humano" só andam
-  online quando o servidor de partida souber a forma de quem matou.

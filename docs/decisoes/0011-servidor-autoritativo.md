@@ -77,8 +77,10 @@ o jogador as tem). O tiro, o dano e os bots são como na 0008.
 
 ## A leva seguinte
 
-1. A vida e o dano no servidor; o tiro conferido lá, voltando no tempo
-   (`PoseHistory`, até `NetRates.MaxRewind`).
+1. ~~A vida e o dano no servidor; o tiro conferido lá, voltando no tempo
+   (`PoseHistory`, até `NetRates.MaxRewind`).~~ Feito na decisão 0016
+   (20/11/2026), junto com o renascimento conferido (a espera e a base do
+   time).
 2. A forma, a arma na mão e o renascimento decididos pelo servidor.
 3. Os bots no servidor (deixam de ser da máquina do dono da sala).
 4. Não mandar inimigo que o jogador não pode ver (contra wallhack).

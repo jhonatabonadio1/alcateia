@@ -171,8 +171,13 @@ public partial class Weapon
 
 		if (SpecialArmed && !PounceReady) SpecialArmed = false;
 		if (_pounceGuard && (!_form.IsWolf || (!_flying && _rootLeft <= 0))) _pounceGuard = false;
-		_health.GuardMultiplier = SpecialArmed || _pounceGuard ? Mathf.Clamp(SpecialGuard, 0f, 1f) : 1f;
+		_health.GuardMultiplier = (GuardOverride ?? (SpecialArmed || _pounceGuard)) ? Mathf.Clamp(SpecialGuard, 0f, 1f) : 1f;
 	}
+
+	/// <summary>No corpo do servidor de partida (decisão 0016): a guarda que
+	/// o jogo contou, no lugar da daqui — a arma do lobo só roda no jogo.
+	/// Nulo em todo outro corpo.</summary>
+	public bool? GuardOverride { get; set; }
 
 	/// <summary>Armado ou no salto do especial: a guarda está ligada.</summary>
 	public bool SpecialGuarded => SpecialArmed || _pounceGuard;

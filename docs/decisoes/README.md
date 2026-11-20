@@ -26,3 +26,4 @@ como "substituído por NNNN".
 | [0013](0013-dados-do-jogo-no-servidor.md) | Economia e conteúdo moram no servidor; o painel edita, o jogo lê |
 | [0014](0014-escudo-em-memoria.md) | O escudo de segurança decide em memória e registra em lote |
 | [0015](0015-economia-da-conta.md) | Tudo o que vale alguma coisa é da conta; o jogo só espelha |
+| [0016](0016-vida-e-acerto-no-servidor.md) | Vida e acerto no servidor de partida: o acerto é conferido, a morte é decidida lá (segunda leva da 0011) |

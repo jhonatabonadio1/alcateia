@@ -20,6 +20,14 @@ using System.Text.Json.Nodes;
 /// pelos comandos que chegam, a cada passo de física
 /// (<see cref="PhysicsStep"/>); a cada dois passos, todos recebem o estado
 /// do mundo, cada um com o número do último comando seu já simulado.
+///
+/// **Vida e acerto** (decisão 0016, só na autoritativa): o acerto que um
+/// jogo diz que deu entra numa fila, espera o servidor simular o comando
+/// em que o tiro saiu e é conferido (<see cref="HitCheck"/>). Valendo, o
+/// dano é aplicado no corpo daqui, a vítima recebe como ficou
+/// (<c>Damage</c>) e, se caiu, o abate é anunciado — quem decide a morte é
+/// o servidor. Recusado, não acontece nada, e a recusa conta contra quem
+/// atirou (vai no resultado).
 /// </summary>
 public sealed class HostedMatch
 {
@@ -52,6 +60,29 @@ public sealed class HostedMatch
 	private byte[] _snapshotBody = new byte[1 + 16 * EntityState.Size];
 	private readonly byte[] _packet = new byte[2048];
 
+	/// <summary>Quanto um acerto espera o comando do tiro ser simulado, em passos.</summary>
+	public const int HitWait = 12;
+
+	private readonly HitCheck _hits;
+	private readonly List<PendingHit> _pending = new();
+	private readonly Dictionary<long, (Vector3 Position, uint Tick)> _botPoses = new();
+	private uint _tick;
+	private double _now, _vitals;
+
+	private struct PendingHit
+	{
+		public ClaimedHit Hit;
+		public bool ByBot;
+		public uint Arrived;
+	}
+
+	/// <summary>Acertos conferidos: quantos valeram e quantos foram recusados, por motivo.</summary>
+	public int HitsAccepted { get; private set; }
+	public Dictionary<HitVerdict, int> HitsRefused { get; } = new();
+
+	/// <summary>O corpo de um jogador no mundo da partida (null fora da autoritativa).</summary>
+	public ServerBody BodyOf(long account) => _bodies.GetValueOrDefault(account);
+
 	/// <summary>Corpos simulados agora.</summary>
 	public int Bodies => _bodyList.Count;
 
@@ -74,6 +105,7 @@ public sealed class HostedMatch
 		Referee = referee;
 		_link = link;
 		World = world;
+		if (world != null) _hits = new HitCheck(world, BodyRids);
 
 		// O número de cada corpo no estado do mundo: o lugar na escalação.
 		byte index = 0;
@@ -109,7 +141,17 @@ public sealed class HostedMatch
 	/// <summary>Passa o tempo: o juiz, o relógio para os jogadores e o fim.</summary>
 	public void Tick(double delta)
 	{
+		_now += delta;
 		if (_left.Count > 0) AnnounceGone();
+
+		// A vida de cada um, como o servidor tem, para o jogo dele: se lá
+		// está mais alta, vale a daqui.
+		_vitals -= delta;
+		if (Authoritative && _vitals <= 0)
+		{
+			_vitals = ClockEvery;
+			SendVitals();
+		}
 
 		RefPhase before = Referee.Phase;
 		Referee.Tick(delta);
@@ -185,7 +227,8 @@ public sealed class HostedMatch
 			players.Add(new JsonObject
 			{
 				["accountId"] = s.Id, ["kills"] = s.Kills, ["deaths"] = s.Deaths, ["assists"] = s.Assists,
-				["headshots"] = s.Headshots, ["points"] = s.Points
+				["headshots"] = s.Headshots, ["points"] = s.Points,
+				["killsWolf"] = s.KillsWolf, ["rejectedHits"] = s.RejectedHits
 			});
 
 		return new JsonObject
@@ -202,6 +245,7 @@ public sealed class HostedMatch
 		Referee.Seat seat = Referee.Find(account);
 		Player body = World.SpawnBody($"Jogador{account}", seat?.Team ?? Referee.Blue);
 		var server = new ServerBody(account, _indexOf.GetValueOrDefault(account), body);
+		server.SpawnPoints.AddRange(World.SpawnsFor(seat?.Team ?? Referee.Blue));
 		_bodies[account] = server;
 		_bodyList.Add(server);
 	}
@@ -220,8 +264,15 @@ public sealed class HostedMatch
 	{
 		if (!Authoritative) return;
 
+		_tick = tick;
 		foreach (ServerBody body in _bodyList) body.Step(tick, delta);
+		ResolveHits(tick);
 		if (tick % NetRates.SnapshotEvery == 0) SendSnapshots(tick);
+	}
+
+	private IEnumerable<Rid> BodyRids()
+	{
+		foreach (ServerBody body in _bodyList) yield return body.Body.GetRid();
 	}
 
 	/// <summary>O estado do mundo: o corpo comum é escrito uma vez; cada
@@ -288,11 +339,7 @@ public sealed class HostedMatch
 
 			case NetWire.Status:
 				if (!Authoritative) break;
-				Broadcast(NetWire.Relay(packet, account), reliable: false, except: peer);
-				float hp = r.ReadSingle(), maxHp = r.ReadSingle(), shield = r.ReadSingle(), maxShield = r.ReadSingle();
-				r.ReadBoolean();
-				string primary = r.ReadString(), secondary = r.ReadString();
-				if (_bodies.TryGetValue(account, out ServerBody status)) status.ApplyStatus(hp, maxHp, shield, maxShield, primary, secondary);
+				ReadStatus(peer, account, packet, r);
 				break;
 
 			case NetWire.Loadout:
@@ -313,25 +360,32 @@ public sealed class HostedMatch
 				break;
 
 			case NetWire.Hit:
-				ForwardHit(account, packet, r, 1);
+				if (Authoritative) Claim(account, byBot: false, r);
+				else ForwardHit(account, packet, r, 1);
 				break;
 
 			case NetWire.Died:
-				ReadDeath(account, r);
+				if (Authoritative) ReadOwnDeath(account, r);
+				else ReadDeath(account, r);
 				break;
 
 			// O dono falando por um bot dele: confere que é dele e trata
 			// como se o bot fosse um jogador.
 			case NetWire.BotState:
 			case NetWire.BotAttack:
-				if (!Referee.Speaks(account, r.ReadInt64())) break;
+				long speaker = r.ReadInt64();
+				if (!Referee.Speaks(account, speaker)) break;
+				// Onde o bot está: é contra isso que se confere o acerto nele.
+				if (type == NetWire.BotState) _botPoses[speaker] = (r.ReadVector(), _tick);
 				Broadcast(NetWire.AsPlayer(packet, type == NetWire.BotState ? NetWire.State : NetWire.Attack),
 					reliable: type != NetWire.BotState, except: peer);
 				break;
 
 			case NetWire.BotHit:
 				long shooter = r.ReadInt64();
-				if (Referee.Speaks(account, shooter)) ForwardHit(shooter, packet, r, 9);
+				if (!Referee.Speaks(account, shooter)) break;
+				if (Authoritative) Claim(shooter, byBot: true, r);
+				else ForwardHit(shooter, packet, r, 9);
 				break;
 
 			case NetWire.BotDied:
@@ -382,7 +436,267 @@ public sealed class HostedMatch
 		var assisters = new long[r.ReadByte()];
 		for (int i = 0; i < assisters.Length; i++) assisters[i] = r.ReadInt64();
 
-		if (Referee.Death(victim, killer, headshot, assisters) is RefKill kill) Announce(kill, cause, weapon);
+		if (Referee.Death(victim, killer, headshot, assisters, killerWasWolf: cause == (byte)KillCause.Wolf) is RefKill kill)
+			Announce(kill, cause, weapon);
+	}
+
+	// ------------------------------------------------------------ vida e acerto (autoritativa, decisão 0016)
+
+	/// <summary>
+	/// O jogo conta que morreu. Na autoritativa quem decide a morte por
+	/// acerto de outra máquina é o servidor; daqui só vale a morte sem
+	/// autor (queda, a própria granada) ou por um bot da própria máquina.
+	/// </summary>
+	private void ReadOwnDeath(long account, BinaryReader r)
+	{
+		long killer = r.ReadInt64();
+		if (killer != 0 && !(Referee.Find(killer) is { IsBot: true } bot && bot.Owner == account)) return;
+
+		r.BaseStream.Position = 1;
+		_bodies.TryGetValue(account, out ServerBody body);
+		bool wasAlive = body?.Alive ?? true;
+		body?.SelfDeath();
+		if (wasAlive) ReadDeath(account, r);
+	}
+
+	/// <summary>Vida, escudo e armas do jogo: daqui só vale o que desce. Os
+	/// outros recebem a vida que o servidor tem.</summary>
+	private void ReadStatus(long peer, long account, byte[] packet, BinaryReader r)
+	{
+		float hp = r.ReadSingle();
+		r.ReadSingle();
+		float shield = r.ReadSingle();
+		r.ReadSingle();
+		r.ReadBoolean();
+		string primary = r.ReadString(), secondary = r.ReadString();
+		bool guard = false;
+		long left = r.BaseStream.Length - r.BaseStream.Position;
+		if (left >= 2 + 1 + 1 + 4 + 4 + 1)
+		{
+			r.BaseStream.Position += 2 + 1 + 1 + 4 + 4;
+			guard = r.ReadBoolean();
+		}
+
+		byte[] relayed = NetWire.Relay(packet, account);
+		if (!_bodies.TryGetValue(account, out ServerBody body) || !body.Placed)
+		{
+			body?.ApplyStatus(hp, shield, primary, secondary, guard);
+			Broadcast(relayed, reliable: false, except: peer);
+			return;
+		}
+		body.ApplyStatus(hp, shield, primary, secondary, guard);
+
+		Health h = body.Health;
+		BitConverter.TryWriteBytes(relayed.AsSpan(9, 4), h.Hp);
+		BitConverter.TryWriteBytes(relayed.AsSpan(13, 4), h.MaxHp);
+		BitConverter.TryWriteBytes(relayed.AsSpan(17, 4), h.Shield);
+		BitConverter.TryWriteBytes(relayed.AsSpan(21, 4), h.MaxShield);
+		relayed[25] = (byte)(h.IsDead ? 1 : 0);
+		Broadcast(relayed, reliable: false, except: peer);
+	}
+
+	/// <summary>A vida que o servidor tem de cada um, para o jogo dele.</summary>
+	private void SendVitals()
+	{
+		foreach (var (peer, account) in _accountOf)
+		{
+			if (!_bodies.TryGetValue(account, out ServerBody body) || !body.Placed) continue;
+			BinaryWriter w = NetWire.Begin(NetWire.Vitals, out MemoryStream stream);
+			w.Write(body.Health.Hp);
+			w.Write(body.Health.Shield);
+			w.Write(body.Health.IsDead);
+			_link.Send(peer, stream.ToArray(), false);
+		}
+	}
+
+	/// <summary>Um acerto que um jogo diz que deu entra na fila.</summary>
+	private void Claim(long shooter, bool byBot, BinaryReader r)
+	{
+		var hit = new ClaimedHit
+		{
+			Shooter = shooter,
+			Target = r.ReadInt64(),
+			Amount = r.ReadSingle(),
+			Headshot = r.ReadBoolean(),
+			Cause = (KillCause)r.ReadByte(),
+			Weapon = r.ReadString(),
+			From = r.ReadVector(),
+			ViewTick = double.NaN
+		};
+		if (r.BaseStream.Length - r.BaseStream.Position >= 4 + 8)
+		{
+			hit.Seq = r.ReadUInt32();
+			hit.ViewTick = r.ReadDouble();
+		}
+		if (!float.IsFinite(hit.Amount) || !hit.From.IsFinite()) return;
+		_pending.Add(new PendingHit { Hit = hit, ByBot = byBot, Arrived = _tick });
+	}
+
+	/// <summary>Confere os acertos cujo comando do tiro já foi simulado
+	/// (ou que esperaram demais).</summary>
+	private void ResolveHits(uint tick)
+	{
+		for (int i = 0; i < _pending.Count;)
+		{
+			PendingHit p = _pending[i];
+			if (!p.ByBot && _bodies.TryGetValue(p.Hit.Shooter, out ServerBody waiting)
+				&& waiting.Commands.LastProcessed < p.Hit.Seq && tick - p.Arrived < HitWait)
+			{
+				i++;
+				continue;
+			}
+			_pending.RemoveAt(i);
+			Resolve(p, tick);
+		}
+	}
+
+	private void Resolve(in PendingHit p, uint tick)
+	{
+		ClaimedHit hit = p.Hit;
+		Referee.Seat target = Referee.Find(hit.Target), shooterSeat = Referee.Find(hit.Shooter);
+		// Aliado, partida parada, alguém que saiu: não é trapaça, só não vale.
+		if (target == null || shooterSeat == null || !Referee.CanHit(hit.Shooter, hit.Target, Math.Min(hit.Amount, Referee.MaxHit))) return;
+
+		ServerBody victim = null;
+		if (!target.IsBot && !_bodies.TryGetValue(hit.Target, out victim)) return;
+
+		HitVerdict verdict;
+		float amount;
+		bool headshot;
+		if (p.ByBot)
+			verdict = CheckBotShot(hit, victim, tick, out amount, out headshot);
+		else
+		{
+			if (!_bodies.TryGetValue(hit.Shooter, out ServerBody shooter)) return;
+			ServerBody.ShotPose shot = shooter.ShotAt(hit.Seq);
+			double first, last;
+			if (target.IsBot)
+			{
+				first = last = tick;
+			}
+			else
+			{
+				double rewind = HitRules.RewindTick(hit.ViewTick, shot.Tick);
+				first = double.IsNaN(hit.ViewTick) ? rewind : rewind - HitRules.RewindSlackTicks;
+				last = double.IsNaN(hit.ViewTick) ? shot.Tick : Math.Min(rewind + HitRules.RewindSlackTicks, shot.Tick);
+			}
+			verdict = _hits.Check(hit, shot, shooter, PoseOf(hit.Target, target.IsBot), first, last, _now, out amount, out headshot);
+		}
+
+		if (verdict != HitVerdict.Ok)
+		{
+			Refuse(hit, shooterSeat, verdict);
+			return;
+		}
+
+		// Valeu, mas o alvo já caiu (ou acabou de renascer, protegido): não
+		// é trapaça — os dois atiraram quase juntos.
+		if (victim != null && (!victim.Alive || victim.Health.IsProtected)) return;
+
+		HitsAccepted++;
+		if (target.IsBot) SendHitToOwner(hit, target, amount, headshot);
+		else ApplyHit(hit, victim, amount, headshot);
+	}
+
+	/// <summary>O tiro de um bot (a máquina do dono o move): confere de onde
+	/// saiu e a parede no caminho, contra onde o servidor tinha o alvo no
+	/// último instante que o dono podia estar vendo.</summary>
+	private HitVerdict CheckBotShot(in ClaimedHit hit, ServerBody victim, uint tick, out float amount, out bool headshot)
+	{
+		amount = Math.Min(hit.Amount, Referee.MaxHit);
+		headshot = hit.Headshot;
+		if (!_botPoses.TryGetValue(hit.Shooter, out var bot)) return HitVerdict.ShooterGone;
+		if (hit.Cause != KillCause.Grenade && hit.From.DistanceTo(bot.Position) > HitRules.OriginSlack + 2.5f) return HitVerdict.BadOrigin;
+		if (victim == null) return HitVerdict.Ok;   // bot em bot é da mesma máquina (Touch)
+
+		return _hits.CheckLine(hit, PoseOf(hit.Target, false), (double)tick - HitRules.MaxRewindTicks, tick);
+	}
+
+	/// <summary>Onde o alvo estava num passo: o corpo daqui (com a
+	/// história), ou o bot onde o dono disse por último.</summary>
+	private HitCheck.PoseAt PoseOf(long target, bool bot)
+	{
+		if (bot)
+			return (double _, out Vector3 center, out float height) =>
+			{
+				height = 1.75f;
+				bool known = _botPoses.TryGetValue(target, out var pose);
+				center = known ? pose.Position : default;
+				return known;
+			};
+
+		ServerBody body = _bodies.GetValueOrDefault(target);
+		return (double tick, out Vector3 center, out float height) =>
+		{
+			center = default;
+			height = 1.75f;
+			if (body == null || !body.History.Sample(tick, out PoseSample pose)) return false;
+			center = pose.Position.ToGodot();
+			height = pose.Height;
+			return true;
+		};
+	}
+
+	private void Refuse(in ClaimedHit hit, Referee.Seat shooter, HitVerdict verdict)
+	{
+		HitsRefused[verdict] = HitsRefused.GetValueOrDefault(verdict) + 1;
+		if (!HitCheck.Suspicious(verdict)) return;
+
+		shooter.RejectedHits++;
+		if (shooter.RejectedHits <= 5 || shooter.RejectedHits % 25 == 0)
+			GD.Print($"Acerto recusado em {Key}: {shooter.Name} em {Referee.Find(hit.Target)?.Name} ({hit.WeaponId}): " +
+				$"{HitCheck.Describe(verdict)} ({shooter.RejectedHits} até agora).");
+	}
+
+	/// <summary>O acerto valeu num jogador: o dano é aplicado aqui, a vítima
+	/// recebe como ficou e, se caiu, o servidor anuncia o abate.</summary>
+	private void ApplyHit(in ClaimedHit hit, ServerBody victim, float amount, bool headshot)
+	{
+		if (!Referee.Hit(hit.Shooter, hit.Target, amount)) return;
+
+		Health h = victim.Health;
+		float before = h.Hp + h.Shield;
+		h.TakeDamage(amount, 0, hit.From, headshot);
+		float dealt = before - (h.Hp + h.Shield);
+		if (dealt <= 0) return;
+
+		KillCause cause = hit.Cause == KillCause.Headshot && !headshot ? KillCause.Gun
+			: hit.Cause == KillCause.Gun && headshot ? KillCause.Headshot
+			: hit.Cause;
+
+		if (_peerOf.TryGetValue(hit.Target, out long peer))
+		{
+			BinaryWriter w = NetWire.Begin(NetWire.Damage, out MemoryStream stream);
+			w.Write(hit.Shooter);
+			w.Write(dealt);
+			w.Write(headshot);
+			w.Write((byte)cause);
+			w.Write(hit.Weapon ?? "");
+			w.Write(hit.From);
+			w.Write(h.Hp);
+			w.Write(h.Shield);
+			_link.Send(peer, stream.ToArray(), true);
+		}
+
+		if (!h.IsDead) return;
+		if (Referee.Death(hit.Target, hit.Shooter, headshot, Referee.RecentHitters(hit.Target), killerWasWolf: cause == KillCause.Wolf) is RefKill kill)
+			Announce(kill, (byte)cause, hit.Weapon ?? "");
+	}
+
+	/// <summary>O acerto valeu num bot: segue para a máquina do dono, que o move.</summary>
+	private void SendHitToOwner(in ClaimedHit hit, Referee.Seat bot, float amount, bool headshot)
+	{
+		if (!Referee.Hit(hit.Shooter, hit.Target, amount) || !_peerOf.TryGetValue(bot.Owner, out long owner)) return;
+
+		BinaryWriter w = NetWire.Begin(NetWire.HitBot, out MemoryStream stream);
+		w.Write(hit.Shooter);
+		w.Write(hit.Target);
+		w.Write(amount);
+		w.Write(headshot);
+		w.Write((byte)hit.Cause);
+		w.Write(hit.Weapon ?? "");
+		w.Write(hit.From);
+		_link.Send(owner, stream.ToArray(), true);
 	}
 
 	private void AnnounceGone()

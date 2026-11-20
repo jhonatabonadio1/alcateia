@@ -325,6 +325,9 @@ public partial class NetMatch : Node
 		w.Write((byte)Mathf.Clamp(_weapon.Grenades, 0, 255));
 		w.Write(_form.Wp);
 		w.Write(_weapon.SpecialCharge);
+		// A guarda do especial do lobo (decisão 0016): o servidor aplica o
+		// dano e precisa saber que ela está ligada.
+		w.Write(_weapon.SpecialGuarded);
 		Send(stream, reliable: false);
 	}
 
@@ -509,8 +512,19 @@ public partial class NetMatch : Node
 		w.Write((byte)hit.Cause);
 		w.Write(hit.Weapon);
 		w.Write(hit.From);
+		// Para o servidor conferir (decisão 0016): o comando em que o tiro
+		// saiu (o deste passo, que sai logo depois) e o instante em que os
+		// outros estavam na minha tela. O servidor de repasse ignora.
+		w.Write(_seq + 1);
+		w.Write(_clock.Known ? _clock.RenderTime(LocalSeconds) * NetRates.TickRate : double.NaN);
 		Send(stream);
 	}
+
+	/// <summary>Só o robô do teste de ponta a ponta: um acerto inventado
+	/// (dano, cabeça e origem à escolha), para conferir que o servidor
+	/// autoritativo recusa (decisão 0016).</summary>
+	public void SendForgedHit(long target, float amount, Vector3 from) =>
+		SendHit(target, new RemoteHit(amount, from, true, KillCause.Headshot, _weapon.Held?.Id ?? "", null));
 
 	/// <summary>Conta que <paramref name="victim"/> (eu ou um bot meu) morreu.</summary>
 	private void SendDied(long victim, long killer, KillCause cause, string weapon, bool headshot, List<long> assisters)
@@ -588,6 +602,15 @@ public partial class NetMatch : Node
 					TakeHit(OnlineMatch.AccountId, r.ReadInt64(), r.ReadSingle(), r.ReadBoolean(), (KillCause)r.ReadByte(), r.ReadString(), r.ReadVector());
 					break;
 
+				case NetWire.Damage:
+					TakeServerDamage(r);
+					break;
+
+				case NetWire.Vitals:
+					float vitalHp = r.ReadSingle(), vitalShield = r.ReadSingle();
+					if (!r.ReadBoolean()) _health.CorrectDown(vitalHp, vitalShield);
+					break;
+
 				case NetWire.HitBot:
 					long shooter = r.ReadInt64();
 					TakeHit(r.ReadInt64(), shooter, r.ReadSingle(), r.ReadBoolean(), (KillCause)r.ReadByte(), r.ReadString(), r.ReadVector());
@@ -641,6 +664,27 @@ public partial class NetMatch : Node
 
 		List<long> assisters = health.TakeAssists(attacker).Select(IdOf).Where(id => id != 0).ToList();
 		SendDied(victimId, attackerId, cause, weapon, headshot, assisters);
+	}
+
+	/// <summary>
+	/// Partida autoritativa (decisão 0016): o servidor aplicou um acerto em
+	/// mim e diz como fiquei. A morte, se veio, é dele: não conto de volta
+	/// (o abate chega logo depois, para todos).
+	/// </summary>
+	private void TakeServerDamage(BinaryReader r)
+	{
+		long attackerId = r.ReadInt64();
+		float dealt = r.ReadSingle();
+		r.ReadBoolean();
+		r.ReadByte();
+		r.ReadString();
+		Vector3 from = r.ReadVector();
+		float hp = r.ReadSingle(), shield = r.ReadSingle();
+
+		_puppets.TryGetValue(attackerId, out Bot attacker);
+		_hitInProgress = true;
+		_health.ApplyServerHit(dealt, hp, shield, from, attacker);
+		_hitInProgress = false;
 	}
 
 	private void ReadKill(BinaryReader r)

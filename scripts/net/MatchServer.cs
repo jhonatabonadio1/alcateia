@@ -106,6 +106,9 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		var (first, last) = PortRange(OS.GetEnvironment("ALCATEIA_GAME_PORT"));
 		_capacity = int.TryParse(OS.GetEnvironment("ALCATEIA_MATCHES"), out int capacity) ? Math.Clamp(capacity, 1, 64) : DefaultCapacity;
 		_authoritative = OS.GetEnvironment("ALCATEIA_NETCODE").Trim().ToLowerInvariant() is "autoritativo" or "authoritative";
+		// Só o teste de ponta a ponta liga: o robô se põe de frente para o
+		// alvo "renascendo" vivo. Em produção, renascer vivo é recusado.
+		ServerBody.AllowTeleport = OS.GetEnvironment("ALCATEIA_TESTE_TELEPORTE") == "1";
 
 		foreach (string arg in OS.GetCmdlineUserArgs())
 		{
@@ -248,6 +251,10 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		Referee r = match.Referee;
 		JsonObject body = match.Result(_id);
 		GD.Print($"Partida {match.Key} acabou: VANGUARDA {r.Score(Referee.Blue)} x {r.Score(Referee.Orange)} SINDICATO.");
+		if (match.Authoritative)
+			GD.Print($"Acertos em {match.Key}: {match.HitsAccepted} valeram; recusados: " +
+				(match.HitsRefused.Count == 0 ? "nenhum" : string.Join(", ", match.HitsRefused.Select(e => $"{HitCheck.Describe(e.Key)} {e.Value}"))) +
+				$"; suspeitos por jogador: {string.Join(", ", r.Seats.Where(s => !s.IsBot).Select(s => $"{s.Name} {s.RejectedHits}"))}.");
 
 		// O resultado é o que paga os jogadores: insiste um pouco.
 		_reporting.Add(match.Key);

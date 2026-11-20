@@ -21,6 +21,11 @@ public partial class MatchWorld : SubViewport
 	public string MapId { get; }
 	public int StrippedNodes { get; private set; }
 
+	/// <summary>Os pontos de nascimento do mapa, com o time de cada um (0:
+	/// qualquer time), guardados antes de os marcadores saírem: o servidor
+	/// confere onde o jogador diz que renasceu (decisão 0016).</summary>
+	public List<(int Team, Vector3 Point)> Spawns { get; } = new();
+
 	public MatchWorld() : this(Maps.All[0].Id) { }
 
 	public MatchWorld(string mapId)
@@ -39,6 +44,7 @@ public partial class MatchWorld : SubViewport
 		MapInfo info = Maps.Get(MapId);
 		var scene = ResourceLoader.Load<PackedScene>(info.Scene) ?? ResourceLoader.Load<PackedScene>(Maps.All[0].Scene);
 		Node map = scene.Instantiate();
+		CollectSpawns(map, Transform3D.Identity);
 		StrippedNodes = Strip(map);
 		AddChild(map);
 	}
@@ -60,6 +66,28 @@ public partial class MatchWorld : SubViewport
 		AddChild(body);
 		body.GlobalPosition = new Vector3(0, -500, 0);
 		return body;
+	}
+
+	/// <summary>Os pontos que servem a um time (os do time e os de qualquer um).</summary>
+	public IEnumerable<Vector3> SpawnsFor(int team)
+	{
+		foreach (var (t, point) in Spawns)
+			if (t == 0 || t == team) yield return point;
+	}
+
+	/// <summary>O espaço de física desta partida (só o que colide: o mapa e os corpos).</summary>
+	public PhysicsDirectSpaceState3D Space => FindWorld3D()?.DirectSpaceState;
+
+	private void CollectSpawns(Node node, Transform3D parent)
+	{
+		Transform3D here = node is Node3D n3 ? parent * n3.Transform : parent;
+		if (node is SpawnPoints set)
+		{
+			foreach (Node child in set.GetChildren())
+				if (child is Node3D marker) Spawns.Add((set.Team, (here * marker.Transform).Origin));
+			return;
+		}
+		foreach (Node child in node.GetChildren()) CollectSpawns(child, here);
 	}
 
 	/// <summary>Tira do mapa tudo o que não colide. Devolve quantos nós saíram.</summary>

@@ -35,6 +35,11 @@ public sealed record ReportedLine(long AccountId, int Kills, int Deaths, int Ass
 	/// <summary>Dos abates, quantos como lobo (o resto é como humano). Servidor
 	/// de partida antigo não manda: fica zero e os desafios "como lobo" não andam.</summary>
 	public int KillsWolf { get; init; }
+
+	/// <summary>Acertos que o servidor de partida recusou (parede no caminho,
+	/// fora da mira, longe demais, rápido demais: decisão 0016). Só o
+	/// servidor de partida autoritativo confere; o de repasse manda zero.</summary>
+	public int RejectedHits { get; init; }
 }
 
 /// <summary>O fim de uma partida, como o servidor de partida conta.</summary>

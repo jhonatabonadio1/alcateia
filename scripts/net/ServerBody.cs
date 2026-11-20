@@ -4,29 +4,54 @@ using System.Linq;
 
 /// <summary>
 /// O corpo de um jogador no servidor de partida (modo autoritativo,
-/// decisão 0011): o <see cref="Player"/> de sempre, movido pelos comandos
-/// que chegam (<see cref="Commands"/>), um por passo, com o mesmo código
-/// que o jogo do jogador usou para prever.
+/// decisões 0011 e 0016): o <see cref="Player"/> de sempre, movido pelos
+/// comandos que chegam (<see cref="Commands"/>), um por passo, com o mesmo
+/// código que o jogo do jogador usou para prever.
 ///
-/// O que ainda vem do jogo nesta leva — e por isso o servidor só copia:
-/// a forma, a arma na mão, a vida (<see cref="ApplyStatus"/>), se está
-/// morto e onde renasceu (no próprio comando). A leva seguinte traz a vida
-/// e o tiro para cá.
+/// **A vida é daqui** (decisão 0016): o <see cref="Health"/> deste corpo é
+/// o que vale. O acerto que outro jogador diz que deu é conferido
+/// (<see cref="HitCheck"/>) e aplicado aqui; a morte é decidida aqui; o
+/// jogo só pode contar que tem **menos** vida (dano que só ele viu: queda,
+/// a própria granada, um bot dele) — nunca mais. Renascer só depois da
+/// espera, e num ponto de nascimento do time.
+///
+/// O que ainda vem do jogo: a forma e a arma na mão (no comando), as armas
+/// do conjunto e a guarda do especial do lobo (Status), a classe de lobo e
+/// as melhorias (Loadout).
 /// </summary>
 public sealed class ServerBody
 {
+	/// <summary>Folga na espera para renascer, em segundos: a morte chega
+	/// ao jogo meia ida e volta depois de acontecer aqui.</summary>
+	public const double RespawnSlack = 0.75;
+
+	/// <summary>Até quantos metros do ponto de nascimento do time vale
+	/// renascer (o jogo sorteia uns metros em volta).</summary>
+	public const float SpawnReach = 9f;
+
+	/// <summary>Só para o teste de ponta a ponta: deixa o robô "renascer"
+	/// vivo, em qualquer lugar, para se pôr de frente para o alvo. Em
+	/// produção fica desligado.</summary>
+	public static bool AllowTeleport { get; set; }
+
 	public readonly long Account;
 	public readonly byte Index;
 	public readonly Player Body;
 	public readonly CommandBuffer Commands = new();
 	public readonly PoseHistory History = new();
 
-	private readonly Health _health;
-	private readonly FormController _form;
-	private readonly Weapon _weapon;
+	/// <summary>O ritmo de dano de quem atira, por tipo de golpe.</summary>
+	public readonly DamageBudget GunBudget = new(), MeleeBudget = new(), GrenadeBudget = new();
+
+	public Health Health { get; }
+	public FormController Form { get; }
+	public Weapon Weapon { get; }
+
+	/// <summary>Os pontos onde o time deste corpo pode renascer (vazio: não confere).</summary>
+	public List<Vector3> SpawnPoints { get; } = new();
 
 	private string _primary = "", _secondary = "";
-	private float _hp = 100, _maxHp = 100, _shield, _maxShield;
+	private readonly Node3D _head;
 
 	/// <summary>A vida do jogador em que o corpo está (dá a volta em 256).</summary>
 	public byte Epoch { get; private set; }
@@ -34,16 +59,41 @@ public sealed class ServerBody
 	/// <summary>Já sabe onde o jogador nasceu e está no mundo.</summary>
 	public bool Placed { get; private set; }
 
+	public bool Alive => Placed && !Health.IsDead;
+
 	public int Simulated { get; private set; }
+
+	/// <summary>Renascimentos recusados (cedo demais, ou longe da base).</summary>
+	public int RefusedSpawns { get; private set; }
+
+	/// <summary>Onde o corpo estava logo depois de cada comando: é de onde
+	/// sai o tiro que o jogo deu naquele comando.</summary>
+	public struct ShotPose
+	{
+		public uint Seq, Tick;
+		public Vector3 Eye, Feet;
+		public float Yaw, Pitch;
+		public bool Alive;
+		public Form Form;
+		public Slot Slot;
+		public string Held;
+		public bool Valid;
+	}
+
+	private readonly ShotPose[] _shots = new ShotPose[NetRates.HistoryTicks];
+	private ShotPose _latest;
 
 	public ServerBody(long account, byte index, Player body)
 	{
 		Account = account;
 		Index = index;
 		Body = body;
-		_health = body.GetNode<Health>("Health");
-		_form = body.GetNode<FormController>("FormController");
-		_weapon = body.GetNode<Weapon>("Weapon");
+		Health = body.GetNode<Health>("Health");
+		Form = body.GetNode<FormController>("FormController");
+		Weapon = body.GetNode<Weapon>("Weapon");
+		_head = body.GetNode<Node3D>("Head");
+		Health.MatchTimings = true;
+		Health.AutoRespawn = false;
 		Hide();
 	}
 
@@ -55,47 +105,106 @@ public sealed class ServerBody
 		for (int i = 0; i < wanted; i++)
 		{
 			if (!Commands.Next(out InputCommand command, out _)) break;
-			Apply(command, delta);
+			Apply(command, tick, delta);
 		}
 
 		if (Placed)
 			History.Record(tick, Body.GlobalPosition.ToNumerics(), Body.Rotation.Y, Body.HeadPitch, Body.IsCrouching ? Body.CrouchHeight : Body.StandHeight);
 	}
 
-	private void Apply(in InputCommand c, double delta)
+	private void Apply(in InputCommand c, uint tick, double delta)
 	{
 		// Vida nova (ou a primeira): o corpo vai para onde o jogo diz que
-		// nasceu. Sem a posição ainda, espera — comando de outra vida não
-		// move o corpo desta.
+		// nasceu — se já pode renascer, e se é na base do time. Sem a
+		// posição ainda, espera: comando de outra vida não move o corpo desta.
 		if (!Placed || c.Epoch != Epoch)
 		{
-			if (!c.HasSpawn) return;
+			if (!c.HasSpawn || !MayRespawn(c.Spawn.ToGodot())) return;
 			Epoch = c.Epoch;
-			if (_health.IsDead) _health.Mirror(_maxHp, _maxHp, _maxShield, _maxShield, false);
+			if (Health.IsDead) Health.Mirror(Health.MaxHp, Health.MaxHp, Health.MaxShield, Health.MaxShield, false);
 			Show();
 			Body.PlaceDriven(c.Spawn.ToGodot());
 		}
 
-		if (c.Dead && !_health.IsDead) _health.Mirror(0, _maxHp, 0, _maxShield, true);
+		// Morto aqui, o corpo não anda (o jogo pode não ter sabido ainda).
+		if (!Health.IsDead)
+		{
+			Form form = System.Enum.IsDefined(typeof(Form), (int)c.Form) ? (Form)c.Form : global::Form.Human;
+			Form.RemoteSet(form);
+			if (!Form.IsWolf) Weapon.RemoteHold(_primary, _secondary, (Slot)c.HeldSlot);
+			Body.Simulate(NetCommands.ToIntent(c), Quant.Yaw(c.Yaw), Quant.Pitch(c.Pitch), delta, c.Frozen);
+			Simulated++;
+		}
 
-		Form form = System.Enum.IsDefined(typeof(Form), (int)c.Form) ? (Form)c.Form : Form.Human;
-		_form.RemoteSet(form);
-		if (!_form.IsWolf) _weapon.RemoteHold(_primary, _secondary, (Slot)c.HeldSlot);
-
-		Body.Simulate(NetCommands.ToIntent(c), Quant.Yaw(c.Yaw), Quant.Pitch(c.Pitch), delta, c.Frozen);
-		Simulated++;
+		RecordShot(c.Seq, tick);
 	}
 
-	/// <summary>Vida, escudo e armas, como o jogo conta (Status).</summary>
-	public void ApplyStatus(float hp, float maxHp, float shield, float maxShield, string primary, string secondary)
+	/// <summary>Pode renascer agora, ali? A primeira vez, sempre (é a
+	/// largada); depois, só morto, passada a espera, e perto de um ponto de
+	/// nascimento do time.</summary>
+	private bool MayRespawn(Vector3 at)
 	{
-		_hp = hp;
-		_maxHp = maxHp;
-		_shield = shield;
-		_maxShield = maxShield;
+		if (!Placed || AllowTeleport) return true;
+
+		bool ok = Health.IsDead && Health.RespawnIn <= RespawnSlack && NearSpawn(at);
+		if (!ok) RefusedSpawns++;
+		return ok;
+	}
+
+	private bool NearSpawn(Vector3 at)
+	{
+		if (SpawnPoints.Count == 0) return true;
+		foreach (Vector3 point in SpawnPoints)
+			if (new Vector2(point.X - at.X, point.Z - at.Z).Length() <= SpawnReach && Mathf.Abs(point.Y - at.Y) <= 4f) return true;
+		return false;
+	}
+
+	private void RecordShot(uint seq, uint tick)
+	{
+		_latest = new ShotPose
+		{
+			Seq = seq, Tick = tick,
+			Eye = _head.GlobalPosition,
+			Feet = Body.GlobalPosition - Vector3.Up * (Body.StandHeight * 0.5f),
+			Yaw = Body.Rotation.Y, Pitch = Body.HeadPitch,
+			Alive = Alive,
+			Form = Form.Current,
+			Slot = Weapon.HumanSlot,
+			Held = Form.IsWolf ? "" : Weapon.HumanSlot == Slot.Knife ? Weapon.MeleeId : Weapon.Held?.Id ?? "",
+			Valid = true
+		};
+		_shots[seq % (uint)_shots.Length] = _latest;
+	}
+
+	/// <summary>Onde o corpo estava logo depois do comando <paramref name="seq"/>.
+	/// Sem ele (já saiu do anel), o mais recente.</summary>
+	public ShotPose ShotAt(uint seq)
+	{
+		ShotPose pose = _shots[seq % (uint)_shots.Length];
+		return pose.Valid && pose.Seq == seq ? pose : _latest;
+	}
+
+	/// <summary>
+	/// Vida, escudo, armas e a guarda do especial, como o jogo conta
+	/// (Status). Da vida e do escudo só vale o que desce (decisão 0016).
+	/// </summary>
+	public void ApplyStatus(float hp, float shield, string primary, string secondary, bool guard)
+	{
 		_primary = primary ?? "";
 		_secondary = secondary ?? "";
-		if (Placed && !_health.IsDead) _health.Mirror(hp, maxHp, shield, maxShield, false);
+		if (!Alive) return;
+
+		Health.LowerTo(hp, shield);
+		// A guarda do especial é da arma do lobo, que só roda no jogo: ele
+		// conta, e ela só vale em lobo (é uma redução do dano, com teto).
+		Weapon.GuardOverride = guard && Form.IsWolf;
+	}
+
+	/// <summary>O jogo contou que morreu sem ser por acerto de outra máquina
+	/// (queda, a própria granada, um bot dele).</summary>
+	public void SelfDeath()
+	{
+		if (Alive) Health.Mirror(0, Health.MaxHp, 0, Health.MaxShield, true);
 	}
 
 	/// <summary>A classe de lobo e as melhorias (Loadout): mudam a
@@ -104,7 +213,7 @@ public sealed class ServerBody
 	{
 		var valid = tattoos.Where(id => Catalog.Get(id)?.Kind == ItemKind.Tattoo).Distinct().Take(Profile.MaxTattoos);
 		WolfBreed built = Profile.BuildBreed(breed, valid);
-		if (built != null) _form.Breed = built;
+		if (built != null) Form.Breed = built;
 	}
 
 	/// <summary>O corpo no estado do mundo.</summary>
@@ -114,17 +223,17 @@ public sealed class ServerBody
 		if (Placed) flags |= EntityFlags.Present;
 		if (Body.IsOnFloor()) flags |= EntityFlags.Grounded;
 		if (Body.IsCrouching) flags |= EntityFlags.Crouching;
-		if (_health.IsDead) flags |= EntityFlags.Dead;
+		if (Health.IsDead) flags |= EntityFlags.Dead;
 		if (Body.IsWallRunning) flags |= EntityFlags.WallRunning;
 		if (Body.IsSprinting) flags |= EntityFlags.Sprinting;
-		if (_weapon.IsAiming) flags |= EntityFlags.Aiming;
+		if (Weapon.IsAiming) flags |= EntityFlags.Aiming;
 
 		return new EntityState
 		{
 			Index = Index,
 			Flags = flags,
-			Form = (byte)_form.Current,
-			Slot = (byte)_weapon.HumanSlot,
+			Form = (byte)Form.Current,
+			Slot = (byte)Weapon.HumanSlot,
 			Epoch = Epoch,
 			Position = Body.GlobalPosition.ToNumerics(),
 			Velocity = Body.Velocity.ToNumerics(),

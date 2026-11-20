@@ -7,8 +7,11 @@ using System.Collections.Generic;
 /// O escudo é separado do HP de propósito: o documento aponta isso como
 /// um dos detalhes que vendem a lembrança. Dano come escudo primeiro.
 ///
-/// Fase 1 roda local. Na Fase 2 o TakeDamage passa a ser chamado
-/// SOMENTE no servidor — o cliente nunca decide dano.
+/// Offline e no repasse (decisão 0008) roda em cada máquina. Na partida
+/// autoritativa (decisão 0016) o que vale é o deste mesmo componente no
+/// corpo do servidor de partida: lá o <see cref="TakeDamage"/> é chamado
+/// depois de o acerto ser conferido, e o jogo só copia
+/// (<see cref="ApplyServerHit"/>, <see cref="CorrectDown"/>).
 /// </summary>
 public partial class Health : Node
 {
@@ -59,7 +62,12 @@ public partial class Health : Node
 	/// <summary>A espera da morte de agora (ou da última).</summary>
 	public float RespawnWait { get; private set; }
 
-	private float WaitFor(int deaths) => Match.Current == null
+	/// <summary>Conta a espera como numa partida mesmo sem uma aberta: o
+	/// corpo no servidor de partida (decisão 0016), que confere se o
+	/// jogador esperou o bastante para renascer.</summary>
+	public bool MatchTimings { get; set; }
+
+	private float WaitFor(int deaths) => Match.Current == null && !MatchTimings
 		? TrainingRespawnDelay
 		: Mathf.Min(RespawnDelay + RespawnGrowth * Mathf.Max(deaths - 1, 0), Mathf.Max(RespawnMax, RespawnDelay));
 
@@ -235,6 +243,50 @@ public partial class Health : Node
 		Hp = Mathf.Clamp(hp, 0f, maxHp);
 		Shield = Mathf.Clamp(shield, 0f, maxShield);
 		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
+	}
+
+	/// <summary>
+	/// Partida autoritativa (decisão 0016): o servidor aplicou um acerto
+	/// neste corpo e diz como ficou. Aqui só se copia — com o aviso de dano
+	/// (a seta, o som) e a morte, se for o caso. Quem morreu assim não conta
+	/// a morte ao servidor: foi ele que decidiu.
+	/// </summary>
+	public void ApplyServerHit(float dealt, float hp, float shield, Vector3 from, Node attacker)
+	{
+		if (IsDead) return;
+		NoteAttacker(attacker);
+		_sinceHit = 0;
+		if (dealt > 0) EmitSignal(SignalName.Damaged, dealt, from);
+
+		Shield = Mathf.Clamp(shield, 0f, MaxShield);
+		Hp = Mathf.Clamp(hp, 0f, MaxHp);
+		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
+
+		if (Hp <= 0) Die(0);
+	}
+
+	/// <summary>O servidor tem menos vida ou escudo do que aqui (decisão
+	/// 0016): vale o dele. Para cima não se corrige — dano que só esta
+	/// máquina viu (uma queda) ainda está a caminho do servidor.</summary>
+	public void CorrectDown(float hp, float shield)
+	{
+		if (IsDead) return;
+		bool changed = false;
+		if (hp < Hp - 1f) { Hp = Mathf.Max(hp, 1f); changed = true; }
+		if (shield < Shield - 1f) { Shield = Mathf.Max(shield, 0f); changed = true; }
+		if (changed) EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
+	}
+
+	/// <summary>No servidor: o jogo contou menos vida ou escudo do que o
+	/// servidor tem (dano que só ele viu: queda, a própria granada, um bot
+	/// dele). Só desce; nunca sobe — subir é o que o servidor não aceita.</summary>
+	public void LowerTo(float hp, float shield)
+	{
+		if (IsDead) return;
+		bool changed = false;
+		if (hp < Hp) { Hp = Mathf.Max(hp, 1f); _sinceHit = 0; changed = true; }
+		if (shield < Shield) { Shield = Mathf.Max(shield, 0f); changed = true; }
+		if (changed) EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
 	}
 
 	public void TakeDamage(float amount, int attackerId = 0, Vector3 from = default, bool headshot = false)

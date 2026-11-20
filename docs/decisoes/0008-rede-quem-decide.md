@@ -62,6 +62,11 @@ impossível e morte repetida.
 
 ## O caminho daqui
 
+**Atualização (20/11/2026):** na partida autoritativa a vida e o acerto
+já são do servidor (decisão 0016): o acerto é conferido lá (parede, mira,
+alcance, ritmo, arma), o dano é aplicado lá e a morte é decidida lá. Os
+bots continuam na máquina do dono da sala.
+
 **Atualização (13/11/2026): começou.** A decisão 0011 traz o modo em que o
 servidor move os corpos (comandos, predição e correção, interpolação),
 ligado por `ALCATEIA_NETCODE=autoritativo`. Este modo de repasse continua o

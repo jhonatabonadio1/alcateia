@@ -23,10 +23,12 @@ public static class NetRates
 	public const double MaxExtrapolation = 0.1;
 
 	/// <summary>Quanto tempo de história o servidor guarda de cada corpo
-	/// para a volta no tempo do tiro (a leva seguinte usa).</summary>
+	/// para a volta no tempo do tiro (decisão 0016).</summary>
 	public const int HistoryTicks = 64;
 
-	/// <summary>Até quanto no passado a volta no tempo vai, em segundos:
-	/// com mais ping que isso, quem atira deixa de ser favorecido.</summary>
-	public const double MaxRewind = 0.2;
+	/// <summary>Até quanto no passado a volta no tempo vai, em segundos: os
+	/// 100 ms do desenho dos outros mais uns 200 ms de ida e volta. Com
+	/// mais ping que isso, quem atira deixa de ser favorecido (e o acerto
+	/// que ele viu pode ser recusado).</summary>
+	public const double MaxRewind = 0.3;
 }

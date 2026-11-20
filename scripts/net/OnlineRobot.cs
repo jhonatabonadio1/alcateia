@@ -37,6 +37,12 @@ public partial class OnlineRobot : Node
 	private readonly System.Collections.Generic.Dictionary<Bot, Vector3> _botStart = new();
 	private readonly System.Collections.Generic.HashSet<string> _botsMoved = new();
 	private BotLevel _level;
+
+	// Na autoritativa o criador também tenta trapacear (decisão 0016):
+	// manda acertos inventados, de longe do próprio corpo, e o servidor
+	// tem de recusar todos.
+	public const int Forgeries = 3;
+	private int _forged;
 	private double _aimTimer, _matchTime, _endTime;
 	private JsonObject _lobbyResult;
 
@@ -213,6 +219,12 @@ public partial class OnlineRobot : Node
 			player.Velocity = Vector3.Zero;
 		}
 
+		if (Host && _authoritative && _forged < Forgeries && _matchTime > 8 + 2 * _forged && NetMatch.Current is { } cheat)
+		{
+			cheat.SendForgedHit(target.RemoteId, 400f, player.GlobalPosition + new Vector3(0, 60, 0));
+			_forged++;
+		}
+
 		Vector3 to = target.GlobalPosition - player.GlobalPosition;
 		player.Rotation = new Vector3(0, Mathf.Atan2(-to.X, -to.Z), 0);
 		player.GetNode<Node3D>("Head").Rotation = Vector3.Zero;
@@ -266,7 +278,7 @@ public partial class OnlineRobot : Node
 			$"tiros_do_boneco={_puppetShots} acertos_levados={_hitsTaken} avisos_do_saguao={_lobbyEnds} " +
 			$"bots_meus={_myBots} bonecos_bot={_botPuppets} bots_andaram={botsMoved} tiros_de_bot={_botShots} dificuldade={_level} " +
 			$"abates_com_bot={_botKills} abateu_bot={_killsOnBots} " +
-			$"modo={(_authoritative ? "autoritativo" : "repasse")} correcoes={_corrections} " +
+			$"modo={(_authoritative ? "autoritativo" : "repasse")} correcoes={_corrections} forjados={_forged} " +
 			$"conta={(account && Profile.HasAccount ? "ok" : "falhou")} xp_no_jogo={Profile.Xp} presas={presas} missoes={missions} missoes_andando={moving} " +
 			$"compra={(bought == null ? "ok" : "recusada")} usos={uses} gasto={spent} recusa={(refused != null ? "ok" : "comprou")} " +
 			$"sala={(LobbyLink.Instance.Room != null ? LobbyLink.Instance.Room["state"] : "nenhuma")}");

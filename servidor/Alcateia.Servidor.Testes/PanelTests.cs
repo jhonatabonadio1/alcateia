@@ -340,7 +340,7 @@ public static class PanelTests
 			var result = new JsonObject
 			{
 				["matchKey"] = key, ["serverId"] = "gs-1", ["scoreBlue"] = 40, ["scoreOrange"] = 10,
-				["players"] = new JsonArray(new JsonObject { ["accountId"] = host.Id, ["kills"] = 100, ["killsWolf"] = 30, ["deaths"] = 0, ["assists"] = 2, ["headshots"] = 99, ["points"] = 900 })
+				["players"] = new JsonArray(new JsonObject { ["accountId"] = host.Id, ["kills"] = 100, ["killsWolf"] = 30, ["deaths"] = 0, ["assists"] = 2, ["headshots"] = 99, ["points"] = 900, ["rejectedHits"] = 40 })
 			};
 			Check.Equal(200, (await fleet.Call(HttpMethod.Post, "/v1/matches", result, w.Config.FleetKey)).Status, "o resultado");
 
@@ -373,6 +373,8 @@ public static class PanelTests
 			await w.Services.Security.Flush();
 			var file = await admin.Get($"/players/{host.Id}");
 			Check.True(file.Body["events"].AsArray().Any(e => e["kind"].GetValue<string>() == EventKind.Cheat), "100 abates em segundos, quase todos na cabeça: alerta na ficha");
+			Check.True(file.Body["events"].AsArray().Any(e => e.ToJsonString().Contains("acertos recusados")),
+				"40 acertos recusados pelo servidor de partida: alerta na ficha (decisão 0016)");
 
 			Check.Equal(200, (await admin.Delete("/challenges/evento_abates")).Status, "remover o desafio");
 			Check.True((await host.Call(HttpMethod.Get, "/v1/challenges")).Body["challenges"].AsArray().All(c => c["id"].GetValue<string>() != "evento_abates"), "some para o jogador");

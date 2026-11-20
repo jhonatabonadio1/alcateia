@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace Alcateia.Dominio.Partidas;
 
 /// <summary>
-/// O que um resultado de partida tem de estranho. O servidor de partida é
-/// quem conta, mas enquanto vida e acerto ainda são decididos nos
-/// clientes (decisão 0008), um trapaceiro aparece primeiro aqui: abates
-/// demais para o tempo jogado, tiro na cabeça em quase todos, mais tiros
-/// na cabeça do que abates. Não pune sozinho — vira evento de segurança
-/// na ficha do jogador, e quem decide é uma pessoa.
+/// O que um resultado de partida tem de estranho: abates demais para o
+/// tempo jogado, tiro na cabeça em quase todos, mais tiros na cabeça do
+/// que abates — e, com o servidor de partida autoritativo (decisão 0016),
+/// muitos acertos recusados por ele (parede no caminho, fora da mira,
+/// rápido demais). Não pune sozinho — vira evento de segurança na ficha
+/// do jogador, e quem decide é uma pessoa.
 /// </summary>
 public static class Plausibility
 {
@@ -17,6 +17,10 @@ public static class Plausibility
 	public const int HeadshotSample = 20;
 	public const double MaxHeadshotRate = 0.9;
 	public const int FlawlessKills = 40;
+
+	/// <summary>Acertos recusados numa partida a partir dos quais vale olhar:
+	/// um ou outro é ping alto; dezenas é trapaça ou defeito.</summary>
+	public const int RejectedHitsAlert = 15;
 
 	public static List<(long AccountId, string What)> Flags(MatchReport report, double minutes)
 	{
@@ -33,6 +37,8 @@ public static class Plausibility
 
 			if (l.Kills >= FlawlessKills && l.Deaths == 0) flags.Add((l.AccountId, $"{l.Kills} abates sem morrer"));
 			if (l.Kills < 0 || l.Deaths < 0 || l.Assists < 0 || l.Points < 0) flags.Add((l.AccountId, "número negativo no resultado"));
+			if (l.RejectedHits >= RejectedHitsAlert)
+				flags.Add((l.AccountId, $"{l.RejectedHits} acertos recusados pelo servidor de partida (parede, mira, alcance ou ritmo)"));
 		}
 		return flags;
 	}

@@ -52,7 +52,8 @@ public static class MatchRoutes
 			int N(string field) => node[field]?.GetValue<int>() ?? 0;
 			lines.Add(new ReportedLine(node["accountId"]?.GetValue<long>() ?? 0, N("kills"), N("deaths"), N("assists"), N("headshots"), N("points"))
 			{
-				KillsWolf = N("killsWolf")
+				KillsWolf = N("killsWolf"),
+				RejectedHits = N("rejectedHits")
 			});
 		}
 		return new MatchReport(Api.Text(body, "matchKey"), Api.Text(body, "serverId"), Api.Int(body, "scoreBlue"), Api.Int(body, "scoreOrange"), lines);

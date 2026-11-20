@@ -51,6 +51,14 @@ public sealed class Referee
 		public bool IsBot => Owner != 0;
 		public bool Connected, EverConnected;
 		public int Kills, Deaths, Assists, Headshots;
+
+		/// <summary>Abates feitos como lobo (os desafios "como lobo" e
+		/// "como humano" do servidor contam por aqui).</summary>
+		public int KillsWolf;
+
+		/// <summary>Acertos que o servidor de partida recusou (decisão 0016):
+		/// vai no resultado, e o servidor central desconfia de quem tem muitos.</summary>
+		public int RejectedHits;
 		public int Points => Kills * PointsPerKill + Assists * PointsPerAssist;
 
 		internal readonly Dictionary<long, double> HitBy = new();
@@ -174,15 +182,21 @@ public sealed class Referee
 	/// deve seguir para a vítima.</summary>
 	public bool Hit(long attackerId, long victimId, float amount)
 	{
+		if (!CanHit(attackerId, victimId, amount)) return false;
+		Find(victimId).HitBy[attackerId] = _now;
+		return true;
+	}
+
+	/// <summary>O acerto pode valer (partida valendo, os dois ligados,
+	/// inimigos ou fogo amigo ligado, dano possível) — sem anotar nada.</summary>
+	public bool CanHit(long attackerId, long victimId, float amount)
+	{
 		if (Phase != RefPhase.Live || attackerId == victimId) return false;
 		if (!(amount > 0f) || amount > MaxHit) return false;
 
 		Seat attacker = Find(attackerId), victim = Find(victimId);
 		if (attacker == null || victim == null || !attacker.Connected || !victim.Connected) return false;
-		if (attacker.Team == victim.Team && !FriendlyFire) return false;
-
-		victim.HitBy[attackerId] = _now;
-		return true;
+		return attacker.Team != victim.Team || FriendlyFire;
 	}
 
 	/// <summary>
@@ -191,7 +205,7 @@ public sealed class Referee
 	/// (queda, a própria granada) não entra no placar, como no jogo
 	/// offline. Nulo se não houve abate.
 	/// </summary>
-	public RefKill? Death(long victimId, long killerId, bool headshot, IEnumerable<long> assisters)
+	public RefKill? Death(long victimId, long killerId, bool headshot, IEnumerable<long> assisters, bool killerWasWolf = false)
 	{
 		Seat victim = Find(victimId);
 		if (Phase != RefPhase.Live || victim == null || !victim.Connected) return null;
@@ -215,6 +229,7 @@ public sealed class Referee
 
 		victim.Deaths++;
 		killer.Kills++;
+		if (killerWasWolf) killer.KillsWolf++;
 		if (headshot) killer.Headshots++;
 		foreach (long id in helpers) Find(id).Assists++;
 
@@ -227,6 +242,15 @@ public sealed class Referee
 		}
 
 		return new RefKill(killerId, victimId, headshot, helpers);
+	}
+
+	/// <summary>Quem acertou a vítima há pouco (a janela do crédito): é a
+	/// lista de assistências quando é o servidor que decide a morte.</summary>
+	public long[] RecentHitters(long victimId)
+	{
+		Seat victim = Find(victimId);
+		return victim == null ? Array.Empty<long>()
+			: victim.HitBy.Where(e => _now - e.Value <= CreditWindow).Select(e => e.Key).ToArray();
 	}
 
 	private bool Recent(Seat victim, long attackerId) =>

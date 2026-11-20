@@ -50,13 +50,27 @@ using System.Text;
 /// | Status | jogo → todos, 10 por segundo | vida, escudo, morto, armas (a vida ainda é do jogo nesta leva) |
 /// | Loadout | jogo, ao entrar | a classe de lobo e as melhorias (mudam o movimento do lobo) |
 /// | Radio | jogo → todos, repassado | o call de rádio (1 byte: qual fala); cada máquina toca se for do time |
+///
+/// **Vida e acerto no servidor** (decisão 0016, na autoritativa): o
+/// <c>Hit</c> e o <c>BotHit</c> levam, no fim, o número do comando do tiro
+/// e o passo em que o jogo via os outros; o servidor confere e não repassa
+/// o acerto num jogador — aplica e conta:
+///
+/// | Tipo | Quem manda | Conteúdo |
+/// |---|---|---|
+/// | Damage | servidor → vítima | quem acertou, o dano que valeu, cabeça, causa, arma, de onde, a vida e o escudo que ficaram |
+/// | Vitals | servidor → cada um, 2 por segundo | a vida, o escudo e se está morto, como o servidor tem |
+///
+/// O <c>Status</c> do jogo ganha, no fim, a guarda do especial do lobo; o
+/// que o servidor repassa dele aos outros leva a vida que o servidor tem.
 /// </summary>
 public static class NetWire
 {
 	public const byte Hello = 1, Welcome = 2, Refused = 3, State = 4, Attack = 5,
 		Hit = 6, Died = 7, Kill = 8, Clock = 9, Gone = 10,
 		BotState = 11, BotAttack = 12, BotHit = 13, BotDied = 14, HitBot = 15, Touch = 16,
-		Input = 17, Snapshot = 18, Status = 19, Loadout = 20, Radio = 21;
+		Input = 17, Snapshot = 18, Status = 19, Loadout = 20, Radio = 21,
+		Damage = 22, Vitals = 23;
 
 	/// <summary>O modo da partida, no <c>Welcome</c>.</summary>
 	public const byte ModeRelay = 0, ModeAuthoritative = 1;

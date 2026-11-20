@@ -82,7 +82,7 @@ As rotas de jogador pedem `Authorization: Bearer <token>`; as de frota,
 | `GET /v1/rooms` | jogador | As salas abertas |
 | `GET /v1/matches` | jogador | As últimas partidas da conta |
 | `POST /v1/fleet/heartbeat` `{id, address, port, players, capacity, matches[]}` | frota | Um servidor de partida bate ponto: quantas partidas aguenta (`capacity`, 1 se faltar) e as chaves das que tem abertas (`matches`). A resposta traz `assignments[]`, as partidas novas para ele (e `assignment`, a primeira, para servidor antigo); em `players[]`, bot tem `accountId` negativo e `owner`. Partida entregue que some de `matches` (fechou sem resultado: ninguém entrou, ou todos saíram) libera o lugar, e a sala volta a esperar |
-| `POST /v1/matches` `{matchKey, serverId, scoreBlue, scoreOrange, players[]}` | frota | O resultado. 409 se já foi entregue. Em `players[]`, `killsWolf` (opcional) diz quantos abates foram como lobo |
+| `POST /v1/matches` `{matchKey, serverId, scoreBlue, scoreOrange, players[]}` | frota | O resultado. 409 se já foi entregue. Em `players[]`, `killsWolf` (opcional) diz quantos abates foram como lobo e `rejectedHits` (opcional) quantos acertos o servidor de partida recusou (decisão 0016; 15 ou mais viram alerta na ficha) |
 | `GET /v1/gamedata` | qualquer um | Catálogo, mapas, promoções, desafios e configurações, de uma vez. Com `If-None-Match`, 304 se nada mudou |
 | `GET /v1/inventory` | jogador | `{presas, sangue, xp, rank, items[]}` (só o que está valendo) |
 | `DELETE /v1/inventory/{id}` | jogador | Descarta um item da conta (`item_inexistente` se ela não tem). O que vem com a conta não está no inventário do servidor: não há o que descartar |

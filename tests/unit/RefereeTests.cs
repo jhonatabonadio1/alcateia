@@ -161,4 +161,22 @@ public static class RefereeTests
 		r.Tick(r.EmptyTimeout);
 		Check.Equal(RefPhase.Ended, r.Phase, "ninguém voltou");
 	}
+
+	[Test("abate como lobo conta à parte; quem acertou há pouco é a lista de assistências")]
+	public static void WolfKillsAndHitters()
+	{
+		Referee r = Live(scoreToWin: 10);
+		r.Hit(2, 1, 50);
+		r.Hit(3, 1, 10);   // aliado da vítima com fogo amigo desligado: não conta
+		Check.True(r.RecentHitters(1).Length == 1 && r.RecentHitters(1)[0] == 2, "só o inimigo que acertou");
+		Check.True(r.Death(1, 2, false, r.RecentHitters(1), killerWasWolf: true) != null, "o abate vale");
+		Check.Equal(1, r.Find(2).KillsWolf, "abate como lobo");
+		Check.Equal(1, r.Find(2).Kills, "e conta como abate");
+
+		r.Tick(2);
+		r.Hit(1, 2, 50);
+		r.Death(2, 1, true, r.RecentHitters(2));
+		Check.Equal(0, r.Find(1).KillsWolf, "abate como humano não conta como lobo");
+		Check.Equal(0, r.RecentHitters(2).Length, "depois da morte, a lista recomeça");
+	}
 }

@@ -108,11 +108,19 @@ editar auditoria.
 - **XP e Presas de partida**: `Rewards.cs`, com teto por partida; só
   quem estava escalado recebe; partida repetida é recusada.
 - **Entrada na partida**: ingresso assinado (HMAC) com validade de 3 min.
-- **O que ainda é do cliente**: vida e acerto (decisão 0008). O
-  movimento já pode ser do servidor de partida
-  (`ALCATEIA_NETCODE=autoritativo`, decisão 0011). Enquanto vida e
-  acerto não forem para lá, o jogo não é à prova de trapaça — o que há
-  é o alerta de resultado absurdo e o banimento.
+- **Combate** (só com `ALCATEIA_NETCODE=autoritativo` no servidor de
+  partida, decisões 0011 e 0016): o servidor move os corpos, guarda a
+  vida e confere cada acerto — de onde saiu, a arma na mão, o alcance, a
+  parede no caminho (voltando o alvo no tempo), a mira, o dano máximo e o
+  ritmo. A morte e o renascimento (a espera e a base do time) são
+  decididos lá. Acerto recusado conta contra quem atirou; com 15 ou mais
+  numa partida, alerta na ficha. **No modo de repasse (o padrão) nada
+  disso vale**: vida e acerto ficam nos jogos (decisão 0008).
+- **O que ainda é do cliente**, mesmo na autoritativa: a forma e a arma
+  na mão, as armas do conjunto (o servidor de partida não confere se o
+  jogador tem a arma), a guarda do especial do lobo e os bots (máquina
+  do dono da sala). O servidor ainda manda todos os corpos para todos
+  (wallhack). Veja "O que ainda vem do jogo" na decisão 0016.
 
 ## Pôr na internet
 
