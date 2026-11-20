@@ -2,10 +2,13 @@
 """Tira do código do jogo a semente do servidor.
 
 O catálogo (scripts/meta/Catalog.cs), os mapas (scripts/meta/Maps.cs), as
-missões (scripts/meta/Missions.cs) e os personagens (assets/personagens)
-viram servidor/Alcateia.Infra/Semente/jogo.json. O servidor lê esse arquivo
-ao subir e põe no banco SÓ o que ainda não existe: o que o painel já editou
-(preço, raridade, ligado ou não) nunca é sobrescrito.
+missões (scripts/meta/Missions.cs), os personagens (assets/personagens) e
+os modos de jogo liberados (scripts/core/RoomConfig.cs) viram
+servidor/Alcateia.Infra/Semente/jogo.json. O servidor lê esse arquivo ao
+subir e põe no banco SÓ o que ainda não existe: o que o painel já editou
+(preço, raridade, ligado ou não) nunca é sobrescrito. O que é do jogo e o
+painel não edita — a arte de cada item e, nos mapas, a foto e os modos
+para que cada um foi feito — acompanha o jogo a cada subida.
 
 Entrou arma, skin, mapa ou missão nova no jogo? Rode de novo e faça commit:
 
@@ -151,11 +154,22 @@ def challenges():
     return found
 
 
+def released_modes():
+    """Os modos que o jogo deixa escolher hoje (RoomSettings.ModeAvailable, em RoomConfig.cs)."""
+    source = (ROOT / "scripts/core/RoomConfig.cs").read_text(encoding="utf-8")
+    line = next((l for l in source.splitlines() if "ModeAvailable(GameMode" in l), "")
+    found = [MODES[m] for m in re.findall(r"GameMode\.(\w+)", line.split("=>", 1)[-1])]
+    if not found:
+        print("não achei RoomSettings.ModeAvailable: considerei só o modo Equipe liberado", file=sys.stderr)
+    return found or ["equipe"]
+
+
 def main():
-    data = {"catalog": catalog(), "maps": maps(), "challenges": challenges()}
+    data = {"releasedModes": released_modes(), "catalog": catalog(), "maps": maps(), "challenges": challenges()}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, ensure_ascii=False, indent="\t") + "\n", encoding="utf-8")
-    print(f"{OUT.relative_to(ROOT)}: {len(data['catalog'])} itens, {len(data['maps'])} mapas, {len(data['challenges'])} desafios")
+    print(f"{OUT.relative_to(ROOT)}: {len(data['catalog'])} itens, {len(data['maps'])} mapas, {len(data['challenges'])} desafios; "
+          f"modos liberados: {', '.join(data['releasedModes'])}")
     missing = [i["id"] for i in data["catalog"] if not i["image"]] + [m["id"] for m in data["maps"] if not m["image"]]
     if missing:
         print("sem imagem (o painel mostra o nome):", ", ".join(missing), file=sys.stderr)

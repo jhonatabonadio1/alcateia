@@ -40,6 +40,7 @@ public static class AdminContentRoutes
 				["kinds"] = new JsonArray(ItemKinds.All.Select(k => (JsonNode)k).ToArray()),
 				["metrics"] = new JsonArray(Metrics.All.Select(k => (JsonNode)k).ToArray()),
 				["periods"] = new JsonArray(Periods.All.Select(k => (JsonNode)k).ToArray()),
+				["releasedModes"] = new JsonArray(s.GameData.ReleasedModes.Select(k => (JsonNode)k).ToArray()),
 				["durations"] = new JsonArray(Shop.DurationDays.Select(k => (JsonNode)k).ToArray())
 			};
 		});

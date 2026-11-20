@@ -79,14 +79,23 @@ public sealed class GameDataService
 {
 	private readonly IGameDataRepository _repository;
 	private volatile GameData _current = new();
+	private IReadOnlyList<string> _releasedModes = new[] { "equipe" };
 
 	public GameDataService(IGameDataRepository repository) => _repository = repository;
 
 	public GameData Current => _current;
 
-	/// <summary>Põe no banco o que veio com o jogo e ainda não está lá.</summary>
-	public async Task Seed(IEnumerable<CatalogEntry> items, IEnumerable<GameMap> maps, IEnumerable<Challenge> challenges)
+	/// <summary>Os modos que o jogo deixa escolher hoje (vem com o jogo, na
+	/// semente; o painel não muda). Um mapa pode ter sido feito para um modo
+	/// que ainda não existe: o painel mostra isso em vez de anunciar o modo.</summary>
+	public IReadOnlyList<string> ReleasedModes => _releasedModes;
+
+	/// <summary>Põe no banco o que veio com o jogo e ainda não está lá, e
+	/// acerta o que é do jogo (a arte, os modos de cada mapa).</summary>
+	public async Task Seed(IEnumerable<CatalogEntry> items, IEnumerable<GameMap> maps, IEnumerable<Challenge> challenges,
+		IReadOnlyList<string> releasedModes = null)
 	{
+		if (releasedModes != null && releasedModes.Count > 0) _releasedModes = releasedModes;
 		await _repository.SeedItems(items);
 		await _repository.SeedMaps(maps);
 		await _repository.SeedChallenges(challenges);

@@ -214,6 +214,8 @@ export interface Content {
 	metrics: string[];
 	periods: string[];
 	durations: number[];
+	/** Os modos que o jogo deixa escolher hoje. */
+	releasedModes: string[];
 }
 
 export interface IpBlock {

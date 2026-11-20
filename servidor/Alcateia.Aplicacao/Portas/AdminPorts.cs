@@ -69,10 +69,13 @@ public interface IGameDataRepository
 {
 	Task<IReadOnlyList<CatalogEntry>> Catalog();
 	Task SaveItem(CatalogEntry item);
-	/// <summary>Põe os itens que ainda não existem; não mexe nos que o painel já editou.</summary>
+	/// <summary>Põe os itens que ainda não existem. Nos que existem, só a
+	/// arte acompanha o jogo; o que o painel edita fica como está.</summary>
 	Task<int> SeedItems(IEnumerable<CatalogEntry> items);
 	Task<IReadOnlyList<GameMap>> Maps();
 	Task SaveMap(GameMap map);
+	/// <summary>Põe os mapas que ainda não existem. Nos que existem, a foto
+	/// e os modos (que são do jogo) acompanham a semente.</summary>
 	Task<int> SeedMaps(IEnumerable<GameMap> maps);
 	Task<IReadOnlyList<Promotion>> Promotions(bool includeEnded);
 	Task<Promotion> AddPromotion(Promotion promotion, long adminId);

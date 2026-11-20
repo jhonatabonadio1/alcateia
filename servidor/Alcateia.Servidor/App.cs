@@ -188,7 +188,7 @@ public static class App
 	public static async Task Prepare(Services services, ILogger log)
 	{
 		SeedData.Seed seed = SeedData.Load();
-		await services.GameData.Seed(seed.Catalog, seed.Maps, seed.Challenges);
+		await services.GameData.Seed(seed.Catalog, seed.Maps, seed.Challenges, seed.ReleasedModes);
 		await services.Security.Start();
 
 		Config config = services.Config;

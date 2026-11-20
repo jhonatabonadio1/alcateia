@@ -16,7 +16,10 @@ namespace Alcateia.Infra.Semente;
 /// </summary>
 public static class SeedData
 {
-	public sealed record Seed(IReadOnlyList<CatalogEntry> Catalog, IReadOnlyList<GameMap> Maps, IReadOnlyList<Challenge> Challenges);
+	/// <param name="ReleasedModes">Os modos que o jogo deixa escolher hoje. Um mapa
+	/// pode ter sido feito para um modo que ainda não existe.</param>
+	public sealed record Seed(IReadOnlyList<CatalogEntry> Catalog, IReadOnlyList<GameMap> Maps, IReadOnlyList<Challenge> Challenges,
+		IReadOnlyList<string> ReleasedModes);
 
 	public static Seed Load()
 	{
@@ -37,7 +40,8 @@ public static class SeedData
 			Text(c, "id"), Text(c, "period"), Text(c, "text"), Text(c, "metric"), Int(c, "target"), Int(c, "presas"), Int(c, "xp"), 0,
 			null, 0, c["title"]?.GetValue<string>(), true, null, null, Int(c, "sort"))).ToList();
 
-		return new Seed(catalog, maps, challenges);
+		string[] released = root["releasedModes"] is JsonArray modes ? modes.Select(m => m.GetValue<string>()).ToArray() : new[] { "equipe" };
+		return new Seed(catalog, maps, challenges, released);
 	}
 
 	private static string Text(JsonNode node, string field) => node[field]?.GetValue<string>() ?? "";

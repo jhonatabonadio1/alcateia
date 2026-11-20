@@ -52,7 +52,9 @@ public sealed class PgGameDataRepository : IGameDataRepository
 	{
 		int made = 0;
 		foreach (CatalogEntry e in items)
-			made += (await _db.Query(ItemInsert + "on conflict (id) do nothing", ItemArgs(e))).Affected;
+			// O que o painel edita fica como está; a arte é do jogo e o acompanha.
+			made += (await _db.Query(ItemInsert +
+				"on conflict (id) do update set image = excluded.image where excluded.image <> '' and catalog_items.image <> excluded.image", ItemArgs(e))).Affected;
 		return made;
 	}
 
@@ -82,7 +84,12 @@ public sealed class PgGameDataRepository : IGameDataRepository
 	{
 		int made = 0;
 		foreach (GameMap m in maps)
-			made += (await _db.Query(MapInsert + "on conflict (id) do nothing", MapArgs(m))).Affected;
+			// Nome, descrição e "ligado" são do painel. A foto e os modos para
+			// que o mapa foi feito são do jogo: acompanham a semente.
+			made += (await _db.Query(MapInsert +
+				"on conflict (id) do update set modes = excluded.modes, " +
+				"image = case when excluded.image <> '' then excluded.image else game_maps.image end " +
+				"where game_maps.modes <> excluded.modes or (excluded.image <> '' and game_maps.image <> excluded.image)", MapArgs(m))).Affected;
 		return made;
 	}
 

@@ -1,4 +1,7 @@
 {
+	"releasedModes": [
+		"equipe"
+	],
 	"catalog": [
 		{
 			"id": "ar15",
@@ -864,7 +867,6 @@
 			"size": "Grande",
 			"description": "Grande, 100 × 70 m, de dia. Um prédio de concreto em construção no meio do canteiro: corredor de 60 m, salas e salões no térreo, duas lajes abertas em cima (4 e 8 m) com escadas e muretas de tijolo. Em volta, material empilhado, andaimes e gruas.",
 			"modes": [
-				"equipe",
 				"mata_mata"
 			],
 			"enabled": true,

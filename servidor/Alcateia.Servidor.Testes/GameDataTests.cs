@@ -34,6 +34,20 @@ public static class GameDataTests
 			Check.True(data["challenges"].AsArray().Count >= 20, "as missões do jogo viram desafios");
 			Check.True(!data["settings"]["manutencao"]["on"].GetValue<bool>(), "sem manutenção");
 
+			// O que é do jogo acompanha o jogo: um mapa que passou a ser só de
+			// um modo que ainda não existe muda no banco na subida seguinte,
+			// sem perder o que o painel editou (aqui, o nome e o "desligado").
+			await w.Db.Exec("update game_maps set name = 'Obra do Jhon', enabled = false where id = 'obra'");
+			var seed = Alcateia.Infra.Semente.SeedData.Load();
+			var changed = seed.Maps.Select(m => m.Id == "obra" ? m with { Modes = new[] { "mata_mata" }, Name = "Outro nome" } : m).ToList();
+			await w.Services.GameData.Seed(seed.Catalog, changed, seed.Challenges, seed.ReleasedModes);
+			var obra = w.Services.GameData.Current.Maps.First(m => m.Id == "obra");
+			Check.Equal("mata_mata", string.Join(",", obra.Modes), "os modos do mapa acompanham o jogo");
+			Check.Equal("Obra do Jhon", obra.Name, "o nome que o painel deu fica");
+			Check.True(!obra.Enabled, "e o desligado também");
+			Check.Equal("equipe", string.Join(",", w.Services.GameData.ReleasedModes), "só o modo Equipe está liberado");
+
+			first = await w.Http.GetAsync(w.Url + "/v1/gamedata");
 			string etag = first.Headers.ETag.Tag;
 			var again = new HttpRequestMessage(HttpMethod.Get, w.Url + "/v1/gamedata");
 			again.Headers.TryAddWithoutValidation("If-None-Match", etag);

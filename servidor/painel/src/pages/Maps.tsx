@@ -39,6 +39,21 @@ function MapPhoto({ map }: { map: GameMap }) {
 	);
 }
 
+const list = (modes: string[]) => modes.map((m) => modeNames[m] ?? m).join(" e ");
+
+/**
+ * O tamanho e os modos do mapa. Só anuncia modo que o jogo já tem: mapa
+ * feito para um modo que ainda não existe diz isso, e em que modo se joga
+ * nele enquanto isso.
+ */
+function modesOf(map: GameMap, released: string[]) {
+	const playable = map.modes.filter((m) => released.includes(m));
+	if (playable.length > 0) return `${map.size}, ${list(playable)}`;
+	const waiting = map.modes.filter((m) => !released.includes(m));
+	if (waiting.length === 0) return map.size;
+	return `${map.size}. Feito para ${list(waiting)}, que ainda não existe no jogo: por enquanto joga em ${list(released)}.`;
+}
+
 export function Maps() {
 	const { can } = useSession();
 	const refresh = useRefresh();
@@ -77,9 +92,7 @@ export function Maps() {
 							<div className="flex items-start justify-between gap-3">
 								<div>
 									<h2 className="display text-lg leading-tight">{map.name}</h2>
-									<p className="text-[13px] text-ink-3">
-										{map.size}, {map.modes.map((m) => modeNames[m] ?? m).join(" e ")}
-									</p>
+									<p className="text-[13px] text-ink-3">{modesOf(map, content.data.releasedModes)}</p>
 								</div>
 								{can("content") && <Switch checked={map.enabled} onCheckedChange={(enabled) => void toggle(map, enabled)} aria-label={map.enabled ? `Desligar ${map.name}` : `Ligar ${map.name}`} />}
 							</div>

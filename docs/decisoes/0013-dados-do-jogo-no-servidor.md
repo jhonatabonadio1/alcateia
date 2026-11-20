@@ -17,6 +17,10 @@ edita.
   (`tools/servidor/exportar_dados.py` → `Alcateia.Infra/Semente/jogo.json`)
   e põe no banco só o que ainda não existe. Depois disso quem manda é o
   painel: a semente nunca sobrescreve o que foi editado.
+- **O que é do jogo continua do jogo**: a arte dos itens, a foto dos
+  mapas, os modos para que cada mapa foi feito e quais modos existem
+  vêm da semente a cada subida, mesmo em banco já povoado. O painel só
+  anuncia modo liberado.
 - O jogo pede tudo de uma vez (`GET /v1/gamedata`) com `ETag`: sem
   mudança, 304. No servidor esses dados ficam em memória
   (`GameDataService`) e só são relidos quando o painel muda algo — saber

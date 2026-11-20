@@ -36,7 +36,7 @@ Pede a senha nova, desliga as duas etapas dessa conta e a destrava.
 | **Jogadores** | Busca por nome, número ou IP. Na ficha: patente, carteira, inventário, extrato, partidas, alertas de trapaça, contas no mesmo endereço. Ações: **banir** (com prazo e motivo), desbanir, derrubar conexão, **dar ou tirar Presas e Sangue**, dar e tirar item | moderador bane; administrador mexe em moeda e item |
 | **Frota e salas** | Os servidores de partida vivos, o que cada um roda, e as salas do saguão | todos veem |
 | **Armas, skins e itens** | Todo o catálogo com a arte do jogo: nome, raridade, patente mínima, preço por duração, em destaque, vem com a conta, **ligado ou não** | administrador |
-| **Mapas** | Cada mapa com a foto: **liga e desliga a rotação** com um clique. Mapa desligado não abre sala nova | administrador |
+| **Mapas** | Cada mapa com a foto: **liga e desliga a rotação** com um clique. Mapa desligado não abre sala nova. O cartão só anuncia modo que o jogo já tem (hoje, Equipe): mapa feito para um modo que ainda não existe, como a Obra para o mata-mata, diz isso e em que modo se joga nele por enquanto | administrador |
 | **Promoções** | Desconto com começo e fim num item à venda. Vale na loja sozinho, no horário | administrador |
 | **Desafios** | As missões diárias, semanais, permanentes e de **evento** (com datas): o que conta, o alvo e o prêmio (Presas, XP, Sangue, item por tantos dias, título) | administrador |
 | **Eventos** | Tudo o que o escudo viu, com filtro por tipo, gravidade e IP; bloquear um endereço dali mesmo | moderador bloqueia |
@@ -103,4 +103,7 @@ python3 tools/servidor/exportar_dados.py     # atualiza servidor/Alcateia.Infra/
 ```
 
 Faça commit e suba o servidor: ele acrescenta o que falta e não toca no
-que o painel já editou.
+que o painel já editou. O que é do jogo e o painel não edita acompanha a
+semente a cada subida: a arte de cada item, a foto de cada mapa, os
+modos para que cada mapa foi feito e quais modos estão liberados
+(`RoomSettings.ModeAvailable`, em `scripts/core/RoomConfig.cs`).
