@@ -164,7 +164,7 @@ public partial class CharacterAnimator
 
 	/// <summary>Quanto a cabeça de um corpo de outro rig sobe nos clipes, em
 	/// graus (metade no pescoço, metade na cabeça).</summary>
-	[Export] public float FittedHeadLift = 12f;
+	[Export] public float FittedHeadLift = 38f;
 
 	private static readonly string[] HeadBones = { "mixamorig_Neck", "mixamorig_Head" };
 

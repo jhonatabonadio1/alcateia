@@ -164,7 +164,6 @@ public partial class HeldWeapon : Node3D
 		}
 
 		_model.GlobalTransform = placed;
-		if (aimed) ClearHead(skeleton, placed);
 
 		// O carregador some no meio da recarga, como na primeira pessoa.
 		if (_magazine != null)
@@ -183,10 +182,14 @@ public partial class HeldWeapon : Node3D
 	//  * a coronha não entra no tronco: a arma desliza para a frente ao longo
 	//    do cano até a ponta de trás ficar fora (a mão escorrega um pouco no
 	//    punho, o que não se vê);
-	//  * a arma não entra na cabeça: primeiro a arma se afasta dela, de lado
-	//    e para baixo, alguns centímetros (a mão envolve o punho, não se
-	//    nota); o que faltar, a cabeça e o pescoço sobem um pouco (a mira vem
-	//    do corpo, não da cabeça do modelo).
+	//  * a arma não entra na cabeça: ela se afasta dela, de lado e para baixo,
+	//    alguns centímetros (a mão envolve o punho, não se nota). A cabeça já
+	//    vem um pouco mais erguida nos clipes desses corpos
+	//    (CharacterAnimator.FittedHeadLift).
+	//
+	// Não se gira osso aqui: girar a cabeça por fora da árvore de animação,
+	// a cada quadro, somava giro em cima de giro nos bots que correm, e o
+	// Barut aparecia de rosto virado para trás (19/11, Jhon: "sem rosto").
 
 	/// <summary>Raio do tronco (da coluna ao pescoço) que a coronha respeita.</summary>
 	[Export] public float TorsoRadius = 0.12f;
@@ -196,9 +199,6 @@ public partial class HeldWeapon : Node3D
 
 	/// <summary>Até quanto a arma desliza para a frente, em metros.</summary>
 	[Export] public float MaxSlide = 0.14f;
-
-	/// <summary>Até quanto a cabeça sobe, em graus.</summary>
-	[Export] public float MaxHeadLift = 12f;
 
 	/// <summary>Até quanto a arma se afasta da cabeça, em metros.</summary>
 	[Export] public float MaxShift = 0.045f;
@@ -267,38 +267,6 @@ public partial class HeldWeapon : Node3D
 		if (away.LengthSquared() < 1e-8f) return placed;
 		placed.Origin += away.Normalized() * Mathf.Min(HeadClearance - d, MaxShift);
 		return placed;
-	}
-
-	/// <summary>Sobe a cabeça (metade no pescoço, metade nela) até o alto da
-	/// arma passar a <see cref="HeadClearance"/> do centro dela.</summary>
-	private void ClearHead(Transform3D skeleton, Transform3D placed)
-	{
-		if (_head < 0 || _top < 0 || _neck < 0) return;
-		Vector3 back = placed * _topBack, front = placed * _topFront;
-		Vector3 lateral = _body.GlobalTransform.Basis.X.Normalized();
-		float lifted = 0f;
-		for (int i = 0; i < 6 && lifted < MaxHeadLift; i++)
-		{
-			Vector3 center = (Bone(skeleton, _head) + Bone(skeleton, _top)) * 0.5f;
-			float d = center.DistanceTo(Geometry3D.GetClosestPointToSegment(center, back, front));
-			if (d >= HeadClearance) break;
-			float step = Mathf.Min(Mathf.RadToDeg((HeadClearance - d) / 0.2f) + 1f, MaxHeadLift - lifted);
-			Lift(skeleton, _neck, lateral, step * 0.5f);
-			Lift(skeleton, _head, lateral, step * 0.5f);
-			lifted += step;
-		}
-	}
-
-	/// <summary>Gira o osso para trás, em volta do eixo lateral do corpo
-	/// (o alto vai para as costas), por cima da pose deste quadro.</summary>
-	private void Lift(Transform3D skeleton, int bone, Vector3 lateral, float degrees)
-	{
-		Basis global = (skeleton.Basis * _skeleton.GetBoneGlobalPose(bone).Basis).Orthonormalized();
-		Vector3 axis = (global.Inverse() * lateral).Normalized();
-		// Corpo de frente para −Z: girar em volta da lateral (+X do corpo) por
-		// um ângulo positivo leva o alto para trás (+Z).
-		Quaternion pose = _skeleton.GetBonePoseRotation(bone);
-		_skeleton.SetBonePoseRotation(bone, (pose * new Quaternion(axis, Mathf.DegToRad(degrees))).Normalized());
 	}
 
 	/// <summary>Pontos da arma (no espaço do modelo dela) onde vão as palmas:
