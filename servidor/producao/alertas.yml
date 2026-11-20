@@ -1,0 +1,44 @@
+# O que merece acordar alguém. No Grafana (Alerting → Contact points) dá
+# para mandar estes alertas para o Telegram com o token de um bot.
+groups:
+  - name: wolfleague
+    rules:
+      - alert: ServidorForaDoAr
+        expr: up{job="wolfleague"} == 0
+        for: 1m
+        labels: { severity: critico }
+        annotations:
+          summary: O servidor do WolfLeague não responde há um minuto.
+
+      - alert: SemServidorDePartida
+        expr: wolfleague_fleet_servers == 0
+        for: 3m
+        labels: { severity: critico }
+        annotations:
+          summary: Nenhum servidor de partida ligado — as salas não conseguem começar.
+
+      - alert: FrotaQuaseCheia
+        expr: wolfleague_matches_running / wolfleague_fleet_slots > 0.85
+        for: 5m
+        labels: { severity: aviso }
+        annotations:
+          summary: Mais de 85% dos lugares de partida ocupados. Suba mais servidores de partida.
+
+      - alert: AtaqueEmCurso
+        expr: increase(wolfleague_auto_blocks_total[10m]) >= 5
+        labels: { severity: aviso }
+        annotations:
+          summary: O escudo bloqueou 5 ou mais endereços em 10 minutos. Olhe o painel (Segurança → Eventos).
+
+      - alert: PedidosDemais
+        expr: rate(wolfleague_requests_rate_limited_total[5m]) > 5
+        for: 5m
+        labels: { severity: aviso }
+        annotations:
+          summary: O freio de pedidos está segurando mais de 5 pedidos por segundo.
+
+      - alert: EventosDeSegurancaPerdidos
+        expr: increase(wolfleague_security_events_dropped_total[10m]) > 0
+        labels: { severity: aviso }
+        annotations:
+          summary: Eventos de segurança não chegaram ao banco (banco fora, ou enxurrada). Eles continuam no log (Loki).

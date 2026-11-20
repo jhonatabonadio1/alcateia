@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 using Alcateia.Aplicacao.Frota;
+using Alcateia.Aplicacao.Jogo;
+using Alcateia.Aplicacao.Seguranca;
+using Alcateia.Dominio.Seguranca;
 using Alcateia.Aplicacao.Portas;
 using Alcateia.Aplicacao.Saguao;
 using Alcateia.Dominio;
@@ -21,12 +25,21 @@ public sealed class MatchService
 	private readonly IMatchRepository _matches;
 	private readonly FleetService _fleet;
 	private readonly LobbyService _lobby;
+	private readonly GameDataService _data;
+	private readonly ChallengeService _challenges;
+	private readonly SecurityService _security;
+	private readonly IClock _clock;
 
-	public MatchService(IMatchRepository matches, FleetService fleet, LobbyService lobby)
+	public MatchService(IMatchRepository matches, FleetService fleet, LobbyService lobby, GameDataService data,
+		ChallengeService challenges, SecurityService security, IClock clock)
 	{
 		_matches = matches;
 		_fleet = fleet;
 		_lobby = lobby;
+		_data = data;
+		_challenges = challenges;
+		_security = security;
+		_clock = clock;
 	}
 
 	public async Task<SettledMatch> Report(MatchReport report)
@@ -35,12 +48,22 @@ public sealed class MatchService
 		if (active == null || active.Value.ServerId != report.ServerId)
 			throw new Failure(FailureKind.Conflict, "partida_desconhecida", "Essa partida não está em curso neste servidor.");
 
-		SettledMatch settled = MatchSettlement.Settle(active.Value.Assignment, report);
+		DateTime now = _clock.UtcNow;
+		var (xpBonus, presasBonus) = _data.Current.Bonus(now);
+		SettledMatch settled = MatchSettlement.Settle(active.Value.Assignment, report, xpBonus, presasBonus);
 		if (!await _matches.TrySave(settled))
 			throw new Failure(FailureKind.Conflict, "partida_repetida", "Essa partida já foi registrada.");
 
 		_fleet.Release(report.MatchKey);
 		await _lobby.MatchEnded(settled);
+
+		// Depois de gravado: nada daqui para baixo desfaz a partida.
+		var seated = settled.Lines.Select(l => l.Seat.AccountId).ToHashSet();
+		foreach (var (accountId, what) in Plausibility.Flags(report, (now - active.Value.Assignment.StartedAt).TotalMinutes))
+			if (seated.Contains(accountId))
+				_security.Record(EventKind.Cheat, Severity.High, "", accountId, report.ServerId, "/v1/matches", $"{what} (partida {report.MatchKey})");
+
+		await _challenges.Apply(settled);
 		return settled;
 	}
 

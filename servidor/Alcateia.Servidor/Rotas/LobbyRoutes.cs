@@ -28,6 +28,7 @@ public static class LobbyRoutes
 		app.Map("/v1/lobby", async ctx =>
 		{
 			if (!ctx.WebSockets.IsWebSocketRequest) throw new Failure(FailureKind.Invalid, "so_websocket", "Esta rota é WebSocket.");
+			if (s.GameData.Current.Maintenance) throw new Failure(FailureKind.Unavailable, "manutencao", "O servidor está em manutenção.");
 			Account account = await s.Accounts.FromToken(ctx.Request.Query["token"]) ?? await s.Accounts.Require(Api.Token(ctx));
 
 			using WebSocket socket = await ctx.WebSockets.AcceptWebSocketAsync();

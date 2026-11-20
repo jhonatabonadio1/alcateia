@@ -12,7 +12,7 @@ namespace Alcateia.Servidor.Testes;
 /// partida, os jogadores recebem o ingresso, o resultado paga.</summary>
 public static class MatchTests
 {
-	private static JsonObject Beat(string id, int port = 7777) =>
+	public static JsonObject Beat(string id, int port = 7777) =>
 		new() { ["id"] = id, ["address"] = "10.0.0.5", ["port"] = port, ["players"] = 0 };
 
 	/// <summary>A batida de um servidor de partida de agora: quantas partidas
@@ -28,7 +28,7 @@ public static class MatchTests
 	}
 
 	/// <summary>Uma sala com um jogador só, que começa a partida. Devolve a chave.</summary>
-	private static async Task<(Player Host, string Key)> Solo(World w)
+	public static async Task<(Player Host, string Key)> Solo(World w)
 	{
 		Player host = await w.NewPlayer();
 		await host.Connect();
@@ -147,7 +147,7 @@ public static class MatchTests
 			var (_, beat) = await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"), w.Config.FleetKey);
 			Check.Equal(key, beat["assignment"]["matchKey"].GetValue<string>(), "a batida seguinte traz a partida");
 			Check.Equal(2, beat["assignment"]["players"].AsArray().Count, "com os dois jogadores");
-			Check.Equal("armazem", beat["assignment"]["settings"]["map"].GetValue<string>(), "e as regras da sala");
+			Check.Equal("armazem_estendido", beat["assignment"]["settings"]["map"].GetValue<string>(), "e as regras da sala");
 			var (_, again) = await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"), w.Config.FleetKey);
 			Check.True(again["assignment"] == null, "a partida é entregue uma vez só");
 

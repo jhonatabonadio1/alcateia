@@ -36,6 +36,19 @@ public sealed class PgResult
 	public long Long(int row, string column) => long.Parse(Text(row, column), CultureInfo.InvariantCulture);
 	public int Int(int row, string column) => int.Parse(Text(row, column), CultureInfo.InvariantCulture);
 	public bool Bool(int row, string column) => Text(row, column) == "t";
+	public bool Null(int row, string column) => Text(row, column) == null;
+
+	/// <summary>Uma data do banco (timestamptz, que vem como
+	/// <c>2026-11-20 12:00:00.123+00</c>) em UTC; null é null.</summary>
+	public DateTime? Date(int row, string column)
+	{
+		string text = Text(row, column);
+		if (text == null) return null;
+		// O Postgres abrevia o fuso para "+00"; o .NET quer "+00:00".
+		int sign = text.LastIndexOfAny(new[] { '+', '-' });
+		if (sign > 10 && text.Length - sign == 3) text += ":00";
+		return DateTimeOffset.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal).UtcDateTime;
+	}
 
 	private int Index(string column)
 	{

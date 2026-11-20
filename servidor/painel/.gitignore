@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# As imagens do jogo são copiadas de assets/ por scripts/imagens.mjs.
+public/jogo/

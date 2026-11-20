@@ -31,7 +31,13 @@ public interface IAccountRepository
 	Task SaveData(long accountId, string dataJson);
 
 	Task<IReadOnlyList<RankingEntry>> Ranking(int limit);
+
+	/// <summary>O banimento em vigor da conta, ou null se não há.</summary>
+	Task<BanStatus> Ban(long accountId);
 }
+
+/// <summary>Um banimento em vigor: até quando (null = para sempre) e por quê.</summary>
+public sealed record BanStatus(DateTime? Until, string Reason);
 
 /// <summary>Onde as partidas jogadas ficam guardadas.</summary>
 public interface IMatchRepository

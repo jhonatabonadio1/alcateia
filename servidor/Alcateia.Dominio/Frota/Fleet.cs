@@ -31,6 +31,12 @@ public sealed record LostMatch(MatchAssignment Assignment, MatchLoss Reason);
 /// Regra pura, sem relógio próprio (quem chama diz que horas são) e sem
 /// trava: quem usa de várias linhas (a aplicação) protege.
 /// </summary>
+/// <summary>Uma partida em curso, como o painel a vê.</summary>
+public sealed record MatchView(string MatchKey, string Title, string Map, DateTime StartedAt, int Players);
+
+/// <summary>Um servidor de partida, como o painel o vê.</summary>
+public sealed record ServerView(string Id, string Address, int Port, int Players, int Capacity, DateTime LastSeen, IReadOnlyList<MatchView> Matches);
+
 public sealed class Fleet
 {
 	/// <summary>Entregue a partida, o servidor tem este tempo para começar a
@@ -152,6 +158,12 @@ public sealed class Fleet
 	}
 
 	/// <summary>Servidores, quantos têm partida, lugares no total e partidas em curso.</summary>
+	/// <summary>Cada servidor de partida, para o painel.</summary>
+	public List<ServerView> Servers() => _servers.Values
+		.Select(s => new ServerView(s.Id, s.Address, s.Port, s.Players, s.Capacity, s.LastSeen,
+			s.Slots.Select(x => new MatchView(x.Assignment.MatchKey, x.Assignment.Title, x.Assignment.Map, x.Assignment.StartedAt, x.Assignment.Players.Count)).ToList()))
+		.OrderBy(s => s.Id).ToList();
+
 	public (int Servers, int Busy, int Capacity, int Running) Status() =>
 		(_servers.Count, _servers.Values.Count(s => s.Slots.Count > 0), _servers.Values.Sum(s => s.Capacity), _servers.Values.Sum(s => s.Slots.Count));
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -70,17 +71,27 @@ public sealed class PgAccountRepository : IAccountRepository
 		if (p.Empty) return null;
 
 		var stats = Dominio.Contas.Profile.StatNames.ToDictionary(column => column, column => p.Int(0, column));
-		return new Profile(accountId, p.Text(0, "name"), p.Text(0, "created_at"), p.Long(0, "xp"), p.Long(0, "presas"), stats, p.Text(0, "data"));
+		return new Profile(accountId, p.Text(0, "name"), p.Text(0, "created_at"), p.Long(0, "xp"), p.Long(0, "presas"), stats, p.Text(0, "data"))
+		{
+			Sangue = p.Long(0, "sangue")
+		};
 	}
 
 	public Task SaveData(long accountId, string dataJson) =>
 		_db.Exec("update profiles set data = $2::jsonb, updated_at = now() where account_id = $1", accountId, dataJson);
 
+	public async Task<BanStatus> Ban(long accountId)
+	{
+		PgResult r = await _db.Query(
+			"select banned_until, ban_reason from accounts where id = $1 and banned and (banned_until is null or banned_until > now())", accountId);
+		return r.Empty ? null : new BanStatus(r.Date(0, "banned_until"), r.Text(0, "ban_reason") ?? "");
+	}
+
 	public async Task<IReadOnlyList<RankingEntry>> Ranking(int limit)
 	{
 		PgResult top = await _db.Query(
 			"select a.name, p.xp, p.kills, p.deaths, p.wins, p.matches from profiles p join accounts a on a.id = p.account_id " +
-			"order by p.xp desc, a.id limit $1", limit);
+			"where not (a.banned and (a.banned_until is null or a.banned_until > now())) order by p.xp desc, a.id limit $1", limit);
 
 		var list = new List<RankingEntry>();
 		for (int i = 0; i < top.Rows.Count; i++)

@@ -137,7 +137,9 @@ public sealed class Player : IAsyncDisposable
 /// <summary>O servidor de pé para um teste, com o banco limpo.</summary>
 public sealed class World : IAsyncDisposable
 {
-	public string Url;
+	public const string AdminName = "chefe", AdminPassword = "senha-do-painel-123";
+	public string Url, AdminUrl;
+	public Services Services;
 	public Config Config;
 	public HttpClient Http = new();
 	public PgPool Db;
@@ -157,6 +159,12 @@ public sealed class World : IAsyncDisposable
 	{
 		var world = new World { Config = new Config { Database = Database(), Port = FreePort(), FleetKey = "chave-de-teste" } };
 		world.Config.LoginsPerMinute = 1000;
+		world.Config.AdminPort = FreePort();
+		world.Config.AdminUser = AdminName;
+		world.Config.AdminPassword = AdminPassword;
+		world.Config.AdminUi = System.IO.Path.GetTempPath();
+		world.Config.SecurityLog = false;
+		world.Config.MasterKey = "chave-mestra-de-teste";
 		tweak?.Invoke(world.Config);
 
 		world.Db = new PgPool(world.Config.Database);
@@ -169,6 +177,8 @@ public sealed class World : IAsyncDisposable
 		world._app = await App.Build(world.Config);
 		await world._app.StartAsync();
 		world.Url = $"http://127.0.0.1:{world.Config.Port}";
+		world.AdminUrl = $"http://127.0.0.1:{world.Config.AdminPort}";
+		world.Services = world._app.Services.GetService(typeof(Services)) as Services;
 		return world;
 	}
 
@@ -233,6 +243,9 @@ public static class Program
 		tests.AddRange(AccountTests.All);
 		tests.AddRange(LobbyTests.All);
 		tests.AddRange(MatchTests.All);
+		tests.AddRange(SecurityTests.All);
+		tests.AddRange(GameDataTests.All);
+		tests.AddRange(PanelTests.All);
 
 		int passed = 0, failed = 0;
 		foreach (var (name, run) in tests)

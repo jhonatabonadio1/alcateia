@@ -65,6 +65,12 @@ public sealed class FleetService
 		lock (_lock) _fleet.Release(matchKey);
 	}
 
+	/// <summary>Os servidores de partida e o que cada um está rodando.</summary>
+	public List<ServerView> Servers()
+	{
+		lock (_lock) return _fleet.Servers();
+	}
+
 	public (int Servers, int Busy, int Capacity, int Running) Status()
 	{
 		(int, int, int, int) status;

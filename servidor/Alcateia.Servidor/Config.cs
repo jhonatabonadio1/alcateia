@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using Alcateia.Aplicacao.Seguranca;
+using Alcateia.Dominio.Seguranca;
 using Alcateia.Infra.Banco;
 
 namespace Alcateia.Servidor;
@@ -42,6 +46,55 @@ public sealed class Config
 	/// <summary>Quanto vale o ingresso de entrada numa partida.</summary>
 	public TimeSpan TicketLife = TimeSpan.FromMinutes(3);
 
+	// ------------------------------------------------------------ segurança
+
+	public const string DevMasterKey = "chave-mestra-de-desenvolvimento-troque";
+
+	/// <summary>A chave que cifra o que não pode ficar legível no banco (o
+	/// segredo da segunda etapa dos administradores). Trocar depois de em
+	/// uso desliga a segunda etapa de todos: eles ligam de novo.</summary>
+	public string MasterKey = DevMasterKey;
+
+	/// <summary>De quem o servidor aceita os cabeçalhos de endereço real
+	/// (<c>CF-Connecting-IP</c>, <c>X-Forwarded-For</c>): o proxy da
+	/// frente. Vazio, vale sempre o endereço da conexão — cabeçalho de
+	/// desconhecido qualquer um forja.</summary>
+	public List<IpRange> TrustedProxies = new();
+
+	/// <summary>Os limites do escudo (freio por minuto, bloqueio automático).</summary>
+	public SecurityOptions Security = new();
+
+	/// <summary>Escreve os eventos de segurança também na saída padrão, em JSON.</summary>
+	public bool SecurityLog = true;
+
+	// ------------------------------------------------------------ painel
+
+	/// <summary>A porta do painel administrativo. É outra porta de
+	/// propósito: a do jogo fica aberta para a internet, esta não — só
+	/// quem está na VPN, no túnel ou na lista (<see cref="AdminAllow"/>)
+	/// chega nela. Zero desliga o painel.</summary>
+	public int AdminPort = 8081;
+
+	/// <summary>Em que endereço a porta do painel escuta. Fora do Docker,
+	/// só a própria máquina.</summary>
+	public string AdminBind = "127.0.0.1";
+
+	/// <summary>Quem pode falar com o painel. Vazio: quem alcançar a porta.</summary>
+	public List<IpRange> AdminAllow = new();
+
+	/// <summary>O primeiro administrador (o dono), criado ao subir se
+	/// ainda não há nenhum.</summary>
+	public string AdminUser = "", AdminPassword = "";
+
+	/// <summary>Sem a segunda etapa ligada, o administrador só consegue ligá-la.</summary>
+	public bool AdminRequireTotp;
+
+	/// <summary>A pasta com o painel já compilado (o React).</summary>
+	public string AdminUi = Path.Combine(AppContext.BaseDirectory, "painel");
+
+	/// <summary>Quem pede <c>/metrics</c> apresenta esta chave. Vazia, só a porta protege.</summary>
+	public string MetricsKey = "";
+
 	public static Config FromEnvironment()
 	{
 		var c = new Config();
@@ -55,7 +108,32 @@ public sealed class Config
 		c.SessionDays = int.Parse(Env("ALCATEIA_SESSION_DAYS", "30"));
 		c.LoginsPerMinute = int.Parse(Env("ALCATEIA_LOGINS_PER_MINUTE", "12"));
 		c.Database.MaxConnections = int.Parse(Env("ALCATEIA_DB_POOL", "32"));
+
+		c.MasterKey = Env("ALCATEIA_MASTER_KEY", c.MasterKey);
+		c.TrustedProxies = Ranges(Env("ALCATEIA_TRUSTED_PROXIES", ""), wide: true);
+		c.Security.RequestsPerMinute = int.Parse(Env("ALCATEIA_REQUESTS_PER_MINUTE", "600"));
+		c.Security.AutoBlock = Env("ALCATEIA_AUTO_BLOCK", "1") != "0";
+		c.Security.Allow = Ranges(Env("ALCATEIA_IP_ALLOW", ""), wide: true);
+		c.Security.RetentionDays = int.Parse(Env("ALCATEIA_EVENT_DAYS", "90"));
+
+		c.AdminPort = int.Parse(Env("ALCATEIA_ADMIN_PORT", "8081"));
+		c.AdminBind = Env("ALCATEIA_ADMIN_BIND", c.AdminBind);
+		c.AdminAllow = Ranges(Env("ALCATEIA_ADMIN_ALLOW", ""), wide: true);
+		c.AdminUser = Env("ALCATEIA_ADMIN_USER", "");
+		c.AdminPassword = Env("ALCATEIA_ADMIN_PASSWORD", "");
+		c.AdminRequireTotp = Env("ALCATEIA_ADMIN_REQUIRE_2FA", "0") == "1";
+		c.AdminUi = Env("ALCATEIA_ADMIN_UI", c.AdminUi);
+		c.MetricsKey = Env("ALCATEIA_METRICS_KEY", "");
 		return c;
+	}
+
+	/// <summary>Uma lista de endereços ou faixas separada por vírgula.</summary>
+	private static List<IpRange> Ranges(string text, bool wide)
+	{
+		var list = new List<IpRange>();
+		foreach (string part in text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+			list.Add(IpRange.Parse(part, wide));
+		return list;
 	}
 
 	private static string Env(string name, string fallback)

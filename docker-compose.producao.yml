@@ -1,0 +1,63 @@
+# Produção: o servidor atrás do Caddy, com HTTPS automático (Let's Encrypt).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.producao.yml up -d --build
+#
+# Precisa, no .env: ALCATEIA_DOMAIN (ex.: api.wolfleague.gg, apontando para
+# esta máquina) e as portas 80 e 443 abertas. A porta 8080 deixa de ser
+# publicada: de fora só se chega pelo Caddy. O painel continua só em
+# 127.0.0.1:8081 (túnel SSH ou VPN). O passo a passo e o porquê de cada
+# coisa: docs/SEGURANCA.md.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      servidor:
+        condition: service_healthy
+    environment:
+      ALCATEIA_DOMAIN: ${ALCATEIA_DOMAIN:?defina ALCATEIA_DOMAIN no arquivo .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./servidor/producao/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_dados:/data
+      - caddy_config:/config
+    networks:
+      default:
+        ipv4_address: 172.28.0.10
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  servidor:
+    # De fora só se chega pelo Caddy: a API e o painel ficam publicados
+    # só nesta máquina (a API, para servidores de partida que rodam aqui
+    # com a rede da máquina — docker-compose.frota.yml).
+    ports: !override
+      - "127.0.0.1:${ALCATEIA_PORT:-8080}:8080"
+      - "127.0.0.1:${ALCATEIA_ADMIN_PORT:-8081}:8081"
+    environment:
+      # O Caddy é o único de quem o servidor aceita o endereço real do
+      # jogador (X-Forwarded-For). Com o Cloudflare na frente, é o Caddy
+      # que confia no Cloudflare (veja o Caddyfile).
+      ALCATEIA_TRUSTED_PROXIES: 172.28.0.10
+      ALCATEIA_ADMIN_REQUIRE_2FA: "1"
+
+  partida:
+    environment:
+      # Dentro da rede do Docker, sem passar pelo Caddy.
+      ALCATEIA_API: http://servidor:8080
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
+
+volumes:
+  caddy_dados:
+  caddy_config:

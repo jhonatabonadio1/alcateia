@@ -104,6 +104,45 @@ public sealed class LobbyService : IDisposable
 
 	public int Online { get { lock (_lock) return _sessions.Count; } }
 
+	/// <summary>O mapa pode ser jogado? O painel desliga mapa; quem decide
+	/// é quem conhece os mapas (os dados do jogo). Por padrão, todos.</summary>
+	public Func<string, bool> MapAllowed { get; set; } = _ => true;
+
+	public bool IsOnline(long accountId)
+	{
+		lock (_lock) return _sessions.ContainsKey(accountId);
+	}
+
+	/// <summary>Salas abertas e quantas estão em partida, para o painel.</summary>
+	public (int Rooms, int Playing) RoomCount()
+	{
+		lock (_lock) return (_rooms.Count, _rooms.Values.Count(r => r.State != Dominio.Salas.RoomState.Waiting));
+	}
+
+	/// <summary>Derruba a conexão de uma conta (banimento, ou a pedido do
+	/// painel). Falso se ela não estava ligada.</summary>
+	public async Task<bool> Kick(long accountId, string why)
+	{
+		var outbox = new Outbox();
+		Session session;
+		lock (_lock)
+		{
+			if (!_sessions.TryGetValue(accountId, out session)) return false;
+			Leave(session, outbox);
+			_sessions.Remove(accountId);
+		}
+		await outbox.Deliver();
+		_ = session.Connection.Close(why);
+		return true;
+	}
+
+	private void RequireMap(JsonObject settings)
+	{
+		string map = settings?["map"]?.GetValue<string>();
+		if (map != null && !MapAllowed(map))
+			throw new Failure(FailureKind.Conflict, "mapa_desligado", "Esse mapa está fora de rotação no momento.");
+	}
+
 	/// <summary>A lista de salas, como vai para o cliente (sem senha).</summary>
 	public JsonArray Rooms()
 	{
@@ -257,6 +296,7 @@ public sealed class LobbyService : IDisposable
 				break;
 
 			case "room.create":
+				RequireMap(m["settings"] as JsonObject);
 				Create(c, m["settings"] as JsonObject, outbox);
 				break;
 
@@ -280,6 +320,7 @@ public sealed class LobbyService : IDisposable
 				break;
 
 			case "room.settings":
+				RequireMap(m["settings"] as JsonObject);
 				InRoom(c).ChangeSettings(c.Account.Id, m["settings"] as JsonObject);
 				Changed(c.Room, outbox);
 				break;
@@ -348,6 +389,7 @@ public sealed class LobbyService : IDisposable
 	private void Start(Session c, Outbox outbox)
 	{
 		Room room = InRoom(c);
+		RequireMap(room.Settings);
 		MatchAssignment assignment = room.Lineup(c.Account.Id, Guid.NewGuid().ToString("N"));
 
 		(string Address, int Port)? server = _fleet.Allocate(assignment);

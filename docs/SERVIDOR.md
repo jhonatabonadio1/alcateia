@@ -3,6 +3,8 @@
 Como o Alcateia joga em rede: o que roda onde, como subir, como testar
 e o que ainda não faz. As decisões por trás estão em
 `docs/decisoes/0008` (quem decide o quê) e `0009` (servidor sem pacote).
+O painel administrativo está em `docs/PAINEL.md`; a segurança (o escudo,
+a blacklist de IP, como pôr na internet), em `docs/SEGURANCA.md`.
 
 ## As três peças
 
@@ -17,8 +19,9 @@ e o que ainda não faz. As decisões por trás estão em
 
 | Peça | O que é | Onde está |
 |---|---|---|
-| **Servidor** | ASP.NET (.NET 8). Contas, sessões, perfil, ranking, o saguão (salas e chat por WebSocket) e a frota de servidores de partida | `servidor/Alcateia.Servidor` |
-| **Banco** | PostgreSQL 16. Contas, sessões, perfis, partidas | contêiner `banco` |
+| **Servidor** | ASP.NET (.NET 8). Contas, sessões, perfil, ranking, o saguão (salas e chat por WebSocket), a frota de servidores de partida, os dados do jogo (catálogo, mapas, promoções, desafios), a loja, o inventário e o escudo de segurança | `servidor/Alcateia.Servidor` |
+| **Painel** | React. Jogadores, banimentos, moeda e itens, armas e skins, mapas, promoções, desafios, eventos de segurança, blacklist de IP, auditoria. Servido pelo próprio servidor, **em outra porta** (8081), que não se abre para a internet | `servidor/painel`, `docs/PAINEL.md` |
+| **Banco** | PostgreSQL 16. É onde tudo mora: contas, sessões, perfis, carteira, inventário, extrato, partidas, catálogo, mapas, promoções, desafios, banimentos, blacklist de IP, eventos de segurança, administradores e auditoria | contêiner `banco` |
 | **Servidor de partida** | O próprio jogo sem tela (`godot --headless -- --servidor`). Várias partidas ao mesmo tempo (4 por padrão, `ALCATEIA_MATCHES`), na mesma porta: recebe os jogadores de cada uma, repassa o que cada um faz, arbitra e entrega o resultado. Partida que todos abandonam acaba em 20 s e libera o lugar | `scripts/net/MatchServer.cs`, `HostedMatch.cs` |
 | **Jogo** | A tela Online (`OnlineScreen`), a conta (`Backend`), o saguão ao vivo (`LobbyLink`) e a partida em rede (`NetMatch`) | `scripts/net`, `scripts/lobby` |
 
@@ -27,10 +30,15 @@ e o que ainda não faz. As decisões por trás estão em
 Precisa só do Docker.
 
 ```
-cp .env.exemplo .env        # e troque a senha do banco e o segredo da frota
+cp .env.exemplo .env        # e troque os segredos; ponha o nome e a senha do primeiro administrador
 docker compose up -d --build
 curl http://127.0.0.1:8080/health
 ```
+
+O painel abre em **http://127.0.0.1:8081** (só nesta máquina), com o
+administrador que você pôs no `.env` (`ALCATEIA_ADMIN_USER` e
+`ALCATEIA_ADMIN_PASSWORD`). Entre, troque a senha e ligue a verificação
+em duas etapas (`docs/PAINEL.md`).
 
 A primeira vez demora: baixa o .NET, o PostgreSQL e o Godot. Sobem três
 contêineres: `banco`, `servidor` (porta 8080) e `partida` (porta
@@ -63,6 +71,20 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
 | `ALCATEIA_NETCODE` | `autoritativo`: o servidor de partida move os corpos (decisão 0011); vazio ou `repasse`: cada jogo move o seu (0008) | vazio |
 | `ALCATEIA_API` | (jogo e servidor de partida) onde fica o servidor; passa por cima do campo da tela | — |
 | `ALCATEIA_SESSION_DAYS` | Validade do login | `30` |
+| `ALCATEIA_MASTER_KEY` | Cifra o que não pode ficar legível no banco (o segredo das duas etapas) | obrigatória |
+| `ALCATEIA_ADMIN_USER`, `ALCATEIA_ADMIN_PASSWORD` | O primeiro administrador do painel; só vale enquanto não há nenhum | — |
+| `ALCATEIA_ADMIN_PORT` | Porta do painel (0 desliga o painel) | `8081` |
+| `ALCATEIA_ADMIN_BIND` | Em que endereço a porta do painel escuta. Fora do Docker, só a própria máquina | `127.0.0.1` |
+| `ALCATEIA_ADMIN_ALLOW` | Quem pode falar com o painel (endereços ou faixas, com vírgula) | qualquer um que alcance a porta |
+| `ALCATEIA_ADMIN_REQUIRE_2FA` | `1`: sem as duas etapas ligadas, o administrador só consegue ligá-las | `0` |
+| `ALCATEIA_ADMIN_UI` | A pasta do painel compilado | `painel/` ao lado do programa |
+| `ALCATEIA_TRUSTED_PROXIES` | De quem o servidor aceita `X-Forwarded-For` e `CF-Connecting-IP` (o proxy da frente) | ninguém |
+| `ALCATEIA_REQUESTS_PER_MINUTE` | Freio de pedidos por minuto, por endereço | `600` |
+| `ALCATEIA_LOGINS_PER_MINUTE` | Tentativas de login ou cadastro por minuto, por endereço | `12` |
+| `ALCATEIA_AUTO_BLOCK` | `0`: o escudo só registra, não bloqueia sozinho | `1` |
+| `ALCATEIA_IP_ALLOW` | Endereços que o escudo nunca bloqueia nem freia | — |
+| `ALCATEIA_EVENT_DAYS` | Por quantos dias os eventos de segurança ficam no banco | `90` |
+| `ALCATEIA_METRICS_KEY` | A chave que o Prometheus apresenta em `/metrics` | sem chave |
 
 ## Como uma partida acontece
 
@@ -169,10 +191,13 @@ Como chega lá:
   automática (quem cai volta para a sala).
 - **Do lobo**, o uivo, a corrida na parede e os golpes especiais
   aparecem para os outros como movimento e ataque comum.
-- **O perfil da loja continua local.** O servidor guarda a conta, o XP
-  online e o ranking; inventário, Presas e missões ainda são os do
-  arquivo do jogador (o XP da partida online entra nos dois).
-- **Sem HTTPS**: ponha um proxy (Caddy, nginx) na frente antes de expor
-  na internet — a senha viaja no corpo do pedido.
-- O servidor guarda as salas na memória: reiniciar o contêiner
-  `servidor` derruba as salas abertas (as contas e o histórico ficam).
+- **A loja do jogo ainda compra no arquivo local.** O servidor já tem
+  tudo — catálogo, preço, promoção, carteira, inventário, extrato,
+  desafios (`GET /v1/gamedata`, `POST /v1/shop/buy`, `/v1/challenges`) —
+  e o jogo já lê do servidor o que o painel muda (mapas em rotação,
+  aviso, manutenção, preços: `scripts/net/ServerData.cs`). Falta a tela
+  da loja e a das missões trocarem o arquivo local pelas chamadas do
+  servidor (`Backend.Buy`, `Backend.Inventory`, `Backend.Challenges`).
+- **Abates como lobo** ainda não vão no resultado da partida
+  (`killsWolf`): os desafios "como lobo" e "como humano" só andam
+  online quando o servidor de partida souber a forma de quem matou.

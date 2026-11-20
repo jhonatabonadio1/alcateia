@@ -1,0 +1,51 @@
+# O Caddy na frente do servidor: HTTPS automático, e nada mais chega à
+# porta 8080 de fora. Veja docs/SEGURANCA.md.
+{
+	# Com o Cloudflare na frente (nuvem laranja), descomente: o Caddy passa
+	# a acreditar no endereço do jogador que o Cloudflare informa. As faixas
+	# são as publicadas em https://www.cloudflare.com/ips/ — confira antes.
+	# servers {
+	# 	trusted_proxies static 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22
+	# 	client_ip_headers CF-Connecting-IP X-Forwarded-For
+	# }
+}
+
+{$ALCATEIA_DOMAIN} {
+	encode zstd gzip
+
+	# O jogo manda JSON pequeno; nada legítimo passa disso.
+	request_body {
+		max_size 128KB
+	}
+
+	# O painel não existe neste domínio (ele também recusa, mas aqui nem chega).
+	@painel path /admin /admin/* /metrics
+	respond @painel 404
+
+	reverse_proxy servidor:8080 {
+		# O WebSocket do saguão fica aberto por horas.
+		transport http {
+			read_timeout 0
+		}
+	}
+
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}
+
+# O painel por um domínio próprio, só para os endereços da equipe.
+# Prefira o túnel SSH ou a VPN; se precisar disto, troque os endereços,
+# defina ALCATEIA_PANEL_DOMAIN no .env (e no serviço caddy) e descomente.
+#
+# {$ALCATEIA_PANEL_DOMAIN} {
+# 	@fora not remote_ip 203.0.113.7 198.51.100.0/24
+# 	respond @fora 404
+# 	reverse_proxy servidor:8081
+# }

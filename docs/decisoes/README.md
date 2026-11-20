@@ -22,3 +22,6 @@ como "substituído por NNNN".
 | [0009](0009-servidor-sem-pacotes.md) | O servidor não usa pacote de fora (cliente PostgreSQL próprio) |
 | [0010](0010-servidor-em-camadas.md) | O servidor em camadas: domínio, aplicação, infra e a API |
 | [0011](0011-servidor-autoritativo.md) | O servidor move os corpos: comandos, predição e correção, interpolação (primeira leva) |
+| [0012](0012-painel-em-outra-porta.md) | O painel administrativo: outra porta, contas próprias, React à parte |
+| [0013](0013-dados-do-jogo-no-servidor.md) | Economia e conteúdo moram no servidor; o painel edita, o jogo lê |
+| [0014](0014-escudo-em-memoria.md) | O escudo de segurança decide em memória e registra em lote |

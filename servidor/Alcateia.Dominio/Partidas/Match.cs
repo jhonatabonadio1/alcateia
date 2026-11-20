@@ -30,18 +30,31 @@ public sealed class MatchAssignment
 }
 
 /// <summary>O que um jogador fez, segundo o servidor de partida.</summary>
-public sealed record ReportedLine(long AccountId, int Kills, int Deaths, int Assists, int Headshots, int Points);
+public sealed record ReportedLine(long AccountId, int Kills, int Deaths, int Assists, int Headshots, int Points)
+{
+	/// <summary>Dos abates, quantos como lobo (o resto é como humano). Servidor
+	/// de partida antigo não manda: fica zero e os desafios "como lobo" não andam.</summary>
+	public int KillsWolf { get; init; }
+}
 
 /// <summary>O fim de uma partida, como o servidor de partida conta.</summary>
 public sealed record MatchReport(string MatchKey, string ServerId, int ScoreBlue, int ScoreOrange, IReadOnlyList<ReportedLine> Players);
 
 /// <summary>Um jogador no resultado fechado, com o que ganhou.</summary>
 public sealed record SettledLine(MatchSeat Seat, int Kills, int Deaths, int Assists, int Headshots, int Points,
-	bool Won, bool Draw, bool Mvp, Rewards.Gain Gain);
+	bool Won, bool Draw, bool Mvp, Rewards.Gain Gain)
+{
+	public int KillsWolf { get; init; }
+	public int KillsHuman => Kills - KillsWolf;
+}
 
 /// <summary>O resultado fechado: o que vai para o banco e para os jogadores.</summary>
 public sealed record SettledMatch(MatchAssignment Assignment, string ServerId, int Winner, int ScoreBlue, int ScoreOrange,
-	IReadOnlyList<SettledLine> Lines);
+	IReadOnlyList<SettledLine> Lines)
+{
+	/// <summary>Minutos jogados, para os desafios de tempo.</summary>
+	public int Minutes(DateTime now) => (int)Math.Clamp((now - Assignment.StartedAt).TotalMinutes, 0, 120);
+}
 
 /// <summary>Uma partida no histórico de um jogador.</summary>
 public sealed record MatchHistoryEntry(string Map, int Winner, int ScoreBlue, int ScoreOrange, string EndedAt, int Team,
@@ -57,8 +70,15 @@ public static class MatchSettlement
 {
 	public const int Draw = 0, Blue = 1, Orange = 2;
 
-	public static SettledMatch Settle(MatchAssignment assignment, MatchReport report)
+	/// <summary>O maior bônus de evento que o painel pode ligar.</summary>
+	public const double MaxBonus = 5;
+
+	/// <summary><paramref name="xpBonus"/> e <paramref name="presasBonus"/>: o
+	/// multiplicador de evento ("XP em dobro"), que o painel liga e desliga.</summary>
+	public static SettledMatch Settle(MatchAssignment assignment, MatchReport report, double xpBonus = 1, double presasBonus = 1)
 	{
+		xpBonus = Math.Clamp(xpBonus, 1, MaxBonus);
+		presasBonus = Math.Clamp(presasBonus, 1, MaxBonus);
 		int winner = report.ScoreBlue == report.ScoreOrange ? Draw : report.ScoreBlue > report.ScoreOrange ? Blue : Orange;
 		var seats = assignment.Players.ToDictionary(p => p.AccountId);
 
@@ -73,7 +93,8 @@ public static class MatchSettlement
 				Deaths = Math.Clamp(line.Deaths, 0, 999),
 				Assists = Math.Clamp(line.Assists, 0, Rewards.MaxAssists),
 				Headshots = Math.Clamp(line.Headshots, 0, Rewards.MaxKills),
-				Points = Math.Clamp(line.Points, 0, 99999)
+				Points = Math.Clamp(line.Points, 0, 99999),
+				KillsWolf = Math.Clamp(line.KillsWolf, 0, Math.Clamp(line.Kills, 0, Rewards.MaxKills))
 			}));
 		}
 
@@ -82,8 +103,10 @@ public static class MatchSettlement
 		var lines = counted.Select(c =>
 		{
 			bool won = winner != Draw && c.Seat.Team == winner, draw = winner == Draw, isMvp = c.Seat.AccountId == mvp;
+			Rewards.Gain gain = Rewards.ForMatch(c.Line.Kills, c.Line.Assists, won, draw, isMvp);
+			gain = new Rewards.Gain((long)Math.Round(gain.Xp * xpBonus), (long)Math.Round(gain.Presas * presasBonus));
 			return new SettledLine(c.Seat, c.Line.Kills, c.Line.Deaths, c.Line.Assists, c.Line.Headshots, c.Line.Points,
-				won, draw, isMvp, Rewards.ForMatch(c.Line.Kills, c.Line.Assists, won, draw, isMvp));
+				won, draw, isMvp, gain) { KillsWolf = c.Line.KillsWolf };
 		}).ToList();
 
 		return new SettledMatch(assignment, report.ServerId, winner, report.ScoreBlue, report.ScoreOrange, lines);

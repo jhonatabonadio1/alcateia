@@ -54,8 +54,28 @@ public sealed class AccountService
 			throw new Failure(FailureKind.Unauthorized, "login_invalido", "Nome ou senha incorretos.");
 
 		Account account = found.Value.Account;
+		await RequireNotBanned(account.Id);
 		await _accounts.MarkLogin(account.Id);
 		return (account, await NewSession(account));
+	}
+
+	/// <summary>Conta banida não entra: a recusa diz até quando e por quê.</summary>
+	public async Task RequireNotBanned(long accountId)
+	{
+		BanStatus ban = await _accounts.Ban(accountId);
+		if (ban == null) return;
+		string until = ban.Until == null ? "permanentemente" : $"até {ban.Until.Value:dd/MM/yyyy HH:mm} (UTC)";
+		string reason = string.IsNullOrWhiteSpace(ban.Reason) ? "" : $" Motivo: {ban.Reason}";
+		throw new Failure(FailureKind.Forbidden, "conta_banida", $"Esta conta está banida {until}.{reason}");
+	}
+
+	/// <summary>Esquece os logins em memória de uma conta: quem foi banido
+	/// ou teve a sessão derrubada para de valer agora, e não daqui a meio
+	/// minuto.</summary>
+	public void Forget(long accountId)
+	{
+		foreach (var entry in _cache)
+			if (entry.Value.Account.Id == accountId) _cache.TryRemove(entry.Key, out _);
 	}
 
 	/// <summary>A conta dona do token, ou null se ele não vale (mais).</summary>

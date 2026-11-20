@@ -534,7 +534,8 @@ public partial class RoomScreen : LobbyScreen
 		grid.AddThemeConstantOverride("h_separation", UiTokens.S3);
 		grid.AddThemeConstantOverride("v_separation", UiTokens.S3);
 
-		foreach (MapInfo map in Maps.All)
+		// Mapa que o painel tirou da rotação não aparece (o da sala, sim: é o que está marcado).
+		foreach (MapInfo map in Maps.All.Where(m => ServerData.MapOn(m.Id) || m.Id == S.Map))
 		{
 			MapInfo chosen = map;
 			bool current = map.Id == S.Map;

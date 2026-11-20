@@ -32,7 +32,7 @@ public sealed class RateLimit
 	/// <summary>Recusa o pedido se este endereço já tentou demais.</summary>
 	public void Check(HttpContext ctx)
 	{
-		if (!Allow(ctx.Connection.RemoteIpAddress?.ToString() ?? "?"))
+		if (!Allow(ClientIp.Of(ctx)))
 			throw new Failure(FailureKind.TooMany, "devagar", "Muitas tentativas. Espere um minuto.");
 	}
 }

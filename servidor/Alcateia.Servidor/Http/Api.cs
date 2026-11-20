@@ -72,9 +72,16 @@ public static class Api
 	/// <summary>Só servidor de partida passa: quem tem a chave da frota (<c>X-Fleet-Key</c>).</summary>
 	public static void RequireGameServer(HttpContext ctx, Config config)
 	{
-		if (!Passwords.SameSecret(ctx.Request.Headers["X-Fleet-Key"], config.FleetKey))
-			throw new Failure(FailureKind.Unauthorized, "chave_invalida", "Chave da frota inválida.");
+		if (Passwords.SameSecret(ctx.Request.Headers["X-Fleet-Key"], config.FleetKey)) return;
+		OnBadFleetKey?.Invoke(ctx);
+		throw new Failure(FailureKind.Unauthorized, "chave_invalida", "Chave da frota inválida.");
 	}
+
+	/// <summary>Alguém apresentou a chave da frota errada (vai para o registro de segurança).</summary>
+	public static Action<HttpContext> OnBadFleetKey;
+
+	/// <summary>Uma data como vai para o cliente (ISO 8601, UTC).</summary>
+	public static JsonNode Date(DateTime? utc) => utc == null ? null : JsonValue.Create(utc.Value.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"));
 
 	public static Task Send(HttpContext ctx, JsonNode body)
 	{

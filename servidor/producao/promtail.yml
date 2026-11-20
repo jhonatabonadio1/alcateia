@@ -1,0 +1,32 @@
+# O Promtail recolhe os logs dos contêineres e manda para o Loki: a cópia
+# dos eventos de segurança que não fica na máquina do servidor do jogo.
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 10s
+    relabel_configs:
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: servico
+    pipeline_stages:
+      # As linhas de segurança do servidor são JSON com "log":"seguranca".
+      - match:
+          selector: '{servico="servidor"} |= "\"log\":\"seguranca\""'
+          stages:
+            - json:
+                expressions:
+                  kind: kind
+                  severity: severity
+            - labels:
+                kind:
+                severity:

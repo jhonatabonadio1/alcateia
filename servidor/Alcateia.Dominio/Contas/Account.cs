@@ -42,6 +42,12 @@ public static class AccountRules
 public sealed record Profile(long Id, string Name, string CreatedAt, long Xp, long Presas,
 	IReadOnlyDictionary<string, int> Stats, string DataJson)
 {
+	/// <summary>A moeda paga (só compra o que não dá poder).</summary>
+	public long Sangue { get; init; }
+
+	/// <summary>A patente, tirada do XP.</summary>
+	public int Rank => RankRule.RankFor(Xp);
+
 	/// <summary>As estatísticas, na ordem em que vão para o cliente.</summary>
 	public static readonly string[] StatNames = { "matches", "wins", "losses", "draws", "kills", "deaths", "assists", "headshots", "mvps" };
 

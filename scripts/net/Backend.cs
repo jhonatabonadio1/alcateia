@@ -96,6 +96,39 @@ public static class Backend
 
 	public static Task<Reply> Ranking(int limit = 10) => Call(HttpMethod.Get, $"/v1/ranking?limit={limit}");
 
+	/// <summary>O que o servidor tem na conta: itens, carteira e patente.</summary>
+	public static Task<Reply> Inventory() => Call(HttpMethod.Get, "/v1/inventory");
+
+	/// <summary>Compra na loja do servidor. Ele confere preço, patente e
+	/// saldo: o jogo só diz o item e a duração.</summary>
+	public static Task<Reply> Buy(string itemId, Duration duration) =>
+		Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = itemId, ["duration"] = (int)duration });
+
+	/// <summary>Os desafios valendo e o progresso da conta em cada um.</summary>
+	public static Task<Reply> Challenges() => Call(HttpMethod.Get, "/v1/challenges");
+
+	/// <summary>Recebe o prêmio de um desafio completo.</summary>
+	public static Task<Reply> ClaimChallenge(string id) => Call(HttpMethod.Post, $"/v1/challenges/{Uri.EscapeDataString(id)}/claim", new JsonObject());
+
+	/// <summary>Os dados do jogo que moram no servidor (<see cref="ServerData"/>).
+	/// Com a etiqueta da última resposta, o servidor responde 304 e sem
+	/// corpo quando nada mudou. Status 0: sem servidor.</summary>
+	public static async Task<(int Status, string ETag, JsonObject Body)> GameData(string etag)
+	{
+		try
+		{
+			var request = new HttpRequestMessage(HttpMethod.Get, Url + "/v1/gamedata");
+			if (!string.IsNullOrEmpty(etag)) request.Headers.TryAddWithoutValidation("If-None-Match", etag);
+			using HttpResponseMessage response = await Http.SendAsync(request);
+			if ((int)response.StatusCode != 200) return ((int)response.StatusCode, etag, null);
+			return (200, response.Headers.ETag?.Tag, JsonNode.Parse(await response.Content.ReadAsStringAsync()) as JsonObject);
+		}
+		catch (Exception e) when (e is HttpRequestException or TaskCanceledException or JsonException or InvalidOperationException or UriFormatException)
+		{
+			return (0, etag, null);
+		}
+	}
+
 	/// <summary>Uma chamada em nome de um servidor de partida.</summary>
 	public static Task<Reply> AsGameServer(string path, JsonObject body, string fleetKey) =>
 		Call(HttpMethod.Post, path, body, fleetKey);

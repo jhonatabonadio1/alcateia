@@ -2,6 +2,8 @@
 
 ## Não lançado
 
+- **Servidor: painel administrativo, segurança e economia no servidor** (20/11). O servidor central virou dono da carteira (Presas e Sangue), do inventário, do extrato, do catálogo, dos mapas, das promoções, dos desafios e das configurações (banco na versão 2; `docs/decisoes/0013`). **Painel** em React + Tailwind + shadcn, numa porta só dele (8081, `docs/PAINEL.md`, decisão 0012): visão geral ao vivo, jogadores (banir com prazo e motivo, dar e tirar moeda e item), armas e skins, mapas (liga e desliga a rotação), promoções, desafios (inclusive de evento), eventos de segurança, blacklist de IP, auditoria, manutenção, bônus de XP e administradores com papéis e verificação em duas etapas. **Escudo** (`docs/SEGURANCA.md`, decisão 0014): endereço real só de proxy de confiança, blacklist de IP, freio de pedidos, varredura e injeção recusadas, força bruta e "uma senha em várias contas" bloqueadas sozinhas, todo evento registrado (sem senha), alerta de resultado de partida absurdo. Compra conferida no servidor; desafio anda com o resultado do servidor de partida. Produção: Caddy (HTTPS), Prometheus, Loki, Grafana (`docker-compose.producao.yml`, `docker-compose.monitor.yml`). No jogo: `ServerData` lê do servidor mapas em rotação, preços, promoções, aviso e manutenção; a sala respeita o mapa desligado. **O `.env` agora pede `ALCATEIA_MASTER_KEY`.** Falta: a loja e as missões do jogo trocarem o arquivo local pelo servidor, e vida e acerto no servidor de partida.
+
 - Eve e Barut novos: são os personagens dos times (jogador e bots), com todas as animações.
 - A arma que os outros veem fica encaixada nas duas mãos e não atravessa o corpo.
 - No inventário, o personagem aparece de pé, em pose parada, e o cartão mostra a arte dele.

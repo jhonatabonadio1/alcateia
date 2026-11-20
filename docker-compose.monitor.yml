@@ -1,0 +1,60 @@
+# Monitoramento: Prometheus (números e alertas), Loki + Promtail (os logs,
+# guardados FORA do contêiner do servidor) e Grafana (as telas).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.producao.yml -f docker-compose.monitor.yml up -d
+#
+# Precisa, no .env: ALCATEIA_METRICS_KEY e GRAFANA_PASSWORD. O Grafana fica
+# só em 127.0.0.1:3000 (túnel SSH, como o painel). Veja docs/SEGURANCA.md.
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=30d
+    environment:
+      ALCATEIA_METRICS_KEY: ${ALCATEIA_METRICS_KEY:?defina ALCATEIA_METRICS_KEY no arquivo .env}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - printf '%s' "$$ALCATEIA_METRICS_KEY" > /tmp/chave && exec /bin/prometheus "$$@"
+      - --
+    volumes:
+      - ./servidor/producao/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./servidor/producao/alertas.yml:/etc/prometheus/alertas.yml:ro
+      - prometheus:/prometheus
+
+  loki:
+    image: grafana/loki:3.3.2
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki:/loki
+
+  promtail:
+    image: grafana/promtail:3.3.2
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail.yml
+    volumes:
+      - ./servidor/producao/promtail.yml:/etc/promtail/promtail.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?defina GRAFANA_PASSWORD no arquivo .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./servidor/producao/grafana-fontes.yml:/etc/grafana/provisioning/datasources/fontes.yml:ro
+      - grafana:/var/lib/grafana
+
+volumes:
+  prometheus:
+  loki:
+  grafana:

@@ -1,4 +1,4 @@
-# Só o que o servidor precisa entra no contexto da imagem.
+# Só o que o servidor e o painel precisam entra no contexto da imagem.
 *
 !scripts/domain/Rewards.cs
 !servidor/Alcateia.Dominio/**
@@ -7,3 +7,12 @@
 !servidor/Alcateia.Servidor/**
 servidor/*/bin
 servidor/*/obj
+
+# O painel (React) e as imagens do jogo que ele mostra.
+!servidor/painel/**
+servidor/painel/node_modules
+servidor/painel/dist
+servidor/painel/public/jogo
+!assets/ui/armas/*.png
+!assets/ui/mapas/*.png
+!assets/personagens/*/thumb.jpg

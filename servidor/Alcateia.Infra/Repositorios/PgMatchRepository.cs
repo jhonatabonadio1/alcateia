@@ -30,9 +30,10 @@ public sealed class PgMatchRepository : IMatchRepository
 				foreach (SettledLine l in m.Lines)
 				{
 					await c.Query(
-						"insert into match_players (match_id, account_id, team, kills, deaths, assists, headshots, points, mvp, xp_gain, presas_gain) " +
-						"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
-						matchId, l.Seat.AccountId, l.Seat.Team, l.Kills, l.Deaths, l.Assists, l.Headshots, l.Points, l.Mvp, l.Gain.Xp, l.Gain.Presas);
+						"insert into match_players (match_id, account_id, team, kills, deaths, assists, headshots, points, mvp, xp_gain, presas_gain, kills_wolf, kills_human) " +
+						"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+						matchId, l.Seat.AccountId, l.Seat.Team, l.Kills, l.Deaths, l.Assists, l.Headshots, l.Points, l.Mvp, l.Gain.Xp, l.Gain.Presas,
+						l.KillsWolf, l.KillsHuman);
 
 					await c.Query(
 						"update profiles set xp = xp + $2, presas = presas + $3, matches = matches + 1, " +
@@ -40,6 +41,13 @@ public sealed class PgMatchRepository : IMatchRepository
 						"assists = assists + $9, headshots = headshots + $10, mvps = mvps + $11, updated_at = now() where account_id = $1",
 						l.Seat.AccountId, l.Gain.Xp, l.Gain.Presas, l.Won ? 1 : 0, !l.Won && !l.Draw ? 1 : 0, l.Draw ? 1 : 0,
 						l.Kills, l.Deaths, l.Assists, l.Headshots, l.Mvp ? 1 : 0);
+
+					// O prêmio também entra no extrato da conta.
+					if (l.Gain.Presas != 0)
+						await c.Query(
+							"insert into ledger (account_id, currency, amount, balance_after, reason, ref) " +
+							"select account_id, 'presas', $2, presas, 'partida', $3 from profiles where account_id = $1",
+							l.Seat.AccountId, l.Gain.Presas, a.MatchKey);
 				}
 				return matchId;
 			});

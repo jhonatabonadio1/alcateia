@@ -184,11 +184,14 @@ public partial class OnlineScreen : LobbyScreen
 		Refresh();
 
 		Backend.Reply profile = await Backend.Resume();
+		// O que o painel mudou (mapas em rotação, preços, aviso) vem junto.
+		if (profile.Ok) await ServerData.Refresh(0);
 		bool open = profile.Ok && await Lobby.Open();
 
 		_connecting = false;
 		if (!profile.Ok && profile.Status == 401) _status = "A sua sessão venceu. Entre de novo.";
-		else if (!open) _status = Loc.F("Não consegui falar com {0}. O servidor está no ar?", Backend.Url);
+		else if (profile.Status == 403 || profile.Status == 503) _status = profile.Error;     // banido, ou em manutenção: o servidor diz por quê
+		else if (!open) _status = ServerData.Maintenance ? "O servidor está em manutenção. Volte daqui a pouco." : Loc.F("Não consegui falar com {0}. O servidor está no ar?", Backend.Url);
 		if (Alive) Refresh();
 	}
 
@@ -229,6 +232,8 @@ public partial class OnlineScreen : LobbyScreen
 
 	private void BuildRooms()
 	{
+		_ = ServerData.Refresh();
+		if (ServerData.Notice.Length > 0) _main.AddChild(UiKit.Text(ServerData.Notice, null, UiTokens.Accent));
 		HBoxContainer head = Heading(_main, "Salas", Loc.F("{0} aberta(s) · você é {1}", Lobby.Rooms.Count, Backend.AccountName));
 		head.AddChild(UiKit.Button("Sair da conta", ButtonKind.Secondary, Logout));
 		head.AddChild(UiKit.Button("Atualizar", ButtonKind.Secondary, Lobby.RefreshRooms));
@@ -330,7 +335,8 @@ public partial class OnlineScreen : LobbyScreen
 		if (string.IsNullOrWhiteSpace(s.Title) || s.Title == "Sala de treino") s.Title = Loc.F("Sala de {0}", Backend.AccountName);
 		s.Password = "";
 		s.TeamSize = Math.Clamp(s.TeamSize, 1, RoomSettings.MaxTeamSize);
-		if (!Maps.All.Any(m => m.Id == s.Map)) s.Map = Maps.All[0].Id;
+		// Mapa que saiu do jogo, ou que o painel tirou da rotação: o primeiro que está valendo.
+		if (!Maps.All.Any(m => m.Id == s.Map) || !ServerData.MapOn(s.Map)) s.Map = ServerData.FirstMapOn();
 		s.ScoreToWin = Scores[Nearest(Scores, s.ScoreToWin)];
 		s.Minutes = Durations[Nearest(Durations, s.Minutes)];
 		RoomScreen.PendingPassword = "";

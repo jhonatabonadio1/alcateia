@@ -19,7 +19,7 @@ public static class LobbyTests
 	/// <summary>Regras de sala. <paramref name="play"/> é o modo de jogo
 	/// (PlayMode no jogo): de 4 em diante, contra bots.</summary>
 	public static JsonObject Settings(string title = "Sala do teste", int teamSize = 4, string password = "", int play = 0) =>
-		new() { ["title"] = title, ["teamSize"] = teamSize, ["map"] = "armazem", ["minutes"] = 10, ["scoreToWin"] = 40, ["password"] = password, ["play"] = play };
+		new() { ["title"] = title, ["teamSize"] = teamSize, ["map"] = "armazem_estendido", ["minutes"] = 10, ["scoreToWin"] = 40, ["password"] = password, ["play"] = play };
 
 	/// <summary>Um modo contra bots: "Contra bots", humano e lobo liberados.</summary>
 	public const int VsBots = 4;

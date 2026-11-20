@@ -1,0 +1,167 @@
+@import "tailwindcss";
+@import "@fontsource-variable/archivo/wdth.css";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * As cores do painel. O jogo é noite, lua e dois times: a Vanguarda (azul) e
+ * o Sindicato (laranja). O painel usa o azul para o que se pode fazer, o
+ * laranja para o que pede atenção e o vermelho só para o que não tem volta.
+ * "Noite" é o padrão; "Dia" é o mesmo desenho para a tela clara.
+ */
+:root,
+[data-theme="dark"] {
+	color-scheme: dark;
+	--bg: #0f1420;
+	--surface: #171d2a;
+	--surface-2: #1e2636;
+	--surface-3: #263043;
+	--line: #2b3548;
+	--line-strong: #3b475e;
+	--ink: #ece9df;
+	--ink-2: #a8afbf;
+	--ink-3: #77819a;
+	--primary: #4f8df7;
+	--primary-ink: #0b1120;
+	--primary-soft: #1a2a4a;
+	--accent: #f08c3e;
+	--accent-soft: #3a2616;
+	--danger: #e25555;
+	--danger-soft: #3b1a1f;
+	--good: #2fb344;
+	--good-soft: #14301c;
+	--warn: #fab219;
+	--warn-soft: #3a2e0e;
+	--ring: #7aa9ff;
+
+	--chart-1: #3987e5;
+	--chart-2: #d95926;
+	--chart-neutral: #55627a;
+	--chart-warn: #fab219;
+	--chart-critical: #d03b3b;
+	--chart-grid: #263043;
+
+	--rarity-0: #8a93a6;
+	--rarity-1: #4fb36b;
+	--rarity-2: #4f8df7;
+	--rarity-3: #a070f0;
+	--rarity-4: #e9b23a;
+}
+
+[data-theme="light"] {
+	color-scheme: light;
+	--bg: #eceef3;
+	--surface: #ffffff;
+	--surface-2: #f4f5f9;
+	--surface-3: #e7eaf1;
+	--line: #d9dde7;
+	--line-strong: #b9c0cf;
+	--ink: #131926;
+	--ink-2: #4a5468;
+	--ink-3: #737d92;
+	--primary: #1f5fd1;
+	--primary-ink: #ffffff;
+	--primary-soft: #e3ecfc;
+	--accent: #c45e14;
+	--accent-soft: #fbeadb;
+	--danger: #c22f2f;
+	--danger-soft: #fbe4e4;
+	--good: #177a27;
+	--good-soft: #e0f3e3;
+	--warn: #9a6a00;
+	--warn-soft: #fbf0cf;
+	--ring: #1f5fd1;
+
+	--chart-1: #2a78d6;
+	--chart-2: #eb6834;
+	--chart-neutral: #a3adbf;
+	--chart-warn: #fab219;
+	--chart-critical: #d03b3b;
+	--chart-grid: #e7eaf1;
+
+	--rarity-0: #6b7487;
+	--rarity-1: #2d8f4b;
+	--rarity-2: #1f5fd1;
+	--rarity-3: #7a45d6;
+	--rarity-4: #b07c00;
+}
+
+@theme inline {
+	--font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+	--color-bg: var(--bg);
+	--color-surface: var(--surface);
+	--color-surface-2: var(--surface-2);
+	--color-surface-3: var(--surface-3);
+	--color-line: var(--line);
+	--color-line-strong: var(--line-strong);
+	--color-ink: var(--ink);
+	--color-ink-2: var(--ink-2);
+	--color-ink-3: var(--ink-3);
+	--color-primary: var(--primary);
+	--color-primary-ink: var(--primary-ink);
+	--color-primary-soft: var(--primary-soft);
+	--color-accent: var(--accent);
+	--color-accent-soft: var(--accent-soft);
+	--color-danger: var(--danger);
+	--color-danger-soft: var(--danger-soft);
+	--color-good: var(--good);
+	--color-good-soft: var(--good-soft);
+	--color-warn: var(--warn);
+	--color-warn-soft: var(--warn-soft);
+	--color-ring: var(--ring);
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 10px;
+}
+
+@layer base {
+	* {
+		border-color: var(--line);
+	}
+	html {
+		background: var(--bg);
+		color: var(--ink);
+		font-family: var(--font-sans);
+		font-size: 14px;
+		line-height: 1.45;
+		-webkit-font-smoothing: antialiased;
+	}
+	body {
+		min-height: 100dvh;
+	}
+	/* Números em coluna alinham: algarismos da mesma largura em todo o painel. */
+	table,
+	.num {
+		font-variant-numeric: tabular-nums;
+	}
+	:focus-visible {
+		outline: 2px solid var(--ring);
+		outline-offset: 2px;
+	}
+	::selection {
+		background: var(--primary);
+		color: var(--primary-ink);
+	}
+}
+
+@layer utilities {
+	/* Os títulos usam a largura expandida da mesma família do texto. */
+	.display {
+		font-stretch: 122%;
+		font-weight: 650;
+		letter-spacing: -0.01em;
+	}
+	.scroll-thin {
+		scrollbar-width: thin;
+		scrollbar-color: var(--line-strong) transparent;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}

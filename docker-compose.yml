@@ -3,8 +3,12 @@
 #   cp .env.exemplo .env      (e troque as senhas)
 #   docker compose up -d --build
 #
-# Sobe o banco, o servidor (http://localhost:8080) e um servidor de
-# partida (porta 7777/UDP). Veja docs/SERVIDOR.md.
+# Sobe o banco, o servidor (http://localhost:8080), o painel
+# administrativo (http://localhost:8081, só nesta máquina) e um servidor
+# de partida (porta 7777/UDP). Veja docs/SERVIDOR.md e docs/PAINEL.md.
+#
+# Para a internet, com HTTPS, some o docker-compose.producao.yml
+# (docs/SEGURANCA.md).
 
 name: alcateia
 
@@ -37,8 +41,34 @@ services:
       ALCATEIA_DB_HOST: banco
       ALCATEIA_DB_PASSWORD: ${ALCATEIA_DB_PASSWORD}
       ALCATEIA_FLEET_KEY: ${ALCATEIA_FLEET_KEY:?defina ALCATEIA_FLEET_KEY no arquivo .env}
+      # Cifra o que não pode ficar legível no banco (docs/SEGURANCA.md).
+      ALCATEIA_MASTER_KEY: ${ALCATEIA_MASTER_KEY:?defina ALCATEIA_MASTER_KEY no arquivo .env}
+      # O primeiro administrador do painel (só vale enquanto não há nenhum).
+      ALCATEIA_ADMIN_USER: ${ALCATEIA_ADMIN_USER:-}
+      ALCATEIA_ADMIN_PASSWORD: ${ALCATEIA_ADMIN_PASSWORD:-}
+      ALCATEIA_ADMIN_REQUIRE_2FA: ${ALCATEIA_ADMIN_REQUIRE_2FA:-0}
+      ALCATEIA_ADMIN_ALLOW: ${ALCATEIA_ADMIN_ALLOW:-}
+      ALCATEIA_TRUSTED_PROXIES: ${ALCATEIA_TRUSTED_PROXIES:-}
+      ALCATEIA_IP_ALLOW: ${ALCATEIA_IP_ALLOW:-}
+      ALCATEIA_METRICS_KEY: ${ALCATEIA_METRICS_KEY:-}
     ports:
       - "${ALCATEIA_PORT:-8080}:8080"
+      # O painel só na própria máquina: de fora, por túnel SSH ou VPN
+      # (ssh -L 8081:127.0.0.1:8081 usuario@servidor). Nunca "0.0.0.0".
+      - "127.0.0.1:${ALCATEIA_ADMIN_PORT:-8081}:8081"
+    # O contêiner não ganha privilégio nem escreve no próprio disco.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
 
   partida:
     build:

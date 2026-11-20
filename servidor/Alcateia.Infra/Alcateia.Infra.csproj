@@ -19,4 +19,7 @@
 		<ProjectReference Include="../Alcateia.Aplicacao/Alcateia.Aplicacao.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<EmbeddedResource Include="Semente/jogo.json" LogicalName="Alcateia.Infra.Semente.jogo.json" />
+	</ItemGroup>
 </Project>
