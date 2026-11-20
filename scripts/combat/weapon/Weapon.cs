@@ -140,7 +140,7 @@ public partial class Weapon : Node3D
 		{
 			Slot.Primary => PrimaryDef?.Id ?? "",
 			Slot.Secondary => SecondaryDef?.Id ?? "",
-			Slot.Knife => Arsenal.KnifeId,
+			Slot.Knife => MeleeId,
 			Slot.Grenade => Arsenal.GrenadeId,
 			_ => ""
 		};
@@ -226,6 +226,7 @@ public partial class Weapon : Node3D
 
 		UpdateArmed(delta);
 		TickButt(delta);
+		TickThrow((float)delta);
 
 		if (_pending.Count > 0)
 			RunPending(delta);
@@ -235,6 +236,11 @@ public partial class Weapon : Node3D
 		{
 			_attackQueue--;
 			if (_form.IsWolf && _form.CanAttack && !_health.IsDead) WolfAttack();
+			else if (!_form.IsWolf && HumanSlot == Slot.Knife && _form.CanAttack && !_health.IsDead)
+			{
+				_attackQueue = 0;
+				Knife();
+			}
 			else _attackQueue = 0;
 		}
 
@@ -355,6 +361,10 @@ public partial class Weapon : Node3D
 			// De lobo, o clique no fim de um golpe fica guardado.
 			if (_form.IsWolf && !_diving && _cooldown <= AttackBuffer)
 				_attackQueue = Mathf.Min(_attackQueue + 1, MaxQueuedAttacks);
+			// Com a faca também (19/11): um clique, um golpe — o que cai no
+			// meio do golpe anterior sai assim que ele acaba.
+			else if (!_form.IsWolf && HumanSlot == Slot.Knife && _cooldown <= AttackBuffer)
+				_attackQueue = 1;
 			return;
 		}
 
@@ -402,6 +412,7 @@ public partial class Weapon : Node3D
 		SpecialArmed = false;
 		_pounceGuard = false;
 		_grenadeReady = false;
+		_throwPending = 0;
 		_attackQueued = false;
 		_pending.Clear();
 		if (IsReloading) CancelReload();

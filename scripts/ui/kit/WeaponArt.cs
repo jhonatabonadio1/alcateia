@@ -63,6 +63,8 @@ public partial class WeaponArt : Control
 		if (Photos.TryGetValue(id, out Texture2D photo)) return photo;
 		string path = PhotoDir + id + ".png";
 		photo = ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null;
+		// Personagem: a imagem dele (assets/personagens/<pasta>/thumb.jpg).
+		photo ??= Catalog.Get(id)?.Character?.Thumbnail;
 		Photos[id] = photo;
 		return photo;
 	}
@@ -217,8 +219,24 @@ void fragment() {
 			case "ar15_diamante":
 			case "ar15_8bit":
 			case "ar15_lava": RifleAr15(); break;
-			case "m9": Pistol(); break;
-			case Arsenal.KnifeId: Knife(); break;
+			case "m4a4":
+			case "ak74":
+			case "scar":
+			case "svd":
+			case "m4a4_neon":
+			case "m4a4_dragao":
+			case "ak74_tigre":
+			case "ak74_imperial":
+			case "scar_artico":
+			case "scar_galaxia":
+			case "svd_carbono":
+			case "svd_tempestade": RifleAr15(); break;
+			case "deagle":
+			case "deagle_cobra":
+			case "deagle_fenix": Pistol(); break;
+			case Arsenal.KnifeId:
+			case "faca_damasco":
+			case "faca_obsidiana": Knife(); break;
 			case Arsenal.GrenadeId: Grenade(); break;
 			case "troca_nome": NameTag(); break;
 			default:

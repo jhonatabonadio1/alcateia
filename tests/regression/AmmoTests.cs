@@ -31,7 +31,7 @@ public sealed class FiniteAmmoTest : RegressionTest
 		w.InfiniteAmmo = false;
 		WeaponDefinition m16 = Arsenal.Get("ar15");
 
-		w.Equip(m16, Arsenal.Get("m9"), 1);
+		w.Equip(m16, Arsenal.Get("deagle"), 1);
 		w.SelectSlot(Slot.Primary);
 		await b.Seconds(0.6);
 		b.Check(w.AmmoInMag == m16.Magazine && w.Reserve == m16.Reserve, $"nasce com o pente e a reserva cheios ({w.AmmoInMag} / {w.Reserve})");
@@ -111,11 +111,11 @@ public sealed class AimZoomTest : RegressionTest
 		float baseFov = camera.Fov;
 
 		string only = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--armas="))?["--armas=".Length..];
-		foreach (string id in Arsenal.Primaries.Append("m9").Where(i => only == null || only.Split(',').Contains(i)))
+		foreach (string id in Arsenal.Primaries.Append("deagle").Where(i => only == null || only.Split(',').Contains(i)))
 		{
 			bool pistol = Arsenal.IsSecondary(id);
 			WeaponDefinition def = Arsenal.Get(id);
-			w.Equip(pistol ? Arsenal.Get("ar15") : def, Arsenal.Get("m9"), 1);
+			w.Equip(pistol ? Arsenal.Get("ar15") : def, Arsenal.Get("deagle"), 1);
 			w.SelectSlot(pistol ? Slot.Secondary : Slot.Primary);
 			await b.Seconds(0.8);
 

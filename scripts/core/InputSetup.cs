@@ -43,6 +43,9 @@ public static class InputSetup
 		Key("melee", Godot.Key.V);
 		// F, morto: solta a câmera de espectador (KillCam).
 		Key("spectate_free", Godot.Key.F);
+		// F, vivo: olha a arma na mão (a faca gira; a pistola é conferida) —
+		// a animação "inspecionar" do conjunto (ViewModel.Rig).
+		Key("inspect", Godot.Key.F);
 
 		// Slots: o lobo é o 3, na mesma memória muscular das armas.
 		Key("slot_1", Godot.Key.Key1);

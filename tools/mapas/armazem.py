@@ -121,6 +121,10 @@ def montar():
     m.material("vidro", None, (0.40, 0.71, 1.0), aspereza=0.1, dupla=True)
 
     m.modelo("Galpao", "Armazem", "armazem", (0, 0, 0))
+    # O material de cada face do galpão e o material de detalhe (o .glb vem
+    # do Blender sem isso): tools/mapas/kits/detalhe.py. Pode rodar de novo.
+    from .kits import detalhe
+    detalhe.detalhar_armazem("armazem", quieto=True)
 
     # Piso: uma laje só, no lugar das 54 placas do desenho.
     m.caixa("Colisao", "Piso", (0, -0.5, 0), (48, 1, 32), "concreto", oculta=True)

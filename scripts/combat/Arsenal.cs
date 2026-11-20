@@ -41,8 +41,10 @@ public static class Arsenal
 	/// </summary>
 	public const float DamageScale = CombatRules.FirearmDamageScale;
 
-	public static readonly string[] Primaries = { "ar15", "ar15_ultimate", "ar15_ouro", "ar15_diamante", "ar15_8bit", "ar15_lava" };
-	public static readonly string[] Secondaries = { "m9" };
+	public static readonly string[] Primaries = { "ar15", "ar15_ultimate", "ar15_ouro", "ar15_diamante", "ar15_8bit", "ar15_lava", "m4a4", "ak74", "scar", "svd",
+		// As versões épicas e lendárias de 19/11 (tools/armas/peles.py): a mesma arma, outra pintura, um pouco mais forte.
+		"m4a4_neon", "m4a4_dragao", "ak74_tigre", "ak74_imperial", "scar_artico", "scar_galaxia", "svd_carbono", "svd_tempestade" };
+	public static readonly string[] Secondaries = { "deagle", "deagle_cobra", "deagle_fenix" };
 
 	/// <summary>A arma vai para o espaço da secundária? É o que decide em
 	/// que espaço entra uma arma pega do chão.</summary>
@@ -51,23 +53,40 @@ public static class Arsenal
 	/// <summary>Ids da faca e da granada: o que o feed, o HUD e a arma na
 	/// mão usam para desenhar. As armas de fogo usam o id do .tres.</summary>
 	public const string KnifeId = "faca";
+
+	/// <summary>As facas: a de todo mundo e as versões dela (19/11). A faca
+	/// não tem .tres — os números dela estão na arma (Weapon.Knife) e cada
+	/// versão os multiplica (<see cref="KnifeStats"/>).</summary>
+	public static readonly string[] Knives = { KnifeId, "faca_damasco", "faca_obsidiana" };
+
+	public static bool IsKnife(string id) => id != null && System.Array.IndexOf(Knives, id) >= 0;
+
+	/// <summary>Quanto esta faca muda o dano, o tempo entre golpes e o
+	/// alcance da faca comum (1 = igual).</summary>
+	public static (float Damage, float Cooldown, float Range) KnifeStats(string id) => id switch
+	{
+		"faca_damasco" => (1.06f, 0.95f, 1f),
+		"faca_obsidiana" => (1.12f, 0.9f, 1.05f),
+		_ => (1f, 1f, 1f)
+	};
 	public const string GrenadeId = "choque";
 
 	/// <summary>O fuzil de quem não escolheu outro: o AR-15 desde 15/11
 	/// (era a M16A2, que continua no arsenal).</summary>
-	public const string DefaultPrimary = "ar15";
-	public const string DefaultSecondary = "m9";
+	/// A M4A4 desde 19/11 (pedido do Jhon: "a arma padrão agora é a M4A4").
+	public const string DefaultPrimary = "m4a4";
+	public const string DefaultSecondary = "deagle";
 
 	public static readonly UtilityInfo[] Utilities =
 	{
 		new UtilityInfo
 		{
 			Id = GrenadeId,
-			DisplayName = "Granada de choque",
+			DisplayName = "Granada",
 			WpCost = 60,
 			Count = 1,
 			AllowedInSecondSlot = false,
-			Description = "Anti-lobo. Pouco dano, muita lentidão: não mata, tira a mobilidade que define a forma."
+			Description = "Explosiva. Mata de perto e fere até a borda do raio; cai onde a mira aponta."
 		}
 	};
 

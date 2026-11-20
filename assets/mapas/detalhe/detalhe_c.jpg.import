@@ -1,0 +1,29 @@
+[remap]
+
+importer="2d_array_texture"
+type="CompressedTexture2DArray"
+uid="uid://c2ila7yfitpfp"
+path.s3tc="res://.godot/imported/detalhe_c.jpg-45976ad52ea44ee4f7c7f252cbf403cc.s3tc.ctexarray"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+
+[deps]
+
+source_file="res://assets/mapas/detalhe/detalhe_c.jpg"
+dest_files=["res://.godot/imported/detalhe_c.jpg-45976ad52ea44ee4f7c7f252cbf403cc.s3tc.ctexarray"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/uastc_level=0
+compress/rdo_quality_loss=0.0
+compress/hdr_compression=1
+compress/channel_pack=1
+mipmaps/generate=true
+mipmaps/limit=-1
+slices/horizontal=5
+slices/vertical=4

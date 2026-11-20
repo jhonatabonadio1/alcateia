@@ -89,6 +89,7 @@ class Mapa:
         self.escadas = []    # (grupo, nome, centro, base, tamanho) — o volume de subir
         self.focos = []      # (grupo, nome, pos, cor, energia, alcance, ângulo, sombra)
         self.cru_recursos, self.cru_nos = [], []     # linhas de .tscn prontas (partículas)
+        self.panoramas = []                          # imagens de fundo em volta do mapa (panorama)
         self.spawns = {AZUL: [], LARANJA: []}
         self.rotas = []
         self.ambiente = {}
@@ -113,12 +114,18 @@ class Mapa:
 
     # ---------------------------------------------------------------- peças
 
-    def caixa(self, grupo, nome, centro, tamanho, material, colide=True, rot=None, oculta=False, cor=None):
+    def caixa(self, grupo, nome, centro, tamanho, material, colide=True, rot=None, oculta=False, cor=None, minimapa=True):
         """`oculta`: só a colisão, sem desenho — para quando o que se vê é
         uma forma mais rica por cima (degraus sobre a rampa, vagão).
         `cor`: (r, g, b) com que a caixa oculta aparece no minimapa, que
         desenha as caixas do mapa e não tem malha de onde tirar a cor
-        (`metadata/mapa_cor`; sem ela, cinza)."""
+        (`metadata/mapa_cor`; sem ela, cinza). `minimapa=False`: a caixa
+        oculta fica fora do minimapa (`metadata/mapa_fora`) — a laje de um
+        andar de cima, que taparia as paredes de baixo."""
+        if not minimapa:
+            if not hasattr(self, "fora_do_minimapa"):
+                self.fora_do_minimapa = set()
+            self.fora_do_minimapa.add((grupo, nome))
         if cor is not None:
             if not hasattr(self, "cores"):
                 self.cores = {}
@@ -316,6 +323,20 @@ class Mapa:
         alto = altura + 1.03
         self.escadas.append((grupo, nome, ponto(0, alto / 2, 0.195), base, (largura + 0.12, alto, 1.05)))
 
+    def panorama(self, imagem, raio, altura=70.0, base=-3.0, cor=(1, 1, 1), repete=2):
+        """O fundo do mapa: a imagem ``assets/mapas/fundos/<imagem>.png`` (o horizonte recortado, com transparência)
+        em quatro painéis em pé, a ``raio`` metros do centro, sem luz nem sombra — a cidade ou a serra ao longe."""
+        k = len(self.panoramas); self.panoramas.append(imagem); lado = 2 * raio
+        self.cru_recursos += [
+            f'[sub_resource type="StandardMaterial3D" id="FundoMat{k}"]', "transparency = 1", "shading_mode = 0", "cull_mode = 2",
+            f'albedo_color = Color({f(cor[0])}, {f(cor[1])}, {f(cor[2])}, 1)', f'albedo_texture = ExtResource("f_{imagem}")',
+            f"uv1_scale = Vector3({repete}, 1, 1)", "disable_receive_shadows = true", "",
+            f'[sub_resource type="QuadMesh" id="FundoQuad{k}"]', f'material = SubResource("FundoMat{k}")', f"size = Vector2({f(lado)}, {f(altura)})", ""]
+        self.cru_nos += [f'[node name="Fundo{k}" type="Node3D" parent="."]', ""]
+        for i, (x, z, yaw) in enumerate(((0, -raio, 0), (raio, 0, -90), (0, raio, 180), (-raio, 0, 90))):
+            self.cru_nos += [f'[node name="Painel{i}" type="MeshInstance3D" parent="Fundo{k}"]',
+                             f"transform = {xform((x, base + altura / 2, z), giro_y(yaw))}", f'mesh = SubResource("FundoQuad{k}")', "cast_shadow = 0", ""]
+
     def nevasca(self, altura=24.0, quantos=6000):
         """Neve caindo sobre o mapa todo (partículas; só enfeite)."""
         self.cru_recursos += [
@@ -384,6 +405,8 @@ class Mapa:
             ext.append(("Texture2D", f"res://assets/mapas/ceus/{hdri}.hdr", "t_ceu"))
         for imagem in sorted({l[2] for l in self.letreiros}):
             ext.append(("Texture2D", f"res://assets/mapas/letreiros/{imagem}.png", f"l_{imagem}"))
+        for imagem in sorted(set(self.panoramas)):
+            ext.append(("Texture2D", f"res://assets/mapas/fundos/{imagem}.png", f"f_{imagem}"))
         for arquivo in sorted({x[2] for x in self.modelos}):
             ext.append(("PackedScene", f"res://assets/mapas/pecas/{arquivo}.glb", f"p_{arquivo}"))
         if self.escadas:
@@ -485,6 +508,9 @@ class Mapa:
                   f"directional_shadow_max_distance = {f(s.get('alcance', 120))}"]
             if "neblina" in s:
                 o += [f"light_volumetric_fog_energy = {f(s['neblina'])}"]
+            # (o tamanho do sol no céu: a sombra abre e amacia com a distância de quem a faz — os mapas de kit, 20/11)
+            if "tamanho" in s:
+                o += [f"light_angular_distance = {f(s['tamanho'])}", "directional_shadow_blend_splits = true"]
             o += [""]
 
         if self.preenchimento:
@@ -532,6 +558,8 @@ class Mapa:
                 tom = getattr(self, "cores", {}).get((g, nome))
                 if tom:
                     o.append(f"metadata/mapa_cor = Color({f(tom[0])}, {f(tom[1])}, {f(tom[2])}, 1)")
+                if (g, nome) in getattr(self, "fora_do_minimapa", ()):
+                    o.append("metadata/mapa_fora = true")
                 o += ["", f'[node name="Colisao" type="CollisionShape3D" parent="{g}/{nome}"]',
                       f'shape = SubResource("{formas[chave]}")', ""]
             elif colide:
@@ -670,6 +698,11 @@ class Mapa:
             n = a["neblina"]
             o += ["fog_enabled = true", f"fog_light_color = {cor(n['cor'])}", f"fog_density = {f(n['densidade'])}",
                   f"fog_sky_affect = {f(n.get('ceu', 0.6))}"]
+            # (a perspectiva aérea — o longe toma a cor do céu — e o clarão em volta do sol: os mapas de kit, 20/11)
+            if "aerea" in n:
+                o += [f"fog_aerial_perspective = {f(n['aerea'])}"]
+            if "sol" in n:
+                o += [f"fog_sun_scatter = {f(n['sol'])}"]
         o += ["adjustment_enabled = true", f"adjustment_contrast = {f(a.get('contraste', 1.06))}",
               f"adjustment_saturation = {f(a.get('saturacao', 1.05))}", ""]
         return o

@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ql11wlyj10tq"
-path="res://.godot/imported/ar15_lava_armRoughness.jpg-e43fa539d68903a95fa57285c71a19db.ctex"
+path.s3tc="res://.godot/imported/ar15_lava_armRoughness.jpg-e43fa539d68903a95fa57285c71a19db.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "32c6abc1a3e46e9aa825fbf0b7510ac6"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/armas/fp/ar15_lava_armRoughness.jpg"
-dest_files=["res://.godot/imported/ar15_lava_armRoughness.jpg-e43fa539d68903a95fa57285c71a19db.ctex"]
+dest_files=["res://.godot/imported/ar15_lava_armRoughness.jpg-e43fa539d68903a95fa57285c71a19db.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

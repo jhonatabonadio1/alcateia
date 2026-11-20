@@ -4,12 +4,13 @@ As mãos de primeira pessoa em low poly (pedido do Jhon, 18/11: "retexturize
 somente a mão, deixe ela mais low poly, na mesma pegada da geometria do lobo,
 para combinar com a arma e o restante do mapa").
 
-    python3 tools/armas/maos_lowpoly.py [--faces 3200] [--cores 8]
+    python3 tools/armas/maos_lowpoly.py [--faces 5600] [--cores 12]
 
 Lê as mãos originais (o manequim, 7.240 triângulos, pele fotográfica) de
 tools/armas/fontes/ e grava em assets/armas/fp/maos/:
 
-- maos.glb         a malha reduzida (uns 3.200 triângulos). Superfícies suaves
+- maos.glb         a malha reduzida (uns 5.600 triângulos; eram 3.200 até 20/11, quando o Jhon
+                   pediu a mão "um pouco menos quadrada, mais lisa"). Superfícies suaves
                    ficam lisas e só as quinas de verdade viram faceta (a
                    primeira versão, toda facetada com 2.000 triângulos, ficou
                    "quadriculada demais");
@@ -38,8 +39,8 @@ FONTE = os.path.join(AQUI, 'fontes', 'maos_alta.glb')
 PELE = os.path.join(AQUI, 'fontes', 'maos_cor_alta.jpg')
 SAIDA = os.path.join(AQUI, '..', '..', 'assets', 'armas', 'fp', 'maos')
 CELULA = 8                     # lado de cada cor na tira, em pixels
-ALISA = 4                      # passadas de alisar a cor entre faces vizinhas
-VINCO = 50.0                   # ângulo (graus) a partir do qual a aresta vira quina
+ALISA = 8                      # passadas de alisar a cor entre faces vizinhas (eram 4)
+VINCO = 72.0                   # ângulo (graus) a partir do qual a aresta vira quina (eram 50: quase tudo fica liso)
 
 
 def arg(nome, padrao):
@@ -60,7 +61,7 @@ def por(g, arr, comp, tipo, alvo=None, minmax=False):
 
 
 def main():
-    faces_alvo, cores = arg('--faces', 3200), arg('--cores', 8)
+    faces_alvo, cores = arg('--faces', 5600), arg('--cores', 12)
     g = Glb(FONTE); j = g.json
     prim = j['meshes'][0]['primitives'][0]; at = prim['attributes']
     pos = g.acc(at['POSITION']).astype(float); uv = g.acc(at['TEXCOORD_0']).astype(float)

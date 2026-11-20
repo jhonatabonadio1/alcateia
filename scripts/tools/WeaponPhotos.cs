@@ -20,7 +20,8 @@ public partial class WeaponPhotos : Node
 
 	/// <summary>As armas fotografadas: todas as de assets/armas/armas.json
 	/// que aparecem na interface.</summary>
-	private static readonly string[] Ids = { "ar15", "ar15_ultimate", "ar15_ouro", "ar15_diamante", "ar15_8bit", "ar15_lava", "m9", "faca", "choque" };
+	private static readonly string[] Ids = { "ar15", "ar15_ultimate", "ar15_ouro", "ar15_diamante", "ar15_8bit", "ar15_lava", "m4a4", "ak74", "scar", "svd", "deagle", "faca", "choque",
+		"m4a4_neon", "m4a4_dragao", "ak74_tigre", "ak74_imperial", "scar_artico", "scar_galaxia", "svd_carbono", "svd_tempestade", "deagle_cobra", "deagle_fenix", "faca_damasco", "faca_obsidiana" };
 
 	/// <summary>Só estas (<c>-- --armas=ar15_ouro,ar15_8bit</c>); sem isso, todas.</summary>
 	private static string[] Wanted()

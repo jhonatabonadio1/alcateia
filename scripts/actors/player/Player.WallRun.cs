@@ -556,6 +556,15 @@ public partial class Player
 		// ele soltava e regrudava na parede de trás, voltando.
 		if (!IsBlocked(_wallAlong, out Vector3 front)) return true;
 
+		// O que fecha à frente é o limite invisível do mapa: não se vira
+		// para ele (seria correr em parede que não se vê). Solta.
+		if (_blockedByLimit)
+		{
+			WallLog("soltou, limite invisível do mapa à frente");
+			ReleaseWall();
+			return false;
+		}
+
 		Vector3 turn = _wallNormal - front * _wallNormal.Dot(front);
 		turn.Y = 0;
 
@@ -776,7 +785,7 @@ public partial class Player
 		_wallProbe.Exclude = exclude;
 
 		foreach (var hit in space.IntersectShape(_wallProbe, 8))
-			if (hit["collider"].Obj is CharacterBody3D) exclude.Add((Rid)hit["rid"]);
+			if (hit["collider"].Obj is CharacterBody3D || IsInvisibleLimit(hit["collider"].Obj)) exclude.Add((Rid)hit["rid"]);
 
 		// A segunda busca, no canto: sem a parede que ficou para trás.
 		if (behind && _wallBody.IsValid) exclude.Add(_wallBody);
@@ -793,6 +802,8 @@ public partial class Player
 				|| type == PhysicsServer3D.ShapeType.Sphere;
 		}
 
+		if (BackedByBarrier((Vector3)rest["point"], (Vector3)rest["normal"])) return false;
+
 		Vector3 away = GlobalPosition - (Vector3)rest["point"];
 		away.Y = 0;
 
@@ -807,6 +818,41 @@ public partial class Player
 		distance = away.Length();
 		return true;
 	}
+
+	/// <summary>
+	/// O muro que fecha o mapa: a parede em que a sonda encostou tem uma
+	/// <c>Barreira…</c> logo atrás da face (os mapas de kit põem a caixa
+	/// invisível 6 cm para dentro do muro de fora, do chão ao teto). Nele
+	/// o lobo não gruda nem sobe: "o lobo não pode andar nem escalar as
+	/// limitações do jogo, ele deve cair" (Jhon, 20/11). As <c>Limite…</c>
+	/// não contam aqui: no Armazém elas ficam rentes à parede do galpão,
+	/// que é de correr.
+	/// </summary>
+	private bool BackedByBarrier(Vector3 point, Vector3 normal)
+	{
+		normal.Y = 0;
+		if (normal.LengthSquared() < 1e-6f) return false;
+		normal = normal.Normalized();
+
+		var space = GetWorld3D().DirectSpaceState;
+		var exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		var query = PhysicsRayQueryParameters3D.Create(point + normal * 0.2f, point - normal * BarrierBehindWall);
+		// A casa recuada do alinhamento fica dentro da barreira: o raio já nasce dentro dela.
+		query.HitFromInside = true;
+		for (int i = 0; i < 4; i++)
+		{
+			query.Exclude = exclude;
+			var hit = space.IntersectRay(query);
+			if (hit.Count == 0) return false;
+			if (hit["collider"].Obj is StaticBody3D body && ((string)body.Name).StartsWith("Barreira")) return true;
+			exclude.Add((Rid)hit["rid"]);
+		}
+		return false;
+	}
+
+	/// <summary>Até que fundura, atrás da face da parede, uma barreira
+	/// invisível faz dela muro de limite.</summary>
+	[Export] public float BarrierBehindWall = 0.3f;
 
 	/// <summary>Altura mínima dos pés ao chão para a parede pegar.
 	/// Baixa de propósito: alta demais mata a jogada em vez de
@@ -851,6 +897,7 @@ public partial class Player
 		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
 
 		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+		_blockedByLimit = false;
 		if (hit.Count == 0) return false;
 
 		Vector3 n = (Vector3)hit["normal"];
@@ -859,6 +906,24 @@ public partial class Player
 
 		n.Y = 0;
 		normal = n.Normalized();
+		_blockedByLimit = IsInvisibleLimit(hit["collider"].Obj);
 		return true;
+	}
+
+	/// <summary>O último <see cref="IsBlocked"/> bateu num limite invisível.</summary>
+	private bool _blockedByLimit;
+
+	/// <summary>
+	/// Parede invisível do limite do mapa: as <c>Limite…</c> de volta do
+	/// mapa (<see cref="MapBounds"/>) e as <c>Barreira…</c> por cima do
+	/// muro de fora dos mapas de kit. O lobo não gruda nelas — "lobo não
+	/// pode correr em parede invisível" (Jhon, 20/11). Elas continuam
+	/// segurando o corpo: só a corrida em parede as ignora.
+	/// </summary>
+	public static bool IsInvisibleLimit(object body)
+	{
+		if (body is not StaticBody3D node) return false;
+		string name = node.Name;
+		return name.StartsWith("Limite") || name.StartsWith("Barreira");
 	}
 }

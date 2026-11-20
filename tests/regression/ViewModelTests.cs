@@ -46,14 +46,14 @@ public sealed class ViewModelTest : RegressionTest
 		}
 		else await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.4);
 
-		// --armas=ar15,m9 fotografa só essas (a foto é lenta sem placa de vídeo).
+		// --armas=ar15,deagle fotografa só essas (a foto é lenta sem placa de vídeo).
 		string only = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--armas="))?["--armas=".Length..];
 		bool Wanted(string id) => only == null || only.Split(',').Contains(id);
 
-		foreach (string id in Arsenal.Primaries.Append("m9").Where(Wanted))
+		foreach (string id in Arsenal.Primaries.Append("deagle").Where(Wanted))
 		{
 			bool pistol = Arsenal.IsSecondary(id);
-			b.Weapon.Equip(pistol ? Arsenal.Get("ar15") : Arsenal.Get(id), Arsenal.Get("m9"), 1);
+			b.Weapon.Equip(pistol ? Arsenal.Get("ar15") : Arsenal.Get(id), Arsenal.Get("deagle"), 1);
 			b.Weapon.SelectSlot(pistol ? Slot.Secondary : Slot.Primary);
 			await b.Seconds(0.6);
 
@@ -146,12 +146,15 @@ public sealed class ViewModelTest : RegressionTest
 			if (held == null) continue;
 			await Photo(b, $"{id}_1_parada");
 
-			// Onde a peça está para quem olha: no espaço da câmera. A faca
-			// anda pela animação do conjunto; a granada, pelo código, que
-			// move o conjunto inteiro.
+			// Onde a peça está para quem olha: no espaço da câmera. As duas
+			// andam pela animação do conjunto (19/11: a granada também — armar
+			// leva o braço lá atrás), presas a um osso: é o osso que se mede.
 			var camera = view.GetParent<Node3D>();
 			var piece = held.FindChild(slot == Slot.Knife ? "faca" : "granada", true, false) as Node3D ?? held;
-			Vector3 Where() => camera.ToLocal(piece.GlobalPosition);
+			var bones = held.FindChildren("*", "Skeleton3D", true, false);
+			var skeleton = bones.Count > 0 ? (Skeleton3D)bones[0] : null;
+			int bone = skeleton?.FindBone(slot == Slot.Knife ? "Grip" : "Bolt") ?? -1;
+			Vector3 Where() => camera.ToLocal(bone >= 0 ? skeleton.ToGlobal(skeleton.GetBoneGlobalPose(bone).Origin) : piece.GlobalPosition);
 			Vector3 rest = Where();
 			RegressionBench.Press("attack");
 			float moved = 0f;
@@ -205,13 +208,16 @@ public sealed class Ar15ViewModelTest : RegressionTest
 		var camera = view.GetParent<Node3D>();
 		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.4);
 
-		b.Check(Arsenal.DefaultPrimary == "ar15", "o AR-15 é o fuzil padrão");
-		b.Weapon.Equip(Arsenal.Get("ar15"), Arsenal.Get("m9"), 1);
+		b.Check(Arsenal.DefaultPrimary == "m4a4", "a M4A4 é o fuzil padrão");
+		b.Weapon.Equip(Arsenal.Get("ar15"), Arsenal.Get("deagle"), 1);
 		b.Weapon.SelectSlot(Slot.Secondary);
 		await b.Seconds(0.6);
 
+		// A pistola (19/11) guarda animada antes: o AR-15 sobe depois dela.
 		b.Weapon.SelectSlot(Slot.Primary);
 		await b.Frames(3);
+		b.Check(view.Held?.Name == "deagle" && view.RigAnimation == "guardar", $"ao trocar, a pistola guarda primeiro (tocando: {view.RigAnimation})");
+		await b.Seconds(Arsenal.Get("deagle").HolsterTime + 0.02);
 		b.Check(view.Held?.Name == "ar15" && view.RigAnimation == "sacar", $"ao pegar, o AR-15 saca animado (tocando: {view.RigAnimation})");
 		await b.Seconds(0.7);
 		b.Check(view.RigAnimation == "parado", $"depois do saque, parado (tocando: {view.RigAnimation})");
@@ -229,7 +235,7 @@ public sealed class Ar15ViewModelTest : RegressionTest
 		b.Weapon.TryAttack();
 		b.Check(b.Weapon.AmmoInMag == ammo, "enquanto o AR-15 é guardado, a pistola não atira");
 		await b.Seconds(0.3);
-		b.Check(view.Held?.Name == "m9", $"guardado, a pistola sobe (na mão: {view.Held?.Name})");
+		b.Check(view.Held?.Name == "deagle", $"guardado, a pistola sobe (na mão: {view.Held?.Name})");
 		await b.Seconds(0.25);
 		b.Weapon.TryAttack();
 		b.Check(b.Weapon.AmmoInMag == ammo - 1, "e atira 0,2 s depois de subir");

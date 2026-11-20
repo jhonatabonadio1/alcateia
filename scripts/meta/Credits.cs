@@ -34,6 +34,8 @@ public static class Credits
 		{
 			new Line("Mapa Armazém (galpão, contêineres, objetos e textura)",
 				"pacote LowPolyFPS4 da Unity Asset Store", "Licença da Asset Store"),
+			new Line("Mapas Cidade, Cidade do Deserto, Estação de Trem e Obra (peças e textura)",
+				"Low Poly FPS Bundle, de JustCreate (Fab)", "Licença padrão da Fab"),
 			new Line("Texturas dos mapas, céus e objetos de cenário (barris, caixotes, estantes, pedras…)",
 				"Poly Haven (polyhaven.com)", "CC0"),
 			new Line("Letreiros: Overpass", "The Overpass Project Authors (Red Hat)", "SIL Open Font License 1.1", Required: true),

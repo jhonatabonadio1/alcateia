@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://bcfcofdhrkval"
+path="res://.godot/imported/corpo_m4a4_dragao.obj-9e9ac25508b49e9fc3bbd4f02ef0eb2c.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_m4a4_dragao.obj-9e9ac25508b49e9fc3bbd4f02ef0eb2c.mesh"]
+
+source_file="res://assets/armas/m4a4_dragao/corpo_m4a4_dragao.obj"
+dest_files=["res://.godot/imported/corpo_m4a4_dragao.obj-9e9ac25508b49e9fc3bbd4f02ef0eb2c.mesh", "res://.godot/imported/corpo_m4a4_dragao.obj-9e9ac25508b49e9fc3bbd4f02ef0eb2c.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

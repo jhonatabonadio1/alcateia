@@ -80,7 +80,7 @@ public static class WeaponModel
 	}
 
 	/// <summary>Pistola fica na mão; o resto pede as duas.</summary>
-	public static bool IsPistol(string id) => id == "m9";
+	public static bool IsPistol(string id) => Sfx.ModelOf(id) == "deagle";
 
 	/// <summary>Onde vai a mão direita ou a esquerda nesta arma.</summary>
 	public static HandPlace Hand(string id, bool right)
@@ -212,6 +212,9 @@ public static class WeaponModel
 			};
 			// A skin 8 bit é de pixel: sem suavizar os blocos.
 			if (name.Contains("8Bit")) made.TextureFilter = BaseMaterial3D.TextureFilterEnum.NearestWithMipmaps;
+			// As armas de paleta (tools/armas/reais.py): cada face é uma célula de
+			// cor da textura; suavizar mistura a cor da célula vizinha.
+			if (name.Contains("/reais/")) made.TextureFilter = BaseMaterial3D.TextureFilterEnum.Nearest;
 
 			// Skin que brilha (o AR-15 Ultimate): ao lado da cor (X_D.png) pode
 			// haver a emissão (X_E.png), só com as flames e as quinas acesas.

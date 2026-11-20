@@ -188,7 +188,7 @@ public partial class InventoryScreen : LobbyScreen
 		// Nome do conjunto (o padrão tem nome fixo).
 		LineEdit field = UiKit.Field(current.Name, "Nome do conjunto", LoadoutSet.MaxNameLength);
 		field.Editable = !current.IsDefault;
-		field.TooltipText = current.IsDefault ? "O conjunto padrão: grátis, sempre disponível, rende +50 WP. Aceita itens gratuitos e os liberados para o padrão (a AR-15 Ultimate, a granada de choque)" : "";
+		field.TooltipText = current.IsDefault ? "O conjunto padrão: grátis, sempre disponível, rende +50 WP. Aceita as armas comuns e a granada" : "";
 		void Rename()
 		{
 			string name = field.Text.Trim();
@@ -207,7 +207,7 @@ public partial class InventoryScreen : LobbyScreen
 		column.AddChild(SlotRow("Primária", Catalog.Get(current.Primary), () => Filter(0, 1),
 			null, choosing: _sub == 1));
 		column.AddChild(SlotRow("Secundária", Catalog.Get(current.Secondary), () => Filter(0, 2), null, choosing: _sub == 2));
-		column.AddChild(SlotRow("Corpo a corpo", Catalog.Get(Arsenal.KnifeId), () => Filter(0, 4), null, fixedSlot: true, choosing: _sub == 4));
+		column.AddChild(SlotRow("Corpo a corpo", Catalog.Get(Arsenal.IsKnife(current.Melee) ? current.Melee : Arsenal.KnifeId), () => Filter(0, 4), null, choosing: _sub == 4));
 
 		string utility = current.Utilities.FirstOrDefault();
 		column.AddChild(SlotRow("Granada", Catalog.Get(utility), () => Filter(0, 3),
@@ -262,7 +262,7 @@ public partial class InventoryScreen : LobbyScreen
 		{
 			column.AddChild(UiKit.Caption(Teams.TitleOf(team), Teams.ColorOf(team)));
 			CatalogItem item = Catalog.Get(Profile.CharacterIdFor(team));
-			string standard = team == Teams.Blue ? "Padrão (Exo Gray)" : "Padrão (Ely)";
+			string standard = team == Teams.Blue ? "Padrão (Eve)" : "Padrão (Barut)";
 			column.AddChild(SlotRow("Personagem", item, () => Filter(2, 0),
 				item == null ? null : () => { Profile.ClearCharacter(team); Refresh(); }, emptyName: standard));
 			column.AddChild(UiKit.Gap(UiTokens.S2));
@@ -424,7 +424,7 @@ public partial class InventoryScreen : LobbyScreen
 			(0, 1) => owned.Where(ItemInfo.IsPrimary),
 			(0, 2) => owned.Where(ItemInfo.IsSecondary),
 			(0, 3) => owned.Where(i => i.Kind == ItemKind.Utility),
-			(0, 4) => owned.Where(i => i.Id == Arsenal.KnifeId),
+			(0, 4) => owned.Where(i => Arsenal.IsKnife(i.Id)),
 			(0, _) => owned.Where(i => i.Kind is ItemKind.Weapon or ItemKind.Utility),
 			(1, 0) => owned.Where(i => i.Kind == ItemKind.Tattoo),
 			(1, _) => owned.Where(i => i.Kind == ItemKind.Breed),
@@ -471,7 +471,7 @@ public partial class InventoryScreen : LobbyScreen
 		bool expired = Profile.IsExpired(item.Id);
 
 		Button equip = UiKit.Button(EquipLabel(item), ButtonKind.Primary, () => Equip(item));
-		equip.Disabled = !usable || IsEquippedHere(item) || item.Kind == ItemKind.Service && !Profile.Owns(item.Id) || item.Id == Arsenal.KnifeId;
+		equip.Disabled = !usable || IsEquippedHere(item) || item.Kind == ItemKind.Service && !Profile.Owns(item.Id);
 		column.AddChild(equip);
 
 		HBoxContainer row = UiKit.Row(UiTokens.S2);
@@ -505,7 +505,7 @@ public partial class InventoryScreen : LobbyScreen
 		ItemKind.Character => (item.Team is 0 or Teams.Blue ? Profile.BlueCharacter == item.Id : true)
 			&& (item.Team is 0 or Teams.Orange ? Profile.OrangeCharacter == item.Id : true),
 		ItemKind.Service => false,
-		_ => CurrentSet.Primary == item.Id || CurrentSet.Secondary == item.Id || CurrentSet.Utilities.Contains(item.Id)
+		_ => CurrentSet.Primary == item.Id || CurrentSet.Secondary == item.Id || CurrentSet.Melee == item.Id || CurrentSet.Utilities.Contains(item.Id)
 	};
 
 	private void Equip(CatalogItem item)
@@ -546,8 +546,8 @@ public partial class InventoryScreen : LobbyScreen
 	private bool EquipInSet(CatalogItem item)
 	{
 		LoadoutSet set = CurrentSet;
-		// O padrão aceita o que é gratuito e o que o catálogo libera para
-		// ele (a AR-15 Ultimate, a granada de choque).
+		// O padrão aceita as armas comuns e a granada
+		// (LoadoutSet.AllowedInDefault).
 		if (set.IsDefault && !LoadoutSet.AllowedInDefault(item.Id))
 		{
 			Shell.Toast(Loc.F("{0} não pode ir no conjunto padrão. Escolha outro conjunto para equipar.", item.Name), UiTokens.Danger);
@@ -557,6 +557,7 @@ public partial class InventoryScreen : LobbyScreen
 		LoadoutSet test = set.Clone();
 		if (ItemInfo.IsPrimary(item)) test.Primary = item.Id;
 		else if (ItemInfo.IsSecondary(item)) test.Secondary = item.Id;
+		else if (Arsenal.IsKnife(item.Id)) test.Melee = item.Id;
 		else if (item.Kind == ItemKind.Utility) test.Utilities = new List<string> { item.Id };
 
 		if (!test.Validate(out string error))
@@ -567,6 +568,7 @@ public partial class InventoryScreen : LobbyScreen
 
 		set.Primary = test.Primary;
 		set.Secondary = test.Secondary;
+		set.Melee = test.Melee;
 		set.Utilities = test.Utilities;
 		Profile.Save();
 		Shell.Toast(Loc.F("{0} equipada em {1}", item.Name, set.Name));
@@ -587,6 +589,7 @@ public partial class InventoryScreen : LobbyScreen
 				{
 					if (set.Primary == item.Id) set.Primary = Arsenal.DefaultPrimary;
 					if (set.Secondary == item.Id) set.Secondary = Arsenal.DefaultSecondary;
+					if (set.Melee == item.Id) set.Melee = Arsenal.KnifeId;
 					set.Utilities.Remove(item.Id);
 				}
 				Profile.Discard(item.Id);

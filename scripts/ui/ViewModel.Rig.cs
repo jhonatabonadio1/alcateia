@@ -17,20 +17,38 @@ using System.Collections.Generic;
 ///   com a recarga de verdade (<see cref="Weapon.ReloadDuration"/>) — o
 ///   de pente vazio quando o pente esvaziou; na escopeta, um ciclo por
 ///   cartucho;
-/// - **golpe** e **golpe2** na faca, um de cada vez (a estocada e o corte
-///   de lado), no tempo entre dois golpes;
+/// - **golpe**, **golpe2**, **golpe4** e **golpe3** na faca, um a cada
+///   clique (estocada, corte, estocada alta, corte deitado), no tempo
+///   entre dois golpes;
 /// - **sacar** ao trocar de arma, **andar** ao andar, **parado** no resto;
 /// - **guardar** ao trocar para outra arma, quando o conjunto tem (o
 ///   AR-15): a arma desce antes de a outra subir.
 ///
-/// O AR-15 recarrega com a animação do Jhon (16/11, 2,7 s, esticada para
-/// o tempo da recarga). Conjunto sem animação de recarga recarrega por
+/// O AR-15 recarrega com a recarga de referência do tutorial posta sobre
+/// a pose do Jhon (19/11, tools/armas/recarga.py; 2,3 s, o tempo da
+/// recarga). Conjunto sem animação de recarga recarrega por
 /// código, por cima do parado — o conjunto inclina, o carregador cai e
 /// volta, o ferrolho é puxado se o pente esvaziou (<see cref="RigPieces"/>).
 ///
-/// A granada não tem conjunto próprio: vai na mão do braço da pistola, e
-/// o arremesso é movimento de código. A faca sem "golpe" na ficha também
-/// cai no golpe de código.
+/// A granada (19/11) tem conjunto próprio: <b>armar</b> ao apertar (o
+/// braço vai lá atrás e fica), <b>arremesso</b> ao soltar (o braço vem e
+/// lança; a granada da mão some no instante <c>soltar</c> da ficha, quando
+/// a de verdade já está voando). A arma seguinte só sobe depois do
+/// arremesso. Conjunto sem esses clipes arremessa por código. A faca sem
+/// "golpe" na ficha também cai no golpe de código. Com o botão preso, depois
+/// de armar toca <b>armado</b> em laço (a mão respira, não congela); a
+/// granada de verdade só aparece no mundo no instante em que sai da mão.
+///
+/// <b>inspecionar</b> (19/11: "na faca, o jogo só tá usando 2 animações"):
+/// o conjunto que tem esse clipe (a faca gira na mão; a pistola é conferida)
+/// toca-o na tecla F e, sozinho, depois de um tempo parado. Andar, mirar,
+/// atirar, golpear ou trocar de arma interrompe.
+///
+/// <b>A câmera</b> (19/11, as armas novas): o conjunto que traz o
+/// movimento da cabeça do animador (a ficha: <c>"camera"</c>, o osso que
+/// o carrega — a translação dele é pitch, yaw e roll em graus) gira a
+/// câmera junto com a animação: o tranco do saque, o balanço da recarga,
+/// o coice do tiro. A mira segue a câmera: a bala sai no meio da tela.
 /// </summary>
 public partial class ViewModel
 {
@@ -136,6 +154,15 @@ public partial class ViewModel
 		_magazineNode = null;
 		_rigObject = null;
 		_rigPlayer = null;
+		_cameraSkeleton = null;
+		_cameraBone = -1;
+		_throwing = false;
+		// A mão sumiu com a granada ainda nela (trocou, morreu): ela sai assim mesmo.
+		_weapon.ThrowFromHand = false;
+		_weapon.ReleaseFromHand(null);
+		if (_thrown != null && IsInstanceValid(_thrown)) _thrown.Visible = true;
+		_thrown = null;
+		_idle = 0f;
 		_rigClips.Clear();
 		_rigPlaying = "";
 		_rigBusy = 0;
@@ -184,8 +211,9 @@ public partial class ViewModel
 			Godot.Collections.Dictionary a = value.AsGodotDictionary();
 			string clip = a["clipe"].AsString();
 			if (_rigPlayer == null || !_rigPlayer.HasAnimation(clip)) continue;
+			// "contato" na faca (a lâmina chega no alvo), "soltar" na granada (sai da mão).
 			_rigClips[name.AsString()] = new Clip(clip, a["de"].AsDouble(), a["ate"].AsDouble(),
-				a.ContainsKey("contato") ? a["contato"].AsDouble() : 0);
+				a.ContainsKey("contato") ? a["contato"].AsDouble() : a.ContainsKey("soltar") ? a["soltar"].AsDouble() : 0);
 
 			// Parado, andar e correr se repetem sem emenda; o arquivo vem sem
 			// laço, e sem ele o fim de cada volta dá um tranco.
@@ -195,7 +223,7 @@ public partial class ViewModel
 			// começo, e a cada volta os braços pulavam). Vai e volta.
 			if (clip == "Scene")
 				_rigPlayer.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Pingpong;
-			else if (name.AsString() is "parado" or "andar" or "correr" or "mira" or "mira_andar")
+			else if (name.AsString() is "parado" or "andar" or "correr" or "mira" or "mira_andar" or "armado")
 				_rigPlayer.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Linear;
 		}
 
@@ -225,7 +253,175 @@ public partial class ViewModel
 		if (draws) _rigBusy = drawSeconds;
 
 		FindPieces(scene);
+		FindCameraBone(scene, rig);
+		_handOffset = rig.ContainsKey("centro") ? ToVector(rig["centro"]) : Vector3.Zero;
+		_weapon.ThrowFromHand = id == Arsenal.GrenadeId && _rigSkeleton != null && _boltBone >= 0
+			&& _rigClips.TryGetValue("arremesso", out Clip throwing) && throwing.Contact > 0.01;
 		return true;
+	}
+
+	// ------------------------------------------------------------ a câmera da animação
+
+	private Skeleton3D _cameraSkeleton;
+	private int _cameraBone = -1;
+	private Vector3 _cameraTrack;
+	private float _cameraWeight = 1f;
+
+	/// <summary>Quanto da câmera da animação fica na mira: a cabeça para
+	/// quieta para mirar (e na luneta qualquer giro seria enorme).</summary>
+	[Export] public float RigCameraAimed = 0f;
+
+	/// <summary>O osso que carrega a câmera da animação, se a ficha diz.</summary>
+	private void FindCameraBone(Node3D scene, Godot.Collections.Dictionary rig)
+	{
+		_cameraSkeleton = null;
+		_cameraBone = -1;
+		if (!rig.ContainsKey("camera")) return;
+		foreach (Node node in scene.FindChildren("*", "Skeleton3D", true, false))
+		{
+			var skeleton = (Skeleton3D)node;
+			int bone = skeleton.FindBone(rig["camera"].AsString());
+			if (bone < 0) continue;
+			_cameraSkeleton = skeleton;
+			_cameraBone = bone;
+			return;
+		}
+	}
+
+	/// <summary>Gira a câmera como a cabeça do animador girou (graus de
+	/// pitch, yaw e roll na translação do osso). Sem conjunto, sem osso ou
+	/// de lobo, a câmera volta ao zero sem tranco.</summary>
+	private void UpdateCameraTrack(float dt)
+	{
+		UpdateThrown(dt);
+
+		// Armando a granada a câmera fica quieta: ela sai na direção da mira
+		// desse instante, e a mira não pode andar sozinha enquanto se aponta.
+		// E segue quieta até a mão soltar: a granada vai para onde a cruz
+		// aponta nesse instante, e a cruz tem de estar onde o jogador a pôs.
+		bool still = _rigPlaying == "armar" || (_heldId == Arsenal.GrenadeId && (_weapon.IsGrenadeReady || _weapon.IsThrowPending));
+		_cameraWeight = Mathf.MoveToward(_cameraWeight, still ? 0f : 1f, dt * 6f);
+		Vector3 target = Vector3.Zero;
+		if (_cameraBone >= 0 && _cameraSkeleton != null && IsInstanceValid(_cameraSkeleton) && Visible && !_form.IsWolf)
+			target = _cameraSkeleton.GetBonePosePosition(_cameraBone) * _cameraWeight * (1f - (1f - RigCameraAimed) * _weapon.AimEase);
+		// A trilha já vem alisada; só a troca de arma (outra trilha) pede emenda.
+		_cameraTrack = _cameraBone >= 0 ? _cameraTrack.Lerp(target, Mathf.Clamp(dt * 30f, 0f, 1f)) : _cameraTrack.Lerp(Vector3.Zero, Mathf.Clamp(dt * 12f, 0f, 1f));
+		if (_cameraTrack.LengthSquared() < 1e-6f && target == Vector3.Zero) _cameraTrack = Vector3.Zero;
+		_camera.Rotation = _cameraTrack * Mathf.DegToRad(1f);
+	}
+
+	// ------------------------------------------------------------ a granada
+
+	/// <summary>O arremesso está tocando: a arma seguinte espera.</summary>
+	private bool _throwing;
+
+	/// <summary>Arremessou: o braço lança (o clipe "arremesso") antes de a
+	/// arma seguinte subir. A troca de arma chega logo depois deste aviso e
+	/// espera (<see cref="_holster"/>).</summary>
+	private void OnThrown()
+	{
+		if (!HasRig || _heldId != Arsenal.GrenadeId || !_rigClips.TryGetValue("arremesso", out Clip clip)) return;
+		// Soltou antes de acabar de armar (um toque rápido): a mão vai de onde
+		// está para o arremesso numa emenda mais longa, sem pular.
+		bool armed = _rigPlaying == "armado" || (_rigPlaying == "armar" && !_rigPlayer.IsPlaying());
+		// O braço lança com a força do arremesso: perto, mais solto; longe, mais rápido.
+		// (Era de 0,82 a 1,1 da velocidade do clipe; o Jhon pediu o arremesso um pouco
+		// mais rápido — só ele, o armar fica como está —, 20/11.)
+		double seconds = clip.Length / Mathf.Lerp(ThrowSpeedNear, ThrowSpeedFar, _weapon.ThrowPower);
+		PlayRig("arremesso", seconds, armed ? 0.03 : 0.1);
+		_rigBusy = seconds;
+		_holster = (float)Mathf.Min(seconds, RigThrowMax);
+		_throwing = true;
+
+	}
+
+	private Node3D _thrown;
+	private Vector3 _thrownFrom;
+	private float _thrownWait;
+
+	/// <summary>A granada de verdade aparece (e a da mão some) assim que
+	/// ela sai do lugar em que nasceu — ou depois de 0,08 s, de todo jeito.
+	/// Roda todo quadro, com ou sem conjunto.</summary>
+	private void UpdateThrown(float dt)
+	{
+		if (_thrown == null) return;
+		bool gone = !IsInstanceValid(_thrown);
+		if (!gone && (_thrownWait -= dt) > 0f && _thrown.GlobalPosition.DistanceSquaredTo(_thrownFrom) < 1e-4f) return;
+		if (!gone) _thrown.Visible = true;
+		_thrown = null;
+		if (_throwing && _rigObject != null && IsInstanceValid(_rigObject)) _rigObject.Visible = false;
+	}
+
+	/// <summary>O meio da granada no osso que a leva (a ficha: "centro").</summary>
+	private Vector3 _handOffset;
+
+	/// <summary>
+	/// Onde a granada da mão está, **no mundo e no tamanho de verdade**: o
+	/// conjunto é desenhado encolhido perto da câmera (<see cref="RigScale"/>);
+	/// o mesmo ponto da tela, na distância em que a mão estaria de fato. É
+	/// dali que a granada de verdade nasce quando a mão solta — na tela, uma
+	/// vira a outra sem pulo.
+	/// </summary>
+	private Vector3? HandPoint()
+	{
+		if (_rigSkeleton == null || !IsInstanceValid(_rigSkeleton) || _boltBone < 0) return null;
+		Vector3 world = _rigSkeleton.GlobalTransform * (_rigSkeleton.GetBoneGlobalPose(_boltBone) * _handOffset);
+		Transform3D camera = _camera.GlobalTransform;
+		return camera * (camera.AffineInverse() * world / RigScale);
+	}
+
+	/// <summary>A velocidade do clipe do arremesso (1 = como foi animado): no
+	/// arremesso mais fraco e no mais forte.</summary>
+	[Export] public float ThrowSpeedNear = 1.05f;
+	[Export] public float ThrowSpeedFar = 1.4f;
+
+	/// <summary>O arremesso mais longo que se espera antes da arma seguinte (s).</summary>
+	[Export] public float RigThrowMax = 0.5f;
+
+	/// <summary>A granada animada: arma enquanto o botão está preso (e fica
+	/// lá atrás); o arremesso começa em <see cref="OnThrown"/>. Verdadeiro se
+	/// cuidou do quadro.</summary>
+	private bool RigGrenade()
+	{
+		if (_heldId != Arsenal.GrenadeId || !_rigClips.ContainsKey("armar")) return false;
+
+		if (_throwing)
+		{
+			// A granada sai da mão no instante "soltar": a da mão some e a de
+			// verdade nasce ali, já voando para onde a cruz aponta.
+			if (_rigObject != null && _rigClips.TryGetValue("arremesso", out Clip thrown))
+			{
+				bool left = _rigPlayer.CurrentAnimationPosition >= thrown.From + Mathf.Max(thrown.Contact, 0.01);
+				if (left && _weapon.IsThrowPending)
+				{
+					_weapon.ReleaseFromHand(HandPoint());
+					// A física só anda com a granada no passo seguinte (ou no outro):
+					// até lá a da mão continua à vista, e a de verdade, escondida —
+					// sem isso havia um ou dois quadros sem granada nenhuma na tela.
+					if (_weapon.LastGrenade is Node3D real && IsInstanceValid(real))
+					{
+						_thrown = real;
+						_thrownFrom = real.GlobalPosition;
+						_thrownWait = 0.08f;
+						real.Visible = false;
+					}
+				}
+				_rigObject.Visible = !left || _thrown != null;
+			}
+			return true;
+		}
+
+		if (_weapon.IsGrenadeReady)
+		{
+			if (_rigPlaying != "armar" && _rigPlaying != "armado") PlayRig("armar", 0, 0.06);
+			// Armada, a mão lá atrás não congela: respira até o botão soltar.
+			else if (_rigPlaying == "armar" && !_rigPlayer.IsPlaying() && _rigClips.ContainsKey("armado")) PlayRig("armado", 0, 0.15);
+			_rigBusy = 0;
+			return true;
+		}
+
+		// Soltou sem arremessar (trocou de arma, virou lobo): volta ao parado.
+		return false;
 	}
 
 	/// <summary>O saque animado mais longo que se toca, em segundos: a arma
@@ -374,7 +570,9 @@ public partial class ViewModel
 	private Clip? _swingTail;
 	private double _swingTailIn, _swingTailSeconds;
 
-	/// <summary>O golpe da faca animado: alterna os golpes do conjunto.
+	private static readonly string[] SwingOrder = { "golpe", "golpe2", "golpe4", "golpe3" };
+
+	/// <summary>O golpe da faca animado: passa pelos golpes do conjunto, um a um.
 	/// A lâmina chega em <see cref="RigSwingLead"/> e a volta toca inteira,
 	/// no tempo do clipe — só encolhe se não couber no intervalo entre
 	/// dois golpes. Falso se o conjunto não tem golpe — aí vale o golpe de
@@ -383,7 +581,17 @@ public partial class ViewModel
 	{
 		if (!HasRig) return false;
 
-		string name = _swing % 2 == 1 && _rigClips.ContainsKey("golpe2") ? "golpe2" : "golpe";
+		// Um a um, na ordem (19/11: "deve passar 1 por 1 enquanto utilizo elas"):
+		// estocada, corte, estocada alta, corte deitado — os que o conjunto tiver.
+		string name = "golpe";
+		for (int k = 0; k < SwingOrder.Length; k++)
+		{
+			string next = SwingOrder[(_swing + k) % SwingOrder.Length];
+			if (!_rigClips.ContainsKey(next)) continue;
+			name = next;
+			_swing += k;
+			break;
+		}
 		if (!_rigClips.TryGetValue(name, out Clip clip)) return false;
 
 		_swing++;
@@ -425,6 +633,8 @@ public partial class ViewModel
 
 	private void UpdateRig(float dt)
 	{
+		// Fazendo alguma coisa (tiro, golpe, saque, recarga...): o relógio de olhar a arma volta ao zero.
+		if (_rigBusy > 0 && _rigPlaying != "inspecionar") _idle = 0f;
 		_rigBusy -= dt;
 		FollowMuzzle();
 
@@ -439,7 +649,7 @@ public partial class ViewModel
 		// Faca e granada: o golpe e o arremesso são movimento de código
 		// sobre o conjunto inteiro (o braço vai junto).
 		Vector3 position = Vector3.Zero, rotation = Vector3.Zero;
-		if (_heldId == Arsenal.GrenadeId)
+		if (_heldId == Arsenal.GrenadeId && !_rigClips.ContainsKey("armar"))
 		{
 			bool winding = _weapon.IsGrenadeReady;
 			if (!winding && _windup > 0.5f) _throw = 1f;
@@ -467,17 +677,22 @@ public partial class ViewModel
 				PlayRig(name, _weapon.ReloadDuration * (1f - p));
 			_rigLastReload = p;
 			_rigBusy = 0;
+			_idle = 0f;
 			// A recarga tira da mira: quando acabar, a arma está na cintura.
 			_rigAiming = false;
 			return;
 		}
 
 		_rigLastReload = 0f;
+		if (RigGrenade()) return;
 		if (UpdateRigAim()) return;
+		// Olhando a arma: andar interrompe (mirar, atirar e trocar já tocam o delas por cima).
+		if (_rigPlaying == "inspecionar" && _rigBusy > 0 && new Vector3(_body.Velocity.X, 0, _body.Velocity.Z).Length() > 0.5f) _rigBusy = 0;
 		if (_rigBusy > 0 && _rigPlayer.IsPlaying()) return;
 
 		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
 		bool moving = _body.IsOnFloor() && flat.Length() > 0.5f;
+		if (RigInspect(dt, moving || flat.Length() > 0.5f)) return;
 		string rest = _rigAiming
 			? moving && _rigClips.ContainsKey("mira_andar") ? "mira_andar" : "mira"
 			: moving && _rigClips.ContainsKey("andar") ? "andar" : "parado";
@@ -495,6 +710,35 @@ public partial class ViewModel
 		_rigRestHold = 0f;
 
 		if (_rigPlaying != rest || !_rigPlayer.IsPlaying()) PlayRig(rest, 0, 0.2);
+	}
+
+	/// <summary>Depois de quanto tempo parado, sem fazer nada, o jogador
+	/// olha a arma sozinho (s); e de quanto em quanto tempo repete.</summary>
+	[Export] public float RigIdleInspect = 9f;
+	[Export] public float RigIdleInspectAgain = 16f;
+
+	private float _idle;
+
+	/// <summary>Toca "inspecionar" (a faca gira na mão, a pistola é
+	/// conferida) na tecla F ou depois de um tempo parado. Só no descanso:
+	/// quem chama já passou pela recarga, pela granada, pela mira e pelo que
+	/// está ocupado. Verdadeiro se começou agora.</summary>
+	private bool RigInspect(float dt, bool moving)
+	{
+		if (!_rigClips.TryGetValue("inspecionar", out Clip clip) || _rigAiming || moving || _holster > 0f || _form.IsWolf)
+		{
+			_idle = 0f;
+			return false;
+		}
+
+		_idle += dt;
+		bool asked = InputMap.HasAction("inspect") && Input.IsActionJustPressed("inspect");
+		if (!asked && _idle < RigIdleInspect) return false;
+
+		_idle = RigIdleInspect - RigIdleInspectAgain;
+		PlayRig("inspecionar", 0, 0.12);
+		_rigBusy = clip.Length;
+		return true;
 	}
 
 	/// <summary>Quanto o corpo tem de ficar andando (ou parado) para os

@@ -131,6 +131,21 @@ esqueleto). A textura do fuzil (`T_AssaultRifle_D.png`) não veio no pacote (os
 
     python3 tools/armas/blender/infima.py
 
+**A recarga** (19/11) não é mais a que sai do `infima.py`: vem da recarga
+de referência do projeto de Unreal do mesmo tutorial ("UE5.3 Source
+Files"), que o Jhon trouxe. Dois arquivos, também em
+`assets/pacotes/infima/`: `A_FP_AssaultRifle_Reload.uasset` (os braços) e
+`A_FP_WEP_AssaultRifle_Reload.uasset` (o carregador). O `uasset.py` lê as
+curvas direto do `.uasset` (não precisa do Unreal) e o `recarga.py` as
+põe sobre a pose parada do Jhon, no tempo da recarga do jogo — os
+detalhes estão no cabeçalho dele. Depois de regerar o `ar15.glb` (ou uma
+skin), rode de novo, junto com a mira e a coronhada:
+
+    python3 tools/armas/recarga.py assets/armas/fp/ar15*.glb --ficha assets/armas/fp/bracos.json
+
+Falta confirmar que a licença CC BY do pacote de Blender vale também para
+os arquivos de Unreal do tutorial (vieram da mesma página).
+
 Grava o conjunto de primeira pessoa (`assets/armas/fp/ar15.glb` e a
 entrada `ar15` de `bracos.json`) e o modelo para a mão dos outros e o
 chão (`assets/armas/ar15/` e a entrada `ar15` de `armas.json`).
@@ -151,6 +166,7 @@ origem) e das animações dela.
 | 44 texturas do Poly Haven | `assets/textures/pbr/` — todos os materiais dos mapas | `tools/mapas/texturas.py` |
 | 2 céus (dia claro, neve nublada) | `assets/mapas/ceus/` — Vila e Estação Polar | copiados; `ceu=dict(hdri=…)` no mapa |
 | 36 objetos do Poly Haven | `assets/mapas/pecas/*.glb` — nos cômodos e em volta | `tools/mapas/blender/pecas_polyhaven.py` |
+| Low Poly FPS Bundle (JustCreate, Fab; o Jhon trouxe os .fbx — kits de peças, sem os mapas montados) | `tools/mapas/kits/*.npz` e `assets/mapas/kits/*.png` (as peças e a textura de cada kit: fps1, fps2, fps5, fps6); `assets/mapas/pecas/` `cidade.glb`, `deserto.glb`, `estacao.glb`, `obra.glb` — os mapas Cidade, Cidade do Deserto, Estação de Trem e Obra | `tools/mapas/kits/extrair.gd` + `kit_fbx.py` (uma vez por kit) e `tools/mapas/<mapa>.py` |
 | Pacote LowPolyFPS4 (Unity Asset Store; o Jhon trouxe o `.unitypackage`) | `assets/mapas/pecas/armazem.glb` — o mapa Armazém inteiro | `tools/mapas/blender/armazem.py` |
 
 | 6 conjuntos de braços animados do Sketchfab | `assets/armas/fp/*.glb` — as armas de fogo em primeira pessoa | `tools/armas/blender/bracos.py` |

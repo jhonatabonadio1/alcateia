@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 public sealed class RigHandsTest : RegressionTest
 {
 	public override string Name => "MaosPadrao";
-	public override string Description => "o AR-15 usa as mãos padrão (assets/armas/fp/maos), iguais nos dois times; a pistola fica com as dela";
+	public override string Description => "o AR-15 usa as mãos padrão (assets/armas/fp/maos), iguais nos dois times; a pistola também";
 
 	private string _photos = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--fotos="))?["--fotos=".Length..];
 
@@ -42,7 +42,7 @@ public sealed class RigHandsTest : RegressionTest
 		}
 		else await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.4);
 
-		b.Weapon.Equip(Arsenal.Get("ar15"), Arsenal.Get("m9"), 1);
+		b.Weapon.Equip(Arsenal.Get("ar15"), Arsenal.Get("deagle"), 1);
 		b.Weapon.SelectSlot(Slot.Primary);
 		await b.Seconds(0.8);
 
@@ -78,11 +78,11 @@ public sealed class RigHandsTest : RegressionTest
 			await Orbit(b, view, held, "maos");
 		}
 
-		// A pistola é de outro esqueleto: não leva as mãos padrão.
+		// A pistola (19/11) é do mesmo esqueleto: leva as mesmas mãos padrão.
 		b.Weapon.SelectSlot(Slot.Secondary);
 		await b.Seconds(0.8);
-		b.Check(view.Held != null && !view.HasRigHands && view.Held.FindChild("maos", true, false) == null,
-			"a pistola fica com as mãos dela");
+		b.Check(view.Held != null && view.HasRigHands && view.Held.FindChild("maos", true, false) != null,
+			"a pistola usa as mesmas mãos padrão");
 	}
 
 	/// <summary>Fotos de fora, com uma câmera de teste em volta dos braços:

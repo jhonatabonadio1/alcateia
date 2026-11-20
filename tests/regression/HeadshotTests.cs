@@ -29,7 +29,7 @@ public sealed class HeadshotTest : RegressionTest
 		await b.Seconds(target.SpawnProtection + 0.3);
 
 		Weapon w = b.Weapon;
-		w.Equip(Arsenal.Get("ar15"), Arsenal.Get("m9"), 1);
+		w.Equip(Arsenal.Get("ar15"), Arsenal.Get("deagle"), 1);
 		w.SelectSlot(Slot.Primary);
 		WeaponDefinition m16 = Arsenal.Get("ar15");
 		float body = CombatRules.FirearmDamage(m16.Damage, 1, false, m16.HeadshotMultiplier);

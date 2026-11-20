@@ -317,7 +317,7 @@ public sealed class NetGearTest : RegressionTest
 
 	public override async Task Run(RegressionBench b)
 	{
-		var sent = new NetState { Position = new Vector3(1, 2, 3), Hp = 150, MaxHp = 200, Primary = "ar15", Secondary = "m9",
+		var sent = new NetState { Position = new Vector3(1, 2, 3), Hp = 150, MaxHp = 200, Primary = "ar15", Secondary = "deagle",
 			HasGear = true, Ammo = 17, Reloading = true, Grenades = 1, Wp = 420, Charge = 0.75f };
 		var stream = new System.IO.MemoryStream();
 		sent.Write(new System.IO.BinaryWriter(stream));
@@ -326,7 +326,7 @@ public sealed class NetGearTest : RegressionTest
 			"pente, recarga, granadas, WP e carga chegam");
 		b.Check(got.Primary == "ar15" && Mathf.IsEqualApprox(got.Hp, 150), "e o resto do estado também");
 
-		var old = new NetState { Position = Vector3.One, Hp = 90, MaxHp = 200, Primary = "ar15", Secondary = "m9" };
+		var old = new NetState { Position = Vector3.One, Hp = 90, MaxHp = 200, Primary = "ar15", Secondary = "deagle" };
 		stream = new System.IO.MemoryStream();
 		old.Write(new System.IO.BinaryWriter(stream));
 		got = NetState.Read(new System.IO.BinaryReader(new System.IO.MemoryStream(stream.ToArray())));

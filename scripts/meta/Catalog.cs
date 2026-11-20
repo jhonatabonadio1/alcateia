@@ -104,19 +104,36 @@ public static class Catalog
 		// ---------------------------------------------------- armas
 		// Desde 19/11 só a família AR-15 (com as skins), a pistola, a faca e a
 		// granada: as outras armas saíram a pedido do Jhon.
+		// Incomum desde 19/11: o conjunto padrão só aceita arma comum, e o AR-15
+		// não pode ir nele (pedido do Jhon).
 		new() { Id = "ar15", Name = "AR-15", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
+			Rarity = 1, Starter = true,
+			Description = "Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e não é ruim em nada." },
+		new() { Id = "deagle", Name = "Desert Eagle", Type = "Pistola", Kind = ItemKind.Weapon,
 			Rarity = 0, Starter = true,
-			Description = "O fuzil padrão. Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e não é ruim em nada." },
-		new() { Id = "m9", Name = "M9", Type = "Pistola", Kind = ItemKind.Weapon,
+			Description = "A secundária de todo conjunto. Sete tiros que pesam: dois no corpo resolvem, mas o coice cobra cada um." },
+		// As armas de 19/11 (os modelos que o Jhon trouxe: M4A4, AK-74, SCAR-H,
+		// SVD; tools/armas/reais.py). A M4A4 vem com o perfil; a AK-74 e a SVD
+		// são incomuns e a SCAR-H é épica — essas três se compram (Jhon, 19/11).
+		new() { Id = "m4a4", Name = "M4A4", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
 			Rarity = 0, Starter = true,
-			Description = "A secundária de todo conjunto. Troca rápida para quando o pente acaba no meio da luta." },
+			Description = "O fuzil padrão. Carabina rápida e fácil de segurar: um pouco mais de cadência que o AR-15, um pouco menos de alcance." },
+		new() { Id = "ak74", Name = "AK-74", Type = "Fuzil de impacto", Kind = ItemKind.Weapon,
+			Rarity = 1, MinRank = 1, Prices = new[] { 200, 1000, 3000, 6600, 15500 },
+			Description = "Três tiros no corpo. Feita para rajadas de três a cinco: depois disso o cano vai para onde quer." },
+		new() { Id = "scar", Name = "SCAR-H", Type = "Arma pesada", Kind = ItemKind.Weapon,
+			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 },
+			Description = "Fuzil de batalha 7,62: pente de 20, tiro lento e pesado. Segura um corredor de longe; de perto, perde para qualquer fuzil." },
+		new() { Id = "svd", Name = "SVD Dragunov", Type = "Fuzil de precisão", Kind = ItemKind.Weapon,
+			Rarity = 1, MinRank = 1, Prices = new[] { 200, 1000, 3000, 6600, 15500 },
+			Description = "Semiautomático com luneta. Dois no corpo ou um na cabeça; fora da mira, a bala vai para qualquer lado." },
 		new() { Id = Arsenal.KnifeId, Name = "Faca", Type = "Corpo a corpo", Kind = ItemKind.Weapon,
 			Rarity = 0, Starter = true,
 			Description = "Silenciosa: não faz ruído para os bots. A arma de quem quer o abate sem entregar a posição." },
 		// O AR-15 um degrau acima (18/11): mesmo fuzil, mesmas animações, um pouco
 		// mais forte em tudo. Pele roxa com flames (tools/armas/blender/ar15_ultimate.py).
 		new() { Id = "ar15_ultimate", Name = "AR-15 Ultimate", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
-			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 }, Hot = true, DefaultOk = true,
+			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 }, Hot = true,
 			Description = "O AR-15 no limite: um pouco mais de dano, cadência e pente, e o recuo mais domado. Pele roxa com flames que brilham." },
 		// As skins de 19/11 ("crie as outras armas, épicas e lendárias"; à
 		// tarde: "uma toda dourada, outra diamante, outra 8 bit"): o mesmo
@@ -135,10 +152,49 @@ public static class Catalog
 			Rarity = 4, MinRank = 5, Prices = new[] { 450, 2200, 6600, 14500, 35000 }, Hot = true,
 			Description = "Lendária. O tiro mais preciso e a maior cadência do arsenal, pente de 42 e recarga rápida. Facetas de cristal que brilham." },
 
+		// As versões épicas e lendárias das armas novas (19/11: "crie as armas lendárias e épicas (com variação de
+		// texturas)"): uma épica e uma lendária de cada, com pintura própria (tools/armas/peles.py) e um pouco mais forte.
+		new() { Id = "m4a4_neon", Name = "M4A4 Neon", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
+			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 },
+			Description = "Épica. A M4A4 mais rápida e mais junta no tiro, com pente de 32. Grafite com trilhas de circuito que acendem em ciano." },
+		new() { Id = "m4a4_dragao", Name = "M4A4 Dragão", Type = "Fuzil de assalto", Kind = ItemKind.Weapon,
+			Rarity = 4, MinRank = 5, Prices = new[] { 450, 2200, 6600, 14500, 35000 }, Hot = true,
+			Description = "Lendária. Mais dano por tiro, pente de 36, recarga rápida e recuo domado. Escamas vermelhas de borda dourada, com brasa entre elas." },
+		new() { Id = "ak74_tigre", Name = "AK-74 Tigre", Type = "Fuzil de impacto", Kind = ItemKind.Weapon,
+			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 },
+			Description = "Épica. Um pouco mais de dano e o coice mais fácil de segurar na rajada. Laranja com listras de tigre." },
+		new() { Id = "ak74_imperial", Name = "AK-74 Imperial", Type = "Fuzil de impacto", Kind = ItemKind.Weapon,
+			Rarity = 4, MinRank = 5, Prices = new[] { 450, 2200, 6600, 14500, 35000 }, Hot = true,
+			Description = "Lendária. A AK que bate mais forte e mais rápido, pente de 35 e o coice mais domado. Laca preta com filigrana de ouro." },
+		new() { Id = "scar_artico", Name = "SCAR-H Ártico", Type = "Arma pesada", Kind = ItemKind.Weapon,
+			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 },
+			Description = "Épica. Recuo menor, tiro mais junto e pente de 22. Camuflagem digital de neve." },
+		new() { Id = "scar_galaxia", Name = "SCAR-H Galáxia", Type = "Arma pesada", Kind = ItemKind.Weapon,
+			Rarity = 4, MinRank = 5, Prices = new[] { 450, 2200, 6600, 14500, 35000 }, Hot = true,
+			Description = "Lendária. Mais dano, mais cadência, pente de 25 e recarga rápida. Uma nebulosa roxa e ciano, com estrelas que brilham." },
+		new() { Id = "svd_carbono", Name = "SVD Carbono", Type = "Fuzil de precisão", Kind = ItemKind.Weapon,
+			Rarity = 3, MinRank = 3, Prices = new[] { 350, 1700, 5200, 11500, 28000 },
+			Description = "Épica. Segundo tiro mais cedo, recarga e saque mais rápidos. Fibra de carbono com detalhes vermelhos." },
+		new() { Id = "svd_tempestade", Name = "SVD Tempestade", Type = "Fuzil de precisão", Kind = ItemKind.Weapon,
+			Rarity = 4, MinRank = 5, Prices = new[] { 450, 2200, 6600, 14500, 35000 }, Hot = true,
+			Description = "Lendária. Mais dano, segundo tiro mais cedo, pente de 12 e recarga rápida. Nuvens de tempestade cortadas por raios acesos." },
+		new() { Id = "deagle_cobra", Name = "Desert Eagle Cobra", Type = "Pistola", Kind = ItemKind.Weapon,
+			Rarity = 3, MinRank = 3, Prices = new[] { 220, 1100, 3300, 7300, 17000 },
+			Description = "Épica. O coice cobra menos e o tiro seguinte sai mais cedo. Escamas de cobra verde-esmeralda." },
+		new() { Id = "deagle_fenix", Name = "Desert Eagle Fênix", Type = "Pistola", Kind = ItemKind.Weapon,
+			Rarity = 4, MinRank = 5, Prices = new[] { 280, 1400, 4200, 9300, 22000 }, Hot = true,
+			Description = "Lendária. Mais dano, oito tiros no pente e recarga rápida. Cromo preto com chamas acesas que lambem o cano." },
+		new() { Id = "faca_damasco", Name = "Faca Damasco", Type = "Corpo a corpo", Kind = ItemKind.Weapon,
+			Rarity = 3, MinRank = 3, Prices = new[] { 180, 900, 2700, 6000, 14000 },
+			Description = "Épica. Um pouco mais de dano e golpe um pouco mais rápido. Lâmina de aço damasco em ondas, cabo de madeira e cobre." },
+		new() { Id = "faca_obsidiana", Name = "Faca Obsidiana", Type = "Corpo a corpo", Kind = ItemKind.Weapon,
+			Rarity = 4, MinRank = 5, Prices = new[] { 240, 1200, 3600, 8000, 19000 }, Hot = true,
+			Description = "Lendária. A faca que mais fere, a mais rápida e com um palmo a mais de alcance. Vidro vulcânico preto com veios roxos acesos." },
+
 		// ---------------------------------------------------- utilitário
-		new() { Id = Arsenal.GrenadeId, Name = "Granada de choque", Type = "Granada", Kind = ItemKind.Utility,
-			Rarity = 1, Prices = new[] { 60, 300, 900, 2000, 4500 }, DefaultOk = true,
-			Description = "Anti-lobo: atordoa e desacelera quem pega o estouro. Não existe para matar; existe para o lobo não chegar." },
+		new() { Id = Arsenal.GrenadeId, Name = "Granada", Type = "Granada", Kind = ItemKind.Utility,
+			Rarity = 0, Starter = true, DefaultOk = true,
+			Description = "Explosiva: mata de perto e fere até a borda do raio. Cai onde a mira aponta. Todo mundo tem, e já vem no conjunto padrão." },
 
 		// ---------------------------------------------------- melhorias
 		new() { Id = "tat_pata", Name = "Pata Leve", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,

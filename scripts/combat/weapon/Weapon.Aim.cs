@@ -18,6 +18,21 @@ public partial class Weapon
 	[ExportGroup("Mira")]
 	[Export] public float AimTime = 0.16f;
 
+	/// <summary>Segundos para a luneta do fuzil de precisão chegar ao olho:
+	/// mais lento que as outras miras, é o tempo da animação de subir.</summary>
+	[Export] public float ScopeTime = 0.3f;
+
+	/// <summary>Quanto da subida já passou quando a tela corta para a luneta
+	/// (pedido do Jhon, 19/11: "a animação aproxima a mira do olho e pouco
+	/// tempo depois corta para a mira, igual o mecanismo da Widowmaker").</summary>
+	public const float ScopeCut = 0.9f;
+
+	/// <summary>A arma na mão mira por luneta (todo fuzil de precisão).</summary>
+	public bool HasScope => Held?.Class == WeaponClass.Sniper;
+
+	/// <summary>A tela está na luneta: a arma some e fica o retículo.</summary>
+	public bool Scoped => HasScope && AimBlend >= ScopeCut;
+
 	private bool _aimWanted;
 
 	/// <summary>Quanto está mirando: 0 é da cintura, 1 é na mira.</summary>
@@ -42,8 +57,14 @@ public partial class Weapon
 	public float AimEase => AimBlend * AimBlend * (3f - 2f * AimBlend);
 
 	/// <summary>A abertura da câmera para quem abre em <paramref name="baseFov"/>.</summary>
-	public float AimFovFor(float baseFov) =>
-		Mathf.Lerp(baseFov, Mathf.Min(Held?.AimFov ?? baseFov, baseFov), AimEase);
+	public float AimFovFor(float baseFov)
+	{
+		float aimed = Mathf.Min(Held?.AimFov ?? baseFov, baseFov);
+		// Luneta: a câmera quase não fecha enquanto a arma sobe; o zoom
+		// chega inteiro no corte.
+		if (HasScope) return Scoped ? aimed : Mathf.Lerp(baseFov, baseFov * 0.88f, AimEase);
+		return Mathf.Lerp(baseFov, aimed, AimEase);
+	}
 
 	/// <summary>O que a mira faz com a dispersão (1 = nada).</summary>
 	private float AimSpreadFactor => Mathf.Lerp(1f, Held?.AimSpreadMultiplier ?? 1f, AimBlend);
@@ -54,6 +75,7 @@ public partial class Weapon
 	private void UpdateAim(double delta)
 	{
 		float target = _aimWanted && CanAim ? 1f : 0f;
-		AimBlend = Mathf.MoveToward(AimBlend, target, (float)delta / Mathf.Max(AimTime, 0.01f));
+		float time = HasScope ? ScopeTime : AimTime;
+		AimBlend = Mathf.MoveToward(AimBlend, target, (float)delta / Mathf.Max(time, 0.01f));
 	}
 }

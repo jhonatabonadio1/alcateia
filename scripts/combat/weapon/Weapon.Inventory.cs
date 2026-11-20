@@ -167,8 +167,12 @@ public partial class Weapon
 		EmitSignal(SignalName.AmmoChanged, PrimaryAmmo, PrimaryMag, false);
 	}
 
+	/// <summary>A faca na mão: a comum ou uma versão dela (a do conjunto).</summary>
+	public string MeleeId { get; private set; } = Arsenal.KnifeId;
+
 	public void Equip(LoadoutSet set)
 	{
+		MeleeId = set != null && Arsenal.IsKnife(set.Melee) ? set.Melee : Arsenal.KnifeId;
 		if (set == null)
 		{
 			Equip(null, null, 0);

@@ -261,6 +261,7 @@ public partial class CharacterAnimator
 		AddChild(model);
 
 		_model = model;
+		SkinCulling.Loosen(_model);
 		_modelPath = path;
 		_teamModel = true;
 	}

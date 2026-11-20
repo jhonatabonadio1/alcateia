@@ -53,6 +53,16 @@ public partial class Crosshair : Control
 		if (Form != null && Form.IsWolf) return;
 		float aim = Weapon?.AimEase ?? 0f;
 
+		// O fuzil de precisão (19/11): a arma sobe até a luneta e, no fim da
+		// subida, a tela corta para a luneta — sem transição, como na Widowmaker.
+		if (Weapon != null && Weapon.HasScope)
+		{
+			SelfModulate = Colors.White;
+			if (Weapon.Scoped) PaintSniperScope(this, Size);
+			else if (aim < 1f) Paint(this, Size / 2f, Settings.Values.Crosshair, _spread * PixelsPerDegree, aim);
+			return;
+		}
+
 		// A arma que mira pela própria mira (o AR-15, 18/11): a cruz some
 		// e quem aponta é a alça e a massa da arma, no centro da tela.
 		bool sights = aim > 0f && ViewModel.HasSights(Weapon?.HeldId);
@@ -65,6 +75,48 @@ public partial class Crosshair : Control
 
 		Paint(this, Size / 2f, Settings.Values.Crosshair, _spread * PixelsPerDegree, aim);
 		if (aim > 0f) PaintScope(this, Size / 2f, Size.Y, Settings.Values.Crosshair, ScopeSpread(), aim);
+	}
+
+	/// <summary>
+	/// A luneta, igual para todo fuzil de precisão: tudo preto em volta de um
+	/// círculo fixo no meio da tela e o retículo branco — a cruz fina, mais
+	/// grossa perto da borda, as marcas de distância e o ponto no centro.
+	/// </summary>
+	public static void PaintSniperScope(CanvasItem canvas, Vector2 size)
+	{
+		Vector2 center = size / 2f;
+		float radius = size.Y * 0.46f;
+		Color black = Colors.Black;
+		var white = new Color(1f, 1f, 1f, 0.95f);
+		var shadow = new Color(0f, 0f, 0f, 0.55f);
+
+		// O preto de fora: os lados do quadrado do círculo e um anel grosso por cima das quinas.
+		canvas.DrawRect(new Rect2(0, 0, center.X - radius + 1f, size.Y), black);
+		canvas.DrawRect(new Rect2(center.X + radius - 1f, 0, size.X - center.X - radius + 1f, size.Y), black);
+		float ring = radius * 0.5f;
+		canvas.DrawArc(center, radius + ring / 2f - 1f, 0, Mathf.Tau, 160, black, ring, true);
+		// A borda da lente: escurece um pouco para dentro.
+		canvas.DrawArc(center, radius - 5f, 0, Mathf.Tau, 160, new Color(0, 0, 0, 0.4f), 10f, true);
+		canvas.DrawArc(center, radius - 14f, 0, Mathf.Tau, 160, new Color(0, 0, 0, 0.15f), 10f, true);
+
+		float thin = Mathf.Max(1.5f, size.Y / 600f), thick = thin * 3.5f, gap = radius * 0.5f;
+		foreach (Vector2 dir in new[] { Vector2.Up, Vector2.Down, Vector2.Left, Vector2.Right })
+		{
+			Vector2 side = new(dir.Y, dir.X);
+			// A sombra por baixo deixa o branco legível contra céu e parede clara.
+			DrawBar(canvas, center + dir * 6f, center + dir * gap, thin + 2f, shadow);
+			DrawBar(canvas, center + dir * gap, center + dir * radius, thick + 2f, shadow);
+			DrawBar(canvas, center + dir * 6f, center + dir * gap, thin, white);
+			DrawBar(canvas, center + dir * gap, center + dir * radius, thick, white);
+			for (int i = 1; i <= 3; i++)
+			{
+				Vector2 at = center + dir * (gap * i / 4f);
+				DrawBar(canvas, at - side * (thin * 3.5f + 1f), at + side * (thin * 3.5f + 1f), thin + 2f, shadow);
+				DrawBar(canvas, at - side * thin * 3.5f, at + side * thin * 3.5f, thin, white);
+			}
+		}
+		canvas.DrawCircle(center, thin * 1.6f + 1f, shadow, true, -1f, true);
+		canvas.DrawCircle(center, thin * 1.6f, white, true, -1f, true);
 	}
 
 	/// <summary>O cone do próximo tiro em pixels, na câmera de agora.</summary>

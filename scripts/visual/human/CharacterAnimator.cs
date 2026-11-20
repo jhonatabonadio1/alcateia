@@ -115,6 +115,7 @@ public partial class CharacterAnimator : Node3D
 			GD.PrintErr($"CharacterAnimator: não achei o modelo em '{ModelPath}'.");
 			return;
 		}
+		SkinCulling.Loosen(_model);
 
 		SwapTeamModel();
 

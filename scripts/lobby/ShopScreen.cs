@@ -46,6 +46,7 @@ public partial class ShopScreen : LobbyScreen
 		new("Destaques", "Oferta do dia", () => Catalog.Daily(DateTime.Now)),
 		new("Humano", "Primárias", () => ForSale.Where(i => ItemInfo.IsPrimary(i) && i.Kind == ItemKind.Weapon)),
 		new("Humano", "Secundárias", () => ForSale.Where(i => ItemInfo.IsSecondary(i) && i.Kind == ItemKind.Weapon)),
+		new("Humano", "Facas", () => ForSale.Where(i => Arsenal.IsKnife(i.Id))),
 		new("Humano", "Granadas", () => ForSale.Where(i => i.Kind == ItemKind.Utility)),
 		new("Lobo", "Melhorias", () => ForSale.Where(i => i.Kind == ItemKind.Tattoo)),
 		new("Lobo", "Classes de lobo", () => ForSale.Where(i => i.Kind == ItemKind.Breed)),
@@ -64,11 +65,11 @@ public partial class ShopScreen : LobbyScreen
 		_selectedId = item.Id;
 		_category = item.Kind switch
 		{
-			ItemKind.Tattoo => 5,
-			ItemKind.Breed => 6,
-			ItemKind.Service => 7,
-			ItemKind.Utility => 4,
-			_ => ItemInfo.IsSecondary(item) ? 3 : 2
+			ItemKind.Tattoo => 6,
+			ItemKind.Breed => 7,
+			ItemKind.Service => 8,
+			ItemKind.Utility => 5,
+			_ => Arsenal.IsKnife(item.Id) ? 4 : ItemInfo.IsSecondary(item) ? 3 : 2
 		};
 		_duration = DefaultDuration(item);
 	}

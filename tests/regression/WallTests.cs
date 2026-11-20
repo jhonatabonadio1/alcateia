@@ -203,3 +203,62 @@ public sealed class WallBarrelTest : RegressionTest
 		return Mathf.Atan2(d.Z, d.X);
 	}
 }
+
+/// <summary>Parede invisível do limite do mapa (as <c>Limite…</c> e as
+/// <c>Barreira…</c> do alto do muro): o lobo não corre nela (Jhon, 20/11).
+/// A mesma parede com outro nome serve de controle: nela ele gruda.</summary>
+public sealed class InvisibleWallTest : WallTestBase
+{
+	public override string Name => "ParedeInvisivel";
+	public override string Description => "o lobo não gruda nem corre na parede invisível do limite do mapa";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.RemoveBots();
+		await b.BecomeWolf();
+		Player p = b.Player;
+
+		foreach (string name in new[] { "ParedeTeste", "BarreiraTeste", "LimiteTeste" })
+		{
+			// Lá no alto, longe do cenário da bancada: só esta parede.
+			var wall = new StaticBody3D { Name = name, Position = new Vector3(0, 40, -2f) };
+			wall.AddChild(new CollisionShape3D { Shape = new BoxShape3D { Size = new Vector3(30, 12, 0.4f) } });
+			b.GetTree().CurrentScene.AddChild(wall);
+			await b.Frames(2);
+
+			await b.Place(new Vector3(-6, 40, -1.45f), -90f, settle: 0.02);
+			p.Velocity = new Vector3(3.5f, 0, 0);
+			RegressionBench.Press("move_forward");
+			bool grabbed = await b.Until(() => p.IsWallRunning, 0.7);
+			RegressionBench.ReleaseAll();
+
+			if (name == "ParedeTeste") b.Check(grabbed, "controle: na parede comum ele gruda");
+			else b.Check(!grabbed, $"não gruda na {name}");
+
+			wall.QueueFree();
+			await b.Frames(2);
+		}
+
+		// O muro que fecha o mapa: parede comum com a barreira 6 cm atrás da face.
+		{
+			var wall = new StaticBody3D { Name = "MuroTeste", Position = new Vector3(0, 40, -2f) };
+			wall.AddChild(new CollisionShape3D { Shape = new BoxShape3D { Size = new Vector3(30, 12, 0.4f) } });
+			var barrier = new StaticBody3D { Name = "BarreiraAtras", Position = new Vector3(0, 40, -2.06f) };
+			barrier.AddChild(new CollisionShape3D { Shape = new BoxShape3D { Size = new Vector3(30, 30, 0.4f) } });
+			b.GetTree().CurrentScene.AddChild(wall);
+			b.GetTree().CurrentScene.AddChild(barrier);
+			await b.Frames(2);
+
+			await b.Place(new Vector3(-6, 40, -1.45f), -90f, settle: 0.02);
+			p.Velocity = new Vector3(3.5f, 0, 0);
+			RegressionBench.Press("move_forward");
+			bool grabbed = await b.Until(() => p.IsWallRunning, 0.7);
+			RegressionBench.ReleaseAll();
+			b.Check(!grabbed, "não gruda no muro que tem a barreira do limite por trás");
+
+			wall.QueueFree();
+			barrier.QueueFree();
+			await b.Frames(2);
+		}
+	}
+}

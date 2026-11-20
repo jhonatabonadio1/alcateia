@@ -146,7 +146,7 @@ public partial class Minimap : Control
 				? material.AlbedoColor
 				: DefaultPiece);
 		else if (node is CollisionShape3D { Shape: BoxShape3D shape } hidden && !hidden.Disabled
-			&& hidden.GetParent() is StaticBody3D body && !HasDrawnBox(body))
+			&& hidden.GetParent() is StaticBody3D body && !HasDrawnBox(body) && !body.HasMeta(OffMeta))
 			AddPiece(hidden.GlobalTransform, shape.Size, body.HasMeta(ColorMeta)
 				? body.GetMeta(ColorMeta).AsColor()
 				: DefaultPiece);
@@ -163,6 +163,11 @@ public partial class Minimap : Control
 	/// <summary>Onde o mapa grava a cor da caixa só de colisão
 	/// (<c>kit.caixa(..., cor=)</c> em tools/mapas).</summary>
 	private const string ColorMeta = "mapa_cor";
+
+	/// <summary>Caixa de colisão que o minimapa não desenha: a laje de um
+	/// andar de cima e o teto, que tapariam as paredes de baixo (os mapas de
+	/// kit; <c>metadata/mapa_fora</c>, posto pelo gerador).</summary>
+	private const string OffMeta = "mapa_fora";
 
 	private static readonly Color DefaultPiece = new Color(0.6f, 0.6f, 0.62f);
 

@@ -135,7 +135,7 @@ public partial class HeldWeapon : Node3D
 		Vector3 right = PalmOf(skeleton, _rightHand, _rightMiddle, _rightIndex, _rightPinky, true);
 
 		bool reloading = _weapon.IsReloading;
-		bool aimed = !reloading && _leftHand >= 0 && _id != Arsenal.KnifeId && _id != Arsenal.GrenadeId;
+		bool aimed = !reloading && _leftHand >= 0 && !Arsenal.IsKnife(_id) && _id != Arsenal.GrenadeId;
 
 		Transform3D placed;
 

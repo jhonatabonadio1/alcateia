@@ -162,7 +162,7 @@ public sealed class MapSoundTest : RegressionTest
 		b.Check(Sfx.Has("impacto") && Sfx.Has("impacto_metal") && Sfx.Has("capsula"), "bala na parede e cápsula no chão");
 
 		// Cada arma de fogo: o tiro dos outros e o seu.
-		foreach (string id in new[] { "ar15", "m9" })
+		foreach (string id in new[] { "ar15", "deagle" })
 			b.Check(Sfx.Has($"tiro_{id}") && Sfx.Has($"tiro_proprio_{id}") && Sfx.Has($"tiro_distante_{id}"), $"tiros da {id}");
 
 		// O chão diz do que é feito: na Estação Polar, neve no chão e

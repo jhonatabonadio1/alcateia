@@ -82,7 +82,11 @@ public static class Profile
 	public static readonly TimeSpan ExpiredGrace = TimeSpan.FromDays(30);
 
 	private const string FilePath = "user://perfil.json";
-	private const int Version = 2;
+	private const int Version = 3;
+
+	/// <summary>O arquivo lido era de antes da versão 3: o conjunto padrão
+	/// ganha a granada, uma vez (<see cref="Repair"/>).</summary>
+	private static bool _grenadeToDefault;
 
 	/// <summary>Disparado quando algo visível no header muda (moedas,
 	/// XP, patente, nome).</summary>
@@ -187,6 +191,7 @@ public static class Profile
 		}
 
 		data ??= Fresh();
+		_grenadeToDefault = data.Version < 3;
 
 		PlayerName = data.PlayerName ?? "";
 		CreatedUtc = data.CreatedUtc == default ? DateTime.UtcNow : data.CreatedUtc;
@@ -224,6 +229,7 @@ public static class Profile
 
 		var old = root?.AsObject();
 		Data data = Fresh();
+		data.Version = 1;
 
 		if (old?["Inventory"] is JsonArray ids)
 		{
@@ -418,7 +424,7 @@ public static class Profile
 
 	/// <summary>Está em uso em algum conjunto, ou equipado no lobo?</summary>
 	public static bool IsEquipped(string id) =>
-		Sets.Any(s => s.Primary == id || s.Secondary == id || s.Utilities.Contains(id))
+		Sets.Any(s => s.Primary == id || s.Secondary == id || s.Melee == id || s.Utilities.Contains(id))
 		|| Tattoos.Contains(id) || Breed == id || id == Arsenal.KnifeId
 		|| BlueCharacter == id || OrangeCharacter == id;
 
@@ -624,7 +630,9 @@ public static class Profile
 
 		if (Sets.Count == 0)
 		{
-			Sets.Add(new LoadoutSet { Name = "Padrão", IsDefault = true });
+			// A granada já vem no padrão (19/11: "granada deve entrar no kit
+			// padrão por padrão").
+			Sets.Add(new LoadoutSet { Name = "Padrão", IsDefault = true, Utilities = new List<string> { Arsenal.GrenadeId } });
 			Sets.Add(new LoadoutSet { Name = "Conjunto 2" });
 			Sets.Add(new LoadoutSet { Name = "Conjunto 3" });
 			Sets.Add(new LoadoutSet { Name = "Conjunto 4" });
@@ -645,12 +653,22 @@ public static class Profile
 			set.Utilities ??= new List<string>();
 			if (!Fits(set.Primary, secondary: false, set == Sets[0])) set.Primary = Arsenal.DefaultPrimary;
 			if (!Fits(set.Secondary, secondary: true, set == Sets[0])) set.Secondary = Arsenal.DefaultSecondary;
+			// A faca do conjunto: uma que exista, que ele tenha e, no padrão, comum.
+			if (!Arsenal.IsKnife(set.Melee) || !Owns(set.Melee) || (set == Sets[0] && !LoadoutSet.AllowedInDefault(set.Melee))) set.Melee = Arsenal.KnifeId;
 			set.Utilities.RemoveAll(id => Arsenal.GetUtility(id) == null || Catalog.Get(id) == null
 				|| (!Owns(id) && !Catalog.Get(id).Starter) || (set == Sets[0] && !LoadoutSet.AllowedInDefault(id)));
 		}
 
 		LoadoutSet first = Sets[0];
 		first.IsDefault = true;
+
+		// Perfil de antes da versão 3: o padrão ganha a granada, uma vez. Quem
+		// tirar depois, fica sem — o arquivo já sai na versão nova.
+		if (_grenadeToDefault)
+		{
+			_grenadeToDefault = false;
+			if (first.GrenadeCount() == 0 && first.Utilities.Count < LoadoutSet.MaxUtilities) first.Utilities.Add(Arsenal.GrenadeId);
+		}
 		if (string.IsNullOrEmpty(first.Name)) first.Name = "Padrão";
 
 		for (int i = 1; i < Sets.Count; i++)

@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://7ylkiptbxhav"
+path="res://.godot/imported/corpo_svd_tempestade.obj-337603684aad71cd7fe80b157e19d1ab.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_svd_tempestade.obj-337603684aad71cd7fe80b157e19d1ab.mesh"]
+
+source_file="res://assets/armas/svd_tempestade/corpo_svd_tempestade.obj"
+dest_files=["res://.godot/imported/corpo_svd_tempestade.obj-337603684aad71cd7fe80b157e19d1ab.mesh", "res://.godot/imported/corpo_svd_tempestade.obj-337603684aad71cd7fe80b157e19d1ab.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

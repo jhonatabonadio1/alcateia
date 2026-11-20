@@ -172,7 +172,7 @@ public partial class CharacterPreview : SubViewportContainer
 			player = new AnimationPlayer { Name = "AnimationPlayer" };
 			model.AddChild(player);
 		}
-		if (player == null) return model;
+		if (player == null) return Seat(model, null, 0);
 
 		// O humano fica na pose da vitrine: de pé, posturado, sem arma
 		// (HeroPose), e não no parado de fuzil do jogo.
@@ -187,7 +187,7 @@ public partial class CharacterPreview : SubViewportContainer
 			idle = WolfOwnClips.Fit(own, "idle", body, model, player.GetNode(player.RootNode).GetPathTo(body).ToString());
 			own?.Free();
 		}
-		if (idle == null && !ResourceLoader.Exists(idlePath)) return model;
+		if (idle == null && !ResourceLoader.Exists(idlePath)) return Seat(model, null, 0);
 
 		Node temp = idle == null ? GD.Load<PackedScene>(idlePath).Instantiate() : null;
 		if (temp != null) idle = AnimationKit.TakeAnimation(Nodes.FindFirst<AnimationPlayer>(temp), "idle", false);
@@ -201,7 +201,7 @@ public partial class CharacterPreview : SubViewportContainer
 			if (hips > 0.01f && source > 0.01f) AnimationKit.MatchHips(idle, hips / source);
 		}
 		temp?.Free();
-		if (idle == null) return model;
+		if (idle == null) return Seat(model, null, 0);
 
 		AnimationKit.StripRootMotion(idle);
 		idle.LoopMode = Animation.LoopModeEnum.Linear;
@@ -210,6 +210,26 @@ public partial class CharacterPreview : SubViewportContainer
 		library.AddAnimation("idle", idle);
 		player.AddAnimationLibrary("vitrine", library);
 		player.Play("vitrine/idle");
+		return Seat(model, player, idle.Length);
+	}
+
+	/// <summary>
+	/// Assenta o modelo no tampo do pedestal: o ponto mais baixo da pele, ao
+	/// longo de todo o parado, fica 2 mm acima dele. O lobo, no parado
+	/// agachado do Jhon, afundava 13 cm (o vermelho, 15): os pés e as garras
+	/// atravessavam o disco (19/11: "pé atravessando o limite").
+	/// </summary>
+	private static Node3D Seat(Node3D model, AnimationPlayer player, double length)
+	{
+		float low = float.MaxValue;
+		int samples = player != null && length > 0.01 ? 16 : 1;
+		for (int i = 0; i < samples; i++)
+		{
+			if (player != null && length > 0.01) player.Seek(length * i / samples, true);
+			low = Mathf.Min(low, SkinPoints.Lowest(model).Low);
+		}
+		if (player != null && length > 0.01) player.Seek(0, true);
+		if (low < float.MaxValue / 2) model.Position += Vector3.Up * (0.002f - low);
 		return model;
 	}
 

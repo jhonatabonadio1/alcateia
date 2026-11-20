@@ -71,6 +71,10 @@ def montar():
     m.material("vidro", None, (0.40, 0.71, 1.0), aspereza=0.1, dupla=True)
 
     m.modelo("Galpao", "Armazem", "armazem_estendido", (0, 0, 0))
+    # O material de cada face do galpão e o material de detalhe (o .glb vem
+    # do Blender sem isso): tools/mapas/kits/detalhe.py. Pode rodar de novo.
+    from .kits import detalhe
+    detalhe.detalhar_armazem("armazem_estendido", quieto=True)
 
     m.caixa("Colisao", "Piso", (0, -0.5, 0), (79, 1, 49), "concreto", oculta=True)
     for nome, c, t in (("LimiteOeste", (-39.2, 8, 0), (1, 18, 49)), ("LimiteLeste", (39.2, 8, 0), (1, 18, 49)),

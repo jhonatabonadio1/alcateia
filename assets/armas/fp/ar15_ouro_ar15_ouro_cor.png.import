@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://vwy84mvjdnrp"
-path="res://.godot/imported/ar15_ouro_ar15_ouro_cor.png-0c5ce936ffff0e2176a1935eb08371d4.ctex"
+path.s3tc="res://.godot/imported/ar15_ouro_ar15_ouro_cor.png-0c5ce936ffff0e2176a1935eb08371d4.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "067d879608facfe457a3cd83abaf4a2c"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/armas/fp/ar15_ouro_ar15_ouro_cor.png"
-dest_files=["res://.godot/imported/ar15_ouro_ar15_ouro_cor.png-0c5ce936ffff0e2176a1935eb08371d4.ctex"]
+dest_files=["res://.godot/imported/ar15_ouro_ar15_ouro_cor.png-0c5ce936ffff0e2176a1935eb08371d4.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -40,4 +41,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

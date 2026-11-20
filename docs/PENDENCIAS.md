@@ -350,3 +350,23 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   falta passar os bots para outro jogador quando o dono cai.
 - **Bots** na Polar atiram metade do que atiravam (76 tiros em 40 s,
   eram 146); na Vila, 5 de 7 saem da base.
+
+### Armas de 19/11 (M4A4, AK-74, SCAR-H, SVD, Desert Eagle, V40, faca)
+
+- Feitas por `tools/armas/reais.py` (modelos) e `tools/armas/conjuntos.py` (primeira pessoa). Os arquivos de origem e os `.npz` ficam em `assets/pacotes/reais/` (fora do git); a licença dos modelos é do Jhon confirmar.
+- **Não foi visto numa partida de verdade**: os testes automáticos passam e as poses foram conferidas em fotos fora do jogo.
+- A faca foi refeita com a mão levada pelo braço (pulso reto, sem torcer a manga); falta o Jhon aprovar no jogo. Não achei referência utilizável de ataques de faca na internet: os golpes são desenhados à mão.
+- Os sons são provisórios (`tools/sons/reais.py`): feitos dos do AR-15 e da pistola antiga.
+- Números das armas e loja: todas entraram liberadas (`Starter`); o Desert Eagle usa a ficha "pistola pesada" do ARSENAL.md sendo a pistola padrão — rever o balanceamento.
+- `tools/gerar_armas.py` e `tools/gerar_arsenal.py` ainda falam da M9 e das armas antigas.
+- Guia para as próximas armas: `docs/ANIMACAO_ARMAS.md` (regras, como é montado, o que conferir). `python3 tools/armas/conferir.py` mede pulso, braço na frente da câmera e corte na mira.
+- **Dedos nas outras armas** (feito em 19/11 para a mão esquerda): AK-74, SCAR-H e SVD repetem no guarda-mão o encosto da M4A4 (`pegada.pegar_como`); na Desert Eagle a mão esquerda abraça a direita sem atravessar (`abracar`). A mão direita nos punhos da AK-74, da SCAR-H e da SVD continua com a pose do AR-15 (só o indicador vai ao gatilho).
+- Faca: o arquivo de referência só tem dois golpes; o terceiro e o quarto são derivados deles (a mão girada). Se aparecer arquivo com mais golpes, trocar.
+- SCAR-H mirada: ainda mira por dentro do anel da alça, que é grande na tela (a M4A4 foi aberta em 19/11; a SCAR-H ninguém pediu).
+- Pulsos que ainda passam de 40° (medidos por `conferir.py`): nos fuzis, no saque, no guardar e na coronhada (50–78°); a mão esquerda da Desert Eagle no apoio (78°).
+- Granada: virou explosiva e de todo mundo (`Starter`, sem preço). A de choque continua no código (`GrenadeKind.Shock`), sem uso. O perfil foi para a versão 3: quem já tinha perfil ganha a granada no conjunto padrão uma vez.
+- A granada sai da mão (19/11): nasce quando a mão solta no clipe `arremesso` (`ViewModel.HandPoint` → `Weapon.ReleaseFromHand`), e a velocidade é calculada dali até o ponto da cruz; a câmera fica parada do armar até soltar. Arco de 9° (perto) a 30° (no alcance máximo) acima da linha até o ponto. Com ponto na mira cai nele até 19 m; mirando o céu, ~18 m. Medido na bancada (`GranadaNaCruz`): o primeiro toque fica de 0,12 a 0,28 m do ponto (a bola de colisão tem 0,14 m de raio) no chão de 3 a 17 m, em parede a 9 e a 15 m e andando de lado; colado numa parede, não a atravessa. Fotografado na bancada com o jogo rodando (não numa partida): a troca da granada da mão pela que voa acontece atrás dos dedos.
+- Arremesso refeito para soltar **em cima da linha da cruz** (19/11, "a granada tem que ser lançada no meio da linha da mão, na direção exata do crosshair"): medido no jogo, ela nasce a 1 cm da linha, sai a 0,04° dela e chega ao chão em cima dela; a granada da mão fica à vista até a de verdade começar a andar.
+- A granada que voa é menor na tela que a da mão (a da mão é 18% maior e o conjunto é esticado para a câmera) e nasce sem a rotação da da mão. Os bots e os bonecos de rede lançam como antes, da frente da câmera; a mira do bot (`Bot.Grenade.ThrowPitch`) ainda faz a conta do arremesso antigo.
+- A granada da primeira pessoa é 18% maior que a que voa.
+- Versões épicas e lendárias (19/11; `tools/armas/peles.py`, sem Blender): atlas UV novo por arma e desenho calculado em 3D; os números estão nos .tres (e, da faca, em `Arsenal.KnifeStats`). A faca escolhida (`LoadoutSet.Melee`) não vai pela rede: os outros veem a faca comum, e o abate conta como "faca". No mundo, o metal das pinturas é a metade do desenhado (sem céu para refletir ficava preto). Conferido na bancada (`ArmasEpicasELendarias`) e por fotos; os desenhos são de programa, não de artista.

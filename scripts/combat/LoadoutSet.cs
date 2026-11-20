@@ -21,6 +21,8 @@ public sealed class LoadoutSet
 	public bool IsDefault { get; set; }
 	public string Primary { get; set; } = Arsenal.DefaultPrimary;
 	public string Secondary { get; set; } = Arsenal.DefaultSecondary;
+	/// <summary>A faca do conjunto (19/11: as versões da faca). A comum é de todo mundo.</summary>
+	public string Melee { get; set; } = Arsenal.KnifeId;
 	public List<string> Utilities { get; set; } = new();
 
 	/// <summary>Soma simples dos itens — sem desconto nem bônus de
@@ -77,14 +79,23 @@ public sealed class LoadoutSet
 		return error == null;
 	}
 
-	/// <summary>No conjunto padrão só entra o que é gratuito ou o que o
-	/// catálogo libera para ele (<see cref="CatalogItem.DefaultOk"/>).</summary>
-	public static bool AllowedInDefault(string id) =>
-		string.IsNullOrEmpty(id) || Arsenal.CostOf(id) <= 0 || Catalog.Get(id)?.DefaultOk == true;
+	/// <summary>
+	/// O que pode ir no conjunto padrão. Arma: só as comuns (pedido do Jhon,
+	/// 19/11: "a AR-15 não pode ser definida como padrão, somente arma comum
+	/// pode") — e de graça, como todo o padrão (<see cref="TotalCost"/>).
+	/// Utilitário: o que é gratuito ou o que o catálogo libera para ele
+	/// (<see cref="CatalogItem.DefaultOk"/>, a granada de choque).
+	/// </summary>
+	public static bool AllowedInDefault(string id)
+	{
+		if (string.IsNullOrEmpty(id)) return true;
+		if (Arsenal.Get(id) != null || Arsenal.IsKnife(id)) return Catalog.Get(id)?.Rarity == 0;
+		return Arsenal.CostOf(id) <= 0 || Catalog.Get(id)?.DefaultOk == true;
+	}
 
 	private bool DefaultAllows()
 	{
-		if (!AllowedInDefault(Primary) || !AllowedInDefault(Secondary)) return false;
+		if (!AllowedInDefault(Primary) || !AllowedInDefault(Secondary) || !AllowedInDefault(Melee)) return false;
 		foreach (string id in Utilities)
 			if (!AllowedInDefault(id)) return false;
 		return true;
@@ -108,7 +119,7 @@ public sealed class LoadoutSet
 
 	private bool OwnsAll()
 	{
-		if (!Profile.Owns(Primary) || !Profile.Owns(Secondary)) return false;
+		if (!Profile.Owns(Primary) || !Profile.Owns(Secondary) || !Profile.Owns(Melee ?? Arsenal.KnifeId)) return false;
 
 		foreach (string id in Utilities)
 			if (!Profile.Owns(id)) return false;
@@ -130,6 +141,7 @@ public sealed class LoadoutSet
 		IsDefault = IsDefault,
 		Primary = Primary,
 		Secondary = Secondary,
+		Melee = Melee,
 		Utilities = new List<string>(Utilities)
 	};
 }

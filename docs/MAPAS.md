@@ -293,8 +293,197 @@ renderizada no Blender, do mesmo ângulo, até ser tirada no Godot.
 3. Acrescente um teste em `tests/regression/MapTests.cs` (três linhas).
 4. `python3 tools/mapas/conferir.py <id>` (faces brigando, letreiro mal assentado, objeto no ar), `python3 tools/gerar_mapas.py <id>` e `tools/testar.sh Mapa`.
 
+<!-- mapas de kit: início -->
+## Mapas de kit (Low Poly FPS Bundle)
+
+Em 19/11 o Jhon trouxe o pacote "Low Poly FPS Bundle" (JustCreate, na Fab) em FBX e pediu os mapas no jogo. O pacote em
+FBX traz **as peças** de cada mapa (casas, paredes, pisos, trens, objetos) e a textura, mas **não o mapa montado** — a
+planta só existe nas cenas da Unity e da Unreal. Estes mapas foram montados aqui, com planta própria, pelo tema de cada
+kit (não são cópia do mapa de demonstração do autor). Em 20/11 o Jhon pediu **mapas maiores e mais robustos, com
+caminhos e corredores** em vez de um retângulo aberto: foram refeitos no tamanho do Polar, com a planta em letras
+(`tools/mapas/kits/planta.py`):
+
+| Mapa | Tamanho | Tema | Gerador |
+|---|---|---|---|
+| **Cidade** (id `cidade`) | 120 × 80 m (grande) | Um bairro de dia: três ruas de ponta a ponta, duas transversais e o bulevar do centro; por dentro dos quarteirões, becos de 2,5 m entre lojas e casas, em volta do prédio em obras de três andares, atrás do banco; cada time nasce num posto de gasolina | `tools/mapas/cidade.py` (kit fps1: "Low Poly FPS Map Vol.1 — City") |
+| **Cidade do Deserto** (id `deserto`) | 110 × 75 m (grande) | Cidadela no deserto, sol alto, talhada dentro da muralha: três vielas de ponta a ponta, becos de 2,5 m entre elas, a rua da feira (10 m) e a praça do chafariz; casas de laje com escada de pedra, e por cima da muralha (5,4 m) anda-se de ponta a ponta; cada time nasce no pátio da caravana | `tools/mapas/deserto.py` (kit fps2: "Low Poly FPS Map Vol.2 — Desert City") |
+| **Estação de Trem** (id `estacao`) | 120 × 95 m (grande) | Estação no centro da cidade, fim de tarde: a rua e a calçada da praça ao norte (carros, árvores, postes), o prédio de 97 m com o saguão mais alto entre quatro torres de relógio, alas de telhado de duas águas, sacadas e cobertura na plataforma; duas plataformas, três linhas com trens parados, pátio de carga e, no centro, a passarela de 5 m com seis escadas; os prédios do centro fecham o mapa (kit da Cidade, num segundo desenho com colisão); cada time nasce numa ponta da plataforma do meio | `tools/mapas/estacao.py` (kit fps5: "Low Poly FPS Map Vol.5 — Railway Station (a cidade em volta: Vol.1 — City)") |
+| **Obra** (id `obra`) | 100 × 70 m (grande) | Canteiro de obras, de dia: um prédio de concreto de 60 × 40 m no meio — no térreo, corredor de 60 m, quatro salas e dois salões com pilares; duas lajes abertas em cima (4 e 8 m), com escadas e muretas de tijolo —, andaimes, gruas e material empilhado em volta; a planta tem um desenho por piso | `tools/mapas/obra.py` (kit fps6: "Low Poly FPS Map Vol.6 — Construction") |
+
+O Vol.4 (Warehouse) é o Armazém, que já estava no jogo.
+
+### Como são feitos
+
+```sh
+# uma vez por kit (precisa do Godot e dos .fbx em assets/pacotes/, que não vão para o repositório)
+godot --headless --path . -s tools/mapas/kits/extrair.gd -- res://assets/pacotes/fps_bundle/fps1 /tmp/kits/fps1
+python3 tools/mapas/kits/kit_fbx.py fps1 /tmp/kits <a textura do kit>.png
+# o mapa (só Python: numpy e Pillow)
+python3 tools/gerar_mapas.py cidade
+```
+
+- **`tools/mapas/kits/extrair.gd`** lê cada `.fbx` no Godot e grava os triângulos (posição, normal, UV) de cada peça;
+  **`kit_fbx.py`** junta tudo em `tools/mapas/kits/<kit>.npz` e copia a textura para `assets/mapas/kits/<kit>.png`.
+  Alguns arquivos vêm em centímetros ou deitados: as listas `EM_CM` e `DEITADA`, no topo, acertam (vistas peça a peça).
+- **`tools/mapas/kits/planta.py`** (`Planta`) é a planta do mapa **desenhada em letras**, no topo do arquivo de cada mapa:
+  cada letra é uma célula de 2,5 m (a largura de um beco) vista de cima. Desenha-se só a metade oeste; a leste sai dela
+  girada 180° ou espelhada. O que cada letra quer dizer é o mapa que diz (a legenda está em cima do desenho): um prédio
+  por retângulo de letras iguais (`regioes`, `fatiar`), esticado para encher o retângulo e com a fachada para o lado de
+  mais chão livre (`frente`); `-`, `|` e `+` são parede fina no meio da célula, com letra de vão para a porta
+  (`paredes`); os algarismos são as marcas por onde passam as rotas dos bots (`rota`). **Para mudar um beco de lugar,
+  abrir uma passagem ou pôr um carro, troca-se a letra e roda-se o gerador.**
+- **`tools/mapas/kits/montagem.py`** (`Montagem`) põe as peças: `por(nome, x, z, yaw)` — o meio da peça em (x, z), a base
+  no chão; `pivo=True` usa a origem da peça (paredes e pisos modulares). `simetrico()` repete tudo girado 180° (o outro
+  time vê o mesmo mapa); `espelhar()` espelha em x = 0 (quando o mapa tem um lado norte, como o saguão da Estação).
+  A frente das casas é o +Z da peça: `yaw=0` olha para +Z, `yaw=90` para +X. `encaixar` estica a peça para encher um
+  retângulo, `muro` põe uma fileira de módulos de parede de um ponto a outro e `chapa` uma caixa lisa de uma cor da
+  textura do kit (o asfalto, a calçada, a laje). A peça esticada vira uma malha própria no `.glb`: o nó fica só com giro
+  e posição (corpo de colisão com escala não funciona direito no Godot).
+- **O desenho** vai num `.glb` por mapa (`assets/mapas/pecas/<id>.glb`): uma malha por peça diferente, um nó por peça
+  posta, um material só (a textura do kit embutida, desenhada dos dois lados).
+- **A colisão** (`colide=`): `'malha'` — o nó ganha o sufixo `-col` e o Godot cria o corpo e a forma a partir da própria
+  malha (onde se entra ou se sobe: lojas, o prédio em obras, escadas); `'caixa'` — uma caixa escondida no `.tscn` (prédio
+  fechado, parede lisa, carros, caixotes, barris; é o que o minimapa desenha, na cor média da peça); `None` — enfeite. Cada mapa tem a tabela dele no topo (`CAIXA`, `SEM`).
+  Árvore e poste: a peça sem colisão e uma `barra` (só o tronco). O minimapa recebe ainda uma caixa invisível por peça de
+  malha (nó `Planta`).
+- **O chão e os limites**: `fechar(m, X, Z)` põe o `Piso` e as paredes invisíveis `Limite…` (a regra de `MapBounds`).
+  **`barrar(m, P, letras, altura)`** fecha o alto do muro de fora: o lobo corre na parede e, de salto em salto, chega em
+  cima dela — então sobre todo o maciço que encosta na borda da planta vai uma caixa invisível do chão ao teto
+  (`Barreira…`; pedido do Jhon, 20/11: "nas paredes, coloque um limite invisível do mapa, em todos"). O que fica no
+  meio do mapa (os prédios da Cidade, a muralha de dentro do Deserto, as lajes da Obra) continua de se subir. O teste de
+  mapa confere: 244 pontos em toda a volta, a 1 m do teto, têm de cair dentro de barreira.
+  **O lobo não corre em parede invisível** (Jhon, 20/11): a corrida em parede ignora os corpos `Limite…` e `Barreira…`
+  (`Player.IsInvisibleLimit`) — não gruda neles e, se um deles fecha a frente, solta em vez de virar a quina para ele. A
+  barreira fica 6 cm para dentro da face do muro que dá para o chão, para que embaixo quem o lobo toca seja o muro
+  (teste `ParedeInvisivel`).
+- **A altura e o fundo** (pedido do Jhon, 20/11: "bem mais alto, tão alto que nem os lobos alcançam", "preencha o
+  fundo"): o que fecha cada mapa tem de 14 a 20 m ou mais (a muralha de fora do Deserto em dois panos, as empenas dos
+  vizinhos na Obra, o muro da Estação, os prédios de dois corpos da Cidade, os vizinhos e a torre do Escritório —
+  `Planta.marcada` separa o maciço de fora do de dentro, `Montagem.torre` faz o prédio de faixas de vidro). Para fora do
+  limite, `Montagem.arredores` põe duas fileiras de prédios do kit em toda a volta e `Mapa.panorama` quatro painéis com
+  a imagem do horizonte (`assets/mapas/fundos/`, desenhadas por `tools/mapas/kits/fundos.py`: a cidade e a serra).
+- **Enfeite não tromba**: nos laços que espalham, `Montagem.grupo()` confere a caixa de cada peça nova contra o que já
+  estava posto e tira o que entrou em outra coisa; a parede fina só serve de encosto de frente (não a ponta nem o canto).
+- **Os enfeites** (pedido do Jhon, 20/11: "interiores mais ricos", "vegetação, detalhes, objetos"): além das letras, cada
+  mapa espalha miudezas **sem colisão** ao pé das paredes (`Planta.beiras` + `Montagem.encostar`) e no chão livre, sorteadas
+  pelo lugar (`Planta.sorte`: o mesmo sorteio no ponto do outro time) — não mudam por onde se anda. O que tem colisão
+  (banco, caixote, mesa) entra por letra na planta, e as rotas são conferidas de novo. Os kits da Estação e da Obra não
+  têm planta: o mato deles vem do kit do Escritório, num segundo `.glb` (`<id>_mato.glb`, função `mato()`). Na Obra as
+  colunas vão na malha de 7,5 m do prédio, em todos os pisos (`colunas`): inteiras onde há laje por cima, o toco com a
+  ferragem de espera onde o piso de cima ainda não foi feito.
+- **Nascimentos e rotas**: `Grade` é a planta de onde se anda, tirada da colisão (25 cm por célula, 55 cm de folga);
+  `nascer` acha seis pontos livres em volta do lugar dado (e os do outro time, do outro lado); `Grade.rota` liga os
+  pontos de cada rota pelo caminho andável. Mapa com desnível (as plataformas da Estação) passa a função `piso(x, z)`.
+- **A foto e a miniatura**: a foto é a de sempre (`tools/fotos_mapas.gd`); a miniatura sai de `Montagem.planta`.
+
+Para mexer num mapa: edite `desenho()` no arquivo dele, rode o gerador e abra o Godot (ele importa o `.glb` de novo).
+Para conferir sem abrir o jogo, a grade (`Grade.imagem`) mostra o que ficou livre e as rotas.
+
+### O que foi conferido e o que não foi
+
+Cada mapa passa o teste de mapa (carrega, os times nascem em chão livre, sem buraco no chão, o alto do muro de fora é
+barrado, os bots saem da base pela navegação e trocam tiro) e foi fotografado no Godot de cima e do olho do jogador. **Ninguém jogou uma partida neles**: o
+ritmo, os pontos de vantagem e o que o lobo alcança de fato são do desenho no papel. A colisão de malha é de um lado só
+(como a casca do Armazém); prédio fechado, parede, laje e muro são caixas. As larguras: a parede fina fica no meio da
+célula, então um corredor de duas letras entre duas paredes tem 7,3 m, não 5. O ambiente sonoro é o da Vila.
+<!-- mapas de kit: fim -->
+## O detalhe das superfícies (mapas de paleta)
+
+Os mapas de kit e os dois Armazéns são pintados por uma paleta: a face tem uma cor lisa e mais nada. Em 20/11 o Jhon
+pediu textura mais detalhada no chão, nos metais, nos vidros, "sem tirar a essência". A cor continua a da paleta; por
+cima dela entra o **grão do material** de cada face — relevo, aspereza, um claro-escuro leve e manchas largas; o metal
+vira metal e o vidro reflete o céu. São quatro peças:
+
+- **`assets/mapas/detalhe/superficie.gdshader`** — o material. O grão é projetado pelo mundo (de cima e dos lados): não
+  depende da UV da peça e emenda de uma peça para a outra. As tabelas no topo dizem, por material, a camada de textura, o
+  tamanho (metros por repetição), a força do relevo e do claro-escuro, a aspereza, o metal. No material de cada kit
+  (`assets/mapas/detalhe/<kit>.tres`): `intensidade` (0 = o mapa liso de antes, 1 = o padrão), `relevo`, `manchas` e
+  `ver_classes` (pinta cada material de uma cor, para conferir).
+- **`tools/mapas/detalhe_texturas.py`** — desenha as texturas (`detalhe_n.jpg` o relevo e a oclusão, `detalhe_m.jpg` o
+  claro-escuro, a aspereza e a altura, `detalhe_c.jpg` a **tinta** — a cor que multiplica a da paleta: o tijolo mais
+  alaranjado, o musgo na junta, a ferrugem no risco — e `macro.png`): 20 camadas de 1024 px num mosaico 5 × 4, que o
+  Godot importa como Texture2DArray. Desde a tarde de 20/11 **todas são desenhadas ali** (ruído e geometria, sem foto),
+  no estilo que o Jhon pediu ("nível Riot, Overwatch", "tirar o aspecto de Roblox"): forma grande e limpa, quina
+  chanfrada, cada tijolo, laje ou tábua de um tom, pouco ruído miúdo. O reboco descasca e mostra o tijolo por baixo; a
+  telha segue a queda do telhado.
+- **`tools/mapas/kits/detalhe.py`** — decide **de que material é cada face** e grava no `.glb` (o vermelho da cor do
+  vértice). A paleta não diz (o mesmo cinza é asfalto, parede e lataria); a conta é pela peça (`House_01` é prédio,
+  `Car_01` é veículo), pela cor (num prédio, o azul-claro é vidro e a cor que mais cobre as faces em pé é a parede) e por
+  para onde a face olha (o escuro para cima é telhado; em pé, esquadria). As regras por tipo de peça estão em `PECAS`; o
+  Armazém, que vem do Blender em pedaços grandes, usa a caixa de cada peça do `.json` dele (`armazem`). São 27 materiais
+  (`CLASSES`): asfalto, piso, concreto, reboco, tijolo, metal pintado, metal cru, vidro, madeira, folhagem, areia, rocha,
+  tecido, plástico, adobe, terra, louça, papel, borracha, telhado, faixa, lataria, água, calçamento, brita, tronco.
+- **O `.glb.import`** de cada modelo troca o material embutido pelo `.tres` (`_subresources`, `use_external`): é o que
+  `detalhe.ligar` escreve.
+
+Os geradores fazem isso sozinhos (`Montagem.glb` e `tools/mapas/armazem*.py`). Para refazer só o detalhe, sem gerar o mapa:
+
+```sh
+python3 tools/mapas/detalhar.py            # todos; ou: detalhar.py cidade
+python3 tools/mapas/detalhe_texturas.py    # as texturas (só se mudar uma camada)
+```
+
+**Peça com o material errado**: uma linha em `PECAS` (ou em `FIXAS`, se for só ela), `detalhar.py`, e o Godot importa de
+novo. **Material forte ou fraco demais**: a linha dele nas tabelas do shader. A Vila e a Estação Polar não entram: já
+são de fotografia de material.
+
+O que foi conferido: os seis mapas renderizados no Godot 4.7 (Forward+) antes e depois, do ângulo da foto e da altura do
+jogador; com `intensidade = 0` o quadro sai igual ao de antes. **Não foi medido o custo** no Mac (o material lê de 2 a
+6 texturas a mais por ponto) nem rodado `tools/testar.sh`.
+
+### O que mudou nos mapas na tarde de 20/11 (pedidos do Jhon)
+
+- **O que fecha o mapa ficou baixo** ("não precisam de prédios, muro alto ao redor, pode ser metade do que já é" — o lobo
+  não corre no limite invisível, cai): na Estação os prédios da volta têm um corpo só (10 a 15 m; eram dois, um em cima
+  do outro); no Deserto a muralha de fora tem 7,6 m (era 14); na Obra é um **muro de obra** de 3,8 m — pano de tijolo,
+  pilar de concreto a cada 5 m e capa de concreto (era de 16 m, com a empena dos vizinhos). O limite invisível
+  (`barrar`) continua do chão ao teto.
+- **Telhado segura quem sobe**: na Estação os telhados de duas águas, as coberturas da plataforma e a parede alta do
+  saguão têm colisão; na Cidade o corpo de cima dos prédios altos; no Deserto todas as tendas.
+- **Deserto sem vegetação e sem água**: saíram as palmeiras, as plantas, o poço e o chafariz (no lugar, pedras, potes,
+  carga e um estrado de pedra no meio da praça); a rua da feira é calçada de ponta a ponta e o resto é areia, com
+  lajotas e blocos soltos. O fundo são dunas largas e redondas (as peças e o painel `serra.png`).
+- **Cidade**: as bombas do posto são de chapa pintada (saíam de tijolo); o que ficava a cavalo no meio-fio vai inteiro
+  para a rua ou para a calçada (flutuava 14 cm); o ar-condicionado só vai em parede alta e fechada.
+- **A capa de cada mapa tem clima de guerra** (`tools/fotos_mapas.gd`, tabela `GUERRA`): névoa de poeira, colunas de
+  fumaça ao longe, menos cor, mais contraste e vinheta — só na foto. `-- limpa` tira sem isso; `-- rascunho`, pequena.
+
+**Não foi feito ainda**: o chanfro das quinas e os frisos (geometria, no Blender), o interior das janelas, peças novas
+(trens, carros) e a planta dos mapas em compartimentos. A textura sozinha não tira o aspecto de bloco das peças do kit.
+
+### As calçadas da Cidade
+
+Pedido do Jhon (20/11): "coloque calçadas na cidade, não deixe asfalto e chão se misturarem". O asfalto era uma chapa
+3 cm acima da calçada, de parede a parede. Agora são **dois níveis**, no desenho e na colisão (`calcadas`, em
+`tools/mapas/cidade.py`): a calçada é o nível zero de sempre (prédios, becos e o pátio do posto não mudam), com 1,6 m ao
+pé dos prédios (`CALCADA`); o asfalto fica 14 cm abaixo (`MEIO_FIO` — o jogador sobe 0,3 m andando, o bot 0,5) e entre os
+dois vai o meio-fio, mais claro (`GUIA`). O chão de colisão (`Piso`) desceu para −0,14 e a calçada tem as caixas dela
+(`Calcada…`). O que está na rua desce com ela; o carro ou a barreira que ficaria metade na calçada vai inteiro para a
+rua, e a pintura que não cabe no asfalto sai. A rua da Estação de Trem ainda é do jeito antigo.
 ## Testes
 
-`MapaArmazemEstendido`: o mapa carrega
+`MapaArmazemEstendido`, `MapaCidade`, `MapaDeserto`, `MapaEstacao`, `MapaObra`: o mapa carrega
 na partida, os dois times nascem, ninguém cai do mapa, os bots saem da
 base pela malha de navegação e trocam tiro.
+
+## A luz, as escadas e o limite dos mapas de kit (20/11)
+
+- **Luz** — `luz_de_jogo(m, clima, yaw, queda)` em `tools/mapas/kits/montagem.py` (a tabela `CLIMAS`: `dia`, `tarde`,
+  `deserto`). Sol quente e forte, sombra fria e clara (ambiente azul-violeta que não depende de o céu "ver" o lugar: beco,
+  sala e vão de laje ficam legíveis), uma luz fraca sem sombra apontada para cima na direção do sol (a luz que volta do
+  chão), SSAO largo + SSIL, ACES com branco 6,5, névoa com perspectiva aérea, sol com tamanho (sombra macia).
+  `lampadas(m, [M])` põe uma lâmpada quente, sem sombra, em cada poste do kit. **Sem SDFGI**: testada em foto, apagava
+  tudo o que o céu não vê (sala sem lâmpada preta) — o Armazém, fechado, usa. Conferido em fotos Forward+ do mapa com
+  personagens parados no sol, no beco e debaixo de laje; **não** conferido dentro da partida (a nuvem não roda o jogo em
+  Forward+ em tempo útil).
+- **Escadas** — `M.rampa(escada, pé, alto, lados)`: uma chapa inclinada só de colisão por cima dos degraus (nós `pr…` em
+  `Colisao`). Com `FloorConstantSpeed` no jogador e no bot, sobe-se na velocidade do chão, sem tranco. Testes
+  `EscadaObra`, `EscadaEstacao`, `EscadaDeserto`.
+- **Limite** — o muro de fora (o que tem uma `Barreira…` até 30 cm atrás da face) não segura a corrida do lobo
+  (`Player.BackedByBarrier`); por isso os prédios que fecham o mapa têm a altura natural do kit. Teste `ParedeInvisivel`.
+- **Mata-mata** — cada cena tem o nó `NascerLivre` com 16 `Marker3D` espalhados (`espalhar(m, grade, base)`), para o
+  modo todos contra todos, que ainda não existe no jogo (`RoomConfig.ModeAvailable`). A Obra está marcada só mata-mata
+  em `Maps.cs`.
+- **Estação** — nas pontas das linhas, o muro de arrimo e as bocas de túnel (`Wall_08` do kit, um arco por linha:
+  `Kit.recorte`); a rua continua para fora do mapa, interditada; duas torres de relógio, inteiras, na calçada.
+- **Obra** — muro de tijolo de 6,2 m; as muretas têm a colisão da própria peça (passa-se pelo vão).

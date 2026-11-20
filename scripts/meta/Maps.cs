@@ -64,6 +64,59 @@ public static class Maps
 			// era todo grave e em caixa pequena não se ouvia nada.
 			RoomSize = 0.75f, RoomWet = 0.35f, Ambience = "ambiente_armazem", AmbienceDb = -12f,
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
+		},
+		// Os mapas de 19/11 (pedido do Jhon: "inclua esses mapas no game"): montados
+		// com as peças dos kits "Low Poly FPS Map" Vol. 1, 2, 3, 5 e 6 (JustCreate),
+		// com planta própria — o pacote em FBX vem sem os mapas montados
+		// (tools/mapas/kits; docs/MAPAS.md).
+		new()
+		{
+			Id = "cidade",
+			Name = "Cidade",
+			Size = "Grande",
+			Scene = "res://scenes/maps/cidade.tscn",
+			Thumbnail = "res://assets/ui/mapas/cidade.png",
+			Cover = "res://assets/ui/mapas/cidade_foto.png",
+			Description = "Grande, 120 × 80 m, de dia. Um bairro inteiro: três ruas de ponta a ponta, o bulevar do centro e os becos de 2,5 m por dentro dos quarteirões — entre as lojas, em volta do prédio em obras de três andares, atrás do banco. Cada time nasce num posto de gasolina.",
+			RoomSize = 0.5f, RoomWet = 0.12f, Ambience = "ambiente_vila", AmbienceDb = -14f,
+			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
+		},
+		new()
+		{
+			Id = "deserto",
+			Name = "Cidade do Deserto",
+			Size = "Grande",
+			Scene = "res://scenes/maps/deserto.tscn",
+			Thumbnail = "res://assets/ui/mapas/deserto.png",
+			Cover = "res://assets/ui/mapas/deserto_foto.png",
+			Description = "Grande, 110 × 75 m, sol alto. Uma cidadela talhada dentro da muralha: três vielas de ponta a ponta ligadas por becos de 2,5 m, a rua da feira e a praça do chafariz no meio. Casas de laje com escada de pedra; por cima da muralha, só o lobo.",
+			RoomSize = 0.4f, RoomWet = 0.08f, Ambience = "ambiente_vila", AmbienceDb = -14f,
+			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
+		},
+		new()
+		{
+			Id = "estacao",
+			Name = "Estação de Trem",
+			Size = "Grande",
+			Scene = "res://scenes/maps/estacao.tscn",
+			Thumbnail = "res://assets/ui/mapas/estacao.png",
+			Cover = "res://assets/ui/mapas/estacao_foto.png",
+			Description = "Grande, 120 × 95 m, fim de tarde, no centro da cidade. A rua e a praça, o prédio da estação com as torres de relógio — saguão, duas alas com corredor e salas —, duas plataformas, três linhas com trens parados e o pátio de carga. No centro, a passarela cruza as linhas por cima dos trens.",
+			RoomSize = 0.6f, RoomWet = 0.2f, Ambience = "ambiente_vila", AmbienceDb = -16f,
+			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
+		},
+		new()
+		{
+			Id = "obra",
+			Name = "Obra",
+			Size = "Grande",
+			Scene = "res://scenes/maps/obra.tscn",
+			Thumbnail = "res://assets/ui/mapas/obra.png",
+			Cover = "res://assets/ui/mapas/obra_foto.png",
+			Description = "Grande, 100 × 70 m, de dia. Um prédio de concreto em construção no meio do canteiro: corredor de 60 m, salas e salões no térreo, duas lajes abertas em cima (4 e 8 m) com escadas e muretas de tijolo. Em volta, material empilhado, andaimes e gruas.",
+			RoomSize = 0.55f, RoomWet = 0.18f, Ambience = "ambiente_vila", AmbienceDb = -15f,
+			// só mata-mata (todos contra todos, nascendo espalhados: os pontos são o nó NascerLivre da cena) — Jhon, 20/11
+			Modes = new[] { GameMode.MataMata }
 		}
 	};
 

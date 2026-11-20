@@ -119,6 +119,7 @@ public partial class Bot : CharacterBody3D
 		_form = GetNode<FormController>("FormController");
 		_weapon = GetNode<Weapon>("Weapon");
 		_head = GetNode<Node3D>("Head");
+		FloorConstantSpeed = true;          // igual ao jogador: na escada, a velocidade do chão
 		_rng = MatchRandom.Stream(Name);
 		_noise = new BodyNoise(this, Noise);
 		_moves = new WolfMoveMotor(this, _weapon);

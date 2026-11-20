@@ -79,6 +79,9 @@ public partial class Player : CharacterBody3D
 		_weapon = GetNode<Weapon>("Weapon");
 
 		_gravity = (float)ProjectSettings.GetSetting("physics/3d/default_gravity");
+		// Na rampa e na escada o corpo anda o mesmo que no chão (sem isto o
+		// Godot tira da subida o que a inclinação "come": 12% numa escada).
+		FloorConstantSpeed = true;
 		_spawn = GlobalPosition;
 
 		BuildBody();

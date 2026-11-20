@@ -1,0 +1,3110 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/mapas/ceus/dia_claro.hdr" id="t_ceu"]
+[ext_resource type="Texture2D" path="res://assets/mapas/fundos/cidade.png" id="f_cidade"]
+[ext_resource type="PackedScene" path="res://assets/mapas/pecas/cidade.glb" id="p_cidade"]
+[ext_resource type="Script" path="res://scripts/core/SpawnPoints.cs" id="s_spawns"]
+[ext_resource type="Script" path="res://scripts/core/PatrolRoutes.cs" id="s_routes"]
+[ext_resource type="Script" path="res://scripts/core/NavBaker.cs" id="s_nav"]
+
+[sub_resource type="StandardMaterial3D" id="M_kit_colisao"]
+albedo_color = Color(0.5, 0.5, 0.5, 1)
+roughness = 1
+
+[sub_resource type="BoxShape3D" id="S1"]
+size = Vector3(0.978, 0.5092, 0.4751)
+
+[sub_resource type="BoxShape3D" id="S2"]
+size = Vector3(0.978, 0.4751, 0.5092)
+
+[sub_resource type="BoxShape3D" id="S3"]
+size = Vector3(0.6096, 0.8875, 0.6096)
+
+[sub_resource type="BoxShape3D" id="S4"]
+size = Vector3(0.6096, 0.8866, 0.6096)
+
+[sub_resource type="BoxShape3D" id="S5"]
+size = Vector3(0.9163, 0.9166, 0.9132)
+
+[sub_resource type="BoxShape3D" id="S6"]
+size = Vector3(0.9129, 0.9087, 0.9131)
+
+[sub_resource type="BoxShape3D" id="S7"]
+size = Vector3(1.6425, 1.0781, 1.0247)
+
+[sub_resource type="BoxShape3D" id="S8"]
+size = Vector3(0.2755, 0.5518, 0.5797)
+
+[sub_resource type="BoxShape3D" id="S9"]
+size = Vector3(1.25, 0.2009, 1.5)
+
+[sub_resource type="BoxShape3D" id="S10"]
+size = Vector3(0.4, 1, 1.5)
+
+[sub_resource type="BoxShape3D" id="S11"]
+size = Vector3(0.4, 0.75, 1.5)
+
+[sub_resource type="BoxShape3D" id="S12"]
+size = Vector3(1.9715, 1.4886, 3.3342)
+
+[sub_resource type="BoxShape3D" id="S13"]
+size = Vector3(12.5, 37.7557, 12.5)
+
+[sub_resource type="BoxShape3D" id="S14"]
+size = Vector3(7.6786, 14.736, 7.5)
+
+[sub_resource type="BoxShape3D" id="S15"]
+size = Vector3(7.6786, 12.3542, 7.5)
+
+[sub_resource type="BoxShape3D" id="S16"]
+size = Vector3(7.6786, 10.4085, 7.5)
+
+[sub_resource type="BoxShape3D" id="S17"]
+size = Vector3(7.5, 12.3542, 7.5)
+
+[sub_resource type="BoxShape3D" id="S18"]
+size = Vector3(7.5, 10.4085, 7.5)
+
+[sub_resource type="BoxShape3D" id="S19"]
+size = Vector3(7.5, 14.736, 7.5)
+
+[sub_resource type="BoxShape3D" id="S20"]
+size = Vector3(7.5, 8, 10)
+
+[sub_resource type="BoxShape3D" id="S21"]
+size = Vector3(12.5, 20, 12.5)
+
+[sub_resource type="BoxShape3D" id="S22"]
+size = Vector3(7.6923, 10.4085, 7.5)
+
+[sub_resource type="BoxShape3D" id="S23"]
+size = Vector3(7.6923, 14.736, 7.5)
+
+[sub_resource type="BoxShape3D" id="S24"]
+size = Vector3(7.6923, 12.3542, 7.5)
+
+[sub_resource type="BoxShape3D" id="S25"]
+size = Vector3(2.5, 1.8334, 0.4543)
+
+[sub_resource type="BoxShape3D" id="S26"]
+size = Vector3(3.75, 1.8334, 0.4543)
+
+[sub_resource type="BoxShape3D" id="S27"]
+size = Vector3(1.965, 1.3826, 3.2792)
+
+[sub_resource type="BoxShape3D" id="S28"]
+size = Vector3(0.4, 1.5689, 3)
+
+[sub_resource type="BoxShape3D" id="S29"]
+size = Vector3(1.9552, 1.135, 3.2638)
+
+[sub_resource type="BoxShape3D" id="S30"]
+size = Vector3(1.9552, 1.169, 3.2638)
+
+[sub_resource type="BoxShape3D" id="S31"]
+size = Vector3(1.965, 1.3826, 3.2798)
+
+[sub_resource type="BoxShape3D" id="S32"]
+size = Vector3(1.2757, 0.709, 1.2686)
+
+[sub_resource type="BoxShape3D" id="S33"]
+size = Vector3(1.6167, 1.0553, 1.4066)
+
+[sub_resource type="BoxShape3D" id="S34"]
+size = Vector3(1.9765, 1.3907, 3.2972)
+
+[sub_resource type="BoxShape3D" id="S35"]
+size = Vector3(0.4, 1.5, 3)
+
+[sub_resource type="BoxShape3D" id="S36"]
+size = Vector3(0.4, 1.0958, 1.5)
+
+[sub_resource type="BoxShape3D" id="S37"]
+size = Vector3(0.45, 3, 0.45)
+
+[sub_resource type="BoxShape3D" id="S38"]
+size = Vector3(0.3, 4.6, 0.3)
+
+[sub_resource type="BoxShape3D" id="S39"]
+size = Vector3(136, 1, 96)
+
+[sub_resource type="BoxShape3D" id="S40"]
+size = Vector3(1, 22, 82)
+
+[sub_resource type="BoxShape3D" id="S41"]
+size = Vector3(122, 22, 1)
+
+[sub_resource type="BoxShape3D" id="S42"]
+size = Vector3(122, 1, 82)
+
+[sub_resource type="BoxShape3D" id="S43"]
+size = Vector3(144, 1, 21.1)
+
+[sub_resource type="BoxShape3D" id="S44"]
+size = Vector3(26.1, 1, 4.3)
+
+[sub_resource type="BoxShape3D" id="S45"]
+size = Vector3(21.1, 1, 9.3)
+
+[sub_resource type="BoxShape3D" id="S46"]
+size = Vector3(33.2, 1, 23.2)
+
+[sub_resource type="BoxShape3D" id="S47"]
+size = Vector3(33.6, 1, 23.2)
+
+[sub_resource type="BoxShape3D" id="S48"]
+size = Vector3(33.6, 1, 18.2)
+
+[sub_resource type="BoxShape3D" id="S49"]
+size = Vector3(32.6, 1, 6.8)
+
+[sub_resource type="BoxShape3D" id="S50"]
+size = Vector3(120, 22, 7.5)
+
+[sub_resource type="BoxShape3D" id="S51"]
+size = Vector3(12.44, 22, 5)
+
+[sub_resource type="BoxShape3D" id="S52"]
+size = Vector3(7.5, 22, 72.5)
+
+[sub_resource type="BoxShape3D" id="S53"]
+size = Vector3(7.5, 22, 67.5)
+
+[sub_resource type="BoxShape3D" id="S54"]
+size = Vector3(12.44, 22, 12.38)
+
+[sub_resource type="BoxShape3D" id="S55"]
+size = Vector3(5, 22, 12.44)
+
+[sub_resource type="BoxShape3D" id="S56"]
+size = Vector3(100, 22, 7.44)
+
+[sub_resource type="BoxMesh" id="KM1"]
+size = Vector3(7.25, 3.81, 8.82)
+
+[sub_resource type="StandardMaterial3D" id="KC1"]
+albedo_color = Color(0.328, 0.312, 0.317, 1)
+
+[sub_resource type="BoxMesh" id="KM2"]
+size = Vector3(12.5, 31.22, 20)
+
+[sub_resource type="StandardMaterial3D" id="KC2"]
+albedo_color = Color(0.517, 0.496, 0.481, 1)
+
+[sub_resource type="BoxMesh" id="KM3"]
+size = Vector3(7.5, 3.36, 7.5)
+
+[sub_resource type="StandardMaterial3D" id="KC3"]
+albedo_color = Color(0.354, 0.315, 0.289, 1)
+
+[sub_resource type="BoxMesh" id="KM4"]
+size = Vector3(7.5, 7.23, 12.5)
+
+[sub_resource type="StandardMaterial3D" id="KC4"]
+albedo_color = Color(0.499, 0.475, 0.458, 1)
+
+[sub_resource type="BoxMesh" id="KM5"]
+size = Vector3(7.5, 3.42, 7.5)
+
+[sub_resource type="StandardMaterial3D" id="KC5"]
+albedo_color = Color(0.394, 0.319, 0.275, 1)
+
+[sub_resource type="BoxMesh" id="KM6"]
+size = Vector3(10, 7.54, 7.5)
+
+[sub_resource type="StandardMaterial3D" id="KC6"]
+albedo_color = Color(0.375, 0.304, 0.234, 1)
+
+[sub_resource type="BoxMesh" id="KM7"]
+size = Vector3(4.24, 3, 3.66)
+
+[sub_resource type="StandardMaterial3D" id="KC7"]
+albedo_color = Color(0.458, 0.433, 0.415, 1)
+
+[sub_resource type="StandardMaterial3D" id="FundoMat0"]
+transparency = 1
+shading_mode = 0
+cull_mode = 2
+albedo_color = Color(1, 1, 1, 1)
+albedo_texture = ExtResource("f_cidade")
+uv1_scale = Vector3(2, 1, 1)
+disable_receive_shadows = true
+
+[sub_resource type="QuadMesh" id="FundoQuad0"]
+material = SubResource("FundoMat0")
+size = Vector2(460, 130)
+
+[sub_resource type="PanoramaSkyMaterial" id="CeuMat"]
+panorama = ExtResource("t_ceu")
+energy_multiplier = 1
+
+[sub_resource type="Sky" id="Ceu"]
+sky_material = SubResource("CeuMat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Ceu")
+sky_rotation = Vector3(0, 1.2915, 0)
+ambient_light_source = 3
+ambient_light_sky_contribution = 0.25
+ambient_light_color = Color(0.74, 0.8, 1, 1)
+ambient_light_energy = 0.8
+reflected_light_source = 2
+tonemap_mode = 3
+tonemap_exposure = 0.92
+ssao_enabled = true
+ssao_intensity = 2.4
+glow_enabled = true
+glow_intensity = 0.7
+glow_bloom = 0.12
+tonemap_white = 6.5
+ssao_radius = 1.6
+ssao_power = 1.5
+ssao_light_affect = 0.35
+glow_hdr_threshold = 1
+ssil_enabled = true
+ssil_intensity = 1
+ssil_radius = 4.0
+fog_enabled = true
+fog_light_color = Color(0.74, 0.84, 1, 1)
+fog_density = 0.0018
+fog_sky_affect = 0.15
+fog_aerial_perspective = 0.55
+fog_sun_scatter = 0.25
+adjustment_enabled = true
+adjustment_contrast = 1.06
+adjustment_saturation = 1.2
+
+[node name="Cidade" type="Node3D"]
+
+[node name="Ambiente" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="Sol" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.788, -0.412, 0.4575, 0, 0.7431, 0.6691, -0.6157, -0.5273, 0.5856, 0, 40, 0)
+light_color = Color(1, 0.9, 0.72, 1)
+light_energy = 2.8
+shadow_enabled = true
+shadow_blur = 1.2
+directional_shadow_max_distance = 170
+light_angular_distance = 0.8
+directional_shadow_blend_splits = true
+
+[node name="Preenchimento" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.788, 0.379, 0.4851, 0, 0.788, -0.6157, -0.6157, 0.4851, 0.621, 0, 40, 0)
+light_color = Color(1, 0.86, 0.68, 1)
+light_energy = 0.6
+light_specular = 0.2
+shadow_enabled = false
+
+[node name="Reflexo" type="ReflectionProbe" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+size = Vector3(122, 14, 82)
+box_projection = true
+interior = false
+ambient_mode = 0
+
+[node name="Colisao" type="Node3D" parent="."]
+
+[node name="Cidade" type="Node3D" parent="."]
+
+[node name="Luzes" type="Node3D" parent="."]
+
+[node name="pc1_AmoBox" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9397, 0, 0.342, 0, 1, 0, -0.342, 0, 0.9397, -51.2, 0.2546, 5.4)
+metadata/mapa_cor = Color(0.36, 0.38, 0.282, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc1_AmoBox"]
+shape = SubResource("S1")
+
+[node name="pc2_AmoBox_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -51.6, 0.2376, -5.6)
+metadata/mapa_cor = Color(0.386, 0.343, 0.28, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc2_AmoBox_01"]
+shape = SubResource("S2")
+
+[node name="pc3_Barrel_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -51.9, 0.4438, -6.6)
+metadata/mapa_cor = Color(0.365, 0.328, 0.301, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc3_Barrel_01"]
+shape = SubResource("S3")
+
+[node name="pc4_Barrel_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -51.2, 0.4433, -6.9)
+metadata/mapa_cor = Color(0.36, 0.309, 0.268, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc4_Barrel_02"]
+shape = SubResource("S4")
+
+[node name="pc5_Box_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -51.7, 0.4583, 6.6)
+metadata/mapa_cor = Color(0.589, 0.447, 0.298, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc5_Box_01"]
+shape = SubResource("S5")
+
+[node name="pc6_Box_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9659, 0, 0.2588, 0, 1, 0, -0.2588, 0, 0.9659, -51.7, 1.3583, 6.6)
+metadata/mapa_cor = Color(0.52, 0.382, 0.238, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc6_Box_02"]
+shape = SubResource("S5")
+
+[node name="pc7_Box_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, -50.7, 0.4544, 6.8)
+metadata/mapa_cor = Color(0.488, 0.365, 0.231, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc7_Box_03"]
+shape = SubResource("S6")
+
+[node name="pc8_Trash_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -51.8, 0.5391, 2.2)
+metadata/mapa_cor = Color(0.256, 0.268, 0.245, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc8_Trash_02"]
+shape = SubResource("S7")
+
+[node name="pc9_Wheel_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -52, 0.2759, -1.2)
+metadata/mapa_cor = Color(0.328, 0.328, 0.328, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc9_Wheel_01"]
+shape = SubResource("S8")
+
+[node name="pc10_Pallet_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9848, 0, 0.1736, 0, 1, 0, -0.1736, 0, 0.9848, -44.2, 0.1005, -6.6)
+metadata/mapa_cor = Color(0.442, 0.325, 0.2, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc10_Pallet_01"]
+shape = SubResource("S9")
+
+[node name="pc11_RoadPart_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41.6, 0.5, -4.4)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc11_RoadPart_02"]
+shape = SubResource("S10")
+
+[node name="pc12_RoadPart_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41.6, 0.375, 3.6)
+metadata/mapa_cor = Color(0.755, 0.478, 0.424, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc12_RoadPart_04"]
+shape = SubResource("S11")
+
+[node name="pc13_Car_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9063, 0, -0.4226, 0, 1, 0, 0.4226, 0, 0.9063, -43.4, 0.7443, 5.9)
+metadata/mapa_cor = Color(0.556, 0.531, 0.523, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc13_Car_01"]
+shape = SubResource("S12")
+
+[node name="pc15_AmoBox" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9397, 0, -0.342, 0, 1, 0, 0.342, 0, -0.9397, 51.2, 0.2546, -5.4)
+metadata/mapa_cor = Color(0.36, 0.38, 0.282, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc15_AmoBox"]
+shape = SubResource("S1")
+
+[node name="pc16_AmoBox_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 51.6, 0.2376, 5.6)
+metadata/mapa_cor = Color(0.386, 0.343, 0.28, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc16_AmoBox_01"]
+shape = SubResource("S2")
+
+[node name="pc17_Barrel_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 51.9, 0.4438, 6.6)
+metadata/mapa_cor = Color(0.365, 0.328, 0.301, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc17_Barrel_01"]
+shape = SubResource("S3")
+
+[node name="pc18_Barrel_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 51.2, 0.4433, 6.9)
+metadata/mapa_cor = Color(0.36, 0.309, 0.268, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc18_Barrel_02"]
+shape = SubResource("S4")
+
+[node name="pc19_Box_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 51.7, 0.4583, -6.6)
+metadata/mapa_cor = Color(0.589, 0.447, 0.298, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc19_Box_01"]
+shape = SubResource("S5")
+
+[node name="pc20_Box_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9659, 0, -0.2588, 0, 1, 0, 0.2588, 0, -0.9659, 51.7, 1.3583, -6.6)
+metadata/mapa_cor = Color(0.52, 0.382, 0.238, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc20_Box_02"]
+shape = SubResource("S5")
+
+[node name="pc21_Box_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.766, 0, -0.6428, 0, 1, 0, 0.6428, 0, -0.766, 50.7, 0.4544, -6.8)
+metadata/mapa_cor = Color(0.488, 0.365, 0.231, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc21_Box_03"]
+shape = SubResource("S6")
+
+[node name="pc22_Trash_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 51.8, 0.5391, -2.2)
+metadata/mapa_cor = Color(0.256, 0.268, 0.245, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc22_Trash_02"]
+shape = SubResource("S7")
+
+[node name="pc23_Wheel_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 52, 0.2759, 1.2)
+metadata/mapa_cor = Color(0.328, 0.328, 0.328, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc23_Wheel_01"]
+shape = SubResource("S8")
+
+[node name="pc24_Pallet_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9848, 0, -0.1736, 0, 1, 0, 0.1736, 0, -0.9848, 44.2, 0.1005, 6.6)
+metadata/mapa_cor = Color(0.442, 0.325, 0.2, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc24_Pallet_01"]
+shape = SubResource("S9")
+
+[node name="pc25_RoadPart_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 41.6, 0.5, 4.4)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc25_RoadPart_02"]
+shape = SubResource("S10")
+
+[node name="pc26_RoadPart_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 41.6, 0.375, -3.6)
+metadata/mapa_cor = Color(0.755, 0.478, 0.424, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc26_RoadPart_04"]
+shape = SubResource("S11")
+
+[node name="pc27_Car_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9063, 0, 0.4226, 0, 1, 0, -0.4226, 0, -0.9063, 43.4, 0.7443, -5.9)
+metadata/mapa_cor = Color(0.556, 0.531, 0.523, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc27_Car_01"]
+shape = SubResource("S12")
+
+[node name="pc88_House_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -53.75, 18.8778, -33.75)
+metadata/mapa_cor = Color(0.356, 0.325, 0.306, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc88_House_02"]
+shape = SubResource("S13")
+
+[node name="pc89_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.6607, 7.368, -36.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc89_House_04"]
+shape = SubResource("S14")
+
+[node name="pc90_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35.9821, 6.1771, -36.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc90_House_03"]
+shape = SubResource("S15")
+
+[node name="pc91_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28.3036, 5.2042, -36.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc91_House_01"]
+shape = SubResource("S16")
+
+[node name="pc92_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.625, 7.368, -36.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc92_House_04"]
+shape = SubResource("S14")
+
+[node name="pc93_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.9464, 6.1771, -36.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc93_House_03"]
+shape = SubResource("S15")
+
+[node name="pc94_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.2679, 5.2042, -36.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc94_House_01"]
+shape = SubResource("S16")
+
+[node name="pc95_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4107, 7.368, -36.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc95_House_04"]
+shape = SubResource("S14")
+
+[node name="pc96_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.0893, 6.1771, -36.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc96_House_03"]
+shape = SubResource("S15")
+
+[node name="pc97_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.7679, 5.2042, -36.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc97_House_01"]
+shape = SubResource("S16")
+
+[node name="pc98_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.4464, 7.368, -36.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc98_House_04"]
+shape = SubResource("S14")
+
+[node name="pc99_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.125, 6.1771, -36.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc99_House_03"]
+shape = SubResource("S15")
+
+[node name="pc100_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40.8036, 5.2042, -36.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc100_House_01"]
+shape = SubResource("S16")
+
+[node name="pc101_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.4821, 7.368, -36.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc101_House_04"]
+shape = SubResource("S14")
+
+[node name="pc102_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 56.1607, 6.1771, -36.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc102_House_03"]
+shape = SubResource("S15")
+
+[node name="pc103_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 56.25, 6.1771, -28.75)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc103_House_03"]
+shape = SubResource("S17")
+
+[node name="pc104_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 56.25, 5.2042, -21.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc104_House_01"]
+shape = SubResource("S18")
+
+[node name="pc105_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 56.25, 7.368, -13.75)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc105_House_04"]
+shape = SubResource("S19")
+
+[node name="pc106_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 56.25, 6.1771, -6.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc106_House_03"]
+shape = SubResource("S17")
+
+[node name="pc107_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 56.25, 5.2042, 1.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc107_House_01"]
+shape = SubResource("S18")
+
+[node name="pc108_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 56.25, 7.368, 8.75)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc108_House_04"]
+shape = SubResource("S19")
+
+[node name="pc109_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 56.25, 6.1771, 16.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc109_House_03"]
+shape = SubResource("S17")
+
+[node name="pc110_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 56.25, 5.2042, 23.75)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc110_House_01"]
+shape = SubResource("S18")
+
+[node name="pc111_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -56.25, 5.2042, -23.75)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc111_House_01"]
+shape = SubResource("S18")
+
+[node name="pc112_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -56.25, 7.368, -16.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc112_House_04"]
+shape = SubResource("S19")
+
+[node name="pc113_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -56.25, 6.1771, -8.75)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc113_House_03"]
+shape = SubResource("S17")
+
+[node name="pc114_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -56.25, 5.2042, -1.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc114_House_01"]
+shape = SubResource("S18")
+
+[node name="pc115_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -56.25, 7.368, 6.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc115_House_04"]
+shape = SubResource("S19")
+
+[node name="pc116_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -56.25, 6.1771, 13.75)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc116_House_03"]
+shape = SubResource("S17")
+
+[node name="pc117_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -56.25, 5.2042, 21.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc117_House_01"]
+shape = SubResource("S18")
+
+[node name="pc118_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -56.25, 7.368, 28.75)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc118_House_04"]
+shape = SubResource("S19")
+
+[node name="pc119_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.25, 6.1771, 36.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc119_House_03"]
+shape = SubResource("S17")
+
+[node name="pc123_Office_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -10, 4, -21.25)
+metadata/mapa_cor = Color(0.56, 0.536, 0.512, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc123_Office_01"]
+shape = SubResource("S20")
+
+[node name="pc126_Bank_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 28.75, 10, -13.75)
+metadata/mapa_cor = Color(0.361, 0.361, 0.361, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc126_Bank_01"]
+shape = SubResource("S21")
+
+[node name="pc127_House_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 46.25, 18.8778, -13.75)
+metadata/mapa_cor = Color(0.356, 0.325, 0.306, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc127_House_02"]
+shape = SubResource("S13")
+
+[node name="pc128_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -31.25, 6.1771, -11.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc128_House_03"]
+shape = SubResource("S17")
+
+[node name="pc130_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, 7.368, -11.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc130_House_04"]
+shape = SubResource("S19")
+
+[node name="pc131_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, 6.1771, -11.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc131_House_03"]
+shape = SubResource("S17")
+
+[node name="pc134_House_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -46.25, 18.8778, 13.75)
+metadata/mapa_cor = Color(0.356, 0.325, 0.306, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc134_House_02"]
+shape = SubResource("S13")
+
+[node name="pc135_Bank_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -28.75, 10, 13.75)
+metadata/mapa_cor = Color(0.361, 0.361, 0.361, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc135_Bank_01"]
+shape = SubResource("S21")
+
+[node name="pc136_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -16.25, 5.2042, 11.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc136_House_01"]
+shape = SubResource("S18")
+
+[node name="pc137_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.75, 7.368, 11.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc137_House_04"]
+shape = SubResource("S19")
+
+[node name="pc139_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 31.25, 6.1771, 11.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc139_House_03"]
+shape = SubResource("S17")
+
+[node name="pc144_Office_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10, 4, 21.25)
+metadata/mapa_cor = Color(0.56, 0.536, 0.512, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc144_Office_01"]
+shape = SubResource("S20")
+
+[node name="pc146_House_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.75, 18.8778, 33.75)
+metadata/mapa_cor = Color(0.356, 0.325, 0.306, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc146_House_02"]
+shape = SubResource("S13")
+
+[node name="pc147_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -48.6538, 5.2042, 36.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc147_House_01"]
+shape = SubResource("S22")
+
+[node name="pc148_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -40.9615, 7.368, 36.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc148_House_04"]
+shape = SubResource("S23")
+
+[node name="pc149_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -33.2692, 6.1771, 36.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc149_House_03"]
+shape = SubResource("S24")
+
+[node name="pc150_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -25.5769, 5.2042, 36.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc150_House_01"]
+shape = SubResource("S22")
+
+[node name="pc151_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -17.8846, 7.368, 36.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc151_House_04"]
+shape = SubResource("S23")
+
+[node name="pc152_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -10.1923, 6.1771, 36.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc152_House_03"]
+shape = SubResource("S24")
+
+[node name="pc153_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -2.5, 5.2042, 36.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc153_House_01"]
+shape = SubResource("S22")
+
+[node name="pc154_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 5.1923, 7.368, 36.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc154_House_04"]
+shape = SubResource("S23")
+
+[node name="pc155_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 12.8846, 6.1771, 36.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc155_House_03"]
+shape = SubResource("S24")
+
+[node name="pc156_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 20.5769, 5.2042, 36.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc156_House_01"]
+shape = SubResource("S22")
+
+[node name="pc157_House_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 28.2692, 7.368, 36.25)
+metadata/mapa_cor = Color(0.505, 0.436, 0.386, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc157_House_04"]
+shape = SubResource("S23")
+
+[node name="pc158_House_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 35.9615, 6.1771, 36.25)
+metadata/mapa_cor = Color(0.461, 0.463, 0.466, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc158_House_03"]
+shape = SubResource("S24")
+
+[node name="pc159_House_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 43.6538, 5.2042, 36.25)
+metadata/mapa_cor = Color(0.411, 0.39, 0.368, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc159_House_01"]
+shape = SubResource("S22")
+
+[node name="pc160_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.25, 0.9167, -21.25)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc160_Fence_03"]
+shape = SubResource("S25")
+
+[node name="pc161_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.75, 0.9167, -21.25)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc161_Fence_03"]
+shape = SubResource("S25")
+
+[node name="pc162_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.75, 0.9167, -11.25)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc162_Fence_03"]
+shape = SubResource("S25")
+
+[node name="pc163_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 0.9167, -11.25)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc163_Fence_03"]
+shape = SubResource("S25")
+
+[node name="pc164_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 0.9167, 11.25)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc164_Fence_03"]
+shape = SubResource("S25")
+
+[node name="pc165_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.75, 0.9167, 11.25)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc165_Fence_03"]
+shape = SubResource("S25")
+
+[node name="pc166_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.75, 0.9167, 21.25)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc166_Fence_03"]
+shape = SubResource("S25")
+
+[node name="pc167_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.25, 0.9167, 21.25)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc167_Fence_03"]
+shape = SubResource("S25")
+
+[node name="pc168_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -38.15, 0.7767, 21.875)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc168_Fence_03"]
+shape = SubResource("S26")
+
+[node name="pc169_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -38.75, 0.7767, 25.625)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc169_Fence_03"]
+shape = SubResource("S26")
+
+[node name="pc170_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 38.75, 0.7767, -25.625)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc170_Fence_03"]
+shape = SubResource("S26")
+
+[node name="pc171_Fence_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 38.15, 0.7767, -21.875)
+metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc171_Fence_03"]
+shape = SubResource("S26")
+
+[node name="pc179_Car_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0844, 0, 0.9964, 0, 1, 0, -0.9964, 0, -0.0844, -26.25, 0.7443, -32.05)
+metadata/mapa_cor = Color(0.556, 0.531, 0.523, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc179_Car_01"]
+shape = SubResource("S12")
+
+[node name="pc204_OldCar_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9989, 0, -0.0459, 0, 1, 0, 0.0459, 0, -0.9989, 26.25, 0.6913, -32.65)
+metadata/mapa_cor = Color(0.621, 0.475, 0.334, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc204_OldCar_04"]
+shape = SubResource("S27")
+
+[node name="pc212_RoadPart_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9938, 0, -0.1111, 0, 1, 0, 0.1111, 0, 0.9938, -18.75, 0.6444, -28.75)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc212_RoadPart_05"]
+shape = SubResource("S28")
+
+[node name="pc213_RoadPart_06" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9938, 0, -0.1111, 0, 1, 0, 0.1111, 0, 0.9938, -18.75, 0.5, -25.75)
+metadata/mapa_cor = Color(0.549, 0.549, 0.549, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc213_RoadPart_06"]
+shape = SubResource("S10")
+
+[node name="pc214_RoadPart_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9996, 0, -0.0293, 0, 1, 0, 0.0293, 0, 0.9996, 21.25, 0.6444, -28.75)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc214_RoadPart_05"]
+shape = SubResource("S28")
+
+[node name="pc215_RoadPart_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9996, 0, -0.0293, 0, 1, 0, 0.0293, 0, 0.9996, 21.25, 0.5, -25.75)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc215_RoadPart_02"]
+shape = SubResource("S10")
+
+[node name="pc217_OldCar_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9957, 0, -0.0927, 0, 1, 0, 0.0927, 0, -0.9957, -13.75, 0.5675, -24.85)
+metadata/mapa_cor = Color(0.486, 0.375, 0.342, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc217_OldCar_02"]
+shape = SubResource("S29")
+
+[node name="pc231_Car_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1664, 0, 0.9861, 0, 1, 0, -0.9861, 0, -0.1664, 43.75, 0.6043, -26.25)
+metadata/mapa_cor = Color(0.556, 0.531, 0.523, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc231_Car_01"]
+shape = SubResource("S12")
+
+[node name="pc232_OldCar_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1959, 0, 0.9806, 0, 1, 0, -0.9806, 0, -0.1959, 48.75, 0.4445, -26.25)
+metadata/mapa_cor = Color(0.466, 0.421, 0.394, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc232_OldCar_01"]
+shape = SubResource("S30")
+
+[node name="pc233_OldCar_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9928, 0, 0.1194, 0, 1, 0, -0.1194, 0, 0.9928, 1.25, 0.5513, -23.75)
+metadata/mapa_cor = Color(0.399, 0.36, 0.327, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc233_OldCar_03"]
+shape = SubResource("S31")
+
+[node name="pc234_Box_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9982, 0, 0.0602, 0, 1, 0, -0.0602, 0, 0.9982, 23.25, 0.4583, -24.05)
+metadata/mapa_cor = Color(0.589, 0.447, 0.298, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc234_Box_01"]
+shape = SubResource("S5")
+
+[node name="pc235_Box_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9174, 0, 0.3979, 0, 1, 0, -0.3979, 0, 0.9174, 24.25, 0.4583, -23.55)
+metadata/mapa_cor = Color(0.52, 0.382, 0.238, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc235_Box_02"]
+shape = SubResource("S5")
+
+[node name="pc236_Box_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.7832, 0, 0.6218, 0, 1, 0, -0.6218, 0, 0.7832, 23.45, 1.3544, -23.85)
+metadata/mapa_cor = Color(0.488, 0.365, 0.231, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc236_Box_03"]
+shape = SubResource("S6")
+
+[node name="pc237_Car_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.2055, 0, 0.9787, 0, 1, 0, -0.9787, 0, 0.2055, 31.25, 0.7443, -23.75)
+metadata/mapa_cor = Color(0.556, 0.531, 0.523, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc237_Car_01"]
+shape = SubResource("S12")
+
+[node name="pc244_Trash_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 31.25, 0.5391, -21.25)
+metadata/mapa_cor = Color(0.256, 0.268, 0.245, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc244_Trash_02"]
+shape = SubResource("S7")
+
+[node name="pc245_Garbage_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.25, 0.3545, -19.65)
+metadata/mapa_cor = Color(0.369, 0.291, 0.241, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc245_Garbage_01"]
+shape = SubResource("S32")
+
+[node name="pc246_OldCar_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1301, 0, 0.9915, 0, 1, 0, -0.9915, 0, -0.1301, 43.75, 0.5675, -20.35)
+metadata/mapa_cor = Color(0.486, 0.375, 0.342, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc246_OldCar_02"]
+shape = SubResource("S29")
+
+[node name="pc247_OldCar_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.109, 0, 0.994, 0, 1, 0, -0.994, 0, 0.109, 48.75, 0.6913, -20.35)
+metadata/mapa_cor = Color(0.399, 0.36, 0.327, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc247_OldCar_03"]
+shape = SubResource("S31")
+
+[node name="pc248_Box_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.94, 0, -0.3412, 0, 1, 0, 0.3412, 0, 0.94, -11.75, 0.4583, -16.55)
+metadata/mapa_cor = Color(0.589, 0.447, 0.298, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc248_Box_01"]
+shape = SubResource("S5")
+
+[node name="pc249_Box_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0.0009, 0, 1, 0, -0.0009, 0, 1, -10.75, 0.4583, -16.05)
+metadata/mapa_cor = Color(0.52, 0.382, 0.238, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc249_Box_02"]
+shape = SubResource("S5")
+
+[node name="pc250_Box_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9657, 0, 0.2597, 0, 1, 0, -0.2597, 0, 0.9657, -11.55, 1.3544, -16.35)
+metadata/mapa_cor = Color(0.488, 0.365, 0.231, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc250_Box_03"]
+shape = SubResource("S6")
+
+[node name="pc251_Box_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8931, 0, 0.4498, 0, 1, 0, -0.4498, 0, 0.8931, -21.75, 0.4583, -11.55)
+metadata/mapa_cor = Color(0.589, 0.447, 0.298, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc251_Box_01"]
+shape = SubResource("S5")
+
+[node name="pc252_Box_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.6854, 0, 0.7281, 0, 1, 0, -0.7281, 0, 0.6854, -20.75, 0.4583, -11.05)
+metadata/mapa_cor = Color(0.52, 0.382, 0.238, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc252_Box_02"]
+shape = SubResource("S5")
+
+[node name="pc253_Box_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.4736, 0, 0.8807, 0, 1, 0, -0.8807, 0, 0.4736, -21.55, 1.3544, -11.35)
+metadata/mapa_cor = Color(0.488, 0.365, 0.231, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc253_Box_03"]
+shape = SubResource("S6")
+
+[node name="pc254_Trash_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -21.25, 0.5277, -8.75)
+metadata/mapa_cor = Color(0.344, 0.269, 0.212, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc254_Trash_01"]
+shape = SubResource("S33")
+
+[node name="pc255_Garbage_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.25, 0.3545, -7.15)
+metadata/mapa_cor = Color(0.369, 0.291, 0.241, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc255_Garbage_01"]
+shape = SubResource("S32")
+
+[node name="pc256_OldCar_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9945, 0, 0.1051, 0, 1, 0, -0.1051, 0, 0.9945, -1.25, 0.5554, -8.75)
+metadata/mapa_cor = Color(0.438, 0.404, 0.385, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc256_OldCar_05"]
+shape = SubResource("S34")
+
+[node name="pc296_OldCar_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1661, 0, 0.9861, 0, 1, 0, -0.9861, 0, -0.1661, -8.75, 0.5675, -4.65)
+metadata/mapa_cor = Color(0.486, 0.375, 0.342, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc296_OldCar_02"]
+shape = SubResource("S29")
+
+[node name="pc297_RoadPart_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9995, 0, 0.0329, 0, 1, 0, -0.0329, 0, 0.9995, 6.25, 0.75, -4.95)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc297_RoadPart_03"]
+shape = SubResource("S35")
+
+[node name="pc298_RoadPart_07" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9995, 0, 0.0329, 0, 1, 0, -0.0329, 0, 0.9995, 6.25, 0.4079, -1.45)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc298_RoadPart_07"]
+shape = SubResource("S36")
+
+[node name="pc299_OldCar_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9989, 0, 0.0459, 0, 1, 0, -0.0459, 0, -0.9989, 18.75, 0.5675, -5.15)
+metadata/mapa_cor = Color(0.486, 0.375, 0.342, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc299_OldCar_02"]
+shape = SubResource("S29")
+
+[node name="pc300_RoadPart_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0926, 0, 0.9957, 0, 1, 0, -0.9957, 0, 0.0926, -36.25, 0.6444, -1.25)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc300_RoadPart_05"]
+shape = SubResource("S28")
+
+[node name="pc301_RoadPart_06" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0926, 0, 0.9957, 0, 1, 0, -0.9957, 0, 0.0926, -33.95, 0.36, -1.25)
+metadata/mapa_cor = Color(0.549, 0.549, 0.549, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc301_RoadPart_06"]
+shape = SubResource("S10")
+
+[node name="pc302_RoadPart_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0.0056, 0, 1, 0, -0.0056, 0, 1, -16.25, 0.61, -1.25)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc302_RoadPart_03"]
+shape = SubResource("S35")
+
+[node name="pc303_RoadPart_06" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0.0056, 0, 1, 0, -0.0056, 0, 1, -16.25, 0.36, 1.05)
+metadata/mapa_cor = Color(0.549, 0.549, 0.549, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc303_RoadPart_06"]
+shape = SubResource("S10")
+
+[node name="pc304_RoadPart_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0.0085, 0, 1, 0, -0.0085, 0, 1, 16.25, 0.6444, -1.25)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc304_RoadPart_05"]
+shape = SubResource("S28")
+
+[node name="pc305_RoadPart_06" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0.0085, 0, 1, 0, -0.0085, 0, 1, 16.25, 0.36, 1.05)
+metadata/mapa_cor = Color(0.549, 0.549, 0.549, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc305_RoadPart_06"]
+shape = SubResource("S10")
+
+[node name="pc306_Car_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1364, 0, 0.9907, 0, 1, 0, -0.9907, 0, -0.1364, 33.75, 0.6043, -1.25)
+metadata/mapa_cor = Color(0.556, 0.531, 0.523, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc306_Car_01"]
+shape = SubResource("S12")
+
+[node name="pc307_Car_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1364, 0, 0.9907, 0, 1, 0, -0.9907, 0, -0.1364, -33.75, 0.6043, 1.25)
+metadata/mapa_cor = Color(0.556, 0.531, 0.523, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc307_Car_01"]
+shape = SubResource("S12")
+
+[node name="pc308_RoadPart_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0.0085, 0, 1, 0, -0.0085, 0, 1, -16.25, 0.6444, 1.25)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc308_RoadPart_05"]
+shape = SubResource("S28")
+
+[node name="pc309_RoadPart_06" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0.0085, 0, 1, 0, -0.0085, 0, 1, -16.25, 0.5, 4.25)
+metadata/mapa_cor = Color(0.549, 0.549, 0.549, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc309_RoadPart_06"]
+shape = SubResource("S10")
+
+[node name="pc310_RoadPart_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0.0056, 0, 1, 0, -0.0056, 0, 1, 16.25, 0.61, 1.25)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc310_RoadPart_03"]
+shape = SubResource("S35")
+
+[node name="pc311_RoadPart_06" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0.0056, 0, 1, 0, -0.0056, 0, 1, 16.25, 0.5, 4.25)
+metadata/mapa_cor = Color(0.549, 0.549, 0.549, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc311_RoadPart_06"]
+shape = SubResource("S10")
+
+[node name="pc312_RoadPart_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0926, 0, 0.9957, 0, 1, 0, -0.9957, 0, 0.0926, 36.25, 0.6444, 1.25)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc312_RoadPart_05"]
+shape = SubResource("S28")
+
+[node name="pc313_RoadPart_06" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.0926, 0, 0.9957, 0, 1, 0, -0.9957, 0, 0.0926, 38.55, 0.36, 1.25)
+metadata/mapa_cor = Color(0.549, 0.549, 0.549, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc313_RoadPart_06"]
+shape = SubResource("S10")
+
+[node name="pc314_OldCar_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9989, 0, 0.0459, 0, 1, 0, -0.0459, 0, -0.9989, -18.75, 0.5675, 5.15)
+metadata/mapa_cor = Color(0.486, 0.375, 0.342, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc314_OldCar_02"]
+shape = SubResource("S29")
+
+[node name="pc315_RoadPart_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9995, 0, 0.0329, 0, 1, 0, -0.0329, 0, 0.9995, -6.25, 0.75, 4.95)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc315_RoadPart_03"]
+shape = SubResource("S35")
+
+[node name="pc316_RoadPart_07" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9995, 0, 0.0329, 0, 1, 0, -0.0329, 0, 0.9995, -6.25, 0.5479, 6.05)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc316_RoadPart_07"]
+shape = SubResource("S36")
+
+[node name="pc317_OldCar_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1661, 0, 0.9861, 0, 1, 0, -0.9861, 0, -0.1661, 8.75, 0.5675, 4.65)
+metadata/mapa_cor = Color(0.486, 0.375, 0.342, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc317_OldCar_02"]
+shape = SubResource("S29")
+
+[node name="pc357_OldCar_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9945, 0, 0.1051, 0, 1, 0, -0.1051, 0, 0.9945, 1.25, 0.5554, 8.75)
+metadata/mapa_cor = Color(0.438, 0.404, 0.385, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc357_OldCar_05"]
+shape = SubResource("S34")
+
+[node name="pc358_Trash_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 21.25, 0.5277, 8.75)
+metadata/mapa_cor = Color(0.344, 0.269, 0.212, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc358_Trash_01"]
+shape = SubResource("S33")
+
+[node name="pc359_Garbage_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 0.3545, 10.35)
+metadata/mapa_cor = Color(0.369, 0.291, 0.241, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc359_Garbage_01"]
+shape = SubResource("S32")
+
+[node name="pc360_Box_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.8931, 0, 0.4498, 0, 1, 0, -0.4498, 0, 0.8931, 20.75, 0.4583, 10.95)
+metadata/mapa_cor = Color(0.589, 0.447, 0.298, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc360_Box_01"]
+shape = SubResource("S5")
+
+[node name="pc361_Box_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.6854, 0, 0.7281, 0, 1, 0, -0.7281, 0, 0.6854, 21.75, 0.4583, 11.45)
+metadata/mapa_cor = Color(0.52, 0.382, 0.238, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc361_Box_02"]
+shape = SubResource("S5")
+
+[node name="pc362_Box_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.4736, 0, 0.8807, 0, 1, 0, -0.8807, 0, 0.4736, 20.95, 1.3544, 11.15)
+metadata/mapa_cor = Color(0.488, 0.365, 0.231, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc362_Box_03"]
+shape = SubResource("S6")
+
+[node name="pc363_Box_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.94, 0, -0.3412, 0, 1, 0, 0.3412, 0, 0.94, 10.75, 0.4583, 15.95)
+metadata/mapa_cor = Color(0.589, 0.447, 0.298, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc363_Box_01"]
+shape = SubResource("S5")
+
+[node name="pc364_Box_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0.0009, 0, 1, 0, -0.0009, 0, 1, 11.75, 0.4583, 16.45)
+metadata/mapa_cor = Color(0.52, 0.382, 0.238, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc364_Box_02"]
+shape = SubResource("S5")
+
+[node name="pc365_Box_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9657, 0, 0.2597, 0, 1, 0, -0.2597, 0, 0.9657, 10.95, 1.3544, 16.15)
+metadata/mapa_cor = Color(0.488, 0.365, 0.231, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc365_Box_03"]
+shape = SubResource("S6")
+
+[node name="pc366_OldCar_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.109, 0, 0.994, 0, 1, 0, -0.994, 0, 0.109, -48.75, 0.6913, 20.35)
+metadata/mapa_cor = Color(0.399, 0.36, 0.327, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc366_OldCar_03"]
+shape = SubResource("S31")
+
+[node name="pc367_OldCar_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1301, 0, 0.9915, 0, 1, 0, -0.9915, 0, -0.1301, -43.75, 0.5675, 20.35)
+metadata/mapa_cor = Color(0.486, 0.375, 0.342, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc367_OldCar_02"]
+shape = SubResource("S29")
+
+[node name="pc368_Trash_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -31.25, 0.5391, 21.25)
+metadata/mapa_cor = Color(0.256, 0.268, 0.245, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc368_Trash_02"]
+shape = SubResource("S7")
+
+[node name="pc369_Garbage_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31.25, 0.3545, 22.85)
+metadata/mapa_cor = Color(0.369, 0.291, 0.241, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc369_Garbage_01"]
+shape = SubResource("S32")
+
+[node name="pc376_Car_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.2055, 0, 0.9787, 0, 1, 0, -0.9787, 0, 0.2055, -31.25, 0.7443, 23.75)
+metadata/mapa_cor = Color(0.556, 0.531, 0.523, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc376_Car_01"]
+shape = SubResource("S12")
+
+[node name="pc377_Box_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9982, 0, 0.0602, 0, 1, 0, -0.0602, 0, 0.9982, -24.25, 0.4583, 23.45)
+metadata/mapa_cor = Color(0.589, 0.447, 0.298, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc377_Box_01"]
+shape = SubResource("S5")
+
+[node name="pc378_Box_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9174, 0, 0.3979, 0, 1, 0, -0.3979, 0, 0.9174, -23.25, 0.4583, 23.95)
+metadata/mapa_cor = Color(0.52, 0.382, 0.238, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc378_Box_02"]
+shape = SubResource("S5")
+
+[node name="pc379_Box_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.7832, 0, 0.6218, 0, 1, 0, -0.6218, 0, 0.7832, -24.05, 1.3544, 23.65)
+metadata/mapa_cor = Color(0.488, 0.365, 0.231, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc379_Box_03"]
+shape = SubResource("S6")
+
+[node name="pc380_OldCar_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9928, 0, 0.1194, 0, 1, 0, -0.1194, 0, 0.9928, -1.25, 0.5513, 23.75)
+metadata/mapa_cor = Color(0.399, 0.36, 0.327, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc380_OldCar_03"]
+shape = SubResource("S31")
+
+[node name="pc381_OldCar_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1959, 0, 0.9806, 0, 1, 0, -0.9806, 0, -0.1959, -48.75, 0.4445, 26.25)
+metadata/mapa_cor = Color(0.466, 0.421, 0.394, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc381_OldCar_01"]
+shape = SubResource("S30")
+
+[node name="pc382_Car_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.1664, 0, 0.9861, 0, 1, 0, -0.9861, 0, -0.1664, -43.75, 0.6043, 26.25)
+metadata/mapa_cor = Color(0.556, 0.531, 0.523, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc382_Car_01"]
+shape = SubResource("S12")
+
+[node name="pc396_OldCar_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9957, 0, -0.0927, 0, 1, 0, 0.0927, 0, -0.9957, 13.75, 0.5675, 24.85)
+metadata/mapa_cor = Color(0.486, 0.375, 0.342, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc396_OldCar_02"]
+shape = SubResource("S29")
+
+[node name="pc398_RoadPart_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9996, 0, -0.0293, 0, 1, 0, 0.0293, 0, 0.9996, -21.25, 0.6444, 28.75)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc398_RoadPart_05"]
+shape = SubResource("S28")
+
+[node name="pc399_RoadPart_02" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9996, 0, -0.0293, 0, 1, 0, 0.0293, 0, 0.9996, -21.25, 0.5, 31.75)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc399_RoadPart_02"]
+shape = SubResource("S10")
+
+[node name="pc400_RoadPart_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9938, 0, -0.1111, 0, 1, 0, 0.1111, 0, 0.9938, 18.75, 0.6444, 28.75)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc400_RoadPart_05"]
+shape = SubResource("S28")
+
+[node name="pc401_RoadPart_06" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.9938, 0, -0.1111, 0, 1, 0, 0.1111, 0, 0.9938, 18.75, 0.5, 31.75)
+metadata/mapa_cor = Color(0.549, 0.549, 0.549, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc401_RoadPart_06"]
+shape = SubResource("S10")
+
+[node name="pc409_OldCar_04" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.9989, 0, -0.0459, 0, 1, 0, 0.0459, 0, -0.9989, -26.25, 0.6913, 32.65)
+metadata/mapa_cor = Color(0.621, 0.475, 0.334, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc409_OldCar_04"]
+shape = SubResource("S27")
+
+[node name="pc434_Car_01" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.0844, 0, 0.9964, 0, 1, 0, -0.9964, 0, -0.0844, 26.25, 0.7443, 32.05)
+metadata/mapa_cor = Color(0.556, 0.531, 0.523, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc434_Car_01"]
+shape = SubResource("S12")
+
+[node name="pc856_OldCar_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0.866, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866, -1.7, 0.5513, 2.4)
+metadata/mapa_cor = Color(0.399, 0.36, 0.327, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc856_OldCar_03"]
+shape = SubResource("S31")
+
+[node name="pc857_OldCar_05" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.866, 0, -0.5, 0, 1, 0, 0.5, 0, -0.866, 1.7, 0.5554, -2.4)
+metadata/mapa_cor = Color(0.438, 0.404, 0.385, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc857_OldCar_05"]
+shape = SubResource("S34")
+
+[node name="pc858_RoadPart_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 0.61, -1.9)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc858_RoadPart_03"]
+shape = SubResource("S35")
+
+[node name="pc859_RoadPart_03" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 0.61, 1.9)
+metadata/mapa_cor = Color(0.58, 0.58, 0.58, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc859_RoadPart_03"]
+shape = SubResource("S35")
+
+[node name="pb0" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41.25, 1.5, -31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb0"]
+shape = SubResource("S37")
+
+[node name="pb1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.75, 2.3, -31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb1"]
+shape = SubResource("S38")
+
+[node name="pb2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.5, -31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb2"]
+shape = SubResource("S37")
+
+[node name="pb3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.25, 1.5, -31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb3"]
+shape = SubResource("S37")
+
+[node name="pb4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, 1.5, -31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb4"]
+shape = SubResource("S37")
+
+[node name="pb5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.5, -31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb5"]
+shape = SubResource("S37")
+
+[node name="pb6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.25, 2.3, -31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb6"]
+shape = SubResource("S38")
+
+[node name="pb7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.25, 1.5, -31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb7"]
+shape = SubResource("S37")
+
+[node name="pb8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31.25, 2.3, -26.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb8"]
+shape = SubResource("S38")
+
+[node name="pb9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.75, 1.5, -26.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb9"]
+shape = SubResource("S37")
+
+[node name="pb10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.75, 2.3, -26.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb10"]
+shape = SubResource("S38")
+
+[node name="pb11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.25, 1.5, -26.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb11"]
+shape = SubResource("S37")
+
+[node name="pb12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.25, 1.5, -21.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb12"]
+shape = SubResource("S37")
+
+[node name="pb13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 1.5, -8.75)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb13"]
+shape = SubResource("S37")
+
+[node name="pb14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.75, 1.5, -6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb14"]
+shape = SubResource("S37")
+
+[node name="pb15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31.25, 2.3, -6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb15"]
+shape = SubResource("S38")
+
+[node name="pb16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.25, 1.5, -6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb16"]
+shape = SubResource("S37")
+
+[node name="pb17" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.25, 1.5, -6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb17"]
+shape = SubResource("S37")
+
+[node name="pb18" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, 2.3, -6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb18"]
+shape = SubResource("S38")
+
+[node name="pb19" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 1.5, -6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb19"]
+shape = SubResource("S37")
+
+[node name="pb20" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.75, 2.3, -6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb20"]
+shape = SubResource("S38")
+
+[node name="pb21" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.25, 1.5, -6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb21"]
+shape = SubResource("S37")
+
+[node name="pb22" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41.25, 1.5, 6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb22"]
+shape = SubResource("S37")
+
+[node name="pb23" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.75, 2.3, 6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb23"]
+shape = SubResource("S38")
+
+[node name="pb24" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.25, 1.5, 6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb24"]
+shape = SubResource("S37")
+
+[node name="pb25" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.75, 2.3, 6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb25"]
+shape = SubResource("S38")
+
+[node name="pb26" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.25, 1.5, 6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb26"]
+shape = SubResource("S37")
+
+[node name="pb27" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, 1.5, 6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb27"]
+shape = SubResource("S37")
+
+[node name="pb28" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.25, 2.3, 6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb28"]
+shape = SubResource("S38")
+
+[node name="pb29" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.75, 1.5, 6.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb29"]
+shape = SubResource("S37")
+
+[node name="pb30" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.25, 1.5, 8.75)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb30"]
+shape = SubResource("S37")
+
+[node name="pb31" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 1.5, 21.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb31"]
+shape = SubResource("S37")
+
+[node name="pb32" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.25, 1.5, 26.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb32"]
+shape = SubResource("S37")
+
+[node name="pb33" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.75, 2.3, 26.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb33"]
+shape = SubResource("S38")
+
+[node name="pb34" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.75, 1.5, 26.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb34"]
+shape = SubResource("S37")
+
+[node name="pb35" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.25, 2.3, 26.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb35"]
+shape = SubResource("S38")
+
+[node name="pb36" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46.25, 1.5, 31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb36"]
+shape = SubResource("S37")
+
+[node name="pb37" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.25, 2.3, 31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb37"]
+shape = SubResource("S38")
+
+[node name="pb38" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 1.5, 31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb38"]
+shape = SubResource("S37")
+
+[node name="pb39" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.75, 1.5, 31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb39"]
+shape = SubResource("S37")
+
+[node name="pb40" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 1.5, 31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb40"]
+shape = SubResource("S37")
+
+[node name="pb41" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 1.5, 31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb41"]
+shape = SubResource("S37")
+
+[node name="pb42" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.75, 2.3, 31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb42"]
+shape = SubResource("S38")
+
+[node name="pb43" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.25, 1.5, 31.25)
+metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pb43"]
+shape = SubResource("S37")
+
+[node name="Piso" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.64, 0)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Piso"]
+shape = SubResource("S39")
+
+[node name="LimiteOeste" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -60.5, 11, 0)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteOeste"]
+shape = SubResource("S40")
+
+[node name="LimiteLeste" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, 11, 0)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteLeste"]
+shape = SubResource("S40")
+
+[node name="LimiteSul" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11, -40.5)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteSul"]
+shape = SubResource("S41")
+
+[node name="LimiteNorte" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11, 40.5)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteNorte"]
+shape = SubResource("S41")
+
+[node name="LimiteTeto" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 22.5, 0)
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteTeto"]
+shape = SubResource("S42")
+
+[node name="Calcada1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, -41.45)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada1"]
+shape = SubResource("S43")
+
+[node name="Calcada2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -58.95, -0.5, -28.75)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada2"]
+shape = SubResource("S44")
+
+[node name="Calcada3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.45, -0.5, -26.25)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada3"]
+shape = SubResource("S45")
+
+[node name="Calcada4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, -0.5, -15)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada4"]
+shape = SubResource("S46")
+
+[node name="Calcada5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -0.5, -15)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada5"]
+shape = SubResource("S46")
+
+[node name="Calcada6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.2, -0.5, -15)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada6"]
+shape = SubResource("S47")
+
+[node name="Calcada7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.2, -0.5, -12.5)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada7"]
+shape = SubResource("S48")
+
+[node name="Calcada8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.7, -0.5, 0)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada8"]
+shape = SubResource("S49")
+
+[node name="Calcada9" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.7, -0.5, 0)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada9"]
+shape = SubResource("S49")
+
+[node name="Calcada10" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.2, -0.5, 12.5)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada10"]
+shape = SubResource("S48")
+
+[node name="Calcada11" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, -0.5, 15)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada11"]
+shape = SubResource("S46")
+
+[node name="Calcada12" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.2, -0.5, 15)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada12"]
+shape = SubResource("S47")
+
+[node name="Calcada13" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -0.5, 15)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada13"]
+shape = SubResource("S46")
+
+[node name="Calcada14" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -61.45, -0.5, 26.25)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada14"]
+shape = SubResource("S45")
+
+[node name="Calcada15" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.95, -0.5, 28.75)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada15"]
+shape = SubResource("S44")
+
+[node name="Calcada16" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 41.45)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Calcada16"]
+shape = SubResource("S43")
+
+[node name="Barreira1" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11, -36.25)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira1"]
+shape = SubResource("S50")
+
+[node name="Barreira2" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -53.78, 11, -30)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira2"]
+shape = SubResource("S51")
+
+[node name="Barreira3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.25, 11, 3.75)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira3"]
+shape = SubResource("S52")
+
+[node name="Barreira4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56.25, 11, 6.25)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira4"]
+shape = SubResource("S53")
+
+[node name="Barreira5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.28, 11, -13.75)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira5"]
+shape = SubResource("S54")
+
+[node name="Barreira6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46.28, 11, 13.75)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira6"]
+shape = SubResource("S54")
+
+[node name="Barreira7" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 11, 33.78)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira7"]
+shape = SubResource("S55")
+
+[node name="Barreira8" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 11, 36.28)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira8"]
+shape = SubResource("S56")
+
+[node name="Desenho" parent="Cidade" instance=ExtResource("p_cidade")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
+[node name="Poste1" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.2, 4.3, 31.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste2" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.8, 4.3, -31.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste3" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.8, 4.3, 6.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste4" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31.2, 4.3, -26.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste5" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31.2, 4.3, -6.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste6" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.8, 4.3, 26.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste7" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.8, 4.3, 6.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste8" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.8, 4.3, -6.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste9" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.8, 4.3, -26.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste10" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.2, 4.3, 6.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste11" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.2, 4.3, 26.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste12" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.8, 4.3, -6.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste13" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.8, 4.3, 31.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Poste14" type="OmniLight3D" parent="Luzes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.2, 4.3, -31.2)
+light_color = Color(1, 0.82, 0.58, 1)
+light_energy = 1.8
+omni_range = 7.5
+
+[node name="Planta" type="Node3D" parent="."]
+
+[node name="p1" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -47, 1.9037, 0)
+mesh = SubResource("KM1")
+material_override = SubResource("KC1")
+visible = false
+
+[node name="p2" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 47, 1.9037, 0)
+mesh = SubResource("KM1")
+material_override = SubResource("KC1")
+visible = false
+
+[node name="p3" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46.25, 15.6108, -17.5)
+mesh = SubResource("KM2")
+material_override = SubResource("KC2")
+visible = false
+
+[node name="p4" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -31.25, 1.6786, -21.25)
+mesh = SubResource("KM3")
+material_override = SubResource("KC3")
+visible = false
+
+[node name="p5" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.25, 3.616, -18.75)
+mesh = SubResource("KM4")
+material_override = SubResource("KC4")
+visible = false
+
+[node name="p6" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, 1.7113, -21.25)
+mesh = SubResource("KM5")
+material_override = SubResource("KC5")
+visible = false
+
+[node name="p7" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, 1.6786, -21.25)
+mesh = SubResource("KM3")
+material_override = SubResource("KC3")
+visible = false
+
+[node name="p8" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 3.7678, -11.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p9" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -27.5, 1.36, -1.2)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p10" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 27.5, 1.36, 1.2)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p11" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 10, 3.7678, 11.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p12" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 46.25, 15.6108, 17.5)
+mesh = SubResource("KM2")
+material_override = SubResource("KC2")
+visible = false
+
+[node name="p13" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 21.25, 3.616, 18.75)
+mesh = SubResource("KM4")
+material_override = SubResource("KC4")
+visible = false
+
+[node name="p14" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -16.25, 1.6786, 21.25)
+mesh = SubResource("KM3")
+material_override = SubResource("KC3")
+visible = false
+
+[node name="p15" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -8.75, 1.7113, 21.25)
+mesh = SubResource("KM5")
+material_override = SubResource("KC5")
+visible = false
+
+[node name="p16" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 31.25, 1.6786, 21.25)
+mesh = SubResource("KM3")
+material_override = SubResource("KC3")
+visible = false
+
+[node name="Fundo0" type="Node3D" parent="."]
+
+[node name="Painel0" type="MeshInstance3D" parent="Fundo0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 59, -230)
+mesh = SubResource("FundoQuad0")
+cast_shadow = 0
+
+[node name="Painel1" type="MeshInstance3D" parent="Fundo0"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 230, 59, 0)
+mesh = SubResource("FundoQuad0")
+cast_shadow = 0
+
+[node name="Painel2" type="MeshInstance3D" parent="Fundo0"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 59, 230)
+mesh = SubResource("FundoQuad0")
+cast_shadow = 0
+
+[node name="Painel3" type="MeshInstance3D" parent="Fundo0"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -230, 59, 0)
+mesh = SubResource("FundoQuad0")
+cast_shadow = 0
+
+[node name="NascerLivre" type="Node3D" parent="."]
+
+[node name="livre1" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -46.88, 1.2, 29.12)
+
+[node name="livre2" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.12, 1.2, -28.88)
+
+[node name="livre3" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.88, 1.2, -28.88)
+
+[node name="livre4" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.12, 1.2, 29.12)
+
+[node name="livre5" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.88, 1.2, 5.12)
+
+[node name="livre6" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.12, 1.2, 5.12)
+
+[node name="livre7" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.88, 1.2, -4.88)
+
+[node name="livre8" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.12, 1.2, -26.88)
+
+[node name="livre9" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.12, 1.2, -0.88)
+
+[node name="livre10" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.88, 1.2, 29.12)
+
+[node name="livre11" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.12, 1.2, 25.12)
+
+[node name="livre12" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.88, 1.2, 11.12)
+
+[node name="livre13" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.12, 1.2, -6.88)
+
+[node name="livre14" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.12, 1.2, -10.88)
+
+[node name="livre15" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.88, 1.2, -8.88)
+
+[node name="livre16" type="Marker3D" parent="NascerLivre"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.12, 1.2, 15.12)
+
+[node name="SpawnA" type="Node3D" parent="."]
+script = ExtResource("s_spawns")
+Team = 1
+
+[node name="p1" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.5, 1.2, 1)
+
+[node name="p2" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.5, 1.2, -0.6)
+
+[node name="p3" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.5, 1.2, 2.6)
+
+[node name="p4" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45.9, 1.2, 1)
+
+[node name="p5" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45.9, 1.2, -0.6)
+
+[node name="p6" type="Marker3D" parent="SpawnA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45.9, 1.2, 2.6)
+
+[node name="SpawnB" type="Node3D" parent="."]
+script = ExtResource("s_spawns")
+Team = 2
+
+[node name="p1" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 1.2, -1)
+
+[node name="p2" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 1.2, 0.6)
+
+[node name="p3" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 1.2, -2.6)
+
+[node name="p4" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.9, 1.2, -1)
+
+[node name="p5" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.9, 1.2, 0.6)
+
+[node name="p6" type="Marker3D" parent="SpawnB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.9, 1.2, -2.6)
+
+[node name="PatrolRoutes" type="Node3D" parent="."]
+script = ExtResource("s_routes")
+
+[node name="ruaNorte" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.4, 0.5, 1.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.9, 0.5, -4.6)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.4, 0.5, -9.9)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.1, 0.5, -16.9)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.4, 0.5, -23.6)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.9, 0.5, -28.6)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28.6, 0.5, -26.6)
+
+[node name="p8" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.9, 0.5, -23.4)
+
+[node name="p9" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.1, 0.5, -24.4)
+
+[node name="p10" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.6, 0.5, -27.6)
+
+[node name="p11" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.9, 0.5, -28.6)
+
+[node name="p12" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.1, 0.5, -28.6)
+
+[node name="p13" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.1, 0.5, -28.6)
+
+[node name="p14" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.1, 0.5, -28.6)
+
+[node name="p15" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.1, 0.5, -31.4)
+
+[node name="p16" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.6, 0.5, -29.9)
+
+[node name="p17" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.4, 0.5, -29.1)
+
+[node name="p18" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.6, 0.5, -29.1)
+
+[node name="p19" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.6, 0.5, -29.6)
+
+[node name="p20" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 0.5, -30.1)
+
+[node name="p21" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6, 0.5, -29.4)
+
+[node name="p22" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.4, 0.5, -30.1)
+
+[node name="p23" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.1, 0.5, -30.9)
+
+[node name="p24" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.9, 0.5, -28.6)
+
+[node name="p25" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.9, 0.5, -25.6)
+
+[node name="p26" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.9, 0.5, -21.4)
+
+[node name="p27" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.1, 0.5, -15.1)
+
+[node name="p28" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.1, 0.5, -8.1)
+
+[node name="p29" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.1, 0.5, -1.6)
+
+[node name="p30" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.4, 0.5, 3.6)
+
+[node name="p31" type="Marker3D" parent="PatrolRoutes/ruaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.6, 0.5, -0.9)
+
+[node name="avenida" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.4, 0.5, 1.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.6, 0.5, -3.6)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -37.1, 0.5, -3.1)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30.6, 0.5, -4.4)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.1, 0.5, -2.6)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.4, 0.5, -2.9)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.9, 0.5, -3.6)
+
+[node name="p8" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.6, 0.5, 0.6)
+
+[node name="p9" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0.5, -0.4)
+
+[node name="p10" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0.5, 5.1)
+
+[node name="p11" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0.5, 12.1)
+
+[node name="p12" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0.5, 18.9)
+
+[node name="p13" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4, 0.5, 25.9)
+
+[node name="p14" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.4, 0.5, 26.6)
+
+[node name="p15" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.1, 0.5, 25.1)
+
+[node name="p16" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.1, 0.5, 18.1)
+
+[node name="p17" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.6, 0.5, 11.1)
+
+[node name="p18" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.6, 0.5, 5.1)
+
+[node name="p19" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.4, 0.5, 3.4)
+
+[node name="p20" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.1, 0.5, 4.4)
+
+[node name="p21" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.1, 0.5, 3.9)
+
+[node name="p22" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.4, 0.5, 3.4)
+
+[node name="p23" type="Marker3D" parent="PatrolRoutes/avenida"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.6, 0.5, -0.9)
+
+[node name="ruaSul" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.4, 0.5, 1.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.6, 0.5, -3.4)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40.6, 0.5, 2.4)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.9, 0.5, 8.9)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.9, 0.5, 15.9)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.9, 0.5, 22.1)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.1, 0.5, 28.9)
+
+[node name="p8" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.6, 0.5, 27.4)
+
+[node name="p9" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.6, 0.5, 26.9)
+
+[node name="p10" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.9, 0.5, 26.1)
+
+[node name="p11" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.6, 0.5, 28.4)
+
+[node name="p12" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.6, 0.5, 28.9)
+
+[node name="p13" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.4, 0.5, 28.9)
+
+[node name="p14" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.4, 0.5, 28.9)
+
+[node name="p15" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.6, 0.5, 26.6)
+
+[node name="p16" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.6, 0.5, 26.1)
+
+[node name="p17" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.1, 0.5, 27.4)
+
+[node name="p18" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.1, 0.5, 28.9)
+
+[node name="p19" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.4, 0.5, 28.1)
+
+[node name="p20" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.4, 0.5, 28.1)
+
+[node name="p21" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.4, 0.5, 27.1)
+
+[node name="p22" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.6, 0.5, 27.9)
+
+[node name="p23" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.4, 0.5, 27.6)
+
+[node name="p24" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.9, 0.5, 25.9)
+
+[node name="p25" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.1, 0.5, 21.9)
+
+[node name="p26" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.1, 0.5, 16.6)
+
+[node name="p27" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.1, 0.5, 16.1)
+
+[node name="p28" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.1, 0.5, 11.9)
+
+[node name="p29" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.6, 0.5, 6.1)
+
+[node name="p30" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.9, 0.5, 0.9)
+
+[node name="p31" type="Marker3D" parent="PatrolRoutes/ruaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.6, 0.5, -0.9)
+
+[node name="becos" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.4, 0.5, 1.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.6, 0.5, -3.6)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -37.1, 0.5, -3.1)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30.9, 0.5, -5.1)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.4, 0.5, -8.9)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.1, 0.5, -15.9)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.4, 0.5, -19.6)
+
+[node name="p8" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.4, 0.5, -24.1)
+
+[node name="p9" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.1, 0.5, -27.6)
+
+[node name="p10" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.6, 0.5, -28.1)
+
+[node name="p11" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 0.5, -22.4)
+
+[node name="p12" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.9, 0.5, -20.1)
+
+[node name="p13" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.9, 0.5, -17.4)
+
+[node name="p14" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.9, 0.5, -17.4)
+
+[node name="p15" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.4, 0.5, -16.1)
+
+[node name="p16" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.9, 0.5, -17.4)
+
+[node name="p17" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.9, 0.5, -17.9)
+
+[node name="p18" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9, 0.5, -24.1)
+
+[node name="p19" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.4, 0.5, -28.6)
+
+[node name="p20" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.9, 0.5, -30.1)
+
+[node name="p21" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.4, 0.5, -31.1)
+
+[node name="p22" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.6, 0.5, -26.9)
+
+[node name="p23" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.1, 0.5, -24.9)
+
+[node name="p24" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.4, 0.5, -18.9)
+
+[node name="p25" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.1, 0.5, -12.4)
+
+[node name="p26" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40.4, 0.5, -5.6)
+
+[node name="p27" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.9, 0.5, 0.4)
+
+[node name="p28" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.4, 0.5, 1.9)
+
+[node name="p29" type="Marker3D" parent="PatrolRoutes/becos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.6, 0.5, -0.9)
+
+[node name="fundos" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.4, 0.5, 1.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.6, 0.5, -3.4)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40.6, 0.5, 2.4)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.9, 0.5, 8.9)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.9, 0.5, 15.9)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.9, 0.5, 22.1)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.1, 0.5, 28.9)
+
+[node name="p8" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.6, 0.5, 27.4)
+
+[node name="p9" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.1, 0.5, 25.6)
+
+[node name="p10" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.4, 0.5, 19.6)
+
+[node name="p11" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.9, 0.5, 20.1)
+
+[node name="p12" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.1, 0.5, 25.9)
+
+[node name="p13" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6, 0.5, 27.4)
+
+[node name="p14" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.1, 0.5, 28.6)
+
+[node name="p15" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.5, 28.6)
+
+[node name="p16" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.9, 0.5, 28.1)
+
+[node name="p17" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.6, 0.5, 27.4)
+
+[node name="p18" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.4, 0.5, 22.1)
+
+[node name="p19" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.4, 0.5, 16.9)
+
+[node name="p20" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.6, 0.5, 11.1)
+
+[node name="p21" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.4, 0.5, 6.4)
+
+[node name="p22" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.6, 0.5, 4.1)
+
+[node name="p23" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.6, 0.5, 5.4)
+
+[node name="p24" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.6, 0.5, 9.6)
+
+[node name="p25" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.1, 0.5, 16.6)
+
+[node name="p26" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.9, 0.5, 21.9)
+
+[node name="p27" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.6, 0.5, 26.1)
+
+[node name="p28" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.1, 0.5, 27.6)
+
+[node name="p29" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.9, 0.5, 28.1)
+
+[node name="p30" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.6, 0.5, 27.1)
+
+[node name="p31" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.9, 0.5, 23.1)
+
+[node name="p32" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.9, 0.5, 17.9)
+
+[node name="p33" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.4, 0.5, 16.1)
+
+[node name="p34" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.4, 0.5, 13.4)
+
+[node name="p35" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.6, 0.5, 7.6)
+
+[node name="p36" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.1, 0.5, 2.4)
+
+[node name="p37" type="Marker3D" parent="PatrolRoutes/fundos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.6, 0.5, -0.9)
+
+[node name="cruzadaNorte" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.4, 0.5, 1.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.9, 0.5, -4.6)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.4, 0.5, -9.9)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.1, 0.5, -16.9)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.4, 0.5, -23.6)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.9, 0.5, -28.6)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28.6, 0.5, -26.6)
+
+[node name="p8" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.9, 0.5, -23.4)
+
+[node name="p9" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.1, 0.5, -24.4)
+
+[node name="p10" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.6, 0.5, -27.6)
+
+[node name="p11" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.9, 0.5, -27.4)
+
+[node name="p12" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.5, -21.1)
+
+[node name="p13" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.5, -14.1)
+
+[node name="p14" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.5, -7.1)
+
+[node name="p15" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0.5, -0.9)
+
+[node name="p16" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6, 0.5, 5.1)
+
+[node name="p17" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0.5, 11.6)
+
+[node name="p18" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0.5, 18.6)
+
+[node name="p19" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0.5, 25.4)
+
+[node name="p20" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.1, 0.5, 28.9)
+
+[node name="p21" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.9, 0.5, 28.1)
+
+[node name="p22" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.1, 0.5, 26.1)
+
+[node name="p23" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.1, 0.5, 26.1)
+
+[node name="p24" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.4, 0.5, 28.4)
+
+[node name="p25" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.6, 0.5, 23.1)
+
+[node name="p26" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.6, 0.5, 16.1)
+
+[node name="p27" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.4, 0.5, 10.1)
+
+[node name="p28" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.6, 0.5, 4.6)
+
+[node name="p29" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.6, 0.5, -0.6)
+
+[node name="p30" type="Marker3D" parent="PatrolRoutes/cruzadaNorte"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.6, 0.5, -0.9)
+
+[node name="cruzadaSul" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.4, 0.5, 1.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.6, 0.5, -3.4)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40.6, 0.5, 2.4)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.9, 0.5, 8.9)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.9, 0.5, 15.9)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.9, 0.5, 22.1)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.1, 0.5, 28.9)
+
+[node name="p8" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.6, 0.5, 27.4)
+
+[node name="p9" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.6, 0.5, 26.9)
+
+[node name="p10" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.9, 0.5, 26.1)
+
+[node name="p11" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.6, 0.5, 28.4)
+
+[node name="p12" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.9, 0.5, 24.6)
+
+[node name="p13" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.6, 0.5, 17.6)
+
+[node name="p14" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.9, 0.5, 10.9)
+
+[node name="p15" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0.5, 5.1)
+
+[node name="p16" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9, 0.5, -0.4)
+
+[node name="p17" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0.5, -7.1)
+
+[node name="p18" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.1, 0.5, -14.1)
+
+[node name="p19" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9, 0.5, -20.9)
+
+[node name="p20" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.9, 0.5, -27.4)
+
+[node name="p21" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.9, 0.5, -30.1)
+
+[node name="p22" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.9, 0.5, -30.6)
+
+[node name="p23" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.1, 0.5, -29.9)
+
+[node name="p24" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.1, 0.5, -29.9)
+
+[node name="p25" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.4, 0.5, -25.4)
+
+[node name="p26" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.6, 0.5, -18.4)
+
+[node name="p27" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.6, 0.5, -11.6)
+
+[node name="p28" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40.4, 0.5, -5.6)
+
+[node name="p29" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.9, 0.5, 0.4)
+
+[node name="p30" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.4, 0.5, 1.9)
+
+[node name="p31" type="Marker3D" parent="PatrolRoutes/cruzadaSul"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.6, 0.5, -0.9)
+
+[node name="obras" type="Node3D" parent="PatrolRoutes"]
+
+[node name="p1" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.4, 0.5, 1.1)
+
+[node name="p2" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.9, 0.5, -4.6)
+
+[node name="p3" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.4, 0.5, -9.9)
+
+[node name="p4" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.1, 0.5, -16.9)
+
+[node name="p5" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.4, 0.5, -23.6)
+
+[node name="p6" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.9, 0.5, -28.6)
+
+[node name="p7" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28.9, 0.5, -25.9)
+
+[node name="p8" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.4, 0.5, -19.9)
+
+[node name="p9" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.1, 0.5, -13.4)
+
+[node name="p10" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.9, 0.5, -7.1)
+
+[node name="p11" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.1, 0.5, -1.1)
+
+[node name="p12" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.1, 0.5, -3.9)
+
+[node name="p13" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.1, 0.5, -1.4)
+
+[node name="p14" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.1, 0.5, -0.1)
+
+[node name="p15" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0.5, -5.1)
+
+[node name="p16" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 0.5, -10.9)
+
+[node name="p17" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.4, 0.5, -15.9)
+
+[node name="p18" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.4, 0.5, -15.9)
+
+[node name="p19" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.4, 0.5, -15.9)
+
+[node name="p20" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.1, 0.5, -20.9)
+
+[node name="p21" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.4, 0.5, -25.1)
+
+[node name="p22" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.1, 0.5, -24.4)
+
+[node name="p23" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.1, 0.5, -18.1)
+
+[node name="p24" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.1, 0.5, -11.1)
+
+[node name="p25" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.1, 0.5, -4.9)
+
+[node name="p26" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.1, 0.5, -1.9)
+
+[node name="p27" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.1, 0.5, 1.1)
+
+[node name="p28" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.4, 0.5, 4.4)
+
+[node name="p29" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.4, 0.5, 4.4)
+
+[node name="p30" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.9, 0.5, 2.6)
+
+[node name="p31" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.1, 0.5, 2.4)
+
+[node name="p32" type="Marker3D" parent="PatrolRoutes/obras"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.6, 0.5, -0.9)
+
+[node name="NavBaker" type="Node3D" parent="."]
+script = ExtResource("s_nav")

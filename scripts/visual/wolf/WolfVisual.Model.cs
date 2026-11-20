@@ -56,6 +56,7 @@ public partial class WolfVisual
 		_model.Scale = Vector3.One * ModelScale;
 		_model.RotationDegrees = new Vector3(0, ModelYaw, 0);
 		AddChild(_model);
+		SkinCulling.Loosen(_model);
 
 		_anims = FindPlayer(_model);
 

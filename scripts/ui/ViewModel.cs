@@ -172,6 +172,7 @@ public partial class ViewModel : Node3D
 		_weapon.Fired += OnFired;
 		_weapon.Butted += OnButted;
 		_weapon.AmmoChanged += OnAmmo;
+		_weapon.Thrown += OnThrown;
 
 		BuildEffects();
 		BuildHandFill();
@@ -337,6 +338,16 @@ public partial class ViewModel : Node3D
 
 		UpdateHands(dt);
 		UpdateEffects(dt);
+		UpdateCameraTrack(dt);
+		UpdateScope();
+	}
+
+	/// <summary>Na luneta (fuzil de precisão) a arma sai da tela no fim da
+	/// subida: quem mira é o retículo (<see cref="Crosshair.PaintSniperScope"/>).</summary>
+	private void UpdateScope()
+	{
+		if (_held == null) return;
+		_held.Visible = !_weapon.Scoped;
 	}
 
 	// ------------------------------------------------------------ a coronhada
@@ -541,7 +552,7 @@ public partial class ViewModel : Node3D
 
 	private static Vector3 Anchor(string id) => id switch
 	{
-		Arsenal.KnifeId => KnifeAnchor,
+		_ when Arsenal.IsKnife(id) => KnifeAnchor,
 		Arsenal.GrenadeId => GrenadeAnchor,
 		_ when WeaponModel.IsPistol(id) => PistolAnchor,
 		_ => RifleAnchor

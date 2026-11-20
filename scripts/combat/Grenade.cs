@@ -1,12 +1,11 @@
 using Godot;
 
 /// <summary>
-/// Granada de atordoamento — a ferramenta anti-lobo.
-///
-/// Sem ela o humano sozinho num corredor não tem jogada: perde no
-/// corpo-a-corpo e não tem distância para usar a arma. A granada não
-/// mata o lobo, ela tira a mobilidade dele — que é de onde vem todo
-/// o poder da forma.
+/// A granada do jogo: **explosiva** desde 19/11 (decisão do Jhon: "a
+/// granada do jogo deve ser a explosiva, não a de energia"). Mata de
+/// perto e fere até a borda do raio; não atordoa. A de choque (o estouro
+/// elétrico que desacelera) continua aqui, pronta, em
+/// <see cref="GrenadeKind.Shock"/>.
 ///
 /// Fase 2: o arremesso vira intenção enviada ao servidor, e a
 /// explosão é resolvida lá. Projétil com física é justamente o caso
@@ -23,6 +22,10 @@ public partial class Grenade : RigidBody3D
 	/// depois deste tempo de voo.</summary>
 	[Export] public float MaxFlight = 6f;
 
+	/// <summary>Quanto da velocidade sobra no primeiro toque: a granada
+	/// fica onde caiu.</summary>
+	[Export] public float LandingKeep = 0.08f;
+
 	/// <summary>Já encostou: o pavio está contando. Para os testes.</summary>
 	public bool Landed { get; private set; }
 
@@ -32,15 +35,15 @@ public partial class Grenade : RigidBody3D
 	[Export] public float MaxDamage = 260f;
 
 	/// <summary>
-	/// O tipo da granada (18/11). **Choque** (a do jogo hoje): um estouro
-	/// elétrico que **desacelera quem está perto e atordoa o inimigo**,
-	/// com pouco dano (<see cref="ShockDamage"/>). **Fragmentação**: a
-	/// explosão de fogo que mata de perto (<see cref="MaxDamage"/>) —
-	/// pronta, guardada para a granada desse tipo que ainda vai entrar.
+	/// O tipo da granada. **Fragmentação** (a do jogo desde 19/11): a
+	/// explosão de fogo que mata de perto (<see cref="MaxDamage"/>).
+	/// **Choque** (a de 18/11, guardada): um estouro elétrico que
+	/// desacelera quem está perto e atordoa o inimigo, com pouco dano
+	/// (<see cref="ShockDamage"/>).
 	/// </summary>
 	public enum GrenadeKind { Shock, Frag }
 
-	[Export] public GrenadeKind Kind = GrenadeKind.Shock;
+	[Export] public GrenadeKind Kind = GrenadeKind.Frag;
 
 	/// <summary>Dano da granada de choque no centro (o ponto dela é o
 	/// atordoamento, não o dano).</summary>
@@ -77,8 +80,10 @@ public partial class Grenade : RigidBody3D
 		MaxContactsReported = 4;
 
 		// No ar, sem freio: o arremesso é calculado para cair onde se mira
-		// (Weapon.Grenade). Encostou, quica pouco e para logo, para ficar
-		// perto de onde caiu.
+		// (Weapon.Grenade). Encostou, fica: perde quase toda a velocidade no
+		// primeiro toque e não rola (19/11: "o arremesso da granada deve ser
+		// extremamente preciso" — com o freio de antes ela ainda escorregava
+		// mais de um metro depois de cair no ponto).
 		LinearDampMode = DampMode.Replace;
 		LinearDamp = 0f;
 		PhysicsMaterialOverride = new PhysicsMaterial { Bounce = 0.05f, Friction = 1f };
@@ -88,9 +93,11 @@ public partial class Grenade : RigidBody3D
 			{
 				Landed = true;
 				_timer = Fuse;
+				LinearVelocity *= LandingKeep;
+				AngularVelocity *= LandingKeep;
 			}
-			LinearDamp = 7f;
-			AngularDamp = 9f;
+			LinearDamp = 12f;
+			AngularDamp = 12f;
 		};
 
 		// A granada de verdade no lugar da bola (pedido do Jhon, 18/11).
