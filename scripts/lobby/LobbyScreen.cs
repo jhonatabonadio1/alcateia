@@ -16,10 +16,26 @@ public abstract partial class LobbyScreen : Control
 	/// <summary>O shell que hospeda a tela.</summary>
 	protected LobbyShell Shell => LobbyShell.Instance;
 
+	/// <summary>A tela mostra coisa da conta (carteira, itens, missões):
+	/// refaz-se quando a conta chega, muda ou sai.</summary>
+	protected virtual bool FollowsAccount => false;
+
 	public override void _Ready()
 	{
 		UiKit.Fill(this);
 		Build();
+		if (!FollowsAccount) return;
+		Profile.AccountChanged += Refresh;
+		// Preço, promoção e vitrine do dia também vêm do servidor.
+		ServerData.Changed += Refresh;
+		_ = ServerData.Refresh();
+	}
+
+	public override void _ExitTree()
+	{
+		if (!FollowsAccount) return;
+		Profile.AccountChanged -= Refresh;
+		ServerData.Changed -= Refresh;
 	}
 
 	protected abstract void Build();

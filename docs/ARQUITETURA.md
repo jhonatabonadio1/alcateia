@@ -33,7 +33,8 @@ Depois de mudar C#, o Godot recompila ao dar play. Se aparecer erro de
 build, ele está na aba **MSBuild** do painel de baixo, não na aba
 Output.
 
-**Onde fica o seu perfil salvo** (conjuntos, último usado):
+**Onde fica o seu perfil salvo** (conjuntos, último usado; Presas,
+itens, XP e missões não: são da conta, no servidor — decisão 0015):
 `user://perfil.json`. No macOS isso é
 `~/Library/Application Support/Godot/app_userdata/alcateia/perfil.json`.
 Apagar esse arquivo devolve os quatro conjuntos padrão.
@@ -459,7 +460,8 @@ public override void _ExitTree() => KillFeed.Reported -= OnKill;
 |---|---|---|
 | `Match.Current` | A partida em andamento. `Match.IsLive` é **verdadeiro quando não há partida** (treino) | A cena da partida |
 | `RoomConfig` | Configuração da sala para a partida ler | O jogo aberto |
-| `Profile` | Nome, patente, XP, Presas e Sangue, inventário com prazos, conjuntos, raça, tatuagens, estatísticas, missões, títulos. Salva em `user://perfil.json`; evento `Changed` | Em disco |
+| `Profile` | Espelho da conta (XP e patente, Presas e Sangue, inventário com prazos, missões, títulos: `ApplyAccount`, `ClearAccount`, em memória) e as escolhas do jogador (conjuntos, raça, tatuagens, personagens, título em uso, estatísticas de treino), salvas em `user://perfil.json`. Eventos `Changed` e `AccountChanged` | Escolhas em disco; o resto na conta (decisão 0015) |
+| `AccountSync` | O caminho único entre o jogo e a conta: retomar o login, reler carteira, itens e missões, comprar, descartar, resgatar, trocar o nome; as promoções a comemorar | O jogo aberto |
 | `Settings` | Volumes por canal e sensibilidade. `user://opcoes.json` | Em disco |
 | `RoomDirectory` | As salas da lista (simuladas) e a sala em que você está (`Current`) | O jogo aberto |
 | `Catalog` | A loja: itens, preços por prazo, itens do dia | Sempre |

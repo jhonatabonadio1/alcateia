@@ -195,6 +195,8 @@ export interface Challenge {
 	active: boolean;
 	sort: number;
 	running: boolean;
+	/** Está no rodízio de agora (diários e semanais revezam). */
+	today: boolean;
 }
 
 export interface Settings {
@@ -202,6 +204,8 @@ export interface Settings {
 	versao_minima: { version: string };
 	aviso: { text: string };
 	bonus: { xp: number; presas: number; until: string | null };
+	desafios: { daily: number; weekly: number };
+	vitrine: { count: number; percent: number };
 }
 
 export interface Content {
@@ -214,6 +218,8 @@ export interface Content {
 	metrics: string[];
 	periods: string[];
 	durations: number[];
+	/** Os itens da vitrine de hoje (com desconto até o dia virar). */
+	dailyItems: string[];
 	/** Os modos que o jogo deixa escolher hoje. */
 	releasedModes: string[];
 }

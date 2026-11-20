@@ -274,6 +274,42 @@ public static class PanelTests
 			Check.True((await Audit(admin)).Contains("catalogo.alterou") && (await Audit(admin)).Contains("promocao.criou"), "na auditoria");
 		}),
 
+		("painel: vitrine do dia — quatro itens com 20%, os mesmos o dia inteiro, e o desconto vale na compra", async () =>
+		{
+			await using World w = await World.Start();
+			using var admin = new PanelClient(w);
+			await admin.Login();
+			await using Player p = await w.NewPlayer();
+			await w.Db.Exec("update profiles set xp = 900000, presas = 900000 where account_id = $1", p.Id);
+
+			var off = JsonNode.Parse(await (await w.Http.GetAsync(w.Url + "/v1/gamedata")).Content.ReadAsStringAsync());
+			Check.Equal(0, off["dailyItems"].AsArray().Count, "desligada, não há vitrine");
+
+			Check.Equal(200, (await admin.Put("/settings/vitrine", new JsonObject { ["count"] = 4, ["percent"] = 20 })).Status, "ligar a vitrine do dia");
+			Check.Equal("desconto_invalido", Code(await admin.Put("/settings/vitrine", new JsonObject { ["count"] = 4, ["percent"] = 95 })), "95% não passa");
+
+			var data = JsonNode.Parse(await (await w.Http.GetAsync(w.Url + "/v1/gamedata")).Content.ReadAsStringAsync());
+			string[] daily = data["dailyItems"].AsArray().Select(i => i.GetValue<string>()).ToArray();
+			Check.Equal(4, daily.Length, "quatro itens do dia");
+			Check.Equal(4, data["promotions"].AsArray().Count(x => x["title"].GetValue<string>() == "Item do dia" && x["percent"].GetValue<int>() == 20), "cada um como uma promoção de 20% que vale até o dia virar");
+
+			JsonNode item = data["items"].AsArray().First(i => i["id"].GetValue<string>() == daily[0]);
+			Check.True(!item["consumable"].GetValue<bool>() && !item["starter"].GetValue<bool>(), "só item à venda e que não é consumível");
+			int duration = Enumerable.Range(0, 5).First(d => item["prices"][d].GetValue<int>() >= 0);
+			int full = item["prices"][duration].GetValue<int>();
+			var bought = await p.Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = daily[0], ["duration"] = duration });
+			Check.Equal((int)Math.Round(full * 0.8), bought.Body["price"].GetValue<int>(), "comprado com os 20% da vitrine");
+
+			// A regra pura: o mesmo dia de Brasília dá a mesma vitrine; outro dia, outra.
+			var catalog = w.Services.GameData.Current.Catalog;
+			DateTime noon = new(2026, 11, 20, 15, 0, 0, DateTimeKind.Utc);
+			string Showcase(DateTime at) => string.Join(",", Alcateia.Dominio.Loja.Shop.DailyShowcase(catalog, at).Select(x => x.ItemId));
+			Check.Equal(Showcase(noon), Showcase(noon.AddHours(11).AddMinutes(59)), "a mesma até 02:59 UTC (23:59 de Brasília)");
+			Check.True(Enumerable.Range(1, 5).Any(d => Showcase(noon.AddDays(d)) != Showcase(noon)), "em outros dias, outra");
+			Check.Equal(new DateTime(2026, 11, 21, 3, 0, 0, DateTimeKind.Utc), Alcateia.Dominio.Loja.Shop.DailyShowcase(catalog, noon)[0].EndsAt, "vale até a meia-noite de Brasília");
+			Check.Equal(4, (await admin.Get("/content")).Body["dailyItems"].AsArray().Count, "o painel mostra a vitrine de hoje");
+		}),
+
 		("painel: desafio criado no painel anda com o resultado da partida e paga uma vez só; bônus de XP vale; resultado absurdo vira alerta", async () =>
 		{
 			await using World w = await World.Start();
@@ -289,6 +325,8 @@ public static class PanelTests
 			Check.Equal(200, made.Status, "criar o desafio de evento");
 			Check.Equal("metrica_invalida", Code(await admin.Put("/challenges/ruim", new JsonObject { ["period"] = "daily", ["text"] = "x", ["metric"] = "voar", ["target"] = 1 })), "métrica inventada");
 			Check.Equal(200, (await admin.Put("/settings/bonus", new JsonObject { ["xp"] = 2, ["presas"] = 1 })).Status, "XP em dobro");
+			Check.Equal(200, (await admin.Put("/settings/desafios", new JsonObject { ["daily"] = 0, ["weekly"] = 0 })).Status, "sem rodízio: todos os desafios valem");
+			Check.Equal("quantidade_invalida", Code(await admin.Put("/settings/desafios", new JsonObject { ["daily"] = 999 })), "quantidade absurda não passa");
 			Check.Equal("bonus_invalido", Code(await admin.Put("/settings/bonus", new JsonObject { ["xp"] = 50 })), "bônus absurdo não passa");
 
 			Player fleet = w.Server();
@@ -309,7 +347,9 @@ public static class PanelTests
 			Rewards.Gain gain = Rewards.ForMatch(100, 2, won: true, draw: false, mvp: true);
 			var (_, profile) = await host.Call(HttpMethod.Get, "/v1/profile");
 			Check.Equal(gain.Xp * 2, profile["xp"].GetValue<long>(), "XP em dobro pelo bônus do painel");
-			Check.Equal(3000 + gain.Presas, profile["presas"].GetValue<long>(), "Presas sem bônus");
+			long promoted = Alcateia.Dominio.Contas.RankRule.PromotionPresas(0, gain.Xp * 2);
+			Check.True(promoted > 0, "esse XP todo sobe de patente");
+			Check.Equal(3000 + gain.Presas + promoted, profile["presas"].GetValue<long>(), "Presas sem bônus, mais o prêmio de cada patente alcançada");
 
 			var list = (await host.Call(HttpMethod.Get, "/v1/challenges")).Body["challenges"].AsArray();
 			JsonNode Of(string id) => list.First(c => c["id"].GetValue<string>() == id);
@@ -322,7 +362,8 @@ public static class PanelTests
 
 			var claimed = await host.Call(HttpMethod.Post, "/v1/challenges/evento_abates/claim");
 			Check.Equal(200, claimed.Status, "receber o prêmio");
-			Check.Equal(3000 + gain.Presas + 300, claimed.Body["balance"]["presas"].GetValue<long>(), "300 Presas");
+			long promotedByClaim = Alcateia.Dominio.Contas.RankRule.PromotionPresas(gain.Xp * 2, gain.Xp * 2 + 50);
+			Check.Equal(3000 + gain.Presas + promoted + promotedByClaim + 300, claimed.Body["balance"]["presas"].GetValue<long>(), "300 Presas");
 			Check.Equal(10L, claimed.Body["balance"]["sangue"].GetValue<long>(), "10 de Sangue");
 			Check.Equal(gain.Xp * 2 + 50, claimed.Body["balance"]["xp"].GetValue<long>(), "50 de XP");
 			Check.Equal("premio_indisponivel", Code(await host.Call(HttpMethod.Post, "/v1/challenges/evento_abates/claim")), "uma vez só");

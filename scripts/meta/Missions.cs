@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json.Nodes;
 
 public enum MissionMetric
 {
@@ -20,7 +21,9 @@ public enum MissionPeriod
 {
 	Daily,
 	Weekly,
-	Permanent
+	Permanent,
+	/// <summary>Vale entre duas datas (criada no painel do servidor).</summary>
+	Event
 }
 
 public sealed class MissionDef
@@ -34,6 +37,13 @@ public sealed class MissionDef
 	public MissionPeriod Period;
 	/// <summary>Título exibível no perfil (só missões permanentes).</summary>
 	public string Title;
+	/// <summary>Sangue de prêmio (o painel pode pôr; as que vêm com o jogo não dão).</summary>
+	public int Sangue;
+	/// <summary>Item de prêmio, e por quantos dias (0: para sempre).</summary>
+	public string ItemId;
+	public int ItemDays;
+	/// <summary>Quando a missão de evento acaba.</summary>
+	public DateTime? EndsUtc;
 }
 
 public sealed class MissionProgress
@@ -44,26 +54,36 @@ public sealed class MissionProgress
 }
 
 /// <summary>
-/// As missões: três diárias, cinco semanais e os marcos permanentes.
+/// As missões da conta: diárias, semanais, permanentes e de evento.
 ///
-/// Diárias e semanais saem de um sorteio pela data (mesmo dia, mesmas
-/// missões), e trocam sozinhas na virada. O resgate é manual de
-/// propósito: o clique de resgatar é o momento da recompensa, e
-/// resgatar sozinho desperdiçaria esse momento.
+/// Quem manda é o servidor (docs/decisoes/0015): ele diz quais valem
+/// hoje (as diárias e semanais revezam, as mesmas para todo mundo), soma
+/// o progresso com o resultado que o servidor de partida entrega e paga
+/// o prêmio uma vez por período. Aqui fica o espelho do que ele disse por
+/// último, para as telas — sem conta, não há missão.
+///
+/// O resgate é manual de propósito: o clique de resgatar é o momento da
+/// recompensa, e resgatar sozinho desperdiçaria esse momento.
 /// </summary>
 public sealed class MissionBook
 {
-	public const int DailyCount = 3;
-	public const int WeeklyCount = 5;
+	public List<MissionProgress> Daily { get; private set; } = new();
+	public List<MissionProgress> Weekly { get; private set; } = new();
+	public List<MissionProgress> Permanent { get; private set; } = new();
+	public List<MissionProgress> Event { get; private set; } = new();
 
-	public string DailyKey { get; set; } = "";
-	public List<MissionProgress> Daily { get; set; } = new();
-	public string WeeklyKey { get; set; } = "";
-	public List<MissionProgress> Weekly { get; set; } = new();
-	public List<MissionProgress> Permanent { get; set; } = new();
+	/// <summary>Quando as diárias e as semanais viram, pelo relógio do servidor.</summary>
+	public DateTime? DailyResetsUtc { get; private set; }
+	public DateTime? WeeklyResetsUtc { get; private set; }
+
+	/// <summary>As definições que o servidor mandou (texto, alvo, prêmio).</summary>
+	private readonly Dictionary<string, MissionDef> _server = new();
 
 	// ------------------------------------------------------------------ catálogo
 
+	/// <summary>As missões que vêm com o jogo. São a semente do servidor
+	/// (tools/servidor/exportar_dados.py lê esta lista, linha por linha):
+	/// depois de semeadas, quem edita, cria e desliga é o painel.</summary>
 	private static readonly List<MissionDef> Defs = new()
 	{
 		// diárias
@@ -109,82 +129,113 @@ public sealed class MissionBook
 	private static MissionDef P(string id, string text, MissionMetric m, int target, int presas, int xp, string title) =>
 		new() { Id = id, Text = text, Metric = m, Target = target, Presas = presas, Xp = MissionXp(xp), Period = MissionPeriod.Permanent, Title = title };
 
-	public static MissionDef Def(string id) => Defs.FirstOrDefault(d => d.Id == id);
+	/// <summary>A definição da missão: a que o servidor mandou, ou a que
+	/// vem com o jogo.</summary>
+	public static MissionDef Def(string id) =>
+		Profile.Missions._server.TryGetValue(id ?? "", out MissionDef def) ? def : Defs.FirstOrDefault(d => d.Id == id);
+
+	// ------------------------------------------------------------------ o que o servidor disse
+
+	/// <summary>Lê a resposta de <c>GET /v1/challenges</c>.</summary>
+	public void Apply(JsonObject reply)
+	{
+		_server.Clear();
+		Daily = new(); Weekly = new(); Permanent = new(); Event = new();
+
+		foreach (JsonNode c in reply?["challenges"] as JsonArray ?? new JsonArray())
+		{
+			string id = c["id"]?.GetValue<string>();
+			if (string.IsNullOrEmpty(id)) continue;
+
+			MissionPeriod period = c["period"]?.GetValue<string>() switch
+			{
+				"daily" => MissionPeriod.Daily,
+				"weekly" => MissionPeriod.Weekly,
+				"event" => MissionPeriod.Event,
+				_ => MissionPeriod.Permanent
+			};
+
+			_server[id] = new MissionDef
+			{
+				Id = id, Period = period,
+				Text = c["text"]?.GetValue<string>() ?? id,
+				Metric = MetricOf(c["metric"]?.GetValue<string>()),
+				Target = Math.Max(1, c["target"]?.GetValue<int>() ?? 1),
+				Presas = c["presas"]?.GetValue<int>() ?? 0,
+				Xp = c["xp"]?.GetValue<int>() ?? 0,
+				Sangue = c["sangue"]?.GetValue<int>() ?? 0,
+				ItemId = c["itemId"]?.GetValue<string>(),
+				ItemDays = c["itemDays"]?.GetValue<int>() ?? 0,
+				Title = c["title"]?.GetValue<string>(),
+				EndsUtc = Utc(c["endsAt"])
+			};
+
+			var progress = new MissionProgress
+			{
+				Id = id,
+				Progress = c["progress"]?.GetValue<int>() ?? 0,
+				Claimed = c["claimed"]?.GetValue<bool>() ?? false
+			};
+			(period switch
+			{
+				MissionPeriod.Daily => Daily,
+				MissionPeriod.Weekly => Weekly,
+				MissionPeriod.Event => Event,
+				_ => Permanent
+			}).Add(progress);
+		}
+
+		DailyResetsUtc = Utc(reply?["dailyResetsAt"]);
+		WeeklyResetsUtc = Utc(reply?["weeklyResetsAt"]);
+	}
+
+	private static DateTime? Utc(JsonNode node) =>
+		DateTime.TryParse(node?.GetValue<string>(), CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out DateTime at) ? at : null;
+
+	private static MissionMetric MetricOf(string metric) => metric switch
+	{
+		"wins" => MissionMetric.Wins,
+		"kills" => MissionMetric.Kills,
+		"kills_wolf" => MissionMetric.KillsWolf,
+		"kills_human" => MissionMetric.KillsHuman,
+		"headshots" => MissionMetric.Headshots,
+		"assists" => MissionMetric.Assists,
+		"minutes" => MissionMetric.Minutes,
+		"mvps" => MissionMetric.Mvps,
+		_ => MissionMetric.Matches
+	};
 
 	// ------------------------------------------------------------------ períodos
 
-	public static string DayKey(DateTime local) => local.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+	/// <summary>Quanto falta para as diárias virarem (zero se o servidor ainda não disse).</summary>
+	public TimeSpan UntilDailyReset() => Left(DailyResetsUtc);
 
-	public static string WeekKey(DateTime local) =>
-		$"{ISOWeek.GetYear(local)}-S{ISOWeek.GetWeekOfYear(local):00}";
+	public TimeSpan UntilWeeklyReset() => Left(WeeklyResetsUtc);
 
-	public static TimeSpan UntilDailyReset(DateTime local) => local.Date.AddDays(1) - local;
+	private static TimeSpan Left(DateTime? utc) =>
+		utc == null || utc <= DateTime.UtcNow ? TimeSpan.Zero : utc.Value - DateTime.UtcNow;
 
-	public static TimeSpan UntilWeeklyReset(DateTime local)
-	{
-		int daysToMonday = ((int)DayOfWeek.Monday - (int)local.DayOfWeek + 7) % 7;
-		if (daysToMonday == 0) daysToMonday = 7;
-		return local.Date.AddDays(daysToMonday) - local;
-	}
-
-	/// <summary>Troca diárias e semanais se virou o dia ou a semana, e
-	/// garante que todo marco permanente tenha uma linha.</summary>
-	public void Refresh(DateTime local)
-	{
-		string day = DayKey(local);
-		if (DailyKey != day || Daily.Count != DailyCount)
-		{
-			DailyKey = day;
-			Daily = Draw(MissionPeriod.Daily, DailyCount, local.Year * 1000 + local.DayOfYear);
-		}
-
-		string week = WeekKey(local);
-		if (WeeklyKey != week || Weekly.Count != WeeklyCount)
-		{
-			WeeklyKey = week;
-			Weekly = Draw(MissionPeriod.Weekly, WeeklyCount, ISOWeek.GetYear(local) * 100 + ISOWeek.GetWeekOfYear(local) + 7919);
-		}
-
-		foreach (MissionDef def in Defs.Where(d => d.Period == MissionPeriod.Permanent))
-			if (Permanent.All(p => p.Id != def.Id))
-				Permanent.Add(new MissionProgress { Id = def.Id });
-
-		Permanent.RemoveAll(p => Def(p.Id) == null);
-	}
-
-	private static List<MissionProgress> Draw(MissionPeriod period, int count, int seed)
-	{
-		// A semente sai da própria data, não de GetHashCode de texto: no
-		// .NET o hash de string muda a cada execução.
-		var rng = new Random(seed);
-		return Defs.Where(d => d.Period == period)
-			.OrderBy(_ => rng.Next())
-			.Take(count)
-			.Select(d => new MissionProgress { Id = d.Id })
-			.ToList();
-	}
-
-	public IEnumerable<MissionProgress> All() => Daily.Concat(Weekly).Concat(Permanent);
+	public IEnumerable<MissionProgress> All() => Daily.Concat(Weekly).Concat(Event).Concat(Permanent);
 
 	public int ClaimableCount => All().Count(p => !p.Claimed && Def(p.Id) is MissionDef d && p.Progress >= d.Target);
 
 	// ------------------------------------------------------------------ progresso
 
-	/// <summary>Soma o resultado de uma partida. Devolve as missões que
-	/// ficaram completas agora (para a tela de resultado avisar).</summary>
-	public List<MissionDef> Record(MatchResult result)
+	/// <summary>
+	/// As missões que esta partida deve completar — para a tela de
+	/// resultado avisar na hora. É uma previsão com a mesma conta do
+	/// servidor: o progresso de verdade é o que ele somar, e chega no
+	/// próximo <see cref="AccountSync.Refresh"/>.
+	/// </summary>
+	public List<MissionDef> Predict(MatchResult result)
 	{
 		var done = new List<MissionDef>();
-
 		foreach (MissionProgress p in All())
 		{
 			MissionDef def = Def(p.Id);
 			if (def == null || p.Claimed || p.Progress >= def.Target) continue;
-
-			p.Progress = Math.Min(def.Target, p.Progress + Amount(def.Metric, result));
-			if (p.Progress >= def.Target) done.Add(def);
+			if (p.Progress + Amount(def.Metric, result) >= def.Target) done.Add(def);
 		}
-
 		return done;
 	}
 
@@ -201,24 +252,4 @@ public sealed class MissionBook
 		MissionMetric.Mvps => r.Mvp ? 1 : 0,
 		_ => 0
 	};
-
-	/// <summary>Resgata: credita Presas e XP e, no marco permanente,
-	/// destrava o título. Devolve as promoções que o XP causou.</summary>
-	public bool Claim(string id, out List<int> promotions)
-	{
-		promotions = new List<int>();
-		MissionProgress p = All().FirstOrDefault(m => m.Id == id);
-		MissionDef def = Def(id);
-		if (p == null || def == null || p.Claimed || p.Progress < def.Target) return false;
-
-		p.Claimed = true;
-		Profile.Earn(Currency.Presas, def.Presas, save: false);
-		promotions = Profile.AddXp(def.Xp);
-
-		if (!string.IsNullOrEmpty(def.Title) && !Profile.Titles.Contains(def.Title))
-			Profile.Titles.Add(def.Title);
-
-		Profile.Save();
-		return true;
-	}
 }

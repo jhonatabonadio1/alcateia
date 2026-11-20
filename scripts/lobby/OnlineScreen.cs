@@ -108,7 +108,7 @@ public partial class OnlineScreen : LobbyScreen
 
 		column.AddChild(UiKit.Text("Salas", "Title"));
 		column.AddChild(UiKit.Paragraph("Entre com a sua conta do servidor, ou crie uma agora. " +
-			"A conta guarda a sua patente online e o seu lugar no ranking."));
+			"A conta guarda as suas Presas, os seus itens, as missões, a patente e o seu lugar no ranking."));
 
 		LineEdit name = UiKit.Field(Backend.AccountName.Length > 0 ? Backend.AccountName : Profile.PlayerName, "Nome", 16);
 		LineEdit password = UiKit.Field("", "Senha (8 ou mais)", 64);
@@ -462,8 +462,8 @@ public partial class OnlineScreen : LobbyScreen
 
 		JsonNode you = end["you"];
 		if (you != null)
-			Shell.Toast(Loc.F("Partida registrada no servidor: +{0} XP de patente online", you["xp"]), UiTokens.Success);
+			Shell.Toast(Loc.F("Partida registrada: +{0} XP e +{1} Presas", you["xp"], you["presas"]), UiTokens.Success);
 		_ = LoadRanking();
-		_ = Backend.RefreshProfile();
+		_ = AccountSync.Refresh();
 	}
 }

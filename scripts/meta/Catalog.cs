@@ -285,16 +285,54 @@ public static class Catalog
 
 	public static string NameOf(string id) => Get(id)?.Name ?? Arsenal.NameOf(id);
 
-	/// <summary>Preço numa duração, ou −1 se não vendido nela.</summary>
+	/// <summary>Preço numa duração, ou −1 se não vendido nela. Já com o
+	/// desconto que estiver valendo no servidor (promoção do painel ou
+	/// item do dia) — é o mesmo preço que o servidor vai cobrar.</summary>
 	public static int Price(CatalogItem item, Duration d)
 	{
-		if (item?.Prices == null) return -1;
+		if (item?.Prices == null || (int)d >= item.Prices.Length) return -1;
 		int price = item.Prices[(int)d];
 		if (price < 0) return -1;
 
-		// Item do dia: 20% de desconto em todas as durações.
-		if (IsDaily(item, DateTime.Now)) price = (int)(Mathf.Round(price * 0.8f / 10f) * 10f);
-		return price;
+		int percent = ServerData.Discount(item.Id);
+		return percent <= 0 ? price : Math.Max(1, (int)Math.Round(price * (100 - percent) / 100.0));
+	}
+
+	// ------------------------------------------------------------------ o que o servidor muda
+
+	private sealed record BuiltIn(int[] Prices, int Rarity, int MinRank, bool Hot, bool Starter);
+	private static readonly Dictionary<string, BuiltIn> _builtIn = new();
+
+	/// <summary>
+	/// A economia de um item como o servidor a tem hoje (o painel muda
+	/// preço, raridade, patente, destaque e "vem com a conta" sem versão
+	/// nova do jogo). O que veio com o jogo fica guardado para
+	/// <see cref="RestoreBuiltIn"/>.
+	/// </summary>
+	public static void ApplyServer(string id, int[] prices, int rarity, int minRank, bool hot, bool starter)
+	{
+		if (Get(id) is not CatalogItem item) return;
+		_builtIn.TryAdd(id, new BuiltIn(item.Prices, item.Rarity, item.MinRank, item.Hot, item.Starter));
+		item.Prices = prices is { Length: > 0 } ? prices : null;
+		item.Rarity = Math.Clamp(rarity, 0, 4);
+		item.MinRank = Ranks.Clamp(minRank);
+		item.Hot = hot;
+		item.Starter = starter;
+	}
+
+	/// <summary>Volta ao que veio com o jogo (sem servidor, e nos testes).</summary>
+	public static void RestoreBuiltIn()
+	{
+		foreach (var (id, was) in _builtIn)
+		{
+			if (Get(id) is not CatalogItem item) continue;
+			item.Prices = was.Prices;
+			item.Rarity = was.Rarity;
+			item.MinRank = was.MinRank;
+			item.Hot = was.Hot;
+			item.Starter = was.Starter;
+		}
+		_builtIn.Clear();
 	}
 
 	/// <summary>Preço por dia, ou −1 para permanente e não vendido.</summary>
@@ -325,14 +363,10 @@ public static class Catalog
 
 	// ------------------------------------------------------------------ do dia
 
-	/// <summary>Quatro itens do dia, sorteados pela data: mesmo dia, mesma
-	/// vitrine, para todo mundo e a cada vez que se abre a loja.</summary>
-	public static List<CatalogItem> Daily(DateTime day)
-	{
-		var pool = _items.Where(i => i.ForSale && !i.Consumable).ToList();
-		var rng = new Random(day.Year * 1000 + day.DayOfYear);
-		return pool.OrderBy(_ => rng.Next()).Take(4).ToList();
-	}
+	/// <summary>Os itens do dia: a vitrine que o servidor sorteia pela data
+	/// (mesmo dia, mesma vitrine, para todo mundo), com desconto até a
+	/// meia-noite de Brasília. Sem servidor não há vitrine.</summary>
+	public static List<CatalogItem> Daily() => ServerData.DailyItems.Select(Get).Where(i => i != null).ToList();
 
-	public static bool IsDaily(CatalogItem item, DateTime day) => Daily(day).Contains(item);
+	public static bool IsDaily(CatalogItem item) => item != null && ServerData.DailyItems.Contains(item.Id);
 }

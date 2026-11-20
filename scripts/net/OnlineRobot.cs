@@ -76,7 +76,7 @@ public partial class OnlineRobot : Node
 		}
 
 		if (Host)
-			lobby.CreateRoom(OnlineMatch.SettingsTo(new RoomSettings { Title = "Sala dos robôs", TeamSize = 4, ScoreToWin = 10, Minutes = 3, Difficulty = BotLevel.Hard }));
+			lobby.CreateRoom(OnlineMatch.SettingsTo(new RoomSettings { Title = "Sala dos robôs", TeamSize = 4, ScoreToWin = 10, Minutes = 3, Difficulty = BotLevel.Hard, Play = PlayMode.BotsLivre }));
 	}
 
 	private void OnLobbyChanged()
@@ -248,6 +248,17 @@ public partial class OnlineRobot : Node
 		long xp = profile.Body?["xp"]?.GetValue<long>() ?? -1;
 		string matches = stats?["matches"]?.ToString() ?? "?", kills = stats?["kills"]?.ToString() ?? "?", deaths = stats?["deaths"]?.ToString() ?? "?";
 
+		// A conta, pelo mesmo caminho das telas (AccountSync → Profile): o
+		// que o servidor pagou pela partida, as missões que ele andou, uma
+		// compra que ele aceita e uma que ele recusa.
+		bool account = await AccountSync.Refresh();
+		long presas = Profile.Presas;
+		int missions = Profile.Missions.All().Count(), moving = Profile.Missions.All().Count(p => p.Progress > 0);
+		string bought = await AccountSync.Buy(AccountSync.RenameItem, Duration.Permanent);
+		int uses = Profile.Find(AccountSync.RenameItem)?.Uses ?? 0;
+		long spent = presas - Profile.Presas;
+		string refused = await AccountSync.Buy("scar", Duration.Day1);        // pede patente que conta nova não tem
+
 		JsonNode m = _lobbyResult?["match"];
 		int botsMoved = _botsMoved.Count;
 		GD.Print($"ROBO {_name} fim: partidas={matches} xp={xp} abates={kills} mortes={deaths} " +
@@ -256,6 +267,8 @@ public partial class OnlineRobot : Node
 			$"bots_meus={_myBots} bonecos_bot={_botPuppets} bots_andaram={botsMoved} tiros_de_bot={_botShots} dificuldade={_level} " +
 			$"abates_com_bot={_botKills} abateu_bot={_killsOnBots} " +
 			$"modo={(_authoritative ? "autoritativo" : "repasse")} correcoes={_corrections} " +
+			$"conta={(account && Profile.HasAccount ? "ok" : "falhou")} xp_no_jogo={Profile.Xp} presas={presas} missoes={missions} missoes_andando={moving} " +
+			$"compra={(bought == null ? "ok" : "recusada")} usos={uses} gasto={spent} recusa={(refused != null ? "ok" : "comprou")} " +
 			$"sala={(LobbyLink.Instance.Room != null ? LobbyLink.Instance.Room["state"] : "nenhuma")}");
 
 		GetTree().Quit(0);

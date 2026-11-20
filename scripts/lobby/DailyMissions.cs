@@ -15,11 +15,13 @@ public static class DailyMissions
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
 		head.AddChild(UiKit.Caption("Missões do dia"));
 		head.AddChild(UiKit.Spacer());
-		TimeSpan left = MissionBook.UntilDailyReset(DateTime.Now);
-		head.AddChild(UiKit.Text(Loc.F("troca em {0} h {1:00} min", left.Hours, left.Minutes), "Caption"));
+		TimeSpan left = Profile.Missions.UntilDailyReset();
+		if (Profile.HasAccount) head.AddChild(UiKit.Text(Loc.F("troca em {0} h {1:00} min", (int)left.TotalHours, left.Minutes), "Caption"));
 		column.AddChild(head);
 
-		Profile.Missions.Refresh(DateTime.Now);
+		if (!Profile.HasAccount)
+			column.AddChild(UiKit.Paragraph("As missões são da conta: entre nela para ver as de hoje.", "Caption"));
+
 		foreach (MissionProgress p in Profile.Missions.Daily)
 		{
 			MissionDef def = MissionBook.Def(p.Id);

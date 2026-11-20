@@ -104,6 +104,12 @@ public static class Backend
 	public static Task<Reply> Buy(string itemId, Duration duration) =>
 		Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = itemId, ["duration"] = (int)duration });
 
+	/// <summary>Joga fora um item do inventário da conta.</summary>
+	public static Task<Reply> Discard(string itemId) => Call(HttpMethod.Delete, $"/v1/inventory/{Uri.EscapeDataString(itemId)}");
+
+	/// <summary>Troca o nome da conta (gasta um item Troca de nome).</summary>
+	public static Task<Reply> Rename(string name) => Call(HttpMethod.Post, "/v1/account/name", new JsonObject { ["name"] = name });
+
 	/// <summary>Os desafios valendo e o progresso da conta em cada um.</summary>
 	public static Task<Reply> Challenges() => Call(HttpMethod.Get, "/v1/challenges");
 
@@ -166,26 +172,29 @@ public static class Backend
 		Token = token;
 		AccountId = profile?["id"]?.GetValue<long>() ?? 0;
 		AccountName = profile?["name"]?.GetValue<string>() ?? "";
-		if (profile?["xp"] is JsonNode xp) global::Profile.SetOnlineXp(xp.GetValue<long>());
 		Save();
+		AccountSync.SessionStarted(profile);
 		SessionChanged?.Invoke();
 	}
 
-	/// <summary>Lê de novo o perfil da conta (o XP, depois de uma partida).</summary>
-	public static async Task RefreshProfile()
+	/// <summary>O servidor trocou o nome da conta.</summary>
+	public static void Renamed(string name)
 	{
-		if (!LoggedIn) return;
-		Reply profile = await Profile();
-		if (profile.Ok && profile.Body?["xp"] is JsonNode xp) global::Profile.SetOnlineXp(xp.GetValue<long>());
+		AccountName = name ?? AccountName;
+		SessionChanged?.Invoke();
 	}
+
+	/// <summary>O servidor disse que o login não vale mais (venceu, a conta
+	/// foi banida ou derrubada pela moderação).</summary>
+	public static void SessionExpired() => Forget();
 
 	private static void Forget()
 	{
 		Token = null;
 		AccountId = 0;
 		AccountName = "";
-		global::Profile.SetOnlineXp(null);
 		Save();
+		AccountSync.SessionEnded();
 		SessionChanged?.Invoke();
 	}
 

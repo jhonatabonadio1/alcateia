@@ -20,6 +20,7 @@ public static class EventKind
 	public const string LoginAfterFailures = "login.ok_apos_falhas";
 	public const string LoginBanned = "login.banido";
 	public const string Register = "conta.criada";
+	public const string Rename = "conta.trocou_nome";
 	public const string BruteForce = "ataque.forca_bruta";
 	public const string Spraying = "ataque.varios_nomes";
 	public const string Scanner = "ataque.varredura";

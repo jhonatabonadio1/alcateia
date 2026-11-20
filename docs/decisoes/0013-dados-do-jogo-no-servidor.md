@@ -41,8 +41,7 @@ edita.
 
 - Item, mapa ou missão nova no jogo pede rodar o exportador e subir o
   servidor de novo (ele acrescenta o que falta).
-- Enquanto a loja do jogo não trocar o arquivo local pelas chamadas do
-  servidor, existem as duas carteiras (veja "O que ainda não faz" em
-  `docs/SERVIDOR.md`).
+- A carteira do arquivo local acabou na decisão 0015: o jogo só
+  espelha a conta.
 - A conta da patente existe em dois lugares (`Ranks.cs` no jogo,
   `RankRule.cs` no servidor): mudou num, mude no outro — há teste.

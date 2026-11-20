@@ -38,12 +38,12 @@ Pede a senha nova, desliga as duas etapas dessa conta e a destrava.
 | **Armas, skins e itens** | Todo o catálogo com a arte do jogo: nome, raridade, patente mínima, preço por duração, em destaque, vem com a conta, **ligado ou não** | administrador |
 | **Mapas** | Cada mapa com a foto: **liga e desliga a rotação** com um clique. Mapa desligado não abre sala nova. O cartão só anuncia modo que o jogo já tem (hoje, Equipe): mapa feito para um modo que ainda não existe, como a Obra para o mata-mata, diz isso e em que modo se joga nele por enquanto | administrador |
 | **Promoções** | Desconto com começo e fim num item à venda. Vale na loja sozinho, no horário | administrador |
-| **Desafios** | As missões diárias, semanais, permanentes e de **evento** (com datas): o que conta, o alvo e o prêmio (Presas, XP, Sangue, item por tantos dias, título) | administrador |
+| **Desafios** | As missões diárias, semanais, permanentes e de **evento** (com datas): o que conta, o alvo e o prêmio (Presas, XP, Sangue, item por tantos dias, título). Das diárias e semanais ligadas o servidor sorteia as que valem em cada período (as mesmas para todos); a etiqueta **Valendo hoje / esta semana** mostra quais | administrador |
 | **Eventos** | Tudo o que o escudo viu, com filtro por tipo, gravidade e IP; bloquear um endereço dali mesmo | moderador bloqueia |
 | **Blacklist de IP** | Endereços e faixas bloqueados (pelo escudo ou pela equipe), com prazo e motivo | moderador |
 | **Banimentos** | As contas banidas e o histórico | todos veem |
 | **Auditoria** | Quem fez o quê no painel, em quem e de onde | todos veem |
-| **Configurações** | Manutenção (fecha a entrada, com recado), evento de bônus (XP e Presas multiplicados até uma data), aviso do saguão, versão mínima do jogo | dono |
+| **Configurações** | Manutenção (fecha a entrada, com recado), evento de bônus (XP e Presas multiplicados até uma data), aviso do saguão, versão mínima do jogo, **vitrine do dia** (quantos itens entram em oferta a cada dia e com quanto de desconto; 0 desliga) e **rodízio dos desafios** (quantas diárias e semanais valem por vez; 0 = todas as ligadas) | dono |
 | **Administradores** | Criar, mudar o papel, trocar a senha, desligar | dono |
 
 Papéis: **dono** (tudo), **administrador** (modera, edita o jogo, mexe em
@@ -61,9 +61,11 @@ O painel grava no banco e o servidor renova na hora os dados em memória.
 O jogo lê `GET /v1/gamedata` ao entrar na conta e a cada minuto no
 saguão (`scripts/net/ServerData.cs`): mapa desligado some da escolha de
 mapa, o aviso aparece no saguão. Banimento e manutenção valem no mesmo
-instante (são do servidor). Preço e promoção valem na hora para a compra
-pelo servidor (`POST /v1/shop/buy`); a tela da loja do jogo ainda usa o
-arquivo local — veja "O que ainda não faz" em `docs/SERVIDOR.md`.
+instante (são do servidor). Preço, promoção e vitrine do dia valem na
+hora: a loja do jogo mostra o que veio do servidor e é ele que cobra
+(`POST /v1/shop/buy`). Moeda ou item dado pelo painel aparece no jogo
+quando o jogador abre a loja, o inventário ou as missões, ou termina
+uma partida (decisão 0015).
 
 ## Desenvolver o painel
 

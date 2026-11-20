@@ -15,6 +15,8 @@ public partial class ProfileScreen : LobbyScreen
 {
 	public override IconKind NavIcon => IconKind.Profile;
 
+	protected override bool FollowsAccount => true;
+
 	protected override void Build()
 	{
 		HBoxContainer split = SplitPage();
@@ -99,7 +101,7 @@ public partial class ProfileScreen : LobbyScreen
 		column.AddChild(UiKit.Spacer());
 
 		// Trocar o nome exige o item da loja.
-		bool canRename = Profile.Owns("troca_nome");
+		bool canRename = Profile.HasAccount && Profile.Owns(AccountSync.RenameItem);
 		Button rename = UiKit.Button(canRename ? "Trocar nome" : "Trocar nome (item da loja)", ButtonKind.Secondary,
 			canRename ? Rename : () => Shell.GoShop("troca_nome"));
 		column.AddChild(rename);
@@ -109,6 +111,17 @@ public partial class ProfileScreen : LobbyScreen
 		column.AddChild(created);
 
 		return panel;
+	}
+
+	/// <summary>O nome é o da conta: quem troca é o servidor, que confere
+	/// se está livre e gasta o item.</summary>
+	private async void DoRename(string name)
+	{
+		string error = Profile.ValidateName(name) ?? await AccountSync.Rename(name.Trim());
+		if (!IsInsideTree()) return;
+		if (error == null) Shell.Toast("Nome trocado", UiTokens.Success);
+		else Shell.Toast(error, UiTokens.Danger);
+		Refresh();
 	}
 
 	private void Rename()
@@ -124,11 +137,7 @@ public partial class ProfileScreen : LobbyScreen
 
 		Shell.Modal("Trocar nome", body,
 			new Modal.Choice("Cancelar", ButtonKind.Secondary, null),
-			new Modal.Choice("Trocar", ButtonKind.Primary, () =>
-			{
-				if (Profile.SetName(field.Text, out string why)) { Shell.Toast("Nome trocado", UiTokens.Success); Refresh(); }
-				else Shell.Toast(why, UiTokens.Danger);
-			}));
+			new Modal.Choice("Trocar", ButtonKind.Primary, () => DoRename(field.Text)));
 		field.CallDeferred(Control.MethodName.GrabFocus);
 	}
 

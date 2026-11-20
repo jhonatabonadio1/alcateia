@@ -203,7 +203,9 @@ public partial class ItemCard : PanelContainer
 				UiTokens.Success);
 		}
 
-		if (Catalog.IsDaily(Item, DateTime.Now)) return UiKit.Chip("−20% hoje", UiTokens.Warning, solid: true);
+		int discount = ServerData.Discount(Item.Id);
+		if (Catalog.IsDaily(Item)) return UiKit.Chip(Loc.F("−{0}% hoje", discount), UiTokens.Warning, solid: true);
+		if (discount > 0) return UiKit.Chip(Loc.F("−{0}%", discount), UiTokens.Warning, solid: true);
 		if (Item.Hot) return UiKit.Chip("Destaque", UiTokens.Accent);
 		return null;
 	}

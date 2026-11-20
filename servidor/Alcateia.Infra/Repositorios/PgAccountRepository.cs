@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Alcateia.Aplicacao.Portas;
+using Alcateia.Dominio;
 using Alcateia.Dominio.Contas;
 using Alcateia.Infra.Banco;
 
@@ -79,6 +80,28 @@ public sealed class PgAccountRepository : IAccountRepository
 
 	public Task SaveData(long accountId, string dataJson) =>
 		_db.Exec("update profiles set data = $2::jsonb, updated_at = now() where account_id = $1", accountId, dataJson);
+
+	public async Task Rename(long accountId, string name, string nameKey, string itemId)
+	{
+		try
+		{
+			await _db.Transaction(async c =>
+			{
+				PgResult used = await c.Query(
+					"update inventory set uses = uses - 1 where account_id = $1 and item_id = $2 and uses > 0 returning uses", accountId, itemId);
+				if (used.Empty) throw new Failure(FailureKind.Conflict, "sem_troca_de_nome", "Você precisa do item Troca de nome, da loja.");
+				if (used.Int(0, "uses") == 0) await c.Query("delete from inventory where account_id = $1 and item_id = $2", accountId, itemId);
+
+				await c.Query("update accounts set name = $2, name_key = $3 where id = $1", accountId, name, nameKey);
+				return 0;
+			});
+		}
+		catch (PgException e) when (e.IsUniqueViolation)
+		{
+			// A transação desfez o gasto do item.
+			throw new Failure(FailureKind.Conflict, "nome_em_uso", "Já existe uma conta com esse nome.");
+		}
+	}
 
 	public async Task<BanStatus> Ban(long accountId)
 	{

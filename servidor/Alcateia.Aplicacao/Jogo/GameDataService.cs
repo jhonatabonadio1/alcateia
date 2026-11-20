@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Alcateia.Aplicacao.Portas;
+using Alcateia.Dominio;
 using Alcateia.Dominio.Desafios;
 using Alcateia.Dominio.Loja;
 
@@ -22,13 +23,21 @@ public static class SettingKeys
 	public const string Notice = "aviso";
 	/// <summary><c>{ "xp": 1, "presas": 1, "until": null }</c> — evento de XP ou Presas em dobro.</summary>
 	public const string Bonus = "bonus";
+	/// <summary><c>{ "daily": 3, "weekly": 5 }</c> — quantos desafios diários e
+	/// semanais valem por vez (o resto entra no rodízio); 0 é "todos".</summary>
+	public const string Challenges = "desafios";
+	/// <summary><c>{ "count": 4, "percent": 20 }</c> — a vitrine do dia: quantos
+	/// itens e com que desconto; count 0 desliga.</summary>
+	public const string Showcase = "vitrine";
 
 	public static readonly IReadOnlyDictionary<string, string> Defaults = new Dictionary<string, string>
 	{
 		[Maintenance] = "{\"on\":false,\"message\":\"\"}",
 		[MinVersion] = "{\"version\":\"0.0.0\"}",
 		[Notice] = "{\"text\":\"\"}",
-		[Bonus] = "{\"xp\":1,\"presas\":1,\"until\":null}"
+		[Bonus] = "{\"xp\":1,\"presas\":1,\"until\":null}",
+		[Challenges] = "{\"daily\":3,\"weekly\":5}",
+		[Showcase] = "{\"count\":4,\"percent\":20}"
 	};
 }
 
@@ -46,8 +55,48 @@ public sealed class GameData
 	/// <summary>O que vai para o jogo, já em JSON, e a etiqueta dele.</summary>
 	public string Json = "{}", ETag = "\"0\"";
 
+	/// <summary>O dia do jogo para o qual o JSON foi montado (a vitrine do dia vai nele).</summary>
+	public string DayKey = "";
+
+	/// <summary>As promoções valendo: as do painel e a vitrine do dia.</summary>
+	public List<Promotion> PromotionsAt(DateTime now)
+	{
+		int count = Shop.DailyCount, percent = Shop.DailyPercent;
+		if (Settings.TryGetValue(SettingKeys.Showcase, out JsonNode v))
+		{
+			count = v["count"]?.GetValue<int>() ?? count;
+			percent = v["percent"]?.GetValue<int>() ?? percent;
+		}
+		var all = new List<Promotion>(Promotions);
+		all.AddRange(Shop.DailyShowcase(Catalog, now, count, percent));
+		return all;
+	}
+
+	/// <summary>Uma cópia com os mesmos dados (as listas não mudam depois de montadas).</summary>
+	public GameData Copy() => new()
+	{
+		Catalog = Catalog, Items = Items, Maps = Maps, Promotions = Promotions, Challenges = Challenges, Settings = Settings
+	};
+
 	public bool Maintenance => Settings.TryGetValue(SettingKeys.Maintenance, out JsonNode m) && (m["on"]?.GetValue<bool>() ?? false);
 	public string MaintenanceMessage => Settings.TryGetValue(SettingKeys.Maintenance, out JsonNode m) ? m["message"]?.GetValue<string>() ?? "" : "";
+
+	/// <summary>Quantos desafios diários e semanais valem por vez.</summary>
+	public (int Daily, int Weekly) ChallengeCounts
+	{
+		get
+		{
+			if (!Settings.TryGetValue(SettingKeys.Challenges, out JsonNode c)) return (ChallengeRules.DailyCount, ChallengeRules.WeeklyCount);
+			return (c["daily"]?.GetValue<int>() ?? ChallengeRules.DailyCount, c["weekly"]?.GetValue<int>() ?? ChallengeRules.WeeklyCount);
+		}
+	}
+
+	/// <summary>Os desafios valendo agora (com o rodízio dos diários e semanais).</summary>
+	public List<Challenge> RunningChallenges(DateTime now)
+	{
+		var (daily, weekly) = ChallengeCounts;
+		return ChallengeRules.Running(Challenges, now, daily, weekly);
+	}
 
 	/// <summary>O multiplicador de evento valendo agora.</summary>
 	public (double Xp, double Presas) Bonus(DateTime now)
@@ -79,11 +128,31 @@ public sealed class GameDataService
 {
 	private readonly IGameDataRepository _repository;
 	private volatile GameData _current = new();
+	private readonly object _rebuild = new();
+	private readonly Func<DateTime> _now;
 	private IReadOnlyList<string> _releasedModes = new[] { "equipe" };
 
-	public GameDataService(IGameDataRepository repository) => _repository = repository;
+	public GameDataService(IGameDataRepository repository, Func<DateTime> now = null)
+	{
+		_repository = repository;
+		_now = now ?? (() => DateTime.UtcNow);
+	}
 
-	public GameData Current => _current;
+	/// <summary>Os dados de agora. Virou o dia do jogo? A vitrine do dia
+	/// muda: o JSON é montado de novo (em memória, sem ir ao banco).</summary>
+	public GameData Current
+	{
+		get
+		{
+			GameData data = _current;
+			if (data.DayKey == GameClock.DayKey(_now())) return data;
+			lock (_rebuild)
+			{
+				if (_current.DayKey != GameClock.DayKey(_now())) _current = Stamp(_current.Copy());
+				return _current;
+			}
+		}
+	}
 
 	/// <summary>Os modos que o jogo deixa escolher hoje (vem com o jogo, na
 	/// semente; o painel não muda). Um mapa pode ter sido feito para um modo
@@ -116,9 +185,17 @@ public sealed class GameDataService
 		IReadOnlyDictionary<string, string> stored = await _repository.Settings();
 		data.Settings = SettingKeys.Defaults.ToDictionary(d => d.Key, d => JsonNode.Parse(stored.TryGetValue(d.Key, out string json) ? json : d.Value));
 
-		data.Json = ToJson(data).ToJsonString();
+		_current = Stamp(data);
+	}
+
+	/// <summary>Monta o JSON do jogo para o dia de hoje e a etiqueta dele.</summary>
+	private GameData Stamp(GameData data)
+	{
+		DateTime now = _now();
+		data.DayKey = GameClock.DayKey(now);
+		data.Json = ToJson(data, now).ToJsonString();
 		data.ETag = "\"" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(data.Json)))[..16] + "\"";
-		_current = data;
+		return data;
 	}
 
 	/// <summary>O mapa pode ser jogado? Mapa que o servidor não conhece
@@ -130,7 +207,7 @@ public sealed class GameDataService
 		return map == null || map.Enabled;
 	}
 
-	private static JsonObject ToJson(GameData d)
+	private static JsonObject ToJson(GameData d, DateTime now)
 	{
 		var items = new JsonArray();
 		foreach (CatalogEntry i in d.Catalog.Where(i => i.Enabled))
@@ -149,7 +226,8 @@ public sealed class GameDataService
 			});
 
 		var promotions = new JsonArray();
-		foreach (Promotion p in d.Promotions.Where(p => p.Active))
+		List<Promotion> valid = d.PromotionsAt(now);
+		foreach (Promotion p in valid.Where(p => p.Active))
 			promotions.Add(new JsonObject
 			{
 				["id"] = p.Id, ["itemId"] = p.ItemId, ["title"] = p.Title, ["percent"] = p.Percent,
@@ -165,7 +243,9 @@ public sealed class GameDataService
 
 		return new JsonObject
 		{
-			["items"] = items, ["maps"] = maps, ["promotions"] = promotions, ["challenges"] = challenges, ["settings"] = settings
+			["items"] = items, ["maps"] = maps, ["promotions"] = promotions, ["challenges"] = challenges, ["settings"] = settings,
+			// A vitrine do dia (também está nas promoções, com o desconto e até quando).
+			["dailyItems"] = new JsonArray(valid.Where(p => p.Id == 0).Select(p => (JsonNode)p.ItemId).ToArray())
 		};
 	}
 

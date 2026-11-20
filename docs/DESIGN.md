@@ -1686,31 +1686,46 @@ vista de cima do gerador.
 
 ## Fora da partida: perfil, patentes, loja e missões
 
-Tudo salvo em `user://perfil.json` (`Profile`, versão 2; o perfil da
-versão 1 é migrado). Opções ficam à parte, em `user://opcoes.json`.
+**Tudo o que vale alguma coisa é da conta** (decisão 0015, Jhon,
+20/11: "tudo exige conta"): XP, patente, Presas, Sangue, inventário,
+missões e títulos vêm do servidor e o jogo só os espelha
+(`Profile.ApplyAccount`, `scripts/net/AccountSync.cs`). Sem conta é
+Filhote, zero Presas e o equipamento de série; a loja mostra a vitrine
+e pede para entrar, as missões também. **Partida sem servidor é treino**
+e não rende nada. O arquivo `user://perfil.json` (`Profile`, versão 4)
+guarda só escolhas: conjuntos, raça, tatuagens, personagens, título em
+uso, estatísticas de treino. Opções ficam à parte, em
+`user://opcoes.json`.
 
 - **Duas moedas.** **Presas** se ganham jogando; **Sangue** é a moeda
-  paga e só aparece — vender exige servidor. **WP não é moeda de
-  lobby**: vive só dentro da partida. Perfil novo começa com 3.000
-  Presas.
+  paga e só aparece — a venda ainda não abriu. **WP não é moeda de
+  lobby**: vive só dentro da partida. Conta nova começa com as Presas
+  que o servidor dá (3.000, `AccountRules.StarterPresas` no servidor).
 - **Patentes** (`meta/Ranks.cs`): 30, em 10 famílias de 3 graus
   (Filhote I até Alfa III). XP para a patente *r*: 250·r^1,9. Cada
   promoção dá Presas (150 + 100 por família) e a tela de promoção.
-  Patente não cai. **Bot não tem patente** (decisão do Jhon, 13/11): no
+  Patente não cai. O servidor paga a promoção junto com o XP que a deu;
+  o lobby mostra a tela quando a conta chega. **Bot não tem patente** (decisão do Jhon, 13/11): no
   placar, na sala e no cartão de duelo aparece sem insígnia, como "Bot".
-- **Partida rende** (`meta/Progression.cs`): 150 XP e 100 Presas por
-  jogar, mais abate, assistência, vitória ou empate, e MVP. Abandonar
-  não rende nada.
+- **Partida rende** (`meta/Progression.cs`, a mesma conta do servidor):
+  150 XP e 100 Presas por jogar, mais abate, assistência, vitória ou
+  empate, e MVP. Abandonar não rende nada. Só a partida online com
+  conta rende; a tela de resultado mostra a previsão e quem paga é o
+  servidor.
 - **Loja** (`meta/Catalog.cs`): armas, granada, tatuagens (bônus
   pequenos de velocidade, pulo, escudo, garra e perda de escudo) e
-  troca de nome. Prazos de 1, 7, 30 e 90 dias ou permanente; quatro
-  itens do dia com 20% de desconto. Item com patente mínima aparece
+  troca de nome. Prazos de 1, 7, 30 e 90 dias ou permanente. Preço,
+  raridade, patente mínima e promoções vêm do servidor (o painel muda);
+  a vitrine do dia (quatro itens com 20%, configurável) é sorteada pelo
+  servidor no dia de Brasília. A compra é do servidor. Item com patente mínima aparece
   trancado, com a patente que destrava. A raça Ligeiro não é vendida:
   destrava na patente.
-- **Missões** (`meta/Missions.cs`): três diárias e cinco semanais
-  sorteadas pela data (mesmo dia, mesmas missões), e as permanentes,
-  que dão título. **O resgate é manual** — o clique é o momento da
-  recompensa.
+- **Missões** (`meta/Missions.cs`, espelho do servidor): três diárias e
+  cinco semanais sorteadas pelo servidor (as mesmas para todos), as
+  permanentes, que dão título, e as de evento, com data para acabar.
+  O progresso anda com o resultado que o servidor de partida entrega.
+  **O resgate é manual** — o clique é o momento da recompensa, e quem
+  paga é o servidor.
 
 ---
 

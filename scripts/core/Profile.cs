@@ -73,7 +73,6 @@ public static class Profile
 {
 	public const int SetCount = 4;
 	public const int MaxTattoos = 2;
-	public const int StarterPresas = 3000;
 	public const int NameMin = 3;
 	public const int NameMax = 16;
 
@@ -82,7 +81,7 @@ public static class Profile
 	public static readonly TimeSpan ExpiredGrace = TimeSpan.FromDays(30);
 
 	private const string FilePath = "user://perfil.json";
-	private const int Version = 3;
+	private const int Version = 4;
 
 	/// <summary>O arquivo lido era de antes da versão 3: o conjunto padrão
 	/// ganha a granada, uma vez (<see cref="Repair"/>).</summary>
@@ -98,29 +97,24 @@ public static class Profile
 	public static bool HasName => !string.IsNullOrEmpty(PlayerName);
 	public static DateTime CreatedUtc { get; private set; }
 
+	// ---- o que é da conta (docs/decisoes/0015) ----
+	//
+	// XP, Presas, Sangue, itens, missões e títulos moram no servidor. Aqui
+	// fica só o espelho do que a conta tem agora, enquanto se está nela:
+	// não vai para o arquivo, e sem conta é tudo zero (só os itens de série).
+
+	/// <summary>Há uma conta carregada: os valores abaixo são os dela.</summary>
+	public static bool HasAccount { get; private set; }
+
+	/// <summary>A conta chegou, mudou ou saiu (as telas que dependem dela se refazem).</summary>
+	public static event Action AccountChanged;
+
 	public static long Xp { get; private set; }
 
-	/// <summary>O XP da conta no servidor, quando se está logado (nulo
-	/// fora). Online quem vale é ele: é o que os outros veem na sala. Antes
-	/// o topo do menu mostrava a patente do XP local e a sala a do
-	/// servidor, e as duas não batiam (Jhon, 17/11).</summary>
-	public static long? OnlineXp { get; private set; }
+	/// <summary>O XP que dá a patente mostrada (o da conta).</summary>
+	public static long RankXp => Xp;
+	public static int Rank => Ranks.RankFor(Xp);
 
-	/// <summary>O XP que dá a patente mostrada: o da conta, logado; o
-	/// local, fora.</summary>
-	public static long RankXp => OnlineXp ?? Xp;
-	public static int Rank => Ranks.RankFor(RankXp);
-
-	/// <summary>A patente do XP local (a das partidas offline).</summary>
-	public static int LocalRank => Ranks.RankFor(Xp);
-
-	/// <summary>O XP da conta mudou (entrou, saiu, terminou partida online).</summary>
-	public static void SetOnlineXp(long? xp)
-	{
-		if (OnlineXp == xp) return;
-		OnlineXp = xp;
-		Changed?.Invoke();
-	}
 	public static List<RankEvent> RankHistory { get; private set; } = new();
 
 	public static long Presas { get; private set; }
@@ -147,16 +141,16 @@ public static class Profile
 	/// <summary>A última sala criada, para o formulário já vir preenchido.</summary>
 	public static RoomSettings LastRoom { get; set; }
 
+	/// <summary>O arquivo do jogador: as escolhas dele (conjuntos, lobo,
+	/// personagem, título em uso, última sala) e as estatísticas locais.
+	/// Nada que valha alguma coisa: isso é da conta. Arquivo antigo, com
+	/// Presas e itens, é lido sem erro e esses campos são ignorados.</summary>
 	private sealed class Data
 	{
 		public int Version { get; set; }
 		public string PlayerName { get; set; }
 		public DateTime CreatedUtc { get; set; }
-		public long Xp { get; set; }
 		public List<RankEvent> RankHistory { get; set; }
-		public long Presas { get; set; }
-		public long Sangue { get; set; }
-		public List<OwnedItem> Inventory { get; set; }
 		public List<LoadoutSet> Sets { get; set; }
 		public int LastUsed { get; set; }
 		public string Breed { get; set; }
@@ -164,15 +158,13 @@ public static class Profile
 		public string BlueCharacter { get; set; }
 		public string OrangeCharacter { get; set; }
 		public LifetimeStats Stats { get; set; }
-		public MissionBook Missions { get; set; }
-		public List<string> Titles { get; set; }
 		public string Title { get; set; }
 		public RoomSettings LastRoom { get; set; }
 	}
 
-	static Profile() => Load();
-
 	// ------------------------------------------------------------------ disco
+
+	static Profile() => Load();
 
 	public static void Load()
 	{
@@ -195,11 +187,7 @@ public static class Profile
 
 		PlayerName = data.PlayerName ?? "";
 		CreatedUtc = data.CreatedUtc == default ? DateTime.UtcNow : data.CreatedUtc;
-		Xp = Math.Max(0, data.Xp);
 		RankHistory = data.RankHistory ?? new List<RankEvent>();
-		Presas = Math.Max(0, data.Presas);
-		Sangue = Math.Max(0, data.Sangue);
-		Inventory = data.Inventory ?? new List<OwnedItem>();
 		Sets = data.Sets ?? new List<LoadoutSet>();
 		LastUsed = data.LastUsed;
 		Breed = string.IsNullOrEmpty(data.Breed) ? "raca_bruto" : data.Breed;
@@ -207,18 +195,14 @@ public static class Profile
 		BlueCharacter = data.BlueCharacter;
 		OrangeCharacter = data.OrangeCharacter;
 		Stats = data.Stats ?? new LifetimeStats();
-		Missions = data.Missions ?? new MissionBook();
-		Titles = data.Titles ?? new List<string>();
 		Title = data.Title ?? "";
 		LastRoom = data.LastRoom;
 
 		Repair();
 	}
 
-	/// <summary>Lê as duas versões do arquivo. A 1 tinha o inventário como
-	/// lista de ids e nenhum dado de progressão: vira versão 2 com tudo o
-	/// que o jogador tinha mantido como permanente, as Presas iniciais e
-	/// sem nickname — a tela de entrada pede um.</summary>
+	/// <summary>Lê o arquivo. O da versão 1 só tinha os conjuntos: o resto
+	/// começa novo e a tela de entrada pede um nome.</summary>
 	private static Data Parse(string json)
 	{
 		JsonNode root = JsonNode.Parse(json);
@@ -230,23 +214,9 @@ public static class Profile
 		var old = root?.AsObject();
 		Data data = Fresh();
 		data.Version = 1;
-
-		if (old?["Inventory"] is JsonArray ids)
-		{
-			foreach (JsonNode id in ids)
-			{
-				string value = id?.GetValue<string>();
-				if (!string.IsNullOrEmpty(value) && data.Inventory.All(i => i.Id != value))
-					data.Inventory.Add(new OwnedItem { Id = value, AcquiredUtc = DateTime.UtcNow });
-			}
-		}
-
 		if (old?["Sets"] is JsonArray sets)
 			data.Sets = JsonSerializer.Deserialize<List<LoadoutSet>>(sets.ToJsonString());
-
 		data.LastUsed = old?["LastUsed"]?.GetValue<int>() ?? 0;
-
-		GD.Print("Perfil: arquivo da versão 1 convertido para a 2 (itens mantidos como permanentes).");
 		return data;
 	}
 
@@ -255,9 +225,7 @@ public static class Profile
 		Version = Version,
 		PlayerName = "",
 		CreatedUtc = DateTime.UtcNow,
-		Presas = StarterPresas,
-		RankHistory = new List<RankEvent> { new() { Rank = 0, Utc = DateTime.UtcNow } },
-		Inventory = new List<OwnedItem>()
+		RankHistory = new List<RankEvent> { new() { Rank = 0, Utc = DateTime.UtcNow } }
 	};
 
 	public static void Save()
@@ -269,11 +237,7 @@ public static class Profile
 				Version = Version,
 				PlayerName = PlayerName,
 				CreatedUtc = CreatedUtc,
-				Xp = Xp,
 				RankHistory = RankHistory,
-				Presas = Presas,
-				Sangue = Sangue,
-				Inventory = Inventory,
 				Sets = Sets,
 				LastUsed = LastUsed,
 				Breed = Breed,
@@ -281,8 +245,6 @@ public static class Profile
 				BlueCharacter = BlueCharacter,
 				OrangeCharacter = OrangeCharacter,
 				Stats = Stats,
-				Missions = Missions,
-				Titles = Titles,
 				Title = Title,
 				LastRoom = LastRoom
 			};
@@ -317,6 +279,70 @@ public static class Profile
 
 	public static void NotifyChanged() => Changed?.Invoke();
 
+	// ------------------------------------------------------------------ conta
+
+	/// <summary>
+	/// O servidor disse o que a conta tem agora: carteira, XP e itens.
+	/// Devolve as patentes alcançadas desde a última vez que ele disse
+	/// (para a tela de promoção) — na primeira, nenhuma.
+	/// </summary>
+	public static List<int> ApplyAccount(long xp, long presas, long sangue, IEnumerable<OwnedItem> items)
+	{
+		var promotions = new List<int>();
+		int before = Rank;
+		bool first = !HasAccount;
+
+		HasAccount = true;
+		Xp = Math.Max(0, xp);
+		Presas = Math.Max(0, presas);
+		Sangue = Math.Max(0, sangue);
+		Inventory = items?.ToList() ?? new List<OwnedItem>();
+
+		if (!first)
+			for (int rank = before + 1; rank <= Rank; rank++)
+			{
+				promotions.Add(rank);
+				RankHistory.Add(new RankEvent { Rank = rank, Utc = DateTime.UtcNow });
+			}
+
+		Repair();
+		if (promotions.Count > 0) Save();
+		Changed?.Invoke();
+		AccountChanged?.Invoke();
+		return promotions;
+	}
+
+	/// <summary>Saiu da conta: sem carteira, sem itens, sem missões. As
+	/// escolhas (conjuntos, lobo) ficam como estão, para a volta.</summary>
+	public static void ClearAccount()
+	{
+		if (!HasAccount && Xp == 0 && Presas == 0 && Inventory.Count == 0) return;
+		HasAccount = false;
+		Xp = Presas = Sangue = 0;
+		Inventory = new List<OwnedItem>();
+		Missions = new MissionBook();
+		Titles = new List<string>();
+		Repair();
+		Changed?.Invoke();
+		AccountChanged?.Invoke();
+	}
+
+	/// <summary>Os títulos que a conta ganhou (os dos desafios resgatados).</summary>
+	public static void ApplyTitles(IEnumerable<string> titles)
+	{
+		Titles = titles?.ToList() ?? new List<string>();
+		if (!string.IsNullOrEmpty(Title) && HasAccount && !Titles.Contains(Title)) Title = "";
+	}
+
+	/// <summary>Com conta, o nome do jogador é o da conta.</summary>
+	public static void UseAccountName(string name)
+	{
+		if (string.IsNullOrEmpty(name) || name == PlayerName) return;
+		PlayerName = name;
+		Save();
+		Changed?.Invoke();
+	}
+
 	// ------------------------------------------------------------------ nome
 
 	/// <summary>Valida um nickname: 3 a 16 caracteres, letras, números,
@@ -333,18 +359,14 @@ public static class Profile
 		return null;
 	}
 
-	/// <summary>Primeiro nome: grátis. Trocar depois consome o item
-	/// "Troca de nome".</summary>
+	/// <summary>O nome com que se joga sem conta, escolhido na primeira
+	/// abertura. Com conta vale o nome dela; trocar esse é com o item
+	/// Troca de nome, pelo servidor (<see cref="AccountSync.Rename"/>).</summary>
 	public static bool SetName(string name, out string error)
 	{
 		error = ValidateName(name);
 		if (error != null) return false;
-
-		if (HasName)
-		{
-			if (!Owns("troca_nome")) { error = "Precisa do item Troca de nome"; return false; }
-			Consume("troca_nome");
-		}
+		if (HasName && HasAccount) { error = "Com conta, o nome se troca com o item Troca de nome"; return false; }
 
 		PlayerName = name.Trim();
 		Save();
@@ -369,59 +391,6 @@ public static class Profile
 
 	public static bool IsExpired(string id) => Find(id)?.IsExpired == true;
 
-	/// <summary>Acrescenta tempo a um item: soma ao que resta se ainda
-	/// não expirou, conta de agora se expirou, e permanente vence tudo.</summary>
-	public static void Grant(string id, Duration duration)
-	{
-		CatalogItem info = Catalog.Get(id);
-		OwnedItem item = Find(id);
-
-		if (item == null)
-		{
-			item = new OwnedItem { Id = id, AcquiredUtc = DateTime.UtcNow, ExpiresUtc = DateTime.UtcNow };
-			Inventory.Add(item);
-		}
-
-		if (info?.Consumable == true)
-		{
-			item.ExpiresUtc = null;
-			item.Uses++;
-			return;
-		}
-
-		// Já permanente continua permanente; comprar tempo não rebaixa.
-		if (duration == Duration.Permanent || item.ExpiresUtc == null)
-		{
-			item.ExpiresUtc = null;
-			return;
-		}
-
-		DateTime from = item.ExpiresUtc != null && item.ExpiresUtc > DateTime.UtcNow ? item.ExpiresUtc.Value : DateTime.UtcNow;
-		item.ExpiresUtc = from.AddDays(Catalog.Days(duration));
-	}
-
-	public static void Consume(string id)
-	{
-		OwnedItem item = Find(id);
-		if (item == null) return;
-		item.Uses = Math.Max(0, item.Uses - 1);
-		if (item.Uses == 0) Inventory.Remove(item);
-	}
-
-	/// <summary>Tira do inventário (descartar). Itens iniciais não saem.</summary>
-	public static void Discard(string id)
-	{
-		if (Catalog.Get(id)?.Starter == true) return;
-		Inventory.RemoveAll(i => i.Id == id);
-		Tattoos.Remove(id);
-		if (Breed == id) Breed = "raca_bruto";
-		if (BlueCharacter == id) BlueCharacter = null;
-		if (OrangeCharacter == id) OrangeCharacter = null;
-		Repair();
-		Save();
-		Changed?.Invoke();
-	}
-
 	/// <summary>Está em uso em algum conjunto, ou equipado no lobo?</summary>
 	public static bool IsEquipped(string id) =>
 		Sets.Any(s => s.Primary == id || s.Secondary == id || s.Melee == id || s.Utilities.Contains(id))
@@ -430,69 +399,9 @@ public static class Profile
 
 	// ------------------------------------------------------------------ moedas
 
+	/// <summary>O saldo da conta. Comprar, ganhar e gastar é com o
+	/// servidor (<see cref="AccountSync"/>): aqui só se lê.</summary>
 	public static long Balance(Currency currency) => currency == Currency.Presas ? Presas : Sangue;
-
-	public static bool Spend(Currency currency, long amount)
-	{
-		if (amount < 0 || Balance(currency) < amount) return false;
-		if (currency == Currency.Presas) Presas -= amount; else Sangue -= amount;
-		Save();
-		Changed?.Invoke();
-		return true;
-	}
-
-	public static void Earn(Currency currency, long amount, bool save = true)
-	{
-		if (amount <= 0) return;
-		if (currency == Currency.Presas) Presas += amount; else Sangue += amount;
-		if (save) Save();
-		Changed?.Invoke();
-	}
-
-	/// <summary>Compra: debita e entrega. Falha sem mexer em nada se
-	/// faltar saldo, patente ou o item não estiver à venda na duração.</summary>
-	public static bool Buy(string id, Duration duration, out string error)
-	{
-		error = null;
-		CatalogItem item = Catalog.Get(id);
-		int price = Catalog.Price(item, duration);
-
-		if (item == null || price < 0) error = "Item não está à venda nessa duração";
-		else if (Rank < item.MinRank) error = Loc.F("Exige a patente {0}", Ranks.NameOf(item.MinRank));
-		else if (Presas < price) error = "Presas insuficientes";
-
-		if (error != null) return false;
-
-		Presas -= price;
-		Grant(id, duration);
-		Save();
-		Changed?.Invoke();
-		return true;
-	}
-
-	// ------------------------------------------------------------------ progressão
-
-	/// <summary>Soma XP. Devolve as patentes alcançadas (para a tela de
-	/// promoção); cada promoção rende Presas e entra no histórico.</summary>
-	public static List<int> AddXp(long amount)
-	{
-		var promotions = new List<int>();
-		if (amount <= 0) return promotions;
-
-		int before = LocalRank;
-		Xp += amount;
-		int after = LocalRank;
-
-		for (int rank = before + 1; rank <= after; rank++)
-		{
-			promotions.Add(rank);
-			Presas += Ranks.PromotionReward(rank);
-			RankHistory.Add(new RankEvent { Rank = rank, Utc = DateTime.UtcNow });
-		}
-
-		Changed?.Invoke();
-		return promotions;
-	}
 
 	// ------------------------------------------------------------------ lobo
 
@@ -526,7 +435,14 @@ public static class Profile
 	/// <summary>A classe de lobo do jogador com as melhorias aplicadas.
 	/// Cópia: o recurso original é compartilhado com os bots e não pode
 	/// mudar.</summary>
-	public static WolfBreed BuildBreed() => BuildBreed(Breed, OwnedTattoos());
+	/// <summary>A classe de lobo que o jogador pode usar agora: a escolhida,
+	/// se a patente da conta a libera; senão, o Bruto.</summary>
+	public static string UsableBreed => BreedAllowed(Breed) ? Breed : "raca_bruto";
+
+	private static bool BreedAllowed(string id) =>
+		Catalog.Get(id) is CatalogItem item && item.Kind == ItemKind.Breed && Rank >= item.MinRank;
+
+	public static WolfBreed BuildBreed() => BuildBreed(UsableBreed, OwnedTattoos());
 
 	/// <summary>As melhorias equipadas que o jogador tem de fato.</summary>
 	public static System.Collections.Generic.List<string> OwnedTattoos() => Tattoos.Where(Owns).ToList();
@@ -598,11 +514,11 @@ public static class Profile
 
 	/// <summary>Esta arma pode estar neste espaço de um conjunto: existe,
 	/// é do espaço certo, o jogador a tem e, no padrão, ela é liberada.</summary>
-	private static bool Fits(string id, bool secondary, bool isDefault)
+	private static bool Fits(string id, bool secondary, bool isDefault, bool ownership)
 	{
-		if (string.IsNullOrEmpty(id) || Arsenal.Get(id) == null || Catalog.Get(id) is not CatalogItem item) return false;
+		if (string.IsNullOrEmpty(id) || Arsenal.Get(id) == null || Catalog.Get(id) == null) return false;
 		if (Arsenal.IsSecondary(id) != secondary) return false;
-		if (!Owns(id) && !item.Starter) return false;
+		if (ownership && !Owns(id)) return false;
 		return !isDefault || LoadoutSet.AllowedInDefault(id);
 	}
 
@@ -648,16 +564,11 @@ public static class Profile
 		// voltava sempre para AR-15 e M9 sem granada, mesmo com a AR-15
 		// Ultimate e a granada liberadas para ele). Só sai o que não existe
 		// mais, não é dele ou não cabe no espaço.
-		foreach (LoadoutSet set in Sets)
-		{
-			set.Utilities ??= new List<string>();
-			if (!Fits(set.Primary, secondary: false, set == Sets[0])) set.Primary = Arsenal.DefaultPrimary;
-			if (!Fits(set.Secondary, secondary: true, set == Sets[0])) set.Secondary = Arsenal.DefaultSecondary;
-			// A faca do conjunto: uma que exista, que ele tenha e, no padrão, comum.
-			if (!Arsenal.IsKnife(set.Melee) || !Owns(set.Melee) || (set == Sets[0] && !LoadoutSet.AllowedInDefault(set.Melee))) set.Melee = Arsenal.KnifeId;
-			set.Utilities.RemoveAll(id => Arsenal.GetUtility(id) == null || Catalog.Get(id) == null
-				|| (!Owns(id) && !Catalog.Get(id).Starter) || (set == Sets[0] && !LoadoutSet.AllowedInDefault(id)));
-		}
+		// O que depende de possuir (ou da patente) só se confere com a conta
+		// carregada: sem ela não se sabe o que é dele, e limpar aqui apagaria
+		// os conjuntos de quem só ainda não entrou. Na hora de usar vale
+		// Usable(), que troca pelo padrão o que não é dele.
+		for (int i = 0; i < Sets.Count; i++) Sanitize(Sets[i], i == 0, ownership: HasAccount);
 
 		LoadoutSet first = Sets[0];
 		first.IsDefault = true;
@@ -676,7 +587,7 @@ public static class Profile
 
 		LastUsed = Mathf.Clamp(LastUsed, 0, SetCount - 1);
 
-		if (Catalog.Get(Breed)?.Kind != ItemKind.Breed || Rank < Catalog.Get(Breed).MinRank)
+		if (Catalog.Get(Breed)?.Kind != ItemKind.Breed || (HasAccount && !BreedAllowed(Breed)))
 			Breed = "raca_bruto";
 
 		Tattoos = Tattoos.Where(id => Catalog.Get(id)?.Kind == ItemKind.Tattoo).Distinct().Take(MaxTattoos).ToList();
@@ -688,6 +599,28 @@ public static class Profile
 		if (RankHistory.Count == 0)
 			RankHistory.Add(new RankEvent { Rank = 0, Utc = CreatedUtc });
 
-		Missions.Refresh(DateTime.Now);
+	}
+
+	/// <summary>Tira do conjunto o que não existe mais, não cabe no espaço
+	/// ou — com <paramref name="ownership"/> — não é do jogador.</summary>
+	private static void Sanitize(LoadoutSet set, bool isDefault, bool ownership)
+	{
+		set.Utilities ??= new List<string>();
+		if (!Fits(set.Primary, secondary: false, isDefault, ownership)) set.Primary = Arsenal.DefaultPrimary;
+		if (!Fits(set.Secondary, secondary: true, isDefault, ownership)) set.Secondary = Arsenal.DefaultSecondary;
+		// A faca do conjunto: uma que exista, que ele tenha e, no padrão, comum.
+		if (!Arsenal.IsKnife(set.Melee) || (ownership && !Owns(set.Melee)) || (isDefault && !LoadoutSet.AllowedInDefault(set.Melee))) set.Melee = Arsenal.KnifeId;
+		set.Utilities.RemoveAll(id => Arsenal.GetUtility(id) == null || Catalog.Get(id) == null
+			|| (ownership && !Owns(id)) || (isDefault && !LoadoutSet.AllowedInDefault(id)));
+	}
+
+	/// <summary>O conjunto como dá para usar agora: uma cópia em que o que
+	/// não é do jogador (sem conta, tudo o que não é de série) vira o
+	/// padrão. O conjunto guardado não muda.</summary>
+	public static LoadoutSet Usable(LoadoutSet set)
+	{
+		LoadoutSet usable = set.Clone();
+		Sanitize(usable, set.IsDefault, ownership: true);
+		return usable;
 	}
 }

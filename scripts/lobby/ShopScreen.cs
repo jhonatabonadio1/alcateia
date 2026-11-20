@@ -38,12 +38,16 @@ public partial class ShopScreen : LobbyScreen
 	/// o que entra nela.</summary>
 	private readonly record struct Category(string Group, string Name, Func<IEnumerable<CatalogItem>> Items);
 
-	private static IEnumerable<CatalogItem> ForSale => Catalog.All.Where(i => !i.Starter || i.Kind == ItemKind.Breed);
+	/// <summary>O que aparece na loja: o que não vem com a conta e que o
+	/// servidor não desligou.</summary>
+	private static IEnumerable<CatalogItem> ForSale => Catalog.All.Where(i => (!i.Starter || i.Kind == ItemKind.Breed) && ServerData.ItemOn(i.Id));
+
+	protected override bool FollowsAccount => true;
 
 	private static readonly Category[] Categories =
 	{
 		new("Destaques", "Em destaque", () => ForSale.Where(i => i.Hot)),
-		new("Destaques", "Oferta do dia", () => Catalog.Daily(DateTime.Now)),
+		new("Destaques", "Oferta do dia", () => Catalog.Daily()),
 		new("Humano", "Primárias", () => ForSale.Where(i => ItemInfo.IsPrimary(i) && i.Kind == ItemKind.Weapon)),
 		new("Humano", "Secundárias", () => ForSale.Where(i => ItemInfo.IsSecondary(i) && i.Kind == ItemKind.Weapon)),
 		new("Humano", "Facas", () => ForSale.Where(i => Arsenal.IsKnife(i.Id))),
@@ -86,7 +90,7 @@ public partial class ShopScreen : LobbyScreen
 		head.AddChild(UiKit.Spacer());
 		Button sangue = UiKit.Button("Comprar Sangue", ButtonKind.Tertiary);
 		sangue.Disabled = true;
-		sangue.TooltipText = "A moeda paga só existe com servidor. E ela nunca compra poder.";
+		sangue.TooltipText = "A venda de Sangue ainda não abriu. E ele nunca compra poder.";
 		head.AddChild(sangue);
 		page.AddChild(head);
 
@@ -190,8 +194,9 @@ public partial class ShopScreen : LobbyScreen
 		head.AddChild(UiKit.Spacer());
 		if (_category == Daily)
 		{
-			TimeSpan left = MissionBook.UntilDailyReset(DateTime.Now);
-			head.AddChild(UiKit.Text(Loc.F("Troca em {0} h {1:00} min  ·  20% de desconto", left.Hours, left.Minutes), "Caption", UiTokens.Warning));
+			TimeSpan left = (ServerData.DailyEndsUtc ?? DateTime.UtcNow) - DateTime.UtcNow;
+			head.AddChild(UiKit.Text(items.Count == 0 ? "A vitrine do dia vem do servidor: entre em Online"
+				: Loc.F("Troca em {0} h {1:00} min", (int)left.TotalHours, left.Minutes), "Caption", UiTokens.Warning));
 		}
 		column.AddChild(head);
 
@@ -306,10 +311,21 @@ public partial class ShopScreen : LobbyScreen
 
 		HBoxContainer buy = UiKit.Row(UiTokens.S2);
 		buy.AddChild(UiKit.Spacer());
+		// Comprar é com a conta: o servidor confere preço, patente e saldo.
+		if (!Profile.HasAccount)
+		{
+			Button enter = UiKit.Button(AccountGate.Loading ? "Carregando a conta…" : "Entrar na conta para comprar", ButtonKind.Primary, () => Shell.GoOnline());
+			enter.CustomMinimumSize = new Vector2(260, UiTokens.ButtonHeight);
+			enter.Disabled = AccountGate.Loading;
+			buy.AddChild(enter);
+			column.AddChild(buy);
+			return column;
+		}
+
 		Button purchase = UiKit.Button(ownedForever ? "Já é permanente" : Profile.Owns(item.Id) && !item.Consumable ? "Comprar mais tempo" : "Comprar",
 			ButtonKind.Primary, () => Confirm(item, _duration, selectedPrice));
 		purchase.CustomMinimumSize = new Vector2(200, UiTokens.ButtonHeight);
-		purchase.Disabled = locked || ownedForever;
+		purchase.Disabled = locked || ownedForever || _buying;
 		purchase.TooltipText = locked ? Loc.F("Exige {0}", Ranks.NameOf(item.MinRank)) : !affordable ? "Presas insuficientes" : "";
 		buy.AddChild(purchase);
 		column.AddChild(buy);
@@ -358,12 +374,23 @@ public partial class ShopScreen : LobbyScreen
 		return row;
 	}
 
-	private void Buy(CatalogItem item, Duration duration)
+	/// <summary>Uma compra de cada vez: o botão fica parado até o servidor responder.</summary>
+	private bool _buying;
+
+	private async void Buy(CatalogItem item, Duration duration)
 	{
-		if (!Profile.Buy(item.Id, duration, out string error))
+		if (_buying) return;
+		_buying = true;
+		Refresh();
+		string error = await AccountSync.Buy(item.Id, duration);
+		_buying = false;
+		if (!IsInsideTree()) return;
+
+		if (error != null)
 		{
 			Shell.Toast(error, UiTokens.Danger);
 			Sfx.Ui("ui_negado");
+			Refresh();
 			return;
 		}
 

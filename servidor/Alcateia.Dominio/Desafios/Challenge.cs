@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Alcateia.Dominio.Partidas;
 
 namespace Alcateia.Dominio.Desafios;
@@ -39,7 +43,7 @@ public static class ChallengeRules
 {
 	/// <summary>O dia do jogo vira à meia-noite de Brasília (UTC−3, sem
 	/// horário de verão desde 2019): o servidor é um só para todos.</summary>
-	public static readonly TimeSpan GameZone = TimeSpan.FromHours(-3);
+	public static readonly TimeSpan GameZone = GameClock.Zone;
 
 	public static void Check(Challenge c)
 	{
@@ -66,6 +70,49 @@ public static class ChallengeRules
 			Periods.Weekly => $"{ISOWeek.GetYear(local)}-S{ISOWeek.GetWeekOfYear(local):00}",
 			_ => "sempre"
 		};
+	}
+
+	/// <summary>Quantos desafios diários e semanais valem por vez (o resto
+	/// descansa). Zero é "todos".</summary>
+	public const int DailyCount = 3, WeeklyCount = 5;
+
+	/// <summary>
+	/// Os desafios valendo agora. Diários e semanais entram em rodízio:
+	/// de todos os ligados, valem <paramref name="daily"/> por dia e
+	/// <paramref name="weekly"/> por semana, sorteados pela própria data —
+	/// o mesmo dia dá os mesmos desafios, para todo mundo. Permanentes e de
+	/// evento valem todos.
+	/// </summary>
+	public static List<Challenge> Running(IEnumerable<Challenge> all, DateTime utc, int daily = DailyCount, int weekly = WeeklyCount)
+	{
+		var on = all.Where(c => c.RunningAt(utc)).ToList();
+		var running = new List<Challenge>();
+		running.AddRange(Rotation(on.Where(c => c.Period == Periods.Daily), utc, daily));
+		running.AddRange(Rotation(on.Where(c => c.Period == Periods.Weekly), utc, weekly));
+		running.AddRange(on.Where(c => c.Period is Periods.Permanent or Periods.Event));
+		return running;
+	}
+
+	private static IEnumerable<Challenge> Rotation(IEnumerable<Challenge> pool, DateTime utc, int count)
+	{
+		var list = pool.ToList();
+		if (count <= 0 || list.Count <= count) return list;
+		string key = PeriodKey(list[0], utc);
+		// A ordem sai da data e do identificador, não de GetHashCode (que no
+		// .NET muda a cada execução): reiniciar o servidor não troca o dia.
+		return list.OrderBy(c => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key + "|" + c.Id))))
+			.Take(count).OrderBy(c => c.Sort).ThenBy(c => c.Id);
+	}
+
+	/// <summary>Quando os diários viram (a próxima meia-noite de Brasília).</summary>
+	public static DateTime NextDailyReset(DateTime utc) => GameClock.NextDay(utc);
+
+	/// <summary>Quando os semanais viram (a próxima segunda-feira, meia-noite de Brasília).</summary>
+	public static DateTime NextWeeklyReset(DateTime utc)
+	{
+		DateTime local = utc + GameZone;
+		int days = ((int)DayOfWeek.Monday - (int)local.DayOfWeek + 7) % 7;
+		return local.Date.AddDays(days == 0 ? 7 : days) - GameZone;
 	}
 
 	/// <summary>Quanto esta partida soma no desafio.</summary>

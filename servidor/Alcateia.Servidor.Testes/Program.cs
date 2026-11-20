@@ -179,6 +179,10 @@ public sealed class World : IAsyncDisposable
 		world.Url = $"http://127.0.0.1:{world.Config.Port}";
 		world.AdminUrl = $"http://127.0.0.1:{world.Config.AdminPort}";
 		world.Services = world._app.Services.GetService(typeof(Services)) as Services;
+		// A vitrine do dia muda com a data: desligada, para os preços dos
+		// testes não dependerem do dia em que rodam (ela tem o teste dela).
+		await world.Services.Db.Exec("insert into settings (key, value) values ('vitrine', '{\"count\":0,\"percent\":0}'::jsonb) on conflict (key) do update set value = excluded.value");
+		await world.Services.GameData.Reload();
 		return world;
 	}
 

@@ -34,6 +34,7 @@ public partial class LobbyShell : Control
 	{
 		if (Instance == this) Instance = null;
 		GetTree().NodeAdded -= OnNodeAdded;
+		AccountSync.Promoted -= ShowPromotions;
 		// A partida volta à paleta e ao estilo do jogo (HUD, menu do Esc).
 		UiTokens.Menu = false;
 	}
@@ -77,8 +78,31 @@ public partial class LobbyShell : Control
 		_overlay = UiKit.Fill(new Control { MouseFilter = MouseFilterEnum.Ignore });
 		AddChild(_overlay);
 
+		// A conta (carteira, itens, missões) mora no servidor: com um login
+		// guardado, já vem ao abrir; e voltando de uma partida, vem de novo.
+		AccountSync.Promoted += ShowPromotions;
+		_ = AccountSync.Resume();
+		ShowPromotions();
+
 		GoStart();
 	}
+
+	/// <summary>A conta subiu de patente (resgatou missão, o servidor
+	/// pagou uma partida): uma comemoração de cada vez.</summary>
+	private void ShowPromotions()
+	{
+		if (!IsInsideTree() || _promoting || AccountSync.PendingPromotions.Count == 0) return;
+		int rank = AccountSync.PendingPromotions[0];
+		AccountSync.PendingPromotions.RemoveAt(0);
+		_promoting = true;
+		PromotionOverlay.Open(_overlay, rank, () =>
+		{
+			_promoting = false;
+			ShowPromotions();
+		});
+	}
+
+	private bool _promoting;
 
 	/// <summary>A primeira tela: entrada se ainda não há nome; a sala se
 	/// voltamos de uma partida; senão, a lista de salas.</summary>

@@ -465,6 +465,13 @@ public partial class ResultScreen : CanvasLayer
 		_lines = UiKit.Column(UiTokens.S2);
 		column.AddChild(_lines);
 
+		// Treino não rende: XP, Presas e missões são da conta, e só o
+		// servidor de partida pode dizer ao servidor o que aconteceu.
+		if (!_match.Reward.Earns)
+			_lines.AddChild(UiKit.Paragraph(Profile.HasAccount
+				? "Partida de treino: não rende XP nem Presas. As partidas online rendem."
+				: "Sem conta, a partida não rende XP nem Presas. Entre na sua conta em Online para ganhar.", "Caption"));
+
 		column.AddChild(UiKit.Divider());
 
 		HBoxContainer presas = UiKit.Row(UiTokens.S2);

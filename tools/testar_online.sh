@@ -90,6 +90,12 @@ conferir "$PASTA/b.log" "tiros_de_bot=[1-9]" "o visitante viu bot atirar"
 conferir "$PASTA/b.log" "abateu_bot=[1-9]" "o visitante abateu um bot (o acerto foi até a máquina do criador, e a morte voltou pelo servidor)"
 conferir "$PASTA/a.log" "abates_com_bot=[1-9]" "o criador viu abates com bot no placar do servidor"
 conferir "$PASTA/a.log" "avisos_do_saguao=1 .*sala=waiting" "o saguão avisou o fim e a sala voltou a esperar"
+# A conta é do servidor (decisão 0015): o jogo só espelha o que ele diz.
+conferir "$PASTA/a.log" "conta=ok xp_no_jogo=[1-9][0-9]* presas=[3-9][0-9]{3,} " "o jogo do criador mostra o XP e as Presas que o servidor pagou pela partida"
+conferir "$PASTA/b.log" "conta=ok xp_no_jogo=[1-9]" "o do visitante também"
+conferir "$PASTA/a.log" "missoes=[1-9][0-9]* missoes_andando=[1-9]" "as missões vieram do servidor e a partida as fez andar"
+conferir "$PASTA/a.log" "compra=ok usos=1 gasto=1500 " "comprou na loja pelo servidor: o item chegou e as Presas saíram"
+conferir "$PASTA/a.log" "recusa=ok" "e o servidor recusou a arma que a patente dele não libera"
 if [ "${ALCATEIA_NETCODE:-}" = "autoritativo" ]; then
 	conferir "$PASTA/a.log" "modo=autoritativo" "o criador jogou a partida autoritativa (o servidor moveu os corpos)"
 	conferir "$PASTA/b.log" "modo=autoritativo" "o visitante também"

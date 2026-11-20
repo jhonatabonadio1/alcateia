@@ -126,6 +126,8 @@ public sealed class ContentService
 			SettingKeys.Maintenance => new JsonObject { ["on"] = o["on"]?.GetValue<bool>() ?? false, ["message"] = Cut(o["message"]?.GetValue<string>(), 200) },
 			SettingKeys.MinVersion => new JsonObject { ["version"] = Version(o["version"]?.GetValue<string>()) },
 			SettingKeys.Notice => new JsonObject { ["text"] = Cut(o["text"]?.GetValue<string>(), 300) },
+			SettingKeys.Challenges => new JsonObject { ["daily"] = Count(o["daily"]), ["weekly"] = Count(o["weekly"]) },
+			SettingKeys.Showcase => new JsonObject { ["count"] = Count(o["count"]), ["percent"] = Percent(o["percent"]) },
 			_ => new JsonObject
 			{
 				["xp"] = Bonus(o["xp"]), ["presas"] = Bonus(o["presas"]),
@@ -136,6 +138,20 @@ public sealed class ContentService
 		await _repository.SaveSetting(key, clean.ToJsonString());
 		await _data.Reload();
 		await _audit.Note(who, "configuracao.alterou", key, clean.ToJsonString());
+	}
+
+	private static int Percent(JsonNode node)
+	{
+		int value = node?.GetValue<int>() ?? 0;
+		if (value is < 0 or > Shop.MaxPercent) throw new Failure(FailureKind.Invalid, "desconto_invalido", $"Desconto de 0 a {Shop.MaxPercent}%.");
+		return value;
+	}
+
+	private static int Count(JsonNode node)
+	{
+		int value = node?.GetValue<int>() ?? 0;
+		if (value is < 0 or > 50) throw new Failure(FailureKind.Invalid, "quantidade_invalida", "A quantidade vai de 0 a 50.");
+		return value;
 	}
 
 	private static double Bonus(JsonNode node)

@@ -32,7 +32,7 @@ function fromPrice(item: CatalogItem) {
 	return item.discount > 0 ? Math.max(1, Math.round((lowest * (100 - item.discount)) / 100)) : lowest;
 }
 
-function ItemCard({ item, editable, onEdit, onToggle }: { item: CatalogItem; editable: boolean; onEdit: () => void; onToggle: (enabled: boolean) => void }) {
+function ItemCard({ item, daily, editable, onEdit, onToggle }: { item: CatalogItem; daily: boolean; editable: boolean; onEdit: () => void; onToggle: (enabled: boolean) => void }) {
 	const price = fromPrice(item);
 	return (
 		<Card className={cn("group flex flex-col overflow-hidden", !item.enabled && "opacity-70")}>
@@ -59,7 +59,7 @@ function ItemCard({ item, editable, onEdit, onToggle }: { item: CatalogItem; edi
 						) : price !== null ? (
 							<p className="num text-[13px] text-ink-2">
 								a partir de <span className="font-semibold text-ink">{n(price)}</span> {currencyNames[item.currency]}{" "}
-								{item.discount > 0 && <Badge tone="accent">−{item.discount}%</Badge>}
+								{item.discount > 0 && <Badge tone="accent">{daily ? `Item do dia −${item.discount}%` : `−${item.discount}%`}</Badge>}
 							</p>
 						) : (
 							<Badge>{item.minRank > 0 ? `Libera na patente ${item.minRank}` : "Fora da loja"}</Badge>
@@ -248,7 +248,7 @@ export function Catalog() {
 			) : (
 				<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 					{shown.map((item) => (
-						<ItemCard key={item.id} item={item} editable={can("content")} onEdit={() => setEditing(item)} onToggle={(enabled) => void toggle(item, enabled)} />
+						<ItemCard key={item.id} item={item} daily={content.data.dailyItems.includes(item.id)} editable={can("content")} onEdit={() => setEditing(item)} onToggle={(enabled) => void toggle(item, enabled)} />
 					))}
 				</div>
 			)}

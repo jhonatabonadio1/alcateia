@@ -64,6 +64,8 @@ public partial class InventoryScreen : LobbyScreen
 
 	private LoadoutSet CurrentSet => Profile.Sets[Mathf.Clamp(_setIndex, 0, Profile.Sets.Count - 1)];
 
+	protected override bool FollowsAccount => true;
+
 	protected override void Build()
 	{
 		VBoxContainer page = Page(UiTokens.S3);
@@ -575,6 +577,16 @@ public partial class InventoryScreen : LobbyScreen
 		return true;
 	}
 
+	/// <summary>O item sai da conta, no servidor; a tela se refaz quando ele confirma.</summary>
+	private async void Discard(CatalogItem item)
+	{
+		string error = await AccountSync.Discard(item.Id);
+		if (!IsInsideTree()) return;
+		if (error != null) Shell.Toast(error, UiTokens.Danger);
+		else Shell.Toast(Loc.F("{0} descartada", item.Name));
+		Refresh();
+	}
+
 	private void ConfirmDiscard(CatalogItem item)
 	{
 		Label body = UiKit.Paragraph(Loc.F("{0} sai do inventário. Se estiver num conjunto, o conjunto volta para o padrão naquele lugar. Não há reembolso.", item.Name));
@@ -592,10 +604,9 @@ public partial class InventoryScreen : LobbyScreen
 					if (set.Melee == item.Id) set.Melee = Arsenal.KnifeId;
 					set.Utilities.Remove(item.Id);
 				}
-				Profile.Discard(item.Id);
+				Profile.Save();
 				_selectedId = null;
-				Shell.Toast(Loc.F("{0} descartada", item.Name));
-				Refresh();
+				Discard(item);
 			}),
 			new Modal.Choice("Manter", ButtonKind.Primary, null));
 	}

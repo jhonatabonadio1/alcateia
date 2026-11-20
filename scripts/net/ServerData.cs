@@ -21,8 +21,8 @@ public static class ServerData
 	private static string _etag;
 	private static DateTime _checkedAt = DateTime.MinValue;
 	private static readonly HashSet<string> MapsOff = new();
-	private static readonly Dictionary<string, int[]> Prices = new();
 	private static readonly HashSet<string> ItemsKnown = new();
+	private static readonly HashSet<string> Daily = new();
 	private static readonly List<Promo> Promos = new();
 
 	/// <summary>Já chegou alguma resposta do servidor.</summary>
@@ -63,6 +63,21 @@ public static class ServerData
 	/// <summary>O item existe e está ligado no servidor (ou o servidor ainda não disse nada).</summary>
 	public static bool ItemOn(string id) => !Loaded || ItemsKnown.Contains(id ?? "");
 
+	/// <summary>Os itens da vitrine de hoje (com desconto até o dia virar).</summary>
+	public static IReadOnlyCollection<string> DailyItems => Daily;
+
+	/// <summary>Até quando vale a vitrine de hoje (nulo: não há vitrine).</summary>
+	public static DateTime? DailyEndsUtc
+	{
+		get
+		{
+			DateTime? ends = null;
+			foreach (Promo p in Promos)
+				if (Daily.Contains(p.ItemId) && p.EndsAt > DateTime.UtcNow && (ends == null || p.EndsAt < ends)) ends = p.EndsAt;
+			return ends;
+		}
+	}
+
 	/// <summary>O desconto valendo agora para o item, em por cento (0: nenhum).</summary>
 	public static int Discount(string itemId)
 	{
@@ -73,16 +88,9 @@ public static class ServerData
 		return best;
 	}
 
-	/// <summary>O preço do servidor para essa duração, já com o desconto;
-	/// −1 se não se vende. Sem dados do servidor, o do catálogo do jogo.</summary>
-	public static int Price(CatalogItem item, Duration duration)
-	{
-		int[] prices = Prices.TryGetValue(item.Id, out int[] server) ? server : item.Prices;
-		int index = (int)duration;
-		if (prices == null || index >= prices.Length || prices[index] < 0) return -1;
-		int percent = Discount(item.Id);
-		return percent <= 0 ? prices[index] : Math.Max(1, (int)Math.Round(prices[index] * (100 - percent) / 100.0));
-	}
+	/// <summary>O preço que o servidor cobra hoje por essa duração, já com
+	/// o desconto; −1 se não se vende. Sem dados do servidor, o do jogo.</summary>
+	public static int Price(CatalogItem item, Duration duration) => Catalog.Price(item, duration);
 
 	/// <summary>Lê a resposta de <c>/v1/gamedata</c>.</summary>
 	public static void Apply(JsonObject data)
@@ -91,14 +99,24 @@ public static class ServerData
 		foreach (JsonNode m in data["maps"] as JsonArray ?? new JsonArray())
 			if (!(m["enabled"]?.GetValue<bool>() ?? true)) MapsOff.Add(m["id"]?.GetValue<string>() ?? "");
 
-		Prices.Clear();
+		// A economia de cada item passa a ser a do servidor (o painel muda
+		// preço, raridade, patente e destaque sem versão nova do jogo).
+		Catalog.RestoreBuiltIn();
 		ItemsKnown.Clear();
 		foreach (JsonNode i in data["items"] as JsonArray ?? new JsonArray())
 		{
 			string id = i["id"]?.GetValue<string>() ?? "";
 			ItemsKnown.Add(id);
-			if (i["prices"] is JsonArray prices && prices.Count > 0) Prices[id] = prices.Select(p => p.GetValue<int>()).ToArray();
+			Catalog.ApplyServer(id,
+				(i["prices"] as JsonArray)?.Select(p => p.GetValue<int>()).ToArray(),
+				i["rarity"]?.GetValue<int>() ?? Catalog.Get(id)?.Rarity ?? 0,
+				i["minRank"]?.GetValue<int>() ?? Catalog.Get(id)?.MinRank ?? 0,
+				i["hot"]?.GetValue<bool>() ?? Catalog.Get(id)?.Hot ?? false,
+				i["starter"]?.GetValue<bool>() ?? Catalog.Get(id)?.Starter ?? false);
 		}
+
+		Daily.Clear();
+		foreach (JsonNode d in data["dailyItems"] as JsonArray ?? new JsonArray()) Daily.Add(d.GetValue<string>());
 
 		Promos.Clear();
 		foreach (JsonNode p in data["promotions"] as JsonArray ?? new JsonArray())
@@ -121,8 +139,9 @@ public static class ServerData
 		_etag = null;
 		_checkedAt = DateTime.MinValue;
 		MapsOff.Clear();
-		Prices.Clear();
+		Catalog.RestoreBuiltIn();
 		ItemsKnown.Clear();
+		Daily.Clear();
 		Promos.Clear();
 		Notice = "";
 		Maintenance = false;

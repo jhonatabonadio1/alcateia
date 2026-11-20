@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Alcateia.Dominio.Loja;
 
@@ -87,6 +89,27 @@ public static class Shop
 		if (promo.Percent is < 1 or > MaxPercent) throw Invalid("desconto_invalido", $"Desconto de 1 a {MaxPercent}%.");
 		if (promo.EndsAt <= promo.StartsAt) throw Invalid("periodo_invalido", "A promoção acaba antes de começar.");
 		if ((promo.Title ?? "").Length > 60) throw Invalid("titulo_invalido", "Título comprido demais.");
+	}
+
+	/// <summary>Quantos itens entram na vitrine do dia, e com que desconto.</summary>
+	public const int DailyCount = 4, DailyPercent = 20;
+
+	/// <summary>
+	/// A vitrine do dia: alguns itens à venda com desconto, sorteados pela
+	/// data — o mesmo dia dá a mesma vitrine, para todo mundo. Consumível
+	/// não entra. Sai como promoções comuns, que valem até o dia virar.
+	/// </summary>
+	public static List<Promotion> DailyShowcase(IEnumerable<CatalogEntry> catalog, DateTime utc, int count = DailyCount, int percent = DailyPercent)
+	{
+		if (count <= 0 || percent <= 0) return new List<Promotion>();
+		string day = GameClock.DayKey(utc);
+		// A ordem sai da data e do identificador (não de GetHashCode, que
+		// muda a cada execução): reiniciar o servidor não troca a vitrine.
+		return catalog.Where(i => i.ForSale && !i.Consumable)
+			.OrderBy(i => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(day + "|" + i.Id))))
+			.Take(count)
+			.Select(i => new Promotion(0, i.Id, "Item do dia", Math.Min(percent, MaxPercent), GameClock.DayStart(utc), GameClock.NextDay(utc), true))
+			.ToList();
 	}
 
 	/// <summary>O maior desconto valendo agora para o item (promoções não somam).</summary>

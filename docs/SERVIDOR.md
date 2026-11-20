@@ -191,13 +191,11 @@ Como chega lá:
   automática (quem cai volta para a sala).
 - **Do lobo**, o uivo, a corrida na parede e os golpes especiais
   aparecem para os outros como movimento e ataque comum.
-- **A loja do jogo ainda compra no arquivo local.** O servidor já tem
-  tudo — catálogo, preço, promoção, carteira, inventário, extrato,
-  desafios (`GET /v1/gamedata`, `POST /v1/shop/buy`, `/v1/challenges`) —
-  e o jogo já lê do servidor o que o painel muda (mapas em rotação,
-  aviso, manutenção, preços: `scripts/net/ServerData.cs`). Falta a tela
-  da loja e a das missões trocarem o arquivo local pelas chamadas do
-  servidor (`Backend.Buy`, `Backend.Inventory`, `Backend.Challenges`).
+- **Sem conta não há progressão** (decisão 0015): loja, inventário,
+  missões, XP e Presas são da conta. Partida sem servidor é treino e
+  não rende nada.
+- As estatísticas da tela de perfil do jogo ainda são as locais; as da
+  conta aparecem no ranking e no painel.
 - **Abates como lobo** ainda não vão no resultado da partida
   (`killsWolf`): os desafios "como lobo" e "como humano" só andam
   online quando o servidor de partida souber a forma de quem matou.

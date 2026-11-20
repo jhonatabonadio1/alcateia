@@ -90,6 +90,7 @@ export const eventNames: Record<string, string> = {
 	"login.ok_apos_falhas": "Login certo depois de vários errados",
 	"login.banido": "Banido tentou entrar",
 	"conta.criada": "Conta criada",
+	"conta.trocou_nome": "Troca de nome",
 	"ataque.forca_bruta": "Força bruta no login",
 	"ataque.varios_nomes": "Uma senha em várias contas",
 	"ataque.varredura": "Varredura de rotas",

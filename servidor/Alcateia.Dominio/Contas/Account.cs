@@ -25,12 +25,22 @@ public static class AccountRules
 
 	public static string Key(string name) => Clean(name).ToLowerInvariant();
 
-	/// <summary>Confere nome e senha de uma conta nova; devolve o nome limpo.</summary>
-	public static string CheckNew(string name, string password)
+	/// <summary>O item da loja que paga uma troca de nome.</summary>
+	public const string RenameItem = "troca_nome";
+
+	/// <summary>Confere um nome de conta; devolve o nome limpo.</summary>
+	public static string CheckName(string name)
 	{
 		name = Clean(name);
 		if (name.Length < NameMin || name.Length > NameMax || !ValidName.IsMatch(name))
 			throw new Failure(FailureKind.Invalid, "nome_invalido", $"O nome tem de {NameMin} a {NameMax} letras, números ou _.");
+		return name;
+	}
+
+	/// <summary>Confere nome e senha de uma conta nova; devolve o nome limpo.</summary>
+	public static string CheckNew(string name, string password)
+	{
+		name = CheckName(name);
 		if (password == null || password.Length < PasswordMin || password.Length > PasswordMax)
 			throw new Failure(FailureKind.Invalid, "senha_fraca", $"A senha precisa de pelo menos {PasswordMin} caracteres.");
 		return name;

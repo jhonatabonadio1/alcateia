@@ -1,9 +1,11 @@
+using System.Linq;
 using System.Text.Json.Nodes;
 using Alcateia.Aplicacao.Jogo;
 using Alcateia.Aplicacao.Portas;
 using Alcateia.Dominio.Contas;
 using Alcateia.Dominio.Desafios;
 using Alcateia.Dominio.Loja;
+using Alcateia.Dominio.Seguranca;
 using Alcateia.Servidor.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +21,8 @@ namespace Alcateia.Servidor.Rotas;
 /// |---|---|---|
 /// | GET /v1/gamedata | qualquer um | tudo de uma vez; com <c>If-None-Match</c>, 304 se nada mudou |
 /// | GET /v1/inventory | jogador | o que ele tem, a carteira e a patente |
+/// | DELETE /v1/inventory/{id} | jogador | joga o item fora |
+/// | POST /v1/account/name | jogador | <c>{ name }</c> — troca o nome, gastando um item Troca de nome |
 /// | POST /v1/shop/buy | jogador | <c>{ itemId, duration }</c> — o servidor confere preço, patente e saldo |
 /// | GET /v1/challenges | jogador | os desafios valendo e o progresso dele |
 /// | POST /v1/challenges/{id}/claim | jogador | recebe o prêmio de um desafio completo |
@@ -53,6 +57,21 @@ public static class GameRoutes
 			});
 		});
 
+		app.MapDelete("/v1/inventory/{id}", async ctx =>
+		{
+			Account account = await s.Accounts.Require(Api.Token(ctx));
+			await s.Shop.Discard(account.Id, (string)ctx.Request.RouteValues["id"]);
+			await Api.Send(ctx, new JsonObject { ["ok"] = true });
+		});
+
+		app.MapPost("/v1/account/name", async ctx =>
+		{
+			Account account = await s.Accounts.Require(Api.Token(ctx));
+			string name = await s.Accounts.Rename(account.Id, Api.Text(await Api.Body(ctx), "name"));
+			s.Security.Record(EventKind.Rename, Severity.Info, ClientIp.Of(ctx), account.Id, name, "/v1/account/name", $"era {account.Name}");
+			await Api.Send(ctx, new JsonObject { ["name"] = name });
+		});
+
 		app.MapPost("/v1/shop/buy", async ctx =>
 		{
 			Account account = await s.Accounts.Require(Api.Token(ctx));
@@ -78,7 +97,13 @@ public static class GameRoutes
 				one["periodKey"] = state.PeriodKey;
 				list.Add(one);
 			}
-			await Api.Send(ctx, new JsonObject { ["challenges"] = list });
+			var (daily, weekly) = s.Challenges.Resets();
+			await Api.Send(ctx, new JsonObject
+			{
+				["challenges"] = list,
+				["titles"] = new JsonArray((await s.Challenges.Titles(account.Id)).Select(t => (JsonNode)t).ToArray()),
+				["dailyResetsAt"] = Api.Date(daily), ["weeklyResetsAt"] = Api.Date(weekly)
+			});
 		});
 
 		app.MapPost("/v1/challenges/{id}/claim", async ctx =>

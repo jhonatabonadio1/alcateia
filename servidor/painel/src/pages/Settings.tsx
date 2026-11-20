@@ -99,6 +99,36 @@ export function Settings() {
 				</Card>
 
 				<Card>
+					<CardHeader title="Vitrine do dia" description="Todo dia, alguns itens à venda entram em promoção até a meia-noite de Brasília. O sorteio é pela data, igual para todo mundo; consumível não entra. Zero itens desliga a vitrine." />
+					<CardBody className="flex flex-wrap items-end gap-3">
+						<Field label="Itens por dia" className="w-36">
+							<Input type="number" min={0} max={50} value={s.vitrine.count} onChange={(e) => setS({ ...s, vitrine: { ...s.vitrine, count: Number(e.target.value) } })} className="num" />
+						</Field>
+						<Field label="Desconto (%)" className="w-36">
+							<Input type="number" min={0} max={90} value={s.vitrine.percent} onChange={(e) => setS({ ...s, vitrine: { ...s.vitrine, percent: Number(e.target.value) } })} className="num" />
+						</Field>
+						<Button variant="primary" disabled={saving === "vitrine"} onClick={() => void save("vitrine", s.vitrine, "Vitrine salva.")}>
+							Salvar
+						</Button>
+					</CardBody>
+				</Card>
+
+				<Card>
+					<CardHeader title="Rodízio dos desafios" description="Quantos desafios diários e semanais valem por vez. O resto descansa e entra nos dias seguintes; o sorteio é pela data, igual para todo mundo. Zero: valem todos os que estão ligados." />
+					<CardBody className="flex flex-wrap items-end gap-3">
+						<Field label="Diários por dia" className="w-36">
+							<Input type="number" min={0} max={50} value={s.desafios.daily} onChange={(e) => setS({ ...s, desafios: { ...s.desafios, daily: Number(e.target.value) } })} className="num" />
+						</Field>
+						<Field label="Semanais por semana" className="w-44">
+							<Input type="number" min={0} max={50} value={s.desafios.weekly} onChange={(e) => setS({ ...s, desafios: { ...s.desafios, weekly: Number(e.target.value) } })} className="num" />
+						</Field>
+						<Button variant="primary" disabled={saving === "desafios"} onClick={() => void save("desafios", s.desafios, "Rodízio salvo.")}>
+							Salvar
+						</Button>
+					</CardBody>
+				</Card>
+
+				<Card>
 					<CardHeader title="Aviso no saguão" description="Um recado curto que o jogo mostra para todo mundo. Em branco, não aparece nada." />
 					<CardBody className="flex flex-col gap-3">
 						<Textarea value={s.aviso.text} onChange={(e) => setS({ ...s, aviso: { text: e.target.value } })} maxLength={300} placeholder="Ex.: Mapa novo no ar: Estação de Trem." aria-label="Aviso no saguão" />

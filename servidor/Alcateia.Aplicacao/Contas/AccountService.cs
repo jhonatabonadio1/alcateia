@@ -59,6 +59,16 @@ public sealed class AccountService
 		return (account, await NewSession(account));
 	}
 
+	/// <summary>Troca o nome da conta, gastando um item Troca de nome.
+	/// Devolve o nome como ficou.</summary>
+	public async Task<string> Rename(long accountId, string name)
+	{
+		name = AccountRules.CheckName(name);
+		await _accounts.Rename(accountId, name, AccountRules.Key(name), AccountRules.RenameItem);
+		Forget(accountId);        // os logins em memória ainda dizem o nome antigo
+		return name;
+	}
+
 	/// <summary>Conta banida não entra: a recusa diz até quando e por quê.</summary>
 	public async Task RequireNotBanned(long accountId)
 	{

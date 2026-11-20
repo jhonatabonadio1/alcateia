@@ -186,10 +186,22 @@ public sealed class PgPlayerRepository : IPlayerRepository
 		string reference = $"{ch.Id}/{periodKey}";
 		if (ch.Presas > 0) await Adjust(c, accountId, Currency.Presas, ch.Presas, "desafio", reference, null);
 		if (ch.Sangue > 0) await Adjust(c, accountId, Currency.Sangue, ch.Sangue, "desafio", reference, null);
-		if (ch.Xp > 0) await c.Query("update profiles set xp = xp + $2, updated_at = now() where account_id = $1", accountId, ch.Xp);
+		if (ch.Xp > 0)
+		{
+			PgResult after = await c.Query("update profiles set xp = xp + $2, updated_at = now() where account_id = $1 returning xp", accountId, ch.Xp);
+			await PayPromotions(c, accountId, after.Long(0, "xp") - ch.Xp, after.Long(0, "xp"), reference);
+		}
 		if (!string.IsNullOrEmpty(ch.ItemId)) await Grant(c, accountId, ch.ItemId, itemExpiresAt, "desafio", 0);
 		return true;
 	});
+
+	/// <summary>Subiu de patente: paga as Presas de cada patente alcançada
+	/// (com linha no extrato). Dentro da transação de quem deu o XP.</summary>
+	internal static async Task PayPromotions(PgConnection c, long accountId, long xpBefore, long xpAfter, string reference)
+	{
+		long presas = RankRule.PromotionPresas(xpBefore, xpAfter);
+		if (presas > 0) await Adjust(c, accountId, Currency.Presas, presas, "promocao", reference, null);
+	}
 
 	// ------------------------------------------------------------ banimento e sessões
 

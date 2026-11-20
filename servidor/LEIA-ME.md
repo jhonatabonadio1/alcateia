@@ -20,7 +20,8 @@ Alcateia.Dominio/        as regras, puras (sem banco, rede ou ASP.NET)
   Desafios/Challenge.cs  desafios: métrica, período (dia e semana de Brasília), progresso
   Seguranca/             faixa de IP (CIDR), eventos, padrões de ataque, TOTP
   Painel/Admin.cs        papéis e permissões do painel, regras de conta
-  Contas/RankRule.cs     a patente a partir do XP (a mesma conta do jogo)
+  Contas/RankRule.cs     a patente a partir do XP (a mesma conta do jogo) e o prêmio de promoção
+  GameClock.cs           o dia do jogo (Brasília): quando viram missões e vitrine
 Alcateia.Aplicacao/      os casos de uso
   Portas/Ports.cs        o que a aplicação pede de fora: repositórios, senha, relógio, conexão
   Contas/AccountService  criar conta, entrar, sair, perfil, ranking
@@ -83,9 +84,11 @@ As rotas de jogador pedem `Authorization: Bearer <token>`; as de frota,
 | `POST /v1/fleet/heartbeat` `{id, address, port, players, capacity, matches[]}` | frota | Um servidor de partida bate ponto: quantas partidas aguenta (`capacity`, 1 se faltar) e as chaves das que tem abertas (`matches`). A resposta traz `assignments[]`, as partidas novas para ele (e `assignment`, a primeira, para servidor antigo); em `players[]`, bot tem `accountId` negativo e `owner`. Partida entregue que some de `matches` (fechou sem resultado: ninguém entrou, ou todos saíram) libera o lugar, e a sala volta a esperar |
 | `POST /v1/matches` `{matchKey, serverId, scoreBlue, scoreOrange, players[]}` | frota | O resultado. 409 se já foi entregue. Em `players[]`, `killsWolf` (opcional) diz quantos abates foram como lobo |
 | `GET /v1/gamedata` | qualquer um | Catálogo, mapas, promoções, desafios e configurações, de uma vez. Com `If-None-Match`, 304 se nada mudou |
-| `GET /v1/inventory` | jogador | `{presas, sangue, xp, rank, items[]}` |
+| `GET /v1/inventory` | jogador | `{presas, sangue, xp, rank, items[]}` (só o que está valendo) |
+| `DELETE /v1/inventory/{id}` | jogador | Descarta um item da conta (`item_inexistente` se ela não tem). O que vem com a conta não está no inventário do servidor: não há o que descartar |
+| `POST /v1/account/name` `{name}` | jogador | Troca o nome: confere se está livre e gasta um uso do item `troca_nome`. `nome_em_uso`, `sem_troca_de_nome` |
 | `POST /v1/shop/buy` `{itemId, duration}` | jogador | Compra: o servidor confere preço, desconto, patente e saldo. `duration` de 0 a 4 (1, 7, 30, 90 dias, para sempre) |
-| `GET /v1/challenges` | jogador | Os desafios valendo e o progresso da conta |
+| `GET /v1/challenges` | jogador | `{challenges[], titles[], dailyResetsAt, weeklyResetsAt}`: os desafios valendo agora (o rodízio do dia e da semana, os permanentes e os de evento), o progresso da conta, os títulos ganhos e quando viram |
 | `POST /v1/challenges/{id}/claim` | jogador | Recebe o prêmio de um desafio completo (uma vez por período) |
 | `/admin/v1/...` | administrador | O painel — só na porta do painel (`docs/PAINEL.md`) |
 | `GET /metrics` | Prometheus | Os números, no formato do Prometheus — só na porta do painel |

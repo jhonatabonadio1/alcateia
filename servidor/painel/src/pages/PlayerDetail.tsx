@@ -50,7 +50,7 @@ const statNames: Record<string, string> = {
 	mvps: "MVP",
 };
 
-const ledgerReasons: Record<string, string> = { compra: "Compra na loja", partida: "Prêmio de partida", desafio: "Prêmio de desafio", painel: "Painel" };
+const ledgerReasons: Record<string, string> = { compra: "Compra na loja", partida: "Prêmio de partida", desafio: "Prêmio de desafio", promocao: "Promoção de patente", painel: "Painel" };
 const sources: Record<string, string> = { loja: "Comprado", painel: "Dado pelo painel", desafio: "Prêmio de desafio" };
 
 export function PlayerDetail() {

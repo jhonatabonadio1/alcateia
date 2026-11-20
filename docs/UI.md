@@ -803,6 +803,12 @@ XP, loja com moeda do jogo, inventário, missões e a sala inteira
 funcionam e ficam salvos em `user://perfil.json`. O que depende de rede
 aparece desabilitado com "em breve" ou não aparece.
 
+> Desde 20/11 (decisão 0015) carteira, inventário, patente e missões
+> são da conta, no servidor. Sem conta, a loja e as missões mostram o
+> cartão de entrar (`scripts/lobby/AccountGate.cs`), o botão de compra
+> vira "Entrar na conta para comprar" e a tela de resultado diz que a
+> partida foi de treino.
+
 | Seção do guia | Onde está |
 |---|---|
 | Design tokens | `scripts/ui/kit/UiTokens.cs` (grade, raios, cores, tempos) e `UiFonts.cs` (Barlow e Barlow Condensed, OFL, números tabulares) |

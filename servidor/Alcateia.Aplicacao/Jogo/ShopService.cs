@@ -32,6 +32,13 @@ public sealed class ShopService
 
 	public Task<IReadOnlyList<LedgerEntry>> Ledger(long accountId) => _players.Ledger(accountId, 50);
 
+	/// <summary>Joga fora um item do inventário (não devolve o que custou).</summary>
+	public async Task Discard(long accountId, string itemId)
+	{
+		if (!await _players.Revoke(accountId, itemId ?? ""))
+			throw new Failure(FailureKind.NotFound, "item_inexistente", "Você não tem esse item.");
+	}
+
 	public Task<PurchaseReceipt> Buy(long accountId, string itemId, int duration)
 	{
 		GameData data = _data.Current;
@@ -40,7 +47,7 @@ public sealed class ShopService
 
 		return _players.Purchase(accountId, itemId ?? "", wallet =>
 		{
-			int price = Shop.Quote(item, duration, RankRule.RankFor(wallet.Xp), data.Promotions, now);
+			int price = Shop.Quote(item, duration, RankRule.RankFor(wallet.Xp), data.PromotionsAt(now), now);
 			if (item.Consumable) return new PurchaseDecision(item.Currency, price, null, Uses: 1);
 
 			if (wallet.Owned != null && wallet.Owned.ExpiresAt == null)

@@ -12,32 +12,55 @@ public partial class MissionsScreen : LobbyScreen
 {
 	public override IconKind NavIcon => IconKind.Missions;
 
+	protected override bool FollowsAccount => true;
+
 	protected override void Build()
 	{
-		Profile.Missions.Refresh(DateTime.Now);
-
 		VBoxContainer page = Page();
 
 		HBoxContainer head = UiKit.Row(UiTokens.S3);
 		head.AddChild(UiKit.Text("Missões", "Title"));
 		int ready = Profile.Missions.ClaimableCount;
-		Label summary = UiKit.Text(ready > 0 ? Loc.F("{0} pronta(s) para resgatar", ready) : "Progresso conta em toda partida terminada", "Muted",
+		Label summary = UiKit.Text(ready > 0 ? Loc.F("{0} pronta(s) para resgatar", ready) : "Progresso conta em toda partida online terminada", "Muted",
 			ready > 0 ? UiTokens.Accent : (Color?)null);
 		summary.SizeFlagsVertical = SizeFlags.ShrinkEnd;
 		head.AddChild(summary);
 		page.AddChild(head);
 
+		// As missões são da conta: é o servidor que diz quais valem hoje,
+		// soma o progresso e paga o prêmio.
+		if (!Profile.HasAccount)
+		{
+			CenterContainer center = new() { SizeFlagsVertical = SizeFlags.ExpandFill };
+			center.AddChild(AccountGate.Card(Shell, "As missões são da sua conta",
+				"Entre na conta para ver as missões do dia e da semana. O progresso conta nas partidas online, e o prêmio vai direto para a sua carteira."));
+			page.AddChild(center);
+			return;
+		}
+
+		// Ao abrir, pergunta de novo: uma partida pode ter acabado agora.
+		if (!_asked)
+		{
+			_asked = true;
+			_ = AccountSync.Refresh();
+		}
+
 		HBoxContainer columns = UiKit.Row(UiTokens.S4);
 		columns.SizeFlagsVertical = SizeFlags.ExpandFill;
 		page.AddChild(columns);
 
-		TimeSpan daily = MissionBook.UntilDailyReset(DateTime.Now);
-		TimeSpan weekly = MissionBook.UntilWeeklyReset(DateTime.Now);
+		TimeSpan daily = Profile.Missions.UntilDailyReset();
+		TimeSpan weekly = Profile.Missions.UntilWeeklyReset();
 
-		columns.AddChild(Section("Diárias", Loc.F("trocam em {0} h {1:00} min", daily.Hours, daily.Minutes), Profile.Missions.Daily));
+		if (Profile.Missions.Event.Count > 0)
+			columns.AddChild(Section("Evento", "por tempo limitado", Profile.Missions.Event));
+		columns.AddChild(Section("Diárias", Loc.F("trocam em {0} h {1:00} min", (int)daily.TotalHours, daily.Minutes), Profile.Missions.Daily));
 		columns.AddChild(Section("Semanais", Loc.F("trocam em {0} d {1} h", (int)weekly.TotalDays, weekly.Hours), Profile.Missions.Weekly));
 		columns.AddChild(Section("Permanentes", "cada uma dá um título", Profile.Missions.Permanent));
 	}
+
+	private bool _asked;
+	private bool _claiming;
 
 	private Control Section(string title, string note, List<MissionProgress> list)
 	{
@@ -103,6 +126,13 @@ public partial class MissionsScreen : LobbyScreen
 		bottom.AddChild(UiKit.Text($"+{UiTokens.Thousands(def.Presas)}", "Numeric"));
 		bottom.AddChild(Icon.Make(IconKind.Presa, 13, CurrencyLabel.ColorOf(Currency.Presas)));
 		bottom.AddChild(UiKit.Text(Loc.F("+{0} XP", UiTokens.Thousands(def.Xp)), "Numeric", UiTokens.TextSecondary));
+		if (def.Sangue > 0)
+		{
+			bottom.AddChild(UiKit.Text($"+{UiTokens.Thousands(def.Sangue)}", "Numeric"));
+			bottom.AddChild(Icon.Make(IconKind.Sangue, 13, CurrencyLabel.ColorOf(Currency.Sangue)));
+		}
+		if (!string.IsNullOrEmpty(def.ItemId))
+			bottom.AddChild(UiKit.Chip(def.ItemDays > 0 ? Loc.F("{0} por {1} dias", Catalog.NameOf(def.ItemId), def.ItemDays) : Catalog.NameOf(def.ItemId), UiTokens.Accent));
 		if (!string.IsNullOrEmpty(def.Title)) bottom.AddChild(UiKit.Chip(Loc.F("título: {0}", def.Title), UiTokens.Accent));
 		bottom.AddChild(UiKit.Spacer());
 
@@ -116,17 +146,26 @@ public partial class MissionsScreen : LobbyScreen
 		return card;
 	}
 
-	private void Claim(MissionDef def)
+	/// <summary>Resgata no servidor: é ele que confere se completou e paga
+	/// (uma vez só). A promoção de patente, se vier, o lobby mostra.</summary>
+	private async void Claim(MissionDef def)
 	{
-		if (!Profile.Missions.Claim(def.Id, out List<int> promotions))
+		if (_claiming) return;
+		_claiming = true;
+		string error = await AccountSync.Claim(def.Id);
+		_claiming = false;
+		if (!IsInsideTree()) return;
+
+		if (error != null)
+		{
+			Shell.Toast(error, UiTokens.Danger);
+			Sfx.Ui("ui_negado");
+			Refresh();
 			return;
+		}
 
 		Sfx.Ui(Sfx.First("ui_recompensa", "abate"));
 		Shell.Toast(Loc.F("Resgatada: +{0} Presas, +{1} XP", UiTokens.Thousands(def.Presas), UiTokens.Thousands(def.Xp)), UiTokens.Success);
-		Profile.NotifyChanged();
 		Refresh();
-
-		foreach (int rank in promotions)
-			PromotionOverlay.Open(Shell.Overlay, rank);
 	}
 }

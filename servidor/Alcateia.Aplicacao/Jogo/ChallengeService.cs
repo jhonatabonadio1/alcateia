@@ -33,7 +33,7 @@ public sealed class ChallengeService
 		DateTime now = _clock.UtcNow;
 		var progress = (await _players.Progress(accountId)).ToDictionary(p => (p.ChallengeId, p.PeriodKey));
 		var list = new List<ChallengeState>();
-		foreach (Challenge c in _data.Current.Challenges.Where(c => c.RunningAt(now)))
+		foreach (Challenge c in _data.Current.RunningChallenges(now))
 		{
 			string key = ChallengeRules.PeriodKey(c, now);
 			progress.TryGetValue((c.Id, key), out var p);
@@ -42,12 +42,26 @@ public sealed class ChallengeService
 		return list;
 	}
 
+	/// <summary>Os títulos que a conta ganhou: os dos desafios cujo prêmio ela já recebeu.</summary>
+	public async Task<IReadOnlyList<string>> Titles(long accountId)
+	{
+		var claimed = (await _players.Progress(accountId)).Where(p => p.Claimed).Select(p => p.ChallengeId).ToHashSet();
+		return _data.Current.Challenges.Where(c => !string.IsNullOrEmpty(c.Title) && claimed.Contains(c.Id)).Select(c => c.Title).Distinct().ToList();
+	}
+
+	/// <summary>Quando os desafios diários e os semanais viram.</summary>
+	public (DateTime Daily, DateTime Weekly) Resets()
+	{
+		DateTime now = _clock.UtcNow;
+		return (ChallengeRules.NextDailyReset(now), ChallengeRules.NextWeeklyReset(now));
+	}
+
 	/// <summary>Soma o resultado de uma partida nos desafios de cada jogador.</summary>
 	public async Task Apply(SettledMatch match)
 	{
 		DateTime now = _clock.UtcNow;
 		int minutes = match.Minutes(now);
-		var running = _data.Current.Challenges.Where(c => c.RunningAt(now)).ToList();
+		var running = _data.Current.RunningChallenges(now);
 
 		foreach (SettledLine line in match.Lines)
 			foreach (Challenge c in running)
@@ -61,7 +75,7 @@ public sealed class ChallengeService
 	public async Task<Challenge> Claim(long accountId, string challengeId)
 	{
 		DateTime now = _clock.UtcNow;
-		Challenge c = _data.Current.Challenges.FirstOrDefault(x => x.Id == challengeId && x.RunningAt(now))
+		Challenge c = _data.Current.RunningChallenges(now).FirstOrDefault(x => x.Id == challengeId)
 			?? throw new Failure(FailureKind.NotFound, "desafio_inexistente", "Esse desafio não está valendo.");
 
 		DateTime? itemUntil = c.ItemDays > 0 ? now.AddDays(c.ItemDays) : null;

@@ -19,6 +19,22 @@ public static class RankRule
 		return (long)(Math.Round(230.0 * MathF.Pow(rank, 2.6f) / 10.0) * 10.0);
 	}
 
+	/// <summary>A família da patente (bronze, prata...): três patentes cada.</summary>
+	public static int Family(int rank) => Math.Clamp(rank, 0, Count - 1) / 3;
+
+	/// <summary>Presas de prêmio ao chegar à patente (a mesma conta de
+	/// <c>Ranks.PromotionReward</c>, no jogo).</summary>
+	public static int PromotionReward(int rank) => 150 + 100 * Family(rank);
+
+	/// <summary>O que se ganha de Presas por subir de <paramref name="xpBefore"/>
+	/// a <paramref name="xpAfter"/>: a soma do prêmio de cada patente alcançada.</summary>
+	public static long PromotionPresas(long xpBefore, long xpAfter)
+	{
+		long presas = 0;
+		for (int rank = RankFor(xpBefore) + 1; rank <= RankFor(xpAfter); rank++) presas += PromotionReward(rank);
+		return presas;
+	}
+
 	public static int RankFor(long xp)
 	{
 		int rank = 0;

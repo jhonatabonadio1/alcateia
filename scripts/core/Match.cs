@@ -409,7 +409,13 @@ public partial class Match : Node
 			Breed = Profile.Breed
 		};
 
-		Reward = Progression.Apply(Result);
+		Reward = Progression.Apply(Result, Online);
+		// O que a conta ganhou de verdade vem do servidor, daqui a pouco.
+		if (Reward.Earns)
+		{
+			AccountSync.AlreadyShown(Reward.Promotions);
+			_ = AccountSync.RefreshAfterMatch();
+		}
 	}
 
 	private void SetPhase(MatchPhase phase)

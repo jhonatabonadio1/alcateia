@@ -32,6 +32,11 @@ public interface IAccountRepository
 
 	Task<IReadOnlyList<RankingEntry>> Ranking(int limit);
 
+	/// <summary>Troca o nome da conta gastando um uso do item
+	/// <paramref name="itemId"/>, tudo ou nada. Recusa (<c>Failure</c>) se
+	/// a conta não tem o item ou se o nome já é de outra.</summary>
+	Task Rename(long accountId, string name, string nameKey, string itemId);
+
 	/// <summary>O banimento em vigor da conta, ou null se não há.</summary>
 	Task<BanStatus> Ban(long accountId);
 }

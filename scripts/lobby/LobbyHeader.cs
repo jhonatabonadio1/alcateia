@@ -328,6 +328,10 @@ public partial class LobbyHeader : PanelContainer
 
 		_presas.SetValue(Profile.Presas);
 		_sangue.SetValue(Profile.Sangue);
+		// Carteira e patente são da conta: sem ela, é tudo zero.
+		string hint = Profile.HasAccount ? "" : "Entre na sua conta (Online) para ter carteira, itens e patente";
+		_presas.TooltipText = hint;
+		_sangue.TooltipText = hint;
 
 		int claimable = Profile.Missions.ClaimableCount;
 		if (_missionBadge != null)

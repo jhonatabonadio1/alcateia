@@ -19,8 +19,8 @@ import { useSession } from "@/lib/session";
 import type { Challenge } from "@/lib/types";
 
 const periodHelp: Record<string, string> = {
-	daily: "Recomeçam todo dia à meia-noite de Brasília.",
-	weekly: "Recomeçam toda segunda-feira à meia-noite de Brasília.",
+	daily: "Recomeçam todo dia à meia-noite de Brasília. De todos os ligados, valem alguns por dia, em rodízio (a quantidade está em Configurações).",
+	weekly: "Recomeçam toda segunda-feira à meia-noite de Brasília. Também em rodízio.",
 	permanent: "Fazem-se uma vez na vida da conta e podem dar um título.",
 	event: "Valem entre duas datas: o fim de semana, o feriado, o lançamento.",
 };
@@ -42,6 +42,7 @@ const blank = (period: string): Challenge => ({
 	active: true,
 	sort: 9999,
 	running: true,
+	today: false,
 });
 
 /** Um identificador a partir do texto: "Faça 20 abates" vira "faca_20_abates". */
@@ -146,7 +147,9 @@ export function Challenges() {
 							{shown.map((c) => (
 								<Tr key={c.id}>
 									<Td>
-										<p className="font-medium">{c.text}</p>
+										<p className="font-medium">
+											{c.text} {c.today && (period === "daily" || period === "weekly") && <Badge tone="good">{period === "daily" ? "Valendo hoje" : "Valendo esta semana"}</Badge>}
+										</p>
 										<p className="text-xs text-ink-3">{c.id}</p>
 									</Td>
 									<Td className="text-ink-2">{metricNames[c.metric] ?? c.metric}</Td>

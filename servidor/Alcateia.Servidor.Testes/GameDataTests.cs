@@ -103,6 +103,72 @@ public static class GameDataTests
 			Check.Equal("-200,-1000,-15500,-1500,-1500", string.Join(",", ledger), "cada compra no extrato");
 		}),
 
+		("desafios: três diários e cinco semanais por vez, os mesmos para todos; a virada é à meia-noite de Brasília", async () =>
+		{
+			await using World w = await World.Start();
+			await using Player a = await w.NewPlayer("Ana");
+			await using Player b = await w.NewPlayer("Beto");
+
+			var (_, mine) = await a.Call(HttpMethod.Get, "/v1/challenges");
+			var (_, theirs) = await b.Call(HttpMethod.Get, "/v1/challenges");
+			string[] Ids(JsonObject body, string period) => body["challenges"].AsArray().Where(c => c["period"].GetValue<string>() == period).Select(c => c["id"].GetValue<string>()).ToArray();
+			Check.Equal(3, Ids(mine, "daily").Length, "três diários");
+			Check.Equal(5, Ids(mine, "weekly").Length, "cinco semanais");
+			Check.True(Ids(mine, "permanent").Length >= 5, "os permanentes valem todos");
+			Check.Equal(string.Join(",", Ids(mine, "daily")), string.Join(",", Ids(theirs, "daily")), "os diários de hoje são os mesmos para todo mundo");
+
+			// A regra pura: mesma data, mesmo sorteio; outro dia, outro sorteio; a meia-noite é a de Brasília.
+			var all = w.Services.GameData.Current.Challenges;
+			DateTime noon = new(2026, 11, 20, 15, 0, 0, DateTimeKind.Utc);
+			string Daily(DateTime at) => string.Join(",", Alcateia.Dominio.Desafios.ChallengeRules.Running(all, at).Where(c => c.Period == "daily").Select(c => c.Id));
+			Check.Equal(Daily(noon), Daily(noon.AddHours(5)), "no mesmo dia, os mesmos");
+			Check.True(Enumerable.Range(1, 6).Any(d => Daily(noon.AddDays(d)) != Daily(noon)), "em outros dias, outros");
+			Check.Equal(Daily(new DateTime(2026, 11, 21, 2, 59, 0, DateTimeKind.Utc)), Daily(noon), "02:59 UTC ainda é dia 20 em Brasília");
+			Check.Equal(new DateTime(2026, 11, 21, 3, 0, 0, DateTimeKind.Utc), Alcateia.Dominio.Desafios.ChallengeRules.NextDailyReset(noon), "os diários viram às 03:00 UTC");
+			Check.Equal(new DateTime(2026, 11, 23, 3, 0, 0, DateTimeKind.Utc), Alcateia.Dominio.Desafios.ChallengeRules.NextWeeklyReset(noon), "os semanais, na segunda-feira");
+			Check.True(mine["dailyResetsAt"] != null && mine["weeklyResetsAt"] != null, "o jogo recebe as duas viradas");
+			Check.Equal(0, mine["titles"].AsArray().Count, "conta nova não tem título");
+		}),
+
+		("conta: subir de patente paga Presas; desafio permanente dá título; descartar item; trocar de nome gasta o item", async () =>
+		{
+			await using World w = await World.Start();
+			await using Player p = await w.NewPlayer("Velho_Nome");
+			await using Player other = await w.NewPlayer("Ocupado");
+
+			// Um desafio permanente já completo: receber o prêmio dá XP (sobe de patente) e o título.
+			await w.Db.Exec("update profiles set xp = 225 where account_id = $1", p.Id);
+			await w.Db.Exec("insert into challenge_progress (account_id, challenge_id, period_key, progress) values ($1, 'p_partidas', 'sempre', 100)", p.Id);
+			var def = w.Services.GameData.Current.Challenges.First(c => c.Id == "p_partidas");
+			var claimed = await p.Call(HttpMethod.Post, "/v1/challenges/p_partidas/claim");
+			Check.Equal(200, claimed.Status, "receber o prêmio do desafio permanente");
+			Check.Equal(1, claimed.Body["balance"]["rank"].GetValue<int>(), "o XP do prêmio levou à patente 1");
+			Check.Equal(3000L + def.Presas + 150, claimed.Body["balance"]["presas"].GetValue<long>(), "as Presas do desafio e mais 150 pela promoção");
+			var (_, challenges) = await p.Call(HttpMethod.Get, "/v1/challenges");
+			Check.Equal(def.Title, challenges["titles"][0].GetValue<string>(), "e o título do desafio");
+			string[] reasons = (await w.Db.Query("select reason from ledger where account_id = $1 order by id", p.Id)).Rows.Select(r => r[0]).ToArray();
+			Check.True(reasons.Contains("promocao") && reasons.Contains("desafio"), "promoção e desafio no extrato: " + string.Join(",", reasons));
+
+			// Descartar.
+			await p.Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = "ak74", ["duration"] = 0 });
+			Check.Equal(200, (await p.Call(HttpMethod.Delete, "/v1/inventory/ak74")).Status, "jogar a AK-74 fora");
+			Check.Equal(404, (await p.Call(HttpMethod.Delete, "/v1/inventory/ak74")).Status, "o que não se tem não se descarta");
+			Check.Equal(0, (await p.Call(HttpMethod.Get, "/v1/inventory")).Body["items"].AsArray().Count, "saiu do inventário");
+
+			// Trocar de nome.
+			Check.Equal("sem_troca_de_nome", Code(await p.Call(HttpMethod.Post, "/v1/account/name", new JsonObject { ["name"] = "Novo_Nome" })), "sem o item não troca");
+			await p.Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = "troca_nome", ["duration"] = 4 });
+			Check.Equal("nome_em_uso", Code(await p.Call(HttpMethod.Post, "/v1/account/name", new JsonObject { ["name"] = "ocupado" })), "nome de outra conta não");
+			Check.Equal("nome_invalido", Code(await p.Call(HttpMethod.Post, "/v1/account/name", new JsonObject { ["name"] = "a b" })), "nome inválido não");
+			Check.Equal(1, (await p.Call(HttpMethod.Get, "/v1/inventory")).Body["items"][0]["uses"].GetValue<int>(), "troca recusada não gasta o item");
+			var renamed = await p.Call(HttpMethod.Post, "/v1/account/name", new JsonObject { ["name"] = "Novo_Nome" });
+			Check.Equal("Novo_Nome", renamed.Body["name"].GetValue<string>(), "nome trocado");
+			Check.Equal(0, (await p.Call(HttpMethod.Get, "/v1/inventory")).Body["items"].AsArray().Count, "o item foi gasto");
+			Check.Equal("Novo_Nome", (await p.Call(HttpMethod.Get, "/v1/profile")).Body["name"].GetValue<string>(), "o perfil já diz o nome novo");
+			Check.Equal(200, (await w.Server().Call(HttpMethod.Post, "/v1/sessions", new JsonObject { ["name"] = "novo_nome", ["password"] = "senha-boa-123" })).Status, "entra com o nome novo");
+			Check.Equal(401, (await w.Server().Call(HttpMethod.Post, "/v1/sessions", new JsonObject { ["name"] = "Velho_Nome", ["password"] = "senha-boa-123" })).Status, "o antigo não existe mais");
+		}),
+
 		("loja: várias compras ao mesmo tempo não gastam o mesmo dinheiro", async () =>
 		{
 			await using World w = await World.Start();

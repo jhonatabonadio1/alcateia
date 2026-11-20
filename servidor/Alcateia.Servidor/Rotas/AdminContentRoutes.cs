@@ -20,12 +20,15 @@ public static class AdminContentRoutes
 		{
 			GameData d = s.Content.Current(who);
 			DateTime now = DateTime.UtcNow;
+			var today = d.RunningChallenges(now).Select(c => c.Id).ToHashSet();
+			var valid = d.PromotionsAt(now);
 			var settings = new JsonObject();
 			foreach (var setting in d.Settings) settings[setting.Key] = setting.Value.DeepClone();
 
 			return new JsonObject
 			{
-				["catalog"] = new JsonArray(d.Catalog.Select(i => (JsonNode)ToJson(i, Shop.Discount(i.Id, d.Promotions, now))).ToArray()),
+				["catalog"] = new JsonArray(d.Catalog.Select(i => (JsonNode)ToJson(i, Shop.Discount(i.Id, valid, now))).ToArray()),
+				["dailyItems"] = new JsonArray(valid.Where(p => p.Id == 0).Select(p => (JsonNode)p.ItemId).ToArray()),
 				["maps"] = new JsonArray(d.Maps.Select(m => (JsonNode)ToJson(m)).ToArray()),
 				["promotions"] = new JsonArray((await s.Content.Promotions(who)).Select(p => (JsonNode)ToJson(p, now)).ToArray()),
 				["challenges"] = new JsonArray(d.Challenges.Select(c =>
@@ -34,6 +37,7 @@ public static class AdminContentRoutes
 					one["active"] = c.Active;
 					one["sort"] = c.Sort;
 					one["running"] = c.RunningAt(now);
+					one["today"] = today.Contains(c.Id);
 					return (JsonNode)one;
 				}).ToArray()),
 				["settings"] = settings,

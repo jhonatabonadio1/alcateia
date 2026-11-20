@@ -216,7 +216,8 @@ public partial class LoadoutMenu : CanvasLayer
 		if (set.IsDefault) _form.AddWp(DefaultBonus);
 		else _form.TrySpend(set.TotalCost());
 
-		RoomRules.Equip(_weapon, set);
+		// O que não é do jogador (sem conta, tudo o que não é de série) entra como o padrão.
+		RoomRules.Equip(_weapon, Profile.Usable(set));
 		if (!timedOut) Sfx.Ui("ui_clique");
 
 		Profile.LastUsed = index;

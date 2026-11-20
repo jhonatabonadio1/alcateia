@@ -35,10 +35,10 @@ public sealed class PgMatchRepository : IMatchRepository
 						matchId, l.Seat.AccountId, l.Seat.Team, l.Kills, l.Deaths, l.Assists, l.Headshots, l.Points, l.Mvp, l.Gain.Xp, l.Gain.Presas,
 						l.KillsWolf, l.KillsHuman);
 
-					await c.Query(
+					PgResult after = await c.Query(
 						"update profiles set xp = xp + $2, presas = presas + $3, matches = matches + 1, " +
 						"wins = wins + $4, losses = losses + $5, draws = draws + $6, kills = kills + $7, deaths = deaths + $8, " +
-						"assists = assists + $9, headshots = headshots + $10, mvps = mvps + $11, updated_at = now() where account_id = $1",
+						"assists = assists + $9, headshots = headshots + $10, mvps = mvps + $11, updated_at = now() where account_id = $1 returning xp",
 						l.Seat.AccountId, l.Gain.Xp, l.Gain.Presas, l.Won ? 1 : 0, !l.Won && !l.Draw ? 1 : 0, l.Draw ? 1 : 0,
 						l.Kills, l.Deaths, l.Assists, l.Headshots, l.Mvp ? 1 : 0);
 
@@ -48,6 +48,8 @@ public sealed class PgMatchRepository : IMatchRepository
 							"insert into ledger (account_id, currency, amount, balance_after, reason, ref) " +
 							"select account_id, 'presas', $2, presas, 'partida', $3 from profiles where account_id = $1",
 							l.Seat.AccountId, l.Gain.Presas, a.MatchKey);
+
+					if (!after.Empty) await PgPlayerRepository.PayPromotions(c, l.Seat.AccountId, after.Long(0, "xp") - l.Gain.Xp, after.Long(0, "xp"), a.MatchKey);
 				}
 				return matchId;
 			});
