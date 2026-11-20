@@ -66,12 +66,30 @@ public partial class ItemCard : PanelContainer
 		// Bloqueado por patente: a arma continua acesa na vitrine (é o que
 		// faz querer chegar lá); quem diz que falta patente é o cadeado.
 
-		WeaponArt picture = UiKit.Fill(WeaponArt.Make(Item.Id, Vector2.Zero, dim: expired, showcase: true));
-		picture.OffsetLeft = UiTokens.S2;
-		picture.OffsetRight = -UiTokens.S2;
-		picture.OffsetTop = UiTokens.S3 + 6;
-		picture.OffsetBottom = -UiTokens.S2;
-		art.AddChild(picture);
+		if (Item.Character?.Thumbnail is Texture2D thumbnail)
+		{
+			// Personagem com imagem própria: ela enche a vitrine do cartão.
+			// O corte parte do alto: num cartão largo, cortar pelo meio tirava a cabeça.
+			CoverImage portrait = UiKit.Fill(new CoverImage
+			{
+				Texture = thumbnail,
+				FocusY = 0f,
+				Modulate = expired ? new Color(1, 1, 1, 0.35f) : Colors.White
+			});
+			portrait.OffsetLeft = 2;
+			portrait.OffsetTop = 2;
+			portrait.OffsetRight = -2;
+			art.AddChild(portrait);
+		}
+		else
+		{
+			WeaponArt picture = UiKit.Fill(WeaponArt.Make(Item.Id, Vector2.Zero, dim: expired, showcase: true));
+			picture.OffsetLeft = UiTokens.S2;
+			picture.OffsetRight = -UiTokens.S2;
+			picture.OffsetTop = UiTokens.S3 + 6;
+			picture.OffsetBottom = -UiTokens.S2;
+			art.AddChild(picture);
+		}
 
 		// Cantos da arte numa camada própria: estado à esquerda, selo à
 		// direita, e, embaixo, o cadeado com a patente quando bloqueado.

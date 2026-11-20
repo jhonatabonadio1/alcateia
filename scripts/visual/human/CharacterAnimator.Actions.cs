@@ -26,6 +26,12 @@ public partial class CharacterAnimator
 	private bool _grenadeShot;
 	private double _grenadeClock;
 
+	/// <summary>O gesto de arremesso ainda está tocando (a granada já saiu e
+	/// o braço termina o lance). A arma na mão espera ele acabar para
+	/// reaparecer (HeldWeapon).</summary>
+	public bool ThrowingGrenade => _hasGrenade && _tree != null && !_dead
+		&& _tree.Get("parameters/Grenade/active").AsBool();
+
 	private void UpdateGrenade(double delta)
 	{
 		if (!_hasGrenade || _tree == null || _weapon == null || _dead) return;

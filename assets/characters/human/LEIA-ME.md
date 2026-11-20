@@ -1,9 +1,10 @@
-# Humano — Mixamo Basic Shooter Pack
+# Humano — clipes do Mixamo (Basic Shooter Pack)
 
-`exo_gray.fbx` (Exo Gray) é o soldado do **time azul** e `ely.fbx`
-(Ely, de K. Atienza) o do **time laranja**; o `CharacterAnimator`
-troca o `xbot` da cena por eles conforme o time. `xbot.fbx` continua
-como reserva e na cena.
+Os corpos que se veem no jogo não ficam mais aqui: são a **Eve** (time
+azul) e o **Barut** (time laranja), em `assets/personagens/` (19/11; o Exo
+Gray e a Ely, do Mixamo, saíram). Daqui o jogo usa os **clipes** e o
+`xbot.fbx`, que é o corpo da cena até o do time entrar e a referência de
+repouso dos clipes.
 
 `xbot.fbx` é o personagem (malha + esqueleto). Os outros 16 são
 clipes, um por arquivo, todos sobre o **mesmo rig `mixamorig:` de 65

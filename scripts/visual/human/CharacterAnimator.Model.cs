@@ -48,18 +48,19 @@ public partial class CharacterAnimator
 	[Export] public bool TintByTeam = true;
 
 	/// <summary>
-	/// Personagem de cada time. O time azul é o Exo Gray, o laranja é a
-	/// Ely — decisão do Jhon. Os dois são do Mixamo, com o mesmo
-	/// esqueleto do xbot, então todos os clipes servem sem conversão.
+	/// Personagem de cada time: a Eve no azul e o Barut no laranja (19/11,
+	/// Jhon: os do Mixamo, Exo Gray e Ely, saíram). São do pacote Stylized
+	/// Sci-Fi Characters, com os nomes de osso do Mixamo e outro repouso:
+	/// os clipes entram por <see cref="AnimationKit.FitToBody"/>.
 	///
 	/// Com personagem próprio o corpo não é pintado: a roupa já diz o
 	/// time, e pintar por cima de textura vira lama. Caminho vazio, ou
 	/// arquivo que não existe, mantém o xbot pintado da cena.
 	/// </summary>
 	[Export(PropertyHint.File, "*.fbx,*.glb,*.tscn")]
-	public string BlueModel = "res://assets/characters/human/exo_gray.fbx";
+	public string BlueModel = "res://assets/personagens/eve/humano.glb";
 	[Export(PropertyHint.File, "*.fbx,*.glb,*.tscn")]
-	public string OrangeModel = "res://assets/characters/human/ely.fbx";
+	public string OrangeModel = "res://assets/personagens/barut/humano.glb";
 	[Export] public Color BlueBody = new Color(0.22f, 0.45f, 0.95f);
 	[Export] public Color OrangeBody = new Color(1f, 0.48f, 0.16f);
 
@@ -82,14 +83,26 @@ public partial class CharacterAnimator
 	/// </summary>
 	private int LoadClips()
 	{
+		// Corpo de outro rig (os personagens do pacote Sci-Fi): a biblioteca
+		// ajustada a ele é a mesma para todo bot com o mesmo modelo, e o
+		// ajuste custa — feita uma vez por modelo.
+		if (_modelPath != null && FittedLibraries.TryGetValue(_modelPath, out AnimationLibrary cached))
+		{
+			_player.AddAnimationLibrary("alcateia", cached);
+			return cached.GetAnimationList().Count;
+		}
+
 		var library = new AnimationLibrary();
 		int count = 0;
+		bool fitted = false;
 
 		// Os clipes são do X Bot, e o quadril deles fica na altura do X
 		// Bot (1,04 m). O Exo Gray (0,96) e a Ely (0,98) têm pernas mais
 		// curtas: com o quadril do X Bot os pés ficavam 6 a 8 cm acima do
 		// chão. Cada clipe é ajustado para o quadril do modelo em uso.
 		float modelHips = HipsRestHeight(_model);
+		Skeleton3D body = FindSkeleton(_model);
+		string bodyPath = body != null ? _player.GetNode(_player.RootNode).GetPathTo(body).ToString() : "Skeleton3D";
 
 		foreach (string clip in Clips)
 		{
@@ -107,11 +120,26 @@ public partial class CharacterAnimator
 
 			if (animation != null)
 			{
-				StripRootMotion(animation);
+				if (!SameRig(body, _model, FindSkeleton(temp), temp))
+				{
+					// Outro rig com os nomes do Mixamo: reorienta osso a osso e
+					// leva o quadril ao espaço e à altura do corpo.
+					FitToBody(animation, temp, body, _model, bodyPath);
+					// Ombros mais altos e braços mais curtos que os do X Bot: o
+					// fuzil chega mais perto do rosto, e a cabeça inclinada do
+					// clipe entrava na coronha. Ela sobe um pouco.
+					TiltBack(animation, body, _model, HeadBones, FittedHeadLift * 0.5f);
+					StripRootMotion(animation);
+					fitted = true;
+				}
+				else
+				{
+					StripRootMotion(animation);
 
-				float clipHips = HipsRestHeight(temp);
-				if (modelHips > 0.01f && clipHips > 0.01f)
-					MatchHips(animation, modelHips / clipHips);
+					float clipHips = HipsRestHeight(temp);
+					if (modelHips > 0.01f && clipHips > 0.01f)
+						MatchHips(animation, modelHips / clipHips);
+				}
 
 				// Locomoção precisa repetir; golpe e morte, não.
 				if (clip == "crouch_walk" && CrouchWalkTrim > 0
@@ -130,8 +158,23 @@ public partial class CharacterAnimator
 		}
 
 		_player.AddAnimationLibrary("alcateia", library);
+		if (fitted && _modelPath != null) FittedLibraries[_modelPath] = library;
 		return count;
 	}
+
+	/// <summary>Quanto a cabeça de um corpo de outro rig sobe nos clipes, em
+	/// graus (metade no pescoço, metade na cabeça).</summary>
+	[Export] public float FittedHeadLift = 12f;
+
+	private static readonly string[] HeadBones = { "mixamorig_Neck", "mixamorig_Head" };
+
+	/// <summary>As bibliotecas já ajustadas a um corpo de outro rig, por
+	/// modelo.</summary>
+	private static readonly Dictionary<string, AnimationLibrary> FittedLibraries = new();
+
+	/// <summary>O arquivo do modelo em uso, quando é o de um time ou de um
+	/// personagem (nulo no xbot da cena).</summary>
+	private string _modelPath;
 
 	private static bool IsLooping(string clip) =>
 		clip.StartsWith("idle") || clip.StartsWith("walk") ||
@@ -205,6 +248,11 @@ public partial class CharacterAnimator
 
 		if (GD.Load<PackedScene>(path)?.Instantiate() is not Node3D model) return;
 
+		// Um GLB sem animação (os personagens do pacote Sci-Fi) não traz
+		// tocador: os clipes entram num novo, na raiz do modelo.
+		if (FindPlayer(model) == null)
+			model.AddChild(new AnimationPlayer { Name = "AnimationPlayer" });
+
 		Node3D old = _model;
 		model.Name = old.Name;
 		model.Transform = old.Transform;
@@ -213,6 +261,7 @@ public partial class CharacterAnimator
 		AddChild(model);
 
 		_model = model;
+		_modelPath = path;
 		_teamModel = true;
 	}
 

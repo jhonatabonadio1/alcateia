@@ -73,7 +73,8 @@ public static class Credits
 		}),
 		new("Personagens e animação", new[]
 		{
-			new Line("Modelo e animações do humano, morte e corrida na parede do lobo; braços do AR-15 (X Bot)", "Mixamo — Adobe", "licença de uso do Mixamo"),
+			new Line("Eve e Barut (modelos e texturas dos humanos)", "pacote Stylized Sci-Fi Characters, da Unity Asset Store", "Licença da Asset Store"),
+			new Line("Animações do humano, morte e corrida na parede do lobo; braços do AR-15 (X Bot)", "Mixamo — Adobe", "licença de uso do Mixamo"),
 			new Line("Lobos azul e vermelho (modelo, esqueleto e textura)", "gerado por Jhonata Bonadio no Meshy (meshy.ai)", "termos do plano do Meshy"),
 			new Line("Animações do lobo (andar, agachar, correr de quatro, golpes, uivo, pulo e salto)", "Jhonata Bonadio", "obra do autor")
 		}),

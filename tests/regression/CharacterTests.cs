@@ -17,7 +17,8 @@ public sealed class CharacterTest : RegressionTest
 	public override string Description => "cada personagem tem humano de 1,79 m e lobo de 1,66 m, os ossos certos, e o corpo usa os modelos e a vida dele";
 
 	/// <summary>Os de sempre, a régua dos novos.</summary>
-	private const string ReferenceHuman = "res://assets/characters/human/ely.fbx";
+	// A régua do humano é a altura que o jogo assume (CharacterSkin.HumanHeight):
+	// os do Mixamo que a davam (Ely, Exo Gray) saíram em 19/11.
 	// Os lobos dos times desde 17/11 (o mutant.fbx ficou só de referência antiga).
 	private const string ReferenceWolf = "res://assets/characters/wolf/lobo_azul.glb";
 	private const string ReferenceWolfOrange = "res://assets/characters/wolf/lobo_vermelho.glb";
@@ -34,8 +35,8 @@ public sealed class CharacterTest : RegressionTest
 		// A Eve saiu (19/11): pode não haver nenhum; os de sempre não são pastas.
 		RegressionBench.Note($"{skins.Count} personagem(ns) em assets/personagens");
 
-		float humanTop = HeadTop(ReferenceHuman, out _), wolfTop = HeadTop(ReferenceWolf, out _);
-		RegressionBench.Note($"régua: topo da cabeça {RegressionBench.F(humanTop)} m (Ely), {RegressionBench.F(wolfTop)} m (lobo)");
+		float humanTop = CharacterSkin.HumanHeight, wolfTop = HeadTop(ReferenceWolf, out _);
+		RegressionBench.Note($"régua: topo da cabeça {RegressionBench.F(humanTop)} m (humano), {RegressionBench.F(wolfTop)} m (lobo)");
 
 		foreach (CharacterSkin skin in skins)
 		{

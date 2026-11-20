@@ -357,6 +357,115 @@ public static class AnimationKit
 		}
 	}
 
+	/// <summary>Transformação de <paramref name="from"/> até (sem incluir)
+	/// <paramref name="stop"/>, somando os nós do caminho. Funciona fora da
+	/// árvore, onde não há transformação global.</summary>
+	public static Transform3D ChainTo(Node from, Node stop)
+	{
+		Transform3D t = Transform3D.Identity;
+		for (Node n = from; n != null && n != stop; n = n.GetParent())
+			if (n is Node3D n3) t = n3.Transform * t;
+		return t;
+	}
+
+	/// <summary>
+	/// O corpo é do mesmo rig do clipe (mesmo repouso de cada osso, mesma
+	/// orientação do esqueleto no modelo)? É o caso do X Bot, da Ely e do
+	/// Exo Gray, todos do Mixamo: o clipe serve como está. Um corpo de
+	/// outra procedência com os nomes do Mixamo (os personagens do pacote
+	/// Sci-Fi, 19/11) tem outro repouso e precisa de <see cref="FitToBody"/>.
+	/// </summary>
+	public static bool SameRig(Skeleton3D body, Node bodyRoot, Skeleton3D clip, Node clipRoot)
+	{
+		if (body == null || clip == null) return true;
+		Quaternion fb = ChainTo(body, bodyRoot).Basis.Orthonormalized().GetRotationQuaternion();
+		Quaternion fc = ChainTo(clip, clipRoot).Basis.Orthonormalized().GetRotationQuaternion();
+		if (fb.AngleTo(fc) > 0.035f) return false;
+		foreach (string name in new[] { "mixamorig_Hips", "mixamorig_Spine", "mixamorig_LeftArm", "mixamorig_RightForeArm", "mixamorig_LeftUpLeg", "mixamorig_RightHand" })
+		{
+			int a = body.FindBone(name), b = clip.FindBone(name);
+			if (a < 0 || b < 0) return false;
+			if (body.GetBoneRest(a).Basis.GetRotationQuaternion().AngleTo(clip.GetBoneRest(b).Basis.GetRotationQuaternion()) > 0.035f)
+				return false;
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// Leva um clipe do Mixamo a um corpo de outro rig com os mesmos nomes
+	/// de osso: aponta as trilhas para o esqueleto do corpo
+	/// (<paramref name="bodyPath"/>, a partir da raiz do tocador), passa o
+	/// quadril para o espaço e a altura do corpo e reorienta cada osso por
+	/// <see cref="RetargetPose"/> (a direção no mundo, não o giro local).
+	/// Só o quadril anda; escala e posição dos outros ossos saem. O mesmo
+	/// ajuste que o lobo faz com os clipes do Jhon (WolfOwnClips.Fit).
+	/// </summary>
+	public static void FitToBody(Animation animation, Node clipRoot, Skeleton3D body, Node bodyRoot, string bodyPath)
+	{
+		Skeleton3D reference = FindSkeleton(clipRoot);
+		if (reference == null || body == null) return;
+		int refHips = reference.FindBone("mixamorig_Hips");
+		int bodyHips = body.FindBone("mixamorig_Hips");
+
+		for (int track = animation.GetTrackCount() - 1; track >= 0; track--)
+		{
+			Animation.TrackType type = animation.TrackGetType(track);
+			bool hips = animation.TrackGetPath(track).ToString().Contains("Hips");
+			if (type == Animation.TrackType.Scale3D || (type == Animation.TrackType.Position3D && !hips))
+				animation.RemoveTrack(track);
+		}
+		PointAt(animation, bodyPath);
+
+		Transform3D fr = ChainTo(reference, clipRoot);
+		Transform3D fb = ChainTo(body, bodyRoot);
+
+		if (refHips >= 0 && bodyHips >= 0)
+		{
+			float ratio = (fb * body.GetBoneGlobalRest(bodyHips).Origin).Y
+				/ Mathf.Max((fr * reference.GetBoneGlobalRest(refHips).Origin).Y, 1e-4f);
+			Transform3D back = fb.AffineInverse();
+			// A posição da trilha é local ao pai do quadril; o pai é a raiz do
+			// esqueleto nos dois, então o espaço do esqueleto serve.
+			for (int track = 0; track < animation.GetTrackCount(); track++)
+			{
+				if (animation.TrackGetType(track) != Animation.TrackType.Position3D) continue;
+				for (int key = 0; key < animation.TrackGetKeyCount(track); key++)
+					animation.TrackSetKeyValue(track, key, back * ((fr * (Vector3)animation.TrackGetKeyValue(track, key)) * ratio));
+			}
+		}
+
+		RetargetPose(animation, reference, body,
+			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion());
+	}
+
+	/// <summary>
+	/// Inclina ossos para trás (a cabeça e o pescoço), em graus, girando cada
+	/// um em volta do eixo lateral do corpo (+X do modelo, visto no repouso
+	/// do osso). Ângulo positivo leva o alto do osso para as costas.
+	/// </summary>
+	public static void TiltBack(Animation animation, Skeleton3D body, Node bodyRoot, string[] bones, float degrees)
+	{
+		if (body == null || Mathf.IsZeroApprox(degrees)) return;
+		Quaternion frame = ChainTo(body, bodyRoot).Basis.Orthonormalized().GetRotationQuaternion();
+		for (int track = 0; track < animation.GetTrackCount(); track++)
+		{
+			if (animation.TrackGetType(track) != Animation.TrackType.Rotation3D) continue;
+			string path = animation.TrackGetPath(track).ToString();
+			string name = path[(path.LastIndexOf(':') + 1)..];
+			if (System.Array.IndexOf(bones, name) < 0) continue;
+			int bone = body.FindBone(name);
+			if (bone < 0) continue;
+			Quaternion rest = (frame * body.GetBoneGlobalRest(bone).Basis.GetRotationQuaternion()).Normalized();
+			Vector3 axis = (rest.Inverse() * Vector3.Right).Normalized();
+			var tilt = new Quaternion(axis, Mathf.DegToRad(-degrees));
+			for (int key = 0; key < animation.TrackGetKeyCount(track); key++)
+			{
+				var q = (Quaternion)animation.TrackGetKeyValue(track, key);
+				animation.TrackSetKeyValue(track, key, (q * tilt).Normalized());
+			}
+		}
+	}
+
 	private static Quaternion Arc(Vector3 from, Vector3 to)
 	{
 		float dot = Mathf.Clamp(from.Dot(to), -1f, 1f);

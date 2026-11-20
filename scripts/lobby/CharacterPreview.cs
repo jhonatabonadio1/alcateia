@@ -15,7 +15,7 @@ using Godot;
 /// </summary>
 public partial class CharacterPreview : SubViewportContainer
 {
-	private const string HumanPath = "res://assets/characters/human/exo_gray.fbx";
+	private const string HumanPath = "res://assets/personagens/eve/humano.glb";
 	private const string HumanFallback = "res://assets/characters/human/xbot.fbx";
 	private const string HumanIdle = "res://assets/characters/human/idle_rifle.fbx";
 	private const string WolfPath = "res://assets/characters/wolf/lobo_azul.glb";
@@ -165,10 +165,22 @@ public partial class CharacterPreview : SubViewportContainer
 			player = new AnimationPlayer { Name = "AnimationPlayer" };
 			body.GetParent().AddChild(player);
 		}
+		// O humano de um GLB sem animação (os personagens do pacote Sci-Fi):
+		// tocador na raiz, como no jogo (CharacterAnimator.SwapTeamModel).
+		if (player == null && !refit && body != null)
+		{
+			player = new AnimationPlayer { Name = "AnimationPlayer" };
+			model.AddChild(player);
+		}
 		if (player == null) return model;
 
-		// O parado do Jhon (lobo_anim.glb), no mesmo ajuste do jogo.
+		// O humano fica na pose da vitrine: de pé, posturado, sem arma
+		// (HeroPose), e não no parado de fuzil do jogo.
 		Animation idle = null;
+		if (!refit && body != null)
+			idle = HeroPose.Make(body, model, player.GetNode(player.RootNode).GetPathTo(body).ToString());
+
+		// O parado do Jhon (lobo_anim.glb), no mesmo ajuste do jogo.
 		if (refit && body != null && WolfOwnClips.Has("idle"))
 		{
 			Node own = WolfOwnClips.Open();

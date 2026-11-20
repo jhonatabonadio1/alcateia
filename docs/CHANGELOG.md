@@ -2,6 +2,19 @@
 
 ## Não lançado
 
+- Eve e Barut novos: são os personagens dos times (jogador e bots), com todas as animações.
+- A arma que os outros veem fica encaixada nas duas mãos e não atravessa o corpo.
+- No inventário, o personagem aparece de pé, em pose parada, e o cartão mostra a arte dele.
+
+- Arremesso da granada: a mão entra na linha da cruz antes de soltar; a granada sai do meio da mão, em cima da linha da cruz, e voa reto para ela (antes saía 11 cm à direita e convergia no voo).
+- A granada sai da mão: nasce no instante e no lugar em que a mão a solta no arremesso (antes nascia no clique, à frente da câmera) e voa para o ponto que a cruz aponta. O arco depende da distância — perto, um lance quase direto, junto da cruz; longe, o arco alto — e a mão lança mais rápido quanto mais longe. Alcance: cai no ponto até 19 m (eram 16); mirando o céu, ~18 m (eram 15,5).
+- Desert Eagle: o andar é o do AR-15 (a arma quase não vai mais para os lados).
+- Dedos fechando em cada arma: na AK-74, na SCAR-H e na SVD a mão esquerda fecha no guarda-mão como na M4A4 (as pontas dos dedos não sobram mais acima da arma).
+- Desert Eagle: as duas mãos se abraçam sem uma passar por dentro da outra; recarga mais rápida (1,8 s e 2,2 s); bem menos coice ao atirar e bem menos balanço ao andar.
+- M4A4 mirada: a alça ficou pequena e abaixo do centro da tela, com o pino da massa no meio — dá para ver o oponente.
+- Faca: quatro golpes que passam um a um (estocada, corte, estocada alta, corte deitado).
+- Granada: a mão armada fica mais alta e mais atrás.
+
 - O tiro atravessa aliados (com o fogo amigo desligado) e acerta o inimigo atrás deles; os bots também atiram por cima do time.
 
 - A granada é explosiva (antes era a de choque) e cai onde a mira aponta, até 16 m; ao tocar o chão ela fica, não rola. Já vem no conjunto padrão de todo mundo.

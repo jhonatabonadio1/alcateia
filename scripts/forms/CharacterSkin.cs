@@ -64,6 +64,13 @@ public partial class CharacterSkin : Resource
 	/// FormController.HumanHp, 200). 1 = a vida de todo mundo.</summary>
 	[Export] public float HpMultiplier = 1f;
 
+	/// <summary>A imagem do cartão na vitrine: thumb.jpg na pasta do
+	/// personagem (16:9). Sem ela, o cartão mostra o desenho genérico.</summary>
+	public string ThumbnailPath => $"{ResourcePath.GetBaseDir()}/thumb.jpg";
+
+	/// <summary>A imagem do cartão, ou nulo.</summary>
+	public Texture2D Thumbnail => ResourceLoader.Exists(ThumbnailPath) ? GD.Load<Texture2D>(ThumbnailPath) : null;
+
 	/// <summary>O id no catálogo e no perfil: "pers_" + o nome da pasta.</summary>
 	public string Id => $"pers_{ResourcePath.GetBaseDir().GetFile()}";
 
