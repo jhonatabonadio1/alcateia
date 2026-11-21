@@ -45,3 +45,8 @@ assets/pacotes/
 # Jogo exportado (export_presets.cfg)
 build/
 _to_delete/
+
+# Pacotes de entrega e sincronização entre agentes (nunca versionar)
+_sync*.tgz
+entrega*.tgz
+_mac_*.txt
