@@ -339,6 +339,29 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ## Pendências técnicas conhecidas
 
+- **Arrumar os testes automatizados** (Jhon, 21/11). Na rodada de
+  21/11, 12 testes de regressão falham sempre, e com isso o vermelho
+  deixou de avisar. Em cada um, decidir se o teste ficou velho (o jogo
+  mudou de propósito) ou se o jogo está errado, e consertar; depois, não
+  juntar nada com teste vermelho e rodar o `tools/testar.sh` no CI a cada
+  push (hoje o lançamento sai sem os testes). O que já se sabe:
+  - `MaosPadrao`: o teste ainda espera as mãos low poly de 18/11; as de
+    20/11 são as desenhadas, no shader das mãos, com o LED do time.
+    Teste já reescrito na nuvem (11 verificações passando), não entregue.
+  - `VelocidadeNoChao`, `CorridaNaParede`, a passada do humano no
+    `PassoNoRitmo` e o pulo correndo no `Medidas`: tudo 6,7% mais rápido
+    que o esperado (humano 3,456 m/s em vez de 3,24), desde 15/11.
+    Decidir a velocidade certa e acertar o jogo ou o `docs/MEDIDAS.md`.
+  - `PassadaDoLobo`: andando para trás o pé patina 0,46 m/s (máximo 0,4).
+  - `Granada`: cai a 26 m da mão, o teste espera ~18 m.
+  - `GranadaFere`: quem lança, a 4 m, não leva dano.
+  - `Suavizacao`: a qualidade baixa ainda liga efeitos e a ultra não liga
+    o reflexo.
+  - `EfeitosDoLobo`: sem personagem, os efeitos não saem na cor do time.
+  - `Animacoes`: 14 de 17 clipes carregados.
+  - `CtrlCliqueNoMac`: falha sem mensagem (código 0).
+  - Testes de unidade: corrigidos em 21/11 (74 de 74).
+
 - **Braços animados não conferidos na tela.** As posições do M16 e da
   escopeta foram as mais chutadas.
 - **Servidor no Docker nunca construído**: `docker compose up -d --build`
