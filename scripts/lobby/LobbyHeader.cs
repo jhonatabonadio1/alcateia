@@ -21,9 +21,9 @@ public partial class LobbyHeader : PanelContainer
 {
 	private readonly record struct Nav(IconKind Icon, string Label, System.Action Go);
 
-	private RankBadge _badge;
+	private PhotoTile _photo;
+	private LevelChip _chip;
 	private Label _name;
-	private Label _rank;
 	private ProgressBar _xp;
 	private Label _xpText;
 	private CurrencyLabel _presas;
@@ -89,7 +89,7 @@ public partial class LobbyHeader : PanelContainer
 		var cluster = new Button
 		{
 			ThemeTypeVariation = "TertiaryButton",
-			CustomMinimumSize = new Vector2(300, UiTokens.HeaderHeight - 8),
+			CustomMinimumSize = new Vector2(360, UiTokens.HeaderHeight - 8),
 			FocusMode = FocusModeEnum.All,
 			MouseDefaultCursorShape = CursorShape.PointingHand,
 			TooltipText = "Abrir o perfil"
@@ -105,39 +105,57 @@ public partial class LobbyHeader : PanelContainer
 		row.MouseFilter = MouseFilterEnum.Ignore;
 		margin.AddChild(row);
 
-		_badge = RankBadge.Make(Profile.Rank, 40);
-		_badge.MouseFilter = MouseFilterEnum.Ignore;
-		row.AddChild(_badge);
+		// Só a foto, sem a borda do nível: aqui não há espaço para ela (o nível está no chip ao lado).
+		_photo = PhotoTile.Make(Avatars.Selected, 48);
+		row.AddChild(_photo);
 
-		VBoxContainer text = UiKit.Column(2);
+		// Duas linhas, não três (Jhon, 21/11: "ficou muito apertado a barra,
+		// o nível e o nome um abaixo do outro"): em cima o nome, com o XP à
+		// direita; embaixo o nível ("20 ★★★★★") e a barra ao lado. O metal
+		// não vai escrito ("não precisa desse bronze"): a cor do chip diz.
+		VBoxContainer text = UiKit.Column(UiTokens.S1 + 2);
 		text.MouseFilter = MouseFilterEnum.Ignore;
 		text.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		text.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 		row.AddChild(text);
 
+		HBoxContainer top = UiKit.Row(UiTokens.S2);
+		top.MouseFilter = MouseFilterEnum.Ignore;
 		_name = UiKit.Truncated("", "Subtitle");
 		_name.AddThemeFontSizeOverride("font_size", 17);
-		text.AddChild(_name);
-
-		HBoxContainer line = UiKit.Row(UiTokens.S2);
-		line.MouseFilter = MouseFilterEnum.Ignore;
-		_rank = UiKit.Caption("");
-		line.AddChild(_rank);
-		line.AddChild(UiKit.Spacer());
-		_xpText = UiKit.Text("", "Caption");
+		_name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		top.AddChild(_name);
+		// O XP na mesma linha de base do nome: centralizar as caixas deixava o
+		// texto menor 2 px acima (medido no Godot com a Figtree: base do nome
+		// a 17 px, a do XP a 15). Embaixo, com 1 px de folga = a diferença das
+		// descidas das duas fontes (5 e 4 px), a base cai no mesmo lugar.
+		var xpBox = new MarginContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsVertical = SizeFlags.Fill };
+		xpBox.AddThemeConstantOverride("margin_bottom", 1);
+		_xpText = UiKit.Text("", "Caption", UiTokens.TextSecondary);
 		_xpText.AddThemeFontOverride("font", UiFonts.Numeric);
-		line.AddChild(_xpText);
-		text.AddChild(line);
+		_xpText.SizeFlagsVertical = SizeFlags.Fill;
+		_xpText.VerticalAlignment = VerticalAlignment.Bottom;
+		xpBox.AddChild(_xpText);
+		top.AddChild(xpBox);
+		text.AddChild(top);
 
+		HBoxContainer bottom = UiKit.Row(UiTokens.S2);
+		bottom.MouseFilter = MouseFilterEnum.Ignore;
+		_chip = LevelChip.Make(Profile.Rank, 18);
+		_chip.MouseFilter = MouseFilterEnum.Ignore;
+		bottom.AddChild(_chip);
 		_xp = new ProgressBar
 		{
-			CustomMinimumSize = new Vector2(0, 4),
+			CustomMinimumSize = new Vector2(0, 6),
+			SizeFlagsHorizontal = SizeFlags.ExpandFill,
+			SizeFlagsVertical = SizeFlags.ShrinkCenter,
 			ShowPercentage = false,
 			MaxValue = 1,
 			Step = 0.001,
 			MouseFilter = MouseFilterEnum.Ignore
 		};
-		text.AddChild(_xp);
+		bottom.AddChild(_xp);
+		text.AddChild(bottom);
 
 		return cluster;
 	}
@@ -316,10 +334,10 @@ public partial class LobbyHeader : PanelContainer
 		if (_name == null) return;
 
 		int rank = Profile.Rank;
-		_badge.Rank = rank;
+		_photo.Photo = Avatars.Selected;
+		_photo.Edge = Ranks.ColorOf(rank);
+		_chip.Rank = rank;
 		_name.Text = string.IsNullOrEmpty(Profile.Title) ? Profile.PlayerName : $"{Profile.PlayerName}";
-		_rank.Text = Loc.Upper(Ranks.NameOf(rank));
-		_rank.AddThemeColorOverride("font_color", Ranks.InkOf(rank));
 
 		long into = Profile.RankXp - Ranks.XpFor(rank);
 		long span = Ranks.XpFor(rank + 1) - Ranks.XpFor(rank);

@@ -10,7 +10,9 @@ public enum ItemKind
 	Tattoo,
 	Breed,
 	Character,
-	Service
+	Service,
+	/// <summary>Foto de perfil (<see cref="Avatars"/>): só a aparência, vale para sempre.</summary>
+	Photo
 }
 
 /// <summary>As durações da loja. O preço por dia cai com a duração — o
@@ -262,6 +264,29 @@ public static class Catalog
 		new() { Id = "raca_ligeiro", Name = "Ligeiro", Type = "Classe de lobo", Kind = ItemKind.Breed,
 			Rarity = 2, MinRank = 3, BreedPath = "res://resources/breeds/ligeiro.tres",
 			Description = "Velocidade e flanco: o lobo mais rápido e o pulo mais longo, com pouco escudo. Destrava em Batedor I." },
+
+		// ---------------------------------------------------- fotos de perfil
+		// As da loja (as três grátis não são item: Avatars.cs). Só permanente.
+		new() { Id = "foto_faca_damasco", Name = "Foto Lâmina Damasco", Type = "Foto de perfil", Kind = ItemKind.Photo,
+			Rarity = 2, Prices = new[] { -1, -1, -1, -1, 800 }, Description = "A faca Damasco no seu retrato." },
+		new() { Id = "foto_choque_neon", Name = "Foto Neon", Type = "Foto de perfil", Kind = ItemKind.Photo,
+			Rarity = 2, Prices = new[] { -1, -1, -1, -1, 800 }, Description = "A granada Neon no seu retrato." },
+		new() { Id = "foto_faca_obsidiana", Name = "Foto Obsidiana", Type = "Foto de perfil", Kind = ItemKind.Photo,
+			Rarity = 3, Prices = new[] { -1, -1, -1, -1, 1200 }, Description = "A faca Obsidiana no seu retrato." },
+		new() { Id = "foto_choque_magma", Name = "Foto Magma", Type = "Foto de perfil", Kind = ItemKind.Photo,
+			Rarity = 3, Prices = new[] { -1, -1, -1, -1, 1200 }, Description = "A granada Magma no seu retrato." },
+		new() { Id = "foto_ar15_lava", Name = "Foto Lava", Type = "Foto de perfil", Kind = ItemKind.Photo,
+			Rarity = 3, Prices = new[] { -1, -1, -1, -1, 1500 }, Description = "A AR-15 Lava no seu retrato." },
+		new() { Id = "foto_deagle_fenix", Name = "Foto Fênix", Type = "Foto de perfil", Kind = ItemKind.Photo,
+			Rarity = 3, Prices = new[] { -1, -1, -1, -1, 1500 }, Description = "A Desert Eagle Fênix no seu retrato." },
+		new() { Id = "foto_ak74_tigre", Name = "Foto Tigre", Type = "Foto de perfil", Kind = ItemKind.Photo,
+			Rarity = 3, Prices = new[] { -1, -1, -1, -1, 1500 }, Description = "A AK-74 Tigre no seu retrato." },
+		new() { Id = "foto_choque_ouro", Name = "Foto Ouro Puro", Type = "Foto de perfil", Kind = ItemKind.Photo,
+			Rarity = 4, Prices = new[] { -1, -1, -1, -1, 2000 }, Description = "A granada de ouro no seu retrato." },
+		new() { Id = "foto_m4a4_dragao", Name = "Foto Dragão", Type = "Foto de perfil", Kind = ItemKind.Photo,
+			Rarity = 4, Prices = new[] { -1, -1, -1, -1, 2000 }, Description = "A M4A4 Dragão no seu retrato." },
+		new() { Id = "foto_scar_galaxia", Name = "Foto Galáxia", Type = "Foto de perfil", Kind = ItemKind.Photo,
+			Rarity = 4, Prices = new[] { -1, -1, -1, -1, 2500 }, Description = "A SCAR-H Galáxia no seu retrato." },
 
 		// ---------------------------------------------------- serviços
 		new() { Id = "troca_nome", Name = "Troca de nome", Type = "Serviço", Kind = ItemKind.Service,

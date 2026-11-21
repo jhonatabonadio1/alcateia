@@ -32,6 +32,7 @@ public static class ItemInfo
 			ItemKind.Tattoo => "Melhoria",
 			ItemKind.Breed => "Classe",
 			ItemKind.Character => "Personagem",
+			ItemKind.Photo => "Foto de perfil",
 			_ => "Serviço"
 		};
 	}

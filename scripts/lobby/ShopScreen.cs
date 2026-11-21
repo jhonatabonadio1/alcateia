@@ -54,7 +54,8 @@ public partial class ShopScreen : LobbyScreen
 		new("Humano", "Granadas", () => ForSale.Where(i => i.Kind == ItemKind.Utility)),
 		new("Lobo", "Melhorias", () => ForSale.Where(i => i.Kind == ItemKind.Tattoo)),
 		new("Lobo", "Classes de lobo", () => ForSale.Where(i => i.Kind == ItemKind.Breed)),
-		new("Conta", "Serviços", () => ForSale.Where(i => i.Kind == ItemKind.Service))
+		new("Conta", "Serviços", () => ForSale.Where(i => i.Kind == ItemKind.Service)),
+		new("Conta", "Fotos de perfil", () => ForSale.Where(i => i.Kind == ItemKind.Photo))
 	};
 
 	private const int Daily = 1;
@@ -72,6 +73,7 @@ public partial class ShopScreen : LobbyScreen
 			ItemKind.Tattoo => 6,
 			ItemKind.Breed => 7,
 			ItemKind.Service => 8,
+			ItemKind.Photo => 9,
 			ItemKind.Utility => 5,
 			_ => Arsenal.IsKnife(item.Id) ? 4 : ItemInfo.IsSecondary(item) ? 3 : 2
 		};

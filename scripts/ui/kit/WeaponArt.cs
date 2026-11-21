@@ -61,7 +61,8 @@ public partial class WeaponArt : Control
 	{
 		if (string.IsNullOrEmpty(id)) return null;
 		if (Photos.TryGetValue(id, out Texture2D photo)) return photo;
-		string path = PhotoDir + id + ".png";
+		// Foto de perfil (foto_<x>): a imagem dela, em assets/ui/avatares/.
+		string path = id.StartsWith("foto_") ? $"res://assets/ui/avatares/{id[5..]}.png" : PhotoDir + id + ".png";
 		photo = ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null;
 		// Personagem: a imagem dele (assets/personagens/<pasta>/thumb.jpg).
 		photo ??= Catalog.Get(id)?.Character?.Thumbnail;

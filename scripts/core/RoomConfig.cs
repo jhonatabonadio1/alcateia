@@ -71,6 +71,8 @@ public sealed class RoomMember
 	public bool Ready;
 	public bool IsHost;
 	public int Rank;
+	/// <summary>A foto de perfil (<see cref="Avatars"/>); nula em bot.</summary>
+	public string Photo;
 }
 
 /// <summary>Para onde o fim da partida leva.</summary>

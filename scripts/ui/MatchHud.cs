@@ -38,7 +38,7 @@ public partial class MatchHud : CanvasLayer
 	private int _lastCount = -1;
 
 	private Control _board;
-	private Scoreboard _scoreboard;
+	private TabBoard _scoreboard;
 	private Label _boardInfo;
 
 	private double _goTimer;
@@ -90,7 +90,13 @@ public partial class MatchHud : CanvasLayer
 		// Carregando o salto do lobo, o Tab é do modo alvo, não do placar.
 		bool tabTaken = Groups.LocalPlayer(GetTree()) is Player { TabTaken: true };
 		bool showBoard = _match.Phase != MatchPhase.Ended && ((Input.IsActionPressed("scoreboard") && !tabTaken) || _forceBoard);
-		if (showBoard && !_board.Visible) _boardRefresh = 0;
+		if (showBoard && !_board.Visible)
+		{
+			_boardRefresh = 0;
+			// entra num piscar, não num corte
+			_board.Modulate = new Color(1, 1, 1, 0);
+			_board.CreateTween().TweenProperty(_board, "modulate:a", 1f, 0.12f);
+		}
 		_board.Visible = showBoard;
 
 		if (showBoard)
@@ -301,7 +307,8 @@ public partial class MatchHud : CanvasLayer
 
 	private void BuildBoard()
 	{
-		var dim = UiKit.Fill(new ColorRect { Color = new Color(UiTokens.Bg, 0.55f), MouseFilter = Control.MouseFilterEnum.Ignore });
+		// O mapa borrado e escurecido atrás do placar (o mesmo fundo do Esc).
+		var dim = UiKit.Fill(new ColorRect { Color = UiTokens.Bg, Material = HudStyle.Backdrop(0.5f), MouseFilter = Control.MouseFilterEnum.Ignore });
 		_root.AddChild(dim);
 		_board = dim;
 		_board.Visible = false;
@@ -317,7 +324,7 @@ public partial class MatchHud : CanvasLayer
 		_boardInfo.HorizontalAlignment = HorizontalAlignment.Center;
 		column.AddChild(_boardInfo);
 
-		_scoreboard = new Scoreboard();
+		_scoreboard = new TabBoard();
 		column.AddChild(_scoreboard);
 	}
 

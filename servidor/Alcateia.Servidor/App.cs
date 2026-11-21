@@ -160,7 +160,7 @@ public static class App
 		IFleetScaler scaler = config.FlyApp != "" && config.FlyToken != ""
 			? new Alcateia.Infra.Fly.FlyMachines(config.FlyApi, config.FlyApp, config.FlyToken) : null;
 		var fleet = new FleetService(config.FleetTimeout, new FleetSigner(config.FleetKey), clock, scaler, config.FleetReserve);
-		var lobby = new LobbyService(fleet, accounts, clock, config.TicketLife, config.RoomListEvery, config.MaxRooms) { MapAllowed = gameData.MapAllowed };
+		var lobby = new LobbyService(fleet, accounts, clock, config.TicketLife, config.RoomListEvery, config.MaxRooms) { MapAllowed = gameData.MapAllowed, Inventory = playerStore.Inventory };
 		var challenges = new ChallengeService(playerStore, gameData, clock);
 		var matches = new MatchService(matchStore, fleet, lobby, gameData, challenges, security, clock);
 

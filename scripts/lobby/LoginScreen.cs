@@ -236,7 +236,7 @@ public partial class LoginScreen : LobbyScreen
 
 		Backend.Reply reply = await Backend.EnterSaved(access);
 		_busy = false;
-		if (!IsInsideTree()) return;
+		if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
 		if (reply.Ok)
 		{
@@ -368,7 +368,7 @@ public partial class LoginScreen : LobbyScreen
 		Backend.KeepAccess = _keep;
 		Backend.Reply reply = _register ? await Backend.Register(name, password) : await Backend.Login(name, password);
 		_busy = false;
-		if (!IsInsideTree()) return;
+		if (!IsInstanceValid(this) || !IsInsideTree()) return;
 
 		if (reply.Ok)
 		{
@@ -402,7 +402,7 @@ public partial class LoginScreen : LobbyScreen
 	{
 		_asked = true;
 		Backend.Reply reply = await Backend.Health();
-		if (!IsInsideTree()) return;
+		if (!IsInstanceValid(this) || !IsInsideTree()) return;
 		_online = reply.Ok;
 		// Só a barra de baixo: refazer a tela apagaria a senha que se digita.
 		if (_bottom != null && IsInstanceValid(_bottom))

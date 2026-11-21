@@ -96,7 +96,8 @@ public partial class RoomScreen : LobbyScreen
 				IsBot = bot,
 				Ready = bot || (m["ready"]?.GetValue<bool>() ?? false),
 				IsHost = host,
-				Rank = bot ? Ranks.None : Ranks.RankFor(m["xp"]?.GetValue<long>() ?? 0)
+				Rank = bot ? Ranks.None : Ranks.RankFor(m["xp"]?.GetValue<long>() ?? 0),
+				Photo = bot ? null : m["photo"]?.GetValue<string>()
 			});
 			if (host && id == Backend.AccountId && PendingPassword != null)
 			{
@@ -339,12 +340,18 @@ public partial class RoomScreen : LobbyScreen
 		row.MouseFilter = MouseFilterEnum.Ignore;
 		slot.AddChild(row);
 
-		RankBadge badge = RankBadge.Make(member.Rank, 28);
-		badge.MouseFilter = MouseFilterEnum.Ignore;
-		row.AddChild(badge);
+		row.AddChild(PhotoTile.Make(member.Photo, 30));
 
 		Icon crown = Icon.Make(IconKind.Crown, 16, member.IsHost ? UiTokens.Accent : new Color(0, 0, 0, 0));
 		row.AddChild(crown);
+
+		// O nível como no cabeçalho ("32 ★"), na frente do nome. Bot não tem.
+		if (!member.IsBot)
+		{
+			LevelChip level = LevelChip.Make(member.Rank, 18);
+			level.MouseFilter = MouseFilterEnum.Ignore;
+			row.AddChild(level);
+		}
 
 		Label name = UiKit.Truncated(member.Name, null, member.IsBot ? UiTokens.TextSecondary : UiTokens.TextPrimary);
 		name.AddThemeFontOverride("font", member.IsBot ? UiFonts.Medium : UiFonts.SemiBold);
@@ -675,7 +682,7 @@ public partial class RoomScreen : LobbyScreen
 		if (m == null) return panel;
 
 		HBoxContainer who = UiKit.Row(UiTokens.S3);
-		who.AddChild(RankBadge.Make(m.Rank, 48));
+		who.AddChild(RankBadge.Make(m.Rank, 56, avatar: m.Photo));
 		VBoxContainer names = UiKit.Column(0);
 		names.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		names.AddChild(UiKit.Truncated(m.Name, "Subtitle", Teams.ColorOf(m.Team)));

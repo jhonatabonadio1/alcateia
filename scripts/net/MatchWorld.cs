@@ -47,6 +47,27 @@ public partial class MatchWorld : SubViewport
 		CollectSpawns(map, Transform3D.Identity);
 		StrippedNodes = Strip(map);
 		AddChild(map);
+
+		// O que o servidor tem para colidir. No servidor exportado (com a
+		// arte trocada por cascas) os números têm de bater com os do jogo:
+		// se a colisão tivesse sumido junto com o desenho, apareceria aqui.
+		var (shapes, faces) = CountCollision(map);
+		GD.Print($"Mundo {MapId}: {shapes} formas de colisão, {faces} triângulos, {Spawns.Count} pontos de nascimento");
+	}
+
+	/// <summary>Quantas formas de colisão o mapa tem e quantos triângulos
+	/// há nas que são malha.</summary>
+	public static (int Shapes, int Faces) CountCollision(Node root)
+	{
+		int shapes = 0, faces = 0;
+		foreach (Node node in root.FindChildren("*", nameof(CollisionShape3D), true, false))
+		{
+			if (node is not CollisionShape3D { Shape: Shape3D shape }) continue;
+			shapes++;
+			if (shape is ConcavePolygonShape3D concave) faces += concave.Data.Length / 3;
+			else if (shape is ConvexPolygonShape3D convex) faces += convex.Points.Length;
+		}
+		return (shapes, faces);
 	}
 
 	/// <summary>Um corpo de jogador movido pela rede, ainda fora do mundo

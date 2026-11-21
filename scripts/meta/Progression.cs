@@ -18,6 +18,8 @@ public sealed class MatchResult
 	public double SecondsWolf;
 	public Dictionary<string, int> KillsByWeapon = new();
 	public string Breed;
+	/// <summary>Segundos em chamas (o rage): vira XP.</summary>
+	public int FireSeconds;
 }
 
 public sealed class RewardLine
@@ -108,6 +110,7 @@ public static class Progression
 		if (r.Won) Line("Vitória", XpWin, PresasWin);
 		else if (r.Draw) Line("Empate", XpDraw, PresasDraw);
 		if (r.Mvp) Line("MVP da partida", XpMvp, PresasMvp);
+		Line(Loc.F("Em chamas {0}:{1:00}", r.FireSeconds / 60, r.FireSeconds % 60), Rewards.FireXp(r.FireSeconds), 0);
 
 		long xp = 0, presas = 0;
 		foreach (RewardLine line in summary.Lines) { xp += line.Xp; presas += line.Presas; }

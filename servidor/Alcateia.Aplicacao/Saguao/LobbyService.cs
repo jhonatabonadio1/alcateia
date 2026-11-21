@@ -53,6 +53,10 @@ public sealed class LobbyService : IDisposable
 		internal Room Room;
 		internal long Xp;
 		internal readonly Queue<DateTime> Chats = new();
+		/// <summary>A foto de perfil que os outros veem (<see cref="PhotoRule"/>).</summary>
+		internal string Photo = PhotoRule.Default;
+		/// <summary>As fotos da loja que a conta tem (lidas ao entrar e de novo se pedir uma que não estava).</summary>
+		internal HashSet<string> Photos = new();
 	}
 
 	private readonly FleetService _fleet;
@@ -107,6 +111,10 @@ public sealed class LobbyService : IDisposable
 	/// <summary>O mapa pode ser jogado? O painel desliga mapa; quem decide
 	/// é quem conhece os mapas (os dados do jogo). Por padrão, todos.</summary>
 	public Func<string, bool> MapAllowed { get; set; } = _ => true;
+
+	/// <summary>Os itens de uma conta, para conferir as fotos de perfil
+	/// compradas. Sem isso (testes), só as grátis valem.</summary>
+	public Func<long, Task<IReadOnlyList<Alcateia.Dominio.Loja.OwnedItem>>> Inventory { get; set; }
 
 	public bool IsOnline(long accountId)
 	{
@@ -164,7 +172,7 @@ public sealed class LobbyService : IDisposable
 			// Conta sem perfil ainda entra; só aparece sem patente.
 		}
 
-		var session = new Session { Account = account, Connection = connection, Xp = xp };
+		var session = new Session { Account = account, Connection = connection, Xp = xp, Photos = await OwnedPhotos(account.Id) };
 		var outbox = new Outbox();
 		Session old;
 		lock (_lock)
@@ -342,6 +350,13 @@ public sealed class LobbyService : IDisposable
 				Chat(c, m["text"]?.GetValue<string>() ?? "", outbox);
 				break;
 
+			case "profile.photo":
+				string photo = m["id"]?.GetValue<string>() ?? "";
+				if (!PhotoRule.Exists(photo)) break;
+				if (PhotoRule.Free.Contains(photo) || c.Photos.Contains(photo)) SetPhoto(c, photo, outbox);
+				else _ = RecheckPhoto(c, photo);   // pode ter acabado de comprar
+				break;
+
 			default:
 				throw new Failure(FailureKind.Invalid, "mensagem_desconhecida", $"Não conheço '{type}'.");
 		}
@@ -480,6 +495,40 @@ public sealed class LobbyService : IDisposable
 		return list;
 	}
 
+	private async Task<HashSet<string>> OwnedPhotos(long accountId)
+	{
+		if (Inventory == null) return new HashSet<string>();
+		try
+		{
+			return PhotoRule.Owned((await Inventory(accountId)).Select(i => i.ItemId));
+		}
+		catch (Exception)   // sem os itens, a pessoa entra só com as grátis
+		{
+			return new HashSet<string>();
+		}
+	}
+
+	private void SetPhoto(Session c, string photo, Outbox outbox)
+	{
+		if (c.Photo == photo) return;
+		c.Photo = photo;
+		if (c.Room != null) RoomState(c.Room, outbox);
+	}
+
+	/// <summary>Pediu uma foto da loja que não estava na lista: relê os itens
+	/// (a compra pode ter sido agora) e, se for dela, troca.</summary>
+	private async Task RecheckPhoto(Session c, string photo)
+	{
+		HashSet<string> owned = await OwnedPhotos(c.Account.Id);
+		var outbox = new Outbox();
+		lock (_lock)
+		{
+			c.Photos = owned;
+			if (owned.Contains(photo)) SetPhoto(c, photo, outbox);
+		}
+		await outbox.Deliver();
+	}
+
 	private JsonObject RoomsMessage() => new() { ["t"] = "rooms", ["rooms"] = RoomList(), ["total"] = _rooms.Count };
 
 	/// <summary>O estado inteiro da sala, para todos nela.</summary>
@@ -494,7 +543,8 @@ public sealed class LobbyService : IDisposable
 				["team"] = m.Team,
 				["ready"] = m.Ready,
 				["host"] = m.Account.Id == room.HostId,
-				["xp"] = m.Xp
+				["xp"] = m.Xp,
+				["photo"] = SessionOf(m)?.Photo ?? PhotoRule.Default
 			});
 
 		// Os bots entram na mesma lista, marcados: sempre prontos, sem XP

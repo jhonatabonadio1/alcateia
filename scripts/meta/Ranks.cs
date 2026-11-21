@@ -73,9 +73,20 @@ public static class Ranks
 	/// <summary>O desenho da borda dentro do metal, 0 a 9: muda a cada 10 níveis.</summary>
 	public static int Tier(int rank) => LevelOf(rank) % 100 / 10;
 
+	/// <summary>Quanto a borda brilha (<c>FrameShine</c>: reflexo e estrelinhas),
+	/// de 0 a 1. Nada no Iniciante e no começo do Bronze; cresce com o
+	/// metal e, dentro dele, com o desenho — a prata começa em 0,18, o ouro
+	/// em 0,36, o Mestre chega a 1.</summary>
+	public static float Shine(int rank)
+	{
+		float shine = (Family(rank) - 1) * 0.18f + Tier(rank) * 0.02f;
+		return shine < 0.1f ? 0f : Mathf.Min(shine, 1f);
+	}
+
 	/// <summary>O número da placa: o nível sem as centenas (as estrelas contam elas).</summary>
 	public static int Shown(int rank) => LevelOf(rank) < 100 ? LevelOf(rank) : LevelOf(rank) % 100;
 
+	// Já no idioma do jogo (Loc): quem usa só mostra.
 	public static string NameOf(int rank) => rank < 0 ? Loc.T("Bot") : Loc.F("Nível {0}", LevelOf(rank));
 	public static string FamilyName(int rank) => Loc.T(MetalNames[Family(rank)]);
 	public static Color ColorOf(int rank) => rank < 0 ? new Color("8a93a0") : MetalColors[Family(rank)];

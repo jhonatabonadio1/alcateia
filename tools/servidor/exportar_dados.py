@@ -33,7 +33,7 @@ def _constants():
 
 
 CONSTANTS = _constants()
-KINDS = {"Weapon": "weapon", "Utility": "utility", "Tattoo": "tattoo", "Breed": "breed", "Character": "character", "Service": "service"}
+KINDS = {"Weapon": "weapon", "Utility": "utility", "Tattoo": "tattoo", "Breed": "breed", "Character": "character", "Service": "service", "Photo": "photo"}
 MODES = {"Equipe": "equipe", "MataMata": "mata_mata", "Dominacao": "dominacao", "Cacada": "cacada", "Sobrevivencia": "sobrevivencia"}
 METRICS = {"Matches": "matches", "Wins": "wins", "Kills": "kills", "KillsWolf": "kills_wolf", "KillsHuman": "kills_human",
            "Headshots": "headshots", "Assists": "assists", "Minutes": "minutes", "Mvps": "mvps"}
@@ -101,7 +101,8 @@ def catalog():
             "rarity": int_of(block, "Rarity"), "minRank": int_of(block, "MinRank"), "currency": "presas",
             "prices": [int(p) for p in prices.group(1).split(",")] if prices else [],
             "starter": flag(block, "Starter"), "hot": flag(block, "Hot"), "consumable": flag(block, "Consumable"), "team": 0,
-            "image": image((f"assets/ui/armas/{item_id}.png", f"armas/{item_id}.png")),
+            "image": image((f"assets/ui/avatares/{item_id[5:]}.png", f"avatares/{item_id[5:]}.png") if kind == "Photo"
+                           else (f"assets/ui/armas/{item_id}.png", f"armas/{item_id}.png")),
         })
 
     # Os personagens são uma pasta cada (assets/personagens/<pasta>/personagem.tres).

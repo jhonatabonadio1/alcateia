@@ -215,6 +215,21 @@ public partial class Hud : CanvasLayer
 	{
 		if (_health == null) return;
 
+		// Em chamas (rage): o fogo azul em volta da insígnia, e a borda de
+		// quem está sendo visto (o próprio jogador, ou quem se assiste).
+		if (_match != null && _formBadge != null)
+		{
+			CombatantStats me = null;
+			foreach (CombatantStats c in _match.Combatants)
+				if (c.Health == _health) { me = c; break; }
+			_formBadge.Fire = me != null && me.Rage.OnFire ? me.Rage.Level : 0f;
+			if (me != null)
+			{
+				_formBadge.Rank = me.Rank;
+				_formBadge.Photo = me.Photo;
+			}
+		}
+
 		// Morto com a escolha de conjunto aberta: ela já diz "Abatido" e
 		// de quê. Aqui só aparece depois de escolher, enquanto o tempo
 		// mínimo para renascer não passou.

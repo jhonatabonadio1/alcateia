@@ -33,11 +33,11 @@ public partial class PromotionOverlay : Control
 		column.Alignment = BoxContainer.AlignmentMode.Center;
 		center.AddChild(column);
 
-		Label head = UiKit.Text("PROMOVIDO", "Display", UiTokens.Accent);
+		Label head = UiKit.Text(Ranks.LevelOf(_rank) % 100 == 0 ? "NOVA ESTRELA" : "NOVA BORDA", "Display", UiTokens.Accent);
 		head.HorizontalAlignment = HorizontalAlignment.Center;
 		column.AddChild(head);
 
-		RankBadge badge = RankBadge.Make(_rank, 160);
+		RankBadge badge = RankBadge.Make(_rank, 200, avatar: Avatars.Selected);
 		badge.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
 		column.AddChild(badge);
 

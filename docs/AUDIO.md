@@ -145,3 +145,27 @@ Para instalar a música do menu: salvar como
    arma: hoje são de duas a quatro variações.
 6. Dublagem dos personagens (em inglês), já anotada em
    `docs/PENDENCIAS.md`.
+
+## Em chamas (21/11)
+
+**Desligado** (Jhon, 21/11, ao ouvir: "tire esse som por enquanto, não
+ficou bom"). O HUD não cria mais o `FireSound` e os arquivos saíram de
+`assets/audio`; o gerador (`tools/sons/chamas.py`) e o código ficaram
+para uma segunda tentativa. O que está abaixo é como era.
+
+Pedido do Jhon: "ao ficar em chamas, deve ter um barulho de fogo e mais
+efeitos especiais no som, somente para o jogador que está em chamas".
+`FireSound` (no HUD do jogador local; nunca no de quem se assiste):
+
+| Quando | O que soa |
+|---|---|
+| Pega fogo | `chamas_acender` (sopro e brilho subindo, o "fuuum" em 0,38 s, faíscas) e o barramento Mundo abafa 7 dB por 0,12 s, voltando em 0,7 s |
+| Em chamas | `chamas_laco` em volta, de −20 dB (calor no mínimo) a −9 dB (no máximo); o Mundo ganha até +4,5 dB abaixo de 170 Hz (`Sfx.SetFire`): os seus tiros e passos ficam mais pesados |
+| Abate ou assistência em chamas | `chamas_explosao` por cima do `abate` |
+| Apaga | `chamas_apagar` (chiado descendo) e o laço some |
+
+Medidas (rms, pico, energia abaixo de 200 Hz): acender −15,1 / −1,5 / 29%;
+laço −23,0 / −3,2 / 36%; explosão −17,5 / −1,5 / 35%; apagar −18,7 / −1,5 / 4%.
+Os outros jogadores não ouvem nada: o fogo é o prêmio de quem joga bem, não
+uma pista de onde ele está.
+

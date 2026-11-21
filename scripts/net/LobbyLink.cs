@@ -85,6 +85,8 @@ public partial class LobbyLink : Node
 		}
 
 		_ = Task.Run(() => ReadLoop(_socket, _cancel.Token));
+		_noPhotos = false;            // conexão nova, servidor talvez novo
+		SetPhoto(Avatars.Selected);   // a foto chega antes de qualquer sala
 		return true;
 	}
 
@@ -112,6 +114,17 @@ public partial class LobbyLink : Node
 	public void RemoveBot(long id) => Send("room.bot.remove", ("id", id));
 	public void Say(string text) => Send("chat", ("text", text));
 	public void RefreshRooms() => Send("rooms.list");
+
+	/// <summary>A foto de perfil escolhida, para os outros verem na sala e
+	/// no placar. O servidor confere se ela é sua (grátis ou comprada).</summary>
+	public void SetPhoto(string id)
+	{
+		if (!_noPhotos) Send("profile.photo", ("id", id ?? ""));
+	}
+
+	/// <summary>O servidor desta conexão não conhece <c>profile.photo</c> (é de
+	/// uma versão anterior): não manda mais, e não mostra erro.</summary>
+	private bool _noPhotos;
 
 	private void Send(string type, params (string Key, JsonNode Value)[] fields)
 	{
@@ -192,7 +205,15 @@ public partial class LobbyLink : Node
 					ChatReceived?.Invoke(from, text);
 					break;
 				case "error":
-					Failed?.Invoke(m["code"]?.GetValue<string>() ?? "", m["message"]?.GetValue<string>() ?? "");
+					string code = m["code"]?.GetValue<string>() ?? "", message = m["message"]?.GetValue<string>() ?? "";
+					// Servidor de antes das fotos de perfil: não é erro do jogador,
+					// só não mostra a foto aos outros. Para de mandar nesta conexão.
+					if (code == "mensagem_desconhecida" && message.Contains("profile.photo"))
+					{
+						_noPhotos = true;
+						break;
+					}
+					Failed?.Invoke(code, message);
 					break;
 				case "match.start":
 					// Onde quer que o jogador esteja no menu, a partida

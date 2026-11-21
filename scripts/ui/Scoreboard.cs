@@ -97,7 +97,7 @@ public partial class Scoreboard : HBoxContainer
 		public readonly PanelContainer Root;
 		private readonly StyleBoxFlat _plain = Highlight(null);
 		private readonly StyleBoxFlat _local = Highlight(UiTokens.Accent);
-		private readonly RankBadge _badge;
+		private readonly PhotoTile _badge;
 		private readonly Icon _crown;
 		private readonly Label _name;
 		private readonly PanelContainer _spree;
@@ -113,7 +113,7 @@ public partial class Scoreboard : HBoxContainer
 			line.CustomMinimumSize = new Vector2(0, 30);
 
 			var badgeBox = new CenterContainer { MouseFilter = MouseFilterEnum.Ignore };
-			_badge = RankBadge.Make(0, 22);
+			_badge = PhotoTile.Make(null, 24);
 			badgeBox.AddChild(_badge);
 			Cell(badgeBox, RankW);
 			line.AddChild(badgeBox);
@@ -169,7 +169,8 @@ public partial class Scoreboard : HBoxContainer
 		{
 			Root.AddThemeStyleboxOverride("panel", c.IsLocal ? _local : _plain);
 
-			_badge.Rank = c.Rank;
+			_badge.Photo = c.Photo;
+			_badge.Visible = !c.IsBot;
 			_crown.Visible = c.Name == mvp;
 
 			_name.Text = c.Name;

@@ -27,6 +27,7 @@ if (!existsSync(game)) {
 } else {
 	const weapons = copyImages(path.join(game, "ui/armas"), path.join(out, "armas"));
 	const maps = copyImages(path.join(game, "ui/mapas"), path.join(out, "mapas"));
+	const photos = copyImages(path.join(game, "ui/avatares"), path.join(out, "avatares"));
 	let people = 0;
 	const folder = path.join(game, "personagens");
 	if (existsSync(folder)) {
@@ -38,5 +39,5 @@ if (!existsSync(game)) {
 			people++;
 		}
 	}
-	console.log(`imagens: ${weapons} armas, ${maps} mapas, ${people} personagens`);
+	console.log(`imagens: ${weapons} armas, ${maps} mapas, ${photos} fotos de perfil, ${people} personagens`);
 }

@@ -56,7 +56,7 @@ public partial class InventoryScreen : LobbyScreen
 		{
 			ItemKind.Tattoo or ItemKind.Breed => 1,
 			ItemKind.Character => 2,
-			ItemKind.Service => 3,
+			ItemKind.Service or ItemKind.Photo => 3,
 			_ => 0
 		};
 		_sub = item.Kind == ItemKind.Breed ? 1 : 0;
@@ -431,7 +431,7 @@ public partial class InventoryScreen : LobbyScreen
 			(1, 0) => owned.Where(i => i.Kind == ItemKind.Tattoo),
 			(1, _) => owned.Where(i => i.Kind == ItemKind.Breed),
 			(2, _) => owned.Where(i => i.Kind == ItemKind.Character),
-			_ => owned.Where(i => i.Kind == ItemKind.Service)
+			_ => owned.Where(i => i.Kind is ItemKind.Service or ItemKind.Photo)
 		};
 	}
 
@@ -497,6 +497,7 @@ public partial class InventoryScreen : LobbyScreen
 		ItemKind.Breed => Profile.Breed == item.Id ? "Classe em uso" : "Usar esta classe",
 		ItemKind.Character => IsEquippedHere(item) ? Loc.F("Em uso {0}", TeamLabel(item)) : Loc.F("Usar {0}", TeamLabel(item)),
 		ItemKind.Service => "Usar",
+		ItemKind.Photo => IsEquippedHere(item) ? "Foto em uso" : "Usar como foto",
 		_ => IsEquippedHere(item) ? Loc.F("Equipada em {0}", CurrentSet.Name) : Loc.F("Equipar em {0}", CurrentSet.Name)
 	};
 
@@ -507,6 +508,7 @@ public partial class InventoryScreen : LobbyScreen
 		ItemKind.Character => (item.Team is 0 or Teams.Blue ? Profile.BlueCharacter == item.Id : true)
 			&& (item.Team is 0 or Teams.Orange ? Profile.OrangeCharacter == item.Id : true),
 		ItemKind.Service => false,
+		ItemKind.Photo => Avatars.Selected == Avatars.IdOf(item.Id),
 		_ => CurrentSet.Primary == item.Id || CurrentSet.Secondary == item.Id || CurrentSet.Melee == item.Id || CurrentSet.Utilities.Contains(item.Id)
 	};
 
@@ -532,6 +534,12 @@ public partial class InventoryScreen : LobbyScreen
 			case ItemKind.Service:
 				Shell.GoProfile();
 				return;
+
+			case ItemKind.Photo:
+				Avatars.Selected = Avatars.IdOf(item.Id);
+				Profile.NotifyChanged();
+				Shell.Toast(Loc.F("{0} em uso", item.Name));
+				break;
 
 			default:
 				if (!EquipInSet(item)) return;

@@ -53,7 +53,8 @@ public static class MatchRoutes
 			lines.Add(new ReportedLine(node["accountId"]?.GetValue<long>() ?? 0, N("kills"), N("deaths"), N("assists"), N("headshots"), N("points"))
 			{
 				KillsWolf = N("killsWolf"),
-				RejectedHits = N("rejectedHits")
+				RejectedHits = N("rejectedHits"),
+				FireSeconds = N("fire")
 			});
 		}
 		return new MatchReport(Api.Text(body, "matchKey"), Api.Text(body, "serverId"), Api.Int(body, "scoreBlue"), Api.Int(body, "scoreOrange"), lines);

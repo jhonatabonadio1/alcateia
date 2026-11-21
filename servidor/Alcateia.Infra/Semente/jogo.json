@@ -842,6 +842,226 @@
 			"sort": 390
 		},
 		{
+			"id": "foto_faca_damasco",
+			"name": "Foto Lâmina Damasco",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 2,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				800
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/faca_damasco.png",
+			"sort": 400
+		},
+		{
+			"id": "foto_choque_neon",
+			"name": "Foto Neon",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 2,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				800
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/choque_neon.png",
+			"sort": 410
+		},
+		{
+			"id": "foto_faca_obsidiana",
+			"name": "Foto Obsidiana",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 3,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				1200
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/faca_obsidiana.png",
+			"sort": 420
+		},
+		{
+			"id": "foto_choque_magma",
+			"name": "Foto Magma",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 3,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				1200
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/choque_magma.png",
+			"sort": 430
+		},
+		{
+			"id": "foto_ar15_lava",
+			"name": "Foto Lava",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 3,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				1500
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/ar15_lava.png",
+			"sort": 440
+		},
+		{
+			"id": "foto_deagle_fenix",
+			"name": "Foto Fênix",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 3,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				1500
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/deagle_fenix.png",
+			"sort": 450
+		},
+		{
+			"id": "foto_ak74_tigre",
+			"name": "Foto Tigre",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 3,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				1500
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/ak74_tigre.png",
+			"sort": 460
+		},
+		{
+			"id": "foto_choque_ouro",
+			"name": "Foto Ouro Puro",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 4,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				2000
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/choque_ouro.png",
+			"sort": 470
+		},
+		{
+			"id": "foto_m4a4_dragao",
+			"name": "Foto Dragão",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 4,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				2000
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/m4a4_dragao.png",
+			"sort": 480
+		},
+		{
+			"id": "foto_scar_galaxia",
+			"name": "Foto Galáxia",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 4,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				2500
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/scar_galaxia.png",
+			"sort": 490
+		},
+		{
 			"id": "pers_barut",
 			"name": "Barut",
 			"type": "Personagem · Sindicato",
@@ -855,7 +1075,7 @@
 			"consumable": false,
 			"team": 2,
 			"image": "personagens/barut.jpg",
-			"sort": 400
+			"sort": 500
 		},
 		{
 			"id": "pers_eve",
@@ -871,7 +1091,7 @@
 			"consumable": false,
 			"team": 1,
 			"image": "personagens/eve.jpg",
-			"sort": 410
+			"sort": 510
 		},
 		{
 			"id": "troca_nome",
@@ -893,7 +1113,7 @@
 			"consumable": true,
 			"team": 0,
 			"image": "",
-			"sort": 420
+			"sort": 520
 		}
 	],
 	"maps": [

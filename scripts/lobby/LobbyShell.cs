@@ -96,6 +96,8 @@ public partial class LobbyShell : Control
 		if (!IsInsideTree() || _promoting || AccountSync.PendingPromotions.Count == 0) return;
 		int rank = AccountSync.PendingPromotions[0];
 		AccountSync.PendingPromotions.RemoveAt(0);
+		// Nível comum só aparece na barra; a tela é para borda ou estrela nova.
+		if (!Ranks.IsMilestone(rank)) { ShowPromotions(); return; }
 		_promoting = true;
 		PromotionOverlay.Open(_overlay, rank, () =>
 		{

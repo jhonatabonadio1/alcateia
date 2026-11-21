@@ -81,6 +81,22 @@ public static class SecurityTests
 			Check.Equal(RankRule.Count - 1, RankRule.RankFor(long.MaxValue / 4), "o teto é o nível 3000");
 			Check.Equal(1, RankRule.Family(99), "o nível 100 é bronze");
 			Check.Equal(100L, RankRule.PromotionPresas(RankRule.XpFor(8), RankRule.XpFor(9)), "o nível 10 é borda nova: 100 Presas");
+
+			// rage: tempo em chamas que os abates não explicam vira evento de segurança
+			var fogo = new Alcateia.Dominio.Partidas.MatchReport("k", "s", 0, 0, new[]
+			{
+				new Alcateia.Dominio.Partidas.ReportedLine(1, 2, 0, 0, 0, 0) { FireSeconds = 30 },
+				new Alcateia.Dominio.Partidas.ReportedLine(2, 0, 0, 0, 0, 0) { FireSeconds = 200 }
+			});
+			var estranho = Alcateia.Dominio.Partidas.Plausibility.Flags(fogo, 10);
+			Check.True(estranho.All(f => f.AccountId != 1), "30 s em chamas com dois abates é possível");
+			Check.True(estranho.Any(f => f.AccountId == 2 && f.What.Contains("em chamas")), "200 s em chamas sem abate é denunciado");
+
+			// fotos de perfil: grátis sempre; da loja, só com o item
+			Check.True(PhotoRule.Allowed("eve", Array.Empty<string>()), "a Eve é grátis");
+			Check.True(!PhotoRule.Allowed("scar_galaxia", Array.Empty<string>()), "a da loja sem o item, não");
+			Check.True(PhotoRule.Allowed("scar_galaxia", new[] { "foto_scar_galaxia" }), "com o item, sim");
+			Check.True(!PhotoRule.Allowed("inventada", new[] { "foto_inventada" }), "foto que não existe, nunca");
 			return Task.CompletedTask;
 		}),
 

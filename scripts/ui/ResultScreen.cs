@@ -215,6 +215,8 @@ public partial class ResultScreen : CanvasLayer
 			return;
 		}
 
+		// Nível comum só aparece na barra; a tela é para borda ou estrela nova.
+		if (!Ranks.IsMilestone(promotions[index])) { Promote(index + 1); return; }
 		PromotionOverlay.Open(_overlay, promotions[index], () => Promote(index + 1));
 	}
 

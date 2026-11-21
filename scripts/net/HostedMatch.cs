@@ -161,6 +161,7 @@ public sealed class HostedMatch
 		{
 			_clock = ClockEvery;
 			Broadcast(ClockPacket(NetWire.Clock), reliable: Referee.Phase != before);
+			if (Referee.Phase == RefPhase.Live) Broadcast(FirePacket(), reliable: false);
 		}
 
 		if (Referee.Phase != RefPhase.Ended) return;
@@ -228,7 +229,8 @@ public sealed class HostedMatch
 			{
 				["accountId"] = s.Id, ["kills"] = s.Kills, ["deaths"] = s.Deaths, ["assists"] = s.Assists,
 				["headshots"] = s.Headshots, ["points"] = s.Points,
-				["killsWolf"] = s.KillsWolf, ["rejectedHits"] = s.RejectedHits
+				["killsWolf"] = s.KillsWolf, ["rejectedHits"] = s.RejectedHits,
+				["fire"] = (int)s.Rage.FireSeconds
 			});
 
 		return new JsonObject
@@ -722,6 +724,22 @@ public sealed class HostedMatch
 		w.Write(Referee.Score(Referee.Blue));
 		w.Write(Referee.Score(Referee.Orange));
 		Broadcast(stream.ToArray());
+	}
+
+	/// <summary>O rage (em chamas) de cada lugar, como o juiz tem: é o que os
+	/// jogos mostram, e o tempo em chamas é o que vai no resultado.</summary>
+	private byte[] FirePacket()
+	{
+		BinaryWriter w = NetWire.Begin(NetWire.Fire, out MemoryStream stream);
+		w.Write((byte)System.Math.Min(Referee.Seats.Count, 255));
+		foreach (Referee.Seat s in Referee.Seats.Take(255))
+		{
+			w.Write(s.Id);
+			w.Write(s.Rage.Heat);
+			w.Write(s.Rage.OnFire);
+			w.Write((ushort)System.Math.Min(s.Rage.FireSeconds, ushort.MaxValue));
+		}
+		return stream.ToArray();
 	}
 
 	private byte[] ClockPacket(byte type)

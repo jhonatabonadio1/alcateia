@@ -40,6 +40,10 @@ public sealed record ReportedLine(long AccountId, int Kills, int Deaths, int Ass
 	/// fora da mira, longe demais, rápido demais: decisão 0016). Só o
 	/// servidor de partida autoritativo confere; o de repasse manda zero.</summary>
 	public int RejectedHits { get; init; }
+
+	/// <summary>Segundos em chamas (o rage, <see cref="Rage"/>): vira XP.
+	/// Servidor de partida antigo não manda: zero.</summary>
+	public int FireSeconds { get; init; }
 }
 
 /// <summary>O fim de uma partida, como o servidor de partida conta.</summary>
@@ -108,7 +112,7 @@ public static class MatchSettlement
 		var lines = counted.Select(c =>
 		{
 			bool won = winner != Draw && c.Seat.Team == winner, draw = winner == Draw, isMvp = c.Seat.AccountId == mvp;
-			Rewards.Gain gain = Rewards.ForMatch(c.Line.Kills, c.Line.Assists, won, draw, isMvp);
+			Rewards.Gain gain = Rewards.ForMatch(c.Line.Kills, c.Line.Assists, won, draw, isMvp, c.Line.FireSeconds);
 			gain = new Rewards.Gain((long)Math.Round(gain.Xp * xpBonus), (long)Math.Round(gain.Presas * presasBonus));
 			return new SettledLine(c.Seat, c.Line.Kills, c.Line.Deaths, c.Line.Assists, c.Line.Headshots, c.Line.Points,
 				won, draw, isMvp, gain) { KillsWolf = c.Line.KillsWolf };

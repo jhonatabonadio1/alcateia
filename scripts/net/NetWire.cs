@@ -21,6 +21,7 @@ using System.Text;
 /// | Kill | servidor | o abate aceito e o placar |
 /// | Clock | servidor | fase, contagem, tempo e placar |
 /// | Gone | servidor | alguém saiu |
+/// | Fire | servidor, 2 por segundo | o rage de cada um: conta, calor, se está em chamas e os segundos em chamas |
 ///
 /// **Bots.** Quem move os bots é a máquina do dono da sala; ela fala por
 /// eles com os mesmos pacotes, mais o número do bot na frente. O
@@ -70,7 +71,7 @@ public static class NetWire
 		Hit = 6, Died = 7, Kill = 8, Clock = 9, Gone = 10,
 		BotState = 11, BotAttack = 12, BotHit = 13, BotDied = 14, HitBot = 15, Touch = 16,
 		Input = 17, Snapshot = 18, Status = 19, Loadout = 20, Radio = 21,
-		Damage = 22, Vitals = 23;
+		Damage = 22, Vitals = 23, Fire = 24;
 
 	/// <summary>O modo da partida, no <c>Welcome</c>.</summary>
 	public const byte ModeRelay = 0, ModeAuthoritative = 1;

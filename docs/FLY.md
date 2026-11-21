@@ -134,7 +134,8 @@ fly ips list -a wolfleague-partida          # anote o IPv4
 
 fly secrets set --stage -a wolfleague-partida ALCATEIA_FLEET_KEY="$FROTA"
 
-# A imagem (o Godot importa os assets no construtor remoto: demora).
+# A imagem: o servidor dedicado exportado (docs/SERVIDOR_DEDICADO.md).
+# A primeira vez baixa o Godot e os modelos (~1,3 GB); depois fica no cache.
 fly deploy -c fly.partida.toml --build-only --push --image-label v0.3.0
 
 # Quatro máquinas paradas, portas 7777 a 7780, em São Paulo.
@@ -261,8 +262,8 @@ máquina.
 Nada disto rodou no Fly ainda — foi escrito a partir da documentação. Os
 pontos que mais podem dar trabalho na primeira vez:
 
-- o construtor remoto importando os assets do Godot (imagem grande, build
-  demorado; se faltar memória, `fly deploy --vm-memory` não vale para o
+- o construtor remoto exportando o servidor dedicado (a importação é leve,
+  ~2 min; se faltar memória, `fly deploy --vm-memory` não vale para o
   construtor — aí construa local com `--local-only`);
 - o servidor conectando ao Postgres por `wolfleague-db.internal` (a rede
   privada é IPv6) com a senha do segredo — se `/health` responder

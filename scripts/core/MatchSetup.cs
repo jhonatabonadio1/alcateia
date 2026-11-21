@@ -123,6 +123,7 @@ public partial class MatchSetup : Node
 			puppet.Remote = true;
 			puppet.RemoteId = seat.Id;
 			puppet.RemoteRank = seat.IsBot ? Ranks.None : Ranks.RankFor(seat.Xp);
+			puppet.RemotePhoto = seat.IsBot ? null : seat.Photo;
 			Place(puppet, seat.Team, used);
 			bots.AddChild(puppet);
 			puppets.Add(puppet);

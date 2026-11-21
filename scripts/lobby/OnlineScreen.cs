@@ -334,7 +334,7 @@ public partial class OnlineScreen : LobbyScreen
 			Label position = UiKit.Text($"{line["position"]}", "Numeric", UiTokens.TextSecondary);
 			position.CustomMinimumSize = new Vector2(22, 0);
 			row.AddChild(position);
-			row.AddChild(RankBadge.Make(Ranks.RankFor(xp), 20));
+			row.AddChild(LevelChip.Make(Ranks.RankFor(xp), 16));
 			Label who = UiKit.Truncated(name, null, name == Backend.AccountName ? UiTokens.Accent : (Color?)null);
 			who.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 			row.AddChild(who);

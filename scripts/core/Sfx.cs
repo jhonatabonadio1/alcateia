@@ -166,6 +166,61 @@ public static class Sfx
 		AudioServer.SetBusEffectEnabled(bus, 0, wet > 0.001f);
 	}
 
+	/// <summary>
+	/// O "em chamas" no som (<see cref="FireSound"/>): de 0 a 1, quanto os
+	/// sons do mundo (os seus tiros, passos, impactos) ganham de peso no grave
+	/// — um filtro de prateleira no barramento Mundo, de 0 a +4,5 dB abaixo
+	/// de 170 Hz. Só na máquina de quem está em chamas.
+	/// </summary>
+	public static void SetFire(float amount)
+	{
+		EnsureBuses();
+		int bus = AudioServer.GetBusIndex(BusWorld);
+		if (bus < 0) return;
+
+		int slot = -1;
+		for (int i = 0; i < AudioServer.GetBusEffectCount(bus); i++)
+			if (AudioServer.GetBusEffect(bus, i) is AudioEffectLowShelfFilter) { slot = i; break; }
+		if (slot < 0)
+		{
+			if (amount <= 0.001f) return;
+			AudioServer.AddBusEffect(bus, new AudioEffectLowShelfFilter { CutoffHz = 170f, Gain = 1f });
+			slot = AudioServer.GetBusEffectCount(bus) - 1;
+		}
+
+		amount = Mathf.Clamp(amount, 0f, 1f);
+		((AudioEffectLowShelfFilter)AudioServer.GetBusEffect(bus, slot)).Gain = 1f + 0.68f * amount;
+		AudioServer.SetBusEffectEnabled(bus, slot, amount > 0.001f);
+	}
+
+	private static Tween _duck;
+
+	/// <summary>Abafa o barramento Mundo em <paramref name="db"/> por
+	/// <paramref name="hold"/> segundos e volta em <paramref name="release"/>:
+	/// o momento em que o fogo pega passa na frente do tiroteio. Com zeros,
+	/// volta na hora. O volume do Mundo não é do jogador (as opções mexem
+	/// no SFX), então pode ser mexido aqui.</summary>
+	public static void DuckWorld(float db, float hold, float release)
+	{
+		EnsureBuses();
+		int bus = AudioServer.GetBusIndex(BusWorld);
+		if (bus < 0) return;
+
+		_duck?.Kill();
+		_duck = null;
+		if (release <= 0f || (Engine.GetMainLoop() as SceneTree) is not SceneTree tree)
+		{
+			AudioServer.SetBusVolumeDb(bus, 0f);
+			return;
+		}
+
+		AudioServer.SetBusVolumeDb(bus, db);
+		_duck = tree.CreateTween();
+		_duck.TweenInterval(hold);
+		_duck.TweenMethod(Callable.From<float>(v => AudioServer.SetBusVolumeDb(bus, v)), db, 0f, release)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+	}
+
 	/// <summary>Fundo do mapa em laço (vento, zumbido de máquina), filho
 	/// de <paramref name="owner"/>. Null se o arquivo não existir.</summary>
 	public static AudioStreamPlayer Ambience(Node owner, string name, float volumeDb = -14f) =>

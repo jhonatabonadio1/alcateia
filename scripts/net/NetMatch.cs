@@ -624,6 +624,10 @@ public partial class NetMatch : Node
 					ReadClock(r);
 					break;
 
+				case NetWire.Fire:
+					ReadFire(r);
+					break;
+
 				case NetWire.Gone:
 					long goneId = r.ReadInt64();
 					if (_puppets.TryGetValue(goneId, out Bot gone)) gone.RemotePresent(false);
@@ -716,6 +720,21 @@ public partial class NetMatch : Node
 		float countdown = r.ReadSingle(), time = r.ReadSingle();
 		int blue = r.ReadInt32(), orange = r.ReadInt32();
 		Match.Current?.NetSync(phase, countdown, time, blue, orange);
+	}
+
+	/// <summary>O rage de cada um, como o servidor de partida conta.</summary>
+	private void ReadFire(BinaryReader r)
+	{
+		int count = r.ReadByte();
+		for (int i = 0; i < count; i++)
+		{
+			long id = r.ReadInt64();
+			float heat = r.ReadSingle();
+			bool onFire = r.ReadBoolean();
+			int seconds = r.ReadUInt16();
+			(string name, int team) = Who(id);
+			if (team != 0) Match.Current?.NetFire(name, team, heat, onFire, seconds);
+		}
 	}
 
 	/// <summary>O nome e o time de uma conta, como aparecem nesta máquina.</summary>

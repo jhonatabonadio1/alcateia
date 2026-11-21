@@ -44,6 +44,7 @@ export const kindNames: Record<string, string> = {
 	breed: "Classes de lobo",
 	character: "Personagens",
 	service: "Serviços",
+	photo: "Fotos de perfil",
 };
 
 export const durationNames = ["1 dia", "7 dias", "30 dias", "90 dias", "Para sempre"];

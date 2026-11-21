@@ -19,6 +19,8 @@ public partial class Bot
 	/// negativo e não tem patente.</summary>
 	public long RemoteId { get; set; }
 	public int RemoteRank { get; set; }
+	/// <summary>A foto de perfil do jogador (no placar).</summary>
+	public string RemotePhoto { get; set; }
 
 	/// <summary>Partida online, bot de verdade, movido por esta máquina:
 	/// o número dele na escalação (negativo). Zero fora disso.</summary>

@@ -59,6 +59,9 @@ public sealed class Referee
 		/// <summary>Acertos que o servidor de partida recusou (decisão 0016):
 		/// vai no resultado, e o servidor central desconfia de quem tem muitos.</summary>
 		public int RejectedHits;
+
+		/// <summary>O rage (em chamas): o tempo em chamas vai no resultado e vira XP.</summary>
+		public readonly Rage Rage = new();
 		public int Points => Kills * PointsPerKill + Assists * PointsPerAssist;
 
 		internal readonly Dictionary<long, double> HitBy = new();
@@ -168,6 +171,7 @@ public sealed class Referee
 				break;
 
 			case RefPhase.Live:
+				foreach (Seat s in _seats.Values) s.Rage.Tick((float)delta);
 				TimeLeft -= delta;
 				if (TimeLeft <= 0)
 				{
@@ -232,6 +236,11 @@ public sealed class Referee
 		if (killerWasWolf) killer.KillsWolf++;
 		if (headshot) killer.Headshots++;
 		foreach (long id in helpers) Find(id).Assists++;
+		if (killer.Team != victim.Team)
+		{
+			killer.Rage.Kill();
+			foreach (long id in helpers) Find(id).Rage.Assist();
+		}
 
 		// Abate em aliado (fogo amigo ligado) conta para quem matou, mas
 		// não pontua o time.

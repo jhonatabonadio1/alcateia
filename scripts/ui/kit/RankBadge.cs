@@ -18,10 +18,42 @@ public partial class RankBadge : Control
 
 	/// <summary>Raio do vão da foto, em fração do lado da borda (o desenho tem
 	/// o aro com raio 300 de 1024 e o vão começa uns 35 px para dentro).</summary>
-	private const float Window = 0.262f;
+	public const float Window = 0.262f;
+
+	/// <summary>Quanto a borda passa do quadrado do retrato (os enfeites saem pelos lados).</summary>
+	public const float Grow = 1.12f;
 
 	private int _rank;
 	private string _avatar;
+	private bool _bare;
+
+	// Por cima do retrato e da borda (desenhados aqui): o brilho da borda
+	// (níveis altos) e, por cima dele, a placa do número com as estrelas.
+	private readonly FrameShine _shine;
+	private readonly LevelPlate _plate;
+
+	public RankBadge()
+	{
+		_shine = new FrameShine();
+		_shine.SetAnchorsPreset(LayoutPreset.FullRect);
+		AddChild(_shine);
+		_plate = new LevelPlate();
+		_plate.SetAnchorsPreset(LayoutPreset.FullRect);
+		AddChild(_plate);
+	}
+
+	/// <summary>Brilho e placa só no retrato grande (40 px ou mais); a placa some com <see cref="Bare"/>.</summary>
+	private void Sync()
+	{
+		bool big = _rank >= 0 && Mathf.Min(Size.X, Size.Y) >= 40f;
+		_shine.Rank = big ? _rank : Ranks.None;
+		_plate.Rank = big && !_bare ? _rank : Ranks.None;
+	}
+
+	public override void _Notification(int what)
+	{
+		if (what == NotificationResized) Sync();
+	}
 
 	public int Rank
 	{
@@ -30,6 +62,7 @@ public partial class RankBadge : Control
 		{
 			_rank = value < 0 ? Ranks.None : Ranks.Clamp(value);
 			TooltipText = _rank < 0 ? "Bot" : $"{Ranks.NameOf(_rank)} · {Ranks.FamilyName(_rank)}";
+			Sync();
 			QueueRedraw();
 		}
 	}
@@ -43,7 +76,11 @@ public partial class RankBadge : Control
 	}
 
 	/// <summary>Sem placa nem estrelas, mesmo grande.</summary>
-	public bool Bare { get; set; }
+	public bool Bare
+	{
+		get => _bare;
+		set { _bare = value; Sync(); }
+	}
 
 	public static RankBadge Make(int rank, int size = 32, bool bare = false, string avatar = null)
 	{
@@ -124,20 +161,17 @@ public partial class RankBadge : Control
 		// Pequena, a borda passa do quadrado (os enfeites saem pelos lados);
 		// grande, cabe inteira.
 		bool small = side < 40;
-		float grow = small ? 1.45f : 1.12f;
+		float grow = small ? 1.45f : Grow;
 		float frame = side * grow;
 		Vector2 c = Size / 2f;
 
 		DrawPortrait(this, c, frame * Window, Avatars.PhotoOf(_avatar));
 		if (FrameOf(_rank) is Texture2D art)
 			DrawTextureRect(art, new Rect2(c - new Vector2(frame, frame) / 2f, new Vector2(frame, frame)), false);
-
-		if (small || Bare) return;
-		DrawPlate(this, new Vector2(c.X, c.Y + frame * Window * 0.98f), side * 0.2f, _rank, GetThemeFont("font", "Label"));
+		// a placa e o brilho são os filhos (LevelPlate, FrameShine)
 	}
 
-	/// <summary>A placa do número e, embaixo, as estrelas. Usada também
-	/// no HUD.</summary>
+	/// <summary>A placa do número e, embaixo, as estrelas (quem chama é o <see cref="LevelPlate"/>).</summary>
 	public static void DrawPlate(CanvasItem on, Vector2 top, float height, int rank, Font font)
 	{
 		Color metal = Ranks.ColorOf(rank);

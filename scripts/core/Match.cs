@@ -26,6 +26,11 @@ public sealed class CombatantStats
 	public int Spree;
 	public int BestSpree;
 	public int Rank;
+	/// <summary>A foto de perfil (<see cref="Avatars"/>); nula em bot.</summary>
+	public string Photo;
+	/// <summary>O rage (em chamas). Aqui é para mostrar (HUD, placar); o XP
+	/// de verdade vem do servidor de partida, que conta o mesmo.</summary>
+	public readonly Rage Rage = new();
 	public bool IsLocal;
 	public bool IsBot;
 
@@ -213,6 +218,8 @@ public partial class Match : Node
 			_rostered = true;
 		}
 
+		if (Phase == MatchPhase.Live) TickRage((float)delta);
+
 		if (Online)
 		{
 			// Entre um aviso do servidor e o próximo, o relógio daqui anda
@@ -298,7 +305,8 @@ public partial class Match : Node
 				entry.Form = node.GetNodeOrNull<FormController>("FormController");
 				entry.Rank = entry.IsLocal ? Profile.Rank
 					: remote != null ? remote.RemoteRank
-					: Ranks.None;   // bot não tem patente
+					: Ranks.None;   // bot não tem nível
+				entry.Photo = entry.IsLocal ? Avatars.Selected : remote?.RemotePhoto;
 
 				if (entry.IsLocal) _local = entry;
 			}
@@ -347,9 +355,15 @@ public partial class Match : Node
 		killer.Kills++;
 		killer.Spree++;
 		killer.BestSpree = Mathf.Max(killer.BestSpree, killer.Spree);
+		killer.Rage.Kill();
 
 		foreach (string name in kill.Assisters)
-			if (name != kill.Killer) Entry(name, kill.KillerTeam).Assists++;
+			if (name != kill.Killer)
+			{
+				CombatantStats helper = Entry(name, kill.KillerTeam);
+				helper.Assists++;
+				helper.Rage.Assist();
+			}
 
 		if (killer == _local)
 		{
@@ -384,6 +398,25 @@ public partial class Match : Node
 	/// <summary>Monta o resultado do jogador local e paga XP e Presas.
 	/// Antes da troca de fase, para a tela de resultado já encontrar o
 	/// resumo pronto quando o sinal chegar.</summary>
+	/// <summary>Alguém pegou fogo ou apagou (o placar e o HUD acendem as chamas).</summary>
+	public event System.Action<CombatantStats> FireChanged;
+
+	/// <summary>Online: o rage como o servidor de partida tem (ele conta, ele
+	/// manda no resultado; aqui é só o que se mostra).</summary>
+	public void NetFire(string name, int team, float heat, bool onFire, float seconds)
+	{
+		CombatantStats entry = Entry(name, team);
+		bool was = entry.Rage.OnFire;
+		entry.Rage.Sync(heat, onFire, seconds);
+		if (was != onFire) FireChanged?.Invoke(entry);
+	}
+
+	private void TickRage(float delta)
+	{
+		foreach (CombatantStats entry in _stats.Values)
+			if (entry.Rage.Tick(delta)) FireChanged?.Invoke(entry);
+	}
+
 	private void Payout()
 	{
 		if (_local == null || Reward != null) return;
@@ -406,7 +439,8 @@ public partial class Match : Node
 			SecondsHuman = _localSecondsHuman,
 			SecondsWolf = _localSecondsWolf,
 			KillsByWeapon = new Dictionary<string, int>(_localByWeapon),
-			Breed = Profile.Breed
+			Breed = Profile.Breed,
+			FireSeconds = (int)_local.Rage.FireSeconds
 		};
 
 		Reward = Progression.Apply(Result, Online);

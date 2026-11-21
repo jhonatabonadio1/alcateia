@@ -27,6 +27,7 @@ COPY servidor/painel/package.json servidor/painel/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY assets/ui/armas /fonte/assets/ui/armas
 COPY assets/ui/mapas /fonte/assets/ui/mapas
+COPY assets/ui/avatares /fonte/assets/ui/avatares
 COPY assets/personagens /fonte/assets/personagens
 COPY servidor/painel ./
 RUN npm run build

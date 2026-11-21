@@ -10,7 +10,9 @@ using Godot;
 /// Sem isso a semente vem do relógio, e a partida diz qual foi no Output.
 ///
 /// <c>-- --servidor</c> faz deste processo um servidor de partida
-/// (<see cref="MatchServer"/>) em vez do jogo; <c>-- --robo=criar</c> ou
+/// (<see cref="MatchServer"/>) em vez do jogo; o servidor exportado (o
+/// preset "Servidor (Linux)", com a marca <c>dedicated_server</c>) já
+/// nasce servidor, sem precisar do argumento; <c>-- --robo=criar</c> ou
 /// <c>--robo=entrar</c> põe um robô para jogar uma partida online sozinho
 /// (<see cref="OnlineRobot"/>, usado por tools/testar_online.sh).
 /// </summary>
@@ -47,11 +49,16 @@ public partial class Inicio : Node
 		};
 
 		string[] args = OS.GetCmdlineUserArgs();
-		if (System.Array.IndexOf(args, "--servidor") >= 0) Callable.From(BecomeServer).CallDeferred();
+		if (IsServer(args)) Callable.From(BecomeServer).CallDeferred();
 
 		string robot = System.Array.Find(args, a => a.StartsWith("--robo="));
 		if (robot != null) AddChild(new OnlineRobot { Name = "Robo", Role = robot["--robo=".Length..] });
 	}
+
+	/// <summary>Este processo é um servidor de partida: o exportado para
+	/// servidor (docs/SERVIDOR_DEDICADO.md) ou o jogo com <c>-- --servidor</c>.</summary>
+	public static bool IsServer(string[] args) =>
+		OS.HasFeature("dedicated_server") || System.Array.IndexOf(args, "--servidor") >= 0;
 
 	/// <summary>Troca o menu pelo servidor de partida.</summary>
 	private void BecomeServer()

@@ -35,7 +35,7 @@ public partial class ProfileScreen : LobbyScreen
 
 		int rank = Profile.Rank;
 
-		RankBadge badge = RankBadge.Make(rank, 128);
+		RankBadge badge = RankBadge.Make(rank, 240, avatar: Avatars.Selected);
 		badge.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
 		column.AddChild(badge);
 
@@ -43,9 +43,11 @@ public partial class ProfileScreen : LobbyScreen
 		name.HorizontalAlignment = HorizontalAlignment.Center;
 		column.AddChild(name);
 
-		Label rankName = UiKit.Text(Loc.Upper(Ranks.NameOf(rank)), "Subtitle", Ranks.InkOf(rank));
-		rankName.HorizontalAlignment = HorizontalAlignment.Center;
-		column.AddChild(rankName);
+		HBoxContainer level = UiKit.Row(UiTokens.S2);
+		level.Alignment = BoxContainer.AlignmentMode.Center;
+		level.AddChild(LevelChip.Make(rank, 22));
+		level.AddChild(UiKit.Text($"{Ranks.NameOf(rank)} · {Ranks.FamilyName(rank)}".ToUpperInvariant(), "Subtitle", Ranks.InkOf(rank)));
+		column.AddChild(level);
 
 		if (!string.IsNullOrEmpty(Profile.Title))
 		{
@@ -83,6 +85,9 @@ public partial class ProfileScreen : LobbyScreen
 
 		column.AddChild(UiKit.Divider());
 
+		column.AddChild(UiKit.Caption("Foto de perfil"));
+		column.AddChild(Photos());
+
 		// Título exibível: ganho nas missões permanentes.
 		column.AddChild(UiKit.Caption("Título"));
 		string[] titles = new[] { "Nenhum" }.Concat(Profile.Titles).ToArray();
@@ -115,6 +120,59 @@ public partial class ProfileScreen : LobbyScreen
 
 	/// <summary>O nome é o da conta: quem troca é o servidor, que confere
 	/// se está livre e gasta o item.</summary>
+	/// <summary>As fotos de perfil: as suas para escolher, as da loja com cadeado e preço.</summary>
+	private Control Photos()
+	{
+		var grid = new GridContainer { Columns = 7 };
+		grid.AddThemeConstantOverride("h_separation", UiTokens.S2);
+		grid.AddThemeConstantOverride("v_separation", UiTokens.S2);
+		foreach (Avatars.Photo photo in Avatars.All)
+		{
+			bool mine = Avatars.Owns(photo.Id), chosen = mine && Avatars.Selected == photo.Id;
+			var cell = new Button
+			{
+				CustomMinimumSize = new Vector2(52, 52), Flat = true, FocusMode = FocusModeEnum.None,
+				TooltipText = mine ? photo.Name : Loc.F("{0} · {1} Presas na loja", photo.Name, UiTokens.Thousands(photo.Price)),
+				Disabled = !mine
+			};
+			var face = new TextureRect
+			{
+				Texture = Avatars.PhotoOf(photo.Id), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+				StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered, MouseFilter = MouseFilterEnum.Ignore,
+				Modulate = mine ? Colors.White : new Color(0.4f, 0.4f, 0.45f)
+			};
+			face.SetAnchorsPreset(LayoutPreset.FullRect);
+			face.OffsetLeft = face.OffsetTop = 3; face.OffsetRight = face.OffsetBottom = -3;
+			cell.AddChild(face);
+			if (!mine)
+			{
+				Icon lockIcon = Icon.Make(IconKind.Lock, 16, UiTokens.TextPrimary);
+				lockIcon.SetAnchorsPreset(LayoutPreset.Center);
+				lockIcon.MouseFilter = MouseFilterEnum.Ignore;
+				cell.AddChild(lockIcon);
+			}
+			if (chosen)
+			{
+				var ring = new Panel { MouseFilter = MouseFilterEnum.Ignore };
+				var box = new StyleBoxFlat { DrawCenter = false, BorderColor = UiTokens.Accent };
+				box.SetBorderWidthAll(3);
+				box.SetCornerRadiusAll(4);
+				ring.AddThemeStyleboxOverride("panel", box);
+				ring.SetAnchorsPreset(LayoutPreset.FullRect);
+				cell.AddChild(ring);
+			}
+			string id = photo.Id;
+			cell.Pressed += () =>
+			{
+				Avatars.Selected = id;
+				Profile.NotifyChanged();
+				Refresh();
+			};
+			grid.AddChild(cell);
+		}
+		return grid;
+	}
+
 	private async void DoRename(string name)
 	{
 		string error = Profile.ValidateName(name) ?? await AccountSync.Rename(name.Trim());

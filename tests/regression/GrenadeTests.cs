@@ -3,7 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 /// <summary>Granada de segurar e soltar (v0.26.9) e mais forte (v0.26.10):
-/// nada sai enquanto segura; soltou, ela vai a uns 18 m olhando reto
+/// nada sai enquanto segura; soltou, olhando reto (a conta mira o alcance
+/// máximo, 24 m, na altura do olho) ela passa desse ponto e cai a uns 26 m
 /// (19/11: "pode ir mais longe também, não tanto"; eram 15,5).
 ///
 /// E **sai da mão** (19/11): nasce quando a mão solta no arremesso (não no
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 public sealed class GrenadeRangeTest : RegressionTest
 {
 	public override string Name => "Granada";
-	public override string Description => "a granada arma enquanto segura, sai da mão no arremesso em cima da linha da cruz, vai reto para ela e cai a ~18 m";
+	public override string Description => "a granada arma enquanto segura, sai da mão no arremesso em cima da linha da cruz, vai reto para ela e, olhando reto, cai logo depois do alcance máximo (24 m)";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -78,7 +79,10 @@ public sealed class GrenadeRangeTest : RegressionTest
 		b.AtMost(0.03, worst, "no voo inteiro, fica em cima da linha da cruz (m para o lado, no máximo)");
 		b.AtMost(0.03, Mathf.Abs(end), "chega ao chão em cima da linha da cruz (m para o lado)");
 
-		b.Near(18.0, landed, 1.0, "onde a granada toca o chão (m)");
+		// Olhando reto não há ponto mirado: a conta mira o alcance máximo
+		// (ThrowMaxRange, 24 m) na altura do olho, e ela cai um pouco depois.
+		b.AtLeast(24.0, landed, "onde a granada toca o chão, olhando reto (m): passa do alcance máximo");
+		b.AtMost(29.0, landed, "onde a granada toca o chão, olhando reto (m): e cai logo depois");
 		b.Check(b.Weapon.Grenades == 1, $"sobrou uma granada (sobraram {b.Weapon.Grenades})");
 	}
 

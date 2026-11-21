@@ -7,6 +7,7 @@ Ancião,,Elder,Anciano,(não está mais no código)
 Anti-lobo: atordoa e desacelera quem pega o estouro. Não existe para matar; existe para o lobo não chegar.,,Anti-wolf: stuns and slows whoever catches the blast. It's not there to kill; it's there to keep the wolf from reaching you.,Antilobo: aturde y ralentiza a quien alcanza la explosión. No existe para matar; existe para que el lobo no llegue.,(não está mais no código)
 "Arsenal, conjuntos e a economia de WP.",,"Arsenal, loadouts and the WP economy.","Arsenal, equipos y la economía de WP.",(não está mais no código)
 Batedor,,Scout,Explorador,(não está mais no código)
+Bot — sem patente,,Bot — no rank,Bot — sin rango,(não está mais no código)
 Caçador,,Hunter,Cazador,(não está mais no código)
 Dois times: Vanguarda e Sindicato.,,Two teams: Vanguard and Syndicate.,Dos equipos: Vanguardia y Sindicato.,(não está mais no código)
 "Entre com a sua conta do servidor, ou crie uma agora. ",,"Sign in with your server account, or create one now. ","Entra con tu cuenta del servidor, o crea una ahora. ",(não está mais no código)
@@ -38,6 +39,7 @@ Patente,,Rank,Rango,(não está mais no código)
 Precisa do item Troca de nome,,Requires the Name Change item,Necesita el objeto Cambio de nombre,(não está mais no código)
 Presa de Ferro,,Iron Fang,Colmillo de Hierro,(não está mais no código)
 Progresso conta em toda partida terminada,,Progress counts in every finished match,El progreso cuenta en toda partida terminada,(não está mais no código)
+PROMOVIDO,,PROMOTED,ASCENDIDO,(não está mais no código)
 Rastreador,,Tracker,Rastreador,(não está mais no código)
 Recomeçar,,Start over,Reiniciar,(não está mais no código)
 Recomeçar perfil,,Reset profile,Reiniciar perfil,(não está mais no código)
@@ -51,33 +53,16 @@ Troca em {0} h {1:00} min  ·  20% de desconto,,Changes in {0} h {1:00} min  · 
 "Tudo volta ao começo: Filhote I, 3.000 Presas, só o equipamento inicial. Não dá para desfazer.",,"Everything goes back to the start: Pup I, 3,000 Fangs, only the starting gear. This can't be undone.","Todo vuelve al comienzo: Cachorro I, 3.000 Colmillos, solo el equipo inicial. No se puede deshacer.",(não está mais no código)
 Uivador,,Howler,Aullador,(não está mais no código)
 −20% hoje,,−20% today,−20% hoy,(não está mais no código)
-Barut,,Barut,Barut,assets/personagens/barut/personagem.tres
-"Do Sindicato. Jaqueta vermelha, colete de placas e o lobo vermelho dele, com o neon laranja nas garras e no rugido. É o personagem do time.",,"From the Syndicate. Red jacket, plate vest and his red wolf, with orange neon on the claws and the roar. He's the team's character.","Del Sindicato. Chaqueta roja, chaleco de placas y su lobo rojo, con neón naranja en las garras y en el rugido. Es el personaje del equipo.",assets/personagens/barut/personagem.tres
-"Da Vanguarda. Colete escuro, braçadeiras de aço e o lobo azul dela, com o neon azul nas garras e no rugido. É a personagem do time.",,"From the Vanguard. Dark vest, steel bracers and her blue wolf, with blue neon on the claws and the roar. She's the team's character.","De la Vanguardia. Chaleco oscuro, brazales de acero y su lobo azul, con neón azul en las garras y en el rugido. Es la personaje del equipo.",assets/personagens/eve/personagem.tres
-Eve,,Eve,Eve,assets/personagens/eve/personagem.tres
-"Fuzil de impacto. O melhor tempo para matar do arsenal, para quem atira em rajadas curtas.",,"Impact rifle. The best time-to-kill in the arsenal, for those who fire short bursts.","Fusil de impacto. El mejor tiempo para matar del arsenal, para quien dispara ráfagas cortas.",resources/weapons/ak74.tres
-"Fuzil padrão. Referência do arsenal: nada excepcional, e esse é o ponto.",,"Standard rifle. The arsenal's reference: nothing exceptional, and that's the point.","Fusil estándar. La referencia del arsenal: nada excepcional, y esa es la idea.",resources/weapons/ar15.tres
-"O AR-15 8 bit: cadência mais alta e tiro mais junto, dano um pouco menor. Pintado em pixel, como nos jogos de antigamente.",,"The 8-bit AR-15: higher fire rate and tighter shots, slightly less damage. Painted in pixels, like the games of old.","El AR-15 8 bit: más cadencia y disparos más juntos, un poco menos de daño. Pintado en píxeles, como los juegos de antes.",resources/weapons/ar15_8bit.tres
-"O AR-15 de diamante: o tiro mais preciso e a maior cadência do arsenal, pente de 42 e recarga rápida. Facetas de cristal que brilham.",,"The diamond AR-15: the most accurate shot and the highest fire rate in the arsenal, 42-round magazine and fast reload. Glittering crystal facets.","El AR-15 de diamante: el disparo más preciso y la mayor cadencia del arsenal, cargador de 42 y recarga rápida. Facetas de cristal que brillan.",resources/weapons/ar15_diamante.tres
-"O AR-15 de lava: um pouco mais de dano por tiro, um pouco menos de cadência. Rocha escura com lava acesa nas rachaduras.",,"The lava AR-15: a bit more damage per shot, a bit less fire rate. Dark rock with glowing lava in the cracks.","El AR-15 de lava: un poco más de daño por disparo, un poco menos de cadencia. Roca oscura con lava encendida en las grietas.",resources/weapons/ar15_lava.tres
-"O AR-15 de ouro: o mais forte por tiro do arsenal, pente de 40, recarga rápida e o recuo mais domado. Ouro inteiro, polido e gravado.",,"The gold AR-15: the strongest per shot in the arsenal, 40-round magazine, fast reload and the tamest recoil. Solid gold, polished and engraved.","El AR-15 de oro: el más fuerte por disparo del arsenal, cargador de 40, recarga rápida y el retroceso más domado. Oro macizo, pulido y grabado.",resources/weapons/ar15_ouro.tres
-"O AR-15 no limite. Um pouco mais de dano, cadência e pente, e o recuo mais domado.",,"The AR-15 at its limit. A bit more damage, fire rate and magazine, and the tamest recoil.","El AR-15 al límite. Un poco más de daño, cadencia y cargador, y el retroceso más domado.",resources/weapons/ar15_ultimate.tres
-"Pistola padrão. Sete tiros pesados: dois no corpo resolvem, e o coice cobra cada um.",,"Standard pistol. Seven heavy shots: two to the body do it, and the kick charges for each one.","Pistola estándar. Siete disparos pesados: dos al cuerpo bastan, y el culatazo cobra cada uno.",resources/weapons/deagle.tres
-Carabina de assalto. Cadência alta e recuo dócil; perde um pouco de dano na distância.,,Assault carbine. High fire rate and gentle recoil; loses a little damage at range.,Carabina de asalto. Cadencia alta y retroceso dócil; pierde un poco de daño a distancia.,resources/weapons/m4a4.tres
-"A arma pesada: fuzil de batalha 7,62. Tiro lento e forte, pente de 20, lenta para andar e recarregar.",,"The heavy weapon: 7.62 battle rifle. Slow, strong shots, 20-round magazine, slow to move and reload.","El arma pesada: fusil de batalla 7,62. Disparo lento y fuerte, cargador de 20, lenta para moverse y recargar.",resources/weapons/scar.tres
-"Fuzil de precisão semiautomático, com luneta. Dois tiros no corpo, um na cabeça; sem a mira não acerta nada.",,"Semi-automatic sniper rifle with a scope. Two shots to the body, one to the head; without the scope it hits nothing.","Fusil de precisión semiautomático, con mira telescópica. Dos disparos al cuerpo, uno a la cabeza; sin la mira no acierta nada.",resources/weapons/svd.tres
 "A granada explosiva, em basalto com lava acesa nas rachaduras.",,"The explosive grenade, in basalt with glowing lava in the cracks.","La granada explosiva, en basalto con lava encendida en las grietas.",scripts/combat/Arsenal.cs
 "A granada explosiva, em fibra de carbono com faixa vermelha.",,"The explosive grenade, in carbon fiber with a red stripe.","La granada explosiva, en fibra de carbono con franja roja.",scripts/combat/Arsenal.cs
 "A granada explosiva, em ouro gravado.",,"The explosive grenade, in engraved gold.","La granada explosiva, en oro grabado.",scripts/combat/Arsenal.cs
 "A granada explosiva, em placas pretas com as juntas acesas em ciano.",,"The explosive grenade, in black plates with cyan-lit seams.","La granada explosiva, en placas negras con las juntas encendidas en cian.",scripts/combat/Arsenal.cs
 Explosiva. Mata de perto e fere até a borda do raio; cai onde a mira aponta.,,Explosive. Kills up close and wounds out to the edge of the blast; lands where you aim.,Explosiva. Mata de cerca y hiere hasta el borde del radio; cae donde apunta la mira.,scripts/combat/Arsenal.cs
-Granada,,Grenade,Granada,scripts/combat/Arsenal.cs
 Granada Carbono,,Carbon Grenade,Granada Carbono,scripts/combat/Arsenal.cs
 Granada Magma,,Magma Grenade,Granada Magma,scripts/combat/Arsenal.cs
 Granada Neon,,Neon Grenade,Granada Neón,scripts/combat/Arsenal.cs
 Granada Ouro,,Gold Grenade,Granada Oro,scripts/combat/Arsenal.cs
 Human,,Human,Human,scripts/combat/HeadHitbox.cs
-Skeleton3D,,Skeleton3D,Skeleton3D,scripts/combat/HeadHitbox.cs
 Este item não pode ir no conjunto padrão,,This item can't go in the default loadout,Este objeto no puede ir en el equipo predeterminado,scripts/combat/LoadoutSet.cs
 Item fora do inventário,,Item not in inventory,Objeto fuera del inventario,scripts/combat/LoadoutSet.cs
 Item repetido no mesmo conjunto,,Item repeated in the same loadout,Objeto repetido en el mismo equipo,scripts/combat/LoadoutSet.cs
@@ -96,7 +81,9 @@ na faca,,with the knife,con cuchillo,scripts/core/KillFeed.cs
 por {0} {1}{2},,by {0} {1}{2},por {0} {1}{2},scripts/core/KillFeed.cs
 Queda,,Fall,Caída,scripts/core/KillFeed.cs
 SINDICATO,,SYNDICATE,SINDICATO,scripts/core/KillFeed.cs
+Sindicato,,Syndicate,Sindicato,scripts/core/KillFeed.cs
 VANGUARDA,,VANGUARD,VANGUARDIA,scripts/core/KillFeed.cs
+Vanguarda,,Vanguard,Vanguardia,scripts/core/KillFeed.cs
 DOUBLE KILL,,DOUBLE KILL,DOUBLE KILL,scripts/core/KillStory.cs
 HEPTA KILL,,HEPTA KILL,HEPTA KILL,scripts/core/KillStory.cs
 HEXA KILL,,HEXA KILL,HEXA KILL,scripts/core/KillStory.cs
@@ -104,6 +91,7 @@ OCTA KILL,,OCTA KILL,OCTA KILL,scripts/core/KillStory.cs
 PENTA KILL,,PENTA KILL,PENTA KILL,scripts/core/KillStory.cs
 QUADRA KILL,,QUADRA KILL,QUADRA KILL,scripts/core/KillStory.cs
 TRIPLE KILL,,TRIPLE KILL,TRIPLE KILL,scripts/core/KillStory.cs
+../Bots,,,,scripts/core/MatchSetup.cs
 "Bots, só humanos",,"Bots, humans only","Bots, solo humanos",scripts/core/PlayMode.cs
 "Bots, só lobos",,"Bots, wolves only","Bots, solo lobos",scripts/core/PlayMode.cs
 Caçar humanos,,Hunt humans,Cazar humanos,scripts/core/PlayMode.cs
@@ -113,6 +101,8 @@ Caçar lobos,,Hunt wolves,Cazar lobos,scripts/core/PlayMode.cs
 "Com bots nos times, todos lobos.",,"Bots on both teams, everyone's a wolf.","Con bots en los equipos, todos lobos.",scripts/core/PlayMode.cs
 Com bots: Vanguarda de humano contra Sindicato de lobo.,,With bots: human Vanguard against wolf Syndicate.,Con bots: Vanguardia humana contra Sindicato lobo.,scripts/core/PlayMode.cs
 Com bots: Vanguarda de lobo contra Sindicato de humano.,,With bots: wolf Vanguard against human Syndicate.,Con bots: Vanguardia lobo contra Sindicato humano.,scripts/core/PlayMode.cs
+Contra bots,,Against bots,Contra bots,scripts/core/PlayMode.cs
+humano e lobo,,human and wolf,humano y lobo,scripts/core/PlayMode.cs
 Humano e lobo: cada um transforma quando quiser.,,Human and wolf: each one transforms whenever they want.,Humano y lobo: cada uno se transforma cuando quiere.,scripts/core/PlayMode.cs
 Humanos × Lobos,,Humans × Wolves,Humanos × Lobos,scripts/core/PlayMode.cs
 Livre,,Free,Libre,scripts/core/PlayMode.cs
@@ -147,14 +137,17 @@ Brasa,,Ember,Brasa,scripts/core/RoomConfig.cs
 Caçada,,Hunt,Cacería,scripts/core/RoomConfig.cs
 Cinza,,Ash,Ceniza,scripts/core/RoomConfig.cs
 Corvo,,Raven,Cuervo,scripts/core/RoomConfig.cs
+Difíceis,,Hard,Difíciles,scripts/core/RoomConfig.cs
 Dominação,,Domination,Dominación,scripts/core/RoomConfig.cs
 Equipe,,Team,Equipo,scripts/core/RoomConfig.cs
 Faísca,,Spark,Chispa,scripts/core/RoomConfig.cs
 Ferrugem,,Rust,Óxido,scripts/core/RoomConfig.cs
+Fáceis,,Easy,Fáciles,scripts/core/RoomConfig.cs
 Garoa,,Drizzle,Llovizna,scripts/core/RoomConfig.cs
 Granito,,Granite,Granito,scripts/core/RoomConfig.cs
 Lâmina,,Blade,Hoja,scripts/core/RoomConfig.cs
 Mata-mata,,Deathmatch,Todos contra todos,scripts/core/RoomConfig.cs
+Médios,,Medium,Medios,scripts/core/RoomConfig.cs
 Neblina,,Fog,Niebla,scripts/core/RoomConfig.cs
 Pólvora,,Gunpowder,Pólvora,scripts/core/RoomConfig.cs
 Raposa,,Fox,Zorro,scripts/core/RoomConfig.cs
@@ -164,6 +157,7 @@ Sobrevivência,,Survival,Supervivencia,scripts/core/RoomConfig.cs
 Sombra,,Shadow,Sombra,scripts/core/RoomConfig.cs
 Só faca,,Knife only,Solo cuchillo,scripts/core/RoomConfig.cs
 Só pistolas,,Pistols only,Solo pistolas,scripts/core/RoomConfig.cs
+Todas,,All,Todas,scripts/core/RoomConfig.cs
 Tormenta,,Storm,Tormenta,scripts/core/RoomConfig.cs
 Trovão,,Thunder,Trueno,scripts/core/RoomConfig.cs
 Urtiga,,Nettle,Ortiga,scripts/core/RoomConfig.cs
@@ -198,6 +192,7 @@ TAA (mais lisa),,TAA (smoothest),TAA (la más suave),scripts/core/Settings.cs
 Ultra,,Ultra,Ultra,scripts/core/Settings.cs
 Verde,,Green,Verde,scripts/core/Settings.cs
 Vermelho,,Red,Rojo,scripts/core/Settings.cs
+Bruto,,Brute,Bruto,scripts/forms/WolfBreed.cs
 Abrir Online,,Open Online,Abrir En línea,scripts/lobby/AccountGate.cs
 "Carregando a sua conta… Se o servidor não responder, confira a conexão em Online.",,"Loading your account… If the server doesn't answer, check the connection in Online.","Cargando tu cuenta… Si el servidor no responde, revisa la conexión en En línea.",scripts/lobby/AccountGate.cs
 Entrar na conta,,Sign in,Entrar en la cuenta,scripts/lobby/AccountGate.cs
@@ -241,6 +236,7 @@ Escolha a secundária,,Choose the secondary,Elige la secundaria,scripts/lobby/In
 Escolha as melhorias,,Choose the upgrades,Elige las mejoras,scripts/lobby/InventoryScreen.cs
 Escolha o personagem,,Choose the character,Elige el personaje,scripts/lobby/InventoryScreen.cs
 Fixo em todo conjunto,,Fixed in every loadout,Fijo en todo equipo,scripts/lobby/InventoryScreen.cs
+Foto em uso,,Photo in use,Foto en uso,scripts/lobby/InventoryScreen.cs
 Granada 2,,Grenade 2,Granada 2,scripts/lobby/InventoryScreen.cs
 Grátis,,Free,Gratis,scripts/lobby/InventoryScreen.cs
 Grátis  ·  +50 WP,,Free  ·  +50 WP,Gratis  ·  +50 WP,scripts/lobby/InventoryScreen.cs
@@ -274,11 +270,11 @@ Seus conjuntos,,Your loadouts,Tus equipos,scripts/lobby/InventoryScreen.cs
 Seus personagens,,Your characters,Tus personajes,scripts/lobby/InventoryScreen.cs
 Seus serviços,,Your services,Tus servicios,scripts/lobby/InventoryScreen.cs
 Tirar,,Remove,Quitar,scripts/lobby/InventoryScreen.cs
-Todas,,All,Todas,scripts/lobby/InventoryScreen.cs
 Todas as suas armas,,All your weapons,Todas tus armas,scripts/lobby/InventoryScreen.cs
 Todos,,All,Todos,scripts/lobby/InventoryScreen.cs
 "Tudo do lobo se compra com Presas, nunca com dinheiro.",,"Everything for the wolf is bought with Fangs, never with money.","Todo lo del lobo se compra con Colmillos, nunca con dinero.",scripts/lobby/InventoryScreen.cs
 Usar,,Use,Usar,scripts/lobby/InventoryScreen.cs
+Usar como foto,,Use as photo,Usar como foto,scripts/lobby/InventoryScreen.cs
 Usar esta classe,,Use this class,Usar esta clase,scripts/lobby/InventoryScreen.cs
 Usar {0},,Use {0},Usar {0},scripts/lobby/InventoryScreen.cs
 Vazio,,Empty,Vacío,scripts/lobby/InventoryScreen.cs
@@ -286,6 +282,7 @@ Ver itens para {0},,See items for {0},Ver objetos para {0},scripts/lobby/Invento
 WP {0},,WP {0},WP {0},scripts/lobby/InventoryScreen.cs
 WP é o que você gasta cada vez que renasce com este conjunto. Ganha-se WP jogando a partida.,,WP is what you spend each time you respawn with this loadout. You earn WP by playing the match.,WP es lo que gastas cada vez que reapareces con este equipo. El WP se gana jugando la partida.,scripts/lobby/InventoryScreen.cs
 {0} descartada,,{0} discarded,{0} descartada,scripts/lobby/InventoryScreen.cs
+{0} em uso,,{0} in use,{0} en uso,scripts/lobby/InventoryScreen.cs
 {0} em uso {1},,{0} in use {1},{0} en uso {1},scripts/lobby/InventoryScreen.cs
 {0} equipada,,{0} equipped,{0} equipada,scripts/lobby/InventoryScreen.cs
 {0} equipada em {1},,{0} equipped in {1},{0} equipada en {1},scripts/lobby/InventoryScreen.cs
@@ -315,7 +312,6 @@ Escudo,,Shield,Escudo,scripts/lobby/ItemDetail.cs
 Escudo máximo,,Max shield,Escudo máximo,scripts/lobby/ItemDetail.cs
 Exige a patente {0},,Requires rank {0},Requiere el rango {0},scripts/lobby/ItemDetail.cs
 Garra,,Claws,Garra,scripts/lobby/ItemDetail.cs
-humano e lobo,,human and wolf,humano y lobo,scripts/lobby/ItemDetail.cs
 Mobilidade,,Mobility,Movilidad,scripts/lobby/ItemDetail.cs
 Os dois,,Both,Ambos,scripts/lobby/ItemDetail.cs
 Pente,,Magazine,Cargador,scripts/lobby/ItemDetail.cs
@@ -332,6 +328,7 @@ Vida,,Health,Vida,scripts/lobby/ItemDetail.cs
 {0:0} por min,,{0:0} per min,{0:0} por min,scripts/lobby/ItemDetail.cs
 1 uso,,1 use,1 uso,scripts/lobby/ItemInfo.cs
 Destrava em {0},,Unlocks at {0},Se desbloquea en {0},scripts/lobby/ItemInfo.cs
+Foto de perfil,,Profile photo,Foto de perfil,scripts/lobby/ItemInfo.cs
 Melhoria,,Upgrade,Mejora,scripts/lobby/ItemInfo.cs
 Permanente,,Permanent,Permanente,scripts/lobby/ItemInfo.cs
 Serviço,,Service,Servicio,scripts/lobby/ItemInfo.cs
@@ -396,7 +393,6 @@ título: {0},,title: {0},título: {0},scripts/lobby/MissionsScreen.cs
 {0} por {1} dias,,{0} for {1} days,{0} por {1} días,scripts/lobby/MissionsScreen.cs
 {0} pronta(s) para resgatar,,{0} ready to claim,{0} lista(s) para reclamar,scripts/lobby/MissionsScreen.cs
 Cancelar,,Cancel,Cancelar,scripts/lobby/ModePicker.cs
-Contra bots,,Against bots,Contra bots,scripts/lobby/ModePicker.cs
 Contra jogadores,,Against players,Contra jugadores,scripts/lobby/ModePicker.cs
 A sua sessão venceu. Entre de novo.,,Your session expired. Sign in again.,Tu sesión caducó. Vuelve a entrar.,scripts/lobby/OnlineScreen.cs
 Atualizar,,Refresh,Actualizar,scripts/lobby/OnlineScreen.cs
@@ -489,6 +485,7 @@ Vitórias,,Wins,Victorias,scripts/lobby/ProfileScreen.cs
 {0} como humano,,{0} as human,{0} como humano,scripts/lobby/ProfileScreen.cs
 {0} como lobo,,{0} as wolf,{0} como lobo,scripts/lobby/ProfileScreen.cs
 {0} h {1:00} min,,{0} h {1:00} min,{0} h {1:00} min,scripts/lobby/ProfileScreen.cs
+{0} · {1} Presas na loja,,{0} · {1} Fangs in the shop,{0} · {1} Colmillos en la tienda,scripts/lobby/ProfileScreen.cs
 +  Adicionar bot,,+  Add bot,+  Añadir bot,scripts/lobby/RoomScreen.cs
 4 a 8 caracteres. Vale quando houver multijogador.,,4 to 8 characters. Applies once there's multiplayer.,De 4 a 8 caracteres. Vale cuando haya multijugador.,scripts/lobby/RoomScreen.cs
 A partida está em andamento,,The match is in progress,La partida está en curso,scripts/lobby/RoomScreen.cs
@@ -498,13 +495,11 @@ Abates / mortes,,Kills / deaths,Bajas / muertes,scripts/lobby/RoomScreen.cs
 Aguardando,,Waiting,Esperando,scripts/lobby/RoomScreen.cs
 Arma,,Weapon,Arma,scripts/lobby/RoomScreen.cs
 Bare,,Bare,Bare,scripts/lobby/RoomScreen.cs
-Bot,,Bot,Bot,scripts/lobby/RoomScreen.cs
 Bots,,Bots,Bots,scripts/lobby/RoomScreen.cs
 Canal local,,Local channel,Canal local,scripts/lobby/RoomScreen.cs
 Convidar,,Invite,Invitar,scripts/lobby/RoomScreen.cs
 Convidar amigos exige servidor,,Inviting friends needs a server,Invitar amigos requiere servidor,scripts/lobby/RoomScreen.cs
 Dificuldade,,Difficulty,Dificultad,scripts/lobby/RoomScreen.cs
-Difíceis,,Hard,Difíciles,scripts/lobby/RoomScreen.cs
 difíceis,,hard,difíciles,scripts/lobby/RoomScreen.cs
 Difícil,,Hard,Difícil,scripts/lobby/RoomScreen.cs
 Dono da sala,,Room owner,Dueño de la sala,scripts/lobby/RoomScreen.cs
@@ -518,7 +513,6 @@ Falta alguém marcar que está pronto,,Someone still needs to ready up,Falta que
 Falta alguém pronto num dos times,,Someone on one of the teams isn't ready,Falta alguien listo en uno de los equipos,scripts/lobby/RoomScreen.cs
 Fechar,,Close,Cerrar,scripts/lobby/RoomScreen.cs
 Fogo amigo,,Friendly fire,Fuego amigo,scripts/lobby/RoomScreen.cs
-Fáceis,,Easy,Fáciles,scripts/lobby/RoomScreen.cs
 fáceis,,easy,fáciles,scripts/lobby/RoomScreen.cs
 Fácil,,Easy,Fácil,scripts/lobby/RoomScreen.cs
 Iniciar partida,,Start match,Iniciar partida,scripts/lobby/RoomScreen.cs
@@ -529,7 +523,6 @@ Mapa,,Map,Mapa,scripts/lobby/RoomScreen.cs
 Marcar pronto,,Ready up,Marcar listo,scripts/lobby/RoomScreen.cs
 Modo,,Mode,Modo,scripts/lobby/RoomScreen.cs
 Médio,,Medium,Medio,scripts/lobby/RoomScreen.cs
-Médios,,Medium,Medios,scripts/lobby/RoomScreen.cs
 médios,,medium,medios,scripts/lobby/RoomScreen.cs
 Nível,,Level,Nivel,scripts/lobby/RoomScreen.cs
 Nível {0},,Level {0},Nivel {0},scripts/lobby/RoomScreen.cs
@@ -587,6 +580,7 @@ Entrar na conta para comprar,,Sign in to buy,Entra en la cuenta para comprar,scr
 Exige {0},,Requires {0},Requiere {0},scripts/lobby/ShopScreen.cs
 Facas,,Knives,Cuchillos,scripts/lobby/ShopScreen.cs
 Faltam {0} Presas,,{0} Fangs short,Faltan {0} Colmillos,scripts/lobby/ShopScreen.cs
+Fotos de perfil,,Profile photos,Fotos de perfil,scripts/lobby/ShopScreen.cs
 Granadas,,Grenades,Granadas,scripts/lobby/ShopScreen.cs
 Já é permanente,,Already permanent,Ya es permanente,scripts/lobby/ShopScreen.cs
 "Já é sua. Escolha no inventário, aba Lobo.",,"It's already yours. Pick it in the inventory, Wolf tab.","Ya es tuya. Elígela en el inventario, pestaña Lobo.",scripts/lobby/ShopScreen.cs
@@ -609,6 +603,32 @@ Vem com todo perfil.,,Comes with every profile.,Viene con todo perfil.,scripts/l
 Você tem,,You have,Tienes,scripts/lobby/ShopScreen.cs
 {0:0} Presas por dia,,{0:0} Fangs per day,{0:0} Colmillos por día,scripts/lobby/ShopScreen.cs
 {0} itens,,{0} items,{0} objetos,scripts/lobby/ShopScreen.cs
+Barut,,Barut,Barut,scripts/meta/Avatars.cs
+"Do Sindicato. Jaqueta vermelha, colete de placas e o lobo vermelho dele, com o neon laranja nas garras e no rugido. É o personagem do time.",,"From the Syndicate. Red jacket, plate vest and his red wolf, with orange neon on the claws and the roar. He's the team's character.","Del Sindicato. Chaqueta roja, chaleco de placas y su lobo rojo, con neón naranja en las garras y en el rugido. Es el personaje del equipo.",assets/personagens/barut/personagem.tres
+"Da Vanguarda. Colete escuro, braçadeiras de aço e o lobo azul dela, com o neon azul nas garras e no rugido. É a personagem do time.",,"From the Vanguard. Dark vest, steel bracers and her blue wolf, with blue neon on the claws and the roar. She's the team's character.","De la Vanguardia. Chaleco oscuro, brazales de acero y su lobo azul, con neón azul en las garras y en el rugido. Es la personaje del equipo.",assets/personagens/eve/personagem.tres
+Dragão,,Dragon,Dragón,scripts/meta/Avatars.cs
+Eve,,Eve,Eve,scripts/meta/Avatars.cs
+"Fuzil de impacto. O melhor tempo para matar do arsenal, para quem atira em rajadas curtas.",,"Impact rifle. The best time-to-kill in the arsenal, for those who fire short bursts.","Fusil de impacto. El mejor tiempo para matar del arsenal, para quien dispara ráfagas cortas.",resources/weapons/ak74.tres
+"Fuzil padrão. Referência do arsenal: nada excepcional, e esse é o ponto.",,"Standard rifle. The arsenal's reference: nothing exceptional, and that's the point.","Fusil estándar. La referencia del arsenal: nada excepcional, y esa es la idea.",resources/weapons/ar15.tres
+"O AR-15 8 bit: cadência mais alta e tiro mais junto, dano um pouco menor. Pintado em pixel, como nos jogos de antigamente.",,"The 8-bit AR-15: higher fire rate and tighter shots, slightly less damage. Painted in pixels, like the games of old.","El AR-15 8 bit: más cadencia y disparos más juntos, un poco menos de daño. Pintado en píxeles, como los juegos de antes.",resources/weapons/ar15_8bit.tres
+"O AR-15 de diamante: o tiro mais preciso e a maior cadência do arsenal, pente de 42 e recarga rápida. Facetas de cristal que brilham.",,"The diamond AR-15: the most accurate shot and the highest fire rate in the arsenal, 42-round magazine and fast reload. Glittering crystal facets.","El AR-15 de diamante: el disparo más preciso y la mayor cadencia del arsenal, cargador de 42 y recarga rápida. Facetas de cristal que brillan.",resources/weapons/ar15_diamante.tres
+"O AR-15 de lava: um pouco mais de dano por tiro, um pouco menos de cadência. Rocha escura com lava acesa nas rachaduras.",,"The lava AR-15: a bit more damage per shot, a bit less fire rate. Dark rock with glowing lava in the cracks.","El AR-15 de lava: un poco más de daño por disparo, un poco menos de cadencia. Roca oscura con lava encendida en las grietas.",resources/weapons/ar15_lava.tres
+"O AR-15 de ouro: o mais forte por tiro do arsenal, pente de 40, recarga rápida e o recuo mais domado. Ouro inteiro, polido e gravado.",,"The gold AR-15: the strongest per shot in the arsenal, 40-round magazine, fast reload and the tamest recoil. Solid gold, polished and engraved.","El AR-15 de oro: el más fuerte por disparo del arsenal, cargador de 40, recarga rápida y el retroceso más domado. Oro macizo, pulido y grabado.",resources/weapons/ar15_ouro.tres
+"O AR-15 no limite. Um pouco mais de dano, cadência e pente, e o recuo mais domado.",,"The AR-15 at its limit. A bit more damage, fire rate and magazine, and the tamest recoil.","El AR-15 al límite. Un poco más de daño, cadencia y cargador, y el retroceso más domado.",resources/weapons/ar15_ultimate.tres
+"Pistola padrão. Sete tiros pesados: dois no corpo resolvem, e o coice cobra cada um.",,"Standard pistol. Seven heavy shots: two to the body do it, and the kick charges for each one.","Pistola estándar. Siete disparos pesados: dos al cuerpo bastan, y el culatazo cobra cada uno.",resources/weapons/deagle.tres
+Carabina de assalto. Cadência alta e recuo dócil; perde um pouco de dano na distância.,,Assault carbine. High fire rate and gentle recoil; loses a little damage at range.,Carabina de asalto. Cadencia alta y retroceso dócil; pierde un poco de daño a distancia.,resources/weapons/m4a4.tres
+"A arma pesada: fuzil de batalha 7,62. Tiro lento e forte, pente de 20, lenta para andar e recarregar.",,"The heavy weapon: 7.62 battle rifle. Slow, strong shots, 20-round magazine, slow to move and reload.","El arma pesada: fusil de batalla 7,62. Disparo lento y fuerte, cargador de 20, lenta para moverse y recargar.",resources/weapons/scar.tres
+"Fuzil de precisão semiautomático, com luneta. Dois tiros no corpo, um na cabeça; sem a mira não acerta nada.",,"Semi-automatic sniper rifle with a scope. Two shots to the body, one to the head; without the scope it hits nothing.","Fusil de precisión semiautomático, con mira telescópica. Dos disparos al cuerpo, uno a la cabeza; sin la mira no acierta nada.",resources/weapons/svd.tres
+Fera do Barut,,Barut's Beast,Bestia de Barut,scripts/meta/Avatars.cs
+Fênix,,Phoenix,Fénix,scripts/meta/Avatars.cs
+Galáxia,,Galaxy,Galaxia,scripts/meta/Avatars.cs
+Lava,,Lava,Lava,scripts/meta/Avatars.cs
+Lâmina Damasco,,Damascus Blade,Hoja Damasco,scripts/meta/Avatars.cs
+Magma,,Magma,Magma,scripts/meta/Avatars.cs
+Neon,,Neon,Neón,scripts/meta/Avatars.cs
+Obsidiana,,Obsidian,Obsidiana,scripts/meta/Avatars.cs
+Ouro Puro,,Pure Gold,Oro Puro,scripts/meta/Avatars.cs
+Tigre,,Tiger,Tigre,scripts/meta/Avatars.cs
 +10% de escudo máximo do lobo.,,+10% wolf max shield.,+10% de escudo máximo del lobo.,scripts/meta/Catalog.cs
 +5% de velocidade na forma de lobo.,,+5% speed in wolf form.,+5% de velocidad en forma de lobo.,scripts/meta/Catalog.cs
 +6% de dano da garra.,,+6% claw damage.,+6% de daño de garra.,scripts/meta/Catalog.cs
@@ -619,6 +639,16 @@ Você tem,,You have,Tienes,scripts/lobby/ShopScreen.cs
 30 dias,,30 days,30 días,scripts/meta/Catalog.cs
 7 dias,,7 days,7 días,scripts/meta/Catalog.cs
 90 dias,,90 days,90 días,scripts/meta/Catalog.cs
+A AK-74 Tigre no seu retrato.,,The AK-74 Tiger on your portrait.,La AK-74 Tigre en tu retrato.,scripts/meta/Catalog.cs
+A AR-15 Lava no seu retrato.,,The AR-15 Lava on your portrait.,La AR-15 Lava en tu retrato.,scripts/meta/Catalog.cs
+A Desert Eagle Fênix no seu retrato.,,The Desert Eagle Phoenix on your portrait.,La Desert Eagle Fénix en tu retrato.,scripts/meta/Catalog.cs
+A faca Damasco no seu retrato.,,The Damascus Knife on your portrait.,El cuchillo Damasco en tu retrato.,scripts/meta/Catalog.cs
+A faca Obsidiana no seu retrato.,,The Obsidian Knife on your portrait.,El cuchillo Obsidiana en tu retrato.,scripts/meta/Catalog.cs
+A granada de ouro no seu retrato.,,The gold grenade on your portrait.,La granada de oro en tu retrato.,scripts/meta/Catalog.cs
+A granada Magma no seu retrato.,,The Magma grenade on your portrait.,La granada Magma en tu retrato.,scripts/meta/Catalog.cs
+A granada Neon no seu retrato.,,The Neon grenade on your portrait.,La granada Neón en tu retrato.,scripts/meta/Catalog.cs
+A M4A4 Dragão no seu retrato.,,The M4A4 Dragon on your portrait.,La M4A4 Dragón en tu retrato.,scripts/meta/Catalog.cs
+A SCAR-H Galáxia no seu retrato.,,The SCAR-H Galaxy on your portrait.,La SCAR-H Galaxia en tu retrato.,scripts/meta/Catalog.cs
 "A secundária de todo conjunto. Sete tiros que pesam: dois no corpo resolvem, mas o coice cobra cada um.",,"Every loadout's secondary. Seven shots that hit hard: two to the body do it, but the kick charges for each one.","La secundaria de todo conjunto. Siete disparos que pesan: dos al cuerpo bastan, pero el culatazo cobra cada uno.",scripts/meta/Catalog.cs
 AK-74,,AK-74,AK-74,scripts/meta/Catalog.cs
 AK-74 Imperial,,AK-74 Imperial,AK-74 Imperial,scripts/meta/Catalog.cs
@@ -631,7 +661,6 @@ AR-15 Lava,,AR-15 Lava,AR-15 Lava,scripts/meta/Catalog.cs
 AR-15 Ouro,,AR-15 Gold,AR-15 Oro,scripts/meta/Catalog.cs
 AR-15 Ultimate,,AR-15 Ultimate,AR-15 Ultimate,scripts/meta/Catalog.cs
 Arma pesada,,Heavy weapon,Arma pesada,scripts/meta/Catalog.cs
-Bruto,,Brute,Bruto,scripts/meta/Catalog.cs
 "Cadência mais alta e tiro mais junto, com um pouco menos de dano. Pintado em pixel, como nos jogos de antigamente.",,"Higher fire rate and tighter grouping, with a little less damage. Painted in pixels, like the games of old.","Mayor cadencia y disparos más agrupados, con un poco menos de daño. Pintada en píxeles, como en los juegos de antes.",scripts/meta/Catalog.cs
 Caçador Noturno,,Night Hunter,Cazador Nocturno,scripts/meta/Catalog.cs
 Classe de lobo,,Wolf class,Clase de lobo,scripts/meta/Catalog.cs
@@ -642,6 +671,16 @@ Desert Eagle Fênix,,Desert Eagle Phoenix,Desert Eagle Fénix,scripts/meta/Catal
 "Explosiva: mata de perto e fere até a borda do raio. Cai onde a mira aponta. Todo mundo tem, e já vem no conjunto padrão.",,"Explosive: kills up close and wounds out to the edge of the blast. Lands where you aim. Everyone has it, and it comes in the default loadout.","Explosiva: mata de cerca y hiere hasta el borde del radio. Cae donde apunta la mira. Todos la tienen, y ya viene en el equipo predeterminado.",scripts/meta/Catalog.cs
 Faca Damasco,,Damascus Knife,Cuchillo Damasco,scripts/meta/Catalog.cs
 Faca Obsidiana,,Obsidian Knife,Cuchillo Obsidiana,scripts/meta/Catalog.cs
+Foto Dragão,,Dragon Photo,Foto Dragón,scripts/meta/Catalog.cs
+Foto Fênix,,Phoenix Photo,Foto Fénix,scripts/meta/Catalog.cs
+Foto Galáxia,,Galaxy Photo,Foto Galaxia,scripts/meta/Catalog.cs
+Foto Lava,,Lava Photo,Foto Lava,scripts/meta/Catalog.cs
+Foto Lâmina Damasco,,Damascus Blade Photo,Foto Hoja Damasco,scripts/meta/Catalog.cs
+Foto Magma,,Magma Photo,Foto Magma,scripts/meta/Catalog.cs
+Foto Neon,,Neon Photo,Foto Neón,scripts/meta/Catalog.cs
+Foto Obsidiana,,Obsidian Photo,Foto Obsidiana,scripts/meta/Catalog.cs
+Foto Ouro Puro,,Pure Gold Photo,Foto Oro Puro,scripts/meta/Catalog.cs
+Foto Tigre,,Tiger Photo,Foto Tigre,scripts/meta/Catalog.cs
 Fuzil de assalto,,Assault rifle,Fusil de asalto,scripts/meta/Catalog.cs
 "Fuzil de batalha 7,62: pente de 20, tiro lento e pesado. Segura um corredor de longe; de perto, perde para qualquer fuzil.",,"7.62 battle rifle: 20-round magazine, slow and heavy shots. Holds a corridor from afar; up close, it loses to any rifle.","Fusil de batalla 7,62: cargador de 20, disparo lento y pesado. Aguanta un pasillo de lejos; de cerca, pierde contra cualquier fusil.",scripts/meta/Catalog.cs
 Fuzil de impacto,,Impact rifle,Fusil de impacto,scripts/meta/Catalog.cs
@@ -683,7 +722,6 @@ SCAR-H Galáxia,,SCAR-H Galaxy,SCAR-H Galaxia,scripts/meta/Catalog.cs
 SCAR-H Ártico,,SCAR-H Arctic,SCAR-H Ártico,scripts/meta/Catalog.cs
 "Semiautomático com luneta. Dois no corpo ou um na cabeça; fora da mira, a bala vai para qualquer lado.",,"Semi-automatic with a scope. Two to the body or one to the head; off the scope, the bullet goes anywhere.","Semiautomático con mira telescópica. Dos al cuerpo o uno a la cabeza; sin la mira, la bala va a cualquier lado.",scripts/meta/Catalog.cs
 Silenciosa: não faz ruído para os bots. A arma de quem quer o abate sem entregar a posição.,,Silent: makes no noise for the bots. The weapon for whoever wants the kill without giving away their position.,Silenciosa: no hace ruido para los bots. El arma de quien quiere la baja sin delatar su posición.,scripts/meta/Catalog.cs
-Sindicato,,Syndicate,Sindicato,scripts/meta/Catalog.cs
 SVD Carbono,,SVD Carbon,SVD Carbono,scripts/meta/Catalog.cs
 SVD Dragunov,,SVD Dragunov,SVD Dragunov,scripts/meta/Catalog.cs
 SVD Tempestade,,SVD Storm,SVD Tormenta,scripts/meta/Catalog.cs
@@ -691,7 +729,6 @@ Troca de nome,,Name Change,Cambio de nombre,scripts/meta/Catalog.cs
 Troca o seu nickname uma vez. O nome é fixo sem este item.,,Changes your nickname once. The name is fixed without this item.,Cambia tu apodo una vez. Sin este objeto el nombre es fijo.,scripts/meta/Catalog.cs
 Três tiros no corpo. Feita para rajadas de três a cinco: depois disso o cano vai para onde quer.,,Three shots to the body. Made for bursts of three to five: after that the barrel goes where it wants.,Tres disparos al cuerpo. Hecha para ráfagas de tres a cinco: después de eso el cañón va adonde quiere.,scripts/meta/Catalog.cs
 "Um pouco mais de dano por tiro, um pouco menos de cadência. Rocha escura com lava acesa nas rachaduras.",,"A bit more damage per shot, a bit less fire rate. Dark rock with lava glowing in the cracks.","Un poco más de daño por disparo, un poco menos de cadencia. Roca oscura con lava encendida en las grietas.",scripts/meta/Catalog.cs
-Vanguarda,,Vanguard,Vanguardia,scripts/meta/Catalog.cs
 "Velocidade e flanco: o lobo mais rápido e o pulo mais longo, com pouco escudo. Destrava em Batedor I.",,"Speed and flanking: the fastest wolf and the longest jump, with little shield. Unlocks at Scout I.","Velocidad y flanqueo: el lobo más rápido y el salto más largo, con poco escudo. Se desbloquea en Explorador I.",scripts/meta/Catalog.cs
 "Épica. A M4A4 mais rápida e mais junta no tiro, com pente de 32. Grafite com trilhas de circuito que acendem em ciano.",,"Epic. A faster, tighter-shooting M4A4 with a 32-round magazine. Graphite with circuit traces that glow cyan.","Épica. La M4A4 más rápida y más precisa, con cargador de 32. Grafito con pistas de circuito que brillan en cian.",scripts/meta/Catalog.cs
 Épica. Basalto com a lava acesa nas rachaduras e ferragem de ferro queimado. Só a aparência muda.,,Epic. Basalt with glowing lava in the cracks and burnt-iron hardware. Only the look changes.,Épica. Basalto con la lava encendida en las grietas y herrajes de hierro quemado. Solo cambia la apariencia.,scripts/meta/Catalog.cs
@@ -860,6 +897,7 @@ Veterano,,Veteran,Veterano,scripts/meta/Missions.cs
 Abates ×{0},,Kills ×{0},Bajas ×{0},scripts/meta/Progression.cs
 Assistências ×{0},,Assists ×{0},Asistencias ×{0},scripts/meta/Progression.cs
 Bônus de evento,,Event bonus,Bonificación de evento,scripts/meta/Progression.cs
+Em chamas {0}:{1:00},,On fire {0}:{1:00},En llamas {0}:{1:00},scripts/meta/Progression.cs
 Empate,,Draw,Empate,scripts/meta/Progression.cs
 MVP da partida,,Match MVP,MVP de la partida,scripts/meta/Progression.cs
 Participação,,Participation,Participación,scripts/meta/Progression.cs
@@ -873,8 +911,18 @@ Ouro,,Gold,Oro,scripts/meta/Ranks.cs
 Platina,,Platinum,Platino,scripts/meta/Ranks.cs
 Prata,,Silver,Plata,scripts/meta/Ranks.cs
 Bot {0},,Bot {0},Bot {0},scripts/meta/RoomDirectory.cs
+If-None-Match,,,,scripts/net/Backend.cs
 O servidor respondeu {0}.,,The server answered {0}.,El servidor respondió {0}.,scripts/net/Backend.cs
 Sem resposta do servidor.,,No response from the server.,Sin respuesta del servidor.,scripts/net/Backend.cs
+arma que não estava na mão,,,,scripts/net/HitCheck.cs
+fora da mira,,,,scripts/net/HitCheck.cs
+longe demais para a arma,,,,scripts/net/HitCheck.cs
+mais dano por segundo que a arma dá,,,,scripts/net/HitCheck.cs
+o alvo não estava lá,,,,scripts/net/HitCheck.cs
+o juiz não aceita,,,,scripts/net/HitCheck.cs
+o tiro saiu de longe do corpo,,,,scripts/net/HitCheck.cs
+parede no caminho,,,,scripts/net/HitCheck.cs
+quem atirou estava morto ou fora do mundo,,,,scripts/net/HitCheck.cs
 A ligação com o servidor caiu.,,The connection to the server dropped.,Se cayó la conexión con el servidor.,scripts/net/LobbyLink.cs
 ALVO TRAVADO · TAB: VOLTAR AO CHÃO,,TARGET LOCKED · TAB: BACK TO GROUND,OBJETIVO FIJADO · TAB: VOLVER AL SUELO,scripts/ui/ChargeBar.cs
 CLIQUE NO ALVO · TAB: VOLTAR AO CHÃO,,CLICK THE TARGET · TAB: BACK TO GROUND,CLIC EN EL OBJETIVO · TAB: VOLVER AL SUELO,scripts/ui/ChargeBar.cs
@@ -970,7 +1018,9 @@ Segure Tab para ver o placar,,Hold Tab to see the scoreboard,Mantén Tab para ve
 VALENDO!,,GO!,¡YA!,scripts/ui/MatchHud.cs
 {0}  ·  {1}  ·  primeiro a {2}  ·  {3},,{0}  ·  {1}  ·  first to {2}  ·  {3},{0}  ·  {1}  ·  primero a {2}  ·  {3},scripts/ui/MatchHud.cs
 Destravado: ,,Unlocked: ,Desbloqueado: ,scripts/ui/PromotionOverlay.cs
-PROMOVIDO,,PROMOTED,ASCENDIDO,scripts/ui/PromotionOverlay.cs
+Display,,Display,Display,scripts/ui/PromotionOverlay.cs
+NOVA BORDA,,NEW FRAME,NUEVO MARCO,scripts/ui/PromotionOverlay.cs
+NOVA ESTRELA,,NEW STAR,NUEVA ESTRELLA,scripts/ui/PromotionOverlay.cs
 +{0} XP,,+{0} XP,+{0} XP,scripts/ui/ResultScreen.cs
 DERROTA,,DEFEAT,DERROTA,scripts/ui/ResultScreen.cs
 EMPATE,,DRAW,EMPATE,scripts/ui/ResultScreen.cs
@@ -1002,6 +1052,14 @@ JOGADOR,,PLAYER,JUGADOR,scripts/ui/Scoreboard.cs
 MORTES,,DEATHS,MUERTES,scripts/ui/Scoreboard.cs
 PING,,PING,PING,scripts/ui/Scoreboard.cs
 PONTOS,,POINTS,PUNTOS,scripts/ui/Scoreboard.cs
+ASSISTÊNCIAS,,ASSISTS,ASISTENCIAS,scripts/ui/TabBoard.cs
+EM CHAMAS,,ON FIRE,EN LLAMAS,scripts/ui/TabBoard.cs
+INIMIGOS,,ENEMIES,ENEMIGOS,scripts/ui/TabBoard.cs
+MELHOR SEQUÊNCIA,,BEST STREAK,MEJOR RACHA,scripts/ui/TabBoard.cs
+SEQUÊNCIA ×{0},,STREAK ×{0},RACHA ×{0},scripts/ui/TabBoard.cs
+SEU TIME,,YOUR TEAM,TU EQUIPO,scripts/ui/TabBoard.cs
+VS,,VS,VS,scripts/ui/TabBoard.cs
+Skeleton3D,,Skeleton3D,Skeleton3D,scripts/ui/ViewModel.Aim.cs
 Bolt,,Bolt,Bolt,scripts/ui/ViewModel.Rig.cs
 Grip,,Grip,Grip,scripts/ui/ViewModel.Rig.cs
 Magazine,,Magazine,Magazine,scripts/ui/ViewModel.Rig.cs
@@ -1054,6 +1112,7 @@ Dois toques no W e segure: 30% mais rápido.,,Double-tap W and hold: 30% faster.
 Equipe e clique para arremessar.,,Equip and click to throw.,Equipa y haz clic para lanzar.,scripts/ui/hud/Hud.Guide.cs
 Especial,,Special,Especial,scripts/ui/hud/Hud.Guide.cs
 Garrada,,Claw strike,Zarpazo,scripts/ui/hud/Hud.Guide.cs
+Granada,,Grenade,Granada,scripts/combat/Arsenal.cs
 Habilidades,,Abilities,Habilidades,scripts/ui/hud/Hud.Guide.cs
 Poder e movimento,,Power and movement,Poder y movimiento,scripts/ui/hud/Hud.Guide.cs
 Pule numa parede e segure W para correr por ela. Espaço salta da parede.,,Jump onto a wall and hold W to run along it. Space jumps off the wall.,Salta a una pared y mantén W para correr por ella. Espacio salta desde la pared.,scripts/ui/hud/Hud.Guide.cs
@@ -1080,14 +1139,14 @@ Munição: {0},,Ammo: {0},Munición: {0},scripts/ui/hud/Hud.cs
 Pegou: {0},,Picked up: {0},Recogiste: {0},scripts/ui/hud/Hud.cs
 Renasce em {0:0.0} s,,Respawn in {0:0.0} s,Reapareces en {0:0.0} s,scripts/ui/hud/Hud.cs
 Soltou: {0},,Dropped: {0},Soltaste: {0},scripts/ui/hud/Hud.cs
-Display,,Display,Display,scripts/ui/hud/KillBanner.cs
 ELIMINOU,,ELIMINATED,ELIMINÓ,scripts/ui/hud/KillBanner.cs
 na cabeça,,headshot,en la cabeza,scripts/ui/hud/KillBanner.cs
 Presas — ganhas jogando. Compram armas e melhorias.,,Fangs — earned by playing. They buy weapons and upgrades.,Colmillos — se ganan jugando. Compran armas y mejoras.,scripts/ui/kit/CurrencyLabel.cs
 Sangue,,Blood,Sangre,scripts/ui/kit/CurrencyLabel.cs
 Sangue — moeda comprada. Disponível quando houver servidor.,,Blood — purchased currency. Available once there's a server.,Sangre — moneda comprada. Disponible cuando haya servidor.,scripts/ui/kit/CurrencyLabel.cs
+Bot,,Bot,Bot,scripts/ui/kit/LevelChip.cs
+Label,,,,scripts/ui/kit/LevelChip.cs
 Local,,Local,Local,scripts/ui/kit/PingBars.cs
-Bot — sem patente,,Bot — no rank,Bot — sin rango,scripts/ui/kit/RankBadge.cs
 Surface1,,Surface1,Surface1,scripts/ui/kit/UiKit.cs
 Comum,,Common,Común,scripts/ui/kit/UiTokens.cs
 Incomum,,Uncommon,Poco común,scripts/ui/kit/UiTokens.cs
@@ -1104,3 +1163,6 @@ ESPECTADOR,,SPECTATOR,ESPECTADOR,scripts/visual/KillCam.Hud.cs
 PRONTO PARA RENASCER,,READY TO RESPAWN,LISTO PARA REAPARECER,scripts/visual/KillCam.Hud.cs
 RENASCE EM,,RESPAWNS IN,REAPARECE EN,scripts/visual/KillCam.Hud.cs
 WASD E MOUSE  ·  ESPAÇO: VOLTAR AOS ALIADOS,,WASD AND MOUSE  ·  SPACE: BACK TO ALLIES,WASD Y RATÓN  ·  ESPACIO: VOLVER A LOS ALIADOS,scripts/visual/KillCam.Hud.cs
+"depth_test_disabled, ",,,,scripts/visual/Silhouette.cs
+Head,,,,scripts/visual/VisualSmoothing.cs
+Weapon,,,,scripts/visual/VisualSmoothing.cs

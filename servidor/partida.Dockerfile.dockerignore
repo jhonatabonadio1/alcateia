@@ -1,11 +1,26 @@
-# O jogo inteiro entra, menos o que é da máquina de quem desenvolve.
+# O que não entra no build do servidor de partida. A etapa que exporta
+# precisa do projeto (cenas, recursos, código, a arte para importar) e do
+# tools/servidor; o resto é da máquina de quem desenvolve ou de outro
+# programa.
 .git
+.github
 .godot
 .synctmp
+.vscode
+.idea
+**/.DS_Store
 **/bin
 **/obj
+**/__pycache__
+build
 assets/pacotes
-servidor/Alcateia.Servidor
-servidor/Alcateia.Servidor.Testes
+servidor/Alcateia.*
+servidor/painel
+servidor/producao
+instalador
+android
 docs
 tests
+*.zip
+*.tgz
+*.unitypackage
