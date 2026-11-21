@@ -52,6 +52,28 @@ Ponha aqui, com o que se sabe dele.
   fotos: catálogo, regra no servidor de que é dele, escolha mandada ao
   saguão e na escalação, para os outros verem).
 
+### Nome do WP, classes de lobo, Discord e site (anotado em 21/11)
+
+- **Revisar o servidor do Discord e o site.** O Discord sai de
+  `tools/discord/montar.py` + `servidor.json` (cargos, canais, regras,
+  "como jogar", convite): conferir textos, canais e permissões depois de
+  montado, e o link de download (aponta para as Releases do GitHub; se o
+  repositório for privado, os testadores não baixam).
+- **Trocar o nome "WP".** A energia de transformar (máximo 10.000) ainda
+  se chama WP. Escolher outro nome e trocar em tudo: HUD (`Hud.Form`,
+  `Hud.Layout`), escolha de conjunto (`LoadoutMenu`, custos "100 WP"),
+  `FormController`, `WolfBreed`, `Profile`, rede (`NetMatch`, `NetWire`, só
+  nomes e comentários), `assets/i18n/textos.csv` (13 textos, com inglês e
+  espanhol) e a documentação.
+- **Mais classes de lobo, no servidor, com thumbs.** Hoje são duas, Bruto
+  e Ligeiro (`resources/breeds/*.tres`), já no catálogo como tipo `breed`
+  (`exportar_dados.py` leva para o servidor e o painel). Criar as classes
+  novas (atributos no `.tres`, item no `Catalog.cs`, preço), regenerar o
+  `jogo.json` para o servidor conhecê-las, e fazer uma thumb de verdade
+  para cada uma — hoje a arte da classe na loja, no inventário e no
+  conjunto é desenhada em código (`WeaponArt.WolfHead`, a silhueta do
+  lobo num escudo).
+
 ### Para depois (anotado em 19/11)
 
 - **Moldura do personagem no HUD pela patente.** A moldura do retrato

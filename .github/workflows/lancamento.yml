@@ -156,7 +156,7 @@ jobs:
   cliente:
     needs: importar
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
       - name: Import pronto (job "importar")
@@ -232,7 +232,7 @@ jobs:
   cliente-mac:
     needs: importar
     runs-on: macos-latest
-    timeout-minutes: 50
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
       - name: Import pronto (job "importar")
