@@ -94,11 +94,33 @@ public partial class Player
 		return health != null && !health.IsDead && health.Team != _health.Team;
 	}
 
+	/// <summary>Pontos do alvo testados para a trava, a partir do centro do
+	/// corpo (para cima, para o lado): o centro, o peito, a cabeça e os
+	/// dois ombros.</summary>
+	private static readonly Vector2[] SightPoints =
+		{ new(0f, 0f), new(0f, 0.45f), new(0f, 0.8f), new(-0.3f, 0.45f), new(0.3f, 0.45f) };
+
+	/// <summary>
+	/// Dá para ver o alvo: o centro, o peito, a cabeça ou um ombro. Só o
+	/// centro (até 21/11) perdia a trava atrás de qualquer coisa fina ou
+	/// baixa no meio — o poste de uma luminária, um caixote — com o
+	/// inimigo quase inteiro à vista. Sem trava, o especial ia para
+	/// onde a mira batia no cenário, e não nele ("parece que ele não tá
+	/// indo no oponente", Jhon, no Distrito Neon).
+	/// </summary>
 	private bool InSight(Vector3 eye, Node3D body)
 	{
-		var query = PhysicsRayQueryParameters3D.Create(eye, body.GlobalPosition);
-		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
-		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
-		return hit.Count == 0 || hit["collider"].Obj == body;
+		var space = GetWorld3D().DirectSpaceState;
+		var exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		Vector3 side = (body.GlobalPosition - eye).Cross(Vector3.Up);
+		side = side.LengthSquared() > 0.0001f ? side.Normalized() : Vector3.Right;
+		foreach (Vector2 point in SightPoints)
+		{
+			var query = PhysicsRayQueryParameters3D.Create(eye, body.GlobalPosition + side * point.X + Vector3.Up * point.Y);
+			query.Exclude = exclude;
+			var hit = space.IntersectRay(query);
+			if (hit.Count == 0 || hit["collider"].Obj == body) return true;
+		}
+		return false;
 	}
 }

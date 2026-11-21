@@ -142,10 +142,11 @@ public static class Arsenal
 
 	public static string NameOf(string id)
 	{
+		// No idioma do jogo (assets/i18n): o nome no recurso é a chave.
 		UtilityInfo utility = GetUtility(id);
-		if (utility != null) return utility.DisplayName;
+		if (utility != null) return Loc.T(utility.DisplayName);
 
-		return Get(id)?.DisplayName ?? id;
+		return Loc.T(Get(id)?.DisplayName ?? id);
 	}
 
 	/// <summary>Todos os ids do catálogo, para o inventário.</summary>

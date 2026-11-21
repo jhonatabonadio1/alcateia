@@ -21,20 +21,23 @@ public partial class Weapon
 	/// <summary>Segundos entre o dano do bote e a garra poder sair.</summary>
 	[Export] public float DiveFollowUp = 0.05f;
 
-	/// <summary>Até quando (relógio do jogo, ms) dura a aterrissagem do
-	/// último bote: nesse tempo a garra corta a aterrissagem.</summary>
-	private ulong _diveLandUntil;
+	/// <summary>Quanto ainda dura a aterrissagem do último bote, em tempo
+	/// de jogo: nesse tempo a garra corta a aterrissagem.</summary>
+	private double _diveLandLeft;
 
-	/// <summary>Até quando (ms) o lobo só está se levantando de um golpe que
-	/// já bateu: o bote que encostou, o salto que caiu. É o que o pulo e a
-	/// corrida cortam.</summary>
-	private ulong _recoverUntil;
+	/// <summary>Quanto ainda falta do levantar de um golpe que já bateu (o
+	/// bote que encostou, o salto que caiu), em tempo de jogo, como o
+	/// <c>_rootLeft</c>. É o que o pulo e a corrida cortam. Era um relógio de
+	/// parede (ms): um engasgo no impacto (o efeito do bote compilando na
+	/// primeira vez) passava do prazo antes do passo seguinte, a corrida não
+	/// cortava, e o lobo ficava preso correndo no lugar (Jhon, 21/11).</summary>
+	private double _recoverLeft;
 
 	/// <summary>A garra saindo por cima da aterrissagem do bote: solta o
 	/// lobo do chão.</summary>
 	private void CutDiveLanding()
 	{
-		if (_diveLandUntil == 0 || Time.GetTicksMsec() >= _diveLandUntil) return;
+		if (_diveLandLeft <= 0) return;
 		CutRecovery();
 	}
 
@@ -45,21 +48,27 @@ public partial class Weapon
 	/// quatro cortam essa parte na hora.
 	/// </summary>
 	public bool IsRecovering => _form != null && _form.IsWolf && _rootLeft > 0 && !_diving && !_flying && !_charging
-		&& _recoverUntil != 0 && Time.GetTicksMsec() < _recoverUntil;
+		&& _recoverLeft > 0;
 
 	/// <summary>Solta o lobo do levantar: anda, pula e corre neste mesmo passo.</summary>
 	public void CutRecovery()
 	{
-		if (_rootLeft <= 0 && _diveLandUntil == 0 && _recoverUntil == 0) return;
-		_diveLandUntil = 0;
-		_recoverUntil = 0;
+		if (_rootLeft <= 0 && _diveLandLeft <= 0 && _recoverLeft <= 0) return;
+		_diveLandLeft = 0;
+		_recoverLeft = 0;
 		_rootLeft = 0;
 		_strikeLeft = 0;
 		EmitSignal(SignalName.WolfRecoveryCut);
 	}
 
-	private void MarkRecovery(double seconds) =>
-		_recoverUntil = Time.GetTicksMsec() + (ulong)(Mathf.Max((float)seconds, 0f) * 1000f);
+	private void MarkRecovery(double seconds) => _recoverLeft = Mathf.Max((float)seconds, 0f);
+
+	/// <summary>Os prazos do levantar correm com o jogo (Weapon._PhysicsProcess).</summary>
+	private void TickRecovery(double delta)
+	{
+		if (_recoverLeft > 0) _recoverLeft -= delta;
+		if (_diveLandLeft > 0) _diveLandLeft -= delta;
+	}
 
 	/// <summary>Velocidade do mergulho, em m/s. Constante, em linha reta:
 	/// sem gravidade, sem freio e sem desvio no meio. O ponto de impacto
@@ -235,7 +244,7 @@ public partial class Weapon
 		_strikeLeft = land;
 		_rootLeft = land;
 		_cooldown = Mathf.Max(DiveFollowUp, LeapCooldown - (float)_diveElapsed);
-		_diveLandUntil = Time.GetTicksMsec() + (ulong)(land * 1000f);
+		_diveLandLeft = land;
 		MarkRecovery(land);
 
 		EmitSignal(SignalName.WolfDiveLanded);

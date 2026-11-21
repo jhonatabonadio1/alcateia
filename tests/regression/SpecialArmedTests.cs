@@ -94,3 +94,58 @@ public sealed class SpecialArmedTest : RegressionTest
 		b.Check(!w.PounceReady, "o salto gasta a carga");
 	}
 }
+
+/// <summary>O modo alvo trava num inimigo atrás de algo fino ou baixo — o
+/// poste de uma luminária, um caixote na cintura — com ele quase inteiro à
+/// vista. Só o centro do corpo contava: no Distrito Neon o especial perdia
+/// a trava atrás das luminárias de chão e ia para onde a mira batia no
+/// cenário ("parece que ele não tá indo no oponente", Jhon, 21/11). Atrás
+/// de uma parede inteira, não trava.</summary>
+public sealed class LockThroughPostTest : RegressionTest
+{
+	public override string Name => "TravaAtrasDoPoste";
+	public override string Description => "o especial trava no inimigo atrás de um poste ou de um caixote baixo, e não atrás de uma parede";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.RemoveBots(keep: 1);
+		var enemy = b.Bots()[0];
+		RegressionBench.Freeze(enemy);
+		enemy.GetNode<Health>("Health").Team = b.Health.Team == Teams.Blue ? Teams.Orange : Teams.Blue;
+		await b.BecomeWolf();
+		Weapon w = b.Weapon;
+		w.SpecialFree = false;
+
+		// O lobo em x = 4 olhando para −X; o inimigo 8 m à frente.
+		Vector3 me = new(4, 1, -3.5f);
+		enemy.GlobalPosition = new Vector3(-4, 1, -3.5f);
+		await b.Place(me, 90f);
+		float enemyY = enemy.GlobalPosition.Y;
+
+		(string What, Vector3 Size, float CenterY, bool Locks)[] cases =
+		{
+			("poste fino na frente do centro", new Vector3(0.15f, 4f, 0.15f), enemyY, true),
+			("caixote até o peito", new Vector3(0.6f, 1.2f, 3f), enemyY - 0.9f + 0.6f, true),
+			("parede inteira", new Vector3(0.4f, 5f, 6f), enemyY, false),
+		};
+
+		foreach (var (what, size, centerY, locks) in cases)
+		{
+			// No meio do caminho, do lado do inimigo (a câmera fica atrás do lobo).
+			var block = new StaticBody3D { Name = "Bloqueio" };
+			block.AddChild(new CollisionShape3D { Shape = new BoxShape3D { Size = size } });
+			b.Scene.AddChild(block);
+			block.GlobalPosition = new Vector3(-2.2f, centerY, -3.5f);
+			await b.PhysicsFrame();
+
+			w.FillSpecial();
+			if (!w.SpecialArmed) await b.Tap("pounce");
+			await b.Frames(4);
+			bool locked = b.Player.LockTarget == enemy;
+			b.Check(locked == locks, $"{what}: {(locks ? "trava" : "não trava")} (travado: {locked})");
+
+			block.QueueFree();
+			await b.PhysicsFrame();
+		}
+	}
+}

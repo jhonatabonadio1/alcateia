@@ -56,6 +56,17 @@ public sealed class WolfResponseTest : RegressionTest
 		int leaps = _leaps;
 		int dive = await Press("special", () => _leaps > leaps);
 		b.Check(dive <= Immediate, $"botão direito logo depois de sair do chão: o bote sai em {dive} passo(s)");
+		// E aparece: o golpe cobre o pulo em dois quadros, no mesmo passo do
+		// clique (Jhon, 21/11: "quase cancelar a animação").
+		AnimationTree tree = p.GetNodeOrNull("WolfVisual")?.FindChildren("*", "AnimationTree", true, false)
+			.OfType<AnimationTree>().FirstOrDefault();
+		if (tree != null)
+		{
+			bool shown = (bool)tree.Get("parameters/Dive/active");
+			float fade = (float)tree.Get("parameters/Dive/fade_in_remaining");
+			b.Check(shown && fade <= WolfVisual.DiveFadeIn + 0.001f,
+				$"e o golpe toma o corpo já no passo do clique (ativo: {shown}; mistura restante {fade * 1000:0} ms, máximo {WolfVisual.DiveFadeIn * 1000:0})");
+		}
 		await b.Until(() => !w.IsDiving, 2.0);
 		await b.Seconds(1.2);
 
@@ -99,6 +110,20 @@ public sealed class WolfResponseTest : RegressionTest
 		int out3 = await FramesUntil(() => Flat(p) > 3f, 1.0);
 		Input.ActionRelease("move_forward");
 		b.Check(out3 <= Immediate + 4, $"bote no meio da corrida (W segurado): pousa e segue correndo em {out3} passo(s)");
+		await b.Seconds(1.2);
+
+		// 8b. O mesmo com um engasgo de 1,2 s no impacto (o efeito do bote
+		// compilando na primeira vez): o levantar conta em tempo de jogo, e
+		// a corrida ainda corta. Antes contava no relógio de parede, o prazo
+		// passava no engasgo e o lobo ficava preso correndo no lugar (Jhon,
+		// 21/11: "ele anima e depois buga, fica andando no mesmo lugar").
+		Action stall = () => OS.DelayMsec(1200);
+		w.WolfDiveLanded += stall.Invoke;
+		await Dive(b, p, w, start, sprinting: true);
+		w.WolfDiveLanded -= stall.Invoke;
+		int out4 = await FramesUntil(() => Flat(p) > 3f, 1.0);
+		Input.ActionRelease("move_forward");
+		b.Check(out4 <= Immediate + 4, $"com um engasgo no impacto, o bote na corrida ainda pousa correndo em {out4} passo(s)");
 
 		// 9. Pulo na corrida: pousa correndo.
 		await b.Place(start, -90f, settle: 0.6);

@@ -204,6 +204,8 @@ public partial class Weapon : Node3D
 		if (_rootLeft > 0)
 			_rootLeft -= delta;
 
+		TickRecovery(delta);
+
 		if (_stepLeft > 0)
 			_stepLeft -= delta;
 

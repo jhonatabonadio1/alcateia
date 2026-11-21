@@ -38,10 +38,15 @@ public sealed class TattooEffect
 public sealed class CatalogItem
 {
 	public string Id;
-	public string Name;
+
+	// O nome, o tipo e a descrição saem no idioma do jogo (assets/i18n,
+	// pedido do Jhon, 21/11): o que está aqui é a chave, em português.
+	private string _name, _type, _description;
+
+	public string Name { get => Loc.T(_name); set => _name = value; }
 	/// <summary>Tipo por extenso no cartão: "Fuzil de assalto".</summary>
-	public string Type;
-	public string Description;
+	public string Type { get => Loc.T(_type); set => _type = value; }
+	public string Description { get => Loc.T(_description); set => _description = value; }
 	public ItemKind Kind;
 	/// <summary>0 comum … 4 lendário.</summary>
 	public int Rarity;

@@ -76,8 +76,8 @@ public static class Ranks
 	/// <summary>O número da placa: o nível sem as centenas (as estrelas contam elas).</summary>
 	public static int Shown(int rank) => LevelOf(rank) < 100 ? LevelOf(rank) : LevelOf(rank) % 100;
 
-	public static string NameOf(int rank) => rank < 0 ? "Bot" : $"Nível {LevelOf(rank)}";
-	public static string FamilyName(int rank) => MetalNames[Family(rank)];
+	public static string NameOf(int rank) => rank < 0 ? Loc.T("Bot") : Loc.F("Nível {0}", LevelOf(rank));
+	public static string FamilyName(int rank) => Loc.T(MetalNames[Family(rank)]);
 	public static Color ColorOf(int rank) => rank < 0 ? new Color("8a93a0") : MetalColors[Family(rank)];
 
 	/// <summary>A cor do metal para **texto**: um pouco mais clara.</summary>

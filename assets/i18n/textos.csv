@@ -1,6 +1,81 @@
 texto,pt_BR,en,es,onde
-"Anti-lobo. Pouco dano, muita lentidão: não mata, tira a mobilidade que define a forma.",,"Anti-wolf. Low damage, heavy slow: it doesn't kill, it takes away the mobility that defines the form.","Antilobo. Poco daño, mucha lentitud: no mata, quita la movilidad que define la forma.",scripts/combat/Arsenal.cs
-Granada de choque,,Shock grenade,Granada de choque,scripts/combat/Arsenal.cs
+A conta guarda a sua patente online e o seu lugar no ranking.,,The account keeps your online rank and your place in the leaderboard.,La cuenta guarda tu rango en línea y tu lugar en la clasificación.,(não está mais no código)
+A moeda paga só existe com servidor. E ela nunca compra poder.,,The paid currency only exists with a server. And it never buys power.,La moneda de pago solo existe con servidor. Y nunca compra poder.,(não está mais no código)
+A secundária de todo conjunto. Troca rápida para quando o pente acaba no meio da luta.,,The secondary in every loadout. A quick swap for when the magazine runs dry mid-fight.,La secundaria de todo equipo. Cambio rápido para cuando el cargador se acaba en plena pelea.,(não está mais no código)
+Ancião,,Elder,Anciano,(não está mais no código)
+"Anti-lobo. Pouco dano, muita lentidão: não mata, tira a mobilidade que define a forma.",,"Anti-wolf. Low damage, heavy slow: it doesn't kill, it takes away the mobility that defines the form.","Antilobo. Poco daño, mucha lentitud: no mata, quita la movilidad que define la forma.",(não está mais no código)
+Anti-lobo: atordoa e desacelera quem pega o estouro. Não existe para matar; existe para o lobo não chegar.,,Anti-wolf: stuns and slows whoever catches the blast. It's not there to kill; it's there to keep the wolf from reaching you.,Antilobo: aturde y ralentiza a quien alcanza la explosión. No existe para matar; existe para que el lobo no llegue.,(não está mais no código)
+"Arsenal, conjuntos e a economia de WP.",,"Arsenal, loadouts and the WP economy.","Arsenal, equipos y la economía de WP.",(não está mais no código)
+Batedor,,Scout,Explorador,(não está mais no código)
+Caçador,,Hunter,Cazador,(não está mais no código)
+Dois times: Vanguarda e Sindicato.,,Two teams: Vanguard and Syndicate.,Dos equipos: Vanguardia y Sindicato.,(não está mais no código)
+"Entre com a sua conta do servidor, ou crie uma agora. ",,"Sign in with your server account, or create one now. ","Entra con tu cuenta del servidor, o crea una ahora. ",(não está mais no código)
+Filhote,,Pup,Cachorro,(não está mais no código)
+Granada de choque,,Shock grenade,Granada de choque,(não está mais no código)
+HUD de combate e placar refeitos.,,Combat HUD and scoreboard remade.,HUD de combate y marcador rehechos.,(não está mais no código)
+"Humano contra lobo. Escolha o nome que vai aparecer no placar, no feed e para quem estiver na sua sala.",,"Human versus wolf. Pick the name that will show on the scoreboard, in the feed and to whoever is in your room.","Humano contra lobo. Elige el nombre que aparecerá en el marcador, en el feed y para quien esté en tu sala.",(não está mais no código)
+II,,II,II,(não está mais no código)
+III,,III,III,(não está mais no código)
+Item não está à venda nessa duração,,Item not sold for that duration,El objeto no se vende con esa duración,(não está mais no código)
+"Letras, números, _ e -. O nome é fixo: trocar depois exige o item Troca de nome, da loja.",,"Letters, numbers, _ and -. The name is fixed: changing it later needs the Name Change item from the shop.","Letras, números, _ y -. El nombre es fijo: cambiarlo después requiere el objeto Cambio de nombre, de la tienda.",(não está mais no código)
+"Lobby novo: salas, loja, inventário, perfil, missões e opções.",,"New lobby: rooms, shop, inventory, profile, missions and options.","Lobby nuevo: salas, tienda, inventario, perfil, misiones y opciones.",(não está mais no código)
+Lua Cheia,,Full Moon,Luna Llena,(não está mais no código)
+Mais a luz que rebate nas paredes e sombra mais nítida. O padrão.,,Plus light bouncing off walls and sharper shadows. The default.,Además la luz que rebota en las paredes y sombras más nítidas. La predeterminada.,(não está mais no código)
+"Mais reflexo no chão e nas superfícies lisas, e a sombra mais fina.",,"More reflections on floors and smooth surfaces, and finer shadows.","Más reflejos en el suelo y superficies lisas, y sombras más finas.",(não está mais no código)
+"Modelo e animações do humano, morte e corrida na parede do lobo; braços do AR-15 (X Bot)",,"Human model and animations, death and the wolf's wall run; AR-15 arms (X Bot)","Modelo y animaciones del humano, muerte y carrera por la pared del lobo; brazos de la AR-15 (X Bot)",(não está mais no código)
+Nickname,,Nickname,Apodo,(não está mais no código)
+Nome,,Name,Nombre,(não está mais no código)
+Novidades,,What's new,Novedades,(não está mais no código)
+Não achei o servidor em {0}. Ele está no ar? (docker compose up -d),,Couldn't find the server at {0}. Is it up? (docker compose up -d),No encontré el servidor en {0}. ¿Está encendido? (docker compose up -d),(não está mais no código)
+"O conjunto padrão: grátis, sempre disponível, rende +50 WP. Aceita itens gratuitos e os liberados para o padrão (a AR-15 Ultimate, a granada de choque)",,"The default loadout: free, always available, earns +50 WP. Takes free items and the ones cleared for default (the AR-15 Ultimate, the shock grenade)","El equipo predeterminado: gratis, siempre disponible, rinde +50 WP. Acepta objetos gratuitos y los permitidos en el predeterminado (la AR-15 Ultimate, la granada de choque)",(não está mais no código)
+"O fuzil padrão. Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e não é ruim em nada.",,"The standard rifle. Accurate in single shots, predictable in bursts. Not the best at anything and not bad at anything.","El fusil estándar. Preciso tiro a tiro, predecible en ráfaga. No es el mejor en nada y no es malo en nada.",(não está mais no código)
+"O perfil fica salvo neste computador. Recomeçar apaga patente, XP, Presas, inventário, conjuntos e missões.",,"Your profile is saved on this computer. Starting over erases rank, XP, Fangs, inventory, loadouts and missions.","El perfil se guarda en esta computadora. Reiniciar borra rango, XP, Colmillos, inventario, equipos y misiones.",(não está mais no código)
+Padrão (Ely),,Default (Ely),Predeterminado (Ely),(não está mais no código)
+Padrão (Exo Gray),,Default (Exo Gray),Predeterminado (Exo Gray),(não está mais no código)
+Partida registrada no servidor: +{0} XP de patente online,,Match recorded on the server: +{0} online rank XP,Partida registrada en el servidor: +{0} XP de rango en línea,(não está mais no código)
+Patente,,Rank,Rango,(não está mais no código)
+"Patentes, XP e Presas: cada partida rende progresso.",,"Ranks, XP and Fangs: every match earns progress.","Rangos, XP y Colmillos: cada partida da progreso.",(não está mais no código)
+Precisa do item Troca de nome,,Requires the Name Change item,Necesita el objeto Cambio de nombre,(não está mais no código)
+Presa de Ferro,,Iron Fang,Colmillo de Hierro,(não está mais no código)
+Progresso conta em toda partida terminada,,Progress counts in every finished match,El progreso cuenta en toda partida terminada,(não está mais no código)
+Rastreador,,Tracker,Rastreador,(não está mais no código)
+Recomeçar,,Start over,Reiniciar,(não está mais no código)
+Recomeçar perfil,,Reset profile,Reiniciar perfil,(não está mais no código)
+Recomeçar perfil?,,Reset profile?,¿Reiniciar perfil?,(não está mais no código)
+Senha (8 ou mais),,Password (8 or more),Contraseña (8 o más),(não está mais no código)
+Sentinela,,Sentinel,Centinela,(não está mais no código)
+"Sombra simples, sem oclusão nem brilho. Para máquina fraca.",,"Simple shadows, no occlusion or glow. For weak machines.","Sombras simples, sin oclusión ni brillo. Para equipos modestos.",(não está mais no código)
+"Sombra suave, oclusão nos cantos e brilho das luzes.",,"Soft shadows, corner occlusion and light glow.","Sombras suaves, oclusión en las esquinas y brillo de las luces.",(não está mais no código)
+"Sons para tudo: armas, passos, lobo, interface.",,"Sounds for everything: weapons, footsteps, wolf, interface.","Sonidos para todo: armas, pasos, lobo, interfaz.",(não está mais no código)
+Troca em {0} h {1:00} min  ·  20% de desconto,,Changes in {0} h {1:00} min  ·  20% off,Cambia en {0} h {1:00} min  ·  20% de descuento,(não está mais no código)
+"Tudo volta ao começo: Filhote I, 3.000 Presas, só o equipamento inicial. Não dá para desfazer.",,"Everything goes back to the start: Pup I, 3,000 Fangs, only the starting gear. This can't be undone.","Todo vuelve al comienzo: Cachorro I, 3.000 Colmillos, solo el equipo inicial. No se puede deshacer.",(não está mais no código)
+Uivador,,Howler,Aullador,(não está mais no código)
+−20% hoje,,−20% today,−20% hoy,(não está mais no código)
+Barut,,Barut,Barut,assets/personagens/barut/personagem.tres
+"Do Sindicato. Jaqueta vermelha, colete de placas e o lobo vermelho dele, com o neon laranja nas garras e no rugido. É o personagem do time.",,"From the Syndicate. Red jacket, plate vest and his red wolf, with orange neon on the claws and the roar. He's the team's character.","Del Sindicato. Chaqueta roja, chaleco de placas y su lobo rojo, con neón naranja en las garras y en el rugido. Es el personaje del equipo.",assets/personagens/barut/personagem.tres
+"Da Vanguarda. Colete escuro, braçadeiras de aço e o lobo azul dela, com o neon azul nas garras e no rugido. É a personagem do time.",,"From the Vanguard. Dark vest, steel bracers and her blue wolf, with blue neon on the claws and the roar. She's the team's character.","De la Vanguardia. Chaleco oscuro, brazales de acero y su lobo azul, con neón azul en las garras y en el rugido. Es la personaje del equipo.",assets/personagens/eve/personagem.tres
+Eve,,Eve,Eve,assets/personagens/eve/personagem.tres
+"Fuzil de impacto. O melhor tempo para matar do arsenal, para quem atira em rajadas curtas.",,"Impact rifle. The best time-to-kill in the arsenal, for those who fire short bursts.","Fusil de impacto. El mejor tiempo para matar del arsenal, para quien dispara ráfagas cortas.",resources/weapons/ak74.tres
+"Fuzil padrão. Referência do arsenal: nada excepcional, e esse é o ponto.",,"Standard rifle. The arsenal's reference: nothing exceptional, and that's the point.","Fusil estándar. La referencia del arsenal: nada excepcional, y esa es la idea.",resources/weapons/ar15.tres
+"O AR-15 8 bit: cadência mais alta e tiro mais junto, dano um pouco menor. Pintado em pixel, como nos jogos de antigamente.",,"The 8-bit AR-15: higher fire rate and tighter shots, slightly less damage. Painted in pixels, like the games of old.","El AR-15 8 bit: más cadencia y disparos más juntos, un poco menos de daño. Pintado en píxeles, como los juegos de antes.",resources/weapons/ar15_8bit.tres
+"O AR-15 de diamante: o tiro mais preciso e a maior cadência do arsenal, pente de 42 e recarga rápida. Facetas de cristal que brilham.",,"The diamond AR-15: the most accurate shot and the highest fire rate in the arsenal, 42-round magazine and fast reload. Glittering crystal facets.","El AR-15 de diamante: el disparo más preciso y la mayor cadencia del arsenal, cargador de 42 y recarga rápida. Facetas de cristal que brillan.",resources/weapons/ar15_diamante.tres
+"O AR-15 de lava: um pouco mais de dano por tiro, um pouco menos de cadência. Rocha escura com lava acesa nas rachaduras.",,"The lava AR-15: a bit more damage per shot, a bit less fire rate. Dark rock with glowing lava in the cracks.","El AR-15 de lava: un poco más de daño por disparo, un poco menos de cadencia. Roca oscura con lava encendida en las grietas.",resources/weapons/ar15_lava.tres
+"O AR-15 de ouro: o mais forte por tiro do arsenal, pente de 40, recarga rápida e o recuo mais domado. Ouro inteiro, polido e gravado.",,"The gold AR-15: the strongest per shot in the arsenal, 40-round magazine, fast reload and the tamest recoil. Solid gold, polished and engraved.","El AR-15 de oro: el más fuerte por disparo del arsenal, cargador de 40, recarga rápida y el retroceso más domado. Oro macizo, pulido y grabado.",resources/weapons/ar15_ouro.tres
+"O AR-15 no limite. Um pouco mais de dano, cadência e pente, e o recuo mais domado.",,"The AR-15 at its limit. A bit more damage, fire rate and magazine, and the tamest recoil.","El AR-15 al límite. Un poco más de daño, cadencia y cargador, y el retroceso más domado.",resources/weapons/ar15_ultimate.tres
+"Pistola padrão. Sete tiros pesados: dois no corpo resolvem, e o coice cobra cada um.",,"Standard pistol. Seven heavy shots: two to the body do it, and the kick charges for each one.","Pistola estándar. Siete disparos pesados: dos al cuerpo bastan, y el culatazo cobra cada uno.",resources/weapons/deagle.tres
+Carabina de assalto. Cadência alta e recuo dócil; perde um pouco de dano na distância.,,Assault carbine. High fire rate and gentle recoil; loses a little damage at range.,Carabina de asalto. Cadencia alta y retroceso dócil; pierde un poco de daño a distancia.,resources/weapons/m4a4.tres
+"A arma pesada: fuzil de batalha 7,62. Tiro lento e forte, pente de 20, lenta para andar e recarregar.",,"The heavy weapon: 7.62 battle rifle. Slow, strong shots, 20-round magazine, slow to move and reload.","El arma pesada: fusil de batalla 7,62. Disparo lento y fuerte, cargador de 20, lenta para moverse y recargar.",resources/weapons/scar.tres
+"Fuzil de precisão semiautomático, com luneta. Dois tiros no corpo, um na cabeça; sem a mira não acerta nada.",,"Semi-automatic sniper rifle with a scope. Two shots to the body, one to the head; without the scope it hits nothing.","Fusil de precisión semiautomático, con mira telescópica. Dos disparos al cuerpo, uno a la cabeza; sin la mira no acierta nada.",resources/weapons/svd.tres
+"A granada explosiva, em basalto com lava acesa nas rachaduras.",,"The explosive grenade, in basalt with glowing lava in the cracks.","La granada explosiva, en basalto con lava encendida en las grietas.",scripts/combat/Arsenal.cs
+"A granada explosiva, em fibra de carbono com faixa vermelha.",,"The explosive grenade, in carbon fiber with a red stripe.","La granada explosiva, en fibra de carbono con franja roja.",scripts/combat/Arsenal.cs
+"A granada explosiva, em ouro gravado.",,"The explosive grenade, in engraved gold.","La granada explosiva, en oro grabado.",scripts/combat/Arsenal.cs
+"A granada explosiva, em placas pretas com as juntas acesas em ciano.",,"The explosive grenade, in black plates with cyan-lit seams.","La granada explosiva, en placas negras con las juntas encendidas en cian.",scripts/combat/Arsenal.cs
+Explosiva. Mata de perto e fere até a borda do raio; cai onde a mira aponta.,,Explosive. Kills up close and wounds out to the edge of the blast; lands where you aim.,Explosiva. Mata de cerca y hiere hasta el borde del radio; cae donde apunta la mira.,scripts/combat/Arsenal.cs
+Granada,,Grenade,Granada,scripts/combat/Arsenal.cs
+Granada Carbono,,Carbon Grenade,Granada Carbono,scripts/combat/Arsenal.cs
+Granada Magma,,Magma Grenade,Granada Magma,scripts/combat/Arsenal.cs
+Granada Neon,,Neon Grenade,Granada Neón,scripts/combat/Arsenal.cs
+Granada Ouro,,Gold Grenade,Granada Oro,scripts/combat/Arsenal.cs
 Human,,Human,Human,scripts/combat/HeadHitbox.cs
 Skeleton3D,,Skeleton3D,Skeleton3D,scripts/combat/HeadHitbox.cs
 Este item não pode ir no conjunto padrão,,This item can't go in the default loadout,Este objeto no puede ir en el equipo predeterminado,scripts/combat/LoadoutSet.cs
@@ -47,8 +122,8 @@ Só lobos,,Wolves only,Solo lobos,scripts/core/PlayMode.cs
 Todos nascem lobo. Garra e mobilidade.,,Everyone spawns as a wolf. Claws and mobility.,Todos nacen lobo. Garras y movilidad.,scripts/core/PlayMode.cs
 "Vanguarda de humano, Sindicato de lobo. Trocam na metade.",,"Human Vanguard, wolf Syndicate. They swap at halftime.","Vanguardia humana, Sindicato lobo. Cambian a la mitad.",scripts/core/PlayMode.cs
 "Vanguarda {0}, Sindicato {1}",,"Vanguard {0}, Syndicate {1}","Vanguardia {0}, Sindicato {1}",scripts/core/PlayMode.cs
+"Com conta, o nome se troca com o item Troca de nome",,"With an account, the name is changed with the Name Change item","Con cuenta, el nombre se cambia con el objeto Cambio de nombre",scripts/core/Profile.cs
 Item fora do inventário ou expirado,,Item not in inventory or expired,Objeto fuera del inventario o caducado,scripts/core/Profile.cs
-Item não está à venda nessa duração,,Item not sold for that duration,El objeto no se vende con esa duración,scripts/core/Profile.cs
 Já equipada,,Already equipped,Ya equipada,scripts/core/Profile.cs
 Máximo de {0} caracteres,,Up to {0} characters,Máximo de {0} caracteres,scripts/core/Profile.cs
 Máximo de {0} melhorias,,Up to {0} upgrades,Máximo de {0} mejoras,scripts/core/Profile.cs
@@ -57,7 +132,6 @@ Nome reservado,,Reserved name,Nombre reservado,scripts/core/Profile.cs
 Não é um personagem,,Not a character,No es un personaje,scripts/core/Profile.cs
 Não é uma melhoria,,Not an upgrade,No es una mejora,scripts/core/Profile.cs
 Personagem fora do inventário ou expirado,,Character not in inventory or expired,Personaje fuera del inventario o caducado,scripts/core/Profile.cs
-Precisa do item Troca de nome,,Requires the Name Change item,Necesita el objeto Cambio de nombre,scripts/core/Profile.cs
 "Use só letras, números, _ e -",,"Use only letters, numbers, _ and -","Usa solo letras, números, _ y -",scripts/core/Profile.cs
 Cover Me!,,Cover Me!,¡Cúbreme!,scripts/core/Radio.cs
 Enemy Spotted!,,Enemy Spotted!,¡Enemigo a la vista!,scripts/core/Radio.cs
@@ -98,6 +172,10 @@ Arma pesada proibida nesta sala,,Heavy weapons banned in this room,Armas pesadas
 Sala sem armas pesadas,,Room without heavy weapons,Sala sin armas pesadas,scripts/core/RoomRules.cs
 Sala só de pistolas: todo conjunto vira pistola,,Pistols-only room: every loadout becomes pistols,Sala solo de pistolas: todo equipo pasa a pistola,scripts/core/RoomRules.cs
 "A mais lisa, também em folha e grade; deixa um leve rastro no que se move rápido.",,"The smoothest, also on foliage and fences; leaves a slight trail on fast movement.","La más suave, también en hojas y rejas; deja un leve rastro en lo que se mueve rápido.",scripts/core/Settings.cs
+"A mesma luz das outras, mais barata: sombra simples e os efeitos com poucas amostras. Para máquina fraca.",,"The same light as the others, cheaper: simple shadows and effects with few samples. For weak machines.","La misma luz que las demás, más barata: sombra simple y efectos con pocas muestras. Para máquinas débiles.",scripts/core/Settings.cs
+"A mesma luz, sombra mais fina e os efeitos na resolução cheia.",,"The same light, finer shadows and effects at full resolution.","La misma luz, sombra más fina y efectos a resolución completa.",scripts/core/Settings.cs
+"A mesma luz, sombra mais nítida e os efeitos inteiros. O padrão.",,"The same light, sharper shadows and full effects. The default.","La misma luz, sombra más nítida y efectos completos. El predeterminado.",scripts/core/Settings.cs
+"A mesma luz, sombra suave e os efeitos com menos amostras.",,"The same light, soft shadows and effects with fewer samples.","La misma luz, sombra suave y efectos con menos muestras.",scripts/core/Settings.cs
 Alta,,High,Alta,scripts/core/Settings.cs
 Amarelo,,Yellow,Amarillo,scripts/core/Settings.cs
 Baixa,,Low,Baja,scripts/core/Settings.cs
@@ -110,25 +188,25 @@ Desligada,,Off,Desactivada,scripts/core/Settings.cs
 "Filtro na tela inteira: quase de graça, mas borra um pouco.",,"Full-screen filter: nearly free, but blurs a little.","Filtro en toda la pantalla: casi gratis, pero desenfoca un poco.",scripts/core/Settings.cs
 FXAA (leve),,FXAA (light),FXAA (ligera),scripts/core/Settings.cs
 Magenta,,Magenta,Magenta,scripts/core/Settings.cs
-Mais a luz que rebate nas paredes e sombra mais nítida. O padrão.,,Plus light bouncing off walls and sharper shadows. The default.,Además la luz que rebota en las paredes y sombras más nítidas. La predeterminada.,scripts/core/Settings.cs
-"Mais reflexo no chão e nas superfícies lisas, e a sombra mais fina.",,"More reflections on floors and smooth surfaces, and finer shadows.","Más reflejos en el suelo y superficies lisas, y sombras más finas.",scripts/core/Settings.cs
 Master,,Master,General,scripts/core/Settings.cs
 MSAA 2×,,MSAA 2×,MSAA 2×,scripts/core/Settings.cs
 MSAA 4×,,MSAA 4×,MSAA 4×,scripts/core/Settings.cs
 MSAA 4× + FXAA,,MSAA 4× + FXAA,MSAA 4× + FXAA,scripts/core/Settings.cs
 "MSAA 4× e o filtro por cima, que pega também folha e grade.",,"MSAA 4× with the filter on top, which also catches foliage and fences.","MSAA 4× y el filtro encima, que también alcanza hojas y rejas.",scripts/core/Settings.cs
 Média,,Medium,Media,scripts/core/Settings.cs
-"Sombra simples, sem oclusão nem brilho. Para máquina fraca.",,"Simple shadows, no occlusion or glow. For weak machines.","Sombras simples, sin oclusión ni brillo. Para equipos modestos.",scripts/core/Settings.cs
-"Sombra suave, oclusão nos cantos e brilho das luzes.",,"Soft shadows, corner occlusion and light glow.","Sombras suaves, oclusión en las esquinas y brillo de las luces.",scripts/core/Settings.cs
 TAA (mais lisa),,TAA (smoothest),TAA (la más suave),scripts/core/Settings.cs
 Ultra,,Ultra,Ultra,scripts/core/Settings.cs
 Verde,,Green,Verde,scripts/core/Settings.cs
 Vermelho,,Red,Rojo,scripts/core/Settings.cs
+Abrir Online,,Open Online,Abrir En línea,scripts/lobby/AccountGate.cs
+"Carregando a sua conta… Se o servidor não responder, confira a conexão em Online.",,"Loading your account… If the server doesn't answer, check the connection in Online.","Cargando tu cuenta… Si el servidor no responde, revisa la conexión en En línea.",scripts/lobby/AccountGate.cs
+Entrar na conta,,Sign in,Entrar en la cuenta,scripts/lobby/AccountGate.cs
 As licenças completas e a origem de cada arquivo estão na pasta do jogo: ,,The full licenses and the source of each file are in the game folder: ,Las licencias completas y el origen de cada archivo están en la carpeta del juego: ,scripts/lobby/CreditsScreen.cs
 "assets/audio/CREDITOS.md, assets/fonts/OFL.txt e docs/PACOTES.md.",,"assets/audio/CREDITOS.md, assets/fonts/OFL.txt and docs/PACOTES.md.","assets/audio/CREDITOS.md, assets/fonts/OFL.txt y docs/PACOTES.md.",scripts/lobby/CreditsScreen.cs
 Créditos,,Credits,Créditos,scripts/lobby/CreditsScreen.cs
 quem fez e de onde veio cada coisa,,who made each thing and where it came from,quién hizo cada cosa y de dónde vino,scripts/lobby/CreditsScreen.cs
 Voltar às opções,,Back to options,Volver a opciones,scripts/lobby/CreditsScreen.cs
+As missões são da conta: entre nela para ver as de hoje.,,Missions belong to the account: sign in to see today's.,Las misiones son de la cuenta: entra para ver las de hoy.,scripts/lobby/DailyMissions.cs
 Missões do dia,,Daily missions,Misiones del día,scripts/lobby/DailyMissions.cs
 troca em {0} h {1:00} min,,resets in {0} h {1:00} min,cambian en {0} h {1:00} min,scripts/lobby/DailyMissions.cs
 Ver todas as missões,,See all missions,Ver todas las misiones,scripts/lobby/DailyMissions.cs
@@ -179,10 +257,10 @@ na Vanguarda e no Sindicato,,on the Vanguard and the Syndicate,en la Vanguardia 
 "Nada aqui ainda. A loja vende armas, granadas e melhorias por Presas.",,"Nothing here yet. The shop sells weapons, grenades and upgrades for Fangs.","Nada aquí todavía. La tienda vende armas, granadas y mejoras por Colmillos.",scripts/lobby/InventoryScreen.cs
 no Sindicato,,on the Syndicate,en el Sindicato,scripts/lobby/InventoryScreen.cs
 Nome do conjunto,,Loadout name,Nombre del equipo,scripts/lobby/InventoryScreen.cs
-"O conjunto padrão: grátis, sempre disponível, rende +50 WP. Aceita itens gratuitos e os liberados para o padrão (a AR-15 Ultimate, a granada de choque)",,"The default loadout: free, always available, earns +50 WP. Takes free items and the ones cleared for default (the AR-15 Ultimate, the shock grenade)","El equipo predeterminado: gratis, siempre disponible, rinde +50 WP. Acepta objetos gratuitos y los permitidos en el predeterminado (la AR-15 Ultimate, la granada de choque)",scripts/lobby/InventoryScreen.cs
+"O conjunto padrão: grátis, sempre disponível, rende +50 WP. Aceita as armas comuns e a granada",,"The default loadout: free, always available, earns +50 WP. Takes the common weapons and the grenade","El equipo predeterminado: gratis, siempre disponible, rinde +50 WP. Acepta las armas comunes y la granada",scripts/lobby/InventoryScreen.cs
 "O personagem vale no time dele, com o lobo dele: escolheu a pessoa, transforma no lobo dela. ",,"A character counts on its own team, with its own wolf: pick the person, transform into their wolf. ","El personaje vale en su equipo, con su lobo: eliges a la persona, te transformas en su lobo. ",scripts/lobby/InventoryScreen.cs
-Padrão (Ely),,Default (Ely),Predeterminado (Ely),scripts/lobby/InventoryScreen.cs
-Padrão (Exo Gray),,Default (Exo Gray),Predeterminado (Exo Gray),scripts/lobby/InventoryScreen.cs
+Padrão (Barut),,Default (Barut),Predeterminado (Barut),scripts/lobby/InventoryScreen.cs
+Padrão (Eve),,Default (Eve),Predeterminado (Eve),scripts/lobby/InventoryScreen.cs
 Personagem,,Character,Personaje,scripts/lobby/InventoryScreen.cs
 Primária,,Primary,Primaria,scripts/lobby/InventoryScreen.cs
 Pronto para usar na partida,,Ready to use in the match,Listo para usar en la partida,scripts/lobby/InventoryScreen.cs
@@ -220,7 +298,8 @@ Incluído,,Included,Incluido,scripts/lobby/ItemCard.cs
 Por patente,,By rank,Por rango,scripts/lobby/ItemCard.cs
 Possui,,Owned,En posesión,scripts/lobby/ItemCard.cs
 Possui · renovar,,Owned · renew,En posesión · renovar,scripts/lobby/ItemCard.cs
-−20% hoje,,−20% today,−20% hoy,scripts/lobby/ItemCard.cs
+−{0}%,,−{0}%,−{0}%,scripts/lobby/ItemCard.cs
+−{0}% hoje,,−{0}% today,−{0}% hoy,scripts/lobby/ItemCard.cs
 A vida é a mesma como humano e como lobo; o lobo soma o escudo da classe por cima.,,Health is the same as human and as wolf; the wolf adds the class shield on top.,La vida es la misma como humano y como lobo; el lobo suma el escudo de la clase encima.,scripts/lobby/ItemDetail.cs
 Alcance,,Range,Alcance,scripts/lobby/ItemDetail.cs
 Atributos,,Stats,Atributos,scripts/lobby/ItemDetail.cs
@@ -260,6 +339,7 @@ Serviço,,Service,Servicio,scripts/lobby/ItemInfo.cs
 {0} h {1} min,,{0} h {1} min,{0} h {1} min,scripts/lobby/ItemInfo.cs
 {0} usos,,{0} uses,{0} usos,scripts/lobby/ItemInfo.cs
 Abrir o perfil,,Open profile,Abrir el perfil,scripts/lobby/LobbyHeader.cs
+"Entre na sua conta (Online) para ter carteira, itens e patente",,"Sign in to your account (Online) to have a wallet, items and rank","Entra en tu cuenta (En línea) para tener cartera, objetos y rango",scripts/lobby/LobbyHeader.cs
 Expandir a barra,,Expand the bar,Expandir la barra,scripts/lobby/LobbyHeader.cs
 LEAGUE,,LEAGUE,LEAGUE,scripts/lobby/LobbyHeader.cs
 Loja,,Shop,Tienda,scripts/lobby/LobbyHeader.cs
@@ -273,10 +353,38 @@ Salas,,Rooms,Salas,scripts/lobby/LobbyHeader.cs
 WOLF,,WOLF,WOLF,scripts/lobby/LobbyHeader.cs
 Jhon,,Jhon,Jhon,scripts/lobby/LobbyShell.cs
 Sala do Jhon,,Jhon's room,Sala de Jhon,scripts/lobby/LobbyShell.cs
+3 a 16 caracteres,,3 to 16 characters,De 3 a 16 caracteres,scripts/lobby/LoginScreen.cs
+8 ou mais caracteres,,8 or more characters,8 o más caracteres,scripts/lobby/LoginScreen.cs
+"A conta guarda as suas Presas, os seus itens, as missões, a patente e o seu lugar no ranking. O nome é o que aparece no placar.",,"The account keeps your Fangs, your items, missions, rank and your place in the ranking. The name is what shows on the scoreboard.","La cuenta guarda tus Colmillos, tus objetos, las misiones, el rango y tu lugar en la clasificación. El nombre es el que aparece en el marcador.",scripts/lobby/LoginScreen.cs
+a mesma senha,,the same password,la misma contraseña,scripts/lobby/LoginScreen.cs
+A senha precisa de 8 ou mais caracteres.,,The password needs 8 or more characters.,La contraseña necesita 8 o más caracteres.,scripts/lobby/LoginScreen.cs
+As duas senhas não são iguais.,,The two passwords don't match.,Las dos contraseñas no coinciden.,scripts/lobby/LoginScreen.cs
+Conta,,Account,Cuenta,scripts/lobby/LoginScreen.cs
+CONTAS SALVAS,,SAVED ACCOUNTS,CUENTAS GUARDADAS,scripts/lobby/LoginScreen.cs
+Criar conta,,Create account,Crear cuenta,scripts/lobby/LoginScreen.cs
+Digite a senha.,,Type the password.,Escribe la contraseña.,scripts/lobby/LoginScreen.cs
+Digite o nome da conta.,,Type the account name.,Escribe el nombre de la cuenta.,scripts/lobby/LoginScreen.cs
+Entrando como {0}…,,Signing in as {0}…,Entrando como {0}…,scripts/lobby/LoginScreen.cs
+Entrar,,Sign in,Entrar,scripts/lobby/LoginScreen.cs
+Esquecer este acesso neste computador,,Forget this access on this computer,Olvidar este acceso en este ordenador,scripts/lobby/LoginScreen.cs
+Falando com o servidor…,,Talking to the server…,Hablando con el servidor…,scripts/lobby/LoginScreen.cs
+HUMANOS CONTRA LOBOS,,HUMANS VERSUS WOLVES,HUMANOS CONTRA LOBOS,scripts/lobby/LoginScreen.cs
+NOME DA CONTA,,ACCOUNT NAME,NOMBRE DE LA CUENTA,scripts/lobby/LoginScreen.cs
+O acesso salvo de {0} venceu. Digite a senha para entrar.,,{0}'s saved access expired. Type the password to sign in.,El acceso guardado de {0} caducó. Escribe la contraseña para entrar.,scripts/lobby/LoginScreen.cs
+O servidor não respondeu. Confira a internet e tente de novo.,,The server didn't answer. Check the internet and try again.,El servidor no respondió. Revisa internet e inténtalo de nuevo.,scripts/lobby/LoginScreen.cs
+Procurando o servidor…,,Looking for the server…,Buscando el servidor…,scripts/lobby/LoginScreen.cs
+REPITA A SENHA,,REPEAT THE PASSWORD,REPITE LA CONTRASEÑA,scripts/lobby/LoginScreen.cs
+SENHA,,PASSWORD,CONTRASEÑA,scripts/lobby/LoginScreen.cs
+Servidor fora do ar,,Server down,Servidor caído,scripts/lobby/LoginScreen.cs
+Servidor no ar,,Server online,Servidor en línea,scripts/lobby/LoginScreen.cs
+As missões são da sua conta,,Missions belong to your account,Las misiones son de tu cuenta,scripts/lobby/MissionsScreen.cs
 cada uma dá um título,,each one grants a title,cada una da un título,scripts/lobby/MissionsScreen.cs
 Diárias,,Daily,Diarias,scripts/lobby/MissionsScreen.cs
+"Entre na conta para ver as missões do dia e da semana. O progresso conta nas partidas online, e o prêmio vai direto para a sua carteira.",,"Sign in to see the daily and weekly missions. Progress counts in online matches, and the reward goes straight to your wallet.","Entra en la cuenta para ver las misiones del día y de la semana. El progreso cuenta en las partidas en línea, y el premio va directo a tu cartera.",scripts/lobby/MissionsScreen.cs
+Evento,,Event,Evento,scripts/lobby/MissionsScreen.cs
 Permanentes,,Permanent,Permanentes,scripts/lobby/MissionsScreen.cs
-Progresso conta em toda partida terminada,,Progress counts in every finished match,El progreso cuenta en toda partida terminada,scripts/lobby/MissionsScreen.cs
+por tempo limitado,,for a limited time,por tiempo limitado,scripts/lobby/MissionsScreen.cs
+Progresso conta em toda partida online terminada,,Progress counts in every finished online match,El progreso cuenta en cada partida en línea terminada,scripts/lobby/MissionsScreen.cs
 Resgatada,,Claimed,Reclamada,scripts/lobby/MissionsScreen.cs
 "Resgatada: +{0} Presas, +{1} XP",,"Claimed: +{0} Fangs, +{1} XP","Reclamada: +{0} Colmillos, +{1} XP",scripts/lobby/MissionsScreen.cs
 Resgatar,,Claim,Reclamar,scripts/lobby/MissionsScreen.cs
@@ -285,42 +393,34 @@ Surface2,,Surface2,Surface2,scripts/lobby/MissionsScreen.cs
 trocam em {0} d {1} h,,reset in {0} d {1} h,cambian en {0} d {1} h,scripts/lobby/MissionsScreen.cs
 trocam em {0} h {1:00} min,,reset in {0} h {1:00} min,cambian en {0} h {1:00} min,scripts/lobby/MissionsScreen.cs
 título: {0},,title: {0},título: {0},scripts/lobby/MissionsScreen.cs
+{0} por {1} dias,,{0} for {1} days,{0} por {1} días,scripts/lobby/MissionsScreen.cs
 {0} pronta(s) para resgatar,,{0} ready to claim,{0} lista(s) para reclamar,scripts/lobby/MissionsScreen.cs
 Cancelar,,Cancel,Cancelar,scripts/lobby/ModePicker.cs
 Contra bots,,Against bots,Contra bots,scripts/lobby/ModePicker.cs
 Contra jogadores,,Against players,Contra jugadores,scripts/lobby/ModePicker.cs
-A conta guarda a sua patente online e o seu lugar no ranking.,,The account keeps your online rank and your place in the leaderboard.,La cuenta guarda tu rango en línea y tu lugar en la clasificación.,scripts/lobby/OnlineScreen.cs
 A sua sessão venceu. Entre de novo.,,Your session expired. Sign in again.,Tu sesión caducó. Vuelve a entrar.,scripts/lobby/OnlineScreen.cs
 Atualizar,,Refresh,Actualizar,scripts/lobby/OnlineScreen.cs
 até {0} · {1} min,,up to {0} · {1} min,hasta {0} · {1} min,scripts/lobby/OnlineScreen.cs
 Carregando…,,Loading…,Cargando…,scripts/lobby/OnlineScreen.cs
 Conectando…,,Connecting…,Conectando…,scripts/lobby/OnlineScreen.cs
 Conversa,,Chat,Chat,scripts/lobby/OnlineScreen.cs
-Criar conta,,Create account,Crear cuenta,scripts/lobby/OnlineScreen.cs
 Criar sala,,Create room,Crear sala,scripts/lobby/OnlineScreen.cs
 "Crie a sua e chame alguém. Nos modos contra bots, o dono da sala põe os bots que quiser em cada time.",,"Create yours and invite someone. In modes against bots, the room owner puts as many bots as they like on each team.","Crea la tuya e invita a alguien. En los modos contra bots, el dueño de la sala pone los bots que quiera en cada equipo.",scripts/lobby/OnlineScreen.cs
 Entrando como {0} em {1}.,,Signing in as {0} at {1}.,Entrando como {0} en {1}.,scripts/lobby/OnlineScreen.cs
-Entrar,,Sign in,Entrar,scripts/lobby/OnlineScreen.cs
-"Entre com a sua conta do servidor, ou crie uma agora. ",,"Sign in with your server account, or create one now. ","Entra con tu cuenta del servidor, o crea una ahora. ",scripts/lobby/OnlineScreen.cs
 Escreva e aperte Enter,,Type and press Enter,Escribe y pulsa Enter,scripts/lobby/OnlineScreen.cs
-Falando com o servidor…,,Talking to the server…,Hablando con el servidor…,scripts/lobby/OnlineScreen.cs
 Nenhuma sala aberta agora,,No open rooms right now,Ninguna sala abierta ahora,scripts/lobby/OnlineScreen.cs
 Ninguém jogou ainda.,,Nobody has played yet.,Nadie ha jugado todavía.,scripts/lobby/OnlineScreen.cs
-Nome,,Name,Nombre,scripts/lobby/OnlineScreen.cs
-Não achei o servidor em {0}. Ele está no ar? (docker compose up -d),,Couldn't find the server at {0}. Is it up? (docker compose up -d),No encontré el servidor en {0}. ¿Está encendido? (docker compose up -d),scripts/lobby/OnlineScreen.cs
 Não consegui carregar.,,Couldn't load.,No se pudo cargar.,scripts/lobby/OnlineScreen.cs
 Não consegui falar com {0}.,,Couldn't reach {0}.,No se pudo hablar con {0}.,scripts/lobby/OnlineScreen.cs
 Não consegui falar com {0}. O servidor está no ar?,,Couldn't reach {0}. Is the server up?,No se pudo hablar con {0}. ¿El servidor está encendido?,scripts/lobby/OnlineScreen.cs
-Partida registrada no servidor: +{0} XP de patente online,,Match recorded on the server: +{0} online rank XP,Partida registrada en el servidor: +{0} XP de rango en línea,scripts/lobby/OnlineScreen.cs
+O servidor está em manutenção. Volte daqui a pouco.,,The server is under maintenance. Come back in a bit.,El servidor está en mantenimiento. Vuelve en un rato.,scripts/lobby/OnlineScreen.cs
+Partida registrada: +{0} XP e +{1} Presas,,Match recorded: +{0} XP and +{1} Fangs,Partida registrada: +{0} XP y +{1} Colmillos,scripts/lobby/OnlineScreen.cs
 Ranking,,Leaderboard,Clasificación,scripts/lobby/OnlineScreen.cs
 Sair da conta,,Sign out,Cerrar sesión,scripts/lobby/OnlineScreen.cs
 Sala com senha,,Password-protected room,Sala con contraseña,scripts/lobby/OnlineScreen.cs
 Sala de {0},,{0}'s room,Sala de {0},scripts/lobby/OnlineScreen.cs
 Sem ligação com o servidor,,No connection to the server,Sin conexión con el servidor,scripts/lobby/OnlineScreen.cs
-Senha,,Password,Contraseña,scripts/lobby/OnlineScreen.cs
-Senha (8 ou mais),,Password (8 or more),Contraseña (8 o más),scripts/lobby/OnlineScreen.cs
 Senha da sala,,Room password,Contraseña de la sala,scripts/lobby/OnlineScreen.cs
-Servidor,,Server,Servidor,scripts/lobby/OnlineScreen.cs
 Tentar de novo,,Try again,Intentar de nuevo,scripts/lobby/OnlineScreen.cs
 {0} aberta(s) · você é {1},,{0} open · you are {1},{0} abierta(s) · eres {1},scripts/lobby/OnlineScreen.cs
 {0} jogador(es) e {1} bot(s). Quem entra toma o lugar de um bot.,,{0} player(s) and {1} bot(s). Whoever joins takes a bot's place.,{0} jugador(es) y {1} bot(s). Quien entra toma el lugar de un bot.,scripts/lobby/OnlineScreen.cs
@@ -338,19 +438,14 @@ Mira,,Crosshair,Mira,scripts/lobby/OptionsScreen.cs
 Mira padrão,,Default crosshair,Mira predeterminada,scripts/lobby/OptionsScreen.cs
 Mouse,,Mouse,Ratón,scripts/lobby/OptionsScreen.cs
 Música e ambiente,,Music and ambience,Música y ambiente,scripts/lobby/OptionsScreen.cs
-"O perfil fica salvo neste computador. Recomeçar apaga patente, XP, Presas, inventário, conjuntos e missões.",,"Your profile is saved on this computer. Starting over erases rank, XP, Fangs, inventory, loadouts and missions.","El perfil se guarda en esta computadora. Reiniciar borra rango, XP, Colmillos, inventario, equipos y misiones.",scripts/lobby/OptionsScreen.cs
 O ponto tem um tamanho só.,,The dot has a single size.,El punto tiene un solo tamaño.,scripts/lobby/OptionsScreen.cs
 Opacidade,,Opacity,Opacidad,scripts/lobby/OptionsScreen.cs
 Outra cor,,Custom color,Otro color,scripts/lobby/OptionsScreen.cs
 Ponto,,Dot,Punto,scripts/lobby/OptionsScreen.cs
 Qualidade,,Quality,Calidad,scripts/lobby/OptionsScreen.cs
-Recomeçar,,Start over,Reiniciar,scripts/lobby/OptionsScreen.cs
-Recomeçar perfil,,Reset profile,Reiniciar perfil,scripts/lobby/OptionsScreen.cs
-Recomeçar perfil?,,Reset profile?,¿Reiniciar perfil?,scripts/lobby/OptionsScreen.cs
 Sensibilidade,,Sensitivity,Sensibilidad,scripts/lobby/OptionsScreen.cs
 Suavização,,Anti-aliasing,Suavizado,scripts/lobby/OptionsScreen.cs
 Tamanho,,Size,Tamaño,scripts/lobby/OptionsScreen.cs
-"Tudo volta ao começo: Filhote I, 3.000 Presas, só o equipamento inicial. Não dá para desfazer.",,"Everything goes back to the start: Pup I, 3,000 Fangs, only the starting gear. This can't be undone.","Todo vuelve al comienzo: Cachorro I, 3.000 Colmillos, solo el equipo inicial. No se puede deshacer.",scripts/lobby/OptionsScreen.cs
 Vale também no meio da partida.,,Also applies mid-match.,Vale también en medio de la partida.,scripts/lobby/OptionsScreen.cs
 Vídeo,,Video,Video,scripts/lobby/OptionsScreen.cs
 {0:0} px,,{0:0} px,{0:0} px,scripts/lobby/OptionsScreen.cs
@@ -436,13 +531,14 @@ Modo,,Mode,Modo,scripts/lobby/RoomScreen.cs
 Médio,,Medium,Medio,scripts/lobby/RoomScreen.cs
 Médios,,Medium,Medios,scripts/lobby/RoomScreen.cs
 médios,,medium,medios,scripts/lobby/RoomScreen.cs
+Nível,,Level,Nivel,scripts/lobby/RoomScreen.cs
+Nível {0},,Level {0},Nivel {0},scripts/lobby/RoomScreen.cs
 O time {0} está cheio,,Team {0} is full,El equipo {0} está lleno,scripts/lobby/RoomScreen.cs
 Objetivo,,Objective,Objetivo,scripts/lobby/RoomScreen.cs
 Online,,Online,En línea,scripts/lobby/RoomScreen.cs
 Os dois times precisam de alguém,,Both teams need someone,Los dos equipos necesitan a alguien,scripts/lobby/RoomScreen.cs
 Os dois times precisam de alguém: ponha um bot no time vazio,,Both teams need someone: put a bot on the empty team,Los dos equipos necesitan a alguien: pon un bot en el equipo vacío,scripts/lobby/RoomScreen.cs
 Passe o número da sala: {0},,Share the room number: {0},Pasa el número de la sala: {0},scripts/lobby/RoomScreen.cs
-Patente,,Rank,Rango,scripts/lobby/RoomScreen.cs
 Pronto  »,,Ready  »,Listo  »,scripts/lobby/RoomScreen.cs
 Prontos: {0} contra {1} — espere mais alguém ficar pronto,,Ready: {0} against {1} — wait for someone else to ready up,Listos: {0} contra {1} — espera a que alguien más esté listo,scripts/lobby/RoomScreen.cs
 Regras da sala,,Room rules,Reglas de la sala,scripts/lobby/RoomScreen.cs
@@ -450,6 +546,7 @@ Sair da sala,,Leave room,Salir de la sala,scripts/lobby/RoomScreen.cs
 SALA,,ROOM,SALA,scripts/lobby/RoomScreen.cs
 Sala,,Room,Sala,scripts/lobby/RoomScreen.cs
 Sem senha,,No password,Sin contraseña,scripts/lobby/RoomScreen.cs
+Senha,,Password,Contraseña,scripts/lobby/RoomScreen.cs
 Situação,,Status,Situación,scripts/lobby/RoomScreen.cs
 só o mestre altera,,only the host can change this,solo el anfitrión lo cambia,scripts/lobby/RoomScreen.cs
 Só o mestre inicia,,Only the host can start,Solo el anfitrión inicia,scripts/lobby/RoomScreen.cs
@@ -470,8 +567,10 @@ Ver perfil,,View profile,Ver perfil,scripts/lobby/RoomScreen.cs
 {0} foi para o time {1}.,,{0} moved to team {1}.,{0} pasó al equipo {1}.,scripts/lobby/RoomScreen.cs
 {0} não está mais pronto.,,{0} is no longer ready.,{0} ya no está listo.,scripts/lobby/RoomScreen.cs
 1 item,,1 item,1 objeto,scripts/lobby/ShopScreen.cs
-A moeda paga só existe com servidor. E ela nunca compra poder.,,The paid currency only exists with a server. And it never buys power.,La moneda de pago solo existe con servidor. Y nunca compra poder.,scripts/lobby/ShopScreen.cs
+A venda de Sangue ainda não abriu. E ele nunca compra poder.,,Blood sales haven't opened yet. And it never buys power.,La venta de Sangre aún no abrió. Y nunca compra poder.,scripts/lobby/ShopScreen.cs
+A vitrine do dia vem do servidor: entre em Online,,Today's showcase comes from the server: go to Online,El escaparate del día viene del servidor: entra en En línea,scripts/lobby/ShopScreen.cs
 Abrir no inventário,,Open in inventory,Abrir en el inventario,scripts/lobby/ShopScreen.cs
+Carregando a conta…,,Loading the account…,Cargando la cuenta…,scripts/lobby/ShopScreen.cs
 Classes de lobo,,Wolf classes,Clases de lobo,scripts/lobby/ShopScreen.cs
 Comprado: {0} · {1},,Bought: {0} · {1},Comprado: {0} · {1},scripts/lobby/ShopScreen.cs
 Comprar,,Buy,Comprar,scripts/lobby/ShopScreen.cs
@@ -479,13 +578,14 @@ Comprar mais tempo,,Buy more time,Comprar más tiempo,scripts/lobby/ShopScreen.c
 Comprar Sangue,,Buy Blood,Comprar Sangre,scripts/lobby/ShopScreen.cs
 Confirmar,,Confirm,Confirmar,scripts/lobby/ShopScreen.cs
 Confirmar compra,,Confirm purchase,Confirmar compra,scripts/lobby/ShopScreen.cs
-Conta,,Account,Cuenta,scripts/lobby/ShopScreen.cs
 Destaques,,Featured,Destacados,scripts/lobby/ShopScreen.cs
 Destrava na patente {0} — não está à venda.,,Unlocks at rank {0} — not for sale.,Se desbloquea en el rango {0} — no está a la venta.,scripts/lobby/ShopScreen.cs
 Duração,,Duration,Duración,scripts/lobby/ShopScreen.cs
 Em destaque,,Featured,Destacado,scripts/lobby/ShopScreen.cs
+Entrar na conta para comprar,,Sign in to buy,Entra en la cuenta para comprar,scripts/lobby/ShopScreen.cs
 "Escolha a categoria à esquerda e clique num item: aqui aparecem os atributos, por quanto tempo comprar e o preço.",,"Pick a category on the left and click an item: its stats, how long to buy it for and the price show up here.","Elige la categoría a la izquierda y haz clic en un objeto: aquí aparecen los atributos, por cuánto tiempo comprarlo y el precio.",scripts/lobby/ShopScreen.cs
 Exige {0},,Requires {0},Requiere {0},scripts/lobby/ShopScreen.cs
+Facas,,Knives,Cuchillos,scripts/lobby/ShopScreen.cs
 Faltam {0} Presas,,{0} Fangs short,Faltan {0} Colmillos,scripts/lobby/ShopScreen.cs
 Granadas,,Grenades,Granadas,scripts/lobby/ShopScreen.cs
 Já é permanente,,Already permanent,Ya es permanente,scripts/lobby/ShopScreen.cs
@@ -502,24 +602,13 @@ Primárias,,Primaries,Primarias,scripts/lobby/ShopScreen.cs
 Saldo atual,,Current balance,Saldo actual,scripts/lobby/ShopScreen.cs
 Saldo depois,,Balance after,Saldo después,scripts/lobby/ShopScreen.cs
 Secundárias,,Secondaries,Secundarias,scripts/lobby/ShopScreen.cs
-Troca em {0} h {1:00} min  ·  20% de desconto,,Changes in {0} h {1:00} min  ·  20% off,Cambia en {0} h {1:00} min  ·  20% de descuento,scripts/lobby/ShopScreen.cs
+Troca em {0} h {1:00} min,,Changes in {0} h {1:00} min,Cambia en {0} h {1:00} min,scripts/lobby/ShopScreen.cs
 "Tudo aqui custa Presas, a moeda que você ganha jogando.",,"Everything here costs Fangs, the currency you earn by playing.","Todo aquí cuesta Colmillos, la moneda que ganas jugando.",scripts/lobby/ShopScreen.cs
 Um uso,,Single use,Un uso,scripts/lobby/ShopScreen.cs
 Vem com todo perfil.,,Comes with every profile.,Viene con todo perfil.,scripts/lobby/ShopScreen.cs
 Você tem,,You have,Tienes,scripts/lobby/ShopScreen.cs
 {0:0} Presas por dia,,{0:0} Fangs per day,{0:0} Colmillos por día,scripts/lobby/ShopScreen.cs
 {0} itens,,{0} items,{0} objetos,scripts/lobby/ShopScreen.cs
-3 a 16 caracteres,,3 to 16 characters,De 3 a 16 caracteres,scripts/lobby/WelcomeScreen.cs
-"Arsenal, conjuntos e a economia de WP.",,"Arsenal, loadouts and the WP economy.","Arsenal, equipos y la economía de WP.",scripts/lobby/WelcomeScreen.cs
-Dois times: Vanguarda e Sindicato.,,Two teams: Vanguard and Syndicate.,Dos equipos: Vanguardia y Sindicato.,scripts/lobby/WelcomeScreen.cs
-HUD de combate e placar refeitos.,,Combat HUD and scoreboard remade.,HUD de combate y marcador rehechos.,scripts/lobby/WelcomeScreen.cs
-"Humano contra lobo. Escolha o nome que vai aparecer no placar, no feed e para quem estiver na sua sala.",,"Human versus wolf. Pick the name that will show on the scoreboard, in the feed and to whoever is in your room.","Humano contra lobo. Elige el nombre que aparecerá en el marcador, en el feed y para quien esté en tu sala.",scripts/lobby/WelcomeScreen.cs
-"Letras, números, _ e -. O nome é fixo: trocar depois exige o item Troca de nome, da loja.",,"Letters, numbers, _ and -. The name is fixed: changing it later needs the Name Change item from the shop.","Letras, números, _ y -. El nombre es fijo: cambiarlo después requiere el objeto Cambio de nombre, de la tienda.",scripts/lobby/WelcomeScreen.cs
-"Lobby novo: salas, loja, inventário, perfil, missões e opções.",,"New lobby: rooms, shop, inventory, profile, missions and options.","Lobby nuevo: salas, tienda, inventario, perfil, misiones y opciones.",scripts/lobby/WelcomeScreen.cs
-Nickname,,Nickname,Apodo,scripts/lobby/WelcomeScreen.cs
-Novidades,,What's new,Novedades,scripts/lobby/WelcomeScreen.cs
-"Patentes, XP e Presas: cada partida rende progresso.",,"Ranks, XP and Fangs: every match earns progress.","Rangos, XP y Colmillos: cada partida da progreso.",scripts/lobby/WelcomeScreen.cs
-"Sons para tudo: armas, passos, lobo, interface.",,"Sounds for everything: weapons, footsteps, wolf, interface.","Sonidos para todo: armas, pasos, lobo, interfaz.",scripts/lobby/WelcomeScreen.cs
 +10% de escudo máximo do lobo.,,+10% wolf max shield.,+10% de escudo máximo del lobo.,scripts/meta/Catalog.cs
 +5% de velocidade na forma de lobo.,,+5% speed in wolf form.,+5% de velocidad en forma de lobo.,scripts/meta/Catalog.cs
 +6% de dano da garra.,,+6% claw damage.,+6% de daño de garra.,scripts/meta/Catalog.cs
@@ -530,52 +619,93 @@ Novidades,,What's new,Novedades,scripts/lobby/WelcomeScreen.cs
 30 dias,,30 days,30 días,scripts/meta/Catalog.cs
 7 dias,,7 days,7 días,scripts/meta/Catalog.cs
 90 dias,,90 days,90 días,scripts/meta/Catalog.cs
-A secundária de todo conjunto. Troca rápida para quando o pente acaba no meio da luta.,,The secondary in every loadout. A quick swap for when the magazine runs dry mid-fight.,La secundaria de todo equipo. Cambio rápido para cuando el cargador se acaba en plena pelea.,scripts/meta/Catalog.cs
+"A secundária de todo conjunto. Sete tiros que pesam: dois no corpo resolvem, mas o coice cobra cada um.",,"Every loadout's secondary. Seven shots that hit hard: two to the body do it, but the kick charges for each one.","La secundaria de todo conjunto. Siete disparos que pesan: dos al cuerpo bastan, pero el culatazo cobra cada uno.",scripts/meta/Catalog.cs
+AK-74,,AK-74,AK-74,scripts/meta/Catalog.cs
+AK-74 Imperial,,AK-74 Imperial,AK-74 Imperial,scripts/meta/Catalog.cs
+AK-74 Tigre,,AK-74 Tiger,AK-74 Tigre,scripts/meta/Catalog.cs
 Alfa,,Alpha,Alfa,scripts/meta/Catalog.cs
-Anti-lobo: atordoa e desacelera quem pega o estouro. Não existe para matar; existe para o lobo não chegar.,,Anti-wolf: stuns and slows whoever catches the blast. It's not there to kill; it's there to keep the wolf from reaching you.,Antilobo: aturde y ralentiza a quien alcanza la explosión. No existe para matar; existe para que el lobo no llegue.,scripts/meta/Catalog.cs
 AR-15,,AR-15,AR-15,scripts/meta/Catalog.cs
 AR-15 8 Bit,,AR-15 8 Bit,AR-15 8 Bit,scripts/meta/Catalog.cs
 AR-15 Diamante,,AR-15 Diamond,AR-15 Diamante,scripts/meta/Catalog.cs
 AR-15 Lava,,AR-15 Lava,AR-15 Lava,scripts/meta/Catalog.cs
 AR-15 Ouro,,AR-15 Gold,AR-15 Oro,scripts/meta/Catalog.cs
 AR-15 Ultimate,,AR-15 Ultimate,AR-15 Ultimate,scripts/meta/Catalog.cs
+Arma pesada,,Heavy weapon,Arma pesada,scripts/meta/Catalog.cs
 Bruto,,Brute,Bruto,scripts/meta/Catalog.cs
 "Cadência mais alta e tiro mais junto, com um pouco menos de dano. Pintado em pixel, como nos jogos de antigamente.",,"Higher fire rate and tighter grouping, with a little less damage. Painted in pixels, like the games of old.","Mayor cadencia y disparos más agrupados, con un poco menos de daño. Pintada en píxeles, como en los juegos de antes.",scripts/meta/Catalog.cs
 Caçador Noturno,,Night Hunter,Cazador Nocturno,scripts/meta/Catalog.cs
 Classe de lobo,,Wolf class,Clase de lobo,scripts/meta/Catalog.cs
 Couro Grosso,,Thick Hide,Cuero Grueso,scripts/meta/Catalog.cs
+Desert Eagle,,Desert Eagle,Desert Eagle,scripts/meta/Catalog.cs
+Desert Eagle Cobra,,Desert Eagle Cobra,Desert Eagle Cobra,scripts/meta/Catalog.cs
+Desert Eagle Fênix,,Desert Eagle Phoenix,Desert Eagle Fénix,scripts/meta/Catalog.cs
+"Explosiva: mata de perto e fere até a borda do raio. Cai onde a mira aponta. Todo mundo tem, e já vem no conjunto padrão.",,"Explosive: kills up close and wounds out to the edge of the blast. Lands where you aim. Everyone has it, and it comes in the default loadout.","Explosiva: mata de cerca y hiere hasta el borde del radio. Cae donde apunta la mira. Todos la tienen, y ya viene en el equipo predeterminado.",scripts/meta/Catalog.cs
+Faca Damasco,,Damascus Knife,Cuchillo Damasco,scripts/meta/Catalog.cs
+Faca Obsidiana,,Obsidian Knife,Cuchillo Obsidiana,scripts/meta/Catalog.cs
 Fuzil de assalto,,Assault rifle,Fusil de asalto,scripts/meta/Catalog.cs
+"Fuzil de batalha 7,62: pente de 20, tiro lento e pesado. Segura um corredor de longe; de perto, perde para qualquer fuzil.",,"7.62 battle rifle: 20-round magazine, slow and heavy shots. Holds a corridor from afar; up close, it loses to any rifle.","Fusil de batalla 7,62: cargador de 20, disparo lento y pesado. Aguanta un pasillo de lejos; de cerca, pierde contra cualquier fusil.",scripts/meta/Catalog.cs
+Fuzil de impacto,,Impact rifle,Fusil de impacto,scripts/meta/Catalog.cs
+Fuzil de precisão,,Sniper rifle,Fusil de precisión,scripts/meta/Catalog.cs
 Fúria da Lua,,Moon Fury,Furia Lunar,scripts/meta/Catalog.cs
 Garra Afiada,,Sharp Claw,Garra Afilada,scripts/meta/Catalog.cs
 "Lendária. +12% de escudo máximo do lobo, e ele se desfaz 20% mais devagar.",,"Legendary. +12% wolf max shield, and it wears off 20% slower.","Legendaria. +12% de escudo máximo del lobo, y se desgasta un 20% más lento.",scripts/meta/Catalog.cs
 Lendária. +7% de dano da garra e +5% de velocidade na forma de lobo.,,Legendary. +7% claw damage and +5% speed in wolf form.,Legendaria. +7% de daño de garra y +5% de velocidad en forma de lobo.,scripts/meta/Catalog.cs
+"Lendária. A AK que bate mais forte e mais rápido, pente de 35 e o coice mais domado. Laca preta com filigrana de ouro.",,"Legendary. The hardest and fastest hitting AK, 35-round magazine and the tamest kick. Black lacquer with gold filigree.","Legendaria. La AK que pega más fuerte y más rápido, cargador de 35 y el retroceso más domado. Laca negra con filigrana de oro.",scripts/meta/Catalog.cs
+"Lendária. A faca que mais fere, a mais rápida e com um palmo a mais de alcance. Vidro vulcânico preto com veios roxos acesos.",,"Legendary. The hardest-hitting and fastest knife, with a little more reach. Black volcanic glass with glowing purple veins.","Legendaria. El cuchillo que más hiere, el más rápido y con algo más de alcance. Vidrio volcánico negro con vetas púrpuras encendidas.",scripts/meta/Catalog.cs
+"Lendária. Mais dano por tiro, pente de 36, recarga rápida e recuo domado. Escamas vermelhas de borda dourada, com brasa entre elas.",,"Legendary. More damage per shot, 36-round magazine, fast reload and tamed recoil. Red scales edged in gold, embers glowing between them.","Legendaria. Más daño por disparo, cargador de 36, recarga rápida y retroceso domado. Escamas rojas con borde dorado y brasas entre ellas.",scripts/meta/Catalog.cs
+"Lendária. Mais dano, mais cadência, pente de 25 e recarga rápida. Uma nebulosa roxa e ciano, com estrelas que brilham.",,"Legendary. More damage, higher rate of fire, 25-round magazine and fast reload. A purple and cyan nebula with stars that shine.","Legendaria. Más daño, más cadencia, cargador de 25 y recarga rápida. Una nebulosa púrpura y cian con estrellas que brillan.",scripts/meta/Catalog.cs
+"Lendária. Mais dano, oito tiros no pente e recarga rápida. Cromo preto com chamas acesas que lambem o cano.",,"Legendary. More damage, eight rounds in the magazine and a fast reload. Black chrome with glowing flames licking the barrel.","Legendaria. Más daño, ocho disparos en el cargador y recarga rápida. Cromo negro con llamas encendidas que lamen el cañón.",scripts/meta/Catalog.cs
+"Lendária. Mais dano, segundo tiro mais cedo, pente de 12 e recarga rápida. Nuvens de tempestade cortadas por raios acesos.",,"Legendary. More damage, a quicker follow-up shot, 12-round magazine and fast reload. Storm clouds split by glowing lightning.","Legendaria. Más daño, segundo disparo más pronto, cargador de 12 y recarga rápida. Nubes de tormenta cortadas por rayos encendidos.",scripts/meta/Catalog.cs
 "Lendária. O mais forte por tiro do arsenal, pente de 40, recarga rápida e o recuo mais domado. Ouro inteiro, polido e gravado.",,"Legendary. The hardest-hitting shot in the arsenal, 40-round magazine, fast reload and the tamest recoil. Solid gold, polished and engraved.","Legendaria. El disparo más fuerte del arsenal, cargador de 40, recarga rápida y el retroceso más domado. Oro entero, pulido y grabado.",scripts/meta/Catalog.cs
 "Lendária. O tiro mais preciso e a maior cadência do arsenal, pente de 42 e recarga rápida. Facetas de cristal que brilham.",,"Legendary. The most accurate shot and the highest fire rate in the arsenal, 42-round magazine and fast reload. Glittering crystal facets.","Legendaria. El disparo más preciso y la mayor cadencia del arsenal, cargador de 42 y recarga rápida. Facetas de cristal que brillan.",scripts/meta/Catalog.cs
+"Lendária. Ouro polido com treliça gravada, espoleta de ônix e alavanca de ouro branco. Só a aparência muda.",,"Legendary. Polished gold with engraved lattice, onyx fuze and white-gold lever. Only the look changes.","Legendaria. Oro pulido con celosía grabada, espoleta de ónice y palanca de oro blanco. Solo cambia la apariencia.",scripts/meta/Catalog.cs
 Ligeiro,,Swift,Ligero,scripts/meta/Catalog.cs
 "Linha de frente: escudo alto, garra pesada, resiste a tiro no corpo. Mais lento no chão.",,"Front line: high shield, heavy claws, shrugs off body shots. Slower on the ground.","Primera línea: escudo alto, garra pesada, resiste disparos al cuerpo. Más lento en el suelo.",scripts/meta/Catalog.cs
+M4A4,,M4A4,M4A4,scripts/meta/Catalog.cs
+M4A4 Dragão,,M4A4 Dragon,M4A4 Dragón,scripts/meta/Catalog.cs
+M4A4 Neon,,M4A4 Neon,M4A4 Neón,scripts/meta/Catalog.cs
 Melhoria · lobo,,Upgrade · wolf,Mejora · lobo,scripts/meta/Catalog.cs
 "O AR-15 no limite: um pouco mais de dano, cadência e pente, e o recuo mais domado. Pele roxa com flames que brilham.",,"The AR-15 at its limit: a bit more damage, fire rate and magazine, and the recoil tamed further. Purple skin with glowing flames.","La AR-15 al límite: un poco más de daño, cadencia y cargador, y el retroceso más domado. Piel morada con llamas que brillan.",scripts/meta/Catalog.cs
 O escudo do lobo se desfaz 20% mais devagar.,,The wolf's shield wears off 20% slower.,El escudo del lobo se desgasta un 20% más lento.,scripts/meta/Catalog.cs
-"O fuzil padrão. Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e não é ruim em nada.",,"The standard rifle. Accurate in single shots, predictable in bursts. Not the best at anything and not bad at anything.","El fusil estándar. Preciso tiro a tiro, predecible en ráfaga. No es el mejor en nada y no es malo en nada.",scripts/meta/Catalog.cs
+"O fuzil padrão. Carabina rápida e fácil de segurar: um pouco mais de cadência que o AR-15, um pouco menos de alcance.",,"The standard rifle. A fast, easy-to-handle carbine: a bit more fire rate than the AR-15, a bit less range.","El fusil estándar. Carabina rápida y fácil de controlar: un poco más de cadencia que el AR-15, un poco menos de alcance.",scripts/meta/Catalog.cs
 os dois times,,both teams,los dos equipos,scripts/meta/Catalog.cs
 Pata Leve,,Light Paw,Pata Ligera,scripts/meta/Catalog.cs
 Pelo Denso,,Dense Fur,Pelaje Denso,scripts/meta/Catalog.cs
 Perm,,Perm,Perm,scripts/meta/Catalog.cs
 Personagem · {0},,Character · {0},Personaje · {0},scripts/meta/Catalog.cs
 Pistola,,Pistol,Pistola,scripts/meta/Catalog.cs
+"Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e não é ruim em nada.",,"Accurate shot by shot, predictable in bursts. Not the best at anything and not bad at anything.","Preciso disparo a disparo, predecible en ráfaga. No es el mejor en nada y no es malo en nada.",scripts/meta/Catalog.cs
 Presas de Aço,,Steel Fangs,Colmillos de Acero,scripts/meta/Catalog.cs
+"Rara. A granada explosiva em fibra de carbono sob verniz, com faixa e alavanca vermelhas. Só a aparência muda.",,"Rare. The explosive grenade in varnished carbon fiber, with a red stripe and lever. Only the look changes.","Rara. La granada explosiva en fibra de carbono barnizada, con franja y palanca rojas. Solo cambia la apariencia.",scripts/meta/Catalog.cs
 Salto Longo,,Long Leap,Salto Largo,scripts/meta/Catalog.cs
+SCAR-H,,SCAR-H,SCAR-H,scripts/meta/Catalog.cs
+SCAR-H Galáxia,,SCAR-H Galaxy,SCAR-H Galaxia,scripts/meta/Catalog.cs
+SCAR-H Ártico,,SCAR-H Arctic,SCAR-H Ártico,scripts/meta/Catalog.cs
+"Semiautomático com luneta. Dois no corpo ou um na cabeça; fora da mira, a bala vai para qualquer lado.",,"Semi-automatic with a scope. Two to the body or one to the head; off the scope, the bullet goes anywhere.","Semiautomático con mira telescópica. Dos al cuerpo o uno a la cabeza; sin la mira, la bala va a cualquier lado.",scripts/meta/Catalog.cs
 Silenciosa: não faz ruído para os bots. A arma de quem quer o abate sem entregar a posição.,,Silent: makes no noise for the bots. The weapon for whoever wants the kill without giving away their position.,Silenciosa: no hace ruido para los bots. El arma de quien quiere la baja sin delatar su posición.,scripts/meta/Catalog.cs
 Sindicato,,Syndicate,Sindicato,scripts/meta/Catalog.cs
+SVD Carbono,,SVD Carbon,SVD Carbono,scripts/meta/Catalog.cs
+SVD Dragunov,,SVD Dragunov,SVD Dragunov,scripts/meta/Catalog.cs
+SVD Tempestade,,SVD Storm,SVD Tormenta,scripts/meta/Catalog.cs
 Troca de nome,,Name Change,Cambio de nombre,scripts/meta/Catalog.cs
 Troca o seu nickname uma vez. O nome é fixo sem este item.,,Changes your nickname once. The name is fixed without this item.,Cambia tu apodo una vez. Sin este objeto el nombre es fijo.,scripts/meta/Catalog.cs
+Três tiros no corpo. Feita para rajadas de três a cinco: depois disso o cano vai para onde quer.,,Three shots to the body. Made for bursts of three to five: after that the barrel goes where it wants.,Tres disparos al cuerpo. Hecha para ráfagas de tres a cinco: después de eso el cañón va adonde quiere.,scripts/meta/Catalog.cs
 "Um pouco mais de dano por tiro, um pouco menos de cadência. Rocha escura com lava acesa nas rachaduras.",,"A bit more damage per shot, a bit less fire rate. Dark rock with lava glowing in the cracks.","Un poco más de daño por disparo, un poco menos de cadencia. Roca oscura con lava encendida en las grietas.",scripts/meta/Catalog.cs
 Vanguarda,,Vanguard,Vanguardia,scripts/meta/Catalog.cs
 "Velocidade e flanco: o lobo mais rápido e o pulo mais longo, com pouco escudo. Destrava em Batedor I.",,"Speed and flanking: the fastest wolf and the longest jump, with little shield. Unlocks at Scout I.","Velocidad y flanqueo: el lobo más rápido y el salto más largo, con poco escudo. Se desbloquea en Explorador I.",scripts/meta/Catalog.cs
+"Épica. A M4A4 mais rápida e mais junta no tiro, com pente de 32. Grafite com trilhas de circuito que acendem em ciano.",,"Epic. A faster, tighter-shooting M4A4 with a 32-round magazine. Graphite with circuit traces that glow cyan.","Épica. La M4A4 más rápida y más precisa, con cargador de 32. Grafito con pistas de circuito que brillan en cian.",scripts/meta/Catalog.cs
+Épica. Basalto com a lava acesa nas rachaduras e ferragem de ferro queimado. Só a aparência muda.,,Epic. Basalt with glowing lava in the cracks and burnt-iron hardware. Only the look changes.,Épica. Basalto con la lava encendida en las grietas y herrajes de hierro quemado. Solo cambia la apariencia.,scripts/meta/Catalog.cs
+Épica. O coice cobra menos e o tiro seguinte sai mais cedo. Escamas de cobra verde-esmeralda.,,Epic. A lighter kick and a quicker next shot. Emerald-green snake scales.,Épica. Menos retroceso y el siguiente disparo sale antes. Escamas de serpiente verde esmeralda.,scripts/meta/Catalog.cs
+Épica. Placas pretas com as juntas e a faixa do meio acesas em ciano. Só a aparência muda.,,Epic. Black plates with the seams and middle stripe lit in cyan. Only the look changes.,Épica. Placas negras con las juntas y la franja central encendidas en cian. Solo cambia la apariencia.,scripts/meta/Catalog.cs
+"Épica. Recuo menor, tiro mais junto e pente de 22. Camuflagem digital de neve.",,"Epic. Less recoil, tighter shots and a 22-round magazine. Digital snow camouflage.","Épica. Menos retroceso, disparo más preciso y cargador de 22. Camuflaje digital de nieve.",scripts/meta/Catalog.cs
+"Épica. Segundo tiro mais cedo, recarga e saque mais rápidos. Fibra de carbono com detalhes vermelhos.",,"Epic. A quicker follow-up shot, faster reload and draw. Carbon fibre with red details.","Épica. Segundo disparo más pronto, recarga y desenfunde más rápidos. Fibra de carbono con detalles rojos.",scripts/meta/Catalog.cs
+"Épica. Um pouco mais de dano e golpe um pouco mais rápido. Lâmina de aço damasco em ondas, cabo de madeira e cobre.",,"Epic. A little more damage and a slightly faster strike. A wavy Damascus steel blade, wood and copper handle.","Épica. Un poco más de daño y un golpe algo más rápido. Hoja de acero de Damasco en ondas, mango de madera y cobre.",scripts/meta/Catalog.cs
+Épica. Um pouco mais de dano e o coice mais fácil de segurar na rajada. Laranja com listras de tigre.,,Epic. A little more damage and a kick that is easier to hold in a burst. Orange with tiger stripes.,Épica. Un poco más de daño y un retroceso más fácil de controlar en ráfaga. Naranja con rayas de tigre.,scripts/meta/Catalog.cs
 .NET — .NET Foundation e colaboradores,,.NET — .NET Foundation and contributors,.NET — .NET Foundation y colaboradores,scripts/meta/Credits.cs
 "Acertos, faca e explosão",,"Hits, knife and explosion","Impactos, cuchillo y explosión",scripts/meta/Credits.cs
 AK-74M,,AK-74M,AK-74M,scripts/meta/Credits.cs
 Animações do AR-15,,AR-15 animations,Animaciones de la AR-15,scripts/meta/Credits.cs
+"Animações do humano, morte e corrida na parede do lobo; braços do AR-15 (X Bot)",,"Human animations, death and the wolf's wall run; AR-15 arms (X Bot)","Animaciones del humano, muerte y carrera por la pared del lobo; brazos del AR-15 (X Bot)",scripts/meta/Credits.cs
 "Animações do lobo (andar, agachar, correr de quatro, golpes, uivo, pulo e salto)",,"Wolf animations (walk, crouch, four-legged run, strikes, howl, jump and leap)","Animaciones del lobo (andar, agacharse, correr a cuatro patas, golpes, aullido, salto y brinco)",scripts/meta/Credits.cs
 "Animações dos braços (fuzis, submetralhadora, pistola, escopeta)",,"Arm animations (rifles, submachine gun, pistol, shotgun)","Animaciones de los brazos (fusiles, subfusil, pistola, escopeta)",scripts/meta/Credits.cs
 Apache 2.0,,Apache 2.0,Apache 2.0,scripts/meta/Credits.cs
@@ -601,6 +731,7 @@ doomsentinel (Sketchfab),,doomsentinel (Sketchfab),doomsentinel (Sketchfab),scri
 eNse7en (Sketchfab),,eNse7en (Sketchfab),eNse7en (Sketchfab),scripts/meta/Credits.cs
 Erik Kennedy,,Erik Kennedy,Erik Kennedy,scripts/meta/Credits.cs
 Escopeta semiautomática,,Semi-automatic shotgun,Escopeta semiautomática,scripts/meta/Credits.cs
+Eve e Barut (modelos e texturas dos humanos),,Eve and Barut (human models and textures),Eve y Barut (modelos y texturas de los humanos),scripts/meta/Credits.cs
 Faca com braços e animações,,Knife with arms and animations,Cuchillo con brazos y animaciones,scripts/meta/Credits.cs
 "feitas para o jogo (tools/patentes.py, fotos_armas.tscn)",,"made for the game (tools/patentes.py, fotos_armas.tscn)","hechas para el juego (tools/patentes.py, fotos_armas.tscn)",scripts/meta/Credits.cs
 "feitos para o jogo, por código e no Blender (tools/)",,"made for the game, in code and in Blender (tools/)","hechos para el juego, por código y en Blender (tools/)",scripts/meta/Credits.cs
@@ -634,13 +765,15 @@ Letreiros: Stardos Stencil,,Signage: Stardos Stencil,Rótulos: Stardos Stencil,s
 Licença da Asset Store,,Asset Store license,Licencia de la Asset Store,scripts/meta/Credits.cs
 licença de uso do Mixamo,,Mixamo usage license,licencia de uso de Mixamo,scripts/meta/Credits.cs
 licença do GameDev Market,,GameDev Market license,licencia de GameDev Market,scripts/meta/Credits.cs
+Licença padrão da Fab,,Fab standard license,Licencia estándar de Fab,scripts/meta/Credits.cs
 "Lobos azul e vermelho (modelo, esqueleto e textura)",,"Blue and red wolves (model, skeleton and texture)","Lobos azul y rojo (modelo, esqueleto y textura)",scripts/meta/Credits.cs
+"Low Poly FPS Bundle, de JustCreate (Fab)",,"Low Poly FPS Bundle, by JustCreate (Fab)","Low Poly FPS Bundle, de JustCreate (Fab)",scripts/meta/Credits.cs
 M16A2 com braços e animações,,M16A2 with arms and animations,M16A2 con brazos y animaciones,scripts/meta/Credits.cs
 "Mapa Armazém (galpão, contêineres, objetos e textura)",,"Warehouse map (shed, containers, props and texture)","Mapa Almacén (galpón, contenedores, objetos y textura)",scripts/meta/Credits.cs
+"Mapas Cidade, Cidade do Deserto, Estação de Trem e Obra (peças e textura)",,"Maps City, Desert City, Railway Station, Construction Site (pieces and texture)","Mapas Ciudad, Ciudad del Desierto, Estación de Tren, Obra (piezas y textura)",scripts/meta/Credits.cs
 "Mapas, armas e mãos",,"Maps, weapons and hands","Mapas, armas y manos",scripts/meta/Credits.cs
 MIT,,MIT,MIT,scripts/meta/Credits.cs
 Mixamo — Adobe,,Mixamo — Adobe,Mixamo — Adobe,scripts/meta/Credits.cs
-"Modelo e animações do humano, morte e corrida na parede do lobo; braços do AR-15 (X Bot)",,"Human model and animations, death and the wolf's wall run; AR-15 arms (X Bot)","Modelo y animaciones del humano, muerte y carrera por la pared del lobo; brazos de la AR-15 (X Bot)",scripts/meta/Credits.cs
 Motor do jogo,,Game engine,Motor del juego,scripts/meta/Credits.cs
 "Músicas, vinhetas de início e de fim, sons da interface e a voz da locutora Iris",,"Music, start and end stingers, interface sounds and the voice of announcer Iris","Músicas, viñetas de inicio y de fin, sonidos de la interfaz y la voz de la locutora Iris",scripts/meta/Credits.cs
 obra do autor,,author's own work,obra del autor,scripts/meta/Credits.cs
@@ -648,6 +781,7 @@ Oculus Audio Pack 1 — Meta Platforms,,Oculus Audio Pack 1 — Meta Platforms,O
 Omnibus-Type,,Omnibus-Type,Omnibus-Type,scripts/meta/Credits.cs
 pacote gratuito,,free pack,paquete gratuito,scripts/meta/Credits.cs
 pacote LowPolyFPS4 da Unity Asset Store,,LowPolyFPS4 pack from the Unity Asset Store,paquete LowPolyFPS4 de la Unity Asset Store,scripts/meta/Credits.cs
+"pacote Stylized Sci-Fi Characters, da Unity Asset Store",,"Stylized Sci-Fi Characters pack, from the Unity Asset Store","paquete Stylized Sci-Fi Characters, de la Unity Asset Store",scripts/meta/Credits.cs
 "Passos, pulos, lobo, vozes, ambiente do hangar e do metrô (modificados)",,"Footsteps, jumps, wolf, voices, hangar and subway ambience (modified)","Pasos, saltos, lobo, voces, ambiente del hangar y del metro (modificados)",scripts/meta/Credits.cs
 Personagens e animação,,Characters and animation,Personajes y animación,scripts/meta/Credits.cs
 Phosphor Icons (phosphoricons.com),,Phosphor Icons (phosphoricons.com),Phosphor Icons (phosphoricons.com),scripts/meta/Credits.cs
@@ -657,6 +791,7 @@ PostgreSQL License,,PostgreSQL License,PostgreSQL License,scripts/meta/Credits.c
 raimeiyonke (Sketchfab),,raimeiyonke (Sketchfab),raimeiyonke (Sketchfab),scripts/meta/Credits.cs
 Raios do especial,,Special's lightning,Rayos del especial,scripts/meta/Credits.cs
 Rugido do lobo e faca,,Wolf roar and knife,Rugido del lobo y cuchillo,scripts/meta/Credits.cs
+Servidor,,Server,Servidor,scripts/meta/Credits.cs
 SIL Open Font License 1.1,,SIL Open Font License 1.1,SIL Open Font License 1.1,scripts/meta/Credits.cs
 sintetizado para o jogo,,synthesized for the game,sintetizado para el juego,scripts/meta/Credits.cs
 sintetizados por código (tools/sons/raios.py),,synthesized in code (tools/sons/raios.py),sintetizados por código (tools/sons/raios.py),scripts/meta/Credits.cs
@@ -676,11 +811,21 @@ WolfLeague (gerados para o jogo),,WolfLeague (generated for the game),WolfLeague
 Ícones da interface,,Interface icons,Íconos de la interfaz,scripts/meta/Credits.cs
 Armazém,,Warehouse,Almacén,scripts/meta/Maps.cs
 Armazém (original),,Warehouse (original),Almacén (original),scripts/meta/Maps.cs
+Cidade,,City,Ciudad,scripts/meta/Maps.cs
+Cidade do Deserto,,Desert City,Ciudad del Desierto,scripts/meta/Maps.cs
+Distrito Neon,,Neon District,Distrito Neón,scripts/meta/Maps.cs
+Estação de Trem,,Railway Station,Estación de Tren,scripts/meta/Maps.cs
 Estação Polar,,Polar Station,Estación Polar,scripts/meta/Maps.cs
 Grande,,Large,Grande,scripts/meta/Maps.cs
+"Grande, 100 × 70 m, de dia. Um prédio de concreto em construção no meio do canteiro: corredor de 60 m, salas e salões no térreo, duas lajes abertas em cima (4 e 8 m) com escadas e muretas de tijolo. Em volta, material empilhado, andaimes e gruas.",,"Large, 100 × 70 m, daytime. A concrete building under construction in the middle of the site: a 60 m corridor, rooms and halls on the ground floor, two open slabs above (4 and 8 m) with stairs and low brick walls. Around it, stacked material, scaffolding and cranes.","Grande, 100 × 70 m, de día. Un edificio de hormigón en construcción en medio de la obra: pasillo de 60 m, salas y salones en la planta baja, dos losas abiertas arriba (4 y 8 m) con escaleras y muretes de ladrillo. Alrededor, material apilado, andamios y grúas.",scripts/meta/Maps.cs
 "Grande, 110 × 70 m, neve e crepúsculo. Garagem central atravessável, alojamentos em fileiras, passarelas suspensas, tanques e torre de rádio.",,"Large, 110 × 70 m, snow and dusk. Drive-through central garage, rows of barracks, raised walkways, tanks and a radio tower.","Grande, 110 × 70 m, nieve y crepúsculo. Garaje central atravesable, barracas en hileras, pasarelas elevadas, tanques y torre de radio.",scripts/meta/Maps.cs
+"Grande, 110 × 75 m, sol alto. Uma cidadela talhada dentro da muralha: três vielas de ponta a ponta ligadas por becos de 2,5 m, a rua da feira e a praça do chafariz no meio. Casas de laje com escada de pedra; por cima da muralha, só o lobo.",,"Large, 110 × 75 m, high sun. A citadel carved inside the rampart: three lanes from end to end linked by 2.5 m alleys, the market street and the fountain square in the middle. Flat-roofed houses with stone stairs; on top of the rampart, only the wolf.","Grande, 110 × 75 m, sol alto. Una ciudadela tallada dentro de la muralla: tres callejuelas de punta a punta unidas por callejones de 2,5 m, la calle del mercado y la plaza de la fuente en el medio. Casas de azotea con escalera de piedra; por encima de la muralla, solo el lobo.",scripts/meta/Maps.cs
+"Grande, 120 × 80 m, de dia. Um bairro inteiro: três ruas de ponta a ponta, o bulevar do centro e os becos de 2,5 m por dentro dos quarteirões — entre as lojas, em volta do prédio em obras de três andares, atrás do banco. Cada time nasce numa ponta da avenida.",,"Large, 120 × 80 m, daytime. A whole neighbourhood: three streets from end to end, the central boulevard and the 2.5 m alleys inside the blocks — between the shops, around the three-storey building under construction, behind the bank. Each team spawns at one end of the avenue.","Grande, 120 × 80 m, de día. Un barrio entero: tres calles de punta a punta, el bulevar del centro y los callejones de 2,5 m por dentro de las manzanas — entre las tiendas, alrededor del edificio en obras de tres pisos, detrás del banco. Cada equipo nace en una punta de la avenida.",scripts/meta/Maps.cs
+"Grande, 120 × 95 m, fim de tarde, no centro da cidade. A rua e a praça, o prédio da estação com as torres de relógio — saguão, duas alas com corredor e salas —, duas plataformas, três linhas com trens parados e o pátio de carga. No centro, a passarela cruza as linhas por cima dos trens.",,"Large, 120 × 95 m, late afternoon, downtown. The street and the square, the station building with its clock towers — main hall, two wings with a corridor and rooms —, two platforms, three tracks with parked trains and the freight yard. In the centre, the footbridge crosses the tracks above the trains.","Grande, 120 × 95 m, atardecer, en el centro de la ciudad. La calle y la plaza, el edificio de la estación con las torres de reloj — vestíbulo, dos alas con pasillo y salas —, dos andenes, tres vías con trenes detenidos y el patio de carga. En el centro, la pasarela cruza las vías por encima de los trenes.",scripts/meta/Maps.cs
+"Grande, 124 × 100 m, de noite. Dois quarteirões de uma cidade do futuro, um de cada time, ligados pela avenida do meio e por duas ruas: lojas, o bar, a feira coberta, a praça do parque e um prédio de três lajes com escada por fora. Letreiros e faixas de LED iluminam as ruas; em volta, torres de até 100 m.",,"Large, 124 × 100 m, at night. Two blocks of a city of the future, one for each team, linked by the middle avenue and two streets: shops, the bar, the covered market, the park square and a three-floor building with an outside staircase. Signs and LED strips light the streets; around them, towers up to 100 m tall.","Grande, 124 × 100 m, de noche. Dos manzanas de una ciudad del futuro, una de cada equipo, unidas por la avenida central y dos calles: tiendas, el bar, el mercado cubierto, la plaza del parque y un edificio de tres losas con escalera por fuera. Letreros y franjas de LED iluminan las calles; alrededor, torres de hasta 100 m.",scripts/meta/Maps.cs
 "Médio, 72 × 52 m, fim de tarde. Praça com chafariz e feira, casas de reboco com terraço e vielas estreitas entre elas.",,"Medium, 72 × 52 m, late afternoon. A square with a fountain and a market, plastered houses with terraces and narrow alleys between them.","Mediano, 72 × 52 m, atardecer. Plaza con fuente y feria, casas revocadas con terraza y callejones estrechos entre ellas.",scripts/meta/Maps.cs
 "Médio, 75 × 45 m, galpão de contêineres de 13 m de altura. Túneis, pilhas com pranchas por cima, duas alas com pirâmides de contêineres até 8,7 m e corredores compridos junto às paredes.",,"Medium, 75 × 45 m, a container shed 13 m tall. Tunnels, stacks with planks on top, two wings with container pyramids up to 8.7 m and long corridors along the walls.","Mediano, 75 × 45 m, galpón de contenedores de 13 m de altura. Túneles, pilas con tablones encima, dos alas con pirámides de contenedores de hasta 8,7 m y pasillos largos junto a las paredes.",scripts/meta/Maps.cs
+Obra,,Construction Site,Obra,scripts/meta/Maps.cs
 Pequeno,,Small,Pequeño,scripts/meta/Maps.cs
 "Pequeno, 46 × 30 m, galpão fechado. Contêineres que viram túnel, pilhas de dois com pranchas por cima e claraboias no teto.",,"Small, 46 × 30 m, enclosed shed. Containers that turn into tunnels, two-high stacks with planks on top and skylights in the roof.","Pequeño, 46 × 30 m, galpón cerrado. Contenedores que se vuelven túnel, pilas de dos con tablones encima y claraboyas en el techo.",scripts/meta/Maps.cs
 Vila,,Village,Villa,scripts/meta/Maps.cs
@@ -714,22 +859,19 @@ Vença 7 partidas,,Win 7 matches,Gana 7 partidas,scripts/meta/Missions.cs
 Veterano,,Veteran,Veterano,scripts/meta/Missions.cs
 Abates ×{0},,Kills ×{0},Bajas ×{0},scripts/meta/Progression.cs
 Assistências ×{0},,Assists ×{0},Asistencias ×{0},scripts/meta/Progression.cs
+Bônus de evento,,Event bonus,Bonificación de evento,scripts/meta/Progression.cs
 Empate,,Draw,Empate,scripts/meta/Progression.cs
 MVP da partida,,Match MVP,MVP de la partida,scripts/meta/Progression.cs
 Participação,,Participation,Participación,scripts/meta/Progression.cs
 Promoção: {0},,Promotion: {0},Ascenso: {0},scripts/meta/Progression.cs
 Vitória,,Victory,Victoria,scripts/meta/Progression.cs
-Ancião,,Elder,Anciano,scripts/meta/Ranks.cs
-Batedor,,Scout,Explorador,scripts/meta/Ranks.cs
-Caçador,,Hunter,Cazador,scripts/meta/Ranks.cs
-Filhote,,Pup,Cachorro,scripts/meta/Ranks.cs
-II,,II,II,scripts/meta/Ranks.cs
-III,,III,III,scripts/meta/Ranks.cs
-Lua Cheia,,Full Moon,Luna Llena,scripts/meta/Ranks.cs
-Presa de Ferro,,Iron Fang,Colmillo de Hierro,scripts/meta/Ranks.cs
-Rastreador,,Tracker,Rastreador,scripts/meta/Ranks.cs
-Sentinela,,Sentinel,Centinela,scripts/meta/Ranks.cs
-Uivador,,Howler,Aullador,scripts/meta/Ranks.cs
+Bronze,,Bronze,Bronce,scripts/meta/Ranks.cs
+Diamante,,Diamond,Diamante,scripts/meta/Ranks.cs
+Iniciante,,Beginner,Principiante,scripts/meta/Ranks.cs
+Mestre,,Master,Maestro,scripts/meta/Ranks.cs
+Ouro,,Gold,Oro,scripts/meta/Ranks.cs
+Platina,,Platinum,Platino,scripts/meta/Ranks.cs
+Prata,,Silver,Plata,scripts/meta/Ranks.cs
 Bot {0},,Bot {0},Bot {0},scripts/meta/RoomDirectory.cs
 O servidor respondeu {0}.,,The server answered {0}.,El servidor respondió {0}.,scripts/net/Backend.cs
 Sem resposta do servidor.,,No response from the server.,Sin respuesta del servidor.,scripts/net/Backend.cs
@@ -839,6 +981,7 @@ melhor sequência,,best streak,mejor racha,scripts/ui/ResultScreen.cs
 MISSÕES CONCLUÍDAS,,MISSIONS COMPLETED,MISIONES COMPLETADAS,scripts/ui/ResultScreen.cs
 MVP DA PARTIDA,,MATCH MVP,MVP DE LA PARTIDA,scripts/ui/ResultScreen.cs
 Partida aberta direto no editor: não há sala.,,Match opened straight from the editor: there's no room.,Partida abierta directo en el editor: no hay sala.,scripts/ui/ResultScreen.cs
+Partida de treino: não rende XP nem Presas. As partidas online rendem.,,Training match: earns no XP or Fangs. Online matches do.,Partida de entrenamiento: no da XP ni Colmillos. Las partidas en línea sí.,scripts/ui/ResultScreen.cs
 patente máxima,,highest rank,rango máximo,scripts/ui/ResultScreen.cs
 Presas,,Fangs,Colmillos,scripts/ui/ResultScreen.cs
 primeiro a {0},,first to {0},primero a {0},scripts/ui/ResultScreen.cs
@@ -846,6 +989,7 @@ próxima: {0},,next: {0},siguiente: {0},scripts/ui/ResultScreen.cs
 RECOMPENSA,,REWARD,RECOMPENSA,scripts/ui/ResultScreen.cs
 "Resgate a recompensa em Missões, no lobby.",,"Claim the reward in Missions, in the lobby.","Reclama la recompensa en Misiones, en el lobby.",scripts/ui/ResultScreen.cs
 Sair para o lobby,,Leave to lobby,Salir al lobby,scripts/ui/ResultScreen.cs
+"Sem conta, a partida não rende XP nem Presas. Entre na sua conta em Online para ganhar.",,"Without an account, the match earns no XP or Fangs. Sign in to your account in Online to earn.","Sin cuenta, la partida no da XP ni Colmillos. Entra en tu cuenta en En línea para ganar.",scripts/ui/ResultScreen.cs
 Sem MVP: ninguém pontuou nesta partida.,,No MVP: nobody scored this match.,Sin MVP: nadie puntuó en esta partida.,scripts/ui/ResultScreen.cs
 VITÓRIA,,VICTORY,VICTORIA,scripts/ui/ResultScreen.cs
 VOCÊ,,YOU,TÚ,scripts/ui/ResultScreen.cs
@@ -910,7 +1054,6 @@ Dois toques no W e segure: 30% mais rápido.,,Double-tap W and hold: 30% faster.
 Equipe e clique para arremessar.,,Equip and click to throw.,Equipa y haz clic para lanzar.,scripts/ui/hud/Hud.Guide.cs
 Especial,,Special,Especial,scripts/ui/hud/Hud.Guide.cs
 Garrada,,Claw strike,Zarpazo,scripts/ui/hud/Hud.Guide.cs
-Granada,,Grenade,Granada,scripts/ui/hud/Hud.Guide.cs
 Habilidades,,Abilities,Habilidades,scripts/ui/hud/Hud.Guide.cs
 Poder e movimento,,Power and movement,Poder y movimiento,scripts/ui/hud/Hud.Guide.cs
 Pule numa parede e segure W para correr por ela. Espaço salta da parede.,,Jump onto a wall and hold W to run along it. Space jumps off the wall.,Salta a una pared y mantén W para correr por ella. Espacio salta desde la pared.,scripts/ui/hud/Hud.Guide.cs
@@ -951,42 +1094,13 @@ Incomum,,Uncommon,Poco común,scripts/ui/kit/UiTokens.cs
 Lendário,,Legendary,Legendario,scripts/ui/kit/UiTokens.cs
 Raro,,Rare,Raro,scripts/ui/kit/UiTokens.cs
 Épico,,Epic,Épico,scripts/ui/kit/UiTokens.cs
-Explosiva. Mata de perto e fere até a borda do raio; cai onde a mira aponta.,,Explosive. Kills up close and wounds out to the edge of the blast; lands where you aim.,Explosiva. Mata de cerca y hiere hasta el borde del radio; cae donde apunta la mira.,scripts/combat/Arsenal.cs
-"Explosiva: mata de perto e fere até a borda do raio. Cai onde a mira aponta. Todo mundo tem, e já vem no conjunto padrão.",,"Explosive: kills up close and wounds out to the edge of the blast. Lands where you aim. Everyone has it, and it comes in the default loadout.","Explosiva: mata de cerca y hiere hasta el borde del radio. Cae donde apunta la mira. Todos la tienen, y ya viene en el equipo predeterminado.",scripts/meta/Catalog.cs
-"O conjunto padrão: grátis, sempre disponível, rende +50 WP. Aceita as armas comuns e a granada",,"The default loadout: free, always available, earns +50 WP. Takes the common weapons and the grenade","El equipo predeterminado: gratis, siempre disponible, rinde +50 WP. Acepta las armas comunes y la granada",scripts/lobby/InventoryScreen.cs
-M4A4 Neon,,M4A4 Neon,M4A4 Neón,scripts/meta/Catalog.cs
-"Épica. A M4A4 mais rápida e mais junta no tiro, com pente de 32. Grafite com trilhas de circuito que acendem em ciano.",,"Epic. A faster, tighter-shooting M4A4 with a 32-round magazine. Graphite with circuit traces that glow cyan.","Épica. La M4A4 más rápida y más precisa, con cargador de 32. Grafito con pistas de circuito que brillan en cian.",scripts/meta/Catalog.cs
-M4A4 Dragão,,M4A4 Dragon,M4A4 Dragón,scripts/meta/Catalog.cs
-"Lendária. Mais dano por tiro, pente de 36, recarga rápida e recuo domado. Escamas vermelhas de borda dourada, com brasa entre elas.",,"Legendary. More damage per shot, 36-round magazine, fast reload and tamed recoil. Red scales edged in gold, embers glowing between them.","Legendaria. Más daño por disparo, cargador de 36, recarga rápida y retroceso domado. Escamas rojas con borde dorado y brasas entre ellas.",scripts/meta/Catalog.cs
-AK-74 Tigre,,AK-74 Tiger,AK-74 Tigre,scripts/meta/Catalog.cs
-Épica. Um pouco mais de dano e o coice mais fácil de segurar na rajada. Laranja com listras de tigre.,,Epic. A little more damage and a kick that is easier to hold in a burst. Orange with tiger stripes.,Épica. Un poco más de daño y un retroceso más fácil de controlar en ráfaga. Naranja con rayas de tigre.,scripts/meta/Catalog.cs
-AK-74 Imperial,,AK-74 Imperial,AK-74 Imperial,scripts/meta/Catalog.cs
-"Lendária. A AK que bate mais forte e mais rápido, pente de 35 e o coice mais domado. Laca preta com filigrana de ouro.",,"Legendary. The hardest and fastest hitting AK, 35-round magazine and the tamest kick. Black lacquer with gold filigree.","Legendaria. La AK que pega más fuerte y más rápido, cargador de 35 y el retroceso más domado. Laca negra con filigrana de oro.",scripts/meta/Catalog.cs
-SCAR-H Ártico,,SCAR-H Arctic,SCAR-H Ártico,scripts/meta/Catalog.cs
-"Épica. Recuo menor, tiro mais junto e pente de 22. Camuflagem digital de neve.",,"Epic. Less recoil, tighter shots and a 22-round magazine. Digital snow camouflage.","Épica. Menos retroceso, disparo más preciso y cargador de 22. Camuflaje digital de nieve.",scripts/meta/Catalog.cs
-SCAR-H Galáxia,,SCAR-H Galaxy,SCAR-H Galaxia,scripts/meta/Catalog.cs
-"Lendária. Mais dano, mais cadência, pente de 25 e recarga rápida. Uma nebulosa roxa e ciano, com estrelas que brilham.",,"Legendary. More damage, higher rate of fire, 25-round magazine and fast reload. A purple and cyan nebula with stars that shine.","Legendaria. Más daño, más cadencia, cargador de 25 y recarga rápida. Una nebulosa púrpura y cian con estrellas que brillan.",scripts/meta/Catalog.cs
-SVD Carbono,,SVD Carbon,SVD Carbono,scripts/meta/Catalog.cs
-"Épica. Segundo tiro mais cedo, recarga e saque mais rápidos. Fibra de carbono com detalhes vermelhos.",,"Epic. A quicker follow-up shot, faster reload and draw. Carbon fibre with red details.","Épica. Segundo disparo más pronto, recarga y desenfunde más rápidos. Fibra de carbono con detalles rojos.",scripts/meta/Catalog.cs
-SVD Tempestade,,SVD Storm,SVD Tormenta,scripts/meta/Catalog.cs
-"Lendária. Mais dano, segundo tiro mais cedo, pente de 12 e recarga rápida. Nuvens de tempestade cortadas por raios acesos.",,"Legendary. More damage, a quicker follow-up shot, 12-round magazine and fast reload. Storm clouds split by glowing lightning.","Legendaria. Más daño, segundo disparo más pronto, cargador de 12 y recarga rápida. Nubes de tormenta cortadas por rayos encendidos.",scripts/meta/Catalog.cs
-Desert Eagle Cobra,,Desert Eagle Cobra,Desert Eagle Cobra,scripts/meta/Catalog.cs
-Épica. O coice cobra menos e o tiro seguinte sai mais cedo. Escamas de cobra verde-esmeralda.,,Epic. A lighter kick and a quicker next shot. Emerald-green snake scales.,Épica. Menos retroceso y el siguiente disparo sale antes. Escamas de serpiente verde esmeralda.,scripts/meta/Catalog.cs
-Desert Eagle Fênix,,Desert Eagle Phoenix,Desert Eagle Fénix,scripts/meta/Catalog.cs
-"Lendária. Mais dano, oito tiros no pente e recarga rápida. Cromo preto com chamas acesas que lambem o cano.",,"Legendary. More damage, eight rounds in the magazine and a fast reload. Black chrome with glowing flames licking the barrel.","Legendaria. Más daño, ocho disparos en el cargador y recarga rápida. Cromo negro con llamas encendidas que lamen el cañón.",scripts/meta/Catalog.cs
-Faca Damasco,,Damascus Knife,Cuchillo Damasco,scripts/meta/Catalog.cs
-"Épica. Um pouco mais de dano e golpe um pouco mais rápido. Lâmina de aço damasco em ondas, cabo de madeira e cobre.",,"Epic. A little more damage and a slightly faster strike. A wavy Damascus steel blade, wood and copper handle.","Épica. Un poco más de daño y un golpe algo más rápido. Hoja de acero de Damasco en ondas, mango de madera y cobre.",scripts/meta/Catalog.cs
-Faca Obsidiana,,Obsidian Knife,Cuchillo Obsidiana,scripts/meta/Catalog.cs
-"Lendária. A faca que mais fere, a mais rápida e com um palmo a mais de alcance. Vidro vulcânico preto com veios roxos acesos.",,"Legendary. The hardest-hitting and fastest knife, with a little more reach. Black volcanic glass with glowing purple veins.","Legendaria. El cuchillo que más hiere, el más rápido y con algo más de alcance. Vidrio volcánico negro con vetas púrpuras encendidas.",scripts/meta/Catalog.cs
-Facas,,Knives,Cuchillos,scripts/lobby/ShopScreen.cs
-Cidade,,City,Ciudad,scripts/meta/Maps.cs
-Cidade do Deserto,,Desert City,Ciudad del Desierto,scripts/meta/Maps.cs
-"Low Poly FPS Bundle, de JustCreate (Fab)",,"Low Poly FPS Bundle, by JustCreate (Fab)","Low Poly FPS Bundle, de JustCreate (Fab)",scripts/meta/Credits.cs
-Licença padrão da Fab,,Fab standard license,Licencia estándar de Fab,scripts/meta/Credits.cs
-"Grande, 110 × 75 m, sol alto. Uma cidadela talhada dentro da muralha: três vielas de ponta a ponta ligadas por becos de 2,5 m, a rua da feira e a praça do chafariz no meio. Casas de laje com escada de pedra; por cima da muralha, só o lobo.",,"Large, 110 × 75 m, high sun. A citadel carved inside the rampart: three lanes from end to end linked by 2.5 m alleys, the market street and the fountain square in the middle. Flat-roofed houses with stone stairs; on top of the rampart, only the wolf.","Grande, 110 × 75 m, sol alto. Una ciudadela tallada dentro de la muralla: tres callejuelas de punta a punta unidas por callejones de 2,5 m, la calle del mercado y la plaza de la fuente en el medio. Casas de azotea con escalera de piedra; por encima de la muralla, solo el lobo.",scripts/meta/Maps.cs
-Estação de Trem,,Railway Station,Estación de Tren,scripts/meta/Maps.cs
-Obra,,Construction Site,Obra,scripts/meta/Maps.cs
-"Grande, 100 × 70 m, de dia. Um prédio de concreto em construção no meio do canteiro: corredor de 60 m, salas e salões no térreo, duas lajes abertas em cima (4 e 8 m) com escadas e muretas de tijolo. Em volta, material empilhado, andaimes e gruas.",,"Large, 100 × 70 m, daytime. A concrete building under construction in the middle of the site: a 60 m corridor, rooms and halls on the ground floor, two open slabs above (4 and 8 m) with stairs and low brick walls. Around it, stacked material, scaffolding and cranes.","Grande, 100 × 70 m, de día. Un edificio de hormigón en construcción en medio de la obra: pasillo de 60 m, salas y salones en la planta baja, dos losas abiertas arriba (4 y 8 m) con escaleras y muretes de ladrillo. Alrededor, material apilado, andamios y grúas.",scripts/meta/Maps.cs
-"Grande, 120 × 95 m, fim de tarde, no centro da cidade. A rua e a praça, o prédio da estação com as torres de relógio — saguão, duas alas com corredor e salas —, duas plataformas, três linhas com trens parados e o pátio de carga. No centro, a passarela cruza as linhas por cima dos trens.",,"Large, 120 × 95 m, late afternoon, downtown. The street and the square, the station building with its clock towers — main hall, two wings with a corridor and rooms —, two platforms, three tracks with parked trains and the freight yard. In the centre, the footbridge crosses the tracks above the trains.","Grande, 120 × 95 m, atardecer, en el centro de la ciudad. La calle y la plaza, el edificio de la estación con las torres de reloj — vestíbulo, dos alas con pasillo y salas —, dos andenes, tres vías con trenes detenidos y el patio de carga. En el centro, la pasarela cruza las vías por encima de los trenes.",scripts/meta/Maps.cs
-"Mapas Cidade, Cidade do Deserto, Estação de Trem e Obra (peças e textura)",,"Maps City, Desert City, Railway Station, Construction Site (pieces and texture)","Mapas Ciudad, Ciudad del Desierto, Estación de Tren, Obra (piezas y textura)",scripts/meta/Credits.cs
-"Grande, 120 × 80 m, de dia. Um bairro inteiro: três ruas de ponta a ponta, o bulevar do centro e os becos de 2,5 m por dentro dos quarteirões — entre as lojas, em volta do prédio em obras de três andares, atrás do banco. Cada time nasce numa ponta da avenida.",,"Large, 120 × 80 m, daytime. A whole neighbourhood: three streets from end to end, the central boulevard and the 2.5 m alleys inside the blocks — between the shops, around the three-storey building under construction, behind the bank. Each team spawns at one end of the avenue.","Grande, 120 × 80 m, de día. Un barrio entero: tres calles de punta a punta, el bulevar del centro y los callejones de 2,5 m por dentro de las manzanas — entre las tiendas, alrededor del edificio en obras de tres pisos, detrás del banco. Cada equipo nace en una punta de la avenida.",scripts/meta/Maps.cs
+ASSISTINDO,,WATCHING,OBSERVANDO,scripts/visual/KillCam.Hud.cs
+CLIQUES: TROCAR ALIADO  ·  ESPAÇO: CÂMERA LIVRE,,CLICKS: SWITCH ALLY  ·  SPACE: FREE CAMERA,CLICS: CAMBIAR ALIADO  ·  ESPACIO: CÁMARA LIBRE,scripts/visual/KillCam.Hud.cs
+CLIQUES: TROCAR ALIADO  ·  ESPAÇO: VISTA DE CIMA,,CLICKS: SWITCH ALLY  ·  SPACE: TOP VIEW,CLICS: CAMBIAR ALIADO  ·  ESPACIO: VISTA DESDE ARRIBA,scripts/visual/KillCam.Hud.cs
+COMO HUMANO,,AS A HUMAN,COMO HUMANO,scripts/visual/KillCam.Hud.cs
+COMO LOBO,,AS A WOLF,COMO LOBO,scripts/visual/KillCam.Hud.cs
+ESPAÇO: ESPECTADOR,,SPACE: SPECTATOR,ESPACIO: ESPECTADOR,scripts/visual/KillCam.Hud.cs
+ESPECTADOR,,SPECTATOR,ESPECTADOR,scripts/visual/KillCam.Hud.cs
+PRONTO PARA RENASCER,,READY TO RESPAWN,LISTO PARA REAPARECER,scripts/visual/KillCam.Hud.cs
+RENASCE EM,,RESPAWNS IN,REAPARECE EN,scripts/visual/KillCam.Hud.cs
+WASD E MOUSE  ·  ESPAÇO: VOLTAR AOS ALIADOS,,WASD AND MOUSE  ·  SPACE: BACK TO ALLIES,WASD Y RATÓN  ·  ESPACIO: VOLVER A LOS ALIADOS,scripts/visual/KillCam.Hud.cs

@@ -64,6 +64,9 @@ public partial class Hud : CanvasLayer
 	public string ShownReload => _reloading?.Text;
 	public int FeedShown => _feed?.GetChildCount() ?? 0;
 
+	/// <summary>O feed está de fato na tela (a camada dele e ele visíveis). Para os testes.</summary>
+	public bool FeedOnScreen => _feed != null && _feed.IsVisibleInTree() && (_feedLayer == null || _feedLayer.Visible);
+
 	public override void _Ready()
 	{
 		Node player = Subject ?? Groups.LocalPlayer(GetTree()) ?? Nodes.FindFirst<Player>(GetTree().CurrentScene);
@@ -140,7 +143,11 @@ public partial class Hud : CanvasLayer
 		if (!_health.IsDead) Warn(Loc.F("Soltou: {0}", Arsenal.NameOf(id)), 1.2f, UiTokens.TextSecondary);
 	}
 
-	private void OnMatchPhase(int phase) => Visible = (MatchPhase)phase != MatchPhase.Ended && (Subject != null || !KillCam.Active);
+	private void OnMatchPhase(int phase)
+	{
+		Visible = (MatchPhase)phase != MatchPhase.Ended && (Subject != null || !KillCam.Active);
+		if (_feedLayer != null) _feedLayer.Visible = (MatchPhase)phase != MatchPhase.Ended;
+	}
 
 	private void OnHalfTime()
 	{

@@ -45,6 +45,9 @@ public partial class KillCam : Node3D
 	/// <summary>Há uma câmera de morte na tela: o HUD de quem joga sai.</summary>
 	public static bool Active { get; private set; }
 
+	/// <summary>A câmera de morte na tela agora (nula sem nenhuma).</summary>
+	public static KillCam Current { get; private set; }
+
 	/// <summary>Em que modo está: "morte", "abate", "primeira", "cima" ou
 	/// "livre". Para os testes.</summary>
 	public string Mode => _phase switch
@@ -77,6 +80,7 @@ public partial class KillCam : Node3D
 		_camera.GlobalTransform = _from;
 		_camera.MakeCurrent();
 		Active = true;
+		Current = this;
 		Mark();
 		BuildHud();
 	}
@@ -113,6 +117,7 @@ public partial class KillCam : Node3D
 		ShowBodies();
 		Focus = null;
 		Active = false;
+		if (Current == this) Current = null;
 		foreach (var (mesh, previous) in _marked)
 			if (IsInstanceValid(mesh)) BodyOverlay.SetEdge(mesh, previous);
 		_marked.Clear();

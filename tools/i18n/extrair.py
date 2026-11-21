@@ -25,9 +25,10 @@ FORA = ("scripts/tools/", "scripts/debug/", "scripts/visual/wolf/", "scripts/vis
         "scripts/visual/fx/", "scripts/actors/", "scripts/ai/", "scripts/net/MatchServer", "scripts/net/Net", "scripts/net/Server",
         "scripts/core/Sfx", "scripts/core/NavBaker", "scripts/core/InputSetup", "scripts/combat/weapon/", "scripts/visual/Weapon",
         "scripts/visual/WorldAudio", "scripts/visual/CombatantAudio", "scripts/core/Loc.cs",
-        "scripts/ui/kit/UiTheme", "scripts/ui/kit/UiFonts", "scripts/net/OnlineRobot")
+        "scripts/ui/kit/UiTheme", "scripts/ui/kit/UiFonts", "scripts/net/OnlineRobot",
+        "scripts/net/HitCheck", "scripts/net/HostedMatch", "scripts/visual/VisualSmoothing", "scripts/visual/Silhouette")
 # nomes de nó e de corpo (a lógica e a rede dependem deles), cabeçalhos e variáveis: nunca são texto
-NUNCA = {"Authorization", "Bearer ", "X-Fleet-Key", "Content-Type", "ALCATEIA_API", "Jogador{0}", "Bot{0}"}
+NUNCA = {"Authorization", "Bearer ", "X-Fleet-Key", "Content-Type", "ALCATEIA_API", "Jogador{0}", "Bot{0}", "If-None-Match", "../Bots"}
 
 # contexto que NÃO é texto de tela: o literal vem logo depois disto
 NAO = re.compile(r"""(GetNode(OrNull)?(<[^>]*>)?\(|FindChild(ren)?\(|GetNodesInGroup\(|IsInGroup\(|AddToGroup\(|HasNode\(|Has\(|Own\(|Source\(|Fire\(|Cap\(
@@ -108,6 +109,23 @@ def varrer():
                         trocas.setdefault(caminho, []).append((a, b, f'Loc.F("{fmt}", {", ".join(args)})'))
     return achados, trocas
 
+# Os textos que moram em recurso (.tres): o nome e a descrição das armas,
+# das classes de lobo, dos personagens (pedido do Jhon, 21/11: "os nomes do
+# mapa e descrição devem estar no i18n, o mesmo para itens, personagens").
+PASTAS_TRES = ["resources", "assets/personagens"]
+CAMPOS_TRES = re.compile(r'^(DisplayName|Description|Title|Subtitle|Lore|Tagline)\s*=\s*"((?:[^"\\]|\\.)*)"\s*$', re.M)
+
+def varrer_recursos(achados):
+    for pasta in PASTAS_TRES:
+        for dp, _, fn in os.walk(os.path.join(RAIZ, pasta)):
+            for f in sorted(fn):
+                if not f.endswith(".tres"): continue
+                caminho = os.path.join(dp, f)
+                rel = os.path.relpath(caminho, RAIZ).replace(os.sep, "/")
+                for m in CAMPOS_TRES.finditer(open(caminho, encoding="utf-8").read()):
+                    t = m.group(2).replace('\\"', '"').replace("\\n", "\n")
+                    if parece_texto(t): achados.setdefault(t, rel)
+
 def ler_csv():
     linhas, cab = {}, ["texto", "pt_BR", "en", "es", "onde"]
     if os.path.exists(CSV):
@@ -120,6 +138,7 @@ def ler_csv():
 
 def main():
     achados, trocas = varrer()
+    varrer_recursos(achados)
     cab, linhas = ler_csv()
     novos = 0
     for t, onde in achados.items():

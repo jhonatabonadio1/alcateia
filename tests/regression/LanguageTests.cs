@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 using System.Threading.Tasks;
 
@@ -58,6 +59,13 @@ public sealed class LanguageTests : RegressionTest
 		b.Check(Loc.T("Créditos") == "Créditos", "em português, o texto é o português (não o inglês)");
 		TranslationServer.SetLocale("en");
 		b.Check(Loc.T("Créditos") == "Credits", "em inglês, traduz");
+		// O que não é texto de tela fixo também (Jhon, 21/11): mapa, item,
+		// arma, personagem e patente saem no idioma do jogo.
+		b.Check(Maps.Get("neon").Name == "Neon District" && Maps.Get("neon").Description.StartsWith("Large"), $"mapa: nome e descrição ({Maps.Get("neon").Name})");
+		b.Check(Catalog.Get("scar")?.Type == "Heavy weapon", $"item: o tipo ({Catalog.Get("scar")?.Type})");
+		b.Check(Arsenal.NameOf("choque_neon") == "Neon Grenade", $"arma: o nome ({Arsenal.NameOf("choque_neon")})");
+		b.Check(Catalog.All.Any(i => i.Kind == ItemKind.Character && i.Description.StartsWith("From the")), "personagem: a descrição");
+		b.Check(Ranks.NameOf(5).StartsWith("Level ") && Ranks.FamilyName(Ranks.RankFor(long.MaxValue / 4)) != "", $"patente: {Ranks.NameOf(5)}");
 		TranslationServer.SetLocale("es");
 		b.Check(Loc.T("Voltar às opções") == "Volver a opciones", "em espanhol, traduz");
 		TranslationServer.SetLocale(before);

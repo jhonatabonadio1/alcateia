@@ -42,6 +42,10 @@ public partial class Hud
 		string me = _health?.PublicName;
 		bool mine = kill.Killer == me;
 		bool died = kill.Victim == me;
+		// Morto, quem se vê no espectador também ganha a borda (19/11: "com
+		// destaque em quem estou vendo, só para mim").
+		string watched = Subject == null ? KillCam.Current?.Watching?.GetNodeOrNull<Health>("Health")?.PublicName : null;
+		bool seen = watched != null && (kill.Killer == watched || kill.Victim == watched);
 
 		// Sequência (double, triple…) e vingança, de quem for.
 		KillStory.Note note = _story.Add(kill.Killer, kill.Victim, Time.GetTicksMsec() / 1000.0);
@@ -59,8 +63,8 @@ public partial class Hud
 		// Placa chapada (sem borrar o fundo). A linha em que você aparece
 		// leva borda dourada: é a que importa.
 		var line = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Ignore, SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd };
-		line.AddThemeStyleboxOverride("panel", HudStyle.Plate(mine || died ? UiTokens.Accent : new Color(1, 1, 1, 0.25f),
-			padH: UiTokens.S3, padV: 3, accentWidth: mine || died ? 3 : 1));
+		line.AddThemeStyleboxOverride("panel", HudStyle.Plate(mine || died || seen ? UiTokens.Accent : new Color(1, 1, 1, 0.25f),
+			padH: UiTokens.S3, padV: 3, accentWidth: mine || died || seen ? 3 : 1));
 
 		HBoxContainer row = UiKit.Row(UiTokens.S2);
 		line.AddChild(row);

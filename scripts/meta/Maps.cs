@@ -5,7 +5,12 @@ using System.Linq;
 public sealed class MapInfo
 {
 	public string Id;
-	public string Name;
+
+	// O nome, a descrição e o tamanho saem no idioma do jogo (assets/i18n,
+	// pedido do Jhon, 21/11): o que está aqui é a chave, em português.
+	private string _name, _description, _size = "Médio";
+
+	public string Name { get => Loc.T(_name); set => _name = value; }
 	public string Scene;
 	/// <summary>Planta vista de cima, gerada pelo gerador do mapa
 	/// (tools/gerar_mapas.py). Fica de reserva enquanto não há a foto.</summary>
@@ -18,9 +23,9 @@ public sealed class MapInfo
 
 	/// <summary>A imagem a mostrar: a foto, ou a planta se ainda não há foto.</summary>
 	public string Picture => !string.IsNullOrEmpty(Cover) && ResourceLoader.Exists(Cover) ? Cover : Thumbnail;
-	public string Description;
+	public string Description { get => Loc.T(_description); set => _description = value; }
 	/// <summary>Pequeno, Médio ou Grande.</summary>
-	public string Size = "Médio";
+	public string Size { get => Loc.T(_size); set => _size = value; }
 	public GameMode[] Modes;
 
 	/// <summary>A acústica do lugar (<see cref="Sfx.SetRoom"/>): tamanho

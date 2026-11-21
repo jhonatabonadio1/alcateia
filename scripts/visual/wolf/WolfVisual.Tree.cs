@@ -18,13 +18,19 @@ public partial class WolfVisual
 	/// entra seca: a garra chega 0,14 s depois do clique, e uma entrada
 	/// mais longa comeria o golpe. Sai curta, porque a próxima vem logo.
 	/// A aterrissagem do bote também entra quase seca: é o impacto.</summary>
+	/// <summary>Mistura de entrada do bote sobre o pulo: dois quadros.</summary>
+	public const float DiveFadeIn = 0.03f;
+
 	private static (float In, float Out) Fades(string shot) => shot switch
 	{
 		"claw" or "heavy" => (0.06f, 0.1f),
 		"howl" => (0.15f, 0.2f),
 		"jump_land" => (0.05f, 0.25f),
 		"pounce" => (0.12f, 0.25f),
-		"dive" => (0.08f, 0.15f),
+		// O bote corta o pulo quase seco: em 0,08 s de mistura, num bote
+		// curto (10 passos), metade do golpe saía ainda com cara de pulo
+		// (Jhon, 21/11: "menos delay e quase cancelar a animação").
+		"dive" => (DiveFadeIn, 0.15f),
 		"dive_land" => (0.05f, 0.25f),
 		_ => (0.08f, 0.2f)
 	};

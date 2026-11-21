@@ -203,7 +203,11 @@ public sealed class WatchedHudLiveTest : RegressionTest
 		b.Check(cam != null && cam.Mode == "primeira" && cam.Watching == mate, $"espectador na tela do aliado ({cam?.Mode})");
 		Hud hud = cam?.SubjectHud;
 		if (hud == null) { b.Check(false, "há o HUD do aliado"); return; }
-		b.Check(hud.FeedShown >= 1, $"o feed continua no espectador ({hud.FeedShown} linhas)");
+		Hud mine = b.GetTree().Root.FindChildren("*", "", true, false).OfType<Hud>().FirstOrDefault(h => h.Subject == null);
+		b.Check(mine != null && mine.FeedOnScreen && mine.FeedShown >= 1, $"o feed continua na tela no espectador ({mine?.FeedShown} linhas)");
+		b.Check(!hud.FeedOnScreen, "e só um: o HUD do aliado não repete o feed");
+
+
 
 		Weapon gun = mate.GetNode<Weapon>("Weapon");
 		gun.ProcessMode = Node.ProcessModeEnum.Always;
@@ -272,5 +276,43 @@ public sealed class SpectatorInsideTest : RegressionTest
 			string wall = hit.Count > 0 ? ((Node)hit["collider"]).Name : "";
 			b.Check(!wall.StartsWith("casca") && at.Y > -0.1f, $"{name}: a câmera fica dentro do galpão ({at}, no caminho: {(wall == "" ? "nada" : wall)})");
 		}
+	}
+}
+
+/// <summary>
+/// Morto, o feed de abates continua na tela o tempo todo (pedido do Jhon,
+/// 21/11): na câmera de morte, no espectador e com a escolha de conjunto
+/// aberta por cima — e abate novo aparece.
+/// </summary>
+public sealed class DeadFeedTest : RegressionTest
+{
+	public override string Name => "FeedMorto";
+	public override string Description => "morto, com a escolha de conjunto aberta, o feed de abates continua na tela e recebe abate novo";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.CloseLoadout();
+		var bots = b.Bots();
+		foreach (var bot in bots) RegressionBench.Freeze(bot);
+		Health a = bots[0].GetNode<Health>("Health"), c = bots[^1].GetNode<Health>("Health");
+		b.Health.TrainingRespawnDelay = 3f;
+		b.Health.TakeDamage(99999f);
+
+		Hud mine = b.GetTree().Root.FindChildren("*", "", true, false).OfType<Hud>().FirstOrDefault(h => h.Subject == null);
+		var loadout = b.GetTree().Root.FindChildren("*", "", true, false).OfType<LoadoutMenu>().FirstOrDefault();
+		if (mine == null || loadout == null) { b.Check(false, "há o HUD e a escolha de conjunto"); return; }
+
+		await b.Seconds(1.0);
+		int before = mine.FeedShown;
+		KillFeed.Report(new Kill(a.PublicName, a.Team, c.PublicName, c.Team, KillCause.Gun, "ar15"));
+		await b.Frames(3);
+		b.Check(mine.FeedOnScreen && mine.FeedShown > before, $"na câmera de morte, o abate novo aparece ({before} → {mine.FeedShown})");
+
+		b.Check(await b.Until(() => loadout.IsOpen, 8), "a escolha de conjunto abriu");
+		before = mine.FeedShown;
+		KillFeed.Report(new Kill(c.PublicName, c.Team, a.PublicName, a.Team, KillCause.Headshot, "ar15"));
+		await b.Frames(3);
+		b.Check(mine.FeedOnScreen && mine.FeedShown > before, $"com a escolha aberta por cima, o feed continua e recebe o abate ({before} → {mine.FeedShown})");
+		b.CloseLoadout();
 	}
 }

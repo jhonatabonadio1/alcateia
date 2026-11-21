@@ -151,9 +151,43 @@ public partial class Hud
 		box.AddChild(where);
 	}
 
+	/// <summary>
+	/// O feed de quem joga mora numa camada própria, acima da escolha de
+	/// conjunto (pedido do Jhon, 21/11: "quando eu morrer, o feed de kills
+	/// deve continuar aparecendo, mesmo no modo espectador"). Antes ele ia
+	/// junto com o HUD: morto, o HUD sai (a câmera de morte põe o de quem
+	/// se vê) e a escolha de conjunto cobria o de quem se vê — o feed sumia
+	/// os 15 s da escolha. O HUD de quem se vê não mostra o dele: seria o
+	/// mesmo feed duas vezes.
+	/// </summary>
+	private CanvasLayer _feedLayer;
+
+	/// <summary>Acima da escolha de conjunto (9) e do menu (10).</summary>
+	public const int FeedLayer = 11;
+
 	private void BuildFeed()
 	{
+		if (Subject == null)
+		{
+			_feedLayer = new CanvasLayer { Layer = FeedLayer, Name = "FeedDeAbates" };
+			AddChild(_feedLayer);
+			var root = new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
+			root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+			_feedLayer.AddChild(root);
+			_feed = UiKit.Column(UiTokens.S1);
+			_feed.SetAnchorsPreset(Control.LayoutPreset.TopRight);
+			_feed.GrowHorizontal = Control.GrowDirection.Begin;
+			_feed.MouseFilter = Control.MouseFilterEnum.Ignore;
+			root.AddChild(_feed);
+			_feed.Position = new Vector2(-Edge, Edge);
+			_feed.CustomMinimumSize = new Vector2(440, 0);
+			_feed.OffsetLeft = -Edge - 440;
+			_feed.OffsetRight = -Edge;
+			return;
+		}
+
 		_feed = Corner(UiKit.Column(UiTokens.S1), Control.LayoutPreset.TopRight);
+		_feed.Visible = false;
 		_feed.Position = new Vector2(-Edge, Edge);
 		_feed.CustomMinimumSize = new Vector2(440, 0);
 		_feed.OffsetLeft = -Edge - 440;

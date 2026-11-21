@@ -22,8 +22,26 @@ using Godot;
 /// </summary>
 public partial class Crosshair : Control
 {
-	/// <summary>Pixels de abertura por grau de dispersão.</summary>
+	/// <summary>Pixels de abertura por grau de dispersão quando não há
+	/// câmera (a prévia das opções). Em jogo a conta é a da câmera: veja
+	/// <see cref="Opening"/>.</summary>
 	[Export] public float PixelsPerDegree = 9f;
+
+	/// <summary>
+	/// Quantos pixels do centro cai um tiro com <paramref name="degrees"/>
+	/// de desvio, nesta tela e neste campo de visão. Antes era um número
+	/// fixo (9 px por grau), que só batia num FOV: com a dispersão grande
+	/// do fuzil de precisão sem luneta (4°), a cruz abria metade do que o
+	/// tiro espalhava, e o tiro caía fora dela (Jhon, 21/11: "o tiro da
+	/// sniper não está coincidindo com o crosshair sem escopo").
+	/// </summary>
+	public float Opening(float degrees)
+	{
+		Camera3D camera = GetViewport()?.GetCamera3D();
+		if (camera == null || PreviewSpread >= 0f) return degrees * PixelsPerDegree;
+		float half = Mathf.Tan(Mathf.DegToRad(Mathf.Clamp(camera.Fov, 1f, 179f) * 0.5f));
+		return Size.Y * 0.5f * Mathf.Tan(Mathf.DegToRad(Mathf.Clamp(degrees, 0f, 60f))) / half;
+	}
 
 	public Weapon Weapon { get; set; }
 	public FormController Form { get; set; }
@@ -59,7 +77,7 @@ public partial class Crosshair : Control
 		{
 			SelfModulate = Colors.White;
 			if (Weapon.Scoped) PaintSniperScope(this, Size);
-			else if (aim < 1f) Paint(this, Size / 2f, Settings.Values.Crosshair, _spread * PixelsPerDegree, aim);
+			else if (aim < 1f) Paint(this, Size / 2f, Settings.Values.Crosshair, Opening(_spread), aim);
 			return;
 		}
 
@@ -69,11 +87,11 @@ public partial class Crosshair : Control
 		SelfModulate = new Color(1, 1, 1, sights ? 1f - aim : 1f);
 		if (sights)
 		{
-			if (aim < 1f) Paint(this, Size / 2f, Settings.Values.Crosshair, _spread * PixelsPerDegree);
+			if (aim < 1f) Paint(this, Size / 2f, Settings.Values.Crosshair, Opening(_spread));
 			return;
 		}
 
-		Paint(this, Size / 2f, Settings.Values.Crosshair, _spread * PixelsPerDegree, aim);
+		Paint(this, Size / 2f, Settings.Values.Crosshair, Opening(_spread), aim);
 		if (aim > 0f) PaintScope(this, Size / 2f, Size.Y, Settings.Values.Crosshair, ScopeSpread(), aim);
 	}
 
