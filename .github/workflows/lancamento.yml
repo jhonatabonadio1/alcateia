@@ -1,6 +1,6 @@
-# Lançamento: uma tag "v*" (git tag v0.4.0 && git push --tags) roda os
-# testes e, passando, sobe o servidor e a frota de partidas no Fly.io, monta
-# o jogo para Windows e para Mac e, só quando tudo isso deu certo,
+# Lançamento: uma tag "v*" (git tag v0.4.0 && git push --tags) sobe o
+# servidor e a frota de partidas no Fly.io, monta o jogo para Windows e
+# para Mac e, só quando tudo isso deu certo,
 # publica a Release do GitHub (o link que vai para os testadores) com:
 #   WolfLeague-Setup-<versão>.exe   instalador do Windows (atalhos, desinstalador)
 #   WolfLeague-<versão>-windows.zip Windows portátil, sem instalar
@@ -38,14 +38,19 @@ env:
   FLY_APP_PARTIDA: ${{ vars.FLY_APP_PARTIDA || 'wolfleague-partida' }}
   SERVIDOR_URL: ${{ vars.SERVIDOR_URL || format('https://{0}.fly.dev', vars.FLY_APP_API || 'wolfleague-api') }}
 
-jobs:
-  testes:
-    uses: ./.github/workflows/testes.yml
+# Sem os testes automatizados por enquanto (Jhon, 21/11: "tire os testes
+# automatizados do Lançamento por enquanto"): o lançamento não espera por
+# eles. O testes.yml continua rodando sozinho a cada push. Para voltar,
+# ponha o job abaixo de "jobs:" e "needs: testes" no servidor, no cliente e
+# no cliente-mac:
+#
+#   testes:
+#     uses: ./.github/workflows/testes.yml
 
+jobs:
   # O servidor (API, saguão, painel). Sobe primeiro: a versão nova da
   # frota pode depender de rota nova dele; a velha continua falando com ele.
   servidor:
-    needs: testes
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: producao
@@ -97,7 +102,6 @@ jobs:
   # empacota o instalador (instalador/windows.nsi) e guarda como artefato.
   # Roda ao mesmo tempo que o deploy; quem publica é o job "release".
   cliente:
-    needs: testes
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -165,7 +169,6 @@ jobs:
   # Apple, não é autenticado: na primeira vez o jogador libera em
   # Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo Assim.
   cliente-mac:
-    needs: testes
     runs-on: macos-latest
     timeout-minutes: 50
     steps:

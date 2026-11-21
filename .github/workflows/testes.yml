@@ -6,7 +6,7 @@ name: Testes
 
 on:
   push:
-    # Só ramos: a tag de lançamento já roda os testes pelo lancamento.yml.
+    # Só ramos (a tag de lançamento não roda testes por enquanto: lancamento.yml).
     branches: ["**"]
   pull_request:
   workflow_dispatch:
