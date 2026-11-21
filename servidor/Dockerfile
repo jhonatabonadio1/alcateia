@@ -1,8 +1,9 @@
 # O servidor do Alcateia (contas, salas, chat, ranking, frota, loja,
 # desafios, segurança) e o painel administrativo.
 #
-# O contexto é a raiz do repositório, porque as regras de recompensa
-# (scripts/domain/Rewards.cs) são as do jogo:
+# O contexto é a raiz do repositório, porque as regras de recompensa e da
+# fúria (scripts/domain/Rewards.cs e Rage.cs, que o Alcateia.Dominio.csproj
+# inclui) são as do jogo:
 #
 #   docker build -f servidor/Dockerfile -t alcateia-servidor .
 #
@@ -11,6 +12,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS construir
 WORKDIR /fonte
 COPY scripts/domain/Rewards.cs scripts/domain/Rewards.cs
+COPY scripts/domain/Rage.cs scripts/domain/Rage.cs
 # As camadas: domínio, aplicação, infra e a API (que é o programa).
 COPY servidor/Alcateia.Dominio servidor/Alcateia.Dominio
 COPY servidor/Alcateia.Aplicacao servidor/Alcateia.Aplicacao

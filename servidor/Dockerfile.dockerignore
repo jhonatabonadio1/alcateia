@@ -1,6 +1,7 @@
 # Só o que o servidor e o painel precisam entra no contexto da imagem.
 *
 !scripts/domain/Rewards.cs
+!scripts/domain/Rage.cs
 !servidor/Alcateia.Dominio/**
 !servidor/Alcateia.Aplicacao/**
 !servidor/Alcateia.Infra/**
