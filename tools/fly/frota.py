@@ -31,21 +31,37 @@ API = os.environ.get('FLY_API_HOSTNAME', 'https://api.machines.dev').rstrip('/')
 PARADAS = ('stopped', 'suspended', 'created')
 
 
+# Logo depois do "fly deploy --build-only --push", o registro do Fly pode
+# ainda não ter a imagem: a máquina volta 400 MANIFEST_UNKNOWN. Espera e tenta
+# de novo (até uns 4 minutos) antes de desistir.
+ESPERA_IMAGEM = (10, 15, 20, 30, 40, 60, 60)
+
+
 def pedir(metodo, caminho, corpo=None):
 	token = os.environ.get('FLY_API_TOKEN', '').strip()
 	if not token:
 		sys.exit('falta FLY_API_TOKEN')
 	dados = json.dumps(corpo).encode() if corpo is not None else None
-	req = urllib.request.Request(API + caminho, data=dados, method=metodo)
-	# O token novo vem como "FlyV1 fm2_...": a linha inteira, com o prefixo, vai depois do Bearer.
-	req.add_header('Authorization', 'Bearer ' + token)
-	req.add_header('Content-Type', 'application/json')
-	try:
-		with urllib.request.urlopen(req, timeout=60) as r:
-			texto = r.read().decode()
-			return json.loads(texto) if texto.strip() else None
-	except urllib.error.HTTPError as e:
-		sys.exit(f'{metodo} {caminho}: {e.code} {e.read().decode()[:400]}')
+	for tentativa in range(len(ESPERA_IMAGEM) + 1):
+		req = urllib.request.Request(API + caminho, data=dados, method=metodo)
+		# O token novo vem como "FlyV1 fm2_...": a linha inteira, com o prefixo, vai depois do Bearer.
+		req.add_header('Authorization', 'Bearer ' + token)
+		req.add_header('Content-Type', 'application/json')
+		try:
+			with urllib.request.urlopen(req, timeout=60) as r:
+				texto = r.read().decode()
+				return json.loads(texto) if texto.strip() else None
+		except urllib.error.HTTPError as e:
+			erro = e.read().decode()
+			if 'MANIFEST_UNKNOWN' in erro and tentativa < len(ESPERA_IMAGEM):
+				espera = ESPERA_IMAGEM[tentativa]
+				print(f'a imagem ainda não está no registro do Fly; tento de novo em {espera} s', flush=True)
+				time.sleep(espera)
+				continue
+			if 'MANIFEST_UNKNOWN' in erro:
+				sys.exit(f'{metodo} {caminho}: a imagem não apareceu no registro do Fly. '
+					f'Confira com "fly image show" / refaça o build (docs/FLY.md). {e.code} {erro[:300]}')
+			sys.exit(f'{metodo} {caminho}: {e.code} {erro[:400]}')
 
 
 def maquinas(app):
