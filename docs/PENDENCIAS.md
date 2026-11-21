@@ -378,6 +378,12 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Testar com 8 jogadores de verdade** (pedido em 17/11): uma partida com
   oito pessoas, não bots, com latência real. Hoje: só dois jogos sem tela
   na mesma máquina; o teste de carga está em `tools/testar_carga.sh`.
+- **Links de download das releases no Discord, automático** (pedido em
+  21/11): quando o CI de lançamento (`.github/workflows/lancamento.yml`,
+  tag `v*`) publica a Release do GitHub, postar no canal de download do
+  Discord a versão, as novidades e os links da Release
+  (`WolfLeague-Setup-<versão>.exe`, o `.zip` portátil do Windows e o
+  `.dmg` do Mac), por um webhook do canal guardado como segredo no GitHub.
 
 ## Pendências técnicas conhecidas
 

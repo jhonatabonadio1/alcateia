@@ -116,7 +116,7 @@ jobs:
   # Cada execução parte do cache da anterior: só o que mudou é refeito.
   importar:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     outputs:
       chave: ${{ steps.chave.outputs.chave }}
     steps:
