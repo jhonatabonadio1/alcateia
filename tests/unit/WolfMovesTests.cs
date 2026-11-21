@@ -4,18 +4,20 @@ namespace Alcateia.UnitTests;
 /// mesmo lugar.</summary>
 public static class WolfMovesTests
 {
-	[Test("a garra dura 0,73 s e o dano sai 0,20 s depois do clique (o Attack_Primary a 1×)")]
+	// As garradas tocam a 1,3× desde 18/11 (pedido do Jhon: "mais fluido,
+	// sem demorar"); o teste ficou com o tempo do clipe a 1×.
+	[Test("a garra dura 0,56 s e o dano sai 0,15 s depois do clique (o Attack_Primary a 1,3×)")]
 	public static void ClawTiming()
 	{
-		Check.Near(0.733, WolfMoves.Duration(WolfMove.Claw), 0.001, "duração da garra");
-		Check.Near(0.20, WolfMoves.ImpactDelay(WolfMove.Claw), 0.001, "instante do dano");
+		Check.Near(0.733 / 1.3, WolfMoves.Duration(WolfMove.Claw), 0.001, "duração da garra");
+		Check.Near(0.20 / 1.3, WolfMoves.ImpactDelay(WolfMove.Claw), 0.001, "instante do dano");
 	}
 
 	[Test("o soco tem o mesmo ritmo da garra")]
 	public static void PunchTiming()
 	{
 		Check.Near(WolfMoves.Duration(WolfMove.Claw), WolfMoves.Duration(WolfMove.Punch), 0.001, "duração");
-		Check.Near(0.20, WolfMoves.ImpactDelay(WolfMove.Punch), 0.001, "instante do dano");
+		Check.Near(WolfMoves.ImpactDelay(WolfMove.Claw), WolfMoves.ImpactDelay(WolfMove.Punch), 0.001, "instante do dano");
 	}
 
 	[Test("o salto dura 2,2 s, voa de 0,47 s a 1,27 s e bate em 1,33 s (o Special_Attack a 1×)")]

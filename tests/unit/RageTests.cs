@@ -43,7 +43,11 @@ public static class RageTests
 	{
 		var rage = new Rage();
 		rage.Kill(); rage.Kill();
-		for (int i = 0; i < 150; i++) rage.Tick(0.1f);   // 15 s: esfriou para ~100
+		// 14 s: 10 de folga e 4 esfriando, 200 → ~120, ainda em chamas. Com
+		// 15 s o calor parava em 98 (a folga em float acaba um passo antes):
+		// o fogo já tinha apagado e o abate não testava o que diz o nome.
+		for (int i = 0; i < 140; i++) rage.Tick(0.1f);
+		Check.True(rage.OnFire, "antes do abate, ainda em chamas");
 		rage.Kill();
 		for (int i = 0; i < 90; i++) rage.Tick(0.1f);
 		Check.True(rage.OnFire, "o abate zerou a folga");
