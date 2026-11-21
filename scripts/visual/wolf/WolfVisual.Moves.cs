@@ -78,6 +78,24 @@ public partial class WolfVisual
 		if ((WolfMove)move == WolfMove.Pounce) _pounceClock = 99;
 	}
 
+	/// <summary>O lobo saiu do levantar de um golpe (pulou, correu): a
+	/// aterrissagem do bote e o fim do salto saem da tela na hora.</summary>
+	private void OnRecoveryCut()
+	{
+		FadeOut("dive_land");
+		FadeOut("pounce");
+		_pounceClock = 99;
+	}
+
+	/// <summary>Tira um golpe de corpo inteiro da tela, se estiver tocando.</summary>
+	private void FadeOut(string shot)
+	{
+		if (_tree == null || !Has(shot)) return;
+		string name = Cap(shot);
+		if ((bool)_tree.Get($"parameters/{name}/active"))
+			_tree.Set($"parameters/{name}/request", (int)AnimationNodeOneShot.OneShotRequest.FadeOut);
+	}
+
 	/// <summary>Tempo desde que o salto começou a tocar.</summary>
 	private double _pounceClock = 99;
 	private bool _pounceHeld;

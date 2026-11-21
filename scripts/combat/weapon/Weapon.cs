@@ -75,6 +75,10 @@ public partial class Weapon : Node3D
 	/// corpo troca a queda pela aterrissagem neste instante.</summary>
 	[Signal] public delegate void WolfDiveLandedEventHandler();
 
+	/// <summary>A aterrissagem do bote ou do salto foi cortada (pelo pulo,
+	/// pela corrida, pela garra): o corpo sai da pose de levantar.</summary>
+	[Signal] public delegate void WolfRecoveryCutEventHandler();
+
 	//
 	// No chão e no ar são golpes diferentes, não o mesmo em lugares
 	// diferentes. No chão é o salto inteiro do "jump attack", parado no

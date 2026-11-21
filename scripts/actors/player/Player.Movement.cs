@@ -393,11 +393,30 @@ public partial class Player
 	/// Um toque, um pulo. Segurar a tecla não repete, e a trava curta
 	/// impede que o mesmo toque dispare o pulo do chão e o da parede.
 	/// </summary>
+	/// <summary>Quanto a tecla de pulo fica guardada, em segundos: apertou
+	/// um pouco antes de pousar (ou com o lobo ainda se levantando de um
+	/// golpe), o pulo sai no primeiro passo em que pode. Sem isso a tecla
+	/// apertada cedo se perdia e o lobo parecia não responder (Jhon, 20/11).</summary>
+	[Export] public float JumpBuffer = 0.15f;
+
+	private double _jumpBuffered;
+
+	/// <summary>Guarda a tecla de pulo deste passo (ou desconta o tempo da guardada).</summary>
+	private void BufferJump(double delta)
+	{
+		if (_intent.Jump) _jumpBuffered = JumpBuffer;
+		else if (_jumpBuffered > 0) _jumpBuffered -= delta;
+	}
+
+	/// <summary>Tem pulo pedido (agora ou guardado)?</summary>
+	private bool JumpPending => _jumpBuffered > 0;
+
 	private bool WantsJump()
 	{
 		if (_jumpLock > 0) return false;
-		if (!_intent.Jump) return false;
+		if (_jumpBuffered <= 0) return false;
 
+		_jumpBuffered = 0;
 		_jumpLock = 0.2;
 		return true;
 	}

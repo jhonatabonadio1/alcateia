@@ -417,6 +417,7 @@ public partial class Player : CharacterBody3D
 				_stunSlow = 1f;
 		}
 
+		BufferJump(delta);
 		HandleActions(delta);
 
 		if (IsOnFloor() || _onWall || !_form.IsWolf)
@@ -443,6 +444,12 @@ public partial class Player : CharacterBody3D
 		UpdateNoise(delta);
 		UpdateCameraKick(delta);
 		UpdateAimCamera();
+
+		// Um corta o outro (Jhon, 20/11): o golpe que já bateu (o bote que
+		// encostou, o salto que caiu) não prende o lobo se ele pula ou
+		// corre de quatro — sai neste mesmo passo.
+		if (_weapon.IsRecovering && (JumpPending || (_sprinting && _intent.Forward)))
+			_weapon.CutRecovery();
 
 		// Os golpes especiais do lobo (bote, voo do salto, preso ao chão)
 		// movem o corpo pela arma; o resto do movimento espera.

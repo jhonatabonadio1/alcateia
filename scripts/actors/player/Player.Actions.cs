@@ -21,9 +21,12 @@ public partial class Player
 	private double _howlProgress;
 	private bool IsHowling => _howling;
 
-	/// <summary>Especial apertado junto com o pulo: vira bote no quadro
-	/// seguinte.</summary>
-	private bool _diveAfterJump;
+	/// <summary>Quanto o botão direito apertado no chão fica guardado, em
+	/// segundos: junto com o pulo (ou um instante antes), o bote sai no
+	/// primeiro passo já no ar (Jhon, 20/11).</summary>
+	[Export] public float LeapBuffer = 0.15f;
+
+	private double _leapBuffered;
 
 	/// <summary>
 	/// Rugido: segurar R do começo ao fim da animação devolve o escudo
@@ -123,19 +126,22 @@ public partial class Player
 		// Botão direito, de lobo: o bote, no ar. Quem move o corpo durante
 		// ele é o passo de física, pela arma.
 		//
-		// Pulo e botão direito no mesmo quadro: o pulo sai agora e o bote
-		// no quadro seguinte, já no ar.
-		if (_diveAfterJump)
+		// No chão o botão direito fica guardado um instante: apertado junto
+		// com o pulo (ou logo antes), o bote sai no primeiro passo já no ar.
+		if (_intent.Special)
 		{
-			_diveAfterJump = false;
-			if (!IsOnFloor()) _weapon.TrySpecial();
+			if (_form.IsWolf && IsOnFloor()) _leapBuffered = LeapBuffer;
+			else _weapon.TrySpecial();
 		}
-		else if (_intent.Special)
+		else if (_leapBuffered > 0)
 		{
-			if (_form.IsWolf && IsOnFloor() && _intent.Jump)
-				_diveAfterJump = true;
-			else
+			_leapBuffered -= delta;
+			if (!_form.IsWolf) _leapBuffered = 0;
+			else if (!IsOnFloor())
+			{
 				_weapon.TrySpecial();
+				if (_weapon.IsDiving) _leapBuffered = 0;
+			}
 		}
 
 		// V, de humano com arma de fogo: a coronhada.

@@ -400,6 +400,9 @@ public partial class Weapon
 		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown,
 			() =>
 			{
+				// Bateu: dali em diante o lobo só se levanta, e o pulo ou a
+				// corrida cortam (Jhon, 20/11).
+				MarkRecovery(_rootLeft);
 				_wolfHit = Kill.WolfPounceId;
 				Claw(damage, PounceHitReach, PounceHitRadius, false, _pounceFlew ? _flyDir : null,
 					focus: _pounceFocus, splash: PounceSplash);

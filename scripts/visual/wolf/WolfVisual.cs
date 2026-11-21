@@ -117,6 +117,7 @@ public partial class WolfVisual : Node3D
 		_weapon.WolfMoveStarted += OnMove;
 		_weapon.WolfMoveCancelled += OnMoveCancelled;
 		_weapon.WolfDiveLanded += OnDiveLanded;
+		_weapon.WolfRecoveryCut += OnRecoveryCut;
 		if (_health != null)
 		{
 			_health.Died += _ => OnDied();
@@ -179,9 +180,14 @@ public partial class WolfVisual : Node3D
 			if (_jumping && !jumping && !onWall && _body.IsOnFloor() && _speed < MovingSpeed && !_weapon.IsStriking)
 				Fire("jump_land", Has("jump_air") ? 1f : JumpLandSpeed);
 
-			// Saiu do chão pulando (não caindo de uma beirada): o impulso.
-			if (jumping && !_jumping && jumped && _body.Velocity.Y > 0f && Has("jump_start"))
-				_tree.Set("parameters/Machine/Jump/StartShot/request", (int)AnimationNodeOneShot.OneShotRequest.Fire);
+			// Saiu do chão pulando (não caindo de uma beirada): o impulso. E a
+			// aterrissagem do pulo anterior, se ainda tocava, sai na hora.
+			if (jumping && !_jumping && jumped && _body.Velocity.Y > 0f)
+			{
+				FadeOut("jump_land");
+				if (Has("jump_start"))
+					_tree.Set("parameters/Machine/Jump/StartShot/request", (int)AnimationNodeOneShot.OneShotRequest.Fire);
+			}
 
 			_onWall = onWall;
 			_jumping = jumping;

@@ -25,15 +25,41 @@ public partial class Weapon
 	/// último bote: nesse tempo a garra corta a aterrissagem.</summary>
 	private ulong _diveLandUntil;
 
+	/// <summary>Até quando (ms) o lobo só está se levantando de um golpe que
+	/// já bateu: o bote que encostou, o salto que caiu. É o que o pulo e a
+	/// corrida cortam.</summary>
+	private ulong _recoverUntil;
+
 	/// <summary>A garra saindo por cima da aterrissagem do bote: solta o
 	/// lobo do chão.</summary>
 	private void CutDiveLanding()
 	{
 		if (_diveLandUntil == 0 || Time.GetTicksMsec() >= _diveLandUntil) return;
+		CutRecovery();
+	}
+
+	/// <summary>
+	/// O golpe já bateu e o lobo só está se levantando (a aterrissagem do
+	/// bote, o fim do salto). Pedido do Jhon (20/11): "um anula o outro,
+	/// desde que tenham feito o movimento completo" — o pulo e a corrida de
+	/// quatro cortam essa parte na hora.
+	/// </summary>
+	public bool IsRecovering => _form != null && _form.IsWolf && _rootLeft > 0 && !_diving && !_flying && !_charging
+		&& _recoverUntil != 0 && Time.GetTicksMsec() < _recoverUntil;
+
+	/// <summary>Solta o lobo do levantar: anda, pula e corre neste mesmo passo.</summary>
+	public void CutRecovery()
+	{
+		if (_rootLeft <= 0 && _diveLandUntil == 0 && _recoverUntil == 0) return;
 		_diveLandUntil = 0;
+		_recoverUntil = 0;
 		_rootLeft = 0;
 		_strikeLeft = 0;
+		EmitSignal(SignalName.WolfRecoveryCut);
 	}
+
+	private void MarkRecovery(double seconds) =>
+		_recoverUntil = Time.GetTicksMsec() + (ulong)(Mathf.Max((float)seconds, 0f) * 1000f);
 
 	/// <summary>Velocidade do mergulho, em m/s. Constante, em linha reta:
 	/// sem gravidade, sem freio e sem desvio no meio. O ponto de impacto
@@ -210,6 +236,7 @@ public partial class Weapon
 		_rootLeft = land;
 		_cooldown = Mathf.Max(DiveFollowUp, LeapCooldown - (float)_diveElapsed);
 		_diveLandUntil = Time.GetTicksMsec() + (ulong)(land * 1000f);
+		MarkRecovery(land);
 
 		EmitSignal(SignalName.WolfDiveLanded);
 		EmitSignal(SignalName.AttackCooldown, CooldownLeap, (float)_cooldown);

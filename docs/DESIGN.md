@@ -481,6 +481,19 @@ não responder. Clicando sem parar, dois golpes e meio por segundo.
 - Preso no lugar (salto, aterrissagem do bote), o lobo freia em
   `FreezeBrake` (30 m/s²) em vez de parar seco: desliza meio metro
   enquanto agacha.
+- **Um corta o outro** (Jhon, 20/11: "é jogo rápido, a resposta do
+  lobo tem que ser precisa"). Depois que o golpe bateu (o bote
+  encostou, o salto caiu), o resto é só levantar: o **pulo** e a
+  **corrida de quatro** (W W, ou o W ainda segurado na corrida) cortam
+  essa parte e saem no mesmo passo (`Weapon.IsRecovering`,
+  `CutRecovery`); a garra já cortava a aterrissagem do bote. O golpe em
+  si (o mergulho, o voo do salto) não se corta.
+- **Tecla um pouco cedo fica guardada**: o espaço apertado até 0,15 s
+  antes de poder pular (pousando, levantando de um golpe) pula assim
+  que pode (`JumpBuffer`); o botão direito apertado no chão junto com o
+  pulo, ou um instante antes, vira bote no primeiro passo no ar
+  (`LeapBuffer`). Medido no teste `LoboResponde`: W W, pulo e bote saem
+  em 2 passos (33 ms) da tecla.
 
 **O golpe não é hitscan.** Cada patada cria um volume curto à frente
 do corpo e pega quem estiver dentro. A diferença é concreta: um raio
