@@ -43,6 +43,16 @@ public sealed class Config
 	/// como caído.</summary>
 	public TimeSpan FleetTimeout = TimeSpan.FromSeconds(20);
 
+	/// <summary>Lugares livres que a frota tenta manter de pé
+	/// (<c>ALCATEIA_FLEET_RESERVE</c>). Só vale com servidores sob demanda.</summary>
+	public int FleetReserve;
+
+	/// <summary>Servidores de partida sob demanda no Fly.io: o app das
+	/// máquinas de partida (<c>ALCATEIA_FLY_APP</c>), o token que pode ligá-las
+	/// (<c>ALCATEIA_FLY_TOKEN</c>) e a API de máquinas
+	/// (<c>ALCATEIA_FLY_API</c>). Sem app e token, a frota é fixa.</summary>
+	public string FlyApp = "", FlyToken = "", FlyApi = "https://api.machines.dev";
+
 	/// <summary>Quanto vale o ingresso de entrada numa partida.</summary>
 	public TimeSpan TicketLife = TimeSpan.FromMinutes(3);
 
@@ -116,6 +126,10 @@ public sealed class Config
 		c.Security.Allow = Ranges(Env("ALCATEIA_IP_ALLOW", ""), wide: true);
 		c.Security.RetentionDays = int.Parse(Env("ALCATEIA_EVENT_DAYS", "90"));
 
+		c.FleetReserve = int.Parse(Env("ALCATEIA_FLEET_RESERVE", "0"));
+		c.FlyApp = Env("ALCATEIA_FLY_APP", "");
+		c.FlyToken = Env("ALCATEIA_FLY_TOKEN", "");
+		c.FlyApi = Env("ALCATEIA_FLY_API", c.FlyApi);
 		c.AdminPort = int.Parse(Env("ALCATEIA_ADMIN_PORT", "8081"));
 		c.AdminBind = Env("ALCATEIA_ADMIN_BIND", c.AdminBind);
 		c.AdminAllow = Ranges(Env("ALCATEIA_ADMIN_ALLOW", ""), wide: true);

@@ -104,6 +104,7 @@ public static class SecurityTests
 				await alone.Services.Security.Block("198.51.100.7", "atacante", 0, "admin", "chefe");
 				Check.Equal(200, await Get(alone, "/health", ("X-Forwarded-For", "198.51.100.7")),
 					"sem proxy de confiança o cabeçalho é ignorado (senão qualquer um se passava por outro)");
+				Check.Equal(200, await Get(alone, "/health", ("Fly-Client-IP", "198.51.100.7")), "o do Fly também");
 			}
 
 			await using World w = await World.Start(c => c.TrustedProxies.Add(IpRange.Parse("127.0.0.0/8", true)));
@@ -113,6 +114,8 @@ public static class SecurityTests
 			Check.Equal(403, await Get(w, "/health", ("X-Forwarded-For", "203.0.113.5, 198.51.100.7")),
 				"vale o último endereço antes do proxy: o que vem antes o cliente pode ter inventado");
 			Check.Equal(403, await Get(w, "/health", ("CF-Connecting-IP", "198.51.100.7")), "o cabeçalho do Cloudflare também vale");
+			Check.Equal(403, await Get(w, "/health", ("Fly-Client-IP", "198.51.100.7"), ("X-Forwarded-For", "198.51.100.7, 66.241.124.10")),
+				"no Fly vale o Fly-Client-IP (o último do X-Forwarded-For lá é o IP do próprio app)");
 		}),
 
 		("segurança: varredura e injeção são recusadas e registradas; a terceira bloqueia o endereço", async () =>

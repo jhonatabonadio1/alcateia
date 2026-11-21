@@ -268,7 +268,7 @@ public partial class ViewModel
 	private Transform3D PullPin(float dt, Transform3D left)
 	{
 		bool winding = _weapon.IsGrenadeReady;
-		if (!winding && _windup > 0.5f && _heldId == Arsenal.GrenadeId) _throw = 1f;
+		if (!winding && _windup > 0.5f && Arsenal.IsGrenade(_heldId)) _throw = 1f;
 		_windup = Mathf.MoveToward(_windup, winding ? 1f : 0f, dt * (winding ? 4f : 10f));
 		if (_pin == null) return left;
 

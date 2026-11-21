@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Alcateia.Aplicacao.Portas;
 using Alcateia.Dominio.Frota;
 using Alcateia.Dominio.Partidas;
@@ -19,16 +20,61 @@ public sealed class FleetService
 	private readonly ITicketSigner _signer;
 	private readonly IClock _clock;
 	private readonly object _lock = new();
+	private readonly IFleetScaler _scaler;
+	private readonly int _reserve;
+	private DateTime _wokeAt = DateTime.MinValue;
+
+	/// <summary>Depois de ligar um servidor, espera isto antes de ligar
+	/// outro: é o tempo de a máquina subir e bater ponto.</summary>
+	public static readonly TimeSpan WakeEvery = TimeSpan.FromSeconds(45);
 
 	/// <summary>Uma partida em curso acabou sem resultado (o servidor caiu,
 	/// ou fechou a partida vazia): a sala dela volta a esperar.</summary>
 	public event Action<LostMatch> Lost;
 
-	public FleetService(TimeSpan timeout, ITicketSigner signer, IClock clock)
+	/// <param name="scaler">Quem liga servidores sob demanda; null, nenhum.</param>
+	/// <param name="reserve">Quantos lugares livres a frota tenta manter
+	/// (para a próxima sala não esperar a máquina subir). Zero: só liga
+	/// quando uma sala não acha lugar.</param>
+	public FleetService(TimeSpan timeout, ITicketSigner signer, IClock clock, IFleetScaler scaler = null, int reserve = 0)
 	{
 		_fleet = new Fleet(timeout);
 		_signer = signer;
 		_clock = clock;
+		_scaler = scaler;
+		_reserve = Math.Max(reserve, 0);
+	}
+
+	/// <summary>Liga servidores sozinha quando falta lugar.</summary>
+	public bool Scales => _scaler != null;
+
+	/// <summary>Um servidor ocioso quer desligar: sim, se não faz falta
+	/// (veja <see cref="Fleet.Retire"/>).</summary>
+	public bool Retire(string serverId)
+	{
+		lock (_lock) return _fleet.Retire(serverId, _reserve, _clock.UtcNow);
+	}
+
+	// Sob a trava: decide se é hora de ligar mais um.
+	private bool ShouldWake(bool full)
+	{
+		if (_scaler == null) return false;
+		DateTime now = _clock.UtcNow;
+		if (!full && _fleet.FreeSlots(now) >= Math.Max(_reserve, 0)) return false;
+		if (now - _wokeAt < WakeEvery) return false;
+		_wokeAt = now;
+		return true;
+	}
+
+	// Fora da trava, sem esperar: quem pediu lugar não fica preso na API do Fly.
+	private void Wake()
+	{
+		IFleetScaler scaler = _scaler;
+		_ = Task.Run(async () =>
+		{
+			try { await scaler.Wake(); }
+			catch (Exception e) { Console.Error.WriteLine($"Frota: não consegui ligar servidor ({e.Message})"); }
+		});
 	}
 
 	/// <summary>Batida de um servidor de partida: devolve as partidas que ele deve abrir.</summary>
@@ -46,12 +92,15 @@ public sealed class FleetService
 	{
 		(string, int)? place;
 		List<LostMatch> lost;
+		bool wake;
 		lock (_lock)
 		{
 			lost = _fleet.Sweep(_clock.UtcNow);
 			place = _fleet.Allocate(assignment, _clock.UtcNow);
+			wake = ShouldWake(full: place == null);
 		}
 		Announce(lost);
+		if (wake) Wake();
 		return place;
 	}
 
@@ -75,12 +124,15 @@ public sealed class FleetService
 	{
 		(int, int, int, int) status;
 		List<LostMatch> lost;
+		bool wake;
 		lock (_lock)
 		{
 			lost = _fleet.Sweep(_clock.UtcNow);
 			status = _fleet.Status();
+			wake = ShouldWake(full: false);
 		}
 		Announce(lost);
+		if (wake) Wake();
 		return status;
 	}
 

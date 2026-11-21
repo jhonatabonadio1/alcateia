@@ -177,6 +177,16 @@ public sealed class ObraMapTest : MapPlaysTest
 	protected override bool ClosedRing => true;
 }
 
+/// <summary>O Distrito Neon (20/11). Não é fechado por um muro só: o anel de
+/// torres tem vãos, e cada vão tem a barreira invisível dele
+/// (<c>Barreira…</c>, tools/mapas/neon.py) — por isso sem o teste do alto
+/// do muro de fora.</summary>
+public sealed class NeonMapTest : MapPlaysTest
+{
+	public override string Name => "MapaNeon";
+	protected override string MapId => "neon";
+}
+
 /// <summary>
 /// Nas escadas dos mapas de kit o corpo sobe deslizando numa chapa de
 /// colisão por cima dos degraus (nós <c>pr…</c>), na velocidade de andar e
@@ -275,4 +285,10 @@ public sealed class DesertoStairsTest : StairsRunTest
 {
 	public override string Name => "EscadaDeserto";
 	protected override string MapId => "deserto";
+}
+
+public sealed class NeonStairsTest : StairsRunTest
+{
+	public override string Name => "EscadaNeon";
+	protected override string MapId => "neon";
 }

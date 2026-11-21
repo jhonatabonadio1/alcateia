@@ -5020,7 +5020,7 @@ mesh = ExtResource("o_c5cdbff245")
 [node name="Galpao" type="Node3D" parent="." unique_id=795584774]
 
 [node name="Armazem" parent="Galpao" unique_id=283865847 instance=ExtResource("p_armazem")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4388275, 0.079797745, -0.27768755)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.953434, -9.222479, -10.307756)
 
 [node name="Luzes" type="Node3D" parent="." unique_id=603623815]
 

@@ -44,3 +44,7 @@ enabled=PackedStringArray("res://addons/func_godot/plugin.cfg")
 [rendering]
 
 rendering_device/driver.windows="d3d12"
+
+[wolfleague]
+
+rede/servidor="https://wolfleague-api.fly.dev"

@@ -195,6 +195,20 @@ public static class Catalog
 		new() { Id = Arsenal.GrenadeId, Name = "Granada", Type = "Granada", Kind = ItemKind.Utility,
 			Rarity = 0, Starter = true, DefaultOk = true,
 			Description = "Explosiva: mata de perto e fere até a borda do raio. Cai onde a mira aponta. Todo mundo tem, e já vem no conjunto padrão." },
+		// As versões da granada (20/11): a mesma granada, com outra pintura — nada muda no dano nem no raio. Qualquer uma
+		// pode ir no conjunto padrão (pedido do Jhon: "granada pode ser equipada qualquer uma no padrão"): DefaultOk.
+		new() { Id = "choque_carbono", Name = "Granada Carbono", Type = "Granada", Kind = ItemKind.Utility,
+			Rarity = 2, MinRank = 2, Prices = new[] { 60, 300, 900, 2000, 4800 }, DefaultOk = true,
+			Description = "Rara. A granada explosiva em fibra de carbono sob verniz, com faixa e alavanca vermelhas. Só a aparência muda." },
+		new() { Id = "choque_neon", Name = "Granada Neon", Type = "Granada", Kind = ItemKind.Utility,
+			Rarity = 3, MinRank = 3, Prices = new[] { 90, 450, 1350, 3000, 7000 }, DefaultOk = true,
+			Description = "Épica. Placas pretas com as juntas e a faixa do meio acesas em ciano. Só a aparência muda." },
+		new() { Id = "choque_magma", Name = "Granada Magma", Type = "Granada", Kind = ItemKind.Utility,
+			Rarity = 3, MinRank = 3, Prices = new[] { 90, 450, 1350, 3000, 7000 }, DefaultOk = true,
+			Description = "Épica. Basalto com a lava acesa nas rachaduras e ferragem de ferro queimado. Só a aparência muda." },
+		new() { Id = "choque_ouro", Name = "Granada Ouro", Type = "Granada", Kind = ItemKind.Utility,
+			Rarity = 4, MinRank = 5, Prices = new[] { 120, 600, 1800, 4000, 9500 }, Hot = true, DefaultOk = true,
+			Description = "Lendária. Ouro polido com treliça gravada, espoleta de ônix e alavanca de ouro branco. Só a aparência muda." },
 
 		// ---------------------------------------------------- melhorias
 		new() { Id = "tat_pata", Name = "Pata Leve", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,

@@ -1,11 +1,10 @@
-[gd_resource type="ShaderMaterial" format=3]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://gvugifm1jtr7"]
 
-[ext_resource type="Shader" path="res://assets/mapas/detalhe/superficie.gdshader" id="1"]
-[ext_resource type="Texture2D" path="res://assets/mapas/pecas/armazem_paleta.png" id="2"]
-[ext_resource type="CompressedTexture2DArray" path="res://assets/mapas/detalhe/detalhe_n.jpg" id="3"]
-[ext_resource type="CompressedTexture2DArray" path="res://assets/mapas/detalhe/detalhe_m.jpg" id="4"]
-[ext_resource type="Texture2D" path="res://assets/mapas/detalhe/macro.png" id="5"]
-[ext_resource type="CompressedTexture2DArray" path="res://assets/mapas/detalhe/detalhe_c.jpg" id="6"]
+[ext_resource type="Shader" uid="uid://qdcri8g3cpmh" path="res://assets/mapas/detalhe/superficie.gdshader" id="1"]
+[ext_resource type="Texture2D" uid="uid://d1agt616ht8c6" path="res://assets/mapas/pecas/armazem_paleta.png" id="2"]
+[ext_resource type="CompressedTexture2DArray" uid="uid://dgrke4w13ra7i" path="res://assets/mapas/detalhe/detalhe_n.jpg" id="3"]
+[ext_resource type="CompressedTexture2DArray" uid="uid://c5maxofxuwiyn" path="res://assets/mapas/detalhe/detalhe_m.jpg" id="4"]
+[ext_resource type="Texture2D" uid="uid://py7aonlh535g" path="res://assets/mapas/detalhe/macro.png" id="5"]
 
 [resource]
 render_priority = 0
@@ -14,4 +13,9 @@ shader_parameter/paleta = ExtResource("2")
 shader_parameter/detalhe_n = ExtResource("3")
 shader_parameter/detalhe_m = ExtResource("4")
 shader_parameter/macro = ExtResource("5")
-shader_parameter/detalhe_c = ExtResource("6")
+shader_parameter/intensidade = 1.0
+shader_parameter/relevo = 1.0
+shader_parameter/manchas = 1.0
+shader_parameter/tinta = 1.0
+shader_parameter/ver_classes = false
+shader_parameter/luz_forca = 0.0

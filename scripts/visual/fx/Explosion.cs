@@ -1,26 +1,29 @@
 using Godot;
 
 /// <summary>
-/// A explosão da granada (pedido do Jhon, 18/11: "insira explosão de
-/// granada avançada, com partículas"). No lugar da esfera clara que
-/// inchava, sete camadas curtas, cada uma com o seu tempo:
+/// A explosão da granada. Refeita em 20/11 (pedido do Jhon: "explosão mais
+/// luminosa, não precisa de tanta partícula, só um efeito de luz e explosão
+/// já basta"). A de 18/11 eram sete camadas com quase duzentas partículas
+/// simuladas; esta é luz e forma, em seis peças, cada uma com o seu tempo:
 ///
-/// - o **clarão**: uma luz que acende o lugar e apaga em 0,35 s;
-/// - o **núcleo**: branco, incha e some em 0,1 s;
-/// - o **fogo**: dezenas de línguas que nascem quase brancas, viram
-///   amarelas, laranja e vermelho-escuras enquanto incham e sobem ("deve
-///   ser fogo, explosão mesmo" — a primeira versão era uma cúpula laranja
-///   transparente);
-/// - a **onda de choque**: um anel rente ao chão até o raio da granada —
-///   mostra até onde ela pega;
-/// - as **fagulhas**: dezenas de pontos quentes jogados para todo lado,
-///   que caem com a gravidade, quicam uma vez e apagam;
-/// - a **fumaça**: bolas escuras e macias que sobem e abrem por 1,6 s;
-/// - os **estilhaços**: pedaços escuros maiores, poucos, que voam longe.
+/// - a **luz**: um clarão forte que acende o lugar inteiro e faz sombra
+///   (pico em 34, cai em décimos de segundo e fica um resto quente até
+///   0,75 s);
+/// - o **clarão**: um disco de luz virado para a câmera, que abre e some
+///   em 0,16 s;
+/// - a **bola de fogo**: uma esfera de superfície revolta (o desenho é do
+///   material, <c>explosao_fogo.gdshader</c>) que nasce branca de tão
+///   quente, vira amarela, laranja e vermelho-escura enquanto incha e sobe,
+///   e se desfaz em buracos — com um miolo menor, mais claro, por dentro;
+/// - o **chão**: a onda de choque (um anel fino de luz que corre até o raio
+///   da granada — mostra até onde ela pega) e a mancha de calor no meio;
+/// - a **fumaça**: a mesma esfera, escura, que sobe e abre por 1,5 s;
+/// - as **fagulhas**: vinte e oito pontos quentes que caem, quicam uma vez
+///   e apagam (eram noventa, mais as línguas de fogo, as bolas de fumaça e
+///   os estilhaços).
 ///
-/// As partículas são simuladas aqui (são menos de duzentas, por meio
-/// segundo) e desenhadas de uma vez cada tipo (MultiMesh), como a poeira
-/// da corrida (<see cref="SprintDust"/>).
+/// Os tempos e as medidas saíram de fotos tiradas quadro a quadro, de dia e
+/// de noite.
 /// </summary>
 public partial class Explosion : Node3D
 {
@@ -30,6 +33,14 @@ public partial class Explosion : Node3D
 	/// <summary>Explosões vivas agora. Para os testes.</summary>
 	public static int Alive { get; private set; }
 
+	private const string FireShader = "res://assets/efeitos/explosao_fogo.gdshader";
+	private const string SmokeShader = "res://assets/efeitos/explosao_fumaca.gdshader";
+	private const string GroundShader = "res://assets/efeitos/explosao_chao.gdshader";
+
+	/// <summary>Quanto dura cada peça, em segundos.</summary>
+	private const float LightTime = 0.75f, FlashTime = 0.16f, FireTime = 0.62f, CoreTime = 0.28f,
+		SmokeStart = 0.1f, SmokeTime = 1.5f, GroundTime = 0.9f, TotalTime = 1.7f;
+
 	private struct Bit
 	{
 		public Vector3 At, Velocity;
@@ -38,12 +49,17 @@ public partial class Explosion : Node3D
 		public bool Bounced;
 	}
 
-	private const int Sparks = 90, Puffs = 26, Shards = 16, Flames = 46;
+	private const int Sparks = 28;
 
-	private readonly Bit[] _sparks = new Bit[Sparks], _puffs = new Bit[Puffs], _shards = new Bit[Shards], _fire = new Bit[Flames];
-	private MultiMesh _sparkMesh, _puffMesh, _shardMesh, _fireMesh;
+	private readonly Bit[] _sparks = new Bit[Sparks];
+	private MultiMesh _sparkMesh;
 	private readonly RandomNumberGenerator _rng = new();
 	private float _age, _floorY;
+
+	private OmniLight3D _light;
+	private MeshInstance3D _fire, _core, _smoke, _ground, _flash;
+	private ShaderMaterial _fireMaterial, _coreMaterial, _smokeMaterial, _groundMaterial;
+	private StandardMaterial3D _flashMaterial;
 
 	public static Explosion Spawn(Node parent, Vector3 at, float radius)
 	{
@@ -61,87 +77,156 @@ public partial class Explosion : Node3D
 	{
 		_rng.Randomize();
 		_floorY = GlobalPosition.Y - 0.12f;
+		float seed = _rng.RandfRange(0f, 40f);
 
-		// ---- o clarão
-		var light = new OmniLight3D { LightColor = new Color(1f, 0.78f, 0.45f), LightEnergy = 9f, OmniRange = Radius * 2.2f, ShadowEnabled = false };
-		AddChild(light);
-		Tween glow = light.CreateTween();
-		glow.TweenProperty(light, "light_energy", 0f, 0.35).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quad);
-		glow.TweenCallback(Callable.From(light.QueueFree));
-
-		// ---- o núcleo e a bola de fogo
-		Ball(new Color(1f, 0.97f, 0.85f, 1f), Radius * 0.2f, 0.1f, 0.35f, false);
-
-		// ---- a onda de choque
-		var ringMaterial = new StandardMaterial3D
+		// ---- a luz: acende o lugar e faz sombra (um mapa de sombra só,
+		// dos baratos, por menos de um segundo)
+		_light = new OmniLight3D
 		{
-			AlbedoColor = new Color(1f, 0.92f, 0.75f, 0.7f),
+			LightColor = new Color(1f, 0.72f, 0.38f),
+			OmniRange = Radius * 3.2f,
+			OmniAttenuation = 0.7f,
+			ShadowEnabled = true,
+			OmniShadowMode = OmniLight3D.ShadowMode.DualParaboloid,
+			Position = new Vector3(0f, 1.2f, 0f)
+		};
+		AddChild(_light);
+
+		// ---- a bola de fogo, o miolo e a fumaça: a mesma esfera
+		var sphere = new SphereMesh { Radius = 1f, Height = 2f, RadialSegments = 40, Rings = 20 };
+		_fire = Layer(sphere, FireShader, seed, out _fireMaterial);
+		_core = Layer(sphere, FireShader, seed + 5.4f, out _coreMaterial);
+		_coreMaterial?.SetShaderParameter("forca", 1.8f);
+		_smoke = Layer(sphere, SmokeShader, seed + 2.1f, out _smokeMaterial);
+		_smoke.Visible = false;
+
+		// ---- o chão: a onda de choque e a mancha de calor
+		_ground = Layer(new QuadMesh { Size = new Vector2(2f, 2f), Orientation = PlaneMesh.OrientationEnum.Y }, GroundShader, seed, out _groundMaterial);
+		_ground.Scale = new Vector3(Radius, 1f, Radius);
+		_ground.Position = new Vector3(0f, -0.08f, 0f);
+
+		// ---- o clarão: um disco de luz virado para a câmera
+		var gradient = new Gradient();
+		gradient.SetColor(0, Colors.White);
+		gradient.SetColor(1, new Color(1, 1, 1, 0));
+		gradient.SetOffset(0, 0f);
+		_flashMaterial = new StandardMaterial3D
+		{
 			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-			CullMode = BaseMaterial3D.CullModeEnum.Disabled
-		};
-		var ring = new MeshInstance3D
-		{
-			Mesh = new TorusMesh { InnerRadius = 0.93f, OuterRadius = 1f, Rings = 40, RingSegments = 6 },
-			MaterialOverride = ringMaterial,
-			CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-			Scale = new Vector3(0.3f, 0.12f, 0.3f)
-		};
-		AddChild(ring);
-		Tween wave = ring.CreateTween().SetParallel();
-		wave.TweenProperty(ring, "scale", new Vector3(Radius, 0.05f, Radius), 0.32).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Cubic);
-		wave.TweenProperty(ringMaterial, "albedo_color:a", 0f, 0.32).SetEase(Tween.EaseType.In);
-		wave.Chain().TweenCallback(Callable.From(ring.QueueFree));
-
-		// ---- as partículas
-		// ---- o fogo: línguas claras que incham, sobem e escurecem
-		_fireMesh = Cloud(Flames, soft: true, lit: true);
-		for (int i = 0; i < Flames; i++)
-		{
-			Vector3 dir = Sphere(0.2f);
-			float reach = _rng.RandfRange(0.2f, 1f);
-			_fire[i] = new Bit
+			AlbedoTexture = new GradientTexture2D
 			{
-				At = dir * reach * 0.5f, Velocity = dir * (2f + 9f * reach) + Vector3.Up * _rng.RandfRange(1.5f, 4.5f),
-				Life = _rng.RandfRange(0.38f, 0.8f), Size = _rng.RandfRange(0.9f, 1.9f) * (Radius / 6.5f),
-				Color = Colors.White
-			};
-		}
+				Gradient = gradient, Width = 96, Height = 96,
+				Fill = GradientTexture2D.FillEnum.Radial, FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(1f, 0.5f)
+			},
+			AlbedoColor = new Color(1f, 0.92f, 0.75f, 1f),
+			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+			BlendMode = BaseMaterial3D.BlendModeEnum.Add,
+			BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
+			BillboardKeepScale = true,
+			NoDepthTest = true
+		};
+		_flash = new MeshInstance3D
+		{
+			Mesh = new QuadMesh { Size = Vector2.One },
+			MaterialOverride = _flashMaterial,
+			CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+			Position = new Vector3(0f, 1f, 0f)
+		};
+		AddChild(_flash);
 
-		_sparkMesh = Cloud(Sparks, soft: false, lit: true);
-		_puffMesh = Cloud(Puffs, soft: true, lit: false);
-		_shardMesh = Cloud(Shards, soft: false, lit: false);
-
+		// ---- as fagulhas
+		_sparkMesh = Cloud(Sparks);
 		for (int i = 0; i < Sparks; i++)
 		{
 			Vector3 dir = Sphere(0.15f);
 			_sparks[i] = new Bit
 			{
-				At = dir * 0.2f, Velocity = dir * _rng.RandfRange(5f, 17f) + Vector3.Up * _rng.RandfRange(1f, 5f),
-				Life = _rng.RandfRange(0.4f, 1.0f), Size = _rng.RandfRange(0.06f, 0.13f),
-				Color = new Color(1f, _rng.RandfRange(0.55f, 0.95f), _rng.RandfRange(0.1f, 0.5f))
+				At = dir * 0.2f, Velocity = dir * _rng.RandfRange(6f, 18f) + Vector3.Up * _rng.RandfRange(1f, 5f),
+				Life = _rng.RandfRange(0.45f, 1.0f), Size = _rng.RandfRange(0.07f, 0.15f),
+				Color = new Color(1f, _rng.RandfRange(0.6f, 0.95f), _rng.RandfRange(0.15f, 0.5f))
 			};
 		}
-		for (int i = 0; i < Puffs; i++)
+
+		Pose(0f);
+	}
+
+	/// <summary>Uma peça da explosão: a malha com o material do arquivo
+	/// (se o arquivo faltar, a peça fica sem material — aparece, feia, em
+	/// vez de derrubar a partida).</summary>
+	private MeshInstance3D Layer(Mesh mesh, string shaderPath, float seed, out ShaderMaterial material)
+	{
+		material = null;
+		if (ResourceLoader.Exists(shaderPath))
 		{
-			Vector3 dir = Sphere(0.05f);
-			float gray = _rng.RandfRange(0.1f, 0.26f);
-			_puffs[i] = new Bit
-			{
-				At = dir * _rng.RandfRange(0.2f, 0.9f), Velocity = dir * _rng.RandfRange(0.8f, 3.2f) + Vector3.Up * _rng.RandfRange(0.6f, 2.2f),
-				Life = _rng.RandfRange(1.1f, 1.9f), Size = _rng.RandfRange(1.1f, 2.3f),
-				Color = new Color(gray, gray * 0.96f, gray * 0.9f, _rng.RandfRange(0.6f, 0.85f))
-			};
+			material = new ShaderMaterial { Shader = GD.Load<Shader>(shaderPath) };
+			material.SetShaderParameter("semente", seed);
+			material.SetShaderParameter("vida", 0f);
 		}
-		for (int i = 0; i < Shards; i++)
+		var layer = new MeshInstance3D
 		{
-			Vector3 dir = Sphere(0.25f);
-			_shards[i] = new Bit
-			{
-				At = dir * 0.2f, Velocity = dir * _rng.RandfRange(6f, 13f) + Vector3.Up * _rng.RandfRange(2f, 6f),
-				Life = _rng.RandfRange(0.7f, 1.3f), Size = _rng.RandfRange(0.07f, 0.14f),
-				Color = new Color(0.1f, 0.09f, 0.08f)
-			};
+			Mesh = mesh,
+			MaterialOverride = material,
+			CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+			Visible = material != null
+		};
+		AddChild(layer);
+		return layer;
+	}
+
+	/// <summary>Cada peça no instante <paramref name="t"/> (segundos desde
+	/// o estouro): o tamanho, o lugar, a força e a "vida" que o material
+	/// de cada uma desenha.</summary>
+	private void Pose(float t)
+	{
+		float scale = Radius;
+
+		// A luz: o pico que cai em décimos de segundo, e o resto quente.
+		if (_light != null)
+		{
+			_light.LightEnergy = t > LightTime ? 0f : 34f * Mathf.Exp(-t * 16f) + 9f * Mathf.Pow(1f - t / LightTime, 2f);
+			_light.Visible = t <= LightTime;
+		}
+
+		float fire = Mathf.Clamp(t / FireTime, 0f, 1f), grown = 1f - Mathf.Pow(1f - fire, 3f);
+		if (_fireMaterial != null)
+		{
+			_fire.Visible = fire < 1f;
+			_fire.Scale = Vector3.One * scale * (0.16f + 0.42f * grown);
+			_fire.Position = new Vector3(0f, 0.5f + 1.5f * grown, 0f);
+			_fireMaterial.SetShaderParameter("vida", fire);
+		}
+
+		float core = Mathf.Clamp(t / CoreTime, 0f, 1f);
+		if (_coreMaterial != null)
+		{
+			_core.Visible = core < 1f;
+			_core.Scale = Vector3.One * scale * (0.10f + 0.22f * (1f - Mathf.Pow(1f - core, 2f)));
+			_core.Position = new Vector3(0f, 0.6f + 0.6f * core, 0f);
+			_coreMaterial.SetShaderParameter("vida", core * 0.75f);
+		}
+
+		float smoke = Mathf.Clamp((t - SmokeStart) / SmokeTime, 0f, 1f);
+		if (_smokeMaterial != null)
+		{
+			_smoke.Visible = t > SmokeStart && smoke < 1f;
+			_smoke.Scale = Vector3.One * scale * (0.30f + 0.34f * Mathf.Sqrt(smoke));
+			_smoke.Position = new Vector3(0f, 1.4f + 2.6f * smoke, 0f);
+			_smokeMaterial.SetShaderParameter("vida", smoke);
+		}
+
+		float ground = Mathf.Clamp(t / GroundTime, 0f, 1f);
+		if (_groundMaterial != null)
+		{
+			_ground.Visible = ground < 1f;
+			_groundMaterial.SetShaderParameter("vida", ground);
+		}
+
+		float flash = Mathf.Clamp(t / FlashTime, 0f, 1f);
+		if (_flash != null)
+		{
+			_flash.Visible = flash < 1f;
+			_flash.Scale = Vector3.One * scale * (1f + 1.6f * flash);
+			_flashMaterial.AlbedoColor = new Color(1f, 0.92f, 0.75f, Mathf.Pow(1f - flash, 1.5f));
 		}
 	}
 
@@ -154,35 +239,14 @@ public partial class Explosion : Node3D
 		return dir.Normalized();
 	}
 
-	private void Ball(Color color, float size, float time, float start, bool darken)
-	{
-		var material = new StandardMaterial3D
-		{
-			AlbedoColor = color,
-			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-			Transparency = BaseMaterial3D.TransparencyEnum.Alpha
-		};
-		var ball = new MeshInstance3D
-		{
-			Mesh = new SphereMesh { Radius = 1f, Height = 2f, RadialSegments = 16, Rings = 8 },
-			MaterialOverride = material,
-			CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-			Scale = Vector3.One * size * start
-		};
-		AddChild(ball);
-		Tween grow = ball.CreateTween().SetParallel();
-		grow.TweenProperty(ball, "scale", Vector3.One * size, time).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Cubic);
-		grow.TweenProperty(material, "albedo_color:a", 0f, time).SetEase(Tween.EaseType.In);
-		if (darken) grow.TweenProperty(material, "albedo_color", new Color(0.25f, 0.08f, 0.02f, 0f), time);
-		grow.Chain().TweenCallback(Callable.From(ball.QueueFree));
-	}
-
-	private MultiMesh Cloud(int count, bool soft, bool lit)
+	/// <summary>As fagulhas, desenhadas de uma vez (MultiMesh): pontos de
+	/// luz virados para a câmera.</summary>
+	private MultiMesh Cloud(int count)
 	{
 		var gradient = new Gradient();
 		gradient.SetColor(0, Colors.White);
 		gradient.SetColor(1, new Color(1, 1, 1, 0));
-		gradient.SetOffset(0, soft ? 0.05f : 0.55f);
+		gradient.SetOffset(0, 0.55f);
 		var material = new StandardMaterial3D
 		{
 			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
@@ -195,7 +259,7 @@ public partial class Explosion : Node3D
 			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
 			BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
 			BillboardKeepScale = true,
-			BlendMode = lit ? BaseMaterial3D.BlendModeEnum.Add : BaseMaterial3D.BlendModeEnum.Mix
+			BlendMode = BaseMaterial3D.BlendModeEnum.Add
 		};
 		var mesh = new MultiMesh
 		{
@@ -219,65 +283,37 @@ public partial class Explosion : Node3D
 		float dt = (float)delta;
 		_age += dt;
 
-		StepFire(dt);
-		Step(_sparks, _sparkMesh, dt, gravity: 14f, drag: 1.6f, bounce: true, grow: 0f);
-		Step(_puffs, _puffMesh, dt, gravity: -0.5f, drag: 2.4f, bounce: false, grow: 1.1f);
-		Step(_shards, _shardMesh, dt, gravity: 15f, drag: 0.6f, bounce: true, grow: 0f);
+		Pose(_age);
+		StepSparks(dt);
 
-		if (_age > 2f) QueueFree();
+		if (_age > TotalTime) QueueFree();
 	}
 
-	/// <summary>O fogo: cada língua nasce quase branca, vira amarela,
-	/// laranja e vermelho-escura enquanto incha e sobe, e apaga — a fumaça
-	/// fica no lugar dela.</summary>
-	private void StepFire(float dt)
+	private void StepSparks(float dt)
 	{
-		if (_fireMesh == null) return;
-		for (int i = 0; i < _fire.Length; i++)
-		{
-			Bit b = _fire[i];
-			b.Age += dt;
-			float t = Mathf.Clamp(b.Age / b.Life, 0f, 1f);
-			b.Velocity *= 1f - Mathf.Min(5.5f * dt, 0.9f);
-			b.Velocity += Vector3.Up * 3.2f * dt;
-			b.At += b.Velocity * dt;
-			_fire[i] = b;
-
-			Color color = t < 0.18f ? new Color(1f, 0.96f, 0.72f).Lerp(new Color(1f, 0.74f, 0.2f), t / 0.18f)
-				: t < 0.55f ? new Color(1f, 0.74f, 0.2f).Lerp(new Color(1f, 0.36f, 0.05f), (t - 0.18f) / 0.37f)
-				: new Color(1f, 0.36f, 0.05f).Lerp(new Color(0.35f, 0.05f, 0.01f), (t - 0.55f) / 0.45f);
-			color.A = t < 0.08f ? t / 0.08f : 1f - Mathf.Pow(t, 1.8f);
-			float size = b.Size * (0.45f + 1.25f * Mathf.Sqrt(t)) * (t >= 1f ? 0f : 1f);
-			_fireMesh.SetInstanceTransform(i, new Transform3D(Basis.Identity.Scaled(Vector3.One * Mathf.Max(size, 0.0001f)), b.At));
-			_fireMesh.SetInstanceColor(i, color);
-		}
-	}
-
-	private void Step(Bit[] bits, MultiMesh mesh, float dt, float gravity, float drag, bool bounce, float grow)
-	{
-		if (mesh == null) return;
+		if (_sparkMesh == null) return;
 		float floor = _floorY - GlobalPosition.Y;
-		for (int i = 0; i < bits.Length; i++)
+		for (int i = 0; i < _sparks.Length; i++)
 		{
-			Bit b = bits[i];
+			Bit b = _sparks[i];
 			b.Age += dt;
 			float t = Mathf.Clamp(b.Age / b.Life, 0f, 1f);
-			b.Velocity += Vector3.Down * gravity * dt;
-			b.Velocity *= 1f - Mathf.Min(drag * dt, 0.9f);
+			b.Velocity += Vector3.Down * 14f * dt;
+			b.Velocity *= 1f - Mathf.Min(1.6f * dt, 0.9f);
 			b.At += b.Velocity * dt;
-			if (bounce && b.At.Y < floor)
+			if (b.At.Y < floor)
 			{
 				b.At.Y = floor;
 				b.Velocity = b.Bounced ? Vector3.Zero : new Vector3(b.Velocity.X * 0.5f, -b.Velocity.Y * 0.35f, b.Velocity.Z * 0.5f);
 				b.Bounced = true;
 			}
-			bits[i] = b;
+			_sparks[i] = b;
 
-			float size = b.Size * (1f + grow * t) * (t >= 1f ? 0f : 1f);
+			float size = b.Size * (t >= 1f ? 0f : 1f);
 			Color color = b.Color;
-			color.A *= t < 0.25f && grow > 0f ? t / 0.25f : 1f - Mathf.Pow(t, grow > 0f ? 1.4f : 2.2f);
-			mesh.SetInstanceTransform(i, new Transform3D(Basis.Identity.Scaled(Vector3.One * Mathf.Max(size, 0.0001f)), b.At));
-			mesh.SetInstanceColor(i, color);
+			color.A *= 1f - Mathf.Pow(t, 2.2f);
+			_sparkMesh.SetInstanceTransform(i, new Transform3D(Basis.Identity.Scaled(Vector3.One * Mathf.Max(size, 0.0001f)), b.At));
+			_sparkMesh.SetInstanceColor(i, color);
 		}
 	}
 }

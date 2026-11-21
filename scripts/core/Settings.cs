@@ -99,18 +99,24 @@ public static class Settings
 
 	public static readonly string[] QualityNotes =
 	{
-		"Sombra simples, sem oclusão nem brilho. Para máquina fraca.",
-		"Sombra suave, oclusão nos cantos e brilho das luzes.",
-		"Mais a luz que rebate nas paredes e sombra mais nítida. O padrão.",
-		"Mais reflexo no chão e nas superfícies lisas, e a sombra mais fina."
+		"A mesma luz das outras, mais barata: sombra simples e os efeitos com poucas amostras. Para máquina fraca.",
+		"A mesma luz, sombra suave e os efeitos com menos amostras.",
+		"A mesma luz, sombra mais nítida e os efeitos inteiros. O padrão.",
+		"A mesma luz, sombra mais fina e os efeitos na resolução cheia."
 	};
 
 	/// <summary>
-	/// Aplica a qualidade: o tamanho e o filtro das sombras (no motor,
-	/// para todos os mapas) e os efeitos de cada ambiente aberto —
-	/// oclusão nos cantos (SSAO), luz que rebate (SSIL), reflexo na tela
-	/// (SSR) e brilho (glow). Os efeitos só ligam onde o mapa os quer: um
-	/// mapa sem brilho continua sem brilho na Ultra.
+	/// Aplica a qualidade. **A luz é a mesma nas quatro** (pedido do Jhon,
+	/// 20/11: "regule o gráfico baixo, médio, alto e ultra para a luz ficar
+	/// padrão em todos, não pode ficar mais claro"): todo efeito que muda a
+	/// luz do quadro — oclusão nos cantos (SSAO), luz que rebate na tela
+	/// (SSIL), luz rebatida do mapa (SDFGI), névoa com raio de sol e brilho
+	/// (glow) — fica ligado em todas, como o mapa pediu. Antes a Baixa
+	/// desligava a oclusão e a Média a luz rebatida, e o mapa clareava (sem
+	/// oclusão o canto não escurece; sem SDFGI a sala volta a receber o céu).
+	/// O que muda de uma para outra é só o custo: o tamanho e o filtro das
+	/// sombras, e as amostras e a resolução de cada efeito
+	/// (<see cref="ApplyEffectCost"/>). A referência é a Alta, o padrão.
 	/// </summary>
 	public static void ApplyQuality(SceneTree tree)
 	{
@@ -126,6 +132,7 @@ public static class Settings
 		};
 		RenderingServer.DirectionalSoftShadowFilterSetQuality(filter);
 		RenderingServer.PositionalSoftShadowFilterSetQuality(filter);
+		ApplyEffectCost(q);
 
 		if (tree?.Root == null) return;
 		tree.Root.MeshLodThreshold = q == 0 ? 2f : q == 3 ? 0.5f : 1f;
@@ -135,36 +142,78 @@ public static class Settings
 			if (node is WorldEnvironment world) ApplyQuality(world.Environment);
 	}
 
-	/// <summary>Os efeitos de um ambiente na qualidade escolhida. Guarda,
-	/// na primeira vez, o que o mapa pediu.</summary>
+	/// <summary>
+	/// O custo dos efeitos, para todos os mapas (no motor): amostras,
+	/// meia ou inteira resolução, passadas de desfoque, raios da luz
+	/// rebatida e o tamanho da grade da névoa. Nada disto muda quanto o
+	/// efeito escurece ou clareia, só o quanto ele é fino. A Alta usa os
+	/// valores padrão do Godot.
+	/// </summary>
+	private static void ApplyEffectCost(int q)
+	{
+		var ssao = q switch
+		{
+			0 => RenderingServer.EnvironmentSsaoQuality.VeryLow,
+			1 => RenderingServer.EnvironmentSsaoQuality.Low,
+			2 => RenderingServer.EnvironmentSsaoQuality.Medium,
+			_ => RenderingServer.EnvironmentSsaoQuality.High
+		};
+		RenderingServer.EnvironmentSetSsaoQuality(ssao, q < 3, 0.5f, 2, 50f, 300f);
+
+		var ssil = q switch
+		{
+			0 => RenderingServer.EnvironmentSsilQuality.VeryLow,
+			1 => RenderingServer.EnvironmentSsilQuality.Low,
+			2 => RenderingServer.EnvironmentSsilQuality.Medium,
+			_ => RenderingServer.EnvironmentSsilQuality.High
+		};
+		RenderingServer.EnvironmentSetSsilQuality(ssil, q < 3, 0.5f, 4, 50f, 300f);
+
+		RenderingServer.EnvironmentSetSdfgiRayCount(q switch
+		{
+			0 => RenderingServer.EnvironmentSdfgiRayCount.Count4,
+			1 => RenderingServer.EnvironmentSdfgiRayCount.Count8,
+			2 => RenderingServer.EnvironmentSdfgiRayCount.Count16,
+			_ => RenderingServer.EnvironmentSdfgiRayCount.Count32
+		});
+		RenderingServer.GISetUseHalfResolution(q < 2);
+
+		int fog = q switch { 0 => 32, 1 => 48, 2 => 64, _ => 96 };
+		RenderingServer.EnvironmentSetVolumetricFogVolumeSize(fog, fog);
+		RenderingServer.EnvironmentSetVolumetricFogFilterActive(q > 0);
+	}
+
+	/// <summary>Os efeitos de um ambiente: os que o mapa pediu, em todas as
+	/// qualidades (o que a qualidade muda é o custo, em
+	/// <see cref="ApplyEffectCost"/>). Guarda, na primeira vez, o que o
+	/// mapa pediu, porque as versões antigas desligavam efeitos aqui.</summary>
 	public static void ApplyQuality(Godot.Environment env)
 	{
 		if (env == null) return;
-		int q = Math.Clamp(Values.Quality, 0, QualityNames.Length - 1);
 
 		if (!env.HasMeta("mapa_ssao"))
 		{
 			env.SetMeta("mapa_ssao", env.SsaoEnabled);
 			env.SetMeta("mapa_glow", env.GlowEnabled);
 		}
-		bool ssao = env.GetMeta("mapa_ssao").AsBool(), glow = env.GetMeta("mapa_glow").AsBool();
-
-		// A luz rebatida (SDFGI) e a névoa com raio de sol são as mais
-		// caras: só da Alta para cima, e só no mapa que as pede.
 		if (!env.HasMeta("mapa_sdfgi"))
 		{
 			env.SetMeta("mapa_sdfgi", env.SdfgiEnabled);
 			env.SetMeta("mapa_nevoa", env.VolumetricFogEnabled);
 		}
-		env.SdfgiEnabled = env.GetMeta("mapa_sdfgi").AsBool() && q >= 2;
-		env.VolumetricFogEnabled = env.GetMeta("mapa_nevoa").AsBool() && q >= 2;
+		bool ssao = env.GetMeta("mapa_ssao").AsBool();
 
-		env.SsaoEnabled = ssao && q >= 1;
-		env.GlowEnabled = glow && q >= 1;
-		env.SsilEnabled = ssao && q >= 2;
+		env.SsaoEnabled = ssao;
+		env.GlowEnabled = env.GetMeta("mapa_glow").AsBool();
+		env.SdfgiEnabled = env.GetMeta("mapa_sdfgi").AsBool();
+		env.VolumetricFogEnabled = env.GetMeta("mapa_nevoa").AsBool();
+		// A luz que rebate na tela, como a Alta sempre pôs (em todo mapa com
+		// oclusão, a 0,8): era o que se via no padrão.
+		env.SsilEnabled = ssao;
 		env.SsilIntensity = 0.8f;
-		env.SsrEnabled = ssao && q >= 3;
-		env.SsrMaxSteps = 48;
+		// O reflexo na tela (SSR) era só da Ultra e clareava o chão: sai,
+		// para a Ultra ter a mesma luz das outras.
+		env.SsrEnabled = false;
 	}
 
 	/// <summary>Aplica a suavização na tela do jogo (a janela inteira:

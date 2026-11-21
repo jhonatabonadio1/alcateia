@@ -1,12 +1,16 @@
 # Roda todos os testes a cada push e pull request: compila o jogo, os
 # testes de unidade e os de regressão (o jogo de verdade, sem tela).
-# É o mesmo tools/testar.sh que roda no Mac.
+# É o mesmo tools/testar.sh que roda no Mac. O lançamento
+# (lancamento.yml) chama este mesmo arquivo antes de subir para o Fly.
 name: Testes
 
 on:
   push:
+    # Só ramos: a tag de lançamento já roda os testes pelo lancamento.yml.
+    branches: ["**"]
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 env:
   GODOT_VERSION: 4.7.2
@@ -14,6 +18,33 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
+  # A semente do servidor (o que o painel conhece: armas, skins, mapas)
+  # tem de estar em dia com o código do jogo. Entrou item no jogo e
+  # ninguém rodou o exportar_dados.py? Falha aqui, antes de chegar à
+  # produção sem aparecer no painel.
+  semente:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: A semente bate com o jogo
+        run: |
+          python3 tools/servidor/exportar_dados.py
+          if ! git diff --quiet -- servidor/Alcateia.Infra/Semente/jogo.json; then
+            echo "::error file=servidor/Alcateia.Infra/Semente/jogo.json::A semente está velha. Rode: python3 tools/servidor/exportar_dados.py e faça commit."
+            git --no-pager diff --stat -- servidor/Alcateia.Infra/Semente/jogo.json
+            exit 1
+          fi
+      - name: Itens sem foto na loja
+        run: |
+          python3 - <<'PY'
+          import json
+          dados = json.load(open('servidor/Alcateia.Infra/Semente/jogo.json', encoding='utf-8'))
+          sem = [i['id'] for i in dados.get('catalog', []) if i.get('kind') in ('weapon', 'utility', 'skin') and not i.get('image')]
+          for i in sem:
+              print(f'::warning::item sem foto na loja (rode o WeaponPhotos no editor): {i}')
+          PY
+
   testes:
     runs-on: ubuntu-latest
     timeout-minutes: 30

@@ -41,7 +41,7 @@ public sealed class LoginTest : RegressionTest
 			TabRow(shell).Select(1);
 			await b.Frames(3);
 			LineEdit[] fields = Fields(shell);
-			b.Check(fields.Length == 4, $"criar conta: nome, senha, repetir a senha e servidor ({fields.Length} campos)");
+			b.Check(fields.Length == 3, $"criar conta: nome, senha e repetir a senha; o servidor é fixo ({fields.Length} campos)");
 			fields[0].Text = name;
 			fields[1].Text = password;
 			fields[2].Text = "outra-senha-123";
@@ -64,7 +64,7 @@ public sealed class LoginTest : RegressionTest
 			b.Check(shell.Current is LoginScreen, "sem sessão, volta ao login");
 			await b.Seconds(0.5);
 			b.Check(!Backend.LoggedIn, "e não entra sozinho com o acesso salvo");
-			Button account = Buttons(shell).FirstOrDefault(x => x.TooltipText == Loc.F("Entrar como {0}", name));
+			Button account = Buttons(shell).FirstOrDefault(x => x.HasMeta("conta") && (string)x.GetMeta("conta") == name);
 			b.Check(account != null, "a conta salva aparece para clicar");
 			account?.EmitSignal(BaseButton.SignalName.Pressed);
 			b.Check(await RealUntil(b, () => shell.Current is OnlineScreen && Backend.LoggedIn && Backend.AccountName == name, 5), "um clique na conta: entrou");
@@ -84,7 +84,7 @@ public sealed class LoginTest : RegressionTest
 			forget?.EmitSignal(BaseButton.SignalName.Pressed);
 			await b.Frames(3);
 			b.Check(Backend.Saved.All(a => a.Name != name), "esquecer: o acesso sai da lista");
-			b.Check(!Buttons(shell).Any(x => x.TooltipText == Loc.F("Entrar como {0}", name)), "e da tela");
+			b.Check(!Buttons(shell).Any(x => x.HasMeta("conta") && (string)x.GetMeta("conta") == name), "e da tela");
 		}
 		finally
 		{

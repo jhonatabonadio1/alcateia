@@ -1,0 +1,130 @@
+# Lançamento: uma tag "v*" (git tag v0.4.0 && git push --tags) roda os
+# testes e, passando, sobe o servidor e a frota de partidas no Fly.io e
+# publica o jogo para Windows numa Release do GitHub (o link que vai para
+# os testadores). Tag com hífen (v0.4.0-alpha.1) sai como pré-lançamento.
+# Também dá para rodar à mão (aba Actions → Lançamento → Run workflow).
+#
+# Configuração de uma vez (docs/FLY.md):
+#   segredo  FLY_API_TOKEN       token que pode fazer deploy nos dois apps
+#   variável FLY_APP_API         (opcional) padrão wolfleague-api
+#   variável FLY_APP_PARTIDA     (opcional) padrão wolfleague-partida
+name: Lançamento
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+# Um lançamento por vez: dois deploys ao mesmo tempo no mesmo app brigam.
+concurrency:
+  group: lancamento
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # criar a Release com o jogo
+
+env:
+  GODOT_VERSION: 4.7.2
+  FLY_APP_API: ${{ vars.FLY_APP_API || 'wolfleague-api' }}
+  FLY_APP_PARTIDA: ${{ vars.FLY_APP_PARTIDA || 'wolfleague-partida' }}
+
+jobs:
+  testes:
+    uses: ./.github/workflows/testes.yml
+
+  # O servidor (API, saguão, painel). Sobe primeiro: a versão nova da
+  # frota pode depender de rota nova dele; a velha continua falando com ele.
+  servidor:
+    needs: testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: producao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy do servidor
+        run: flyctl deploy --config fly.servidor.toml --app "$FLY_APP_API" --remote-only --wait-timeout 300
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Saúde
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS "https://${FLY_APP_API}.fly.dev/health"; then echo; exit 0; fi
+            sleep 6
+          done
+          echo "::error::o servidor não respondeu /health depois do deploy"
+          exit 1
+
+  # A frota: constrói a imagem do servidor de partida e troca nas máquinas.
+  # As paradas trocam na hora; as ligadas (com partida) esperam desligar
+  # sozinhas, até 20 minutos — ninguém cai no meio da partida.
+  partida:
+    needs: servidor
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: producao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Imagem do servidor de partida
+        id: imagem
+        run: |
+          rotulo="${GITHUB_REF_NAME//\//-}-${GITHUB_SHA::7}"
+          flyctl deploy --config fly.partida.toml --app "$FLY_APP_PARTIDA" \
+            --build-only --push --remote-only --image-label "$rotulo"
+          echo "ref=registry.fly.io/${FLY_APP_PARTIDA}:${rotulo}" >> "$GITHUB_OUTPUT"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Trocar a imagem nas máquinas
+        run: |
+          python3 tools/fly/frota.py --app "$FLY_APP_PARTIDA" atualizar \
+            --imagem "${{ steps.imagem.outputs.ref }}" --esperar 1200
+          python3 tools/fly/frota.py --app "$FLY_APP_PARTIDA" estado
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  # O jogo para Windows, apontando para o servidor de produção
+  # (wolfleague/rede/servidor no project.godot). Sobe como Release do
+  # GitHub; rodado à mão (sem tag), fica só como artefato do workflow.
+  cliente:
+    needs: testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Godot ${{ env.GODOT_VERSION }} (.NET) e os modelos de exportação
+        run: |
+          nome="Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64"
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          curl -sSL -o godot.zip "${base}/${nome}.zip"
+          unzip -q godot.zip -d "$HOME/godot"
+          echo "GODOT=$HOME/godot/${nome}/Godot_v${GODOT_VERSION}-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
+          curl -sSL -o modelos.tpz "${base}/Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz"
+          destino="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono"
+          mkdir -p "$destino"
+          unzip -q modelos.tpz -d modelos
+          mv modelos/templates/* "$destino/"
+      - name: Exportar para Windows
+        run: |
+          dotnet build alcateia.csproj --nologo -v quiet
+          "$GODOT" --headless --path . --import || true
+          mkdir -p build/windows
+          "$GODOT" --headless --path . --export-release "Windows" build/windows/WolfLeague.exe
+          test -f build/windows/WolfLeague.exe
+          (cd build/windows && zip -qr "../WolfLeague-${GITHUB_REF_NAME//\//-}-windows.zip" .)
+          ls -la build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wolfleague-windows
+          path: build/*.zip
+      - name: Release no GitHub
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pre=""; case "$GITHUB_REF_NAME" in *-*) pre="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" build/*.zip $pre --title "WolfLeague $GITHUB_REF_NAME" \
+            --notes "Jogo para Windows: baixe o .zip, extraia e abra WolfLeague.exe. O Windows pode avisar que o programa não é assinado: Mais informações → Executar assim mesmo."

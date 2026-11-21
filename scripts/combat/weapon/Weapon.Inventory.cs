@@ -170,9 +170,24 @@ public partial class Weapon
 	/// <summary>A faca na mão: a comum ou uma versão dela (a do conjunto).</summary>
 	public string MeleeId { get; private set; } = Arsenal.KnifeId;
 
+	/// <summary>A granada do conjunto: a comum ou uma versão dela (só a
+	/// pintura muda — <see cref="Arsenal.Grenades"/>). É a que aparece na
+	/// mão e a que voa.</summary>
+	public string GrenadeModelId { get; private set; } = Arsenal.GrenadeId;
+
 	public void Equip(LoadoutSet set)
 	{
 		MeleeId = set != null && Arsenal.IsKnife(set.Melee) ? set.Melee : Arsenal.KnifeId;
+		GrenadeModelId = Arsenal.GrenadeId;
+		if (set?.Utilities != null)
+		{
+			foreach (string utility in set.Utilities)
+			{
+				if (!Arsenal.IsGrenade(utility)) continue;
+				GrenadeModelId = utility;
+				break;
+			}
+		}
 		if (set == null)
 		{
 			Equip(null, null, 0);

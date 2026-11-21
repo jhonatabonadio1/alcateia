@@ -53,18 +53,18 @@
    },
    "partes": [
     {
-     "malha": "res://assets/armas/ak74/corpo.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/ak74/corpo_ak74.obj",
+     "material": "res://assets/armas/ak74/T_Ak74_D.png",
      "no": ""
     },
     {
-     "malha": "res://assets/armas/ak74/ferrolho.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/ak74/ferrolho_ak74.obj",
+     "material": "res://assets/armas/ak74/T_Ak74_D.png",
      "no": "Ferrolho"
     },
     {
-     "malha": "res://assets/armas/ak74/magazine.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/ak74/magazine_ak74.obj",
+     "material": "res://assets/armas/ak74/T_Ak74_D.png",
      "no": "Magazine"
     }
    ],
@@ -298,17 +298,17 @@
    "partes": [
     {
      "malha": "res://assets/armas/ar15/corpo_ar15.obj",
-     "material": "res://assets/armas/ar15/T_AssaultRifle_D.png",
+     "material": "res://assets/armas/ar15/T_AR15_D.png",
      "no": ""
     },
     {
      "malha": "res://assets/armas/ar15/ferrolho_ar15.obj",
-     "material": "res://assets/armas/ar15/T_AssaultRifle_D.png",
+     "material": "res://assets/armas/ar15/T_AR15_D.png",
      "no": "Ferrolho"
     },
     {
      "malha": "res://assets/armas/ar15/magazine_ar15.obj",
-     "material": "res://assets/armas/ar15/T_AssaultRifle_D.png",
+     "material": "res://assets/armas/ar15/T_AR15_D.png",
      "no": "Magazine"
     }
    ],
@@ -788,13 +788,273 @@
    },
    "partes": [
     {
-     "malha": "res://assets/armas/choque/corpo.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/choque/corpo_choque.obj",
+     "material": "res://assets/armas/choque/T_Choque_D.png",
      "no": ""
     },
     {
-     "malha": "res://assets/armas/choque/pino.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/choque/pino_choque.obj",
+     "material": "res://assets/armas/choque/T_Choque_D.png",
+     "no": "Pino"
+    }
+   ],
+   "pontos": {}
+  },
+  "choque_carbono": {
+   "limites": [
+    [
+     -0.037,
+     -0.045,
+     -0.03
+    ],
+    [
+     0.038,
+     0.045,
+     0.032
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.026,
+      0.0,
+      -0.0
+     ],
+     "dedos": [
+      0.1,
+      0.1,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/choque_carbono/corpo_choque_carbono.obj",
+     "material": "res://assets/armas/choque_carbono/T_ChoqueCarbono_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/choque_carbono/pino_choque_carbono.obj",
+     "material": "res://assets/armas/choque_carbono/T_ChoqueCarbono_D.png",
+     "no": "Pino"
+    }
+   ],
+   "pontos": {}
+  },
+  "choque_magma": {
+   "limites": [
+    [
+     -0.037,
+     -0.045,
+     -0.03
+    ],
+    [
+     0.038,
+     0.045,
+     0.032
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.026,
+      0.0,
+      -0.0
+     ],
+     "dedos": [
+      0.1,
+      0.1,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/choque_magma/corpo_choque_magma.obj",
+     "material": "res://assets/armas/choque_magma/T_ChoqueMagma_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/choque_magma/pino_choque_magma.obj",
+     "material": "res://assets/armas/choque_magma/T_ChoqueMagma_D.png",
+     "no": "Pino"
+    }
+   ],
+   "pontos": {}
+  },
+  "choque_neon": {
+   "limites": [
+    [
+     -0.037,
+     -0.045,
+     -0.03
+    ],
+    [
+     0.038,
+     0.045,
+     0.032
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.026,
+      0.0,
+      -0.0
+     ],
+     "dedos": [
+      0.1,
+      0.1,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/choque_neon/corpo_choque_neon.obj",
+     "material": "res://assets/armas/choque_neon/T_ChoqueNeon_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/choque_neon/pino_choque_neon.obj",
+     "material": "res://assets/armas/choque_neon/T_ChoqueNeon_D.png",
+     "no": "Pino"
+    }
+   ],
+   "pontos": {}
+  },
+  "choque_ouro": {
+   "limites": [
+    [
+     -0.037,
+     -0.045,
+     -0.03
+    ],
+    [
+     0.038,
+     0.045,
+     0.032
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.026,
+      0.0,
+      -0.0
+     ],
+     "dedos": [
+      0.1,
+      0.1,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://assets/armas/choque_ouro/corpo_choque_ouro.obj",
+     "material": "res://assets/armas/choque_ouro/T_ChoqueOuro_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://assets/armas/choque_ouro/pino_choque_ouro.obj",
+     "material": "res://assets/armas/choque_ouro/T_ChoqueOuro_D.png",
      "no": "Pino"
     }
    ],
@@ -853,18 +1113,18 @@
    },
    "partes": [
     {
-     "malha": "res://assets/armas/deagle/corpo.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/deagle/corpo_deagle.obj",
+     "material": "res://assets/armas/deagle/T_Deagle_D.png",
      "no": ""
     },
     {
-     "malha": "res://assets/armas/deagle/ferrolho.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/deagle/ferrolho_deagle.obj",
+     "material": "res://assets/armas/deagle/T_Deagle_D.png",
      "no": "Ferrolho"
     },
     {
-     "malha": "res://assets/armas/deagle/magazine.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/deagle/magazine_deagle.obj",
+     "material": "res://assets/armas/deagle/T_Deagle_D.png",
      "no": "Magazine"
     }
    ],
@@ -1096,23 +1356,8 @@
    },
    "partes": [
     {
-     "malha": "res://assets/armas/faca/corpo_aco.obj",
-     "material": "aco",
-     "no": ""
-    },
-    {
-     "malha": "res://assets/armas/faca/corpo_borracha.obj",
-     "material": "borracha",
-     "no": ""
-    },
-    {
-     "malha": "res://assets/armas/faca/corpo_metal.obj",
-     "material": "metal",
-     "no": ""
-    },
-    {
-     "malha": "res://assets/armas/faca/corpo_polimero.obj",
-     "material": "polimero",
+     "malha": "res://assets/armas/faca/faca_faca.obj",
+     "material": "res://assets/armas/faca/T_Faca_D.png",
      "no": ""
     }
    ],
@@ -1291,18 +1536,18 @@
    },
    "partes": [
     {
-     "malha": "res://assets/armas/m4a4/corpo.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/m4a4/corpo_m4a4.obj",
+     "material": "res://assets/armas/m4a4/T_M4a4_D.png",
      "no": ""
     },
     {
-     "malha": "res://assets/armas/m4a4/ferrolho.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/m4a4/ferrolho_m4a4.obj",
+     "material": "res://assets/armas/m4a4/T_M4a4_D.png",
      "no": "Ferrolho"
     },
     {
-     "malha": "res://assets/armas/m4a4/magazine.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/m4a4/magazine_m4a4.obj",
+     "material": "res://assets/armas/m4a4/T_M4a4_D.png",
      "no": "Magazine"
     }
    ],
@@ -1534,18 +1779,18 @@
    },
    "partes": [
     {
-     "malha": "res://assets/armas/scar/corpo.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/scar/corpo_scar.obj",
+     "material": "res://assets/armas/scar/T_Scar_D.png",
      "no": ""
     },
     {
-     "malha": "res://assets/armas/scar/ferrolho.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/scar/ferrolho_scar.obj",
+     "material": "res://assets/armas/scar/T_Scar_D.png",
      "no": "Ferrolho"
     },
     {
-     "malha": "res://assets/armas/scar/magazine.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/scar/magazine_scar.obj",
+     "material": "res://assets/armas/scar/T_Scar_D.png",
      "no": "Magazine"
     }
    ],
@@ -1777,18 +2022,18 @@
    },
    "partes": [
     {
-     "malha": "res://assets/armas/svd/corpo.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/svd/corpo_svd.obj",
+     "material": "res://assets/armas/svd/T_Svd_D.png",
      "no": ""
     },
     {
-     "malha": "res://assets/armas/svd/ferrolho.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/svd/ferrolho_svd.obj",
+     "material": "res://assets/armas/svd/T_Svd_D.png",
      "no": "Ferrolho"
     },
     {
-     "malha": "res://assets/armas/svd/magazine.obj",
-     "material": "res://assets/armas/reais/paleta.png",
+     "malha": "res://assets/armas/svd/magazine_svd.obj",
+     "material": "res://assets/armas/svd/T_Svd_D.png",
      "no": "Magazine"
     }
    ],

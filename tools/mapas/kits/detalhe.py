@@ -262,10 +262,38 @@ def predio_de(parede):
     return lambda f: predio(f, parede)
 
 
+
+def scifi(f):
+    """O kit da cidade do futuro (o pacote do Unity, ``unity_kit.py``): a textura é um atlas de quatro quadrantes — a
+    paleta, os anúncios, o piso e os prédios de fundo com os LEDs —, e o quadrante diz o que a face é. O que acende
+    (anúncio, LED, janela ao longe) fica liso: a luz é da textura ``_luz``."""
+    u, v = f.uv[:, 0] % 1, f.uv[:, 1] % 1; cl = np.full(f.n, C['metal_pintado']); n = f.nome
+    paleta = (u < 0.5) & (v < 0.5); piso = (u < 0.5) & (v >= 0.5)
+    cl[~paleta & ~piso] = C['liso']
+    cl[piso] = np.where(f.s[piso] > 0.45, C['faixa'], np.where(f.v[piso] < 0.40, C['asfalto'], C['piso']))
+    cl[(u >= 0.8125) & (u < 0.875) & (v >= 0.875) & (v < 0.9375)] = C['vidro']                 # o material Glass
+    cl[(u >= 0.875) & (u < 0.9375) & (v >= 0.875) & (v < 0.9375)] = C['concreto']              # o cinza dos prédios de fundo
+    if 'Nature' in n:
+        cl[paleta] = np.where(f.verde, C['folhagem'], np.where(f.marrom, C['tronco'], np.where(f.cinza, C['rocha'], C['terra'])))[paleta]
+        if 'Flowerbed' in n or 'Bio' in n: cl[paleta & f.cinza] = C['concreto']
+    elif 'Car_' in n or 'Drone' in n:
+        cl[paleta] = np.where(f.preto, C['borracha'], np.where(f.vidro | ((f.h > 190) & (f.h < 250) & (f.v < 0.45)), C['vidro'], C['lataria']))[paleta]
+    elif 'Floor' in n:
+        cl[paleta] = np.where(f.cinza & (f.v < 0.4), C['asfalto'], C['piso'])[paleta]
+    elif re.match(r'SM_(Building|BigBuilding|BG_|BigFence|Buildings_)', n):
+        cl[paleta] = np.where(f.vidro, C['vidro'], np.where(f.cinza & (f.v > 0.5), C['concreto'], np.where(f.marrom, C['madeira'], C['metal_pintado'])))[paleta]
+    else:
+        cl[paleta] = np.where(f.marrom, C['madeira'], np.where(f.cinza & (f.v < 0.45), C['metal_cru'], np.where(f.vidro, C['vidro'], np.where(f.cinza, C['metal_pintado'], C['plastico']))))[paleta]
+        if 'Food' in n: cl[paleta] = C['plastico']
+    return cl
+
+
 # A primeira regra que casa com o começo do nome vale. (kit, expressão, regra); kit None: todos.
 PECAS = [
+    ('scifi', r'', scifi),
     # ---- as chapas que os mapas criam (Kit.chapa): o nome é o próprio material
     (None, r'asfalto$', so('asfalto')), (None, r'calcada$', so('piso')), (None, r'meiofio$', so('concreto')), (None, r'(branco|amarelo)$', so('faixa')),
+    (None, r'poca_', so('agua')), (None, r'lama_', so('terra')), (None, r'monte_areia', so('areia')), (None, r'monte_brita', so('brita')),
     (None, r'(piso|concreto|laje|chao)$', so('piso')), (None, r'brita$', so('brita')), (None, r'escuro$', so('metal_pintado')),
     ('fps2', r'(muralha)$', so('adobe')), ('fps2', r'pedra$', so('calcamento')),
     ('fps6', r'muro$', so('tijolo')), ('fps6', r'parede$', so('concreto')), (None, r'(muro|parede)$', so('reboco')),
@@ -309,11 +337,12 @@ def regra_de(kit, nome):
     return qualquer
 
 
-def classificar(kit, nome, cor, normal, pos):
+def classificar(kit, nome, cor, normal, pos, uv=None):
     """O material de cada face de uma peça. ``cor`` (T × 3, a cor da paleta no meio da face), ``normal`` (T × 3, a da
-    face), ``pos`` (T × 3 × 3)."""
+    face), ``pos`` (T × 3 × 3), ``uv`` (T × 2, o meio da face na textura — o kit de atlas olha onde ela cai)."""
     if not len(cor): return np.zeros(0, int)
-    return np.asarray(regra_de(kit, nome)(Faces(cor, normal, pos)), int)
+    f = Faces(cor, normal, pos); f.uv = uv; f.nome = nome
+    return np.asarray(regra_de(kit, nome)(f), int)
 
 
 # ---------------------------------------------------------------- o Armazém (um modelo só, do Blender)
@@ -412,7 +441,7 @@ def remendar(caminho, kit, regra=None, quieto=False):
             g = np.where((g * Nn.sum(1)).sum(1, keepdims=True) < 0, -g, g); g = np.where(comp < 1e-10, Nn.mean(1), g)
             c = U.mean(1); cor = tex[np.clip((c[:, 1] % 1 * H).astype(int), 0, H - 1), np.clip((c[:, 0] % 1 * W).astype(int), 0, W - 1)]
             if p.get('material') is None and regra is None: cl = np.zeros(len(idx), int)
-            else: cl = np.asarray(regra(Faces(cor, g, P)), int) if regra else classificar(kit, nome, cor, g, P)
+            else: cl = np.asarray(regra(Faces(cor, g, P)), int) if regra else classificar(kit, nome, cor, g, P, c)
             np.add.at(areas, cl, comp[:, 0] / 2)
             # um vértice por (posição, normal, uv, material): a face inteira tem um material só
             v = np.concatenate([pos[idx.reshape(-1)], nor[idx.reshape(-1)], uv[idx.reshape(-1)], np.repeat(cl, 3)[:, None].astype(np.float32)], 1)

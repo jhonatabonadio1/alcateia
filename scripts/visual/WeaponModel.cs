@@ -233,6 +233,28 @@ public static class WeaponModel
 				made.Metallic = 0.35f;
 			}
 
+			// As texturas de 20/11 (tools/armas/peles.py) trazem, ao lado da cor,
+			// a rugosidade e o metal (X_ORM.png: verde e azul) e o relevo
+			// (X_N.png): o chanfro das quinas, a gravação do ouro, a faceta do
+			// diamante. Com a textura, o número do material vira 1 (ela manda).
+			string packed = name.EndsWith("_D.png") ? name[..^6] + "_ORM.png" : null;
+			if (packed != null && ResourceLoader.Exists(packed))
+			{
+				var orm = GD.Load<Texture2D>(packed);
+				made.RoughnessTexture = orm;
+				made.RoughnessTextureChannel = BaseMaterial3D.TextureChannel.Green;
+				made.MetallicTexture = orm;
+				made.MetallicTextureChannel = BaseMaterial3D.TextureChannel.Blue;
+				made.Roughness = 1f;
+				made.Metallic = 1f;
+			}
+			string relief = name.EndsWith("_D.png") ? name[..^6] + "_N.png" : null;
+			if (relief != null && ResourceLoader.Exists(relief))
+			{
+				made.NormalEnabled = true;
+				made.NormalTexture = GD.Load<Texture2D>(relief);
+			}
+
 			// O 8 bit é fosco: brilho de metal desmancha o pixel.
 			if (name.Contains("8Bit"))
 			{

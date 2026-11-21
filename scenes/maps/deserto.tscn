@@ -127,93 +127,87 @@ size = Vector3(0.563, 0.6628, 0.5016)
 size = Vector3(1.2686, 2.3, 0.4967)
 
 [sub_resource type="BoxShape3D" id="S33"]
-size = Vector3(2.0635, 1.958, 2.0569)
-
-[sub_resource type="BoxShape3D" id="S34"]
 size = Vector3(0.7488, 0.7693, 0.7488)
 
-[sub_resource type="BoxShape3D" id="S35"]
-size = Vector3(0.9438, 0.9395, 0.944)
-
-[sub_resource type="BoxShape3D" id="S36"]
+[sub_resource type="BoxShape3D" id="S34"]
 size = Vector3(0.5604, 0.6625, 0.4827)
 
-[sub_resource type="BoxShape3D" id="S37"]
+[sub_resource type="BoxShape3D" id="S35"]
 size = Vector3(1.3958, 1.289, 1.2977)
 
-[sub_resource type="BoxShape3D" id="S38"]
+[sub_resource type="BoxShape3D" id="S36"]
 size = Vector3(0.9708, 1.1674, 1.106)
 
-[sub_resource type="BoxShape3D" id="S39"]
+[sub_resource type="BoxShape3D" id="S37"]
 size = Vector3(1.1079, 0.8259, 1.0798)
 
-[sub_resource type="BoxShape3D" id="S40"]
+[sub_resource type="BoxShape3D" id="S38"]
 size = Vector3(0.455, 0.7046, 0.444)
 
-[sub_resource type="BoxShape3D" id="S41"]
+[sub_resource type="BoxShape3D" id="S39"]
 size = Vector3(2.6253, 0.672, 0.8073)
 
-[sub_resource type="BoxShape3D" id="S42"]
+[sub_resource type="BoxShape3D" id="S40"]
 size = Vector3(1.0045, 0.9, 0.9832)
 
-[sub_resource type="BoxShape3D" id="S43"]
+[sub_resource type="BoxShape3D" id="S41"]
 size = Vector3(4.8, 0.9, 4.8)
 
-[sub_resource type="BoxShape3D" id="S44"]
+[sub_resource type="BoxShape3D" id="S42"]
 size = Vector3(7.2834, 0.3, 2.3095)
 
-[sub_resource type="BoxShape3D" id="S45"]
+[sub_resource type="BoxShape3D" id="S43"]
 size = Vector3(126, 1, 91)
 
-[sub_resource type="BoxShape3D" id="S46"]
+[sub_resource type="BoxShape3D" id="S44"]
 size = Vector3(1, 18, 77)
 
-[sub_resource type="BoxShape3D" id="S47"]
+[sub_resource type="BoxShape3D" id="S45"]
 size = Vector3(112, 18, 1)
 
-[sub_resource type="BoxShape3D" id="S48"]
+[sub_resource type="BoxShape3D" id="S46"]
 size = Vector3(112, 1, 77)
 
-[sub_resource type="BoxShape3D" id="S49"]
+[sub_resource type="BoxShape3D" id="S47"]
 size = Vector3(110, 18, 2.5)
 
-[sub_resource type="BoxShape3D" id="S50"]
+[sub_resource type="BoxShape3D" id="S48"]
 size = Vector3(12.44, 18, 7.5)
 
-[sub_resource type="BoxShape3D" id="S51"]
+[sub_resource type="BoxShape3D" id="S49"]
 size = Vector3(2.38, 18, 7.44)
 
-[sub_resource type="BoxShape3D" id="S52"]
+[sub_resource type="BoxShape3D" id="S50"]
 size = Vector3(7.38, 18, 2.44)
 
-[sub_resource type="BoxShape3D" id="S53"]
+[sub_resource type="BoxShape3D" id="S51"]
 size = Vector3(9.88, 18, 7.44)
 
-[sub_resource type="BoxShape3D" id="S54"]
+[sub_resource type="BoxShape3D" id="S52"]
 size = Vector3(7.44, 18, 17.5)
 
-[sub_resource type="BoxShape3D" id="S55"]
+[sub_resource type="BoxShape3D" id="S53"]
 size = Vector3(2.5, 18, 47.5)
 
-[sub_resource type="BoxShape3D" id="S56"]
+[sub_resource type="BoxShape3D" id="S54"]
 size = Vector3(5, 18, 27.44)
 
-[sub_resource type="BoxShape3D" id="S57"]
+[sub_resource type="BoxShape3D" id="S55"]
 size = Vector3(5, 18, 9.94)
 
-[sub_resource type="BoxShape3D" id="S58"]
+[sub_resource type="BoxShape3D" id="S56"]
 size = Vector3(2.5, 18, 9.94)
 
-[sub_resource type="BoxShape3D" id="S59"]
+[sub_resource type="BoxShape3D" id="S57"]
 size = Vector3(10, 18, 9.94)
 
-[sub_resource type="BoxShape3D" id="S60"]
+[sub_resource type="BoxShape3D" id="S58"]
 size = Vector3(7.5, 18, 4.94)
 
-[sub_resource type="BoxShape3D" id="S61"]
+[sub_resource type="BoxShape3D" id="S59"]
 size = Vector3(7.5, 18, 2.44)
 
-[sub_resource type="BoxShape3D" id="S62"]
+[sub_resource type="BoxShape3D" id="S60"]
 size = Vector3(10, 18, 2.44)
 
 [sub_resource type="BoxMesh" id="B1"]
@@ -250,12 +244,24 @@ size = Vector3(2.5, 3.64, 7.5)
 albedo_color = Color(0.627, 0.554, 0.501, 1)
 
 [sub_resource type="BoxMesh" id="KM6"]
-size = Vector3(3.3, 2.56, 2.35)
+size = Vector3(2.06, 1.96, 2.06)
 
 [sub_resource type="StandardMaterial3D" id="KC6"]
-albedo_color = Color(0.783, 0.614, 0.475, 1)
+albedo_color = Color(0.505, 0.321, 0.217, 1)
+
+[sub_resource type="BoxMesh" id="KM7"]
+size = Vector3(0.94, 0.94, 0.94)
 
 [sub_resource type="StandardMaterial3D" id="KC7"]
+albedo_color = Color(0.51, 0.322, 0.219, 1)
+
+[sub_resource type="BoxMesh" id="KM8"]
+size = Vector3(3.3, 2.56, 2.35)
+
+[sub_resource type="StandardMaterial3D" id="KC8"]
+albedo_color = Color(0.783, 0.614, 0.475, 1)
+
+[sub_resource type="StandardMaterial3D" id="KC9"]
 albedo_color = Color(0.748, 0.588, 0.479, 1)
 
 [sub_resource type="StandardMaterial3D" id="FundoMat0"]
@@ -2326,13 +2332,6 @@ metadata/mapa_cor = Color(0.802, 0.61, 0.415, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc733_Bag_01"]
 shape = SubResource("S31")
 
-[node name="pc738_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9766, 0, 0.2152, 0, 1, 0, -0.2152, 0, 0.9766, -18.75, 0.979, -31.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc738_Box_02"]
-shape = SubResource("S33")
-
 [node name="pc739_Jug_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.55, 0.2188, -30.85)
 metadata/mapa_cor = Color(0.634, 0.466, 0.321, 1)
@@ -2368,33 +2367,19 @@ metadata/mapa_cor = Color(0.775, 0.548, 0.399, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc743_Jug_02"]
 shape = SubResource("S30")
 
-[node name="pc744_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9871, 0, 0.1603, 0, 1, 0, -0.1603, 0, 0.9871, -18.75, 0.979, -26.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc744_Box_02"]
-shape = SubResource("S33")
-
 [node name="pc745_Barrel_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.25, 0.3846, -26.55)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc745_Barrel_01"]
-shape = SubResource("S34")
-
-[node name="pc746_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9841, 0, -0.1775, 0, 1, 0, 0.1775, 0, 0.9841, -8.75, 0.4698, -26.25)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc746_Box_01"]
-shape = SubResource("S35")
+shape = SubResource("S33")
 
 [node name="pc747_Bag_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.95, 0.3312, -25.95)
 metadata/mapa_cor = Color(0.74, 0.615, 0.428, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc747_Bag_02"]
-shape = SubResource("S36")
+shape = SubResource("S34")
 
 [node name="pc748_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.95, 0.3314, -25.35)
@@ -2424,19 +2409,12 @@ metadata/mapa_cor = Color(0.775, 0.548, 0.399, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc751_Jug_02"]
 shape = SubResource("S30")
 
-[node name="pc752_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9947, 0, -0.103, 0, 1, 0, 0.103, 0, 0.9947, 33.75, 0.979, -26.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc752_Box_02"]
-shape = SubResource("S33")
-
 [node name="pc753_Barrel_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.25, 0.3846, -26.55)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc753_Barrel_01"]
-shape = SubResource("S34")
+shape = SubResource("S33")
 
 [node name="pc754_Jug_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41.65, 0.2188, -23.75)
@@ -2464,21 +2442,21 @@ transform = Transform3D(0.9116, 0, 0.4111, 0, 1, 0, -0.4111, 0, 0.9116, -13.75, 
 metadata/mapa_cor = Color(0.583, 0.455, 0.333, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc757_Rock_04"]
-shape = SubResource("S37")
+shape = SubResource("S35")
 
 [node name="pc758_Rock_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.662, 0, 0.7495, 0, 1, 0, -0.7495, 0, 0.662, -12.75, 0.5837, -23.15)
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc758_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc759_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.45, 0.413, -22.85)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc759_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc760_Jug_03" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 0.1772, -23.75)
@@ -2506,63 +2484,56 @@ transform = Transform3D(0.9587, 0, -0.2844, 0, 1, 0, 0.2844, 0, 0.9587, 18.75, 0
 metadata/mapa_cor = Color(0.583, 0.455, 0.333, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc763_Rock_04"]
-shape = SubResource("S37")
+shape = SubResource("S35")
 
 [node name="pc764_Rock_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.8382, 0, -0.5454, 0, 1, 0, 0.5454, 0, 0.8382, 19.75, 0.5837, -23.15)
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc764_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc765_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.05, 0.413, -22.85)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc765_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc766_Rock_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9991, 0, 0.0427, 0, 1, 0, -0.0427, 0, 0.9991, 41.25, 0.5837, -23.75)
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc766_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc767_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9998, 0, 0.0214, 0, 1, 0, -0.0214, 0, 0.9998, 42.05, 0.413, -23.25)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc767_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc768_Rock_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9929, 0, 0.1193, 0, 1, 0, -0.1193, 0, 0.9929, 13.75, 0.5837, -18.75)
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc768_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc769_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9982, 0, 0.0597, 0, 1, 0, -0.0597, 0, 0.9982, 14.55, 0.413, -18.25)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc769_Rock_01"]
-shape = SubResource("S39")
-
-[node name="pc770_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9936, 0, 0.1132, 0, 1, 0, -0.1132, 0, 0.9936, -6.25, 0.4698, -11.25)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc770_Box_01"]
-shape = SubResource("S35")
+shape = SubResource("S37")
 
 [node name="pc771_Bag_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.45, 0.3312, -10.95)
 metadata/mapa_cor = Color(0.74, 0.615, 0.428, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc771_Bag_02"]
-shape = SubResource("S36")
+shape = SubResource("S34")
 
 [node name="pc772_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.45, 0.3314, -10.35)
@@ -2571,19 +2542,12 @@ metadata/mapa_cor = Color(0.802, 0.61, 0.415, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc772_Bag_01"]
 shape = SubResource("S31")
 
-[node name="pc773_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9907, 0, -0.1357, 0, 1, 0, 0.1357, 0, 0.9907, 3.75, 0.979, -11.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc773_Box_02"]
-shape = SubResource("S33")
-
 [node name="pc774_Barrel_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 0.3846, -11.55)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc774_Barrel_01"]
-shape = SubResource("S34")
+shape = SubResource("S33")
 
 [node name="pc777_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.35, 0.3314, -7.85)
@@ -2597,14 +2561,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.25, 0.3523, -8.55)
 metadata/mapa_cor = Color(0.741, 0.611, 0.447, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc778_Bag_03"]
-shape = SubResource("S40")
+shape = SubResource("S38")
 
 [node name="pc780_Table_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8.75, 0.336, -8.75)
 metadata/mapa_cor = Color(0.481, 0.363, 0.24, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc780_Table_02"]
-shape = SubResource("S41")
+shape = SubResource("S39")
 
 [node name="pc784_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.65, 0.3314, -7.85)
@@ -2618,49 +2582,28 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.75, 0.3523, -8.55)
 metadata/mapa_cor = Color(0.741, 0.611, 0.447, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc785_Bag_03"]
-shape = SubResource("S40")
-
-[node name="pc786_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9089, 0, -0.4171, 0, 1, 0, 0.4171, 0, 0.9089, -44.15, 0.4698, -6.25)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc786_Box_01"]
-shape = SubResource("S35")
-
-[node name="pc787_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9956, 0, 0.0932, 0, 1, 0, -0.0932, 0, 0.9956, -43.15, 0.4698, -5.95)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc787_Box_01"]
-shape = SubResource("S35")
+shape = SubResource("S38")
 
 [node name="pc788_Bag_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.55, 0.3312, -7.15)
 metadata/mapa_cor = Color(0.74, 0.615, 0.428, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc788_Bag_02"]
-shape = SubResource("S36")
+shape = SubResource("S34")
 
 [node name="pc789_Pallet_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44.25, 0.45, -5.15)
 metadata/mapa_cor = Color(0.724, 0.541, 0.382, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc789_Pallet_02"]
-shape = SubResource("S42")
-
-[node name="pc790_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9664, 0, -0.2571, 0, 1, 0, 0.2571, 0, 0.9664, -1.25, 0.4698, -6.25)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc790_Box_01"]
-shape = SubResource("S35")
+shape = SubResource("S40")
 
 [node name="pc791_Bag_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 0.3312, -5.95)
 metadata/mapa_cor = Color(0.74, 0.615, 0.428, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc791_Bag_02"]
-shape = SubResource("S36")
+shape = SubResource("S34")
 
 [node name="pc792_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.45, 0.3314, -5.35)
@@ -2772,28 +2715,28 @@ transform = Transform3D(0.9452, 0, -0.3264, 0, 1, 0, 0.3264, 0, 0.9452, -11.25, 
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc808_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc809_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9862, 0, -0.1655, 0, 1, 0, 0.1655, 0, 0.9862, -10.45, 0.413, -3.25)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc809_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc810_Rock_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9668, 0, 0.2554, 0, 1, 0, -0.2554, 0, 0.9668, 8.75, 0.5837, -3.75)
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc810_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc811_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9917, 0, 0.1288, 0, 1, 0, -0.1288, 0, 0.9917, 9.55, 0.413, -3.25)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc811_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc812_Jug_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.35, 0.2188, -3.75)
@@ -2816,53 +2759,25 @@ metadata/mapa_cor = Color(0.775, 0.548, 0.399, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc814_Jug_02"]
 shape = SubResource("S30")
 
-[node name="pc815_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9101, 0, -0.4143, 0, 1, 0, 0.4143, 0, 0.9101, 48.35, 0.4698, -3.75)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc815_Box_01"]
-shape = SubResource("S35")
-
-[node name="pc816_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9954, 0, 0.0963, 0, 1, 0, -0.0963, 0, 0.9954, 49.35, 0.4698, -3.45)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc816_Box_01"]
-shape = SubResource("S35")
-
 [node name="pc817_Bag_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.95, 0.3312, -4.65)
 metadata/mapa_cor = Color(0.74, 0.615, 0.428, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc817_Bag_02"]
-shape = SubResource("S36")
+shape = SubResource("S34")
 
 [node name="pc818_Pallet_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.25, 0.45, -2.65)
 metadata/mapa_cor = Color(0.724, 0.541, 0.382, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc818_Pallet_02"]
-shape = SubResource("S42")
-
-[node name="pc819_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9998, 0, -0.0194, 0, 1, 0, 0.0194, 0, 0.9998, -28.75, 0.979, -1.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc819_Box_02"]
-shape = SubResource("S33")
+shape = SubResource("S40")
 
 [node name="pc820_Barrel_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.25, 0.3846, -1.55)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc820_Barrel_01"]
-shape = SubResource("S34")
-
-[node name="pc823_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9773, 0, -0.2118, 0, 1, 0, 0.2118, 0, 0.9773, 11.25, 0.979, -1.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc823_Box_02"]
 shape = SubResource("S33")
 
 [node name="pc824_Barrel_01" type="StaticBody3D" parent="Colisao"]
@@ -2870,7 +2785,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.75, 0.3846, -1.55)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc824_Barrel_01"]
-shape = SubResource("S34")
+shape = SubResource("S33")
 
 [node name="pc826_Table_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.25, 0.3681, -1.25)
@@ -2891,7 +2806,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.75, 0.3523, -1.05)
 metadata/mapa_cor = Color(0.741, 0.611, 0.447, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc831_Bag_03"]
-shape = SubResource("S40")
+shape = SubResource("S38")
 
 [node name="pc834_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44.85, 0.3314, 2.15)
@@ -2905,7 +2820,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44.75, 0.3523, 1.45)
 metadata/mapa_cor = Color(0.741, 0.611, 0.447, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc835_Bag_03"]
-shape = SubResource("S40")
+shape = SubResource("S38")
 
 [node name="pc837_Table_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.25, 0.3681, 1.25)
@@ -2914,25 +2829,11 @@ metadata/mapa_cor = Color(0.529, 0.403, 0.276, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc837_Table_01"]
 shape = SubResource("S26")
 
-[node name="pc839_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9773, 0, -0.2118, 0, 1, 0, 0.2118, 0, 0.9773, -11.25, 0.979, 1.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc839_Box_02"]
-shape = SubResource("S33")
-
 [node name="pc840_Barrel_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.75, 0.3846, 0.95)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc840_Barrel_01"]
-shape = SubResource("S34")
-
-[node name="pc843_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9998, 0, -0.0194, 0, 1, 0, 0.0194, 0, 0.9998, 28.75, 0.979, 1.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc843_Box_02"]
 shape = SubResource("S33")
 
 [node name="pc844_Barrel_01" type="StaticBody3D" parent="Colisao"]
@@ -2940,35 +2841,21 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.25, 0.3846, 0.95)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc844_Barrel_01"]
-shape = SubResource("S34")
-
-[node name="pc845_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9101, 0, -0.4143, 0, 1, 0, 0.4143, 0, 0.9101, -49.15, 0.4698, 3.75)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc845_Box_01"]
-shape = SubResource("S35")
-
-[node name="pc846_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9954, 0, 0.0963, 0, 1, 0, -0.0963, 0, 0.9954, -48.15, 0.4698, 4.05)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc846_Box_01"]
-shape = SubResource("S35")
+shape = SubResource("S33")
 
 [node name="pc847_Bag_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.55, 0.3312, 2.85)
 metadata/mapa_cor = Color(0.74, 0.615, 0.428, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc847_Bag_02"]
-shape = SubResource("S36")
+shape = SubResource("S34")
 
 [node name="pc848_Pallet_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -49.25, 0.45, 4.85)
 metadata/mapa_cor = Color(0.724, 0.541, 0.382, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc848_Pallet_02"]
-shape = SubResource("S42")
+shape = SubResource("S40")
 
 [node name="pc849_Jug_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -39.15, 0.2188, 3.75)
@@ -2996,28 +2883,28 @@ transform = Transform3D(0.9668, 0, 0.2554, 0, 1, 0, -0.2554, 0, 0.9668, -8.75, 0
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc852_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc853_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9917, 0, 0.1288, 0, 1, 0, -0.1288, 0, 0.9917, -7.95, 0.413, 4.25)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc853_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc854_Rock_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9452, 0, -0.3264, 0, 1, 0, 0.3264, 0, 0.9452, 11.25, 0.5837, 3.75)
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc854_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc855_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9862, 0, -0.1655, 0, 1, 0, 0.1655, 0, 0.9862, 12.05, 0.413, 4.25)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc855_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc857_Table_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.75, 0.3681, 3.75)
@@ -3117,19 +3004,12 @@ metadata/mapa_cor = Color(0.775, 0.548, 0.399, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc870_Jug_02"]
 shape = SubResource("S30")
 
-[node name="pc871_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9664, 0, -0.2571, 0, 1, 0, 0.2571, 0, 0.9664, 1.25, 0.4698, 6.25)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc871_Box_01"]
-shape = SubResource("S35")
-
 [node name="pc872_Bag_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.05, 0.3312, 6.55)
 metadata/mapa_cor = Color(0.74, 0.615, 0.428, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc872_Bag_02"]
-shape = SubResource("S36")
+shape = SubResource("S34")
 
 [node name="pc873_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05, 0.3314, 7.15)
@@ -3138,33 +3018,19 @@ metadata/mapa_cor = Color(0.802, 0.61, 0.415, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc873_Bag_01"]
 shape = SubResource("S31")
 
-[node name="pc874_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9089, 0, -0.4171, 0, 1, 0, 0.4171, 0, 0.9089, 43.35, 0.4698, 6.25)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc874_Box_01"]
-shape = SubResource("S35")
-
-[node name="pc875_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9956, 0, 0.0932, 0, 1, 0, -0.0932, 0, 0.9956, 44.35, 0.4698, 6.55)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc875_Box_01"]
-shape = SubResource("S35")
-
 [node name="pc876_Bag_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.95, 0.3312, 5.35)
 metadata/mapa_cor = Color(0.74, 0.615, 0.428, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc876_Bag_02"]
-shape = SubResource("S36")
+shape = SubResource("S34")
 
 [node name="pc877_Pallet_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.25, 0.45, 7.35)
 metadata/mapa_cor = Color(0.724, 0.541, 0.382, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc877_Pallet_02"]
-shape = SubResource("S42")
+shape = SubResource("S40")
 
 [node name="pc880_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44.85, 0.3314, 9.65)
@@ -3178,14 +3044,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44.75, 0.3523, 8.95)
 metadata/mapa_cor = Color(0.741, 0.611, 0.447, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc881_Bag_03"]
-shape = SubResource("S40")
+shape = SubResource("S38")
 
 [node name="pc883_Table_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8.75, 0.336, 8.75)
 metadata/mapa_cor = Color(0.481, 0.363, 0.24, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc883_Table_02"]
-shape = SubResource("S41")
+shape = SubResource("S39")
 
 [node name="pc887_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.15, 0.3314, 9.65)
@@ -3199,35 +3065,21 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.25, 0.3523, 8.95)
 metadata/mapa_cor = Color(0.741, 0.611, 0.447, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc888_Bag_03"]
-shape = SubResource("S40")
-
-[node name="pc889_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9907, 0, -0.1357, 0, 1, 0, 0.1357, 0, 0.9907, -3.75, 0.979, 11.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc889_Box_02"]
-shape = SubResource("S33")
+shape = SubResource("S38")
 
 [node name="pc890_Barrel_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.25, 0.3846, 10.95)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc890_Barrel_01"]
-shape = SubResource("S34")
-
-[node name="pc891_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9936, 0, 0.1132, 0, 1, 0, -0.1132, 0, 0.9936, 6.25, 0.4698, 11.25)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc891_Box_01"]
-shape = SubResource("S35")
+shape = SubResource("S33")
 
 [node name="pc892_Bag_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.05, 0.3312, 11.55)
 metadata/mapa_cor = Color(0.74, 0.615, 0.428, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc892_Bag_02"]
-shape = SubResource("S36")
+shape = SubResource("S34")
 
 [node name="pc893_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.05, 0.3314, 12.15)
@@ -3241,49 +3093,49 @@ transform = Transform3D(0.9929, 0, 0.1193, 0, 1, 0, -0.1193, 0, 0.9929, -13.75, 
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc894_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc895_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9982, 0, 0.0597, 0, 1, 0, -0.0597, 0, 0.9982, -12.95, 0.413, 19.25)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc895_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc896_Rock_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9991, 0, 0.0427, 0, 1, 0, -0.0427, 0, 0.9991, -41.25, 0.5837, 23.75)
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc896_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc897_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9998, 0, 0.0214, 0, 1, 0, -0.0214, 0, 0.9998, -40.45, 0.413, 24.25)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc897_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc898_Rock_04" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9587, 0, -0.2844, 0, 1, 0, 0.2844, 0, 0.9587, -18.75, 0.6445, 23.75)
 metadata/mapa_cor = Color(0.583, 0.455, 0.333, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc898_Rock_04"]
-shape = SubResource("S37")
+shape = SubResource("S35")
 
 [node name="pc899_Rock_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.8382, 0, -0.5454, 0, 1, 0, 0.5454, 0, 0.8382, -17.75, 0.5837, 24.35)
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc899_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc900_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.45, 0.413, 24.65)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc900_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc901_Jug_03" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.25, 0.1772, 23.75)
@@ -3311,21 +3163,21 @@ transform = Transform3D(0.9116, 0, 0.4111, 0, 1, 0, -0.4111, 0, 0.9116, 13.75, 0
 metadata/mapa_cor = Color(0.583, 0.455, 0.333, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc904_Rock_04"]
-shape = SubResource("S37")
+shape = SubResource("S35")
 
 [node name="pc905_Rock_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.662, 0, 0.7495, 0, 1, 0, -0.7495, 0, 0.662, 14.75, 0.5837, 24.35)
 metadata/mapa_cor = Color(0.581, 0.454, 0.331, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc905_Rock_02"]
-shape = SubResource("S38")
+shape = SubResource("S36")
 
 [node name="pc906_Rock_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.05, 0.413, 24.65)
 metadata/mapa_cor = Color(0.57, 0.442, 0.322, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc906_Rock_01"]
-shape = SubResource("S39")
+shape = SubResource("S37")
 
 [node name="pc907_Jug_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40.85, 0.2188, 23.75)
@@ -3348,19 +3200,12 @@ metadata/mapa_cor = Color(0.775, 0.548, 0.399, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc909_Jug_02"]
 shape = SubResource("S30")
 
-[node name="pc910_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9947, 0, -0.103, 0, 1, 0, 0.103, 0, 0.9947, -33.75, 0.979, 26.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc910_Box_02"]
-shape = SubResource("S33")
-
 [node name="pc911_Barrel_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32.25, 0.3846, 25.95)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc911_Barrel_01"]
-shape = SubResource("S34")
+shape = SubResource("S33")
 
 [node name="pc912_Jug_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.65, 0.2188, 26.25)
@@ -3383,19 +3228,12 @@ metadata/mapa_cor = Color(0.775, 0.548, 0.399, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc914_Jug_02"]
 shape = SubResource("S30")
 
-[node name="pc915_Box_01" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9841, 0, -0.1775, 0, 1, 0, 0.1775, 0, 0.9841, 8.75, 0.4698, 26.25)
-metadata/mapa_cor = Color(0.51, 0.322, 0.219, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc915_Box_01"]
-shape = SubResource("S35")
-
 [node name="pc916_Bag_02" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.55, 0.3312, 26.55)
 metadata/mapa_cor = Color(0.74, 0.615, 0.428, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc916_Bag_02"]
-shape = SubResource("S36")
+shape = SubResource("S34")
 
 [node name="pc917_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.55, 0.3314, 27.15)
@@ -3404,19 +3242,12 @@ metadata/mapa_cor = Color(0.802, 0.61, 0.415, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc917_Bag_01"]
 shape = SubResource("S31")
 
-[node name="pc918_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9871, 0, 0.1603, 0, 1, 0, -0.1603, 0, 0.9871, 18.75, 0.979, 26.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc918_Box_02"]
-shape = SubResource("S33")
-
 [node name="pc919_Barrel_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.25, 0.3846, 25.95)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc919_Barrel_01"]
-shape = SubResource("S34")
+shape = SubResource("S33")
 
 [node name="pc920_Jug_03" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.75, 0.1772, 26.25)
@@ -3439,13 +3270,6 @@ metadata/mapa_cor = Color(0.775, 0.548, 0.399, 1)
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc922_Jug_02"]
 shape = SubResource("S30")
 
-[node name="pc923_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9766, 0, 0.2152, 0, 1, 0, -0.2152, 0, 0.9766, 18.75, 0.979, 31.25)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc923_Box_02"]
-shape = SubResource("S33")
-
 [node name="pc924_Jug_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.95, 0.2188, 31.65)
 metadata/mapa_cor = Color(0.634, 0.466, 0.321, 1)
@@ -3465,21 +3289,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
 metadata/mapa_cor = Color(0.647, 0.576, 0.525, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc1335_muralha"]
-shape = SubResource("S43")
-
-[node name="pc1336_Box_02" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.9397, 0, 0.342, 0, 1, 0, -0.342, 0, 0.9397, -0.6, 1.879, 0.3)
-metadata/mapa_cor = Color(0.505, 0.321, 0.217, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc1336_Box_02"]
-shape = SubResource("S33")
+shape = SubResource("S41")
 
 [node name="pc1337_Barrel_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 1.2846, -0.7)
 metadata/mapa_cor = Color(0.388, 0.306, 0.231, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc1337_Barrel_01"]
-shape = SubResource("S34")
+shape = SubResource("S33")
 
 [node name="pc1338_Bag_01" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 1.2314, 1.1)
@@ -3500,274 +3317,274 @@ transform = Transform3D(0.8777, -0.4792, 0, 0.4792, 0.8777, 0, 0, 0, 1, -17.0745
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr0"]
-shape = SubResource("S44")
+shape = SubResource("S42")
 
 [node name="pr1" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.8777, -0.4792, 0, 0.4792, 0.8777, 0, 0, 0, 1, 12.9255, 1.6133, -16.1557)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr1"]
-shape = SubResource("S44")
+shape = SubResource("S42")
 
 [node name="pr2" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(-0.8777, 0.4792, 0, 0.4792, 0.8777, 0, 0, 0, -1, -12.9255, 1.6133, 16.1557)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr2"]
-shape = SubResource("S44")
+shape = SubResource("S42")
 
 [node name="pr3" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(-0.8777, 0.4792, 0, 0.4792, 0.8777, 0, 0, 0, -1, 17.0745, 1.6133, 18.6557)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr3"]
-shape = SubResource("S44")
+shape = SubResource("S42")
 
 [node name="Piso" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Piso"]
-shape = SubResource("S45")
+shape = SubResource("S43")
 
 [node name="LimiteOeste" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55.5, 9, 0)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteOeste"]
-shape = SubResource("S46")
+shape = SubResource("S44")
 
 [node name="LimiteLeste" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.5, 9, 0)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteLeste"]
-shape = SubResource("S46")
+shape = SubResource("S44")
 
 [node name="LimiteSul" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -38)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteSul"]
-shape = SubResource("S47")
+shape = SubResource("S45")
 
 [node name="LimiteNorte" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, 38)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteNorte"]
-shape = SubResource("S47")
+shape = SubResource("S45")
 
 [node name="LimiteTeto" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 18.5, 0)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteTeto"]
-shape = SubResource("S48")
+shape = SubResource("S46")
 
 [node name="Barreira1" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -36.25)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira1"]
-shape = SubResource("S49")
+shape = SubResource("S47")
 
 [node name="Barreira2" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48.78, 9, -31.25)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira2"]
-shape = SubResource("S50")
+shape = SubResource("S48")
 
 [node name="Barreira3" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.75, 9, -31.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira3"]
-shape = SubResource("S51")
+shape = SubResource("S49")
 
 [node name="Barreira4" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.75, 9, -33.78)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira4"]
-shape = SubResource("S52")
+shape = SubResource("S50")
 
 [node name="Barreira5" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 9, -31.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira5"]
-shape = SubResource("S53")
+shape = SubResource("S51")
 
 [node name="Barreira6" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 9, -31.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira6"]
-shape = SubResource("S51")
+shape = SubResource("S49")
 
 [node name="Barreira7" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 9, -31.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira7"]
-shape = SubResource("S51")
+shape = SubResource("S49")
 
 [node name="Barreira8" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.75, 9, -31.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira8"]
-shape = SubResource("S51")
+shape = SubResource("S49")
 
 [node name="Barreira9" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.78, 9, -31.25)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira9"]
-shape = SubResource("S50")
+shape = SubResource("S48")
 
 [node name="Barreira10" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -51.28, 9, -18.75)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira10"]
-shape = SubResource("S54")
+shape = SubResource("S52")
 
 [node name="Barreira11" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.28, 9, -18.75)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira11"]
-shape = SubResource("S54")
+shape = SubResource("S52")
 
 [node name="Barreira12" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -53.75, 9, 13.75)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira12"]
-shape = SubResource("S55")
+shape = SubResource("S53")
 
 [node name="Barreira13" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.75, 9, 13.75)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira13"]
-shape = SubResource("S55")
+shape = SubResource("S53")
 
 [node name="Barreira14" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 9, 23.78)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira14"]
-shape = SubResource("S56")
+shape = SubResource("S54")
 
 [node name="Barreira15" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 9, 23.78)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira15"]
-shape = SubResource("S56")
+shape = SubResource("S54")
 
 [node name="Barreira16" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45, 9, 32.53)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira16"]
-shape = SubResource("S57")
+shape = SubResource("S55")
 
 [node name="Barreira17" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.75, 9, 32.53)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira17"]
-shape = SubResource("S58")
+shape = SubResource("S56")
 
 [node name="Barreira18" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.25, 9, 32.53)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira18"]
-shape = SubResource("S58")
+shape = SubResource("S56")
 
 [node name="Barreira19" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.25, 9, 32.53)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira19"]
-shape = SubResource("S58")
+shape = SubResource("S56")
 
 [node name="Barreira20" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 9, 32.53)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira20"]
-shape = SubResource("S59")
+shape = SubResource("S57")
 
 [node name="Barreira21" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.75, 9, 32.53)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira21"]
-shape = SubResource("S58")
+shape = SubResource("S56")
 
 [node name="Barreira22" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 9, 32.53)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira22"]
-shape = SubResource("S57")
+shape = SubResource("S55")
 
 [node name="Barreira23" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 9, 35.03)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira23"]
-shape = SubResource("S60")
+shape = SubResource("S58")
 
 [node name="Barreira24" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38.75, 9, 36.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira24"]
-shape = SubResource("S61")
+shape = SubResource("S59")
 
 [node name="Barreira25" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.5, 9, 36.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira25"]
-shape = SubResource("S62")
+shape = SubResource("S60")
 
 [node name="Barreira26" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.25, 9, 36.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira26"]
-shape = SubResource("S61")
+shape = SubResource("S59")
 
 [node name="Barreira27" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.25, 9, 36.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira27"]
-shape = SubResource("S61")
+shape = SubResource("S59")
 
 [node name="Barreira28" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 9, 36.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira28"]
-shape = SubResource("S61")
+shape = SubResource("S59")
 
 [node name="Barreira29" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.5, 9, 36.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira29"]
-shape = SubResource("S62")
+shape = SubResource("S60")
 
 [node name="Barreira30" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.75, 9, 36.28)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira30"]
-shape = SubResource("S61")
+shape = SubResource("S59")
 
 [node name="Desenho" parent="Deserto" instance=ExtResource("p_deserto")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
@@ -4039,37 +3856,199 @@ material_override = SubResource("KC5")
 visible = false
 
 [node name="p45" type="MeshInstance3D" parent="Planta"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8.75, 1.2806, -8.75)
+transform = Transform3D(0.9766, 0, 0.2152, 0, 1, 0, -0.2152, 0, 0.9766, -18.75, 0.979, -31.25)
 mesh = SubResource("KM6")
 material_override = SubResource("KC6")
 visible = false
 
 [node name="p46" type="MeshInstance3D" parent="Planta"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.75, 1.2806, -3.75)
+transform = Transform3D(0.9871, 0, 0.1603, 0, 1, 0, -0.1603, 0, 0.9871, -18.75, 0.979, -26.25)
 mesh = SubResource("KM6")
-material_override = SubResource("KC7")
+material_override = SubResource("KC6")
 visible = false
 
 [node name="p47" type="MeshInstance3D" parent="Planta"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.25, 1.2806, -1.25)
-mesh = SubResource("KM6")
+transform = Transform3D(0.9841, 0, -0.1775, 0, 1, 0, 0.1775, 0, 0.9841, -8.75, 0.4698, -26.25)
+mesh = SubResource("KM7")
 material_override = SubResource("KC7")
 visible = false
 
 [node name="p48" type="MeshInstance3D" parent="Planta"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.25, 1.2806, 1.25)
+transform = Transform3D(0.9947, 0, -0.103, 0, 1, 0, 0.103, 0, 0.9947, 33.75, 0.979, -26.25)
 mesh = SubResource("KM6")
-material_override = SubResource("KC7")
+material_override = SubResource("KC6")
 visible = false
 
 [node name="p49" type="MeshInstance3D" parent="Planta"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.75, 1.2806, 3.75)
-mesh = SubResource("KM6")
+transform = Transform3D(0.9936, 0, 0.1132, 0, 1, 0, -0.1132, 0, 0.9936, -6.25, 0.4698, -11.25)
+mesh = SubResource("KM7")
 material_override = SubResource("KC7")
 visible = false
 
 [node name="p50" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9907, 0, -0.1357, 0, 1, 0, 0.1357, 0, 0.9907, 3.75, 0.979, -11.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p51" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -8.75, 1.2806, -8.75)
+mesh = SubResource("KM8")
+material_override = SubResource("KC8")
+visible = false
+
+[node name="p52" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9089, 0, -0.4171, 0, 1, 0, 0.4171, 0, 0.9089, -44.15, 0.4698, -6.25)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p53" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9956, 0, 0.0932, 0, 1, 0, -0.0932, 0, 0.9956, -43.15, 0.4698, -5.95)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p54" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9664, 0, -0.2571, 0, 1, 0, 0.2571, 0, 0.9664, -1.25, 0.4698, -6.25)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p55" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.75, 1.2806, -3.75)
+mesh = SubResource("KM8")
+material_override = SubResource("KC9")
+visible = false
+
+[node name="p56" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9101, 0, -0.4143, 0, 1, 0, 0.4143, 0, 0.9101, 48.35, 0.4698, -3.75)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p57" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9954, 0, 0.0963, 0, 1, 0, -0.0963, 0, 0.9954, 49.35, 0.4698, -3.45)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p58" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9998, 0, -0.0194, 0, 1, 0, 0.0194, 0, 0.9998, -28.75, 0.979, -1.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p59" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9773, 0, -0.2118, 0, 1, 0, 0.2118, 0, 0.9773, 11.25, 0.979, -1.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p60" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.25, 1.2806, -1.25)
+mesh = SubResource("KM8")
+material_override = SubResource("KC9")
+visible = false
+
+[node name="p61" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.25, 1.2806, 1.25)
+mesh = SubResource("KM8")
+material_override = SubResource("KC9")
+visible = false
+
+[node name="p62" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9773, 0, -0.2118, 0, 1, 0, 0.2118, 0, 0.9773, -11.25, 0.979, 1.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p63" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9998, 0, -0.0194, 0, 1, 0, 0.0194, 0, 0.9998, 28.75, 0.979, 1.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p64" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9101, 0, -0.4143, 0, 1, 0, 0.4143, 0, 0.9101, -49.15, 0.4698, 3.75)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p65" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9954, 0, 0.0963, 0, 1, 0, -0.0963, 0, 0.9954, -48.15, 0.4698, 4.05)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p66" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.75, 1.2806, 3.75)
+mesh = SubResource("KM8")
+material_override = SubResource("KC9")
+visible = false
+
+[node name="p67" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9664, 0, -0.2571, 0, 1, 0, 0.2571, 0, 0.9664, 1.25, 0.4698, 6.25)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p68" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9089, 0, -0.4171, 0, 1, 0, 0.4171, 0, 0.9089, 43.35, 0.4698, 6.25)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p69" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9956, 0, 0.0932, 0, 1, 0, -0.0932, 0, 0.9956, 44.35, 0.4698, 6.55)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p70" type="MeshInstance3D" parent="Planta"]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 8.75, 1.2806, 8.75)
+mesh = SubResource("KM8")
+material_override = SubResource("KC8")
+visible = false
+
+[node name="p71" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9907, 0, -0.1357, 0, 1, 0, 0.1357, 0, 0.9907, -3.75, 0.979, 11.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p72" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9936, 0, 0.1132, 0, 1, 0, -0.1132, 0, 0.9936, 6.25, 0.4698, 11.25)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p73" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9947, 0, -0.103, 0, 1, 0, 0.103, 0, 0.9947, -33.75, 0.979, 26.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p74" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9841, 0, -0.1775, 0, 1, 0, 0.1775, 0, 0.9841, 8.75, 0.4698, 26.25)
+mesh = SubResource("KM7")
+material_override = SubResource("KC7")
+visible = false
+
+[node name="p75" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9871, 0, 0.1603, 0, 1, 0, -0.1603, 0, 0.9871, 18.75, 0.979, 26.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p76" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9766, 0, 0.2152, 0, 1, 0, -0.2152, 0, 0.9766, 18.75, 0.979, 31.25)
+mesh = SubResource("KM6")
+material_override = SubResource("KC6")
+visible = false
+
+[node name="p77" type="MeshInstance3D" parent="Planta"]
+transform = Transform3D(0.9397, 0, 0.342, 0, 1, 0, -0.342, 0, 0.9397, -0.6, 1.879, 0.3)
 mesh = SubResource("KM6")
 material_override = SubResource("KC6")
 visible = false

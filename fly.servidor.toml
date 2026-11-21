@@ -1,0 +1,55 @@
+# O servidor do WolfLeague no Fly.io: API, saguão (WebSocket) e o painel.
+# Sobe com: flyctl deploy --config fly.servidor.toml (o lançamento no
+# GitHub Actions faz isso). Configuração de uma vez: docs/FLY.md.
+#
+# UMA máquina só: o saguão e a frota ficam em memória. Duas máquinas
+# seriam dois saguões que não se enxergam.
+
+app = "wolfleague-api"
+primary_region = "gru"
+
+[build]
+  dockerfile = "servidor/Dockerfile"
+
+[env]
+  # O painel (8081) escuta em todos os endereços, inclusive a rede privada
+  # do Fly (IPv6). Não há serviço público para ele: só chega quem entra
+  # por "fly proxy 8081 -a wolfleague-api".
+  ALCATEIA_ADMIN_BIND = "::"
+  # O proxy do Fly liga para o app a partir de 172.16.x.x; o endereço do
+  # jogador vem no Fly-Client-IP.
+  ALCATEIA_TRUSTED_PROXIES = "172.16.0.0/12"
+  # O Postgres do Fly, pela rede privada (sem TLS: a rede já é cifrada).
+  ALCATEIA_DB_HOST = "wolfleague-db.flycast"
+  ALCATEIA_DB_PORT = "5432"
+  # Servidores de partida sob demanda: o app das máquinas e quantos lugares
+  # livres manter de pé. O token (ALCATEIA_FLY_TOKEN) é segredo.
+  ALCATEIA_FLY_APP = "wolfleague-partida"
+  ALCATEIA_FLEET_RESERVE = "1"
+
+[deploy]
+  strategy = "rolling"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Nunca desliga: o saguão é a conexão aberta dos jogadores.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "connections"
+    soft_limit = 800
+    hard_limit = 1000
+
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "15s"
+    method = "GET"
+    path = "/health"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

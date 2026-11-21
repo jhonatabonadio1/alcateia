@@ -145,7 +145,7 @@ public partial class Weapon : Node3D
 			Slot.Primary => PrimaryDef?.Id ?? "",
 			Slot.Secondary => SecondaryDef?.Id ?? "",
 			Slot.Knife => MeleeId,
-			Slot.Grenade => Arsenal.GrenadeId,
+			Slot.Grenade => GrenadeModelId,
 			_ => ""
 		};
 

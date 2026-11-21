@@ -508,7 +508,7 @@
 			"sort": 230
 		},
 		{
-			"id": "granada",
+			"id": "choque",
 			"name": "Granada",
 			"type": "Granada",
 			"kind": "utility",
@@ -520,8 +520,96 @@
 			"hot": false,
 			"consumable": false,
 			"team": 0,
-			"image": "",
+			"image": "armas/choque.png",
 			"sort": 240
+		},
+		{
+			"id": "choque_carbono",
+			"name": "Granada Carbono",
+			"type": "Granada",
+			"kind": "utility",
+			"rarity": 2,
+			"minRank": 2,
+			"currency": "presas",
+			"prices": [
+				60,
+				300,
+				900,
+				2000,
+				4800
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "armas/choque_carbono.png",
+			"sort": 250
+		},
+		{
+			"id": "choque_neon",
+			"name": "Granada Neon",
+			"type": "Granada",
+			"kind": "utility",
+			"rarity": 3,
+			"minRank": 3,
+			"currency": "presas",
+			"prices": [
+				90,
+				450,
+				1350,
+				3000,
+				7000
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "armas/choque_neon.png",
+			"sort": 260
+		},
+		{
+			"id": "choque_magma",
+			"name": "Granada Magma",
+			"type": "Granada",
+			"kind": "utility",
+			"rarity": 3,
+			"minRank": 3,
+			"currency": "presas",
+			"prices": [
+				90,
+				450,
+				1350,
+				3000,
+				7000
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "armas/choque_magma.png",
+			"sort": 270
+		},
+		{
+			"id": "choque_ouro",
+			"name": "Granada Ouro",
+			"type": "Granada",
+			"kind": "utility",
+			"rarity": 4,
+			"minRank": 5,
+			"currency": "presas",
+			"prices": [
+				120,
+				600,
+				1800,
+				4000,
+				9500
+			],
+			"starter": false,
+			"hot": true,
+			"consumable": false,
+			"team": 0,
+			"image": "armas/choque_ouro.png",
+			"sort": 280
 		},
 		{
 			"id": "tat_pata",
@@ -543,7 +631,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 250
+			"sort": 290
 		},
 		{
 			"id": "tat_salto",
@@ -565,7 +653,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 260
+			"sort": 300
 		},
 		{
 			"id": "tat_couro",
@@ -587,7 +675,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 270
+			"sort": 310
 		},
 		{
 			"id": "tat_garra",
@@ -609,7 +697,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 280
+			"sort": 320
 		},
 		{
 			"id": "tat_pelo",
@@ -631,7 +719,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 290
+			"sort": 330
 		},
 		{
 			"id": "tat_cacador",
@@ -653,7 +741,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 300
+			"sort": 340
 		},
 		{
 			"id": "tat_presas",
@@ -675,7 +763,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 310
+			"sort": 350
 		},
 		{
 			"id": "tat_alfa",
@@ -697,7 +785,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 320
+			"sort": 360
 		},
 		{
 			"id": "tat_lua",
@@ -719,7 +807,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 330
+			"sort": 370
 		},
 		{
 			"id": "raca_bruto",
@@ -735,7 +823,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 340
+			"sort": 380
 		},
 		{
 			"id": "raca_ligeiro",
@@ -751,7 +839,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "",
-			"sort": 350
+			"sort": 390
 		},
 		{
 			"id": "pers_barut",
@@ -767,7 +855,7 @@
 			"consumable": false,
 			"team": 2,
 			"image": "personagens/barut.jpg",
-			"sort": 360
+			"sort": 400
 		},
 		{
 			"id": "pers_eve",
@@ -783,7 +871,7 @@
 			"consumable": false,
 			"team": 1,
 			"image": "personagens/eve.jpg",
-			"sort": 370
+			"sort": 410
 		},
 		{
 			"id": "troca_nome",
@@ -805,7 +893,7 @@
 			"consumable": true,
 			"team": 0,
 			"image": "",
-			"sort": 380
+			"sort": 420
 		}
 	],
 	"maps": [
@@ -826,7 +914,7 @@
 			"id": "cidade",
 			"name": "Cidade",
 			"size": "Grande",
-			"description": "Grande, 120 × 80 m, de dia. Um bairro inteiro: três ruas de ponta a ponta, o bulevar do centro e os becos de 2,5 m por dentro dos quarteirões — entre as lojas, em volta do prédio em obras de três andares, atrás do banco. Cada time nasce num posto de gasolina.",
+			"description": "Grande, 120 × 80 m, de dia. Um bairro inteiro: três ruas de ponta a ponta, o bulevar do centro e os becos de 2,5 m por dentro dos quarteirões — entre as lojas, em volta do prédio em obras de três andares, atrás do banco. Cada time nasce numa ponta da avenida.",
 			"modes": [
 				"equipe",
 				"mata_mata"
@@ -874,6 +962,19 @@
 			"image": "mapas/obra_foto.png"
 		},
 		{
+			"id": "neon",
+			"name": "Distrito Neon",
+			"size": "Grande",
+			"description": "Grande, 124 × 100 m, de noite. Dois quarteirões de uma cidade do futuro, um de cada time, ligados pela avenida do meio e por duas ruas: lojas, o bar, a feira coberta, a praça do parque e um prédio de três lajes com escada por fora. Letreiros e faixas de LED iluminam as ruas; em volta, torres de até 100 m.",
+			"modes": [
+				"equipe",
+				"mata_mata"
+			],
+			"enabled": true,
+			"sort": 50,
+			"image": "mapas/neon_foto.png"
+		},
+		{
 			"id": "armazem",
 			"name": "Armazém (original)",
 			"size": "Pequeno",
@@ -883,7 +984,7 @@
 				"mata_mata"
 			],
 			"enabled": false,
-			"sort": 50,
+			"sort": 60,
 			"image": "mapas/armazem_foto.png"
 		},
 		{
@@ -896,7 +997,7 @@
 				"mata_mata"
 			],
 			"enabled": false,
-			"sort": 60,
+			"sort": 70,
 			"image": "mapas/vila.png"
 		},
 		{
@@ -909,7 +1010,7 @@
 				"mata_mata"
 			],
 			"enabled": false,
-			"sort": 70,
+			"sort": 80,
 			"image": "mapas/polar.png"
 		}
 	],

@@ -819,19 +819,24 @@ GRANADA = dict(centro=(-0.015, -0.070, 0.050), tamanho=1.18)           # onde a 
 GRANADA_LUGAR = (0.105, -0.090, -0.30, 10.0, 55.0, 5.0)               # a mão parada: x, y, z do punho no olho (m); pitch, yaw, roll (graus)
 GRANADA_PRES = (0.045, -0.035, -0.33, 55.0, 60.0, 70.0)               # a granada apresentada à mão esquerda: deitada na mão, a argola virada para a esquerda e para baixo
 # o braço do arremesso, pelo pulso (``mao_pelo_braco``): x, y, z do pulso no olho (m); o giro da mão em torno do antebraço (2 valores somados) e a dobra do pulso para a palma (graus)
-GRANADA_ATRAS = (0.21, -0.03, -0.215, 0.0, -18.0, 0.0)                # armado: a mão ao lado da cabeça, ainda na tela (é dali que se mira)
+# armado: a mão ao lado da cabeça, alta e para trás (Jhon, 20/11: "a mão da granada deve ir mais alta e mais para trás da
+# câmera"); era (0,21, −0,03, −0,215): o pulso 3 cm abaixo do olho e a 21 cm à frente. Agora 3,5 cm acima e a 16,5 cm:
+# a granada fica no canto de cima da tela, metade para fora.
+GRANADA_ATRAS = (0.205, 0.035, -0.165, 0.0, -18.0, 0.0)
 # Com 'meio', x, y, z são do **meio da granada** (não do pulso): é ele que tem de passar pela linha da cruz.
 # A granada sai **do meio da mão, na linha da cruz, indo para ela** (Jhon, 19/11, jogando: "a granada tem que ser lançada
 # no meio da linha da mão, na direção exata do crosshair"). Antes a mão soltava 11 cm à direita da cruz, cortando a tela
 # em diagonal (22° para o lado), e a granada de verdade convergia para a cruz no voo: parecia sair de lado, por cima da
 # mão. Agora a mão vem de trás, entra na linha da cruz **antes** de soltar, solta com a granada em cima dela (um pouco
 # acima da cruz, para não a tapar) e ainda acompanha o lance para a frente antes de cair.
-GRANADA_ARCO = ((0.045, (0.22, 0.01, -0.18, 0.0, -24.0, -8.0)),      # recua um nada, o pulso arma para trás
+GRANADA_ARCO = ((0.045, (0.215, 0.06, -0.13, 0.0, -26.0, -8.0)),      # recua um nada, o pulso arma para trás
                 (0.085, (0.010, 0.066, -0.39, 0.0, -6.0, 0.0), 'meio'),      # já na linha da cruz, indo para a frente
                 (0.11, (0.0, 0.072, -0.55, 0.0, 6.0, 4.0), 'meio'),   # solta aqui (SOLTA): em cima da linha da cruz
-                (0.145, (-0.002, 0.060, -0.615, 0.0, 16.0, 18.0), 'meio'),   # a mão acompanha o lance
-                (0.22, (-0.012, -0.045, -0.59, 0.0, 20.0, 28.0), 'meio'),    # o pulso termina o chicote e a mão cai
-                (0.36, (0.03, -0.26, -0.40, 0.0, 12.0, 16.0)),
+                (0.145, (-0.002, 0.060, -0.615, 0.0, 20.0, 22.0), 'meio'),   # a mão acompanha o lance
+                # o pulso termina o chicote dobrando para a frente, de leve (Jhon, 20/11: "um leve movimento do pulso dobrando para
+                # frente ao arremessar, no final da animação") — eram 20° e 28°, e voltava a 12° e 16° logo depois
+                (0.22, (-0.012, -0.045, -0.59, 0.0, 27.0, 33.0), 'meio'),    # o pulso termina o chicote e a mão cai
+                (0.36, (0.03, -0.26, -0.40, 0.0, 22.0, 27.0)),
                 (0.55, (0.10, -0.50, -0.22, 0.0, 4.0, 8.0)))
 GRANADA_SOLTA = 0.11
 
@@ -1114,3 +1119,8 @@ if __name__ == '__main__':
         if id_ in MIRAS: mirar(id_, ficha)
         if id_ in LONGAS:
             import coronhada; coronhada.fazer(os.path.join(FP, f'{id_}.glb'), ficha)
+    # O conjunto refeito sai com a malha e a paleta de antes: o acabamento de tools/armas/peles.py (a forma nova da faca
+    # e da granada, o UV e o material das texturas) volta aqui, para a arma e para as peles dela — que assim também
+    # recebem as animações novas. Não redesenha textura (segundos). SEM_PELES=1 pula.
+    if not os.environ.get('SEM_PELES'):
+        import peles; peles.reaplicar(set(args or list(LONGAS) + list(CURTAS)))

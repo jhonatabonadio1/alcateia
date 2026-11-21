@@ -29,6 +29,10 @@ uniform float manchas : hint_range(0.0, 3.0) = 1.0;
 uniform float tinta : hint_range(0.0, 2.0) = 1.0;
 /** Pinta cada material de uma cor, para conferir o que tools/mapas/kits/detalhe.py decidiu. */
 uniform bool ver_classes = false;
+// o que acende (os LEDs, os anúncios e as janelas do mapa Neon): a textura da luz, no mesmo desenho da paleta. Preta (o
+// padrão) nos outros mapas: nada muda neles.
+uniform sampler2D luz : source_color, hint_default_black, filter_linear_mipmap, repeat_enable;
+uniform float luz_forca = 0.0;
 
 const int N = 27;
 const float CAMADA_TELHA = 17.0;
@@ -217,5 +221,10 @@ void fragment() {
 		AO_LIGHT_AFFECT = 0.3;
 		vec3 nm = normalize(n + desvio * t1.z * relevo * intensidade);
 		NORMAL = normalize((VIEW_MATRIX * vec4(nm, 0.0)).xyz);
+		if (luz_forca > 0.0) {
+			vec3 acesa = texture(luz, UV).rgb;
+			EMISSION = acesa * luz_forca;
+			ALBEDO = mix(ALBEDO, acesa, clamp(max(acesa.r, max(acesa.g, acesa.b)), 0.0, 1.0) * 0.6);
+		}
 	}
 }

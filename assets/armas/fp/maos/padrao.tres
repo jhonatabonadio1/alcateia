@@ -1,9 +1,17 @@
-[gd_resource type="StandardMaterial3D" load_steps=2 format=3]
+[gd_resource type="ShaderMaterial" load_steps=6 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/armas/fp/maos/maos_paleta.png" id="1_cor"]
+[ext_resource type="Shader" path="res://assets/armas/fp/maos/maos.gdshader" id="1_sh"]
+[ext_resource type="Texture2D" path="res://assets/armas/fp/maos/maos_cor.png" id="2_cor"]
+[ext_resource type="Texture2D" path="res://assets/armas/fp/maos/maos_orm.png" id="3_orm"]
+[ext_resource type="Texture2D" path="res://assets/armas/fp/maos/maos_relevo.png" id="4_rel"]
+[ext_resource type="Texture2D" path="res://assets/armas/fp/maos/maos_led.png" id="5_led"]
 
 [resource]
 resource_name = "maos"
-albedo_texture = ExtResource("1_cor")
-roughness = 0.82
-texture_filter = 0
+shader = ExtResource("1_sh")
+shader_parameter/cor = ExtResource("2_cor")
+shader_parameter/orm = ExtResource("3_orm")
+shader_parameter/relevo = ExtResource("4_rel")
+shader_parameter/luz = ExtResource("5_led")
+shader_parameter/relevo_forca = 1.0
+shader_parameter/led_forca = 3.2

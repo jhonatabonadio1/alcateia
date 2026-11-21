@@ -171,3 +171,13 @@ and Tough**) foram gerados pelo Jhon no **ElevenLabs** e cortados por
 `musica_camera_abate.ogg` é sintetizada (`tools/sons/camera_abate.py`), sem
 material de terceiros. `coronhada_1..3` saem do **Oculus Audio Pack 1**
 (MovementWithGear, Swoosh e VOXMale Hurt; `tools/sons/coronhada.py`).
+
+## Ambiente dos mapas (20/11)
+
+`ambiente_cidade`, `ambiente_deserto`, `ambiente_estacao`, `ambiente_obra`, `ambiente_neon` e os `evento_*`
+(`passaros`, `buzina`, `trem`, `drone`, `cachorro`) são montados por `tools/sons/ambiente_mapas.py` com gravações do
+**Oculus Audio Pack** (Meta, o mesmo pacote dos outros sons; pasta `corpora/oculus-audio-pack/ogg`): AMBUrbn_CityAmerican,
+AMBUrbn_CityEuroDaytime, AMBCnst_ConstructionSiteMedium, AMBForst_ForestBirds 01–03, WINDVege_LightWindTreesBirds,
+MACHMisc_MachineHum 01–02, TRNElec_TrainPassby e ANMLDog_DogBark. As buzinas, o vento do deserto, o zumbido dos letreiros e
+os carros voadores são sintetizados no próprio script.
+

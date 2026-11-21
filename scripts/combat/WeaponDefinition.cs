@@ -114,6 +114,12 @@ public partial class WeaponDefinition : Resource
 
 	[Export] public float RecoilRecovery = 7f;
 
+	/// <summary>O coice na mira (botão direito): fração do recuo de câmera e do
+	/// movimento dos braços no tiro mirado. 1 = o mesmo de fora da mira. A
+	/// SCAR escopada pediu "mexer bem menos ao atirar, ser um pouco mais
+	/// estável" (Jhon, 20/11).</summary>
+	[Export(PropertyHint.Range, "0.1,1,0.05")] public float AimRecoilMultiplier = 1f;
+
 	[ExportGroup("Alcance")]
 	[Export] public float Range = 150f;
 	[Export] public float FalloffStart = 35f;

@@ -42,6 +42,16 @@ public static class FleetRoutes
 			if (deliver.Count > 0) reply["assignment"] = ToJson(deliver[0]);
 			await Api.Send(ctx, reply);
 		});
+
+		// O servidor de partida ocioso pergunta se pode desligar
+		// (ALCATEIA_IDLE_EXIT). "leave": true e ele já saiu da lista.
+		app.MapPost("/v1/fleet/leave", async ctx =>
+		{
+			Api.RequireGameServer(ctx, s.Config);
+			JsonObject body = await Api.Body(ctx);
+			bool leave = s.Fleet.Retire(Api.Text(body, "id"));
+			await Api.Send(ctx, new JsonObject { ["ok"] = true, ["leave"] = leave });
+		});
 	}
 
 	private static JsonObject ToJson(MatchAssignment a)

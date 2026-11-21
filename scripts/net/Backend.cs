@@ -25,7 +25,18 @@ using System.Threading.Tasks;
 /// </summary>
 public static class Backend
 {
-	public const string DefaultUrl = "http://127.0.0.1:8080";
+	public const string LocalUrl = "http://127.0.0.1:8080";
+
+	/// <summary>
+	/// O servidor quando ninguém escolheu outro. No editor (e nos testes,
+	/// que rodam no binário do editor), o da própria máquina. No jogo
+	/// exportado — o que vai para os testadores —, o de produção, que fica
+	/// no project.godot (<c>wolfleague/rede/servidor</c>): trocou o
+	/// endereço do servidor, troca lá e exporta de novo.
+	/// </summary>
+	public static string DefaultUrl => OS.HasFeature("editor")
+		? LocalUrl
+		: ProjectSettings.GetSetting("wolfleague/rede/servidor", LocalUrl).AsString().TrimEnd('/');
 	private const string FilePath = "user://online.cfg";
 
 	/// <summary>A resposta de uma chamada: o código HTTP (0 se o

@@ -71,6 +71,13 @@ public static class Arsenal
 	};
 	public const string GrenadeId = "choque";
 
+	/// <summary>As granadas: a de todo mundo e as versões dela (20/11) — a
+	/// mesma granada com outra pintura (tools/armas/peles.py). O dano, o
+	/// raio e o nome no abate são os da comum (<see cref="GrenadeId"/>).</summary>
+	public static readonly string[] Grenades = { GrenadeId, "choque_carbono", "choque_neon", "choque_magma", "choque_ouro" };
+
+	public static bool IsGrenade(string id) => id != null && System.Array.IndexOf(Grenades, id) >= 0;
+
 	/// <summary>O fuzil de quem não escolheu outro: o AR-15 desde 15/11
 	/// (era a M16A2, que continua no arsenal).</summary>
 	/// A M4A4 desde 19/11 (pedido do Jhon: "a arma padrão agora é a M4A4").
@@ -87,7 +94,16 @@ public static class Arsenal
 			Count = 1,
 			AllowedInSecondSlot = false,
 			Description = "Explosiva. Mata de perto e fere até a borda do raio; cai onde a mira aponta."
-		}
+		},
+		// As versões (20/11): a mesma granada, com outra pintura. Custam e fazem o mesmo.
+		new UtilityInfo { Id = "choque_carbono", DisplayName = "Granada Carbono", WpCost = 60, Count = 1, AllowedInSecondSlot = false,
+			Description = "A granada explosiva, em fibra de carbono com faixa vermelha." },
+		new UtilityInfo { Id = "choque_neon", DisplayName = "Granada Neon", WpCost = 60, Count = 1, AllowedInSecondSlot = false,
+			Description = "A granada explosiva, em placas pretas com as juntas acesas em ciano." },
+		new UtilityInfo { Id = "choque_magma", DisplayName = "Granada Magma", WpCost = 60, Count = 1, AllowedInSecondSlot = false,
+			Description = "A granada explosiva, em basalto com lava acesa nas rachaduras." },
+		new UtilityInfo { Id = "choque_ouro", DisplayName = "Granada Ouro", WpCost = 60, Count = 1, AllowedInSecondSlot = false,
+			Description = "A granada explosiva, em ouro gravado." }
 	};
 
 	private static readonly Dictionary<string, WeaponDefinition> _cache = new();

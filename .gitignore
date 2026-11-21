@@ -41,3 +41,6 @@ assets/pacotes/
 
 # Medidas locais do tools/medir_lobo.sh
 .medidas/
+
+# Jogo exportado (export_presets.cfg)
+build/

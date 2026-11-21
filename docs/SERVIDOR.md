@@ -45,13 +45,14 @@ contêineres: `banco`, `servidor` (porta 8080) e `partida` (porta
 7777/UDP). `docker compose logs -f servidor partida` mostra o que
 acontece; `docker compose down` para (os dados ficam no volume `banco`).
 
-No jogo: **Online → Criar conta**, com o servidor `http://127.0.0.1:8080`.
+No jogo: na tela de login, **Criar conta**. O endereço do servidor é fixo no jogo por enquanto (`Backend.DefaultUrl`, `http://127.0.0.1:8080`); `ALCATEIA_API` passa por cima. A escolha do servidor mais rápido e mais perto vem depois.
 
 **Para jogar com alguém de fora da sua máquina**, ponha no `.env` o
 endereço pelo qual os outros chegam nela
 (`ALCATEIA_PUBLIC_ADDRESS=192.168.0.10`, ou o IP público), libere as
-portas 8080/TCP e 7777/UDP, e cada jogador aponta o campo "Servidor"
-para `http://esse-endereço:8080`.
+portas 8080/TCP e 7777/UDP, e cada jogador abre o jogo com
+`ALCATEIA_API=http://esse-endereço:8080` (a tela de login não tem mais o
+campo "Servidor": o endereço é fixo no jogo por enquanto).
 
 **Mais partidas ao mesmo tempo**: cada servidor de partida cuida de uma.
 Suba mais com `docker compose up -d --scale partida=3` — tirando do
@@ -63,13 +64,14 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
 | Variável | Para quê | Padrão |
 |---|---|---|
 | `ALCATEIA_DB_PASSWORD` | Senha do banco | obrigatória |
+| `ALCATEIA_FLY_APP`, `ALCATEIA_FLY_TOKEN`, `ALCATEIA_FLEET_RESERVE` | Servidores de partida sob demanda no Fly.io (docs/FLY.md) | — |
 | `ALCATEIA_FLEET_KEY` | Segredo entre o servidor e os servidores de partida. Assina os ingressos | obrigatória |
 | `ALCATEIA_PUBLIC_ADDRESS` | O endereço que os jogadores usam para chegar ao servidor de partida | `127.0.0.1` |
 | `ALCATEIA_PORT` | Porta HTTP do servidor na sua máquina | `8080` |
 | `ALCATEIA_GAME_PORT` | Porta UDP do servidor de partida | `7777` |
 | `ALCATEIA_MATCHES` | Quantas partidas o servidor de partida joga ao mesmo tempo | `4` |
 | `ALCATEIA_NETCODE` | `autoritativo`: o servidor de partida move os corpos (decisão 0011) e decide vida, acerto e morte (0016); vazio ou `repasse`: cada jogo move o seu e decide a própria vida (0008) | vazio |
-| `ALCATEIA_API` | (jogo e servidor de partida) onde fica o servidor; passa por cima do campo da tela | — |
+| `ALCATEIA_API` | (jogo e servidor de partida) onde fica o servidor; passa por cima do endereço fixo do jogo | — |
 | `ALCATEIA_SESSION_DAYS` | Validade do login | `30` |
 | `ALCATEIA_MASTER_KEY` | Cifra o que não pode ficar legível no banco (o segredo das duas etapas) | obrigatória |
 | `ALCATEIA_ADMIN_USER`, `ALCATEIA_ADMIN_PASSWORD` | O primeiro administrador do painel; só vale enquanto não há nenhum | — |

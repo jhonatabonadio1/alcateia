@@ -10,7 +10,10 @@ using Godot;
 /// Tudo fica em <c>assets/armas/fp/maos/</c>:
 /// - <c>maos.glb</c>: a malha dos dois braços, já presa ao esqueleto;
 /// - <c>padrao.tres</c>: o material. É aqui, e só aqui, que se troca a
-///   textura das mãos de todas as armas.
+///   textura das mãos de todas as armas. Desde 20/11 é um material de
+///   shader (<c>maos.gdshader</c>, feito por tools/armas/maos.py): cor,
+///   relevo, rugosidade e o LED do bracelete, que acende na cor do time
+///   (<see cref="PaintBracelet"/>).
 ///
 /// A arma não muda: o <c>ar15.glb</c> continua o mesmo, com as animações
 /// dele. A malha entra no esqueleto da arma pelo nome dos ossos. Armas de
@@ -29,7 +32,23 @@ public partial class ViewModel
 	public bool HasRigHands => _rigHands != null && IsInstanceValid(_rigHands);
 
 	/// <summary>Põe as mãos padrão no esqueleto desta arma, se ele for o do AR-15.</summary>
-	private void AttachRigHands(Node3D scene) => _rigHands = PutStandardHands(scene);
+	private void AttachRigHands(Node3D scene)
+	{
+		_rigHands = PutStandardHands(scene);
+		PaintBracelet(_rigHands, _body?.GetNodeOrNull<Health>("Health")?.Team ?? Teams.Blue);
+	}
+
+	/// <summary>O LED do bracelete das mãos padrão, na cor do time de quem
+	/// as usa (pedido do Jhon, 20/11): azul na Vanguarda, vermelho no
+	/// Sindicato. É o parâmetro <c>led</c> do material das mãos
+	/// (<c>maos.gdshader</c>), posto por instância — o material é um só
+	/// para todo mundo.</summary>
+	internal static void PaintBracelet(MeshInstance3D hands, int team)
+	{
+		if (hands == null || !IsInstanceValid(hands)) return;
+		Color led = team == Teams.Orange ? new Color(1f, 0.13f, 0.1f) : new Color(0.1f, 0.5f, 1f);
+		hands.SetInstanceShaderParameter("led", led);
+	}
 
 	/// <summary>As mãos padrão no esqueleto do conjunto (o do AR-15), no
 	/// lugar dos braços que vieram nele. Serve também à câmera de abate e

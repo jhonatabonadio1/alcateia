@@ -6,11 +6,19 @@ using System;
 /// passa por aqui — o acesso pode estar salvo, mas entrar é um clique na
 /// conta, nunca sozinho.
 ///
-/// À esquerda, as contas salvas neste computador: clicou, entra (o login
-/// guardado é conferido no servidor; se não vale mais, a conta sai da
-/// lista e o nome vai para o formulário, à espera da senha). À direita,
-/// entrar com nome e senha, ou criar uma conta nova. "Lembrar acesso"
-/// guarda o login desta conta para o próximo clique.
+/// Mais elaborada (20/11, com o login do Overwatch de referência): o
+/// fundo vivo (<see cref="LoginBackdrop"/>: polígonos que ondulam e
+/// partículas que seguem o mouse), a marca grande no alto, o formulário no
+/// meio, num cartão de vidro. À esquerda dele, as contas salvas neste
+/// computador: clicou, entra (o login guardado é conferido no servidor; se
+/// não vale mais, a conta sai da lista e o nome vai para o formulário, à
+/// espera da senha). "Lembrar acesso" guarda o login desta conta para o
+/// próximo clique. Embaixo, se o servidor está no ar, o treino sem conta e
+/// sair do jogo.
+///
+/// O endereço do servidor é fixo no jogo por enquanto (Jhon, 20/11): a
+/// tela não pergunta. A escolha do servidor mais rápido e mais perto,
+/// os de partida inclusive, vem depois.
 ///
 /// Sem conta não há progressão (decisão 0015: a carteira, os itens e a
 /// patente são da conta); o treino com bots fica num botão discreto
@@ -22,9 +30,12 @@ public partial class LoginScreen : LobbyScreen
 	private bool _busy;
 	private string _status = "";
 	private string _name = "";
-	private string _server = "";
 	private bool _keep = true;
-	private LineEdit _nameField, _password, _confirm, _serverField;
+	private bool _shown;
+	private LineEdit _nameField, _password, _confirm;
+
+	/// <summary>O servidor respondeu? (null: ainda perguntando).</summary>
+	private bool? _online;
 
 	public LoginScreen(string notice = null)
 	{
@@ -33,102 +44,188 @@ public partial class LoginScreen : LobbyScreen
 
 	protected override void Build()
 	{
-		if (_server.Length == 0) _server = Backend.Url;
 		_keep = Backend.KeepAccess;
+		if (_online == null && !_asked) Ask();
+
+		AddChild(new LoginBackdrop());
 
 		var center = UiKit.Fill(new CenterContainer());
 		AddChild(center);
 
-		VBoxContainer page = UiKit.Column(UiTokens.S4);
+		VBoxContainer page = UiKit.Column(UiTokens.S5);
 		center.AddChild(page);
 
-		HBoxContainer brand = UiKit.Row(UiTokens.S3);
-		brand.AddChild(Icon.Make(IconKind.Wolf, 48, UiTokens.Accent));
-		brand.AddChild(UiKit.Text(Credits.GameName.ToUpperInvariant(), "Display"));
+		Control brand = Brand();
 		page.AddChild(brand);
 
 		HBoxContainer row = UiKit.Row(UiTokens.S4);
+		row.Alignment = BoxContainer.AlignmentMode.Center;
 		page.AddChild(row);
-		if (Backend.Saved.Count > 0) row.AddChild(SavedCard());
-		row.AddChild(FormCard());
+		Control saved = Backend.Saved.Count > 0 ? SavedCard() : null;
+		if (saved != null) row.AddChild(saved);
+		Control form = FormCard();
+		row.AddChild(form);
 
-		// O treino com bots não precisa de conta (decisão de 13/11; não
-		// rende nada, decisão 0015).
-		HBoxContainer offline = UiKit.Row(UiTokens.S2);
-		offline.AddChild(UiKit.Spacer());
-		Button train = UiKit.Button("Treinar sem conta", ButtonKind.Tertiary, () =>
-			Shell.GoRoom(RoomDirectory.Current ?? RoomDirectory.Create(new RoomSettings { Title = "Treino" })));
-		train.TooltipText = "Uma sala com bots, neste computador. Sem conta, a partida não rende XP nem Presas.";
-		offline.AddChild(train);
-		page.AddChild(offline);
+		Control bottom = _bottom = BottomBar();
+		AddChild(bottom);
+
+		// A entrada: a marca desce, o cartão sobe (só na primeira vez; a
+		// tela se refaz a cada mudança e não pisca de novo).
+		if (!_shown)
+		{
+			_shown = true;
+			Motion.FadeIn(brand, 0.7f, 0.05f);
+			Motion.FadeIn(row, 0.6f, 0.25f);
+			Motion.FadeIn(bottom, 0.6f, 0.5f);
+		}
 
 		(_nameField.Text.Length == 0 ? _nameField : _password).CallDeferred(Control.MethodName.GrabFocus);
+	}
+
+	// ------------------------------------------------------------------ a marca
+
+	private Control Brand()
+	{
+		VBoxContainer brand = UiKit.Column(UiTokens.S2);
+		brand.Alignment = BoxContainer.AlignmentMode.Center;
+
+		HBoxContainer mark = UiKit.Row(UiTokens.S3);
+		mark.Alignment = BoxContainer.AlignmentMode.Center;
+		Control wolf = Icon.Make(IconKind.Wolf, 76, UiTokens.Accent);
+		wolf.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+		mark.AddChild(wolf);
+
+		Label name = UiKit.Text(Credits.GameName.ToUpperInvariant(), "Display");
+		name.AddThemeFontOverride("font", new FontVariation { BaseFont = UiFonts.DisplayHeavy, SpacingGlyph = 3 });
+		name.AddThemeFontSizeOverride("font_size", 72);
+		// Um halo dourado em volta das letras.
+		name.AddThemeColorOverride("font_shadow_color", new Color(UiTokens.Accent, 0.28f));
+		name.AddThemeConstantOverride("shadow_offset_x", 0);
+		name.AddThemeConstantOverride("shadow_offset_y", 0);
+		name.AddThemeConstantOverride("shadow_outline_size", 18);
+		mark.AddChild(name);
+		brand.AddChild(mark);
+
+		// O fio de ouro embaixo, que some nas pontas.
+		var line = new TextureRect
+		{
+			Texture = Fade(UiTokens.Accent),
+			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+			StretchMode = TextureRect.StretchModeEnum.Scale,
+			CustomMinimumSize = new Vector2(460, 2),
+			SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
+			MouseFilter = MouseFilterEnum.Ignore
+		};
+		brand.AddChild(line);
+
+		Label tagline = UiKit.Caption("HUMANOS CONTRA LOBOS", UiTokens.TextSecondary);
+		tagline.AddThemeFontOverride("font", new FontVariation { BaseFont = UiFonts.Label, SpacingGlyph = 5 });
+		tagline.HorizontalAlignment = HorizontalAlignment.Center;
+		brand.AddChild(tagline);
+		return brand;
+	}
+
+	private static Texture2D _fade;
+
+	private static Texture2D Fade(Color color)
+	{
+		if (_fade != null) return _fade;
+		var gradient = new Gradient();
+		gradient.SetColor(0, new Color(color, 0f));
+		gradient.SetColor(1, new Color(color, 0f));
+		gradient.AddPoint(0.5f, new Color(color, 0.9f));
+		return _fade = new GradientTexture2D { Gradient = gradient, Width = 256, Height = 2 };
 	}
 
 	// ------------------------------------------------------------------ contas salvas
 
 	private Control SavedCard()
 	{
-		PanelContainer card = UiKit.Card(out VBoxContainer column, UiTokens.S4);
-		card.CustomMinimumSize = new Vector2(380, 0);
+		PanelContainer card = UiKit.Card(out VBoxContainer column, UiTokens.S4, UiTokens.S2);
+		card.CustomMinimumSize = new Vector2(340, 0);
 		card.SizeFlagsVertical = SizeFlags.ShrinkBegin;
 
-		column.AddChild(UiKit.Text("Contas salvas", "Subtitle"));
-		column.AddChild(UiKit.Paragraph("Clique na conta para entrar.", "Caption"));
-
+		column.AddChild(Heading("CONTAS SALVAS"));
+		column.AddChild(UiKit.Gap(UiTokens.S1));
 		foreach (Backend.SavedAccess access in Backend.Saved)
 			column.AddChild(AccountLine(access));
 		return card;
 	}
 
+	/// <summary>Uma conta salva: a linha inteira é o botão (a inicial num
+	/// círculo, o nome, a seta de entrar); o X, dentro dela, esquece.</summary>
 	private Control AccountLine(Backend.SavedAccess access)
 	{
-		HBoxContainer line = UiKit.Row(UiTokens.S2);
+		string shown = access.Name.Length > 0 ? access.Name : "Conta";
 
-		// A conta inteira é o botão: nome grande, servidor embaixo.
 		Button enter = UiKit.Button("", ButtonKind.Secondary, () => EnterSaved(access));
+		enter.SetMeta("conta", access.Name);
 		enter.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		enter.CustomMinimumSize = new Vector2(0, 60);
+		enter.CustomMinimumSize = new Vector2(0, 64);
 		enter.Disabled = _busy;
-		enter.TooltipText = Loc.F("Entrar como {0}", access.Name);
+		enter.MouseDefaultCursorShape = CursorShape.PointingHand;
+		Color accent = UiTokens.Accent;
+		enter.AddThemeStyleboxOverride("normal", RowBox(new Color(1, 1, 1, 0.035f), new Color(1, 1, 1, 0.09f)));
+		enter.AddThemeStyleboxOverride("hover", RowBox(new Color(accent, 0.1f), new Color(accent, 0.65f)));
+		enter.AddThemeStyleboxOverride("pressed", RowBox(new Color(accent, 0.16f), accent));
+		enter.AddThemeStyleboxOverride("hover_pressed", RowBox(new Color(accent, 0.16f), accent));
+		enter.AddThemeStyleboxOverride("focus", RowBox(Colors.Transparent, new Color(accent, 0.65f)));
+		enter.AddThemeStyleboxOverride("disabled", RowBox(new Color(1, 1, 1, 0.02f), new Color(1, 1, 1, 0.05f)));
 
+		MarginContainer pad = UiKit.Margin(UiTokens.S3, 0, UiTokens.S2, 0);
+		pad.MouseFilter = MouseFilterEnum.Ignore;
+		UiKit.Fill(pad);
+		enter.AddChild(pad);
 		HBoxContainer inside = UiKit.Row(UiTokens.S3);
 		inside.MouseFilter = MouseFilterEnum.Ignore;
-		UiKit.Fill(inside);
-		inside.AddChild(UiKit.Gap(UiTokens.S2));
-		Control icon = Icon.Make(IconKind.Profile, 28, UiTokens.Accent);
-		icon.MouseFilter = MouseFilterEnum.Ignore;
-		icon.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		inside.AddChild(icon);
+		pad.AddChild(inside);
 
-		VBoxContainer text = UiKit.Column(0);
-		text.MouseFilter = MouseFilterEnum.Ignore;
-		text.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		Label name = UiKit.Text(access.Name.Length > 0 ? access.Name : "Conta", "Subtitle");
+		// A inicial num círculo com o fio dourado.
+		var avatar = new PanelContainer
+		{
+			CustomMinimumSize = new Vector2(38, 38),
+			SizeFlagsVertical = SizeFlags.ShrinkCenter,
+			MouseFilter = MouseFilterEnum.Ignore
+		};
+		var round = new StyleBoxFlat { BgColor = new Color(accent, 0.14f), BorderColor = new Color(accent, 0.8f) };
+		round.SetBorderWidthAll(2);
+		round.SetCornerRadiusAll(19);
+		avatar.AddThemeStyleboxOverride("panel", round);
+		Label initial = UiKit.Text(shown.Substring(0, 1).ToUpperInvariant(), "Subtitle", accent);
+		initial.HorizontalAlignment = HorizontalAlignment.Center;
+		initial.VerticalAlignment = VerticalAlignment.Center;
+		initial.MouseFilter = MouseFilterEnum.Ignore;
+		avatar.AddChild(initial);
+		inside.AddChild(avatar);
+
+		Label name = UiKit.Truncated(shown, "Subtitle");
+		name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		name.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 		name.MouseFilter = MouseFilterEnum.Ignore;
-		text.AddChild(name);
-		Label where = UiKit.Caption(ServerLabel(access.Url));
-		where.MouseFilter = MouseFilterEnum.Ignore;
-		text.AddChild(where);
-		inside.AddChild(text);
-		enter.AddChild(inside);
-		line.AddChild(enter);
+		inside.AddChild(name);
+
+		Control go = Icon.Make(IconKind.Go, 18, UiTokens.TextSecondary);
+		go.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+		go.MouseFilter = MouseFilterEnum.Ignore;
+		inside.AddChild(go);
 
 		Button forget = UiKit.IconButton(IconKind.Close, "Esquecer este acesso neste computador", () =>
 		{
 			Backend.ForgetSaved(access);
 			Refresh();
-		});
+		}, 16);
 		forget.Disabled = _busy;
 		forget.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		line.AddChild(forget);
-		return line;
+		inside.AddChild(forget);
+		return enter;
 	}
 
-	private static string ServerLabel(string url)
+	private static StyleBoxFlat RowBox(Color bg, Color border)
 	{
-		string shown = url.Replace("https://", "").Replace("http://", "");
-		return url.TrimEnd('/') == Backend.DefaultUrl ? Loc.F("{0} (neste computador)", shown) : shown;
+		var box = new StyleBoxFlat { BgColor = bg, BorderColor = border };
+		box.SetBorderWidthAll(1);
+		box.SetCornerRadiusAll(UiTokens.RadiusPanel);
+		return box;
 	}
 
 	private async void EnterSaved(Backend.SavedAccess access)
@@ -149,7 +246,6 @@ public partial class LoginScreen : LobbyScreen
 		}
 
 		_name = access.Name;
-		_server = access.Url;
 		_register = false;
 		_status = reply.Status == 401
 			? Loc.F("O acesso salvo de {0} venceu. Digite a senha para entrar.", access.Name)
@@ -162,8 +258,9 @@ public partial class LoginScreen : LobbyScreen
 
 	private Control FormCard()
 	{
-		PanelContainer card = UiKit.Card(out VBoxContainer column, UiTokens.S4);
-		card.CustomMinimumSize = new Vector2(440, 0);
+		PanelContainer card = UiKit.Card(out VBoxContainer column, UiTokens.S5);
+		card.CustomMinimumSize = new Vector2(420, 0);
+		card.SizeFlagsVertical = SizeFlags.ShrinkBegin;
 
 		column.AddChild(Tabs.Make(new[] { "Entrar", "Criar conta" }, _register ? 1 : 0, index =>
 		{
@@ -173,51 +270,73 @@ public partial class LoginScreen : LobbyScreen
 			Refresh();
 		}));
 
-		column.AddChild(UiKit.Paragraph(_register
-			? "A conta guarda as suas Presas, os seus itens, as missões, a patente e o seu lugar no ranking. O nome é o que aparece no placar."
-			: "Entre com o nome e a senha da sua conta.", "Caption"));
+		if (_register)
+			column.AddChild(UiKit.Paragraph("A conta guarda as suas Presas, os seus itens, as missões, a patente e o seu lugar no ranking. O nome é o que aparece no placar.", "Caption"));
 
-		_nameField = UiKit.Field(_name, "3 a 16 caracteres", Profile.NameMax);
-		_password = UiKit.Field("", _register ? "8 ou mais caracteres" : "", 64);
+		_nameField = Entry(_name, "3 a 16 caracteres", Profile.NameMax);
+		_password = Entry("", _register ? "8 ou mais caracteres" : "", 64);
 		_password.Secret = true;
-		_serverField = UiKit.Field(_server, Backend.DefaultUrl, 120);
-		column.AddChild(UiKit.FormRow("Nome", _nameField, 110));
-		column.AddChild(UiKit.FormRow("Senha", _password, 110));
+		column.AddChild(Labeled("NOME DA CONTA", _nameField));
+		column.AddChild(Labeled("SENHA", _password));
 		if (_register)
 		{
-			_confirm = UiKit.Field("", "a mesma senha", 64);
+			_confirm = Entry("", "a mesma senha", 64);
 			_confirm.Secret = true;
-			column.AddChild(UiKit.FormRow("Repita a senha", _confirm, 110));
+			column.AddChild(Labeled("REPITA A SENHA", _confirm));
 			_confirm.TextSubmitted += _ => Submit();
 		}
 		else _confirm = null;
-		column.AddChild(UiKit.FormRow("Servidor", _serverField, 110));
 
 		column.AddChild(UiKit.Check("Lembrar acesso neste computador", _keep, on => _keep = on));
 
 		Label status = UiKit.Paragraph(_status.Length > 0 ? _status : " ", null);
 		status.AddThemeColorOverride("font_color", _busy ? UiTokens.TextSecondary : UiTokens.Warning);
-		status.CustomMinimumSize = new Vector2(400, 0);
+		status.CustomMinimumSize = new Vector2(360, 0);
 		column.AddChild(status);
 
-		HBoxContainer buttons = UiKit.Row(UiTokens.S2);
-		buttons.AddChild(UiKit.Spacer());
-		Button go = UiKit.Button(_register ? "Criar conta" : "Entrar", ButtonKind.Primary, Submit);
+		Button go = UiKit.Button(_register ? "Criar conta" : "Entrar", ButtonKind.Primary, () => Submit());
 		go.Disabled = _busy;
-		go.CustomMinimumSize = new Vector2(160, UiTokens.ButtonHeight);
-		buttons.AddChild(go);
-		column.AddChild(buttons);
+		go.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		go.CustomMinimumSize = new Vector2(0, 52);
+		go.AddThemeFontSizeOverride("font_size", UiTokens.Subtitle);
+		_go = go;
+		column.AddChild(go);
 
 		_password.TextSubmitted += _ => { if (_confirm == null) Submit(); else _confirm.GrabFocus(); };
 		_nameField.TextSubmitted += _ => _password.GrabFocus();
 		return card;
 	}
 
+	private Button _go;
+
+	private static LineEdit Entry(string text, string placeholder, int max)
+	{
+		LineEdit field = UiKit.Field(text, placeholder, max);
+		field.CustomMinimumSize = new Vector2(0, 44);
+		field.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		return field;
+	}
+
+	/// <summary>O rótulo pequeno, em caixa alta, em cima do campo.</summary>
+	private static Control Labeled(string label, Control field)
+	{
+		VBoxContainer box = UiKit.Column(UiTokens.S1);
+		box.AddChild(Heading(label));
+		box.AddChild(field);
+		return box;
+	}
+
+	private static Label Heading(string text)
+	{
+		Label label = UiKit.Caption(text, UiTokens.TextSecondary);
+		label.AddThemeFontOverride("font", new FontVariation { BaseFont = UiFonts.Label, SpacingGlyph = 2 });
+		return label;
+	}
+
 	/// <summary>Guarda o que já foi digitado (a tela se refaz a cada mudança).</summary>
 	private void Keep()
 	{
 		if (_nameField != null && IsInstanceValid(_nameField)) _name = _nameField.Text;
-		if (_serverField != null && IsInstanceValid(_serverField)) _server = _serverField.Text;
 	}
 
 	private async void Submit()
@@ -239,11 +358,14 @@ public partial class LoginScreen : LobbyScreen
 			return;
 		}
 
+		// As faíscas saem do botão.
+		if (_go != null && IsInstanceValid(_go))
+			LoginBackdrop.Burst(_go.GlobalPosition + _go.Size / 2f - GlobalPosition, Size);
+
 		_busy = true;
 		_status = "Falando com o servidor…";
 		Refresh();
 
-		Backend.Url = _server;
 		Backend.KeepAccess = _keep;
 		Backend.Reply reply = _register ? await Backend.Register(name, password) : await Backend.Login(name, password);
 		_busy = false;
@@ -255,13 +377,14 @@ public partial class LoginScreen : LobbyScreen
 			return;
 		}
 
+		if (reply.Status == 0) _online = false;
 		_status = Problem(reply);
 		Sfx.Ui("ui_negado");
 		Refresh();
 	}
 
 	private static string Problem(Backend.Reply reply) => reply.Status == 0
-		? Loc.F("Não achei o servidor em {0}. Ele está no ar?", Backend.Url)
+		? "O servidor não respondeu. Confira a internet e tente de novo."
 		: reply.Error;
 
 	/// <summary>Entrou: a conta vem do servidor e o jogo abre nas salas.</summary>
@@ -269,5 +392,64 @@ public partial class LoginScreen : LobbyScreen
 	{
 		Sfx.Ui(Sfx.First("ui_confirmar", "abate"));
 		Shell.GoOnline();
+	}
+
+	// ------------------------------------------------------------------ embaixo
+
+	private bool _asked;
+
+	/// <summary>Pergunta uma vez se o servidor está no ar (o ponto embaixo).</summary>
+	private async void Ask()
+	{
+		_asked = true;
+		Backend.Reply reply = await Backend.Health();
+		if (!IsInsideTree()) return;
+		_online = reply.Ok;
+		// Só a barra de baixo: refazer a tela apagaria a senha que se digita.
+		if (_bottom != null && IsInstanceValid(_bottom))
+		{
+			_bottom.QueueFree();
+			AddChild(_bottom = BottomBar());
+		}
+	}
+
+	private Control _bottom;
+
+	private Control BottomBar()
+	{
+		MarginContainer margin = UiKit.Margin(UiTokens.S5, 0, UiTokens.S5, UiTokens.S4);
+		margin.SetAnchorsAndOffsetsPreset(LayoutPreset.BottomWide);
+		margin.GrowVertical = GrowDirection.Begin;
+
+		HBoxContainer bar = UiKit.Row(UiTokens.S3);
+		margin.AddChild(bar);
+
+		// O servidor: no ar, fora, ou ainda perguntando.
+		HBoxContainer server = UiKit.Row(UiTokens.S2);
+		Color dot = _online switch { true => UiTokens.Success, false => UiTokens.Danger, _ => UiTokens.TextSecondary };
+		var light = new Panel { CustomMinimumSize = new Vector2(10, 10), SizeFlagsVertical = SizeFlags.ShrinkCenter, MouseFilter = MouseFilterEnum.Ignore };
+		light.AddThemeStyleboxOverride("panel", new StyleBoxFlat { BgColor = dot, CornerRadiusTopLeft = 5, CornerRadiusTopRight = 5, CornerRadiusBottomLeft = 5, CornerRadiusBottomRight = 5 });
+		server.AddChild(light);
+		if (_online == null) Motion.Pulse(light);
+		server.AddChild(UiKit.Caption(_online switch
+		{
+			true => "Servidor no ar",
+			false => "Servidor fora do ar",
+			_ => "Procurando o servidor…"
+		}));
+		bar.AddChild(server);
+
+		bar.AddChild(UiKit.Spacer());
+
+		// O treino com bots não precisa de conta (decisão de 13/11; não
+		// rende nada, decisão 0015).
+		Button train = UiKit.Button("Treinar sem conta", ButtonKind.Tertiary, () =>
+			Shell.GoRoom(RoomDirectory.Current ?? RoomDirectory.Create(new RoomSettings { Title = "Treino" })));
+		train.TooltipText = "Uma sala com bots, neste computador. Sem conta, a partida não rende XP nem Presas.";
+		bar.AddChild(train);
+
+		Button quit = UiKit.Button("Sair do jogo", ButtonKind.Tertiary, () => GetTree().Quit());
+		bar.AddChild(quit);
+		return margin;
 	}
 }

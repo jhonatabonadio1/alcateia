@@ -85,13 +85,16 @@ class Kit:
         y, x = np.unravel_index(np.argmin(d + liso * 4), d.shape)
         return ((x + 0.5) / 256, (y + 0.5) / 256), tuple(t[y, x].round(3))
 
-    def chapa(self, nome, rgb):
+    def chapa(self, nome, rgb, fundo=False):
         """Cria a peça ``nome``: uma caixa de 1 × 1 × 1 m (a base em y = 0, o meio em x = z = 0), sem fundo, toda da cor
-        ``rgb`` da textura. Põe-se com ``Montagem.chapa`` (esticada para o tamanho que for)."""
+        ``rgb`` da textura. Põe-se com ``Montagem.chapa`` (esticada para o tamanho que for). ``fundo``: com a face de
+        baixo — a laje que se vê de baixo (sem ela, quem olha o teto vê o verso da face de cima, na mesma altura da base
+        do que está em cima, e os dois piscam: o que está no andar de cima "atravessa" o teto; Obra, Jhon, 20/11)."""
         (u, v), achada = self.uv_da_cor(rgb)
         c = np.array([[x, y, z] for x in (-0.5, 0.5) for y in (0.0, 1.0) for z in (-0.5, 0.5)])
         faces = [((2, 3, 7), (2, 7, 6), (0, 1, 0)), ((0, 4, 6), (0, 6, 2), (0, 0, -1)), ((1, 3, 7), (1, 7, 5), (0, 0, 1)),
                  ((0, 2, 3), (0, 3, 1), (-1, 0, 0)), ((4, 5, 7), (4, 7, 6), (1, 0, 0))]
+        if fundo: faces.append(((0, 4, 5), (0, 5, 1), (0, -1, 0)))
         pos, nor = [], []
         for t1, t2, n in faces:
             for t in (t1, t2):

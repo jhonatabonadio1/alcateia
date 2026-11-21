@@ -21,7 +21,8 @@ public partial class WeaponPhotos : Node
 	/// <summary>As armas fotografadas: todas as de assets/armas/armas.json
 	/// que aparecem na interface.</summary>
 	private static readonly string[] Ids = { "ar15", "ar15_ultimate", "ar15_ouro", "ar15_diamante", "ar15_8bit", "ar15_lava", "m4a4", "ak74", "scar", "svd", "deagle", "faca", "choque",
-		"m4a4_neon", "m4a4_dragao", "ak74_tigre", "ak74_imperial", "scar_artico", "scar_galaxia", "svd_carbono", "svd_tempestade", "deagle_cobra", "deagle_fenix", "faca_damasco", "faca_obsidiana" };
+		"m4a4_neon", "m4a4_dragao", "ak74_tigre", "ak74_imperial", "scar_artico", "scar_galaxia", "svd_carbono", "svd_tempestade", "deagle_cobra", "deagle_fenix", "faca_damasco", "faca_obsidiana",
+		"choque_carbono", "choque_neon", "choque_magma", "choque_ouro" };
 
 	/// <summary>Só estas (<c>-- --armas=ar15_ouro,ar15_8bit</c>); sem isso, todas.</summary>
 	private static string[] Wanted()
@@ -101,8 +102,12 @@ public partial class WeaponPhotos : Node
 
 		Aabb box = Bounds(model, Transform3D.Identity) ?? new Aabb(Vector3.Zero, Vector3.One * 0.2f);
 		model.Position = -box.GetCenter();
-		// Um pouco de lado e de cima: dá para ver o volume sem perder o perfil.
-		pivot.RotationDegrees = new Vector3(0, 0, 0);
+		pivot.Basis = Pose(id);
+		if (pivot.Basis != Basis.Identity && Bounds(pivot, Transform3D.Identity) is Aabb turned)
+		{
+			pivot.Position = -turned.GetCenter();
+			box = turned;
+		}
 
 		// A câmera olha de +X: o cano (−Z) aponta para a direita da foto.
 		float length = box.Size.Z;
@@ -121,6 +126,16 @@ public partial class WeaponPhotos : Node
 		camera.LookAtFromPosition(new Vector3(2.6f, 0.42f, 0.5f), Vector3.Zero, Vector3.Up);
 		return stage;
 	}
+
+	/// <summary>Arma de fogo: de perfil, o cano para a direita. Faca: a face
+	/// da lâmina para a câmera, a ponta subindo para a direita (de perfil
+	/// ela ficava em pé, um risco no meio da foto). Granada: girada para a
+	/// argola ficar na frente e a alavanca no perfil (de frente, a alavanca
+	/// tapava a granada). O mesmo em tools/fotos_armas.gd.</summary>
+	private static Basis Pose(string id) =>
+		id.StartsWith("faca") ? new Basis(Vector3.Right, Mathf.DegToRad(-35))
+		: Arsenal.IsGrenade(id) ? new Basis(Vector3.Up, Mathf.DegToRad(120))
+		: Basis.Identity;
 
 	private static DirectionalLight3D Light(Vector3 degrees, float energy, Color color) => new()
 	{

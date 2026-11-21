@@ -130,6 +130,26 @@ public sealed class Fleet
 	}
 
 	/// <summary>A partida em curso com esta chave, e o servidor que a tem.</summary>
+	/// <summary>Lugares livres nos servidores que estão batendo.</summary>
+	public int FreeSlots(DateTime now) =>
+		_servers.Values.Where(s => now - s.LastSeen <= Fresh).Sum(s => Math.Max(s.Free, 0));
+
+	/// <summary>Um servidor ocioso pede para desligar. Pode, se não tem
+	/// partida e se sem ele ainda sobram <paramref name="reserve"/> lugares
+	/// livres; aí sai da lista na hora — nenhuma partida nova cai nele
+	/// entre o "pode" e o desligar. Quem a lista nem conhece pode ir.</summary>
+	public bool Retire(string id, int reserve, DateTime now)
+	{
+		if (id == null || !_servers.TryGetValue(id, out GameServer s)) return true;
+		if (s.Slots.Count > 0) return false;
+
+		int others = _servers.Values.Where(x => x != s && now - x.LastSeen <= Fresh).Sum(x => Math.Max(x.Free, 0));
+		if (others < reserve) return false;
+
+		_servers.Remove(id);
+		return true;
+	}
+
 	public (MatchAssignment Assignment, string ServerId)? Find(string matchKey)
 	{
 		if (matchKey == null || !_byMatch.TryGetValue(matchKey, out GameServer s)) return null;

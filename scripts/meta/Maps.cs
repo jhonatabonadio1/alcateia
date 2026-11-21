@@ -63,6 +63,8 @@ public static class Maps
 			// O vento entrando pelo galpão (18/11): o zumbido antigo (ambiente_hangar)
 			// era todo grave e em caixa pequena não se ouvia nada.
 			RoomSize = 0.75f, RoomWet = 0.35f, Ambience = "ambiente_armazem", AmbienceDb = -12f,
+			// (de vez em quando, os pássaros do lado de fora do galpão — 20/11)
+			EventSound = "evento_passaros", EventEvery = new Vector2(60, 130),
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
 		},
 		// Os mapas de 19/11 (pedido do Jhon: "inclua esses mapas no game"): montados
@@ -77,8 +79,12 @@ public static class Maps
 			Scene = "res://scenes/maps/cidade.tscn",
 			Thumbnail = "res://assets/ui/mapas/cidade.png",
 			Cover = "res://assets/ui/mapas/cidade_foto.png",
-			Description = "Grande, 120 × 80 m, de dia. Um bairro inteiro: três ruas de ponta a ponta, o bulevar do centro e os becos de 2,5 m por dentro dos quarteirões — entre as lojas, em volta do prédio em obras de três andares, atrás do banco. Cada time nasce num posto de gasolina.",
-			RoomSize = 0.5f, RoomWet = 0.12f, Ambience = "ambiente_vila", AmbienceDb = -14f,
+			Description = "Grande, 120 × 80 m, de dia. Um bairro inteiro: três ruas de ponta a ponta, o bulevar do centro e os becos de 2,5 m por dentro dos quarteirões — entre as lojas, em volta do prédio em obras de três andares, atrás do banco. Cada time nasce numa ponta da avenida.",
+			// O fundo de cada mapa de kit é o dele desde 20/11 (pedido do Jhon: "som de ambiente em todos os mapas,
+			// pássaros, buzinas de carros — deserto não tem carro"): tools/sons/ambiente_mapas.py. Aqui, a cidade ao
+			// longe com pássaros e buzinas; de vez em quando, duas buzinadas mais perto.
+			RoomSize = 0.5f, RoomWet = 0.12f, Ambience = "ambiente_cidade", AmbienceDb = -13f,
+			EventSound = "evento_buzina", EventEvery = new Vector2(35, 80),
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
 		},
 		new()
@@ -90,7 +96,9 @@ public static class Maps
 			Thumbnail = "res://assets/ui/mapas/deserto.png",
 			Cover = "res://assets/ui/mapas/deserto_foto.png",
 			Description = "Grande, 110 × 75 m, sol alto. Uma cidadela talhada dentro da muralha: três vielas de ponta a ponta ligadas por becos de 2,5 m, a rua da feira e a praça do chafariz no meio. Casas de laje com escada de pedra; por cima da muralha, só o lobo.",
-			RoomSize = 0.4f, RoomWet = 0.08f, Ambience = "ambiente_vila", AmbienceDb = -14f,
+			// (vento seco e pássaros longe; nenhum carro)
+			RoomSize = 0.4f, RoomWet = 0.08f, Ambience = "ambiente_deserto", AmbienceDb = -14f,
+			EventSound = "evento_passaros", EventEvery = new Vector2(45, 100),
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
 		},
 		new()
@@ -102,7 +110,9 @@ public static class Maps
 			Thumbnail = "res://assets/ui/mapas/estacao.png",
 			Cover = "res://assets/ui/mapas/estacao_foto.png",
 			Description = "Grande, 120 × 95 m, fim de tarde, no centro da cidade. A rua e a praça, o prédio da estação com as torres de relógio — saguão, duas alas com corredor e salas —, duas plataformas, três linhas com trens parados e o pátio de carga. No centro, a passarela cruza as linhas por cima dos trens.",
-			RoomSize = 0.6f, RoomWet = 0.2f, Ambience = "ambiente_vila", AmbienceDb = -16f,
+			// (a cidade de dia, o zumbido dos trilhos, pássaros sob a cobertura; de vez em quando um trem passa ao longe)
+			RoomSize = 0.6f, RoomWet = 0.2f, Ambience = "ambiente_estacao", AmbienceDb = -15f,
+			EventSound = "evento_trem", EventEvery = new Vector2(70, 140),
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
 		},
 		new()
@@ -114,9 +124,28 @@ public static class Maps
 			Thumbnail = "res://assets/ui/mapas/obra.png",
 			Cover = "res://assets/ui/mapas/obra_foto.png",
 			Description = "Grande, 100 × 70 m, de dia. Um prédio de concreto em construção no meio do canteiro: corredor de 60 m, salas e salões no térreo, duas lajes abertas em cima (4 e 8 m) com escadas e muretas de tijolo. Em volta, material empilhado, andaimes e gruas.",
-			RoomSize = 0.55f, RoomWet = 0.18f, Ambience = "ambiente_vila", AmbienceDb = -15f,
+			// (o canteiro ao longe — máquina, batidas —, vento e pássaros; de vez em quando um cachorro late na vizinhança)
+			RoomSize = 0.55f, RoomWet = 0.18f, Ambience = "ambiente_obra", AmbienceDb = -15f,
+			EventSound = "evento_cachorro", EventEvery = new Vector2(50, 110),
 			// só mata-mata (todos contra todos, nascendo espalhados: os pontos são o nó NascerLivre da cena) — Jhon, 20/11
 			Modes = new[] { GameMode.MataMata }
+		},
+		new()
+		{
+			// A cidade do futuro do pacote "Low Poly Sci-Fi City" (pedido do Jhon, 20/11: "implemente esse mapa no
+			// jogo, refaça a luz e as texturas e deixe ele maior; use LED para iluminar as partes que representam
+			// LED"): a cena de demonstração do pacote, lida do arquivo do Unity, duas vezes — a cópia girada 180° —,
+			// de noite, com os LEDs acesos (tools/mapas/neon.py; docs/MAPAS.md).
+			Id = "neon",
+			Name = "Distrito Neon",
+			Size = "Grande",
+			Scene = "res://scenes/maps/neon.tscn",
+			Thumbnail = "res://assets/ui/mapas/neon.png",
+			Cover = "res://assets/ui/mapas/neon_foto.png",
+			Description = "Grande, 124 × 100 m, de noite. Dois quarteirões de uma cidade do futuro, um de cada time, ligados pela avenida do meio e por duas ruas: lojas, o bar, a feira coberta, a praça do parque e um prédio de três lajes com escada por fora. Letreiros e faixas de LED iluminam as ruas; em volta, torres de até 100 m.",
+			RoomSize = 0.6f, RoomWet = 0.22f, Ambience = "ambiente_neon", AmbienceDb = -13f,
+			EventSound = "evento_drone", EventEvery = new Vector2(40, 90),
+			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
 		}
 	};
 

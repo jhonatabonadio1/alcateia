@@ -30,6 +30,7 @@ RecoilVerticalLate = 1.2
 RecoilEarlyShots = 3
 RecoilHorizontal = 0.2
 RecoilRecovery = 5.0
+AimRecoilMultiplier = 0.35
 Range = 200
 FalloffStart = 40
 FalloffEnd = 70

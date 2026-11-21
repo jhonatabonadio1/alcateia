@@ -23,6 +23,8 @@ As quatro perguntas do teste de mapa:
 
 O leste é o oeste **espelhado** (o prédio fica ao norte para os dois times): o azul nasce na ponta de −X.
 """
+import numpy as np
+
 from .kit import Mapa, AZUL
 from .kits.montagem import Montagem, Grade, fechar, nascer, barrar, espalhar, luz_de_jogo, lampadas
 from .kits.planta import Planta
@@ -83,7 +85,9 @@ LINHAS = (20, 25, 28)                                # a primeira fileira de cad
 SAGUAO = 18.75                                       # o saguão vai de −SAGUAO a +SAGUAO; as alas, daí até ALA
 ALA = 48.75
 
-CAIXA = ('ATM', 'Bench', 'Box', 'Generator', 'PhoneBooth', 'VendingMachine', 'TrainPart', 'RailwayPart', 'Barrier', 'Train_', 'Wall', 'muro', 'parede', 'Building_07')
+# (os vagões, o galpão e a guarita têm a colisão da própria malha: a caixa deles pegava o teto curvo, o beiral e o vão debaixo
+# da sacada, e o tiro de cima batia nela, invisível — Jhon, 20/11)
+CAIXA = ('ATM', 'Bench', 'Box', 'Generator', 'PhoneBooth', 'VendingMachine', 'RailwayPart', 'Barrier', 'Wall', 'muro', 'parede')
 SEM = ('Railway_', 'Light_', 'Clock1', 'Time_', 'Platform_', 'TrafficLight', 'HousePart', 'WallDecor', 'Window_', 'Door_', 'Building_',
        'concreto', 'piso', 'amarelo', 'escuro', 'brita', 'tunel_concreto', 'Wall_08T')
 VAGOES = dict(L=('Train_01_C1', 'Train_02_C1', 'Train_01_C2', 'Train_02_C2'), G=('TrainPart_05', 'TrainPart_06'), Q=('TrainPart_04',),
@@ -179,7 +183,7 @@ def desenho():
     # São duas, inteiras, de pé na calçada, uma de cada lado da entrada do saguão, encostadas na fachada)
     tz = K['Building_07'].tam[2]
     for lado in (-1, 1):
-        M.por('Building_07', lado * (SAGUAO + 0.4), zN - 0.2 - tz / 2, yaw=180.0, colide='caixa')
+        M.por('Building_07', lado * (SAGUAO + 0.4), zN - 0.2 - tz / 2, yaw=180.0, colide='malha')          # (a caixa pegava a ponta do telhado)
         for i in range(5):                  # a cobertura da plataforma, presa na fachada das alas
             x = lado * (SAGUAO + 6.5 + 5.0 * i)
             if not any(abs(x - (bx + (1.25 if bx < 0 else -1.25))) < 5.4 for _, _, _, bx, _ in P.celulas('B')):
@@ -197,7 +201,7 @@ def desenho():
         M.por(P.sorteio(x, z, VAGOES[reg[0]]), x, z, yaw=90.0 if x < 0 else -90.0)
     for reg in P.regioes('H'):
         ret = P.mundo(*reg[1:]); x, z = (ret[0] + ret[2]) / 2, (ret[1] + ret[3]) / 2
-        M.por('Building_05', x, z, yaw=P.frente(ret, SOLIDOS), colide='caixa')
+        M.por('Building_05', x, z, yaw=P.frente(ret, SOLIDOS), colide='malha')
 
     # ---- o que está nas plataformas, no prédio e no pátio
     for L, r, c, x, z in P.celulas('pnvkbgxcjB'):
@@ -210,7 +214,7 @@ def desenho():
         elif L == 'g': M.por('Generator_01', x, z, yaw=90.0)
         elif L == 'x': M.por('Barrier_01', x, z - 0.8, yaw=90.0 + g); M.por('Barrier_01', x + 0.2, z + 0.9, yaw=90.0 - g)
         elif L == 'c':
-            M.por('SmallRoof_01', x, z, colide='malha', planta=False); M.barra(x, z, 0.3, 3.0)
+            M.por('SmallRoof_01', x, z, colide='malha', planta=False)          # (a colisão é a da malha; a caixa a mais saiu)
             M.por(P.sorteio(x, z, ('Platform_01', 'Platform_02')), x, z + 0.5, y=2.3, colide=None); M.por('Light_02', x + 1.2, z, y=2.75, colide=None); M.por('Clock1_C1', x - 1.4, z + 0.3, y=1.9, colide=None)
         elif L == 'j': M.por(P.sorteio(x, z, ('TrainPart_01', 'TrainPart_02')), x, z, yaw=90.0 + g); M.por('Box_01', x + 1.6, z + 0.4, yaw=g)
         elif L == 'B':
@@ -219,7 +223,7 @@ def desenho():
             # ala tem 9 m no kit e é esticada para os 10 m, como as vizinhas) — antes ficava solta na frente da parede,
             # mais baixa que ela ("essas torres ficaram mal feitas", Jhon, 20/11)
             xb = x + (1.25 if x < 0 else -1.25); ala = abs(xb) > SAGUAO; nome = 'Wall2_05' if ala else 'Wall_05'; p = K[nome]
-            M.por(nome, xb - (p.lo[0] + p.hi[0]) / 2, zS + 0.04, yaw=0.0, pivo=True, escala=(1.0, TETO / p.tam[1], 1.0), colide='caixa')
+            M.por(nome, xb - (p.lo[0] + p.hi[0]) / 2, zS + 0.04, yaw=0.0, pivo=True, escala=(1.0, TETO / p.tam[1], 1.0), colide='malha')
 
     # ---- o que dá vida ao prédio, sem colisão: relógios, quadros de horários, luminárias, caixas de ar e janelas internas
     # nas paredes; os sinais na ponta das linhas
@@ -288,9 +292,12 @@ def cidade_em_volta():
     for L, r, c, x, z in P.celulas('atiuq'):
         if L == 'a': C.por(P.sorteio(x, z, CARROS), x, z, yaw=90.0 + P.desvio(x, z, 10))
         elif L == 't':
-            C.por(P.sorteio(x, z, ('Tree_01', 'Tree_02')), x, z, yaw=P.desvio(x, z, 180), colide=None); C.barra(x, z, 0.45, 3.0)
+            C.por(P.sorteio(x, z, ('Tree_01', 'Tree_02')), x, z, yaw=P.desvio(x, z, 180), colide=None); C.barra(x, z, 0.28, 3.0)          # (o tronco: 0,24 m; a caixa de 0,45 segurava tiro de raspão)
             for i, (dx, dz) in enumerate(((0.7, 0.3), (-0.5, 0.6), (0.1, -0.8))): C.por('Grass_01', x + dx, z + dz, yaw=70.0 * i, colide=None)
-        elif L == 'i': C.por('Light_01', x, z, colide=None); C.barra(x, z, 0.3, 4.6)
+        elif L == 'i':
+            # (a caixa do poste vai no poste: a peça tem o braço de 2,4 m para um lado e era centrada pela caixa dela, com o
+            # poste 1,1 m ao lado — a caixa ficava no ar, invisível, e segurava tiro; 20/11)
+            pe = C.por('Light_01', x, z, colide=None).pontos(np.zeros((1, 3)))[0]; C.barra(pe[0], pe[2], 0.12, 4.6)          # (o poste: 0,11 m)
         elif L == 'u': C.por('Trash_01', x, z); C.por('Garbage_01', x + 1.6, z, colide=None)
         elif L == 'q': C.por('House_08', x, z, yaw=180.0); C.por('FlowerBed_01', x + 2.6, z, colide=None); C.por('FlowerBed_01', x - 2.6, z, colide=None)
     for lado in (-1, 1):

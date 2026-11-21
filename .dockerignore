@@ -1,0 +1,20 @@
+# O que não vai para as imagens Docker (servidor/Dockerfile e
+# servidor/partida.Dockerfile usam a raiz do projeto como contexto). Sem
+# isto, o "fly deploy" mandaria gigas para o construtor remoto.
+.git
+.github
+.godot
+.synctmp
+.vscode
+.idea
+**/.DS_Store
+**/bin
+**/obj
+**/__pycache__
+servidor/painel/node_modules
+servidor/painel/dist
+tools/nupkgs
+docs
+android
+*.zip
+*.unitypackage

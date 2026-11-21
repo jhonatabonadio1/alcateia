@@ -3,7 +3,7 @@ Cidade — mapa grande (120 × 80 m), a céu aberto, de dia.
 
 Um bairro inteiro: três ruas de ponta a ponta (a do norte, a avenida no meio e a do sul), duas transversais e o bulevar
 do centro, e dentro dos quarteirões os becos de 2,5 m — entre as lojas e as casas, em volta do prédio em obras (três
-andares, com escada por dentro), atrás do banco. Cada time nasce num posto de gasolina, numa ponta da avenida.
+andares, com escada por dentro), atrás do banco. Cada time nasce numa ponta da avenida.
 
 Montado com as peças do kit "Low Poly FPS Map Vol.1 — City" (JustCreate; ``tools/mapas/kits``), com planta própria (o kit
 vem sem o mapa montado). A planta é o desenho em letras aqui embaixo (``kits/planta.py``): cada letra, 2,5 m.
@@ -14,9 +14,9 @@ As quatro perguntas do teste de mapa:
   2. Onde o humano vê o lobo chegando: as lajes do prédio em obras e as esquinas do bulevar, de frente para as três ruas.
   3. Corredor que o humano deve evitar: os becos de 2,5 m (duas paredes para o lobo ricochetear, sem para onde fugir) e a
      avenida de ponta a ponta, só com carro e barreira de cobertura.
-  4. Cair em cima de quem não olha: do teto das lojas e da cobertura do posto sobre quem passa no beco ou nasce embaixo.
+  4. Cair em cima de quem não olha: do teto das lojas sobre quem passa no beco.
 
-O leste é o oeste girado 180°: o azul nasce no posto de −X, o laranja no de +X, e os dois veem o mesmo mapa.
+O leste é o oeste girado 180°: o azul nasce na ponta −X da avenida, o laranja na +X, e os dois veem o mesmo mapa.
 """
 import numpy as np
 
@@ -65,8 +65,10 @@ SOLIDOS = "hlTBIKOSq"
 P = Planta(OESTE, 2.5, 'giro')
 X, Z = P.X, P.Z            # o espaço jogável: de −X a X e de −Z a Z
 
-CAIXA = ('AmoBox', 'ATM', 'Barrel', 'Box_', 'Car_', 'OldCar', 'Fan', 'FlowerBed', 'Garbage', 'Hydrant', 'Trash', 'Wheel', 'Rock', 'Pallet',
-         'RoadPart', 'Barrier', 'Parking_01', 'House_01', 'House_02', 'House_03', 'House_04', 'Bank', 'Office', 'Fence_03')
+# (os prédios e os carros têm a colisão da própria malha: a caixa deles pegava a sacada, a escada de incêndio, a marquise
+# e o capô, e o tiro de cima do telhado para a rua batia nela, invisível, sem dano — Jhon, 20/11)
+CAIXA = ('AmoBox', 'ATM', 'Barrel', 'Box_', 'Fan', 'FlowerBed', 'Garbage', 'Hydrant', 'Trash', 'Wheel', 'Rock', 'Pallet',
+         'RoadPart', 'Barrier', 'Parking_01', 'Fence_03')
 SEM = ('BG_', 'Grass', 'Plant', 'Mud', 'Luke', 'PowerLines', 'RoadSign', 'Tree', 'Light', 'ParkingBG', 'asfalto', 'calcada', 'meiofio', 'branco', 'amarelo')
 CARROS = ('OldCar_01', 'OldCar_02', 'OldCar_03', 'OldCar_04', 'OldCar_05', 'OldCar_06', 'Car_01')
 
@@ -74,18 +76,18 @@ CARROS = ('OldCar_01', 'OldCar_02', 'OldCar_03', 'OldCar_04', 'OldCar_05', 'OldC
 # ---- as ruas e as calçadas (pedido do Jhon, 20/11: "coloque calçadas na cidade, não deixe asfalto e chão se misturarem")
 # O asfalto fica MEIO_FIO abaixo da calçada, com o meio-fio na borda: são dois níveis de verdade, no desenho e na
 # colisão, e um não fica por cima do outro (era uma chapa a 3 cm da outra, e de longe as duas brigavam). A calçada é
-# o nível zero de sempre — os prédios, os becos e o posto não mudam; quem desce é a rua e o que está nela.
+# o nível zero de sempre — os prédios e os becos não mudam; quem desce é a rua e o que está nela.
 RUAS = ((5, 3, 45, 6), (3, 26, 43, 29), (3, 14, 45, 18), (8, 3, 10, 29), (38, 3, 40, 29), (22, 3, 26, 29), (3, 24, 8, 29), (40, 3, 45, 8))
 MEIO_FIO = 0.14           # o degrau: o jogador (0,3 m) e o bot (0,5 m) sobem andando
 CALCADA = 1.6             # a largura da calçada ao pé dos prédios (as árvores e os postes ficam nela)
 GUIA = 0.2                # a largura do meio-fio
-PATIO = 41.0              # daqui para fora, na avenida, é o pátio do posto (onde se nasce): calçada
+PATIO = 41.0              # daqui para fora, na avenida, é o largo onde se nasce: calçada
 PASSO = 0.1               # a malha da planta do asfalto
 
 
 def planta_das_ruas():
     """Onde é asfalto, numa malha de PASSO vista de cima (linhas em z, colunas em x), de −X−12 a X+12: as ruas da planta,
-    menos o pátio do posto, com a calçada tirada de cada borda."""
+    menos o largo onde se nasce, com a calçada tirada de cada borda."""
     fora = 12.0; nx, nz = int(round((2 * X + 2 * fora) / PASSO)), int(round((2 * Z + 2 * fora) / PASSO))
     col = lambda x: int(round((x + X + fora) / PASSO)); lin = lambda z: int(round((z + Z + fora) / PASSO))
     rua = np.zeros((nz, nx), bool)
@@ -182,8 +184,8 @@ def desenho():
                       ('amarelo', (0.9, 0.75, 0.1))):
         K.chapa(nome, cor)
 
-    # ---- o posto, onde o azul nasce (o do laranja é ele girado): a cobertura de 3,8 m, as bombas, caixas
-    M.por('Gas_Station_01', -47.0, 0.0, yaw=90)
+    # ---- o largo onde o azul nasce (o do laranja é ele girado), na ponta da avenida: caixas, tambores e um carro. (Era um
+    # posto de gasolina, com a cobertura e as bombas; saiu a pedido do Jhon, 20/11.)
     M.por('AmoBox', -51.2, 5.4, yaw=20); M.por('AmoBox_01', -51.6, -5.6); M.por('Barrel_01', -51.9, -6.6); M.por('Barrel_02', -51.2, -6.9)
     M.por('Box_01', -51.7, 6.6); M.por('Box_02', -51.7, 6.6, y=0.9, yaw=15); M.por('Box_03', -50.7, 6.8, yaw=40)
     M.por('Trash_02', -51.8, 2.2, yaw=90); M.por('Wheel_01', -52.0, -1.2, yaw=90); M.por('Pallet_01', -44.2, -6.6, yaw=10)
@@ -238,11 +240,13 @@ def desenho():
         elif L == 'o':
             M.por('Barrel_01', x - 0.35, z); M.por('Barrel_02', x + 0.4, z + 0.3)
         elif L == 't':
-            nome = P.sorteio(x, z, ('Tree_01', 'Tree_02')); M.por(nome, x, z, yaw=P.desvio(x, z, 180), colide=None); M.barra(x, z, 0.45, 3.0)
+            nome = P.sorteio(x, z, ('Tree_01', 'Tree_02')); M.por(nome, x, z, yaw=P.desvio(x, z, 180), colide=None); M.barra(x, z, 0.28, 3.0)          # (o tronco: 0,24 m; a caixa de 0,45 segurava tiro de raspão)
             for i, (dx, dz) in enumerate(((0.7, 0.3), (-0.5, 0.6), (0.1, -0.8), (-0.8, -0.3))): M.por('Grass_01', x + dx, z + dz, yaw=70.0 * i, colide=None)
             M.por('Plant_01', x + 0.9, z - 0.6, yaw=P.desvio(x, z, 90), colide=None)
         elif L == 'p':
-            M.por('Light_01', x, z, yaw=(0.0 if ao_x else 90.0), colide=None); M.barra(x, z, 0.3, 4.6)
+            # (a caixa do poste vai no poste, não no meio da peça, que tem o braço de 2,4 m para um lado: a caixa ficava 1,1 m
+            # ao lado do poste, no ar, invisível, e segurava tiro; 20/11)
+            pe = M.por('Light_01', x, z, yaw=(0.0 if ao_x else 90.0), colide=None).pontos(np.zeros((1, 3)))[0]; M.barra(pe[0], pe[2], 0.12, 4.6)
 
     # ---- o que dá vida à rua, sem colisão: canteiros, placas, lixo e ar-condicionado ao pé dos prédios; bueiros e poças
     for r, c, x, z, yaw, dist in P.beiras(SOLIDOS):

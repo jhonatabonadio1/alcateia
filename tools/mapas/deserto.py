@@ -66,7 +66,8 @@ X, Z = P.X, P.Z
 MURALHA = 5.4          # a altura do maciço; a ameia da parede (6 m) passa por cima
 MURALHA_FORA = 7.6     # a muralha que fecha o mapa (era 14 m; Jhon, 20/11: "pode ser metade do que já é" — o lobo não corre nos limites invisíveis, cai)
 
-CAIXA = ('Bag_', 'Barrel', 'Box_', 'Pallet', 'Pot_', 'Rock_', 'Furniture', 'Table', 'Jug_', 'Well', 'muralha')
+# (os caixotes têm a colisão da própria malha: a caixa deles pegava a tampa torta e segurava tiro de raspão — 20/11)
+CAIXA = ('Bag_', 'Barrel', 'Pallet', 'Pot_', 'Rock_', 'Furniture', 'Table', 'Jug_', 'Well', 'muralha')
 SEM = ('Block_', 'Book', 'Carpet', 'Cup', 'Desk', 'Food', 'Plate', 'Scroll', 'Flag', 'Dryer', 'Plant', 'PalmTree', 'PowerLines', 'Tile', 'Hill', 'Mountain',
        'Garbage', 'Door', 'WindowPart', 'FlowerBed', 'pedra')
 # a casa de cada tamanho de retângulo (em células, o lado maior primeiro): baixas e altas

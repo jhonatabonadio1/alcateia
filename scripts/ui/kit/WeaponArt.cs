@@ -237,7 +237,11 @@ void fragment() {
 			case Arsenal.KnifeId:
 			case "faca_damasco":
 			case "faca_obsidiana": Knife(); break;
-			case Arsenal.GrenadeId: Grenade(); break;
+			case Arsenal.GrenadeId:
+			case "choque_carbono":
+			case "choque_neon":
+			case "choque_magma":
+			case "choque_ouro": Grenade(); break;
 			case "troca_nome": NameTag(); break;
 			default:
 				if (_id.StartsWith("tat_")) Tattoo();

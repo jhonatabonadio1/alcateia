@@ -145,6 +145,9 @@ public partial class Weapon
 	/// (<see cref="ThrowForce"/> × 1,35): sai a 45°, o mais longe que dá.
 	/// Mirando o céu ou além de <see cref="ThrowMaxRange"/>: o mais longe que o braço dá.
 	/// </summary>
+	/// <summary>O raio da esfera de colisão da granada (scenes/grenade.tscn).</summary>
+	private const float GrenadeRadius = 0.14f;
+
 	private Vector3 ThrowVelocity(Vector3 from, Vector3 forward, float gravityScale, RigidBody3D grenade = null)
 	{
 		Vector3 eye = _camera.GlobalPosition;
@@ -153,6 +156,10 @@ public partial class Weapon
 		var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
 		// Mirando o céu ou longe demais: o arremesso mais longo que o braço dá.
 		Vector3 aimed = hit.Count > 0 ? hit["position"].AsVector3() : eye + forward * ThrowMaxRange;
+		// A conta leva o centro da granada; quem toca é a casca. O centro mira
+		// um raio para fora da superfície e o toque cai no ponto da cruz (vindo
+		// baixo, mirar o ponto fazia tocar meio metro antes; 20/11).
+		if (hit.Count > 0) aimed += hit["normal"].AsVector3() * GrenadeRadius;
 
 		Vector3 to = aimed - from;
 		var flat = new Vector3(to.X, 0, to.Z);
@@ -240,6 +247,7 @@ public partial class Weapon
 		if (grenade is Grenade armed)
 		{
 			armed.Thrower = _health;
+			armed.ModelId = GrenadeModelId;
 			armed.Cosmetic = Puppet;
 		}
 		_body.GetTree().CurrentScene.AddChild(grenade);

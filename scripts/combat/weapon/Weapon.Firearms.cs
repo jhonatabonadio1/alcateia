@@ -102,6 +102,10 @@ public partial class Weapon
 		bool wild = held.RecoilHorizontalAfter > 0 && _streak >= held.RecoilHorizontalAfter;
 		float side = wild ? held.RecoilHorizontalLate : held.RecoilHorizontal;
 		RecoilYaw = wild ? _rng.Range(-side, side) : (_streak % 2 == 0 ? side : -side);
+		// Na mira, o coice da arma que pede menos (a SCAR escopada).
+		float steady = Mathf.Lerp(1f, held.AimRecoilMultiplier, AimEase);
+		Recoil *= steady;
+		RecoilYaw *= steady;
 
 		EmitSignal(SignalName.Fired);
 
@@ -132,8 +136,12 @@ public partial class Weapon
 			}
 			if (hit == null)
 			{
-				if (i == 0 && collider != null)
-					EmitSignal(SignalName.WorldHit, impact, _lastNormal, collider);
+				if (collider != null)
+				{
+					// O furo de cada bala (de cada chumbo, na escopeta); o estalo, um por disparo.
+					BulletMarks.Add(_body.GetParent(), impact, _lastNormal, collider);
+					if (i == 0) EmitSignal(SignalName.WorldHit, impact, _lastNormal, collider);
+				}
 				continue;
 			}
 

@@ -553,7 +553,7 @@ public partial class ViewModel : Node3D
 	private static Vector3 Anchor(string id) => id switch
 	{
 		_ when Arsenal.IsKnife(id) => KnifeAnchor,
-		Arsenal.GrenadeId => GrenadeAnchor,
+		_ when Arsenal.IsGrenade(id) => GrenadeAnchor,
 		_ when WeaponModel.IsPistol(id) => PistolAnchor,
 		_ => RifleAnchor
 	};

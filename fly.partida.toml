@@ -1,0 +1,13 @@
+# Só para CONSTRUIR a imagem do servidor de partida:
+#   flyctl deploy --config fly.partida.toml --build-only --push --image-label v0.4.0
+#
+# NÃO rode "fly deploy" sem --build-only com este arquivo: ele daria a
+# mesma configuração (e a mesma porta) a todas as máquinas, e a frota
+# depende de cada máquina ter a sua porta UDP. As máquinas são criadas e
+# atualizadas por tools/fly/frota.py (veja docs/FLY.md).
+
+app = "wolfleague-partida"
+primary_region = "gru"
+
+[build]
+  dockerfile = "servidor/partida.Dockerfile"

@@ -24,7 +24,15 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 OUT = ROOT / "servidor" / "Alcateia.Infra" / "Semente" / "jogo.json"
 
-CONSTANTS = {"Arsenal.KnifeId": "faca", "Arsenal.GrenadeId": "granada"}
+# Os ids que o Catalog.cs usa por constante (Id = Arsenal.GrenadeId), lidos do
+# próprio Arsenal.cs: fixo aqui, a granada saía "granada" no painel e "choque"
+# no jogo, e a loja do servidor não casava com a do jogo.
+def _constants():
+    text = (ROOT / "scripts/combat/Arsenal.cs").read_text(encoding="utf-8")
+    return {f"Arsenal.{name}": value for name, value in re.findall(r'public const string (\w+Id) = "([^"]+)"', text)}
+
+
+CONSTANTS = _constants()
 KINDS = {"Weapon": "weapon", "Utility": "utility", "Tattoo": "tattoo", "Breed": "breed", "Character": "character", "Service": "service"}
 MODES = {"Equipe": "equipe", "MataMata": "mata_mata", "Dominacao": "dominacao", "Cacada": "cacada", "Sobrevivencia": "sobrevivencia"}
 METRICS = {"Matches": "matches", "Wins": "wins", "Kills": "kills", "KillsWolf": "kills_wolf", "KillsHuman": "kills_human",

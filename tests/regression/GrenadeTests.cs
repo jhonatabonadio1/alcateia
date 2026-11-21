@@ -68,7 +68,7 @@ public sealed class GrenadeRangeTest : RegressionTest
 			if (!GodotObject.IsInstanceValid(grenade)) return true;
 			if (grenade.Landed || grenade.GlobalPosition.Y <= 0.15f)
 			{
-				landed = RegressionBench.Flat(grenade.GlobalPosition - from);
+				landed = RegressionBench.Flat((grenade.Landed ? grenade.LandedAt : grenade.GlobalPosition) - from);
 				return true;
 			}
 			end = (grenade.GlobalPosition - eye).Dot(right);
@@ -94,7 +94,7 @@ public sealed class GrenadeRangeTest : RegressionTest
 public sealed class GrenadeAimTest : RegressionTest
 {
 	public override string Name => "GranadaNaMira";
-	public override string Description => "a granada explode perto do ponto mirado (6 m e 13 m), voa com o modelo da granada e explode com o efeito novo";
+	public override string Description => "a granada cai no ponto mirado (6 m e 13 m), quica e rola um pouco, voa com o modelo da granada e explode com o efeito novo";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -125,20 +125,32 @@ public sealed class GrenadeAimTest : RegressionTest
 			if (grenade == null) continue;
 			b.Check(grenade.GetNodeOrNull("Modelo") != null, "voa o modelo da granada, não a bola");
 
-			Vector3 last = grenade.GlobalPosition;
-			float fuse = grenade.Fuse;
+			Vector3 last = grenade.GlobalPosition, touch = last;
+			float fuse = grenade.Fuse, peak = float.NaN, hop = 0f;
 			double flown = 0, fused = 0;
 			await b.Until(() =>
 			{
 				if (!GodotObject.IsInstanceValid(grenade)) return true;
 				last = grenade.GlobalPosition;
-				if (grenade.Landed) fused += 1.0 / 60.0; else flown += 1.0 / 60.0;
+				if (grenade.Landed)
+				{
+					fused += 1.0 / 60.0;
+					// O quique: o ponto mais alto depois do toque, medido de onde ela termina parada.
+					if (float.IsNaN(peak)) { touch = grenade.LandedAt; peak = last.Y; }
+					peak = Mathf.Max(peak, last.Y);
+					hop = peak - last.Y;
+				}
+				else { flown += 1.0 / 60.0; touch = last; }
 				return false;
 			}, 6.0);
 			b.Check(flown > 0.15, $"no ar o pavio não conta ({RegressionBench.F(flown)} s de voo)");
 			b.Near(fuse, fused, 0.2, "encostou, explode depois do pavio (s)");
-			RegressionBench.Note($"mirou a {RegressionBench.F(far)} m; explodiu a {RegressionBench.F(RegressionBench.Flat(last - aim))} m do ponto");
-			b.AtMost(0.5, RegressionBench.Flat(last - aim), $"a {RegressionBench.F(far)} m: distância entre a explosão e o ponto mirado (m)");
+			// Cai no ponto mirado e dali segue a física (20/11: "a granada deve quicar mais no chão, mais natural"):
+			// quica, rola um pouco e para.
+			RegressionBench.Note($"mirou a {RegressionBench.F(far)} m; o primeiro toque a {RegressionBench.F(RegressionBench.Flat(touch - aim))} m do ponto, quicou {RegressionBench.F(hop * 100f)} cm e explodiu a {RegressionBench.F(RegressionBench.Flat(last - aim))} m dele");
+			b.AtMost(0.6, RegressionBench.Flat(touch - aim), $"a {RegressionBench.F(far)} m: distância entre o primeiro toque e o ponto mirado (m)");
+			b.AtLeast(0.08, hop, $"a {RegressionBench.F(far)} m: quica depois de cair (m)");
+			b.AtMost(6.0, RegressionBench.Flat(last - aim), $"a {RegressionBench.F(far)} m: e para perto, sem sair rolando longe (m)");
 			b.Check(Explosion.Alive > 0, "a explosão está no ar (a granada é a explosiva)");
 			b.Check(ShockBlast.Alive == 0, "e não o estouro de choque");
 			await b.Seconds(2.3);
@@ -226,7 +238,7 @@ public sealed class GrenadeCrosshairTest : RegressionTest
 			{
 				if (!GodotObject.IsInstanceValid(grenade)) return true;
 				if (walled) through = Mathf.Max(through, grenade.GlobalPosition.X - face);
-				if (!landed) touch = grenade.GlobalPosition;
+				if (!landed) touch = grenade.Landed ? grenade.LandedAt : grenade.GlobalPosition;
 				landed |= grenade.Landed;
 				return landed && !close;
 			}, close ? 0.9 : 5.0);
@@ -264,5 +276,80 @@ public sealed class GrenadeCrosshairTest : RegressionTest
 		RegressionBench.Note($"{aimed} arremessos com ponto na mira ({walls} em parede); o pior, parado: {RegressionBench.F(worst)} m");
 		b.AtLeast(9, aimed, "arremessos com um ponto na mira");
 		b.AtLeast(3, walls, "deles, em parede");
+	}
+}
+
+/// <summary>A granada fere de verdade num mapa de jogo (Jhon, 20/11: "a
+/// granada não está dando dano em área nos inimigos e nem em mim; nunca
+/// matei alguém com granada"). A explosão perguntava à física quem estava
+/// no raio e ficava com as 32 primeiras respostas; num mapa de centenas de
+/// peças, eram paredes e degraus, e o inimigo ficava de fora. No campo de
+/// treino (quase vazio) isso não aparecia. E quem lançou ouve o acerto,
+/// como no tiro ("tem que dar o barulho de dano igual da arma").</summary>
+public sealed class GrenadeHurtsTest : RegressionTest
+{
+	public override string Name => "GranadaFere";
+	public override string Description => "na Obra, a granada que estoura ao lado de um inimigo tira vida dele, o mata de perto, fere quem lançou e dá o sinal de acerto a quem lançou";
+	public override string Scene => RegressionBench.Match;
+
+	public override void Prepare()
+	{
+		RoomConfig.Settings = new RoomSettings { Map = "obra", TeamSize = 4 };
+		RoomConfig.Members.Clear();
+		RoomConfig.Members.Add(new RoomMember { Name = "Teste", Team = Teams.Blue });
+		foreach (var (name, team) in RoomConfig.DefaultBots())
+			RoomConfig.Members.Add(new RoomMember { Name = name, Team = team, IsBot = true });
+		RoomConfig.Active = true;
+	}
+
+	public override async Task Run(RegressionBench b)
+	{
+		await b.Seconds(1.0);
+		Health mine = b.Health;
+		CharacterBody3D[] enemies = b.Bots().Where(bot => bot.GetNodeOrNull<Health>("Health")?.Team != mine.Team).ToArray();
+		b.Check(enemies.Length >= 2, $"há inimigos na partida ({enemies.Length})");
+		if (enemies.Length < 2) return;
+		foreach (CharacterBody3D bot in b.Bots()) RegressionBench.Freeze(bot);
+		// Passa a proteção de quem acabou de nascer.
+		await b.Seconds(mine.SpawnProtection + 0.5);
+
+		// O primeiro inimigo, onde ele está: quantas peças do mapa há no raio?
+		CharacterBody3D near = enemies[0];
+		Vector3 at = near.GlobalPosition + new Vector3(1.0f, 0.3f, 0);
+		var probe = new PhysicsShapeQueryParameters3D { Shape = new SphereShape3D { Radius = 9f }, Transform = new Transform3D(Basis.Identity, at) };
+		int pieces = near.GetWorld3D().DirectSpaceState.IntersectShape(probe, 512).Count;
+		RegressionBench.Note($"peças do mundo no raio da explosão: {pieces}");
+
+		int hits = 0;
+		void OnHit(bool _) => hits++;
+		b.Weapon.HitConfirmed += OnHit;
+
+		Health target = near.GetNode<Health>("Health");
+		float before = target.Hp;
+		await Blow(b, at, mine);
+		b.Check(target.IsDead || target.Hp < before, $"o inimigo a 1 m levou dano ({before:0} → {target.Hp:0})");
+		b.Check(target.IsDead, "a 1 m, a granada mata");
+		b.Check(hits > 0, "quem lançou recebeu o sinal de acerto (o som e a marca na mira)");
+
+		// Quem lançou também se fere: granada aos pés custa caro.
+		await b.Place(enemies[1].GlobalPosition + new Vector3(0, 0, 30f), 0f);
+		float mineBefore = mine.Hp;
+		hits = 0;
+		await Blow(b, b.Player.GlobalPosition + new Vector3(4f, 0.3f, 0), mine);
+		b.Check(mine.IsDead || mine.Hp < mineBefore, $"quem lançou, a 4 m, levou dano ({mineBefore:0} → {mine.Hp:0})");
+		b.Check(hits == 0, "ferir a si mesmo não dá sinal de acerto");
+
+		b.Weapon.HitConfirmed -= OnHit;
+	}
+
+	private static async Task Blow(RegressionBench b, Vector3 at, Health thrower)
+	{
+		var grenade = GD.Load<PackedScene>(Weapon.DefaultGrenadeScene).Instantiate<Grenade>();
+		grenade.Thrower = thrower;
+		grenade.MaxFlight = 0.05f;
+		grenade.GravityScale = 0f;
+		b.Scene.AddChild(grenade);
+		grenade.GlobalPosition = at;
+		await b.Seconds(0.3);
 	}
 }

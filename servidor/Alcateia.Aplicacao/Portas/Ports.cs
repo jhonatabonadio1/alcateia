@@ -74,6 +74,14 @@ public interface ITicketSigner
 	string Sign(string text);
 }
 
+/// <summary>Quem liga mais um servidor de partida quando falta lugar (no
+/// Fly.io: uma das máquinas paradas da frota). Sem ele, a frota é a que
+/// estiver de pé. Devolve o que ligou, ou null se não havia o que ligar.</summary>
+public interface IFleetScaler
+{
+	Task<string> Wake();
+}
+
 public interface IClock
 {
 	DateTime UtcNow { get; }

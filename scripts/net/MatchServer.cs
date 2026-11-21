@@ -60,7 +60,14 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	public const int DefaultPort = 7777, DefaultCapacity = 4;
 	private const double HeartbeatEvery = 2, HelloTimeout = 10;
 
-	private readonly string _id = OS.GetEnvironment("ALCATEIA_SERVER_ID") is { Length: > 0 } id ? id : Guid.NewGuid().ToString("N")[..12];
+	// No Fly.io, o id da máquina: o painel mostra o mesmo nome que o "fly machine list".
+	private readonly string _id = OS.GetEnvironment("ALCATEIA_SERVER_ID") is { Length: > 0 } id ? id
+		: OS.GetEnvironment("FLY_MACHINE_ID") is { Length: > 0 } machine ? machine : Guid.NewGuid().ToString("N")[..12];
+
+	// Servidor sob demanda (docs/FLY.md): ocioso por _idleExit segundos, pede
+	// para sair da frota e encerra — a máquina para. Zero: nunca.
+	private double _idleExit, _idle;
+	private bool _leaving;
 	private string _fleetKey, _address;
 	private int _port, _capacity;
 
@@ -97,6 +104,19 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	/// <summary>Atalhos de teste, os mesmos da partida: -- --duracao=30 --contagem=2</summary>
 	private double? _seconds, _countdown;
 
+	/// <summary>O endereço (IPv4) de <paramref name="name"/>, que pode ser
+	/// um nome (o "fly-global-services" do Fly está no /etc/hosts); null
+	/// para todos os endereços.</summary>
+	private static string Bind(string name)
+	{
+		name = name?.Trim();
+		if (string.IsNullOrEmpty(name) || name == "*") return null;
+		if (System.Net.IPAddress.TryParse(name, out _)) return name;
+		string ip = IP.ResolveHostname(name, IP.Type.Ipv4);
+		if (string.IsNullOrEmpty(ip)) GD.PrintErr($"Servidor de partida: não achei o endereço de {name} (ALCATEIA_BIND); abrindo em todos.");
+		return string.IsNullOrEmpty(ip) ? null : ip;
+	}
+
 	public override void _Ready()
 	{
 		Engine.MaxFps = 60;
@@ -106,6 +126,7 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		var (first, last) = PortRange(OS.GetEnvironment("ALCATEIA_GAME_PORT"));
 		_capacity = int.TryParse(OS.GetEnvironment("ALCATEIA_MATCHES"), out int capacity) ? Math.Clamp(capacity, 1, 64) : DefaultCapacity;
 		_authoritative = OS.GetEnvironment("ALCATEIA_NETCODE").Trim().ToLowerInvariant() is "autoritativo" or "authoritative";
+		_idleExit = double.TryParse(OS.GetEnvironment("ALCATEIA_IDLE_EXIT"), out double idle) ? Math.Max(idle, 0) : 0;
 		// Só o teste de ponta a ponta liga: o robô se põe de frente para o
 		// alvo "renascendo" vivo. Em produção, renascer vivo é recusado.
 		ServerBody.AllowTeleport = OS.GetEnvironment("ALCATEIA_TESTE_TELEPORTE") == "1";
@@ -125,10 +146,16 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 
 		// A primeira porta livre da faixa: vários servidores de partida na
 		// mesma máquina (docker compose --scale) não brigam pela mesma.
+		// O endereço em que a porta abre: todos (o padrão) ou o que
+		// ALCATEIA_BIND diz. No Fly.io tem de ser "fly-global-services" —
+		// com o endereço curinga o Linux responde do endereço errado e o
+		// jogador nunca recebe a resposta (docs/FLY.md).
+		string bind = Bind(OS.GetEnvironment("ALCATEIA_BIND"));
 		Error error = Error.Failed;
 		for (_port = first; _port <= last; _port++)
 		{
 			_peer = new ENetMultiplayerPeer();
+			if (bind != null) _peer.SetBindIP(bind);
 			error = _peer.CreateServer(_port, 32 * _capacity);
 			if (error == Error.Ok) break;
 		}
@@ -155,10 +182,17 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		if (_net == null) return;
 
 		_heartbeat -= delta;
-		if (_heartbeat <= 0 && !_beating)
+		if (_heartbeat <= 0 && !_beating && !_leaving)
 		{
 			_heartbeat = HeartbeatEvery;
 			_ = Heartbeat();
+		}
+
+		if (_idleExit > 0)
+		{
+			bool quiet = _matches.Count == 0 && _reporting.Count == 0 && _strangers.Count == 0 && _early.Count == 0;
+			_idle = quiet ? _idle + delta : 0;
+			if (_idle >= _idleExit && !_beating && !_leaving) _ = Leave();
 		}
 
 		// Quem conectou e não se apresentou não fica pendurado na porta.
@@ -227,6 +261,24 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 
 		foreach (JsonNode node in reply.Body?["assignments"] as JsonArray ?? new JsonArray())
 			if (node is JsonObject assignment) Open(assignment);
+	}
+
+	/// <summary>Ocioso: pergunta ao servidor se pode desligar. Ele diz não
+	/// se a frota ficaria sem lugar livre (ALCATEIA_FLEET_RESERVE); diz sim e
+	/// já tira este da lista, para nenhuma partida cair aqui no caminho.</summary>
+	private async Task Leave()
+	{
+		_leaving = true;
+		Backend.Reply reply = await Backend.AsGameServer("/v1/fleet/leave", new JsonObject { ["id"] = _id }, _fleetKey);
+		if (reply.Ok && reply.Body?["leave"]?.GetValue<bool>() == true)
+		{
+			GD.Print($"Servidor de partida {_id}: ocioso há {_idle:0} s, a frota não precisa de mim. Desligando.");
+			GetTree().Quit(0);
+			return;
+		}
+		// Ainda faço falta (ou não deu para perguntar): pergunto de novo daqui a um minuto.
+		_idle = Math.Max(_idleExit - 60, 0);
+		_leaving = false;
 	}
 
 	private void Open(JsonObject assignment)

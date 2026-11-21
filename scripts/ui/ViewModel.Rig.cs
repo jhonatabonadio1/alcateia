@@ -169,6 +169,39 @@ public partial class ViewModel
 		ForgetMuzzle();
 	}
 
+	/// <summary>
+	/// Encolhe o movimento de um clipe em volta do primeiro quadro: cada chave
+	/// fica a <paramref name="factor"/> do caminho entre o primeiro quadro e
+	/// ela (posição, giro e escala de cada osso). A animação vem do arquivo e é
+	/// a mesma para todas as cópias do conjunto: marca-se para não encolher
+	/// duas vezes.
+	/// </summary>
+	private static void Soften(Animation anim, float factor)
+	{
+		if (anim == null || factor >= 0.999f || anim.HasMeta("coice_mira")) return;
+		anim.SetMeta("coice_mira", factor);
+		for (int t = 0; t < anim.GetTrackCount(); t++)
+		{
+			int keys = anim.TrackGetKeyCount(t);
+			if (keys < 2) continue;
+			Variant first = anim.TrackGetKeyValue(t, 0);
+			for (int k = 1; k < keys; k++)
+			{
+				Variant v = anim.TrackGetKeyValue(t, k);
+				switch (anim.TrackGetType(t))
+				{
+					case Animation.TrackType.Position3D:
+					case Animation.TrackType.Scale3D:
+						anim.TrackSetKeyValue(t, k, first.AsVector3().Lerp(v.AsVector3(), factor));
+						break;
+					case Animation.TrackType.Rotation3D:
+						anim.TrackSetKeyValue(t, k, first.AsQuaternion().Slerp(v.AsQuaternion(), factor));
+						break;
+				}
+			}
+		}
+	}
+
 	/// <summary>Monta os braços animados desta arma. Falso se ela não tem
 	/// conjunto — aí valem as mãos de sempre.</summary>
 	private bool BuildRig(string id)
@@ -190,7 +223,7 @@ public partial class ViewModel
 		_held = new Node3D { Name = id };
 		_held.AddChild(scene);
 		AddChild(_held);
-		_rigObject = scene.FindChild(id == Arsenal.GrenadeId ? "granada" : "faca", true, false) as Node3D;
+		_rigObject = scene.FindChild(Arsenal.IsGrenade(id) ? "granada" : "faca", true, false) as Node3D;
 
 		AttachRigHands(scene);
 		foreach (Node node in scene.FindChildren("*", "MeshInstance3D", true, false))
@@ -227,6 +260,11 @@ public partial class ViewModel
 				_rigPlayer.GetAnimation(clip).LoopMode = Animation.LoopModeEnum.Linear;
 		}
 
+		// O tiro mirado da arma que pede menos coice na mira: o movimento do
+		// clipe (braços e câmera) encolhe em volta da pose de mira.
+		if (_rigPlayer != null && _rigClips.TryGetValue("mira_tiro", out Clip aimedShot) && Arsenal.Get(id) is WeaponDefinition aimedDef)
+			Soften(_rigPlayer.GetAnimation(aimedShot.Name), aimedDef.AimRecoilMultiplier);
+
 		if (_rigPlayer == null || !_rigClips.ContainsKey("parado"))
 		{
 			GD.PushWarning($"ViewModel: o conjunto de {id} não tem animação de parado.");
@@ -255,7 +293,7 @@ public partial class ViewModel
 		FindPieces(scene);
 		FindCameraBone(scene, rig);
 		_handOffset = rig.ContainsKey("centro") ? ToVector(rig["centro"]) : Vector3.Zero;
-		_weapon.ThrowFromHand = id == Arsenal.GrenadeId && _rigSkeleton != null && _boltBone >= 0
+		_weapon.ThrowFromHand = Arsenal.IsGrenade(id) && _rigSkeleton != null && _boltBone >= 0
 			&& _rigClips.TryGetValue("arremesso", out Clip throwing) && throwing.Contact > 0.01;
 		return true;
 	}
@@ -299,7 +337,7 @@ public partial class ViewModel
 		// desse instante, e a mira não pode andar sozinha enquanto se aponta.
 		// E segue quieta até a mão soltar: a granada vai para onde a cruz
 		// aponta nesse instante, e a cruz tem de estar onde o jogador a pôs.
-		bool still = _rigPlaying == "armar" || (_heldId == Arsenal.GrenadeId && (_weapon.IsGrenadeReady || _weapon.IsThrowPending));
+		bool still = _rigPlaying == "armar" || (Arsenal.IsGrenade(_heldId) && (_weapon.IsGrenadeReady || _weapon.IsThrowPending));
 		_cameraWeight = Mathf.MoveToward(_cameraWeight, still ? 0f : 1f, dt * 6f);
 		Vector3 target = Vector3.Zero;
 		if (_cameraBone >= 0 && _cameraSkeleton != null && IsInstanceValid(_cameraSkeleton) && Visible && !_form.IsWolf)
@@ -320,7 +358,7 @@ public partial class ViewModel
 	/// espera (<see cref="_holster"/>).</summary>
 	private void OnThrown()
 	{
-		if (!HasRig || _heldId != Arsenal.GrenadeId || !_rigClips.TryGetValue("arremesso", out Clip clip)) return;
+		if (!HasRig || !Arsenal.IsGrenade(_heldId) || !_rigClips.TryGetValue("arremesso", out Clip clip)) return;
 		// Soltou antes de acabar de armar (um toque rápido): a mão vai de onde
 		// está para o arremesso numa emenda mais longa, sem pular.
 		bool armed = _rigPlaying == "armado" || (_rigPlaying == "armar" && !_rigPlayer.IsPlaying());
@@ -383,7 +421,7 @@ public partial class ViewModel
 	/// cuidou do quadro.</summary>
 	private bool RigGrenade()
 	{
-		if (_heldId != Arsenal.GrenadeId || !_rigClips.ContainsKey("armar")) return false;
+		if (!Arsenal.IsGrenade(_heldId) || !_rigClips.ContainsKey("armar")) return false;
 
 		if (_throwing)
 		{
@@ -649,7 +687,7 @@ public partial class ViewModel
 		// Faca e granada: o golpe e o arremesso são movimento de código
 		// sobre o conjunto inteiro (o braço vai junto).
 		Vector3 position = Vector3.Zero, rotation = Vector3.Zero;
-		if (_heldId == Arsenal.GrenadeId && !_rigClips.ContainsKey("armar"))
+		if (Arsenal.IsGrenade(_heldId) && !_rigClips.ContainsKey("armar"))
 		{
 			bool winding = _weapon.IsGrenadeReady;
 			if (!winding && _windup > 0.5f) _throw = 1f;

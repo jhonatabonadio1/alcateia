@@ -126,7 +126,7 @@ public partial class HeldWeapon : Node3D
 		// No fim do arremesso a mão direita ainda está no ar e o fuzil já é a
 		// arma da vez: ele só volta quando o braço termina o gesto (antes
 		// balançava pendurado na mão que jogou a granada).
-		bool throwing = _id != Arsenal.GrenadeId && GetParent() is CharacterAnimator animator && animator.ThrowingGrenade;
+		bool throwing = !Arsenal.IsGrenade(_id) && GetParent() is CharacterAnimator animator && animator.ThrowingGrenade;
 		_model.Visible = !throwing;
 		if (throwing) return;
 
@@ -135,7 +135,7 @@ public partial class HeldWeapon : Node3D
 		Vector3 right = PalmOf(skeleton, _rightHand, _rightMiddle, _rightIndex, _rightPinky, true);
 
 		bool reloading = _weapon.IsReloading;
-		bool aimed = !reloading && _leftHand >= 0 && !Arsenal.IsKnife(_id) && _id != Arsenal.GrenadeId;
+		bool aimed = !reloading && _leftHand >= 0 && !Arsenal.IsKnife(_id) && !Arsenal.IsGrenade(_id);
 
 		Transform3D placed;
 

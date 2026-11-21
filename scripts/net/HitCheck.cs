@@ -220,7 +220,9 @@ public sealed class HitCheck
 	public HitVerdict CheckLine(in ClaimedHit hit, PoseAt target, double firstTick, double lastTick)
 	{
 		bool sight = hit.Cause is KillCause.Gun or KillCause.Headshot or KillCause.Knife;
-		float reach = hit.Cause == KillCause.Grenade ? 10f : hit.Cause == KillCause.Wolf ? WolfReach + 2f : 200f;
+		if (hit.Cause == KillCause.Grenade) LoadGrenade();
+		// (a granada: o raio dela, que é o da cena — era 10 m fixo, menos que o raio de 9 m da de 20/11 com a folga)
+		float reach = hit.Cause == KillCause.Grenade ? _grenadeRadius + 2f : hit.Cause == KillCause.Wolf ? WolfReach + 2f : 200f;
 		HitVerdict worst = HitVerdict.TargetGone;
 		Span<N.Vector3> points = stackalloc N.Vector3[6];
 		for (double tick = firstTick; tick <= lastTick + 0.001; tick += 1)
@@ -285,8 +287,8 @@ public sealed class HitCheck
 	{
 		if (_grenadeDamage > 0) return;
 		var grenade = GD.Load<PackedScene>(Weapon.DefaultGrenadeScene)?.Instantiate<Grenade>();
-		_grenadeDamage = grenade?.MaxDamage ?? 260f;
-		_grenadeRadius = grenade?.Radius ?? 6.5f;
+		_grenadeDamage = grenade?.MaxDamage ?? 420f;
+		_grenadeRadius = grenade?.Radius ?? 9f;
 		grenade?.Free();
 	}
 

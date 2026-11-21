@@ -82,6 +82,20 @@ public partial class Weapon
 	/// sai daqui porque é aqui que se sabe quem bateu — fazer a vítima
 	/// descobrir o autor acopla Health a quem atira.
 	/// </summary>
+	/// <summary>
+	/// Um acerto que não saiu da arma na mão (a granada que este jogador
+	/// lançou): o mesmo retorno de um tiro — o som de acerto, a marca na
+	/// mira e a carga do especial (Jhon, 20/11: "se der dano em inimigo,
+	/// tem que dar o barulho de dano igual da arma").
+	/// </summary>
+	public void ConfirmHit(float amount, bool headshot = false)
+	{
+		if (Puppet || amount <= 0) return;
+		EmitSignal(SignalName.DamageDealt, amount);
+		EmitSignal(SignalName.HitConfirmed, headshot);
+		_form.OnDamageDealt(amount);
+	}
+
 	private void Damage(Health target, float amount, Vector3 from, bool headshot)
 	{
 		// O boneco de outro jogador só encena o ataque: quem acerta é a

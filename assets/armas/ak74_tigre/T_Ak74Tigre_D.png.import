@@ -2,28 +2,29 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://441h10goab2p"
-path="res://.godot/imported/T_Ak74Tigre_D.png-349db1c94e07b456747a09a087d0b57c.ctex"
+uid="uid://iu1oyjbhohg"
+path.bptc="res://.godot/imported/T_Ak74Tigre_D.png-349db1c94e07b456747a09a087d0b57c.bptc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/ak74_tigre/T_Ak74Tigre_D.png"
-dest_files=["res://.godot/imported/T_Ak74Tigre_D.png-349db1c94e07b456747a09a087d0b57c.ctex"]
+dest_files=["res://.godot/imported/T_Ak74Tigre_D.png-349db1c94e07b456747a09a087d0b57c.bptc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -37,4 +38,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

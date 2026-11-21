@@ -305,7 +305,7 @@ caminhos e corredores** em vez de um retângulo aberto: foram refeitos no tamanh
 
 | Mapa | Tamanho | Tema | Gerador |
 |---|---|---|---|
-| **Cidade** (id `cidade`) | 120 × 80 m (grande) | Um bairro de dia: três ruas de ponta a ponta, duas transversais e o bulevar do centro; por dentro dos quarteirões, becos de 2,5 m entre lojas e casas, em volta do prédio em obras de três andares, atrás do banco; cada time nasce num posto de gasolina | `tools/mapas/cidade.py` (kit fps1: "Low Poly FPS Map Vol.1 — City") |
+| **Cidade** (id `cidade`) | 120 × 80 m (grande) | Um bairro de dia: três ruas de ponta a ponta, duas transversais e o bulevar do centro; por dentro dos quarteirões, becos de 2,5 m entre lojas e casas, em volta do prédio em obras de três andares, atrás do banco; cada time nasce numa ponta da avenida | `tools/mapas/cidade.py` (kit fps1: "Low Poly FPS Map Vol.1 — City") |
 | **Cidade do Deserto** (id `deserto`) | 110 × 75 m (grande) | Cidadela no deserto, sol alto, talhada dentro da muralha: três vielas de ponta a ponta, becos de 2,5 m entre elas, a rua da feira (10 m) e a praça do chafariz; casas de laje com escada de pedra, e por cima da muralha (5,4 m) anda-se de ponta a ponta; cada time nasce no pátio da caravana | `tools/mapas/deserto.py` (kit fps2: "Low Poly FPS Map Vol.2 — Desert City") |
 | **Estação de Trem** (id `estacao`) | 120 × 95 m (grande) | Estação no centro da cidade, fim de tarde: a rua e a calçada da praça ao norte (carros, árvores, postes), o prédio de 97 m com o saguão mais alto entre quatro torres de relógio, alas de telhado de duas águas, sacadas e cobertura na plataforma; duas plataformas, três linhas com trens parados, pátio de carga e, no centro, a passarela de 5 m com seis escadas; os prédios do centro fecham o mapa (kit da Cidade, num segundo desenho com colisão); cada time nasce numa ponta da plataforma do meio | `tools/mapas/estacao.py` (kit fps5: "Low Poly FPS Map Vol.5 — Railway Station (a cidade em volta: Vol.1 — City)") |
 | **Obra** (id `obra`) | 100 × 70 m (grande) | Canteiro de obras, de dia: um prédio de concreto de 60 × 40 m no meio — no térreo, corredor de 60 m, quatro salas e dois salões com pilares; duas lajes abertas em cima (4 e 8 m), com escadas e muretas de tijolo —, andaimes, gruas e material empilhado em volta; a planta tem um desenho por piso | `tools/mapas/obra.py` (kit fps6: "Low Poly FPS Map Vol.6 — Construction") |
@@ -487,3 +487,31 @@ base pela malha de navegação e trocam tiro.
 - **Estação** — nas pontas das linhas, o muro de arrimo e as bocas de túnel (`Wall_08` do kit, um arco por linha:
   `Kit.recorte`); a rua continua para fora do mapa, interditada; duas torres de relógio, inteiras, na calçada.
 - **Obra** — muro de tijolo de 6,2 m; as muretas têm a colisão da própria peça (passa-se pelo vão).
+
+## Distrito Neon (20/11) — o pacote do Unity como kit
+
+O Jhon mandou o `.unitypackage` "Low Poly Sci-Fi City" ("implemente esse mapa no jogo, refaça a luz e as texturas e deixe
+ele maior; use LED para iluminar as partes que representam LED; de fundo, prédios bem altos, com letreiros").
+
+- **O pacote vira kit** em três passos (`tools/mapas/kits/`): `unity_pacote.py` põe cada arquivo do pacote no caminho dele;
+  `unity_fbx.py` (precisa do Blender: `pip install bpy`) lê a malha de cada `.fbx`; `unity_kit.py` junta — um prefab = uma
+  peça (301), as quatro texturas e as cores dos materiais lisos num atlas de 2048 px (`assets/mapas/kits/scifi.png`), o que
+  acende em `scifi_luz.png`, e a cena de demonstração (`tools/mapas/LP_SciFiCity_DEMO.json`: a matriz de cada uma das 1.059
+  peças). O Unity é de mão esquerda: posição (−x, y, z), rotação (x, −y, −z, w); a malha do `.fbx` entra como está, × 0,01.
+- **O mapa** (`tools/mapas/neon.py`): a cena sem a fileira oeste, mais a cópia girada 180° encostada ali. Colisão: malha
+  nos prédios, caixa nos objetos, rampa nas quatro escadas; o chão é o piso do mapa (5 cm). O pacote não fecha o quarteirão
+  em toda a volta: onde o chão livre encosta no vazio vai uma `Barreira…` invisível (78).
+- **A luz**: céu de noite desenhado (`kits/fundos.py: ceu_noite` → `ceus/noite_neon.hdr`), lua fria com sombra, névoa roxa,
+  e os LEDs — `superficie.gdshader` ganhou `luz`/`luz_forca` (preta e zero nos outros mapas: nada muda neles); `leds()` põe
+  uma lâmpada da cor de cada letreiro grande (44) e 22 postes.
+- **Material de cada face**: a regra `scifi` em `kits/detalhe.py` olha em que quadrante do atlas a face cai.
+- **O que foi conferido**: fotos Forward+ do mapa (de cima, da rua, da avenida), a grade de onde se anda, as rotas e os pontos
+  de nascer; as quinas dos degraus em cima da chapa das escadas. **Não conferido**: o jogo (C#), os testes, a navegação dos
+  bots, o custo das 66 luzes em máquina fraca.
+
+### A Obra, o som e as capas (20/11, noite)
+
+- **Obra** (`obra.py: canteiro`): montes (`a` areia, `p` brita na planta), lama, poças (classe `agua`) e tábuas.
+- **Som**: `tools/sons/ambiente_mapas.py`; o fundo e o som de vez em quando de cada mapa estão em `Maps.cs`.
+- **Capas**: `tools/fotos_mapas.gd` (`CAPA` e `GRADE`): cor viva e desfoque leve embaixo e nos cantos.
+

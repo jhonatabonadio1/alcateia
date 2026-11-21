@@ -803,6 +803,234 @@
   "fov": 63.09,
   "sacar": true
  },
+ "choque_carbono": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 0.72,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "armado": {
+    "ate": 1.8,
+    "clipe": "armado",
+    "de": 0.0
+   },
+   "armar": {
+    "ate": 0.64,
+    "clipe": "armar",
+    "de": 0.0
+   },
+   "arremesso": {
+    "ate": 0.55,
+    "clipe": "arremesso",
+    "de": 0.0,
+    "soltar": 0.11
+   },
+   "parado": {
+    "ate": 2.2,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.36,
+    "clipe": "sacar",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "choque_carbono"
+  ],
+  "arquivo": "res://assets/armas/fp/choque_carbono.glb",
+  "camera": "interaction",
+  "cano": [
+   0.0782,
+   0.0033,
+   -0.3442
+  ],
+  "centro": [
+   2.662,
+   10.85,
+   -10.084
+  ],
+  "fiel": true,
+  "fov": 63.09
+ },
+ "choque_magma": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 0.72,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "armado": {
+    "ate": 1.8,
+    "clipe": "armado",
+    "de": 0.0
+   },
+   "armar": {
+    "ate": 0.64,
+    "clipe": "armar",
+    "de": 0.0
+   },
+   "arremesso": {
+    "ate": 0.55,
+    "clipe": "arremesso",
+    "de": 0.0,
+    "soltar": 0.11
+   },
+   "parado": {
+    "ate": 2.2,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.36,
+    "clipe": "sacar",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "choque_magma"
+  ],
+  "arquivo": "res://assets/armas/fp/choque_magma.glb",
+  "camera": "interaction",
+  "cano": [
+   0.0782,
+   0.0033,
+   -0.3442
+  ],
+  "centro": [
+   2.662,
+   10.85,
+   -10.084
+  ],
+  "fiel": true,
+  "fov": 63.09
+ },
+ "choque_neon": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 0.72,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "armado": {
+    "ate": 1.8,
+    "clipe": "armado",
+    "de": 0.0
+   },
+   "armar": {
+    "ate": 0.64,
+    "clipe": "armar",
+    "de": 0.0
+   },
+   "arremesso": {
+    "ate": 0.55,
+    "clipe": "arremesso",
+    "de": 0.0,
+    "soltar": 0.11
+   },
+   "parado": {
+    "ate": 2.2,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.36,
+    "clipe": "sacar",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "choque_neon"
+  ],
+  "arquivo": "res://assets/armas/fp/choque_neon.glb",
+  "camera": "interaction",
+  "cano": [
+   0.0782,
+   0.0033,
+   -0.3442
+  ],
+  "centro": [
+   2.662,
+   10.85,
+   -10.084
+  ],
+  "fiel": true,
+  "fov": 63.09
+ },
+ "choque_ouro": {
+  "ajuste": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "animacoes": {
+   "andar": {
+    "ate": 0.72,
+    "clipe": "andar",
+    "de": 0.0
+   },
+   "armado": {
+    "ate": 1.8,
+    "clipe": "armado",
+    "de": 0.0
+   },
+   "armar": {
+    "ate": 0.64,
+    "clipe": "armar",
+    "de": 0.0
+   },
+   "arremesso": {
+    "ate": 0.55,
+    "clipe": "arremesso",
+    "de": 0.0,
+    "soltar": 0.11
+   },
+   "parado": {
+    "ate": 2.2,
+    "clipe": "parado",
+    "de": 0.0
+   },
+   "sacar": {
+    "ate": 0.36,
+    "clipe": "sacar",
+    "de": 0.0
+   }
+  },
+  "armas": [
+   "choque_ouro"
+  ],
+  "arquivo": "res://assets/armas/fp/choque_ouro.glb",
+  "camera": "interaction",
+  "cano": [
+   0.0782,
+   0.0033,
+   -0.3442
+  ],
+  "centro": [
+   2.662,
+   10.85,
+   -10.084
+  ],
+  "fiel": true,
+  "fov": 63.09
+ },
  "deagle": {
   "ajuste": [
    0.0,

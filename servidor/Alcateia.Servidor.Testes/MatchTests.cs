@@ -79,6 +79,34 @@ public static class MatchTests
 			Check.Equal(200, (await w.Server().Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"), w.Config.FleetKey)).Status, "chave certa");
 		}),
 
+		("frota sob demanda: o servidor ocioso só desliga se não faz falta", async () =>
+		{
+			await using World w = await World.Start(c => c.FleetReserve = 1);
+			Player fleet = w.Server();
+			await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-1"), w.Config.FleetKey);
+			await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", Beat("gs-2", 7778), w.Config.FleetKey);
+
+			Check.Equal(401, (await fleet.Call(HttpMethod.Post, "/v1/fleet/leave", new JsonObject { ["id"] = "gs-1" })).Status, "sem chave");
+			var (_, first) = await fleet.Call(HttpMethod.Post, "/v1/fleet/leave", new JsonObject { ["id"] = "gs-1" }, w.Config.FleetKey);
+			Check.True(first["leave"].GetValue<bool>(), "sobra o gs-2 de reserva: o gs-1 pode desligar");
+			var (_, last) = await fleet.Call(HttpMethod.Post, "/v1/fleet/leave", new JsonObject { ["id"] = "gs-2" }, w.Config.FleetKey);
+			Check.True(!last["leave"].GetValue<bool>(), "o último lugar livre fica de pé");
+
+			// O que saiu não recebe partida: a próxima sala cai no gs-2.
+			await using Player host = await w.NewPlayer();
+			await host.Connect();
+			await host.Hear("rooms");
+			await host.Say(Msg("room.create", ("settings", Settings(play: LobbyTests.VsBots))));
+			await host.Hear("room");
+			await host.Say(Msg("room.bot.add", ("team", 2)));
+			await host.Hear("room", m => m["members"].AsArray().Count == 2);
+			await host.Say(Msg("room.start"));
+			Check.Equal(7778, (await host.Hear("match.start"))["port"].GetValue<int>(), "a partida vai para o que ficou");
+
+			var (_, busy) = await fleet.Call(HttpMethod.Post, "/v1/fleet/leave", new JsonObject { ["id"] = "gs-2" }, w.Config.FleetKey);
+			Check.True(!busy["leave"].GetValue<bool>(), "com partida, não desliga");
+		}),
+
 		("partida com bots: a escalação leva os bots com o dono; o resultado não paga nem grava bot", async () =>
 		{
 			await using World w = await World.Start();
