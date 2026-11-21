@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://db7wcw853ctns"
 path.s3tc="res://.godot/imported/humano_f_Hair_color.jpg-69c2d49adb204d3327c9bdde51f84e9c.s3tc.ctex"
+path.etc2="res://.godot/imported/humano_f_Hair_color.jpg-69c2d49adb204d3327c9bdde51f84e9c.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/personagens/eve/humano_f_Hair_color.jpg"
-dest_files=["res://.godot/imported/humano_f_Hair_color.jpg-69c2d49adb204d3327c9bdde51f84e9c.s3tc.ctex"]
+dest_files=["res://.godot/imported/humano_f_Hair_color.jpg-69c2d49adb204d3327c9bdde51f84e9c.s3tc.ctex", "res://.godot/imported/humano_f_Hair_color.jpg-69c2d49adb204d3327c9bdde51f84e9c.etc2.ctex"]
 
 [params]
 

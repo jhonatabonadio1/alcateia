@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dr5q2juobvghv"
 path.bptc="res://.godot/imported/T_Ak74_N.png-6e5b4612deba37b9e0738cc28eaa42db.bptc.ctex"
+path.astc="res://.godot/imported/T_Ak74_N.png-6e5b4612deba37b9e0738cc28eaa42db.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/ak74/T_Ak74_N.png"
-dest_files=["res://.godot/imported/T_Ak74_N.png-6e5b4612deba37b9e0738cc28eaa42db.bptc.ctex"]
+dest_files=["res://.godot/imported/T_Ak74_N.png-6e5b4612deba37b9e0738cc28eaa42db.bptc.ctex", "res://.godot/imported/T_Ak74_N.png-6e5b4612deba37b9e0738cc28eaa42db.astc.ctex"]
 
 [params]
 

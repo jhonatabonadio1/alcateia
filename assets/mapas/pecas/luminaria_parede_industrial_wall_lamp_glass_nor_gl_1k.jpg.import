@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://7n48gmdlxxod"
 path.s3tc="res://.godot/imported/luminaria_parede_industrial_wall_lamp_glass_nor_gl_1k.jpg-64875940f8f35b555e68878d3ac4d136.s3tc.ctex"
+path.etc2="res://.godot/imported/luminaria_parede_industrial_wall_lamp_glass_nor_gl_1k.jpg-64875940f8f35b555e68878d3ac4d136.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/luminaria_parede_industrial_wall_lamp_glass_nor_gl_1k.jpg"
-dest_files=["res://.godot/imported/luminaria_parede_industrial_wall_lamp_glass_nor_gl_1k.jpg-64875940f8f35b555e68878d3ac4d136.s3tc.ctex"]
+dest_files=["res://.godot/imported/luminaria_parede_industrial_wall_lamp_glass_nor_gl_1k.jpg-64875940f8f35b555e68878d3ac4d136.s3tc.ctex", "res://.godot/imported/luminaria_parede_industrial_wall_lamp_glass_nor_gl_1k.jpg-64875940f8f35b555e68878d3ac4d136.etc2.ctex"]
 
 [params]
 

@@ -10,11 +10,15 @@ config_version=5
 
 [application]
 
-config/name="alcateia"
-run/main_scene="res://scenes/menu/menu.tscn"
-run/main_scene.dedicated_server="res://scenes/servidor.tscn"
+config/name="WolfLeague"
+run/main_scene="res://scenes/intro/vinheta.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/show_image=false
 config/icon="res://icon.svg"
+config/use_custom_user_dir.template=true
+config/custom_user_dir_name.template="WolfLeague"
+run/main_scene.dedicated_server="res://scenes/servidor.tscn"
 
 [autoload]
 
@@ -32,7 +36,7 @@ window/size/mode.editor=3
 
 [dotnet]
 
-project/assembly_name="alcateia"
+project/assembly_name="WolfLeague"
 
 [editor_plugins]
 
@@ -44,7 +48,6 @@ enabled=PackedStringArray("res://addons/func_godot/plugin.cfg")
 
 [rendering]
 
-rendering_device/driver.windows="d3d12"
 textures/vram_compression/import_etc2_astc=true
 
 [wolfleague]

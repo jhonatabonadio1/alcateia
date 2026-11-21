@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dyelk16157yc"
 path.bptc="res://.godot/imported/T_FacaObsidiana_ORM.png-829d0433dcd28f7bbff6ffafd07f4cde.bptc.ctex"
+path.astc="res://.godot/imported/T_FacaObsidiana_ORM.png-829d0433dcd28f7bbff6ffafd07f4cde.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/faca_obsidiana/T_FacaObsidiana_ORM.png"
-dest_files=["res://.godot/imported/T_FacaObsidiana_ORM.png-829d0433dcd28f7bbff6ffafd07f4cde.bptc.ctex"]
+dest_files=["res://.godot/imported/T_FacaObsidiana_ORM.png-829d0433dcd28f7bbff6ffafd07f4cde.bptc.ctex", "res://.godot/imported/T_FacaObsidiana_ORM.png-829d0433dcd28f7bbff6ffafd07f4cde.astc.ctex"]
 
 [params]
 

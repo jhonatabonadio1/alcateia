@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b32i107br8ldq"
 path.s3tc="res://.godot/imported/galao_verde_metal_jerrycan_green_diff_1k.jpg-fe89dcd813132d8a51cb9a61d02564e7.s3tc.ctex"
+path.etc2="res://.godot/imported/galao_verde_metal_jerrycan_green_diff_1k.jpg-fe89dcd813132d8a51cb9a61d02564e7.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/galao_verde_metal_jerrycan_green_diff_1k.jpg"
-dest_files=["res://.godot/imported/galao_verde_metal_jerrycan_green_diff_1k.jpg-fe89dcd813132d8a51cb9a61d02564e7.s3tc.ctex"]
+dest_files=["res://.godot/imported/galao_verde_metal_jerrycan_green_diff_1k.jpg-fe89dcd813132d8a51cb9a61d02564e7.s3tc.ctex", "res://.godot/imported/galao_verde_metal_jerrycan_green_diff_1k.jpg-fe89dcd813132d8a51cb9a61d02564e7.etc2.ctex"]
 
 [params]
 

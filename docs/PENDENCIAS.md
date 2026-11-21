@@ -27,26 +27,24 @@ Ponha aqui, com o que se sabe dele.
 
 ### Retrato, moldura e fundo (anotado em 21/11)
 
-- **Fotos de perfil de verdade.** Hoje as 3 grátis são recortes da arte
-  (Eve, Barut, a fera do Barut) e as 10 da loja são armas e granadas
-  (`assets/ui/avatares/`, `Avatars.cs`, itens `foto_*`). Fazer retratos
-  próprios, feitos para ser foto de perfil.
-- **Na partida, o retrato é o personagem, não a foto de perfil.** Mostrar
-  a foto de frente do personagem que o jogador está usando: o humano na
-  forma humana, o lobo na forma lobo (troca junto com a transformação).
-  Hoje o hexágono ao lado da vida (`HexBadge`, `Hud.Layout`) mostra a foto
-  de perfil (`Avatars.Selected`). Precisa: um retrato de frente de cada
-  personagem, humano e lobo (tirado do modelo, como as fotos das armas), e,
-  para os outros jogadores, o personagem na escalação online (hoje ela não
-  leva o personagem; veja "Personagem online" abaixo).
+- ~~Fotos de perfil de verdade~~ (feito 21/11: 20 ícones pintados,
+  `assets/ui/avatares/`). Falta: 10 deles estão em 256 px (o Figma limitou
+  as exportações); trocar pelos de 1024 px do arquivo "WolfLeague — ícones
+  de jogador" no Figma.
+- **Na partida, o retrato é o personagem** (feito em parte, 21/11: o Tab e
+  o HUD mostram `assets/personagens/<nome>/retrato.png`, Eve ou Barut).
+  Falta: o retrato do lobo na forma lobo (troca junto com a
+  transformação) e, para os outros jogadores online, o personagem que
+  escolheram: hoje a escalação não leva o personagem (veja "Personagem
+  online" abaixo), então eles aparecem com o do time (Eve no azul, Barut
+  no laranja), o mesmo modelo que se vê na partida.
 - **TAB: a moldura do nível vira o cartão inteiro.** Cada jogador ganha
   uma moldura retangular, no cartão todo, de acordo com o nível; o retrato
   do centro fica só a imagem, sem a moldura hexagonal. A moldura
   retangular fica mais robusta conforme o nível (como as de perfil: metal
   e estágio), mas sem folhas nem louros. Hoje: `TabBoard`, cartões de
-  204 px com o `RankBadge` (foto + borda + placa) no centro. A confirmar:
-  a imagem do centro do TAB é a foto de perfil ou o retrato do personagem,
-  como no HUD.
+  204 px com o `RankBadge` (foto + borda + placa) no centro. A imagem do
+  centro é o retrato do personagem, como no HUD (Jhon, 21/11).
 - **Fundos do cartão, na loja.** O interior da moldura retangular pode ser
   personalizado com fundos comprados na loja. Tipo de item novo (como as
   fotos: catálogo, regra no servidor de que é dele, escolha mandada ao
@@ -400,6 +398,14 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Testar com 8 jogadores de verdade** (pedido em 17/11): uma partida com
   oito pessoas, não bots, com latência real. Hoje: só dois jogos sem tela
   na mesma máquina; o teste de carga está em `tools/testar_carga.sh`.
+- **Windows: testar o iniciador com o jogo de verdade e medir os
+  requisitos** (21/11). O iniciador (`instalador/iniciador.nsi`) foi testado
+  no Wine e é testado no Windows do GitHub com um jogo de mentira; falta
+  abrir a Release num PC com Vulkan, num só com DirectX 11 (cai na
+  compatibilidade) e no Parallels. Os requisitos do instalador e do site
+  (Windows 10/11 de 64 bits, 8 GB) são estimativa: medir memória, FPS e
+  placa mínima de verdade, no Forward+ e na compatibilidade, e conferir
+  se o visual da compatibilidade está aceitável (sem os efeitos do Forward+).
 - **Links de download das releases no Discord, automático** (pedido em
   21/11): quando o CI de lançamento (`.github/workflows/lancamento.yml`,
   tag `v*`) publica a Release do GitHub, postar no canal de download do

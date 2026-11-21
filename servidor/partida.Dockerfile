@@ -55,7 +55,7 @@ COPY . .
 # exportação não deixou o .pck e o .NET, o build para e mostra o porquê.
 RUN arch=$([ "$TARGETARCH" = "arm64" ] && echo arm64 || echo x86_64) \
 	&& python3 tools/servidor/preparar_exportacao.py --arquitetura "$arch" \
-	&& dotnet build alcateia.csproj --nologo -v quiet \
+	&& dotnet build WolfLeague.csproj --nologo -v quiet \
 	&& (godot --headless --path . --import > /tmp/importacao.log 2>&1 || true) \
 	&& mkdir -p /saida \
 	&& (godot --headless --path . --export-release "Servidor (Linux)" /saida/WolfLeagueServidor > /tmp/exportacao.log 2>&1 || true) \

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://df5h8fgu53gxr"
 path.s3tc="res://.godot/imported/pedra_b_namaqualand_boulder_03_arm_1k.jpg-1bcd3d265245f86f41cd0af6e7bd27b8.s3tc.ctex"
+path.etc2="res://.godot/imported/pedra_b_namaqualand_boulder_03_arm_1k.jpg-1bcd3d265245f86f41cd0af6e7bd27b8.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/pedra_b_namaqualand_boulder_03_arm_1k.jpg"
-dest_files=["res://.godot/imported/pedra_b_namaqualand_boulder_03_arm_1k.jpg-1bcd3d265245f86f41cd0af6e7bd27b8.s3tc.ctex"]
+dest_files=["res://.godot/imported/pedra_b_namaqualand_boulder_03_arm_1k.jpg-1bcd3d265245f86f41cd0af6e7bd27b8.s3tc.ctex", "res://.godot/imported/pedra_b_namaqualand_boulder_03_arm_1k.jpg-1bcd3d265245f86f41cd0af6e7bd27b8.etc2.ctex"]
 
 [params]
 

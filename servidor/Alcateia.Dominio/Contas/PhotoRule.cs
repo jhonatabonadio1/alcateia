@@ -6,21 +6,21 @@ namespace Alcateia.Dominio.Contas;
 
 /// <summary>
 /// As fotos de perfil (a mesma lista de <c>scripts/meta/Avatars.cs</c>):
-/// três de graça para todo mundo; as outras são itens da loja
+/// oito de graça para todo mundo; as outras são itens da loja
 /// <c>foto_&lt;id&gt;</c> (tipo <c>photo</c>). O saguão só mostra para os
 /// outros uma foto que a conta pode usar.
 /// </summary>
 public static class PhotoRule
 {
-	public const string Default = "eve";
+	public const string Default = "lobo_cinza";
 	public const string ItemPrefix = "foto_";
 
-	public static readonly string[] Free = { "eve", "barut", "lobo_barut" };
+	public static readonly string[] Free = { "lobo_cinza", "filhote", "lua_cheia", "coruja_piloto", "geleia", "drone", "panda_vermelho", "corvo" };
 
 	public static readonly string[] Sold =
 	{
-		"faca_damasco", "faca_obsidiana", "choque_neon", "choque_magma", "choque_ouro",
-		"ar15_lava", "m4a4_dragao", "deagle_fenix", "scar_galaxia", "ak74_tigre"
+		"garras", "capacete", "escorpiao", "bau", "urso", "cristal_lua",
+		"coruja_neve", "raposa_espirito", "lobo_neon", "granada_ouro", "lobo_gelo", "lobo_fogo"
 	};
 
 	public static bool Exists(string id) => Free.Contains(id) || Sold.Contains(id);

@@ -31,6 +31,6 @@ public partial class LevelPlate : Control
 		float side = Mathf.Min(Size.X, Size.Y);
 		if (_rank < 0 || side <= 0) return;
 		Vector2 c = Size / 2f;
-		RankBadge.DrawPlate(this, new Vector2(c.X, c.Y + side * RankBadge.Grow * RankBadge.Window * 0.98f), side * 0.2f, _rank, GetThemeFont("font", "Label"));
+		RankBadge.DrawPlate(this, new Vector2(c.X, c.Y + side * RankBadge.Grow * RankBadge.Window * 0.98f), side * 0.13f, _rank, GetThemeFont("font", "Label"));
 	}
 }

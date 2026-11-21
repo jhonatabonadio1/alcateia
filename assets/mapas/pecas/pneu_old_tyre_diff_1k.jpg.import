@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cxei4puing2ug"
 path.s3tc="res://.godot/imported/pneu_old_tyre_diff_1k.jpg-d117e2880c2f74196bed26fd51f510cc.s3tc.ctex"
+path.etc2="res://.godot/imported/pneu_old_tyre_diff_1k.jpg-d117e2880c2f74196bed26fd51f510cc.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/pneu_old_tyre_diff_1k.jpg"
-dest_files=["res://.godot/imported/pneu_old_tyre_diff_1k.jpg-d117e2880c2f74196bed26fd51f510cc.s3tc.ctex"]
+dest_files=["res://.godot/imported/pneu_old_tyre_diff_1k.jpg-d117e2880c2f74196bed26fd51f510cc.s3tc.ctex", "res://.godot/imported/pneu_old_tyre_diff_1k.jpg-d117e2880c2f74196bed26fd51f510cc.etc2.ctex"]
 
 [params]
 

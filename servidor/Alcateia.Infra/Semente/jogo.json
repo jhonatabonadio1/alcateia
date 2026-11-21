@@ -842,8 +842,8 @@
 			"sort": 390
 		},
 		{
-			"id": "foto_faca_damasco",
-			"name": "Foto Lâmina Damasco",
+			"id": "foto_garras",
+			"name": "Foto Garras",
 			"type": "Foto de perfil",
 			"kind": "photo",
 			"rarity": 2,
@@ -860,12 +860,12 @@
 			"hot": false,
 			"consumable": false,
 			"team": 0,
-			"image": "avatares/faca_damasco.png",
+			"image": "avatares/garras.png",
 			"sort": 400
 		},
 		{
-			"id": "foto_choque_neon",
-			"name": "Foto Neon",
+			"id": "foto_capacete",
+			"name": "Foto Capacete",
 			"type": "Foto de perfil",
 			"kind": "photo",
 			"rarity": 2,
@@ -882,15 +882,15 @@
 			"hot": false,
 			"consumable": false,
 			"team": 0,
-			"image": "avatares/choque_neon.png",
+			"image": "avatares/capacete.png",
 			"sort": 410
 		},
 		{
-			"id": "foto_faca_obsidiana",
-			"name": "Foto Obsidiana",
+			"id": "foto_escorpiao",
+			"name": "Foto Escorpião",
 			"type": "Foto de perfil",
 			"kind": "photo",
-			"rarity": 3,
+			"rarity": 2,
 			"minRank": 0,
 			"currency": "presas",
 			"prices": [
@@ -898,18 +898,40 @@
 				-1,
 				-1,
 				-1,
-				1200
+				800
 			],
 			"starter": false,
 			"hot": false,
 			"consumable": false,
 			"team": 0,
-			"image": "avatares/faca_obsidiana.png",
+			"image": "avatares/escorpiao.png",
 			"sort": 420
 		},
 		{
-			"id": "foto_choque_magma",
-			"name": "Foto Magma",
+			"id": "foto_bau",
+			"name": "Foto Baú",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 2,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				800
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/bau.png",
+			"sort": 430
+		},
+		{
+			"id": "foto_urso",
+			"name": "Foto Urso de Guerra",
 			"type": "Foto de perfil",
 			"kind": "photo",
 			"rarity": 3,
@@ -926,34 +948,12 @@
 			"hot": false,
 			"consumable": false,
 			"team": 0,
-			"image": "avatares/choque_magma.png",
-			"sort": 430
-		},
-		{
-			"id": "foto_ar15_lava",
-			"name": "Foto Lava",
-			"type": "Foto de perfil",
-			"kind": "photo",
-			"rarity": 3,
-			"minRank": 0,
-			"currency": "presas",
-			"prices": [
-				-1,
-				-1,
-				-1,
-				-1,
-				1500
-			],
-			"starter": false,
-			"hot": false,
-			"consumable": false,
-			"team": 0,
-			"image": "avatares/ar15_lava.png",
+			"image": "avatares/urso.png",
 			"sort": 440
 		},
 		{
-			"id": "foto_deagle_fenix",
-			"name": "Foto Fênix",
+			"id": "foto_cristal_lua",
+			"name": "Foto Cristal da Lua",
 			"type": "Foto de perfil",
 			"kind": "photo",
 			"rarity": 3,
@@ -964,18 +964,18 @@
 				-1,
 				-1,
 				-1,
-				1500
+				1200
 			],
 			"starter": false,
 			"hot": false,
 			"consumable": false,
 			"team": 0,
-			"image": "avatares/deagle_fenix.png",
+			"image": "avatares/cristal_lua.png",
 			"sort": 450
 		},
 		{
-			"id": "foto_ak74_tigre",
-			"name": "Foto Tigre",
+			"id": "foto_coruja_neve",
+			"name": "Foto Coruja da Neve",
 			"type": "Foto de perfil",
 			"kind": "photo",
 			"rarity": 3,
@@ -992,15 +992,15 @@
 			"hot": false,
 			"consumable": false,
 			"team": 0,
-			"image": "avatares/ak74_tigre.png",
+			"image": "avatares/coruja_neve.png",
 			"sort": 460
 		},
 		{
-			"id": "foto_choque_ouro",
-			"name": "Foto Ouro Puro",
+			"id": "foto_raposa_espirito",
+			"name": "Foto Raposa Espírito",
 			"type": "Foto de perfil",
 			"kind": "photo",
-			"rarity": 4,
+			"rarity": 3,
 			"minRank": 0,
 			"currency": "presas",
 			"prices": [
@@ -1008,18 +1008,18 @@
 				-1,
 				-1,
 				-1,
-				2000
+				1500
 			],
 			"starter": false,
 			"hot": false,
 			"consumable": false,
 			"team": 0,
-			"image": "avatares/choque_ouro.png",
+			"image": "avatares/raposa_espirito.png",
 			"sort": 470
 		},
 		{
-			"id": "foto_m4a4_dragao",
-			"name": "Foto Dragão",
+			"id": "foto_lobo_neon",
+			"name": "Foto Lobo Neon",
 			"type": "Foto de perfil",
 			"kind": "photo",
 			"rarity": 4,
@@ -1036,12 +1036,34 @@
 			"hot": false,
 			"consumable": false,
 			"team": 0,
-			"image": "avatares/m4a4_dragao.png",
+			"image": "avatares/lobo_neon.png",
 			"sort": 480
 		},
 		{
-			"id": "foto_scar_galaxia",
-			"name": "Foto Galáxia",
+			"id": "foto_granada_ouro",
+			"name": "Foto Granada de Ouro",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 4,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				2000
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/granada_ouro.png",
+			"sort": 490
+		},
+		{
+			"id": "foto_lobo_gelo",
+			"name": "Foto Lobo de Gelo",
 			"type": "Foto de perfil",
 			"kind": "photo",
 			"rarity": 4,
@@ -1058,8 +1080,30 @@
 			"hot": false,
 			"consumable": false,
 			"team": 0,
-			"image": "avatares/scar_galaxia.png",
-			"sort": 490
+			"image": "avatares/lobo_gelo.png",
+			"sort": 500
+		},
+		{
+			"id": "foto_lobo_fogo",
+			"name": "Foto Lobo de Fogo",
+			"type": "Foto de perfil",
+			"kind": "photo",
+			"rarity": 4,
+			"minRank": 0,
+			"currency": "presas",
+			"prices": [
+				-1,
+				-1,
+				-1,
+				-1,
+				2500
+			],
+			"starter": false,
+			"hot": false,
+			"consumable": false,
+			"team": 0,
+			"image": "avatares/lobo_fogo.png",
+			"sort": 510
 		},
 		{
 			"id": "pers_barut",
@@ -1075,7 +1119,7 @@
 			"consumable": false,
 			"team": 2,
 			"image": "personagens/barut.jpg",
-			"sort": 500
+			"sort": 520
 		},
 		{
 			"id": "pers_eve",
@@ -1091,7 +1135,7 @@
 			"consumable": false,
 			"team": 1,
 			"image": "personagens/eve.jpg",
-			"sort": 510
+			"sort": 530
 		},
 		{
 			"id": "troca_nome",
@@ -1113,7 +1157,7 @@
 			"consumable": true,
 			"team": 0,
 			"image": "",
-			"sort": 520
+			"sort": 540
 		}
 	],
 	"maps": [

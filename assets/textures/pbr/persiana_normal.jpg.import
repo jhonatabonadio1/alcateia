@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cxmefnlife20c"
 path.s3tc="res://.godot/imported/persiana_normal.jpg-b7bc352a03800fca140924b87f39c3eb.s3tc.ctex"
+path.etc2="res://.godot/imported/persiana_normal.jpg-b7bc352a03800fca140924b87f39c3eb.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/persiana_normal.jpg"
-dest_files=["res://.godot/imported/persiana_normal.jpg-b7bc352a03800fca140924b87f39c3eb.s3tc.ctex"]
+dest_files=["res://.godot/imported/persiana_normal.jpg-b7bc352a03800fca140924b87f39c3eb.s3tc.ctex", "res://.godot/imported/persiana_normal.jpg-b7bc352a03800fca140924b87f39c3eb.etc2.ctex"]
 
 [params]
 

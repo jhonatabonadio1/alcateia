@@ -92,6 +92,19 @@ public partial class OptionsScreen : LobbyScreen
 		})));
 		column.AddChild(quality);
 
+		// Windows: o modo de vídeo que o iniciador usa (VideoMode). Para quem
+		// abriu, mas com defeito na imagem; vale ao abrir o jogo de novo.
+		if (VideoMode.Available)
+		{
+			Label mode = UiKit.Paragraph(VideoModeNote(), "Caption");
+			column.AddChild(Labeled("Modo de vídeo", UiKit.Picker(VideoMode.Names, VideoMode.Chosen(), i =>
+			{
+				VideoMode.Choose(i);
+				mode.Text = VideoModeNote();
+			})));
+			column.AddChild(mode);
+		}
+
 		// O idioma: as colunas de assets/i18n/textos.csv. O que não tem
 		// tradução aparece em português.
 		// Só entra na lista o idioma que já tem texto traduzido (uma coluna vazia
@@ -118,6 +131,9 @@ public partial class OptionsScreen : LobbyScreen
 		}));
 		return panel;
 	}
+
+	private static string VideoModeNote() =>
+		Loc.F("Agora em {0}. A troca vale na próxima vez que o jogo abrir.", VideoMode.Current);
 
 	/// <summary>
 	/// A mira: estilo, cor, tamanho, espessura, espaço, contorno, opacidade

@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://d3qdyl5qto042"
 path.s3tc="res://.godot/imported/pedra_calcada_normal.jpg-16416801dc5d5723d941d842d8dedd18.s3tc.ctex"
+path.etc2="res://.godot/imported/pedra_calcada_normal.jpg-16416801dc5d5723d941d842d8dedd18.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/pedra_calcada_normal.jpg"
-dest_files=["res://.godot/imported/pedra_calcada_normal.jpg-16416801dc5d5723d941d842d8dedd18.s3tc.ctex"]
+dest_files=["res://.godot/imported/pedra_calcada_normal.jpg-16416801dc5d5723d941d842d8dedd18.s3tc.ctex", "res://.godot/imported/pedra_calcada_normal.jpg-16416801dc5d5723d941d842d8dedd18.etc2.ctex"]
 
 [params]
 

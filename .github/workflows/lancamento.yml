@@ -142,7 +142,7 @@ jobs:
           echo "GODOT=$HOME/godot/${nome}/Godot_v${GODOT_VERSION}-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
       - name: Importar
         run: |
-          dotnet build alcateia.csproj --nologo -v quiet
+          dotnet build WolfLeague.csproj --nologo -v quiet
           "$GODOT" --headless --path . --import || true
           du -sh .godot/imported
       - uses: actions/cache/save@v4
@@ -193,21 +193,28 @@ jobs:
         env:
           VERSAO: ${{ steps.versao.outputs.versao }}
         run: |
-          dotnet build alcateia.csproj --nologo -v quiet
+          dotnet build WolfLeague.csproj --nologo -v quiet
           "$GODOT" --headless --path . --import || true
-          mkdir -p build/windows
-          "$GODOT" --headless --path . --export-release "Windows" build/windows/WolfLeague.exe
-          test -f build/windows/WolfLeague.exe
-          test -f build/windows/WolfLeague.pck
-          (cd build/windows && zip -qr "../WolfLeague-${VERSAO}-windows.zip" .)
-          ls -la build build/windows
-      - name: Instalador do Windows
+          # O jogo vai em jogo\; o WolfLeague.exe de fora é o iniciador
+          # (próximo passo), que acha o modo de vídeo que funciona.
+          mkdir -p build/windows/jogo
+          "$GODOT" --headless --path . --export-release "Windows" build/windows/jogo/WolfLeague.exe
+          test -f build/windows/jogo/WolfLeague.exe
+          test -f build/windows/jogo/WolfLeague.pck
+          ls -la build/windows/jogo
+      - name: Iniciador, .zip e instalador do Windows
         env:
           VERSAO: ${{ steps.versao.outputs.versao }}
           NUMERO: ${{ steps.versao.outputs.numero }}
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends nsis
+          # O iniciador (instalador/iniciador.nsi): tenta Vulkan, DirectX 12 e
+          # compatibilidade, guarda o que abriu e avisa se nada abrir.
+          makensis -V2 -DVERSAO_NUM="$NUMERO" -DSAIDA="$PWD/build/windows/WolfLeague.exe" "$PWD/instalador/iniciador.nsi"
+          test -f build/windows/WolfLeague.exe
+          (cd build/windows && zip -qr "../WolfLeague-${VERSAO}-windows.zip" .)
+          ls -la build build/windows
           python3 instalador/gerar_lista.py build/windows build/desinstalar.nsh
           # O .nsi com caminho absoluto: o makensis entra na pasta do script
           # antes de compilar, e a arte (o ícone, os painéis) vem de
@@ -268,7 +275,7 @@ jobs:
           if [ "${{ steps.importado.outputs.cache-hit }}" != "true" ]; then
             echo "::warning::o import do Linux não veio do cache: o Mac vai comprimir as texturas sozinho (demora)"
           fi
-          dotnet build alcateia.csproj --nologo -v quiet
+          dotnet build WolfLeague.csproj --nologo -v quiet
           "$GODOT" --headless --path . --import || true
           mkdir -p build/macos
           "$GODOT" --headless --path . --export-release "macOS" build/macos/WolfLeague.zip
@@ -280,7 +287,13 @@ jobs:
         run: |
           app="$(find build/macos/app -maxdepth 1 -name '*.app' | head -1)"
           test -d "$app"
-          codesign --verify --deep --verbose=1 "$app" || echo "::warning::assinatura ad hoc não conferiu"
+          # O Godot exporta sem assinar (export_presets.cfg, codesign=0): o
+          # assinador embutido dele grava as permissões de um jeito que o macOS
+          # recusa, e o jogo morre ao abrir ("killed", 21/11). Assinatura ad hoc
+          # com o codesign do próprio Mac, sem hardened runtime; não conferiu,
+          # não sai .dmg.
+          codesign --force --deep --sign - "$app"
+          codesign --verify --deep --strict --verbose=2 "$app"
           mkdir -p dmg && cp -R "$app" dmg/WolfLeague.app && ln -s /Applications dmg/Aplicativos
           mkdir -p entrega
           hdiutil create -volname "WolfLeague" -srcfolder dmg -ov -format UDZO "entrega/WolfLeague-${VERSAO}-mac.dmg"

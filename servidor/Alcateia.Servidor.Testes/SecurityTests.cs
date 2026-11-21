@@ -93,9 +93,9 @@ public static class SecurityTests
 			Check.True(estranho.Any(f => f.AccountId == 2 && f.What.Contains("em chamas")), "200 s em chamas sem abate é denunciado");
 
 			// fotos de perfil: grátis sempre; da loja, só com o item
-			Check.True(PhotoRule.Allowed("eve", Array.Empty<string>()), "a Eve é grátis");
-			Check.True(!PhotoRule.Allowed("scar_galaxia", Array.Empty<string>()), "a da loja sem o item, não");
-			Check.True(PhotoRule.Allowed("scar_galaxia", new[] { "foto_scar_galaxia" }), "com o item, sim");
+			Check.True(PhotoRule.Allowed("lobo_cinza", Array.Empty<string>()), "o lobo cinzento é grátis");
+			Check.True(!PhotoRule.Allowed("lobo_fogo", Array.Empty<string>()), "a da loja sem o item, não");
+			Check.True(PhotoRule.Allowed("lobo_fogo", new[] { "foto_lobo_fogo" }), "com o item, sim");
 			Check.True(!PhotoRule.Allowed("inventada", new[] { "foto_inventada" }), "foto que não existe, nunca");
 			return Task.CompletedTask;
 		}),

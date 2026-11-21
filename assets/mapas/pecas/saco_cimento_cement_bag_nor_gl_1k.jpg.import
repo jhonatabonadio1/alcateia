@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://butlwponrcyrc"
 path.s3tc="res://.godot/imported/saco_cimento_cement_bag_nor_gl_1k.jpg-918a53b7083da1c7ba04ee2b83b7992a.s3tc.ctex"
+path.etc2="res://.godot/imported/saco_cimento_cement_bag_nor_gl_1k.jpg-918a53b7083da1c7ba04ee2b83b7992a.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/saco_cimento_cement_bag_nor_gl_1k.jpg"
-dest_files=["res://.godot/imported/saco_cimento_cement_bag_nor_gl_1k.jpg-918a53b7083da1c7ba04ee2b83b7992a.s3tc.ctex"]
+dest_files=["res://.godot/imported/saco_cimento_cement_bag_nor_gl_1k.jpg-918a53b7083da1c7ba04ee2b83b7992a.s3tc.ctex", "res://.godot/imported/saco_cimento_cement_bag_nor_gl_1k.jpg-918a53b7083da1c7ba04ee2b83b7992a.etc2.ctex"]
 
 [params]
 

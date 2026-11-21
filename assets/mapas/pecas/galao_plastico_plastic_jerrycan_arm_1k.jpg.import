@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dj85ffe484ebm"
 path.s3tc="res://.godot/imported/galao_plastico_plastic_jerrycan_arm_1k.jpg-1e88b7d5de3c5ed50d248960d0157a22.s3tc.ctex"
+path.etc2="res://.godot/imported/galao_plastico_plastic_jerrycan_arm_1k.jpg-1e88b7d5de3c5ed50d248960d0157a22.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/galao_plastico_plastic_jerrycan_arm_1k.jpg"
-dest_files=["res://.godot/imported/galao_plastico_plastic_jerrycan_arm_1k.jpg-1e88b7d5de3c5ed50d248960d0157a22.s3tc.ctex"]
+dest_files=["res://.godot/imported/galao_plastico_plastic_jerrycan_arm_1k.jpg-1e88b7d5de3c5ed50d248960d0157a22.s3tc.ctex", "res://.godot/imported/galao_plastico_plastic_jerrycan_arm_1k.jpg-1e88b7d5de3c5ed50d248960d0157a22.etc2.ctex"]
 
 [params]
 

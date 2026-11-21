@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3wnsiufn3fcc"
 path.s3tc="res://.godot/imported/humano_m_Outfit_color.jpg-ecb3b96cfce03c859b4b814924b3852b.s3tc.ctex"
+path.etc2="res://.godot/imported/humano_m_Outfit_color.jpg-ecb3b96cfce03c859b4b814924b3852b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/personagens/barut/humano_m_Outfit_color.jpg"
-dest_files=["res://.godot/imported/humano_m_Outfit_color.jpg-ecb3b96cfce03c859b4b814924b3852b.s3tc.ctex"]
+dest_files=["res://.godot/imported/humano_m_Outfit_color.jpg-ecb3b96cfce03c859b4b814924b3852b.s3tc.ctex", "res://.godot/imported/humano_m_Outfit_color.jpg-ecb3b96cfce03c859b4b814924b3852b.etc2.ctex"]
 
 [params]
 

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dv2ba0kfb6ba4"
 path.s3tc="res://.godot/imported/bau_ferramenta_metal_tool_chest_arm_1k.jpg-347217db9470742840c37a18b0341bbe.s3tc.ctex"
+path.etc2="res://.godot/imported/bau_ferramenta_metal_tool_chest_arm_1k.jpg-347217db9470742840c37a18b0341bbe.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/bau_ferramenta_metal_tool_chest_arm_1k.jpg"
-dest_files=["res://.godot/imported/bau_ferramenta_metal_tool_chest_arm_1k.jpg-347217db9470742840c37a18b0341bbe.s3tc.ctex"]
+dest_files=["res://.godot/imported/bau_ferramenta_metal_tool_chest_arm_1k.jpg-347217db9470742840c37a18b0341bbe.s3tc.ctex", "res://.godot/imported/bau_ferramenta_metal_tool_chest_arm_1k.jpg-347217db9470742840c37a18b0341bbe.etc2.ctex"]
 
 [params]
 

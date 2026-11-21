@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c41ubw30c48tl"
 path.bptc="res://.godot/imported/T_Choque_D.png-1e7fd1276f049d0354ff253790f63354.bptc.ctex"
+path.astc="res://.godot/imported/T_Choque_D.png-1e7fd1276f049d0354ff253790f63354.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/choque/T_Choque_D.png"
-dest_files=["res://.godot/imported/T_Choque_D.png-1e7fd1276f049d0354ff253790f63354.bptc.ctex"]
+dest_files=["res://.godot/imported/T_Choque_D.png-1e7fd1276f049d0354ff253790f63354.bptc.ctex", "res://.godot/imported/T_Choque_D.png-1e7fd1276f049d0354ff253790f63354.astc.ctex"]
 
 [params]
 

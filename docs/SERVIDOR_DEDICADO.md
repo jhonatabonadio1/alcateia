@@ -15,7 +15,7 @@ que toda a arte vira casca.
    (`tools/servidor/preparar_exportacao.py`), importa e exporta o preset
    **"Servidor (Linux)"** de `export_presets.cfg`;
 2. **roda**: só `WolfLeagueServidor` (o modelo de exportação),
-   `WolfLeagueServidor.pck` e `data_alcateia_linuxbsd_*` (o C# em Release e
+   `WolfLeagueServidor.pck` e `data_WolfLeague_linuxbsd_*` (o C# em Release e
    o .NET dele), em cima de `mcr.microsoft.com/dotnet/runtime-deps:8.0`,
    como usuário sem privilégio.
 

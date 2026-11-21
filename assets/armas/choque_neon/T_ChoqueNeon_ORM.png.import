@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bjq3cv6an7rit"
 path.bptc="res://.godot/imported/T_ChoqueNeon_ORM.png-533bd5fadabd5094009dfddfcf072797.bptc.ctex"
+path.astc="res://.godot/imported/T_ChoqueNeon_ORM.png-533bd5fadabd5094009dfddfcf072797.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/choque_neon/T_ChoqueNeon_ORM.png"
-dest_files=["res://.godot/imported/T_ChoqueNeon_ORM.png-533bd5fadabd5094009dfddfcf072797.bptc.ctex"]
+dest_files=["res://.godot/imported/T_ChoqueNeon_ORM.png-533bd5fadabd5094009dfddfcf072797.bptc.ctex", "res://.godot/imported/T_ChoqueNeon_ORM.png-533bd5fadabd5094009dfddfcf072797.astc.ctex"]
 
 [params]
 

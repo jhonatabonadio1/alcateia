@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://4nw8v3kyel40"
 path.s3tc="res://.godot/imported/caixa_municao_ammo_box_diff_1k.jpg-bcda103d42e2e3568a9fa8e126a14804.s3tc.ctex"
+path.etc2="res://.godot/imported/caixa_municao_ammo_box_diff_1k.jpg-bcda103d42e2e3568a9fa8e126a14804.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/caixa_municao_ammo_box_diff_1k.jpg"
-dest_files=["res://.godot/imported/caixa_municao_ammo_box_diff_1k.jpg-bcda103d42e2e3568a9fa8e126a14804.s3tc.ctex"]
+dest_files=["res://.godot/imported/caixa_municao_ammo_box_diff_1k.jpg-bcda103d42e2e3568a9fa8e126a14804.s3tc.ctex", "res://.godot/imported/caixa_municao_ammo_box_diff_1k.jpg-bcda103d42e2e3568a9fa8e126a14804.etc2.ctex"]
 
 [params]
 

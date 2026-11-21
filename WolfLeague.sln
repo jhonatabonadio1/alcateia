@@ -1,6 +1,6 @@
 ﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "alcateia", "alcateia.csproj", "{B40858D6-A0CF-4AFF-A108-F04C4604F830}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WolfLeague", "WolfLeague.csproj", "{B40858D6-A0CF-4AFF-A108-F04C4604F830}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

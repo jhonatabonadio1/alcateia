@@ -16,11 +16,21 @@
 ; (%LOCALAPPDATA%\Programs\WolfLeague): não pede senha de administrador, e o
 ; jogo se atualiza rodando o instalador novo por cima. Silencioso:
 ; WolfLeague-Setup-x.exe /S  (e /D=pasta, por último).
-; O que o jogador salva (conta, ajustes) fica em %APPDATA%\Godot\app_userdata
+; O que o jogador salva (conta, ajustes, logs) fica em %APPDATA%\WolfLeague
 ; e o desinstalador não mexe nisso.
+;
+; A pasta instalada: WolfLeague.exe é o iniciador (instalador/iniciador.nsi),
+; que acha o modo de vídeo que funciona; o jogo exportado fica em jogo\.
+;
+; Requisitos mínimos (os mesmos do site): Windows 10 ou 11 de 64 bits e
+; 8 GB de memória. 32 bits ou Windows mais velho não instala; pouca memória
+; ou Windows para ARM (roda por emulação, bem mais lento) avisa e pergunta.
 
 Unicode true
 !include "MUI2.nsh"
+!include "LogicLib.nsh"
+!include "x64.nsh"
+!include "WinVer.nsh"
 
 !ifndef VERSAO
   !error "passe -DVERSAO=x.y.z"
@@ -41,6 +51,8 @@ Unicode true
 !define NOME      "WolfLeague"
 !define EXE       "WolfLeague.exe"
 !define CHAVE_DES "Software\Microsoft\Windows\CurrentVersion\Uninstall\${NOME}"
+!define MEMORIA_GB 8
+!define MEMORIA_MB 7000   ; o Windows mostra um pouco menos que os 8 GB da placa
 
 ; As cores do menu do jogo (scripts/ui/kit/UiTokens.cs, paleta Menu), RRGGBB.
 !define COR_FUNDO  "0A1119"   ; MenuBg, azul-noite
@@ -71,6 +83,40 @@ VIAddVersionKey "FileDescription" "Instalador do ${NOME}"
 VIAddVersionKey "FileVersion" "${VERSAO}"
 VIAddVersionKey "ProductVersion" "${VERSAO}"
 VIAddVersionKey "LegalCopyright" "${NOME}"
+
+; ---- requisitos mínimos ---------------------------------------------------
+Function .onInit
+  ; O jogo é de 64 bits (x86_64).
+  ${IfNot} ${IsNativeAMD64}
+  ${AndIfNot} ${IsNativeARM64}
+    MessageBox MB_ICONSTOP|MB_OK "O ${NOME} precisa do Windows de 64 bits, e este Windows é de 32 bits." /SD IDOK
+    Abort
+  ${EndIf}
+  ${IfNot} ${AtLeastWin10}
+    MessageBox MB_ICONSTOP|MB_OK "O ${NOME} precisa do Windows 10 ou do Windows 11." /SD IDOK
+    Abort
+  ${EndIf}
+  ${If} ${IsNativeARM64}
+    MessageBox MB_ICONEXCLAMATION|MB_YESNO "Este Windows é para processador ARM. O ${NOME} roda nele por emulação e fica bem mais lento que num PC com processador Intel ou AMD.$\r$\n$\r$\nInstalar mesmo assim?" /SD IDYES IDYES +2
+    Abort
+  ${EndIf}
+
+  ; Memória (GlobalMemoryStatusEx: ullTotalPhys, em bytes).
+  System::Call "*(i 64, i 0, l 0, l 0, l 0, l 0, l 0, l 0, l 0) p .r0"
+  System::Call "kernel32::GlobalMemoryStatusEx(p r0) i .r1"
+  System::Call "*$0(i, i, l .r2)"
+  System::Free $0
+  ${If} $1 <> 0
+    System::Int64Op $2 / 1048576
+    Pop $2
+    ${If} $2 < ${MEMORIA_MB}
+      IntOp $3 $2 + 512
+      IntOp $3 $3 / 1024
+      MessageBox MB_ICONEXCLAMATION|MB_YESNO "Este computador tem $3 GB de memória, e o ${NOME} pede ${MEMORIA_GB} GB. O jogo pode ficar lento ou fechar no meio da partida.$\r$\n$\r$\nInstalar mesmo assim?" /SD IDYES IDYES +2
+      Abort
+    ${EndIf}
+  ${EndIf}
+FunctionEnd
 
 ; ---- aparência -----------------------------------------------------------
 !define MUI_ICON   "${__FILEDIR__}\WolfLeague.ico"
@@ -163,12 +209,25 @@ VIAddVersionKey "LegalCopyright" "${NOME}"
 !insertmacro MUI_LANGUAGE "PortugueseBR"
 
 ; ---- instalação ----------------------------------------------------------
+!macro ApagarDados PASTA
+  FindFirst $R0 $R1 "${PASTA}\data_*_windows_x86_64"
+  ${DoWhile} $R1 != ""
+    RMDir /r "${PASTA}\$R1"
+    FindNext $R0 $R1
+  ${Loop}
+  FindClose $R0
+!macroend
+
 Section "Jogo"
   SetOutPath "$INSTDIR"
 
   ; Versão antiga: a pasta de dados do .NET pode ter DLLs que a nova não tem.
-  ; Só apagamos a pasta que o próprio jogo cria, nunca o $INSTDIR inteiro.
-  RMDir /r "$INSTDIR\data_WolfLeague_windows_x86_64"
+  ; Só apagamos as pastas que o próprio jogo cria (data_*_windows_x86_64),
+  ; nunca o $INSTDIR inteiro: a de jogo\ e, das versões de antes do
+  ; iniciador, a que ficava solta na pasta, junto com o .pck.
+  !insertmacro ApagarDados "$INSTDIR\jogo"
+  !insertmacro ApagarDados "$INSTDIR"
+  Delete "$INSTDIR\WolfLeague.pck"
 
   File /r "${ORIGEM}\*.*"
   File "${__FILEDIR__}\WolfLeague.ico"

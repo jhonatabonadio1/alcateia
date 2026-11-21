@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dhrukypi8klg1"
 path.bptc="res://.godot/imported/maos_led.png-c5b5a7ec0870ba8b32dd82d3716f25e4.bptc.ctex"
+path.astc="res://.godot/imported/maos_led.png-c5b5a7ec0870ba8b32dd82d3716f25e4.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/fp/maos/maos_led.png"
-dest_files=["res://.godot/imported/maos_led.png-c5b5a7ec0870ba8b32dd82d3716f25e4.bptc.ctex"]
+dest_files=["res://.godot/imported/maos_led.png-c5b5a7ec0870ba8b32dd82d3716f25e4.bptc.ctex", "res://.godot/imported/maos_led.png-c5b5a7ec0870ba8b32dd82d3716f25e4.astc.ctex"]
 
 [params]
 
@@ -38,4 +39,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

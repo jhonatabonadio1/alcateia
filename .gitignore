@@ -44,6 +44,9 @@ assets/pacotes/
 
 # Jogo exportado (export_presets.cfg)
 build/
+# o .dmg do Mac feito aqui (tools/lancamento/mac_local.sh)
+/dmg/
+/entrega/
 _to_delete/
 
 # Pacotes de entrega e sincronização entre agentes (nunca versionar)

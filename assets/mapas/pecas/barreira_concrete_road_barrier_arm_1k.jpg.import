@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://ujmeg1sl0dpf"
 path.s3tc="res://.godot/imported/barreira_concrete_road_barrier_arm_1k.jpg-1635d5ebd31d278ff881250ce8e115aa.s3tc.ctex"
+path.etc2="res://.godot/imported/barreira_concrete_road_barrier_arm_1k.jpg-1635d5ebd31d278ff881250ce8e115aa.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/barreira_concrete_road_barrier_arm_1k.jpg"
-dest_files=["res://.godot/imported/barreira_concrete_road_barrier_arm_1k.jpg-1635d5ebd31d278ff881250ce8e115aa.s3tc.ctex"]
+dest_files=["res://.godot/imported/barreira_concrete_road_barrier_arm_1k.jpg-1635d5ebd31d278ff881250ce8e115aa.s3tc.ctex", "res://.godot/imported/barreira_concrete_road_barrier_arm_1k.jpg-1635d5ebd31d278ff881250ce8e115aa.etc2.ctex"]
 
 [params]
 

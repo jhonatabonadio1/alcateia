@@ -3,9 +3,10 @@ using System;
 using System.Linq;
 
 /// <summary>
-/// O perfil: identidade, patente com a barra de XP, estatísticas
-/// vitalícias e o histórico de patentes. Abre pelo bloco de identidade
-/// do header e pelo botão "Ver perfil" da sala.
+/// O perfil: identidade, patente com a barra de XP e estatísticas
+/// vitalícias. Abre pelo bloco de identidade do header e pelo botão "Ver
+/// perfil" da sala. (O painel com o histórico e as próximas patentes saiu
+/// a pedido do Jhon, 21/11.)
 ///
 /// Perfil de outro jogador (Fase 2) mostra tudo menos saldo e
 /// inventário — por isso o saldo não aparece aqui também: ele já está no
@@ -23,7 +24,6 @@ public partial class ProfileScreen : LobbyScreen
 
 		split.AddChild(Identity());
 		split.AddChild(Stats());
-		split.AddChild(History());
 	}
 
 	// ------------------------------------------------------------------ identidade
@@ -46,7 +46,8 @@ public partial class ProfileScreen : LobbyScreen
 		HBoxContainer level = UiKit.Row(UiTokens.S2);
 		level.Alignment = BoxContainer.AlignmentMode.Center;
 		level.AddChild(LevelChip.Make(rank, 22));
-		level.AddChild(UiKit.Text($"{Ranks.NameOf(rank)} · {Ranks.FamilyName(rank)}".ToUpperInvariant(), "Subtitle", Ranks.InkOf(rank)));
+		// Só o nível (Jhon, 21/11: o nome da fase, "Iniciante", não aparece).
+		level.AddChild(UiKit.Text(Ranks.NameOf(rank).ToUpperInvariant(), "Subtitle", Ranks.InkOf(rank)));
 		column.AddChild(level);
 
 		if (!string.IsNullOrEmpty(Profile.Title))
@@ -282,41 +283,5 @@ public partial class ProfileScreen : LobbyScreen
 		text.AddChild(UiKit.Text(item?.Name ?? "Ainda nenhuma", "Subtitle", item == null ? UiTokens.TextDisabled : UiTokens.TextPrimary));
 		row.AddChild(text);
 		return tile;
-	}
-
-	// ------------------------------------------------------------------ histórico
-
-	private Control History()
-	{
-		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S4, UiTokens.S2);
-		panel.CustomMinimumSize = new Vector2(360, 0);
-
-		column.AddChild(UiKit.Caption("Histórico de patentes"));
-
-		foreach (RankEvent e in Profile.RankHistory.OrderByDescending(e => e.Utc).Take(8))
-		{
-			HBoxContainer row = UiKit.Row(UiTokens.S2);
-			row.AddChild(RankBadge.Make(e.Rank, 28));
-			row.AddChild(UiKit.Truncated(Ranks.NameOf(e.Rank), null, Ranks.InkOf(e.Rank)));
-			row.AddChild(UiKit.Text(e.Utc.ToLocalTime().ToString("dd/MM/yy"), "Numeric", UiTokens.TextSecondary));
-			column.AddChild(row);
-		}
-
-		column.AddChild(UiKit.Divider());
-		column.AddChild(UiKit.Caption("Próximas patentes"));
-
-		int rank = Profile.Rank;
-		for (int r = rank + 1; r <= Math.Min(rank + 6, Ranks.Count - 1); r++)
-		{
-			HBoxContainer row = UiKit.Row(UiTokens.S2);
-			row.AddChild(RankBadge.Make(r, 28));
-			row.AddChild(UiKit.Truncated(Ranks.NameOf(r), null, UiTokens.TextSecondary));
-			row.AddChild(UiKit.Text(Loc.F("{0} XP", UiTokens.Thousands(Ranks.XpFor(r))), "Numeric", UiTokens.TextDisabled));
-			column.AddChild(row);
-		}
-
-		column.AddChild(UiKit.Spacer());
-		column.AddChild(UiKit.Paragraph("Patente não cai: ela mede o caminho percorrido, não a fase atual.", "Caption"));
-		return panel;
 	}
 }

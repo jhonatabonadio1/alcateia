@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://blf1vh0gowf5l"
 path.bptc="res://.godot/imported/T_M4a4_D.png-95f99c2b3bb13acec6c77201de224a12.bptc.ctex"
+path.astc="res://.godot/imported/T_M4a4_D.png-95f99c2b3bb13acec6c77201de224a12.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/m4a4/T_M4a4_D.png"
-dest_files=["res://.godot/imported/T_M4a4_D.png-95f99c2b3bb13acec6c77201de224a12.bptc.ctex"]
+dest_files=["res://.godot/imported/T_M4a4_D.png-95f99c2b3bb13acec6c77201de224a12.bptc.ctex", "res://.godot/imported/T_M4a4_D.png-95f99c2b3bb13acec6c77201de224a12.astc.ctex"]
 
 [params]
 

@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bavi5xo5es3hs"
 path.s3tc="res://.godot/imported/metal_ondulado_cor.jpg-1474df3b576480f6852217e13a8d4b88.s3tc.ctex"
+path.etc2="res://.godot/imported/metal_ondulado_cor.jpg-1474df3b576480f6852217e13a8d4b88.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/metal_ondulado_cor.jpg"
-dest_files=["res://.godot/imported/metal_ondulado_cor.jpg-1474df3b576480f6852217e13a8d4b88.s3tc.ctex"]
+dest_files=["res://.godot/imported/metal_ondulado_cor.jpg-1474df3b576480f6852217e13a8d4b88.s3tc.ctex", "res://.godot/imported/metal_ondulado_cor.jpg-1474df3b576480f6852217e13a8d4b88.etc2.ctex"]
 
 [params]
 

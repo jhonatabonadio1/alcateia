@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://ie7m8stpocei"
 path.s3tc="res://.godot/imported/humano_f_Outfit_orm.jpg-7e8152b0d855a85350fa3d2749bc0e11.s3tc.ctex"
+path.etc2="res://.godot/imported/humano_f_Outfit_orm.jpg-7e8152b0d855a85350fa3d2749bc0e11.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/personagens/eve/humano_f_Outfit_orm.jpg"
-dest_files=["res://.godot/imported/humano_f_Outfit_orm.jpg-7e8152b0d855a85350fa3d2749bc0e11.s3tc.ctex"]
+dest_files=["res://.godot/imported/humano_f_Outfit_orm.jpg-7e8152b0d855a85350fa3d2749bc0e11.s3tc.ctex", "res://.godot/imported/humano_f_Outfit_orm.jpg-7e8152b0d855a85350fa3d2749bc0e11.etc2.ctex"]
 
 [params]
 

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://d0ghe57nsomaf"
 path.s3tc="res://.godot/imported/ar15_ouro_armColor.jpg-0b027a8ccbd5a12f5a3547f3d08121ed.s3tc.ctex"
+path.etc2="res://.godot/imported/ar15_ouro_armColor.jpg-0b027a8ccbd5a12f5a3547f3d08121ed.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/armas/fp/ar15_ouro_armColor.jpg"
-dest_files=["res://.godot/imported/ar15_ouro_armColor.jpg-0b027a8ccbd5a12f5a3547f3d08121ed.s3tc.ctex"]
+dest_files=["res://.godot/imported/ar15_ouro_armColor.jpg-0b027a8ccbd5a12f5a3547f3d08121ed.s3tc.ctex", "res://.godot/imported/ar15_ouro_armColor.jpg-0b027a8ccbd5a12f5a3547f3d08121ed.etc2.ctex"]
 
 [params]
 

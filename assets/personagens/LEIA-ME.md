@@ -1,9 +1,15 @@
 # Personagens
 
 Uma pasta por personagem: `personagem.tres` (nome, time, vida), o humano
-(`humano.glb`), o lobo e, se houver, `thumb.jpg` (16:9), a imagem do
-cartão no inventário. O jogo acha as pastas sozinho e cada uma vira um
-item da aba Personagem.
+(`humano.glb`), o lobo, `retrato.png` e, se houver, `thumb.jpg` (16:9), a
+imagem do cartão no inventário. O jogo acha as pastas sozinho e cada uma
+vira um item da aba Personagem.
+
+**`retrato.png`** (quadrado, 512×512, o rosto centrado) é a foto de quem
+joga com o personagem na partida: no placar (Tab) e na insígnia do HUD,
+no lugar da foto de perfil (21/11). Todo personagem novo precisa ter um;
+sem ele, o jogo cai no `thumb.jpg`, que é 16:9 e fica esticado na
+insígnia.
 
 Como fazer um novo, com as proporções certas para as animações
 servirem: **`docs/PERSONAGENS.md`**.

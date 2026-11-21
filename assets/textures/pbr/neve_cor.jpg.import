@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://chqkn0ghlgv5y"
 path.s3tc="res://.godot/imported/neve_cor.jpg-4cc31d8d5dfed5b339bcd1224b5f492b.s3tc.ctex"
+path.etc2="res://.godot/imported/neve_cor.jpg-4cc31d8d5dfed5b339bcd1224b5f492b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/neve_cor.jpg"
-dest_files=["res://.godot/imported/neve_cor.jpg-4cc31d8d5dfed5b339bcd1224b5f492b.s3tc.ctex"]
+dest_files=["res://.godot/imported/neve_cor.jpg-4cc31d8d5dfed5b339bcd1224b5f492b.s3tc.ctex", "res://.godot/imported/neve_cor.jpg-4cc31d8d5dfed5b339bcd1224b5f492b.etc2.ctex"]
 
 [params]
 

@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dghx1np8etqu4"
 path.s3tc="res://.godot/imported/lobo_vermelho_lobo_emissao.jpg-d74c7822aff0197107c4be04fec9cd8e.s3tc.ctex"
+path.etc2="res://.godot/imported/lobo_vermelho_lobo_emissao.jpg-d74c7822aff0197107c4be04fec9cd8e.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/characters/wolf/lobo_vermelho_lobo_emissao.jpg"
-dest_files=["res://.godot/imported/lobo_vermelho_lobo_emissao.jpg-d74c7822aff0197107c4be04fec9cd8e.s3tc.ctex"]
+dest_files=["res://.godot/imported/lobo_vermelho_lobo_emissao.jpg-d74c7822aff0197107c4be04fec9cd8e.s3tc.ctex", "res://.godot/imported/lobo_vermelho_lobo_emissao.jpg-d74c7822aff0197107c4be04fec9cd8e.etc2.ctex"]
 
 [params]
 

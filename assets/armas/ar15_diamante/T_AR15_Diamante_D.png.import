@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dy4dq81j1vir4"
 path.bptc="res://.godot/imported/T_AR15_Diamante_D.png-11d5de2b5f418231abeb3b9fb6b39c53.bptc.ctex"
+path.astc="res://.godot/imported/T_AR15_Diamante_D.png-11d5de2b5f418231abeb3b9fb6b39c53.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/ar15_diamante/T_AR15_Diamante_D.png"
-dest_files=["res://.godot/imported/T_AR15_Diamante_D.png-11d5de2b5f418231abeb3b9fb6b39c53.bptc.ctex"]
+dest_files=["res://.godot/imported/T_AR15_Diamante_D.png-11d5de2b5f418231abeb3b9fb6b39c53.bptc.ctex", "res://.godot/imported/T_AR15_Diamante_D.png-11d5de2b5f418231abeb3b9fb6b39c53.astc.ctex"]
 
 [params]
 

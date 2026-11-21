@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b060erqse2xl"
 path.s3tc="res://.godot/imported/bloco_cor.jpg-243e2b1c50db9b96300cf80fef1127cb.s3tc.ctex"
+path.etc2="res://.godot/imported/bloco_cor.jpg-243e2b1c50db9b96300cf80fef1127cb.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/bloco_cor.jpg"
-dest_files=["res://.godot/imported/bloco_cor.jpg-243e2b1c50db9b96300cf80fef1127cb.s3tc.ctex"]
+dest_files=["res://.godot/imported/bloco_cor.jpg-243e2b1c50db9b96300cf80fef1127cb.s3tc.ctex", "res://.godot/imported/bloco_cor.jpg-243e2b1c50db9b96300cf80fef1127cb.etc2.ctex"]
 
 [params]
 

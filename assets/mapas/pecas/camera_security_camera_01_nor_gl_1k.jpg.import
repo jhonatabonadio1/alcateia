@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://d3fsecvcbu2rj"
 path.s3tc="res://.godot/imported/camera_security_camera_01_nor_gl_1k.jpg-8461b1dfb3c288e6242d1b7b5dab0ef2.s3tc.ctex"
+path.etc2="res://.godot/imported/camera_security_camera_01_nor_gl_1k.jpg-8461b1dfb3c288e6242d1b7b5dab0ef2.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/camera_security_camera_01_nor_gl_1k.jpg"
-dest_files=["res://.godot/imported/camera_security_camera_01_nor_gl_1k.jpg-8461b1dfb3c288e6242d1b7b5dab0ef2.s3tc.ctex"]
+dest_files=["res://.godot/imported/camera_security_camera_01_nor_gl_1k.jpg-8461b1dfb3c288e6242d1b7b5dab0ef2.s3tc.ctex", "res://.godot/imported/camera_security_camera_01_nor_gl_1k.jpg-8461b1dfb3c288e6242d1b7b5dab0ef2.etc2.ctex"]
 
 [params]
 

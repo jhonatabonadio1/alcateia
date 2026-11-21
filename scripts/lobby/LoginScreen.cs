@@ -85,25 +85,22 @@ public partial class LoginScreen : LobbyScreen
 
 	private Control Brand()
 	{
-		VBoxContainer brand = UiKit.Column(UiTokens.S2);
+		VBoxContainer brand = UiKit.Column(UiTokens.S3);
 		brand.Alignment = BoxContainer.AlignmentMode.Center;
 
-		HBoxContainer mark = UiKit.Row(UiTokens.S3);
-		mark.Alignment = BoxContainer.AlignmentMode.Center;
-		Control wolf = Icon.Make(IconKind.Wolf, 76, UiTokens.Accent);
-		wolf.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		mark.AddChild(wolf);
-
-		Label name = UiKit.Text(Credits.GameName.ToUpperInvariant(), "Display");
-		name.AddThemeFontOverride("font", new FontVariation { BaseFont = UiFonts.DisplayHeavy, SpacingGlyph = 3 });
-		name.AddThemeFontSizeOverride("font_size", 72);
-		// Um halo dourado em volta das letras.
-		name.AddThemeColorOverride("font_shadow_color", new Color(UiTokens.Accent, 0.28f));
-		name.AddThemeConstantOverride("shadow_offset_x", 0);
-		name.AddThemeConstantOverride("shadow_offset_y", 0);
-		name.AddThemeConstantOverride("shadow_outline_size", 18);
-		mark.AddChild(name);
-		brand.AddChild(mark);
+		// A logo de sempre, a mesma do site e do instalador (Jhon, 21/11:
+		// "deixe padrão a logo"; sem o "humanos contra lobos" embaixo).
+		var logo = new TextureRect
+		{
+			Texture = GD.Load<Texture2D>("res://assets/ui/marca/wolfleague_logo_horizontal.png"),
+			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+			StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+			TextureFilter = TextureFilterEnum.LinearWithMipmaps,
+			CustomMinimumSize = new Vector2(640, 83),
+			SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
+			MouseFilter = MouseFilterEnum.Ignore
+		};
+		brand.AddChild(logo);
 
 		// O fio de ouro embaixo, que some nas pontas.
 		var line = new TextureRect
@@ -116,11 +113,6 @@ public partial class LoginScreen : LobbyScreen
 			MouseFilter = MouseFilterEnum.Ignore
 		};
 		brand.AddChild(line);
-
-		Label tagline = UiKit.Caption("HUMANOS CONTRA LOBOS", UiTokens.TextSecondary);
-		tagline.AddThemeFontOverride("font", new FontVariation { BaseFont = UiFonts.Label, SpacingGlyph = 5 });
-		tagline.HorizontalAlignment = HorizontalAlignment.Center;
-		brand.AddChild(tagline);
 		return brand;
 	}
 

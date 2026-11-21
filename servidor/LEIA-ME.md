@@ -111,7 +111,7 @@ segunda derruba a primeira.
 | `room.leave` | | Saindo o dono, a sala passa para o próximo |
 | `room.team` | `team` (1 azul, 2 laranja) | |
 | `room.ready` | `ready` | |
-| `profile.photo` | `id` | A foto de perfil que os outros veem (`eve`, `barut`, `lobo_barut` ou uma comprada, item `foto_<id>`). O servidor ignora foto que a conta não tem. Cada membro da sala sai com `photo`. |
+| `profile.photo` | `id` | A foto de perfil que os outros veem (uma das oito grátis, como `lobo_cinza`, ou uma comprada, item `foto_<id>`; a lista é `PhotoRule`). O servidor ignora foto que a conta não tem. Cada membro da sala sai com `photo`. |
 | `room.settings` | `settings` | Só o dono |
 | `room.bot.add` | `team` | Só o dono: põe um bot no time (se couber) |
 | `room.bot.remove` | `id` (negativo) | Só o dono: tira o bot |

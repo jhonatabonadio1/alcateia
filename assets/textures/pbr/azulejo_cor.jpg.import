@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://1t8wjn5teays"
 path.s3tc="res://.godot/imported/azulejo_cor.jpg-e49cb48577eaa3d6e55f7743e23c9a37.s3tc.ctex"
+path.etc2="res://.godot/imported/azulejo_cor.jpg-e49cb48577eaa3d6e55f7743e23c9a37.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/azulejo_cor.jpg"
-dest_files=["res://.godot/imported/azulejo_cor.jpg-e49cb48577eaa3d6e55f7743e23c9a37.s3tc.ctex"]
+dest_files=["res://.godot/imported/azulejo_cor.jpg-e49cb48577eaa3d6e55f7743e23c9a37.s3tc.ctex", "res://.godot/imported/azulejo_cor.jpg-e49cb48577eaa3d6e55f7743e23c9a37.etc2.ctex"]
 
 [params]
 

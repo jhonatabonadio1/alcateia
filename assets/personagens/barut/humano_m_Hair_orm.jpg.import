@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dtg4xpuj4t4sy"
 path.s3tc="res://.godot/imported/humano_m_Hair_orm.jpg-f18e6be4492b2c97af9c0ce336e57ca5.s3tc.ctex"
+path.etc2="res://.godot/imported/humano_m_Hair_orm.jpg-f18e6be4492b2c97af9c0ce336e57ca5.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/personagens/barut/humano_m_Hair_orm.jpg"
-dest_files=["res://.godot/imported/humano_m_Hair_orm.jpg-f18e6be4492b2c97af9c0ce336e57ca5.s3tc.ctex"]
+dest_files=["res://.godot/imported/humano_m_Hair_orm.jpg-f18e6be4492b2c97af9c0ce336e57ca5.s3tc.ctex", "res://.godot/imported/humano_m_Hair_orm.jpg-f18e6be4492b2c97af9c0ce336e57ca5.etc2.ctex"]
 
 [params]
 

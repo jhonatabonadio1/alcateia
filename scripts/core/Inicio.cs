@@ -32,8 +32,7 @@ public partial class Inicio : Node
 
 	public override void _Ready()
 	{
-		// O nome do jogo na janela. O nome do projeto no Godot continua
-		// "alcateia": trocar ele mudaria a pasta onde o perfil é salvo.
+		// O nome do jogo na janela (o projeto também se chama WolfLeague).
 		DisplayServer.WindowSetTitle(Credits.GameName);
 
 		// A suavização vale para a janela inteira, desde a primeira cena

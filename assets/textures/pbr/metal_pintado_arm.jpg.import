@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://58lwe5wgqg0l"
 path.s3tc="res://.godot/imported/metal_pintado_arm.jpg-e8bdabd6375f97426c1b6d7d708d76e0.s3tc.ctex"
+path.etc2="res://.godot/imported/metal_pintado_arm.jpg-e8bdabd6375f97426c1b6d7d708d76e0.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/metal_pintado_arm.jpg"
-dest_files=["res://.godot/imported/metal_pintado_arm.jpg-e8bdabd6375f97426c1b6d7d708d76e0.s3tc.ctex"]
+dest_files=["res://.godot/imported/metal_pintado_arm.jpg-e8bdabd6375f97426c1b6d7d708d76e0.s3tc.ctex", "res://.godot/imported/metal_pintado_arm.jpg-e8bdabd6375f97426c1b6d7d708d76e0.etc2.ctex"]
 
 [params]
 

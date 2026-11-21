@@ -45,6 +45,20 @@ jobs:
               print(f'::warning::item sem foto na loja (rode o WeaponPhotos no editor): {i}')
           PY
 
+  # O iniciador do Windows (instalador/iniciador.nsi) num Windows de
+  # verdade, com um jogo de mentira que falha nos modos de vídeo pedidos:
+  # a ordem das tentativas, o modo guardado, o escolhido nas Opções e o
+  # aviso quando nada abre. É ele que garante que o jogo nunca "não abre
+  # sem dizer nada".
+  iniciador:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Iniciador
+        shell: pwsh
+        run: ./instalador/teste/testar_iniciador.ps1
+
   testes:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -67,7 +81,7 @@ jobs:
 
       - name: Importar os assets
         run: |
-          dotnet build alcateia.csproj --nologo -v quiet
+          dotnet build WolfLeague.csproj --nologo -v quiet
           "${{ steps.godot.outputs.bin }}" --headless --path . --import || true
 
       - name: Testes

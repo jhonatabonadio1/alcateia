@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://csk4ejlw2mb8y"
 path.s3tc="res://.godot/imported/fps6.png-b207a03437fb9fbcad916d15675a6972.s3tc.ctex"
+path.etc2="res://.godot/imported/fps6.png-b207a03437fb9fbcad916d15675a6972.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/mapas/kits/fps6.png"
-dest_files=["res://.godot/imported/fps6.png-b207a03437fb9fbcad916d15675a6972.s3tc.ctex"]
+dest_files=["res://.godot/imported/fps6.png-b207a03437fb9fbcad916d15675a6972.s3tc.ctex", "res://.godot/imported/fps6.png-b207a03437fb9fbcad916d15675a6972.etc2.ctex"]
 
 [params]
 

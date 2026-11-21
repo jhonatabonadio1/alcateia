@@ -37,7 +37,7 @@ if ! curl -fsS -m 5 "$ALCATEIA_API/health" >/dev/null; then
 fi
 
 echo "== Compilando"
-dotnet build alcateia.csproj --nologo -v quiet -clp:ErrorsOnly || exit 1
+dotnet build WolfLeague.csproj --nologo -v quiet -clp:ErrorsOnly || exit 1
 
 PASTA=$(mktemp -d)
 limpar() {

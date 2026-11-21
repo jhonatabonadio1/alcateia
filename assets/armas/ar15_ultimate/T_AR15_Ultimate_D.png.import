@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://drgyw8rf6mkr2"
 path.bptc="res://.godot/imported/T_AR15_Ultimate_D.png-58396aed90fecebbfd9e7097e6ba3d10.bptc.ctex"
+path.astc="res://.godot/imported/T_AR15_Ultimate_D.png-58396aed90fecebbfd9e7097e6ba3d10.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/ar15_ultimate/T_AR15_Ultimate_D.png"
-dest_files=["res://.godot/imported/T_AR15_Ultimate_D.png-58396aed90fecebbfd9e7097e6ba3d10.bptc.ctex"]
+dest_files=["res://.godot/imported/T_AR15_Ultimate_D.png-58396aed90fecebbfd9e7097e6ba3d10.bptc.ctex", "res://.godot/imported/T_AR15_Ultimate_D.png-58396aed90fecebbfd9e7097e6ba3d10.astc.ctex"]
 
 [params]
 

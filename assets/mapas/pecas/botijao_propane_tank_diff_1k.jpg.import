@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cqf32gyjr2fi4"
 path.s3tc="res://.godot/imported/botijao_propane_tank_diff_1k.jpg-1db36edef7ae41da560b90e7390037d7.s3tc.ctex"
+path.etc2="res://.godot/imported/botijao_propane_tank_diff_1k.jpg-1db36edef7ae41da560b90e7390037d7.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/botijao_propane_tank_diff_1k.jpg"
-dest_files=["res://.godot/imported/botijao_propane_tank_diff_1k.jpg-1db36edef7ae41da560b90e7390037d7.s3tc.ctex"]
+dest_files=["res://.godot/imported/botijao_propane_tank_diff_1k.jpg-1db36edef7ae41da560b90e7390037d7.s3tc.ctex", "res://.godot/imported/botijao_propane_tank_diff_1k.jpg-1db36edef7ae41da560b90e7390037d7.etc2.ctex"]
 
 [params]
 

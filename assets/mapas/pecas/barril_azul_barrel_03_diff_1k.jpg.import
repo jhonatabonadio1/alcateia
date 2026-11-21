@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dpsjun7v1secn"
 path.s3tc="res://.godot/imported/barril_azul_barrel_03_diff_1k.jpg-a72f00a12d935e71c5900424f6e76aec.s3tc.ctex"
+path.etc2="res://.godot/imported/barril_azul_barrel_03_diff_1k.jpg-a72f00a12d935e71c5900424f6e76aec.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/barril_azul_barrel_03_diff_1k.jpg"
-dest_files=["res://.godot/imported/barril_azul_barrel_03_diff_1k.jpg-a72f00a12d935e71c5900424f6e76aec.s3tc.ctex"]
+dest_files=["res://.godot/imported/barril_azul_barrel_03_diff_1k.jpg-a72f00a12d935e71c5900424f6e76aec.s3tc.ctex", "res://.godot/imported/barril_azul_barrel_03_diff_1k.jpg-a72f00a12d935e71c5900424f6e76aec.etc2.ctex"]
 
 [params]
 

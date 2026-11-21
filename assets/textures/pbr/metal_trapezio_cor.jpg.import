@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cs5wuwh3povuo"
 path.s3tc="res://.godot/imported/metal_trapezio_cor.jpg-718f5e0651a279209b1f9972237f6227.s3tc.ctex"
+path.etc2="res://.godot/imported/metal_trapezio_cor.jpg-718f5e0651a279209b1f9972237f6227.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/metal_trapezio_cor.jpg"
-dest_files=["res://.godot/imported/metal_trapezio_cor.jpg-718f5e0651a279209b1f9972237f6227.s3tc.ctex"]
+dest_files=["res://.godot/imported/metal_trapezio_cor.jpg-718f5e0651a279209b1f9972237f6227.s3tc.ctex", "res://.godot/imported/metal_trapezio_cor.jpg-718f5e0651a279209b1f9972237f6227.etc2.ctex"]
 
 [params]
 

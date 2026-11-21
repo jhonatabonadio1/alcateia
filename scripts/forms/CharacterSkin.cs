@@ -71,6 +71,21 @@ public partial class CharacterSkin : Resource
 	/// <summary>A imagem do cartão, ou nulo.</summary>
 	public Texture2D Thumbnail => ResourceLoader.Exists(ThumbnailPath) ? GD.Load<Texture2D>(ThumbnailPath) : null;
 
+	/// <summary>O retrato (retrato.png na pasta, quadrado): a foto de quem
+	/// joga com este personagem na partida, no placar (Tab) e no HUD
+	/// (Jhon, 21/11: "se eu tiver de eve, exibir a foto da eve").</summary>
+	public string PortraitPath => $"{ResourcePath.GetBaseDir()}/retrato.png";
+
+	/// <summary>O de sempre do time, quando o jogador não escolheu outro (e
+	/// todo bot e todo jogador de outra máquina): o personagem daquele time,
+	/// Eve no azul e Barut no laranja, os mesmos modelos do CharacterAnimator.
+	/// Sem time, o do azul, como o CharacterAnimator.</summary>
+	public static CharacterSkin DefaultFor(int team)
+	{
+		List<CharacterSkin> all = All();
+		return all.Find(s => s.Team == team) ?? all.Find(s => s.Team == Teams.Blue);
+	}
+
 	/// <summary>O id no catálogo e no perfil: "pers_" + o nome da pasta.</summary>
 	public string Id => $"pers_{ResourcePath.GetBaseDir().GetFile()}";
 

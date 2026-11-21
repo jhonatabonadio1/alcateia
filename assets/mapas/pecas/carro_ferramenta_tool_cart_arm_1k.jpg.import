@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://u6o7gpi4iyjk"
 path.s3tc="res://.godot/imported/carro_ferramenta_tool_cart_arm_1k.jpg-ae11bf439d9e6c35f09029747beb093f.s3tc.ctex"
+path.etc2="res://.godot/imported/carro_ferramenta_tool_cart_arm_1k.jpg-ae11bf439d9e6c35f09029747beb093f.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/carro_ferramenta_tool_cart_arm_1k.jpg"
-dest_files=["res://.godot/imported/carro_ferramenta_tool_cart_arm_1k.jpg-ae11bf439d9e6c35f09029747beb093f.s3tc.ctex"]
+dest_files=["res://.godot/imported/carro_ferramenta_tool_cart_arm_1k.jpg-ae11bf439d9e6c35f09029747beb093f.s3tc.ctex", "res://.godot/imported/carro_ferramenta_tool_cart_arm_1k.jpg-ae11bf439d9e6c35f09029747beb093f.etc2.ctex"]
 
 [params]
 

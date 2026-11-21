@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c7bfnef61gryf"
 path.s3tc="res://.godot/imported/concreto_cor.jpg-2d8b66e52472490f90c2ef4e0e3147c0.s3tc.ctex"
+path.etc2="res://.godot/imported/concreto_cor.jpg-2d8b66e52472490f90c2ef4e0e3147c0.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/concreto_cor.jpg"
-dest_files=["res://.godot/imported/concreto_cor.jpg-2d8b66e52472490f90c2ef4e0e3147c0.s3tc.ctex"]
+dest_files=["res://.godot/imported/concreto_cor.jpg-2d8b66e52472490f90c2ef4e0e3147c0.s3tc.ctex", "res://.godot/imported/concreto_cor.jpg-2d8b66e52472490f90c2ef4e0e3147c0.etc2.ctex"]
 
 [params]
 

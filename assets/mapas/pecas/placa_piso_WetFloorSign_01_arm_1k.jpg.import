@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://db3h6nbg5ct7b"
 path.s3tc="res://.godot/imported/placa_piso_WetFloorSign_01_arm_1k.jpg-f2251da82f371eb9ad75dd32ee213fa4.s3tc.ctex"
+path.etc2="res://.godot/imported/placa_piso_WetFloorSign_01_arm_1k.jpg-f2251da82f371eb9ad75dd32ee213fa4.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/placa_piso_WetFloorSign_01_arm_1k.jpg"
-dest_files=["res://.godot/imported/placa_piso_WetFloorSign_01_arm_1k.jpg-f2251da82f371eb9ad75dd32ee213fa4.s3tc.ctex"]
+dest_files=["res://.godot/imported/placa_piso_WetFloorSign_01_arm_1k.jpg-f2251da82f371eb9ad75dd32ee213fa4.s3tc.ctex", "res://.godot/imported/placa_piso_WetFloorSign_01_arm_1k.jpg-f2251da82f371eb9ad75dd32ee213fa4.etc2.ctex"]
 
 [params]
 

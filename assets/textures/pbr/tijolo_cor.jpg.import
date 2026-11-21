@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bksmwrl3y24fe"
 path.s3tc="res://.godot/imported/tijolo_cor.jpg-8910e4b119243b5ab4889abf41de169e.s3tc.ctex"
+path.etc2="res://.godot/imported/tijolo_cor.jpg-8910e4b119243b5ab4889abf41de169e.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/tijolo_cor.jpg"
-dest_files=["res://.godot/imported/tijolo_cor.jpg-8910e4b119243b5ab4889abf41de169e.s3tc.ctex"]
+dest_files=["res://.godot/imported/tijolo_cor.jpg-8910e4b119243b5ab4889abf41de169e.s3tc.ctex", "res://.godot/imported/tijolo_cor.jpg-8910e4b119243b5ab4889abf41de169e.etc2.ctex"]
 
 [params]
 

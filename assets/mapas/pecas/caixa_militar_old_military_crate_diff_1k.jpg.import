@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cgggx2ej5p25v"
 path.s3tc="res://.godot/imported/caixa_militar_old_military_crate_diff_1k.jpg-ea11037e88d4af3824c66208bc46106b.s3tc.ctex"
+path.etc2="res://.godot/imported/caixa_militar_old_military_crate_diff_1k.jpg-ea11037e88d4af3824c66208bc46106b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/caixa_militar_old_military_crate_diff_1k.jpg"
-dest_files=["res://.godot/imported/caixa_militar_old_military_crate_diff_1k.jpg-ea11037e88d4af3824c66208bc46106b.s3tc.ctex"]
+dest_files=["res://.godot/imported/caixa_militar_old_military_crate_diff_1k.jpg-ea11037e88d4af3824c66208bc46106b.s3tc.ctex", "res://.godot/imported/caixa_militar_old_military_crate_diff_1k.jpg-ea11037e88d4af3824c66208bc46106b.etc2.ctex"]
 
 [params]
 

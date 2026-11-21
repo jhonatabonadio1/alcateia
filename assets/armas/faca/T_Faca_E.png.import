@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://csm8inliwtvkd"
 path.bptc="res://.godot/imported/T_Faca_E.png-8b2bc2dd0b8b3165316c05d7c51ed7bd.bptc.ctex"
+path.astc="res://.godot/imported/T_Faca_E.png-8b2bc2dd0b8b3165316c05d7c51ed7bd.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/faca/T_Faca_E.png"
-dest_files=["res://.godot/imported/T_Faca_E.png-8b2bc2dd0b8b3165316c05d7c51ed7bd.bptc.ctex"]
+dest_files=["res://.godot/imported/T_Faca_E.png-8b2bc2dd0b8b3165316c05d7c51ed7bd.bptc.ctex", "res://.godot/imported/T_Faca_E.png-8b2bc2dd0b8b3165316c05d7c51ed7bd.astc.ctex"]
 
 [params]
 

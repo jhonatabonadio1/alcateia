@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bpykxk0lyq7b5"
 path.s3tc="res://.godot/imported/polar_modulo_B2.png-18f1ee12d7c8d3c380e101b81af5ef45.s3tc.ctex"
+path.etc2="res://.godot/imported/polar_modulo_B2.png-18f1ee12d7c8d3c380e101b81af5ef45.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/mapas/letreiros/polar_modulo_B2.png"
-dest_files=["res://.godot/imported/polar_modulo_B2.png-18f1ee12d7c8d3c380e101b81af5ef45.s3tc.ctex"]
+dest_files=["res://.godot/imported/polar_modulo_B2.png-18f1ee12d7c8d3c380e101b81af5ef45.s3tc.ctex", "res://.godot/imported/polar_modulo_B2.png-18f1ee12d7c8d3c380e101b81af5ef45.etc2.ctex"]
 
 [params]
 

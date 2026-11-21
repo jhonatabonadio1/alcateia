@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dtbaw7b71xot"
 path.s3tc="res://.godot/imported/humano_f_Body_normal.jpg-6da3c9828a0011c0ff8187d09224cf4f.s3tc.ctex"
+path.etc2="res://.godot/imported/humano_f_Body_normal.jpg-6da3c9828a0011c0ff8187d09224cf4f.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/personagens/eve/humano_f_Body_normal.jpg"
-dest_files=["res://.godot/imported/humano_f_Body_normal.jpg-6da3c9828a0011c0ff8187d09224cf4f.s3tc.ctex"]
+dest_files=["res://.godot/imported/humano_f_Body_normal.jpg-6da3c9828a0011c0ff8187d09224cf4f.s3tc.ctex", "res://.godot/imported/humano_f_Body_normal.jpg-6da3c9828a0011c0ff8187d09224cf4f.etc2.ctex"]
 
 [params]
 

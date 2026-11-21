@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dbesbxo1law2t"
 path.s3tc="res://.godot/imported/ar_condicionado_exterior_aircon_unit_rusted_02_arm_1k.jpg-9d8ed5378ceb1089c78fa5d868d3431e.s3tc.ctex"
+path.etc2="res://.godot/imported/ar_condicionado_exterior_aircon_unit_rusted_02_arm_1k.jpg-9d8ed5378ceb1089c78fa5d868d3431e.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/ar_condicionado_exterior_aircon_unit_rusted_02_arm_1k.jpg"
-dest_files=["res://.godot/imported/ar_condicionado_exterior_aircon_unit_rusted_02_arm_1k.jpg-9d8ed5378ceb1089c78fa5d868d3431e.s3tc.ctex"]
+dest_files=["res://.godot/imported/ar_condicionado_exterior_aircon_unit_rusted_02_arm_1k.jpg-9d8ed5378ceb1089c78fa5d868d3431e.s3tc.ctex", "res://.godot/imported/ar_condicionado_exterior_aircon_unit_rusted_02_arm_1k.jpg-9d8ed5378ceb1089c78fa5d868d3431e.etc2.ctex"]
 
 [params]
 

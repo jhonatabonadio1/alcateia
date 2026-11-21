@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dpb4gh35c1jpi"
 path.s3tc="res://.godot/imported/caixote_a_wooden_crate_01_nor_gl_1k.jpg-66a169eb365ebf299af9b4faf69c0e82.s3tc.ctex"
+path.etc2="res://.godot/imported/caixote_a_wooden_crate_01_nor_gl_1k.jpg-66a169eb365ebf299af9b4faf69c0e82.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/caixote_a_wooden_crate_01_nor_gl_1k.jpg"
-dest_files=["res://.godot/imported/caixote_a_wooden_crate_01_nor_gl_1k.jpg-66a169eb365ebf299af9b4faf69c0e82.s3tc.ctex"]
+dest_files=["res://.godot/imported/caixote_a_wooden_crate_01_nor_gl_1k.jpg-66a169eb365ebf299af9b4faf69c0e82.s3tc.ctex", "res://.godot/imported/caixote_a_wooden_crate_01_nor_gl_1k.jpg-66a169eb365ebf299af9b4faf69c0e82.etc2.ctex"]
 
 [params]
 

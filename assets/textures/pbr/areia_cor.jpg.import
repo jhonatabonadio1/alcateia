@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://ds8w1jei838xv"
 path.s3tc="res://.godot/imported/areia_cor.jpg-9f20ac446a4474a92d4505b369d4380d.s3tc.ctex"
+path.etc2="res://.godot/imported/areia_cor.jpg-9f20ac446a4474a92d4505b369d4380d.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/areia_cor.jpg"
-dest_files=["res://.godot/imported/areia_cor.jpg-9f20ac446a4474a92d4505b369d4380d.s3tc.ctex"]
+dest_files=["res://.godot/imported/areia_cor.jpg-9f20ac446a4474a92d4505b369d4380d.s3tc.ctex", "res://.godot/imported/areia_cor.jpg-9f20ac446a4474a92d4505b369d4380d.etc2.ctex"]
 
 [params]
 

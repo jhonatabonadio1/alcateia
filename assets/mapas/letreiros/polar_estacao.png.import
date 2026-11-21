@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://rji7h71ka150"
 path.s3tc="res://.godot/imported/polar_estacao.png-32243a3d9703856e18714ad89d6dd29a.s3tc.ctex"
+path.etc2="res://.godot/imported/polar_estacao.png-32243a3d9703856e18714ad89d6dd29a.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/mapas/letreiros/polar_estacao.png"
-dest_files=["res://.godot/imported/polar_estacao.png-32243a3d9703856e18714ad89d6dd29a.s3tc.ctex"]
+dest_files=["res://.godot/imported/polar_estacao.png-32243a3d9703856e18714ad89d6dd29a.s3tc.ctex", "res://.godot/imported/polar_estacao.png-32243a3d9703856e18714ad89d6dd29a.etc2.ctex"]
 
 [params]
 

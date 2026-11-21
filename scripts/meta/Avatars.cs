@@ -3,9 +3,13 @@ using System.Linq;
 
 /// <summary>
 /// Fotos de perfil (Jhon, 21/11, "igual League of Legends"): o retrato que
-/// vai dentro da borda de nível (<see cref="RankBadge"/>). Três vêm de graça
-/// (Eve, Barut e o lobo do Barut, da arte dos personagens) e dez são da loja
-/// (as armas e granadas raras, em assets/ui/avatares/).
+/// vai dentro da borda de nível (<see cref="RankBadge"/>). Vinte ícones
+/// pintados, no estilo dos ícones de jogador dos MOBAs (gerados com IA no
+/// Figma, arquivo "WolfLeague — ícones de jogador"; assets/ui/avatares/):
+/// oito de graça e doze da loja.
+///
+/// Na partida a foto é outra: o retrato do personagem com que cada um joga
+/// (<see cref="OfCharacter"/>, assets/personagens/&lt;nome&gt;/retrato.png).
 ///
 /// As da loja são itens do catálogo (<c>foto_&lt;id&gt;</c>, tipo Photo,
 /// só permanentes). A escolha fica em user://foto.cfg e vai para o saguão
@@ -22,28 +26,37 @@ public static class Avatars
 
 	public static readonly Photo[] All =
 	{
-		new("eve", "Eve", 0),
-		new("barut", "Barut", 0),
-		new("lobo_barut", "Fera do Barut", 0),
-		new("faca_damasco", "Lâmina Damasco", 800),
-		new("faca_obsidiana", "Obsidiana", 1200),
-		new("choque_neon", "Neon", 800),
-		new("choque_magma", "Magma", 1200),
-		new("choque_ouro", "Ouro Puro", 2000),
-		new("ar15_lava", "Lava", 1500),
-		new("m4a4_dragao", "Dragão", 2000),
-		new("deagle_fenix", "Fênix", 1500),
-		new("scar_galaxia", "Galáxia", 2500),
-		new("ak74_tigre", "Tigre", 1500),
+		// de graça
+		new("lobo_cinza", "Lobo Cinzento", 0),
+		new("filhote", "Filhote", 0),
+		new("lua_cheia", "Lua Cheia", 0),
+		new("coruja_piloto", "Coruja Piloto", 0),
+		new("geleia", "Geleia", 0),
+		new("drone", "Drone", 0),
+		new("panda_vermelho", "Panda Vermelho", 0),
+		new("corvo", "Corvo", 0),
+		// da loja
+		new("garras", "Garras", 800),
+		new("capacete", "Capacete", 800),
+		new("escorpiao", "Escorpião", 800),
+		new("bau", "Baú", 800),
+		new("urso", "Urso de Guerra", 1200),
+		new("cristal_lua", "Cristal da Lua", 1200),
+		new("coruja_neve", "Coruja da Neve", 1500),
+		new("raposa_espirito", "Raposa Espírito", 1500),
+		new("lobo_neon", "Lobo Neon", 2000),
+		new("granada_ouro", "Granada de Ouro", 2000),
+		new("lobo_gelo", "Lobo de Gelo", 2500),
+		new("lobo_fogo", "Lobo de Fogo", 2500),
 	};
 
-	public const string Default = "eve";
+	public const string Default = "lobo_cinza";
 	private const string File = "user://foto.cfg";
 	private static string _selected;
 
 	public static Photo Get(string id) => All.FirstOrDefault(p => p.Id == id);
 
-	/// <summary>O id da foto a partir do item da loja (<c>foto_eve</c> → <c>eve</c>).</summary>
+	/// <summary>O id da foto a partir do item da loja (<c>foto_lobo_fogo</c> → <c>lobo_fogo</c>).</summary>
 	public static string IdOf(string itemId) => itemId != null && itemId.StartsWith("foto_") ? itemId[5..] : itemId;
 
 	/// <summary>A foto é sua? As grátis sempre; as da loja quando o item
@@ -73,5 +86,28 @@ public static class Avatars
 		}
 	}
 
-	public static Texture2D PhotoOf(string id) => Get(id) is Photo p ? RankBadge.Load(p.Path) : null;
+	/// <summary>A imagem de uma foto de perfil ou de um personagem
+	/// (<c>pers_&lt;nome&gt;</c>, o retrato dele).</summary>
+	public static Texture2D PhotoOf(string id)
+	{
+		if (id != null && id.StartsWith("pers_")) return PortraitOf(id);
+		return Get(id) is Photo p ? RankBadge.Load(p.Path) : null;
+	}
+
+	/// <summary>A foto de quem está na partida: o personagem escolhido, ou o
+	/// de sempre do time (Eve no azul, Barut no laranja).</summary>
+	public static string OfCharacter(CharacterSkin chosen, int team) =>
+		(chosen ?? CharacterSkin.DefaultFor(team))?.Id;
+
+	private static readonly System.Collections.Generic.Dictionary<string, Texture2D> Portraits = new();
+
+	private static Texture2D PortraitOf(string id)
+	{
+		if (Portraits.TryGetValue(id, out Texture2D cached)) return cached;
+		CharacterSkin skin = CharacterSkin.All().FirstOrDefault(s => s.Id == id);
+		Texture2D portrait = skin == null ? null
+			: ResourceLoader.Exists(skin.PortraitPath) ? GD.Load<Texture2D>(skin.PortraitPath) : skin.Thumbnail;
+		Portraits[id] = portrait;
+		return portrait;
+	}
 }

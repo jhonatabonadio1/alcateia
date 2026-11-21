@@ -35,8 +35,11 @@ Output.
 
 **Onde fica o seu perfil salvo** (conjuntos, último usado; Presas,
 itens, XP e missões não: são da conta, no servidor — decisão 0015):
-`user://perfil.json`. No macOS isso é
-`~/Library/Application Support/Godot/app_userdata/alcateia/perfil.json`.
+`user://perfil.json`. Rodando pelo editor, no macOS isso é
+`~/Library/Application Support/Godot/app_userdata/WolfLeague/perfil.json`; o
+jogo exportado guarda tudo numa pasta própria, `WolfLeague` (no macOS
+`~/Library/Application Support/WolfLeague`, no Windows `%APPDATA%\WolfLeague`),
+para não misturar com o que o editor salva (o servidor local, por exemplo).
 Apagar esse arquivo devolve os quatro conjuntos padrão.
 
 ---

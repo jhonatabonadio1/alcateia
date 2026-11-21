@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dyu3fvh78jo0c"
 path.s3tc="res://.godot/imported/rocha_normal.jpg-1c065ee051add2d58b5ef99988f2262a.s3tc.ctex"
+path.etc2="res://.godot/imported/rocha_normal.jpg-1c065ee051add2d58b5ef99988f2262a.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/rocha_normal.jpg"
-dest_files=["res://.godot/imported/rocha_normal.jpg-1c065ee051add2d58b5ef99988f2262a.s3tc.ctex"]
+dest_files=["res://.godot/imported/rocha_normal.jpg-1c065ee051add2d58b5ef99988f2262a.s3tc.ctex", "res://.godot/imported/rocha_normal.jpg-1c065ee051add2d58b5ef99988f2262a.etc2.ctex"]
 
 [params]
 

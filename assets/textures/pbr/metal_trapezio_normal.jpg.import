@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c32pm0oqkcnhf"
 path.s3tc="res://.godot/imported/metal_trapezio_normal.jpg-891a7730080c0b8a3a3e05bb0fd03f0b.s3tc.ctex"
+path.etc2="res://.godot/imported/metal_trapezio_normal.jpg-891a7730080c0b8a3a3e05bb0fd03f0b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/metal_trapezio_normal.jpg"
-dest_files=["res://.godot/imported/metal_trapezio_normal.jpg-891a7730080c0b8a3a3e05bb0fd03f0b.s3tc.ctex"]
+dest_files=["res://.godot/imported/metal_trapezio_normal.jpg-891a7730080c0b8a3a3e05bb0fd03f0b.s3tc.ctex", "res://.godot/imported/metal_trapezio_normal.jpg-891a7730080c0b8a3a3e05bb0fd03f0b.etc2.ctex"]
 
 [params]
 

@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cxt4crdv8oqwo"
 path.s3tc="res://.godot/imported/polar_lab.png-93cbb061db4a83296e8fc9010264cee8.s3tc.ctex"
+path.etc2="res://.godot/imported/polar_lab.png-93cbb061db4a83296e8fc9010264cee8.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/mapas/letreiros/polar_lab.png"
-dest_files=["res://.godot/imported/polar_lab.png-93cbb061db4a83296e8fc9010264cee8.s3tc.ctex"]
+dest_files=["res://.godot/imported/polar_lab.png-93cbb061db4a83296e8fc9010264cee8.s3tc.ctex", "res://.godot/imported/polar_lab.png-93cbb061db4a83296e8fc9010264cee8.etc2.ctex"]
 
 [params]
 

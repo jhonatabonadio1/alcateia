@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dsffrcx8bjnce"
 path.s3tc="res://.godot/imported/obra_mato_kit_fps3.png-8ad75f4d96cb169c1d89fada859aac63.s3tc.ctex"
+path.etc2="res://.godot/imported/obra_mato_kit_fps3.png-8ad75f4d96cb169c1d89fada859aac63.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/obra_mato_kit_fps3.png"
-dest_files=["res://.godot/imported/obra_mato_kit_fps3.png-8ad75f4d96cb169c1d89fada859aac63.s3tc.ctex"]
+dest_files=["res://.godot/imported/obra_mato_kit_fps3.png-8ad75f4d96cb169c1d89fada859aac63.s3tc.ctex", "res://.godot/imported/obra_mato_kit_fps3.png-8ad75f4d96cb169c1d89fada859aac63.etc2.ctex"]
 
 [params]
 

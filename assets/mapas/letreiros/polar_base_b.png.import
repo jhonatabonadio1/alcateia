@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://4f50vh0ehyos"
 path.s3tc="res://.godot/imported/polar_base_b.png-1f51c86656bf2f28e77d57de4d2f37af.s3tc.ctex"
+path.etc2="res://.godot/imported/polar_base_b.png-1f51c86656bf2f28e77d57de4d2f37af.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/mapas/letreiros/polar_base_b.png"
-dest_files=["res://.godot/imported/polar_base_b.png-1f51c86656bf2f28e77d57de4d2f37af.s3tc.ctex"]
+dest_files=["res://.godot/imported/polar_base_b.png-1f51c86656bf2f28e77d57de4d2f37af.s3tc.ctex", "res://.godot/imported/polar_base_b.png-1f51c86656bf2f28e77d57de4d2f37af.etc2.ctex"]
 
 [params]
 

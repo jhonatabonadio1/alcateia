@@ -34,7 +34,7 @@ falhas=0
 inicio=$(date +%s)
 
 echo "== Compilando"
-if ! dotnet build alcateia.csproj --nologo -v quiet -clp:ErrorsOnly; then
+if ! dotnet build WolfLeague.csproj --nologo -v quiet -clp:ErrorsOnly; then
 	echo "A compilação falhou."
 	exit 1
 fi

@@ -4,15 +4,16 @@ importer="2d_array_texture"
 type="CompressedTexture2DArray"
 uid="uid://dgrke4w13ra7i"
 path.bptc="res://.godot/imported/detalhe_n.jpg-1f691d0e677534647515762d45b62b9d.bptc.ctexarray"
+path.astc="res://.godot/imported/detalhe_n.jpg-1f691d0e677534647515762d45b62b9d.astc.ctexarray"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/mapas/detalhe/detalhe_n.jpg"
-dest_files=["res://.godot/imported/detalhe_n.jpg-1f691d0e677534647515762d45b62b9d.bptc.ctexarray"]
+dest_files=["res://.godot/imported/detalhe_n.jpg-1f691d0e677534647515762d45b62b9d.bptc.ctexarray", "res://.godot/imported/detalhe_n.jpg-1f691d0e677534647515762d45b62b9d.astc.ctexarray"]
 
 [params]
 

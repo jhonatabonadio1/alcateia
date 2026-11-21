@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bddcapj6crtlp"
 path.s3tc="res://.godot/imported/mesa_aco_metal_office_desk_nor_gl_1k.jpg-3630ba99399c6b5a8f9eaa0b3e831d41.s3tc.ctex"
+path.etc2="res://.godot/imported/mesa_aco_metal_office_desk_nor_gl_1k.jpg-3630ba99399c6b5a8f9eaa0b3e831d41.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/mesa_aco_metal_office_desk_nor_gl_1k.jpg"
-dest_files=["res://.godot/imported/mesa_aco_metal_office_desk_nor_gl_1k.jpg-3630ba99399c6b5a8f9eaa0b3e831d41.s3tc.ctex"]
+dest_files=["res://.godot/imported/mesa_aco_metal_office_desk_nor_gl_1k.jpg-3630ba99399c6b5a8f9eaa0b3e831d41.s3tc.ctex", "res://.godot/imported/mesa_aco_metal_office_desk_nor_gl_1k.jpg-3630ba99399c6b5a8f9eaa0b3e831d41.etc2.ctex"]
 
 [params]
 

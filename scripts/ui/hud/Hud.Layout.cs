@@ -206,7 +206,7 @@ public partial class Hud
 
 		// Forma sempre visível, ao lado da vida. Parece redundante; em
 		// partida rápida não é.
-		_formBadge = new HexBadge { Edge = Teams.ColorOf(_health.Team), SizeFlagsVertical = Control.SizeFlags.ShrinkEnd, Rank = Profile.Rank, Photo = Subject == null ? Avatars.Selected : null };
+		_formBadge = new HexBadge { Edge = Teams.ColorOf(_health.Team), SizeFlagsVertical = Control.SizeFlags.ShrinkEnd, Rank = Profile.Rank, Photo = Avatars.OfCharacter(_player?.Character, _health.Team) };
 		_formIcon = _formBadge.Glyph;
 		block.AddChild(_formBadge);
 

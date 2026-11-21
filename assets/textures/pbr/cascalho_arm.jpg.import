@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://d1fgm7o46my57"
 path.s3tc="res://.godot/imported/cascalho_arm.jpg-1368c50bb91e13f89cc66332d86cc913.s3tc.ctex"
+path.etc2="res://.godot/imported/cascalho_arm.jpg-1368c50bb91e13f89cc66332d86cc913.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/cascalho_arm.jpg"
-dest_files=["res://.godot/imported/cascalho_arm.jpg-1368c50bb91e13f89cc66332d86cc913.s3tc.ctex"]
+dest_files=["res://.godot/imported/cascalho_arm.jpg-1368c50bb91e13f89cc66332d86cc913.s3tc.ctex", "res://.godot/imported/cascalho_arm.jpg-1368c50bb91e13f89cc66332d86cc913.etc2.ctex"]
 
 [params]
 

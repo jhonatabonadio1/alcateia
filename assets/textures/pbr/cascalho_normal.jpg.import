@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dagawrtldg2jl"
 path.s3tc="res://.godot/imported/cascalho_normal.jpg-49905809d682717f900dbec6954109f4.s3tc.ctex"
+path.etc2="res://.godot/imported/cascalho_normal.jpg-49905809d682717f900dbec6954109f4.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/cascalho_normal.jpg"
-dest_files=["res://.godot/imported/cascalho_normal.jpg-49905809d682717f900dbec6954109f4.s3tc.ctex"]
+dest_files=["res://.godot/imported/cascalho_normal.jpg-49905809d682717f900dbec6954109f4.s3tc.ctex", "res://.godot/imported/cascalho_normal.jpg-49905809d682717f900dbec6954109f4.etc2.ctex"]
 
 [params]
 

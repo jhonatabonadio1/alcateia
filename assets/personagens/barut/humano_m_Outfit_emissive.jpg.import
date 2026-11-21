@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cuigi5eul2708"
 path.s3tc="res://.godot/imported/humano_m_Outfit_emissive.jpg-07230645364186fae0fe13d77c90854f.s3tc.ctex"
+path.etc2="res://.godot/imported/humano_m_Outfit_emissive.jpg-07230645364186fae0fe13d77c90854f.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/personagens/barut/humano_m_Outfit_emissive.jpg"
-dest_files=["res://.godot/imported/humano_m_Outfit_emissive.jpg-07230645364186fae0fe13d77c90854f.s3tc.ctex"]
+dest_files=["res://.godot/imported/humano_m_Outfit_emissive.jpg-07230645364186fae0fe13d77c90854f.s3tc.ctex", "res://.godot/imported/humano_m_Outfit_emissive.jpg-07230645364186fae0fe13d77c90854f.etc2.ctex"]
 
 [params]
 

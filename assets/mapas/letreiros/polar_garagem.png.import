@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://ctbnbp0rp6xup"
 path.s3tc="res://.godot/imported/polar_garagem.png-1352c760bdab3e7d84abee74d9549612.s3tc.ctex"
+path.etc2="res://.godot/imported/polar_garagem.png-1352c760bdab3e7d84abee74d9549612.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/mapas/letreiros/polar_garagem.png"
-dest_files=["res://.godot/imported/polar_garagem.png-1352c760bdab3e7d84abee74d9549612.s3tc.ctex"]
+dest_files=["res://.godot/imported/polar_garagem.png-1352c760bdab3e7d84abee74d9549612.s3tc.ctex", "res://.godot/imported/polar_garagem.png-1352c760bdab3e7d84abee74d9549612.etc2.ctex"]
 
 [params]
 

@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cutawjna6dp7j"
 path.s3tc="res://.godot/imported/madeira_escura_normal.jpg-b427ca50746ce4e2f6cf10e9d5713f4b.s3tc.ctex"
+path.etc2="res://.godot/imported/madeira_escura_normal.jpg-b427ca50746ce4e2f6cf10e9d5713f4b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/madeira_escura_normal.jpg"
-dest_files=["res://.godot/imported/madeira_escura_normal.jpg-b427ca50746ce4e2f6cf10e9d5713f4b.s3tc.ctex"]
+dest_files=["res://.godot/imported/madeira_escura_normal.jpg-b427ca50746ce4e2f6cf10e9d5713f4b.s3tc.ctex", "res://.godot/imported/madeira_escura_normal.jpg-b427ca50746ce4e2f6cf10e9d5713f4b.etc2.ctex"]
 
 [params]
 

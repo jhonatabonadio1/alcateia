@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cnuim3k86xb0f"
 path.s3tc="res://.godot/imported/penhasco_normal.jpg-cc3b5d56c54405eb88801ea818f755fc.s3tc.ctex"
+path.etc2="res://.godot/imported/penhasco_normal.jpg-cc3b5d56c54405eb88801ea818f755fc.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/penhasco_normal.jpg"
-dest_files=["res://.godot/imported/penhasco_normal.jpg-cc3b5d56c54405eb88801ea818f755fc.s3tc.ctex"]
+dest_files=["res://.godot/imported/penhasco_normal.jpg-cc3b5d56c54405eb88801ea818f755fc.s3tc.ctex", "res://.godot/imported/penhasco_normal.jpg-cc3b5d56c54405eb88801ea818f755fc.etc2.ctex"]
 
 [params]
 

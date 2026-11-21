@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b7h4ms1os1ojt"
 path.s3tc="res://.godot/imported/escada_madeira_wooden_ladder_nor_gl_1k.jpg-f690a368d36232ac940a60345d7e2180.s3tc.ctex"
+path.etc2="res://.godot/imported/escada_madeira_wooden_ladder_nor_gl_1k.jpg-f690a368d36232ac940a60345d7e2180.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/escada_madeira_wooden_ladder_nor_gl_1k.jpg"
-dest_files=["res://.godot/imported/escada_madeira_wooden_ladder_nor_gl_1k.jpg-f690a368d36232ac940a60345d7e2180.s3tc.ctex"]
+dest_files=["res://.godot/imported/escada_madeira_wooden_ladder_nor_gl_1k.jpg-f690a368d36232ac940a60345d7e2180.s3tc.ctex", "res://.godot/imported/escada_madeira_wooden_ladder_nor_gl_1k.jpg-f690a368d36232ac940a60345d7e2180.etc2.ctex"]
 
 [params]
 

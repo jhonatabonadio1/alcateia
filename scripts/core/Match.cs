@@ -306,7 +306,9 @@ public partial class Match : Node
 				entry.Rank = entry.IsLocal ? Profile.Rank
 					: remote != null ? remote.RemoteRank
 					: Ranks.None;   // bot não tem nível
-				entry.Photo = entry.IsLocal ? Avatars.Selected : remote?.RemotePhoto;
+				// Na partida, a foto é o retrato do personagem com que ele joga
+				// (Jhon, 21/11), não a foto de perfil: Eve, Barut...
+				entry.Photo = Avatars.OfCharacter((node as Player)?.Character, health.Team);
 
 				if (entry.IsLocal) _local = entry;
 			}

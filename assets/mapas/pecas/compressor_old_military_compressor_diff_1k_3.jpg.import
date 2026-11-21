@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://taheiiac75fs"
 path.s3tc="res://.godot/imported/compressor_old_military_compressor_diff_1k_3.jpg-879476858dd1f6cc7480e834218d8870.s3tc.ctex"
+path.etc2="res://.godot/imported/compressor_old_military_compressor_diff_1k_3.jpg-879476858dd1f6cc7480e834218d8870.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/compressor_old_military_compressor_diff_1k_3.jpg"
-dest_files=["res://.godot/imported/compressor_old_military_compressor_diff_1k_3.jpg-879476858dd1f6cc7480e834218d8870.s3tc.ctex"]
+dest_files=["res://.godot/imported/compressor_old_military_compressor_diff_1k_3.jpg-879476858dd1f6cc7480e834218d8870.s3tc.ctex", "res://.godot/imported/compressor_old_military_compressor_diff_1k_3.jpg-879476858dd1f6cc7480e834218d8870.etc2.ctex"]
 
 [params]
 

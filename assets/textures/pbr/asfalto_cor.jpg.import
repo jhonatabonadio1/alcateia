@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://epnmmr4rcfks"
 path.s3tc="res://.godot/imported/asfalto_cor.jpg-ceba318d7f7b6e3b47bf1c49e4fa376b.s3tc.ctex"
+path.etc2="res://.godot/imported/asfalto_cor.jpg-ceba318d7f7b6e3b47bf1c49e4fa376b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/textures/pbr/asfalto_cor.jpg"
-dest_files=["res://.godot/imported/asfalto_cor.jpg-ceba318d7f7b6e3b47bf1c49e4fa376b.s3tc.ctex"]
+dest_files=["res://.godot/imported/asfalto_cor.jpg-ceba318d7f7b6e3b47bf1c49e4fa376b.s3tc.ctex", "res://.godot/imported/asfalto_cor.jpg-ceba318d7f7b6e3b47bf1c49e4fa376b.etc2.ctex"]
 
 [params]
 

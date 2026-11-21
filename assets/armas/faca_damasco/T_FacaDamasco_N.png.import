@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bmtyeibcw7pi7"
 path.bptc="res://.godot/imported/T_FacaDamasco_N.png-8d22fa94eee219ee84bf67bfdd0126d3.bptc.ctex"
+path.astc="res://.godot/imported/T_FacaDamasco_N.png-8d22fa94eee219ee84bf67bfdd0126d3.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/armas/faca_damasco/T_FacaDamasco_N.png"
-dest_files=["res://.godot/imported/T_FacaDamasco_N.png-8d22fa94eee219ee84bf67bfdd0126d3.bptc.ctex"]
+dest_files=["res://.godot/imported/T_FacaDamasco_N.png-8d22fa94eee219ee84bf67bfdd0126d3.bptc.ctex", "res://.godot/imported/T_FacaDamasco_N.png-8d22fa94eee219ee84bf67bfdd0126d3.astc.ctex"]
 
 [params]
 

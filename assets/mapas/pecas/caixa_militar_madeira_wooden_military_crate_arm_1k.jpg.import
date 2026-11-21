@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://d1dpkkf4bmnmn"
 path.s3tc="res://.godot/imported/caixa_militar_madeira_wooden_military_crate_arm_1k.jpg-cf5bca9bde9cb2143cfcb0d37f09bcc5.s3tc.ctex"
+path.etc2="res://.godot/imported/caixa_militar_madeira_wooden_military_crate_arm_1k.jpg-cf5bca9bde9cb2143cfcb0d37f09bcc5.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/mapas/pecas/caixa_militar_madeira_wooden_military_crate_arm_1k.jpg"
-dest_files=["res://.godot/imported/caixa_militar_madeira_wooden_military_crate_arm_1k.jpg-cf5bca9bde9cb2143cfcb0d37f09bcc5.s3tc.ctex"]
+dest_files=["res://.godot/imported/caixa_militar_madeira_wooden_military_crate_arm_1k.jpg-cf5bca9bde9cb2143cfcb0d37f09bcc5.s3tc.ctex", "res://.godot/imported/caixa_militar_madeira_wooden_military_crate_arm_1k.jpg-cf5bca9bde9cb2143cfcb0d37f09bcc5.etc2.ctex"]
 
 [params]
 
