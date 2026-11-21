@@ -15,4 +15,5 @@ servidor/painel/dist
 servidor/painel/public/jogo
 !assets/ui/armas/*.png
 !assets/ui/mapas/*.png
+!assets/ui/avatares/*.png
 !assets/personagens/*/thumb.jpg
