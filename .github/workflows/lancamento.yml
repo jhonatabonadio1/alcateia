@@ -108,14 +108,62 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
+  # O import do Godot (as texturas comprimidas em BPTC de alta qualidade:
+  # uns 2,5 GB em .godot/imported) feito uma vez, no Linux, e guardado no
+  # cache do Actions. O Windows e o Mac só restauram e exportam. No Mac o
+  # runner não tem GPU e o Godot comprimia tudo na CPU ARM: passou de 50 min
+  # e foi cancelado (21/11). E minuto de Mac custa 10 vezes o de Linux.
+  # Cada execução parte do cache da anterior: só o que mudou é refeito.
+  importar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      chave: ${{ steps.chave.outputs.chave }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Chave do cache
+        id: chave
+        run: echo "chave=godot-importado-${GODOT_VERSION}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+      - name: Import da execução anterior
+        uses: actions/cache/restore@v4
+        with:
+          path: .godot/imported
+          key: ${{ steps.chave.outputs.chave }}
+          restore-keys: godot-importado-${{ env.GODOT_VERSION }}-
+      - name: Godot ${{ env.GODOT_VERSION }} (.NET)
+        run: |
+          nome="Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64"
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          curl -sSL -o godot.zip "${base}/${nome}.zip"
+          unzip -q godot.zip -d "$HOME/godot"
+          echo "GODOT=$HOME/godot/${nome}/Godot_v${GODOT_VERSION}-stable_mono_linux.x86_64" >> "$GITHUB_ENV"
+      - name: Importar
+        run: |
+          dotnet build alcateia.csproj --nologo -v quiet
+          "$GODOT" --headless --path . --import || true
+          du -sh .godot/imported
+      - uses: actions/cache/save@v4
+        with:
+          path: .godot/imported
+          key: ${{ steps.chave.outputs.chave }}
+
   # O jogo para Windows, apontando para o servidor de produção: exporta,
   # empacota o instalador (instalador/windows.nsi) e guarda como artefato.
   # Roda ao mesmo tempo que o deploy; quem publica é o job "release".
   cliente:
+    needs: importar
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      - name: Import pronto (job "importar")
+        uses: actions/cache/restore@v4
+        with:
+          path: .godot/imported
+          key: ${{ needs.importar.outputs.chave }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
@@ -182,10 +230,17 @@ jobs:
   # Apple, não é autenticado: na primeira vez o jogador libera em
   # Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo Assim.
   cliente-mac:
+    needs: importar
     runs-on: macos-latest
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
+      - name: Import pronto (job "importar")
+        id: importado
+        uses: actions/cache/restore@v4
+        with:
+          path: .godot/imported
+          key: ${{ needs.importar.outputs.chave }}
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
@@ -210,6 +265,9 @@ jobs:
       - name: Exportar para Mac
         run: |
           test -x "$GODOT"
+          if [ "${{ steps.importado.outputs.cache-hit }}" != "true" ]; then
+            echo "::warning::o import do Linux não veio do cache: o Mac vai comprimir as texturas sozinho (demora)"
+          fi
           dotnet build alcateia.csproj --nologo -v quiet
           "$GODOT" --headless --path . --import || true
           mkdir -p build/macos

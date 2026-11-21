@@ -25,6 +25,33 @@ Ponha aqui, com o que se sabe dele.
 
 ## Pedido e ainda não feito
 
+### Retrato, moldura e fundo (anotado em 21/11)
+
+- **Fotos de perfil de verdade.** Hoje as 3 grátis são recortes da arte
+  (Eve, Barut, a fera do Barut) e as 10 da loja são armas e granadas
+  (`assets/ui/avatares/`, `Avatars.cs`, itens `foto_*`). Fazer retratos
+  próprios, feitos para ser foto de perfil.
+- **Na partida, o retrato é o personagem, não a foto de perfil.** Mostrar
+  a foto de frente do personagem que o jogador está usando: o humano na
+  forma humana, o lobo na forma lobo (troca junto com a transformação).
+  Hoje o hexágono ao lado da vida (`HexBadge`, `Hud.Layout`) mostra a foto
+  de perfil (`Avatars.Selected`). Precisa: um retrato de frente de cada
+  personagem, humano e lobo (tirado do modelo, como as fotos das armas), e,
+  para os outros jogadores, o personagem na escalação online (hoje ela não
+  leva o personagem; veja "Personagem online" abaixo).
+- **TAB: a moldura do nível vira o cartão inteiro.** Cada jogador ganha
+  uma moldura retangular, no cartão todo, de acordo com o nível; o retrato
+  do centro fica só a imagem, sem a moldura hexagonal. A moldura
+  retangular fica mais robusta conforme o nível (como as de perfil: metal
+  e estágio), mas sem folhas nem louros. Hoje: `TabBoard`, cartões de
+  204 px com o `RankBadge` (foto + borda + placa) no centro. A confirmar:
+  a imagem do centro do TAB é a foto de perfil ou o retrato do personagem,
+  como no HUD.
+- **Fundos do cartão, na loja.** O interior da moldura retangular pode ser
+  personalizado com fundos comprados na loja. Tipo de item novo (como as
+  fotos: catálogo, regra no servidor de que é dele, escolha mandada ao
+  saguão e na escalação, para os outros verem).
+
 ### Para depois (anotado em 19/11)
 
 - **Moldura do personagem no HUD pela patente.** A moldura do retrato
