@@ -71,8 +71,9 @@ jobs:
           exit 1
 
   # A frota: constrói a imagem do servidor de partida e troca nas máquinas.
-  # As paradas trocam na hora; as ligadas (com partida) esperam desligar
-  # sozinhas, até 20 minutos — ninguém cai no meio da partida.
+  # As paradas trocam na hora; as ligadas também, se não há partida em curso
+  # (o /health do servidor); com partida, esperam desligar sozinhas, até 20
+  # minutos — ninguém cai no meio da partida.
   partida:
     needs: servidor
     runs-on: ubuntu-latest
@@ -98,8 +99,11 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       - name: Trocar a imagem nas máquinas
         run: |
+          # Sem partida em curso (o /health do servidor diz), a máquina ligada
+          # (a reserva da frota, que nunca desliga sozinha) troca na hora.
           python3 tools/fly/frota.py --app "$FLY_APP_PARTIDA" atualizar \
-            --imagem "${{ steps.imagem.outputs.ref }}" --esperar 1200
+            --imagem "${{ steps.imagem.outputs.ref }}" --esperar 1200 \
+            --saude "https://${FLY_APP_API}.fly.dev/health"
           python3 tools/fly/frota.py --app "$FLY_APP_PARTIDA" estado
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

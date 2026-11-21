@@ -194,11 +194,16 @@ git push origin v0.4.0
 
 O `lancamento.yml` roda os testes (inclusive a checagem de que a semente
 do painel está em dia), sobe o servidor, espera o `/health`, constrói a
-imagem da partida e troca nas máquinas. As paradas trocam na hora; as
-ligadas estão com partida, então ele espera elas desligarem sozinhas (até
-20 min). A que não desligou a tempo fica na versão anterior e aparece como
-aviso no resumo do lançamento: rode `frota.py atualizar --imagem ...` de
-novo depois.
+imagem da partida e troca nas máquinas. As paradas trocam na hora. As
+ligadas: se o `/health` do servidor diz que não há partida em curso
+(`fleet.matches` 0), trocam na hora também (reiniciam na imagem nova em
+segundos) — é o caso da reserva da frota (`ALCATEIA_FLEET_RESERVE`), que
+nunca desliga sozinha. Com partida em curso, ele espera elas desligarem
+(até 20 min). A que não trocou a tempo fica na versão anterior e aparece
+como aviso no resumo do lançamento: rode
+`frota.py atualizar --imagem ... --saude https://<app>.fly.dev/health` de
+novo depois. Erros passageiros da API do Fly (502, 503, sem resposta) são
+repetidos algumas vezes antes de o job falhar.
 
 O servidor sobe antes da frota: uma frota nova pode precisar de rota nova
 dele, e a frota velha continua falando com o servidor novo. Ao trocar o

@@ -109,14 +109,24 @@ public partial class Weapon
 	/// sai quando chegar lá (Player.Actions).</summary>
 	[Export] public float LeapMinHeight = 1.1f;
 
-	/// <summary>Dos pés ao chão logo abaixo, em metros; sem chão até 40 m, muito.</summary>
+	/// <summary>Dos pés ao cenário logo abaixo, em metros; sem chão até 40 m,
+	/// muito. Corpos (inimigo, aliado, bot) não contam: online o jogo vê os
+	/// outros ~100 ms no passado e o servidor de partida no presente, e a
+	/// altura sairia diferente nos dois — o bote em passos diferentes, e o
+	/// servidor puxando o lobo de volta.</summary>
 	public float HeightAboveGround()
 	{
 		Vector3 feet = _body.GlobalPosition + Vector3.Down * 0.85f;   // a cápsula tem 1,75 m, centrada
-		var query = PhysicsRayQueryParameters3D.Create(feet, feet + Vector3.Down * 40f, 1);
-		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
-		var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
-		return hit.Count == 0 ? float.MaxValue : feet.DistanceTo((Vector3)hit["position"]);
+		var exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+		PhysicsDirectSpaceState3D space = _body.GetWorld3D().DirectSpaceState;
+		for (int i = 0; i < 6; i++)
+		{
+			var hit = space.IntersectRay(PhysicsRayQueryParameters3D.Create(feet, feet + Vector3.Down * 40f, 1, exclude));
+			if (hit.Count == 0) return float.MaxValue;
+			if (hit["collider"].Obj is CharacterBody3D) { exclude.Add((Rid)hit["rid"]); continue; }
+			return feet.DistanceTo((Vector3)hit["position"]);
+		}
+		return float.MaxValue;
 	}
 
 	/// <summary>Fração do dano que o lobo leva com o especial ativo

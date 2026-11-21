@@ -36,13 +36,20 @@ PARADAS = ('stopped', 'suspended', 'created')
 # de novo (até uns 4 minutos) antes de desistir.
 ESPERA_IMAGEM = (10, 15, 20, 30, 40, 60, 60)
 
+# A API de máquinas às vezes devolve 502/503 ou não responde por uns
+# segundos. Um 502 no meio da espera derrubava o lançamento (21/11): tenta
+# de novo antes de desistir.
+TRANSITORIOS = (429, 500, 502, 503, 504)
+ESPERA_REDE = (3, 6, 12, 24)
+
 
 def pedir(metodo, caminho, corpo=None):
 	token = os.environ.get('FLY_API_TOKEN', '').strip()
 	if not token:
 		sys.exit('falta FLY_API_TOKEN')
 	dados = json.dumps(corpo).encode() if corpo is not None else None
-	for tentativa in range(len(ESPERA_IMAGEM) + 1):
+	imagem = rede = 0
+	while True:
 		req = urllib.request.Request(API + caminho, data=dados, method=metodo)
 		# O token novo vem como "FlyV1 fm2_...": a linha inteira, com o prefixo, vai depois do Bearer.
 		req.add_header('Authorization', 'Bearer ' + token)
@@ -52,16 +59,31 @@ def pedir(metodo, caminho, corpo=None):
 				texto = r.read().decode()
 				return json.loads(texto) if texto.strip() else None
 		except urllib.error.HTTPError as e:
-			erro = e.read().decode()
-			if 'MANIFEST_UNKNOWN' in erro and tentativa < len(ESPERA_IMAGEM):
-				espera = ESPERA_IMAGEM[tentativa]
-				print(f'a imagem ainda não está no registro do Fly; tento de novo em {espera} s', flush=True)
-				time.sleep(espera)
-				continue
+			erro = e.read().decode(errors='replace')
 			if 'MANIFEST_UNKNOWN' in erro:
+				if imagem < len(ESPERA_IMAGEM):
+					espera = ESPERA_IMAGEM[imagem]
+					imagem += 1
+					print(f'a imagem ainda não está no registro do Fly; tento de novo em {espera} s')
+					time.sleep(espera)
+					continue
 				sys.exit(f'{metodo} {caminho}: a imagem não apareceu no registro do Fly. '
 					f'Confira com "fly image show" / refaça o build (docs/FLY.md). {e.code} {erro[:300]}')
+			if e.code in TRANSITORIOS and rede < len(ESPERA_REDE):
+				espera = ESPERA_REDE[rede]
+				rede += 1
+				print(f'{metodo} {caminho}: {e.code} do Fly; tento de novo em {espera} s')
+				time.sleep(espera)
+				continue
 			sys.exit(f'{metodo} {caminho}: {e.code} {erro[:400]}')
+		except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+			if rede < len(ESPERA_REDE):
+				espera = ESPERA_REDE[rede]
+				rede += 1
+				print(f'{metodo} {caminho}: sem resposta do Fly ({e}); tento de novo em {espera} s')
+				time.sleep(espera)
+				continue
+			sys.exit(f'{metodo} {caminho}: sem resposta do Fly ({e})')
 
 
 def maquinas(app):
@@ -126,14 +148,39 @@ def criar(a):
 		print(f"criada {m['id']} na porta {p}/udp (parada)")
 
 
+def partidas_em_curso(url):
+	"""Partidas em curso na frota toda, pelo /health do servidor do jogo
+	(público). None quando não dá para saber."""
+	try:
+		with urllib.request.urlopen(url, timeout=15) as r:
+			n = json.loads(r.read().decode()).get('fleet', {}).get('matches')
+			return int(n) if n is not None and int(n) >= 0 else None
+	except Exception as e:   # sem resposta, resposta estranha: espera, como antes
+		print(f'não consegui ler {url} ({e})')
+		return None
+
+
 def atualizar(a):
 	"""Troca a imagem (e o --env) de todas. A parada troca na hora e continua
-	parada; a ligada pode estar no meio de uma partida, então espera ela
-	desligar sozinha (até --esperar segundos) e troca depois."""
+	parada. A ligada pode estar no meio de uma partida: com --saude (o
+	/health do servidor do jogo), se não há partida nenhuma em curso, troca
+	na hora (a máquina reinicia na imagem nova, em segundos); senão espera
+	ela desligar sozinha (até --esperar segundos) e troca depois.
+
+	A reserva da frota (ALCATEIA_FLEET_RESERVE) nunca desliga sozinha: sem o
+	--saude ela ficava na imagem antiga, e era nela que se jogava (21/11)."""
 	if not a.imagem:
 		sys.exit('atualizar precisa de --imagem')
 	prazo = time.time() + a.esperar
 	feitas = set()
+
+	def nova(cfg):
+		cfg['image'] = a.imagem
+		for par in a.env or []:
+			k, _, v = par.partition('=')
+			cfg.setdefault('env', {})[k] = v
+		return cfg
+
 	while True:
 		faltam = []
 		for m in maquinas(a.app):
@@ -141,11 +188,7 @@ def atualizar(a):
 			if m['id'] in feitas or (cfg.get('image') == a.imagem and not a.env):
 				continue
 			if m.get('state') in PARADAS:
-				cfg['image'] = a.imagem
-				for par in a.env or []:
-					k, _, v = par.partition('=')
-					cfg.setdefault('env', {})[k] = v
-				pedir('POST', f"/v1/apps/{a.app}/machines/{m['id']}", {'config': cfg, 'skip_launch': True})
+				pedir('POST', f"/v1/apps/{a.app}/machines/{m['id']}", {'config': nova(cfg), 'skip_launch': True})
 				feitas.add(m['id'])
 				print(f"{m['id']} (udp {porta(m)}): atualizada, continua parada")
 			elif m.get('state') != 'destroyed':
@@ -153,6 +196,18 @@ def atualizar(a):
 		if not faltam:
 			print('frota toda na imagem nova')
 			return
+
+		ligadas = [m for m in faltam if m.get('state') == 'started']
+		if a.saude and ligadas:
+			em_curso = partidas_em_curso(a.saude)
+			if em_curso == 0:
+				for m in ligadas:
+					pedir('POST', f"/v1/apps/{a.app}/machines/{m['id']}", {'config': nova(m.get('config', {}))})
+					feitas.add(m['id'])
+					print(f"{m['id']} (udp {porta(m)}): ligada sem partida em curso, atualizada (reinicia na imagem nova)")
+				continue
+			if em_curso is not None:
+				print(f'{em_curso} partida(s) em curso na frota')
 		if time.time() >= prazo:
 			nomes = ', '.join(f"{m['id']} (udp {porta(m)})" for m in faltam)
 			# Anotação do GitHub Actions: aparece no resumo do lançamento.
@@ -197,9 +252,14 @@ def main():
 	u.add_argument('--imagem', required=True)
 	u.add_argument('--esperar', type=int, default=0, help='segundos esperando as ligadas desligarem')
 	u.add_argument('--env', action='append', help='K=V a trocar (repete)')
+	u.add_argument('--saude', help='o /health do servidor do jogo, ex. https://wolfleague-api.fly.dev/health: '
+		'sem partida em curso, a ligada troca na hora em vez de esperar desligar')
 	u.set_defaults(f=atualizar)
 
 	a = ap.parse_args()
+	# No Actions a saída é um cano: sem isto, as linhas só saem no fim e o
+	# erro (que sai na hora) aparece antes delas.
+	sys.stdout.reconfigure(line_buffering=True)
 	a.f(a)
 
 

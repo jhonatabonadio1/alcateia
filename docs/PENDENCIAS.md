@@ -167,6 +167,14 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ### Personagens, loja e economia
 
+- **Recompensa de testador do alpha** (prometido no site do alpha, 21/11):
+  quem jogou o alpha ganha armas e itens exclusivos no lançamento, que não
+  vão para a loja. A fazer: criar essas armas e itens; guardar no
+  servidor quem foi testador (conta que jogou partida no alpha, ou o
+  cargo de testador do Discord) de um jeito que sobreviva se as contas
+  do alpha forem zeradas; e entregar na conta no lançamento. O site
+  também diz que o progresso do alpha pode ser zerado, mas a recompensa
+  não depende disso.
 - **Comprar personagens novos e jogar com eles** — loja, inventário e
   partida (primeira e terceira pessoa, e na rede).
 - **Cada personagem com o seu próprio lobo — e o lobo muda a raça**
