@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 /// O jogo online: entrar na conta, ver as salas dos outros, abrir a sua,
 /// escolher o time, conversar e começar a partida.
 ///
-/// Três estados, uma tela: sem conta (o formulário de entrada), no saguão
-/// (a lista de salas) e dentro de uma sala (os dois times). O painel da
+/// Dois estados, uma tela: no saguão (a lista de salas) e dentro de uma
+/// sala (os dois times). Entrar na conta é a tela de login
+/// (<see cref="LoginScreen"/>), a primeira do jogo. O painel da
 /// direita — ranking e chat — fica parado enquanto o da esquerda se
 /// refaz a cada notícia do servidor, para não apagar o que o jogador
 /// está digitando.
@@ -63,9 +64,10 @@ public partial class OnlineScreen : LobbyScreen
 		_chatLog = null;
 		_ranking = null;
 
+		// Sem sessão (saiu, venceu): o login é a primeira tela do jogo.
 		if (!Backend.LoggedIn)
 		{
-			BuildLogin();
+			Callable.From(() => Shell.GoLogin(_status.Length > 0 ? _status : null)).CallDeferred();
 			return;
 		}
 
@@ -96,62 +98,6 @@ public partial class OnlineScreen : LobbyScreen
 	}
 
 	// ------------------------------------------------------------------ conta
-
-	private void BuildLogin()
-	{
-		var center = UiKit.Fill(new CenterContainer());
-		AddChild(center);
-
-		PanelContainer card = UiKit.Card(out VBoxContainer column, UiTokens.S5);
-		card.CustomMinimumSize = new Vector2(460, 0);
-		center.AddChild(card);
-
-		column.AddChild(UiKit.Text("Salas", "Title"));
-		column.AddChild(UiKit.Paragraph("Entre com a sua conta do servidor, ou crie uma agora. " +
-			"A conta guarda as suas Presas, os seus itens, as missões, a patente e o seu lugar no ranking."));
-
-		LineEdit name = UiKit.Field(Backend.AccountName.Length > 0 ? Backend.AccountName : Profile.PlayerName, "Nome", 16);
-		LineEdit password = UiKit.Field("", "Senha (8 ou mais)", 64);
-		password.Secret = true;
-		LineEdit server = UiKit.Field(Backend.Url, Backend.DefaultUrl, 120);
-		column.AddChild(UiKit.FormRow("Nome", name, 90));
-		column.AddChild(UiKit.FormRow("Senha", password, 90));
-		column.AddChild(UiKit.FormRow("Servidor", server, 90));
-
-		Label status = UiKit.Paragraph(_status, null);
-		status.AddThemeColorOverride("font_color", UiTokens.Warning);
-		status.Visible = _status.Length > 0;
-		column.AddChild(status);
-
-		HBoxContainer buttons = UiKit.Row(UiTokens.S2);
-		buttons.AddChild(UiKit.Spacer());
-		Button create = UiKit.Button("Criar conta", ButtonKind.Secondary, () => Enter(server.Text, name.Text, password.Text, register: true));
-		Button enter = UiKit.Button("Entrar", ButtonKind.Primary, () => Enter(server.Text, name.Text, password.Text, register: false));
-		create.Disabled = enter.Disabled = _busy;
-		buttons.AddChild(create);
-		buttons.AddChild(enter);
-		column.AddChild(buttons);
-
-		password.TextSubmitted += _ => Enter(server.Text, name.Text, password.Text, register: false);
-	}
-
-	private async void Enter(string server, string name, string password, bool register)
-	{
-		if (_busy) return;
-		_busy = true;
-		_status = "Falando com o servidor…";
-		Refresh();
-
-		Backend.Url = server;
-		Backend.Reply reply = register ? await Backend.Register(name.Trim(), password) : await Backend.Login(name.Trim(), password);
-
-		_busy = false;
-		_status = reply.Ok ? "" : reply.Status == 0
-			? Loc.F("Não achei o servidor em {0}. Ele está no ar? (docker compose up -d)", Backend.Url)
-			: reply.Error;
-		if (reply.Ok) Sfx.Ui("abate");
-		if (Alive) Refresh();
-	}
 
 	private void BuildConnecting()
 	{
@@ -200,7 +146,7 @@ public partial class OnlineScreen : LobbyScreen
 		Lobby.Close();
 		await Backend.Logout();
 		_status = "";
-		if (Alive) Refresh();
+		if (Alive) Shell.GoLogin();
 	}
 
 	private bool Alive => IsInstanceValid(this) && IsInsideTree();

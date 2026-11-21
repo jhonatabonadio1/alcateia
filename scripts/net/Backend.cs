@@ -14,9 +14,14 @@ using System.Threading.Tasks;
 /// <see cref="Reply"/> — nunca lança. Sem servidor, <c>Ok</c> é falso e
 /// <c>Error</c> diz o que houve; o jogo continua jogável offline.
 ///
-/// O endereço e o login ficam em <c>user://online.cfg</c>; a variável de
-/// ambiente <c>ALCATEIA_API</c> passa por cima do endereço (é como o
-/// servidor de partida e os testes o apontam).
+/// O endereço e os acessos salvos ficam em <c>user://online.cfg</c>; a
+/// variável de ambiente <c>ALCATEIA_API</c> passa por cima do endereço (é
+/// como o servidor de partida e os testes o apontam).
+///
+/// **Acesso salvo não entra sozinho** (Jhon, 20/11): o jogo abre na tela
+/// de login (<see cref="LoginScreen"/>), com as contas salvas para clicar.
+/// A sessão (<see cref="Token"/>) só existe depois do clique, ou do login,
+/// e vale até fechar o jogo ou sair da conta.
 /// </summary>
 public static class Backend
 {
@@ -44,6 +49,25 @@ public static class Backend
 	public static long AccountId { get; private set; }
 	public static string AccountName { get; private set; } = "";
 	public static bool LoggedIn => !string.IsNullOrEmpty(Token);
+
+	/// <summary>Um acesso guardado neste computador: a conta, o servidor e
+	/// o login dela (o token, nunca a senha).</summary>
+	public sealed record SavedAccess(string Url, long Id, string Name, string Token, string SavedAt);
+
+	private static readonly System.Collections.Generic.List<SavedAccess> _saved = new();
+
+	/// <summary>Os acessos salvos, o mais recente primeiro.</summary>
+	public static System.Collections.Generic.IReadOnlyList<SavedAccess> Saved
+	{
+		get
+		{
+			Load();
+			return _saved;
+		}
+	}
+
+	/// <summary>Guardar o acesso da próxima entrada (o "lembrar" da tela de login).</summary>
+	public static bool KeepAccess { get; set; } = true;
 
 	/// <summary>Disparado quando se entra ou se sai da conta.</summary>
 	public static event Action SessionChanged;
@@ -74,7 +98,53 @@ public static class Backend
 
 	public static Task<Reply> Login(string name, string password) => Enter("/v1/sessions", name, password);
 
-	/// <summary>Confere se o login guardado ainda vale; se não, esquece.</summary>
+	/// <summary>
+	/// Entra com um acesso salvo (o clique na conta, na tela de login):
+	/// confere no servidor se o login ainda vale. Não vale mais (venceu,
+	/// saiu em outro lugar), o acesso sai da lista e a tela pede a senha.
+	/// </summary>
+	public static async Task<Reply> EnterSaved(SavedAccess access)
+	{
+		Load();
+		_url = access.Url;
+		Token = access.Token;
+		AccountId = access.Id;
+		AccountName = access.Name;
+		KeepAccess = true;
+
+		Reply profile = await Profile();
+		if (profile.Ok) Remember(Token, profile.Body);
+		else
+		{
+			if (profile.Status == 401) Drop(access.Url, access.Id);
+			Token = null;
+			AccountId = 0;
+			AccountName = "";
+			Save();
+		}
+		return profile;
+	}
+
+	/// <summary>Fecha a sessão sem sair da conta — o que acontece ao fechar
+	/// o jogo: o acesso salvo fica, e a próxima entrada é o clique nele. Os
+	/// testes usam para "abrir o jogo de novo".</summary>
+	public static void EndSession()
+	{
+		Token = null;
+		AccountId = 0;
+		AccountName = "";
+		AccountSync.SessionEnded();
+		SessionChanged?.Invoke();
+	}
+
+	/// <summary>Tira um acesso da lista (o "esquecer" da tela de login).</summary>
+	public static void ForgetSaved(SavedAccess access)
+	{
+		Drop(access.Url, access.Id);
+		Save();
+	}
+
+	/// <summary>Confere se o login desta sessão ainda vale; se não, esquece.</summary>
 	public static async Task<Reply> Resume()
 	{
 		Load();
@@ -172,6 +242,8 @@ public static class Backend
 		Token = token;
 		AccountId = profile?["id"]?.GetValue<long>() ?? 0;
 		AccountName = profile?["name"]?.GetValue<string>() ?? "";
+		Drop(Url, AccountId);
+		if (KeepAccess) _saved.Insert(0, new SavedAccess(Url, AccountId, AccountName, Token, DateTime.UtcNow.ToString("o")));
 		Save();
 		AccountSync.SessionStarted(profile);
 		SessionChanged?.Invoke();
@@ -181,6 +253,12 @@ public static class Backend
 	public static void Renamed(string name)
 	{
 		AccountName = name ?? AccountName;
+		int at = _saved.FindIndex(a => a.Id == AccountId && a.Url == Url);
+		if (at >= 0)
+		{
+			_saved[at] = _saved[at] with { Name = AccountName };
+			Save();
+		}
 		SessionChanged?.Invoke();
 	}
 
@@ -188,8 +266,11 @@ public static class Backend
 	/// foi banida ou derrubada pela moderação).</summary>
 	public static void SessionExpired() => Forget();
 
+	/// <summary>Sai da sessão. O login desta conta não vale mais (saiu,
+	/// venceu, foi derrubada): o acesso salvo dela sai junto.</summary>
 	private static void Forget()
 	{
+		if (AccountId != 0) Drop(Url, AccountId);
 		Token = null;
 		AccountId = 0;
 		AccountName = "";
@@ -197,6 +278,8 @@ public static class Backend
 		AccountSync.SessionEnded();
 		SessionChanged?.Invoke();
 	}
+
+	private static void Drop(string url, long id) => _saved.RemoveAll(a => a.Id == id && a.Url == url);
 
 	private static void Load()
 	{
@@ -207,19 +290,44 @@ public static class Backend
 		if (file.Load(FilePath) != Godot.Error.Ok) return;
 
 		_url = file.GetValue("servidor", "url", DefaultUrl).AsString();
-		Token = file.GetValue("conta", "token", "").AsString();
-		AccountName = file.GetValue("conta", "nome", "").AsString();
-		AccountId = file.GetValue("conta", "id", 0).AsInt64();
-		if (Token == "") Token = null;
+
+		string list = file.GetValue("acessos", "lista", "").AsString();
+		if (list.Length > 0)
+		{
+			try
+			{
+				if (JsonNode.Parse(list) is JsonArray array)
+					foreach (JsonNode a in array)
+					{
+						string token = a?["token"]?.GetValue<string>() ?? "";
+						if (token.Length == 0) continue;
+						_saved.Add(new SavedAccess(a["url"]?.GetValue<string>() ?? DefaultUrl, a["id"]?.GetValue<long>() ?? 0,
+							a["name"]?.GetValue<string>() ?? "", token, a["savedAt"]?.GetValue<string>() ?? ""));
+					}
+			}
+			catch (JsonException) { }
+		}
+
+		// O arquivo de antes (um login só, que entrava sozinho) vira um
+		// acesso salvo: a conta aparece na tela de login para clicar.
+		string old = file.GetValue("conta", "token", "").AsString();
+		if (old.Length > 0)
+		{
+			long id = file.GetValue("conta", "id", 0).AsInt64();
+			if (!_saved.Exists(a => a.Id == id && a.Url == _url))
+				_saved.Insert(0, new SavedAccess(_url, id, file.GetValue("conta", "nome", "").AsString(), old, ""));
+		}
 	}
 
 	private static void Save()
 	{
+		var array = new JsonArray();
+		foreach (SavedAccess a in _saved)
+			array.Add(new JsonObject { ["url"] = a.Url, ["id"] = a.Id, ["name"] = a.Name, ["token"] = a.Token, ["savedAt"] = a.SavedAt });
+
 		var file = new ConfigFile();
 		file.SetValue("servidor", "url", _url);
-		file.SetValue("conta", "token", Token ?? "");
-		file.SetValue("conta", "nome", AccountName);
-		file.SetValue("conta", "id", AccountId);
+		file.SetValue("acessos", "lista", array.ToJsonString());
 		file.Save(FilePath);
 	}
 }

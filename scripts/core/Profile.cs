@@ -259,24 +259,6 @@ public static class Profile
 		}
 	}
 
-	/// <summary>Apaga o perfil e começa do zero (tela de opções).</summary>
-	public static void Reset()
-	{
-		try
-		{
-			string path = ProjectSettings.GlobalizePath(FilePath);
-			if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
-		}
-		catch (Exception error)
-		{
-			GD.PrintErr($"Perfil: não consegui apagar ({error.Message}).");
-		}
-
-		Load();
-		Save();
-		Changed?.Invoke();
-	}
-
 	public static void NotifyChanged() => Changed?.Invoke();
 
 	// ------------------------------------------------------------------ conta

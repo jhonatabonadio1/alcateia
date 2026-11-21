@@ -3,7 +3,7 @@ using System;
 
 /// <summary>
 /// Opções: volume por canal, sensibilidade do mouse, a mira, a tabela
-/// de controles e recomeçar o perfil. Tudo aplica na hora e salva em
+/// de controles. Tudo aplica na hora e salva em
 /// user://opcoes.json.
 /// </summary>
 public partial class OptionsScreen : LobbyScreen
@@ -26,7 +26,6 @@ public partial class OptionsScreen : LobbyScreen
 		columns.AddChild(left);
 		left.AddChild(AudioPanel());
 		left.AddChild(MousePanel());
-		left.AddChild(ProfilePanel());
 
 		// A mira numa coluna própria: embaixo das outras não cabia na tela.
 		VBoxContainer middle = UiKit.Column(UiTokens.S4);
@@ -264,17 +263,6 @@ public partial class OptionsScreen : LobbyScreen
 		return row;
 	}
 
-	private Control ProfilePanel()
-	{
-		(PanelContainer panel, VBoxContainer column) = Section("Perfil");
-		column.AddChild(UiKit.Paragraph("O perfil fica salvo neste computador. Recomeçar apaga patente, XP, Presas, inventário, conjuntos e missões."));
-
-		Button reset = UiKit.Button("Recomeçar perfil", ButtonKind.Danger, ConfirmReset);
-		reset.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
-		column.AddChild(reset);
-		return panel;
-	}
-
 	private static Control ControlsPanel()
 	{
 		(PanelContainer panel, VBoxContainer column) = Section("Controles");
@@ -283,20 +271,6 @@ public partial class OptionsScreen : LobbyScreen
 		return panel;
 	}
 
-	private void ConfirmReset()
-	{
-		Label body = UiKit.Paragraph("Tudo volta ao começo: Filhote I, 3.000 Presas, só o equipamento inicial. Não dá para desfazer.");
-		body.CustomMinimumSize = new Vector2(400, 0);
-
-		Shell.Modal("Recomeçar perfil?", body,
-			new Modal.Choice("Recomeçar", ButtonKind.Danger, () =>
-			{
-				Profile.Reset();
-				RoomDirectory.Current = null;
-				Shell.Go(new WelcomeScreen());
-			}),
-			new Modal.Choice("Cancelar", ButtonKind.Primary, null));
-	}
 
 	// ------------------------------------------------------------------ peças
 

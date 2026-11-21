@@ -229,13 +229,14 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ### Contas e cliente
 
-- **Sistema de contas.** Hoje: criar conta e entrar já existem (aba
-  Online + servidor). Falta: e-mail, confirmação, recuperar senha, trocar
-  senha, apagar conta (LGPD), entrar logo ao abrir o jogo.
-- **Cliente do jogo onde o jogador entra na conta e dá play: o login fica
-  na primeira tela do próprio jogo** (decidido pelo Jhon, 13/11). Sem
-  launcher separado. A tela de entrada (`WelcomeScreen`) vira a de
-  login; o jogo offline com bots continua acessível (treino).
+- **Sistema de contas.** Hoje: criar conta e entrar já existem, na
+  primeira tela do jogo (`LoginScreen`, 20/11). Falta: e-mail,
+  confirmação, recuperar senha, trocar senha, apagar conta (LGPD).
+- ~~**O login fica na primeira tela do próprio jogo**~~ (decidido pelo
+  Jhon, 13/11; feito em 20/11): o jogo abre no login, com as contas
+  salvas para clicar (salvo não entra sozinho), entrar e criar conta. O
+  "Recomeçar perfil" das opções saiu. O treino com bots segue sem conta,
+  num botão discreto embaixo do login.
 - **Launcher externo, estilo Battle.net** (pedido em 17/11): programa à
   parte que baixa e instala o jogo, atualiza sozinho, obriga a atualizar
   quando o servidor exige, desinstala e abre o jogo. Contradiz a decisão

@@ -35,6 +35,7 @@ public partial class LobbyShell : Control
 		if (Instance == this) Instance = null;
 		GetTree().NodeAdded -= OnNodeAdded;
 		AccountSync.Promoted -= ShowPromotions;
+		Backend.SessionChanged -= OnSessionChanged;
 		// A partida volta à paleta e ao estilo do jogo (HUD, menu do Esc).
 		UiTokens.Menu = false;
 	}
@@ -81,6 +82,7 @@ public partial class LobbyShell : Control
 		// A conta (carteira, itens, missões) mora no servidor: com um login
 		// guardado, já vem ao abrir; e voltando de uma partida, vem de novo.
 		AccountSync.Promoted += ShowPromotions;
+		Backend.SessionChanged += OnSessionChanged;
 		_ = AccountSync.Resume();
 		ShowPromotions();
 
@@ -104,15 +106,23 @@ public partial class LobbyShell : Control
 
 	private bool _promoting;
 
-	/// <summary>A primeira tela: entrada se ainda não há nome; a sala se
-	/// voltamos de uma partida; senão, a lista de salas.</summary>
+	/// <summary>Saiu da conta (ou ela venceu, ou foi derrubada): volta ao login.</summary>
+	private void OnSessionChanged()
+	{
+		if (Backend.LoggedIn || Current is LoginScreen || !IsInsideTree()) return;
+		Callable.From(() => GoLogin()).CallDeferred();
+	}
+
+	/// <summary>A primeira tela: o login, sempre que o jogo abre (Jhon,
+	/// 20/11: o acesso pode estar salvo, mas entrar é clicar na conta); de
+	/// volta de uma partida, a sala; senão, a lista de salas.</summary>
 	private void GoStart()
 	{
 		if (DevScreen()) return;
 
-		if (!Profile.HasName)
+		if (!Backend.LoggedIn)
 		{
-			Go(new WelcomeScreen());
+			GoLogin();
 			return;
 		}
 
@@ -206,7 +216,7 @@ public partial class LobbyShell : Control
 
 		Current = screen;
 		_content.AddChild(screen);
-		_header.Visible = screen is not WelcomeScreen;
+		_header.Visible = screen is not LoginScreen;
 		_header.SetActive(screen.NavIcon);
 		Motion.FadeIn(screen, UiTokens.Normal);
 	}
@@ -263,6 +273,9 @@ public partial class LobbyShell : Control
 	public void GoMissions() => Go(new MissionsScreen());
 	public void GoOptions() => Go(new OptionsScreen());
 	public void GoOnline() => Go(new OnlineScreen());
+
+	/// <summary>A tela de login, com um recado (a sessão venceu, saiu da conta).</summary>
+	public void GoLogin(string notice = null) => Go(new LoginScreen(notice));
 	public void GoCredits() => Go(new CreditsScreen());
 
 	/// <summary>A aba Salas: a sala em que o jogador está, se estiver numa;
@@ -287,7 +300,7 @@ public partial class LobbyShell : Control
 
 	/// <summary>
 	/// Abre uma tela direto pela linha de comando, para testar e
-	/// fotografar sem clicar: <c>-- --tela=loja</c>. Telas: entrada,
+	/// fotografar sem clicar: <c>-- --tela=loja</c>. Telas: entrada (o login),
 	/// salas, treino, sala, loja, inventario, perfil, missoes, opcoes, online, creditos.
 	/// </summary>
 	private bool DevScreen()
@@ -298,10 +311,12 @@ public partial class LobbyShell : Control
 		string screen = arg["--tela=".Length..];
 		string focus = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--foco="))?["--foco=".Length..];
 		if (!Profile.HasName && screen != "entrada") Profile.SetName("Jhon", out _);
+		// Para fotografar com conta: entra com o primeiro acesso salvo.
+		if (screen != "entrada" && !Backend.LoggedIn && Backend.Saved.Count > 0) _ = Backend.EnterSaved(Backend.Saved[0]);
 
 		switch (screen)
 		{
-			case "entrada": Go(new WelcomeScreen()); break;
+			case "entrada": GoLogin(); break;
 			case "sala": GoRoom(RoomDirectory.Current ?? RoomDirectory.Create(new RoomSettings { Title = "Sala do Jhon" })); break;
 			case "loja": GoShop(focus); break;
 			case "inventario": GoInventory(focus); break;
