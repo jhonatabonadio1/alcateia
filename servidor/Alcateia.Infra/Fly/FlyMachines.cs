@@ -24,9 +24,9 @@ public sealed class FlyMachines : IFleetScaler
 	{
 		_app = app;
 		_http = new HttpClient { BaseAddress = new Uri(api.TrimEnd('/') + "/"), Timeout = TimeSpan.FromSeconds(20) };
-		// Os tokens novos ("fly tokens create") já vêm com o esquema: "FlyV1 fm2_...".
-		_http.DefaultRequestHeaders.TryAddWithoutValidation("Authorization",
-			token.StartsWith("FlyV1 ", StringComparison.Ordinal) ? token : "Bearer " + token);
+		// Os tokens novos ("fly tokens create") vêm como "FlyV1 fm2_...": a
+		// linha inteira, prefixo e tudo, é a credencial, e vai depois do Bearer.
+		_http.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", "Bearer " + token);
 	}
 
 	public async Task<string> Wake()

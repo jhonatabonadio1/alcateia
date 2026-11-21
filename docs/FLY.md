@@ -7,7 +7,7 @@ peças, cada uma um app do Fly:
 |---|---|---|
 | `wolfleague-api` | O servidor: API, saguão (WebSocket), painel | `fly deploy -c fly.servidor.toml` (o lançamento faz) |
 | `wolfleague-partida` | A frota de servidores de partida (o jogo sem tela, UDP) | máquinas criadas por `tools/fly/frota.py` |
-| `wolfleague-db` | O Postgres | `fly postgres create` |
+| `wolfleague-db` | O Postgres 16 (imagem oficial, num volume) | `fly deploy -c fly.banco.toml` |
 
 Os nomes são o padrão dos arquivos; se o nome que você quer já estiver
 tomado no Fly, troque em `fly.servidor.toml`, `fly.partida.toml` e nas
@@ -56,6 +56,10 @@ precisas.
 
 Precisa do `flyctl` (`brew install flyctl`) e de `fly auth login`.
 
+**O atalho:** `tools/fly/primeira_vez.sh` faz os passos 1 a 5 abaixo
+sozinho (pergunta antes do que custa dinheiro e pula o que já existe).
+Os passos ficam aqui para entender o que ele faz, ou para fazer à mão.
+
 ### 1. Os apps
 
 ```bash
@@ -66,29 +70,39 @@ fly apps create wolfleague-partida
 ### 2. O banco
 
 ```bash
-fly postgres create --name wolfleague-db --region gru
-fly postgres attach wolfleague-db -a wolfleague-api \
-  --database-name alcateia --database-user alcateia
+fly apps create wolfleague-db
+SENHA_DB=$(openssl rand -hex 24)        # guarde: o Fly não mostra segredo de novo
+fly secrets set --stage -a wolfleague-db POSTGRES_PASSWORD="$SENHA_DB"
+fly deploy -c fly.banco.toml -a wolfleague-db --ha=false
+fly status -a wolfleague-db             # a máquina tem de estar "started"
 ```
 
-O `attach` imprime uma `DATABASE_URL` do tipo
-`postgres://alcateia:SENHA@wolfleague-db.flycast:5432/alcateia`. Guarde a
-SENHA para o passo 3. (Ele também grava `DATABASE_URL` como segredo do
-app; o servidor não usa, pode apagar com `fly secrets unset DATABASE_URL
--a wolfleague-api`.)
+É o Postgres 16 oficial (o mesmo do `docker-compose.yml`) numa máquina do
+Fly, com um volume de 10 GB. Não tem serviço público: o servidor o acha em
+`wolfleague-db.internal:5432`, pela rede privada, sem TLS (a rede privada
+já é cifrada). O usuário e o banco (`alcateia`) nascem na primeira subida.
 
-> É o Postgres "não gerenciado" do Fly, falado pela rede privada sem TLS
-> (a rede privada já é cifrada). O **Managed Postgres** do Fly liga SSL
-> por padrão, e o cliente de Postgres do servidor
-> (`servidor/Alcateia.Infra/Banco/Pg.cs`) ainda não fala TLS — para usar o
-> gerenciado, falta isso.
+**Por que não `fly postgres create`:** o Postgres "automatizado" do Fly
+está descontinuado e sem suporte, e o próprio `flyctl` manda usar o
+Managed Postgres. O Managed Postgres custa a partir de 38 dólares por mês
+(mais 0,28 por GB) e a região de São Paulo existe, mas o cliente de
+Postgres do servidor (`servidor/Alcateia.Infra/Banco/Pg.cs`) ainda não
+fala TLS, e o gerenciado liga SSL por padrão — adaptar isso fica para
+quando houver jogador de verdade.
+
+**Banco: o que esperar.** Uma máquina só, com volume: se a máquina cair
+(ou a cada deploy do banco), o jogo fica sem banco até ela voltar. O Fly
+tira um retrato (snapshot) diário do volume, guardado 30 dias aqui
+(`snapshot_retention`); o próprio Fly avisa que isso não deve ser o único
+backup. Antes de ter gente jogando de verdade, falta um backup lógico
+(`pg_dump`) automático guardado fora do Fly.
 
 ### 3. Os segredos do servidor
 
 ```bash
 FROTA=$(openssl rand -hex 32)   # o mesmo vai para o app de partidas
 fly secrets set --stage -a wolfleague-api \
-  ALCATEIA_DB_PASSWORD='SENHA' \
+  ALCATEIA_DB_PASSWORD="$SENHA_DB" \
   ALCATEIA_FLEET_KEY="$FROTA" \
   ALCATEIA_MASTER_KEY="$(openssl rand -hex 32)" \
   ALCATEIA_ADMIN_USER='jhon' \
@@ -154,6 +168,22 @@ O jogo fala com `http://127.0.0.1:8080` até alguém trocar
 é `https://wolfleague-api.fly.dev` — ou um domínio seu: `fly certs add
 api.wolfleague.com.br -a wolfleague-api` e um CNAME no DNS.
 
+## O jogo dos testadores
+
+O jogo exportado (não o editor) fala com o servidor que está em
+`project.godot` → `wolfleague/rede/servidor` (`https://wolfleague-api.fly.dev`).
+No editor e nos testes continua o `127.0.0.1:8080`.
+
+- **Windows:** o lançamento exporta sozinho e põe o `.zip` na Release do
+  GitHub — é o link que vai para os testadores. Tag com hífen
+  (`v0.4.0-alpha.1`) sai como pré-lançamento.
+- **Mac:** exporte no editor (Projeto → Exportar → macOS). Sai sem
+  assinatura da Apple: quem abrir pela primeira vez precisa de clique
+  direito → Abrir.
+
+Os modelos de exportação (Editor → Gerenciar modelos de exportação) têm de
+estar instalados no editor para exportar à mão.
+
 ## Lançar uma versão
 
 ```bash
@@ -183,7 +213,7 @@ partidas em curso não, elas estão nas máquinas de partida.
 | mais servidores | `python3 tools/fly/frota.py criar 4 --imagem ... --api ... --ip ...` |
 | abrir o painel | `fly proxy 8081 -a wolfleague-api` e `http://localhost:8081` |
 | logs | `fly logs -a wolfleague-api` / `fly logs -a wolfleague-partida` |
-| entrar no banco | `fly postgres connect -a wolfleague-db -d alcateia` |
+| entrar no banco | `fly ssh console -a wolfleague-db` e depois `psql -U alcateia` |
 | mudar a reserva | `ALCATEIA_FLEET_RESERVE` no `fly.servidor.toml` e lançar |
 
 (`frota.py` precisa de `FLY_API_TOKEN` no ambiente: `export
@@ -234,6 +264,9 @@ pontos que mais podem dar trabalho na primeira vez:
 - o construtor remoto importando os assets do Godot (imagem grande, build
   demorado; se faltar memória, `fly deploy --vm-memory` não vale para o
   construtor — aí construa local com `--local-only`);
+- o servidor conectando ao Postgres por `wolfleague-db.internal` (a rede
+  privada é IPv6) com a senha do segredo — se `/health` responder
+  `sem_banco`, é aqui: confira `fly logs -a wolfleague-api`;
 - 1 GB de memória por máquina de partida (`--memoria` no `frota.py`);
 - os segredos do app chegando às máquinas criadas pela API (o log do
   passo 5 mostra).

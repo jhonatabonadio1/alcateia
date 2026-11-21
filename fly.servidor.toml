@@ -19,13 +19,16 @@ primary_region = "gru"
   # O proxy do Fly liga para o app a partir de 172.16.x.x; o endereço do
   # jogador vem no Fly-Client-IP.
   ALCATEIA_TRUSTED_PROXIES = "172.16.0.0/12"
-  # O Postgres do Fly, pela rede privada (sem TLS: a rede já é cifrada).
-  ALCATEIA_DB_HOST = "wolfleague-db.flycast"
+  # O Postgres (app wolfleague-db, fly.banco.toml), pela rede privada do
+  # Fly. Sem TLS: a rede privada já é cifrada.
+  ALCATEIA_DB_HOST = "wolfleague-db.internal"
   ALCATEIA_DB_PORT = "5432"
   # Servidores de partida sob demanda: o app das máquinas e quantos lugares
   # livres manter de pé. O token (ALCATEIA_FLY_TOKEN) é segredo.
   ALCATEIA_FLY_APP = "wolfleague-partida"
   ALCATEIA_FLEET_RESERVE = "1"
+  # Em produção, o painel só abre com a segunda etapa (o app de código).
+  ALCATEIA_ADMIN_REQUIRE_2FA = "1"
 
 [deploy]
   strategy = "rolling"

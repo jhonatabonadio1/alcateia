@@ -1,13 +1,22 @@
 # Lançamento: uma tag "v*" (git tag v0.4.0 && git push --tags) roda os
-# testes e, passando, sobe o servidor e a frota de partidas no Fly.io e
-# publica o jogo para Windows numa Release do GitHub (o link que vai para
-# os testadores). Tag com hífen (v0.4.0-alpha.1) sai como pré-lançamento.
-# Também dá para rodar à mão (aba Actions → Lançamento → Run workflow).
+# testes e, passando, sobe o servidor e a frota de partidas no Fly.io, monta
+# o jogo para Windows e para Mac e, só quando tudo isso deu certo,
+# publica a Release do GitHub (o link que vai para os testadores) com:
+#   WolfLeague-Setup-<versão>.exe   instalador do Windows (atalhos, desinstalador)
+#   WolfLeague-<versão>-windows.zip Windows portátil, sem instalar
+#   WolfLeague-<versão>-mac.dmg     Mac (Intel e Apple Silicon): arrastar para Aplicativos
+#   SHA256SUMS.txt                  para conferir o download
+# O jogo sai apontando para https://<FLY_APP_API>.fly.dev (ou para a
+# variável SERVIDOR_URL, se existir) e com a versão da tag.
+# Tag com hífen (v0.4.0-alpha.1) sai como pré-lançamento.
+# Também dá para rodar à mão (aba Actions → Lançamento → Run workflow):
+# sem tag não há Release, o instalador fica como artefato do workflow.
 #
 # Configuração de uma vez (docs/FLY.md):
 #   segredo  FLY_API_TOKEN       token que pode fazer deploy nos dois apps
 #   variável FLY_APP_API         (opcional) padrão wolfleague-api
 #   variável FLY_APP_PARTIDA     (opcional) padrão wolfleague-partida
+#   variável SERVIDOR_URL        (opcional) padrão https://<FLY_APP_API>.fly.dev
 name: Lançamento
 
 on:
@@ -21,12 +30,13 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write   # criar a Release com o jogo
+  contents: write   # criar a Release com o instalador
 
 env:
   GODOT_VERSION: 4.7.2
   FLY_APP_API: ${{ vars.FLY_APP_API || 'wolfleague-api' }}
   FLY_APP_PARTIDA: ${{ vars.FLY_APP_PARTIDA || 'wolfleague-partida' }}
+  SERVIDOR_URL: ${{ vars.SERVIDOR_URL || format('https://{0}.fly.dev', vars.FLY_APP_API || 'wolfleague-api') }}
 
 jobs:
   testes:
@@ -83,9 +93,9 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-  # O jogo para Windows, apontando para o servidor de produção
-  # (wolfleague/rede/servidor no project.godot). Sobe como Release do
-  # GitHub; rodado à mão (sem tag), fica só como artefato do workflow.
+  # O jogo para Windows, apontando para o servidor de produção: exporta,
+  # empacota o instalador (instalador/windows.nsi) e guarda como artefato.
+  # Roda ao mesmo tempo que o deploy; quem publica é o job "release".
   cliente:
     needs: testes
     runs-on: ubuntu-latest
@@ -95,6 +105,16 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+      - name: Versão e endereço de produção
+        id: versao
+        run: |
+          # tag v0.4.0-alpha.1 -> 0.4.0-alpha.1; sem tag, uma versão de teste
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.0.0-dev.${GITHUB_SHA::7}"; fi
+          # o Windows quer quatro números: 0.4.0-alpha.1 -> 0.4.0.0
+          n="$(echo "${v%%-*}" | awk -F. '{printf "%d.%d.%d.0", $1, $2, $3}')"
+          echo "versao=$v" >> "$GITHUB_OUTPUT"
+          echo "numero=$n" >> "$GITHUB_OUTPUT"
+          python3 tools/lancamento/preparar_build.py --versao "$v" --numero "$n" --servidor "$SERVIDOR_URL"
       - name: Godot ${{ env.GODOT_VERSION }} (.NET) e os modelos de exportação
         run: |
           nome="Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64"
@@ -108,23 +128,154 @@ jobs:
           unzip -q modelos.tpz -d modelos
           mv modelos/templates/* "$destino/"
       - name: Exportar para Windows
+        env:
+          VERSAO: ${{ steps.versao.outputs.versao }}
         run: |
           dotnet build alcateia.csproj --nologo -v quiet
           "$GODOT" --headless --path . --import || true
           mkdir -p build/windows
           "$GODOT" --headless --path . --export-release "Windows" build/windows/WolfLeague.exe
           test -f build/windows/WolfLeague.exe
-          (cd build/windows && zip -qr "../WolfLeague-${GITHUB_REF_NAME//\//-}-windows.zip" .)
-          ls -la build
+          test -f build/windows/WolfLeague.pck
+          (cd build/windows && zip -qr "../WolfLeague-${VERSAO}-windows.zip" .)
+          ls -la build build/windows
+      - name: Instalador do Windows
+        env:
+          VERSAO: ${{ steps.versao.outputs.versao }}
+          NUMERO: ${{ steps.versao.outputs.numero }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends nsis
+          python3 instalador/gerar_lista.py build/windows build/desinstalar.nsh
+          makensis -V2 -DVERSAO="$VERSAO" -DVERSAO_NUM="$NUMERO" \
+            -DORIGEM="$PWD/build/windows" -DLISTA="$PWD/build/desinstalar.nsh" \
+            -DSAIDA="$PWD/build/WolfLeague-Setup-${VERSAO}.exe" instalador/windows.nsi
+          mkdir -p entrega
+          cp "build/WolfLeague-Setup-${VERSAO}.exe" "build/WolfLeague-${VERSAO}-windows.zip" entrega/
+          ls -la entrega
       - uses: actions/upload-artifact@v4
         with:
           name: wolfleague-windows
-          path: build/*.zip
+          path: entrega/*
+          if-no-files-found: error
+
+  # O jogo para Mac, exportado num Mac de verdade (o Godot .NET exporta o
+  # .app universal, Intel + Apple Silicon, com assinatura ad hoc) e posto
+  # num .dmg com o atalho para Aplicativos. Sem conta de desenvolvedor da
+  # Apple, não é autenticado: na primeira vez o jogador libera em
+  # Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo Assim.
+  cliente-mac:
+    needs: testes
+    runs-on: macos-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Versão e endereço de produção
+        id: versao
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.0.0-dev.${GITHUB_SHA::7}"; fi
+          n="$(echo "${v%%-*}" | awk -F. '{printf "%d.%d.%d.0", $1, $2, $3}')"
+          echo "versao=$v" >> "$GITHUB_OUTPUT"
+          python3 tools/lancamento/preparar_build.py --versao "$v" --numero "$n" --servidor "$SERVIDOR_URL"
+      - name: Godot ${{ env.GODOT_VERSION }} (.NET) e os modelos de exportação
+        run: |
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          curl -sSL -o godot.zip "${base}/Godot_v${GODOT_VERSION}-stable_mono_macos.universal.zip"
+          ditto -x -k godot.zip "$HOME/godot"
+          echo "GODOT=$(find "$HOME/godot" -maxdepth 4 -path '*Contents/MacOS/Godot' | head -1)" >> "$GITHUB_ENV"
+          curl -sSL -o modelos.tpz "${base}/Godot_v${GODOT_VERSION}-stable_mono_export_templates.tpz"
+          destino="$HOME/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.stable.mono"
+          mkdir -p "$destino"
+          unzip -q modelos.tpz -d modelos
+          mv modelos/templates/* "$destino/"
+      - name: Exportar para Mac
+        run: |
+          test -x "$GODOT"
+          dotnet build alcateia.csproj --nologo -v quiet
+          "$GODOT" --headless --path . --import || true
+          mkdir -p build/macos
+          "$GODOT" --headless --path . --export-release "macOS" build/macos/WolfLeague.zip
+          ditto -x -k build/macos/WolfLeague.zip build/macos/app
+          ls build/macos/app
+      - name: Imagem de disco (.dmg)
+        env:
+          VERSAO: ${{ steps.versao.outputs.versao }}
+        run: |
+          app="$(find build/macos/app -maxdepth 1 -name '*.app' | head -1)"
+          test -d "$app"
+          codesign --verify --deep --verbose=1 "$app" || echo "::warning::assinatura ad hoc não conferiu"
+          mkdir -p dmg && cp -R "$app" dmg/WolfLeague.app && ln -s /Applications dmg/Aplicativos
+          mkdir -p entrega
+          hdiutil create -volname "WolfLeague" -srcfolder dmg -ov -format UDZO "entrega/WolfLeague-${VERSAO}-mac.dmg"
+          ls -la entrega
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wolfleague-mac
+          path: entrega/*
+          if-no-files-found: error
+
+  # A Release. Só com tag, e só depois de o servidor e a frota estarem no ar
+  # e o instalador pronto: ninguém baixa um jogo que aponta para um servidor
+  # que não subiu. Se o workflow for rodado de novo na mesma tag, troca os
+  # arquivos da Release que já existe em vez de falhar.
+  release:
+    if: success() && startsWith(github.ref, 'refs/tags/v')
+    needs: [servidor, partida, cliente, cliente-mac]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: instalador/capa.png
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wolfleague-*
+          merge-multiple: true
+          path: entrega
+      - name: Conferência
+        run: (cd entrega && sha256sum -- * > SHA256SUMS.txt && cat SHA256SUMS.txt)
       - name: Release no GitHub
-        if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
         run: |
-          pre=""; case "$GITHUB_REF_NAME" in *-*) pre="--prerelease" ;; esac
-          gh release create "$GITHUB_REF_NAME" build/*.zip $pre --title "WolfLeague $GITHUB_REF_NAME" \
-            --notes "Jogo para Windows: baixe o .zip, extraia e abra WolfLeague.exe. O Windows pode avisar que o programa não é assinado: Mais informações → Executar assim mesmo."
+          versao="${TAG#v}"
+          instalador="WolfLeague-Setup-${versao}.exe"
+          dmg="WolfLeague-${versao}-mac.dmg"
+          test -f "entrega/${instalador}"
+          test -f "entrega/${dmg}"
+          repo_raw="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${TAG}/instalador/capa.png"
+          {
+            echo "![WolfLeague](${repo_raw})"
+            echo
+            echo "## Windows 10 ou 11"
+            echo
+            echo "1. Baixe **${instalador}** aqui embaixo e execute."
+            echo "2. O Windows pode avisar \"O Windows protegeu o computador\" (o instalador ainda não é assinado): clique em **Mais informações** e depois em **Executar assim mesmo**."
+            echo "3. Siga o instalador. Ele cria atalhos na Área de Trabalho e no Menu Iniciar."
+            echo
+            echo "Para atualizar, rode o instalador da versão nova por cima. Para desinstalar: Configurações → Aplicativos. A sua conta e os seus ajustes não são apagados."
+            echo
+            echo "Sem instalar: baixe o **-windows.zip**, extraia numa pasta e abra WolfLeague.exe."
+            echo
+            echo "## Mac (Intel ou Apple Silicon, macOS 11 ou mais novo)"
+            echo
+            echo "1. Baixe **${dmg}**, abra e arraste o WolfLeague para **Aplicativos**."
+            echo "2. Na primeira vez o Mac bloqueia (o jogo ainda não é autenticado pela Apple). Abra **Ajustes do Sistema → Privacidade e Segurança**, role até o aviso do WolfLeague e clique em **Abrir Mesmo Assim**."
+            echo
+            echo "O **SHA256SUMS.txt** serve para conferir os downloads."
+            echo
+            echo "---"
+          } > notas.md
+          pre=""; case "$TAG" in *-*) pre="--prerelease" ;; esac
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" entrega/* --clobber
+          else
+            gh release create "$TAG" entrega/* $pre --title "WolfLeague $TAG" \
+              --notes-file notas.md --generate-notes
+          fi

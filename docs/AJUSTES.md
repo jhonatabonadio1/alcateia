@@ -309,7 +309,7 @@ estão em `scripts/domain/CombatRules.cs`, com teste
 | Campo | Valor | O que faz |
 |---|---|---|
 | `HumanHp` | 200 | Vida (a mesma nas duas formas). O personagem multiplica (`HpMultiplier` no `personagem.tres` de cada pasta em `assets/personagens/`; Eve ×1,1 = 220) |
-| `MaxWp` | 2500 | Teto de WP |
+| `MaxWp` | 10000 | Teto de WP (era 2500; Jhon, 21/11) |
 | `WpPerKill` | 100 | WP por abate de arma |
 | `WpPerWolfKill` | 70 | WP por abate de lobo |
 | `WpPerAssist` | 35 | WP por assistência |

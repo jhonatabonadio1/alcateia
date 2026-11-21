@@ -44,3 +44,4 @@ assets/pacotes/
 
 # Jogo exportado (export_presets.cfg)
 build/
+_to_delete/

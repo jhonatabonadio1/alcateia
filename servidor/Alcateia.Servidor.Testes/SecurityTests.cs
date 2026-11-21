@@ -69,11 +69,18 @@ public static class SecurityTests
 				&& ThreatRules.LooksLikeInjection("/v1/../../etc/passwd") && ThreatRules.LooksLikeInjection("/?a=${jndi:ldap://x}"), "padrões de injeção");
 			Check.True(!ThreatRules.LooksLikeInjection("/v1/ranking?limit=50"), "pedido normal não é");
 
-			Check.Equal(0L, RankRule.XpFor(0), "patente 0 começa em zero");
-			Check.Equal(230L, RankRule.XpFor(1), "o primeiro degrau, igual ao do jogo");
-			Check.Equal(1390L, RankRule.XpFor(2), "o segundo degrau, igual ao do jogo");
-			Check.Equal(1, RankRule.RankFor(1389), "quase no segundo");
-			Check.Equal(2, RankRule.RankFor(1390), "no segundo");
+			// níveis (rank 0 = nível 1); os mesmos degraus de scripts/meta/Ranks.cs
+			Check.Equal(0L, RankRule.XpFor(0), "o nível 1 começa em zero");
+			Check.Equal(100L, RankRule.XpFor(1), "o nível 2, igual ao do jogo");
+			Check.Equal(210L, RankRule.XpFor(2), "o nível 3, igual ao do jogo");
+			Check.Equal(49050L, RankRule.XpFor(90), "fim da rampa: daí em diante, 1.000 por nível");
+			Check.Equal(58050L, RankRule.XpFor(99), "o nível 100, o primeiro bronze");
+			Check.Equal(1, RankRule.RankFor(209), "quase no nível 3");
+			Check.Equal(2, RankRule.RankFor(210), "no nível 3");
+			Check.Equal(99, RankRule.RankFor(58050), "nível 100");
+			Check.Equal(RankRule.Count - 1, RankRule.RankFor(long.MaxValue / 4), "o teto é o nível 3000");
+			Check.Equal(1, RankRule.Family(99), "o nível 100 é bronze");
+			Check.Equal(100L, RankRule.PromotionPresas(RankRule.XpFor(8), RankRule.XpFor(9)), "o nível 10 é borda nova: 100 Presas");
 			return Task.CompletedTask;
 		}),
 

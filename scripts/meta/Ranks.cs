@@ -1,98 +1,127 @@
 using Godot;
 
 /// <summary>
-/// As patentes: 30, em dez famílias de três graus.
+/// Os **níveis** (Jhon, 21/11: "ao invés de patentes, será níveis; cada
+/// nível tem uma borda", no modelo do Overwatch). O nome da classe ficou
+/// <c>Ranks</c> e o número continua sendo o "rank" no código, no servidor
+/// e no banco: <c>rank</c> 0 é o **nível 1**. Mudou a regra, não o dado —
+/// o XP de cada conta é o mesmo, só passa a ser lido como nível.
 ///
-/// Nomes e insígnias são próprios do projeto. A insígnia distingue
-/// família por forma e cor antes do detalhe fino (o grau): com trinta
-/// patentes, o olho precisa reconhecer "é um Caçador" antes de contar
-/// losangos.
+/// Como se lê um nível L (= rank + 1):
 ///
-/// A curva (pedido do Jhon, 17/11: subir tem de custar muito, e cada vez
-/// mais): XP para a patente <c>r</c> = 230 × r^2,6, arredondado de 10 em
-/// 10. Com uns 100 XP por partida (<see cref="Rewards"/>):
-///
-/// | patente | XP | partidas (total) | a mais que a anterior |
+/// | L | metal | estrelas | número na placa |
 /// |---|---|---|---|
-/// | 1 Filhote II | 230 | ~2 | 2 |
-/// | 2 Filhote III | 1.390 | ~14 | 12 |
-/// | 3 Batedor I | 4.000 | ~40 | 26 |
-/// | 6 Rastreador I | 24.260 | ~240 | 92 |
-/// | 9 Caçador I | 69.620 | ~700 | 184 |
-/// | 15 Uivador I | 262.760 | ~2.600 | 430 |
-/// | 21 Lua Cheia I | 630.230 | ~6.300 | 750 |
-/// | 29 Alfa III | 1.458.690 | ~14.600 | 1.270 |
+/// | 1–99 | Iniciante (cinza) | 0 | L |
+/// | 100–599 | Bronze | 1 a 5, uma a cada 100 | L % 100 |
+/// | 600–1099 | Prata | 1 a 5 | L % 100 |
+/// | 1100–1599 | Ouro | … | … |
+/// | 1600–2099 | Platina | | |
+/// | 2100–2599 | Diamante | | |
+/// | 2600–3000 | Mestre | | |
 ///
-/// Jogando 5 partidas por dia, a última patente leva uns 8 anos (o alvo
-/// do Jhon, docs/PENDENCIAS.md). Antes: 250 × r^1,9 com 400 XP por
-/// partida, ~430 partidas até o topo.
+/// O nível 520 aparece "20 ★★★★★" em bronze. A borda (assets/ui/bordas/)
+/// muda a cada 10 níveis dentro do metal (asas, louros, coroa) — 7 metais
+/// × 10 desenhos, gerados por tools/bordas.py.
 ///
-/// Sem rebaixamento: patente de progressão não cai.
+/// A curva: do nível L ao L+1 custa 100 + 10 × (L−1) XP, até o teto de
+/// 1.000 (a partir do 91). Uma partida rende uns 70 a 100 XP
+/// (<see cref="Rewards"/>): o nível 2 sai na primeira partida, o 10 em
+/// umas 12, o 100 (bronze) em umas 600, e daí ~10 partidas por nível.
+/// Sem rebaixamento.
+///
+/// <b>A mesma conta está no servidor</b> (RankRule.cs): mudou aqui, mude lá.
 /// </summary>
 public static class Ranks
 {
-	public const int Count = 30;
+	/// <summary>Nível máximo: 3000 (rank 2999).</summary>
+	public const int Count = 3000;
 
-	/// <summary>Sem patente: os bots (decisão do Jhon, 13/11). Patente é
-	/// de quem joga; o bot aparece sem insígnia, só com "Bot".</summary>
+	/// <summary>Sem nível: os bots. O bot aparece sem borda, só com "Bot".</summary>
 	public const int None = -1;
 
-	private static readonly string[] Families =
-	{
-		"Filhote", "Batedor", "Rastreador", "Caçador", "Sentinela",
-		"Uivador", "Presa de Ferro", "Lua Cheia", "Ancião", "Alfa"
-	};
+	/// <summary>Custo de subir do nível L para o L+1 cresce até este teto.</summary>
+	private const int CostStart = 100, CostStep = 10, CostCap = 1000;
+	private const int Ramp = (CostCap - CostStart) / CostStep;   // 90 níveis até o teto
 
-	/// <summary>Cor de cada família: bronze, prata, ouro, aço, platina...</summary>
-	private static readonly Color[] FamilyColors =
-	{
-		new("b08d6a"), new("c49a6c"), new("b9c1cb"), new("d4dbe3"), new("e0b84f"),
-		new("f2c94c"), new("7fb0d9"), new("c9d6f0"), new("b48cff"), new("ff6a3d")
-	};
+	public static readonly string[] MetalNames = { "Iniciante", "Bronze", "Prata", "Ouro", "Platina", "Diamante", "Mestre" };
 
-	private static readonly string[] Roman = { "I", "II", "III" };
+	/// <summary>A cor de cada metal: a da borda, a da placa e a das estrelas.</summary>
+	public static readonly Color[] MetalColors =
+	{
+		new("aeb6c2"), new("c98a5e"), new("cdd6e1"), new("f2c14e"), new("7fd6e6"), new("a98bff"), new("ff6a3d")
+	};
 
 	public static int Clamp(int rank) => Mathf.Clamp(rank, 0, Count - 1);
 
-	public static int Family(int rank) => Clamp(rank) / 3;
-	public static int Tier(int rank) => Clamp(rank) % 3;
+	/// <summary>O nível que se mostra (1 a 3000).</summary>
+	public static int LevelOf(int rank) => Clamp(rank) + 1;
 
-	public static string NameOf(int rank) => rank < 0 ? "Bot" : $"{Families[Family(rank)]} {Roman[Tier(rank)]}";
-	public static string FamilyName(int rank) => Families[Family(rank)];
-	public static Color ColorOf(int rank) => rank < 0 ? new Color("8a93a0") : FamilyColors[Family(rank)];
+	/// <summary>O metal: 0 Iniciante, 1 Bronze ... 6 Mestre.</summary>
+	public static int Family(int rank)
+	{
+		int level = LevelOf(rank);
+		return level < 100 ? 0 : Mathf.Min(1 + (level - 100) / 500, MetalNames.Length - 1);
+	}
 
-	/// <summary>A cor da família para **texto**: a mesma, um pouco mais
-	/// clara, para as famílias de bronze não ficarem apagadas no escuro.</summary>
+	/// <summary>Estrelas embaixo da borda: uma a cada 100 níveis, de 1 a 5 por metal.</summary>
+	public static int Stars(int rank)
+	{
+		int level = LevelOf(rank);
+		return level < 100 ? 0 : Mathf.Min((level - 100) % 500 / 100 + 1, 5);
+	}
+
+	/// <summary>O desenho da borda dentro do metal, 0 a 9: muda a cada 10 níveis.</summary>
+	public static int Tier(int rank) => LevelOf(rank) % 100 / 10;
+
+	/// <summary>O número da placa: o nível sem as centenas (as estrelas contam elas).</summary>
+	public static int Shown(int rank) => LevelOf(rank) < 100 ? LevelOf(rank) : LevelOf(rank) % 100;
+
+	public static string NameOf(int rank) => rank < 0 ? "Bot" : $"Nível {LevelOf(rank)}";
+	public static string FamilyName(int rank) => MetalNames[Family(rank)];
+	public static Color ColorOf(int rank) => rank < 0 ? new Color("8a93a0") : MetalColors[Family(rank)];
+
+	/// <summary>A cor do metal para **texto**: um pouco mais clara.</summary>
 	public static Color InkOf(int rank) => ColorOf(rank).Lightened(0.18f);
 
-	/// <summary>XP acumulado necessário para chegar à patente.</summary>
+	/// <summary>XP acumulado necessário para chegar ao rank (nível rank + 1).</summary>
 	public static long XpFor(int rank)
 	{
-		rank = Clamp(rank);
-		if (rank == 0) return 0;
-		return (long)(Mathf.Round(230.0 * Mathf.Pow(rank, 2.6) / 10.0) * 10.0);
+		long r = Clamp(rank);
+		if (r <= Ramp) return CostStart * r + CostStep * r * (r - 1) / 2;
+		return XpFor(Ramp) + CostCap * (r - Ramp);
 	}
 
 	public static int RankFor(long xp)
 	{
-		int rank = 0;
-		while (rank + 1 < Count && xp >= XpFor(rank + 1)) rank++;
-		return rank;
+		int low = 0, high = Count - 1;   // o maior rank com XpFor(rank) <= xp
+		while (low < high)
+		{
+			int mid = (low + high + 1) / 2;
+			if (XpFor(mid) <= xp) low = mid; else high = mid - 1;
+		}
+		return low;
 	}
 
-	/// <summary>Quanto da patente atual já foi percorrido, de 0 a 1. Na
-	/// última patente, sempre 1.</summary>
+	/// <summary>Quanto do nível atual já foi percorrido, de 0 a 1. No último, sempre 1.</summary>
 	public static float Progress(long xp)
 	{
 		int rank = RankFor(xp);
 		if (rank >= Count - 1) return 1f;
-
-		long from = XpFor(rank);
-		long to = XpFor(rank + 1);
+		long from = XpFor(rank), to = XpFor(rank + 1);
 		return Mathf.Clamp((float)(xp - from) / (to - from), 0f, 1f);
 	}
 
-	/// <summary>Presas de recompensa ao ser promovido para a patente.
-	/// Crescem com a família: promoção alta tem que valer a espera.</summary>
-	public static int PromotionReward(int rank) => 150 + 100 * Family(rank);
+	/// <summary>Presas ao subir para o rank: 20 por nível; borda nova (a cada
+	/// 10) vale mais, e estrela nova (a cada 100) mais ainda.</summary>
+	public static int PromotionReward(int rank)
+	{
+		int level = LevelOf(rank);
+		if (level % 100 == 0) return 500 + 100 * Family(rank);
+		if (level % 10 == 0) return 100 + 25 * Family(rank);
+		return 20;
+	}
+
+	/// <summary>A subida que merece a tela de promoção: borda ou estrela nova.
+	/// Os outros níveis só aparecem na barra do resultado.</summary>
+	public static bool IsMilestone(int rank) => LevelOf(rank) % 10 == 0;
 }

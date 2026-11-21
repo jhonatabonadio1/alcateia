@@ -37,7 +37,8 @@ def pedir(metodo, caminho, corpo=None):
 		sys.exit('falta FLY_API_TOKEN')
 	dados = json.dumps(corpo).encode() if corpo is not None else None
 	req = urllib.request.Request(API + caminho, data=dados, method=metodo)
-	req.add_header('Authorization', token if token.startswith('FlyV1 ') else 'Bearer ' + token)
+	# O token novo vem como "FlyV1 fm2_...": a linha inteira, com o prefixo, vai depois do Bearer.
+	req.add_header('Authorization', 'Bearer ' + token)
 	req.add_header('Content-Type', 'application/json')
 	try:
 		with urllib.request.urlopen(req, timeout=60) as r:

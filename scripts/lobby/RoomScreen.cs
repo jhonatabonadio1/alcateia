@@ -461,15 +461,17 @@ public partial class RoomScreen : LobbyScreen
 
 		form.AddChild(Row("Bots", Picker(new[] { "Fáceis", "Médios", "Difíceis" }, (int)S.Difficulty, SetDifficulty)));
 
-		string[] rankNames = Enumerable.Range(0, Ranks.Count).Select(Ranks.NameOf).ToArray();
+		// Níveis de 1 a 3000: o filtro anda em degraus (o começo de cada
+		// metal e algumas paradas no Iniciante), não nível a nível.
+		string[] stepNames = LevelSteps.Select(r => Loc.F("Nível {0}", Ranks.LevelOf(r))).ToArray();
 		HBoxContainer range = UiKit.Row(UiTokens.S2);
-		OptionButton min = Picker(rankNames, S.MinRank, i => SetRankRange(i, S.MaxRank));
-		OptionButton max = Picker(rankNames, S.MaxRank, i => SetRankRange(S.MinRank, i));
+		OptionButton min = Picker(stepNames, StepOf(S.MinRank), i => SetRankRange(LevelSteps[i], S.MaxRank));
+		OptionButton max = Picker(stepNames, StepOf(S.MaxRank), i => SetRankRange(S.MinRank, LevelSteps[i]));
 		range.AddChild(min);
 		range.AddChild(UiKit.Text("a", "Muted"));
 		range.AddChild(max);
 		range.TooltipText = "Vale quando houver multijogador.";
-		form.AddChild(Row("Patente", range));
+		form.AddChild(Row("Nível", range));
 
 		HBoxContainer checks = UiKit.Row(UiTokens.S3);
 		checks.AddChild(Check("Fogo amigo", S.FriendlyFire, v => Change("Fogo amigo", v ? "ligado" : "desligado", () => S.FriendlyFire = v)));
@@ -689,7 +691,7 @@ public partial class RoomScreen : LobbyScreen
 		}
 		else if (_online && m != Me)
 		{
-			column.AddChild(Info("Patente", Ranks.NameOf(m.Rank)));
+			column.AddChild(Info("Nível", Ranks.NameOf(m.Rank)));
 			column.AddChild(Info("Situação", m.IsHost ? "Dono da sala" : m.Ready ? "Pronto" : "Aguardando"));
 		}
 		else
@@ -1021,10 +1023,21 @@ public partial class RoomScreen : LobbyScreen
 		Refresh();
 	}
 
+	/// <summary>Os degraus do filtro de nível da sala (em rank: nível − 1).</summary>
+	private static readonly int[] LevelSteps = { 0, 9, 24, 49, 99, 599, 1099, 1599, 2099, 2599, Ranks.Count - 1 };
+
+	/// <summary>O degrau mais alto que não passa do rank (salas antigas guardam qualquer número).</summary>
+	private static int StepOf(int rank)
+	{
+		int step = 0;
+		for (int i = 0; i < LevelSteps.Length; i++) if (LevelSteps[i] <= rank) step = i;
+		return step;
+	}
+
 	private void SetRankRange(int min, int max)
 	{
 		if (min > max) (min, max) = (max, min);
-		Change("Patente", $"{Ranks.NameOf(min)} a {Ranks.NameOf(max)}", () => { S.MinRank = min; S.MaxRank = max; });
+		Change("Nível", $"{Ranks.NameOf(min)} a {Ranks.NameOf(max)}", () => { S.MinRank = min; S.MaxRank = max; });
 		Refresh();
 	}
 

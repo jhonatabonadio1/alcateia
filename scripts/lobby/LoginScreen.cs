@@ -13,16 +13,15 @@ using System;
 /// computador: clicou, entra (o login guardado é conferido no servidor; se
 /// não vale mais, a conta sai da lista e o nome vai para o formulário, à
 /// espera da senha). "Lembrar acesso" guarda o login desta conta para o
-/// próximo clique. Embaixo, se o servidor está no ar, o treino sem conta e
-/// sair do jogo.
+/// próximo clique. Embaixo, se o servidor está no ar e sair do jogo. Sem
+/// conta não se joga: o "treinar sem conta" saiu (Jhon, 20/11).
 ///
 /// O endereço do servidor é fixo no jogo por enquanto (Jhon, 20/11): a
 /// tela não pergunta. A escolha do servidor mais rápido e mais perto,
 /// os de partida inclusive, vem depois.
 ///
 /// Sem conta não há progressão (decisão 0015: a carteira, os itens e a
-/// patente são da conta); o treino com bots fica num botão discreto
-/// embaixo, e não rende nada.
+/// patente são da conta).
 /// </summary>
 public partial class LoginScreen : LobbyScreen
 {
@@ -440,13 +439,6 @@ public partial class LoginScreen : LobbyScreen
 		bar.AddChild(server);
 
 		bar.AddChild(UiKit.Spacer());
-
-		// O treino com bots não precisa de conta (decisão de 13/11; não
-		// rende nada, decisão 0015).
-		Button train = UiKit.Button("Treinar sem conta", ButtonKind.Tertiary, () =>
-			Shell.GoRoom(RoomDirectory.Current ?? RoomDirectory.Create(new RoomSettings { Title = "Treino" })));
-		train.TooltipText = "Uma sala com bots, neste computador. Sem conta, a partida não rende XP nem Presas.";
-		bar.AddChild(train);
 
 		Button quit = UiKit.Button("Sair do jogo", ButtonKind.Tertiary, () => GetTree().Quit());
 		bar.AddChild(quit);

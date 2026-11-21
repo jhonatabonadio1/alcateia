@@ -1,0 +1,34 @@
+# O Postgres do WolfLeague no Fly.io: a imagem oficial do Postgres 16 (a
+# mesma do docker-compose.yml) num volume. Não tem serviço público: só se
+# chega nele pela rede privada do Fly, em wolfleague-db.internal:5432.
+#
+#   fly apps create wolfleague-db
+#   fly secrets set --stage -a wolfleague-db POSTGRES_PASSWORD=...
+#   fly deploy -c fly.banco.toml -a wolfleague-db --ha=false
+#
+# UMA máquina: o banco do alfa. Cai a máquina, o jogo fica sem banco até
+# ela voltar (docs/FLY.md, "Banco: o que esperar").
+
+app = "wolfleague-db"
+primary_region = "gru"
+
+[build]
+  image = "postgres:16"
+
+[env]
+  POSTGRES_USER = "alcateia"
+  POSTGRES_DB = "alcateia"
+  # O volume já vem com lost+found na raiz, e o initdb não aceita pasta
+  # com coisa dentro: o banco fica numa subpasta.
+  PGDATA = "/var/lib/postgresql/data/pgdata"
+
+[mounts]
+  source = "pgdata"
+  destination = "/var/lib/postgresql/data"
+  initial_size = "10gb"
+  # O Fly guarda 5 dias por padrão; 30 dá folga para notar um problema.
+  snapshot_retention = 30
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"

@@ -2,7 +2,7 @@
 # Monta a produção no Fly.io do zero, uma vez (o passo a passo de
 # docs/FLY.md, em um script). Roda no seu Mac, com o flyctl logado:
 #
-#   brew install flyctl && fly auth login
+#   brew install flyctl gh && fly auth login && gh auth login
 #   tools/fly/primeira_vez.sh
 #
 # Pode rodar de novo: o que já existe ele pula. Pergunta antes do que
@@ -39,21 +39,18 @@ for app in "$API" "$PARTIDA"; do
 	if existe_app "$app"; then echo "$app já existe"; else fly apps create "$app" --org "$ORG"; fi
 done
 
-passo "2. Banco ($BANCO)"
+passo "2. Banco ($BANCO): Postgres 16 num volume (fly.banco.toml)"
 SENHA_DB=""
 if existe_app "$BANCO"; then
 	echo "$BANCO já existe."
-	read -r -s -p "Senha do usuário alcateia no banco (Enter se os segredos já estão no app): " SENHA_DB; echo
+	read -r -s -p "Senha do banco (a que você guardou; Enter se o $API já tem a certa): " SENHA_DB; echo
 else
-	echo "Cria o Postgres (1 máquina pequena, 10 GB). Custa alguns dólares por mês."
+	echo "Cria o Postgres como app do Fly: 1 máquina de 1 GB + volume de 10 GB (uns 7 dólares por mês)."
 	pergunta "Criar?" || exit 1
-	fly postgres create --name "$BANCO" --region "$REGIAO" --org "$ORG" \
-		--initial-cluster-size 1 --vm-size shared-cpu-1x --volume-size 10
-	saida=$(fly postgres attach "$BANCO" -a "$API" --database-name alcateia --database-user alcateia --yes 2>&1) || { echo "$saida"; exit 1; }
-	echo "$saida" | grep -v -i "password" || true
-	SENHA_DB=$(echo "$saida" | grep -oE 'postgres://alcateia:[^@]+@' | sed -E 's#postgres://alcateia:(.*)@#\1#' | head -1)
-	[ -n "$SENHA_DB" ] || { echo "não achei a senha na saída do attach; rode de novo informando a senha"; exit 1; }
-	fly secrets unset DATABASE_URL -a "$API" --stage >/dev/null 2>&1 || true
+	fly apps create "$BANCO" --org "$ORG"
+	SENHA_DB=$(openssl rand -hex 24)
+	fly secrets set --stage -a "$BANCO" POSTGRES_PASSWORD="$SENHA_DB" >/dev/null
+	fly deploy -c fly.banco.toml -a "$BANCO" --ha=false
 fi
 
 passo "3. Segredos"
@@ -105,16 +102,30 @@ else
 fi
 python3 tools/fly/frota.py --app "$PARTIDA" estado
 
+passo "6. GitHub (o pipeline de lançamento)"
+if command -v gh >/dev/null && gh auth status >/dev/null 2>&1; then
+	REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+	# o ambiente "producao" dos jobs de deploy (aprovação: Settings → Environments)
+	gh api -X PUT "repos/$REPO/environments/producao" >/dev/null
+	fly tokens create org -o "$ORG" --name "github-actions" | gh secret set FLY_API_TOKEN --repo "$REPO"
+	[ "$API" != "wolfleague-api" ] && gh variable set FLY_APP_API --repo "$REPO" --body "$API"
+	[ "$PARTIDA" != "wolfleague-partida" ] && gh variable set FLY_APP_PARTIDA --repo "$REPO" --body "$PARTIDA"
+	echo "GitHub pronto em $REPO: segredo FLY_API_TOKEN e ambiente producao."
+else
+	echo "Sem o gh logado (brew install gh && gh auth login), faça à mão em"
+	echo "Settings → Secrets and variables → Actions: segredo FLY_API_TOKEN com"
+	echo "    fly tokens create org -o $ORG"
+fi
+
 passo "Pronto"
-echo "Servidor:  https://$API.fly.dev  (o jogo exportado já aponta para ele: project.godot)"
+echo "Servidor:  https://$API.fly.dev  (o jogo exportado aponta para ele: o pipeline grava no project.godot)"
 echo "Painel:    fly proxy 8081 -a $API   e abra http://localhost:8081"
 echo "Logs:      fly logs -a $API   /   fly logs -a $PARTIDA"
-echo
-echo "No GitHub (Settings → Secrets and variables → Actions), crie o segredo FLY_API_TOKEN com:"
-echo "    fly tokens create org -o $ORG"
+echo "Lançar:    git tag v0.4.0-alpha.1 && git push origin v0.4.0-alpha.1"
 if [ -n "$FROTA" ]; then
 	echo
 	echo "GUARDE NUM COFRE (não aparece de novo):"
 	echo "    ALCATEIA_FLEET_KEY  = $FROTA"
 	echo "    ALCATEIA_MASTER_KEY = $MESTRA"
+	[ -n "$SENHA_DB" ] && echo "    senha do banco      = $SENHA_DB"
 fi

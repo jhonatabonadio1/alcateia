@@ -39,7 +39,7 @@ public partial class FormController : Node
 
 	[Export] public WolfBreed Breed;
 
-	[Export] public float MaxWp = 2500f;
+	[Export] public float MaxWp = 10000f;   // teto de WP na partida (Jhon, 21/11: "o wp máximo para acumular durante o game passa a ser 10 mil")
 
 	/// <summary>WP perdido a cada morte (decisão do Jhon). Um abate rende
 	/// 100: morrer custa um abate. Nunca abaixo de zero, e o conjunto
