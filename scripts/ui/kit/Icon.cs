@@ -219,6 +219,8 @@ public partial class Icon : Control
 				break;
 
 			case IconKind.Wolf:
+				// Sem uso enquanto existir assets/ui/icones/wolf.png (a cabeça do
+				// ícone do jogo, 21/11): este traço é só o reserva.
 				// Cabeça de lobo de frente: orelhas, testa, focinho.
 				Poly(true, 4, 3, 9, 8, 15, 8, 20, 3, 20, 12, 15, 19, 12, 21, 9, 19, 4, 12);
 				Dot(9, 12, 1.2f);

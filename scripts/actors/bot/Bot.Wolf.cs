@@ -72,11 +72,13 @@ public partial class Bot
 		if (_wantDive)
 		{
 			if (IsOnFloor()) { _wantDive = false; return; }
+			// Perto do alto do pulo; abaixo da altura mínima do bote
+			// (Weapon.LeapMinHeight), tenta de novo até pousar.
 			if (Velocity.Y < 1.5f)
 			{
-				_wantDive = false;
 				_weapon.TrySpecial();
-				if (Debug) GD.Print($"{Name}: bote {(_weapon.IsDiving ? "saiu" : "não saiu")}");
+				if (_weapon.IsDiving) _wantDive = false;
+				if (Debug && _weapon.IsDiving) GD.Print($"{Name}: bote saiu");
 			}
 			return;
 		}

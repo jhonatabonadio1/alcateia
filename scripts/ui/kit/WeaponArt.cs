@@ -316,19 +316,46 @@ void fragment() {
 		}
 	}
 
+	private static Texture2D _wolfMark;
+
+	/// <summary>A cabeça do lobo do ícone do jogo (assets/ui/icones/wolf.png,
+	/// de tools/icones/wolf.svg), com os olhos e o nariz vazados.</summary>
+	private static Texture2D WolfMark => _wolfMark ??= GD.Load<Texture2D>("res://assets/ui/icones/wolf.png");
+
+	/// <summary>A cabeça do lobo centrada em (cx, cy), com <paramref name="side"/> de lado, na grade.</summary>
+	private void WolfAt(float cx, float cy, float side, Color c)
+	{
+		if (WolfMark == null) return;
+		DrawTextureRect(WolfMark, new Rect2(P(cx - side / 2f, cy - side / 2f), new Vector2(side, side) * _s), false, new Color(c, c.A * _alpha));
+	}
+
+	/// <summary>Classe de lobo (Jhon, 21/11: "essas classes também estão mal
+	/// feitas"): a cabeça do lobo do ícone do jogo, e o que distingue a
+	/// classe atrás dela — o Bruto, um escudo (aguenta mais); o Ligeiro,
+	/// riscos de velocidade (corre e pula mais).</summary>
 	private void WolfHead()
 	{
-		Poly(Metal, 66, 10, 84, 28, 116, 28, 134, 10, 136, 40, 116, 64, 100, 72, 84, 64, 64, 40);
-		Poly(UiTokens.Bg, 84, 40, 92, 38, 92, 44);
-		Poly(UiTokens.Bg, 116, 40, 108, 38, 108, 44);
-		Poly(Dark, 94, 60, 106, 60, 100, 66);
+		if (_id == "raca_ligeiro")
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				float y = 30 + i * 12, x = 42 + (i == 1 ? 0 : 10);
+				Poly(Dark, x, y, x + 34, y, x + 30, y + 5, x - 4, y + 5);
+			}
+		}
+		else
+		{
+			// escudo hexagonal atrás da cabeça
+			Poly(new Color(Dark, 0.55f), 100, 0, 135, 18, 135, 58, 100, 78, 65, 58, 65, 18);
+		}
+		WolfAt(100, 40, 66, Metal);
 	}
 
 	/// <summary>Personagem: o busto do humano e, atrás dele, a cabeça do
 	/// lobo que vem junto.</summary>
 	private void Person()
 	{
-		Poly(Dark, 104, 14, 118, 28, 136, 28, 150, 14, 152, 40, 136, 60, 118, 60, 102, 40);   // lobo atrás
+		WolfAt(128, 36, 52, Dark);                                                           // lobo atrás
 		DrawEllipse(84, 26, 13, 15, Metal);                                                    // cabeça
 		Poly(Metal, 76, 40, 92, 40, 94, 46, 116, 52, 122, 76, 46, 76, 52, 52, 74, 46);         // ombros
 		Rect(UiTokens.Accent, 64, 56, 40, 3);                                                  // faixa do time

@@ -95,6 +95,25 @@ public partial class Health : Node
 	/// espera: 0,08 enche do zero em 12,5 s.</summary>
 	[Export] public float RegenRate = 0.08f;
 
+	/// <summary>
+	/// Quanto o jogo e o servidor de partida podem estar defasados na volta
+	/// da vida, em segundos (decisão 0016). Os dois regeneram, mas o jogo
+	/// começa meia ida e volta depois (o acerto chega depois), e o que ele
+	/// conta (Status) chega ao servidor mais meia ida e volta depois: o
+	/// servidor vê o jogo uma ida e volta inteira atrás. Sem folga, essa
+	/// diferença contava como dano que só o jogo viu, zerava a espera de 15 s
+	/// do servidor, e o Vitals puxava o jogo de volta: a vida nunca voltava
+	/// (Jhon, 21/11: "vida não tá se recuperando"). Cobre até 500 ms.
+	/// </summary>
+	public const float RegenLag = 0.5f;
+
+	/// <summary>Já voltando (ou a ponto de voltar, dentro da defasagem).</summary>
+	private bool Regenerating => RegenDelay > 0 && _sinceHit >= RegenDelay - RegenLag && Hp < MaxHp;
+
+	/// <summary>Diferença de vida entre o jogo e o servidor que não é dano:
+	/// a defasagem da regeneração, ou meio ponto de arredondamento.</summary>
+	private float SyncSlack(float floor) => Regenerating ? floor + MaxHp * RegenRate * RegenLag : floor;
+
 	/// <summary>Escudo perdido por segundo. Zero para quem não tem
 	/// escudo que vaza, como o humano.</summary>
 	public float ShieldDecay { get; set; }
@@ -272,19 +291,22 @@ public partial class Health : Node
 	{
 		if (IsDead) return;
 		bool changed = false;
-		if (hp < Hp - 1f) { Hp = Mathf.Max(hp, 1f); changed = true; }
+		if (hp < Hp - SyncSlack(1f)) { Hp = Mathf.Max(hp, 1f); changed = true; }
 		if (shield < Shield - 1f) { Shield = Mathf.Max(shield, 0f); changed = true; }
 		if (changed) EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
 	}
 
 	/// <summary>No servidor: o jogo contou menos vida ou escudo do que o
 	/// servidor tem (dano que só ele viu: queda, a própria granada, um bot
-	/// dele). Só desce; nunca sobe — subir é o que o servidor não aceita.</summary>
+	/// dele). Só desce; nunca sobe — subir é o que o servidor não aceita.
+	/// Regenerando, a diferença da defasagem (<see cref="RegenLag"/>) não é
+	/// dano: nem desce nem zera a espera. Um dano pequeno do jogo nessa hora
+	/// aparece logo, porque o jogo para de regenerar e a diferença cresce.</summary>
 	public void LowerTo(float hp, float shield)
 	{
 		if (IsDead) return;
 		bool changed = false;
-		if (hp < Hp) { Hp = Mathf.Max(hp, 1f); _sinceHit = 0; changed = true; }
+		if (hp < Hp - SyncSlack(0.5f)) { Hp = Mathf.Max(hp, 1f); _sinceHit = 0; changed = true; }
 		if (shield < Shield) { Shield = Mathf.Max(shield, 0f); changed = true; }
 		if (changed) EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
 	}

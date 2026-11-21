@@ -10,7 +10,9 @@ using System.Threading.Tasks;
 /// da tecla, e um corta o outro assim que o anterior fez o movimento dele:
 /// o bote, depois do dano, não prende o lobo no chão se ele pula ou corre.
 /// A tecla apertada um pouco antes (o pulo antes de pousar, o bote junto
-/// com o pulo) fica guardada e sai no primeiro passo em que pode.
+/// com o pulo) fica guardada e sai no primeiro passo em que pode — para o
+/// bote, quando o lobo chega à altura mínima (Weapon.LeapMinHeight; Jhon,
+/// 21/11: "não praticamente instantâneo").
 ///
 /// Mede em passos de física (60 por segundo): o que o jogador sente.
 /// </summary>
@@ -24,6 +26,7 @@ public sealed class WolfResponseTest : RegressionTest
 
 	private RegressionBench _b;
 	private int _leaps;
+	private float _leapHeight;
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -35,7 +38,12 @@ public sealed class WolfResponseTest : RegressionTest
 		Vector3 start = new(-15, 1, 13);
 		// O bote pode começar e encostar no mesmo passo (saiu do chão agora):
 		// conta pelo sinal, não pelo estado.
-		w.WolfMoveStarted += move => { if ((WolfMove)move == WolfMove.Leap) _leaps++; };
+		w.WolfMoveStarted += move =>
+		{
+			if ((WolfMove)move != WolfMove.Leap) return;
+			_leaps++;
+			_leapHeight = w.HeightAboveGround();
+		};
 
 		// 1. W W: corre de quatro no segundo toque.
 		await b.Place(start, -90f, settle: 0.6);
@@ -52,10 +60,13 @@ public sealed class WolfResponseTest : RegressionTest
 		int jump = await Press("jump", () => !p.IsOnFloor());
 		b.Check(jump <= Immediate, $"espaço: sai do chão em {jump} passo(s)");
 
-		// 3. Bote logo que sai do chão.
+		// 3. Botão direito logo que sai do chão: não sai ali, colado no chão;
+		// fica guardado e sai sozinho quando o lobo chega à altura mínima.
 		int leaps = _leaps;
+		float low = w.HeightAboveGround();
 		int dive = await Press("special", () => _leaps > leaps);
-		b.Check(dive <= Immediate, $"botão direito logo depois de sair do chão: o bote sai em {dive} passo(s)");
+		b.Check(dive < 999 && _leapHeight >= w.LeapMinHeight - 0.05f,
+			$"botão direito a {low:0.00} m do chão: o bote espera e sai a {_leapHeight:0.00} m (mínimo {w.LeapMinHeight:0.00} m), {dive} passo(s) depois");
 		// E aparece: o golpe cobre o pulo em dois quadros, no mesmo passo do
 		// clique (Jhon, 21/11: "quase cancelar a animação").
 		AnimationTree tree = p.GetNodeOrNull("WolfVisual")?.FindChildren("*", "AnimationTree", true, false)
@@ -70,14 +81,16 @@ public sealed class WolfResponseTest : RegressionTest
 		await b.Until(() => !w.IsDiving, 2.0);
 		await b.Seconds(1.2);
 
-		// 4. Pulo e bote apertados juntos (o bote ainda no chão): fica guardado.
+		// 4. Pulo e bote apertados juntos (o bote ainda no chão): fica guardado
+		// e sai na altura mínima, sem apertar de novo.
 		await b.Place(start, -90f, settle: 0.6);
 		Input.ActionPress("jump");
 		Input.ActionPress("special");
 		int leapsBefore = _leaps;
-		int together = await FramesUntil(() => _leaps > leapsBefore, 0.5);
+		int together = await FramesUntil(() => _leaps > leapsBefore, 0.8);
 		RegressionBench.ReleaseAll();
-		b.Check(together <= Immediate + 2, $"espaço e botão direito juntos: o bote sai assim que sai do chão ({together} passos)");
+		b.Check(together < 999 && _leapHeight >= w.LeapMinHeight - 0.05f,
+			$"espaço e botão direito juntos: o bote sai sozinho a {_leapHeight:0.00} m ({together} passos)");
 		await b.Until(() => !w.IsDiving, 2.0);
 		await b.Seconds(1.2);
 
@@ -104,6 +117,14 @@ public sealed class WolfResponseTest : RegressionTest
 		int out2 = await Press("move_forward", () => p.IsSprinting && Flat(p) > 3f, hold: true);
 		Input.ActionRelease("move_forward");
 		b.Check(out2 <= Immediate + 4, $"depois do dano do bote, W W: corre em {out2} passo(s)");
+
+		// 7b. Depois do bote, só andar (W, sem a corrida) já solta (Jhon,
+		// 21/11: "ao cair, o lobo corre no mesmo lugar travado").
+		await Dive(b, p, w, start, sprinting: false);
+		int walk = await Press("move_forward", () => !w.IsRooted && Flat(p) > 1.5f, hold: true);
+		Input.ActionRelease("move_forward");
+		b.Check(walk <= Immediate + 6, $"depois do dano do bote, só W: anda em {walk} passo(s)");
+		await b.Seconds(0.6);
 
 		// 8. Correndo de quatro, pula e dá o bote: pousa já correndo.
 		await Dive(b, p, w, start, sprinting: true);

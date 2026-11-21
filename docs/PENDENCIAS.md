@@ -135,6 +135,13 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 ### Mapas e modos
 
 - **Mais mapas.**
+- **Colisões dos objetos do mapa Neon** (anotado em 21/11): resolver as
+  colisões dos objetos do mapa. Junto, a revisão pedida em 20/11 para
+  todos os mapas, que ficou parada: nenhuma colisão maior que o objeto
+  que se vê (o teste que varre as caixas de colisão contra o desenho está
+  pronto fora do repositório, `CollisionFitTests.cs`; na Cidade apontou
+  41 caixas, a maioria grades, lixeiras e barras de poste e árvore, ainda
+  a conferir em foto).
 - **Campo de treinamento** (pedido em 17/11): lugar para treinar mira,
   recuo, salto do lobo e movimento sem partida valendo. Hoje: a tela
   "Treino com bots" foi removida em 17/11 e só resta a cena de treino

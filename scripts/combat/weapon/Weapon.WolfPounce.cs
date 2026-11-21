@@ -98,7 +98,25 @@ public partial class Weapon
 	{
 		if (_cooldown > 0 || _charging) return;
 		if (!_form.IsWolf || !_form.CanAttack) return;
-		if (!_body.IsOnFloor()) Leap();
+		if (!_body.IsOnFloor() && HeightAboveGround() >= LeapMinHeight) Leap();
+	}
+
+	/// <summary>Altura mínima dos pés ao chão para o bote sair (Jhon, 21/11:
+	/// "preciso atingir uma altura mínima antes, não muito alto, mas o
+	/// suficiente para não ser praticamente instantâneo"). Com 1,1 m, num pulo
+	/// do chão plano, o bote sai uns 0,25 s depois do pulo no Bruto (que sobe
+	/// até 1,6 m) e 0,18 s no Ligeiro (2,5 m). Apertado antes, fica guardado e
+	/// sai quando chegar lá (Player.Actions).</summary>
+	[Export] public float LeapMinHeight = 1.1f;
+
+	/// <summary>Dos pés ao chão logo abaixo, em metros; sem chão até 40 m, muito.</summary>
+	public float HeightAboveGround()
+	{
+		Vector3 feet = _body.GlobalPosition + Vector3.Down * 0.85f;   // a cápsula tem 1,75 m, centrada
+		var query = PhysicsRayQueryParameters3D.Create(feet, feet + Vector3.Down * 40f, 1);
+		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+		var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
+		return hit.Count == 0 ? float.MaxValue : feet.DistanceTo((Vector3)hit["position"]);
 	}
 
 	/// <summary>Fração do dano que o lobo leva com o especial ativo

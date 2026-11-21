@@ -6,7 +6,10 @@
 ;   python3 instalador/gerar_lista.py build/windows build/desinstalar.nsh
 ;   makensis -DVERSAO=0.4.0-alpha.1 -DVERSAO_NUM=0.4.0.0 \
 ;            -DORIGEM="$PWD/build/windows" -DLISTA="$PWD/build/desinstalar.nsh" \
-;            -DSAIDA="$PWD/build/WolfLeague-Setup.exe" instalador/windows.nsi
+;            -DSAIDA="$PWD/build/WolfLeague-Setup.exe" "$PWD/instalador/windows.nsi"
+;
+; O .nsi vai com caminho absoluto: o makensis entra na pasta dele antes de
+; compilar, e a arte vem de ${__FILEDIR__} (relativo, não acha o ícone).
 ;
 ; A arte (painéis com a Eve e o Barut, cabeçalho, ícone) vem pronta de
 ; instalador/gerar_arte.py. Instala só para o usuário

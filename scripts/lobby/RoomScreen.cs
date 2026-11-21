@@ -340,7 +340,7 @@ public partial class RoomScreen : LobbyScreen
 		row.MouseFilter = MouseFilterEnum.Ignore;
 		slot.AddChild(row);
 
-		row.AddChild(PhotoTile.Make(member.Photo, 30));
+		row.AddChild(PhotoTile.Make(PhotoOf(member), 30));
 
 		Icon crown = Icon.Make(IconKind.Crown, 16, member.IsHost ? UiTokens.Accent : new Color(0, 0, 0, 0));
 		row.AddChild(crown);
@@ -681,10 +681,27 @@ public partial class RoomScreen : LobbyScreen
 		RoomMember m = _selected ?? Me;
 		if (m == null) return panel;
 
+		// O retrato e os nomes no mesmo centro (Jhon, 21/11: "precisa alinhar a
+		// moldura com os nomes"). Bot não tem nível nem foto: o ícone dele, no
+		// mesmo lugar, para o nome não ficar solto.
 		HBoxContainer who = UiKit.Row(UiTokens.S3);
-		who.AddChild(RankBadge.Make(m.Rank, 56, avatar: m.Photo));
-		VBoxContainer names = UiKit.Column(0);
+		if (m.IsBot)
+		{
+			var botBox = new CenterContainer { CustomMinimumSize = new Vector2(64, 64) };
+			botBox.AddChild(Icon.Make(IconKind.Bot, 40, UiTokens.TextDisabled));
+			who.AddChild(botBox);
+		}
+		else
+		{
+			// a placa do nível passa um pouco da caixa: folga embaixo
+			var portrait = new MarginContainer();
+			portrait.AddThemeConstantOverride("margin_bottom", 10);
+			portrait.AddChild(RankBadge.Make(m.Rank, 64, avatar: PhotoOf(m)));
+			who.AddChild(portrait);
+		}
+		VBoxContainer names = UiKit.Column(2);
 		names.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		names.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 		names.AddChild(UiKit.Truncated(m.Name, "Subtitle", Teams.ColorOf(m.Team)));
 		names.AddChild(UiKit.Text(Ranks.NameOf(m.Rank), "Caption", Ranks.InkOf(m.Rank)));
 		who.AddChild(names);
@@ -1029,6 +1046,10 @@ public partial class RoomScreen : LobbyScreen
 		Change("Bots", new[] { "fáceis", "médios", "difíceis" }[level], () => S.Difficulty = (BotLevel)level);
 		Refresh();
 	}
+
+	/// <summary>A foto de um membro. A sua vem daqui mesmo, não do servidor:
+	/// na sala offline não há servidor, e um servidor antigo não manda foto.</summary>
+	private string PhotoOf(RoomMember m) => m == null || m.IsBot ? null : m.Photo ?? (m == Me ? Avatars.Selected : null);
 
 	/// <summary>Os degraus do filtro de nível da sala (em rank: nível − 1).</summary>
 	private static readonly int[] LevelSteps = { 0, 9, 24, 49, 99, 599, 1099, 1599, 2099, 2599, Ranks.Count - 1 };

@@ -39,6 +39,10 @@ public partial class Player : CharacterBody3D
 
 	private float _gravity = 9.8f;
 
+	/// <summary>Saiu do chão (ou está no bote) correndo de quatro: chegando
+	/// com o W apertado, a aterrissagem solta e a corrida continua.</summary>
+	private bool _sprintIntoAir;
+
 	/// <summary>O que o jogador quer neste quadro (<see cref="CharacterIntent"/>):
 	/// lido uma vez no começo do passo de física.</summary>
 	private CharacterIntent _intent;
@@ -448,8 +452,20 @@ public partial class Player : CharacterBody3D
 		// Um corta o outro (Jhon, 20/11): o golpe que já bateu (o bote que
 		// encostou, o salto que caiu) não prende o lobo se ele pula ou
 		// corre de quatro — sai neste mesmo passo.
-		if (_weapon.IsRecovering && (JumpPending || (_sprinting && _intent.Forward)))
+		//
+		// Andar também corta (Jhon, 21/11: "W W, pula, secundário com o W
+		// apertado; ao cair, o lobo corre no mesmo lugar travado"): quem
+		// chega do bote apertando para onde ir quer ir, e só a corrida de
+		// quatro cortava — soltar o W um instante no ar já desligava ela.
+		// Quem entrou no ar correndo de quatro volta correndo de quatro.
+		if (IsOnFloor() && !_weapon.IsRecovering && !_weapon.IsDiving) _sprintIntoAir = _sprinting;
+		else if (_sprinting) _sprintIntoAir = true;
+		bool moves = _form.IsWolf && _intent.Move.LengthSquared() > 0.01f;
+		if (_weapon.IsRecovering && (JumpPending || moves))
+		{
 			_weapon.CutRecovery();
+			if (moves && _intent.Forward && _sprintIntoAir && !_crouching) _sprinting = true;
+		}
 
 		// Os golpes especiais do lobo (bote, voo do salto, preso ao chão)
 		// movem o corpo pela arma; o resto do movimento espera.

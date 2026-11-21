@@ -83,11 +83,17 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Imagem do servidor de partida
         id: imagem
+        # Monta aqui no runner e envia com "docker push": quando o push volta,
+        # a imagem está no registro. Com "flyctl deploy --build-only --push"
+        # no construtor remoto, o envio às vezes chegava depois (ou nunca) e
+        # as máquinas recebiam MANIFEST_UNKNOWN.
         run: |
           rotulo="${GITHUB_REF_NAME//\//-}-${GITHUB_SHA::7}"
-          flyctl deploy --config fly.partida.toml --app "$FLY_APP_PARTIDA" \
-            --build-only --push --remote-only --image-label "$rotulo"
-          echo "ref=registry.fly.io/${FLY_APP_PARTIDA}:${rotulo}" >> "$GITHUB_OUTPUT"
+          ref="registry.fly.io/${FLY_APP_PARTIDA}:${rotulo}"
+          flyctl auth docker
+          docker build -f servidor/partida.Dockerfile -t "$ref" .
+          docker push "$ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       - name: Trocar a imagem nas máquinas
@@ -151,9 +157,12 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends nsis
           python3 instalador/gerar_lista.py build/windows build/desinstalar.nsh
+          # O .nsi com caminho absoluto: o makensis entra na pasta do script
+          # antes de compilar, e a arte (o ícone, os painéis) vem de
+          # ${__FILEDIR__}. Relativo, virava instalador/instalador/...
           makensis -V2 -DVERSAO="$VERSAO" -DVERSAO_NUM="$NUMERO" \
             -DORIGEM="$PWD/build/windows" -DLISTA="$PWD/build/desinstalar.nsh" \
-            -DSAIDA="$PWD/build/WolfLeague-Setup-${VERSAO}.exe" instalador/windows.nsi
+            -DSAIDA="$PWD/build/WolfLeague-Setup-${VERSAO}.exe" "$PWD/instalador/windows.nsi"
           mkdir -p entrega
           cp "build/WolfLeague-Setup-${VERSAO}.exe" "build/WolfLeague-${VERSAO}-windows.zip" entrega/
           ls -la entrega

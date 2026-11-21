@@ -22,11 +22,16 @@ public partial class Player
 	private bool IsHowling => _howling;
 
 	/// <summary>Quanto o botão direito apertado no chão fica guardado, em
-	/// segundos: junto com o pulo (ou um instante antes), o bote sai no
-	/// primeiro passo já no ar (Jhon, 20/11).</summary>
+	/// segundos: junto com o pulo (ou um instante antes), o bote fica pedido
+	/// para este pulo (Jhon, 20/11).</summary>
 	[Export] public float LeapBuffer = 0.15f;
 
 	private double _leapBuffered;
+
+	/// <summary>O bote pedido no ar (ou guardado do chão) esperando o lobo
+	/// subir até <c>Weapon.LeapMinHeight</c>. Sai assim que chegar; tocou o
+	/// chão antes, cai fora.</summary>
+	private bool _leapWaiting;
 
 	/// <summary>
 	/// Rugido: segurar R do começo ao fim da animação devolve o escudo
@@ -127,11 +132,14 @@ public partial class Player
 		// ele é o passo de física, pela arma.
 		//
 		// No chão o botão direito fica guardado um instante: apertado junto
-		// com o pulo (ou logo antes), o bote sai no primeiro passo já no ar.
+		// com o pulo (ou logo antes), vale para este pulo. No ar, o bote só
+		// sai a partir de uma altura (Weapon.LeapMinHeight): apertado antes,
+		// espera o lobo subir até lá e sai sozinho.
 		if (_intent.Special)
 		{
-			if (_form.IsWolf && IsOnFloor()) _leapBuffered = LeapBuffer;
-			else _weapon.TrySpecial();
+			if (!_form.IsWolf) _weapon.TrySpecial();
+			else if (IsOnFloor()) _leapBuffered = LeapBuffer;
+			else _leapWaiting = true;
 		}
 		else if (_leapBuffered > 0)
 		{
@@ -139,8 +147,18 @@ public partial class Player
 			if (!_form.IsWolf) _leapBuffered = 0;
 			else if (!IsOnFloor())
 			{
+				_leapBuffered = 0;
+				_leapWaiting = true;
+			}
+		}
+
+		if (_leapWaiting)
+		{
+			if (!_form.IsWolf || IsOnFloor()) _leapWaiting = false;
+			else
+			{
 				_weapon.TrySpecial();
-				if (_weapon.IsDiving) _leapBuffered = 0;
+				if (_weapon.IsDiving) _leapWaiting = false;
 			}
 		}
 
