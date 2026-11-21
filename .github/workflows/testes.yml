@@ -73,4 +73,4 @@ jobs:
       - name: Testes
         env:
           GODOT: ${{ steps.godot.outputs.bin }}
-        run: tools/testar.sh
+        run: bash tools/testar.sh
