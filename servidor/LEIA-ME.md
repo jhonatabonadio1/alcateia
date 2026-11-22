@@ -116,6 +116,7 @@ segunda derruba a primeira.
 | `room.bot.add` | `team` | Só o dono: põe um bot no time (se couber) |
 | `room.bot.remove` | `id` (negativo) | Só o dono: tira o bot |
 | `room.start` | | Só o dono, com todos prontos (bot está sempre pronto) |
+| `room.restart` | | Só o dono: a sala inteira vai para uma partida nova, sem esperar pronto. Com partida em curso, ela é descartada (sai da frota; o resultado dela, quando vier, é recusado e não paga ninguém). Na tela do resultado é o "jogar de novo" |
 | `chat` | `text` | Na sala, para a sala; fora, para o saguão |
 | `ping` | | |
 
@@ -126,7 +127,7 @@ segunda derruba a primeira.
 | `room` | A sala em que você está: regras, membros, estado. Os bots vêm em `members` com `bot: true`, `id` negativo, `owner` (a conta do dono da sala, cuja máquina os move) e sem `xp` |
 | `left` | Você saiu da sala |
 | `chat` | `from`, `text` |
-| `match.start` | `address`, `port`, `matchKey`, `accountId`, `expires`, `ticket`, `settings` — hora de ligar no servidor de partida |
+| `match.start` | `address`, `port`, `matchKey`, `accountId`, `expires`, `ticket`, `settings`, `restart` (o dono reiniciou a partida que estava em curso) — hora de ligar no servidor de partida |
 | `match.end` | O placar e o que você ganhou (`you{xp, presas}`) |
 | `error` | `code`, `message`. Na sala em partida: `servidor_caiu` (o servidor de partida parou de bater) ou `partida_encerrada` (fechou sem resultado) — a sala já voltou a esperar |
 | `pong` | |

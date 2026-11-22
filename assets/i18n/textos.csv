@@ -1166,3 +1166,18 @@ WASD E MOUSE  ·  ESPAÇO: VOLTAR AOS ALIADOS,,WASD AND MOUSE  ·  SPACE: BACK T
 "depth_test_disabled, ",,,,scripts/visual/Silhouette.cs
 Head,,,,scripts/visual/VisualSmoothing.cs
 Weapon,,,,scripts/visual/VisualSmoothing.cs
+Resolução 3D,,3D resolution,Resolución 3D,scripts/lobby/OptionsScreen.cs
+Quanto da tela o jogo desenha em 3D. Menos é mais rápido; o menu e a mira ficam nítidos. A luz não muda. É o que mais ajuda em placa fraca.,,How much of the screen the game renders in 3D. Lower is faster; the menu and crosshair stay sharp. Lighting does not change. This helps the most on a weak graphics card.,Cuánto de la pantalla dibuja el juego en 3D. Menos es más rápido; el menú y la mira se ven nítidos. La luz no cambia. Es lo que más ayuda en una tarjeta débil.,scripts/lobby/OptionsScreen.cs
+Resolução dinâmica,,Dynamic resolution,Resolución dinámica,scripts/lobby/OptionsScreen.cs
+"Quando a placa não segura o limite de FPS, o 3D baixa a resolução sozinho (até 50%) e volta quando sobra. A resolução 3D acima é o máximo.",,"When the graphics card can't hold the FPS limit, the 3D lowers its resolution on its own (down to 50%) and raises it again when there is headroom. The 3D resolution above is the maximum.","Cuando la tarjeta no aguanta el límite de FPS, el 3D baja la resolución solo (hasta 50%) y la sube cuando sobra. La resolución 3D de arriba es el máximo.",scripts/lobby/OptionsScreen.cs
+Limite de FPS,,FPS limit,Límite de FPS,scripts/lobby/OptionsScreen.cs
+"O máximo de quadros por segundo. O do monitor acompanha os Hz dele (60, 75, 144…). Para passar dos Hz, desligue o V-Sync.",,"The maximum frames per second. The monitor option follows its refresh rate (60, 75, 144…). To go above it, turn V-Sync off.","El máximo de cuadros por segundo. El del monitor sigue sus Hz (60, 75, 144…). Para superarlos, desactiva el V-Sync.",scripts/lobby/OptionsScreen.cs
+Monitor,,Monitor,Monitor,scripts/core/Settings.cs
+Sem limite,,Unlimited,Sin límite,scripts/core/Settings.cs
+Desligado,,Off,Desactivado,scripts/core/Settings.cs
+Ligado,,On,Activado,scripts/core/Settings.cs
+Adaptativo,,Adaptive,Adaptativo,scripts/core/Settings.cs
+"A placa entrega o quadro na hora: menos atraso no mouse, mas a imagem pode rasgar.",,"Frames are shown right away: less mouse delay, but the image can tear.","La tarjeta entrega el cuadro al instante: menos retraso del ratón, pero la imagen puede rasgarse.",scripts/core/Settings.cs
+Sem rasgo na imagem; o FPS não passa dos Hz do monitor. O padrão.,,No tearing; FPS does not go above the monitor's refresh rate. The default.,Sin rasgado; los FPS no superan los Hz del monitor. El predeterminado.,scripts/core/Settings.cs
+"Como o ligado, mas quando o FPS cai abaixo dos Hz do monitor ele desliga, para não travar.",,"Like On, but it turns off when FPS drops below the monitor's refresh rate, to avoid stutter.","Como Activado, pero se desactiva cuando los FPS caen por debajo de los Hz del monitor, para no trabarse.",scripts/core/Settings.cs
+Mostrar desempenho (FPS e ping),,Show performance (FPS and ping),Mostrar rendimiento (FPS y ping),scripts/lobby/OptionsScreen.cs

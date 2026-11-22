@@ -72,7 +72,7 @@ public partial class Hud : CanvasLayer
 		Node player = Subject ?? Groups.LocalPlayer(GetTree()) ?? Nodes.FindFirst<Player>(GetTree().CurrentScene);
 		if (player == null)
 		{
-			GD.PrintErr("Hud: nenhum Player encontrado na cena.");
+			GD.PrintErr("Hud: no Player found in the scene.");
 			return;
 		}
 

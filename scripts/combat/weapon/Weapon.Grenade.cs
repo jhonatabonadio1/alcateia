@@ -43,7 +43,11 @@ public partial class Weapon
 	/// deixar voce segurando granada no meio de um tiroteio.
 	/// </summary>
 	/// <summary>Granada pronta na mão, esperando o botão soltar.</summary>
-	public bool IsGrenadeReady => _grenadeReady && HumanSlot == Slot.Grenade && !_form.IsWolf;
+	public bool IsGrenadeReady => (Puppet ? RemoteGrenadeReady : _grenadeReady) && HumanSlot == Slot.Grenade && !_form.IsWolf;
+
+	/// <summary>No boneco de outro jogador: o dono está com a granada pronta
+	/// na mão (o estado que chegou, desde 21/11). O corpo arma o braço.</summary>
+	public bool RemoteGrenadeReady { get; set; }
 	private bool _grenadeReady;
 
 	/// <summary>
@@ -195,20 +199,20 @@ public partial class Weapon
 	{
 		if (_form.IsWolf || !_form.CanAttack)
 		{
-			if (Debug) GD.Print("granada: so na forma humana, fora de transicao");
+			if (Debug) GD.Print("grenade: human form only, not while transforming");
 			return;
 		}
 
 		if (Grenades <= 0)
 		{
-			if (Debug) GD.Print("granada: acabou");
+			if (Debug) GD.Print("grenade: none left");
 			EmitSignal(SignalName.GrenadesChanged, Grenades);
 			return;
 		}
 
 		if (GrenadeScene == null)
 		{
-			GD.PrintErr("Weapon: GrenadeScene nao atribuida.");
+			GD.PrintErr("Weapon: GrenadeScene not assigned.");
 			return;
 		}
 

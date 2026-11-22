@@ -63,7 +63,7 @@ public sealed class ProfilePersistsTest : RegressionTest
 
 	public override async Task Run(RegressionBench b)
 	{
-		string path = ProjectSettings.GlobalizePath("user://perfil.json");
+		string path = ProjectSettings.GlobalizePath(UserFiles.Profile);
 		string backup = System.IO.File.Exists(path) ? System.IO.File.ReadAllText(path) : null;
 		try
 		{

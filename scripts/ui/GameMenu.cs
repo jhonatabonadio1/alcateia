@@ -27,6 +27,7 @@ public partial class GameMenu : CanvasLayer
 	private Control _sub;
 	private Modal _confirm;
 	private Button _continue;
+	private Button _restart;
 	private bool _open;
 
 	public override void _Ready()
@@ -58,6 +59,9 @@ public partial class GameMenu : CanvasLayer
 		_open = true;
 		_root.Visible = true;
 		_main.Visible = true;
+		// Online só o mestre da sala reinicia (e reinicia para todos). Pergunta
+		// a cada abertura: o mestre pode ter saído e passado a sala.
+		_restart.Visible = Match.Current?.CanRestart ?? true;
 		UiState.Push();
 		Motion.FadeIn(_root, UiTokens.Fast);
 		_continue.CallDeferred(Control.MethodName.GrabFocus);
@@ -92,6 +96,47 @@ public partial class GameMenu : CanvasLayer
 			new Modal.Choice("Abandonar", ButtonKind.Danger, then),
 			new Modal.Choice("Ficar", ButtonKind.Primary, null));
 		_confirm.Closed += () => _confirm = null;
+	}
+
+	/// <summary>Online, o "reiniciar" do mestre: confirma dizendo o que
+	/// acontece com todos, pede ao saguão e avisa se não deu.</summary>
+	private void RestartChoice()
+	{
+		if (Match.Current is not { Online: true })
+		{
+			Abandon("Reiniciar a partida?", Restart);
+			return;
+		}
+
+		using var style = UiTokens.MenuScope();
+		Label body = UiKit.Paragraph("A partida recomeça do zero para todos da sala. Esta não rende XP, Presas nem missões para ninguém.");
+		body.CustomMinimumSize = new Vector2(400, 0);
+		_confirm = Modal.Open(_root, "Reiniciar para todos?", body,
+			new Modal.Choice("Reiniciar", ButtonKind.Danger, () =>
+			{
+				Close();
+				RestartOnline(this);
+			}),
+			new Modal.Choice("Voltar", ButtonKind.Primary, null));
+		_confirm.Closed += () => _confirm = null;
+	}
+
+	/// <summary>Pede o reinício ao saguão e mostra, em <paramref name="host"/>,
+	/// que pediu — e o motivo, se o saguão recusar (sem servidor livre, não é
+	/// mais o mestre). A partida nova chega para todos como o começar.</summary>
+	public static void RestartOnline(Node host)
+	{
+		LobbyLink lobby = LobbyLink.Instance;
+		void Failed(string code, string message)
+		{
+			lobby.Failed -= Failed;
+			if (IsInstanceValid(host)) Toast.Push(host, message, UiTokens.Danger, 4f);
+		}
+		lobby.Failed += Failed;
+		host.GetTree().CreateTimer(10).Timeout += () => lobby.Failed -= Failed;
+
+		Match.Current?.Restart();
+		Toast.Push(host, "Reiniciando a partida para todos…");
 	}
 
 	private void Restart()
@@ -231,7 +276,7 @@ public partial class GameMenu : CanvasLayer
 
 		stack.AddChild(UiKit.Divider());
 
-		Item(stack, "Reiniciar partida", ButtonKind.Secondary, () => Abandon("Reiniciar a partida?", Restart));
+		_restart = Item(stack, "Reiniciar partida", ButtonKind.Secondary, RestartChoice);
 		Item(stack, "Sair para a sala", ButtonKind.Secondary, () => Abandon("Sair para a sala?", BackToRoom));
 		Item(stack, "Sair do jogo", ButtonKind.Danger, () => Abandon("Sair do jogo?", () => GetTree().Quit()));
 	}

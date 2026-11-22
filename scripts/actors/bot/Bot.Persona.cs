@@ -85,6 +85,11 @@ public partial class Bot
 	{
 		get
 		{
+			// O boneco de outro jogador: o que o dono diz (21/11). Pela
+			// velocidade, o lobo de quem andava em pé com uma tatuagem de
+			// velocidade, ou numa raça mais rápida que a do boneco, aparecia
+			// correndo de quatro.
+			if (Remote) return RemoteSprinting && _form.IsWolf && !_health.IsDead;
 			if (!_form.IsWolf || !IsOnFloor()) return false;
 			Vector3 flat = new Vector3(Velocity.X, 0, Velocity.Z);
 			return flat.Length() > FormSpeed * SprintSpeedMark;
@@ -103,7 +108,7 @@ public partial class Bot
 		RollMood();
 
 		if (Debug)
-			GD.Print($"{Name}: lobo {_wolfLove:0.00}, distância ×{_rangeTaste:0.00}, flanco {_flank:0.0} m");
+			GD.Print($"{Name}: wolf {_wolfLove:0.00}, range ×{_rangeTaste:0.00}, flank {_flank:0.0} m");
 	}
 
 	private void RollMood()
@@ -130,7 +135,7 @@ public partial class Bot
 
 		RollMood();
 
-		if (Debug) GD.Print($"{Name}: humor de {(_wolfMood ? "lobo" : "arma")}");
+		if (Debug) GD.Print($"{Name}: in the mood for {(_wolfMood ? "wolf" : "gun")}");
 	}
 
 	/// <summary>
@@ -182,7 +187,7 @@ public partial class Bot
 		GoLook(prey.GlobalPosition + guess, flank: false);
 		_idleFor = 0;
 
-		if (Debug) GD.Print($"{Name}: sem notícia, foi atrás");
+		if (Debug) GD.Print($"{Name}: no news, went hunting");
 	}
 
 	/// <summary>

@@ -61,7 +61,7 @@ public partial class NetMatch : Node
 	private readonly Dictionary<long, Bot> _puppets = new();
 	private readonly Dictionary<long, Bot> _owned = new();   // os bots que esta máquina move
 	private double _sendTimer, _joinTimer;
-	private bool _hitInProgress, _left;
+	private bool _hitInProgress, _left, _superseded;
 
 	// ---- partida autoritativa
 	/// <summary>O servidor move os corpos (decisão 0011).</summary>
@@ -85,6 +85,16 @@ public partial class NetMatch : Node
 	public int Corrections => _prediction.Corrections;
 	public float LastError => _prediction.LastError;
 
+	/// <summary>Ida e volta até o servidor de partida (ms), do ENet; -1 sem ligação.</summary>
+	public int PingMs => Server()?.GetStatistic(ENetPacketPeer.PeerStatistic.RoundTripTime) is double rtt ? (int)rtt : -1;
+
+	/// <summary>Pacotes perdidos no caminho (0 a 1), do ENet; -1 sem ligação.</summary>
+	public float PacketLoss => Server()?.GetStatistic(ENetPacketPeer.PeerStatistic.PacketLoss) is double loss
+		? (float)(loss / 65536.0) : -1f;
+
+	private ENetPacketPeer Server() =>
+		_peer != null && _peer.GetConnectionStatus() == MultiplayerPeer.ConnectionStatus.Connected ? _peer.GetPeer(1) : null;
+
 	private static double LocalSeconds => Time.GetTicksUsec() / 1_000_000.0;
 
 	public override void _EnterTree() => Current = this;
@@ -105,8 +115,11 @@ public partial class NetMatch : Node
 
 		_health.Died += OnLocalDied;
 		_health.Respawned += OnLocalRespawned;
-		_weapon.Fired += () => SendAttack();
+		// O golpe do lobo vai quando começa (SendMove), não no impacto: o
+		// boneco toca o golpe certo, na hora certa. A arma, quando atira.
+		_weapon.Fired += () => { if (!_form.IsWolf) SendAttack(); };
 		_weapon.Thrown += () => SendAttack(Slot.Grenade);
+		_weapon.WolfMoveStarted += move => SendMoveSoon(null, (WolfMove)move);
 
 		_peer = new ENetMultiplayerPeer();
 		Error error = _peer.CreateClient(OnlineMatch.Address, OnlineMatch.Port);
@@ -142,8 +155,10 @@ public partial class NetMatch : Node
 		_owned[id] = bot;
 
 		var weapon = bot.GetNode<Weapon>("Weapon");
-		weapon.Fired += () => SendBotAttack(bot, weapon.CurrentSlot);
+		var botForm = bot.GetNode<FormController>("FormController");
+		weapon.Fired += () => { if (!botForm.IsWolf) SendBotAttack(bot, weapon.CurrentSlot); };
 		weapon.Thrown += () => SendBotAttack(bot, Slot.Grenade);
+		weapon.WolfMoveStarted += move => SendMoveSoon(bot, (WolfMove)move);
 
 		// Morte sem autor (queda, a própria granada): o servidor fica sabendo.
 		bot.GetNode<Health>("Health").Died += _ =>
@@ -208,7 +223,23 @@ public partial class NetMatch : Node
 			_net.MultiplayerPeer = new OfflineMultiplayerPeer();
 			GetTree().SetMultiplayer(null, GetPath());
 		}
-		OnlineMatch.Finish();
+		// Trocada por uma nova (o mestre reiniciou): a online continua.
+		if (!_superseded) OnlineMatch.Finish();
+	}
+
+	/// <summary>
+	/// O saguão mandou outra partida (o mestre reiniciou): esta para de falar
+	/// com o servidor dela agora — o resultado dela não vale nada — e não
+	/// volta para a sala nem encerra a partida online quando a cena sair: a
+	/// tela de carregamento já está levando para a nova.
+	/// </summary>
+	public void Supersede()
+	{
+		if (_superseded) return;
+		_superseded = true;
+		_left = true;
+		GD.Print("Online match: the room host restarted; moving to the new one.");
+		_peer?.Close();
 	}
 
 	public override void _PhysicsProcess(double delta)
@@ -256,6 +287,12 @@ public partial class NetMatch : Node
 			Form = (byte)_form.Current,
 			Slot = (byte)_weapon.HumanSlot,
 			Grounded = _body.IsOnFloor(),
+			WallRunning = _player is Player { IsWallRunning: true },
+			Sprinting = _me is { IsSprinting: true },
+			Crouching = _me is { IsCrouching: true },
+			Howling = _me != null && _me.HowlProgress > 0f,
+			Quiet = _me != null && (_me.IsCrouching || _me.IsWalking),
+			GrenadeReady = _weapon.IsGrenadeReady,
 			Dead = _health.IsDead,
 			Hp = _health.Hp,
 			MaxHp = _health.MaxHp,
@@ -302,6 +339,7 @@ public partial class NetMatch : Node
 
 		_recent[_seq % InputCommand.Redundancy] = c;
 		_prediction.Record(_seq, _me.GlobalPosition.ToNumerics(), _me.Velocity.ToNumerics());
+		_wallAt[_seq % (uint)_wallAt.Length] = (_seq, _me.IsWallRunning);
 
 		_net.SendBytes(NetCommands.InputPacket(_recent, _seq, _inputBuffer), 1, MultiplayerPeer.TransferModeEnum.Unreliable);
 	}
@@ -380,7 +418,7 @@ public partial class NetMatch : Node
 		_spawn = _player.GlobalPosition;
 		_spawnConfirmed = false;
 		SendLoadout();
-		GD.Print("Partida online autoritativa: o servidor move os corpos.");
+		GD.Print("Authoritative online match: the server moves the bodies.");
 	}
 
 	/// <summary>O estado do mundo: corrige o meu corpo e guarda a pose dos outros.</summary>
@@ -426,6 +464,8 @@ public partial class NetMatch : Node
 		_spawnConfirmed = true;
 		if (_health.IsDead || ack == 0) return;
 
+		SyncWall(e.Has(EntityFlags.WallRunning), ack);
+
 		System.Numerics.Vector3 fix = _prediction.Reconcile(ack, _seq, e.Position);
 		if (fix == System.Numerics.Vector3.Zero) return;
 
@@ -433,6 +473,29 @@ public partial class NetMatch : Node
 		_player.GlobalPosition += moved;
 		if (moved.Length() < Prediction.SnapDistance)
 			_player.GetNodeOrNull<VisualSmoothing>("VisualSmoothing")?.Absorb(moved);
+	}
+
+	/// <summary>Se este jogo estava na parede em cada passo mandado (para
+	/// comparar com o que o servidor diz do mesmo passo).</summary>
+	private readonly (uint Seq, bool Wall)[] _wallAt = new (uint, bool)[128];
+
+	/// <summary>O passo em que o jogo voltou para a parede por ordem do
+	/// servidor: os estados de antes dele já não dizem nada.</summary>
+	private uint _wallSyncSeq;
+
+	/// <summary>
+	/// O servidor diz que, no passo <paramref name="ack"/>, o corpo estava na
+	/// parede e este jogo, no mesmo passo, não: a posição sozinha não
+	/// resolve (o jogo cai, o servidor corre, e a correção arrasta o lobo
+	/// de pé pela parede). O jogo volta para ela
+	/// (<see cref="Player.ResumeWallFromServer"/>).
+	/// </summary>
+	private void SyncWall(bool serverWall, uint ack)
+	{
+		if (_me == null || !serverWall || ack <= _wallSyncSeq) return;
+		var (seq, clientWall) = _wallAt[ack % (uint)_wallAt.Length];
+		if (seq != ack || clientWall) return;
+		if (_me.ResumeWallFromServer()) _wallSyncSeq = _seq;
 	}
 
 	/// <summary>Os outros, um pouco no passado, entre dois estados que já chegaram.</summary>
@@ -449,6 +512,11 @@ public partial class NetMatch : Node
 			Form form = Enum.IsDefined(typeof(Form), (int)p.Form) ? (Form)p.Form : Form.Human;
 			puppet.RemoteSnapshot(p.Position.ToGodot(), p.Velocity.ToGodot(), p.Yaw, p.Pitch,
 				p.Has(EntityFlags.Grounded), form, (Slot)p.Slot);
+			// O servidor já mandava (EntityFlags.WallRunning); o boneco não usava.
+			puppet.RemoteWallRun = p.Has(EntityFlags.WallRunning);
+			// Correr de quatro e agachar também já vinham; rugir, desde 21/11.
+			bool crouching = p.Has(EntityFlags.Crouching);
+			puppet.RemoteMotion(p.Has(EntityFlags.Sprinting), crouching, p.Has(EntityFlags.Howling), crouching, false);
 		}
 	}
 
@@ -472,6 +540,45 @@ public partial class NetMatch : Node
 		w.Write((byte)(slot ?? _weapon.CurrentSlot));
 		w.Write(_player.Rotation.Y);
 		w.Write(_head.Rotation.X);
+		Send(stream);
+	}
+
+	/// <summary>
+	/// O golpe do lobo começou (o meu ou o de um bot meu): vai no fim do
+	/// quadro, quando a arma já calculou o voo do salto (o sinal sai antes,
+	/// no meio da conta). O uivo vai no estado, não aqui.
+	/// </summary>
+	private void SendMoveSoon(Bot bot, WolfMove move)
+	{
+		if (move == WolfMove.Howl) return;
+		Callable.From(() => SendMove(bot, move)).CallDeferred();
+	}
+
+	/// <summary>Um <c>Attack</c> de lobo com o golpe no fim (NetWire): o
+	/// boneco toca exatamente este golpe — garrada de um braço ou do outro,
+	/// o salto do especial ou o bote.</summary>
+	private void SendMove(Bot bot, WolfMove move)
+	{
+		if (!Joined || _left) return;
+		if (bot != null && !IsInstanceValid(bot)) return;
+
+		Weapon weapon = bot != null ? bot.GetNode<Weapon>("Weapon") : _weapon;
+		float a = 0f, b = 0f;
+		if (move == WolfMove.Pounce)
+		{
+			a = weapon.PounceSkip;
+			b = weapon.PounceFlightRate;
+		}
+		else if (move == WolfMove.Leap) a = weapon.DiveEta;
+
+		BinaryWriter w = NetWire.Begin(bot != null ? NetWire.BotAttack : NetWire.Attack, out MemoryStream stream);
+		if (bot != null) w.Write(bot.NetId);
+		w.Write((byte)Slot.Wolf);
+		w.Write(bot != null ? bot.Rotation.Y : _player.Rotation.Y);
+		w.Write(bot != null ? bot.HeadPitch : _head.Rotation.X);
+		w.Write((byte)((int)move + 1));
+		w.Write(a);
+		w.Write(b);
 		Send(stream);
 	}
 
@@ -548,9 +655,12 @@ public partial class NetMatch : Node
 		if (!_hitInProgress && Joined) SendDied(OnlineMatch.AccountId, 0, KillCause.Fall, "", false, new List<long>());
 	}
 
+	// Sem garantia, mas em ordem: o estado velho que chega depois de um novo
+	// é jogado fora (21/11). O comando da partida autoritativa (Input) não
+	// passa por aqui: ele leva os últimos de folga e o servidor ordena.
 	private void Send(MemoryStream stream, bool reliable = true) =>
 		_net.SendBytes(stream.ToArray(), 1,
-			reliable ? MultiplayerPeer.TransferModeEnum.Reliable : MultiplayerPeer.TransferModeEnum.Unreliable);
+			reliable ? MultiplayerPeer.TransferModeEnum.Reliable : MultiplayerPeer.TransferModeEnum.UnreliableOrdered);
 
 	// ------------------------------------------------------------ o que me contam
 
@@ -591,7 +701,19 @@ public partial class NetMatch : Node
 
 				case NetWire.Attack:
 					if (_puppets.TryGetValue(r.ReadInt64(), out Bot attacker))
-						attacker.RemoteAttack((Slot)r.ReadByte(), r.ReadSingle(), r.ReadSingle());
+					{
+						var attackSlot = (Slot)r.ReadByte();
+						float attackYaw = r.ReadSingle(), attackPitch = r.ReadSingle();
+						// O golpe do lobo, no fim (desde 21/11); sem ele, o ataque de antes.
+						int move = r.BaseStream.Position < r.BaseStream.Length ? r.ReadByte() : 0;
+						float moveA = 0f, moveB = 0f;
+						if (move > 0 && r.BaseStream.Length - r.BaseStream.Position >= 8)
+						{
+							moveA = r.ReadSingle();
+							moveB = r.ReadSingle();
+						}
+						attacker.RemoteAttack(attackSlot, attackYaw, attackPitch, move, moveA, moveB);
+					}
 					break;
 
 				case NetWire.Radio:
@@ -637,7 +759,7 @@ public partial class NetMatch : Node
 		}
 		catch (Exception e) when (e is EndOfStreamException or IOException or ArgumentException or IndexOutOfRangeException)
 		{
-			GD.PushWarning($"NetMatch: pacote torto do servidor ({e.Message})");
+			GD.PushWarning($"NetMatch: malformed packet from the server ({e.Message})");
 		}
 	}
 
@@ -646,6 +768,8 @@ public partial class NetMatch : Node
 		Form form = Enum.IsDefined(typeof(Form), (int)s.Form) ? (Form)s.Form : Form.Human;
 		body.RemoteUpdate(s.Position, s.Velocity, s.Yaw, s.Pitch, s.Grounded, form, (Slot)s.Slot,
 			s.Primary, s.Secondary, s.Hp, s.MaxHp, s.Shield, s.MaxShield, s.Dead);
+		body.RemoteWallRun = s.WallRunning && !s.Dead;
+		body.RemoteMotion(s.Sprinting, s.Crouching, s.Howling && !s.Dead, s.Quiet, s.GrenadeReady && !s.Dead);
 		if (s.HasGear && !s.Dead) body.RemoteGear(s.Ammo, s.Reloading, s.Grenades, s.Wp, s.Charge);
 	}
 
@@ -754,7 +878,7 @@ public partial class NetMatch : Node
 		// Partida já encerrada: o servidor fechou a porta, como combinado.
 		if (Match.Current is { Phase: MatchPhase.Ended }) return;
 
-		GD.Print("Partida online: " + why);
+		GD.Print("Online match ended: " + why);
 		OnlineMatch.Notice = why;
 		Callable.From(() => Match.Current?.Leave(ReturnTarget.Room)).CallDeferred();
 	}

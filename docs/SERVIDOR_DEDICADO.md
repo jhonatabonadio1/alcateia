@@ -14,8 +14,8 @@ que toda a arte vira casca.
 1. **exporta**: o editor do Godot .NET (só nesta etapa) prepara a cópia
    (`tools/servidor/preparar_exportacao.py`), importa e exporta o preset
    **"Servidor (Linux)"** de `export_presets.cfg`;
-2. **roda**: só `WolfLeagueServidor` (o modelo de exportação),
-   `WolfLeagueServidor.pck` e `data_WolfLeague_linuxbsd_*` (o C# em Release e
+2. **roda**: só `WolfLeagueServer` (o modelo de exportação),
+   `WolfLeagueServer.pck` e `data_WolfLeague_linuxbsd_*` (o C# em Release e
    o .NET dele), em cima de `mcr.microsoft.com/dotnet/runtime-deps:8.0`,
    como usuário sem privilégio.
 
@@ -73,7 +73,7 @@ exportar à mão, com o Godot .NET e os modelos de exportação instalados:
 
 ```
 python3 tools/servidor/preparar_exportacao.py   # só numa CÓPIA do projeto
-godot --headless --path . --export-release "Servidor (Linux)" build/servidor/WolfLeagueServidor
+godot --headless --path . --export-release "Servidor (Linux)" build/servidor/WolfLeagueServer
 ```
 
 Atenção: num projeto que vai continuar em uso, não rode o

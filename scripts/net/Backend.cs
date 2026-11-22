@@ -37,7 +37,7 @@ public static class Backend
 	public static string DefaultUrl => OS.HasFeature("editor")
 		? LocalUrl
 		: ProjectSettings.GetSetting("wolfleague/rede/servidor", LocalUrl).AsString().TrimEnd('/');
-	private const string FilePath = "user://online.cfg";
+	private const string FilePath = UserFiles.Online;
 
 	/// <summary>A resposta de uma chamada: o código HTTP (0 se o
 	/// servidor nem respondeu) e o corpo.</summary>
@@ -300,9 +300,10 @@ public static class Backend
 		var file = new ConfigFile();
 		if (file.Load(FilePath) != Godot.Error.Ok) return;
 
-		_url = file.GetValue("servidor", "url", DefaultUrl).AsString();
+		// [server] e [accounts] (até 21/11, [servidor] e [acessos]).
+		_url = file.GetValue("server", "url", file.GetValue("servidor", "url", DefaultUrl)).AsString();
 
-		string list = file.GetValue("acessos", "lista", "").AsString();
+		string list = file.GetValue("accounts", "list", file.GetValue("acessos", "lista", "")).AsString();
 		if (list.Length > 0)
 		{
 			try
@@ -337,8 +338,8 @@ public static class Backend
 			array.Add(new JsonObject { ["url"] = a.Url, ["id"] = a.Id, ["name"] = a.Name, ["token"] = a.Token, ["savedAt"] = a.SavedAt });
 
 		var file = new ConfigFile();
-		file.SetValue("servidor", "url", _url);
-		file.SetValue("acessos", "lista", array.ToJsonString());
+		file.SetValue("server", "url", _url);
+		file.SetValue("accounts", "list", array.ToJsonString());
 		file.Save(FilePath);
 	}
 }

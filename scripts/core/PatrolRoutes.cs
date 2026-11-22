@@ -43,7 +43,7 @@ public partial class PatrolRoutes : Node3D
 		}
 
 		if (Debug)
-			GD.Print($"PatrolRoutes: {_routes.Count} rotas");
+			GD.Print($"PatrolRoutes: {_routes.Count} routes");
 	}
 
 	public override void _ExitTree()

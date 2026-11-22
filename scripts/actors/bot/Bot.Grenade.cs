@@ -83,7 +83,7 @@ public partial class Bot
 		_grenadesBefore = _weapon.Grenades;
 		_weapon.SelectSlot(Slot.Grenade);
 
-		if (Debug) GD.Print($"{Name}: granada a {distance:0.0} m{(wolf ? " no lobo" : "")}{(sees ? "" : " atrás da parede")}");
+		if (Debug) GD.Print($"{Name}: grenade at {distance:0.0} m{(wolf ? " at the wolf" : "")}{(sees ? "" : " behind the wall")}");
 	}
 
 	/// <summary>

@@ -274,8 +274,16 @@ public partial class CharacterAnimator
 		var camera = GetNodeOrNull<Camera3D>(OwnerCameraPath);
 		uint layers = camera != null ? 1u << (BodyLayer - 1) : 1u | ViewModel.CharacterLayer;
 
-		var held = new HeldWeapon { Name = "HeldWeapon" };
+		// As poses do Blender do personagem (poses_armas.json, ao lado do modelo).
+		var held = new HeldWeapon { Name = "HeldWeapon", PosesPath = HoldPoses.PathFor(_modelPath) };
 		AddChild(held);
 		held.Attach(_model, _body, layers);
+		_held = held;
 	}
+
+	/// <summary>A arma na mão. Quando ela vem do conjunto de primeira pessoa,
+	/// os braços fazem a recarga e a granada de lá (as do clipe de fuzil não
+	/// tocam por cima).</summary>
+	private HeldWeapon _held;
+	private bool ArmsFromRig => _held != null && IsInstanceValid(_held) && _held.ArmsFromRig;
 }

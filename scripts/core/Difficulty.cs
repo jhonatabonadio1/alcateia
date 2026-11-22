@@ -56,7 +56,7 @@ public static class Difficulty
 		preset = ResourceLoader.Load<BotDifficulty>(Files[level]);
 		if (preset == null)
 		{
-			GD.PushError($"Dificuldade: não achei {Files[level]}; usando os valores do médio.");
+			GD.PushError($"Difficulty: {Files[level]} not found; using the medium values.");
 			preset = new BotDifficulty();
 		}
 

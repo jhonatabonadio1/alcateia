@@ -79,7 +79,7 @@ public static class UiFonts
 	private static Font Load(string file)
 	{
 		var font = GD.Load<Font>(Dir + file);
-		if (font == null) GD.PrintErr($"UiFonts: não achei {Dir}{file}");
+		if (font == null) GD.PrintErr($"UiFonts: not found: {Dir}{file}");
 		return font ?? ThemeDB.FallbackFont;
 	}
 

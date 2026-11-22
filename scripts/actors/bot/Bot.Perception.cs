@@ -154,7 +154,7 @@ public partial class Bot
 			_alerted = true;
 			_threatAge = 0;
 
-			if (Debug) GD.Print($"{Name} ouviu {noise.Kind} e ficou");
+			if (Debug) GD.Print($"{Name} heard {noise.Kind} and stayed");
 			return;
 		}
 
@@ -165,7 +165,7 @@ public partial class Bot
 
 		Believe(noise.Position + error, Memory);
 
-		if (Debug) GD.Print($"{Name} ouviu {noise.Kind} a {distance:0}m e foi olhar");
+		if (Debug) GD.Print($"{Name} heard {noise.Kind} at {distance:0}m and went to look");
 	}
 
 	/// <summary>Registra onde o bot acha que o alvo está.</summary>

@@ -54,6 +54,7 @@ escudo.
 | Painel: senha errada | 5 erros seguidos | a conta trava 15 min (evento crítico) |
 | Painel: endereço fora da lista | — | 404 e evento grave |
 | Resultado de partida absurdo | mais de 8 abates por minuto, 90% na cabeça em 20+ abates, 40+ abates sem morrer | alerta na ficha do jogador — não pune sozinho |
+| Problema numa partida | servidor de partida que sumiu ou desligou, jogador recusado na porta, ligação que caiu, partida vazia ou abandonada, resultado que não chegou, erro ou lentidão do servidor de partida | só registra (tipos `partida.*`, filtro **Partidas** no painel); não bloqueia ninguém |
 
 **Bloqueio automático**: 15 minutos na primeira vez, e quatro vezes mais
 a cada reincidência, até um dia. Aparece no painel (Blacklist de IP) com
@@ -76,6 +77,36 @@ Os eventos ficam em dois lugares:
   (`docker-compose.monitor.yml`). **É a cópia que importa numa
   invasão**: quem tomar o servidor apaga a tabela, não o que já saiu
   dele. O ideal é o Loki em outra máquina.
+
+### Problemas de partida (`partida.*`)
+
+O servidor de partida (o Godot no Fly) não tem como falar com o painel:
+ele conta o que deu errado e manda **junto da batida que já dá na API a
+cada 2 s** (campo `events`, no máximo 20 por batida; se a batida falhar,
+os incidentes voltam para a fila, que guarda 40). A API só aceita os tipos
+`partida.*` da lista abaixo, limita a gravidade e ignora o que vier torto.
+Quem forjar a chave da frota não consegue gravar outro tipo de evento por
+aqui. O mesmo incidente (tipo, partida, conta) só é anotado a cada 15 s: os
+repetidos entram como "+N iguais" no próximo.
+
+| Tipo | Quando | Quem escreve |
+|---|---|---|
+| `partida.servidor_sumiu` (grave) | o servidor de partida parou de bater com partida aberta | API (frota) |
+| `partida.encerrada_sem_resultado` | a partida foi dada como perdida sem o servidor avisar | API (frota) |
+| `partida.servidor_desligou` | o servidor ocioso saiu porque a frota não precisava dele | API |
+| `partida.recusado` | jogador barrado na porta (ingresso, conta fora da escalação, partida já acabada) | servidor de partida |
+| `partida.sem_apresentacao` | ligou na porta e não mostrou o ingresso em 10 s | servidor de partida |
+| `partida.conexao_caiu` | jogador saiu com a partida em curso | servidor de partida |
+| `partida.vazia` | ninguém entrou e a partida fechou sozinha (20 s) | servidor de partida |
+| `partida.abandonada` | a partida acabou por ficar sem ninguém, antes do fim normal | servidor de partida |
+| `partida.resultado_falhou` (grave) | o resultado não chegou à API em 4 tentativas | servidor de partida |
+| `partida.erro_servidor` (grave) | exceção no relógio ou na física de uma partida; as outras seguem | servidor de partida |
+| `partida.passo_lento` | passo da física acima de 10 ms em média ou 40 ms no pior (o orçamento é 16,7 ms) | servidor de partida |
+
+O servidor **não distingue** quem fechou o jogo de quem perdeu a rede:
+os dois chegam como `partida.conexao_caiu`. Para investigar, cruze com a
+conta (a linha leva o número) e com a hora. Os eventos também saem em
+JSON no log da API (`fly logs -a wolfleague-api`), ao vivo.
 
 O que a equipe faz no painel fica na **auditoria** (`audit_log`): quem,
 o quê, em quem, de que endereço. O painel não tem tela para apagar nem

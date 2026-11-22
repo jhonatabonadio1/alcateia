@@ -66,9 +66,9 @@ public static class AnimationKit
 		}
 
 		if (debug && mostTracks == 0)
-			GD.PrintErr($"Animação: '{clip}' não traz trilha nenhuma — vai dar pose em T.");
+			GD.PrintErr($"Animation: '{clip}' has no tracks — it will T-pose.");
 		else if (debug)
-			GD.Print($"  {clip}: '{chosen}', {mostTracks} trilhas, {longest:0.00}s");
+			GD.Print($"  {clip}: '{chosen}', {mostTracks} tracks, {longest:0.00}s");
 
 		return best?.Duplicate() as Animation;
 	}

@@ -20,7 +20,7 @@ public enum MatchLoss
 	Closed
 }
 
-public sealed record LostMatch(MatchAssignment Assignment, MatchLoss Reason);
+public sealed record LostMatch(MatchAssignment Assignment, MatchLoss Reason, string ServerId = "");
 
 /// <summary>
 /// A frota: os servidores de partida (o próprio jogo rodando sem tela)
@@ -102,7 +102,7 @@ public sealed class Fleet
 				{
 					s.Slots.Remove(slot);
 					_byMatch.Remove(slot.Assignment.MatchKey);
-					lost.Add(new LostMatch(slot.Assignment, MatchLoss.Closed));
+					lost.Add(new LostMatch(slot.Assignment, MatchLoss.Closed, s.Id));
 				}
 			}
 		}
@@ -170,7 +170,7 @@ public sealed class Fleet
 		var lost = new List<LostMatch>();
 		foreach (GameServer s in _servers.Values.Where(s => now - s.LastSeen > _timeout).ToList())
 		{
-			lost.AddRange(s.Slots.Select(x => new LostMatch(x.Assignment, MatchLoss.ServerDown)));
+			lost.AddRange(s.Slots.Select(x => new LostMatch(x.Assignment, MatchLoss.ServerDown, s.Id)));
 			foreach (Slot slot in s.Slots) _byMatch.Remove(slot.Assignment.MatchKey);
 			_servers.Remove(s.Id);
 		}

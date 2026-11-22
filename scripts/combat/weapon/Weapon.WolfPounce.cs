@@ -652,9 +652,9 @@ public partial class Weapon
 		if (Debug)
 		{
 			float time = Mathf.Max(duration, 0.05f);
-			GD.Print($"salto: anda {distance:0.0} m{(distance < wanted - 0.05f ? $" (queria {wanted:0.0}: obstáculo no caminho)" : "")}, " +
-				$"arco {arc:0.0} m, cai {land:+0.0;-0.0} m em {time:0.00} s " +
-				$"(sai a {distance / time:0.0} m/s no chão e {(land + 4f * arc) / time:0.0} m/s para cima)");
+			GD.Print($"leap: travels {distance:0.0} m{(distance < wanted - 0.05f ? $" (wanted {wanted:0.0}: obstacle in the way)" : "")}, " +
+				$"arc {arc:0.0} m, lands {land:+0.0;-0.0} m in {time:0.00} s " +
+				$"(leaves at {distance / time:0.0} m/s along the ground and {(land + 4f * arc) / time:0.0} m/s up)");
 		}
 
 		_flyStart = _body.GlobalPosition;

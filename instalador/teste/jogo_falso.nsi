@@ -8,7 +8,7 @@ Target amd64-unicode
 !include "WordFunc.nsh"
 
 !ifndef SAIDA
-  !define SAIDA "jogo\WolfLeague.exe"
+  !define SAIDA "game\WolfLeague.exe"
 !endif
 OutFile "${SAIDA}"
 SilentInstall silent

@@ -107,12 +107,24 @@ export const eventNames: Record<string, string> = {
 	"painel.conta_travada": "Conta do painel travada",
 	"painel.sem_permissao": "Painel: acesso negado",
 	"trapaca.suspeita": "Resultado suspeito de trapaça",
+	"partida.servidor_sumiu": "Servidor de partida sumiu",
+	"partida.encerrada_sem_resultado": "Partida encerrada sem resultado",
+	"partida.servidor_desligou": "Servidor de partida desligou",
+	"partida.conexao_caiu": "Jogador saiu ou a ligação caiu",
+	"partida.recusado": "Jogador recusado na porta",
+	"partida.sem_apresentacao": "Ligou na porta e ficou calado",
+	"partida.vazia": "Partida fechou vazia",
+	"partida.abandonada": "Partida acabou sem ninguém",
+	"partida.resultado_falhou": "Resultado não chegou à API",
+	"partida.erro_servidor": "Erro no servidor de partida",
+	"partida.passo_lento": "Servidor de partida lento",
 };
 
 export const severityNames = ["Informativo", "Atenção", "Grave", "Crítico"];
 
 export const eventGroups = [
 	{ value: "todos", label: "Todos os tipos" },
+	{ value: "partida.", label: "Partidas (servidor de partida)" },
 	{ value: "login.", label: "Logins do jogo" },
 	{ value: "ataque.", label: "Ataques" },
 	{ value: "bloqueio.", label: "Bloqueios" },

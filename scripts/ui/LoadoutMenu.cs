@@ -71,7 +71,7 @@ public partial class LoadoutMenu : CanvasLayer
 
 		if (player == null)
 		{
-			GD.PrintErr("LoadoutMenu: nenhum jogador na cena.");
+			GD.PrintErr("LoadoutMenu: no player in the scene.");
 			return;
 		}
 

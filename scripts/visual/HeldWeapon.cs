@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 /// <summary>
 /// A arma na mão do corpo em terceira pessoa — a que os outros veem.
@@ -21,6 +22,21 @@ using Godot;
 /// para ela viraria a arma para baixo. Então, enquanto a arma está bem
 /// segura, guarda-se onde ela fica *em relação à mão direita*; na
 /// recarga ela só acompanha a mão direita com essa relação congelada.
+///
+/// **Pistola, faca e granada: as mãos vão até a arma** (21/11, Jhon: "as
+/// armas, granadas, pistola, faca não estão posicionadas corretamente nas
+/// mãos dos personagens… o boneco precisa segurar igual é na primeira
+/// pessoa"). Os clipes são todos de fuzil: a pistola saía de lado, entre
+/// as duas mãos, e a faca de pé, com a lâmina para cima. Agora essas três
+/// ficam numa pose de mira (na frente dos olhos, para onde a cabeça olha) e
+/// os braços vão até elas (<see cref="ArmIK"/>), com a palma e os dedos
+/// nos pontos do armas.json — os da primeira pessoa. Na pistola as duas
+/// mãos; na faca e na granada a direita, e a esquerda em guarda. A faca
+/// estoca e puxa na diagonal, alternando, como a da primeira pessoa.
+///
+/// **O tronco segue a mira** (<see cref="AimWithBody"/>): o corpo se inclina
+/// para cima e para baixo com a cabeça, e o fuzil vai junto — antes o
+/// boneco apontava sempre reto, olhasse para onde olhasse.
 /// </summary>
 public partial class HeldWeapon : Node3D
 {
@@ -67,14 +83,20 @@ public partial class HeldWeapon : Node3D
 		}
 
 		FindBodyBones();
+		_poses = HoldPoses.For(PosesPath);
 
 		if (_rightHand < 0)
 		{
-			GD.PrintErr("HeldWeapon: esqueleto sem mão direita.");
+			GD.PrintErr("HeldWeapon: skeleton has no right hand.");
 			return;
 		}
 
 		_weapon.SlotChanged += _ => Rebuild();
+		_weapon.Fired += OnFired;
+		_weapon.Thrown += () => _rig?.Thrown();
+		_weapon.AmmoChanged += OnAmmo;
+		FindFingers();
+		_bodyHead = body.GetNodeOrNull<Node3D>("Head");
 		_weapon.PickedUp += _ => Rebuild();
 		_weapon.Dropped += _ => Rebuild();
 		if (_form != null) _form.FormChanged += _ => Rebuild();
@@ -102,13 +124,35 @@ public partial class HeldWeapon : Node3D
 		string id = WantedId();
 		if (id == _id && (_model != null || id == "")) return;
 
+		// O lance da granada termina antes de a arma seguinte aparecer (como
+		// na primeira pessoa). Morreu ou virou lobo: sai já.
+		if (_rig != null && _rig.Throwing && id != "")
+		{
+			_rebuildAfterThrow = true;
+			return;
+		}
+		_rebuildAfterThrow = false;
+
 		_model?.QueueFree();
 		_model = null;
+		_rig = null;
+		_rigReloading = false;
 		_magazine = null;
 		_id = id;
 		_calibrated = false;
 
 		if (id == "") return;
+
+		// A arma com conjunto de primeira pessoa vem dele: o mesmo modelo, a
+		// mesma animação, as mãos e os dedos no lugar (HeldRig).
+		_rig = UseFirstPersonRig ? HeldRig.Create(id, _layers) : null;
+		if (_rig != null)
+		{
+			_model = _rig;
+			AddChild(_rig);
+			_rig.Start();
+			return;
+		}
 
 		ReadHands();
 		_model = WeaponModel.Build(id);
@@ -121,7 +165,33 @@ public partial class HeldWeapon : Node3D
 
 	public override void _Process(double delta)
 	{
-		if (_model == null || _skeleton == null || !IsVisibleInTree()) return;
+		if (_skeleton == null) return;
+
+		// O que este nó mexeu nos ossos no quadro passado e a animação não
+		// reescreveu volta ao que era: nada se soma de um quadro para o outro.
+		RestorePose();
+		if (_model == null || !IsVisibleInTree()) return;
+		_stab += delta;
+
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		if (_rebuildAfterThrow && (_rig == null || !_rig.Throwing)) Rebuild();
+
+		// A pose do Blender para esta arma (o corpo da cintura para cima) e o
+		// conjunto da primeira pessoa posto pela mão direita dela.
+		if (_rig != null && PoseFor(_id) is HoldPose pose)
+		{
+			HoldByPose(delta, pose);
+			return;
+		}
+
+		BendToAim(skeleton);
+
+		// A arma do conjunto de primeira pessoa: as mãos vão até ela.
+		if (_rig != null)
+		{
+			HoldByRig(delta);
+			return;
+		}
 
 		// No fim do arremesso a mão direita ainda está no ar e o fuzil já é a
 		// arma da vez: ele só volta quando o braço termina o gesto (antes
@@ -130,7 +200,8 @@ public partial class HeldWeapon : Node3D
 		_model.Visible = !throwing;
 		if (throwing) return;
 
-		Transform3D skeleton = _skeleton.GlobalTransform;
+		// Pistola, faca e granada: as mãos vão até a arma.
+		if (HandsOnWeapon && HoldByHands(skeleton)) return;
 		Transform3D hand = skeleton * _skeleton.GetBoneGlobalPose(_rightHand);
 		Vector3 right = PalmOf(skeleton, _rightHand, _rightMiddle, _rightIndex, _rightPinky, true);
 
@@ -173,6 +244,906 @@ public partial class HeldWeapon : Node3D
 		}
 	}
 
+	// ------------------------------------------------------------ como na primeira pessoa (21/11)
+
+	/// <summary>O tronco inclina com a mira (para cima e para baixo).</summary>
+	[ExportGroup("Terceira pessoa")]
+	[Export] public bool AimWithBody = true;
+
+	/// <summary>Quanto da inclinação da cabeça o tronco acompanha.</summary>
+	[Export(PropertyHint.Range, "0,1")] public float AimPitchShare = 0.85f;
+
+	/// <summary>Até quantos graus o tronco inclina.</summary>
+	[Export] public float AimPitchLimit = 55f;
+
+	/// <summary>Pistola, faca e granada nas mãos pela pose de mira (desligado,
+	/// voltam a ir só na mão direita do clipe de fuzil).</summary>
+	[Export] public bool HandsOnWeapon = true;
+
+	/// <summary>Onde a palma direita fica, em metros, a partir do meio da
+	/// cabeça e no sentido da mira (x à direita, y para cima, −z à frente).
+	/// Pistola: braços esticados, na linha dos olhos, um pouco abaixo.</summary>
+	[Export] public Vector3 PistolHold = new(0.05f, -0.17f, -0.42f);
+
+	/// <summary>A faca, baixa e à frente, com a lâmina para a frente.</summary>
+	[Export] public Vector3 KnifeHold = new(0.2f, -0.34f, -0.3f);
+
+	/// <summary>A granada na mão, antes de armar.</summary>
+	[Export] public Vector3 GrenadeHold = new(0.2f, -0.38f, -0.19f);
+
+	/// <summary>A mão esquerda em guarda, quando só a direita segura.</summary>
+	[Export] public Vector3 GuardHold = new(-0.14f, -0.4f, -0.22f);
+
+	/// <summary>O giro da faca em torno do lado, em graus: a lâmina (que no
+	/// modelo é +Y) vai para a frente e um pouco para cima.</summary>
+	[Export] public float KnifeTilt = -62f;
+
+	/// <summary>O golpe da faca: quanto dura e até onde vai a estocada.</summary>
+	[Export] public float StabTime = 0.3f;
+	[Export] public float StabReach = 0.34f;
+
+	private Node3D _bodyHead;
+	private readonly System.Collections.Generic.List<int> _spines = new();
+	private int _rightUpper = -1, _rightLower = -1, _leftUpper = -1, _leftLower = -1;
+	private double _stab = 99;
+	private int _stabKind = 1;
+
+	/// <summary>O golpe da faca: a próxima é a outra (estocada, puxada).</summary>
+	private void OnFired()
+	{
+		_rig?.Fired(Arsenal.IsKnife(_id), _weapon.KnifeCooldown);
+		if (!Arsenal.IsKnife(_id)) return;
+		_stab = 0;
+		_stabKind = (_stabKind + 1) % 2;
+	}
+
+	// ---- os ossos mexidos aqui: o que eram antes e o que ficou
+
+	private readonly System.Collections.Generic.Dictionary<int, (Quaternion Before, Quaternion Written)> _posed = new();
+
+	private void RestorePose()
+	{
+		foreach (var (bone, pose) in _posed)
+			if (_skeleton.GetBonePoseRotation(bone).IsEqualApprox(pose.Written))
+				_skeleton.SetBonePoseRotation(bone, pose.Before);
+		_posed.Clear();
+	}
+
+	private void Write(int bone, Quaternion rotation)
+	{
+		Quaternion before = _posed.TryGetValue(bone, out var was) ? was.Before : _skeleton.GetBonePoseRotation(bone);
+		_skeleton.SetBonePoseRotation(bone, rotation);
+		_posed[bone] = (before, rotation);
+	}
+
+	/// <summary>
+	/// O tronco inclina com a cabeça, repartido pelos ossos da coluna: o
+	/// peito, os ombros, os braços e a arma sobem e descem juntos. Cada osso
+	/// gira em torno do lado do corpo, no espaço do pai.
+	/// </summary>
+	private void BendToAim(Transform3D skeleton)
+	{
+		if (!AimWithBody || _spines.Count == 0 || _bodyHead == null) return;
+		if (_health != null && _health.IsDead) return;
+
+		float limit = Mathf.DegToRad(AimPitchLimit);
+		float pitch = Mathf.Clamp(_bodyHead.Rotation.X * AimPitchShare, -limit, limit);
+		if (Mathf.Abs(pitch) < 0.002f) return;
+
+		Vector3 side = (skeleton.Basis.Inverse() * _body.GlobalBasis.X).Normalized();
+		float share = pitch / _spines.Count;
+
+		// O pai de cada um como estava antes de qualquer giro: giros em torno
+		// do mesmo eixo se somam na ordem que for.
+		var parents = new Basis[_spines.Count];
+		for (int i = 0; i < _spines.Count; i++)
+		{
+			int parent = _skeleton.GetBoneParent(_spines[i]);
+			parents[i] = parent >= 0 ? _skeleton.GetBoneGlobalPose(parent).Basis.Orthonormalized() : Basis.Identity;
+		}
+
+		for (int i = 0; i < _spines.Count; i++)
+		{
+			int bone = _spines[i];
+			Vector3 axis = (parents[i].Transposed() * side).Normalized();
+			Write(bone, new Quaternion(axis, share) * _skeleton.GetBonePoseRotation(bone));
+		}
+	}
+
+	/// <summary>O meio da cabeça e o sentido da mira: a frente do corpo,
+	/// inclinada como a cabeça.</summary>
+	private Transform3D AimFrame(Transform3D skeleton)
+	{
+		Vector3 eye = _head >= 0 && _top >= 0 ? (Bone(skeleton, _head) + Bone(skeleton, _top)) * 0.5f
+			: _head >= 0 ? Bone(skeleton, _head) : _body.GlobalPosition + Vector3.Up * 0.6f;
+		Basis yaw = _body.GlobalBasis.Orthonormalized();
+		float pitch = Mathf.Clamp(_bodyHead?.Rotation.X ?? 0f, -1.45f, 1.45f);
+		return new Transform3D(new Basis(yaw.X, pitch) * yaw, eye);
+	}
+
+	/// <summary>A arma com a palma direita em <paramref name="hold"/> (no
+	/// sentido da mira) e girada por <paramref name="turn"/>.</summary>
+	private Transform3D HoldAt(Transform3D aim, Vector3 hold, Basis turn)
+	{
+		Basis basis = aim.Basis * turn;
+		return new Transform3D(basis, aim * hold - basis * _gripPoint);
+	}
+
+	/// <summary>Pistola, faca ou granada nas mãos. Falso para o resto (o fuzil
+	/// fica como sempre, na linha das mãos do clipe).</summary>
+	private bool HoldByHands(Transform3D skeleton)
+	{
+		bool pistol = WeaponModel.IsPistol(_id), knife = Arsenal.IsKnife(_id), grenade = Arsenal.IsGrenade(_id);
+		if (!pistol && !knife && !grenade) return false;
+		if (_rightUpper < 0 || _rightLower < 0 || _rightHand < 0) return false;
+		// Armando e lançando a granada, o braço é o do clipe.
+		if (grenade && GetParent() is CharacterAnimator { ThrowingGrenade: true }) return false;
+
+		Transform3D aim = AimFrame(skeleton);
+		Transform3D placed = pistol ? HoldAt(aim, PistolHold, Basis.Identity)
+			: knife ? HoldAt(aim, KnifeHold + StabOffset(), new Basis(Vector3.Right, Mathf.DegToRad(KnifeTilt)))
+			: HoldAt(aim, GrenadeHold, Basis.Identity);
+
+		if (!Grip(placed, true, out Vector3 missed)) return false;
+		// Longe demais para o braço: a arma vem até a mão, não fica no ar.
+		placed.Origin += missed;
+
+		if (pistol && !_weapon.IsReloading && _leftUpper >= 0 && _leftLower >= 0 && _leftHand >= 0)
+			Grip(placed, false, out _);
+		else if (!pistol && _leftUpper >= 0 && _leftLower >= 0 && _leftHand >= 0)
+			ArmIK.Reach(_skeleton, _leftUpper, _leftLower, _leftHand, aim * GuardHold, null, Elbow(false), Write);
+
+		_model.GlobalTransform = placed;
+		_calibrated = false;
+
+		// O carregador da pistola some no meio da recarga, como no fuzil.
+		if (_magazine != null)
+		{
+			float p = _weapon.ReloadProgress;
+			_magazine.Visible = !(_weapon.IsReloading && p > 0.3f && p < 0.65f);
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// Uma mão na arma: a palma no ponto do armas.json, os dedos e a palma
+	/// virados como lá (a mão da primeira pessoa tem os dedos em −Z e a palma
+	/// em −Y). <paramref name="missed"/> é quanto o pulso ficou longe do
+	/// ponto (braço curto demais).
+	/// </summary>
+	private bool Grip(Transform3D weapon, bool right, out Vector3 missed)
+	{
+		missed = Vector3.Zero;
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		if (!HandFrame(skeleton, right, out Vector3 fingers, out Vector3 palm, out Vector3 offset)) return false;
+
+		Transform3D place = weapon * WeaponModel.Hand(_id, right).Transform;
+		Vector3 point = place * WeaponModel.Palm;
+		Basis rotation = ArmIK.Orient(-place.Basis.Z, -place.Basis.Y) * ArmIK.Orient(fingers, palm).Transposed();
+		Vector3 target = point - rotation * offset;
+
+		Vector3 reached = right
+			? ArmIK.Reach(_skeleton, _rightUpper, _rightLower, _rightHand, target, rotation, Elbow(true), Write)
+			: ArmIK.Reach(_skeleton, _leftUpper, _leftLower, _leftHand, target, rotation, Elbow(false), Write);
+		missed = reached - target;
+		return true;
+	}
+
+	/// <summary>Para onde o cotovelo aponta: para baixo, para fora e um
+	/// pouco para trás.</summary>
+	private Vector3 Elbow(bool right)
+	{
+		int shoulder = right ? _rightUpper : _leftUpper;
+		Basis body = _body.GlobalBasis.Orthonormalized();
+		Vector3 at = Bone(_skeleton.GlobalTransform, shoulder);
+		return at + Vector3.Down * 0.4f + body.X * (right ? 0.3f : -0.3f) + body.Z * 0.12f;
+	}
+
+	/// <summary>Os dedos, a palma e o centro da palma da mão do corpo, na
+	/// rotação do osso da mão (não mudam com a pose: são os começos dos dedos).</summary>
+	private bool HandFrame(Transform3D skeleton, bool right, out Vector3 fingers, out Vector3 palm, out Vector3 offset)
+	{
+		fingers = palm = offset = Vector3.Zero;
+		int wrist = right ? _rightHand : _leftHand;
+		int middle = right ? _rightMiddle : _leftMiddle, index = right ? _rightIndex : _leftIndex, pinky = right ? _rightPinky : _leftPinky;
+		if (wrist < 0 || middle < 0 || index < 0 || pinky < 0) return false;
+
+		Transform3D pose = skeleton * _skeleton.GetBoneGlobalPose(wrist);
+		Basis back = pose.Basis.Orthonormalized().Transposed();
+		Vector3 along = Bone(skeleton, middle) - pose.Origin;
+		Vector3 across = Bone(skeleton, index) - Bone(skeleton, pinky);
+		Vector3 inside = right ? across.Cross(along) : along.Cross(across);
+		if (along.LengthSquared() < 1e-8f || inside.LengthSquared() < 1e-10f) return false;
+
+		fingers = (back * along).Normalized();
+		palm = (back * inside).Normalized();
+		offset = back * (PalmOf(skeleton, wrist, middle, index, pinky, right) - pose.Origin);
+		return true;
+	}
+
+	/// <summary>
+	/// O golpe da faca, no sentido da mira: a estocada vai à frente e volta;
+	/// a puxada desce na diagonal, de cima à direita para baixo à esquerda —
+	/// os dois golpes da primeira pessoa.
+	/// </summary>
+	private Vector3 StabOffset()
+	{
+		if (_stab >= StabTime) return Vector3.Zero;
+		float u = (float)(_stab / StabTime);
+		float out_ = Mathf.Sin(Mathf.Pi * u);
+		if (_stabKind == 0) return new Vector3(-0.04f, 0.06f, -StabReach) * out_;
+		return new Vector3(Mathf.Lerp(0.15f, -0.28f, u), Mathf.Lerp(0.18f, -0.12f, u), -0.18f) * out_;
+	}
+
+	// ------------------------------------------------------------ o conjunto da primeira pessoa (21/11)
+
+	/// <summary>Usar o conjunto de primeira pessoa como referência (desligado,
+	/// volta a arma de sempre, nas mãos do clipe de fuzil).</summary>
+	[ExportGroup("Terceira pessoa: conjunto")]
+	[Export] public bool UseFirstPersonRig = true;
+
+	/// <summary>
+	/// Onde o conjunto fica em relação ao olho, em metros (x à direita, y
+	/// para cima, −z à frente). Na primeira pessoa a arma fica colada no olho
+	/// (a câmera não vê o ombro nem a cabeça); no corpo, o conjunto desce e
+	/// vai para a frente até a arma encostar no ombro sem entrar no rosto.
+	/// </summary>
+	[Export] public Vector3 RigRifle = new(0f, -0.1f, 0f);
+	[Export] public Vector3 RigPistol = new(0f, -0.12f, -0.16f);
+	[Export] public Vector3 RigKnife = new(0f, -0.16f, -0.02f);
+	[Export] public Vector3 RigGrenade = new(0f, -0.15f, -0.08f);
+
+	/// <summary>Quanto do giro da mão vai para o antebraço (o pulso não torce).</summary>
+	[Export(PropertyHint.Range, "0,1")] public float ForearmTwist = 0.5f;
+
+	/// <summary>Que parte da mão do corpo encosta onde a do conjunto encosta:
+	/// 0 é o pulso, 1 o começo dos dedos. Perto dos dedos, a mão maior do
+	/// personagem fecha na mesma empunhadura.</summary>
+	[Export(PropertyHint.Range, "0,1")] public float KnuckleAlign = 0.8f;
+
+	private HeldRig _rig;
+	private bool _rigReloading, _rebuildAfterThrow;
+
+	/// <summary>Os braços do corpo seguem o conjunto (a recarga e a granada do
+	/// clipe de fuzil não tocam por cima: CharacterAnimator).</summary>
+	public bool ArmsFromRig => _rig != null;
+
+	/// <summary>Os dedos do corpo: [dedo][1..4] (polegar, indicador, médio, anelar, mínimo).</summary>
+	private readonly int[][] _fingersR = new int[5][], _fingersL = new int[5][];
+	private static readonly string[] Fingers = { "Thumb", "Index", "Middle", "Ring", "Pinky" };
+
+	private void FindFingers()
+	{
+		for (int f = 0; f < 5; f++)
+		{
+			_fingersR[f] = FingerChain("Right", Fingers[f]);
+			_fingersL[f] = FingerChain("Left", Fingers[f]);
+		}
+	}
+
+	private int[] FingerChain(string side, string finger)
+	{
+		var chain = new int[4];
+		for (int n = 0; n < 4; n++)
+		{
+			chain[n] = -1;
+			for (int i = 0; i < _skeleton.GetBoneCount(); i++)
+				if (_skeleton.GetBoneName(i).EndsWith($"{side}Hand{finger}{n + 1}")) { chain[n] = i; break; }
+		}
+		return chain[0] < 0 || chain[1] < 0 || chain[2] < 0 ? null : chain;
+	}
+
+	private void OnAmmo(int inMag, int magSize, bool reloading)
+	{
+		if (_rig == null) return;
+		if (reloading && !_rigReloading)
+		{
+			_rigReloading = true;
+			bool empty = inMag <= 0;
+			float seconds = !_weapon.Puppet && _weapon.ReloadDuration > 0.2f ? _weapon.ReloadDuration
+				: _weapon.Held is WeaponDefinition def ? (empty ? def.ReloadEmpty : def.ReloadTactical) : 0f;
+			_rig.Reload(empty, seconds);
+		}
+		else if (!reloading && _rigReloading)
+		{
+			_rigReloading = false;
+			if (inMag < magSize) _rig.StopReload();
+		}
+	}
+
+	/// <summary>
+	/// A arma do conjunto, onde o conjunto põe, e o corpo segurando: o
+	/// conjunto vai para a frente do olho (na pose da mira), as mãos vão onde
+	/// as dele estão — o punho girado como lá, cada dedo fechado até a ponta
+	/// chegar onde a de lá chega — e o cotovelo e o ombro são os do corpo.
+	///
+	/// O punho não entorta (Jhon, 21/11: "mas não ficar torto"): o cotovelo
+	/// vai para trás da mão, na linha dela, e o que sobrar de dobra além de
+	/// <see cref="WristBend"/> a mão desfaz. A arma de uma mão só (a pistola,
+	/// a faca, a granada) vai junto com a mão: ela nunca sai da mão. A
+	/// granada cresce com a mão do personagem (a dele é maior que a do
+	/// conjunto) e encosta na palma. A mão que não segura nada (a esquerda,
+	/// com a granada ou com a faca, quando a do conjunto está fora da tela)
+	/// fica solta ao lado do corpo.
+	/// </summary>
+	private void HoldByRig(double delta)
+	{
+		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
+		_rig.Tick(delta, _weapon.IsGrenadeReady, _body.IsOnFloor() && flat.Length() > 0.5f);
+
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		Transform3D aim = AimFrame(skeleton);
+		bool knife = Arsenal.IsKnife(_id), grenade = Arsenal.IsGrenade(_id), pistol = WeaponModel.IsPistol(_id);
+		bool oneHand = knife || grenade || pistol;
+		Vector3 offset = knife ? RigKnife : grenade ? RigGrenade : pistol ? RigPistol : RigRifle;
+		_rig.GlobalTransform = new Transform3D(aim.Basis, aim * offset);
+
+		if (_rightUpper < 0 || _rightLower < 0 || _rightHand < 0) return;
+		if (!RigTarget(true, out Vector3 rightWrist, out Basis rightTurn, out HandShape rightShape)) return;
+		Vector3 leftWrist = Vector3.Zero;
+		Basis leftTurn = Basis.Identity;
+		HandShape leftShape = default;
+		bool left = _leftUpper >= 0 && _leftLower >= 0 && _leftHand >= 0 && RigTarget(false, out leftWrist, out leftTurn, out leftShape);
+
+		// A mão esquerda solta: a do conjunto está fora da tela (abaixo do
+		// quadro da primeira pessoa), e lá ela não foi feita para ser vista.
+		// Com a faca, a esquerda fica sempre solta: a guarda da primeira
+		// pessoa (a mão aberta na frente da tela), no corpo, virava uma garra.
+		float loose = 0f;
+		if (left && knife) loose = 1f;
+		else if (left && grenade)
+		{
+			Vector3 shoulder = Bone(skeleton, _leftUpper);
+			float below = aim.Basis.Y.Dot(shoulder - leftWrist);
+			loose = Mathf.Clamp((below - LooseFrom) / 0.12f, 0f, 1f);
+		}
+
+		Vector3 shift = Shortfall(_rightUpper, _rightLower, _rightHand, rightWrist);
+		if (left && loose < 1f && !oneHand) shift += Shortfall(_leftUpper, _leftLower, _leftHand, leftWrist + shift);
+		if (shift.LengthSquared() > 1e-8f)
+		{
+			_rig.GlobalPosition += shift;
+			rightWrist += shift;
+			leftWrist += shift;
+		}
+
+		// A direita: na arma (de duas mãos) ou com ela (de uma mão).
+		Basis rightFinal = Arm(true, rightWrist, rightTurn, rightShape, oneHand ? WristBend : 180f);
+		Transform3D carry = Transform3D.Identity;
+		float ball = 0f;
+		Vector3 ballAt = Vector3.Zero;
+		if (oneHand)
+		{
+			float grow = grenade ? Mathf.Clamp(rightShape.Ratio * GrenadeGrow, 1f, 1.8f) : 1f;
+			carry = rightShape.Carry(rightWrist, rightFinal, grow);
+			// A granada na palma: o meio dela a um raio da palma, e os dedos
+			// fecham em volta (Jhon, 21/11: "granada não encostando na mão").
+			if (grenade && _rig.HasCenter && Palm(true, out Vector3 palm, out Vector3 inside))
+			{
+				ball = GrenadeRadius * grow;
+				ballAt = palm + inside * ball;
+				carry = new Transform3D(Basis.Identity, ballAt - carry * _rig.Center()) * carry;
+			}
+			_rig.Carry(carry);
+		}
+
+		if (left)
+		{
+			if (pistol)
+			{
+				// As duas mãos na pistola: a esquerda vai com ela.
+				leftWrist = carry * leftWrist;
+				leftTurn = carry.Basis.Orthonormalized() * leftTurn;
+				Arm(false, leftWrist, leftTurn, leftShape, 180f);
+			}
+			else
+			{
+				if (loose > 0f)
+				{
+					Loose(out Vector3 restWrist, out Basis restTurn);
+					leftWrist = leftWrist.Lerp(restWrist, loose);
+					leftTurn = new Basis(leftTurn.GetRotationQuaternion().Slerp(restTurn.GetRotationQuaternion(), loose));
+				}
+				Arm(false, leftWrist, leftTurn, leftShape, oneHand ? WristBend : 180f);
+			}
+		}
+
+		// Na pistola, os polegares vão para a frente, deitados na arma (o do
+		// personagem, mais comprido, ficava em pé em cima do ferrolho).
+		Vector3 thumbs = pistol ? _rig.GunForward() : Vector3.Zero;
+		RigFingers(true, oneHand ? carry : Transform3D.Identity, 1f, 0f, thumbs, ballAt, ball);
+		if (left) RigFingers(false, pistol ? carry : Transform3D.Identity, 1f - loose, oneHand ? 0f : SupportCurl, thumbs);
+		_rig.FollowMuzzle();
+		_calibrated = false;
+	}
+
+	// ------------------------------------------------------------ a pose do Blender (22/11)
+
+	/// <summary>O arquivo de poses do personagem (<c>poses_armas.json</c>, ao
+	/// lado do modelo); o CharacterAnimator põe antes do Attach.</summary>
+	public string PosesPath;
+
+	/// <summary>Usar as poses do Blender quando o personagem tem (desligado,
+	/// volta o conjunto posto na frente do olho, de 21/11).</summary>
+	[Export] public bool UsePoses = true;
+
+	/// <summary>Quanto tempo leva a troca de uma pose para a outra (s).</summary>
+	[Export] public float PoseBlendTime = 0.18f;
+
+	private Dictionary<string, HoldPose> _poses;
+	private readonly Dictionary<string, int> _boneByName = new();
+	private double _poseClock = GD.Randf() * 3.0;
+	private HoldPose _poseNow, _posePrevious;
+	private float _poseBlend = 1f;
+
+	private HoldPose PoseFor(string id)
+	{
+		if (!UsePoses || _poses == null || string.IsNullOrEmpty(id)) return null;
+		return _poses.TryGetValue(HoldPoses.KindOf(id), out HoldPose pose) ? pose : null;
+	}
+
+	/// <summary>
+	/// A arma com a pose do Blender (Jhon, 22/11: "use o blender para isso,
+	/// não ficou bom"): o corpo da cintura para cima vai para a pose feita
+	/// lá para este tipo de arma (o tronco, a cabeça, os braços e os dedos),
+	/// o peito vira para a mira, e o conjunto da primeira pessoa é posto pela
+	/// mão direita da pose — na pose ela segura a arma como a da primeira
+	/// pessoa segura. Daí em diante só o que a animação da primeira pessoa
+	/// mexe (sacar, tiro, recarga, golpe, armar, arremessar) move as mãos: a
+	/// direita segue a de lá, a arma vai com ela, e a esquerda vai na arma
+	/// (fuzil, pistola) ou fica na pose (faca, granada).
+	/// </summary>
+	private void HoldByPose(double delta, HoldPose pose)
+	{
+		_poseClock += delta;
+		if (pose != _poseNow)
+		{
+			_posePrevious = _poseNow;
+			_poseNow = pose;
+			_poseBlend = 0f;
+		}
+		_poseBlend = Mathf.Min(1f, _poseBlend + (float)delta / Mathf.Max(PoseBlendTime, 0.01f));
+
+		ApplyHoldPose(pose, _posePrevious, _poseBlend, _poseClock);
+		AimChest(pose, _posePrevious, _poseBlend, _poseClock);
+
+		_rig.Tick(delta, _weapon.IsGrenadeReady, false);
+		if (_rightUpper < 0 || _rightLower < 0 || _rightHand < 0) return;
+		if (!BodyHand(true, out Vector3 fingers, out Vector3 palm, out Vector3 knuckles)) return;
+
+		// O conjunto pela mão direita da pose: a mão dele, no começo do
+		// "parado", cai nela (o começo dos dedos no mesmo ponto, os dedos e a
+		// palma para o mesmo lado). A granada cresce junto.
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		Basis handRot = (skeleton * _skeleton.GetBoneGlobalPose(_rightHand)).Basis.Orthonormalized();
+		Vector3 handAt = Bone(skeleton, _rightHand);
+		var posed = new Transform3D(ArmIK.Orient(handRot * fingers, handRot * palm), handAt + handRot * (knuckles * KnuckleAlign));
+		Transform3D rest = RigFrame(_rig.RestWristR, _rig.RestMiddleR, _rig.RestIndexR, _rig.RestPinkyR, true);
+		float grow = pose.Grow > 0.01f ? pose.Grow : 1f;
+		_rig.GlobalTransform = posed * new Transform3D(Basis.Identity.Scaled(Vector3.One * grow), Vector3.Zero) * rest.AffineInverse();
+
+		// Os cotovelos da pose (o polo do braço).
+		Vector3 elbowR = Bone(skeleton, _rightLower);
+		Vector3 elbowL = _leftLower >= 0 ? Bone(skeleton, _leftLower) : Vector3.Zero;
+
+		// A direita vai onde a mão da primeira pessoa está agora (parada, é
+		// a própria pose; sacando, atirando, golpeando, ela se mexe).
+		_rig.HandPoints(true, out Vector3 w, out Vector3 m, out Vector3 i, out Vector3 p);
+		Transform3D now = _rig.GlobalTransform * RigFrame(w, m, i, p, true);
+		var target = new Transform3D(now.Basis.Orthonormalized(), now.Origin);
+		Basis turn = target.Basis * ArmIK.Orient(fingers, palm).Transposed();
+		Vector3 wrist = target.Origin - turn * (knuckles * KnuckleAlign);
+		bool oneHand = Arsenal.IsKnife(_id) || Arsenal.IsGrenade(_id) || WeaponModel.IsPistol(_id);
+		var shape = new HandShape(fingers, palm, knuckles, Vector3.Zero, Vector3.Zero, Vector3.Zero) { AlignAt = KnuckleAlign };
+		Basis final = Arm(true, wrist, turn, shape, oneHand ? WristBend : 180f, elbowR);
+
+		// A arma vai com a mão direita (se a mão não chegou ou o punho
+		// desentortou, a arma acompanha). A granada fica na palma.
+		Basis finalRot = final.Orthonormalized();
+		var reached = new Transform3D(ArmIK.Orient(finalRot * fingers, finalRot * palm),
+			Bone(_skeleton.GlobalTransform, _rightHand) + finalRot * (knuckles * KnuckleAlign));
+		Transform3D carry = reached * target.AffineInverse();
+		if (pose.Ball > 0f && _rig.HasCenter && Palm(true, out Vector3 palmAt, out Vector3 inside))
+		{
+			Vector3 socket = palmAt + inside * pose.Ball;
+			carry = new Transform3D(Basis.Identity, socket - carry * _rig.Center()) * carry;
+		}
+		_rig.Carry(carry);
+
+		// A esquerda na arma (fuzil, pistola): onde a da primeira pessoa
+		// está, levada com a arma; um pouco para trás no guarda-mão se o
+		// braço não alcançava (o Blender disse quanto). Na faca e na granada
+		// ela fica na pose.
+		if (pose.Left == "arma" && _leftUpper >= 0 && _leftLower >= 0 && _leftHand >= 0
+			&& BodyHand(false, out Vector3 leftFingers, out Vector3 leftPalm, out Vector3 leftKnuckles))
+		{
+			_rig.HandPoints(false, out w, out m, out i, out p);
+			Transform3D left = carry * (_rig.GlobalTransform * RigFrame(w, m, i, p, false));
+			Basis leftBasis = left.Basis.Orthonormalized();
+			Vector3 leftPoint = left.Origin - _rig.GunForward() * pose.Slide;
+			Basis leftTurn = leftBasis * ArmIK.Orient(leftFingers, leftPalm).Transposed();
+			Vector3 leftWrist = leftPoint - leftTurn * (leftKnuckles * KnuckleAlign);
+			var leftShape = new HandShape(leftFingers, leftPalm, leftKnuckles, Vector3.Zero, Vector3.Zero, Vector3.Zero) { AlignAt = KnuckleAlign };
+			Arm(false, leftWrist, leftTurn, leftShape, 180f, elbowL);
+		}
+
+		_rig.FollowMuzzle();
+		_calibrated = false;
+	}
+
+	/// <summary>Uma mão do conjunto como base: os dedos, a palma e o ponto no
+	/// começo dos dedos (no espaço em que os pontos vieram).</summary>
+	private Transform3D RigFrame(Vector3 wrist, Vector3 middle, Vector3 index, Vector3 pinky, bool right)
+	{
+		Vector3 along = middle - wrist, across = index - pinky;
+		Vector3 inside = right ? across.Cross(along) : along.Cross(across);
+		return new Transform3D(ArmIK.Orient(along, inside), wrist.Lerp(middle, KnuckleAlign));
+	}
+
+	/// <summary>Os ossos da cintura para cima na pose (passando da anterior
+	/// para esta em <see cref="PoseBlendTime"/>).</summary>
+	private void ApplyHoldPose(HoldPose pose, HoldPose previous, float blend, double t)
+	{
+		foreach (var (name, keys) in pose.Bones)
+		{
+			if (!_boneByName.TryGetValue(name, out int bone)) continue;
+			Quaternion q = pose.Sample(keys, t);
+			if (blend < 1f)
+			{
+				Quaternion from = previous != null && previous.Bones.TryGetValue(name, out var old)
+					? previous.Sample(old, t) : _skeleton.GetBonePoseRotation(bone);
+				q = from.Slerp(q, blend * blend * (3f - 2f * blend));
+			}
+			Write(bone, q);
+		}
+	}
+
+	/// <summary>
+	/// O peito como na pose, em relação ao corpo, e virado para a mira: as
+	/// pernas e o quadril vêm da animação de andar (que gira o quadril), e as
+	/// vértebras desfazem a diferença. A cabeça leva o resto da inclinação.
+	/// </summary>
+	private void AimChest(HoldPose pose, HoldPose previous, float blend, double t)
+	{
+		if (_spines.Count == 0) return;
+		int chest = _spines[^1];
+		Basis body = _skeleton.GlobalBasis.Orthonormalized();
+		float limit = Mathf.DegToRad(AimPitchLimit);
+		float pitch = Mathf.Clamp(_bodyHead?.Rotation.X ?? 0f, -limit, limit);
+		Vector3 side = _body.GlobalBasis.X.Normalized();
+
+		Quaternion model = pose.Sample(pose.Chest, t);
+		if (blend < 1f && previous != null) model = previous.Sample(previous.Chest, t).Slerp(model, blend);
+		Quaternion want = (new Quaternion(side, pitch * AimPitchShare) * (body * new Basis(model)).GetRotationQuaternion()).Normalized();
+		Quaternion now = (body * _skeleton.GetBoneGlobalPose(chest).Basis.Orthonormalized()).GetRotationQuaternion();
+		Quaternion delta = (want * now.Inverse()).Normalized();
+		Quaternion part = Quaternion.Identity.Slerp(delta, 1f / _spines.Count);
+		foreach (int bone in _spines) TurnBone(bone, part, body);
+
+		// A cabeça: o resto da inclinação da mira, metade no pescoço.
+		float rest = pitch * (1f - AimPitchShare);
+		if (Mathf.Abs(rest) > 0.002f)
+		{
+			var nod = new Quaternion(side, rest * 0.5f);
+			if (_neck >= 0) TurnBone(_neck, nod, body);
+			if (_head >= 0) TurnBone(_head, nod, body);
+		}
+	}
+
+	/// <summary>Gira um osso (e o que vem depois) no mundo, em torno dele.</summary>
+	private void TurnBone(int bone, Quaternion world, Basis body)
+	{
+		int parent = _skeleton.GetBoneParent(bone);
+		Basis local = body.Transposed() * new Basis(world) * body;
+		Basis global = local * _skeleton.GetBoneGlobalPose(bone).Basis.Orthonormalized();
+		Basis parentGlobal = parent >= 0 ? _skeleton.GetBoneGlobalPose(parent).Basis.Orthonormalized() : Basis.Identity;
+		Write(bone, (parentGlobal.Transposed() * global).Orthonormalized().GetRotationQuaternion());
+	}
+
+	/// <summary>A dobra do punho que fica (graus): o resto o cotovelo e a mão
+	/// desfazem.</summary>
+	[Export(PropertyHint.Range, "0,90")] public float WristBend = 28f;
+
+	/// <summary>A granada na mão do personagem, do tamanho da mão dele (1 = a
+	/// mão dele é para a granada o que a do conjunto é para a dela).</summary>
+	[Export(PropertyHint.Range, "0.5,2")] public float GrenadeGrow = 1f;
+
+	/// <summary>Quanto abaixo do ombro (m) a mão esquerda do conjunto começa a
+	/// ser deixada solta ao lado do corpo.</summary>
+	[Export] public float LooseFrom = 0.3f;
+
+	/// <summary>A forma de uma mão do corpo e da mão do conjunto, para levar
+	/// a arma de uma mão da do conjunto para a do corpo.</summary>
+	private readonly record struct HandShape(Vector3 Fingers, Vector3 Palm, Vector3 Knuckles,
+		Vector3 RigWrist, Vector3 RigAlong, Vector3 RigInside)
+	{
+		/// <summary>A mão do corpo é quantas vezes a do conjunto.</summary>
+		public float Ratio => RigAlong.Length() > 1e-4f ? Knuckles.Length() / RigAlong.Length() : 1f;
+
+		/// <summary>O que leva a mão do conjunto (e o que ela segura) para a
+		/// mão do corpo, já no lugar: <paramref name="grow"/> vezes maior.</summary>
+		public Transform3D Carry(Vector3 wrist, Basis rotation, float grow)
+		{
+			Basis rotationOrtho = rotation.Orthonormalized();
+			Vector3 along = rotationOrtho * Fingers, inside = rotationOrtho * Palm;
+			var body = new Transform3D(ArmIK.Orient(along, inside), wrist + rotationOrtho * (Knuckles * AlignAt));
+			var rig = new Transform3D(ArmIK.Orient(RigAlong, RigInside), RigWrist + RigAlong * AlignAt);
+			return body * new Transform3D(Basis.Identity.Scaled(Vector3.One * grow), Vector3.Zero) * rig.AffineInverse();
+		}
+
+		public float AlignAt { get; init; }
+	}
+
+	/// <summary>Onde o pulso do corpo vai e como a mão gira para a mão dele
+	/// ficar como a do conjunto: os dedos para o mesmo lado, a palma virada
+	/// para o mesmo lado, o começo dos dedos no mesmo ponto.</summary>
+	private bool RigTarget(bool right, out Vector3 wrist, out Basis turn, out HandShape shape)
+	{
+		wrist = Vector3.Zero;
+		turn = Basis.Identity;
+		shape = default;
+		int hand = right ? _rig.HandR : _rig.HandL;
+		int[][] fp = right ? _rig.FingersR : _rig.FingersL;
+		if (hand < 0 || fp[1] == null || fp[2] == null || fp[4] == null) return false;
+		if (!BodyHand(right, out Vector3 fingers, out Vector3 palm, out Vector3 knuckles)) return false;
+
+		Vector3 w = _rig.At(hand), m = _rig.At(fp[2][0]);
+		Vector3 along = m - w, across = _rig.At(fp[1][0]) - _rig.At(fp[4][0]);
+		Vector3 inside = right ? across.Cross(along) : along.Cross(across);
+		if (along.LengthSquared() < 1e-8f || inside.LengthSquared() < 1e-10f) return false;
+
+		turn = ArmIK.Orient(along, inside) * ArmIK.Orient(fingers, palm).Transposed();
+		wrist = w.Lerp(m, KnuckleAlign) - turn * (knuckles * KnuckleAlign);
+		shape = new HandShape(fingers, palm, knuckles, w, along, inside) { AlignAt = KnuckleAlign };
+		return true;
+	}
+
+	/// <summary>
+	/// Um braço do corpo até o pulso, a mão girada como pedido, sem o punho
+	/// entortar: o cotovelo aponta para trás da mão (o antebraço na linha
+	/// dela) e, se ainda sobrar dobra além de <paramref name="maxBend"/>
+	/// graus, a mão volta até lá. Devolve a rotação que a mão ficou.
+	/// </summary>
+	private Basis Arm(bool right, Vector3 wrist, Basis turn, HandShape shape, float maxBend, Vector3? posedElbow = null)
+	{
+		int upper = right ? _rightUpper : _leftUpper, lower = right ? _rightLower : _leftLower, hand = right ? _rightHand : _leftHand;
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		float forearm = Bone(skeleton, lower).DistanceTo(Bone(skeleton, hand));
+		Vector3 along = (turn.Orthonormalized() * shape.Fingers).Normalized();
+
+		// Atrás da mão, na linha dela, puxado para baixo e para fora como o
+		// cotovelo de quem segura uma arma.
+		Vector3 behind = wrist - along * forearm;
+		// Com pose, o cotovelo da pose (o Blender já escolheu o que deixa o
+		// punho reto).
+		Vector3 pole = posedElbow ?? Elbow(right).Lerp(behind + Vector3.Down * 0.06f, ElbowFollowsHand);
+		ArmIK.Reach(_skeleton, upper, lower, hand, wrist, turn, pole, Write, ForearmTwist);
+
+		if (maxBend >= 179f) return turn;
+		Vector3 elbow = Bone(_skeleton.GlobalTransform, lower);
+		Vector3 forearmAxis = (wrist - elbow).Normalized();
+		float bend = Mathf.RadToDeg(along.AngleTo(forearmAxis));
+		if (bend <= maxBend + 0.5f) return turn;
+
+		Quaternion back = ArmIK.Arc(along, forearmAxis);
+		Basis straighter = new Basis(Quaternion.Identity.Slerp(back, (bend - maxBend) / bend)) * turn.Orthonormalized();
+		ArmIK.Reach(_skeleton, upper, lower, hand, wrist, straighter, pole, Write, ForearmTwist);
+		return straighter;
+	}
+
+	/// <summary>O quanto o cotovelo vai para trás da mão (0 = o cotovelo
+	/// de sempre, para baixo e para fora).</summary>
+	[Export(PropertyHint.Range, "0,1")] public float ElbowFollowsHand = 0.6f;
+
+	/// <summary>A mão esquerda solta, ao lado do corpo: um pouco à frente da
+	/// coxa, os dedos para baixo, a palma para dentro.</summary>
+	private void Loose(out Vector3 wrist, out Basis turn)
+	{
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		Basis body = _body.GlobalBasis.Orthonormalized();
+		Vector3 shoulder = Bone(skeleton, _leftUpper);
+		float arm = shoulder.DistanceTo(Bone(skeleton, _leftLower)) + Bone(skeleton, _leftLower).DistanceTo(Bone(skeleton, _leftHand));
+		// O corpo olha para −Z: a esquerda é −X.
+		wrist = shoulder + Vector3.Down * arm * 0.9f - body.Z * 0.1f - body.X * 0.05f;
+		turn = Basis.Identity;
+		if (!BodyHand(false, out Vector3 fingers, out Vector3 palm, out _)) return;
+		Vector3 along = (Vector3.Down - body.Z * 0.25f).Normalized();
+		turn = ArmIK.Orient(along, body.X) * ArmIK.Orient(fingers, palm).Transposed();
+	}
+
+	/// <summary>A mão do corpo, na rotação do osso dela: para onde vão os
+	/// dedos, para onde a palma olha, e o começo do dedo médio (do pulso).</summary>
+	private bool BodyHand(bool right, out Vector3 fingers, out Vector3 palm, out Vector3 middle)
+	{
+		fingers = palm = middle = Vector3.Zero;
+		int wrist = right ? _rightHand : _leftHand;
+		int mid = right ? _rightMiddle : _leftMiddle, index = right ? _rightIndex : _leftIndex, pinky = right ? _rightPinky : _leftPinky;
+		if (wrist < 0 || mid < 0 || index < 0 || pinky < 0) return false;
+
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		Transform3D pose = skeleton * _skeleton.GetBoneGlobalPose(wrist);
+		Basis back = pose.Basis.Orthonormalized().Transposed();
+		Vector3 along = Bone(skeleton, mid) - pose.Origin;
+		Vector3 across = Bone(skeleton, index) - Bone(skeleton, pinky);
+		Vector3 inside = right ? across.Cross(along) : along.Cross(across);
+		if (along.LengthSquared() < 1e-8f || inside.LengthSquared() < 1e-10f) return false;
+
+		fingers = (back * along).Normalized();
+		palm = (back * inside).Normalized();
+		middle = back * along;
+		return true;
+	}
+
+	/// <summary>Quanto o conjunto tem de chegar perto para este braço
+	/// alcançar o pulso (zero se alcança).</summary>
+	private Vector3 Shortfall(int upper, int lower, int hand, Vector3 wrist)
+	{
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		Vector3 a = Bone(skeleton, upper), b = Bone(skeleton, lower), c = Bone(skeleton, hand);
+		float reach = (a.DistanceTo(b) + b.DistanceTo(c)) * 0.97f;
+		Vector3 to = wrist - a;
+		float d = to.Length();
+		return d > reach && d > 1e-4f ? -to / d * (d - reach) : Vector3.Zero;
+	}
+
+	/// <summary>
+	/// Os dedos do corpo fechados como os do conjunto: cada falange dobra o
+	/// quanto a de lá dobra, no plano em que os dedos do personagem fecham
+	/// (o afastamento entre os dedos fica o do personagem — copiado do
+	/// conjunto, a mão maior virava uma garra). O polegar copia a direção de
+	/// cada falange de lá. <paramref name="carry"/> leva a mão do conjunto
+	/// para onde a arma de uma mão foi; <paramref name="extra"/> fecha mais
+	/// (a mão de apoio no guarda-mão: os dedos do personagem, mais longos,
+	/// passavam por cima); <paramref name="weight"/> 0 deixa como estão.
+	/// </summary>
+	private void RigFingers(bool right, Transform3D carry, float weight, float extra = 0f, Vector3 thumbForward = default,
+		Vector3 ball = default, float ballRadius = 0f)
+	{
+		if (weight <= 0.01f) return;
+		int[][] fp = right ? _rig.FingersR : _rig.FingersL;
+		int[][] body = right ? _fingersR : _fingersL;
+		int rigHand = right ? _rig.HandR : _rig.HandL, hand = right ? _rightHand : _leftHand;
+		if (fp[1] == null || fp[2] == null || fp[4] == null || hand < 0) return;
+		if (!BodyHand(right, out Vector3 bodyFingers, out Vector3 bodyPalm, out _)) return;
+
+		// A mão do conjunto (levada) e a do corpo: para onde os dedos vão,
+		// para onde a palma olha, e o eixo em que um dedo fecha.
+		Basis turn = carry.Basis.Orthonormalized();
+		Vector3 w = carry * _rig.At(rigHand), m = carry * _rig.At(fp[2][0]);
+		Vector3 rigAlong = (m - w).Normalized(), across = carry * _rig.At(fp[1][0]) - carry * _rig.At(fp[4][0]);
+		Vector3 rigInside = (right ? across.Cross(rigAlong) : rigAlong.Cross(across)).Normalized();
+		Vector3 rigCurl = rigAlong.Cross(rigInside).Normalized();
+
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		Basis handNow = (skeleton * _skeleton.GetBoneGlobalPose(hand)).Basis.Orthonormalized();
+		Basis handRest = _skeleton.GetBoneGlobalRest(hand).Basis.Orthonormalized();
+		Vector3 along = (handNow * bodyFingers).Normalized(), inside = (handNow * bodyPalm).Normalized();
+		Vector3 curl = along.Cross(inside).Normalized();
+
+		for (int f = 0; f < 5; f++)
+		{
+			if (fp[f] == null || body[f] == null || body[f][3] < 0) continue;
+			Vector3[] seg = _rig.FingerSegments(fp[f]);
+			var want = new Vector3[3];
+			for (int k = 0; k < 3; k++)
+			{
+				Vector3 d = (turn * seg[k]).Normalized();
+				if (f == 0)
+				{
+					want[k] = k > 0 && thumbForward != Vector3.Zero ? d.Slerp(thumbForward.Normalized(), ThumbForward).Normalized() : d;
+					continue;
+				}
+				// A falange do personagem na pose de descanso (dedos quase retos),
+				// na mão de agora, dobrada até o ângulo da de lá.
+				Vector3 restA = _skeleton.GetBoneGlobalRest(body[f][k]).Origin, restB = _skeleton.GetBoneGlobalRest(body[f][k + 1]).Origin;
+				Vector3 rest = (handNow * (handRest.Transposed() * (skeleton.Basis.Orthonormalized() * (restB - restA)))).Normalized();
+				float target = Bent(d, rigAlong, rigCurl) + extra * (k + 1) / 3f;
+				want[k] = Turned(rest, curl, target - Bent(rest, along, curl));
+			}
+
+			// Em volta de uma bola (a granada): o dedo fecha ou abre até a
+			// ponta encostar nela, sem nenhuma junta entrar.
+			if (ballRadius > 0f)
+			{
+				if (f > 0) Wrap(body[f], want, curl, ball, ballRadius);
+				else
+				{
+					// O polegar: no plano dele ou no da mão, o que encostar melhor.
+					Vector3 own = ThumbAxis(want, curl);
+					Vector3[] tryOwn = (Vector3[])want.Clone(), tryHand = (Vector3[])want.Clone();
+					// E deitado sobre a bola, para a frente da mão (não em pé).
+					Vector3 lean = (along + inside).Normalized();
+					float a = Wrap(body[f], tryOwn, own, ball, ballRadius, lean), c = Wrap(body[f], tryHand, curl, ball, ballRadius, lean);
+					System.Array.Copy(a <= c ? tryOwn : tryHand, want, 3);
+				}
+			}
+
+			for (int k = 0; k < 3; k++)
+			{
+				int bone = body[f][k], child = body[f][k + 1];
+				int parent = _skeleton.GetBoneParent(bone);
+				if (parent < 0) break;
+				skeleton = _skeleton.GlobalTransform;
+				Transform3D pose = skeleton * _skeleton.GetBoneGlobalPose(bone);
+				Vector3 now = Bone(skeleton, child) - pose.Origin;
+				Vector3 aim = weight < 1f ? now.Normalized().Slerp(want[k], weight) : want[k];
+				Quaternion turnBone = ArmIK.Arc(now, aim);
+				Basis parentRotation = (skeleton * _skeleton.GetBoneGlobalPose(parent)).Basis.Orthonormalized();
+				Basis next = new Basis(turnBone) * pose.Basis.Orthonormalized();
+				Write(bone, (parentRotation.Transposed() * next).Orthonormalized().GetRotationQuaternion());
+			}
+		}
+	}
+
+	/// <summary>O eixo em que o polegar dobra: o plano das falanges dele.</summary>
+	private static Vector3 ThumbAxis(Vector3[] d, Vector3 fallback)
+	{
+		Vector3 own = d[0].Cross(d[1]) + d[1].Cross(d[2]);
+		return own.Length() > 0.1f ? own.Normalized() : fallback;
+	}
+
+	/// <summary>Fecha (ou abre) um dedo em volta de uma bola: a ponta
+	/// encostada nela (mais a grossura do dedo), nenhuma junta dentro.
+	/// Devolve o quanto ficou longe disso.</summary>
+	private float Wrap(int[] chain, Vector3[] want, Vector3 axis, Vector3 ball, float radius, Vector3 lean = default)
+	{
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		Vector3 k0 = Bone(skeleton, chain[0]);
+		float l0 = k0.DistanceTo(Bone(skeleton, chain[1]));
+		float l1 = Bone(skeleton, chain[1]).DistanceTo(Bone(skeleton, chain[2]));
+		float l2 = Bone(skeleton, chain[2]).DistanceTo(Bone(skeleton, chain[3]));
+		float skin = radius + FingerThickness;
+
+		float best = 0f, bestCost = float.MaxValue;
+		for (float a = -0.8f; a <= 1.8f; a += 0.04f)
+		{
+			Vector3 p1 = k0 + Turned(want[0], axis, a / 3f) * l0;
+			Vector3 p2 = p1 + Turned(want[1], axis, a * 2f / 3f) * l1;
+			Vector3 p3 = p2 + Turned(want[2], axis, a) * l2;
+			float cost = Mathf.Abs(p3.DistanceTo(ball) - skin);
+			foreach (Vector3 p in new[] { p1, p2, p3 })
+				cost += Mathf.Max(0f, skin - p.DistanceTo(ball)) * 4f;
+			if (lean != Vector3.Zero) cost += (1f - (p3 - k0).Normalized().Dot(lean)) * 0.03f;
+			if (cost < bestCost) { bestCost = cost; best = a; }
+		}
+		for (int k = 0; k < 3; k++) want[k] = Turned(want[k], axis, best * (k + 1) / 3f);
+		return bestCost;
+	}
+
+	/// <summary>O meio da palma do corpo e para onde ela olha.</summary>
+	private bool Palm(bool right, out Vector3 palm, out Vector3 inside)
+	{
+		palm = inside = Vector3.Zero;
+		int wrist = right ? _rightHand : _leftHand, middle = right ? _rightMiddle : _leftMiddle;
+		if (!BodyHand(right, out _, out Vector3 palmLocal, out _)) return false;
+		Transform3D skeleton = _skeleton.GlobalTransform;
+		Transform3D pose = skeleton * _skeleton.GetBoneGlobalPose(wrist);
+		palm = pose.Origin.Lerp(Bone(skeleton, middle), 0.6f);
+		inside = (pose.Basis.Orthonormalized() * palmLocal).Normalized();
+		return true;
+	}
+
+	/// <summary>O raio da granada do conjunto (m), e a grossura de um dedo
+	/// do personagem até o osso.</summary>
+	[Export] public float GrenadeRadius = 0.036f;
+	[Export] public float FingerThickness = 0.012f;
+
+	/// <summary>O quanto uma falange dobra (radianos): o ângulo dela, a
+	/// partir da direção da mão, em torno do eixo em que os dedos fecham.</summary>
+	private static float Bent(Vector3 direction, Vector3 along, Vector3 curl)
+	{
+		Vector3 flat = direction - curl * direction.Dot(curl);
+		return Mathf.Atan2(curl.Dot(along.Cross(flat)), along.Dot(flat));
+	}
+
+	/// <summary>O quanto os polegares deitam para a frente na pistola (0 a 1).</summary>
+	[Export(PropertyHint.Range, "0,1")] public float ThumbForward = 0.6f;
+
+	/// <summary>Quanto a mão de apoio fecha a mais no guarda-mão (radianos).</summary>
+	[Export(PropertyHint.Range, "0,2")] public float SupportCurl = 0.7f;
+
+	private static Vector3 Turned(Vector3 v, Vector3 axis, float angle) => Mathf.Abs(angle) < 1e-5f ? v : v.Rotated(axis, angle);
+
 	// ------------------------------------------------------------ sem atravessar o corpo
 	//
 	// 19/11, Jhon: "armas não podem atravessar o personagem". Os clipes são
@@ -211,8 +1182,14 @@ public partial class HeldWeapon : Node3D
 		for (int i = 0; i < _skeleton.GetBoneCount(); i++)
 		{
 			string bone = _skeleton.GetBoneName(i);
+			_boneByName[bone.StartsWith("mixamorig_") ? bone["mixamorig_".Length..] : bone] = i;
 			if (bone.EndsWith("Spine1")) _spine = i;
-			else if (bone.EndsWith("Neck")) _neck = i;
+			if (bone.EndsWith("Spine") || bone.EndsWith("Spine1") || bone.EndsWith("Spine2")) _spines.Add(i);
+			if (bone.EndsWith("RightArm")) _rightUpper = i;
+			else if (bone.EndsWith("RightForeArm")) _rightLower = i;
+			else if (bone.EndsWith("LeftArm")) _leftUpper = i;
+			else if (bone.EndsWith("LeftForeArm")) _leftLower = i;
+			if (bone.EndsWith("Neck")) _neck = i;
 			else if (bone.EndsWith("_Head") || bone == "Head") _head = i;
 			else if (bone.EndsWith("HeadTop_End")) _top = i;
 		}

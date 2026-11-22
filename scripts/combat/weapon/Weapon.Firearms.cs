@@ -350,7 +350,7 @@ public partial class Weapon
 
 			if (result.Count == 0)
 			{
-				if (Debug) GD.Print("ataque: não acertou nada");
+				if (Debug) GD.Print("attack: hit nothing");
 				return null;
 			}
 
@@ -375,8 +375,8 @@ public partial class Weapon
 			if (Debug)
 			{
 				GD.Print(health == null
-					? $"ataque: acertou '{node.Name}', que não tem um filho chamado Health"
-					: $"ataque: acertou '{node.Name}'");
+					? $"attack: hit '{node.Name}', which has no child named Health"
+					: $"attack: hit '{node.Name}'");
 			}
 
 			return health;

@@ -87,7 +87,8 @@ public partial class CharacterAnimator
 	{
 		if (_airborne) return;
 
-		bool crouching = _owner != null && _owner.IsCrouching;
+		// O boneco de outro jogador agacha quando o dono agacha (21/11: não aparecia).
+		bool crouching = _owner != null ? _owner.IsCrouching : _body is Bot { RemoteCrouching: true };
 		if (crouching == _crouched) return;
 
 		_crouched = crouching;
@@ -163,6 +164,6 @@ public partial class CharacterAnimator
 		_playback?.Travel("Jump");
 
 		if (Debug && _playback == null)
-			GD.Print($"{_body.Name}: Jump() chamado sem árvore montada");
+			GD.Print($"{_body.Name}: Jump() called before the tree was built");
 	}
 }

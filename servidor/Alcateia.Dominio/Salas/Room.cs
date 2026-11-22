@@ -174,6 +174,24 @@ public sealed class Room
 		if (_members.Any(m => !m.Ready && m.Account.Id != HostId))
 			throw new Failure(FailureKind.Conflict, "nem_todos_prontos", "Nem todos estão prontos.");
 
+		return Assignment(matchKey);
+	}
+
+	/// <summary>
+	/// O dono recomeça (Jhon, 21/11: "somente o mestre da sala pode reiniciar
+	/// partida"): no meio da partida ou na tela do resultado, a sala inteira
+	/// vai para uma partida nova, sem esperar ninguém marcar pronto — quem
+	/// está na sala jogou a de agora (no meio dela ninguém entra). A partida
+	/// de agora, se houver, quem descarta é o saguão.
+	/// </summary>
+	public MatchAssignment RestartLineup(long accountId, string matchKey)
+	{
+		RequireHost(accountId);
+		return Assignment(matchKey);
+	}
+
+	private MatchAssignment Assignment(string matchKey)
+	{
 		var bots = VsBots ? _bots.ToList() : new List<BotSeat>();
 		return new MatchAssignment
 		{

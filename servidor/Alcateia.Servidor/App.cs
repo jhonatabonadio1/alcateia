@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
 using Alcateia.Aplicacao.Contas;
@@ -7,6 +8,7 @@ using Alcateia.Aplicacao.Jogo;
 using Alcateia.Aplicacao.Painel;
 using Alcateia.Aplicacao.Portas;
 using Alcateia.Aplicacao.Seguranca;
+using Alcateia.Dominio.Frota;
 using Alcateia.Dominio.Seguranca;
 using Alcateia.Infra.Semente;
 using Alcateia.Aplicacao.Frota;
@@ -141,6 +143,20 @@ public static class App
 		return app;
 	}
 
+	/// <summary>Uma partida acabou sem resultado (o servidor de partida parou
+	/// de bater, ou a fechou vazia): vai para o registro, e o painel mostra.</summary>
+	private static void RecordLost(SecurityService security, LostMatch lost)
+	{
+		string humans = string.Join(",", lost.Assignment.Players.Where(p => !p.IsBot).Select(p => p.AccountId));
+		bool down = lost.Reason == MatchLoss.ServerDown;
+		security.Record(
+			down ? EventKind.MatchServerGone : EventKind.MatchClosed,
+			down ? Severity.High : Severity.Warning,
+			"", null, lost.ServerId, lost.Assignment.MatchKey,
+			(down ? "o servidor de partida parou de bater e a partida se perdeu" : "o servidor de partida fechou a partida sem resultado") +
+			(humans == "" ? "" : $"; contas: {humans}"));
+	}
+
 	/// <summary>Liga as camadas: os repositórios e a segurança da infra nas
 	/// portas da aplicação.</summary>
 	public static Services Compose(Config config)
@@ -160,6 +176,7 @@ public static class App
 		IFleetScaler scaler = config.FlyApp != "" && config.FlyToken != ""
 			? new Alcateia.Infra.Fly.FlyMachines(config.FlyApi, config.FlyApp, config.FlyToken) : null;
 		var fleet = new FleetService(config.FleetTimeout, new FleetSigner(config.FleetKey), clock, scaler, config.FleetReserve);
+		fleet.Lost += lost => RecordLost(security, lost);
 		var lobby = new LobbyService(fleet, accounts, clock, config.TicketLife, config.RoomListEvery, config.MaxRooms) { MapAllowed = gameData.MapAllowed, Inventory = playerStore.Inventory };
 		var challenges = new ChallengeService(playerStore, gameData, clock);
 		var matches = new MatchService(matchStore, fleet, lobby, gameData, challenges, security, clock);

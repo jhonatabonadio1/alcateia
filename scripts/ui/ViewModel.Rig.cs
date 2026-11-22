@@ -267,7 +267,7 @@ public partial class ViewModel
 
 		if (_rigPlayer == null || !_rigClips.ContainsKey("parado"))
 		{
-			GD.PushWarning($"ViewModel: o conjunto de {id} não tem animação de parado.");
+			GD.PushWarning($"ViewModel: the {id} set has no idle animation.");
 			RemoveChild(_held);
 			_held.QueueFree();
 			_held = null;

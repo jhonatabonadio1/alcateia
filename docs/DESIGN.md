@@ -1387,7 +1387,7 @@ arma da outra.
 
 Especificação: `docs/CONJUNTOS.md`. Implementação:
 `scripts/combat/LoadoutSet.cs`, `scripts/core/Profile.cs` (salvo em
-`user://perfil.json`) e a tela de respawn em `scripts/ui/LoadoutMenu.cs`.
+`user://profile.json`) e a tela de respawn em `scripts/ui/LoadoutMenu.cs`.
 
 - Quatro conjuntos. O **primeiro é o padrão**: só itens grátis, sempre
   disponível, e escolhê-lo rende **+50 WP**. O `Profile.Repair` força
@@ -1705,10 +1705,10 @@ missões e títulos vêm do servidor e o jogo só os espelha
 (`Profile.ApplyAccount`, `scripts/net/AccountSync.cs`). Sem conta é
 Filhote, zero Presas e o equipamento de série; a loja mostra a vitrine
 e pede para entrar, as missões também. **Partida sem servidor é treino**
-e não rende nada. O arquivo `user://perfil.json` (`Profile`, versão 4)
+e não rende nada. O arquivo `user://profile.json` (`Profile`, versão 4)
 guarda só escolhas: conjuntos, raça, tatuagens, personagens, título em
 uso, estatísticas de treino. Opções ficam à parte, em
-`user://opcoes.json`.
+`user://settings.json`.
 
 - **Duas moedas.** **Presas** se ganham jogando; **Sangue** é a moeda
   paga e só aparece — a venda ainda não abriu. **WP não é moeda de

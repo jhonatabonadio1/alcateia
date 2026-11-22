@@ -35,7 +35,7 @@ test -d "$app"
 codesign --force --deep --sign - "$app"
 codesign --verify --deep --strict --verbose=2 "$app"
 
-mkdir -p dmg && cp -R "$app" dmg/WolfLeague.app && ln -s /Applications dmg/Aplicativos
+mkdir -p dmg && cp -R "$app" dmg/WolfLeague.app && ln -s /Applications dmg/Applications
 dmg_arq="entrega/WolfLeague-${VERSAO}-mac.dmg"
 hdiutil create -volname "WolfLeague" -srcfolder dmg -ov -format UDZO "$dmg_arq"
 ls -lh "$dmg_arq"

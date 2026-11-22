@@ -49,6 +49,6 @@ public partial class NavBaker : Node3D
 		region.NavigationMesh = mesh;
 
 		if (Debug)
-			GD.Print($"NavBaker: {mesh.GetPolygonCount()} polígonos de navegação");
+			GD.Print($"NavBaker: {mesh.GetPolygonCount()} navigation polygons");
 	}
 }

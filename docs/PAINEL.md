@@ -39,7 +39,7 @@ Pede a senha nova, desliga as duas etapas dessa conta e a destrava.
 | **Mapas** | Cada mapa com a foto: **liga e desliga a rotação** com um clique. Mapa desligado não abre sala nova. O cartão só anuncia modo que o jogo já tem (hoje, Equipe): mapa feito para um modo que ainda não existe, como a Obra para o mata-mata, diz isso e em que modo se joga nele por enquanto | administrador |
 | **Promoções** | Desconto com começo e fim num item à venda. Vale na loja sozinho, no horário | administrador |
 | **Desafios** | As missões diárias, semanais, permanentes e de **evento** (com datas): o que conta, o alvo e o prêmio (Presas, XP, Sangue, item por tantos dias, título). Das diárias e semanais ligadas o servidor sorteia as que valem em cada período (as mesmas para todos); a etiqueta **Valendo hoje / esta semana** mostra quais | administrador |
-| **Eventos** | Tudo o que o escudo viu, com filtro por tipo, gravidade e IP; bloquear um endereço dali mesmo | moderador bloqueia |
+| **Eventos** (Segurança) | Tudo o que o escudo viu, com filtro por tipo, gravidade e IP; bloquear um endereço dali mesmo. O filtro **Partidas** mostra o que deu errado nos servidores de partida: servidor que sumiu, jogador recusado, ligação que caiu, partida vazia, resultado que não chegou, erro e lentidão (detalhe em `SEGURANCA.md`) | moderador bloqueia |
 | **Blacklist de IP** | Endereços e faixas bloqueados (pelo escudo ou pela equipe), com prazo e motivo | moderador |
 | **Banimentos** | As contas banidas e o histórico | todos veem |
 | **Auditoria** | Quem fez o quê no painel, em quem e de onde | todos veem |

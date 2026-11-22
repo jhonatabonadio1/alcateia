@@ -48,6 +48,10 @@ public partial class Bot
 		Slot = (byte)_weapon.HumanSlot,
 		Grounded = IsOnFloor(),
 		Dead = _health.IsDead,
+		// O boneco deste bot nas outras máquinas corre de quatro e ruge
+		// quando ele corre e ruge aqui (21/11: antes adivinhava pela velocidade).
+		Sprinting = IsSprinting,
+		Howling = Action == BotAction.Howl,
 		Hp = _health.Hp,
 		MaxHp = _health.MaxHp,
 		Shield = _health.Shield,
@@ -70,9 +74,96 @@ public partial class Bot
 	public int Steps => _noise.Steps;
 	public float StridePhase => _noise.StridePhase;
 
-	/// <summary>Quão rápido o boneco alcança a posição noticiada, e o
-	/// quanto se adianta pela velocidade, em segundos.</summary>
-	private const float RemoteCatchUp = 14f, RemoteLead = 0.2f, RemoteSnap = 6f;
+	/// <summary>Quão rápido o boneco alcança a posição noticiada, e até
+	/// quanto se adianta pela velocidade, em segundos.
+	///
+	/// 21/11 (Jhon: "sinto um leve delay"): o boneco corria atrás da posição
+	/// com 1/14 s de atraso a mais (a perseguição suave sempre fica uma
+	/// fração para trás) e só se adiantava o tempo desde a última notícia.
+	/// Agora ele se adianta também esse atraso da perseguição
+	/// (<see cref="RemoteChaseLag"/>): fica onde o dono estava ao mandar,
+	/// sem somar o próprio atraso.</summary>
+	private const float RemoteCatchUp = 18f, RemoteLead = 0.2f, RemoteSnap = 6f;
+
+	/// <summary>O atraso da perseguição suave, em segundos (1/RemoteCatchUp).</summary>
+	private const float RemoteChaseLag = 1f / RemoteCatchUp;
+
+	/// <summary>Quão rápido o boneco vira para onde o dono olha.</summary>
+	private const float RemoteTurn = 26f;
+
+	/// <summary>O que o dono está fazendo e o boneco não tem como adivinhar
+	/// (o estado que chegou, desde 21/11): correndo de quatro, agachado,
+	/// rugindo, andando quieto. Antes a corrida de quatro era achada pela
+	/// velocidade (o lobo de quem andava em pé aparecia de quatro), e o
+	/// agachar e o rugido não apareciam para ninguém.</summary>
+	public bool RemoteSprinting { get; private set; }
+	public bool RemoteCrouching { get; private set; }
+	public bool RemoteHowling { get; private set; }
+	public bool RemoteQuiet { get; private set; }
+
+	/// <summary>Chegou o que o dono está fazendo (o estado).</summary>
+	public void RemoteMotion(bool sprinting, bool crouching, bool howling, bool quiet, bool grenadeReady)
+	{
+		RemoteSprinting = sprinting;
+		RemoteCrouching = crouching;
+		RemoteHowling = howling;
+		RemoteQuiet = quiet;
+		_weapon.RemoteGrenadeReady = grenadeReady;
+	}
+
+	// ---- agachado: a cápsula do boneco encolhe como a do dono
+
+	/// <summary>A altura da cápsula agachada (a do jogador, Player.CrouchHeight).</summary>
+	private const float RemoteCrouchHeight = 1.0f;
+
+	private CapsuleShape3D _remoteCapsule;
+	private float _remoteStand = 1.75f, _remoteHeight = 1.75f;
+
+	/// <summary>Quanto o centro do corpo desceu agachado, em metros: o
+	/// desenho sobe isso para os pés continuarem no chão (a posição que
+	/// chega é o centro da cápsula do dono, que desce ao agachar).</summary>
+	public float RemoteCrouchDrop => (_remoteStand - _remoteHeight) * 0.5f;
+
+	/// <summary>A cápsula do boneco é só dele (a da cena é uma para todos
+	/// os bots): agachar um não encolhe os outros.</summary>
+	private void OwnCapsule()
+	{
+		var shape = GetNodeOrNull<CollisionShape3D>("CollisionShape3D");
+		if (shape?.Shape is not CapsuleShape3D capsule) return;
+		_remoteCapsule = (CapsuleShape3D)capsule.Duplicate();
+		shape.Shape = _remoteCapsule;
+		_remoteStand = _remoteHeight = capsule.Height;
+	}
+
+	/// <summary>
+	/// O dono agachou: a cápsula encolhe em torno do centro, como a dele
+	/// (o tiro por cima da cabeça abaixada passa; antes passava pelo boneco
+	/// em pé e acertava o ar acima de quem estava agachado), e o desenho
+	/// desce o corpo com os pés no chão. Na mesma velocidade do jogador.
+	/// </summary>
+	private void UpdateRemoteCrouch(float dt)
+	{
+		if (_remoteCapsule == null) return;
+		float target = RemoteCrouching && !_health.IsDead ? Mathf.Min(RemoteCrouchHeight, _remoteStand) : _remoteStand;
+		if (Mathf.IsEqualApprox(_remoteHeight, target)) return;
+		_remoteHeight = Mathf.MoveToward(_remoteHeight, target, 22f * dt);
+		_remoteCapsule.Height = _remoteHeight;
+	}
+
+	/// <summary>O dono está correndo na parede (o estado que chegou). O
+	/// lobo do boneco deita na parede e engatinha, como o de quem joga
+	/// (Jhon, 21/11: na partida online o lobo dos outros na parede saía
+	/// com a animação de pulo).</summary>
+	public bool RemoteWallRun { get; set; }
+
+	/// <summary>A parede em que o boneco corre: a normal (para fora dela)
+	/// e o sentido da corrida, achados aqui, perto do corpo — a rede não
+	/// manda. Zero fora da parede.</summary>
+	public Vector3 RemoteWallNormal { get; private set; }
+	public Vector3 RemoteWallAlong { get; private set; }
+
+	/// <summary>Até onde, de cada lado do corpo, procurar a parede.</summary>
+	private const float RemoteWallReach = 1.1f;
 
 	private Vector3 _netPosition, _netVelocity;
 	private float _netYaw, _netPitch;
@@ -134,6 +225,7 @@ public partial class Bot
 		_netPosition = GlobalPosition;
 		_netYaw = Rotation.Y;
 		_layer = CollisionLayer;
+		OwnCapsule();
 
 		// Até o dono dar notícia, o boneco não existe para ninguém.
 		RemotePresent(false);
@@ -178,14 +270,19 @@ public partial class Bot
 		_health.Mirror(hp, maxHp, shield, maxShield, dead);
 	}
 
-	/// <summary>O dono atacou: o boneco encena.</summary>
-	public void RemoteAttack(Slot slot, float yaw, float pitch)
+	/// <summary>O dono atacou: o boneco encena. Com <paramref name="move"/>
+	/// (o golpe do lobo + 1, desde 21/11), toca exatamente aquele golpe, com
+	/// os números dele (NetWire).</summary>
+	public void RemoteAttack(Slot slot, float yaw, float pitch, int move = 0, float a = 0f, float b = 0f)
 	{
 		if (_health.IsDead) return;
 
 		Rotation = new Vector3(0, yaw, 0);
 		_head.Rotation = new Vector3(pitch, 0, 0);
-		_weapon.RemoteAttack(slot);
+		if (move > 0 && System.Enum.IsDefined(typeof(WolfMove), move - 1))
+			_weapon.RemoteWolfMove((WolfMove)(move - 1), a, b);
+		else
+			_weapon.RemoteAttack(slot);
 	}
 
 	private void RemoteStep(double delta)
@@ -209,15 +306,17 @@ public partial class Bot
 		}
 		else
 		{
-			Vector3 target = _netPosition + _netVelocity * Mathf.Min((float)_netAge, RemoteLead);
+			Vector3 target = _netPosition + _netVelocity * Mathf.Min((float)_netAge + RemoteChaseLag, RemoteLead);
 			GlobalPosition = GlobalPosition.DistanceTo(target) > RemoteSnap
 				? target
 				: GlobalPosition.Lerp(target, 1f - Mathf.Exp(-RemoteCatchUp * dt));
 
-			float turn = 1f - Mathf.Exp(-18f * dt);
+			float turn = 1f - Mathf.Exp(-RemoteTurn * dt);
 			Rotation = new Vector3(0, Mathf.LerpAngle(Rotation.Y, _netYaw, turn), 0);
 			_head.Rotation = new Vector3(Mathf.LerpAngle(_head.Rotation.X, _netPitch, turn), 0, 0);
 		}
+
+		UpdateRemoteCrouch(dt);
 
 		// Um toque no chão (ou para fora dele) só para o corpo saber se
 		// está pisando: a animação e o som do passo perguntam isso.
@@ -225,6 +324,77 @@ public partial class Bot
 		MoveAndSlide();
 		Velocity = _netVelocity;
 
+		UpdateRemoteWall();
 		UpdateNoise(delta);
+	}
+
+	/// <summary>
+	/// Correndo na parede, a parede: o sentido é o do movimento (parado,
+	/// agarrado, o de antes), e a parede é a mais perto de um dos lados
+	/// dele. Sem parede achada, fica a última — numa quina a sonda pode
+	/// errar um passo.
+	/// </summary>
+	private void UpdateRemoteWall()
+	{
+		if (!RemoteWallRun || _health.IsDead)
+		{
+			RemoteWallNormal = RemoteWallAlong = Vector3.Zero;
+			return;
+		}
+
+		var flat = new Vector3(_netVelocity.X, 0, _netVelocity.Z);
+		Vector3 along = flat.LengthSquared() > 0.04f ? flat.Normalized()
+			: RemoteWallAlong != Vector3.Zero ? RemoteWallAlong
+			: new Vector3(-GlobalBasis.Z.X, 0, -GlobalBasis.Z.Z).Normalized();
+		if (along == Vector3.Zero) return;
+
+		Vector3 side = along.Cross(Vector3.Up).Normalized();
+		Vector3 bestNormal = Vector3.Zero;
+		float best = float.MaxValue;
+		foreach (Vector3 dir in new[] { side, -side })
+			if (ProbeRemoteWall(dir, out Vector3 normal, out float distance) && distance < best)
+			{
+				best = distance;
+				bestNormal = normal;
+			}
+
+		if (bestNormal == Vector3.Zero)
+		{
+			if (RemoteWallNormal == Vector3.Zero) return;
+			bestNormal = RemoteWallNormal;
+		}
+
+		Vector3 onWall = along - bestNormal * along.Dot(bestNormal);
+		RemoteWallNormal = bestNormal;
+		RemoteWallAlong = onWall.LengthSquared() > 1e-4f ? onWall.Normalized() : along;
+	}
+
+	private bool ProbeRemoteWall(Vector3 dir, out Vector3 normal, out float distance)
+	{
+		normal = Vector3.Zero;
+		distance = 0f;
+		var space = GetWorld3D().DirectSpaceState;
+		Vector3 from = GlobalPosition;
+		var query = PhysicsRayQueryParameters3D.Create(from, from + dir * RemoteWallReach);
+		var exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		for (int i = 0; i < 4; i++)
+		{
+			query.Exclude = exclude;
+			var hit = space.IntersectRay(query);
+			if (hit.Count == 0) return false;
+			// Gente e os limites invisíveis do mapa não são parede.
+			if (hit["collider"].Obj is CharacterBody3D || Player.IsInvisibleLimit(hit["collider"].Obj))
+			{
+				exclude.Add((Rid)hit["rid"]);
+				continue;
+			}
+			Vector3 n = (Vector3)hit["normal"];
+			n.Y = 0;
+			if (n.LengthSquared() < 0.25f) return false;   // chão ou teto inclinado
+			normal = n.Normalized();
+			distance = from.DistanceTo((Vector3)hit["position"]);
+			return true;
+		}
+		return false;
 	}
 }

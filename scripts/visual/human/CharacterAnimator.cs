@@ -97,7 +97,7 @@ public partial class CharacterAnimator : Node3D
 	/// soma duas vezes — foi assim que o corpo afundou 1,75 m, que é
 	/// o dobro certinho de onde ele devia estar.
 	/// </summary>
-	private float BaseY => _owner != null ? _owner.FeetOffset : _modelY;
+	private float BaseY => _owner != null ? _owner.FeetOffset : _modelY + ((_body as Bot)?.RemoteCrouchDrop ?? 0f);
 	private string _lastState = "";
 	private static bool _reported;
 
@@ -112,7 +112,7 @@ public partial class CharacterAnimator : Node3D
 		_model = GetNodeOrNull<Node3D>(ModelPath);
 		if (_model == null)
 		{
-			GD.PrintErr($"CharacterAnimator: não achei o modelo em '{ModelPath}'.");
+			GD.PrintErr($"CharacterAnimator: model not found at '{ModelPath}'.");
 			return;
 		}
 		SkinCulling.Loosen(_model);
@@ -122,7 +122,7 @@ public partial class CharacterAnimator : Node3D
 		_player = FindPlayer(_model);
 		if (_player == null)
 		{
-			GD.PrintErr("CharacterAnimator: o modelo não traz AnimationPlayer.");
+			GD.PrintErr("CharacterAnimator: the model has no AnimationPlayer.");
 			return;
 		}
 
@@ -154,7 +154,10 @@ public partial class CharacterAnimator : Node3D
 		AttachWeapon();
 
 		if (_weapon != null)
+		{
 			_weapon.AmmoChanged += OnAmmoChanged;
+			_weapon.Thrown += OnThrown;
+		}
 
 		if (loaded > 0)
 		{
@@ -186,8 +189,8 @@ public partial class CharacterAnimator : Node3D
 			foreach (string clip in Clips)
 				if (!_player.HasAnimation($"alcateia/{clip}")) missing.Add(clip);
 
-			GD.Print($"CharacterAnimator: {loaded} clipes carregados" +
-					 (missing.Count > 0 ? $" — faltando: {string.Join(", ", missing)}" : ""));
+			GD.Print($"CharacterAnimator: {loaded} clips loaded" +
+					 (missing.Count > 0 ? $" — missing: {string.Join(", ", missing)}" : ""));
 		}
 	}
 
@@ -255,9 +258,9 @@ public partial class CharacterAnimator : Node3D
 		uint layers = 0;
 		if (FirstVisual(_model) is VisualInstance3D first) layers = first.Layers;
 
-		GD.Print($"{_body.Name}: estado '{now}'  chão {_body.IsOnFloor()}" +
-				 $"  visível {Visible && _model.Visible}  camada {layers}" +
-				 $"  forma {(_form != null && _form.IsWolf ? "lobo" : "humano")}");
+		GD.Print($"{_body.Name}: state '{now}'  floor {_body.IsOnFloor()}" +
+				 $"  visible {Visible && _model.Visible}  layer {layers}" +
+				 $"  form {(_form != null && _form.IsWolf ? "wolf" : "human")}");
 	}
 
 	/// <summary>O corpo humano some quando o dono vira lobo.</summary>

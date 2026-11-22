@@ -78,7 +78,7 @@ public partial class MapLoader : Node3D
 	{
 		if (string.IsNullOrEmpty(MapPath))
 		{
-			if (Debug) GD.Print("MapLoader: nenhum mapa definido.");
+			if (Debug) GD.Print("MapLoader: no map set.");
 			return;
 		}
 
@@ -86,7 +86,7 @@ public partial class MapLoader : Node3D
 
 		if (scene == null)
 		{
-			GD.PrintErr($"MapLoader: não consegui carregar {MapPath}");
+			GD.PrintErr($"MapLoader: could not load {MapPath}");
 			return;
 		}
 
@@ -103,7 +103,7 @@ public partial class MapLoader : Node3D
 		Prepare(map, ref collisions);
 
 		if (Debug)
-			GD.Print($"MapLoader: {collisions} corpos de colisão, {Spawns.Count} spawns");
+			GD.Print($"MapLoader: {collisions} collision bodies, {Spawns.Count} spawns");
 
 		if (BakeNavigation)
 			Bake(map);
@@ -144,7 +144,7 @@ public partial class MapLoader : Node3D
 			PatrolRoutes.Register(points);
 
 			if (Debug && points.Count >= 2)
-				GD.Print($"MapLoader: rota '{node.Name}' com {points.Count} pontos");
+				GD.Print($"MapLoader: route '{node.Name}' with {points.Count} points");
 		}
 
 		if (node is MeshInstance3D mesh)
@@ -241,6 +241,6 @@ public partial class MapLoader : Node3D
 		_region.NavigationMesh = mesh;
 
 		if (Debug)
-			GD.Print($"MapLoader: navegação assada com {mesh.GetPolygonCount()} polígonos");
+			GD.Print($"MapLoader: navigation baked with {mesh.GetPolygonCount()} polygons");
 	}
 }

@@ -78,7 +78,7 @@ public partial class Bot
 			{
 				_weapon.TrySpecial();
 				if (_weapon.IsDiving) _wantDive = false;
-				if (Debug && _weapon.IsDiving) GD.Print($"{Name}: bote saiu");
+				if (Debug && _weapon.IsDiving) GD.Print($"{Name}: pounce launched");
 			}
 			return;
 		}
@@ -94,7 +94,7 @@ public partial class Bot
 		{
 			float power = _weapon.PounceChargeFor(distance) + _rng.Range(-PounceError, PounceError);
 			bool went = _weapon.BotPounce(_target, power);
-			if (Debug) GD.Print($"{Name}: salto a {distance:0.0} m, carga {power:0.00}{(went ? "" : " (não deu)")}");
+			if (Debug) GD.Print($"{Name}: leap at {distance:0.0} m, charge {power:0.00}{(went ? "" : " (failed)")}");
 		}
 		else if (distance >= 3f && distance < 6f)
 		{

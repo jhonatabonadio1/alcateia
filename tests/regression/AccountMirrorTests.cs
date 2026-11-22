@@ -17,7 +17,7 @@ public sealed class AccountMirrorTests : RegressionTest
 
 	public override Task Run(RegressionBench b)
 	{
-		string path = ProjectSettings.GlobalizePath("user://perfil.json");
+		string path = ProjectSettings.GlobalizePath(UserFiles.Profile);
 		string backup = System.IO.File.Exists(path) ? System.IO.File.ReadAllText(path) : null;
 		const string bought = "ar15_ouro";
 		try

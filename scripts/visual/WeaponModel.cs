@@ -181,7 +181,7 @@ public static class WeaponModel
 		if (_sheet != null) return _sheet;
 		if (!ResourceLoader.Exists(SheetPath))
 		{
-			GD.PushWarning($"WeaponModel: falta {SheetPath} — rode tools/gerar_armas.py");
+			GD.PushWarning($"WeaponModel: {SheetPath} is missing — run tools/gerar_armas.py");
 			return null;
 		}
 

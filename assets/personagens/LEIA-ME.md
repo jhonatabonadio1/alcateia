@@ -53,10 +53,24 @@ a diferença (`AnimationKit.SameRig`) e ajusta cada clipe ao corpo
 altura do corpo). O ajuste é feito uma vez por modelo e vale para todos
 os corpos iguais da partida.
 
-A arma na mão (`HeldWeapon`) fica com o punho na palma direita e o
-guarda-mão na linha da palma esquerda, e não entra no corpo: desliza para
-a frente se a coronha tocar o tronco, afasta-se da cabeça e, no que
-faltar, a cabeça sobe um pouco.
+**A arma na mão** (terceira pessoa) é uma pose feita no Blender para
+cada tipo de arma e cada personagem (`poses_armas.json`, na pasta dele;
+22/11). O script é `tools/personagens/blender/poses_armas.py`: ele abre o
+humano e o conjunto da primeira pessoa da arma (`assets/armas/fp/`), põe
+a arma no corpo como está no `DESENHO` do script (a coronha no ombro, a
+pistola na frente do peito…), leva as mãos onde as mãos da primeira
+pessoa seguram, escolhe o cotovelo que deixa o punho reto e fecha cada
+dedo. No jogo (`HeldWeapon`) o corpo da cintura para cima vai para a
+pose, o peito vira para a mira e o conjunto é posto pela mão direita da
+pose; a animação da primeira pessoa (tiro, recarga, golpe, granada) mexe
+as mãos a partir dali.
+
+Para ajustar uma pose à mão: `poses_armas.py <pasta> --blend` grava
+`tools/personagens/blender/poses/<pasta>.blend` (uma ação por tipo; a arma
+de cada tipo presa na mão direita, na coleção `arma_<tipo>`). Mude a pose
+da ação no Blender e rode `poses_armas.py <pasta> --do-blend` para
+regravar o `.json` a partir dele. O `.blend` tem ~22 MB com as texturas e
+fica fora do git (a pasta tem `.gdignore`: o Godot não tenta importá-lo).
 
 Na vitrine do inventário o humano fica na pose de pé, sem arma
 (`HeroPose`).

@@ -56,7 +56,7 @@ public sealed class LifetimeStats
 }
 
 /// <summary>
-/// O perfil do jogador, salvo em user://perfil.json, fora do projeto.
+/// O perfil do jogador, salvo em user://profile.json, fora do projeto.
 ///
 /// Guarda o que sobrevive entre partidas: nickname, patente e XP, as
 /// duas moedas, o inventário com a duração de cada item, os quatro
@@ -80,7 +80,7 @@ public static class Profile
 	/// sumir: dá chance de renovar e evita a raiva de "perdi meu item".</summary>
 	public static readonly TimeSpan ExpiredGrace = TimeSpan.FromDays(30);
 
-	private const string FilePath = "user://perfil.json";
+	private static string FilePath => UserFiles.Resolve(UserFiles.Profile, "user://perfil.json");
 	private const int Version = 4;
 
 	/// <summary>O arquivo lido era de antes da versão 3: o conjunto padrão
@@ -179,7 +179,7 @@ public static class Profile
 		catch (Exception error)
 		{
 			// Perfil corrompido não pode impedir o jogo de abrir.
-			GD.PrintErr($"Perfil: não consegui ler ({error.Message}); começando um novo.");
+			GD.PrintErr($"Profile: could not read ({error.Message}); starting a new one.");
 		}
 
 		data ??= Fresh();
@@ -255,7 +255,7 @@ public static class Profile
 		}
 		catch (Exception error)
 		{
-			GD.PrintErr($"Perfil: não consegui salvar ({error.Message}).");
+			GD.PrintErr($"Profile: could not save ({error.Message}).");
 		}
 	}
 

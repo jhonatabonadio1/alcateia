@@ -30,7 +30,7 @@ public partial class MapSlot : Node3D
 		var scene = ResourceLoader.Load<PackedScene>(Info.Scene);
 		if (scene == null)
 		{
-			GD.PushError($"MapSlot: não achei o mapa '{Info.Id}' em {Info.Scene}; carregando o primeiro da lista.");
+			GD.PushError($"MapSlot: map '{Info.Id}' not found at {Info.Scene}; loading the first one in the list.");
 			Info = Maps.All[0];
 			scene = ResourceLoader.Load<PackedScene>(Info.Scene);
 		}

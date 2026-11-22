@@ -166,7 +166,7 @@ public partial class Bot
 
 			if (_stuckTimer >= StuckTime)
 			{
-				if (Debug) GD.Print($"{Name}: travado, trocando de destino");
+				if (Debug) GD.Print($"{Name}: stuck, changing destination");
 				_hasPatrolTarget = false;
 				_stuckTimer = 0;
 				return;
@@ -258,7 +258,7 @@ public partial class Bot
 		_leg += _legStep;
 
 		if (Debug)
-			GD.Print($"{Name}: rota {_route} ponto {_leg - _legStep} -> {_patrolTarget}");
+			GD.Print($"{Name}: route {_route} point {_leg - _legStep} -> {_patrolTarget}");
 
 		// Acabou a rota: na próxima vez pega outra.
 		if (_leg < 0 || _leg >= PatrolRoutes.Length(_route))

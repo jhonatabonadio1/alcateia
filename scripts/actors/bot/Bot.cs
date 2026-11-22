@@ -391,7 +391,8 @@ public partial class Bot : CharacterBody3D
 	/// <summary>Mesma regra do jogador (<see cref="BodyNoise"/>): o bot
 	/// não agacha nem anda devagar, então o passo sempre sai.</summary>
 	private void UpdateNoise(double delta) =>
-		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, howling: Action == BotAction.Howl, silent: false);
+		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, howling: Action == BotAction.Howl || RemoteHowling,
+			silent: Remote && RemoteQuiet);
 
 	/// <summary>
 	/// Transições explícitas. Ter os estados nomeados vale mais que a
@@ -443,7 +444,7 @@ public partial class Bot : CharacterBody3D
 
 	private void OnDied(int killerId)
 	{
-		if (Debug) GD.Print($"{Name} morreu");
+		if (Debug) GD.Print($"{Name} died");
 
 		_memoryTimer = 0;
 		_vigilTimer = 0;

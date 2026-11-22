@@ -217,7 +217,7 @@ partidas em curso não, elas estão nas máquinas de partida.
 | ver a frota | `python3 tools/fly/frota.py estado` |
 | ligar uma na mão | `python3 tools/fly/frota.py ligar` |
 | mais servidores | `python3 tools/fly/frota.py criar 4 --imagem ... --api ... --ip ...` |
-| abrir o painel | `fly proxy 8081 -a wolfleague-api` e `http://localhost:8081` |
+| abrir o painel | `https://wolfleague-api.fly.dev:8443` (reserva: `fly proxy 8081 -a wolfleague-api` e `http://localhost:8081`) |
 | logs | `fly logs -a wolfleague-api` / `fly logs -a wolfleague-partida` |
 | entrar no banco | `fly ssh console -a wolfleague-db` e depois `psql -U alcateia` |
 | mudar a reserva | `ALCATEIA_FLEET_RESERVE` no `fly.servidor.toml` e lançar |
@@ -258,9 +258,12 @@ máquina.
   servidor só acredita nele vindo do proxy do Fly (`172.16.0.0/12` em
   `ALCATEIA_TRUSTED_PROXIES`). No `X-Forwarded-For` do Fly o último
   endereço é o IP do próprio app, por isso o `Fly-Client-IP` vem antes.
-- **O painel não tem porta pública.** Ele escuta na rede privada
-  (`ALCATEIA_ADMIN_BIND = "::"`) e só se chega por `fly proxy`, que passa
-  pelo WireGuard da sua conta.
+- **O painel tem porta pública própria (8443, só HTTPS)**, declarada em
+  `[[services]]` no `fly.servidor.toml`, sem túnel. A proteção é a senha de
+  12+, o 2FA obrigatório e a trava por tentativas; para fechar mais,
+  `fly secrets set ALCATEIA_ADMIN_ALLOW="SEU.IP/32" -a wolfleague-api`
+  (fora da lista: 404 e evento grave). O `fly proxy 8081` continua
+  funcionando como reserva.
 
 ## O que ainda não foi testado
 

@@ -53,3 +53,7 @@ _to_delete/
 _sync*.tgz
 entrega*.tgz
 _mac_*.txt
+
+# Cenas do Blender das poses com arma (~22 MB cada, com texturas): geradas por
+# tools/personagens/blender/poses_armas.py --blend
+tools/personagens/blender/poses/*.blend

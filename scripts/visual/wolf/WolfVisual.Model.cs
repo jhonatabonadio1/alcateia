@@ -48,7 +48,7 @@ public partial class WolfVisual
 
 		if (!ResourceLoader.Exists(path) || GD.Load<PackedScene>(path)?.Instantiate() is not Node3D model)
 		{
-			GD.PrintErr($"WolfVisual: modelo do lobo não encontrado em {path}.");
+			GD.PrintErr($"WolfVisual: wolf model not found at {path}.");
 			return false;
 		}
 
@@ -69,7 +69,7 @@ public partial class WolfVisual
 			Skeleton3D skeleton = FindSkeleton(_model);
 			if (skeleton == null)
 			{
-				GD.PrintErr("WolfVisual: o modelo do lobo não tem esqueleto.");
+				GD.PrintErr("WolfVisual: the wolf model has no skeleton.");
 				return false;
 			}
 

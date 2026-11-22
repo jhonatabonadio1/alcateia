@@ -301,7 +301,7 @@ public partial class Weapon : Node3D
 			// que granada não usada.
 			if (Grenades <= 0)
 			{
-				if (Debug) GD.Print("granada: acabou");
+				if (Debug) GD.Print("grenade: none left");
 				EmitSignal(SignalName.GrenadesChanged, Grenades);
 				return;
 			}
@@ -376,7 +376,7 @@ public partial class Weapon : Node3D
 
 		if (!_form.CanAttack)
 		{
-			if (Debug) GD.Print($"ataque bloqueado: forma atual é {_form.Current}");
+			if (Debug) GD.Print($"attack blocked: current form is {_form.Current}");
 			return;
 		}
 

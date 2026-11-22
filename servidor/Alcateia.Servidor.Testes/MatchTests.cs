@@ -3,6 +3,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Alcateia.Aplicacao.Portas;
+using Alcateia.Dominio.Seguranca;
 using Alcateia.Infra.Seguranca;
 using static Alcateia.Servidor.Testes.LobbyTests;
 
@@ -89,6 +91,10 @@ public static class MatchTests
 			Check.Equal(401, (await fleet.Call(HttpMethod.Post, "/v1/fleet/leave", new JsonObject { ["id"] = "gs-1" })).Status, "sem chave");
 			var (_, first) = await fleet.Call(HttpMethod.Post, "/v1/fleet/leave", new JsonObject { ["id"] = "gs-1" }, w.Config.FleetKey);
 			Check.True(first["leave"].GetValue<bool>(), "sobra o gs-2 de reserva: o gs-1 pode desligar");
+			await w.Services.Security.Flush();
+			var stopped = await w.Services.Security.Events(new EventFilter(KindPrefix: EventKind.MatchServerStopped));
+			Check.Equal(1, stopped.Count, "o painel fica sabendo que o servidor desligou");
+			Check.Equal("gs-1", stopped[0].Actor, "qual servidor");
 			var (_, last) = await fleet.Call(HttpMethod.Post, "/v1/fleet/leave", new JsonObject { ["id"] = "gs-2" }, w.Config.FleetKey);
 			Check.True(!last["leave"].GetValue<bool>(), "o último lugar livre fica de pé");
 
@@ -288,6 +294,53 @@ public static class MatchTests
 			await fleet.Call(HttpMethod.Get, "/health");      // qualquer olhada na frota varre os caídos
 			Check.Equal("servidor_caiu", (await host.Hear("error"))["code"].GetValue<string>(), "o jogador é avisado");
 			Check.Equal("waiting", (await host.Hear("room", m => m["state"].GetValue<string>() == "waiting"))["state"].GetValue<string>(), "a sala volta a esperar");
+
+			await w.Services.Security.Flush();
+			var gone = await w.Services.Security.Events(new EventFilter(KindPrefix: EventKind.MatchServerGone));
+			Check.Equal(1, gone.Count, "o painel fica sabendo que o servidor de partida sumiu");
+			Check.Equal("gs-1", gone[0].Actor, "qual servidor");
+			Check.Equal(Severity.High, gone[0].Severity, "e é grave");
+		}),
+
+		("frota: o servidor de partida conta os incidentes na batida e o painel os vê (partida.*)", async () =>
+		{
+			await using World w = await World.Start();
+			Player fleet = w.Server();
+
+			JsonObject beat = Beat("gs-1");
+			beat["events"] = new JsonArray
+			{
+				new JsonObject { ["kind"] = "partida.recusado", ["severity"] = 1, ["match"] = "abc", ["account"] = 7, ["detail"] = "ingresso inválido" },
+				new JsonObject { ["kind"] = "login.ok", ["severity"] = 0, ["detail"] = "forjado: não é um tipo de partida" },
+				new JsonObject { ["kind"] = "partida.vazia", ["severity"] = 99, ["detail"] = "gravidade fora da faixa" },
+				new JsonObject { ["kind"] = 5, ["severity"] = "alta" },
+				"torto"
+			};
+			Check.Equal(200, (await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", beat, w.Config.FleetKey)).Status, "evento torto não recusa a batida");
+
+			await w.Services.Security.Flush();
+			var events = await w.Services.Security.Events(new EventFilter(KindPrefix: EventKind.MatchPrefix));
+			Check.Equal(2, events.Count, "só os tipos de partida entram");
+
+			SecurityEvent refused = events.First(e => e.Kind == EventKind.MatchRefused);
+			Check.Equal(7L, refused.AccountId ?? 0, "a conta");
+			Check.Equal("gs-1", refused.Actor, "o servidor de partida");
+			Check.Equal("abc", refused.Path, "a partida");
+			Check.Equal("ingresso inválido", refused.Detail, "o motivo");
+			Check.Equal(Severity.Critical, events.First(e => e.Kind == EventKind.MatchEmpty).Severity, "a gravidade é limitada à faixa");
+
+			var logins = await w.Services.Security.Events(new EventFilter(KindPrefix: "login."));
+			Check.True(logins.All(e => e.Detail != "forjado: não é um tipo de partida"), "um tipo que não é de partida não passa pela batida");
+
+			// A mesma batida pode trazer no máximo 20: o resto fica para o servidor de partida contar de novo.
+			beat = Beat("gs-1");
+			var many = new JsonArray();
+			for (int i = 0; i < 30; i++) many.Add(new JsonObject { ["kind"] = "partida.recusado", ["detail"] = $"n{i}" });
+			beat["events"] = many;
+			await fleet.Call(HttpMethod.Post, "/v1/fleet/heartbeat", beat, w.Config.FleetKey);
+			await w.Services.Security.Flush();
+			var after = await w.Services.Security.Events(new EventFilter(KindPrefix: EventKind.MatchRefused, Limit: 200));
+			Check.Equal(1 + 20, after.Count, "uma batida leva até 20 incidentes");
 		}),
 	};
 }

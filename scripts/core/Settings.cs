@@ -5,12 +5,12 @@ using System.Text.Json;
 /// <summary>
 /// Opções do jogador: volumes por canal, sensibilidade do mouse e a mira
 /// (<see cref="CrosshairSettings"/>). Salvas
-/// em user://opcoes.json, separadas do perfil — opção é da máquina, não
+/// em user://settings.json (<see cref="UserFiles"/>), separadas do perfil — opção é da máquina, não
 /// da conta.
 /// </summary>
 public static class Settings
 {
-	private const string FilePath = "user://opcoes.json";
+	private static string FilePath => UserFiles.Resolve(UserFiles.Settings, "user://opcoes.json");
 
 	public sealed class Data
 	{
@@ -28,6 +28,32 @@ public static class Settings
 		/// <summary>Qualidade dos efeitos, um de <see cref="QualityNames"/>.
 		/// Alta por padrão.</summary>
 		public int Quality { get; set; } = 2;
+
+		/// <summary>Quanto da tela o 3D desenha (0,5 a 1): menos pixels
+		/// para a placa, o HUD segue inteiro. A luz não muda.</summary>
+		public float RenderScale { get; set; } = 1f;
+
+		/// <summary>Já olhou a placa de vídeo uma vez (<see cref="AutoTune"/>).
+		/// Arquivo antigo sem o campo olha na próxima abertura.</summary>
+		public bool GpuChecked { get; set; }
+
+		/// <summary>A resolução do 3D desce sozinha quando a placa não segura
+		/// a meta de FPS (<see cref="ResolutionTuner"/>), até 50%, e volta
+		/// quando sobra. <see cref="RenderScale"/> é o teto. Ligada por padrão:
+		/// em máquina que aguenta, fica no teto e nada muda.</summary>
+		public bool DynamicResolution { get; set; } = true;
+
+		/// <summary>Limite de FPS: -1 o do monitor (Hz), 0 sem limite, ou o
+		/// número. Ver <see cref="FpsValues"/>.</summary>
+		public int MaxFps { get; set; } = -1;
+
+		/// <summary>V-Sync, um de <see cref="VSyncNames"/>. Ligado por padrão
+		/// (o padrão do Godot, o que o jogo sempre usou).</summary>
+		public int VSync { get; set; } = 1;
+
+		/// <summary>Mostrar no canto o FPS, o tempo da placa, a resolução
+		/// do 3D e o ping (<see cref="PerfOverlay"/>).</summary>
+		public bool ShowPerf { get; set; }
 
 		/// <summary>Sangue ao acertar tiro e garra (<see cref="Blood"/>).
 		/// Ligado por padrão; arquivo antigo sem o campo, também.</summary>
@@ -60,7 +86,7 @@ public static class Settings
 		}
 		catch (Exception error)
 		{
-			GD.PrintErr($"Opções: não consegui ler ({error.Message}); usando o padrão.");
+			GD.PrintErr($"Settings: could not read ({error.Message}); using defaults.");
 			Values = new Data();
 		}
 	}
@@ -74,7 +100,7 @@ public static class Settings
 		}
 		catch (Exception error)
 		{
-			GD.PrintErr($"Opções: não consegui salvar ({error.Message}).");
+			GD.PrintErr($"Settings: could not save ({error.Message}).");
 		}
 
 		Changed?.Invoke();
@@ -231,6 +257,111 @@ public static class Settings
 		};
 		view.ScreenSpaceAA = mode is 1 or 4 ? Viewport.ScreenSpaceAAEnum.Fxaa : Viewport.ScreenSpaceAAEnum.Disabled;
 		view.UseTaa = mode == 5;
+
+		// Resolução do 3D: FSR 1 devolve a nitidez (só no Forward+/Mobile; na
+		// compatibilidade, filtro simples). O HUD não escala.
+		// Com a resolução dinâmica, quem mexe na escala é o ResolutionTuner;
+		// aqui ela só não passa do teto.
+		float max = Math.Clamp(Values.RenderScale, 0.5f, 1f);
+		float scale = Values.DynamicResolution ? Math.Min(view.Scaling3DScale, max) : max;
+		bool compat = RenderingServer.GetCurrentRenderingMethod() == "gl_compatibility";
+		view.Scaling3DScale = scale;
+		view.Scaling3DMode = compat || (!Values.DynamicResolution && scale >= 0.999f)
+			? Viewport.Scaling3DModeEnum.Bilinear
+			: Viewport.Scaling3DModeEnum.Fsr;
+	}
+
+	/// <summary>As opções de limite de FPS, na ordem do seletor: o do
+	/// monitor, números fixos e sem limite.</summary>
+	public static readonly int[] FpsValues = { -1, 30, 60, 75, 120, 144, 165, 240, 0 };
+
+	public static string[] FpsNames()
+	{
+		var names = new string[FpsValues.Length];
+		for (int i = 0; i < FpsValues.Length; i++)
+			names[i] = FpsValues[i] switch
+			{
+				-1 => $"{Loc.T("Monitor")} ({MonitorHz} Hz)",
+				0 => Loc.T("Sem limite"),
+				var n => $"{n} FPS"
+			};
+		return names;
+	}
+
+	public static int FpsIndex() => Math.Max(0, Array.IndexOf(FpsValues, Values.MaxFps));
+
+	public static readonly string[] VSyncNames = { "Desligado", "Ligado", "Adaptativo" };
+
+	public static readonly string[] VSyncNotes =
+	{
+		"A placa entrega o quadro na hora: menos atraso no mouse, mas a imagem pode rasgar.",
+		"Sem rasgo na imagem; o FPS não passa dos Hz do monitor. O padrão.",
+		"Como o ligado, mas quando o FPS cai abaixo dos Hz do monitor ele desliga, para não travar."
+	};
+
+	/// <summary>Os Hz do monitor da janela (60 se o sistema não disser).</summary>
+	public static int MonitorHz
+	{
+		get
+		{
+			double hz = DisplayServer.ScreenGetRefreshRate(DisplayServer.WindowGetCurrentScreen());
+			return hz < 30 ? 60 : (int)Math.Round(hz);
+		}
+	}
+
+	/// <summary>O FPS que o jogo tenta segurar: o limite escolhido ou, sem
+	/// número, os Hz do monitor. A resolução dinâmica mira nele.</summary>
+	public static int FrameTarget => Values.MaxFps > 0 ? Values.MaxFps : MonitorHz;
+
+	/// <summary>Aplica o limite de FPS e o V-Sync (só no jogo; o servidor de
+	/// partida tem o limite dele).</summary>
+	public static void ApplyFrameRate()
+	{
+		Engine.MaxFps = Values.MaxFps < 0 ? MonitorHz : Values.MaxFps;
+		DisplayServer.WindowSetVsyncMode(Math.Clamp(Values.VSync, 0, 2) switch
+		{
+			0 => DisplayServer.VSyncMode.Disabled,
+			2 => DisplayServer.VSyncMode.Adaptive,
+			_ => DisplayServer.VSyncMode.Enabled
+		});
+	}
+
+	/// <summary>As opções de resolução do 3D, na ordem do seletor.</summary>
+	public static readonly string[] RenderScaleNames = { "100%", "85%", "75%", "65%", "50%" };
+	public static readonly float[] RenderScaleValues = { 1f, 0.85f, 0.75f, 0.65f, 0.5f };
+
+	public static int RenderScaleIndex()
+	{
+		int best = 0;
+		for (int i = 1; i < RenderScaleValues.Length; i++)
+			if (Math.Abs(RenderScaleValues[i] - Values.RenderScale) < Math.Abs(RenderScaleValues[best] - Values.RenderScale)) best = i;
+		return best;
+	}
+
+	/// <summary>Placas que não seguram o jogo na Alta em tela cheia: MX, GT
+	/// de entrada e vídeo integrado.</summary>
+	private static readonly System.Text.RegularExpressions.Regex WeakGpu = new(
+		@"\bMX\s?[1-3]\d\d\b|\bGT\s?[1-9]\d\d\b|\bGeForce\s?(8|9)\d\d|Intel.*(HD|UHD|Iris|Graphics)|Radeon.*(Vega\s?\d|Graphics)|Microsoft Basic|llvmpipe|SwiftShader",
+		System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+	/// <summary>Na primeira abertura (e uma vez só), se a placa é fraca, põe
+	/// as opções de custo no mínimo: qualidade Baixa, FXAA e 3D a 65%. O
+	/// jogador muda quando quiser nas Opções.</summary>
+	public static void AutoTune()
+	{
+		if (Values.GpuChecked) return;
+		Values.GpuChecked = true;
+		string gpu = RenderingServer.GetVideoAdapterName() ?? "";
+		bool weak = WeakGpu.IsMatch(gpu);
+		GD.Print($"GPU: {gpu} ({(weak ? "weak: settings lowered to minimum" : "ok")})");
+		if (weak)
+		{
+			Values.Quality = 0;
+			Values.AntiAliasing = 1;
+			Values.RenderScale = 0.65f;
+			Values.DynamicResolution = true;
+		}
+		Save();
 	}
 
 	/// <summary>Aplica os volumes nos canais de áudio. Os canais são

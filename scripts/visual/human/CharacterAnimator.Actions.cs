@@ -35,6 +35,7 @@ public partial class CharacterAnimator
 	private void UpdateGrenade(double delta)
 	{
 		if (!_hasGrenade || _tree == null || _weapon == null || _dead) return;
+		if (ArmsFromRig && !_grenadeShot) return;
 
 		bool ready = _weapon.IsGrenadeReady;
 		if (ready && !_grenadeShot)
@@ -62,6 +63,24 @@ public partial class CharacterAnimator
 	}
 
 	/// <summary>
+	/// A granada saiu sem o braço ter armado na tela: o bot (que arremessa
+	/// direto) e o boneco de quem soltou rápido demais para o estado contar
+	/// que a granada estava pronta. Toca o lance a partir do braço armado
+	/// (Jhon, 21/11: "animações de lançar granada também não exibem"). Se o
+	/// braço já estava armado, o soltar de <see cref="UpdateGrenade"/> já toca.
+	/// </summary>
+	private void OnThrown()
+	{
+		if (!_hasGrenade || _tree == null || _dead) return;
+		if (_grenadeShot || ThrowingGrenade || ArmsFromRig) return;
+
+		_grenadeClock = GrenadeCocked;
+		_tree.Set("parameters/GrenadeSeek/seek_request", GrenadeCocked);
+		_tree.Set("parameters/GrenadeSpeed/scale", GrenadeThrowSpeed);
+		_tree.Set("parameters/Grenade/request", (int)AnimationNodeOneShot.OneShotRequest.Fire);
+	}
+
+	/// <summary>
 	/// A recarga começa e termina com a da arma. A velocidade do clipe
 	/// é ajustada para ele acabar junto com a recarga: a vazia, mais
 	/// longa, fica mais lenta na tela também. Na escopeta o clipe toca
@@ -73,6 +92,7 @@ public partial class CharacterAnimator
 
 		if (reloading && !_reloadPlaying)
 		{
+			if (ArmsFromRig) return;
 			_reloadPlaying = true;
 			float duration = _weapon.ReloadDuration;
 			bool shells = _weapon.Held?.ShellByShell == true;

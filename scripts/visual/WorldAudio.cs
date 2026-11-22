@@ -197,8 +197,8 @@ public partial class WorldAudio : Node
 	private void Play(string name, Noise noise, bool mine, float volumeDb = 0f, float reach = 0f)
 	{
 		if (Debug)
-			GD.Print($"[som] {noise.Kind} de {noise.Source?.Name} ({(mine ? "seu" : $"raio {noise.Radius:0} m")}) → "
-				+ (name != null && Sfx.Has(name) ? name : $"SEM ARQUIVO ({name})"));
+			GD.Print($"[sound] {noise.Kind} from {noise.Source?.Name} ({(mine ? "yours" : $"radius {noise.Radius:0} m")}) → "
+				+ (name != null && Sfx.Has(name) ? name : $"NO FILE ({name})"));
 
 		if (name == null) return;
 

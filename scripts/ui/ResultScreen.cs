@@ -542,7 +542,18 @@ public partial class ResultScreen : CanvasLayer
 		if (room.Disabled) room.TooltipText = "Partida aberta direto no editor: não há sala.";
 		row.AddChild(room);
 
-		_again = UiKit.Button("Jogar de novo", ButtonKind.Primary, Again);
+		// Online, jogar de novo é do mestre da sala, e leva todos (Jhon, 21/11).
+		// Para os outros o primário vira o voltar à sala, sob o cursor do mesmo jeito.
+		if (_match.CanRestart)
+		{
+			_again = UiKit.Button("Jogar de novo", ButtonKind.Primary, Again);
+		}
+		else
+		{
+			_again = UiKit.Button("Voltar à sala", ButtonKind.Primary, () => Leave(ReturnTarget.Room));
+			_again.TooltipText = "Só o mestre da sala reinicia a partida.";
+			room.Visible = false;
+		}
 		_again.CustomMinimumSize = new Vector2(220, 52);
 		row.AddChild(_again);
 
@@ -552,7 +563,19 @@ public partial class ResultScreen : CanvasLayer
 		return row;
 	}
 
-	private void Again() => _match.Restart();
+	private void Again()
+	{
+		if (_match.Online)
+		{
+			// Um pedido só; a partida nova chega para todos. Se o saguão recusar
+			// (o aviso aparece), o botão volta.
+			_again.Disabled = true;
+			GetTree().CreateTimer(10).Timeout += () => { if (IsInstanceValid(_again)) _again.Disabled = false; };
+			GameMenu.RestartOnline(this);
+			return;
+		}
+		_match.Restart();
+	}
 
 	private void Leave(ReturnTarget target) => _match.Leave(target);
 }

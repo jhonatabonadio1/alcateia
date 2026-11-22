@@ -35,8 +35,8 @@ Output.
 
 **Onde fica o seu perfil salvo** (conjuntos, último usado; Presas,
 itens, XP e missões não: são da conta, no servidor — decisão 0015):
-`user://perfil.json`. Rodando pelo editor, no macOS isso é
-`~/Library/Application Support/Godot/app_userdata/WolfLeague/perfil.json`; o
+`user://profile.json`. Rodando pelo editor, no macOS isso é
+`~/Library/Application Support/Godot/app_userdata/WolfLeague/profile.json`; o
 jogo exportado guarda tudo numa pasta própria, `WolfLeague` (no macOS
 `~/Library/Application Support/WolfLeague`, no Windows `%APPDATA%\WolfLeague`),
 para não misturar com o que o editor salva (o servidor local, por exemplo).
@@ -463,9 +463,9 @@ public override void _ExitTree() => KillFeed.Reported -= OnKill;
 |---|---|---|
 | `Match.Current` | A partida em andamento. `Match.IsLive` é **verdadeiro quando não há partida** (treino) | A cena da partida |
 | `RoomConfig` | Configuração da sala para a partida ler | O jogo aberto |
-| `Profile` | Espelho da conta (XP e patente, Presas e Sangue, inventário com prazos, missões, títulos: `ApplyAccount`, `ClearAccount`, em memória) e as escolhas do jogador (conjuntos, raça, tatuagens, personagens, título em uso, estatísticas de treino), salvas em `user://perfil.json`. Eventos `Changed` e `AccountChanged` | Escolhas em disco; o resto na conta (decisão 0015) |
+| `Profile` | Espelho da conta (XP e patente, Presas e Sangue, inventário com prazos, missões, títulos: `ApplyAccount`, `ClearAccount`, em memória) e as escolhas do jogador (conjuntos, raça, tatuagens, personagens, título em uso, estatísticas de treino), salvas em `user://profile.json`. Eventos `Changed` e `AccountChanged` | Escolhas em disco; o resto na conta (decisão 0015) |
 | `AccountSync` | O caminho único entre o jogo e a conta: retomar o login, reler carteira, itens e missões, comprar, descartar, resgatar, trocar o nome; as promoções a comemorar | O jogo aberto |
-| `Settings` | Volumes por canal e sensibilidade. `user://opcoes.json` | Em disco |
+| `Settings` | Volumes por canal e sensibilidade. `user://settings.json` | Em disco |
 | `RoomDirectory` | As salas da lista (simuladas) e a sala em que você está (`Current`) | O jogo aberto |
 | `Catalog` | A loja: itens, preços por prazo, itens do dia | Sempre |
 | `Ranks` | As 30 patentes, nomes, cores e XP de cada uma | Sempre |
@@ -574,7 +574,7 @@ só passe o valor final para o gerador depois.
    `scripts/ui/kit/WeaponArt.cs`.
 5. Pronto: aparece no inventário, no editor de conjuntos e no catálogo.
    Se não aparecer num perfil já salvo, confira o `Profile.Repair` —
-   ou apague o `perfil.json`.
+   ou apague o `profile.json`.
 
 Se a arma precisa de um comportamento novo (rajada, mira telescópica),
 o campo vai em `WeaponDefinition.cs` e o comportamento em
@@ -804,7 +804,7 @@ Mantenha as pontuações entre 0 e 1. Uma ação que sempre ganha vira o
   commitar o que for só investigação.
 - **Isolar:** reproduza no `treino.tscn` antes de caçar na partida
   inteira. Menos coisa acontecendo, menos suspeitos.
-- **Perfil corrompido:** apague o `perfil.json` (seção 1).
+- **Perfil corrompido:** apague o `profile.json` (seção 1).
 
 ---
 

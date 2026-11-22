@@ -11,7 +11,9 @@ public enum EntityFlags : byte
 	Dead = 8,
 	WallRunning = 16,
 	Sprinting = 32,
-	Aiming = 64
+	Aiming = 64,
+	/// <summary>Rugindo (21/11): o boneco dos outros ruge junto.</summary>
+	Howling = 128
 }
 
 /// <summary>Um corpo no estado do mundo que o servidor manda: 24 bytes.</summary>

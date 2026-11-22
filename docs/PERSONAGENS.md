@@ -104,6 +104,22 @@ ajusta o quadril de cada clipe à altura do quadril do modelo na
 importação (`MatchHips`). Com a mesma altura total, as pernas ficam
 proporcionais e o pé não flutua nem afunda.
 
+### As poses com arma (Blender)
+
+Em terceira pessoa o corpo segura cada tipo de arma (fuzil, pistola,
+faca, granada) numa pose feita no Blender para aquele personagem: o
+tronco, a cabeça, os braços e cada dedo, com a arma da primeira pessoa na
+mão. Personagem novo precisa das dele:
+
+```
+python3 tools/personagens/blender/poses_armas.py <pasta>            # grava poses_armas.json
+python3 tools/personagens/blender/poses_armas.py <pasta> --fotos /tmp/poses   # e fotos para conferir
+```
+
+Sem o `poses_armas.json` o personagem ainda segura a arma (o jeito
+antigo, com as mãos calculadas no jogo), mas fica pior. O teste
+`BonecoMaos` confere que o jogo põe as mãos e a arma onde o Blender pôs.
+
 ## 4. O lobo
 
 **Fonte: Meshy**, a partir do mesmo lobo de base (o lobo tático do

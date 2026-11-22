@@ -67,7 +67,7 @@ public partial class Dummy : StaticBody3D
 
 	private void OnDied(int killerId)
 	{
-		GD.Print($"{Name} morreu");
+		GD.Print($"{Name} died");
 		ShowBody(false);
 	}
 

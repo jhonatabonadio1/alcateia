@@ -323,16 +323,16 @@ public sealed class HitCheck
 	/// <summary>O motivo, para o registro do servidor.</summary>
 	public static string Describe(HitVerdict v) => v switch
 	{
-		HitVerdict.Ok => "valeu",
-		HitVerdict.NotAllowed => "o juiz não aceita",
-		HitVerdict.ShooterGone => "quem atirou estava morto ou fora do mundo",
-		HitVerdict.TargetGone => "o alvo não estava lá",
-		HitVerdict.BadOrigin => "o tiro saiu de longe do corpo",
-		HitVerdict.OutOfRange => "longe demais para a arma",
-		HitVerdict.Blocked => "parede no caminho",
-		HitVerdict.BadAim => "fora da mira",
-		HitVerdict.TooFast => "mais dano por segundo que a arma dá",
-		HitVerdict.WrongWeapon => "arma que não estava na mão",
+		HitVerdict.Ok => "accepted",
+		HitVerdict.NotAllowed => "not allowed by the referee",
+		HitVerdict.ShooterGone => "shooter was dead or out of the world",
+		HitVerdict.TargetGone => "target was not there",
+		HitVerdict.BadOrigin => "shot started too far from the body",
+		HitVerdict.OutOfRange => "out of the weapon's range",
+		HitVerdict.Blocked => "wall in the way",
+		HitVerdict.BadAim => "outside the aim",
+		HitVerdict.TooFast => "more damage per second than the weapon deals",
+		HitVerdict.WrongWeapon => "weapon not in hand",
 		_ => v.ToString()
 	};
 

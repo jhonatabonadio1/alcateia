@@ -120,7 +120,7 @@ public partial class LoadingScreen : CanvasLayer
 		done = status == ResourceLoader.ThreadLoadStatus.Loaded;
 		if (status is ResourceLoader.ThreadLoadStatus.Failed or ResourceLoader.ThreadLoadStatus.InvalidResource)
 		{
-			GD.PushError($"Carregamento: não consegui carregar {path}");
+			GD.PushError($"Loading: could not load {path}");
 			done = true;
 		}
 		return done ? 1f : _progress.Count > 0 ? (float)_progress[0] : 0f;

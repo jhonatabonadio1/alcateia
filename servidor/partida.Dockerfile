@@ -48,7 +48,7 @@ RUN arch=$([ "$TARGETARCH" = "arm64" ] && echo arm64 || echo x86_64) \
 	&& unzip -q -j /tmp/modelos.tpz "templates/linux_release.${arch}" "templates/linux_debug.${arch}" "templates/version.txt" -d "$destino" \
 	&& rm /tmp/modelos.tpz
 
-WORKDIR /jogo
+WORKDIR /game
 COPY . .
 
 # Prepara a cópia (importação leve, a arquitetura), importa e exporta. Se a
@@ -58,8 +58,8 @@ RUN arch=$([ "$TARGETARCH" = "arm64" ] && echo arm64 || echo x86_64) \
 	&& dotnet build WolfLeague.csproj --nologo -v quiet \
 	&& (godot --headless --path . --import > /tmp/importacao.log 2>&1 || true) \
 	&& mkdir -p /saida \
-	&& (godot --headless --path . --export-release "Servidor (Linux)" /saida/WolfLeagueServidor > /tmp/exportacao.log 2>&1 || true) \
-	&& if [ ! -f /saida/WolfLeagueServidor.pck ] || ! ls -d /saida/data_* > /dev/null 2>&1; then \
+	&& (godot --headless --path . --export-release "Servidor (Linux)" /saida/WolfLeagueServer > /tmp/exportacao.log 2>&1 || true) \
+	&& if [ ! -f /saida/WolfLeagueServer.pck ] || ! ls -d /saida/data_* > /dev/null 2>&1; then \
 		echo "A exportação do servidor falhou:"; \
 		grep -E "ERROR|error" /tmp/exportacao.log | head -40; \
 		cat /root/.local/share/godot/mono/build_logs/*/msbuild_issues.csv 2>/dev/null | head -20; \
@@ -69,8 +69,8 @@ RUN arch=$([ "$TARGETARCH" = "arm64" ] && echo arm64 || echo x86_64) \
 
 # ---------------------------------------------------------------- 2. roda
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0
-WORKDIR /jogo
-COPY --from=exporta /saida/ /jogo/
+WORKDIR /game
+COPY --from=exporta /saida/ /game/
 
 ENV ALCATEIA_API=http://servidor:8080 \
 	ALCATEIA_GAME_PORT=7777
@@ -78,4 +78,4 @@ EXPOSE 7777/udp
 
 # O usuário sem privilégio que a imagem do .NET já traz.
 USER app
-ENTRYPOINT ["/jogo/WolfLeagueServidor", "--headless"]
+ENTRYPOINT ["/game/WolfLeagueServer", "--headless"]

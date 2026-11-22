@@ -51,7 +51,7 @@ export function Security() {
 		<>
 			<PageHeader
 				title="Eventos de segurança"
-				description="Tudo o que o escudo do servidor viu: logins certos e errados, varreduras, tentativas de injeção, bloqueios e resultados de partida suspeitos. A senha tentada nunca é guardada."
+				description="Tudo o que o escudo do servidor viu: logins certos e errados, varreduras, tentativas de injeção, bloqueios e resultados de partida suspeitos. Também o que deu errado nas partidas (filtro “Partidas”): quem foi recusado, ligação que caiu, partida vazia, servidor que sumiu. A senha tentada nunca é guardada."
 			/>
 
 			<Card className="mb-4">
@@ -127,10 +127,15 @@ export function Security() {
 									<Td>
 										{e.accountId ? (
 											<Link to={`/jogadores/${e.accountId}`} className="hover:underline">
-												{e.actor || `#${e.accountId}`}
+												{e.kind.startsWith("partida.") ? `Conta #${e.accountId}` : e.actor || `#${e.accountId}`}
 											</Link>
 										) : (
-											<span className="text-ink-2">{e.actor}</span>
+											<span className="text-ink-2">{e.kind.startsWith("partida.") ? "" : e.actor}</span>
+										)}
+										{e.kind.startsWith("partida.") && e.actor && (
+											<div className="num text-xs text-ink-3" title="Servidor de partida (máquina do Fly)">
+												{e.actor}
+											</div>
 										)}
 									</Td>
 									<Td className="max-w-[28ch] truncate text-ink-3" title={e.path}>

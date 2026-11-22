@@ -106,6 +106,24 @@ public partial class LobbyLink : Node
 	public void SetReady(bool ready) => Send("room.ready", ("ready", ready));
 	public void StartMatch() => Send("room.start");
 
+	/// <summary>O mestre recomeça a partida para a sala inteira (no meio dela
+	/// ou no resultado). O saguão descarta a de agora e manda a nova a todos
+	/// (<c>match.start</c>).</summary>
+	public void RestartMatch() => Send("room.restart");
+
+	/// <summary>Esta conta é o mestre da sala aberta (sem criar a ligação só
+	/// para perguntar).</summary>
+	public static bool IsRoomHost
+	{
+		get
+		{
+			if (!InRoom) return false;
+			foreach (JsonNode m in _instance.Room["members"] as JsonArray ?? new JsonArray())
+				if (m?["id"]?.GetValue<long>() == Backend.AccountId) return m["host"]?.GetValue<bool>() ?? false;
+			return false;
+		}
+	}
+
 	/// <summary>Muda as regras da sala (só o dono, com a sala esperando).</summary>
 	public void ChangeSettings(JsonObject settings) => Send("room.settings", ("settings", settings));
 

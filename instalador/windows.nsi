@@ -20,7 +20,7 @@
 ; e o desinstalador não mexe nisso.
 ;
 ; A pasta instalada: WolfLeague.exe é o iniciador (instalador/iniciador.nsi),
-; que acha o modo de vídeo que funciona; o jogo exportado fica em jogo\.
+; que acha o modo de vídeo que funciona; o jogo exportado fica em game\.
 ;
 ; Requisitos mínimos (os mesmos do site): Windows 10 ou 11 de 64 bits e
 ; 8 GB de memória. 32 bits ou Windows mais velho não instala; pouca memória
@@ -67,19 +67,19 @@ Unicode true
 Name "${NOME}"
 OutFile "${SAIDA}"
 InstallDir "$LOCALAPPDATA\Programs\${NOME}"
-InstallDirRegKey HKCU "Software\${NOME}" "Pasta"
+InstallDirRegKey HKCU "Software\${NOME}" "InstallPath"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma
 SetCompressorDictSize 32
 BrandingText "${NOME} ${VERSAO}"
-InstallButtonText "Instalar"
+InstallButtonText "Install"
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 
 VIProductVersion "${VERSAO_NUM}"
 VIAddVersionKey "ProductName" "${NOME}"
 VIAddVersionKey "CompanyName" "${NOME}"
-VIAddVersionKey "FileDescription" "Instalador do ${NOME}"
+VIAddVersionKey "FileDescription" "${NOME} Setup"
 VIAddVersionKey "FileVersion" "${VERSAO}"
 VIAddVersionKey "ProductVersion" "${VERSAO}"
 VIAddVersionKey "LegalCopyright" "${NOME}"
@@ -89,15 +89,15 @@ Function .onInit
   ; O jogo é de 64 bits (x86_64).
   ${IfNot} ${IsNativeAMD64}
   ${AndIfNot} ${IsNativeARM64}
-    MessageBox MB_ICONSTOP|MB_OK "O ${NOME} precisa do Windows de 64 bits, e este Windows é de 32 bits." /SD IDOK
+    MessageBox MB_ICONSTOP|MB_OK "${NOME} requires 64-bit Windows, and this Windows is 32-bit." /SD IDOK
     Abort
   ${EndIf}
   ${IfNot} ${AtLeastWin10}
-    MessageBox MB_ICONSTOP|MB_OK "O ${NOME} precisa do Windows 10 ou do Windows 11." /SD IDOK
+    MessageBox MB_ICONSTOP|MB_OK "${NOME} requires Windows 10 or Windows 11." /SD IDOK
     Abort
   ${EndIf}
   ${If} ${IsNativeARM64}
-    MessageBox MB_ICONEXCLAMATION|MB_YESNO "Este Windows é para processador ARM. O ${NOME} roda nele por emulação e fica bem mais lento que num PC com processador Intel ou AMD.$\r$\n$\r$\nInstalar mesmo assim?" /SD IDYES IDYES +2
+    MessageBox MB_ICONEXCLAMATION|MB_YESNO "This Windows is for ARM processors. ${NOME} runs on it through emulation and is much slower than on a PC with an Intel or AMD processor.$\r$\n$\r$\nInstall anyway?" /SD IDYES IDYES +2
     Abort
   ${EndIf}
 
@@ -112,7 +112,7 @@ Function .onInit
     ${If} $2 < ${MEMORIA_MB}
       IntOp $3 $2 + 512
       IntOp $3 $3 / 1024
-      MessageBox MB_ICONEXCLAMATION|MB_YESNO "Este computador tem $3 GB de memória, e o ${NOME} pede ${MEMORIA_GB} GB. O jogo pode ficar lento ou fechar no meio da partida.$\r$\n$\r$\nInstalar mesmo assim?" /SD IDYES IDYES +2
+      MessageBox MB_ICONEXCLAMATION|MB_YESNO "This computer has $3 GB of memory, and ${NOME} needs ${MEMORIA_GB} GB. The game may run slowly or close in the middle of a match.$\r$\n$\r$\nInstall anyway?" /SD IDYES IDYES +2
       Abort
     ${EndIf}
   ${EndIf}
@@ -174,39 +174,39 @@ FunctionEnd
 ; ---- páginas -------------------------------------------------------------
 ; Boas-vindas: a Eve, que é a capa do jogo.
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${__FILEDIR__}\lateral_inicio.bmp"
-!define MUI_WELCOMEPAGE_TITLE "Bem-vindo ao WolfLeague"
-!define MUI_WELCOMEPAGE_TEXT "Este assistente instala o WolfLeague, o FPS online de humanos contra lobos, no seu computador.$\r$\n$\r$\nPara entrar nas salas é preciso estar conectado à internet.$\r$\n$\r$\nClique em Avançar para continuar."
+!define MUI_WELCOMEPAGE_TITLE "Welcome to WolfLeague"
+!define MUI_WELCOMEPAGE_TEXT "This wizard will install WolfLeague, the online FPS of humans versus wolves, on your computer.$\r$\n$\r$\nAn internet connection is required to join rooms.$\r$\n$\r$\nClick Next to continue."
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW EstiloJanela
 !insertmacro MUI_PAGE_WELCOME
 
-!define MUI_PAGE_HEADER_TEXT "Onde instalar"
-!define MUI_PAGE_HEADER_SUBTEXT "Escolha a pasta do WolfLeague."
+!define MUI_PAGE_HEADER_TEXT "Install location"
+!define MUI_PAGE_HEADER_SUBTEXT "Choose the folder for WolfLeague."
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW EstiloMeio
 !insertmacro MUI_PAGE_DIRECTORY
 
-!define MUI_PAGE_HEADER_TEXT "Instalando"
-!define MUI_PAGE_HEADER_SUBTEXT "Copiando os arquivos do jogo."
+!define MUI_PAGE_HEADER_TEXT "Installing"
+!define MUI_PAGE_HEADER_SUBTEXT "Copying the game files."
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW EstiloMeio
 !insertmacro MUI_PAGE_INSTFILES
 
 ; Fim: o Barut e o lobo.
 !undef MUI_WELCOMEFINISHPAGE_BITMAP
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${__FILEDIR__}\lateral_fim.bmp"
-!define MUI_FINISHPAGE_TITLE "WolfLeague instalado"
-!define MUI_FINISHPAGE_TEXT "Tudo pronto. Os atalhos estão na Área de Trabalho e no Menu Iniciar.$\r$\n$\r$\nBoa partida!"
+!define MUI_FINISHPAGE_TITLE "WolfLeague installed"
+!define MUI_FINISHPAGE_TEXT "All set. The shortcuts are on the Desktop and in the Start Menu.$\r$\n$\r$\nHave a good match!"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${EXE}"
-!define MUI_FINISHPAGE_RUN_TEXT "Jogar agora"
+!define MUI_FINISHPAGE_RUN_TEXT "Play now"
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW EstiloJanela
 !insertmacro MUI_PAGE_FINISH
 
-!define MUI_PAGE_HEADER_TEXT "Desinstalar o WolfLeague"
-!define MUI_PAGE_HEADER_SUBTEXT "Remove o jogo deste computador."
+!define MUI_PAGE_HEADER_TEXT "Uninstall WolfLeague"
+!define MUI_PAGE_HEADER_SUBTEXT "Removes the game from this computer."
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW un.EstiloMeio
 !insertmacro MUI_UNPAGE_CONFIRM
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW un.EstiloMeio
 !insertmacro MUI_UNPAGE_INSTFILES
 
-!insertmacro MUI_LANGUAGE "PortugueseBR"
+!insertmacro MUI_LANGUAGE "English"
 
 ; ---- instalação ----------------------------------------------------------
 !macro ApagarDados PASTA
@@ -218,33 +218,38 @@ FunctionEnd
   FindClose $R0
 !macroend
 
-Section "Jogo"
+Section "Game"
   SetOutPath "$INSTDIR"
 
   ; Versão antiga: a pasta de dados do .NET pode ter DLLs que a nova não tem.
   ; Só apagamos as pastas que o próprio jogo cria (data_*_windows_x86_64),
-  ; nunca o $INSTDIR inteiro: a de jogo\ e, das versões de antes do
+  ; nunca o $INSTDIR inteiro: a de game\ e, das versões de antes do
   ; iniciador, a que ficava solta na pasta, junto com o .pck.
-  !insertmacro ApagarDados "$INSTDIR\jogo"
+  !insertmacro ApagarDados "$INSTDIR\game"
+  ; Versões até 21/11 punham o jogo em jogo\ e o desinstalador em
+  ; Desinstalar.exe (agora tudo em inglês): a pasta velha é só do jogo.
+  RMDir /r "$INSTDIR\jogo"
+  Delete "$INSTDIR\Desinstalar.exe"
   !insertmacro ApagarDados "$INSTDIR"
   Delete "$INSTDIR\WolfLeague.pck"
 
   File /r "${ORIGEM}\*.*"
   File "${__FILEDIR__}\WolfLeague.ico"
 
-  WriteUninstaller "$INSTDIR\Desinstalar.exe"
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
 
   CreateShortcut "$SMPROGRAMS\${NOME}.lnk" "$INSTDIR\${EXE}" "" "$INSTDIR\WolfLeague.ico"
   CreateShortcut "$DESKTOP\${NOME}.lnk" "$INSTDIR\${EXE}" "" "$INSTDIR\WolfLeague.ico"
 
-  WriteRegStr HKCU "Software\${NOME}" "Pasta" "$INSTDIR"
+  WriteRegStr HKCU "Software\${NOME}" "InstallPath" "$INSTDIR"
+  DeleteRegValue HKCU "Software\${NOME}" "Pasta"
   WriteRegStr HKCU "${CHAVE_DES}" "DisplayName" "${NOME}"
   WriteRegStr HKCU "${CHAVE_DES}" "DisplayVersion" "${VERSAO}"
   WriteRegStr HKCU "${CHAVE_DES}" "Publisher" "${NOME}"
   WriteRegStr HKCU "${CHAVE_DES}" "DisplayIcon" "$INSTDIR\WolfLeague.ico"
   WriteRegStr HKCU "${CHAVE_DES}" "InstallLocation" "$INSTDIR"
-  WriteRegStr HKCU "${CHAVE_DES}" "UninstallString" '"$INSTDIR\Desinstalar.exe"'
-  WriteRegStr HKCU "${CHAVE_DES}" "QuietUninstallString" '"$INSTDIR\Desinstalar.exe" /S'
+  WriteRegStr HKCU "${CHAVE_DES}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+  WriteRegStr HKCU "${CHAVE_DES}" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
   WriteRegDWORD HKCU "${CHAVE_DES}" "NoModify" 1
   WriteRegDWORD HKCU "${CHAVE_DES}" "NoRepair" 1
 SectionEnd
@@ -253,6 +258,7 @@ Section "Uninstall"
   ; a lista vem do mesmo diretório que o instalador copiou
   !include "${LISTA}"
   Delete "$INSTDIR\WolfLeague.ico"
+  Delete "$INSTDIR\Uninstall.exe"
   Delete "$INSTDIR\Desinstalar.exe"
   RMDir "$INSTDIR"   ; só some se ficou vazia
 

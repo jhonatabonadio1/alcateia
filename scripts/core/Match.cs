@@ -153,7 +153,7 @@ public partial class Match : Node
 
 		// A semente da partida vai para o Output: um defeito que dependeu
 		// da sorte volta rodando com -- --seed=N (GameRandom).
-		GD.Print($"Semente da partida: {MatchRandom.Seed} (repita com -- --seed={MatchRandom.Seed})");
+		GD.Print($"Match seed: {MatchRandom.Seed} (repeat with -- --seed={MatchRandom.Seed})");
 
 		CountdownLeft = CountdownTime;
 		TimeLeft = Duration;
@@ -258,13 +258,21 @@ public partial class Match : Node
 		}
 	}
 
-	/// <summary>Recomeça a mesma partida, com a mesma sala.</summary>
+	/// <summary>Quem pode recomeçar: fora do online, sempre; online, só o
+	/// mestre da sala (Jhon, 21/11: "somente o mestre da sala pode reiniciar
+	/// partida").</summary>
+	public bool CanRestart => !Online || LobbyLink.IsRoomHost;
+
+	/// <summary>Recomeça a mesma partida, com a mesma sala. Online, o mestre
+	/// pede ao saguão: a partida de agora é descartada (ninguém ganha nada
+	/// por ela) e a sala inteira vai para uma nova — chega como o começar de
+	/// sempre (<c>match.start</c>), para todos. Quem não é mestre não
+	/// recomeça.</summary>
 	public void Restart()
 	{
-		// Online não se recomeça sozinho: volta-se para a sala.
 		if (Online)
 		{
-			Leave(ReturnTarget.Room);
+			if (CanRestart) LobbyLink.Instance.RestartMatch();
 			return;
 		}
 
@@ -460,6 +468,6 @@ public partial class Match : Node
 		EmitSignal(SignalName.PhaseChanged, (int)phase);
 
 		if (Debug)
-			GD.Print($"Partida: {phase}  (VANGUARDA {_score[Teams.Blue]} x {_score[Teams.Orange]} SINDICATO)");
+			GD.Print($"Match: {phase}  (VANGUARD {_score[Teams.Blue]} x {_score[Teams.Orange]} SYNDICATE)");
 	}
 }

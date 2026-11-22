@@ -133,6 +133,15 @@ public partial class WolfVisual : Node3D
 			_body.CallDeferred(Node.MethodName.AddChild, new WolfFx { Name = "WolfFx" });
 	}
 
+	/// <summary>Na parede agora: o jogador daqui, ou o boneco de quem
+	/// joga em outra máquina (o estado que chegou da rede).</summary>
+	private bool OnWallNow => _player != null ? _player.IsWallRunning : _bot is { RemoteWallRun: true };
+
+	/// <summary>A parede (normal para fora e sentido da corrida), de
+	/// quem for: zero fora dela.</summary>
+	private Vector3 WallNormalNow => _player != null ? _player.WallNormal : _bot?.RemoteWallNormal ?? Vector3.Zero;
+	private Vector3 WallAlongNow => _player != null ? _player.WallAlong : _bot?.RemoteWallAlong ?? Vector3.Zero;
+
 	/// <summary>O lobo montado (a raiz do modelo), para os efeitos.</summary>
 	public Node3D Model => _model;
 
@@ -144,7 +153,8 @@ public partial class WolfVisual : Node3D
 		if (_tree == null || !Visible) return;
 
 		// O lobo da cena fica no pé da cápsula, que encolhe ao agachar.
-		float feet = _player != null ? _player.FeetOffset : -0.875f;
+		// O boneco de outro jogador agachado: a cápsula dele também encolhe.
+		float feet = _player != null ? _player.FeetOffset : -0.875f + (_bot?.RemoteCrouchDrop ?? 0f);
 		// O "Running Crawl" apoia as mãos no chão com a mão grande do corpo:
 		// sobe CrawlLift. O andar agachado do Jhon tem os pés no chão.
 		Position = new Vector3(0, feet + (Has("crawl") ? 0f : CrawlLift) * _crawl * _moveMix
@@ -163,7 +173,7 @@ public partial class WolfVisual : Node3D
 
 		// No ar depois de um pulo, o voo do clipe de pulo; caindo de uma
 		// beirada, o corpo segue na pose de antes.
-		bool onWall = _player != null && _player.IsWallRunning && Has("wallrun");
+		bool onWall = OnWallNow && Has("wallrun");
 
 		// No ar o lobo cai, não anda: depois de um pulo (do chão ou da
 		// parede) e também soltando da parede ou caindo de uma beirada.

@@ -65,16 +65,21 @@ public partial class WolfVisual
 	/// </summary>
 	private void UpdateWall(float delta)
 	{
-		if (_player == null) return;
+		// O bot daqui não corre na parede, e o modelo dele fica como foi
+		// montado. O boneco de quem joga em outra máquina só mexe aqui na
+		// parede (indo, nela e voltando), sem o giro e a inclinação que são
+		// do jogador daqui.
+		bool puppet = _player == null;
+		if (puppet && (_bot is not { Remote: true } || (!_onWall && _wallBlend <= 0f))) return;
 
 		float target = _onWall ? 1f : 0f;
 		_wallBlend = Mathf.MoveToward(_wallBlend, target, delta / Mathf.Max(WallTurnTime, 0.01f));
 
 		var rest = new Transform3D(
-			Basis.FromEuler(new Vector3(0, Mathf.DegToRad(ModelYaw) + _yawOffset, 0)).Scaled(Vector3.One * ModelScale),
+			Basis.FromEuler(new Vector3(0, Mathf.DegToRad(ModelYaw) + (puppet ? 0f : _yawOffset), 0)).Scaled(Vector3.One * ModelScale),
 			Vector3.Zero);
 
-		if (_lean > 0.01f)
+		if (!puppet && _lean > 0.01f)
 		{
 			// Nariz para baixo: girar em X negativo leva o −Z (a frente do
 			// corpo) para baixo. O pivô fica na altura do quadril.
@@ -91,10 +96,11 @@ public partial class WolfVisual
 
 		// Saindo da parede, a normal some antes de o corpo terminar de
 		// levantar: a volta usa a última parede conhecida.
-		if (_player.WallNormal != Vector3.Zero && _player.WallAlong != Vector3.Zero)
+		Vector3 wallNormal = WallNormalNow, wallAlong = WallAlongNow;
+		if (wallNormal != Vector3.Zero && wallAlong != Vector3.Zero)
 		{
-			_lastNormal = _player.WallNormal;
-			_lastAlong = _player.WallAlong;
+			_lastNormal = wallNormal;
+			_lastAlong = wallAlong;
 		}
 
 		Vector3 normal = _lastNormal;

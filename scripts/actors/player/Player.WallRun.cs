@@ -239,7 +239,7 @@ public partial class Player
 		if (_wallJumpGrace <= 0 || !_form.IsWolf || IsOnFloor() || IsStunned) return false;
 		if (!WantsJump()) return false;
 
-		WallLog("salto da parede logo depois de soltar");
+		WallLog("wall jump right after letting go");
 		JumpOffWall();
 		return true;
 	}
@@ -268,7 +268,7 @@ public partial class Player
 			// chega-se à parede sem nada segurando a corrida e o
 			// código voltava antes de olhar, então o log ficava calado
 			// como se estivesse tudo bem.
-			if (!IsOnFloor()) WallLog("segure W para correr na parede");
+			if (!IsOnFloor()) WallLog("hold W to run on the wall");
 
 			return false;
 		}
@@ -284,13 +284,13 @@ public partial class Player
 		// mesma altura logo após o salto e a parede vira elevador.
 		if (_wallCooldown > 0)
 		{
-			WallLog("ainda em recarga desde a última corrida");
+			WallLog("still on cooldown since the last run");
 			return false;
 		}
 
 		if (!found)
 		{
-			WallLog($"nenhuma a menos de {WallCheckDistance}m");
+			WallLog($"none within {WallCheckDistance}m");
 			return false;
 		}
 
@@ -299,13 +299,13 @@ public partial class Player
 		// rente ao chão transformava todo esbarrão em corrida na parede.
 		if (Velocity.Y > WallGrabMaxRise && IsNearFloor(WallGrabHeight))
 		{
-			WallLog("subindo — ainda baixo para grudar");
+			WallLog("rising — still too low to stick");
 			return false;
 		}
 
 		if (IsNearFloor())
 		{
-			WallLog("perto demais do chão");
+			WallLog("too close to the floor");
 			return false;
 		}
 
@@ -314,7 +314,7 @@ public partial class Player
 		// deixar o puxava de volta.
 		if (new Vector3(Velocity.X, 0, Velocity.Z).Dot(normal) > WallLeaveSpeed)
 		{
-			WallLog("indo para longe da parede");
+			WallLog("moving away from the wall");
 			return false;
 		}
 
@@ -326,10 +326,16 @@ public partial class Player
 		// altura.
 		if (IsLastWall(normal))
 		{
-			WallLog("mesma parede — salte para outra ou toque o chão");
+			WallLog("same wall — jump to another or touch the floor");
 			return false;
 		}
 
+		return CommitGrab(normal);
+	}
+
+	/// <summary>Gruda de fato: daqui em diante o lobo corre nesta parede.</summary>
+	private bool CommitGrab(Vector3 normal)
+	{
 		_onWall = true;
 		_wallTimer = WallRunMaxTime;
 		_wallNormal = normal;
@@ -341,12 +347,39 @@ public partial class Player
 		// desistir, senão o lobo solta no mesmo frame em que gruda.
 		if (!ResolveDirection(normal, out _wallAlong))
 		{
-			WallLog("os dois sentidos estão bloqueados");
+			WallLog("both directions are blocked");
 			_onWall = false;
 			return false;
 		}
 
-		WallLog($"grudou, normal {_wallNormal}, sentido {_wallAlong}");
+		WallLog($"stuck, normal {_wallNormal}, direction {_wallAlong}");
+		return true;
+	}
+
+	/// <summary>
+	/// Partida autoritativa: o servidor confirmou um passo com o corpo na
+	/// parede em que este jogo estava fora dela (Jhon, 21/11: online o lobo
+	/// "corria sem animação, em pé, mas andando na parede"). Com a rede
+	/// oscilando, o servidor às vezes dá um passo a mais ou a menos; a
+	/// correção acerta só a posição, e um puxão de centímetros bastava
+	/// para este jogo soltar a parede. Solto, ele não regrudava — a regra
+	/// da mesma parede e a recarga são para o jogador, não para a correção
+	/// — e o servidor seguia na parede: o corpo era arrastado por ela de
+	/// pé, na pose do pulo. Aqui o jogo volta para a parede, se ainda está
+	/// no ar, segurando W (ou agarrado) e com ela ao alcance.
+	///
+	/// O contrário (o jogo na parede e o servidor não) não solta aqui: um
+	/// passo de diferença no grudar viraria soltar e regrudar.
+	/// </summary>
+	public bool ResumeWallFromServer()
+	{
+		if (_onWall || !_form.IsWolf || IsOnFloor() || IsStunned || _moves.Controls) return false;
+		if (!_intent.Forward && !_intent.AttackHeld) return false;
+		if (!ProbeWall(out Vector3 normal, out _)) return false;
+
+		_wallCooldown = 0;
+		if (!CommitGrab(normal)) return false;
+		WallLog("the server is on the wall: the client goes back to it");
 		return true;
 	}
 
@@ -391,13 +424,13 @@ public partial class Player
 		{
 			if (!NextFaceIsWide(normal, wallDistance))
 			{
-				WallLog("ponta de parede fina: segue reto");
+				WallLog("thin wall end: keep going straight");
 				LeaveWallStraight();
 				return false;
 			}
 
 			_rounding = true;
-			WallLog("quina: contorna para a face seguinte");
+			WallLog("corner: wraps to the next face");
 		}
 
 		_wallNormal = normal;
@@ -430,7 +463,7 @@ public partial class Player
 		{
 			// Perdeu a parede: segue reto um instante antes de soltar.
 			_cornerGrace = CornerGrace;
-			WallLog("perdeu a parede");
+			WallLog("lost the wall");
 			return true;
 		}
 
@@ -438,7 +471,7 @@ public partial class Player
 
 		if (_cornerGrace <= 0)
 		{
-			WallLog("soltou: nada para encostar");
+			WallLog("let go: nothing to lean on");
 			ReleaseWall();
 			return false;
 		}
@@ -493,7 +526,7 @@ public partial class Player
 		{
 			velocity = along * (carried * 0.3f) - _wallNormal * 3.2f;
 			velocity.Y = Mathf.Sqrt(2f * _gravity * (rise + 0.45f));
-			WallLog($"subindo no topo, {rise:0.00} m acima dos pés");
+			WallLog($"climbing over the top, {rise:0.00} m above the feet");
 		}
 		IsJumpAirborne = true;
 		_jumpFromWall = true;
@@ -560,7 +593,7 @@ public partial class Player
 		// para ele (seria correr em parede que não se vê). Solta.
 		if (_blockedByLimit)
 		{
-			WallLog("soltou, limite invisível do mapa à frente");
+			WallLog("let go, invisible map boundary ahead");
 			ReleaseWall();
 			return false;
 		}
@@ -570,7 +603,7 @@ public partial class Player
 
 		if (turn.LengthSquared() < 0.04f || IsBlocked(turn.Normalized(), out _))
 		{
-			WallLog("soltou, caminho bloqueado à frente");
+			WallLog("let go, path blocked ahead");
 			ReleaseWall();
 			return false;
 		}
@@ -579,7 +612,7 @@ public partial class Player
 		_wallAlong = turn.Normalized();
 		_wallNormal = front;
 		velocity = _wallAlong * Mathf.Max(pace, 0f) + Vector3.Up * velocity.Y;
-		WallLog("canto: segue pela parede da frente");
+		WallLog("inner corner: continues on the wall ahead");
 		return true;
 	}
 
@@ -627,7 +660,7 @@ public partial class Player
 		_wallStall = target > 1f && moved < target * 0.3f ? _wallStall + delta : 0;
 		if (_wallStall >= WallStallTime)
 		{
-			WallLog("soltou, travado em algo à frente");
+			WallLog("let go, stuck on something ahead");
 			ReleaseWall();
 			_wallCooldown = Mathf.Max(_wallCooldown, WallStallCooldown);
 		}
@@ -640,7 +673,7 @@ public partial class Player
 		if (!WallDebug || message == _lastWallLog) return;
 
 		_lastWallLog = message;
-		GD.Print($"parede: {message}");
+		GD.Print($"wall: {message}");
 	}
 
 	/// <summary>É a parede que o lobo acabou de deixar? Mesma direção e

@@ -59,8 +59,8 @@ public partial class SpawnPoints : Node3D
 				_points.Add(marker.GlobalPosition);
 
 		if (Debug)
-			GD.Print($"SpawnPoints '{Name}': {_points.Count} pontos" +
-					 (Team > 0 ? $" para o time {Teams.NameOf(Team)}" : " para qualquer time"));
+			GD.Print($"SpawnPoints '{Name}': {_points.Count} points" +
+					 (Team > 0 ? $" for team {Teams.NameOf(Team)}" : " for any team"));
 	}
 
 	public override void _ExitTree()

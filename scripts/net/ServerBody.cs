@@ -227,6 +227,7 @@ public sealed class ServerBody
 		if (Body.IsWallRunning) flags |= EntityFlags.WallRunning;
 		if (Body.IsSprinting) flags |= EntityFlags.Sprinting;
 		if (Weapon.IsAiming) flags |= EntityFlags.Aiming;
+		if (Body.HowlProgress > 0f) flags |= EntityFlags.Howling;
 
 		return new EntityState
 		{

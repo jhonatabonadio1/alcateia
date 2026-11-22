@@ -115,6 +115,10 @@ public partial class Player
 	/// agachamento é decidido aqui e em lugar nenhum mais.</summary>
 	public bool IsCrouching => _crouching;
 
+	/// <summary>Andando devagar (Shift, só humano): o passo não faz barulho.
+	/// A rede conta aos outros (o passo do boneco também fica quieto).</summary>
+	public bool IsWalking => _walking;
+
 	/// <summary>
 	/// Onde ficam os pés, em relação ao centro do corpo.
 	///

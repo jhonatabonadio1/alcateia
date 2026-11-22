@@ -33,7 +33,7 @@ public partial class MatchSetup : Node
 
 		if (bots == null || BotScene == null)
 		{
-			GD.PrintErr("MatchSetup: sem nó de bots ou sem cena de bot.");
+			GD.PrintErr("MatchSetup: no bots node or no bot scene.");
 			return;
 		}
 

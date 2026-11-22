@@ -48,6 +48,115 @@ public partial class Weapon
 		TryAttack();
 	}
 
+	// ------------------------------------------------------------ os golpes do lobo
+
+	/// <summary>
+	/// O dono do boneco começou um golpe de lobo (21/11): o boneco toca
+	/// aquele golpe, do começo, no tempo da tabela (<see cref="WolfMoves"/>),
+	/// com o som no impacto — e não fere ninguém (o dano é da máquina do
+	/// dono). O corpo anda pela rede; aqui só correm os relógios que a
+	/// animação lê (em golpe, preso, no voo, no bote).
+	///
+	/// Antes o boneco só sabia "atacou", no instante do impacto, e tocava
+	/// uma garrada: o salto do especial e o bote nunca apareciam para os
+	/// outros, e a garrada saía atrasada.
+	/// </summary>
+	/// <param name="a">Salto: quanto do clipe ele pula (o agachar). Bote: em
+	/// quanto tempo encosta.</param>
+	/// <param name="b">Salto: o ritmo do voo.</param>
+	public void RemoteWolfMove(WolfMove move, float a, float b)
+	{
+		if (!Puppet || _form == null || !_form.IsWolf || _health.IsDead) return;
+
+		switch (move)
+		{
+			case WolfMove.Claw:
+			case WolfMove.Punch:
+				// O braço que o dono usou, não o que o boneco acharia.
+				_nextPunch = move == WolfMove.Punch;
+				_cooldown = 0;
+				_attackQueue = 0;
+				_diving = false;
+				_flying = false;
+				WolfAttack();
+				break;
+
+			case WolfMove.Pounce:
+				RemotePounce(a, b);
+				break;
+
+			case WolfMove.Leap:
+				RemoteLeap(a);
+				break;
+		}
+	}
+
+	/// <summary>O salto do especial no boneco: as mesmas contas do
+	/// <see cref="Pounce"/> (agachar, voo, pancada e levantar), com o que o
+	/// dono mandou no lugar da carga e da mira.</summary>
+	private void RemotePounce(float skip, float rate)
+	{
+		var (crouch, airborne, _) = WolfMoves.StepOf(WolfMove.Pounce);
+		skip = Mathf.Clamp(skip, 0f, crouch);
+		rate = rate > 0.01f ? Mathf.Clamp(rate, 0.2f, 6f) : 1f;
+
+		float wait = Mathf.Max(crouch - skip, 0f);
+		float air = airborne / rate;
+		float recover = Mathf.Max(PounceRecoverRate, 0.1f);
+		float landed = crouch + airborne;
+		float impactAt = wait + air + Mathf.Max(WolfMoves.ImpactDelay(WolfMove.Pounce) - landed, 0f) / recover;
+		float total = wait + air + Mathf.Max(WolfMoves.Duration(WolfMove.Pounce) - landed, 0f) / recover;
+
+		_charging = false;
+		_diving = false;
+		_flying = false;
+		_pounceLanded = false;
+		_comboIndex = 0;
+		_attackQueue = 0;
+		_rootLeft = total;
+		PounceSkip = skip;
+		PounceFlightRate = rate;
+
+		// O clipe começa já no impulso (o WolfVisual lê o PounceSkip agora).
+		EmitSignal(SignalName.WolfMoveStarted, (int)WolfMove.Pounce);
+		ulong id = StartMove(WolfMove.Pounce, CooldownHeavy, HeavyCooldown,
+			() => MarkRecovery(_rootLeft), Mathf.Max(skip, 0.001f), total, impactAt);
+
+		// O voo: só o relógio (o corpo voa pela rede).
+		After(wait, id, () =>
+		{
+			_flyStart = _flyEnd = _body.GlobalPosition;
+			_flyTotal = Mathf.Max(air, 0.05f);
+			_flyTime = 0;
+			_flying = true;
+		});
+	}
+
+	/// <summary>O bote no boneco: o mergulho na mira que chegou com o
+	/// ataque, batendo no tempo que o dono previu (o boneco não sente o
+	/// chão: quem o move é a rede).</summary>
+	private void RemoteLeap(float eta)
+	{
+		_comboIndex = 0;
+		_charging = false;
+		_flying = false;
+
+		Vector3 aim = -_head.GlobalTransform.Basis.Z;
+		aim.Y = Mathf.Min(aim.Y, -DiveMinDrop);
+		aim = aim.Normalized();
+		DiveVelocity = aim * DiveSpeed;
+		DiveEta = eta > 0.01f ? Mathf.Min(eta, DiveMaxTime) : TimeToContact(DiveVelocity);
+
+		_diving = true;
+		_diveLeft = DiveEta;
+		_diveElapsed = 0;
+		_strikeId++;
+		_strikeLeft = 0;
+		_cooldown = DiveMaxTime + WolfMoves.LandDuration;
+
+		EmitSignal(SignalName.WolfMoveStarted, (int)WolfMove.Leap);
+	}
+
 	// ------------------------------------------------------------ o boneco online
 
 	private bool _mirrorReloading;

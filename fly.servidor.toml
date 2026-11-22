@@ -13,8 +13,10 @@ primary_region = "gru"
 
 [env]
   # O painel (8081) escuta em todos os endereços, inclusive a rede privada
-  # do Fly (IPv6). Não há serviço público para ele: só chega quem entra
-  # por "fly proxy 8081 -a wolfleague-api".
+  # do Fly (IPv6). O Fly o publica em https://wolfleague-api.fly.dev:8443
+  # (bloco [[services]] abaixo); "fly proxy 8081 -a wolfleague-api" segue
+  # servindo de reserva. Proteção: senha de 12+, 2FA obrigatório, trava por
+  # tentativas e, se der, ALCATEIA_ADMIN_ALLOW (secret) com o seu IP.
   ALCATEIA_ADMIN_BIND = "::"
   # O proxy do Fly liga para o app a partir de 172.16.x.x; o endereço do
   # jogador vem no Fly-Client-IP.
@@ -51,6 +53,29 @@ primary_region = "gru"
     interval = "15s"
     method = "GET"
     path = "/health"
+    timeout = "5s"
+
+# Painel administrativo: porta 8443, só HTTPS (o handler "http" repassa
+# Fly-Client-IP e Fly-Forwarded-Proto, que o servidor já entende).
+[[services]]
+  protocol = "tcp"
+  internal_port = 8081
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 8443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    soft_limit = 50
+    hard_limit = 100
+
+  [[services.tcp_checks]]
+    grace_period = "30s"
+    interval = "30s"
     timeout = "5s"
 
 [[vm]]

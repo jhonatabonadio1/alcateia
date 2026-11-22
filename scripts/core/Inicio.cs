@@ -35,6 +35,12 @@ public partial class Inicio : Node
 		// O nome do jogo na janela (o projeto também se chama WolfLeague).
 		DisplayServer.WindowSetTitle(Credits.GameName);
 
+		string[] args = OS.GetCmdlineUserArgs();
+		bool server = IsServer(args);
+
+		// Placa fraca: na primeira abertura, as opções de custo vão ao mínimo.
+		if (!server) Settings.AutoTune();
+
 		// A suavização vale para a janela inteira, desde a primeira cena
 		// (também quando a partida é aberta direto do editor).
 		Settings.ApplyVideo(GetTree().Root);
@@ -47,8 +53,16 @@ public partial class Inicio : Node
 			if (node is WorldEnvironment world) Settings.ApplyQuality(world.Environment);
 		};
 
-		string[] args = OS.GetCmdlineUserArgs();
-		if (IsServer(args)) Callable.From(BecomeServer).CallDeferred();
+		// Só no jogo: o limite de FPS e o V-Sync, a resolução que acompanha
+		// a placa e o painel de desempenho (que só aparece se ligado).
+		if (!server)
+		{
+			Settings.ApplyFrameRate();
+			AddChild(new ResolutionTuner { Name = "Resolucao" });
+			AddChild(new PerfOverlay { Name = "Desempenho" });
+		}
+
+		if (server) Callable.From(BecomeServer).CallDeferred();
 
 		string robot = System.Array.Find(args, a => a.StartsWith("--robo="));
 		if (robot != null) AddChild(new OnlineRobot { Name = "Robo", Role = robot["--robo=".Length..] });

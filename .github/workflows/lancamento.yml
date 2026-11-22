@@ -195,13 +195,13 @@ jobs:
         run: |
           dotnet build WolfLeague.csproj --nologo -v quiet
           "$GODOT" --headless --path . --import || true
-          # O jogo vai em jogo\; o WolfLeague.exe de fora é o iniciador
+          # O jogo vai em game\; o WolfLeague.exe de fora é o iniciador
           # (próximo passo), que acha o modo de vídeo que funciona.
-          mkdir -p build/windows/jogo
-          "$GODOT" --headless --path . --export-release "Windows" build/windows/jogo/WolfLeague.exe
-          test -f build/windows/jogo/WolfLeague.exe
-          test -f build/windows/jogo/WolfLeague.pck
-          ls -la build/windows/jogo
+          mkdir -p build/windows/game
+          "$GODOT" --headless --path . --export-release "Windows" build/windows/game/WolfLeague.exe
+          test -f build/windows/game/WolfLeague.exe
+          test -f build/windows/game/WolfLeague.pck
+          ls -la build/windows/game
       - name: Iniciador, .zip e instalador do Windows
         env:
           VERSAO: ${{ steps.versao.outputs.versao }}
@@ -294,7 +294,7 @@ jobs:
           # não sai .dmg.
           codesign --force --deep --sign - "$app"
           codesign --verify --deep --strict --verbose=2 "$app"
-          mkdir -p dmg && cp -R "$app" dmg/WolfLeague.app && ln -s /Applications dmg/Aplicativos
+          mkdir -p dmg && cp -R "$app" dmg/WolfLeague.app && ln -s /Applications dmg/Applications
           mkdir -p entrega
           hdiutil create -volname "WolfLeague" -srcfolder dmg -ov -format UDZO "entrega/WolfLeague-${VERSAO}-mac.dmg"
           ls -la entrega
@@ -352,7 +352,7 @@ jobs:
             echo
             echo "## Mac (Intel ou Apple Silicon, macOS 11 ou mais novo)"
             echo
-            echo "1. Baixe **${dmg}**, abra e arraste o WolfLeague para **Aplicativos**."
+            echo "1. Baixe **${dmg}**, abra e arraste o WolfLeague para **Applications** (Aplicativos)."
             echo "2. Na primeira vez o Mac bloqueia (o jogo ainda não é autenticado pela Apple). Abra **Ajustes do Sistema → Privacidade e Segurança**, role até o aviso do WolfLeague e clique em **Abrir Mesmo Assim**."
             echo
             echo "O **SHA256SUMS.txt** serve para conferir os downloads."

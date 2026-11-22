@@ -12,9 +12,12 @@ public partial class WolfVisual
 	private bool _howling;
 
 
+	/// <summary>Rugindo: o jogador daqui (segurando R), o bot, ou o boneco
+	/// de quem ruge em outra máquina (o estado que chegou, desde 21/11 —
+	/// antes o rugido não aparecia para ninguém).</summary>
 	private bool IsHowling() =>
 		_player != null ? _player.HowlProgress > 0f
-		: _bot != null && _bot.Action == BotAction.Howl;
+		: _bot != null && (_bot.Action == BotAction.Howl || _bot.RemoteHowling);
 
 	/// <summary>Dispara um golpe por cima do corpo.</summary>
 	private void Fire(string shot, float speed)

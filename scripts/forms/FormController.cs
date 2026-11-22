@@ -200,7 +200,7 @@ public partial class FormController : Node
 
 				if (Breed == null)
 				{
-					GD.PrintErr("FormController: nenhuma WolfBreed atribuída.");
+					GD.PrintErr("FormController: no WolfBreed assigned.");
 					return;
 				}
 				if (Wp < Breed.WpCost)
@@ -327,6 +327,15 @@ public partial class FormController : Node
 	public void RemoteSet(Form form)
 	{
 		if (form == Current || Breed == null) return;
+
+		// O boneco conta a transformação no relógio dele e pode acabar um
+		// instante antes de o dono avisar que acabou: o "ainda virando" que
+		// chega depois é velho. Voltar para ele recomeçava a fumaça e
+		// mostrava o humano de novo no meio (Jhon, 21/11: "mostra ele como
+		// lobo, rapidamente volta para humano e já volta para lobo").
+		if (form == Form.ShiftingToWolf && Current == Form.Wolf) return;
+		if (form == Form.ShiftingToHuman && Current == Form.Human) return;
+
 		Enter(form);
 	}
 

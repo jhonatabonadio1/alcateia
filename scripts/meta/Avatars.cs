@@ -12,7 +12,7 @@ using System.Linq;
 /// (<see cref="OfCharacter"/>, assets/personagens/&lt;nome&gt;/retrato.png).
 ///
 /// As da loja são itens do catálogo (<c>foto_&lt;id&gt;</c>, tipo Photo,
-/// só permanentes). A escolha fica em user://foto.cfg e vai para o saguão
+/// só permanentes). A escolha fica em user://avatar.cfg e vai para o saguão
 /// (<see cref="LobbyLink.SetPhoto"/>), que confere se é sua e a põe na sala
 /// para os outros verem (o "photo" de cada membro).
 /// </summary>
@@ -51,7 +51,7 @@ public static class Avatars
 	};
 
 	public const string Default = "lobo_cinza";
-	private const string File = "user://foto.cfg";
+	private static string File => UserFiles.Resolve(UserFiles.Avatar, "user://foto.cfg");
 	private static string _selected;
 
 	public static Photo Get(string id) => All.FirstOrDefault(p => p.Id == id);
@@ -71,7 +71,10 @@ public static class Avatars
 			if (_selected == null)
 			{
 				var cfg = new ConfigFile();
-				_selected = cfg.Load(File) == Error.Ok ? cfg.GetValue("perfil", "foto", Default).AsString() : Default;
+				// [profile] avatar (até 21/11, [perfil] foto).
+				_selected = cfg.Load(File) == Error.Ok
+					? cfg.GetValue("profile", "avatar", cfg.GetValue("perfil", "foto", Default)).AsString()
+					: Default;
 			}
 			return Owns(_selected) ? _selected : Default;
 		}
@@ -80,7 +83,7 @@ public static class Avatars
 			if (!Owns(value)) return;
 			_selected = value;
 			var cfg = new ConfigFile();
-			cfg.SetValue("perfil", "foto", value);
+			cfg.SetValue("profile", "avatar", value);
 			cfg.Save(File);
 			if (LobbyLink.InRoom || Backend.LoggedIn) LobbyLink.Instance.SetPhoto(value);
 		}

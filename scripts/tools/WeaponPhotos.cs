@@ -47,7 +47,7 @@ public partial class WeaponPhotos : Node
 			Image photo = stage.GetTexture().GetImage();
 			photo.Resize(Width / 2, Height / 2, Image.Interpolation.Lanczos);
 			photo.SavePng(dir + id + ".png");
-			GD.Print($"foto: {id}");
+			GD.Print($"photo: {id}");
 
 			RemoveChild(stage);
 			stage.QueueFree();

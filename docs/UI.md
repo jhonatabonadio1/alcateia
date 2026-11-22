@@ -800,7 +800,7 @@ Os valores numéricos de balanceamento (canalização, drenagem, recarga de ener
 
 Escopo combinado: **tudo o que roda sem servidor**. Perfil, patentes,
 XP, loja com moeda do jogo, inventário, missões e a sala inteira
-funcionam e ficam salvos em `user://perfil.json`. O que depende de rede
+funcionam e ficam salvos em `user://profile.json`. O que depende de rede
 aparece desabilitado com "em breve" ou não aparece.
 
 > Desde 20/11 (decisão 0015) carteira, inventário, patente e missões

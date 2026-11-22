@@ -8,8 +8,15 @@ using Godot;
 /// Preto. O emblema vem de longe enquanto o som sobe e bate no impacto, com
 /// o brilho dourado se abrindo, um risco de luz e um tremor curto; INITECH
 /// sobe, GAMES abre do meio com as duas linhas; uma faixa de luz passa pela
-/// logo; tudo some no preto e o menu entra. O menu carrega por trás
-/// enquanto isso. Qualquer tecla ou clique pula a vinheta.
+/// logo; tudo some no preto, fica uns 3 s no preto e o menu entra.
+///
+/// A vinheta não se pula e roda inteira antes do jogo abrir (Jhon, 21/11:
+/// "precisa esperar acabar a intro antes de abrir o jogo, e ficar uns 3 s
+/// com tela preta"). Por isso: ela só começa depois de uns quadros (a
+/// janela abrindo e a primeira imagem engasgam), um quadro lento não pula
+/// pedaço dela (o tempo anda no máximo 1/20 s por quadro) e o menu só
+/// começa a carregar no preto do fim, para não disputar com ela. Se o
+/// menu levar mais que os 3 s, o preto dura até ele ficar pronto.
 ///
 /// A arte é a logo do Jhon recortada em três partes (assets/ui/estudio:
 /// emblema, INITECH, GAMES), nas posições da logo inteira; o som,
@@ -24,7 +31,11 @@ public partial class StudioIntro : Control
 	// O tempo da vinheta, em segundos (o som foi feito nesse tempo).
 	private const float Impact = 1.0f;
 	private const float FadeOut = 3.3f;
-	private const float End = 3.95f;
+	private const float Black = FadeOut + 0.55f;   // tudo preto daqui em diante
+	private const float BlackHold = 3f;            // o preto antes do menu
+	private const float End = Black + BlackHold;
+	// Quadros de espera, no preto, antes do som e da animação começarem.
+	private const int WarmupFrames = 4;
 
 	// As partes na logo inteira, em frações da arte original (1800 × 1632).
 	private const float LogoAspect = 1800f / 1632f;
@@ -59,7 +70,8 @@ void fragment() {
 	private ColorRect _fade;
 	private AudioStreamPlayer _sound;
 	private float _t;
-	private bool _skipping, _leaving;
+	private bool _loading, _leaving;
+	private int _warmup;
 
 	public override void _Ready()
 	{
@@ -73,7 +85,6 @@ void fragment() {
 			return;
 		}
 
-		ResourceLoader.LoadThreadedRequest(GameMenu.MenuScene);
 		Input.MouseMode = Input.MouseModeEnum.Hidden;
 		Build();
 		Resized += Layout;
@@ -82,24 +93,18 @@ void fragment() {
 		Settings.ApplyAudio();
 		_sound = new AudioStreamPlayer { Stream = GD.Load<AudioStream>(SoundPath), Bus = Sfx.BusMusic };
 		AddChild(_sound);
-		_sound.Play();
-	}
-
-	public override void _UnhandledInput(InputEvent e)
-	{
-		if (_skipping || _leaving) return;
-		if (e is InputEventKey { Pressed: true } or InputEventMouseButton { Pressed: true } or InputEventJoypadButton { Pressed: true })
-		{
-			_skipping = true;
-			if (_t < FadeOut) _t = FadeOut;
-			GetViewport().SetInputAsHandled();
-		}
 	}
 
 	public override void _Process(double delta)
 	{
 		if (_logo == null) return;
-		_t += (float)delta * (_skipping ? 2.2f : 1f);
+		// Os primeiros quadros ficam no tempo zero (tudo preto); o tempo e o
+		// som começam juntos depois deles.
+		if (_warmup < WarmupFrames)
+		{
+			if (++_warmup == WarmupFrames) _sound?.Play();
+		}
+		else _t += Mathf.Min((float)delta, 1f / 20f);
 		float t = _t;
 
 		// Fundo: um brilho quente atrás do emblema, que acende no impacto.
@@ -136,9 +141,13 @@ void fragment() {
 		float sweep = Mathf.Lerp(-0.3f, 1.3f, Smooth(1.45f, 2.3f, t));
 		foreach (ShaderMaterial fx in new[] { _emblemFx, _nameFx, _gamesFx }) fx.SetShaderParameter("sweep", sweep);
 
-		// Some no preto, e o menu entra.
-		_fade.Color = new Color(0, 0, 0, Smooth(FadeOut, FadeOut + 0.55f, t));
-		if (_sound != null && _skipping) _sound.VolumeDb = Mathf.Lerp(0f, -40f, Smooth(FadeOut, FadeOut + 0.55f, t));
+		// Some no preto; no preto o menu carrega, e entra.
+		_fade.Color = new Color(0, 0, 0, Smooth(FadeOut, Black, t));
+		if (t >= Black && !_loading)
+		{
+			_loading = true;
+			ResourceLoader.LoadThreadedRequest(GameMenu.MenuScene);
+		}
 		if (t >= End) Leave();
 	}
 

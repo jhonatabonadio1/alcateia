@@ -1,5 +1,5 @@
 ; O iniciador do WolfLeague para Windows: é o WolfLeague.exe que o jogador
-; abre (atalho, Menu Iniciar, .zip). O jogo de verdade fica em jogo\.
+; abre (atalho, Menu Iniciar, .zip). O jogo de verdade fica em game\.
 ;
 ; Por que existe (21/11): quando o vídeo não sobe, o Godot fecha sem dizer
 ; nada e não tenta outro modo. Ele só troca de modo quando o driver nem
@@ -94,9 +94,9 @@ Function Tentar
 FunctionEnd
 
 Section
-  StrCpy $jogo "$EXEDIR\jogo\${NOME}.exe"
+  StrCpy $jogo "$EXEDIR\game\${NOME}.exe"
   ${IfNot} ${FileExists} "$jogo"
-    !insertmacro Aviso "Faltam arquivos do ${NOME}:$\r$\n$jogo$\r$\n$\r$\nInstale o jogo de novo."
+    !insertmacro Aviso "Some ${NOME} files are missing:$\r$\n$jogo$\r$\n$\r$\nPlease reinstall the game."
     SetErrorLevel 1
     Quit
   ${EndIf}
@@ -113,7 +113,10 @@ Section
 
   ; A ordem: escolhido nas Opções, o que funcionou da última vez, a lista.
   StrCpy $lista ""
-  ReadINIStr $1 "$APPDATA\${NOME}\video.ini" "video" "modo"
+  ReadINIStr $1 "$APPDATA\${NOME}\video.ini" "video" "mode"
+  ${If} $1 == ""
+    ReadINIStr $1 "$APPDATA\${NOME}\video.ini" "video" "modo"   ; até 21/11
+  ${EndIf}
   ${WordFind} " ${MODOS} " " $1 " "E#" $0
   ${IfNot} ${Errors}
     StrCpy $lista "$1"
@@ -137,7 +140,8 @@ Section
       ${If} $1 != ""
       ${AndIf} $1 != "auto"
       ${AndIf} $1 != "$R0"
-        WriteINIStr "$APPDATA\${NOME}\video.ini" "video" "modo" "auto"
+        WriteINIStr "$APPDATA\${NOME}\video.ini" "video" "mode" "auto"
+        DeleteINIStr "$APPDATA\${NOME}\video.ini" "video" "modo"
       ${EndIf}
       SetErrorLevel 0
       Quit
@@ -147,7 +151,7 @@ Section
 
   ; Nenhum serviu.
   DeleteRegValue HKCU "${CHAVE}" "Video"
-  !insertmacro Aviso "O ${NOME} não conseguiu abrir o vídeo neste computador.$\r$\n$\r$\nTentamos Vulkan, DirectX 12 e o modo de compatibilidade (DirectX 11). Atualize o driver da placa de vídeo (no site da NVIDIA, da AMD ou da Intel) e abra o jogo de novo.$\r$\n$\r$\nSe continuar, mande no Discord o arquivo godot.log da pasta que vai abrir agora."
+  !insertmacro Aviso "${NOME} could not start the video on this computer.$\r$\n$\r$\nWe tried Vulkan, DirectX 12 and compatibility mode (DirectX 11). Update your graphics card driver (from the NVIDIA, AMD or Intel website) and open the game again.$\r$\n$\r$\nIf it keeps happening, send us on Discord the godot.log file from the folder that opens now."
   CreateDirectory "$APPDATA\${NOME}\logs"
   ExecShell "open" "$APPDATA\${NOME}\logs"
   SetErrorLevel 1

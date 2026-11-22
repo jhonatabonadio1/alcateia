@@ -346,6 +346,10 @@ public sealed class LobbyService : IDisposable
 				Start(c, outbox);
 				break;
 
+			case "room.restart":
+				Restart(c, outbox);
+				break;
+
 			case "chat":
 				Chat(c, m["text"]?.GetValue<string>() ?? "", outbox);
 				break;
@@ -410,6 +414,38 @@ public sealed class LobbyService : IDisposable
 		(string Address, int Port)? server = _fleet.Allocate(assignment);
 		if (server == null) throw new Failure(FailureKind.Unavailable, "sem_servidor", "Não há servidor de partida livre agora. Tente de novo em instantes.");
 
+		Launch(room, assignment, server.Value, false, outbox);
+	}
+
+	/// <summary>
+	/// O dono recomeça a partida para a sala inteira (Jhon, 21/11): a de
+	/// agora é descartada — sai da frota, e o resultado dela, quando o
+	/// servidor de partida mandar, é recusado como partida desconhecida:
+	/// ninguém ganha nem perde nada por ela — e todos recebem o ingresso de
+	/// uma nova, como no começar. Também vale na tela do resultado (a sala já
+	/// esperando): "jogar de novo" do dono leva todo mundo, pronto ou não.
+	/// </summary>
+	private void Restart(Session c, Outbox outbox)
+	{
+		Room room = InRoom(c);
+		RequireMap(room.Settings);
+		MatchAssignment assignment = room.RestartLineup(c.Account.Id, Guid.NewGuid().ToString("N"));
+
+		(string Address, int Port)? server = _fleet.Allocate(assignment);
+		if (server == null) throw new Failure(FailureKind.Unavailable, "sem_servidor", "Não há servidor de partida livre agora. Tente de novo em instantes.");
+
+		string old = room.State == Dominio.Salas.RoomState.Playing ? room.MatchKey : null;
+		if (old != null)
+		{
+			_fleet.Release(old);
+			room.EndMatch(old);
+		}
+		Launch(room, assignment, server.Value, old != null, outbox);
+	}
+
+	/// <summary>A sala entra na partida: cada um recebe o endereço e o seu ingresso.</summary>
+	private void Launch(Room room, MatchAssignment assignment, (string Address, int Port) server, bool restart, Outbox outbox)
+	{
 		room.BeginMatch(assignment.MatchKey);
 		long expires = new DateTimeOffset(_clock.UtcNow.Add(_ticketLife)).ToUnixTimeSeconds();
 
@@ -417,13 +453,14 @@ public sealed class LobbyService : IDisposable
 			outbox.To(SessionOf(m), new JsonObject
 			{
 				["t"] = "match.start",
-				["address"] = server.Value.Address,
-				["port"] = server.Value.Port,
+				["address"] = server.Address,
+				["port"] = server.Port,
 				["matchKey"] = assignment.MatchKey,
 				["accountId"] = m.Account.Id,
 				["expires"] = expires,
 				["ticket"] = _fleet.Ticket(assignment.MatchKey, m.Account.Id, expires),
-				["settings"] = room.Settings.DeepClone()
+				["settings"] = room.Settings.DeepClone(),
+				["restart"] = restart
 			});
 
 		Changed(room, outbox);

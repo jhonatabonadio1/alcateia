@@ -102,7 +102,7 @@ public partial class RankBadge : Control
 		if (string.IsNullOrEmpty(path)) return null;
 		if (Cache.TryGetValue(path, out Texture2D texture)) return texture;
 		texture = ResourceLoader.Exists(path) ? GD.Load<Texture2D>(path) : null;
-		if (texture == null) GD.PrintErr($"RankBadge: não achei {path}");
+		if (texture == null) GD.PrintErr($"RankBadge: not found: {path}");
 		Cache[path] = texture;
 		return texture;
 	}

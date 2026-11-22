@@ -33,7 +33,8 @@ public static class VideoMode
 			foreach (string line in File.ReadAllLines(FilePath))
 			{
 				string l = line.Trim();
-				if (!l.StartsWith("modo=", StringComparison.OrdinalIgnoreCase)) continue;
+				// "mode=" (e "modo=", das versões até 21/11).
+				if (!l.StartsWith("mode=", StringComparison.OrdinalIgnoreCase) && !l.StartsWith("modo=", StringComparison.OrdinalIgnoreCase)) continue;
 				int i = Array.IndexOf(Ids, l[5..].Trim().ToLowerInvariant());
 				return i < 0 ? 0 : i;
 			}
@@ -50,10 +51,10 @@ public static class VideoMode
 		try
 		{
 			Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-			File.WriteAllText(FilePath, $"[video]\r\nmodo={id}\r\n");
+			File.WriteAllText(FilePath, $"[video]\r\nmode={id}\r\n");
 		}
-		catch (IOException e) { GD.PushWarning($"Modo de vídeo: não consegui gravar {FilePath}: {e.Message}"); }
-		catch (UnauthorizedAccessException e) { GD.PushWarning($"Modo de vídeo: não consegui gravar {FilePath}: {e.Message}"); }
+		catch (IOException e) { GD.PushWarning($"Video mode: could not write {FilePath}: {e.Message}"); }
+		catch (UnauthorizedAccessException e) { GD.PushWarning($"Video mode: could not write {FilePath}: {e.Message}"); }
 	}
 
 	/// <summary>O modo em que o jogo está rodando agora, para mostrar.</summary>

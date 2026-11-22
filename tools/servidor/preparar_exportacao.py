@@ -68,7 +68,7 @@ def arquitetura(raiz, arq):
     opcoes = texto.find("binary_format/architecture=", inicio)
     fim = texto.find("\n", opcoes)
     texto = texto[:opcoes] + f'binary_format/architecture="{arq}"' + texto[fim:]
-    export = re.compile(r'(export_path="build/servidor/WolfLeagueServidor)\.[a-z0-9_]+(")')
+    export = re.compile(r'(export_path="build/servidor/WolfLeagueServer)\.[a-z0-9_]+(")')
     texto = export.sub(lambda m: f"{m.group(1)}.{arq}{m.group(2)}", texto, count=1)
     open(caminho, "w", encoding="utf-8").write(texto)
 

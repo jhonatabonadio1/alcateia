@@ -39,6 +39,17 @@ using System.Text;
 /// O que o servidor repassa de um jogador aos outros leva a conta do
 /// autor logo depois do tipo.
 ///
+/// **Golpes do lobo** (21/11): o <c>Attack</c> do lobo sai quando o golpe
+/// começa, não quando ele acerta, e leva no fim qual golpe é
+/// (<see cref="WolfMove"/> + 1) e dois números: no salto do especial, quanto
+/// do clipe ele pula e o ritmo do voo; no bote, em quanto tempo ele encosta.
+/// Antes o boneco recebia só "atacou" na hora do impacto e tocava uma
+/// garrada: o especial e o bote não apareciam, e a garrada chegava atrasada.
+///
+/// **Estado sem ordem trocada** (21/11): o estado vai sem garantia, mas em
+/// ordem (<c>UnreliableOrdered</c>): um estado velho que chega depois de um
+/// novo é jogado fora, em vez de voltar o boneco no tempo.
+///
 /// **Modo autoritativo** (decisão 0011, <c>ALCATEIA_NETCODE=autoritativo</c>
 /// no servidor de partida): o servidor move os corpos. O <c>Welcome</c>
 /// traz, depois do relógio, o modo e o número de cada corpo na escalação;
@@ -76,8 +87,10 @@ public static class NetWire
 	/// <summary>O modo da partida, no <c>Welcome</c>.</summary>
 	public const byte ModeRelay = 0, ModeAuthoritative = 1;
 
-	/// <summary>Estados por segundo que cada jogo manda.</summary>
-	public const int StateRate = 20;
+	/// <summary>Estados por segundo que cada jogo manda. Era 20: com 30 o
+	/// boneco dos outros anda menos atrasado (Jhon, 21/11: "sinto um leve
+	/// delay no que eu faço para o que o player recebe").</summary>
+	public const int StateRate = 30;
 
 	public static BinaryWriter Begin(byte type, out MemoryStream stream)
 	{
@@ -126,6 +139,21 @@ public struct NetState
 	public float Yaw, Pitch;
 	public byte Form, Slot;
 	public bool Grounded, Dead;
+	/// <summary>Correndo na parede (desde 21/11: sem isto quem via o lobo
+	/// de outra máquina na parede via ele pulando/caindo). Um bit no byte
+	/// de Grounded e Dead: jogo antigo ignora.</summary>
+	public bool WallRunning;
+
+	/// <summary>O que o boneco adivinhava e errava (21/11), mais bits no
+	/// mesmo byte: correndo de quatro (o boneco achava pela velocidade, e o
+	/// lobo andando em pé aparecia de quatro), agachado (não aparecia),
+	/// rugindo (o rugido não aparecia) e andando quieto (agachado ou
+	/// devagar: o passo não faz barulho nas outras máquinas).</summary>
+	public bool Sprinting, Crouching, Howling, Quiet;
+
+	/// <summary>Segurando a granada com o pino puxado: o boneco arma o
+	/// braço. Um byte depois do HUD (desde 21/11); jogo antigo não lê.</summary>
+	public bool GrenadeReady;
 	public float Hp, MaxHp, Shield, MaxShield;
 	public string Primary, Secondary;
 
@@ -145,7 +173,8 @@ public struct NetState
 		w.Write(Pitch);
 		w.Write(Form);
 		w.Write(Slot);
-		w.Write((byte)((Grounded ? 1 : 0) | (Dead ? 2 : 0)));
+		w.Write((byte)((Grounded ? 1 : 0) | (Dead ? 2 : 0) | (WallRunning ? 4 : 0)
+			| (Sprinting ? 8 : 0) | (Crouching ? 16 : 0) | (Howling ? 32 : 0) | (Quiet ? 64 : 0)));
 		w.Write(Hp);
 		w.Write(MaxHp);
 		w.Write(Shield);
@@ -158,6 +187,7 @@ public struct NetState
 		w.Write(Grenades);
 		w.Write(Wp);
 		w.Write(Charge);
+		w.Write((byte)(GrenadeReady ? 1 : 0));
 	}
 
 	public static NetState Read(BinaryReader r)
@@ -174,6 +204,11 @@ public struct NetState
 		byte flags = r.ReadByte();
 		s.Grounded = (flags & 1) != 0;
 		s.Dead = (flags & 2) != 0;
+		s.WallRunning = (flags & 4) != 0;
+		s.Sprinting = (flags & 8) != 0;
+		s.Crouching = (flags & 16) != 0;
+		s.Howling = (flags & 32) != 0;
+		s.Quiet = (flags & 64) != 0;
 		s.Hp = r.ReadSingle();
 		s.MaxHp = r.ReadSingle();
 		s.Shield = r.ReadSingle();
@@ -188,6 +223,7 @@ public struct NetState
 			s.Grenades = r.ReadByte();
 			s.Wp = r.ReadSingle();
 			s.Charge = r.ReadSingle();
+			if (r.BaseStream.Length - r.BaseStream.Position >= 1) s.GrenadeReady = (r.ReadByte() & 1) != 0;
 		}
 		return s;
 	}

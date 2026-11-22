@@ -52,7 +52,7 @@ public partial class MatchWorld : SubViewport
 		// arte trocada por cascas) os números têm de bater com os do jogo:
 		// se a colisão tivesse sumido junto com o desenho, apareceria aqui.
 		var (shapes, faces) = CountCollision(map);
-		GD.Print($"Mundo {MapId}: {shapes} formas de colisão, {faces} triângulos, {Spawns.Count} pontos de nascimento");
+		GD.Print($"World {MapId}: {shapes} collision shapes, {faces} triangles, {Spawns.Count} spawn points");
 	}
 
 	/// <summary>Quantas formas de colisão o mapa tem e quantos triângulos

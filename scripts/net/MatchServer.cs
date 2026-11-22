@@ -60,6 +60,16 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	public const int DefaultPort = 7777, DefaultCapacity = 4;
 	private const double HeartbeatEvery = 2, HelloTimeout = 10;
 
+	// O que o painel mostra em Segurança → Partidas: os mesmos tipos de
+	// servidor/Alcateia.Dominio/Seguranca/SecurityEvent.cs, e a gravidade.
+	private const string KindConnectionLost = "partida.conexao_caiu", KindRefused = "partida.recusado",
+		KindNoHello = "partida.sem_apresentacao", KindEmpty = "partida.vazia", KindAbandoned = "partida.abandonada",
+		KindResultFailed = "partida.resultado_falhou", KindServerError = "partida.erro_servidor", KindSlowStep = "partida.passo_lento";
+	private const int Info = 0, Warning = 1, High = 2;
+
+	// O passo da física a 60/s tem 16,7 ms: acima disto o servidor atrasa todo mundo.
+	private const double SlowAverageMs = 10, SlowWorstMs = 40;
+
 	// No Fly.io, o id da máquina: o painel mostra o mesmo nome que o "fly machine list".
 	private readonly string _id = OS.GetEnvironment("ALCATEIA_SERVER_ID") is { Length: > 0 } id ? id
 		: OS.GetEnvironment("FLY_MACHINE_ID") is { Length: > 0 } machine ? machine : Guid.NewGuid().ToString("N")[..12];
@@ -82,6 +92,18 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	// ele chegar, senão o servidor do Alcateia a daria por fechada sem
 	// resultado e recusaria o resultado depois.
 	private readonly HashSet<string> _reporting = new();
+
+	// O que deu errado aqui, para o painel: vai junto da próxima batida. A
+	// fila é pequena de propósito: com a API fora do ar por muito tempo, os
+	// mais velhos se perdem em vez de encher a memória.
+	private sealed record IncidentNote(string Kind, int Severity, string Match, long Account, string Detail);
+	private readonly List<IncidentNote> _incidents = new();
+	private const int MaxIncidents = 40, IncidentsPerBeat = 20;
+
+	// O mesmo incidente (tipo, partida, conta) só vira aviso a cada tanto:
+	// quem insiste em bater na porta não enche o painel.
+	private readonly Dictionary<string, (double At, int Skipped)> _noted = new();
+	private const double SameIncidentEvery = 15;
 
 	// Quem chegou antes de a partida chegar: o saguão avisa os jogadores
 	// e o servidor de partida ao mesmo tempo, e o jogador pode ganhar a
@@ -113,7 +135,7 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		if (string.IsNullOrEmpty(name) || name == "*") return null;
 		if (System.Net.IPAddress.TryParse(name, out _)) return name;
 		string ip = IP.ResolveHostname(name, IP.Type.Ipv4);
-		if (string.IsNullOrEmpty(ip)) GD.PrintErr($"Servidor de partida: não achei o endereço de {name} (ALCATEIA_BIND); abrindo em todos.");
+		if (string.IsNullOrEmpty(ip)) GD.PrintErr($"Match server: address of {name} not found (ALCATEIA_BIND); listening on all.");
 		return string.IsNullOrEmpty(ip) ? null : ip;
 	}
 
@@ -139,7 +161,7 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 
 		if (string.IsNullOrEmpty(_fleetKey))
 		{
-			GD.PrintErr("Servidor de partida: falta ALCATEIA_FLEET_KEY.");
+			GD.PrintErr("Match server: ALCATEIA_FLEET_KEY is missing.");
 			GetTree().Quit(1);
 			return;
 		}
@@ -161,7 +183,7 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		}
 		if (error != Error.Ok)
 		{
-			GD.PrintErr($"Servidor de partida: não consegui abrir nenhuma porta de {first} a {last}/UDP ({error}).");
+			GD.PrintErr($"Match server: could not open any port from {first} to {last}/UDP ({error}).");
 			GetTree().Quit(1);
 			return;
 		}
@@ -173,8 +195,8 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		_net.PeerDisconnected += OnGone;
 		_net.PeerPacket += OnPacket;
 
-		GD.Print($"Servidor de partida {_id} na porta {_port}/UDP, até {_capacity} partida(s)" +
-			(_authoritative ? ", autoritativo (60 passos/s)" : ", repasse") + $", falando com {Backend.Url}");
+		GD.Print($"Match server {_id} on port {_port}/UDP, up to {_capacity} match(es)" +
+			(_authoritative ? ", authoritative (60 steps/s)" : ", relay") + $", talking to {Backend.Url}");
 	}
 
 	public override void _Process(double delta)
@@ -201,22 +223,33 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 			_strangers[peer] += delta;
 			if (_strangers[peer] <= HelloTimeout) continue;
 
-			if (_early.Remove(peer)) Refuse(peer, 0, "essa partida não está aqui");
+			if (_early.Remove(peer, out var early)) Refuse(peer, early.Account, "essa partida não está aqui", early.Key);
+			else Incident(KindNoHello, Warning, "", 0, $"ligou na porta e não mostrou o ingresso em {HelloTimeout:0} s");
 			Kick(peer);
 		}
 
 		foreach (HostedMatch match in _matches.Values.ToList())
 		{
-			match.Tick(delta);
-			if (match.Finished) Close(match);
+			try
+			{
+				match.Tick(delta);
+				if (match.Finished) Close(match);
+			}
+			catch (Exception e)
+			{
+				Fault("relógio da partida", match.Key, e);
+			}
 		}
 
 		_statsTimer += delta;
 		if (_statsTimer >= 30 && _stepCount > 0)
 		{
 			StepStats = (_stepTotalMs / _stepCount, _stepWorstMs, _stepCount);
-			GD.Print($"Passo do servidor: média {StepStats.Average:0.00} ms, pior {StepStats.Worst:0.00} ms " +
-				$"({_matches.Count} partida(s), {_matches.Values.Sum(m => m.Bodies)} corpo(s))");
+			GD.Print($"Server step: average {StepStats.Average:0.00} ms, worst {StepStats.Worst:0.00} ms " +
+				$"({_matches.Count} match(es), {_matches.Values.Sum(m => m.Bodies)} body(ies))");
+			if (StepStats.Average > SlowAverageMs || StepStats.Worst > SlowWorstMs)
+				Incident(KindSlowStep, Warning, "", 0, $"passo médio {StepStats.Average:0.0} ms, pior {StepStats.Worst:0.0} ms " +
+					$"({_matches.Count} partida(s), {_matches.Values.Sum(m => m.Bodies)} corpo(s)); o orçamento é 16,7 ms");
 			_statsTimer = 0;
 			_stepTotalMs = _stepWorstMs = 0;
 			_stepCount = 0;
@@ -231,7 +264,11 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 
 		_tick++;
 		_stepWatch.Restart();
-		foreach (HostedMatch match in _matches.Values) match.PhysicsStep(_tick, delta);
+		foreach (HostedMatch match in _matches.Values)
+		{
+			try { match.PhysicsStep(_tick, delta); }
+			catch (Exception e) { Fault("passo da física", match.Key, e); }
+		}
 		double ms = _stepWatch.Elapsed.TotalMilliseconds;
 		_stepTotalMs += ms;
 		_stepWorstMs = Math.Max(_stepWorstMs, ms);
@@ -246,16 +283,26 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		var open = new JsonArray();
 		foreach (string key in _matches.Keys.Union(_reporting)) open.Add(key);
 
+		// Os incidentes vão junto. Se a batida não chegar, voltam para a fila.
+		List<IncidentNote> sent = _incidents.Take(IncidentsPerBeat).ToList();
+		_incidents.RemoveRange(0, sent.Count);
+		var events = new JsonArray();
+		foreach (IncidentNote n in sent)
+			events.Add(new JsonObject { ["kind"] = n.Kind, ["severity"] = n.Severity, ["match"] = n.Match, ["account"] = n.Account, ["detail"] = n.Detail });
+
 		Backend.Reply reply = await Backend.AsGameServer("/v1/fleet/heartbeat", new JsonObject
 		{
 			["id"] = _id, ["address"] = _address ?? "", ["port"] = _port,
-			["players"] = _matches.Values.Sum(m => m.Players), ["capacity"] = _capacity, ["matches"] = open
+			["players"] = _matches.Values.Sum(m => m.Players), ["capacity"] = _capacity, ["matches"] = open,
+			["events"] = events
 		}, _fleetKey);
 		_beating = false;
 
 		if (!reply.Ok)
 		{
-			if (reply.Status != 0) GD.PrintErr($"Servidor de partida: o servidor recusou a batida ({reply.Status} {reply.Code}).");
+			_incidents.InsertRange(0, sent);
+			if (_incidents.Count > MaxIncidents) _incidents.RemoveRange(0, _incidents.Count - MaxIncidents);
+			if (reply.Status != 0) GD.PrintErr($"Match server: the API refused the heartbeat ({reply.Status} {reply.Code}).");
 			return;
 		}
 
@@ -272,7 +319,7 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		Backend.Reply reply = await Backend.AsGameServer("/v1/fleet/leave", new JsonObject { ["id"] = _id }, _fleetKey);
 		if (reply.Ok && reply.Body?["leave"]?.GetValue<bool>() == true)
 		{
-			GD.Print($"Servidor de partida {_id}: ocioso há {_idle:0} s, a frota não precisa de mim. Desligando.");
+			GD.Print($"Match server {_id}: idle for {_idle:0} s and not needed by the fleet. Shutting down.");
 			GetTree().Quit(0);
 			return;
 		}
@@ -302,24 +349,28 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	{
 		Referee r = match.Referee;
 		JsonObject body = match.Result(_id);
-		GD.Print($"Partida {match.Key} acabou: VANGUARDA {r.Score(Referee.Blue)} x {r.Score(Referee.Orange)} SINDICATO.");
+		GD.Print($"Match {match.Key} ended: VANGUARD {r.Score(Referee.Blue)} x {r.Score(Referee.Orange)} SYNDICATE.");
+		NoteEnded(match);
 		if (match.Authoritative)
-			GD.Print($"Acertos em {match.Key}: {match.HitsAccepted} valeram; recusados: " +
-				(match.HitsRefused.Count == 0 ? "nenhum" : string.Join(", ", match.HitsRefused.Select(e => $"{HitCheck.Describe(e.Key)} {e.Value}"))) +
-				$"; suspeitos por jogador: {string.Join(", ", r.Seats.Where(s => !s.IsBot).Select(s => $"{s.Name} {s.RejectedHits}"))}.");
+			GD.Print($"Hits in {match.Key}: {match.HitsAccepted} accepted; refused: " +
+				(match.HitsRefused.Count == 0 ? "none" : string.Join(", ", match.HitsRefused.Select(e => $"{HitCheck.Describe(e.Key)} {e.Value}"))) +
+				$"; suspicious per player: {string.Join(", ", r.Seats.Where(s => !s.IsBot).Select(s => $"{s.Name} {s.RejectedHits}"))}.");
 
 		// O resultado é o que paga os jogadores: insiste um pouco.
 		_reporting.Add(match.Key);
 		try
 		{
+			string lastError = "";
 			for (int attempt = 1; attempt <= 4; attempt++)
 			{
 				Backend.Reply reply = await Backend.AsGameServer("/v1/matches", (JsonObject)body.DeepClone(), _fleetKey);
 				if (reply.Ok || reply.Status == 409) return;
 
-				GD.PrintErr($"Servidor de partida: resultado não entregue (tentativa {attempt}: {reply.Status} {reply.Error})");
+				lastError = $"{reply.Status} {reply.Error}";
+				GD.PrintErr($"Match server: result not delivered (attempt {attempt}: {lastError})");
 				await ToSignal(GetTree().CreateTimer(1.5 * attempt), SceneTreeTimer.SignalName.Timeout);
 			}
+			Incident(KindResultFailed, High, match.Key, 0, $"o resultado não chegou à API depois de 4 tentativas ({lastError})");
 		}
 		finally
 		{
@@ -335,6 +386,82 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		_matches.Remove(match.Key);
 		foreach (long peer in _matchOf.Where(e => e.Value == match).Select(e => e.Key).ToList()) _matchOf.Remove(peer);
 		_heartbeat = 0;   // avisa já que o lugar vagou
+	}
+
+	// ------------------------------------------------------------ incidentes para o painel
+
+	/// <summary>Conta um incidente para o painel (Segurança → Partidas): sai na
+	/// próxima batida. O mesmo incidente (tipo, partida, conta) só vale a cada
+	/// <see cref="SameIncidentEvery"/> s; os de permeio são contados no
+	/// próximo. Devolve se valeu.</summary>
+	private bool Incident(string kind, int severity, string matchKey = "", long account = 0, string detail = "")
+	{
+		double now = Time.GetTicksMsec() / 1000.0;
+		string id = $"{kind}|{matchKey}|{account}";
+		int skipped = 0;
+		if (_noted.TryGetValue(id, out var before))
+		{
+			if (now - before.At < SameIncidentEvery)
+			{
+				_noted[id] = (before.At, before.Skipped + 1);
+				return false;
+			}
+			skipped = before.Skipped;
+		}
+		if (_noted.Count > 500) _noted.Clear();   // quem varre a porta com mil nomes não enche a memória
+		_noted[id] = (now, 0);
+
+		if (skipped > 0) detail += $" (+{skipped} iguais nos {SameIncidentEvery:0} s anteriores)";
+		_incidents.Add(new IncidentNote(kind, severity, matchKey ?? "", account, detail ?? ""));
+		if (_incidents.Count > MaxIncidents) _incidents.RemoveRange(0, _incidents.Count - MaxIncidents);
+		return true;
+	}
+
+	/// <summary>Uma exceção no meio da partida: vai para o painel e para o log,
+	/// e as outras partidas seguem.</summary>
+	private void Fault(string at, string matchKey, Exception e)
+	{
+		if (Incident(KindServerError, High, matchKey, 0, $"{at}: {e.GetType().Name}: {e.Message}"))
+			GD.PrintErr($"Match server: error in {at} ({matchKey}): {e}");
+	}
+
+	/// <summary>Um jogador saiu com a partida em curso. O servidor não sabe se
+	/// foi ele que fechou o jogo ou a ligação que caiu: os dois chegam aqui iguais.</summary>
+	private void NoteGone(HostedMatch match, long account)
+	{
+		RefPhase phase = match.Referee.Phase;
+		if (phase == RefPhase.Ended) return;   // saiu depois do fim: o normal
+
+		string phaseText = phase switch
+		{
+			RefPhase.Waiting => "esperando a partida começar",
+			RefPhase.Countdown => "na contagem para começar",
+			_ => $"em jogo, faltando {match.Referee.TimeLeft:0} s"
+		};
+		Incident(KindConnectionLost, phase == RefPhase.Live ? Warning : Info, match.Key, account,
+			$"saiu ou a ligação caiu {phaseText}; sobram {Math.Max(match.Referee.ConnectedCount - 1, 0)} jogador(es) ligado(s)");
+	}
+
+	/// <summary>A partida acabou: se foi por falta de gente, é incidente.</summary>
+	private void NoteEnded(HostedMatch match)
+	{
+		Referee r = match.Referee;
+		List<Referee.Seat> humans = r.Seats.Where(s => !s.IsBot).ToList();
+		long first = humans.Count > 0 ? humans[0].Id : 0;
+		string score = $"{r.Score(Referee.Blue)} x {r.Score(Referee.Orange)}";
+
+		if (!humans.Any(s => s.EverConnected))
+		{
+			Incident(KindEmpty, Warning, match.Key, first,
+				$"ninguém entrou em {r.EmptyTimeout:0} s e a partida fechou vazia ({score}); escalados: {string.Join(",", humans.Select(s => s.Id))}");
+			return;
+		}
+
+		bool byTime = r.TimeLeft <= 0;
+		bool byScore = r.Score(Referee.Blue) >= r.ScoreToWin || r.Score(Referee.Orange) >= r.ScoreToWin;
+		if (!byTime && !byScore)
+			Incident(KindAbandoned, Warning, match.Key, first,
+				$"acabou porque ficou {r.EmptyTimeout:0} s sem ninguém ({score}, faltavam {r.TimeLeft:0} s)");
 	}
 
 	// ------------------------------------------------------------ os jogadores
@@ -378,12 +505,17 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 			return;
 		}
 
+		string note = "";
 		HostedMatch match = refusal == null ? _matches[matchKey] : null;
-		if (match != null && !match.Admit(peer, account)) refusal = "você não está nesta partida";
+		if (match != null && !match.Admit(peer, account))
+		{
+			refusal = "você não está nesta partida";
+			note = match.Referee.Phase == RefPhase.Ended ? "a partida já tinha acabado" : "a conta não está na escalação";
+		}
 
 		if (refusal != null)
 		{
-			Refuse(peer, account, refusal);
+			Refuse(peer, account, refusal, matchKey, note);
 			return;
 		}
 
@@ -397,20 +529,27 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	{
 		_strangers.Remove(peer);
 		_early.Remove(peer);
-		if (_matchOf.Remove(peer, out HostedMatch match)) match.Drop(peer);
+		if (_matchOf.Remove(peer, out HostedMatch match))
+		{
+			NoteGone(match, match.AccountOf(peer));
+			match.Drop(peer);
+		}
 	}
 
-	private void Refuse(long peer, long account, string why)
+	private void Refuse(long peer, long account, string why, string matchKey = "", string note = "")
 	{
 		BinaryWriter w = NetWire.Begin(NetWire.Refused, out MemoryStream stream);
 		w.Write(why);
 		Send(peer, stream.ToArray(), true);
-		GD.Print($"Recusado na porta: {why} (conta {account}).");
+		GD.Print($"Refused at the door: {why} (account {account}).");
+		Incident(KindRefused, Warning, matchKey, account, note == "" ? why : $"{why}: {note}");
 	}
 
+	// Sem garantia, mas em ordem: um estado velho que chega depois de um novo
+	// é jogado fora pela ligação, em vez de voltar o boneco (21/11).
 	public void Send(long peer, byte[] packet, bool reliable) =>
 		_net.SendBytes(packet, (int)peer,
-			reliable ? MultiplayerPeer.TransferModeEnum.Reliable : MultiplayerPeer.TransferModeEnum.Unreliable);
+			reliable ? MultiplayerPeer.TransferModeEnum.Reliable : MultiplayerPeer.TransferModeEnum.UnreliableOrdered);
 
 	public void Kick(long peer)
 	{

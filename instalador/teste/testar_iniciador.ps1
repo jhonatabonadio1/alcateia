@@ -13,13 +13,13 @@ if (-not $makensis) {
 
 $raiz = Join-Path ([IO.Path]::GetTempPath()) "wolfleague-iniciador"
 Remove-Item -Recurse -Force $raiz -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force (Join-Path $raiz "jogo") | Out-Null
+New-Item -ItemType Directory -Force (Join-Path $raiz "game") | Out-Null
 $iniciador = Join-Path $raiz "WolfLeague.exe"
-$chamadas = Join-Path $raiz "jogo\chamadas.txt"
+$chamadas = Join-Path $raiz "game\chamadas.txt"
 
 & $makensis -V2 "-DSAIDA=$iniciador" (Resolve-Path "instalador/iniciador.nsi").Path
 if ($LASTEXITCODE) { throw "makensis: iniciador" }
-& $makensis -V2 "-DSAIDA=$(Join-Path $raiz 'jogo\WolfLeague.exe')" (Resolve-Path "instalador/teste/jogo_falso.nsi").Path
+& $makensis -V2 "-DSAIDA=$(Join-Path $raiz 'game\WolfLeague.exe')" (Resolve-Path "instalador/teste/jogo_falso.nsi").Path
 if ($LASTEXITCODE) { throw "makensis: jogo de mentira" }
 
 $ini = Join-Path $env:APPDATA "WolfLeague\video.ini"
@@ -62,10 +62,10 @@ Confere "modo pedido na mão: só repassa" (Rodar "vulkan d3d12" "--rendering-dr
 Confere "os outros argumentos vão junto" (Rodar "" "--verbose") "$a --verbose"
 
 New-Item -ItemType Directory -Force (Split-Path $ini) | Out-Null
-Set-Content $ini "[video]`r`nmodo=d3d12"
+Set-Content $ini "[video]`r`nmode=d3d12"
 Confere "escolhido nas Opções falha: cai no que funcionou" (Rodar "d3d12") "$d|$a"
-Confere "  e as Opções voltam para Automático" ((Get-Content $ini) -join " ") "[video] modo=auto"
-Set-Content $ini "[video]`r`nmodo=vulkan"
+Confere "  e as Opções voltam para Automático" ((Get-Content $ini) -join " ") "[video] mode=auto"
+Set-Content $ini "[video]`r`nmode=vulkan"
 Confere "escolhido nas Opções funciona" (Rodar "") $v
 
 # Nada funciona: tenta os quatro, esquece o guardado e para na mensagem

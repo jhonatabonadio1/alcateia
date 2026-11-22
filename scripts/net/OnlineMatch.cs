@@ -43,6 +43,10 @@ public static class OnlineMatch
 	/// a partida espera e troca de cena.</summary>
 	public static void Launch(SceneTree tree, JsonObject start, JsonObject room)
 	{
+		// O mestre reiniciou com a partida em curso: a de agora larga o
+		// servidor dela já e não encerra esta (o carregamento leva para a nova).
+		NetMatch.Current?.Supersede();
+
 		Address = start["address"].GetValue<string>();
 		Port = start["port"].GetValue<int>();
 		MatchKey = start["matchKey"].GetValue<string>();

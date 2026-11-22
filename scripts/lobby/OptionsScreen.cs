@@ -4,7 +4,7 @@ using System;
 /// <summary>
 /// Opções: volume por canal, sensibilidade do mouse, a mira, a tabela
 /// de controles. Tudo aplica na hora e salva em
-/// user://opcoes.json.
+/// user://settings.json.
 /// </summary>
 public partial class OptionsScreen : LobbyScreen
 {
@@ -92,6 +92,40 @@ public partial class OptionsScreen : LobbyScreen
 		})));
 		column.AddChild(quality);
 
+		column.AddChild(Labeled("Resolução 3D", UiKit.Picker(Settings.RenderScaleNames, Settings.RenderScaleIndex(), i =>
+		{
+			Settings.Values.RenderScale = Settings.RenderScaleValues[i];
+			Settings.Save();
+			Settings.ApplyVideo(((SceneTree)Engine.GetMainLoop()).Root);
+		})));
+		column.AddChild(UiKit.Paragraph("Quanto da tela o jogo desenha em 3D. Menos é mais rápido; o menu e a mira ficam nítidos. A luz não muda. É o que mais ajuda em placa fraca.", "Caption"));
+
+		column.AddChild(UiKit.Check("Resolução dinâmica", Settings.Values.DynamicResolution, on =>
+		{
+			Settings.Values.DynamicResolution = on;
+			Settings.Save();
+			Settings.ApplyVideo(((SceneTree)Engine.GetMainLoop()).Root);
+		}));
+		column.AddChild(UiKit.Paragraph("Quando a placa não segura o limite de FPS, o 3D baixa a resolução sozinho (até 50%) e volta quando sobra. A resolução 3D acima é o máximo.", "Caption"));
+
+		column.AddChild(Labeled("Limite de FPS", UiKit.Picker(Settings.FpsNames(), Settings.FpsIndex(), i =>
+		{
+			Settings.Values.MaxFps = Settings.FpsValues[i];
+			Settings.Save();
+			Settings.ApplyFrameRate();
+		})));
+		column.AddChild(UiKit.Paragraph("O máximo de quadros por segundo. O do monitor acompanha os Hz dele (60, 75, 144…). Para passar dos Hz, desligue o V-Sync.", "Caption"));
+
+		Label vsync = UiKit.Paragraph(Settings.VSyncNotes[Math.Clamp(Settings.Values.VSync, 0, 2)], "Caption");
+		column.AddChild(Labeled("V-Sync", UiKit.Picker(Settings.VSyncNames, Settings.Values.VSync, i =>
+		{
+			Settings.Values.VSync = i;
+			Settings.Save();
+			Settings.ApplyFrameRate();
+			vsync.Text = Settings.VSyncNotes[i];
+		})));
+		column.AddChild(vsync);
+
 		// Windows: o modo de vídeo que o iniciador usa (VideoMode). Para quem
 		// abriu, mas com defeito na imagem; vale ao abrir o jogo de novo.
 		if (VideoMode.Available)
@@ -127,6 +161,11 @@ public partial class OptionsScreen : LobbyScreen
 		column.AddChild(UiKit.Check("Sangue ao acertar", Settings.Values.Blood, on =>
 		{
 			Settings.Values.Blood = on;
+			Settings.Save();
+		}));
+		column.AddChild(UiKit.Check("Mostrar desempenho (FPS e ping)", Settings.Values.ShowPerf, on =>
+		{
+			Settings.Values.ShowPerf = on;
 			Settings.Save();
 		}));
 		return panel;

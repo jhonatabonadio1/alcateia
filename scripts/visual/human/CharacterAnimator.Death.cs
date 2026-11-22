@@ -63,7 +63,7 @@ public partial class CharacterAnimator
 		_corpseTimer = 0;
 
 		if (_hasDeath) _playback?.Travel("Death");
-		else if (Debug) GD.Print("CharacterAnimator: sem clipe de morte.");
+		else if (Debug) GD.Print("CharacterAnimator: no death clip.");
 	}
 
 	/// <summary>

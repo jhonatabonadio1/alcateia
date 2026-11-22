@@ -131,12 +131,15 @@ public sealed class HostedMatch
 		var match = new HostedMatch(assignment["matchKey"].GetValue<string>(), referee, link,
 			authoritative ? new MatchWorld(map) : null);
 		int bots = seats.Count(s => s.Item4 != 0);
-		GD.Print($"Partida {match.Key}: {seats.Count - bots} jogador(es) e {bots} bot(s), mapa {map}, até {referee.ScoreToWin} pontos" +
-			(authoritative ? ", autoritativa." : "."));
+		GD.Print($"Match {match.Key}: {seats.Count - bots} player(s) and {bots} bot(s), map {map}, first to {referee.ScoreToWin} points" +
+			(authoritative ? ", authoritative." : "."));
 		return match;
 	}
 
 	public bool Has(long peer) => _accountOf.ContainsKey(peer);
+
+	/// <summary>A conta que está nesta ligação (0 se não é de ninguém aqui).</summary>
+	public long AccountOf(long peer) => _accountOf.TryGetValue(peer, out long account) ? account : 0;
 
 	/// <summary>Passa o tempo: o juiz, o relógio para os jogadores e o fim.</summary>
 	public void Tick(double delta)
@@ -192,7 +195,7 @@ public sealed class HostedMatch
 		_peerOf[account] = peer;
 		if (Authoritative && !_bodies.ContainsKey(account)) AddBody(account);
 		_link.Send(peer, WelcomePacket(), true);
-		GD.Print($"Entrou em {Key}: {Referee.Find(account).Name} ({Referee.ConnectedCount} de {Referee.Seats.Count(s => !s.IsBot)}).");
+		GD.Print($"Joined {Key}: {Referee.Find(account).Name} ({Referee.ConnectedCount} of {Referee.Seats.Count(s => !s.IsBot)}).");
 		return true;
 	}
 
@@ -646,8 +649,8 @@ public sealed class HostedMatch
 
 		shooter.RejectedHits++;
 		if (shooter.RejectedHits <= 5 || shooter.RejectedHits % 25 == 0)
-			GD.Print($"Acerto recusado em {Key}: {shooter.Name} em {Referee.Find(hit.Target)?.Name} ({hit.WeaponId}): " +
-				$"{HitCheck.Describe(verdict)} ({shooter.RejectedHits} até agora).");
+			GD.Print($"Hit refused in {Key}: {shooter.Name} on {Referee.Find(hit.Target)?.Name} ({hit.WeaponId}): " +
+				$"{HitCheck.Describe(verdict)} ({shooter.RejectedHits} so far).");
 	}
 
 	/// <summary>O acerto valeu num jogador: o dano é aplicado aqui, a vítima

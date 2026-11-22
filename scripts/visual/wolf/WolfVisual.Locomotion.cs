@@ -162,7 +162,7 @@ public partial class WolfVisual
 		float speed = flat.Length();
 		_speed = speed;
 
-		bool onWall = _player != null && _player.IsWallRunning;
+		bool onWall = OnWallNow;
 		// Carregando o salto o corpo vira para onde anda e, parando, fica
 		// como está (voltar para a mira arrastava os pés); o salto sai para a
 		// câmera, e ao soltar o corpo vira para ela.
@@ -179,7 +179,7 @@ public partial class WolfVisual
 		// Agachado ou de quatro, só há clipe para a frente: o corpo vira
 		// para onde anda. Em pé, com os quatro andares, fica de frente para
 		// a mira e o passo escolhe a direção.
-		bool crouching = ((_player?.IsCrouching ?? false) || _weapon.IsChargingPounce) && !onWall;
+		bool crouching = ((_player?.IsCrouching ?? _bot?.RemoteCrouching ?? false) || _weapon.IsChargingPounce) && !onWall;
 		// Batendo na corrida de quatro, o corpo se ergue para o golpe e volta
 		// a correr de quatro depois (18/11, Jhon: "não posso bater com o lobo
 		// enquanto estou correndo com o W W"). O golpe saía e feria, mas a

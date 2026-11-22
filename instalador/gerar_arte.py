@@ -113,11 +113,11 @@ def capa(eve, inst, saida, fonte, fonte_texto):
     d.rectangle((58, 150, 58 + 56, 154), fill=OURO)
     y = marca(base, 56, 160, 92, fonte)
     ft = ImageFont.truetype(fonte_texto, 26)
-    d.text((58, y + 16), "FPS online  ·  Humanos × Lobos", font=ft, fill=TEXTO)
+    d.text((58, y + 16), "Online FPS  ·  Humans × Wolves", font=ft, fill=TEXTO)
     # etiqueta do teste
     fa = ImageFont.truetype(fonte, 24)
     d.rectangle((58, h - 74, 58 + 150, h - 34), fill=OURO)
-    d.text((58 + 75, h - 54), "TESTE ALFA", font=fa, fill=(26, 18, 6), anchor="mm")
+    d.text((58 + 75, h - 54), "ALPHA TEST", font=fa, fill=(26, 18, 6), anchor="mm")
     base.convert("RGB").save(saida, "PNG", optimize=True)
 
 
