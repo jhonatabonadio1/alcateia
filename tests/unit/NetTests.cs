@@ -92,7 +92,7 @@ public static class NetTests
 		Check.Equal(3u, b.LastProcessed, "último simulado");
 	}
 
-	[Test("fila de comandos: faltou, repete o último segurado; buraco que não fecha é pulado")]
+	[Test("fila de comandos: faltou, o corpo espera sem dar passo; o que se perdeu sai com o último segurado")]
 	public static void CommandBufferGaps()
 	{
 		var b = new CommandBuffer();
@@ -101,20 +101,29 @@ public static class NetTests
 		b.Next(out _, out _);
 		b.Next(out _, out _);
 
-		Check.True(b.Next(out InputCommand c, out bool rep) && rep && c.Has(InputButtons.Forward), "faltou: repete segurando");
-		Check.Equal(2u, b.LastProcessed, "repetir não avança o número");
+		// Um passo a mais aqui (repetir o último) deixava o corpo do servidor
+		// um passo à frente do jogo a cada pacote atrasado.
+		Check.False(b.Next(out _, out _), "faltou: espera, sem passo");
+		Check.Equal(2u, b.LastProcessed, "esperar não avança o número");
+		Check.Equal(1, b.Starved, "conta a espera");
 
-		b.Push(Cmd(3));
-		Check.True(b.Next(out c, out rep) && c.Seq == 3 && !rep, "o que faltou chegou: vale");
+		b.Push(Cmd(3, InputButtons.Forward));
+		Check.True(b.Next(out InputCommand c, out bool rep) && c.Seq == 3 && !rep, "o que faltou chegou: vale");
 
-		// 4 nunca chega; 5 e 6 chegam.
-		b.Push(Cmd(5));
+		// 4 e 5 nunca chegam; 6 e 7 chegam.
 		b.Push(Cmd(6));
+		b.Push(Cmd(7, InputButtons.Jump | InputButtons.Forward));
 		int waits = 0;
-		while (b.Next(out c, out rep) && rep) waits++;
-		Check.Equal(5u, c.Seq, "depois de esperar, pula o buraco");
-		Check.Equal(CommandBuffer.GapPatience, waits, "espera um pouco antes de pular");
-		Check.Equal(1, b.Skipped, "conta o pulado");
+		while (!b.Next(out c, out rep)) waits++;
+		Check.Equal(CommandBuffer.GapPatience, waits, "espera um pouco antes de dar o buraco por perdido");
+		Check.True(rep && c.Seq == 4 && c.Has(InputButtons.Forward) && !c.Has(InputButtons.Jump), "o perdido sai com o último segurado, no número dele");
+		Check.True(b.Next(out c, out rep) && rep && c.Seq == 5, "o resto do buraco sai junto, sem esperar de novo");
+		Check.True(b.Next(out c, out rep) && !rep && c.Seq == 6, "e segue do próximo que chegou");
+		Check.Equal(2, b.Skipped, "conta os perdidos");
+
+		b.Push(Cmd(4));
+		b.Push(Cmd(5));
+		Check.True(b.Next(out c, out _) && c.Seq == 7, "o perdido que chega tarde não vale mais (o passo dele já foi dado)");
 	}
 
 	[Test("fila de comandos: funda demais, consome dois por passo até voltar")]

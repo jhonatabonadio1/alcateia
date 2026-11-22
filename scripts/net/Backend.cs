@@ -37,7 +37,7 @@ public static class Backend
 	public static string DefaultUrl => OS.HasFeature("editor")
 		? LocalUrl
 		: ProjectSettings.GetSetting("wolfleague/rede/servidor", LocalUrl).AsString().TrimEnd('/');
-	private const string FilePath = UserFiles.Online;
+	private static string FilePath => UserFiles.OfAccount(UserFiles.Online);
 
 	/// <summary>A resposta de uma chamada: o código HTTP (0 se o
 	/// servidor nem respondeu) e o corpo.</summary>

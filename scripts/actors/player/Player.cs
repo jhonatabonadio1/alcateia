@@ -183,6 +183,9 @@ public partial class Player : CharacterBody3D
 
 		SetProcessInput(false);
 		SetPhysicsProcess(false);
+		// Morto, este corpo não dá passo (ServerBody não o move): a colisão
+		// sai na morte, não ao assentar (Corpse.Drop).
+		_health.Died += _ => _corpse.Drop();
 		_health.Respawned += () =>
 		{
 			_corpse.Revive();

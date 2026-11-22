@@ -310,6 +310,15 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   distribuir.
 - **Perfil, inventário e moedas no servidor** (hoje ficam no arquivo do
   jogador — dá para editar à mão).
+- **Uma instância só do jogo por máquina** (anotado em 22/11, para
+  definir depois). Hoje dá para abrir quantos jogos quiser (`open -n` no
+  Mac, o .exe de novo no Windows), e o `-- --perfil=b` (22/11) existe
+  justamente para testar o multijogador com duas janelas, cada uma com a
+  sua conta. Para os jogadores, a ideia é travar em uma: o segundo jogo
+  avisa que já há um aberto (e traz o primeiro para a frente) e fecha.
+  Decidir: se o `--perfil=` (ou o editor) continua liberando mais de uma
+  para teste, e como travar (arquivo trancado na pasta do jogador, ou
+  mutex com nome no Windows e trava de arquivo no Mac).
 
 ### Alcance: idioma e acessibilidade (pedido em 17/11)
 

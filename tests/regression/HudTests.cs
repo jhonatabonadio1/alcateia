@@ -80,6 +80,12 @@ public sealed class CrosshairOptionsTest : RegressionTest
 			options?.EmitSignal(BaseButton.SignalName.Pressed);
 			await b.Frames(3);
 
+			// As opções em abas (22/11): a mira é a aba Mira.
+			Button tab = Find<Button>(menu, x => x.Text == Loc.Upper("Mira") && x.IsVisibleInTree());
+			b.Check(tab != null, "as Opções da partida têm a aba Mira");
+			tab?.EmitSignal(BaseButton.SignalName.Pressed);
+			await b.Frames(3);
+
 			b.Check(Find<Crosshair>(menu, x => x.IsVisibleInTree()) != null, "as Opções da partida mostram a prévia da mira");
 
 			// -- --fotos=pasta: guarda a tela das Opções da partida.

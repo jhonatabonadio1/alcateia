@@ -211,19 +211,11 @@ public partial class GameMenu : CanvasLayer
 	private void Options()
 	{
 		using var style = UiTokens.MenuScope();
-		// Áudio e mouse de um lado, a mira do outro: de pé, os três não
-		// cabem numa tela de 1080.
-		HBoxContainer columns = UiKit.Row(UiTokens.S3);
-		VBoxContainer left = UiKit.Column(UiTokens.S3);
-		left.CustomMinimumSize = new Vector2(440, 0);
-		left.AddChild(OptionsScreen.AudioPanel());
-		left.AddChild(OptionsScreen.MousePanel());
-		left.AddChild(OptionsScreen.VideoPanel());
-		columns.AddChild(left);
-		Control crosshair = OptionsScreen.CrosshairPanel();
-		crosshair.CustomMinimumSize = new Vector2(520, 0);
-		columns.AddChild(crosshair);
-		ShowSub("Opções", columns);
+		// As mesmas abas da tela de opções (no jeito do Overwatch, 22/11),
+		// num tamanho que cabe numa tela de 720 a 1080: a lista rola.
+		Control view = OptionsScreen.View();
+		view.CustomMinimumSize = new Vector2(1180, 600);
+		ShowSub("Opções", view);
 	}
 
 	private void Controls()

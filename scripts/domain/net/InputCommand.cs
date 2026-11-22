@@ -53,7 +53,8 @@ public struct InputCommand
 		Dead = 1,
 		HasSpawn = 2,
 		HasSlot = 4,
-		Frozen = 8
+		Frozen = 8,
+		OnWall = 16
 	}
 
 	public uint Seq;
@@ -80,6 +81,14 @@ public struct InputCommand
 	/// menu aberto): o servidor segura o dele também.</summary>
 	public bool Frozen;
 
+	/// <summary>O lobo do jogo estava correndo na parede neste passo. Se o
+	/// do servidor saiu dela sozinho (o que sobra de diferença entre os
+	/// dois: uma quina tomada um passo antes, o corpo de outro jogador no
+	/// caminho), ele volta (<see cref="Player.ResumeWall"/>), dentro das
+	/// mesmas regras do corpo (no ar, segurando W ou agarrado, com a parede
+	/// ao alcance). Servidor antigo ignora o bit.</summary>
+	public bool OnWall;
+
 	/// <summary>Onde nasceu nesta vida: vai nos primeiros comandos de cada
 	/// vida, até o servidor confirmar.</summary>
 	public bool HasSpawn;
@@ -94,6 +103,7 @@ public struct InputCommand
 		if (HasSpawn) flags |= Flags.HasSpawn;
 		if (HasSlotRequest) flags |= Flags.HasSlot;
 		if (Frozen) flags |= Flags.Frozen;
+		if (OnWall) flags |= Flags.OnWall;
 
 		w.U32(Seq);
 		w.U16((ushort)Buttons);
@@ -128,6 +138,7 @@ public struct InputCommand
 		c.Dead = (flags & Flags.Dead) != 0;
 		c.HasSlotRequest = (flags & Flags.HasSlot) != 0;
 		c.Frozen = (flags & Flags.Frozen) != 0;
+		c.OnWall = (flags & Flags.OnWall) != 0;
 		c.HasSpawn = (flags & Flags.HasSpawn) != 0;
 		if (c.HasSpawn) c.Spawn = r.PositionCm();
 		return c;

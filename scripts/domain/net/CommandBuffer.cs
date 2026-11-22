@@ -4,17 +4,24 @@
 /// Os comandos chegam fora de ordem, repetidos (cada pacote leva os
 /// últimos quatro) e às vezes não chegam. O servidor consome um por
 /// passo, na ordem: é o que mantém o corpo dele andando no mesmo ritmo
-/// que o do jogo.
+/// que o do jogo — e dando os mesmos passos que o jogo deu, nem um a mais
+/// nem um a menos. É por isso que os dois chegam ao mesmo lugar.
 ///
 /// - Começa com <see cref="StartDepth"/> comandos guardados: a folga que
 ///   absorve o pacote que atrasa um pouco.
-/// - Faltou o comando do passo: repete o último, segurando o que estava
-///   segurado (sem repetir pulo nem tiro) — <see cref="Starved"/> conta.
-///   Se o que faltou chegar depois, vale (o servidor fica um passo atrás).
-/// - Um buraco com comandos depois dele, e já esperou demais: pula o
-///   buraco (<see cref="Skipped"/>).
-/// - Fila funda demais (o jogo andou mais rápido): o servidor consome dois
-///   no mesmo passo até voltar (<see cref="HighWater"/>).
+/// - Faltou o comando do passo: o corpo espera por ele, sem dar passo
+///   (<see cref="Starved"/> conta), e o servidor fica um passo atrás.
+///   Antes repetia o último aqui — um passo que o jogo não deu: a cada
+///   pacote atrasado o corpo do servidor ia um passo à frente, depois o
+///   buraco pulado o deixava um atrás, e o jogo era puxado para a frente e
+///   para trás (Jhon, 22/11: o servidor "não deixava andar para frente").
+/// - Um buraco com comandos depois dele, e já esperou demais: o que falta
+///   se perdeu em todas as cópias (ou chega tarde demais). Cada passo dele
+///   é dado com o último segurado, sem repetir pulo nem tiro
+///   (<see cref="Skipped"/>): o jogo deu aquele passo, o servidor também,
+///   e com as mesmas teclas seguras os dois ficam no mesmo lugar.
+/// - Fila funda demais (o jogo andou mais rápido, ou o servidor esperou):
+///   o servidor consome dois no mesmo passo até voltar (<see cref="HighWater"/>).
 /// </summary>
 public sealed class CommandBuffer
 {
@@ -33,13 +40,20 @@ public sealed class CommandBuffer
 	private bool _hasLast;
 	private int _waited;
 
+	/// <summary>Até que número o buraco foi dado por perdido (cada passo
+	/// dele sai com o último segurado, sem esperar de novo).</summary>
+	private uint _lostUntil;
+
 	/// <summary>O último comando simulado (o servidor conta isto de volta
 	/// ao jogo, que compara onde achou que estava).</summary>
 	public uint LastProcessed { get; private set; }
 
 	public bool Started { get; private set; }
 
+	/// <summary>Passos em que o corpo esperou o comando que faltava.</summary>
 	public int Starved { get; private set; }
+
+	/// <summary>Comandos que não chegaram a tempo e foram dados com o último segurado.</summary>
 	public int Skipped { get; private set; }
 	public int Received { get; private set; }
 
@@ -75,8 +89,10 @@ public sealed class CommandBuffer
 		}
 	}
 
-	/// <summary>O próximo comando a simular. Falso antes de começar.
-	/// <paramref name="repeated"/>: não chegou, é o último segurado.</summary>
+	/// <summary>O próximo comando a simular. Falso: neste passo o corpo
+	/// espera (antes de começar, ou o comando do passo ainda não chegou).
+	/// <paramref name="repeated"/>: o comando se perdeu, este é o último
+	/// segurado no lugar dele.</summary>
 	public bool Next(out InputCommand command, out bool repeated)
 	{
 		command = default;
@@ -87,23 +103,29 @@ public sealed class CommandBuffer
 		if (Take(want, out command))
 			return true;
 
-		// Buraco: espera um pouco (repetindo o último); depois pula para o
-		// próximo que chegou.
-		if (_highest > want && ++_waited > GapPatience)
+		// Buraco com comandos depois dele: espera um pouco (o que falta
+		// costuma vir no pacote seguinte); passou disso, dá por perdido até
+		// o próximo que chegou.
+		if (want > _lostUntil && _highest > want && ++_waited > GapPatience)
 		{
 			uint next = want + 1;
 			while (next <= _highest && !Has(next)) next++;
-			Skipped += (int)(next - want);
-			LastProcessed = next - 1;
-			_waited = 0;
-			if (Take(next, out command)) return true;
+			_lostUntil = next - 1;
 		}
 
-		if (!_hasLast) return false;
-		command = _last.Held();
-		repeated = true;
+		if (want <= _lostUntil && _hasLast)
+		{
+			command = _last.Held();
+			command.Seq = want;
+			LastProcessed = want;
+			_waited = 0;
+			repeated = true;
+			Skipped++;
+			return true;
+		}
+
 		Starved++;
-		return true;
+		return false;
 	}
 
 	private bool Take(uint seq, out InputCommand command)
@@ -150,5 +172,6 @@ public sealed class CommandBuffer
 		Started = false;
 		_hasLast = false;
 		_waited = 0;
+		_lostUntil = 0;
 	}
 }

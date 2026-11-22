@@ -360,7 +360,8 @@ public partial class Player
 	/// Partida autoritativa: o servidor confirmou um passo com o corpo na
 	/// parede em que este jogo estava fora dela (Jhon, 21/11: online o lobo
 	/// "corria sem animação, em pé, mas andando na parede"). Com a rede
-	/// oscilando, o servidor às vezes dá um passo a mais ou a menos; a
+	/// oscilando, o servidor às vezes dava um passo a mais ou a menos (a
+	/// fila de comandos, até 22/11 — veja CommandBuffer); a
 	/// correção acerta só a posição, e um puxão de centímetros bastava
 	/// para este jogo soltar a parede. Solto, ele não regrudava — a regra
 	/// da mesma parede e a recarga são para o jogador, não para a correção
@@ -371,7 +372,19 @@ public partial class Player
 	/// O contrário (o jogo na parede e o servidor não) não solta aqui: um
 	/// passo de diferença no grudar viraria soltar e regrudar.
 	/// </summary>
-	public bool ResumeWallFromServer()
+	public bool ResumeWallFromServer() => ResumeWall("the server is on the wall: the client goes back to it");
+
+	/// <summary>
+	/// O outro lado diz que o corpo está na parede e este não está: volta
+	/// para ela, sem a regra da mesma parede nem a recarga (essas são para o
+	/// jogador, não para acertar os dois lados), mas com as regras do corpo
+	/// — no ar, lobo, segurando W ou agarrado, a parede ao alcance. O jogo
+	/// usa quando o servidor confirma a parede; o servidor, quando o jogo
+	/// conta que está nela (<see cref="InputCommand.OnWall"/>; Jhon, 22/11:
+	/// um tropeço do servidor tirava o corpo dele da parede e ele não
+	/// voltava, e a correção arrastava o lobo de pé pela parede).
+	/// </summary>
+	public bool ResumeWall(string why)
 	{
 		if (_onWall || !_form.IsWolf || IsOnFloor() || IsStunned || _moves.Controls) return false;
 		if (!_intent.Forward && !_intent.AttackHeld) return false;
@@ -379,7 +392,7 @@ public partial class Player
 
 		_wallCooldown = 0;
 		if (!CommitGrab(normal)) return false;
-		WallLog("the server is on the wall: the client goes back to it");
+		WallLog(why);
 		return true;
 	}
 

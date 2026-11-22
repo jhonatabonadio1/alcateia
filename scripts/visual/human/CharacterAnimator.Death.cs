@@ -49,6 +49,10 @@ public partial class CharacterAnimator
 	private double _deathLength;
 	private readonly List<BaseMaterial3D> _fadeMaterials = new();
 
+	/// <summary>Cada superfície que recebeu a cópia transparente, e o que
+	/// ela tinha antes: ao renascer, volta exatamente aquilo.</summary>
+	private readonly List<(MeshInstance3D Mesh, int Surface, Material Before)> _fadeSurfaces = new();
+
 	/// <summary>A força do brilho de cada material antes de desbotar: o
 	/// brilho (as faixas acesas da roupa da Ely) apaga junto com o corpo.
 	/// Antes ficava aceso no corpo transparente e parecia um objeto deixado
@@ -115,6 +119,11 @@ public partial class CharacterAnimator
 	/// <summary>
 	/// Prepara os materiais para receber opacidade.
 	///
+	/// A cópia desenha a profundidade antes da cor (<c>AlphaDepthPrePass</c>):
+	/// com transparência comum o Godot não ordena os pedaços de um mesmo
+	/// corpo, e o que fica por dentro (os olhos, os dentes, o cabelo de
+	/// baixo, o forro das luvas) aparecia por cima do rosto e da mão.
+	///
 	/// Duplicar é obrigatório: o material vem da importação e é
 	/// compartilhado por todos os bots da cena. Sem a cópia, matar um
 	/// faz os outros desbotarem junto — e esse é o tipo de defeito que
@@ -135,8 +144,9 @@ public partial class CharacterAnimator
 						continue;
 
 					var copy = (BaseMaterial3D)source.Duplicate();
-					copy.Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
+					copy.Transparency = BaseMaterial3D.TransparencyEnum.AlphaDepthPrePass;
 
+					_fadeSurfaces.Add((mesh, surface, mesh.GetSurfaceOverrideMaterial(surface)));
 					mesh.SetSurfaceOverrideMaterial(surface, copy);
 					_fadeMaterials.Add(copy);
 					_fadeEmission.Add(copy.EmissionEnergyMultiplier);
@@ -147,6 +157,20 @@ public partial class CharacterAnimator
 		}
 	}
 
+	/// <summary>Cada superfície volta ao material que tinha antes da morte.</summary>
+	private void RestoreMaterials()
+	{
+		foreach (var (mesh, surface, before) in _fadeSurfaces)
+			if (IsInstanceValid(mesh)) mesh.SetSurfaceOverrideMaterial(surface, before);
+		_fadeSurfaces.Clear();
+		_fadeMaterials.Clear();
+		_fadeEmission.Clear();
+	}
+
+	/// <summary>O corpo tem algum material transparente agora (o teste
+	/// confere que ninguém renasce assim).</summary>
+	public bool HasFadeMaterials => _fadeSurfaces.Count > 0;
+
 	private void OnRespawned()
 	{
 		_dead = false;
@@ -156,15 +180,14 @@ public partial class CharacterAnimator
 		_airborne = false;
 
 		// Volta tudo: um corpo que renasce meio transparente e meio
-		// enterrado é o mesmo defeito, só adiado.
-		for (int i = 0; i < _fadeMaterials.Count; i++)
-		{
-			BaseMaterial3D material = _fadeMaterials[i];
-			Color color = material.AlbedoColor;
-			color.A = 1f;
-			material.AlbedoColor = color;
-			material.EmissionEnergyMultiplier = _fadeEmission[i];
-		}
+		// enterrado é o mesmo defeito, só adiado. E volta o material de
+		// antes, não só a opacidade: a cópia continuava transparente, e um
+		// corpo transparente desenha o que tem por dentro por cima da pele —
+		// depois de algumas mortes, os olhos e os dentes saltavam do rosto,
+		// o cabelo sumia e as luvas pareciam rasgadas, nas duas máquinas
+		// (Jhon, 22/11: "o servidor iniciou corretamente, depois que matei
+		// algumas vezes ficou assim").
+		RestoreMaterials();
 
 		_model.Position = new Vector3(_model.Position.X, 0, _model.Position.Z);
 		_model.Visible = true;

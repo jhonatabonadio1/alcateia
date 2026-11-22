@@ -112,6 +112,14 @@ public sealed class ServerBody
 			History.Record(tick, Body.GlobalPosition.ToNumerics(), Body.Rotation.Y, Body.HeadPitch, Body.IsCrouching ? Body.CrouchHeight : Body.StandHeight);
 	}
 
+	/// <summary>Quantos passos seguidos o jogo conta que está na parede e
+	/// este corpo não, antes de voltar para ela.</summary>
+	public const int WallBehindSteps = 3;
+	private int _wallBehind;
+
+	/// <summary>Quantas vezes voltou para a parede pelo que o jogo contou.</summary>
+	public int WallResumes { get; private set; }
+
 	private void Apply(in InputCommand c, uint tick, double delta)
 	{
 		// Vida nova (ou a primeira): o corpo vai para onde o jogo diz que
@@ -134,6 +142,16 @@ public sealed class ServerBody
 			if (!Form.IsWolf) Weapon.RemoteHold(_primary, _secondary, (Slot)c.HeldSlot);
 			Body.Simulate(NetCommands.ToIntent(c), Quant.Yaw(c.Yaw), Quant.Pitch(c.Pitch), delta, c.Frozen);
 			Simulated++;
+
+			// O jogo segue na parede e este corpo saiu dela: um passo de
+			// diferença no grudar é normal (o próximo acerta), três seguidos
+			// não — volta para a parede (InputCommand.OnWall).
+			_wallBehind = c.OnWall && !Body.IsWallRunning ? _wallBehind + 1 : 0;
+			if (_wallBehind >= WallBehindSteps && Body.ResumeWall("the client is on the wall: the server goes back to it"))
+			{
+				WallResumes++;
+				_wallBehind = 0;
+			}
 		}
 
 		RecordShot(c.Seq, tick);

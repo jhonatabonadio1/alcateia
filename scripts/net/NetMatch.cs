@@ -331,6 +331,7 @@ public partial class NetMatch : Node
 		c.Epoch = _epoch;
 		c.Dead = _health.IsDead;
 		c.Frozen = _me.Frozen;
+		c.OnWall = _me.IsWallRunning;
 		if (!_spawnConfirmed)
 		{
 			c.HasSpawn = true;

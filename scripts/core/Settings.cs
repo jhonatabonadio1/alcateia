@@ -10,7 +10,7 @@ using System.Text.Json;
 /// </summary>
 public static class Settings
 {
-	private static string FilePath => UserFiles.Resolve(UserFiles.Settings, "user://opcoes.json");
+	private static string FilePath => UserFiles.Resolve(UserFiles.Settings, "user://opcoes.json", perAccount: false);
 
 	public sealed class Data
 	{

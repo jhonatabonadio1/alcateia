@@ -45,6 +45,7 @@ public abstract class WallNetTest : NetcodeTest
 		c.Form = (byte)p.GetNode<FormController>("FormController").Current;
 		c.HeldSlot = (byte)p.GetNode<Weapon>("Weapon").HumanSlot;
 		c.Frozen = p.Frozen;
+		c.OnWall = p.IsWallRunning;
 		if (withSpawn)
 		{
 			c.HasSpawn = true;
@@ -358,6 +359,121 @@ public sealed class WallRunCorrectionTest : WallNetTest
 		b.AtMost(6, apartAfter, "do terço de segundo depois do puxão em diante, o servidor na parede e o jogo fora dela quase nunca (passos)");
 		b.AtLeast(60, wallAfter, "o jogo seguiu na parede (passos)");
 		b.AtLeast(wallAfter - 3, wallClipAfter, "com o clipe da parede (passos)");
+
+		world.QueueFree();
+	}
+}
+
+/// <summary>
+/// O outro lado do <see cref="WallRunCorrectionTest"/>: o corpo do
+/// servidor sai da parede e o do jogo segue nela (o que sobra de
+/// diferença entre os dois: uma quina, o corpo de outro jogador; até
+/// 22/11, também os passos a mais e a menos da fila de comandos com a rede
+/// oscilando). Sem conserto, a regra da mesma parede ("salte para outra
+/// ou toque o chão") não deixava o servidor regrudar: ele caía de pé, quem
+/// via de outra máquina via o lobo na pose do pulo deslizando pela parede,
+/// e a correção puxava o jogo (Jhon, 22/11: "o lobo fica com a pose de
+/// pular deslizando pela parede"). Com a rede oscilando o tempo todo
+/// (atraso de 50 a 183 ms, um pacote em cada cinco perdido).
+/// </summary>
+public sealed class WallRunServerDropTest : WallNetTest
+{
+	public override string Name => "ParedeServidorSolta";
+	public override string Description => "online: o corpo do servidor sai da parede e o do jogo não; o servidor volta para ela (o jogo conta que está na parede), quem vê de fora vê o lobo na parede e a correção não arrasta o jogo";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.RemoveBots();
+		await b.Until(() => Match.Current?.Phase == MatchPhase.Live, 30);
+		await b.BecomeWolf();
+		Player p = b.Player;
+		await b.Place(p.GlobalPosition, p.RotationDegrees.Y, settle: 0.5);
+
+		MatchWorld world = await StartServer(b);
+		if (!PlaceTestWall(p, b.GetTree().CurrentScene, world, out Vector3 start, out Vector3 along, out Vector3 normal))
+		{
+			b.Check(false, "achou lugar para a parede de teste");
+			return;
+		}
+		await b.Place(start, Mathf.RadToDeg(Mathf.Atan2(-along.X, -along.Z)), settle: 0.6);
+
+		var server = new ServerBody(1, 0, world.SpawnBody("Servidor", Teams.Blue));
+		server.ApplyLoadout(Profile.Breed, Profile.OwnedTattoos());
+
+		Player.NetQuantize = true;
+		var up = new JitterLink();
+		var down = new JitterLink { DropOneIn = 0 };
+		var prediction = new Prediction();
+		var recent = new InputCommand[InputCommand.Redundancy];
+		var buffer = new byte[256];
+		Vector3 spawn = p.GlobalPosition;
+		uint seq = 0, tick = 0;
+		bool confirmed = false;
+		const int Push = 100, End = 240;
+		int apart = 0, serverOff = 0, fixesAfter = 0;
+		float dragged = 0f;
+		bool pushedOff = false;
+
+		for (int step = 0; step < End; step++)
+		{
+			if (step == 30) RegressionBench.Press("move_forward");
+			if (step == 33) RegressionBench.Press("jump");
+			if (step == 35) RegressionBench.Release("jump");
+
+			// O tropeço: só o corpo do servidor solta a parede (como solta
+			// numa quina ou num passo pulado).
+			if (step == Push)
+			{
+				b.Check(p.IsWallRunning && server.Body.IsWallRunning, "antes do tropeço, os dois na parede");
+				typeof(Player).GetMethod("ReleaseWall", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+					.Invoke(server.Body, null);
+			}
+
+			await b.Frames(1);
+			tick++;
+
+			seq++;
+			recent[seq % InputCommand.Redundancy] = Command(p, seq, !confirmed, spawn);
+			prediction.Record(seq, p.GlobalPosition.ToNumerics(), p.Velocity.ToNumerics());
+			up.Send(tick, NetCommands.InputPacket(recent, seq, buffer));
+
+			foreach (byte[] packet in up.Arrived(tick)) NetCommands.ReadInputPacket(packet, server.Commands);
+			server.Step(tick, NetRates.TickSeconds);
+			if (step >= Push && step < Push + 10 && !server.Body.IsWallRunning) pushedOff = true;
+
+			if (step > Push + 20)
+			{
+				if (p.IsWallRunning && !server.Body.IsWallRunning) apart++;
+				if (!server.Body.IsWallRunning) serverOff++;
+			}
+
+			if (tick % NetRates.SnapshotEvery == 0 && server.Placed)
+				down.Send(tick, Snapshot(server, server.Commands.LastProcessed));
+			foreach (byte[] packet in down.Arrived(tick))
+			{
+				(uint acked, EntityState e) = ReadSnapshot(packet);
+				confirmed = true;
+				if (acked == 0) continue;
+				System.Numerics.Vector3 fix = prediction.Reconcile(acked, seq, e.Position);
+				if (fix != System.Numerics.Vector3.Zero)
+				{
+					p.GlobalPosition += fix.ToGodot();
+					if (step > Push + 20)
+					{
+						fixesAfter++;
+						dragged = Mathf.Max(dragged, fix.ToGodot().Length());
+					}
+				}
+			}
+		}
+		RegressionBench.ReleaseAll();
+		Player.NetQuantize = false;
+
+		RegressionBench.Note($"depois do tropeço no servidor: o jogo na parede e o servidor fora em {apart} passos (servidor fora {serverOff}); correções depois {fixesAfter}, a maior {dragged * 100f:0} cm");
+		b.Check(pushedOff, "o tropeço tirou o servidor da parede");
+		RegressionBench.Note($"o servidor voltou para a parede pelo que o jogo contou {server.WallResumes} vez(es)");
+		b.AtMost(6, apart, "do terço de segundo depois do tropeço em diante, o jogo na parede e o servidor fora dela quase nunca (passos)");
+		b.AtMost(0.25f, dragged, "a correção não arrasta o jogo (m)");
 
 		world.QueueFree();
 	}

@@ -29,6 +29,10 @@ public static class ControlsTable
 		("Esc", "Menu da partida — não pausa"),
 	};
 
+	/// <summary>As teclas e o que fazem, na ordem da tabela (as Opções
+	/// montam a aba Controles com elas).</summary>
+	public static (string Key, string Action)[] Entries => Rows;
+
 	public static Control Build()
 	{
 		var grid = new GridContainer { Columns = 2 };

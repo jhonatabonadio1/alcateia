@@ -42,6 +42,21 @@ public sealed class Corpse
 		_body.MoveAndSlide();
 	}
 
+	/// <summary>
+	/// Sai da física na hora, sem assentar: o corpo do servidor (partida
+	/// autoritativa), que morto não dá passo — e por isso nunca passava
+	/// por <see cref="Settle"/>. A cápsula ficava sólida, invisível, onde
+	/// ele morreu, até renascer: quem passava por ali era barrado no
+	/// servidor e puxado de volta no jogo, que já não via ninguém (Jhon,
+	/// 22/11: "o servidor não deixava eu andar para frente, por um tempo").
+	/// </summary>
+	public void Drop()
+	{
+		Settled = true;
+		_body.Velocity = Vector3.Zero;
+		_shape.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
+	}
+
 	/// <summary>Renasceu: a colisão volta.</summary>
 	public void Revive()
 	{

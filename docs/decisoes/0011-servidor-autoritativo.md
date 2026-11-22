@@ -24,9 +24,15 @@ mundo vai a cada dois passos (30 por segundo). Os números estão em
 **Comandos.** O jogo manda, a cada passo, o que o jogador apertou e para
 onde olhava (`InputCommand`, 17 bytes), junto com os três anteriores — um
 pacote perdido não perde o passo. O servidor guarda numa fila por jogador
-(`CommandBuffer`): começa com dois de folga, consome um por passo, repete
-o último segurado se faltar (sem repetir pulo nem tiro), pula buraco que
-não fecha e consome dois por passo se o jogo correr na frente.
+(`CommandBuffer`): começa com dois de folga, consome um por passo, espera
+parado se faltar (o corpo não dá passo; o servidor fica um passo atrás),
+dá o buraco que não fecha com o último segurado (sem repetir pulo nem
+tiro), no número de cada comando perdido, e consome dois por passo se o
+jogo correr na frente. O servidor dá exatamente os passos que o jogo deu:
+até 22/11 ele repetia o último quando faltava (um passo a mais) e pulava o
+buraco (um a menos), e com a rede oscilando o jogo era corrigido para a
+frente e para trás a todo momento (teste `AndarComRedeOscilando`: 84
+correções em 6 s, até 35 cm; agora nenhuma).
 
 **Simulação.** Cada partida tem o próprio mundo de física (`MatchWorld`, um
 `SubViewport` com mundo próprio, sem desenhar nada), com o mapa reduzido

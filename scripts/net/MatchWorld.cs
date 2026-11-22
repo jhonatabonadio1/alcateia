@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 /// <summary>
 /// O mundo de uma partida dentro do servidor de partida (modo
@@ -87,6 +88,39 @@ public partial class MatchWorld : SubViewport
 		AddChild(body);
 		body.GlobalPosition = new Vector3(0, -500, 0);
 		return body;
+	}
+
+	/// <summary>Mantém carregados os mapas e o jogador depois do aquecimento:
+	/// sem ninguém segurando, o Godot solta o recurso e a próxima partida
+	/// carrega do disco de novo.</summary>
+	private static readonly List<Resource> Warm = new();
+
+	/// <summary>
+	/// Aquece o servidor de partida antes de ele se oferecer à frota (Jhon,
+	/// 22/11: "ao ficar muito tempo sem partidas, entra na partida e logo
+	/// depois a partida cai, somente na segunda fica estável"). O primeiro
+	/// mundo e o primeiro corpo de um processo novo carregam o mapa e o
+	/// jogador do disco e compilam o C# na hora: medido aqui (jogo com a arte
+	/// inteira), 4,8 s o mundo e 36,7 s o primeiro corpo, contra 0,07 s e
+	/// 0,14 s da segunda vez. Nesse tempo o servidor inteiro para (a rede
+	/// não responde e o relógio da partida dá um salto): quem entrou cai.
+	/// Aqui isso acontece uma vez, antes da primeira batida: carrega todos
+	/// os mapas e o jogador (e os mantém), monta um mundo e um corpo e joga
+	/// fora. Devolve quanto levou (ms).
+	/// </summary>
+	public static long Warmup(Node host)
+	{
+		var watch = Stopwatch.StartNew();
+		foreach (MapInfo info in Maps.All)
+			if (ResourceLoader.Load<PackedScene>(info.Scene) is PackedScene map) Warm.Add(map);
+		if (GD.Load<PackedScene>("res://scenes/player.tscn") is PackedScene player) Warm.Add(player);
+
+		var world = new MatchWorld(Maps.All[0].Id) { Name = "Aquecimento" };
+		host.AddChild(world);
+		world.SpawnBody("Aquecimento", Referee.Blue);
+		host.RemoveChild(world);
+		world.QueueFree();
+		return watch.ElapsedMilliseconds;
 	}
 
 	/// <summary>Os pontos que servem a um time (os do time e os de qualquer um).</summary>

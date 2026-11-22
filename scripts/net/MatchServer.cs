@@ -59,6 +59,8 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 {
 	public const int DefaultPort = 7777, DefaultCapacity = 4;
 	private const double HeartbeatEvery = 2, HelloTimeout = 10;
+	/// <summary>O máximo que um quadro conta para os prazos e o relógio das partidas.</summary>
+	private const double MaxTickSeconds = 0.25;
 
 	// O que o painel mostra em Segurança → Partidas: os mesmos tipos de
 	// servidor/Alcateia.Dominio/Seguranca/SecurityEvent.cs, e a gravidade.
@@ -166,6 +168,12 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 			return;
 		}
 
+		// Antes de abrir a porta e bater: a primeira partida não pode pagar
+		// o carregamento (MatchWorld.Warmup). Enquanto aquece, a frota nem
+		// sabe que este servidor existe.
+		long warm = MatchWorld.Warmup(this);
+		GD.Print($"Match server: warmed up in {warm} ms ({Maps.All.Count} maps and the player loaded).");
+
 		// A primeira porta livre da faixa: vários servidores de partida na
 		// mesma máquina (docker compose --scale) não brigam pela mesma.
 		// O endereço em que a porta abre: todos (o padrão) ou o que
@@ -202,6 +210,11 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	public override void _Process(double delta)
 	{
 		if (_net == null) return;
+
+		// Um quadro lento (o servidor travou carregando algo) não pode virar
+		// "ficou calado 10 s" nem "ninguém entrou em 20 s": para os prazos,
+		// o quadro conta no máximo MaxTickSeconds.
+		delta = Math.Min(delta, MaxTickSeconds);
 
 		_heartbeat -= delta;
 		if (_heartbeat <= 0 && !_beating && !_leaving)
