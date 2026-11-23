@@ -17,9 +17,9 @@
 /// </summary>
 public sealed class Rage
 {
-	public const float KillHeat = 100f, AssistHeat = 50f, MaxHeat = 300f;
-	public const float Ignite = 200f, Extinguish = 100f;
-	public const float Grace = 10f, CoolPerSecond = 20f;
+	public const float KillHeat = 100f, AssistHeat = 50f, MaxHeat = 400f;
+	public const float Ignite = 300f, Extinguish = 150f;
+	public const float Grace = 6f, CoolPerSecond = 40f;
 
 	public float Heat { get; private set; }
 	public bool OnFire { get; private set; }

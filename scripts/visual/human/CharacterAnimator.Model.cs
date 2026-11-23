@@ -275,7 +275,7 @@ public partial class CharacterAnimator
 		uint layers = camera != null ? 1u << (BodyLayer - 1) : 1u | ViewModel.CharacterLayer;
 
 		// As poses do Blender do personagem (poses_armas.json, ao lado do modelo).
-		var held = new HeldWeapon { Name = "HeldWeapon", PosesPath = HoldPoses.PathFor(_modelPath) };
+		var held = new HeldWeapon { Name = "HeldWeapon", PosesPath = HoldPoses.PathFor(_modelPath), ClipsModel = _modelPath };
 		AddChild(held);
 		held.Attach(_model, _body, layers);
 		_held = held;

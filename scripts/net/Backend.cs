@@ -244,6 +244,10 @@ public static class Backend
 		}
 		catch (Exception e) when (e is HttpRequestException or TaskCanceledException or JsonException or InvalidOperationException or UriFormatException)
 		{
+			// Sem isto, "sem conexão" não diz se foi recusa, certificado, DNS
+			// ou tempo esgotado: o log do jogo fica mudo.
+			GD.PushWarning($"Backend: {method} {Url}{path} falhou: {e.GetType().Name}: {e.Message}"
+				+ (e.InnerException != null ? $" ({e.InnerException.Message})" : ""));
 			return new Reply(0, null);
 		}
 	}

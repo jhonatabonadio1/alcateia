@@ -10,11 +10,11 @@ public partial class Weapon
 {
 	/// <summary>Traçante do disparo. Sem nenhum retorno visual não há
 	/// como saber que alguém atirou em você — o bot parecia inofensivo
-	/// enquanto acertava.</summary>
+	/// enquanto acertava. O efeito (a bala que viaja, o rastro, o clarão do
+	/// cano) e os números dele estão em <see cref="BulletTracer"/>.</summary>
 	[ExportGroup("Armas de fogo")]
 	[Export] public bool ShowTracer = true;
-	[Export] public Color TracerColor = new Color(1f, 0.9f, 0.5f, 0.9f);
-	[Export] public float TracerLife = 0.08f;
+	[Export] public Color TracerColor = new Color(1f, 0.72f, 0.32f, 0.95f);
 
 	/// <summary>Raio do estampido. Atirar sempre entrega a posição —
 	/// é o custo de usar a arma.</summary>
@@ -255,26 +255,8 @@ public partial class Weapon
 		player.ApplyStun(seconds, 0.5f);
 	}
 
-	/// <summary>
-	/// Material único, compartilhado por todos os traçantes do jogo.
-	///
-	/// Criar um material por disparo força o Godot a montar pipeline de
-	/// render na hora. Com dois bots atirando nove vezes por segundo,
-	/// isso trava o quadro — o jogador sente como congelamento no
-	/// instante em que levam tiro nele.
-	/// </summary>
-	private static StandardMaterial3D _tracerMaterial;
-
-	private static StandardMaterial3D TracerMaterial(Color color)
-	{
-		return _tracerMaterial ??= new StandardMaterial3D
-		{
-			ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-			Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-			AlbedoColor = color,
-			NoDepthTest = false
-		};
-	}
+	// o último cano era o da arma da primeira pessoa (que tem o clarão dela)
+	private bool _muzzleFirstPerson;
 
 	/// <summary>Ponta do cano, quando há arma visível na mão.</summary>
 	private Vector3 MuzzleOrigin(Vector3 fallback)
@@ -285,8 +267,12 @@ public partial class Weapon
 		if (_viewModel != null && !IsInstanceValid(_viewModel)) _viewModel = null;
 		_viewModel ??= _body.GetNodeOrNull<Node3D>("Head/Camera3D/ViewModel") as ViewModel;
 
+		_muzzleFirstPerson = false;
 		if (_viewModel != null && _viewModel.TryGetMuzzle(out Vector3 muzzle))
+		{
+			_muzzleFirstPerson = true;
 			return muzzle;
+		}
 
 		// Visto de fora (o bot, o boneco de outro jogador): o cano da arma
 		// na mão do corpo. Antes saía do olho, e o tiro dos bots parecia
@@ -298,27 +284,12 @@ public partial class Weapon
 		return fallback;
 	}
 
-	/// <summary>Linha fina que aparece e some. Peça descartável — vira
-	/// efeito de verdade na fase de polimento.</summary>
+	/// <summary>O traçante, do cano até onde o tiro parou (<see cref="BulletTracer"/>).</summary>
 	private void Tracer(Vector3 from, Vector3 to)
 	{
-		if (!ShowTracer) return;
-
-		var mesh = new ImmediateMesh();
-
-		mesh.SurfaceBegin(Mesh.PrimitiveType.Lines, TracerMaterial(TracerColor));
-		mesh.SurfaceAddVertex(Vector3.Zero);
-		mesh.SurfaceAddVertex(to - from);
-		mesh.SurfaceEnd();
-
-		var node = new MeshInstance3D { Mesh = mesh };
-		_body.GetTree().CurrentScene.AddChild(node);
-		node.GlobalPosition = from;
-
-		// Timer simples em vez de Tween: nada a animar, já que o
-		// material é compartilhado e não pode ser esmaecido sozinho.
-		SceneTreeTimer timer = _body.GetTree().CreateTimer(TracerLife);
-		timer.Timeout += node.QueueFree;
+		// No servidor sem tela ninguém vê: só gastaria um nó e uma malha por disparo.
+		if (!ShowTracer || DisplayServer.GetName() == "headless") return;
+		BulletTracer.Spawn(_body.GetTree().CurrentScene, from, to, TracerColor, flash: !_muzzleFirstPerson);
 	}
 
 	/// <summary>A normal da superfície do último raio que bateu.</summary>

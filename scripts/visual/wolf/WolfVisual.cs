@@ -199,10 +199,15 @@ public partial class WolfVisual : Node3D
 					_tree.Set("parameters/Machine/Jump/StartShot/request", (int)AnimationNodeOneShot.OneShotRequest.Fire);
 			}
 
+			if (_bot != null && onWall != _onWall)
+				GD.Print($"wall view: {_body.Name} {(onWall ? "on" : "off")} the wall{(OnWallNow && !Has("wallrun") ? " (no wallrun clip)" : "")}");
 			_onWall = onWall;
 			_jumping = jumping;
 			_playback?.Travel(onWall ? "Wall" : jumping ? "Jump" : "Locomotion");
+			_stateMiss = 0f;
 		}
+		else
+			KeepState((float)delta);
 
 		if (_jumping && !Has("jump_air")) UpdateJump();
 
@@ -227,6 +232,32 @@ public partial class WolfVisual : Node3D
 		UpdateLean((float)delta);
 		UpdateWall((float)delta);
 	}
+
+	/// <summary>
+	/// O estado pedido não pegou: a viagem do Travel pode ser ignorada (o
+	/// lobo acabando de aparecer, uma troca no meio de outra) e só era pedida
+	/// na mudança — o lobo ficava de pé na parede até descer dela (Jhon,
+	/// 22/11: online a corrida na parede não aparecia). Passado um quarto de
+	/// segundo fora do estado certo, pede de novo.
+	/// </summary>
+	private void KeepState(float delta)
+	{
+		if (_playback == null) return;
+		string want = _onWall ? "Wall" : _jumping ? "Jump" : "Locomotion";
+		string now = _playback.GetCurrentNode().ToString();
+		if (now == want || _playback.GetTravelPath().Count > 0)
+		{
+			_stateMiss = 0f;
+			return;
+		}
+		_stateMiss += delta;
+		if (_stateMiss < 0.25f) return;
+		_stateMiss = 0f;
+		GD.Print($"wall view: {_body.Name} was in '{now}', going to '{want}' again");
+		_playback.Travel(want);
+	}
+
+	private float _stateMiss;
 
 	private void OnFormChanged(int form)
 	{

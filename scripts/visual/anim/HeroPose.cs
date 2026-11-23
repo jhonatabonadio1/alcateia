@@ -28,6 +28,13 @@ public static class HeroPose
 
 	private static readonly string[] Fingers = { "Index", "Middle", "Ring", "Pinky" };
 
+	/// <summary>Um osso de dedo, com o nome do Mixamo ("mixamorig_RightHandIndex1") ou o do Manny ("index_01_r").</summary>
+	private static int FingerBone(Skeleton3D body, string side, string finger, int k)
+	{
+		int bone = body.FindBone($"mixamorig_{side}Hand{finger}{k}");
+		return bone >= 0 ? bone : body.FindBone($"{finger.ToLowerInvariant()}_0{k}_{(side == "Right" ? 'r' : 'l')}");
+	}
+
 	/// <summary>Quanto cada falange dobra para a palma, somado, em graus.</summary>
 	private static readonly float[] Curl = { 55f, 120f, 170f };
 
@@ -86,7 +93,7 @@ public static class HeroPose
 		// Punhos: cada falange dobra para a palma (em T, a palma olha para baixo).
 		foreach (string side in new[] { "Left", "Right" })
 		{
-			int hand = body.FindBone($"mixamorig_{side}Hand"), middle = body.FindBone($"mixamorig_{side}HandMiddle1");
+			int hand = body.FindBone($"mixamorig_{side}Hand"), middle = FingerBone(body, side, "Middle", 1);
 			if (hand < 0 || middle < 0) continue;
 			Quaternion turn = (Global(hand) * rest[hand].Inverse()).Normalized();
 			Vector3 along = turn * (origin[middle] - origin[hand]).Normalized();
@@ -95,7 +102,7 @@ public static class HeroPose
 			{
 				for (int k = 1; k <= 3; k++)
 				{
-					int a = body.FindBone($"mixamorig_{side}Hand{finger}{k}"), b = body.FindBone($"mixamorig_{side}Hand{finger}{k + 1}");
+					int a = FingerBone(body, side, finger, k), b = FingerBone(body, side, finger, k + 1);
 					if (a < 0 || b < 0) continue;
 					float angle = Mathf.DegToRad(Curl[k - 1]);
 					wanted[a] = (b, along * Mathf.Cos(angle) + palm * Mathf.Sin(angle));
@@ -104,7 +111,7 @@ public static class HeroPose
 			// O polegar fecha por cima dos dedos.
 			for (int k = 1; k <= 3; k++)
 			{
-				int a = body.FindBone($"mixamorig_{side}HandThumb{k}"), b = body.FindBone($"mixamorig_{side}HandThumb{k + 1}");
+				int a = FingerBone(body, side, "Thumb", k), b = FingerBone(body, side, "Thumb", k + 1);
 				if (a < 0 || b < 0) continue;
 				Vector3 rested = turn * (origin[b] - origin[a]).Normalized();
 				wanted[a] = (b, (rested + palm * (0.35f * k) + along * 0.2f).Normalized());

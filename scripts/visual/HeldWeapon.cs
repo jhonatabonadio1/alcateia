@@ -74,12 +74,12 @@ public partial class HeldWeapon : Node3D
 			string bone = _skeleton.GetBoneName(i);
 			if (bone.EndsWith("RightHand")) _rightHand = i;
 			else if (bone.EndsWith("LeftHand")) _leftHand = i;
-			else if (bone.EndsWith("RightHandMiddle1")) _rightMiddle = i;
-			else if (bone.EndsWith("LeftHandMiddle1")) _leftMiddle = i;
-			else if (bone.EndsWith("RightHandIndex1")) _rightIndex = i;
-			else if (bone.EndsWith("LeftHandIndex1")) _leftIndex = i;
-			else if (bone.EndsWith("RightHandPinky1")) _rightPinky = i;
-			else if (bone.EndsWith("LeftHandPinky1")) _leftPinky = i;
+			else if (bone.EndsWith("RightHandMiddle1") || bone == "middle_01_r") _rightMiddle = i;
+			else if (bone.EndsWith("LeftHandMiddle1") || bone == "middle_01_l") _leftMiddle = i;
+			else if (bone.EndsWith("RightHandIndex1") || bone == "index_01_r") _rightIndex = i;
+			else if (bone.EndsWith("LeftHandIndex1") || bone == "index_01_l") _leftIndex = i;
+			else if (bone.EndsWith("RightHandPinky1") || bone == "pinky_01_r") _rightPinky = i;
+			else if (bone.EndsWith("LeftHandPinky1") || bone == "pinky_01_l") _leftPinky = i;
 		}
 
 		FindBodyBones();
@@ -136,6 +136,7 @@ public partial class HeldWeapon : Node3D
 		_model?.QueueFree();
 		_model = null;
 		_rig = null;
+		_clipSet = null;
 		_rigReloading = false;
 		_magazine = null;
 		_id = id;
@@ -151,8 +152,12 @@ public partial class HeldWeapon : Node3D
 			_model = _rig;
 			AddChild(_rig);
 			_rig.Start();
+			_clipSet = UseClips ? HoldClips.For(HoldClips.PathFor(ClipsModel, id)) : null;
+			MapClipBones();
+			_clipFade = 0f;
 			return;
 		}
+		_clipSet = null;
 
 		ReadHands();
 		_model = WeaponModel.Build(id);
@@ -175,6 +180,14 @@ public partial class HeldWeapon : Node3D
 
 		Transform3D skeleton = _skeleton.GlobalTransform;
 		if (_rebuildAfterThrow && (_rig == null || !_rig.Throwing)) Rebuild();
+
+		// As animações feitas no Blender a partir das da primeira pessoa
+		// (22/11): o corpo da cintura para cima e a arma, quadro a quadro.
+		if (_rig != null && _clipSet != null)
+		{
+			HoldByClips(delta);
+			return;
+		}
 
 		// A pose do Blender para esta arma (o corpo da cintura para cima) e o
 		// conjunto da primeira pessoa posto pela mão direita dela.
@@ -307,6 +320,19 @@ public partial class HeldWeapon : Node3D
 			if (_skeleton.GetBonePoseRotation(bone).IsEqualApprox(pose.Written))
 				_skeleton.SetBonePoseRotation(bone, pose.Before);
 		_posed.Clear();
+		foreach (var (bone, pose) in _posedPosition)
+			if (_skeleton.GetBonePosePosition(bone).IsEqualApprox(pose.Written))
+				_skeleton.SetBonePosePosition(bone, pose.Before);
+		_posedPosition.Clear();
+	}
+
+	private readonly Dictionary<int, (Vector3 Before, Vector3 Written)> _posedPosition = new();
+
+	private void WritePosition(int bone, Vector3 position)
+	{
+		Vector3 before = _posedPosition.TryGetValue(bone, out var was) ? was.Before : _skeleton.GetBonePosePosition(bone);
+		_skeleton.SetBonePosePosition(bone, position);
+		_posedPosition[bone] = (before, position);
 	}
 
 	private void Write(int bone, Quaternion rotation)
@@ -527,8 +553,15 @@ public partial class HeldWeapon : Node3D
 		for (int n = 0; n < 4; n++)
 		{
 			chain[n] = -1;
+		{
+			// os dedos têm os nomes do Mixamo ("RightHandIndex1") ou os do Manny ("index_01_r")
+			string manny = $"{finger.ToLowerInvariant()}_0{n + 1}_{(side == "Right" ? 'r' : 'l')}";
 			for (int i = 0; i < _skeleton.GetBoneCount(); i++)
-				if (_skeleton.GetBoneName(i).EndsWith($"{side}Hand{finger}{n + 1}")) { chain[n] = i; break; }
+			{
+				string name = _skeleton.GetBoneName(i);
+				if (name == manny || name.EndsWith($"{side}Hand{finger}{n + 1}")) { chain[n] = i; break; }
+			}
+		}
 		}
 		return chain[0] < 0 || chain[1] < 0 || chain[2] < 0 ? null : chain;
 	}
@@ -655,6 +688,389 @@ public partial class HeldWeapon : Node3D
 		if (left) RigFingers(false, pistol ? carry : Transform3D.Identity, 1f - loose, oneHand ? 0f : SupportCurl, thumbs);
 		_rig.FollowMuzzle();
 		_calibrated = false;
+	}
+
+	// ------------------------------------------------------------ as animações do Blender (22/11, à tarde)
+
+	/// <summary>O modelo do personagem (as animações ficam na pasta
+	/// <c>animacoes/</c> ao lado dele); o CharacterAnimator põe antes do
+	/// Attach.</summary>
+	public string ClipsModel;
+
+	/// <summary>Usar as animações do Blender quando o personagem tem (desligado,
+	/// volta a pose de 22/11 de manhã).</summary>
+	[Export] public bool UseClips = true;
+
+	private HoldClipSet _clipSet;
+	private int[] _clipBones = System.Array.Empty<int>();
+	private int _spine2 = -1;
+	private float _clipFade;
+
+	/// <summary>As animações da arma na mão agora (null: não tem).</summary>
+	public HoldClipSet Clips => _clipSet;
+
+	private int[] _clipPosBones = System.Array.Empty<int>();
+
+	private void MapClipBones()
+	{
+		if (_clipSet == null) return;
+		_clipPosBones = new int[_clipSet.PosNames.Length];
+		for (int i = 0; i < _clipPosBones.Length; i++)
+			_clipPosBones[i] = _boneByName.TryGetValue(_clipSet.PosNames[i], out int pb) ? pb : -1;
+		_clipBones = new int[_clipSet.BoneNames.Length];
+		for (int i = 0; i < _clipBones.Length; i++)
+			_clipBones[i] = _boneByName.TryGetValue(_clipSet.BoneNames[i], out int bone) ? bone : -1;
+		_spine2 = _boneByName.TryGetValue("Spine2", out int chest) ? chest : -1;
+	}
+
+	/// <summary>
+	/// A arma com as animações feitas no Blender a partir das da primeira
+	/// pessoa (Jhon, 22/11: "vamos copiar exatamente as animações dos
+	/// braços, tronco e etc e vamos adaptá-las nos personagens"): a
+	/// animação de terceira pessoa toca junto com a da arma (o mesmo clipe,
+	/// no mesmo instante, misturando na troca como a da arma mistura), o
+	/// peito inclina para a mira e o conjunto vai onde o clipe diz, em
+	/// relação ao peito. A mão na arma, o dedo no gatilho, o carregador na
+	/// mão na recarga e a mira no olho vêm do clipe.
+	/// </summary>
+	private void HoldByClips(double delta)
+	{
+		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
+		bool moving = _body.IsOnFloor() && flat.Length() > 0.5f;
+		bool aiming = _weapon.IsAiming && !_weapon.IsReloading;
+		_rig.Tick(delta, _weapon.IsGrenadeReady, moving, aiming);
+
+		HoldClip now = _clipSet.Get(_rig.Playing) ?? _clipSet.Get("parado");
+		if (now == null || _spine2 < 0) return;
+		double at = _rig.Playing == now.Name ? _rig.ClipTime : 0;
+		float w = _rig.BlendWeight;
+		HoldClip before = w < 1f ? _clipSet.Get(_rig.PrevPlaying) : null;
+		_clipFade = Mathf.Min(1f, _clipFade + (float)delta / Mathf.Max(PoseBlendTime, 0.01f));
+		float fade = _clipFade * _clipFade * (3f - 2f * _clipFade);
+
+		for (int i = 0; i < _clipBones.Length; i++)
+		{
+			int bone = _clipBones[i];
+			if (bone < 0) continue;
+			Quaternion q = now.Bone(i, at);
+			if (before != null) q = before.Bone(i, _rig.PrevTime).Slerp(q, w);
+			if (fade < 1f) q = _skeleton.GetBonePoseRotation(bone).Slerp(q, fade);
+			Write(bone, q);
+		}
+
+		// A posição de alguns ossos da mão (a palma de lá fecha deslizando os nós)
+		for (int i = 0; i < _clipPosBones.Length; i++)
+		{
+			int bone = _clipPosBones[i];
+			if (bone < 0 || now.PosCount == 0) continue;
+			Vector3 p = now.Position(i, at);
+			if (before != null && before.PosCount > 0) p = before.Position(i, _rig.PrevTime).Lerp(p, w);
+			if (fade < 1f) p = _skeleton.GetBonePosePosition(bone).Lerp(p, fade);
+			WritePosition(bone, p);
+		}
+
+		ChestAsBaked(fade);
+		PitchChest();
+
+		Transform3D rig = now.RigAt(at);
+		if (before != null) rig = HoldClips.Blend(before.RigAt(_rig.PrevTime), rig, w);
+		// A arma do tamanho da mão do personagem: cresce em volta da origem
+		// do conjunto (o olho da primeira pessoa), como no Blender.
+		if (!Mathf.IsEqualApprox(_clipSet.Scale, 1f))
+			rig *= new Transform3D(Basis.Identity.Scaled(Vector3.One * _clipSet.Scale), Vector3.Zero);
+		_rig.GlobalTransform = _skeleton.GlobalTransform * _skeleton.GetBoneGlobalPose(_spine2) * rig;
+		_rig.FollowMuzzle();
+		_calibrated = false;
+		GrowGrenade();
+		SwapMagazine(now, at);
+	}
+
+	/// <summary>Quantas vezes a granada na mão é maior vista de fora (Jhon, 23/11: "aumente o
+	/// tamanho da granada"): a de lá é do tamanho de uma de verdade (7 cm), e de fora, longe,
+	/// sumia na mão. Só a da mão em terceira pessoa: a da primeira pessoa e a que voa ficam como
+	/// estão. Os dedos do personagem abrem para ela no Blender (GRANADA_MAO_ABRE).</summary>
+	[Export(PropertyHint.Range, "1,2")] public float GrenadeHeldGrow = 1.4f;
+
+	// a pose do Grip antes de crescer e a que se escreveu: a animação não repõe a escala dele, e
+	// crescer em cima do quadro de antes fazia a granada crescer sem parar até sumir
+	private Skeleton3D _grownOf;
+	private Vector3 _gripPos, _gripScale, _grownPos, _grownScale;
+	private Quaternion _gripRot, _grownRot;
+
+	/// <summary>Cresce a granada do conjunto em volta do centro dela: o osso Grip leva o corpo,
+	/// o pino e a alavanca. Sempre a partir da pose sem crescer (a da animação, ou a guardada
+	/// se a animação não repôs o osso).</summary>
+	private void GrowGrenade()
+	{
+		if (!Arsenal.IsGrenade(_id) || Mathf.IsEqualApprox(GrenadeHeldGrow, 1f) || !_rig.HasCenter) return;
+		Skeleton3D sk = _rig.Skeleton;
+		int grip = sk.FindBone("Grip");
+		if (grip < 0) return;
+		// cada uma por si: a animação repõe a posição e a rotação, mas não a escala
+		if (_grownOf == sk)
+		{
+			if (sk.GetBonePosePosition(grip).IsEqualApprox(_grownPos)) sk.SetBonePosePosition(grip, _gripPos);
+			if (sk.GetBonePoseRotation(grip).IsEqualApprox(_grownRot)) sk.SetBonePoseRotation(grip, _gripRot);
+			if (sk.GetBonePoseScale(grip).IsEqualApprox(_grownScale)) sk.SetBonePoseScale(grip, _gripScale);
+		}
+		_grownOf = sk;
+		_gripPos = sk.GetBonePosePosition(grip);
+		_gripRot = sk.GetBonePoseRotation(grip);
+		_gripScale = sk.GetBonePoseScale(grip);
+		Transform3D G = sk.GlobalTransform * sk.GetBoneGlobalPose(grip);
+		Vector3 center = _rig.Center();
+		Vector3 local = G.AffineInverse() * center;
+		Basis grown = G.Basis.Scaled(Vector3.One * GrenadeHeldGrow);
+		var target = new Transform3D(grown, center - grown * local);
+		int parent = sk.GetBoneParent(grip);
+		Transform3D parentGlobal = sk.GlobalTransform * (parent >= 0 ? sk.GetBoneGlobalPose(parent) : Transform3D.Identity);
+		Transform3D pose = parentGlobal.AffineInverse() * target;
+		sk.SetBonePosePosition(grip, pose.Origin);
+		sk.SetBonePoseRotation(grip, pose.Basis.Orthonormalized().GetRotationQuaternion());
+		sk.SetBonePoseScale(grip, pose.Basis.Scale);
+		_grownPos = sk.GetBonePosePosition(grip);
+		_grownRot = sk.GetBonePoseRotation(grip);
+		_grownScale = sk.GetBonePoseScale(grip);
+	}
+
+	// ------------------------------------------------------------ a troca de pente vista de fora
+
+	private MeshInstance3D _rigMag;
+	private int _rigMagBone = -1;
+	private HeldRig _rigMagOf;
+	// a mão do corpo para a do conjunto, medida com as duas juntas (parado ou mirando)
+	private Transform3D _bodyToRigHand = Transform3D.Identity;
+	private bool _knowsHand, _magDropped;
+	// o pente no quadro de antes (para a velocidade e o giro com que ele sai da mão)
+	private Transform3D _magBefore = Transform3D.Identity;
+	private bool _magTracked;
+	private Vector3 _magVelocity, _magSpin;
+
+	/// <summary>Em quanto tempo (s) o pente passa da animação para a mão do corpo ao ser
+	/// agarrado (a mão do corpo está com a de lá, e os dois lugares são o mesmo).</summary>
+	[Export] public float MagazineHandOver = 0.08f;
+
+	/// <summary>Quanto tempo o pente que caiu fica no chão (s).</summary>
+	[Export] public float DroppedMagazineLife = 8f;
+
+	/// <summary>Quanto da velocidade e do giro da mão o pente leva ao ser solto (0 = cai parado,
+	/// só a gravidade; 1 = tudo), e o teto dos dois (m/s e rad/s).</summary>
+	[Export(PropertyHint.Range, "0,1")] public float MagazineThrow = 0.35f;
+	[Export] public float MagazineMaxSpeed = 3f;
+	[Export] public float MagazineMaxSpin = 8f;
+
+	private ArrayMesh _looseMag;
+	private Mesh _looseMagOf;
+
+	/// <summary>A malha do pente sem os dados da pele (só o que se desenha), montada uma vez por
+	/// arma: a do conjunto, solta num corpo físico, o motor não desenha.</summary>
+	private ArrayMesh LooseMagazine()
+	{
+		Mesh source = _rigMag?.Mesh;
+		if (source == null) return null;
+		if (_looseMag != null && _looseMagOf == source) return _looseMag;
+		var loose = new ArrayMesh();
+		for (int s = 0; s < source.GetSurfaceCount(); s++)
+		{
+			Godot.Collections.Array from = source.SurfaceGetArrays(s);
+			var arrays = new Godot.Collections.Array();
+			arrays.Resize((int)Mesh.ArrayType.Max);
+			foreach (Mesh.ArrayType kind in new[] { Mesh.ArrayType.Vertex, Mesh.ArrayType.Normal, Mesh.ArrayType.Tangent,
+				Mesh.ArrayType.Color, Mesh.ArrayType.TexUV, Mesh.ArrayType.TexUV2, Mesh.ArrayType.Index })
+				arrays[(int)kind] = from[(int)kind];
+			loose.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+		}
+		_looseMag = loose;
+		_looseMagOf = source;
+		return loose;
+	}
+
+	/// <summary>
+	/// A recarga vista de fora troca o pente (Jhon, 23/11: "a Eve tira o pente, ele cai no
+	/// chão (velocidade da gravidade), tira outro pente do bolso; o pente precisa estar nas
+	/// mãos, orientado pela pegada da mão, veja a referência na recarga em primeira pessoa").
+	/// Na primeira pessoa a mão some embaixo da câmera e volta com o mesmo pente; de fora, a
+	/// animação do Blender (<c>Copia.trocar_pente</c>) leva a mão ao bolso, e os tempos vêm no
+	/// clipe (<see cref="HoldClip.MagGrab"/>). Com o pente na mão, ele vai preso na mão
+	/// esquerda do corpo pela pegada de lá, quadro a quadro: onde o pente do conjunto está em
+	/// relação à mão do conjunto agora, levado para a mão do corpo. Ao soltar, some, e uma
+	/// cópia cai em queda livre; quando a mão pega o novo no bolso, reaparece na mão, e no
+	/// encaixe volta para o lugar da animação. O boneco de outro jogador não sabe que
+	/// recarrega (só toca a animação que chegou): basta o conjunto estar tocando a recarga.
+	/// </summary>
+	private void SwapMagazine(HoldClip clip, double at)
+	{
+		if (_rigMagOf != _rig)
+		{
+			_rigMagOf = _rig;
+			_rigMag = _rig?.FindChild("carregador", true, false) as MeshInstance3D;
+			_rigMagBone = _rig?.Skeleton != null ? _rig.Skeleton.FindBone("Magazine") : -1;
+			_knowsHand = false;
+			_magDropped = false;
+		}
+		if (_rigMag == null || _rigMagBone < 0 || _leftHand < 0 || _rig.HandL < 0) return;
+		Skeleton3D rigSkeleton = _rig.Skeleton;
+		Transform3D rigHand = rigSkeleton.GlobalTransform * rigSkeleton.GetBoneGlobalPose(_rig.HandL);
+		Transform3D bodyHand = _skeleton.GlobalTransform * _skeleton.GetBoneGlobalPose(_leftHand);
+		bool swapping = clip != null && clip.SwapsMagazine && _rig.Playing == clip.Name;
+		if (!swapping)
+		{
+			// parado, andando ou mirando, já sem mistura: a mão do corpo está na do conjunto
+			if (_rig.BlendWeight >= 1f && _rig.Playing is "parado" or "andar" or "mira" or "mira_andar")
+			{
+				_bodyToRigHand = bodyHand.AffineInverse() * rigHand;
+				_knowsHand = true;
+			}
+			_rigMag.Visible = true;
+			_magDropped = false;
+			_magTracked = false;
+			return;
+		}
+		if (!_knowsHand) return;
+
+		// o pente na mão do corpo, seguro como a mão de lá o segura neste quadro
+		Transform3D animated = rigSkeleton.GlobalTransform * rigSkeleton.GetBoneGlobalPose(_rigMagBone);
+		Transform3D carried = bodyHand * _bodyToRigHand * rigHand.AffineInverse() * animated;
+		if (at < clip.MagGrab)
+		{
+			_rigMag.Visible = true;
+			_magDropped = false;
+			_magTracked = false;
+			return;
+		}
+		if (at >= clip.MagDrop && at < clip.MagPick)
+		{
+			if (!_magDropped)
+			{
+				_magDropped = true;
+				// Da mão, se ela o tirou: sai com a velocidade e o giro que tinha nela (um objeto
+				// largado). Direto da arma, se foi ejetado (a recarga de pente vazio da pistola:
+				// a mão de lá nem o segura): só a velocidade do corpo, e a gravidade faz o resto.
+				bool fromHand = clip.MagDrop > clip.MagGrab && _magTracked;
+				DropMagazine(clip.MagDrop > clip.MagGrab ? carried : animated,
+					fromHand ? _magVelocity : _body.Velocity, fromHand ? _magSpin : Vector3.Zero);
+			}
+			_rigMag.Visible = false;
+			_magTracked = false;
+			return;
+		}
+		_rigMag.Visible = true;
+		if (at >= clip.MagSeat) return;
+		// Ao agarrar, passa da animação para a mão em MagazineHandOver. Do bolso ao encaixe fica
+		// só na mão: na primeira pessoa o pente está a metros dali até dois quadros antes de
+		// encaixar (é como ela esconde a troca), e no encaixe a mão do corpo chega na pose de
+		// lá, onde os dois lugares são o mesmo.
+		float hand = at < clip.MagDrop ? Mathf.Clamp((float)((at - clip.MagGrab) / MagazineHandOver), 0f, 1f) : 1f;
+		hand = hand * hand * (3f - 2f * hand);
+		Transform3D target = hand >= 1f ? carried : animated.InterpolateWith(carried, hand);
+		// a velocidade e o giro do pente na mão, de um quadro para o outro (no mundo)
+		float dt = (float)GetProcessDeltaTime();
+		if (_magTracked && dt > 1e-4f)
+		{
+			Quaternion turned = (target.Basis.Orthonormalized() * _magBefore.Basis.Orthonormalized().Inverse()).GetRotationQuaternion().Normalized();
+			float angle = turned.GetAngle();
+			if (angle > Mathf.Pi) angle -= Mathf.Tau;
+			_magSpin = Mathf.Abs(angle) > 1e-5f ? turned.GetAxis().Normalized() * (angle / dt) : Vector3.Zero;
+			_magVelocity = (target.Origin - _magBefore.Origin) / dt;
+		}
+		_magBefore = target;
+		_magTracked = true;
+		int parent = rigSkeleton.GetBoneParent(_rigMagBone);
+		Transform3D parentGlobal = rigSkeleton.GlobalTransform * (parent >= 0 ? rigSkeleton.GetBoneGlobalPose(parent) : Transform3D.Identity);
+		Transform3D local = parentGlobal.AffineInverse() * target;
+		rigSkeleton.SetBonePosePosition(_rigMagBone, local.Origin);
+		rigSkeleton.SetBonePoseRotation(_rigMagBone, local.Basis.Orthonormalized().GetRotationQuaternion());
+	}
+
+	/// <summary>Uma cópia do pente cai de onde foi solto e obedece à física até parar no chão
+	/// (Jhon, 23/11: "o pente precisa cair 100% no chão e respeitar a física"): sai com a
+	/// velocidade e o giro dados, a gravidade faz o resto, e a forma que bate é a do próprio
+	/// pente (o casco convexo da malha: com a caixa em volta dela, um cubo, ele parava de pé no
+	/// ar, a 7 cm do chão). Só de enfeite: bate no cenário, não fere ninguém, e some depois de
+	/// <see cref="DroppedMagazineLife"/>.</summary>
+	private void DropMagazine(Transform3D magazineBone, Vector3 velocity, Vector3 spin)
+	{
+		if (_rigMag.Mesh == null || _rigMag.Skin == null) return;
+		ArrayMesh loose = LooseMagazine();
+		if (loose == null) return;
+		Skin skin = _rigMag.Skin;
+		Transform3D bind = Transform3D.Identity;
+		for (int i = 0; i < skin.GetBindCount(); i++)
+			if (skin.GetBindName(i) == "Magazine" || skin.GetBindBone(i) == _rigMagBone)
+				bind = skin.GetBindPose(i);
+		// A malha solta, sem a pele: o osso vezes a pose de ligação. O corpo rígido fica no
+		// meio do pente (a origem da malha é a do conjunto, longe dele), sem escala; a malha e
+		// a forma de colisão vão juntas, com a escala e o desvio.
+		Transform3D place = magazineBone * bind;
+		Aabb box = _rigMag.Mesh.GetAabb();
+		Vector3 scale = place.Basis.Scale;
+		Vector3 offset = -(box.GetCenter() * scale);
+		var body = new RigidBody3D
+		{
+			CollisionLayer = 0,
+			CollisionMask = 1,
+			Mass = 0.25f,
+			ContinuousCd = true,
+			PhysicsMaterialOverride = new PhysicsMaterial { Friction = 0.9f, Bounce = 0.25f },
+		};
+		var mesh = new MeshInstance3D { Mesh = loose, Layers = _rigMag.Layers, Scale = scale, Position = offset };
+		for (int s = 0; s < loose.GetSurfaceCount(); s++)
+			mesh.SetSurfaceOverrideMaterial(s, _rigMag.GetActiveMaterial(s));
+		body.AddChild(mesh);
+		Shape3D hull = loose.CreateConvexShape(true, true);
+		body.AddChild(hull != null
+			? new CollisionShape3D { Shape = hull, Scale = scale, Position = offset }
+			: new CollisionShape3D { Shape = new BoxShape3D { Size = (box.Size * scale).Max(new Vector3(0.01f, 0.01f, 0.01f)) } });
+		Node world = GetTree().CurrentScene ?? GetTree().Root;
+		world.AddChild(body);
+		Vector3 center = place * box.GetCenter();
+		body.GlobalTransform = new Transform3D(place.Basis.Orthonormalized(), center);
+		// a velocidade dada é a da origem do osso: a do meio do pente soma o giro
+		// (com teto: um quadro ruim não pode arremessar o pente). Da velocidade da mão em relação
+		// ao corpo ele leva só MagazineThrow: lá a mão arranca o pente a mais de 2 m/s, e com tudo
+		// isso ele voava mais de um metro para o lado.
+		Vector3 thrown = (velocity - _body.Velocity + spin.Cross(center - magazineBone.Origin)) * MagazineThrow;
+		body.LinearVelocity = _body.Velocity + thrown.LimitLength(MagazineMaxSpeed);
+		body.AngularVelocity = (spin * MagazineThrow).LimitLength(MagazineMaxSpin);
+		GetTree().CreateTimer(DroppedMagazineLife).Timeout += () =>
+		{
+			if (IsInstanceValid(body)) body.QueueFree();
+		};
+	}
+
+	/// <summary>
+	/// O peito como no Blender, em relação ao corpo. Lá o quadril estava em
+	/// repouso; aqui ele vem da animação de andar (que gira e balança), e as
+	/// vértebras desfazem a diferença — senão o tronco, as mãos e a arma
+	/// apontam para onde o quadril gira, e não para a mira.
+	/// </summary>
+	private void ChestAsBaked(float fade)
+	{
+		if (_spines.Count == 0) return;
+		int hips = _skeleton.GetBoneParent(_spines[0]);
+		if (hips < 0) return;
+		Basis body = _skeleton.GlobalBasis.Orthonormalized();
+		Basis rest = _skeleton.GetBoneGlobalRest(hips).Basis.Orthonormalized();
+		Basis pose = _skeleton.GetBoneGlobalPose(hips).Basis.Orthonormalized();
+		Quaternion delta = (body * rest * pose.Transposed() * body.Transposed()).Orthonormalized().GetRotationQuaternion().Normalized();
+		if (fade < 1f) delta = Quaternion.Identity.Slerp(delta, fade);
+		Quaternion part = Quaternion.Identity.Slerp(delta, 1f / _spines.Count);
+		foreach (int bone in _spines) TurnBone(bone, part, body);
+	}
+
+	/// <summary>O peito inclina para a mira (para cima e para baixo), todo
+	/// nas vértebras: a cabeça e a arma vão juntas, e mirando o olho continua
+	/// na linha da mira.</summary>
+	private void PitchChest()
+	{
+		if (_spines.Count == 0) return;
+		float limit = Mathf.DegToRad(AimPitchLimit);
+		float pitch = Mathf.Clamp(_bodyHead?.Rotation.X ?? 0f, -limit, limit);
+		if (Mathf.Abs(pitch) < 0.002f) return;
+		Basis body = _skeleton.GlobalBasis.Orthonormalized();
+		Vector3 side = _body.GlobalBasis.X.Normalized();
+		var part = new Quaternion(side, pitch / _spines.Count);
+		foreach (int bone in _spines) TurnBone(bone, part, body);
 	}
 
 	// ------------------------------------------------------------ a pose do Blender (22/11)

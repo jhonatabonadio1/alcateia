@@ -478,3 +478,96 @@ public sealed class WallRunServerDropTest : WallNetTest
 		world.QueueFree();
 	}
 }
+
+/// <summary>
+/// O mesmo, na partida de repasse (o modo padrão online): cada jogo manda o
+/// próprio estado (NetState) e o boneco das outras máquinas segue por ele
+/// (NetMatch.Apply). Jhon, 22/11: "a animação de correr na parede não tá
+/// indo para o online, novamente".
+/// </summary>
+public sealed class WallRunRelayTest : WallNetTest
+{
+	public override string Name => "ParedeRepasse";
+	public override string Description => "online no repasse: quem vê de outra máquina vê o lobo deitado na parede, com o clipe dela, pelo estado que o dono manda";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.RemoveBots();
+		await b.Until(() => Match.Current?.Phase == MatchPhase.Live, 30);
+		await b.BecomeWolf();
+		Player p = b.Player;
+		await b.Place(p.GlobalPosition, p.RotationDegrees.Y, settle: 0.5);
+
+		var dummy = new Node3D { Name = "MundoDeTeste" };
+		b.GetTree().CurrentScene.AddChild(dummy);
+		if (!PlaceTestWall(p, b.GetTree().CurrentScene, dummy, out Vector3 start, out Vector3 along, out Vector3 normal))
+		{
+			b.Check(false, "achou lugar para a parede de teste");
+			return;
+		}
+		await b.Place(start, Mathf.RadToDeg(Mathf.Atan2(-along.X, -along.Z)), settle: 0.6);
+
+		var puppet = GD.Load<PackedScene>("res://scenes/bot.tscn").Instantiate<Bot>();
+		puppet.Name = "Boneco";
+		puppet.Team = Teams.Orange;
+		puppet.Remote = true;
+		b.GetTree().CurrentScene.AddChild(puppet);
+		await b.Frames(2);
+		var visual = puppet.GetNode<WolfVisual>("WolfVisual");
+		var form = p.GetNode<FormController>("FormController");
+		var weapon = p.GetNode<Weapon>("Weapon");
+		var health = p.GetNode<Health>("Health");
+
+		int clientWall = 0, puppetWall = 0, puppetClip = 0;
+		float lying = -1f;
+		var states = new System.Collections.Generic.Dictionary<string, int>();
+		for (int step = 0; step < 3 * 60; step++)
+		{
+			if (step == 30) RegressionBench.Press("move_forward");
+			if (step == 33) RegressionBench.Press("jump");
+			if (step == 35) RegressionBench.Release("jump");
+			await b.Frames(1);
+
+			if (step % 2 == 0)
+			{
+				// O que o NetMatch manda (SendState) e o que faz ao chegar (Apply).
+				var sent = new NetState
+				{
+					Position = p.GlobalPosition, Velocity = p.Velocity, Yaw = p.Rotation.Y,
+					Pitch = p.GetNode<Node3D>("Head").Rotation.X, Form = (byte)form.Current,
+					Slot = (byte)weapon.HumanSlot, Grounded = p.IsOnFloor(), WallRunning = p.IsWallRunning,
+					Sprinting = p.IsSprinting, Crouching = p.IsCrouching, Dead = health.IsDead,
+					Hp = health.Hp, MaxHp = health.MaxHp, Shield = health.Shield, MaxShield = health.MaxShield,
+					Primary = weapon.PrimaryDef?.Id ?? "", Secondary = weapon.SecondaryDef?.Id ?? "", HasGear = true
+				};
+				using var stream = new System.IO.MemoryStream();
+				sent.Write(new System.IO.BinaryWriter(stream));
+				stream.Position = 0;
+				NetState s = NetState.Read(new System.IO.BinaryReader(stream));
+				Form f = (Form)s.Form;
+				puppet.RemoteUpdate(s.Position + Vector3.Back * 0f, s.Velocity, s.Yaw, s.Pitch, s.Grounded, f, (Slot)s.Slot,
+					s.Primary, s.Secondary, s.Hp, s.MaxHp, s.Shield, s.MaxShield, s.Dead);
+				puppet.RemoteWallRun = s.WallRunning && !s.Dead;
+				puppet.RemoteMotion(s.Sprinting, s.Crouching, false, false, false, false);
+				puppet.CollisionLayer = 0;
+			}
+
+			if (p.IsWallRunning) clientWall++;
+			if (puppet.RemoteWallRun)
+			{
+				puppetWall++;
+				string st = CurrentState(visual);
+				states[st] = states.GetValueOrDefault(st) + 1;
+				if (st == "Wall") puppetClip++;
+				if (visual.Model != null) lying = Mathf.Max(lying, visual.Model.GlobalBasis.Y.Normalized().Dot(normal));
+			}
+		}
+		RegressionBench.ReleaseAll();
+		RegressionBench.Note($"passos na parede: jogo {clientWall}, boneco {puppetWall} (com o clipe: {puppetClip}); estados {string.Join(", ", states.Select(kv => kv.Key + "=" + kv.Value))}; deitado {lying:0.00}");
+		b.AtLeast(60, clientWall, "o jogo correu na parede (passos)");
+		b.AtLeast(50, puppetWall, "o boneco soube que está na parede (passos)");
+		b.AtLeast(puppetWall - 3, puppetClip, "e tocou o clipe da parede (passos)");
+		b.AtLeast(0.9, lying, "deitado na parede");
+		puppet.QueueFree();
+	}
+}

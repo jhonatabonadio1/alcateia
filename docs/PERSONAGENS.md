@@ -104,21 +104,29 @@ ajusta o quadril de cada clipe à altura do quadril do modelo na
 importação (`MatchHips`). Com a mesma altura total, as pernas ficam
 proporcionais e o pé não flutua nem afunda.
 
-### As poses com arma (Blender)
+### As animações com arma (Blender)
 
-Em terceira pessoa o corpo segura cada tipo de arma (fuzil, pistola,
-faca, granada) numa pose feita no Blender para aquele personagem: o
-tronco, a cabeça, os braços e cada dedo, com a arma da primeira pessoa na
-mão. Personagem novo precisa das dele:
+Em terceira pessoa o corpo toca, para cada arma (ak74, ar15, m4a4, scar,
+svd, deagle, faca, granada), um clipe para cada clipe da primeira pessoa
+(parado, andar, tiro, recarga, sacar, a mira, os golpes, armar e lançar),
+feito no Blender para aquele personagem: o tronco, a cabeça, os braços e
+cada dedo, com a arma da primeira pessoa na mão. Personagem novo precisa
+dos dele:
 
 ```
-python3 tools/personagens/blender/poses_armas.py <pasta>            # grava poses_armas.json
-python3 tools/personagens/blender/poses_armas.py <pasta> --fotos /tmp/poses   # e fotos para conferir
+python3 tools/personagens/blender/animacoes_armas.py <pasta>                 # todas as armas
+python3 tools/personagens/blender/animacoes_armas.py <pasta> ar15 --clipes recarga,mira \
+    --fotos /tmp/anim --quadros 0,0.5 --vistas frente,lado,perto --sem-gravar   # fotos para conferir
 ```
 
-Sem o `poses_armas.json` o personagem ainda segura a arma (o jeito
-antigo, com as mãos calculadas no jogo), mas fica pior. O teste
-`BonecoMaos` confere que o jogo põe as mãos e a arma onde o Blender pôs.
+Grava `assets/personagens/<pasta>/animacoes/<arma>.json` e diz, de cada
+clipe, o pior quadro: a mão que não chegou, o punho (dobra, lado, giro),
+o dedo dentro da arma, a junta fora do que dobra e a palma longe da arma.
+As regras de cada arma estão no começo do script (`POSTURA`, `FACA`,
+`GRANADA`, os limites das juntas). Sem a pasta `animacoes/` o personagem
+segura a arma pela pose parada de antes (`poses_armas.py`,
+`poses_armas.json`). O teste `BonecoMaos` confere que o jogo põe as mãos
+e a arma onde o Blender pôs, e que o cano vai para a mira.
 
 ## 4. O lobo
 

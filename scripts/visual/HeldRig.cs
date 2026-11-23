@@ -198,10 +198,36 @@ public partial class HeldRig : Node3D
 		if (!_clips.TryGetValue(name, out Clip clip)) return 0;
 		float speed = seconds > 0.01 ? (float)(clip.Length / seconds) : 1f;
 		bool sameClip = Player.CurrentAnimation == clip.Name;
+		// A troca: a animação de antes continua andando e some aos poucos
+		// (como o AnimationPlayer faz), e o corpo mistura as duas do mesmo
+		// jeito (HeldWeapon.HoldByClips).
+		if (!sameClip && blend > 0.001 && Playing != "")
+		{
+			PrevPlaying = Playing;
+			PrevTime = ClipTime;
+			_prevSpeed = Speed;
+			_blendLeft = _blendTotal = blend;
+		}
+		else _blendLeft = 0;
 		Player.PlaySection(clip.Name, clip.From, clip.To, sameClip ? 0 : blend, speed);
 		Playing = name;
+		Speed = speed;
 		return seconds > 0.01 ? seconds : clip.Length;
 	}
+
+	/// <summary>A velocidade em que a animação de agora toca.</summary>
+	public double Speed { get; private set; } = 1;
+
+	/// <summary>Onde a animação de agora está (s, desde o começo dela).</summary>
+	public double ClipTime => _clips.TryGetValue(Playing, out Clip clip) ? Player.CurrentAnimationPosition - clip.From : 0;
+
+	/// <summary>A animação que está saindo (numa troca) e onde ela está.</summary>
+	public string PrevPlaying { get; private set; } = "";
+	public double PrevTime { get; private set; }
+	private double _prevSpeed = 1, _blendLeft, _blendTotal;
+
+	/// <summary>Quanto a animação de agora já entrou na troca (1 = inteira).</summary>
+	public float BlendWeight => _blendLeft > 0 && _blendTotal > 0 ? Mathf.Clamp(1f - (float)(_blendLeft / _blendTotal), 0f, 1f) : 1f;
 
 	/// <summary>Ocupado com uma animação que não é de descanso até o fim dela.</summary>
 	public void Hold(double seconds) => _busy = seconds;
@@ -216,6 +242,11 @@ public partial class HeldRig : Node3D
 	/// <summary>Atirou (ou golpeou, com a faca).</summary>
 	public void Fired(bool knife, float knifeCooldown)
 	{
+		if (!knife && _aimed && Has("mira_tiro"))
+		{
+			_busy = Play("mira_tiro", 0, 0.02);
+			return;
+		}
 		if (knife)
 		{
 			for (int k = 0; k < SwingOrder.Length; k++)
@@ -236,6 +267,8 @@ public partial class HeldRig : Node3D
 	{
 		string name = empty && Has("recarga_vazia") ? "recarga_vazia" : "recarga";
 		if (!Has(name)) return;
+		// recarregando, sai da mira (a arma: Weapon.CanAim)
+		_aimed = false;
 		_busy = Play(name, seconds > 0.1f ? seconds : 0, 0.12);
 	}
 
@@ -261,9 +294,9 @@ public partial class HeldRig : Node3D
 	/// O quadro: a granada armada, o descanso (parado ou andando) quando
 	/// nada está tocando, e a boca do cano no lugar.
 	/// </summary>
-	public void Tick(double delta, bool grenadeReady, bool moving)
+	public void Tick(double delta, bool grenadeReady, bool moving, bool aiming = false)
 	{
-		Decide(delta, grenadeReady, moving);
+		Decide(delta, grenadeReady, moving, aiming);
 
 		// A arma volta para onde a animação a deixou (Carry muda) e a
 		// animação anda.
@@ -275,9 +308,18 @@ public partial class HeldRig : Node3D
 			_carried = false;
 		}
 		Player.Advance(delta);
+		if (_blendLeft > 0)
+		{
+			_blendLeft -= delta;
+			PrevTime += delta * _prevSpeed;
+		}
 	}
 
-	private void Decide(double delta, bool grenadeReady, bool moving)
+	/// <summary>Na mira (a animação de mirar já tocou).</summary>
+	public bool Aimed => _aimed;
+	private bool _aimed;
+
+	private void Decide(double delta, bool grenadeReady, bool moving, bool aiming)
 	{
 		_busy -= delta;
 		if (_releaseIn >= 0 && (_releaseIn -= delta) < 0 && _grenade != null) _grenade.Visible = false;
@@ -290,10 +332,26 @@ public partial class HeldRig : Node3D
 		}
 
 		if (_busy > 0) return;
-		string rest = moving && Has("andar") ? "andar" : "parado";
+
+		// A mira (Jhon, 22/11: "mira escopada também, de cada arma"): sobe
+		// com a animação de mirar do conjunto, fica na de mira (parado ou
+		// andando) e desce com a de desmirar.
+		bool aim = aiming && Has("mira");
+		if (aim != _aimed)
+		{
+			_aimed = aim;
+			string change = aim ? "mirar" : "desmirar";
+			if (Has(change))
+			{
+				_busy = Play(change, 0, 0.06);
+				return;
+			}
+		}
+		string rest = aim ? (moving && Has("mira_andar") ? "mira_andar" : "mira")
+			: moving && Has("andar") ? "andar" : "parado";
 		// Só troca entre parado e andar depois de o novo durar um pouco (um
 		// degrau tira o corpo do chão por um quadro).
-		if (Playing is "parado" or "andar" && Playing != rest)
+		if (Playing is "parado" or "andar" or "mira" or "mira_andar" && Playing != rest)
 		{
 			_restHold += delta;
 			if (_restHold < 0.18) return;

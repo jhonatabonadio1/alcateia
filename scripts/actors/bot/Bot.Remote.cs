@@ -102,13 +102,16 @@ public partial class Bot
 	public bool RemoteQuiet { get; private set; }
 
 	/// <summary>Chegou o que o dono está fazendo (o estado).</summary>
-	public void RemoteMotion(bool sprinting, bool crouching, bool howling, bool quiet, bool grenadeReady)
+	public void RemoteMotion(bool sprinting, bool crouching, bool howling, bool quiet, bool grenadeReady, bool aiming = false)
 	{
 		RemoteSprinting = sprinting;
 		RemoteCrouching = crouching;
 		RemoteHowling = howling;
 		RemoteQuiet = quiet;
 		_weapon.RemoteGrenadeReady = grenadeReady;
+		// Na mira: a arma do boneco sobe como a do dono (Weapon.UpdateAim
+		// anda igual; recarregando ou sem arma de fogo, não sobe).
+		_weapon.SetAiming(aiming);
 	}
 
 	// ---- agachado: a cápsula do boneco encolhe como a do dono

@@ -73,9 +73,7 @@ void fragment() {
 
 	// três labaredas: a do meio alta, duas menores dos lados
 	float flame = lick(p, 0.0, 3.0 * k, 1.55, t, seed);
-	flame = max(flame, lick(p, -0.95, 1.9 * k, 0.95, t * 1.13, seed + 4.0));
-	flame = max(flame, lick(p, 0.9, 2.2 * k, 1.0, t * 0.91, seed + 9.0));
-
+	
 	float v = clamp(flame, 0.0, 1.0);
 	vec3 outer = vec3(0.03, 0.2, 1.0);
 	vec3 mid = vec3(0.14, 0.6, 1.0);

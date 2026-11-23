@@ -287,12 +287,13 @@ public partial class NetMatch : Node
 			Form = (byte)_form.Current,
 			Slot = (byte)_weapon.HumanSlot,
 			Grounded = _body.IsOnFloor(),
-			WallRunning = _player is Player { IsWallRunning: true },
+			WallRunning = MyWall(),
 			Sprinting = _me is { IsSprinting: true },
 			Crouching = _me is { IsCrouching: true },
 			Howling = _me != null && _me.HowlProgress > 0f,
 			Quiet = _me != null && (_me.IsCrouching || _me.IsWalking),
 			GrenadeReady = _weapon.IsGrenadeReady,
+			Aiming = _weapon.IsAiming,
 			Dead = _health.IsDead,
 			Hp = _health.Hp,
 			MaxHp = _health.MaxHp,
@@ -331,7 +332,7 @@ public partial class NetMatch : Node
 		c.Epoch = _epoch;
 		c.Dead = _health.IsDead;
 		c.Frozen = _me.Frozen;
-		c.OnWall = _me.IsWallRunning;
+		c.OnWall = MyWall();
 		if (!_spawnConfirmed)
 		{
 			c.HasSpawn = true;
@@ -499,6 +500,21 @@ public partial class NetMatch : Node
 		if (_me.ResumeWallFromServer()) _wallSyncSeq = _seq;
 	}
 
+	/// <summary>Estou na parede? E o log da troca (online, para achar onde
+	/// a parede se perde entre as máquinas).</summary>
+	private bool MyWall()
+	{
+		bool on = _player is Player { IsWallRunning: true };
+		if (on != _myWallWas)
+		{
+			_myWallWas = on;
+			GD.Print($"wall net: me {(on ? "on" : "off")} the wall");
+		}
+		return on;
+	}
+
+	private bool _myWallWas;
+
 	/// <summary>Os outros, um pouco no passado, entre dois estados que já chegaram.</summary>
 	private void UpdatePuppets()
 	{
@@ -517,7 +533,8 @@ public partial class NetMatch : Node
 			puppet.RemoteWallRun = p.Has(EntityFlags.WallRunning);
 			// Correr de quatro e agachar também já vinham; rugir, desde 21/11.
 			bool crouching = p.Has(EntityFlags.Crouching);
-			puppet.RemoteMotion(p.Has(EntityFlags.Sprinting), crouching, p.Has(EntityFlags.Howling), crouching, false);
+			puppet.RemoteMotion(p.Has(EntityFlags.Sprinting), crouching, p.Has(EntityFlags.Howling), crouching, false,
+				p.Has(EntityFlags.Aiming));
 		}
 	}
 
@@ -770,7 +787,7 @@ public partial class NetMatch : Node
 		body.RemoteUpdate(s.Position, s.Velocity, s.Yaw, s.Pitch, s.Grounded, form, (Slot)s.Slot,
 			s.Primary, s.Secondary, s.Hp, s.MaxHp, s.Shield, s.MaxShield, s.Dead);
 		body.RemoteWallRun = s.WallRunning && !s.Dead;
-		body.RemoteMotion(s.Sprinting, s.Crouching, s.Howling && !s.Dead, s.Quiet, s.GrenadeReady && !s.Dead);
+		body.RemoteMotion(s.Sprinting, s.Crouching, s.Howling && !s.Dead, s.Quiet, s.GrenadeReady && !s.Dead, s.Aiming && !s.Dead);
 		if (s.HasGear && !s.Dead) body.RemoteGear(s.Ammo, s.Reloading, s.Grenades, s.Wp, s.Charge);
 	}
 

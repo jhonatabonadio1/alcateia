@@ -154,6 +154,11 @@ public struct NetState
 	/// <summary>Segurando a granada com o pino puxado: o boneco arma o
 	/// braço. Um byte depois do HUD (desde 21/11); jogo antigo não lê.</summary>
 	public bool GrenadeReady;
+
+	/// <summary>Na mira (22/11): o boneco sobe a arma ao olho como a do dono
+	/// (HeldRig toca mirar/mira/desmirar). Um bit no byte da granada: jogo
+	/// antigo ignora.</summary>
+	public bool Aiming;
 	public float Hp, MaxHp, Shield, MaxShield;
 	public string Primary, Secondary;
 
@@ -187,7 +192,7 @@ public struct NetState
 		w.Write(Grenades);
 		w.Write(Wp);
 		w.Write(Charge);
-		w.Write((byte)(GrenadeReady ? 1 : 0));
+		w.Write((byte)((GrenadeReady ? 1 : 0) | (Aiming ? 2 : 0)));
 	}
 
 	public static NetState Read(BinaryReader r)
@@ -223,7 +228,12 @@ public struct NetState
 			s.Grenades = r.ReadByte();
 			s.Wp = r.ReadSingle();
 			s.Charge = r.ReadSingle();
-			if (r.BaseStream.Length - r.BaseStream.Position >= 1) s.GrenadeReady = (r.ReadByte() & 1) != 0;
+			if (r.BaseStream.Length - r.BaseStream.Position >= 1)
+			{
+				byte extra = r.ReadByte();
+				s.GrenadeReady = (extra & 1) != 0;
+				s.Aiming = (extra & 2) != 0;
+			}
 		}
 		return s;
 	}

@@ -53,19 +53,22 @@ a diferença (`AnimationKit.SameRig`) e ajusta cada clipe ao corpo
 altura do corpo). O ajuste é feito uma vez por modelo e vale para todos
 os corpos iguais da partida.
 
-**A arma na mão** (terceira pessoa) é uma pose feita no Blender para
-cada tipo de arma e cada personagem (`poses_armas.json`, na pasta dele;
-22/11). O script é `tools/personagens/blender/poses_armas.py`: ele abre o
-humano e o conjunto da primeira pessoa da arma (`assets/armas/fp/`), põe
-a arma no corpo como está no `DESENHO` do script (a coronha no ombro, a
-pistola na frente do peito…), leva as mãos onde as mãos da primeira
-pessoa seguram, escolhe o cotovelo que deixa o punho reto e fecha cada
-dedo. No jogo (`HeldWeapon`) o corpo da cintura para cima vai para a
-pose, o peito vira para a mira e o conjunto é posto pela mão direita da
-pose; a animação da primeira pessoa (tiro, recarga, golpe, granada) mexe
-as mãos a partir dali.
+**A arma na mão** (terceira pessoa) vem das animações da primeira pessoa,
+refeitas no Blender para cada personagem e cada arma
+(`animacoes/<arma>.json`, na pasta dele; 22/11). O script é
+`tools/personagens/blender/animacoes_armas.py`: ele abre o humano e o
+conjunto da primeira pessoa da arma (`assets/armas/fp/`), põe o conjunto no
+corpo (`POSTURA`: no quadril e na mira) e, quadro a quadro de cada clipe,
+leva as mãos onde as da primeira pessoa estão, escolhe o cotovelo que
+deixa o punho no que ele dobra e fecha cada dedo até encostar na arma. A
+faca e a granada têm o corpo inteiro coreografado (`FACA`, `GRANADA`). No
+jogo (`HeldWeapon.HoldByClips`) o clipe toca junto com o do conjunto, o
+peito desfaz o giro do quadril da animação de andar e inclina para a mira,
+e o conjunto vai onde o clipe diz, em relação ao peito.
 
-Para ajustar uma pose à mão: `poses_armas.py <pasta> --blend` grava
+Sem a pasta `animacoes/`, vale a pose parada de antes (`poses_armas.json`,
+`tools/personagens/blender/poses_armas.py`). Para ajustar uma pose à mão:
+`poses_armas.py <pasta> --blend` grava
 `tools/personagens/blender/poses/<pasta>.blend` (uma ação por tipo; a arma
 de cada tipo presa na mão direita, na coleção `arma_<tipo>`). Mude a pose
 da ação no Blender e rode `poses_armas.py <pasta> --do-blend` para

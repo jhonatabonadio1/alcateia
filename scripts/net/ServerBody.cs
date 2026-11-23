@@ -116,6 +116,7 @@ public sealed class ServerBody
 	/// este corpo não, antes de voltar para ela.</summary>
 	public const int WallBehindSteps = 3;
 	private int _wallBehind;
+	private bool _wallWas;
 
 	/// <summary>Quantas vezes voltou para a parede pelo que o jogo contou.</summary>
 	public int WallResumes { get; private set; }
@@ -147,10 +148,21 @@ public sealed class ServerBody
 			// diferença no grudar é normal (o próximo acerta), três seguidos
 			// não — volta para a parede (InputCommand.OnWall).
 			_wallBehind = c.OnWall && !Body.IsWallRunning ? _wallBehind + 1 : 0;
-			if (_wallBehind >= WallBehindSteps && Body.ResumeWall("the client is on the wall: the server goes back to it"))
+			if (_wallBehind >= WallBehindSteps)
 			{
-				WallResumes++;
-				_wallBehind = 0;
+				if (Body.ResumeWall("the client is on the wall: the server goes back to it"))
+				{
+					WallResumes++;
+					_wallBehind = 0;
+				}
+				else if (_wallBehind == WallBehindSteps)
+					GD.Print($"wall server: {Account} says it is on the wall, this body can't go back ({Body.WallResumeBlock})");
+			}
+			if (Body.IsWallRunning != _wallWas)
+			{
+				_wallWas = Body.IsWallRunning;
+				Vector3 at = Body.GlobalPosition;
+				GD.Print($"wall server: {Account} {(_wallWas ? "on" : "off")} the wall at ({at.X:0.0}, {at.Y:0.0}, {at.Z:0.0}); client on the wall: {c.OnWall}");
 			}
 		}
 

@@ -384,14 +384,28 @@ public partial class Player
 	/// um tropeço do servidor tirava o corpo dele da parede e ele não
 	/// voltava, e a correção arrastava o lobo de pé pela parede).
 	/// </summary>
+	/// <summary>Por que o último ResumeWall não voltou (o log do servidor).</summary>
+	public string WallResumeBlock { get; private set; } = "";
+
 	public bool ResumeWall(string why)
 	{
-		if (_onWall || !_form.IsWolf || IsOnFloor() || IsStunned || _moves.Controls) return false;
-		if (!_intent.Forward && !_intent.AttackHeld) return false;
-		if (!ProbeWall(out Vector3 normal, out _)) return false;
+		WallResumeBlock = _onWall ? "already on it" : !_form.IsWolf ? "not a wolf" : IsOnFloor() ? "on the floor"
+			: IsStunned ? "stunned" : _moves.Controls ? "in a move" : !_intent.Forward && !_intent.AttackHeld ? "not holding W"
+			: "";
+		if (WallResumeBlock != "") return false;
+		if (!ProbeWall(out Vector3 normal, out _))
+		{
+			WallResumeBlock = $"no wall within {WallCheckDistance}m";
+			return false;
+		}
 
 		_wallCooldown = 0;
-		if (!CommitGrab(normal)) return false;
+		if (!CommitGrab(normal))
+		{
+			WallResumeBlock = "could not grab it";
+			return false;
+		}
+		WallResumeBlock = "";
 		WallLog(why);
 		return true;
 	}

@@ -18,12 +18,12 @@ public sealed class PuppetFlagsTest : RegressionTest
 		var sent = new NetState
 		{
 			Grounded = true, Sprinting = true, Crouching = true, Howling = true, Quiet = true,
-			HasGear = true, GrenadeReady = true, Primary = "ar15", Secondary = "deagle"
+			HasGear = true, GrenadeReady = true, Aiming = true, Primary = "ar15", Secondary = "deagle"
 		};
 		var stream = new System.IO.MemoryStream();
 		sent.Write(new System.IO.BinaryWriter(stream));
 		NetState got = NetState.Read(new System.IO.BinaryReader(new System.IO.MemoryStream(stream.ToArray())));
-		b.Check(got.Grounded && got.Sprinting && got.Crouching && got.Howling && got.Quiet && got.GrenadeReady, "as marcas vão e voltam");
+		b.Check(got.Grounded && got.Sprinting && got.Crouching && got.Howling && got.Quiet && got.GrenadeReady && got.Aiming, "as marcas vão e voltam (a mira também)");
 		b.Check(!got.Dead && !got.WallRunning, "sem mexer nos bits de antes");
 
 		var old = new NetState { Grounded = true, HasGear = true, Primary = "ar15", Secondary = "deagle" };
@@ -32,7 +32,7 @@ public sealed class PuppetFlagsTest : RegressionTest
 		byte[] bytes = stream.ToArray();
 		// A mensagem de antes de 21/11 terminava antes do byte da granada.
 		got = NetState.Read(new System.IO.BinaryReader(new System.IO.MemoryStream(bytes, 0, bytes.Length - 1)));
-		b.Check(got.HasGear && !got.GrenadeReady && !got.Sprinting && !got.Howling && !got.Crouching, "a mensagem antiga é lida, tudo desligado");
+		b.Check(got.HasGear && !got.GrenadeReady && !got.Aiming && !got.Sprinting && !got.Howling && !got.Crouching, "a mensagem antiga é lida, tudo desligado");
 		await b.Frames(1);
 	}
 }
@@ -120,7 +120,7 @@ public sealed class PuppetWolfTest : RegressionTest
 public sealed class PuppetHandsTest : RegressionTest
 {
 	public override string Name => "BonecoMaos";
-	public override string Description => "em terceira pessoa a pose de cada arma é a do Blender (poses_armas.json): as mãos e a arma onde o Blender deixou, o punho sem entortar, a granada na palma e o cano para a mira; Eve e Barut";
+	public override string Description => "em terceira pessoa cada arma toca a animação feita no Blender a partir da primeira pessoa (animacoes/<arma>.json): as mãos onde as do conjunto estão (parado, mirando, recarregando), o cano para a mira, a mira dos outros pela rede; Eve e Barut";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -140,11 +140,12 @@ public sealed class PuppetHandsTest : RegressionTest
 		await b.Frames(2);
 		Vector3 at = b.Player.GlobalPosition;
 		string who = team == Teams.Orange ? "Barut" : "Eve";
+		bool aiming = false;
 
 		void Tell(Slot slot, float pitch)
 		{
 			puppet.RemoteUpdate(at, Vector3.Zero, 0f, pitch, true, Form.Human, slot, "ar15", "deagle", 200f, 200f, 0f, 0f, false);
-			puppet.RemoteMotion(false, false, false, false, false);
+			puppet.RemoteMotion(false, false, false, false, false, aiming);
 			puppet.CollisionLayer = 0;
 		}
 		async Task Hold(Slot slot, float pitch, int frames = 40)
@@ -157,14 +158,6 @@ public sealed class PuppetHandsTest : RegressionTest
 		}
 
 		var held = puppet.GetNode<HeldWeapon>("Human/HeldWeapon");
-		var poses = HoldPoses.For(held.PosesPath);
-		b.Check(poses != null && poses.Count == 4, $"{who}: as quatro poses do Blender carregaram ({held.PosesPath})");
-		if (poses == null)
-		{
-			puppet.QueueFree();
-			return;
-		}
-
 		Skeleton3D skeleton = AnimationKit.FindSkeleton(puppet.GetNode<Node3D>("Human"));
 		int Bone(string end)
 		{
@@ -175,85 +168,106 @@ public sealed class PuppetHandsTest : RegressionTest
 		Vector3 At(int bone) => (skeleton.GlobalTransform * skeleton.GetBoneGlobalPose(bone)).Origin;
 		HeldRig Rig() => held.GetChildCount() > 0 ? held.GetChild(0) as HeldRig : null;
 		Vector3 Aim(float pitch) => (new Basis(puppet.GlobalBasis.X.Normalized(), pitch) * -puppet.GlobalBasis.Z).Normalized();
-		int rightArm = Bone("RightForeArm"), right = Bone("RightHand"), rightMiddle = Bone("RightHandMiddle1");
-		int left = Bone("LeftHand"), head = Bone("_Head");
-		Vector3 Palm(int wrist, int middle) => At(wrist).Lerp(At(middle), 0.6f);
-		float Wrist() => Mathf.RadToDeg((At(right) - At(rightArm)).AngleTo(At(rightMiddle) - At(right)));
-		Vector3 Gun(HeldRig rig) => rig.At(rig.Skeleton.FindBone("ik_hand_gun"));
-
-		// As distâncias entre as mãos, a cabeça e a arma são as do Blender (o
-		// peito vira para a mira e o quadril vem da animação, mas da cintura
-		// para cima é a pose).
-		void Same(string kind, HeldRig rig)
+		int FingerBone(string mixamo, string manny) { int b = Bone(mixamo); return b >= 0 ? b : skeleton.FindBone(manny); }
+		int right = Bone("RightHand"), rightMiddle = FingerBone("RightHandMiddle1", "middle_01_r");
+		int left = Bone("LeftHand"), leftMiddle = FingerBone("LeftHandMiddle1", "middle_01_l");
+		// A palma: entre o pulso e o começo do médio, onde o Blender encosta
+		// a palma do personagem na da primeira pessoa.
+		Vector3 Palm(int wrist, int middle) => At(wrist).Lerp(At(middle), 0.8f);
+		Vector3 RigPalm(HeldRig rig, bool rightSide)
 		{
-			HoldPose pose = poses[kind];
-			var here = new System.Collections.Generic.Dictionary<string, Vector3>
-			{
-				["RightHand"] = At(right), ["LeftHand"] = At(left), ["Head"] = At(head), ["arma"] = Gun(rig),
-			};
-			float worst = 0f;
-			string where = "";
-			foreach (var (a, b2) in new[] { ("RightHand", "arma"), ("LeftHand", "arma"), ("RightHand", "LeftHand"), ("Head", "arma"), ("Head", "RightHand") })
-			{
-				if (!pose.Check.ContainsKey(a) || !pose.Check.ContainsKey(b2)) continue;
-				float want = pose.Check[a].DistanceTo(pose.Check[b2]);
-				float got = here[a].DistanceTo(here[b2]);
-				if (Mathf.Abs(got - want) > worst)
-				{
-					worst = Mathf.Abs(got - want);
-					where = $"{a}–{b2} {got:0.000} m (Blender {want:0.000})";
-				}
-			}
-			RegressionBench.Note($"{who}, {kind}: maior diferença para o Blender {worst * 100f:0.0} cm ({where}), punho {Wrist():0}°");
-			b.AtMost(0.025f, worst, $"{who}, {kind}: mãos, cabeça e arma como no Blender (m)");
+			int w = rightSide ? rig.HandR : rig.HandL;
+			int m = (rightSide ? rig.FingersR : rig.FingersL)[2][0];
+			return rig.At(w).Lerp(rig.At(m), 0.8f);
+		}
+		// As mãos do personagem onde as do conjunto estão (o Blender ajeita a
+		// mão do personagem, que é maior, em até ~3 cm: a pele da palma, o giro
+		// em volta do cabo).
+		// A esquerda pode deslizar no guarda-mão: o braço do personagem é mais
+		// curto que o da primeira pessoa e o Blender leva a mão para trás na
+		// linha do cano (até ~10 cm). Conta o que sai da linha.
+		float LeftGap(HeldRig rig)
+		{
+			Vector3 d = Palm(left, leftMiddle) - RigPalm(rig, false);
+			Vector3 along = rig.GunForward();
+			float s = d.Dot(along);
+			return Mathf.Abs(s) > 0.12f ? d.Length() : (d - along * s).Length();
+		}
+		float Gap(HeldRig rig, bool rightSide) => rightSide ? Palm(right, rightMiddle).DistanceTo(RigPalm(rig, true)) : LeftGap(rig);
+
+		async Task Check(Slot slot, string kind, bool twoHands)
+		{
+			await Hold(slot, 0f);
+			HeldRig rig = Rig();
+			b.Check(rig != null && held.Clips != null, $"{who}, {kind}: a animação do Blender carregou");
+			if (rig == null || held.Clips == null) return;
+			float r = Gap(rig, true), l = twoHands ? Gap(rig, false) : 0f;
+			RegressionBench.Note($"{who}, {kind} ({rig.Playing}): mão direita a {r * 100f:0.0} cm da do conjunto" + (twoHands ? $", esquerda a {l * 100f:0.0} cm" : ""));
+			b.AtMost(0.05f, r, $"{who}, {kind}: a mão direita na arma (m)");
+			if (twoHands) b.AtMost(0.04f, l, $"{who}, {kind}: a mão esquerda na arma (m)");
 		}
 
-		foreach (float pitch in new[] { 0f, 0.4f })
-		{
-			await Hold(Slot.Secondary, pitch);
-			HeldRig pistol = Rig();
-			b.Check(pistol != null, $"{who}: a pistola vem do conjunto da primeira pessoa");
-			if (pistol == null) break;
-			float barrel = pistol.GunForward().Dot(Aim(pitch));
-			RegressionBench.Note($"{who}, pistola, mira {pitch:0.0} rad: cano·mira {barrel:0.00}");
-			b.Check(barrel > 0.9f, $"{who}: a pistola aponta para onde ele mira ({barrel:0.00})");
-			if (pitch == 0f) Same("pistola", pistol);
-			b.AtMost(held.WristBend + 4f, Wrist(), $"{who}: o punho com a pistola não entorta (graus)");
-		}
-
-		await Hold(Slot.Knife, 0f);
-		if (Rig() is HeldRig knife)
-		{
-			Same("faca", knife);
-			b.AtMost(held.WristBend + 4f, Wrist(), $"{who}: o punho com a faca não entorta (graus)");
-		}
-		else b.Check(false, $"{who}: a faca vem do conjunto");
-
-		await Hold(Slot.Grenade, 0f);
-		if (Rig() is HeldRig grenade)
-		{
-			Same("granada", grenade);
-			float gap = Palm(right, rightMiddle).DistanceTo(grenade.Center());
-			int bolt = grenade.Skeleton.FindBone("Bolt");
-			float size = grenade.Skeleton.GlobalTransform.Basis.Scale.X * grenade.Skeleton.GetBoneGlobalPose(bolt).Basis.Scale.X / 0.01f;
-			RegressionBench.Note($"{who}, granada: o meio a {gap:0.000} m da palma, {size:0.00}× o tamanho do conjunto");
-			b.AtMost(poses["granada"].Ball + 0.03f, gap, $"{who}: a granada encosta na palma (m)");
-			b.Check(size > 1.15f, $"{who}: a granada cresce com a mão do personagem ({size:0.00}×)");
-			b.AtMost(held.WristBend + 4f, Wrist(), $"{who}: o punho com a granada não entorta (graus)");
-		}
-		else b.Check(false, $"{who}: a granada vem do conjunto");
-
-		await Hold(Slot.Primary, 0f);
-		HeldRig rifle = Rig();
-		b.Check(rifle != null, $"{who}: o fuzil vem do conjunto");
-		float level = rifle?.GunForward().Y ?? 0f;
-		float straight = rifle?.GunForward().Dot(Aim(0f)) ?? 0f;
-		if (rifle != null) Same("fuzil", rifle);
-		b.Check(straight > 0.93f, $"{who}: o fuzil aponta para a frente ({straight:0.00})");
+		await Check(Slot.Primary, "fuzil", true);
+		float straight = Rig()?.GunForward().Dot(Aim(0f)) ?? 0f;
+		b.Check(straight > 0.9f, $"{who}: o fuzil aponta para a frente ({straight:0.00})");
 		await Hold(Slot.Primary, 0.5f);
-		float up = Rig()?.GunForward().Y ?? 0f;
-		RegressionBench.Note($"{who}, fuzil: cano para cima {level:0.00} reto, {up:0.00} mirando 0,5 rad acima");
-		b.Check(up > level + 0.2f, $"{who}: olhando para cima, o fuzil sobe junto");
+		float up = Rig()?.GunForward().Dot(Aim(0.5f)) ?? 0f;
+		b.Check(up > 0.9f, $"{who}: olhando para cima, o fuzil sobe junto ({up:0.00})");
+
+		// A mira pela rede: o boneco sobe a arma ao olho.
+		aiming = true;
+		await Hold(Slot.Primary, 0f, 50);
+		HeldRig aimed = Rig();
+		b.Check(aimed != null && aimed.Playing is "mira" or "mira_andar", $"{who}: mirando, o boneco toca a mira ({aimed?.Playing})");
+		if (aimed != null)
+		{
+			float r = Gap(aimed, true), l = Gap(aimed, false);
+			float dir = aimed.GunForward().Dot(Aim(0f));
+			RegressionBench.Note($"{who}, fuzil na mira: mãos a {r * 100f:0.0}/{l * 100f:0.0} cm, cano·mira {dir:0.00}");
+			b.AtMost(0.05f, Mathf.Max(r, l), $"{who}: na mira, as mãos na arma (m)");
+			b.Check(dir > 0.95f, $"{who}: na mira, o cano para a mira ({dir:0.00})");
+		}
+		aiming = false;
+		await Hold(Slot.Primary, 0f, 30);
+		b.Check(Rig()?.Playing is "parado" or "andar", $"{who}: soltou a mira, volta ao descanso ({Rig()?.Playing})");
+
+		// A recarga: as mãos com as do conjunto. Quando o personagem troca o pente
+		// (o clipe diz quando, HoldClip.MagDrop; Jhon, 23/11: "ela coloca o mesmo
+		// carregador"), a esquerda sai de propósito: solta o pente velho (ele cai),
+		// vai ao bolso e volta com o novo — aí só a direita fica com a de lá, e a
+		// esquerda tem de ir mesmo (mais de 10 cm da de lá) e voltar.
+		puppet.RemoteGear(0, true, 1, 0f, 0f);
+		float worst = 0f, away = 0f;
+		string playing = "";
+		bool swaps = false;
+		for (int i = 0; i < 90; i++)
+		{
+			Tell(Slot.Primary, 0f);
+			puppet.RemoteGear(0, true, 1, 0f, 0f);
+			await b.Frames(1);
+			if (Rig() is HeldRig rr && rr.Playing.StartsWith("recarga") && rr.BlendWeight >= 1f)
+			{
+				playing = rr.Playing;
+				HoldClip clip = held.Clips?.Get(rr.Playing);
+				double t = rr.ClipTime;
+				bool swapping = clip != null && clip.SwapsMagazine && t >= clip.MagDrop - 0.05 && t <= clip.MagSeat;
+				swaps |= clip != null && clip.SwapsMagazine;
+				worst = Mathf.Max(worst, swapping ? Gap(rr, true) : Mathf.Max(Gap(rr, true), Gap(rr, false)));
+				if (swapping) away = Mathf.Max(away, Gap(rr, false));
+			}
+		}
+		puppet.RemoteGear(30, false, 1, 0f, 0f);
+		RegressionBench.Note($"{who}, recarga ({playing}): as mãos a no máximo {worst * 100f:0.0} cm das do conjunto"
+			+ (swaps ? $"; a esquerda vai buscar o pente a {away * 100f:0.0} cm" : ""));
+		b.Check(playing.StartsWith("recarga"), $"{who}: o boneco recarrega");
+		b.AtMost(0.045f, worst, $"{who}: na recarga, as mãos com as do conjunto (m)");
+		if (swaps) b.Check(away > 0.10f, $"{who}: na troca de pente, a esquerda vai à cintura ({away * 100f:0.0} cm)");
+
+		await Check(Slot.Secondary, "pistola", true);
+		float barrel = Rig()?.GunForward().Dot(Aim(0f)) ?? 0f;
+		b.Check(barrel > 0.9f, $"{who}: a pistola aponta para onde ele mira ({barrel:0.00})");
+		await Check(Slot.Knife, "faca", false);
+		await Check(Slot.Grenade, "granada", false);
 
 		puppet.QueueFree();
 		await b.Frames(2);

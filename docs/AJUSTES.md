@@ -404,7 +404,10 @@ a opacidade são as da mira do jogador).
 
 Ajustes globais do recuo, no `Player`: `RecoilScale` 1 (multiplica o de
 toda arma), `RecoilMax` 4,5° (teto acumulado), `RecoilReturnDelay`
-0,12 s. Traçante: `Weapon.ShowTracer`, `TracerLife` 0,08 s. Ruído do
+0,12 s. Traçante: `Weapon.ShowTracer` e `TracerColor`; o efeito em
+`BulletTracer` (`Speed` 190 m/s, `StreakLength` 3,2 m, `CoreWidth` 0,022 m,
+`GlowWidth` 0,12 m, `TrailLife` 0,45 s, `TrailWidth` 0,03 m, `TrailStrength`
+0,38, `TrailWisp` 0,03 m, `FlashSize` 0,22 m, `FlashLife` 0,05 s). Ruído do
 tiro para os bots: `Weapon.ShotNoise` 60 m.
 
 Preços da loja e patente mínima: `scripts/meta/Catalog.cs`.

@@ -1,3 +1,4 @@
+
 using Godot;
 using System.Collections.Generic;
 
@@ -211,6 +212,29 @@ public partial class Hud : CanvasLayer
 		Visible = !watching;
 	}
 
+	private bool _saidOnFire;
+
+	/// <summary>
+	/// O personagem fala ao pegar fogo ("I'm on fire!", Jhon, 23/11: "quero
+	/// colocar para eu ouvir quando eu entrar em chamas"): só quem pegou
+	/// ouve, como o resto do "em chamas". A fala é a do personagem dele
+	/// (<c>voz_em_chamas_&lt;pasta&gt;</c>: barut, eve), e quem não tem a sua
+	/// fica calado.
+	/// </summary>
+	private void SayOnFire(CombatantStats me)
+	{
+		bool on = me != null && me.IsLocal && me.Rage.OnFire;
+		if (on && !_saidOnFire)
+		{
+			CharacterSkin skin = _player?.Character ?? CharacterSkin.DefaultFor(_health.Team);
+			string who = skin?.ResourcePath.GetBaseDir().GetFile();
+			string line = Sfx.First($"voz_em_chamas_{who}");
+			Sfx.Local("em_chamas");   // o brilho de quem pegou fogo, junto com a fala
+			if (line != null) Sfx.Local(line);
+		}
+		_saidOnFire = on;
+	}
+
 	public override void _Process(double delta)
 	{
 		if (_health == null) return;
@@ -223,6 +247,7 @@ public partial class Hud : CanvasLayer
 			foreach (CombatantStats c in _match.Combatants)
 				if (c.Health == _health) { me = c; break; }
 			_formBadge.Fire = me != null && me.Rage.OnFire ? me.Rage.Level : 0f;
+			if (Subject == null) SayOnFire(me);
 			if (me != null)
 			{
 				_formBadge.Rank = me.Rank;
