@@ -84,6 +84,12 @@ LANCE_REF = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lance_refe
 REF_PINO, REF_SAI, REF_ARMADO, REF_SOLTA, REF_SEGUE = 1.0, 43.0, 57.0, 62.0, 74.0
 # no armar: até PINO s a esquerda puxa o pino (a primeira pessoa); de PINO ao fim o braço engatilha
 LANCE_PINO = float(os.environ.get('LANCE_PINO', 0.22))
+# A esquerda fica no pino até ele sair (na primeira pessoa sai aos 0,26 s; tools/armas/conjuntos.py), com a ponta do
+# indicador na de lá, dentro da argola (Jhon, 23/11: "deixe a personagem grudar mais um pouco a mão no gatilho da
+# granada"; ela soltava aos 0,22 s, a 12 a 16 cm da argola). Com o pino na mão ela se solta da granada e, LANCE_LARGA
+# depois, abre e larga o pino, que cai no chão (HeldWeapon.Pin; "o gatilho da granada deve cair no chão também").
+LANCE_PINO_SAI = float(os.environ.get('LANCE_PINO_SAI', 0.27))
+LANCE_LARGA = float(os.environ.get('LANCE_LARGA', 0.12))
 # no arremesso: a soltura (s; a granada sai da mão no jogo em aa.LANCE[0]), o fim do
 # acompanhamento e o começo da volta para os braços soltos
 LANCE_SEGUE = float(os.environ.get('LANCE_SEGUE', 0.36))
@@ -189,6 +195,11 @@ FACA_PUXA = 0.12
 RECARGA_TROCA = os.environ.get('RECARGA_TROCA', '1') == '1'
 # onde fica o meio do pente novo quando a mão o pega no bolso (o lado esquerdo do quadril)
 RECARGA_BOLSO = tuple(float(x) for x in os.environ.get('RECARGA_BOLSO', '-0.25,0.08,-0.43').split(','))
+# O saque da granada vem do bolso (Jhon, 23/11: "no terceira pessoa, a Eve deve tirar a granada do bolso também, igual
+# às outras armas"): a palma no bolso da frente da direita (no peito: x direita, y frente, z cima), os dedos para baixo
+# e a palma para a coxa, segurando a granada; sobe até a pegada (Copia.sacar_do_bolso).
+GRANADA_BOLSO = tuple(float(x) for x in os.environ.get('GRANADA_BOLSO', '0.22,0.10,-0.45').split(','))
+GRANADA_BOLSO_EIXOS = ((0.0, 0.25, -1.0), (-1.0, 0.3, 0.0))
 # quanto o pente já saiu do encaixe quando a mão o solta (m)
 RECARGA_SOLTA = float(os.environ.get('RECARGA_SOLTA', 0.22))
 # quanto a mão puxa o pente para cima antes de levá-lo à arma (m)
@@ -202,6 +213,9 @@ RECARGA_ENTRA = 0.12
 # Quanto a mão que segura a granada abre (0 = a pegada de lá; 1 = a mão em repouso): a granada de
 # fora é 1,4 vez maior (Jhon, 23/11: "aumente o tamanho da granada")
 GRANADA_MAO_ABRE = float(os.environ.get('GRANADA_MAO_ABRE', 0.3))
+# Quanto a granada da mão cresce no jogo em volta do meio dela (HeldWeapon.GrenadeHeldGrow — os dois têm de ser iguais):
+# o que encosta nela (o dedo na argola) é posto onde ela fica crescida.
+GRANADA_CRESCE = float(os.environ.get('GRANADA_CRESCE', 1.4))
 # Quanto do giro do braço de cima em volta de si o osso de torção desfaz perto do ombro (1 = todo:
 # a pele afinava na braçadeira, metade num osso e metade no outro a 130°; 0,6 fica liso)
 TORCAO_PARTE = float(os.environ.get('TORCAO_PARTE', 0.6))
@@ -216,6 +230,12 @@ OMBRO_MIRA_PISTOLA = float(os.environ.get('OMBRO_MIRA_PISTOLA', 26.0))
 LIMITE_GIRO_MIRA = float(os.environ.get('LIMITE_GIRO_MIRA', 3.0))
 # até quanto a pistola pode descer (m) para o punho ficar reto
 DESCE_PISTOLA = float(os.environ.get('DESCE_PISTOLA', 0.14))
+# A pistola reta (Jhon, 23/11: "pulso e arma precisam estar retas no 3 pessoa"): o cano na
+# horizontal e os dois punhos retos (não com a dobra da primeira pessoa, que na pegada da P9 é de
+# ~50°, o antebraço vindo de baixo). A arma não gira: anda (frente, lado, altura) até os dois
+# punhos ficarem até PUNHO_RETO graus do reto.
+PISTOLA_RETA = os.environ.get('PISTOLA_RETA', '1') == '1'
+PUNHO_RETO = float(os.environ.get('PUNHO_RETO', 8.0))
 COTOVELO_BAIXO = tuple(float(x) for x in os.environ.get('COTOVELO_BAIXO', '0.25,-1.0,0.0').split(','))
 
 
@@ -918,14 +938,16 @@ class Copia:
                 # do corpo (8 cm no colete) — e vai, em arco pela frente, de onde estava (no peito)
                 # até apontar o alvo.
                 centro = (M[corpo.n('RightArm')].translation + M[corpo.n('LeftArm')].translation) * 0.5
-                if t <= LANCE_PINO or not hasattr(self, '_pino_e'):
+                if t <= LANCE_PINO_SAI or not hasattr(self, '_pino_e'):
                     rig.colocar(q['col'])
                     alvo_e = mm.quadro(rig.m('hand_l')) @ ger.K[('Left', 'Hand')]
                     self._pino_e = (C.inverted() @ (alvo_e.translation - centro), C.inverted() @ alvo_e.to_3x3().normalized())
                     q['esquerda'] = None
+                    # a ponta do indicador na de lá (resolvido junto com o braço)
+                    q['pino_e'] = True
                     wa = 0.0
                 else:
-                    wa = aa.suave((t - LANCE_PINO) / 0.30)
+                    wa = aa.suave((t - LANCE_PINO_SAI) / 0.30)
                     mi = corpo.mao['Left']
                     quer = aponta[1] @ orient(mi['dedos'], mi['palma']).inverted()
                     punho_aponta = aponta[0] - quer @ (mi['nos'] * aa.ALINHA)
@@ -943,6 +965,7 @@ class Copia:
                     solta_e = aa.quadro_mao(corpo, L, G['solta_e'], G['mao_solta_e'])
                     q['esquerda'] = ('quadro', solta_e[0], wp, solta_e[1])
                     q['relaxa_e'] = wp
+                    q['pino_e'] = False
             elif nome == 'armado':
                 q['esquerda'] = ('quadro', aponta[0], 1.0, aponta[1])
                 q['forma_e'] = 'aberta'
@@ -1047,6 +1070,29 @@ class Copia:
             q['solto_d'] = 1.0 - w
             self.olhar_a_arma(q, w)
 
+    def sacar_do_bolso(self, quadros, n):
+        """A granada sai do bolso (Jhon, 23/11): a mão direita começa no bolso da frente
+        (GRANADA_BOLSO), com a granada na palma virada para a coxa, e sobe até a pegada da primeira
+        pessoa, girando no caminho; o braço vem pendurado (o cotovelo para trás) e a cabeça
+        acompanha. O conjunto toca o saque de lá (é o que o jogo toca): a granada é posta para a mão
+        de lá ficar onde a daqui vai."""
+        corpo, rig = self.corpo, self.rig
+        Q = aa.quadro_mira(corpo)
+        for k, q in enumerate(quadros):
+            u = k / max(1, n)
+            w = aa.suave(u)
+            rig.tocar('sacar', k)
+            rig.colocar(q['col'])
+            fp = rig.mao('Right')
+            F_fp = Matrix.Translation(fp['palma']) @ orient(fp['ao_longo'], fp['dentro']).to_4x4()
+            p0 = aa.no_peito(corpo, q['locais'], GRANADA_BOLSO)
+            r0 = orient(Q @ Vector(GRANADA_BOLSO_EIXOS[0]), Q @ Vector(GRANADA_BOLSO_EIXOS[1]))
+            pos = p0.lerp(fp['palma'], w)
+            rot = r0.to_quaternion().slerp(F_fp.to_3x3().to_quaternion(), w).to_matrix()
+            q['col'] = (Matrix.Translation(pos) @ rot.to_4x4()) @ F_fp.inverted() @ q['col']
+            q['solto_d'] = 1.0 - w
+            self.olhar_a_arma(q, w)
+
     def olhar_a_arma(self, q, w):
         """A cabeça acompanha, de leve, a mão que saca (Jhon, 23/11: "ao sacar a arma, o personagem
         deve olhar levemente para a direção em que a arma está sendo sacada"): o pescoço e a cabeça
@@ -1103,24 +1149,69 @@ class Copia:
             if suave.length > 1e-5:
                 q['col'] = Matrix.Translation(suave) @ q['col']
 
-    def _giro_em(self, M, col, eixos, pref_d, pref_e):
+    def cano(self):
+        """Para onde o cano da pistola aponta, no mundo (o -y do osso da arma, ficha 'cano_osso')."""
+        co = self.rig.ficha.get('cano_osso')
+        osso = co['osso'] if co else 'ik_hand_gun'
+        return (self.rig.rot(osso) @ Vector((0.0, -1.0, 0.0))).normalized()
+
+    def nivelar(self, col):
+        """O giro (em volta do pulso direito) que põe o cano na horizontal, sem mudar para onde
+        ele aponta de lado."""
+        self.rig.colocar(col)
+        pulso_d = (mm.quadro(self.rig.m('hand_r')) @ self.ger.K[('Right', 'Hand')]).translation.copy()
+        c = self.cano()
+        h = Vector((c.x, c.y, 0.0)).normalized()
+        R = c.rotation_difference(h).to_matrix().to_4x4()
+        return Matrix.Translation(pulso_d) @ R @ Matrix.Translation(-pulso_d)
+
+    def _giro_em(self, M, col, eixos, pref_d, pref_e, reto=False):
         """Quanto os dois punhos ficam além de PUNHO_PISTOLA do de lá com a pistola
-        girada (yaw, pitch em graus) em volta do pulso direito."""
+        girada (yaw, pitch em graus) em volta do pulso direito e erguida eixos[2] (m).
+        `reto`: o punho tem de ficar reto (PUNHO_RETO), não como o de lá, e a arma anda
+        também para a frente (eixos[3]) e para o lado (eixos[4])."""
         rig, ger, corpo = self.rig, self.ger, self.corpo
         rig.colocar(col)
         pulso_d = (mm.quadro(rig.m('hand_r')) @ ger.K[('Right', 'Hand')]).translation.copy()
         R = (Quaternion(pa.CIMA, math.radians(eixos[0])) @ Quaternion(pa.DIREITA, math.radians(eixos[1]))).to_matrix().to_4x4()
-        giro = Matrix.Translation(pa.CIMA * eixos[2]) @ Matrix.Translation(pulso_d) @ R @ Matrix.Translation(-pulso_d)
+        anda = pa.CIMA * eixos[2]
+        if len(eixos) > 3:
+            anda = anda + pa.FRENTE * eixos[3] + pa.DIREITA * eixos[4]
+        giro = Matrix.Translation(anda) @ Matrix.Translation(pulso_d) @ R @ Matrix.Translation(-pulso_d)
         rig.colocar(giro @ col)
         custo = 0.0
         for s, lado, pref in (('r', 'Right', pref_d), ('l', 'Left', pref_e)):
             fp = rig.mao(lado)
             alvo = mm.quadro(rig.m(f'hand_{s}')) @ ger.K[(lado, 'Hand')]
+            quer, folga = ((0.0, 0.0), PUNHO_RETO) if reto else ((fp['dobra'], fp['lado']), PUNHO_PISTOLA)
             r = ger.braco[lado].avaliar(M, alvo.translation, alvo.to_3x3().normalized(), pref, corpo.mao[lado], 0.03, 0.0,
-                                        passo=7.5, alvo=(fp['dobra'], fp['lado']))
-            ex = max(0.0, abs(r['dobra'] - fp['dobra']) - PUNHO_PISTOLA) + max(0.0, abs(r['lado'] - fp['lado']) - PUNHO_PISTOLA)
+                                        passo=7.5, alvo=quer)
+            ex = max(0.0, abs(r['dobra'] - quer[0]) - folga) + max(0.0, abs(r['lado'] - quer[1]) - folga)
             custo += ex * ex + r['longe'] * 4000
+        if reto:
+            return custo + 0.05 * (eixos[0] ** 2 + eixos[1] ** 2) + 30.0 * (eixos[2] ** 2 + eixos[3] ** 2 + eixos[4] ** 2), giro
         return custo + 0.05 * (eixos[0] ** 2 + eixos[1] ** 2) + 300.0 * eixos[2] ** 2, giro
+
+    def _reta(self, M0, col):
+        """A pistola reta: nivelada, e andando (frente, lado, altura; uns graus de lado e de
+        cima) até os dois punhos ficarem retos. Devolve (custo, eixos, giro no mundo)."""
+        nivel = self.nivelar(col)
+        col_n = nivel @ col
+        melhor = None
+        centro = (0.0, 0.0, 0.0, 0.0, 0.0)
+        lim = (4.0, 3.0, 0.16, 0.14, 0.10)
+        for passo, passo_m in ((2.0, 0.04), (1.0, 0.015), (0.5, 0.005)):
+            # cada passo anda até parar de melhorar (a arma pode ir até `lim` de onde estava)
+            for _ in range(6):
+                for d in __import__('itertools').product((-1, 0, 1), repeat=5):
+                    e = tuple(max(-lim[i], min(lim[i], centro[i] + d[i] * (passo if i < 2 else passo_m))) for i in range(5))
+                    c, g = self._giro_em(M0, col_n, e, COTOVELO_BAIXO, COTOVELO_BAIXO, reto=True)
+                    if melhor is None or c < melhor[0]:
+                        melhor = (c, e, g @ nivel)
+                if melhor[1] == centro:
+                    break
+                centro = melhor[1]
+        return melhor
 
     def giro_da_pistola(self, q, M):
         """A pistola gira inteira (com as duas mãos presas nela) em volta do pulso direito
@@ -1141,6 +1232,13 @@ class Copia:
                 lim_ang = LIMITE_GIRO_MIRA if est == 'mira' else 15.0
                 melhor = None
                 centro = (0.0, 0.0, 0.0)
+                if PISTOLA_RETA:
+                    melhor = self._reta(M0, q0['col'])
+                    self._giros[est] = (q0['col'].inverted() @ melhor[2] @ q0['col'], melhor[1])
+                    e = melhor[1]
+                    print(f'PISTOLA reta {est}: {e[0]:.1f}° de lado, {e[1]:.1f}° de cima, anda {e[3] * 100:.1f} cm para a frente, '
+                          f'{e[4] * 100:.1f} para a direita, {e[2] * 100:.1f} para cima (custo {melhor[0]:.1f})', flush=True)
+                    return self._giros[est][0]
                 for passo, passo_z in ((5.0, 0.03), (2.0, 0.012), (0.8, 0.005)):
                     for dy in (-2, -1, 0, 1, 2):
                         for dp in (-2, -1, 0, 1, 2):
@@ -1289,6 +1387,13 @@ class Copia:
                       ('ombro_costas', c - pa.FRENTE * 1.2 + pa.DIREITA * 0.5 + pa.CIMA * 0.2),
                       ('ombro_cima', c + pa.CIMA * 1.2 + pa.DIREITA * 0.3 - pa.FRENTE * 0.2)]
             fov = 110
+        if os.environ.get('FOTOS_MAOS'):
+            # de perto, as duas mãos (a pegada: os dedos, os polegares, uma mão na outra)
+            c = (M[self.corpo.n('RightHand')].translation + M[self.corpo.n('LeftHand')].translation) * 0.5
+            vistas = [('maos_esquerda', c - pa.DIREITA * 0.9 + pa.FRENTE * 0.2 + pa.CIMA * 0.15),
+                      ('maos_direita', c + pa.DIREITA * 0.9 + pa.FRENTE * 0.2 + pa.CIMA * 0.15),
+                      ('maos_cima', c + pa.CIMA * 0.9 - pa.FRENTE * 0.25)]
+            fov = 110
         for vista, de in vistas:
             arq = os.path.join(saida, f'_{nome}_{k:03d}_{vista}.png')
             pa.foto(arq, de, c, fov)
@@ -1411,6 +1516,8 @@ class Copia:
                     # repouso, mesmo da mão oposta")
                     q['relaxa_d'] = aa.suave(max(0.0, min(1.0, (t_ - aa.LANCE[0]) / 0.12)))
                     q['cotovelo_e'] = None
+            if tipo == 'granada' and nome == 'sacar':
+                self.sacar_do_bolso(quadros, n)
         else:
             if tipo == 'pistola' and PUNHO_PISTOLA > 0:
                 # o giro da pistola antes do alcance (o alcance corrige o que ele tirar)
@@ -1424,6 +1531,8 @@ class Copia:
         out = aa.Clipe(nome, n + 1)
         out.posicoes = []
         out.carregador = getattr(self, '_tempos_pente', {}).get(nome)
+        # o pino da granada: quando sai da granada (a esquerda o leva) e quando ela o larga (cai no chão)
+        out.pino = [round(LANCE_PINO_SAI, 4), round(LANCE_PINO_SAI + LANCE_LARGA, 4)] if (tipo == 'granada' and nome == 'armar') else None
         pior_falta = 0.0
         pior_ponta = 0.0
         pior_torcao = 0.0
@@ -1479,9 +1588,11 @@ class Copia:
                         p_alvo = e[1] - quer @ (mi['nos'] * aa.ALINHA)
                         pulso = pulso.lerp(p_alvo, e[2])
                         rot = Quaternion().slerp((quer @ rot.inverted()).to_quaternion(), e[2]).to_matrix() @ rot
-                # a mão livre (a esquerda da faca) e a da granada: o punho dentro do que dobra
-                livre = (tipo == 'granada' and ref_d < 0.5) or (tipo == 'faca' and lado == 'Left')
-                alvo_p = (0.0, 0.0) if livre else (fp['dobra'], fp['lado'])
+                # a mão livre (a esquerda da faca) e a da granada: o punho dentro do que dobra. A esquerda
+                # puxando o pino não: ela é a de lá, com o dedo na argola
+                pino_ = lado == 'Left' and tipo == 'granada' and q.get('pino_e', False)
+                livre = ((tipo == 'granada' and ref_d < 0.5) or (tipo == 'faca' and lado == 'Left')) and not pino_
+                alvo_p = (0.0, 0.0) if (livre or (tipo == 'pistola' and PISTOLA_RETA)) else (fp['dobra'], fp['lado'])
                 if livre:
                     antes_ = rot
                     # A mão na direção do antebraço (Jhon, 23/11: "apenas alinha a mão à direção do
@@ -1497,6 +1608,26 @@ class Copia:
                         q['col'] = (Matrix.Translation(pulso) @ rot.to_4x4()) @ (Matrix.Translation(pulso) @ antes_.to_4x4()).inverted() @ q['col']
                         rig.colocar(q['col'])
                 r = br.resolver(M, locais, pulso, rot, pref, corpo.mao[lado], cotovelo_max_z=alto, peso_tempo=peso_t, alvo=alvo_p)
+                if os.environ.get('MEDIR_PUNHO') and nome in os.environ['MEDIR_PUNHO'].split(',') and k in (0, n // 2):
+                    cano_ = self.cano()
+                    print(f'PUNHO {nome} q{k} {lado}: de lá {fp["dobra"]:.0f}°/{fp["lado"]:.0f}°, aqui {r["dobra"]:.0f}°/{r["lado"]:.0f}° '
+                          f'(dobra/lado); cano {math.degrees(math.asin(max(-1.0, min(1.0, cano_.dot(pa.CIMA))))):.0f}° acima da horizontal', flush=True)
+                if pino_:
+                    # a ponta do indicador daqui na de lá (a mão daqui é maior ou menor e os dedos dela,
+                    # de outro comprimento: com o punho no de lá, o dedo ficava fora da argola)
+                    j2, j3 = mm.quadro(rig.m('index_02_l')).translation, mm.quadro(rig.m('index_03_l')).translation
+                    ponta_fp = j3 + (j3 - j2) * 0.9
+                    # no jogo a granada cresce em volta do meio dela, e a argola vai junto
+                    meio_g = rig.m('Bolt') @ Vector(rig.ficha['centro'])
+                    ponta_fp = meio_g + (ponta_fp - meio_g) * GRANADA_CRESCE
+                    for _ in range(3):
+                        Mx = corpo.esq.fk(locais)
+                        i2, i3 = Mx[corpo.n('LeftHandIndex2')].translation, Mx[corpo.n('LeftHandIndex3')].translation
+                        erro = ponta_fp - (i3 + (i3 - i2) * 0.9)
+                        if erro.length < 0.002:
+                            break
+                        pulso = pulso + erro
+                        r = br.resolver(M, locais, pulso, rot, pref, corpo.mao[lado], cotovelo_max_z=alto, peso_tempo=peso_t, alvo=alvo_p)
                 if os.environ.get('DEPURAR_SACAR') and nome == 'sacar' and k == 0:
                     M2 = corpo.esq.fk(locais)
                     S2 = M2[br.up].translation
@@ -1534,6 +1665,8 @@ class Copia:
                     baixo_ = -pa.CIMA - eixo_ * (-pa.CIMA).dot(eixo_)
                     if cot_.length > 1e-4 and baixo_.length > 1e-4:
                         cotovelo_lado[lado] = max(cotovelo_lado.get(lado, 0.0), math.degrees(cot_.angle(baixo_)))
+                        if os.environ.get('MEDIR_COTOVELO') and nome in os.environ['MEDIR_COTOVELO'].split(','):
+                            print(f'COTOVELO {nome} q{k} {lado}: {math.degrees(cot_.angle(baixo_)):.0f}° do para baixo (dobra {cot_.length * 100:.1f} cm fora da linha ombro-pulso)', flush=True)
                 self.rolar_braco(M, locais, ger.braco[lado], lado)
                 relaxa = 0.0
                 if tipo == 'granada' and lado == 'Left':
@@ -1575,6 +1708,21 @@ class Copia:
                 self.posar_novo(locais, deltas, trans)
                 b_ = self.braco_no_tronco()
                 print(f'BRACO {nome} q{k}: o braço entra no tronco D {b_["Right"] * 1000:.0f} mm E {b_["Left"] * 1000:.0f} mm ({b_["Right_onde"]} | {b_["Left_onde"]})', flush=True)
+            if os.environ.get('MEDIR_PINO') and tipo == 'granada' and nome == 'armar':
+                # a ponta do indicador esquerdo (daqui e de lá) contra a argola (o osso Magazine)
+                Mf = corpo.esq.fk(locais)
+                i2, i3 = Mf[corpo.n('LeftHandIndex2')].translation, Mf[corpo.n('LeftHandIndex3')].translation
+                ponta = i3 + (i3 - i2) * 0.9
+                rig.colocar(q['col'])
+                arg = next(pc for pc in rig.pecas if pc['osso'] == 'Magazine')
+                meio_g = rig.m('Bolt') @ Vector(rig.ficha['centro'])
+                pts_ = [meio_g + (rig.m('Magazine') @ p_ - meio_g) * GRANADA_CRESCE for p_ in arg['amostra']]      # a argola crescida, como no jogo
+                meio_ = sum(pts_, Vector()) / len(pts_)
+                j2, j3 = mm.quadro(rig.m('index_02_l')).translation, mm.quadro(rig.m('index_03_l')).translation
+                ponta_fp = meio_g + (j3 + (j3 - j2) * 0.9 - meio_g) * GRANADA_CRESCE
+                print(f'PINO q{k}: a ponta do indicador a {min((ponta - p_).length for p_ in pts_) * 1000:.0f} mm da argola '
+                      f'({(ponta - meio_).length * 1000:.0f} mm do meio dela); a de lá a {min((ponta_fp - p_).length for p_ in pts_) * 1000:.0f} mm '
+                      f'({(ponta_fp - meio_).length * 1000:.0f} mm do meio); daqui à de lá {(ponta - ponta_fp).length * 1000:.0f} mm', flush=True)
             if os.environ.get('MEDIR_CORPO') and nome in os.environ['MEDIR_CORPO'].split(','):
                 self.posar_novo(locais, deltas, trans)
                 rig.colocar(q['col'])
@@ -1658,6 +1806,9 @@ def gravar(personagem, arma, clipes, escala=1.0):
             # a troca de pente vista de fora (Copia.trocar_pente): quando a mão solta o velho, quando
             # pega o novo na cintura e quando ele encaixa (segundos do clipe)
             dados['clipes'][c.nome]['carregador'] = c.carregador
+        if getattr(c, 'pino', None):
+            # o pino da granada (Copia.lance): quando sai e quando a esquerda o larga (segundos do clipe)
+            dados['clipes'][c.nome]['pino'] = c.pino
     caminho = os.path.join(pasta, arma + '.json')
     with open(caminho, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(dados, f, ensure_ascii=False, separators=(',', ':'))

@@ -142,6 +142,24 @@ public partial class Weapon
 		EmitSignal(SignalName.AttackCooldown, CooldownClaw, (float)_cooldown);
 	}
 
+	/// <summary>Corta a garrada em curso e os cliques guardados (o lobo grudou
+	/// na parede, onde não se bate — Jhon, 24/11): o dano que ainda não saiu
+	/// não sai, a garra some da tela e o próximo clique já pode arranhar. O
+	/// bote, o salto e a carga não são garrada e seguem.</summary>
+	public void CutClaw()
+	{
+		if (_form == null || !_form.IsWolf || _diving || _flying || _charging) return;
+		_attackQueue = 0;
+		if (_strikeLeft <= 0 && _cooldown <= 0) return;
+		_strikeId++;
+		_strikeLeft = 0;
+		_cooldown = 0;
+		_stepLeft = 0;
+		EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Claw);
+		EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Punch);
+		EmitSignal(SignalName.AttackCooldown, CooldownClaw, 0f);
+	}
+
 	/// <summary>O passo da garrada e o avanço do salto: anda
 	/// <paramref name="distance"/> em <paramref name="duration"/>, para a
 	/// frente do corpo ou na <paramref name="direction"/> dada. O pico do

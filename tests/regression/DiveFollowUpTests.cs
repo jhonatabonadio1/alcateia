@@ -69,11 +69,56 @@ public sealed class NoClawOnSprintTest : RegressionTest
 		await b.Frames(4);
 		b.Check(claws == 0 && b.Player.IsSprinting, "na corrida o clique não arranha, e a corrida segue");
 
+		// Pulou da corrida (o W segue apertado): no ar a garra sai (Jhon, 23/11: "correndo
+		// de 4 e pulo, não consigo dar ataque primário, só secundário").
+		await b.Tap("jump");
+		await b.Frames(10);
+		b.Check(!b.Player.IsOnFloor(), "pulou da corrida");
+		await b.Tap("attack");
+		await b.Frames(4);
+		b.Check(claws == 1, $"no ar, pulando da corrida, a garra sai ({claws} golpes)");
+		for (int i = 0; i < 240 && !b.Player.IsOnFloor(); i++) await b.Frames(1);
+		await b.Seconds(1.0);
+		claws = 0;
+
 		Input.ActionRelease("move_forward");
 		await b.Frames(4);
 		b.Check(!b.Player.IsSprinting, "soltou o W: saiu da corrida");
 		await b.Tap("attack");
 		await b.Frames(4);
 		b.Check(claws == 1, "fora da corrida, a garra sai");
+	}
+}
+
+/// <summary>
+/// No ar, o bote corta a garrada (Jhon, 23/11: "se eu estiver no ar apertando o ataque
+/// primário e apertar o secundário, ele deve interromper o primário e acionar o secundário
+/// imediatamente"). Antes a garrada segurava o bote até acabar.
+/// </summary>
+public sealed class DiveCutsClawTest : RegressionTest
+{
+	public override string Name => "BoteCortaGarra";
+	public override string Description => "no ar, garrada e logo o botão direito: o bote sai na hora e a garrada some da tela";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.RemoveBots();
+		await b.BecomeWolf();
+		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.6);
+		Weapon w = b.Weapon;
+		int claws = 0;
+		bool cancelled = false;
+		w.WolfMoveStarted += move => { if ((WolfMove)move is WolfMove.Claw or WolfMove.Punch) claws++; };
+		w.WolfMoveCancelled += move => { if ((WolfMove)move is WolfMove.Claw or WolfMove.Punch) cancelled = true; };
+
+		await b.Tap("jump");
+		await b.Seconds(0.28);
+		await b.Tap("attack");
+		await b.Frames(2);
+		b.Check(claws == 1 && w.IsStriking && !w.IsDiving, "no ar, a garrada sai");
+		await b.Tap("special");
+		b.Check(await b.Until(() => w.IsDiving, 0.05), "o botão direito no meio da garrada: o bote sai na hora");
+		b.Check(cancelled, "a garrada é cortada na tela");
+		b.Check(await b.Until(() => !w.IsDiving, 2.0), "o bote encosta no chão");
 	}
 }

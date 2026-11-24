@@ -121,7 +121,18 @@ public partial class Player
 		// corrida para bater (regra do Jhon, 18/11: "se eu estiver andando
 		// de quadrúpede não posso atacar, tenho que parar; não posso estar
 		// no W W").
-		else if (firing && !(_form.IsWolf && _sprinting))
+		//
+		// No ar a regra não vale (Jhon, 23/11: "correndo de 4 e pulo, não
+		// consigo dar ataque primário, só secundário"): o _sprinting segue
+		// ligado no pulo com o W apertado (para voltar correndo ao cair), e
+		// prendia a garra aérea junto. A corrida que proíbe é a do chão.
+		//
+		// Na parede também não arranha (Jhon, 24/11: "andar na parede com o lobo
+		// não pode atacar, mas se sair da parede tem que responder aos ataques
+		// imediatamente"): lá o botão é o de agarrar (Player.WallRun), e o clique
+		// não fica guardado. A garrada em curso é cortada ao grudar
+		// (Weapon.CutClaw), então saiu da parede, o clique arranha na hora.
+		else if (firing && !(_form.IsWolf && ((_sprinting && IsOnFloor()) || _onWall)))
 			_weapon.TryAttack();
 
 		// A granada sai quando o botão solta.

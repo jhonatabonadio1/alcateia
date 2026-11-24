@@ -91,7 +91,7 @@ export `RefillOnTransform`, desligado por padrão.
 | 5 | Equipar granada (o ataque arremessa) |
 | Botão direito | Humano: zoom com mira circular (segurar). Lobo: salto no chão, bote no ar |
 | Tab (segurando o salto) | Lobo: modo alvo, em vez do placar — marca os inimigos à vista; o clique trava no destacado (a mira segue ele, o salto cai nos pés dele, o anel no chão some); Tab de novo volta à mira no chão |
-| W duas vezes (segurando) | Lobo: corrida de quatro patas, 30% mais rápida (`WolfSprintFactor`); soltar o W ou agachar volta a correr em pé. Carregando o salto, cancela o salto (sem gastar a recarga) e sai correndo |
+| W duas vezes (segurando) | Lobo: corrida de quatro patas, 30% mais rápida (`WolfSprintFactor`); soltar o W ou agachar volta a correr em pé. Carregando o salto, cancela o salto (sem gastar a recarga) e sai correndo. No chão, de quatro, o clique não arranha (tem de sair da corrida); no ar, pulando dela, arranha (Jhon, 23/11) |
 | W segurado | Sustenta a corrida em parede |
 | Ataque segurado | Agarra na parede sem avançar |
 | Clique esq. | Atacar |
@@ -716,8 +716,10 @@ Três peças de código, e a lista de arquivos em `assets/audio/LEIA-ME.md`:
   um arquivo por vez, sem tocar em código.
 - `scripts/visual/WorldAudio.cs` (um por cena de jogo) **escuta o
   NoiseBus** e toca passo, pouso, tiro, uivo e explosão no ponto e no
-  raio do ruído. **O uivo usa o mesmo som da transformação**
-  (`lobo_transformar`), decisão do Jhon — `WorldAudio.HowlSound`. Não existe som de mundo que não seja ruído: é assim que
+  raio do ruído. **O rugido é a voz e os choques** (Jhon, 23/11: "só
+  choque e rugido"; o choque "sem esse som subindo, zuuuum", e sem o estalo
+  no final). E a troca de forma não ruge mais ("precisa tirar o som ou
+  trocar o rugido do lobo ao apertar 3"): toca um "puff" de fumaça. Não existe som de mundo que não seja ruído: é assim que
   a regra acima se mantém sozinha.
 - `scripts/visual/CombatantAudio.cs` (filho de Player e Bot) toca o
   que não é ruído — transformação, garra, recarga, dor, morte — com

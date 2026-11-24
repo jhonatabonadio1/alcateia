@@ -96,9 +96,25 @@ public partial class Weapon
 	/// </summary>
 	public void TrySpecial()
 	{
-		if (_cooldown > 0 || _charging) return;
+		if (_charging) return;
 		if (!_form.IsWolf || !_form.CanAttack) return;
-		if (!_body.IsOnFloor() && HeightAboveGround() >= LeapMinHeight) Leap();
+		// No ar, o bote corta a garrada em curso na hora (Jhon, 23/11: "se eu estiver no ar
+		// apertando o ataque primário e apertar o secundário, ele deve interromper o primário e
+		// acionar o secundário imediatamente"). O bote troca o golpe: o dano da garra que ainda
+		// não saiu não sai mais, e os cliques guardados são esquecidos.
+		bool clawingInAir = _strikeLeft > 0 && !_diving && !_flying && !_body.IsOnFloor();
+		if (_cooldown > 0 && !clawingInAir) return;
+		if (!_body.IsOnFloor() && HeightAboveGround() >= LeapMinHeight)
+		{
+			_attackQueue = 0;
+			if (clawingInAir)
+			{
+				// a garra some da tela enquanto o bote entra
+				EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Claw);
+				EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Punch);
+			}
+			Leap();
+		}
 	}
 
 	/// <summary>Altura mínima dos pés ao chão para o bote sair (Jhon, 21/11:

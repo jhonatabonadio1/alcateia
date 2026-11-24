@@ -75,8 +75,6 @@ public partial class WolfFx : Node3D
 	private WindWisps _wisps;
 	private LightningAura _sparks;
 	private RoarBurst _roar;
-	private Skeleton3D _skeleton;
-	private int _muzzle = -1;
 	private bool _wasArmed;
 
 	/// <summary>Os raios do especial armado, o rugido e o vento. Para os testes.</summary>
@@ -143,16 +141,6 @@ public partial class WolfFx : Node3D
 			_overlay = ResourceLoader.Exists(AuraPath) ? GD.Load<Material>(AuraPath) : null;
 
 			var skeleton = model.FindChildren("*", "Skeleton3D", true, false).OfType<Skeleton3D>().FirstOrDefault();
-			_skeleton = skeleton;
-			if (skeleton != null)
-			{
-				for (int i = 0; i < skeleton.GetBoneCount(); i++)
-				{
-					string bone = skeleton.GetBoneName(i);
-					if (bone.EndsWith("headfront")) { _muzzle = i; break; }
-					if (bone.EndsWith("Head") && _muzzle < 0) _muzzle = i;
-				}
-			}
 			Material trail = ResourceLoader.Exists(TrailPath) ? GD.Load<Material>(TrailPath) : null;
 			if (skeleton != null && trail != null)
 			{
@@ -334,12 +322,15 @@ public partial class WolfFx : Node3D
 	private double _armedHum;
 
 	/// <summary>Os sons de energia do uivo (pedido do Jhon, 18/11: "faltam
-	/// sons de brilho, energia para complementar"): a energia carregando
-	/// enquanto ele ruge, e o escudo cheio quando termina. Ficam por baixo
-	/// do rugido e chegam bem menos longe que ele: quem entrega a posição
-	/// de longe continua sendo o rugido (<see cref="WorldAudio"/>).</summary>
-	[Export] public string HowlEnergySound = "lobo_uivo_energia";
-	[Export] public string HowlShieldSound = "lobo_uivo_escudo";
+	/// sons de brilho, energia para complementar"): os choques enquanto ele
+	/// ruge, por baixo da voz (<see cref="WorldAudio.HowlSound"/>). Desde
+	/// 23/11 só estalos e arcos, sem tom (Jhon: "o barulho do choque deve ser
+	/// apenas do choque, sem esse som subindo, zuuuum"; e "sem o estalo no
+	/// final"): <c>lobo_uivo_choque</c>, de <c>tools/sons/choque_puff.py</c>.
+	/// O de antes (<c>lobo_uivo_energia</c>, com o grave e a bobina subindo)
+	/// e o estalo do escudo cheio (<c>lobo_uivo_escudo</c>) ficam no disco.</summary>
+	[Export] public string HowlEnergySound = "lobo_uivo_choque";
+	[Export] public string HowlShieldSound = "";
 	[Export] public float HowlEnergyRadius = 22f;
 
 	private Node _energy;
@@ -411,14 +402,6 @@ public partial class WolfFx : Node3D
 		bool roaring = shown && (_visual?.Howling ?? false);
 		_roar.Tint = color;
 		_roar.Active = roaring;
-		if (roaring && _skeleton != null && _muzzle >= 0 && IsInstanceValid(_skeleton))
-		{
-			// A boca, pelo osso do focinho; o rugido vai para onde o corpo olha.
-			Vector3 muzzle = (_skeleton.GlobalTransform * _skeleton.GetBoneGlobalPose(_muzzle)).Origin;
-			Vector3 forward = -_body.GlobalBasis.Z;
-			_roar.Mouth = _roar.ToLocal(muzzle + forward * 0.25f);
-			_roar.Forward = _roar.GlobalBasis.Inverse() * (forward + Vector3.Up * 0.12f).Normalized();
-		}
 		UpdateHowlSound(roaring);
 	}
 

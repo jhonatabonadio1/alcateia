@@ -50,10 +50,11 @@ public partial class WorldAudio : Node
 	/// usa a mesma voz. Para um uivo próprio, ponha o arquivo em
 	/// <c>assets/audio/</c> e troque este nome.
 	/// </summary>
-	/// <summary>O rugido (18/11: gravação própria, do pacote que o Jhon
-	/// mandou; antes era o som da transformação, que fica de reserva).</summary>
+	/// <summary>A voz do rugido (18/11: gravação própria, do pacote que o Jhon
+	/// mandou). Por baixo dela, os choques (<see cref="WolfFx.HowlEnergySound"/>;
+	/// Jhon, 23/11: "só choque e rugido").</summary>
 	[Export] public string HowlSound = "lobo_rugido";
-	[Export] public string HowlFallback = "lobo_transformar";
+	[Export] public string HowlFallback = "";
 
 	private Node _local;
 	private Health _localHealth;

@@ -71,7 +71,8 @@ public static class Credits
 			new Line("Pistola", "raimeiyonke (Sketchfab)", "CC BY 4.0", Required: true),
 			new Line("Escopeta semiautomática", "haoliu95 (Sketchfab)", "CC BY 4.0", Required: true),
 			new Line("Faca com braços e animações", "DJMaesen / bumstrum (Sketchfab)", "CC BY 4.0", Required: true),
-			new Line("Granada de choque M84", "Coozy (Sketchfab)", "CC BY 4.0", Required: true)
+			new Line("Granada de choque M84", "Coozy (Sketchfab)", "CC BY 4.0", Required: true),
+			new Line("Animações da pistola (pegada, saque e recarga), de referência", "P9 Manny FPS Animations, Blend_GUY (Sketchfab)", "Sketchfab Standard")
 		}),
 		new("Personagens e animação", new[]
 		{

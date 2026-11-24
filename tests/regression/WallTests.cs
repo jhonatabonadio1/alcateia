@@ -262,3 +262,38 @@ public sealed class InvisibleWallTest : WallTestBase
 		}
 	}
 }
+
+/// <summary>Na parede o lobo não bate; saiu dela, o clique arranha na hora
+/// (Jhon, 24/11: "andar na parede com o lobo não pode atacar, mas se sair da
+/// parede tem que responder aos ataques imediatamente").</summary>
+public sealed class NoClawOnWallTest : WallTestBase
+{
+	public override string Name => "SemGarraNaParede";
+	public override string Description => "na parede o clique não arranha (agarra); saltou da parede, a garra sai no quadro seguinte";
+
+	public override async Task Run(RegressionBench b)
+	{
+		if (!await StartRun(b)) return;
+		Player p = b.Player;
+		Weapon w = b.Weapon;
+		int claws = 0;
+		w.WolfMoveStarted += move => { if ((WolfMove)move is WolfMove.Claw or WolfMove.Punch) claws++; };
+
+		await b.Seconds(0.3);
+		for (int i = 0; i < 3; i++)
+		{
+			await b.Tap("attack");
+			await b.Frames(3);
+		}
+		b.Check(claws == 0 && p.IsWallRunning, $"na parede o clique não arranha e o lobo segue nela ({claws} golpes)");
+
+		RegressionBench.Press("jump");
+		b.Check(await b.Until(() => !p.IsWallRunning, 0.2), "saltou da parede");
+		RegressionBench.Release("jump");
+		await b.Frames(1);
+		await b.Tap("attack");
+		await b.Frames(2);
+		b.Check(claws == 1, $"fora da parede, a garra sai na hora ({claws} golpe)");
+		RegressionBench.ReleaseAll();
+	}
+}

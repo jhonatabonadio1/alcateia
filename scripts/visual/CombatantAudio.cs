@@ -183,15 +183,23 @@ public partial class CombatantAudio : Node
 		_lastGrenades = left;
 	}
 
+	/// <summary>O som de virar lobo (tecla 3) e de voltar a humano: o "puff" da fumaça
+	/// (<c>forma_puff</c>, de <c>tools/sons/choque_puff.py</c>). Jhon, 23/11: "precisa tirar o
+	/// som ou trocar o rugido do lobo ao apertar 3", e depois "ao transformar não tô ouvindo o
+	/// puff". Os rugidos de antes (<c>lobo_transformar</c>, <c>lobo_destransformar</c>) ficam no
+	/// disco; o nome aqui os traz de volta.</summary>
+	[Export] public string TransformSound = "forma_puff";
+	[Export] public string UntransformSound = "forma_puff";
+
 	private void OnForm(int form)
 	{
 		switch ((Form)form)
 		{
 			case Form.ShiftingToWolf:
-				Play("lobo_transformar");
+				Play(Sfx.First(TransformSound));
 				break;
 			case Form.ShiftingToHuman:
-				Play(Sfx.First("lobo_destransformar", "lobo_transformar"));
+				Play(Sfx.First(UntransformSound));
 				break;
 		}
 	}

@@ -783,12 +783,15 @@ public partial class HeldWeapon : Node3D
 		_calibrated = false;
 		GrowGrenade();
 		SwapMagazine(now, at);
+		PullPin(now, at);
 	}
 
-	/// <summary>Quantas vezes a granada na mão é maior vista de fora (Jhon, 23/11: "aumente o
-	/// tamanho da granada"): a de lá é do tamanho de uma de verdade (7 cm), e de fora, longe,
-	/// sumia na mão. Só a da mão em terceira pessoa: a da primeira pessoa e a que voa ficam como
-	/// estão. Os dedos do personagem abrem para ela no Blender (GRANADA_MAO_ABRE).</summary>
+	/// <summary>Quantas vezes a granada na mão é maior vista de fora que a da primeira pessoa (Jhon,
+	/// 23/11: "aumente o tamanho da granada"; e de novo: "pode aumentar mais um pouco"): a de lá é
+	/// 1,40 da de verdade (tools/armas/conjuntos.py), e de fora, longe, sumia na mão; daqui ela sai
+	/// 1,96. Só a da mão em terceira pessoa. Os dedos do personagem abrem para ela e o dedo que puxa
+	/// o pino entra na argola crescida no Blender (GRANADA_MAO_ABRE, GRANADA_CRESCE: os dois
+	/// números têm de ser iguais).</summary>
 	[Export(PropertyHint.Range, "1,2")] public float GrenadeHeldGrow = 1.4f;
 
 	// a pose do Grip antes de crescer e a que se escreveu: a animação não repõe a escala dele, e
@@ -802,7 +805,10 @@ public partial class HeldWeapon : Node3D
 	/// se a animação não repôs o osso).</summary>
 	private void GrowGrenade()
 	{
-		if (!Arsenal.IsGrenade(_id) || Mathf.IsEqualApprox(GrenadeHeldGrow, 1f) || !_rig.HasCenter) return;
+		// O conjunto já cresce com a mão do personagem (a escala do arquivo: o Barut 1,3); a granada cresce
+		// só o que falta para ficar do tamanho de GrenadeHeldGrow nos dois.
+		float grow = GrenadeHeldGrow / Mathf.Max(1f, _clipSet?.Scale ?? 1f);
+		if (!Arsenal.IsGrenade(_id) || Mathf.IsEqualApprox(grow, 1f) || grow < 1f || !_rig.HasCenter) return;
 		Skeleton3D sk = _rig.Skeleton;
 		int grip = sk.FindBone("Grip");
 		if (grip < 0) return;
@@ -820,7 +826,7 @@ public partial class HeldWeapon : Node3D
 		Transform3D G = sk.GlobalTransform * sk.GetBoneGlobalPose(grip);
 		Vector3 center = _rig.Center();
 		Vector3 local = G.AffineInverse() * center;
-		Basis grown = G.Basis.Scaled(Vector3.One * GrenadeHeldGrow);
+		Basis grown = G.Basis.Scaled(Vector3.One * grow);
 		var target = new Transform3D(grown, center - grown * local);
 		int parent = sk.GetBoneParent(grip);
 		Transform3D parentGlobal = sk.GlobalTransform * (parent >= 0 ? sk.GetBoneGlobalPose(parent) : Transform3D.Identity);

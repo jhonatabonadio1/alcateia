@@ -171,6 +171,7 @@ origem) e das animações dela.
 
 | 6 conjuntos de braços animados do Sketchfab | `assets/armas/fp/*.glb` — as armas de fogo em primeira pessoa | `tools/armas/blender/bracos.py` |
 | O AR-15 da InfimaGames (fuzil, braços e animações do Jhon, como na cena dele) | `assets/armas/fp/ar15.glb` e `assets/armas/ar15/` | `tools/armas/blender/infima.py` |
+| P9 Manny FPS Animations (Blend_GUY, Sketchfab; licença Sketchfab Standard; o Jhon trouxe em 23/11) — só o movimento: a pegada, o saque e a recarga | `tools/armas/dados/p9.npz` (os ossos quadro a quadro) → a Desert Eagle em `assets/armas/fp/deagle*.glb` e na terceira pessoa | `tools/armas/blender/p9.py`, depois `RefP9` em `tools/armas/conjuntos.py`. O `.glb` fica em `assets/pacotes/sketchfab/p9-manny-fps-animations/` |
 
 A faca é um conjunto próprio (`knife-animated`, com os golpes animados).
 A granada (M84) vai na mão do braço da pistola (`OBJETOS` em

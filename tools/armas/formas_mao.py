@@ -83,6 +83,13 @@ def _peca(T, parte):
 BOLA_C, BOLA_R = np.array([-0.0066, -0.0103, 0.0]), 0.0297          # o meio e o raio da bola (os da V40 do pacote)
 
 
+# A argola do pino, do tamanho da V40 (um aro de 5,8 cm), encolhida em volta do olhal (Jhon, 23/11: "diminuir o
+# tamanho do pino que aciona ela, está muito grande"): 0,6 = um aro de 3,5 cm. conjuntos.py encolhe a argola da peça
+# antiga do mesmo tanto, para o dedo que puxa entrar nesta.
+ARGOLA = float(__import__('os').environ.get('ARGOLA', 0.6))
+OLHAL = np.array([0.0110, 0.0296, 0.0186])                           # o meio do olhal do pino, onde a argola passa
+
+
 def granada():
     """A granada: (corpo — a bola, a espoleta e a alavanca —, nó ''), (pino — o pino e a argola, nesta ordem —, nó 'Pino')."""
     cx, cy, _ = BOLA_C; r = BOLA_R
@@ -119,9 +126,10 @@ def granada():
     Tp = _para_fora(_malha([disco(-0.0146, 0.0016), disco(-0.0140, 0.0022), disco(-0.0128, 0.0022), disco(-0.0124, 0.0011), disco(0.0150, 0.0011)], tampa0=True, tampa1=True))
     olhal = _aro(np.array([px, py, 0.0150 + 0.0036]), np.array([0.0, 0.0, 1.0]), np.array([0.0, 1.0, 0.0]), 0.0036, 0.0009, 20, 8)
     Tp = np.concatenate([Tp, olhal])
-    # (a argola: o aro da V40 — o meio, o plano e o raio dela)
+    # (a argola: o aro da V40 — o meio, o plano e o raio dela —, encolhida em volta do olhal: ARGOLA)
     u = np.array([-0.471, 0.879, -0.080]); v = np.array([0.852, 0.429, -0.302]); u /= np.linalg.norm(u); v -= u * (u @ v); v /= np.linalg.norm(v)
-    Tr = _aro(np.array([0.0088, 0.0004, 0.0209]), u, v, 0.0290, 0.0012, 56, 10)
+    meio_aro = OLHAL + (np.array([0.0088, 0.0004, 0.0209]) - OLHAL) * ARGOLA
+    Tr = _aro(meio_aro, u, v, 0.0290 * ARGOLA, 0.0012, 56, 10)
     pino = _peca(np.concatenate([Tp, Tr]), np.concatenate([np.full(len(Tp), 3), np.full(len(Tr), 4)]))
     return [('corpo', '', corpo), ('pino', 'Pino', pino)]
 

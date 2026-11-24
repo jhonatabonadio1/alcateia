@@ -353,6 +353,9 @@ public partial class Player
 		}
 
 		WallLog($"stuck, normal {_wallNormal}, direction {_wallAlong}");
+		// Na parede não se bate: a garrada que vinha do ar some, e o relógio dela
+		// junto — ao sair da parede, o clique arranha na hora (Jhon, 24/11).
+		_weapon.CutClaw();
 		return true;
 	}
 

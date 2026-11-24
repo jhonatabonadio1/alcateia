@@ -19,7 +19,8 @@ De onde vem o movimento:
   e a esquerda é levada para o guarda-mão e para o carregador de cada arma; os braços são
   recalculados.
 - **Desert Eagle, faca e granada**: animadas aqui, por chaves, sobre a respiração, o
-  balanço do andar e o saque do AR-15 (é o que dá a mesma "mão" a todas).
+  balanço do andar e o saque do AR-15 (é o que dá a mesma "mão" a todas). Na Desert
+  Eagle, a pegada, o saque e as recargas vêm da P9 (``RefP9``, ``dados/p9.npz``).
 
 Depois de montar, a mira (``mira.py``) e a coronhada (``coronhada.py``) entram por cima,
 como no AR-15.
@@ -175,6 +176,8 @@ def posar(E, q, base):
     for lado, alvo in q.get('livre', {}).items():
         falta = max(falta, E.braco(pose, lado, alvo, corpo)); E.por_local(pose, f'ik_hand_{lado}', E.mundo(pose, E.mao[lado]))
     for lado in q.get('braco', ()): antebraco_pela_mao(E, pose, lado)
+    for lado, f in q.get('antebraco', {}).items():                     # o antebraço na direção dada (no osso da arma): o da P9
+        antebraco_pela_mao(E, pose, lado, direcao=rot(E.arma_de(pose)) @ np.asarray(f, float))
     for lado in q.get('pulso', ()):                                       # o pulso não quebra: a mão cede, e a arma vai com ela
         K = pulso_reto(E, pose, lado)
         if K is not None and lado in q.get('pega', {}):
@@ -252,18 +255,20 @@ def mao_pelo_braco(E, base, lado, olho, rolo=0.0, dobra=(0.0, 0.0)):
     return H
 
 
-def antebraco_pela_mao(E, pose, lado, maximo=18.0):
+def antebraco_pela_mao(E, pose, lado, maximo=18.0, direcao=None):
     """O contrário de ``pulso_reto``, para movimento que já veio de um animador (a faca): a mão fica exatamente onde a
     animação a pôs e quem se ajeita é o braço — o antebraço vem para a linha da mão (sobra no máximo ``maximo`` graus de
-    dobra) e o cotovelo e o ombro, fora da tela, vão para onde for preciso."""
+    dobra) e o cotovelo e o ombro, fora da tela, vão para onde for preciso. Com ``direcao`` (no espaço da raiz), o
+    antebraço vai exatamente nela (do cotovelo para o pulso): o pulso dobrado de quem segura a pistola com as duas mãos."""
     cl, ua, la, hd = (E.N(f'{o}_{lado}') for o in ('clavicle', 'upperarm', 'lowerarm', 'hand'))
     Wu, Wl, Wh = (E.mundo(pose, i) for i in (ua, la, hd)); S, C, H = Wu[:3, 3], Wl[:3, 3], Wh[:3, 3]
     L1, L2 = np.linalg.norm(C - S), np.linalg.norm(H - C); f = (H - C) / L2
     Bh, _ = E.ligacao(f'hand_{lado}'); Bl, _ = E.ligacao(f'lowerarm_{lado}'); Rh = rot(Bh); Rh = Rh / np.linalg.norm(Rh, axis=0, keepdims=True)
     d = Bh[:3, 3] - Bl[:3, 3]; Rw = rot(Wh); Rw = Rw / np.linalg.norm(Rw, axis=0, keepdims=True); reto = Rw @ (Rh.T @ (d / np.linalg.norm(d)))
     ang = float(np.degrees(np.arccos(np.clip(np.dot(f, reto), -1.0, 1.0))))
-    if ang <= maximo: return
-    th = np.radians(ang); t = 1.0 - maximo / ang; f2 = np.sin((1 - t) * th) * f + np.sin(t * th) * reto; f2 /= np.linalg.norm(f2)
+    if direcao is not None: f2 = np.asarray(direcao, float) / np.linalg.norm(direcao)
+    elif ang <= maximo: return
+    else: th = np.radians(ang); t = 1.0 - maximo / ang; f2 = np.sin((1 - t) * th) * f + np.sin(t * th) * reto; f2 /= np.linalg.norm(f2)
     C2 = H - L2 * f2; S2 = C2 - L1 * (C2 - S) / np.linalg.norm(C2 - S)
     pai = E.mundo(pose, E.c.parent[cl]); pose[cl] = (pose[cl][0] + rot(pai).T @ (S2 - S), pose[cl][1])
     Wc = E.mundo(pose, cl); Ru = arco(C - S, C2 - S2) @ rot(Wu); Rl = arco(H - C, H - C2) @ rot(Wl)
@@ -437,11 +442,13 @@ class Maos:
 
     def aberta(self, lado): return self.dedos_aberta if lado == 'l' else self.AR.espelhar_dedos(self.dedos_aberta, 'r')
 
-    def no_gatilho(self, dedos, gatilho):
+    def no_gatilho(self, dedos, gatilho, punho=None):
         """Leva o indicador direito ao gatilho (ponto no espaço da arma, m): o dedo é resolvido como um
         braço de dois ossos, do nó da mão ao começo da última falange — que é o que encosta no gatilho
-        no AR-15. Devolve (dedos, distância que sobrou em mm)."""
+        no AR-15. ``punho``: a mão direita no osso da arma (por omissão, a do AR-15). Devolve (dedos,
+        distância que sobrou em mm)."""
         AR = self.AR; pose = dict(AR.parado); AR.por_dedos(pose, dedos)
+        if punho is not None: AR.prender(pose, AR.arma_de(pose), {'r': punho}, AR.parado)
         G = AR.arma_de(pose); alvo = (G @ ARMA @ np.append(np.asarray(gatilho, float), 1.0))[:3]
         i1, i2, i3 = (AR.N(f'index_{k}_r') for k in ('01', '02', '03'))
         toque = np.append(pose[i3][0] / np.linalg.norm(pose[i3][0]) * 0.7, 1.0)       # 7 mm depois da última junta
@@ -541,43 +548,185 @@ class RefPistola:
         return p
 
 
+class RefP9:
+    """
+    As animações da P9 que o Jhon trouxe em 23/11 (``assets/p9_manny_fps_animations.glb``: "para você ter ideia de como
+    fazer a mão segurando, a recarga da pistola e o draw; faça no primeiro e terceira pessoa"; "Fire e Walk não precisa,
+    somente draw, idle, reload"), assadas por ``tools/armas/blender/p9.py`` em ``dados/p9.npz``: quadro a quadro (24 por
+    segundo), no espaço da armadura (cm), a pistola (``Grip_Bone``), o carregador (``Clip_Bone``), as mãos e a pose local
+    de cada dedo.
+
+    O esqueleto é o nosso (o Manny do UE5: mesmos ossos, mesmo repouso, mesmo tamanho de mão), então a pegada passa
+    inteira: as duas mãos em relação à arma e os dedos, junta por junta. E as armas também batem: o carregador da P9 e o
+    da Desert Eagle têm 11 cm e ficam no mesmo lugar em relação ao punho (1 cm de diferença). ``A`` leva do espaço do
+    ``Grip_Bone`` da P9 (x à esquerda, y para baixo, z para trás, cm) para o do osso da nossa arma (cm), com os eixos
+    trocados e o alto do carregador de lá no do daqui.
+    """
+    def __init__(self, AR):
+        d = np.load(os.path.join(reais.DADOS, 'p9.npz')); self.d = d; self.fps = float(d['fps'])
+        self.o = [str(x) for x in d['ossos']]; self.n_dedos = [str(x) for x in d['dedos']]; self.AR = AR
+        eixos = np.diag([-0.01, -0.01, 0.01, 1.0])                         # P9 (cm) -> nossa arma (m), sem o lugar
+        mag_p9 = (np.c_[d['p220_mag_no_punho'], np.ones(len(d['p220_mag_no_punho']))] @ eixos.T)[:, :3]
+        mag = np.vstack([m['pos'].reshape(-1, 3) for _, no, m in reais.arma('deagle')['pecas'] if no == 'Magazine'])
+        topo = lambda q: np.array([0.0, q[:, 1].max(), (q[:, 2].min() + q[:, 2].max()) / 2])
+        self.deslocar = topo(mag) - topo(mag_p9)                            # o alto do carregador de lá no do daqui (onde entra no poço)
+        self.A = ARMA @ mover(*self.deslocar) @ eixos; self.Ai = np.linalg.inv(self.A)
+        self.base_mag_p9 = float(mag_p9[:, 1].min() + self.deslocar[1]); self.base_mag = float(mag[:, 1].min())
+
+    def duracao(self, acao): return (len(self.d[acao + '_mundo']) - 1) / self.fps
+
+    def _k(self, acao, t):
+        n = len(self.d[acao + '_mundo']); x = min(max(t * self.fps, 0.0), n - 1.001); k = int(x); return k, x - k
+
+    def osso(self, acao, nome, t):
+        """O osso no espaço da armadura (cm), entre dois quadros."""
+        k, u = self._k(acao, t); W = self.d[acao + '_mundo']; i = self.o.index(nome)
+        return entre(W[k, i].astype(float), W[k + 1, i].astype(float), u)
+
+    def na_arma(self, acao, nome, t):
+        """Um osso (a mão, o carregador) no espaço do osso da nossa arma (cm)."""
+        return self.A @ np.linalg.inv(self.osso(acao, 'Grip_Bone', t)) @ self.osso(acao, nome, t)
+
+    def arma(self, acao, t, t0, forca=1.0):
+        """O movimento da pistola (no espaço do osso da nossa arma, cm) desde o instante ``t0`` da ação, vezes ``forca``."""
+        D = rigida(self.A @ np.linalg.inv(self.osso(acao, 'Grip_Bone', t0)) @ self.osso(acao, 'Grip_Bone', t) @ self.Ai)
+        return D if forca == 1.0 else parte(D, forca)
+
+    def antebraco(self, acao, t, lado):
+        """A direção do antebraço (do cotovelo para o pulso) no espaço do osso da nossa arma."""
+        C, H = self.na_arma(acao, f'lowerarm_{lado}', t)[:3, 3], self.na_arma(acao, f'hand_{lado}', t)[:3, 3]
+        return (H - C) / np.linalg.norm(H - C)
+
+    def dedos(self, acao, t, lado):
+        """A pose dos dedos de uma mão (``{nó: (T, Q)}``, com a translação do repouso)."""
+        k, u = self._k(acao, t); L = self.d[acao + '_dedos']; AR = self.AR; out = {}
+        for i, n in enumerate(self.n_dedos):
+            if not n.endswith('_' + lado): continue
+            j = AR.N(n); out[j] = (AR.parado[j][0], slerp(matq(rot(L[k, i].astype(float))), matq(rot(L[k + 1, i].astype(float))), u))
+        return out
+
+
 def referencial(o, m, i, p):
     """Um referencial da mão: x do pulso à base do dedo médio, y do mindinho ao indicador."""
     x = (m - o) / np.linalg.norm(m - o); y = i - p; z = np.cross(x, y); z /= np.linalg.norm(z); y = np.cross(z, x)
     F = np.eye(4); F[:3, :3] = np.c_[x, y, z]; F[:3, 3] = o; return F
 
 
-def abracar(AR, M, base, apoio, id_):
+def solido_pistola(id_):
+    """A pistola como sólido para os dedos encostarem: o ferrolho e a armação em fatias ao longo do cano, o punho em
+    fatias na altura (em corte ele é quase convexo; ao longo do cano, a fatia juntava o punho com o ferrolho e o vão do
+    polegar ficava cheio) e o guarda-mato à parte."""
+    import pegada
+    tri = np.vstack([m['pos'] for _, _, m in reais.arma(id_)['pecas']]); pts = pegada.amostrar(tri, 0.003); partes = []
+    cima = pts[pts[:, 1] >= -0.03]
+    for z in np.arange(cima[:, 2].min(), cima[:, 2].max(), 0.02):
+        k = cima[(cima[:, 2] >= z - 0.002) & (cima[:, 2] <= z + 0.022)]
+        if len(k) > 8 and np.ptp(k, axis=0).min() > 1e-4: partes.append(k)
+    punho = pts[(pts[:, 1] < -0.03) & (pts[:, 2] > 0.015)]
+    for y in np.arange(punho[:, 1].min(), -0.03, 0.01):
+        k = punho[(punho[:, 1] >= y - 0.001) & (punho[:, 1] <= y + 0.011)]
+        if len(k) > 8 and np.ptp(k, axis=0).min() > 1e-4: partes.append(k)
+    guarda = pts[(pts[:, 1] < -0.03) & (pts[:, 2] <= 0.015)]
+    if len(guarda) > 8: partes.append(guarda)
+    return pegada.Solido(*partes)
+
+
+def abracar(AR, M, base, apoio, id_, punho=None, reta=(-1.0, 0.0, 0.0), aberta=None, solido_arma=None):
     """A mão esquerda abraçando a direita no punho da pistola, **sem uma passar por dentro da outra** (Jhon, 19/11): a
     direita (com os dedos já no punho e no gatilho) e o punho da arma viram um sólido; a esquerda encosta a palma nele
     pelo lado e fecha dedo por dedo até a pele tocar (``pegada.pegar``). Devolve (o apoio novo, os dedos, as medidas)."""
     import pegada
-    pele = pegada.Pele(); G0 = AR.arma_de(AR.parado); prova = dict(base); AR.prender(prova, G0, {'r': M.punho, 'l': apoio}, base)
+    punho = M.punho if punho is None else punho
+    pele = pegada.Pele(); G0 = AR.arma_de(AR.parado); prova = dict(base); AR.prender(prova, G0, {'r': punho, 'l': apoio}, base)
     Q = pele.em(AR, prova, np.linalg.inv(G0 @ ARMA)); de = lambda *nomes: np.array([n.endswith('_r') and n.startswith(nomes) for n in pele.dono])
     dedos_r, palma_r = Q[de('index', 'middle', 'ring', 'pinky')], Q[de('hand', 'thumb')]
     tri = np.vstack([m['pos'] for _, _, m in reais.arma(id_)['pecas']])
-    solido = pegada.Solido(dedos_r, palma_r).mais(pegada.Solido.de_malha(tri, dedos_r[:, 2].min() - 0.03, palma_r[:, 2].max()))
+    arma = solido_arma if solido_arma is not None else pegada.Solido.de_malha(tri, dedos_r[:, 2].min() - 0.03, palma_r[:, 2].max())
+    solido = pegada.Solido(dedos_r, palma_r).mais(arma)
     # cada dedo dobra inteiro, da mão aberta para a fechada, e para quando encosta: o abraço de quem segura com as duas mãos
-    onde, dedos, medidas = pegada.pegar(AR, prova, 'l', solido, np.eye(4), M.aberta('l'), M.fechada('l', 1.0), reta=(-1.0, 0.0, 0.0), pele=pele, junto=True, faixa=(-0.45, 1.1))
+    onde, dedos, medidas = pegada.pegar(AR, prova, 'l', solido, np.eye(4), M.aberta('l') if aberta is None else aberta, M.fechada('l', 1.0), reta=reta, pele=pele, junto=True, faixa=(-0.45, 1.1))
     return na_arma(*(-onde[:3, 3])) @ apoio, dedos, medidas
+
+
+def polegar_a_frente(AR, M, base, apoio, dedos, id_, alvo=(0.0, -0.30, -1.0), folga=0.0006, punho=None, solido_arma=None):
+    """O polegar da mão de apoio deitado para a frente, ao longo da armação, embaixo do da direita (Jhon, 23/11: "dedão
+    da mão base da pistola está para cima, as mãos precisam estar uma apertando a outra"). O apoio é o espelho da mão
+    do punho, e o polegar dele ficava em pé ao lado do ferrolho. Procura, girando a primeira junta do polegar em volta
+    de dois eixos dela (e dobrando as outras duas um pouco), a pose que aponta mais para ``alvo`` (no espaço da arma:
+    z para trás, y para cima) sem atravessar a mão direita nem a arma, e encostada nelas. Devolve (dedos, medidas)."""
+    import pegada
+    pele = pegada.Pele(); G0 = AR.arma_de(AR.parado)
+    prova = dict(base); AR.por_dedos(prova, dedos); AR.prender(prova, G0, {'r': M.punho if punho is None else punho, 'l': apoio}, base)
+    A = np.linalg.inv(G0 @ ARMA)
+    Q = pele.em(AR, prova, A); de = lambda *nomes: np.array([n.endswith('_r') and n.startswith(nomes) for n in pele.dono])
+    dedos_r, palma_r = Q[de('index', 'middle', 'ring', 'pinky')], Q[de('hand', 'thumb')]
+    tri = np.vstack([m['pos'] for _, _, m in reais.arma(id_)['pecas']])
+    arma = solido_arma if solido_arma is not None else pegada.Solido.de_malha(tri, dedos_r[:, 2].min() - 0.03, palma_r[:, 2].max())
+    solido = pegada.Solido(dedos_r, palma_r).mais(arma)
+    polegar = np.array([n.startswith('thumb') and n.endswith('_l') for n in pele.dono])
+    j1, j2, j3 = (AR.N(f'thumb_0{k}_l') for k in (1, 2, 3))
+    quer = np.asarray(alvo, float); quer /= np.linalg.norm(quer)
+    aberta = M.aberta('l'); R_A = rot(A)
+    def direcao(p):
+        W1, W3 = AR.mundo(p, j1), AR.mundo(p, j3)
+        ponta = (W3 @ np.append(p[j3][0] / np.linalg.norm(p[j3][0]) * 2.0, 1.0))[:3]
+        d = R_A @ (ponta - W1[:3, 3]); return d / np.linalg.norm(d)
+    def pose_de(a, b, dobra):
+        p = dict(prova); T1, q1 = prova[j1]
+        p[j1] = (T1, qmul(qmul(q1, eixo_angulo((1.0, 0.0, 0.0), a)), eixo_angulo((0.0, 0.0, 1.0), b)))
+        for j in (j2, j3): p[j] = (prova[j][0], slerp(aberta[j][1], prova[j][1], dobra))
+        return p
+    def custo(a, b, dobra):
+        p = pose_de(a, b, dobra); d = pele.em(AR, p, A, polegar); f = solido.fora(d)
+        perto = float(f.min())
+        if perto < folga: return None, perto
+        angulo = np.degrees(np.arccos(np.clip(direcao(p) @ quer, -1, 1)))
+        return angulo + 4000.0 * max(0.0, perto - 0.002), perto                   # (graus; e 4° por mm de folga além de 2 mm)
+    melhor = None
+    for a in range(-90, 91, 10):
+        for b in range(-90, 91, 10):
+            for dobra in (0.0, 0.3, 0.6):
+                c, perto = custo(a, b, dobra)
+                if c is not None and (melhor is None or c < melhor[0]): melhor = (c, a, b, dobra, perto)
+    if melhor is None: return dedos, dict(mm=None)
+    _, a0, b0, d0, _ = melhor
+    for a in np.arange(a0 - 8, a0 + 8.1, 2.0):
+        for b in np.arange(b0 - 8, b0 + 8.1, 2.0):
+            c, perto = custo(a, b, d0)
+            if c is not None and c < melhor[0]: melhor = (c, a, b, d0, perto)
+    _, a, b, dobra, perto = melhor; p = pose_de(a, b, dobra)
+    out = dict(dedos)
+    for j in (j1, j2, j3): out[j] = p[j]
+    angulo = float(np.degrees(np.arccos(np.clip(direcao(p) @ quer, -1, 1))))
+    return out, dict(mm=round(perto * 1000, 1), graus=round(angulo, 0), giro=(float(a), float(b)), dobra=dobra)
 
 
 def pistola(mov, ficha=None):
     id_ = 'deagle'; E, AR = abrir(id_); M = Maos(AR)
     L = reais.arma(id_); LUGAR = (0.075, -0.068, -0.295); Gp = arma_no_olho(E, *LUGAR, pitch=0.0, yaw=5.0, roll=2.0)      # Jhon, 19/11: "suba ela um pouco e coloque um pouco para frente"
-    # a mão esquerda abraça a direita: o espelho dela, um pouco para fora, para baixo e para a frente
-    apoio = M.espelhada(da_arma(mover(-0.012, -0.012, -0.006) @ giro(pitch=-8, yaw=-6)))
+    # A pegada é a da P9 (Jhon, 23/11: "joguei a P9 para você ter ideia de como fazer a mão segurando"): as duas mãos
+    # altas no punho, os pulsos dobrados e os antebraços vindo de baixo, a esquerda na frente da direita. A direita vai
+    # inteira (o lugar no punho e os dedos; o indicador vai ao gatilho desta arma). A esquerda sai do lugar dela na P9,
+    # mas as nossas mãos são mais grossas que as do Manny de lá: com a pose de lá os dedos de uma entravam 2 a 3 cm na
+    # outra. Ela se afasta na direção de onde vem até a palma encostar, e cada dedo fecha a partir da pose de lá até
+    # encostar (``abracar``); o polegar deita para a frente (``polegar_a_frente``).
+    P9 = RefP9(AR); sol = solido_pistola(id_)
+    punho = P9.na_arma('idle', 'hand_r', 0.0); apoio = P9.na_arma('idle', 'hand_l', 0.0)
     base = dict(AR.parado)
-    dedos_r, sobra = M.no_gatilho(M.dedos_punho, reais.arma(id_)['gatilho'])
+    dedos_r, sobra = M.no_gatilho(P9.dedos('idle', 0.0, 'r'), reais.arma(id_)['gatilho'], punho=punho)
     print(f"  {id_}: o indicador fica a {sobra:.1f} mm do gatilho")
     AR.por_dedos(base, dedos_r)
-    apoio, dedos_l, medidas = abracar(AR, M, base, apoio, id_); AR.por_dedos(base, dedos_l)
+    vem = (np.linalg.inv(ARMA) @ apoio)[:3, 3] - (np.linalg.inv(ARMA) @ punho)[:3, 3]; vem /= np.linalg.norm(vem)        # a arma (e a direita) vão na direção da esquerda até a palma encostar
+    apoio, dedos_l, medidas = abracar(AR, M, base, apoio, id_, punho=punho, reta=tuple(vem), aberta=P9.dedos('idle', 0.0, 'l'), solido_arma=sol)
+    dedos_l, pol = polegar_a_frente(AR, M, base, apoio, dedos_l, id_, punho=punho, solido_arma=sol); AR.por_dedos(base, dedos_l)
     print(f"  {id_}: a mão esquerda abraçando a direita — a pele fica a {medidas['mm']} mm dela e da arma (negativo = atravessa)")
-    pose = dict(pega={'r': M.punho, 'l': apoio}, braco=('l',))            # o antebraço esquerdo alinha com a mão (o pulso dobrava 78°)
-    feitos = comuns(E, mov, Gp, pose, base, dict(parado=2.0, andar=0.72, sacar=0.36, guardar=0.3), dict(parado=1.4, andar=1.9), cam=0.7)
+    print(f"  {id_}: o polegar esquerdo para a frente — {pol}")
+    # os antebraços vêm de baixo, dobrados no pulso, como os da P9 (alinhados com a mão, ficavam deitados para trás)
+    pose = dict(pega={'r': punho, 'l': apoio}, antebraco={l: P9.antebraco('idle', 0.0, l) for l in 'rl'})
+    feitos = comuns(E, mov, Gp, pose, base, dict(parado=2.0, andar=0.72, guardar=0.3), dict(parado=1.4, andar=1.9), cam=0.7)
 
-    # ---- o que vem da referência (``RefPistola``): o tiro, as duas recargas, o andar, a corrida e o inspecionar
-    ref = RefPistola(AR, M.punho)
+    # ---- o que vem da referência da Glock (``RefPistola``): o tiro, a corrida, o inspecionar (o saque e as recargas vêm da P9, embaixo)
+    ref = RefPistola(AR, punho)
     Wb = lambda n: E.mundo(base, E.N(n))
     Fm = referencial(Wb('hand_l')[:3, 3], Wb('middle_01_l')[:3, 3], Wb('index_01_l')[:3, 3], Wb('pinky_01_l')[:3, 3])
     Hl0 = Wb('hand_l'); Rm = np.eye(4); Rm[:3, :3] = rot(Hl0); Rm[:3, 3] = Hl0[:3, 3]; Ql = np.linalg.inv(Fm) @ Rm
@@ -594,7 +743,7 @@ def pistola(mov, ficha=None):
             u = t * k; D = ref.arma(acao, u, forca); G = arma_em(u); R = D[:3, :3]
             # a câmera da referência não se mexe (o arquivo põe todo o movimento nas mãos): a cabeça acompanha a arma, um pouco
             olhar = np.degrees([np.arcsin(np.clip(-R[1, 2], -1, 1)), np.arctan2(R[0, 2], R[2, 2]), np.arctan2(R[1, 0], R[1, 1])]) * cam
-            out = dict(G=G, pega={'r': M.punho}, cam=olhar,
+            out = dict(G=G, pega={'r': punho}, cam=olhar,
                                                                               pecas={'Bolt': da_arma(ref.peca(acao, 'Slide', u, ferrolho))})
             if callable(carregador):                                      # a recarga: o carregador reto pelo punho, a mão esquerda presa nele
                 Dm, Dmao, w = carregador(u, arma_em)
@@ -602,7 +751,7 @@ def pistola(mov, ficha=None):
                 out['dedos'] = {'l': misturar_dedos(dedos_l, M.dedos_carregador, w)}; out['braco'] = ('l',)
                 return out
             if carregador: out['pecas']['Magazine'] = da_arma(ref.peca(acao, 'Magazine', u))
-            if solta is None: out['pega']['l'] = apoio; out['braco'] = ('l',)
+            if solta is None: out['pega']['l'] = apoio; out['antebraco'] = pose['antebraco']        # os antebraços da pegada (da P9), como no parado
             else:                                                         # a esquerda larga o apoio, faz o que a da referência faz e volta
                 w = solta(t); out['livre'] = {'l': entre(G @ apoio, esquerda_da_ref(G, acao, u), w)}
                 out['dedos'] = {'l': misturar_dedos(dedos_l, dedos_mag, w)}
@@ -613,66 +762,116 @@ def pistola(mov, ficha=None):
     da_ref('Shot', 'tiro', 0.30, forca=0.40, cam=0.10)
 
     # ---- o carregador nas recargas (Jhon, 19/11: "ficou estranha na saída do cartucho", "cartuchos em posição estranha e
-    # incorreta"). Antes ele ia preso ao gesto da mão esquerda da referência: saltava para cima da arma e atravessava o
-    # punho na volta. Agora o caminho é dele: sai e entra **reto, pelo eixo do punho** (o poço do carregador, medido na
-    # malha: 8° de inclinação), e só fora do punho a mão o leva embora, para baixo e para a esquerda. A mão esquerda vai
-    # presa nele (a pegada do carregador do AR-15). Os tempos são os da referência: quando o carregador dela começa a
-    # sair e quando a mão dela volta ao punho.
+    # incorreta"): ele sai e entra **reto, pelo eixo do punho** (o poço do carregador, medido na malha: 8° de inclinação);
+    # só fora do punho a mão o leva embora. A mão esquerda vai presa nele (a pegada do carregador do AR-15).
     EIXO = np.array([0.0, -0.9897, 0.1435]); CURSO = 0.118               # para baixo, pelo poço; quanto anda até soltar do punho (m)
     MEIO = np.array([0.0, -0.060, 0.036])                                # o meio do carregador
     BOCA = mover(*(EIXO * CURSO))
-    LONGE = mover(*(EIXO * (CURSO + 0.21) + np.array([-0.07, 0.0, 0.05]))) @ em_torno(MEIO, giro(pitch=-14, roll=24))      # fora da tela, na mão
     # onde a mão esquerda segura o carregador: a pegada do AR-15, levada ao terço de baixo do carregador da pistola
     pega_mag = da_arma(mover(*(np.array([0.0, -0.080, 0.037]) - np.array([0.007, -0.115, -0.114])))) @ trs(*base[E.N('Magazine')]) @ M.mao_no_carregador
-    def saindo(tau):                                                     # tau: há quanto tempo começou a sair
-        if tau <= 0: return np.eye(4)
-        if tau <= 0.13: return mover(*(EIXO * CURSO * (tau / 0.13) ** 2))                    # reto, acelerando
-        q = min((tau - 0.13) / 0.20, 1.0); return entre(BOCA, LONGE, 1 - (1 - q) ** 2)       # solto: a mão o leva, sem parar na boca
-    def entrando(tau):                                                   # tau: quanto falta para assentar
-        if tau <= 0: return np.eye(4)
-        if tau <= 0.085: return mover(*(EIXO * CURSO * (tau / 0.085) ** 1.25))               # reto, pelo eixo, e bate no fim
-        if tau <= 0.115: return mover(*(EIXO * (CURSO + 0.006 * (tau - 0.085) / 0.03)))      # um instante na boca, alinhando
-        q = min((tau - 0.115) / 0.20, 1.0); return entre(mover(*(EIXO * (CURSO + 0.006))), LONGE, q * q * (3 - 2 * q))
-    t_pega = next(k for k in range(200) if np.linalg.norm(ref.peca('Reloat_t', 'Magazine', k / 60)[:3, 3]) > 0.015) / 60
-    def mao_w(acao, u): return referencial(*ref.esquerda(acao, u))
-    ENC = mao_w('Reloat_t', t_pega)[:3, 3]
-    def t_encaixe(acao, depois):                                         # quando a mão esquerda da referência volta ao punho
-        return min((k / 60 for k in range(int(depois * 60), int(ref.duracao(acao) * 60))), key=lambda u: np.linalg.norm(mao_w(acao, u)[:3, 3] - ENC))
     # A pistola fica com o punho na borda de baixo da tela: sem subir, a troca do carregador acontecia toda fora dela.
     # Durante a troca a arma sobe 6 cm (e vem um pouco para o meio): dá para ver o carregador sair e o novo entrar.
-    def erguer(de, ate): return lambda u: np.array([-0.018, 0.060, 0.0]) * suave((u - de) / 0.20) * (1 - suave((u - ate) / 0.30))
-    def tatica():
-        t_sai, t_entra = t_pega - 0.03, t_encaixe('Reloat_t', t_pega + 0.45) + 0.03; meio = (t_sai + 0.33 + t_entra - 0.315) / 2
-        tatica.ergue = erguer(t_sai - 0.24, t_entra + 0.08)
-        print(f"  {id_}: recarga — o carregador sai aos {t_sai:.2f} s e o novo assenta aos {t_entra:.2f} s")
-        def c(u, arma_em):
-            Dm = saindo(u - t_sai) if u < meio else entrando(t_entra - u)
-            return Dm, Dm, suave(u / (t_sai - 0.02)) * (1 - suave((u - t_entra - 0.05) / 0.30))
+    def erguer(de, ate, v=(-0.018, 0.060, 0.0)): return lambda u: np.array(v) * suave((u - de) / 0.20) * (1 - suave((u - ate) / 0.30))
+
+    # ---- o saque e as recargas da P9 (Jhon, 23/11: "joguei a P9 para você ter ideia de como fazer a recarga da pistola e
+    # o draw"). Da P9 vem o gesto da arma (em relação à câmera), o caminho da mão esquerda (em relação à arma), os dedos
+    # dela, a direção dos antebraços e os tempos; o caminho do carregador também, levado ao poço desta arma (o da P9 é
+    # 2,4° mais inclinado: girado em volta do alto do carregador, ele sai e entra reto pelo nosso ``EIXO``). Na pegada a
+    # mão esquerda ficou afastada da de lá (``abracar``: as nossas mãos são mais grossas); ``corr`` leva o caminho de lá
+    # para perto da nossa pegada, e os dedos levam a mesma diferença.
+    corr = apoio @ np.linalg.inv(P9.na_arma('idle', 'hand_l', 0.0))
+    dedos_p9 = P9.dedos('idle', 0.0, 'l'); dif = {j: qmul(qinv(dedos_p9[j][1]), dedos_l[j][1]) for j in dedos_l}
+    def dedos_da_p9(acao, tp): return {j: (T, qmul(Q, dif[j])) for j, (T, Q) in P9.dedos(acao, tp, 'l').items()}
+    def olhar_de(D, cam):
+        R = rot(D); return np.degrees([np.arcsin(np.clip(-R[1, 2], -1, 1)), np.arctan2(R[0, 2], R[2, 2]), np.arctan2(R[1, 0], R[1, 1])]) * cam
+    eixos_p9 = mover(*P9.deslocar) @ np.diag([-0.01, -0.01, 0.01, 1.0])  # P9 (cm) -> nossa arma (m)
+    def clip_rel(acao, tp): return np.linalg.inv(P9.osso(acao, 'Grip_Bone', tp)) @ P9.osso(acao, 'Clip_Bone', tp)
+    sai = (eixos_p9 @ clip_rel('reload', 16 / P9.fps))[:3, 3] - (eixos_p9 @ clip_rel('reload', 0.0))[:3, 3]; sai /= np.linalg.norm(sai)
+    TOPO = np.array([0.0, -0.0028, 0.036])                               # o alto do carregador (onde ele entra no poço)
+    POCO = em_torno(TOPO, trs(np.zeros(3), matq(arco(sai, EIXO))))
+    print(f"  {id_}: o poço da P9 fica a {np.degrees(np.arccos(np.clip(sai @ EIXO, -1, 1))):.1f}° do daqui")
+    def carregador_p9(acao, tp):
+        """O movimento do carregador no espaço da arma (m), o da P9 levado ao poço daqui."""
+        D = clip_rel(acao, tp) @ np.linalg.inv(clip_rel(acao, 0.0))
+        return rigida(POCO @ eixos_p9 @ D @ np.linalg.inv(eixos_p9) @ np.linalg.inv(POCO))
+    def instantes(acao):
+        """Da mão esquerda e do carregador da P9 (s): a mão larga o punho, chega ao carregador, o carregador sai, ele assenta,
+        a mão volta ao punho."""
+        n = len(P9.d[acao + '_mundo']); f = P9.fps
+        mao = [np.linalg.norm(P9.na_arma(acao, 'hand_l', k / f)[:3, 3] - P9.na_arma(acao, 'hand_l', 0.0)[:3, 3]) for k in range(n)]
+        mag = [np.linalg.norm(carregador_p9(acao, k / f)[:3, 3]) for k in range(n)]
+        larga = next(k for k in range(n) if mao[k] > 0.3); chega = next(k for k in range(larga, n) if abs(mao[k + 1] - mao[k]) < 0.05)
+        sai_ = next(k for k in range(n) if mag[k] > 0.002); assenta = max(k for k in range(n) if mag[k] > 0.002) + 1
+        volta = next(k for k in range(assenta, n) if mao[k] < 0.2)
+        return dict(larga=larga / f, chega=chega / f, sai=sai_ / f, assenta=assenta / f, volta=volta / f, longe=int(np.argmax(mag)) / f)
+    def da_p9(acao, nome, dur, t0, carregador=None, ferrolho=None, cam=0.12, ergue=None, forca=1.0, gira=None):
+        k = P9.duracao(acao) / dur
+        def arma_em(t):
+            G = Gp @ P9.arma(acao, t * k, t0, forca)
+            if gira is not None:                                          # um giro a mais, em volta do punho, no olho
+                p = (E.R2O @ G)[:3, 3]; G = rigida(E.O2R @ mover(*p) @ giro(*gira(t)) @ mover(*(-p)) @ E.R2O) @ G
+            return G if ergue is None else rigida(E.O2R @ mover(*ergue(t)) @ E.R2O) @ G
+        def q(t):
+            tp = t * k; D = P9.arma(acao, tp, t0, forca); G = arma_em(t)
+            mao = G @ corr @ P9.na_arma(acao, 'hand_l', tp)
+            out = dict(G=G, pega={'r': punho}, livre={'l': mao}, dedos={'l': dedos_da_p9(acao, tp)}, cam=olhar_de(D, cam),
+                       antebraco={l: P9.antebraco(acao, tp, l) for l in 'rl'}, pecas={})
+            if carregador is not None:
+                Dm, Dmao, w = carregador(t, arma_em)                      # w: quanto a mão está no carregador (0 a 1)
+                out['pecas']['Magazine'] = da_arma(Dm)
+                if w > 0:
+                    out['livre']['l'] = entre(mao, G @ da_arma(Dmao) @ pega_mag, w)
+                    out['dedos']['l'] = misturar_dedos(out['dedos']['l'], M.dedos_carregador, w)
+            if ferrolho is not None: out['pecas']['Bolt'] = da_arma(ferrolho(t))
+            return out
+        feitos[nome] = construir(E, nome, dur, q, base)
+    # o saque: a pistola sobe do coldre (embaixo, à direita) e a mão esquerda vem encontrá-la
+    da_p9('draw', 'sacar', 0.36, P9.duracao('draw'), cam=0.08)
+    # a recarga com bala na câmara (1,67 s, a P9 tem 2,67): a esquerda desce ao pé do carregador, puxa-o para fora da
+    # tela, volta com ele (o "novo") e empurra até assentar
+    T = instantes('reload'); print(f"  {id_}: na P9 — {', '.join(f'{a} {b:.2f} s' for a, b in T.items())}")
+    def tatica_p9(dur):
+        k = P9.duracao('reload') / dur
+        def c(t, arma_em):
+            tp = t * k; Dm = carregador_p9('reload', tp)
+            w = suave((tp - T['larga']) / max(T['chega'] - T['larga'], 1e-3)) * (1 - suave((tp - T['assenta']) / max(T['volta'] - T['assenta'], 1e-3)))
+            return Dm, Dm, w
         return c
-    def vazia():
-        acao = 'Reloat_f'; ff = [np.linalg.norm(ref.peca(acao, 'Magazine', k / 60)[:3, 3]) for k in range(int(ref.duracao(acao) * 60) + 1)]
-        t_cai = next(k for k, d in enumerate(ff) if d > 0.015) / 60; t_some = next(k for k, d in enumerate(ff) if d > 0.4) / 60
-        t_volta = next(k for k in range(int(t_some * 60), len(ff)) if ff[k] < 0.01) / 60
-        t_entra = t_encaixe(acao, max(t_some + 0.25, t_volta - 0.2)); troca = t_entra - 0.33
-        print(f"  {id_}: recarga vazia — o velho cai aos {t_cai:.2f} s, o novo assenta aos {t_entra:.2f} s")
-        vazia.ergue = erguer(t_cai - 0.24, t_entra + 0.08)
+    # a pistola fica com o punho na borda de baixo da tela: durante a troca ela sobe 4 cm e vem 2 cm para perto, para
+    # dar para ver o carregador sair e o novo entrar, e gira o cano para dentro e tomba (``RECARGA_GIRO_P9``: pitch,
+    # yaw, roll), como a da Glock fazia. Sem o giro, de fora (a terceira pessoa copia esta) o cotovelo direito da Eve
+    # abria para o lado (100° do para baixo; agora 32°, era 26° com a Glock); trazer a arma mais para o meio e para
+    # perto enfiava o antebraço 7 cm no peito. Medido com ``MEDIR_COTOVELO`` e ``MEDIR_BRACO`` no ``mao_manny_anim.py``.
+    def ergue_p9(dur):
+        k = P9.duracao('reload') / dur; return erguer(T['larga'] / k, T['assenta'] / k, RECARGA_PERTO_P9)
+    def gira_p9(dur):
+        k = P9.duracao('reload') / dur; return erguer(T['larga'] / k, T['assenta'] / k, RECARGA_GIRO_P9)
+    # 60% do gesto da arma, como era com a Glock: o da P9 levanta o cano 30°, e de fora (a terceira pessoa copia este)
+    # a Eve levava a pistola ao rosto com o cotovelo para cima
+    RECARGA_FORCA = float(os.environ.get('RECARGA_FORCA', 0.6))
+    RECARGA_PERTO_P9 = tuple(float(x) for x in os.environ.get('RECARGA_PERTO_P9', '-0.018,0.04,0.02').split(','))
+    RECARGA_GIRO_P9 = tuple(float(x) for x in os.environ.get('RECARGA_GIRO_P9', '0,20,-25').split(','))
+    da_p9('reload', 'recarga', ref.duracao('Reloat_t'), 0.0, carregador=tatica_p9(ref.duracao('Reloat_t')), cam=0.15, ergue=ergue_p9(ref.duracao('Reloat_t')), forca=RECARGA_FORCA, gira=gira_p9(ref.duracao('Reloat_t')))
+    # a recarga vazia (2,17 s): o carregador velho cai sozinho, a mão desce, volta com o novo e empurra; o ferrolho, que
+    # estava travado atrás, solta no fim (o da referência da Glock, que solta aos 1,8 s)
+    def vazia_p9(dur):
+        k = P9.duracao('reload') / dur; t_cai = T['sai'] / k; troca = (T['longe'] + 0.25 * (T['assenta'] - T['longe'])) / k
         GRAV = 8.0; te = np.sqrt(2 * CURSO / GRAV); baixo = rot(E.O2R) @ np.array([0.0, -1.0, 0.0]); baixo /= np.linalg.norm(baixo)
-        def c(u, arma_em):
-            novo = entrando(t_entra - u)                                  # o novo (e a mão que o traz): fora da tela até vir
-            if u >= troca: Dm = novo
+        def c(t, arma_em):
+            tp = t * k; novo = carregador_p9('reload', tp)
+            if t >= troca: Dm = novo
             else:                                                         # o velho: solto, escorrega pelo poço e cai no mundo, girando
-                tau = u - t_cai
+                tau = t - t_cai
                 if tau <= te: Dm = mover(*(EIXO * 0.5 * GRAV * max(tau, 0.0) ** 2))
                 else:
                     Ge = arma_em(t_cai + te) @ ARMA; dt = tau - te; v = rot(Ge) @ EIXO * (GRAV * te * 100)
                     queda = mover(*(v * dt + baixo * (490.0 * dt * dt)))
-                    Dm = np.linalg.inv(arma_em(u) @ ARMA) @ queda @ Ge @ BOCA @ em_torno(MEIO, giro(pitch=-160 * dt, roll=60 * dt))
-            return Dm, novo, suave((u - 0.05) / 0.30) * (1 - suave((u - t_entra - 0.05) / 0.30))
+                    Dm = np.linalg.inv(arma_em(t) @ ARMA) @ queda @ Ge @ BOCA @ em_torno(MEIO, giro(pitch=-160 * dt, roll=60 * dt))
+            w = suave((t - troca) / 0.05) * (1 - suave((tp - T['assenta']) / max(T['volta'] - T['assenta'], 1e-3)))
+            return Dm, novo, w
         return c
-    # a recarga gira a arma 86° na referência; a nossa pistola fica mais perto do olho, e com o giro inteiro ela tapava a
-    # tela: 60% do gesto (o carregador e a mão esquerda seguem a arma, então continuam se encontrando)
-    c = tatica(); da_ref('Reloat_t', 'recarga', ref.duracao('Reloat_t'), forca=0.6, cam=0.2, carregador=c, ergue=tatica.ergue)
-    c = vazia(); da_ref('Reloat_f', 'recarga_vazia', ref.duracao('Reloat_f'), forca=0.6, cam=0.2, carregador=c, ergue=vazia.ergue)
+    dur_v = ref.duracao('Reloat_f')
+    da_p9('reload', 'recarga_vazia', dur_v, 0.0, carregador=vazia_p9(dur_v), ferrolho=lambda t: ref.peca('Reloat_f', 'Slide', t), cam=0.15, ergue=ergue_p9(dur_v), forca=RECARGA_FORCA, gira=gira_p9(dur_v))
     # O andar é **o do AR-15**, igual ao da M4A4: mesmo passo (0,8 s), mesma força, mesma câmera (Jhon, 19/11: "ao andar
     # não precisa mexer muito para os lados, faça igual à animação da AR-15"). O da referência da pistola, mesmo a um
     # terço, levava a arma 15 mm de um lado ao outro e a girava 6°; o do AR-15 são 5 mm e meio grau.
@@ -690,7 +889,7 @@ def pistola(mov, ficha=None):
     embaixo = no_olho(E, -0.10, -0.30, -0.12, pitch=-20, yaw=20, roll=30)
     def coronhada(t):
         v = bate(t); G = arma_no_olho(E, LUGAR[0] + v[0], LUGAR[1] + v[1], LUGAR[2] + v[2], pitch=v[3], yaw=5.0 + v[4], roll=2.0 + v[5])
-        return dict(G=G, pega={'r': M.punho}, livre={'l': entre(G @ apoio, embaixo, larga(t))}, pulso=('r',),
+        return dict(G=G, pega={'r': punho}, livre={'l': entre(G @ apoio, embaixo, larga(t))}, pulso=('r',),
                     cam=(0.8 * mola(t - 0.09, 5, 0.5), -1.8 * mola(t - 0.085, 4.5, 0.55), -0.9 * mola(t - 0.085, 4.5, 0.55)))
     feitos['coronhada'] = construir(E, 'coronhada', 0.40, coronhada, base)
     for nome, falta in feitos.items(): print(f"  {id_}.{nome}: {E.duracao(nome):.2f} s, alcance que faltou {falta * 10:.1f} mm")
@@ -815,21 +1014,24 @@ def faca(mov, ficha=None):
 
 
 # ---------------------------------------------------------------- a granada
-GRANADA = dict(centro=(-0.015, -0.070, 0.050), tamanho=1.18)           # onde a bola fica na mão antes de encostar (arma, m); o tamanho (1 = o real, bola de 6 cm)
+# o tamanho: 1 = o real, bola de 6 cm; era 1,18 (Jhon, 23/11: "granada está muito pequena, pode aumentar mais um pouco")
+GRANADA = dict(centro=(-0.015, -0.070, 0.050), tamanho=float(os.environ.get('GRANADA_TAM', 1.40)))          # onde a bola fica na mão antes de encostar (arma, m); o tamanho
 GRANADA_LUGAR = (0.105, -0.090, -0.30, 10.0, 55.0, 5.0)               # a mão parada: x, y, z do punho no olho (m); pitch, yaw, roll (graus)
 GRANADA_PRES = (0.045, -0.035, -0.33, 55.0, 60.0, 70.0)               # a granada apresentada à mão esquerda: deitada na mão, a argola virada para a esquerda e para baixo
 # o braço do arremesso, pelo pulso (``mao_pelo_braco``): x, y, z do pulso no olho (m); o giro da mão em torno do antebraço (2 valores somados) e a dobra do pulso para a palma (graus)
 # armado: a mão ao lado da cabeça, alta e para trás (Jhon, 20/11: "a mão da granada deve ir mais alta e mais para trás da
 # câmera"); era (0,21, −0,03, −0,215): o pulso 3 cm abaixo do olho e a 21 cm à frente. Agora 3,5 cm acima e a 16,5 cm:
-# a granada fica no canto de cima da tela, metade para fora.
-GRANADA_ATRAS = (0.205, 0.035, -0.165, 0.0, -18.0, 0.0)
+# a granada fica no canto de cima da tela, metade para fora. Em 23/11 mais (Jhon: "pode ir mais para trás da câmera
+# ao armar, quase não mostrando nada, e um pouco para cima"): o pulso 5 cm acima do olho e a 11 cm à frente — fora da
+# tela; da granada aparece só um pedaço no canto.
+GRANADA_ATRAS = (0.215, 0.05, -0.11, 0.0, -18.0, 0.0)
 # Com 'meio', x, y, z são do **meio da granada** (não do pulso): é ele que tem de passar pela linha da cruz.
 # A granada sai **do meio da mão, na linha da cruz, indo para ela** (Jhon, 19/11, jogando: "a granada tem que ser lançada
 # no meio da linha da mão, na direção exata do crosshair"). Antes a mão soltava 11 cm à direita da cruz, cortando a tela
 # em diagonal (22° para o lado), e a granada de verdade convergia para a cruz no voo: parecia sair de lado, por cima da
 # mão. Agora a mão vem de trás, entra na linha da cruz **antes** de soltar, solta com a granada em cima dela (um pouco
 # acima da cruz, para não a tapar) e ainda acompanha o lance para a frente antes de cair.
-GRANADA_ARCO = ((0.045, (0.215, 0.06, -0.13, 0.0, -26.0, -8.0)),      # recua um nada, o pulso arma para trás
+GRANADA_ARCO = ((0.045, (0.22, 0.085, -0.05, 0.0, -26.0, -8.0)),      # recua um nada, o pulso arma para trás
                 (0.085, (0.010, 0.066, -0.39, 0.0, -6.0, 0.0), 'meio'),      # já na linha da cruz, indo para a frente
                 (0.11, (0.0, 0.072, -0.55, 0.0, 6.0, 4.0), 'meio'),   # solta aqui (SOLTA): em cima da linha da cruz
                 (0.145, (-0.002, 0.060, -0.615, 0.0, 20.0, 22.0), 'meio'),   # a mão acompanha o lance
@@ -857,13 +1059,18 @@ def choque(mov, ficha=None):
     id_ = 'choque'; TAM = GRANADA['tamanho']; MEIO = np.array([-0.005, -0.010, 0.0])       # o meio da bola, na peça
     def esc(p): return MEIO + (np.asarray(p, float) - MEIO) * TAM          # a peça é maior que a real na primeira pessoa ("ficou meio pequena")
     O = {n: esc(t) for n, t in reais.por_osso(id_).items()}; al = O['handle'].reshape(-1, 3)
+    # a argola encolhida em volta do olhal, como a da malha nova (formas_mao.ARGOLA): é por ela que o dedo puxa
+    import formas_mao; OLHAL_F = esc(formas_mao.OLHAL); PIN0 = O['pinmove']
+    def encolher(p): return OLHAL_F + (np.asarray(p, float) - OLHAL_F) * formas_mao.ARGOLA
+    O['pinmove'] = encolher(PIN0)
     solido = pegada.Solido(O['grenade'], al[al[:, 1] > esc((0, 0.034, 0))[1]], al[al[:, 1] <= esc((0, 0.036, 0))[1]])      # a bola e a espoleta; a alavanca: o topo e a descida
     OLHAL = esc((0.011, 0.030, 0.015)); EZ = np.array([0.0, 0.0, 1.0])    # a cabeça do pino, onde a argola gira; o eixo do pino
     AR0 = Esqueleto(FONTE); M0 = Maos(AR0); pele = pegada.Pele()
     memo = os.environ.get('GR_MEMO')                                       # (para afinar o gesto sem refazer a pegada a cada vez)
     if memo and os.path.exists(memo) and pickle.load(open(memo, 'rb'))[0] == GRANADA: _, na_mao, dedos_bola, medidas = pickle.load(open(memo, 'rb'))
     else:
-        na_mao, dedos_bola, medidas = pegada.pegar(AR0, dict(AR0.parado), 'r', solido, no_punho(SOBE, (-1.0, 0.0, 0.0), MEIO, GRANADA['centro']), M0.aberta('r'), M0.fechada('r', 1.0), pele=pele)
+        # (a faixa dos dedos abre mais que a padrão: com a bola de 1,40 o polegar fechado no mínimo de antes a atravessava)
+        na_mao, dedos_bola, medidas = pegada.pegar(AR0, dict(AR0.parado), 'r', solido, no_punho(SOBE, (-1.0, 0.0, 0.0), MEIO, GRANADA['centro']), M0.aberta('r'), M0.fechada('r', 1.0), pele=pele, faixa=(-1.0, 1.2))
         if memo: pickle.dump((GRANADA, na_mao, dedos_bola, medidas), open(memo, 'wb'))
     print(f"  {id_}: a mão direita na granada — a pele fica a {medidas['mm']} mm dela (0 = encostada; negativo = atravessando)")
     na_mao_i = np.linalg.inv(na_mao)
@@ -888,11 +1095,21 @@ def choque(mov, ficha=None):
         for a, no, m in pecas:
             m = dict(m, pos=esc(m['pos']))
             if no != 'Pino': out.append((a, no, m)); continue
-            e_argola = np.array([np.abs(O['pinmove'].reshape(-1, 9) - x.reshape(9)).sum(1).min() < 1e-6 for x in m['pos']])
+            e_argola = np.array([np.abs(PIN0.reshape(-1, 9) - x.reshape(9)).sum(1).min() < 1e-6 for x in m['pos']])
             out.append((a, 'Pino', {k: v[~e_argola] for k, v in m.items()}))
-            out.append((a, 'Argola', levar({k: v[e_argola] for k, v in m.items()}, ABRE)))
+            arg = {k: v[e_argola] for k, v in m.items()}; arg['pos'] = encolher(arg['pos'])
+            out.append((a, 'Argola', levar(arg, ABRE)))
         return out
     E, AR = abrir(id_, 'granada', na_mao=na_mao, osso={'': 'Bolt', 'Pino': 'Trigger', 'Argola': 'Magazine'}, antes=separar)   # o corpo voa pelo osso Bolt; o pino sai pelo Trigger; a argola balança no Magazine
+    # Onde a malha nova (formas_mao, no espaço da peça, tamanho real) vai em cada osso (peles._forma_nova): a conta que
+    # leva a peça daqui ao conjunto — o tamanho, a mão e, na argola, a abertura. Era um número medido uma vez
+    # (dados/na_mao.json) e ficava velho quando o tamanho ou a pegada mudavam.
+    Bg, _ = E.ligacao('ik_hand_gun'); Mm = Bg @ ARMA; S = np.eye(4); S[:3, :3] *= TAM; S[:3, 3] = MEIO * (1 - TAM)
+    caminho_nm = os.path.join(AQUI, 'dados', 'na_mao.json'); nm = json.load(open(caminho_nm, encoding='utf-8'))
+    def m34(X): return [[round(float(x), 6) for x in linha] for linha in X[:3]]
+    nm['choque']['ossos'] = [dict(osso='Bolt', matriz=m34(Mm @ na_mao @ S)), dict(osso='Trigger', matriz=m34(Mm @ na_mao @ S)),
+                             dict(osso='Magazine', matriz=m34(Mm @ na_mao @ ABRE @ S))]
+    json.dump(nm, open(caminho_nm, 'w', encoding='utf-8'), indent=1, ensure_ascii=False); open(caminho_nm, 'a', encoding='utf-8').write('\n')
     M = Maos(AR); base = dict(AR.parado); fechada = dedos_bola; aberta = M.aberta('r'); AR.por_dedos(base, fechada); por_ombro(E, base, 'r', 0.22, -0.26, 0.06)
 
     # parada: a mão virada para dentro, para a granada, a alavanca e a argola aparecerem (antes só se via o dorso da mão)
@@ -958,7 +1175,9 @@ def choque(mov, ficha=None):
         def aro_em(t):                                                    # (quanto o pino saiu, para onde a argola aponta, onde está a ponta do dedo, quanto falta o dedo girar): na peça
             if t < T_GANCHO:
                 # o dedo vem de ponta pelo eixo do aro, 3 mm para dentro do arame; no fim corre para fora e o arame assenta nele
-                w = suave((t - (T_GANCHO - 0.05)) / 0.05); r = giro(pitch=-levanta * w)[:3, :3] @ r0
+                # (a argola levanta a partir de 0,08 s antes: com a bola de 1,40 e a argola menor, levantando só nos últimos
+                # 0,05 s a mão esquerda chegava antes dela e encostava na direita)
+                w = suave((t - (T_GANCHO - 0.08)) / 0.08); r = giro(pitch=-levanta * w)[:3, :3] @ r0
                 return 0.0, r, OLHAL + r * (leff - 0.003 * (1 - suave((t - (T_GANCHO - 0.03)) / 0.03))) - normal(r) * 0.075 * (1 - suave((t - T_EIXO) / (T_GANCHO - 0.02 - T_EIXO))), 0.0
             K = K1 + PUXAO * puxa(t); s, d = biela(K); return s, d, K, 0.0
         T_FORA = next(k / 240 for k in range(int(DUR * 240)) if aro_em(k / 240)[0] >= CURSO_PINO)
@@ -1002,7 +1221,8 @@ def choque(mov, ficha=None):
     # do dedo o mais longe do olhal que o aro deixa: o arame assenta no dedo, sem cortar.
     LEFF = LR - 0.016; levanta = 0.0
     for levanta in np.arange(0.0, 76.0, 5.0):
-        if gesto(levanta, LEFF)['medir'](T_GANCHO)[1] > 0.0015: break
+        g_ = gesto(levanta, LEFF)['medir']
+        if min(g_(t)[1] for t in np.arange(T_EIXO, T_GANCHO + 1e-6, 0.01)) > 0.0015: break      # folga em toda a entrada, não só no fim
     a, b = LR - 0.030, LR - 0.002                                         # a: o dedo solto dentro do aro; b: o arame dentro do dedo
     for _ in range(12):
         m = (a + b) / 2

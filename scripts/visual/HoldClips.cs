@@ -39,6 +39,12 @@ public sealed class HoldClip
 	public float MagGrab = -1f, MagDrop = -1f, MagPick = -1f, MagSeat = -1f;
 	public bool SwapsMagazine => MagGrab >= 0f && MagDrop >= MagGrab && MagPick > MagDrop && MagSeat > MagPick;
 
+	/// <summary>O pino da granada no armar visto de fora (s do clipe; -1: não tem): quando ele sai
+	/// da granada, no dedo da mão esquerda, e quando ela o larga e ele cai no chão ("pino" do
+	/// arquivo; Jhon, 23/11: "o gatilho da granada deve cair no chão também").</summary>
+	public float PinOut = -1f, PinDrop = -1f;
+	public bool PullsPin => PinOut >= 0f && PinDrop > PinOut;
+
 	/// <summary>A duração (s).</summary>
 	public float Length => Frames > 1 ? (Frames - 1) / Fps : 0f;
 
@@ -218,6 +224,11 @@ public static class HoldClips
 				clip.MagDrop = t[1].AsSingle();
 				clip.MagPick = t[2].AsSingle();
 				clip.MagSeat = t[3].AsSingle();
+			}
+			if (d.TryGetValue("pino", out Variant pin) && pin.AsGodotArray().Count == 2)
+			{
+				clip.PinOut = pin.AsGodotArray()[0].AsSingle();
+				clip.PinDrop = pin.AsGodotArray()[1].AsSingle();
 			}
 			set.Clips[clip.Name] = clip;
 		}

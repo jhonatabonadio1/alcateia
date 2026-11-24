@@ -276,7 +276,9 @@ começa 0,32 s depois de soltar e o dano sai em 1,14 s.
 | `LeapReach` / `LeapRadius` | 1,7 / 1,5 m | Volume do acerto (maior que o da garra) |
 | `LeapCooldown` | 0 | Espera entre botes (0 = um por pulo) |
 
-A aterrissagem prende o lobo 0,87 s (`WolfMoves.Land`, a 1×).
+A aterrissagem prende o lobo 0,87 s (`WolfMoves.Land`, a 1×). No ar, o bote
+corta a garrada em curso na hora (`Weapon.TrySpecial`; o dano dela que ainda
+não saiu não sai mais). A altura mínima (`LeapMinHeight`) continua valendo.
 
 ### Rugido (R)
 
@@ -284,6 +286,17 @@ Dura **1,53 s** (o Howl do Jhon a 1×, em `WolfMoves.Of`) e devolve o escudo
 inteiro. Pode andar rugindo. `HowlNoise` 45 m (ouvido pelos bots) e
 `Health.ShieldDecayGrace` 1 s (o escudo espera isso para voltar a
 escorrer).
+
+O que se vê e se ouve (23/11): só a silhueta na cor do lobo (`WolfFx`,
+pelo `RoarBurst.Glow`) e os raios elétricos (`RoarBurst`). Dois sons: a
+voz (`WorldAudio.HowlSound` = `lobo_rugido`) e os choques, só estalos e
+arcos, sem tom que sobe (`WolfFx.HowlEnergySound` = `lobo_uivo_choque`,
+22 m; era `lobo_uivo_energia`). O estalo do escudo cheio saiu
+(`WolfFx.HowlShieldSound` vazio, era `lobo_uivo_escudo`). Virar lobo e
+voltar a humano tocam o "puff" (`CombatantAudio.TransformSound` e
+`UntransformSound` = `forma_puff`; eram os rugidos `lobo_transformar` e
+`lobo_destransformar`, que ficam no disco). Os dois sons novos saem de
+`tools/sons/choque_puff.py`.
 
 ### Quanto dá hoje (contra humano, 200 de vida)
 
@@ -412,6 +425,26 @@ tiro para os bots: `Weapon.ShotNoise` 60 m.
 
 Preços da loja e patente mínima: `scripts/meta/Catalog.cs`.
 
+### A pistola na mão (a P9, 23/11)
+
+A pegada, o saque e as recargas da Desert Eagle vêm da P9
+(`tools/armas/dados/p9.npz`, `RefP9` em `tools/armas/conjuntos.py`). Depois
+de mudar, rode `conjuntos.py deagle`, `peles.py deagle deagle_cobra
+deagle_fenix` e a terceira pessoa (`mao_manny_anim.py eve deagle`,
+`animacoes_armas.py barut deagle`).
+
+| Onde | Valor | O quê |
+|---|---|---|
+| `pistola()`: `da_p9('draw', 'sacar', 0,36, …)` | 0,36 s (a P9 tem 0,58) | O saque |
+| `RECARGA_FORCA` | 0,6 | Quanto do gesto da arma da P9 entra na recarga (inteiro, o cano subia 30° e de fora a Eve levava a arma ao rosto) |
+| `RECARGA_PERTO_P9` | x −1,8 cm, y +4 cm, z +2 cm (no olho) | Para onde a arma vai durante a troca, para o carregador aparecer |
+| `RECARGA_GIRO_P9` | pitch 0°, yaw +20°, roll −25° | O giro a mais na troca: o cano para dentro e tombado. Sem ele o cotovelo direito da Eve abria para o lado (100°; agora 32°) |
+| `PISTOLA_RETA` (`mao_manny_anim.py`) | ligado | Terceira pessoa: o cano na horizontal e os pulsos retos, não com a dobra da primeira pessoa (24/11). `PISTOLA_RETA=0` volta ao de antes |
+| `PUNHO_RETO` (`mao_manny_anim.py`) | 8° | Quanto o pulso pode dobrar sem custo na pistola reta |
+
+As durações das recargas continuam as do jogo (`ReloadTactical` 1,8 s e
+`ReloadEmpty` 2,2 s no `.tres`; o clipe tem 1,67 e 2,17 s).
+
 ---
 
 ## 8. Faca, granada e soltar arma
@@ -436,6 +469,24 @@ Preços da loja e patente mínima: `scripts/meta/Catalog.cs`.
 
 Segurar o botão arma o braço; soltar arremessa. A animação do braço
 fica em `ViewModel.cs` (na tela) e `CharacterAnimator.cs` (no corpo).
+
+O tamanho e a pegada da granada (23/11):
+
+| Onde | Campo | Valor | O que faz |
+|---|---|---|---|
+| `tools/armas/conjuntos.py` | `GRANADA['tamanho']` | 1,40 (era 1,18) | A granada na mão em primeira pessoa, em relação à de verdade |
+| `tools/armas/formas_mao.py` | `ARGOLA` | 0,6 | O tamanho da argola do pino (o aro de 5,8 cm da V40 vira um de 3,5 cm) |
+| `tools/armas/conjuntos.py` | `GRANADA_ATRAS` | pulso 21,5 cm à direita, 5 cm acima e 11 cm à frente do olho | A mão armada, quase toda fora da tela |
+| `Grenade` | `ModelScale` | 1,4 | A granada voando (só a aparência; a colisão não muda) |
+| `HeldWeapon` | `GrenadeHeldGrow` | 1,4 | A granada na mão em terceira pessoa, sobre a da primeira pessoa (1,96 da de verdade); o personagem de mão grande (Barut, escala 1,3) cresce só o que falta |
+| `mao_manny_anim.py` | `GRANADA_CRESCE` | 1,4 | O mesmo número no Blender: o dedo que puxa o pino entra na argola crescida |
+| `mao_manny_anim.py` | `LANCE_PINO_SAI` / `LANCE_LARGA` | 0,27 / 0,12 s | Quando o pino sai (a esquerda o leva) e quando ela o larga (cai no chão: `HeldWeapon.DroppedPinLife` 8 s) |
+| `mao_manny_anim.py` | `GRANADA_BOLSO` | 0,22; 0,10; −0,45 m | O bolso de onde a terceira pessoa saca a granada (no peito: direita, frente, cima) |
+
+`dados/na_mao.json` (onde a malha da granada vai em cada osso) é escrito
+por `conjuntos.py` a cada vez: mudou o tamanho, rode `conjuntos.py choque`
+(com `SEM_PELES=1`) e depois `peles.py choque choque_carbono choque_neon
+choque_magma choque_ouro`.
 
 ---
 

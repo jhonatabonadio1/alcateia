@@ -89,6 +89,12 @@ public partial class Grenade : RigidBody3D
 	/// de quem arremessou.</summary>
 	public bool Cosmetic { get; set; }
 
+	/// <summary>De que tamanho a granada se vê voando, em relação à de verdade (só a aparência:
+	/// a colisão não muda). A da mão em primeira pessoa é 1,40 da de verdade
+	/// (tools/armas/conjuntos.py, GRANADA; Jhon, 23/11: "granada está muito pequena"), e a que
+	/// sai dela tem o mesmo tamanho.</summary>
+	[Export] public float ModelScale = 1.4f;
+
 	private double _timer;
 	private bool _exploded;
 
@@ -117,6 +123,7 @@ public partial class Grenade : RigidBody3D
 		if (model.GetChildCount() > 0)
 		{
 			model.Name = "Modelo";
+			model.Scale = Vector3.One * ModelScale;
 			AddChild(model);
 			if (GetNodeOrNull<MeshInstance3D>("MeshInstance3D") is MeshInstance3D ball) ball.Visible = false;
 		}

@@ -117,6 +117,11 @@ nome do autor. O Jhon precisa confirmar a licença e o crédito de cada pacote
 código** (`tools/sons/uivo.py`: senoides, serras e ruído filtrado, numpy e
 scipy). Nenhuma gravação; sem licença de terceiros.
 
+`lobo_uivo_choque_1..2` (os choques do rugido desde 23/11, só estalos, no
+lugar do `lobo_uivo_energia`) e `forma_puff_1..3` (o "puff" de virar lobo e
+de voltar a humano) também são **sintetizados por código**
+(`tools/sons/choque_puff.py`). Nenhuma gravação; sem licença de terceiros.
+
 O rugido em si, `lobo_rugido_1`, é montado por `tools/sons/rugido.py` a partir
 de duas gravações do **Free Sounds Pack** (Creature 1-21 e Zombie 1 - Short
 1-01), em camadas e com distorção. Vale a pendência de licença do pacote.
