@@ -19,7 +19,7 @@ do `docs/DESIGN.md` do sistema que for mexer.
 > | `docs/AJUSTES.md` | todo número regulável, com o valor atual e onde mudar |
 > | `docs/MAPAS.md` | os mapas, como são gerados e como fazer um novo |
 > | `docs/PACOTES.md` | de onde vem a arte (texturas, objetos, céus, braços, armas), licenças e como baixar |
-> | `docs/PERSONAGENS.md` | personagens jogáveis (`assets/personagens/`, uma pasta cada): como fazer um novo nas proporções certas |
+> | `docs/PERSONAGENS.md` | personagens jogáveis (`src/assets/personagens/`, uma pasta cada): como fazer um novo nas proporções certas |
 > | `docs/decisoes/` | as decisões de arquitetura (ADR) |
 > | `docs/ARSENAL.md`, `docs/CONJUNTOS.md`, `docs/UI.md` | especificações de armas, economia e interface |
 > | `docs/CHANGELOG.md` | o que entrou em cada versão |
@@ -28,6 +28,12 @@ do `docs/DESIGN.md` do sistema que for mexer.
 > **Mudou um número? Atualize a linha dele no `AJUSTES.md`.** Mudou uma
 > decisão de jogo? No `DESIGN.md`. Vai mexer num sistema? Leia a seção
 > dele no `DESIGN.md` antes.
+
+> **O jogo mora em `src/`** (24/11): `src/scripts`, `src/scenes`, `src/assets`,
+> `src/resources`, `src/tests` e `src/tools` (no Godot, `res://src/...`). Na raiz
+> ficam `project.godot`, `WolfLeague.csproj`, `export_presets.cfg`, `addons/`,
+> `servidor/`, `docs/`, `instalador/` e os arquivos do Docker e do Fly. Os
+> comandos rodam da raiz: `src/tools/testar.sh`.
 
 ## Regra zero
 
@@ -104,16 +110,19 @@ granadas mais fortes.
    lobo junto e o contraste entre as formas não muda. Para separar as
    duas, mexa no `SpeedMultiplier` das classes, não só aqui.
 
-   Valores absolutos atuais (velocidade em m/s, pulo em altura):
+   Valores absolutos atuais (velocidade em m/s, pulo em altura), medidos no
+   jogo em 24/11 (os testes seguem estes; `docs/MEDIDAS.md`). A cena do
+   jogador põe `HumanSpeed` 3,2 (o código diz 3,0): a base é 3,2 × 1,08.
+   O que o texto abaixo conta em 3,24 m/s é de antes.
 
    | | Humano | Bruto | Ligeiro |
    |---|---|---|---|
-   | Velocidade | 3,24 (faca 3,36) | 3,89 (1,298×) | 4,22 (1,406×) |
-   | Pulo | 0,99 m | 1,62 m (1,28×) | 2,50 m (1,59×) |
-   | Avanço do pulo correndo | ~2,7 m | ~3,9 m | ~5,0 m |
-   | Agachado | 1,46 | 1,75 | 1,90 |
-   | De quatro (W W) | — | 5,06 | 5,48 |
-   | Na parede | — | 4,45 | 4,82 |
+   | Velocidade | 3,46 (faca 3,58) | 4,15 (1,298×) | 4,50 (1,406×) |
+   | Pulo | 1,02 m | 1,67 m | 2,56 m |
+   | Avanço do pulo correndo | ~2,6 m | ~4,4 m | ~5,9 m |
+   | Agachado | 1,56 | 1,87 | 2,03 |
+   | De quatro (W W) | — | 7,14 | 7,73 |
+   | Na parede | — | 4,75 | 5,14 |
 
    **A velocidade do humano é a passada do X Bot**, medida no quadril:
    correr ("run_fwd") anda 3,0 m/s a 1×, andar 1,0, de costas 1,1 e
@@ -180,7 +189,7 @@ Nomes das classes aqui são inventados: Bruto, Ligeiro, e depois
 Couraçado, Espectro, Detonador, Congelante, Arcano.
 
 **Licenças de assets de terceiros.** Todo som tem a origem em
-`assets/audio/CREDITOS.md`. A maior parte é CC0; o Oculus Audio Pack é
+`src/assets/audio/CREDITOS.md`. A maior parte é CC0; o Oculus Audio Pack é
 **CC BY 4.0** e exige crédito visível no jogo publicado. Asset novo só
 entra com licença que permita uso comercial, e com a linha dele nos
 créditos no mesmo commit.
@@ -190,7 +199,7 @@ inclusive comercial, mas **não** se redistribui o arquivo cru como
 asset. Se o repositório um dia for público, os `.fbx` do Mixamo
 precisam sair dele.
 
-As fontes Barlow e Barlow Condensed (`assets/fonts/`) são **SIL OFL
+As fontes Barlow e Barlow Condensed (`src/assets/fonts/`) são **SIL OFL
 1.1**: uso comercial livre, e a licença vai junto (`OFL.txt`). Não
 venda a fonte sozinha nem distribua com outro nome.
 
@@ -207,36 +216,38 @@ alcateia/
 ├── docs/               DESIGN, ARQUITETURA, AJUSTES, UI, ARSENAL, CONJUNTOS, MAPAS, PACOTES, SERVIDOR, PENDENCIAS, CHANGELOG, decisoes/ (ADR)
 ├── servidor/           o servidor (.NET + PostgreSQL) e as imagens Docker — fora do Godot (.gdignore)
 ├── docker-compose.yml  banco + servidor + servidor de partida
-├── tests/              unit (C# puro) e regression (o jogo sem tela)
-├── assets/             audio, characters, personagens (uma pasta por personagem jogável), fonts, maps, textures, ui
-├── resources/
-│   ├── breeds/         estatísticas das classes de lobo
-│   ├── weapons/        uma definição por arma (gerada por tools/gerar_arsenal.py)
-│   ├── bots/           níveis de dificuldade (facil, medio, dificil)
-│   └── body/           ruido.tres — quanto barulho o corpo faz
-├── scenes/
-│   ├── menu/menu.tscn  o lobby inteiro (LobbyShell)
-│   ├── main.tscn       a partida
-│   ├── treino.tscn     campo de treino, sem partida
-│   ├── maps/           armazem (o único na lista), vila, polar (.tscn gerados por tools/gerar_mapas.py)
-│   └── player, bot, dummy, grenade
-├── tools/              geradores, e testar.sh (os testes)
-└── scripts/
-	├── domain/         regras em C# puro (combate, sorteio), com teste de unidade
-	├── actors/         player/, bot/ — quem decide; body/ — o corpo que os dois
-	│                   dividem; input/ — a intenção do jogador
-	├── ai/             o cérebro do bot e os níveis de dificuldade
-	├── combat/         Health, weapon/ (Weapon.*), Grenade, Arsenal, LoadoutSet
-	├── forms/          FormController (transformação e WP), WolfBreed
-	├── core/           partida, regras da sala, perfil, opções, som, input
-	├── meta/           o que vive fora da partida: patentes, catálogo,
-	│                   missões, progressão, mapas, lista de salas
-	├── lobby/          as telas do lobby
-	├── ui/             hud/ (HUD por canto), placar, resultado, respawn, Esc
-	│   └── kit/        tokens, tema e componentes de interface
-	├── visual/         human/ e wolf/ (os corpos animados), anim/ (AnimationKit), áudio
-	├── net/            conta, saguão, partida online e servidor de partida
-	└── debug/          peças descartáveis
+├── WolfLeague.csproj, export_presets.cfg, icon.svg, addons/ (o Godot só acha plugin em res://addons)
+└── src/                o jogo (res://src/...)
+	├── tests/          unit (C# puro) e regression (o jogo sem tela)
+	├── assets/         audio, personagens (uma pasta por personagem jogável; _comum/ tem as animações do humano e do lobo), fonts, mapas, textures, ui
+	├── resources/
+	│   ├── breeds/     estatísticas das classes de lobo
+	│   ├── weapons/    uma definição por arma (.tres feito à mão desde 24/11)
+	│   ├── bots/       níveis de dificuldade (facil, medio, dificil)
+	│   └── body/       ruido.tres — quanto barulho o corpo faz
+	├── scenes/
+	│   ├── menu/menu.tscn  o lobby inteiro (LobbyShell)
+	│   ├── main.tscn   a partida
+	│   ├── treino.tscn campo de treino, sem partida
+	│   ├── maps/       armazem (o único na lista), vila, polar (.tscn gerados por src/tools/gerar_mapas.py)
+	│   └── player, bot, dummy, grenade
+	├── tools/          geradores, e testar.sh (os testes)
+	└── scripts/
+		├── domain/     regras em C# puro (combate, sorteio), com teste de unidade
+		├── actors/     player/, bot/ — quem decide; body/ — o corpo que os dois
+		│               dividem; input/ — a intenção do jogador
+		├── ai/         o cérebro do bot e os níveis de dificuldade
+		├── combat/     Health, weapon/ (Weapon.*), Grenade, Arsenal, LoadoutSet
+		├── forms/      FormController (transformação e WP), WolfBreed
+		├── core/       partida, regras da sala, perfil, opções, som, input
+		├── meta/       o que vive fora da partida: patentes, catálogo,
+		│               missões, progressão, mapas, lista de salas
+		├── lobby/      as telas do lobby
+		├── ui/         hud/ (HUD por canto), placar, resultado, respawn, Esc
+		│   └── kit/    tokens, tema e componentes de interface
+		├── visual/     human/ e wolf/ (os corpos animados), anim/ (AnimationKit), áudio
+		├── net/        conta, saguão, partida online e servidor de partida
+		└── debug/      peças descartáveis
 ```
 
 O mapa completo, arquivo por arquivo, e o caminho de cada dado da
@@ -257,7 +268,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `actors/bot/Bot.Navigation.cs` | Malha de navegação, desvio, pular obstáculo, virar o corpo |
 | `actors/bot/Bot.Cover.cs` | Achar cobertura testando a linha de tiro, recuar |
 | `actors/bot/Bot.Patrol.cs` | Ronda pelas rotas do mapa e busca onde o alvo sumiu |
-| `actors/body/` | O corpo que o jogador e o bot dividem: `WolfMoveMotor` (bote, voo do salto, preso ao chão), `BodyNoise` + `BodyNoiseProfile` (passo, baque, rugido; `resources/body/ruido.tres`), `Corpse` (cair e assentar morto), `BodyMotion.Hold` |
+| `actors/body/` | O corpo que o jogador e o bot dividem: `WolfMoveMotor` (bote, voo do salto, preso ao chão), `BodyNoise` + `BodyNoiseProfile` (passo, baque, rugido; `src/resources/body/ruido.tres`), `Corpse` (cair e assentar morto), `BodyMotion.Hold` |
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
 | `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, pente e reserva, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Aim` (zoom do botão direito), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfDive` (bote), `.Damage` (o raio com a cabeça do modelo e aplicar dano) |
 | `combat/HeadHitbox.cs` | A cabeça de quem leva tiro, no modelo que se vê (os ossos da cabeça do humano ou do lobo); sem modelo, a faixa de cima da cápsula |
@@ -266,7 +277,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `visual/RigPieces.cs` | Peças do conjunto de primeira pessoa mexidas por código por cima da animação (o carregador e o ferrolho na recarga de código do AR-15) |
 | `domain/HeadHit.cs` | A cabeça como esfera e quando o raio a acerta (parede na frente protege), C# puro com teste |
 | `domain/net/` | O núcleo da rede autoritativa (decisão 0011): pacote binário sem alocar, comando, fila de comandos, estado do mundo, história, interpolação, relógio do servidor e predição — C# puro, com teste de unidade |
-| `ai/BotDifficulty.cs` | Um nível de dificuldade como dado (`resources/bots/*.tres`) |
+| `ai/BotDifficulty.cs` | Um nível de dificuldade como dado (`src/resources/bots/*.tres`) |
 | `visual/human/CharacterAnimator*.cs` | O corpo humano animado: `.Model` e `.Tree` montam uma vez (clipes, modelo do time, árvore); `.Locomotion`, `.Actions` (recarga, granada, reação) e `.Death` tocam por quadro |
 | `visual/wolf/WolfVisual*.cs` | O corpo do lobo: `.Model` e `.Tree` montam; `.Locomotion`, `.Air` (parede, pulo, bote) e `.Moves` (golpes, rugido) tocam |
 | `visual/wolf/WolfOwnClips.cs` | As animações do Jhon (`lobo_anim.glb`): abre o arquivo e encaixa cada clipe no corpo (eixos, quadril) |
@@ -332,13 +343,13 @@ partida). As razões estão em `docs/decisoes/`.
   principal guarda o ciclo e lista as partes no comentário do topo;
   cada parte abre o seu `[ExportGroup]`. Campo mora na parte que é dona
   dele (ADR 0002)
-- **Conta de regra vai para `scripts/domain`** (C# puro, sem Godot),
+- **Conta de regra vai para `src/scripts/domain`** (C# puro, sem Godot),
   com teste de unidade (ADR 0001). Número que se ajusta sem programar
   vai num `.tres` (ADR 0005)
 - O que o jogador e o bot fazem igual mora uma vez só
-  (`scripts/actors/body`, ADR 0003). Achou uma cópia? Junte — o
-  `tools/testar.sh` reprova seis linhas iguais em dois lugares
-  (`tools/duplicados.py`). Nome de grupo é `Groups`, peça de tela
+  (`src/scripts/actors/body`, ADR 0003). Achou uma cópia? Junte — o
+  `src/tools/testar.sh` reprova seis linhas iguais em dois lugares
+  (`src/tools/duplicados.py`). Nome de grupo é `Groups`, peça de tela
   repetida é `UiKit`
 - Método passou de uns 80 linhas? Quebre em passos com nome (a corrida
   na parede é o exemplo)
@@ -347,29 +358,29 @@ partida). As razões estão em `docs/decisoes/`.
 
 ## Testes
 
-**Rode antes de todo commit:** `tools/testar.sh` (com `GODOT=` apontando
+**Rode antes de todo commit:** `src/tools/testar.sh` (com `GODOT=` apontando
 para o Godot .NET, se ele não estiver no PATH). `--rapido` pula os dois
-testes de partida; um nome filtra (`tools/testar.sh Salto`). O GitHub
+testes de partida; um nome filtra (`src/tools/testar.sh Salto`). O GitHub
 roda o mesmo script a cada push (`.github/workflows/testes.yml`).
 
 | Camada | Onde | O que prova |
 |---|---|---|
-| Unidade | `tests/unit` (C# puro, sem Godot nem pacote) | As regras: dano, WP, tempos dos golpes... Tudo de `scripts/domain` e o `WolfMoves` |
-| Regressão | `tests/regression` (o jogo de verdade, sem tela, 60 quadros fixos, um processo por teste, semente fixa) | O comportamento aprovado: distância do salto, velocidades, altura do pulo, parede (correr, saltar, agarrar), passada do lobo, granada, dano da garra, ruído, níveis dos bots, clipes de animação, HUD, renascer, bots atirando, cenas sem erro |
+| Unidade | `src/tests/unit` (C# puro, sem Godot nem pacote) | As regras: dano, WP, tempos dos golpes... Tudo de `src/scripts/domain` e o `WolfMoves` |
+| Regressão | `src/tests/regression` (o jogo de verdade, sem tela, 60 quadros fixos, um processo por teste, semente fixa) | O comportamento aprovado: distância do salto, velocidades, altura do pulo, parede (correr, saltar, agarrar), passada do lobo, granada, dano da garra, ruído, níveis dos bots, clipes de animação, HUD, renascer, bots atirando, cenas sem erro |
 
 - **Mudou um comportamento de propósito?** Mude o teste no mesmo
   commit, dizendo no teste por quê. Teste vermelho sem mudança
   combinada é regressão: conserte o código, não o teste.
-- **Regra nova que dá para testar sem o Godot vai para `scripts/domain`**
+- **Regra nova que dá para testar sem o Godot vai para `src/scripts/domain`**
   (C# puro) com teste de unidade. O que precisa de física, animação ou
   cena vira teste de regressão (`RegressionTest`, achado sozinho pela
   bancada).
 - Um teste de regressão também reprova se o Output tiver `ERROR`.
 - **Mexeu no servidor ou na rede?** Rode também
-  `tools/testar_servidor.sh` (o servidor contra um PostgreSQL de
-  verdade) e `tools/testar_online.sh` (dois jogos sem tela jogando uma
+  `src/tools/testar_servidor.sh` (o servidor contra um PostgreSQL de
+  verdade) e `src/tools/testar_online.sh` (dois jogos sem tela jogando uma
   partida pelo servidor). Os dois pedem Docker. Mexeu no saguão ou na
-  frota? `tools/testar_carga.sh` (3000 jogadores e 1000 partidas ao
+  frota? `src/tools/testar_carga.sh` (3000 jogadores e 1000 partidas ao
   mesmo tempo; os números de referência estão em `docs/SERVIDOR.md`).
 - Para medir velocidade, use `bench.Displacement(corpo, quadros)`, não
   segundos: o cronômetro pode chegar um quadro depois e somar 3%.
@@ -389,7 +400,7 @@ projeto foi respondida — **sim, é gostoso**. Os últimos ajustes foram de
 animação.
 
 A tela de créditos existe (`CreditsScreen`, conteúdo em
-`scripts/meta/Credits.cs`): **todo material de terceiros novo ganha a
+`src/scripts/meta/Credits.cs`): **todo material de terceiros novo ganha a
 linha dele ali no mesmo commit.**
 
 **Fase 2 — o que já existe** (veja `docs/SERVIDOR.md`):

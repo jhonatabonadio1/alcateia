@@ -85,11 +85,12 @@ public static class SecurityTests
 			// rage: tempo em chamas que os abates não explicam vira evento de segurança
 			var fogo = new Alcateia.Dominio.Partidas.MatchReport("k", "s", 0, 0, new[]
 			{
-				new Alcateia.Dominio.Partidas.ReportedLine(1, 2, 0, 0, 0, 0) { FireSeconds = 30 },
+				// três abates: até 26 s em chamas (Rage.MaxFireSeconds, regras de 23/11)
+				new Alcateia.Dominio.Partidas.ReportedLine(1, 3, 0, 0, 0, 0) { FireSeconds = 26 },
 				new Alcateia.Dominio.Partidas.ReportedLine(2, 0, 0, 0, 0, 0) { FireSeconds = 200 }
 			});
 			var estranho = Alcateia.Dominio.Partidas.Plausibility.Flags(fogo, 10);
-			Check.True(estranho.All(f => f.AccountId != 1), "30 s em chamas com dois abates é possível");
+			Check.True(estranho.All(f => f.AccountId != 1), "26 s em chamas com três abates é possível");
 			Check.True(estranho.Any(f => f.AccountId == 2 && f.What.Contains("em chamas")), "200 s em chamas sem abate é denunciado");
 
 			// fotos de perfil: grátis sempre; da loja, só com o item

@@ -101,10 +101,10 @@ jobs:
         run: |
           # Sem partida em curso (o /health do servidor diz), a máquina ligada
           # (a reserva da frota, que nunca desliga sozinha) troca na hora.
-          python3 tools/fly/frota.py --app "$FLY_APP_PARTIDA" atualizar \
+          python3 src/tools/fly/frota.py --app "$FLY_APP_PARTIDA" atualizar \
             --imagem "${{ steps.imagem.outputs.ref }}" --esperar 1200 \
             --saude "https://${FLY_APP_API}.fly.dev/health"
-          python3 tools/fly/frota.py --app "$FLY_APP_PARTIDA" estado
+          python3 src/tools/fly/frota.py --app "$FLY_APP_PARTIDA" estado
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
@@ -176,7 +176,7 @@ jobs:
           n="$(echo "${v%%-*}" | awk -F. '{printf "%d.%d.%d.0", $1, $2, $3}')"
           echo "versao=$v" >> "$GITHUB_OUTPUT"
           echo "numero=$n" >> "$GITHUB_OUTPUT"
-          python3 tools/lancamento/preparar_build.py --versao "$v" --numero "$n" --servidor "$SERVIDOR_URL"
+          python3 src/tools/lancamento/preparar_build.py --versao "$v" --numero "$n" --servidor "$SERVIDOR_URL"
       - name: Godot ${{ env.GODOT_VERSION }} (.NET) e os modelos de exportação
         run: |
           nome="Godot_v${GODOT_VERSION}-stable_mono_linux_x86_64"
@@ -274,7 +274,7 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.0.0-dev.${GITHUB_SHA::7}"; fi
           n="$(echo "${v%%-*}" | awk -F. '{printf "%d.%d.%d.0", $1, $2, $3}')"
           echo "versao=$v" >> "$GITHUB_OUTPUT"
-          python3 tools/lancamento/preparar_build.py --versao "$v" --numero "$n" --servidor "$SERVIDOR_URL"
+          python3 src/tools/lancamento/preparar_build.py --versao "$v" --numero "$n" --servidor "$SERVIDOR_URL"
       - name: Godot ${{ env.GODOT_VERSION }} (.NET) e os modelos de exportação
         run: |
           base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
@@ -390,10 +390,15 @@ jobs:
             echo
             echo "---"
           } > notas.md
-          pre=""; case "$TAG" in *-*) pre="--prerelease" ;; esac
+          # Sem --prerelease (Jhon, 24/11: "por que a release não aparece
+          # aqui"): o GitHub só mostra na lateral do repositório a release
+          # marcada como a mais recente, e pre-release nunca é a mais recente;
+          # com todas as versões em alpha, a lateral ficava em "Create a new
+          # release". O "alpha" já está no nome da tag e na capa.
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" entrega/* --clobber
+            gh release edit "$TAG" --prerelease=false --latest
           else
-            gh release create "$TAG" entrega/* $pre --title "WolfLeague $TAG" \
+            gh release create "$TAG" entrega/* --latest --title "WolfLeague $TAG" \
               --notes-file notas.md --generate-notes
           fi

@@ -19,7 +19,7 @@ se adapta.
 **Ritmo.** O servidor anda a 60 passos por segundo, o mesmo da física do
 jogo: cada comando do jogador é um passo, nos dois lados. O estado do
 mundo vai a cada dois passos (30 por segundo). Os números estão em
-`scripts/domain/net/NetRates.cs`.
+`src/scripts/domain/net/NetRates.cs`.
 
 **Comandos.** O jogo manda, a cada passo, o que o jogador apertou e para
 onde olhava (`InputCommand`, 17 bytes), junto com os três anteriores — um
@@ -79,7 +79,7 @@ o jogador as tem). O tiro, o dano e os bots são como na 0008.
   (`PassoDoServidor`, numa máquina de 2 núcleos). O passo tem 16,7 ms.
 - Ponta a ponta: dois jogos sem tela jogam uma partida inteira no modo
   autoritativo, com bots, tiros, abates e resultado
-  (`ALCATEIA_NETCODE=autoritativo tools/testar_online.sh`).
+  (`ALCATEIA_NETCODE=autoritativo src/tools/testar_online.sh`).
 
 ## A leva seguinte
 

@@ -12,7 +12,7 @@ que toda a arte vira casca.
 `servidor/partida.Dockerfile`, em duas etapas:
 
 1. **exporta**: o editor do Godot .NET (só nesta etapa) prepara a cópia
-   (`tools/servidor/preparar_exportacao.py`), importa e exporta o preset
+   (`src/tools/servidor/preparar_exportacao.py`), importa e exporta o preset
    **"Servidor (Linux)"** de `export_presets.cfg`;
 2. **roda**: só `WolfLeagueServer` (o modelo de exportação),
    `WolfLeagueServer.pck` e `data_WolfLeague_linuxbsd_*` (o C# em Release e
@@ -27,10 +27,10 @@ O preset "Servidor (Linux)":
   `PlaceholderTexture` (guarda só o tamanho) e material vira
   `PlaceholderMaterial`. Malhas, formas de colisão, animações, cenas e
   recursos de jogo (armas, raças) ficam como são;
-- fora do pacote, além do que o cliente já deixa de fora: `assets/pacotes`
+- fora do pacote, além do que o cliente já deixa de fora: `src/assets/pacotes`
   (o material de origem).
 
-Com a marca `dedicated_server`, o jogo abre `scenes/servidor.tscn` (um nó
+Com a marca `dedicated_server`, o jogo abre `src/scenes/servidor.tscn` (um nó
 vazio, `run/main_scene.dedicated_server` no `project.godot`) em vez do
 menu, e `Inicio` o troca pelo `MatchServer` — o mesmo que
 `-- --servidor` faz no editor.
@@ -62,17 +62,17 @@ e os números bateram em todos os mapas. Rodou como usuário sem privilégio.
 
 **Não conferido aqui**: a imagem Docker em si (não há Docker nesta máquina)
 e uma partida com jogadores de verdade contra o servidor exportado (o
-teste de ponta a ponta, `tools/testar_online.sh`, usa o jogo no editor).
+teste de ponta a ponta, `src/tools/testar_online.sh`, usa o jogo no editor).
 A primeira partida no Fly é esse teste.
 
 ## Desenvolvimento
 
 Nada muda: `godot --headless --path . -- --servidor` continua sendo o
-servidor de partida no editor (é o que o `tools/testar_online.sh` usa). Para
+servidor de partida no editor (é o que o `src/tools/testar_online.sh` usa). Para
 exportar à mão, com o Godot .NET e os modelos de exportação instalados:
 
 ```
-python3 tools/servidor/preparar_exportacao.py   # só numa CÓPIA do projeto
+python3 src/tools/servidor/preparar_exportacao.py   # só numa CÓPIA do projeto
 godot --headless --path . --export-release "Servidor (Linux)" build/servidor/WolfLeagueServer
 ```
 

@@ -6,7 +6,7 @@ peças, cada uma um app do Fly:
 | App | O que é | Como sobe |
 |---|---|---|
 | `wolfleague-api` | O servidor: API, saguão (WebSocket), painel | `fly deploy -c fly.servidor.toml` (o lançamento faz) |
-| `wolfleague-partida` | A frota de servidores de partida (o jogo sem tela, UDP) | máquinas criadas por `tools/fly/frota.py` |
+| `wolfleague-partida` | A frota de servidores de partida (o jogo sem tela, UDP) | máquinas criadas por `src/tools/fly/frota.py` |
 | `wolfleague-db` | O Postgres 16 (imagem oficial, num volume) | `fly deploy -c fly.banco.toml` |
 
 Os nomes são o padrão dos arquivos; se o nome que você quer já estiver
@@ -32,7 +32,7 @@ jogador ──"começar"──▶ wolfleague-api ──falta lugar?──▶ API
   dedicado. O Fly entrega o pacote da porta 7779 só à máquina que declarou
   a 7779 — é assim que o jogador cai no servidor certo. Por isso as
   máquinas não sobem com `fly deploy` (que daria a mesma porta a todas), e
-  sim pelo `tools/fly/frota.py`.
+  sim pelo `src/tools/fly/frota.py`.
 - **Quem liga é o servidor do jogo.** Quando os lugares livres ficam abaixo
   de `ALCATEIA_FLEET_RESERVE` (1 no `fly.servidor.toml`), ou quando uma sala
   pede para começar e não acha lugar, ele liga uma máquina parada pela API
@@ -56,7 +56,7 @@ precisas.
 
 Precisa do `flyctl` (`brew install flyctl`) e de `fly auth login`.
 
-**O atalho:** `tools/fly/primeira_vez.sh` faz os passos 1 a 5 abaixo
+**O atalho:** `src/tools/fly/primeira_vez.sh` faz os passos 1 a 5 abaixo
 sozinho (pergunta antes do que custa dinheiro e pula o que já existe).
 Os passos ficam aqui para entender o que ele faz, ou para fazer à mão.
 
@@ -139,12 +139,12 @@ fly secrets set --stage -a wolfleague-partida ALCATEIA_FLEET_KEY="$FROTA"
 fly deploy -c fly.partida.toml --build-only --push --image-label v0.3.0
 
 # Quatro máquinas paradas, portas 7777 a 7780, em São Paulo.
-FLY_API_TOKEN=$(fly auth token) python3 tools/fly/frota.py criar 4 \
+FLY_API_TOKEN=$(fly auth token) python3 src/tools/fly/frota.py criar 4 \
   --imagem registry.fly.io/wolfleague-partida:v0.3.0 \
   --api http://wolfleague-api.internal:8080 \
   --ip O_IPV4_ANOTADO
 
-FLY_API_TOKEN=$(fly auth token) python3 tools/fly/frota.py estado
+FLY_API_TOKEN=$(fly auth token) python3 src/tools/fly/frota.py estado
 ```
 
 Em um ou dois minutos o servidor nota que não há lugar livre (reserva 1) e
@@ -165,7 +165,7 @@ No repositório: Settings → Secrets and variables → Actions.
 ### 7. O jogo apontando para lá
 
 O jogo fala com `http://127.0.0.1:8080` até alguém trocar
-(`scripts/net/Backend.cs`, `user://online.cfg`). Para produção, o endereço
+(`src/scripts/net/Backend.cs`, `user://online.cfg`). Para produção, o endereço
 é `https://wolfleague-api.fly.dev` — ou um domínio seu: `fly certs add
 api.wolfleague.com.br -a wolfleague-api` e um CNAME no DNS.
 
@@ -214,9 +214,9 @@ partidas em curso não, elas estão nas máquinas de partida.
 
 | Quero... | Comando |
 |---|---|
-| ver a frota | `python3 tools/fly/frota.py estado` |
-| ligar uma na mão | `python3 tools/fly/frota.py ligar` |
-| mais servidores | `python3 tools/fly/frota.py criar 4 --imagem ... --api ... --ip ...` |
+| ver a frota | `python3 src/tools/fly/frota.py estado` |
+| ligar uma na mão | `python3 src/tools/fly/frota.py ligar` |
+| mais servidores | `python3 src/tools/fly/frota.py criar 4 --imagem ... --api ... --ip ...` |
 | abrir o painel | `https://wolfleague-api.fly.dev:8443` (reserva: `fly proxy 8081 -a wolfleague-api` e `http://localhost:8081`) |
 | logs | `fly logs -a wolfleague-api` / `fly logs -a wolfleague-partida` |
 | entrar no banco | `fly ssh console -a wolfleague-db` e depois `psql -U alcateia` |

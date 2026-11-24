@@ -228,10 +228,10 @@ public static class PanelTests
 			await p.Say(Msg("room.create", ("settings", city)));
 			await p.Hear("room");
 
-			foreach (string map in new[] { "deserto", "estacao", "obra" })
+			foreach (string map in new[] { "deserto", "estacao", "obra", "neon" })
 				Check.Equal(200, (await admin.Put("/maps/" + map, new JsonObject { ["enabled"] = false })).Status, "desligar " + map);
 			Check.Equal("ultimo_mapa", Code(await admin.Put("/maps/cidade", new JsonObject { ["enabled"] = false })), "o último mapa ligado não desliga");
-			Check.Equal(200, (await admin.Put("/maps/polar", new JsonObject { ["enabled"] = true })).Status, "religar um mapa guardado");
+			Check.Equal(200, (await admin.Put("/maps/deserto", new JsonObject { ["enabled"] = true })).Status, "religar um mapa desligado");
 			Check.Equal("equipe", string.Join(",", (await admin.Get("/content")).Body["releasedModes"].AsArray().Select(m => m.GetValue<string>())),
 				"o painel sabe que só o modo Equipe existe, para não anunciar mapa em modo que o jogo não tem");
 		}),

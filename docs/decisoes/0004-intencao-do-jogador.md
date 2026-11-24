@@ -11,7 +11,7 @@ pacote de rede, de uma gravação ou de um teste sem simular teclas.
 ## Decisão
 
 No começo do passo de física o `Player` monta um `CharacterIntent`
-(`scripts/actors/input/`) — direção, pulo, agachar, ataque, especial,
+(`src/scripts/actors/input/`) — direção, pulo, agachar, ataque, especial,
 uivo, slot — e dali em diante só olha para ele. A rotação do mouse
 continua por evento, no `_Input`.
 

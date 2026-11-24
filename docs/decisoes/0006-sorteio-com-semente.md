@@ -14,7 +14,7 @@ A dispersão do tiro, o recuo sorteado e todas as escolhas do bot usavam
 
 ## Decisão
 
-`GameRandom` (`scripts/domain`, SplitMix64) é o sorteio de regra. Cada
+`GameRandom` (`src/scripts/domain`, SplitMix64) é o sorteio de regra. Cada
 dono tem o seu fluxo, derivado da semente da partida e do nome do nó:
 `MatchRandom.Stream("Bot3")`, `MatchRandom.Stream("Bot3/arma")`. Quem
 não tem dono (pontos de nascimento, rotas) usa `MatchRandom.For(nome)`.

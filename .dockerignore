@@ -13,7 +13,7 @@
 **/__pycache__
 servidor/painel/node_modules
 servidor/painel/dist
-tools/nupkgs
+src/tools/nupkgs
 docs
 android
 *.zip

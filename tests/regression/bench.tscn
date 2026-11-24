@@ -1,6 +1,0 @@
-[gd_scene format=3 uid="uid://bxc00r1yxkw2"]
-
-[ext_resource type="Script" uid="uid://yibjgfwc6la2" path="res://tests/regression/RegressionBench.cs" id="1_bench"]
-
-[node name="RegressionBench" type="Node" unique_id=81625612]
-script = ExtResource("1_bench")

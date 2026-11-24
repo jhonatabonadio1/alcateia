@@ -21,8 +21,8 @@ Na partida autoritativa (`ALCATEIA_NETCODE=autoritativo`):
   servidor manda a cada um a vida que tem dele (`Vitals`), e o jogo desce
   a dele se estiver acima. Para os outros, o servidor repassa a vida que
   ele tem, não a que o jogo contou.
-- **O acerto é conferido no servidor** (`scripts/net/HitCheck.cs`, contas
-  em `scripts/domain/net/HitRules.cs`). O jogo continua achando o acerto
+- **O acerto é conferido no servidor** (`src/scripts/net/HitCheck.cs`, contas
+  em `src/scripts/domain/net/HitRules.cs`). O jogo continua achando o acerto
   na própria tela (é o que não deixa o tiro parecer atrasado) e manda,
   junto, o número do comando em que atirou e o instante em que via os
   outros. O servidor espera simular aquele comando, pega onde o atirador
@@ -98,7 +98,7 @@ São os itens 2 a 4 da "leva seguinte" da decisão 0011.
   40 tiros no mesmo instante, vida "cheia" contada pelo jogo, morte
   contada duas vezes, renascer cedo e fora da base. Todos recusados; os
   honestos valem e matam.
-- Ponta a ponta (`ALCATEIA_NETCODE=autoritativo tools/testar_online.sh`):
+- Ponta a ponta (`ALCATEIA_NETCODE=autoritativo src/tools/testar_online.sh`):
   dois jogos sem tela jogam a partida inteira com abates decididos no
   servidor; o criador manda três acertos inventados e o servidor recusa
   os três, sem recusar nenhum acerto honesto dos dois.

@@ -10,14 +10,14 @@ ninguém ver até a próxima partida.
 
 ## Decisão
 
-- **Unidade** (`tests/unit`): C# puro sobre `scripts/domain`, com um
+- **Unidade** (`src/tests/unit`): C# puro sobre `src/scripts/domain`, com um
   executor próprio de 100 linhas — sem xUnit, porque o ambiente nem
   sempre alcança o NuGet. Segundos.
-- **Regressão** (`tests/regression`): o jogo de verdade, sem tela, a 60
+- **Regressão** (`src/tests/regression`): o jogo de verdade, sem tela, a 60
   quadros fixos, um processo por teste. Mede o que o jogador sente:
   velocidade, altura, distância do salto, a passada do pé, o dano, o
   HUD. Um minuto e meio.
-- `tools/testar.sh` roda os dois; o GitHub roda a cada push.
+- `src/tools/testar.sh` roda os dois; o GitHub roda a cada push.
 - Um teste falha também se aparecer `ERROR` no Output.
 
 **Regra:** mudou um comportamento de propósito, mude o número esperado

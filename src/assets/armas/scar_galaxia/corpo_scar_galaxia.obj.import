@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://b6l2bsjg0g31a"
+path="res://.godot/imported/corpo_scar_galaxia.obj-e5c0f4ef1a0f8ed17d33ef90f167dcdd.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_scar_galaxia.obj-e5c0f4ef1a0f8ed17d33ef90f167dcdd.mesh"]
+
+source_file="res://src/assets/armas/scar_galaxia/corpo_scar_galaxia.obj"
+dest_files=["res://.godot/imported/corpo_scar_galaxia.obj-e5c0f4ef1a0f8ed17d33ef90f167dcdd.mesh", "res://.godot/imported/corpo_scar_galaxia.obj-e5c0f4ef1a0f8ed17d33ef90f167dcdd.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

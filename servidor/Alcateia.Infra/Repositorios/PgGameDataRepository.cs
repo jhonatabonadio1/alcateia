@@ -83,7 +83,13 @@ public sealed class PgGameDataRepository : IGameDataRepository
 	public async Task<int> SeedMaps(IEnumerable<GameMap> maps)
 	{
 		int made = 0;
-		foreach (GameMap m in maps)
+		var list = maps.ToList();
+		// O mapa que o jogo não tem mais some do banco (e do painel). Semente
+		// vazia não apaga nada: seria um jogo sem mapa, não um mapa a menos.
+		if (list.Count > 0)
+			made += (await _db.Query("delete from game_maps where not ($1::jsonb ? id)",
+				JsonSerializer.Serialize(list.Select(m => m.Id)))).Affected;
+		foreach (GameMap m in list)
 			// Nome, descrição e "ligado" são do painel. A foto e os modos para
 			// que o mapa foi feito são do jogo: acompanham a semente.
 			made += (await _db.Query(MapInsert +

@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/scripts/combat/WeaponDefinition.cs" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+Id = "m4a4"
+DisplayName = "M4A4"
+Class = 0
+WpCost = 200
+Description = "Carabina de assalto. Cadência alta e recuo dócil; perde um pouco de dano na distância."
+Damage = 26
+HeadshotMultiplier = 2.5
+Rpm = 700
+Mode = 0
+Magazine = 30
+Reserve = 90
+ReloadTactical = 2.3
+ReloadEmpty = 2.9
+DrawTime = 0.5
+HolsterTime = 0.5
+SpreadBase = 0.16
+SpreadPerShot = 0.09
+SpreadMax = 1.9
+SpreadRecovery = 12.0
+SpreadDelay = 0.05
+MoveSpreadMultiplier = 1.6
+CrouchSpreadMultiplier = 0.7
+RecoilVertical = 0.85
+RecoilVerticalLate = 0.55
+RecoilEarlyShots = 4
+RecoilHorizontal = 0.14
+RecoilRecovery = 7.5
+Range = 150
+FalloffStart = 30
+FalloffEnd = 55
+FalloffMin = 0.7
+SpeedMultiplier = 1.0
+NoiseRadius = 45
+AimFov = 55
+AimSpreadMultiplier = 0.15
+AimSpeedMultiplier = 0.7
+StarDamage = 2.0
+StarPenetration = 2.5
+StarAccuracy = 3.5
+StarRate = 3.5
+StarMobility = 2.5
+StarRecoil = 3.0
+StarRange = 2.5

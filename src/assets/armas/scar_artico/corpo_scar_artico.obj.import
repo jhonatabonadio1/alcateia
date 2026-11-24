@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cqg3axoe3rixb"
+path="res://.godot/imported/corpo_scar_artico.obj-58726af9e107efcad1d2d748172e4c67.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_scar_artico.obj-58726af9e107efcad1d2d748172e4c67.mesh"]
+
+source_file="res://src/assets/armas/scar_artico/corpo_scar_artico.obj"
+dest_files=["res://.godot/imported/corpo_scar_artico.obj-58726af9e107efcad1d2d748172e4c67.mesh", "res://.godot/imported/corpo_scar_artico.obj-58726af9e107efcad1d2d748172e4c67.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

@@ -11,27 +11,27 @@ obj/
 
 # Mapa de referência: vem extraído do cliente original, então fica
 # local. Versionar republicaria arte de terceiros — e 22 MB de binário
-# por commit. Veja assets/maps/LEIA-ME.md.
-assets/maps/arrival/
+# por commit. Veja src/assets/maps/LEIA-ME.md.
+src/assets/maps/arrival/
 
 # Python
 __pycache__/
 
 # Pacotes NuGet locais do Godot .NET (cópia de GodotSharp/Tools/nupkgs,
 # só para compilar fora do editor). Cada máquina tem os seus.
-tools/nupkgs/
+src/tools/nupkgs/
 
 # Texturas que o Godot extrai dos .fbx na importação (exo_gray_0.png,
 # mutant_red_1.png...). Saem do próprio .fbx, então cada máquina gera
 # as suas.
-assets/characters/**/*_[0-9].png
-assets/characters/**/*_[0-9].png.import
-assets/characters/**/*_alpha_[0-9].png
-assets/characters/**/*_alpha_[0-9].png.import
+src/assets/personagens/**/*_[0-9].png
+src/assets/personagens/**/*_[0-9].png.import
+src/assets/personagens/**/*_alpha_[0-9].png
+src/assets/personagens/**/*_alpha_[0-9].png.import
 
 # Pacotes de arte baixados (Poly Haven, Sketchfab): matéria-prima,
-# grande, refeita por tools/baixar_pacotes.py. Veja docs/PACOTES.md.
-assets/pacotes/
+# grande, refeita por src/tools/baixar_pacotes.py. Veja docs/PACOTES.md.
+src/assets/pacotes/
 
 # Os segredos do servidor (copie de .env.exemplo).
 .env
@@ -39,12 +39,12 @@ assets/pacotes/
 # Pasta de troca de arquivos com o Claude (pacotes e bundles): não versionar.
 .synctmp/
 
-# Medidas locais do tools/medir_lobo.sh
+# Medidas locais do src/tools/medir_lobo.sh
 .medidas/
 
 # Jogo exportado (export_presets.cfg)
 build/
-# o .dmg do Mac feito aqui (tools/lancamento/mac_local.sh)
+# o .dmg do Mac feito aqui (src/tools/lancamento/mac_local.sh)
 /dmg/
 /entrega/
 _to_delete/
@@ -55,5 +55,5 @@ entrega*.tgz
 _mac_*.txt
 
 # Cenas do Blender das poses com arma (~22 MB cada, com texturas): geradas por
-# tools/personagens/blender/poses_armas.py --blend
-tools/personagens/blender/poses/*.blend
+# src/tools/personagens/blender/poses_armas.py --blend
+src/tools/personagens/blender/poses/*.blend

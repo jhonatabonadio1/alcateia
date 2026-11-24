@@ -18,16 +18,16 @@ o código é organizado assim está em `docs/decisoes/`.
 
 - Godot **4.7.2 .NET** (a versão "Mono"/C#, não a padrão)
 - .NET SDK compatível com essa versão do Godot
-- Python 3, só para os geradores em `tools/`
+- Python 3, só para os geradores em `src/tools/`
 - Um editor C# com suporte a Godot: Rider ou VS Code com a extensão C#
 
 **Rodar**
 
 | Atalho no Godot | O que abre |
 |---|---|
-| F5 | A cena principal: `scenes/menu/menu.tscn` |
-| F6 com `scenes/main.tscn` aberta | A partida direto, sem menu, com um 4 contra 4 padrão |
-| F6 com `scenes/treino.tscn` aberta | Caixa de areia: chão, paredes, bonecos e dois bots, sem partida |
+| F5 | A cena principal: `src/scenes/menu/menu.tscn` |
+| F6 com `src/scenes/main.tscn` aberta | A partida direto, sem menu, com um 4 contra 4 padrão |
+| F6 com `src/scenes/treino.tscn` aberta | Caixa de areia: chão, paredes, bonecos e dois bots, sem partida |
 
 Depois de mudar C#, o Godot recompila ao dar play. Se aparecer erro de
 build, ele está na aba **MSBuild** do painel de baixo, não na aba
@@ -76,7 +76,7 @@ com `EmitSignal(SignalName.Died, id)` e escuta com
 `health.Died += OnDied;`.
 
 **Resource (`.tres`)** é um objeto de dados salvo em arquivo. As armas
-são Resources: cada `.tres` em `resources/weapons/` é uma
+são Resources: cada `.tres` em `src/resources/weapons/` é uma
 `WeaponDefinition` preenchida.
 
 **`GetNode<T>("Caminho")`** busca um nó pelo caminho relativo. Este
@@ -95,6 +95,9 @@ mexer na árvore no meio de um sinal causaria erro.
 ```
 alcateia/
 ├── project.godot          configuração; cena principal = menu
+├── WolfLeague.csproj      o projeto C# (export_presets.cfg ao lado)
+├── servidor/              o servidor (.NET + PostgreSQL), fora do Godot
+├── instalador/            a arte e o script do instalador
 ├── CLAUDE.md / AGENTS.md  guia para agentes: regras, arquitetura, testes
 ├── CONTRIBUTING.md        como trabalhar no projeto (passo a passo)
 ├── docs/
@@ -104,13 +107,14 @@ alcateia/
 │   ├── ARSENAL.md         especificação das armas
 │   ├── CONJUNTOS.md       especificação de conjuntos e economia
 │   ├── UI.md              guia de interface: telas, HUD, tokens
+│   ├── MAPAS.md, PACOTES.md, PERSONAGENS.md, SERVIDOR.md, MEDIDAS.md...
 │   ├── decisoes/          registros de decisão de arquitetura (ADR)
 │   └── CHANGELOG.md
-├── tests/
-│   ├── unit/              C# puro, sem Godot (scripts/domain)
+├── src/tests/
+│   ├── unit/              C# puro, sem Godot (src/scripts/domain)
 │   └── regression/        o jogo de verdade, sem tela
 ├── .github/workflows/     os testes a cada push
-├── scenes/
+├── src/scenes/
 │   ├── menu/menu.tscn     entrada do jogo: o lobby inteiro
 │   ├── main.tscn          a partida
 │   ├── treino.tscn        caixa de areia
@@ -118,16 +122,17 @@ alcateia/
 │   ├── bot.tscn           o bot
 │   ├── dummy.tscn         boneco de tiro
 │   ├── grenade.tscn       granada de choque
-│   └── maps/vila.tscn     um mapa (gerado por tools/gerar_mapas.py)
-├── resources/
-│   ├── weapons/*.tres     armas (geradas por tools/gerar_arsenal.py)
+│   └── maps/*.tscn        os seis mapas (a cena é a fonte; docs/MAPAS.md)
+├── src/resources/
+│   ├── weapons/*.tres     armas e peles (editadas à mão)
 │   ├── breeds/*.tres      classes de lobo
 │   ├── bots/*.tres        níveis de dificuldade (fácil, médio, difícil)
 │   └── body/ruido.tres    quanto barulho o corpo faz
-├── assets/                modelos, animações, texturas, sons, fontes,
-│                          miniaturas de mapa (assets/ui/mapas)
-├── tools/                 geradores e o testar.sh
-└── scripts/
+├── src/assets/            modelos, animações, texturas, sons, fontes,
+│                          personagens (personagens/), miniaturas de
+│                          mapa (ui/mapas)
+├── src/tools/             geradores e o testar.sh
+└── src/scripts/
     ├── domain/            regras em C# puro: contas do combate, sorteio
     │                      com semente — sem Godot, com teste de unidade
     ├── actors/
@@ -187,7 +192,7 @@ balanceamento contra bot deixa de valer contra gente.
                            │ emite sinais / eventos estáticos                   │
             ┌──────────────▼───────────────────────────┐   ┌───────────────────▼──┐
   QUEM      │  Hud, MatchHud, Minimap, DamageIndicator │   │ REGRAS (C# puro,     │
-  MOSTRA    │  ViewModel, WolfVisual, CharacterAnimator│   │ scripts/domain):     │
+  MOSTRA    │  ViewModel, WolfVisual, CharacterAnimator│   │ src/scripts/domain):     │
   E TOCA    │  WorldAudio, CombatantAudio              │   │ CombatRules,         │
             └──────────────────────────────────────────┘   │ GameRandom, WolfMoves│
                                                            │ HeadHit              │
@@ -216,7 +221,7 @@ balanceamento contra bot deixa de valer contra gente.
 5. **Sorteio de regra de jogo é `GameRandom`**, com semente
    (`MatchRandom.Stream(nome)`), nunca `GD.Randf()`. Enfeite pode usar o
    do Godot.
-6. **Conta de regra mora em `scripts/domain`**, com teste de unidade.
+6. **Conta de regra mora em `src/scripts/domain`**, com teste de unidade.
    O componente decide o que aconteceu e pede o número.
 
 ---
@@ -279,7 +284,7 @@ menu.tscn (LobbyShell)
   │     preenche RoomConfig (estático): Active, Settings (cópia das
   │     regras), Members · Difficulty.Set(nível)
   ▼
-ChangeSceneToFile("res://scenes/main.tscn")
+ChangeSceneToFile("res://src/scenes/main.tscn")
   │
   ├─ Player._EnterTree     lê RoomConfig.PlayerTeam → Health.Team
   ├─ Player._Ready         FormController.Breed = Profile.BuildBreed()
@@ -502,7 +507,7 @@ mais `MoveAndSlide`.
 **Propriedade de `.tres`/`.tscn` com nome errado é ignorada em
 silêncio.** Se o `.tres` diz `RecoilRecovry = 9`, o Godot não reclama:
 usa o valor padrão do `[Export]`. Renomeou um `[Export]`? Procure o
-nome antigo em `resources/` e `scenes/`.
+nome antigo em `src/resources/` e `src/scenes/`.
 
 **Renomear um nó quebra o `GetNode`** — sem erro de compilação, só
 exceção ao rodar. Veja a seção 5.
@@ -512,9 +517,14 @@ mas `_Ready` depois deles. Para o pai configurar algo que os filhos usam
 no `_Ready` deles (o time, que define a cor), tem que ser no
 `_EnterTree`.
 
-**Arquivo gerado sobrescreve edição à mão.** `resources/weapons/*.tres`
-e `scenes/maps/*.tscn` saem dos scripts em `tools/`. Ajustou no
-Inspector e depois rodou o gerador? Perdeu o ajuste. Mude no gerador.
+**Arquivo gerado sobrescreve edição à mão.** O que sai de script em
+`src/tools/` — os modelos e a ficha das armas (`src/assets/armas/`,
+`armas.json`, `fp/bracos.json`, por `src/tools/armas/`), as animações de
+terceira pessoa (`src/assets/personagens/<p>/animacoes/`) — perde o
+ajuste feito à mão quando o script roda de novo. Mude no script. Desde
+24/11 **não é mais o caso** de `src/resources/weapons/*.tres` (editados à
+mão; o `gerar_arsenal.py` saiu) nem de `src/scenes/maps/*.tscn` (a cena
+é a fonte; o `gerar_mapas.py` saiu).
 
 **Método com nome de tipo do Godot.** Um método chamado `Panel()` ou
 `Button()` dentro de uma classe que herda de `Control` conflita com os
@@ -547,32 +557,40 @@ porque o humano tem 200. Não multiplique de novo no `.tres`.
 
 ### Mudar o balanceamento de uma arma
 
-1. Abra `tools/gerar_arsenal.py` e mude o número no dicionário da arma.
-2. Rode da raiz do projeto: `python3 tools/gerar_arsenal.py`.
-3. Confira no `docs/ARSENAL.md` se "tiros para matar" ainda bate —
+1. Abra `src/resources/weapons/<id>.tres` (no Inspector ou num editor de
+   texto) e mude o número. É a fonte: o gerador antigo
+   (`gerar_arsenal.py`) saiu em 24/11. As peles (`<id>_<tema>.tres`) têm
+   os números delas, que costumam ser os da arma de origem — confira se
+   precisam acompanhar.
+2. Confira no `docs/ARSENAL.md` se "tiros para matar" ainda bate —
    lembrando que o dano é multiplicado por 2 na hora do tiro.
+3. Atualize a linha do número no `docs/AJUSTES.md`.
 4. Teste no `treino.tscn` contra os bonecos.
-
-Para experimentar rápido, pode mexer direto no `.tres` pelo Inspector;
-só passe o valor final para o gerador depois.
 
 ### Adicionar uma arma
 
-1. No `gerar_arsenal.py`, copie o dicionário de uma arma parecida, mude
-   `Id`, `DisplayName`, `Class`, `WpCost` e os números. Rode o gerador.
-2. Em `scripts/combat/Arsenal.cs`, ponha o id em `Primaries` ou
+1. Copie o `.tres` de uma arma parecida em `src/resources/weapons/`, mude
+   `Id`, `DisplayName`, `Class`, `WpCost` e os números.
+2. Em `src/scripts/combat/Arsenal.cs`, ponha o id em `Primaries` ou
    `Secondaries`.
-3. Em `tools/gerar_armas.py`, desenhe a arma (uma função como `ak47()`:
-   chapas de perfil, peças redondas, onde vai cada mão) e ponha na
-   lista do `main()`; rode o script e deixe o Godot importar os `.obj`.
-   É o modelo 3D que aparece na sua mão, na dos outros e no chão — sem
-   ele, aparece o M16. As peças que a animação mexe vão em nós com
-   nome: `Magazine` (a recarga tira e põe), `Ferrolho`, `Bomba`; e os
-   pontos `Muzzle` (boca do cano), `Ejecao` e `Carga`. Veja "A arma na
-   mão", abaixo.
-4. Para a loja: um item em `scripts/meta/Catalog.cs` e a silhueta 2D em
-   `scripts/ui/kit/WeaponArt.cs`.
-5. Pronto: aparece no inventário, no editor de conjuntos e no catálogo.
+3. O modelo 3D, que aparece na sua mão, na dos outros e no chão:
+   `src/tools/armas/reais.py` (a tabela de ids no topo; o arquivo de
+   origem passa antes por `src/tools/armas/blender/reais.py`) grava
+   `src/assets/armas/<id>/` e a entrada de `armas.json`; sem ela, aparece
+   a arma padrão. As peças que a animação mexe vão em nós com nome:
+   `Magazine` (a recarga tira e põe), `Ferrolho`, `Pino`; e os pontos
+   `Muzzle` (boca do cano), `Ejecao` e `Carga`. Veja "A arma na mão",
+   abaixo.
+4. A primeira pessoa: `src/tools/armas/conjuntos.py <id>` (o `ar15.glb`
+   com a arma trocada), depois a mira, a coronhada e a recarga
+   (`mira.py`, `coronhada.py`, `recarga.py`). A terceira pessoa: os
+   scripts de `src/tools/personagens/blender/` gravam
+   `src/assets/personagens/<p>/animacoes/<id>.json` para cada personagem.
+   As regras e o que conferir estão em `docs/ANIMACAO_ARMAS.md`.
+5. Para a loja: um item em `src/scripts/meta/Catalog.cs`, a silhueta 2D em
+   `src/scripts/ui/kit/WeaponArt.cs` e a foto (`src/tools/fotos_armas.gd
+   -- <id>`, em `src/assets/ui/armas/`).
+6. Pronto: aparece no inventário, no editor de conjuntos e no catálogo.
    Se não aparecer num perfil já salvo, confira o `Profile.Repair` —
    ou apague o `profile.json`.
 
@@ -582,21 +600,19 @@ o campo vai em `WeaponDefinition.cs` e o comportamento em
 
 ### A arma na mão
 
-O que se vê em primeira pessoa são três coisas que nascem do mesmo
-lugar, `tools/gerar_armas.py`:
+O que se vê em primeira pessoa são três coisas:
 
-| O quê | Onde fica | Quem usa |
-|---|---|---|
-| As malhas de cada arma (`assets/armas/<id>/*.obj`) | uma por nó e por material | `WeaponModel.Build` |
-| As malhas das mãos (`assets/armas/bracos/`): luva, reforço e manga, em quatro poses (`punho`, `apoio`, `fechada`, `aberta`), direita e esquerda | | `WeaponModel.BuildHand` |
-| A ficha (`assets/armas/armas.json`): peças, materiais, pontos e, para cada mão, a pose, o ponto onde a palma encosta, para onde apontam os dedos e para onde olha a palma | | `WeaponModel.Hand` |
+| O quê | Onde fica | De onde vem | Quem usa |
+|---|---|---|---|
+| As malhas de cada arma (`src/assets/armas/<id>/*.obj`) | uma por nó e por material | `src/tools/armas/reais.py` e `peles.py` | `WeaponModel.Build` |
+| As malhas das mãos (`src/assets/armas/bracos/`): luva, reforço e manga, em quatro poses (`punho`, `apoio`, `fechada`, `aberta`), direita e esquerda | | feitas pelo `gerar_armas.py`, que saiu em 24/11; ficaram como arquivo | `WeaponModel.BuildHand` |
+| A ficha (`src/assets/armas/armas.json`): peças, materiais, pontos e, para cada mão, a pose, o ponto onde a palma encosta, para onde apontam os dedos e para onde olha a palma | | `reais.py` e `peles.py`, cada um a entrada das suas armas (a parte das mãos, `maos`, ficou do `gerar_armas.py`) | `WeaponModel.Hand` |
 
-Cada arma é desenhada de lado, em metros, com a origem no punho. No
-jogo o cano aponta para −Z. Os materiais são por nome (`metal`,
-`polimero`, `madeira`, `luva`...) e as cores estão em
-`WeaponModel.Material`.
+Cada arma fica com a origem no punho, em metros; no jogo o cano aponta
+para −Z. A cor vem das texturas de cada arma (`T_<Id>_D/_E/_ORM`, por
+`peles.py`) ou da paleta (`src/assets/armas/reais/paleta.png`).
 
-`ViewModel` (em `scripts/ui/`, vários arquivos) monta a arma com as duas
+`ViewModel` (em `src/scripts/ui/`, vários arquivos) monta a arma com as duas
 mãos como filhas dela — coice e inclinação levam as mãos junto — e
 anima:
 
@@ -606,12 +622,12 @@ anima:
 - `ViewModel.Hands.cs`: a mão esquerda. Ela anda entre pontos
   calculados na própria arma (o fundo do carregador, o ferrolho, a
   janela de carga), então a coreografia é uma só para todas: troca de
-  carregador, cartucho a cartucho na escopeta, bombeada depois do tiro,
-  pino da granada, golpe de faca.
+  carregador, pino da granada, golpe de faca.
 - `ViewModel.Effects.cs`: clarão e luz do tiro, ferrolho que recua,
   cápsula que salta.
-- `ViewModel.Rig.cs`: os braços animados de cada arma (conjuntos do
-  Blender, `assets/armas/fp/bracos.json`).
+- `ViewModel.Rig.cs`: os braços animados de cada arma (os conjuntos de
+  `src/assets/armas/fp/`, feitos por `src/tools/armas/conjuntos.py`;
+  a ficha é `fp/bracos.json`).
 - No zoom (botão direito) a câmera fecha (`Weapon.AimFovFor`), mas a
   arma na tela não pode crescer junto: o `ViewModel` encolhe na largura
   e na altura na razão das aberturas, que é o mesmo que ter uma câmera
@@ -623,24 +639,26 @@ Nada disso decide tiro ou recarga: tudo segue o relógio da `Weapon`
 **Para conferir sem abrir o editor**: o teste `BracosNaMao` fotografa
 cada arma parada, atirando e recarregando quando roda com tela e
 `--fotos=pasta` (o comando está no topo de
-`tests/regression/ViewModelTests.cs`).
+`src/tests/regression/ViewModelTests.cs`).
 
 **Trocar por modelo de artista**: ponha os arquivos com os mesmos nomes
-em `assets/armas/` (ou aponte a ficha para um `.glb`) e mantenha os nós
-e pontos com nome. Os pacotes do Sketchfab listados em
-`docs/PACOTES.md` são candidatos.
+em `src/assets/armas/` (ou aponte a ficha para um `.glb`) e mantenha os nós
+e pontos com nome. De onde veio a arte de hoje, e as licenças:
+`docs/PACOTES.md`.
 
 ## Trocar um personagem ou uma animação
 
-- **Personagem de um time:** ponha o `.fbx` do Mixamo em
-  `assets/characters/human/` (humano) ou `assets/characters/wolf/`
-  (lobo) e aponte `BlueModel`/`OrangeModel` no `CharacterAnimator` ou
-  no `WolfVisual`. Precisa ter o esqueleto `mixamorig` — todo
-  personagem baixado do Mixamo tem.
+- **Personagem novo:** uma pasta em `src/assets/personagens/<id>/` com
+  `humano.glb`, o lobo, `personagem.tres` e `retrato.png` — o jogo acha
+  sozinho. O passo a passo, com as medidas: `docs/PERSONAGENS.md`.
+- **Personagem padrão de um time:** aponte `BlueModel`/`OrangeModel` no
+  `CharacterAnimator` (humano) ou no `WolfVisual` (lobo). Hoje são a Eve
+  (azul) e o Barut (laranja). Precisa ter o esqueleto `mixamorig`.
 - **Animação:** baixe do Mixamo "without skin" e salve com o nome do
-  clipe que ela substitui (`run_fwd.fbx`, `wolf/claw.fbx`...). Clipe que
-  falta é pulado sem erro.
-- **Animação do lobo feita à mão:** o `wolf/lobo_anim.glb` (esqueleto e
+  clipe que ela substitui em `src/assets/personagens/_comum/humano/`
+  (`run_fwd.fbx`...) ou `_comum/lobo/` (`death.fbx`, `wallrun.fbx`...).
+  Clipe que falta é pulado sem erro.
+- **Animação do lobo feita à mão:** o `_comum/lobo/lobo_anim.glb` (esqueleto e
   os 15 clipes do Jhon, a tabela está no `LEIA-ME.md` da pasta) tem
   prioridade sobre o `.fbx` do mesmo papel (`WolfOwnClips`). Depois de trocar um clipe, meça a passada de novo
   (`PassadaDoLobo`, `PassoNoRitmo`).
@@ -649,11 +667,11 @@ e pontos com nome. Os pacotes do Sketchfab listados em
 
 Tudo é `[Export]` do `Player` (e do `Bot`, que tem os próprios). Ajuste
 no Inspector com `player.tscn` aberto. As classes de lobo estão em
-`resources/breeds/*.tres` (`WolfBreed`).
+`src/resources/breeds/*.tres` (`WolfBreed`).
 
 ### Adicionar uma tecla
 
-1. `scripts/core/InputSetup.cs`: `Key("nome_da_acao", Godot.Key.F);`
+1. `src/scripts/core/InputSetup.cs`: `Key("nome_da_acao", Godot.Key.F);`
 2. Leia onde fizer sentido: `Input.IsActionJustPressed("nome_da_acao")`.
 3. Atualize a tabela de controles do `docs/DESIGN.md`.
 
@@ -677,7 +695,7 @@ sinal.
 
 ### Fazer uma tela nova do lobby
 
-1. Crie `scripts/lobby/MinhaTela.cs` herdando de `LobbyScreen`.
+1. Crie `src/scripts/lobby/MinhaTela.cs` herdando de `LobbyScreen`.
 2. Monte tudo em `Build()`. Para redesenhar depois de uma mudança,
    chame `Refresh()` (reconstrói no próximo quadro).
 3. Abra com `Shell.Go(new MinhaTela())`. Toast, modal e sobreposições:
@@ -690,29 +708,24 @@ primário por tela, número com a variação `Numeric`.
 ### Adicionar um item à loja
 
 1. Se for arma nova, crie antes a arma (receita acima).
-2. Em `scripts/meta/Catalog.cs`, acrescente o `CatalogItem`: id, nome,
+2. Em `src/scripts/meta/Catalog.cs`, acrescente o `CatalogItem`: id, nome,
    tipo, descrição, raridade, patente mínima e os cinco preços (1, 7,
    30, 90 dias e permanente). Tatuagem leva um `TattooEffect`.
 3. Se o desenho do cartão não existir, acrescente a silhueta em
-   `scripts/ui/kit/WeaponArt.cs`.
+   `src/scripts/ui/kit/WeaponArt.cs`.
 
 ### Adicionar um som
 
-**Trocar um som existente:** os arquivos de `assets/audio/` saem de
-`tools/sons/processar.py` (precisa de ffmpeg e numpy). Mude a linha do
-som lá e rode, da raiz:
-
-```
-python3 tools/sons/baixar.py /tmp/sons_brutos
-python3 tools/sons/processar.py /tmp/sons_brutos assets/audio
-```
-
-Ou jogue um arquivo seu com o mesmo nome por cima, e anote a origem em
-`assets/audio/CREDITOS.md`. Só lembre que rodar o gerador de novo
-sobrescreve.
+**Trocar um som existente:** jogue o arquivo novo com o mesmo nome por
+cima, em `src/assets/audio/`, e anote a origem em
+`src/assets/audio/CREDITOS.md`. O `processar.py` e o `baixar.py`, que
+geravam a maior parte dos sons, saíram em 24/11 (geravam o som das armas
+antigas). Os sons feitos por código têm cada um o seu script em
+`src/tools/sons/` (`raios.py`, `uivo.py`, `reais.py`...): rodar um deles
+de novo sobrescreve o arquivo dele.
 
 **Som de um evento que já existe, sem arquivo ainda:** jogue o arquivo
-em `assets/audio/` com o nome da tabela do `LEIA-ME.md`. Nada de
+em `src/assets/audio/` com o nome da tabela do `LEIA-ME.md`. Nada de
 código.
 
 **Som de um evento novo:**
@@ -726,7 +739,7 @@ código.
 - É seu (retorno, interface)? `Sfx.Local("nome")` ou
   `Sfx.Ui("nome")` de onde fizer sentido.
 
-Acrescente o nome novo no `assets/audio/LEIA-ME.md`.
+Acrescente o nome novo no `src/assets/audio/LEIA-ME.md`.
 
 Botão novo de menu ganha som com `Sfx.Wire(botao)`.
 
@@ -752,20 +765,14 @@ tema na raiz: `UiTheme.Apply(UiKit.Fill(new Control()))`.
 
 ### Criar um mapa
 
-Passo a passo em `docs/MAPAS.md`. Em resumo: um arquivo em
-`tools/mapas/` monta o mapa com o kit (`tools/mapas/kit.py`),
-`tools/gerar_mapas.py` escreve o `.tscn` e a miniatura, e o mapa entra
-na lista em `scripts/meta/Maps.cs`. A cena da partida carrega o mapa da
+Passo a passo em `docs/MAPAS.md`. Em resumo: **a cena
+`src/scenes/maps/<id>.tscn` é a fonte** (desde 24/11; o
+`gerar_mapas.py`, que a escrevia a partir dos módulos de
+`src/tools/mapas/`, saiu — está no histórico do git), e o mapa entra na
+lista em `src/scripts/meta/Maps.cs`. A cena da partida carrega o mapa da
 sala pelo `MapSlot` (nó `Map` do `main.tscn`).
 
-**Antes de gravar, confira:** `python3 tools/mapas/conferir.py` lê a
-geometria dos quatro mapas e acusa face brigando com face (pisca-pisca),
-letreiro enterrado ou solto no ar, ponto de nascimento dentro de parede
-e objeto flutuando. O kit já acerta sozinho os dois primeiros ao gravar
-(`Mapa.acertar()`); o que o conferidor ainda acusar é para arrumar no
-gerador. `--cru` mostra o que havia antes do acerto.
-
-O que a cena do mapa precisa ter, seja gerada ou feita à mão:
+O que a cena do mapa precisa ter:
 
 - **Geometria** em `StaticBody3D` com `BoxMesh` — o minimapa desenha
   toda caixa que encontrar, com a cor do material dela, e ignora pisos
@@ -782,7 +789,7 @@ O que a cena do mapa precisa ter, seja gerada ou feita à mão:
 
 ### Ensinar uma decisão nova ao bot
 
-1. `scripts/ai/BotBrain.cs`: acrescente o valor em `BotAction` e uma
+1. `src/scripts/ai/BotBrain.cs`: acrescente o valor em `BotAction` e uma
    linha no `switch` de `Score`, pontuando com as curvas de `Utility.cs`
    e os campos do `BotContext`.
 2. Se a decisão precisa de uma informação nova, acrescente o campo em
@@ -851,7 +858,7 @@ O `MultiplayerSynchronizer` do `player.tscn` é resto de um primeiro
 desenho e não é usado: a ligação é própria (`SceneMultiplayer` só do nó
 `NetMatch`), para o resto da cena continuar offline.
 
-`scripts/debug/` e o `Dummy` são descartáveis.
+`src/scripts/debug/` e o `Dummy` são descartáveis.
 
 ---
 

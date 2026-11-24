@@ -6,7 +6,7 @@
 #      preset "Servidor (Linux)" — servidor dedicado: cada textura e cada
 #      material viram uma casca vazia, o C# sai compilado em Release e o
 #      executável é o modelo de exportação (sem editor). Como a arte vira
-#      casca, a importação é leve (tools/servidor/preparar_exportacao.py:
+#      casca, a importação é leve (src/tools/servidor/preparar_exportacao.py:
 #      texturas a 64 px, modelos sem LOD) — a colisão não muda.
 #   2. a imagem que roda: só o executável, o .pck e o .NET dele, em cima do
 #      runtime-deps (as bibliotecas de sistema do .NET). Sem SDK, sem
@@ -54,7 +54,7 @@ COPY . .
 # Prepara a cópia (importação leve, a arquitetura), importa e exporta. Se a
 # exportação não deixou o .pck e o .NET, o build para e mostra o porquê.
 RUN arch=$([ "$TARGETARCH" = "arm64" ] && echo arm64 || echo x86_64) \
-	&& python3 tools/servidor/preparar_exportacao.py --arquitetura "$arch" \
+	&& python3 src/tools/servidor/preparar_exportacao.py --arquitetura "$arch" \
 	&& dotnet build WolfLeague.csproj --nologo -v quiet \
 	&& (godot --headless --path . --import > /tmp/importacao.log 2>&1 || true) \
 	&& mkdir -p /saida \

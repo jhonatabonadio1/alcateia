@@ -4,9 +4,9 @@ Para quem for animar a próxima arma — gente ou IA. Junta o que foi decidido,
 medido e errado nas armas de 19/11 (M4A4, AK-74, SCAR-H, SVD, Desert Eagle,
 faca, granada V40). Onde aparece uma frase entre aspas, é pedido do Jhon.
 
-O AR-15 (`assets/armas/fp/ar15.glb`) é a referência de qualidade: foi animado
+O AR-15 (`src/assets/armas/fp/ar15.glb`) é a referência de qualidade: foi animado
 à mão no Blender. Tudo o mais é montado por programa em cima do esqueleto dele
-(`tools/armas/conjuntos.py`) e tem de parecer feito pela mesma mão.
+(`src/tools/armas/conjuntos.py`) e tem de parecer feito pela mesma mão.
 
 ---
 
@@ -51,18 +51,18 @@ São critérios de aceite. Uma animação que quebra uma delas não vai para o j
 
 | Peça | Arquivo |
 |---|---|
-| Modelos convertidos (malha, cores, peças, ossos de origem) | `tools/armas/reais.py`, `tools/armas/blender/reais.py`, `assets/pacotes/reais/` |
-| O construtor dos conjuntos | `tools/armas/conjuntos.py` |
-| Esqueleto, IK, poses de dedos, `Chaves`, `Curva`, `mola` | `tools/armas/esqueleto.py` |
-| A mão fechando em volta de um objeto, medida na pele | `tools/armas/pegada.py` |
-| Clipes de mira (mirar, mira, mira_andar, mira_tiro, desmirar) | `tools/armas/mira.py` |
-| Conferência por números | `tools/armas/conferir.py` |
-| A ficha que o jogo lê | `assets/armas/fp/bracos.json` |
-| Quem toca os clipes no jogo | `scripts/ui/ViewModel.Rig.cs` |
+| Modelos convertidos (malha, cores, peças, ossos de origem) | `src/tools/armas/reais.py`, `src/tools/armas/blender/reais.py`, `src/assets/pacotes/reais/` |
+| O construtor dos conjuntos | `src/tools/armas/conjuntos.py` |
+| Esqueleto, IK, poses de dedos, `Chaves`, `Curva`, `mola` | `src/tools/armas/esqueleto.py` |
+| A mão fechando em volta de um objeto, medida na pele | `src/tools/armas/pegada.py` |
+| Clipes de mira (mirar, mira, mira_andar, mira_tiro, desmirar) | `src/tools/armas/mira.py` |
+| Conferência por números | `src/tools/armas/conferir.py` |
+| A ficha que o jogo lê | `src/assets/armas/fp/bracos.json` |
+| Quem toca os clipes no jogo | `src/scripts/ui/ViewModel.Rig.cs` |
 
 ```
-python3 tools/armas/conjuntos.py m4a4 ak74 scar svd deagle faca choque --ficha assets/armas/fp/bracos.json
-python3 tools/armas/conferir.py m4a4 ak74 scar svd deagle faca choque
+python3 src/tools/armas/conjuntos.py m4a4 ak74 scar svd deagle faca choque --ficha src/assets/armas/fp/bracos.json
+python3 src/tools/armas/conferir.py m4a4 ak74 scar svd deagle faca choque
 ```
 
 Depois de montar, reimportar no Godot (`--headless --import`) antes de olhar:
@@ -116,7 +116,7 @@ Clipe que não está na ficha não toca. A faca e a pistola já tiveram
 ### Pistola (Desert Eagle)
 
 - Tiro, recarga, corrida e inspecionar vêm da pistola de referência
-  (`tools/armas/dados/glock.npz`); a coronhada é de uma mão, com a lateral.
+  (`src/tools/armas/dados/glock.npz`); a coronhada é de uma mão, com a lateral.
   O tiro da referência entra com 40% da força ("pode mexer bem menos quando
   atira").
 - **O andar é o do AR-15**, igual ao da M4A4 (0,8 s, mesma força, mesma

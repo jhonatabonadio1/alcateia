@@ -7,14 +7,18 @@ que acontece quando muda. Valores do repositório na v0.27.0.
 > Mexeu em algum número daqui? Atualize a linha dele neste guia e, se
 > for decisão de design, também no `docs/DESIGN.md`.
 
+> **Nome na tela:** o WP daqui aparece no jogo como **KP** (kill
+> points), desde 24/11; as Presas como **Cash** e o Sangue como **IPs**.
+> No código, no perfil e no servidor os nomes antigos continuam.
+
 ---
 
 ## Onde os valores moram
 
 | Onde | Como mudar | Vale para |
 |---|---|---|
-| **Inspetor do Godot** — campos `[Export]` dos scripts | Abra a cena (`scenes/player.tscn` para você, `scenes/bot.tscn` para os bots), selecione o nó (`Player`, `Weapon`, `Health`, `FormController`, `WolfVisual`, `Human`) e mude no Inspetor | Só aquela cena. O valor do script é o padrão; o da cena, quando existe, ganha |
-| **Recursos `.tres`** | Duplo clique no Godot, ou edite o texto | `resources/breeds/` (classes de lobo), `resources/weapons/` (armas de fogo), `resources/bots/` (níveis de dificuldade), `resources/body/ruido.tres` (ruído do corpo) |
+| **Inspetor do Godot** — campos `[Export]` dos scripts | Abra a cena (`src/scenes/player.tscn` para você, `src/scenes/bot.tscn` para os bots), selecione o nó (`Player`, `Weapon`, `Health`, `FormController`, `WolfVisual`, `Human`) e mude no Inspetor | Só aquela cena. O valor do script é o padrão; o da cena, quando existe, ganha |
+| **Recursos `.tres`** | Duplo clique no Godot, ou edite o texto | `src/resources/breeds/` (classes de lobo), `src/resources/weapons/` (armas de fogo), `src/resources/bots/` (níveis de dificuldade), `src/resources/body/ruido.tres` (ruído do corpo) |
 | **Código** | Edite o `.cs` | `WolfMoves.cs` (tempo dos golpes), `Catalog.cs` (tatuagens e preços), `Arsenal.cs` (granada, faca), `RoomConfig.cs` (sala padrão) |
 
 Para mudar o padrão de todo mundo, mude no script; para mudar só o
@@ -28,7 +32,7 @@ o renascer do bot (6 s).
   `HumanSpeed` e `JumpVelocity` vezes o `SpeedMultiplier` e o
   `JumpMultiplier` da classe. Mudou o humano, o lobo muda junto.
 - **Os bots ignoram parte do `bot.tscn`.** O nível de dificuldade
-  (`resources/bots/facil.tres`, `medio.tres`, `dificil.tres`)
+  (`src/resources/bots/facil.tres`, `medio.tres`, `dificil.tres`)
   sobrescreve visão, mira, reação, velocidade e outros ao entrar na
   partida. Para esses campos, mude no `.tres` do nível (tabela na seção
   [Bots](#9-bots-e-dificuldade)).
@@ -50,19 +54,19 @@ o renascer do bot (6 s).
   confira isso.
 - **Tem teste.** Velocidades, pulo, corrida na parede, salto
   carregado, dano da garra, granada e ruído têm teste
-  (`tools/testar.sh`, seção Testes do CLAUDE.md). Mudou um valor de
+  (`src/tools/testar.sh`, seção Testes do CLAUDE.md). Mudou um valor de
   propósito, mude o número esperado no teste junto.
 
 ---
 
 ## 1. Movimento (humano e base do lobo)
 
-`scripts/actors/player/` (Player.cs e as partes Movement, WallRun, Camera, Actions) → nó `Player` em `scenes/player.tscn`. No Inspector os campos aparecem em grupos: Corpo, Movimento, Corrida na parede, Câmera e mira.
+`src/scripts/actors/player/` (Player.cs e as partes Movement, WallRun, Camera, Actions) → nó `Player` em `src/scenes/player.tscn`. No Inspector os campos aparecem em grupos: Corpo, Movimento, Corrida na parede, Câmera e mira.
 
 | Campo | Valor | O que faz |
 |---|---|---|
-| `HumanSpeed` | 3,0 m/s | Base da velocidade. **Base do lobo também.** É a passada do clipe de corrida: subir faz o pé patinar |
-| `HumanSpeedBonus` | 1,08 | Só o humano anda isto acima da base (3,24 m/s); o lobo não muda |
+| `HumanSpeed` | 3,2 m/s na cena (`src/scenes/player.tscn`; o código diz 3,0) | Base da velocidade. **Base do lobo também.** É a passada do clipe de corrida: subir faz o pé patinar |
+| `HumanSpeedBonus` | 1,08 | Só o humano anda isto acima da base (3,46 m/s); o lobo não muda |
 | `JumpVelocity` | 4,4 m/s | Impulso do pulo do lobo (vezes `JumpMultiplier`) e base do salto da parede |
 | `HumanJumpVelocity` | 4,75 m/s | Impulso do pulo do humano. Com `HumanGravityScale`, sobe 0,80 m e volta em 0,67 s |
 | `HumanGravityScale` | 1,45 | Gravidade do humano no ar (o lobo usa 1). Pulo mais rápido e queda mais seca |
@@ -104,7 +108,7 @@ o renascer do bot (6 s).
 
 | | Humano | Bruto | Ligeiro |
 |---|---|---|---|
-| Velocidade | 3,24 m/s (faca 3,36) | 3,89 (×1,298) | 4,22 (×1,406) |
+| Velocidade | 3,46 m/s (faca 3,58) | 4,15 (×1,298) | 4,50 (×1,406) |
 | Agachado | 1,46 | 1,75 | 1,90 |
 | Shift | 1,36 | — | — |
 | De quatro (W W) | — | 5,06 | 5,48 |
@@ -116,14 +120,15 @@ O avanço do lobo é estimativa (a última medida foi ~3,8 m com o Bruto
 a 3,6 m/s).
 
 Cada arma também multiplica a velocidade do humano com ela na mão
-(`SpeedMultiplier` da arma, seção 7): M9 1,12, UMP 1,08, AK 0,92...
+(`SpeedMultiplier` da arma, seção 7): Desert Eagle 1,08, AK-74 0,92,
+SCAR-H 0,88, SVD 0,86...
 
 ---
 
 ## 2. Classes de lobo
 
-`resources/breeds/bruto.tres` e `ligeiro.tres` (script
-`scripts/forms/WolfBreed.cs`). **Os bots usam sempre o Bruto.** O
+`src/resources/breeds/bruto.tres` e `ligeiro.tres` (script
+`src/scripts/forms/WolfBreed.cs`). **Os bots usam sempre o Bruto.** O
 jogador usa a classe escolhida no perfil, com as tatuagens aplicadas.
 
 | Campo | Bruto | Ligeiro | O que faz |
@@ -138,7 +143,7 @@ jogador usa a classe escolhida no perfil, com as tatuagens aplicadas.
 | `AttackRange` | 5 | 3,2 | Só os bots usam: distância em que o bot lobo decide atacar |
 | `WpCost` | 0 | 0 | WP para transformar |
 
-### Tatuagens (`scripts/meta/Catalog.cs`)
+### Tatuagens (`src/scripts/meta/Catalog.cs`)
 
 Multiplicam a classe do jogador (não a dos bots):
 
@@ -160,7 +165,7 @@ Multiplicam a classe do jogador (não a dos bots):
 |---|---|---|
 | `WallRunSpeedBonus` | 1,1427 | Velocidade na parede = `HumanSpeed` × classe × isto |
 | `WallAccel` | 18 m/s² | Aceleração ao grudar |
-| `WallBrake` | 32 m/s² | Freada ao agarrar (botão de ataque na parede) |
+| `WallBrake` | 32 m/s² | Freada quando o lobo chega à parede mais rápido que a corrida dela (o ataque não agarra mais, 24/11) |
 | `WallRunMaxTime` | 0 | Tempo máximo na parede (0 = sem limite) |
 | `WallRunVerticalDrift` | 0 m/s | Sobe/desce na parede (0 = altura travada) |
 | `WallCheckDistance` | 0,75 m | Distância máxima até a parede para grudar |
@@ -191,8 +196,8 @@ Multiplicam a classe do jogador (não a dos bots):
 
 ## 4. Golpes do lobo
 
-Campos em `scripts/combat/weapon/` (`Weapon.WolfClaws.cs`, `.WolfPounce.cs`, `.WolfDive.cs`) → nó `Weapon`, grupos "Lobo: ..." no Inspetor. Tempos em
-`scripts/forms/WolfMoves.cs`.
+Campos em `src/scripts/combat/weapon/` (`Weapon.WolfClaws.cs`, `.WolfPounce.cs`, `.WolfDive.cs`) → nó `Weapon`, grupos "Lobo: ..." no Inspetor. Tempos em
+`src/scripts/forms/WolfMoves.cs`.
 
 `ClawCancelAfter` (nó `Weapon`, grupo da garra) = 0,08 s: quanto depois do impacto a próxima garrada pode cortar a atual (clicando rápido, uma a cada 0,28 s; pedido do Jhon, 16/11).
 
@@ -296,7 +301,7 @@ arcos, sem tom que sobe (`WolfFx.HowlEnergySound` = `lobo_uivo_choque`,
 voltar a humano tocam o "puff" (`CombatantAudio.TransformSound` e
 `UntransformSound` = `forma_puff`; eram os rugidos `lobo_transformar` e
 `lobo_destransformar`, que ficam no disco). Os dois sons novos saem de
-`tools/sons/choque_puff.py`.
+`src/tools/sons/choque_puff.py`.
 
 ### Quanto dá hoje (contra humano, 200 de vida)
 
@@ -310,18 +315,18 @@ voltar a humano tocam o "puff" (`CombatantAudio.TransformSound` e
 | Bote caindo ≥ 2,5 m | 540 | 528 |
 
 Contra lobo, tire o ×1,6 e aplique a `BodyResistance` dele. As contas
-estão em `scripts/domain/CombatRules.cs`, com teste
-(`tests/unit/CombatRulesTests.cs`): mudou a fórmula, o teste diz.
+estão em `src/scripts/domain/CombatRules.cs`, com teste
+(`src/tests/unit/CombatRulesTests.cs`): mudou a fórmula, o teste diz.
 
 ---
 
 ## 5. Transformação e WP
 
-`scripts/forms/FormController.cs` → nó `FormController`.
+`src/scripts/forms/FormController.cs` → nó `FormController`.
 
 | Campo | Valor | O que faz |
 |---|---|---|
-| `HumanHp` | 200 | Vida (a mesma nas duas formas). O personagem multiplica (`HpMultiplier` no `personagem.tres` de cada pasta em `assets/personagens/`; Eve ×1,1 = 220) |
+| `HumanHp` | 200 | Vida (a mesma nas duas formas). O personagem multiplica (`HpMultiplier` no `personagem.tres` de cada pasta em `src/assets/personagens/`; Eve ×1,1 = 220) |
 | `MaxWp` | 10000 | Teto de WP (era 2500; Jhon, 21/11) |
 | `WpPerKill` | 100 | WP por abate de arma |
 | `WpPerWolfKill` | 70 | WP por abate de lobo |
@@ -341,7 +346,7 @@ sempre humano.
 
 ## 6. Vida, escudo e renascer
 
-`scripts/combat/Health.cs` → nó `Health`.
+`src/scripts/combat/Health.cs` → nó `Health`.
 
 | Campo | Valor | O que faz |
 |---|---|---|
@@ -361,54 +366,58 @@ ossos `mixamorig_Head` e `mixamorig_HeadTop_End`, com raio de
 à vista (boneco do treino, corpo no servidor), vale `Weapon.HeadZone`
 0,72 m acima do centro do corpo. A faca usa `Weapon.HeadshotMultiplier`
 2,5; as armas, o delas. Câmera de morte:
-`LoadoutMenu.KillCamTime` 1,8 s, `KillCam.Hold` 0,35 s,
+`LoadoutMenu.KillCamTime` 4,2 s, `KillCam.Hold` 0,35 s,
 `KillCam.TurnRate` 5.
 
 ---
 
 ## 7. Armas de fogo
 
-`resources/weapons/*.tres` (script `WeaponDefinition.cs`).
+`src/resources/weapons/*.tres` (script `WeaponDefinition.cs`).
+Um `.tres` por arma, **editado à mão** (no Inspector ou no texto; os
+geradores `gerar_arsenal.py` e `gerar_armas.py` saíram em 24/11). As
+skins (`ar15_ouro`, `m4a4_dragao`...) têm o `.tres` delas, um pouco mais
+fortes que a arma de base; a ficha de cada uma está no `docs/ARSENAL.md`.
 
-| Campo | M16A2 | AK-47 | SG-552 | UMP-45 | M3 | M9 |
+| Campo | AR-15 | M4A4 | AK-74 | SCAR-H | SVD | Desert Eagle |
 |---|---|---|---|---|---|---|
-| Classe | fuzil | fuzil | fuzil | SMG | escopeta | pistola |
-| `WpCost` | 0 | 380 | 320 | 280 | 350 | 0 |
-| `Damage` | 27 | 42 | 26 | 28 | 13 ×9 | 25 |
-| `HeadshotMultiplier` | 2,5 | 2,4 | 2,5 | 1,8 | 1,5 | 2,4 |
-| `Rpm` | 650 | 500 | 550 | 750 | 70 | 420 |
-| `Mode` | Auto | Auto | Auto | Auto | Pump | Semi |
-| `Magazine` | 30 | 30 | 30 | 25 | 8 | 15 |
-| `ReloadTactical` / `Empty` (s) | 2,3 / 2,9 | 2,5 / 3,3 | 2,6 / 3,2 | 2,1 / 2,7 | 0,55 cartucho | 1,9 / 2,4 |
-| `DrawTime` (s) | 0,5 | 0,6 | 0,55 | 0,35 | 0,6 | 0,3 |
-| `HolsterTime` (s) | 0 (AR-15: 0,5) | 0 | 0 | 0 | 0 | 0 |
-| `SpreadBase` / `PerShot` / `Max` (°) | 0,15 / 0,09 / 1,8 | 0,45 / 0,4 / 6,5 | 0,25 / 0,15 / 2,8 | 0,55 / 0,18 / 3,5 | 4,5 / 0 / 4,5 | 0,5 / 0,3 / 4 |
-| `SpreadRecovery` (°/s) | 12 (espera 0,05 s) | 7 | 11 | 12 | 99 | 9 |
-| `MoveSpreadMultiplier` | 1,6 | 3,0 | 1,5 | 1,3 | 1,0 | 1,5 |
-| `CrouchSpreadMultiplier` | 0,7 | 0,6 | 0,65 | 0,8 | 1,0 | 0,8 |
-| `RecoilVertical` / `Late` | 1,0 / 0,55 | 1,8 / 0,9 | 0,65 | 0,5 | 3,5 | 1,2 |
-| `RecoilHorizontal` | 0,18 | 0,15 (0,7 após 6 tiros) | 0,08 | 0,25 | 0,3 | 0,15 |
-| `RecoilRecovery` | 7 | 5,5 | 9 | 10 | 4 | 9 |
-| `Range` (m) | 150 | 150 | 150 | 100 | 40 | 100 |
-| Queda de dano (m → fração) | 35–60 → 0,7 | 30–55 → 0,75 | 45–70 → 0,8 | 15–30 → 0,6 | 8–20 → 0,45 | 18–35 → 0,6 |
-| `SpeedMultiplier` | 1,0 | 0,92 | 0,95 | 1,08 | 0,9 | 1,12 |
-| `NoiseRadius` (m) | 45 | 55 | 45 | 35 | 60 | 30 |
+| Classe | fuzil | fuzil | fuzil | pesada (`Class` fuzil) | sniper | pistola |
+| `WpCost` | 0 | 200 (0 no padrão) | 380 | 450 | 600 | 0 |
+| `Damage` | 27 | 26 | 42 | 48 | 85 | 55 |
+| `HeadshotMultiplier` | 2,5 | 2,5 | 2,4 | 2,3 | 2,4 | 2,2 |
+| `Rpm` | 650 | 700 | 500 | 400 | 120 | 240 |
+| `Mode` | Auto | Auto | Auto | Auto | Semi | Semi |
+| `Magazine` / `Reserve` | 30 / 90 | 30 / 90 | 30 / 90 | 20 / 80 | 10 / 30 | 7 / 28 |
+| `ReloadTactical` / `Empty` (s) | 2,3 / 2,9 | 2,3 / 2,9 | 2,5 / 3,3 | 2,9 / 3,5 | 3,0 / 3,5 | 1,8 / 2,2 |
+| `DrawTime` / `HolsterTime` (s) | 0,5 / 0,5 | 0,5 / 0,5 | 0,55 / 0,5 | 0,6 / 0,55 | 0,6 / 0,5 | 0,4 / 0,3 |
+| `SpreadBase` / `PerShot` / `Max` (°) | 0,15 / 0,09 / 1,8 | 0,16 / 0,09 / 1,9 | 0,45 / 0,4 / 6,5 | 0,3 / 0,35 / 5 | 4 / 0,5 / 6 | 0,45 / 0,8 / 6 |
+| `SpreadRecovery` (°/s) | 12 (espera 0,05 s) | 12 (espera 0,05 s) | 7 | 8 | 9 | 9 |
+| `MoveSpreadMultiplier` | 1,6 | 1,6 | 3,0 | 2,6 | 4,0 | 1,5 |
+| `CrouchSpreadMultiplier` | 0,7 | 0,7 | 0,6 | 0,6 | 0,7 | 0,8 |
+| `RecoilVertical` / `Late` (tiros antes do `Late`) | 1,0 / 0,55 (4) | 0,85 / 0,55 (4) | 1,8 / 0,9 (5) | 2,1 / 1,2 (3) | 3,0 | 1,6 |
+| `RecoilHorizontal` | 0,18 | 0,14 | 0,15 (0,7 após 6 tiros) | 0,2 | 0,3 | 0,2 |
+| `RecoilRecovery` | 7 | 7,5 | 5,5 | 5 | 5 | 5,5 |
+| `Range` (m) | 150 | 150 | 150 | 200 | 300 | 100 |
+| Queda de dano (m → fração) | 35–60 → 0,7 | 30–55 → 0,7 | 30–55 → 0,75 | 40–70 → 0,8 | nenhuma | 25–45 → 0,7 |
+| `SpeedMultiplier` | 1,0 | 1,0 | 0,92 | 0,88 | 0,86 | 1,08 |
+| `NoiseRadius` (m) | 45 | 45 | 55 | 60 | 80 | 50 |
 
-Outros campos: `Pellets` (chumbos por tiro), `WolfStun` (M3: 0,4 s de
-lentidão no lobo), `ShellByShell`/`ShellTime`/`ShellEnter` (recarga
-cartucho a cartucho), `RecoilEarlyShots` (tiros antes do recuo
-"Late"), `SpreadDelay` (espera para a dispersão voltar). `Reserve` é a reserva
-com que se nasce e o teto do que se junta do chão (a munição acaba).
-Os `Star*` são só exibição (da loja).
+Outros campos: `WolfStun` (Desert Eagle: 0,25 s de lentidão no lobo),
+`Pellets` (chumbos por tiro) e `ShellByShell`/`ShellTime`/`ShellEnter`
+(recarga cartucho a cartucho; nenhuma arma de hoje usa os dois),
+`RecoilEarlyShots` (tiros antes do recuo "Late"), `SpreadDelay` (espera
+para a dispersão voltar). `Reserve` é a reserva com que se nasce e o
+teto do que se junta do chão (a munição acaba). Os `Star*` são só
+exibição (da loja).
 
-**Zoom** (botão direito segurado), no grupo "Mira" de cada
-`.tres` (gerados por `tools/gerar_arsenal.py`):
+**Zoom** (botão direito segurado), no grupo "Mira" de cada `.tres`:
 
-| Campo | M16A2 | SG-552 | AK-47 | UMP-45 | M3 | M9 |
+| Campo | AR-15 | M4A4 | AK-74 | SCAR-H | SVD | Desert Eagle |
 |---|---|---|---|---|---|---|
-| `AimFov` (graus; fora da mira, 75) | 55 | 55 | 55 | 60 | 65 | 65 |
-| `AimSpreadMultiplier` (dispersão que sobra) | 0,2 | 0,35 | 0,35 | 0,5 | 0,8 | 0,6 |
-| `AimSpeedMultiplier` (passo que sobra) | 0,7 | 0,7 | 0,7 | 0,7 | 0,7 | 0,7 |
+| `AimFov` (graus; fora da mira, 75) | 55 | 55 | 55 | 50 | 18 | 65 |
+| `AimSpreadMultiplier` (dispersão que sobra) | 0,2 | 0,15 | 0,3 | 0,25 | 0,006 | 0,6 |
+| `AimSpeedMultiplier` (passo que sobra) | 0,7 | 0,7 | 0,7 | 0,6 | 0,5 | 0,7 |
+| `AimRecoilMultiplier` (recuo que sobra) | 1 | 1 | 1 | 0,35 | 1 | 1 |
 
 `Weapon.AimTime` 0,16 s (entrar e sair). A sensibilidade do mouse cai na
 razão das aberturas, para o mesmo gesto andar o mesmo na tela. A mira
@@ -423,12 +432,12 @@ toda arma), `RecoilMax` 4,5° (teto acumulado), `RecoilReturnDelay`
 0,38, `TrailWisp` 0,03 m, `FlashSize` 0,22 m, `FlashLife` 0,05 s). Ruído do
 tiro para os bots: `Weapon.ShotNoise` 60 m.
 
-Preços da loja e patente mínima: `scripts/meta/Catalog.cs`.
+Preços da loja e patente mínima: `src/scripts/meta/Catalog.cs`.
 
 ### A pistola na mão (a P9, 23/11)
 
 A pegada, o saque e as recargas da Desert Eagle vêm da P9
-(`tools/armas/dados/p9.npz`, `RefP9` em `tools/armas/conjuntos.py`). Depois
+(`src/tools/armas/dados/p9.npz`, `RefP9` em `src/tools/armas/conjuntos.py`). Depois
 de mudar, rode `conjuntos.py deagle`, `peles.py deagle deagle_cobra
 deagle_fenix` e a terceira pessoa (`mao_manny_anim.py eve deagle`,
 `animacoes_armas.py barut deagle`).
@@ -451,22 +460,23 @@ As durações das recargas continuam as do jogo (`ReloadTactical` 1,8 s e
 
 ## 8. Faca, granada e soltar arma
 
-`scripts/combat/weapon/` (`Weapon.Knife.cs`, `.Grenade.cs`, `.Inventory.cs`) → nó `Weapon`, e `scripts/combat/Grenade.cs` (cena
-`scenes/grenade.tscn`).
+`src/scripts/combat/weapon/` (`Weapon.Knife.cs`, `.Grenade.cs`, `.Inventory.cs`) → nó `Weapon`, e `src/scripts/combat/Grenade.cs` (cena
+`src/scenes/grenade.tscn`).
 
 | Campo | Valor | O que faz |
 |---|---|---|
-| `KnifeDamage` / `KnifeRange` / `KnifeCooldown` | 85 / 2,2 m / 0,55 s | Faca |
+| `KnifeDamage` / `KnifeRange` / `KnifeCooldown` | 85 / 2,2 m / 0,40 s | Faca, o golpe rápido (clique esquerdo) |
+| `KnifeStabDamage` / `KnifeStabBehind` / `KnifeStabCone` | 120 / 2× / 60° | A estocada (botão direito): o dano de frente, quanto vale pelas costas (240 mata um humano de vida cheia) e o cone das costas (graus entre o golpe e a frente do alvo) |
+| `KnifeStabHitDelay` / `KnifeStabCooldown` | 0,2 s / 0,8 s | Quando o dano da estocada sai (a lâmina chega à frente no clipe) e quanto a faca fica ocupada |
 | `KnifeSpeedMultiplier` | 1,037 | Velocidade com a faca na mão, sobre a do humano (3,36 m/s) |
-| `ThrowForce` | 14,5 m/s | Força do arremesso na mira (era 11) |
-| `ThrowArc` | 4 m/s | Empurrão para cima (era 3,5). Olhando reto cai a ~15,5 m |
+| `ThrowForce` | 17,5 m/s | Força do arremesso na mira (era 14,5; 20/11). Olhando reto, de pé, vai a uns 24 m; a granada cai onde a mira aponta |
+| `ThrowArc` | 4 m/s | Empurrão para cima (era 3,5) |
 | `ThrowCooldown` | 0,9 s | Entre uma granada e outra |
 | Quantidade | 1 por espaço de utilitário | `Arsenal.cs` (`Count`) e o conjunto |
-| `Grenade.Fuse` | 1,8 s | Tempo até explodir |
-| `Grenade.Radius` | 6,5 m | Raio |
-| `Grenade.MaxDamage` | 70 | Dano no centro (cai até a borda) |
-| `Grenade.StunDuration` | 2,5 s | Atordoamento no centro |
-| `Grenade.StunSlowFactor` | 0,3 | Velocidade de quem está atordoado |
+| `Grenade.Fuse` | 1,2 s | Tempo até explodir, contado do primeiro toque (sem tocar nada, explode em `MaxFlight` 6 s) |
+| `Grenade.Radius` | 9 m | Raio (era 6,5; 20/11) |
+| `Grenade.MaxDamage` | 420 | Dano no centro, caindo até a borda: mata quem tem 200 de vida a até 4,7 m |
+| `Grenade.Kind` | `Frag` | Explosiva desde 19/11 (o id ainda é `choque`). `Shock`, a de choque de 18/11, está guardada: `ShockDamage` 60, `StunDuration` 2,5 s e `StunSlowFactor` 0,3 só valem nela |
 | `DropThrow` / `DropLift` | 5,5 / 1,8 m/s | Arremesso da arma ao soltar (G) |
 
 Segurar o botão arma o braço; soltar arremessa. A animação do braço
@@ -476,13 +486,14 @@ O tamanho e a pegada da granada (23/11):
 
 | Onde | Campo | Valor | O que faz |
 |---|---|---|---|
-| `tools/armas/conjuntos.py` | `GRANADA['tamanho']` | 1,40 (era 1,18) | A granada na mão em primeira pessoa, em relação à de verdade |
-| `tools/armas/formas_mao.py` | `ARGOLA` | 0,6 | O tamanho da argola do pino (o aro de 5,8 cm da V40 vira um de 3,5 cm) |
-| `tools/armas/conjuntos.py` | `GRANADA_ATRAS` | pulso 21,5 cm à direita, 5 cm acima e 11 cm à frente do olho | A mão armada, quase toda fora da tela |
+| `src/tools/armas/conjuntos.py` | `GRANADA['tamanho']` | 1,40 (era 1,18) | A granada na mão em primeira pessoa, em relação à de verdade |
+| `src/tools/armas/formas_mao.py` | `ARGOLA` | 0,6 | O tamanho da argola do pino (o aro de 5,8 cm da V40 vira um de 3,5 cm) |
+| `src/tools/armas/conjuntos.py` | `GRANADA_ATRAS` | pulso 21,5 cm à direita, 5 cm acima e 11 cm à frente do olho | A mão armada, quase toda fora da tela |
 | `Grenade` | `ModelScale` | 1,4 | A granada voando (só a aparência; a colisão não muda) |
-| `HeldWeapon` | `GrenadeHeldGrow` | 1,4 | A granada na mão em terceira pessoa, sobre a da primeira pessoa (1,96 da de verdade); o personagem de mão grande (Barut, escala 1,3) cresce só o que falta |
+| `HeldWeapon` | `GrenadeHeldGrow` | 1 | A granada na mão em terceira pessoa, sobre a da primeira pessoa (era 1,4; desde 24/11 do mesmo tamanho, 1,40 da de verdade) |
 | `HeldWeapon` | `DrawShowAt` | 0,85 | Na troca de arma, quanto do caminho até a pose do saque a mão anda antes de a arma nova aparecer nela (sai do bolso, da bainha, de trás) |
-| `mao_manny_anim.py` | `GRANADA_CRESCE` | 1,4 | O mesmo número no Blender: o dedo que puxa o pino entra na argola crescida |
+| `mao_manny_anim.py` | `GRANADA_CRESCE` / `GRANADA_MAO_ABRE` | 1 / 0 | O mesmo número no Blender (o dedo que puxa o pino entra na argola do tamanho do jogo) e quanto a mão abre para a granada (0, a pegada da primeira pessoa; era 0,3 com ela 1,4 vez maior) |
+| `src/tools/armas/peles.py` | `PIXEL_BLOCO` | 2,6 cm | O tamanho do bloco da AR-15 8 Bit (era 1,3) |
 | `mao_manny_anim.py` | `LANCE_PINO_SAI` / `LANCE_LARGA` | 0,27 / 0,12 s | Quando o pino sai (a esquerda o leva) e quando ela o larga (cai no chão: `HeldWeapon.DroppedPinLife` 8 s) |
 | `mao_manny_anim.py` | `GRANADA_BOLSO` | 0,22; 0,10; −0,45 m | O bolso de onde a terceira pessoa saca a granada (no peito: direita, frente, cima) |
 
@@ -495,7 +506,7 @@ choque_magma choque_ouro`.
 
 ## 9. Bots e dificuldade
 
-**Estes valores vêm de `resources/bots/facil.tres`, `medio.tres` e
+**Estes valores vêm de `src/resources/bots/facil.tres`, `medio.tres` e
 `dificil.tres`** (classe `BotDifficulty`; abra no Inspector) e
 sobrescrevem o `bot.tscn`. O nome e a linha que aparecem no menu de
 dificuldade (`Label`, `Summary`) também moram ali. O teste
@@ -558,7 +569,7 @@ Desde 18/11, também no `bot.tscn` (padrões no código, `Bot.Persona.cs`,
 `PatrolRoutes.CrowdCost` (18 m) e `SpreadJitter` (10 m) espalham o time
 pelas rotas: cada bot numa rota a encarece para o próximo.
 
-O cérebro (as notas de cada ação) está em `scripts/ai/BotBrain.cs`.
+O cérebro (as notas de cada ação) está em `src/scripts/ai/BotBrain.cs`.
 
 ---
 
@@ -569,7 +580,7 @@ O cérebro (as notas de cada ação) está em `scripts/ai/BotBrain.cs`.
 | `Match.cs` | `ScoreToWin` | 40 abates (a sala sobrescreve) |
 | `Match.cs` | `Duration` | 600 s (a sala sobrescreve) |
 | `Match.cs` | `CountdownTime` | 10 s |
-| `LoadoutMenu.cs` | `ChooseTime` | 5 s para escolher o conjunto ao renascer |
+| `LoadoutMenu.cs` | `ChooseTime` | 15 s para escolher o conjunto ao renascer (não escolheu, vai o padrão) |
 | `RoomConfig.cs` | `RoomSettings` | Modo Livre, 6 por time (de 1 a 6, `TeamSizes`), Armazém, 40 pontos, 10 min, todas as armas, bots no Médio |
 | `LoadingScreen.cs` | `MinShown` | 2 s mínimos na tela de carregamento |
 
@@ -583,7 +594,7 @@ modos são mata-mata em equipe.
 ## 11. Ruído e som
 
 Raio em metros em que os bots ouvem. Um arquivo só para o jogador e
-para o bot: `resources/body/ruido.tres` (classe `BodyNoiseProfile`).
+para o bot: `src/resources/body/ruido.tres` (classe `BodyNoiseProfile`).
 Abra no Inspector e mude ali — vale para os dois.
 
 | Campo | Valor |
@@ -593,15 +604,22 @@ Abra no Inspector e mude ali — vale para os dois.
 | `Land` | 17 |
 | `Howl` | 45 (já no começo do rugido e a cada 0,5 s) |
 | `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,32 / 2,37 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça. De lobo, só vale sem o modelo: com ele, em pé a passada é a do andar que toca (frente, trás ou lado) e de quatro o som sai uma vez por ciclo do clipe, quando as patas se juntam (`WolfVisual.SprintGather`, 0,567 s) |
-| `NoiseRadius` da arma | 30 a 60 (seção 7) |
+| `NoiseRadius` da arma | 45 a 80 (seção 7) |
 
-O som do lugar fica no mapa (`scripts/meta/Maps.cs`):
+O som do lugar fica no mapa (`src/scripts/meta/Maps.cs`):
 
-| Campo | Vila | Polar | O que é |
+| Mapa | `RoomSize` / `RoomWet` | `Ambience` / `AmbienceDb` | `EventSound` / `EventEvery` (s) |
 |---|---|---|---|
-| `RoomSize` / `RoomWet` | 0,45 / 0,1 | 0,3 / 0,05 | Reverberação: tamanho (0–1) e quanto entra |
-| `Ambience` / `AmbienceDb` | vila / −12 | polar / −12 | Fundo em laço e volume |
-| `EventSound` / `EventEvery` | — | — | Som eventual (nenhum mapa usa hoje) |
+| Armazém | 0,75 / 0,35 | `ambiente_armazem` / −12 | `evento_passaros` / 60–130 |
+| Cidade | 0,5 / 0,12 | `ambiente_cidade` / −13 | `evento_buzina` / 35–80 |
+| Cidade do Deserto | 0,4 / 0,08 | `ambiente_deserto` / −14 | `evento_passaros` / 45–100 |
+| Estação de Trem | 0,6 / 0,2 | `ambiente_estacao` / −15 | `evento_trem` / 70–140 |
+| Obra | 0,55 / 0,18 | `ambiente_obra` / −15 | `evento_cachorro` / 50–110 |
+| Distrito Neon | 0,6 / 0,22 | `ambiente_neon` / −13 | `evento_drone` / 40–90 |
+
+`RoomSize` / `RoomWet` é a reverberação (tamanho de 0 a 1 e quanto
+entra); `Ambience` o fundo em laço e o volume; `EventSound` o som
+eventual, sorteado nesse intervalo.
 
 No nó `CombatantAudio`: `ImpactRange` 25 m (bala na parede),
 `CasingDelay` 0,42 s e `CasingInterval` 0,28 s (cápsula no chão). No
@@ -618,7 +636,7 @@ Agachado e com Shift não fazem ruído; a faca é silenciosa. Teste:
 
 Mexa com cuidado: muitos destes são medidas.
 
-**Marca do inimigo** (`scripts/visual/ShoulderMark.cs`, constantes: o
+**Marca do inimigo** (`src/scripts/visual/ShoulderMark.cs`, constantes: o
 nó é criado por código):
 
 | Constante | Valor | O que faz |
@@ -628,7 +646,7 @@ nó é criado por código):
 | `TowardCamera` | 0,15 m | Quanto vem na direção da câmera: o próprio ombro não tampa, a parede tampa. Com 0,25 o brilho do ombro de lá passava na frente do rosto visto de lado |
 | `Energy` | 3,0 | Força do brilho (acima de 1 acende o bloom) |
 
-**Lobo** (`scripts/visual/wolf/`, nó `WolfVisual`):
+**Lobo** (`src/scripts/visual/wolf/`, nó `WolfVisual`):
 
 | Campo | Valor | O que faz |
 |---|---|---|
@@ -642,27 +660,32 @@ nó é criado por código):
 | `DiveLeanMax` | 40° | Inclinação no bote |
 | `TeamTint` | 0,3 | Cor do time na pele |
 
-**Humano** (`scripts/visual/human/`, nó `Human`): `CrouchAim` 1
+**Humano** (`src/scripts/visual/human/`, nó `Human`): `CrouchAim` 1
 (fuzil no ombro agachado), `BlendSmoothing` 9, `HitCooldown` 1,6 s,
 `CorpseHold` / `CorpseFade` 1,2 s, `TintByTeam`, `BlueBody`,
 `OrangeBody`.
 
-**Arma na tela** (`scripts/ui/ViewModel.cs`): `Kick` 0,055 m e
+**Arma na tela** (`src/scripts/ui/ViewModel.cs`): `Kick` 0,055 m e
 `KickPitch` 3,2° (o coice: para trás e o cano para cima), `FlashLife`
 0,05 s, `BobAmount` 0,011 m e `BobSide` 0,007 m (balanço do passo, no
 ritmo da passada), `SwayAmount` 0,55 / `SwayMax` 3,5° / `SwayReturn` 9
 (atraso ao olhar), `LandDip` 0,006 m por m/s de queda. Onde a arma fica
 na tela: as âncoras no começo do arquivo (`RifleAnchor`...). Onde cada
-mão fica em cada arma, e o desenho das armas: `tools/gerar_armas.py`.
+mão fica em cada arma: a ficha `src/assets/armas/armas.json` (`maos`),
+escrita com as peças das armas por `src/tools/armas/reais.py`; a primeira
+pessoa animada, por `src/tools/armas/conjuntos.py`, e as skins por
+`peles.py`.
 
-**Braços animados** (`scripts/ui/ViewModel.Rig.cs`): `RigFov` 50,5° (a
+**Braços animados** (`src/scripts/ui/ViewModel.Rig.cs`): `RigFov` 50,5° (a
 abertura para a qual os conjuntos foram animados; a ficha
-`assets/armas/fp/bracos.json` pode trazer a sua em `fov` — o AR-15 usa a
+`src/assets/armas/fp/bracos.json` pode trazer a sua em `fov` — o AR-15 usa a
 da câmera do Jhon: 95° na horizontal, 63,09° na vertical em 16:9), `RigScale` 0,45 (o conjunto encolhido na direção do
 olho), `RigKick` 0,3, `RigDrawMax` 0,4 s (o saque animado mais longo:
 a arma atira 0,2 s depois da troca), `RigHolsterTime` 0,16 s (quanto o
 guardar dura quando a arma não diz o dela; o AR-15 diz:
-`HolsterTime`, na seção 7). Saque animado na
+`HolsterTime`, na seção 7), `RigIdleInspect` 9 s e `RigIdleInspectAgain` 16 s
+(parado esse tempo, olha a arma sozinho), `KnifeIdleInspect` desligado (a
+faca não se olha sozinha; a tecla F saiu). Saque animado na
 arma principal só com `"sacar": true` na ficha (o AR-15). Com `"fiel": true`
 (o AR-15, pedido do Jhon) o conjunto toca só a animação dele: sem balanço
 do passo, atraso ao olhar, coice nem afundar no pouso de código. A recarga de
@@ -671,7 +694,7 @@ código (conjunto sem animação de recarga, o AR-15) está em
 24 cm entre 20% e 36%, some até 60% e volta até 74%; com o pente vazio,
 o ferrolho recua 5 cm entre 78% e 90%.
 
-**Mira** (`scripts/ui/Crosshair.cs`): `PixelsPerDegree` 9, `MinGap`
+**Mira** (`src/scripts/ui/Crosshair.cs`): `PixelsPerDegree` 9, `MinGap`
 5, `Length` 8, `Thickness` 2.
 
 ---

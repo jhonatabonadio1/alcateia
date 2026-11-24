@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/scripts/combat/WeaponDefinition.cs" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+Id = "svd"
+DisplayName = "SVD Dragunov"
+Class = 3
+WpCost = 600
+Description = "Fuzil de precisão semiautomático, com luneta. Dois tiros no corpo, um na cabeça; sem a mira não acerta nada."
+Damage = 85
+HeadshotMultiplier = 2.4
+Rpm = 120
+Mode = 1
+Magazine = 10
+Reserve = 30
+ReloadTactical = 3.0
+ReloadEmpty = 3.5
+DrawTime = 0.6
+HolsterTime = 0.5
+SpreadBase = 4.0
+SpreadPerShot = 0.5
+SpreadMax = 6.0
+SpreadRecovery = 9.0
+MoveSpreadMultiplier = 4.0
+CrouchSpreadMultiplier = 0.7
+RecoilVertical = 3.0
+RecoilVerticalLate = 3.0
+RecoilEarlyShots = 1
+RecoilHorizontal = 0.3
+RecoilRecovery = 5.0
+Range = 300
+FalloffStart = 250
+FalloffEnd = 300
+FalloffMin = 1.0
+SpeedMultiplier = 0.86
+NoiseRadius = 80
+AimFov = 18
+AimSpreadMultiplier = 0.006
+AimSpeedMultiplier = 0.5
+StarDamage = 4.5
+StarPenetration = 4.0
+StarAccuracy = 5.0
+StarRate = 1.5
+StarMobility = 1.5
+StarRecoil = 1.5
+StarRange = 5.0

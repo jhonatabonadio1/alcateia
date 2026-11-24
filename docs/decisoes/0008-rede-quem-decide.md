@@ -21,7 +21,7 @@ A primeira versão online divide assim:
 | Posição, forma, arma na mão e **vida** de um corpo | A máquina do dono |
 | Se um tiro acertou | A máquina de quem atirou (a mesma `Weapon` de sempre) |
 | Quanto o acerto tira | A máquina da vítima (o mesmo `Health` de sempre: escudo, cabeça, proteção) |
-| Se uma morte vale como abate, o placar, o relógio, o resultado | O servidor de partida (`Referee`, C# puro em `scripts/domain`) |
+| Se uma morte vale como abate, o placar, o relógio, o resultado | O servidor de partida (`Referee`, C# puro em `src/scripts/domain`) |
 | Conta, XP, ranking | O servidor do Alcateia, a partir do resultado que o servidor de partida entrega |
 
 Os outros jogadores aparecem como **bonecos**: o corpo do bot com

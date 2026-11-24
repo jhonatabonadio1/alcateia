@@ -3,12 +3,24 @@
 Referência de balanceamento. Todos os valores são ponto de partida para
 teste, não números finais.
 
+**Onde os números moram:** cada arma de fogo tem o seu
+`src/resources/weapons/<id>.tres`, editado à mão (os geradores
+`gerar_arsenal.py` e `gerar_armas.py` saíram em 24/11). Mudou um número
+lá, mude a ficha dele aqui e a linha no `docs/AJUSTES.md`. O modelo e a
+primeira pessoa de cada arma saem de `src/tools/armas/reais.py`,
+`conjuntos.py` e `peles.py` (as skins).
+
+> **Nome na tela:** o WP deste documento aparece no jogo como **KP**
+> (kill points), desde 24/11. As Presas viraram **Cash** e o Sangue,
+> **IPs** (Inipoints). No código e no servidor os nomes antigos
+> continuam (`WpCost`, `Currency.Presas`).
+
 ## Premissas do sistema
 
 | | |
 |---|---|
-| Vida do humano | 100 HP, sem armadura |
-| Vida do lobo | 100 HP + escudo (50 / 150 / 300 conforme a forma) |
+| Vida do humano | 100 HP na conta deste documento, sem armadura. No jogo são 200, e o dano das armas de fogo dobra (`CombatRules.FirearmDamageScale` 2): tiros para matar e TTK ficam os mesmos |
+| Vida do lobo | a mesma do humano, mais o escudo da classe (`docs/AJUSTES.md`, seção 2) |
 | Dispersão | graus de meio-ângulo do cone |
 | Recoil | graus por tiro, aplicados à rotação da câmera |
 | Intervalo entre tiros | `60 / RPM` |
@@ -20,27 +32,104 @@ teste, não números finais.
 Convenção de estrelas: **escala 0–5, estrela alta = melhor para o jogador**,
 inclusive em recuo (5 = quase sem coice). Nunca misturar a convenção.
 
+**O arsenal de hoje** (desde 19/11): AR-15, M4A4, AK-74, SCAR-H, SVD,
+Desert Eagle, a faca e a granada, cada uma com as suas skins (épicas e
+lendárias: a mesma arma, outra pintura, um pouco mais forte). O conjunto
+padrão leva a **M4A4**, a **Desert Eagle**, a faca e a granada.
+
 ---
 
 # FUZIS DE ASSALTO
 
-## AR-15 — fuzil padrão (desde 15/11)
-*O fuzil de quem não escolheu outro.* Modelo de TastyTony (com
-silenciador, mira red dot e coronha retrátil), animações em primeira
-pessoa feitas pelo Jhon no pacote da InfimaGames. Começa com **os mesmos
-números da M16A2** (a tabela abaixo, a de 14/11): é o mesmo papel, com
-outra cara. A M16A2 continua no arsenal, agora à venda.
+## M4A4 — fuzil padrão (desde 19/11)
+*Carabina rápida e fácil de segurar.* Pedido do Jhon: "a arma padrão
+agora é a M4A4" (`Arsenal.DefaultPrimary`). Vem com o perfil e é a única
+primária que entra no conjunto padrão (só arma comum vai nele). Um pouco
+mais de cadência que o AR-15, um pouco menos de alcance.
 
-O silenciador ainda é só visual: o som e o raio de ruído para os bots
-são os da M16A2.
+```
+Custo WP                200         (no conjunto padrão, 0)
+Dano                    26          Headshot ×2.5 (65)
+RPM                     700         (0.086s entre tiros)
+Pente / Reserva         30 / 90
+Tiros para matar        4 corpo / 2 cabeça
+TTK                     0.26s
+
+Reload tática           2.30s
+Reload vazia            2.90s
+Draw / Holster          0.50s / 0.50s
+
+Dispersão base          0.16°
+Dispersão por tiro      +0.09°      Máxima 1.9°
+Recuperação             12.0°/s     (inicia 0.05s após o último tiro)
+Mult. movimento         1.6×        Mult. agachado 0.7×
+Na mira (zoom)          dispersão ×0.15
+
+Recoil vertical         0.85° tiros 1-4, depois 0.55°
+Recoil horizontal       ±0.14°
+Recuperação de recoil   7.5°/s
+
+Falloff                 100% até 30m → 70% a 55m
+Mult. velocidade        1.00
+Raio de ruído           45m
+Modos de tiro           automático
+```
+Estrelas: Dano 2.0 · Pen 2.5 · Precisão 3.5 · Cadência 3.5 · Mob 2.5 · Recuo 3.0 · Alcance 2.5
+
+Skins: **M4A4 Neon** (épica, 350 WP: 742 RPM, pente 32) e **M4A4 Dragão**
+(lendária, 500 WP: dano 29, pente 36, recarga mais rápida).
+
+## AR-15 — a referência (padrão de 15/11 a 19/11)
+*Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e
+não é ruim em nada.* Modelo de TastyTony (com silenciador, mira red dot e
+coronha retrátil), animações em primeira pessoa feitas pelo Jhon no
+pacote da InfimaGames. Vem com o perfil, mas é incomum: não entra no
+conjunto padrão (Jhon, 19/11: "somente arma comum pode").
+
+O silenciador é só visual: o som e o raio de ruído para os bots são os
+de um fuzil sem ele.
+
+```
+Custo WP                0
+Dano                    27          Headshot ×2.5 (67.5)
+RPM                     650         (0.092s entre tiros)
+Pente / Reserva         30 / 90
+Tiros para matar        4 corpo / 2 cabeça
+TTK                     0.28s
+
+Reload tática           2.30s
+Reload vazia            2.90s
+Draw / Holster          0.50s / 0.50s
+
+Dispersão base          0.15°
+Dispersão por tiro      +0.09°       Máxima 1.8°
+Recuperação             12.0°/s      (inicia 0.05s após o último tiro)
+Mult. movimento         1.6×         Mult. agachado 0.7×
+Na mira (zoom)          dispersão ×0.2
+
+Recoil vertical         1.00° tiros 1-4, depois 0.55°
+Recoil horizontal       ±0.18° alternado
+Recuperação de recoil   7.0°/s
+
+Falloff                 100% até 35m → 70% a 60m
+Mult. velocidade        1.00
+Raio de ruído           45m
+Modos de tiro           automático
+```
+Estrelas: Dano 2.0 · Pen 2.5 · Precisão 3.5 · Cadência 3.0 · Mob 2.5 · Recuo 2.5 · Alcance 3.0
 
 Guardar leva **0,5 s** (`HolsterTime`, o tempo da animação do Jhon): ao
 trocar do AR-15 para outra arma, a outra só sobe depois disso e atira
 0,2 s depois de subir.
 
+*14/11 (ainda como M16A2, de quem o AR-15 herdou os números): o Jhon
+achou a arma padrão difícil de usar. Ficou mais precisa, com um pouco
+menos de dano (30 → 27, ainda 4 no corpo e 2 na cabeça; contra lobo, 10% a
+menos) e a mira mais fechada (×0.35 → ×0.2). O recuo ficou como estava.*
+
 ## AR-15 Ultimate — o AR-15 no limite (18/11)
 *O mesmo fuzil, um degrau acima.* Está à venda na loja (raridade épica, patente 3
-e Presas, como as outras armas de combate: nada de Sangue). É o AR-15 com a pele
+e Cash, como as outras armas de combate: nada de IPs). É o AR-15 com a pele
 roxa de flames: o mesmo modelo, o mesmo rig e as mesmas animações do Jhon (o
 `ar15_ultimate.glb` só troca a malha e a textura do fuzil e do carregador). "Um
 pouco mais forte que a padrão", pedido do Jhon: números de ponto de partida, para
@@ -78,92 +167,30 @@ Estrelas: Dano 2.5 · Pen 2.5 · Precisão 3.8 · Cadência 3.3 · Mob 2.5 · Re
 Contra o AR-15: +11% de dano (30, ainda 4 no corpo e 2 na cabeça), +8% de
 cadência, pente 5 maior, dispersão e recuo cerca de 10% menores e alcance um
 pouco maior. Não tem um eixo de troca novo: é o AR-15 melhor, e o preço está em
-Presas e patente, nunca em vantagem permanente de quem pagou.
+Cash e patente, nunca em vantagem permanente de quem pagou.
 
-**A pele** (`tools/armas/blender/ar15_ultimate.py`): base roxa e índigo, flames
+**A pele** (`src/tools/armas/blender/ar15_ultimate.py`): base roxa e índigo, flames
 de lado nos dois lados da arma (silenciador, guarda-mão e caixa), quinas com
 brilho e um padrão hexagonal discreto; as peças pequenas de metal claro viram
-douradas. A cor está em `assets/armas/ar15_ultimate/T_AR15_Ultimate_D.png` e a
+douradas. A cor está em `src/assets/armas/ar15_ultimate/T_AR15_Ultimate_D.png` e a
 emissão (só as flames e as quinas) em `T_AR15_Ultimate_E.png`;
 `WeaponModel.Material` liga a emissão sozinho quando acha o `_E.png` ao lado do
 `_D.png`. O desenho das flames está em `FLAMES` no script: mexeu, rode de novo.
 
-## M16A2 — fuzil padrão até 15/11
-*Referência do arsenal. Nada excepcional, e esse é o ponto.* Saiu do
-conjunto padrão quando entrou o AR-15; à venda na loja (raridade 1, a
-mais barata dos fuzis), e quem já tinha continua com ela.
+**As outras skins do AR-15** (19/11), cada uma com um jeito:
 
-```
-Custo WP                0 (conjunto padrão)
-Dano                    27          Headshot ×2.5 (67.5)
-RPM                     650         (0.092s entre tiros)
-Pente / Reserva         30 / 90
-Tiros para matar        4 corpo / 2 cabeça
-TTK                     0.28s
+| Skin | Raridade | WP | Dano | RPM | Pente |
+|---|---|---|---|---|---|
+| AR-15 8 Bit | épica | 320 | 29 | 740 | 35 |
+| AR-15 Lava | épica | 320 | 31 | 690 | 35 |
+| AR-15 Ouro | lendária | 400 | 35 | 720 | 40 |
+| AR-15 Diamante | lendária | 400 | 33 | 760 | 42 |
 
-Reload tática           2.30s
-Reload vazia            2.90s
-Draw / Holster          0.50s / 0.35s
+O resto de cada uma está no `.tres` dela.
 
-Dispersão base          0.15°
-Dispersão por tiro      +0.09°       Máxima 1.8°
-Recuperação             12.0°/s      (inicia 0.05s após o último tiro)
-Mult. movimento         1.6×         Mult. agachado 0.7×
-Na mira (zoom)          dispersão ×0.2
-
-Recoil vertical         1.00° tiros 1-4, depois 0.55°
-Recoil horizontal       ±0.18° alternado
-Recuperação de recoil   7.0°/s
-
-Falloff                 100% até 35m → 70% a 60m
-Mult. velocidade        1.00
-Raio de ruído           45m
-Modos de tiro           automático
-```
-Estrelas: Dano 2.0 · Pen 2.5 · Precisão 3.5 · Cadência 3.0 · Mob 2.5 · Recuo 2.5 · Alcance 3.0
-
-*14/11: o Jhon achou a M16 difícil de usar sendo a arma padrão. Ficou mais
-precisa (a dispersão que ele afinou no editor), com um pouco menos de dano
-(30 → 27, ainda 4 no corpo e 2 na cabeça; contra lobo, 10% a menos) e a mira
-mais fechada (×0.35 → ×0.2). O recuo ficou como estava.*
-
-## SG-552 — fuzil de controle
-*A única arma que não pune atirar em movimento. Padrão de recoil quase reto,
-totalmente decorável.*
-
-```
-Custo WP                320
-Dano                    26          Headshot ×2.5 (65)
-RPM                     550         (0.109s)
-Pente / Reserva         30 / 90
-Tiros para matar        4 corpo / 2 cabeça
-TTK                     0.33s        ← o pior do arsenal
-
-Reload tática           2.60s
-Reload vazia            3.20s
-Draw / Holster          0.55s / 0.40s
-
-Dispersão base          0.25°
-Dispersão por tiro      +0.15°       Máxima 2.8°
-Recuperação             11.0°/s
-Mult. movimento         1.5×         ← a assinatura da arma
-Mult. agachado          0.65×
-
-Recoil vertical         0.65° constante (padrão linear)
-Recoil horizontal       ±0.08°
-Recuperação de recoil   9.0°/s
-
-Falloff                 100% até 45m → 80% a 70m
-Mult. velocidade        0.95
-Raio de ruído           45m
-Modos de tiro           automático, rajada de 3
-```
-Estrelas: Dano 2.0 · Pen 2.5 · Precisão 4.0 · Cadência 2.5 · Mob 2.5 · Recuo 4.0 · Alcance 3.5
-
-**Fraqueza deliberada:** pior arma do arsenal contra lobo em espaço fechado.
-
-## AK-47 — fuzil de impacto
-*Melhor TTK do jogo. Feito para rajadas de 3 a 5, nunca para spray.*
+## AK-74 — fuzil de impacto
+*Melhor TTK do jogo. Feito para rajadas de 3 a 5, nunca para spray.* É a
+ficha da AK-47 antiga, com o modelo novo (19/11).
 
 ```
 Custo WP                380
@@ -175,13 +202,14 @@ TTK                     0.24s        ← o melhor do arsenal
 
 Reload tática           2.50s
 Reload vazia            3.30s
-Draw / Holster          0.60s / 0.45s
+Draw / Holster          0.55s / 0.50s
 
 Dispersão base          0.45°
 Dispersão por tiro      +0.40°       Máxima 6.5°
 Recuperação             7.0°/s
 Mult. movimento         3.0×         ← pune andar e atirar
 Mult. agachado          0.60×
+Na mira (zoom)          dispersão ×0.3
 
 Recoil vertical         1.80° tiros 1-5, depois 0.90°
 Recoil horizontal       ±0.15° até o 6º tiro, ±0.70° imprevisível depois
@@ -194,319 +222,109 @@ Modos de tiro           automático
 ```
 Estrelas: Dano 4.0 · Pen 3.5 · Precisão 1.5 · Cadência 2.0 · Mob 2.0 · Recuo 1.0 · Alcance 2.5
 
-## G36C — fuzil de curta distância
-*Cadência de SMG com dano de fuzil. A escolha de quem joga agressivo.*
-
-```
-Custo WP                340
-Dano                    27          Headshot ×2.3 (62)
-RPM                     750         (0.080s)
-Pente / Reserva         30 / 90
-Tiros para matar        4 corpo / 2 cabeça
-TTK                     0.24s
-
-Reload tática           2.20s
-Reload vazia            2.80s
-Draw / Holster          0.42s / 0.32s
-
-Dispersão base          0.50°
-Dispersão por tiro      +0.30°       Máxima 5.0°
-Recuperação             10.0°/s
-Mult. movimento         2.4×         Mult. agachado 0.75×
-
-Recoil vertical         0.90° tiros 1-4, depois 0.60°
-Recoil horizontal       ±0.30°
-Recuperação de recoil   8.0°/s
-
-Falloff                 100% até 22m → 65% a 45m
-Mult. velocidade        1.02
-Raio de ruído           42m
-Modos de tiro           automático, rajada de 2
-```
-Estrelas: Dano 2.5 · Pen 2.0 · Precisão 2.0 · Cadência 4.0 · Mob 3.5 · Recuo 3.0 · Alcance 1.5
-
-## AUG — fuzil de precisão
-*Semiautomático com mira 2×. A ponte entre fuzil e sniper.*
-
-```
-Custo WP                420
-Dano                    34          Headshot ×2.6 (88)
-RPM                     480         (0.125s)
-Pente / Reserva         30 / 90
-Tiros para matar        3 corpo / 2 cabeça
-TTK                     0.25s
-
-Reload tática           2.80s
-Reload vazia            3.50s
-Draw / Holster          0.65s / 0.45s
-
-Dispersão base          0.20°        Com mira 0.05°
-Dispersão por tiro      +0.35°       Máxima 4.5°
-Recuperação             10.0°/s
-Mult. movimento         3.0×         Mult. agachado 0.55×
-
-Recoil vertical         1.20° constante
-Recoil horizontal       ±0.10°
-Recuperação de recoil   11.0°/s      ← volta rápido à mira
-
-Zoom                    2.0× (tempo de entrada 0.25s)
-Falloff                 100% até 55m → 85% a 80m
-Mult. velocidade        0.90
-Raio de ruído           50m
-Modos de tiro           semiautomático
-```
-Estrelas: Dano 3.5 · Pen 3.0 · Precisão 4.5 · Cadência 1.5 · Mob 1.5 · Recuo 3.0 · Alcance 4.0
+Skins: **AK-74 Tigre** (épica, 530 WP: dano 44, coice menor) e **AK-74
+Imperial** (lendária, 680 WP: dano 46, 525 RPM, pente 35).
 
 ---
 
-# SUBMETRALHADORAS
+# ARMA PESADA
 
-## UMP-45 — SMG de dano
-*A arma anti-lobo. Existe por causa da mobilidade do inimigo, não da distância.*
-
-```
-Custo WP                280
-Dano                    28          Headshot ×1.8 (50)
-RPM                     750         (0.080s)
-Pente / Reserva         25 / 100
-Tiros para matar        4 corpo / 2 cabeça (perto)
-TTK                     0.24s
-
-Reload tática           2.10s
-Reload vazia            2.70s
-Draw / Holster          0.35s / 0.25s   ← o saque mais rápido
-
-Dispersão base          0.55°
-Dispersão por tiro      +0.18°       Máxima 3.5°
-Recuperação             12.0°/s
-Mult. movimento         1.3×         ← feita para atirar correndo
-Mult. agachado          0.80×
-
-Recoil vertical         0.50° constante
-Recoil horizontal       ±0.25°
-Recuperação de recoil   10.0°/s
-
-Falloff                 100% até 15m → 60% a 30m (6 tiros para matar)
-Mult. velocidade        1.08
-Raio de ruído           35m
-Modos de tiro           automático
-```
-Estrelas: Dano 2.5 · Pen 1.5 · Precisão 2.0 · Cadência 4.0 · Mob 4.5 · Recuo 3.0 · Alcance 1.5
-
-**É a arma que você puxa quando ouve o uivo.**
-
-## P90 — SMG de sustentação
-*Pente de 50. Feita para aguentar uma investida inteira de lobo sem recarregar.*
-
-```
-Custo WP                330
-Dano                    22          Headshot ×1.7 (37)
-RPM                     900         (0.067s)
-Pente / Reserva         50 / 100
-Tiros para matar        5 corpo / 3 cabeça
-TTK                     0.27s
-
-Reload tática           3.00s
-Reload vazia            3.60s        ← o preço do pente grande
-Draw / Holster          0.40s / 0.28s
-
-Dispersão base          0.60°
-Dispersão por tiro      +0.14°       Máxima 3.2°
-Recuperação             13.0°/s
-Mult. movimento         1.2×         Mult. agachado 0.85×
-
-Recoil vertical         0.35° constante
-Recoil horizontal       ±0.30°
-Recuperação de recoil   12.0°/s
-
-Falloff                 100% até 12m → 55% a 28m
-Mult. velocidade        1.06
-Raio de ruído           33m
-Modos de tiro           automático
-```
-Estrelas: Dano 1.5 · Pen 1.0 · Precisão 2.0 · Cadência 5.0 · Mob 4.5 · Recuo 4.0 · Alcance 1.0
-
----
-
-# ESCOPETAS
-
-## M3 — escopeta pump
-*Mata lobo de escudo 50 com um tiro. O ciclo de 0.85s é a janela em que o
-lobo te alcança.*
-
-```
-Custo WP                350
-Pellets por tiro        9
-Dano por pellet         13          (117 a queima-roupa)
-Headshot                ×1.5 por pellet
-RPM                     70          (0.85s de ciclo da bomba)
-Pente / Reserva         8 / 32
-
-Reload                  0.55s por cartucho — INTERROMPÍVEL
-Entrada / saída reload  0.30s / 0.40s
-Draw / Holster          0.60s / 0.40s
-
-Cone fixo               2.5° a 0m → 9° a 20m (não cresce com tiros)
-Mult. movimento         1.0×         ← movimento não afeta
-Recoil vertical         3.50° por tiro
-Recuperação de recoil   4.0°/s
-
-Falloff por pellet      100% até 8m → 45% a 20m
-Stun em lobo            0.40s de lentidão
-Mult. velocidade        0.90
-Raio de ruído           60m
-Modos de tiro           pump
-```
-Estrelas: Dano 5.0 · Pen 1.0 · Precisão 1.0 · Cadência 0.5 · Mob 2.0 · Recuo 1.0 · Alcance 0.5
-
-**A recarga interrompível é a mecânica central:** cartucho a cartucho,
-cancelável a qualquer momento. Cria a decisão sob pressão de recarregar mais
-um ou atirar com o que tem.
-
-## XM-26 — escopeta automática
-*Menos dano por tiro, muito mais tiros. O preço é o custo e a recarga única.*
-
-```
-Custo WP                480
-Pellets por tiro        8
-Dano por pellet         10          (80 a queima-roupa)
-Headshot                ×1.4 por pellet
-RPM                     180         (0.33s entre tiros)
-Pente / Reserva         6 / 24
-
-Reload (pente inteiro)  3.40s        ← não é cartucho a cartucho
-Draw / Holster          0.65s / 0.45s
-
-Cone fixo               3.5° a 0m → 12° a 18m
-Mult. movimento         1.0×
-Recoil vertical         2.20° por tiro
-Recuperação de recoil   5.0°/s
-
-Falloff por pellet      100% até 6m → 40% a 18m
-Stun em lobo            0.30s de lentidão
-Mult. velocidade        0.88
-Raio de ruído           58m
-Modos de tiro           semiautomático
-```
-Estrelas: Dano 3.5 · Pen 1.0 · Precisão 1.0 · Cadência 2.5 · Mob 1.5 · Recuo 1.5 · Alcance 0.5
-
-Dois tiros rápidos (0.33s) matam lobo de escudo 150.
-
----
-
-# SNIPERS
-
-## Scout — sniper móvel
-*Não mata no corpo. É a sniper que consegue fugir do lobo.*
+## SCAR-H — fuzil de batalha 7,62
+*Pente de 20, tiro lento e pesado. Segura um corredor de longe; de perto,
+perde para qualquer fuzil.*
 
 ```
 Custo WP                450
-Dano                    85          Headshot ×2.0 (170 → morte instantânea)
-RPM                     60          (1.00s de ciclo do ferrolho)
-Pente / Reserva         10 / 30
-Tiros para matar        2 corpo / 1 cabeça
+Dano                    48          Headshot ×2.3 (110 → morte instantânea)
+RPM                     400         (0.150s)
+Pente / Reserva         20 / 80
+Tiros para matar        3 corpo / 1 cabeça
+TTK                     0.30s
 
-Reload                  2.80s
-Draw / Holster          0.55s / 0.40s
+Reload tática           2.90s
+Reload vazia            3.50s
+Draw / Holster          0.60s / 0.55s
 
-Dispersão sem mira      8.00°        ← inutilizável no quadril
-Dispersão com mira      0.04°
-Mult. movimento         3.5×
-Recoil vertical         2.50°
-Recuperação de recoil   6.0°/s
+Dispersão base          0.30°
+Dispersão por tiro      +0.35°       Máxima 5.0°
+Recuperação             8.0°/s
+Mult. movimento         2.6×         Mult. agachado 0.60×
+Na mira (zoom)          dispersão ×0.25, recuo ×0.35
 
-Zoom                    4.0× (entrada 0.30s)
-Falloff                 nenhum
-Mult. velocidade        0.95         ← a mais móvel das snipers
-Raio de ruído           70m
-Modos de tiro           ferrolho
+Recoil vertical         2.10° tiros 1-3, depois 1.20°
+Recoil horizontal       ±0.20°
+Recuperação de recoil   5.0°/s
+
+Falloff                 100% até 40m → 80% a 70m
+Mult. velocidade        0.88
+Raio de ruído           60m
+Modos de tiro           automático
 ```
-Estrelas: Dano 3.5 · Pen 3.0 · Precisão 5.0 · Cadência 1.5 · Mob 3.0 · Recuo 2.0 · Alcance 5.0
+Estrelas: Dano 4.5 · Pen 4.0 · Precisão 3.0 · Cadência 1.5 · Mob 1.5 · Recuo 1.5 · Alcance 3.5
 
-## M40 — sniper intermediária
-*Mata no torso. O ciclo de 1.3s é o que impede o domínio total.*
-
-```
-Custo WP                620
-Dano                    98          Headshot ×2.0 (196)
-RPM                     46          (1.30s de ciclo)
-Pente / Reserva         5 / 25
-Tiros para matar        2 corpo (1 se houver qualquer dano prévio) / 1 cabeça
-
-Reload                  3.40s
-Draw / Holster          0.75s / 0.50s
-
-Dispersão sem mira      10.00°
-Dispersão com mira      0.02°
-Mult. movimento         4.0×
-Recoil vertical         3.50°
-Recuperação de recoil   4.5°/s
-
-Zoom                    6.0× (entrada 0.38s)
-Falloff                 nenhum
-Penetração              madeira e chapa fina
-Mult. velocidade        0.85
-Raio de ruído           80m
-Modos de tiro           ferrolho
-```
-Estrelas: Dano 4.5 · Pen 4.0 · Precisão 5.0 · Cadência 1.0 · Mob 1.5 · Recuo 1.5 · Alcance 5.0
-
-## AWM — sniper pesada
-*Mata qualquer humano e o lobo fantasma com um tiro. Praticamente imóvel.*
-
-```
-Custo WP                850
-Dano                    160         Headshot ×2.0 (320)
-RPM                     37          (1.60s de ciclo)
-Pente / Reserva         5 / 20
-Tiros para matar        1 corpo (humano e lobo de escudo 50)
-
-Reload                  4.00s
-Draw / Holster          0.90s / 0.60s
-
-Dispersão sem mira      12.00°
-Dispersão com mira      0.01°
-Mult. movimento         5.0×         ← andar torna a arma inútil
-Recoil vertical         5.00°
-Recuperação de recoil   3.5°/s
-
-Zoom                    8.0× (entrada 0.45s)
-Falloff                 nenhum
-Penetração              madeira, chapa, concreto fino
-Mult. velocidade        0.78
-Raio de ruído           95m
-Modos de tiro           ferrolho
-```
-Estrelas: Dano 5.0 · Pen 5.0 · Precisão 5.0 · Cadência 0.5 · Mob 0.5 · Recuo 1.0 · Alcance 5.0
+Skins: **SCAR-H Ártico** (épica, 600 WP: recuo menor, pente 22) e **SCAR-H
+Galáxia** (lendária, 750 WP: dano 52, 432 RPM, pente 25).
 
 ---
 
-# SECUNDÁRIAS
+# SNIPER
 
-## M9 — pistola padrão
+## SVD Dragunov — fuzil de precisão
+*Semiautomático com luneta. Dois no corpo ou um na cabeça; fora da mira,
+a bala vai para qualquer lado.*
+
 ```
-Custo WP                0 (conjunto padrão)
-Dano                    25          Headshot ×2.4 (60)
-RPM                     420         Pente / Reserva  15 / 60
-Reload                  1.90s tática / 2.40s vazia
-Draw / Holster          0.30s / 0.20s
-Dispersão base          0.50°       Por tiro +0.30°   Máx 4.0°
-Recoil vertical         1.20°       Recuperação 9.0°/s
-Falloff                 100% até 18m → 60% a 35m
-Mult. velocidade        1.12        Raio de ruído  30m
+Custo WP                600
+Dano                    85          Headshot ×2.4 (204 → morte instantânea)
+RPM                     120         (0.50s entre tiros)
+Pente / Reserva         10 / 30
+Tiros para matar        2 corpo / 1 cabeça
+
+Reload tática           3.00s
+Reload vazia            3.50s
+Draw / Holster          0.60s / 0.50s
+
+Dispersão sem mira      4.00°        ← inutilizável no quadril
+Na mira                 dispersão ×0.006 (0.02°)
+Dispersão por tiro      +0.50°       Máxima 6.0°
+Recuperação             9.0°/s
+Mult. movimento         4.0×         Mult. agachado 0.7×
+Recoil vertical         3.00°
+Recoil horizontal       ±0.30°
+Recuperação de recoil   5.0°/s
+
+Zoom                    abertura 18° (fora da mira, 75°)
+Falloff                 nenhum
+Mult. velocidade        0.86
+Raio de ruído           80m
 Modos de tiro           semiautomático
 ```
-Estrelas: Dano 2.0 · Pen 1.5 · Precisão 2.5 · Cadência 3.0 · Mob 5.0 · Recuo 3.0 · Alcance 2.0
+Estrelas: Dano 4.5 · Pen 4.0 · Precisão 5.0 · Cadência 1.5 · Mob 1.5 · Recuo 1.5 · Alcance 5.0
 
-## Desert Eagle — pistola pesada
+Skins: **SVD Carbono** (épica, 750 WP: 130 RPM, recarga e saque mais
+rápidos) e **SVD Tempestade** (lendária, 900 WP: dano 94, pente 12).
+
+---
+
+# SECUNDÁRIA
+
+## Desert Eagle — pistola padrão
+*Sete tiros que pesam: dois no corpo resolvem, mas o coice cobra cada um.*
+A secundária de todo conjunto (`Arsenal.DefaultSecondary`). A pegada, o
+saque e as recargas vêm da P9 (23/11; `docs/AJUSTES.md`, seção 7).
+**Pendente:** a pistola padrão vai virar a Glock 17
+(`docs/PENDENCIAS.md`).
+
 ```
-Custo WP                150
+Custo WP                0 (conjunto padrão)
 Dano                    55          Headshot ×2.2 (121 → morte instantânea)
 RPM                     240         Pente / Reserva  7 / 28
-Reload                  2.40s tática / 2.90s vazia
-Draw / Holster          0.40s / 0.28s
-Dispersão base          0.45°       Por tiro +0.80°   Máx 6.0°
-Recoil vertical         2.80°       Recuperação 5.5°/s
+Reload                  1.80s tática / 2.20s vazia
+Draw / Holster          0.40s / 0.30s
+Dispersão base          0.45°       Por tiro +0.80°   Máx 6.0°   Recuperação 9.0°/s
+Mult. movimento         1.5×        Mult. agachado 0.8×
+Na mira (zoom)          dispersão ×0.6
+Recoil vertical         1.60°       Horizontal ±0.20°   Recuperação 5.5°/s
 Falloff                 100% até 25m → 70% a 45m
 Stun em lobo            0.25s
 Mult. velocidade        1.08        Raio de ruído  50m
@@ -514,63 +332,52 @@ Modos de tiro           semiautomático
 ```
 Estrelas: Dano 4.0 · Pen 3.0 · Precisão 2.5 · Cadência 1.5 · Mob 4.5 · Recuo 1.5 · Alcance 2.5
 
-## M500 — revólver
-```
-Custo WP                180
-Dano                    85          Headshot ×2.0 (170)
-RPM                     120         Pente / Reserva  5 / 20
-Reload                  3.20s (tambor inteiro)
-Draw / Holster          0.50s / 0.35s
-Dispersão base          0.40°       Por tiro +1.20°   Máx 7.0°
-Recoil vertical         4.50°       Recuperação 4.0°/s
-                        (0.45s para voltar à mira — o 2º tiro é lento)
-Falloff                 100% até 22m → 65% a 40m
-Stun em lobo            0.50s
-Mult. velocidade        1.05        Raio de ruído  65m
-Modos de tiro           ação simples
-```
-Estrelas: Dano 5.0 · Pen 4.0 · Precisão 2.5 · Cadência 0.5 · Mob 4.0 · Recuo 0.5 · Alcance 2.5
+Skins: **Desert Eagle Cobra** (épica, 120 WP: 259 RPM, coice menor) e
+**Desert Eagle Fênix** (lendária, 240 WP: dano 61, pente 8, recarga mais
+rápida).
 
 ---
 
-# UTILITÁRIOS
+# CORPO A CORPO
 
-## Granada de fragmentação
-```
-Custo WP        40          Quantidade  1
-Dano central    110         Raio letal  3.0m   Raio total  6.0m
-Fuse            3.0s        Dano decai linearmente do centro à borda
-Arremesso       14 m/s      Cozinhar  permitido
-Raio de ruído   100m
-```
+## Faca
+*Silenciosa: não faz ruído para os bots.* Não tem `.tres`: os números
+estão na arma (`Weapon.Knife.cs`).
 
-## Granada de luz
 ```
-Custo WP        30          Quantidade  2
-Cegueira        3.5s no centro, 1.2s na borda
-Raio            8.0m        Requer linha de visão
-Fuse            1.8s        Surdez parcial  2.0s
-Efeito em lobo  cegueira ×1.4 (o lobo depende mais do movimento)
+Golpe rápido (clique esquerdo)   85 de dano, 2,2 m, um a cada 0,40s
+Estocada (botão direito)         120 de frente, ×2 pelas costas (240)
+                                 cone das costas 60°, dano em 0,2s, ocupa 0,8s
+Mult. velocidade                 1.037 sobre o humano
+Raio de ruído                    nenhum
 ```
 
-## Granada de fumaça
-```
-Custo WP        30          Quantidade  1
-Duração         12.0s       Raio  8.0m   Tempo de expansão  1.5s
-Bloqueia        visão humana e cone de visão da IA
-```
+A estocada (24/11) é o golpe lento que mata pelas costas: 240 derruba um
+humano de vida cheia. A tecla F (olhar a faca) saiu junto. As versões
+multiplicam a comum (`Arsenal.KnifeStats`): **Faca Damasco** (épica)
+dano ×1,06 e golpe ×0,95; **Faca Obsidiana** (lendária) dano ×1,12, golpe
+×0,9 e alcance ×1,05.
 
-## Granada de choque — anti-lobo
+---
+
+# UTILITÁRIO
+
+## Granada
+A única do jogo: a V40, com o id `choque` (de quando era de choque, em
+18/11); explosiva desde 19/11 (`Grenade.Kind` = `Frag`). Os números
+estão em `src/scripts/combat/Grenade.cs` e `Weapon.Grenade.cs` (tabela
+no `docs/AJUSTES.md`, seção 8).
+
 ```
 Custo WP        60          Quantidade  1
-Dano            20
-Lentidão        60% por 2.5s (apenas em lobo)
-Raio            5.0m        Fuse  2.0s
-Impede          grude em parede durante o efeito
+Dano central    420         Raio  9.0m   Dano decai linearmente do centro à borda
+Fuse            1.2s, contado do primeiro toque no chão
+Arremesso       cai onde a mira aponta (ThrowForce 17,5 m/s)
 ```
 
-A granada de choque é a resposta direta à mobilidade do lobo: não mata,
-mas tira a vantagem que define a forma.
+Com 420 no centro, mata quem tem 200 de vida a até 4,7 m. As versões
+(Carbono, Neon, Magma, Ouro) só mudam a pintura, custam o mesmo e
+qualquer uma vai no conjunto padrão.
 
 ---
 
@@ -578,67 +385,61 @@ mas tira a vantagem que define a forma.
 
 | Item | WP | Categoria |
 |---|---|---|
-| M16A2 | 0 | padrão |
-| M9 | 0 | padrão |
-| UMP-45 | 280 | SMG |
+| Desert Eagle | 0 | secundária, padrão |
+| AR-15 | 0 | fuzil |
+| M4A4 | 200 (0 no padrão) | fuzil, padrão |
 | AR-15 Ultimate | 300 | fuzil |
-| SG-552 | 320 | fuzil |
-| P90 | 330 | SMG |
-| G36C | 340 | fuzil |
-| M3 | 350 | escopeta |
-| AK-47 | 380 | fuzil |
-| AUG | 420 | fuzil |
-| Scout | 450 | sniper |
-| XM-26 | 480 | escopeta |
-| M40 | 620 | sniper |
-| AWM | 850 | sniper |
-| Desert Eagle | 150 | secundária |
-| M500 | 180 | secundária |
-| Granada de luz | 30 | utilitário |
-| Granada de fumaça | 30 | utilitário |
-| Granada de fragmentação | 40 | utilitário |
-| Granada de choque | 60 | utilitário |
+| AK-74 | 380 | fuzil |
+| SCAR-H | 450 | pesada |
+| SVD | 600 | sniper |
+| Granada | 60 | utilitário |
+
+As skins custam mais que a arma de base (tabelas acima). O conjunto
+padrão custa sempre 0 (`LoadoutSet.TotalCost`).
 
 ## Economia
 
 | Ação | WP |
 |---|---|
-| Selecionar conjunto padrão ou lobo | +50 |
+| Selecionar o conjunto padrão | +50 |
 | Abate | +100 |
 | Abate com lobo | +70 |
 | Assistência | +35 |
-| Objetivo (plantar, desarmar, capturar) | +75 |
-| Teto acumulado | 2500 |
+| Morrer | −100 |
+| Teto acumulado | 10000 (era 2500; Jhon, 21/11) |
 
-O conjunto é a unidade de compra, não a arma. Até 4 conjuntos salvos; o
+Transformar em lobo não custa (as classes básicas são de 0 WP). O
+conjunto é a unidade de compra, não a arma. Até 4 conjuntos salvos; o
 primeiro é gratuito e sempre disponível. O equipamento comprado some na
-morte e precisa ser recomprado no respawn — o WP acumulado permanece.
-
----
-
-# ORDEM DE IMPLEMENTAÇÃO
-
-**Primeira leva (balanceamento do duelo):** M16A2, SG-552, AK-47, UMP-45, M3.
-Cinco armas bastam para descobrir se humano × lobo funciona.
-
-**Segunda leva (profundidade):** Scout, M500, granada de choque.
-Mudam o jogo de forma profunda e vão bagunçar o balanceamento se entrarem cedo.
-
-**Terceira leva (variedade):** G36C, AUG, P90, XM-26, M40, AWM, Desert Eagle.
-Só depois que a base estiver estável.
+morte e precisa ser recomprado no respawn — o WP acumulado permanece,
+menos os 100 da morte. Os números estão em `FormController` (seção 5 do
+`docs/AJUSTES.md`).
 
 ---
 
 # TESTES DE VALIDAÇÃO
 
+Jogados em 13/11, com o arsenal de então, e aprovados (fecharam a
+Fase 1):
+
 1. **Humano × humano a 25m** — nenhuma arma deve vencer mais de 60% dos duelos.
-2. **Lobo × humano em corredor** — o lobo deve vencer contra SG-552 e perder
-   contra M3.
+2. **Lobo × humano em corredor** — o lobo deve vencer contra o fuzil de
+   controle (a SG-552) e perder contra a escopeta (a M3).
 3. **Lobo × humano em campo aberto** — o lobo deve perder contra tudo.
-4. **Economia** — um jogador mediano deve acessar uma arma de 350 WP por volta
+4. **Economia** — um jogador mediano deve acessar uma arma de ~350 WP por volta
    do terço inicial da partida, não antes.
 
 Se o teste 3 falhar, a velocidade do lobo está alta demais.
 Se o teste 2 falhar para os dois lados, o problema é o alcance da garra.
 Se o teste 4 falhar para cima, o ganho por abate está alto e a partida vira
 bola de neve.
+
+---
+
+# Histórico
+
+Até 19/11 o arsenal era o da especificação original: M16A2, SG-552,
+AK-47, UMP-45, M3, M9 (as que chegaram ao jogo), mais G36C, AUG, P90,
+XM-26, Scout, M40, AWM, M500 e as granadas de luz, fumaça e
+fragmentação (que só existiam no papel). Saíram todas a pedido do Jhon,
+trocadas pelas armas de hoje; as fichas antigas estão no git.

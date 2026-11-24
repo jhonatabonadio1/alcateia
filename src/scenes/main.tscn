@@ -1,0 +1,77 @@
+[gd_scene format=3 uid="uid://c61irrkg2x37d"]
+
+[ext_resource type="PackedScene" path="res://src/scenes/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://src/scenes/bot.tscn" id="2_bot"]
+[ext_resource type="Script" uid="uid://0gfgihi85g3c" path="res://src/scripts/ui/hud/Hud.cs" id="3_hud"]
+[ext_resource type="Script" uid="uid://drd37xrwbmrlb" path="res://src/scripts/ui/GameMenu.cs" id="4_gamemenu"]
+[ext_resource type="Script" uid="uid://ygsj71u1r7j3" path="res://src/scripts/ui/LoadoutMenu.cs" id="5_loadout"]
+[ext_resource type="Script" path="res://src/scripts/core/MapSlot.cs" id="6_map"]
+[ext_resource type="Script" uid="uid://d06lwh464r8of" path="res://src/scripts/core/Match.cs" id="7_match"]
+[ext_resource type="Script" uid="uid://cqv80rxanekdu" path="res://src/scripts/ui/MatchHud.cs" id="8_matchhud"]
+[ext_resource type="Script" uid="uid://dwfpokfkeb7je" path="res://src/scripts/core/MatchSetup.cs" id="9_setup"]
+[ext_resource type="Script" uid="uid://cmhqla005aplu" path="res://src/scripts/ui/DamageIndicator.cs" id="10_damage"]
+[ext_resource type="Script" path="res://src/scripts/visual/WorldAudio.cs" id="20_world_audio"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMaterial_main"]
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("SkyMaterial_main")
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+sky = SubResource("Sky_main")
+ambient_light_source = 3
+tonemap_mode = 2
+ssao_enabled = true
+glow_enabled = true
+
+[node name="Main" type="Node3D" unique_id=734808170]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=324035423]
+environment = SubResource("Environment_main")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1124948555]
+transform = Transform3D(0.81915, 0.43939, -0.36869, 0, 0.64279, 0.76604, 0.57358, -0.62751, 0.52654, 0, 30, 0)
+shadow_enabled = true
+directional_shadow_max_distance = 120.0
+
+[node name="Map" type="Node3D" parent="." unique_id=1378511582]
+script = ExtResource("6_map")
+
+[node name="Match" type="Node" parent="." unique_id=978944452]
+script = ExtResource("7_match")
+
+[node name="Player" parent="." unique_id=1748555704 groups=["player"] instance=ExtResource("1_player")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -39, 1.2, -2)
+
+[node name="Bots" type="Node3D" parent="." unique_id=1629529614]
+
+[node name="MatchSetup" type="Node" parent="." unique_id=1339127820]
+script = ExtResource("9_setup")
+BotScene = ExtResource("2_bot")
+
+[node name="GameMenu" type="CanvasLayer" parent="." unique_id=763816392]
+script = ExtResource("4_gamemenu")
+
+[node name="LoadoutMenu" type="CanvasLayer" parent="." unique_id=1133292727]
+layer = 9
+script = ExtResource("5_loadout")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=369621219]
+script = ExtResource("3_hud")
+
+[node name="DamageIndicator" type="Control" parent="HUD" unique_id=421800747]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("10_damage")
+
+[node name="MatchHud" type="CanvasLayer" parent="." unique_id=1539007994]
+script = ExtResource("8_matchhud")
+
+[node name="WorldAudio" type="Node" parent="."]
+script = ExtResource("20_world_audio")

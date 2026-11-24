@@ -1,0 +1,2338 @@
+{
+ "armas": {
+  "ak74": {
+   "limites": [
+    [
+     -0.022,
+     -0.195,
+     -0.614
+    ],
+    [
+     0.043,
+     0.069,
+     0.329
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      -0.008,
+      -0.27
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/ak74/corpo_ak74.obj",
+     "material": "res://src/assets/armas/ak74/T_Ak74_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/ak74/ferrolho_ak74.obj",
+     "material": "res://src/assets/armas/ak74/T_Ak74_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/ak74/magazine_ak74.obj",
+     "material": "res://src/assets/armas/ak74/T_Ak74_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.02,
+     0.04,
+     -0.11
+    ],
+    "Muzzle": [
+     0.0,
+     0.0157,
+     -0.6138
+    ]
+   }
+  },
+  "ak74_imperial": {
+   "limites": [
+    [
+     -0.022,
+     -0.195,
+     -0.614
+    ],
+    [
+     0.043,
+     0.069,
+     0.329
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      -0.008,
+      -0.27
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/ak74_imperial/corpo_ak74_imperial.obj",
+     "material": "res://src/assets/armas/ak74_imperial/T_Ak74Imperial_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/ak74_imperial/ferrolho_ak74_imperial.obj",
+     "material": "res://src/assets/armas/ak74_imperial/T_Ak74Imperial_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/ak74_imperial/magazine_ak74_imperial.obj",
+     "material": "res://src/assets/armas/ak74_imperial/T_Ak74Imperial_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.02,
+     0.04,
+     -0.11
+    ],
+    "Muzzle": [
+     0.0,
+     0.0157,
+     -0.6138
+    ]
+   }
+  },
+  "ak74_tigre": {
+   "limites": [
+    [
+     -0.022,
+     -0.195,
+     -0.614
+    ],
+    [
+     0.043,
+     0.069,
+     0.329
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      -0.008,
+      -0.27
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/ak74_tigre/corpo_ak74_tigre.obj",
+     "material": "res://src/assets/armas/ak74_tigre/T_Ak74Tigre_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/ak74_tigre/ferrolho_ak74_tigre.obj",
+     "material": "res://src/assets/armas/ak74_tigre/T_Ak74Tigre_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/ak74_tigre/magazine_ak74_tigre.obj",
+     "material": "res://src/assets/armas/ak74_tigre/T_Ak74Tigre_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.02,
+     0.04,
+     -0.11
+    ],
+    "Muzzle": [
+     0.0,
+     0.0157,
+     -0.6138
+    ]
+   }
+  },
+  "ar15": {
+   "externo": true,
+   "limites": [
+    [
+     -0.029,
+     -0.115,
+     -0.491
+    ],
+    [
+     0.024,
+     0.103,
+     0.27
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.014,
+      -0.36
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/ar15/corpo_ar15.obj",
+     "material": "res://src/assets/armas/ar15/T_AR15_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/ar15/ferrolho_ar15.obj",
+     "material": "res://src/assets/armas/ar15/T_AR15_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/ar15/magazine_ar15.obj",
+     "material": "res://src/assets/armas/ar15/T_AR15_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.0163,
+     0.0286,
+     -0.0904
+    ],
+    "Muzzle": [
+     -0.0036,
+     0.0294,
+     -0.4913
+    ]
+   }
+  },
+  "ar15_8bit": {
+   "externo": true,
+   "limites": [
+    [
+     -0.029,
+     -0.115,
+     -0.491
+    ],
+    [
+     0.024,
+     0.103,
+     0.27
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.014,
+      -0.36
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/ar15_8bit/corpo_ar15_8bit.obj",
+     "material": "res://src/assets/armas/ar15_8bit/T_AR15_8Bit_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/ar15_8bit/ferrolho_ar15_8bit.obj",
+     "material": "res://src/assets/armas/ar15_8bit/T_AR15_8Bit_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/ar15_8bit/magazine_ar15_8bit.obj",
+     "material": "res://src/assets/armas/ar15_8bit/T_AR15_8Bit_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.0163,
+     0.0286,
+     -0.0904
+    ],
+    "Muzzle": [
+     -0.0036,
+     0.0294,
+     -0.4913
+    ]
+   }
+  },
+  "ar15_diamante": {
+   "externo": true,
+   "limites": [
+    [
+     -0.029,
+     -0.115,
+     -0.491
+    ],
+    [
+     0.024,
+     0.103,
+     0.27
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.014,
+      -0.36
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/ar15_diamante/corpo_ar15_diamante.obj",
+     "material": "res://src/assets/armas/ar15_diamante/T_AR15_Diamante_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/ar15_diamante/ferrolho_ar15_diamante.obj",
+     "material": "res://src/assets/armas/ar15_diamante/T_AR15_Diamante_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/ar15_diamante/magazine_ar15_diamante.obj",
+     "material": "res://src/assets/armas/ar15_diamante/T_AR15_Diamante_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.0163,
+     0.0286,
+     -0.0904
+    ],
+    "Muzzle": [
+     -0.0036,
+     0.0294,
+     -0.4913
+    ]
+   }
+  },
+  "ar15_lava": {
+   "externo": true,
+   "limites": [
+    [
+     -0.029,
+     -0.115,
+     -0.491
+    ],
+    [
+     0.024,
+     0.103,
+     0.27
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.014,
+      -0.36
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/ar15_lava/corpo_ar15_lava.obj",
+     "material": "res://src/assets/armas/ar15_lava/T_AR15_Lava_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/ar15_lava/ferrolho_ar15_lava.obj",
+     "material": "res://src/assets/armas/ar15_lava/T_AR15_Lava_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/ar15_lava/magazine_ar15_lava.obj",
+     "material": "res://src/assets/armas/ar15_lava/T_AR15_Lava_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.0163,
+     0.0286,
+     -0.0904
+    ],
+    "Muzzle": [
+     -0.0036,
+     0.0294,
+     -0.4913
+    ]
+   }
+  },
+  "ar15_ouro": {
+   "externo": true,
+   "limites": [
+    [
+     -0.029,
+     -0.115,
+     -0.491
+    ],
+    [
+     0.024,
+     0.103,
+     0.27
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.014,
+      -0.36
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/ar15_ouro/corpo_ar15_ouro.obj",
+     "material": "res://src/assets/armas/ar15_ouro/T_AR15_Ouro_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/ar15_ouro/ferrolho_ar15_ouro.obj",
+     "material": "res://src/assets/armas/ar15_ouro/T_AR15_Ouro_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/ar15_ouro/magazine_ar15_ouro.obj",
+     "material": "res://src/assets/armas/ar15_ouro/T_AR15_Ouro_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.0163,
+     0.0286,
+     -0.0904
+    ],
+    "Muzzle": [
+     -0.0036,
+     0.0294,
+     -0.4913
+    ]
+   }
+  },
+  "ar15_ultimate": {
+   "externo": true,
+   "limites": [
+    [
+     -0.029,
+     -0.115,
+     -0.491
+    ],
+    [
+     0.024,
+     0.103,
+     0.27
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.014,
+      -0.36
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/ar15_ultimate/corpo_ar15_ultimate.obj",
+     "material": "res://src/assets/armas/ar15_ultimate/T_AR15_Ultimate_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/ar15_ultimate/ferrolho_ar15_ultimate.obj",
+     "material": "res://src/assets/armas/ar15_ultimate/T_AR15_Ultimate_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/ar15_ultimate/magazine_ar15_ultimate.obj",
+     "material": "res://src/assets/armas/ar15_ultimate/T_AR15_Ultimate_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.0163,
+     0.0286,
+     -0.0904
+    ],
+    "Muzzle": [
+     -0.0036,
+     0.0294,
+     -0.4913
+    ]
+   }
+  },
+  "choque": {
+   "limites": [
+    [
+     -0.037,
+     -0.045,
+     -0.03
+    ],
+    [
+     0.038,
+     0.045,
+     0.032
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.026,
+      0.0,
+      -0.0
+     ],
+     "dedos": [
+      0.1,
+      0.1,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/choque/corpo_choque.obj",
+     "material": "res://src/assets/armas/choque/T_Choque_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/choque/pino_choque.obj",
+     "material": "res://src/assets/armas/choque/T_Choque_D.png",
+     "no": "Pino"
+    }
+   ],
+   "pontos": {}
+  },
+  "choque_carbono": {
+   "limites": [
+    [
+     -0.037,
+     -0.045,
+     -0.03
+    ],
+    [
+     0.038,
+     0.045,
+     0.032
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.026,
+      0.0,
+      -0.0
+     ],
+     "dedos": [
+      0.1,
+      0.1,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/choque_carbono/corpo_choque_carbono.obj",
+     "material": "res://src/assets/armas/choque_carbono/T_ChoqueCarbono_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/choque_carbono/pino_choque_carbono.obj",
+     "material": "res://src/assets/armas/choque_carbono/T_ChoqueCarbono_D.png",
+     "no": "Pino"
+    }
+   ],
+   "pontos": {}
+  },
+  "choque_magma": {
+   "limites": [
+    [
+     -0.037,
+     -0.045,
+     -0.03
+    ],
+    [
+     0.038,
+     0.045,
+     0.032
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.026,
+      0.0,
+      -0.0
+     ],
+     "dedos": [
+      0.1,
+      0.1,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/choque_magma/corpo_choque_magma.obj",
+     "material": "res://src/assets/armas/choque_magma/T_ChoqueMagma_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/choque_magma/pino_choque_magma.obj",
+     "material": "res://src/assets/armas/choque_magma/T_ChoqueMagma_D.png",
+     "no": "Pino"
+    }
+   ],
+   "pontos": {}
+  },
+  "choque_neon": {
+   "limites": [
+    [
+     -0.037,
+     -0.045,
+     -0.03
+    ],
+    [
+     0.038,
+     0.045,
+     0.032
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.026,
+      0.0,
+      -0.0
+     ],
+     "dedos": [
+      0.1,
+      0.1,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/choque_neon/corpo_choque_neon.obj",
+     "material": "res://src/assets/armas/choque_neon/T_ChoqueNeon_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/choque_neon/pino_choque_neon.obj",
+     "material": "res://src/assets/armas/choque_neon/T_ChoqueNeon_D.png",
+     "no": "Pino"
+    }
+   ],
+   "pontos": {}
+  },
+  "choque_ouro": {
+   "limites": [
+    [
+     -0.037,
+     -0.045,
+     -0.03
+    ],
+    [
+     0.038,
+     0.045,
+     0.032
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.026,
+      0.0,
+      -0.0
+     ],
+     "dedos": [
+      0.1,
+      0.1,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/choque_ouro/corpo_choque_ouro.obj",
+     "material": "res://src/assets/armas/choque_ouro/T_ChoqueOuro_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/choque_ouro/pino_choque_ouro.obj",
+     "material": "res://src/assets/armas/choque_ouro/T_ChoqueOuro_D.png",
+     "no": "Pino"
+    }
+   ],
+   "pontos": {}
+  },
+  "deagle": {
+   "limites": [
+    [
+     -0.018,
+     -0.118,
+     -0.147
+    ],
+    [
+     0.018,
+     0.019,
+     0.099
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.004,
+      -0.135,
+      0.035
+     ],
+     "dedos": [
+      0.83,
+      0.25,
+      -0.5
+     ],
+     "palma": [
+      -0.2,
+      1,
+      -0.2
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/deagle/corpo_deagle.obj",
+     "material": "res://src/assets/armas/deagle/T_Deagle_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/deagle/ferrolho_deagle.obj",
+     "material": "res://src/assets/armas/deagle/T_Deagle_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/deagle/magazine_deagle.obj",
+     "material": "res://src/assets/armas/deagle/T_Deagle_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.014,
+     0.02,
+     -0.03
+    ],
+    "Muzzle": [
+     0.0,
+     0.0081,
+     -0.1466
+    ]
+   }
+  },
+  "deagle_cobra": {
+   "limites": [
+    [
+     -0.018,
+     -0.118,
+     -0.147
+    ],
+    [
+     0.018,
+     0.019,
+     0.099
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.004,
+      -0.135,
+      0.035
+     ],
+     "dedos": [
+      0.83,
+      0.25,
+      -0.5
+     ],
+     "palma": [
+      -0.2,
+      1,
+      -0.2
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/deagle_cobra/corpo_deagle_cobra.obj",
+     "material": "res://src/assets/armas/deagle_cobra/T_DeagleCobra_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/deagle_cobra/ferrolho_deagle_cobra.obj",
+     "material": "res://src/assets/armas/deagle_cobra/T_DeagleCobra_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/deagle_cobra/magazine_deagle_cobra.obj",
+     "material": "res://src/assets/armas/deagle_cobra/T_DeagleCobra_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.014,
+     0.02,
+     -0.03
+    ],
+    "Muzzle": [
+     0.0,
+     0.0081,
+     -0.1466
+    ]
+   }
+  },
+  "deagle_fenix": {
+   "limites": [
+    [
+     -0.018,
+     -0.118,
+     -0.147
+    ],
+    [
+     0.018,
+     0.019,
+     0.099
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.004,
+      -0.135,
+      0.035
+     ],
+     "dedos": [
+      0.83,
+      0.25,
+      -0.5
+     ],
+     "palma": [
+      -0.2,
+      1,
+      -0.2
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/deagle_fenix/corpo_deagle_fenix.obj",
+     "material": "res://src/assets/armas/deagle_fenix/T_DeagleFenix_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/deagle_fenix/ferrolho_deagle_fenix.obj",
+     "material": "res://src/assets/armas/deagle_fenix/T_DeagleFenix_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/deagle_fenix/magazine_deagle_fenix.obj",
+     "material": "res://src/assets/armas/deagle_fenix/T_DeagleFenix_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.014,
+     0.02,
+     -0.03
+    ],
+    "Muzzle": [
+     0.0,
+     0.0081,
+     -0.1466
+    ]
+   }
+  },
+  "faca": {
+   "limites": [
+    [
+     -0.013,
+     -0.084,
+     -0.125
+    ],
+    [
+     0.013,
+     0.225,
+     0.061
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.013,
+      -0.02,
+      0.012
+     ],
+     "dedos": [
+      0.1,
+      0.15,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/faca/faca_faca.obj",
+     "material": "res://src/assets/armas/faca/T_Faca_D.png",
+     "no": ""
+    }
+   ],
+   "pontos": {}
+  },
+  "faca_damasco": {
+   "limites": [
+    [
+     -0.013,
+     -0.084,
+     -0.125
+    ],
+    [
+     0.013,
+     0.225,
+     0.061
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.013,
+      -0.02,
+      0.012
+     ],
+     "dedos": [
+      0.1,
+      0.15,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/faca_damasco/faca_faca_damasco.obj",
+     "material": "res://src/assets/armas/faca_damasco/T_FacaDamasco_D.png",
+     "no": ""
+    }
+   ],
+   "pontos": {}
+  },
+  "faca_obsidiana": {
+   "limites": [
+    [
+     -0.013,
+     -0.084,
+     -0.125
+    ],
+    [
+     0.013,
+     0.225,
+     0.061
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.013,
+      -0.02,
+      0.012
+     ],
+     "dedos": [
+      0.1,
+      0.15,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.1
+     ],
+     "pose": "fechada"
+    },
+    "esquerda": {
+     "alvo": [
+      -0.3,
+      -0.05,
+      -0.05
+     ],
+     "dedos": [
+      0.3,
+      0.35,
+      -1
+     ],
+     "palma": [
+      0.5,
+      -1,
+      0
+     ],
+     "pose": "aberta"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/faca_obsidiana/faca_faca_obsidiana.obj",
+     "material": "res://src/assets/armas/faca_obsidiana/T_FacaObsidiana_D.png",
+     "no": ""
+    }
+   ],
+   "pontos": {}
+  },
+  "m4a4": {
+   "limites": [
+    [
+     -0.03,
+     -0.157,
+     -0.55
+    ],
+    [
+     0.045,
+     0.096,
+     0.29
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.0,
+      -0.27
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/m4a4/corpo_m4a4.obj",
+     "material": "res://src/assets/armas/m4a4/T_M4a4_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/m4a4/ferrolho_m4a4.obj",
+     "material": "res://src/assets/armas/m4a4/T_M4a4_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/m4a4/magazine_m4a4.obj",
+     "material": "res://src/assets/armas/m4a4/T_M4a4_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.022,
+     0.035,
+     -0.075
+    ],
+    "Muzzle": [
+     0.0,
+     0.0243,
+     -0.5499
+    ]
+   }
+  },
+  "m4a4_dragao": {
+   "limites": [
+    [
+     -0.03,
+     -0.157,
+     -0.55
+    ],
+    [
+     0.045,
+     0.096,
+     0.29
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.0,
+      -0.27
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/m4a4_dragao/corpo_m4a4_dragao.obj",
+     "material": "res://src/assets/armas/m4a4_dragao/T_M4a4Dragao_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/m4a4_dragao/ferrolho_m4a4_dragao.obj",
+     "material": "res://src/assets/armas/m4a4_dragao/T_M4a4Dragao_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/m4a4_dragao/magazine_m4a4_dragao.obj",
+     "material": "res://src/assets/armas/m4a4_dragao/T_M4a4Dragao_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.022,
+     0.035,
+     -0.075
+    ],
+    "Muzzle": [
+     0.0,
+     0.0243,
+     -0.5499
+    ]
+   }
+  },
+  "m4a4_neon": {
+   "limites": [
+    [
+     -0.03,
+     -0.157,
+     -0.55
+    ],
+    [
+     0.045,
+     0.096,
+     0.29
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.0,
+      -0.27
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/m4a4_neon/corpo_m4a4_neon.obj",
+     "material": "res://src/assets/armas/m4a4_neon/T_M4a4Neon_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/m4a4_neon/ferrolho_m4a4_neon.obj",
+     "material": "res://src/assets/armas/m4a4_neon/T_M4a4Neon_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/m4a4_neon/magazine_m4a4_neon.obj",
+     "material": "res://src/assets/armas/m4a4_neon/T_M4a4Neon_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.022,
+     0.035,
+     -0.075
+    ],
+    "Muzzle": [
+     0.0,
+     0.0243,
+     -0.5499
+    ]
+   }
+  },
+  "scar": {
+   "limites": [
+    [
+     -0.043,
+     -0.136,
+     -0.617
+    ],
+    [
+     0.027,
+     0.129,
+     0.343
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.0,
+      -0.27
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/scar/corpo_scar.obj",
+     "material": "res://src/assets/armas/scar/T_Scar_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/scar/ferrolho_scar.obj",
+     "material": "res://src/assets/armas/scar/T_Scar_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/scar/magazine_scar.obj",
+     "material": "res://src/assets/armas/scar/T_Scar_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.022,
+     0.05,
+     -0.1
+    ],
+    "Muzzle": [
+     0.0,
+     0.0324,
+     -0.6174
+    ]
+   }
+  },
+  "scar_artico": {
+   "limites": [
+    [
+     -0.043,
+     -0.136,
+     -0.617
+    ],
+    [
+     0.027,
+     0.129,
+     0.343
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.0,
+      -0.27
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/scar_artico/corpo_scar_artico.obj",
+     "material": "res://src/assets/armas/scar_artico/T_ScarArtico_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/scar_artico/ferrolho_scar_artico.obj",
+     "material": "res://src/assets/armas/scar_artico/T_ScarArtico_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/scar_artico/magazine_scar_artico.obj",
+     "material": "res://src/assets/armas/scar_artico/T_ScarArtico_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.022,
+     0.05,
+     -0.1
+    ],
+    "Muzzle": [
+     0.0,
+     0.0324,
+     -0.6174
+    ]
+   }
+  },
+  "scar_galaxia": {
+   "limites": [
+    [
+     -0.043,
+     -0.136,
+     -0.617
+    ],
+    [
+     0.027,
+     0.129,
+     0.343
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.0,
+      -0.27
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/scar_galaxia/corpo_scar_galaxia.obj",
+     "material": "res://src/assets/armas/scar_galaxia/T_ScarGalaxia_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/scar_galaxia/ferrolho_scar_galaxia.obj",
+     "material": "res://src/assets/armas/scar_galaxia/T_ScarGalaxia_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/scar_galaxia/magazine_scar_galaxia.obj",
+     "material": "res://src/assets/armas/scar_galaxia/T_ScarGalaxia_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.022,
+     0.05,
+     -0.1
+    ],
+    "Muzzle": [
+     0.0,
+     0.0324,
+     -0.6174
+    ]
+   }
+  },
+  "svd": {
+   "limites": [
+    [
+     -0.038,
+     -0.105,
+     -0.897
+    ],
+    [
+     0.043,
+     0.12,
+     0.328
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.0,
+      -0.34
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/svd/corpo_svd.obj",
+     "material": "res://src/assets/armas/svd/T_Svd_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/svd/ferrolho_svd.obj",
+     "material": "res://src/assets/armas/svd/T_Svd_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/svd/magazine_svd.obj",
+     "material": "res://src/assets/armas/svd/T_Svd_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.02,
+     0.035,
+     -0.13
+    ],
+    "Muzzle": [
+     0.0,
+     0.0192,
+     -0.8973
+    ]
+   }
+  },
+  "svd_carbono": {
+   "limites": [
+    [
+     -0.038,
+     -0.105,
+     -0.897
+    ],
+    [
+     0.043,
+     0.12,
+     0.328
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.0,
+      -0.34
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/svd_carbono/corpo_svd_carbono.obj",
+     "material": "res://src/assets/armas/svd_carbono/T_SvdCarbono_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/svd_carbono/ferrolho_svd_carbono.obj",
+     "material": "res://src/assets/armas/svd_carbono/T_SvdCarbono_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/svd_carbono/magazine_svd_carbono.obj",
+     "material": "res://src/assets/armas/svd_carbono/T_SvdCarbono_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.02,
+     0.035,
+     -0.13
+    ],
+    "Muzzle": [
+     0.0,
+     0.0192,
+     -0.8973
+    ]
+   }
+  },
+  "svd_tempestade": {
+   "limites": [
+    [
+     -0.038,
+     -0.105,
+     -0.897
+    ],
+    [
+     0.043,
+     0.12,
+     0.328
+    ]
+   ],
+   "maos": {
+    "direita": {
+     "alvo": [
+      0.017,
+      -0.078,
+      0.012
+     ],
+     "dedos": [
+      0.3,
+      -0.3,
+      -1
+     ],
+     "palma": [
+      -1,
+      0,
+      -0.35
+     ],
+     "pose": "punho"
+    },
+    "esquerda": {
+     "alvo": [
+      0.0,
+      0.0,
+      -0.34
+     ],
+     "dedos": [
+      0.75,
+      0.1,
+      -0.62
+     ],
+     "palma": [
+      0,
+      1,
+      0
+     ],
+     "pose": "apoio"
+    }
+   },
+   "partes": [
+    {
+     "malha": "res://src/assets/armas/svd_tempestade/corpo_svd_tempestade.obj",
+     "material": "res://src/assets/armas/svd_tempestade/T_SvdTempestade_D.png",
+     "no": ""
+    },
+    {
+     "malha": "res://src/assets/armas/svd_tempestade/ferrolho_svd_tempestade.obj",
+     "material": "res://src/assets/armas/svd_tempestade/T_SvdTempestade_D.png",
+     "no": "Ferrolho"
+    },
+    {
+     "malha": "res://src/assets/armas/svd_tempestade/magazine_svd_tempestade.obj",
+     "material": "res://src/assets/armas/svd_tempestade/T_SvdTempestade_D.png",
+     "no": "Magazine"
+    }
+   ],
+   "pontos": {
+    "Ejecao": [
+     0.02,
+     0.035,
+     -0.13
+    ],
+    "Muzzle": [
+     0.0,
+     0.0192,
+     -0.8973
+    ]
+   }
+  }
+ },
+ "maos": {
+  "aberta": {
+   "direita": [
+    {
+     "malha": "res://src/assets/armas/bracos/aberta_direita_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/aberta_direita_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/aberta_direita_manga.obj",
+     "material": "manga"
+    }
+   ],
+   "esquerda": [
+    {
+     "malha": "res://src/assets/armas/bracos/aberta_esquerda_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/aberta_esquerda_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/aberta_esquerda_manga.obj",
+     "material": "manga"
+    }
+   ]
+  },
+  "apoio": {
+   "direita": [
+    {
+     "malha": "res://src/assets/armas/bracos/apoio_direita_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/apoio_direita_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/apoio_direita_manga.obj",
+     "material": "manga"
+    }
+   ],
+   "esquerda": [
+    {
+     "malha": "res://src/assets/armas/bracos/apoio_esquerda_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/apoio_esquerda_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/apoio_esquerda_manga.obj",
+     "material": "manga"
+    }
+   ]
+  },
+  "fechada": {
+   "direita": [
+    {
+     "malha": "res://src/assets/armas/bracos/fechada_direita_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/fechada_direita_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/fechada_direita_manga.obj",
+     "material": "manga"
+    }
+   ],
+   "esquerda": [
+    {
+     "malha": "res://src/assets/armas/bracos/fechada_esquerda_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/fechada_esquerda_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/fechada_esquerda_manga.obj",
+     "material": "manga"
+    }
+   ]
+  },
+  "punho": {
+   "direita": [
+    {
+     "malha": "res://src/assets/armas/bracos/punho_direita_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/punho_direita_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/punho_direita_manga.obj",
+     "material": "manga"
+    }
+   ],
+   "esquerda": [
+    {
+     "malha": "res://src/assets/armas/bracos/punho_esquerda_luva.obj",
+     "material": "luva"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/punho_esquerda_luva_reforco.obj",
+     "material": "luva_reforco"
+    },
+    {
+     "malha": "res://src/assets/armas/bracos/punho_esquerda_manga.obj",
+     "material": "manga"
+    }
+   ]
+  }
+ }
+}

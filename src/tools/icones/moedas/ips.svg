@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- IPs, Inipoints (a moeda comprada; era Sangue): moeda violeta com aro claro e uma gema lapidada no meio. Desenho do jogo (24/11). -->
+  <defs>
+    <linearGradient id="aro" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9dcff"/><stop offset="0.5" stop-color="#8e6bff"/><stop offset="1" stop-color="#3a1d9a"/>
+    </linearGradient>
+    <radialGradient id="face" cx="0.5" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#4a2bb8"/><stop offset="1" stop-color="#1a0d4d"/>
+    </radialGradient>
+  </defs>
+  <ellipse cx="128" cy="236" rx="78" ry="10" fill="#000" opacity="0.3"/>
+  <circle cx="128" cy="124" r="112" fill="#24106a"/>
+  <circle cx="128" cy="120" r="110" fill="url(#aro)"/>
+  <circle cx="128" cy="120" r="88" fill="url(#face)"/>
+  <circle cx="128" cy="120" r="88" fill="none" stroke="#c9b4ff" stroke-width="3" opacity="0.6"/>
+  <!-- a gema: mesa em cima, pavilhão embaixo, cada faceta num tom -->
+  <polygon points="80,100 100,72 156,72 176,100 128,180" fill="#5fd3ff"/>
+  <polygon points="100,72 128,72 116,100 80,100" fill="#b9f0ff"/>
+  <polygon points="128,72 156,72 176,100 140,100" fill="#7fdcff"/>
+  <polygon points="116,100 140,100 128,72" fill="#e8fbff"/>
+  <polygon points="80,100 116,100 128,180" fill="#2fa7f0"/>
+  <polygon points="116,100 140,100 128,180" fill="#58c6ff"/>
+  <polygon points="140,100 176,100 128,180" fill="#1b7fd6"/>
+  <polygon points="80,100 100,72 156,72 176,100 128,180" fill="none" stroke="#0b3c80" stroke-width="4" stroke-linejoin="round"/>
+  <!-- o brilho e as faíscas -->
+  <path d="M58 86a76 76 0 0 1 70-52" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity="0.45"/>
+  <path d="M190 48l5 13 13 5-13 5-5 13-5-13-13-5 13-5z" fill="#fff"/>
+  <path d="M74 156l3 8 8 3-8 3-3 8-3-8-8-3 8-3z" fill="#e7dcff"/>
+</svg>

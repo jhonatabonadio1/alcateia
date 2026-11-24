@@ -1237,45 +1237,6 @@
 			"enabled": true,
 			"sort": 50,
 			"image": "mapas/neon_foto.png"
-		},
-		{
-			"id": "armazem",
-			"name": "Armazém (original)",
-			"size": "Pequeno",
-			"description": "Pequeno, 46 × 30 m, galpão fechado. Contêineres que viram túnel, pilhas de dois com pranchas por cima e claraboias no teto.",
-			"modes": [
-				"equipe",
-				"mata_mata"
-			],
-			"enabled": false,
-			"sort": 60,
-			"image": "mapas/armazem_foto.png"
-		},
-		{
-			"id": "vila",
-			"name": "Vila",
-			"size": "Médio",
-			"description": "Médio, 72 × 52 m, fim de tarde. Praça com chafariz e feira, casas de reboco com terraço e vielas estreitas entre elas.",
-			"modes": [
-				"equipe",
-				"mata_mata"
-			],
-			"enabled": false,
-			"sort": 70,
-			"image": "mapas/vila.png"
-		},
-		{
-			"id": "polar",
-			"name": "Estação Polar",
-			"size": "Grande",
-			"description": "Grande, 110 × 70 m, neve e crepúsculo. Garagem central atravessável, alojamentos em fileiras, passarelas suspensas, tanques e torre de rádio.",
-			"modes": [
-				"equipe",
-				"mata_mata"
-			],
-			"enabled": false,
-			"sort": 80,
-			"image": "mapas/polar.png"
 		}
 	],
 	"challenges": [

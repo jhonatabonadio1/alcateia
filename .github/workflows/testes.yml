@@ -1,6 +1,6 @@
 # Roda todos os testes a cada push e pull request: compila o jogo, os
 # testes de unidade e os de regressão (o jogo de verdade, sem tela).
-# É o mesmo tools/testar.sh que roda no Mac. O lançamento
+# É o mesmo src/tools/testar.sh que roda no Mac. O lançamento
 # (lancamento.yml) chama este mesmo arquivo antes de subir para o Fly.
 name: Testes
 
@@ -29,9 +29,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: A semente bate com o jogo
         run: |
-          python3 tools/servidor/exportar_dados.py
+          python3 src/tools/servidor/exportar_dados.py
           if ! git diff --quiet -- servidor/Alcateia.Infra/Semente/jogo.json; then
-            echo "::error file=servidor/Alcateia.Infra/Semente/jogo.json::A semente está velha. Rode: python3 tools/servidor/exportar_dados.py e faça commit."
+            echo "::error file=servidor/Alcateia.Infra/Semente/jogo.json::A semente está velha. Rode: python3 src/tools/servidor/exportar_dados.py e faça commit."
             git --no-pager diff --stat -- servidor/Alcateia.Infra/Semente/jogo.json
             exit 1
           fi
@@ -87,4 +87,4 @@ jobs:
       - name: Testes
         env:
           GODOT: ${{ steps.godot.outputs.bin }}
-        run: bash tools/testar.sh
+        run: bash src/tools/testar.sh

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Cash (a moeda ganha jogando; era Presas): moeda de ouro com aro, face em relevo e um C cortado por duas barras. Desenho do jogo (24/11). -->
+  <defs>
+    <linearGradient id="aro" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff1b0"/><stop offset="0.45" stop-color="#f2b632"/><stop offset="1" stop-color="#9a5a07"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd75e"/><stop offset="1" stop-color="#d98f12"/>
+    </linearGradient>
+    <linearGradient id="fundo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b8740a"/><stop offset="1" stop-color="#f0b437"/>
+    </linearGradient>
+    <linearGradient id="simbolo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff7d1"/><stop offset="1" stop-color="#ffd24a"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="128" cy="236" rx="78" ry="10" fill="#000" opacity="0.28"/>
+  <circle cx="128" cy="124" r="112" fill="#7a4304"/>
+  <circle cx="128" cy="120" r="110" fill="url(#aro)"/>
+  <circle cx="128" cy="120" r="88" fill="url(#fundo)"/>
+  <circle cx="128" cy="122" r="84" fill="url(#face)"/>
+  <circle cx="128" cy="120" r="76" fill="none" stroke="#a5620a" stroke-width="4" stroke-dasharray="2 9" opacity="0.7"/>
+  <!-- o C com as duas barras: sombra (relevo), corpo -->
+  <g transform="translate(0,5)" fill="#8a4c05" opacity="0.85">
+    <path d="M160 92a46 46 0 1 0 0 64l-14-15a26 26 0 1 1 0-34z"/>
+    <rect x="114" y="62" width="11" height="116" rx="4"/><rect x="134" y="62" width="11" height="116" rx="4"/>
+  </g>
+  <g fill="url(#simbolo)">
+    <path d="M160 92a46 46 0 1 0 0 64l-14-15a26 26 0 1 1 0-34z"/>
+    <rect x="114" y="62" width="11" height="116" rx="4"/><rect x="134" y="62" width="11" height="116" rx="4"/>
+  </g>
+  <!-- o brilho -->
+  <path d="M58 86a76 76 0 0 1 70-52" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+  <circle cx="190" cy="60" r="7" fill="#fff" opacity="0.9"/>
+</svg>

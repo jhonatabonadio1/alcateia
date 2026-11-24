@@ -1,7 +1,10 @@
 # Conjuntos de Armas (WP Sets) — Especificação
 
-Sistema de montagem e seleção de equipamento. Complementa `WEAPONS.md`,
+Sistema de montagem e seleção de equipamento. Complementa `ARSENAL.md`,
 que define os itens e seus custos.
+
+> **Nome na tela:** o WP aparece no jogo como **KP** (kill points),
+> desde 24/11. No código continua `Wp`.
 
 ---
 
@@ -27,10 +30,15 @@ montar em tempo real, a decisão perde custo e vira otimização sem fim.
 
 | Espaço | Aceita | Obrigatório |
 |---|---|---|
-| Primária | fuzil, SMG, escopeta, sniper | sim |
-| Secundária | pistola, revólver | sim |
-| Utilitário 1 | qualquer granada | não |
+| Primária | fuzil, arma pesada, sniper | sim |
+| Secundária | pistola | sim |
+| Corpo a corpo | a faca ou uma versão dela | sim (a comum é de todo mundo) |
+| Utilitário 1 | a granada (qualquer versão) | não |
 | Utilitário 2 | granada de luz ou fumaça apenas | não |
+
+O segundo utilitário existe na regra (`UtilityInfo.AllowedInSecondSlot`),
+mas nenhuma granada de hoje cabe nele: na prática, uma granada por
+conjunto.
 
 O custo é a **soma simples** dos itens. Sem descontos, sem bônus de
 combinação — o jogador precisa conseguir somar de cabeça olhando a tela.
@@ -38,13 +46,13 @@ combinação — o jogador precisa conseguir somar de cabeça olhando a tela.
 ### Exemplo
 
 ```
-Conjunto "Caçador"
-  Primária      M3                   350
-  Secundária    M500                 180
-  Utilitário 1  Granada de choque     60
-  Utilitário 2  Granada de luz        30
+Conjunto "Longa distância"
+  Primária      SVD Dragunov         600
+  Secundária    Desert Eagle           0
+  Corpo a corpo Faca                   —
+  Utilitário 1  Granada               60
   ─────────────────────────────────────
-  Total                              620 WP
+  Total                              660 WP
 ```
 
 ---
@@ -55,8 +63,11 @@ O jogador possui **4 conjuntos salvos**.
 
 ### Conjunto 1 — Padrão
 - Custo fixo **0**
-- Aceita **apenas itens de custo 0** (M16A2, M9)
-- Não pode receber arma paga, mesmo que o jogador a possua
+- Aceita **apenas armas comuns** (a M4A4, a Desert Eagle e a faca
+  comum) e qualquer versão da granada (`LoadoutSet.AllowedInDefault`;
+  Jhon, 19/11: "somente arma comum pode")
+- Não pode receber arma incomum ou melhor, mesmo que o jogador a possua
+  (nem o AR-15)
 - Sempre disponível, em qualquer situação de WP
 - **Selecioná-lo concede +50 WP**
 
@@ -76,11 +87,11 @@ tem caminho de recuperação, e a partida não trava para quem está perdendo.
   WP disponível: 480
 
   [1] Padrão             GRÁTIS  (+50 WP)      ✓
-  [2] Assalto               380                ✓
-  [3] Caçador               620                ✗  faltam 140
-  [4] Longa distância       680                ✗  faltam 200
+  [2] Assalto               440                ✓
+  [3] Pesado                510                ✗  faltam 30
+  [4] Longa distância       660                ✗  faltam 180
 
-  [L] Lobo — Battle Wolf    225                ✓
+  Lobo: grátis, a qualquer hora — tecla 3
 ```
 
 ### Regras
@@ -89,9 +100,11 @@ tem caminho de recuperação, e a partida não trava para quem está perdendo.
    quanto falta. Ver o que não se pode pagar é o que cria desejo e dá sentido
    ao próximo abate.
 2. A seleção debita o WP **no momento do respawn**, não antes.
-3. O lobo é uma opção na mesma lista, com custo por forma.
-4. **Timeout de 5s:** entra o último conjunto usado; se não for pagável,
-   entra o Padrão.
+3. O lobo não está na lista: transformar é um slot da partida (tecla 3)
+   e as classes básicas não custam WP. A tela só avisa a regra do modo
+   (lobo livre, bloqueado ou obrigatório).
+4. **Tempo de 15 s** (`LoadoutMenu.ChooseTime`; Jhon, 18/11): não
+   escolheu, entra o Padrão.
 5. O conjunto selecionado fica destacado até o próximo respawn.
 
 ---
@@ -100,8 +113,9 @@ tem caminho de recuperação, e a partida não trava para quem está perdendo.
 
 > **O equipamento comprado some na morte. O WP acumulado permanece.**
 
-Comprou um AWM de 850 WP e morreu em dez segundos? Perdeu os 850 e precisa
-juntar de novo. Mas o WP ganho com abates continua.
+Comprou uma SVD de 600 WP e morreu em dez segundos? Perdeu os 600 e precisa
+juntar de novo. Mas o WP ganho com abates continua (menos os 100 que a
+morte tira, `WpLostOnDeath`).
 
 Isso torna cada morte uma perda econômica além da tática, e faz o jogador
 pensar duas vezes antes de levar a arma cara para uma posição exposta —
@@ -111,27 +125,25 @@ exatamente a tensão desejada num jogo onde o inimigo escala paredes.
 
 | Ação | WP |
 |---|---|
-| Selecionar conjunto Padrão ou Lobo | +50 |
+| Selecionar o conjunto Padrão | +50 |
 | Abate | +100 |
 | Abate em forma de lobo | +70 |
 | Assistência | +35 |
-| Objetivo (plantar, desarmar, capturar) | +75 |
-| **Teto acumulado** | **2500** |
+| Morrer | −100 |
+| **Teto acumulado** | **10000** (era 2500; Jhon, 21/11) |
 
 O WP persiste durante a sessão e é zerado a cada partida.
 
-### Custo das formas de lobo
+### Custo das classes de lobo
 
-| Forma | WP |
+| Classe | WP |
 |---|---|
-| Baby Wolf | 200 |
-| Battle Wolf | 225 |
-| Elite Wolf | 250 |
-| Blood Wolf | 275 |
-| Monster Wolf | 300 |
-| Death Wolf | 325 |
-| Master Wolf | 350 |
-| Perfect Wolf | 375 |
+| Bruto | 0 |
+| Ligeiro | 0 |
+
+Decisão do autor (nov/2026): as classes básicas custam 0 WP. As
+mutações que vierem (Couraçado, Espectro...) é que devem custar
+(`WolfBreed.WpCost`).
 
 ---
 
@@ -143,8 +155,8 @@ Verificações antes de salvar:
 2. Secundária preenchida
 3. Sem itens duplicados no mesmo conjunto
 4. Todos os itens presentes no inventário do jogador
-5. Máximo de 2 utilitários
-6. Conjunto 1 aceita apenas itens de custo 0
+5. Máximo de 2 utilitários; o segundo, só luz ou fumaça
+6. Conjunto 1 aceita apenas armas comuns e as granadas liberadas
 7. **O custo total NÃO é limitado**
 
 A regra 7 é intencional e costuma ser a primeira que alguém tenta
@@ -157,107 +169,77 @@ conseguir pagar. Isso é uma meta, não um erro. Não conserte.
 
 Sugestões pré-montadas para jogadores novos, exibidas como ponto de partida.
 
-### Assalto — 380 WP
+### Assalto — 440 WP
 ```
-AK-47            380
-M9                 0
+AK-74            380
+Desert Eagle       0
+Granada           60
 ──────────────────────
-Total            380
+Total            440
 ```
 Entrada direta. O melhor TTK do jogo com secundária gratuita.
 
-### Caçador — 620 WP
+### Pesado — 510 WP
 ```
-M3               350
-M500             180
-Granada choque    60
-Granada luz       30
+SCAR-H           450
+Desert Eagle       0
+Granada           60
 ──────────────────────
-Total            620
+Total            510
 ```
-Anti-lobo dedicado. Dois stuns e morte com um tiro de perto.
+Segura o corredor de longe; de perto, a pistola resolve.
 
-### Controle — 530 WP
+### Longa distância — 660 WP
 ```
-SG-552           320
-Desert Eagle     150
-Granada fumaça    30
-Granada luz       30
+SVD Dragunov     600
+Desert Eagle       0
+Granada           60
 ──────────────────────
-Total            530
-```
-Distância média, recoil decorável, utilitários para negar espaço.
-
-### Longa distância — 680 WP
-```
-Scout            450
-M500             180
-Granada choque     60
-──────────────────────
-Total            680
+Total            660
 ```
 A combinação sniper + resposta de perto. Cara, mas legítima.
-
-### Móvel — 350 WP
-```
-UMP-45           280
-M9                 0
-Granada choque    60
-Granada luz       30
-──────────────────────
-Total            370
-```
-Saque rápido e velocidade alta. Para quem joga em movimento.
 
 ---
 
 ## 8. Modelo de dados
 
+`src/scripts/combat/LoadoutSet.cs` (resumido). Os itens são ids do
+catálogo (`Arsenal`), não recursos:
+
 ```csharp
-[GlobalClass]
-public partial class LoadoutSet : Resource
+public sealed class LoadoutSet
 {
-    [Export] public string Name = "Novo conjunto";
-    [Export] public bool IsDefault = false;
+	public const int MaxNameLength = 16;
+	public const int MaxUtilities = 2;
 
-    [Export] public WeaponDefinition Primary;
-    [Export] public WeaponDefinition Secondary;
-    [Export] public Godot.Collections.Array<UtilityDefinition> Utilities = new();
+	public string Name { get; set; } = "Novo conjunto";
+	public bool IsDefault { get; set; }
+	public string Primary { get; set; } = Arsenal.DefaultPrimary;     // m4a4
+	public string Secondary { get; set; } = Arsenal.DefaultSecondary; // deagle
+	public string Melee { get; set; } = Arsenal.KnifeId;              // faca
+	public List<string> Utilities { get; set; } = new();
 
-    public int TotalCost()
-    {
-        if (IsDefault) return 0;
+	public int TotalCost()
+	{
+		if (IsDefault) return 0;
 
-        int cost = 0;
-        if (Primary   != null) cost += Primary.WpCost;
-        if (Secondary != null) cost += Secondary.WpCost;
-        foreach (var u in Utilities)
-            if (u != null) cost += u.WpCost;
-        return cost;
-    }
+		int cost = Arsenal.CostOf(Primary) + Arsenal.CostOf(Secondary);
+		foreach (string id in Utilities)
+			cost += Arsenal.CostOf(id);
+		return cost;
+	}
 
-    public bool IsAffordable(int currentWp) => TotalCost() <= currentWp;
+	public bool IsAffordable(float wp) => TotalCost() <= wp;
 
-    public bool Validate(PlayerInventory inv, out string error)
-    {
-        if (Primary == null)
-            { error = "Primária obrigatória"; return false; }
-        if (Secondary == null)
-            { error = "Secundária obrigatória"; return false; }
-        if (Utilities.Count > 2)
-            { error = "Máximo 2 utilitários"; return false; }
-        if (IsDefault && TotalCost() > 0)
-            { error = "O conjunto padrão só aceita itens gratuitos"; return false; }
-        if (!inv.OwnsAll(this))
-            { error = "Item não possuído"; return false; }
-
-        error = null;
-        return true;
-    }
+	// Primária e secundária obrigatórias, até 2 utilitários (o segundo só
+	// luz ou fumaça), sem repetidos, o padrão só com itens comuns
+	// (AllowedInDefault) e tudo no inventário (Profile.Owns).
+	public bool Validate(out string error) { ... }
 }
 ```
 
-O perfil do jogador guarda apenas `LoadoutSet[4]` e o inventário.
+O perfil do jogador guarda apenas os 4 conjuntos (`Profile.Sets`,
+`Profile.SetCount`) e o inventário.
 
 **O custo nunca é persistido.** É sempre recalculado a partir das definições,
 então um ajuste de balanceamento se propaga sozinho para todos os conjuntos
@@ -267,11 +249,11 @@ de todos os jogadores.
 
 ## 9. Decisões de design
 
-### Permitir sniper + escopeta
-Vários jogos proíbem combinações assim por medo de desequilíbrio. Aqui seria
-um erro: o custo somado (450 + 350 = 800 WP) já é a limitação natural, e esse
-conjunto específico — matar de longe, se defender de perto — é uma resposta
-legítima ao lobo que alguém vai descobrir sozinho e achar genial.
+### Não proibir combinações
+Vários jogos proíbem combinações por medo de desequilíbrio. Aqui seria
+um erro: o custo somado já é a limitação natural. A sniper com a granada
+(660 WP) — matar de longe, se defender de perto — é uma resposta legítima
+ao lobo que alguém vai descobrir sozinho e achar genial.
 
 **Deixe a economia balancear em vez de uma regra arbitrária.** Se um conjunto
 virar dominante, aumente o custo do item; não proíba a combinação.
@@ -282,7 +264,7 @@ a vantagem. Duas travas baratas:
 
 1. **Bônus de desvantagem** — o time que está perdendo ganha WP um pouco mais
    rápido. Invisível ao jogador, mantém a partida viva.
-2. **Nenhum item pago com dinheiro real pode custar menos WP** por desempenho
+2. **Nenhum item pago com dinheiro real (IPs, o antigo Sangue) pode custar menos WP** por desempenho
    igual. No momento em que o custo vira vantagem comprável, toda a economia
    deixa de significar algo.
 

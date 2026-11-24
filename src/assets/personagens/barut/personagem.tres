@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CharacterSkin" format=3]
+
+[ext_resource type="Script" path="res://src/scripts/forms/CharacterSkin.cs" id="1_pers"]
+
+[resource]
+script = ExtResource("1_pers")
+DisplayName = "Barut"
+Description = "Do Sindicato. Jaqueta vermelha, colete de placas e o lobo vermelho dele, com o neon laranja nas garras e no rugido. É o personagem do time."
+Team = 2
+Rarity = 2
+HumanModel = "res://src/assets/personagens/barut/humano.glb"
+WolfModel = "res://src/assets/personagens/barut/lobo_vermelho.glb"
+EffectColor = Color(1, 0.35, 0.12, 1)
+HpMultiplier = 1.0

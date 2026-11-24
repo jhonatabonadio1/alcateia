@@ -17,7 +17,7 @@ as **regras de design que não se violam** continuam lá.
 - [Granada](#granada)
 - [O bot](#o-bot)
 - [Mapas vindos de .glb](#mapas-vindos-de-glb)
-- [O mapa Hangar](#o-mapa-hangar)
+- [Os mapas](#os-mapas)
 - [A partida](#a-partida)
 - [Times](#times)
 - [Do menu à partida](#do-menu-à-partida)
@@ -93,8 +93,8 @@ export `RefillOnTransform`, desligado por padrão.
 | Tab (segurando o salto) | Lobo: modo alvo, em vez do placar — marca os inimigos à vista; o clique trava no destacado (a mira segue ele, o salto cai nos pés dele, o anel no chão some); Tab de novo volta à mira no chão |
 | W duas vezes (segurando) | Lobo: corrida de quatro patas, 30% mais rápida (`WolfSprintFactor`); soltar o W ou agachar volta a correr em pé. Carregando o salto, cancela o salto (sem gastar a recarga) e sai correndo. No chão, de quatro, o clique não arranha (tem de sair da corrida); no ar, pulando dela, arranha (Jhon, 23/11) |
 | W segurado | Sustenta a corrida em parede |
-| Ataque segurado | Agarra na parede sem avançar |
 | Clique esq. | Atacar |
+| Botão direito, com a faca | A estocada: mais lenta (0,8 s) e mais forte (120); pelas costas, 240 — mata um humano de vida cheia |
 | Ctrl ou C | Agachar (nas duas formas). No Mac, Ctrl + clique vira clique direito no sistema; o jogo trata como ataque (`MacCtrlClick`), e o especial agachado sai agachando no C |
 | Shift | Andar devagar e em silêncio (só humano) |
 | R | Rugir (lobo): segure até o fim para o escudo voltar · recarregar (humano) |
@@ -387,6 +387,8 @@ escolhido sozinho.
 
 ### A economia de WP
 
+> Na tela, desde 24/11, o WP se chama **KP** (kill points); Presas é **Cash** e Sangue é **IPs** (Inipoints). No código e aqui os nomes de antes continuam.
+
 WP vem de **abater**, de **assistir** e de **renascer com o conjunto
 padrão**, nunca do relógio (valores em "Conjuntos e economia").
 Ganhar por tempo premia esperar; ganhar por abate premia jogar. O
@@ -435,13 +437,14 @@ terceiro machuca mais.
 **Golpe sincronizado com a animação, e golpe não corta golpe.** O dano
 sai no quadro em que a garra chega na animação, não no clique, e o
 próximo golpe só sai quando a animação acaba. A tabela é uma só,
-`scripts/forms/WolfMoves.cs`: para cada golpe, o trecho do clipe, a
-velocidade e o instante do golpe, medidos nas mãos do esqueleto por
-`tools/analisar_golpes.gd`. A arma lê dela para o dano e o
+`src/scripts/forms/WolfMoves.cs`: para cada golpe, o trecho do clipe, a
+velocidade e o instante do golpe, medidos nas mãos do esqueleto (pelo
+`analisar_golpes.gd`, que media no Mutant e saiu em 24/11; está no
+histórico do git). A arma lê dela para o dano e o
 `WolfVisual` para a animação — não tem como sair de sincronia. Para um
 golpe mais rápido ou mais pesado, mude só a velocidade; a duração e o
-instante do dano acompanham. Trocou o clipe? Rode a ferramenta e
-corrija a linha dele.
+instante do dano acompanham. Trocou o clipe? Meça de novo e corrija a
+linha dele.
 
 | Golpe | Clipe | Golpe na tela | Dura |
 |---|---|---|---|
@@ -653,7 +656,7 @@ estimar por comprimento.
 
 ### Som é informação de jogo
 
-Ruído passa por um barramento (`scripts/core/NoiseBus.cs`): quem faz
+Ruído passa por um barramento (`src/scripts/core/NoiseBus.cs`): quem faz
 barulho publica, quem ouve se inscreve, e nenhum dos dois conhece o
 outro. É o padrão de *stimulus broadcast* usado em IA de stealth —
 a alternativa, cada bot varrer o mundo procurando coisas barulhentas,
@@ -702,26 +705,26 @@ grave) que a do tiro dos outros.
 
 ### O áudio
 
-Os arquivos são gerados por `tools/sons/processar.py` a partir de
-gravações baixadas do GitHub por `tools/sons/baixar.py`. Para mudar um
+Os arquivos são gerados por `src/tools/sons/processar.py` a partir de
+gravações baixadas do GitHub por `src/tools/sons/baixar.py`. Para mudar um
 som, mude a linha dele no gerador e rode de novo; editar o `.wav` à mão
 se perde na próxima geração.
 
-Três peças de código, e a lista de arquivos em `assets/audio/LEIA-ME.md`:
+Três peças de código, e a lista de arquivos em `src/assets/audio/LEIA-ME.md`:
 
-- `scripts/core/Sfx.cs` toca por **nome**: `Sfx.At("passo", ponto,
+- `src/scripts/core/Sfx.cs` toca por **nome**: `Sfx.At("passo", ponto,
   raio)` acha `passo.wav`/`.ogg`/`.mp3` e as variações `passo_1`,
   `passo_2`... e sorteia entre elas com o tom variando ±6%. **Arquivo
   que não existe fica mudo, sem erro** — o jogo ganha som aos poucos,
   um arquivo por vez, sem tocar em código.
-- `scripts/visual/WorldAudio.cs` (um por cena de jogo) **escuta o
+- `src/scripts/visual/WorldAudio.cs` (um por cena de jogo) **escuta o
   NoiseBus** e toca passo, pouso, tiro, uivo e explosão no ponto e no
   raio do ruído. **O rugido é a voz e os choques** (Jhon, 23/11: "só
   choque e rugido"; o choque "sem esse som subindo, zuuuum", e sem o estalo
   no final). E a troca de forma não ruge mais ("precisa tirar o som ou
   trocar o rugido do lobo ao apertar 3"): toca um "puff" de fumaça. Não existe som de mundo que não seja ruído: é assim que
   a regra acima se mantém sozinha.
-- `scripts/visual/CombatantAudio.cs` (filho de Player e Bot) toca o
+- `src/scripts/visual/CombatantAudio.cs` (filho de Player e Bot) toca o
   que não é ruído — transformação, garra, recarga, dor, morte — com
   **alcance de 12 m**. Os bots não ouvem esses sons, então eles não
   podem servir de informação de longe; de perto você já está vendo
@@ -794,7 +797,7 @@ erro, porque ouvir não é ver — um bot que localiza som com precisão
 cirúrgica parece trapacear.
 
 **Decisão** — **utilidade**, não transições fixas. Cada ação dá uma
-nota de 0 a 1 e a maior vence (`scripts/ai/BotBrain.cs`).
+nota de 0 a 1 e a maior vence (`src/scripts/ai/BotBrain.cs`).
 
 A diferença aparece quando duas coisas são verdade ao mesmo tempo.
 Uma máquina de estados precisa de uma regra para decidir se recarrega
@@ -822,7 +825,7 @@ A decisão sai em intervalos, não a cada frame: pensar sessenta vezes
 por segundo custa caro e produz um bot que muda de ideia antes de
 terminar o que começou.
 
-As **curvas** ficam separadas da decisão (`scripts/ai/Utility.cs`).
+As **curvas** ficam separadas da decisão (`src/scripts/ai/Utility.cs`).
 Trocar uma curva muda a personalidade do bot; trocar um `if` muda o
 programa.
 
@@ -868,7 +871,7 @@ jogador confiar que esconder-se funciona.
 
 ### Dificuldade dos bots
 
-Três níveis, como dado: `resources/bots/facil.tres`, `medio.tres` e `dificil.tres` (`BotDifficulty`; quem aplica é `scripts/core/Difficulty.cs`). O que muda é
+Três níveis, como dado: `src/resources/bots/facil.tres`, `medio.tres` e `dificil.tres` (`BotDifficulty`; quem aplica é `src/scripts/core/Difficulty.cs`). O que muda é
 **competência, nunca vida ou dano**: inflar o inimigo produz luta
 longa, não luta difícil.
 
@@ -947,7 +950,7 @@ depende de navmesh, e navmesh depende de um mapa de verdade.
 
 ## Mapas vindos de .glb
 
-`scripts/core/MapLoader.cs` carrega um `.glb`, gera colisão de malha,
+`src/scripts/core/MapLoader.cs` carrega um `.glb`, gera colisão de malha,
 coleta spawns e assa a navegação — tudo em tempo de execução.
 
 Colisão normalmente se configura na janela de importação, que é GUI.
@@ -967,7 +970,8 @@ porque os raios precisam de superfície para encontrar.
 
 O Arrival vinha extraído do cliente original e nunca pôde ser
 publicado. Serviu de régua de proporção enquanto não havia mapa
-próprio; com o Hangar, foi apagado do projeto a pedido.
+próprio; com o Hangar (que também saiu, em 16/11), foi apagado do
+projeto a pedido.
 
 ### Geometria de uma face, e por que isso quebra meio jogo
 
@@ -1004,7 +1008,7 @@ muda nada no caso normal.
 
 ### Pontos de nascimento
 
-`scripts/core/SpawnPoints.cs`. Oito marcadores em `main.tscn`,
+`src/scripts/core/SpawnPoints.cs`. Oito marcadores em `main.tscn`,
 escolhidos por terem 2 m de folga em volta e 3 m de teto livre — foram
 medidos no arquivo, não estimados a olho.
 
@@ -1020,11 +1024,11 @@ próximo, com uns metros de ruído); continua valendo para quem não
 recebeu ponto na largada.
 
 Sem `SpawnPoints` na cena, cada ator volta ao próprio ponto inicial —
-é o que mantém `scenes/treino.tscn` funcionando sem configuração.
+é o que mantém `src/scenes/treino.tscn` funcionando sem configuração.
 
 ### Escadas: iguais em todo mapa
 
-`scripts/core/Ladder.cs` e `Player.Ladder.cs`. **Decisão do Jhon
+`src/scripts/core/Ladder.cs` e `Player.Ladder.cs`. **Decisão do Jhon
 (17/11):** a escada de subir é uma peça do jogo e se comporta igual em
 qualquer mapa. W sobe, S desce (olhando bem para baixo, o W desce, como
 nos jogos de tiro de sempre), A e D de lado; parado na escada, fica
@@ -1036,7 +1040,7 @@ no jogo e no servidor. Os bots ainda não sobem.
 
 ### Rondas: cada mapa traz as suas
 
-`scripts/core/PatrolRoutes.cs`. Uma rota é uma sequência de pontos
+`src/scripts/core/PatrolRoutes.cs`. Uma rota é uma sequência de pontos
 que alguém já sabe que dá para percorrer. O bot pega uma, percorre e
 pega outra.
 
@@ -1049,7 +1053,7 @@ número dentro de um círculo.
 de duas formas:
 
 1. Um nó `PatrolRoutes` na cena, com um filho por rota e um
-   `Marker3D` por ponto. É como o Arrival faz.
+   `Marker3D` por ponto. É como os mapas de hoje fazem.
 2. Objetos chamados `route*` dentro do próprio `.glb`, com os pontos
    como filhos. Mesma ideia dos `spawn*`: quem desenha o mapa sabe por
    onde se anda nele, e dizer isso no Blender custa menos do que
@@ -1091,10 +1095,10 @@ informação melhor do que lembrar.
 
 | Cena | Para que serve |
 |---|---|
-| `scenes/menu/menu.tscn` | **Cena principal do projeto.** Início, sala, conjuntos e inventário |
-| `scenes/main.tscn` | A partida. Os bots nascem da sala (`MatchSetup`); aberta direto pelo editor, monta um 4 contra 4 padrão |
-| `scenes/maps/hangar.tscn` | O mapa, com tudo que é dele: geometria, spawns por base, rotas e navegação |
-| `scenes/treino.tscn` | Caixa cinza com duas paredes paralelas e bonecos, para medir física sem o mapa no caminho |
+| `src/scenes/menu/menu.tscn` | **Cena principal do projeto.** Início, sala, conjuntos e inventário |
+| `src/scenes/main.tscn` | A partida. Os bots nascem da sala (`MatchSetup`); aberta direto pelo editor, monta um 4 contra 4 padrão |
+| `src/scenes/maps/*.tscn` | Os seis mapas, cada um com tudo que é dele: geometria, spawns por base, rotas e navegação. A cena é a fonte (veja `docs/MAPAS.md`) |
+| `src/scenes/treino.tscn` | Caixa cinza com duas paredes paralelas e bonecos, para medir física sem o mapa no caminho |
 
 A cena de treino não é sobra: quando a física quebra, uma sala limpa
 com duas paredes e um cubo diz em dez segundos o que um mapa inteiro
@@ -1102,42 +1106,33 @@ esconde.
 
 ---
 
-## O mapa Hangar
+## Os mapas
 
-Mapa próprio: o pátio de uma base aérea. Nasceu em caixa cinza e hoje
-tem material de verdade, oficinas em que se entra e letreiros — nenhuma
-peça vinda de outro jogo.
+Seis, todos na lista (`src/scripts/meta/Maps.cs`): Armazém, Cidade,
+Cidade do Deserto, Estação de Trem, Obra e Distrito Neon. Como cada um
+foi feito, e como fazer um novo, está em `docs/MAPAS.md`. **Desde 24/11 a
+fonte de cada mapa é a cena** (`src/scenes/maps/<id>.tscn`): o gerador
+(`gerar_mapas.py`) saiu, e os módulos de `src/tools/mapas/` ficaram só
+como registro de como cada mapa nasceu.
 
-Gerado por `tools/mapas/hangar.py` (com `tools/gerar_mapas.py hangar`),
-que guarda cada medida com o motivo dela. **Rodar o script de novo sobrescreve o `.tscn`**: se o mapa for
-editado no Godot, o `.tscn` passa a ser a fonte e o script vira só o
-registro de como ele nasceu.
-
-| Medida | Valor |
-|---|---|
-| Arena | 84 × 48 m, muro de 12 m |
-| Bases | galpões de 10 × 21 m com teto a 5 m, A (azul) a oeste, B (laranja) a leste |
-| Centro | heliponto de 12 × 12 m a 2 m, parapeito de 1 m, farol de 4 m |
-| Blocos | quatro, 12 × 9 m e 5 m de altura, com rampa vindo do centro |
-| Pontes | duas, 28 m de vão a 5 m, ligando os telhados |
-| Becos | 3 m de largura entre cada bloco e o muro |
-
-**Simétrico em X.** Num mapa de bases, qualquer vantagem de um lado é
+**Simétrico.** Num mapa de bases, qualquer vantagem de um lado é
 vantagem de um time, e não tem como afinar isso jogando sozinho contra
-bots.
+bots. Por isso o lado de um time é o do outro girado 180° (ou
+espelhado).
 
-### As quatro perguntas, respondidas pela geometria
-
-1. **Caminho que só o lobo faz:** os becos. Duas paredes paralelas a
-   3 m é o que a corrida em parede precisa para subir ricocheteando até
-   o telhado de 5 m. O humano chega lá pelas rampas — pelo centro,
-   exposto.
-2. **Lugar onde o humano vê o lobo chegando:** o heliponto, 2 m acima
-   do chão, de frente para as alas abertas.
-3. **Corredor que o humano deve evitar:** os mesmos becos. Três metros
-   é distância de garra, não de fuzil.
-4. **Cair em cima de quem não olha:** as pontes. Grade só do lado do
-   muro; do lado da ala, nada.
+**O que saiu.** O Hangar (o primeiro mapa próprio, o pátio de uma base
+aérea, 84 × 48 m), o Metrô e a Rua Abandonada saíram em 16/11, a pedido;
+o Armazém original, a Vila e a Estação Polar em 24/11 (estão no
+histórico do git). Do Hangar fica o exemplo de como a geometria
+responde às quatro perguntas do teste de mapa: **becos de 3 m** entre os
+blocos e o muro — duas paredes paralelas a 3 m é o que a corrida em
+parede precisa para subir ricocheteando até um telhado de 5 m, e três
+metros é distância de garra, não de fuzil (o caminho do lobo e o
+corredor que o humano evita); **um heliponto 2 m acima do chão**, de
+frente para as alas abertas (onde o humano vê o lobo chegando); e
+**pontes sem grade do lado de dentro** (de onde cair em cima de quem
+não olha). Cômodo encostado num beco deixa a parede do beco inteira: o
+lobo precisa dela para subir.
 
 ### Alturas amarradas à física
 
@@ -1147,20 +1142,11 @@ precisa pular 1,4 m — `JumpMultiplier` de pelo menos **1,2** (com
 1,28, 1,62 m). Ninguém alcança 5 m sem parede. **Mexeu no pulo, confira estes números** — um
 caixote 2 cm alto demais vira parede para o humano sem ninguém notar.
 
-### As oficinas
-
-Os quatro blocos laterais eram maciços; agora cada um é uma oficina de
-dois cômodos: a sala da frente com porta e duas janelas para a ala, o
-depósito dos fundos com uma porta para o lado do centro e outra para o
-lado da base, e uma porta ligando os dois. **A parede de trás ficou
-inteira** — é uma das duas do beco, e o lobo precisa dela para subir.
-O telhado, a mureta e a rampa são os de antes.
-
 ---
 
 ## A partida
 
-`scripts/core/Match.cs`. Mata-mata em equipe, Azul contra Laranja:
+`src/scripts/core/Match.cs`. Mata-mata em equipe, Azul contra Laranja:
 ganha quem chegar primeiro ao objetivo da sala (padrão **40** abates);
 se o tempo acabar antes (padrão **10 minutos**), ganha quem tiver
 mais, e empate é empate. Pontos e tempo vêm de `RoomConfig`.
@@ -1187,12 +1173,12 @@ contar o tempo. **Sair no meio é abandonar**: não paga nada, e o Esc
 pede confirmação.
 
 Atalhos de desenvolvimento, para ver o fim sem jogar dez minutos:
-`godot ... res://scenes/main.tscn -- --duracao=30 --contagem=2`, e
+`godot ... res://src/scenes/main.tscn -- --duracao=30 --contagem=2`, e
 `--placar` deixa o Tab aberto.
 
 ### O HUD da partida
 
-`scripts/ui/MatchHud.cs`, separado do `Hud` de propósito: o `Hud` fala
+`src/scripts/ui/MatchHud.cs`, separado do `Hud` de propósito: o `Hud` fala
 do corpo, este fala da partida, e some inteiro numa cena sem partida.
 
 - **Topo:** placar de cada time com a barra até a meta — "27" não diz o
@@ -1267,7 +1253,7 @@ dia, o ranking e a conversa na lateral. A lista de treino offline
 ("Treino com bots") saiu em 17/11, a pedido.
 
 **Modo de jogo (decisão do Jhon, 17/11).** Antes de criar a sala, o
-mestre escolhe o modo (`scripts/core/PlayMode.cs`, tela
+mestre escolhe o modo (`src/scripts/core/PlayMode.cs`, tela
 `ModePicker`). Todos são mata-mata em equipe; o modo diz contra quem e
 em que forma cada time joga:
 
@@ -1341,16 +1327,21 @@ o menu para fugir de uma luta. Com o menu aberto o corpo fica parado
 ## Arsenal
 
 Especificação: `docs/ARSENAL.md`. Implementação:
-`scripts/combat/WeaponDefinition.cs` (um Resource por arma),
-`scripts/combat/Arsenal.cs` (catálogo e preços) e
-`resources/weapons/*.tres`, gerados por `tools/gerar_arsenal.py`.
+`src/scripts/combat/WeaponDefinition.cs` (um Resource por arma),
+`src/scripts/combat/Arsenal.cs` (catálogo e preços) e
+`src/resources/weapons/*.tres`, **editados à mão** (o gerador
+`gerar_arsenal.py` saiu em 24/11: ainda gerava a M9).
 
-Só a **primeira leva** do documento: M16A2, SG-552, AK-47, UMP-45 e M3,
-mais a M9 do conjunto padrão. Desde 15/11 o fuzil do conjunto padrão é
-o **AR-15** (modelo e animações de primeira pessoa próprios, os números
-da M16A2); a M16A2 virou compra. O documento explica por quê — cinco armas
-bastam para saber se humano contra lobo funciona, e as outras bagunçam o
-balanceamento se entrarem antes.
+As armas de hoje: o **AR-15** (o fuzil do conjunto padrão desde 15/11,
+modelo e animações de primeira pessoa próprios), a **M4A4**, a **AK-74**,
+a **SCAR-H** (a arma pesada), a **SVD** (precisão, com luneta), a
+**Desert Eagle** (a pistola padrão), a faca e a granada de choque, mais as
+peles épicas e lendárias de cada uma. As de 19/11 vieram dos modelos que
+o Jhon trouxe (veja `docs/PACOTES.md`). A primeira leva do documento
+(M16A2, SG-552, AK-47, UMP-45, M3 e a M9) saiu do jogo. A ideia que a
+guiava continua: poucas armas bastam para saber se humano contra lobo
+funciona, e cada arma a mais bagunça o balanceamento se entrar antes da
+hora.
 
 ### Decisões que divergem do documento, e por quê
 
@@ -1359,11 +1350,10 @@ balanceamento se entrarem antes.
 | Vida do humano | 100 | **200** | Decisão do Jhon. O dano é multiplicado por `Arsenal.DamageScale = 2` na hora do tiro, o que preserva tiros-para-matar e TTK do documento sem reescrever os números |
 | Reserva de munição | 90, 100… | **infinita** | Regra antiga do Jhon: o custo de atirar é o tempo de recarga. A reserva fica na definição só para exibir |
 | Lobo | vendido no respawn | **grátis, tecla 3** | Decisão do Jhon: virar lobo é decisão tática, não compra |
-| Cone da M3 | 2,5° a 0 m → 9° a 20 m | **4,5° fixo** | Cone que cresce com a distância é aproximado por um meio-ângulo fixo; a 20 m dá 1,6 m de raio |
-| Rajada (SG-552, G36C) | modo extra | **só automático** | Um modo por arma até alguém sentir falta |
+| Rajada (G36C e outras) | modo extra | **um modo por arma** (automático ou semiautomático) | Um modo por arma até alguém sentir falta |
 
 **Mexeu num número de dano?** Confira "tiros para matar" no documento.
-O AK mata com um tiro na cabeça porque 42 × 2,4 × 2 = 201,6 passa de
+A AK-74 mata com um tiro na cabeça porque 42 × 2,4 × 2 = 201,6 passa de
 200 — um ajuste de 1 ponto quebra a identidade da arma.
 
 ### O que a definição controla
@@ -1388,8 +1378,8 @@ arma da outra.
 ## Conjuntos e economia
 
 Especificação: `docs/CONJUNTOS.md`. Implementação:
-`scripts/combat/LoadoutSet.cs`, `scripts/core/Profile.cs` (salvo em
-`user://profile.json`) e a tela de respawn em `scripts/ui/LoadoutMenu.cs`.
+`src/scripts/combat/LoadoutSet.cs`, `src/scripts/core/Profile.cs` (salvo em
+`user://profile.json`) e a tela de respawn em `src/scripts/ui/LoadoutMenu.cs`.
 
 - Quatro conjuntos. O **primeiro é o padrão**: só itens grátis, sempre
   disponível, e escolhê-lo rende **+50 WP**. O `Profile.Repair` força
@@ -1431,7 +1421,7 @@ Morto, ela abre com "ABATIDO" e de quê.
 
 ## HUD de combate
 
-`scripts/ui/hud/`, no layout da regra dos cantos (veja "Layout da
+`src/scripts/ui/hud/`, no layout da regra dos cantos (veja "Layout da
 tela"). Tudo chega por sinal — vida, munição, WP, forma, slot, abates —
 exceto o que é contínuo por natureza e é lido a cada quadro: abertura
 da mira, barra de transformação, recargas do lobo, uivo, relógio de
@@ -1445,7 +1435,7 @@ diz para onde vai.
 **Marcador de acerto** (`HitMarker.cs`): branco no corpo, vermelho e
 maior na cabeça, e segura mais no abate. O som de cada um é diferente.
 
-**Dano direcional** (`scripts/ui/DamageIndicator.cs`): arco vermelho em
+**Dano direcional** (`src/scripts/ui/DamageIndicator.cs`): arco vermelho em
 volta da mira apontando para quem atirou, por 1,5 s. Guarda a posição
 de origem no mundo, não o ângulo do momento — é o que faz o arco girar
 quando você vira, continuando a apontar para o atirador.
@@ -1498,7 +1488,8 @@ na hora. Através de parede seria ver quem está escondido — isso fica só
 para o matador, com a silhueta vermelha, e só enquanto você está morto
 (`Silhouette`).
 
-**A morte começa no quadro da morte.** O "mutant dying" fica parado
+**A morte começa no quadro da morte.** O "mutant dying" do Mixamo
+(`_comum/lobo/death.fbx`) fica parado
 0,43 s antes de cair; tocado inteiro, o lobo morto ficava meio segundo
 de pé. O clipe começa em 0,55 s (`WolfMoves`).
 
@@ -1512,38 +1503,42 @@ e a gravidade voltava a puxar o corpo através do mapa.
 
 ## Armas na mão, soltar e pegar
 
-**Cada arma tem o seu modelo** (`scripts/visual/WeaponModel.cs`),
-montado com caixas e cilindros: a alça do M16, a madeira e o carregador
-curvo da AK, o tubo da M3. O mesmo modelo aparece em três lugares —
-na sua mão (`ViewModel`), na mão dos outros (`HeldWeapon`) e no chão
-(`WeaponPickup`) —, então a AK caída é a mesma AK que o inimigo
-segurava. Arma nova precisa de um caso em `WeaponModel.Build`; sem
-ele, aparece um fuzil genérico.
+**Cada arma tem o seu modelo** (`src/scripts/visual/WeaponModel.cs`),
+lido das malhas de `src/assets/armas/<id>/` e da ficha
+`src/assets/armas/armas.json` (feitas por `src/tools/armas/reais.py` e
+`peles.py`; o AR-15, do modelo de TastyTony). O mesmo modelo aparece em
+três lugares — na sua mão (`ViewModel`), na mão dos outros
+(`HeldWeapon`) e no chão (`WeaponPickup`) —, então a AK caída é a mesma
+AK que o inimigo segurava. Arma sem entrada na ficha aparece como a
+arma padrão: melhor uma arma qualquer na mão do que mão vazia.
 
-**O AR-15 saca e guarda animado.** É o único fuzil com saque animado
-(o Jhon animou para isso): ao trocar para outra arma ele é guardado
-antes, no tempo da animação do Jhon (0,5 s, pedido dele em 15/11), e só
-então a outra sobe e, 0,2 s depois, atira; ao voltar, ele sobe pela
-animação. Trocar a partir do AR-15 leva 0,5 s a mais que das outras. As outras
-armas principais continuam subindo de baixo (decisão de 13/11).
+**Toda arma saca e guarda animada.** Começou no AR-15 (o Jhon animou
+para isso): ao trocar para outra arma a da mão é guardada antes, no
+tempo dela (`HolsterTime`; 0,5 s no AR-15, pedido do Jhon em 15/11), e só
+então a outra sobe e, 0,2 s depois, atira. Os outros fuzis usam o saque
+e o guardar do AR-15, com o peso de cada um (`src/tools/armas/conjuntos.py`);
+a Desert Eagle, o da P9.
 
 **Recarga animada.** Em primeira pessoa a arma inclina, o carregador
-sai por baixo e volta, e ela endireita; na escopeta cada cartucho é um
-empurrão. Em terceira pessoa o clipe `reload` do Mixamo toca **só da
-cintura para cima** (disparo único filtrado nos ossos do tronco e dos
-braços), então quem recarrega correndo continua correndo. As duas
-seguem o relógio da arma (`Weapon.ReloadProgress`): recarga vazia, mais
-longa, dura mais na tela também.
+sai por baixo e volta, e ela endireita. **Em terceira pessoa cada arma
+toca os clipes dela** (22/11): o corpo da cintura para cima tem um clipe
+para cada clipe da primeira pessoa, por arma e por personagem
+(`src/assets/personagens/<p>/animacoes/<arma>.json`, feitos no Blender
+por `src/tools/personagens/blender/`), tocado junto com o da primeira
+pessoa, no mesmo instante (`HoldClips`, `HeldWeapon.HoldByClips`); o
+quadril segue a animação de andar, então quem recarrega correndo
+continua correndo. Tudo segue o relógio da arma
+(`Weapon.ReloadProgress`): recarga vazia, mais longa, dura mais na tela
+também.
 
-**A arma na mão dos outros sem calibrar osso.** As animações são de
-fuzil, com a mão direita no punho e a esquerda no guarda-mão: a arma
-vai na mão direita apontando para a esquerda. Na recarga a mão
-esquerda sai para buscar o carregador, então a arma congela a relação
-com a mão direita do último quadro bom e só a acompanha.
+**Personagem sem a pasta `animacoes/`** segura a arma pela pose de antes:
+a arma vai na mão direita apontando para a esquerda, e na recarga, quando
+a mão esquerda sai para buscar o carregador, a arma congela a relação com
+a mão direita do último quadro bom e só a acompanha.
 
 **Soltar e pegar, como no CS:**
 
-- **B** joga a arma da mão para frente. Da primária você vai para a
+- **G** joga a arma da mão para frente. Da primária você vai para a
   secundária; da secundária, para a faca. Faca e granada não se soltam.
 - **Morto em forma humana deixa cair** a primária (ou a pistola, se só
   tinha ela), com o pente como estava. Lobo não deixa nada. Quem
@@ -1561,57 +1556,50 @@ com a mão direita do último quadro bom e só a acompanha.
 
 ## Personagens
 
-Todos do Mixamo, com o mesmo esqueleto `mixamorig` — por isso os
-clipes servem para todos sem conversão.
+Dois, um por time: a **Eve** (azul) e o **Barut** (laranja). Cada um é
+uma pasta em `src/assets/personagens/` com o humano (`humano.glb`), o
+lobo dele (`eve/lobo_azul.glb`, `barut/lobo_vermelho.glb`), o
+`personagem.tres` (nome, time, vida), o `retrato.png` e as animações de
+terceira pessoa de cada arma (`animacoes/*.json`). O que todos dividem
+fica em `src/assets/personagens/_comum/`: em `humano/`, o X Bot
+(`xbot.fbx`, o corpo base da cena e o esqueleto dos clipes) e os clipes
+do Mixamo; em `lobo/`, as animações do lobo (`lobo_anim.glb`, do Jhon, e
+os `.fbx` de reserva). O guia para fazer um novo é o
+`docs/PERSONAGENS.md`.
 
-| Quem | Arquivo | Animações |
-|---|---|---|
-| Humano, time azul | `assets/characters/human/exo_gray.fbx` (Exo Gray) | os clipes de `assets/characters/human/` |
-| Humano, time laranja | `assets/characters/human/ely.fbx` (Ely, de K. Atienza) | os mesmos |
-| Lobo, time azul | `assets/characters/wolf/mutant.fbx` | Creature Pack, em `assets/characters/wolf/` |
-| Lobo, time laranja | `assets/characters/wolf/mutant_red.fbx` | os mesmos |
+**Quem não escolhe nada, e todo bot, joga de Eve no azul e de Barut no
+laranja** (19/11): o `CharacterAnimator` troca o `xbot` da cena pelo
+personagem do time antes de carregar os clipes (`BlueModel`,
+`OrangeModel`); com personagem próprio o corpo não é pintado. Os humanos
+vêm do pacote Stylized Sci-Fi Characters e os lobos o Jhon gerou no
+Meshy (veja `docs/PACOTES.md`). O Exo Gray e a Ely (do Mixamo) saíram em
+19/11; o lobo antigo (`mutant*.fbx`), que ficou como referência de
+altura, saiu em 24/11.
 
-O `CharacterAnimator` troca o `xbot` da cena pelo personagem do time
-antes de carregar os clipes (`BlueModel`, `OrangeModel`); com
-personagem próprio o corpo não é pintado.
-
-**Personagens escolhidos (16/11).** Além dos de sempre, o jogador pode
-escolher um personagem para cada time no inventário. Cada um é uma pasta
-em `assets/personagens/` com o humano, o lobo e a vida
-(`personagem.tres`); o guia é o `docs/PERSONAGENS.md`. Decisões do Jhon:
+**Decisões do Jhon (16/11)** sobre escolher personagem no inventário:
 
 - **Humano e lobo vêm juntos.** Quem escolhe a Eve transforma na loba da
   Eve. Escolher os dois separados deixaria o inimigo sem ligar o lobo à
   pessoa que estava ali de fuzil.
-- **O personagem é do time.** A Eve só entra no time laranja.
-- **Pode mudar a vida** (`HpMultiplier`, nas duas formas). A Eve tem
-  ×1,1 (220). É vantagem de quem tem o personagem (regra 3): hoje todo
+- **O personagem é do time.** A Eve só entra no time azul; o Barut, no
+  laranja.
+- **Pode mudar a vida** (`HpMultiplier`, nas duas formas; os dois de hoje
+  têm ×1, 200). É vantagem de quem tem o personagem (regra 3): hoje todo
   personagem vem com o perfil, e o preço fica para a economia decidir.
   O personagem não mexe na classe de lobo (velocidade, pulo, garra).
-- **Mesma altura dos de sempre** (humano 1,79 m, lobo 1,66 m), porque a
+- **Mesma altura para todos** (humano 1,79 m, lobo 1,66 m), porque a
   cabeça que leva tiro é a do modelo. O teste `Personagens` reprova quem
   fugir disso.
 
 **Os clipes humanos são do X Bot**, e a trilha do quadril vem em
-metros do corpo dele (quadril a 1,04 m). O Exo Gray (0,96 m) e a Ely
-(0,98 m) têm pernas mais curtas, e com o quadril do X Bot os pés
-ficavam 6 a 8 cm acima do chão. Cada clipe é ajustado na carga pela
-razão entre os dois quadris em repouso
-(`AnimationKit.MatchHips`). Os clipes do lobo são do próprio
-Mutant e já pisam no chão. Trocou o personagem? Não precisa mexer em
-nada: a razão é lida dos dois esqueletos. O `WolfVisual` faz o mesmo
-para o lobo. O `mutant_red.fbx` veio do Blender, sem `AnimationPlayer`
-e com o esqueleto dentro de `Armature`: o tocador é criado ao lado do
-esqueleto, onde o caminho `Skeleton3D:osso` dos clipes existe.
-
-Clipes do lobo: parado num ramo, andar e correr no outro, e o passo
-**no ritmo do corpo**: o clipe toca na razão entre a velocidade do corpo
-e a passada dele, medida no Mutant (andar 1,34 m/s, correr 2,42 m/s, já
-na escala do jogo; varrido de 2,2 a 3,3 no esqueleto, 2,42 é a de menor
-patinação) — o Bruto a 3,89 m/s corre o clipe a 1,61×. Antes ele tocava
-a 1× até 7 m/s, e o corpo andava mais do dobro das pernas. Só anda até
-2,0 m/s e só corre de 2,6 m/s: nenhuma velocidade do jogo para entre os
-dois (os ciclos têm tamanhos diferentes, e misturados o pé patina).
+metros do corpo dele (quadril a 1,04 m). Personagem de pernas mais
+curtas ficaria com os pés acima do chão (no Exo Gray e na Ely, 6 a 8 cm),
+então cada clipe é ajustado na carga pela razão entre os dois quadris em
+repouso (`AnimationKit.MatchHips`). Trocou o personagem? Não precisa
+mexer em nada: a razão é lida dos dois esqueletos. O `WolfVisual` faz o
+mesmo para o lobo; os lobos do Meshy vêm sem `AnimationPlayer`, e o
+tocador é criado ao lado do esqueleto, onde o caminho
+`Skeleton3D:osso` dos clipes existe.
 
 **O lobo vira para onde anda** (`WolfVisual.UpdateLocomotion`). Só há
 clipes para a frente: de lado (A, D e as diagonais da frente) o modelo
@@ -1620,10 +1608,8 @@ diagonais de trás) fica de frente e o passo toca **ao contrário**. A
 divisa tem folga (105° a 120°) para não dar meia-volta à toa. Golpe,
 carga do salto, bote, salto e parede voltam o modelo para a mira
 (1400°/s); parado, ele fica virado para onde parou — voltar arrastaria
-os pés sem passo. Medido no pé de apoio: de lado a patinação foi de 5,4
-para 0,85 m/s, para trás de 7,3 para 0,72; para a frente fica em 0,73
-(o pé rolando no apoio). Só a cápsula, a câmera e a mira continuam
-olhando para a frente.
+os pés sem passo. Só a cápsula, a câmera e a mira continuam olhando
+para a frente.
 
 **Parando, o passo congela onde o corpo parou** — o clipe toca na
 velocidade do corpo, que já é zero em 0,08 s — e as pernas se juntam em
@@ -1632,56 +1618,44 @@ um mínimo de 0,6×: o lobo corria no lugar mais um quarto de segundo, os
 pés andando um metro com o corpo parado.
 
 **Desde 15/11 quase tudo são animações do Jhon** (`lobo_anim.glb`,
-feitas no lobo do Meshy, 15 clipes); só a morte e a corrida na parede
-seguem do Mixamo. **Em pé o lobo não tem corrida, só andar**: os quatro
+feitas no lobo do Meshy, 15 clipes; a tabela está no `LEIA-ME.md` de
+`_comum/lobo/`); só a morte e a corrida na parede seguem do Mixamo
+(`death.fbx`, `wallrun.fbx`). **Em pé o lobo não tem corrida, só andar**: os quatro
 andares (frente, trás, esquerda, direita) **aceleram até a velocidade
-do corpo** para o pé não deslizar (a 4,15 m/s, de frente toca a ~2,9×
-e de lado a ~5,5×; decisão do Jhon). O corpo fica de frente para a
-mira e o passo escolhe a direção; nas diagonais o corpo vira o resto
-(até 45°). Parado em pé ele desce 2 cm (`FootSink`): a pata só encostava
-pelas garras e, de longe, ele parecia flutuar. A câmera fica a 2,5 m
-(era 3,5). **Agachado** toca o `Crouch_Idle` (topo da cabeça a 1,18 m
-do chão; a cápsula agachada tem 1,0 m, então a cabeça sai 18 cm acima —
-o tiro na cabeça segue o modelo). Andando agachado ele **engatinha** no
-`Crouch_Walk`, na velocidade do corpo (`CrawlClipSpeed` 1,62 m/s). **Na
+do corpo** para o pé não deslizar (decisão do Jhon). O corpo fica de
+frente para a mira e o passo escolhe a direção; nas diagonais o corpo
+vira o resto (até 45°). Parado em pé ele desce 2 cm (`FootSink`): a pata
+só encostava pelas garras e, de longe, ele parecia flutuar. A câmera
+fica a 2,5 m (era 3,5). **Agachado** toca o `Crouch_Idle` (topo da
+cabeça a 1,18 m do chão; a cápsula agachada tem 1,0 m, então a cabeça
+sai 18 cm acima — o tiro na cabeça segue o modelo). Andando agachado ele
+**engatinha** no `Crouch_Walk`, na velocidade do corpo
+(`CrawlClipSpeed`). Antes o lobo agachado continuava de pé, a cabeça a
+1,7 m — fora da cápsula, e o tiro passava por cima do que se via. **Na
 corrida de quatro** (W duas vezes) toca o `Run_Quad` na velocidade do
-corpo, como o andar: a 5,4 m/s, 1,37× e sem patinar (o Jhon pediu o
-clipe um pouco mais rápido e o corpo um pouco mais lento). O som do passo sai
-uma vez por ciclo, no quadro em que as patas da frente e as de trás se
-juntam. **O pulo** toca o impulso (`Jump_Start`) ao sair do chão, o voo
-em laço (`Jump_Air`) e o pouso (`Jump_Land`), todos a 1×. Com o Mutant
-do Mixamo, o agachado era o fim do "jump attack" e o engatinhar o
-Running Crawl. Antes o lobo agachado continuava de pé,
-a cabeça a 1,7 m — fora da cápsula, e o tiro passava por cima do que se
-via. Testado e descartado: misturar a pose agachada no andar (o pé de
-apoio patinava 0,9 a 1,4 m/s em qualquer passada) e pôr só no tronco (a
-cabeça ficava a 1,58 m). Um clipe de andar agachado do Mixamo aplicado
-no Mutant resolveria melhor que o engatinhar;
-as garradas e o rugido **da cintura para cima**; o salto e o bote no
-corpo inteiro; **o pulo**, só o voo do "mutant jumping", tocado pela
-velocidade vertical (o agachar do clipe fica de fora: a física sai do
-chão no quadro do clique), com o quadril na altura de pé — quem sobe é
-a cápsula —, e a aterrissagem do clipe quando o lobo chega devagar
-(chegando correndo, volta direto para a corrida, senão o pé patina).
+corpo, como o andar (o Jhon pediu o clipe um pouco mais rápido e o corpo
+um pouco mais lento). O som do passo sai uma vez por ciclo, no quadro em
+que as patas da frente e as de trás se juntam. **O pulo** toca o impulso
+(`Jump_Start`) ao sair do chão, o voo em laço (`Jump_Air`) e o pouso
+(`Jump_Land`), todos a 1×. As garradas e o rugido tocam **da cintura
+para cima**; o salto e o bote, no corpo inteiro.
+
 **No ar o lobo cai, não anda**: soltando da parede, saltando dela ou
 caindo de uma beirada, fica a pose do topo do pulo (encolhido, braços
 para cima) até o chão chegar a 1 m, e aí as pernas esticam para pousar
 — a altura é medida por um raio para baixo. Um instante no ar descendo
-rampa (menos de 0,12 s) não conta. A morte; e, na parede, o
-**Running Crawl** com a barriga virada para a parede em que está — o
-modelo deita para o lado da parede (pela normal dela), a cápsula e a
-câmera continuam de pé. **Virar lobo não tem animação** (decisão do
-Jhon): o lobo aparece já na locomoção.
+rampa (menos de 0,12 s) não conta. Na parede, o **Running Crawl** com a
+barriga virada para a parede em que está — o modelo deita para o lado
+da parede (pela normal dela), a cápsula e a câmera continuam de pé.
+**Virar lobo não tem animação** (decisão do Jhon): o lobo aparece já na
+locomoção.
 
-O clique esquerdo **alterna** dois golpes, o "swiping" e o "punch", um
-braço de cada vez. O "jump attack" serve três clipes: inteiro no salto
-(direito no chão); só a queda no bote (direito no ar), do ponto mais
-alto ao impacto; e, quando o bote encosta, a aterrissagem. **O lobo não tem animação de pulo**, decisão do Jhon: ele só pula,
-e o corpo segue na pose em que estava. Trechos, velocidades e instante
-do golpe: `WolfMoves` (veja "As garras").
-
-Texturas embutidas nos `.fbx` são extraídas pelo Godot na importação
-(`exo_gray_0.png`...) e ficam fora do git: cada máquina gera as suas.
+O clique esquerdo **alterna** duas garradas (`Attack_Primary`,
+`Attack_Secondary`), um braço de cada vez. O `Special_Attack` serve três
+trechos: inteiro no salto (direito no chão); só a queda no bote (direito
+no ar), do ponto mais alto ao impacto; e, quando o bote encosta, a
+aterrissagem. Trechos, velocidades e instante do golpe: `WolfMoves`
+(veja "As garras").
 
 ---
 
@@ -1695,16 +1669,19 @@ assada, e some. A contagem offline só começa depois dela. Quando o
 servidor passar a servir o mapa e as posições, é nela que se espera.
 
 **A foto do mapa.** Cada mapa tem a sua (1920 × 1080), de um ângulo
-bom, tirada no próprio jogo por `tools/fotos_mapas.gd`. Aparece na
+bom, tirada no próprio jogo por `src/tools/fotos_mapas.gd`. Aparece na
 escolha do mapa, na sala e no carregamento. Sem foto, vale a planta
 vista de cima do gerador.
 
 ## Fora da partida: perfil, patentes, loja e missões
 
+> Na tela, desde 24/11, Presas é **Cash**, Sangue é **IPs** e WP é **KP**.
+> No código, no servidor e aqui os nomes de antes continuam.
+
 **Tudo o que vale alguma coisa é da conta** (decisão 0015, Jhon,
 20/11: "tudo exige conta"): XP, patente, Presas, Sangue, inventário,
 missões e títulos vêm do servidor e o jogo só os espelha
-(`Profile.ApplyAccount`, `scripts/net/AccountSync.cs`). Sem conta é
+(`Profile.ApplyAccount`, `src/scripts/net/AccountSync.cs`). Sem conta é
 Filhote, zero Presas e o equipamento de série; a loja mostra a vitrine
 e pede para entrar, as missões também. **Partida sem servidor é treino**
 e não rende nada. O arquivo `user://profile.json` (`Profile`, versão 4)
@@ -1747,7 +1724,7 @@ uso, estatísticas de treino. Opções ficam à parte, em
 ## Interface: o kit
 
 Guia completo, com as decisões de cada tela: `docs/UI.md`. Toda tela
-nova usa `scripts/ui/kit/` — não crie `Label` com tamanho e cor soltos.
+nova usa `src/scripts/ui/kit/` — não crie `Label` com tamanho e cor soltos.
 
 - **Tokens** em `UiTokens`: grade de 8 (4 · 8 · 16 · 24 · 32 · 48 ·
   64), raios, paleta, tempos de animação. Número fora da grade é bug.

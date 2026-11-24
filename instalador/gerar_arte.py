@@ -3,7 +3,7 @@
 
 Uso:  python3 instalador/gerar_arte.py   (de qualquer pasta)
 
-Lê  assets/personagens/{eve,barut}/thumb.jpg, a fonte Kanit do jogo e
+Lê  src/assets/personagens/{eve,barut}/thumb.jpg, a fonte Kanit do jogo e
     instalador/icone.svg (precisa do `rsvg-convert`: brew install librsvg)
 Grava em instalador/:
     lateral_inicio.bmp   painel esquerdo da tela de boas-vindas (Eve, a capa)
@@ -128,10 +128,10 @@ def main():
     a = p.parse_args()
     inst = os.path.dirname(os.path.abspath(__file__))   # onde estão icone.svg e o resto
     saida = a.saida or inst
-    fonte = os.path.join(a.raiz, "assets/fonts/Kanit-BoldItalic.ttf")
-    fonte_texto = os.path.join(a.raiz, "assets/fonts/Kanit-SemiBold.ttf")
-    eve = Image.open(os.path.join(a.raiz, "assets/personagens/eve/thumb.jpg")).convert("RGB")
-    barut = Image.open(os.path.join(a.raiz, "assets/personagens/barut/thumb.jpg")).convert("RGB")
+    fonte = os.path.join(a.raiz, "src/assets/fonts/Kanit-BoldItalic.ttf")
+    fonte_texto = os.path.join(a.raiz, "src/assets/fonts/Kanit-SemiBold.ttf")
+    eve = Image.open(os.path.join(a.raiz, "src/assets/personagens/eve/thumb.jpg")).convert("RGB")
+    barut = Image.open(os.path.join(a.raiz, "src/assets/personagens/barut/thumb.jpg")).convert("RGB")
     os.makedirs(saida, exist_ok=True)
     lateral(eve, os.path.join(saida, "lateral_inicio.bmp"), 0.5, fonte)
     lateral(barut, os.path.join(saida, "lateral_fim.bmp"), 0.60, fonte)

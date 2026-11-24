@@ -4,7 +4,7 @@ Como pôr um personagem novo no jogo — humano e lobo — com as mesmas
 proporções dos que já existem, para as animações servirem sem refazer
 nada e a cabeça que leva tiro ficar no mesmo lugar.
 
-Resumo: **uma pasta por personagem em `assets/personagens/`**, com o
+Resumo: **uma pasta por personagem em `src/assets/personagens/`**, com o
 humano, o lobo e um `personagem.tres` com os números. O jogo acha a
 pasta sozinho; o teste `Personagens` reprova o que sair da medida.
 
@@ -13,7 +13,7 @@ pasta sozinho; o teste `Personagens` reprova o que sair da medida.
 ## 1. A pasta
 
 ```
-assets/personagens/
+src/assets/personagens/
 └── eve/                  o nome da pasta vira o id: pers_eve
     ├── personagem.tres   nome, time, descrição, raridade, vida
     ├── humano.fbx        o corpo humano (Mixamo)
@@ -40,8 +40,8 @@ com três grupos.
 | `Description` | Pirata do espaço… | O texto do cartão |
 | `Team` | 2 | 1 azul, 2 laranja, 0 os dois times |
 | `Rarity` | 3 | 0 comum … 4 lendário (a cor da moldura) |
-| `HumanModel` | `res://assets/personagens/eve/humano.fbx` | O corpo humano |
-| `WolfModel` | `res://assets/personagens/eve/lobo.glb` | O lobo |
+| `HumanModel` | `res://src/assets/personagens/eve/humano.fbx` | O corpo humano |
+| `WolfModel` | `res://src/assets/personagens/eve/lobo.glb` | O lobo |
 | `HpMultiplier` | 1,1 | Vida, nas duas formas: 200 × isto |
 
 **A vida é a mesma como humano e como lobo** (`FormController.HumanHp`,
@@ -70,12 +70,12 @@ graça, `Starter`); quando personagem tiver preço, a economia decide.
 1. No Mixamo, escolha o personagem (ou suba o seu e passe pelo
    auto-rig) e baixe em **FBX Binary, "T-pose", com a malha ("With
    Skin")**. Não precisa de animação: o jogo usa os clipes do X Bot em
-   `assets/characters/human/`.
+   `src/assets/personagens/_comum/humano/`.
 2. Ponha o arquivo na pasta como `humano.fbx`.
 3. Meça:
 
    ```
-   tools/personagem.sh medir assets/personagens/<nome>/humano.fbx
+   src/tools/personagem.sh medir src/assets/personagens/<nome>/humano.fbx
    ```
 
    Precisa mostrar o esqueleto `mixamorig` com 65 ossos ou mais (com
@@ -86,7 +86,7 @@ graça, `Starter`); quando personagem tiver preço, a economia decide.
    A escala vai na importação do Godot:
 
    ```
-   tools/personagem.sh escala assets/personagens/<nome>/humano.fbx
+   src/tools/personagem.sh escala src/assets/personagens/<nome>/humano.fbx
    ```
 
    Ele diz o número; abra o Godot uma vez (para criar o
@@ -114,12 +114,12 @@ cada dedo, com a arma da primeira pessoa na mão. Personagem novo precisa
 dos dele:
 
 ```
-python3 tools/personagens/blender/animacoes_armas.py <pasta>                 # todas as armas
-python3 tools/personagens/blender/animacoes_armas.py <pasta> ar15 --clipes recarga,mira \
+python3 src/tools/personagens/blender/animacoes_armas.py <pasta>                 # todas as armas
+python3 src/tools/personagens/blender/animacoes_armas.py <pasta> ar15 --clipes recarga,mira \
     --fotos /tmp/anim --quadros 0,0.5 --vistas frente,lado,perto --sem-gravar   # fotos para conferir
 ```
 
-Grava `assets/personagens/<pasta>/animacoes/<arma>.json` e diz, de cada
+Grava `src/assets/personagens/<pasta>/animacoes/<arma>.json` e diz, de cada
 clipe, o pior quadro: a mão que não chegou, o punho (dobra, lado, giro),
 o dedo dentro da arma, a junta fora do que dobra e a palma longe da arma.
 As regras de cada arma estão no começo do script (`POSTURA`, `FACA`,
@@ -141,7 +141,7 @@ com o osso extra `headfront`** — é o esqueleto em que o Jhon animou o
 2. Prepare:
 
    ```
-   tools/personagem.sh lobo ~/Downloads/<lobo>.glb assets/personagens/<nome>
+   src/tools/personagem.sh lobo ~/Downloads/<lobo>.glb src/assets/personagens/<nome>
    ```
 
    Isso, no Blender:
@@ -154,7 +154,7 @@ com o osso extra `headfront`** — é o esqueleto em que o Jhon animou o
 3. Confira:
 
    ```
-   tools/personagem.sh medir assets/personagens/<nome>/lobo.glb
+   src/tools/personagem.sh medir src/assets/personagens/<nome>/lobo.glb
    ```
 
    Altura 1,660 m, 24 ossos, texturas 2048, nenhuma animação.
@@ -164,13 +164,13 @@ do lobo de base, e o `WolfOwnClips` os encaixa no corpo pelo nome do
 osso e pela altura do quadril. Mesmo esqueleto e mesma altura = mesma
 passada, o pé sem patinar e a garra acertando onde acerta hoje. Se a
 silhueta mudar muito (pernas mais curtas, tronco mais longo), a passada
-muda: rode `tools/medir_lobo.sh` e compare a patinação com a do lobo de
-sempre (veja `assets/characters/wolf/LEIA-ME.md`).
+muda: rode `src/tools/medir_lobo.sh` e compare a patinação com a do lobo de
+sempre (veja `src/assets/personagens/_comum/lobo/LEIA-ME.md`).
 
 ## 5. Conferir no jogo
 
 ```
-tools/testar.sh Personagens
+src/tools/testar.sh Personagens
 ```
 
 O teste abre cada pasta e reprova se:
@@ -188,7 +188,7 @@ item mostra o humano e o lobo girando, para ver a textura.
 
 ## 6. Antes do commit
 
-- A linha nos créditos (`scripts/meta/Credits.cs`), no mesmo commit.
+- A linha nos créditos (`src/scripts/meta/Credits.cs`), no mesmo commit.
   Personagem do Mixamo cai na linha do Mixamo; lobo do Meshy, na do
   Meshy — confira se já está coberto.
 - O `CHANGELOG.md`.
@@ -199,14 +199,14 @@ item mostra o humano e o lobo girando, para ver a textura.
 
 | Peça | O quê |
 |---|---|
-| `scripts/forms/CharacterSkin.cs` | O recurso (`personagem.tres`) e a lista das pastas |
-| `scripts/meta/Catalog.cs` | `WithCharacters`: um item `Character` por pasta |
-| `scripts/core/Profile.cs` | `BlueCharacter`, `OrangeCharacter`: o escolhido de cada time |
-| `scripts/actors/player/Player.cs` | `_EnterTree`: com o time já certo, passa os modelos e a vida aos filhos antes do `_Ready` deles |
+| `src/scripts/forms/CharacterSkin.cs` | O recurso (`personagem.tres`) e a lista das pastas |
+| `src/scripts/meta/Catalog.cs` | `WithCharacters`: um item `Character` por pasta |
+| `src/scripts/core/Profile.cs` | `BlueCharacter`, `OrangeCharacter`: o escolhido de cada time |
+| `src/scripts/actors/player/Player.cs` | `_EnterTree`: com o time já certo, passa os modelos e a vida aos filhos antes do `_Ready` deles |
 | `CharacterAnimator.ModelOverride`, `WolfVisual.ModelOverride` | O modelo do personagem no lugar do modelo do time |
-| `scripts/lobby/InventoryScreen.cs` | A aba Personagem e o equipar |
-| `tests/regression/CharacterTests.cs` | O teste `Personagens` |
-| `tools/personagem.sh`, `tools/personagens/` | Medir, preparar o lobo, escala do humano |
+| `src/scripts/lobby/InventoryScreen.cs` | A aba Personagem e o equipar |
+| `src/tests/regression/CharacterTests.cs` | O teste `Personagens` |
+| `src/tools/personagem.sh`, `src/tools/personagens/` | Medir, preparar o lobo, escala do humano |
 
 **Online:** a vida vale (cada jogo decide a própria vida e manda o
 máximo no status), mas os outros jogadores ainda te veem com o

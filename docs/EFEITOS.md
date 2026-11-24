@@ -6,15 +6,15 @@ que mudou em relação a ele está no fim.
 
 | Efeito | Quando aparece | Onde |
 |---|---|---|
-| Fumaça da transformação | virando lobo e voltando a humano; o corpo troca na metade dela | `scripts/visual/fx/TransformSmoke.cs`, `assets/efeitos/fumaca.png` |
-| Rastro das garras | na garrada, no salto (no ar) e no bote, na mão que bate | `scripts/visual/fx/ClawTrail.cs`, `assets/efeitos/rastro.gdshader` |
-| Aura | rugindo (R) e carregando o salto | `assets/efeitos/aura.gdshader` |
-| Ar de velocidade | de quatro, no salto e no bote (acima de 60% da velocidade de quatro); some ao frear | riscos: partículas em `WolfFx.cs`; brilho nas bordas: `assets/efeitos/vento.gdshader` |
+| Fumaça da transformação | virando lobo e voltando a humano; o corpo troca na metade dela | `src/scripts/visual/fx/TransformSmoke.cs`, `src/assets/efeitos/fumaca.png` |
+| Rastro das garras | na garrada, no salto (no ar) e no bote, na mão que bate | `src/scripts/visual/fx/ClawTrail.cs`, `src/assets/efeitos/rastro.gdshader` |
+| Aura | rugindo (R) e carregando o salto | `src/assets/efeitos/aura.gdshader` |
+| Ar de velocidade | de quatro, no salto e no bote (acima de 60% da velocidade de quatro); some ao frear | riscos: partículas em `WolfFx.cs`; brilho nas bordas: `src/assets/efeitos/vento.gdshader` |
 | Câmera abre com a velocidade | para o dono do lobo, junto com o ar (+8°) | `WolfFx.cs`, `AirFovKick` |
 
-Quem liga e desliga tudo é o `scripts/visual/fx/WolfFx.cs`, um por
+Quem liga e desliga tudo é o `src/scripts/visual/fx/WolfFx.cs`, um por
 corpo (jogador e bot), criado pelo `WolfVisual`. O teste é o
-`EfeitosDoLobo` (`tests/regression/WolfFxTests.cs`); com
+`EfeitosDoLobo` (`src/tests/regression/WolfFxTests.cs`); com
 `-- --fotos=pasta` ele fotografa cada efeito.
 
 ## A cor é do personagem

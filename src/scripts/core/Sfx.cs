@@ -1,0 +1,424 @@
+using Godot;
+using System.Collections.Generic;
+
+/// <summary>
+/// Toca sons por nome, a partir de <c>res://src/assets/audio/</c>.
+///
+/// O nome é o contrato: <c>Sfx.At("passo", ...)</c> procura
+/// <c>passo.wav</c>, <c>passo.ogg</c> ou <c>passo.mp3</c>, e também as
+/// variações <c>passo_1</c>, <c>passo_2</c>... Todas as que existirem
+/// entram num sorteio sem repetição seguida, com o tom variando um
+/// pouco a cada vez — quatro arquivos soam como quarenta, e o passo não
+/// vira metralhadora.
+///
+/// **Arquivo que não existe fica mudo, sem erro.** É o que deixa o jogo
+/// ganhar som aos poucos: cada arquivo que entra na pasta passa a tocar,
+/// sem mexer em código. A lista de nomes está em
+/// <c>assets/audio/LEIA-ME.md</c>.
+///
+/// Os tocadores ficam na raiz da árvore, não na cena: um tiro que
+/// termina de tocar depois de quem atirou sumir (morte, troca de cena)
+/// não é cortado no meio.
+/// </summary>
+public static class Sfx
+{
+	public const string Folder = "res://src/assets/audio";
+
+	public const string BusSfx = "SFX";
+
+	/// <summary>O que soa dentro do mapa — passo, tiro, corpo — passa por
+	/// aqui e ganha a reverberação do lugar (<see cref="SetRoom"/>). O
+	/// retorno que é só seu (marcador de acerto, abate) vai direto ao
+	/// SFX, seco: ele não está no mundo.</summary>
+	public const string BusWorld = "Mundo";
+	public const string BusUi = "Interface";
+	public const string BusMusic = "Musica";
+
+	/// <summary>Teto de sons simultâneos. Um tiroteio de dezesseis
+	/// pessoas passa disso; o que excede é o som que ninguém
+	/// distinguiria mesmo.</summary>
+	public const int MaxVoices = 48;
+
+	/// <summary>Variação de tom, como fator: 1,06 = até 6% para cima ou
+	/// para baixo.</summary>
+	public const float PitchVariation = 1.06f;
+
+	private static readonly string[] Extensions = { ".wav", ".ogg", ".mp3" };
+	private static readonly Dictionary<string, AudioStream> _cache = new();
+	private static readonly HashSet<string> _missing = new();
+	private static int _voices;
+	private static bool _busesReady;
+
+	/// <summary>O som deste nome (com as variações sorteadas), para quem
+	/// tem o próprio tocador. Null se não houver arquivo.</summary>
+	public static AudioStream Stream(string name) => Get(name);
+
+	/// <summary>A arma de uma skin: "ar15_ultimate" soa como "ar15". Os
+	/// sons levam o id da arma no nome; a skin usa os da arma dela.</summary>
+	public static string ModelOf(string id)
+	{
+		int cut = string.IsNullOrEmpty(id) ? -1 : id.IndexOf('_');
+		return cut > 0 ? id[..cut] : id ?? "";
+	}
+
+	/// <summary>Existe algum arquivo para este nome?</summary>
+	public static bool Has(string name) => Get(name) != null;
+
+	/// <summary>O primeiro nome da lista que tiver arquivo, ou null.
+	/// Serve para "som desta arma, senão o tiro genérico".</summary>
+	public static string First(params string[] names)
+	{
+		foreach (string name in names)
+			if (Has(name)) return name;
+		return null;
+	}
+
+	/// <summary>
+	/// Som num ponto do mundo. <paramref name="radius"/> é até onde ele
+	/// chega, em metros — use o mesmo raio do ruído que os bots ouvem,
+	/// para o jogador e o bot ouvirem a mesma coisa.
+	/// </summary>
+	public static void At(string name, Vector3 position, float radius, float volumeDb = 0f, float reach = 0f)
+	{
+		AudioStream stream = Get(name);
+		if (stream == null || !Reserve(out Window root)) return;
+
+		var player = new AudioStreamPlayer3D
+		{
+			Stream = stream,
+			Bus = BusWorld,
+			VolumeDb = volumeDb,
+			MaxDistance = Mathf.Max(Mathf.Max(radius, reach), 1f),
+
+			// Com esta escala o som chega à borda do raio uns 16 dB
+			// abaixo do volume de perto: audível, mas claramente longe.
+			UnitSize = Mathf.Max(radius * 0.15f, 1.5f),
+			DopplerTracking = AudioStreamPlayer3D.DopplerTrackingEnum.Disabled,
+			Position = position
+		};
+
+		Start(root, player, () => player.Play(), () => player.Finished += () => Release(player));
+	}
+
+	/// <summary>
+	/// Som preso a um nó: anda com ele e dá para cortar no meio (devolve o
+	/// tocador, que se solta sozinho quando o som acaba).
+	/// <paramref name="own"/>: é o corpo de quem joga, então toca sem
+	/// posição, como <see cref="Own"/>. Null se o arquivo não existir.
+	/// </summary>
+	public static Node Attached(Node3D owner, string name, float radius, bool own, float volumeDb = 0f)
+	{
+		EnsureBuses();
+		AudioStream stream = Get(name);
+		if (stream == null || owner == null) return null;
+
+		Node player;
+		if (own)
+		{
+			var flat = new AudioStreamPlayer { Stream = stream, Bus = BusWorld, VolumeDb = volumeDb, Autoplay = true };
+			flat.Finished += flat.QueueFree;
+			player = flat;
+		}
+		else
+		{
+			var spot = new AudioStreamPlayer3D
+			{
+				Stream = stream,
+				Bus = BusWorld,
+				VolumeDb = volumeDb,
+				MaxDistance = Mathf.Max(radius, 1f),
+				UnitSize = Mathf.Max(radius * 0.15f, 1.5f),
+				DopplerTracking = AudioStreamPlayer3D.DopplerTrackingEnum.Disabled,
+				Autoplay = true
+			};
+			spot.Finished += spot.QueueFree;
+			player = spot;
+		}
+
+		owner.AddChild(player);
+		return player;
+	}
+
+	/// <summary>Som sem posição: o que é seu (seu tiro, seu passo, o
+	/// marcador de acerto). Soa igual nos dois ouvidos.</summary>
+	public static void Local(string name, float volumeDb = 0f) => Flat(name, BusSfx, volumeDb);
+
+	/// <summary>Som do seu corpo no mundo (seu tiro, seu passo, sua
+	/// recarga): sem posição, mas com a reverberação do lugar.</summary>
+	public static void Own(string name, float volumeDb = 0f) => Flat(name, BusWorld, volumeDb);
+
+	/// <summary>
+	/// A acústica do lugar: <paramref name="size"/> de 0 (cubículo) a 1
+	/// (galpão), <paramref name="wet"/> quanto de reverberação entra (0
+	/// desliga). Cada mapa diz a sua (<see cref="MapInfo"/>); tiro em
+	/// estação de metrô e tiro na neve não soam igual.
+	/// </summary>
+	public static void SetRoom(float size, float wet)
+	{
+		EnsureBuses();
+
+		int bus = AudioServer.GetBusIndex(BusWorld);
+		if (bus < 0 || AudioServer.GetBusEffectCount(bus) == 0) return;
+		if (AudioServer.GetBusEffect(bus, 0) is not AudioEffectReverb reverb) return;
+
+		reverb.RoomSize = Mathf.Clamp(size, 0f, 1f);
+		reverb.Wet = Mathf.Clamp(wet, 0f, 1f);
+		AudioServer.SetBusEffectEnabled(bus, 0, wet > 0.001f);
+	}
+
+	/// <summary>
+	/// O "em chamas" no som (<see cref="FireSound"/>): de 0 a 1, quanto os
+	/// sons do mundo (os seus tiros, passos, impactos) ganham de peso no grave
+	/// — um filtro de prateleira no barramento Mundo, de 0 a +4,5 dB abaixo
+	/// de 170 Hz. Só na máquina de quem está em chamas.
+	/// </summary>
+	public static void SetFire(float amount)
+	{
+		EnsureBuses();
+		int bus = AudioServer.GetBusIndex(BusWorld);
+		if (bus < 0) return;
+
+		int slot = -1;
+		for (int i = 0; i < AudioServer.GetBusEffectCount(bus); i++)
+			if (AudioServer.GetBusEffect(bus, i) is AudioEffectLowShelfFilter) { slot = i; break; }
+		if (slot < 0)
+		{
+			if (amount <= 0.001f) return;
+			AudioServer.AddBusEffect(bus, new AudioEffectLowShelfFilter { CutoffHz = 170f, Gain = 1f });
+			slot = AudioServer.GetBusEffectCount(bus) - 1;
+		}
+
+		amount = Mathf.Clamp(amount, 0f, 1f);
+		((AudioEffectLowShelfFilter)AudioServer.GetBusEffect(bus, slot)).Gain = 1f + 0.68f * amount;
+		AudioServer.SetBusEffectEnabled(bus, slot, amount > 0.001f);
+	}
+
+	private static Tween _duck;
+
+	/// <summary>Abafa o barramento Mundo em <paramref name="db"/> por
+	/// <paramref name="hold"/> segundos e volta em <paramref name="release"/>:
+	/// o momento em que o fogo pega passa na frente do tiroteio. Com zeros,
+	/// volta na hora. O volume do Mundo não é do jogador (as opções mexem
+	/// no SFX), então pode ser mexido aqui.</summary>
+	public static void DuckWorld(float db, float hold, float release)
+	{
+		EnsureBuses();
+		int bus = AudioServer.GetBusIndex(BusWorld);
+		if (bus < 0) return;
+
+		_duck?.Kill();
+		_duck = null;
+		if (release <= 0f || (Engine.GetMainLoop() as SceneTree) is not SceneTree tree)
+		{
+			AudioServer.SetBusVolumeDb(bus, 0f);
+			return;
+		}
+
+		AudioServer.SetBusVolumeDb(bus, db);
+		_duck = tree.CreateTween();
+		_duck.TweenInterval(hold);
+		_duck.TweenMethod(Callable.From<float>(v => AudioServer.SetBusVolumeDb(bus, v)), db, 0f, release)
+			.SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+	}
+
+	/// <summary>Fundo do mapa em laço (vento, zumbido de máquina), filho
+	/// de <paramref name="owner"/>. Null se o arquivo não existir.</summary>
+	public static AudioStreamPlayer Ambience(Node owner, string name, float volumeDb = -14f) =>
+		Looped(owner, name, BusSfx, volumeDb);
+
+	/// <summary>Som de interface: cliques, passar o mouse.</summary>
+	public static void Ui(string name, float volumeDb = 0f) => Flat(name, BusUi, volumeDb);
+
+	/// <summary>
+	/// Música em loop, filha de <paramref name="owner"/>: para quando o
+	/// dono sai de cena. Devolve null se o arquivo não existir.
+	/// </summary>
+	public static AudioStreamPlayer Music(Node owner, string name, float volumeDb = -8f) =>
+		Looped(owner, name, BusMusic, volumeDb);
+
+	/// <summary>
+	/// Música que toca uma vez só (uma vinheta que precisa ser cortada no
+	/// meio), filha de <paramref name="owner"/>. Diferente de
+	/// <see cref="Local"/>, devolve o tocador para quem chamou poder
+	/// abaixar o volume e terminar quando quiser. Null se o arquivo não
+	/// existir.
+	/// </summary>
+	public static AudioStreamPlayer Once(Node owner, string name, float volumeDb = 0f)
+	{
+		EnsureBuses();
+		AudioStream stream = Get(name);
+		if (stream == null) return null;
+		var player = new AudioStreamPlayer { Stream = stream, Bus = BusMusic, VolumeDb = volumeDb, Autoplay = true };
+		player.Finished += player.QueueFree;
+		owner.AddChild(player);
+		return player;
+	}
+
+	private static AudioStreamPlayer Looped(Node owner, string name, string bus, float volumeDb)
+	{
+		EnsureBuses();
+		if (string.IsNullOrEmpty(name)) return null;
+
+		AudioStream stream = LoadAny($"{Folder}/{name}");
+		if (stream == null) return null;
+
+		// .ogg e .mp3 têm a propriedade "loop"; o .wav marca o laço por
+		// amostra. Mais simples ainda: ligar "Loop" na aba Import do
+		// Godot, e aí nada disto precisa agir.
+		if (stream is AudioStreamWav wav)
+		{
+			if (wav.LoopMode == AudioStreamWav.LoopModeEnum.Disabled)
+			{
+				wav.LoopMode = AudioStreamWav.LoopModeEnum.Forward;
+				wav.LoopEnd = (int)(wav.GetLength() * wav.MixRate);
+			}
+		}
+		else
+		{
+			stream.Set("loop", true);
+		}
+
+		var player = new AudioStreamPlayer { Stream = stream, Bus = bus, VolumeDb = volumeDb, Autoplay = true };
+		owner.AddChild(player);
+		return player;
+	}
+
+	/// <summary>Clique e passar o mouse num botão. Botão desabilitado
+	/// não faz som: é um "não" que o jogador já está vendo.</summary>
+	public static void Wire(BaseButton button)
+	{
+		button.MouseEntered += () =>
+		{
+			if (!button.Disabled) Ui("ui_passar");
+		};
+		button.Pressed += () => Ui("ui_clique");
+	}
+
+	// ------------------------------------------------------------------
+
+	private static void Flat(string name, string bus, float volumeDb)
+	{
+		AudioStream stream = Get(name);
+		if (stream == null || !Reserve(out Window root)) return;
+
+		var player = new AudioStreamPlayer { Stream = stream, Bus = bus, VolumeDb = volumeDb };
+		Start(root, player, () => player.Play(), () => player.Finished += () => Release(player));
+	}
+
+	private static void Start(Window root, Node player, System.Action play, System.Action hook)
+	{
+		_voices++;
+		hook();
+		root.AddChild(player);
+		play();
+	}
+
+	private static bool Reserve(out Window root)
+	{
+		root = (Engine.GetMainLoop() as SceneTree)?.Root;
+		if (root == null || _voices >= MaxVoices) return false;
+
+		EnsureBuses();
+		return true;
+	}
+
+	private static void Release(Node player)
+	{
+		_voices = Mathf.Max(_voices - 1, 0);
+		player.QueueFree();
+	}
+
+	private static AudioStream Get(string name)
+	{
+		if (string.IsNullOrEmpty(name)) return null;
+		if (_cache.TryGetValue(name, out AudioStream cached)) return cached;
+		if (_missing.Contains(name)) return null;
+
+		var found = new List<AudioStream>();
+
+		AudioStream single = LoadAny($"{Folder}/{name}");
+		if (single != null) found.Add(single);
+
+		for (int i = 1; i <= 32; i++)
+		{
+			AudioStream variation = LoadAny($"{Folder}/{name}_{i}");
+			if (variation == null) break;
+			found.Add(variation);
+		}
+
+		if (found.Count == 0)
+		{
+			_missing.Add(name);
+			return null;
+		}
+
+		var random = new AudioStreamRandomizer
+		{
+			RandomPitch = PitchVariation,
+			RandomVolumeOffsetDb = 1f,
+			PlaybackMode = found.Count > 1
+				? AudioStreamRandomizer.PlaybackModeEnum.RandomNoRepeats
+				: AudioStreamRandomizer.PlaybackModeEnum.Random
+		};
+
+		foreach (AudioStream stream in found)
+			random.AddStream(-1, stream);
+
+		_cache[name] = random;
+		return random;
+	}
+
+	private static AudioStream LoadAny(string basePath)
+	{
+		foreach (string extension in Extensions)
+		{
+			string path = basePath + extension;
+			if (ResourceLoader.Exists(path))
+				return GD.Load<AudioStream>(path);
+		}
+
+		return null;
+	}
+
+	/// <summary>
+	/// Canais de volume, criados por código como as teclas do
+	/// InputSetup: uma fonte só, sem depender do editor. Separados para
+	/// o menu de opções poder ter um volume para cada.
+	/// </summary>
+	public static void EnsureBuses()
+	{
+		if (_busesReady) return;
+		_busesReady = true;
+
+		foreach (string bus in new[] { BusSfx, BusUi, BusMusic })
+		{
+			if (AudioServer.GetBusIndex(bus) >= 0) continue;
+
+			int index = AudioServer.BusCount;
+			AudioServer.AddBus(index);
+			AudioServer.SetBusName(index, bus);
+			AudioServer.SetBusSend(index, "Master");
+		}
+
+		// O mundo desemboca no SFX (o volume de efeitos vale para os
+		// dois) e carrega a reverberação do mapa, desligada até alguém
+		// chamar SetRoom.
+		if (AudioServer.GetBusIndex(BusWorld) < 0)
+		{
+			int index = AudioServer.BusCount;
+			AudioServer.AddBus(index);
+			AudioServer.SetBusName(index, BusWorld);
+			AudioServer.SetBusSend(index, BusSfx);
+			AudioServer.AddBusEffect(index, new AudioEffectReverb
+			{
+				RoomSize = 0.3f, Damping = 0.6f, Spread = 0.9f, Hipass = 0.25f, Dry = 1f, Wet = 0f, PredelayMsec = 30f
+			}, 0);
+			AudioServer.SetBusEffectEnabled(index, 0, false);
+		}
+
+		// Teto na saída: dezesseis fuzis ao mesmo tempo não podem
+		// estourar a caixa de som.
+		if (AudioServer.GetBusEffectCount(0) == 0)
+			AudioServer.AddBusEffect(0, new AudioEffectHardLimiter { CeilingDb = -0.5f, PreGainDb = 0f, Release = 0.1f });
+	}
+}

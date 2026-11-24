@@ -2,7 +2,7 @@
 # desafios, segurança) e o painel administrativo.
 #
 # O contexto é a raiz do repositório, porque as regras de recompensa e da
-# fúria (scripts/domain/Rewards.cs e Rage.cs, que o Alcateia.Dominio.csproj
+# fúria (src/scripts/domain/Rewards.cs e Rage.cs, que o Alcateia.Dominio.csproj
 # inclui) são as do jogo:
 #
 #   docker build -f servidor/Dockerfile -t alcateia-servidor .
@@ -11,8 +11,8 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS construir
 WORKDIR /fonte
-COPY scripts/domain/Rewards.cs scripts/domain/Rewards.cs
-COPY scripts/domain/Rage.cs scripts/domain/Rage.cs
+COPY src/scripts/domain/Rewards.cs src/scripts/domain/Rewards.cs
+COPY src/scripts/domain/Rage.cs src/scripts/domain/Rage.cs
 # As camadas: domínio, aplicação, infra e a API (que é o programa).
 COPY servidor/Alcateia.Dominio servidor/Alcateia.Dominio
 COPY servidor/Alcateia.Aplicacao servidor/Alcateia.Aplicacao
@@ -27,10 +27,10 @@ FROM node:22-alpine AS painel
 WORKDIR /fonte/servidor/painel
 COPY servidor/painel/package.json servidor/painel/package-lock.json ./
 RUN npm ci --no-audit --no-fund
-COPY assets/ui/armas /fonte/assets/ui/armas
-COPY assets/ui/mapas /fonte/assets/ui/mapas
-COPY assets/ui/avatares /fonte/assets/ui/avatares
-COPY assets/personagens /fonte/assets/personagens
+COPY src/assets/ui/armas /fonte/src/assets/ui/armas
+COPY src/assets/ui/mapas /fonte/src/assets/ui/mapas
+COPY src/assets/ui/avatares /fonte/src/assets/ui/avatares
+COPY src/assets/personagens /fonte/src/assets/personagens
 COPY servidor/painel ./
 RUN npm run build
 

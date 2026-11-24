@@ -13,10 +13,10 @@ correção precisava ser feita duas vezes, e uma das vezes era esquecida.
 ## Decisão
 
 O que é do **corpo** — e não de quem decide — mora em
-`scripts/actors/body/` e os dois usam o mesmo objeto:
+`src/scripts/actors/body/` e os dois usam o mesmo objeto:
 
 - `WolfMoveMotor`: o corpo enquanto a arma está com ele.
-- `BodyNoise` + `BodyNoiseProfile` (`resources/body/ruido.tres`).
+- `BodyNoise` + `BodyNoiseProfile` (`src/resources/body/ruido.tres`).
 - `Corpse`: cair e assentar morto.
 - `BodyMotion.Hold`: parado com gravidade.
 

@@ -22,8 +22,8 @@ a blacklist de IP, como pôr na internet), em `docs/SEGURANCA.md`.
 | **Servidor** | ASP.NET (.NET 8). Contas, sessões, perfil, ranking, o saguão (salas e chat por WebSocket), a frota de servidores de partida, os dados do jogo (catálogo, mapas, promoções, desafios), a loja, o inventário e o escudo de segurança | `servidor/Alcateia.Servidor` |
 | **Painel** | React. Jogadores, banimentos, moeda e itens, armas e skins, mapas, promoções, desafios, eventos de segurança, blacklist de IP, auditoria. Servido pelo próprio servidor, **em outra porta** (8081), que não se abre para a internet | `servidor/painel`, `docs/PAINEL.md` |
 | **Banco** | PostgreSQL 16. É onde tudo mora: contas, sessões, perfis, carteira, inventário, extrato, partidas, catálogo, mapas, promoções, desafios, banimentos, blacklist de IP, eventos de segurança, administradores e auditoria | contêiner `banco` |
-| **Servidor de partida** | Um programa à parte, exportado do mesmo projeto como servidor dedicado (`servidor/partida.Dockerfile`, docs/SERVIDOR_DEDICADO.md); no desenvolvimento, o jogo sem tela (`godot --headless -- --servidor`). Várias partidas ao mesmo tempo (4 por padrão, `ALCATEIA_MATCHES`), na mesma porta: recebe os jogadores de cada uma, repassa o que cada um faz, arbitra e entrega o resultado. Partida que todos abandonam acaba em 20 s e libera o lugar | `scripts/net/MatchServer.cs`, `HostedMatch.cs` |
-| **Jogo** | A tela Online (`OnlineScreen`), a conta (`Backend`), o saguão ao vivo (`LobbyLink`) e a partida em rede (`NetMatch`) | `scripts/net`, `scripts/lobby` |
+| **Servidor de partida** | Um programa à parte, exportado do mesmo projeto como servidor dedicado (`servidor/partida.Dockerfile`, docs/SERVIDOR_DEDICADO.md); no desenvolvimento, o jogo sem tela (`godot --headless -- --servidor`). Várias partidas ao mesmo tempo (4 por padrão, `ALCATEIA_MATCHES`), na mesma porta: recebe os jogadores de cada uma, repassa o que cada um faz, arbitra e entrega o resultado. Partida que todos abandonam acaba em 20 s e libera o lugar | `src/scripts/net/MatchServer.cs`, `HostedMatch.cs` |
+| **Jogo** | A tela Online (`OnlineScreen`), a conta (`Backend`), o saguão ao vivo (`LobbyLink`) e a partida em rede (`NetMatch`) | `src/scripts/net`, `src/scripts/lobby` |
 
 ## Subir tudo
 
@@ -35,7 +35,7 @@ docker compose up -d --build
 curl http://127.0.0.1:8080/health
 ```
 
-O painel abre em **http://127.0.0.1:8081** (só nesta máquina), com o
+O painel abre em **http://127.0.0.1:8443** (só nesta máquina; dentro do contêiner ele escuta na 8081), com o
 administrador que você pôs no `.env` (`ALCATEIA_ADMIN_USER` e
 `ALCATEIA_ADMIN_PASSWORD`). Entre, troque a senha e ligue a verificação
 em duas etapas (`docs/PAINEL.md`).
@@ -104,22 +104,22 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
    (`Referee`) valida os abates e manda o placar e o relógio.
 5. No fim, o servidor de partida entrega o resultado
    (`POST /v1/matches`); o servidor calcula o prêmio com a mesma regra
-   do jogo (`scripts/domain/Rewards.cs`), grava no perfil e avisa a
+   do jogo (`src/scripts/domain/Rewards.cs`), grava no perfil e avisa a
    sala, que volta a esperar.
 
-O formato dos pacotes da partida está em `scripts/net/NetWire.cs`; as
+O formato dos pacotes da partida está em `src/scripts/net/NetWire.cs`; as
 rotas HTTP e as mensagens do saguão, em `servidor/LEIA-ME.md`.
 
 ## Testar
 
 | Comando | O que prova |
 |---|---|
-| `tools/testar_servidor.sh` | Os testes do servidor contra um PostgreSQL de verdade (sobe um descartável no Docker): banco, contas, salas, chat, partidas, frota |
-| `tools/testar_carga.sh` | Carga: 3000 jogadores de verdade (conta, WebSocket), 1000 salas jogando ao mesmo tempo e 250 servidores de partida falsos. Mede o tempo de cada resposta (veja "Escala") |
-| `tools/testar.sh` | Inclui os testes de unidade do juiz (`RefereeTests`) |
-| `tools/testar_online.sh` | Ponta a ponta: um servidor de partida e **dois jogos de verdade, sem tela**, criam conta, abrem sala, jogam 35 s (um atira, o outro morre e renasce) e conferem conta, placar e saguão. Precisa do servidor no ar (`docker compose up -d`, depois `docker compose stop partida`) |
+| `src/tools/testar_servidor.sh` | Os testes do servidor contra um PostgreSQL de verdade (sobe um descartável no Docker): banco, contas, salas, chat, partidas, frota |
+| `src/tools/testar_carga.sh` | Carga: 3000 jogadores de verdade (conta, WebSocket), 1000 salas jogando ao mesmo tempo e 250 servidores de partida falsos. Mede o tempo de cada resposta (veja "Escala") |
+| `src/tools/testar.sh` | Inclui os testes de unidade do juiz (`RefereeTests`) |
+| `src/tools/testar_online.sh` | Ponta a ponta: um servidor de partida e **dois jogos de verdade, sem tela**, criam conta, abrem sala, jogam 35 s (um atira, o outro morre e renasce) e conferem conta, placar e saguão. Precisa do servidor no ar (`docker compose up -d`, depois `docker compose stop partida`) |
 
-O robô do teste é `scripts/net/OnlineRobot.cs` (`-- --robo=criar` /
+O robô do teste é `src/scripts/net/OnlineRobot.cs` (`-- --robo=criar` /
 `--robo=entrar`).
 
 ## Partida autoritativa (decisão 0011)
@@ -152,7 +152,7 @@ alvo). Nunca em produção.
 
 ## Escala
 
-O que aguenta, medido (`tools/testar_carga.sh`, 13/11, numa máquina de
+O que aguenta, medido (`src/tools/testar_carga.sh`, 13/11, numa máquina de
 **2 núcleos** dividida entre o servidor e o próprio teste):
 
 | | |

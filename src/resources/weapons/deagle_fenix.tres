@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/scripts/combat/WeaponDefinition.cs" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+Id = "deagle_fenix"
+DisplayName = "Desert Eagle Fênix"
+Class = 4
+WpCost = 240
+Description = "Lendária. Mais dano, oito tiros no pente e recarga rápida. Cromo preto com chamas acesas que lambem o cano."
+Damage = 61
+HeadshotMultiplier = 2.2
+WolfStun = 0.25
+Rpm = 240
+Mode = 1
+Magazine = 8
+Reserve = 32
+ReloadTactical = 1.584
+ReloadEmpty = 1.936
+DrawTime = 0.4
+HolsterTime = 0.3
+SpreadBase = 0.45
+SpreadPerShot = 0.8
+SpreadMax = 6.0
+SpreadRecovery = 9.0
+MoveSpreadMultiplier = 1.5
+CrouchSpreadMultiplier = 0.8
+RecoilVertical = 1.44
+RecoilVerticalLate = 1.44
+RecoilEarlyShots = 1
+RecoilHorizontal = 0.2
+RecoilRecovery = 5.5
+Range = 100
+FalloffStart = 25
+FalloffEnd = 45
+FalloffMin = 0.7
+SpeedMultiplier = 1.08
+NoiseRadius = 50
+AimFov = 65
+AimSpreadMultiplier = 0.6
+AimSpeedMultiplier = 0.7
+StarDamage = 4.6
+StarPenetration = 3.0
+StarAccuracy = 2.5
+StarRate = 1.5
+StarMobility = 4.5
+StarRecoil = 2.1
+StarRange = 2.5

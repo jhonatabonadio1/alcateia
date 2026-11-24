@@ -12,7 +12,7 @@ Ponha aqui, com o que se sabe dele.
 | Defeito | O que se sabe |
 |---|---|
 | **Faca e granada** | Corrigido (13/11) com os modelos do Sketchfab na mão do braço da pistola. A faca agora usa o conjunto animado que o Jhon trouxe (golpes animados). Falta o Jhon conferir. |
-| **Glitches nos mapas** | Varridos os quatro (13/11) com `tools/mapas/conferir.py`: faces brigando, letreiros enterrados ou soltos, objetos flutuando na Polar — corrigidos. O conferidor só olha caixas retas: rampas, formas livres (trem, tanques, terreno) e os modelos prontos não são conferidos. Se ainda houver, falta print ou o lugar exato. |
+| **Glitches nos mapas** | Varridos os quatro (13/11) com `src/tools/mapas/conferir.py`: faces brigando, letreiros enterrados ou soltos, objetos flutuando na Polar — corrigidos. O conferidor só olha caixas retas: rampas, formas livres (trem, tanques, terreno) e os modelos prontos não são conferidos. Se ainda houver, falta print ou o lugar exato. |
 | **Glitches na troca de arma / braços reiniciando** | Corrigidos os que se acharam (tamanho e lugar dos braços, travada na primeira troca, sacar; o pulo do M16 parado e o recomeço ao perder o chão). Falta o Jhon conferir. |
 | **Tiro na cabeça sem dano / M16 difícil** (14/11) | Corrigido: o tiro saía 1° acima da cruz (o recuo subia a câmera antes) e a cabeça era a faixa de cima da cápsula. Agora o tiro sai de onde a cruz está e a cabeça é a do modelo. Falta o Jhon conferir. |
 | **Corpo do lobo fora da cápsula** (achado em 14/11) | O lobo anda curvado: a cabeça (já corrigida) e o pescoço ficam até meio metro à frente da cápsula, e tiro no pescoço e no peito curvado passa direto. Próximo passo: esferas do tronco seguindo os ossos, como a da cabeça. |
@@ -25,14 +25,25 @@ Ponha aqui, com o que se sabe dele.
 
 ## Pedido e ainda não feito
 
+### Armas, lobos e site (anotado em 24/11)
+
+| Pedido | O que se sabe |
+|---|---|
+| **Pistola padrão: Desert Eagle → G17** | A pistola de quem começa vira a Glock 17. A primeira pessoa da pistola já usa referências da Glock e da P9 (`src/tools/armas/conjuntos.py`, `RefPistola`); falta o modelo, a ficha (`armas.json`, `bracos.json`), a terceira pessoa (Eve e Barut) e trocar o padrão do conjunto. |
+| **Polir os lobos** | Cores mais escuras, e tirar a cara de "Sonic" (o azul vivo do `lobo_azul.glb`). Mexer no modelo só com o OK do Jhon. |
+| **Medidas reais das armas** | Pegar o tamanho real de cada arma e aplicar na primeira e na terceira pessoa (hoje cada uma foi ajustada no olho). |
+| **Som da pistola** | Os tiros da pistola estão simples demais. |
+| **Distância dos tiros, mirando e sem mirar** | Rever o alcance e a queda do dano (e a dispersão) com e sem a mira. |
+| **Granadas e a 8 Bit no site** | Aparecem erradas no site; arrumar (a foto da 8 Bit foi refeita em 24/11, `src/assets/ui/armas/ar15_8bit.png`). |
+
 ### Retrato, moldura e fundo (anotado em 21/11)
 
 - ~~Fotos de perfil de verdade~~ (feito 21/11: 20 ícones pintados,
-  `assets/ui/avatares/`). Falta: 10 deles estão em 256 px (o Figma limitou
+  `src/assets/ui/avatares/`). Falta: 10 deles estão em 256 px (o Figma limitou
   as exportações); trocar pelos de 1024 px do arquivo "WolfLeague — ícones
   de jogador" no Figma.
 - **Na partida, o retrato é o personagem** (feito em parte, 21/11: o Tab e
-  o HUD mostram `assets/personagens/<nome>/retrato.png`, Eve ou Barut).
+  o HUD mostram `src/assets/personagens/<nome>/retrato.png`, Eve ou Barut).
   Falta: o retrato do lobo na forma lobo (troca junto com a
   transformação) e, para os outros jogadores online, o personagem que
   escolheram: hoje a escalação não leva o personagem (veja "Personagem
@@ -53,7 +64,7 @@ Ponha aqui, com o que se sabe dele.
 ### Nome do WP, classes de lobo, Discord e site (anotado em 21/11)
 
 - **Revisar o servidor do Discord e o site.** O Discord sai de
-  `tools/discord/montar.py` + `servidor.json` (cargos, canais, regras,
+  `src/tools/discord/montar.py` + `servidor.json` (cargos, canais, regras,
   "como jogar", convite): conferir textos, canais e permissões depois de
   montado, e o link de download (aponta para as Releases do GitHub; se o
   repositório for privado, os testadores não baixam).
@@ -61,10 +72,10 @@ Ponha aqui, com o que se sabe dele.
   se chama WP. Escolher outro nome e trocar em tudo: HUD (`Hud.Form`,
   `Hud.Layout`), escolha de conjunto (`LoadoutMenu`, custos "100 WP"),
   `FormController`, `WolfBreed`, `Profile`, rede (`NetMatch`, `NetWire`, só
-  nomes e comentários), `assets/i18n/textos.csv` (13 textos, com inglês e
+  nomes e comentários), `src/assets/i18n/textos.csv` (13 textos, com inglês e
   espanhol) e a documentação.
 - **Mais classes de lobo, no servidor, com thumbs.** Hoje são duas, Bruto
-  e Ligeiro (`resources/breeds/*.tres`), já no catálogo como tipo `breed`
+  e Ligeiro (`src/resources/breeds/*.tres`), já no catálogo como tipo `breed`
   (`exportar_dados.py` leva para o servidor e o painel). Criar as classes
   novas (atributos no `.tres`, item no `Catalog.cs`, preço), regenerar o
   `jogo.json` para o servidor conhecê-las, e fazer uma thumb de verdade
@@ -84,7 +95,7 @@ Ponha aqui, com o que se sabe dele.
   servidor guarda os últimos segundos do estado de todos e o cliente
   remonta a cena com os modelos de verdade.
 - **Tradução revisada por nativo.** Inglês e espanhol estão preenchidos em
-  `assets/i18n/textos.csv` (946 textos); falta alguém nativo passar o olho
+  `src/assets/i18n/textos.csv` (946 textos); falta alguém nativo passar o olho
   nos nomes (Presas = Fangs/Colmillos, Sangue = Blood/Sangre, patentes).
 
 Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
@@ -149,7 +160,7 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   os certos (atualizar testes e MEDIDAS) ou foi sem querer?
 - **Luz da mão nunca acendeu.** `ViewModel.BuildHandFill` faz `AddChild`
   na câmera com ela ainda montando os filhos: o Godot recusa e dá um
-  erro no Output a cada partida (por isso o `tools/testar.sh` marca
+  erro no Output a cada partida (por isso o `src/tools/testar.sh` marca
   quase todo teste com "erro no Output"). Trocar por `CallDeferred`
   acende a luz — e muda a cara da arma em primeira pessoa, que hoje o
   Jhon aprova sem ela. Decidir: acender ou tirar o código.
@@ -165,7 +176,7 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Falas das sequências (pedido do Jhon, 17/11) — falta gravar.** O
   feed, os ícones e as chamadas de DOUBLE/TRIPLE/… KILL, TEAM KILL e
   VINGANÇA estão prontos (`KillStory`, `KillBanner`), e o jogo já toca a
-  fala se o arquivo existir: `assets/audio/voz_double_kill.wav`,
+  fala se o arquivo existir: `src/assets/audio/voz_double_kill.wav`,
   `voz_triple_kill`, `voz_quadra_kill`, `voz_penta_kill`,
   `voz_hexa_kill`, `voz_hepta_kill`, `voz_octa_kill`, `voz_team_kill`,
   `voz_vinganca`. Falta a voz: gravar, comprar ou gerar (uma tentativa
@@ -323,7 +334,7 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 ### Alcance: idioma e acessibilidade (pedido em 17/11)
 
 - **Internacionalização.** Hoje: os 946 textos de tela estão em
-  `assets/i18n/textos.csv` (gerado por `tools/i18n/extrair.py`), com
+  `src/assets/i18n/textos.csv` (gerado por `src/tools/i18n/extrair.py`), com
   português, inglês e espanhol, e o idioma se escolhe nas Opções. Falta:
   revisão de nativo, conferir texto que cresce e estoura botão em inglês e
   espanhol, formato de número e data, as falas do rádio, e a tradução das
@@ -406,7 +417,7 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   Precisa de login próprio e registro de quem fez o quê.
 - **Testar com 8 jogadores de verdade** (pedido em 17/11): uma partida com
   oito pessoas, não bots, com latência real. Hoje: só dois jogos sem tela
-  na mesma máquina; o teste de carga está em `tools/testar_carga.sh`.
+  na mesma máquina; o teste de carga está em `src/tools/testar_carga.sh`.
 - **Windows: testar o iniciador com o jogo de verdade e medir os
   requisitos** (21/11). O iniciador (`instalador/iniciador.nsi`) foi testado
   no Wine e é testado no Windows do GitHub com um jogo de mentira; falta
@@ -424,11 +435,23 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ## Pendências técnicas conhecidas
 
+### Limpeza do repositório: o que ficou para decidir (levantado em 24/11)
+
+O que tinha confiança alta saiu em 24/11 (CHANGELOG). Ficou, com confiança média (ninguém carrega hoje, mas pode servir):
+- clipes reserva do lobo em `src/assets/personagens/_comum/lobo/` (`claw`, `heavy`, `howl`, `leap`, `jump`, `sprint`, ~21 MB): só entram se faltar o clipe no `lobo_anim.glb`, que tem todos;
+- 36 peças do Poly Haven em `src/assets/mapas/pecas/` e 35 texturas de `src/assets/textures/pbr/` que nenhum mapa usa (~60 MB);
+- o pacote cru da faca em `src/assets/sketchfab/` (41 MB, a única cópia: mover para `pacotes/`, não apagar; o crédito CC BY continua);
+- os passos na neve (a neve era da Polar), o `ambiente_hangar.ogg` (matéria-prima do som do Armazém), a paleta das mãos antigas;
+- o `textos.csv` guarda 93 textos que saíram do código.
+
+Lembrete: a exportação leva tudo de `src/` (`all_resources`), então o que sobra aqui também vai no jogo exportado.
+
+
 - **Arrumar os testes automatizados** (Jhon, 21/11). Na rodada de
   21/11, 12 testes de regressão falham sempre, e com isso o vermelho
   deixou de avisar. Em cada um, decidir se o teste ficou velho (o jogo
   mudou de propósito) ou se o jogo está errado, e consertar; depois, não
-  juntar nada com teste vermelho e rodar o `tools/testar.sh` no CI a cada
+  juntar nada com teste vermelho e rodar o `src/tools/testar.sh` no CI a cada
   push (hoje o lançamento sai sem os testes). O que já se sabe:
   - `MaosPadrao`: o teste ainda espera as mãos low poly de 18/11; as de
     20/11 são as desenhadas, no shader das mãos, com o LED do time.
@@ -462,13 +485,12 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ### Armas de 19/11 (M4A4, AK-74, SCAR-H, SVD, Desert Eagle, V40, faca)
 
-- Feitas por `tools/armas/reais.py` (modelos) e `tools/armas/conjuntos.py` (primeira pessoa). Os arquivos de origem e os `.npz` ficam em `assets/pacotes/reais/` (fora do git); a licença dos modelos é do Jhon confirmar.
+- Feitas por `src/tools/armas/reais.py` (modelos) e `src/tools/armas/conjuntos.py` (primeira pessoa). Os arquivos de origem e os `.npz` ficam em `src/assets/pacotes/reais/` (fora do git); a licença dos modelos é do Jhon confirmar.
 - **Não foi visto numa partida de verdade**: os testes automáticos passam e as poses foram conferidas em fotos fora do jogo.
 - A faca foi refeita com a mão levada pelo braço (pulso reto, sem torcer a manga); falta o Jhon aprovar no jogo. Não achei referência utilizável de ataques de faca na internet: os golpes são desenhados à mão.
-- Os sons são provisórios (`tools/sons/reais.py`): feitos dos do AR-15 e da pistola antiga.
+- Os sons são provisórios (`src/tools/sons/reais.py`): feitos dos do AR-15 e da pistola antiga.
 - Números das armas e loja: todas entraram liberadas (`Starter`); o Desert Eagle usa a ficha "pistola pesada" do ARSENAL.md sendo a pistola padrão — rever o balanceamento.
-- `tools/gerar_armas.py` e `tools/gerar_arsenal.py` ainda falam da M9 e das armas antigas.
-- Guia para as próximas armas: `docs/ANIMACAO_ARMAS.md` (regras, como é montado, o que conferir). `python3 tools/armas/conferir.py` mede pulso, braço na frente da câmera e corte na mira.
+- Guia para as próximas armas: `docs/ANIMACAO_ARMAS.md` (regras, como é montado, o que conferir). `python3 src/tools/armas/conferir.py` mede pulso, braço na frente da câmera e corte na mira.
 - **Dedos nas outras armas** (feito em 19/11 para a mão esquerda): AK-74, SCAR-H e SVD repetem no guarda-mão o encosto da M4A4 (`pegada.pegar_como`); na Desert Eagle a mão esquerda abraça a direita sem atravessar (`abracar`). A mão direita nos punhos da AK-74, da SCAR-H e da SVD continua com a pose do AR-15 (só o indicador vai ao gatilho).
 - Faca: o arquivo de referência só tem dois golpes; o terceiro e o quarto são derivados deles (a mão girada). Se aparecer arquivo com mais golpes, trocar.
 - SCAR-H mirada: ainda mira por dentro do anel da alça, que é grande na tela (a M4A4 foi aberta em 19/11; a SCAR-H ninguém pediu).
@@ -478,4 +500,4 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - Arremesso refeito para soltar **em cima da linha da cruz** (19/11, "a granada tem que ser lançada no meio da linha da mão, na direção exata do crosshair"): medido no jogo, ela nasce a 1 cm da linha, sai a 0,04° dela e chega ao chão em cima dela; a granada da mão fica à vista até a de verdade começar a andar.
 - A granada que voa é menor na tela que a da mão (a da mão é 18% maior e o conjunto é esticado para a câmera) e nasce sem a rotação da da mão. Os bots e os bonecos de rede lançam como antes, da frente da câmera; a mira do bot (`Bot.Grenade.ThrowPitch`) ainda faz a conta do arremesso antigo.
 - A granada da primeira pessoa é 18% maior que a que voa.
-- Versões épicas e lendárias (19/11; `tools/armas/peles.py`, sem Blender): atlas UV novo por arma e desenho calculado em 3D; os números estão nos .tres (e, da faca, em `Arsenal.KnifeStats`). A faca escolhida (`LoadoutSet.Melee`) não vai pela rede: os outros veem a faca comum, e o abate conta como "faca". No mundo, o metal das pinturas é a metade do desenhado (sem céu para refletir ficava preto). Conferido na bancada (`ArmasEpicasELendarias`) e por fotos; os desenhos são de programa, não de artista.
+- Versões épicas e lendárias (19/11; `src/tools/armas/peles.py`, sem Blender): atlas UV novo por arma e desenho calculado em 3D; os números estão nos .tres (e, da faca, em `Arsenal.KnifeStats`). A faca escolhida (`LoadoutSet.Melee`) não vai pela rede: os outros veem a faca comum, e o abate conta como "faca". No mundo, o metal das pinturas é a metade do desenhado (sem céu para refletir ficava preto). Conferido na bancada (`ArmasEpicasELendarias`) e por fotos; os desenhos são de programa, não de artista.

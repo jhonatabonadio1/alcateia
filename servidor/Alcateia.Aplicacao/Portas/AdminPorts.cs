@@ -75,7 +75,9 @@ public interface IGameDataRepository
 	Task<IReadOnlyList<GameMap>> Maps();
 	Task SaveMap(GameMap map);
 	/// <summary>Põe os mapas que ainda não existem. Nos que existem, a foto
-	/// e os modos (que são do jogo) acompanham a semente.</summary>
+	/// e os modos (que são do jogo) acompanham a semente. O mapa que saiu do
+	/// jogo sai daqui também (Jhon, 24/11: "mapas que não são utilizados no
+	/// jogo podem ser removidos e nem devem aparecer no dashboard").</summary>
 	Task<int> SeedMaps(IEnumerable<GameMap> maps);
 	Task<IReadOnlyList<Promotion>> Promotions(bool includeEnded);
 	Task<Promotion> AddPromotion(Promotion promotion, long adminId);

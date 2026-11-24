@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/scripts/combat/WeaponDefinition.cs" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+Id = "ak74_imperial"
+DisplayName = "AK-74 Imperial"
+Class = 0
+WpCost = 680
+Description = "Lendária. A AK que bate mais forte e mais rápido, pente de 35 e o coice mais domado. Laca preta com filigrana de ouro."
+Damage = 46
+HeadshotMultiplier = 2.4
+Rpm = 525
+Mode = 0
+Magazine = 35
+Reserve = 105
+ReloadTactical = 2.25
+ReloadEmpty = 2.97
+DrawTime = 0.55
+HolsterTime = 0.5
+SpreadBase = 0.45
+SpreadPerShot = 0.4
+SpreadMax = 6.5
+SpreadRecovery = 7.0
+MoveSpreadMultiplier = 3.0
+CrouchSpreadMultiplier = 0.6
+RecoilVertical = 1.44
+RecoilVerticalLate = 0.72
+RecoilEarlyShots = 5
+RecoilHorizontal = 0.12
+RecoilHorizontalLate = 0.7
+RecoilHorizontalAfter = 6
+RecoilRecovery = 5.5
+Range = 150
+FalloffStart = 30
+FalloffEnd = 55
+FalloffMin = 0.75
+SpeedMultiplier = 0.92
+NoiseRadius = 55
+AimFov = 55
+AimSpreadMultiplier = 0.3
+AimSpeedMultiplier = 0.7
+StarDamage = 4.6
+StarPenetration = 3.5
+StarAccuracy = 1.5
+StarRate = 2.3
+StarMobility = 2.0
+StarRecoil = 2.2
+StarRange = 2.5

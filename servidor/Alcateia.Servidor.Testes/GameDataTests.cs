@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Alcateia.Dominio.Contas;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ public static class GameDataTests
 			Check.Equal(15500, ak["prices"][4].GetValue<int>(), "e custa 15 500 para sempre");
 			Check.True(data["items"].AsArray().Any(i => i["id"].GetValue<string>() == "pers_eve"), "os personagens estão no catálogo");
 			Check.True(data["maps"].AsArray().First(m => m["id"].GetValue<string>() == "armazem_estendido")["enabled"].GetValue<bool>(), "o Armazém está ligado");
-			Check.True(!data["maps"].AsArray().First(m => m["id"].GetValue<string>() == "polar")["enabled"].GetValue<bool>(), "os mapas guardados vêm desligados");
+			Check.True(!data["maps"].AsArray().Any(m => m["id"].GetValue<string>() is "polar" or "vila" or "armazem"), "os mapas que saíram do jogo não vêm");
 			Check.True(data["challenges"].AsArray().Count >= 20, "as missões do jogo viram desafios");
 			Check.True(!data["settings"]["manutencao"]["on"].GetValue<bool>(), "sem manutenção");
 
@@ -94,7 +95,8 @@ public static class GameDataTests
 			await Buy(p, "troca_nome", 4);
 			var (_, inventory) = await p.Call(HttpMethod.Get, "/v1/inventory");
 			Check.Equal(1500L, inventory["presas"].GetValue<long>(), "duas trocas de nome a 1 500");
-			Check.Equal(1, inventory["rank"].GetValue<int>(), "a patente vem junto");
+			// A patente é a do XP que a conta tem (RankRule), seja qual for o XP de começo.
+			Check.Equal(RankRule.RankFor(inventory["xp"].GetValue<long>()), inventory["rank"].GetValue<int>(), "a patente vem junto");
 			JsonNode name = inventory["items"].AsArray().First(i => i["id"].GetValue<string>() == "troca_nome");
 			Check.Equal(2, name["uses"].GetValue<int>(), "consumível soma usos");
 			Check.Equal(2, inventory["items"].AsArray().Count, "a AK-74 e a troca de nome");
@@ -142,8 +144,12 @@ public static class GameDataTests
 			var def = w.Services.GameData.Current.Challenges.First(c => c.Id == "p_partidas");
 			var claimed = await p.Call(HttpMethod.Post, "/v1/challenges/p_partidas/claim");
 			Check.Equal(200, claimed.Status, "receber o prêmio do desafio permanente");
-			Check.Equal(1, claimed.Body["balance"]["rank"].GetValue<int>(), "o XP do prêmio levou à patente 1");
-			Check.Equal(3000L + def.Presas + 150, claimed.Body["balance"]["presas"].GetValue<long>(), "as Presas do desafio e mais 150 pela promoção");
+			// O prêmio de hoje (def.Xp) leva os 225 de XP adiante: a patente e o que a promoção paga
+			// seguem a regra (RankRule), não um número fixo (eram a patente 1 e 150).
+			long xpAfter = 225 + def.Xp;
+			Check.True(RankRule.RankFor(xpAfter) > RankRule.RankFor(225), "o prêmio sobe de patente");
+			Check.Equal(RankRule.RankFor(xpAfter), claimed.Body["balance"]["rank"].GetValue<int>(), "o XP do prêmio levou à patente da regra");
+			Check.Equal(3000L + def.Presas + RankRule.PromotionPresas(225, xpAfter), claimed.Body["balance"]["presas"].GetValue<long>(), "as Presas do desafio e as da promoção");
 			var (_, challenges) = await p.Call(HttpMethod.Get, "/v1/challenges");
 			Check.Equal(def.Title, challenges["titles"][0].GetValue<string>(), "e o título do desafio");
 			string[] reasons = (await w.Db.Query("select reason from ledger where account_id = $1 order by id", p.Id)).Rows.Select(r => r[0]).ToArray();

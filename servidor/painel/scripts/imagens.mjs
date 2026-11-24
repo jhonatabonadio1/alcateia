@@ -7,7 +7,7 @@ import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 const here = import.meta.dirname;
-const game = process.env.JOGO_ASSETS ?? path.resolve(here, "../../../assets");
+const game = process.env.JOGO_ASSETS ?? path.resolve(here, "../../../src/assets");
 const out = path.resolve(here, "../public/jogo");
 
 function copyImages(from, to, keep = () => true) {

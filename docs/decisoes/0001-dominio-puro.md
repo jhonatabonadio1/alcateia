@@ -14,7 +14,7 @@ jogando.
 ## Decisão
 
 Tudo o que é **regra** — número que sai de número — mora em
-`scripts/domain/`, em C# puro: sem `using Godot`, sem estado, sem
+`src/scripts/domain/`, em C# puro: sem `using Godot`, sem estado, sem
 sorteio escondido. `CombatRules`, `WolfMoves` (o tempo dos golpes) e
 `GameRandom` são os primeiros.
 
@@ -23,7 +23,7 @@ aconteceu** (acertou a cabeça? estava agachado?) e pedem o número ao
 domínio. Os pesos (os `[Export]`, os `.tres`) continuam com eles e
 entram como parâmetro.
 
-`tests/unit` compila só essa pasta, sem Godot e sem pacote NuGet:
+`src/tests/unit` compila só essa pasta, sem Godot e sem pacote NuGet:
 roda em segundos, até sem internet.
 
 ## Consequências

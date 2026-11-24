@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cwg4xkvbnxllf"
+path="res://.godot/imported/corpo_choque_carbono.obj-5cd8dfee8ac05d9202b8b0ebc49f67d3.mesh"
+
+[deps]
+
+files=["res://.godot/imported/corpo_choque_carbono.obj-5cd8dfee8ac05d9202b8b0ebc49f67d3.mesh"]
+
+source_file="res://src/assets/armas/choque_carbono/corpo_choque_carbono.obj"
+dest_files=["res://.godot/imported/corpo_choque_carbono.obj-5cd8dfee8ac05d9202b8b0ebc49f67d3.mesh", "res://.godot/imported/corpo_choque_carbono.obj-5cd8dfee8ac05d9202b8b0ebc49f67d3.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

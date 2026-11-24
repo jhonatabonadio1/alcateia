@@ -15,9 +15,9 @@ ficam nos outros documentos:
 - `docs/DESIGN.md`: por que o jogo é assim (corrida em parede, garras,
   salto, bot).
 
-Os números vêm do código e da cena do jogador (`scenes/player.tscn`), e
+Os números vêm do código e da cena do jogador (`src/scenes/player.tscn`), e
 os de movimento foram **medidos no jogo** pelo teste `Medidas`
-(`tests/regression/MeasureTests.cs`). Se uma mudança de jogo mexer em
+(`src/tests/regression/MeasureTests.cs`). Se uma mudança de jogo mexer em
 algum deles, o teste falha: ou a mudança volta, ou este documento e os
 mapas mudam junto.
 
@@ -72,7 +72,7 @@ Medidos no chão plano, segurando a tecla.
 | Carregando o salto | — | 0,97 m/s | — |
 
 Velocidade de base: `Player.HumanSpeed` 3,2 na cena. O lobo multiplica
-pela raça (`resources/breeds/*.tres`, `SpeedMultiplier`) e, de quatro,
+pela raça (`src/resources/breeds/*.tres`, `SpeedMultiplier`) e, de quatro,
 por `WolfSprintFactor` (1,719 na cena).
 
 **O que isso pede do mapa:** atravessar uma área aberta de 20 m leva
@@ -84,7 +84,7 @@ decide se um campo aberto é armadilha para o lobo ou para o humano.
 | | Humano | Lobo Bruto | Lobo Ligeiro |
 |---|---|---|---|
 | O pulo parado sobe (pés) | 1,02 | 1,67 | 2,56 |
-| Pulo correndo, do chão ao chão | 3,2 | 4,4 | 5,9 |
+| Pulo correndo, do chão ao chão | 2,6 | 4,4 | 5,9 |
 | Sobe andando, sem pular | 0,05 | 0,05 | 0,05 |
 | Sobe pulando, colado na quina | 1,10 | 1,0* | 1,2* |
 
@@ -171,10 +171,10 @@ O resto, com os exemplos, está em `docs/MAPAS.md`.
 
 ## 8. Arte de personagem e de primeira pessoa
 
-- **Personagens:** uma pasta por personagem em `assets/personagens/`,
+- **Personagens:** uma pasta por personagem em `src/assets/personagens/`,
   com humano de 1,79 e lobo de 1,66, e os ossos que as animações usam.
   Passo a passo em `docs/PERSONAGENS.md`.
-- **Mãos de primeira pessoa:** ficam em `assets/armas/fp/maos/`.
+- **Mãos de primeira pessoa:** ficam em `src/assets/armas/fp/maos/`.
   `maos.glb` é a malha dos dois braços, no esqueleto do AR-15 (o da
   Unreal), e `padrao.tres` é o material. A textura das mãos de todas as
   armas se troca ali, num lugar só. Arma nova com o mesmo esqueleto

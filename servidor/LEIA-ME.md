@@ -41,7 +41,7 @@ Alcateia.Infra/          o mundo de fora
   Seguranca/Passwords.cs senha (PBKDF2), tokens, assinatura dos ingressos, relógio
   Seguranca/Crypto.cs    AES-256-GCM para o que não pode ficar legível no banco
   Seguranca/JsonSecurityLog  cada evento de segurança como uma linha de JSON na saída
-  Semente/               o que vem com o jogo (jogo.json, de tools/servidor/exportar_dados.py)
+  Semente/               o que vem com o jogo (jogo.json, de src/tools/servidor/exportar_dados.py)
 Alcateia.Servidor/       a borda (o programa)
   Program.cs, App.cs     a montagem de tudo (raiz da composição)
   Config.cs              variáveis de ambiente
@@ -51,8 +51,8 @@ Alcateia.Servidor/       a borda (o programa)
                          dados do jogo e loja (GameRoutes), e o painel (Admin*Routes)
 painel/                  o painel administrativo: React + Tailwind + componentes no estilo shadcn
 producao/                Caddy (HTTPS), Prometheus, alertas, Promtail, Grafana
-Alcateia.Servidor.Testes/   testes de integração (tools/testar_servidor.sh)
-Alcateia.Carga/             teste de carga: milhares de jogadores e partidas (tools/testar_carga.sh)
+Alcateia.Servidor.Testes/   testes de integração (src/tools/testar_servidor.sh)
+Alcateia.Carga/             teste de carga: milhares de jogadores e partidas (src/tools/testar_carga.sh)
 Dockerfile                  a imagem do servidor
 partida.Dockerfile          a imagem do servidor de partida (o servidor dedicado exportado)
 ```

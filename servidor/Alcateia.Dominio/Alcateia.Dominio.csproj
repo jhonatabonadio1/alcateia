@@ -18,8 +18,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="../../scripts/domain/Rewards.cs" Link="Partidas/Rewards.cs" />
-		<Compile Include="../../scripts/domain/Rage.cs" Link="Partidas/Rage.cs" />
+		<Compile Include="../../src/scripts/domain/Rewards.cs" Link="Partidas/Rewards.cs" />
+		<Compile Include="../../src/scripts/domain/Rage.cs" Link="Partidas/Rage.cs" />
 	</ItemGroup>
 
 </Project>

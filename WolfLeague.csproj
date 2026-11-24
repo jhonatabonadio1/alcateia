@@ -6,9 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Os testes de unidade são um projeto à parte, sem Godot
-         (tests/unit/Alcateia.UnitTests.csproj). Os de regressão, em
-         tests/regression, rodam dentro do jogo e ficam aqui. -->
-    <Compile Remove="tests/unit/**" />
+         (src/tests/unit/Alcateia.UnitTests.csproj). Os de regressão, em
+         src/tests/regression, rodam dentro do jogo e ficam aqui. -->
+    <Compile Remove="src/tests/unit/**" />
     <!-- O servidor (contas, salas, frota) é outro programa, em ASP.NET:
          servidor/Alcateia.Servidor. -->
     <Compile Remove="servidor/**" />

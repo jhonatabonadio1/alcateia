@@ -5,16 +5,16 @@ https://claude.ai/artifact/MNPtVPtQfL1ynagTZXfnyU — ao mudar lá, atualize aqu
 
 ## Como usar
 
-Cada som abaixo tem o **nome de arquivo que o jogo já procura**: gere, salve com esse nome em `assets/audio/` e ele passa a tocar na hora, sem mexer em código. Os marcados como **novo** ainda não tocam em lugar nenhum: precisam de uma linha de código.
+Cada som abaixo tem o **nome de arquivo que o jogo já procura**: gere, salve com esse nome em `src/assets/audio/` e ele passa a tocar na hora, sem mexer em código. Os marcados como **novo** ainda não tocam em lugar nenhum: precisam de uma linha de código.
 
 - **Prompt em inglês.** Os geradores de som e de música entendem bem melhor em inglês. Cole o prompt como está e ajuste a duração na própria ferramenta.
 - **Não escreva "League of Legends" no prompt.** A maioria das ferramentas recusa ou copia demais quando lê nome de jogo ou de artista. Os prompts já descrevem o estilo.
 - **Variações.** Onde a tabela pede 3 ou mais, gere várias vezes e salve como `nome_1.wav`, `nome_2.wav`… O jogo sorteia entre elas; sem variação, tiro e passo soam como metralhadora de loop.
-- **Formato.** Efeitos: WAV, 48 kHz, 16 bits, **mono** (o jogo põe o som no lugar 3D). Exceções em estéreo: o seu próprio tiro (`tiro_proprio_*`), a interface e as músicas. Músicas e ambientes: OGG estéreo. Se a ferramenta só entrega .opus (ou outro formato), `tools/sons/preparar_ia.py` converte.
+- **Formato.** Efeitos: WAV, 48 kHz, 16 bits, **mono** (o jogo põe o som no lugar 3D). Exceções em estéreo: o seu próprio tiro (`tiro_proprio_*`), a interface e as músicas. Músicas e ambientes: OGG estéreo. Se a ferramenta só entrega .opus (ou outro formato), `src/tools/sons/preparar_ia.py` converte.
 - **Corte o silêncio do começo.** Tiro, clique e passo têm de começar no primeiro milissegundo; 50 ms de silêncio já viram atraso no gatilho. Pico em −1 dB. (`preparar_ia.py` também faz isso e iguala o volume.)
 - **Laços.** Música do menu e ambientes tocam em laço: peça "seamless loop" e confira se a emenda não estala.
 - **Licença.** Confira se o plano da ferramenta permite uso comercial antes de publicar o jogo.
-- **Cuidado com o roteiro antigo.** `tools/sons/processar.py` refaz os sons provisórios a partir das gravações de pacotes grátis. Os que já foram trocados pelos gerados saíram dele; ao trocar outros, tire-os de lá também.
+- **Cuidado com o roteiro antigo.** `src/tools/sons/processar.py` refaz os sons provisórios a partir das gravações de pacotes grátis. Os que já foram trocados pelos gerados saíram dele; ao trocar outros, tire-os de lá também.
 
 **Coluna "No jogo"** (atualizada em 18/11): **✅ IA** = feito pelo Jhon e já tocando · **provisório** = existe e toca hoje, tirado de pacote grátis (troque quando gerar) · **falta** = ainda não existe.
 
@@ -219,4 +219,4 @@ Do que mais muda a sensação do jogo para o que menos muda:
 7. ~~Vitória, derrota, empate, início de partida~~ — feitos em 18/11.
 8. Passos e o resto.
 
-Lote novo: acrescente as linhas dele em `MAP` no `tools/sons/preparar_ia.py` e rode `python3 tools/sons/preparar_ia.py <pasta dos arquivos> assets/audio`. Ele corta o silêncio, iguala o volume e fecha o laço das músicas.
+Lote novo: acrescente as linhas dele em `MAP` no `src/tools/sons/preparar_ia.py` e rode `python3 src/tools/sons/preparar_ia.py <pasta dos arquivos> src/assets/audio`. Ele corta o silêncio, iguala o volume e fecha o laço das músicas.

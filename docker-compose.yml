@@ -4,7 +4,7 @@
 #   docker compose up -d --build
 #
 # Sobe o banco, o servidor (http://localhost:8080), o painel
-# administrativo (http://localhost:8081, só nesta máquina) e um servidor
+# administrativo (http://localhost:8443, só nesta máquina) e um servidor
 # de partida (porta 7777/UDP). Veja docs/SERVIDOR.md e docs/PAINEL.md.
 #
 # Para a internet, com HTTPS, some o docker-compose.producao.yml
@@ -54,8 +54,10 @@ services:
     ports:
       - "${ALCATEIA_PORT:-8080}:8080"
       # O painel só na própria máquina: de fora, por túnel SSH ou VPN
-      # (ssh -L 8081:127.0.0.1:8081 usuario@servidor). Nunca "0.0.0.0".
-      - "127.0.0.1:${ALCATEIA_ADMIN_PORT:-8081}:8081"
+      # (ssh -L 8443:127.0.0.1:8443 usuario@servidor). Nunca "0.0.0.0".
+      # Na máquina, 8443 (Jhon, 24/11: a mesma porta do painel no Fly); dentro
+      # do contêiner o painel segue na 8081.
+      - "127.0.0.1:${ALCATEIA_ADMIN_PORT:-8443}:8081"
     # O contêiner não ganha privilégio nem escreve no próprio disco.
     read_only: true
     tmpfs:

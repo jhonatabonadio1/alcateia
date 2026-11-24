@@ -8,10 +8,10 @@ internet (`docs/decisoes/0012`).
 ## Abrir
 
 Com o `docker compose up -d --build` da raiz, o painel está em
-**http://127.0.0.1:8081**, na máquina do servidor. De outra máquina:
+**http://127.0.0.1:8443** (no `docker compose`; dentro do contêiner, 8081), na máquina do servidor. De outra máquina:
 
 ```
-ssh -L 8081:127.0.0.1:8081 usuario@servidor      # e abra http://127.0.0.1:8081
+ssh -L 8443:127.0.0.1:8443 usuario@servidor      # e abra http://127.0.0.1:8443
 ```
 
 O primeiro administrador é o do `.env` (`ALCATEIA_ADMIN_USER` e
@@ -59,7 +59,7 @@ motivo.
 
 O painel grava no banco e o servidor renova na hora os dados em memória.
 O jogo lê `GET /v1/gamedata` ao entrar na conta e a cada minuto no
-saguão (`scripts/net/ServerData.cs`): mapa desligado some da escolha de
+saguão (`src/scripts/net/ServerData.cs`): mapa desligado some da escolha de
 mapa, o aviso aparece no saguão. Banimento e manutenção valem no mesmo
 instante (são do servidor). Preço, promoção e vitrine do dia valem na
 hora: a loja do jogo mostra o que veio do servidor e é ele que cobra
@@ -72,14 +72,14 @@ uma partida (decisão 0015).
 ```
 cd servidor/painel
 npm install
-npm run dev          # http://127.0.0.1:5173, falando com o servidor em 127.0.0.1:8081
+npm run dev          # http://127.0.0.1:5173, falando com o servidor em 127.0.0.1:8443
 npm run build        # gera dist/, que o servidor entrega
 ```
 
 Fora do Docker, aponte o servidor para o que foi compilado:
 `ALCATEIA_ADMIN_UI=servidor/painel/dist`. As imagens das armas, dos
-mapas e dos personagens são copiadas de `assets/` por
-`scripts/imagens.mjs` (roda sozinho antes do `dev` e do `build`).
+mapas e dos personagens são copiadas de `src/assets/` por
+`src/scripts/imagens.mjs` (roda sozinho antes do `dev` e do `build`).
 
 ```
 src/
@@ -101,11 +101,11 @@ O servidor conhece o que veio na semente. Entrou coisa nova em
 `Catalog.cs`, `Maps.cs` ou `Missions.cs`:
 
 ```
-python3 tools/servidor/exportar_dados.py     # atualiza servidor/Alcateia.Infra/Semente/jogo.json
+python3 src/tools/servidor/exportar_dados.py     # atualiza servidor/Alcateia.Infra/Semente/jogo.json
 ```
 
 Faça commit e suba o servidor: ele acrescenta o que falta e não toca no
 que o painel já editou. O que é do jogo e o painel não edita acompanha a
 semente a cada subida: a arte de cada item, a foto de cada mapa, os
 modos para que cada mapa foi feito e quais modos estão liberados
-(`RoomSettings.ModeAvailable`, em `scripts/core/RoomConfig.cs`).
+(`RoomSettings.ModeAvailable`, em `src/scripts/core/RoomConfig.cs`).

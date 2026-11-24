@@ -16,16 +16,16 @@ As regras de design estão no `CLAUDE.md`; o mapa do código, em
 ## Testes
 
 ```sh
-tools/testar.sh            # tudo (~1,5 min)
-tools/testar.sh --rapido   # sem os dois testes de partida (~50 s)
-tools/testar.sh Salto      # só os testes com "Salto" no nome
+src/tools/testar.sh            # tudo (~1,5 min)
+src/tools/testar.sh --rapido   # sem os dois testes de partida (~50 s)
+src/tools/testar.sh Salto      # só os testes com "Salto" no nome
 ```
 
-Sem o Godot no PATH: `GODOT=/caminho/do/Godot tools/testar.sh`. No Mac
+Sem o Godot no PATH: `GODOT=/caminho/do/Godot src/tools/testar.sh`. No Mac
 o executável fica em `Godot_mono.app/Contents/MacOS/Godot`.
 
 O GitHub roda o mesmo script a cada push. Commit com teste vermelho não
-sobe. O script também procura **código repetido** (`tools/duplicados.py`):
+sobe. O script também procura **código repetido** (`src/tools/duplicados.py`):
 seis linhas iguais em dois lugares reprovam — junte numa peça só.
 
 ## Antes de mudar algo
@@ -42,15 +42,15 @@ seis linhas iguais em dois lugares reprovam — junte numa peça só.
 | Você vai… | Onde |
 |---|---|
 | Mudar um número (velocidade, dano, tempo) | o `.tres` ou o `[Export]` dele — o `docs/AJUSTES.md` diz qual — e a linha no guia |
-| Escrever uma conta nova (dano, chance, alcance) | `scripts/domain/`, em C# puro, com teste em `tests/unit/` |
+| Escrever uma conta nova (dano, chance, alcance) | `src/scripts/domain/`, em C# puro, com teste em `src/tests/unit/` |
 | Sortear algo que muda o jogo | `GameRandom` (`MatchRandom.Stream(nome)`), nunca `GD.Randf()` |
 | Ler uma tecla nova | `CharacterIntent` (e `InputSetup`), nunca `Input` direto no `Player` |
-| Algo que jogador e bot fazem igual | `scripts/actors/body/` |
+| Algo que jogador e bot fazem igual | `src/scripts/actors/body/` |
 | Um sistema novo num ator grande | uma parte nova da classe parcial (`Player.Coisa.cs`) com o seu `[ExportGroup]` |
 | Algo novo no HUD | um sinal no componente e um handler na parte do canto (`ui/hud/`) |
-| Um nível de bot, uma arma, uma classe | um `.tres` novo em `resources/` |
+| Um nível de bot, uma arma, uma classe | um `.tres` novo em `src/resources/` |
 | Uma peça de tela que se repete (cartão, grade, linha rótulo/valor) | `UiKit` |
-| Achar o jogador, os bots, um nó na árvore | `Groups` e `Nodes` (`scripts/core`), nunca o nome do grupo solto |
+| Achar o jogador, os bots, um nó na árvore | `Groups` e `Nodes` (`src/scripts/core`), nunca o nome do grupo solto |
 | Uma decisão de arquitetura | um ADR novo em `docs/decisoes/` |
 
 ## Estilo
@@ -67,4 +67,4 @@ seis linhas iguais em dois lugares reprovam — junte numa peça só.
 - Um assunto por commit, com a mensagem dizendo o que mudou e por quê.
 - Atualize o `docs/CHANGELOG.md` quando a mudança aparece para quem
   joga, e o `CLAUDE.md`/`DESIGN.md` quando muda uma regra.
-- Rode `tools/testar.sh` antes.
+- Rode `src/tools/testar.sh` antes.

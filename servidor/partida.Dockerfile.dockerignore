@@ -1,6 +1,6 @@
 # O que não entra no build do servidor de partida. A etapa que exporta
 # precisa do projeto (cenas, recursos, código, a arte para importar) e do
-# tools/servidor; o resto é da máquina de quem desenvolve ou de outro
+# src/tools/servidor; o resto é da máquina de quem desenvolve ou de outro
 # programa.
 .git
 .github
@@ -13,14 +13,14 @@
 **/obj
 **/__pycache__
 build
-assets/pacotes
+src/assets/pacotes
 servidor/Alcateia.*
 servidor/painel
 servidor/producao
 instalador
 android
 docs
-tests
+src/tests
 *.zip
 *.tgz
 *.unitypackage

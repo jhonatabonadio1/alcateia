@@ -237,7 +237,7 @@ Modal com: item, duração, preço, saldo atual, saldo depois da compra. Botão 
 ## HUD de combate
 
 **O visual (17/11, pedido do Jhon: mais low poly, mais Overwatch).** Tudo
-em `scripts/ui/kit/HudStyle.cs`:
+em `src/scripts/ui/kit/HudStyle.cs`:
 
 - **Sem fundo** (17/11, segunda passada, com Overwatch de referência:
   "a HUD em primeira pessoa não precisa de fundo blur"): vida, munição e
@@ -271,9 +271,9 @@ destaque, cantos arredondados, botões retos, Kanit nos títulos e Figtree
 no texto. `UiTokens.Menu` (ligada pelo `LobbyShell`) troca paleta
 (`UiTokens`), estilo (`UiTheme`) e letras (`UiFonts`); na partida vale o
 conjunto do jogo (facetado, Barlow). Ícones: Phosphor (`Icon`,
-`assets/ui/icones/`). Patentes: imagens (`RankBadge`,
-`assets/ui/patentes/`). Armas: fotos do modelo (`WeaponArt`,
-`assets/ui/armas/`). O que está abaixo sobre a paleta clara é histórico.
+`src/assets/ui/icones/`). Patentes: imagens (`RankBadge`,
+`src/assets/ui/patentes/`). Armas: fotos do modelo (`WeaponArt`,
+`src/assets/ui/armas/`). O que está abaixo sobre a paleta clara é histórico.
 
 **Vidro fosco nos menus** (17/11: "esses fundos brancos podem ser com
 blur, foscos"): os cartões do tema (`Surface1`, `Surface2`, `Card`,
@@ -696,6 +696,8 @@ Esse último par é o que faz o balanceamento do jogo existir: uma arma pode ser
 
 **Duas moedas, não três**
 
+> **Nomes na tela desde 24/11 (Jhon):** Presas virou **Cash** e Sangue virou **IPs** (Inipoints); o WP da partida virou **KP** (kill points). Ícones: a moeda de ouro (Cash) e a violeta com a gema (IPs), em `src/assets/ui/moedas/` (fontes em `src/tools/icones/moedas/`). No código, no perfil e no servidor os nomes de antes continuam (`Currency.Presas`, `presas`, `Wp`); este guia ainda usa os nomes antigos.
+
 | Moeda | Como se ganha | O que compra |
 |---|---|---|
 | Presas (moeda do jogo) | Partidas jogadas, vitórias, missões, eventos | Armas por tempo, visual básico, tatuagens, criação de matilha, troca de nome |
@@ -805,27 +807,27 @@ aparece desabilitado com "em breve" ou não aparece.
 
 > Desde 20/11 (decisão 0015) carteira, inventário, patente e missões
 > são da conta, no servidor. Sem conta, a loja e as missões mostram o
-> cartão de entrar (`scripts/lobby/AccountGate.cs`), o botão de compra
+> cartão de entrar (`src/scripts/lobby/AccountGate.cs`), o botão de compra
 > vira "Entrar na conta para comprar" e a tela de resultado diz que a
 > partida foi de treino.
 
 | Seção do guia | Onde está |
 |---|---|
-| Design tokens | `scripts/ui/kit/UiTokens.cs` (grade, raios, cores, tempos) e `UiFonts.cs` (Barlow e Barlow Condensed, OFL, números tabulares) |
-| Theme | `scripts/ui/kit/UiTheme.cs` — feito em código e aplicado por raiz (`UiTheme.Apply`), porque `CanvasLayer` corta a herança de tema |
-| Componentes | `scripts/ui/kit/`: `UiKit` (texto, botão, campo, seletor, painel, chip), `Icon`, `Motion`, `RankBadge`, `CurrencyLabel`, `StatBar`, `WeaponArt`, `Tabs`, `Modal`, `CountdownRing`, `PingBars`, `Toast` |
-| Fluxo de telas e header | `scripts/lobby/LobbyShell.cs` (moldura fixa, miolo trocando) e `LobbyHeader.cs` |
+| Design tokens | `src/scripts/ui/kit/UiTokens.cs` (grade, raios, cores, tempos) e `UiFonts.cs` (Barlow e Barlow Condensed, OFL, números tabulares) |
+| Theme | `src/scripts/ui/kit/UiTheme.cs` — feito em código e aplicado por raiz (`UiTheme.Apply`), porque `CanvasLayer` corta a herança de tema |
+| Componentes | `src/scripts/ui/kit/`: `UiKit` (texto, botão, campo, seletor, painel, chip), `Icon`, `Motion`, `RankBadge`, `CurrencyLabel`, `StatBar`, `WeaponArt`, `Tabs`, `Modal`, `CountdownRing`, `PingBars`, `Toast` |
+| Fluxo de telas e header | `src/scripts/lobby/LobbyShell.cs` (moldura fixa, miolo trocando) e `LobbyHeader.cs` |
 | Lista de salas | a das salas online, em `OnlineScreen.cs` (a lista de treino offline saiu em 17/11); a sala, online ou não, é a `RoomScreen.cs` |
-| Tela de sala | `RoomScreen.cs`; regras em `scripts/core/RoomConfig.cs` e `RoomRules.cs` |
+| Tela de sala | `RoomScreen.cs`; regras em `src/scripts/core/RoomConfig.cs` e `RoomRules.cs` |
 | Inventário | `InventoryScreen.cs`, `ItemCard.cs`, `ItemDetail.cs`, `CharacterPreview.cs` |
-| Loja | `ShopScreen.cs`; catálogo e preços em `scripts/meta/Catalog.cs` |
+| Loja | `ShopScreen.cs`; catálogo e preços em `src/scripts/meta/Catalog.cs` |
 | Perfil, missões, opções | `ProfileScreen.cs`, `MissionsScreen.cs`, `OptionsScreen.cs` |
-| HUD de combate | `scripts/ui/hud/Hud*.cs`, `Crosshair.cs`, `HitMarker.cs`, `DamageIndicator.cs`, `Minimap.cs` |
-| Placar e topo da partida | `scripts/ui/MatchHud.cs` e `Scoreboard.cs` |
-| Fim de partida | `scripts/ui/ResultScreen.cs` e `PromotionOverlay.cs`; recompensa em `scripts/meta/Progression.cs` |
-| Respawn e Esc | `scripts/ui/LoadoutMenu.cs` e `GameMenu.cs` |
-| Patentes | `scripts/meta/Ranks.cs` |
-| Missões | `scripts/meta/Missions.cs` |
+| HUD de combate | `src/scripts/ui/hud/Hud*.cs`, `Crosshair.cs`, `HitMarker.cs`, `DamageIndicator.cs`, `Minimap.cs` |
+| Placar e topo da partida | `src/scripts/ui/MatchHud.cs` e `Scoreboard.cs` |
+| Fim de partida | `src/scripts/ui/ResultScreen.cs` e `PromotionOverlay.cs`; recompensa em `src/scripts/meta/Progression.cs` |
+| Respawn e Esc | `src/scripts/ui/LoadoutMenu.cs` e `GameMenu.cs` |
+| Patentes | `src/scripts/meta/Ranks.cs` |
+| Missões | `src/scripts/meta/Missions.cs` |
 
 ### Onde o jogo diverge do guia, e por quê
 

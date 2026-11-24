@@ -36,7 +36,7 @@ Quatro projetos, cada um só conhece os de dentro:
 - O WebSocket virou uma porta (`ILobbyConnection`): o saguão não sabe o
   que é um socket.
 - O contrato com o jogo não mudou: as mesmas rotas, as mesmas mensagens,
-  os mesmos testes de integração (`tools/testar_servidor.sh`) passando.
+  os mesmos testes de integração (`src/tools/testar_servidor.sh`) passando.
 
 ## Custo
 

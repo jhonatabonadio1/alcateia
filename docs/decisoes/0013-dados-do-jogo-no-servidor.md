@@ -14,7 +14,7 @@ edita.
   mapas (ligado ou não), promoções, desafios, configurações, carteira
   (Presas e Sangue), inventário, extrato e progresso nos desafios.
 - O servidor sobe com uma **semente** tirada do código do jogo
-  (`tools/servidor/exportar_dados.py` → `Alcateia.Infra/Semente/jogo.json`)
+  (`src/tools/servidor/exportar_dados.py` → `Alcateia.Infra/Semente/jogo.json`)
   e põe no banco só o que ainda não existe. Depois disso quem manda é o
   painel: a semente nunca sobrescreve o que foi editado.
 - **O que é do jogo continua do jogo**: a arte dos itens, a foto dos

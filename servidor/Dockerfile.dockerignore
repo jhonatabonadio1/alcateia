@@ -1,7 +1,7 @@
 # Só o que o servidor e o painel precisam entra no contexto da imagem.
 *
-!scripts/domain/Rewards.cs
-!scripts/domain/Rage.cs
+!src/scripts/domain/Rewards.cs
+!src/scripts/domain/Rage.cs
 !servidor/Alcateia.Dominio/**
 !servidor/Alcateia.Aplicacao/**
 !servidor/Alcateia.Infra/**
@@ -14,7 +14,7 @@ servidor/*/obj
 servidor/painel/node_modules
 servidor/painel/dist
 servidor/painel/public/jogo
-!assets/ui/armas/*.png
-!assets/ui/mapas/*.png
-!assets/ui/avatares/*.png
-!assets/personagens/*/thumb.jpg
+!src/assets/ui/armas/*.png
+!src/assets/ui/mapas/*.png
+!src/assets/ui/avatares/*.png
+!src/assets/personagens/*/thumb.jpg

@@ -8,11 +8,18 @@ of Legends de referência.
 **Para gerar sons com IA:** `docs/SONS_IA.md` tem cada som com o nome de
 arquivo, quando toca, como deve soar, o prompt em inglês e o que já existe.
 
-Todo som do jogo é **gerado por roteiro** — `tools/sons/baixar.py` baixa
-as gravações de origem e `tools/sons/processar.py` corta, mistura e
-normaliza para `assets/audio/`, com o nome que o `Sfx` procura. Para
-mudar um som, muda-se a linha dele no roteiro. As fontes e licenças de
-cada arquivo estão em `assets/audio/CREDITOS.md`.
+Os sons ficam em `src/assets/audio/`, com o nome que o `Sfx` procura.
+Uma parte chegou pronta do Jhon (músicas, vinhetas, a voz da Iris e a
+interface, gerados por IA); o resto sai de roteiros em `src/tools/sons/`,
+um por assunto — `reais.py` faz os tiros e as recargas das armas de hoje
+(M4A4, AK-74, SCAR-H, SVD e Desert Eagle) a partir dos que o jogo já
+tinha, `pacote_armas.py` os do AR-15, `choque_puff.py` os do rugido e da
+transformação, e assim por diante. Para mudar um som, rode de novo o
+roteiro dele ou troque o arquivo, com o mesmo nome. As fontes e licenças
+de cada arquivo estão em `src/assets/audio/CREDITOS.md`.
+
+`baixar.py` e `processar.py`, que baixavam as gravações de origem e
+montavam quase tudo, saíram em 24/11: geravam o som das armas antigas.
 
 > Quem escreveu os roteiros (o Claude) **não ouve** o resultado: os sons
 > são ajustados por medida (pico, volume médio, quanto de grave, quanto
@@ -48,11 +55,19 @@ ler nada.
 | O seu tiro tem peso; o dos outros tem lugar | `tiro_proprio_*` (estéreo, com soco e cauda) e `tiro_*` (mono, num ponto do mapa), mais `tiro_distante_*` de longe |
 | Inimigo soa mais que aliado | **a fazer**: hoje passo de aliado e de inimigo têm o mesmo volume |
 | Lobo e humano se distinguem de ouvido | já: `lobo_passo` é mais grave e abafado que `passo` |
-| O especial se anuncia | **a fazer**: um som próprio no disparo do especial (hoje só os raios) |
+| O especial se anuncia | já: `lobo_especial_armar`, `lobo_especial_raio` e `lobo_especial_queda` (`WolfFx`) |
 | Locutor | começou (veja abaixo); faltam as falas das sequências |
-| Música só onde não atrapalha | menu, e acordes de começo e fim de partida; na partida, nada |
+| Música só onde não atrapalha | menu e sala, resultado, vinhetas de começo e fim de partida; na partida, só a do último minuto |
 
 ## O tiro (refeito em 18/11)
+
+*Registro: as camadas abaixo foram montadas pelo `processar.py`, nas
+armas de então (o M16, a M3...). As armas de hoje herdaram o tiro do
+AR-15 por `reais.py` (mais grave e mais longo na AK-74, na SCAR-H e na
+SVD; um nada mais agudo na M4A4; a Desert Eagle, o da pistola antiga,
+mais grave) e são provisórias: troca-se pondo a
+gravação com o mesmo nome (`tiro_<id>`, `tiro_proprio_<id>`,
+`tiro_distante_<id>`).*
 
 Medido antes: de 93 a 99% da energia de cada tiro ficava nos primeiros
 30 ms, e menos de 3% abaixo de 150 Hz (fora o M16). Ou seja: um estalo,
@@ -68,8 +83,7 @@ em jogo de tiro:
 
 Depois: o grave ficou entre 11 e 15% da energia, e o ataque entre 54 e
 80% (o resto é corpo e cauda). Os tiros duram de 0,65 a 1,1 s (eram de
-0,4 a 0,85). A escopeta (M3) ficou bem mais alta que antes na média —
-se incomodar, é o primeiro número a baixar (`guns["m3"]`, o soco).
+0,4 a 0,85).
 
 ## A locutora: Iris
 
@@ -107,15 +121,17 @@ Onde buscar (o Jhon baixa; o ambiente do Claude só alcança o GitHub):
   (Epic Stock Media, uns US$ 11 a 19, 199 falas com sequências,
   contagens e vitória/derrota) e *FPS Announcer* (EchoFrame, US$ 5).
 - Ou gravar: são nove falas curtas; qualquer voz grave com compressão e
-  uma sala curta serve, e o roteiro já faz esse tratamento.
+  uma sala curta serve.
 
-Para instalar: pôr o `.wav` em `assets/audio/` com o nome da tabela.
+Para instalar: pôr o `.wav` em `src/assets/audio/` com o nome da tabela.
 
 ## Música
 
-Hoje o "tema" do menu (`musica_menu.ogg`) é um ambiente de floresta à
-noite, e a partida tem três acordes (`partida_inicio`, `vitoria`,
-`derrota`, `empate`). Não há música de verdade ainda.
+Hoje o menu e a sala tocam `musica_sala` (o `musica_menu`, um ambiente
+de floresta à noite, saiu em 19/11); o último minuto da partida tem
+`musica_fim_proximo` e o resultado, `musica_resultado`. As vinhetas são
+`partida_inicio`, `vitoria`, `derrota` (duas, sorteadas) e `empate`.
+São as músicas de IA do Jhon (18/11); falta um tema de menu próprio.
 
 O que procurar: um tema de menu de 1 a 3 minutos que faça laço, sombrio
 e heroico (percussão grave, cordas, sem melodia grudenta), e versões
@@ -132,25 +148,26 @@ Fontes com uso comercial liberado:
 | Freesound, filtro CC0 | CC0 | efeitos avulsos; cuidado com CC BY-NC, que não serve |
 | Kenney | CC0 | interface, impactos, vozes (já usamos) |
 
-Para instalar a música do menu: salvar como
-`assets/audio/musica_menu.ogg` (o jogo já toca esse nome em laço).
+Para trocar a música do menu: salvar como
+`src/assets/audio/musica_sala.ogg` (é o nome que o lobby toca em laço,
+`LobbyShell.PlayMusic`).
 
 ## O que falta, em ordem
 
 1. Falas das sequências (acima).
 2. Tema do menu de verdade.
-3. Som do especial do lobo (disparo e queda), casando com os raios.
-4. Passo de inimigo mais alto que o de aliado; ameaça na mistura.
-5. Tiro com variação por ambiente (dentro e fora) e mais gravações por
-   arma: hoje são de duas a quatro variações.
-6. Dublagem dos personagens (em inglês), já anotada em
+3. Passo de inimigo mais alto que o de aliado; ameaça na mistura.
+4. Tiro com variação por ambiente (dentro e fora) e gravações de
+   verdade por arma: hoje são três variações por arma, feitas do tiro do
+   AR-15 (a Desert Eagle, da pistola antiga).
+5. Dublagem dos personagens (em inglês), já anotada em
    `docs/PENDENCIAS.md`.
 
 ## Em chamas (21/11)
 
 **Desligado** (Jhon, 21/11, ao ouvir: "tire esse som por enquanto, não
 ficou bom"). O HUD não cria mais o `FireSound` e os arquivos saíram de
-`assets/audio`; o gerador (`tools/sons/chamas.py`) e o código ficaram
+`src/assets/audio`; o gerador (`src/tools/sons/chamas.py`) e o código ficaram
 para uma segunda tentativa. O que está abaixo é como era.
 
 Pedido do Jhon: "ao ficar em chamas, deve ter um barulho de fogo e mais

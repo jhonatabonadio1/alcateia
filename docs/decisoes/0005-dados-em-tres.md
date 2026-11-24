@@ -12,11 +12,11 @@ exigia recompilar ou mudar dois lugares.
 ## Decisão
 
 Número que alguém vai querer ajustar sem programar é um `Resource`
-com `[GlobalClass]` e um `.tres` em `resources/`:
+com `[GlobalClass]` e um `.tres` em `src/resources/`:
 
-- `resources/weapons/`, `resources/breeds/` (já eram);
-- `resources/bots/facil|medio|dificil.tres` (`BotDifficulty`);
-- `resources/body/ruido.tres` (`BodyNoiseProfile`).
+- `src/resources/weapons/`, `src/resources/breeds/` (já eram);
+- `src/resources/bots/facil|medio|dificil.tres` (`BotDifficulty`);
+- `src/resources/body/ruido.tres` (`BodyNoiseProfile`).
 
 O código guarda o padrão (o valor do script) e as **regras** entre os
 números viram teste, não comentário: o teste `Dificuldade` não prende

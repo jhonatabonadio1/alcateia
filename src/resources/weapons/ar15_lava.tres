@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/scripts/combat/WeaponDefinition.cs" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+Id = "ar15_lava"
+DisplayName = "AR-15 Lava"
+Class = 0
+WpCost = 320
+Description = "O AR-15 de lava: um pouco mais de dano por tiro, um pouco menos de cadência. Rocha escura com lava acesa nas rachaduras."
+Damage = 31
+HeadshotMultiplier = 2.5
+Rpm = 690
+Mode = 0
+Magazine = 35
+Reserve = 105
+ReloadTactical = 2.3
+ReloadEmpty = 2.9
+DrawTime = 0.5
+HolsterTime = 0.5
+SpreadBase = 0.13
+SpreadPerShot = 0.08
+SpreadMax = 1.6
+SpreadRecovery = 12.5
+SpreadDelay = 0.05
+MoveSpreadMultiplier = 1.5
+CrouchSpreadMultiplier = 0.7
+RecoilVertical = 0.95
+RecoilVerticalLate = 0.5
+RecoilEarlyShots = 4
+RecoilHorizontal = 0.16
+RecoilRecovery = 7.5
+Range = 160
+FalloffStart = 40
+FalloffEnd = 65
+FalloffMin = 0.75
+SpeedMultiplier = 1.0
+NoiseRadius = 45
+AimFov = 55
+AimSpreadMultiplier = 0.2
+AimSpeedMultiplier = 0.7
+StarDamage = 2.8
+StarPenetration = 2.5
+StarAccuracy = 3.8
+StarRate = 3.1
+StarMobility = 2.5
+StarRecoil = 3.0
+StarRange = 3.3
