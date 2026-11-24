@@ -232,6 +232,9 @@ O ângulo de cada mapa (de onde a câmera olha e para onde) está em
 4. `src/tools/testar.sh Mapa`.
 
 <!-- mapas de kit: início -->
+
+**Colisão das peças finas** (24/11): nos mapas de kit, peça fina ou recortada (poste, placa, mesa, banco) colide na própria malha, não numa caixa do tamanho total dela — a caixa virava parede invisível. No Neon a troca está feita; para outro mapa, ou se a cena voltar a ter caixa nessas peças: `godot --headless --path . -s res://src/tools/mapas/colisao_exata.gd -- <mapa> [--seco]` (a lista de peças, `FINAS`, é a do pacote do Neon; outro kit pede a lista dele).
+
 ## Mapas de kit (Low Poly FPS Bundle)
 
 Em 19/11 o Jhon trouxe o pacote "Low Poly FPS Bundle" (JustCreate, na Fab) em FBX e pediu os mapas no jogo. O pacote em

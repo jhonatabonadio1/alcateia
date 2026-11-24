@@ -150,6 +150,14 @@ public partial class Minimap : Control
 			AddPiece(hidden.GlobalTransform, shape.Size, body.HasMeta(ColorMeta)
 				? body.GetMeta(ColorMeta).AsColor()
 				: DefaultPiece);
+		// A peça fina com a forma exata (poste, banco, quiosque: colisao_exata.gd,
+		// 24/11): entra pela caixa em volta da forma, com a cor da peça.
+		else if (node is CollisionShape3D { Shape: ConcavePolygonShape3D exact } piece && !piece.Disabled
+			&& piece.GetParent() is StaticBody3D owner && owner.HasMeta(ColorMeta) && !owner.HasMeta(OffMeta))
+		{
+			Aabb bounds = BoundsOf(exact);
+			AddPiece(piece.GlobalTransform * new Transform3D(Basis.Identity, bounds.GetCenter()), bounds.Size, owner.GetMeta(ColorMeta).AsColor());
+		}
 
 		// Letras curtas no mapa viram marcas no minimapa: é assim que
 		// "A" e "B" aparecem sem o minimapa saber o que é uma base.
@@ -182,6 +190,15 @@ public partial class Minimap : Control
 		foreach (Node child in body.GetChildren())
 			if (child is MeshInstance3D { Mesh: BoxMesh }) return true;
 		return false;
+	}
+
+	private static Aabb BoundsOf(ConcavePolygonShape3D shape)
+	{
+		Vector3[] faces = shape.GetFaces();
+		if (faces.Length == 0) return new Aabb();
+		var bounds = new Aabb(faces[0], Vector3.Zero);
+		foreach (Vector3 p in faces) bounds = bounds.Expand(p);
+		return bounds;
 	}
 
 	private void AddPiece(Transform3D xform, Vector3 size, Color color)
