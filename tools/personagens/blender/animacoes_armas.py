@@ -3042,10 +3042,12 @@ def resolver_clipe(corpo, rig, plano, clipe, medir_penetracao=False):
             base = misturar_locais(plano.posturas[trans[0]], plano.posturas[trans[1]], w)
             col = misturar_matriz(plano.colocacoes[trans[0]], plano.colocacoes[trans[1]], w)
             est = trans[1] if w > 0.5 else trans[0]
+            w_mira = w if trans[1] == 'mira' else (1.0 - w if trans[0] == 'mira' else 0.0)
         else:
             base = plano.posturas[estado]
             col = plano.colocacoes[estado]
             est = estado
+            w_mira = 1.0 if estado == 'mira' else 0.0
         locais = dict(base)
         rig.tocar(clipe, k)
         # a cabeça do animador: inclina (x), gira (y) e rola (z), em graus
@@ -3056,7 +3058,7 @@ def resolver_clipe(corpo, rig, plano, clipe, medir_penetracao=False):
             M0 = corpo.esq.fk(locais)
             for nome in (corpo.n('Neck'), corpo.n('Head')):
                 corpo.esq.por(M0, locais, nome, meia.to_matrix() @ M0[nome].to_3x3())
-        quadros.append(dict(locais=locais, col=col, est=est, forma_d=None, forma_e=None, esquerda=None))
+        quadros.append(dict(locais=locais, col=col, est=est, w_mira=w_mira, forma_d=None, forma_e=None, esquerda=None))
 
     # faca e granada: o corpo inteiro
     if tipo in ('faca', 'granada'):

@@ -191,6 +191,9 @@ FACA_GOLPES = {
 FACA_BAINHA = tuple(float(x) for x in os.environ.get('FACA_BAINHA', '0.33,0.08,-0.54').split(','))
 FACA_BAINHA_SAI = (0.26, 0.12, -0.42)
 FACA_PUXA = 0.12
+# o punho da mão direita no saque da faca (graus de dobra e para o lado; FACA_SACAR_PUNHO=0 desliga)
+_fsp = os.environ.get('FACA_SACAR_PUNHO', '25,15')
+FACA_SACAR_PUNHO = None if _fsp == '0' else tuple(float(x) for x in _fsp.split(','))
 # A troca de pente na recarga (Copia.trocar_pente). No peito: x direita, y frente, z cima.
 RECARGA_TROCA = os.environ.get('RECARGA_TROCA', '1') == '1'
 # onde fica o meio do pente novo quando a mão o pega no bolso (o lado esquerdo do quadril)
@@ -237,6 +240,13 @@ DESCE_PISTOLA = float(os.environ.get('DESCE_PISTOLA', 0.14))
 PISTOLA_RETA = os.environ.get('PISTOLA_RETA', '1') == '1'
 PUNHO_RETO = float(os.environ.get('PUNHO_RETO', 8.0))
 COTOVELO_BAIXO = tuple(float(x) for x in os.environ.get('COTOVELO_BAIXO', '0.25,-1.0,0.0').split(','))
+# O cotovelo direito na mira do fuzil, por personagem (para fora, para cima, para trás): com o mesmo
+# COTOVELO_BAIXO, as proporções do Barut deixavam o cotovelo colado ao corpo (14° do para baixo) e o
+# da Eve saía para fora (30° a 52°; Jhon, 24/11: "na mira do fuzil é o cotovelo do barut, o da eve
+# tá pra fora, do barut deve ficar igual"). O braço dele segura mais esticado (o cotovelo a 15 cm da
+# linha ombro-pulso; o dela a 19), então ele vai a 64° para o cotovelo sair para o lado o que o dela
+# sai (13,5 cm; o dela, 15). Misturado com o de sempre no mirar e no desmirar.
+COTOVELO_D_MIRA = {'barut': '2.0,-1.0,0.0'}
 
 
 def nomes_de_mao(s):
@@ -1551,6 +1561,10 @@ class Copia:
                 pref = (q.get('cotovelo_d') or des['cotovelo_d']) if lado == 'Right' else (q.get('cotovelo_e') or des['cotovelo_e'])
                 if tipo in ('fuzil', 'pistola'):
                     pref = COTOVELO_BAIXO
+                    fora = os.environ.get('COTOVELO_D_MIRA', COTOVELO_D_MIRA.get(self.personagem))
+                    if tipo == 'fuzil' and lado == 'Right' and fora and q.get('w_mira', 0.0) > 0.0:
+                        alvo_ = tuple(float(x) for x in fora.split(','))
+                        pref = tuple(a + (b - a) * q['w_mira'] for a, b in zip(COTOVELO_BAIXO, alvo_))
                 br = ger.braco[lado]
                 guarda_ = q.get('guarda_d' if lado == 'Right' else 'guarda_e', 0.0) if tipo == 'faca' else 0.0
                 if guarda_ > 0.0:
@@ -1591,7 +1605,10 @@ class Copia:
                 # a mão livre (a esquerda da faca) e a da granada: o punho dentro do que dobra. A esquerda
                 # puxando o pino não: ela é a de lá, com o dedo na argola
                 pino_ = lado == 'Left' and tipo == 'granada' and q.get('pino_e', False)
-                livre = ((tipo == 'granada' and ref_d < 0.5) or (tipo == 'faca' and lado == 'Left')) and not pino_
+                # no saque da faca a mão direita também: na bainha, com a lâmina para baixo na pegada de lá,
+                # o punho ia 67° para o lado (Jhon, 24/11: "pulso torto"); a faca gira junto com a palma
+                faca_saque = tipo == 'faca' and lado == 'Right' and nome == 'sacar' and FACA_SACAR_PUNHO is not None
+                livre = ((tipo == 'granada' and ref_d < 0.5) or (tipo == 'faca' and lado == 'Left') or faca_saque) and not pino_
                 alvo_p = (0.0, 0.0) if (livre or (tipo == 'pistola' and PISTOLA_RETA)) else (fp['dobra'], fp['lado'])
                 if livre:
                     antes_ = rot
@@ -1602,13 +1619,16 @@ class Copia:
                     alinhado = tipo == 'granada'
                     lim_ = dict(dobra=(-PUNHO_ALINHADO, PUNHO_ALINHADO), lado=(-PUNHO_ALINHADO, PUNHO_ALINHADO),
                                 giro=80.0) if alinhado else aa.LIMITE_PUNHO
+                    if faca_saque:
+                        lim_ = dict(dobra=(-FACA_SACAR_PUNHO[0], FACA_SACAR_PUNHO[0]),
+                                    lado=(-FACA_SACAR_PUNHO[1], FACA_SACAR_PUNHO[1]), giro=80.0)
                     rot = aa.limitar_punho(br, M, pulso, rot, pref, corpo.mao[lado], alto, peso_t, alvo_p, lim=lim_)
                     if lado == 'Right':
-                        # a granada vai junto com a palma
+                        # a granada (e a faca no saque) vai junto com a palma
                         q['col'] = (Matrix.Translation(pulso) @ rot.to_4x4()) @ (Matrix.Translation(pulso) @ antes_.to_4x4()).inverted() @ q['col']
                         rig.colocar(q['col'])
                 r = br.resolver(M, locais, pulso, rot, pref, corpo.mao[lado], cotovelo_max_z=alto, peso_tempo=peso_t, alvo=alvo_p)
-                if os.environ.get('MEDIR_PUNHO') and nome in os.environ['MEDIR_PUNHO'].split(',') and k in (0, n // 2):
+                if os.environ.get('MEDIR_PUNHO') and nome in os.environ['MEDIR_PUNHO'].split(',') and k in (0, n // 2, n - 1):
                     cano_ = self.cano()
                     print(f'PUNHO {nome} q{k} {lado}: de lá {fp["dobra"]:.0f}°/{fp["lado"]:.0f}°, aqui {r["dobra"]:.0f}°/{r["lado"]:.0f}° '
                           f'(dobra/lado); cano {math.degrees(math.asin(max(-1.0, min(1.0, cano_.dot(pa.CIMA))))):.0f}° acima da horizontal', flush=True)

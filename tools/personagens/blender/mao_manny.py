@@ -295,7 +295,10 @@ def bases_do_clipe(corpo, rig, plano, clipe):
             M0 = corpo.esq.fk(locais)
             for nome in (corpo.n('Neck'), corpo.n('Head')):
                 corpo.esq.por(M0, locais, nome, meia.to_matrix() @ M0[nome].to_3x3())
-        quadros.append(dict(locais=locais, col=col, est=est, w=(aa.suave(progresso[k]) if (trans and trans[0] in plano.posturas and trans[1] in plano.posturas) else None)))
+        w_ = aa.suave(progresso[k]) if (trans and trans[0] in plano.posturas and trans[1] in plano.posturas) else None
+        # quanto do quadro é a postura da mira (0 a 1; no mirar e no desmirar, o caminho)
+        w_mira = (w_ if trans[1] == 'mira' else 1.0 - w_) if w_ is not None else (1.0 if est == 'mira' else 0.0)
+        quadros.append(dict(locais=locais, col=col, est=est, w=w_, w_mira=w_mira))
     return n, quadros
 
 

@@ -135,11 +135,11 @@ public sealed class WolfFxTest : RegressionTest
 
 		// ---- o uivo (R): a luz de regeneração acende, os arcos saltam, e o
 		// escudo cheio fecha com o anel. Soltar no meio não dá o anel.
-		b.Check(fx.Roar.Glow <= 0.01f && !fx.Roar.Sweeping, "sem rugir, a silhueta não acende");
+		b.Check(fx.Roar.Glow <= 0.01f && !fx.Roar.Sweeping, "sem rugir, nada da luz do uivo");
 		Input.ActionPress("howl");
 		await b.Seconds(0.5);
 		b.Check(fx.Roar.Active, "segurando R, o rugido aparece");
-		b.AtLeast(0.5, fx.Roar.Glow, "a silhueta acende durante o uivo");
+		b.AtLeast(0.5, fx.Roar.Glow, "a luz de regeneração acende durante o uivo");
 		int arcs = 0;
 		for (int i = 0; i < 30; i++)
 		{
@@ -147,9 +147,10 @@ public sealed class WolfFxTest : RegressionTest
 			arcs = Mathf.Max(arcs, fx.Roar.Arcs);
 		}
 		b.AtLeast(1, arcs, "arcos elétricos saltam para o corpo no uivo");
+		b.AtMost(2.5, RoarBurst.ShaftTop, "a luz do uivo é baixa (não passa de 2,5 m dos pés)");
 		Input.ActionRelease("howl");
 		await b.Seconds(0.1);
-		b.Check(!fx.Roar.Sweeping, "soltou no meio: sem a descarga de escudo cheio");
+		b.Check(!fx.Roar.Sweeping, "soltou no meio: sem o anel de escudo cheio");
 		b.Check(!fx.EnergyPlaying, "soltou no meio: o som da energia é cortado");
 		await b.Seconds(1.0);
 
@@ -161,9 +162,9 @@ public sealed class WolfFxTest : RegressionTest
 			swept = fx.Roar.Sweeping;
 		}
 		Input.ActionRelease("howl");
-		b.Check(swept, "rugiu até o fim: a descarga de escudo cheio sai do corpo");
+		b.Check(swept, "rugiu até o fim: o anel de escudo cheio sobe");
 		await b.Seconds(1.2);
-		b.Check(fx.Roar.Glow <= 0.01f && fx.Roar.Arcs == 0, "acabou o uivo, a silhueta e os arcos apagam");
+		b.Check(fx.Roar.Glow <= 0.01f && fx.Roar.Arcs == 0, "acabou o uivo, a luz e os arcos somem");
 
 		// ---- voltando a humano: fumaça de novo, curta.
 		form.ToggleForm();

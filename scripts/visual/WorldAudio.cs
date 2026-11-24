@@ -51,8 +51,8 @@ public partial class WorldAudio : Node
 	/// <c>assets/audio/</c> e troque este nome.
 	/// </summary>
 	/// <summary>A voz do rugido (18/11: gravação própria, do pacote que o Jhon
-	/// mandou). Por baixo dela, os choques (<see cref="WolfFx.HowlEnergySound"/>;
-	/// Jhon, 23/11: "só choque e rugido").</summary>
+	/// mandou). Por baixo dela, a energia e o escudo cheio
+	/// (<see cref="WolfFx.HowlEnergySound"/>; voltaram em 24/11, com esta voz).</summary>
 	[Export] public string HowlSound = "lobo_rugido";
 	[Export] public string HowlFallback = "";
 

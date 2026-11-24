@@ -34,7 +34,15 @@ public partial class VisualSmoothing : Node
 	private Node3D _body;
 	private Health _health;
 	private readonly List<Node3D> _parts = new();
-	private Vector3 _from, _applied;
+
+	/// <summary>Peças soltas (<c>TopLevel</c>) que se desenham presas ao corpo: a arma
+	/// na mão vista de fora (<see cref="HeldWeapon"/>). Postas no mundo, não seguem o
+	/// deslocamento do modelo: a arma era desenhada onde a física está e as mãos um
+	/// passo atrás — andando, até 5 cm; saindo de agachado para o pulo, o corpo sobe
+	/// 17 cm num passo e a arma descolava 10 cm das mãos (Jhon, 24/11). Andam junto,
+	/// no mundo.</summary>
+	private readonly List<Node3D> _loose = new();
+	private Vector3 _from, _applied, _appliedWorld;
 	private bool _shifted;
 
 	/// <summary>O que falta o desenho andar de uma correção da rede (no
@@ -49,6 +57,13 @@ public partial class VisualSmoothing : Node
 	/// segundo, que é o que faz a correção passar despercebida.
 	/// </summary>
 	public void Absorb(Vector3 moved) => _correction -= moved;
+
+	/// <summary>Uma peça solta (<c>TopLevel</c>) presa ao desenho do corpo: anda com
+	/// ele (veja <see cref="_loose"/>). Sai sozinha quando é liberada.</summary>
+	public void Follow(Node3D loose)
+	{
+		if (loose != null && !_loose.Contains(loose)) _loose.Add(loose);
+	}
 
 	public override void _Ready()
 	{
@@ -105,8 +120,12 @@ public partial class VisualSmoothing : Node
 		if (behind.LengthSquared() < 1e-8f) return;
 
 		_applied = _body.GlobalTransform.Basis.Inverse() * behind;
+		_appliedWorld = behind;
 		foreach (Node3D part in _parts)
 			if (IsInstanceValid(part)) part.Position += _applied;
+		_loose.RemoveAll(n => !IsInstanceValid(n));
+		foreach (Node3D loose in _loose)
+			if (loose.IsInsideTree()) loose.GlobalPosition += _appliedWorld;
 		_shifted = true;
 	}
 
@@ -120,5 +139,7 @@ public partial class VisualSmoothing : Node
 
 		foreach (Node3D part in _parts)
 			if (IsInstanceValid(part)) part.Position -= _applied;
+		foreach (Node3D loose in _loose)
+			if (IsInstanceValid(loose) && loose.IsInsideTree()) loose.GlobalPosition -= _appliedWorld;
 	}
 }

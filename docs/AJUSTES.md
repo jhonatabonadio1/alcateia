@@ -441,6 +441,8 @@ deagle_fenix` e a terceira pessoa (`mao_manny_anim.py eve deagle`,
 | `RECARGA_GIRO_P9` | pitch 0°, yaw +20°, roll −25° | O giro a mais na troca: o cano para dentro e tombado. Sem ele o cotovelo direito da Eve abria para o lado (100°; agora 32°) |
 | `PISTOLA_RETA` (`mao_manny_anim.py`) | ligado | Terceira pessoa: o cano na horizontal e os pulsos retos, não com a dobra da primeira pessoa (24/11). `PISTOLA_RETA=0` volta ao de antes |
 | `PUNHO_RETO` (`mao_manny_anim.py`) | 8° | Quanto o pulso pode dobrar sem custo na pistola reta |
+| `FACA_SACAR_PUNHO` (`mao_manny_anim.py`) | 25°, 15° | O punho direito no saque da faca: até quanto dobra e vai para o lado (a faca gira junto com a palma); `0` desliga |
+| `COTOVELO_D_MIRA` (`mao_manny_anim.py`) | Barut `2.0,-1.0,0.0` (64° do para baixo); Eve sem | Para onde o cotovelo direito prefere ir na mira do fuzil, por personagem (fora, cima, trás); a variável de ambiente vale para todos |
 
 As durações das recargas continuam as do jogo (`ReloadTactical` 1,8 s e
 `ReloadEmpty` 2,2 s no `.tres`; o clipe tem 1,67 e 2,17 s).
@@ -479,6 +481,7 @@ O tamanho e a pegada da granada (23/11):
 | `tools/armas/conjuntos.py` | `GRANADA_ATRAS` | pulso 21,5 cm à direita, 5 cm acima e 11 cm à frente do olho | A mão armada, quase toda fora da tela |
 | `Grenade` | `ModelScale` | 1,4 | A granada voando (só a aparência; a colisão não muda) |
 | `HeldWeapon` | `GrenadeHeldGrow` | 1,4 | A granada na mão em terceira pessoa, sobre a da primeira pessoa (1,96 da de verdade); o personagem de mão grande (Barut, escala 1,3) cresce só o que falta |
+| `HeldWeapon` | `DrawShowAt` | 0,85 | Na troca de arma, quanto do caminho até a pose do saque a mão anda antes de a arma nova aparecer nela (sai do bolso, da bainha, de trás) |
 | `mao_manny_anim.py` | `GRANADA_CRESCE` | 1,4 | O mesmo número no Blender: o dedo que puxa o pino entra na argola crescida |
 | `mao_manny_anim.py` | `LANCE_PINO_SAI` / `LANCE_LARGA` | 0,27 / 0,12 s | Quando o pino sai (a esquerda o leva) e quando ela o larga (cai no chão: `HeldWeapon.DroppedPinLife` 8 s) |
 | `mao_manny_anim.py` | `GRANADA_BOLSO` | 0,22; 0,10; −0,45 m | O bolso de onde a terceira pessoa saca a granada (no peito: direita, frente, cima) |

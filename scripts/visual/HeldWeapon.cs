@@ -111,6 +111,20 @@ public partial class HeldWeapon : Node3D
 		Rebuild();
 	}
 
+	/// <summary>A arma é solta (<c>TopLevel</c>, posta no mundo a cada quadro): o alisamento do
+	/// desenho do corpo (<see cref="VisualSmoothing"/>) a leva junto com o modelo, senão as mãos
+	/// ficam um passo da física atrás dela.
+	/// Pedido no quadro (não ao montar a arma): o corpo monta o alisamento depois do modelo.</summary>
+	private void FollowBody()
+	{
+		if (_model == null || _following == _model) return;
+		if (_body?.GetNodeOrNull<VisualSmoothing>("VisualSmoothing") is not VisualSmoothing smoothing) return;
+		smoothing.Follow(_model);
+		_following = _model;
+	}
+
+	private Node3D _following;
+
 	private string WantedId()
 	{
 		if (_weapon == null || (_form != null && _form.ShowsWolf) || (_health != null && _health.IsDead))
@@ -176,6 +190,7 @@ public partial class HeldWeapon : Node3D
 		// reescreveu volta ao que era: nada se soma de um quadro para o outro.
 		RestorePose();
 		if (_model == null || !IsVisibleInTree()) return;
+		FollowBody();
 		_stab += delta;
 
 		Transform3D skeleton = _skeleton.GlobalTransform;
@@ -748,6 +763,52 @@ public partial class HeldWeapon : Node3D
 		_clipFade = Mathf.Min(1f, _clipFade + (float)delta / Mathf.Max(PoseBlendTime, 0.01f));
 		float fade = _clipFade * _clipFade * (3f - 2f * _clipFade);
 
+		Transform3D rig = now.RigAt(at);
+		if (before != null) rig = HoldClips.Blend(before.RigAt(_rig.PrevTime), rig, w);
+		// A arma do tamanho da mão do personagem: cresce em volta da origem
+		// do conjunto (o olho da primeira pessoa), como no Blender.
+		if (!Mathf.IsEqualApprox(_clipSet.Scale, 1f))
+			rig *= new Transform3D(Basis.Identity.Scaled(Vector3.One * _clipSet.Scale), Vector3.Zero);
+
+		// Na troca de arma o corpo leva PoseBlendTime para chegar à pose do clipe, e a arma nova ia
+		// direto para o fim do caminho: a faca e a granada apareciam fora da mão, perto da coxa, e
+		// depois a mão ia até elas (Jhon, 24/11: "ela surge fora da mão e depois se desloca para
+		// mão"). Enquanto o corpo chega, a arma vai presa na mão direita, onde o clipe a põe nela.
+		Transform3D placed;
+		if (fade < 1f && _rightHand >= 0)
+		{
+			PoseClip(now, at, before, w, 1f);
+			Transform3D inHand = _skeleton.GetBoneGlobalPose(_rightHand).AffineInverse() * _skeleton.GetBoneGlobalPose(_spine2) * rig;
+			RestorePose();
+			PoseClip(now, at, before, w, fade);
+			placed = _skeleton.GetBoneGlobalPose(_rightHand) * inHand;
+		}
+		else
+		{
+			PoseClip(now, at, before, w, fade);
+			placed = _skeleton.GetBoneGlobalPose(_spine2) * rig;
+		}
+		_rig.GlobalTransform = _skeleton.GlobalTransform * placed;
+		// No saque a arma nova sai do bolso, da bainha ou de trás, onde o clipe começa: ela só
+		// aparece quando a mão chega lá (Jhon, 24/11: "ela precisa sair do bolso"). Antes, presa
+		// na mão, a granada descia do peito até o bolso para depois subir.
+		_rig.Visible = !(now.Name == "sacar" && fade < DrawShowAt);
+		_rig.FollowMuzzle();
+		_calibrated = false;
+		GrowGrenade();
+		SwapMagazine(now, at);
+		PullPin(now, at);
+	}
+
+	/// <summary>Na troca de arma, quanto do caminho até a pose do saque (0 a 1) a mão anda antes de
+	/// a arma nova aparecer nela.</summary>
+	[Export(PropertyHint.Range, "0,1")] public float DrawShowAt = 0.85f;
+
+	/// <summary>Os ossos do clipe no corpo, misturados com o clipe de antes (<paramref name="w"/>) e
+	/// com a pose de agora do corpo (<paramref name="fade"/>, a troca de arma); o peito como no
+	/// Blender e inclinado para a mira.</summary>
+	private void PoseClip(HoldClip now, double at, HoldClip before, float w, float fade)
+	{
 		for (int i = 0; i < _clipBones.Length; i++)
 		{
 			int bone = _clipBones[i];
@@ -771,19 +832,6 @@ public partial class HeldWeapon : Node3D
 
 		ChestAsBaked(fade);
 		PitchChest();
-
-		Transform3D rig = now.RigAt(at);
-		if (before != null) rig = HoldClips.Blend(before.RigAt(_rig.PrevTime), rig, w);
-		// A arma do tamanho da mão do personagem: cresce em volta da origem
-		// do conjunto (o olho da primeira pessoa), como no Blender.
-		if (!Mathf.IsEqualApprox(_clipSet.Scale, 1f))
-			rig *= new Transform3D(Basis.Identity.Scaled(Vector3.One * _clipSet.Scale), Vector3.Zero);
-		_rig.GlobalTransform = _skeleton.GlobalTransform * _skeleton.GetBoneGlobalPose(_spine2) * rig;
-		_rig.FollowMuzzle();
-		_calibrated = false;
-		GrowGrenade();
-		SwapMagazine(now, at);
-		PullPin(now, at);
 	}
 
 	/// <summary>Quantas vezes a granada na mão é maior vista de fora que a da primeira pessoa (Jhon,
