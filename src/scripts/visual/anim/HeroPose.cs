@@ -136,13 +136,5 @@ public static class HeroPose
 		if (a >= 0 && b >= 0) wanted[a] = (b, direction);
 	}
 
-	private static Quaternion Arc(Vector3 from, Vector3 to)
-	{
-		float dot = Mathf.Clamp(from.Dot(to), -1f, 1f);
-		if (dot > 0.99999f) return Quaternion.Identity;
-		Vector3 axis = from.Cross(to);
-		if (axis.LengthSquared() < 1e-10f)
-			axis = from.Cross(Mathf.Abs(from.X) < 0.9f ? Vector3.Right : Vector3.Up);
-		return new Quaternion(axis.Normalized(), Mathf.Acos(dot));
-	}
+	private static Quaternion Arc(Vector3 from, Vector3 to) => AnimationKit.Arc(from, to);
 }

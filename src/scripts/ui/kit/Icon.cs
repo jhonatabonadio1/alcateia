@@ -86,6 +86,14 @@ public partial class Icon : Control
 		return texture;
 	}
 
+	/// <summary>A forma de quem está numa linha de placar (o placar e o TAB):
+	/// caveira apagada se morto, lobo laranja ou humano.</summary>
+	public void ShowForm(bool dead, bool wolf)
+	{
+		Kind = dead ? IconKind.Skull : wolf ? IconKind.Wolf : IconKind.Human;
+		Tint = dead ? UiTokens.TextDisabled : wolf ? UiTokens.WolfOrange : UiTokens.TextSecondary;
+	}
+
 	public static Icon Make(IconKind kind, int size = 20, Color? tint = null) => new()
 	{
 		Kind = kind,

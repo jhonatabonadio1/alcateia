@@ -107,18 +107,7 @@ public partial class Bot
 		Vector3 up = Vector3.Up * StepHeight;
 		Vector3 ahead = wanted.Normalized() * Mathf.Max(want, 0.12f);
 
-		Transform3D at = GlobalTransform;
-		at.Origin = from;
-		if (TestMove(at, up)) return;
-		at.Origin += up;
-		if (TestMove(at, ahead)) return;
-		at.Origin += ahead;
-
-		var floor = new KinematicCollision3D();
-		if (!TestMove(at, -up - Vector3.Up * 0.05f, floor)) return;
-		if (floor.GetNormal().Dot(Vector3.Up) < Mathf.Cos(FloorMaxAngle)) return;
-
-		Vector3 landed = at.Origin + floor.GetTravel();
+		if (!BodyMotion.ProbeStep(this, from, up, ahead, FloorMaxAngle, out Vector3 landed)) return;
 		if (landed.Y - from.Y < 0.02f) return;
 		GlobalPosition = landed;
 	}

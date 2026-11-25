@@ -81,50 +81,83 @@ public sealed class HeldSmoothingTest : RegressionTest
 /// Na troca de arma a arma nova fica na mão (Jhon, 24/11: a faca e a granada "surgem fora da mão e
 /// depois se deslocam para a mão"). O corpo leva um instante para chegar à pose do saque, e a arma
 /// ia direto para o fim do caminho (até 80 cm da mão). Agora ela some até a mão chegar ao bolso ou
-/// à bainha e, visível, anda presa nela.
+/// à bainha e, visível, anda presa nela; e aparece com a mão no quadril (Jhon, 24/11: "valide se a
+/// granada surge na mão em terceira pessoa pegando do bolso, igual as armas; e valide isso para a
+/// faca também").
 /// </summary>
 public sealed class DrawInHandTest : RegressionTest
 {
 	public override string Name => "ArmaNovaNaMao";
-	public override string Description => "o boneco troca a pistola pela faca: a faca some no começo do saque e, visível, fica a menos de 3 cm da mão";
+	public override string Description => "Eve e Barut trocam a pistola pela faca e pela granada: some no começo do saque, aparece com a mão no quadril (bainha, bolso) e, visível, fica a menos de 3 cm da mão";
+
+	/// <summary>Até onde do quadril direito a mão pode estar quando a peça aparece: o
+	/// bolso e a bainha ficam ao lado dele (a mão de quem pega no bolso, uns 25 cm).</summary>
+	private const float PocketReach = 0.32f;
 
 	public override async Task Run(RegressionBench b)
 	{
 		b.RemoveBots();
-		var puppet = GD.Load<PackedScene>("res://src/scenes/bot.tscn").Instantiate<Bot>();
-		puppet.Name = "Boneco";
-		puppet.Team = 2;
-		puppet.Remote = true;
-		b.GetTree().CurrentScene.AddChild(puppet);
-		await b.Frames(2);
-		Vector3 at = b.Player.GlobalPosition + new Vector3(0, 0, -4f);
-		void Tell(Slot slot)
+		foreach (int team in new[] { Teams.Blue, Teams.Orange })
+		foreach (Slot slot in new[] { Slot.Knife, Slot.Grenade })
 		{
-			puppet.RemoteUpdate(at, Vector3.Zero, 0f, 0f, true, Form.Human, slot, "ar15", "deagle", 200f, 200f, 0f, 0f, false);
-			puppet.RemoteMotion(false, false, false, false, false);
-			puppet.CollisionLayer = 0;
-		}
-		for (int i = 0; i < 90; i++) { Tell(Slot.Secondary); await b.Frames(1); }
+			string what = (slot == Slot.Knife ? "a faca" : "a granada") + (team == Teams.Blue ? " da Eve" : " do Barut");
+			var puppet = GD.Load<PackedScene>("res://src/scenes/bot.tscn").Instantiate<Bot>();
+			puppet.Name = "Boneco";
+			puppet.Team = team;
+			puppet.Remote = true;
+			b.GetTree().CurrentScene.AddChild(puppet);
+			await b.Frames(2);
+			Vector3 at = b.Player.GlobalPosition + new Vector3(0, 0, -4f);
+			void Tell(Slot holding)
+			{
+				puppet.RemoteUpdate(at, Vector3.Zero, 0f, 0f, true, Form.Human, holding, "ar15", "deagle", 200f, 200f, 0f, 0f, false);
+				puppet.RemoteMotion(false, false, false, false, false);
+				puppet.CollisionLayer = 0;
+			}
+			for (int i = 0; i < 90; i++) { Tell(Slot.Secondary); await b.Frames(1); }
 
-		Transform3D? last = null;
-		var probe = new HeldSmoothingProbe { Look = () => last = InHand(puppet) };
-		b.GetTree().CurrentScene.AddChild(probe);
-		int hidden = 0, shown = 0;
-		float far = 0f;
-		for (int i = 0; i < 24; i++)
-		{
-			Tell(Slot.Knife);
-			await b.Frames(1);
-			if (last is not Transform3D now) { hidden++; continue; }
-			shown++;
-			far = Mathf.Max(far, now.Origin.Length());
+			Transform3D? last = null;
+			float hip = -1f;
+			var probe = new HeldSmoothingProbe { Look = () => { last = InHand(puppet); hip = HandToHip(puppet); } };
+			b.GetTree().CurrentScene.AddChild(probe);
+			int hidden = 0, shown = 0;
+			float far = 0f, firstHip = -1f;
+			for (int i = 0; i < 30; i++)
+			{
+				Tell(slot);
+				await b.Frames(1);
+				if (last is not Transform3D now) { if (shown == 0) hidden++; continue; }
+				if (shown == 0) firstHip = hip;
+				shown++;
+				far = Mathf.Max(far, now.Origin.Length());
+			}
+			probe.QueueFree();
+			RegressionBench.Note($"{what}: escondida {hidden} quadros; aparece com a mão a {firstHip * 100f:0} cm do quadril; visível, a mão do conjunto a até {far * 100f:0.0} cm da do corpo");
+			b.Check(hidden > 0, $"{what} some enquanto a mão vai buscá-la ({hidden} quadros)");
+			b.Check(shown > 0, $"{what} aparece na mão ({shown} quadros)");
+			b.Check(firstHip >= 0 && firstHip < PocketReach, $"{what} aparece com a mão no quadril, onde fica o bolso ou a bainha ({firstHip * 100f:0} cm do quadril)");
+			// Entre dois quadros do clipe (30 por segundo) o corpo e o conjunto se separam um pouco no
+			// gesto rápido do saque (até 2 cm, e 0 no quadro do clipe): o braço interpola osso por osso.
+			b.Check(far < 0.03f, $"visível, {what} fica na mão (a mão do conjunto a até {far * 100f:0.0} cm da do corpo; era até 80 cm)");
+			puppet.QueueFree();
+			await b.Frames(2);
 		}
-		probe.QueueFree();
-		b.Check(hidden > 0, $"a faca some enquanto a mão vai à bainha ({hidden} quadros)");
-		b.Check(shown > 0, $"e aparece na mão ({shown} quadros)");
-		// Entre dois quadros do clipe (30 por segundo) o corpo e o conjunto se separam um pouco no
-		// gesto rápido do saque (até 2 cm, e 0 no quadro do clipe): o braço interpola osso por osso.
-		b.Check(far < 0.03f, $"visível, a faca fica na mão (a mão do conjunto a até {far * 100f:0.0} cm da do corpo; era até 80 cm)");
+	}
+
+	/// <summary>A distância da mão direita do corpo ao quadril direito (o osso da coxa).</summary>
+	private static float HandToHip(Bot puppet)
+	{
+		Skeleton3D skeleton = AnimationKit.FindSkeleton(puppet.GetNode("Human"));
+		if (skeleton == null) return -1f;
+		int hand = -1, hip = -1;
+		for (int i = 0; i < skeleton.GetBoneCount(); i++)
+		{
+			string name = skeleton.GetBoneName(i);
+			if (name.EndsWith("RightHand")) hand = i;
+			else if (name.EndsWith("RightUpLeg")) hip = i;
+		}
+		if (hand < 0 || hip < 0) return -1f;
+		return skeleton.GetBoneGlobalPose(hand).Origin.DistanceTo(skeleton.GetBoneGlobalPose(hip).Origin) * skeleton.GlobalTransform.Basis.Scale.Y;
 	}
 
 	/// <summary>A mão do conjunto (o que segura a arma) no espaço da mão direita do corpo, sem escala; null se a arma está escondida.</summary>

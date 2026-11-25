@@ -319,18 +319,7 @@ public partial class Player
 		// não passaria da quina.
 		Vector3 ahead = flatWanted.Normalized() * Mathf.Max(want, 0.12f);
 
-		Transform3D at = GlobalTransform;
-		at.Origin = from;
-		if (TestMove(at, up)) return;                 // teto em cima
-		at.Origin += up;
-		if (TestMove(at, ahead)) return;              // mais alto que um degrau
-		at.Origin += ahead;
-
-		var floor = new KinematicCollision3D();
-		if (!TestMove(at, -up - Vector3.Up * 0.05f, floor)) return;
-		if (floor.GetNormal().Dot(Vector3.Up) < Mathf.Cos(FloorMaxAngle)) return;
-
-		Vector3 landed = at.Origin + floor.GetTravel();
+		if (!BodyMotion.ProbeStep(this, from, up, ahead, FloorMaxAngle, out Vector3 landed)) return;
 		float rise = landed.Y - from.Y;
 		if (rise < 0.02f) return;
 

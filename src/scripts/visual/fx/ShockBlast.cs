@@ -95,31 +95,12 @@ public partial class ShockBlast : Node3D
 		gradient.SetColor(0, Colors.White);
 		gradient.SetColor(1, new Color(1, 1, 1, 0));
 		gradient.SetOffset(0, 0.4f);
-		_mesh = new MultiMesh
+		_mesh = FxQuads.Cloud(new GradientTexture2D
 		{
-			TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
-			UseColors = true,
-			Mesh = new QuadMesh
-			{
-				Size = Vector2.One,
-				Material = new StandardMaterial3D
-				{
-					ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-					AlbedoTexture = new GradientTexture2D
-					{
-						Gradient = gradient, Width = 32, Height = 32,
-						Fill = GradientTexture2D.FillEnum.Radial, FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(1f, 0.5f)
-					},
-					VertexColorUseAsAlbedo = true,
-					Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-					BlendMode = BaseMaterial3D.BlendModeEnum.Add,
-					BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
-					BillboardKeepScale = true
-				}
-			},
-			InstanceCount = Count,
-			VisibleInstanceCount = Count
-		};
+			Gradient = gradient, Width = 32, Height = 32,
+			Fill = GradientTexture2D.FillEnum.Radial, FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(1f, 0.5f)
+		}, Count, additive: true);
+		_mesh.VisibleInstanceCount = Count;
 		AddChild(new MultiMeshInstance3D
 		{
 			Multimesh = _mesh,

@@ -420,19 +420,7 @@ public static class AnimationKit
 		Transform3D fb = ChainTo(body, bodyRoot);
 
 		if (refHips >= 0 && bodyHips >= 0)
-		{
-			float ratio = (fb * body.GetBoneGlobalRest(bodyHips).Origin).Y
-				/ Mathf.Max((fr * reference.GetBoneGlobalRest(refHips).Origin).Y, 1e-4f);
-			Transform3D back = fb.AffineInverse();
-			// A posição da trilha é local ao pai do quadril; o pai é a raiz do
-			// esqueleto nos dois, então o espaço do esqueleto serve.
-			for (int track = 0; track < animation.GetTrackCount(); track++)
-			{
-				if (animation.TrackGetType(track) != Animation.TrackType.Position3D) continue;
-				for (int key = 0; key < animation.TrackGetKeyCount(track); key++)
-					animation.TrackSetKeyValue(track, key, back * ((fr * (Vector3)animation.TrackGetKeyValue(track, key)) * ratio));
-			}
-		}
+			MoveHips(animation, reference, refHips, fr, body, bodyHips, fb);
 
 		RetargetPose(animation, reference, body,
 			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion());
@@ -466,7 +454,32 @@ public static class AnimationKit
 		}
 	}
 
-	private static Quaternion Arc(Vector3 from, Vector3 to)
+	/// <summary>
+	/// As trilhas de posição (o quadril) do espaço do clipe
+	/// (<paramref name="fr"/>, o esqueleto de referência) para o do corpo
+	/// (<paramref name="fb"/>), na razão das alturas do quadril: o corpo mais
+	/// baixo anda e pula proporcionalmente. A posição da trilha é local ao pai
+	/// do quadril; o pai é a raiz do esqueleto nos dois, então o espaço do
+	/// esqueleto serve. O humano e os clipes do lobo do Jhon (WolfOwnClips)
+	/// usam.
+	/// </summary>
+	public static void MoveHips(Animation animation, Skeleton3D reference, int refHips, Transform3D fr,
+		Skeleton3D body, int bodyHips, Transform3D fb)
+	{
+		float ratio = (fb * body.GetBoneGlobalRest(bodyHips).Origin).Y
+			/ Mathf.Max((fr * reference.GetBoneGlobalRest(refHips).Origin).Y, 1e-4f);
+		Transform3D back = fb.AffineInverse();
+		for (int track = 0; track < animation.GetTrackCount(); track++)
+		{
+			if (animation.TrackGetType(track) != Animation.TrackType.Position3D) continue;
+			for (int key = 0; key < animation.TrackGetKeyCount(track); key++)
+				animation.TrackSetKeyValue(track, key, back * ((fr * (Vector3)animation.TrackGetKeyValue(track, key)) * ratio));
+		}
+	}
+
+	/// <summary>O giro mais curto que leva a direção <paramref name="from"/> à
+	/// <paramref name="to"/> (as duas unitárias). Usado também pela HeroPose.</summary>
+	public static Quaternion Arc(Vector3 from, Vector3 to)
 	{
 		float dot = Mathf.Clamp(from.Dot(to), -1f, 1f);
 		if (dot > 0.99999f) return Quaternion.Identity;

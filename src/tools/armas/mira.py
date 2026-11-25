@@ -370,7 +370,7 @@ def fazer(path, ficha=None, previa=None):
     # ---- a ficha: os clipes e a boca do cano no osso da arma
     if ficha and os.path.exists(ficha):
         d = json.load(open(ficha, encoding='utf-8'))
-        alvo = "res://" + os.path.relpath(os.path.abspath(path), os.path.abspath(os.path.join(os.path.dirname(ficha), "..", "..", ".."))).replace(os.sep, "/")
+        alvo = "res://" + os.path.relpath(os.path.abspath(path), os.path.abspath(os.path.join(os.path.dirname(ficha), "..", "..", "..", ".."))).replace(os.sep, "/")   # a raiz do projeto (a ficha está em src/assets/armas/fp)
         for nome, e in d.items():
             if e.get('arquivo') != alvo: continue
             for clipe in NOVOS:

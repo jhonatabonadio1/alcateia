@@ -104,15 +104,7 @@ public static class WolfOwnClips
 		Transform3D fb = Chain(body, modelRoot);
 
 		// O quadril: do espaço do clipe para o do corpo, na razão das alturas.
-		float ratio = (fb * body.GetBoneGlobalRest(bodyHips).Origin).Y
-			/ Mathf.Max((fr * reference.GetBoneGlobalRest(refHips).Origin).Y, 1e-4f);
-		Transform3D back = fb.AffineInverse();
-		for (int track = 0; track < animation.GetTrackCount(); track++)
-		{
-			if (animation.TrackGetType(track) != Animation.TrackType.Position3D) continue;
-			for (int key = 0; key < animation.TrackGetKeyCount(track); key++)
-				animation.TrackSetKeyValue(track, key, back * ((fr * (Vector3)animation.TrackGetKeyValue(track, key)) * ratio));
-		}
+		AnimationKit.MoveHips(animation, reference, refHips, fr, body, bodyHips, fb);
 
 		AnimationKit.RetargetPose(animation, reference, body,
 			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion());

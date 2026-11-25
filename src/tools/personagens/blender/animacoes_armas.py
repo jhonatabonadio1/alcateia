@@ -535,7 +535,7 @@ class Conjunto:
         self.chave = chave
         self.escala = escala
         self.ficha = FICHA[chave]
-        caminho = os.path.join(RAIZ, self.ficha['arquivo'].replace('res://', ''))
+        caminho = os.path.join(RAIZ, self.ficha['arquivo'].replace('res://src/', '').replace('res://', ''))   # RAIZ é src/ (24/11)
         antes_obj, antes_acao = set(bpy.data.objects), set(bpy.data.actions)
         bpy.ops.import_scene.gltf(filepath=caminho)
         novos = [o for o in bpy.data.objects if o not in antes_obj]

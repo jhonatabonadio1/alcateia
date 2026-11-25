@@ -186,16 +186,7 @@ public partial class Scoreboard : HBoxContainer
 			_assists.Text = c.Assists.ToString();
 			_points.Text = c.Points.ToString();
 
-			if (c.IsDead)
-			{
-				_form.Kind = IconKind.Skull;
-				_form.Tint = UiTokens.TextDisabled;
-			}
-			else
-			{
-				_form.Kind = c.IsWolf ? IconKind.Wolf : IconKind.Human;
-				_form.Tint = c.IsWolf ? UiTokens.WolfOrange : UiTokens.TextSecondary;
-			}
+			_form.ShowForm(c.IsDead, c.IsWolf);
 
 			_ping.Visible = !c.IsBot;
 			_bot.Visible = c.IsBot;

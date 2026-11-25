@@ -31,16 +31,7 @@ uniform vec4 cool : source_color = vec4(0.200, 0.480, 0.680, 1.0);
 uniform vec4 warm : source_color = vec4(0.850, 0.420, 0.130, 1.0);
 uniform vec4 gold : source_color = vec4(0.950, 0.720, 0.310, 1.0);
 
-float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-
-float vnoise(vec2 p) {
-	vec2 i = floor(p);
-	vec2 f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
-		mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-
+" + ShaderBits.ValueNoise + @"
 // A altura de um vértice da malha: ondula devagar.
 float height(vec2 k) {
 	vec2 q = k * 0.23;

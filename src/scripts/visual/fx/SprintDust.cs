@@ -66,26 +66,8 @@ public partial class SprintDust : Node3D
 
 		// Simulados aqui (são poucos) e desenhados de uma vez: cada grão é
 		// um quadradinho de frente para a câmera, com a própria cor.
-		_mesh = new MultiMesh
-		{
-			TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
-			UseColors = true,
-			Mesh = new QuadMesh
-			{
-				Size = Vector2.One,
-				Material = new StandardMaterial3D
-				{
-					ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-					AlbedoTexture = Dot(),
-					VertexColorUseAsAlbedo = true,
-					Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-					BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
-					BillboardKeepScale = true
-				}
-			},
-			InstanceCount = Max,
-			VisibleInstanceCount = 0
-		};
+		_mesh = FxQuads.Cloud(Dot(), Max);
+		_mesh.VisibleInstanceCount = 0;
 		_grains = new MultiMeshInstance3D
 		{
 			Name = "Graos",

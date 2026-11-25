@@ -254,6 +254,24 @@ DESCE_PISTOLA = float(os.environ.get('DESCE_PISTOLA', 0.14))
 # punhos ficarem até PUNHO_RETO graus do reto.
 PISTOLA_RETA = os.environ.get('PISTOLA_RETA', '1') == '1'
 PUNHO_RETO = float(os.environ.get('PUNHO_RETO', 8.0))
+# Os dedos da pistola juntos (Jhon, 24/11: "dedo mínimo e dedo médio tortos, esses devem seguir a
+# direção dos outros, e a articulação também"). Na P9 de lá a mão esquerda fecha o médio a 135° e
+# o mínimo a 105°, com as juntas giradas até 72°, contra 61-70° do indicador e do anelar: na
+# primeira pessoa esses dedos ficam escondidos atrás da arma; de fora, de frente, ficavam tortos.
+# Aqui o médio dobra como a média do indicador e do anelar, e o mínimo como o anelar (as falanges;
+# os metacarpos e o polegar ficam os de lá).
+# A mão de apoio em concha (Jhon, 24/11: "encoste a mão base nos dedos da mão que segura, apenas
+# arrastando para o lado, para formar uma concha com a mão"): na P9 de lá a palma esquerda fica a
+# 26-32 mm das pontas dos dedos da direita. Ela anda de lado (na horizontal, perpendicular ao cano,
+# para a direita) estes milímetros, por personagem (medido com MEDIR_CONCHA=curva: o vão fecha
+# até uns 4-6 mm da pele); só quando está no punho da arma (some quando sai para o pente).
+PISTOLA_CONCHA = {'eve': 48.0, 'barut': 52.0}
+# E depois recua (Jhon, 24/11: "mão mais para trás, para os dedos, da frente ao dedão, encostarem o
+# máximo possível nos dedos que seguram a arma"): (recuo ao longo do cano, lado, cima; mm), por
+# personagem, o que mais encosta os dedos dela nos da direita com a mão entrando até 6 mm
+# (MEDIR_RECUO=busca; de 4 pontos dos dedos encostando para 32 de 387 na Eve e 36 de 445 no Barut).
+PISTOLA_RECUO = {'eve': (25.0, -5.0, 5.0), 'barut': (30.0, -20.0, 0.0)}
+PISTOLA_DEDOS_JUNTOS = os.environ.get('PISTOLA_DEDOS_JUNTOS', '1') == '1'
 COTOVELO_BAIXO = tuple(float(x) for x in os.environ.get('COTOVELO_BAIXO', '0.25,-1.0,0.0').split(','))
 # O cotovelo direito na mira do fuzil, por personagem (para fora, para cima, para trás): com o mesmo
 # COTOVELO_BAIXO, as proporções do Barut deixavam o cotovelo colado ao corpo (14° do para baixo) e o
@@ -1153,6 +1171,8 @@ class Copia:
                 alvo = mm.quadro(rig.m(f'hand_{s}')) @ ger.K[(lado, 'Hand')]
                 br = ger.braco[lado]
                 S = M[br.up].translation
+                if lado == 'Left' and self.plano.tipo == 'pistola':
+                    alvo = Matrix.Translation(self.concha(q)) @ alvo
                 d = (alvo.translation - S).length - br.alcance() * 0.965
                 e = q.get('esquerda') if lado == 'Left' else None
                 if e and e[0] == 'quadro':
@@ -1417,8 +1437,32 @@ class Copia:
             c = (M[self.corpo.n('RightHand')].translation + M[self.corpo.n('LeftHand')].translation) * 0.5
             vistas = [('maos_esquerda', c - pa.DIREITA * 0.9 + pa.FRENTE * 0.2 + pa.CIMA * 0.15),
                       ('maos_direita', c + pa.DIREITA * 0.9 + pa.FRENTE * 0.2 + pa.CIMA * 0.15),
-                      ('maos_cima', c + pa.CIMA * 0.9 - pa.FRENTE * 0.25)]
+                      ('maos_cima', c + pa.CIMA * 0.9 - pa.FRENTE * 0.25),
+                      ('maos_frente', c + pa.FRENTE * 0.9 + pa.CIMA * 0.1),
+                      ('maos_frente_esq', c + pa.FRENTE * 0.75 - pa.DIREITA * 0.45 + pa.CIMA * 0.15)]
             fov = 110
+        if os.environ.get('FOTOS_LA'):
+            # as mãos da primeira pessoa (maos.glb, presa ao esqueleto do conjunto) no lugar das
+            # daqui, para comparar a pegada
+            if not hasattr(self, '_maos_la'):
+                antes = set(bpy.data.objects)
+                bpy.ops.import_scene.gltf(filepath=os.path.join(RAIZ, 'assets/armas/fp/maos/maos.glb'))
+                novos = [o for o in bpy.data.objects if o not in antes]
+                self._maos_la = [o for o in novos if o.type == 'MESH']
+                for o in self._maos_la:
+                    mw = o.matrix_world.copy()
+                    o.parent = None
+                    for m in o.modifiers:
+                        if m.type == 'ARMATURE':
+                            m.object = self.rig.arm
+                    o.matrix_world = self.rig.arm.matrix_world @ mw
+                for o in novos:
+                    if o.type != 'MESH':
+                        o.hide_render = True
+            for o in self._maos_la:
+                o.hide_render = False
+            for o in getattr(self, '_novo_malhas', []):
+                o.hide_render = True
         for vista, de in vistas:
             arq = os.path.join(saida, f'_{nome}_{k:03d}_{vista}.png')
             pa.foto(arq, de, c, fov)
@@ -1473,6 +1517,171 @@ class Copia:
                 dentro = max(dentro, -sinal)
             perto = min(perto, d)
         return dentro, perto
+
+    def concha(self, q):
+        """O arrasto da mão esquerda para a concha (PISTOLA_CONCHA), no mundo, com o conjunto já
+        posto: inteiro com ela no punho da arma (onde está, vista da direita, no começo do parado),
+        e sumindo até 5 cm longe dali (o pente, o saque)."""
+        mm_ = float(os.environ.get('PISTOLA_CONCHA', PISTOLA_CONCHA.get(self.personagem, 0.0)))
+        if mm_ <= 0.0:
+            return Vector()
+        # a esquerda vista da mão direita (que segura a arma): na mira de lá o conjunto anda em
+        # volta do olho, mas a pegada é a mesma
+        local = mm.quadro(self.rig.m('hand_r')).inverted() @ self.rig.p('hand_l')
+        if not hasattr(self, '_esq_no_punho'):
+            self._esq_no_punho = local.copy()   # o parado é o primeiro clipe gerado
+        longe = (local - self._esq_no_punho).length
+        w = max(0.0, min(1.0, 1.0 - (longe - 0.01) / 0.04))
+        lat = self.lado_da_concha()
+        f = self.cano()
+        cima = lat.cross(f).normalized()
+        if cima.dot(pa.CIMA) < 0:
+            cima = -cima
+        rec = os.environ.get('PISTOLA_RECUO')
+        b, l, c = tuple(float(x) for x in rec.split(',')) if rec else PISTOLA_RECUO.get(self.personagem, (0.0, 0.0, 0.0))
+        return (lat * (mm_ + l) - f * b + cima * c) / 1000.0 * w
+
+    def curva_do_recuo(self, passos=range(0, 61, 4)):
+        """MEDIR_RECUO: com o glb novo posado, a mão esquerda recuando ao longo do cano (mm): quanto
+        ela entra na direita, quantos pontos dos dedos dela (do indicador ao polegar) encostam (até
+        4 mm) na direita, e o polegar esquerdo contra os dedos da direita na linha do cano (mm;
+        negativo = atrás deles, do lado de quem atira)."""
+        from mathutils import kdtree
+        dg = bpy.context.evaluated_depsgraph_get()
+        esq, dedos_e, polegar_e, dir_, dedos_d = [], [], [], [], []
+        for o in self._novo_malhas:
+            g = {x.index: x.name for x in o.vertex_groups}
+            em = o.evaluated_get(dg).to_mesh()
+            for v, ve in zip(o.data.vertices, em.vertices):
+                if not v.groups:
+                    continue
+                n = g[max(v.groups, key=lambda x: x.weight).group]
+                p_ = o.matrix_world @ ve.co
+                if n in nomes_de_mao('l') or n.endswith('_04_l') or n == pa.PREFIXO + 'LeftHand':
+                    esq.append(p_)
+                    if n.split('_')[0] in mt.TODOS and not n.endswith('metacarpal_l'):
+                        dedos_e.append(p_)
+                    if n.startswith('thumb_0') and n[7] in '34':
+                        polegar_e.append(p_)
+                elif n in nomes_de_mao('r') or n.endswith('_04_r') or n == pa.PREFIXO + 'RightHand':
+                    dir_.append((p_, (o.matrix_world.to_3x3() @ ve.normal).normalized()))
+                    if n.split('_')[0] in mt.DEDOS4 and n[-4:-2] in ('02', '03', '04') or n.endswith(('_02_r', '_03_r', '_04_r')) and not n.startswith('thumb'):
+                        dedos_d.append(p_)
+            o.evaluated_get(dg).to_mesh_clear()
+        kd = kdtree.KDTree(len(dir_))
+        for i, (p_, _) in enumerate(dir_):
+            kd.insert(p_, i)
+        kd.balance()
+        f = self.cano()
+        frente_d = min(p_.dot(f) for p_ in dedos_d)
+        if os.environ.get('MEDIR_RECUO') == 'partes':
+            # de onde os dedos esquerdos estão dos direitos (média do vetor ao ponto mais perto),
+            # nos eixos do cano: frente, lado (da esquerda para a direita) e cima
+            lat = self.lado_da_concha()
+            cima = lat.cross(f).normalized()
+            if cima.dot(pa.CIMA) < 0:
+                cima = -cima
+            for nome_, pts in (('dedos', [p_ for p_ in dedos_e if p_ not in polegar_e]), ('polegar', polegar_e)):
+                v = Vector()
+                ds = []
+                for p_ in pts:
+                    co, i, d = kd.find(p_)
+                    v += co - p_
+                    ds.append(d)
+                v /= max(1, len(pts))
+                ds.sort()
+                print(f'RECUO partes {nome_}: até a direita, em média frente {v.dot(f) * 1000:+.0f} mm, lado {v.dot(lat) * 1000:+.0f}, '
+                      f'cima {v.dot(cima) * 1000:+.0f}; distância mediana {ds[len(ds) // 2] * 1000:.0f} mm', flush=True)
+        if os.environ.get('MEDIR_RECUO') == 'busca':
+            # o deslocamento (recuo, lado, cima; mm) que mais encosta os dedos esquerdos (até 5 mm da
+            # direita) com a mão entrando até 6 mm
+            lat = self.lado_da_concha()
+            cima = lat.cross(f).normalized()
+            if cima.dot(pa.CIMA) < 0:
+                cima = -cima
+            res = []
+            for b in range(0, 51, 5):
+                for c in range(-10, 36, 5):
+                    for l in range(-25, 11, 5):
+                        t = (-f * b + lat * l + cima * c) / 1000.0
+                        entra = 0.0
+                        for p_ in esq:
+                            co, i, d = kd.find(p_ + t)
+                            s_ = (p_ + t - co).dot(dir_[i][1])
+                            if s_ < 0 and d < 0.03:
+                                entra = max(entra, -s_)
+                                if entra > 0.006:
+                                    break
+                        if entra > 0.006:
+                            continue
+                        enc = sum(1 for p_ in dedos_e if kd.find(p_ + t)[2] < 0.005)
+                        pol = sum((p_ + t).dot(f) for p_ in polegar_e) / max(1, len(polegar_e)) - frente_d
+                        res.append((enc, b, l, c, entra, pol))
+            res.sort(reverse=True)
+            for enc, b, l, c, entra, pol in res[:8]:
+                print(f'RECUO busca: recua {b} mm, lado {l:+d}, cima {c:+d}: encostam {enc} de {len(dedos_e)}, entra {entra * 1000:.1f} mm, polegar {pol * 1000:+.0f} mm', flush=True)
+        out = []
+        for b in passos:
+            t = -f * (b / 1000.0)
+            entra = 0.0
+            for p_ in esq:
+                co, i, d = kd.find(p_ + t)
+                s_ = (p_ + t - co).dot(dir_[i][1])
+                if s_ < 0 and d < 0.03:
+                    entra = max(entra, -s_)
+            encosta = sum(1 for p_ in dedos_e if kd.find(p_ + t)[2] < 0.004)
+            pol = sum((p_ + t).dot(f) for p_ in polegar_e) / max(1, len(polegar_e)) - frente_d
+            out.append((b, entra, encosta, len(dedos_e), pol))
+        return out
+
+    def lado_da_concha(self):
+        """De lado, perpendicular ao cano e na horizontal, da mão esquerda para a direita (no mundo)."""
+        c = self.cano()
+        lat = c.cross(pa.CIMA)
+        lat.normalize()
+        d = self.rig.p('hand_r') - self.rig.p('hand_l')
+        return lat if lat.dot(d) > 0 else -lat
+
+    def vao_da_concha(self, lat, folga=0.001):
+        """Quanto a palma esquerda pode andar de lado (`lat`) até encostar nas pontas dos dedos da
+        direita: o maior passo (m) com a palma entrando até `folga` neles. Com o glb novo posado."""
+        from mathutils import kdtree
+        dg = bpy.context.evaluated_depsgraph_get()
+        palma, dedos = [], []
+        mao_e = pa.PREFIXO + 'LeftHand'
+        for o in self._novo_malhas:
+            g = {x.index: x.name for x in o.vertex_groups}
+            em = o.evaluated_get(dg).to_mesh()
+            for v, ve in zip(o.data.vertices, em.vertices):
+                if not v.groups:
+                    continue
+                n = g[max(v.groups, key=lambda x: x.weight).group]
+                if n == mao_e or (n.endswith('_metacarpal_l') and not n.startswith('thumb')):
+                    palma.append(o.matrix_world @ ve.co)
+                elif n.endswith(('_02_r', '_03_r', '_04_r')) and not n.startswith('thumb'):
+                    dedos.append((o.matrix_world @ ve.co, (o.matrix_world.to_3x3() @ ve.normal).normalized()))
+            o.evaluated_get(dg).to_mesh_clear()
+        kd = kdtree.KDTree(len(dedos))
+        for i, (p_, _) in enumerate(dedos):
+            kd.insert(p_, i)
+        kd.balance()
+        def entra(t):
+            pior, perto = 0.0, 1.0
+            for p_ in palma:
+                q_ = p_ + lat * t
+                co, i, d = kd.find(q_)
+                perto = min(perto, d)
+                sinal = (q_ - co).dot(dedos[i][1])
+                if sinal < 0 and d < 0.03:
+                    pior = max(pior, -sinal)
+            return pior, perto
+        antes = entra(0.0)
+        if os.environ.get('MEDIR_CONCHA') == 'curva':
+            print('CONCHA curva: ' + ', '.join(f'{x} mm: entra {entra(x / 1000)[0] * 1000:.1f} perto {entra(x / 1000)[1] * 1000:.1f}' for x in range(0, 61, 5)), flush=True)
+        t = 0.0
+        while t < 0.06 and entra(t + 0.001)[0] <= folga:
+            t += 0.001
+        return t, antes
 
     def _quadros_foto(self, nome, n):
         if not hasattr(self, '_fotos_feitas'):
@@ -1603,6 +1812,8 @@ class Copia:
                 fp = rig.mao(lado)
                 alvo = mm.quadro(rig.m(f'hand_{s}')) @ ger.K[(lado, 'Hand')]
                 pulso, rot = alvo.translation.copy(), alvo.to_3x3().normalized()
+                if lado == 'Left' and tipo == 'pistola':
+                    pulso = pulso + self.concha(q)
                 e = q.get('esquerda') if lado == 'Left' else None
                 if e:
                     mi = corpo.mao['Left']
@@ -1723,6 +1934,9 @@ class Copia:
                     # na primeira pessoa a palma fecha deslizando os nós (até 2,4 cm): o osso de
                     # lá tem translação, em centímetros (o conjunto tem escala 0,01)
                     trans[nm] = loc * 0.01
+                # na recarga a esquerda segura o pente: os dedos dela ficam os de lá
+                if tipo == 'pistola' and PISTOLA_DEDOS_JUNTOS and (lado == 'Right' or not nome.startswith('recarga')):
+                    juntar_dedos(deltas, s)
             # o osso de torção do braço de cima (torcao_braco.py): o giro contrário ao do braço em
             # volta de si, para a pele perto do ombro só balançar (Jhon: "braço da granada torcendo")
             torcoes = {}
@@ -1734,6 +1948,23 @@ class Copia:
             if os.environ.get('FOTOS_ANIM') and k in self._quadros_foto(nome, n):
                 self.posar_novo(locais, deltas, trans)
                 self._fotos_feitas.setdefault(nome, []).append((k, self.foto(nome, k, M, os.environ['FOTOS_ANIM'])))
+            if os.environ.get('MEDIR_DEDOS') and k in (0, n):
+                self.posar_novo(locais, deltas, trans)
+                for quem, arm_ in (('aqui', self._novo_arm), ('lá', rig.arm)):
+                    for s_ in ('r', 'l'):
+                        print(f'DEDOS {nome} q{k} {quem} {s_}: ' + medir_dedos(arm_, s_), flush=True)
+            if os.environ.get('MEDIR_CONCHA') and tipo == 'pistola' and k == 0:
+                self.posar_novo(locais, deltas, trans)
+                rig.colocar(q['col'])
+                t_, (ent_, perto_) = self.vao_da_concha(self.lado_da_concha())
+                print(f'CONCHA {nome} q{k}: a palma esquerda entra {ent_ * 1000:.1f} mm nos dedos da direita, o mais perto a {perto_ * 1000:.1f} mm; '
+                      f'pode andar de lado {t_ * 1000:.0f} mm até encostar', flush=True)
+            if os.environ.get('MEDIR_RECUO') and tipo == 'pistola' and k == 0:
+                self.posar_novo(locais, deltas, trans)
+                rig.colocar(q['col'])
+                for b_, ent_, enc_, tot_, pol_ in self.curva_do_recuo():
+                    print(f'RECUO {nome} {b_:2d} mm: entra {ent_ * 1000:4.1f} mm; dedos encostando {enc_:3d} de {tot_}; '
+                          f'polegar {pol_ * 1000:+5.0f} mm da frente dos dedos da direita', flush=True)
             if os.environ.get('MEDIR_CABECA') and tipo == 'faca':
                 o_, f_, _, _ = rig.eixos_arma()
                 cab_ = M[corpo.n('Head')].translation
@@ -1795,6 +2026,40 @@ class Copia:
             print('OSSOS', nome, {k_: round(v_ * 1000, 1) for k_, v_ in sorted(por_osso.items(), key=lambda x: -x[1])[:10]})
         print(f'CLIPE {nome:12s} {out.quadros:3d} q: mão a {pior_falta * 1000:.1f} mm do lugar; junta de dedo daqui contra a de lá: até {pior_ponta * 1000:.1f} mm; ombro torcido até {pior_torcao:.0f}° (direito {torcao_lado.get("Right", 0):.0f}°, esquerdo {torcao_lado.get("Left", 0):.0f}°); cotovelo longe do para baixo até D {cotovelo_lado.get("Right", 0):.0f}° E {cotovelo_lado.get("Left", 0):.0f}°; punho torto a mais que o de lá até D {punho_lado.get("Right", 0):.0f}° E {punho_lado.get("Left", 0):.0f}°', flush=True)
         return out
+
+def juntar_dedos(deltas, s):
+    """O médio e o mínimo seguem os vizinhos (PISTOLA_DEDOS_JUNTOS): cada falange do médio gira
+    como a média das do indicador e do anelar, e cada uma do mínimo, como a do anelar."""
+    for i in (1, 2, 3):
+        ind, ane = deltas[f'index_0{i}_{s}'], deltas[f'ring_0{i}_{s}']
+        if ind.dot(ane) < 0:
+            ane = -ane
+        deltas[f'middle_0{i}_{s}'] = ind.slerp(ane, 0.5).normalized()
+        deltas[f'pinky_0{i}_{s}'] = ane.copy()
+
+
+def medir_dedos(arm, s):
+    """Cada dedo contra os vizinhos: o eixo da dobra (o plano em que o dedo fecha) e o eixo x de
+    cada falange (para onde a junta dobra), em graus do do anelar e do indicador (a média)."""
+    mw = arm.matrix_world
+    def eixos(d):
+        bs = [arm.pose.bones[f'{d}_0{i}_{s}'] for i in (1, 2, 3)]
+        dirs = [((mw @ b.tail) - (mw @ b.head)).normalized() for b in bs]
+        dobra = dirs[0].cross(dirs[1]) + dirs[1].cross(dirs[2])
+        xs = [(mw.to_3x3() @ b.matrix.to_3x3() @ Vector((1, 0, 0))).normalized() for b in bs]
+        return dobra.normalized() if dobra.length > 1e-6 else Vector(), xs, dirs
+    e = {d: eixos(d) for d in mt.DEDOS4}
+    ref = (e['index'][0] + e['ring'][0]).normalized()
+    refx = [(e['index'][1][i] + e['ring'][1][i]).normalized() for i in range(3)]
+    out = []
+    for d in mt.DEDOS4:
+        dobra, xs, dirs = e[d]
+        ang = math.degrees(dobra.angle(ref)) if dobra.length > 0 else -1
+        juntas = '/'.join(f'{math.degrees(xs[i].angle(refx[i])):.0f}' for i in range(3))
+        fecha = math.degrees(dirs[0].angle(dirs[2]))
+        out.append(f'{d} dobra {ang:.0f}° juntas {juntas}° fecha {fecha:.0f}°')
+    return '; '.join(out)
+
 
 def gravar(personagem, arma, clipes, escala=1.0):
     pasta = os.path.join(RAIZ, 'assets/personagens', personagem, 'animacoes')

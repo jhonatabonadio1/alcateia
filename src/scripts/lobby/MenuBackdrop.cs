@@ -39,18 +39,7 @@ uniform float cell = 150.0;
 uniform float aspect = 1.777;
 uniform float drift = 0.0;
 
-float hash(vec2 p) {
-	return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-}
-
-float vnoise(vec2 p) {
-	vec2 i = floor(p);
-	vec2 f = fract(p);
-	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
-		mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-
+" + ShaderBits.ValueNoise + @"
 void fragment() {
 	vec2 uv = UV;
 	vec2 wide = uv * vec2(aspect, 1.0);
