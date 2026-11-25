@@ -189,9 +189,7 @@ FunctionEnd
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW EstiloMeio
 !insertmacro MUI_PAGE_INSTFILES
 
-; Fim: o Barut e o lobo.
-!undef MUI_WELCOMEFINISHPAGE_BITMAP
-!define MUI_WELCOMEFINISHPAGE_BITMAP "${__FILEDIR__}\lateral_fim.bmp"
+; Fim: a mesma lateral das boas-vindas (a Eve). A do Barut saiu (Jhon, 25/11).
 !define MUI_FINISHPAGE_TITLE "WolfLeague installed"
 !define MUI_FINISHPAGE_TEXT "All set. The shortcuts are on the Desktop and in the Start Menu.$\r$\n$\r$\nHave a good match!"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${EXE}"

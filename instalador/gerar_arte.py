@@ -3,11 +3,10 @@
 
 Uso:  python3 instalador/gerar_arte.py   (de qualquer pasta)
 
-Lê  src/assets/personagens/{eve,barut}/thumb.jpg, a fonte Kanit do jogo e
+Lê  src/assets/personagens/eve/thumb.jpg, a fonte Kanit do jogo e
     instalador/icone.svg (precisa do `rsvg-convert`: brew install librsvg)
 Grava em instalador/:
-    lateral_inicio.bmp   painel esquerdo da tela de boas-vindas (Eve, a capa)
-    lateral_fim.bmp      painel esquerdo da tela final (Barut)
+    lateral_inicio.bmp   painel esquerdo das telas de boas-vindas e final (Eve, a capa)
     cabecalho.bmp        faixa de cima das telas do meio
     WolfLeague.ico       o ícone (o mesmo do jogo, icon.svg)
     capa.png             a capa da Release (Eve)
@@ -131,10 +130,8 @@ def main():
     fonte = os.path.join(a.raiz, "src/assets/fonts/Kanit-BoldItalic.ttf")
     fonte_texto = os.path.join(a.raiz, "src/assets/fonts/Kanit-SemiBold.ttf")
     eve = Image.open(os.path.join(a.raiz, "src/assets/personagens/eve/thumb.jpg")).convert("RGB")
-    barut = Image.open(os.path.join(a.raiz, "src/assets/personagens/barut/thumb.jpg")).convert("RGB")
     os.makedirs(saida, exist_ok=True)
     lateral(eve, os.path.join(saida, "lateral_inicio.bmp"), 0.5, fonte)
-    lateral(barut, os.path.join(saida, "lateral_fim.bmp"), 0.60, fonte)
     cabecalho(inst, os.path.join(saida, "cabecalho.bmp"))
     ico(inst, os.path.join(saida, "WolfLeague.ico"))
     capa(eve, inst, os.path.join(saida, "capa.png"), fonte, fonte_texto)
