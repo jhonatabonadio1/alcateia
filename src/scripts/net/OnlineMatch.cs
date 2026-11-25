@@ -58,10 +58,14 @@ public static class OnlineMatch
 		string forced = OS.GetEnvironment("ALCATEIA_GAME_ADDRESS");
 		if (!string.IsNullOrEmpty(forced)) Address = forced;
 
+		// Entrou com a partida em curso: os bots já estão sendo movidos por
+		// alguém, e quem é o servidor de partida diz (NetWire.BotOwner) se um
+		// dia passarem para cá. Até lá, todos são bonecos aqui.
+		bool late = start["late"]?.GetValue<bool>() ?? false;
 		Roster.Clear();
 		foreach (JsonNode m in room?["members"] as JsonArray ?? new JsonArray())
 			Roster.Add(new Seat(m["id"].GetValue<long>(), m["name"].GetValue<string>(), m["team"].GetValue<int>(),
-				m["xp"]?.GetValue<long>() ?? 0, m["owner"]?.GetValue<long>() ?? 0, m["photo"]?.GetValue<string>()));
+				m["xp"]?.GetValue<long>() ?? 0, late ? 0 : m["owner"]?.GetValue<long>() ?? 0, m["photo"]?.GetValue<string>()));
 		Roster.Sort((a, b) => a.Id.CompareTo(b.Id));
 
 		RoomConfig.Settings = SettingsFrom(start["settings"] as JsonObject);

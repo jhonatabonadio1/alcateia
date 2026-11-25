@@ -102,6 +102,12 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
 4. Durante a partida, 20 vezes por segundo cada jogo conta onde está;
    ataques, acertos e mortes vão com garantia de entrega. O juiz
    (`Referee`) valida os abates e manda o placar e o relógio.
+   Quem sai da partida no meio sai da sala e vai para o lobby; o
+   mestre passa ao próximo jogador, e os bots dele passam para a
+   máquina desse jogador (pacote `BotOwner`). Com vaga, dá para entrar
+   na sala jogando: quem já jogou volta no lugar dele (com o que tinha
+   feito), quem chega ganha um lugar novo, e os outros veem o boneco
+   dele aparecer (pacote `Seat`). Sala vazia descarta a partida.
 5. No fim, o servidor de partida entrega o resultado
    (`POST /v1/matches`); o servidor calcula o prêmio com a mesma regra
    do jogo (`src/scripts/domain/Rewards.cs`), grava no perfil e avisa a
@@ -117,7 +123,7 @@ rotas HTTP e as mensagens do saguão, em `servidor/LEIA-ME.md`.
 | `src/tools/testar_servidor.sh` | Os testes do servidor contra um PostgreSQL de verdade (sobe um descartável no Docker): banco, contas, salas, chat, partidas, frota |
 | `src/tools/testar_carga.sh` | Carga: 3000 jogadores de verdade (conta, WebSocket), 1000 salas jogando ao mesmo tempo e 250 servidores de partida falsos. Mede o tempo de cada resposta (veja "Escala") |
 | `src/tools/testar.sh` | Inclui os testes de unidade do juiz (`RefereeTests`) |
-| `src/tools/testar_online.sh` | Ponta a ponta: um servidor de partida e **dois jogos de verdade, sem tela**, criam conta, abrem sala, jogam 35 s (um atira, o outro morre e renasce) e conferem conta, placar e saguão. Precisa do servidor no ar (`docker compose up -d`, depois `docker compose stop partida`) |
+| `src/tools/testar_online.sh` | Ponta a ponta: um servidor de partida e **dois jogos de verdade, sem tela**, criam conta, abrem sala, jogam 35 s (um atira, o outro morre e renasce) e conferem conta, placar e saguão. Precisa do servidor no ar (`docker compose up -d`, depois `docker compose stop partida`). Com `--voltar`, o criador (dono dos bots) sai no meio e volta pela lista de salas: o visitante tem de herdar os bots e o criador, entrar de novo no lugar dele. `ALCATEIA_TESTE_LOGS=<pasta>` guarda os logs |
 
 O robô do teste é `src/scripts/net/OnlineRobot.cs` (`-- --robo=criar` /
 `--robo=entrar`).

@@ -110,7 +110,9 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	// Quem chegou antes de a partida chegar: o saguão avisa os jogadores
 	// e o servidor de partida ao mesmo tempo, e o jogador pode ganhar a
 	// corrida. Espera aqui até a próxima batida trazer a partida.
-	private readonly Dictionary<long, (string Key, long Account, long Expires, string Ticket)> _early = new();
+	// Também quem entrou na sala com a partida em curso e chegou antes do lugar
+	// dele (Since: desde quando espera).
+	private readonly Dictionary<long, (string Key, long Account, long Expires, string Ticket, double Since)> _early = new();
 
 	private double _heartbeat;
 	private bool _beating;
@@ -321,6 +323,11 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 
 		foreach (JsonNode node in reply.Body?["assignments"] as JsonArray ?? new JsonArray())
 			if (node is JsonObject assignment) Open(assignment);
+
+		// Quem espera um lugar numa partida que já está aqui: tenta de novo (o
+		// lugar pode não vir; depois de SeatWait, é recusado).
+		foreach (string key in _early.Values.Select(e => e.Key).Distinct().Where(_matches.ContainsKey).ToList())
+			Readmit(key);
 	}
 
 	/// <summary>Ocioso: pergunta ao servidor se pode desligar. Ele diz não
@@ -344,18 +351,39 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	private void Open(JsonObject assignment)
 	{
 		string key = assignment["matchKey"]?.GetValue<string>();
-		if (key == null || _matches.ContainsKey(key) || _matches.Count >= _capacity) return;
+		if (key == null) return;
+
+		// A partida que já está aqui, com lugares a mais (alguém entrou na sala
+		// com ela jogando): abre os lugares e deixa entrar quem esperava por eles.
+		if (_matches.TryGetValue(key, out HostedMatch running))
+		{
+			running.AddSeats(assignment);
+			Readmit(key);
+			return;
+		}
+		// Uma atualização de partida que não está mais aqui não abre partida nova.
+		if (assignment["update"]?.GetValue<bool>() == true || _matches.Count >= _capacity) return;
 
 		HostedMatch match = HostedMatch.FromAssignment(assignment, this, _seconds, _countdown, _authoritative);
 		if (match.World != null) AddChild(match.World);
 		_matches[key] = match;
 
+		Readmit(key);
+	}
+
+	/// <summary>Quem chegou antes da partida (ou do lugar dele nela) tenta de novo.</summary>
+	private void Readmit(string key)
+	{
 		foreach (var (peer, hello) in _early.Where(e => e.Value.Key == key).ToList())
 		{
 			_early.Remove(peer);
-			Welcome(peer, hello.Key, hello.Account, hello.Expires, hello.Ticket);
+			Welcome(peer, hello.Key, hello.Account, hello.Expires, hello.Ticket, hello.Since);
 		}
 	}
+
+	/// <summary>Quanto quem tem ingresso espera o lugar dele chegar numa partida em
+	/// curso (o saguão manda o lugar na próxima batida, a cada 2 s).</summary>
+	private const double SeatWait = 15;
 
 	/// <summary>A partida acabou: manda o resultado (o juiz já fechou o placar).</summary>
 	public async void Report(HostedMatch match)
@@ -503,17 +531,22 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		}
 	}
 
-	private void Welcome(long peer, string matchKey, long account, long expires, string ticket)
+	private void Welcome(long peer, string matchKey, long account, long expires, string ticket, double since = -1)
 	{
 		string refusal =
 			expires < DateTimeOffset.UtcNow.ToUnixTimeSeconds() ? "o ingresso venceu"
 			: !SameText(ticket, Sign(_fleetKey, $"{matchKey}|{account}|{expires}")) ? "ingresso inválido"
 			: null;
+		double now = Time.GetTicksMsec() / 1000.0;
+		if (since < 0) since = now;
 
-		if (refusal == null && !_matches.ContainsKey(matchKey))
+		// A partida ainda não chegou, ou chegou sem o lugar de quem entrou com
+		// ela em curso: espera a próxima batida (o lugar, só um tanto).
+		bool noMatch = !_matches.TryGetValue(matchKey, out HostedMatch waiting);
+		bool noSeat = !noMatch && waiting.Referee.Find(account) == null && waiting.Referee.Phase != RefPhase.Ended && now - since < SeatWait;
+		if (refusal == null && (noMatch || noSeat))
 		{
-			// A partida ainda não chegou: espera a próxima batida.
-			_early[peer] = (matchKey, account, expires, ticket);
+			_early[peer] = (matchKey, account, expires, ticket, since);
 			_heartbeat = 0;
 			return;
 		}

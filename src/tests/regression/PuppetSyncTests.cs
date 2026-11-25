@@ -195,7 +195,12 @@ public sealed class PuppetHandsTest : RegressionTest
 		}
 		float Gap(HeldRig rig, bool rightSide) => rightSide ? Palm(right, rightMiddle).DistanceTo(RigPalm(rig, true)) : LeftGap(rig);
 
-		async Task Check(Slot slot, string kind, bool twoHands)
+		// Na pistola a esquerda sai de propósito de onde a da primeira pessoa
+		// fica (Jhon, 24/11: a mão de apoio "em concha", encostada nos dedos da
+		// que segura, e mais para trás): anda de lado 48 mm na Eve e 52 no Barut
+		// e recua 25 a 30 mm (PISTOLA_CONCHA e PISTOLA_RECUO no mao_manny_anim.py).
+		// Fora da linha do cano, isso dá uns 4 a 6 cm.
+		async Task Check(Slot slot, string kind, bool twoHands, float leftLimit = 0.04f)
 		{
 			await Hold(slot, 0f);
 			HeldRig rig = Rig();
@@ -204,7 +209,7 @@ public sealed class PuppetHandsTest : RegressionTest
 			float r = Gap(rig, true), l = twoHands ? Gap(rig, false) : 0f;
 			RegressionBench.Note($"{who}, {kind} ({rig.Playing}): mão direita a {r * 100f:0.0} cm da do conjunto" + (twoHands ? $", esquerda a {l * 100f:0.0} cm" : ""));
 			b.AtMost(0.05f, r, $"{who}, {kind}: a mão direita na arma (m)");
-			if (twoHands) b.AtMost(0.04f, l, $"{who}, {kind}: a mão esquerda na arma (m)");
+			if (twoHands) b.AtMost(leftLimit, l, $"{who}, {kind}: a mão esquerda na arma (m)");
 		}
 
 		await Check(Slot.Primary, "fuzil", true);
@@ -263,7 +268,7 @@ public sealed class PuppetHandsTest : RegressionTest
 		b.AtMost(0.045f, worst, $"{who}: na recarga, as mãos com as do conjunto (m)");
 		if (swaps) b.Check(away > 0.10f, $"{who}: na troca de pente, a esquerda vai à cintura ({away * 100f:0.0} cm)");
 
-		await Check(Slot.Secondary, "pistola", true);
+		await Check(Slot.Secondary, "pistola", true, leftLimit: 0.07f);
 		float barrel = Rig()?.GunForward().Dot(Aim(0f)) ?? 0f;
 		b.Check(barrel > 0.9f, $"{who}: a pistola aponta para onde ele mira ({barrel:0.00})");
 		await Check(Slot.Knife, "faca", false);

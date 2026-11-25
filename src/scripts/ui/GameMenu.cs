@@ -89,7 +89,9 @@ public partial class GameMenu : CanvasLayer
 			return;
 		}
 
-		Label body = UiKit.Paragraph("A partida continua sem você e não rende XP nem Cash. Missões também não contam.");
+		Label body = UiKit.Paragraph(OnlineMatch.Active
+			? "A partida continua sem você. Você sai da sala e volta ao lobby; dá para entrar de novo pela lista de salas, se houver vaga."
+			: "A partida continua sem você e não rende XP nem Cash. Missões também não contam.");
 		body.CustomMinimumSize = new Vector2(400, 0);
 
 		_confirm = Modal.Open(_root, title, body,
@@ -151,6 +153,12 @@ public partial class GameMenu : CanvasLayer
 		// evita que a cena nova nasça achando que há menus abertos.
 		UiState.Reset();
 		GetTree().ReloadCurrentScene();
+	}
+
+	private void LeaveOnline()
+	{
+		if (Match.Current != null) Match.Current.Leave(ReturnTarget.RoomList);
+		else BackToRoom();
 	}
 
 	private void BackToRoom()
@@ -269,7 +277,13 @@ public partial class GameMenu : CanvasLayer
 		stack.AddChild(UiKit.Divider());
 
 		_restart = Item(stack, "Reiniciar partida", ButtonKind.Secondary, RestartChoice);
-		Item(stack, "Sair para a sala", ButtonKind.Secondary, () => Abandon("Sair para a sala?", BackToRoom));
+		// Online, sair da partida é sair da sala (Jhon, 24/11): vai para o lobby, o
+		// mestre passa ao próximo e a partida segue; dá para voltar pela lista de
+		// salas, se houver vaga.
+		if (OnlineMatch.Active)
+			Item(stack, "Sair da partida", ButtonKind.Secondary, () => Abandon("Sair da partida?", LeaveOnline));
+		else
+			Item(stack, "Sair para a sala", ButtonKind.Secondary, () => Abandon("Sair para a sala?", BackToRoom));
 		Item(stack, "Sair do jogo", ButtonKind.Danger, () => Abandon("Sair do jogo?", () => GetTree().Quit()));
 	}
 

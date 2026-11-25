@@ -94,23 +94,46 @@ public sealed class Room
 	// ------------------------------------------------------------ entrar e sair
 
 	/// <summary>Entra: vai para o time com menos gente. Se o time está cheio
-	/// de bots, um bot dá o lugar: gente tem preferência.</summary>
-	public void Join(Account account, long xp, string password)
+	/// de bots, um bot dá o lugar: gente tem preferência.
+	///
+	/// Com a partida em curso também (Jhon, 24/11: "ao sair da partida, posso
+	/// entrar nela novamente caso tenha vaga"): aí os bots já estão jogando e
+	/// não dão o lugar; entra no time com lugar livre (gente e bots contados)
+	/// e menos gente. <paramref name="team"/> fixa o time: quem já jogou esta
+	/// partida volta para o lugar dele, que é do time em que estava.</summary>
+	public void Join(Account account, long xp, string password, int team = 0)
 	{
 		if (Has(account.Id)) return;
-		RequireWaiting("A sala está em partida.");
 		if (_members.Count >= Capacity) throw new Failure(FailureKind.Conflict, "sala_cheia", "A sala está cheia.");
 		if (HasPassword && !Secrets.Same(Password, password))
 			throw new Failure(FailureKind.Forbidden, "senha_errada", "Senha da sala incorreta.");
 
+		if (State == RoomState.Playing)
+		{
+			int[] open = (team is Blue or Orange ? new[] { team } : new[] { Blue, Orange })
+				.Where(t => Taken(t) < TeamSize).ToArray();
+			if (open.Length == 0) throw new Failure(FailureKind.Conflict, "sala_cheia", "A partida está cheia.");
+			int chosen = open.OrderBy(t => _members.Count(m => m.Team == t)).ThenBy(t => t).First();
+			_members.Add(new RoomMember { Account = account, Xp = xp, Team = chosen });
+			return;
+		}
+
 		int blue = _members.Count(m => m.Team == Blue), orange = _members.Count(m => m.Team == Orange);
-		int team = blue <= orange ? Blue : Orange;
-		MakeRoom(team);
-		_members.Add(new RoomMember { Account = account, Xp = xp, Team = team });
+		int side = blue <= orange ? Blue : Orange;
+		MakeRoom(side);
+		_members.Add(new RoomMember { Account = account, Xp = xp, Team = side });
 	}
 
-	/// <summary>Sai. Se quem saiu era o dono, o mais antigo assume. Sala
-	/// vazia acaba (os bots vão junto): quem chama a tira da lista.</summary>
+	/// <summary>Há lugar para mais alguém agora (gente e, com a partida em
+	/// curso, os bots que estão jogando).</summary>
+	public bool HasRoom => State == RoomState.Waiting
+		? _members.Count < Capacity
+		: Taken(Blue) < TeamSize || Taken(Orange) < TeamSize;
+
+	/// <summary>Sai. Se quem saiu era o dono, o mais antigo assume (Jhon,
+	/// 24/11: "o mestre passa a ser o próximo jogador"); com a partida em
+	/// curso, ela continua. Sala vazia acaba (os bots vão junto, e a partida
+	/// dela é descartada): quem chama a tira da lista.</summary>
 	public void Leave(long accountId)
 	{
 		_members.RemoveAll(m => m.Account.Id == accountId);
@@ -203,10 +226,16 @@ public sealed class Room
 		};
 	}
 
-	public void BeginMatch(string matchKey)
+	/// <summary>Onde a partida em curso está (para quem entra no meio dela).</summary>
+	public string MatchAddress { get; private set; }
+	public int MatchPort { get; private set; }
+
+	public void BeginMatch(string matchKey, string address = null, int port = 0)
 	{
 		State = RoomState.Playing;
 		MatchKey = matchKey;
+		MatchAddress = address;
+		MatchPort = port;
 	}
 
 	/// <summary>A partida acabou (com resultado ou não): a sala volta a
@@ -216,6 +245,8 @@ public sealed class Room
 		if (MatchKey != matchKey) return false;
 		State = RoomState.Waiting;
 		MatchKey = null;
+		MatchAddress = null;
+		MatchPort = 0;
 		foreach (RoomMember m in _members) m.Ready = false;
 		return true;
 	}

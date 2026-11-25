@@ -131,6 +131,38 @@ public sealed class Referee
 		return true;
 	}
 
+	/// <summary>Um lugar novo com a partida em curso (alguém entrou na sala
+	/// com ela jogando; Jhon, 24/11). Começa zerado. Falso se já existe (quem
+	/// jogou e saiu volta para o mesmo lugar, com o que já tinha feito) ou se
+	/// a partida acabou.</summary>
+	public bool AddSeat(long id, string name, int team, long owner = 0)
+	{
+		if (Phase == RefPhase.Ended || _seats.ContainsKey(id)) return false;
+		_seats[id] = new Seat { Id = id, Name = name, Team = team is Blue or Orange ? team : Blue, Owner = owner };
+		return true;
+	}
+
+	/// <summary>
+	/// Quem sai deixa os bots dele com o próximo jogador ligado, na ordem da
+	/// escalação (Jhon, 24/11: "se eu sair da partida, o mestre passa a ser o
+	/// próximo jogador"; é a máquina do mestre que move os bots). Devolve o
+	/// novo dono (0 se não há bot dele ou ninguém para ficar com eles: aí eles
+	/// saem junto, como antes).
+	/// </summary>
+	public long HandBots(long from)
+	{
+		List<Seat> bots = BotsOf(from).ToList();
+		if (bots.Count == 0) return 0;
+		Seat next = _seats.Values.FirstOrDefault(s => !s.IsBot && s.Connected && s.Id != from);
+		if (next == null) return 0;
+		foreach (Seat bot in bots)
+		{
+			bot.Owner = next.Id;
+			bot.Connected = bot.EverConnected = true;
+		}
+		return next.Id;
+	}
+
 	public void Leave(long id)
 	{
 		Seat seat = Find(id);

@@ -96,6 +96,7 @@ public sealed class HostedMatch
 	private readonly Dictionary<long, long> _accountOf = new();   // ligação → conta
 	private readonly Dictionary<long, long> _peerOf = new();      // conta → ligação
 	private readonly List<long> _left = new();
+	private readonly List<byte[]> _handed = new();   // bots que passaram de dono, a avisar
 	private double _clock, _linger;
 	private bool _reported;
 
@@ -145,6 +146,11 @@ public sealed class HostedMatch
 	public void Tick(double delta)
 	{
 		_now += delta;
+		if (_handed.Count > 0)
+		{
+			foreach (byte[] packet in _handed) Broadcast(packet);
+			_handed.Clear();
+		}
 		if (_left.Count > 0) AnnounceGone();
 
 		// A vida de cada um, como o servidor tem, para o jogo dele: se lá
@@ -193,6 +199,9 @@ public sealed class HostedMatch
 
 		_accountOf[peer] = account;
 		_peerOf[account] = peer;
+		// Quem chega (no começo, no meio, ou de volta) aparece para quem já está:
+		// quem entrou depois dele não tem o boneco dele.
+		Broadcast(SeatPacket(Referee.Find(account)), except: peer);
 		if (Authoritative && !_bodies.ContainsKey(account)) AddBody(account);
 		_link.Send(peer, WelcomePacket(), true);
 		GD.Print($"Joined {Key}: {Referee.Find(account).Name} ({Referee.ConnectedCount} of {Referee.Seats.Count(s => !s.IsBot)}).");
@@ -205,13 +214,65 @@ public sealed class HostedMatch
 		if (!_accountOf.Remove(peer, out long account)) return;
 		if (_peerOf.TryGetValue(account, out long current) && current == peer) _peerOf.Remove(account);
 
-		// O aviso sai no quadro seguinte: quando dois saem juntos, o
-		// segundo ainda consta aqui mas já não recebe nada. Os bots de
-		// quem saiu saem junto: não há mais máquina para movê-los.
+		// Os bots de quem saiu passam para o próximo jogador (o mestre da sala
+		// é quem os move; Jhon, 24/11: "o mestre passa a ser o próximo
+		// jogador"). Sem ninguém para ficar com eles, saem junto.
+		// Os dois avisos saem no quadro seguinte: quando dois saem juntos (o
+		// fim da partida), o segundo ainda consta aqui mas já não recebe nada.
+		Referee.Seat[] bots = Referee.BotsOf(account).ToArray();
+		long heir = Referee.Phase == RefPhase.Ended ? 0 : Referee.HandBots(account);
+		if (heir != 0) _handed.Add(BotOwnerPacket(bots.Select(b => b.Id), heir));
+
 		_left.Add(account);
-		_left.AddRange(Referee.BotsOf(account).Select(b => b.Id));
+		if (heir == 0) _left.AddRange(bots.Select(b => b.Id));
 		Referee.Leave(account);
 		RemoveBody(account);
+	}
+
+	/// <summary>
+	/// Os lugares novos de uma partida em curso (alguém entrou na sala com
+	/// ela jogando; o saguão manda a escalação de novo com eles). Cada um
+	/// entra no juiz e no estado do mundo, e quem já está jogando fica
+	/// sabendo (o boneco dele aparece). Devolve quantos entraram.
+	/// </summary>
+	public int AddSeats(JsonObject assignment)
+	{
+		int added = 0;
+		foreach (JsonNode p in assignment["players"] as JsonArray ?? new JsonArray())
+		{
+			long id = p["accountId"].GetValue<long>();
+			string name = p["name"].GetValue<string>();
+			int team = p["team"].GetValue<int>();
+			if (!Referee.AddSeat(id, name, team, p["owner"]?.GetValue<long>() ?? 0)) continue;
+			_indexOf[id] = (byte)Math.Min(_indexOf.Count, 255);
+			Broadcast(SeatPacket(Referee.Find(id)));
+			GD.Print($"Seat added to {Key}: {name} (team {team}).");
+			added++;
+		}
+		return added;
+	}
+
+	/// <summary>Um lugar novo: quem é, o time, de quem é (bot) e o número dele no estado do mundo.</summary>
+	private byte[] SeatPacket(Referee.Seat seat)
+	{
+		BinaryWriter w = NetWire.Begin(NetWire.Seat, out MemoryStream stream);
+		w.Write(seat.Id);
+		w.Write(seat.Name);
+		w.Write((byte)seat.Team);
+		w.Write(seat.Owner);
+		w.Write(_indexOf.GetValueOrDefault(seat.Id));
+		return stream.ToArray();
+	}
+
+	/// <summary>Estes bots agora são de <paramref name="owner"/>: a máquina dele passa a movê-los.</summary>
+	private static byte[] BotOwnerPacket(IEnumerable<long> bots, long owner)
+	{
+		long[] ids = bots.Take(255).ToArray();
+		BinaryWriter w = NetWire.Begin(NetWire.BotOwner, out MemoryStream stream);
+		w.Write(owner);
+		w.Write((byte)ids.Length);
+		foreach (long id in ids) w.Write(id);
+		return stream.ToArray();
 	}
 
 	/// <summary>Solta todo mundo.</summary>

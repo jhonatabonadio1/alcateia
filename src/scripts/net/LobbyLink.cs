@@ -101,7 +101,14 @@ public partial class LobbyLink : Node
 
 	public void CreateRoom(JsonObject settings) => Send("room.create", ("settings", settings));
 	public void JoinRoom(int id, string password = "") => Send("room.join", ("id", id), ("password", password));
-	public void LeaveRoom() => Send("room.leave");
+	/// <summary>Sai da sala. A sala some daqui já (a tela que abrir agora não a
+	/// mostra mais); o servidor confirma com <c>left</c>.</summary>
+	public void LeaveRoom()
+	{
+		Send("room.leave");
+		Room = null;
+		Changed?.Invoke();
+	}
 	public void SetTeam(int team) => Send("room.team", ("team", team));
 	public void SetReady(bool ready) => Send("room.ready", ("ready", ready));
 	public void StartMatch() => Send("room.start");

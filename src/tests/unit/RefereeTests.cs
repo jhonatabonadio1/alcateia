@@ -32,6 +32,47 @@ public static class RefereeTests
 		Check.Equal(RefPhase.Live, r.Phase, "contagem acabou, vale");
 	}
 
+	[Test("partida em curso: lugar novo entra zerado; quem já jogou volta no lugar dele; acabada, não entra ninguém")]
+	public static void SeatsInProgress()
+	{
+		Referee r = Live();
+		Check.True(r.Hit(1, 2, 50) && r.Death(2, 1, false, null) != null, "Ana abate Beto");
+
+		Check.True(r.AddSeat(4, "Duda", Referee.Orange), "lugar novo com a partida valendo");
+		Check.True(r.Join(4), "e quem chega entra nele");
+		Check.Equal(Referee.Orange, r.Find(4).Team, "no time que o saguão deu");
+		Check.Equal(0, r.Find(4).Kills, "zerado");
+
+		Check.True(!r.AddSeat(1, "Ana", Referee.Orange), "quem já tem lugar não ganha outro");
+		r.Leave(1);
+		Check.True(r.Join(1), "saiu e voltou");
+		Check.Equal(1, r.Find(1).Kills, "com o que já tinha feito");
+		Check.Equal(Referee.Blue, r.Find(1).Team, "no time de antes");
+
+		r.Tick(61);
+		Check.Equal(RefPhase.Ended, r.Phase, "o tempo acabou");
+		Check.True(!r.AddSeat(5, "Eva", Referee.Blue), "acabada, não abre lugar");
+	}
+
+	[Test("o dono dos bots sai: eles passam para o próximo jogador ligado; sem ninguém, saem junto")]
+	public static void BotsGoToTheNextPlayer()
+	{
+		var r = new Referee(new[] { (1L, "Ana", Referee.Blue, 0L), (2L, "Beto", Referee.Orange, 0L), (3L, "Caio", Referee.Blue, 0L),
+			(-1L, "Fenrir", Referee.Orange, 1L), (-2L, "Garra", Referee.Blue, 1L) }, 3, 60, false, countdown: 2);
+		r.Join(1); r.Join(3);
+
+		Check.Equal(3L, r.HandBots(1), "Beto não chegou: os bots vão para Caio, o próximo ligado");
+		r.Leave(1);
+		Check.True(r.Find(-1).Owner == 3 && r.Find(-2).Owner == 3, "os dois bots são de Caio");
+		Check.True(r.Find(-1).Connected, "e continuam na partida");
+		Check.True(r.Speaks(3, -1) && !r.Speaks(1, -1), "Caio fala por eles; Ana, não mais");
+
+		Check.Equal(0L, r.HandBots(1), "quem não tem bot não passa nada");
+		Check.Equal(0L, r.HandBots(3), "sem ninguém ligado para ficar com eles");
+		r.Leave(3);
+		Check.True(!r.Find(-1).Connected, "e eles saem com o último dono");
+	}
+
 	[Test("bots: chegam e saem com o dono, só ele fala por eles, pontuam e não contam como gente")]
 	public static void BotsFollowTheirOwner()
 	{

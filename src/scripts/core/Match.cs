@@ -286,12 +286,20 @@ public partial class Match : Node
 	/// <summary>Volta ao menu: para a sala, ou para a lista de salas.</summary>
 	public void Leave(ReturnTarget target)
 	{
+		// Sair para o lobby é sair da sala online também (Jhon, 24/11: "se eu
+		// sair da partida, deve ir para o lobby e o mestre passa a ser o próximo
+		// jogador"); a partida dos outros continua.
+		if (target == ReturnTarget.RoomList && LobbyLink.InRoom) LobbyLink.Instance.LeaveRoom();
 		UiState.Reset();
 		RoomConfig.ReturnTo = RoomConfig.Active ? target : ReturnTarget.RoomList;
 		GetTree().ChangeSceneToFile("res://src/scenes/menu/menu.tscn");
 	}
 
 	// ------------------------------------------------------------------
+
+	/// <summary>Quem chegou com a partida em curso (online) entra no placar,
+	/// e o bot que passou a ser movido por esta máquina troca de corpo nele.</summary>
+	public void Enlist() => Roster();
 
 	/// <summary>Todo mundo que está na cena entra no placar já no
 	/// começo, com zero. Placar que só mostra quem já matou esconde

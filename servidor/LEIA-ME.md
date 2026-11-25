@@ -81,7 +81,7 @@ As rotas de jogador pedem `Authorization: Bearer <token>`; as de frota,
 | `GET /v1/ranking?limit=` | jogador | Os primeiros por XP |
 | `GET /v1/rooms` | jogador | As salas abertas |
 | `GET /v1/matches` | jogador | As últimas partidas da conta |
-| `POST /v1/fleet/heartbeat` `{id, address, port, players, capacity, matches[]}` | frota | Um servidor de partida bate ponto: quantas partidas aguenta (`capacity`, 1 se faltar) e as chaves das que tem abertas (`matches`). A resposta traz `assignments[]`, as partidas novas para ele (e `assignment`, a primeira, para servidor antigo); em `players[]`, bot tem `accountId` negativo e `owner`. Partida entregue que some de `matches` (fechou sem resultado: ninguém entrou, ou todos saíram) libera o lugar, e a sala volta a esperar |
+| `POST /v1/fleet/heartbeat` `{id, address, port, players, capacity, matches[]}` | frota | Um servidor de partida bate ponto: quantas partidas aguenta (`capacity`, 1 se faltar) e as chaves das que tem abertas (`matches`). A resposta traz `assignments[]`, as partidas novas para ele (e `assignment`, a primeira, para servidor antigo); em `players[]`, bot tem `accountId` negativo e `owner`. Partida entregue que some de `matches` (fechou sem resultado: ninguém entrou, ou todos saíram) libera o lugar, e a sala volta a esperar. Alguém entrou na sala com a partida em curso: a mesma partida vem de novo, com o lugar novo em `players` e `update: true` (o servidor de partida só abre os lugares; nunca abre partida nova com ela) |
 | `POST /v1/matches` `{matchKey, serverId, scoreBlue, scoreOrange, players[]}` | frota | O resultado. 409 se já foi entregue. Em `players[]`, `killsWolf` (opcional) diz quantos abates foram como lobo e `rejectedHits` (opcional) quantos acertos o servidor de partida recusou (decisão 0016; 15 ou mais viram alerta na ficha) `fire` (opcional) são os segundos em chamas (o rage): vira XP, cortado no máximo que os abates e assistências permitem (`Rage.MaxFireSeconds`); acima disso vira evento de segurança. |
 | `GET /v1/gamedata` | qualquer um | Catálogo, mapas, promoções, desafios e configurações, de uma vez. Com `If-None-Match`, 304 se nada mudou |
 | `GET /v1/inventory` | jogador | `{presas, sangue, xp, rank, items[]}` (só o que está valendo) |
@@ -107,8 +107,8 @@ segunda derruba a primeira.
 |---|---|---|
 | `rooms.list` | | Pede a lista |
 | `room.create` | `settings{title, password, map, teamSize, scoreToWin, minutes, weapons, transform, friendlyFire, difficulty}` (difficulty: 0 fáceis, 1 médios, 2 difíceis) | Abre uma sala e entra nela como dono |
-| `room.join` | `id`, `password` | |
-| `room.leave` | | Saindo o dono, a sala passa para o próximo |
+| `room.join` | `id`, `password` | Também com a partida em curso, se houver vaga (gente e bots que estão jogando contados): quem já jogou a partida volta no time e no lugar dele; quem chega ganha um lugar novo (o servidor de partida o abre na próxima batida) e recebe `match.start` com `late: true` |
+| `room.leave` | | Saindo o dono, a sala passa para o próximo (o mais antigo); com a partida em curso, ela continua. Sala vazia some, e a partida dela é descartada (sai da frota; o resultado, se vier, é recusado). O jogo manda isto ao sair da partida no meio (vai para o lobby) |
 | `room.team` | `team` (1 azul, 2 laranja) | |
 | `room.ready` | `ready` | |
 | `profile.photo` | `id` | A foto de perfil que os outros veem (uma das oito grátis, como `lobo_cinza`, ou uma comprada, item `foto_<id>`; a lista é `PhotoRule`). O servidor ignora foto que a conta não tem. Cada membro da sala sai com `photo`. |
@@ -123,11 +123,11 @@ segunda derruba a primeira.
 | Do servidor | |
 |---|---|
 | `hello` | Quem você é e quantos estão online |
-| `rooms` | A lista de salas (a cada mudança) |
+| `rooms` | A lista de salas (a cada mudança). Cada uma com `open`: dá para entrar agora (esperando com lugar, ou jogando com vaga) |
 | `room` | A sala em que você está: regras, membros, estado. Os bots vêm em `members` com `bot: true`, `id` negativo, `owner` (a conta do dono da sala, cuja máquina os move) e sem `xp` |
 | `left` | Você saiu da sala |
 | `chat` | `from`, `text` |
-| `match.start` | `address`, `port`, `matchKey`, `accountId`, `expires`, `ticket`, `settings`, `restart` (o dono reiniciou a partida que estava em curso) — hora de ligar no servidor de partida |
+| `match.start` | `address`, `port`, `matchKey`, `accountId`, `expires`, `ticket`, `settings`, `restart` (o dono reiniciou a partida que estava em curso), `late` (entrou com a partida em curso: os bots são bonecos até o servidor de partida dizer que passaram para você) — hora de ligar no servidor de partida |
 | `match.end` | O placar e o que você ganhou (`you{xp, presas}`) |
 | `error` | `code`, `message`. Na sala em partida: `servidor_caiu` (o servidor de partida parou de bater) ou `partida_encerrada` (fechou sem resultado) — a sala já voltou a esperar |
 | `pong` | |

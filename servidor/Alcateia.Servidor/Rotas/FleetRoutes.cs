@@ -103,6 +103,8 @@ public static class FleetRoutes
 		var players = new JsonArray();
 		foreach (MatchSeat p in a.Players)
 			players.Add(new JsonObject { ["accountId"] = p.AccountId, ["name"] = p.Name, ["team"] = p.Team, ["owner"] = p.Owner });
-		return new JsonObject { ["matchKey"] = a.MatchKey, ["settings"] = a.Settings.DeepClone(), ["players"] = players };
+		var json = new JsonObject { ["matchKey"] = a.MatchKey, ["settings"] = a.Settings.DeepClone(), ["players"] = players };
+		if (a.Update) json["update"] = true;
+		return json;
 	}
 }

@@ -157,6 +157,38 @@ public sealed class Fleet
 		return slot == null ? null : (slot.Assignment, s.Id);
 	}
 
+	/// <summary>Um lugar a mais numa partida em curso (alguém entrou na sala
+	/// com ela jogando): a escalação vai de novo ao servidor dela na próxima
+	/// batida, que abre o lugar. Quem já está na escalação (jogou e saiu)
+	/// volta para o mesmo lugar, sem mandar nada. Falso se a partida não
+	/// está mais na frota.</summary>
+	public bool AddSeat(string matchKey, MatchSeat seat)
+	{
+		if (matchKey == null || !_byMatch.TryGetValue(matchKey, out GameServer s)) return false;
+		Slot slot = s.Slots.FirstOrDefault(x => x.Assignment.MatchKey == matchKey);
+		if (slot == null) return false;
+		if (slot.Assignment.Players.Any(p => p.AccountId == seat.AccountId)) return true;
+
+		slot.Assignment.Players.Add(seat);
+		if (slot.DeliveredAt != null)
+		{
+			// Já entregue: vai de novo. Ela continua aberta lá, então o prazo
+			// de entrega não a dá por perdida.
+			slot.DeliveredAt = null;
+			slot.Seen = true;
+			slot.Assignment.Update = true;
+		}
+		return true;
+	}
+
+	/// <summary>O time de quem já está na escalação da partida (0 se não está).</summary>
+	public int SeatTeam(string matchKey, long accountId)
+	{
+		if (matchKey == null || !_byMatch.TryGetValue(matchKey, out GameServer s)) return 0;
+		Slot slot = s.Slots.FirstOrDefault(x => x.Assignment.MatchKey == matchKey);
+		return slot?.Assignment.Players.FirstOrDefault(p => p.AccountId == accountId)?.Team ?? 0;
+	}
+
 	/// <summary>A partida acabou (com resultado): o lugar fica livre.</summary>
 	public void Release(string matchKey)
 	{

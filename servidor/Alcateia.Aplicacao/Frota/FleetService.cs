@@ -109,6 +109,18 @@ public sealed class FleetService
 		lock (_lock) return _fleet.Find(matchKey);
 	}
 
+	/// <summary>Um lugar a mais numa partida em curso (<see cref="Fleet.AddSeat"/>).</summary>
+	public bool AddSeat(string matchKey, MatchSeat seat)
+	{
+		lock (_lock) return _fleet.AddSeat(matchKey, seat);
+	}
+
+	/// <summary>O time de quem já está na escalação (0 se não está).</summary>
+	public int SeatTeam(string matchKey, long accountId)
+	{
+		lock (_lock) return _fleet.SeatTeam(matchKey, accountId);
+	}
+
 	public void Release(string matchKey)
 	{
 		lock (_lock) _fleet.Release(matchKey);

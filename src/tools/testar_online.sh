@@ -6,6 +6,12 @@
 # a sala) andam, atiram, matam e morrem para os dois.
 #
 #   src/tools/testar_online.sh
+#   src/tools/testar_online.sh --voltar   o criador sai no meio e volta (24/11)
+#
+# Com --voltar, o criador (dono dos bots) sai da partida depois de uns
+# segundos valendo: deixa a sala, o visitante vira o mestre e passa a mover
+# os bots, e a partida continua; o criador volta pela lista de salas, entra
+# de novo na mesma partida e joga até o fim.
 #
 # Precisa de um servidor do Alcateia no ar. Aponte para ele com
 #   ALCATEIA_API=http://127.0.0.1:8080  ALCATEIA_FLEET_KEY=<o segredo>
@@ -17,6 +23,8 @@
 
 set -u
 cd "$(dirname "$0")/../.." || exit 1
+VOLTAR=""
+[ "${1:-}" = "--voltar" ] && VOLTAR="--sair=8"
 
 GODOT="${GODOT:-godot}"
 export ALCATEIA_API="${ALCATEIA_API:-http://127.0.0.1:8080}"
@@ -39,10 +47,12 @@ fi
 echo "== Compilando"
 dotnet build WolfLeague.csproj --nologo -v quiet -clp:ErrorsOnly || exit 1
 
-PASTA=$(mktemp -d)
+# ALCATEIA_TESTE_LOGS=<pasta>: os logs ficam nela (para ler depois).
+PASTA="${ALCATEIA_TESTE_LOGS:-$(mktemp -d)}"
+mkdir -p "$PASTA"
 limpar() {
 	[ -n "${PARTIDA:-}" ] && kill "$PARTIDA" 2>/dev/null
-	rm -rf "$PASTA"
+	[ -z "${ALCATEIA_TESTE_LOGS:-}" ] && rm -rf "$PASTA"
 }
 trap limpar EXIT
 
@@ -56,7 +66,7 @@ sleep 4
 
 SUFIXO=$(date +%s | tail -c 6)
 echo "== Dois jogadores"
-XDG_DATA_HOME="$PASTA/a" timeout 200 "$GODOT" --headless --path . -- --robo=criar --conta="RoboA$SUFIXO" > "$PASTA/a.log" 2>&1 &
+XDG_DATA_HOME="$PASTA/a" timeout 200 "$GODOT" --headless --path . -- --robo=criar --conta="RoboA$SUFIXO" $VOLTAR > "$PASTA/a.log" 2>&1 &
 A=$!
 sleep 1
 XDG_DATA_HOME="$PASTA/b" timeout 200 "$GODOT" --headless --path . -- --robo=entrar --conta="RoboB$SUFIXO" > "$PASTA/b.log" 2>&1 &
@@ -96,6 +106,15 @@ conferir "$PASTA/b.log" "conta=ok xp_no_jogo=[1-9]" "o do visitante também"
 conferir "$PASTA/a.log" "missoes=[1-9][0-9]* missoes_andando=[1-9]" "as missões vieram do servidor e a partida as fez andar"
 conferir "$PASTA/a.log" "compra=ok usos=1 gasto=1500 " "comprou na loja pelo servidor: o item chegou e as Presas saíram"
 conferir "$PASTA/a.log" "recusa=ok" "e o servidor recusou a arma que a patente dele não libera"
+if [ -n "$VOLTAR" ]; then
+	conferir "$PASTA/a.log" "saiu=1 voltou=1 " "o criador saiu no meio da partida e voltou para ela pela lista de salas"
+	conferir "$PASTA/b.log" "bots_meus_max=2" "quando ele saiu, os dois bots passaram para a máquina do visitante (o novo mestre)"
+	if [ "$(grep -c "Joined .*RoboA$SUFIXO" "$PASTA/servidor.log")" -ge 2 ]; then
+		echo "  ok      o servidor de partida recebeu o criador duas vezes (a volta entrou no lugar dele)"
+	else
+		echo "  FALHOU  o servidor de partida recebeu o criador duas vezes (a volta entrou no lugar dele)"; falhas=$((falhas + 1))
+	fi
+fi
 if [ "${ALCATEIA_NETCODE:-}" = "autoritativo" ]; then
 	conferir "$PASTA/a.log" "modo=autoritativo" "o criador jogou a partida autoritativa (o servidor moveu os corpos)"
 	conferir "$PASTA/b.log" "modo=autoritativo" "o visitante também"

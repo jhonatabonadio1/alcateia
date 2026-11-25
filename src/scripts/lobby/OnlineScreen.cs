@@ -242,8 +242,11 @@ public partial class OnlineScreen : LobbyScreen
 		if (bots > 0) row.AddChild(UiKit.Chip($"+{bots} bot{(bots > 1 ? "s" : "")}", UiTokens.TextSecondary));
 		row.AddChild(UiKit.Chip(playing ? "jogando" : "esperando", playing ? UiTokens.Warning : UiTokens.Success));
 
-		Button join = UiKit.Button("Entrar", ButtonKind.Primary, () => Join(id, locked));
-		join.Disabled = playing || players >= capacity;
+		// Sala jogando com vaga: entra direto na partida (Jhon, 24/11). "open" é do
+		// servidor (conta os bots que estão jogando); sem ele, servidor antigo.
+		bool open = room["open"]?.GetValue<bool>() ?? (!playing && players < capacity);
+		Button join = UiKit.Button(playing ? "Entrar na partida" : "Entrar", ButtonKind.Primary, () => Join(id, locked));
+		join.Disabled = !open;
 		join.CustomMinimumSize = new Vector2(110, 34);
 		row.AddChild(join);
 		return panel;

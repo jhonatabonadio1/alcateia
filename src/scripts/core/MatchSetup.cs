@@ -86,9 +86,11 @@ public partial class MatchSetup : Node
 	/// </summary>
 	private void SetUpOnline(Node3D bots, Node3D player, Dictionary<int, int> used)
 	{
-		var net = new NetMatch { Name = "NetMatch" };
+		var net = new NetMatch { Name = "NetMatch", Setup = this };
 		var puppets = new List<Bot>();
 		var owned = new List<Bot>();
+		_bots = bots;
+		_used = used;
 
 		foreach (OnlineMatch.Seat seat in OnlineMatch.Roster)
 		{
@@ -100,38 +102,53 @@ public partial class MatchSetup : Node
 				continue;
 			}
 
-			if (seat.Mine)
-			{
-				var bot = BotScene.Instantiate<Bot>();
-				bot.Name = $"Bot{-seat.Id}";
-				bot.Team = seat.Team;
-				bot.Callsign = seat.Name;
-				bot.NetId = seat.Id;
-				bot.PatrolCenter = Vector3.Zero;
-				bot.PatrolRadius = 30f;
-				Place(bot, seat.Team, used);
-				bots.AddChild(bot);
-				RoomRules.EquipBot(bot.GetNode<Weapon>("Weapon"));
-				owned.Add(bot);
-				continue;
-			}
-
-			var puppet = BotScene.Instantiate<Bot>();
-			puppet.Name = seat.IsBot ? $"Bot{-seat.Id}" : $"Jogador{seat.Id}";
-			puppet.Team = seat.Team;
-			puppet.Callsign = seat.Name;
-			puppet.Remote = true;
-			puppet.RemoteId = seat.Id;
-			puppet.RemoteRank = seat.IsBot ? Ranks.None : Ranks.RankFor(seat.Xp);
-			puppet.RemotePhoto = seat.IsBot ? null : seat.Photo;
-			Place(puppet, seat.Team, used);
-			bots.AddChild(puppet);
-			puppets.Add(puppet);
+			if (seat.Mine) owned.Add(AddOwnedBot(seat));
+			else puppets.Add(AddPuppet(seat));
 		}
 
 		AddChild(net);
 		foreach (Bot puppet in puppets) net.Register(puppet);
 		foreach (Bot bot in owned) net.Own(bot);
+	}
+
+	private Node3D _bots;
+	private Dictionary<int, int> _used;
+
+	/// <summary>O boneco de outro jogador (ou de um bot de outra máquina), na
+	/// base do time. Também no meio da partida, para quem entrou com ela em
+	/// curso (<see cref="NetMatch"/>).</summary>
+	public Bot AddPuppet(OnlineMatch.Seat seat)
+	{
+		var puppet = BotScene.Instantiate<Bot>();
+		puppet.Name = seat.IsBot ? $"Bot{-seat.Id}" : $"Jogador{seat.Id}";
+		puppet.Team = seat.Team;
+		puppet.Callsign = seat.Name;
+		puppet.Remote = true;
+		puppet.RemoteId = seat.Id;
+		puppet.RemoteRank = seat.IsBot ? Ranks.None : Ranks.RankFor(seat.Xp);
+		puppet.RemotePhoto = seat.IsBot ? null : seat.Photo;
+		Place(puppet, seat.Team, _used);
+		_bots.AddChild(puppet);
+		return puppet;
+	}
+
+	/// <summary>Um bot que esta máquina move (ela é a do mestre da sala), na
+	/// base do time, ou em <paramref name="at"/>: no lugar do boneco dele,
+	/// quando os bots passam para esta máquina no meio da partida.</summary>
+	public Bot AddOwnedBot(OnlineMatch.Seat seat, Vector3? at = null)
+	{
+		var bot = BotScene.Instantiate<Bot>();
+		bot.Name = $"Bot{-seat.Id}";
+		bot.Team = seat.Team;
+		bot.Callsign = seat.Name;
+		bot.NetId = seat.Id;
+		bot.PatrolCenter = Vector3.Zero;
+		bot.PatrolRadius = 30f;
+		Place(bot, seat.Team, _used);
+		if (at is Vector3 where) bot.Position = where;
+		_bots.AddChild(bot);
+		RoomRules.EquipBot(bot.GetNode<Weapon>("Weapon"));
+		return bot;
 	}
 
 	private static void Place(Node3D body, int team, Dictionary<int, int> used)

@@ -89,7 +89,7 @@ public static class NetWire
 		Hit = 6, Died = 7, Kill = 8, Clock = 9, Gone = 10,
 		BotState = 11, BotAttack = 12, BotHit = 13, BotDied = 14, HitBot = 15, Touch = 16,
 		Input = 17, Snapshot = 18, Status = 19, Loadout = 20, Radio = 21,
-		Damage = 22, Vitals = 23, Fire = 24;
+		Damage = 22, Vitals = 23, Fire = 24, Seat = 25, BotOwner = 26;
 
 	/// <summary>O modo da partida, no <c>Welcome</c>.</summary>
 	public const byte ModeRelay = 0, ModeAuthoritative = 1;

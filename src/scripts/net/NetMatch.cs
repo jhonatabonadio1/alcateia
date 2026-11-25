@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 
 /// <summary>
 /// A partida online, do lado de quem joga: a ligação com o servidor de
@@ -46,6 +47,9 @@ using System.Linq;
 public partial class NetMatch : Node
 {
 	public static NetMatch Current { get; private set; }
+
+	/// <summary>Quem montou a partida: cria os bonecos e os bots que chegam no meio dela.</summary>
+	public MatchSetup Setup { get; init; }
 
 	/// <summary>Entrou e foi aceito pelo servidor.</summary>
 	public bool Joined { get; private set; }
@@ -772,6 +776,14 @@ public partial class NetMatch : Node
 					ReadFire(r);
 					break;
 
+				case NetWire.Seat:
+					ReadSeat(r);
+					break;
+
+				case NetWire.BotOwner:
+					ReadBotOwner(r);
+					break;
+
 				case NetWire.Gone:
 					long goneId = r.ReadInt64();
 					if (_puppets.TryGetValue(goneId, out Bot gone)) gone.RemotePresent(false);
@@ -783,6 +795,69 @@ public partial class NetMatch : Node
 		{
 			GD.PushWarning($"NetMatch: malformed packet from the server ({e.Message})");
 		}
+	}
+
+	/// <summary>
+	/// Alguém entrou com a partida em curso (Jhon, 24/11: "posso entrar nela
+	/// novamente caso tenha vaga"), ou voltou: ganha um boneco aqui, se ainda
+	/// não tem, e entra no placar. A patente e a foto vêm da sala do saguão.
+	/// </summary>
+	private void ReadSeat(BinaryReader r)
+	{
+		long id = r.ReadInt64();
+		string name = r.ReadString();
+		int team = r.ReadByte();
+		long owner = r.ReadInt64();
+		byte index = r.ReadByte();
+		if (Authoritative && id > 0) _byIndex[index] = id;
+		if (id == OnlineMatch.AccountId || _puppets.ContainsKey(id) || _owned.ContainsKey(id) || Setup == null) return;
+
+		JsonNode member = (LobbyLink.InRoom ? LobbyLink.Instance.Room["members"] as JsonArray : null)?
+			.FirstOrDefault(m => m?["id"]?.GetValue<long>() == id);
+		var seat = new OnlineMatch.Seat(id, name, team, member?["xp"]?.GetValue<long>() ?? 0, owner, member?["photo"]?.GetValue<string>());
+		OnlineMatch.Roster.RemoveAll(s => s.Id == id);
+		OnlineMatch.Roster.Add(seat);
+
+		Bot puppet = Setup.AddPuppet(seat);
+		Register(puppet);
+		Match.Current?.Enlist();
+		GD.Print($"Online match: {name} joined the match in progress.");
+	}
+
+	/// <summary>
+	/// Os bots de quem saiu passaram para outro jogador (o próximo mestre).
+	/// Se for esta máquina, o boneco de cada um vira bot de verdade, no mesmo
+	/// lugar, e ela passa a movê-lo e a falar por ele.
+	/// </summary>
+	private void ReadBotOwner(BinaryReader r)
+	{
+		long owner = r.ReadInt64();
+		for (int n = r.ReadByte(); n > 0; n--)
+		{
+			long id = r.ReadInt64();
+			int at = OnlineMatch.Roster.FindIndex(s => s.Id == id);
+			if (at >= 0) OnlineMatch.Roster[at] = OnlineMatch.Roster[at] with { Owner = owner };
+			if (owner != OnlineMatch.AccountId || Setup == null || !_puppets.Remove(id, out Bot puppet)) continue;
+
+			_poses.Remove(id);
+			OnlineMatch.Seat seat = at >= 0 ? OnlineMatch.Roster[at] : new OnlineMatch.Seat(id, puppet.Callsign, puppet.Team, 0, owner);
+			Vector3? where = IsInstanceValid(puppet) && !puppet.GetNode<Health>("Health").IsDead ? puppet.GlobalPosition : null;
+			if (IsInstanceValid(puppet)) Retire(puppet);
+			Own(Setup.AddOwnedBot(seat, where));
+		}
+		Match.Current?.Enlist();
+	}
+
+	/// <summary>O boneco de um bot que passou a ser movido aqui sai de cena sem
+	/// ser apagado: a câmera de espectador, a mira e o minimapa podem estar
+	/// segurando ele neste quadro. Fica escondido, parado, sem colisão e fora
+	/// dos grupos (o placar e quem procura corpos acham o bot novo).</summary>
+	private static void Retire(Bot puppet)
+	{
+		puppet.RemotePresent(false);
+		puppet.ProcessMode = ProcessModeEnum.Disabled;
+		foreach (StringName group in puppet.GetGroups()) puppet.RemoveFromGroup(group);
+		puppet.Name = $"{puppet.Name}_aposentado";
 	}
 
 	private static void Apply(Bot body, NetState s)

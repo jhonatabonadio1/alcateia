@@ -17,7 +17,10 @@ using System.Threading.Tasks;
 /// move) e depois só fica de pé e renasce. No fim cada um imprime uma
 /// linha <c>ROBO ...</c> com o que viu, e o script confere as duas.
 ///
-/// <c>--conta=Nome</c> escolhe o nome da conta.
+/// <c>--conta=Nome</c> escolhe o nome da conta. <c>--sair=S</c> (no
+/// criador): depois de S segundos de partida valendo, ele sai dela (vai para o
+/// lobby e deixa a sala; os bots dele passam para o visitante) e volta pela
+/// lista de salas, para a mesma partida (Jhon, 24/11).
 /// </summary>
 public partial class OnlineRobot : Node
 {
@@ -48,11 +51,20 @@ public partial class OnlineRobot : Node
 
 	private bool Host => Role == "criar";
 
+	// Sair e voltar (--sair=S): quando sai, a sala de onde saiu, e quantas
+	// vezes voltou. E quantos bots esta máquina chegou a mover (o visitante
+	// passa a mover os do criador quando ele sai).
+	private double _leaveAt, _liveTime, _rejoinTimer;
+	private bool _leftOnce, _away, _hooked;
+	private int _roomId, _rejoins, _maxMyBots;
+
 	public override void _Ready()
 	{
 		ProcessMode = ProcessModeEnum.Always;
 		_name = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--conta="))?["--conta=".Length..]
 			?? (Host ? "RoboCriador" : "RoboVisitante");
+		string leave = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--sair="))?["--sair=".Length..];
+		if (Host && leave != null) _leaveAt = double.Parse(leave, System.Globalization.CultureInfo.InvariantCulture);
 		_ = Run();
 	}
 
@@ -98,6 +110,7 @@ public partial class OnlineRobot : Node
 			return;
 		}
 
+		_roomId = lobby.Room["id"].GetValue<int>();
 		var members = lobby.Room["members"] as JsonArray;
 		JsonNode me = members.FirstOrDefault(m => m["id"].GetValue<long>() == Backend.AccountId);
 		if (me == null) return;
@@ -133,9 +146,21 @@ public partial class OnlineRobot : Node
 		Match match = Match.Current;
 		if (match == null || NetMatch.Current == null)
 		{
+			// Saiu no meio: volta pela lista de salas, para a mesma partida.
+			if (_away)
+			{
+				Rejoin(delta);
+				return;
+			}
 			// De volta ao menu depois da partida: confere e sai.
 			if (_inMatch) Finish();
 			return;
+		}
+		if (_away)
+		{
+			_away = false;
+			_rejoins++;
+			GD.Print($"ROBO {_name} voltou para a partida.");
 		}
 
 		_authoritative |= NetMatch.Current.Authoritative;
@@ -144,6 +169,8 @@ public partial class OnlineRobot : Node
 		if (!_inMatch)
 		{
 			_inMatch = true;
+			if (_hooked) return;
+			_hooked = true;
 			foreach (Bot puppet in GetTree().GetNodesInGroup(Groups.Bots).OfType<Bot>().Where(b => b.Remote))
 			{
 				if (puppet.RemoteIsBot)
@@ -169,6 +196,7 @@ public partial class OnlineRobot : Node
 			(Groups.LocalPlayer(GetTree())?.GetNode<Health>("Health")).Damaged += (_, _) => _hitsTaken++;
 		}
 
+		_maxMyBots = Math.Max(_maxMyBots, GetTree().GetNodesInGroup(Groups.Bots).OfType<Bot>().Count(b => !b.Remote));
 		foreach (var (puppet, start) in _botStart)
 			if (IsInstanceValid(puppet) && puppet.GlobalPosition.DistanceTo(start) > 2f) _botsMoved.Add(puppet.Name);
 
@@ -196,6 +224,16 @@ public partial class OnlineRobot : Node
 		}
 
 		if (match.Phase != MatchPhase.Live) return;
+
+		_liveTime += delta;
+		if (_leaveAt > 0 && !_leftOnce && _liveTime > _leaveAt)
+		{
+			_leftOnce = _away = true;
+			_inMatch = false;
+			GD.Print($"ROBO {_name} saiu da partida.");
+			match.Leave(ReturnTarget.RoomList);
+			return;
+		}
 
 		// O criador atira no boneco do visitante. O visitante atira no bot
 		// inimigo (que a máquina do criador move) até abatê-lo uma vez.
@@ -229,6 +267,26 @@ public partial class OnlineRobot : Node
 		player.Rotation = new Vector3(0, Mathf.Atan2(-to.X, -to.Z), 0);
 		player.GetNode<Node3D>("Head").Rotation = Vector3.Zero;
 		player.GetNode<Weapon>("Weapon").TryAttack();
+	}
+
+	/// <summary>Fora da partida, depois de sair: entra de novo na sala de onde
+	/// saiu, quando a lista a mostrar jogando com vaga (o saguão manda o
+	/// ingresso e a partida carrega).</summary>
+	private void Rejoin(double delta)
+	{
+		_rejoinTimer -= delta;
+		if (_rejoinTimer > 0) return;
+		_rejoinTimer = 1;
+
+		LobbyLink lobby = LobbyLink.Instance;
+		if (lobby.Room != null) return;
+		JsonNode room = lobby.Rooms.FirstOrDefault(r => r["id"].GetValue<int>() == _roomId);
+		if (room == null || !(room["open"]?.GetValue<bool>() ?? false))
+		{
+			lobby.RefreshRooms();
+			return;
+		}
+		lobby.JoinRoom(_roomId);
 	}
 
 	/// <summary>Um ponto em volta do alvo com linha de tiro livre.</summary>
@@ -281,7 +339,8 @@ public partial class OnlineRobot : Node
 			$"modo={(_authoritative ? "autoritativo" : "repasse")} correcoes={_corrections} forjados={_forged} " +
 			$"conta={(account && Profile.HasAccount ? "ok" : "falhou")} xp_no_jogo={Profile.Xp} presas={presas} missoes={missions} missoes_andando={moving} " +
 			$"compra={(bought == null ? "ok" : "recusada")} usos={uses} gasto={spent} recusa={(refused != null ? "ok" : "comprou")} " +
-			$"sala={(LobbyLink.Instance.Room != null ? LobbyLink.Instance.Room["state"] : "nenhuma")}");
+			$"sala={(LobbyLink.Instance.Room != null ? LobbyLink.Instance.Room["state"] : "nenhuma")} " +
+			$"saiu={(_leftOnce ? 1 : 0)} voltou={_rejoins} bots_meus_max={_maxMyBots}");
 
 		GetTree().Quit(0);
 	}

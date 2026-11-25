@@ -248,6 +248,7 @@ public static class Program
 		tests.AddRange(LobbyTests.All);
 		tests.AddRange(MatchTests.All);
 		tests.AddRange(RestartTests.All);
+		tests.AddRange(RejoinTests.All);
 		tests.AddRange(SecurityTests.All);
 		tests.AddRange(GameDataTests.All);
 		tests.AddRange(PanelTests.All);

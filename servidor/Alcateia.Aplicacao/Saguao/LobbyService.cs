@@ -381,12 +381,32 @@ public sealed class LobbyService : IDisposable
 	{
 		if (!_rooms.TryGetValue(id, out Room room)) throw new Failure(FailureKind.NotFound, "sala_sumiu", "Essa sala não existe mais.");
 		if (c.Room == room) return;
-		if (room.State != Dominio.Salas.RoomState.Waiting) throw new Failure(FailureKind.Conflict, "em_partida", "A sala está em partida.");
+
+		// Com a partida em curso (Jhon, 24/11: "ao sair da partida, posso entrar
+		// nela novamente caso tenha vaga"): quem já jogou esta partida volta no
+		// time e no lugar dele; quem chega agora ganha um lugar novo nela.
+		bool playing = room.State == Dominio.Salas.RoomState.Playing;
+		if (playing && (room.MatchAddress == null || _fleet.Find(room.MatchKey) == null))
+			throw new Failure(FailureKind.Conflict, "em_partida", "A partida desta sala está acabando. Tente de novo em instantes.");
+		int team = playing ? _fleet.SeatTeam(room.MatchKey, c.Account.Id) : 0;
 
 		// A sala nova confere tudo antes: recusado, o jogador fica onde estava.
-		room.Join(c.Account, c.Xp, password);
+		room.Join(c.Account, c.Xp, password, team);
 		Leave(c, outbox);
 		c.Room = room;
+		if (playing)
+		{
+			RoomMember seat = room.Seat(c.Account.Id);
+			if (!_fleet.AddSeat(room.MatchKey, new MatchSeat(c.Account.Id, c.Account.Name, seat.Team)))
+			{
+				room.Leave(c.Account.Id);
+				c.Room = null;
+				throw new Failure(FailureKind.Conflict, "em_partida", "A partida desta sala está acabando. Tente de novo em instantes.");
+			}
+			Changed(room, outbox);
+			SendTicket(room, room.MatchKey, c, false, outbox, late: true);
+			return;
+		}
 		Changed(room, outbox);
 	}
 
@@ -400,7 +420,18 @@ public sealed class LobbyService : IDisposable
 		c.Room = null;
 		outbox.To(c, new JsonObject { ["t"] = "left", ["id"] = room.Id });
 
-		if (room.IsEmpty) _rooms.Remove(room.Id);
+		if (room.IsEmpty)
+		{
+			// Sem ninguém na sala, a partida dela vai junto (Jhon, 24/11: "se não
+			// tiver mais players na sala, o jogo é excluído"): sai da frota, e o
+			// resultado, se chegar, é recusado como de partida desconhecida.
+			if (room.State == Dominio.Salas.RoomState.Playing)
+			{
+				_fleet.Release(room.MatchKey);
+				room.EndMatch(room.MatchKey);
+			}
+			_rooms.Remove(room.Id);
+		}
 		else RoomState(room, outbox);
 		ListChanged();
 	}
@@ -446,24 +477,32 @@ public sealed class LobbyService : IDisposable
 	/// <summary>A sala entra na partida: cada um recebe o endereço e o seu ingresso.</summary>
 	private void Launch(Room room, MatchAssignment assignment, (string Address, int Port) server, bool restart, Outbox outbox)
 	{
-		room.BeginMatch(assignment.MatchKey);
-		long expires = new DateTimeOffset(_clock.UtcNow.Add(_ticketLife)).ToUnixTimeSeconds();
-
-		foreach (RoomMember m in room.Members)
-			outbox.To(SessionOf(m), new JsonObject
-			{
-				["t"] = "match.start",
-				["address"] = server.Address,
-				["port"] = server.Port,
-				["matchKey"] = assignment.MatchKey,
-				["accountId"] = m.Account.Id,
-				["expires"] = expires,
-				["ticket"] = _fleet.Ticket(assignment.MatchKey, m.Account.Id, expires),
-				["settings"] = room.Settings.DeepClone(),
-				["restart"] = restart
-			});
-
+		room.BeginMatch(assignment.MatchKey, server.Address, server.Port);
+		foreach (RoomMember m in room.Members) SendTicket(room, assignment.MatchKey, SessionOf(m), restart, outbox);
 		Changed(room, outbox);
+	}
+
+	/// <summary>O endereço da partida e o ingresso de um jogador. <paramref name="late"/>:
+	/// entrou com ela em curso (o jogo dele trata os bots como bonecos até o
+	/// servidor de partida dizer de quem são).</summary>
+	private void SendTicket(Room room, string matchKey, Session session, bool restart, Outbox outbox, bool late = false)
+	{
+		if (session == null) return;
+		long expires = new DateTimeOffset(_clock.UtcNow.Add(_ticketLife)).ToUnixTimeSeconds();
+		var start = new JsonObject
+		{
+			["t"] = "match.start",
+			["address"] = room.MatchAddress,
+			["port"] = room.MatchPort,
+			["matchKey"] = matchKey,
+			["accountId"] = session.Account.Id,
+			["expires"] = expires,
+			["ticket"] = _fleet.Ticket(matchKey, session.Account.Id, expires),
+			["settings"] = room.Settings.DeepClone(),
+			["restart"] = restart
+		};
+		if (late) start["late"] = true;
+		outbox.To(session, start);
 	}
 
 	private void Chat(Session c, string text, Outbox outbox)
@@ -508,13 +547,14 @@ public sealed class LobbyService : IDisposable
 		ListChanged();
 	}
 
-	/// <summary>As salas que a lista mostra: primeiro as que esperam e têm
-	/// lugar, das mais novas para as mais velhas; até <see cref="MaxListed"/>.</summary>
+	/// <summary>As salas que a lista mostra: primeiro as que têm lugar
+	/// (esperando ou, desde 24/11, jogando com vaga), das mais novas para as
+	/// mais velhas; até <see cref="MaxListed"/>.</summary>
 	private JsonArray RoomList()
 	{
 		var list = new JsonArray();
 		IEnumerable<Room> shown = _rooms.Values
-			.OrderByDescending(r => r.State == Dominio.Salas.RoomState.Waiting && r.Members.Count < r.Capacity)
+			.OrderByDescending(r => r.HasRoom)
 			.ThenByDescending(r => r.Id)
 			.Take(MaxListed);
 		foreach (Room r in shown)
@@ -527,7 +567,9 @@ public sealed class LobbyService : IDisposable
 				["bots"] = r.Bots.Count,
 				["capacity"] = r.Capacity,
 				["state"] = r.StateName,
-				["host"] = r.HostName
+				["host"] = r.HostName,
+				// Dá para entrar agora? Com a partida em curso, os bots dela contam.
+				["open"] = r.HasRoom
 			});
 		return list;
 	}

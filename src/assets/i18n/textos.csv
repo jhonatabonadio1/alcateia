@@ -431,6 +431,7 @@ Digite a senha.,,Type the password.,Escribe la contraseña.,scripts/lobby/LoginS
 Digite o nome da conta.,,Type the account name.,Escribe el nombre de la cuenta.,scripts/lobby/LoginScreen.cs
 Entrando como {0}…,,Signing in as {0}…,Entrando como {0}…,scripts/lobby/LoginScreen.cs
 Entrar,,Sign in,Entrar,scripts/lobby/LoginScreen.cs
+Entrar na partida,,Join match,Entrar en la partida,scripts/lobby/OnlineScreen.cs
 Esquecer este acesso neste computador,,Forget this access on this computer,Olvidar este acceso en este ordenador,scripts/lobby/LoginScreen.cs
 Falando com o servidor…,,Talking to the server…,Hablando con el servidor…,scripts/lobby/LoginScreen.cs
 NOME DA CONTA,,ACCOUNT NAME,NOMBRE DE LA CUENTA,scripts/lobby/LoginScreen.cs
@@ -1057,6 +1058,7 @@ Muted,,Muted,Muted,scripts/ui/DuelCard.cs
 VOCÊ ABATEU,,YOU KILLED,ABATISTE A,scripts/ui/DuelCard.cs
 a partida continua rodando,,the match keeps running,la partida sigue en curso,scripts/ui/GameMenu.cs
 A partida continua sem você e não rende XP nem Cash. Missões também não contam.,,The match goes on without you and earns no XP or Cash. Missions don't count either.,La partida sigue sin ti y no da XP ni Cash. Las misiones tampoco cuentan.,scripts/ui/GameMenu.cs
+"A partida continua sem você. Você sai da sala e volta ao lobby; dá para entrar de novo pela lista de salas, se houver vaga.",,The match goes on without you. You leave the room and go back to the lobby; you can rejoin from the room list if there's a free spot.,La partida sigue sin ti. Sales de la sala y vuelves al lobby; puedes volver a entrar desde la lista de salas si hay lugar.,scripts/ui/GameMenu.cs
 "A partida recomeça do zero para todos da sala. Esta não rende XP, Cash nem missões para ninguém.",,,,scripts/ui/GameMenu.cs
 Abandonar,,Abandon,Abandonar,scripts/ui/GameMenu.cs
 Continuar,,Continue,Continuar,scripts/ui/GameMenu.cs
@@ -1075,6 +1077,8 @@ Sair do jogo,,Quit game,Salir del juego,scripts/ui/GameMenu.cs
 Sair do jogo?,,Quit the game?,¿Salir del juego?,scripts/ui/GameMenu.cs
 Sair para a sala,,Leave to room,Salir a la sala,scripts/ui/GameMenu.cs
 Sair para a sala?,,Leave to the room?,¿Salir a la sala?,scripts/ui/GameMenu.cs
+Sair da partida,,Leave match,Salir de la partida,scripts/ui/GameMenu.cs
+Sair da partida?,,Leave the match?,¿Salir de la partida?,scripts/ui/GameMenu.cs
 Voltar,,Back,Volver,scripts/ui/GameMenu.cs
 Carregando o mapa…,,Loading the map…,Cargando el mapa…,scripts/ui/LoadingScreen.cs
 Mata-mata em equipe,,Team deathmatch,Combate a muerte por equipos,scripts/ui/LoadingScreen.cs

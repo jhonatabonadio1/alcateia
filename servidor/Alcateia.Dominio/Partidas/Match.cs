@@ -24,6 +24,12 @@ public sealed class MatchAssignment
 	public List<MatchSeat> Players = new();
 	public DateTime StartedAt = DateTime.UtcNow;
 
+	/// <summary>Esta entrega é da partida que o servidor de partida já tem,
+	/// com lugares a mais (<see cref="Alcateia.Dominio.Frota.Fleet.AddSeat"/>): ele só abre os
+	/// lugares, nunca uma partida nova com ela (que pode ter acabado no meio
+	/// do caminho).</summary>
+	public bool Update;
+
 	public string Title => Settings?["title"]?.GetValue<string>() ?? "";
 	public string Map => Settings?["map"]?.GetValue<string>() ?? "";
 	public string Mode => Settings?["mode"]?.ToString() ?? "Equipe";
