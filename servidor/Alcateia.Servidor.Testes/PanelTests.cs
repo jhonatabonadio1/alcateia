@@ -65,6 +65,21 @@ public static class PanelTests
 			Check.True(!(await admin.Get($"/players/{p.Id}")).Body["player"]["banned"].GetValue<bool>(), "e o banimento não aconteceu");
 		}),
 
+		("painel: a origem vale pelo nome do servidor, não pela porta (o proxy do Fly entrega sem a 8443); outro site é recusado", async () =>
+		{
+			await using World w = await World.Start();
+			using var admin = new PanelClient(w);
+			string host = new Uri(w.AdminUrl).Host;
+
+			// Como no Fly: o navegador em https://<nome>:8443, o servidor vendo o Host sem a porta.
+			admin.Origin = $"https://{host}:8443";
+			await admin.Login();
+			Check.Equal(200, (await admin.Post("/logout")).Status, "a mesma máquina por outra porta entra (era \"Pedido recusado\")");
+
+			admin.Origin = "https://site-de-fora.example";
+			Check.Equal("pedido_recusado", Code(await admin.Post("/logout")), "outro site é recusado");
+		}),
+
 		("painel: verificação em duas etapas — liga com o código do aplicativo e passa a pedi-lo no login", async () =>
 		{
 			await using World w = await World.Start();

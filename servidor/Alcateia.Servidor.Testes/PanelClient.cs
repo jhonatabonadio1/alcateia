@@ -18,6 +18,9 @@ public sealed class PanelClient : IDisposable
 	/// <summary>Manda o cabeçalho que o painel de verdade manda.</summary>
 	public bool SendHeader = true;
 
+	/// <summary>A origem que o navegador manda (nula: nenhuma).</summary>
+	public string Origin;
+
 	public PanelClient(World world)
 	{
 		_world = world;
@@ -28,6 +31,7 @@ public sealed class PanelClient : IDisposable
 	{
 		var request = new HttpRequestMessage(method, _world.AdminUrl + "/admin/v1" + path);
 		if (SendHeader) request.Headers.Add("X-Painel", "1");
+		if (Origin != null) request.Headers.Add("Origin", Origin);
 		if (body != null) request.Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json");
 		HttpResponseMessage response = await _http.SendAsync(request);
 		string text = await response.Content.ReadAsStringAsync();

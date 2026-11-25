@@ -40,8 +40,15 @@ public static class AdminApi
 		if (!Shield.OnAdminPort(ctx)) throw new Failure(FailureKind.NotFound, "nao_encontrado", "Não encontrado.");
 		if (HttpMethods.IsGet(ctx.Request.Method)) return;
 
+		// O mesmo site: o nome do servidor, sem a porta. No Fly o painel abre em
+		// https://wolfleague-api.fly.dev:8443, mas o proxy entrega o pedido com o Host sem
+		// a porta ("wolfleague-api.fly.dev"): comparando com a porta, todo login era
+		// "Pedido recusado" (Jhon, 25/11). A outra porta do mesmo nome é a API do próprio
+		// jogo, que não serve página de ninguém; e o X-Painel já obriga o navegador a
+		// pedir licença (CORS) a qualquer outro site, que o servidor não dá.
 		string origin = ctx.Request.Headers.Origin;
-		bool sameOrigin = string.IsNullOrEmpty(origin) || (Uri.TryCreate(origin, UriKind.Absolute, out Uri from) && from.Authority == ctx.Request.Host.Value);
+		bool sameOrigin = string.IsNullOrEmpty(origin) || (Uri.TryCreate(origin, UriKind.Absolute, out Uri from)
+			&& string.Equals(from.Host, ctx.Request.Host.Host, StringComparison.OrdinalIgnoreCase));
 		if (ctx.Request.Headers["X-Painel"] != "1" || !sameOrigin)
 			throw new Failure(FailureKind.Forbidden, "pedido_recusado", "Pedido recusado.");
 	}
