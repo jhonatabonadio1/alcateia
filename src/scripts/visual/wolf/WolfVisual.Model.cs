@@ -89,6 +89,7 @@ public partial class WolfVisual
 		// O lobo é visto de fora até pelo dono: entra na luz dos personagens.
 		ViewModel.MarkCharacter(_model);
 		BuildTree();
+		BuildTail();
 		return true;
 	}
 

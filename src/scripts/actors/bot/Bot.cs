@@ -78,6 +78,7 @@ public partial class Bot : CharacterBody3D
 	public BotAction Action { get; private set; } = BotAction.Patrol;
 
 	private Health _health;
+	private int _collisionTeam = TeamCollision.None;
 	private FormController _form;
 	private Weapon _weapon;
 	private Node3D _head;
@@ -179,6 +180,8 @@ public partial class Bot : CharacterBody3D
 
 	public override void _PhysicsProcess(double delta)
 	{
+		// Aliado não é parede (TeamCollision), também para o boneco da rede.
+		TeamCollision.Keep(this, _health, ref _collisionTeam);
 		if (Remote)
 		{
 			RemoteStep(delta);

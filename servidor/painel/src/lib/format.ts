@@ -80,7 +80,7 @@ export const roleHelp: Record<string, string> = {
 	leitor: "Só vê.",
 };
 
-export const currencyNames: Record<string, string> = { presas: "Presas", sangue: "Sangue" };
+export const currencyNames: Record<string, string> = { presas: "Cash", sangue: "IPs" };
 
 export const teamNames = ["Os dois times", "Vanguarda", "Sindicato"];
 

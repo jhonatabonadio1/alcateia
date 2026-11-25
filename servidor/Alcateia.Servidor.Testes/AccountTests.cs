@@ -21,14 +21,15 @@ public static class AccountTests
 			Check.Equal(Alcateia.Infra.Banco.Schema.Latest, body["schema"].GetValue<int>(), "versão do banco");
 		}),
 
-		("conta: criar já entra, com o perfil inicial (3000 Presas, XP 0)", async () =>
+		("conta: criar já entra, com o perfil inicial (0 Presas, 0 Sangue, XP 0)", async () =>
 		{
 			await using World w = await World.Start();
 			Player p = await w.NewPlayer("Jhon_01");
 			var (status, profile) = await p.Call(HttpMethod.Get, "/v1/profile");
 			Check.Equal(200, status, "ler o perfil com o token do cadastro");
 			Check.Equal("Jhon_01", profile["name"].GetValue<string>(), "nome");
-			Check.Equal(3000L, profile["presas"].GetValue<long>(), "Presas iniciais");
+			Check.Equal(0L, profile["presas"].GetValue<long>(), "Cash inicial: nenhum");
+			Check.Equal(0L, profile["sangue"].GetValue<long>(), "IPs inicial: nenhum");
 			Check.Equal(0L, profile["xp"].GetValue<long>(), "XP inicial");
 		}),
 

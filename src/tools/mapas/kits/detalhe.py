@@ -442,6 +442,9 @@ def remendar(caminho, kit, regra=None, quieto=False):
             c = U.mean(1); cor = tex[np.clip((c[:, 1] % 1 * H).astype(int), 0, H - 1), np.clip((c[:, 0] % 1 * W).astype(int), 0, W - 1)]
             if p.get('material') is None and regra is None: cl = np.zeros(len(idx), int)
             else: cl = np.asarray(regra(Faces(cor, g, P)), int) if regra else classificar(kit, nome, cor, g, P, c)
+            # No Armazém toda face tem a paleta. Uma peça que o Blender exportou sem material (o bloco do fundo leste, 447 m²)
+            # o Godot pinta de branco liso, sem paleta nem detalhe: era a parede branca do galpão (Jhon, 25/11).
+            if regra and p.get('material') is None and j.get('materials'): p['material'] = 0
             np.add.at(areas, cl, comp[:, 0] / 2)
             # um vértice por (posição, normal, uv, material): a face inteira tem um material só
             v = np.concatenate([pos[idx.reshape(-1)], nor[idx.reshape(-1)], uv[idx.reshape(-1)], np.repeat(cl, 3)[:, None].astype(np.float32)], 1)

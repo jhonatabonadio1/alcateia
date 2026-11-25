@@ -305,11 +305,21 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		foreach (IncidentNote n in sent)
 			events.Add(new JsonObject { ["kind"] = n.Kind, ["severity"] = n.Severity, ["match"] = n.Match, ["account"] = n.Account, ["detail"] = n.Detail });
 
+		// Onde cada partida está: o saguão fecha a entrada das quase acabando
+		// (Jhon, 25/11: "não pode entrar em sala cuja partida está quase acabando").
+		var progress = new JsonArray();
+		foreach (HostedMatch m in _matches.Values)
+			progress.Add(new JsonObject
+			{
+				["key"] = m.Key, ["live"] = m.Referee.Phase == RefPhase.Live, ["timeLeft"] = Math.Round(m.Referee.TimeLeft, 1), ["duration"] = m.Referee.Duration,
+				["blue"] = m.Referee.Score(Referee.Blue), ["orange"] = m.Referee.Score(Referee.Orange), ["toWin"] = m.Referee.ScoreToWin
+			});
+
 		Backend.Reply reply = await Backend.AsGameServer("/v1/fleet/heartbeat", new JsonObject
 		{
 			["id"] = _id, ["address"] = _address ?? "", ["port"] = _port,
 			["players"] = _matches.Values.Sum(m => m.Players), ["capacity"] = _capacity, ["matches"] = open,
-			["events"] = events
+			["progress"] = progress, ["events"] = events
 		}, _fleetKey);
 		_beating = false;
 

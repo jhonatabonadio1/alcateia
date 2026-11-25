@@ -99,6 +99,30 @@ export function Settings() {
 				</Card>
 
 				<Card>
+					<CardHeader title="Recompensas por partida" description="Quanto Cash cada coisa rende numa partida online, e com quanto Cash a conta nova começa. O XP segue a regra do jogo. Vale para as próximas partidas e para o resultado que o jogo mostra." />
+					<CardBody className="flex flex-wrap items-end gap-3">
+						{(
+							[
+								["base", "Por jogar"],
+								["kill", "Por abate"],
+								["assist", "Por assistência"],
+								["win", "Vitória"],
+								["draw", "Empate"],
+								["mvp", "MVP"],
+								["starter", "Conta nova começa com"]
+							] as const
+						).map(([key, label]) => (
+							<Field key={key} label={label} className="w-36">
+								<Input type="number" min={0} max={100000} value={s.recompensas[key]} onChange={(e) => setS({ ...s, recompensas: { ...s.recompensas, [key]: Number(e.target.value) } })} className="num" />
+							</Field>
+						))}
+						<Button variant="primary" disabled={saving === "recompensas"} onClick={() => void save("recompensas", s.recompensas, "Recompensas salvas.")}>
+							Salvar
+						</Button>
+					</CardBody>
+				</Card>
+
+				<Card>
 					<CardHeader title="Vitrine do dia" description="Todo dia, alguns itens à venda entram em promoção até a meia-noite de Brasília. O sorteio é pela data, igual para todo mundo; consumível não entra. Zero itens desliga a vitrine." />
 					<CardBody className="flex flex-wrap items-end gap-3">
 						<Field label="Itens por dia" className="w-36">

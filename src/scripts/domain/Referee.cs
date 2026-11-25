@@ -79,6 +79,8 @@ public sealed class Referee
 	public RefPhase Phase { get; private set; } = RefPhase.Waiting;
 	public double CountdownLeft { get; private set; }
 	public double TimeLeft { get; private set; }
+	/// <summary>Quanto a partida dura, inteira (segundos).</summary>
+	public double Duration { get; }
 	public int ScoreToWin { get; }
 	public bool FriendlyFire { get; }
 	public int Winner { get; private set; }
@@ -103,7 +105,7 @@ public sealed class Referee
 
 		ScoreToWin = Math.Max(scoreToWin, 1);
 		FriendlyFire = friendlyFire;
-		TimeLeft = seconds;
+		TimeLeft = Duration = seconds;
 		CountdownLeft = countdown;
 	}
 
@@ -132,12 +134,20 @@ public sealed class Referee
 	}
 
 	/// <summary>Um lugar novo com a partida em curso (alguém entrou na sala
-	/// com ela jogando; Jhon, 24/11). Começa zerado. Falso se já existe (quem
-	/// jogou e saiu volta para o mesmo lugar, com o que já tinha feito) ou se
-	/// a partida acabou.</summary>
+	/// com ela jogando; Jhon, 24/11). Começa zerado. Quem jogou e saiu volta
+	/// para o mesmo lugar, com o que já tinha feito: falso, nada muda — a não
+	/// ser que tenha escolhido o outro time na sala (25/11); aí, desligado, o
+	/// lugar muda de time (os abates dele ficam com ele). Falso também se a
+	/// partida acabou.</summary>
 	public bool AddSeat(long id, string name, int team, long owner = 0)
 	{
-		if (Phase == RefPhase.Ended || _seats.ContainsKey(id)) return false;
+		if (Phase == RefPhase.Ended) return false;
+		if (_seats.TryGetValue(id, out Seat old))
+		{
+			if (old.Connected || old.IsBot || team is not (Blue or Orange) || old.Team == team) return false;
+			old.Team = team;
+			return true;
+		}
 		_seats[id] = new Seat { Id = id, Name = name, Team = team is Blue or Orange ? team : Blue, Owner = owner };
 		return true;
 	}
@@ -238,8 +248,8 @@ public sealed class Referee
 	/// <summary>
 	/// Alguém diz que morreu, e por quem. O abate só vale se o autor
 	/// acertou a vítima há pouco; quem ajudou, idem. Morte sem autor
-	/// (queda, a própria granada) não entra no placar, como no jogo
-	/// offline. Nulo se não houve abate.
+	/// (queda, a própria granada) não pontua ninguém: é a
+	/// <see cref="SelfDeath"/>. Nulo se não houve abate.
 	/// </summary>
 	public RefKill? Death(long victimId, long killerId, bool headshot, IEnumerable<long> assisters, bool killerWasWolf = false)
 	{
@@ -283,6 +293,22 @@ public sealed class Referee
 		}
 
 		return new RefKill(killerId, victimId, headshot, helpers);
+	}
+
+	/// <summary>
+	/// Alguém morreu sozinho (a própria granada, a queda): a morte conta para
+	/// ele, sem abate nem ponto para ninguém, como no jogo offline (Jhon,
+	/// 25/11). Falso se não vale: partida parada, ou já morreu neste segundo.
+	/// </summary>
+	public bool SelfDeath(long victimId)
+	{
+		Seat victim = Find(victimId);
+		if (Phase != RefPhase.Live || victim == null || !victim.Connected) return false;
+		if (_now - victim.DiedAt < 1.0) return false;
+		victim.DiedAt = _now;
+		victim.HitBy.Clear();
+		victim.Deaths++;
+		return true;
 	}
 
 	/// <summary>Quem acertou a vítima há pouco (a janela do crédito): é a

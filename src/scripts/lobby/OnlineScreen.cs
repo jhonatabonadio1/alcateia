@@ -235,17 +235,30 @@ public partial class OnlineScreen : LobbyScreen
 
 		row.AddChild(UiKit.Text(Maps.Get(s.Map).Name, "Muted"));
 		row.AddChild(UiKit.Text(Loc.F("até {0} · {1} min", s.ScoreToWin, s.Minutes), "Muted"));
-		int bots = room["bots"]?.GetValue<int>() ?? 0;
-		Label count = UiKit.Text($"{players}/{capacity}", "Numeric", players >= capacity ? UiTokens.Danger : UiTokens.TextPrimary);
-		if (bots > 0) count.TooltipText = Loc.F("{0} jogador(es) e {1} bot(s). Quem entra toma o lugar de um bot.", players, bots);
-		row.AddChild(count);
-		if (bots > 0) row.AddChild(UiKit.Chip($"+{bots} bot{(bots > 1 ? "s" : "")}", UiTokens.TextSecondary));
-		row.AddChild(UiKit.Chip(playing ? "jogando" : "esperando", playing ? UiTokens.Warning : UiTokens.Success));
+		// Os bots contam nos lugares (Jhon, 25/11: "partida com bot deve
+		// contabilizar aqui, e não +10 bots").
+		int bots = room["bots"]?.GetValue<int>() ?? 0, taken = players + bots;
+		bool closing = room["closing"]?.GetValue<bool>() ?? false;
 
-		// Sala jogando com vaga: entra direto na partida (Jhon, 24/11). "open" é do
-		// servidor (conta os bots que estão jogando); sem ele, servidor antigo.
+		// "open" é do servidor (com a partida em curso, conta os bots dela, não
+		// deixa um time com dois a mais e fecha quando ela está quase
+		// acabando); sem ele, servidor antigo.
 		bool open = room["open"]?.GetValue<bool>() ?? (!playing && players < capacity);
-		Button join = UiKit.Button(playing ? "Entrar na partida" : "Entrar", ButtonKind.Primary, () => Join(id, locked));
+		Label count = UiKit.Text($"{taken}/{capacity}", "Numeric", !open && taken >= capacity ? UiTokens.Danger : UiTokens.TextPrimary);
+		if (bots > 0)
+			count.TooltipText = playing
+				? Loc.F("{0} jogador(es) e {1} bot(s).", players, bots)
+				: Loc.F("{0} jogador(es) e {1} bot(s). Quem entra toma o lugar de um bot.", players, bots);
+		row.AddChild(count);
+		row.AddChild(closing
+			? UiKit.Chip("acabando", UiTokens.Danger)
+			: UiKit.Chip(playing ? "jogando" : "esperando", playing ? UiTokens.Warning : UiTokens.Success));
+
+		// Sala jogando com vaga: entra na sala para escolher o time, e de lá na
+		// partida (Jhon, 25/11: "se a partida tiver iniciado, ele entra na sala
+		// para poder escolher o time").
+		Button join = UiKit.Button("Entrar", ButtonKind.Primary, () => Join(id, locked));
+		if (closing) join.TooltipText = Loc.T("A partida está quase acabando: espere a próxima");
 		join.Disabled = !open;
 		join.CustomMinimumSize = new Vector2(110, 34);
 		row.AddChild(join);

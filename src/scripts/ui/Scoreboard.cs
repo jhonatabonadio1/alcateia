@@ -169,7 +169,7 @@ public partial class Scoreboard : HBoxContainer
 		{
 			Root.AddThemeStyleboxOverride("panel", c.IsLocal ? _local : _plain);
 
-			_badge.Photo = c.Photo;
+			_badge.Photo = c.ProfilePhoto;
 			_badge.Visible = !c.IsBot;
 			_crown.Visible = c.Name == mvp;
 

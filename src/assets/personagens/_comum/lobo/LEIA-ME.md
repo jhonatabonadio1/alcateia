@@ -1,5 +1,12 @@
 # Lobo — o lobo do Meshy + Creature Pack
 
+**Desde 25/11 os dois lobos são o mesmo modelo do Meshy** (o "lobo natural"
+que o Jhon gerou: 10 mil triângulos, uma malha só, texturas de 4096), no
+esqueleto do lobo azul de 17/11 mais cinco ossos de rabo (`rabo1` a `rabo5`,
+29 no total), pintado por time: veja `src/tools/lobo/LEIA-ME.md`. O rabo é
+simulado no jogo (`WolfVisual.Tail.cs`); nenhum clipe daqui o mexe. O que
+está abaixo sobre três malhas, tufos e o `polir.py` é dos lobos de antes.
+
 **Desde 18/11 os dois lobos estão polidos** (`tools/lobo/polir.py`, veja o
 LEIA-ME de lá): cores mais vivas, pelo pintado, oclusão assada, textura de
 emissão (`*_lobo_emissao.jpg`: olhos, braceletes, peitoral, joelheiras,

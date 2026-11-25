@@ -154,6 +154,31 @@ public partial class Weapon
 	/// alvo que se mexeu no voo.</summary>
 	[Export] public float PounceChaseRange = 18f;
 
+	/// <summary>Onde o lobo cai em relação ao alvo travado: a esta distância
+	/// do centro dele, de frente para ele (as duas cápsulas têm 0,3 m de
+	/// raio). O ponto de queda era o centro do alvo: o lobo chegava em cima
+	/// do corpo dele, a física o barrava e o empurrava de volta no ar
+	/// (Jhon, 25/11: "vai e volta no ar"). A garra do salto pega em volta
+	/// (<see cref="PounceHitRadius"/>), então cair colado na frente acerta.</summary>
+	[Export] public float PounceStandOff = 0.7f;
+
+	/// <summary>O mais rápido que o ponto de queda anda atrás do alvo que se
+	/// mexe, em m/s. O voo refazia o caminho inteiro a cada quadro para onde
+	/// o alvo estava: o zigue-zague de quem esquiva (e o tremor do boneco da
+	/// rede, que anda aos pacotes) passava inteiro para o lobo no fim do voo,
+	/// que balançava de um lado para o outro. Com o teto, o lobo vem liso e
+	/// ainda alcança quem corre (o mais rápido, o lobo de quatro, anda 7,7).</summary>
+	[Export] public float PounceSteerSpeed = 9f;
+
+	/// <summary>Quanto do movimento do alvo o salto antecipa: mira onde ele
+	/// vai estar quando o lobo cair (a velocidade dele, alisada em
+	/// <see cref="PounceLeadSmooth"/> segundos), até
+	/// <see cref="PounceMaxLead"/> metros. Sem antecipar, o lobo saía para
+	/// onde o alvo estava e corrigia tudo no fim, quando já devia estar
+	/// caindo.</summary>
+	[Export] public float PounceLeadSmooth = 0.25f;
+	[Export] public float PounceMaxLead = 2.5f;
+
 	/// <summary>Segundos para usar o especial depois de armar (Q). Passou,
 	/// perde a carga (pedido do Jhon, 18/11: "depois que eu apertar Q,
 	/// tenho 5 s para usar o especial, se não eu perco"). Zero ou menos:
@@ -269,30 +294,156 @@ public partial class Weapon
 		_flying ? PounceFlightRate : _pounceLanded && _rootLeft > 0 ? Mathf.Max(PounceRecoverRate, 0.1f) : 1f;
 
 	/// <summary>
-	/// O voo persegue o alvo (pedido do Jhon, 18/11): o ponto de queda é
-	/// onde ele está agora — andou para a frente, para o lado ou para trás,
-	/// o lobo cai em cima dele. Até <see cref="PounceChaseRange"/> metros
-	/// de onde saltou; o alvo morto, vale onde ele estava.
+	/// O voo persegue o alvo (pedido do Jhon, 18/11): o lobo cai colado na
+	/// frente dele (<see cref="PounceStandOff"/>), onde ele vai estar quando
+	/// o lobo chegar — andou para a frente, para o lado ou para trás. Até
+	/// <see cref="PounceChaseRange"/> metros de onde saltou; o alvo morto,
+	/// vale onde ele estava.
+	///
+	/// O ponto de queda anda atrás do alvo no máximo a
+	/// <see cref="PounceSteerSpeed"/>, e não salta para onde ele está a cada
+	/// quadro (25/11): o voo fica liso com quem esquiva e com o boneco da
+	/// rede. <paramref name="snap"/>: no impulso, o ponto vai direto.
 	/// </summary>
-	private void ChaseFocus()
+	private void ChaseFocus(double delta, bool snap = false)
 	{
-		if (_pounceFocus is not Node3D focus || !IsInstanceValid(focus) || !focus.IsInsideTree()) return;
-		if (focus.GetNodeOrNull<Health>("Health") is { IsDead: true }) return;
+		if (FocusPoint(delta, snap) is not Vector3 target) return;
 
 		var space = _body.GetWorld3D().DirectSpaceState;
 		float halfHeight = -((_body as Player)?.FeetOffset ?? -0.875f);
-		Vector3 floor = FloorBelow(space, focus.GlobalPosition, 4f) ?? focus.GlobalPosition + Vector3.Down * 0.9f;
-		Vector3 end = floor + Vector3.Up * halfHeight;
 
-		Vector3 flat = end - _flyStart;
-		flat.Y = 0;
-		float distance = flat.Length();
-		if (distance > PounceChaseRange) flat *= PounceChaseRange / distance;
-		if (flat.LengthSquared() > 0.0001f) _flyDir = flat.Normalized();
-		_flyEnd = new Vector3(_flyStart.X + flat.X, end.Y, _flyStart.Z + flat.Z);
-		_flyDistance = flat.Length();
+		// O lado do alvo escolhido no impulso (LandAround), que acompanha o
+		// alvo; sem ele, colado na frente dele, do lado de onde o lobo vem:
+		// o caminho nunca termina dentro do corpo do alvo.
+		Vector3 end;
+		if (_landOffset is Vector3 offset)
+		{
+			Vector3 spot = target + offset;
+			float feet = target.Y - halfHeight;
+			float floor = FloorBelow(space, new Vector3(spot.X, feet + 1.2f, spot.Z), 2.4f) is Vector3 f && Mathf.Abs(f.Y - feet) <= 0.6f ? f.Y : feet;
+			end = new Vector3(spot.X, floor + halfHeight, spot.Z);
+		}
+		else
+		{
+			Vector3 from = (target - _body.GlobalPosition) with { Y = 0 };
+			if (from.LengthSquared() < 0.0001f) from = _flyDir;
+			end = target - from.Normalized() * Mathf.Min(PounceStandOff, from.Length());
+		}
+
+		Vector3 flat = (end - _flyStart) with { Y = 0 };
+		if (flat.Length() > PounceChaseRange) flat = flat.Normalized() * PounceChaseRange;
+		Vector3 wanted = new Vector3(_flyStart.X + flat.X, end.Y, _flyStart.Z + flat.Z);
+
+		_flyEnd = snap ? wanted : _flyEnd.MoveToward(wanted, PounceSteerSpeed * (float)delta);
+		Vector3 path = (_flyEnd - _flyStart) with { Y = 0 };
+		if (path.LengthSquared() > 0.0001f) _flyDir = path.Normalized();
+		_flyDistance = path.Length();
 		_flyLand = Mathf.Clamp(_flyEnd.Y - _flyStart.Y, -PounceMaxDrop, PounceMaxClimb);
 	}
+
+	/// <summary>O centro do corpo do alvo travado quando o lobo chegar: onde
+	/// ele está, mais a velocidade dele (alisada) vezes o voo que falta, no
+	/// chão. Nulo sem alvo (ou morto).</summary>
+	private Vector3? FocusPoint(double delta, bool snap)
+	{
+		(Vector3 At, Vector3 Velocity) view;
+		if (_pounceFocus is Node3D focus && IsInstanceValid(focus) && focus.IsInsideTree())
+		{
+			if (focus.GetNodeOrNull<Health>("Health") is { IsDead: true }) return null;
+			view = FocusView(focus);
+		}
+		else if (_chaseSeenOnly && RemoteFocusView is var (remoteAt, remoteVelocity))
+			view = (remoteAt, remoteVelocity);   // no servidor: um alvo que só o jogo tem (um bot)
+		else return null;
+
+		var space = _body.GetWorld3D().DirectSpaceState;
+		float halfHeight = -((_body as Player)?.FeetOffset ?? -0.875f);
+
+		// Para onde o alvo vai: a velocidade dele, alisada (o boneco da rede
+		// a tem pelo pacote; o bot e o jogador, pela física).
+		var (seen, seenVelocity) = view;
+		Vector3 velocity = seenVelocity with { Y = 0 };
+		float follow = snap ? 1f : 1f - Mathf.Exp(-(float)delta / Mathf.Max(PounceLeadSmooth, 0.01f));
+		_focusVelocity = _focusVelocity.Lerp(velocity, follow);
+		float left = Mathf.Max((float)(_flyTotal - _flyTime), 0f);
+		Vector3 ahead = (_focusVelocity * left).LimitLength(PounceMaxLead);
+
+		Vector3 at = seen + ahead;
+		Vector3 floor = FloorBelow(space, at, 4f) ?? FloorBelow(space, seen, 4f) ?? seen + Vector3.Down * 0.9f;
+		return new Vector3(at.X, floor.Y + halfHeight, at.Z);
+	}
+
+	// ------------------------------------------------------------ partida autoritativa
+
+	/// <summary>
+	/// Onde este corpo vê o alvo travado e para onde ele vai. No jogo, o
+	/// alvo como está na tela (online, arredondado como vai no comando, para
+	/// o servidor fazer a mesma conta); no corpo do servidor, o que o jogo
+	/// disse que via (<see cref="RemoteFocusView"/>) — o servidor vê o alvo
+	/// no presente, e o jogo uns 100 ms atrás; seguindo pontos diferentes, o
+	/// voo dos dois saía diferente e a correção puxava o lobo do jogador.
+	/// </summary>
+	private (Vector3 At, Vector3 Velocity) FocusView(Node3D focus)
+	{
+		if (RemoteFocusView is var (remoteAt, remoteVelocity) && focus == RemoteFocus)
+			return (remoteAt, remoteVelocity);
+
+		Vector3 at = focus.GlobalPosition;
+		Vector3 velocity = focus is CharacterBody3D moving ? moving.Velocity : Vector3.Zero;
+		if (Player.NetQuantize)
+		{
+			at = new Vector3(Quant.Position(at.X), Quant.Position(at.Y), Quant.Position(at.Z));
+			velocity = new Vector3(Quant.Velocity(velocity.X), Quant.Velocity(velocity.Y), Quant.Velocity(velocity.Z));
+		}
+		NetFocusSeen = (at, velocity);
+		_netFocusSeenFor = focus;
+		_netFocusSeenFrame = Engine.GetPhysicsFrames();
+		return (at, velocity);
+	}
+
+	/// <summary>No servidor de partida: o alvo travado que o jogo mandou no
+	/// comando deste passo (já conferido por <c>ServerBody</c>), e onde o jogo
+	/// o via. Nulo no jogo.</summary>
+	public Node3D RemoteFocus { get; set; }
+
+	/// <summary>No servidor: o voo persegue um alvo que só o jogo tem (um
+	/// bot), pelo ponto que o jogo manda a cada passo.</summary>
+	private bool _chaseSeenOnly;
+	public (Vector3 At, Vector3 Velocity)? RemoteFocusView { get; set; }
+
+	/// <summary>No servidor de partida: o ponto que o jogo mirou no salto que
+	/// saiu neste passo (<see cref="RemoteAimNone"/>: não mirou nada).</summary>
+	public Vector3? RemoteAim { get; set; }
+	public bool RemoteAimNone { get; set; }
+
+	/// <summary>Para o comando do jogo: o ponto mirado do salto que saiu
+	/// neste passo de física, se saiu.</summary>
+	public bool NetAimThisStep => _netAimFrame == Engine.GetPhysicsFrames() && _netAimFrame != 0;
+	public Vector3? NetAim { get; private set; }
+	private ulong _netAimFrame;
+
+	/// <summary>Para o comando do jogo: o alvo do especial neste passo — o do
+	/// voo que persegue, ou o travado com o especial armado — e onde o jogo o
+	/// via (o mesmo número que o voo usou, se usou).</summary>
+	public Node3D NetFocus => (_flying || (!_pounceLanded && _rootLeft > 0)) && _pounceFocus is Node3D chasing && IsInstanceValid(chasing)
+		? chasing
+		: SpecialArmed && (_body as Player)?.LockTarget is Node3D locked && IsInstanceValid(locked) ? locked : null;
+
+	public (Vector3 At, Vector3 Velocity) NetFocusSeen { get; private set; }
+	private Node3D _netFocusSeenFor;
+	private ulong _netFocusSeenFrame;
+
+	/// <summary>Onde o jogo vê <paramref name="focus"/> agora, como vai no
+	/// comando: o que o voo usou neste passo, ou o de agora.</summary>
+	public (Vector3 At, Vector3 Velocity) NetFocusView(Node3D focus) =>
+		_netFocusSeenFor == focus && _netFocusSeenFrame == Engine.GetPhysicsFrames() ? NetFocusSeen : FocusView(focus);
+
+	/// <summary>Onde cair em relação ao alvo travado (no chão), escolhido no
+	/// impulso: o voo segue o alvo nesse lado dele.</summary>
+	private Vector3? _landOffset;
+
+	/// <summary>A velocidade do alvo travado, alisada, para antecipar.</summary>
+	private Vector3 _focusVelocity;
 
 	private bool _charging;
 	private double _chargeTime;
@@ -324,7 +475,7 @@ public partial class Weapon
 		{
 			if (!IsChargingPounce) return null;
 
-			var (direction, distance, aimY) = PounceTarget(PounceCharge);
+			var (direction, distance, aimY) = PounceTarget(PounceCharge, PounceAimPoint);
 			PlanPounce(ref distance, direction, out float land, out _, aimY);
 
 			float halfHeight = -((_body as Player)?.FeetOffset ?? -0.875f);
@@ -458,9 +609,14 @@ public partial class Weapon
 		// centro da tela toca o mapa, na distância e na altura dele. Fica
 		// fixado aqui — nada segue o alvo durante o voo.
 		var (delay, duration, _) = WolfMoves.StepOf(WolfMove.Pounce);
-		(_pounceDir, _pounceRange, _pounceAimY) = PounceTarget(power);
-		// O travado no modo alvo é o principal do golpe (Player.Lock).
-		_pounceFocus = (_body as Player)?.LockTarget;
+		Vector3? aim = PounceAimPoint;
+		NetAim = aim;
+		_netAimFrame = Engine.GetPhysicsFrames();
+		(_pounceDir, _pounceRange, _pounceAimY) = PounceTarget(power, aim);
+		// O travado no modo alvo é o principal do golpe (Player.Lock); no
+		// corpo do servidor, o que veio no comando.
+		_pounceFocus = (_body as Player)?.LockTarget ?? RemoteFocus;
+		_chaseSeenOnly = _pounceFocus == null && RemoteFocusView != null;
 		float flight = duration * Mathf.Lerp(1f, Mathf.Clamp(PounceFullFlight, 0.2f, 1f), Mathf.Clamp(power, 0f, 1f));
 		PounceFlightRate = duration / Mathf.Max(flight, 0.05f);
 		After(Mathf.Max(delay - elapsed, 0f), id, () => BeginPounceFlight(flight));
@@ -494,16 +650,22 @@ public partial class Weapon
 	{
 		get
 		{
+			// No servidor de partida: o ponto que o jogo mirou (ele tem a câmera).
+			if (RemoteAimNone) return null;
+			if (RemoteAim is Vector3 remote) return remote;
 			if (_botAim != null || (_body as Player)?.AimCamera is not Camera3D camera) return null;
 
 			Vector3 forward = -camera.GlobalBasis.Z;
 			Vector3 from = camera.GlobalPosition;
 			var space = _body.GetWorld3D().DirectSpaceState;
 
-			// Travado num inimigo (botão do meio): os pés dele, olhe para
-			// onde olhar.
+			// Travado num inimigo (botão do meio): colado na frente dele, olhe
+			// para onde olhar.
 			if ((_body as Player)?.LockTarget is Node3D locked && IsInstanceValid(locked))
-				return FloorBelow(space, locked.GlobalPosition, 4f) ?? locked.GlobalPosition + Vector3.Down * 0.9f;
+			{
+				Vector3 seen = FocusView(locked).At;
+				return InFrontOf(seen, FloorBelow(space, seen, 4f) ?? seen + Vector3.Down * 0.9f);
+			}
 
 			// Em terceira pessoa a câmera fica atrás do lobo: o raio começa
 			// na altura dele, para o que estiver entre os dois não contar.
@@ -519,7 +681,7 @@ public partial class Weapon
 
 			if (hit["collider"].Obj is CharacterBody3D someone)
 			{
-				point = FloorBelow(space, someone.GlobalPosition, 4f) ?? someone.GlobalPosition + Vector3.Down * 0.9f;
+				point = InFrontOf(someone.GlobalPosition, FloorBelow(space, someone.GlobalPosition, 4f) ?? someone.GlobalPosition + Vector3.Down * 0.9f);
 			}
 			else if (normal.Y < 0.5f)
 			{
@@ -540,6 +702,32 @@ public partial class Weapon
 			if (look.LengthSquared() > 0.0001f && flat.Dot(look.Normalized()) < 0.3f) return null;
 			return point;
 		}
+	}
+
+	/// <summary>O chão aos pés de <paramref name="someone"/>, recuado
+	/// <see cref="PounceStandOff"/> para o lado do lobo: o salto cai colado
+	/// na frente dele, e não dentro do corpo dele (onde a física barrava o
+	/// lobo no ar e o fazia escorregar em volta, Jhon, 25/11).</summary>
+	private Vector3 InFrontOf(Vector3 someone, Vector3 feet)
+	{
+		Vector3 back = (_body.GlobalPosition - someone) with { Y = 0 };
+		float gap = back.Length();
+		return gap > 0.0001f ? feet + back / gap * Mathf.Min(PounceStandOff, gap) : feet;
+	}
+
+	/// <summary>O alvo travado deste salto, se o voo está atrás de alguém:
+	/// quem mais estiver no caminho é atravessado (WolfMoveMotor).</summary>
+	public Node3D PounceFocus => _flying && _pounceFocus is Node3D focus && IsInstanceValid(focus) ? focus : null;
+
+	/// <summary>O voo bateu em alguém (WolfMoveMotor): o lobo fica ali, no
+	/// chão, e não escorrega em volta dele para chegar ao ponto de queda. É
+	/// a regra de sempre ("bater em alguém para nele, e o golpe sai ali"):
+	/// antes ela valia pela física, que deslizava o corpo de lado na
+	/// cápsula do outro, e o lobo passava por ele e caía do outro lado.</summary>
+	public void PounceBlocked(Vector3 at)
+	{
+		if (!_flying) return;
+		_flyEnd = new Vector3(at.X, _flyEnd.Y, at.Z);
 	}
 
 	/// <summary>O chão embaixo de <paramref name="from"/>, até
@@ -578,9 +766,8 @@ public partial class Weapon
 	/// na distância sem ponto mirado (céu, bot) ou com
 	/// <see cref="PounceChargeLimitsReach"/> ligado.
 	/// </summary>
-	private (Vector3 Direction, float Distance, float? AimY) PounceTarget(float charge)
+	private (Vector3 Direction, float Distance, float? AimY) PounceTarget(float charge, Vector3? aim)
 	{
-		Vector3? aim = PounceAimPoint;
 		Vector3 direction = PounceDirection(aim);
 		float reach = CombatRules.PounceRange(PounceMinDistance, PounceMaxDistance, charge);
 		if (aim is not Vector3 point) return (direction, reach, null);
@@ -628,6 +815,9 @@ public partial class Weapon
 	private float _flyArc;
 	private Vector3 _flyEnd;
 
+	/// <summary>Onde o voo do salto vai cair agora (o centro do corpo).</summary>
+	public Vector3 PounceFlightEnd => _flyEnd;
+
 	/// <summary>No ar no salto: o corpo segue <see cref="PounceFlightPoint"/>.</summary>
 	public bool IsPounceFlying => _flying && _form != null && _form.IsWolf;
 
@@ -647,12 +837,38 @@ public partial class Weapon
 	/// </summary>
 	public Vector3 PounceFlightPoint(double ahead)
 	{
+		float u0 = Mathf.Clamp((float)(_flyTime / _flyTotal), 0f, 1f);
 		float u = Mathf.Clamp((float)((_flyTime + ahead) / _flyTotal), 0f, 1f);
-		float s = (1f - Mathf.Cos(Mathf.Pi * u)) * 0.5f;
+		float s0 = _flyShape.At(u0), s = _flyShape.At(u);
 		float y = _flyLand * u + 4f * _flyArc * u * (1f - u);
-		Vector3 flat = new Vector3(_flyEnd.X - _flyStart.X, 0, _flyEnd.Z - _flyStart.Z);
-		return _flyStart + flat * s + Vector3.Up * y;
+
+		// No chão, de onde o corpo está até o ponto de queda, a fração do sino
+		// que falta andar neste passo. Sem o alvo mudar de lugar, é o mesmo
+		// arco de sempre (start + caminho × sino). Com ele mudando, o lobo
+		// corrige a partir de onde está, liso — antes o arco era refeito do
+		// ponto de partida, e no fim do voo o lobo ia e voltava junto com o alvo.
+		Vector3 here = _body.GlobalPosition;
+		Vector3 remaining = new Vector3(_flyEnd.X - here.X, 0, _flyEnd.Z - here.Z);
+		float share = 1f - s0 > 1e-4f ? (s - s0) / (1f - s0) : 1f;
+		Vector3 step = remaining * share;
+
+		// E nunca para trás no ar (Jhon, 25/11): o alvo que corre para o lobo
+		// encurta o salto, mas o lobo não recua para encontrá-lo.
+		float back = step.Dot(_flyLaunch);
+		if (back < 0f) step -= _flyLaunch * back;
+
+		return new Vector3(here.X + step.X, _flyStart.Y + y, here.Z + step.Z);
 	}
+
+	/// <summary>O avanço no chão ao longo do voo, de 0 a 1: sai devagar,
+	/// voa, assenta.</summary>
+	private static float Bell(float u) => (1f - Mathf.Cos(Mathf.Pi * u)) * 0.5f;
+
+	/// <summary>Para onde o lobo saiu, no chão: o voo não anda para trás disso.</summary>
+	private Vector3 _flyLaunch = Vector3.Forward;
+
+	/// <summary>A forma deste voo (WolfPouncePath): sobe antes de avançar, desce na vertical no fim.</summary>
+	private FlightShape _flyShape;
 
 	private void BeginPounceFlight(float duration)
 	{
@@ -663,7 +879,7 @@ public partial class Weapon
 		float distance = _pounceRange;
 
 		float wanted = distance;
-		PlanPounce(ref distance, direction, out float land, out float arc, _pounceAimY);
+		PlanPounce(ref distance, direction, out float land, out float arc, out float arcLimit, _pounceAimY);
 
 		if (Debug)
 		{
@@ -674,15 +890,42 @@ public partial class Weapon
 		}
 
 		_flyStart = _body.GlobalPosition;
-		_flyDir = direction;
-		_flyDistance = distance;
-		_flyLand = land;
-		_flyArc = arc;
-		_flyEnd = _flyStart + direction * distance + Vector3.Up * land;
 		_flyTotal = Mathf.Max(duration, 0.05f);
 		_flyTime = 0;
 		_flying = true;
-		_pounceFlew = distance > 0.05f;
+		_focusVelocity = Vector3.Zero;
+		_landOffset = null;
+		Vector3 end = _flyStart + direction * distance + Vector3.Up * land;
+
+		// O caminho com o corpo inteiro (WolfPouncePath): com alvo travado,
+		// o lado dele em que o voo fica mais baixo, onde ele vai estar; sem
+		// alvo, o ponto mirado, no arco mais baixo que passa.
+		_flyShape = default;
+		if (FocusPoint(0, snap: true) is Vector3 target && LandAround(_flyStart, target, arcLimit) is var (spot, swept, shape))
+		{
+			end = spot;
+			arc = swept;
+			_flyShape = shape;
+			_landOffset = (spot - target) with { Y = 0 };
+		}
+		else if (FlightTo(_flyStart, end, Mathf.Max(arc, arcLimit)) is var (lower, form))
+		{
+			arc = lower;
+			_flyShape = form;
+		}
+
+		_flyEnd = end;
+		_flyArc = arc;
+		_flyLand = Mathf.Clamp(end.Y - _flyStart.Y, -PounceMaxDrop, PounceMaxClimb);
+		Vector3 launch = (_flyEnd - _flyStart) with { Y = 0 };
+		_flyDir = launch.LengthSquared() > 0.0001f ? launch.Normalized() : direction;
+		_flyDistance = launch.Length();
+		if (Debug)
+			GD.Print(_landOffset != null
+				? $"leap: on the locked target, {_flyDistance:0.0} m, arc {arc:0.0} m (rise first {_flyShape.Lead:0.00}, drop last {_flyShape.Hold:0.00}), lands {_flyLand:+0.0;-0.0} m, {((Vector3)_landOffset).Length():0.0} m from it"
+				: $"leap: {(_pounceFocus != null ? "no free side around the locked target; " : "")}{_flyDistance:0.0} m, arc {arc:0.0} m (rise first {_flyShape.Lead:0.00}, drop last {_flyShape.Hold:0.00})");
+		_flyLaunch = launch.LengthSquared() > 0.0001f ? launch.Normalized() : direction;
+		_pounceFlew = launch.Length() > 0.05f;
 	}
 
 	/// <summary>
@@ -698,7 +941,13 @@ public partial class Weapon
 	/// não no teto). Com teto baixo sobre o lobo ou sobre o ponto mirado, o
 	/// salto é rasante: o arco cabe embaixo dele.
 	/// </summary>
-	private void PlanPounce(ref float distance, Vector3 direction, out float land, out float arc, float? aimY = null)
+	private void PlanPounce(ref float distance, Vector3 direction, out float land, out float arc, float? aimY = null) =>
+		PlanPounce(ref distance, direction, out land, out arc, out _, aimY);
+
+	/// <param name="arcLimit">O arco mais alto que cabe (sob o teto, até
+	/// <see cref="PounceMaxClear"/>): o caminho do salto
+	/// (<see cref="SweepArc"/>) não passa disso.</param>
+	private void PlanPounce(ref float distance, Vector3 direction, out float land, out float arc, out float arcLimit, float? aimY = null)
 	{
 		var space = _body.GetWorld3D().DirectSpaceState;
 		float halfHeight = -((_body as Player)?.FeetOffset ?? -0.875f);
@@ -726,6 +975,7 @@ public partial class Weapon
 
 		// Mais alto que isto, não se pula por cima nem se pousa em cima.
 		float limit = Mathf.Min(clear, top - 0.4f);
+		arcLimit = arcMax;
 
 		var path = new List<(float X, float H)>();
 		for (float x = 0.4f; x <= distance + 0.01f; x += 0.4f)

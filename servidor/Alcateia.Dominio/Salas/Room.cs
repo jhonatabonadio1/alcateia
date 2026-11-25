@@ -14,6 +14,10 @@ public sealed class RoomMember
 	public long Xp;
 	public int Team;
 	public bool Ready;
+
+	/// <summary>Está jogando a partida da sala. Com ela em curso, quem entra
+	/// na sala fica de fora até escolher o time e entrar (<see cref="Room.Enter"/>).</summary>
+	public bool InMatch;
 }
 
 /// <summary>Um bot posto na sala pelo dono. Número negativo, único na
@@ -97,10 +101,13 @@ public sealed class Room
 	/// de bots, um bot dá o lugar: gente tem preferência.
 	///
 	/// Com a partida em curso também (Jhon, 24/11: "ao sair da partida, posso
-	/// entrar nela novamente caso tenha vaga"): aí os bots já estão jogando e
-	/// não dão o lugar; entra no time com lugar livre (gente e bots contados)
-	/// e menos gente. <paramref name="team"/> fixa o time: quem já jogou esta
-	/// partida volta para o lugar dele, que é do time em que estava.</summary>
+	/// entrar nela novamente caso tenha vaga"). Desde 25/11 entra na sala, não
+	/// direto na partida ("se a partida tiver iniciado, ele entra na sala para
+	/// poder escolher o time"): fica de fora (<see cref="RoomMember.InMatch"/>
+	/// falso), no time sugerido, e entra com <see cref="Enter"/>. Os bots já
+	/// estão jogando e não dão o lugar. <paramref name="team"/> é a sugestão:
+	/// quem já jogou esta partida começa no time em que estava, se ainda
+	/// couber; senão, no que dá para entrar.</summary>
 	public void Join(Account account, long xp, string password, int team = 0)
 	{
 		if (Has(account.Id)) return;
@@ -110,10 +117,9 @@ public sealed class Room
 
 		if (State == RoomState.Playing)
 		{
-			int[] open = (team is Blue or Orange ? new[] { team } : new[] { Blue, Orange })
-				.Where(t => Taken(t) < TeamSize).ToArray();
+			int[] open = new[] { Blue, Orange }.Where(CanEnter).ToArray();
 			if (open.Length == 0) throw new Failure(FailureKind.Conflict, "sala_cheia", "A partida está cheia.");
-			int chosen = open.OrderBy(t => _members.Count(m => m.Team == t)).ThenBy(t => t).First();
+			int chosen = open.Contains(team) ? team : open.OrderBy(PlayingOn).ThenBy(t => t).First();
 			_members.Add(new RoomMember { Account = account, Xp = xp, Team = chosen });
 			return;
 		}
@@ -125,10 +131,50 @@ public sealed class Room
 	}
 
 	/// <summary>Há lugar para mais alguém agora (gente e, com a partida em
-	/// curso, os bots que estão jogando).</summary>
+	/// curso, os bots que estão jogando, sem deixar um time com dois a mais).</summary>
 	public bool HasRoom => State == RoomState.Waiting
 		? _members.Count < Capacity
-		: Taken(Blue) < TeamSize || Taken(Orange) < TeamSize;
+		: _members.Count < Capacity && (CanEnter(Blue) || CanEnter(Orange));
+
+	/// <summary>Quantos estão jogando a partida no time: gente dentro dela e bots.</summary>
+	public int PlayingOn(int team) =>
+		_members.Count(m => m.InMatch && m.Team == team) + _bots.Count(b => b.Team == team);
+
+	/// <summary>Quantos lugares a sala mostra ocupados: esperando, gente e
+	/// bots; jogando, quem está na partida (Jhon, 25/11: "partida com bot deve
+	/// contabilizar aqui").</summary>
+	public int Occupied => State == RoomState.Waiting
+		? _members.Count + _bots.Count
+		: PlayingOn(Blue) + PlayingOn(Orange);
+
+	/// <summary>Dá para entrar na partida em curso por este time: tem lugar, e
+	/// o time não fica com dois a mais que o outro (Jhon, 25/11: "um time só
+	/// pode ter 1 a mais do que o outro").</summary>
+	public bool CanEnter(int team) =>
+		State == RoomState.Playing && team is Blue or Orange
+		&& PlayingOn(team) < TeamSize && PlayingOn(team) <= PlayingOn(Other(team));
+
+	public static int Other(int team) => team == Blue ? Orange : Blue;
+
+	/// <summary>Quem está na sala, de fora da partida em curso, entra nela
+	/// pelo time que escolheu.</summary>
+	public void Enter(long accountId)
+	{
+		RoomMember seat = Seat(accountId);
+		if (State != RoomState.Playing) throw new Failure(FailureKind.Conflict, "sem_partida", "A sala não está em partida.");
+		if (seat.InMatch) return;
+		if (PlayingOn(seat.Team) >= TeamSize) throw new Failure(FailureKind.Conflict, "time_cheio", "Esse time está cheio.");
+		if (!CanEnter(seat.Team))
+			throw new Failure(FailureKind.Conflict, "time_desequilibrado", "Esse time ficaria com dois a mais. Entre no outro.");
+		seat.InMatch = true;
+	}
+
+	/// <summary>Volta atrás de um <see cref="Enter"/> que a partida não aceitou.</summary>
+	public void Unenter(long accountId)
+	{
+		RoomMember seat = _members.FirstOrDefault(m => m.Account.Id == accountId);
+		if (seat != null) seat.InMatch = false;
+	}
 
 	/// <summary>Sai. Se quem saiu era o dono, o mais antigo assume (Jhon,
 	/// 24/11: "o mestre passa a ser o próximo jogador"); com a partida em
@@ -144,6 +190,17 @@ public sealed class Room
 	{
 		RoomMember seat = Seat(accountId);
 		if (team is not (Blue or Orange)) throw new Failure(FailureKind.Invalid, "time_invalido", "Time inválido.");
+
+		// Com a partida em curso, quem ainda está de fora escolhe o time por
+		// onde vai entrar: só um que tenha lugar e não fique desequilibrado.
+		if (State == RoomState.Playing && !seat.InMatch)
+		{
+			if (PlayingOn(team) >= TeamSize) throw new Failure(FailureKind.Conflict, "time_cheio", "Esse time está cheio.");
+			if (!CanEnter(team))
+				throw new Failure(FailureKind.Conflict, "time_desequilibrado", "Esse time ficaria com dois a mais.");
+			seat.Team = team;
+			return;
+		}
 		RequireWaiting("A sala está em partida.");
 		if (_members.Count(m => m.Team == team && m != seat) >= TeamSize)
 			throw new Failure(FailureKind.Conflict, "time_cheio", "Esse time está cheio.");
@@ -230,8 +287,10 @@ public sealed class Room
 	public string MatchAddress { get; private set; }
 	public int MatchPort { get; private set; }
 
+	/// <summary>A sala entra em partida: todos que estão nela jogam.</summary>
 	public void BeginMatch(string matchKey, string address = null, int port = 0)
 	{
+		foreach (RoomMember m in _members) m.InMatch = true;
 		State = RoomState.Playing;
 		MatchKey = matchKey;
 		MatchAddress = address;
@@ -247,7 +306,7 @@ public sealed class Room
 		MatchKey = null;
 		MatchAddress = null;
 		MatchPort = 0;
-		foreach (RoomMember m in _members) m.Ready = false;
+		foreach (RoomMember m in _members) m.Ready = m.InMatch = false;
 		return true;
 	}
 

@@ -268,9 +268,9 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `actors/bot/Bot.Navigation.cs` | Malha de navegação, desvio, pular obstáculo, virar o corpo |
 | `actors/bot/Bot.Cover.cs` | Achar cobertura testando a linha de tiro, recuar |
 | `actors/bot/Bot.Patrol.cs` | Ronda pelas rotas do mapa e busca onde o alvo sumiu |
-| `actors/body/` | O corpo que o jogador e o bot dividem: `WolfMoveMotor` (bote, voo do salto, preso ao chão), `BodyNoise` + `BodyNoiseProfile` (passo, baque, rugido; `src/resources/body/ruido.tres`), `Corpse` (cair e assentar morto), `BodyMotion.Hold` |
+| `actors/body/` | O corpo que o jogador e o bot dividem: `WolfMoveMotor` (bote, voo do salto, preso ao chão), `BodyNoise` + `BodyNoiseProfile` (passo, baque, rugido; `src/resources/body/ruido.tres`), `Corpse` (cair e assentar morto), `BodyMotion.Hold`, `TeamCollision` (aliado atravessa, inimigo é sólido) |
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
-| `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, pente e reserva, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Aim` (zoom do botão direito), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfDive` (bote), `.Damage` (o raio com a cabeça do modelo e aplicar dano) |
+| `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, pente e reserva, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Aim` (zoom do botão direito), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfPouncePath` (o caminho do salto: o voo do corpo inteiro e o lado do alvo onde cair), `.WolfDive` (bote), `.Damage` (o raio com a cabeça do modelo e aplicar dano) |
 | `combat/HeadHitbox.cs` | A cabeça de quem leva tiro, no modelo que se vê (os ossos da cabeça do humano ou do lobo); sem modelo, a faixa de cima da cápsula |
 | `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
 | `domain/CombatRules.cs` | As contas do combate em C# puro (dano, queda, dispersão, recuo, golpes do lobo, salto, vida e escudo), com teste de unidade |
@@ -279,7 +279,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `domain/net/` | O núcleo da rede autoritativa (decisão 0011): pacote binário sem alocar, comando, fila de comandos, estado do mundo, história, interpolação, relógio do servidor e predição — C# puro, com teste de unidade |
 | `ai/BotDifficulty.cs` | Um nível de dificuldade como dado (`src/resources/bots/*.tres`) |
 | `visual/human/CharacterAnimator*.cs` | O corpo humano animado: `.Model` e `.Tree` montam uma vez (clipes, modelo do time, árvore); `.Locomotion`, `.Actions` (recarga, granada, reação) e `.Death` tocam por quadro |
-| `visual/wolf/WolfVisual*.cs` | O corpo do lobo: `.Model` e `.Tree` montam; `.Locomotion`, `.Air` (parede, pulo, bote) e `.Moves` (golpes, rugido) tocam |
+| `visual/wolf/WolfVisual*.cs` | O corpo do lobo: `.Model` e `.Tree` montam; `.Locomotion`, `.Air` (parede, pulo, bote) e `.Moves` (golpes, rugido) tocam; `.Tail` é o rabo com física (mola, gravidade e inércia) |
 | `visual/wolf/WolfOwnClips.cs` | As animações do Jhon (`lobo_anim.glb`): abre o arquivo e encaixa cada clipe no corpo (eixos, quadril) |
 | `visual/anim/AnimationKit.cs` | O que os dois corpos e o lobby dividem: clipe do Mixamo, raiz parada, quadril, esqueleto, filtro do tronco, transições |
 | `core/Match.cs` | Fases da partida, placar, MVP, pagamento de XP e Presas no fim |

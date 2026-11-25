@@ -166,10 +166,12 @@ public partial class NetMatch : Node
 		weapon.Stabbed += () => SendBotAttack(bot, Slot.Knife, NetWire.KnifeStabMove);
 		weapon.WolfMoveStarted += move => SendMoveSoon(bot, (WolfMove)move);
 
-		// Morte sem autor (queda, a própria granada): o servidor fica sabendo.
-		bot.GetNode<Health>("Health").Died += _ =>
+		// Morte sem autor (queda, a própria granada): o servidor fica sabendo,
+		// com o que matou (o feed diz "de granada").
+		var botHealth = bot.GetNode<Health>("Health");
+		botHealth.Died += _ =>
 		{
-			if (!_hitInProgress && Joined) SendDied(id, 0, KillCause.Fall, "", false, new List<long>());
+			if (!_hitInProgress && Joined) SendDied(id, 0, botHealth.LastSelfCause, botHealth.LastSelfWeapon, false, new List<long>());
 		};
 	}
 
@@ -180,6 +182,17 @@ public partial class NetMatch : Node
 		: body == _player ? OnlineMatch.AccountId
 		: body is Bot bot ? bot.OnlineId
 		: 0;
+
+	/// <summary>O lugar de um corpo na escalação do servidor (o número que
+	/// vai no estado do mundo), para o alvo travado do especial.</summary>
+	private byte SeatOf(Node3D body)
+	{
+		long id = IdOf(body);
+		if (id != 0)
+			foreach (var (index, account) in _byIndex)
+				if (account == id) return index;
+		return NetCommands.NoSeat;
+	}
 
 	/// <summary>O corpo desta máquina com este número: o jogador ou um bot dela.</summary>
 	private Node LocalBody(long id) =>
@@ -344,6 +357,7 @@ public partial class NetMatch : Node
 			c.HasSpawn = true;
 			c.Spawn = _spawn.ToNumerics();
 		}
+		NetCommands.Special(ref c, _weapon, SeatOf);
 
 		_recent[_seq % InputCommand.Redundancy] = c;
 		_prediction.Record(_seq, _me.GlobalPosition.ToNumerics(), _me.Velocity.ToNumerics());
@@ -675,10 +689,13 @@ public partial class NetMatch : Node
 	}
 
 	/// <summary>Morri sem ser por acerto de ninguém (queda, a própria
-	/// granada): o servidor fica sabendo, e não dá o abate a ninguém.</summary>
+	/// granada): o servidor fica sabendo, e não dá o abate a ninguém. Vai o
+	/// que matou: até 25/11 ia sempre "queda", e o servidor nem anunciava
+	/// (o feed não mostrava a morte).</summary>
 	private void OnLocalDied(int killerId)
 	{
-		if (!_hitInProgress && Joined) SendDied(OnlineMatch.AccountId, 0, KillCause.Fall, "", false, new List<long>());
+		if (!_hitInProgress && Joined)
+			SendDied(OnlineMatch.AccountId, 0, _health.LastSelfCause, _health.LastSelfWeapon, false, new List<long>());
 	}
 
 	// Sem garantia, mas em ordem: o estado velho que chega depois de um novo
@@ -810,7 +827,17 @@ public partial class NetMatch : Node
 		long owner = r.ReadInt64();
 		byte index = r.ReadByte();
 		if (Authoritative && id > 0) _byIndex[index] = id;
-		if (id == OnlineMatch.AccountId || _puppets.ContainsKey(id) || _owned.ContainsKey(id) || Setup == null) return;
+		if (id == OnlineMatch.AccountId || _owned.ContainsKey(id) || Setup == null) return;
+
+		// Quem voltou escolheu o outro time na sala (25/11): o boneco de antes
+		// sai de cena, e entra um novo, na cor e no lado de agora.
+		if (_puppets.TryGetValue(id, out Bot old))
+		{
+			if (!IsInstanceValid(old) || old.Team == team) return;
+			_puppets.Remove(id);
+			_poses.Remove(id);
+			Retire(old);
+		}
 
 		JsonNode member = (LobbyLink.InRoom ? LobbyLink.Instance.Room["members"] as JsonArray : null)?
 			.FirstOrDefault(m => m?["id"]?.GetValue<long>() == id);
@@ -927,8 +954,10 @@ public partial class NetMatch : Node
 			assisters.Select(id => Who(id).Name).ToArray()));
 
 		// O WP do abate e da assistência é de quem fez, na máquina dele:
-		// o meu, e o dos bots que esta máquina move.
-		LocalBody(killer)?.GetNodeOrNull<FormController>("FormController")?.OnKill(cause == KillCause.Wolf);
+		// o meu, e o dos bots que esta máquina move. Quem se matou (a própria
+		// granada, a queda: o servidor anuncia com ele nos dois lados) não ganha.
+		if (killer != victim)
+			LocalBody(killer)?.GetNodeOrNull<FormController>("FormController")?.OnKill(cause == KillCause.Wolf);
 		foreach (long id in assisters)
 			if (id != killer) LocalBody(id)?.GetNodeOrNull<FormController>("FormController")?.OnAssist();
 

@@ -104,12 +104,13 @@ public static class Progression
 
 		// O servidor conta os abates até um teto por partida.
 		int kills = System.Math.Min(r.Kills, Rewards.MaxKills);
-		Line("Participação", XpBase, PresasBase);
-		Line(Loc.F("Abates ×{0}", kills), XpKill * kills, PresasKill * kills);
-		Line(Loc.F("Assistências ×{0}", r.Assists), XpAssist * r.Assists, PresasAssist * r.Assists);
-		if (r.Won) Line("Vitória", XpWin, PresasWin);
-		else if (r.Draw) Line("Empate", XpDraw, PresasDraw);
-		if (r.Mvp) Line("MVP da partida", XpMvp, PresasMvp);
+		Rewards.CashRates cash = ServerData.Cash;
+		Line("Participação", XpBase, cash.Base);
+		Line(Loc.F("Abates ×{0}", kills), XpKill * kills, (long)cash.Kill * kills);
+		Line(Loc.F("Assistências ×{0}", r.Assists), XpAssist * r.Assists, (long)cash.Assist * r.Assists);
+		if (r.Won) Line("Vitória", XpWin, cash.Win);
+		else if (r.Draw) Line("Empate", XpDraw, cash.Draw);
+		if (r.Mvp) Line("MVP da partida", XpMvp, cash.Mvp);
 		Line(Loc.F("Em chamas {0}:{1:00}", r.FireSeconds / 60, r.FireSeconds % 60), Rewards.FireXp(r.FireSeconds), 0);
 
 		long xp = 0, presas = 0;

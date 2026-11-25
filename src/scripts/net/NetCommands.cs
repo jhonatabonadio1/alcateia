@@ -42,6 +42,37 @@ public static class NetCommands
 		};
 	}
 
+	/// <summary>Lugar na escalação de quem não tem um (o boneco ainda sem
+	/// número, um alvo de teste): o servidor usa só onde o jogo o via.</summary>
+	public const byte NoSeat = 255;
+
+	/// <summary>
+	/// O especial do lobo no comando (partida autoritativa): o ponto mirado do
+	/// salto que saiu neste passo e o alvo travado (armado ou no voo), com onde
+	/// o jogo o via — o que o voo usou. O servidor faz o mesmo salto com isto
+	/// (<see cref="ServerBody"/>). <paramref name="seatOf"/> dá o lugar de um
+	/// corpo na escalação (<see cref="NoSeat"/> se não tem).
+	/// </summary>
+	public static void Special(ref InputCommand c, Weapon weapon, System.Func<Node3D, byte> seatOf)
+	{
+		if (weapon == null) return;
+		if (weapon.NetAimThisStep)
+		{
+			c.HasAim = true;
+			c.AimNone = weapon.NetAim is not Vector3;
+			if (weapon.NetAim is Vector3 aim) c.Aim = aim.ToNumerics();
+		}
+
+		if (weapon.NetFocus is Node3D focus)
+		{
+			var (at, velocity) = weapon.NetFocusView(focus);
+			c.HasFocus = true;
+			c.Focus = seatOf(focus);
+			c.FocusAt = at.ToNumerics();
+			c.FocusVelocity = velocity.ToNumerics();
+		}
+	}
+
 	/// <summary>
 	/// A intenção que o servidor simula a partir do comando. Nesta leva o
 	/// servidor não troca de arma nem solta arma (a arma na mão e a forma

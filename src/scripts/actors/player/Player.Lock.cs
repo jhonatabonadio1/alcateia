@@ -29,6 +29,14 @@ public partial class Player
 	/// salto, <see cref="Weapon.PounceMaxDistance"/>, e uma folga).</summary>
 	[Export] public float LockRange = 14f;
 
+	/// <summary>Já travado, até onde o alvo pode se afastar antes de a trava
+	/// soltar, em metros. Sem esta folga, o alvo a 14 m (a tela dizendo
+	/// "saltar 14 m") passava a 14,05 m no clique, a trava sumia e o salto ia
+	/// para a mira, 12 m no máximo, e caía longe dele (Jhon, 25/11, vídeo na
+	/// Cidade). O voo alcança o travado até
+	/// <see cref="Weapon.PounceChaseRange"/>.</summary>
+	[Export] public float LockKeepRange = 16f;
+
 	/// <summary>Até onde o losango aparece, em graus do centro da tela.</summary>
 	[Export] public float CandidateAngle = 60f;
 
@@ -69,7 +77,8 @@ public partial class Player
 			foreach (Node node in GetTree().GetNodesInGroup(group))
 			{
 				if (node == this || node is not Node3D body || !IsEnemy(body)) continue;
-				if (body.GlobalPosition.DistanceTo(GlobalPosition) > LockRange) continue;
+				float range = body == LockTarget ? Mathf.Max(LockKeepRange, LockRange) : LockRange;
+				if (body.GlobalPosition.DistanceTo(GlobalPosition) > range) continue;
 
 				float angle = Mathf.RadToDeg(forward.AngleTo(body.GlobalPosition - eye));
 				if (angle > CandidateAngle || !InSight(eye, body)) continue;

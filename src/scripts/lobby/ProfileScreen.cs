@@ -20,7 +20,15 @@ public partial class ProfileScreen : LobbyScreen
 
 	protected override void Build()
 	{
-		HBoxContainer split = SplitPage();
+		// Com muita informação o perfil passa da altura da tela: rola, em vez
+		// de descer para fora dela (Jhon, 25/11).
+		var scroll = UiKit.Fill(new ScrollContainer { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled });
+		AddChild(scroll);
+		MarginContainer margin = UiKit.Margin(UiTokens.S5, UiTokens.S4, UiTokens.S5, UiTokens.S4);
+		margin.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		scroll.AddChild(margin);
+		HBoxContainer split = UiKit.Row(UiTokens.S4);
+		margin.AddChild(split);
 
 		split.AddChild(Identity());
 		split.AddChild(Stats());

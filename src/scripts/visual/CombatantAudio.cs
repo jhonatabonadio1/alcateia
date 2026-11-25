@@ -62,14 +62,43 @@ public partial class CombatantAudio : Node
 		_weapon.HitConfirmed += OnHit;
 		_weapon.WorldHit += OnWorldHit;
 		_weapon.AmmoChanged += OnAmmo;
-		_weapon.DryFired += () => Play("arma_vazia");
+		_weapon.DryFired += OnDryFired;
 		_weapon.SlotChanged += OnSlot;
 		_weapon.GrenadesChanged += OnGrenades;
 		_form.FormChanged += OnForm;
 		_health.Damaged += OnDamaged;
-		_health.Died += _ => Play(SoundsWolf ? "lobo_morte" : "morte");
+		_health.Died += OnDied;
 		_health.Respawned += OnRespawned;
 	}
+
+	/// <summary>Solta os sinais ao sair. No servidor de partida este nó sai do
+	/// corpo (Player.BecomeServerBody: som não existe lá), mas a arma
+	/// continuava chamando o OnFired dele a cada tiro: "Cannot access a
+	/// disposed object 'CombatantAudio'" no Output do servidor (Jhon, 25/11).</summary>
+	public override void _ExitTree()
+	{
+		if (IsInstanceValid(_weapon))
+		{
+			_weapon.Fired -= OnFired;
+			_weapon.HitConfirmed -= OnHit;
+			_weapon.WorldHit -= OnWorldHit;
+			_weapon.AmmoChanged -= OnAmmo;
+			_weapon.DryFired -= OnDryFired;
+			_weapon.SlotChanged -= OnSlot;
+			_weapon.GrenadesChanged -= OnGrenades;
+		}
+		if (IsInstanceValid(_form)) _form.FormChanged -= OnForm;
+		if (IsInstanceValid(_health))
+		{
+			_health.Damaged -= OnDamaged;
+			_health.Died -= OnDied;
+			_health.Respawned -= OnRespawned;
+		}
+	}
+
+	private void OnDryFired() => Play("arma_vazia");
+
+	private void OnDied(int killerId) => Play(SoundsWolf ? "lobo_morte" : "morte", VoicePitch());
 
 	/// <summary>A voz é a do corpo que se vê (18/11): voltando a humano, o
 	/// corpo ainda é o do lobo na primeira metade da fumaça — pulo, dor e
@@ -209,7 +238,7 @@ public partial class CombatantAudio : Node
 		if (_hurtTimer > 0 || _health.IsDead) return;
 		_hurtTimer = HurtInterval;
 
-		Play(SoundsWolf ? "lobo_dor" : "dor");
+		Play(SoundsWolf ? "lobo_dor" : "dor", VoicePitch());
 	}
 
 	private void OnRespawned()
@@ -223,11 +252,25 @@ public partial class CombatantAudio : Node
 		if (_local) Sfx.Local("respawn");
 	}
 
-	private void Play(string name)
+	private void Play(string name, float pitch = 1f)
 	{
 		if (name == null) return;
 
-		if (_local) Sfx.Own(name);
-		else Sfx.At(name, _body.GlobalPosition, CosmeticRange);
+		if (_local) Sfx.Own(name, 0f, pitch);
+		else Sfx.At(name, _body.GlobalPosition, CosmeticRange, 0f, 0f, pitch);
+	}
+
+	/// <summary>Só há uma gravação de grito de dor e de morte (masculina):
+	/// para a Eve ela toca mais fina (Jhon, 25/11). Troque por gravações
+	/// próprias quando houver.</summary>
+	[Export] public float FemaleVoicePitch = 1.3f;
+
+	/// <summary>A voz humana do corpo: mais aguda se for a Eve. O lobo não
+	/// muda.</summary>
+	private float VoicePitch()
+	{
+		if (SoundsWolf) return 1f;
+		CharacterSkin skin = (_body as Player)?.Character ?? CharacterSkin.DefaultFor(_health.Team);
+		return skin?.ResourcePath.GetBaseDir().GetFile() == "eve" ? FemaleVoicePitch : 1f;
 	}
 }

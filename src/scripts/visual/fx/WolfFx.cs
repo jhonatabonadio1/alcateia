@@ -10,7 +10,8 @@ using System.Linq;
 /// - **Ar de velocidade**: riscos de vento passando em volta do corpo
 ///   (partículas) e um brilho frio nas bordas (assets/efeitos/vento.gdshader).
 ///   Fraco correndo normal, cheio de quatro, no salto e no bote. Sutil e com
-///   poucos riscos (pedido do Jhon, 16/11). Some ao frear.
+///   poucos riscos (pedido do Jhon, 16/11). Some ao frear. **Só no seu
+///   lobo** (25/11): o dos outros, bot ou boneco da rede, corre sem vento.
 /// - **Rastro das garras** (<see cref="ClawTrail"/>): feixe de luz na mão
 ///   que bate, na janela do golpe — garrada, salto e bote.
 /// - **Fumaça da transformação** (<see cref="TransformSmoke"/>): o corpo
@@ -305,11 +306,15 @@ public partial class WolfFx : Node3D
 		bool power = shown && ((_visual?.Howling ?? false) || _weapon.IsChargingPounce || _weapon.SpecialArmed || _weapon.IsPounceFlying);
 		_aura = Mathf.MoveToward(_aura, power ? PowerAura : 0f, dt / 0.3f);
 
-		// Vento: velocidade acima de AirFrom da máxima (a de quatro).
+		// Vento: velocidade acima de AirFrom da máxima (a de quatro). Só no
+		// seu lobo (Jhon, 25/11: "não devo ver os efeitos de vento do lobo
+		// inimigo, somente o meu"): é a sensação de velocidade de quem corre,
+		// não um sinal para os outros.
 		float max = MaxSpeed();
 		float speed = _body.Velocity.Length();
 		float t = max > 0.01f ? Mathf.Clamp(speed / max, 0f, 1.5f) : 0f;
-		float air = shown && Settings.Values.Quality > 0 ? Mathf.Clamp((t - AirFrom) / (1f - AirFrom), 0f, 1f) : 0f;
+		bool mine = _player is { Driven: false };
+		float air = mine && shown && Settings.Values.Quality > 0 ? Mathf.Clamp((t - AirFrom) / (1f - AirFrom), 0f, 1f) : 0f;
 		_air = Mathf.MoveToward(_air, air, dt / (air > _air ? 0.15f : 0.3f));
 
 		Push();

@@ -1,4 +1,4 @@
-"""Assa a oclusão ambiente do lobo na textura (Cycles, CPU). uso: assar_ao.py modelo.glb saida.png [amostras]"""
+"""Assa a oclusão ambiente do lobo na textura (Cycles, CPU). uso: assar_ao.py modelo.glb saida.png [amostras] [tamanho]"""
 import bpy, sys
 src, out = sys.argv[1], sys.argv[2]
 samples = int(sys.argv[3]) if len(sys.argv) > 3 else 24
@@ -9,7 +9,8 @@ scene.render.engine = 'CYCLES'
 scene.cycles.device = 'CPU'
 scene.cycles.samples = samples
 scene.cycles.use_denoising = False
-img = bpy.data.images.new("ao", 2048, 2048, alpha=False)
+tam = int(sys.argv[4]) if len(sys.argv) > 4 else 2048
+img = bpy.data.images.new("ao", tam, tam, alpha=False)
 objs = [o for o in bpy.data.objects if o.type == 'MESH' and o.material_slots and o.material_slots[0].material]
 for m in bpy.data.materials:
     if not m.node_tree: continue
@@ -19,7 +20,7 @@ for m in bpy.data.materials:
 for o in bpy.data.objects: o.select_set(False)
 for o in objs: o.select_set(True)
 bpy.context.view_layer.objects.active = objs[0]
-scene.render.bake.margin = 4
+scene.render.bake.margin = 8
 try:
     scene.world = bpy.data.worlds.new("w")
     scene.world.light_settings.distance = 0.5

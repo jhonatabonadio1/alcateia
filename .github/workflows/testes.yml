@@ -6,7 +6,7 @@ name: Testes
 
 on:
   push:
-    # Só ramos (a tag de lançamento não roda testes por enquanto: lancamento.yml).
+    # Só ramos: a tag de lançamento já roda os testes pelo lancamento.yml.
     branches: ["**"]
   pull_request:
   workflow_dispatch:
@@ -50,14 +50,44 @@ jobs:
   # a ordem das tentativas, o modo guardado, o escolhido nas Opções e o
   # aviso quando nada abre. É ele que garante que o jogo nunca "não abre
   # sem dizer nada".
+  #
+  # Compila no Ubuntu e testa no Windows: o iniciador é de 64 bits
+  # (Target amd64-unicode), e o NSIS oficial de Windows (o do runner e do
+  # choco) só traz os stubs x86 ("reading stub zlib-amd64-unicode"). O do
+  # apt traz os amd64, e é com ele que o lancamento.yml compila o que vai
+  # para o jogador, então o teste roda o mesmo binário.
+  iniciador-compilar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compilar o iniciador e o jogo de mentira
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends nsis
+          mkdir -p pronto
+          makensis -V2 -DSAIDA="$PWD/pronto/WolfLeague.exe" "$PWD/instalador/iniciador.nsi"
+          makensis -V2 -DSAIDA="$PWD/pronto/jogo_falso.exe" "$PWD/instalador/teste/jogo_falso.nsi"
+          ls -la pronto
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iniciador-teste
+          path: pronto/*
+          if-no-files-found: error
+
   iniciador:
+    needs: iniciador-compilar
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: iniciador-teste
+          path: pronto
       - name: Iniciador
         shell: pwsh
-        run: ./instalador/teste/testar_iniciador.ps1
+        run: ./instalador/teste/testar_iniciador.ps1 -Pronto pronto
 
   testes:
     runs-on: ubuntu-latest

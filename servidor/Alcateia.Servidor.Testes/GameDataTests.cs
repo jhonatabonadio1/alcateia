@@ -67,14 +67,15 @@ public static class GameDataTests
 			Check.Equal("item_inexistente", Code(await Buy(p, "arma_que_nao_existe", 0)), "item inventado");
 			Check.Equal(401, (await w.Server().Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = "ak74" })).Status, "sem login não compra");
 
-			await w.Db.Exec("update profiles set xp = 300 where account_id = $1", p.Id);
+			// Conta nova começa sem Cash; o teste de compra precisa de saldo.
+			await w.Db.Exec("update profiles set xp = 300, presas = 3000 where account_id = $1", p.Id);
 			Check.Equal("duracao_indisponivel", Code(await Buy(p, "ak74", 9)), "duração inventada");
 			Check.Equal("patente_insuficiente", Code(await Buy(p, "scar", 0)), "a SCAR pede patente 3");
 
 			var day = await Buy(p, "ak74", 0);
 			Check.Equal(200, day.Status, "um dia de AK-74");
 			Check.Equal(200, day.Body["price"].GetValue<int>(), "pelo preço do servidor");
-			Check.Equal(2800L, day.Body["balance"].GetValue<long>(), "descontado das 3 000 iniciais");
+			Check.Equal(2800L, day.Body["balance"].GetValue<long>(), "descontado das 3 000 postas pelo teste");
 			Check.True(Math.Abs(DaysFromNow(day.Body["expiresAt"]) - 1) < 0.01, "vale um dia");
 
 			var week = await Buy(p, "ak74", 1);
@@ -149,13 +150,14 @@ public static class GameDataTests
 			long xpAfter = 225 + def.Xp;
 			Check.True(RankRule.RankFor(xpAfter) > RankRule.RankFor(225), "o prêmio sobe de patente");
 			Check.Equal(RankRule.RankFor(xpAfter), claimed.Body["balance"]["rank"].GetValue<int>(), "o XP do prêmio levou à patente da regra");
-			Check.Equal(3000L + def.Presas + RankRule.PromotionPresas(225, xpAfter), claimed.Body["balance"]["presas"].GetValue<long>(), "as Presas do desafio e as da promoção");
+			Check.Equal(def.Presas + RankRule.PromotionPresas(225, xpAfter), claimed.Body["balance"]["presas"].GetValue<long>(), "as Presas do desafio e as da promoção");
 			var (_, challenges) = await p.Call(HttpMethod.Get, "/v1/challenges");
 			Check.Equal(def.Title, challenges["titles"][0].GetValue<string>(), "e o título do desafio");
 			string[] reasons = (await w.Db.Query("select reason from ledger where account_id = $1 order by id", p.Id)).Rows.Select(r => r[0]).ToArray();
 			Check.True(reasons.Contains("promocao") && reasons.Contains("desafio"), "promoção e desafio no extrato: " + string.Join(",", reasons));
 
-			// Descartar.
+			// Descartar (e comprar): a conta começa sem Cash.
+			await w.Db.Exec("update profiles set presas = 5000 where account_id = $1", p.Id);
 			await p.Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = "ak74", ["duration"] = 0 });
 			Check.Equal(200, (await p.Call(HttpMethod.Delete, "/v1/inventory/ak74")).Status, "jogar a AK-74 fora");
 			Check.Equal(404, (await p.Call(HttpMethod.Delete, "/v1/inventory/ak74")).Status, "o que não se tem não se descarta");

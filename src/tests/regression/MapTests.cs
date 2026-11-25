@@ -292,3 +292,36 @@ public sealed class NeonStairsTest : StairsRunTest
 	public override string Name => "EscadaNeon";
 	protected override string MapId => "neon";
 }
+
+/// <summary>
+/// No Armazém, toda face tem a paleta e o detalhe (Jhon, 25/11: "coloque a
+/// textura nessa parte do armazém"). O Blender exportou o bloco do fundo
+/// leste (<c>estendido_41</c>, 447 m²) sem material, e o Godot pinta o que
+/// vem sem material de branco liso: a parede branca com janelas e portões,
+/// sem tijolo nem chapa. O teste olha o modelo do galpão superfície por
+/// superfície: nenhuma pode ficar com o material padrão.
+/// </summary>
+public sealed class WarehouseSurfacesTest : RegressionTest
+{
+	public override string Name => "ArmazemTodaFaceComMaterial";
+	public override string Description => "toda superfície do modelo do Armazém usa o material de detalhe (nenhuma fica branca, sem material)";
+
+	public override async Task Run(RegressionBench b)
+	{
+		var root = GD.Load<PackedScene>("res://src/assets/mapas/pecas/armazem_estendido.glb").Instantiate<Node3D>();
+		b.AddChild(root);
+		await b.Frames(2);
+		int surfaces = 0;
+		var plain = new System.Collections.Generic.List<string>();
+		foreach (MeshInstance3D mesh in root.FindChildren("*", nameof(MeshInstance3D), true, false).OfType<MeshInstance3D>())
+			for (int i = 0; i < (mesh.Mesh?.GetSurfaceCount() ?? 0); i++)
+			{
+				surfaces++;
+				if (mesh.GetActiveMaterial(i) is not ShaderMaterial) plain.Add($"{mesh.Name}[{i}]");
+			}
+		RegressionBench.Note($"{surfaces} superfícies no modelo do Armazém; sem o material de detalhe: {(plain.Count == 0 ? "nenhuma" : string.Join(", ", plain))}");
+		b.Check(surfaces > 0, "o modelo do Armazém tem superfícies");
+		b.Check(plain.Count == 0, $"nenhuma superfície do Armazém fica sem o material de detalhe ({string.Join(", ", plain)})");
+		root.QueueFree();
+	}
+}

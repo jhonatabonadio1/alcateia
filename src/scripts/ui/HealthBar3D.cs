@@ -27,8 +27,15 @@ public partial class HealthBar3D : Node3D
 	[Export] public float Height = 0.085f;
 	[Export] public float HeightAbove = 1.32f;
 
-	/// <summary>Além desta distância a barra não aparece.</summary>
-	[Export] public float VisibleRange = 45f;
+	/// <summary>Além desta distância a barra não aparece. Zero: sem limite
+	/// (Jhon, 25/11: a vida do inimigo aparece a qualquer distância).</summary>
+	[Export] public float VisibleRange = 0f;
+
+	/// <summary>Até esta distância a barra tem o tamanho de sempre; além
+	/// dela cresce com a distância para continuar legível de longe, mas só
+	/// até <see cref="MaxScale"/>, senão vira um letreiro (Jhon, 25/11).</summary>
+	[Export] public float GrowFrom = 12f;
+	[Export] public float MaxScale = 3.2f;
 
 	/// <summary>Segundos na tela depois do último golpe, e o fade.</summary>
 	[Export] public float ShowTime = 2.4f;
@@ -171,8 +178,13 @@ void fragment() {
 
 		Camera3D camera = GetViewport().GetCamera3D();
 		bool on = _shownFor > 0f && camera != null && !_health.IsDead
-			&& camera.GlobalPosition.DistanceTo(GlobalPosition) <= VisibleRange;
+			&& (VisibleRange <= 0f || camera.GlobalPosition.DistanceTo(GlobalPosition) <= VisibleRange);
 		if (on != Visible) Visible = on;
+		if (on)
+		{
+			float dist = camera.GlobalPosition.DistanceTo(GlobalPosition);
+			Scale = Vector3.One * Mathf.Clamp(dist / Mathf.Max(GrowFrom, 0.01f), 1f, MaxScale);
+		}
 		if (on) _material.SetShaderParameter("fade", Mathf.Clamp(_shownFor / Mathf.Max(FadeTime, 0.01f), 0f, 1f));
 	}
 

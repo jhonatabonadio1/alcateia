@@ -60,9 +60,49 @@ public static class NetTests
 		c.Spawn = new Vector3(10, 2, -30);
 		w = new PacketWriter(buffer);
 		c.Write(ref w);
-		Check.Equal(InputCommand.MaxSize, w.Length, "com renascimento");
+		Check.Equal(26, w.Length, "com renascimento");
 		r = new PacketReader(w.Written);
 		Check.Near(-30, InputCommand.Read(ref r).Spawn.Z, 0.01, "onde renasceu");
+	}
+
+	[Test("comando do especial: o ponto mirado e o alvo travado vão juntos, cabem no máximo e voltam iguais")]
+	public static void InputCommandSpecialRoundTrip()
+	{
+		Span<byte> buffer = stackalloc byte[64];
+		var c = new InputCommand
+		{
+			Seq = 77, Buttons = InputButtons.Attack, Epoch = 2,
+			HasSpawn = true, Spawn = new Vector3(1, 0, 2),
+			HasAim = true, Aim = new Vector3(-4.321f, 1.5f, 812.25f),
+			HasFocus = true, Focus = 7, FocusAt = new Vector3(-5, 1.2f, 815), FocusVelocity = new Vector3(3.5f, 0, -1.25f)
+		};
+		var w = new PacketWriter(buffer);
+		c.Write(ref w);
+		// Pior caso: renascimento (9) + ponto (9) + alvo (1 + 9 + 6) sobre os 17.
+		Check.Equal(InputCommand.MaxSize, w.Length, "tudo junto é o máximo");
+		var r = new PacketReader(w.Written);
+		InputCommand back = InputCommand.Read(ref r);
+		Check.True(back.HasAim && !back.AimNone && back.HasFocus && back.HasSpawn, "marcas do especial");
+		Check.Near(812.25, back.Aim.Z, 0.0051, "ponto mirado, em cm");
+		Check.Equal((byte)7, back.Focus, "lugar do alvo");
+		Check.Near(-5, back.FocusAt.X, 0.0051, "onde o jogo via o alvo");
+		Check.Near(-1.25, back.FocusVelocity.Z, 0.0051, "para onde ele ia");
+		Check.Equal(0, r.Left, "não sobra byte para o próximo comando");
+
+		// Saltou para o céu: a marca vai sem o ponto (1 bit, nenhum byte).
+		c = new InputCommand { Seq = 78, HasAim = true, AimNone = true };
+		w = new PacketWriter(buffer);
+		c.Write(ref w);
+		Check.Equal(17, w.Length, "sem ponto, só a marca");
+		r = new PacketReader(w.Written);
+		back = InputCommand.Read(ref r);
+		Check.True(back.HasAim && back.AimNone, "o céu volta como céu");
+
+		// Comando que não chegou: o clique não se repete, o alvo segue.
+		c = new InputCommand { Seq = 79, HasAim = true, Aim = Vector3.One, HasFocus = true, Focus = 3 };
+		InputCommand held = c.Held();
+		Check.False(held.HasAim, "o ponto do clique não repete");
+		Check.True(held.HasFocus && held.Focus == 3, "o alvo travado continua");
 	}
 
 	[Test("comando repetido (não chegou) segura o que estava segurado, sem repetir pulo nem tiro")]

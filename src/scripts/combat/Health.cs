@@ -311,10 +311,15 @@ public partial class Health : Node
 		if (changed) EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
 	}
 
-	public void TakeDamage(float amount, int attackerId = 0, Vector3 from = default, bool headshot = false)
+	/// <param name="ignoreProtection">O dano é do próprio corpo (a granada que
+	/// ele lançou aos pés): a proteção de quem nasceu é contra os outros, e
+	/// não vale contra si (Jhon, 25/11: "a granada no pé não te mata" — jogada
+	/// logo depois de renascer, a granada explodia dentro dos 3 s de proteção
+	/// e não fazia nada).</param>
+	public void TakeDamage(float amount, int attackerId = 0, Vector3 from = default, bool headshot = false, bool ignoreProtection = false)
 	{
 		if (IsRemote) return;
-		if (IsDead || amount <= 0 || IsProtected) return;
+		if (IsDead || amount <= 0 || (IsProtected && !ignoreProtection)) return;
 
 		DamageOutcome outcome = CombatRules.ApplyDamage(Hp, Shield, amount * GuardMultiplier, DamageMultiplier, BodyResistance, headshot);
 		_sinceHit = 0;
@@ -326,6 +331,24 @@ public partial class Health : Node
 
 		if (Hp <= 0)
 			Die(attackerId);
+	}
+
+	/// <summary>
+	/// Dano que o próprio corpo se deu (a granada que lançou, aos pés): fere
+	/// mesmo com a proteção de quem nasceu, e se morrer, a morte é dele, de
+	/// <paramref name="cause"/> (o feed diz "de granada"). Se sobreviver, a
+	/// causa não fica esperando a morte seguinte: até 25/11 a granada que
+	/// feria e não matava deixava a causa "granada" armada, e o inimigo que
+	/// terminasse o serviço virava "se matou" — o matador era apagado e a
+	/// câmera de morte não mostrava ninguém (Jhon, 25/11).
+	/// </summary>
+	public void TakeOwnDamage(float amount, Vector3 from, KillCause cause, string weapon)
+	{
+		SelfCause = cause;
+		SelfWeapon = weapon ?? "";
+		TakeDamage(amount, 0, from, false, ignoreProtection: true);
+		SelfCause = KillCause.Fall;
+		SelfWeapon = "";
 	}
 
 	/// <summary>Recarga de escudo pelo uivo. Nunca passa do teto —
@@ -354,11 +377,37 @@ public partial class Health : Node
 	public double SinceLastAttack => Time.GetTicksMsec() / 1000.0 - _lastAttackAt;
 	private double _lastAttackAt;
 
+	/// <summary>Como este corpo se matou, quando foi ele mesmo (a própria
+	/// granada): vai para o feed. Sem isto a morte é "queda".</summary>
+	public KillCause SelfCause = KillCause.Fall;
+	public string SelfWeapon = "";
+
+	/// <summary>Como foi a última morte sem autor (a própria granada, a
+	/// queda), guardado antes de <see cref="SelfCause"/> zerar: online é o
+	/// que o jogo conta ao servidor, para o feed de todos dizer "de granada"
+	/// (Jhon, 25/11: "quando eu me matei, não apareceu eu me matando e a arma
+	/// no feed"). Morte com autor: queda e nada.</summary>
+	public KillCause LastSelfCause { get; private set; } = KillCause.Fall;
+	public string LastSelfWeapon { get; private set; } = "";
+
 	private void Die(int killerId)
 	{
 		double now = Time.GetTicksMsec() / 1000.0;
 		Killer = _lastAttacker != null && GodotObject.IsInstanceValid(_lastAttacker) && now - _lastAttackAt < 5.0
 			? _lastAttacker : null;
+
+		// A própria granada vale como morte sozinho, mesmo com um tiro recente.
+		if (SelfCause == KillCause.Grenade) Killer = null;
+
+		// Morreu sozinho (queda, a própria granada): entra no feed e conta a
+		// morte, sem pontuar para ninguém (Jhon, 25/11). Online o servidor
+		// é quem anuncia, e a morte volta por lá.
+		if (Killer == null && NetMatch.Current == null && !IsRemote)
+			KillFeed.Report(new Kill(PublicName, Team, PublicName, Team, SelfCause, SelfWeapon));
+		LastSelfCause = Killer == null ? SelfCause : KillCause.Fall;
+		LastSelfWeapon = Killer == null ? SelfWeapon ?? "" : "";
+		SelfCause = KillCause.Fall;
+		SelfWeapon = "";
 		IsDead = true;
 		Hp = 0;
 		Shield = 0;

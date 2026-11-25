@@ -45,6 +45,7 @@ muito bem-vindas aqui.
 | `tiro_distante` | Tiro de longe (mais de 35 m), abafado | da arma |
 | `tiro_distante_ak47` etc. | Versão distante de uma arma específica | da arma |
 | `granada_explosao` | Explosão da granada de choque | ~39 m |
+| `granada_quique` | A granada batendo no chão ou na parede, uma vez por batida, no volume da velocidade da batida (`Grenade.Knock`) | 25 m |
 
 ## O lugar
 

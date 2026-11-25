@@ -79,7 +79,7 @@ public static class Shop
 		if (item.MinRank is < 0 or >= Contas.RankRule.Count) throw Invalid("patente_invalida", "Patente mínima inválida.");
 		if (!Currency.Valid(item.Currency)) throw Invalid("moeda_invalida", "Moeda inválida.");
 		if (item.Currency == Currency.Sangue && !SangueAllowed(item.Kind))
-			throw Invalid("sangue_nao_compra_poder", "Sangue só compra personagem e serviço: moeda paga nunca compra poder.");
+			throw Invalid("sangue_nao_compra_poder", "IPs só compram personagem e serviço: moeda paga nunca compra poder.");
 		if (item.Prices.Count != 0 && item.Prices.Count != DurationDays.Length) throw Invalid("precos_invalidos", "São cinco preços: 1, 7, 30, 90 dias e permanente.");
 		if (item.Prices.Any(p => p > 10_000_000)) throw Invalid("precos_invalidos", "Preço alto demais.");
 	}

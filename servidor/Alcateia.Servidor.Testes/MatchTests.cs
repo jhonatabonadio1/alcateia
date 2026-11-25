@@ -205,7 +205,7 @@ public static class MatchTests
 
 			var (_, hostProfile) = await host.Call(HttpMethod.Get, "/v1/profile");
 			Check.Equal(hostGain.Xp, hostProfile["xp"].GetValue<long>(), "XP do vencedor, pela regra do jogo");
-			Check.Equal(3000 + hostGain.Presas, hostProfile["presas"].GetValue<long>(), "Presas do vencedor");
+			Check.Equal(hostGain.Presas, hostProfile["presas"].GetValue<long>(), "Presas do vencedor");
 			Check.Equal(1, hostProfile["stats"]["wins"].GetValue<int>(), "uma vitória");
 			Check.Equal(10, hostProfile["stats"]["kills"].GetValue<int>(), "abates somados");
 

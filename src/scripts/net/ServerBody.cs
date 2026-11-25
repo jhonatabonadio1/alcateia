@@ -47,6 +47,10 @@ public sealed class ServerBody
 	public FormController Form { get; }
 	public Weapon Weapon { get; }
 
+	/// <summary>O corpo de outro jogador pelo lugar dele na escalação
+	/// (<see cref="Index"/>): é por ele que chega o alvo travado do especial.</summary>
+	public System.Func<byte, Player> Resolve { get; set; }
+
 	/// <summary>Os pontos onde o time deste corpo pode renascer (vazio: não confere).</summary>
 	public List<Vector3> SpawnPoints { get; } = new();
 
@@ -101,6 +105,12 @@ public sealed class ServerBody
 	/// dois, se o jogo está à frente) e guarda onde o corpo ficou.</summary>
 	public void Step(uint tick, double delta)
 	{
+		// Aliado não é parede, aqui também (TeamCollision): o jogo deixa o
+		// lobo atravessar o boneco do aliado, e o corpo daqui batia nele — a
+		// correção puxava o jogo de volta. O passo de física do corpo está
+		// desligado (Player.ReadyDriven): o par se refaz daqui.
+		TeamCollision.Keep(Body, Health, ref _collisionTeam);
+
 		int wanted = Commands.WantedThisTick;
 		for (int i = 0; i < wanted; i++)
 		{
@@ -115,6 +125,7 @@ public sealed class ServerBody
 	/// <summary>Quantos passos seguidos o jogo conta que está na parede e
 	/// este corpo não, antes de voltar para ela.</summary>
 	public const int WallBehindSteps = 3;
+	private int _collisionTeam = TeamCollision.None;
 	private int _wallBehind;
 	private bool _wallWas;
 
@@ -141,7 +152,10 @@ public sealed class ServerBody
 			Form form = System.Enum.IsDefined(typeof(Form), (int)c.Form) ? (Form)c.Form : global::Form.Human;
 			Form.RemoteSet(form);
 			if (!Form.IsWolf) Weapon.RemoteHold(_primary, _secondary, (Slot)c.HeldSlot);
+			TakeSpecial(c);
 			Body.Simulate(NetCommands.ToIntent(c), Quant.Yaw(c.Yaw), Quant.Pitch(c.Pitch), delta, c.Frozen);
+			Weapon.RemoteAim = null;
+			Weapon.RemoteAimNone = false;
 			Simulated++;
 
 			// O jogo segue na parede e este corpo saiu dela: um passo de
@@ -168,6 +182,67 @@ public sealed class ServerBody
 
 		RecordShot(c.Seq, tick);
 	}
+
+	/// <summary>Quantos comandos do especial vieram com o alvo ou o ponto
+	/// recusados (longe demais, aliado, morto): para o relatório e o teste.</summary>
+	public int RefusedAims { get; private set; }
+
+	/// <summary>Folga, em metros, entre onde o jogo diz que via o alvo e onde
+	/// ele esteve aqui: o jogo o vê uns 100 ms atrás, e um lobo de quatro
+	/// anda 0,8 m nesse tempo.</summary>
+	public const float FocusSlack = 3f;
+
+	/// <summary>
+	/// O alvo travado e o ponto mirado do especial, como o jogo os tinha
+	/// neste comando (<see cref="InputCommand.HasFocus"/>, <see cref="InputCommand.HasAim"/>):
+	/// o corpo daqui não tem câmera nem trava, e sem isto o salto dele ia
+	/// para outro lugar e a correção puxava o lobo do jogador para trás
+	/// (Jhon, 25/11: "o lobo não avança e cai e fica, indo e voltando").
+	/// Não acredita em tudo: o alvo tem de ser inimigo, vivo e ao alcance da
+	/// trava, e o ponto, ao alcance do salto.
+	/// </summary>
+	private void TakeSpecial(in InputCommand c)
+	{
+		Player focus = null;
+		(Vector3, Vector3)? view = null;
+		if (c.HasFocus)
+		{
+			Player them = Resolve?.Invoke(c.Focus);
+			Health health = them?.GetNodeOrNull<Health>("Health");
+			float reach = Body.LockKeepRange + 2f;
+			if (them != null && them != Body && health != null && !health.IsDead && health.Team != Health.Team
+				&& Flat(them.GlobalPosition - Body.GlobalPosition) <= Mathf.Max(reach, Weapon.PounceChaseRange))
+			{
+				focus = them;
+				Vector3 at = c.FocusAt.ToGodot(), velocity = c.FocusVelocity.ToGodot();
+				if (at.DistanceTo(them.GlobalPosition) <= FocusSlack && velocity.Length() <= 20f) view = (at, velocity);
+				else RefusedAims++;
+			}
+			else if (them == null && Flat(c.FocusAt.ToGodot() - Body.GlobalPosition) <= Weapon.PounceChaseRange && c.FocusVelocity.Length() <= 20f)
+			{
+				// Um bot (a máquina do dono o move; aqui não há corpo) ou um alvo
+				// ainda sem lugar: vale só onde o jogo o via — o mesmo que um ponto
+				// mirado, que o jogo já pode escolher dentro do alcance.
+				view = (c.FocusAt.ToGodot(), c.FocusVelocity.ToGodot());
+			}
+			else RefusedAims++;
+		}
+		Weapon.RemoteFocus = focus;
+		Weapon.RemoteFocusView = view;
+
+		Weapon.RemoteAim = null;
+		Weapon.RemoteAimNone = c.HasAim && c.AimNone;
+		if (c.HasAim && !c.AimNone)
+		{
+			Vector3 aim = c.Aim.ToGodot();
+			Vector3 from = Body.GlobalPosition;
+			if (Flat(aim - from) <= Weapon.PounceMaxDistance + 4f && aim.Y - from.Y <= Weapon.PounceMaxClimb + 2f && from.Y - aim.Y <= Weapon.PounceMaxDrop + 3f)
+				Weapon.RemoteAim = aim;
+			else RefusedAims++;
+		}
+	}
+
+	private static float Flat(Vector3 v) => new Vector2(v.X, v.Z).Length();
 
 	/// <summary>Pode renascer agora, ali? A primeira vez, sempre (é a
 	/// largada); depois, só morto, passada a espera, e perto de um ponto de
@@ -218,10 +293,12 @@ public sealed class ServerBody
 	/// Vida, escudo, armas e a guarda do especial, como o jogo conta
 	/// (Status). Da vida e do escudo só vale o que desce (decisão 0016).
 	/// </summary>
-	public void ApplyStatus(float hp, float shield, string primary, string secondary, bool guard)
+	public void ApplyStatus(float hp, float shield, string primary, string secondary, bool guard, float charge = -1f)
 	{
 		_primary = primary ?? "";
 		_secondary = secondary ?? "";
+		// A carga do especial (Weapon.MirrorCharge): até o que as regras deram aqui.
+		if (charge >= 0f) Weapon.MirrorCharge(charge);
 		if (!Alive) return;
 
 		Health.LowerTo(hp, shield);
@@ -235,6 +312,22 @@ public sealed class ServerBody
 	public void SelfDeath()
 	{
 		if (Alive) Health.Mirror(0, Health.MaxHp, 0, Health.MaxShield, true);
+	}
+
+	/// <summary>A pontuação e a duração da sala: a carga do especial deste
+	/// corpo enche no mesmo ritmo da do jogo (<see cref="Weapon.KillFill"/>).</summary>
+	public void SetRules(int scoreToWin, double duration)
+	{
+		Weapon.RulesScoreToWin = scoreToWin;
+		Weapon.RulesDuration = (float)duration;
+	}
+
+	/// <summary>O servidor decidiu um abate (ou uma assistência) deste
+	/// jogador: a carga do especial dele enche aqui também.</summary>
+	public void Scored(bool kill, bool asWolf = false)
+	{
+		if (kill) Form.OnKill(asWolf);
+		else Form.OnAssist();
 	}
 
 	/// <summary>A classe de lobo e as melhorias (Loadout): mudam a

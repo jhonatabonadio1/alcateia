@@ -190,6 +190,13 @@ No seu jogo isso dobra: o lobo tem slots próprios (mutação, tatuagem, habilid
 
 Ao selecionar um item, um painel mostra: nome, raridade, duração restante, atributos com barras comparativas (dano, precisão, cadência, peso), descrição curta, e os botões `Equipar`, `Renovar`, `Descartar`. As barras comparativas devem mostrar o delta contra o item atualmente equipado — é a única forma de o jogador decidir sem abrir planilha.
 
+**O personagem em 3D** (`CharacterPreview`, no painel de detalhe do
+inventário e da loja, com as abas Humano / Lobo): um estúdio de verdade —
+luz principal quente com sombra, preenchimento frio, dois recortes atrás e
+um halo no fundo; o corpo em pé num pedestal escuro e fosco, com sombra de
+contato embaixo dos pés; desenhado na resolução da tela (Retina inclusa).
+Arrastar gira; parado, gira devagar.
+
 **Erro comum**
 
 Tratar o inventário como lista de texto. Olhe a proporção nas telas de referência: a arte da arma ocupa mais de metade do card, e o texto é pequeno e secundário. Nesse gênero o inventário é parte da fantasia de poder. Se o seu couber numa `ItemList` do Godot sem customização, está subaproveitado.
@@ -376,9 +383,9 @@ A tela de resultado tem uma função só: fazer o jogador querer jogar de novo. 
 
 - **Veredito** — `Vitória` ou `Derrota` grande, com placar final. 1,5 s sozinho na tela.
 
-- **Placar completo**, com MVP destacado no topo.
+- **Placar completo**, com MVP destacado no topo. A faixa do MVP leva o retrato dele com a borda do nível (64 px, com a placa e as estrelas): dentro, a foto da partida, o retrato do personagem com que ele jogou, a mesma do placar embaixo. MVP bot: o ícone de bot no lugar.
 
-- **Recompensa animada** — XP ganho enchendo a barra de patente, moeda ganha contando pra cima, e o aviso de promoção se houver. Essa animação é o momento mais importante da tela inteira; não a pule nem a acelere.
+- **Recompensa animada** — XP ganho enchendo a barra de patente, moeda ganha contando pra cima, e o aviso de promoção se houver. O card abre com o seu retrato com a borda do nível (72 px): dentro, a sua foto de perfil, porque o nível é da conta (a mesma da tela de promoção que abre dali). Essa animação é o momento mais importante da tela inteira; não a pule nem a acelere.
 
 Rodapé com `Jogar de novo`, `Voltar à sala`, `Sair para o lobby`. O primeiro é o botão primário e deve estar sob o cursor por padrão.
 

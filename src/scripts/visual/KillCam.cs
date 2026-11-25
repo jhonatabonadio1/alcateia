@@ -55,6 +55,15 @@ public partial class KillCam : Node3D
 		Phase.Death => "morte", Phase.First => "primeira", Phase.Above => "cima", _ => "livre"
 	};
 
+	/// <summary>Quem te matou, como a câmera o tem (nulo: morte sem matador).
+	/// Para os testes.</summary>
+	public Node3D Killer => _killer;
+
+	/// <summary>Quantas peças do corpo do matador estão com a silhueta vermelha
+	/// agora, e o nome que o HUD mostra no segundo do corpo caindo. Para os testes.</summary>
+	public int MarkedPieces => _marked.Count;
+	public string WhoName => _whoName != null && _whoName.Visible ? _whoName.Text : "";
+
 	/// <summary>Quem a câmera segue no espectador. Para os testes.</summary>
 	public Node3D Watching => _phase is Phase.First or Phase.Above ? _mate : null;
 

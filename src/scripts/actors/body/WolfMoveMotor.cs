@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 /// <summary>
 /// O corpo durante os golpes especiais do lobo — o mesmo para o jogador e
@@ -11,14 +12,25 @@ using Godot;
 /// </summary>
 public sealed class WolfMoveMotor
 {
-	/// <summary>Teto da velocidade no voo do salto: o corpo vai ao ponto
-	/// do arco no quadro seguinte, mas nunca rápido a ponto de atravessar
-	/// parede.</summary>
-	public const float MaxFlightSpeed = 45f;
+	/// <summary>Teto da velocidade no voo do salto, em m/s: o corpo vai ao
+	/// ponto do arco no quadro seguinte. O MoveAndSlide varre o caminho, então
+	/// não atravessa parede; o teto é só contra um ponto absurdo. Era 45, e o
+	/// salto de 13 m do especial (58 m/s no meio do sino) ficava para trás e
+	/// corrigia no fim.</summary>
+	public const float MaxFlightSpeed = 90f;
 
 	private readonly CharacterBody3D _body;
 	private readonly Weapon _weapon;
 	private bool _pounceFlying;
+
+	/// <summary>O que o salto atravessou no caminho (quem não é o alvo
+	/// travado, postes e placas), até o lobo sair de dentro dele
+	/// (<see cref="ReleasePassed"/>).</summary>
+	private readonly List<PhysicsBody3D> _passed = new();
+
+	/// <summary>A cápsula do corpo, um pouco mais gorda, para saber se o lobo
+	/// já saiu de dentro do que atravessou.</summary>
+	private PhysicsShapeQueryParameters3D _overlap;
 
 	/// <summary>Freada de quem fica preso no lugar, em m/s².</summary>
 	public float FreezeBrake { get; set; } = 30f;
@@ -49,6 +61,8 @@ public sealed class WolfMoveMotor
 			_pounceFlying = true;
 			return true;
 		}
+
+		ReleasePassed();
 
 		// Acabou o voo: o lobo fica onde caiu. Sem isto, o embalo de um voo
 		// barrado no caminho (alguém na frente) virava um deslize extra
@@ -92,12 +106,84 @@ public sealed class WolfMoveMotor
 	}
 
 	/// <summary>O voo do salto: por posição, não por força, para cair onde
-	/// foi planejado. A física ainda manda: bater em algo para o corpo ali.</summary>
+	/// foi planejado. A física ainda manda: bater em algo para o corpo ali.
+	///
+	/// Bater em alguém para no chão, de verdade: o avanço do quadro vai até
+	/// encostar e o resto do voo é só descer. O deslizar da física (o certo
+	/// numa parede) fazia o lobo escorregar de lado na cápsula do outro, dar
+	/// a volta nele e cair do outro lado, de costas para ele — o "vai e volta
+	/// no ar" que errava o alvo (Jhon, 25/11).
+	///
+	/// Com alvo travado (o especial), quem mais estiver no caminho é
+	/// atravessado: o salto é dele, e o lobo cai em quem travou. Sem trava,
+	/// vale a regra de sempre: para em quem encostar.</summary>
 	private void Fly(double delta)
 	{
-		Vector3 next = _weapon.PounceFlightPoint(delta);
-		_body.Velocity = ((next - _body.GlobalPosition) / (float)delta).LimitLength(MaxFlightSpeed);
+		Vector3 motion = _weapon.PounceFlightPoint(delta) - _body.GlobalPosition;
+		Vector3 flat = motion with { Y = 0 };
+		var contact = new KinematicCollision3D();
+		for (int tries = 0; tries < 3 && flat.LengthSquared() > 1e-8f; tries++)
+		{
+			if (!_body.TestMove(_body.GlobalTransform, flat, contact) || contact.GetCollider() is not CharacterBody3D someone) break;
+
+			Node3D focus = _weapon.PounceFocus;
+			if (focus != null && someone != focus)
+			{
+				Pass(someone);
+				continue;
+			}
+
+			Vector3 travel = contact.GetTravel() with { Y = 0 };
+			motion = travel + Vector3.Up * motion.Y;
+			_weapon.PounceBlocked(_body.GlobalPosition + travel);
+			break;
+		}
+
+		// Poste, placa, haste: o voo atravessa (o caminho do salto não conta
+		// com eles, Weapon.WolfPouncePath). Um poste de 12 cm no meio do
+		// caminho parava o lobo no ar e o fazia escorregar em volta dele.
+		for (int tries = 0; tries < 4 && motion.LengthSquared() > 1e-8f; tries++)
+		{
+			if (!_body.TestMove(_body.GlobalTransform, motion, contact)) break;
+			if (contact.GetCollider() is not PhysicsBody3D prop
+				|| !Weapon.IsThinProp(prop, contact.GetColliderShapeIndex(), _weapon.PounceThinProp)) break;
+			Pass(prop);
+		}
+
+		_body.Velocity = (motion / (float)delta).LimitLength(MaxFlightSpeed);
 		_body.MoveAndSlide();
+	}
+
+	/// <summary>Quem o salto atravessou volta a ser sólido assim que o lobo
+	/// sai de cima dele — e não no quadro da queda, quando os dois ainda
+	/// podiam estar encostados e a física os separaria num tranco.</summary>
+	private void ReleasePassed()
+	{
+		if (_passed.Count == 0) return;
+
+		var inside = new HashSet<Rid>();
+		_overlap ??= new PhysicsShapeQueryParameters3D { Shape = new CapsuleShape3D { Radius = 0.36f, Height = 1.8f }, CollideWithAreas = false };
+		_overlap.Transform = new Transform3D(Basis.Identity, _body.GlobalPosition);
+		_overlap.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+		foreach (var hit in _body.GetWorld3D().DirectSpaceState.IntersectShape(_overlap, 16))
+			inside.Add((Rid)hit["rid"]);
+
+		for (int i = _passed.Count - 1; i >= 0; i--)
+		{
+			PhysicsBody3D other = _passed[i];
+			bool gone = !GodotObject.IsInstanceValid(other) || !other.IsInsideTree();
+			if (!gone && inside.Contains(other.GetRid())) continue;
+
+			if (!gone) _body.RemoveCollisionExceptionWith(other);
+			_passed.RemoveAt(i);
+		}
+	}
+
+	/// <summary>Atravessa <paramref name="other"/> até sair de dentro dele.</summary>
+	private void Pass(PhysicsBody3D other)
+	{
+		_body.AddCollisionExceptionWith(other);
+		if (!_passed.Contains(other)) _passed.Add(other);
 	}
 
 	/// <summary>Preso no lugar: sem andar nem pular, só a gravidade. O

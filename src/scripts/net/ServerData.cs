@@ -130,7 +130,25 @@ public static class ServerData
 		MinVersion = settings?["versao_minima"]?["version"]?.GetValue<string>() ?? "0.0.0";
 		XpBonus = Number(settings?["bonus"]?["xp"]);
 		PresasBonus = Number(settings?["bonus"]?["presas"]);
+
+		// O Cash por partida que o painel definiu: a previsão do resultado usa o mesmo.
+		JsonNode r = settings?["recompensas"];
+		if (r != null)
+		{
+			var d = Rewards.CashRates.Default;
+			Cash = new Rewards.CashRates(Rate(r["base"], d.Base), Rate(r["kill"], d.Kill), Rate(r["assist"], d.Assist),
+				Rate(r["win"], d.Win), Rate(r["draw"], d.Draw), Rate(r["mvp"], d.Mvp));
+		}
 		Loaded = true;
+	}
+
+	/// <summary>O Cash que cada coisa rende numa partida (do painel, ou o de fábrica).</summary>
+	public static Rewards.CashRates Cash { get; private set; } = Rewards.CashRates.Default;
+
+	private static int Rate(JsonNode node, int fallback)
+	{
+		try { return node == null ? fallback : System.Math.Clamp(node.GetValue<int>(), 0, 100000); }
+		catch (System.Exception) { return fallback; }
 	}
 
 	/// <summary>Esquece tudo (os testes, e ao trocar de servidor).</summary>
@@ -138,6 +156,7 @@ public static class ServerData
 	{
 		_etag = null;
 		_checkedAt = DateTime.MinValue;
+		Cash = Rewards.CashRates.Default;
 		MapsOff.Clear();
 		Catalog.RestoreBuiltIn();
 		ItemsKnown.Clear();

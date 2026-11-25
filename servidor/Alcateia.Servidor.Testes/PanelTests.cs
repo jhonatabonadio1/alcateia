@@ -181,13 +181,14 @@ public static class PanelTests
 
 			Check.Equal("sem_motivo", Code(await admin.Post($"/players/{p.Id}/currency", new JsonObject { ["currency"] = "presas", ["amount"] = 500 })), "moeda pede motivo");
 			var given = await admin.Post($"/players/{p.Id}/currency", new JsonObject { ["currency"] = "presas", ["amount"] = 500, ["reason"] = "compensação da queda de ontem" });
-			Check.Equal(3500L, given.Body["balance"].GetValue<long>(), "3 000 + 500");
+			// A conta nova começa com 0 (AccountRules.StarterPresas, 25/11): só valem as 500 do painel.
+			Check.Equal(500L, given.Body["balance"].GetValue<long>(), "0 + 500");
 			await admin.Post($"/players/{p.Id}/currency", new JsonObject { ["currency"] = "sangue", ["amount"] = 120, ["reason"] = "pacote comprado" });
 			Check.Equal("saldo_insuficiente", Code(await admin.Post($"/players/{p.Id}/currency", new JsonObject { ["currency"] = "presas", ["amount"] = -9000, ["reason"] = "estorno" })), "não tira mais do que tem");
 			Check.Equal("moeda_invalida", Code(await admin.Post($"/players/{p.Id}/currency", new JsonObject { ["currency"] = "ouro", ["amount"] = 1, ["reason"] = "moeda que não existe" })), "moeda inventada");
 
 			var (_, profile) = await p.Call(HttpMethod.Get, "/v1/profile");
-			Check.Equal(3500L, profile["presas"].GetValue<long>(), "o jogador vê as Presas");
+			Check.Equal(500L, profile["presas"].GetValue<long>(), "o jogador vê as Presas");
 			Check.Equal(120L, profile["sangue"].GetValue<long>(), "e o Sangue");
 
 			Check.Equal("item_inexistente", Code(await admin.Post($"/players/{p.Id}/items", new JsonObject { ["itemId"] = "nada", ["days"] = 7 })), "item que não existe");
@@ -242,7 +243,7 @@ public static class PanelTests
 			using var admin = new PanelClient(w);
 			await admin.Login();
 			await using Player p = await w.NewPlayer();
-			await w.Db.Exec("update profiles set xp = 300 where account_id = $1", p.Id);
+			await w.Db.Exec("update profiles set xp = 300, presas = 3000 where account_id = $1", p.Id);
 
 			Check.Equal(200, (await admin.Put("/catalog/ak74", new JsonObject { ["prices"] = new JsonArray(100, 500, 1500, 3300, 8000) })).Status, "baixar o preço da AK-74");
 			Check.Equal("sangue_nao_compra_poder", Code(await admin.Put("/catalog/ak74", new JsonObject { ["currency"] = "sangue" })), "arma não pode custar Sangue");
@@ -349,7 +350,7 @@ public static class PanelTests
 			Check.Equal(gain.Xp * 2, profile["xp"].GetValue<long>(), "XP em dobro pelo bônus do painel");
 			long promoted = Alcateia.Dominio.Contas.RankRule.PromotionPresas(0, gain.Xp * 2);
 			Check.True(promoted > 0, "esse XP todo sobe de patente");
-			Check.Equal(3000 + gain.Presas + promoted, profile["presas"].GetValue<long>(), "Presas sem bônus, mais o prêmio de cada patente alcançada");
+			Check.Equal(gain.Presas + promoted, profile["presas"].GetValue<long>(), "Presas sem bônus, mais o prêmio de cada patente alcançada");
 
 			var list = (await host.Call(HttpMethod.Get, "/v1/challenges")).Body["challenges"].AsArray();
 			JsonNode Of(string id) => list.First(c => c["id"].GetValue<string>() == id);
@@ -363,7 +364,7 @@ public static class PanelTests
 			var claimed = await host.Call(HttpMethod.Post, "/v1/challenges/evento_abates/claim");
 			Check.Equal(200, claimed.Status, "receber o prêmio");
 			long promotedByClaim = Alcateia.Dominio.Contas.RankRule.PromotionPresas(gain.Xp * 2, gain.Xp * 2 + 50);
-			Check.Equal(3000 + gain.Presas + promoted + promotedByClaim + 300, claimed.Body["balance"]["presas"].GetValue<long>(), "300 Presas");
+			Check.Equal(gain.Presas + promoted + promotedByClaim + 300, claimed.Body["balance"]["presas"].GetValue<long>(), "300 Presas");
 			Check.Equal(10L, claimed.Body["balance"]["sangue"].GetValue<long>(), "10 de Sangue");
 			Check.Equal(gain.Xp * 2 + 50, claimed.Body["balance"]["xp"].GetValue<long>(), "50 de XP");
 			Check.Equal("premio_indisponivel", Code(await host.Call(HttpMethod.Post, "/v1/challenges/evento_abates/claim")), "uma vez só");

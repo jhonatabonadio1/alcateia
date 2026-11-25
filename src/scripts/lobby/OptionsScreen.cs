@@ -35,6 +35,12 @@ public partial class OptionsScreen : LobbyScreen
 
 	/// <summary>Abas, a lista que rola, o painel de explicação e o rodapé.
 	/// <paramref name="credits"/>: o botão dos créditos (só no saguão).</summary>
+	/// <summary>O botão da tela de créditos está escondido por ora (Jhon,
+	/// 25/11). A tela e o conteúdo (<c>Credits.cs</c>) continuam; ligue
+	/// aqui para voltar. As licenças pedem crédito visível no jogo
+	/// publicado (CC BY): religue antes de publicar.</summary>
+	public const bool ShowCredits = false;
+
 	public static Control View(Action credits = null) => new Sheet(credits).Root;
 
 	/// <summary>O estado de uma vista aberta: a aba, a lista e a faixa apontada.</summary>
@@ -65,7 +71,7 @@ public partial class OptionsScreen : LobbyScreen
 			HBoxContainer top = UiKit.Row(UiTokens.S3);
 			top.AddChild(Tabs.Make(TabNames, _lastTab, Show));
 			top.AddChild(UiKit.Spacer());
-			if (credits != null) top.AddChild(UiKit.Button("Créditos", ButtonKind.Tertiary, credits));
+			if (credits != null && ShowCredits) top.AddChild(UiKit.Button("Créditos", ButtonKind.Tertiary, credits));
 			Root.AddChild(top);
 
 			HBoxContainer body = UiKit.Row(UiTokens.S4);

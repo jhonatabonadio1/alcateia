@@ -33,6 +33,8 @@ public partial class Saida : Node
 
 	public static void Flush()
 	{
+		// O que o C# guarda de propósito entre uma cena e outra sai antes.
+		WolfOwnClips.Release();
 		for (int i = 0; i < MaxPasses; i++)
 		{
 			long before = System.GC.GetTotalMemory(false);

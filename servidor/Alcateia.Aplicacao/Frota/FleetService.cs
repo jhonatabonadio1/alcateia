@@ -115,6 +115,12 @@ public sealed class FleetService
 		lock (_lock) return _fleet.AddSeat(matchKey, seat);
 	}
 
+	/// <summary>Onde a partida está (<see cref="Fleet.Progress"/>).</summary>
+	public MatchProgress Progress(string matchKey)
+	{
+		lock (_lock) return _fleet.Progress(matchKey);
+	}
+
 	/// <summary>O time de quem já está na escalação (0 se não está).</summary>
 	public int SeatTeam(string matchKey, long accountId)
 	{

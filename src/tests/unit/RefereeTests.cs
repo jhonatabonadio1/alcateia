@@ -54,6 +54,23 @@ public static class RefereeTests
 		Check.True(!r.AddSeat(5, "Eva", Referee.Blue), "acabada, não abre lugar");
 	}
 
+	[Test("quem saiu e escolheu o outro time na sala volta nele, com os abates; ligado ou no mesmo time, nada muda")]
+	public static void RejoinOnTheOtherTeam()
+	{
+		Referee r = Live();
+		Check.True(r.Hit(1, 2, 50) && r.Death(2, 1, false, null) != null, "Ana abate Beto");
+		int blue = r.Score(Referee.Blue);
+
+		Check.True(!r.AddSeat(1, "Ana", Referee.Orange), "ligada, não troca de time");
+		r.Leave(1);
+		Check.True(!r.AddSeat(1, "Ana", Referee.Blue), "fora, no mesmo time: nada muda");
+		Check.True(r.AddSeat(1, "Ana", Referee.Orange), "fora, no outro time: o lugar muda");
+		Check.True(r.Join(1), "e ela volta");
+		Check.Equal(Referee.Orange, r.Find(1).Team, "no laranja");
+		Check.Equal(1, r.Find(1).Kills, "com o abate que já tinha");
+		Check.Equal(blue, r.Score(Referee.Blue), "o ponto do azul fica com o azul");
+	}
+
 	[Test("o dono dos bots sai: eles passam para o próximo jogador ligado; sem ninguém, saem junto")]
 	public static void BotsGoToTheNextPlayer()
 	{
@@ -160,6 +177,23 @@ public static class RefereeTests
 		Check.Equal(1, kill.Value.Assisters.Length, "só Caio ajudou");
 		Check.Equal(1, r.Find(3).Assists, "assistência de Caio");
 		Check.Equal(15, r.Find(1).Points + r.Find(3).Points, "10 do abate e 5 da assistência");
+	}
+
+	[Test("morrer sozinho (a própria granada, a queda) conta a morte e não pontua ninguém")]
+	public static void SelfDeathCountsWithoutScore()
+	{
+		Referee r = Live();
+		r.Hit(1, 2, 50);
+		Check.True(r.SelfDeath(2), "Beto se matou com a granada: conta");
+		Check.Equal(1, r.Find(2).Deaths, "a morte é dele");
+		Check.Equal(0, r.Find(1).Kills, "ninguém leva o abate (nem quem o acertou antes)");
+		Check.Equal(0, r.Score(Referee.Blue) + r.Score(Referee.Orange), "o placar não mexe");
+		Check.False(r.SelfDeath(2), "no mesmo segundo, não conta de novo");
+		Check.True(r.Death(2, 1, false, null) == null, "e o acerto de antes não vira abate depois");
+		r.Tick(1.1);
+		Check.True(r.SelfDeath(2), "um segundo depois, outra morte conta");
+		Check.Equal(2, r.Find(2).Deaths, "duas mortes");
+		Check.False(r.SelfDeath(99), "quem não é da partida, não");
 	}
 
 	[Test("a mesma morte contada duas vezes vale uma")]

@@ -172,7 +172,10 @@ public static class App
 
 		var security = new SecurityService(securityStore, new JsonSecurityLog(config.SecurityLog ? Console.Out : null), clock, config.Security);
 		var gameData = new GameDataService(new PgGameDataRepository(db));
-		var accounts = new AccountService(new PgAccountRepository(db), hasher, tokens, clock, config.SessionDays);
+		var accounts = new AccountService(new PgAccountRepository(db), hasher, tokens, clock, config.SessionDays)
+		{
+			StarterCash = () => gameData.Current.StarterCash
+		};
 		IFleetScaler scaler = config.FlyApp != "" && config.FlyToken != ""
 			? new Alcateia.Infra.Fly.FlyMachines(config.FlyApi, config.FlyApp, config.FlyToken) : null;
 		var fleet = new FleetService(config.FleetTimeout, new FleetSigner(config.FleetKey), clock, scaler, config.FleetReserve);

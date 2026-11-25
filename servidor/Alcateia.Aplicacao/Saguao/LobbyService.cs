@@ -22,7 +22,7 @@ namespace Alcateia.Aplicacao.Saguao;
 /// manda <c>rooms.list</c>, <c>room.create</c>, <c>room.join</c>,
 /// <c>room.leave</c>, <c>room.team</c>, <c>room.ready</c>,
 /// <c>room.settings</c>, <c>room.bot.add</c>, <c>room.bot.remove</c>,
-/// <c>room.start</c>, <c>chat</c> e <c>ping</c>; o servidor responde com
+/// <c>room.start</c>, <c>room.enter</c>, <c>chat</c> e <c>ping</c>; o servidor responde com
 /// <c>hello</c>, <c>rooms</c>, <c>room</c>, <c>left</c>, <c>chat</c>,
 /// <c>match.start</c>, <c>match.end</c>, <c>pong</c> e <c>error</c>. O
 /// formato de cada uma está em servidor/LEIA-ME.md.
@@ -57,6 +57,10 @@ public sealed class LobbyService : IDisposable
 		internal string Photo = PhotoRule.Default;
 		/// <summary>As fotos da loja que a conta tem (lidas ao entrar e de novo se pedir uma que não estava).</summary>
 		internal HashSet<string> Photos = new();
+		/// <summary>Os itens da conta (menos as fotos): vão na escalação da partida,
+		/// e o servidor de partida só aceita levar a arma que está aqui ou é de série.
+		/// Lidos ao entrar e de novo antes de começar a partida.</summary>
+		internal HashSet<string> Items = new();
 	}
 
 	private readonly FleetService _fleet;
@@ -73,6 +77,7 @@ public sealed class LobbyService : IDisposable
 	// cada sala criada ou cheia seria uma lista inteira para cada um.
 	private readonly System.Threading.Timer _listTimer;
 	private bool _listChanged;
+	private readonly HashSet<int> _closing = new();   // salas com a partida quase acabando, como a lista mostrou
 	private readonly int _maxRooms;
 
 	/// <summary><paramref name="listEvery"/>: de quanto em quanto tempo a
@@ -99,9 +104,24 @@ public sealed class LobbyService : IDisposable
 		var outbox = new Outbox();
 		lock (_lock)
 		{
-			if (!_listChanged) return;
-			_listChanged = false;
-			outbox.To(_sessions.Values.Where(s => s.Room == null), RoomsMessage());
+			// A partida de uma sala passou a estar quase acabando (o servidor de
+			// partida conta a cada batida): a lista e quem está na sala de fora
+			// dela ficam sabendo que não dá mais para entrar.
+			foreach (Room room in _rooms.Values)
+			{
+				bool closing = Closing(room);
+				if (closing == _closing.Contains(room.Id)) continue;
+				if (closing) _closing.Add(room.Id); else _closing.Remove(room.Id);
+				RoomState(room, outbox);
+				_listChanged = true;
+			}
+			_closing.RemoveWhere(id => !_rooms.ContainsKey(id));
+
+			if (_listChanged)
+			{
+				_listChanged = false;
+				outbox.To(_sessions.Values.Where(s => s.Room == null), RoomsMessage());
+			}
 		}
 		await outbox.Deliver();
 	}
@@ -172,7 +192,7 @@ public sealed class LobbyService : IDisposable
 			// Conta sem perfil ainda entra; só aparece sem patente.
 		}
 
-		var session = new Session { Account = account, Connection = connection, Xp = xp, Photos = await OwnedPhotos(account.Id) };
+		var session = new Session { Account = account, Connection = connection, Xp = xp, Photos = await OwnedPhotos(account.Id), Items = await OwnedItems(account.Id) };
 		var outbox = new Outbox();
 		Session old;
 		lock (_lock)
@@ -197,6 +217,7 @@ public sealed class LobbyService : IDisposable
 		{
 			if (JsonNode.Parse(text) is not JsonObject message)
 				throw new Failure(FailureKind.Invalid, "mensagem_invalida", "Mensagem inválida.");
+			await RefreshItemsFor(session, message["t"]?.GetValue<string>() ?? "");
 			lock (_lock) Dispatch(session, message, outbox);
 		}
 		catch (Failure e)
@@ -346,6 +367,10 @@ public sealed class LobbyService : IDisposable
 				Start(c, outbox);
 				break;
 
+			case "room.enter":
+				Enter(c, outbox);
+				break;
+
 			case "room.restart":
 				Restart(c, outbox);
 				break;
@@ -383,31 +408,59 @@ public sealed class LobbyService : IDisposable
 		if (c.Room == room) return;
 
 		// Com a partida em curso (Jhon, 24/11: "ao sair da partida, posso entrar
-		// nela novamente caso tenha vaga"): quem já jogou esta partida volta no
-		// time e no lugar dele; quem chega agora ganha um lugar novo nela.
+		// nela novamente caso tenha vaga"; 25/11: "ele entra na sala para poder
+		// escolher o time"): entra na sala, de fora da partida, no time em que
+		// jogou (se voltou e ainda cabe) ou no que dá para entrar; a partida é
+		// com room.enter. Quase acabando, não entra ("não pode entrar em sala
+		// cuja partida está quase acabando").
 		bool playing = room.State == Dominio.Salas.RoomState.Playing;
-		if (playing && (room.MatchAddress == null || _fleet.Find(room.MatchKey) == null))
-			throw new Failure(FailureKind.Conflict, "em_partida", "A partida desta sala está acabando. Tente de novo em instantes.");
+		if (playing) RequireEnterable(room);
 		int team = playing ? _fleet.SeatTeam(room.MatchKey, c.Account.Id) : 0;
 
 		// A sala nova confere tudo antes: recusado, o jogador fica onde estava.
 		room.Join(c.Account, c.Xp, password, team);
 		Leave(c, outbox);
 		c.Room = room;
-		if (playing)
+		Changed(room, outbox);
+	}
+
+	/// <summary>A partida da sala ainda recebe gente: existe na frota e não
+	/// está quase acabando.</summary>
+	private void RequireEnterable(Room room)
+	{
+		if (room.MatchAddress == null || _fleet.Find(room.MatchKey) == null)
+			throw new Failure(FailureKind.Conflict, "em_partida", "A partida desta sala está acabando. Tente de novo em instantes.");
+		if (Closing(room))
+			throw new Failure(FailureKind.Conflict, "partida_acabando", "A partida está quase acabando. Espere a próxima.");
+	}
+
+	/// <summary>A partida da sala está quase acabando (<see cref="MatchProgress.NearEnd"/>).</summary>
+	private bool Closing(Room room) =>
+		room.State == Dominio.Salas.RoomState.Playing && (_fleet.Progress(room.MatchKey)?.NearEnd ?? false);
+
+	/// <summary>
+	/// Quem está na sala de fora da partida em curso entra nela, pelo time que
+	/// escolheu (equilibrado: <see cref="Room.Enter"/>). A escalação ganha o
+	/// lugar (ou o de antes, de quem volta, no time escolhido agora) e o
+	/// jogador recebe o ingresso, marcado como entrada no meio.
+	/// </summary>
+	private void Enter(Session c, Outbox outbox)
+	{
+		Room room = InRoom(c);
+		if (room.State != Dominio.Salas.RoomState.Playing)
+			throw new Failure(FailureKind.Conflict, "sem_partida", "A sala não está em partida.");
+		if (room.Seat(c.Account.Id).InMatch) return;
+		RequireEnterable(room);
+
+		room.Enter(c.Account.Id);
+		RoomMember seat = room.Seat(c.Account.Id);
+		if (!_fleet.AddSeat(room.MatchKey, new MatchSeat(c.Account.Id, c.Account.Name, seat.Team, 0, c.Items.ToList())))
 		{
-			RoomMember seat = room.Seat(c.Account.Id);
-			if (!_fleet.AddSeat(room.MatchKey, new MatchSeat(c.Account.Id, c.Account.Name, seat.Team)))
-			{
-				room.Leave(c.Account.Id);
-				c.Room = null;
-				throw new Failure(FailureKind.Conflict, "em_partida", "A partida desta sala está acabando. Tente de novo em instantes.");
-			}
-			Changed(room, outbox);
-			SendTicket(room, room.MatchKey, c, false, outbox, late: true);
-			return;
+			room.Unenter(c.Account.Id);
+			throw new Failure(FailureKind.Conflict, "em_partida", "A partida desta sala está acabando. Tente de novo em instantes.");
 		}
 		Changed(room, outbox);
+		SendTicket(room, room.MatchKey, c, false, outbox, late: true);
 	}
 
 	/// <summary>Tira o jogador da sala em que está. Sala vazia some.</summary>
@@ -441,6 +494,7 @@ public sealed class LobbyService : IDisposable
 		Room room = InRoom(c);
 		RequireMap(room.Settings);
 		MatchAssignment assignment = room.Lineup(c.Account.Id, Guid.NewGuid().ToString("N"));
+		AddItems(room, assignment);
 
 		(string Address, int Port)? server = _fleet.Allocate(assignment);
 		if (server == null) throw new Failure(FailureKind.Unavailable, "sem_servidor", "Não há servidor de partida livre agora. Tente de novo em instantes.");
@@ -461,6 +515,7 @@ public sealed class LobbyService : IDisposable
 		Room room = InRoom(c);
 		RequireMap(room.Settings);
 		MatchAssignment assignment = room.RestartLineup(c.Account.Id, Guid.NewGuid().ToString("N"));
+		AddItems(room, assignment);
 
 		(string Address, int Port)? server = _fleet.Allocate(assignment);
 		if (server == null) throw new Failure(FailureKind.Unavailable, "sem_servidor", "Não há servidor de partida livre agora. Tente de novo em instantes.");
@@ -563,15 +618,65 @@ public sealed class LobbyService : IDisposable
 				["id"] = r.Id,
 				["settings"] = r.Settings.DeepClone(),
 				["hasPassword"] = r.HasPassword,
-				["players"] = r.Members.Count,
+				// Gente (jogando, se a partida está em curso) e bots; o jogo mostra
+				// a soma (Jhon, 25/11: "partida com bot deve contabilizar aqui").
+				["players"] = r.State == Dominio.Salas.RoomState.Waiting ? r.Members.Count : r.Members.Count(m => m.InMatch),
 				["bots"] = r.Bots.Count,
 				["capacity"] = r.Capacity,
 				["state"] = r.StateName,
 				["host"] = r.HostName,
-				// Dá para entrar agora? Com a partida em curso, os bots dela contam.
-				["open"] = r.HasRoom
+				// Dá para entrar agora? Com a partida em curso, os bots dela contam,
+				// um time não fica com dois a mais, e quase acabando não entra.
+				["open"] = r.HasRoom && !Closing(r),
+				["closing"] = Closing(r)
 			});
 		return list;
+	}
+
+	/// <summary>Os itens da conta, sem as fotos. Sem a lista (o banco falhou), vazio:
+	/// a pessoa joga só com o que vem de série.</summary>
+	private async Task<HashSet<string>> OwnedItems(long accountId)
+	{
+		if (Inventory == null) return new HashSet<string>();
+		try
+		{
+			// Item vencido (temporário) não vale: o jogo também não o deixa equipar.
+			DateTime now = _clock.UtcNow;
+			return (await Inventory(accountId)).Where(i => i.ValidAt(now)).Select(i => i.ItemId)
+				.Where(id => !id.StartsWith(PhotoRule.ItemPrefix, StringComparison.Ordinal)).ToHashSet();
+		}
+		catch (Exception)
+		{
+			return new HashSet<string>();
+		}
+	}
+
+	/// <summary>Antes de montar a escalação, relê o que cada um tem: a compra pode ter
+	/// sido agora, depois de entrar. Começar e recomeçar leem a sala inteira; entrar
+	/// no meio, só quem entra.</summary>
+	private async Task RefreshItemsFor(Session session, string type)
+	{
+		List<Session> who;
+		lock (_lock)
+		{
+			if (type == "room.enter") who = new List<Session> { session };
+			else if (type is "room.start" or "room.restart" && session.Room != null)
+				who = session.Room.Members.Select(SessionOf).Where(x => x != null).ToList();
+			else return;
+		}
+		foreach (Session x in who)
+		{
+			HashSet<string> items = await OwnedItems(x.Account.Id);
+			lock (_lock) x.Items = items;
+		}
+	}
+
+	/// <summary>A escalação com o que cada jogador tem (bot não tem conta: nada).</summary>
+	private void AddItems(Room room, MatchAssignment assignment)
+	{
+		var items = room.Members.Select(SessionOf).Where(x => x != null).ToDictionary(x => x.Account.Id, x => x.Items);
+		assignment.Players = assignment.Players
+			.Select(p => items.TryGetValue(p.AccountId, out HashSet<string> own) ? p with { Weapons = own.ToList() } : p).ToList();
 	}
 
 	private async Task<HashSet<string>> OwnedPhotos(long accountId)
@@ -622,6 +727,7 @@ public sealed class LobbyService : IDisposable
 				["team"] = m.Team,
 				["ready"] = m.Ready,
 				["host"] = m.Account.Id == room.HostId,
+				["inMatch"] = m.InMatch,
 				["xp"] = m.Xp,
 				["photo"] = SessionOf(m)?.Photo ?? PhotoRule.Default
 			});
@@ -649,6 +755,19 @@ public sealed class LobbyService : IDisposable
 			["state"] = room.StateName,
 			["members"] = members
 		};
+
+		// Com a partida em curso: por quais times dá para entrar agora (quem
+		// está de fora escolhe entre eles) e se ela está quase acabando.
+		if (room.State == Dominio.Salas.RoomState.Playing)
+		{
+			bool closing = Closing(room);
+			var enter = new JsonArray();
+			if (!closing)
+				foreach (int t in new[] { Room.Blue, Room.Orange })
+					if (room.CanEnter(t)) enter.Add(t);
+			state["enter"] = enter;
+			state["closing"] = closing;
+		}
 		outbox.To(room.Members.Select(SessionOf), state);
 	}
 

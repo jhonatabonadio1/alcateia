@@ -112,6 +112,8 @@ public partial class LobbyLink : Node
 	public void SetTeam(int team) => Send("room.team", ("team", team));
 	public void SetReady(bool ready) => Send("room.ready", ("ready", ready));
 	public void StartMatch() => Send("room.start");
+	/// <summary>Estou na sala de fora da partida em curso: entro nela pelo meu time.</summary>
+	public void EnterMatch() => Send("room.enter");
 
 	/// <summary>O mestre recomeça a partida para a sala inteira (no meio dela
 	/// ou no resultado). O saguão descarta a de agora e manda a nova a todos

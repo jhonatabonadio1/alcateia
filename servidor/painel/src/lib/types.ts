@@ -204,6 +204,7 @@ export interface Settings {
 	versao_minima: { version: string };
 	aviso: { text: string };
 	bonus: { xp: number; presas: number; until: string | null };
+	recompensas: { base: number; kill: number; assist: number; win: number; draw: number; mvp: number; starter: number };
 	desafios: { daily: number; weekly: number };
 	vitrine: { count: number; percent: number };
 }

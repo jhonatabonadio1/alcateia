@@ -50,7 +50,10 @@ public sealed class CharacterTest : RegressionTest
 			// de cabeça que o azul): o personagem não pode ser menor que o de sempre.
 			float teamWolfTop = skin.Team == Teams.Orange ? HeadTop(ReferenceWolfOrange, out _) : wolfTop;
 			b.Near(teamWolfTop, HeadTop(skin.WolfModel, out Skeleton3D wolf, WolfBones, b, $"{who} lobo"), 0.04, $"{who}: topo da cabeça do lobo");
-			b.Check(wolf?.GetBoneCount() == 24, $"{who}: o lobo tem os 24 ossos do lobo do jogo ({wolf?.GetBoneCount()})");
+			// 25/11: o lobo do jogo ganhou a cadeia do rabo (rabo1 a rabo5, com
+			// física no WolfVisual.Tail). O lobo de um personagem pode vir sem ela.
+			bool tail = wolf?.FindBone(WolfVisual.TailRoot) >= 0;
+			b.Check(wolf?.GetBoneCount() == (tail ? 29 : 24), $"{who}: o lobo tem os 24 ossos do lobo do jogo{(tail ? " mais os 5 do rabo" : "")} ({wolf?.GetBoneCount()})");
 			human?.Owner?.Free();
 			wolf?.Owner?.Free();
 

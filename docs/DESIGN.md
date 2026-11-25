@@ -413,6 +413,12 @@ entende o que aconteceu fora do campo de visão e, principalmente, de
 que ele morreu. Morrer sem saber a causa é a forma mais rápida de um
 jogo parecer injusto.
 
+Morrer sozinho (a própria granada, a queda) entra no feed com a pessoa
+dos dois lados e o que matou, e conta a morte, sem ponto para ninguém
+(Jhon, 25/11). Online também: o jogo conta ao servidor a causa e a arma,
+e o servidor anuncia a todos (decisão 0017). Até 25/11, online, essa morte
+não aparecia.
+
 ### A troca básica
 
 O lobo **abre mão das armas e ganha mobilidade**. Transformar troca o
@@ -534,6 +540,47 @@ mouse não gira), o salto cai nos pés dele e o anel no chão some. **Tab
 de novo** desliga e o anel volta. Soltar ou cancelar o salto, morrer ou
 o alvo passar de 24 m também desliga. A trava gira a mira, não o salto:
 o que vai na rede continua sendo para onde se olha.
+
+**O salto no alvo travado é liso e cai colado nele** (Jhon, 25/11: "vai e
+volta no ar e acaba errando o alvo; isso precisa ser extremamente preciso
+e fluido"). Hoje a trava vem do Q (o especial armado) e o clique salta.
+O voo segue o alvo, mas:
+
+- cai **na frente dele**, a 0,7 m do centro (`PounceStandOff`), e não
+  dentro do corpo — lá a física barrava o lobo e o empurrava de volta;
+- **mira onde ele vai estar** quando o lobo cair (a velocidade dele,
+  alisada), e o ponto de queda anda atrás dele no máximo a 9 m/s
+  (`PounceSteerSpeed`): quem esquiva de um lado para o outro não faz o
+  lobo balançar no ar;
+- **nunca anda para trás no ar**: o alvo que corre para o lobo encurta o
+  salto, mas o lobo não recua para encontrá-lo;
+- **quem estiver no caminho é atravessado**: o salto é de quem foi
+  travado. Sem trava continua a regra de sempre — bater em alguém para
+  ali, e o golpe sai ali —, só que parando de verdade: antes a física
+  deslizava o lobo de lado na cápsula do outro, e ele dava a volta nele
+  no ar.
+
+**O caminho do salto é o do corpo inteiro** (Jhon, 25/11, vídeo na Cidade:
+travou num humano a 14 m, bateu num poste no meio do caminho, subiu alto
+e caiu longe dele). Vale para o especial e para o salto carregado
+(`Weapon.WolfPouncePath.cs`):
+
+- a trava **segura até 16 m** (`LockKeepRange`): pega até 14 m, e o alvo
+  que se afasta um passo antes do clique não solta mais a trava — era o
+  que mandava o salto para a mira, 12 m no máximo, longe do alvo;
+- o voo é **testado com a cápsula do corpo** ao longo do caminho de
+  verdade, e fica com o arco mais baixo que passa (do arco de sempre para
+  cima, ou um pouco mais baixo, por baixo de uma copa ou de um toldo).
+  Antes era uma linha só, no meio do corpo: o lado do corpo batia na quina
+  de carros e barreiras e o lobo escorregava de lado no ar;
+- com algo colado na saída (ou na chegada), o lobo **sobe antes de
+  avançar** (ou desce na vertical no fim) em vez de subir alto: a barreira
+  colada no lobo pedia 3 m de arco;
+- com alvo travado, cai **do lado do alvo** que dá o voo mais baixo (o da
+  frente, se não for muito mais alto), a 0,7 m dele, ou um pouco mais num
+  canto (até 1,3 m, ainda na área do golpe);
+- **postes, placas e hastes** (mais finos que 35 cm) não contam: o voo os
+  atravessa. O poste de 12 cm no meio da calçada parava o lobo no ar.
 
 **Segurar carrega** (decisão do Jhon). Apertou, o lobo agacha e fica
 encolhido (o clipe para no fim do agachar); soltou, salta. Em 1 s
@@ -1225,6 +1272,21 @@ pelas costas que a vigília existe para lembrar.
 Passo de aliado não é pista: sem esse filtro o time inteiro passaria a
 partida investigando os próprios passos dentro da base.
 
+**Aliado não é parede** (Jhon, 25/11: "ao apertar W W com o lobo e
+encostar num aliado, o lobo vai pra frente e pra trás piscando e às vezes
+atravessa o aliado"). Corpos do mesmo time passam um pelo outro; o
+inimigo continua sólido (`TeamCollision`, em `actors/body`: uma exceção de
+colisão por par, refeita quando o corpo chega ou troca de time). O
+aliado sólido dava três defeitos: o aliado da rede, posto onde a máquina
+dele diz e sem física, aparecia por cima do lobo e a física o empurrava
+para trás a cada quadro (o vai e volta); o bote parava no aliado como numa
+parede; e o salto batia no aliado do caminho. Travar corredor do próprio
+time não é jogada que valha guardar. Vale só para mover o corpo: tiro,
+garra e visão continuam vendo o aliado e decidem por time (o tiro já
+passava pelo aliado com o fogo amigo desligado). A câmera do lobo também
+não recua por gente, de time nenhum: passando pelo aliado, o corpo dele
+ficava entre o lobo e a câmera, e ela saltava de 2,5 m para 0,1 m.
+
 `PublicName` existe porque `DisplayName` vazio não é nulo, e o
 `DisplayName ?? nome do nó` que reportava os abates nunca caía no nó.
 O feed mostrava abate sem autor, e o placar juntaria todos os bots
@@ -1567,6 +1629,29 @@ do Mixamo; em `lobo/`, as animações do lobo (`lobo_anim.glb`, do Jhon, e
 os `.fbx` de reserva). O guia para fazer um novo é o
 `docs/PERSONAGENS.md`.
 
+**Os lobos dos times são o mesmo corpo desde 25/11** (Jhon: "quero algo
+bem próximo daquilo", sobre o modelo natural que ele gerou no Meshy):
+pelagem de lobo em facetas, arnês com peitoral, braceletes, calça curta
+e rabo. O que separa os times é a pintura (`src/tools/lobo/pintar.py`):
+o da Eve tem a pelagem cinza e branca do modelo, olhos e neon em ciano
+e a calça em azul-ardósia; o do Barut é escuro, com olhos de brasa,
+neon vermelho e a calça em carmim. Os olhos são inteiros de luz, sem
+pupila (pedido de sempre do Jhon). O esqueleto é o do lobo de 17/11,
+igual nos dois: mesma altura, mesma passada e a mesma cabeça para o
+tiro nos dois times (antes o vermelho era mais baixo de cabeça).
+
+**O rabo tem física** (Jhon, 25/11: "o rabo deve ter movimentação e
+física durante o game, podendo mexer conforme o personagem anda ou
+corre, bem próximo da física e respeitando leis da gravidade"). São
+cinco ossos que nenhum clipe mexe; quem mexe é um simulador de mola
+(`WolfVisual.Tail.cs`): a gravidade puxa a ponta, a mola devolve ao
+desenho do modelo, e o corpo que acelera, freia ou vira deixa o rabo
+para trás. A conta roda no referencial do corpo: andar em linha reta
+não empurra o rabo (no referencial do mundo, o amortecimento virava
+vento e ele ficava esticado como bandeira a passo). Correndo, um
+arrasto de ar pequeno o levanta. É só o que se vê: não tem hitbox e
+nenhuma regra o lê. Números em `docs/AJUSTES.md`.
+
 **Quem não escolhe nada, e todo bot, joga de Eve no azul e de Barut no
 laranja** (19/11): o `CharacterAnimator` troca o `xbot` da cena pelo
 personagem do time antes de carregar os clipes (`BlueModel`,
@@ -1691,17 +1776,24 @@ uso, estatísticas de treino. Opções ficam à parte, em
 
 - **Duas moedas.** **Presas** se ganham jogando; **Sangue** é a moeda
   paga e só aparece — a venda ainda não abriu. **WP não é moeda de
-  lobby**: vive só dentro da partida. Conta nova começa com as Presas
-  que o servidor dá (3.000, `AccountRules.StarterPresas` no servidor).
+  lobby**: vive só dentro da partida. Conta nova começa com **0 de Cash
+  (Presas) e 0 de IPs (Sangue)** (decisão do Jhon, 25/11;
+  `AccountRules.StarterPresas` no servidor): o que se tem, se ganha jogando.
 - **Patentes** (`meta/Ranks.cs`): 30, em 10 famílias de 3 graus
   (Filhote I até Alfa III). XP para a patente *r*: 250·r^1,9. Cada
   promoção dá Presas (150 + 100 por família) e a tela de promoção.
   Patente não cai. O servidor paga a promoção junto com o XP que a deu;
   o lobby mostra a tela quando a conta chega. **Bot não tem patente** (decisão do Jhon, 13/11): no
   placar, na sala e no cartão de duelo aparece sem insígnia, como "Bot".
-- **Partida rende** (`meta/Progression.cs`, a mesma conta do servidor):
-  150 XP e 100 Presas por jogar, mais abate, assistência, vitória ou
-  empate, e MVP. Abandonar não rende nada. Só a partida online com
+- **Partida rende** (`domain/Rewards.cs`, a mesma conta do servidor):
+  30 de XP e 150 de Cash por jogar, mais abate (4 XP, 10 Cash),
+  assistência (2 XP, 5 Cash), vitória (24 XP, 100 Cash), empate e MVP
+  (15 XP, 50 Cash). **O Cash é regulável no painel** (Configurações →
+  "Recompensas por partida", chave `recompensas`, junto com o Cash da conta
+  nova); o jogo lê o mesmo valor para a previsão do resultado. Os de
+  fábrica foram escolhidos para o jogador comprar cedo: uma partida comum
+  paga um aluguel de 1 dia (120 a 280) e umas 4 partidas pagam uma semana.
+  Preço, vitrine, bônus de evento e desafios também são do painel. Abandonar não rende nada. Só a partida online com
   conta rende; a tela de resultado mostra a previsão e quem paga é o
   servidor.
 - **Loja** (`meta/Catalog.cs`): armas, granada, tatuagens (bônus

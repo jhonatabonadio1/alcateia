@@ -105,9 +105,14 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
    Quem sai da partida no meio sai da sala e vai para o lobby; o
    mestre passa ao próximo jogador, e os bots dele passam para a
    máquina desse jogador (pacote `BotOwner`). Com vaga, dá para entrar
-   na sala jogando: quem já jogou volta no lugar dele (com o que tinha
+   na sala jogando: a pessoa entra na sala, escolhe o lado (só um que
+   não deixe um time com dois a mais) e entra na partida
+   (`room.enter`). Quem já jogou volta no lugar dele (com o que tinha
    feito), quem chega ganha um lugar novo, e os outros veem o boneco
-   dele aparecer (pacote `Seat`). Sala vazia descarta a partida.
+   dele aparecer (pacote `Seat`). Partida quase acabando (últimos 2
+   minutos ou últimos 20% do tempo, o que for menor, ou um time com 80%
+   dos pontos) não recebe ninguém: o servidor de partida conta tempo e
+   placar a cada batida. Sala vazia descarta a partida.
 5. No fim, o servidor de partida entrega o resultado
    (`POST /v1/matches`); o servidor calcula o prêmio com a mesma regra
    do jogo (`src/scripts/domain/Rewards.cs`), grava no perfil e avisa a
@@ -204,11 +209,13 @@ Como chega lá:
   vida, acerto e morte (decisão 0016). Mesmo nela, a forma, a arma na
   mão e as armas do conjunto ainda vêm do jogo, e todos recebem todos os
   corpos.
-- **Bots online saem com o dono da sala**: é a máquina dele que os move
-  (`docs/decisoes/0008`); se ele cai, os bots somem até o fim. A
+- **Bots online andam na máquina de um jogador**: a do dono da sala
+  (`docs/decisoes/0008`); se ele sai, passam para o próximo jogador
+  ligado; sem ninguém, saem junto. A
   dificuldade é da sala: o dono escolhe ao criar e muda na própria sala.
-- Sem entrar no meio da partida vindo de fora da sala, sem reconexão
-  automática (quem cai volta para a sala).
+- Sem reconexão automática (quem cai volta para a sala; de lá, entra de
+  novo pela sala, se houver vaga). Quem entra no meio vê a linha de cada
+  jogador zerada no placar (o placar dos times vem certo).
 - **Do lobo**, o uivo, a corrida na parede e os golpes especiais
   aparecem para os outros como movimento e ataque comum.
 - **Sem conta não há progressão** (decisão 0015): loja, inventário,

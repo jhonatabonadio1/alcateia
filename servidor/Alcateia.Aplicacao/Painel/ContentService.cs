@@ -102,7 +102,7 @@ public sealed class ContentService
 		await _repository.SaveChallenge(challenge);
 		await _data.Reload();
 		await _audit.Note(who, isNew ? "desafio.criou" : "desafio.alterou", challenge.Id,
-			$"{challenge.Text} — {challenge.Metric} {challenge.Target}; {challenge.Presas} Presas, {challenge.Xp} XP, {challenge.Sangue} Sangue");
+			$"{challenge.Text} — {challenge.Metric} {challenge.Target}; {challenge.Presas} Cash, {challenge.Xp} XP, {challenge.Sangue} IPs");
 	}
 
 	public async Task RemoveChallenge(AdminContext who, string id)
@@ -128,6 +128,11 @@ public sealed class ContentService
 			SettingKeys.Notice => new JsonObject { ["text"] = Cut(o["text"]?.GetValue<string>(), 300) },
 			SettingKeys.Challenges => new JsonObject { ["daily"] = Count(o["daily"]), ["weekly"] = Count(o["weekly"]) },
 			SettingKeys.Showcase => new JsonObject { ["count"] = Count(o["count"]), ["percent"] = Percent(o["percent"]) },
+			SettingKeys.Rewards => new JsonObject
+			{
+				["base"] = Cash(o["base"]), ["kill"] = Cash(o["kill"]), ["assist"] = Cash(o["assist"]),
+				["win"] = Cash(o["win"]), ["draw"] = Cash(o["draw"]), ["mvp"] = Cash(o["mvp"]), ["starter"] = Cash(o["starter"])
+			},
 			_ => new JsonObject
 			{
 				["xp"] = Bonus(o["xp"]), ["presas"] = Bonus(o["presas"]),
@@ -144,6 +149,14 @@ public sealed class ContentService
 	{
 		int value = node?.GetValue<int>() ?? 0;
 		if (value is < 0 or > Shop.MaxPercent) throw new Failure(FailureKind.Invalid, "desconto_invalido", $"Desconto de 0 a {Shop.MaxPercent}%.");
+		return value;
+	}
+
+	/// <summary>Um valor de Cash do painel: de 0 a 100 000.</summary>
+	private static int Cash(JsonNode node)
+	{
+		int value = node?.GetValue<int>() ?? 0;
+		if (value is < 0 or > 100000) throw new Failure(FailureKind.Invalid, "cash_invalido", "O Cash vai de 0 a 100 000.");
 		return value;
 	}
 

@@ -9,7 +9,7 @@ namespace Alcateia.Dominio.Partidas;
 /// número negativo no lugar da conta e um dono (<see cref="Owner"/>): a
 /// conta do jogador cuja máquina o move. Bot não é conta — não ganha XP,
 /// não tem patente e não entra no resultado.</summary>
-public sealed record MatchSeat(long AccountId, string Name, int Team, long Owner = 0)
+public sealed record MatchSeat(long AccountId, string Name, int Team, long Owner = 0, IReadOnlyCollection<string> Weapons = null)
 {
 	public bool IsBot => AccountId < 0;
 }
@@ -90,7 +90,8 @@ public static class MatchSettlement
 
 	/// <summary><paramref name="xpBonus"/> e <paramref name="presasBonus"/>: o
 	/// multiplicador de evento ("XP em dobro"), que o painel liga e desliga.</summary>
-	public static SettledMatch Settle(MatchAssignment assignment, MatchReport report, double xpBonus = 1, double presasBonus = 1)
+	public static SettledMatch Settle(MatchAssignment assignment, MatchReport report, double xpBonus = 1, double presasBonus = 1,
+		Rewards.CashRates? cash = null)
 	{
 		xpBonus = Math.Clamp(xpBonus, 1, MaxBonus);
 		presasBonus = Math.Clamp(presasBonus, 1, MaxBonus);
@@ -118,7 +119,7 @@ public static class MatchSettlement
 		var lines = counted.Select(c =>
 		{
 			bool won = winner != Draw && c.Seat.Team == winner, draw = winner == Draw, isMvp = c.Seat.AccountId == mvp;
-			Rewards.Gain gain = Rewards.ForMatch(c.Line.Kills, c.Line.Assists, won, draw, isMvp, c.Line.FireSeconds);
+			Rewards.Gain gain = Rewards.ForMatch(c.Line.Kills, c.Line.Assists, won, draw, isMvp, c.Line.FireSeconds, cash);
 			gain = new Rewards.Gain((long)Math.Round(gain.Xp * xpBonus), (long)Math.Round(gain.Presas * presasBonus));
 			return new SettledLine(c.Seat, c.Line.Kills, c.Line.Deaths, c.Line.Assists, c.Line.Headshots, c.Line.Points,
 				won, draw, isMvp, gain) { KillsWolf = c.Line.KillsWolf };

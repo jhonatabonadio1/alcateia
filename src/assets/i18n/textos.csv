@@ -488,6 +488,8 @@ Senha da sala,,Room password,Contraseña de la sala,scripts/lobby/OnlineScreen.c
 Tentar de novo,,Try again,Intentar de nuevo,scripts/lobby/OnlineScreen.cs
 {0} aberta(s) · você é {1},,{0} open · you are {1},{0} abierta(s) · eres {1},scripts/lobby/OnlineScreen.cs
 {0} jogador(es) e {1} bot(s). Quem entra toma o lugar de um bot.,,{0} player(s) and {1} bot(s). Whoever joins takes a bot's place.,{0} jugador(es) y {1} bot(s). Quien entra toma el lugar de un bot.,scripts/lobby/OnlineScreen.cs
+{0} jogador(es) e {1} bot(s).,,{0} player(s) and {1} bot(s).,{0} jugador(es) y {1} bot(s).,scripts/lobby/OnlineScreen.cs
+A partida está quase acabando: espere a próxima,,The match is almost over: wait for the next one,La partida está por terminar: espera la siguiente,scripts/lobby/OnlineScreen.cs
 "A cruz abre com o espalhamento do tiro: ao atirar seguido, andar e pular. Desligada, fica parada.",,,,scripts/lobby/OptionsScreen.cs
 A folga entre o centro e o começo das hastes.,,,,scripts/lobby/OptionsScreen.cs
 A largura das hastes.,,,,scripts/lobby/OptionsScreen.cs
@@ -627,6 +629,13 @@ médios,,medium,medios,scripts/lobby/RoomScreen.cs
 Nível,,Level,Nivel,scripts/lobby/RoomScreen.cs
 Nível {0},,Level {0},Nivel {0},scripts/lobby/RoomScreen.cs
 O time {0} está cheio,,Team {0} is full,El equipo {0} está lleno,scripts/lobby/RoomScreen.cs
+O time {0} ficaria com dois a mais: troque de lado,,Team {0} would have two more players: switch sides,El equipo {0} tendría dos más: cambia de lado,scripts/lobby/RoomScreen.cs
+O time {0} não tem lugar ou ficaria com dois a mais,,Team {0} is full or would have two more players,El equipo {0} está lleno o tendría dos más,scripts/lobby/RoomScreen.cs
+A partida está cheia,,The match is full,La partida está llena,scripts/lobby/RoomScreen.cs
+A partida já começou. Escolha o lado e entre.,,The match has started. Pick a side and join.,La partida ya empezó. Elige un lado y entra.,scripts/lobby/RoomScreen.cs
+Jogando,,Playing,Jugando,scripts/lobby/RoomScreen.cs
+Na sala,,In the room,En la sala,scripts/lobby/RoomScreen.cs
+na sala,,in the room,en la sala,scripts/lobby/RoomScreen.cs
 Objetivo,,Objective,Objetivo,scripts/lobby/RoomScreen.cs
 Online,,Online,En línea,scripts/lobby/RoomScreen.cs
 Os dois times precisam de alguém,,Both teams need someone,Los dos equipos necesitan a alguien,scripts/lobby/RoomScreen.cs

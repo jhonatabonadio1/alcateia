@@ -16,9 +16,12 @@ using Godot;
 /// jogador centrado, e no canto de nascer três quartos do quadrado eram
 /// fundo. <see cref="Rotate"/> volta ao jeito antigo.
 ///
-/// Só mostra quem está dentro do alcance. Saber onde está todo mundo
-/// o tempo todo destruiria a razão de existir do agachar, do andar
-/// devagar e da audição dos bots.
+/// **Inimigo só aparece se um aliado o enxerga** (Jhon, 25/11): linha de
+/// visão livre e dentro do campo de visão de quem olha, você inclusive.
+/// Quando ninguém do time o vê mais, o ponto fica <see cref="SpotLinger"/>
+/// segundos, esmaece e some. Saber onde está todo mundo o tempo todo
+/// destruiria a razão de existir do agachar, do andar devagar e da
+/// audição dos bots. Aliado aparece sempre, dentro do alcance.
 /// </summary>
 public partial class Minimap : Control
 {
@@ -41,6 +44,22 @@ public partial class Minimap : Control
 	/// <summary>Opacidade das peças do mapa. Abaixo de 1 para os pontos
 	/// dos jogadores sempre se destacarem por cima.</summary>
 	[Export] public float MapAlpha = 0.85f;
+
+	/// <summary>Segundos que o inimigo continua no mapa depois que o último
+	/// aliado o perdeu de vista (o último segundo é um esmaecer).</summary>
+	[Export] public float SpotLinger = 3f;
+
+	/// <summary>Até onde um aliado enxerga um inimigo, em metros.</summary>
+	[Export] public float SpotRange = 45f;
+
+	/// <summary>Campo de visão de quem avista, em graus.</summary>
+	[Export] public float SpotFov = 140f;
+
+	/// <summary>De quanto em quanto tempo se confere quem enxerga quem.</summary>
+	private const double SpotEvery = 0.12;
+
+	private readonly System.Collections.Generic.Dictionary<Node3D, double> _spottedAt = new();
+	private double _spotClock, _spotTimer;
 
 	private Node3D _player;
 	private Health _playerHealth;
@@ -97,7 +116,71 @@ public partial class Minimap : Control
 			_scanned = true;
 		}
 
+		_spotClock += delta;
+		_spotTimer -= delta;
+		if (_spotTimer <= 0 && _player != null)
+		{
+			_spotTimer = SpotEvery;
+			UpdateSpotted();
+		}
+
 		if (_player != null) QueueRedraw();
+	}
+
+	/// <summary>Quanto o inimigo ainda está visível no mapa, de 0 a 1
+	/// (zero: nunca visto ou já esquecido).</summary>
+	private float SpottedAlpha(Node3D enemy)
+	{
+		if (!_spottedAt.TryGetValue(enemy, out double seen)) return 0f;
+		float left = SpotLinger - (float)(_spotClock - seen);
+		return Mathf.Clamp(left, 0f, 1f);
+	}
+
+	/// <summary>O inimigo está no mapa agora? Para os testes.</summary>
+	public bool ShowsEnemy(Node3D enemy) => IsInstanceValid(enemy) && SpottedAlpha(enemy) > 0f;
+
+	/// <summary>Marca os inimigos que algum aliado vivo (ou o próprio
+	/// jogador) enxerga neste instante.</summary>
+	private void UpdateSpotted()
+	{
+		int mine = _playerHealth?.Team ?? 0;
+		var allies = new System.Collections.Generic.List<Node3D>();
+		var enemies = new System.Collections.Generic.List<Node3D>();
+		foreach (string group in Groups.Fighters)
+			foreach (Node node in GetTree().GetNodesInGroup(group))
+			{
+				if (node is not Node3D body || body.GetNodeOrNull<Health>("Health") is not Health health || health.IsDead) continue;
+				if (body == _player || (mine != 0 && health.Team == mine)) allies.Add(body);
+				else enemies.Add(body);
+			}
+		if (!allies.Contains(_player) && _player != null && !(_playerHealth?.IsDead ?? false)) allies.Add(_player);
+
+		PhysicsDirectSpaceState3D space = _player.GetWorld3D().DirectSpaceState;
+		float half = Mathf.DegToRad(SpotFov * 0.5f);
+		foreach (Node3D enemy in enemies)
+		{
+			Vector3 chest = enemy.GlobalPosition + Vector3.Up * 1.0f;
+			foreach (Node3D ally in allies)
+			{
+				Vector3 eye = ally.GlobalPosition + Vector3.Up * 1.6f;
+				Vector3 to = chest - eye;
+				if (to.Length() > SpotRange) continue;
+				Vector3 look = -ally.GlobalBasis.Z; look.Y = 0f;
+				Vector3 flat = new Vector3(to.X, 0f, to.Z);
+				if (look.LengthSquared() > 0.001f && flat.LengthSquared() > 0.001f
+					&& look.Normalized().AngleTo(flat.Normalized()) > half) continue;
+				// Só o mapa (camada 1) tapa a visão: corpo não.
+				var query = PhysicsRayQueryParameters3D.Create(eye, chest, 1);
+				query.CollideWithAreas = false;
+				if (space.IntersectRay(query).Count > 0) continue;
+				_spottedAt[enemy] = _spotClock;
+				break;
+			}
+		}
+
+		// Esquece quem saiu da partida.
+		foreach (Node3D gone in new System.Collections.Generic.List<Node3D>(_spottedAt.Keys))
+			if (!IsInstanceValid(gone)) _spottedAt.Remove(gone);
 	}
 
 	/// <summary>
@@ -510,6 +593,8 @@ public partial class Minimap : Control
 
 					bool enemy = mine == 0 || health.Team != mine;
 					if (enemy != (pass == 1)) continue;
+					float seen = enemy ? SpottedAlpha(body) : 1f;
+					if (seen <= 0f) continue;   // inimigo que nenhum aliado vê não aparece
 					if (!ToMap(body.GlobalPosition, out Vector2 point)) continue;
 
 					// Altura relativa: quem está acima aparece maior. É a única
@@ -517,8 +602,8 @@ public partial class Minimap : Control
 					float height = body.GlobalPosition.Y - _player.GlobalPosition.Y;
 					float size = Mathf.Clamp(4f + height * 0.6f, 2.5f, 7f) + (enemy ? 0.8f : 0f);
 
-					DrawCircle(point, size + 1.6f, new Color(0, 0, 0, 0.75f));
-					DrawCircle(point, size, enemy ? EnemyColor : AllyColor);
+					DrawCircle(point, size + 1.6f, new Color(0, 0, 0, 0.75f * seen));
+					DrawCircle(point, size, new Color(enemy ? EnemyColor : AllyColor, seen));
 					if (!enemy) DrawRadio(point, Radio.Talking(body));
 				}
 	}

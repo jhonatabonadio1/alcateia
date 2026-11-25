@@ -148,8 +148,11 @@ editar auditoria.
   numa partida, alerta na ficha. **No modo de repasse (o padrão) nada
   disso vale**: vida e acerto ficam nos jogos (decisão 0008).
 - **O que ainda é do cliente**, mesmo na autoritativa: a forma e a arma
-  na mão, as armas do conjunto (o servidor de partida não confere se o
-  jogador tem a arma), a guarda do especial do lobo e os bots (máquina
+  na mão, as armas do conjunto e as melhorias do lobo só em parte (o saguão manda
+  na escalação o que a conta tem, sem os itens vencidos; o servidor de
+  partida troca a arma, a classe de lobo ou a melhoria que não é de série
+  nem da conta pela padrão e conta contra o jogador; faca e granada nem
+  precisam: o servidor usa a comum, e a skin é só visual), a guarda do especial do lobo e os bots (máquina
   do dono da sala). O servidor ainda manda todos os corpos para todos
   (wallhack). Veja "O que ainda vem do jogo" na decisão 0016.
 

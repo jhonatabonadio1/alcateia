@@ -47,17 +47,28 @@ public partial class Weapon
 	[Export] public int SpecialMinKills = 6;
 	[Export] public float SpecialMatchShare = 0.7f;
 
+	/// <summary>A pontuação e a duração da sala para o corpo do servidor de
+	/// partida, que não tem <see cref="Match.Current"/> (cada partida do
+	/// processo tem as suas): com elas, a carga dele anda no mesmo ritmo da
+	/// do jogo. Zero: fora de partida.</summary>
+	public int RulesScoreToWin { get; set; }
+	public float RulesDuration { get; set; }
+
 	/// <summary>Quanto um abate enche agora.</summary>
-	public float KillFill => Match.Current == null
-		? SpecialPerKill
-		: 1f / Mathf.Max(SpecialMinKills, Match.Current.ScoreToWin * SpecialScoreShare);
+	public float KillFill => Match.Current != null
+		? 1f / Mathf.Max(SpecialMinKills, Match.Current.ScoreToWin * SpecialScoreShare)
+		: RulesScoreToWin > 0
+			? 1f / Mathf.Max(SpecialMinKills, RulesScoreToWin * SpecialScoreShare)
+			: SpecialPerKill;
 
 	public float SpecialPerAssist => KillFill * SpecialAssistShare;
 
 	/// <summary>Em quantos segundos enche sozinha agora.</summary>
-	public float PassiveFillTime => Match.Current == null || SpecialFillTime <= 0f
+	public float PassiveFillTime => SpecialFillTime <= 0f
 		? SpecialFillTime
-		: Match.Current.Duration * SpecialMatchShare;
+		: Match.Current != null
+			? Match.Current.Duration * SpecialMatchShare
+			: RulesDuration > 0f ? RulesDuration * SpecialMatchShare : SpecialFillTime;
 
 	/// <summary>O lobo existe neste modo para este corpo? No "só humanos"
 	/// não há especial: não carrega e o HUD não mostra (pedido do Jhon,
@@ -77,15 +88,47 @@ public partial class Weapon
 	{
 		if (amount <= 0f) return;
 		SpecialCharge = Mathf.Min(SpecialCharge + amount, 1f);
+		_earned = Mathf.Min(_earned + amount, 1f);
+	}
+
+	/// <summary>
+	/// A carga que este corpo ganhou pelas regras, contada aqui (o tempo e
+	/// os abates que o servidor viu). No corpo do servidor de partida é o
+	/// teto do que o jogo pode dizer que tem (<see cref="MirrorCharge"/>).
+	/// </summary>
+	private float _earned;
+
+	/// <summary>Quanto o jogo pode estar à frente da conta do servidor: o
+	/// passo de um abate a mais, ou um minuto de tempo (o relógio e os
+	/// abates chegam aos dois com atrasos diferentes).</summary>
+	public const float ChargeSlack = 0.2f;
+
+	/// <summary>
+	/// No servidor de partida (decisão 0016): a carga que o jogo diz ter.
+	/// O especial só sai no servidor com a carga cheia, e o servidor não via
+	/// os abates — a carga dele ficava vazia, o salto que o jogo previu não
+	/// acontecia lá e a correção puxava o lobo de volta (Jhon, 25/11: "o
+	/// lobo não avança e cai e fica, indo e voltando"). Vale o que o jogo diz,
+	/// até a conta daqui mais <see cref="ChargeSlack"/>: carga inventada não
+	/// passa.
+	/// </summary>
+	public void MirrorCharge(float charge)
+	{
+		if (float.IsNaN(charge) || charge < 0f) return;
+		// Só sobe: quem gasta a carga daqui é o salto daqui. O estado do jogo e
+		// os comandos vêm por caminhos diferentes, e o "zerou" do jogo (que já
+		// saltou) chegava antes do comando do salto — o servidor ficava sem
+		// carga e não saltava.
+		SpecialCharge = Mathf.Max(SpecialCharge, Mathf.Clamp(charge, 0f, Mathf.Min(1f, _earned + ChargeSlack)));
 	}
 
 	/// <summary>Enche de uma vez (testes, treino).</summary>
-	public void FillSpecial() => SpecialCharge = 1f;
+	public void FillSpecial() => SpecialCharge = _earned = 1f;
 
 	/// <summary>Usou: zera.</summary>
 	private void SpendSpecial()
 	{
-		if (!SpecialFree) SpecialCharge = 0f;
+		if (!SpecialFree) SpecialCharge = _earned = 0f;
 	}
 
 	/// <summary>Põe a carga num valor (a cópia do replay).</summary>

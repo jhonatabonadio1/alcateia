@@ -337,6 +337,10 @@ public partial class ViewModel : Node3D
 		float zoom = Mathf.Tan(Mathf.DegToRad(_camera.Fov * 0.5f)) / Mathf.Tan(Mathf.DegToRad(_baseFov * 0.5f));
 		Basis shrink = Basis.FromScale(new Vector3(zoom, zoom, 1f));
 		Transform = new Transform3D(shrink * Basis.FromEuler(swing * Mathf.DegToRad(1f)), shrink * position);
+		// A pistola mira com a linha de mira abaixo do olho: sobe mirando, e a
+		// massa e a alça de trás ficam no centro, como no fuzil (WeaponDefinition.AimLift).
+		float lift = _weapon.Held?.AimLift ?? 0f;
+		if (lift > 0f && !_form.IsWolf) Transform = new Transform3D(Transform.Basis, Transform.Origin + new Vector3(0, lift * aim, 0));
 
 		UpdateHands(dt);
 		UpdateEffects(dt);

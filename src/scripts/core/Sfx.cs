@@ -78,7 +78,7 @@ public static class Sfx
 	/// chega, em metros — use o mesmo raio do ruído que os bots ouvem,
 	/// para o jogador e o bot ouvirem a mesma coisa.
 	/// </summary>
-	public static void At(string name, Vector3 position, float radius, float volumeDb = 0f, float reach = 0f)
+	public static void At(string name, Vector3 position, float radius, float volumeDb = 0f, float reach = 0f, float pitch = 1f)
 	{
 		AudioStream stream = Get(name);
 		if (stream == null || !Reserve(out Window root)) return;
@@ -88,6 +88,7 @@ public static class Sfx
 			Stream = stream,
 			Bus = BusWorld,
 			VolumeDb = volumeDb,
+			PitchScale = pitch,
 			MaxDistance = Mathf.Max(Mathf.Max(radius, reach), 1f),
 
 			// Com esta escala o som chega à borda do raio uns 16 dB
@@ -145,7 +146,7 @@ public static class Sfx
 
 	/// <summary>Som do seu corpo no mundo (seu tiro, seu passo, sua
 	/// recarga): sem posição, mas com a reverberação do lugar.</summary>
-	public static void Own(string name, float volumeDb = 0f) => Flat(name, BusWorld, volumeDb);
+	public static void Own(string name, float volumeDb = 0f, float pitch = 1f) => Flat(name, BusWorld, volumeDb, pitch);
 
 	/// <summary>
 	/// A acústica do lugar: <paramref name="size"/> de 0 (cubículo) a 1
@@ -296,12 +297,12 @@ public static class Sfx
 
 	// ------------------------------------------------------------------
 
-	private static void Flat(string name, string bus, float volumeDb)
+	private static void Flat(string name, string bus, float volumeDb, float pitch = 1f)
 	{
 		AudioStream stream = Get(name);
 		if (stream == null || !Reserve(out Window root)) return;
 
-		var player = new AudioStreamPlayer { Stream = stream, Bus = bus, VolumeDb = volumeDb };
+		var player = new AudioStreamPlayer { Stream = stream, Bus = bus, VolumeDb = volumeDb, PitchScale = pitch };
 		Start(root, player, () => player.Play(), () => player.Finished += () => Release(player));
 	}
 

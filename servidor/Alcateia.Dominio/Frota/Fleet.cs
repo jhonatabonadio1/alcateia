@@ -8,7 +8,36 @@ namespace Alcateia.Dominio.Frota;
 /// <summary>Uma batida de um servidor de partida: onde está, quantas
 /// partidas aguenta e quais tem abertas agora (<see cref="Open"/> null:
 /// servidor antigo, que não conta — vale uma partida e nada é conferido).</summary>
-public sealed record Beat(string Id, string Address, int Port, int Players, int Capacity, IReadOnlyCollection<string> Open);
+public sealed record Beat(string Id, string Address, int Port, int Players, int Capacity, IReadOnlyCollection<string> Open,
+	IReadOnlyDictionary<string, MatchProgress> Progress = null);
+
+/// <summary>
+/// Onde uma partida em curso está, como o servidor de partida conta a cada
+/// batida: a fase (jogando ou ainda esperando), o tempo que falta e o
+/// placar. O saguão usa para não deixar entrar em partida quase acabando
+/// (Jhon, 25/11: "não pode entrar em sala cuja partida está quase
+/// acabando").
+/// </summary>
+public sealed record MatchProgress(bool Live, double TimeLeft, int Blue, int Orange, int ScoreToWin, double Duration = 0)
+{
+	/// <summary>Faltando menos que isto (segundos), a partida fecha para quem
+	/// chega: entraria para jogar quase nada, e o resultado dele pesaria pouco.</summary>
+	public const double LastSeconds = 120;
+
+	/// <summary>...ou menos que esta parte da partida, se for menor: numa de 3
+	/// minutos (o mínimo da sala), 2 minutos fechariam dois terços dela; com
+	/// 20%, fecha nos últimos 36 s. De 10 minutos para cima, valem os 2 minutos.</summary>
+	public const double LastShare = 0.2;
+
+	/// <summary>A janela do fim, em segundos (sem a duração, de servidor antigo, os 2 minutos).</summary>
+	public double Closing => Duration > 0 ? Math.Min(LastSeconds, Duration * LastShare) : LastSeconds;
+
+	/// <summary>Um time com esta parte dos pontos para vencer: a partida está
+	/// decidida, e fecha também.</summary>
+	public const double DecidedShare = 0.8;
+
+	public bool NearEnd => Live && (TimeLeft <= Closing || Math.Max(Blue, Orange) >= ScoreToWin * DecidedShare);
+}
 
 /// <summary>Por que uma partida em curso deixou de existir sem resultado.</summary>
 public enum MatchLoss
@@ -54,6 +83,7 @@ public sealed class Fleet
 		public MatchAssignment Assignment;
 		public DateTime? DeliveredAt;
 		public bool Seen;
+		public MatchProgress Progress;
 	}
 
 	private sealed class GameServer
@@ -93,8 +123,12 @@ public sealed class Fleet
 		{
 			foreach (Slot slot in s.Slots.ToList())
 			{
-				if (slot.DeliveredAt == null) continue;
+				// O progresso vale mesmo com a escalação esperando ir de novo
+				// (alguém acabou de entrar): a partida continua lá, contando.
 				bool open = beat.Open.Contains(slot.Assignment.MatchKey);
+				if (open && beat.Progress != null && beat.Progress.TryGetValue(slot.Assignment.MatchKey, out MatchProgress progress))
+					slot.Progress = progress;
+				if (slot.DeliveredAt == null) continue;
 				slot.Seen |= open;
 
 				// Já esteve aberta e sumiu, ou nunca abriu no prazo: acabou sem resultado.
@@ -157,19 +191,29 @@ public sealed class Fleet
 		return slot == null ? null : (slot.Assignment, s.Id);
 	}
 
+	/// <summary>Onde a partida está, pela última batida (null: ainda não contou).</summary>
+	public MatchProgress Progress(string matchKey)
+	{
+		if (matchKey == null || !_byMatch.TryGetValue(matchKey, out GameServer s)) return null;
+		return s.Slots.FirstOrDefault(x => x.Assignment.MatchKey == matchKey)?.Progress;
+	}
+
 	/// <summary>Um lugar a mais numa partida em curso (alguém entrou na sala
 	/// com ela jogando): a escalação vai de novo ao servidor dela na próxima
 	/// batida, que abre o lugar. Quem já está na escalação (jogou e saiu)
-	/// volta para o mesmo lugar, sem mandar nada. Falso se a partida não
-	/// está mais na frota.</summary>
+	/// volta para o lugar dele sem mandar nada; se escolheu o outro time na
+	/// sala, o lugar muda de time e a escalação vai de novo. Falso se a
+	/// partida não está mais na frota.</summary>
 	public bool AddSeat(string matchKey, MatchSeat seat)
 	{
 		if (matchKey == null || !_byMatch.TryGetValue(matchKey, out GameServer s)) return false;
 		Slot slot = s.Slots.FirstOrDefault(x => x.Assignment.MatchKey == matchKey);
 		if (slot == null) return false;
-		if (slot.Assignment.Players.Any(p => p.AccountId == seat.AccountId)) return true;
+		int at = slot.Assignment.Players.FindIndex(p => p.AccountId == seat.AccountId);
+		if (at >= 0 && slot.Assignment.Players[at].Team == seat.Team) return true;
 
-		slot.Assignment.Players.Add(seat);
+		if (at >= 0) slot.Assignment.Players[at] = slot.Assignment.Players[at] with { Team = seat.Team };
+		else slot.Assignment.Players.Add(seat);
 		if (slot.DeliveredAt != null)
 		{
 			// Já entregue: vai de novo. Ela continua aberta lá, então o prazo

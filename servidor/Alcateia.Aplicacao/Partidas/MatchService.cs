@@ -50,7 +50,7 @@ public sealed class MatchService
 
 		DateTime now = _clock.UtcNow;
 		var (xpBonus, presasBonus) = _data.Current.Bonus(now);
-		SettledMatch settled = MatchSettlement.Settle(active.Value.Assignment, report, xpBonus, presasBonus);
+		SettledMatch settled = MatchSettlement.Settle(active.Value.Assignment, report, xpBonus, presasBonus, _data.Current.Cash());
 		if (!await _matches.TrySave(settled))
 			throw new Failure(FailureKind.Conflict, "partida_repetida", "Essa partida já foi registrada.");
 

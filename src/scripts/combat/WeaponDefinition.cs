@@ -145,6 +145,16 @@ public partial class WeaponDefinition : Resource
 	[Export(PropertyHint.Range, "0.1,1,0.05")] public float AimSpreadMultiplier = 0.35f;
 	[Export(PropertyHint.Range, "0.2,1,0.05")] public float AimSpeedMultiplier = 0.7f;
 
+	/// <summary>Quanto a arma sobe na tela mirando, em metros (na câmera de
+	/// agora, depois do encolher do zoom). A pistola mira com a linha de mira
+	/// 11 mm abaixo do olho (`BAIXO`, pedido do Jhon de 19/11: "desça ela
+	/// mais"), e a ponta da massa aparecia 2,1° abaixo do centro da tela: a
+	/// bala, que sai do centro, ia acima de onde se mirava (Jhon, 25/11: "a
+	/// mira da pistola escopada não está atirando a bala onde eu miro"). Ele
+	/// pediu então a pistola como o fuzil: a massa e a alça de trás alinhadas no
+	/// centro. Esta subida leva a linha de mira ao eixo do olho. Fuzil: 0.</summary>
+	[Export(PropertyHint.Range, "0,0.03,0.0005")] public float AimLift = 0f;
+
 	[ExportGroup("Estrelas (0 a 5, alto é melhor)")]
 	[Export] public float StarDamage;
 	[Export] public float StarPenetration;

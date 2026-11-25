@@ -84,6 +84,10 @@ public partial class MatchWorld : SubViewport
 		// senão ela tenta replicar pela ligação do servidor de partida.
 		body.GetNodeOrNull("MultiplayerSynchronizer")?.Free();
 		body.RemoveFromGroup("player");
+		// No par de colisão do time (TeamCollision): o aliado atravessa aqui
+		// como no jogo. O passo de física deste corpo está desligado
+		// (Player.ReadyDriven); quem refaz o par é o ServerBody.Step.
+		body.AddToGroup(Groups.ServerBodies);
 		body.GetNode<Health>("Health").Team = team;
 		AddChild(body);
 		body.GlobalPosition = new Vector3(0, -500, 0);

@@ -270,8 +270,9 @@ public partial class OnlineRobot : Node
 	}
 
 	/// <summary>Fora da partida, depois de sair: entra de novo na sala de onde
-	/// saiu, quando a lista a mostrar jogando com vaga (o saguão manda o
-	/// ingresso e a partida carrega).</summary>
+	/// saiu, quando a lista a mostrar jogando com vaga; na sala, escolhe um
+	/// lado aberto e entra na partida (25/11: o saguão manda o ingresso e a
+	/// partida carrega).</summary>
 	private void Rejoin(double delta)
 	{
 		_rejoinTimer -= delta;
@@ -279,7 +280,16 @@ public partial class OnlineRobot : Node
 		_rejoinTimer = 1;
 
 		LobbyLink lobby = LobbyLink.Instance;
-		if (lobby.Room != null) return;
+		if (lobby.Room != null)
+		{
+			JsonNode me = (lobby.Room["members"] as JsonArray)?.FirstOrDefault(m => m?["id"]?.GetValue<long>() == Backend.AccountId);
+			int[] enter = (lobby.Room["enter"] as JsonArray)?.Select(t => t.GetValue<int>()).ToArray() ?? Array.Empty<int>();
+			if (me == null || (me["inMatch"]?.GetValue<bool>() ?? false) || enter.Length == 0) return;
+			int team = me["team"].GetValue<int>();
+			if (enter.Contains(team)) lobby.EnterMatch();
+			else lobby.SetTeam(enter[0]);
+			return;
+		}
 		JsonNode room = lobby.Rooms.FirstOrDefault(r => r["id"].GetValue<int>() == _roomId);
 		if (room == null || !(room["open"]?.GetValue<bool>() ?? false))
 		{

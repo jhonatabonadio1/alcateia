@@ -73,6 +73,9 @@ public sealed class RoomMember
 	public int Rank;
 	/// <summary>A foto de perfil (<see cref="Avatars"/>); nula em bot.</summary>
 	public string Photo;
+	/// <summary>Online, com a partida da sala em curso: está jogando ela (quem
+	/// entrou na sala depois fica de fora até escolher o time e entrar).</summary>
+	public bool InMatch;
 }
 
 /// <summary>Para onde o fim da partida leva.</summary>

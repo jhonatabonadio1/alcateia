@@ -47,9 +47,6 @@ size = Vector3(0.4, 0.75, 1.5)
 [sub_resource type="BoxShape3D" id="S12"]
 size = Vector3(2.5, 1.8334, 0.4543)
 
-[sub_resource type="BoxShape3D" id="S13"]
-size = Vector3(3.75, 1.8334, 0.4543)
-
 [sub_resource type="BoxShape3D" id="S14"]
 size = Vector3(0.4, 1.5689, 3)
 
@@ -560,34 +557,6 @@ metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pc165_Fence_03"]
 shape = SubResource("S12")
-
-[node name="pc166_Fence_03" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -38.15, 0.7767, 21.875)
-metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc166_Fence_03"]
-shape = SubResource("S13")
-
-[node name="pc167_Fence_03" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -38.75, 0.7767, 25.625)
-metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc167_Fence_03"]
-shape = SubResource("S13")
-
-[node name="pc168_Fence_03" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 38.75, 0.7767, -25.625)
-metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc168_Fence_03"]
-shape = SubResource("S13")
-
-[node name="pc169_Fence_03" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 38.15, 0.7767, -21.875)
-metadata/mapa_cor = Color(0.414, 0.409, 0.405, 1)
-
-[node name="Colisao" type="CollisionShape3D" parent="Colisao/pc169_Fence_03"]
-shape = SubResource("S13")
 
 [node name="pc210_RoadPart_05" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(0.9938, 0, -0.1111, 0, 1, 0, 0.1111, 0, 0.9938, -18.75, 0.6444, -28.75)

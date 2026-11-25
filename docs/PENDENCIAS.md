@@ -7,21 +7,67 @@ pendências técnicas que já se conhecem.
 Resolveu um item? Tire daqui e escreva no `CHANGELOG.md`. Achou um novo?
 Ponha aqui, com o que se sabe dele.
 
+## Para o alpha (anotado em 25/11)
+
+Estado: rede autoritativa em produção e testada com latência real (Jhon);
+testes de movimento alinhados (Jhon). O que falta antes de abrir:
+
+- **Rodar a bateria inteira** com o Godot .NET: `src/tools/testar.sh`,
+  `testar_servidor.sh` e `testar_online.sh` (no modo autoritativo). As
+  mudanças de 25/11 abaixo só foram compiladas, não jogadas.
+- **Conferir o conjunto de armas numa partida online** com uma conta que
+  tem uma arma comprada: ela não pode ser trocada nem gerar recusa no log
+  (`HostedMatch.AllowedWeapon`). Publicar o servidor central e o de partida
+  juntos; um só novo não conferem nada.
+- **Commit limpo**: mais de 100 arquivos sem commit (arte apagada e
+  modificada, `src/crash.txt` e a pasta `erros_espeical_lobo_e_mapa_cidade`
+  soltos). Proposta: ajustes, servidor, lobos, limpeza do Sketchfab, docs.
+- **Créditos escondidos** (`OptionsScreen.ShowCredits = false`): o botão
+  fica escondido durante o alpha. **Religar quando liberar no beta e em
+  produção**: o Oculus Audio Pack (CC BY) pede crédito visível no jogo
+  publicado.
+- **Voz da Eve**: a dor, a morte e a respiração usam a gravação
+  masculina tocada mais aguda (`FemaleVoicePitch`); o Jhon aprovou o
+  resultado da respiração (25/11). Se quiser, trocar dor e morte por
+  gravações próprias.
+- **Mudanças de 25/11 para o Jhon ver jogando**: ícone de perfil no
+  resultado e no MVP, sem "Jogar de novo", minimapa só com inimigo à vista
+  de um aliado (some em 3 s), barra de vida do inimigo a qualquer
+  distância (cresce até 3,2×), morte sem autor no feed, voz de
+  vitória/derrota junto do texto, no máximo 3 contas salvas no login.
+- **Servidor autoritativo, o que ainda é do jogo**: a forma e a arma na mão
+  (o servidor só confere o acerto contra elas), os bots (máquina do dono da
+  sala) e a guarda do especial do lobo. O servidor ainda manda todos os
+  corpos para todos (wallhack).
+- **Segurança do servidor autoritativo, para depois do alpha** (anotado em
+  25/11; aceito no alpha aberto). Ainda vêm do jogo: a forma (humano ou
+  lobo), a arma na mão (o servidor só confere o acerto contra elas), os
+  bots (rodam na máquina do dono da sala) e a guarda do especial do lobo.
+  E o servidor manda **todos os corpos para todos**: wallhack (ver
+  através da parede) é possível com um jogo adulterado. Ordem sugerida:
+  1. **Não mandar inimigo fora de vista** (o servidor já tem o mapa e o
+     histórico de poses para decidir quem cada um vê); é o que mais
+     aparece num alpha aberto.
+  2. **A forma e a arma na mão decididas pelo servidor**, a partir do
+     comando de troca.
+  3. **Os bots no servidor de partida**, em vez da máquina do dono.
+  Enquanto isso: acompanhar no painel os alertas de acerto recusado
+  (`rejectedHits`, alerta a partir de 15 numa partida) e a ficha dos
+  jogadores com suspeita (`Plausibility`).
+- **Texto morto**: `textos.csv` ainda traz três textos de Presas/Fangs
+  marcados "(não está mais no código)" (linhas 64, 73 e 91).
+- **`docs/DESIGN.md`**: a curva de XP ("250·r^1,9") e o "150 XP por jogar"
+  estão desatualizados em relação ao código (100·r de custo, 30 XP).
+
 ## Defeitos relatados (13/11/2026, jogando no Mac)
 
 | Defeito | O que se sabe |
 |---|---|
-| **Faca e granada** | Corrigido (13/11) com os modelos do Sketchfab na mão do braço da pistola. A faca agora usa o conjunto animado que o Jhon trouxe (golpes animados). Falta o Jhon conferir. |
-| **Glitches nos mapas** | Varridos os quatro (13/11) com `src/tools/mapas/conferir.py`: faces brigando, letreiros enterrados ou soltos, objetos flutuando na Polar — corrigidos. O conferidor só olha caixas retas: rampas, formas livres (trem, tanques, terreno) e os modelos prontos não são conferidos. Se ainda houver, falta print ou o lugar exato. |
-| **Glitches na troca de arma / braços reiniciando** | Corrigidos os que se acharam (tamanho e lugar dos braços, travada na primeira troca, sacar; o pulo do M16 parado e o recomeço ao perder o chão). Falta o Jhon conferir. |
-| **Tiro na cabeça sem dano / M16 difícil** (14/11) | Corrigido: o tiro saía 1° acima da cruz (o recuo subia a câmera antes) e a cabeça era a faixa de cima da cápsula. Agora o tiro sai de onde a cruz está e a cabeça é a do modelo. Falta o Jhon conferir. |
-| **Corpo do lobo fora da cápsula** (achado em 14/11) | O lobo anda curvado: a cabeça (já corrigida) e o pescoço ficam até meio metro à frente da cápsula, e tiro no pescoço e no peito curvado passa direto. Próximo passo: esferas do tronco seguindo os ossos, como a da cabeça. |
 | **AR-15: recarga vazia** (16/11) | A recarga do AR-15 agora é a animação do Jhon (2,7 s, esticada para 2,3 s ou 2,9 s com o pente vazio). Falta uma "recarga vazia" própria (puxando o ferrolho): quando o Jhon animar, entra no `infima.py` como `recarga_vazia` e o jogo usa sozinho. |
 | **Lobo do Meshy: licença e origem** (15/11) | O lobo vem do Meshy. No plano grátis a licença é CC BY 4.0 (com crédito, que já está em `Credits.cs`); nos pagos o uso comercial é do dono. Confirmar o plano em que foi gerado, e que o prompt ou imagem de referência não era arte do WolfTeam (regra de IP). Quase todas as animações já são do próprio Jhon (`lobo_anim.glb`); só a morte e a corrida na parede ainda são do Mixamo, adaptadas por código. |
-| **Lobo agachado: cabeça fora da cápsula** (15/11) | O `Crouch_Idle` do Jhon deixa a cabeça a 1,18 m do chão; a cápsula agachada tem 1,0 m. A cabeça tem esfera própria e o tiro nela acerta, mas o peito acima de 1,0 m passa direto. Decidir: agachar mais a pose, ou subir a cápsula agachada. |
 | **Lobo: garrada só da cintura para cima** (15/11 à noite) | O rugido toca de corpo inteiro (o lobo para para rugir). A garrada continua da cintura para cima (o lobo anda enquanto bate): a pisada do clipe não aparece. |
-| **Testes de velocidade 6,7% acima** (15/11) | `VelocidadeNoChao`, `CorridaNaParede` e a passada do humano no `PassoNoRitmo` falham com tudo 6,7% mais rápido que o esperado (humano 3,456 em vez de 3,24). Já falhava antes das animações novas; vem das mudanças sem commit ou do último commit. Em 16/11 também falham `AlturaDoPulo` (Bruto pula 1,87 m em vez de 1,62), `SaltoCarregado` e `CargaDoSalto` (a mira do salto não sobe no bloco; o lobo pousa a 18 m dela) — todos de movimento do lobo, nas mudanças sem commit. |
-| **Personagens tremendo e piscando** | Corrigido (13/11): o desenho agora anda entre os passos da física (`VisualSmoothing`) e a borda vermelha saiu de cima da pele. Não deu para ver no Mac daqui: falta o Jhon conferir; se continuar, um vídeo curto mostra se é tremor de posição, de animação ou de sombra. |
+| **Rugido do inimigo sem animação, online** (25/11: "a animação do lobo rugindo inimigo não consigo ver, somente os efeitos dela") | No roteiro autoritativo (`MovimentosOnline`) o servidor ruge inteiro, a marca chega ao boneco estável e o clipe toca até o fim: não se reproduziu com o inimigo sendo **jogador**. Os efeitos e o clipe saem da mesma marca no boneco (`WolfVisual.Howling`), então se o efeito aparece a marca chegou. Falta saber se o inimigo era um bot (o rugido do bot vem pelo `BotState`, não pelo estado do servidor) e, nesse caso, olhar o boneco do bot rugindo andando (o clipe é de corpo inteiro; o andar pode estar por cima). Um vídeo curto resolve. |
+| **Lobo sai da parede no servidor** (25/11: ~30 "wall server: off the wall … client on the wall: True" em 30 min) | O pátio de teste com parede reta não diverge (0 estados diferentes, `MovimentosOnline`). Dois motivos de divergência saíram (o bot sem corpo no servidor e o aliado sólido lá, decisão 0017). Falta medir nas paredes de verdade dos mapas (quinas, peças de colisão do mapa do servidor contra as do jogo). |
 
 ## Pedido e ainda não feito
 
@@ -30,7 +76,7 @@ Ponha aqui, com o que se sabe dele.
 | Pedido | O que se sabe |
 |---|---|
 | **Pistola padrão: Desert Eagle → G17** | A pistola de quem começa vira a Glock 17. A primeira pessoa da pistola já usa referências da Glock e da P9 (`src/tools/armas/conjuntos.py`, `RefPistola`); falta o modelo, a ficha (`armas.json`, `bracos.json`), a terceira pessoa (Eve e Barut) e trocar o padrão do conjunto. |
-| **Polir os lobos** | Cores mais escuras, e tirar a cara de "Sonic" (o azul vivo do `lobo_azul.glb`). Mexer no modelo só com o OK do Jhon. |
+| **Polir os lobos** | **Feito em 25/11** (modelo novo do Meshy nos dois times, olhos de luz, rabo com física; veja o CHANGELOG). Falta o Jhon ver jogando. Se quiser um corpo diferente para o Barut, é gerar outro modelo no Meshy e passar pelo `src/tools/lobo`. |
 | **Medidas reais das armas** | Pegar o tamanho real de cada arma e aplicar na primeira e na terceira pessoa (hoje cada uma foi ajustada no olho). |
 | **Som da pistola** | Os tiros da pistola estão simples demais. |
 | **Distância dos tiros, mirando e sem mirar** | Rever o alcance e a queda do dano (e a dispersão) com e sem a mira. |
@@ -68,12 +114,6 @@ Ponha aqui, com o que se sabe dele.
   "como jogar", convite): conferir textos, canais e permissões depois de
   montado, e o link de download (aponta para as Releases do GitHub; se o
   repositório for privado, os testadores não baixam).
-- **Trocar o nome "WP".** A energia de transformar (máximo 10.000) ainda
-  se chama WP. Escolher outro nome e trocar em tudo: HUD (`Hud.Form`,
-  `Hud.Layout`), escolha de conjunto (`LoadoutMenu`, custos "100 WP"),
-  `FormController`, `WolfBreed`, `Profile`, rede (`NetMatch`, `NetWire`, só
-  nomes e comentários), `src/assets/i18n/textos.csv` (13 textos, com inglês e
-  espanhol) e a documentação.
 - **Mais classes de lobo, no servidor, com thumbs.** Hoje são duas, Bruto
   e Ligeiro (`src/resources/breeds/*.tres`), já no catálogo como tipo `breed`
   (`exportar_dados.py` leva para o servidor e o painel). Criar as classes
@@ -107,11 +147,14 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Modelos próprios de armas.** Hoje: Sketchfab nas armas de fogo,
   código na faca e na granada.
 - **Modelos próprios de humano e de lobo.** Hoje: Mixamo.
-- **Personagem online: os outros te veem com o padrão do time.** A vida
-  do personagem vale online (cada jogo manda o máximo no status), mas a
-  escalação do servidor (`OnlineMatch.Seat`) não leva o personagem, e o
-  boneco dos outros nasce com o modelo do time. Precisa: o personagem na
-  sala (servidor) e o boneco montar com ele.
+- **Personagem online: a escalação não leva o personagem** (conferido em
+  25/11). Hoje não aparece: cada time tem um personagem só (Eve no azul,
+  Barut no laranja), e o padrão do time é o que se escolhe. Quando entrar
+  um terceiro personagem, ou um que sirva nos dois times, os outros vão
+  ver o padrão do time no lugar dele: a escalação do servidor
+  (`OnlineMatch.Seat`) não leva o personagem, e o boneco nasce com o
+  modelo do time. Precisa: o personagem na sala (servidor) e o boneco
+  montar com ele.
 - **Preço dos personagens.** Hoje todo personagem vem com o perfil
   (`Starter`). Personagem com vida a mais seria vantagem de quem o
   escolhe; ter preço (em Presas, nunca em Sangue) é decisão de economia.
@@ -127,12 +170,6 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ### Combate e visual
 
-- **Partida autoritativa, segunda leva** (decisão 0011): a vida e o dano
-  no servidor, o tiro conferido lá voltando no tempo, a forma, a arma na
-  mão e o renascimento decididos pelo servidor, os bots no servidor, não
-  mandar inimigo fora de vista, ajuste do ritmo do jogo pela folga da fila
-  e compressão por diferença no estado do mundo. Até lá o modo
-  autoritativo fica desligado por padrão.
 - **Mirar pela alça da arma (ADS de verdade).** Hoje o botão direito dá
   zoom com mira circular (13/11). Mirar pela arma foi tentado e ficou
   ruim: pede animação própria de mirar em cada conjunto dos braços.
@@ -150,20 +187,6 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 - **Efeitos visuais (GFX) em geral** (17/11): o que já existe está em
   `docs/EFEITOS.md`; faltam os do lobo (fumaça, ar, feixes nas garras,
   brilho) e os de tiro, sangue e impacto listados acima.
-- **Testes de regressão vermelhos — 7 de 70 (medido em 19/11, Godot
-  4.7.0 no Linux).** Todos pelo mesmo motivo, anterior a esta leva: o
-  `HumanSpeed = 3.2` da cena do jogador (commit "eve", 16/11) e o pulo
-  mais baixo, com os testes e o `docs/MEDIDAS.md` ainda esperando 3,0:
-  `VelocidadeNoChao`, `AlturaDoPulo`, `Medidas`, `CorridaNaParede`,
-  `PassadaDoLobo`, `PassoNoRitmo`. E `Animacoes`, pelos clipes que ainda
-  faltam (`crouch_idle`, `fall`, `land`). Decidir: os números novos são
-  os certos (atualizar testes e MEDIDAS) ou foi sem querer?
-- **Luz da mão nunca acendeu.** `ViewModel.BuildHandFill` faz `AddChild`
-  na câmera com ela ainda montando os filhos: o Godot recusa e dá um
-  erro no Output a cada partida (por isso o `src/tools/testar.sh` marca
-  quase todo teste com "erro no Output"). Trocar por `CallDeferred`
-  acende a luz — e muda a cara da arma em primeira pessoa, que hoje o
-  Jhon aprova sem ela. Decidir: acender ou tirar o código.
 - **Sobras do salto carregado.** Com o especial no Q, a carga andando
   (`Charge_Walk`), o anel de mira no chão (`PounceAim`) e
   `PounceChargeHold` não têm mais como acontecer para o jogador. Tirar,
@@ -250,30 +273,6 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   personagem; quanto carrega; o que a cancela. O servidor decide o uso
   (como o resto da Fase 2), e ela precisa de efeito e som próprios para o
   adversário ver que veio.
-- **Sistema de bag** (pedido em 17/11). A definir pelo Jhon o que a bag
-  guarda: a `UI.md` cita a aba `BAG` da loja do WolfTeam, mas aqui o jogo
-  ainda não tem bag. Perguntas: é a mochila do inventário (limite de
-  espaço, itens de consumo), ou um item de equipar com efeito?
-- **Health packs** (pedido em 17/11): item que devolve vida. A definir:
-  achado no mapa (ponto fixo que volta depois de um tempo), carregado
-  como consumível (na bag) ou comprado no respawn com a moeda de partida.
-  A vida é única entre humano e lobo (`DESIGN.md`, "Vida é uma só"), então
-  o pacote cura os dois.
-- **Badge packs** (pedido em 17/11). A definir pelo Jhon: pacote de
-  insígnias/emblemas para o perfil e a patente, ou outra coisa. Sem
-  definição ainda; não dá para estimar.
-- **Outro nome para as tatuagens** (pedido em 17/11): hoje são bônus
-  pequenos de atributo, no máximo duas por jogador (`Profile.MaxTattoos`),
-  e o nome vem da loja do WolfTeam. Junto com o sistema de armaduras
-  (item abaixo): decidir se as duas viram a mesma coisa, num único
-  sistema de equipamento com nome próprio.
-- **Outro nome para Sangue e para WP** (pedido em 17/11). WP (Weapon
-  Points) é termo do WolfTeam e aparece em cerca de 40 pontos do código,
-  nos textos das telas e em `CONJUNTOS.md`; Sangue é a moeda paga. Trocar
-  é só nome, mas toca na interface inteira, no servidor e nos documentos:
-  melhor decidir antes de fazer a internacionalização, para o nome entrar
-  já nas tabelas de tradução. Presas (a moeda de jogar) fica a decidir
-  junto, para os três nomes combinarem.
 - **Revisar o funcionamento da loja e do inventário** (pedido em 17/11):
   conferir compra, duração e vencimento do item, equipar e desequipar,
   limite de tatuagens, o que o inventário mostra para cada categoria e o
@@ -447,28 +446,6 @@ O que tinha confiança alta saiu em 24/11 (CHANGELOG). Ficou, com confiança mé
 Lembrete: a exportação leva tudo de `src/` (`all_resources`), então o que sobra aqui também vai no jogo exportado.
 
 
-- **Arrumar os testes automatizados** (Jhon, 21/11). Na rodada de
-  21/11, 12 testes de regressão falham sempre, e com isso o vermelho
-  deixou de avisar. Em cada um, decidir se o teste ficou velho (o jogo
-  mudou de propósito) ou se o jogo está errado, e consertar; depois, não
-  juntar nada com teste vermelho e rodar o `src/tools/testar.sh` no CI a cada
-  push (hoje o lançamento sai sem os testes). O que já se sabe:
-  - `MaosPadrao`: o teste ainda espera as mãos low poly de 18/11; as de
-    20/11 são as desenhadas, no shader das mãos, com o LED do time.
-    Teste já reescrito na nuvem (11 verificações passando), não entregue.
-  - `VelocidadeNoChao`, `CorridaNaParede`, a passada do humano no
-    `PassoNoRitmo` e o pulo correndo no `Medidas`: tudo 6,7% mais rápido
-    que o esperado (humano 3,456 m/s em vez de 3,24), desde 15/11.
-    Decidir a velocidade certa e acertar o jogo ou o `docs/MEDIDAS.md`.
-  - `PassadaDoLobo`: andando para trás o pé patina 0,46 m/s (máximo 0,4).
-  - `Granada`: cai a 26 m da mão, o teste espera ~18 m.
-  - `GranadaFere`: quem lança, a 4 m, não leva dano.
-  - `Suavizacao`: a qualidade baixa ainda liga efeitos e a ultra não liga
-    o reflexo.
-  - `EfeitosDoLobo`: sem personagem, os efeitos não saem na cor do time.
-  - `Animacoes`: 14 de 17 clipes carregados.
-  - `CtrlCliqueNoMac`: falha sem mensagem (código 0).
-  - Testes de unidade: corrigidos em 21/11 (74 de 74).
 
 - **Braços animados não conferidos na tela.** As posições do M16 e da
   escopeta foram as mais chutadas.

@@ -127,7 +127,10 @@ pasta é a fonte. Como fazer um personagem novo: `docs/PERSONAGENS.md`.
 
 Os lobos (`eve/lobo_azul.glb`, `barut/lobo_vermelho.glb`) foram gerados
 pelo Jhon no **Meshy** (termos do plano dele), e as animações do lobo
-(`_comum/lobo/lobo_anim.glb`) são dele. O corpo base e as animações do
+(`_comum/lobo/lobo_anim.glb`) são dele. Desde 25/11 os dois são o mesmo
+modelo ("WerewolfNaturalWolf", malha e texturas do Meshy), posto no
+esqueleto do lobo de 17/11 e pintado por time pelo `src/tools/lobo`
+(veja o LEIA-ME de lá). O corpo base e as animações do
 humano (`_comum/humano/`, o X Bot) e a morte e a corrida na parede do
 lobo são do **Mixamo**.
 

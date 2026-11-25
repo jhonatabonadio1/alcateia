@@ -34,10 +34,13 @@ public sealed class AccountService
 		_sessionDays = sessionDays;
 	}
 
+	/// <summary>O Cash de uma conta nova, lido do painel a cada cadastro (null: o de fábrica).</summary>
+	public Func<long> StarterCash { get; set; }
+
 	public async Task<(Account Account, string Token)> Register(string name, string password)
 	{
 		name = AccountRules.CheckNew(name, password);
-		long? id = await _accounts.TryCreate(name, AccountRules.Key(name), _passwords.Hash(password), AccountRules.StarterPresas);
+		long? id = await _accounts.TryCreate(name, AccountRules.Key(name), _passwords.Hash(password), StarterCash?.Invoke() ?? AccountRules.StarterPresas);
 		if (id == null) throw new Failure(FailureKind.Conflict, "nome_em_uso", "Já existe uma conta com esse nome.");
 
 		var created = new Account(id.Value, name);

@@ -48,13 +48,15 @@ using System.Collections.Generic;
 ///
 /// Dividido em montar e tocar: WolfVisual.Model (modelo e clipes) e
 /// WolfVisual.Tree (a árvore) rodam uma vez; WolfVisual.Locomotion,
-/// .Air e .Moves leem o estado a cada quadro.
+/// .Air e .Moves leem o estado a cada quadro. WolfVisual.Tail é o rabo
+/// com física (monta uma vez e soma as forças do movimento a cada quadro).
 /// </summary>
 public partial class WolfVisual : Node3D
 {
-	/// <summary>O lobo de cada time: o azul e o vermelho do Jhon (Meshy),
-	/// em três malhas (corpo, roupa, equipamento) com as placas da armadura
-	/// rígidas. O lobo antigo continua em mutant.fbx / mutant_red.fbx.</summary>
+	/// <summary>O lobo de cada time. Desde 25/11 os dois são o mesmo modelo
+	/// do Jhon (Meshy), no mesmo esqueleto (24 ossos mais os 5 do rabo), e
+	/// só a pintura muda: o da Eve claro com neon ciano, o do Barut escuro
+	/// com neon vermelho (src/tools/lobo).</summary>
 	[ExportGroup("Modelo")]
 	[Export(PropertyHint.File, "*.fbx,*.glb,*.tscn")]
 	public string BlueModel = "res://src/assets/personagens/eve/lobo_azul.glb";
@@ -159,6 +161,8 @@ public partial class WolfVisual : Node3D
 		// sobe CrawlLift. O andar agachado do Jhon tem os pés no chão.
 		Position = new Vector3(0, feet + (Has("crawl") ? 0f : CrawlLift) * _crawl * _moveMix
 			- FootSink * (1f - _moveMix) * (1f - _crouch), 0);
+
+		UpdateTail((float)delta);
 
 		if (_dead)
 		{

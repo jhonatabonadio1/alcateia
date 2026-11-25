@@ -80,8 +80,10 @@ public partial class RoomScreen : LobbyScreen
 		var listing = new RoomListing
 		{
 			Settings = settings,
-			State = room?["state"]?.GetValue<string>() == "waiting" ? RoomState.Waiting : RoomState.Playing
+			State = room?["state"]?.GetValue<string>() == "waiting" ? RoomState.Waiting : RoomState.Playing,
+			Closing = room?["closing"]?.GetValue<bool>() ?? false
 		};
+		foreach (JsonNode t in room?["enter"] as JsonArray ?? new JsonArray()) listing.EnterTeams.Add(t.GetValue<int>());
 
 		foreach (JsonNode m in room?["members"] as JsonArray ?? new JsonArray())
 		{
@@ -96,6 +98,7 @@ public partial class RoomScreen : LobbyScreen
 				IsBot = bot,
 				Ready = bot || (m["ready"]?.GetValue<bool>() ?? false),
 				IsHost = host,
+				InMatch = bot || (m["inMatch"]?.GetValue<bool>() ?? false),
 				Rank = bot ? Ranks.None : Ranks.RankFor(m["xp"]?.GetValue<long>() ?? 0),
 				Photo = bot ? null : m["photo"]?.GetValue<string>()
 			});
@@ -179,6 +182,16 @@ public partial class RoomScreen : LobbyScreen
 		? _room.Members.FirstOrDefault(m => !m.IsBot && m.Id == Backend.AccountId)
 		: _room.Members.FirstOrDefault(m => !m.IsBot);
 	private bool IsHost => Me?.IsHost == true;
+
+	/// <summary>Online, a partida da sala está em curso e eu estou de fora dela:
+	/// entrei na sala depois (Jhon, 25/11: "se a partida tiver iniciado, ele
+	/// entra na sala para poder escolher o time"). Escolho o lado e entro.</summary>
+	private bool Outside => _online && _room.State == RoomState.Playing && Me != null && !Me.InMatch;
+
+	/// <summary>Com a partida em curso, o que o time mostra: quem está jogando.</summary>
+	private int Shown(int team) => _online && _room.State == RoomState.Playing
+		? _room.Members.Count(m => m.Team == team && m.InMatch)
+		: _room.Members.Count(m => m.Team == team);
 
 	/// <summary>Quem entra na partida: o mestre, que não marca pronto, e
 	/// quem está pronto.</summary>
@@ -293,7 +306,7 @@ public partial class RoomScreen : LobbyScreen
 		name.AddThemeFontOverride("font", UiFonts.Display);
 		name.AddThemeFontSizeOverride("font_size", 26);
 		headRow.AddChild(name);
-		headRow.AddChild(UiKit.Text($"{members.Count}/{S.TeamSize}", "Numeric", UiTokens.TextSecondary));
+		headRow.AddChild(UiKit.Text($"{Shown(team)}/{S.TeamSize}", "Numeric", UiTokens.TextSecondary));
 		headRow.AddChild(UiKit.Spacer());
 
 		// Contra bots, o mestre põe quantos bots quiser em cada time.
@@ -359,10 +372,16 @@ public partial class RoomScreen : LobbyScreen
 
 		if (member.IsBot) row.AddChild(UiKit.Chip("bot", UiTokens.TextDisabled));
 
+		// Com a partida em curso, o que conta é quem está nela e quem ainda
+		// está na sala, escolhendo o lado.
+		if (_online && _room.State == RoomState.Playing && !member.IsBot)
+			row.AddChild(member.InMatch
+				? UiKit.Text("jogando", "Caption", UiTokens.Warning)
+				: UiKit.Text("na sala", "Caption", UiTokens.TextDisabled));
 		// Pronto: divisas verdes. Quem não está pronto simplesmente não
 		// tem as divisas — e o texto diz que está aguardando. O mestre não
 		// marca pronto: a coroa já diz que é ele quem inicia.
-		if (member.Ready)
+		else if (member.Ready)
 			row.AddChild(Icon.Make(IconKind.Chevrons, 18, UiTokens.Success));
 		else if (!member.IsHost)
 			row.AddChild(UiKit.Text("aguardando", "Caption", UiTokens.TextDisabled));
@@ -716,7 +735,8 @@ public partial class RoomScreen : LobbyScreen
 		else if (_online && m != Me)
 		{
 			column.AddChild(Info("Nível", Ranks.NameOf(m.Rank)));
-			column.AddChild(Info("Situação", m.IsHost ? "Dono da sala" : m.Ready ? "Pronto" : "Aguardando"));
+			column.AddChild(Info("Situação", _online && _room.State == RoomState.Playing ? (m.InMatch ? "Jogando" : "Na sala")
+				: m.IsHost ? "Dono da sala" : m.Ready ? "Pronto" : "Aguardando"));
 		}
 		else
 		{
@@ -746,6 +766,10 @@ public partial class RoomScreen : LobbyScreen
 		column.AddChild(_ready);
 
 		column.AddChild(UiKit.Spacer());
+
+		_hint = UiKit.Paragraph("A partida já começou. Escolha o lado e entre.");
+		_hint.Visible = false;
+		column.AddChild(_hint);
 
 		// Primário, sólido, longe de qualquer coisa destrutiva.
 		_start = UiKit.Button("Iniciar partida", ButtonKind.Primary, StartOrCancel);
@@ -805,9 +829,34 @@ public partial class RoomScreen : LobbyScreen
 		return why == null;
 	}
 
+	private Label _hint;
+
+	/// <summary>De fora da partida em curso: dá para entrar pelo meu time agora?</summary>
+	private bool CanEnter(out string why)
+	{
+		why = null;
+		if (_room.Closing) why = "A partida está quase acabando: espere a próxima";
+		else if (_room.EnterTeams.Count == 0) why = "A partida está cheia";
+		else if (!_room.EnterTeams.Contains(Me.Team))
+			why = Loc.F("O time {0} ficaria com dois a mais: troque de lado", Loc.T(Teams.TitleOf(Me.Team)));
+		return why == null;
+	}
+
 	private void RefreshActions()
 	{
 		if (_ready == null || Me == null) return;
+
+		if (_hint != null) _hint.Visible = Outside;
+		if (Outside)
+		{
+			_ready.Visible = false;
+			bool open = CanEnter(out string closed);
+			_start.Text = "Entrar na partida";
+			_start.Disabled = !open;
+			_start.TooltipText = closed ?? "";
+			if (_hint != null) _hint.Text = Loc.T(closed ?? "A partida já começou. Escolha o lado e entre.");
+			return;
+		}
 
 		// Mesmo símbolo do lugar na lista: as divisas » querem dizer
 		// "pronto" em toda a tela.
@@ -846,6 +895,18 @@ public partial class RoomScreen : LobbyScreen
 
 	private void StartOrCancel()
 	{
+		if (Outside)
+		{
+			if (!CanEnter(out string closed))
+			{
+				Shell.Toast(closed, UiTokens.Danger);
+				return;
+			}
+			Sfx.Ui("ui_jogar");
+			Lobby.EnterMatch();     // o servidor manda o ingresso, e o jogo entra na partida
+			return;
+		}
+
 		if (_countdown >= 0)
 		{
 			_countdown = -1;
@@ -927,6 +988,19 @@ public partial class RoomScreen : LobbyScreen
 	{
 		if (Me == null || _countdown >= 0) return;
 		int other = Teams.Other(Me.Team);
+
+		// De fora da partida em curso: só o lado por onde dá para entrar
+		// (com lugar, e sem deixar um time com dois a mais).
+		if (Outside)
+		{
+			if (!_room.EnterTeams.Contains(other))
+			{
+				Shell.Toast(Loc.F("O time {0} não tem lugar ou ficaria com dois a mais", Loc.T(Teams.TitleOf(other))), UiTokens.Danger);
+				return;
+			}
+			Lobby.SetTeam(other);
+			return;
+		}
 
 		// Time cheio só barra se for de gente: um bot dá o lugar (contra
 		// bots, o jogador fica no time que quiser).

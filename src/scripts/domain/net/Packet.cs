@@ -186,6 +186,13 @@ public static class Quant
 
 	public static float Pitch(short q) => q / 32767f * (MathF.PI / 2f);
 
+	/// <summary>Um ponto como chega pelo pacote (centímetro por eixo): quem
+	/// prevê usa o mesmo número que o servidor vai ler.</summary>
+	public static float Position(float meters) => Cm(meters) / 100f;
+
+	/// <summary>Uma velocidade como chega pelo pacote (cm/s por eixo).</summary>
+	public static float Velocity(float metersPerSecond) => CmPerSecond(metersPerSecond) / 100f;
+
 	/// <summary>Eixo do movimento (−1..1) → −127..127.</summary>
 	public static sbyte Axis(float v) => (sbyte)Math.Clamp((int)MathF.Round(v * 127f), -127, 127);
 

@@ -357,6 +357,7 @@ vira metal e o vidro reflete o céu. São quatro peças:
   Armazém, que vem do Blender em pedaços grandes, usa a caixa de cada peça do `.json` dele (`src/tools/mapas/armazem_estendido.json`; regra `armazem`). São 27 materiais
   (`CLASSES`): asfalto, piso, concreto, reboco, tijolo, metal pintado, metal cru, vidro, madeira, folhagem, areia, rocha,
   tecido, plástico, adobe, terra, louça, papel, borracha, telhado, faixa, lataria, água, calçamento, brita, tronco.
+- **Toda face do Armazém tem material** (25/11): uma primitiva exportada sem material o Godot pinta de branco liso, sem paleta nem detalhe (foi a parede branca do bloco do fundo leste). O `remendar` dá o material da paleta a toda primitiva do Armazém, e o teste `ArmazemTodaFaceComMaterial` reprova a que ficar com o material padrão. Se o Blender exportar um modelo novo, rode `detalhar.py` de novo.
 - **O `.glb.import`** de cada modelo troca o material embutido pelo `.tres` (`_subresources`, `use_external`): é o que
   `detalhe.ligar` escreve.
 
@@ -394,6 +395,16 @@ jogador; com `intensidade = 0` o quadro sai igual ao de antes. **Não foi medido
 
 **Não foi feito ainda**: o chanfro das quinas e os frisos (geometria, no Blender), o interior das janelas, peças novas
 (trens, carros) e a planta dos mapas em compartimentos. A textura sozinha não tira o aspecto de bloco das peças do kit.
+
+### Lixo, ar-condicionado e cercas da Cidade (25/11)
+
+Pedido do Jhon, com fotos. Feito direto no `cidade.glb` (os nós de cada peça) e no `cidade.tscn` (as colisões):
+
+- **O lixo (`Garbage_01`) vai pela lama, não pelo fundo**: a peça tem os sacos 18 cm abaixo da lama. Quem puser lixo de novo
+  põe a origem da peça no chão (a lama fica em y = 0 da malha), não a caixa.
+- **Ar-condicionado só em parede lisa e fechada, encostado**: atrás do aparelho, o meio e os quatro cantos têm de bater na
+  mesma parede, a no máximo 30 cm um do outro (rebaixo de janela), e nada de vidro, janela ou letreiro. Ficaram 19.
+- **Cerca não fica na rua**: as quatro que estavam de pé no asfalto saíram.
 
 ### As calçadas da Cidade
 

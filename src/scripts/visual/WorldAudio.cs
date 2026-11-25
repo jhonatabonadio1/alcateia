@@ -330,9 +330,9 @@ public partial class WorldAudio : Node
 			bool draw = match.Winner == 0;
 			bool won = match.Winner == (_localHealth?.Team ?? 0);
 			Sfx.Local(draw ? "empate" : won ? "vitoria" : "derrota");
-			// A fala entra depois do acorde, não em cima dele.
-			string voice = draw ? "voz_empate" : won ? "voz_vitoria" : "voz_derrota";
-			GetTree().CreateTimer(1.1).Timeout += () => Say(voice);
+			// A fala sai junto com o texto VITÓRIA/DERROTA, que abre na mesma
+			// hora (Jhon, 25/11): sem atraso.
+			Say(draw ? "voz_empate" : won ? "voz_vitoria" : "voz_derrota");
 		}
 	}
 

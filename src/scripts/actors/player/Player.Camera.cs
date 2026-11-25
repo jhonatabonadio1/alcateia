@@ -59,6 +59,21 @@ public partial class Player
 
 	private void OnFormChanged(int form) => ApplyCamera();
 
+	/// <summary>
+	/// A câmera do lobo recua quando há parede atrás, mas não por gente
+	/// (Jhon, 25/11: "o lobo vai pra frente e pra trás piscando"). Com o
+	/// aliado atravessável (TeamCollision), o lobo passa por ele e o corpo do
+	/// aliado fica entre o lobo e a câmera: o braço encolhia de 2,5 m para
+	/// 0,1 m e voltava assim que ele saía da frente, um salto da câmera a
+	/// cada um que cruzasse atrás. Gente se move e é fina; só o cenário
+	/// segura a câmera. Quem avisa é o TeamCollision, a cada par.
+	/// </summary>
+	public void IgnoreForCamera(CharacterBody3D other)
+	{
+		_springArm ??= GetNodeOrNull<SpringArm3D>("Head/SpringArm3D");
+		_springArm?.AddExcludedObject(other.GetRid());
+	}
+
 	/// <summary>A câmera de onde o jogador mira: a de terceira pessoa no
 	/// lobo, a da cabeça no humano. Não é a câmera atual da tela — essa
 	/// pode ser a da morte ou outra qualquer.</summary>

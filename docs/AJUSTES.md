@@ -93,6 +93,13 @@ o renascer do bot (6 s).
 | `MouseSensitivity` | 0,002 | Sensibilidade base. O jogador multiplica nas Opções (`Settings.Sensitivity`, padrão 1) |
 | `ThirdPersonDistance` | 2,5 m | Distância da câmera do lobo (era 3,5; longe demais, Jhon, 15/11) |
 | `FootSink` (nó `WolfVisual`) | 0,02 m | Quanto o lobo parado em pé desce: a pata do Idle_Pose só encosta pelas garras e ele parecia flutuar |
+| `TailStiffnessRoot` / `TailStiffnessTip` (nó `WolfVisual`, grupo Rabo) | 3,5 / 0,6 | A mola que devolve o rabo ao desenho do modelo, na raiz e na ponta. Mais alto: rabo duro, quase sem cair. A raiz firme segura o começo do rabo no lugar. Os números são por metro do modelo: o código multiplica pela unidade do esqueleto (100) |
+| `TailGravityRoot` / `TailGravityTip` | 0,3 / 1,5 | O peso do rabo, na mesma unidade da mola. Parado, a ponta fica 3 cm abaixo e 9 cm mais perto do corpo do que no desenho |
+| `TailDrag` | 0,22 | Quanto do embalo o rabo perde por passo (0 balança para sempre, 1 não balança) |
+| `TailInertia` / `TailInertiaMax` / `TailInertiaSmooth` | 0,55 por g / 1,6 / 0,09 s | Quanto da aceleração do corpo vira força no rabo, o teto (o lobo arranca a 4 g) e o tempo para a força acompanhar |
+| `TailAir` | 0,011 por (m/s)² | Arrasto do ar: levanta o rabo na corrida (de quatro, a 7,1 m/s, o rabo fica na horizontal, a ponta até 13 cm acima da raiz); a passo quase nada |
+| `TailTurn` | 0,16 por rad/s | Quanto o giro do corpo joga o rabo para fora da curva |
+| `TailRadiusRoot` / `TailRadiusTip` | 0,07 / 0,035 m | A grossura do rabo para a colisão com as pernas e o quadril (cápsulas de 11,5 cm nas coxas, 8,5 nas canelas e 9 no quadril, em `WolfVisual.Tail.cs`) |
 
 ### Escada (`Player.Ladder.cs`)
 
@@ -259,9 +266,19 @@ que escolhe a carga pela distância.
 | `PounceArc` | 0,6 m | Altura mínima do arco |
 | `PounceHitRadius` | 1,8 m | Quem o salto pega ao cair: em volta do lobo (era a garra: 1,15 m de raio, 1,5 m à frente). O anel da mira tem este tamanho |
 | `PounceSplash` | 0,3 | O salto é de um alvo só: o principal leva o dano cheio, quem estiver do lado na área leva esta fração |
+| `PounceStandOff` | 0,7 m | O especial travado cai a esta distância do centro do alvo, na frente dele (as duas cápsulas têm 0,3 m de raio). Menor que 0,6, o lobo cai dentro do alvo e a física o empurra |
+| `PounceSteerSpeed` | 9 m/s | O mais rápido que o ponto de queda do especial anda atrás do alvo que se mexe. Mais alto, o lobo balança com quem esquiva; mais baixo, quem corre (o lobo de quatro, 7,7 m/s) escapa |
+| `PounceLeadSmooth` / `PounceMaxLead` | 0,25 s / 2,5 m | Quanto o especial antecipa o alvo: a velocidade dele alisada nesse tempo, vezes o voo que falta, até esse tanto |
 | `PounceHitReach` | 0,4 m | Quanto o centro da área do salto fica à frente do lobo |
-| `LockAngle` (nó `Player`) | 35° | Modo alvo do salto (Tab): o quanto o inimigo pode estar fora do centro da tela para ficar destacado |
-| `LockRange` / `LockKeepRange` | 18 / 24 m | Até onde trava / a que distância a trava cai |
+| `PounceBodyRadius` (grupo "Lobo: caminho do salto") | 0,36 m | A cápsula que o salto testa ao longo do voo: a do corpo (0,3) e a folga com que a física já conta um encosto. Menor, o lobo raspa na quina de barreiras e carros |
+| `PounceGrazeShare` | 0,6 | Sem caminho limpo de lado nenhum do alvo, testa de novo com o corpo nesta fração do raio (aceita raspar) |
+| `PounceFootClear` | 0,03 m | O que é mais baixo que isto acima dos pés não conta no caminho (junta de calçada) |
+| `PounceThinProp` | 0,35 m | Poste, placa, haste mais finos que isto (de lado a lado) não barram o salto: o voo atravessa |
+| `PounceLowArc` | 0,3 m | O arco mais rasante que o salto aceita (por baixo de copa ou toldo) |
+| `PounceShapeAfter` | 0,3 m | Até quanto acima do arco de sempre o voo fica com a forma de sempre; passou disso, prova subir antes de avançar (ou descer na vertical no fim). As formas e os custos ficam no `Weapon.WolfPouncePath.cs` |
+| `MaxFlightSpeed` (`WolfMoveMotor`, constante) | 90 m/s (era 45) | Teto da velocidade no voo do salto. Com 45, o especial de 13 m (58 m/s no meio do sino) ficava para trás e corrigia no fim |
+| `LockAngle` / `LockKeepAngle` (nó `Player`) | 20° / 32° | Especial armado (Q): o quanto o inimigo pode estar fora do centro da tela para travar / para a trava segurar |
+| `LockRange` / `LockKeepRange` | 14 / 16 m | Até onde trava / até onde o já travado segura (25/11: o alvo a 14 m que passava a 14,05 m no clique soltava a trava, e o salto ia para a mira e caía longe) |
 | `LockTurnRate` | 16 /s | Quão rápido a mira vai até o travado |
 | `HeavyCooldown` | 1,0 s | Espera depois do salto |
 
@@ -352,7 +369,7 @@ sempre humano.
 |---|---|---|
 | `MaxHp` | 200 | Vida máxima (o `FormController` define a pool) |
 | `RespawnDelay` | 3 s (bots: 6 s na cena) | Espera para renascer |
-| `SpawnProtection` | 3 s | Imortal ao renascer |
+| `SpawnProtection` | 3 s | Imortal ao renascer, contra os outros: a própria granada fere do mesmo jeito (`Health.TakeOwnDamage`, 25/11) |
 | `RegenDelay` | 15 s | Sem levar dano por este tempo, a vida começa a voltar (0 desliga). O escudo não volta sozinho |
 | `RegenRate` | 0,08 | Fração da vida máxima que volta por segundo (do zero ao cheio em 12,5 s) |
 | `AutoRespawn` | sim (o jogador desliga) | Renascer sozinho |
@@ -418,6 +435,17 @@ exibição (da loja).
 | `AimSpreadMultiplier` (dispersão que sobra) | 0,2 | 0,15 | 0,3 | 0,25 | 0,006 | 0,6 |
 | `AimSpeedMultiplier` (passo que sobra) | 0,7 | 0,7 | 0,7 | 0,6 | 0,5 | 0,7 |
 | `AimRecoilMultiplier` (recuo que sobra) | 1 | 1 | 1 | 0,35 | 1 | 1 |
+| `AimLift` (m que a arma sobe mirando) | 0 | 0 | 0 | 0 | 0 | 0,005 |
+
+`AimLift` (25/11): a pistola mirava com a linha de mira 11 mm abaixo do olho
+(`BAIXO` em `src/tools/armas/conjuntos.py`, pedido de 19/11), a ponta da massa
+2,1° abaixo do centro da tela, e a bala sai do centro: ia 2,1° acima de onde a
+massa apontava (55 cm a 15 m). Agora a arma sobe 5 mm mirando e a massa e a alça
+de trás ficam no centro, como no fuzil; a bala segue saindo do centro. O 5 mm
+saiu de fotos do jogo com 0, 3, 6 e 11 mm (13 px de tela por mm): com 5 a ponta
+da massa fica no centro, dentro do entalhe da alça. Se `BAIXO` ou o lugar da
+pistola na mira mudar, refaça a medida. O teste `TiroPelaMiraDaPistola` guarda
+que o tiro sai do centro.
 
 `Weapon.AimTime` 0,16 s (entrar e sair). A sensibilidade do mouse cai na
 razão das aberturas, para o mesmo gesto andar o mesmo na tela. A mira
@@ -475,6 +503,8 @@ As durações das recargas continuam as do jogo (`ReloadTactical` 1,8 s e
 | Quantidade | 1 por espaço de utilitário | `Arsenal.cs` (`Count`) e o conjunto |
 | `Grenade.Fuse` | 1,2 s | Tempo até explodir, contado do primeiro toque (sem tocar nada, explode em `MaxFlight` 6 s) |
 | `Grenade.Radius` | 9 m | Raio (era 6,5; 20/11) |
+| `Grenade.BounceLoudSpeed` / `BounceMinSpeed` | 7 / 0,45 m/s | O som de cada batida: a 7 m/s soa a 0 dB, metade da velocidade 6 dB a menos; abaixo de 0,45 é rolar e não soa. Solta de 2 m: três batidas, a 5,9, 1,8 e 0,5 m/s |
+| `Grenade.BounceRange` / `BounceGap` | 25 m / 0,07 s | Até onde a batida se ouve, e o tempo mínimo entre duas (o mesmo toque pode durar dois passos) |
 | `Grenade.MaxDamage` | 420 | Dano no centro, caindo até a borda: mata quem tem 200 de vida a até 4,7 m |
 | `Grenade.Kind` | `Frag` | Explosiva desde 19/11 (o id ainda é `choque`). `Shock`, a de choque de 18/11, está guardada: `ShockDamage` 60, `StunDuration` 2,5 s e `StunSlowFactor` 0,3 só valem nela |
 | `DropThrow` / `DropLift` | 5,5 / 1,8 m/s | Arremesso da arma ao soltar (G) |
@@ -583,6 +613,9 @@ O cérebro (as notas de cada ação) está em `src/scripts/ai/BotBrain.cs`.
 | `LoadoutMenu.cs` | `ChooseTime` | 15 s para escolher o conjunto ao renascer (não escolheu, vai o padrão) |
 | `RoomConfig.cs` | `RoomSettings` | Modo Livre, 6 por time (de 1 a 6, `TeamSizes`), Armazém, 40 pontos, 10 min, todas as armas, bots no Médio |
 | `LoadingScreen.cs` | `MinShown` | 2 s mínimos na tela de carregamento |
+| `servidor/Alcateia.Dominio/Frota/Fleet.cs` (`MatchProgress`) | `LastSeconds`, `LastShare` | A partida online fecha para quem chega nos últimos 120 s ou nos últimos 20% do tempo, o que for menor (36 s numa de 3 min) |
+| `servidor/Alcateia.Dominio/Frota/Fleet.cs` (`MatchProgress`) | `DecidedShare` | ...ou quando um time tem 80% dos pontos para vencer |
+| `servidor/Alcateia.Dominio/Salas/Room.cs` | `CanEnter` | Entrar no meio: um time nunca fica com dois a mais que o outro (regra fixa, decisão do Jhon) |
 
 Na tela da sala: modo de jogo (`PlayMode.cs`), jogadores por time,
 mapa, pontos, minutos, armas (todas, sem pesadas ou só pistolas), fogo
@@ -696,6 +729,27 @@ o ferrolho recua 5 cm entre 78% e 90%.
 
 **Mira** (`src/scripts/ui/Crosshair.cs`): `PixelsPerDegree` 9, `MinGap`
 5, `Length` 8, `Thickness` 2.
+
+**Vitrine do personagem** (`src/scripts/lobby/CharacterPreview.cs`, o
+humano e o lobo em 3D no inventário e na loja; 25/11): `KeyEnergy` 2,1 (a
+principal, quente, com sombra macia), `FillEnergy` 0,55 (o preenchimento
+frio), `RimEnergy` 7 (os dois recortes atrás), `SkyEnergy` 0,55 (o céu do
+mapa de dia como ambiente e reflexo), `ContactShadow` 0,75 (a sombra
+embaixo dos pés), `BackdropColor`/`BackdropStrength` 0,32 (o halo atrás) e `Spin` 0,35
+rad/s. O lobo não desce o `FootSink` do jogo aqui: as garras furariam o
+tampo (o teste `VitrineNoPedestal` reprova).
+
+**Partida autoritativa** (decisões 0011, 0016 e 0017; constantes em C#,
+mudam com o servidor de partida junto): `Weapon.ChargeSlack` 0,2 (o
+quanto a carga do especial do corpo do servidor pode passar da que ele
+mesmo ganhou, copiando a do jogo), `ServerBody.FocusSlack` 3 m (a
+distância máxima entre onde o jogo diz que via o alvo travado e onde ele
+esteve no servidor), `ServerBody.WallBehindSteps` 3 (passos com o jogo
+na parede e o servidor fora antes de o servidor voltar para ela),
+`BotProxies.MaxAhead` 0,1 s (quanto a cápsula do bot anda com a
+velocidade dele depois do último estado) e `BotProxies.StaleAfter` 1 s
+(sem estado novo, a cápsula sai), `InputCommand.MaxSize` 51 bytes (o
+comando com renascimento, ponto mirado e alvo travado).
 
 ---
 

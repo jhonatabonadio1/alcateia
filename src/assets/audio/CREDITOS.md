@@ -61,7 +61,8 @@ as versões por superfície (`_metal`, `_neve`, `_madeira`, `_terra`),
 **Kenney** ([kenney.nl](https://kenney.nl)), CC0: UI Audio
 (`ui_passar`, `ui_clique`), Interface Sounds (`ui_negado`, `acerto`,
 `abate`, `contagem`), RPG Audio (`faca`, `trocar_arma`, `recarga_m3`),
-Impact Sounds (`acerto`, `acerto_cabeca`, `lobo_pouso`), Sci-Fi Sounds
+Impact Sounds (`acerto`, `acerto_cabeca`, `lobo_pouso`, `granada_quique`
+— o `impact_metal_medium`), Sci-Fi Sounds
 (`granada_explosao`). Via os espelhos no GitHub de Calinou e
 Boyquotes. (A voz provisória do locutor, do Voiceover Pack Fighter, saiu
 em 18/11: a narração agora é da Iris.)

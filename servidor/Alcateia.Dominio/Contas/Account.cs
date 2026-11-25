@@ -16,8 +16,9 @@ public static class AccountRules
 	public const int NameMin = 3, NameMax = 16;
 	public const int PasswordMin = 8, PasswordMax = 128;
 
-	/// <summary>Presas com que toda conta nova começa.</summary>
-	public const long StarterPresas = 3000;
+	/// <summary>Cash (Presas no código) com que toda conta nova começa: nenhum
+	/// (Jhon, 25/11). O IPs (Sangue) também começa em zero.</summary>
+	public const long StarterPresas = 0;
 
 	private static readonly Regex ValidName = new("^[A-Za-z0-9_]+$", RegexOptions.Compiled);
 

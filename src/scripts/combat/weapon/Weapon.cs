@@ -189,6 +189,21 @@ public partial class Weapon : Node3D
 
 	public override void _PhysicsProcess(double delta)
 	{
+		// O corpo do servidor de partida (Driven) dá o passo da arma junto com
+		// o do corpo, um por comando (Player.Simulate), e não um por quadro do
+		// servidor: com a rede oscilando, o servidor aplica dois comandos num
+		// quadro ou nenhum, e o voo do salto (o relógio dele mora aqui) andava
+		// fora do passo do corpo — o salto do servidor saía diferente do que o
+		// jogo previu, e a correção puxava o lobo para trás (Jhon, 25/11).
+		if (_body is Player { Driven: true }) return;
+		Tick(delta);
+	}
+
+	/// <summary>Um passo da arma: no jogo, um por quadro de física, logo
+	/// depois do passo do corpo; no servidor, um por comando
+	/// (<see cref="Player.Simulate"/>), na mesma ordem.</summary>
+	public void Tick(double delta)
+	{
 		UpdateAim(delta);
 		TickSpecial(delta);
 
@@ -227,7 +242,7 @@ public partial class Weapon : Node3D
 				_flying = false;
 				_pounceLanded = true;
 			}
-			else ChaseFocus();
+			else ChaseFocus(delta);
 		}
 
 		UpdateArmed(delta);

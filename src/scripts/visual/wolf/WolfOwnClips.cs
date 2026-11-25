@@ -47,8 +47,24 @@ public static class WolfOwnClips
 
 	/// <summary>Abre o arquivo; quem chama libera a cena. Null se o arquivo
 	/// não existe (o jogo volta aos clipes do Mixamo).</summary>
-	public static Node Open() =>
-		ResourceLoader.Exists(Path) ? GD.Load<PackedScene>(Path)?.Instantiate() : null;
+	public static Node Open()
+	{
+		if (_scene == null || !GodotObject.IsInstanceValid(_scene))
+			_scene = ResourceLoader.Exists(Path) ? GD.Load<PackedScene>(Path) : null;
+		return _scene?.Instantiate();
+	}
+
+	/// <summary>O arquivo carregado, guardado entre um lobo e o outro. Sem
+	/// isto cada lobo montado carregava o arquivo de novo, e o Godot devolvia
+	/// o mesmo recurso enquanto o coletor do C# ainda soltava o invólucro da
+	/// vez anterior: de vez em quando, "Handle is not initialized" no Output
+	/// (o erro intermitente dos testes, achado em 25/11 sempre nesta linha).
+	/// É um arquivo do disco, não um recurso montado em runtime; o
+	/// <see cref="Saida"/> o solta no fim.</summary>
+	private static PackedScene _scene;
+
+	/// <summary>Solta o arquivo guardado (a saída do jogo).</summary>
+	public static void Release() => _scene = null;
 
 	/// <summary>Duração do clipe do papel no arquivo, em segundos (0 se não
 	/// existe). Os testes conferem o passo do som com ela.</summary>

@@ -4,20 +4,29 @@ namespace Alcateia.UnitTests;
 /// mesma conta no jogo e no servidor.</summary>
 public static class RewardsTests
 {
-	[Test("participar rende 30 de XP e 100 Presas")]
+	[Test("participar rende 30 de XP e 150 Cash")]
 	public static void Participation()
 	{
 		Rewards.Gain g = Rewards.ForMatch(0, 0, won: false, draw: false, mvp: false);
 		Check.Equal(30L, g.Xp, "XP");
-		Check.Equal(100L, g.Presas, "Presas");
+		Check.Equal(150L, g.Presas, "Cash");
 	}
 
-	[Test("dez abates, quatro assistências, vitória e MVP: 117 de XP e 316 Presas")]
+	[Test("o Cash do painel vale no lugar do de fábrica")]
+	public static void PanelRates()
+	{
+		var rates = new Rewards.CashRates(Base: 10, Kill: 1, Assist: 2, Win: 3, Draw: 4, Mvp: 5);
+		Rewards.Gain g = Rewards.ForMatch(10, 4, won: true, draw: false, mvp: true, cash: rates);
+		Check.Equal(10L + 10 + 8 + 3 + 5, g.Presas, "Cash com os valores do painel");
+		Check.Equal(30L + 40 + 8 + 24 + 15, g.Xp, "o XP não muda");
+	}
+
+	[Test("dez abates, quatro assistências, vitória e MVP: 117 de XP e 406 Cash")]
 	public static void FullMatch()
 	{
 		Rewards.Gain g = Rewards.ForMatch(10, 4, won: true, draw: false, mvp: true);
 		Check.Equal(30L + 40 + 8 + 24 + 15, g.Xp, "XP");
-		Check.Equal(100L + 80 + 16 + 80 + 40, g.Presas, "Presas");
+		Check.Equal(150L + 100 + 20 + 100 + 50, g.Presas, "Cash");
 	}
 
 	[Test("empate rende metade da vitória, e vitória não soma com empate")]

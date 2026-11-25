@@ -28,6 +28,9 @@ public sealed class CombatantStats
 	public int Rank;
 	/// <summary>A foto de perfil (<see cref="Avatars"/>); nula em bot.</summary>
 	public string Photo;
+	/// <summary>A foto de perfil de verdade (a escolhida no perfil, não o
+	/// personagem da partida): é a que a tela de resultado mostra.</summary>
+	public string ProfilePhoto;
 	/// <summary>O rage (em chamas). Aqui é para mostrar (HUD, placar); o XP
 	/// de verdade vem do servidor de partida, que conta o mesmo.</summary>
 	public readonly Rage Rage = new();
@@ -325,6 +328,8 @@ public partial class Match : Node
 				// Na partida, a foto é o retrato do personagem com que ele joga
 				// (Jhon, 21/11), não a foto de perfil: Eve, Barut...
 				entry.Photo = Avatars.OfCharacter((node as Player)?.Character, health.Team);
+				// No resultado, o ícone do jogador (Jhon, 25/11), não o personagem.
+				entry.ProfilePhoto = entry.IsLocal ? Avatars.Selected : remote?.RemotePhoto;
 
 				if (entry.IsLocal) _local = entry;
 			}

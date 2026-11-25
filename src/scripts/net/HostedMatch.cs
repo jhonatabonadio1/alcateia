@@ -54,6 +54,10 @@ public sealed class HostedMatch
 	public bool Authoritative => World != null;
 
 	private readonly Dictionary<long, ServerBody> _bodies = new();
+
+	/// <summary>O que cada conta tem na loja, como o saguão mandou na escalação.
+	/// Sem a conta aqui (servidor central antigo): nada é conferido.</summary>
+	private readonly Dictionary<long, HashSet<string>> _owned = new();
 	private readonly List<ServerBody> _bodyList = new();
 	private readonly Dictionary<long, byte> _indexOf = new();
 	private EntityState[] _states = new EntityState[16];
@@ -66,6 +70,10 @@ public sealed class HostedMatch
 	private readonly HitCheck _hits;
 	private readonly List<PendingHit> _pending = new();
 	private readonly Dictionary<long, (Vector3 Position, uint Tick)> _botPoses = new();
+
+	/// <summary>Os bots no mundo daqui (autoritativa): o corpo do jogador
+	/// bate neles como no jogo.</summary>
+	private readonly BotProxies _botBodies;
 	private uint _tick;
 	private double _now, _vitals;
 
@@ -106,7 +114,11 @@ public sealed class HostedMatch
 		Referee = referee;
 		_link = link;
 		World = world;
-		if (world != null) _hits = new HitCheck(world, BodyRids);
+		if (world != null)
+		{
+			_hits = new HitCheck(world, BodyRids);
+			_botBodies = new BotProxies(world);
+		}
 
 		// O número de cada corpo no estado do mundo: o lugar na escalação.
 		byte index = 0;
@@ -131,6 +143,7 @@ public sealed class HostedMatch
 		string map = settings["map"]?.GetValue<string>() ?? Maps.All[0].Id;
 		var match = new HostedMatch(assignment["matchKey"].GetValue<string>(), referee, link,
 			authoritative ? new MatchWorld(map) : null);
+		match.NoteOwned(assignment);
 		int bots = seats.Count(s => s.Item4 != 0);
 		GD.Print($"Match {match.Key}: {seats.Count - bots} player(s) and {bots} bot(s), map {map}, first to {referee.ScoreToWin} points" +
 			(authoritative ? ", authoritative." : "."));
@@ -244,12 +257,46 @@ public sealed class HostedMatch
 			string name = p["name"].GetValue<string>();
 			int team = p["team"].GetValue<int>();
 			if (!Referee.AddSeat(id, name, team, p["owner"]?.GetValue<long>() ?? 0)) continue;
-			_indexOf[id] = (byte)Math.Min(_indexOf.Count, 255);
+			NoteOwned(p);
+			if (!_indexOf.ContainsKey(id)) _indexOf[id] = (byte)Math.Min(_indexOf.Count, 255);   // quem volta de outro time guarda o número
 			Broadcast(SeatPacket(Referee.Find(id)));
 			GD.Print($"Seat added to {Key}: {name} (team {team}).");
 			added++;
 		}
 		return added;
+	}
+
+	/// <summary>Guarda o que cada conta da escalação tem (campo "weapons").</summary>
+	private void NoteOwned(JsonObject assignment)
+	{
+		foreach (JsonNode p in assignment["players"] as JsonArray ?? new JsonArray()) NoteOwned(p);
+	}
+
+	private void NoteOwned(JsonNode seat)
+	{
+		if (seat?["weapons"] is not JsonArray list) return;
+		long id = seat["accountId"].GetValue<long>();
+		_owned[id] = list.Select(n => n?.GetValue<string>() ?? "").Where(w => w.Length > 0).ToHashSet();
+	}
+
+	/// <summary>A arma que a conta pode levar: a de série, ou uma que ela tem
+	/// (decisão 0016, "o que ainda vem do jogo"). Outra vira a padrão e conta
+	/// contra a conta, como um acerto recusado.</summary>
+	private string AllowedWeapon(long account, string id, string fallback)
+	{
+		if (string.IsNullOrEmpty(id) || Allowed(account, id)) return id;
+		GD.Print($"Match {Key}: account {account} brought {id}, which is not theirs; using {fallback}.");
+		return fallback;
+	}
+
+	/// <summary>O item é de série ou da conta? Sem a lista dela (servidor central
+	/// antigo, bot), vale. Quando não é, conta contra a conta.</summary>
+	private bool Allowed(long account, string id)
+	{
+		if (!_owned.TryGetValue(account, out HashSet<string> own)) return true;
+		if (own.Contains(id) || Catalog.Get(id) is { Starter: true }) return true;
+		if (Referee.Find(account) is { } seat) seat.RejectedHits++;
+		return false;
 	}
 
 	/// <summary>Um lugar novo: quem é, o time, de quem é (bot) e o número dele no estado do mundo.</summary>
@@ -312,6 +359,9 @@ public sealed class HostedMatch
 		Player body = World.SpawnBody($"Jogador{account}", seat?.Team ?? Referee.Blue);
 		var server = new ServerBody(account, _indexOf.GetValueOrDefault(account), body);
 		server.SpawnPoints.AddRange(World.SpawnsFor(seat?.Team ?? Referee.Blue));
+		server.SetRules(Referee.ScoreToWin, Referee.Duration);
+		// O alvo travado do especial chega pelo lugar na escalação.
+		server.Resolve = index => _bodyList.FirstOrDefault(b => b.Index == index && b.Alive)?.Body;
 		_bodies[account] = server;
 		_bodyList.Add(server);
 	}
@@ -331,6 +381,7 @@ public sealed class HostedMatch
 		if (!Authoritative) return;
 
 		_tick = tick;
+		_botBodies?.Step(delta);
 		foreach (ServerBody body in _bodyList) body.Step(tick, delta);
 		ResolveHits(tick);
 		if (tick % NetRates.SnapshotEvery == 0) SendSnapshots(tick);
@@ -339,6 +390,26 @@ public sealed class HostedMatch
 	private IEnumerable<Rid> BodyRids()
 	{
 		foreach (ServerBody body in _bodyList) yield return body.Body.GetRid();
+		// A parede que a conferência do tiro procura é a do mapa: o bot no
+		// caminho não é parede.
+		foreach (Rid rid in _botBodies?.Rids() ?? System.Linq.Enumerable.Empty<Rid>()) yield return rid;
+	}
+
+	/// <summary>O estado de um bot, como o dono mandou (NetState): onde
+	/// está, para a conferência do tiro, e a cápsula dele no mundo daqui.</summary>
+	private void ReadBotState(long bot, BinaryReader r)
+	{
+		long start = r.BaseStream.Position;
+		Vector3 position = r.ReadVector();
+		_botPoses[bot] = (position, _tick);
+		if (_botBodies == null) return;
+
+		r.BaseStream.Position = start;
+		NetState s;
+		try { s = NetState.Read(r); }
+		catch (EndOfStreamException) { return; }
+		int team = Referee.Find(bot)?.Team ?? Referee.Blue;
+		_botBodies.Report(bot, team, s.Position, s.Velocity, s.Dead, s.Crouching);
 	}
 
 	/// <summary>O estado do mundo: o corpo comum é escrito uma vez; cada
@@ -413,6 +484,14 @@ public sealed class HostedMatch
 				string breed = r.ReadString();
 				var tattoos = new List<string>();
 				for (int n = Math.Min((int)r.ReadByte(), 8); n > 0; n--) tattoos.Add(r.ReadString());
+				// A classe de lobo e as melhorias têm de ser de série ou da conta:
+				// valem na velocidade, no pulo, no escudo e no dano do lobo.
+				if (!Allowed(account, breed))
+				{
+					GD.Print($"Match {Key}: account {account} brought wolf class {breed}, which is not theirs; using the default.");
+					breed = "raca_bruto";
+				}
+				tattoos.RemoveAll(t => !Allowed(account, t));
 				loading.ApplyLoadout(breed, tattoos);
 				break;
 
@@ -441,8 +520,9 @@ public sealed class HostedMatch
 			case NetWire.BotAttack:
 				long speaker = r.ReadInt64();
 				if (!Referee.Speaks(account, speaker)) break;
-				// Onde o bot está: é contra isso que se confere o acerto nele.
-				if (type == NetWire.BotState) _botPoses[speaker] = (r.ReadVector(), _tick);
+				// Onde o bot está: é contra isso que se confere o acerto nele, e é
+				// onde a cápsula dele fica no mundo daqui.
+				if (type == NetWire.BotState) ReadBotState(speaker, r);
 				Broadcast(NetWire.AsPlayer(packet, type == NetWire.BotState ? NetWire.State : NetWire.Attack),
 					reliable: type != NetWire.BotState, except: peer);
 				break;
@@ -502,6 +582,16 @@ public sealed class HostedMatch
 		var assisters = new long[r.ReadByte()];
 		for (int i = 0; i < assisters.Length; i++) assisters[i] = r.ReadInt64();
 
+		// Morreu sozinho (a própria granada, a queda): conta a morte e entra no
+		// feed de todos, com ele dos dois lados e o que matou, sem pontuar para
+		// ninguém — como no jogo offline (Health.Die). Até 25/11 o juiz só
+		// anunciava abate com autor, e a morte sozinho não aparecia online.
+		if (killer == 0 || killer == victim)
+		{
+			if (Referee.SelfDeath(victim)) Announce(new RefKill(victim, victim, false, Array.Empty<long>()), cause, weapon);
+			return;
+		}
+
 		if (Referee.Death(victim, killer, headshot, assisters, killerWasWolf: cause == (byte)KillCause.Wolf) is RefKill kill)
 			Announce(kill, cause, weapon);
 	}
@@ -536,21 +626,26 @@ public sealed class HostedMatch
 		r.ReadBoolean();
 		string primary = r.ReadString(), secondary = r.ReadString();
 		bool guard = false;
+		float charge = -1f;
 		long left = r.BaseStream.Length - r.BaseStream.Position;
 		if (left >= 2 + 1 + 1 + 4 + 4 + 1)
 		{
-			r.BaseStream.Position += 2 + 1 + 1 + 4 + 4;
+			r.BaseStream.Position += 2 + 1 + 1 + 4;
+			charge = r.ReadSingle();
 			guard = r.ReadBoolean();
 		}
+
+		primary = AllowedWeapon(account, primary, Arsenal.DefaultPrimary);
+		secondary = AllowedWeapon(account, secondary, Arsenal.DefaultSecondary);
 
 		byte[] relayed = NetWire.Relay(packet, account);
 		if (!_bodies.TryGetValue(account, out ServerBody body) || !body.Placed)
 		{
-			body?.ApplyStatus(hp, shield, primary, secondary, guard);
+			body?.ApplyStatus(hp, shield, primary, secondary, guard, charge);
 			Broadcast(relayed, reliable: false, except: peer);
 			return;
 		}
-		body.ApplyStatus(hp, shield, primary, secondary, guard);
+		body.ApplyStatus(hp, shield, primary, secondary, guard, charge);
 
 		Health h = body.Health;
 		BitConverter.TryWriteBytes(relayed.AsSpan(9, 4), h.Hp);
@@ -778,6 +873,12 @@ public sealed class HostedMatch
 
 	private void Announce(RefKill kill, byte cause, string weapon)
 	{
+		// O abate e as assistências enchem a carga do especial dos corpos daqui
+		// também (o jogo enche a dele quando recebe este aviso).
+		if (kill.Killer != kill.Victim && _bodies.TryGetValue(kill.Killer, out ServerBody killer)) killer.Scored(true, cause == (byte)KillCause.Wolf);
+		foreach (long id in kill.Assisters)
+			if (id != kill.Killer && _bodies.TryGetValue(id, out ServerBody helper)) helper.Scored(false);
+
 		BinaryWriter w = NetWire.Begin(NetWire.Kill, out MemoryStream stream);
 		w.Write(kill.Killer);
 		w.Write(kill.Victim);

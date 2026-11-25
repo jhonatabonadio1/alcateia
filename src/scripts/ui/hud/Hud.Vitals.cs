@@ -87,6 +87,10 @@ public partial class Hud
 	/// <summary>Volume da respiração ofegante, do começo ao quase morto.</summary>
 	[Export] public float BreathQuietDb = -20f;
 	[Export] public float BreathLoudDb = -5f;
+	/// <summary>Só há uma gravação de respiração (masculina): para a Eve ela
+	/// toca mais aguda (Jhon, 25/11: "a respiração da mulher deve ser
+	/// feminina"). Troque por um arquivo próprio quando houver.</summary>
+	[Export] public float FemaleBreathPitch = 1.32f;
 
 	private const string DangerCode = @"
 shader_type canvas_item;
@@ -181,6 +185,9 @@ void fragment() {
 		if (gasping && !Breathing)
 		{
 			_breath = Sfx.Ambience(this, "respiracao_ofegante", -40f);
+			CharacterSkin skin = _player?.Character ?? CharacterSkin.DefaultFor(_health.Team);
+			if (_breath != null && skin?.ResourcePath.GetBaseDir().GetFile() == "eve")
+				_breath.PitchScale = FemaleBreathPitch;
 		}
 		if (_breath != null && IsInstanceValid(_breath))
 		{

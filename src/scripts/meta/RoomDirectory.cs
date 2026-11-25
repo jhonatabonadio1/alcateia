@@ -12,6 +12,11 @@ public sealed class RoomListing
 	public RoomState State;
 	/// <summary>Criada pelo próprio jogador nesta sessão.</summary>
 	public bool Mine;
+	/// <summary>Online, com a partida em curso: por quais times dá para entrar
+	/// agora (o servidor diz: lugar livre e sem deixar um time com dois a mais).</summary>
+	public List<int> EnterTeams = new();
+	/// <summary>Online: a partida em curso está quase acabando e não recebe mais ninguém.</summary>
+	public bool Closing;
 
 	public int Occupancy => Members.Count;
 	public int Capacity => Settings.TeamSize * 2;

@@ -29,6 +29,9 @@ public static class SettingKeys
 	/// <summary><c>{ "count": 4, "percent": 20 }</c> — a vitrine do dia: quantos
 	/// itens e com que desconto; count 0 desliga.</summary>
 	public const string Showcase = "vitrine";
+	/// <summary><c>{ "base": 150, "kill": 10, "assist": 5, "win": 100, "draw": 50, "mvp": 50, "starter": 0 }</c> —
+	/// o Cash que cada coisa rende numa partida e o com que a conta nova começa.</summary>
+	public const string Rewards = "recompensas";
 
 	public static readonly IReadOnlyDictionary<string, string> Defaults = new Dictionary<string, string>
 	{
@@ -37,7 +40,8 @@ public static class SettingKeys
 		[Notice] = "{\"text\":\"\"}",
 		[Bonus] = "{\"xp\":1,\"presas\":1,\"until\":null}",
 		[Challenges] = "{\"daily\":3,\"weekly\":5}",
-		[Showcase] = "{\"count\":4,\"percent\":20}"
+		[Showcase] = "{\"count\":4,\"percent\":20}",
+		[Rewards] = "{\"base\":150,\"kill\":10,\"assist\":5,\"win\":100,\"draw\":50,\"mvp\":50,\"starter\":0}"
 	};
 }
 
@@ -96,6 +100,23 @@ public sealed class GameData
 	{
 		var (daily, weekly) = ChallengeCounts;
 		return ChallengeRules.Running(Challenges, now, daily, weekly);
+	}
+
+	/// <summary>O Cash por partida valendo (o do painel, ou o de fábrica).</summary>
+	public global::Rewards.CashRates Cash()
+	{
+		var d = global::Rewards.CashRates.Default;
+		if (!Settings.TryGetValue(SettingKeys.Rewards, out JsonNode r)) return d;
+		return new(Int(r["base"], d.Base), Int(r["kill"], d.Kill), Int(r["assist"], d.Assist), Int(r["win"], d.Win), Int(r["draw"], d.Draw), Int(r["mvp"], d.Mvp));
+	}
+
+	/// <summary>O Cash de uma conta nova.</summary>
+	public long StarterCash => Settings.TryGetValue(SettingKeys.Rewards, out JsonNode r) ? Int(r["starter"], 0) : 0;
+
+	private static int Int(JsonNode node, int fallback)
+	{
+		try { return node == null ? fallback : Math.Clamp(node.GetValue<int>(), 0, 100000); }
+		catch (Exception e) when (e is InvalidOperationException or FormatException) { return fallback; }
 	}
 
 	/// <summary>O multiplicador de evento valendo agora.</summary>

@@ -35,6 +35,7 @@ public partial class Player : CharacterBody3D
 	private Node3D _head;
 	private FormController _form;
 	private Health _health;
+	private int _collisionTeam = TeamCollision.None;
 	private Weapon _weapon;
 
 	private float _gravity = 9.8f;
@@ -205,6 +206,9 @@ public partial class Player : CharacterBody3D
 		_intent = intent;
 		_drivenFrozen = frozen;
 		Step(delta);
+		// A arma, logo depois, como no jogo (lá ela é filha do corpo e dá o
+		// passo de física dela em seguida). Ver Weapon._PhysicsProcess.
+		_weapon.Tick(delta);
 	}
 
 	/// <summary>O jogador estava parado neste passo (contagem, menu): o
@@ -327,7 +331,11 @@ public partial class Player : CharacterBody3D
 	public override void _EnterTree()
 	{
 		var health = GetNodeOrNull<Health>("Health");
-		if (RoomConfig.Active && health != null) health.Team = RoomConfig.PlayerTeam;
+		// O corpo do servidor (Driven) tem o time de quem ele é (MatchWorld.SpawnBody),
+		// não o da sala desta máquina: com a sala ativa (no teste, ou num jogo
+		// que hospeda), todos viravam do mesmo time — e, aliados, atravessavam
+		// um ao outro no servidor (TeamCollision).
+		if (RoomConfig.Active && health != null && !Driven) health.Team = RoomConfig.PlayerTeam;
 
 		// O corpo do servidor não lê o perfil desta máquina: quem o cria
 		// diz o personagem (Character).
@@ -363,6 +371,9 @@ public partial class Player : CharacterBody3D
 
 	public override void _PhysicsProcess(double delta)
 	{
+		// Aliado não é parede (TeamCollision): antes de tudo, até no corpo
+		// movido pelo servidor, que também esbarra nos outros.
+		TeamCollision.Keep(this, _health, ref _collisionTeam);
 		if (Driven || !IsMultiplayerAuthority()) return;
 
 		// Menu aberto: ninguém aperta nada. O corpo continua (cai, termina o

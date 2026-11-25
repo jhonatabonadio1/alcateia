@@ -30,6 +30,22 @@ namespace Alcateia.Servidor.Rotas;
 /// </summary>
 public static class FleetRoutes
 {
+	/// <summary>"progress": [{ key, live, timeLeft, duration, blue, orange, toWin }]: onde
+	/// cada partida está. Servidor antigo não manda; aí nenhuma fecha.</summary>
+	private static Dictionary<string, MatchProgress> ReadProgress(JsonArray list)
+	{
+		if (list == null) return null;
+		var progress = new Dictionary<string, MatchProgress>();
+		foreach (JsonNode n in list)
+		{
+			if (n is not JsonObject p || p["key"]?.GetValue<string>() is not string key) continue;
+			progress[key] = new MatchProgress(p["live"]?.GetValue<bool>() ?? false, p["timeLeft"]?.GetValue<double>() ?? 0,
+				p["blue"]?.GetValue<int>() ?? 0, p["orange"]?.GetValue<int>() ?? 0, Math.Max(p["toWin"]?.GetValue<int>() ?? 1, 1),
+				p["duration"]?.GetValue<double>() ?? 0);
+		}
+		return progress;
+	}
+
 	public static void Map(IEndpointRouteBuilder app, Services s)
 	{
 		app.MapPost("/v1/fleet/heartbeat", async ctx =>
@@ -41,7 +57,8 @@ public static class FleetRoutes
 			if (string.IsNullOrEmpty(address)) address = ctx.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
 			List<string> open = (body["matches"] as JsonArray)?.Select(n => n?.GetValue<string>()).Where(k => k != null).ToList();
 
-			var beat = new Beat(Api.Text(body, "id"), address, Api.Int(body, "port"), Api.Int(body, "players"), Api.Int(body, "capacity", 1), open);
+			var beat = new Beat(Api.Text(body, "id"), address, Api.Int(body, "port"), Api.Int(body, "players"), Api.Int(body, "capacity", 1), open,
+				ReadProgress(body["progress"] as JsonArray));
 			RecordIncidents(s, beat.Id, address, body["events"] as JsonArray);
 			List<MatchAssignment> deliver = s.Fleet.Heartbeat(beat);
 
@@ -102,7 +119,13 @@ public static class FleetRoutes
 	{
 		var players = new JsonArray();
 		foreach (MatchSeat p in a.Players)
-			players.Add(new JsonObject { ["accountId"] = p.AccountId, ["name"] = p.Name, ["team"] = p.Team, ["owner"] = p.Owner });
+		{
+			var seat = new JsonObject { ["accountId"] = p.AccountId, ["name"] = p.Name, ["team"] = p.Team, ["owner"] = p.Owner };
+			// O que a conta tem (itens da loja): o servidor de partida só deixa
+			// levar para a partida a arma que é de série ou que está aqui.
+			if (p.Weapons != null) seat["weapons"] = new JsonArray(p.Weapons.Select(w => (JsonNode)w).ToArray());
+			players.Add(seat);
+		}
 		var json = new JsonObject { ["matchKey"] = a.MatchKey, ["settings"] = a.Settings.DeepClone(), ["players"] = players };
 		if (a.Update) json["update"] = true;
 		return json;

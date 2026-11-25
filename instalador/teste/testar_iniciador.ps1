@@ -2,14 +2,14 @@
 # verdade, com um jogo de mentira (jogo_falso.nsi) que sai com erro nos modos
 # de vídeo listados em FALHAM. Roda no CI (testes.yml, job "iniciador") e em
 # qualquer Windows com o NSIS:
-#   pwsh instalador/teste/testar_iniciador.ps1
+#   pwsh instalador/teste/testar_iniciador.ps1 [-Pronto <pasta>]
+#
+# -Pronto: uma pasta com WolfLeague.exe e jogo_falso.exe já compilados (o CI
+# compila no Ubuntu). O iniciador é de 64 bits, e o NSIS oficial de Windows
+# só traz os stubs x86: sem -Pronto, o makensis daqui só compila se tiver os
+# stubs amd64 (o do apt do Ubuntu/Debian tem).
+param([string]$Pronto = "")
 $ErrorActionPreference = "Stop"
-
-$makensis = (Get-Command makensis -ErrorAction SilentlyContinue).Source
-if (-not $makensis) {
-    $makensis = Join-Path ${env:ProgramFiles(x86)} "NSIS\makensis.exe"
-    if (-not (Test-Path $makensis)) { choco install nsis -y --no-progress | Out-Null }
-}
 
 $raiz = Join-Path ([IO.Path]::GetTempPath()) "wolfleague-iniciador"
 Remove-Item -Recurse -Force $raiz -ErrorAction SilentlyContinue
@@ -17,10 +17,20 @@ New-Item -ItemType Directory -Force (Join-Path $raiz "game") | Out-Null
 $iniciador = Join-Path $raiz "WolfLeague.exe"
 $chamadas = Join-Path $raiz "game\chamadas.txt"
 
-& $makensis -V2 "-DSAIDA=$iniciador" (Resolve-Path "instalador/iniciador.nsi").Path
-if ($LASTEXITCODE) { throw "makensis: iniciador" }
-& $makensis -V2 "-DSAIDA=$(Join-Path $raiz 'game\WolfLeague.exe')" (Resolve-Path "instalador/teste/jogo_falso.nsi").Path
-if ($LASTEXITCODE) { throw "makensis: jogo de mentira" }
+if ($Pronto) {
+    Copy-Item (Join-Path $Pronto "WolfLeague.exe") $iniciador
+    Copy-Item (Join-Path $Pronto "jogo_falso.exe") (Join-Path $raiz "game\WolfLeague.exe")
+} else {
+    $makensis = (Get-Command makensis -ErrorAction SilentlyContinue).Source
+    if (-not $makensis) {
+        $makensis = Join-Path ${env:ProgramFiles(x86)} "NSIS\makensis.exe"
+        if (-not (Test-Path $makensis)) { choco install nsis -y --no-progress | Out-Null }
+    }
+    & $makensis -V2 "-DSAIDA=$iniciador" (Resolve-Path "instalador/iniciador.nsi").Path
+    if ($LASTEXITCODE) { throw "makensis: iniciador (sem os stubs amd64? use -Pronto)" }
+    & $makensis -V2 "-DSAIDA=$(Join-Path $raiz 'game\WolfLeague.exe')" (Resolve-Path "instalador/teste/jogo_falso.nsi").Path
+    if ($LASTEXITCODE) { throw "makensis: jogo de mentira" }
+}
 
 $ini = Join-Path $env:APPDATA "WolfLeague\video.ini"
 $chave = "HKCU:\Software\WolfLeague"

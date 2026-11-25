@@ -35,7 +35,8 @@ public enum InputButtons : ushort
 /// <see cref="Spawn"/>): a vida e a transformação vão para o servidor na
 /// leva seguinte.
 ///
-/// 17 bytes (26 com o renascimento). Cada pacote leva os últimos
+/// 17 bytes (26 com o renascimento; até 51 no especial do lobo, com o
+/// ponto mirado e o alvo travado). Cada pacote leva os últimos
 /// <see cref="InputCommand.Redundancy"/> comandos: um pacote perdido não
 /// perde o passo.
 /// </summary>
@@ -44,7 +45,7 @@ public struct InputCommand
 	/// <summary>Quantos comandos cada pacote leva (o deste passo e os anteriores).</summary>
 	public const int Redundancy = 4;
 
-	public const int MaxSize = 26;
+	public const int MaxSize = 51;
 
 	[Flags]
 	private enum Flags : byte
@@ -54,7 +55,10 @@ public struct InputCommand
 		HasSpawn = 2,
 		HasSlot = 4,
 		Frozen = 8,
-		OnWall = 16
+		OnWall = 16,
+		HasAim = 32,
+		HasFocus = 64,
+		AimNone = 128
 	}
 
 	public uint Seq;
@@ -94,6 +98,29 @@ public struct InputCommand
 	public bool HasSpawn;
 	public Vector3 Spawn;
 
+	/// <summary>
+	/// O especial do lobo (e o salto carregado) saiu neste passo, e este é o
+	/// ponto que o jogo mirou (<see cref="AimNone"/>: não mirou nada, o céu).
+	/// O servidor não tem a câmera do jogador: com o ponto, salta para o
+	/// mesmo lugar (Jhon, 25/11: "no primeira pessoa que buga"). O servidor
+	/// confere que o ponto está ao alcance do salto.
+	/// </summary>
+	public bool HasAim, AimNone;
+	public Vector3 Aim;
+
+	/// <summary>
+	/// O alvo travado do especial: com ele armado (o clique salta nele) ou
+	/// com o voo perseguindo. <see cref="Focus"/> é o lugar dele na escalação;
+	/// <see cref="FocusAt"/> e <see cref="FocusVelocity"/>, onde o jogo o via
+	/// e para onde ia naquele passo — o voo segue isso, e o servidor, que vê
+	/// o alvo no presente (o jogo o vê uns 100 ms atrás), seguia outro ponto.
+	/// O servidor confere que é inimigo, vivo, ao alcance da trava, e que o
+	/// ponto está perto de onde o alvo esteve.
+	/// </summary>
+	public bool HasFocus;
+	public byte Focus;
+	public Vector3 FocusAt, FocusVelocity;
+
 	public bool Has(InputButtons b) => (Buttons & b) != 0;
 
 	public void Write(ref PacketWriter w)
@@ -104,6 +131,9 @@ public struct InputCommand
 		if (HasSlotRequest) flags |= Flags.HasSlot;
 		if (Frozen) flags |= Flags.Frozen;
 		if (OnWall) flags |= Flags.OnWall;
+		if (HasAim) flags |= Flags.HasAim;
+		if (HasAim && AimNone) flags |= Flags.AimNone;
+		if (HasFocus) flags |= Flags.HasFocus;
 
 		w.U32(Seq);
 		w.U16((ushort)Buttons);
@@ -117,6 +147,13 @@ public struct InputCommand
 		w.Byte(Epoch);
 		w.Byte(SlotRequest);
 		if (HasSpawn) w.Position(Spawn);
+		if (HasAim && !AimNone) w.Position(Aim);
+		if (HasFocus)
+		{
+			w.Byte(Focus);
+			w.Position(FocusAt);
+			w.Velocity(FocusVelocity);
+		}
 	}
 
 	public static InputCommand Read(ref PacketReader r)
@@ -140,7 +177,17 @@ public struct InputCommand
 		c.Frozen = (flags & Flags.Frozen) != 0;
 		c.OnWall = (flags & Flags.OnWall) != 0;
 		c.HasSpawn = (flags & Flags.HasSpawn) != 0;
+		c.HasAim = (flags & Flags.HasAim) != 0;
+		c.AimNone = (flags & Flags.AimNone) != 0;
+		c.HasFocus = (flags & Flags.HasFocus) != 0;
 		if (c.HasSpawn) c.Spawn = r.PositionCm();
+		if (c.HasAim && !c.AimNone) c.Aim = r.PositionCm();
+		if (c.HasFocus)
+		{
+			c.Focus = r.Byte();
+			c.FocusAt = r.PositionCm();
+			c.FocusVelocity = r.VelocityCm();
+		}
 		return c;
 	}
 
@@ -154,6 +201,9 @@ public struct InputCommand
 			| InputButtons.AttackHeld | InputButtons.Aim | InputButtons.HowlHeld;
 		c.HasSlotRequest = false;
 		c.HasSpawn = false;
+		// O ponto mirado é do clique, que não se repete; o alvo travado segue.
+		c.HasAim = false;
+		c.AimNone = false;
 		return c;
 	}
 }

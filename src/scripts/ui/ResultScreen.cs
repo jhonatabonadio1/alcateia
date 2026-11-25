@@ -14,8 +14,7 @@ using System.Linq;
 ///    houver, o aviso de promoção. É o momento mais importante da tela:
 ///    não pula nem acelera.
 ///
-/// Rodapé: Jogar de novo (primário, já sob o cursor), Voltar à sala, Sair
-/// para o lobby.
+/// Rodapé: Voltar à sala (primário, já sob o cursor) e Sair para o lobby.
 ///
 /// Só lê o que o <see cref="Match"/> já pagou em <see cref="Match.Reward"/>:
 /// a conta é feita uma vez, antes desta tela existir.
@@ -66,6 +65,12 @@ public partial class ResultScreen : CanvasLayer
 
 	/// <summary>Volume da música da tela de resultado, em dB.</summary>
 	private const float ResultMusicDb = -2f;
+
+	/// <summary>O retrato com a borda do nível na faixa do MVP e no card da
+	/// recompensa, em px (Jhon, 25/11: "os escudos devem ser um pouco maiores e
+	/// ter o ícone do player neles"; eram 40 e 48, só a borda, com o miolo vazio).
+	/// Com 40 ou mais, o retrato mostra a placa do número e as estrelas.</summary>
+	private const int MvpPortrait = 64, RewardPortrait = 72;
 
 	public override void _Ready()
 	{
@@ -385,7 +390,16 @@ public partial class ResultScreen : CanvasLayer
 		}
 
 		row.AddChild(Icon.Make(IconKind.Crown, 32, UiTokens.Accent));
-		row.AddChild(RankBadge.Make(mvp.Rank, 40));
+		// A foto da partida, a mesma do placar logo abaixo: o retrato do
+		// personagem com que ele jogou. Bot não tem nível nem retrato: o ícone
+		// dele, do tamanho do hexágono, no lugar do retrato (como no TAB).
+		if (mvp.Rank < 0)
+		{
+			var bot = new CenterContainer { CustomMinimumSize = Vector2.One * MvpPortrait };
+			bot.AddChild(Icon.Make(IconKind.Bot, Mathf.RoundToInt(MvpPortrait * RankBadge.Grow * RankBadge.Window * 2f), UiTokens.TextDisabled));
+			row.AddChild(bot);
+		}
+		else row.AddChild(RankBadge.Make(mvp.Rank, MvpPortrait, avatar: mvp.ProfilePhoto));
 
 		VBoxContainer who = UiKit.Column(0);
 		who.AddChild(UiKit.Caption("MVP DA PARTIDA", UiTokens.Accent));
@@ -432,8 +446,9 @@ public partial class ResultScreen : CanvasLayer
 
 		// Patente e barra.
 		HBoxContainer rank = UiKit.Row(UiTokens.S3);
-		_badge = RankBadge.Make(Ranks.RankFor(_match.Reward.XpBefore), 48);
-		_badge.PivotOffset = new Vector2(24, 24);
+		// O nível é da conta: a foto de perfil, a mesma da promoção que abre daqui.
+		_badge = RankBadge.Make(Ranks.RankFor(_match.Reward.XpBefore), RewardPortrait, avatar: Avatars.Selected);
+		_badge.PivotOffset = Vector2.One * (RewardPortrait / 2f);
 		rank.AddChild(_badge);
 		VBoxContainer rankText = UiKit.Column(0);
 		rankText.SizeFlagsVertical = Control.SizeFlags.ShrinkCenter;
@@ -537,44 +552,18 @@ public partial class ResultScreen : CanvasLayer
 		Button lobby = UiKit.Button("Sair para o lobby", ButtonKind.Tertiary, () => Leave(ReturnTarget.RoomList));
 		row.AddChild(lobby);
 
-		Button room = UiKit.Button("Voltar à sala", ButtonKind.Secondary, () => Leave(ReturnTarget.Room));
+		// Sem "jogar de novo" (Jhon, 25/11): só voltar à sala ou ao menu. O
+		// primário é a sala, sob o cursor.
+		Button room = UiKit.Button("Voltar à sala", ButtonKind.Primary, () => Leave(ReturnTarget.Room));
 		room.Disabled = !RoomConfig.Active || (RoomDirectory.Current == null && !LobbyLink.InRoom);
 		if (room.Disabled) room.TooltipText = "Partida aberta direto no editor: não há sala.";
+		room.CustomMinimumSize = new Vector2(220, 52);
 		row.AddChild(room);
+		_again = room;
 
-		// Online, jogar de novo é do mestre da sala, e leva todos (Jhon, 21/11).
-		// Para os outros o primário vira o voltar à sala, sob o cursor do mesmo jeito.
-		if (_match.CanRestart)
-		{
-			_again = UiKit.Button("Jogar de novo", ButtonKind.Primary, Again);
-		}
-		else
-		{
-			_again = UiKit.Button("Voltar à sala", ButtonKind.Primary, () => Leave(ReturnTarget.Room));
-			_again.TooltipText = "Só o mestre da sala reinicia a partida.";
-			room.Visible = false;
-		}
-		_again.CustomMinimumSize = new Vector2(220, 52);
-		row.AddChild(_again);
-
-		foreach (Button b in new[] { lobby, room })
-			b.CustomMinimumSize = new Vector2(180, 52);
+		lobby.CustomMinimumSize = new Vector2(180, 52);
 
 		return row;
-	}
-
-	private void Again()
-	{
-		if (_match.Online)
-		{
-			// Um pedido só; a partida nova chega para todos. Se o saguão recusar
-			// (o aviso aparece), o botão volta.
-			_again.Disabled = true;
-			GetTree().CreateTimer(10).Timeout += () => { if (IsInstanceValid(_again)) _again.Disabled = false; };
-			GameMenu.RestartOnline(this);
-			return;
-		}
-		_match.Restart();
 	}
 
 	private void Leave(ReturnTarget target) => _match.Leave(target);

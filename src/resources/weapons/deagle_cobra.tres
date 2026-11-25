@@ -40,6 +40,7 @@ NoiseRadius = 50
 AimFov = 65
 AimSpreadMultiplier = 0.6
 AimSpeedMultiplier = 0.7
+AimLift = 0.005
 StarDamage = 4.0
 StarPenetration = 3.0
 StarAccuracy = 2.5

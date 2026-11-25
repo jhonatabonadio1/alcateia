@@ -64,8 +64,13 @@ public static class OnlineMatch
 		bool late = start["late"]?.GetValue<bool>() ?? false;
 		Roster.Clear();
 		foreach (JsonNode m in room?["members"] as JsonArray ?? new JsonArray())
+		{
+			// Entrando no meio, quem está na sala mas de fora da partida (ainda
+			// escolhendo o time) não está jogando: não vira boneco aqui.
+			if (late && !(m["inMatch"]?.GetValue<bool>() ?? true) && m["id"].GetValue<long>() != AccountId) continue;
 			Roster.Add(new Seat(m["id"].GetValue<long>(), m["name"].GetValue<string>(), m["team"].GetValue<int>(),
 				m["xp"]?.GetValue<long>() ?? 0, late ? 0 : m["owner"]?.GetValue<long>() ?? 0, m["photo"]?.GetValue<string>()));
+		}
 		Roster.Sort((a, b) => a.Id.CompareTo(b.Id));
 
 		RoomConfig.Settings = SettingsFrom(start["settings"] as JsonObject);

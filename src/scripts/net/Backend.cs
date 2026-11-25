@@ -67,6 +67,10 @@ public static class Backend
 
 	private static readonly System.Collections.Generic.List<SavedAccess> _saved = new();
 
+	/// <summary>Quantas contas ficam salvas neste computador (Jhon, 25/11);
+	/// a mais nova entra e a mais antiga sai.</summary>
+	public const int MaxSaved = 3;
+
 	/// <summary>Os acessos salvos, o mais recente primeiro.</summary>
 	public static System.Collections.Generic.IReadOnlyList<SavedAccess> Saved
 	{
@@ -333,10 +337,13 @@ public static class Backend
 			if (!_saved.Exists(a => a.Id == id && a.Url == _url))
 				_saved.Insert(0, new SavedAccess(_url, id, file.GetValue("conta", "nome", "").AsString(), old, ""));
 		}
+		// Quem já tinha mais que o máximo guardado fica com as mais recentes.
+		if (_saved.Count > MaxSaved) _saved.RemoveRange(MaxSaved, _saved.Count - MaxSaved);
 	}
 
 	private static void Save()
 	{
+		if (_saved.Count > MaxSaved) _saved.RemoveRange(MaxSaved, _saved.Count - MaxSaved);
 		var array = new JsonArray();
 		foreach (SavedAccess a in _saved)
 			array.Add(new JsonObject { ["url"] = a.Url, ["id"] = a.Id, ["name"] = a.Name, ["token"] = a.Token, ["savedAt"] = a.SavedAt });

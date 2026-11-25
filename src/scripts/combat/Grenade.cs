@@ -95,7 +95,35 @@ public partial class Grenade : RigidBody3D
 	/// sai dela tem o mesmo tamanho.</summary>
 	[Export] public float ModelScale = 1.4f;
 
+	/// <summary>O som de cada batida (pedido do Jhon, 25/11: "a granada, ao
+	/// cair, tem que fazer um barulho de algo caindo no chão e respeitando a
+	/// física a cada batida"). Um por batida de verdade, no volume da
+	/// velocidade com que ela bateu: o primeiro toque soa cheio, cada quique
+	/// mais baixo, e rolando não soa.</summary>
+	[ExportGroup("Batida")]
+	[Export] public string BounceSound = "granada_quique";
+
+	/// <summary>A velocidade de batida (m/s, na direção da superfície) que
+	/// soa a 0 dB; o arremesso longo bate a uns 12.</summary>
+	[Export] public float BounceLoudSpeed = 7f;
+
+	/// <summary>Abaixo disto a batida não soa (é rolar, não bater).</summary>
+	[Export] public float BounceMinSpeed = 0.45f;
+
+	/// <summary>Até onde a batida se ouve (m).</summary>
+	[Export] public float BounceRange = 25f;
+
+	/// <summary>Tempo mínimo entre duas batidas que soam (s): o mesmo toque
+	/// pode durar dois passos de física.</summary>
+	[Export] public float BounceGap = 0.07f;
+
+	/// <summary>Cada batida que soou: o tempo de voo e a velocidade dela. Para os testes.</summary>
+	public List<(double Time, float Speed)> Bounces { get; } = new();
+
 	private double _timer;
+	private double _alive;
+	private double _lastBounce = -1;
+	private Vector3 _lastVelocity;
 	private bool _exploded;
 
 	public override void _Ready()
@@ -158,6 +186,8 @@ public partial class Grenade : RigidBody3D
 	public override void _PhysicsProcess(double delta)
 	{
 		if (_exploded) return;
+		_alive += delta;
+		Knock((float)delta);
 
 		// No ar: o que está no caminho deste passo? Se há, o toque é agora, ali.
 		if (!Landed)
@@ -173,6 +203,31 @@ public partial class Grenade : RigidBody3D
 		_timer -= delta;
 		if (_timer <= 0)
 			Explode();
+	}
+
+	/// <summary>
+	/// A batida, pela física: o que a velocidade mudou neste passo além da
+	/// gravidade e do freio é o que o chão (ou a parede) devolveu. Quicando,
+	/// a mudança é (1 + quique) × a velocidade com que ela chegou, na
+	/// direção da superfície; rolando, quase nada. Lida assim vale para
+	/// chão, parede e teto, e não depende de o aviso de contato chegar.
+	/// </summary>
+	private void Knock(float delta)
+	{
+		Vector3 velocity = LinearVelocity;
+		Vector3 expected = _lastVelocity + GetGravity() * GravityScale * delta;
+		expected *= Mathf.Max(0f, 1f - LinearDamp * delta);
+		_lastVelocity = velocity;
+		if (_alive < 2 * delta) return;              // o primeiro passo é o arremesso, não batida
+
+		float speed = (velocity - expected).Length() / (1f + Bounciness);
+		if (speed < BounceMinSpeed || _alive - _lastBounce < BounceGap) return;
+
+		_lastBounce = _alive;
+		Bounces.Add((_alive, speed));
+		// O volume segue a energia da batida: metade da velocidade, 6 dB a menos.
+		float db = Mathf.Clamp(20f * Mathf.Log(speed / BounceLoudSpeed) / Mathf.Log(10f), -26f, 3f);
+		Sfx.At(BounceSound, GlobalPosition, BounceRange, db);
 	}
 
 	private void Explode()
@@ -242,7 +297,12 @@ public partial class Grenade : RigidBody3D
 				NetMatch net = Thrower != null && health != null && health != Thrower ? NetMatch.Current : null;
 				net?.BeginLocalHit(Thrower.GetParent(), health, CenterDamage * falloff);
 				if (Thrower != null && health != Thrower) health?.NoteAttacker(Thrower.GetParent());
-				health?.TakeDamage(CenterDamage * falloff, 0, GlobalPosition);
+
+				// A própria granada: fere mesmo com a proteção de quem nasceu
+				// (a proteção é contra os outros) e, se matar, o feed diz "de
+				// granada" (Health.TakeOwnDamage).
+				if (health != null && health == Thrower) health.TakeOwnDamage(CenterDamage * falloff, GlobalPosition, KillCause.Grenade, Arsenal.GrenadeId);
+				else health?.TakeDamage(CenterDamage * falloff, 0, GlobalPosition);
 				net?.EndLocalHit();
 				if (enemy) ThrowerWeapon?.ConfirmHit(CenterDamage * falloff);
 
