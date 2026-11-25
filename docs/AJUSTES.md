@@ -375,13 +375,29 @@ sempre humano.
 | `AutoRespawn` | sim (o jogador desliga) | Renascer sozinho |
 | `ShieldDecayGrace` | 1 s | Carência do escudo depois do rugido |
 
-Cabeça: a do modelo que se vê (`HeadHitbox`): uma esfera no meio dos
-ossos `mixamorig_Head` e `mixamorig_HeadTop_End`, com raio de
-`HeadHit.RadiusFactor` 0,55 × a distância entre eles (12 cm no humano,
-12,5 no lobo). Parede na frente protege; a cápsula do próprio dono, até
-`HeadHit.Depth` 0,45 m (a cabeça do humano fica dentro dela). Sem modelo
-à vista (boneco do treino, corpo no servidor), vale `Weapon.HeadZone`
-0,72 m acima do centro do corpo. A faca usa `Weapon.HeadshotMultiplier`
+O tiro acerta o que se vê (25/11, `BodyHitbox`, conta em
+`src/scripts/domain/BodyHit.cs`): cada peça do corpo (cabeça, pescoço,
+tronco, braço, antebraço, mão, coxa, canela, pé) é uma cápsula de corte
+oval ajustada à pele que pesa no osso dela, e segue o osso. A proporção do
+oval sai da caixa de 3% a 97% da pele (`BodyHit.CrossQuantile` 0,03) e o
+comprimento de 2% a 98% (`LengthQuantile` 0,02); o tamanho, de conter
+`BodyHit.Contains` **0,8** da pele (a cabeça, `BodyHit.HeadContains`
+**0,6**, mais justa: headshot exige mira). Peça com o comprimento (a
+metade) acima de `BodyHit.ElongatedFrom` 1,5 vez o maior raio do corte é
+cápsula, e o membro vira duas peças, uma por metade (ele afina); abaixo, é
+um elipsoide (a cabeça). A cabeça leva só a pele com 80% do peso nos ossos
+dela (`BodyHitbox.HeadWeight`; a juba do lobo é corpo). Peça com menos de 16
+pontos vai para o osso pai (`BodyHitbox.MinPoints`). O rabo do lobo não
+leva tiro. A faca e a coronhada continuam pela cápsula de movimento, com a
+cabeça pela peça até `HeadHit.Depth` 0,45 m dentro da cápsula. Medido
+(teste `CorpoPrecisoNoTiro`): o ar em volta que leva tiro fica em 11–18% da
+silhueta e o corpo visível sem tiro em 2–8% (antes, 55–90% e 2–50%). Até
+25/11 o tiro acertava a cápsula de movimento e a cabeça era uma esfera de
+`HeadHit.RadiusFactor` 0,55 × a distância entre os ossos `mixamorig_Head`
+e `mixamorig_HeadTop_End` (11,9 cm de raio na Eve, 13,1 no Barut, 17,9 no
+lobo). Sem modelo à vista (boneco do treino, corpo no servidor), vale a
+cápsula e `Weapon.HeadZone` 0,72 m acima do centro do corpo. A faca usa
+`Weapon.HeadshotMultiplier`
 2,5; as armas, o delas. Câmera de morte:
 `LoadoutMenu.KillCamTime` 4,2 s, `KillCam.Hold` 0,35 s,
 `KillCam.TurnRate` 5.
@@ -400,7 +416,7 @@ fortes que a arma de base; a ficha de cada uma está no `docs/ARSENAL.md`.
 |---|---|---|---|---|---|---|
 | Classe | fuzil | fuzil | fuzil | pesada (`Class` fuzil) | sniper | pistola |
 | `WpCost` | 0 | 200 (0 no padrão) | 380 | 450 | 600 | 0 |
-| `Damage` | 27 | 26 | 42 | 48 | 85 | 55 |
+| `Damage` (× `CombatRules.FirearmDamageScale` 1,38 no tiro; era 2 até 25/11) | 27 | 26 | 42 | 48 | 85 | 55 |
 | `HeadshotMultiplier` | 2,5 | 2,5 | 2,4 | 2,3 | 2,4 | 2,2 |
 | `Rpm` | 650 | 700 | 500 | 400 | 120 | 240 |
 | `Mode` | Auto | Auto | Auto | Auto | Semi | Semi |
@@ -692,6 +708,19 @@ nó é criado por código):
 | `WallTurnTime` | 0,12 s | Deitar na parede |
 | `DiveLeanMax` | 40° | Inclinação no bote |
 | `TeamTint` | 0,3 | Cor do time na pele |
+
+**Neon e olhos do lobo** (25/11, Jhon: "coloque os leds do equipamento brilhando bem forte", "e o olho também", "quero o neon desse jeito no game"):
+
+| Onde | Campo | Valor | O que faz |
+|---|---|---|---|
+| `src/assets/efeitos/lobo.gdshader` | `neon_energy` | 16 (era 2,6) | Força do neon do corpo (braceletes, peitoral, costas e o olho do modelo). Acima de 1 o glow dos mapas (limiar 1) faz o halo; a 16 o miolo passa do branco. Medido no jogo (Armazém e Cidade): 2,6 era um fio aceso sem halo; 10 esquenta; 16 a 24 fica como nas imagens das thumbs |
+| idem | `neon_boost_gain` | 0,6 (era 1,6) | Quanto o poder (rugido, especial) multiplica o neon: 1 + isto × o `neon_boost` do `WolfFx`. Com o neon a 16 e o 1,6 de antes, o pico do rugido (escudo cheio, boost ~3) ia a 93 e estourava a tela; agora vai a ~44 |
+| idem | `neon_even` | 1 | Todo LED acende igual: cada texel aceso da emissão vai à força cheia, na cor dele (a borda da faixa continua suave; abaixo de 0,04 fica apagado). A textura pintou o miolo do peitoral a ~0,4 e o das costas a ~0,75–0,8 do bracelete (0,98). 0 volta à textura como veio |
+| `src/assets/efeitos/olho.gdshader` | `energy` | 4 | Força do miolo do brilho dos olhos (passa do branco; o halo é do glow do mapa) |
+| idem | `fade_distance` | 0,03 m | Onde o disco encosta na pele ele some, em vez de cortar reto |
+| `src/scripts/visual/fx/EyeGlow.cs` | `Size` | 0,11 m | Tamanho de cada disco (o halo; o miolo é bem menor) |
+| idem | `LeftEye` / `RightEye` | (6,47; 15,64; 22,7) / (−1,03; 15,58; 24,43) cm | Onde ficam os olhos no osso da cabeça, 2 cm à frente da pele, medidos no miolo aceso da emissão do modelo (o mesmo rosto nos dois times). Modelo novo: meça de novo |
+| `WolfFx` | `EyeBoost` | 0,8 | Quanto o brilho dos olhos sobe com o poder (1 + isto × o neon do poder) |
 
 **Humano** (`src/scripts/visual/human/`, nó `Human`): `CrouchAim` 1
 (fuzil no ombro agachado), `BlendSmoothing` 9, `HitCooldown` 1,6 s,

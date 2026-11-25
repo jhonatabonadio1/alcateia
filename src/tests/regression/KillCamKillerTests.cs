@@ -138,34 +138,9 @@ public abstract class KillCamOnlineBase : OnlineGameTest
 		if (Authoritative)
 		{
 			ServerBody mine = Server.Match.BodyOf(TestMatchServer.MeAccount);
-			var space = Server.World.Space;
-			Vector3 at = Vector3.Inf;
-			Vector3 target = mine.Body.GlobalPosition;
-			foreach (float reach in new[] { 6f, 4f, 8f, 3f })
-			{
-				foreach (Vector3 dir in new[] { Vector3.Forward, Vector3.Back, Vector3.Left, Vector3.Right,
-					new Vector3(1, 0, 1).Normalized(), new Vector3(-1, 0, 1).Normalized(), new Vector3(1, 0, -1).Normalized(), new Vector3(-1, 0, -1).Normalized() })
-				{
-					Vector3 c = target + dir * reach;
-					var down = space.IntersectRay(PhysicsRayQueryParameters3D.Create(c + Vector3.Up * 0.5f, c + Vector3.Down * 3f));
-					if (down.Count == 0) continue;
-					Vector3 stand = (Vector3)down["position"] + Vector3.Up * 0.9f;
-					if (Mathf.Abs(stand.Y - target.Y) > 0.5f) continue;
-					// À vista: nada entre os dois (o próprio corpo dele não conta).
-					var sight = PhysicsRayQueryParameters3D.Create(stand + Vector3.Up * 0.6f, target + Vector3.Up * 0.3f);
-					sight.Exclude = new Godot.Collections.Array<Rid> { mine.Body.GetRid() };
-					if (space.IntersectRay(sight).Count > 0) continue;
-					at = stand;
-					break;
-				}
-				if (at != Vector3.Inf) break;
-			}
-			b.Check(at != Vector3.Inf, "achou um lugar à vista do jogador para o outro atirar");
-			if (at == Vector3.Inf) return;
-			Vector3 look = target + Vector3.Up * 0.3f - (at + Vector3.Up * 0.6f);
-			fake = new FakeOther(Server, at, Mathf.Atan2(-look.X, -look.Z), Mathf.Atan2(look.Y, new Vector2(look.X, look.Z).Length()));
-			fake.Status();
-			for (int i = 0; i < 40; i++) { fake.Step(); await b.PhysicsFrame(); }
+			fake = await ShooterInSight(b);
+			b.Check(fake != null, "achou um lugar à vista do jogador para o outro atirar");
+			if (fake == null) return;
 			ServerBody theirs = Server.Match.BodyOf(TestMatchServer.OtherAccount);
 			b.Check(theirs is { Alive: true }, $"{mode}: o outro jogador está no mundo do servidor");
 			// Vida baixa no servidor: um acerto basta (a proteção de quem nasceu já passou).

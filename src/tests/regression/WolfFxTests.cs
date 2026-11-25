@@ -33,7 +33,9 @@ public sealed class WolfFxTest : RegressionTest
 		if (fx == null) return;
 		var human = p.GetNode<Node3D>("Human");
 		var wolf = p.GetNode<WolfVisual>("WolfVisual");
-		var meshes = wolf.Model.FindChildren("*", "MeshInstance3D", true, false).OfType<MeshInstance3D>().ToList();
+		// O corpo: as malhas da pele. Os discos dos olhos acesos (EyeGlow, 25/11)
+		// também são malhas do modelo, mas não levam aura nem vento.
+		var meshes = wolf.Model.FindChildren("*", "MeshInstance3D", true, false).OfType<MeshInstance3D>().Where(m => m.GetParent() is not EyeGlow).ToList();
 
 		// A cor: sem personagem, a do time.
 		Color team = p.GetNode<Health>("Health").Team == Teams.Orange ? WolfFx.OrangeEffect : WolfFx.BlueEffect;
@@ -115,7 +117,7 @@ public sealed class WolfFxTest : RegressionTest
 		await b.Until(() => b.Weapon.IsPounceFlying, 1.5);
 		float aura = 0f, mine = 0f, theirsMax = 0f;
 		var theirMesh = otherFx != null
-			? other.GetNode<WolfVisual>("WolfVisual").Model.FindChildren("*", "MeshInstance3D", true, false).OfType<MeshInstance3D>().First()
+			? other.GetNode<WolfVisual>("WolfVisual").Model.FindChildren("*", "MeshInstance3D", true, false).OfType<MeshInstance3D>().First(m => m.GetParent() is not EyeGlow)
 			: null;
 		while (b.Weapon.IsPounceFlying)
 		{

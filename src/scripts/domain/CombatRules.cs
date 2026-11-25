@@ -15,8 +15,13 @@ public static class CombatRules
 
 	/// <summary>O dano das armas de fogo está todo multiplicado por isto:
 	/// os números do documento são por tiro de uma vida de 100, e a vida
-	/// no jogo é 200.</summary>
-	public const float FirearmDamageScale = 2f;
+	/// no jogo é 200. Era 2 (o documento valendo como está); desde 25/11 é
+	/// 1,38 (Jhon: "as armas estão muito apelonas, os bonecos precisam ser
+	/// mais resistentes"): cada bala tira 31% menos, como se a vida fosse
+	/// 290 contra bala. No corpo, o AR-15 e a M4A4 passam de 4 a 6 tiros, a
+	/// AK e a SCAR de 3 a 4, a Desert Eagle de 2 a 3; na cabeça, só a SVD
+	/// ainda mata com um. A garra, a faca e a granada não mudam.</summary>
+	public const float FirearmDamageScale = 1.38f;
 
 	/// <summary>Fração do dano que sobra a esta distância: inteiro até o
 	/// começo da queda, o mínimo depois do fim, e em linha reta entre os

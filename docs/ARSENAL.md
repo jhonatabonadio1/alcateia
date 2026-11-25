@@ -19,7 +19,7 @@ primeira pessoa de cada arma saem de `src/tools/armas/reais.py`,
 
 | | |
 |---|---|
-| Vida do humano | 100 HP na conta deste documento, sem armadura. No jogo são 200, e o dano das armas de fogo dobra (`CombatRules.FirearmDamageScale` 2): tiros para matar e TTK ficam os mesmos |
+| Vida do humano | 100 HP na conta deste documento, sem armadura. No jogo são 200, e o dano das armas de fogo é multiplicado por `CombatRules.FirearmDamageScale`. Era 2 (tiros para matar e TTK iguais aos do documento); **desde 25/11 é 1,38** (Jhon: "as armas estão muito apelonas"): no jogo, a conta das fichas abaixo vale como se a vida fosse 145 neste documento. Os tiros para matar de agora estão na tabela "No jogo, desde 25/11", logo abaixo |
 | Vida do lobo | a mesma do humano, mais o escudo da classe (`docs/AJUSTES.md`, seção 2) |
 | Dispersão | graus de meio-ângulo do cone |
 | Recoil | graus por tiro, aplicados à rotação da câmera |
@@ -40,6 +40,32 @@ padrão leva a **M4A4**, a **Desert Eagle**, a faca e a granada.
 ---
 
 # FUZIS DE ASSALTO
+
+## No jogo, desde 25/11: tiros para matar
+
+As fichas abaixo trazem os números do documento (vida de 100). Desde 25/11
+a bala tira 31% menos (`FirearmDamageScale` 1,38; Jhon: "as armas estão
+muito apelonas, os bonecos precisam ser mais resistentes"), e o tiro só
+acerta o que se vê (`BodyHitbox`, docs/AJUSTES.md seção 6). Tiros para
+matar e TTK (segundos do primeiro ao último tiro), antes → agora, contra o
+humano (200) e contra o Bruto (200 + 200 de escudo, corpo a 60%; a cabeça
+ignora a resistência):
+
+| Arma | Distância | Humano: corpo | Humano: cabeça | Bruto: corpo | Bruto: cabeça |
+|---|---|---|---|---|---|
+| AR-15 | 10 e 20 m | 4 (0,28 s) → 6 (0,46 s) | 2 (0,09 s) → 3 (0,18 s) | 13 (1,11 s) → 18 (1,57 s) | 3 (0,18 s) → 5 (0,37 s) |
+| AR-15 | 40 m | 4 (0,28 s) → 6 (0,46 s) | 2 (0,09 s) → 3 (0,18 s) | 14 (1,20 s) → 20 (1,75 s) | 4 (0,28 s) → 5 (0,37 s) |
+| M4A4 | 10 e 20 m | 4 (0,26 s) → 6 (0,43 s) | 2 (0,09 s) → 3 (0,17 s) | 13 (1,03 s) → 19 (1,54 s) | 4 (0,26 s) → 5 (0,34 s) |
+| M4A4 | 40 m | 5 (0,34 s) → 7 (0,51 s) | 2 (0,09 s) → 3 (0,17 s) | 15 (1,20 s) → 22 (1,80 s) | 4 (0,26 s) → 6 (0,43 s) |
+| AK-74 | 10 e 20 m | 3 (0,24 s) → 4 (0,36 s) | 1 → 2 (0,12 s) | 8 (0,84 s) → 12 (1,32 s) | 2 (0,12 s) → 3 (0,24 s) |
+| AK-74 | 40 m | 3 (0,24 s) → 4 (0,36 s) | 2 (0,12 s) → 2 (0,12 s) | 9 (0,96 s) → 13 (1,44 s) | 3 (0,24 s) → 4 (0,36 s) |
+| SCAR-H | 10 a 40 m | 3 (0,30 s) → 4 (0,45 s) | 1 → 2 (0,15 s) | 7 (0,90 s) → 11 (1,50 s) | 2 (0,15 s) → 3 (0,30 s) |
+| SVD | 10 a 40 m | 2 (0,50 s) → 2 (0,50 s) | 1 → 1 | 4 (1,50 s) → 6 (2,50 s) | 1 → 2 (0,50 s) |
+| Desert Eagle | 10 e 20 m | 2 (0,25 s) → 3 (0,50 s) | 1 → 2 (0,25 s) | 7 (1,50 s) → 9 (2,00 s) | 2 (0,25 s) → 3 (0,50 s) |
+| Desert Eagle | 40 m | 3 (0,50 s) → 4 (0,75 s) | 2 (0,25 s) → 2 (0,25 s) | 8 (1,75 s) → 12 (2,75 s) | 3 (0,50 s) → 4 (0,75 s) |
+
+Só a SVD ainda mata com um tiro na cabeça (e com dois no corpo): é a
+identidade dela. As skins seguem a arma de base com os números delas.
 
 ## M4A4 — fuzil padrão (desde 19/11)
 *Carabina rápida e fácil de segurar.* Pedido do Jhon: "a arma padrão

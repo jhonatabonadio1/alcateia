@@ -271,11 +271,11 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `actors/body/` | O corpo que o jogador e o bot dividem: `WolfMoveMotor` (bote, voo do salto, preso ao chão), `BodyNoise` + `BodyNoiseProfile` (passo, baque, rugido; `src/resources/body/ruido.tres`), `Corpse` (cair e assentar morto), `BodyMotion.Hold`, `TeamCollision` (aliado atravessa, inimigo é sólido) |
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
 | `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, pente e reserva, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Aim` (zoom do botão direito), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfPouncePath` (o caminho do salto: o voo do corpo inteiro e o lado do alvo onde cair), `.WolfDive` (bote), `.Damage` (o raio com a cabeça do modelo e aplicar dano) |
-| `combat/HeadHitbox.cs` | A cabeça de quem leva tiro, no modelo que se vê (os ossos da cabeça do humano ou do lobo); sem modelo, a faixa de cima da cápsula |
+| `combat/BodyHitbox.cs` | O corpo que leva tiro, no modelo que se vê (25/11): uma peça por osso, ajustada à pele e seguindo o osso; a cabeça é uma delas (`HeadHitbox` só diz onde ela está). Sem modelo, a cápsula e a faixa de cima dela |
 | `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
 | `domain/CombatRules.cs` | As contas do combate em C# puro (dano, queda, dispersão, recuo, golpes do lobo, salto, vida e escudo), com teste de unidade |
 | `visual/RigPieces.cs` | Peças do conjunto de primeira pessoa mexidas por código por cima da animação (o carregador e o ferrolho na recarga de código do AR-15) |
-| `domain/HeadHit.cs` | A cabeça como esfera e quando o raio a acerta (parede na frente protege), C# puro com teste |
+| `domain/BodyHit.cs` | A peça do corpo (cápsula de corte oval) ajustada à pele, e o raio entrando nela; `HeadHit.cs`, a bola e quando a cabeça conta (parede na frente protege). C# puro com teste |
 | `domain/net/` | O núcleo da rede autoritativa (decisão 0011): pacote binário sem alocar, comando, fila de comandos, estado do mundo, história, interpolação, relógio do servidor e predição — C# puro, com teste de unidade |
 | `ai/BotDifficulty.cs` | Um nível de dificuldade como dado (`src/resources/bots/*.tres`) |
 | `visual/human/CharacterAnimator*.cs` | O corpo humano animado: `.Model` e `.Tree` montam uma vez (clipes, modelo do time, árvore); `.Locomotion`, `.Actions` (recarga, granada, reação) e `.Death` tocam por quadro |
@@ -332,6 +332,10 @@ partida). As razões estão em `docs/decisoes/`.
   faz polling
 - Peças descartáveis (Dummy, HUD atual, clarão da granada) estão
   marcadas como tal no comentário de topo
+- Camada de desenho (`Layers`) de malha que já está no mundo só se troca
+  por `RenderLayers.Set`: trocar direto deixa a malha presa à luz dos
+  personagens, e a troca de cena seguinte derruba o jogo (o crash do
+  "Voltar à sala", 25/11)
 - Nada de cache `static` de recurso montado em runtime (animação,
   material, nó de árvore): o C# segura a referência até o coletor
   passar, e o que sobra na fila quando o jogo fecha derruba a saída

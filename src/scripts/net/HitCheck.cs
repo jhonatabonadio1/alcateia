@@ -98,7 +98,10 @@ public sealed class HitCheck
 				if (def == null || def.Id != shot.Held) return HitVerdict.WrongWeapon;
 				range = def.Range;
 				headMultiplier = def.HeadshotMultiplier;
-				max = def.Damage * Math.Max(def.Pellets, 1) + 1f;
+				// O dano da bala no jogo passa pela escala das armas de fogo (CombatRules.Damage).
+				// Sem ela o teto cortava toda bala honesta no servidor autoritativo: com a escala 2 de
+				// antes, o AR-15 mandava 54 e valia 29 (achado em 25/11, no ajuste do dano).
+				max = def.Damage * CombatRules.FirearmDamageScale * Math.Max(def.Pellets, 1) + 1f;
 				spread = def.SpreadMax;
 				break;
 

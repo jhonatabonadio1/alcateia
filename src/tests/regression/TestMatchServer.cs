@@ -31,6 +31,13 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 	/// <summary>O que o servidor mandou ao segundo jogador (que não tem jogo).</summary>
 	public readonly List<(byte Type, byte[] Packet)> ToOther = new();
 
+	/// <summary>Atraso de cada lado, em segundos (meia ida e volta): os pacotes
+	/// do jogo chegam ao servidor e os do servidor ao jogo depois disto.</summary>
+	public double Latency { get; set; }
+
+	private readonly List<(double Due, long Peer, byte[] Packet, bool Reliable, bool In)> _delayed = new();
+	private double _clock;
+
 	private SceneMultiplayer _net;
 	private ENetMultiplayerPeer _peer;
 	private uint _tick;
@@ -65,7 +72,19 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 		Match.Admit(OtherPeer, OtherAccount);
 	}
 
-	public override void _Process(double delta) => Match?.Tick(delta);
+	public override void _Process(double delta)
+	{
+		_clock += delta;
+		for (int i = 0; i < _delayed.Count;)
+		{
+			var d = _delayed[i];
+			if (d.Due > _clock) { i++; continue; }
+			_delayed.RemoveAt(i);
+			if (d.In) Deliver(d.Peer, d.Packet);
+			else Transmit(d.Peer, d.Packet, d.Reliable);
+		}
+		Match?.Tick(delta);
+	}
 
 	public override void _PhysicsProcess(double delta) => Match?.PhysicsStep(++_tick, delta);
 
@@ -74,6 +93,12 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 	private void OnPacket(long peer, byte[] packet)
 	{
 		if (packet.Length == 0) return;
+		if (Latency > 0) _delayed.Add((_clock + Latency, peer, packet, false, true));
+		else Deliver(peer, packet);
+	}
+
+	private void Deliver(long peer, byte[] packet)
+	{
 		using BinaryReader r = NetWire.Open(packet);
 		byte type = r.ReadByte();
 		if (type == NetWire.Hello)
@@ -105,6 +130,12 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 			return;
 		}
 		ToMe.Add((Time.GetTicksMsec() / 1000.0, packet[0], packet));
+		if (Latency > 0) _delayed.Add((_clock + Latency, peer, packet, reliable, false));
+		else Transmit(peer, packet, reliable);
+	}
+
+	private void Transmit(long peer, byte[] packet, bool reliable)
+	{
 		_net.SendBytes(packet, (int)peer,
 			reliable ? MultiplayerPeer.TransferModeEnum.Reliable : MultiplayerPeer.TransferModeEnum.UnreliableOrdered);
 	}

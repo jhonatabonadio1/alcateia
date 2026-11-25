@@ -119,14 +119,14 @@ public partial class Weapon
 		Vector3 tracerEnd = from - aim.Z * held.Range;
 
 		int pellets = Mathf.Max(held.Pellets, 1);
-		List<Head> heads = Heads();
+		List<Target> targets = Targets();
 
 		for (int i = 0; i < pellets; i++)
 		{
 			Vector3 direction = Scatter(aim, spread);
 			Vector3 to = from + direction * held.Range;
 
-			Health hit = Trace(from, to, heads, out Vector3 impact, out Node collider, out bool headshot);
+			Health hit = Trace(from, to, targets, true, out Vector3 impact, out Node collider, out bool headshot);
 
 			// A linha para na parede em vez de atravessá-la.
 			if (i == 0)
@@ -304,13 +304,18 @@ public partial class Weapon
 		target != null && _health != null && target != _health
 		&& target.Team == _health.Team && !RoomConfig.Rules.FriendlyFire;
 
-	private Health Raycast(Vector3 from, Vector3 to, out Vector3 impact, out Node collider)
+	/// <param name="skip">Os corpos com modelo: levam tiro pelas peças, não pela cápsula.</param>
+	private Health Raycast(Vector3 from, Vector3 to, out Vector3 impact, out Node collider, List<Target> skip = null)
 	{
 		impact = to;
 		collider = null;
 
 		var query = PhysicsRayQueryParameters3D.Create(from, to);
-		query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+		var excluded = new Godot.Collections.Array<Rid> { _body.GetRid() };
+		if (skip != null)
+			foreach (Target target in skip)
+				if (target.Body is CollisionObject3D solid) excluded.Add(solid.GetRid());
+		query.Exclude = excluded;
 		query.CollideWithAreas = false;
 
 		PhysicsDirectSpaceState3D space = _body.GetWorld3D().DirectSpaceState;

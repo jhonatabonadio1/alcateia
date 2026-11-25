@@ -961,12 +961,17 @@ câmera que volta sozinho. Sem isso atirar não tem peso.
 
 - **Acerto**: quatro riscos em volta do crosshair. Brancos no corpo,
   vermelhos e maiores na cabeça. Sem isso não se sabe se o tiro pegou.
-- **Dano na cabeça**: 2,5× o dano. A cabeça é a do modelo que se vê
-  (14/11): uma esfera entre os ossos da cabeça, que segue a animação —
-  o humano mirando, o lobo curvado com a cabeça meio metro à frente,
-  fora da cápsula. A faixa de cima da cápsula, a de antes, pegava só a
-  metade de cima da cabeça do humano e nada da do lobo; fica para quem
-  não tem modelo.
+- **Dano na cabeça**: 2,5× o dano. A cabeça é a do modelo que se vê, e
+  segue a animação — o humano mirando, o lobo curvado com a cabeça meio
+  metro à frente, fora da cápsula. **O tiro acerta o que se vê** (25/11,
+  Jhon: "deixe mais preciso, exigir mais mira para dar headshot"): cada
+  peça do corpo é uma cápsula ajustada à pele que pesa no osso dela
+  (`BodyHitbox`); onde não tem corpo, o tiro passa, e headshot é só na
+  cabeça que se vê. Antes (14/11 a 25/11) o corpo era a cápsula de
+  movimento, mais larga e mais funda que ele, e a cabeça uma esfera de 12
+  cm de raio que passava da cabeça visível pelos lados e por baixo. A faca
+  e a coronhada continuam pela cápsula (de perto, o golpe é largo). A
+  faixa de cima da cápsula fica para quem não tem modelo.
 - **O tiro sai de onde a cruz está.** O recuo sobe a câmera depois do
   tiro, para o próximo. Até 14/11 subia antes, e todo tiro ia 1° acima
   da cruz — a 15 m, por cima da cabeça de quem se mirou nela.
@@ -1409,14 +1414,16 @@ hora.
 
 | Ponto | Documento | Jogo | Motivo |
 |---|---|---|---|
-| Vida do humano | 100 | **200** | Decisão do Jhon. O dano é multiplicado por `Arsenal.DamageScale = 2` na hora do tiro, o que preserva tiros-para-matar e TTK do documento sem reescrever os números |
+| Vida do humano | 100 | **200** | Decisão do Jhon. O dano é multiplicado por `Arsenal.DamageScale` na hora do tiro. Era 2, o que preservava tiros-para-matar e TTK do documento; desde 25/11 é **1,38** (Jhon: "as armas estão muito apelonas, os bonecos precisam ser mais resistentes"): cada bala tira 31% menos, como uma vida de 290 contra bala. A garra, a faca e a granada não mudaram |
 | Reserva de munição | 90, 100… | **infinita** | Regra antiga do Jhon: o custo de atirar é o tempo de recarga. A reserva fica na definição só para exibir |
 | Lobo | vendido no respawn | **grátis, tecla 3** | Decisão do Jhon: virar lobo é decisão tática, não compra |
 | Rajada (G36C e outras) | modo extra | **um modo por arma** (automático ou semiautomático) | Um modo por arma até alguém sentir falta |
 
 **Mexeu num número de dano?** Confira "tiros para matar" no documento.
-A AK-74 mata com um tiro na cabeça porque 42 × 2,4 × 2 = 201,6 passa de
-200 — um ajuste de 1 ponto quebra a identidade da arma.
+Até 25/11 a AK-74 matava com um tiro na cabeça (42 × 2,4 × 2 = 201,6 passa
+de 200); com a escala 1,38, nenhum fuzil nem a pistola mata com um tiro na
+cabeça (a AK tira 139), e só a SVD mata (282). Um ajuste de 1 ponto de dano
+muda os tiros para matar: confira a tabela do `docs/ARSENAL.md`.
 
 ### O que a definição controla
 

@@ -21,22 +21,39 @@ public static class CombatRulesTests
 
 	// ------------------------------------------------------------ dano de arma
 
-	[Test("um tiro de M16 no corpo tira 54 de 200 (4 matam); na cabeça, 135 (2 matam)")]
+	// O dano das armas caiu 31% em 25/11 (Jhon: "as armas estão muito
+	// apelonas, os bonecos precisam ser mais resistentes"; FirearmDamageScale
+	// de 2 para 1,38). Os testes abaixo seguem os números novos.
+
+	[Test("um tiro de AR-15 no corpo tira 37 de 200 (6 matam, eram 4); na cabeça, 93 (3 matam, eram 2)")]
 	public static void M16Damage()
 	{
-		Check.Near(54, CombatRules.FirearmDamage(27, 1, false, 2.5f), 1e-4, "corpo");
-		Check.Near(135, CombatRules.FirearmDamage(27, 1, true, 2.5f), 1e-4, "cabeça");
-		Check.True(4 * CombatRules.FirearmDamage(27, 1, false, 2.5f) >= 200, "4 no corpo matam");
-		Check.True(2 * CombatRules.FirearmDamage(27, 1, true, 2.5f) >= 200, "2 na cabeça matam");
+		Check.Near(37.26, CombatRules.FirearmDamage(27, 1, false, 2.5f), 1e-3, "corpo");
+		Check.Near(93.15, CombatRules.FirearmDamage(27, 1, true, 2.5f), 1e-3, "cabeça");
+		Check.True(5 * CombatRules.FirearmDamage(27, 1, false, 2.5f) < 200, "5 no corpo não matam");
+		Check.True(6 * CombatRules.FirearmDamage(27, 1, false, 2.5f) >= 200, "6 no corpo matam");
+		Check.True(2 * CombatRules.FirearmDamage(27, 1, true, 2.5f) < 200, "2 na cabeça não matam");
+		Check.True(3 * CombatRules.FirearmDamage(27, 1, true, 2.5f) >= 200, "3 na cabeça matam");
 	}
 
-	[Test("a AK mata com um tiro na cabeça de perto (o documento do arsenal)")]
-	public static void AkHeadshotKills() =>
-		Check.True(CombatRules.FirearmDamage(42, 1, true, 2.4f) >= 200, "dano na cabeça ≥ 200");
+	[Test("a AK não mata mais com um tiro na cabeça (eram 201,6); dois matam")]
+	public static void AkHeadshotKills()
+	{
+		Check.True(CombatRules.FirearmDamage(42, 1, true, 2.4f) < 200, "um na cabeça não mata");
+		Check.True(2 * CombatRules.FirearmDamage(42, 1, true, 2.4f) >= 200, "dois na cabeça matam");
+	}
 
-	[Test("a M3 com os 9 chumbos no corpo, de perto, mata um humano")]
+	[Test("só a SVD ainda mata com um tiro na cabeça; no corpo, dois")]
+	public static void SniperHeadshotKills()
+	{
+		Check.True(CombatRules.FirearmDamage(85, 1, true, 2.4f) >= 200, "um na cabeça mata");
+		Check.True(CombatRules.FirearmDamage(85, 1, false, 2.4f) < 200, "um no corpo não mata");
+		Check.True(2 * CombatRules.FirearmDamage(85, 1, false, 2.4f) >= 200, "dois no corpo matam");
+	}
+
+	[Test("a M3 (fora do arsenal) com os 9 chumbos no corpo, de perto, tira 161 de 200")]
 	public static void ShotgunPointBlank() =>
-		Check.True(9 * CombatRules.FirearmDamage(13, 1, false, 1.5f) >= 200, "9 chumbos ≥ 200");
+		Check.Near(161.46, 9 * CombatRules.FirearmDamage(13, 1, false, 1.5f), 1e-2, "9 chumbos");
 
 	// ------------------------------------------------------------ dispersão e recuo
 

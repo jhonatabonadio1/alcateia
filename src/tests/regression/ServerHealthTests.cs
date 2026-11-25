@@ -93,10 +93,14 @@ public sealed class ServerHealthTest : RegressionTest
 			string.Join(" ", world.Spawns.Select(sp => $"{sp.Team}:{sp.Point}")));
 
 		// 1. Honesto: à vista, mirando, a arma na mão.
+		// O jogo manda o dano como o calculou: com a escala das armas de fogo (CombatRules.Damage).
 		float before = target.Health.Hp;
-		Hit(Shooter, Clear, m4.Damage, from, "m4a4");
+		float honest = m4.Damage * CombatRules.FirearmDamageScale;
+		Hit(Shooter, Clear, honest, from, "m4a4");
 		await Steps(b, 3);
 		b.Check(_match.HitsAccepted == 1 && target.Health.Hp < before, $"o acerto honesto valeu: a vida caiu no servidor ({before} → {target.Health.Hp})");
+		// Até 25/11 o teto do servidor esquecia a escala e cortava a bala honesta (54 → 29 no AR-15).
+		b.Check(Mathf.Abs(before - target.Health.Hp - honest) < 0.5f, $"e valeu inteiro, como no jogo ({before - target.Health.Hp:0.#} de {honest:0.#})");
 		b.Check(link.Count(PeerClear, NetWire.Damage) == 1, "e a vítima recebeu como ficou (Damage)");
 
 		// 2. Através da parede: mira no escondido, que está atrás de algo sólido.
@@ -135,7 +139,7 @@ public sealed class ServerHealthTest : RegressionTest
 		Hit(Shooter, Clear, 900, Eye(world, Shooter), "m4a4", headshot: false);
 		await Steps(b, 15);
 		float dealt = hp - target.Health.Hp;
-		b.Check(dealt > 0 && dealt <= (m4.Damage + 1) * 1.06f, $"900 de dano com a M4A4 valem só o máximo da arma ({dealt:0.#})");
+		b.Check(dealt > 0 && dealt <= (m4.Damage * CombatRules.FirearmDamageScale + 1) * 1.06f, $"900 de dano com a M4A4 valem só o máximo da arma ({dealt:0.#})");
 
 		// 7. O jogo não sobe a própria vida: diz que está cheio, o servidor não aceita.
 		hp = target.Health.Hp;

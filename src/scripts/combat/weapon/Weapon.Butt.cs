@@ -55,7 +55,7 @@ public partial class Weapon
 
 		Vector3 from = _head.GlobalPosition;
 		Vector3 to = from - _head.GlobalTransform.Basis.Z * ButtRange;
-		Health hit = Trace(from, to, Heads(), out _, out _, out _);
+		Health hit = Trace(from, to, Targets(), false, out _, out _, out _);
 		if (hit != null) Damage(hit, ButtDamage, from, false);
 	}
 }

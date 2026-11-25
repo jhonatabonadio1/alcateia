@@ -49,9 +49,14 @@ ESCADAS = {'SM_Buildings_Stairs_01': ((0.286, 0.0), (-4.22, 3.3), (-1.25, 1.25))
            'SM_Buildings_Stairs_03': ((0.286, 0.0), (-1.96, 1.65), (-0.97, 0.97)), 'SM_Buildings_Stairs_04': ((0.286, 0.0), (-1.96, 1.65), (-0.97, 0.97))}
 
 
+# os fios que cruzam a rua de prédio a prédio e das antenas: desenho só, sem colisão (Jhon, 25/11: "os fios do mapa neon
+# não podem ter colisão"). A antena (SM_Buildings_Part_31) continua sólida. Para o .glb já montado: tools/mapas/sem_colisao.py
+FIOS = ('SM_Buildings_Part_24', 'SM_Buildings_Part_25')
+
+
 def colisao(nome, y=0.0):
     if nome.startswith('SM_Floor_T') or nome.startswith('SM_Floor_Road_'): return 'caixa' if y > 1.0 else None      # o chão é o piso do mapa; a laje do prédio, não
-    if nome.startswith(SEM): return None
+    if nome.startswith(SEM) or nome.startswith(FIOS): return None
     return 'caixa' if nome.startswith(CAIXA) else 'malha'
 
 

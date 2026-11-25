@@ -126,7 +126,9 @@ func _init():
 	var tiradas := 0
 	if "--sem-barreiras" in args:
 		for corpo in colisao.get_children():
-			if String(corpo.name).begins_with("Barreira"):
+			# só as de dentro (Barreira1, 2…): a BarreiraMuro é o lado de fora do
+			# muro da cidade (muro_da_cidade.gd) e fica
+			if String(corpo.name).begins_with("Barreira") and String(corpo.name).substr(8).is_valid_int():
 				colisao.remove_child(corpo)
 				corpo.free()
 				tiradas += 1

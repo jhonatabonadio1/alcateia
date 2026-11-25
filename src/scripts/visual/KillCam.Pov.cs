@@ -264,11 +264,11 @@ public partial class KillCam
 			if (hide && !visual.HasMeta(LayersBefore))
 			{
 				visual.SetMeta(LayersBefore, (long)visual.Layers);
-				visual.Layers = WatchedLayer;
+				RenderLayers.Set(visual, WatchedLayer);
 			}
 			else if (!hide && visual.HasMeta(LayersBefore))
 			{
-				visual.Layers = (uint)visual.GetMeta(LayersBefore).AsInt64();
+				RenderLayers.Set(visual, (uint)visual.GetMeta(LayersBefore).AsInt64());
 				visual.RemoveMeta(LayersBefore);
 			}
 		}

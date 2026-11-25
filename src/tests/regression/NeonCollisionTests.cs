@@ -82,8 +82,10 @@ public sealed class NeonThinCollisionTest : RegressionTest
 		b.Check(ads.Length > 0 && adHits >= adShots * 0.9, $"a placa de anúncio segura o tiro ({adHits} de {adShots})");
 
 		// As paredes invisíveis de dentro do mapa saíram (tapavam portas, salas
-		// e pátios); as do limite ficam.
-		b.Check(!bodies.Any(body => body.Name.ToString().StartsWith("Barreira")), "nenhuma barreira invisível dentro do mapa");
+		// e pátios); as do limite ficam. A BarreiraMuro (25/11) é a do lado de
+		// fora do muro da cidade, não de dentro: NeonMuroDaCidade confere que
+		// ela não tapa onde se anda.
+		b.Check(!bodies.Any(body => System.Text.RegularExpressions.Regex.IsMatch(body.Name, "^Barreira\\d+$")), "nenhuma barreira invisível dentro do mapa");
 		b.Check(bodies.Count(body => body.Name.ToString().StartsWith("Limite")) >= 4, "as paredes do limite ficam");
 
 		map.QueueFree();

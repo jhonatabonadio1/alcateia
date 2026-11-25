@@ -177,14 +177,15 @@ public sealed class ObraMapTest : MapPlaysTest
 	protected override bool ClosedRing => true;
 }
 
-/// <summary>O Distrito Neon (20/11). Não é fechado por um muro só: o anel de
-/// torres tem vãos, e cada vão tem a barreira invisível dele
-/// (<c>Barreira…</c>, tools/mapas/neon.py) — por isso sem o teste do alto
-/// do muro de fora.</summary>
+/// <summary>O Distrito Neon (20/11). Desde 25/11 fecha no muro da cidade: o
+/// lado de fora dele é a parede invisível <c>BarreiraMuro</c>, do chão ao teto
+/// (tools/mapas/muro_da_cidade.gd), e o alto da volta do mapa é barrado como
+/// nos outros. O lobo tentando sair está em NeonMuroDaCidade.</summary>
 public sealed class NeonMapTest : MapPlaysTest
 {
 	public override string Name => "MapaNeon";
 	protected override string MapId => "neon";
+	protected override bool ClosedRing => true;
 }
 
 /// <summary>

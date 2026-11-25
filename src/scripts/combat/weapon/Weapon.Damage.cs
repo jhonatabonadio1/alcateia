@@ -223,17 +223,21 @@ public partial class Weapon
 		return impact.Y - body.GlobalPosition.Y >= HeadZone;
 	}
 
-	/// <summary>Uma cabeça no caminho dos tiros: de quem, a vida, onde está.</summary>
-	private readonly record struct Head(Node3D Body, Health Health, Vector3 Center, float Radius);
+	/// <summary>Um corpo com modelo no caminho dos tiros: de quem, a vida, as
+	/// peças agora (<see cref="BodyHitbox"/>) e a bola que contém todas (o
+	/// teste rápido antes de olhar peça por peça).</summary>
+	private readonly record struct Target(Node3D Body, Health Health, BodyHitbox.Part[] Parts,
+		System.Numerics.Vector3 Center, float Reach);
 
-	private readonly List<Head> _heads = new();
+	private readonly List<Target> _targets = new();
+	private readonly List<BodyHitbox.Part> _parts = new();
 
-	/// <summary>As cabeças de quem está vivo, menos a de quem atira e a dos
-	/// aliados (o tiro atravessa o time). Uma
-	/// vez por disparo: os nove chumbos da escopeta usam a mesma lista.</summary>
-	private List<Head> Heads()
+	/// <summary>Os corpos com modelo de quem está vivo, menos o de quem atira e
+	/// os dos aliados (o tiro atravessa o time). Uma vez por disparo: os
+	/// chumbos da escopeta usam a mesma lista.</summary>
+	private List<Target> Targets()
 	{
-		_heads.Clear();
+		_targets.Clear();
 		SceneTree tree = _body.GetTree();
 		foreach (string group in Groups.Fighters)
 		{
@@ -241,52 +245,67 @@ public partial class Weapon
 			{
 				if (node == _body || node is not Node3D body) continue;
 				if (body.GetNodeOrNull<Health>("Health") is not Health health || health.IsDead) continue;
-				// A cabeça do aliado também não segura o tiro.
+				// O aliado também não segura o tiro.
 				if (PassesThrough(health)) continue;
-				if (HeadHitbox.TryGet(body, out Vector3 center, out float radius))
-					_heads.Add(new Head(body, health, center, radius));
+				if (!BodyHitbox.TryGet(body, _parts)) continue;
+				System.Numerics.Vector3 center = N(body.GlobalPosition);
+				float reach = 0f;
+				foreach (BodyHitbox.Part part in _parts)
+					reach = Mathf.Max(reach, System.Numerics.Vector3.Distance(center, part.Shape.Center) + part.Shape.Reach);
+				_targets.Add(new Target(body, health, _parts.ToArray(), center, reach));
 			}
 		}
 
-		return _heads;
+		return _targets;
 	}
 
 	/// <summary>
-	/// Um raio de ataque, com a cabeça do modelo. O raio da física acha o
-	/// corpo (a cápsula) ou a parede; a cabeça de quem tem modelo é a
-	/// esfera dela, mesmo onde sai da cápsula — a do lobo, curvado, fica
-	/// toda fora. Quem tem modelo só leva tiro na cabeça por ela; quem não
-	/// tem, pela faixa da cápsula (<see cref="IsHeadshot"/>).
+	/// Um raio de ataque. Com <paramref name="precise"/> (as armas de fogo),
+	/// quem tem modelo leva tiro pelas peças do corpo (<see cref="BodyHitbox"/>):
+	/// o raio da física acha só a parede e quem não tem modelo, e a peça vale
+	/// se vier antes da parede; cabeça é a peça da cabeça. Sem ele (faca,
+	/// coronhada, de perto), o corpo é a cápsula de movimento e a cabeça é a
+	/// peça da cabeça, mesmo um palmo dentro da cápsula (<see cref="HeadHit.Counts"/>).
+	/// Quem não tem modelo leva tiro na cápsula, e na cabeça pela faixa de
+	/// cima dela (<see cref="IsHeadshot"/>).
 	/// </summary>
-	private Health Trace(Vector3 from, Vector3 to, List<Head> heads,
+	private Health Trace(Vector3 from, Vector3 to, List<Target> targets, bool precise,
 		out Vector3 impact, out Node collider, out bool headshot)
 	{
-		Health hit = Raycast(from, to, out impact, out collider);
+		Health hit = Raycast(from, to, out impact, out collider, precise ? targets : null);
 
 		float range = from.DistanceTo(to);
 		Vector3 direction = (to - from) / Mathf.Max(range, 1e-4f);
 		float? at = collider != null || impact != to ? from.DistanceTo(impact) : null;
+		System.Numerics.Vector3 f = N(from), d = N(direction);
 
-		Head best = default;
+		Target best = default;
+		bool bestHead = false;
 		float bestAt = float.MaxValue;
-		foreach (Head head in heads)
+		foreach (Target target in targets)
 		{
-			float? enter = HeadHit.Enter(N(from), N(direction), N(head.Center), head.Radius);
-			if (enter is not float t || t > range || t >= bestAt) continue;
-			if (!HeadHit.Counts(t, at, collider == head.Body)) continue;
-			best = head;
-			bestAt = t;
+			if (HeadHit.Enter(f, d, target.Center, target.Reach) is not float near || near > range || near >= bestAt) continue;
+			foreach (BodyHitbox.Part part in target.Parts)
+			{
+				if (!precise && !part.Head) continue;
+				if (BodyHit.Enter(f, d, part.Shape) is not float t || t > range || t >= bestAt) continue;
+				bool counts = precise ? at is not float wall || t <= wall : HeadHit.Counts(t, at, collider == target.Body);
+				if (!counts) continue;
+				best = target;
+				bestHead = part.Head;
+				bestAt = t;
+			}
 		}
 
 		if (best.Body != null)
 		{
 			impact = from + direction * bestAt;
 			collider = best.Body;
-			headshot = true;
+			headshot = bestHead;
 			return best.Health;
 		}
 
-		headshot = hit != null && collider is Node3D body && !HeadHitbox.Has(body) && IsHeadshot(collider, impact);
+		headshot = hit != null && collider is Node3D body && !BodyHitbox.Has(body) && IsHeadshot(collider, impact);
 		return hit;
 	}
 

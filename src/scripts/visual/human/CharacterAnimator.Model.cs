@@ -227,7 +227,7 @@ public partial class CharacterAnimator
 
 	private static void SetLayer(Node node, uint bit)
 	{
-		if (node is VisualInstance3D visual) visual.Layers = bit;
+		if (node is VisualInstance3D visual) RenderLayers.Set(visual, bit);
 
 		foreach (Node child in node.GetChildren())
 			SetLayer(child, bit);

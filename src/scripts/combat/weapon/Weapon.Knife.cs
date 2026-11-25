@@ -87,7 +87,7 @@ public partial class Weapon
 		Vector3 from = _head.GlobalPosition;
 		Vector3 forward = -_head.GlobalTransform.Basis.Z;
 		Vector3 to = from + forward * (KnifeRange * knife.Range);
-		Health hit = Trace(from, to, Heads(), out Vector3 impact, out _, out bool headshot);
+		Health hit = Trace(from, to, Targets(), false, out Vector3 impact, out _, out bool headshot);
 		if (hit == null) return;
 
 		// As costas: a frente do corpo de quem levou (o giro dele) contra o golpe.
@@ -116,7 +116,7 @@ public partial class Weapon
 		Vector3 from = _head.GlobalPosition;
 		Vector3 to = from - _head.GlobalTransform.Basis.Z * (KnifeRange * knife.Range);
 
-		Health hit = Trace(from, to, Heads(), out Vector3 impact, out _, out bool headshot);
+		Health hit = Trace(from, to, Targets(), false, out Vector3 impact, out _, out bool headshot);
 		if (hit == null) return;
 
 		float damage = KnifeDamage * knife.Damage * (headshot ? HeadshotMultiplier : 1f);

@@ -85,7 +85,7 @@ public partial class ViewModel : Node3D
 	/// vê (o humano em primeira pessoa): ele voltaria a aparecer.</summary>
 	public static void MarkCharacter(Node model)
 	{
-		if (model is VisualInstance3D visual && model is not Light3D) visual.Layers |= CharacterLayer;
+		if (model is VisualInstance3D visual && model is not Light3D) RenderLayers.Set(visual, visual.Layers | CharacterLayer);
 		foreach (Node child in model.GetChildren()) MarkCharacter(child);
 	}
 
@@ -244,7 +244,7 @@ public partial class ViewModel : Node3D
 	/// passa para a camada da mão (e só para ela).</summary>
 	private static void MoveToHandLayer(Node node)
 	{
-		if (node is VisualInstance3D visual && node is not Light3D) visual.Layers = HandLayer;
+		if (node is VisualInstance3D visual && node is not Light3D) RenderLayers.Set(visual, HandLayer);
 		foreach (Node child in node.GetChildren()) MoveToHandLayer(child);
 	}
 

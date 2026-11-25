@@ -28,7 +28,19 @@ uniform vec4 albedo : source_color = vec4(1.0);
 
 // 1 quando a malha traz as máscaras na cor de vértice.
 uniform float masks = 0.0;
-uniform float neon_energy = 2.6;
+// A força do neon (25/11, Jhon: "coloque os leds do equipamento brilhando bem
+// forte", "quero o neon desse jeito no game"): era 2,6, um fio aceso sem halo.
+// A 16 o miolo passa do branco e o glow dos mapas (limiar 1) faz o halo.
+uniform float neon_energy = 16.0;
+// Quanto o poder (neon_boost) multiplica o neon: era 1,6 sobre os 2,6 de antes;
+// com o neon forte, o pico do rugido (escudo cheio) estourava a tela.
+uniform float neon_boost_gain = 0.6;
+// Todo LED acende igual (Jhon, 25/11: "os leds no equipamento do peitoral e das
+// costas devem ter os mesmos brilhos"). A textura de emissão pintou o miolo do
+// peitoral a ~0,4 e o das costas a ~0,75–0,8 do bracelete (0,98): cada texel
+// aceso vai à força cheia, na cor dele; a borda da faixa continua suave e o que
+// não é LED (abaixo de 0,04) continua apagado. 0 volta à textura como veio.
+uniform float neon_even = 1.0;
 uniform float neon_breath = 0.14;
 uniform float sway = 0.014;
 uniform float rim = 0.24;
@@ -84,8 +96,10 @@ void fragment() {
 	// O neon respira (devagar, cada lobo no seu tempo de tela) e acende
 	// com o poder.
 	vec3 glow = texture(emission_tex, UV).rgb;
+	float lit = max(glow.r, max(glow.g, glow.b));
+	glow = mix(glow, glow / max(lit, 1e-4) * smoothstep(0.04, 0.4, lit), neon_even);
 	float breath = 1.0 + neon_breath * sin(TIME * 2.1);
-	EMISSION = glow * neon_energy * breath * (1.0 + 1.6 * neon_boost);
+	EMISSION = glow * neon_energy * breath * (1.0 + neon_boost_gain * neon_boost);
 
 	RIM = rim * fur;
 	RIM_TINT = 0.65;

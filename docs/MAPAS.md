@@ -233,6 +233,8 @@ O ângulo de cada mapa (de onde a câmera olha e para onde) está em
 
 <!-- mapas de kit: início -->
 
+**O muro da cidade no Neon** (25/11): o Neon fecha no muro da cidade, não nas paredes `Limite…` da borda: tudo o que fica do lado de fora vira a parede invisível `BarreiraMuro` (do chão ao teto; por cima do carro e da sala de piso alto que encostam no muro, a partir de 3 m acima do carro e do telhado da sala). Ela é medida na colisão da cena: `godot --headless --path . -s res://src/tools/mapas/muro_da_cidade.gd -- neon [--seco] [--imagem=grade.png]` (rode de novo se o mapa mudar: refaz o corpo). O teste é `NeonMuroDaCidade`. **Os fios** do Neon (`SM_Buildings_Part_24` e `_25`) não têm colisão: `neon.py: FIOS`, e no `.glb` já montado `python3 src/tools/mapas/sem_colisao.py <glb> <prefixos>`.
+
 **Colisão das peças finas** (24/11): nos mapas de kit, peça fina ou recortada (poste, placa, mesa, banco) colide na própria malha, não numa caixa do tamanho total dela — a caixa virava parede invisível. No Neon a troca está feita; para outro mapa, ou se a cena voltar a ter caixa nessas peças: `godot --headless --path . -s res://src/tools/mapas/colisao_exata.gd -- <mapa> [--seco]` (a lista de peças, `FINAS`, é a do pacote do Neon; outro kit pede a lista dele).
 
 ## Mapas de kit (Low Poly FPS Bundle)
@@ -455,7 +457,8 @@ ele maior; use LED para iluminar as partes que representam LED; de fundo, prédi
   peças). O Unity é de mão esquerda: posição (−x, y, z), rotação (x, −y, −z, w); a malha do `.fbx` entra como está, × 0,01.
 - **O mapa** (`src/tools/mapas/neon.py`): a cena sem a fileira oeste, mais a cópia girada 180° encostada ali. Colisão: malha
   nos prédios, caixa nos objetos, rampa nas quatro escadas; o chão é o piso do mapa (5 cm). O pacote não fecha o quarteirão
-  em toda a volta: onde o chão livre encosta no vazio vai uma `Barreira…` invisível (78).
+  em toda a volta: onde o chão livre encosta no vazio vai uma `Barreira…` invisível (78). Essas barreiras saíram em 24/11 (tapavam portas e salas); desde 25/11 o lado de fora do muro da cidade
+  inteiro é a `BarreiraMuro` (`muro_da_cidade.gd`, acima).
 - **A luz**: céu de noite desenhado (`kits/fundos.py: ceu_noite` → `ceus/noite_neon.hdr`), lua fria com sombra, névoa roxa,
   e os LEDs — `superficie.gdshader` ganhou `luz`/`luz_forca` (preta e zero nos outros mapas: nada muda neles); `leds()` põe
   uma lâmpada da cor de cada letreiro grande (44) e 22 postes.

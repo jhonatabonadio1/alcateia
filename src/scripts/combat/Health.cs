@@ -107,8 +107,19 @@ public partial class Health : Node
 	/// </summary>
 	public const float RegenLag = 0.5f;
 
-	/// <summary>Já voltando (ou a ponto de voltar, dentro da defasagem).</summary>
-	private bool Regenerating => RegenDelay > 0 && _sinceHit >= RegenDelay - RegenLag && Hp < MaxHp;
+	/// <summary>
+	/// Já voltando, a ponto de voltar ou cheio há menos de
+	/// <see cref="RegenLag"/>: o outro lado (o jogo ou o servidor) ainda pode
+	/// estar atrás na volta. O "cheio há pouco" é o que faltava (Jhon, 25/11:
+	/// "a vida fica indo um pouco e voltando", "depois de um tempo aparece do
+	/// nada cheia"): quem enchia primeiro perdia a folga no mesmo instante, a
+	/// vida do outro, ainda uns pontos atrás pela defasagem, contava como
+	/// dano — o servidor descia, zerava a espera de 15 s e o Vitals puxava o
+	/// jogo para baixo a cada meio segundo, até o servidor voltar e encher de
+	/// uma vez. Com 120 ms de ida e volta: 17 descidas e o servidor parado 2
+	/// pontos abaixo do máximo.
+	/// </summary>
+	private bool Regenerating => RegenDelay > 0 && _sinceHit >= RegenDelay - RegenLag && (Hp < MaxHp || _sinceFull < RegenLag);
 
 	/// <summary>Diferença de vida entre o jogo e o servidor que não é dano:
 	/// a defasagem da regeneração, ou meio ponto de arredondamento.</summary>
@@ -146,6 +157,7 @@ public partial class Health : Node
 	private double _protection;
 	private double _decayHold;
 	private double _sinceHit;
+	private double _sinceFull;
 
 	public override void _Ready()
 	{
@@ -186,6 +198,7 @@ public partial class Health : Node
 	private void Regenerate(double delta)
 	{
 		_sinceHit += delta;
+		_sinceFull = Hp >= MaxHp ? _sinceFull + delta : 0;
 		if (RegenDelay <= 0 || _sinceHit < RegenDelay || Hp >= MaxHp) return;
 
 		Hp = Mathf.Min(Hp + MaxHp * RegenRate * (float)delta, MaxHp);

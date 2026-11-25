@@ -76,6 +76,7 @@ public partial class WolfFx : Node3D
 	private WindWisps _wisps;
 	private LightningAura _sparks;
 	private RoarBurst _roar;
+	private EyeGlow _eyes;
 	private Skeleton3D _skeleton;
 	private int _muzzle = -1;
 	private bool _wasArmed;
@@ -154,6 +155,8 @@ public partial class WolfFx : Node3D
 					if (bone.EndsWith("Head") && _muzzle < 0) _muzzle = i;
 				}
 			}
+			// Os olhos acesos (25/11): o disco de luz por cima da emissão de cada olho.
+			_eyes = EyeGlow.For(skeleton);
 			Material trail = ResourceLoader.Exists(TrailPath) ? GD.Load<Material>(TrailPath) : null;
 			if (skeleton != null && trail != null)
 			{
@@ -442,6 +445,10 @@ public partial class WolfFx : Node3D
 	/// <summary>O máximo que a ponta de um tufo sai do lugar, em metros.</summary>
 	[Export] public float FurMaxPush = 0.045f;
 
+	/// <summary>Quanto o brilho dos olhos (<see cref="EyeGlow"/>) sobe com o
+	/// neon do poder: no poder cheio, 1 + isto vezes o de parado.</summary>
+	[Export] public float EyeBoost = 0.8f;
+
 	private Vector3 _furLag;
 	private Vector3 _furPush;
 	private float _neon;
@@ -462,6 +469,8 @@ public partial class WolfFx : Node3D
 		_neon = Mathf.MoveToward(_neon, power ? 1f : 0f, dt / 0.25f);
 		// No uivo o neon do corpo acende junto com a luz, e estoura quando o escudo enche.
 		float neon = Mathf.Max(_neon, _roar != null ? _roar.Glow * 1.35f + _roar.Flash * 1.6f : 0f);
+
+		_eyes?.Show(1f + EyeBoost * neon, EffectColor);
 
 		float gust = Mathf.Clamp(velocity.Length() / Mathf.Max(MaxSpeed(), 0.1f), 0f, 1.2f);
 		foreach (MeshInstance3D mesh in _meshes)

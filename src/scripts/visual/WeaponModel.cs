@@ -129,7 +129,7 @@ public static class WeaponModel
 	/// corpo do dono some da câmera dele.</summary>
 	public static void SetLayers(Node node, uint layers)
 	{
-		if (node is VisualInstance3D visual) visual.Layers = layers;
+		if (node is VisualInstance3D visual) RenderLayers.Set(visual, layers);
 		foreach (Node child in node.GetChildren()) SetLayers(child, layers);
 	}
 

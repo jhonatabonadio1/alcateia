@@ -45,11 +45,14 @@ public sealed class HeadshotTest : RegressionTest
 			{
 				string where = $"{distance:0} m{(zoom ? ", no zoom" : "")}";
 
-				// Na cabeça que se vê, no corpo, e um palmo acima da cabeça.
+				// Na cabeça que se vê, no peito, e um palmo acima da cabeça. O peito é
+				// o meio da peça do peito (BodyHitbox, 25/11): até 25/11 era meio metro
+				// abaixo da cabeça, que de lado cai no ar na frente do peito do humano
+				// mirando — a cápsula de antes levava tiro ali, o corpo de agora não.
 				foreach (var (aimAt, expected, isHead, what) in new (float, float, bool, string)[]
 				{
 					(0f, head, true, "na cabeça"),
-					(-0.5f, body, false, "no peito"),
+					(float.NaN, body, false, "no peito"),
 					(0.3f, 0f, false, "acima da cabeça"),
 				})
 				{
@@ -61,7 +64,7 @@ public sealed class HeadshotTest : RegressionTest
 					}
 
 					b.Check(HeadHitbox.TryGet(bot, out Vector3 center, out _), "o bot tem cabeça de modelo");
-					Aim(b.Player, camera, center + Vector3.Up * aimAt);
+					Aim(b.Player, camera, float.IsNaN(aimAt) ? Chest(bot) : center + Vector3.Up * aimAt);
 					await b.Frames(2);
 
 					target.SetHp(target.MaxHp);
@@ -101,13 +104,21 @@ public sealed class HeadshotTest : RegressionTest
 
 		b.Check(HeadHitbox.TryGet(b.Player, out Vector3 center, out float radius), "o lobo tem cabeça de modelo");
 		Vector3 flat = new Vector3(center.X - b.Player.GlobalPosition.X, 0, center.Z - b.Player.GlobalPosition.Z);
-		RegressionBench.Note($"cabeça do lobo a {RegressionBench.F(flat.Length())} m do eixo da cápsula (raio {RegressionBench.F(radius)})");
-		b.AtLeast(0.2 + radius, flat.Length(), "a cabeça do lobo fica fora da cápsula");
+		float capsule = ((CapsuleShape3D)b.Player.GetNode<CollisionShape3D>("CollisionShape3D").Shape).Radius;
+		RegressionBench.Note($"cabeça do lobo a {RegressionBench.F(flat.Length())} m do eixo da cápsula (cápsula de raio {RegressionBench.F(capsule)}, cabeça cabe numa bola de {RegressionBench.F(radius)})");
+		// O meio da cabeça fica fora da cápsula (até 25/11 a conta usava o raio da
+		// esfera da cabeça; a peça de agora é mais comprida, e a bola que a contém
+		// não diz nada sobre onde ela está).
+		b.AtLeast(capsule, flat.Length(), "a cabeça do lobo fica fora da cápsula");
 
 		foreach (var (point, isHead, what) in new (Vector3, bool, string)[]
 		{
 			(center, true, "na cabeça"),
-			(b.Player.GlobalPosition + Vector3.Up * 0.1f, false, "no corpo"),
+			// O corpo: o meio da peça do osso Spine (a barriga). Até 25/11 era o
+			// centro da cápsula mais 10 cm, que de frente fica atrás do focinho
+			// do lobo curvado — com a cabeça do tamanho da que se vê, o raio até
+			// ali passa pelo queixo.
+			(Chest(b.Player, "mixamorig_Spine"), false, "no corpo"),
 		})
 		{
 			Aim(bot, camera, point);
@@ -125,6 +136,22 @@ public sealed class HeadshotTest : RegressionTest
 		b.Player.ProcessMode = Node.ProcessModeEnum.Inherit;
 		bot.ProcessMode = Node.ProcessModeEnum.Inherit;
 		await b.Seconds(1.0);
+	}
+
+	/// <summary>O meio de uma parte do corpo: o das peças do osso (o peito é o Spine2).</summary>
+	private static Vector3 Chest(Node3D body, string bone = "mixamorig_Spine2")
+	{
+		var parts = new System.Collections.Generic.List<BodyHitbox.Part>();
+		BodyHitbox.TryGet(body, parts);
+		Vector3 sum = Vector3.Zero;
+		int n = 0;
+		foreach (BodyHitbox.Part part in parts)
+		{
+			if (part.Bone != bone) continue;
+			sum += new Vector3(part.Shape.Center.X, part.Shape.Center.Y, part.Shape.Center.Z);
+			n++;
+		}
+		return n > 0 ? sum / n : body.GlobalPosition + Vector3.Up * 0.3f;
 	}
 
 	/// <summary>Vira o corpo e a cabeça para a câmera olhar o ponto.</summary>
