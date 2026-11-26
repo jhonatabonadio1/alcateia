@@ -473,6 +473,14 @@ entende o que aconteceu fora do campo de visão e, principalmente, de
 que ele morreu. Morrer sem saber a causa é a forma mais rápida de um
 jogo parecer injusto.
 
+**Queda fere** (26/11, Jhon: "humano começar a tomar dano de queda, lobo
+também, mas menos"). O humano, que compra mobilidade com arma e granada,
+paga a altura: até 4 m nada, 12 m mata. O lobo, que é a mobilidade do jogo,
+começa a sentir em 7 m (o pulo e a parede dele não contam) e com metade do
+dano. **Não fere** no bote, no especial e no salto da parede: são os golpes
+e saltos que existem para cair de cima de alguém, e puni-los com a queda
+tiraria a jogada que o jogo quer premiar. Números no `AJUSTES.md`.
+
 Morrer sozinho (a própria granada, a queda) entra no feed com a pessoa
 dos dois lados e o que matou, e conta a morte, sem ponto para ninguém
 (Jhon, 25/11). Online também: o jogo conta ao servidor a causa e a arma,
@@ -517,7 +525,7 @@ linha dele.
 | Garrada, braço 1 | Attack_Primary, inteiro, 1× | 0,20 s | 0,73 s |
 | Garrada, braço 2 | Attack_Secondary, inteiro, 1× | 0,20 s | 0,73 s |
 | Salto (direito no chão) | Special_Attack inteiro, 0–2,20 s, 1× | 1,33 s, quando as mãos batem no chão | 2,2 s, preso; voa até 8,4 m em arco |
-| Bote (direito no ar) | Special_Attack: a queda (0,80–1,33 s), depois a aterrissagem | quando encosta | aterrissagem de 0,87 s, presa; sem recarga |
+| Bote (direito no ar) | Special_Attack: a queda (0,80–1,33 s), depois a aterrissagem | quando encosta | aterrissagem de 0,87 s, presa; um a cada 1 s (26/11) |
 | Rugido (R, segurado) | Howl, inteiro, 1× | escudo no fim | 1,53 s; soltar cancela |
 
 **Desde 15/11 todos os golpes são as animações do Jhon, na velocidade
@@ -526,6 +534,21 @@ em que ele as fez** (pedido dele): as garradas ficaram mais lentas
 
 Durante um golpe o lobo não volta a humano: a tecla espera o golpe
 acabar.
+
+**O compasso: nenhum golpe a menos de uma garrada do anterior** (26/11,
+alpha fechado: "clique repetido nos ataques do lobo, principal e
+secundário, parece não ter limite de resposta: dá pra farmar clique e
+vencer qualquer luta"). A garrada encadeada já tinha o ritmo (uma a cada
+0,34 s); o furo era o ciclo pulo-bote-garra: a garra batia, 0,1 s depois o
+bote, 0,2 s depois a garra de novo — 870 de dano por segundo contra 375 só
+de garrada. Agora todo golpe que fere (garrada, bote) espera 0,34 s do
+anterior (`Weapon.StrikeSpacing`): o bote apertado antes fica esperando no
+ar e sai quando pode, e a garrada depois do bote vem no mesmo compasso. O
+bote ganhou espera própria de 1 s (era um por pulo: pulando sem parar, 360
+a cada 0,7 s). O bote que corta uma garrada que ainda não bateu continua
+saindo na hora (23/11). No servidor autoritativo vale o mesmo, contado pelo
+número do comando de quem bateu (`WolfStrikePace`): no mesmo alvo, um golpe
+por garrada e um bote por segundo; o mesmo golpe pega vários alvos.
 
 **O clique fica guardado** (`AttackBuffer`, 0,3 s): clicou na garrada
 com o golpe anterior ainda no fim, o próximo sai no quadro em que ele
@@ -585,12 +608,18 @@ o salto voa: do impulso até os pés tocarem o chão, o corpo vai até o
 ponto mirado, **até 12 m** (`PounceMaxDistance`; era 12, caiu para
 8,4 na v0.27.1 e voltou a 12 em 17/11, a pedido do Jhon).
 
-**O salto é de um alvo só** (17/11): ao cair, procura em volta do lobo
-(1,8 m, `PounceHitRadius`, e não só à frente como a garra — o lobo pousa
-em cima ou do lado de quem mirou). O principal — o travado no modo
-alvo, senão o inimigo mais perto de onde caiu — leva o dano cheio; quem
-estiver do lado leva 30% (`PounceSplash`). O anel da mira tem o tamanho
-da área.
+**O salto tem um alvo principal e uma área** (17/11; a área desde 26/11):
+ao cair, procura o principal em volta do lobo (1,8 m, `PounceHitRadius`, e
+não só à frente como a garra — o lobo pousa em cima ou do lado de quem
+mirou). O principal — o travado no modo alvo, senão o inimigo mais perto de
+onde caiu — leva o dano cheio, 3,7 garras (Jhon, 26/11: "mais poder de dano
+e em área, afetando mais pessoas ao redor e mais dano ao alvo principal";
+era 2,6 e 30% só a 1,8 m): mata humano de vida cheia e tira uns 80% do
+lobo. Quem estiver em volta até 3,5 m (`PounceAreaRadius`) leva 60% disso
+até 1,5 m, caindo até 30% na borda, e só se não houver parede entre o lobo
+e ele. O anel da mira tem o tamanho da área. A regra 2 continua: o especial
+precisa de quatro abates (ou 240 s) para encher, prende o lobo na
+aterrissagem, e quem sai do caminho antes da queda escapa do cheio.
 
 **O modo alvo** (17/11): carregando o salto, o **Tab** liga o modo alvo
 (e não abre o placar). Os inimigos vivos e à vista até 18 m ganham um

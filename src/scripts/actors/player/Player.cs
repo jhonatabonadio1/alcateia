@@ -48,6 +48,8 @@ public partial class Player : CharacterBody3D
 	/// lido uma vez no começo do passo de física.</summary>
 	private CharacterIntent _intent;
 	private BodyNoise _noise;
+	private readonly FallTracker _fall = new();
+	private FallProfile _fallProfile;
 	private WolfMoveMotor _moves;
 	private Corpse _corpse;
 
@@ -146,6 +148,7 @@ public partial class Player : CharacterBody3D
 	{
 		_collision = GetNode<CollisionShape3D>("CollisionShape3D");
 		_noise = new BodyNoise(this, Noise);
+		_fallProfile = FallProfile.Load();
 		_moves = new WolfMoveMotor(this, _weapon) { FreezeBrake = FreezeBrake };
 		_corpse = new Corpse(this, _collision);
 
@@ -407,6 +410,7 @@ public partial class Player : CharacterBody3D
 		{
 			GlobalPosition = _spawn;
 			Velocity = Vector3.Zero;
+			_fall.Reset();
 			ReleaseWall();
 			_lastWall = Vector3.Zero;
 			return;
@@ -414,6 +418,7 @@ public partial class Player : CharacterBody3D
 
 		if (_health.IsDead)
 		{
+			_fall.Reset();
 			Settle(delta);
 			return;
 		}
@@ -460,6 +465,7 @@ public partial class Player : CharacterBody3D
 		UpdateCrouch(delta);
 		UpdateSprint(delta);
 		UpdateNoise(delta);
+		UpdateFall();
 		UpdateCameraKick(delta);
 		UpdateAimCamera();
 

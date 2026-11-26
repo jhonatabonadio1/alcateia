@@ -11,7 +11,12 @@ public partial class Weapon
 	/// <summary>Salto no chão: dano alto, o lobo preso no lugar até a
 	/// animação acabar.</summary>
 	[ExportGroup("Lobo: salto carregado")]
-	[Export] public float HeavyDamageBonus = 2.6f;
+	/// <summary>Multiplicador do dano do especial no alvo principal (sobre a
+	/// garra). Era 2,6 (o AJUSTES dizia 2,1); 3,7 desde 26/11 (Jhon: "mais
+	/// dano ao alvo principal"): com a garra de 65 do lobo do meio, 385 num
+	/// humano (mata de vida cheia) e 240 num lobo (80% dos 300 de vida e
+	/// escudo do canhão de vidro).</summary>
+	[Export] public float HeavyDamageBonus = 3.7f;
 	[Export] public float HeavyCooldown = 1f;
 
 	/// <summary>O alcance do salto no chão, em metros: o mais longe que
@@ -83,10 +88,17 @@ public partial class Weapon
 	/// <summary>Quanto o centro da área do salto fica à frente do lobo.</summary>
 	[Export] public float PounceHitReach = 0.4f;
 
-	/// <summary>O salto é de um alvo só (pedido do Jhon, 17/11): o principal
-	/// (o travado no modo alvo, senão o inimigo mais perto de onde caiu)
-	/// leva o dano cheio; quem estiver do lado, na área, leva esta fração.</summary>
-	[Export] public float PounceSplash = 0.3f;
+	/// <summary>O principal (o travado no modo alvo, senão o inimigo mais
+	/// perto de onde caiu, dentro de <see cref="PounceHitRadius"/>) leva o dano
+	/// cheio. Quem estiver em volta, até <see cref="PounceAreaRadius"/>, leva
+	/// uma fração que cai com a distância (Jhon, 26/11: "mais poder de dano e
+	/// em área, afetando mais pessoas ao redor"; era 30% e só a 1,8 m):
+	/// <see cref="PounceSplash"/> até <see cref="PounceSplashInner"/> m, caindo
+	/// até <see cref="PounceSplashFar"/> na borda. Parede no meio protege.</summary>
+	[Export] public float PounceSplash = 0.6f;
+	[Export] public float PounceSplashFar = 0.3f;
+	[Export] public float PounceSplashInner = 1.5f;
+	[Export] public float PounceAreaRadius = 3.5f;
 
 	/// <summary>
 	/// Botão direito, no ar: o bote. Prende o lobo na trajetória até o
@@ -104,6 +116,11 @@ public partial class Weapon
 		// não saiu não sai mais, e os cliques guardados são esquecidos.
 		bool clawingInAir = _strikeLeft > 0 && !_diving && !_flying && !_body.IsOnFloor();
 		if (_cooldown > 0 && !clawingInAir) return;
+		// O teto do clique em rajada: o bote não sai antes de StrikeSpacing
+		// depois do último golpe que bateu, nem antes de LeapCooldown depois do
+		// último bote. Apertado antes, fica esperando no ar (Player.Actions) e
+		// sai na hora em que pode.
+		if (_sinceStrike < StrikeSpacing || _sinceLeap < LeapCooldown) return;
 		if (!_body.IsOnFloor() && HeightAboveGround() >= LeapMinHeight)
 		{
 			_attackQueue = 0;
@@ -600,7 +617,7 @@ public partial class Weapon
 				MarkRecovery(_rootLeft);
 				_wolfHit = Kill.WolfPounceId;
 				Claw(damage, PounceHitReach, PounceHitRadius, false, _pounceFlew ? _flyDir : null,
-					focus: _pounceFocus, splash: PounceSplash);
+					focus: _pounceFocus, splash: PounceSplash, area: PounceAreaRadius);
 			}, Mathf.Max(elapsed, 0.001f), total, impactAt);
 
 		// O salto é um pulo de verdade: do impulso até os pés tocarem o

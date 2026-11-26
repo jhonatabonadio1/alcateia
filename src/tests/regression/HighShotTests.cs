@@ -27,6 +27,19 @@ public abstract class HighShotTest : RegressionTest
 
 	public override async Task Run(RegressionBench b)
 	{
+		// Este teste mede o tiro, não a queda: o jogador é levado de telhado em
+		// telhado e às vezes escorrega da beira até a rua. Desde 26/11 a queda
+		// fere (decisão do Jhon) e as escorregadas somadas o matavam no meio da
+		// volta; aqui a queda não conta.
+		FallProfile fall = FallProfile.Load();
+		float safe = fall.HumanSafe;
+		fall.HumanSafe = 1000f;
+		try { await Shots(b); }
+		finally { fall.HumanSafe = safe; }
+	}
+
+	private async Task Shots(RegressionBench b)
+	{
 		b.CloseLoadout();
 		await b.Until(() => b.Bots().Length >= 1, 6.0);
 		var bots = b.Bots();
