@@ -276,14 +276,23 @@ public partial class Player
 	/// <summary>
 	/// A corrida do humano: Shift segurado, andando para a frente, em pé,
 	/// sem atordoamento e com as mãos livres — apertar o gatilho, mirar,
-	/// recarregar, armar a granada ou golpear tira da corrida. Começa no
+	/// recarregar, armar a granada ou estocar tira da corrida. Começa no
 	/// chão e segue no ar (o pulo correndo leva o embalo).
+	///
+	/// Só entra aqui o que o servidor autoritativo também sabe (o comando e
+	/// o estado da arma que ele simula): a coronhada (o V não vai no comando)
+	/// e a granada saindo da mão (só existe em quem tem a mão na tela)
+	/// deixavam o jogo parar de correr e o servidor não, e o corpo era
+	/// puxado de volta.
 	/// </summary>
 	private void UpdateHumanSprint(double delta)
 	{
 		bool ahead = _intent.Forward && _intent.Move.Y < -0.6f;
+		// O clique guardado (Player.Actions) também segura a corrida até o tiro sair: um
+		// clique rápido com o Shift apertado soltava o botão antes de a arma voltar, a
+		// corrida voltava, e o tiro só saía quando o jogador parasse de correr.
 		bool hands = !_intent.AttackHeld && !_intent.AimHeld && !_weapon.IsReloading && !_weapon.IsGrenadeReady
-			&& !_weapon.IsThrowPending && !_weapon.IsButting && !_weapon.IsStabbing;
+			&& !_weapon.IsStabbing && !_sprintClick;
 		bool wants = !_form.IsWolf && _intent.SprintHeld && ahead && !_crouching && !_onWall && !IsStunned && hands;
 		bool now = wants && (_humanSprint || IsOnFloor());
 

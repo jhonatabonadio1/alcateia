@@ -102,6 +102,7 @@ public partial class Hud
 	[Export] public float BreathSprintOut = 4f;
 
 	private float _winded;
+	private bool _gasping;
 
 	private const string DangerCode = @"
 shader_type canvas_item;
@@ -192,7 +193,11 @@ void fragment() {
 
 		// A respiração: entra abaixo de LowHealth, com um pouco de folga para sair.
 		// A respiração é de quem joga: no HUD de outro, só a tela.
-		bool gasping = Subject == null && !_health.IsDead && frac < (Breathing ? LowHealth + 0.08f : LowHealth) && !UiState.AnyOpen;
+		// A folga é da respiração de pouca vida, não do som tocando: a da
+		// corrida também liga o som, e com ela a folga prendia a de pouca vida
+		// ligada entre 30% e 38% de vida depois de correr.
+		bool gasping = Subject == null && !_health.IsDead && frac < (_gasping ? LowHealth + 0.08f : LowHealth) && !UiState.AnyOpen;
+		_gasping = gasping;
 		// Correndo o fôlego vai embora aos poucos, e volta aos poucos.
 		bool running = Subject == null && !_health.IsDead && _player is { IsHumanSprinting: true };
 		_winded = Mathf.MoveToward(_winded, running ? 1f : 0f, delta / Mathf.Max(running ? BreathSprintIn : BreathSprintOut, 0.01f));

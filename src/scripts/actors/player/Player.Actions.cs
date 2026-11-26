@@ -117,12 +117,14 @@ public partial class Player
 
 		// Correndo (Shift), a arma está abaixada: o clique tira da corrida
 		// e o tiro sai quando ela volta (SprintRecover). O clique fica
-		// guardado, senão o da pistola e o da faca se perdiam no caminho.
-		// A granada só arma se o botão ainda estiver apertado.
+		// guardado, senão o da pistola e o da faca se perdiam no caminho:
+		// soltar o botão antes de a arma voltar (um clique normal leva uns
+		// 0,1 s, a volta 0,23) não apaga o clique. Só a granada desiste ao
+		// soltar: ela arma segurando, e solta já seria o arremesso.
 		if (IsWeaponLowered)
 		{
 			if (_intent.Attack) _sprintClick = true;
-			if (_intent.AttackReleased) _sprintClick = false;
+			if (_intent.AttackReleased && _weapon.HumanSlot == Slot.Grenade) _sprintClick = false;
 			firing = false;
 		}
 		else if (_sprintClick)
@@ -197,8 +199,11 @@ public partial class Player
 		}
 
 		// V, de humano: a coronhada com arma de fogo, o golpe com a faca, o
-		// arremesso com a granada.
-		if (_intent.Melee && !_form.IsWolf)
+		// arremesso com a granada. Com a arma abaixada pela corrida, nada: o V
+		// não vai no comando de rede, então não pode tirar da corrida (o
+		// servidor seguiria correndo); e golpear correndo é o que o clique
+		// também não deixa.
+		if (_intent.Melee && !_form.IsWolf && !IsWeaponLowered)
 			_weapon.TryMelee();
 
 		// Q, de lobo: arma o especial (o lobo segue andando, com o modo alvo

@@ -154,6 +154,30 @@ public sealed class HumanSprintTest : RegressionTest
 		b.Check(!b.Player.IsHumanSprinting && !b.Player.IsWeaponLowered, "o clique tirou da corrida e a arma voltou");
 		b.Check(b.Weapon.AmmoInMag < before, "com a arma de volta, atira");
 
+		// Com a pistola, um clique rápido (solta em 0,1 s, antes de a arma voltar) com o
+		// Shift ainda apertado: o tiro sai quando a arma volta, e a corrida continua
+		// depois. Antes soltar o botão apagava o clique, e o tiro se perdia.
+		b.Weapon.SelectSlot(Slot.Secondary);
+		await b.Seconds(0.8);
+		RegressionBench.Press("move_forward", "sprint");
+		await b.Seconds(0.5);
+		b.Check(b.Player.IsHumanSprinting, "correndo com a pistola");
+		int pistol = b.Weapon.AmmoInMag;
+		RegressionBench.Press("attack");
+		await b.Frames(6);
+		RegressionBench.Release("attack");
+		await b.Seconds(0.5);
+		b.Check(b.Weapon.AmmoInMag == pistol - 1, $"clique rápido correndo: um tiro quando a arma volta (pente {pistol} → {b.Weapon.AmmoInMag})");
+		b.Check(b.Player.IsHumanSprinting, "e volta a correr depois do tiro");
+
+		// V correndo não faz nada: o V não vai no comando de rede, e golpear
+		// correndo é o que o clique também não deixa.
+		await b.Tap("melee");
+		await b.Frames(3);
+		b.Check(!b.Weapon.IsButting && b.Player.IsHumanSprinting, "V correndo: nem coronhada, nem sai da corrida");
+		RegressionBench.ReleaseAll();
+		await b.Seconds(0.4);
+
 		// De lobo o Shift não é corrida de humano.
 		await b.BecomeWolf();
 		RegressionBench.Press("move_forward", "sprint");
