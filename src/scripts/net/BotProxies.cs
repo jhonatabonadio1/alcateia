@@ -35,9 +35,9 @@ public sealed class BotProxies
 	/// o bot), a cápsula sai: não fica um bot invisível parado no mapa.</summary>
 	public const double StaleAfter = 1.0;
 
-	/// <summary>A cápsula agachada (a do boneco, Bot.RemoteCrouchHeight),
-	/// encolhida em torno do centro, como a dele.</summary>
-	public const float CrouchHeight = 1.0f, StandHeight = 1.75f;
+	/// <summary>A cápsula agachada (a do humano, Player.HumanCrouchHeight: o bot
+	/// agacha de arma na mão), encolhida em torno do centro, como a dele.</summary>
+	public const float CrouchHeight = Player.DefaultHumanCrouchHeight, StandHeight = 1.75f;
 
 	private sealed class Proxy
 	{

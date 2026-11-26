@@ -32,6 +32,11 @@ public partial class CharacterAnimator
 	/// antes de passar disso.</summary>
 	[Export(PropertyHint.Range, "0.2,0.95")] public float KneelMinReach = 0.42f;
 
+	/// <summary>Quanto o quadril desceu de fato no último clipe aprofundado, em
+	/// metros (o que a perna de apoio deixou de <see cref="KneelDrop"/>). Para
+	/// os testes e o AJUSTES.</summary>
+	public float KneelLower { get; private set; }
+
 	/// <summary>Amostras por segundo das trilhas refeitas.</summary>
 	private const float KneelRate = 30f;
 
@@ -67,29 +72,42 @@ public partial class CharacterAnimator
 		int samples = Mathf.Max(2, Mathf.CeilToInt(animation.Length * KneelRate) + 1);
 		var hipPos = new Vector3[samples];
 		var rot = new Quaternion[2, 3, samples];
+		var hipsAt = new Transform3D[samples];
+		var legAt = new (Transform3D Up, Transform3D Knee, Transform3D Foot, Transform3D Toe)[samples, 2];
+
+		// O quanto o quadril desce é um só no clipe inteiro: o que a perna de
+		// apoio (a do pé mais baixo) deixa no instante mais apertado. Descendo o
+		// que cada instante deixava, o quadril subia a cada passo e o corpo
+		// agachado andando balançava 9 cm (26/11). A perna do passo, no ar,
+		// dobra o que precisar; se não alcança o pé, o pé sobe junto (a
+		// cinemática inversa o deixa onde a perna chega).
+		float lower = drop;
 		for (int i = 0; i < samples; i++)
 		{
 			double t = Mathf.Min(animation.Length, i / KneelRate);
-			Transform3D hipsGlobal = Global(animation, body, bodyPath, hips, t);
-			var leg = new (Transform3D Up, Transform3D Knee, Transform3D Foot, Transform3D Toe)[2];
+			hipsAt[i] = Global(animation, body, bodyPath, hips, t);
 			for (int s = 0; s < 2; s++)
 			{
-				leg[s].Up = hipsGlobal * Local(animation, body, bodyPath, legs[s, 0], t);
-				leg[s].Knee = leg[s].Up * Local(animation, body, bodyPath, legs[s, 1], t);
-				leg[s].Foot = leg[s].Knee * Local(animation, body, bodyPath, legs[s, 2], t);
-				leg[s].Toe = legs[s, 3] >= 0 ? leg[s].Foot * Local(animation, body, bodyPath, legs[s, 3], t) : leg[s].Foot;
+				legAt[i, s].Up = hipsAt[i] * Local(animation, body, bodyPath, legs[s, 0], t);
+				legAt[i, s].Knee = legAt[i, s].Up * Local(animation, body, bodyPath, legs[s, 1], t);
+				legAt[i, s].Foot = legAt[i, s].Knee * Local(animation, body, bodyPath, legs[s, 2], t);
+				legAt[i, s].Toe = legs[s, 3] >= 0 ? legAt[i, s].Foot * Local(animation, body, bodyPath, legs[s, 3], t) : legAt[i, s].Foot;
 			}
+			int stance = legAt[i, 0].Foot.Origin.Dot(up) <= legAt[i, 1].Foot.Origin.Dot(up) ? 0 : 1;
+			var st = legAt[i, stance];
+			float l1 = st.Up.Origin.DistanceTo(st.Knee.Origin), l2 = st.Knee.Origin.DistanceTo(st.Foot.Origin);
+			float least = (l1 + l2) * KneelMinReach;
+			while (lower > 0f && (st.Up.Origin - up * lower).DistanceTo(st.Foot.Origin) < least)
+				lower -= drop * 0.01f;
+		}
+		lower = Mathf.Max(lower, 0f);
+		KneelLower = lower * meters;
 
-			// O quadril desce o que as duas pernas deixam.
-			float lower = drop;
-			for (int s = 0; s < 2; s++)
-			{
-				float l1 = leg[s].Up.Origin.DistanceTo(leg[s].Knee.Origin), l2 = leg[s].Knee.Origin.DistanceTo(leg[s].Foot.Origin);
-				float least = (l1 + l2) * KneelMinReach;
-				while (lower > 0f && (leg[s].Up.Origin - up * lower).DistanceTo(leg[s].Foot.Origin) < least)
-					lower -= drop * 0.02f;
-			}
-			lower = Mathf.Max(lower, 0f);
+		for (int i = 0; i < samples; i++)
+		{
+			double t = Mathf.Min(animation.Length, i / KneelRate);
+			Transform3D hipsGlobal = hipsAt[i];
+			var leg = new[] { legAt[i, 0], legAt[i, 1] };
 
 			Transform3D localHips = Local(animation, body, bodyPath, hips, t);
 			Vector3 moved = up * lower;

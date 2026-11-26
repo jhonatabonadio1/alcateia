@@ -30,22 +30,51 @@ public partial class CharacterAnimator
 		}
 	}
 
-	/// <summary>Acha o osso da cabeça e o ponto dos olhos do personagem deste modelo.</summary>
+	/// <summary>Acha o osso da cabeça e o ponto dos olhos do personagem deste
+	/// modelo, e dá ao dono a altura dos olhos para a câmera.</summary>
 	private void FindEyes()
 	{
 		_eyeSkeleton = FindSkeleton(_model);
 		_eyeBone = _eyeSkeleton?.FindBone("mixamorig_Head") ?? -1;
 		if (CharacterSkin.OfHumanModel(_modelPath) is CharacterSkin skin) _eyeInHead = skin.EyeInHead;
+		if (_owner == null || _player == null) return;
+
+		// Em pé: o parado de fuzil. Agachado: o meio entre o parado e a média
+		// do passo agachado (o olho do corpo sobe e desce uns 3,6 cm andando; a
+		// câmera fica no meio, a menos de 1 cm dos dois).
+		float stand = EyeHeightIn("idle_rifle", false, 0);
+		float crouchIdle = EyeHeightIn("crouch_idle", true, 0);
+		float crouchWalk = EyeHeightMean("crouch_walk", true);
+		float crouch = float.IsFinite(crouchWalk) ? (crouchIdle + crouchWalk) * 0.5f : crouchIdle;
+		_owner.UseHumanEyes(stand, crouch);
+		StandEye = stand;
+		CrouchEye = crouch;
+	}
+
+	/// <summary>A altura dos olhos que foi dada à câmera, em pé e agachado
+	/// (metros acima dos pés). Para os testes.</summary>
+	public float StandEye { get; private set; } = float.NaN;
+	public float CrouchEye { get; private set; } = float.NaN;
+
+	/// <summary>A média da altura dos olhos ao longo do clipe.</summary>
+	private float EyeHeightMean(string clip, bool aimUpper)
+	{
+		if (!_player.HasAnimation($"alcateia/{clip}")) return float.NaN;
+		double length = _player.GetAnimation($"alcateia/{clip}").Length;
+		const int n = 48;
+		float sum = 0;
+		for (int i = 0; i < n; i++) sum += EyeHeightIn(clip, aimUpper, length * i / n);
+		return sum / n;
 	}
 
 	/// <summary>
 	/// A altura dos olhos acima dos pés (a base deste nó), em metros, no clipe
-	/// <paramref name="clip"/> (o instante 0), com as pernas e o quadril dele e,
+	/// <paramref name="clip"/> no instante <paramref name="time"/>, com as pernas e o quadril dele e,
 	/// se <paramref name="aimUpper"/>, o tronco da pose de mira em pé (o que a
 	/// árvore toca agachado: <see cref="CrouchAim"/>). Lida dos ossos, sem tocar
 	/// a árvore: as poses locais compostas até a cabeça.
 	/// </summary>
-	private float EyeHeightIn(string clip, bool aimUpper)
+	private float EyeHeightIn(string clip, bool aimUpper, double time)
 	{
 		if (_eyeSkeleton == null || _eyeBone < 0 || !_player.HasAnimation($"alcateia/{clip}")) return float.NaN;
 		Animation legs = _player.GetAnimation($"alcateia/{clip}");
@@ -57,7 +86,7 @@ public partial class CharacterAnimator
 		for (int bone = _eyeBone; bone >= 0; bone = _eyeSkeleton.GetBoneParent(bone))
 		{
 			Animation from = upper != legs && IsUpperBody(_eyeSkeleton.GetBoneName(bone)) ? upper : legs;
-			pose = Local(from, _eyeSkeleton, bodyPath, bone, 0) * pose;
+			pose = Local(from, _eyeSkeleton, bodyPath, bone, from == upper && upper != legs ? 0 : time) * pose;
 		}
 		Vector3 eye = pose * _eyeInHead;
 
