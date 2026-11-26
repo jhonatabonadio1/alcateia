@@ -60,7 +60,10 @@ public sealed class HumanStrideTest : RegressionTest
 		// lado só há strafe andando (1,03 m/s), e o corpo vai a 3,0.
 		await Phase(b, "de frente", -90f, 0.15, "move_forward");
 		await Phase(b, "para trás", 90f, 0.45, "move_back");
-		await Phase(b, "agachado", -90f, 0.85, "move_forward", "crouch");
+		// Agachado desde 26/11 é uma passada montada pela velocidade (KneelWalk): a
+		// planta fica parada no chão; o que sobra é o calcanhar levantando na saída
+		// do passo (era 0,70 m/s com o clipe).
+		await Phase(b, "agachado", -90f, 0.45, "move_forward", "crouch");
 		await Phase(b, "de lado", 0f, 2.4, "move_right");
 
 		// Com a faca na mão (26/11: 3,84 m/s). Só medido: a corrida não toca mais

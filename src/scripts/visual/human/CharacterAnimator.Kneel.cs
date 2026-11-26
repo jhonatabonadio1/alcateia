@@ -10,8 +10,12 @@ using Godot;
 /// quadril na altura que a coxa de trás deixa com o joelho encostado no chão
 /// (coxa na vertical, canela deitada para trás, o pé na ponta), a perna da
 /// frente a 90° com o pé chapado — as duas no plano de andar, sem abrir para
-/// o lado. Andando, o clipe "Crouched Walking" do Mixamo com o quadril na
-/// mesma altura (a câmera é uma só) e as pernas dobrando para a frente.
+/// o lado. Andando, uma passada montada aqui (<see cref="KneelWalk"/>), com o
+/// quadril na mesma altura (a câmera é uma só), os pés para a frente e o pé de
+/// apoio parado no chão. O "Crouched Walking" do Mixamo saiu: com o pé do
+/// parado em pé (o direito aberto 54°, a base de tiro) o pé entortava ao andar
+/// (Jhon, 26/11: "veja o pé entortando"), e ele andava a 0,67 m/s com o corpo
+/// a 1,35.
 ///
 /// É a animação, e não um modificador por cima dela, de propósito: o que lê
 /// os ossos durante o quadro (as peças de acerto do <see cref="BodyHitbox"/>,
@@ -30,10 +34,29 @@ public partial class CharacterAnimator
 	/// em comprimentos de coxa (perto de 1: coxa deitada, canela em pé).</summary>
 	[Export(PropertyHint.Range, "0.5,1.3")] public float KneelFrontReach = 0.92f;
 
-	/// <summary>O quanto a perna pode se dobrar andando: a distância do quadril
-	/// ao tornozelo não fica abaixo desta fração da perna esticada (0,36: 3,5 cm
-	/// de pele no chão, medido em 26/11).</summary>
-	[Export(PropertyHint.Range, "0.2,0.95")] public float KneelMinReach = 0.39f;
+	/// <summary>A velocidade do corpo agachado andando, em m/s: a passada é
+	/// calculada por ela, para o pé de apoio ficar parado no chão.</summary>
+	[Export] public float CrouchStrideSpeed = 1.35f;
+
+	/// <summary>Quanto dura um ciclo (os dois passos), em segundos.</summary>
+	[Export] public float CrouchStrideTime = 0.72f;
+
+	/// <summary>Fração do ciclo com o pé no chão.</summary>
+	[Export(PropertyHint.Range, "0.5,0.75")] public float CrouchStance = 0.6f;
+
+	/// <summary>Quanto o pé sobe no ar ao dar o passo, em metros.</summary>
+	[Export] public float CrouchStepLift = 0.09f;
+
+	/// <summary>Quanto o calcanhar levanta na saída do passo, em graus.</summary>
+	[Export] public float CrouchHeelLift = 35f;
+
+	/// <summary>O vai e volta do quadril a cada passo, em metros.</summary>
+	[Export] public float CrouchBob = 0.012f;
+
+
+	/// <summary>O pé em repouso (o do modelo, virado para a frente), no espaço
+	/// do esqueleto.</summary>
+	private static Basis RestFoot(Skeleton3D body, int foot) => body.GetBoneGlobalRest(foot).Basis.Orthonormalized();
 
 	/// <summary>Quanto o quadril desceu de fato no agachado parado, em metros.
 	/// Para os testes e o AJUSTES.</summary>
@@ -162,12 +185,12 @@ public partial class CharacterAnimator
 			float rise = 0.11f / rig.Meters;
 			Vector3 c = knee - forward * Mathf.Sqrt(Mathf.Max(shin * shin - rise * rise, 0f)) + up * rise;
 			// O pé na ponta: o tornozelo em cima, os dedos no chão.
-			Vector3 standFoot = rig.Stand[1, 3].Origin - rig.Stand[1, 2].Origin;
-			Basis footBasis = new Basis(Arc(standFoot, -up + forward * 0.25f)) * rig.Stand[1, 2].Basis.Orthonormalized();
+			Vector3 restFoot = body.GetBoneGlobalRest(rig.Legs[1, 3]).Origin - body.GetBoneGlobalRest(rig.Legs[1, 2]).Origin;
+			Basis footBasis = new Basis(Arc(restFoot, -up + forward * 0.25f)) * RestFoot(body, rig.Legs[1, 2]);
 			rot[1] = Bend(rig, 1, hips, a, c, forward - up * 0.2f, footBasis);
 			// Os dedos deitados no chão, virados para a frente (com o pé na ponta,
 			// os dedos seguiam o pé e entravam 7 cm no chão).
-			toeBack = (footBasis.Inverse() * rig.Stand[1, 3].Basis.Orthonormalized()).GetRotationQuaternion();
+			toeBack = (footBasis.Inverse() * body.GetBoneGlobalRest(rig.Legs[1, 3]).Basis.Orthonormalized()).GetRotationQuaternion();
 		}
 		// Esquerda, à frente: pé chapado no chão, joelho para a frente e para cima.
 		{
@@ -176,7 +199,7 @@ public partial class CharacterAnimator
 			float ankle = rig.Stand[0, 2].Origin.Dot(up);
 			Vector3 c = a + forward * (thigh * KneelFrontReach);
 			c += up * (ankle - c.Dot(up));
-			rot[0] = Bend(rig, 0, hips, a, c, forward + up, rig.Stand[0, 2].Basis.Orthonormalized());
+			rot[0] = Bend(rig, 0, hips, a, c, forward + up, RestFoot(body, rig.Legs[0, 2]));
 		}
 
 		var idle = new Animation { Length = 1f, LoopMode = Animation.LoopModeEnum.Linear };
@@ -216,67 +239,124 @@ public partial class CharacterAnimator
 	}
 
 	/// <summary>
-	/// O agachado andando: o clipe, com o quadril reto como o de pé e na altura
-	/// média do agachado parado (a câmera é uma só), e cada perna dobrando para
-	/// a frente, no plano dela.
+	/// O agachado andando, montado por cima do parado em pé: o quadril reto na
+	/// altura do agachado parado (com um vai e volta de <see cref="CrouchBob"/>),
+	/// e cada pé num ciclo: no apoio, a planta recua exatamente na velocidade do
+	/// corpo (o pé fica parado no chão), chapada e depois com o calcanhar
+	/// levantando; no ar, vai para a frente erguido e pousa chapado. Os pés
+	/// sempre para a frente, no plano da perna.
 	/// </summary>
-	private void Kneel(Animation walk, Animation stand, Skeleton3D body, string bodyPath)
+	private Animation KneelWalk(Animation stand, Skeleton3D body, string bodyPath)
 	{
 		KneelRig rig = BuildKneelRig(stand, body, bodyPath);
-		if (rig == null) return;
+		if (rig == null) return null;
 		Vector3 up = rig.Up, forward = rig.Forward, side = rig.Side;
+		float units = 1f / rig.Meters;
 		Basis hips = rig.StandHips.Basis.Orthonormalized();
 
-		int samples = Mathf.Max(2, Mathf.CeilToInt(walk.Length * KneelRate) + 1);
-		var hipAt = new Vector3[samples];
-		var feet = new Vector3[samples, 2];
-		float meanHips = 0f;
-		for (int i = 0; i < samples; i++)
-		{
-			double t = Mathf.Min(walk.Length, i / KneelRate);
-			Transform3D h = Global(walk, body, bodyPath, rig.Hips, t);
-			hipAt[i] = h.Origin;
-			meanHips += h.Origin.Dot(up);
-			for (int s = 0; s < 2; s++) feet[i, s] = Global(walk, body, bodyPath, rig.Legs[s, 2], t).Origin;
-		}
-		meanHips /= samples;
+		float cycle = Mathf.Max(CrouchStrideTime, 0.2f);
+		float travel = CrouchStrideSpeed * cycle * CrouchStance * units;   // o quanto a planta recua no apoio
+		float lift = CrouchStepLift * units, bob = CrouchBob * units;
 
-		// O quadril na altura do parado, sem passar do que a perna dobra.
-		float lower = meanHips - (rig.StandHips.Origin.Dot(up) - rig.Drop);
+		// A planta (a base dos dedos) na altura em que fica em pé, e o tornozelo
+		// em relação a ela com o pé chapado (o pé do repouso, para a frente).
+		float floor = Mathf.Min(rig.Stand[0, 3].Origin.Dot(up), rig.Stand[1, 3].Origin.Dot(up));
+		var ankleFromBall = new Vector3[2];
+		var flat = new Basis[2];
+		var toeFlat = new Basis[2];
+		for (int s = 0; s < 2; s++)
+		{
+			Vector3 v = body.GetBoneGlobalRest(rig.Legs[s, 2]).Origin - body.GetBoneGlobalRest(rig.Legs[s, 3]).Origin;
+			float back = new Vector3(v.X, v.Y, v.Z).Dot(forward);
+			float high = v.Dot(up);
+			ankleFromBall[s] = forward * back + up * high;
+			flat[s] = RestFoot(body, rig.Legs[s, 2]);
+			toeFlat[s] = RestFoot(body, rig.Legs[s, 3]);
+		}
+
+		var anim = new Animation { Length = cycle, LoopMode = Animation.LoopModeEnum.Linear };
+		for (int track = 0; track < stand.GetTrackCount(); track++)
+		{
+			Animation.TrackType type = stand.TrackGetType(track);
+			Variant value;
+			switch (type)
+			{
+				case Animation.TrackType.Position3D: value = stand.PositionTrackInterpolate(track, 0); break;
+				case Animation.TrackType.Rotation3D: value = stand.RotationTrackInterpolate(track, 0); break;
+				case Animation.TrackType.Scale3D: value = stand.ScaleTrackInterpolate(track, 0); break;
+				default: continue;
+			}
+			int copy = anim.AddTrack(type);
+			anim.TrackSetPath(copy, stand.TrackGetPath(track));
+			anim.TrackInsertKey(copy, 0, value);
+		}
+
+		int samples = Mathf.CeilToInt(cycle * 60f);
+		var hipPos = new Vector3[samples + 1];
+		var rot = new Quaternion[2, 4, samples + 1];
 		var upOffset = new Vector3[2];
 		for (int s = 0; s < 2; s++) upOffset[s] = rig.Stand[s, 0].Origin - rig.StandHips.Origin;
+		Vector3 standHipsLow = rig.StandHips.Origin - up * rig.Drop;
 
-		var rot = new Quaternion[2, 3, samples];
-		var hipPos = new Vector3[samples];
-		for (int i = 0; i < samples; i++)
+		for (int i = 0; i <= samples; i++)
 		{
-			Vector3 center = hipAt[i] - up * lower;
+			float phase = (float)i / samples % 1f;
+			// O quadril sobe no meio de cada passo (duas vezes por ciclo).
+			Vector3 center = standHipsLow + up * (bob * 0.5f * -Mathf.Cos(phase * Mathf.Tau * 2f));
 			hipPos[i] = HipsLocal(body, rig.Hips, center);
 			for (int s = 0; s < 2; s++)
 			{
+				float p = (phase + s * 0.5f) % 1f;
 				Vector3 a = center + upOffset[s];
-				// O pé no plano da perna: o que o clipe anda para a frente, sem abrir.
-				Vector3 c = feet[i, s] - side * (feet[i, s] - a).Dot(side);
-				float l1 = rig.Stand[s, 0].Origin.DistanceTo(rig.Stand[s, 1].Origin);
-				float l2 = rig.Stand[s, 1].Origin.DistanceTo(rig.Stand[s, 2].Origin);
-				float least = (l1 + l2) * KneelMinReach;
-				if (a.DistanceTo(c) < least) c = a + (c - a).Normalized() * least;
-				var r = Bend(rig, s, hips, a, c, forward, rig.Stand[s, 2].Basis.Orthonormalized());
+				float middle = a.Dot(forward);
+				float z, high, pitch;
+				if (p < CrouchStance)
+				{
+					// Apoio: a planta recua na velocidade do corpo, parada no chão.
+					float u = p / CrouchStance;
+					z = middle + travel * (0.5f - u);
+					high = 0f;
+					pitch = u > 0.55f ? Mathf.SmoothStep(0f, 1f, (u - 0.55f) / 0.45f) : 0f;
+				}
+				else
+				{
+					// No ar: volta para a frente, erguido, e pousa chapado.
+					float u = (p - CrouchStance) / (1f - CrouchStance);
+					z = middle + travel * (-0.5f + Mathf.SmoothStep(0f, 1f, u));
+					high = lift * Mathf.Sin(u * Mathf.Pi);
+					pitch = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Min(u * 1.6f, 1f));
+				}
+				// A planta, no plano da perna.
+				Vector3 ball = a - up * a.Dot(up) - forward * a.Dot(forward) + forward * z + up * (floor + high);
+				// O calcanhar sobe girando em volta da planta (a ponta do pé desce).
+				var heel = new Basis(side, Mathf.DegToRad(CrouchHeelLift * pitch));
+				if ((heel * ankleFromBall[s]).Dot(up) < ankleFromBall[s].Dot(up)) heel = new Basis(side, -Mathf.DegToRad(CrouchHeelLift * pitch));
+				Vector3 ankle = ball + heel * ankleFromBall[s];
+				Basis footBasis = heel * flat[s];
+				var r = Bend(rig, s, hips, a, ankle, forward + up * 0.2f, footBasis);
 				rot[s, 0, i] = r.Up;
 				rot[s, 1, i] = r.Knee;
 				rot[s, 2, i] = r.Foot;
+				// Os dedos continuam deitados no chão.
+				rot[s, 3, i] = (footBasis.Inverse() * toeFlat[s]).GetRotationQuaternion();
 			}
 		}
 
-		Write(walk, Track(walk, $"{bodyPath}:{body.GetBoneName(rig.Hips)}", Animation.TrackType.Position3D), samples, i => hipPos[i]);
-		Write(walk, Track(walk, $"{bodyPath}:{body.GetBoneName(rig.Hips)}", Animation.TrackType.Rotation3D), samples,
-			_ => rig.StandHips.Basis.GetRotationQuaternion());
+		void Fill(int bone, Animation.TrackType type, System.Func<int, Variant> value)
+		{
+			int track = Track(anim, $"{bodyPath}:{body.GetBoneName(bone)}", type);
+			for (int k = anim.TrackGetKeyCount(track) - 1; k >= 0; k--) anim.TrackRemoveKey(track, k);
+			for (int i = 0; i <= samples; i++) anim.TrackInsertKey(track, cycle * i / samples, value(i));
+		}
+		Fill(rig.Hips, Animation.TrackType.Position3D, i => hipPos[i]);
+		Fill(rig.Hips, Animation.TrackType.Rotation3D, _ => rig.StandHips.Basis.GetRotationQuaternion());
 		for (int s = 0; s < 2; s++)
-			for (int j = 0; j < 3; j++)
+			for (int j = 0; j < 4; j++)
 			{
-				int bone = rig.Legs[s, j], leg = s, joint = j;
-				Write(walk, Track(walk, $"{bodyPath}:{body.GetBoneName(bone)}", Animation.TrackType.Rotation3D), samples, i => rot[leg, joint, i]);
+				int side2 = s, joint = j;
+				Fill(rig.Legs[s, j], Animation.TrackType.Rotation3D, i => rot[side2, joint, i]);
 			}
+		return anim;
 	}
 
 	private static Quaternion Arc(Vector3 from, Vector3 to)
@@ -318,10 +398,4 @@ public partial class CharacterAnimator
 		return track;
 	}
 
-	private static void Write(Animation animation, int track, int samples, System.Func<int, Variant> value)
-	{
-		for (int k = animation.TrackGetKeyCount(track) - 1; k >= 0; k--) animation.TrackRemoveKey(track, k);
-		for (int i = 0; i < samples; i++)
-			animation.TrackInsertKey(track, Mathf.Min(animation.Length, i / KneelRate), value(i));
-	}
 }

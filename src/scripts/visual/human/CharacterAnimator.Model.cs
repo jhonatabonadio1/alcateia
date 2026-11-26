@@ -148,8 +148,9 @@ public partial class CharacterAnimator
 
 				// O agachado do corpo visto, mais fundo que o do clipe (26/11).
 				Animation stand = library.HasAnimation("idle_rifle") ? library.GetAnimation("idle_rifle") : null;
-				if (clip is "crouch_walk" or "crouch_idle")
-					Kneel(animation, stand, body, bodyPath);
+				// Andando agachado: a passada montada (os pés para a frente, sem deslizar).
+				if (clip == "crouch_walk" && KneelWalk(stand, body, bodyPath) is Animation walked)
+					animation = walked;
 
 				animation.LoopMode = IsLooping(clip)
 					? Animation.LoopModeEnum.Linear
