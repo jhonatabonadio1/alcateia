@@ -83,20 +83,26 @@ public partial class Player
 	/// <summary>O olho do humano em pé e agachado, em metros acima dos pés.
 	/// É o olho do corpo que os outros veem (Jhon, 26/11: "o nível de
 	/// agachamento deve ser idêntico ao de 3ª pessoa, extremamente preciso"):
-	/// o <see cref="CharacterAnimator"/> mede no modelo do personagem ao montar
-	/// (<see cref="UseHumanEyes"/>) e troca estes. Os de fábrica são os da Eve e
-	/// do Barut, para o corpo sem modelo (o servidor de partida). Era 147,5 cm em
-	/// pé (12 cm abaixo dos olhos do modelo) e 60 cm agachado (50 abaixo).</summary>
+	/// o <see cref="CharacterAnimator"/> lê no corpo desenhado, parado e de
+	/// cabeça reta, e ajusta estes (<see cref="TuneHumanEye"/>). Os de fábrica
+	/// são os medidos na Eve e no Barut de fuzil na mão (159,2 e 111,2 cm), para
+	/// o corpo sem modelo (o servidor de partida) e o primeiro instante. Era
+	/// 147,5 cm em pé (12 abaixo dos olhos do corpo) e 60 cm agachado (50 abaixo).</summary>
 	[Export] public float HumanEyeHeight = 1.592f;
-	[Export] public float HumanCrouchEyeHeight = 1.116f;
+	[Export] public float HumanCrouchEyeHeight = 1.112f;
 
-	/// <summary>O olho do humano medido no corpo visto (em pé e agachado, metros
-	/// acima dos pés). Chamado pelo <see cref="CharacterAnimator"/> do dono, ao
-	/// montar o modelo.</summary>
-	public void UseHumanEyes(float stand, float crouch)
+	/// <summary>Quão rápido o olho do humano vai até o que o corpo visto mostra,
+	/// em m/s: trocar de arma muda o tronco, e a câmera não dá tranco.</summary>
+	[Export] public float EyeTuneSpeed = 0.4f;
+
+	/// <summary>O olho do corpo visto, lido parado (em pé ou agachado), em metros
+	/// acima dos pés. Chamado pelo <see cref="CharacterAnimator"/> do dono.</summary>
+	public void TuneHumanEye(bool crouched, float height, float delta)
 	{
-		if (float.IsFinite(stand) && stand > 0.5f) HumanEyeHeight = stand;
-		if (float.IsFinite(crouch) && crouch > 0.3f) HumanCrouchEyeHeight = crouch;
+		if (!float.IsFinite(height) || height < 0.3f || height > 2.5f) return;
+		float step = EyeTuneSpeed * delta;
+		if (crouched) HumanCrouchEyeHeight = Mathf.MoveToward(HumanCrouchEyeHeight, height, step);
+		else HumanEyeHeight = Mathf.MoveToward(HumanEyeHeight, height, step);
 	}
 
 	/// <summary>A altura da cápsula agora (em pé, agachado ou no meio).</summary>
