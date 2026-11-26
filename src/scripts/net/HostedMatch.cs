@@ -29,7 +29,7 @@ using System.Text.Json.Nodes;
 /// o servidor. Recusado, não acontece nada, e a recusa conta contra quem
 /// atirou (vai no resultado).
 /// </summary>
-public sealed class HostedMatch
+public sealed partial class HostedMatch
 {
 	/// <summary>Acabou: tanto tempo para os jogadores verem o placar antes
 	/// de a partida fechar.</summary>
@@ -175,6 +175,8 @@ public sealed class HostedMatch
 			SendVitals();
 		}
 
+		ExpireLoose();
+
 		RefPhase before = Referee.Phase;
 		Referee.Tick(delta);
 
@@ -217,6 +219,7 @@ public sealed class HostedMatch
 		Broadcast(SeatPacket(Referee.Find(account)), except: peer);
 		if (Authoritative && !_bodies.ContainsKey(account)) AddBody(account);
 		_link.Send(peer, WelcomePacket(), true);
+		SendLooseTo(peer);
 		GD.Print($"Joined {Key}: {Referee.Find(account).Name} ({Referee.ConnectedCount} of {Referee.Seats.Count(s => !s.IsBot)}).");
 		return true;
 	}
@@ -294,7 +297,7 @@ public sealed class HostedMatch
 	private bool Allowed(long account, string id)
 	{
 		if (!_owned.TryGetValue(account, out HashSet<string> own)) return true;
-		if (own.Contains(id) || Catalog.Get(id) is { Starter: true }) return true;
+		if (own.Contains(id) || Catalog.Get(id) is { Starter: true } || PickedUp(account, id)) return true;
 		if (Referee.Find(account) is { } seat) seat.RejectedHits++;
 		return false;
 	}
@@ -537,6 +540,15 @@ public sealed class HostedMatch
 			case NetWire.BotDied:
 				long fallen = r.ReadInt64();
 				if (Referee.Speaks(account, fallen)) ReadDeath(fallen, r);
+				break;
+
+			// A arma no chão (HostedMatch.Pickups): soltar e pedir para pegar.
+			case NetWire.Drop:
+				ReadDrop(peer, account, r);
+				break;
+
+			case NetWire.Take:
+				ReadTake(account, r);
 				break;
 
 			case NetWire.Touch:
