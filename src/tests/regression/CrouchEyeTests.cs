@@ -120,7 +120,9 @@ public abstract class CrouchEyeTest : RegressionTest
 		}
 		RegressionBench.ReleaseAll();
 		RegressionBench.Note($"{Who} agachado: pele mais baixa {RegressionBench.F(low * 100 - feet * 100)} cm dos pés (em pé {RegressionBench.F((standLow - feet) * 100)}), peça da cabeça {RegressionBench.F((piece.Y - feet) * 100)} cm (olhos a {RegressionBench.F(eyeNow * 100)}), o pé parado andou {RegressionBench.F(wander * 100)} cm em 1 s");
-		b.AtLeast(standLow - 0.015, low, $"{Who}: agachado, nenhuma pele entra no chão mais que em pé (m)");
+		// O andar agachado é o clipe do Mixamo inteiro (Jhon, 26/11: "do jeito que
+		// está"): a bota entra até 2 cm a mais que em pé.
+		b.AtLeast(standLow - 0.02, low, $"{Who}: agachado, nenhuma pele entra no chão mais que em pé (m)");
 		b.Check(hasHead && piece.Y - feet > eyeNow - 0.08f && piece.Y - feet < eyeNow + 0.12f, $"{Who}: a peça de acerto da cabeça desce com a cabeça que se vê");
 		b.AtMost(0.01, wander, $"{Who}: parado agachado, o pé fica parado (m em 1 s; era 0,31, andando no lugar)");
 	}

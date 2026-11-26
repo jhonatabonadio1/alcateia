@@ -24,7 +24,7 @@ public partial class CharacterAnimator
 	/// de no arquivo para que trocar o arquivo baste.
 	/// </summary>
 	[ExportGroup("Árvore")]
-	[Export] public float CrouchWalkTrim = 1.65f;
+	[Export] public float CrouchWalkTrim = 0f;
 
 	/// <summary>
 	/// Locomoção num espaço de mistura 2D, e o resto como estados.

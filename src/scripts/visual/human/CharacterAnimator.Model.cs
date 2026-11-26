@@ -147,11 +147,6 @@ public partial class CharacterAnimator
 					animation.Length = CrouchWalkTrim;
 
 				// O agachado do corpo visto, mais fundo que o do clipe (26/11).
-				Animation stand = library.HasAnimation("idle_rifle") ? library.GetAnimation("idle_rifle") : null;
-				// Andando agachado: a passada montada (os pés para a frente, sem deslizar).
-				if (clip == "crouch_walk" && KneelWalk(stand, body, bodyPath) is Animation walked)
-					animation = walked;
-
 				animation.LoopMode = IsLooping(clip)
 					? Animation.LoopModeEnum.Linear
 					: Animation.LoopModeEnum.None;
@@ -161,7 +156,7 @@ public partial class CharacterAnimator
 
 				// Sem clipe de agachado parado, a pose do andar agachado com os dois pés no chão.
 				if (clip == "crouch_walk" && !library.HasAnimation("crouch_idle")
-					&& KneelIdle(stand, body, bodyPath) is Animation idle)
+					&& CrouchIdle(animation, body, bodyPath) is Animation idle)
 					library.AddAnimation("crouch_idle", idle);
 			}
 

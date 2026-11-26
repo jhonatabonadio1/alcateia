@@ -74,7 +74,7 @@ public partial class CharacterAnimator
 	/// <summary>Quanto da pose de mira em pé entra no tronco agachado: 1 é
 	/// o fuzil no ombro, como de pé; 0, o fuzil baixo dos clipes
 	/// agachados.</summary>
-	[Export(PropertyHint.Range, "0,1")] public float CrouchAim = 1f;
+	[Export(PropertyHint.Range, "0,1")] public float CrouchAim = 0f;
 
 	private Vector2 _blend;
 	private double _jumpGrace;
