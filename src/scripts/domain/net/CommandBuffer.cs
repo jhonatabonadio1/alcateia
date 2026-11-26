@@ -20,14 +20,30 @@
 ///   é dado com o último segurado, sem repetir pulo nem tiro
 ///   (<see cref="Skipped"/>): o jogo deu aquele passo, o servidor também,
 ///   e com as mesmas teclas seguras os dois ficam no mesmo lugar.
-/// - Fila funda demais (o jogo andou mais rápido, ou o servidor esperou):
-///   o servidor consome dois no mesmo passo até voltar (<see cref="HighWater"/>).
+/// - Fila funda demais por mais de <see cref="DeepPatience"/> passos
+///   seguidos (o jogo anda mais rápido que o servidor): a cada
+///   <see cref="CatchUpEvery"/> passos o servidor consome um a mais, até
+///   voltar (<see cref="HighWater"/>). Até 26/11 eram dois por passo assim
+///   que passava do limite: depois de um engasgo do servidor (a fila enche
+///   porque ele deve passos, não porque o jogo está à frente) o corpo andava
+///   o dobro por passo, e quem o via dava um tranco ("microtravamentos").
 /// </summary>
 public sealed class CommandBuffer
 {
 	public const int Capacity = 128;
 	public const int StartDepth = 2;
 	public const int HighWater = 4;
+
+	/// <summary>Quantos passos seguidos a fila tem de ficar funda antes de o
+	/// servidor apressar (meio segundo): um engasgo dele mesmo, que ele
+	/// recupera em poucos quadros, não conta.</summary>
+	public const int DeepPatience = 30;
+
+	/// <summary>Apressando, um comando a mais a cada tantos passos (o corpo
+	/// anda 1/3 mais rápido por um tempo, e não o dobro).</summary>
+	public const int CatchUpEvery = 3;
+
+	private int _deepFor, _catchUpPhase;
 
 	/// <summary>Esperando o comando que falta, quantos passos ainda se
 	/// repete o último antes de pular o buraco.</summary>
@@ -60,8 +76,18 @@ public sealed class CommandBuffer
 	/// <summary>Quantos passos o jogo está à frente do que já foi simulado.</summary>
 	public int Depth => _highest > LastProcessed ? (int)(_highest - LastProcessed) : 0;
 
-	/// <summary>Quantos comandos esta fila quer consumir neste passo.</summary>
-	public int WantedThisTick => !Started ? 0 : Depth > HighWater ? 2 : 1;
+	/// <summary>Quantos comandos esta fila quer consumir neste passo. Contado
+	/// uma vez por passo do servidor (o tempo que a fila fica funda entra aqui).</summary>
+	public int WantedThisTick
+	{
+		get
+		{
+			if (!Started) return 0;
+			_deepFor = Depth > HighWater ? _deepFor + 1 : 0;
+			if (_deepFor < DeepPatience) return 1;
+			return ++_catchUpPhase % CatchUpEvery == 0 ? 2 : 1;
+		}
+	}
 
 	public void Push(in InputCommand c)
 	{

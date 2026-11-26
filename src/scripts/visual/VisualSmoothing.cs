@@ -29,7 +29,7 @@ public partial class VisualSmoothing : Node
 
 	/// <summary>Andar mais que isto num passo é teleporte (nascer,
 	/// renascer, a correção da rede): o desenho vai direto.</summary>
-	private const float TeleportStep = 2f;
+	public const float TeleportStep = 2f;
 
 	private Node3D _body;
 	private Health _health;
@@ -55,8 +55,17 @@ public partial class VisualSmoothing : Node
 	/// 0011): andou <paramref name="moved"/> de uma vez. O desenho não pula
 	/// junto — fica onde estava e escorrega até o corpo em uma fração de
 	/// segundo, que é o que faz a correção passar despercebida.
+	///
+	/// O ponto de partida do passo anda junto (26/11): a correção chega fora do
+	/// passo da física, e sem isto ela entrava também no deslocamento do passo
+	/// que o desenho reparte pelo quadro — o desenho ia para trás até o tamanho
+	/// da correção num quadro e voltava no seguinte (o tremor da tela).
 	/// </summary>
-	public void Absorb(Vector3 moved) => _correction -= moved;
+	public void Absorb(Vector3 moved)
+	{
+		_correction -= moved;
+		_from += moved;
+	}
 
 	/// <summary>Uma peça solta (<c>TopLevel</c>) presa ao desenho do corpo: anda com
 	/// ele (veja <see cref="_loose"/>). Sai sozinha quando é liberada.</summary>

@@ -502,6 +502,13 @@ public partial class NetMatch : Node
 
 		SyncWall(e.Has(EntityFlags.WallRunning), ack);
 
+		// Um estado que chega depois de um mais novo (o mesmo comando ou um
+		// mais velho) já está corrigido: corrigir de novo puxaria o corpo pela
+		// mesma diferença duas vezes, e o seguinte o devolveria (tremor, 26/11).
+		if (ack <= _reconciledAck && _reconciledEpoch == _epoch) return;
+		_reconciledAck = ack;
+		_reconciledEpoch = _epoch;
+
 		System.Numerics.Vector3 fix = _prediction.Reconcile(ack, _seq, e.Position);
 		if (fix == System.Numerics.Vector3.Zero) return;
 
@@ -510,6 +517,10 @@ public partial class NetMatch : Node
 		if (moved.Length() < Prediction.SnapDistance)
 			_player.GetNodeOrNull<VisualSmoothing>("VisualSmoothing")?.Absorb(moved);
 	}
+
+	/// <summary>O último comando cujo resultado o servidor já contou (e em que vida).</summary>
+	private uint _reconciledAck;
+	private byte _reconciledEpoch;
 
 	/// <summary>Se este jogo estava na parede em cada passo mandado (para
 	/// comparar com o que o servidor diz do mesmo passo).</summary>
