@@ -49,8 +49,8 @@ o renascer do bot (6 s).
   fazia o pé de apoio andar junto (de frente, 0,66 m/s de patinação
   contra 0,16).
 - **Alturas presas ao mapa.** O humano pula 0,99 m e sobe caixote
-  (0,8 m), não contêiner (2,2 m). O Bruto precisa de `JumpMultiplier`
-  ≥ 1,2 para chegar ao contêiner a partir do caixote. Mexeu no pulo,
+  (0,8 m), não contêiner (2,2 m). O lobo precisa de `JumpMultiplier`
+  ≥ 1,2 para chegar ao contêiner a partir do caixote (o lobo único tem 1,435). Mexeu no pulo,
   confira isso.
 - **Tem teste.** Velocidades, pulo, corrida na parede, salto
   carregado, dano da garra, granada e ruído têm teste
@@ -79,8 +79,8 @@ o renascer do bot (6 s).
 | `HoldFallGravity` | 0,78 | Gravidade na queda segurando o pulo (menos que 1 = cai mais devagar) |
 | `WolfJumpCarry` | 0,9 | Quanto da velocidade do chão o lobo leva para o pulo |
 | `CrouchSpeedFactor` | 0,45 | Velocidade agachado (as duas formas) |
-| `WolfSprintFactor` | 1,495 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal. 6,2 m/s no Bruto, o `Run_Quad` a ~1,58× (era 1,3: +15% a pedido do Jhon, 16/11) |
-| `WolfChargeMoveFactor` | 0,234 | Lobo carregando o salto: × a velocidade normal. 0,91 m/s no Bruto, a passada do `Charge_Walk` (`ChargeWalkClipSpeed`, nó `WolfVisual`): mudou um, mude o outro |
+| `WolfSprintFactor` | 1,495 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal. 7,44 m/s no lobo (medido, 26/11), o `Run_Quad` a ~1,58× (era 1,3: +15% a pedido do Jhon, 16/11) |
+| `WolfChargeMoveFactor` | 0,234 | Lobo carregando o salto: × a velocidade normal. ~1,0 m/s no lobo, a passada do `Charge_Walk` (`ChargeWalkClipSpeed`, nó `WolfVisual`): mudou um, mude o outro |
 | `WolfBackFactor` | 0,75 | De lobo, andando para trás: × a velocidade normal (na diagonal de trás, em parte). O humano não muda |
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
 | `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Andando em pé e na parede: quanto a animação corre em relação ao corpo (1 acompanha, 0,7 é 30% mais lenta; a pata desliza a diferença). De quatro, o mesmo (acompanha o corpo). Só a animação. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
@@ -113,18 +113,20 @@ o renascer do bot (6 s).
 
 ### Resultado de hoje
 
-| | Humano | Bruto | Ligeiro |
-|---|---|---|---|
-| Velocidade | 3,46 m/s (faca 3,58) | 4,15 (×1,298) | 4,50 (×1,406) |
-| Agachado | 1,46 | 1,75 | 1,90 |
-| Shift | 1,36 | — | — |
-| De quatro (W W) | — | 5,06 | 5,48 |
-| Na parede | — | 4,45 | 4,82 |
-| Altura do pulo | 0,99 m | 1,62 m (×1,28) | 2,50 m (×1,59) |
-| Avanço do pulo correndo | ~2,7 m | ≈4,0 m | ≈5,4 m |
+| | Humano | Lobo (um só, 26/11) |
+|---|---|---|
+| Velocidade | 3,46 m/s (faca 3,58) | 4,33 (×1,352) |
+| Agachado | 1,46 | 1,95 |
+| Shift | 1,36 | — |
+| De quatro (W W) | — | 7,44 |
+| Na parede | — | 4,94 |
+| Altura do pulo | 0,99 m | 2,09 m (×1,435) |
+| Avanço do pulo correndo | ~2,6 m | 5,1 m |
 
-O avanço do lobo é estimativa (a última medida foi ~3,8 m com o Bruto
-a 3,6 m/s).
+Medido em 26/11 (`Medidas`, `VelocidadeNoChao`, `AlturaDoPulo`,
+`CorridaNaParede`). Até 25/11 havia duas classes: o Bruto (4,15 m/s, de
+quatro 7,14, parede 4,75, pulo 1,67 m) e o Ligeiro (4,50, 7,73, 5,14, 2,56 m);
+o lobo único fica no meio.
 
 Cada arma também multiplica a velocidade do humano com ela na mão
 (`SpeedMultiplier` da arma, seção 7): Desert Eagle 1,08, AK-74 0,92,
@@ -132,27 +134,50 @@ SCAR-H 0,88, SVD 0,86...
 
 ---
 
-## 2. Classes de lobo
+## 2. O lobo (um só) e o tempo de lobo
 
-`src/resources/breeds/bruto.tres` e `ligeiro.tres` (script
-`src/scripts/forms/WolfBreed.cs`). **Os bots usam sempre o Bruto.** O
-jogador usa a classe escolhida no perfil, com as tatuagens aplicadas.
+**As classes saíram** (decisão do Jhon, 26/11: "remover 'Classes de lobo' do
+jogo, deixar apenas melhorias de lobo"). O lobo é um só, para o jogador e
+para os bots: `src/resources/breeds/lobo.tres` (script
+`src/scripts/forms/WolfBreed.cs`), **no meio do Bruto e do Ligeiro de antes**,
+e **canhão de vidro** (decisão do Jhon, 26/11): mata rápido, aguenta pouco.
+As melhorias (tatuagens, abaixo) multiplicam uma cópia dele.
 
-| Campo | Bruto | Ligeiro | O que faz |
+| Campo | Lobo | Bruto / Ligeiro (até 25/11) | O que faz |
 |---|---|---|---|
-| `SpeedMultiplier` | 1,298 | 1,406 | × `HumanSpeed` — velocidade no chão e (com `WallRunSpeedBonus`) na parede |
-| `JumpMultiplier` | 1,28 | 1,59 | × `JumpVelocity` — altura do pulo |
-| `Shield` | 200 | 200 | Escudo do lobo: começa em 200 nas duas (a vida é a mesma do humano, 200). O Ligeiro herda o padrão de `WolfBreed.cs` |
-| `ShieldDecay` | 9 /s | 13 /s | Quanto escudo escorre por segundo |
-| `BodyResistance` | 0,6 | 0,78 | Dano no corpo × isto (cabeça ignora). 0,6 = leva 60% |
-| `AttackDamage` | 75 | 55 | Base de **todos** os golpes (seção 4) |
-| `AirAttackBonus` | 1,5 | 2,0 | × dano ao acertar caindo de ≥ 2,5 m |
-| `AttackRange` | 5 | 3,2 | Só os bots usam: distância em que o bot lobo decide atacar |
+| `SpeedMultiplier` | 1,352 | 1,298 / 1,406 | × `HumanSpeed` (3,2 da cena) — 4,33 m/s no chão, 7,44 de quatro, 4,94 na parede (com `WallRunSpeedBonus`) |
+| `JumpMultiplier` | 1,435 | 1,28 / 1,59 | × `JumpVelocity` — o pulo sobe 2,09 m (eram 1,67 e 2,56) |
+| `Shield` | **100** | 200 / 200 | Escudo do lobo (a vida é a do humano, 200). O rugido devolve ele inteiro |
+| `ShieldDecay` | 5,5 /s | 9 / 13 /s | Quanto escudo escorre por segundo: ~18 s do cheio ao zero, o meio dos 22 e 15 s de antes |
+| `BodyResistance` | **1,0** | 0,6 / 0,78 | Dano no corpo × isto: o lobo leva o tiro inteiro, como o humano |
+| `AttackDamage` | 65 | 75 / 55 | Base de **todos** os golpes (seção 4): a garra tira 104 de um humano, dois golpes matam |
+| `AirAttackBonus` | 1,75 | 1,5 / 2,0 | × dano ao acertar caindo de ≥ 2,5 m |
+| `AttackRange` | 4,1 | 5 / 3,2 | Só os bots usam: distância em que o bot lobo decide atacar |
 | `WpCost` | 0 | 0 | WP para transformar |
+
+### O tempo de lobo (`FormController`, nó `FormController` no jogador e no bot, grupo "Tempo de lobo")
+
+Decisão do Jhon, 26/11: "um tempo limite para usar o lobo (ao passar esse
+tempo volta a ser humano, deve avisar o player) e cooldown para voltar a
+ser lobo, para forçar os players a jogarem com armas".
+
+| Campo | Valor | O que faz |
+|---|---|---|
+| `WolfTimeLimit` | 30 s | Quanto se fica lobo de uma vez. Conta só na forma lobo (não na fumaça); acabou, volta a humano sozinho pela mesma transição da tecla 1. 0 desliga. Não vale no modo em que o time é lobo a partida toda |
+| `WolfCooldown` | 20 s | A espera para virar lobo de novo, contada de quando a volta começa (pela tecla ou pelo tempo). Morrer zera o tempo e a espera |
+| `WolfWarnAt` | 5 s | A quantos segundos do fim o HUD avisa: texto ("Você volta a humano em 5 s"), o bipe `contagem` e a barra vermelha pulsando |
+
+O HUD: com o lobo, a barra de baixo esvazia ("LOBO · 24 S", e nos últimos
+5 s "HUMANO EM 4 S"); na espera, ela enche ("ESPERE 12 S") e o espaço 3 da
+barra de armas mostra os segundos ("12s"), apagado. Apertar 3 na espera
+não transforma: avisa quanto falta ("Lobo de novo em 12 s") com o
+`ui_negado`. O bot respeita a mesma espera. O relógio é o do dono do corpo:
+o boneco da rede e o corpo do servidor de partida espelham a forma que o
+dono manda e não voltam sozinhos.
 
 ### Tatuagens (`src/scripts/meta/Catalog.cs`)
 
-Multiplicam a classe do jogador (não a dos bots):
+Multiplicam o lobo do jogador (não o dos bots):
 
 | Tatuagem | Efeito |
 |---|---|
@@ -322,16 +347,17 @@ voltar a humano tocam o "puff" (`CombatantAudio.TransformSound` e
 
 ### Quanto dá hoje (contra humano, 200 de vida)
 
-| Golpe | Bruto (75) | Ligeiro (55) |
-|---|---|---|
-| Garra 1º/2º | 120 | 88 |
-| Garra 3º | 180 | 132 |
-| Salto sem carga | 101 | 74 |
-| Salto cheio | 252 | 185 |
-| Bote | 360 | 264 |
-| Bote caindo ≥ 2,5 m | 540 | 528 |
+| Golpe | Lobo (65) |
+|---|---|
+| Garra 1º/2º | 104 (dois golpes matam) |
+| Garra 3º | 156 |
+| Salto sem carga | 108 |
+| Salto cheio (`HeavyDamageBonus` 2,6) | 270 |
+| Bote | 312 |
+| Bote caindo ≥ 2,5 m | 546 |
 
-Contra lobo, tire o ×1,6 e aplique a `BodyResistance` dele. As contas
+Contra lobo, tire o ×1,6 (o lobo leva o dano inteiro desde 26/11:
+`BodyResistance` 1,0). As contas
 estão em `src/scripts/domain/CombatRules.cs`, com teste
 (`src/tests/unit/CombatRulesTests.cs`): mudou a fórmula, o teste diz.
 
