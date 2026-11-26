@@ -1249,8 +1249,35 @@ public partial class Player
 
 		small &= any;
 		center = small ? (min + max) * 0.5f : Vector2.Zero;
+		// Solto, de pé sozinho: o mourão de uma grade, o batente de uma porta
+		// ou o cano colado na parede são pequenos, mas a volta neles bateria no
+		// que está do lado. Ali vale a parede de sempre.
+		if (small && !StandsAlone(body, index, center, (max - min) * 0.5f)) small = false;
 		_wallSizes[key] = (small, center);
 		return small;
+	}
+
+	/// <summary>Nada além do próprio objeto até <see cref="WallHoldDistance"/>
+	/// em volta dele, na altura do peito (meio metro em volta do centro do
+	/// corpo): dá para dar a volta. O que fica embaixo, na altura das patas
+	/// (banco, base, meio-fio), não conta: a volta passa por cima dele
+	/// (<see cref="ClimbNeeded"/>).</summary>
+	private bool StandsAlone(Rid body, int index, Vector2 center, Vector2 half)
+	{
+		var query = new PhysicsShapeQueryParameters3D
+		{
+			Shape = new BoxShape3D { Size = new Vector3(half.X * 2f + WallHoldDistance * 2f, 0.5f, half.Y * 2f + WallHoldDistance * 2f) },
+			Transform = new Transform3D(Basis.Identity, new Vector3(center.X, GlobalPosition.Y, center.Y)),
+			CollideWithAreas = false,
+			Exclude = new Godot.Collections.Array<Rid> { GetRid() }
+		};
+		foreach (var hit in GetWorld3D().DirectSpaceState.IntersectShape(query, 8))
+		{
+			if (hit["collider"].Obj is CharacterBody3D) continue;
+			if ((Rid)hit["rid"] == body && (int)hit["shape"] == index) continue;
+			return false;
+		}
+		return true;
 	}
 
 	private bool ProbeWall(out Vector3 normal, out float distance, bool behind = false)
