@@ -315,6 +315,10 @@ public sealed partial class HostedMatch
 		// pode ter vindo pelo padrão (a M4A4 custa 200 num conjunto pago, 0 no padrão).
 		int price = Arsenal.CostOf(id);
 		if (string.IsNullOrEmpty(id) || price <= 0 || LoadoutSet.AllowedInDefault(id)) return id;
+		// Arma pega do chão nesta partida nunca é compra: quem a trouxe pagou
+		// (ou ganhou), e quem a pegou leva de graça (26/11, junção da arma
+		// largada com o KP no servidor: o AK pego virava a padrão).
+		if (PickedUp(account, id)) return id;
 		if (Referee.Find(account) is not { IsBot: false } seat) return id;
 
 		var (kp, spent) = _kp.TryGetValue(account, out var entry) ? entry : (new MatchKp(), 0);

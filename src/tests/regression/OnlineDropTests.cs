@@ -117,6 +117,9 @@ public abstract class OnlineDropTest : OnlineGameTest
 			var owned = (Dictionary<long, HashSet<string>>)typeof(HostedMatch)
 				.GetField("_owned", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(Server.Match);
 			owned[TestMatchServer.MeAccount] = new HashSet<string>();
+			// O outro pagou o AK com KP desta partida (26/11: o servidor confere o
+			// gasto de KP pelo placar dele; sem abates, o AK dele voltaria à padrão).
+			Server.Match.Referee.Find(TestMatchServer.OtherAccount).Kills = 10;
 			other.Status(primary: "ak74");
 			for (int i = 0; i < 4; i++) { other.Step(); await b.PhysicsFrame(); }
 		}
