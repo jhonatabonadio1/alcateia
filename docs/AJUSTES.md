@@ -206,7 +206,9 @@ Multiplicam a classe do jogador (não a dos bots):
 Campos em `src/scripts/combat/weapon/` (`Weapon.WolfClaws.cs`, `.WolfPounce.cs`, `.WolfDive.cs`) → nó `Weapon`, grupos "Lobo: ..." no Inspetor. Tempos em
 `src/scripts/forms/WolfMoves.cs`.
 
-`ClawCancelAfter` (nó `Weapon`, grupo da garra) = 0,08 s: quanto depois do impacto a próxima garrada pode cortar a atual (clicando rápido, uma a cada 0,28 s; pedido do Jhon, 16/11).
+`ClawCancelAfter` (nó `Weapon`, grupo da garra) = 0,19 s: quanto depois do impacto a próxima garrada pode sair (o golpe chega 0,154 s depois do clique: uma garrada a cada 0,344 s, 2,9 por segundo; pedido do Jhon, 18/11; o texto daqui dizia 0,08 e 0,28 s, de 16/11).
+
+**O compasso do lobo** (`Weapon.StrikeSpacing` = `ImpactDelay` da garra + `ClawCancelAfter` = 0,344 s; 26/11, alpha fechado: "clique repetido nos ataques do lobo, principal e secundário, parece não ter limite"): nenhum golpe que fere sai a menos disso do anterior — garrada, bote. O bote só sai 0,344 s depois do último golpe que bateu (apertado antes, espera no ar), e a garrada depois do bote espera o mesmo (`DiveFollowUp` vira o mínimo; quem manda é o compasso). Medido clicando um por quadro por 4 s, colado num humano (teste `LoboSemSpam`): só garrada, 11 golpes, 375 de dano por segundo (igual antes); pulo, bote e garrada em ciclo, 870/s com golpes a 0,1 s → 285/s, nenhum a menos de 0,35 s; só pulo e bote, 6 botes (540/s) → 4 (360/s). No servidor autoritativo (`HitCheck`, `WolfStrikePace`), no mesmo alvo vale um golpe do lobo a cada `StrikeSpacing` menos 1 comando e um bote a cada `LeapCooldown` menos 1 comando, contados pelo número do comando do golpe; o teto por golpe é o do próprio golpe (garrada, bote ou especial), não o maior dos três (teste `LoboSemSpamNoServidor`: garradas a cada 0,1 s por 4 s, 40 de 40 aceitas → 10; botes a cada 0,5 s, 8 de 8 → 4).
 
 **Fórmula:** dano = `AttackDamage` da classe × multiplicador do golpe
 × `ClawVsHumanBonus` (1,6, se o alvo é humano) × `AirAttackBonus` (se
@@ -257,15 +259,16 @@ que escolhe a carga pela distância.
 | `PounceMinDistance` | 1,5 m | Distância sem carga, quando a mira não toca nada (céu) e para o bot |
 | `PounceMaxDistance` | 12 m (era 8,4) | Alcance do salto: o mais longe que o ponto mirado pode estar. O bot só salta de até 1 m antes disso |
 | `PounceMinPower` | 0,4 | Fração do dano sem carga |
-| `HeavyDamageBonus` | 2,1 | Multiplicador do dano com carga cheia |
+| `HeavyDamageBonus` | 3,7 (era 2,6 no código; aqui dizia 2,1) | Multiplicador do dano do especial no alvo principal (26/11, Jhon: "mais dano ao alvo principal"): com a garra de 65, 385 num humano e 240 num lobo |
 | `PounceChargeHold` | 0,6 s | Segura cheio isso e salta sozinho |
 | `PounceMaxClear` | 3,2 m | Altura em que o salto pousa ou que ele passa por cima (contêiner de 2,9 m sim, dois empilhados não) |
 | `PounceMaxDrop` | 6,5 m | Quanto o salto pode descer até o ponto de queda |
 | `PounceMaxClimb` | 6,2 m | Mirando em cima de algo, o salto sobe até isto (dois contêineres empilhados, 5,8 m) |
 | `PounceFullFlight` | 0,45 | Tempo de voo com a carga cheia, em fração do clipe (0,8 s → 0,36 s). Sem carga, 1 |
 | `PounceArc` | 0,6 m | Altura mínima do arco |
-| `PounceHitRadius` | 1,8 m | Quem o salto pega ao cair: em volta do lobo (era a garra: 1,15 m de raio, 1,5 m à frente). O anel da mira tem este tamanho |
-| `PounceSplash` | 0,3 | O salto é de um alvo só: o principal leva o dano cheio, quem estiver do lado na área leva esta fração |
+| `PounceHitRadius` | 1,8 m | Onde o salto acha o principal ao cair: em volta do lobo (era a garra: 1,15 m de raio, 1,5 m à frente) |
+| `PounceAreaRadius` | 3,5 m (novo, 26/11) | A área do especial: quem estiver até aqui do lobo leva parte do dano (Jhon: "em área, afetando mais pessoas ao redor"). O anel da mira tem este tamanho |
+| `PounceSplash` / `PounceSplashInner` / `PounceSplashFar` | 0,6 até 1,5 m / 0,3 na borda (era 0,3, só a 1,8 m) | A fração do dano do principal que leva quem está em volta: 60% até 1,5 m, caindo em linha reta até 30% a 3,5 m (`CombatRules.PounceSplash`). Parede entre o lobo e ele: nada (raio do peito ao peito) |
 | `PounceStandOff` | 0,7 m | O especial travado cai a esta distância do centro do alvo, na frente dele (as duas cápsulas têm 0,3 m de raio). Menor que 0,6, o lobo cai dentro do alvo e a física o empurra |
 | `PounceSteerSpeed` | 9 m/s | O mais rápido que o ponto de queda do especial anda atrás do alvo que se mexe. Mais alto, o lobo balança com quem esquiva; mais baixo, quem corre (o lobo de quatro, 7,7 m/s) escapa |
 | `PounceLeadSmooth` / `PounceMaxLead` | 0,25 s / 2,5 m | Quanto o especial antecipa o alvo: a velocidade dele alisada nesse tempo, vezes o voo que falta, até esse tanto |
@@ -296,7 +299,8 @@ começa 0,32 s depois de soltar e o dano sai em 1,14 s.
 | `DiveForwardFromWall` | 0,5 | O mesmo, depois de um salto da parede |
 | `LeapDamageBonus` | 3,0 | Multiplicador do dano |
 | `LeapReach` / `LeapRadius` | 1,7 / 1,5 m | Volume do acerto (maior que o da garra) |
-| `LeapCooldown` | 0 | Espera entre botes (0 = um por pulo) |
+| `LeapCooldown` | 1 s (era 0, um por pulo) | Espera entre botes, do clique (26/11: pulando e apertando o secundário, saía um bote a cada 0,7 s). Apertado antes, o bote espera no ar e sai quando pode |
+| `DiveFollowUp` | 0,05 s (mínimo) | Do dano do bote até a garra poder sair: na prática o compasso (`StrikeSpacing` − o golpe da garra = 0,19 s) |
 
 A aterrissagem prende o lobo 0,87 s (`WolfMoves.Land`, a 1×). No ar, o bote
 corta a garrada em curso na hora (`Weapon.TrySpecial`; o dano dela que ainda
@@ -322,14 +326,24 @@ voltar a humano tocam o "puff" (`CombatantAudio.TransformSound` e
 
 ### Quanto dá hoje (contra humano, 200 de vida)
 
-| Golpe | Bruto (75) | Ligeiro (55) |
-|---|---|---|
-| Garra 1º/2º | 120 | 88 |
-| Garra 3º | 180 | 132 |
-| Salto sem carga | 101 | 74 |
-| Salto cheio | 252 | 185 |
-| Bote | 360 | 264 |
-| Bote caindo ≥ 2,5 m | 540 | 528 |
+O especial (o salto do Q, sempre cheio) mudou em 26/11: 3,7 garras no
+principal (era 2,6 no código; esta tabela ainda dizia 2,1) e a área. A
+coluna do meio é o lobo de garra 65 (a classe única, decisão do Jhon de
+26/11 — outra parte do trabalho).
+
+| Golpe | Bruto (75) | lobo do meio (65) | Ligeiro (55) |
+|---|---|---|---|
+| Garra 1º/2º | 120 | 104 | 88 |
+| Garra 3º | 180 | 156 | 132 |
+| Especial, alvo principal | 444 (era 312) | 385 | 326 (era 229) |
+| Especial, em volta até 1,5 m (60%) | 266 (era 94, só a 1,8 m) | 231 | 195 |
+| Especial, na borda a 3,5 m (30%) | 133 (era nada) | 116 | 98 |
+| Bote | 360 | 312 | 264 |
+| Bote caindo ≥ 2,5 m | 540 | 468 | 528 |
+
+Contra lobo (o canhão de vidro: 200 de vida e 100 de escudo, corpo sem
+resistência), o especial no principal tira 278 (Bruto), 240 (meio) e 204
+(Ligeiro): a maior parte dos 300, sem matar sozinho.
 
 Contra lobo, tire o ×1,6 e aplique a `BodyResistance` dele. As contas
 estão em `src/scripts/domain/CombatRules.cs`, com teste
@@ -360,6 +374,27 @@ conjunto padrão (`LoadoutMenu.cs`) e o `WpCost` de cada arma. Renasce
 sempre humano.
 
 ---
+
+### Dano de queda (26/11)
+
+`src/resources/body/queda.tres` (`FallProfile`, o mesmo para o jogador e o
+bot; quem mede é `src/scripts/actors/body/FallTracker.cs`, a conta é
+`CombatRules.FallDamage`). Pedido do Jhon: "humano começar a tomar dano de
+queda, lobo também, mas menos. Não deve tomar dano de queda no ataque
+secundário (ao pular e atacar) e com a habilidade suprema". A queda conta do
+ponto mais alto do voo até onde pousou; na parede e na escada o corpo está
+apoiado (a queda começa de onde solta). Não fere: o bote, o especial (do
+começo ao fim, inclusive o que cai depois do voo) e o salto da parede. Fere
+pela vida de quem caiu, como a própria granada (`Health.TakeOwnDamage`: a
+proteção de quem nasceu não vale; se matar, o feed diz "Queda"). No lobo, o
+dano passa pela resistência do corpo como qualquer outro.
+
+| Campo | Valor | O que faz |
+|---|---|---|
+| `HumanSafe` | 4 m | Até aqui o humano não se fere: descer de um contêiner (2,9 m) não dói, de dois (5,8 m) tira 45 |
+| `HumanPerMeter` | 25 | Dano por metro além disso: a 12 m, 200 (a vida inteira). Medido (`DanoDeQueda`): solto de ~8 m, 103 |
+| `WolfSafe` | 7 m | O lobo começa mais alto: o pulo dele e o salto da parede não contam |
+| `WolfPerMeter` | 12,5 | Metade do humano: de 12 m, 62,5; os 300 de vida e escudo só a 31 m. Medido: solto de ~12 m, 38 (com a resistência do corpo de hoje) |
 
 ## 6. Vida, escudo e renascer
 
