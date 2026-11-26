@@ -128,7 +128,11 @@ public sealed class HitCheck
 				LoadGrenade();
 				range = _grenadeRadius + 1.5f;
 				max = _grenadeDamage;
-				sight = false;
+				// Parede e barreira protegem da explosão (Jhon, 26/11), no jogo e
+				// aqui: os mesmos pontos do corpo, saindo do mesmo lugar
+				// (Grenade.Exposed). Lá o caminho é uma bola de 6 cm, aqui um
+				// raio: o que passa lá passa aqui.
+				sight = true;
 				checkAim = false;
 				break;
 
@@ -153,7 +157,7 @@ public sealed class HitCheck
 		{
 			if (!target(tick, out Vector3 center, out float height)) continue;
 
-			Vector3 origin = hit.From;
+			Vector3 origin = SightFrom(hit);
 			float distance = origin.DistanceTo(center);
 			if (distance > range + HitRules.RangeSlack)
 			{
@@ -224,7 +228,7 @@ public sealed class HitCheck
 	/// comandos dele).</summary>
 	public HitVerdict CheckLine(in ClaimedHit hit, PoseAt target, double firstTick, double lastTick)
 	{
-		bool sight = hit.Cause is KillCause.Gun or KillCause.Headshot or KillCause.Knife;
+		bool sight = hit.Cause is KillCause.Gun or KillCause.Headshot or KillCause.Knife or KillCause.Grenade;
 		if (hit.Cause == KillCause.Grenade) LoadGrenade();
 		// (a granada: o raio dela, que é o da cena — era 10 m fixo, menos que o raio de 9 m da de 20/11 com a folga)
 		float reach = hit.Cause == KillCause.Grenade ? _grenadeRadius + 2f : hit.Cause == KillCause.Wolf ? WolfReach + 2f : 200f;
@@ -240,9 +244,10 @@ public sealed class HitCheck
 			}
 			if (!sight) return HitVerdict.Ok;
 
-			int count = HitRules.TargetPoints(center.ToNumerics(), height, hit.From.ToNumerics(), points);
+			Vector3 origin = SightFrom(hit);
+			int count = HitRules.TargetPoints(center.ToNumerics(), height, origin.ToNumerics(), points);
 			for (int i = 0; i < count; i++)
-				if (Clear(hit.From, points[i].ToGodot())) return HitVerdict.Ok;
+				if (Clear(origin, points[i].ToGodot())) return HitVerdict.Ok;
 			worst = Worse(worst, HitVerdict.Blocked);
 		}
 		return worst;
@@ -288,11 +293,17 @@ public sealed class HitCheck
 		return attack * move * Math.Max(w.ClawVsHumanBonus, 1f) * Math.Max(air, 1f);
 	}
 
+	/// <summary>De onde sai a conferência de visão: o olho do tiro, ou um
+	/// pouco acima do ponto da explosão (a granada pousada fica rente ao
+	/// chão; <see cref="Grenade.SightLift"/>, o mesmo do jogo).</summary>
+	private static Vector3 SightFrom(in ClaimedHit hit) =>
+		hit.Cause == KillCause.Grenade ? hit.From + Vector3.Up * Grenade.SightLift : hit.From;
+
 	private static void LoadGrenade()
 	{
 		if (_grenadeDamage > 0) return;
 		var grenade = GD.Load<PackedScene>(Weapon.DefaultGrenadeScene)?.Instantiate<Grenade>();
-		_grenadeDamage = grenade?.MaxDamage ?? 420f;
+		_grenadeDamage = grenade?.MaxDamage ?? 300f;
 		_grenadeRadius = grenade?.Radius ?? 9f;
 		grenade?.Free();
 	}

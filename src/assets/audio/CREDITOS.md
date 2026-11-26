@@ -62,8 +62,8 @@ as versões por superfície (`_metal`, `_neve`, `_madeira`, `_terra`),
 (`ui_passar`, `ui_clique`), Interface Sounds (`ui_negado`, `acerto`,
 `abate`, `contagem`), RPG Audio (`faca`, `trocar_arma`, `recarga_m3`),
 Impact Sounds (`acerto`, `acerto_cabeca`, `lobo_pouso`, `granada_quique`
-— o `impact_metal_medium`), Sci-Fi Sounds
-(`granada_explosao`). Via os espelhos no GitHub de Calinou e
+— o `impact_metal_medium`). (A explosão da granada era do Sci-Fi Sounds;
+desde 26/11 é feita por código, abaixo.) Via os espelhos no GitHub de Calinou e
 Boyquotes. (A voz provisória do locutor, do Voiceover Pack Fighter, saiu
 em 18/11: a narração agora é da Iris.)
 
@@ -83,6 +83,12 @@ com rajadas) por `tools/sons/processar.py`. São do projeto.
 
 `arma_vazia` (o clique seco do gatilho sem bala) é sintetizado pelo mesmo
 script. É do projeto.
+
+`granada_explosao_1..4`, `granada_explosao_distante_1..3`,
+`granada_explosao_dentro_1..3`, `granada_pavio` e `granada_pavio_fim` (26/11)
+são **sintetizados por código** (`src/tools/sons/granada.py`: ruído filtrado,
+senoides, atrasos e convolução com ruído; numpy e scipy). Nenhuma gravação;
+são do projeto, sem licença de terceiros.
 
 ## O uivo
 
