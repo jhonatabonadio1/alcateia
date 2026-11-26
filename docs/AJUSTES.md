@@ -66,7 +66,8 @@ o renascer do bot (6 s).
 | Campo | Valor | O que faz |
 |---|---|---|
 | `HumanSpeed` | 3,2 m/s na cena (`src/scenes/player.tscn`; o código diz 3,0) | Base da velocidade. **Base do lobo também.** É a passada do clipe de corrida: subir faz o pé patinar |
-| `HumanSpeedBonus` | 1,08 | Só o humano anda isto acima da base (3,46 m/s); o lobo não muda |
+| `HumanSpeedBonus` | 0,9375 (era 1,08) | Só o humano anda isto vezes a base: 3,0 m/s desde 26/11 (era 3,46; Jhon: "deve andar um pouco mais devagar", "tá deslizando"); o lobo não muda |
+| `RunClipRate` (nó `Human`, `CharacterAnimator`) | 0,88 | O ritmo da corrida para a frente (`run_fwd`) × o do arquivo: a passada dela no corpo do jogo é 3,41 m/s a 1×, e a 0,88× dá os 3,0 do humano (o pé de apoio anda 0,01 m/s, Eve; 0,06, Barut). Nunca acima de 1 (regra 9) |
 | `JumpVelocity` | 4,4 m/s | Impulso do pulo do lobo (vezes `JumpMultiplier`) e base do salto da parede |
 | `HumanJumpVelocity` | 4,75 m/s | Impulso do pulo do humano. Com `HumanGravityScale`, sobe 0,80 m e volta em 0,67 s |
 | `HumanGravityScale` | 1,45 | Gravidade do humano no ar (o lobo usa 1). Pulo mais rápido e queda mais seca |
@@ -85,8 +86,13 @@ o renascer do bot (6 s).
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
 | `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Andando em pé e na parede: quanto a animação corre em relação ao corpo (1 acompanha, 0,7 é 30% mais lenta; a pata desliza a diferença). De quatro, o mesmo (acompanha o corpo). Só a animação. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
 | `WalkSpeedFactor` | 0,42 | Velocidade andando com Shift (só humano) |
-| `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula (é o hitbox do corpo) |
-| `StandEyeHeight` / `CrouchEyeHeight` | 0,62 / 0,1 m | Altura do olho a partir do centro da cápsula |
+| `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula em pé (as duas formas) e agachada do lobo |
+| `HumanCrouchHeight` | 1,3 m (era 1,0, a do lobo) | A cápsula agachada do humano (26/11): leva a cabeça do corpo agachado (o olho a ~109 cm). Passar agachado por baixo de algo pede 1,3 m de vão |
+| `StandEyeHeight` / `CrouchEyeHeight` | 0,6 / 0,1 m | O olho do lobo (o pivô da câmera de 3ª pessoa) a partir do centro da cápsula. Em pé era 0,62 no código e 0,6 na cena (o que valia) |
+| `HumanEyeHeight` / `HumanCrouchEyeHeight` | 1,592 / 1,092 m acima dos pés (eram 1,475 e 0,60) | O olho do humano = o olho do corpo visto (26/11: "o nível de agachamento deve ser idêntico ao de 3ª pessoa"). O `CharacterAnimator` lê no corpo desenhado, parado e de cabeça reta, e afina estes (`TuneHumanEye`, a `EyeTuneSpeed` 0,4 m/s): Eve 159,3 / 108,6 cm, Barut 159,1 / 109,8 cm. Os de fábrica valem para o corpo sem modelo (o servidor de partida) |
+| `EyeInHead` (`personagem.tres` de cada personagem) | Eve (0; 0,066; 0,085), Barut (0; 0,085; 0,094) | O meio dos dois olhos no espaço do osso da cabeça, medido na malha (`src/tools/personagens/olhos.py`). Modelo novo: meça de novo |
+| `KneelDrop` / `KneelMinReach` (nó `Human`) | 0,6 m / 0,39 | O agachado fundo do corpo visto (26/11): o quadril do clipe agachado desce até isto, o que a perna de apoio deixa sem fechar além de 0,39 da perna esticada. Os olhos descem ~50 cm (159 → 109). Abaixo de 0,39 a pele da perna entra no chão |
+| `CrouchWalkSpeed` (nó `Human`) | 0,6 m/s (era 1,9) | Andando agachado a partir disto o clipe de andar toca inteiro (a mistura com o parado enfiava a ponta do pé 16 cm no chão) |
 | `CrouchLerpSpeed` | 22 | Rapidez de agachar e levantar |
 | `FreezeBrake` | 30 m/s² | Freada de quem fica preso no lugar (golpe, carga do salto) |
 | `FallLimit` | −25 m | Abaixo disto volta ao spawn |
@@ -115,13 +121,13 @@ o renascer do bot (6 s).
 
 | | Humano | Bruto | Ligeiro |
 |---|---|---|---|
-| Velocidade | 3,46 m/s (faca 3,58) | 4,15 (×1,298) | 4,50 (×1,406) |
-| Agachado | 1,46 | 1,75 | 1,90 |
-| Shift | 1,36 | — | — |
+| Velocidade | 3,0 m/s (faca 3,84) | 4,15 (×1,298) | 4,50 (×1,406) |
+| Agachado | 1,35 | 1,75 | 1,90 |
+| Shift | 1,26 | — | — |
 | De quatro (W W) | — | 5,06 | 5,48 |
 | Na parede | — | 4,45 | 4,82 |
 | Altura do pulo | 0,99 m | 1,62 m (×1,28) | 2,50 m (×1,59) |
-| Avanço do pulo correndo | ~2,7 m | ≈4,0 m | ≈5,4 m |
+| Avanço do pulo correndo | ~2,25 m | ≈4,0 m | ≈5,4 m |
 
 O avanço do lobo é estimativa (a última medida foi ~3,8 m com o Bruto
 a 3,6 m/s).
@@ -512,7 +518,7 @@ As durações das recargas continuam as do jogo (`ReloadTactical` 1,8 s e
 | `KnifeDamage` / `KnifeRange` / `KnifeCooldown` | 85 / 2,2 m / 0,40 s | Faca, o golpe rápido (clique esquerdo) |
 | `KnifeStabDamage` / `KnifeStabBehind` / `KnifeStabCone` | 120 / 2× / 60° | A estocada (botão direito): o dano de frente, quanto vale pelas costas (240 mata um humano de vida cheia) e o cone das costas (graus entre o golpe e a frente do alvo) |
 | `KnifeStabHitDelay` / `KnifeStabCooldown` | 0,2 s / 0,8 s | Quando o dano da estocada sai (a lâmina chega à frente no clipe) e quanto a faca fica ocupada |
-| `KnifeSpeedMultiplier` | 1,037 | Velocidade com a faca na mão, sobre a do humano (3,36 m/s) |
+| `KnifeSpeedMultiplier` | 1,28 (era 1,037) | Velocidade com a faca na mão, sobre a do humano: 3,84 m/s desde 26/11 (era 3,58; Jhon: "aumentar velocidade de movimento com faca equipada"), abaixo do lobo a pé. A corrida não toca acima de 1× (regra 9): com a faca o pé de apoio fica 0,8–0,9 m/s atrás do corpo |
 | `ThrowForce` | 17,5 m/s | Força do arremesso na mira (era 14,5; 20/11). Olhando reto, de pé, vai a uns 24 m; a granada cai onde a mira aponta |
 | `ThrowArc` | 4 m/s | Empurrão para cima (era 3,5) |
 | `ThrowCooldown` | 0,9 s | Entre uma granada e outra |

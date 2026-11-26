@@ -42,8 +42,9 @@ modelo.
 | | Medida | De onde |
 |---|---|---|
 | Cápsula de colisão (humano e lobo) | 0,30 de raio, 1,75 de altura | `player.tscn`, `CapsuleShape3D` |
-| Agachado | 1,00 de altura | `Player.CrouchHeight` |
-| Olho em pé | ~1,50 do chão | centro (0,875) + `Head` (0,60) |
+| Agachado | 1,30 de altura no humano, 1,00 no lobo | `Player.HumanCrouchHeight`, `Player.CrouchHeight` |
+| Olho do humano | 1,59 do chão em pé, 1,09 agachado | os olhos do corpo visto (`Player.HumanEyeHeight`, afinados pelo `CharacterAnimator`); eram 1,475 e 0,60 até 26/11 |
+| Olho do lobo (pivô da câmera) | ~1,48 do chão | centro (0,875) + `Head` (0,60) |
 | Humano visível (topo da cabeça) | 1,79 | `CharacterSkin.HumanHeight` |
 | Lobo visível (topo da cabeça) | 1,66 | `CharacterSkin.WolfHeight` |
 
@@ -52,7 +53,7 @@ na tela não muda por onde ele passa.
 
 **O que isso pede do mapa:**
 
-- Passagem em pé: **1,80 livre** no mínimo. Agachado: **1,05**.
+- Passagem em pé: **1,80 livre** no mínimo. Agachado: **1,35** para o humano (1,05 para o lobo).
 - Vão entre duas paredes: **0,65** no mínimo para passar (0,60 da
   cápsula e uma folga). Para passar lutando, bem mais.
 - A cabeça que leva tiro é a do modelo. Um personagem fora da altura
@@ -65,13 +66,14 @@ Medidos no chão plano, segurando a tecla.
 
 | | Humano | Lobo Bruto | Lobo Ligeiro |
 |---|---|---|---|
-| Correndo (W) | 3,46 m/s | 4,15 m/s | 4,50 m/s |
-| Andando (Shift) | 1,45 m/s | — | — |
-| Agachado | 1,56 m/s | 1,87 m/s | 2,03 m/s |
+| Correndo (W) | 3,0 m/s (faca 3,84) | 4,15 m/s | 4,50 m/s |
+| Andando (Shift) | 1,26 m/s | — | — |
+| Agachado | 1,35 m/s | 1,87 m/s | 2,03 m/s |
 | De quatro (W duas vezes) | — | 7,14 m/s | 7,73 m/s |
 | Carregando o salto | — | 0,97 m/s | — |
 
-Velocidade de base: `Player.HumanSpeed` 3,2 na cena. O lobo multiplica
+Velocidade de base: `Player.HumanSpeed` 3,2 na cena; o humano anda isto
+× `HumanSpeedBonus` 0,9375 (desde 26/11; era 1,08). O lobo multiplica
 pela raça (`src/resources/breeds/*.tres`, `SpeedMultiplier`) e, de quatro,
 por `WolfSprintFactor` (1,719 na cena).
 
