@@ -92,7 +92,14 @@ o renascer do bot (6 s).
 | `FallLimit` | −25 m | Abaixo disto volta ao spawn |
 | `MouseSensitivity` | 0,002 | Sensibilidade base. O jogador multiplica nas Opções (`Settings.Sensitivity`, padrão 1) |
 | `ThirdPersonDistance` | 2,5 m | Distância da câmera do lobo (era 3,5; longe demais, Jhon, 15/11) |
-| `FootSink` (nó `WolfVisual`) | 0,02 m | Quanto o lobo parado em pé desce: a pata do Idle_Pose só encosta pelas garras e ele parecia flutuar |
+| `FootSink` (nó `WolfVisual`) | 0 m (era 0,02) | Quanto o lobo parado em pé desce. Desde 26/11 quem encosta cada pata no chão é o `WolfFootPlant` (abaixo); descer o corpo inteiro só enterrava as garras |
+| `ContactBand` (nó `Patas`, `WolfFootPlant`, filho do esqueleto do lobo) | 0,15 m | Até quanto acima do chão a pata de apoio desce para encostar (rampa, degrau, o agachado que a proporção do clipe deixa no ar). Dentro do chão a pata sempre sobe até encostar |
+| `StillSpeed` / `ContactTime` | 0,3 m/s / 0,06 s | A pata conta como apoiando se a sola fica parada na vertical em relação ao corpo (a que dá o passo sobe e desce mais rápido que isto); e o tempo para o apoio entrar e sair |
+| `MaxLift` | 0,3 m | O maior ajuste de uma pata, para cima ou para baixo |
+| `EdgeReach` | 0,12 m | Perto de uma quina (amostras de chão a até isto), vale o chão mais alto: a garra rente à quina de um degrau não entra nele |
+| `PlantDistance` | 40 m | Além disto da câmera, as patas não são ajustadas (de longe não se vê; cada lobo custa ~1.400 pontos de pele por quadro) |
+| `RayUp` / `RayDown` | 0,5 / 0,6 m | De onde a quanto abaixo da sola o raio procura o chão (atravessa corpos e a chapa invisível das escadas: a pata pisa no degrau que se vê) |
+| `InSpeed` / `OutSpeed` / `Slack` (`CameraArmEase`, filho do braço da câmera do lobo) | 12 / 2,5 m/s / 0,15 m | A câmera de terceira pessoa entra rápido quando algo fica atrás do lobo (nunca mais que `Slack` além da distância livre do braço, cuja margem é 0,2 m) e sai devagar: o braço que encosta e solta a cada degrau não faz a câmera ir e voltar |
 | `TailStiffnessRoot` / `TailStiffnessTip` (nó `WolfVisual`, grupo Rabo) | 3,5 / 0,6 | A mola que devolve o rabo ao desenho do modelo, na raiz e na ponta. Mais alto: rabo duro, quase sem cair. A raiz firme segura o começo do rabo no lugar. Os números são por metro do modelo: o código multiplica pela unidade do esqueleto (100) |
 | `TailGravityRoot` / `TailGravityTip` | 0,3 / 1,5 | O peso do rabo, na mesma unidade da mola. Parado, a ponta fica 3 cm abaixo e 9 cm mais perto do corpo do que no desenho |
 | `TailDrag` | 0,22 | Quanto do embalo o rabo perde por passo (0 balança para sempre, 1 não balança) |
