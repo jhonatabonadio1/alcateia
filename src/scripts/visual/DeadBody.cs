@@ -146,7 +146,10 @@ public sealed class DeadBody
 	/// <summary>A pose do quadro está pronta: encosta o corpo no chão.</summary>
 	private void OnPose()
 	{
-		if (!_begun || !Shown) return;
+		// O esqueleto ainda avisa a pose enquanto a cena sai (a troca de cena do
+		// "Voltar à sala"): fora da árvore não há chão nem posição no mundo para
+		// medir (26/11: 30 erros "!is_inside_tree()" no VoltarASalaSemCrash).
+		if (!_begun || !Shown || !GodotObject.IsInstanceValid(_model) || !_model.IsInsideTree()) return;
 		FitFloor(_delta, _fallen);
 		_model.Position = new Vector3(_model.Position.X, _baseY + _offset, _model.Position.Z);
 	}
