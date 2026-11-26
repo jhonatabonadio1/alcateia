@@ -87,6 +87,10 @@ public partial class NetMatch : Node
 	/// <summary>Quantas vezes o servidor corrigiu o meu corpo, e o tamanho
 	/// da última diferença (metros): o que o teste e o painel de rede leem.</summary>
 	public int Corrections => _prediction.Corrections;
+
+	/// <summary>A soma e a maior correção do corpo, em metros (para medir).</summary>
+	public float CorrectionSum => _prediction.ErrorSum;
+	public float CorrectionMax => _prediction.ErrorMax;
 	public float LastError => _prediction.LastError;
 
 	/// <summary>Ida e volta até o servidor de partida (ms), do ENet; -1 sem ligação.</summary>

@@ -28,6 +28,10 @@ public sealed class Prediction
 	public int Corrections { get; private set; }
 	public float LastError { get; private set; }
 
+	/// <summary>A soma e a maior das correções feitas, em metros (para medir).</summary>
+	public float ErrorSum { get; private set; }
+	public float ErrorMax { get; private set; }
+
 	public void Record(uint seq, Vector3 position, Vector3 velocity) =>
 		_ring[seq % Capacity] = (seq, position, velocity);
 
@@ -46,6 +50,8 @@ public sealed class Prediction
 		if (LastError < Tolerance) return Vector3.Zero;
 
 		Corrections++;
+		ErrorSum += LastError;
+		if (LastError > ErrorMax) ErrorMax = LastError;
 		for (uint s = seq; s <= newest && newest - s < Capacity; s++)
 		{
 			ref var e = ref _ring[s % Capacity];

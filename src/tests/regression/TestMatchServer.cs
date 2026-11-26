@@ -137,10 +137,13 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 
 	/// <summary>Quando um pacote chega do outro lado (e se chega), com a rede
 	/// deste teste. Nulo: perdido.</summary>
-	private double? Due(bool reliable, bool incoming)
+	private double? Due(bool reliable, bool incoming, bool ordered = true)
 	{
 		double due = _clock + Latency + (Jitter > 0 ? _rng.RandfRange(0f, (float)Jitter) : 0);
 		if (!reliable && Loss > 0 && _rng.Randf() < Loss) { Dropped++; return null; }
+		// O comando (Input) vai no canal sem ordem: pode chegar trocado, e
+		// não é jogado fora por isso (o servidor ordena pelo número).
+		if (!ordered) return due;
 		ref double last = ref incoming ? ref _lastDueIn : ref _lastDueOut;
 		if (due < last)
 		{
@@ -162,7 +165,7 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 		// Do jogo ao servidor: o comando vai sem garantia, o resto (Hello,
 		// Status confiável, acertos) com.
 		bool reliable = packet[0] is not (NetWire.Input or NetWire.State or NetWire.Status or NetWire.BotState);
-		if (Due(reliable, true) is double due) _delayed.Add((due, peer, packet, reliable, true));
+		if (Due(reliable, true, packet[0] != NetWire.Input) is double due) _delayed.Add((due, peer, packet, reliable, true));
 	}
 
 	private void Deliver(long peer, byte[] packet)
