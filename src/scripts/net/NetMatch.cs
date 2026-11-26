@@ -103,7 +103,17 @@ public partial class NetMatch : Node
 	private ENetPacketPeer Server() =>
 		_peer != null && _peer.GetConnectionStatus() == MultiplayerPeer.ConnectionStatus.Connected ? _peer.GetPeer(1) : null;
 
-	private static double LocalSeconds => Time.GetTicksUsec() / 1_000_000.0;
+	/// <summary>
+	/// O relógio daqui para o relógio do servidor e o desenho dos outros: os
+	/// passos de física já dados (26/11). Era o relógio de parede do sistema
+	/// (Time.GetTicksUsec), lido em qualquer ponto do quadro: o instante em
+	/// que um estado "chegou" e o instante do desenho saíam de relógios
+	/// diferentes do passo em que o boneco anda, e o boneco tremia (na medida
+	/// do teste FluidezAutoritativo, tranco em 352 de 360 quadros com a rede
+	/// limpa). A física anda no tempo real (o Godot dá os passos que faltam),
+	/// então isto é o tempo real, só que contado no passo.
+	/// </summary>
+	private static double LocalSeconds => Engine.GetPhysicsFrames() / (double)Engine.PhysicsTicksPerSecond;
 
 	public override void _EnterTree() => Current = this;
 
