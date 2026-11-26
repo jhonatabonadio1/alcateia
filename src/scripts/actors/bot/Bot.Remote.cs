@@ -190,6 +190,20 @@ public partial class Bot
 	/// </summary>
 	public void RemoteSnapshot(Vector3 position, Vector3 velocity, float yaw, float pitch, bool grounded, Form form, Slot slot)
 	{
+		RemoteInterpolated(position, velocity, yaw, pitch, grounded);
+		_form.RemoteSet(form);
+		if (!_form.IsWolf) _weapon.RemoteHold(_netPrimary, _netSecondary, slot);
+	}
+
+	/// <summary>
+	/// A pose do dono já interpolada entre dois estados, um pouco no passado
+	/// (a partida autoritativa, e a de repasse quando o dono conta o instante
+	/// de cada estado, desde 26/11). O boneco vai exatamente para lá a cada
+	/// passo; a notícia que chega (<see cref="RemoteUpdate"/>) passa a dizer só
+	/// a vida, a forma e as armas.
+	/// </summary>
+	public void RemoteInterpolated(Vector3 position, Vector3 velocity, float yaw, float pitch, bool grounded)
+	{
 		_netInterpolated = true;
 		_netPosition = position;
 		_netVelocity = velocity;
@@ -204,9 +218,6 @@ public partial class Bot
 			RemotePresent(true);
 			_netKnown = true;
 		}
-
-		_form.RemoteSet(form);
-		if (!_form.IsWolf) _weapon.RemoteHold(_netPrimary, _netSecondary, slot);
 	}
 
 	/// <summary>Partida autoritativa: vida, escudo e armas do dono (Status).</summary>
@@ -247,7 +258,7 @@ public partial class Bot
 		Visible = present;
 		// A cópia do replay nunca colide: tiro de verdade passa por ela.
 		CollisionLayer = present ? _layer : 0;
-		if (!present) _netKnown = false;
+		if (!present) _netKnown = _netHasLast = false;
 	}
 
 	/// <summary>Chegou notícia do dono: onde está, para onde olha, em
@@ -256,11 +267,16 @@ public partial class Bot
 		Form form, Slot slot, string primary, string secondary,
 		float hp, float maxHp, float shield, float maxShield, bool dead)
 	{
-		_netPosition = position;
-		_netVelocity = velocity;
-		_netYaw = yaw;
-		_netPitch = pitch;
-		_netGrounded = grounded;
+		// Desenhado pelo caminho interpolado (o dono conta o instante): a pose
+		// vem de lá; a notícia diz o resto.
+		if (!_netInterpolated)
+		{
+			_netPosition = position;
+			_netVelocity = velocity;
+			_netYaw = yaw;
+			_netPitch = pitch;
+			_netGrounded = grounded;
+		}
 		_netAge = 0;
 
 		if (!_netKnown)
@@ -309,6 +325,7 @@ public partial class Bot
 
 		if (_netInterpolated)
 		{
+			SmoothNetJump(dt);
 			GlobalPosition = _netPosition;
 			Rotation = new Vector3(0, _netYaw, 0);
 			_head.Rotation = new Vector3(_netPitch, 0, 0);
@@ -343,6 +360,44 @@ public partial class Bot
 	/// dele. Sem parede achada, fica a última — numa quina a sonda pode
 	/// errar um passo.
 	/// </summary>
+	/// <summary>Um passo do boneco que destoa do anterior mais que isto (em
+	/// metros, na horizontal: 3 m/s de mudança num passo) é a rede, não o corpo.</summary>
+	private const float NetJumpTolerance = 0.05f;
+
+	private Vector3 _netLast, _netLastStep;
+	private bool _netHasLast;
+
+	/// <summary>
+	/// O desenho entre um estado e outro é liso, mas a pose que vem da rede
+	/// ainda pode dar um degrau: o desenho que adivinhou à frente quando os
+	/// estados pararam e o caminho de verdade que chega depois, um estado que
+	/// chegou fora de hora. O corpo vai para a pose certa (o tiro e a colisão
+	/// a usam); o desenho (<see cref="VisualSmoothing"/>) não pula junto: fica
+	/// e escorrega até ela em uma fração de segundo (26/11, "os personagens
+	/// voltam no tempo e a tela fica tremendo"). Só na horizontal: pulo e
+	/// pouso mudam a velocidade de uma vez de verdade.
+	/// </summary>
+	private void SmoothNetJump(float dt)
+	{
+		Vector3 step = _netPosition - _netLast;
+		if (_netHasLast)
+		{
+			Vector3 odd = step - _netLastStep;
+			odd.Y = 0;
+			float size = odd.Length();
+			// Teleporte (renasceu, voltou à partida): o desenho vai direto.
+			if (size > NetJumpTolerance && size < VisualSmoothing.TeleportStep)
+			{
+				if (!_health.IsDead) GetNodeOrNull<VisualSmoothing>("VisualSmoothing")?.Absorb(odd);
+				// O que se absorveu não conta como o passo de agora (o seguinte compara com o normal).
+				step -= odd;
+			}
+		}
+		_netLast = _netPosition;
+		_netLastStep = step;
+		_netHasLast = true;
+	}
+
 	private void UpdateRemoteWall()
 	{
 		if (!RemoteWallRun || _health.IsDead)

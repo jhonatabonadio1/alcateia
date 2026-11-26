@@ -98,22 +98,77 @@ public static class NetPoseExtensions
 
 /// <summary>
 /// O relógio do servidor, visto do jogo: a partir dos estados que chegam,
-/// estima que passo é agora no servidor. Segue o estado que chega mais
-/// cedo (o caminho mais rápido da rede) e anda devagar quando a rede
-/// piora, para o desenho dos outros não dar trancos.
+/// estima que instante é agora no servidor e em que instante os outros são
+/// desenhados.
+///
+/// O "agora" segue o estado que chega mais cedo (o caminho mais rápido da
+/// rede) e se acostuma devagar quando a rede piora. O instante do desenho
+/// (<see cref="RenderTime"/>) é outra coisa desde 26/11 (Jhon:
+/// "microtravamentos, os personagens voltam no tempo e a tela fica
+/// tremendo"): ele **anda junto com o relógio daqui e só muda de ritmo
+/// devagar** — até <see cref="MaxRate"/> mais rápido ou mais devagar para
+/// alcançar o alvo —, nunca pula nem volta. Antes era o "agora" menos 100
+/// ms: um estado que chegava mais cedo puxava todo mundo para a frente de
+/// uma vez, e o servidor engasgando deixava o desenho passar do último
+/// estado, adivinhar à frente e voltar quando os atrasados chegavam.
+///
+/// - O atraso do desenho cresce com a irregularidade da rede (o jitter,
+///   medido no quanto cada estado chega depois do caminho mais rápido), até
+///   <see cref="MaxExtraDelay"/> a mais que os 100 ms de base.
+/// - Perto do último estado que chegou, o desenho desacelera até parar, no
+///   máximo <see cref="Overrun"/> além dele (o que se adivinha pela
+///   velocidade), em vez de seguir adivinhando: num engasgo do servidor o
+///   boneco vai mais devagar e para, e depois alcança, liso.
+/// - O ritmo nunca muda de uma vez: no máximo <see cref="RateSlew"/> por
+///   segundo (o boneco que corre não dá tranco quando o desenho freia ou
+///   acelera).
+/// - Longe demais do alvo (começo, rede que caiu por mais de um segundo),
+///   vai direto (<see cref="SnapError"/>).
 /// </summary>
 public sealed class ServerClock
 {
-	private double _offset;
+	/// <summary>O quanto o desenho pode andar mais rápido ou mais devagar que o relógio daqui.</summary>
+	public const double MaxRate = 0.1;
+
+	/// <summary>Quanto a irregularidade da rede pode somar ao atraso do desenho, em segundos.</summary>
+	public const double MaxExtraDelay = 0.08;
+
+	/// <summary>O quanto o desenho pode passar do último estado que chegou (adivinhando
+	/// pela velocidade) enquanto freia, em segundos. Menos que
+	/// <see cref="NetRates.MaxExtrapolation"/>: o boneco nunca chega a ficar parado no limite.</summary>
+	public const double Overrun = 0.08;
+
+	/// <summary>Mais longe que isto do alvo, o desenho vai direto (segundos).</summary>
+	public const double SnapError = 1.0;
+
+	/// <summary>O quanto o ritmo do desenho muda por segundo, no máximo (de 1 a 0 em
+	/// 1/6 s; num quadro, 10%: um corredor a 3,5 m/s muda 0,35 m/s, o que não se vê).</summary>
+	public const double RateSlew = 6.0;
+
+	private double _offset, _late, _newest;
 	private bool _known;
+
+	private double _render, _renderLocal, _rate = 1;
+	private bool _rendering;
 
 	public bool Known => _known;
 
+	/// <summary>A irregularidade da rede agora (segundos), alisada.</summary>
+	public double Jitter => _late;
+
+	/// <summary>Quanto atrás do "agora" do servidor os outros são desenhados.</summary>
+	public double Delay => NetRates.InterpolationDelay + Math.Min(_late * 1.5, MaxExtraDelay);
+
 	/// <summary>Chegou um estado do passo <paramref name="tick"/> quando o
 	/// relógio daqui marcava <paramref name="localSeconds"/>.</summary>
-	public void Observe(uint tick, double localSeconds)
+	public void Observe(uint tick, double localSeconds) => Observe(tick * NetRates.TickSeconds, localSeconds);
+
+	/// <summary>Chegou um estado do instante <paramref name="remoteSeconds"/>
+	/// (no relógio de quem mandou) quando o daqui marcava <paramref name="localSeconds"/>.</summary>
+	public void Observe(double remoteSeconds, double localSeconds)
 	{
-		double sample = tick * NetRates.TickSeconds - localSeconds;
+		if (remoteSeconds > _newest || !_known) _newest = remoteSeconds;
+		double sample = remoteSeconds - localSeconds;
 		if (!_known)
 		{
 			_offset = sample;
@@ -121,14 +176,47 @@ public sealed class ServerClock
 			return;
 		}
 
-		// Chegou mais cedo do que o esperado: a rede melhorou, adota já.
+		// Chegou mais cedo do que o esperado: a rede melhorou, o "agora" adota já
+		// (o desenho não pula: ele só anda um pouco mais rápido até lá).
 		// Mais tarde: vai se acostumando aos poucos.
 		_offset = sample > _offset ? sample : _offset + (sample - _offset) * 0.05;
+
+		// O quanto este estado chegou depois do caminho mais rápido: sobe logo,
+		// desce devagar (uns 2 s), para o atraso do desenho não ficar mudando.
+		double late = _offset - sample;
+		_late += (late - _late) * (late > _late ? 0.5 : 0.02);
 	}
 
 	/// <summary>Segundos de servidor agora.</summary>
 	public double Now(double localSeconds) => localSeconds + _offset;
 
-	/// <summary>O instante em que os outros são desenhados.</summary>
-	public double RenderTime(double localSeconds) => Now(localSeconds) - NetRates.InterpolationDelay;
+	/// <summary>O instante em que os outros são desenhados agora. Chamar mais de
+	/// uma vez no mesmo instante daqui devolve o mesmo valor.</summary>
+	public double RenderTime(double localSeconds)
+	{
+		double target = Now(localSeconds) - Delay;
+		if (!_rendering || Math.Abs(target - _render) > SnapError)
+		{
+			_render = target;
+			_renderLocal = localSeconds;
+			_rate = 1;
+			_rendering = true;
+			return _render;
+		}
+
+		double dt = localSeconds - _renderLocal;
+		if (dt <= 0) return _render;
+		_renderLocal = localSeconds;
+
+		double want = 1 + Math.Clamp((target - _render) * 2.0, -MaxRate, MaxRate);
+		// Chegando no último estado que há: o mais rápido que ainda dá para parar
+		// até Overrun além dele, freando a RateSlew (v² = 2·a·d). O pedaço que
+		// passa do último, enquanto freia, o InterpolationBuffer adivinha.
+		double room = _newest + Overrun - _render;
+		want = Math.Min(want, Math.Sqrt(2 * RateSlew * Math.Max(0, room)));
+		double slew = RateSlew * dt;
+		_rate += Math.Clamp(want - _rate, -slew, slew);
+		_render += dt * _rate;
+		return _render;
+	}
 }

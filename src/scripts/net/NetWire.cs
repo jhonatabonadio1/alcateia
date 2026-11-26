@@ -195,6 +195,15 @@ public struct NetState
 	public byte Grenades;
 	public float Wp, Charge;
 
+	/// <summary>Quando, no relógio de quem mandou (segundos), o corpo estava
+	/// aqui (26/11). Com isto o boneco é desenhado entre dois estados, um
+	/// pouco no passado, no ritmo de quem mandou — como na partida
+	/// autoritativa — e não perseguindo a última notícia (que dava tranco e
+	/// voltava no tempo com a rede irregular). No fim da mensagem: jogo antigo
+	/// não manda nem lê.</summary>
+	public bool HasTime;
+	public double Time;
+
 	public void Write(BinaryWriter w)
 	{
 		w.Write(Position);
@@ -218,6 +227,7 @@ public struct NetState
 		w.Write(Wp);
 		w.Write(Charge);
 		w.Write((byte)((GrenadeReady ? 1 : 0) | (Aiming ? 2 : 0)));
+		if (HasTime) w.Write(Time);
 	}
 
 	public static NetState Read(BinaryReader r)
@@ -258,6 +268,11 @@ public struct NetState
 				byte extra = r.ReadByte();
 				s.GrenadeReady = (extra & 1) != 0;
 				s.Aiming = (extra & 2) != 0;
+				if (r.BaseStream.Length - r.BaseStream.Position >= 8)
+				{
+					s.HasTime = true;
+					s.Time = r.ReadDouble();
+				}
 			}
 		}
 		return s;

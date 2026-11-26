@@ -28,3 +28,4 @@ como "substituído por NNNN".
 | [0015](0015-economia-da-conta.md) | Tudo o que vale alguma coisa é da conta; o jogo só espelha |
 | [0016](0016-vida-e-acerto-no-servidor.md) | Vida e acerto no servidor de partida: o acerto é conferido, a morte é decidida lá (segunda leva da 0011) |
 | [0017](0017-o-servidor-repete-o-especial-e-os-bots.md) | O servidor repete o especial do jogo (o ponto e o alvo vão no comando, a carga segue a do jogo) e põe os bots no mundo dele |
+| [0018](0018-o-desenho-online-anda-liso.md) | O desenho online anda liso: relógio no passo, o desenho dos outros só muda de ritmo (nunca pula nem volta), correção em mola, fila do servidor apressa devagar, repasse com o instante de quem mandou |

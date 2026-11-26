@@ -112,6 +112,10 @@ public abstract class OnlineGameTest : RegressionTest
 		public float Yaw, Pitch;
 		public byte Epoch;
 
+		/// <summary>Andar para a frente (de 0 a 127), no comando de cada passo
+		/// (no eixo do jogo, para a frente é Y negativo: Input.GetVector).</summary>
+		public sbyte Move;
+
 		public FakeOther(TestMatchServer server, Vector3 at, float yaw, float pitch)
 		{
 			_server = server;
@@ -126,7 +130,8 @@ public abstract class OnlineGameTest : RegressionTest
 			_seq++;
 			_recent[_seq % InputCommand.Redundancy] = new InputCommand
 			{
-				Seq = _seq, Yaw = Quant.Yaw(Yaw), Pitch = Quant.Pitch(Pitch), Epoch = Epoch,
+				Seq = _seq, Yaw = Quant.Yaw(Yaw), Pitch = Quant.Pitch(Pitch), Epoch = Epoch, MoveY = (sbyte)(-Move),
+				Buttons = Move > 0 ? InputButtons.Forward : InputButtons.None,
 				HeldSlot = (byte)Slot.Primary, HasSpawn = true, Spawn = At.ToNumerics()
 			};
 			_server.FromOther(NetCommands.InputPacket(_recent, _seq, new byte[256]));

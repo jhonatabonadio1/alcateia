@@ -29,7 +29,7 @@ public partial class VisualSmoothing : Node
 
 	/// <summary>Andar mais que isto num passo é teleporte (nascer,
 	/// renascer, a correção da rede): o desenho vai direto.</summary>
-	private const float TeleportStep = 2f;
+	public const float TeleportStep = 2f;
 
 	private Node3D _body;
 	private Health _health;
@@ -46,17 +46,36 @@ public partial class VisualSmoothing : Node
 	private bool _shifted;
 
 	/// <summary>O que falta o desenho andar de uma correção da rede (no
-	/// mundo). Some aos poucos: em ~0,1 s o desenho alcança o corpo.</summary>
-	private Vector3 _correction;
-	private const float CorrectionFade = 25f;
+	/// mundo), e a velocidade com que ele está indo até lá.
+	///
+	/// Uma mola amortecida na medida (26/11, "a tela fica tremendo com
+	/// glitches"): o desenho sai devagar, acelera e chega sem passar. Era um
+	/// decaimento de ~40 ms, que começava na velocidade máxima: 30 cm de
+	/// correção faziam a câmera saltar a 6 m/s de um quadro para o outro, e
+	/// para trás quando a correção era contra o movimento. Com a mola, 30 cm
+	/// somem em ~0,3 s e a câmera nunca passa de ~1,3 m/s a mais.</summary>
+	private Vector3 _correction, _correctionSpeed;
+
+	/// <summary>A rigidez da mola da correção (rad/s): quanto maior, mais rápido
+	/// o desenho alcança o corpo — e maior o tranco.</summary>
+	private const float CorrectionSpring = 12f;
 
 	/// <summary>
 	/// O corpo foi corrigido pelo servidor (partida autoritativa, decisão
 	/// 0011): andou <paramref name="moved"/> de uma vez. O desenho não pula
 	/// junto — fica onde estava e escorrega até o corpo em uma fração de
 	/// segundo, que é o que faz a correção passar despercebida.
+	///
+	/// O ponto de partida do passo anda junto (26/11): a correção chega fora do
+	/// passo da física, e sem isto ela entrava também no deslocamento do passo
+	/// que o desenho reparte pelo quadro — o desenho ia para trás até o tamanho
+	/// da correção num quadro e voltava no seguinte (o tremor da tela).
 	/// </summary>
-	public void Absorb(Vector3 moved) => _correction -= moved;
+	public void Absorb(Vector3 moved)
+	{
+		_correction -= moved;
+		_from += moved;
+	}
 
 	/// <summary>Uma peça solta (<c>TopLevel</c>) presa ao desenho do corpo: anda com
 	/// ele (veja <see cref="_loose"/>). Sai sozinha quando é liberada.</summary>
@@ -102,13 +121,20 @@ public partial class VisualSmoothing : Node
 		Restore();
 		if (_health != null && _health.IsDead)
 		{
-			_correction = Vector3.Zero;
+			_correction = _correctionSpeed = Vector3.Zero;
 			return;
 		}
 
 		Vector3 behind = _correction;
-		_correction *= Mathf.Exp(-CorrectionFade * (float)delta);
-		if (_correction.LengthSquared() < 1e-6f) _correction = Vector3.Zero;
+		if (_correction != Vector3.Zero)
+		{
+			// Mola criticamente amortecida: a = −ω²x − 2ωv.
+			float dt = (float)delta, w = CorrectionSpring;
+			_correctionSpeed += (-w * w * _correction - 2f * w * _correctionSpeed) * dt;
+			_correction += _correctionSpeed * dt;
+			if (_correction.LengthSquared() < 1e-6f && _correctionSpeed.LengthSquared() < 1e-4f)
+				_correction = _correctionSpeed = Vector3.Zero;
+		}
 
 		Vector3 step = _body.GlobalPosition - _from;
 		if (step.LengthSquared() >= 1e-8f && step.Length() <= TeleportStep)
