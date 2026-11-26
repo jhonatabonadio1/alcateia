@@ -114,6 +114,28 @@ public sealed class ServerHealthTest : RegressionTest
 		_input[Shooter] = _input[Shooter] with { Yaw = onClear.Yaw, Pitch = onClear.Pitch };
 		await Steps(b, 3);
 
+		// 2b. A granada: parede protege no servidor também (Jhon, 26/11: "área de
+		// efeito da granada atravessa paredes"). Até 26/11 o servidor não conferia
+		// visão para a explosão. Uma explosão perto do escondido, do outro lado de
+		// algo sólido: recusada; uma perto do alvo à vista: vale.
+		Vector3? blockedAt = GrenadeSpot(space, hidden.Body.GlobalPosition, from, wantClear: false);
+		Vector3? clearAt = GrenadeSpot(space, target.Body.GlobalPosition, from, wantClear: true);
+		b.Check(blockedAt != null && clearAt != null, $"achou onde estourar: atrás de algo, perto do escondido ({blockedAt}), e à vista do alvo ({clearAt})");
+		if (blockedAt != null && clearAt != null)
+		{
+			int blockedBefore = Refused(HitVerdict.Blocked), acceptedBefore = _match.HitsAccepted;
+			float hiddenHp = hidden.Health.Hp;
+			Hit(Shooter, Hidden, 100, blockedAt.Value, "choque", cause: KillCause.Grenade);
+			await Steps(b, 15);
+			b.Check(Refused(HitVerdict.Blocked) == blockedBefore + 1 && hidden.Health.Hp >= hiddenHp,
+				$"granada do outro lado da parede: recusada, a vida do escondido não mudou ({hiddenHp:0} → {hidden.Health.Hp:0})");
+			float targetHp = target.Health.Hp;
+			Hit(Shooter, Clear, 40, clearAt.Value, "choque", cause: KillCause.Grenade);
+			await Steps(b, 15);
+			b.Check(_match.HitsAccepted == acceptedBefore + 1 && target.Health.Hp < targetHp,
+				$"granada à vista do alvo: vale ({targetHp:0} → {target.Health.Hp:0})");
+		}
+
 		// 3. De onde o corpo não estava.
 		Hit(Shooter, Clear, m4.Damage, from + new Vector3(0, 40, 0), "m4a4");
 		await Steps(b, 15);
@@ -246,13 +268,13 @@ public sealed class ServerHealthTest : RegressionTest
 		Receive(peer, stream.ToArray());
 	}
 
-	private void Hit(long shooter, long target, float amount, Vector3 from, string weapon, bool headshot = false)
+	private void Hit(long shooter, long target, float amount, Vector3 from, string weapon, bool headshot = false, KillCause? cause = null)
 	{
 		BinaryWriter w = NetWire.Begin(NetWire.Hit, out MemoryStream stream);
 		w.Write(target);
 		w.Write(amount);
 		w.Write(headshot);
-		w.Write((byte)(headshot ? KillCause.Headshot : KillCause.Gun));
+		w.Write((byte)(cause ?? (headshot ? KillCause.Headshot : KillCause.Gun)));
 		w.Write(weapon);
 		w.Write(from);
 		w.Write(_input[shooter].Seq + 1);
@@ -292,4 +314,47 @@ public sealed class ServerHealthTest : RegressionTest
 
 	private static bool Ray(PhysicsDirectSpaceState3D space, Vector3 from, Vector3 to) =>
 		space.IntersectRay(PhysicsRayQueryParameters3D.Create(from, to)).Count == 0;
+
+	/// <summary>Um ponto do chão perto do corpo (2 a 7 m) onde a explosão
+	/// enxerga (<paramref name="wantClear"/>) ou não enxerga nenhum dos pontos
+	/// que o servidor confere (<see cref="HitRules.TargetPoints"/>), saindo de
+	/// onde o servidor sai (<see cref="Grenade.SightLift"/> acima do ponto).
+	/// Perto do atirador (um arremesso). Os corpos não contam (o servidor os
+	/// exclui da conferência).</summary>
+	private static Vector3? GrenadeSpot(PhysicsDirectSpaceState3D space, Vector3 body, Vector3 thrower, bool wantClear)
+	{
+		Span<System.Numerics.Vector3> points = stackalloc System.Numerics.Vector3[6];
+		for (float ring = 2f; ring <= 7f; ring += 1f)
+			for (int i = 0; i < 16; i++)
+			{
+				float angle = Mathf.Tau * i / 16f;
+				Vector3 floor = Floor(space, body + new Vector3(Mathf.Sin(angle), 0, Mathf.Cos(angle)) * ring);
+				if (floor == Vector3.Inf || Mathf.Abs(floor.Y - body.Y) > 1.5f) continue;
+				Vector3 spot = floor - Vector3.Up * 0.75f;
+				if (spot.DistanceTo(thrower) > 40f || spot.DistanceTo(body) > 8.5f) continue;
+				Vector3 origin = spot + Vector3.Up * Grenade.SightLift;
+				int count = HitRules.TargetPoints(body.ToNumerics(), 1.75f, origin.ToNumerics(), points);
+				int seen = 0;
+				for (int k = 0; k < count; k++)
+					if (RayNoBodies(space, origin, new Vector3(points[k].X, points[k].Y, points[k].Z))) seen++;
+				if (wantClear ? seen == count : seen == 0) return spot;
+			}
+		return null;
+	}
+
+	/// <summary>A linha, sem contar corpo nenhum (como o servidor: só o mapa).</summary>
+	private static bool RayNoBodies(PhysicsDirectSpaceState3D space, Vector3 from, Vector3 to)
+	{
+		var exclude = new Godot.Collections.Array<Rid>();
+		for (int tries = 0; tries < 6; tries++)
+		{
+			var query = PhysicsRayQueryParameters3D.Create(from, to);
+			query.Exclude = exclude;
+			Godot.Collections.Dictionary hit = space.IntersectRay(query);
+			if (hit.Count == 0) return true;
+			if (hit["collider"].Obj is CharacterBody3D) { exclude.Add((Rid)hit["rid"]); continue; }
+			return false;
+		}
+		return false;
+	}
 }
