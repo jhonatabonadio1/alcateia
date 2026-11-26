@@ -22,6 +22,9 @@ public abstract class OnlineGameTest : RegressionTest
 	protected abstract bool Authoritative { get; }
 	protected TestMatchServer Server { get; private set; }
 
+	/// <summary>Lugares a mais na escalação (bots, por exemplo), no servidor e no jogo.</summary>
+	protected virtual OnlineMatch.Seat[] ExtraSeats => Array.Empty<OnlineMatch.Seat>();
+
 	public override void Prepare()
 	{
 		RoomConfig.Settings = new RoomSettings { Map = "armazem_estendido", TeamSize = 4 };
@@ -32,7 +35,7 @@ public abstract class OnlineGameTest : RegressionTest
 		var tree = (SceneTree)Engine.GetMainLoop();
 		Server = new TestMatchServer();
 		tree.CurrentScene.AddChild(Server);
-		Server.Start(Authoritative);
+		Server.Start(Authoritative, extra: ExtraSeats);
 
 		// A partida online, como o saguão a deixaria (OnlineMatch.Launch).
 		Set(nameof(OnlineMatch.Address), "127.0.0.1");
@@ -44,6 +47,7 @@ public abstract class OnlineGameTest : RegressionTest
 		OnlineMatch.Roster.Clear();
 		OnlineMatch.Roster.Add(new OnlineMatch.Seat(TestMatchServer.MeAccount, "Eu", Teams.Blue, 0));
 		OnlineMatch.Roster.Add(new OnlineMatch.Seat(TestMatchServer.OtherAccount, "Outro", Teams.Orange, 0));
+		OnlineMatch.Roster.AddRange(ExtraSeats);
 		Set(nameof(OnlineMatch.Active), true);
 	}
 

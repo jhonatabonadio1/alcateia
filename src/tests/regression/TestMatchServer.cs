@@ -45,10 +45,12 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 
 	/// <summary>Abre a porta e a partida: <paramref name="authoritative"/>
 	/// com mundo de física (o servidor move os corpos) ou só de repasse.</summary>
-	public void Start(bool authoritative, int scoreToWin = 50)
+	public void Start(bool authoritative, int scoreToWin = 50, IEnumerable<OnlineMatch.Seat> extra = null)
 	{
 		Name = "ServidorDeTeste";
-		var seats = new[] { (MeAccount, "Eu", Referee.Blue, 0L), (OtherAccount, "Outro", Referee.Orange, 0L) };
+		var seats = new List<(long, string, int, long)> { (MeAccount, "Eu", Referee.Blue, 0L), (OtherAccount, "Outro", Referee.Orange, 0L) };
+		// Lugares a mais (bots, por exemplo): os mesmos que o teste põe na escalação do jogo.
+		if (extra != null) seats.AddRange(extra.Select(e => (e.Id, e.Name, e.Team, e.Owner)));
 		var referee = new Referee(seats, scoreToWin, 600, false, countdown: 0);
 		if (authoritative)
 		{

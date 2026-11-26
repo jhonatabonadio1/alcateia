@@ -307,6 +307,10 @@ public sealed class ServerBody
 		Weapon.GuardOverride = guard && Form.IsWolf;
 	}
 
+	/// <summary>A arma é uma das duas que o jogo diz carregar (o último
+	/// <c>Status</c>): só essa pode cair no chão (26/11).</summary>
+	public bool Carries(string id) => !string.IsNullOrEmpty(id) && (id == _primary || id == _secondary);
+
 	/// <summary>O jogo contou que morreu sem ser por acerto de outra máquina
 	/// (queda, a própria granada, um bot dele).</summary>
 	public void SelfDeath()

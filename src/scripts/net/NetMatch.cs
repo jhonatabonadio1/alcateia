@@ -101,7 +101,12 @@ public partial class NetMatch : Node
 
 	private static double LocalSeconds => Time.GetTicksUsec() / 1_000_000.0;
 
-	public override void _EnterTree() => Current = this;
+	public override void _EnterTree()
+	{
+		Current = this;
+		// A arma no chão passa a ser da partida (NetMatch.Pickups).
+		WeaponPickup.Link = this;
+	}
 
 	public override void _Ready()
 	{
@@ -235,6 +240,7 @@ public partial class NetMatch : Node
 	public override void _ExitTree()
 	{
 		if (Current == this) Current = null;
+		if (WeaponPickup.Link == this) WeaponPickup.Link = null;
 		Player.NetQuantize = false;
 		if (_net != null)
 		{
@@ -799,6 +805,14 @@ public partial class NetMatch : Node
 
 				case NetWire.BotOwner:
 					ReadBotOwner(r);
+					break;
+
+				case NetWire.Drop:
+					ReadDrop(r);
+					break;
+
+				case NetWire.Taken:
+					ReadTaken(r);
 					break;
 
 				case NetWire.Gone:
