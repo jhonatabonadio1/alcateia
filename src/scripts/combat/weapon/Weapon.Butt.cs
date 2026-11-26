@@ -1,6 +1,8 @@
 using Godot;
 
 /// <summary>
+/// O corpo a corpo da tecla V (<see cref="TryMelee"/>) e a coronhada.
+///
 /// A coronhada (V; pedido do Jhon, 18/11: "crie a animação de coronhada,
 /// ao apertar V, bem rápida"): com uma arma de fogo na mão, um golpe curto
 /// com a arma no que está colado na cara. É a saída para o lobo que
@@ -28,7 +30,30 @@ public partial class Weapon
 	/// <summary>No meio da coronhada: a arma está ocupada.</summary>
 	public bool IsButting => _buttLeft > 0;
 
-	/// <summary>V: a coronhada, se há arma de fogo na mão e ela está livre.</summary>
+	/// <summary>
+	/// V com o que estiver na mão (Jhon, 26/11: "da faca deve dar uma facada
+	/// normal, golpe normal. granada deve lançar a granada"): com arma de
+	/// fogo, a coronhada; com a faca, o golpe do clique; com a granada, o
+	/// arremesso direto, sem segurar armada (e a que já estava armada sai).
+	/// </summary>
+	public bool TryMelee()
+	{
+		if (_form == null || _form.IsWolf || _health.IsDead) return false;
+		switch (HumanSlot)
+		{
+			case Slot.Knife:
+				TryAttack();
+				return true;
+			case Slot.Grenade:
+				if (_grenadeReady) ReleaseGrenade();
+				else ThrowGrenade();
+				return true;
+			default:
+				return TryButt();
+		}
+	}
+
+	/// <summary>A coronhada, se há arma de fogo na mão e ela está livre.</summary>
 	public bool TryButt()
 	{
 		if (_form == null || _form.IsWolf || !_form.CanAttack || _health.IsDead) return false;
@@ -41,6 +66,22 @@ public partial class Weapon
 		EmitSignal(SignalName.Butted);
 		Sfx.At("coronhada", _body.GlobalPosition, 6f, -2f, 16f);
 		return true;
+	}
+
+	/// <summary>O dono do boneco deu a coronhada: o boneco repete o gesto e
+	/// o som (o dano é da máquina do dono; aqui não fere).</summary>
+	public void RemoteButt(Slot slot)
+	{
+		if (_form.IsWolf || _health.IsDead) return;
+		if (slot is Slot.Primary or Slot.Secondary && HumanSlot != slot)
+		{
+			HumanSlot = slot;
+			AnnounceHeld();
+		}
+		_buttLeft = ButtCooldown;
+		_buttHitIn = -1;
+		EmitSignal(SignalName.Butted);
+		Sfx.At("coronhada", _body.GlobalPosition, 6f, -2f, 16f);
 	}
 
 	private void TickButt(double delta)

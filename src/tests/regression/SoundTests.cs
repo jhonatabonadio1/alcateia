@@ -48,10 +48,9 @@ public sealed class StepRhythmTest : RegressionTest
 
 			double expected = 3.0 / (cycle / 2);
 			b.Near(expected, steps.Count, 1.0, $"passos do humano em 3 s (ciclo de {RegressionBench.F(cycle)} s)");
-			// A passada do perfil (ruido.tres) é a do jogo: 1,19 m. Com a base 3,2 da cena o
-			// humano anda 3,46 m/s, e a passada medida (velocidade × meio ciclo) daria 1,27;
-			// o ritmo dos passos, acima, é o que se ouve, e bate.
-			b.Near(1.19, profile.StrideHuman, 0.01, "passada do humano no perfil (m)");
+			// A passada do perfil (ruido.tres) é a do jogo: 0,94 m, o que o humano anda
+			// (2,56 m/s desde 26/11; era 1,19 m a 3,24) em meio ciclo do clipe de corrida.
+			b.Near(0.94, profile.StrideHuman, 0.01, "passada do humano no perfil (m)");
 			RegressionBench.Note($"passada medida: {RegressionBench.F(speed * cycle / 2)} m");
 
 			// Lobo em pé: o andar do Jhon acelera até a velocidade do corpo

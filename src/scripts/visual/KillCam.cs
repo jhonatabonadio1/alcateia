@@ -262,7 +262,7 @@ public partial class KillCam : Node3D
 		{
 			Vector2 move = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
 			Vector3 step = _camera.GlobalBasis * new Vector3(move.X, 0, move.Y);
-			_camera.GlobalPosition = Fly(_camera.GlobalPosition, step * FreeSpeed * (Input.IsActionPressed("walk") ? 2f : 1f) * (float)delta);
+			_camera.GlobalPosition = Fly(_camera.GlobalPosition, step * FreeSpeed * (Input.IsActionPressed("sprint") ? 2f : 1f) * (float)delta);
 		}
 		_camera.GlobalPosition = MapBounds.Clamp(GetTree(), _camera.GlobalPosition);
 	}

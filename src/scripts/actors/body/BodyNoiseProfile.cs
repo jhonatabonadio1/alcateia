@@ -16,6 +16,11 @@ public partial class BodyNoiseProfile : Resource
 	/// <summary>Raio do passo humano andando.</summary>
 	[Export] public float StepHuman = 13f;
 
+	/// <summary>Raio do passo do humano correndo (Shift). Mais alto que o
+	/// do passo normal e que o do lobo em pé: a corrida entrega a posição,
+	/// e é parte do preço dela (a outra é a arma abaixada).</summary>
+	[Export] public float StepHumanSprint = 22f;
+
 	/// <summary>Raio do passo do lobo. Mais alto: o corpo é maior e mais
 	/// rápido, e isso precisa ter um custo.</summary>
 	[Export] public float StepWolf = 20f;
@@ -34,7 +39,7 @@ public partial class BodyNoiseProfile : Resource
 	///
 	/// Os números saem dos clipes (velocidade em que o pé não patina ×
 	/// duração do ciclo ÷ 2 pisadas) e o teste PassoNoRitmo confere:
-	/// humano correndo, 3,24 m/s × 0,733 s ÷ 2; lobo em pé, o andar do Jhon
+	/// humano andando, 2,56 m/s × 0,733 s ÷ 2 (0,94 m; era 1,19 com o humano a 3,24 m/s, até 26/11); lobo em pé, o andar do Jhon
 	/// de frente, 3,95 × 0,667 ÷ 2. Corrida de quatro: uma batida por ciclo
 	/// (o som sai quando as patas da frente e as de trás se juntam, pedido
 	/// do Jhon): 3,95 × 0,6.
@@ -45,7 +50,11 @@ public partial class BodyNoiseProfile : Resource
 	/// Trocou o clipe ou a velocidade de andar, refaça a conta.
 	/// </summary>
 	[ExportGroup("Passada")]
-	[Export] public float StrideHuman = 1.19f;
+	[Export] public float StrideHuman = 0.94f;
+
+	/// <summary>O humano correndo (Shift): o "Rifle Run" do Mixamo anda
+	/// 3,35 m/s com um ciclo de 0,667 s, duas pisadas.</summary>
+	[Export] public float StrideHumanSprint = 1.12f;
 	[Export] public float StrideWolf = 1.32f;
 	[Export] public float StrideWolfSprint = 2.37f;
 }

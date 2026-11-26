@@ -392,10 +392,11 @@ public partial class Bot : CharacterBody3D
 	}
 
 	/// <summary>Mesma regra do jogador (<see cref="BodyNoise"/>): o bot
-	/// não agacha nem anda devagar, então o passo sempre sai.</summary>
+	/// não agacha, então o passo sempre sai; o boneco de outro jogador
+	/// corre de humano (Shift) quando o dono corre.</summary>
 	private void UpdateNoise(double delta) =>
 		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, howling: Action == BotAction.Howl || RemoteHowling,
-			silent: Remote && RemoteQuiet);
+			silent: Remote && RemoteQuiet, sprinting: IsHumanSprinting);
 
 	/// <summary>
 	/// Transições explícitas. Ter os estados nomeados vale mais que a

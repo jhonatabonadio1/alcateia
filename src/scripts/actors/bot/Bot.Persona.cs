@@ -96,6 +96,10 @@ public partial class Bot
 		}
 	}
 
+	/// <summary>O boneco de outro jogador correndo de humano (Shift): o que
+	/// o dono diz. O bot do jogo ainda não corre de humano.</summary>
+	public bool IsHumanSprinting => Remote && RemoteSprinting && !_form.IsWolf && !_health.IsDead;
+
 	/// <summary>Acima de quanto da velocidade de lobo já é galope (a corrida
 	/// de quatro do bot é <see cref="WolfSprintFactor"/> = 1,3×).</summary>
 	private const float SprintSpeedMark = 1.12f;

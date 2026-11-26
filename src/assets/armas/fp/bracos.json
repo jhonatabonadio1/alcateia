@@ -16,6 +16,11 @@
     "clipe": "coronhada",
     "de": 0.0
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "desmirar": {
     "ate": 0.24,
     "clipe": "desmirar",
@@ -104,6 +109,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {
@@ -196,6 +206,11 @@
     "clipe": "coronhada",
     "de": 0.0
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "desmirar": {
     "ate": 0.24,
     "clipe": "desmirar",
@@ -286,6 +301,11 @@
     "clipe": "coronhada",
     "de": 0.0
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "desmirar": {
     "ate": 0.24,
     "clipe": "desmirar",
@@ -341,6 +361,7 @@
    "ar15"
   ],
   "arquivo": "res://src/assets/armas/fp/ar15.glb",
+  "camera": "interaction",
   "cano": [
    0.0555,
    -0.0722,
@@ -373,6 +394,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {
@@ -430,6 +456,7 @@
    "ar15_8bit"
   ],
   "arquivo": "res://src/assets/armas/fp/ar15_8bit.glb",
+  "camera": "interaction",
   "cano": [
    0.0555,
    -0.0722,
@@ -462,6 +489,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {
@@ -519,6 +551,7 @@
    "ar15_diamante"
   ],
   "arquivo": "res://src/assets/armas/fp/ar15_diamante.glb",
+  "camera": "interaction",
   "cano": [
    0.0555,
    -0.0722,
@@ -551,6 +584,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {
@@ -608,6 +646,7 @@
    "ar15_lava"
   ],
   "arquivo": "res://src/assets/armas/fp/ar15_lava.glb",
+  "camera": "interaction",
   "cano": [
    0.0555,
    -0.0722,
@@ -640,6 +679,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {
@@ -697,6 +741,7 @@
    "ar15_ouro"
   ],
   "arquivo": "res://src/assets/armas/fp/ar15_ouro.glb",
+  "camera": "interaction",
   "cano": [
    0.0555,
    -0.0722,
@@ -729,6 +774,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {
@@ -786,6 +836,7 @@
    "ar15_ultimate"
   ],
   "arquivo": "res://src/assets/armas/fp/ar15_ultimate.glb",
+  "camera": "interaction",
   "cano": [
    0.0555,
    -0.0722,
@@ -830,6 +881,11 @@
     "clipe": "arremesso",
     "de": 0.0,
     "soltar": 0.11
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
    },
    "parado": {
     "ate": 2.2,
@@ -888,6 +944,11 @@
     "de": 0.0,
     "soltar": 0.11
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "parado": {
     "ate": 2.2,
     "clipe": "parado",
@@ -944,6 +1005,11 @@
     "clipe": "arremesso",
     "de": 0.0,
     "soltar": 0.11
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
    },
    "parado": {
     "ate": 2.2,
@@ -1002,6 +1068,11 @@
     "de": 0.0,
     "soltar": 0.11
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "parado": {
     "ate": 2.2,
     "clipe": "parado",
@@ -1049,7 +1120,7 @@
     "de": 0.0
    },
    "correr": {
-    "ate": 2.7833,
+    "ate": 0.6667,
     "clipe": "correr",
     "de": 0.0
    },
@@ -1154,7 +1225,7 @@
     "de": 0.0
    },
    "correr": {
-    "ate": 2.7833,
+    "ate": 0.6667,
     "clipe": "correr",
     "de": 0.0
    },
@@ -1259,7 +1330,7 @@
     "de": 0.0
    },
    "correr": {
-    "ate": 2.7833,
+    "ate": 0.6667,
     "clipe": "correr",
     "de": 0.0
    },
@@ -1358,6 +1429,11 @@
     "clipe": "andar",
     "de": 0.0
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "estocada": {
     "ate": 0.6333,
     "clipe": "inspecionar",
@@ -1429,6 +1505,11 @@
     "clipe": "andar",
     "de": 0.0
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "estocada": {
     "ate": 0.6333,
     "clipe": "inspecionar",
@@ -1498,6 +1579,11 @@
    "andar": {
     "ate": 0.72,
     "clipe": "andar",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "estocada": {
@@ -1587,6 +1673,11 @@
     "de": 0.0,
     "soltar": 0.11
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "parado": {
     "ate": 2.2,
     "clipe": "parado",
@@ -1631,6 +1722,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {
@@ -1723,6 +1819,11 @@
     "clipe": "coronhada",
     "de": 0.0
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "desmirar": {
     "ate": 0.24,
     "clipe": "desmirar",
@@ -1811,6 +1912,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {
@@ -1903,6 +2009,11 @@
     "clipe": "coronhada",
     "de": 0.0
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "desmirar": {
     "ate": 0.24,
     "clipe": "desmirar",
@@ -1991,6 +2102,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {
@@ -2083,6 +2199,11 @@
     "clipe": "coronhada",
     "de": 0.0
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "desmirar": {
     "ate": 0.24,
     "clipe": "desmirar",
@@ -2171,6 +2292,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {
@@ -2263,6 +2389,11 @@
     "clipe": "coronhada",
     "de": 0.0
    },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
+    "de": 0.0
+   },
    "desmirar": {
     "ate": 0.24,
     "clipe": "desmirar",
@@ -2351,6 +2482,11 @@
    "coronhada": {
     "ate": 0.4,
     "clipe": "coronhada",
+    "de": 0.0
+   },
+   "correr": {
+    "ate": 0.6667,
+    "clipe": "correr",
     "de": 0.0
    },
    "desmirar": {

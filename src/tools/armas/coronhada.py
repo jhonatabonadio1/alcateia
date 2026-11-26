@@ -8,8 +8,9 @@ lateral dela").
         [--ficha assets/armas/fp/bracos.json]
 
 Um clipe novo no conjunto, `coronhada` (0,40 s): a arma recolhe um instante para
-o peito já virando, atravessa na frente do rosto (o cano vai para a esquerda, a
-arma fica de lado) e é socada para a frente, com a lateral; depois volta.
+o ombro já virando, gira até a coronha vir para a frente (o cano passa para a
+esquerda e aponta para trás) e é socada com a coronha; depois volta. É a dos
+fuzis; a da pistola, de uma mão, é do `coronhada_pistola.py`.
 
 Diferente da mira (tools/armas/mira.py), aqui não dá para mexer o conjunto
 inteiro: girando tudo junto, os cotovelos (os braços acabam neles) apareciam no
@@ -33,25 +34,36 @@ DURA = 0.40
 # (x direita, y cima, -z frente). yaw +: cano para a esquerda.
 # Refeita a pedido do Jhon (18/11: "mais rápida, uma coronhada rápida e uma leve
 # empurrada com a arma"; 19/11: "coronhada deve ser mais rápida"): o golpe chega
-# em 0,075 s, a arma segue empurrando um pouco, fica um instante e volta.
+# em 0,075 s, a arma segue empurrando um pouco e volta.
+# 26/11 ("ajuste para ficar mais próximo de uma coronhada"; "estou achando meio
+# lento das armas"; "melhore o dinamismo e a fluidez"): quem bate é a **coronha**.
+# A arma chega atravessada e não para: a coronha segue, socada da borda da tela
+# para o meio (a arma gira até 90° e anda 5 cm para a esquerda e 4 para a
+# frente depois do golpe); antes ficava parada a 74°, de lado. Além de 90° o
+# braço direito passa por dentro da câmera. Não fica mais parada no fim (eram 0,06 s) e
+# volta em 0,16 s em vez de 0,20; o resto do tempo do clipe (até 0,40 s, o da
+# regra) é a arma assentando. O caminho entre as chaves é contínuo (``Curva``, sem
+# parar em cada chave como antes).
 CHAVES = [
-    (0.000, (0, 0, 0), (0.00, 0.00, 0.00)),
-    (0.035, (5, 26, -8), (-0.02, 0.015, 0.035)),     # recolhe, já virando
-    (0.075, (-3, 74, -15), (-0.09, 0.045, -0.07)),   # o golpe, com a lateral
-    (0.140, (-4, 78, -16), (-0.095, 0.05, -0.11)),   # a empurrada
-    (0.200, (-3, 76, -15), (-0.09, 0.047, -0.10)),   # segura
-    (0.400, (0, 0, 0), (0.00, 0.00, 0.00)),
+    (0.000, (0, 0, 0), (0.000, 0.000, 0.000)),
+    (0.032, (5, 24, -8), (0.000, 0.012, 0.040)),      # recolhe para o ombro, já virando
+    (0.075, (-5, 80, -16), (-0.085, 0.045, -0.075)),   # o golpe: a arma atravessada, a coronha na frente
+    (0.120, (-7, 90, -18), (-0.135, 0.050, -0.115)),   # a coronha segue, socada para o meio da tela
+    (0.165, (-5, 84, -16), (-0.105, 0.047, -0.090)),   # começa a voltar
+    (0.290, (1, -4, 1), (0.004, -0.004, 0.008)),       # passa um pouco do lugar
+    (0.350, (0, 0, 0), (0.000, 0.000, 0.000)),
+    (0.400, (0, 0, 0), (0.000, 0.000, 0.000)),
 ]
 
+_curvas = None
 
-def suave(u): return u * u * (3 - 2 * u)
 
 def pose(t):
-    for (t0, g0, m0), (t1, g1, m1) in zip(CHAVES, CHAVES[1:]):
-        if t <= t1:
-            u = suave((t - t0) / (t1 - t0))
-            return (np.array(g0) * (1 - u) + np.array(g1) * u), (np.array(m0) * (1 - u) + np.array(m1) * u)
-    return np.zeros(3), np.zeros(3)
+    global _curvas
+    if _curvas is None:
+        from esqueleto import Curva                 # aqui dentro: o esqueleto.py importa este módulo (rot, arco)
+        _curvas = (Curva(*[(t_, g) for t_, g, _ in CHAVES]), Curva(*[(t_, m) for t_, _, m in CHAVES]))
+    return _curvas[0](t), _curvas[1](t)
 
 def rot(m):
     """A rotação pura de uma 4×4 com escala uniforme."""

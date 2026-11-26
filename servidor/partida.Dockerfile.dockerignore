@@ -6,6 +6,11 @@
 .github
 .godot
 .synctmp
+# As cópias de trabalho dos agentes (git worktree, cada uma com o projeto
+# inteiro e o cache de importação): mandavam 45 GB de contexto (26/11).
+.claude
+*.fbx
+!src/**/*.fbx
 .vscode
 .idea
 **/.DS_Store

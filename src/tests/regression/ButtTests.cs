@@ -4,12 +4,13 @@ using System.Threading.Tasks;
 /// <summary>
 /// A coronhada (V): com a arma de fogo na mão, bate rápido no que está
 /// colado, sem gastar munição; a arma fica ocupada um instante; de longe
-/// não pega; de lobo e com a faca não existe.
+/// não pega; de lobo não existe. Com a faca o V golpeia e com a granada
+/// lança.
 /// </summary>
 public sealed class ButtTest : RegressionTest
 {
 	public override string Name => "Coronhada";
-	public override string Description => "V dá a coronhada: fere de perto em menos de 0,2 s, não gasta munição, ocupa a arma e anima na mão";
+	public override string Description => "V dá a coronhada: fere de perto em menos de 0,2 s, não gasta munição, ocupa a arma e anima na mão; com a faca golpeia, com a granada lança";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -47,9 +48,39 @@ public sealed class ButtTest : RegressionTest
 		await b.Seconds(0.3);
 		b.Near(0, before - (hp.Hp + hp.Shield), 0.01, "a 4 m a coronhada não alcança");
 
+		// Com a pistola é a mesma regra (o clipe é o de uma mão, coronhada_pistola.py).
+		await b.Seconds(0.4);
+		w.SelectSlot(Slot.Secondary);
+		await b.Seconds(0.8);
+		await b.Tap("melee");
+		await b.Frames(2);
+		b.Check(w.IsButting && view.Butting, "com a pistola, V dá a coronhada");
+		await b.Seconds(0.6);
+
+		// Com a faca, V é o golpe do clique; com a granada, o arremesso (Jhon, 26/11:
+		// "da faca deve dar uma facada normal, golpe normal. granada deve lançar a
+		// granada"). Antes o V não fazia nada com as duas.
+		enemy.GlobalPosition = b.Player.GlobalPosition - b.Player.GlobalBasis.Z * 1.3f;
+		w.SelectSlot(Slot.Knife);
+		await b.Seconds(0.8);
+		before = hp.Hp + hp.Shield;
+		await b.Tap("melee");
+		await b.Seconds(0.5);
+		b.Check(!w.IsButting, "com a faca não é coronhada");
+		b.AtLeast(1, before - (hp.Hp + hp.Shield), "com a faca, V golpeia e fere");
+
+		enemy.GlobalPosition = b.Player.GlobalPosition - b.Player.GlobalBasis.Z * 12f;
+		w.SelectSlot(Slot.Grenade);
+		await b.Seconds(0.8);
+		int grenades = w.Grenades;
+		await b.Tap("melee");
+		await b.Seconds(0.8);
+		b.Check(w.Grenades == grenades - 1, $"com a granada, V lança (tinha {grenades}, ficou {w.Grenades})");
+
 		// De lobo não existe.
 		await b.Seconds(0.4);
 		await b.BecomeWolf();
 		b.Check(!w.TryButt(), "de lobo não há coronhada");
+		b.Check(!w.TryMelee(), "nem o V de humano");
 	}
 }

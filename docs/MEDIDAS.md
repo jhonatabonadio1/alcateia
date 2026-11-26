@@ -65,9 +65,9 @@ Medidos no chão plano, segurando a tecla.
 
 | | Humano | Lobo Bruto | Lobo Ligeiro |
 |---|---|---|---|
-| Correndo (W) | 3,46 m/s | 4,15 m/s | 4,50 m/s |
-| Andando (Shift) | 1,45 m/s | — | — |
-| Agachado | 1,56 m/s | 1,87 m/s | 2,03 m/s |
+| Andando (W) | 2,56 m/s | 4,15 m/s | 4,50 m/s |
+| Correndo (Shift, só para a frente) | 3,71 m/s | — | — |
+| Agachado | 1,15 m/s | 1,87 m/s | 2,03 m/s |
 | De quatro (W duas vezes) | — | 7,14 m/s | 7,73 m/s |
 | Carregando o salto | — | 0,97 m/s | — |
 
@@ -84,7 +84,7 @@ decide se um campo aberto é armadilha para o lobo ou para o humano.
 | | Humano | Lobo Bruto | Lobo Ligeiro |
 |---|---|---|---|
 | O pulo parado sobe (pés) | 1,02 | 1,67 | 2,56 |
-| Pulo correndo, do chão ao chão | 2,6 | 4,4 | 5,9 |
+| Pulo correndo, do chão ao chão | 1,9 | 4,4 | 5,9 |
 | Sobe andando, sem pular | 0,05 | 0,05 | 0,05 |
 | Sobe pulando, colado na quina | 1,10 | 1,0* | 1,2* |
 

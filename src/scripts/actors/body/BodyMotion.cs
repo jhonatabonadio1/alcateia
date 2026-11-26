@@ -3,6 +3,16 @@ using Godot;
 /// <summary>Movimentos de corpo que não são de ninguém em particular.</summary>
 public static class BodyMotion
 {
+	/// <summary>O humano deste corpo está correndo (Shift)? O jogador
+	/// decide o dele; o boneco de outro jogador mostra o que o dono contou.
+	/// É o que o corpo animado, a arma na mão e os braços na tela perguntam.</summary>
+	public static bool HumanSprinting(CharacterBody3D body) => body switch
+	{
+		Player player => player.IsHumanSprinting,
+		Bot bot => bot.IsHumanSprinting,
+		_ => false
+	};
+
 	/// <summary>Parado no lugar, com gravidade: contagem, fim de partida,
 	/// menu aberto. Sem a gravidade quem estivesse no ar ficaria
 	/// pendurado.</summary>

@@ -1,0 +1,7 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/scripts/debug/VitrineEve.cs" id="1_vitrine"]
+
+[node name="VitrineCorrida" type="Node3D"]
+script = ExtResource("1_vitrine")
+Running = true

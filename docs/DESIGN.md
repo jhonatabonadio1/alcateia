@@ -96,7 +96,7 @@ export `RefillOnTransform`, desligado por padrão.
 | Clique esq. | Atacar |
 | Botão direito, com a faca | A estocada: mais lenta (0,8 s) e mais forte (120); pelas costas, 240 — mata um humano de vida cheia |
 | Ctrl ou C | Agachar (nas duas formas). No Mac, Ctrl + clique vira clique direito no sistema; o jogo trata como ataque (`MacCtrlClick`), e o especial agachado sai agachando no C |
-| Shift | Andar devagar e em silêncio (só humano) |
+| Shift | Correr, de arma abaixada: não atira, não mira e não recarrega (só humano, só para a frente) |
 | R | Rugir (lobo): segure até o fim para o escudo voltar · recarregar (humano) |
 | G | Soltar a arma da mão: cai à frente, e você passa para a próxima |
 | Esc | Menu da partida (continuar, opções, controles, reiniciar, sair para a sala, sair do jogo) — **não pausa** |
@@ -724,11 +724,11 @@ assim vira na direção do som. Dois bots reagindo igual ao mesmo tiro
 entregam que são scripts; um indo e outro ficando parece decisão —
 pelo mesmo motivo que o erro de mira tem variação.
 
-**Agachado e andando com Shift não fazem barulho nenhum.** São as
-duas ferramentas de furtividade do humano, e é o que dá escolha
-contra um inimigo que ouve. Andar devagar é só do humano: o lobo vive
-de movimento, e dar a ele a opção de abrir mão disso criaria um lobo
-furtivo, que é o oposto da forma. É isso que dá ao agachamento um
+**Agachado não faz barulho nenhum.** É a ferramenta de furtividade, e
+é o que dá escolha contra um inimigo que ouve. O andar devagar e em
+silêncio do Shift saiu em 26/11 (pedido do Jhon: o Shift corre): a
+corrida do humano é o contrário, o passo se ouve de 22 m (13 andando),
+e correndo ele não atira. É isso que dá ao agachamento um
 propósito tático em vez de ser só um botão de ficar menor.
 
 O passo sai a cada **passada** — a distância entre um pé no chão e o

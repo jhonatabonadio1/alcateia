@@ -178,7 +178,7 @@ public partial class CharacterAnimator
 
 	private static bool IsLooping(string clip) =>
 		clip.StartsWith("idle") || clip.StartsWith("walk") ||
-		clip.StartsWith("run") || clip.StartsWith("strafe") ||
+		clip.StartsWith("run") || clip.StartsWith("sprint") || clip.StartsWith("strafe") ||
 		clip == "crouch_idle" || clip == "crouch_walk" || clip == "fall";
 
 	/// <summary>Move o corpo para uma camada própria e tira essa

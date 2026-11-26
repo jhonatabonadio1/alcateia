@@ -28,6 +28,10 @@ public partial class Player
 
 	private double _leapBuffered;
 
+	/// <summary>Clicou com a arma abaixada pela corrida: o golpe sai
+	/// quando ela voltar.</summary>
+	private bool _sprintClick;
+
 	/// <summary>O bote pedido no ar (ou guardado do chão) esperando o lobo
 	/// subir até <c>Weapon.LeapMinHeight</c>. Sai assim que chegar; tocou o
 	/// chão antes, cai fora.</summary>
@@ -111,6 +115,22 @@ public partial class Player
 			? _intent.AttackHeld
 			: _intent.Attack;
 
+		// Correndo (Shift), a arma está abaixada: o clique tira da corrida
+		// e o tiro sai quando ela volta (SprintRecover). O clique fica
+		// guardado, senão o da pistola e o da faca se perdiam no caminho.
+		// A granada só arma se o botão ainda estiver apertado.
+		if (IsWeaponLowered)
+		{
+			if (_intent.Attack) _sprintClick = true;
+			if (_intent.AttackReleased) _sprintClick = false;
+			firing = false;
+		}
+		else if (_sprintClick)
+		{
+			_sprintClick = false;
+			firing = !_form.IsWolf;
+		}
+
 		// Especial armado: o clique salta (no alvo travado, se houver), não
 		// arranha.
 		if (_weapon.SpecialArmed)
@@ -176,9 +196,10 @@ public partial class Player
 			}
 		}
 
-		// V, de humano com arma de fogo: a coronhada.
+		// V, de humano: a coronhada com arma de fogo, o golpe com a faca, o
+		// arremesso com a granada.
 		if (_intent.Melee && !_form.IsWolf)
-			_weapon.TryButt();
+			_weapon.TryMelee();
 
 		// Q, de lobo: arma o especial (o lobo segue andando, com o modo alvo
 		// aberto) ou desarma. Quem salta é o clique (acima).

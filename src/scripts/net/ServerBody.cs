@@ -348,7 +348,7 @@ public sealed class ServerBody
 		if (Body.IsCrouching) flags |= EntityFlags.Crouching;
 		if (Health.IsDead) flags |= EntityFlags.Dead;
 		if (Body.IsWallRunning) flags |= EntityFlags.WallRunning;
-		if (Body.IsSprinting) flags |= EntityFlags.Sprinting;
+		if (Body.IsSprinting || Body.IsHumanSprinting) flags |= EntityFlags.Sprinting;
 		if (Weapon.IsAiming) flags |= EntityFlags.Aiming;
 		if (Body.HowlProgress > 0f) flags |= EntityFlags.Howling;
 

@@ -7,6 +7,32 @@ pendências técnicas que já se conhecem.
 Resolveu um item? Tire daqui e escreva no `CHANGELOG.md`. Achou um novo?
 Ponha aqui, com o que se sabe dele.
 
+## Corrida do humano (Shift, 26/11)
+
+- **Os bots não correm**, e o bot humano anda 3,0 m/s (`Bot.Speed`), mais
+  que o jogador desde que o andar caiu para 2,56. Baixar o `Bot.Speed`
+  baixa também o lobo do bot (a velocidade dele é esse número × a classe).
+- **As poses de correr em terceira pessoa**: veja na cena
+  `src/scenes/debug/vitrine_corrida.tscn`. As medidas do gerador apontam
+  o cotovelo direito do Barut aberto com a pistola (81° do "para baixo").
+- **A coronhada em terceira pessoa** (nova em 26/11, cena
+  `src/scenes/debug/vitrine_coronhada.tscn`): com os fuzis o gerador mede
+  o ombro esquerdo torcido até 72–97° e o cotovelo direito a 93–134° do
+  "para baixo" (acima do ombro na AK-74, na SCAR e na SVD): a arma
+  atravessada a 90° na frente do rosto. Falta olhar de perto e, se
+  preciso, conter o giro só na terceira pessoa.
+- **Clipe novo de primeira pessoa feito por cinemática inversa**: confira a
+  linha "na troca de animação a mão sai do caminho" que o `correr.py`
+  imprime. O Godot mistura animações pelo giro de cada osso a partir do
+  repouso; osso perto de 180° do repouso (o braço de cima esquerdo da
+  pistola, 177°) atravessa a tela na troca se o clipe novo o girar.
+- **O pulo correndo do humano avança 1,9 m** (eram 2,6): conferir nos mapas
+  se algum vão que o humano pulava ficou fora de alcance.
+- O `sprint_fwd.fbx` tem 15 MB (veio com a pele do X Bot); dá para trocar
+  por um só com o esqueleto. O `Rifle Run.fbx` e o zip do tutorial na raiz
+  do projeto não são usados pelo jogo e podem sair de lá.
+- De lado o humano ainda patina (só há strafe andando).
+
 ## Para o alpha (anotado em 25/11)
 
 Estado: rede autoritativa em produção e testada com latência real (Jhon);

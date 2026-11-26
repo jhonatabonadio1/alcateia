@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 public sealed class NoiseTest : RegressionTest
 {
 	public override string Name => "Ruido";
-	public override string Description => "um passo por passada correndo, silêncio agachado e com Shift, baque ao pousar, rugido";
+	public override string Description => "um passo por passada, silêncio agachado, passo mais alto correndo com Shift, baque ao pousar, rugido";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -32,7 +32,11 @@ public sealed class NoiseTest : RegressionTest
 			b.Near(13, radius, 0.01, "raio do passo humano");
 
 			b.Check(await Walk(b, heard, "move_forward", "crouch") == 0, "agachado não faz passo");
-			b.Check(await Walk(b, heard, "move_forward", "walk") == 0, "com Shift não faz passo");
+			// Com Shift o humano corre (26/11; antes andava em silêncio): 3,71 m/s por
+			// 3 s, uns 11 m em passadas de 1,12 m, e o passo se ouve de mais longe.
+			int sprint = await Walk(b, heard, "move_forward", "sprint");
+			b.Check(sprint is >= 9 and <= 11, $"passos correndo com Shift em 3 s: {sprint} (esperado 10)");
+			b.Near(22, heard.Find(n => n.Kind == NoiseKind.Step).Radius, 0.01, "raio do passo correndo com Shift");
 
 			// Pulo parado: um baque no pouso.
 			await b.Place(new Vector3(-15, 1, 13), -90f);

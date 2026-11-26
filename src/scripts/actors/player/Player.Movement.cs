@@ -59,9 +59,23 @@ public partial class Player
 	/// <summary>Fração da velocidade enquanto agachado.</summary>
 	[Export] public float CrouchSpeedFactor = 0.45f;
 
-	/// <summary>Fração da velocidade andando com Shift. Só no humano:
-	/// o lobo é puro movimento e não teria por que abrir mão disso.</summary>
-	[Export] public float WalkSpeedFactor = 0.42f;
+	/// <summary>A corrida do humano (Shift, 26/11): × a velocidade normal,
+	/// só para a frente e com a arma abaixada — correndo ele não atira, não
+	/// mira e não recarrega. 1,45 dá 3,71 m/s com o fuzil (o andar a 2,56):
+	/// o "Rifle Run" do Mixamo (3,35 m/s a 1×) toca a 1,11×. Foi 4,3 m/s
+	/// (rápido demais, "parece o Sonic") e 3,46 ("pode deixar um pouco mais
+	/// rápida", Jhon, 26/11). Abaixo do lobo em pé (4,15 o Bruto). O andar
+	/// devagar e em silêncio, que morava no Shift, saiu: quem quer silêncio
+	/// agacha.</summary>
+	[Export] public float HumanSprintFactor = 1.45f;
+
+	/// <summary>Quanto tempo a arma leva para voltar da corrida, em
+	/// segundos: parou de correr (ou clicou correndo), só atira depois
+	/// disto. É o preço da corrida: quem chega correndo chega de arma
+	/// baixa. O clique dado no caminho fica guardado e sai ao fim. 0,23 s
+	/// desde 26/11 (era 0,2): o tempo de os braços trazerem a arma de
+	/// volta (<see cref="ViewModel.RigSprintOut"/>).</summary>
+	[Export] public float SprintRecover = 0.23f;
 	[Export] public float StandHeight = 1.75f;
 	[Export] public float CrouchHeight = 1.0f;
 
@@ -115,9 +129,13 @@ public partial class Player
 	/// agachamento é decidido aqui e em lugar nenhum mais.</summary>
 	public bool IsCrouching => _crouching;
 
-	/// <summary>Andando devagar (Shift, só humano): o passo não faz barulho.
-	/// A rede conta aos outros (o passo do boneco também fica quieto).</summary>
-	public bool IsWalking => _walking;
+	/// <summary>O humano correndo (Shift): mais rápido, de arma abaixada.
+	/// Leitura para o corpo animado, para os braços na tela e para a rede.
+	/// A corrida de quatro do lobo é outra coisa: <see cref="IsSprinting"/>.</summary>
+	public bool IsHumanSprinting => _humanSprint && !_health.IsDead;
+
+	/// <summary>A arma ainda está voltando da corrida: não atira.</summary>
+	public bool IsWeaponLowered => !_form.IsWolf && (_humanSprint || _sprintRecover > 0);
 
 	/// <summary>
 	/// Onde ficam os pés, em relação ao centro do corpo.
@@ -129,7 +147,8 @@ public partial class Player
 	/// jogador agacha.
 	/// </summary>
 	public float FeetOffset => -_height * 0.5f;
-	private bool _walking;
+	private bool _humanSprint;
+	private double _sprintRecover;
 	private double _jumpLock;
 	private float _height;
 
@@ -145,12 +164,14 @@ public partial class Player
 		_stunSlow = Mathf.Min(_stunSlow, Mathf.Clamp(slowFactor, 0.05f, 1f));
 	}
 
-	/// <summary>Só o humano: anda isto acima da base (<see cref="HumanSpeed"/>,
-	/// que é também a base do lobo e não muda). 1,08 desde a v0.27.1
-	/// (decisão do Jhon): 3,24 m/s com o fuzil, e agachado e com Shift
-	/// junto. A corrida do X Bot anda 3,02 a 1×, então o pé desliza um
-	/// pouco acima disso.</summary>
-	[Export] public float HumanSpeedBonus = 1.08f;
+	/// <summary>Só o humano: × a base (<see cref="HumanSpeed"/>, que é também
+	/// a base do lobo e não muda). 0,8 desde 26/11: 2,56 m/s com o fuzil
+	/// (Jhon: "o personagem pode andar mais lento"; a 3,0, "a corrida tá
+	/// muito muito rápida, e o andar do humano também... deixar na
+	/// velocidade de um humano"). Abaixo da passada da corrida do X Bot
+	/// (3,02 a 1×): o corpo anda numa mistura do andar com a corrida, sem
+	/// acelerar clipe. Era 1,08 (3,46 m/s) desde a v0.27.1.</summary>
+	[Export] public float HumanSpeedBonus = 0.8f;
 
 	/// <summary>A corrida de quatro do lobo: W duas vezes seguidas e ele
 	/// cai nas quatro patas, isto mais rápido que a corrida normal
@@ -206,11 +227,40 @@ public partial class Player
 		_sinceForwardTap = 0;
 	}
 
+	/// <summary>
+	/// A corrida do humano: Shift segurado, andando para a frente, em pé,
+	/// sem atordoamento e com as mãos livres — apertar o gatilho, mirar,
+	/// recarregar, armar a granada ou golpear tira da corrida. Começa no
+	/// chão e segue no ar (o pulo correndo leva o embalo).
+	/// </summary>
+	private void UpdateHumanSprint(double delta)
+	{
+		bool ahead = _intent.Forward && _intent.Move.Y < -0.6f;
+		bool hands = !_intent.AttackHeld && !_intent.AimHeld && !_weapon.IsReloading && !_weapon.IsGrenadeReady
+			&& !_weapon.IsThrowPending && !_weapon.IsButting && !_weapon.IsStabbing;
+		bool wants = !_form.IsWolf && _intent.SprintHeld && ahead && !_crouching && !_onWall && !IsStunned && hands;
+		bool now = wants && (_humanSprint || IsOnFloor());
+
+		if (_humanSprint && !now) _sprintRecover = SprintRecover;
+		else if (_sprintRecover > 0) _sprintRecover -= delta;
+		if (_form.IsWolf) _sprintRecover = 0;
+		_humanSprint = now;
+	}
+
+	/// <summary>Morreu ou ficou preso na contagem: a corrida acaba, sem a
+	/// espera da arma.</summary>
+	private void StopHumanSprint()
+	{
+		_humanSprint = false;
+		_sprintRecover = 0;
+		_sprintClick = false;
+	}
+
 	private float SpeedScale =>
 		(_form.IsWolf ? _form.Breed.SpeedMultiplier : HumanSpeedBonus)
 		* (IsStunned ? _stunSlow : 1f)
 		* (_crouching ? CrouchSpeedFactor : 1f)
-		* (_walking ? WalkSpeedFactor : 1f)
+		* (_humanSprint ? HumanSprintFactor : 1f)
 		// A arma na mão pesa: 1,12 com a M9, 0,9 com a M3, e a faca alivia.
 		// É metade do que faz trocar para a secundária ser fuga e não só
 		// munição.
@@ -350,11 +400,6 @@ public partial class Player
 	private void UpdateCrouch(double delta)
 	{
 		_crouching = !_onWall && _intent.CrouchHeld;
-
-		// Andar devagar é ferramenta do humano. O lobo vive de
-		// movimento; dar a ele a opção de abrir mão disso só criaria
-		// um lobo furtivo, que é o oposto da forma.
-		_walking = !_onWall && !_form.IsWolf && _intent.WalkHeld;
 
 		float target = _crouching ? CrouchHeight : StandHeight;
 		float previous = _height;

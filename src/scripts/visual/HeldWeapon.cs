@@ -94,6 +94,7 @@ public partial class HeldWeapon : Node3D
 		_weapon.SlotChanged += _ => Rebuild();
 		_weapon.Fired += OnFired;
 		_weapon.Stabbed += OnStabbed;
+		_weapon.Butted += OnButted;
 		_weapon.Thrown += () => _rig?.Thrown();
 		_weapon.AmmoChanged += OnAmmo;
 		FindFingers();
@@ -324,6 +325,15 @@ public partial class HeldWeapon : Node3D
 		if (!Arsenal.IsKnife(_id)) return;
 		_stab = 0;
 		_stabKind = (_stabKind + 1) % 2;
+	}
+
+	/// <summary>A coronhada (V, 26/11): o conjunto toca o clipe "coronhada" e o corpo segue o dele
+	/// (animacoes/&lt;arma&gt;.json): a do fuzil com as duas mãos, a da pistola com uma. Sem o clipe,
+	/// nada (como era antes: a coronhada não aparecia em quem via de fora).</summary>
+	private void OnButted()
+	{
+		if (_rig == null || !_rig.Has("coronhada")) return;
+		_rig.Hold(_rig.Play("coronhada", 0, 0.04));
 	}
 
 	/// <summary>A estocada da faca (botão direito, 24/11): o conjunto toca o
@@ -559,6 +569,10 @@ public partial class HeldWeapon : Node3D
 	private HeldRig _rig;
 	private bool _rigReloading, _rebuildAfterThrow;
 
+	/// <summary>Correndo (Shift): a velocidade em que as pernas tocam o clipe
+	/// de correr — os braços e a arma vão no mesmo passo. 0 fora da corrida.</summary>
+	private float SprintPace => GetParent() is CharacterAnimator animator ? animator.SprintPace : 0f;
+
 	/// <summary>Os braços do corpo seguem o conjunto (a recarga e a granada do
 	/// clipe de fuzil não tocam por cima: CharacterAnimator).</summary>
 	public bool ArmsFromRig => _rig != null;
@@ -631,7 +645,7 @@ public partial class HeldWeapon : Node3D
 	private void HoldByRig(double delta)
 	{
 		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
-		_rig.Tick(delta, _weapon.IsGrenadeReady, _body.IsOnFloor() && flat.Length() > 0.5f);
+		_rig.Tick(delta, _weapon.IsGrenadeReady, _body.IsOnFloor() && flat.Length() > 0.5f, false, SprintPace);
 
 		Transform3D skeleton = _skeleton.GlobalTransform;
 		Transform3D aim = AimFrame(skeleton);
@@ -767,10 +781,11 @@ public partial class HeldWeapon : Node3D
 		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
 		bool moving = _body.IsOnFloor() && flat.Length() > 0.5f;
 		bool aiming = _weapon.IsAiming && !_weapon.IsReloading;
-		_rig.Tick(delta, _weapon.IsGrenadeReady, moving, aiming);
+		_rig.Tick(delta, _weapon.IsGrenadeReady, moving, aiming, SprintPace);
 
 		HoldClip now = _clipSet.Get(_rig.Playing) ?? _clipSet.Get("parado");
 		if (now == null || _spine2 < 0) return;
+		_runLean = Mathf.MoveToward(_runLean, _rig.Playing == "correr" ? 1f : 0f, (float)delta / Mathf.Max(SprintSpineTime, 0.01f));
 		double at = _rig.Playing == now.Name ? _rig.ClipTime : 0;
 		float w = _rig.BlendWeight;
 		HoldClip before = w < 1f ? _clipSet.Get(_rig.PrevPlaying) : null;
@@ -814,6 +829,32 @@ public partial class HeldWeapon : Node3D
 		PullPin(now, at);
 	}
 
+	/// <summary>
+	/// Correndo (Shift), quanto da coluna, do pescoço e da cabeça fica com a animação de correr do
+	/// corpo, em vez da pose do clipe da arma (0 a 1), e em quanto tempo passa de uma para a outra
+	/// (s). O clipe da arma põe o peito em pé e de frente, como no Blender, desfazendo o que o
+	/// quadril gira; na corrida o quadril inclina para a frente e, com o peito em pé, o corpo
+	/// quebrava na cintura, de bunda empinada (Jhon, 26/11: "a coluna está empinando demais a
+	/// bunda, precisa ser mais dinâmico. a curvatura da corrida"). Com isto o tronco inclina e
+	/// torce com a passada, e os braços e a arma vão com ele.
+	/// </summary>
+	[Export(PropertyHint.Range, "0,1")] public float SprintSpine = 0.9f;
+	[Export] public float SprintSpineTime = 0.3f;
+
+	/// <summary>Correndo, quanto o tronco inclina para a frente além da animação de correr (graus,
+	/// repartidos pelas vértebras): o "Rifle Run" corre quase em pé (Jhon, 26/11, vendo a roda
+	/// de terceira pessoa: "curve só mais um pouco").</summary>
+	[Export] public float SprintLean = 9f;
+
+	private float _runLean;
+
+	/// <summary>A rotação que a animação do corpo deu ao osso neste quadro (antes de este nó
+	/// escrever nele).</summary>
+	private Quaternion Animated(int bone) =>
+		_posed.TryGetValue(bone, out var was) ? was.Before : _skeleton.GetBonePoseRotation(bone);
+
+	private bool IsTrunk(int bone) => bone == _neck || bone == _head || _spines.Contains(bone);
+
 	/// <summary>Na troca de arma, quanto do caminho até a pose do saque (0 a 1) a mão anda antes de
 	/// a arma nova aparecer nela.</summary>
 	[Export(PropertyHint.Range, "0,1")] public float DrawShowAt = 0.85f;
@@ -830,6 +871,8 @@ public partial class HeldWeapon : Node3D
 			Quaternion q = now.Bone(i, at);
 			if (before != null) q = before.Bone(i, _rig.PrevTime).Slerp(q, w);
 			if (fade < 1f) q = _skeleton.GetBonePoseRotation(bone).Slerp(q, fade);
+			// Correndo, o tronco é o da corrida do corpo (SprintSpine).
+			if (_runLean > 0f && IsTrunk(bone)) q = q.Slerp(Animated(bone), _runLean * SprintSpine);
 			Write(bone, q);
 		}
 
@@ -845,7 +888,19 @@ public partial class HeldWeapon : Node3D
 		}
 
 		ChestAsBaked(fade);
+		LeanIntoRun();
 		PitchChest();
+	}
+
+	/// <summary>Correndo, o tronco inclina mais um pouco para a frente (<see cref="SprintLean"/>).</summary>
+	private void LeanIntoRun()
+	{
+		if (_runLean <= 0f || _spines.Count == 0 || Mathf.IsZeroApprox(SprintLean)) return;
+		Basis body = _skeleton.GlobalBasis.Orthonormalized();
+		Vector3 side = _body.GlobalBasis.X.Normalized();
+		// Em volta do lado do corpo, o ângulo negativo leva o alto do tronco para a frente.
+		var part = new Quaternion(side, -Mathf.DegToRad(SprintLean) * _runLean / _spines.Count);
+		foreach (int bone in _spines) TurnBone(bone, part, body);
 	}
 
 	/// <summary>Quantas vezes a granada na mão é maior vista de fora que a da primeira pessoa. Foi 1,4
@@ -984,7 +1039,7 @@ public partial class HeldWeapon : Node3D
 		if (!swapping)
 		{
 			// parado, andando ou mirando, já sem mistura: a mão do corpo está na do conjunto
-			if (_rig.BlendWeight >= 1f && _rig.Playing is "parado" or "andar" or "mira" or "mira_andar")
+			if (_rig.BlendWeight >= 1f && _rig.Playing is "parado" or "andar" or "correr" or "mira" or "mira_andar")
 			{
 				_bodyToRigHand = bodyHand.AffineInverse() * rigHand;
 				_knowsHand = true;
@@ -1122,6 +1177,8 @@ public partial class HeldWeapon : Node3D
 		Basis pose = _skeleton.GetBoneGlobalPose(hips).Basis.Orthonormalized();
 		Quaternion delta = (body * rest * pose.Transposed() * body.Transposed()).Orthonormalized().GetRotationQuaternion().Normalized();
 		if (fade < 1f) delta = Quaternion.Identity.Slerp(delta, fade);
+		// Correndo, o peito acompanha o quadril (SprintSpine): desfaz só o resto.
+		if (_runLean > 0f) delta = Quaternion.Identity.Slerp(delta, 1f - _runLean * SprintSpine);
 		Quaternion part = Quaternion.Identity.Slerp(delta, 1f / _spines.Count);
 		foreach (int bone in _spines) TurnBone(bone, part, body);
 	}
@@ -1191,7 +1248,7 @@ public partial class HeldWeapon : Node3D
 		ApplyHoldPose(pose, _posePrevious, _poseBlend, _poseClock);
 		AimChest(pose, _posePrevious, _poseBlend, _poseClock);
 
-		_rig.Tick(delta, _weapon.IsGrenadeReady, false);
+		_rig.Tick(delta, _weapon.IsGrenadeReady, false, false, SprintPace);
 		if (_rightUpper < 0 || _rightLower < 0 || _rightHand < 0) return;
 		if (!BodyHand(true, out Vector3 fingers, out Vector3 palm, out Vector3 knuckles)) return;
 

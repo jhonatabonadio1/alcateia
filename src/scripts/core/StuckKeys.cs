@@ -40,7 +40,7 @@ public static class StuckKeys
 		if (_shiftDown && !now.ShiftPressed)
 		{
 			_shiftDown = false;
-			Free("walk");
+			Free("sprint");
 		}
 		if (_ctrlDown && !now.CtrlPressed)
 		{

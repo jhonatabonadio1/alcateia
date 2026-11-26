@@ -36,6 +36,19 @@ public partial class CharacterAnimator
 	[Export] public float StrafeClip = 1.03f;
 
 	/// <summary>
+	/// A corrida do Shift ("sprint_fwd", o "Rifle Run" do Mixamo): 3,35 m/s
+	/// a 1×, medido no quadril. Fica no raio 3 da mistura, depois da corrida
+	/// normal, e só entra para quem está correndo (o humano normal anda
+	/// 2,56 m/s, abaixo da passada dele; era 3,46: pela velocidade sozinha, entraria
+	/// sem o Shift). A cadência acompanha o corpo: a corrida do jogo é
+	/// 3,71 m/s e o clipe toca a 1,11×.
+	/// </summary>
+	[Export] public float SprintClip = 3.35f;
+
+	/// <summary>Até quanto o clipe de correr acelera (e desacelera).</summary>
+	[Export] public float SprintPaceMax = 1.6f;
+
+	/// <summary>
 	/// Inverte o eixo lateral do espaço de mistura.
 	///
 	/// Os clipes de strafe do Mixamo vieram com o nome trocado e
@@ -73,6 +86,33 @@ public partial class CharacterAnimator
 	{
 		if (speed <= walk) return speed / Mathf.Max(walk, 0.01f);
 		return 1f + (speed - walk) / Mathf.Max(run - walk, 0.01f);
+	}
+
+	/// <summary>Correndo (Shift): a velocidade em que o clipe de correr
+	/// toca agora (1 = como foi gravado). 0 fora da corrida. A arma na mão
+	/// (<see cref="HeldWeapon"/>) toca o "correr" dela no mesmo passo.</summary>
+	public float SprintPace { get; private set; }
+
+	/// <summary>Quem está correndo (o dono diz, <see cref="BodyMotion.HumanSprinting"/>)
+	/// sai da corrida normal (raio 2) para a do Shift (raio 3), pela
+	/// velocidade à frente.</summary>
+	private Vector2 TowardSprint(Vector2 target, float ahead)
+	{
+		if (!_hasSprint || !BodyMotion.HumanSprinting(_body)) return target;
+		float beyond = Mathf.Clamp((ahead - RunClip) / Mathf.Max(SprintClip - RunClip, 0.01f), 0f, 1f);
+		return new Vector2(target.X, Mathf.Max(target.Y, 2f + beyond));
+	}
+
+	/// <summary>O clipe de correr acompanha o corpo: quanto mais da mistura
+	/// está nele, mais a locomoção toca na cadência da velocidade de agora.</summary>
+	private void PaceSprint(Vector3 local)
+	{
+		if (!_hasSprint) return;
+		float weight = Mathf.Clamp(_blend.Y - 2f, 0f, 1f);
+		float speed = new Vector2(local.X, local.Z).Length();
+		float pace = Mathf.Clamp(speed / Mathf.Max(SprintClip, 0.01f), 1f / SprintPaceMax, SprintPaceMax);
+		_tree.Set("parameters/Machine/Locomotion/Pace/scale", Mathf.Lerp(1f, pace, weight));
+		SprintPace = BodyMotion.HumanSprinting(_body) ? pace : 0f;
 	}
 
 	/// <summary>

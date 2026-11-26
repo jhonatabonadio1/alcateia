@@ -1030,13 +1030,13 @@ FORÇA DO SALTO,,JUMP STRENGTH,FUERZA DEL SALTO,scripts/ui/ChargeBar.cs
 TAB: ESCOLHER ALVO,,TAB: PICK TARGET,TAB: ELEGIR OBJETIVO,scripts/ui/ChargeBar.cs
 Agachar,,Crouch,Agacharse,scripts/ui/ControlsTable.cs
 Andar,,Move,Moverse,scripts/ui/ControlsTable.cs
-Andar devagar e em silêncio (humano),,Walk slowly and silently (human),Andar despacio y en silencio (humano),scripts/ui/ControlsTable.cs
+"Correr, de arma abaixada (humano)",,"Sprint, weapon lowered (human)","Correr, con el arma baja (humano)",scripts/ui/ControlsTable.cs
 Arma principal,,Primary weapon,Arma principal,scripts/ui/ControlsTable.cs
 Arma secundária,,Secondary weapon,Arma secundaria,scripts/ui/ControlsTable.cs
 Atacar,,Attack,Atacar,scripts/ui/ControlsTable.cs
 Clique direito,,Right click,Clic derecho,scripts/ui/ControlsTable.cs
 Clique esquerdo,,Left click,Clic izquierdo,scripts/ui/ControlsTable.cs
-Coronhada (com arma de fogo),,Butt strike (with a firearm),Culatazo (con arma de fuego),scripts/ui/ControlsTable.cs
+"Coronhada (com a faca, golpeia; com a granada, lança)",,"Butt strike (knife: slash; grenade: throw)","Culatazo (con el cuchillo, golpea; con la granada, lanza)",scripts/ui/ControlsTable.cs
 Ctrl,,Ctrl,Ctrl,scripts/ui/ControlsTable.cs
 Equipar granada,,Equip grenade,Equipar granada,scripts/ui/ControlsTable.cs
 Esc,,Esc,Esc,scripts/ui/ControlsTable.cs
@@ -1205,7 +1205,7 @@ VOLTAR A HUMANO,,REVERT TO HUMAN,VOLVER A HUMANO,scripts/ui/hud/Hud.Form.cs
 A arma da mão cai à frente; dá para pegar outra do chão.,,The weapon in hand falls in front of you; you can pick another one off the ground.,El arma de la mano cae delante; puedes recoger otra del suelo.,scripts/ui/hud/Hud.Guide.cs
 "A carga enche com abates também de humano. Cheia, vire lobo para usar.",,"The charge also fills with kills as a human. When full, turn wolf to use it.","La carga se llena con bajas también como humano. Llena, vuélvete lobo para usarla.",scripts/ui/hud/Hud.Guide.cs
 A reserva para quando o pente da principal acaba.,,The backup for when the primary's magazine runs out.,La reserva para cuando se acaba el cargador de la principal.,scripts/ui/hud/Hud.Guide.cs
-Andar em silêncio,,Silent walk,Andar en silencio,scripts/ui/hud/Hud.Guide.cs
+Correr,,Sprint,Correr,scripts/ui/hud/Hud.Guide.cs
 Armas,,Weapons,Armas,scripts/ui/hud/Hud.Guide.cs
 Ataque,,Attack,Ataque,scripts/ui/hud/Hud.Guide.cs
 Bote,,Pounce,Zarpazo,scripts/ui/hud/Hud.Guide.cs
@@ -1217,7 +1217,7 @@ Corrida de quatro,,Four-legged sprint,Carrera a cuatro patas,scripts/ui/hud/Hud.
 Corrida na parede,,Wall run,Carrera por la pared,scripts/ui/hud/Hud.Guide.cs
 "Custa KP. De lobo você é mais rápido, tem escudo e garras — e não atira.",,"Costs KP. As a wolf you're faster, have a shield and claws — and can't shoot.","Cuesta KP. Como lobo eres más rápido, tienes escudo y garras — y no disparas.",scripts/ui/hud/Hud.Guide.cs
 De perto e em silêncio.,,Up close and silent.,De cerca y en silencio.,scripts/ui/hud/Hud.Guide.cs
-Devagar e sem barulho de passo. Ctrl agacha.,,Slow and without footstep noise. Ctrl crouches.,Despacio y sin ruido de pasos. Ctrl se agacha.,scripts/ui/hud/Hud.Guide.cs
+"Mais rápido e de arma abaixada: correndo não atira. Ctrl agacha, em silêncio.",,"Faster, with the weapon lowered: no shooting while sprinting. Ctrl crouches, silently.","Más rápido y con el arma baja: corriendo no dispara. Ctrl se agacha, en silencio.",scripts/ui/hud/Hud.Guide.cs
 Dois toques no W e segure: 30% mais rápido.,,Double-tap W and hold: 30% faster.,Dos toques en W y mantén: 30% más rápido.,scripts/ui/hud/Hud.Guide.cs
 Equipe e clique para arremessar.,,Equip and click to throw.,Equipa y haz clic para lanzar.,scripts/ui/hud/Hud.Guide.cs
 Especial,,Special,Especial,scripts/ui/hud/Hud.Guide.cs

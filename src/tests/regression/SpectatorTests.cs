@@ -96,7 +96,7 @@ public sealed class SpectatorTest : RegressionTest
 		await b.Seconds(0.5);
 		b.AtLeast(2.5, view.GlobalPosition.DistanceTo(before), "livre, o W anda pelo mapa (m)");
 		// Segura o W até bater na borda: a câmera não sai do mapa.
-		RegressionBench.Press("walk");
+		RegressionBench.Press("sprint");
 		await b.Seconds(8);
 		RegressionBench.ReleaseAll();
 		Aabb box = MapBounds.Of(b.GetTree());
@@ -264,7 +264,7 @@ public sealed class SpectatorInsideTest : RegressionTest
 		{
 			cam.AimFree(yaw, pitch);
 			RegressionBench.Press("move_forward");
-			RegressionBench.Press("walk");
+			RegressionBench.Press("sprint");
 			await b.Seconds(6);
 			RegressionBench.ReleaseAll();
 			await b.Frames(2);

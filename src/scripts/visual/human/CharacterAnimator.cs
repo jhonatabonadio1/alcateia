@@ -63,6 +63,8 @@ public partial class CharacterAnimator : Node3D
 	private static readonly string[] Clips =
 	{
 		"idle_rifle", "walk_fwd", "walk_back", "run_fwd", "run_back",
+		// A corrida do Shift: o "Rifle Run" do Mixamo, que o Jhon trouxe (26/11).
+		"sprint_fwd",
 		"strafe_left", "strafe_right", "jump", "fire", "reload",
 		"grenade", "hit", "turn_left", "turn_right",
 
@@ -217,10 +219,12 @@ public partial class CharacterAnimator : Node3D
 		if (InvertStrafe) target.X = -target.X;
 
 		target = target.LimitLength(2.1f);
+		target = TowardSprint(target, ahead);
 
 		_blend = _blend.Lerp(target, Mathf.Min(1f, BlendSmoothing * (float)delta));
 
-		_tree.Set("parameters/Machine/Locomotion/blend_position", _blend);
+		_tree.Set("parameters/Machine/Locomotion/Move/blend_position", _blend);
+		PaceSprint(local);
 
 		if (_hitTimer > 0) _hitTimer -= delta;
 

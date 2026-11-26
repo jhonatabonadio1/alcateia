@@ -17,7 +17,7 @@ public static class NetCommands
 		if (i.Jump) b |= InputButtons.Jump;
 		if (i.JumpHeld) b |= InputButtons.JumpHeld;
 		if (i.CrouchHeld) b |= InputButtons.Crouch;
-		if (i.WalkHeld) b |= InputButtons.Walk;
+		if (i.SprintHeld) b |= InputButtons.Sprint;
 		if (i.Attack) b |= InputButtons.Attack;
 		if (i.AttackHeld) b |= InputButtons.AttackHeld;
 		if (i.AttackReleased) b |= InputButtons.AttackReleased;
@@ -86,7 +86,7 @@ public static class NetCommands
 		Jump = c.Has(InputButtons.Jump),
 		JumpHeld = c.Has(InputButtons.JumpHeld),
 		CrouchHeld = c.Has(InputButtons.Crouch),
-		WalkHeld = c.Has(InputButtons.Walk),
+		SprintHeld = c.Has(InputButtons.Sprint),
 		Attack = c.Has(InputButtons.Attack),
 		AttackHeld = c.Has(InputButtons.AttackHeld),
 		AttackReleased = c.Has(InputButtons.AttackReleased),

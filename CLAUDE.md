@@ -112,15 +112,20 @@ granadas mais fortes.
 
    Valores absolutos atuais (velocidade em m/s, pulo em altura), medidos no
    jogo em 24/11 (os testes seguem estes; `docs/MEDIDAS.md`). A cena do
-   jogador põe `HumanSpeed` 3,2 (o código diz 3,0): a base é 3,2 × 1,08.
+   jogador põe `HumanSpeed` 3,2 (o código diz 3,0): a base do humano é
+   3,2 × 0,8 (`HumanSpeedBonus`; era 1,08 até 26/11).
+   **O Shift corre** (26/11): × 1,45 (`HumanSprintFactor`), só para a
+   frente, de arma abaixada e sem atirar; o andar em silêncio saiu do
+   Shift (quem quer silêncio agacha).
    O que o texto abaixo conta em 3,24 m/s é de antes.
 
    | | Humano | Bruto | Ligeiro |
    |---|---|---|---|
-   | Velocidade | 3,46 (faca 3,58) | 4,15 (1,298×) | 4,50 (1,406×) |
+   | Velocidade | 2,56 (faca 2,65) | 4,15 (1,298×) | 4,50 (1,406×) |
+   | Correndo (Shift) | 3,71 | — | — |
    | Pulo | 1,02 m | 1,67 m | 2,56 m |
-   | Avanço do pulo correndo | ~2,6 m | ~4,4 m | ~5,9 m |
-   | Agachado | 1,56 | 1,87 | 2,03 |
+   | Avanço do pulo correndo | ~1,9 m | ~4,4 m | ~5,9 m |
+   | Agachado | 1,15 | 1,87 | 2,03 |
    | De quatro (W W) | — | 7,14 | 7,73 |
    | Na parede | — | 4,75 | 5,14 |
 

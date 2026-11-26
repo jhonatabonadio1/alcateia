@@ -414,6 +414,7 @@ public partial class Player : CharacterBody3D
 
 		if (_health.IsDead)
 		{
+			StopHumanSprint();
 			Settle(delta);
 			return;
 		}
@@ -424,6 +425,7 @@ public partial class Player : CharacterBody3D
 		// vazia (veja _PhysicsProcess).
 		if (Frozen)
 		{
+			StopHumanSprint();
 			Hold(delta);
 			return;
 		}
@@ -459,6 +461,7 @@ public partial class Player : CharacterBody3D
 
 		UpdateCrouch(delta);
 		UpdateSprint(delta);
+		UpdateHumanSprint(delta);
 		UpdateNoise(delta);
 		UpdateCameraKick(delta);
 		UpdateAimCamera();
@@ -509,6 +512,7 @@ public partial class Player : CharacterBody3D
 	/// <see cref="BodyNoise.StridePhase"/>.</summary>
 	public int Steps => _noise.Steps;
 	public float StridePhase => _noise.StridePhase;
+	public float StrideLength => _noise.StrideLength;
 
 	/// <summary>De lobo, o passo segue o clipe que está tocando: em pé, a
 	/// passada do andar na direção de agora; de quatro, uma batida quando
@@ -519,8 +523,8 @@ public partial class Player : CharacterBody3D
 		_wolfVisual ??= GetNodeOrNull<WolfVisual>("WolfVisual");
 		WolfVisual visual = _form.IsWolf ? _wolfVisual : null;
 		int beats = visual != null && IsSprinting && visual.SprintDrivesSteps ? visual.SprintBeats : -1;
-		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, _howling, silent: _crouching || _walking,
-			sprinting: IsSprinting, stride: visual?.StepStride ?? 0f, beats: beats);
+		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, _howling, silent: _crouching,
+			sprinting: IsSprinting || _humanSprint, stride: visual?.StepStride ?? 0f, beats: beats);
 	}
 
 	private WolfVisual _wolfVisual;

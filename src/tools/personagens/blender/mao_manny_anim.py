@@ -37,6 +37,34 @@ import poses_armas as pa  # noqa: E402
 from poses_armas import EIXOS, RAIZ, orient  # noqa: E402
 
 LADOS = (('r', 'Right'), ('l', 'Left'))
+CIMA = pa.CIMA
+
+# A coronhada vista de fora (``Copia.coronhada``): quanto o corpo entra no golpe, por tipo de arma — o tronco gira
+# (graus, o ombro direito para a frente) e inclina para a frente (graus), e o conjunto avança, sobe e vai para a
+# direita do personagem (m). O fuzil vai para a direita: na primeira pessoa a coronha é socada para o meio da tela, e
+# com o conjunto no mesmo lugar a mão direita cruzava o corpo e o cotovelo subia acima do ombro (a SVD, 168°).
+CORONHADA_CORPO = {
+    'fuzil': dict(gira=20.0, inclina=9.0, avanca=0.0, sobe=0.0, lado=0.10),
+    'pistola': dict(gira=24.0, inclina=10.0, avanca=0.13, sobe=0.10, lado=0.0),
+}
+# A força do golpe no tempo (s): recua um instante (negativo), chega, passa um pouco e volta sem parar.
+CORONHADA_FORCA = ((0.0, 0.0), (0.035, -0.22), (0.085, 1.0), (0.130, 1.08), (0.200, 0.62), (0.320, 0.0), (0.400, 0.0))
+
+
+def _curva(chaves, t):
+    """Uma curva pelas chaves (tempo, valor) sem parar em cada uma (Catmull-Rom), parada nas pontas."""
+    if t <= chaves[0][0]:
+        return chaves[0][1]
+    if t >= chaves[-1][0]:
+        return chaves[-1][1]
+    i = max(j for j in range(len(chaves) - 1) if chaves[j][0] <= t)
+    (t0, v0), (t1, v1) = chaves[i], chaves[i + 1]
+    m0 = (v1 - chaves[i - 1][1]) / (t1 - chaves[i - 1][0]) if i > 0 else 0.0
+    m1 = (chaves[i + 2][1] - v0) / (chaves[i + 2][0] - t0) if i + 2 < len(chaves) else 0.0
+    h = t1 - t0
+    u = (t - t0) / h
+    return ((2 * u ** 3 - 3 * u ** 2 + 1) * v0 + (u ** 3 - 2 * u ** 2 + u) * h * m0
+            + (-2 * u ** 3 + 3 * u ** 2) * v1 + (u ** 3 - u ** 2) * h * m1)
 # Quanto o braço de cima gira em volta do próprio eixo (graus).
 ROLO_BRACO = float(os.environ.get('ROLO_BRACO', 0.0))
 # Quanto custa (por grau) o braço de cima girar em volta de si em relação à pose T (Braco.peso_torcao).
@@ -1157,6 +1185,38 @@ class Copia:
             corpo.esq.por(M, q['locais'], n_, meio @ M[n_].to_3x3())
             M = corpo.esq.fk(q['locais'])
 
+    def coronhada(self, quadros, tipo):
+        """O corpo entra na coronhada (Jhon, 26/11: "revise tudo e melhore o dinamismo e a fluidez dos
+        movimentos"; a da pistola "precisa ser um pouco mais alta e longa e mais fluida"). A arma e as
+        mãos vêm da primeira pessoa, onde só os braços se mexem; visto de fora, um golpe só de braço
+        parece fraco. Aqui o tronco recua um instante, gira levando o ombro direito para a frente e
+        inclina no golpe (``CORONHADA_CORPO``), a cabeça segue olhando para a frente, e o conjunto
+        avança — e, com a pistola, sobe: o braço estica mais alto e mais longe."""
+        corpo = self.corpo
+        C = CORONHADA_CORPO[tipo]
+        espinha = [corpo.n(x) for x in ('Spine', 'Spine1', 'Spine2')]
+        cabeca = corpo.n('Head')
+        pico = (0.0, 0.0, 0.0, 0.0)
+        for k, q in enumerate(quadros):
+            e = _curva(CORONHADA_FORCA, k / aa.FPS)
+            if abs(e) < 1e-5:
+                continue
+            locais = q['locais']
+            M = corpo.esq.fk(locais)
+            olhar = M[cabeca].to_3x3()
+            antes = (M[corpo.n('RightArm')].translation.copy(), M[cabeca].translation.copy())
+            # girar em volta de CIMA no sentido que leva o ombro direito para a frente, e inclinar para a frente
+            giro = (Quaternion(CIMA, aa.rad(C['gira'] * e / 3)) @ Quaternion(pa.DIREITA, aa.rad(-C['inclina'] * e / 3))).to_matrix()
+            for nome in espinha:
+                corpo.esq.por(M, locais, nome, giro @ M[nome].to_3x3())
+            corpo.esq.por(M, locais, cabeca, olhar)
+            avanco = pa.FRENTE * (C['avanca'] * e) + CIMA * (C['sobe'] * e) + pa.DIREITA * (C['lado'] * max(e, 0.0))
+            q['col'] = Matrix.Translation(avanco) @ q['col']
+            if e > pico[0]:
+                pico = (e, (M[corpo.n('RightArm')].translation - antes[0]).dot(pa.FRENTE) * 100,
+                        (M[cabeca].translation - antes[1]).dot(pa.FRENTE) * 100, (M[cabeca].translation - antes[1]).dot(CIMA) * 100)
+        print(f'CORONHADA corpo: no golpe o ombro direito avança {pico[1]:.1f} cm; a cabeça avança {pico[2]:.1f} cm e sobe {pico[3]:.1f} cm')
+
     def aproximar(self, nome, quadros):
         """Quando o braço do personagem (mais curto) não chega na mão de lá, a arma vem para perto do
         corpo (como no animacoes_armas.py, passo 2): o máximo numa janela, depois suave."""
@@ -1759,6 +1819,8 @@ class Copia:
                     q['col'] = self.giro_da_pistola(q, None) @ q['col']
             if nome == 'sacar' and SACAR_DE_TRAS:
                 self.sacar_de_tras(quadros, n, tipo)
+            if nome == 'coronhada':
+                self.coronhada(quadros, tipo)
             self.aproximar(nome, quadros)
             if nome.startswith('recarga') and RECARGA_TROCA:
                 self.trocar_pente(nome, quadros, n)
@@ -2061,7 +2123,7 @@ def medir_dedos(arm, s):
     return '; '.join(out)
 
 
-def gravar(personagem, arma, clipes, escala=1.0):
+def gravar(personagem, arma, clipes, escala=1.0, juntar=False):
     pasta = os.path.join(RAIZ, 'assets/personagens', personagem, 'animacoes')
     os.makedirs(pasta, exist_ok=True)
     velhos = set(pa.FALANGES)
@@ -2110,6 +2172,20 @@ def gravar(personagem, arma, clipes, escala=1.0):
             # o pino da granada (Copia.lance): quando sai e quando a esquerda o larga (segundos do clipe)
             dados['clipes'][c.nome]['pino'] = c.pino
     caminho = os.path.join(pasta, arma + '.json')
+    if juntar:
+        # só os clipes pedidos entram no arquivo que existe; os outros ficam como estão
+        with open(caminho, encoding='utf-8') as f:
+            velho = json.load(f)
+        if velho['fps'] != dados['fps']:
+            # amostrado em outro ritmo (FPS_CLIPES): o clipe leva o dele ("fps" no clipe; HoldClips.cs)
+            for c in dados['clipes'].values():
+                c['fps'] = dados['fps']
+            dados['fps'] = velho['fps']
+        for chave in ('posicoes', 'fps', 'escala', 'ossos'):
+            if velho[chave] != dados[chave]:
+                raise SystemExit(f'{caminho}: "{chave}" mudou; gere o arquivo inteiro')
+        velho['clipes'].update(dados['clipes'])
+        dados = velho
     with open(caminho, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(dados, f, ensure_ascii=False, separators=(',', ':'))
         f.write('\n')
@@ -2118,14 +2194,22 @@ def gravar(personagem, arma, clipes, escala=1.0):
 
 def main():
     personagem, arma = sys.argv[1], sys.argv[2]
+    # FPS_CLIPES=60: os clipes desta rodada são amostrados neste ritmo (o gesto rápido — a coronhada chega em
+    # 0,075 s — fica com dois quadros a 30 por segundo); só com SO_CLIPES e JUNTAR, e cada clipe leva o "fps" dele
+    if os.environ.get('FPS_CLIPES'):
+        aa.FPS = int(os.environ['FPS_CLIPES'])
     c = Copia(personagem, arma)
     c.preparar()
     clipes = []
-    # SO_CLIPES=a,b: só estes (para testar um ajuste depressa); aí não grava o .json
+    # SO_CLIPES=a,b: só estes (para testar um ajuste depressa); aí não grava o .json (a não ser com JUNTAR=1)
     so = [x for x in os.environ.get('SO_CLIPES', '').split(',') if x]
     for nome in sorted(aa.CLIPES[c.plano.tipo], key=lambda x: (x != 'parado', x != 'mira')):
         if nome in c.rig.clipes() and (not so or nome in so):
             clipes.append(c.clipe(nome))
+    if so and os.environ.get('JUNTAR'):
+        # JUNTAR=1 com SO_CLIPES: grava só estes no .json que existe (um clipe novo sem refazer os aprovados)
+        print('JUNTADO', gravar(personagem, arma, clipes, juntar=True))
+        return
     if so:
         print('SO_CLIPES: nada gravado')
         return

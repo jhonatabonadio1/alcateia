@@ -32,8 +32,9 @@ public readonly record struct CharacterIntent
 
 	public bool CrouchHeld { get; init; }
 
-	/// <summary>Shift: andar devagar, em silêncio (só humano).</summary>
-	public bool WalkHeld { get; init; }
+	/// <summary>Shift: correr (só humano, e só para a frente). Era o andar
+	/// devagar e em silêncio até 26/11.</summary>
+	public bool SprintHeld { get; init; }
 
 	public bool Attack { get; init; }
 	public bool AttackHeld { get; init; }
@@ -80,7 +81,7 @@ public readonly record struct CharacterIntent
 		Jump = Input.IsActionJustPressed("jump"),
 		JumpHeld = Input.IsActionPressed("jump"),
 		CrouchHeld = Input.IsActionPressed("crouch"),
-		WalkHeld = Input.IsActionPressed("walk"),
+		SprintHeld = Input.IsActionPressed("sprint"),
 		Attack = Input.IsActionJustPressed("attack"),
 		AttackHeld = Input.IsActionPressed("attack"),
 		AttackReleased = Input.IsActionJustReleased("attack"),

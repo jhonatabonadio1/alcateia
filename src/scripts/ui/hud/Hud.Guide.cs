@@ -112,8 +112,8 @@ public partial class Hud
 				Loc.T("Custa KP. De lobo você é mais rápido, tem escudo e garras — e não atira."), UiTokens.WolfOrange);
 			GuideLine(right, IconKind.Pounce, "Especial", "Q, de lobo",
 				Loc.T("A carga enche com abates também de humano. Cheia, vire lobo para usar."), UiTokens.WolfOrange);
-			GuideLine(right, IconKind.Human, "Andar em silêncio", "Shift",
-				Loc.T("Devagar e sem barulho de passo. Ctrl agacha."), tint);
+			GuideLine(right, IconKind.Human, "Correr", "Shift",
+				Loc.T("Mais rápido e de arma abaixada: correndo não atira. Ctrl agacha, em silêncio."), tint);
 			GuideLine(right, IconKind.Go, "Soltar a arma", "G",
 				Loc.T("A arma da mão cai à frente; dá para pegar outra do chão."), tint);
 		}

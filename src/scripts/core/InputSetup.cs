@@ -22,7 +22,9 @@ public static class InputSetup
 		Key("crouch", Godot.Key.Ctrl);
 		// Só o Ctrl agacha (o C saiu a pedido do Jhon, 18/11). No Mac,
 		// agachado no Ctrl, o botão direito de verdade mira (MacCtrlClick).
-		Key("walk", Godot.Key.Shift);
+		// Shift: o humano corre (26/11, pedido do Jhon; antes andava devagar
+		// e em silêncio — quem quer silêncio agacha).
+		Key("sprint", Godot.Key.Shift);
 		// Menu no Esc e placar no Tab, como em quase todo FPS — e como
 		// no WolfTeam. Tab abria o menu de dificuldade porque não havia
 		// placar quando ele nasceu.

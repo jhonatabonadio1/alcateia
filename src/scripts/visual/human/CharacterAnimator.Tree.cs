@@ -35,10 +35,13 @@ public partial class CharacterAnimator
 	/// </summary>
 	private void BuildTree()
 	{
+		// A corrida do Shift fica no raio 3, para a frente (só para quem
+		// corre: CharacterAnimator.TowardSprint).
+		_hasSprint = _player.HasAnimation("alcateia/sprint_fwd");
 		var locomotion = new AnimationNodeBlendSpace2D
 		{
 			MinSpace = new Vector2(-2.2f, -2.2f),
-			MaxSpace = new Vector2(2.2f, 2.2f)
+			MaxSpace = new Vector2(2.2f, _hasSprint ? 3.2f : 2.2f)
 		};
 
 		// Pelo nome do motor, e não pela propriedade do binding, que
@@ -52,13 +55,22 @@ public partial class CharacterAnimator
 		Point(locomotion, "idle_rifle", 0, 0);
 		Point(locomotion, "walk_fwd", 0, 1);
 		Point(locomotion, "run_fwd", 0, 2);
+		Point(locomotion, "sprint_fwd", 0, 3);
 		Point(locomotion, "walk_back", 0, -1);
 		Point(locomotion, "run_back", 0, -2);
 		Point(locomotion, "strafe_right", 1, 0);
 		Point(locomotion, "strafe_left", -1, 0);
 
+		// A mistura passa por um relógio: o clipe de correr é o único que
+		// acelera (PaceSprint); fora dele o relógio fica em 1.
+		var paced = new AnimationNodeBlendTree();
+		paced.AddNode("Move", locomotion, Vector2.Zero);
+		paced.AddNode("Pace", new AnimationNodeTimeScale(), new Vector2(200, 0));
+		paced.ConnectNode("Pace", 0, "Move");
+		paced.ConnectNode("output", 0, "Pace");
+
 		var machine = new AnimationNodeStateMachine();
-		machine.AddNode("Locomotion", locomotion, new Vector2(300, 100));
+		machine.AddNode("Locomotion", paced, new Vector2(300, 100));
 
 		AddCrouch(machine);
 		Single(machine, "Jump", "jump", new Vector2(520, -20));
@@ -254,6 +266,9 @@ public partial class CharacterAnimator
 
 	private bool _crouchAim;
 	private bool _crouchWalk;
+
+	/// <summary>O clipe de correr (Shift) existe e está na mistura.</summary>
+	private bool _hasSprint;
 
 	/// <summary>O estado "Fall" foi montado (o clipe existe).</summary>
 	private bool _hasFall;

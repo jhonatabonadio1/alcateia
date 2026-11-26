@@ -6,20 +6,25 @@ using System.Threading.Tasks;
 public sealed class GroundSpeedTest : RegressionTest
 {
 	public override string Name => "VelocidadeNoChao";
-	public override string Description => "humano 3,46 m/s, agachado 1,56, faca 3,58; Bruto 4,15, agachado 1,87";
+	public override string Description => "humano 2,56 m/s, agachado 1,15, correndo (Shift) 3,71, faca 2,65; Bruto 4,15, agachado 1,87";
 
 	public override async Task Run(RegressionBench b)
 	{
 		b.RemoveBots();
 
 		// Os números do jogo de hoje: Player.HumanSpeed 3,2 na cena (docs/MEDIDAS.md),
-		// × 1,08 do humano. Eram 3,24 (a base 3,0 do código, que a cena sobrescreve).
-		b.Near(3.456, await Measure(b, "move_forward"), 0.02, "humano correndo");
-		b.Near(1.555, await Measure(b, "move_forward", "crouch"), 0.05, "humano agachado");
-		b.Near(1.452, await Measure(b, "move_forward", "walk"), 0.05, "humano andando (Shift)");
+		// × 0,8 do humano (HumanSpeedBonus). Era × 1,08, 3,46 m/s, até 26/11 (Jhon:
+		// "o personagem pode andar mais lento"; "deixar na velocidade de um humano").
+		b.Near(2.56, await Measure(b, "move_forward"), 0.02, "humano andando");
+		b.Near(1.152, await Measure(b, "move_forward", "crouch"), 0.05, "humano agachado");
+		// O Shift corre desde 26/11 (pedido do Jhon; era andar devagar, 1,45 m/s):
+		// × HumanSprintFactor, só para a frente, em pé.
+		b.Near(2.56 * b.Player.HumanSprintFactor, await Measure(b, "move_forward", "sprint"), 0.03, "humano correndo com Shift");
+		b.Near(2.56, await Measure(b, "move_back", "sprint"), 0.03, "com Shift para trás não corre");
+		b.Near(1.152, await Measure(b, "move_forward", "sprint", "crouch"), 0.05, "agachado, o Shift não corre");
 
 		b.Weapon.SelectSlot(Slot.Knife);
-		b.Near(3.584, await Measure(b, "move_forward"), 0.02, "humano com a faca");
+		b.Near(2.654, await Measure(b, "move_forward"), 0.02, "humano com a faca");
 		b.Weapon.SelectSlot(Slot.Primary);
 
 		await b.BecomeWolf();
@@ -105,5 +110,49 @@ public sealed class WallRunTest : RegressionTest
 		// 4,746: a base 3,2 da cena × 1,298 do Bruto × 1,1427 da parede (era 4,45 com a base 3,0).
 		b.Near(4.746, moved.X / 0.5, 0.05, "velocidade na parede");
 		b.Near(0, moved.Y, 0.02, "altura travada");
+	}
+}
+
+/// <summary>A corrida do humano (Shift, 26/11, pedido do Jhon): de arma
+/// abaixada. O clique tira da corrida, e o tiro sai quando a arma volta.</summary>
+public sealed class HumanSprintTest : RegressionTest
+{
+	public override string Name => "CorridaDoHumano";
+	public override string Description => "com Shift o humano corre de arma abaixada: os braços tocam \"correr\"; o clique tira da corrida e o tiro sai quando a arma volta";
+
+	public override async Task Run(RegressionBench b)
+	{
+		b.RemoveBots();
+		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.6);
+		var view = b.Player.FindChild("ViewModel", true, false) as ViewModel;
+		int before = b.Weapon.AmmoInMag;
+
+		RegressionBench.Press("move_forward", "sprint");
+		await b.Seconds(0.5);
+		b.Check(b.Player.IsHumanSprinting, "correndo com Shift");
+		b.Check(b.Player.IsWeaponLowered, "a arma está abaixada");
+		if (view != null) b.Check(view.RigAnimation == "correr", $"os braços tocam \"correr\" (tocam \"{view.RigAnimation}\")");
+
+		// Os braços andam no passo: a batida da arma cai com a pisada (Jhon, 26/11:
+		// "sincronizar os passos"). Depois de um segundo, menos de 5% do ciclo de folga.
+		await b.Seconds(1.0);
+		if (view != null) b.AtMost(0.05, Mathf.Abs(view.RigSprintBehind), "os braços no passo do corpo (fração do ciclo fora)");
+
+		// O clique tira da corrida: o tiro só sai depois de a arma voltar
+		// (SprintRecover 0,2 s), e o clique dado correndo não se perde.
+		RegressionBench.Press("attack");
+		await b.Frames(5);
+		b.Check(b.Weapon.AmmoInMag == before, "a arma ainda voltando, o clique não atira");
+		await b.Seconds(0.5);
+		RegressionBench.ReleaseAll();
+		b.Check(!b.Player.IsHumanSprinting && !b.Player.IsWeaponLowered, "o clique tirou da corrida e a arma voltou");
+		b.Check(b.Weapon.AmmoInMag < before, "com a arma de volta, atira");
+
+		// De lobo o Shift não é corrida de humano.
+		await b.BecomeWolf();
+		RegressionBench.Press("move_forward", "sprint");
+		await b.Seconds(0.4);
+		b.Check(!b.Player.IsHumanSprinting, "de lobo não há corrida de humano");
+		RegressionBench.ReleaseAll();
 	}
 }

@@ -124,6 +124,7 @@ public partial class NetMatch : Node
 		_weapon.Fired += () => { if (!_form.IsWolf) SendAttack(); };
 		_weapon.Thrown += () => SendAttack(Slot.Grenade);
 		_weapon.Stabbed += () => SendAttack(Slot.Knife, NetWire.KnifeStabMove);
+		_weapon.Butted += () => SendAttack(_weapon.CurrentSlot, NetWire.ButtMove);
 		_weapon.WolfMoveStarted += move => SendMoveSoon(null, (WolfMove)move);
 
 		_peer = new ENetMultiplayerPeer();
@@ -164,6 +165,7 @@ public partial class NetMatch : Node
 		weapon.Fired += () => { if (!botForm.IsWolf) SendBotAttack(bot, weapon.CurrentSlot); };
 		weapon.Thrown += () => SendBotAttack(bot, Slot.Grenade);
 		weapon.Stabbed += () => SendBotAttack(bot, Slot.Knife, NetWire.KnifeStabMove);
+		weapon.Butted += () => SendBotAttack(bot, weapon.CurrentSlot, NetWire.ButtMove);
 		weapon.WolfMoveStarted += move => SendMoveSoon(bot, (WolfMove)move);
 
 		// Morte sem autor (queda, a própria granada): o servidor fica sabendo,
@@ -307,10 +309,11 @@ public partial class NetMatch : Node
 			Slot = (byte)_weapon.HumanSlot,
 			Grounded = _body.IsOnFloor(),
 			WallRunning = MyWall(),
-			Sprinting = _me is { IsSprinting: true },
+			// De lobo, a corrida de quatro; de humano, a do Shift (a forma vai junto).
+			Sprinting = _me != null && (_me.IsSprinting || _me.IsHumanSprinting),
 			Crouching = _me is { IsCrouching: true },
 			Howling = _me != null && _me.HowlProgress > 0f,
-			Quiet = _me != null && (_me.IsCrouching || _me.IsWalking),
+			Quiet = _me is { IsCrouching: true },
 			GrenadeReady = _weapon.IsGrenadeReady,
 			Aiming = _weapon.IsAiming,
 			Dead = _health.IsDead,

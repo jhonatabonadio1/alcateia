@@ -284,6 +284,8 @@ public partial class Bot
 		_head.Rotation = new Vector3(pitch, 0, 0);
 		if (move == NetWire.KnifeStabMove)
 			_weapon.RemoteStab();
+		else if (move == NetWire.ButtMove)
+			_weapon.RemoteButt(slot);
 		else if (move > 0 && System.Enum.IsDefined(typeof(WolfMove), move - 1))
 			_weapon.RemoteWolfMove((WolfMove)(move - 1), a, b);
 		else

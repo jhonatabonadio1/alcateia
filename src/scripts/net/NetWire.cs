@@ -50,6 +50,9 @@ using System.Text;
 /// <see cref="KnifeStabMove"/> (sem os dois números): o boneco toca a
 /// estocada em vez do golpe rápido.
 ///
+/// **Coronhada** (26/11): o <c>Attack</c> com a arma de fogo e
+/// <see cref="ButtMove"/> no fim: o boneco toca a coronhada.
+///
 /// **Estado sem ordem trocada** (21/11): o estado vai sem garantia, mas em
 /// ordem (<c>UnreliableOrdered</c>): um estado velho que chega depois de um
 /// novo é jogado fora, em vez de voltar o boneco no tempo.
@@ -84,6 +87,10 @@ public static class NetWire
 {
 	/// <summary>O golpe no fim do <c>Attack</c> que quer dizer "estocada da faca" (os do lobo são <see cref="WolfMove"/> + 1).</summary>
 	public const byte KnifeStabMove = 200;
+
+	/// <summary>O golpe no fim do <c>Attack</c> que quer dizer "coronhada" (V com arma de fogo, 26/11): o boneco toca a
+	/// coronhada da arma que tem na mão. Antes ela não ia pela rede: quem via de fora não via nada.</summary>
+	public const byte ButtMove = 201;
 
 	public const byte Hello = 1, Welcome = 2, Refused = 3, State = 4, Attack = 5,
 		Hit = 6, Died = 7, Kill = 8, Clock = 9, Gone = 10,

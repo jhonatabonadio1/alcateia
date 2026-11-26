@@ -104,7 +104,7 @@ public sealed class ServerPredictionTest : NetcodeTest
 			(2.6, new[] { "crouch", "move_left" }, false, 0f),
 			(3.4, new[] { "move_forward" }, true, 30f),
 			(4.0, new[] { "move_forward" }, true, 0f),
-			(4.4, new[] { "walk", "move_forward" }, false, 0f),
+			(4.4, new[] { "sprint", "move_forward" }, false, 0f),
 			(5.0, new string[0], false, 0f),
 			// Daqui em diante o servidor empurra o corpo (o jogo não sabe) e anda de novo.
 			(5.6, new[] { "move_forward" }, false, 20f),

@@ -11,7 +11,8 @@ public enum InputButtons : ushort
 	Jump = 1 << 2,
 	JumpHeld = 1 << 3,
 	Crouch = 1 << 4,
-	Walk = 1 << 5,
+	/// <summary>Shift: a corrida do humano (era o andar devagar, o mesmo bit).</summary>
+	Sprint = 1 << 5,
 	Attack = 1 << 6,
 	AttackHeld = 1 << 7,
 	AttackReleased = 1 << 8,
@@ -197,7 +198,7 @@ public struct InputCommand
 	public InputCommand Held()
 	{
 		InputCommand c = this;
-		c.Buttons &= InputButtons.Forward | InputButtons.JumpHeld | InputButtons.Crouch | InputButtons.Walk
+		c.Buttons &= InputButtons.Forward | InputButtons.JumpHeld | InputButtons.Crouch | InputButtons.Sprint
 			| InputButtons.AttackHeld | InputButtons.Aim | InputButtons.HowlHeld;
 		c.HasSlotRequest = false;
 		c.HasSpawn = false;

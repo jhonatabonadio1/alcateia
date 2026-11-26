@@ -92,6 +92,17 @@ public partial class Hud
 	/// feminina"). Troque por um arquivo próprio quando houver.</summary>
 	[Export] public float FemaleBreathPitch = 1.32f;
 
+	/// <summary>A respiração de quem corre (Shift), bem baixa (Jhon, 26/11:
+	/// "coloque também a respiração ao correr, bem sutil"): o volume com o
+	/// fôlego todo gasto, em quanto tempo correndo ela chega lá e em quanto
+	/// some depois de parar (s). É a mesma gravação da pouca vida, que
+	/// continua mandando quando as duas valem.</summary>
+	[Export] public float BreathSprintDb = -27f;
+	[Export] public float BreathSprintIn = 3.5f;
+	[Export] public float BreathSprintOut = 4f;
+
+	private float _winded;
+
 	private const string DangerCode = @"
 shader_type canvas_item;
 uniform float danger = 0.0;
@@ -182,9 +193,14 @@ void fragment() {
 		// A respiração: entra abaixo de LowHealth, com um pouco de folga para sair.
 		// A respiração é de quem joga: no HUD de outro, só a tela.
 		bool gasping = Subject == null && !_health.IsDead && frac < (Breathing ? LowHealth + 0.08f : LowHealth) && !UiState.AnyOpen;
-		if (gasping && !Breathing)
+		// Correndo o fôlego vai embora aos poucos, e volta aos poucos.
+		bool running = Subject == null && !_health.IsDead && _player is { IsHumanSprinting: true };
+		_winded = Mathf.MoveToward(_winded, running ? 1f : 0f, delta / Mathf.Max(running ? BreathSprintIn : BreathSprintOut, 0.01f));
+		if (_health.IsDead) _winded = 0f;
+		bool panting = _winded > 0.02f && !UiState.AnyOpen;
+		if ((gasping || panting) && !Breathing)
 		{
-			_breath = Sfx.Ambience(this, "respiracao_ofegante", -40f);
+			_breath = Sfx.Ambience(this, "respiracao_ofegante", -50f);
 			CharacterSkin skin = _player?.Character ?? CharacterSkin.DefaultFor(_health.Team);
 			if (_breath != null && skin?.ResourcePath.GetBaseDir().GetFile() == "eve")
 				_breath.PitchScale = FemaleBreathPitch;
@@ -192,7 +208,9 @@ void fragment() {
 		if (_breath != null && IsInstanceValid(_breath))
 		{
 			float wanted = gasping ? Mathf.Lerp(BreathQuietDb, BreathLoudDb, Mathf.Clamp(1f - frac / Mathf.Max(LowHealth, 0.01f), 0f, 1f)) : -50f;
+			if (panting) wanted = Mathf.Max(wanted, Mathf.Lerp(-50f, BreathSprintDb, _winded));
 			_breath.VolumeDb = Mathf.MoveToward(_breath.VolumeDb, wanted, delta * (gasping ? 40f : 22f));
+			gasping |= panting;
 			if (!gasping && _breath.VolumeDb <= -49f)
 			{
 				_breath.QueueFree();

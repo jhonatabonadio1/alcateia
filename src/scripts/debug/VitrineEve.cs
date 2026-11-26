@@ -10,6 +10,11 @@ using System.Collections.Generic;
 /// sem montar partida: abra scenes/debug/vitrine_eve.tscn e rode (F6), ou
 /// <c>godot --path . res://src/scenes/debug/vitrine_eve.tscn</c>.
 ///
+/// Com <see cref="Running"/> (cena <c>scenes/debug/vitrine_corrida.tscn</c>) é a
+/// corrida do Shift em terceira pessoa: as Eves numa roda de dentro e os Baruts
+/// numa de fora, um por arma, correndo em volta; P para a roda no lugar (os
+/// passos seguem) e o jogador corre e olha por onde quiser.
+///
 /// As Eves são bonecos de rede (<see cref="Bot.Remote"/>), tocados pelos
 /// mesmos recados que chegam numa partida online: não ferem ninguém, e a
 /// granada delas é só de enfeite.
@@ -29,6 +34,23 @@ public partial class VitrineEve : Node3D
 	/// <summary>1 = Eve, 2 = Barut.</summary>
 	[Export] public int Team = 1;
 
+	/// <summary>Em vez da fila, as duas rodas correndo.</summary>
+	[Export] public bool Running;
+
+	/// <summary>A fila só com as armas de fogo, dando a coronhada (V) de tempo em tempo: as Eves na
+	/// frente e os Baruts atrás (cena <c>scenes/debug/vitrine_coronhada.tscn</c>).</summary>
+	[Export] public bool Butts;
+	[Export] public float ButtEvery = 1.6f;
+	[Export] public float RunSpeed = 3.71f;
+	/// <summary>O meio das rodas (m à frente do jogador) e os raios.</summary>
+	[Export] public float RingAhead = 10f;
+	[Export] public float InnerRing = 4f;
+	[Export] public float OuterRing = 7f;
+
+	private Vector3 _center;
+	private float _lap;
+	private bool _held, _holdKey;
+
 	private enum Kind { Firearm, Knife, Grenade }
 
 	private sealed class Station
@@ -39,7 +61,7 @@ public partial class VitrineEve : Node3D
 		public Bot Body;
 		public Label3D Label;
 		public Vector3 At;
-		public float Yaw, Clock, Offset;
+		public float Yaw, Clock, Offset, Radius, Angle;
 		public int Step;
 	}
 
@@ -55,6 +77,8 @@ public partial class VitrineEve : Node3D
 		// conjunto).
 		foreach (string name in new[] { "Bots", "Dummies", "Menu" })
 			field.GetNodeOrNull(name)?.Free();
+		// As rodas não cabem entre as paredes do treino.
+		if (Running) field.GetNodeOrNull("Walls")?.Free();
 		AddChild(field);
 		ProcessMode = ProcessModeEnum.Always;
 		GetTree().Paused = false;
@@ -82,6 +106,42 @@ public partial class VitrineEve : Node3D
 			("Granada", "ar15", "deagle", Slot.Grenade, Kind.Grenade),
 		};
 
+		if (Running)
+		{
+			_center = OnFloor(origin + forward * RingAhead);
+			for (int i = 0; i < list.Length; i++)
+			{
+				var (title, primary, secondary, slot, kind) = list[i];
+				float angle = i * Mathf.Tau / list.Length;
+				AddStation(title, primary, secondary, slot, kind, Teams.Blue, _center, InnerRing, angle);
+				AddStation(title, primary, secondary, slot, kind, Teams.Orange, _center, OuterRing, angle);
+			}
+			return;
+		}
+
+		if (Butts)
+		{
+			int row = 0;
+			foreach (int team in new[] { Teams.Blue, Teams.Orange })
+			{
+				Vector3 line = origin + forward * (Ahead + row * 2.6f);
+				int n = 0;
+				for (int i = 0; i < list.Length; i++)
+				{
+					var (title, primary, secondary, slot, kind) = list[i];
+					if (kind != Kind.Firearm) continue;
+					Vector3 at = OnFloor(line + right * ((n - 2.5f) * Spacing));
+					Vector3 look = (-forward).Rotated(Vector3.Up, Mathf.DegToRad(TurnAway));
+					Station station = AddStation(title, primary, secondary, slot, kind, team, at, 0f, 0f);
+					station.Yaw = Mathf.Atan2(-look.X, -look.Z);
+					station.Offset = n * 0.27f + row * 0.13f;
+					n++;
+				}
+				row++;
+			}
+			return;
+		}
+
 		Vector3 middle = origin + forward * Ahead;
 		for (int i = 0; i < list.Length; i++)
 		{
@@ -92,33 +152,58 @@ public partial class VitrineEve : Node3D
 			Vector3 look = kind == Kind.Grenade ? right : (-forward).Rotated(Vector3.Up, Mathf.DegToRad(TurnAway));
 			float yaw = Mathf.Atan2(-look.X, -look.Z);
 
-			var body = Puppet.Instantiate<Bot>();
-			body.Name = "Eve_" + primary + "_" + i;
-			body.Team = Team;
-			body.Remote = true;
-			AddChild(body);
-			body.GlobalPosition = at;
-
-			var label = new Label3D
-			{
-				Text = title,
-				Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
-				FontSize = 48,
-				PixelSize = 0.004f,
-				OutlineSize = 10,
-				NoDepthTest = true,
-				Position = at + Vector3.Up * 2.25f,
-			};
-			AddChild(label);
-
-			_stations.Add(new Station
-			{
-				Title = title, Primary = primary, Secondary = secondary, Slot = slot, Kind = kind,
-				Body = body, Label = label, At = at, Yaw = yaw,
-				// Cada uma num ponto do ciclo, para não andarem todas juntas.
-				Offset = i * 0.37f,
-			});
+			Station station = AddStation(title, primary, secondary, slot, kind, Team, at, 0f, 0f);
+			station.Yaw = yaw;
+			// Cada uma num ponto do ciclo, para não andarem todas juntas.
+			station.Offset = i * 0.37f;
 		}
+	}
+
+	private Station AddStation(string title, string primary, string secondary, Slot slot, Kind kind,
+		int team, Vector3 at, float radius, float angle)
+	{
+		var body = Puppet.Instantiate<Bot>();
+		body.Name = "Vitrine_" + primary + "_" + _stations.Count;
+		body.Team = team;
+		body.Remote = true;
+		AddChild(body);
+		body.GlobalPosition = at;
+
+		var label = new Label3D
+		{
+			Text = title,
+			Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+			FontSize = 48,
+			PixelSize = 0.004f,
+			OutlineSize = 10,
+			NoDepthTest = true,
+			Position = at + Vector3.Up * 2.25f,
+		};
+		AddChild(label);
+
+		var station = new Station
+		{
+			Title = title, Primary = primary, Secondary = secondary, Slot = slot, Kind = kind,
+			Body = body, Label = label, At = at, Radius = radius, Angle = angle,
+		};
+		_stations.Add(station);
+		return station;
+	}
+
+	/// <summary>Um passo da roda: o lugar no círculo, correndo para a frente.</summary>
+	private void Run(Station s)
+	{
+		float angle = s.Angle + _lap / s.Radius;
+		var radial = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+		var tangent = new Vector3(-radial.Z, 0f, radial.X);
+		Vector3 at = _center + radial * s.Radius;
+		float yaw = Mathf.Atan2(-tangent.X, -tangent.Z);
+		Bot b = s.Body;
+		b.RemoteUpdate(at, tangent * RunSpeed, yaw, 0f, true, Form.Human, s.Slot, s.Primary, s.Secondary, 200f, 200f, 0f, 0f, false);
+		b.RemoteMotion(true, false, false, false, false);
+		b.RemoteGear(30, false, 2, 0f, 0f);
+		b.CollisionLayer = 0;
+		s.Label.Position = at + Vector3.Up * 2.25f;
 	}
 
 	/// <summary>O ponto no chão embaixo de onde o jogador nasce (ele nasce no alto e cai: na
@@ -132,17 +217,41 @@ public partial class VitrineEve : Node3D
 
 	public override void _PhysicsProcess(double delta)
 	{
+		if (Running)
+		{
+			bool key = Input.IsPhysicalKeyPressed(Key.P);
+			if (key && !_holdKey) _held = !_held;
+			_holdKey = key;
+			if (!_held) _lap += RunSpeed * (float)delta;
+			foreach (Station s in _stations)
+				if (IsInstanceValid(s.Body)) Run(s);
+			return;
+		}
+
 		foreach (Station s in _stations)
 		{
 			if (!IsInstanceValid(s.Body)) continue;
 			s.Clock += (float)delta;
 			float t = s.Clock - s.Offset;
+			if (Butts) { Butt(s, t); continue; }
 			switch (s.Kind)
 			{
 				case Kind.Firearm: Firearm(s, t); break;
 				case Kind.Knife: Knife(s, t); break;
 				default: Grenade(s, t); break;
 			}
+		}
+	}
+
+	/// <summary>Parado com a arma, e a coronhada a cada <see cref="ButtEvery"/> segundos.</summary>
+	private void Butt(Station s, float t)
+	{
+		int beat = t < 0.8f ? 0 : (int)((t - 0.8f) / ButtEvery) + 1;
+		Send(s, s.Slot, false, false, false, "coronhada");
+		if (beat > 0 && beat != s.Step)
+		{
+			s.Step = beat;
+			s.Body.RemoteAttack(s.Slot, s.Yaw, 0f, NetWire.ButtMove);
 		}
 	}
 

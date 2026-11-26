@@ -66,7 +66,7 @@ o renascer do bot (6 s).
 | Campo | Valor | O que faz |
 |---|---|---|
 | `HumanSpeed` | 3,2 m/s na cena (`src/scenes/player.tscn`; o código diz 3,0) | Base da velocidade. **Base do lobo também.** É a passada do clipe de corrida: subir faz o pé patinar |
-| `HumanSpeedBonus` | 1,08 | Só o humano anda isto acima da base (3,46 m/s); o lobo não muda |
+| `HumanSpeedBonus` | 0,8 | Só o humano: × a base (2,56 m/s; era 1,08, 3,46 m/s, até 26/11); o lobo não muda |
 | `JumpVelocity` | 4,4 m/s | Impulso do pulo do lobo (vezes `JumpMultiplier`) e base do salto da parede |
 | `HumanJumpVelocity` | 4,75 m/s | Impulso do pulo do humano. Com `HumanGravityScale`, sobe 0,80 m e volta em 0,67 s |
 | `HumanGravityScale` | 1,45 | Gravidade do humano no ar (o lobo usa 1). Pulo mais rápido e queda mais seca |
@@ -84,7 +84,14 @@ o renascer do bot (6 s).
 | `WolfBackFactor` | 0,75 | De lobo, andando para trás: × a velocidade normal (na diagonal de trás, em parte). O humano não muda |
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
 | `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Andando em pé e na parede: quanto a animação corre em relação ao corpo (1 acompanha, 0,7 é 30% mais lenta; a pata desliza a diferença). De quatro, o mesmo (acompanha o corpo). Só a animação. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
-| `WalkSpeedFactor` | 0,42 | Velocidade andando com Shift (só humano) |
+| `HumanSprintFactor` | 1,45 | A corrida do Shift (só humano, só para a frente, em pé): 3,71 m/s, de arma abaixada, sem atirar |
+| `SprintRecover` | 0,23 s | Depois de correr, quanto a arma leva para voltar antes de atirar (o clique fica guardado) |
+| `ViewModel.RigSprintIn` / `RigSprintOut` | 0,26 s / 0,23 s | Em quanto tempo os braços abaixam a arma para correr e a trazem de volta (a volta cabe no `SprintRecover`) |
+| `HeldWeapon.SprintLean` | 9° | Em terceira pessoa, quanto o tronco de quem corre inclina para a frente além da animação |
+| `HeldWeapon.SprintSpine` / `SprintSpineTime` | 0,9 / 0,3 s | Em terceira pessoa, quanto do tronco (coluna, pescoço, cabeça) fica com a animação de correr do corpo em vez da pose da arma, e em quanto tempo passa de uma para a outra |
+| `ViewModel.RigSprintStepAt` / `RigSprintLock` | 0,15 / 3 | Os braços correndo em primeira pessoa tocam presos ao passo do corpo: em que ponto do ciclo o pé bate, e com que força o clipe corrige o atraso |
+| `Hud.BreathSprintDb` / `BreathSprintIn` / `BreathSprintOut` | −27 dB / 3,5 s / 4 s | A respiração de quem corre: volume com o fôlego gasto, em quanto entra e em quanto some |
+| `CharacterAnimator.SprintClip` / `SprintPaceMax` | 3,35 m/s / 1,6 | A passada do clipe de correr do corpo e até quanto ele acelera |
 | `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula (é o hitbox do corpo) |
 | `StandEyeHeight` / `CrouchEyeHeight` | 0,62 / 0,1 m | Altura do olho a partir do centro da cápsula |
 | `CrouchLerpSpeed` | 22 | Rapidez de agachar e levantar |
@@ -115,9 +122,9 @@ o renascer do bot (6 s).
 
 | | Humano | Bruto | Ligeiro |
 |---|---|---|---|
-| Velocidade | 3,46 m/s (faca 3,58) | 4,15 (×1,298) | 4,50 (×1,406) |
+| Velocidade | 2,56 m/s (faca 2,65) | 4,15 (×1,298) | 4,50 (×1,406) |
 | Agachado | 1,46 | 1,75 | 1,90 |
-| Shift | 1,36 | — | — |
+| Correndo (Shift) | 3,71 | — | — |
 | De quatro (W W) | — | 5,06 | 5,48 |
 | Na parede | — | 4,45 | 4,82 |
 | Altura do pulo | 0,99 m | 1,62 m (×1,28) | 2,50 m (×1,59) |
@@ -649,10 +656,11 @@ Abra no Inspector e mude ali — vale para os dois.
 | Campo | Valor |
 |---|---|
 | `StepHuman` | 13 |
+| `StepHumanSprint` | 22 — o passo do humano correndo com Shift (passada `StrideHumanSprint` 1,12 m) |
 | `StepWolf` | 20 |
 | `Land` | 17 |
 | `Howl` | 45 (já no começo do rugido e a cada 0,5 s) |
-| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,19 / 1,32 / 2,37 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça. De lobo, só vale sem o modelo: com ele, em pé a passada é a do andar que toca (frente, trás ou lado) e de quatro o som sai uma vez por ciclo do clipe, quando as patas se juntam (`WolfVisual.SprintGather`, 0,567 s) |
+| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 0,94 / 1,32 / 2,37 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça. De lobo, só vale sem o modelo: com ele, em pé a passada é a do andar que toca (frente, trás ou lado) e de quatro o som sai uma vez por ciclo do clipe, quando as patas se juntam (`WolfVisual.SprintGather`, 0,567 s) |
 | `NoiseRadius` da arma | 45 a 80 (seção 7) |
 
 O som do lugar fica no mapa (`src/scripts/meta/Maps.cs`):
@@ -674,7 +682,7 @@ No nó `CombatantAudio`: `ImpactRange` 25 m (bala na parede),
 `CasingDelay` 0,42 s e `CasingInterval` 0,28 s (cápsula no chão). No
 `WorldAudio`: `OwnStepVolume` −3 dB.
 
-Agachado e com Shift não fazem ruído; a faca é silenciosa. Teste:
+Agachado não faz ruído; a faca é silenciosa. Correndo com Shift o passo se ouve de mais longe. Teste:
 `Ruido`.
 `WorldAudio.ShotReach` 120 m (até onde você ouve o tiro de outro),
 `DistantShot` 35 m (troca para o som distante), `OwnStepVolume` −3 dB.

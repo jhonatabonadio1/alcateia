@@ -676,6 +676,7 @@ public partial class ViewModel
 		// Fazendo alguma coisa (tiro, golpe, saque, recarga...): o relógio de olhar a arma volta ao zero.
 		if (_rigBusy > 0 && _rigPlaying != "inspecionar") _idle = 0f;
 		_rigBusy -= dt;
+		PaceRig();
 		FollowMuzzle();
 
 		// A armada do golpe acabou: a volta da lâmina.
@@ -732,8 +733,12 @@ public partial class ViewModel
 
 		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
 		bool moving = _body.IsOnFloor() && flat.Length() > 0.5f;
-		if (RigInspect(dt, moving || flat.Length() > 0.5f)) return;
-		string rest = _rigAiming
+		// Correndo (Shift): a arma abaixada, no passo do corpo. Quem corre não
+		// está à toa, mesmo travado numa parede: não olha a arma sozinho.
+		bool sprinting = !_rigAiming && _rigClips.ContainsKey("correr") && BodyMotion.HumanSprinting(_body);
+		if (RigInspect(dt, moving || flat.Length() > 0.5f || sprinting)) return;
+		string rest = sprinting ? "correr"
+			: _rigAiming
 			? moving && _rigClips.ContainsKey("mira_andar") ? "mira_andar" : "mira"
 			: moving && _rigClips.ContainsKey("andar") ? "andar" : "parado";
 
@@ -741,15 +746,74 @@ public partial class ViewModel
 		// pouco. Descendo escada ou esbarrando numa quina o corpo perde o
 		// chão por um quadro, e cada troca recomeçava a animação do
 		// início: os braços ficavam reiniciando (Jhon, 13/11).
+		// A corrida não espera: entra e sai na hora (a arma tem de voltar
+		// antes do tiro, Player.SprintRecover).
 		bool resting = _rigPlaying is "parado" or "andar" or "mira" or "mira_andar";
-		if (resting && _rigPlaying != rest && _rigPlayer.IsPlaying())
+		if (resting && !sprinting && _rigPlaying != rest && _rigPlayer.IsPlaying())
 		{
 			_rigRestHold += dt;
 			if (_rigRestHold < RigRestDelay) return;
 		}
 		_rigRestHold = 0f;
 
-		if (_rigPlaying != rest || !_rigPlayer.IsPlaying()) PlayRig(rest, 0, 0.2);
+		if (_rigPlaying != rest || !_rigPlayer.IsPlaying())
+			PlayRig(rest, 0, sprinting ? RigSprintIn : _rigPlaying == "correr" ? RigSprintOut : 0.2);
+	}
+
+	/// <summary>Em quanto tempo os braços abaixam a arma para correr e em
+	/// quanto a trazem de volta (s). A volta cabe na espera do tiro
+	/// (<see cref="Player.SprintRecover"/>). Eram 0,18 e 0,16, mais
+	/// depressa que mirar (0,26) e sacar (0,36 a 0,4): destoava (Jhon,
+	/// 26/11: "está muito rápida, precisa ser um pouco mais lenta e
+	/// sincronizada com os outros movimentos das armas"). Foram 0,34 e
+	/// 0,30 por um instante ("deixe a entrada e saída da corrida um pouco
+	/// mais rápido"): ficam no tempo de mirar e desmirar.</summary>
+	[Export] public float RigSprintIn = 0.26f;
+	[Export] public float RigSprintOut = 0.23f;
+
+	/// <summary>A cadência dos braços correndo sem o passo do corpo para
+	/// seguir (corpo sem <see cref="Player"/>): fixa. Com ele, os braços
+	/// andam no passo (<see cref="RigSprintStepAt"/>).</summary>
+	[Export] public float RigSprintPace = 0.7f;
+
+	/// <summary>Em que ponto do ciclo do "correr" o pé bate no chão (fração
+	/// do clipe; o outro pé, meio ciclo depois): onde a arma chega mais
+	/// embaixo na corrida da referência. Os braços tocam presos ao passo do
+	/// corpo (<see cref="BodyNoise.StridePhase"/>, o mesmo que faz o som do
+	/// pé): cada batida da arma cai junto com a pisada (Jhon, 26/11:
+	/// "sincronizar os passos"). Antes tocavam num ritmo fixo, solto do pé.</summary>
+	[Export(PropertyHint.Range, "0,0.5")] public float RigSprintStepAt = 0.15f;
+
+	/// <summary>Com que força o clipe corrige o atraso em relação ao passo
+	/// (por ciclo de diferença). Baixo, demora a acertar; alto, dá tranco.</summary>
+	[Export] public float RigSprintLock = 3f;
+
+	/// <summary>Quanto o "correr" está atrás do passo do corpo, em fração do
+	/// ciclo (leitura para o teste).</summary>
+	public float RigSprintBehind { get; private set; }
+
+	/// <summary>A velocidade do clipe dos braços: 1, menos correndo, quando
+	/// segue o passo do corpo — a cadência é a das pisadas, e o que falta
+	/// de fase o clipe ganha ou perde aos poucos.</summary>
+	private void PaceRig()
+	{
+		float pace = 1f;
+		if (_rigPlaying == "correr" && _rigClips.TryGetValue("correr", out Clip clip) && clip.Length > 0.01)
+		{
+			pace = RigSprintPace;
+			if (_player != null && _player.StrideLength > 0.01f)
+			{
+				// Duas pisadas por ciclo: a cadência sai da velocidade e da passada.
+				float speed = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z).Length();
+				pace = speed / (2f * _player.StrideLength) * (float)clip.Length;
+				float want = Mathf.PosMod(RigSprintStepAt + (_player.Steps % 2 + _player.StridePhase) * 0.5f, 1f);
+				float at = Mathf.PosMod((float)((_rigPlayer.CurrentAnimationPosition - clip.From) / clip.Length), 1f);
+				float behind = Mathf.PosMod(want - at + 0.5f, 1f) - 0.5f;
+				RigSprintBehind = behind;
+				pace = Mathf.Clamp(pace * (1f + behind * RigSprintLock), 0.3f, 2.2f);
+			}
+		}
+		if (!Mathf.IsEqualApprox(_rigPlayer.SpeedScale, pace)) _rigPlayer.SpeedScale = pace;
 	}
 
 	/// <summary>Depois de quanto tempo parado, sem fazer nada, o jogador

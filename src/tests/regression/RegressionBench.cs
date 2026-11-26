@@ -219,7 +219,7 @@ public partial class RegressionBench : Node
 	// ------------------------------------------------------------- teclas
 
 	private static readonly string[] Actions =
-		{ "move_forward", "move_back", "move_left", "move_right", "walk", "crouch", "jump", "attack", "special", "pounce" };
+		{ "move_forward", "move_back", "move_left", "move_right", "sprint", "crouch", "jump", "attack", "special", "pounce" };
 
 	public static void Press(params string[] actions)
 	{

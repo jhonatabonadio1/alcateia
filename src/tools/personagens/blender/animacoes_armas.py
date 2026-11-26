@@ -74,16 +74,16 @@ ARMAS = {
 
 # Os clipes que o corpo toca (HeldRig): o descanso, as ações e a mira.
 CLIPES = {
-    'fuzil': ('parado', 'andar', 'tiro', 'recarga', 'sacar',
+    'fuzil': ('parado', 'andar', 'tiro', 'recarga', 'sacar', 'correr', 'coronhada',
               'mirar', 'mira', 'mira_andar', 'mira_tiro', 'desmirar'),
-    'pistola': ('parado', 'andar', 'tiro', 'recarga', 'recarga_vazia', 'sacar',
+    'pistola': ('parado', 'andar', 'tiro', 'recarga', 'recarga_vazia', 'sacar', 'correr', 'coronhada',
                 'mirar', 'mira', 'mira_andar', 'mira_tiro', 'desmirar'),
-    'faca': ('parado', 'andar', 'golpe', 'golpe2', 'golpe3', 'golpe4', 'sacar', 'estocada'),
-    'granada': ('parado', 'andar', 'sacar', 'armar', 'armado', 'arremesso'),
+    'faca': ('parado', 'andar', 'golpe', 'golpe2', 'golpe3', 'golpe4', 'sacar', 'estocada', 'correr'),
+    'granada': ('parado', 'andar', 'sacar', 'armar', 'armado', 'arremesso', 'correr'),
 }
 
 # Os que se repetem (o jogo toca em laço).
-LACOS = ('parado', 'andar', 'mira', 'mira_andar', 'armado')
+LACOS = ('parado', 'andar', 'mira', 'mira_andar', 'armado', 'correr')    # 'correr': a corrida do Shift (armas/correr.py)
 
 # Em que postura a arma fica em cada clipe; mirar e desmirar passam de uma
 # para a outra no ritmo em que a arma da primeira pessoa passa.

@@ -187,7 +187,8 @@ public static class HoldClips
 			{
 				Name = name.AsString(),
 				Frames = frames,
-				Fps = fps,
+				// O clipe amostrado em outro ritmo leva o dele (a coronhada, a 60).
+				Fps = d.TryGetValue("fps", out Variant own) ? own.AsSingle() : fps,
 				Loop = d.TryGetValue("laco", out Variant loop) && loop.AsBool(),
 				BoneCount = bones,
 				Bones = new Quaternion[frames * bones],

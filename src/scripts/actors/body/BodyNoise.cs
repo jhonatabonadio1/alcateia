@@ -12,8 +12,8 @@ using Godot;
 /// - **Baque** ao pousar.
 /// - **Rugido** já no começo e a cada meio segundo enquanto dura.
 ///
-/// Quem anda em silêncio (agachado, ou com Shift) não emite passo. Os
-/// raios vêm do <see cref="BodyNoiseProfile"/>.
+/// Quem anda agachado não emite passo; o humano correndo (Shift) faz mais
+/// barulho que andando. Os raios vêm do <see cref="BodyNoiseProfile"/>.
 /// </summary>
 public sealed class BodyNoise
 {
@@ -32,10 +32,13 @@ public sealed class BodyNoise
 
 	/// <summary>Quantos passos o corpo já deu, e em que ponto da passada
 	/// de agora ele está (0 logo depois da pisada, 1 na seguinte). Conta
-	/// também quando o passo é mudo (agachado, Shift). É por aqui que o
+	/// também quando o passo é mudo (agachado). É por aqui que o
 	/// balanço da arma na mão cai junto com o som do pé.</summary>
 	public int Steps { get; private set; }
 	public float StridePhase => Mathf.Clamp(_walked / Mathf.Max(_stride, 0.01f), 0f, 1f);
+
+	/// <summary>A passada de agora, em metros (0 antes do primeiro passo).</summary>
+	public float StrideLength => _stride;
 	private double _howlTimer;
 
 	public BodyNoise(Node3D source, BodyNoiseProfile profile)
@@ -48,6 +51,8 @@ public sealed class BodyNoise
 	/// lobo em pé); 0 usa a do perfil.</param>
 	/// <param name="beats">Batidas contadas pela animação (a corrida de
 	/// quatro: uma quando as patas se juntam); −1 conta pela distância.</param>
+	/// <param name="sprinting">De lobo, a corrida de quatro; de humano, a
+	/// corrida do Shift (outra passada e um passo mais alto).</param>
 	public void Update(double delta, bool grounded, Vector3 velocity, bool isWolf, bool howling, bool silent,
 		bool sprinting = false, float stride = 0f, int beats = -1)
 	{
@@ -87,7 +92,8 @@ public sealed class BodyNoise
 		_beats = -1;
 
 		if (stride <= 0f)
-			stride = !isWolf ? _profile.StrideHuman : sprinting ? _profile.StrideWolfSprint : _profile.StrideWolf;
+			stride = isWolf ? (sprinting ? _profile.StrideWolfSprint : _profile.StrideWolf)
+				: sprinting ? _profile.StrideHumanSprint : _profile.StrideHuman;
 		float speed = new Vector3(velocity.X, 0, velocity.Z).Length();
 		_stride = stride;
 
@@ -108,6 +114,7 @@ public sealed class BodyNoise
 		// em silêncio.
 		if (silent) return;
 
-		NoiseBus.Emit(_source.GlobalPosition, isWolf ? _profile.StepWolf : _profile.StepHuman, NoiseKind.Step, _source);
+		float radius = isWolf ? _profile.StepWolf : sprinting ? _profile.StepHumanSprint : _profile.StepHuman;
+		NoiseBus.Emit(_source.GlobalPosition, radius, NoiseKind.Step, _source);
 	}
 }

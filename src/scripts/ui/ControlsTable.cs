@@ -9,9 +9,9 @@ public static class ControlsTable
 	{
 		("W A S D", "Andar"),
 		("Espaço", "Pular · saltar da parede"),
-		("Shift", "Andar devagar e em silêncio (humano)"),
+		("Shift", "Correr, de arma abaixada (humano)"),
 		("Ctrl", "Agachar"),
-		("V", "Coronhada (com arma de fogo)"),
+		("V", "Coronhada (com a faca, golpeia; com a granada, lança)"),
 		("Z", "Rádio do time (1 a 0 escolhe a fala)"),
 		("Clique esquerdo", "Atacar"),
 		("Q", "Lobo: especial — salta na mira (também no ar). Enche com abates e, devagar, com o tempo"),

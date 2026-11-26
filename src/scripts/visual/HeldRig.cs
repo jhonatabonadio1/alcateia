@@ -294,9 +294,11 @@ public partial class HeldRig : Node3D
 	/// O quadro: a granada armada, o descanso (parado ou andando) quando
 	/// nada está tocando, e a boca do cano no lugar.
 	/// </summary>
-	public void Tick(double delta, bool grenadeReady, bool moving, bool aiming = false)
+	/// <param name="sprintPace">Correndo (Shift): a velocidade em que o
+	/// "correr" toca, a das pernas do corpo; 0 fora da corrida.</param>
+	public void Tick(double delta, bool grenadeReady, bool moving, bool aiming = false, float sprintPace = 0f)
 	{
-		Decide(delta, grenadeReady, moving, aiming);
+		Decide(delta, grenadeReady, moving, aiming, sprintPace > 0f);
 
 		// A arma volta para onde a animação a deixou (Carry muda) e a
 		// animação anda.
@@ -307,7 +309,10 @@ public partial class HeldRig : Node3D
 			Skeleton.SetBonePoseScale(_gun, _gunScale);
 			_carried = false;
 		}
-		Player.Advance(delta);
+		// A corrida anda no passo do corpo; o resto, no tempo do clipe.
+		double pace = Playing == "correr" && sprintPace > 0f ? sprintPace : 1;
+		if (Playing == "correr") Speed = pace;
+		Player.Advance(delta * pace);
 		if (_blendLeft > 0)
 		{
 			_blendLeft -= delta;
@@ -319,7 +324,7 @@ public partial class HeldRig : Node3D
 	public bool Aimed => _aimed;
 	private bool _aimed;
 
-	private void Decide(double delta, bool grenadeReady, bool moving, bool aiming)
+	private void Decide(double delta, bool grenadeReady, bool moving, bool aiming, bool sprinting)
 	{
 		_busy -= delta;
 		if (_releaseIn >= 0 && (_releaseIn -= delta) < 0 && _grenade != null) _grenade.Visible = false;
@@ -347,17 +352,22 @@ public partial class HeldRig : Node3D
 				return;
 			}
 		}
-		string rest = aim ? (moving && Has("mira_andar") ? "mira_andar" : "mira")
+		// Correndo (Shift): a arma abaixada, como na primeira pessoa.
+		bool run = sprinting && !aim && Has("correr");
+		string rest = run ? "correr"
+			: aim ? (moving && Has("mira_andar") ? "mira_andar" : "mira")
 			: moving && Has("andar") ? "andar" : "parado";
 		// Só troca entre parado e andar depois de o novo durar um pouco (um
-		// degrau tira o corpo do chão por um quadro).
-		if (Playing is "parado" or "andar" or "mira" or "mira_andar" && Playing != rest)
+		// degrau tira o corpo do chão por um quadro). A corrida entra na hora.
+		if (!run && Playing is "parado" or "andar" or "mira" or "mira_andar" && Playing != rest)
 		{
 			_restHold += delta;
 			if (_restHold < 0.18) return;
 		}
 		_restHold = 0;
-		if (Playing != rest || !Player.IsPlaying()) Play(rest, 0, 0.2);
+		// Abaixar a arma para correr e trazê-la de volta leva o mesmo que na
+		// primeira pessoa (ViewModel.RigSprintIn e RigSprintOut).
+		if (Playing != rest || !Player.IsPlaying()) Play(rest, 0, run ? 0.26 : Playing == "correr" ? 0.23 : 0.2);
 	}
 
 	private double _restHold;
