@@ -43,6 +43,9 @@ public sealed class ServerBody
 	/// <summary>O ritmo de dano de quem atira, por tipo de golpe.</summary>
 	public readonly DamageBudget GunBudget = new(), MeleeBudget = new(), GrenadeBudget = new();
 
+	/// <summary>O compasso dos golpes do lobo deste corpo (<see cref="WolfStrikePace"/>).</summary>
+	public readonly WolfStrikePace WolfPace = new();
+
 	public Health Health { get; }
 	public FormController Form { get; }
 	public Weapon Weapon { get; }

@@ -119,7 +119,7 @@ public sealed class HitCheck
 			case KillCause.Wolf:
 				if (shot.Form is not (Form.Wolf or Form.ShiftingToWolf)) return HitVerdict.WrongWeapon;
 				range = WolfReach;
-				max = WolfMax(shooter);
+				max = WolfMoveMax(shooter, hit.WeaponId);
 				sight = false;
 				checkAim = false;
 				break;
@@ -207,6 +207,17 @@ public sealed class HitCheck
 		amount = Math.Min(amount, cap);
 		if (!(amount > 0)) return HitVerdict.NotAllowed;
 
+		// O compasso do lobo: no mesmo alvo, um golpe por garrada; um bote por
+		// espera do bote (alpha fechado, 26/11: o clique em rajada).
+		if (hit.Cause == KillCause.Wolf)
+		{
+			Weapon w = shooter.Weapon;
+			int strikeTicks = (int)Math.Floor(w.StrikeSpacing * NetRates.TickRate) - PaceSlackTicks;
+			int leapTicks = (int)Math.Floor(w.LeapCooldown * NetRates.TickRate) - PaceSlackTicks;
+			if (!shooter.WolfPace.Allow(hit.Target, hit.Seq, hit.WeaponId == Kill.WolfDiveId, strikeTicks, leapTicks))
+				return HitVerdict.TooFast;
+		}
+
 		// O ritmo: o dano por segundo que a arma dá.
 		DamageBudget budget = hit.Cause switch
 		{
@@ -275,18 +286,33 @@ public sealed class HitCheck
 		}
 	}
 
-	/// <summary>O golpe mais forte do lobo: o maior multiplicador (combo,
-	/// salto ou bote) contra humano, caindo do alto.</summary>
-	private static float WolfMax(ServerBody shooter)
+	/// <summary>Folga do compasso do lobo, em comandos: o golpe que bate um
+	/// quadro antes (a garrada parada que vira andando) não é trapaça.</summary>
+	private const int PaceSlackTicks = 1;
+
+	/// <summary>O teto do golpe que o jogo disse que deu: a garrada mais forte
+	/// do combo, o bote ou o especial (o principal), contra humano e caindo do
+	/// alto. Golpe sem nome (jogo antigo): o maior de todos.</summary>
+	private static float WolfMoveMax(ServerBody shooter, string move)
 	{
 		Weapon w = shooter.Weapon;
 		WolfBreed breed = shooter.Form.Breed;
 		float attack = breed?.AttackDamage ?? 120f, air = breed?.AirAttackBonus ?? 1.5f;
 		float combo = 1f;
 		foreach (float c in w.ComboDamage ?? Array.Empty<float>()) combo = Math.Max(combo, c);
-		float move = Math.Max(combo, Math.Max(w.LeapDamageBonus, w.HeavyDamageBonus));
-		return attack * move * Math.Max(w.ClawVsHumanBonus, 1f) * Math.Max(air, 1f);
+		float multiplier = move switch
+		{
+			Kill.WolfClawId => combo,
+			Kill.WolfDiveId => w.LeapDamageBonus,
+			Kill.WolfPounceId => w.HeavyDamageBonus,
+			_ => Math.Max(combo, Math.Max(w.LeapDamageBonus, w.HeavyDamageBonus))
+		};
+		return attack * multiplier * Math.Max(w.ClawVsHumanBonus, 1f) * Math.Max(air, 1f);
 	}
+
+	/// <summary>O golpe mais forte do lobo: o maior multiplicador (combo,
+	/// salto ou bote) contra humano, caindo do alto.</summary>
+	private static float WolfMax(ServerBody shooter) => WolfMoveMax(shooter, "");
 
 	private static void LoadGrenade()
 	{

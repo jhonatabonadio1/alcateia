@@ -168,3 +168,40 @@ public sealed class DamageBudget
 
 	public double Level => _level;
 }
+
+/// <summary>
+/// O ritmo dos golpes do lobo no servidor (alpha fechado, 26/11: "clique
+/// repetido nos ataques do lobo pode estar passando do limite pretendido").
+/// O balde de dano (<see cref="DamageBudget"/>) é largo — a garra pega mais
+/// de um de uma vez, e o especial fere em área —, então quem segura o clique
+/// é o compasso: no mesmo alvo, dois golpes do lobo a menos de um golpe de
+/// distância (a garrada encadeada, 0,34 s) não valem; e dois botes a menos
+/// da espera do bote também não. Conta em passos de comando do atirador (o
+/// número do comando em que o golpe bateu), não na hora em que o acerto
+/// chegou: a rede junta e separa pacotes, o comando não.
+/// </summary>
+public sealed class WolfStrikePace
+{
+	private readonly System.Collections.Generic.Dictionary<long, uint> _lastOn = new();
+	private uint _leapSeq;
+	private bool _leapSeen;
+
+	/// <param name="seq">O comando do golpe (0: jogo antigo, sem número — vale).</param>
+	/// <param name="leap">O golpe é um bote: o mesmo bote pega vários de uma vez
+	/// (mesmo comando), outro bote só depois de <paramref name="leapTicks"/>.</param>
+	public bool Allow(long target, uint seq, bool leap, int strikeTicks, int leapTicks)
+	{
+		if (seq == 0) return true;
+		if (_lastOn.TryGetValue(target, out uint last) && Gap(seq, last) < Math.Max(strikeTicks, 1)) return false;
+		if (leap && _leapSeen && seq != _leapSeq && Gap(seq, _leapSeq) < Math.Max(leapTicks, 1)) return false;
+		_lastOn[target] = seq;
+		if (leap)
+		{
+			_leapSeq = seq;
+			_leapSeen = true;
+		}
+		return true;
+	}
+
+	private static uint Gap(uint a, uint b) => a > b ? a - b : b - a;
+}
