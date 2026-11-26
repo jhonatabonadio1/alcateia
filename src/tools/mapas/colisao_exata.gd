@@ -29,7 +29,15 @@ extends SceneTree
 ## mercado (SM_Props_Market) ficam com caixa: a deles já é justa.
 const FINAS := ["SM_Floor_Light", "SM_Props_0", "SM_Props_BarProps", "SM_Props_Furniture", "SM_Props_CyberIce",
 	"SM_Props_Screen", "SM_Props_Cafe", "SM_Props_Bench", "SM_Nature_Flowerbed", "SM_Nature_Rock",
-	"SM_Nature_Log"]
+	"SM_Nature_Log",
+	"CementC"]
+
+## Destas, a forma é o casco convexo da peça, não a malha inteira: as pilhas de
+## sacos de cimento da Obra (26/11). A caixa cobria os cantos vazios da pilha e o
+## tiro de cima dos andaimes parava no ar ali (TiroDeCimaObra, com a câmera nos
+## olhos do corpo desde 26/11); a malha exata são 4 mil triângulos por pilha (132
+## pilhas), e o casco fica rente aos sacos com poucas faces.
+const CONVEXAS := ["CementC"]
 
 ## Peças sem colisão nenhuma no gerador que são sólidas: ganham a forma delas.
 const SOLIDAS_SEM_COLISAO := ["SM_Props_Ads"]
@@ -73,9 +81,13 @@ func _init():
 		if forma_no == null or desenho == null or desenho.mesh == null:
 			sem_desenho.append(nome)
 			continue
+		var convexa := false
+		for c in CONVEXAS:
+			if peca.begins_with(c):
+				convexa = true
 		if not formas.has(desenho.mesh):
-			formas[desenho.mesh] = desenho.mesh.create_trimesh_shape()
-		var forma: ConcavePolygonShape3D = formas[desenho.mesh]
+			formas[desenho.mesh] = desenho.mesh.create_convex_shape(true, false) if convexa else desenho.mesh.create_trimesh_shape()
+		var forma: Shape3D = formas[desenho.mesh]
 		var antes: Vector3 = forma_no.shape.size if forma_no.shape is BoxShape3D else Vector3.ZERO
 		forma_no.shape = forma
 		# a forma no lugar do desenho, no espaço do corpo
@@ -84,12 +96,13 @@ func _init():
 		if absf(escala.x - escala.y) > 0.001 or absf(escala.y - escala.z) > 0.001:
 			esticadas.append("%s %s" % [nome, escala])
 		trocadas += 1
-		triangulos += forma.get_faces().size() / 3
+		var faces: int = forma.get_faces().size() / 3 if forma is ConcavePolygonShape3D else (forma as ConvexPolygonShape3D).points.size()
+		triangulos += faces
 		var tipo := peca.rstrip("0123456789").trim_suffix("_")
 		if not por_tipo.has(tipo):
 			por_tipo[tipo] = [0, 0, antes]
 		por_tipo[tipo][0] += 1
-		por_tipo[tipo][1] += forma.get_faces().size() / 3
+		por_tipo[tipo][1] += faces
 
 	# As sólidas que ficaram sem colisão: um corpo novo com a forma da peça,
 	# no lugar do desenho (o nome segue o das outras: pc<k>_<peça>).
