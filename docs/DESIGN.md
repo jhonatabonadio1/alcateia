@@ -163,6 +163,23 @@ acabar.
 - **No canto, vira e continua.** Uma parede à frente vira a parede da
   corrida: o lobo segue por ela, para longe da antiga, no mesmo passo.
   Antes ele soltava e regrudava na parede de trás, voltando
+- **A parede que continua não é ponta** (26/11, alpha fechado: "não
+  contorna mais — anda reto"). Nos mapas de verdade a face "acaba" toda
+  hora sem acabar: o degrau de uma fachada, o fim de um pilar raso, um
+  batente, a junta entre duas casas. Passando da ponta, o lobo procura a
+  mesma face logo atrás (até `WallStepBack`, 0,6 m de fundo) ou depois de
+  um vão (até `WallGapMax`, 1,6 m: porta, janela): achou, segue nela — no
+  vão, reto pela linha da parede, sem entrar nele. A regra da quina vale
+  quando não há continuação, medida pela face em que ele corria (e não
+  pelo sentido de agora, que gira ao contornar um pilar à frente)
+- **Obstáculo pequeno, passa por cima.** Caixote, ar-condicionado,
+  peitoril, cano: a cápsula inteira varre o caminho à frente, e o que
+  fecha com o topo até `WallClimbReach` (1,8 m) acima de onde ele corre o
+  lobo sobe por cima (a 7 m/s) e segue na parede, na altura nova. Antes o
+  raio do meio do corpo só via o que estava na altura da barriga: o que
+  batia na cabeça ou nas patas o fazia escorregar por baixo ou parar e
+  cair. Só sobe ao lado da parede (acima do topo dela, não), e não sobe
+  em gente nem no limite do mapa
 - **A parede é o ponto mais próximo dela**, não o que um raio acerta:
   um cilindro em volta do lobo pega a geometria e `GetRestInfo` dá o
   ponto de contato, e a normal é a direção do ponto até o lobo. Ponto

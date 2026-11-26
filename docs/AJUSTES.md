@@ -185,6 +185,10 @@ Multiplicam a classe do jogador (não a dos bots):
 | `WallRunClearance` | 0,7 m | Checagem à frente: bater em algo solta |
 | `WallEndMargin` | 0,1 m | Quanto passa da ponta antes de decidir a quina |
 | `WallWrapMinFace` | 0,25 m | Face mínima para contornar a quina (mais fina: segue reto) |
+| `WallStepBack` | 0,6 m | Passou da ponta e a parede continua até esta fundura atrás da face (degrau da fachada, fim de pilar, batente): segue nela em vez de achar que acabou (26/11) |
+| `WallGapMax` | 1,6 m | O maior vão (porta, janela, espaço entre casas) que o lobo atravessa correndo pela linha da parede; maior que isto, solta como na ponta (26/11) |
+| `WallClimbReach` | 1,8 m | Obstáculo à frente com o topo até esta altura acima de onde corre: o lobo sobe por cima e segue na parede. Mais alto é parede (vale o canto) (26/11) |
+| `WallClimbSpeed` | 7 m/s | Velocidade da subida por cima do obstáculo |
 | `CornerGrace` | 0,15 s | Tempo sem encostar em nada antes de soltar |
 | `WallJumpClimb` | 1,02 | Altura do salto da parede (era 1,35; −40%) |
 | `WallJumpPush` | 6,5 m/s | Empurrão para fora no salto da parede |

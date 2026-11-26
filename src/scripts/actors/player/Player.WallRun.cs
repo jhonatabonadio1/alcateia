@@ -75,6 +75,23 @@ public partial class Player
 	/// faz o lobo seguir reto.</summary>
 	[Export] public float WallWrapMinFace = 0.25f;
 
+	/// <summary>Até que fundura, atrás da face que acabou, a parede que
+	/// continua conta como a mesma corrida (m): o degrau de uma fachada, o
+	/// fim de um pilar, de um batente ou de uma porta de contêiner. O lobo
+	/// segue colado nela em vez de achar que a parede acabou (Jhon, 26/11:
+	/// "na parede, não contorna mais — anda reto").</summary>
+	[Export] public float WallStepBack = 0.6f;
+
+	/// <summary>Quanto o lobo sobe, no máximo, para passar por cima de um
+	/// obstáculo pequeno à frente na parede (caixote, ar-condicionado,
+	/// peitoril, cano), em metros acima de onde corre. Mais alto que isto
+	/// não é pequeno: é parede, e vale a quina. Jhon, 26/11: "passa por
+	/// baixo de obstáculos pequenos em vez de subir neles".</summary>
+	[Export] public float WallClimbReach = 1.8f;
+
+	/// <summary>Velocidade com que sobe por cima do obstáculo, em m/s.</summary>
+	[Export] public float WallClimbSpeed = 7f;
+
 	/// <summary>Indo para longe da parede mais rápido que isto (m/s), não
 	/// gruda. É o que impede de regrudar na ponta que acabou de deixar.</summary>
 	[Export] public float WallLeaveSpeed = 0.5f;
@@ -177,6 +194,24 @@ public partial class Player
 	/// <summary>Contornando uma quina: o sentido gira com a parede até a
 	/// face seguinte.</summary>
 	private bool _rounding;
+
+	/// <summary>A face em que o lobo corre de fato (normal e sentido), a
+	/// do último quadro com a parede ao lado, e não na frente nem atrás.
+	/// Chegando perto de um pilar ou de uma saliência, o sentido gira para
+	/// contorná-la; a quina seguinte é medida pela face, não por esse
+	/// sentido torto (era o que fazia a parede "acabar" no meio).</summary>
+	private Vector3 _faceNormal, _faceAlong;
+
+	/// <summary>A face foi vista de lado desde que grudou (ou virou num canto):
+	/// sem isto, a normal guardada é a do grudar, que perto de uma ponta sai
+	/// na diagonal.</summary>
+	private bool _faceKnown;
+
+	/// <summary>Subindo por cima de um obstáculo à frente.</summary>
+	private bool _climbing;
+
+	/// <summary>O lobo está passando por cima de algo na parede (para os testes).</summary>
+	public bool IsWallClimbing => _onWall && _climbing;
 
 	/// <summary>
 	/// Corrida em parede. Só no lobo, só no ar, só na descida do pulo,
@@ -349,6 +384,10 @@ public partial class Player
 			return false;
 		}
 
+		_faceNormal = _wallNormal;
+		_faceAlong = _wallAlong;
+		_faceKnown = FaceStraightAhead(normal);
+		_climbing = false;
 		WallLog($"stuck, normal {_wallNormal}, direction {_wallAlong}");
 		// Na parede não se bate: a garrada que vinha do ar some, e o relógio dela
 		// junto — ao sair da parede, o clique arranha na hora (Jhon, 24/11).
@@ -428,7 +467,28 @@ public partial class Player
 			_wallNormal = normal;
 			_cornerGrace = 0;
 			_rounding = false;
+			RememberFace(normal);
 			return true;
+		}
+
+		// Atravessando um vão (porta, janela, o espaço entre duas casas): segue
+		// reto pela linha da parede, sem puxar para dentro dele, até a parede
+		// voltar ao lado.
+		if (_gapLeft > 0f)
+		{
+			if (normal.Dot(_faceNormal) > 0.85f && Mathf.Abs(normal.Dot(_wallAlong)) < 0.2f)
+			{
+				_gapLeft = 0f;
+				WallLog("across the gap: back on the wall");
+			}
+			else
+			{
+				normal = _faceNormal;
+				wallDistance = WallHoldDistance;
+				_wallNormal = normal;
+				_cornerGrace = 0;
+				return true;
+			}
 		}
 
 		// O ponto de parede mais perto ficou para trás: ou a parede
@@ -442,22 +502,38 @@ public partial class Player
 			wallDistance = besideDistance;
 		}
 
-		// Passou da ponta: é uma quina. Face seguinte larga (bloco,
-		// contêiner, pilar), contorna e continua nela. Estreita (a ponta
-		// de uma parede fina), segue reto: contornar ali era voltar pelo
-		// outro lado.
+		// Passou da ponta. Três casos:
+		//  - a parede continua logo atrás da ponta (o degrau da fachada, o
+		//    fim de um pilar, de um batente, de uma saliência): segue colado
+		//    nela, no mesmo sentido. Era o caso mais comum nos mapas de
+		//    verdade, e caía no terceiro: o lobo largava a parede e saía reto;
+		//  - é uma quina de verdade, com a face seguinte larga (bloco,
+		//    contêiner, pilar): contorna e continua nela;
+		//  - é a ponta de uma parede fina: segue reto (contornar ali era
+		//    voltar pelo outro lado).
 		float side = normal.Dot(_wallAlong);
 		if (side * wallDistance > WallEndMargin && !_rounding)
 		{
-			if (!NextFaceIsWide(normal, wallDistance))
+			if (WallGoesOn(normal, wallDistance, out Vector3 behind, out float behindDistance, out float gap))
+			{
+				normal = behind;
+				wallDistance = gap > 0f ? WallHoldDistance : behindDistance;
+				_wallAlong = _faceAlong;
+				side = 0f;
+				_gapLeft = gap;
+				WallLog(gap > 0f ? "a gap in the wall: keeps running across it" : "the wall goes on behind the edge");
+			}
+			else if (!NextFaceIsWide(normal, wallDistance, _faceKnown))
 			{
 				WallLog("thin wall end: keep going straight");
 				LeaveWallStraight();
 				return false;
 			}
-
-			_rounding = true;
-			WallLog("corner: wraps to the next face");
+			else
+			{
+				_rounding = true;
+				WallLog("corner: wraps to the next face");
+			}
 		}
 
 		_wallNormal = normal;
@@ -479,13 +555,118 @@ public partial class Player
 		if (_rounding && Mathf.Abs(side) < 0.01f)
 			_rounding = false;
 
+		// A parede ao lado (nem à frente nem atrás): é a face da corrida.
+		if (!_rounding && Mathf.Abs(side) < 0.05f)
+			RememberFace(normal);
+
 		return true;
 	}
+
+	/// <summary>Ao grudar: de frente para a parede há uma face reta, virada
+	/// para o corpo (não uma ponta, onde a normal do grudar sai na diagonal)?</summary>
+	private bool FaceStraightAhead(Vector3 normal)
+	{
+		var query = PhysicsRayQueryParameters3D.Create(GlobalPosition, GlobalPosition - normal * (WallHoldDistance + WallCheckDistance));
+		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+		if (hit.Count == 0) return false;
+		Vector3 n = (Vector3)hit["normal"];
+		n.Y = 0;
+		return n.LengthSquared() > 1e-6f && n.Normalized().Dot(normal) > 0.98f;
+	}
+
+	/// <summary>Guarda a face em que o lobo corre: a normal e o sentido ao
+	/// longo dela, no plano dela.</summary>
+	private void RememberFace(Vector3 normal)
+	{
+		Vector3 along = _wallAlong - normal * normal.Dot(_wallAlong);
+		along.Y = 0;
+		if (along.LengthSquared() < 0.04f) return;
+		_faceNormal = normal;
+		_faceAlong = along.Normalized();
+		_faceKnown = true;
+	}
+
+	/// <summary>
+	/// Passou da ponta da face e a parede continua: logo atrás dela, virada
+	/// para o mesmo lado, até <see cref="WallStepBack"/> mais funda (o degrau
+	/// de uma fachada, o fim de um pilar ou de uma saliência, a porta de um
+	/// contêiner) — ou depois de um vão de até <see cref="WallGapMax"/> (porta,
+	/// janela, o espaço entre duas casas). Raios de frente para a parede,
+	/// passando da ponta, procuram essa continuação. Devolve a normal, a
+	/// distância até ela e, se há vão, quanto falta atravessar (0 sem vão).
+	/// </summary>
+	private bool WallGoesOn(Vector3 normal, float distance, out Vector3 behind, out float behindDistance, out float gap)
+	{
+		behind = Vector3.Zero;
+		behindDistance = 0f;
+		gap = 0f;
+		if (!_faceKnown) return false;
+
+		Vector3 edge = GlobalPosition - normal * distance;
+		var exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		var space = GetWorld3D().DirectSpaceState;
+		// O que vem depois da ponta, de 40 em 40 cm: a face de novo na linha da
+		// antiga (um vão, ou só uma junta) ou mais funda (um degrau para trás).
+		// A linha da antiga ganha: num batente de porta, entrar no recuo e sair
+		// dele era um zigue-zague que acabava travado; reto pela linha, o lobo
+		// passa o vão como passa a porta.
+		Vector3 stepNormal = Vector3.Zero;
+		float stepDistance = 0f;
+		for (float ahead = 0.35f; ahead <= WallGapMax + 0.01f; ahead += 0.4f)
+		{
+			Vector3 from = edge + _faceAlong * ahead + _faceNormal * WallHoldDistance;
+			var query = PhysicsRayQueryParameters3D.Create(from, from - _faceNormal * (WallHoldDistance + WallStepBack));
+			query.Exclude = exclude;
+			var hit = space.IntersectRay(query);
+			if (hit.Count == 0) continue;
+			// Algo na linha do corpo, ou o limite do mapa: a parede não continua por ali.
+			if (hit["collider"].Obj is CharacterBody3D || IsInvisibleLimit(hit["collider"].Obj)) break;
+
+			Vector3 n = (Vector3)hit["normal"];
+			n.Y = 0;
+			Vector3 point = (Vector3)hit["position"];
+			float depth = (from - point).Dot(_faceNormal) - WallHoldDistance;   // atrás da linha da face antiga
+			// Na frente da face antiga: o que salta para fora é obstáculo, não continuação.
+			if (depth < -0.05f) break;
+			if (n.LengthSquared() < 1e-6f || n.Normalized().Dot(_faceNormal) < 0.85f) continue;
+			n = n.Normalized();
+			if (BackedByBarrier(point, n)) break;
+
+			if (depth <= 0.15f)
+			{
+				behind = n;
+				behindDistance = Mathf.Max((GlobalPosition - point).Dot(n), 0.05f);
+				gap = ahead > 0.4f ? ahead + 0.3f : 0f;
+				return true;
+			}
+			if (ahead < 0.4f)
+			{
+				stepNormal = n;
+				stepDistance = Mathf.Max((GlobalPosition - point).Dot(n), 0.05f);
+			}
+		}
+
+		if (stepNormal == Vector3.Zero) return false;
+		behind = stepNormal;
+		behindDistance = stepDistance;
+		return true;
+	}
+
+	/// <summary>O maior vão na parede que o lobo atravessa correndo nela
+	/// (porta, janela, o espaço entre duas casas), em metros.</summary>
+	[Export] public float WallGapMax = 1.6f;
+
+	/// <summary>Atravessando um vão: quanto falta, em metros.</summary>
+	private float _gapLeft;
 
 	/// <summary>Já na parede e ela sumiu: segue reto por
 	/// <see cref="CornerGrace"/> antes de soltar. Falso: soltou.</summary>
 	private bool KeepWithoutWall(double delta)
 	{
+		// No vão não há parede ao lado, e é assim mesmo.
+		if (_gapLeft > 0f) return true;
+
 		if (_cornerGrace <= 0)
 		{
 			// Perdeu a parede: segue reto um instante antes de soltar.
@@ -625,6 +806,10 @@ public partial class Player
 			return false;
 		}
 
+		// Obstáculo pequeno, com o topo ao alcance: não é canto, o lobo passa
+		// por cima dele (RunAlongWall sobe).
+		if (ClimbNeeded(_wallAlong) is float climb && climb > 0f) return true;
+
 		Vector3 turn = _wallNormal - front * _wallNormal.Dot(front);
 		turn.Y = 0;
 
@@ -638,9 +823,60 @@ public partial class Player
 		float pace = new Vector3(Velocity.X, 0, Velocity.Z).Dot(_wallAlong);
 		_wallAlong = turn.Normalized();
 		_wallNormal = front;
+		_faceNormal = front;
+		_faceAlong = _wallAlong;
+		_faceKnown = true;
 		velocity = _wallAlong * Mathf.Max(pace, 0f) + Vector3.Up * velocity.Y;
 		WallLog("inner corner: continues on the wall ahead");
 		return true;
+	}
+
+	/// <summary>A parede continua ao lado <paramref name="rise"/> metros acima:
+	/// subir só vale ao lado dela; acima do topo, o lobo sairia da parede e
+	/// cairia (aí valem a quina e o salto da parede).</summary>
+	private bool WallBesideAt(float rise)
+	{
+		Vector3 face = _faceKnown ? _faceNormal : _wallNormal;
+		Vector3 from = GlobalPosition + Vector3.Up * rise;
+		var query = PhysicsRayQueryParameters3D.Create(from, from - face * (WallHoldDistance + WallCheckDistance));
+		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+		return hit.Count > 0 && hit["collider"].Obj is not CharacterBody3D && !IsInvisibleLimit(hit["collider"].Obj);
+	}
+
+	/// <summary>
+	/// Quanto o lobo precisa subir para passar por cima do que está à frente
+	/// na parede: 0 se o caminho está livre; nulo se o que fecha não é
+	/// pequeno (mais alto que <see cref="WallClimbReach"/>, ou algo em cima
+	/// não deixa subir) — aí vale a quina ou a parada de sempre.
+	///
+	/// A cápsula do corpo inteiro varre o caminho (<see cref="WallRunClearance"/>
+	/// à frente): o raio do meio do corpo não via o que bate na cabeça ou nas
+	/// patas, e o corpo deslizava por baixo do obstáculo ou parava nele e
+	/// caía (Jhon, 26/11: "passa por baixo de obstáculos pequenos em vez de
+	/// subir neles").
+	/// </summary>
+	private float? ClimbNeeded(Vector3 along)
+	{
+		Vector3 ahead = along * WallRunClearance;
+		Transform3D at = GlobalTransform;
+		var hit = new KinematicCollision3D();
+		if (!TestMove(at, ahead, hit)) return 0f;
+
+		// A própria parede ao lado (raspando) não fecha o caminho; gente e o
+		// limite do mapa não se escalam.
+		if (hit.GetCollider() is CharacterBody3D || IsInvisibleLimit(hit.GetCollider())) return null;
+		Vector3 n = hit.GetNormal();
+		if (n.Y < 0.7f && new Vector3(n.X, 0, n.Z).Dot(along) > -0.3f) return 0f;
+
+		for (float h = 0.1f; h <= WallClimbReach + 0.001f; h += 0.1f)
+		{
+			if (TestMove(at, Vector3.Up * h)) return null;          // algo em cima
+			Transform3D up = at;
+			up.Origin += Vector3.Up * h;
+			if (!TestMove(up, ahead)) return WallBesideAt(h) ? h : null;
+		}
+		return null;
 	}
 
 	/// <summary>Corre ao longo da parede, na altura em que grudou, colado a
@@ -650,7 +886,12 @@ public partial class Player
 		// A altura fica a do instante em que grudou. O pulo não é morto
 		// por isso: o lobo só gruda no alto do pulo (WallGrabMaxRise), e
 		// pular colado na parede sobe primeiro e gruda depois.
-		velocity.Y = WallRunVerticalDrift;
+		// Obstáculo pequeno à frente: sobe por cima dele e segue na altura
+		// nova.
+		float climb = ClimbNeeded(_wallAlong) ?? 0f;
+		if (climb > 0f && !_climbing) WallLog($"small obstacle ahead: climbs {climb:0.0} m over it");
+		_climbing = climb > 0f;
+		velocity.Y = _climbing ? Mathf.Min(climb / (float)delta, WallClimbSpeed) : WallRunVerticalDrift;
 
 		float target = HumanSpeed * SpeedScale * WallRunSpeedBonus;
 
@@ -665,7 +906,7 @@ public partial class Player
 		// WallHoldDistance dela. Força fixa batia na quina e empurrava o
 		// lobo para dentro do canto; proporcional, ele contorna a aresta
 		// na mesma distância. Sem parede (instante de tolerância), nada.
-		float stick = _cornerGrace > 0
+		float stick = _cornerGrace > 0 || _gapLeft > 0f
 			? 0f
 			: Mathf.Clamp((wallDistance - WallHoldDistance) * 12f, -2f, WallStickForce);
 
@@ -680,7 +921,19 @@ public partial class Player
 		// (no começo da corrida, acelerando, os dois andam juntos).
 		Vector3 real = GetRealVelocity();
 		float moved = new Vector3(real.X, 0, real.Z).Dot(_wallAlong);
-		_wallStall = target > 1f && moved < target * 0.3f ? _wallStall + delta : 0;
+		if (_gapLeft > 0f)
+		{
+			_gapLeft -= Mathf.Max(moved, 0f) * (float)delta;
+			if (_gapLeft <= 0f)
+			{
+				// O vão era maior do que a parede prometia: solta, como na ponta de parede fina.
+				WallLog("the gap did not close: let go");
+				LeaveWallStraight();
+				return;
+			}
+		}
+		// Subindo por cima de algo, o avanço espera a subida: não é estar preso.
+		_wallStall = target > 1f && moved < target * 0.3f && !_climbing ? _wallStall + delta : 0;
 		if (_wallStall >= WallStallTime)
 		{
 			WallLog("let go, stuck on something ahead");
@@ -733,6 +986,8 @@ public partial class Player
 		_cornerGrace = 0;
 		_rounding = false;
 		_wallStall = 0;
+		_climbing = false;
+		_gapLeft = 0f;
 	}
 
 	/// <summary>
@@ -741,18 +996,21 @@ public partial class Player
 	/// dentro da parede, procura a face seguinte. Numa parede fina ele
 	/// passa por trás dela e não acha nada.
 	/// </summary>
-	private bool NextFaceIsWide(Vector3 normal, float distance)
+	private bool NextFaceIsWide(Vector3 normal, float distance, bool byFace)
 	{
+		// Pela face em que corria (não pelo sentido de agora, que gira ao
+		// contornar uma saliência): o raio vai paralelo a ela.
+		Vector3 face = byFace ? _faceNormal : _wallNormal;
+		Vector3 along = byFace ? _faceAlong : _wallAlong;
 		Vector3 edge = GlobalPosition - normal * distance;
-		Vector3 depth = -_wallNormal;
-		Vector3 from = edge + _wallAlong * 0.4f + depth * WallWrapMinFace;
+		Vector3 from = edge + along * 0.4f - face * WallWrapMinFace;
 
-		var query = PhysicsRayQueryParameters3D.Create(from, from - _wallAlong * 0.7f);
+		var query = PhysicsRayQueryParameters3D.Create(from, from - along * 0.7f);
 		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
 		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
 		if (hit.Count == 0 || hit["collider"].Obj is CharacterBody3D) return false;
 
-		return ((Vector3)hit["normal"]).Dot(_wallAlong) > 0.7f;
+		return ((Vector3)hit["normal"]).Dot(along) > 0.7f;
 	}
 
 	/// <summary>A parede acabou: solta e segue no sentido da corrida, com
