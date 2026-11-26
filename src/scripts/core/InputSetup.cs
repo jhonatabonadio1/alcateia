@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 /// <summary>
 /// Registra as ações de input por código, se ainda não existirem.
@@ -7,75 +8,82 @@ using Godot;
 /// errar e falha em silêncio quando a ação é criada sem tecla atribuída.
 ///
 /// Ações definidas no editor têm prioridade: este código não sobrescreve
-/// nada que já exista.
+/// nada que já exista. A tabela abaixo é também o **padrão de fábrica** das
+/// teclas que o jogador troca nas Opções → Controles (<see cref="KeyBindings"/>):
+/// depois de criar as ações, as trocas salvas vão por cima.
 /// </summary>
 public static class InputSetup
 {
-	public static void EnsureActions()
+	/// <summary>Cada ação e a tecla (ou botão) de fábrica, no texto curto do
+	/// <see cref="KeyBindings.Encode"/>: "K:" e a tecla física, "M:" e o botão.</summary>
+	private static readonly (string Action, string Default)[] Defaults =
 	{
-		Key("move_forward", Godot.Key.W);
-		Key("move_back", Godot.Key.S);
-		Key("move_left", Godot.Key.A);
-		Key("move_right", Godot.Key.D);
-		Key("jump", Godot.Key.Space);
-		Key("howl", Godot.Key.R);
-		Key("crouch", Godot.Key.Ctrl);
+		("move_forward", K(Key.W)),
+		("move_back", K(Key.S)),
+		("move_left", K(Key.A)),
+		("move_right", K(Key.D)),
+		("jump", K(Key.Space)),
+		("howl", K(Key.R)),
 		// Só o Ctrl agacha (o C saiu a pedido do Jhon, 18/11). No Mac,
 		// agachado no Ctrl, o botão direito de verdade mira (MacCtrlClick).
-		Key("walk", Godot.Key.Shift);
+		("crouch", K(Key.Ctrl)),
+		("walk", K(Key.Shift)),
 		// Menu no Esc e placar no Tab, como em quase todo FPS — e como
 		// no WolfTeam. Tab abria o menu de dificuldade porque não havia
-		// placar quando ele nasceu.
-		Key("menu", Godot.Key.Escape);
-		Key("scoreboard", Godot.Key.Tab);
+		// placar quando ele nasceu. O Esc não se troca (KeyBindings.Reserved).
+		("menu", K(Key.Escape)),
+		("scoreboard", K(Key.Tab)),
 		// G solta a arma da mão (decisão do Jhon; era o B do CS).
-		Key("drop", Godot.Key.G);
-		Mouse("attack", MouseButton.Left);
-		Mouse("special", MouseButton.Right);
+		("drop", K(Key.G)),
+		("attack", M(MouseButton.Left)),
+		("special", M(MouseButton.Right)),
 		// Q: o especial do lobo, num toque (decisão do Jhon, 18/11; era
 		// segurar o botão direito no chão para carregar).
-		Key("pounce", Godot.Key.Q);
+		("pounce", K(Key.Q)),
 		// O guia das habilidades: aparece enquanto se segura (18/11, "igual Overwatch").
-		Key("guide", Godot.Key.E);
+		("guide", K(Key.E)),
 		// Z: a lista dos calls de rádio do time (Radio, Hud.Radio).
-		Key("radio", Godot.Key.Z);
+		("radio", K(Key.Z)),
 		// V: a coronhada (Weapon.Butt).
-		Key("melee", Godot.Key.V);
+		("melee", K(Key.V)),
 		// F, morto: solta a câmera de espectador (KillCam).
-		Key("spectate_free", Godot.Key.F);
 		// F, vivo, não faz mais nada (Jhon, 24/11: "tire o F"): olhava a arma
 		// na mão. O começo do giro da faca virou a estocada, no botão direito.
-
+		("spectate_free", K(Key.F)),
 		// Slots: o lobo é o 3, na mesma memória muscular das armas.
-		Key("slot_1", Godot.Key.Key1);
-		Key("slot_2", Godot.Key.Key2);
-		Key("slot_3", Godot.Key.Key3);
-		Key("slot_4", Godot.Key.Key4);
-		Key("slot_5", Godot.Key.Key5);
-	}
+		("slot_1", K(Key.Key1)),
+		("slot_2", K(Key.Key2)),
+		("slot_3", K(Key.Key3)),
+		("slot_4", K(Key.Key4)),
+		("slot_5", K(Key.Key5)),
+	};
 
-	private static void Key(string action, Key key)
+	public static void EnsureActions()
 	{
-		if (InputMap.HasAction(action)) return;
-
-		InputMap.AddAction(action);
-		InputMap.ActionAddEvent(action, new InputEventKey { PhysicalKeycode = key });
+		foreach (var (action, code) in Defaults)
+		{
+			if (InputMap.HasAction(action)) continue;
+			InputMap.AddAction(action);
+			if (KeyBindings.Decode(code) is InputEvent input) InputMap.ActionAddEvent(action, input);
+		}
+		// As teclas que o jogador trocou (Opções → Controles) por cima das de fábrica.
+		KeyBindings.Apply();
 	}
 
-	/// <summary>Segunda tecla para uma ação que já existe.</summary>
-	private static void Also(string action, Key key)
+	/// <summary>A tecla de fábrica da ação, no texto curto (nulo se a ação não é daqui).</summary>
+	public static string DefaultOf(string action)
 	{
-		var extra = new InputEventKey { PhysicalKeycode = key };
-		foreach (InputEvent existing in InputMap.ActionGetEvents(action))
-			if (existing is InputEventKey k && k.PhysicalKeycode == key) return;
-		InputMap.ActionAddEvent(action, extra);
+		foreach (var (name, code) in Defaults)
+			if (name == action) return code;
+		return null;
 	}
 
-	private static void Mouse(string action, MouseButton button)
+	/// <summary>As ações registradas aqui, para os testes.</summary>
+	public static IEnumerable<string> Actions
 	{
-		if (InputMap.HasAction(action)) return;
-
-		InputMap.AddAction(action);
-		InputMap.ActionAddEvent(action, new InputEventMouseButton { ButtonIndex = button });
+		get { foreach (var (action, _) in Defaults) yield return action; }
 	}
+
+	private static string K(Key key) => $"K:{(long)key}";
+	private static string M(MouseButton button) => $"M:{(long)button}";
 }

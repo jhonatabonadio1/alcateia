@@ -40,18 +40,24 @@ public static class StuckKeys
 		if (_shiftDown && !now.ShiftPressed)
 		{
 			_shiftDown = false;
-			Free("walk");
+			Free("walk", Key.Shift);
 		}
 		if (_ctrlDown && !now.CtrlPressed)
 		{
 			_ctrlDown = false;
-			Free("crouch");
+			Free("crouch", Key.Ctrl);
 		}
 	}
 
-	private static void Free(string action)
+	/// <summary>Solta a ação, se ela está no modificador. Com a tecla trocada nas
+	/// Opções (o agachar no C, por exemplo), soltar o Ctrl não é soltar o agachar.</summary>
+	private static void Free(string action, Key modifier)
 	{
 		if (!InputMap.HasAction(action) || !Input.IsActionPressed(action)) return;
+		bool onModifier = false;
+		foreach (InputEvent bound in InputMap.ActionGetEvents(action))
+			if (bound is InputEventKey k && (k.PhysicalKeycode == modifier || k.Keycode == modifier)) onModifier = true;
+		if (!onModifier) return;
 		Input.ActionRelease(action);
 		Freed++;
 	}

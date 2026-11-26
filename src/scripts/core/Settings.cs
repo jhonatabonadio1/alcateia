@@ -66,6 +66,11 @@ public static class Settings
 
 		/// <summary>A mira do jogador. Arquivo antigo sem ela: a de sempre.</summary>
 		public CrosshairSettings Crosshair { get; set; } = new();
+
+		/// <summary>As teclas trocadas nas Opções → Controles: a ação e a tecla no
+		/// texto curto do <see cref="KeyBindings"/> ("K:87", "M:1"). Só o que difere
+		/// do padrão; arquivo antigo sem o campo, as de fábrica.</summary>
+		public System.Collections.Generic.Dictionary<string, string> Keys { get; set; } = new();
 	}
 
 	public static Data Values { get; private set; } = new();
@@ -83,6 +88,7 @@ public static class Settings
 				Values = JsonSerializer.Deserialize<Data>(System.IO.File.ReadAllText(path)) ?? new Data();
 			Values.Crosshair ??= new CrosshairSettings();
 			Values.Crosshair.Clamp();
+			Values.Keys ??= new System.Collections.Generic.Dictionary<string, string>();
 		}
 		catch (Exception error)
 		{
