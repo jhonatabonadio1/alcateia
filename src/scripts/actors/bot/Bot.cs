@@ -65,6 +65,10 @@ public partial class Bot : CharacterBody3D
 	/// </summary>
 	[Export] public BodyNoiseProfile Noise;
 
+	/// <summary>O dano de queda, o mesmo do jogador (<see cref="FallProfile"/>).</summary>
+	private readonly FallTracker _fall = new();
+	private FallProfile _fallProfile;
+
 	/// <summary>De quanto em quanto tempo o cérebro decide, em segundos.</summary>
 	[Export] public float DecisionInterval = 0.4f;
 
@@ -123,6 +127,7 @@ public partial class Bot : CharacterBody3D
 		FloorConstantSpeed = true;          // igual ao jogador: na escada, a velocidade do chão
 		_rng = MatchRandom.Stream(Name);
 		_noise = new BodyNoise(this, Noise);
+		_fallProfile = FallProfile.Load();
 		_moves = new WolfMoveMotor(this, _weapon);
 		_corpse = new Corpse(this, GetNode<CollisionShape3D>("CollisionShape3D"));
 
@@ -190,6 +195,7 @@ public partial class Bot : CharacterBody3D
 
 		if (_health.IsDead)
 		{
+			_fall.Reset();
 			Settle(delta);
 			return;
 		}
@@ -204,6 +210,7 @@ public partial class Bot : CharacterBody3D
 		}
 
 		UpdateNoise(delta);
+		_fall.Update(this, _health, _fallProfile, _form.IsWolf, IsOnFloor(), _weapon.FallExempt);
 		if (_target == null) _radioQuiet += delta;
 
 		// Os golpes especiais do lobo movem o corpo pela arma, com o mesmo
@@ -363,8 +370,10 @@ public partial class Bot : CharacterBody3D
 			IsWolf = _form.IsWolf,
 			// Com WP para pagar: sem esta conta o bot escolhia virar lobo,
 			// a forma negava e ele ficava "transformando" a partida toda.
+			// E fora da espera depois de ser lobo (26/11): o bot respeita o
+			// tempo de lobo e a espera como o jogador.
 			CanTransform = !_form.IsWolf && _form.Breed != null
-				&& _form.Rule == FormRule.Livre && _form.Wp >= _form.Breed.WpCost,
+				&& _form.Rule == FormRule.Livre && _form.Wp >= _form.Breed.WpCost && _form.WolfReady,
 			WolfUrge = _wolfMood ? 1f : 0f,
 			WolfLocked = _form.Rule == FormRule.Lobo,
 			ThreatAge = (float)_threatAge,

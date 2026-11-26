@@ -41,7 +41,7 @@ public sealed class SpecialNetTest : WallNetTest
 
 		MatchWorld world = await StartServer(b);
 		var server = new ServerBody(1, 0, world.SpawnBody("Servidor", Teams.Blue));
-		server.ApplyLoadout(Profile.Breed, Profile.OwnedTattoos());
+		server.ApplyLoadout(Profile.OwnedTattoos());
 		var them = new ServerBody(2, 1, world.SpawnBody("Alvo", Teams.Orange));
 		them.Health.Team = Teams.Other(b.Health.Team);
 		target.GetNode<Health>("Health").Team = Teams.Other(b.Health.Team);

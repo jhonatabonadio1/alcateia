@@ -219,7 +219,7 @@ public partial class ItemCard : PanelContainer
 
 		if (!Item.ForSale)
 		{
-			row.AddChild(UiKit.Text(Item.Starter ? "Incluído" : Item.Kind == ItemKind.Breed ? "Por patente" : "—", "Caption"));
+			row.AddChild(UiKit.Text(Item.Starter ? "Incluído" : "—", "Caption"));
 			return row;
 		}
 

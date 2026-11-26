@@ -360,9 +360,9 @@ public partial class Hud
 		HBoxContainer squares = UiKit.Row(UiTokens.S2);
 		squares.MouseFilter = Control.MouseFilterEnum.Ignore;
 		squares.Alignment = BoxContainer.AlignmentMode.End;
-		_skills[0] = new SkillSquare { Kind = IconKind.Claw, Key = "CLIQUE" };
-		_skills[2] = new SkillSquare { Kind = IconKind.FromAbove, Key = "DIREITO" };
-		_howlSquare = new SkillSquare { Kind = IconKind.Shield, Key = "R", Hot = UiTokens.Accent };
+		_skills[0] = new SkillSquare { Kind = IconKind.Claw, Key = KeyBindings.Short("attack") };
+		_skills[2] = new SkillSquare { Kind = IconKind.FromAbove, Key = KeyBindings.Short("special") };
+		_howlSquare = new SkillSquare { Kind = IconKind.Shield, Key = KeyBindings.Short("howl"), Hot = UiTokens.Accent };
 		squares.AddChild(_skills[0]);
 		squares.AddChild(_skills[2]);
 		squares.AddChild(_howlSquare);
@@ -370,7 +370,7 @@ public partial class Hud
 
 		HBoxContainer hint = UiKit.Row(UiTokens.S1);
 		hint.Alignment = BoxContainer.AlignmentMode.End;
-		_howlLabel = Outlined(UiKit.Caption("Segure E · habilidades", UiTokens.TextSecondary));
+		_howlLabel = Outlined(UiKit.Caption(Loc.F("Segure {0} · habilidades", KeyBindings.Label("guide")), UiTokens.TextSecondary));
 		hint.AddChild(_howlLabel);
 		column.AddChild(hint);
 
@@ -386,7 +386,7 @@ public partial class Hud
 		column.OffsetLeft = -170;
 		column.OffsetRight = 170;
 
-		_pounceTile = new AbilityTile { Title = "ESPECIAL", Key = "Q", Kind = IconKind.Claw };
+		_pounceTile = new AbilityTile { Title = "ESPECIAL", Key = KeyBindings.Short("pounce"), Kind = IconKind.Claw };
 		_pounceTile.SizeFlagsHorizontal = Control.SizeFlags.ShrinkCenter;
 		column.AddChild(_pounceTile);
 

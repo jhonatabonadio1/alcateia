@@ -2,14 +2,20 @@ using Godot;
 using System.Threading.Tasks;
 
 /// <summary>
-/// Depois do bote (pulo + botão direito), a garra sai na hora: o dano do
-/// bote caiu, o clique esquerdo já arranha e solta o lobo da aterrissagem
-/// (pedido do Jhon, 18/11: "é um jogo rápido, de decisão rápida").
+/// Depois do bote (pulo + botão direito), a garra vem logo: o dano do bote
+/// caiu, o clique esquerdo já vale e solta o lobo da aterrissagem (pedido do
+/// Jhon, 18/11: "é um jogo rápido, de decisão rápida").
+///
+/// Desde 26/11 (decisão do Jhon: o clique em rajada do lobo passava do
+/// limite — o ciclo pulo-bote-garra dava 870 de dano por segundo) a garrada
+/// que segue o bote bate a um golpe dele (<see cref="Weapon.StrikeSpacing"/>,
+/// 0,34 s), como uma garrada encadeada: o clique dado logo depois do bote
+/// fica guardado e a garra sai 0,19 s depois do dano (era 0,05).
 /// </summary>
 public sealed class DiveFollowUpTest : RegressionTest
 {
 	public override string Name => "GarraDepoisDoBote";
-	public override string Description => "depois do dano do bote no ar, a garra sai em menos de 0,15 s e solta o lobo da aterrissagem";
+	public override string Description => "depois do dano do bote no ar, o clique fica guardado, a garra sai a um golpe do bote (0,34 s entre os danos) e solta o lobo da aterrissagem";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -30,8 +36,16 @@ public sealed class DiveFollowUpTest : RegressionTest
 
 		await b.Seconds(0.07);
 		await b.Tap("attack");
-		await b.Frames(3);
-		b.Check(claws == 1, $"0,07 s depois do dano, a garra já sai ({claws} golpe)");
+		double waited = 0.07 + 2.0 / Engine.PhysicsTicksPerSecond;
+		while (claws == 0 && waited < 0.6)
+		{
+			await b.PhysicsFrame();
+			waited += 1.0 / Engine.PhysicsTicksPerSecond;
+		}
+		RegressionBench.Note($"clique 0,07 s depois do dano do bote: a garra saiu {RegressionBench.F(waited)} s depois do dano");
+		b.Check(claws == 1, $"o clique dado logo depois do bote não se perde ({claws} golpe)");
+		b.AtMost(w.StrikeSpacing - WolfMoves.ImpactDelay(WolfMove.Claw) + 0.04, waited, "a garra sai assim que pode (s depois do dano do bote)");
+		await b.Frames(2);
 		b.Check(!w.IsRooted, "a garra solta o lobo da aterrissagem");
 
 		// E o combo segue no ritmo normal da garra.

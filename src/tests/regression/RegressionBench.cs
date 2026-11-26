@@ -173,9 +173,17 @@ public partial class RegressionBench : Node
 
 	// ------------------------------------------------------------- jogador
 
-	/// <summary>Vira lobo (com WP de sobra) e espera a transformação.</summary>
-	public async Task BecomeWolf()
+	/// <summary>Vira lobo (com WP de sobra) e espera a transformação.
+	///
+	/// Desde 26/11 o lobo dura 30 s e tem espera de 20 s para voltar
+	/// (<see cref="FormController.WolfTimeLimit"/>). Os testes que não são
+	/// sobre isso medem o lobo por mais tempo e viram lobo várias vezes:
+	/// aqui o relógio desliga e a espera zera, a não ser que o teste peça
+	/// o relógio de verdade (<paramref name="timed"/>; o `TempoDeLobo`).</summary>
+	public async Task BecomeWolf(bool timed = false)
 	{
+		if (!timed) Form.WolfTimeLimit = 0f;
+		Form.ResetWolfClock();
 		Form.AddWp(5000);
 		Form.ToggleForm();
 		await Until(() => Form.Current == global::Form.Wolf, 3.0);

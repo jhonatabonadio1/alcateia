@@ -20,14 +20,21 @@
 ///   é dado com o último segurado, sem repetir pulo nem tiro
 ///   (<see cref="Skipped"/>): o jogo deu aquele passo, o servidor também,
 ///   e com as mesmas teclas seguras os dois ficam no mesmo lugar.
-/// - Fila funda demais (o jogo andou mais rápido, ou o servidor esperou):
-///   o servidor consome dois no mesmo passo até voltar (<see cref="HighWater"/>).
+/// - Fila funda demais (o jogo andou mais rápido, ou um punhado de comandos
+///   chegou junto): o servidor consome dois no mesmo passo até voltar
+///   (<see cref="HighWater"/>). Mas **não apressa enquanto recupera um
+///   engasgo dele mesmo** (<see cref="WantedThisTick"/> com
+///   <c>catchingUp</c>, vários passos no mesmo quadro): ali a fila enche
+///   porque ele deve passos, não porque o jogo está à frente, e apressar
+///   fazia o corpo andar o dobro por passo e quem o via dar um tranco
+///   ("microtravamentos", 26/11).
 /// </summary>
 public sealed class CommandBuffer
 {
 	public const int Capacity = 128;
 	public const int StartDepth = 2;
 	public const int HighWater = 4;
+
 
 	/// <summary>Esperando o comando que falta, quantos passos ainda se
 	/// repete o último antes de pular o buraco.</summary>
@@ -60,8 +67,14 @@ public sealed class CommandBuffer
 	/// <summary>Quantos passos o jogo está à frente do que já foi simulado.</summary>
 	public int Depth => _highest > LastProcessed ? (int)(_highest - LastProcessed) : 0;
 
-	/// <summary>Quantos comandos esta fila quer consumir neste passo.</summary>
-	public int WantedThisTick => !Started ? 0 : Depth > HighWater ? 2 : 1;
+	/// <summary>Quantos comandos esta fila quer consumir neste passo. Chamado
+	/// uma vez por passo do servidor. <paramref name="catchingUp"/>: o servidor
+	/// está recuperando passos que deve (engasgou), não apressa.</summary>
+	public int WantedThisTick(bool catchingUp = false)
+	{
+		if (!Started) return 0;
+		return !catchingUp && Depth > HighWater ? 2 : 1;
+	}
 
 	public void Push(in InputCommand c)
 	{

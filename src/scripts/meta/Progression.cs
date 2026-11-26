@@ -17,7 +17,6 @@ public sealed class MatchResult
 	public double SecondsHuman;
 	public double SecondsWolf;
 	public Dictionary<string, int> KillsByWeapon = new();
-	public string Breed;
 	/// <summary>Segundos em chamas (o rage): vira XP.</summary>
 	public int FireSeconds;
 }
@@ -161,8 +160,5 @@ public static class Progression
 
 		foreach (var (weapon, kills) in r.KillsByWeapon)
 			s.KillsByWeapon[weapon] = (s.KillsByWeapon.TryGetValue(weapon, out int n) ? n : 0) + kills;
-
-		if (!string.IsNullOrEmpty(r.Breed) && r.KillsWolf > 0)
-			s.KillsByBreed[r.Breed] = (s.KillsByBreed.TryGetValue(r.Breed, out int b) ? b : 0) + r.KillsWolf;
 	}
 }

@@ -42,8 +42,9 @@ modelo.
 | | Medida | De onde |
 |---|---|---|
 | Cápsula de colisão (humano e lobo) | 0,30 de raio, 1,75 de altura | `player.tscn`, `CapsuleShape3D` |
-| Agachado | 1,00 de altura | `Player.CrouchHeight` |
-| Olho em pé | ~1,50 do chão | centro (0,875) + `Head` (0,60) |
+| Agachado | 1,30 de altura no humano, 1,00 no lobo | `Player.HumanCrouchHeight`, `Player.CrouchHeight` |
+| Olho do humano | 1,59 do chão em pé, 1,09 agachado | os olhos do corpo visto (`Player.HumanEyeHeight`, afinados pelo `CharacterAnimator`); eram 1,475 e 0,60 até 26/11 |
+| Olho do lobo (pivô da câmera) | ~1,48 do chão | centro (0,875) + `Head` (0,60) |
 | Humano visível (topo da cabeça) | 1,79 | `CharacterSkin.HumanHeight` |
 | Lobo visível (topo da cabeça) | 1,66 | `CharacterSkin.WolfHeight` |
 
@@ -52,7 +53,7 @@ na tela não muda por onde ele passa.
 
 **O que isso pede do mapa:**
 
-- Passagem em pé: **1,80 livre** no mínimo. Agachado: **1,05**.
+- Passagem em pé: **1,80 livre** no mínimo. Agachado: **1,35** para o humano (1,05 para o lobo).
 - Vão entre duas paredes: **0,65** no mínimo para passar (0,60 da
   cápsula e uma folga). Para passar lutando, bem mais.
 - A cabeça que leva tiro é a do modelo. Um personagem fora da altura
@@ -63,17 +64,24 @@ na tela não muda por onde ele passa.
 
 Medidos no chão plano, segurando a tecla.
 
-| | Humano | Lobo Bruto | Lobo Ligeiro |
-|---|---|---|---|
-| Andando (W) | 2,56 m/s | 4,15 m/s | 4,50 m/s |
-| Correndo (Shift, só para a frente) | 3,71 m/s | — | — |
-| Agachado | 1,15 m/s | 1,87 m/s | 2,03 m/s |
-| De quatro (W duas vezes) | — | 7,14 m/s | 7,73 m/s |
-| Carregando o salto | — | 0,97 m/s | — |
+| | Humano | Lobo |
+|---|---|---|
+| Andando (W) | 2,56 m/s (faca 3,28) | 4,33 m/s |
+| Correndo (Shift, só para a frente) | 3,71 m/s | — |
+| Agachado | 1,15 m/s | 1,95 m/s |
+| De quatro (W duas vezes) | — | 7,44 m/s |
+| Carregando o salto | — | ~1,0 m/s |
 
-Velocidade de base: `Player.HumanSpeed` 3,2 na cena. O lobo multiplica
-pela raça (`src/resources/breeds/*.tres`, `SpeedMultiplier`) e, de quatro,
-por `WolfSprintFactor` (1,719 na cena).
+Velocidade de base: `Player.HumanSpeed` 3,2 na cena; o humano anda isto
+× `HumanSpeedBonus` 0,9375 (desde 26/11; era 1,08, 3,46 m/s). O lobo é um só
+desde 26/11 (as classes Bruto e Ligeiro saíram; ele fica no meio delas):
+multiplica por `src/resources/breeds/lobo.tres` (`SpeedMultiplier` 1,352) e,
+de quatro, por `WolfSprintFactor` (1,719 na cena). Até 25/11: Bruto 4,15 /
+7,14, Ligeiro 4,50 / 7,73.
+
+**O lobo dura 30 s de cada vez** (e espera 20 s para virar de novo,
+`FormController.WolfTimeLimit`/`WolfCooldown`, 26/11): um percurso de lobo
+de mais de ~200 m (de quatro) não cabe numa transformação só.
 
 **O que isso pede do mapa:** atravessar uma área aberta de 20 m leva
 quase 6 s para o humano e menos de 3 s para o lobo de quatro. É o que
@@ -81,12 +89,14 @@ decide se um campo aberto é armadilha para o lobo ou para o humano.
 
 ## 3. Pulo e degrau
 
-| | Humano | Lobo Bruto | Lobo Ligeiro |
-|---|---|---|---|
-| O pulo parado sobe (pés) | 1,02 | 1,67 | 2,56 |
-| Pulo correndo, do chão ao chão | 1,9 | 4,4 | 5,9 |
-| Sobe andando, sem pular | 0,05 | 0,05 | 0,05 |
-| Sobe pulando, colado na quina | 1,10 | 1,0* | 1,2* |
+| | Humano | Lobo |
+|---|---|---|
+| O pulo parado sobe (pés) | 1,02 | 2,09 |
+| Pulo correndo, do chão ao chão | 1,9 | 5,1 |
+| Sobe andando, sem pular | 0,05 | 0,05 |
+| Sobe pulando, colado na quina | 1,10 | 1,1* |
+
+Até 25/11 o Bruto pulava 1,67 (4,4 correndo) e o Ligeiro 2,56 (5,9).
 
 \* O lobo que pula contra uma parede segurando W **gruda nela** (corrida
 em parede, seção 5) em vez de subir. Para subir em algo mais alto ele

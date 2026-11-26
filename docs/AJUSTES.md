@@ -49,8 +49,8 @@ o renascer do bot (6 s).
   fazia o pé de apoio andar junto (de frente, 0,66 m/s de patinação
   contra 0,16).
 - **Alturas presas ao mapa.** O humano pula 0,99 m e sobe caixote
-  (0,8 m), não contêiner (2,2 m). O Bruto precisa de `JumpMultiplier`
-  ≥ 1,2 para chegar ao contêiner a partir do caixote. Mexeu no pulo,
+  (0,8 m), não contêiner (2,2 m). O lobo precisa de `JumpMultiplier`
+  ≥ 1,2 para chegar ao contêiner a partir do caixote (o lobo único tem 1,435). Mexeu no pulo,
   confira isso.
 - **Tem teste.** Velocidades, pulo, corrida na parede, salto
   carregado, dano da garra, granada e ruído têm teste
@@ -67,6 +67,7 @@ o renascer do bot (6 s).
 |---|---|---|
 | `HumanSpeed` | 3,2 m/s na cena (`src/scenes/player.tscn`; o código diz 3,0) | Base da velocidade. **Base do lobo também.** É a passada do clipe de corrida: subir faz o pé patinar |
 | `HumanSpeedBonus` | 0,8 | Só o humano: × a base (2,56 m/s; era 1,08, 3,46 m/s, até 26/11); o lobo não muda |
+| `RunClipRate` (nó `Human`, `CharacterAnimator`) | 0,88 | O ritmo da corrida para a frente (`run_fwd`) × o do arquivo: a passada dela no corpo do jogo é 3,41 m/s a 1×, e a 0,88× dá 3,0. O humano anda 2,56, numa mistura do andar com a corrida. Nunca acima de 1 (regra 9) |
 | `JumpVelocity` | 4,4 m/s | Impulso do pulo do lobo (vezes `JumpMultiplier`) e base do salto da parede |
 | `HumanJumpVelocity` | 4,75 m/s | Impulso do pulo do humano. Com `HumanGravityScale`, sobe 0,80 m e volta em 0,67 s |
 | `HumanGravityScale` | 1,45 | Gravidade do humano no ar (o lobo usa 1). Pulo mais rápido e queda mais seca |
@@ -79,8 +80,8 @@ o renascer do bot (6 s).
 | `HoldFallGravity` | 0,78 | Gravidade na queda segurando o pulo (menos que 1 = cai mais devagar) |
 | `WolfJumpCarry` | 0,9 | Quanto da velocidade do chão o lobo leva para o pulo |
 | `CrouchSpeedFactor` | 0,45 | Velocidade agachado (as duas formas) |
-| `WolfSprintFactor` | 1,495 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal. 6,2 m/s no Bruto, o `Run_Quad` a ~1,58× (era 1,3: +15% a pedido do Jhon, 16/11) |
-| `WolfChargeMoveFactor` | 0,234 | Lobo carregando o salto: × a velocidade normal. 0,91 m/s no Bruto, a passada do `Charge_Walk` (`ChargeWalkClipSpeed`, nó `WolfVisual`): mudou um, mude o outro |
+| `WolfSprintFactor` | 1,495 | Corrida de quatro do lobo (W duas vezes, segurando): × a corrida normal. 7,44 m/s no lobo (medido, 26/11), o `Run_Quad` a ~1,58× (era 1,3: +15% a pedido do Jhon, 16/11) |
+| `WolfChargeMoveFactor` | 0,234 | Lobo carregando o salto: × a velocidade normal. ~1,0 m/s no lobo, a passada do `Charge_Walk` (`ChargeWalkClipSpeed`, nó `WolfVisual`): mudou um, mude o outro |
 | `WolfBackFactor` | 0,75 | De lobo, andando para trás: × a velocidade normal (na diagonal de trás, em parte). O humano não muda |
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
 | `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Andando em pé e na parede: quanto a animação corre em relação ao corpo (1 acompanha, 0,7 é 30% mais lenta; a pata desliza a diferença). De quatro, o mesmo (acompanha o corpo). Só a animação. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
@@ -92,14 +93,27 @@ o renascer do bot (6 s).
 | `ViewModel.RigSprintStepAt` / `RigSprintLock` | 0,15 / 3 | Os braços correndo em primeira pessoa tocam presos ao passo do corpo: em que ponto do ciclo o pé bate, e com que força o clipe corrige o atraso |
 | `Hud.BreathSprintDb` / `BreathSprintIn` / `BreathSprintOut` | −27 dB / 3,5 s / 4 s | A respiração de quem corre: volume com o fôlego gasto, em quanto entra e em quanto some |
 | `CharacterAnimator.SprintClip` / `SprintPaceMax` | 3,35 m/s / 1,6 | A passada do clipe de correr do corpo e até quanto ele acelera |
-| `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula (é o hitbox do corpo) |
-| `StandEyeHeight` / `CrouchEyeHeight` | 0,62 / 0,1 m | Altura do olho a partir do centro da cápsula |
+| `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula em pé (as duas formas) e agachada do lobo |
+| `HumanCrouchHeight` | 1,5 m (era 1,3, e antes 1,0, a do lobo) | A cápsula agachada do humano: leva a cabeça do corpo agachado (o olho a ~134 cm). Passar agachado por baixo de algo pede esse vão |
+| `CrouchWalkTrim` / `CrouchAim` / `CrouchWalkSpeed` (nó `Human`) | 0 / 0 / 0,6 | O agachado é o "Crouch Walking" do Mixamo inteiro (26/11): sem corte no clipe, sem a pose de mira em pé no tronco (da cintura para cima quem segura a arma é a animação dela, a mesma de pé); o parado é o instante de passada mais aberta dele, com os dois pés retos no chão |
+| `FootBones` / `SoleBand` (`AnimationKit.Legs`, código) | pés esquerdo e direito / 0,015 m | O pé copia o giro a partir do repouso, não a direção do osso (o ângulo do osso do pé muda de rig para rig). Nos clipes agachados a perna dobra até a sola (a pele do pé até 1,5 cm acima do ponto mais baixo da bota em repouso) não passar do chão |
+| `StandEyeHeight` / `CrouchEyeHeight` | 0,6 / 0,1 m | O olho do lobo (o pivô da câmera de 3ª pessoa) a partir do centro da cápsula. Em pé era 0,62 no código e 0,6 na cena (o que valia) |
+| `HumanEyeHeight` / `HumanCrouchEyeHeight` | 1,592 / 1,092 m acima dos pés (eram 1,475 e 0,60) | O olho do humano = o olho do corpo visto (26/11: "o nível de agachamento deve ser idêntico ao de 3ª pessoa"). O `CharacterAnimator` lê no corpo desenhado, parado e de cabeça reta, e afina estes (`TuneHumanEye`, a `EyeTuneSpeed` 0,4 m/s): Eve 159,3 / 133,9 cm, Barut 159,1 / 134,4 cm (26/11). Os de fábrica valem para o corpo sem modelo (o servidor de partida) |
+| `EyeInHead` (`personagem.tres` de cada personagem) | Eve (0; 0,066; 0,085), Barut (0; 0,085; 0,094) | O meio dos dois olhos no espaço do osso da cabeça, medido na malha (`src/tools/personagens/olhos.py`). Modelo novo: meça de novo |
+| `CrouchWalkSpeed` (nó `Human`) | 0,6 m/s (era 1,9) | Andando agachado a partir disto o clipe de andar toca inteiro (a mistura com o parado enfiava a ponta do pé 16 cm no chão) |
 | `CrouchLerpSpeed` | 22 | Rapidez de agachar e levantar |
 | `FreezeBrake` | 30 m/s² | Freada de quem fica preso no lugar (golpe, carga do salto) |
 | `FallLimit` | −25 m | Abaixo disto volta ao spawn |
 | `MouseSensitivity` | 0,002 | Sensibilidade base. O jogador multiplica nas Opções (`Settings.Sensitivity`, padrão 1) |
 | `ThirdPersonDistance` | 2,5 m | Distância da câmera do lobo (era 3,5; longe demais, Jhon, 15/11) |
-| `FootSink` (nó `WolfVisual`) | 0,02 m | Quanto o lobo parado em pé desce: a pata do Idle_Pose só encosta pelas garras e ele parecia flutuar |
+| `FootSink` (nó `WolfVisual`) | 0 m (era 0,02) | Quanto o lobo parado em pé desce. Desde 26/11 quem encosta cada pata no chão é o `WolfFootPlant` (abaixo); descer o corpo inteiro só enterrava as garras |
+| `ContactBand` (nó `Patas`, `WolfFootPlant`, filho do esqueleto do lobo) | 0,15 m | Até quanto acima do chão a pata de apoio desce para encostar (rampa, degrau, o agachado que a proporção do clipe deixa no ar). Dentro do chão a pata sempre sobe até encostar |
+| `StillSpeed` / `ContactTime` | 0,3 m/s / 0,06 s | A pata conta como apoiando se a sola fica parada na vertical em relação ao corpo (a que dá o passo sobe e desce mais rápido que isto); e o tempo para o apoio entrar e sair |
+| `MaxLift` | 0,3 m | O maior ajuste de uma pata, para cima ou para baixo |
+| `EdgeReach` | 0,12 m | Perto de uma quina (amostras de chão a até isto), vale o chão mais alto: a garra rente à quina de um degrau não entra nele |
+| `PlantDistance` | 40 m | Além disto da câmera, as patas não são ajustadas (de longe não se vê; cada lobo custa ~1.400 pontos de pele por quadro) |
+| `RayUp` / `RayDown` | 0,5 / 0,6 m | De onde a quanto abaixo da sola o raio procura o chão (atravessa corpos e a chapa invisível das escadas: a pata pisa no degrau que se vê) |
+| `InSpeed` / `OutSpeed` / `Slack` (`CameraArmEase`, filho do braço da câmera do lobo) | 12 / 2,5 m/s / 0,15 m | A câmera de terceira pessoa entra rápido quando algo fica atrás do lobo (nunca mais que `Slack` além da distância livre do braço, cuja margem é 0,2 m) e sai devagar: o braço que encosta e solta a cada degrau não faz a câmera ir e voltar |
 | `TailStiffnessRoot` / `TailStiffnessTip` (nó `WolfVisual`, grupo Rabo) | 3,5 / 0,6 | A mola que devolve o rabo ao desenho do modelo, na raiz e na ponta. Mais alto: rabo duro, quase sem cair. A raiz firme segura o começo do rabo no lugar. Os números são por metro do modelo: o código multiplica pela unidade do esqueleto (100) |
 | `TailGravityRoot` / `TailGravityTip` | 0,3 / 1,5 | O peso do rabo, na mesma unidade da mola. Parado, a ponta fica 3 cm abaixo e 9 cm mais perto do corpo do que no desenho |
 | `TailDrag` | 0,22 | Quanto do embalo o rabo perde por passo (0 balança para sempre, 1 não balança) |
@@ -120,18 +134,20 @@ o renascer do bot (6 s).
 
 ### Resultado de hoje
 
-| | Humano | Bruto | Ligeiro |
-|---|---|---|---|
-| Velocidade | 2,56 m/s (faca 2,65) | 4,15 (×1,298) | 4,50 (×1,406) |
-| Agachado | 1,46 | 1,75 | 1,90 |
-| Correndo (Shift) | 3,71 | — | — |
-| De quatro (W W) | — | 5,06 | 5,48 |
-| Na parede | — | 4,45 | 4,82 |
-| Altura do pulo | 0,99 m | 1,62 m (×1,28) | 2,50 m (×1,59) |
-| Avanço do pulo correndo | ~2,7 m | ≈4,0 m | ≈5,4 m |
+| | Humano | Lobo (um só, 26/11) |
+|---|---|---|
+| Velocidade | 2,56 m/s (faca 3,28) | 4,33 (×1,352) |
+| Agachado | 1,15 | 1,95 |
+| Correndo (Shift) | 3,71 | — |
+| De quatro (W W) | — | 7,44 |
+| Na parede | — | 4,94 |
+| Altura do pulo | 0,99 m | 2,09 m (×1,435) |
+| Avanço do pulo correndo | ~1,9 m | 5,1 m |
 
-O avanço do lobo é estimativa (a última medida foi ~3,8 m com o Bruto
-a 3,6 m/s).
+Medido em 26/11 (`Medidas`, `VelocidadeNoChao`, `AlturaDoPulo`,
+`CorridaNaParede`). Até 25/11 havia duas classes: o Bruto (4,15 m/s, de
+quatro 7,14, parede 4,75, pulo 1,67 m) e o Ligeiro (4,50, 7,73, 5,14, 2,56 m);
+o lobo único fica no meio.
 
 Cada arma também multiplica a velocidade do humano com ela na mão
 (`SpeedMultiplier` da arma, seção 7): Desert Eagle 1,08, AK-74 0,92,
@@ -139,27 +155,50 @@ SCAR-H 0,88, SVD 0,86...
 
 ---
 
-## 2. Classes de lobo
+## 2. O lobo (um só) e o tempo de lobo
 
-`src/resources/breeds/bruto.tres` e `ligeiro.tres` (script
-`src/scripts/forms/WolfBreed.cs`). **Os bots usam sempre o Bruto.** O
-jogador usa a classe escolhida no perfil, com as tatuagens aplicadas.
+**As classes saíram** (decisão do Jhon, 26/11: "remover 'Classes de lobo' do
+jogo, deixar apenas melhorias de lobo"). O lobo é um só, para o jogador e
+para os bots: `src/resources/breeds/lobo.tres` (script
+`src/scripts/forms/WolfBreed.cs`), **no meio do Bruto e do Ligeiro de antes**,
+e **canhão de vidro** (decisão do Jhon, 26/11): mata rápido, aguenta pouco.
+As melhorias (tatuagens, abaixo) multiplicam uma cópia dele.
 
-| Campo | Bruto | Ligeiro | O que faz |
+| Campo | Lobo | Bruto / Ligeiro (até 25/11) | O que faz |
 |---|---|---|---|
-| `SpeedMultiplier` | 1,298 | 1,406 | × `HumanSpeed` — velocidade no chão e (com `WallRunSpeedBonus`) na parede |
-| `JumpMultiplier` | 1,28 | 1,59 | × `JumpVelocity` — altura do pulo |
-| `Shield` | 200 | 200 | Escudo do lobo: começa em 200 nas duas (a vida é a mesma do humano, 200). O Ligeiro herda o padrão de `WolfBreed.cs` |
-| `ShieldDecay` | 9 /s | 13 /s | Quanto escudo escorre por segundo |
-| `BodyResistance` | 0,6 | 0,78 | Dano no corpo × isto (cabeça ignora). 0,6 = leva 60% |
-| `AttackDamage` | 75 | 55 | Base de **todos** os golpes (seção 4) |
-| `AirAttackBonus` | 1,5 | 2,0 | × dano ao acertar caindo de ≥ 2,5 m |
-| `AttackRange` | 5 | 3,2 | Só os bots usam: distância em que o bot lobo decide atacar |
+| `SpeedMultiplier` | 1,352 | 1,298 / 1,406 | × `HumanSpeed` (3,2 da cena) — 4,33 m/s no chão, 7,44 de quatro, 4,94 na parede (com `WallRunSpeedBonus`) |
+| `JumpMultiplier` | 1,435 | 1,28 / 1,59 | × `JumpVelocity` — o pulo sobe 2,09 m (eram 1,67 e 2,56) |
+| `Shield` | **100** | 200 / 200 | Escudo do lobo (a vida é a do humano, 200). O rugido devolve ele inteiro |
+| `ShieldDecay` | 5,5 /s | 9 / 13 /s | Quanto escudo escorre por segundo: ~18 s do cheio ao zero, o meio dos 22 e 15 s de antes |
+| `BodyResistance` | **1,0** | 0,6 / 0,78 | Dano no corpo × isto: o lobo leva o tiro inteiro, como o humano |
+| `AttackDamage` | 65 | 75 / 55 | Base de **todos** os golpes (seção 4): a garra tira 104 de um humano, dois golpes matam |
+| `AirAttackBonus` | 1,75 | 1,5 / 2,0 | × dano ao acertar caindo de ≥ 2,5 m |
+| `AttackRange` | 4,1 | 5 / 3,2 | Só os bots usam: distância em que o bot lobo decide atacar |
 | `WpCost` | 0 | 0 | WP para transformar |
+
+### O tempo de lobo (`FormController`, nó `FormController` no jogador e no bot, grupo "Tempo de lobo")
+
+Decisão do Jhon, 26/11: "um tempo limite para usar o lobo (ao passar esse
+tempo volta a ser humano, deve avisar o player) e cooldown para voltar a
+ser lobo, para forçar os players a jogarem com armas".
+
+| Campo | Valor | O que faz |
+|---|---|---|
+| `WolfTimeLimit` | 30 s | Quanto se fica lobo de uma vez. Conta só na forma lobo (não na fumaça); acabou, volta a humano sozinho pela mesma transição da tecla 1. 0 desliga. Não vale no modo em que o time é lobo a partida toda |
+| `WolfCooldown` | 20 s | A espera para virar lobo de novo, contada de quando a volta começa (pela tecla ou pelo tempo). Morrer zera o tempo e a espera |
+| `WolfWarnAt` | 5 s | A quantos segundos do fim o HUD avisa: texto ("Você volta a humano em 5 s"), o bipe `contagem` e a barra vermelha pulsando |
+
+O HUD: com o lobo, a barra de baixo esvazia ("LOBO · 24 S", e nos últimos
+5 s "HUMANO EM 4 S"); na espera, ela enche ("ESPERE 12 S") e o espaço 3 da
+barra de armas mostra os segundos ("12s"), apagado. Apertar 3 na espera
+não transforma: avisa quanto falta ("Lobo de novo em 12 s") com o
+`ui_negado`. O bot respeita a mesma espera. O relógio é o do dono do corpo:
+o boneco da rede e o corpo do servidor de partida espelham a forma que o
+dono manda e não voltam sozinhos.
 
 ### Tatuagens (`src/scripts/meta/Catalog.cs`)
 
-Multiplicam a classe do jogador (não a dos bots):
+Multiplicam o lobo do jogador (não o dos bots):
 
 | Tatuagem | Efeito |
 |---|---|
@@ -192,6 +231,12 @@ Multiplicam a classe do jogador (não a dos bots):
 | `WallRunClearance` | 0,7 m | Checagem à frente: bater em algo solta |
 | `WallEndMargin` | 0,1 m | Quanto passa da ponta antes de decidir a quina |
 | `WallWrapMinFace` | 0,25 m | Face mínima para contornar a quina (mais fina: segue reto) |
+| `WallStepBack` | 0,6 m | Passou da ponta e a parede continua até esta fundura atrás da face (degrau da fachada, fim de pilar, batente): segue nela em vez de achar que acabou (26/11) |
+| `WallGapMax` | 1,6 m | O maior vão (porta, janela, espaço entre casas) que o lobo atravessa correndo pela linha da parede; maior que isto, solta como na ponta (26/11) |
+| `WallClimbReach` | 1,8 m | Obstáculo à frente com o topo até esta altura acima de onde corre: o lobo sobe por cima e segue na parede. Mais alto é parede (vale o canto) (26/11) |
+| `WallClimbSpeed` | 7 m/s | Velocidade da subida por cima do obstáculo |
+| `WallPoleMaxWidth` | 0,6 m | Objeto pequeno (poste, haste de placa, coluna fina): o corte da colisão na altura do corpo cabe num quadrado deste lado, e nada em volta dele na altura do peito. Nele o lobo dá a volta, como no tonel (26/11). 0 desliga |
+| `WallOrbitMaxTurn` | 360°/s | Volta mais rápida em volta de poste, coluna ou tonel: num poste de 12 cm a corrida inteira dava quase duas voltas por segundo; no tonel não chega a agir (26/11). 0 desliga |
 | `CornerGrace` | 0,15 s | Tempo sem encostar em nada antes de soltar |
 | `WallJumpClimb` | 1,02 | Altura do salto da parede (era 1,35; −40%) |
 | `WallJumpPush` | 6,5 m/s | Empurrão para fora no salto da parede |
@@ -213,7 +258,9 @@ Multiplicam a classe do jogador (não a dos bots):
 Campos em `src/scripts/combat/weapon/` (`Weapon.WolfClaws.cs`, `.WolfPounce.cs`, `.WolfDive.cs`) → nó `Weapon`, grupos "Lobo: ..." no Inspetor. Tempos em
 `src/scripts/forms/WolfMoves.cs`.
 
-`ClawCancelAfter` (nó `Weapon`, grupo da garra) = 0,08 s: quanto depois do impacto a próxima garrada pode cortar a atual (clicando rápido, uma a cada 0,28 s; pedido do Jhon, 16/11).
+`ClawCancelAfter` (nó `Weapon`, grupo da garra) = 0,19 s: quanto depois do impacto a próxima garrada pode sair (o golpe chega 0,154 s depois do clique: uma garrada a cada 0,344 s, 2,9 por segundo; pedido do Jhon, 18/11; o texto daqui dizia 0,08 e 0,28 s, de 16/11).
+
+**O compasso do lobo** (`Weapon.StrikeSpacing` = `ImpactDelay` da garra + `ClawCancelAfter` = 0,344 s; 26/11, alpha fechado: "clique repetido nos ataques do lobo, principal e secundário, parece não ter limite"): nenhum golpe que fere sai a menos disso do anterior — garrada, bote. O bote só sai 0,344 s depois do último golpe que bateu (apertado antes, espera no ar), e a garrada depois do bote espera o mesmo (`DiveFollowUp` vira o mínimo; quem manda é o compasso). Medido clicando um por quadro por 4 s, colado num humano (teste `LoboSemSpam`): só garrada, 11 golpes, 375 de dano por segundo (igual antes); pulo, bote e garrada em ciclo, 870/s com golpes a 0,1 s → 285/s, nenhum a menos de 0,35 s; só pulo e bote, 6 botes (540/s) → 4 (360/s). No servidor autoritativo (`HitCheck`, `WolfStrikePace`), no mesmo alvo vale um golpe do lobo a cada `StrikeSpacing` menos 1 comando e um bote a cada `LeapCooldown` menos 1 comando, contados pelo número do comando do golpe; o teto por golpe é o do próprio golpe (garrada, bote ou especial), não o maior dos três (teste `LoboSemSpamNoServidor`: garradas a cada 0,1 s por 4 s, 40 de 40 aceitas → 10; botes a cada 0,5 s, 8 de 8 → 4).
 
 **Fórmula:** dano = `AttackDamage` da classe × multiplicador do golpe
 × `ClawVsHumanBonus` (1,6, se o alvo é humano) × `AirAttackBonus` (se
@@ -264,15 +311,16 @@ que escolhe a carga pela distância.
 | `PounceMinDistance` | 1,5 m | Distância sem carga, quando a mira não toca nada (céu) e para o bot |
 | `PounceMaxDistance` | 12 m (era 8,4) | Alcance do salto: o mais longe que o ponto mirado pode estar. O bot só salta de até 1 m antes disso |
 | `PounceMinPower` | 0,4 | Fração do dano sem carga |
-| `HeavyDamageBonus` | 2,1 | Multiplicador do dano com carga cheia |
+| `HeavyDamageBonus` | 3,7 (era 2,6 no código; aqui dizia 2,1) | Multiplicador do dano do especial no alvo principal (26/11, Jhon: "mais dano ao alvo principal"): com a garra de 65, 385 num humano e 240 num lobo |
 | `PounceChargeHold` | 0,6 s | Segura cheio isso e salta sozinho |
 | `PounceMaxClear` | 3,2 m | Altura em que o salto pousa ou que ele passa por cima (contêiner de 2,9 m sim, dois empilhados não) |
 | `PounceMaxDrop` | 6,5 m | Quanto o salto pode descer até o ponto de queda |
 | `PounceMaxClimb` | 6,2 m | Mirando em cima de algo, o salto sobe até isto (dois contêineres empilhados, 5,8 m) |
 | `PounceFullFlight` | 0,45 | Tempo de voo com a carga cheia, em fração do clipe (0,8 s → 0,36 s). Sem carga, 1 |
 | `PounceArc` | 0,6 m | Altura mínima do arco |
-| `PounceHitRadius` | 1,8 m | Quem o salto pega ao cair: em volta do lobo (era a garra: 1,15 m de raio, 1,5 m à frente). O anel da mira tem este tamanho |
-| `PounceSplash` | 0,3 | O salto é de um alvo só: o principal leva o dano cheio, quem estiver do lado na área leva esta fração |
+| `PounceHitRadius` | 1,8 m | Onde o salto acha o principal ao cair: em volta do lobo (era a garra: 1,15 m de raio, 1,5 m à frente) |
+| `PounceAreaRadius` | 3,5 m (novo, 26/11) | A área do especial: quem estiver até aqui do lobo leva parte do dano (Jhon: "em área, afetando mais pessoas ao redor"). O anel da mira tem este tamanho |
+| `PounceSplash` / `PounceSplashInner` / `PounceSplashFar` | 0,6 até 1,5 m / 0,3 na borda (era 0,3, só a 1,8 m) | A fração do dano do principal que leva quem está em volta: 60% até 1,5 m, caindo em linha reta até 30% a 3,5 m (`CombatRules.PounceSplash`). Parede entre o lobo e ele: nada (raio do peito ao peito) |
 | `PounceStandOff` | 0,7 m | O especial travado cai a esta distância do centro do alvo, na frente dele (as duas cápsulas têm 0,3 m de raio). Menor que 0,6, o lobo cai dentro do alvo e a física o empurra |
 | `PounceSteerSpeed` | 9 m/s | O mais rápido que o ponto de queda do especial anda atrás do alvo que se mexe. Mais alto, o lobo balança com quem esquiva; mais baixo, quem corre (o lobo de quatro, 7,7 m/s) escapa |
 | `PounceLeadSmooth` / `PounceMaxLead` | 0,25 s / 2,5 m | Quanto o especial antecipa o alvo: a velocidade dele alisada nesse tempo, vezes o voo que falta, até esse tanto |
@@ -303,7 +351,8 @@ começa 0,32 s depois de soltar e o dano sai em 1,14 s.
 | `DiveForwardFromWall` | 0,5 | O mesmo, depois de um salto da parede |
 | `LeapDamageBonus` | 3,0 | Multiplicador do dano |
 | `LeapReach` / `LeapRadius` | 1,7 / 1,5 m | Volume do acerto (maior que o da garra) |
-| `LeapCooldown` | 0 | Espera entre botes (0 = um por pulo) |
+| `LeapCooldown` | 1 s (era 0, um por pulo) | Espera entre botes, do clique (26/11: pulando e apertando o secundário, saía um bote a cada 0,7 s). Apertado antes, o bote espera no ar e sai quando pode |
+| `DiveFollowUp` | 0,05 s (mínimo) | Do dano do bote até a garra poder sair: na prática o compasso (`StrikeSpacing` − o golpe da garra = 0,19 s) |
 
 A aterrissagem prende o lobo 0,87 s (`WolfMoves.Land`, a 1×). No ar, o bote
 corta a garrada em curso na hora (`Weapon.TrySpecial`; o dano dela que ainda
@@ -329,16 +378,26 @@ voltar a humano tocam o "puff" (`CombatantAudio.TransformSound` e
 
 ### Quanto dá hoje (contra humano, 200 de vida)
 
-| Golpe | Bruto (75) | Ligeiro (55) |
-|---|---|---|
-| Garra 1º/2º | 120 | 88 |
-| Garra 3º | 180 | 132 |
-| Salto sem carga | 101 | 74 |
-| Salto cheio | 252 | 185 |
-| Bote | 360 | 264 |
-| Bote caindo ≥ 2,5 m | 540 | 528 |
+O especial (o salto do Q, sempre cheio) mudou em 26/11: 3,7 garras no
+principal (era 2,6 no código; esta tabela ainda dizia 2,1) e a área. O lobo é
+um só desde 26/11 (garra 65, no meio do Bruto e do Ligeiro de antes).
 
-Contra lobo, tire o ×1,6 e aplique a `BodyResistance` dele. As contas
+| Golpe | Lobo (65) |
+|---|---|
+| Garra 1º/2º | 104 (dois golpes matam) |
+| Garra 3º | 156 |
+| Especial, alvo principal | 385 (era 270) |
+| Especial, em volta até 1,5 m (60%) | 231 |
+| Especial, na borda a 3,5 m (30%) | 116 |
+| Bote | 312 |
+| Bote caindo ≥ 2,5 m | 546 |
+
+Contra lobo (o canhão de vidro: 200 de vida e 100 de escudo, corpo sem
+resistência), o especial no principal tira 240: a maior parte dos 300, sem
+matar sozinho.
+
+Contra lobo, tire o ×1,6 (o lobo leva o dano inteiro desde 26/11:
+`BodyResistance` 1,0). As contas
 estão em `src/scripts/domain/CombatRules.cs`, com teste
 (`src/tests/unit/CombatRulesTests.cs`): mudou a fórmula, o teste diz.
 
@@ -352,21 +411,45 @@ estão em `src/scripts/domain/CombatRules.cs`, com teste
 |---|---|---|
 | `HumanHp` | 200 | Vida (a mesma nas duas formas). O personagem multiplica (`HpMultiplier` no `personagem.tres` de cada pasta em `src/assets/personagens/`; Eve ×1,1 = 220) |
 | `MaxWp` | 10000 | Teto de WP (era 2500; Jhon, 21/11) |
-| `WpPerKill` | 100 | WP por abate de arma |
-| `WpPerWolfKill` | 70 | WP por abate de lobo |
-| `WpPerAssist` | 35 | WP por assistência |
+| `WpPerKill` | 125 (era 100; 26/11) | WP por abate de arma |
+| `WpPerWolfKill` | 88 (era 70) | WP por abate de lobo |
+| `WpPerAssist` | 44 (era 35) | WP por assistência |
 | `WpPerDamageDealt` | 0 | WP por dano (desligado) |
-| `WpLostOnDeath` | 100 | WP perdido ao morrer |
+| — | — | Morrer não tira WP (o `WpLostOnDeath` de 100 saiu em 26/11). A arma paga fica desbloqueada até o fim da partida (`FormController.Kp`, `MatchKp`) |
 | `ShiftDuration` | 0,55 s | Virar lobo |
 | `ShiftBackDuration` | 0,2 s | Voltar a humano |
 | `ShiftDamageMultiplier` | 1,5 | Dano recebido durante a transformação |
 | `RefillOnTransform` | não | Encher a vida ao transformar |
 
 Mais: `WpCost` da classe (seção 2), `DefaultBonus` 50 WP ao escolher o
-conjunto padrão (`LoadoutMenu.cs`) e o `WpCost` de cada arma. Renasce
+conjunto padrão (`LoadoutMenu.cs`) e o `WpCost` de cada arma. Os valores de
+fábrica dos ganhos moram em `src/scripts/domain/MatchKp.cs` (`PerKill`,
+`PerWolfKill`, `PerAssist`, `DefaultBonus`): o servidor de partida confere o
+gasto com eles, então mude lá, não só no Inspetor. Renasce
 sempre humano.
 
 ---
+
+### Dano de queda (26/11)
+
+`src/resources/body/queda.tres` (`FallProfile`, o mesmo para o jogador e o
+bot; quem mede é `src/scripts/actors/body/FallTracker.cs`, a conta é
+`CombatRules.FallDamage`). Pedido do Jhon: "humano começar a tomar dano de
+queda, lobo também, mas menos. Não deve tomar dano de queda no ataque
+secundário (ao pular e atacar) e com a habilidade suprema". A queda conta do
+ponto mais alto do voo até onde pousou; na parede e na escada o corpo está
+apoiado (a queda começa de onde solta). Não fere: o bote, o especial (do
+começo ao fim, inclusive o que cai depois do voo) e o salto da parede. Fere
+pela vida de quem caiu, como a própria granada (`Health.TakeOwnDamage`: a
+proteção de quem nasceu não vale; se matar, o feed diz "Queda"). No lobo, o
+dano passa pela resistência do corpo como qualquer outro.
+
+| Campo | Valor | O que faz |
+|---|---|---|
+| `HumanSafe` | 4 m | Até aqui o humano não se fere: descer de um contêiner (2,9 m) não dói, de dois (5,8 m) tira 45 |
+| `HumanPerMeter` | 25 | Dano por metro além disso: a 12 m, 200 (a vida inteira). Medido (`DanoDeQueda`): solto de ~8 m, 103 |
+| `WolfSafe` | 7 m | O lobo começa mais alto: o pulo dele e o salto da parede não contam |
+| `WolfPerMeter` | 12,5 | Metade do humano: de 12 m, 62,5; os 300 de vida e escudo só a 31 m. Medido: solto de ~12 m, 38 (com a resistência do corpo de hoje) |
 
 ## 6. Vida, escudo e renascer
 
@@ -375,7 +458,8 @@ sempre humano.
 | Campo | Valor | O que faz |
 |---|---|---|
 | `MaxHp` | 200 | Vida máxima (o `FormController` define a pool) |
-| `RespawnDelay` | 3 s (bots: 6 s na cena) | Espera para renascer |
+| `RespawnDelay` | 10 s | Espera para renascer na partida, a mesma para todo mundo (26/11: era 10 s + 1 s por morte, até 15) |
+| `TrainingRespawnDelay` | 3 s | A espera no campo de treino (sem partida) |
 | `SpawnProtection` | 3 s | Imortal ao renascer, contra os outros: a própria granada fere do mesmo jeito (`Health.TakeOwnDamage`, 25/11) |
 | `RegenDelay` | 15 s | Sem levar dano por este tempo, a vida começa a voltar (0 desliga). O escudo não volta sozinho |
 | `RegenRate` | 0,08 | Fração da vida máxima que volta por segundo (do zero ao cheio em 12,5 s) |
@@ -519,7 +603,7 @@ As durações das recargas continuam as do jogo (`ReloadTactical` 1,8 s e
 | `KnifeDamage` / `KnifeRange` / `KnifeCooldown` | 85 / 2,2 m / 0,40 s | Faca, o golpe rápido (clique esquerdo) |
 | `KnifeStabDamage` / `KnifeStabBehind` / `KnifeStabCone` | 120 / 2× / 60° | A estocada (botão direito): o dano de frente, quanto vale pelas costas (240 mata um humano de vida cheia) e o cone das costas (graus entre o golpe e a frente do alvo) |
 | `KnifeStabHitDelay` / `KnifeStabCooldown` | 0,2 s / 0,8 s | Quando o dano da estocada sai (a lâmina chega à frente no clipe) e quanto a faca fica ocupada |
-| `KnifeSpeedMultiplier` | 1,037 | Velocidade com a faca na mão, sobre a do humano (3,36 m/s) |
+| `KnifeSpeedMultiplier` | 1,28 (era 1,037) | Velocidade com a faca na mão, sobre a do humano: 3,84 m/s desde 26/11 (era 3,58; Jhon: "aumentar velocidade de movimento com faca equipada"), abaixo do lobo a pé. A corrida não toca acima de 1× (regra 9): com a faca o pé de apoio fica 0,8–0,9 m/s atrás do corpo |
 | `ThrowForce` | 17,5 m/s | Força do arremesso na mira (era 14,5; 20/11). Olhando reto, de pé, vai a uns 24 m; a granada cai onde a mira aponta |
 | `ThrowArc` | 4 m/s | Empurrão para cima (era 3,5) |
 | `ThrowCooldown` | 0,9 s | Entre uma granada e outra |
@@ -528,7 +612,13 @@ As durações das recargas continuam as do jogo (`ReloadTactical` 1,8 s e
 | `Grenade.Radius` | 9 m | Raio (era 6,5; 20/11) |
 | `Grenade.BounceLoudSpeed` / `BounceMinSpeed` | 7 / 0,45 m/s | O som de cada batida: a 7 m/s soa a 0 dB, metade da velocidade 6 dB a menos; abaixo de 0,45 é rolar e não soa. Solta de 2 m: três batidas, a 5,9, 1,8 e 0,5 m/s |
 | `Grenade.BounceRange` / `BounceGap` | 25 m / 0,07 s | Até onde a batida se ouve, e o tempo mínimo entre duas (o mesmo toque pode durar dois passos) |
-| `Grenade.MaxDamage` | 420 | Dano no centro, caindo até a borda: mata quem tem 200 de vida a até 4,7 m |
+| `Grenade.MaxDamage` | 300 (era 420) | Dano no centro, caindo até a borda: mata quem tem 200 de vida a até 3 m (era 4,7); a 4 m tira 164, a 6 m 100. Decisão do Jhon, 26/11: "granada forte demais" |
+| `Grenade.SightGap` | 0,06 m | Parede, barreira e fresta protegem (26/11): a explosão só fere quem ela enxerga, por algum dos 6 pontos do corpo (cabeça, peito, meio, joelhos e os lados do peito), com uma bola deste diâmetro (fresta mais fina não deixa passar). Com 0,1 a bola raspava na borda de um muro baixo e a cabeça que aparecia 4 cm acima não levava nada |
+| `Grenade.SightLift` (constante) | 0,15 m | De onde sai a conferência: este tanto acima do ponto da explosão (a granada pousada fica rente ao chão). O servidor autoritativo usa o mesmo (`HitCheck`), com um raio só |
+| `Grenade.FuseSound` / `FuseEndSound` | `granada_pavio` / `granada_pavio_fim` | O pavio (26/11): o chiado em laço, preso à granada do arremesso até a explosão, e no primeiro toque o fim do pavio (o chiado sobe e cliques que se aceleram). Sons de `src/tools/sons/granada.py` |
+| `Grenade.FuseRange` / `FuseDb` / `FuseEndDb` | 14 m / −2 dB / 0 dB | Até onde o pavio se ouve (o fim do pavio, 1,3 vez isso) e o volume |
+| `Grenade.FuseEndLength` | 1,2 s | A duração do arquivo do fim do pavio: com outro `Fuse`, ele toca mais rápido ou mais devagar para acabar junto com a explosão |
+| `WorldAudio.ExplosionFar` / `ExplosionRoof` / `ExplosionReach` | 30 m / 6 m / 140 m | A explosão: mais longe que `ExplosionFar`, a versão de longe (`granada_explosao_distante`); com teto sólido até `ExplosionRoof` acima, a da sala (`granada_explosao_dentro`); senão a de perto. Ouve-se até `ExplosionReach` (era o raio do ruído, 54 m) |
 | `Grenade.Kind` | `Frag` | Explosiva desde 19/11 (o id ainda é `choque`). `Shock`, a de choque de 18/11, está guardada: `ShockDamage` 60, `StunDuration` 2,5 s e `StunSlowFactor` 0,3 só valem nela |
 | `DropThrow` / `DropLift` | 5,5 / 1,8 m/s | Arremesso da arma ao soltar (G) |
 
@@ -730,10 +820,25 @@ nó é criado por código):
 | idem | `LeftEye` / `RightEye` | (6,47; 15,64; 22,7) / (−1,03; 15,58; 24,43) cm | Onde ficam os olhos no osso da cabeça, 2 cm à frente da pele, medidos no miolo aceso da emissão do modelo (o mesmo rosto nos dois times). Modelo novo: meça de novo |
 | `WolfFx` | `EyeBoost` | 0,8 | Quanto o brilho dos olhos sobe com o poder (1 + isto × o neon do poder) |
 
-**Humano** (`src/scripts/visual/human/`, nó `Human`): `CrouchAim` 1
-(fuzil no ombro agachado), `BlendSmoothing` 9, `HitCooldown` 1,6 s,
+**Humano** (`src/scripts/visual/human/`, nó `Human`): `CrouchAim` 0
+(desde 26/11 o tronco agachado é o do clipe, e a arma é segurada pela
+animação dela, a mesma de pé), `BlendSmoothing` 9, `HitCooldown` 1,6 s,
 `CorpseHold` / `CorpseFade` 1,2 s, `TintByTeam`, `BlueBody`,
 `OrangeBody`.
+
+**Corpo morto** (`src/scripts/visual/DeadBody.cs`, o mesmo no humano e no
+lobo; 26/11). `CorpseHold` / `CorpseFade` (nós `Human` e `WolfVisual`) =
+1,2 / 1,2 s: à mostra no chão depois do clipe de morte, e o sumiço. O corpo
+não desce mais um número fixo (`CorpseDrop` 0,12 m e `CorpseSink` saíram): a
+cada quadro o ponto mais baixo da pele (uns 6000 vértices por superfície) é
+medido contra o chão; caindo, sobe só o que entraria no chão; caído, encosta.
+`DeadBody.MaxLift` / `MaxDrop` = 0,6 / 0,4 m: o tanto que pode corrigir (mais
+que isso é medida errada, e o corpo fica onde o clipe pôs). O sumiço é em duas
+passadas: `corpo_profundidade.gdshader` (ou `lobo_profundidade.gdshader`)
+escreve a profundidade e a cor transparente vem depois; `push_back` 0,0008 m é
+o quanto a profundidade fica atrás da pele (o de dentro, mais fundo que isso,
+não aparece). Morto, o rabo do lobo encosta num plano no chão (o
+`ChaoDoMorto` do `WolfVisual.Corpse`).
 
 **Arma na tela** (`src/scripts/ui/ViewModel.cs`): `Kick` 0,055 m e
 `KickPitch` 3,2° (o coice: para trás e o cano para cima), `FlashLife`

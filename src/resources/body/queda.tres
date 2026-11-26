@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="FallProfile" format=3]
+
+[ext_resource type="Script" path="res://src/scripts/actors/body/FallProfile.cs" id="1_fall"]
+
+[resource]
+script = ExtResource("1_fall")
+HumanSafe = 4.0
+HumanPerMeter = 25.0
+WolfSafe = 7.0
+WolfPerMeter = 12.5

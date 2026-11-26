@@ -49,7 +49,7 @@ public partial class Hud
 		_reserve.AddThemeColorOverride("font_color", reserve == 0 ? UiTokens.Danger : UiTokens.TextSecondary);
 		_reloading.Text = reloading ? "RECARREGANDO"
 			: inMag == 0 && reserve == 0 ? "SEM MUNIÇÃO"
-			: inMag <= magSize / 4 && magSize > 0 && reserve > 0 ? "R · RECARREGAR" : "";
+			: inMag <= magSize / 4 && magSize > 0 && reserve > 0 ? Loc.F("{0} · RECARREGAR", KeyBindings.Short("howl")) : "";
 	}
 
 	private void OnSlotChanged(int slot)
@@ -118,7 +118,9 @@ public partial class Hud
 		_pounceTile.Title = _weapon.SpecialArmed
 			? (_weapon.SpecialArmTime > 0f ? Loc.F("CLIQUE SALTA · {0:0.0} S", _weapon.SpecialArmLeft) : "ARMADO · CLIQUE SALTA")
 			: !_weapon.PounceReady ? "ESPECIAL"
-			: _form.IsWolf ? "PRONTO · Q ARMA" : "PRONTO · VIRE LOBO";
+			: _form.IsWolf ? Loc.F("PRONTO · {0} ARMA", KeyBindings.Short("pounce")) : "PRONTO · VIRE LOBO";
+		// A tecla da caixinha segue a troca feita nas Opções no meio da partida.
+		_pounceTile.Key = KeyBindings.Short("pounce");
 	}
 
 	private void UpdateWolf(float delta)
@@ -134,6 +136,7 @@ public partial class Hud
 
 		// O uivo: enche enquanto se segura o R; com o escudo cheio não há o que recarregar.
 		_howlSquare.Set(_form.CanHowl || howl > 0 ? 1f : 0f, howl);
-		_howlLabel.Text = howl > 0 ? "SEGURE R · ESCUDO NO FIM" : "SEGURE E · HABILIDADES";
+		_howlLabel.Text = howl > 0 ? Loc.F("SEGURE {0} · ESCUDO NO FIM", KeyBindings.Short("howl")) : Loc.F("SEGURE {0} · HABILIDADES", KeyBindings.Short("guide"));
+		_howlSquare.Key = KeyBindings.Short("howl");
 	}
 }

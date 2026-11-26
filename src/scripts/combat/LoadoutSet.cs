@@ -41,6 +41,21 @@ public sealed class LoadoutSet
 
 	public bool IsAffordable(float wp) => TotalCost() <= wp;
 
+	/// <summary>Os itens que se pagam com WP (primária, secundária e
+	/// utilitários). O padrão não tem nenhum: é de graça.</summary>
+	public IEnumerable<string> PaidItems()
+	{
+		if (IsDefault) yield break;
+		yield return Primary;
+		yield return Secondary;
+		foreach (string id in Utilities) yield return id;
+	}
+
+	/// <summary>O que falta pagar nesta partida: só os itens que ainda não
+	/// foram pagos nela (Jhon, 26/11: morrer não tira KP — a arma paga fica
+	/// desbloqueada até o fim da partida; <see cref="MatchKp"/>).</summary>
+	public int CostIn(MatchKp kp) => kp == null ? TotalCost() : kp.CostOf(PaidItems(), Arsenal.CostOf);
+
 	public int GrenadeCount()
 	{
 		int count = 0;

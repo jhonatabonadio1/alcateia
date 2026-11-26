@@ -37,14 +37,49 @@ public partial class FormController : Node
 	/// falha silenciosa faz o jogador achar que o botão está quebrado.</summary>
 	[Signal] public delegate void TransformDeniedEventHandler(float missing);
 
+	/// <summary>Tentou virar lobo na espera depois de ser lobo (26/11).
+	/// <paramref name="secondsLeft"/>: quanto falta.</summary>
+	[Signal] public delegate void TransformCoolingEventHandler(float secondsLeft);
+
+	/// <summary>O tempo de lobo está acabando (faltam
+	/// <see cref="WolfWarnAt"/> segundos). O HUD avisa com texto e som.</summary>
+	[Signal] public delegate void WolfTimeWarningEventHandler(float secondsLeft);
+
+	/// <summary>O tempo de lobo acabou: o corpo volta a humano sozinho.</summary>
+	[Signal] public delegate void WolfTimeUpEventHandler();
+
+	/// <summary>O lobo: um só desde 26/11 (as classes Bruto e Ligeiro
+	/// saíram), com as melhorias somadas (<see cref="Profile.BuildBreed"/>).</summary>
 	[Export] public WolfBreed Breed;
+
+	/// <summary>
+	/// Quanto tempo se fica lobo de uma vez (decisão do Jhon, 26/11: "um
+	/// tempo limite para usar o lobo; ao passar esse tempo volta a ser
+	/// humano, deve avisar o player"). Conta só na forma lobo (não na
+	/// fumaça); acabou, volta a humano sozinho, pela mesma transição de
+	/// quem aperta 1. 0 desliga. No modo em que o time é lobo a partida
+	/// toda, não vale.
+	/// </summary>
+	[ExportGroup("Tempo de lobo")]
+	[Export] public float WolfTimeLimit = 30f;
+
+	/// <summary>A espera para virar lobo de novo, contada de quando a
+	/// volta a humano começa — sozinha ou pela tecla (26/11: "cooldown
+	/// para voltar a ser lobo, para forçar os players a jogarem com
+	/// armas"). Morrer zera.</summary>
+	[Export] public float WolfCooldown = 20f;
+
+	/// <summary>A quantos segundos do fim o HUD avisa (texto e som).</summary>
+	[Export] public float WolfWarnAt = 5f;
+	[ExportGroup("")]
 
 	[Export] public float MaxWp = 10000f;   // teto de WP na partida (Jhon, 21/11: "o wp máximo para acumular durante o game passa a ser 10 mil")
 
-	/// <summary>WP perdido a cada morte (decisão do Jhon). Um abate rende
-	/// 100: morrer custa um abate. Nunca abaixo de zero, e o conjunto
-	/// padrão continua devolvendo +50 no renascer.</summary>
-	[Export] public float WpLostOnDeath = 100f;
+	/// <summary>Morrer não tira WP (Jhon, 26/11: "ao morrer, não pode perder
+	/// KP"). Até 25/11 a morte tirava 100. As armas pagas com WP ficam
+	/// desbloqueadas até o fim da partida (<see cref="Kp"/>): renascer com
+	/// elas não cobra de novo.</summary>
+	public readonly MatchKp Kp = new();
 	/// <summary>
 	/// WP vem de abater e de renascer, não do relógio.
 	///
@@ -53,14 +88,14 @@ public partial class FormController : Node
 	/// jogador sem recurso nenhum — castigo que se acumula afunda
 	/// quem já está perdendo.
 	/// </summary>
-	[Export] public float WpPerKill = 100f;
+	[Export] public float WpPerKill = MatchKp.PerKill;   // 26/11: +25% (era 100)
 
 	/// <summary>Abate feito de lobo vale menos que de arma: o lobo já é
 	/// gratuito e fica disponível a qualquer hora, e premiar igual faria
 	/// dele a forma mais barata de enriquecer.</summary>
-	[Export] public float WpPerWolfKill = 70f;
+	[Export] public float WpPerWolfKill = MatchKp.PerWolfKill;   // era 70
 
-	[Export] public float WpPerAssist = 35f;
+	[Export] public float WpPerAssist = MatchKp.PerAssist;   // era 35
 
 
 	/// <summary>Zero desde o arsenal: o documento paga abate, lobo e
@@ -121,13 +156,33 @@ public partial class FormController : Node
 	private Health _health;
 	private double _shiftTimer;
 
+	/// <summary>Segundos de lobo que ainda restam (com o limite ligado).</summary>
+	public float WolfTimeLeft { get; private set; }
+
+	/// <summary>Segundos de espera até poder virar lobo de novo.</summary>
+	public float WolfCooldownLeft { get; private set; }
+
+	/// <summary>O tempo de lobo vale agora: forma lobo, limite ligado, e o
+	/// modo não é o de lobo a partida toda.</summary>
+	public bool WolfTimed => WolfTimeLimit > 0f && Rule != FormRule.Lobo && !_mirrored;
+
+	/// <summary>Pode virar lobo agora, pela espera (o WP e o modo à parte).</summary>
+	public bool WolfReady => WolfCooldownLeft <= 0f;
+
+	/// <summary>A forma deste corpo vem de fora (o boneco da rede, o corpo
+	/// do servidor de partida): o relógio do lobo é o do dono, não o daqui.</summary>
+	private bool _mirrored;
+	private bool _warned;
+
 
 
 	public override void _Ready()
 	{
 		_health = GetParent().GetNode<Health>("Health");
 		_health.SetPool(HumanHp, 0f, true);
-		_health.Died += _ => LoseWp(WpLostOnDeath);
+		// Morrer não tira KP (26/11, economia) e zera o tempo de lobo e a espera:
+		// a vida nova começa livre.
+		_health.Died += _ => ResetWolfClock();
 
 		// Renasce sempre humano (decisão do Jhon): o lobo é pago com WP e
 		// morre com o corpo. Conectado antes do Player e do Bot (o filho
@@ -160,6 +215,37 @@ public partial class FormController : Node
 		else if (rule == FormRule.Humano && Current == Form.Wolf) Enter(Form.Human);
 	}
 
+	/// <summary>Zera o tempo de lobo e a espera (morte, renascer).</summary>
+	public void ResetWolfClock()
+	{
+		WolfTimeLeft = 0f;
+		WolfCooldownLeft = 0f;
+		_warned = false;
+	}
+
+	/// <summary>O relógio do lobo, no passo de física: determinístico, como
+	/// o resto da regra (vira a predição no online).</summary>
+	public override void _PhysicsProcess(double delta)
+	{
+		if (_mirrored || _health == null || _health.IsDead) return;
+		float dt = (float)delta;
+
+		if (WolfCooldownLeft > 0f && !IsWolf) WolfCooldownLeft = Mathf.Max(WolfCooldownLeft - dt, 0f);
+
+		if (Current != Form.Wolf || !WolfTimed) return;
+		WolfTimeLeft = Mathf.Max(WolfTimeLeft - dt, 0f);
+		if (!_warned && WolfTimeLeft <= WolfWarnAt)
+		{
+			_warned = true;
+			EmitSignal(SignalName.WolfTimeWarning, WolfTimeLeft);
+		}
+		if (WolfTimeLeft <= 0f)
+		{
+			EmitSignal(SignalName.WolfTimeUp);
+			Enter(Form.ShiftingToHuman);
+		}
+	}
+
 	public override void _Process(double delta)
 	{
 		EnforceRule();
@@ -186,6 +272,8 @@ public partial class FormController : Node
 	public void ToggleForm()
 	{
 		if (_health.IsDead) return;
+		// Quem pede a troca pela tecla é dono do corpo: o relógio do lobo é daqui.
+		_mirrored = false;
 
 		switch (Current)
 		{
@@ -201,6 +289,12 @@ public partial class FormController : Node
 				if (Breed == null)
 				{
 					GD.PrintErr("FormController: no WolfBreed assigned.");
+					return;
+				}
+				// Na espera depois de ser lobo: não vira, e o HUD diz quanto falta.
+				if (!WolfReady && Rule == FormRule.Livre)
+				{
+					EmitSignal(SignalName.TransformCooling, WolfCooldownLeft);
 					return;
 				}
 				if (Wp < Breed.WpCost)
@@ -259,13 +353,6 @@ public partial class FormController : Node
 	}
 
 	public void OnDamageDealt(float amount) => AddWp(amount * WpPerDamageDealt);
-
-	private void LoseWp(float amount)
-	{
-		if (amount <= 0 || Wp <= 0) return;
-		Wp = Mathf.Max(Wp - amount, 0f);
-		EmitSignal(SignalName.WpChanged, Wp, MaxWp);
-	}
 
 	/// <summary>Um abate (verdadeiro) ou uma assistência (falso) deste
 	/// corpo. Quem mais conta pontos por isso escuta aqui — a carga do
@@ -326,6 +413,9 @@ public partial class FormController : Node
 
 	public void RemoteSet(Form form)
 	{
+		// Quem chama é o boneco da rede ou o corpo do servidor: a forma é a
+		// do dono, e o relógio do lobo também (não volta sozinho aqui).
+		_mirrored = true;
 		if (form == Current || Breed == null) return;
 
 		// O boneco conta a transformação no relógio dele e pode acabar um
@@ -353,10 +443,14 @@ public partial class FormController : Node
 			case Form.ShiftingToHuman:
 				_shiftTimer = ShiftBackDuration;
 				_health.DamageMultiplier = ShiftDamageMultiplier;
+				// A espera começa quando a volta começa (pela tecla ou pelo tempo).
+				if (WolfTimed) WolfCooldownLeft = WolfCooldown;
 				break;
 
 			case Form.Wolf:
 				_health.DamageMultiplier = 1f;
+				WolfTimeLeft = WolfTimeLimit;
+				_warned = false;
 				_health.ShieldDecay = Breed.ShieldDecay;
 				_health.BodyResistance = Breed.BodyResistance;
 

@@ -67,8 +67,36 @@ ou no meio da transição: o `FormController` volta para Humano no
 fica pronto primeiro, então o sinal chega nele antes). Antes o lobo
 voltava lobo.
 
-Não existe restrição de HP para transformar, e as classes básicas não
-custam WP: dá para transformar sempre.
+Não existe restrição de HP para transformar, e virar lobo não custa WP.
+
+**O lobo é por tempo** (decisão do Jhon, 26/11: "um tempo limite para
+usar o lobo; ao passar esse tempo volta a ser humano, deve avisar o
+player. E deve ter cooldown para voltar a ser lobo, para forçar os players
+a jogarem com armas"):
+
+- **30 s de lobo de cada vez** (`WolfTimeLimit`). Conta só na forma lobo,
+  não na fumaça. Acabou, o corpo volta a humano sozinho, pela mesma
+  transição de quem aperta 1 (com a vulnerabilidade dela). O jogador volta
+  com a arma que tinha na mão.
+- **Aviso nos últimos 5 s** (`WolfWarnAt`): o texto "Você volta a humano em
+  5 s", um bipe, e a barra de baixo vermelha, pulsando, contando
+  ("HUMANO EM 4 S"). Antes disso ela mostra o tempo que resta ("LOBO · 24 S").
+- **20 s de espera para virar lobo de novo** (`WolfCooldown`), contados de
+  quando a volta começa — pela tecla ou pelo tempo: sair cedo não zera a
+  espera. Na espera a barra enche ("ESPERE 12 S"), o espaço 3 da barra de
+  armas mostra os segundos ("12s"), e apertar 3 avisa quanto falta.
+- **Morrer zera os dois**: a vida nova começa livre.
+- **O bot respeita a mesma espera** e volta sozinho como o jogador.
+- No modo em que o time é lobo a partida toda, não vale (o time não tem
+  arma para voltar).
+- Online, o relógio é o da máquina do dono do corpo: o boneco dele nos
+  outros jogos e o corpo do servidor de partida espelham a forma que ele
+  manda e não voltam sozinhos.
+
+O porquê: com o lobo livre e de graça, ele dominava — mais rápido, mais
+vida, escudo, parede e dois golpes que matam. O tempo põe a arma de volta
+na mão do jogador, e a espera faz da transformação uma decisão: virar
+agora, ou guardar para a hora certa.
 
 **Transformar não cura.** A proporção de vida é preservada entre os
 corpos — metade da vida humana vira metade da vida do lobo. Sem isso,
@@ -163,6 +191,42 @@ acabar.
 - **No canto, vira e continua.** Uma parede à frente vira a parede da
   corrida: o lobo segue por ela, para longe da antiga, no mesmo passo.
   Antes ele soltava e regrudava na parede de trás, voltando
+- **A parede que continua não é ponta** (26/11, alpha fechado: "não
+  contorna mais — anda reto"). Nos mapas de verdade a face "acaba" toda
+  hora sem acabar: o degrau de uma fachada, o fim de um pilar raso, um
+  batente, a junta entre duas casas. Passando da ponta, o lobo procura a
+  mesma face logo atrás (até `WallStepBack`, 0,6 m de fundo) ou depois de
+  um vão (até `WallGapMax`, 1,6 m: porta, janela): achou, segue nela — no
+  vão, reto pela linha da parede, sem entrar nele. A regra da quina vale
+  quando não há continuação, medida pela face em que ele corria (e não
+  pelo sentido de agora, que gira ao contornar um pilar à frente)
+- **Obstáculo pequeno, passa por cima.** Caixote, ar-condicionado,
+  peitoril, cano: a cápsula inteira varre o caminho à frente, e o que
+  fecha com o topo até `WallClimbReach` (1,8 m) acima de onde ele corre o
+  lobo sobe por cima (a 7 m/s) e segue na parede, na altura nova. Antes o
+  raio do meio do corpo só via o que estava na altura da barriga: o que
+  batia na cabeça ou nas patas o fazia escorregar por baixo ou parar e
+  cair. Só sobe ao lado da parede (acima do topo dela, não), e não sobe
+  em gente nem no limite do mapa
+- **Objeto pequeno: dá a volta** (Jhon, 26/11: "o lobo não gruda em
+  paredes e objetos muito curtos ou pequenos, como um poste ou placa de
+  rua"). Poste, haste de placa, coluna fina: o corte da colisão na altura
+  do corpo cabe num quadrado de `WallPoleMaxWidth` (0,6 m) e não há nada
+  em volta dele na altura do peito. Nele o lobo gruda e dá a volta, como
+  no tonel, com teto de giro (`WallOrbitMaxTurn`, 360°/s: num poste de
+  12 cm a corrida inteira dava quase duas voltas por segundo). Antes o
+  poste era "a ponta de uma parede fina": o lobo grudava e saía reto no
+  quadro seguinte. Mourão de grade, batente e cano colados na parede não
+  são soltos: neles vale a parede de sempre. Saltou de um poste, não
+  regruda nele (de lado nenhum) até tocar o chão — senão subia o poste
+  como elevador; o objeto é a forma de colisão, não o corpo (um corpo de
+  mapa guarda centenas de formas)
+- **Placa e parede curta: corre a face e sai reto.** Chegando pela ponta,
+  a sonda acha a aresta antes da face: o lobo espera os poucos
+  centímetros até ficar ao lado dela e gruda reto (grudar na aresta era
+  grudar torto e largar no quadro seguinte). Corre a face inteira e, na
+  ponta, segue reto no mesmo passo — não dá meia-volta em volta de uma
+  chapa de 5 cm. Já ao lado de uma face (fachada com enfeite), não espera
 - **A parede é o ponto mais próximo dela**, não o que um raio acerta:
   um cilindro em volta do lobo pega a geometria e `GetRestInfo` dá o
   ponto de contato, e a normal é a direção do ponto até o lobo. Ponto
@@ -227,6 +291,34 @@ O bot arremessa direto.
 **Arremesso forte** (decisão do Jhon): 14,5 m/s na mira e 4 para cima
 (era 11 e 3,5), mais o embalo de quem corre. Olhando reto, de pé, cai a
 15,5 m medidos (era ~11).
+
+**Parede protege** (Jhon, 26/11: "área de efeito da granada atravessa
+paredes, não deve acontecer mais"). A explosão só fere quem ela enxerga:
+algum dos 6 pontos do corpo (cabeça, peito, meio, joelhos e os lados do
+peito) tem caminho livre até ela, sem parede, barreira nem cenário no
+meio — o mesmo que o servidor autoritativo confere (`HitCheck`). Vários
+pontos para a quina não decidir sozinha (meio escondido atrás de um
+caixote ainda leva; por cima de um muro baixo, a cabeça leva), e o
+caminho é uma bola de 6 cm, não um raio: a junta entre duas peças da
+parede ou a fresta de uma porta não deixam a explosão passar. Outro
+corpo na frente não protege, como na bala.
+
+**Dano: 300 no centro** (era 420; Jhon, 26/11: "granada forte demais:
+deixar mais balanceada"). Mata quem tem 200 de vida a até 3 m (era 4,7);
+a 4 m tira 164 e a 6 m, 100. Contra o lobo de hoje (200 + 200 de
+escudo, o corpo do Bruto levando 60%), nem antes matava de vida cheia:
+o máximo que tira caiu de 252 para 180 (Bruto) e de 328 para 234
+(Ligeiro). Se o lobo ficar mais frágil (escudo 100, corpo levando 100%:
+300 para matar), a granada colada tira os 300 e a 2 m, 233.
+
+**O som** (26/11, "som de explosão AAA+, com fuse perceptível"): o pavio
+chia preso à granada do arremesso até a explosão, e no primeiro toque —
+quando o pavio começa a contar — o chiado sobe e cliques se aceleram
+até estourar: quem está perto sabe que vai estourar agora. A explosão
+tem três versões: de perto (estalo da onda, soco grave, bafo,
+estilhaços, ronco e eco), de longe (passou de 30 m: o ar come o agudo)
+e debaixo de teto (reflexões curtas, o grave da sala). Tudo feito por
+código (`src/tools/sons/granada.py`), sem gravação de terceiros.
 
 A granada sabe quem a lançou (`Grenade.Thrower`). Aliado passa ileso,
 dano e atordoamento; quem lançou, não — granada aos próprios pés tem
@@ -317,15 +409,52 @@ Enquanto se atira a mira **só sobe**; ela desce quando o gatilho solta
 com o mouse é descontado do que falta descer — sem isso, quem compensa
 o recuo à mão termina mirando abaixo do alvo.
 
+### As patas do lobo no chão (26/11)
+
+**Toda pata de apoio encosta no chão, e nenhuma entra nele** — no plano, na
+rampa, no degrau, parado, andando, de quatro, agachado e pousando (alpha
+fechado: "os pés do lobo atravessam o chão"). Duas partes:
+
+- **O ajuste dos clipes ao corpo** (`AnimationKit.RetargetPose`,
+  `WolfOwnClips.SoleBones`): pernas, pés e mãos giram a partir do repouso
+  do corpo, não na direção do osso do esqueleto dos clipes do Jhon, cujo pé
+  aponta mais para baixo. Copiando a direção, o pé inclinava e a ponta das
+  garras entrava de 6 a 18 cm no chão em toda pose. Coluna, braços e cabeça
+  continuam copiando a direção (o lobo do Meshy está em A, os clipes não).
+  Engatinhar e de quatro ficam como eram, copiando a direção também nas
+  pernas (`WolfOwnClips.KeepRestFor`): neles a pata de apoio patinava mais a
+  partir do repouso (engatinhando 0,27 → 0,65 m/s), e o apoio por quadro já
+  põe as garras no chão. Nos andares em pé o repouso patina menos (de lado
+  0,49 → 0,26 m/s, para trás 0,46 → 0,15).
+- **O apoio por quadro** (`WolfFootPlant`, um modificador do esqueleto, depois
+  da animação): para cada pata, a pele de baixo do pé (e da mão) contra o chão
+  de verdade em quatro pontos (calcanhar, garras, meio e o mais baixo, com o
+  plano do chão de cada um). Dentro do chão sobe; a de apoio (parada na
+  vertical em relação ao corpo) encosta; a que dá o passo não é puxada. Um IK
+  de dois ossos (coxa e canela, braço e antebraço) dobra o joelho, e a sola
+  mantém o ângulo da animação. Só desenho: a cápsula, a física e a rede não
+  mudam. Nas escadas, a pata pisa no degrau que se vê, não na chapa lisa e
+  invisível de subir.
+
+**Escada sem tranco**: a chapa de subir fica pelo menos 3 cm acima das quinas
+dos degraus quando a colisão dos degraus encosta nela (o Deserto:
+`Montagem.rampa`, `folga`) — senão o corpo bate ora na chapa, ora numa quina,
+e sobe aos trancos. A câmera de terceira pessoa entra rápido e sai devagar
+(`CameraArmEase`).
+
 ### O lobo de perto
 
-Alcance de garra maior que o de uma faca, e **resistência no corpo**
-(0,6 no Bruto, 0,78 no Ligeiro). O lobo é uma ameaça de frente, não só
-um corpo rápido.
+Alcance de garra maior que o de uma faca. **O lobo é canhão de vidro**
+(decisão do Jhon, 26/11): mata um humano em duas garradas (104 cada), mas
+tem só **100 de escudo** (era 200) e **leva o tiro inteiro no corpo** — não
+há mais resistência (era 0,6 no Bruto e 0,78 no Ligeiro). Ele ganha a
+luta que escolhe, de perto e de surpresa; pego no aberto, cai rápido.
 
-**Headshot atravessa a resistência inteira.** Sem essa saída, o humano
-com rifle não teria resposta nenhuma contra um lobo vindo de frente —
-e um inimigo sem resposta não é difícil, é injusto.
+**O lobo é um só** (decisão do Jhon, 26/11: "remover 'Classes de lobo' do
+jogo, deixar apenas melhorias"): as classes Bruto e Ligeiro saíram, e o
+lobo único fica no meio delas (`src/resources/breeds/lobo.tres`: 4,33 m/s,
+pulo de 2,09 m, garra 65). O que muda de um jogador para outro são as
+melhorias, ajustes pequenos.
 
 ### Layout da tela
 
@@ -413,6 +542,14 @@ entende o que aconteceu fora do campo de visão e, principalmente, de
 que ele morreu. Morrer sem saber a causa é a forma mais rápida de um
 jogo parecer injusto.
 
+**Queda fere** (26/11, Jhon: "humano começar a tomar dano de queda, lobo
+também, mas menos"). O humano, que compra mobilidade com arma e granada,
+paga a altura: até 4 m nada, 12 m mata. O lobo, que é a mobilidade do jogo,
+começa a sentir em 7 m (o pulo e a parede dele não contam) e com metade do
+dano. **Não fere** no bote, no especial e no salto da parede: são os golpes
+e saltos que existem para cair de cima de alguém, e puni-los com a queda
+tiraria a jogada que o jogo quer premiar. Números no `AJUSTES.md`.
+
 Morrer sozinho (a própria granada, a queda) entra no feed com a pessoa
 dos dois lados e o que matou, e conta a morte, sem ponto para ninguém
 (Jhon, 25/11). Online também: o jogo conta ao servidor a causa e a arma,
@@ -457,7 +594,7 @@ linha dele.
 | Garrada, braço 1 | Attack_Primary, inteiro, 1× | 0,20 s | 0,73 s |
 | Garrada, braço 2 | Attack_Secondary, inteiro, 1× | 0,20 s | 0,73 s |
 | Salto (direito no chão) | Special_Attack inteiro, 0–2,20 s, 1× | 1,33 s, quando as mãos batem no chão | 2,2 s, preso; voa até 8,4 m em arco |
-| Bote (direito no ar) | Special_Attack: a queda (0,80–1,33 s), depois a aterrissagem | quando encosta | aterrissagem de 0,87 s, presa; sem recarga |
+| Bote (direito no ar) | Special_Attack: a queda (0,80–1,33 s), depois a aterrissagem | quando encosta | aterrissagem de 0,87 s, presa; um a cada 1 s (26/11) |
 | Rugido (R, segurado) | Howl, inteiro, 1× | escudo no fim | 1,53 s; soltar cancela |
 
 **Desde 15/11 todos os golpes são as animações do Jhon, na velocidade
@@ -466,6 +603,21 @@ em que ele as fez** (pedido dele): as garradas ficaram mais lentas
 
 Durante um golpe o lobo não volta a humano: a tecla espera o golpe
 acabar.
+
+**O compasso: nenhum golpe a menos de uma garrada do anterior** (26/11,
+alpha fechado: "clique repetido nos ataques do lobo, principal e
+secundário, parece não ter limite de resposta: dá pra farmar clique e
+vencer qualquer luta"). A garrada encadeada já tinha o ritmo (uma a cada
+0,34 s); o furo era o ciclo pulo-bote-garra: a garra batia, 0,1 s depois o
+bote, 0,2 s depois a garra de novo — 870 de dano por segundo contra 375 só
+de garrada. Agora todo golpe que fere (garrada, bote) espera 0,34 s do
+anterior (`Weapon.StrikeSpacing`): o bote apertado antes fica esperando no
+ar e sai quando pode, e a garrada depois do bote vem no mesmo compasso. O
+bote ganhou espera própria de 1 s (era um por pulo: pulando sem parar, 360
+a cada 0,7 s). O bote que corta uma garrada que ainda não bateu continua
+saindo na hora (23/11). No servidor autoritativo vale o mesmo, contado pelo
+número do comando de quem bateu (`WolfStrikePace`): no mesmo alvo, um golpe
+por garrada e um bote por segundo; o mesmo golpe pega vários alvos.
 
 **O clique fica guardado** (`AttackBuffer`, 0,3 s): clicou na garrada
 com o golpe anterior ainda no fim, o próximo sai no quadro em que ele
@@ -525,12 +677,18 @@ o salto voa: do impulso até os pés tocarem o chão, o corpo vai até o
 ponto mirado, **até 12 m** (`PounceMaxDistance`; era 12, caiu para
 8,4 na v0.27.1 e voltou a 12 em 17/11, a pedido do Jhon).
 
-**O salto é de um alvo só** (17/11): ao cair, procura em volta do lobo
-(1,8 m, `PounceHitRadius`, e não só à frente como a garra — o lobo pousa
-em cima ou do lado de quem mirou). O principal — o travado no modo
-alvo, senão o inimigo mais perto de onde caiu — leva o dano cheio; quem
-estiver do lado leva 30% (`PounceSplash`). O anel da mira tem o tamanho
-da área.
+**O salto tem um alvo principal e uma área** (17/11; a área desde 26/11):
+ao cair, procura o principal em volta do lobo (1,8 m, `PounceHitRadius`, e
+não só à frente como a garra — o lobo pousa em cima ou do lado de quem
+mirou). O principal — o travado no modo alvo, senão o inimigo mais perto de
+onde caiu — leva o dano cheio, 3,7 garras (Jhon, 26/11: "mais poder de dano
+e em área, afetando mais pessoas ao redor e mais dano ao alvo principal";
+era 2,6 e 30% só a 1,8 m): mata humano de vida cheia e tira uns 80% do
+lobo. Quem estiver em volta até 3,5 m (`PounceAreaRadius`) leva 60% disso
+até 1,5 m, caindo até 30% na borda, e só se não houver parede entre o lobo
+e ele. O anel da mira tem o tamanho da área. A regra 2 continua: o especial
+precisa de quatro abates (ou 240 s) para encher, prende o lobo na
+aterrissagem, e quem sai do caminho antes da queda escapa do cheio.
 
 **O modo alvo** (17/11): carregando o salto, o **Tab** liga o modo alvo
 (e não abre o placar). Os inimigos vivos e à vista até 18 m ganham um
@@ -1189,7 +1347,7 @@ lobo precisa dela para subir.
 ### Alturas amarradas à física
 
 O humano pula 0,99 m: sobe caixote (0,8 m), não sobe contêiner
-(2,2 m). Para o Bruto alcançar o contêiner a partir do caixote ele
+(2,2 m). Para o lobo alcançar o contêiner a partir do caixote ele
 precisa pular 1,4 m — `JumpMultiplier` de pelo menos **1,2** (com
 1,28, 1,62 m). Ninguém alcança 5 m sem parede. **Mexeu no pulo, confira estes números** — um
 caixote 2 cm alto demais vira parede para o humano sem ninguém notar.
@@ -1461,15 +1619,19 @@ Especificação: `docs/CONJUNTOS.md`. Implementação:
 - Editar só fora da partida. Na partida só se escolhe e paga.
 - Respawn: 5 s, cartões que não cabem aparecem acinzentados com
   "faltam X", estouro do tempo usa o último conjunto ou o padrão.
-- Paga-se no renascer. O equipamento some na morte, e **morrer custa
-  100 WP** (`WpLostOnDeath`, decisão do Jhon) — um abate. Nunca abaixo
-  de zero; o padrão continua devolvendo +50.
+- Paga-se no renascer, e **morrer não tira WP** (Jhon, 26/11: "ao
+  morrer, não pode perder KP"). A arma paga fica desbloqueada até o fim
+  da partida (`MatchKp`): renascer com ela não cobra de novo, e o conjunto
+  custa só o que ainda não foi pago. Até 25/11 o equipamento sumia na
+  morte e a morte tirava 100 (`WpLostOnDeath`, que saiu). O padrão
+  continua devolvendo +50. Online, a partida autoritativa confere o gasto
+  pelo placar do servidor (docs/CONJUNTOS.md, seção 5).
 
 | Ganho | WP |
 |---|---|
-| Abate | 100 |
-| Abate de lobo | 70 |
-| Assistência (acertou nos 10 s antes da morte) | 35 |
+| Abate | 125 (era 100; +25% em 26/11) |
+| Abate de lobo | 88 (era 70) |
+| Assistência (acertou nos 10 s antes da morte) | 44 (era 35) |
 | Escolher o padrão | 50 |
 | Teto | 2500 |
 
@@ -1809,8 +1971,9 @@ uso, estatísticas de treino. Opções ficam à parte, em
   raridade, patente mínima e promoções vêm do servidor (o painel muda);
   a vitrine do dia (quatro itens com 20%, configurável) é sorteada pelo
   servidor no dia de Brasília. A compra é do servidor. Item com patente mínima aparece
-  trancado, com a patente que destrava. A raça Ligeiro não é vendida:
-  destrava na patente.
+  trancado, com a patente que destrava. (Até 25/11 havia as classes de
+  lobo — o Ligeiro destravava na patente —; saíram em 26/11, e a loja e o
+  inventário do lobo têm só as melhorias.)
 - **Missões** (`meta/Missions.cs`, espelho do servidor): três diárias e
   cinco semanais sorteadas pelo servidor (as mesmas para todos), as
   permanentes, que dão título, e as de evento, com data para acabar.

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 public sealed class GroundSpeedTest : RegressionTest
 {
 	public override string Name => "VelocidadeNoChao";
-	public override string Description => "humano 2,56 m/s, agachado 1,15, correndo (Shift) 3,71, faca 2,65; Bruto 4,15, agachado 1,87";
+	public override string Description => "humano 2,56 m/s, agachado 1,15, correndo (Shift) 3,71, faca 3,28; lobo 4,33, agachado 1,95";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -24,15 +24,19 @@ public sealed class GroundSpeedTest : RegressionTest
 		b.Near(1.152, await Measure(b, "move_forward", "sprint", "crouch"), 0.05, "agachado, o Shift não corre");
 
 		b.Weapon.SelectSlot(Slot.Knife);
-		b.Near(2.654, await Measure(b, "move_forward"), 0.02, "humano com a faca");
+		// A faca na mão ×1,28 desde 26/11 (era ×1,037; Jhon: "aumentar velocidade de
+		// movimento com faca equipada"): 2,56 × 1,28 = 3,28 m/s.
+		b.Near(2.56 * b.Weapon.KnifeSpeedMultiplier, await Measure(b, "move_forward"), 0.02, "humano com a faca");
 		b.Weapon.SelectSlot(Slot.Primary);
 
+		// O lobo é um só desde 26/11 (decisão do Jhon: sem classes), no meio do
+		// Bruto (4,15) e do Ligeiro (4,50): a base 3,2 × 1,352.
 		await b.BecomeWolf();
-		b.Near(4.154, await Measure(b, "move_forward"), 0.03, "Bruto correndo");
-		b.Near(1.869, await Measure(b, "move_forward", "crouch"), 0.05, "Bruto agachado");
-		b.Near(4.154, await Measure(b, "move_right"), 0.03, "Bruto de lado");
+		b.Near(4.326, await Measure(b, "move_forward"), 0.03, "lobo correndo");
+		b.Near(1.947, await Measure(b, "move_forward", "crouch"), 0.05, "lobo agachado");
+		b.Near(4.326, await Measure(b, "move_right"), 0.03, "lobo de lado");
 		// Para trás o lobo anda a 75% (WolfBackFactor, pedido do Jhon, 15/11).
-		b.Near(4.154 * b.Player.WolfBackFactor, await Measure(b, "move_back"), 0.03, "Bruto para trás");
+		b.Near(4.326 * b.Player.WolfBackFactor, await Measure(b, "move_back"), 0.03, "lobo para trás");
 	}
 
 	/// <summary>Velocidade média depois de embalar, no campo aberto.</summary>
@@ -48,11 +52,11 @@ public sealed class GroundSpeedTest : RegressionTest
 }
 
 /// <summary>Altura do pulo, amarrada ao mapa: o humano sobe caixote (0,8 m)
-/// e não contêiner; o Bruto alcança o contêiner a partir do caixote.</summary>
+/// e não contêiner; o lobo alcança o contêiner a partir do caixote.</summary>
 public sealed class JumpHeightTest : RegressionTest
 {
 	public override string Name => "AlturaDoPulo";
-	public override string Description => "humano pula 0,99 m, Bruto 1,62 m";
+	public override string Description => "humano pula 0,99 m, lobo 2,09 m";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -60,7 +64,8 @@ public sealed class JumpHeightTest : RegressionTest
 		b.Near(0.99, await Measure(b), 0.04, "pulo do humano");
 
 		await b.BecomeWolf();
-		b.Near(1.62, await Measure(b), 0.05, "pulo do Bruto");
+		// O lobo único (26/11), no meio do Bruto (1,62) e do Ligeiro (2,56): ×1,435.
+		b.Near(2.09, await Measure(b), 0.05, "pulo do lobo");
 	}
 
 	private static async Task<float> Measure(RegressionBench b)
@@ -86,7 +91,7 @@ public sealed class JumpHeightTest : RegressionTest
 public sealed class WallRunTest : RegressionTest
 {
 	public override string Name => "CorridaNaParede";
-	public override string Description => "o Bruto corre na parede a 4,75 m/s sem subir nem descer";
+	public override string Description => "o lobo corre na parede a 4,94 m/s sem subir nem descer";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -107,8 +112,9 @@ public sealed class WallRunTest : RegressionTest
 		RegressionBench.ReleaseAll();
 
 		b.Check(b.Player.IsWallRunning, "continuava na parede");
-		// 4,746: a base 3,2 da cena × 1,298 do Bruto × 1,1427 da parede (era 4,45 com a base 3,0).
-		b.Near(4.746, moved.X / 0.5, 0.05, "velocidade na parede");
+		// 4,944: a base 3,2 da cena × 1,352 do lobo único (26/11; era 1,298 do Bruto,
+		// 4,746) × 1,1427 da parede.
+		b.Near(4.944, moved.X / 0.5, 0.05, "velocidade na parede");
 		b.Near(0, moved.Y, 0.02, "altura travada");
 	}
 }

@@ -113,6 +113,14 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
    minutos ou últimos 20% do tempo, o que for menor, ou um time com 80%
    dos pontos) não recebe ninguém: o servidor de partida conta tempo e
    placar a cada batida. Sala vazia descarta a partida.
+   A arma no chão é da partida (26/11, nos dois modos): quem solta
+   avisa (`Drop`), o servidor de partida guarda as que estão no chão
+   (até 30 s, no máximo 20) e passa a todos, amigo e inimigo; pegar é
+   pedir (`Take`), e o primeiro pedido leva (`Taken` a todos: some de
+   todas as telas, ninguém leva duas vezes). Quem entra no meio recebe
+   as que estão no chão. Na autoritativa, a arma solta tem de ser uma
+   das que o corpo carrega, e a arma pega do chão vale no corpo de quem
+   pegou mesmo sem ser da loja dele.
 5. No fim, o servidor de partida entrega o resultado
    (`POST /v1/matches`); o servidor calcula o prêmio com a mesma regra
    do jogo (`src/scripts/domain/Rewards.cs`), grava no perfil e avisa a
@@ -139,7 +147,10 @@ Com `ALCATEIA_NETCODE=autoritativo` no servidor de partida, ele carrega o
 mapa (só o que colide), põe um corpo por jogador num mundo de física da
 partida e move cada um pelos comandos que chegam, 60 passos por segundo.
 O jogo adivinha o próprio movimento na hora e corrige quando o servidor
-discorda; os outros aparecem 100 ms no passado, interpolados. A cada 30 s
+discorda; os outros aparecem 100 ms no passado (mais a folga do jitter, até
++80 ms), interpolados. O desenho dos outros anda liso: só muda de ritmo, até
+10%, nunca pula nem volta, e freia quando os estados param de chegar; a
+correção do próprio corpo escorrega numa mola (decisão 0018). A cada 30 s
 o servidor escreve no log quanto o passo levou ("Passo do servidor:
 média … pior …"): tem de caber com folga nos 16,7 ms.
 
@@ -156,6 +167,26 @@ passada a espera e na base do time. No fim de cada partida escreve no log
 quantos acertos valeram e os recusados por motivo ("Acertos em …"); cada
 recusa suspeita conta contra quem atirou e vai no resultado
 (`rejectedHits`). A forma, a arma na mão e os bots ainda são do jogo.
+
+**Fluidez com a rede ruim** (decisão 0018, `FluidezAutoritativo` e
+`FluidezRepasse`): o jogo de verdade ligado a um servidor de partida no
+teste (`TestMatchServer`, que simula atraso, jitter, perda e o servidor
+engasgando), o jogador e o outro correndo em círculo, quadro a quadro:
+
+| Rede (autoritativo) | Câmera, trancos / para trás | Boneco, trancos / para trás |
+|---|---|---|
+| limpa | 0 / 0 (antes 9 / 4) | 0 / 0 (antes 295 / 2) |
+| 80 ms, jitter 40, perda 2% | 0 / 0 (antes 9 / 6) | 0 / 0 (antes 226 / 0) |
+| 150 ms, jitter 40, perda 5% | 0 / 0 (antes 9 / 3) | 0 / 0 (antes 224 / 0) |
+| 250 ms, jitter 40, perda 5% | 0 / 0 (antes 9 / 6) | 0 / 0 (antes 199 / 4) |
+| servidor parando 0,1–0,3 s a cada 1,5 s | 0 / 0 (antes 9 / 6) | 1 / 0 (antes 194 / 8) |
+
+Tranco: a velocidade do que se vê muda mais de 2 m/s de um quadro para o
+outro. Na câmera, com o servidor corrigindo o corpo 30 cm a cada 2 s. No
+repasse, o boneco: 0 / 0 em todas (antes até 11 trancos a 150 ms). O
+"antes" do boneco autoritativo é inflado pelo relógio de parede no teste
+sem tela (que roda mais rápido que o tempo real); com o relógio no passo
+e o resto antigo, eram 1 a 14 trancos e 2 voltas no tempo no engasgo.
 
 `ALCATEIA_TESTE_TELEPORTE=1` deixa o jogador "renascer" vivo em qualquer
 lugar: só o teste de ponta a ponta liga (o robô se põe de frente para o

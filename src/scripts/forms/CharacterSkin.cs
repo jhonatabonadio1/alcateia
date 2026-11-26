@@ -64,6 +64,20 @@ public partial class CharacterSkin : Resource
 	/// FormController.HumanHp, 200). 1 = a vida de todo mundo.</summary>
 	[Export] public float HpMultiplier = 1f;
 
+	[ExportGroup("Corpo")]
+	/// <summary>O meio dos dois olhos do humano, no espaço do osso da cabeça
+	/// (<c>mixamorig_Head</c>), em metros do modelo. É onde fica a câmera da 1ª
+	/// pessoa: o olho de quem joga é o olho do corpo que os outros veem, em pé e
+	/// agachado (Jhon, 26/11: "o nível de agachamento deve ser idêntico ao de
+	/// 3ª pessoa, extremamente preciso"). Medido na malha da cabeça (o branco
+	/// dos olhos na textura, levado ao osso pela ligação da pele):
+	/// src/tools/personagens/olhos.py. Modelo novo: meça de novo.</summary>
+	[Export] public Vector3 EyeInHead = new(0f, 0.075f, 0.09f);
+
+	/// <summary>O personagem cujo corpo humano é <paramref name="model"/> (nulo se nenhum).</summary>
+	public static CharacterSkin OfHumanModel(string model) =>
+		string.IsNullOrEmpty(model) ? null : All().Find(s => s.HumanModel == model);
+
 	/// <summary>A imagem do cartão na vitrine: thumb.jpg na pasta do
 	/// personagem (16:9). Sem ela, o cartão mostra o desenho genérico.</summary>
 	public string ThumbnailPath => $"{ResourcePath.GetBaseDir()}/thumb.jpg";

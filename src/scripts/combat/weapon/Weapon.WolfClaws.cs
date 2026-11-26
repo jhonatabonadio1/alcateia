@@ -50,6 +50,17 @@ public partial class Weapon
 
 	private int _comboIndex;
 
+	/// <summary>Segundos desde o último golpe do lobo que bateu (garrada,
+	/// bote, especial). É o relógio do teto contra o clique em rajada.</summary>
+	private double _sinceStrike = 99;
+
+	/// <summary>O menor intervalo entre dois golpes do lobo que ferem: o ritmo
+	/// da garrada encadeada (<see cref="CombatRules.WolfStrikeSpacing"/>, 0,34 s).
+	/// Nenhum golpe — garrada, bote — sai antes disso depois do anterior, por
+	/// mais rápido que se clique (alpha fechado, 26/11: "clique repetido nos
+	/// ataques do lobo, principal e secundário, parece não ter limite").</summary>
+	public float StrikeSpacing => CombatRules.WolfStrikeSpacing(WolfMoves.ImpactDelay(WolfMove.Claw), ClawCancelAfter);
+
 	/// <summary>Próxima garrada com o outro braço.</summary>
 	private bool _nextPunch;
 
@@ -280,6 +291,26 @@ public partial class Weapon
 		return nearest.DistanceSquaredTo(center) <= reach * reach;
 	}
 
+	/// <summary>Nada sólido do mapa entre o peito do lobo e o do outro (os
+	/// corpos não contam): a área do especial não passa parede.</summary>
+	private bool InSight(Node3D other)
+	{
+		var query = PhysicsRayQueryParameters3D.Create(_body.GlobalPosition + Vector3.Up * 0.3f,
+			other.GlobalPosition + Vector3.Up * 0.3f, 1);
+		var exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+		if (other is CollisionObject3D co) exclude.Add(co.GetRid());
+		query.Exclude = exclude;
+		for (int i = 0; i < 6; i++)
+		{
+			var hit = _body.GetWorld3D().DirectSpaceState.IntersectRay(query);
+			if (hit.Count == 0) return true;
+			if (hit["collider"].Obj is not CharacterBody3D) return false;
+			exclude.Add((Rid)hit["rid"]);
+			query.Exclude = exclude;
+		}
+		return true;
+	}
+
 	/// <summary>
 	/// Golpe de garra: um volume curto à frente do corpo, não um raio
 	/// a partir da câmera. Pega quem estiver perto da garra.
@@ -291,9 +322,15 @@ public partial class Weapon
 	/// salto). O principal — <paramref name="focus"/>, se estiver na área,
 	/// senão o inimigo mais perto do centro — leva o dano cheio; os outros
 	/// na área levam só esta fração.
+	///
+	/// <paramref name="area"/> acima do raio: a área do especial (26/11). O
+	/// principal continua escolhido dentro de <paramref name="radius"/>; quem
+	/// estiver até <paramref name="area"/> m do lobo leva uma fração que cai com
+	/// a distância (<see cref="CombatRules.PounceSplash"/>), e só se não houver
+	/// parede entre o lobo e ele.
 	/// </summary>
 	private void Claw(float multiplier, float reach, float radius, bool aerial, Vector3? facing = null,
-		Node3D focus = null, float splash = 1f)
+		Node3D focus = null, float splash = 1f, float area = 0f)
 	{
 		WolfBreed breed = _form.Breed;
 
@@ -316,6 +353,7 @@ public partial class Weapon
 		// garrada, com teto de 8, tinha o mesmo furo. A consulta fica só
 		// para o que tem vida e não é lutador (o boneco do treino).
 		var struckNow = new List<Node3D>();
+		var inArea = new List<Node3D>();
 		foreach (string group in Groups.Fighters)
 		{
 			foreach (Node node in _body.GetTree().GetNodesInGroup(group))
@@ -327,6 +365,7 @@ public partial class Weapon
 				// de folga para o passo que ele deu entre a queda e a pancada.
 				float slack = other == focus ? 0.6f : 0f;
 				if (TouchesBody(center, radius + slack, other)) struckNow.Add(other);
+				else if (area > radius && other.GlobalPosition.DistanceTo(_body.GlobalPosition) <= area) inArea.Add(other);
 			}
 		}
 
@@ -346,6 +385,8 @@ public partial class Weapon
 				struckNow.Add(thing);
 		}
 
+		_sinceStrike = 0;
+
 		Node main = null;
 		if (splash < 1f)
 		{
@@ -357,6 +398,23 @@ public partial class Weapon
 				if (body == focus) { main = body; break; }
 				float d = body.GlobalPosition.DistanceSquaredTo(center);
 				if (d < best) { best = d; main = body; }
+			}
+		}
+
+		// A área do especial: quem está em volta, à vista do lobo, entra com a
+		// fração da distância (a do raio do golpe também segue a distância).
+		var areaShare = new Dictionary<Node3D, float>();
+		if (area > radius)
+		{
+			foreach (Node3D body in inArea) struckNow.Add(body);
+			foreach (Node3D body in struckNow)
+			{
+				if (body == main) continue;
+				Health h = body.GetNode<Health>("Health");
+				if (_health != null && h.Team == _health.Team && !RoomConfig.Rules.FriendlyFire) continue;
+				float share = CombatRules.PounceSplash(body.GlobalPosition.DistanceTo(_body.GlobalPosition),
+					PounceSplashInner, area, splash, PounceSplashFar);
+				areaShare[body] = share > 0f && InSight(body) ? share : 0f;
 			}
 		}
 
@@ -373,7 +431,12 @@ public partial class Weapon
 			bool fromAbove = aerial || (!_body.IsOnFloor() && fallen >= AirAttackMinFall);
 			float damage = CombatRules.WolfStrike(breed.AttackDamage, multiplier,
 				IsHumanForm(collider), ClawVsHumanBonus, fromAbove, breed.AirAttackBonus);
-			if (splash < 1f && collider != main) damage *= splash;
+			if (area > radius && collider != main)
+			{
+				if (!areaShare.TryGetValue(collider, out float share) || share <= 0f) continue;
+				damage *= share;
+			}
+			else if (splash < 1f && collider != main) damage *= splash;
 
 			// Sangue no peito de quem levou, saindo para o lado do corte (a
 			// mão que bate alterna) e um pouco para a frente. O salto, que

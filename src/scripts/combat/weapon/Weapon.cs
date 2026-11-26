@@ -213,6 +213,9 @@ public partial class Weapon : Node3D
 		if (_comboTimer > 0)
 			_comboTimer -= delta;
 
+		_sinceStrike += delta;
+		_sinceLeap += delta;
+
 		if (_strikeLeft > 0)
 			_strikeLeft -= delta;
 
@@ -441,8 +444,11 @@ public partial class Weapon : Node3D
 		if (_form.IsWolf) return;
 
 		// O corpo do servidor de partida não larga arma no chão: a arma
-		// que cai é a do jogo de quem morreu.
-		if (_body is Player { Driven: true }) return;
+		// que cai é a do jogo de quem morreu. Nem o boneco de outra máquina
+		// (26/11): a máquina do dono solta e avisa a partida, e a arma
+		// aparece igual em todas as telas. Antes o boneco soltava uma cópia
+		// só desta tela, que só esta tela via.
+		if (_body is Player { Driven: true } || Puppet) return;
 
 		bool primary = PrimaryDef != null;
 		WeaponDefinition def = primary ? PrimaryDef : SecondaryDef;

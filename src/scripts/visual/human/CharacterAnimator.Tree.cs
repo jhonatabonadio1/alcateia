@@ -24,7 +24,7 @@ public partial class CharacterAnimator
 	/// de no arquivo para que trocar o arquivo baste.
 	/// </summary>
 	[ExportGroup("Árvore")]
-	[Export] public float CrouchWalkTrim = 1.65f;
+	[Export] public float CrouchWalkTrim = 0f;
 
 	/// <summary>
 	/// Locomoção num espaço de mistura 2D, e o resto como estados.
@@ -198,9 +198,17 @@ public partial class CharacterAnimator
 	{
 		if (!_player.HasAnimation($"alcateia/{clip}")) return;
 
-		space.AddBlendPoint(
-			new AnimationNodeAnimation { Animation = $"alcateia/{clip}" },
-			new Vector2(x, y), -1, clip);
+		var node = new AnimationNodeAnimation { Animation = $"alcateia/{clip}" };
+		// A corrida toca no ritmo das pernas do corpo do jogo (RunClipRate):
+		// a linha do tempo esticada, em laço como o arquivo.
+		if (clip == "run_fwd" && RunClipRate > 0.01f && !Mathf.IsEqualApprox(RunClipRate, 1f))
+		{
+			node.UseCustomTimeline = true;
+			node.TimelineLength = _player.GetAnimation($"alcateia/{clip}").Length / RunClipRate;
+			node.StretchTimeScale = true;
+			node.LoopMode = Animation.LoopModeEnum.Linear;
+		}
+		space.AddBlendPoint(node, new Vector2(x, y), -1, clip);
 	}
 
 	/// <summary>

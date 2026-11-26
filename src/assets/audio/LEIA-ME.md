@@ -44,7 +44,11 @@ muito bem-vindas aqui.
 | `tiro_proprio_ak47` etc. | O **seu** tiro com aquela arma: estéreo, mais grave. Sem ele, usa o `tiro_` da arma | — |
 | `tiro_distante` | Tiro de longe (mais de 35 m), abafado | da arma |
 | `tiro_distante_ak47` etc. | Versão distante de uma arma específica | da arma |
-| `granada_explosao` | Explosão da granada de choque | ~39 m |
+| `granada_explosao` | Explosão da granada, de perto (`src/tools/sons/granada.py`) | 54 m (ouve-se até 140) |
+| `granada_explosao_distante` | A mesma explosão a mais de 30 m (`WorldAudio.ExplosionFar`): sem agudo, baque e eco | idem |
+| `granada_explosao_dentro` | A explosão debaixo de teto (até 6 m acima): reflexões curtas, o grave da sala | idem |
+| `granada_pavio` | O pavio chiando, em laço (marcado no `.import`), preso à granada do arremesso até a explosão | 14 m |
+| `granada_pavio_fim` | O fim do pavio, do primeiro toque até a explosão (1,2 s): o chiado sobe e cliques que se aceleram | 18 m |
 | `granada_quique` | A granada batendo no chão ou na parede, uma vez por batida, no volume da velocidade da batida (`Grenade.Knock`) | 25 m |
 
 ## O lugar

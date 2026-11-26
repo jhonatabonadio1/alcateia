@@ -53,24 +53,31 @@ rede; o servidor roda o mesmo código sobre a intenção do jogador
 Um FPS com transformação humano ↔ lobo, onde a escolha de forma é a
 decisão central de cada momento.
 
-**Decisão do autor (nov/2026): as classes básicas custam 0 WP.** O
-jogador transforma quando quiser. O WP continua existindo no sistema e
-é o que vai separar as classes caras — Couraçado, Espectro e as demais
-mutações devem custar, criando a economia que o básico não tem.
+**Decisão do autor (nov/2026): virar lobo custa 0 WP.** O WP continua
+existindo no sistema.
 
-Risco conhecido e aceito: sem custo, o lobo domina. Ele é mais rápido,
-tem mais vida, escudo, corre em parede e mata em dois golpes. Se nos
-testes ninguém mais quiser ficar humano, as alavancas para corrigir
-são, nesta ordem: custo de WP no básico, buff nas armas humanas, e
-granadas mais fortes.
+**O lobo é um só, sem classes** (decisão do Jhon, 26/11: "remover
+'Classes de lobo' do jogo, deixar apenas melhorias de lobo"):
+`src/resources/breeds/lobo.tres`, no meio do Bruto e do Ligeiro de antes.
+A variação entre jogadores vem das melhorias (tatuagens), pequenas.
+
+**O lobo é canhão de vidro** (decisão do Jhon, 26/11): mata um humano em
+duas garradas, mas tem só 100 de escudo e leva o tiro inteiro no corpo. E
+**é por tempo**: 30 s de lobo de cada vez, depois volta a humano sozinho
+(com aviso nos últimos 5 s), e espera 20 s para virar de novo — "para
+forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
+`WolfCooldown`). Era o risco anotado aqui: sem custo, o lobo dominava.
 
 ---
 
 ## Regras de design — não viole sem conversar
 
-1. **Um eixo de troca por classe.** Não dois, não três. O Bruto troca
-   mobilidade por dano; o Ligeiro troca dano por mobilidade. Resista a
-   dar "mais uma habilidadezinha" para uma classe.
+1. **Um eixo de troca por forma e por melhoria.** Não dois, não três. O
+   lobo troca resistência por dano e mobilidade (canhão de vidro, e por
+   tempo); cada melhoria mexe numa coisa só, pouco. Resista a dar "mais
+   uma habilidadezinha" ao lobo ou a uma melhoria. (Até 25/11 a regra era
+   por classe — o Bruto trocava mobilidade por dano, o Ligeiro dano por
+   mobilidade —, e as classes saíram em 26/11.)
 
 2. **Toda habilidade forte precisa de uma condição onde não serve.**
    O Smart Wolf original era quase impossível de acertar, mas tinha
@@ -108,26 +115,36 @@ granadas mais fortes.
    Atenção ao mexer: a velocidade e o pulo do lobo são
    **multiplicadores** dos valores humanos. Baixar o humano encolhe o
    lobo junto e o contraste entre as formas não muda. Para separar as
-   duas, mexa no `SpeedMultiplier` das classes, não só aqui.
+   duas, mexa no `SpeedMultiplier` do lobo (`lobo.tres`), não só aqui.
 
    Valores absolutos atuais (velocidade em m/s, pulo em altura), medidos no
-   jogo em 24/11 (os testes seguem estes; `docs/MEDIDAS.md`). A cena do
-   jogador põe `HumanSpeed` 3,2 (o código diz 3,0): a base do humano é
-   3,2 × 0,8 (`HumanSpeedBonus`; era 1,08 até 26/11).
-   **O Shift corre** (26/11): × 1,45 (`HumanSprintFactor`), só para a
-   frente, de arma abaixada e sem atirar; o andar em silêncio saiu do
-   Shift (quem quer silêncio agacha).
-   O que o texto abaixo conta em 3,24 m/s é de antes.
+	jogo em 24/11 e, no humano, em 26/11 (os testes seguem estes;
+	`docs/MEDIDAS.md`). A cena do jogador põe `HumanSpeed` 3,2 (o código diz
+	3,0), a base do lobo; a base do humano é 3,2 × 0,8 (`HumanSpeedBonus`;
+	era 1,08 até 26/11).
+	**O Shift corre** (26/11): × 1,45 (`HumanSprintFactor`), só para a
+	frente, de arma abaixada e sem atirar; o andar em silêncio saiu do
+	Shift (quem quer silêncio agacha).
+	O que o texto abaixo conta em 3,24 m/s é de antes.
 
-   | | Humano | Bruto | Ligeiro |
-   |---|---|---|---|
-   | Velocidade | 2,56 (faca 2,65) | 4,15 (1,298×) | 4,50 (1,406×) |
-   | Correndo (Shift) | 3,71 | — | — |
-   | Pulo | 1,02 m | 1,67 m | 2,56 m |
-   | Avanço do pulo correndo | ~1,9 m | ~4,4 m | ~5,9 m |
-   | Agachado | 1,15 | 1,87 | 2,03 |
-   | De quatro (W W) | — | 7,14 | 7,73 |
-   | Na parede | — | 4,75 | 5,14 |
+	| | Humano | Lobo (26/11) |
+	|---|---|---|
+	| Velocidade | 2,56 (faca 3,28) | 4,33 (1,352×) |
+	| Correndo (Shift) | 3,71 | — |
+	| Pulo | 1,02 m | 2,09 m |
+	| Avanço do pulo correndo | ~1,9 m | ~5,1 m |
+	| Agachado | 1,15 | 1,95 |
+	| De quatro (W W) | — | 7,44 |
+	| Na parede | — | 4,94 |
+
+	(O lobo único fica no meio do Bruto — 4,15, pulo 1,67 m — e do Ligeiro —
+	4,50, 2,56 m — de antes. Os números do Bruto que o texto abaixo conta
+	são de antes dele.)
+
+	**No corpo do jogo (Eve e Barut) a corrida anda 3,41 m/s a 1×**
+	(medido no pé de apoio, 26/11): ela toca a 0,88× (`RunClipRate`), mais
+	devagar que o arquivo, nunca mais rápido. O humano anda 2,56 m/s numa
+	mistura do andar com a corrida. O texto abaixo é da medida antiga.
 
    **A velocidade do humano é a passada do X Bot**, medida no quadril:
    correr ("run_fwd") anda 3,0 m/s a 1×, andar 1,0, de costas 1,1 e
@@ -172,11 +189,16 @@ granadas mais fortes.
 11. **Agachar vale nas duas formas.** Encolhe a cápsula, baixa o olho
 	e corta a velocidade para 45%. Não se agacha na parede — a corrida
 	já é um estado de corpo inteiro. **O corpo visto agacha junto**: o
-	humano ajoelha com o fuzil no ombro (da cintura para cima, a pose
-	de mira do parado em pé, `CharacterAnimator.CrouchAim` — agacha e
-	atira, decisão do Jhon; os clipes agachados seguravam a arma na
-	cintura), e o lobo encolhe parado e engatinha andando (veja "Clipes
-	do lobo").
+	humano usa o "Crouch Walking" do Mixamo inteiro (decisão do Jhon, 26/11:
+	"do jeito que está, adaptado à altura dela"), com o pé e a perna
+	ajustados ao corpo (`AnimationKit.Legs`: pé reto, sola no chão); o
+	parado é o instante de passada mais aberta dele, os dois pés retos; a
+	arma fica na mão como de pé, reta ("fuzil precisa ficar reto"). O lobo
+	encolhe parado e engatinha andando (veja "Clipes do lobo"). A câmera da
+	1ª pessoa fica nos olhos desse corpo (~134 cm), e a cápsula agachada do
+	humano tem 1,5 m (a do lobo, 1,0). Testes: `OlhoNoCorpoEve`,
+	`OlhoNoCorpoBarut` (até 1 cm), `PeNoChaoEve`, `PeNoChaoBarut`,
+	`AgachadoMira`.
 
 ---
 
@@ -190,8 +212,8 @@ ataque aéreo, modos restritos por espécie.
 texturas, sons ou mapas extraídos do cliente original; os nomes das
 mutações (Power, Ghost, Smart, Guardian, Berserker, Ice, Psycho).
 
-Nomes das classes aqui são inventados: Bruto, Ligeiro, e depois
-Couraçado, Espectro, Detonador, Congelante, Arcano.
+Nomes inventados aqui: Bruto e Ligeiro (as classes de lobo até 25/11),
+e os que vierem (Couraçado, Espectro, Detonador, Congelante, Arcano).
 
 **Licenças de assets de terceiros.** Todo som tem a origem em
 `src/assets/audio/CREDITOS.md`. A maior parte é CC0; o Oculus Audio Pack é
@@ -226,7 +248,7 @@ alcateia/
 	├── tests/          unit (C# puro) e regression (o jogo sem tela)
 	├── assets/         audio, personagens (uma pasta por personagem jogável; _comum/ tem as animações do humano e do lobo), fonts, mapas, textures, ui
 	├── resources/
-	│   ├── breeds/     estatísticas das classes de lobo
+	│   ├── breeds/     lobo.tres — as estatísticas do lobo (um só desde 26/11)
 	│   ├── weapons/    uma definição por arma (.tres feito à mão desde 24/11)
 	│   ├── bots/       níveis de dificuldade (facil, medio, dificil)
 	│   └── body/       ruido.tres — quanto barulho o corpo faz
@@ -277,7 +299,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
 | `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, pente e reserva, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Aim` (zoom do botão direito), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfPouncePath` (o caminho do salto: o voo do corpo inteiro e o lado do alvo onde cair), `.WolfDive` (bote), `.Damage` (o raio com a cabeça do modelo e aplicar dano) |
 | `combat/BodyHitbox.cs` | O corpo que leva tiro, no modelo que se vê (25/11): uma peça por osso, ajustada à pele e seguindo o osso; a cabeça é uma delas (`HeadHitbox` só diz onde ela está). Sem modelo, a cápsula e a faixa de cima dela |
-| `forms/FormController.cs` | Máquina de estados da transformação + economia de WP |
+| `forms/FormController.cs` | Máquina de estados da transformação + economia de WP + o tempo de lobo (30 s) e a espera (20 s) |
 | `domain/CombatRules.cs` | As contas do combate em C# puro (dano, queda, dispersão, recuo, golpes do lobo, salto, vida e escudo), com teste de unidade |
 | `visual/RigPieces.cs` | Peças do conjunto de primeira pessoa mexidas por código por cima da animação (o carregador e o ferrolho na recarga de código do AR-15) |
 | `domain/BodyHit.cs` | A peça do corpo (cápsula de corte oval) ajustada à pele, e o raio entrando nela; `HeadHit.cs`, a bola e quando a cabeça conta (parede na frente protege). C# puro com teste |

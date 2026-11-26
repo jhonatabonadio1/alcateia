@@ -107,6 +107,9 @@ public partial class Hud : CanvasLayer
 		_form.WpChanged += OnWpChanged;
 		_form.FormChanged += OnFormChanged;
 		_form.TransformDenied += OnTransformDenied;
+		_form.TransformCooling += OnTransformCooling;
+		_form.WolfTimeWarning += OnWolfTimeWarning;
+		_form.WolfTimeUp += OnWolfTimeUp;
 		_weapon.SlotChanged += OnSlotChanged;
 		_weapon.GrenadesChanged += OnGrenadesChanged;
 		_weapon.HitConfirmed += OnHitConfirmed;
@@ -182,6 +185,9 @@ public partial class Hud : CanvasLayer
 			_form.WpChanged -= OnWpChanged;
 			_form.FormChanged -= OnFormChanged;
 			_form.TransformDenied -= OnTransformDenied;
+			_form.TransformCooling -= OnTransformCooling;
+			_form.WolfTimeWarning -= OnWolfTimeWarning;
+			_form.WolfTimeUp -= OnWolfTimeUp;
 		}
 		if (_weapon != null && IsInstanceValid(_weapon))
 		{

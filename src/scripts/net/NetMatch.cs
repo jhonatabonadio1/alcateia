@@ -87,6 +87,10 @@ public partial class NetMatch : Node
 	/// <summary>Quantas vezes o servidor corrigiu o meu corpo, e o tamanho
 	/// da última diferença (metros): o que o teste e o painel de rede leem.</summary>
 	public int Corrections => _prediction.Corrections;
+
+	/// <summary>A soma e a maior correção do corpo, em metros (para medir).</summary>
+	public float CorrectionSum => _prediction.ErrorSum;
+	public float CorrectionMax => _prediction.ErrorMax;
 	public float LastError => _prediction.LastError;
 
 	/// <summary>Ida e volta até o servidor de partida (ms), do ENet; -1 sem ligação.</summary>
@@ -99,9 +103,24 @@ public partial class NetMatch : Node
 	private ENetPacketPeer Server() =>
 		_peer != null && _peer.GetConnectionStatus() == MultiplayerPeer.ConnectionStatus.Connected ? _peer.GetPeer(1) : null;
 
-	private static double LocalSeconds => Time.GetTicksUsec() / 1_000_000.0;
+	/// <summary>
+	/// O relógio daqui para o relógio do servidor e o desenho dos outros: os
+	/// passos de física já dados (26/11). Era o relógio de parede do sistema
+	/// (Time.GetTicksUsec), lido em qualquer ponto do quadro: o instante em
+	/// que um estado "chegou" e o instante do desenho saíam de relógios
+	/// diferentes do passo em que o boneco anda, e o boneco tremia (na medida
+	/// do teste FluidezAutoritativo, tranco em 352 de 360 quadros com a rede
+	/// limpa). A física anda no tempo real (o Godot dá os passos que faltam),
+	/// então isto é o tempo real, só que contado no passo.
+	/// </summary>
+	private static double LocalSeconds => Engine.GetPhysicsFrames() / (double)Engine.PhysicsTicksPerSecond;
 
-	public override void _EnterTree() => Current = this;
+	public override void _EnterTree()
+	{
+		Current = this;
+		// A arma no chão passa a ser da partida (NetMatch.Pickups).
+		WeaponPickup.Link = this;
+	}
 
 	public override void _Ready()
 	{
@@ -237,6 +256,7 @@ public partial class NetMatch : Node
 	public override void _ExitTree()
 	{
 		if (Current == this) Current = null;
+		if (WeaponPickup.Link == this) WeaponPickup.Link = null;
 		Player.NetQuantize = false;
 		if (_net != null)
 		{
@@ -275,6 +295,7 @@ public partial class NetMatch : Node
 			return;
 		}
 
+		if (!Authoritative) UpdateRelayedPuppets();
 		if (Authoritative)
 		{
 			SendCommand();
@@ -295,12 +316,17 @@ public partial class NetMatch : Node
 		{
 			BinaryWriter bw = NetWire.Begin(NetWire.BotState, out MemoryStream botStream);
 			bw.Write(id);
-			bot.NetSnapshot().Write(bw);
+			NetState botState = bot.NetSnapshot();
+			botState.HasTime = true;
+			botState.Time = LocalSeconds;
+			botState.Write(bw);
 			Send(botStream, reliable: false);
 		}
 
 		var state = new NetState
 		{
+			HasTime = true,
+			Time = LocalSeconds,
 			Position = _player.GlobalPosition,
 			Velocity = _body.Velocity,
 			Yaw = _player.Rotation.Y,
@@ -394,12 +420,12 @@ public partial class NetMatch : Node
 		Send(stream, reliable: false);
 	}
 
-	/// <summary>A classe de lobo e as melhorias: o servidor precisa delas
-	/// para mover o lobo como este jogo move.</summary>
+	/// <summary>As melhorias do lobo: o servidor precisa delas para mover o
+	/// lobo como este jogo move. (A classe de lobo saiu em 26/11: o lobo é
+	/// um só, e o pacote leva só as melhorias.)</summary>
 	private void SendLoadout()
 	{
 		BinaryWriter w = NetWire.Begin(NetWire.Loadout, out MemoryStream stream);
-		w.Write(Profile.Breed ?? "");
 		List<string> tattoos = Profile.OwnedTattoos();
 		w.Write((byte)tattoos.Count);
 		foreach (string id in tattoos) w.Write(id);
@@ -491,6 +517,13 @@ public partial class NetMatch : Node
 
 		SyncWall(e.Has(EntityFlags.WallRunning), ack);
 
+		// Um estado que chega depois de um mais novo (o mesmo comando ou um
+		// mais velho) já está corrigido: corrigir de novo puxaria o corpo pela
+		// mesma diferença duas vezes, e o seguinte o devolveria (tremor, 26/11).
+		if (ack <= _reconciledAck && _reconciledEpoch == _epoch) return;
+		_reconciledAck = ack;
+		_reconciledEpoch = _epoch;
+
 		System.Numerics.Vector3 fix = _prediction.Reconcile(ack, _seq, e.Position);
 		if (fix == System.Numerics.Vector3.Zero) return;
 
@@ -499,6 +532,10 @@ public partial class NetMatch : Node
 		if (moved.Length() < Prediction.SnapDistance)
 			_player.GetNodeOrNull<VisualSmoothing>("VisualSmoothing")?.Absorb(moved);
 	}
+
+	/// <summary>O último comando cujo resultado o servidor já contou (e em que vida).</summary>
+	private uint _reconciledAck;
+	private byte _reconciledEpoch;
 
 	/// <summary>Se este jogo estava na parede em cada passo mandado (para
 	/// comparar com o que o servidor diz do mesmo passo).</summary>
@@ -537,6 +574,63 @@ public partial class NetMatch : Node
 	}
 
 	private bool _myWallWas;
+
+	/// <summary>
+	/// Partida de repasse: o caminho de cada boneco cujo dono conta o instante
+	/// de cada estado (<see cref="NetState.Time"/>, 26/11). O boneco é desenhado
+	/// entre dois estados, um pouco no passado, no relógio de quem mandou —
+	/// como na partida autoritativa —, em vez de perseguir a última notícia e
+	/// se adiantar pela velocidade: com a rede irregular, a notícia que chegava
+	/// mais tarde puxava o boneco para trás.
+	/// </summary>
+	private sealed class Relayed
+	{
+		public readonly InterpolationBuffer Poses = new();
+		public readonly ServerClock Clock = new();
+		public byte Epoch;
+		public bool WasDead, HasLast;
+		public Vector3 Last;
+	}
+
+	private readonly Dictionary<long, Relayed> _relayed = new();
+
+	/// <summary>Andar mais que isto entre dois estados é teleporte (renasceu):
+	/// o boneco pula em vez de deslizar pelo mapa.</summary>
+	private const float RelayTeleport = 4f;
+
+	private void Track(long id, in NetState s)
+	{
+		if (!_relayed.TryGetValue(id, out Relayed track)) _relayed[id] = track = new Relayed();
+		if (s.Dead) track.WasDead = true;
+		else if (track.WasDead || (track.HasLast && track.Last.DistanceTo(s.Position) > RelayTeleport))
+		{
+			track.Epoch++;
+			track.WasDead = false;
+		}
+		track.Last = s.Position;
+		track.HasLast = true;
+		track.Clock.Observe(s.Time, LocalSeconds);
+		track.Poses.Add(new NetPose
+		{
+			Time = s.Time,
+			Position = s.Position.ToNumerics(),
+			Velocity = s.Velocity.ToNumerics(),
+			Yaw = s.Yaw,
+			Pitch = s.Pitch,
+			Flags = (s.Grounded ? EntityFlags.Grounded : 0) | (s.Dead ? EntityFlags.Dead : 0),
+			Epoch = track.Epoch
+		});
+	}
+
+	private void UpdateRelayedPuppets()
+	{
+		foreach (var (id, track) in _relayed)
+		{
+			if (!_puppets.TryGetValue(id, out Bot puppet) || !track.Clock.Known) continue;
+			if (!track.Poses.Sample(track.Clock.RenderTime(LocalSeconds), out NetPose p)) continue;
+			puppet.RemoteInterpolated(p.Position.ToGodot(), p.Velocity.ToGodot(), p.Yaw, p.Pitch, p.Has(EntityFlags.Grounded));
+		}
+	}
 
 	/// <summary>Os outros, um pouco no passado, entre dois estados que já chegaram.</summary>
 	private void UpdatePuppets()
@@ -742,7 +836,13 @@ public partial class NetMatch : Node
 					break;
 
 				case NetWire.State:
-					if (_puppets.TryGetValue(r.ReadInt64(), out Bot body)) Apply(body, NetState.Read(r));
+					long stateOf = r.ReadInt64();
+					if (_puppets.TryGetValue(stateOf, out Bot body))
+					{
+						NetState st = NetState.Read(r);
+						if (st.HasTime) Track(stateOf, st);
+						Apply(body, st);
+					}
 					break;
 
 				case NetWire.Attack:
@@ -804,10 +904,19 @@ public partial class NetMatch : Node
 					ReadBotOwner(r);
 					break;
 
+				case NetWire.Drop:
+					ReadDrop(r);
+					break;
+
+				case NetWire.Taken:
+					ReadTaken(r);
+					break;
+
 				case NetWire.Gone:
 					long goneId = r.ReadInt64();
 					if (_puppets.TryGetValue(goneId, out Bot gone)) gone.RemotePresent(false);
 					_poses.Remove(goneId);
+					_relayed.Remove(goneId);
 					break;
 			}
 		}
@@ -839,6 +948,7 @@ public partial class NetMatch : Node
 			if (!IsInstanceValid(old) || old.Team == team) return;
 			_puppets.Remove(id);
 			_poses.Remove(id);
+			_relayed.Remove(id);
 			Retire(old);
 		}
 
@@ -868,6 +978,7 @@ public partial class NetMatch : Node
 			int at = OnlineMatch.Roster.FindIndex(s => s.Id == id);
 			if (at >= 0) OnlineMatch.Roster[at] = OnlineMatch.Roster[at] with { Owner = owner };
 			if (owner != OnlineMatch.AccountId || Setup == null || !_puppets.Remove(id, out Bot puppet)) continue;
+			_relayed.Remove(id);
 
 			_poses.Remove(id);
 			OnlineMatch.Seat seat = at >= 0 ? OnlineMatch.Roster[at] : new OnlineMatch.Seat(id, puppet.Callsign, puppet.Team, 0, owner);

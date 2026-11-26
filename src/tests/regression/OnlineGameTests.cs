@@ -22,6 +22,9 @@ public abstract class OnlineGameTest : RegressionTest
 	protected abstract bool Authoritative { get; }
 	protected TestMatchServer Server { get; private set; }
 
+	/// <summary>Lugares a mais na escalação (bots, por exemplo), no servidor e no jogo.</summary>
+	protected virtual OnlineMatch.Seat[] ExtraSeats => Array.Empty<OnlineMatch.Seat>();
+
 	public override void Prepare()
 	{
 		RoomConfig.Settings = new RoomSettings { Map = "armazem_estendido", TeamSize = 4 };
@@ -32,7 +35,7 @@ public abstract class OnlineGameTest : RegressionTest
 		var tree = (SceneTree)Engine.GetMainLoop();
 		Server = new TestMatchServer();
 		tree.CurrentScene.AddChild(Server);
-		Server.Start(Authoritative);
+		Server.Start(Authoritative, extra: ExtraSeats);
 
 		// A partida online, como o saguão a deixaria (OnlineMatch.Launch).
 		Set(nameof(OnlineMatch.Address), "127.0.0.1");
@@ -44,6 +47,7 @@ public abstract class OnlineGameTest : RegressionTest
 		OnlineMatch.Roster.Clear();
 		OnlineMatch.Roster.Add(new OnlineMatch.Seat(TestMatchServer.MeAccount, "Eu", Teams.Blue, 0));
 		OnlineMatch.Roster.Add(new OnlineMatch.Seat(TestMatchServer.OtherAccount, "Outro", Teams.Orange, 0));
+		OnlineMatch.Roster.AddRange(ExtraSeats);
 		Set(nameof(OnlineMatch.Active), true);
 	}
 
@@ -108,6 +112,10 @@ public abstract class OnlineGameTest : RegressionTest
 		public float Yaw, Pitch;
 		public byte Epoch;
 
+		/// <summary>Andar para a frente (de 0 a 127), no comando de cada passo
+		/// (no eixo do jogo, para a frente é Y negativo: Input.GetVector).</summary>
+		public sbyte Move;
+
 		public FakeOther(TestMatchServer server, Vector3 at, float yaw, float pitch)
 		{
 			_server = server;
@@ -122,7 +130,8 @@ public abstract class OnlineGameTest : RegressionTest
 			_seq++;
 			_recent[_seq % InputCommand.Redundancy] = new InputCommand
 			{
-				Seq = _seq, Yaw = Quant.Yaw(Yaw), Pitch = Quant.Pitch(Pitch), Epoch = Epoch,
+				Seq = _seq, Yaw = Quant.Yaw(Yaw), Pitch = Quant.Pitch(Pitch), Epoch = Epoch, MoveY = (sbyte)(-Move),
+				Buttons = Move > 0 ? InputButtons.Forward : InputButtons.None,
 				HeldSlot = (byte)Slot.Primary, HasSpawn = true, Spawn = At.ToNumerics()
 			};
 			_server.FromOther(NetCommands.InputPacket(_recent, _seq, new byte[256]));

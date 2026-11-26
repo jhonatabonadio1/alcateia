@@ -66,4 +66,26 @@ public static class HitRulesTests
 		// 1.485: 49 acertos de 30. Atirando no dobro do ritmo, metade passa.
 		Check.True(accepted >= 47 && accepted <= 51, $"no ritmo da arma, metade passa ({accepted} de 100)");
 	}
+
+	[Test("o compasso do lobo no servidor: no mesmo alvo, um golpe por garrada (20 comandos); bote, um a cada 58; o mesmo golpe pega vários alvos")]
+	public static void WolfPace()
+	{
+		var pace = new WolfStrikePace();
+		Check.True(pace.Allow(7, 100, false, 20, 58), "a primeira garrada vale");
+		Check.True(!pace.Allow(7, 110, false, 20, 58), "no mesmo alvo, 10 comandos depois (0,17 s), não");
+		Check.True(pace.Allow(8, 110, false, 20, 58), "em outro alvo, vale");
+		Check.True(pace.Allow(7, 121, false, 20, 58), "21 comandos depois, vale");
+
+		// Clique em rajada: um golpe a cada 6 comandos (0,1 s) num alvo, por 4 s.
+		var spam = new WolfStrikePace();
+		int ok = 0;
+		for (uint seq = 1; seq <= 240; seq += 6) if (spam.Allow(1, seq, false, 20, 58)) ok++;
+		Check.True(ok <= 12, $"rajada de 40 golpes em 4 s: valem {ok}, no máximo 12 (um a cada 0,34 s)");
+
+		var leap = new WolfStrikePace();
+		Check.True(leap.Allow(1, 500, true, 20, 58) && leap.Allow(2, 500, true, 20, 58), "um bote pega dois de uma vez");
+		Check.True(!leap.Allow(3, 530, true, 20, 58), "outro bote meio segundo depois, não");
+		Check.True(leap.Allow(3, 560, true, 20, 58), "um segundo depois, vale");
+		Check.True(new WolfStrikePace().Allow(1, 0, false, 20, 58) && new WolfStrikePace().Allow(1, 0, true, 20, 58), "sem número de comando (jogo antigo), vale");
+	}
 }

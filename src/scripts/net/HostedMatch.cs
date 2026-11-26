@@ -29,7 +29,7 @@ using System.Text.Json.Nodes;
 /// o servidor. Recusado, não acontece nada, e a recusa conta contra quem
 /// atirou (vai no resultado).
 /// </summary>
-public sealed class HostedMatch
+public sealed partial class HostedMatch
 {
 	/// <summary>Acabou: tanto tempo para os jogadores verem o placar antes
 	/// de a partida fechar.</summary>
@@ -58,6 +58,16 @@ public sealed class HostedMatch
 	/// <summary>O que cada conta tem na loja, como o saguão mandou na escalação.
 	/// Sem a conta aqui (servidor central antigo): nada é conferido.</summary>
 	private readonly Dictionary<long, HashSet<string>> _owned = new();
+
+	/// <summary>O KP de cada conta na partida autoritativa: o que já pagou (fica
+	/// desbloqueado até o fim, <see cref="MatchKp"/>) e quanto gastou. O ganho
+	/// sai do placar deste servidor (<see cref="MatchKp.MostEarned"/>), nunca do
+	/// que o jogo diz (26/11: "gasto de KP só vale se o servidor conferir").</summary>
+	private readonly Dictionary<long, (MatchKp Kp, int Spent)> _kp = new();
+
+	/// <summary>Arma que a conta trouxe sem KP para pagar, já anotada (conta
+	/// contra a conta uma vez, não a cada estado que chega).</summary>
+	private readonly HashSet<(long, string)> _unpaidNoted = new();
 	private readonly List<ServerBody> _bodyList = new();
 	private readonly Dictionary<long, byte> _indexOf = new();
 	private EntityState[] _states = new EntityState[16];
@@ -175,6 +185,8 @@ public sealed class HostedMatch
 			SendVitals();
 		}
 
+		ExpireLoose();
+
 		RefPhase before = Referee.Phase;
 		Referee.Tick(delta);
 
@@ -217,6 +229,7 @@ public sealed class HostedMatch
 		Broadcast(SeatPacket(Referee.Find(account)), except: peer);
 		if (Authoritative && !_bodies.ContainsKey(account)) AddBody(account);
 		_link.Send(peer, WelcomePacket(), true);
+		SendLooseTo(peer);
 		GD.Print($"Joined {Key}: {Referee.Find(account).Name} ({Referee.ConnectedCount} of {Referee.Seats.Count(s => !s.IsBot)}).");
 		return true;
 	}
@@ -289,12 +302,60 @@ public sealed class HostedMatch
 		return fallback;
 	}
 
+	/// <summary>
+	/// A arma foi paga com KP nesta partida? O jogo paga no renascer (a tela de
+	/// conjuntos); aqui o servidor confere contra o que a conta pode ter
+	/// ganhado pelo placar dele. Arma nova que cabe no que sobra é paga e fica
+	/// desbloqueada até o fim; a que não cabe vira a padrão e conta contra a
+	/// conta (uma vez), como a arma que não é dela.
+	/// </summary>
+	public string PaidWeapon(long account, string id, string fallback)
+	{
+		// O que pode ir no conjunto padrão é de graça: com ele na mão, o jogador
+		// pode ter vindo pelo padrão (a M4A4 custa 200 num conjunto pago, 0 no padrão).
+		int price = Arsenal.CostOf(id);
+		if (string.IsNullOrEmpty(id) || price <= 0 || LoadoutSet.AllowedInDefault(id)) return id;
+		// Arma pega do chão nesta partida nunca é compra: quem a trouxe pagou
+		// (ou ganhou), e quem a pegou leva de graça (26/11, junção da arma
+		// largada com o KP no servidor: o AK pego virava a padrão).
+		if (PickedUp(account, id)) return id;
+		if (Referee.Find(account) is not { IsBot: false } seat) return id;
+
+		var (kp, spent) = _kp.TryGetValue(account, out var entry) ? entry : (new MatchKp(), 0);
+		if (kp.IsUnlocked(id)) return id;
+
+		int earned = MatchKp.MostEarned(seat.Kills, seat.KillsWolf, seat.Assists, seat.Deaths);
+		if (spent + price <= earned)
+		{
+			kp.Unlock(new[] { id });
+			_kp[account] = (kp, spent + price);
+			return id;
+		}
+
+		if (_unpaidNoted.Add((account, id)))
+		{
+			seat.RejectedHits++;
+			GD.Print($"Match {Key}: account {account} brought {id} ({price} KP) with {earned - spent} KP to spend; using {fallback}.");
+		}
+		_kp[account] = (kp, spent);
+		return fallback;
+	}
+
+	/// <summary>O KP que a conta ainda pode gastar nesta partida, pelo placar
+	/// do servidor. Para os testes.</summary>
+	public int KpLeft(long account)
+	{
+		if (Referee.Find(account) is not { } seat) return 0;
+		int spent = _kp.TryGetValue(account, out var entry) ? entry.Spent : 0;
+		return MatchKp.MostEarned(seat.Kills, seat.KillsWolf, seat.Assists, seat.Deaths) - spent;
+	}
+
 	/// <summary>O item é de série ou da conta? Sem a lista dela (servidor central
 	/// antigo, bot), vale. Quando não é, conta contra a conta.</summary>
 	private bool Allowed(long account, string id)
 	{
 		if (!_owned.TryGetValue(account, out HashSet<string> own)) return true;
-		if (own.Contains(id) || Catalog.Get(id) is { Starter: true }) return true;
+		if (own.Contains(id) || Catalog.Get(id) is { Starter: true } || PickedUp(account, id)) return true;
 		if (Referee.Find(account) is { } seat) seat.RejectedHits++;
 		return false;
 	}
@@ -376,13 +437,20 @@ public sealed class HostedMatch
 	/// <summary>Um passo de física: cada corpo consome o comando dele; a
 	/// cada <see cref="NetRates.SnapshotEvery"/> passos, o estado do mundo
 	/// vai para todos.</summary>
+	private ulong _lastStepFrame = ulong.MaxValue;
+
 	public void PhysicsStep(uint tick, double delta)
 	{
 		if (!Authoritative) return;
 
 		_tick = tick;
+		// Mais de um passo no mesmo quadro: o servidor engasgou e está dando os
+		// passos que deve. A fila de cada um não apressa (decisão 0018).
+		ulong frame = Godot.Engine.GetProcessFrames();
+		bool catchingUp = frame == _lastStepFrame;
+		_lastStepFrame = frame;
 		_botBodies?.Step(delta);
-		foreach (ServerBody body in _bodyList) body.Step(tick, delta);
+		foreach (ServerBody body in _bodyList) body.Step(tick, delta, catchingUp);
 		ResolveHits(tick);
 		if (tick % NetRates.SnapshotEvery == 0) SendSnapshots(tick);
 	}
@@ -481,18 +549,12 @@ public sealed class HostedMatch
 
 			case NetWire.Loadout:
 				if (!Authoritative || !_bodies.TryGetValue(account, out ServerBody loading)) break;
-				string breed = r.ReadString();
 				var tattoos = new List<string>();
 				for (int n = Math.Min((int)r.ReadByte(), 8); n > 0; n--) tattoos.Add(r.ReadString());
-				// A classe de lobo e as melhorias têm de ser de série ou da conta:
-				// valem na velocidade, no pulo, no escudo e no dano do lobo.
-				if (!Allowed(account, breed))
-				{
-					GD.Print($"Match {Key}: account {account} brought wolf class {breed}, which is not theirs; using the default.");
-					breed = "raca_bruto";
-				}
+				// As melhorias têm de ser da conta: valem na velocidade, no
+				// pulo, no escudo e no dano do lobo. (O lobo é um só desde 26/11.)
 				tattoos.RemoveAll(t => !Allowed(account, t));
-				loading.ApplyLoadout(breed, tattoos);
+				loading.ApplyLoadout(tattoos);
 				break;
 
 			case NetWire.Attack:
@@ -537,6 +599,15 @@ public sealed class HostedMatch
 			case NetWire.BotDied:
 				long fallen = r.ReadInt64();
 				if (Referee.Speaks(account, fallen)) ReadDeath(fallen, r);
+				break;
+
+			// A arma no chão (HostedMatch.Pickups): soltar e pedir para pegar.
+			case NetWire.Drop:
+				ReadDrop(peer, account, r);
+				break;
+
+			case NetWire.Take:
+				ReadTake(account, r);
 				break;
 
 			case NetWire.Touch:
@@ -635,8 +706,8 @@ public sealed class HostedMatch
 			guard = r.ReadBoolean();
 		}
 
-		primary = AllowedWeapon(account, primary, Arsenal.DefaultPrimary);
-		secondary = AllowedWeapon(account, secondary, Arsenal.DefaultSecondary);
+		primary = PaidWeapon(account, AllowedWeapon(account, primary, Arsenal.DefaultPrimary), Arsenal.DefaultPrimary);
+		secondary = PaidWeapon(account, AllowedWeapon(account, secondary, Arsenal.DefaultSecondary), Arsenal.DefaultSecondary);
 
 		byte[] relayed = NetWire.Relay(packet, account);
 		if (!_bodies.TryGetValue(account, out ServerBody body) || !body.Placed)

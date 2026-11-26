@@ -19,7 +19,9 @@ using System.Collections.Generic;
 /// próximo agente consiga ler.
 ///
 /// Dividido em montar e tocar: CharacterAnimator.Model (clipes, modelo
-/// do time, arma) e CharacterAnimator.Tree (a árvore) rodam uma vez no
+/// do time, arma), CharacterAnimator.Kneel (o agachado mais fundo, feito no
+/// clipe ao carregar), CharacterAnimator.Eye (os olhos do corpo, onde fica a
+/// câmera da 1ª pessoa) e CharacterAnimator.Tree (a árvore) rodam uma vez no
 /// _Ready; CharacterAnimator.Locomotion, .Actions e .Death leem o estado
 /// a cada quadro. As ferramentas que o lobo também usa estão no
 /// <see cref="AnimationKit"/>.
@@ -147,6 +149,7 @@ public partial class CharacterAnimator : Node3D
 		// zero e só se mexe para o efeito de morte.
 		_modelY = Position.Y;
 		_model.Position = new Vector3(_model.Position.X, 0, _model.Position.Z);
+		FindEyes();
 
 		HideFromOwner();
 		ApplyTeamTint();

@@ -166,14 +166,17 @@ public static class NetTests
 		Check.True(b.Next(out c, out _) && c.Seq == 7, "o perdido que chega tarde não vale mais (o passo dele já foi dado)");
 	}
 
-	[Test("fila de comandos: funda demais, consome dois por passo até voltar")]
+	[Test("fila de comandos: funda demais, consome dois por passo até voltar; recuperando um engasgo do servidor, não apressa")]
 	public static void CommandBufferCatchUp()
 	{
 		var b = new CommandBuffer();
 		for (uint s = 1; s <= 10; s++) b.Push(Cmd(s));
-		Check.Equal(2, b.WantedThisTick, "dez na fila: dois por passo");
+		Check.Equal(2, b.WantedThisTick(), "dez na fila: dois por passo");
+		// Novo em 26/11 ("microtravamentos"): o servidor dando os passos que deve
+		// depois de engasgar não apressa — o corpo andava o dobro por passo.
+		Check.Equal(1, b.WantedThisTick(catchingUp: true), "recuperando um engasgo do servidor: um por passo");
 		for (int i = 0; i < 8; i++) b.Next(out _, out _);
-		Check.Equal(1, b.WantedThisTick, "voltou ao normal: um por passo");
+		Check.Equal(1, b.WantedThisTick(), "voltou ao normal: um por passo");
 	}
 
 	[Test("estado do mundo: 24 bytes por corpo, corpo comum e cabeçalho de cada um")]
@@ -243,7 +246,77 @@ public static class NetTests
 		Check.Near(11.0, clock.Now(1.0), 0.0001, "no ritmo");
 		clock.Observe(661, 1.5);   // chegou atrasado (~0,5 s)
 		Check.True(clock.Now(1.5) > 11.47, "um estado atrasado mexe pouco");
-		Check.Near(clock.Now(1.5) - NetRates.InterpolationDelay, clock.RenderTime(1.5), 0.0001, "os outros, 100 ms no passado");
+		// Mudou de propósito (26/11, "microtravamentos"): o desenho fica mais
+		// atrás com a rede irregular (o atraso cresce com o jitter, até +80 ms).
+		Check.Near(clock.Now(1.5) - clock.Delay, clock.RenderTime(1.5), 0.0001, "os outros, no passado: 100 ms mais a folga do jitter");
+		Check.True(clock.Delay > NetRates.InterpolationDelay && clock.Delay <= NetRates.InterpolationDelay + ServerClock.MaxExtraDelay + 1e-9,
+			$"com um estado atrasado, a folga cresce, até o teto ({clock.Delay:0.000} s)");
+	}
+
+	/// <summary>Um estado a cada dois passos (30 por segundo), de <paramref name="from"/>
+	/// até <paramref name="to"/> segundos daqui; o atraso de cada um, de <paramref name="late"/>.</summary>
+	private static void Feed(ServerClock clock, ref uint tick, double from, double to, System.Func<double, double> late)
+	{
+		for (double t = from; t < to; t += 2.0 / 60)
+		{
+			tick += 2;
+			clock.Observe(tick, t + late(t));
+		}
+	}
+
+	[Test("relógio do servidor: o desenho nunca volta nem pula, com jitter e com o servidor engasgando (26/11)")]
+	public static void ServerClockRendersSmoothly()
+	{
+		var clock = new ServerClock();
+		var rng = new System.Random(7);
+		uint tick = 0;
+		var arrivals = new System.Collections.Generic.List<(double At, uint Tick)>();
+		// 10 s de estados: atraso de 75 ms, jitter de 0 a 40 ms, e o servidor parado
+		// 0,3 s aos 4 s (os estados desse trecho chegam todos juntos no fim).
+		for (double t = 0; t < 10; t += 2.0 / 60)
+		{
+			tick += 2;
+			double at = t + 0.075 + rng.NextDouble() * 0.04;
+			if (t >= 4.0 && t < 4.3) at = 4.3 + 0.075;
+			arrivals.Add((at, tick));
+		}
+		arrivals.Sort((a, b) => a.At.CompareTo(b.At));
+
+		int next = 0;
+		double last = double.NaN, lastStep = double.NaN, worstChange = 0, smallestStep = double.MaxValue;
+		for (double local = 0; local < 10; local += 1.0 / 60)
+		{
+			while (next < arrivals.Count && arrivals[next].At <= local) clock.Observe(arrivals[next].Tick, arrivals[next++].At);
+			if (!clock.Known) continue;
+			double render = clock.RenderTime(local);
+			if (!double.IsNaN(last))
+			{
+				double step = render - last;
+				smallestStep = System.Math.Min(smallestStep, step);
+				if (!double.IsNaN(lastStep) && local > 1) worstChange = System.Math.Max(worstChange, System.Math.Abs(step - lastStep) * 60);
+				lastStep = step;
+			}
+			last = render;
+		}
+		Check.True(smallestStep >= 0, $"o desenho nunca volta no tempo (menor passo {smallestStep * 1000:0.00} ms)");
+		Check.True(worstChange <= ServerClock.RateSlew / 60 + 1e-6, $"e o ritmo muda devagar, sem tranco (maior mudança de um quadro para o outro {worstChange:0.000})");
+	}
+
+	[Test("relógio do servidor: chegando no último estado, freia e para em vez de seguir adivinhando; depois alcança")]
+	public static void ServerClockCushions()
+	{
+		var clock = new ServerClock();
+		uint tick = 0;
+		Feed(clock, ref tick, 0, 2, _ => 0.05);
+		double newest = tick * NetRates.TickSeconds;
+		double render = 0;
+		// Para de chegar estado por meio segundo.
+		for (double local = 2; local < 2.5; local += 1.0 / 60) render = clock.RenderTime(local);
+		Check.True(render <= newest + NetRates.MaxExtrapolation, $"sem estado novo, o desenho freia e para: no máximo o que se adivinha além do último ({(render - newest) * 1000:0.0} ms além dele)");
+		// Voltam os estados: o desenho volta a andar e alcança o alvo.
+		Feed(clock, ref tick, 2.5, 6, _ => 0.05);
+		double target = clock.Now(6) - clock.Delay;
+		Check.Near(target, clock.RenderTime(6), 0.03, "e depois alcança o alvo, andando um pouco mais rápido");
 	}
 
 	[Test("predição: diferença pequena é ruído; grande corrige o agora e os passos seguintes")]

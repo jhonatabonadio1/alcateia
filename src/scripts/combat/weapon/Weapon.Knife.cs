@@ -15,10 +15,11 @@ public partial class Weapon
 	[ExportGroup("Faca")]
 	[Export] public float KnifeDamage = 85f;
 
-	/// <summary>Velocidade com a faca na mão, sobre a do humano. 3,36 m/s
-	/// desde a v0.27.1, 12% acima dos 3,0 de antes (decisão do Jhon): como o
-	/// humano já anda 8% a mais, a faca soma 1,12 / 1,08.</summary>
-	[Export] public float KnifeSpeedMultiplier = 1.037037f;
+	/// <summary>Velocidade com a faca na mão, sobre a do humano com a arma.
+	/// 1,28 desde 26/11 (era 1,037: 3,58 m/s com o humano a 3,46; Jhon:
+	/// "aumentar velocidade de movimento com faca equipada"): 3,84 m/s com o
+	/// humano a 3,0, ainda abaixo do lobo a pé (4,15 no Bruto).</summary>
+	[Export] public float KnifeSpeedMultiplier = 1.28f;
 	[Export] public float KnifeRange = 2.2f;
 	/// <summary>Tempo entre dois golpes. 0,40 s desde 19/11 (era 0,55: "o
 	/// ataque da faca precisa responder clique a clique, sendo um pouco

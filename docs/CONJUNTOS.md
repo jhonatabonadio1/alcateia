@@ -99,7 +99,8 @@ tem caminho de recuperação, e a partida não trava para quem está perdendo.
 1. Conjuntos inacessíveis aparecem **acinzentados mas visíveis**, exibindo
    quanto falta. Ver o que não se pode pagar é o que cria desejo e dá sentido
    ao próximo abate.
-2. A seleção debita o WP **no momento do respawn**, não antes.
+2. A seleção debita o WP **no momento do respawn**, não antes — e só o que
+   ainda não foi pago nesta partida (seção 5).
 3. O lobo não está na lista: transformar é um slot da partida (tecla 3)
    e as classes básicas não custam WP. A tela só avisa a regra do modo
    (lobo livre, bloqueado ou obrigatório).
@@ -111,28 +112,48 @@ tem caminho de recuperação, e a partida não trava para quem está perdendo.
 
 ## 5. Regra econômica central
 
-> **O equipamento comprado some na morte. O WP acumulado permanece.**
+> **Morrer não tira KP. A arma paga fica desbloqueada até o fim da partida.**
+> (Jhon, 26/11: "ao morrer, não pode perder KP. E devem ganhar um pouco mais
+> por partida.")
 
-Comprou uma SVD de 600 WP e morreu em dez segundos? Perdeu os 600 e precisa
-juntar de novo. Mas o WP ganho com abates continua (menos os 100 que a
-morte tira, `WpLostOnDeath`).
+Comprou uma SVD de 600 KP e morreu em dez segundos? Renasce com ela de novo
+sem pagar: o que foi pago numa partida vale até o fim dela
+(`MatchKp`, `src/scripts/domain/MatchKp.cs`). Um conjunto custa só a soma
+dos itens que ainda não foram pagos nesta partida — trocar para outro paga
+só a arma nova, e voltar ao anterior é de graça. O cartão do conjunto mostra
+"JÁ PAGO" ou o que falta ("380 de 440").
 
-Isso torna cada morte uma perda econômica além da tática, e faz o jogador
-pensar duas vezes antes de levar a arma cara para uma posição exposta —
-exatamente a tensão desejada num jogo onde o inimigo escala paredes.
+Até 25/11 era o contrário: o equipamento sumia na morte (o conjunto era
+cobrado de novo a cada renascer) e a morte tirava 100 (`WpLostOnDeath`, que
+saiu). Quem desbloqueava uma arma e morria logo ficava sem KP para renascer
+com ela — o relato do alpha fechado. O KP agora é progresso dentro da
+partida: juntar abates libera armas melhores para o resto dela.
+
+**Online (partida autoritativa)** o servidor de partida confere o gasto
+(`HostedMatch.PaidWeapon`): a arma paga que chega no estado do jogador só
+vale se o KP que ele pode ter ganhado, pelo placar do servidor
+(`MatchKp.MostEarned`: abates, assistências e o bônus do padrão em cada
+entrada), cobre o preço; a que não cabe vira a padrão e conta contra a conta,
+como a arma que não é dela. A arma do conjunto padrão é de graça. No modo de
+repasse cada jogo decide o próprio corpo (decisão 0008) e o KP não é
+conferido.
 
 ### Ganhos
 
 | Ação | WP |
 |---|---|
 | Selecionar o conjunto Padrão | +50 |
-| Abate | +100 |
-| Abate em forma de lobo | +70 |
-| Assistência | +35 |
-| Morrer | −100 |
+| Abate | +125 (era 100; +25% em 26/11) |
+| Abate em forma de lobo | +88 (era 70) |
+| Assistência | +44 (era 35) |
+| Morrer | 0 (era −100) |
 | **Teto acumulado** | **10000** (era 2500; Jhon, 21/11) |
 
-O WP persiste durante a sessão e é zerado a cada partida.
+O WP persiste durante a sessão e é zerado a cada partida, com as armas
+desbloqueadas nela.
+
+Uma partida típica (10 abates de arma, 4 assistências, 8 mortes renascendo
+no padrão) rendia 740 KP; agora rende 1826.
 
 ### Custo das classes de lobo
 

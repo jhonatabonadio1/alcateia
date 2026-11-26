@@ -460,6 +460,10 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ## Pendências técnicas conhecidas
 
+### O pé do humano entra no chão andando e correndo de pé (medido em 26/11)
+
+Com o ajuste do pé de 26/11 (o pé copia o giro a partir do repouso), parado em pé a sola fica a +0,3/+0,5 cm. Andando e correndo ela ainda entra: Eve −2,1 (andar) e −3,1 cm (correr), Barut −4,1 e −4,6 (era −5,3 e −6,4). A perna da Eve e do Barut tem outra proporção que a do X Bot, e o tornozelo pousa baixo. O ajuste de perna do agachado (`AnimationKit.ReachFloor`) resolve (todos a −0,5 cm ou mais), mas nos clipes de pé mudou a medida de deslize do `PassadaHumana` (para trás 0,36 → 0,55 m/s), sem o pé andar na horizontal: muda quais pontos a medida conta como apoiados. Ficou só no agachado até combinar se a medida muda.
+
 ### Limpeza do repositório: o que ficou para decidir (levantado em 24/11)
 
 O que tinha confiança alta saiu em 24/11 (CHANGELOG). Ficou, com confiança média (ninguém carrega hoje, mas pode servir):

@@ -181,21 +181,6 @@ public partial class ItemDetail : PanelContainer
 			return bars;
 		}
 
-		if (item.Kind == ItemKind.Breed)
-		{
-			var breed = GD.Load<WolfBreed>(item.BreedPath);
-			var cmpBreed = compare?.BreedPath != null && compare != item ? GD.Load<WolfBreed>(compare.BreedPath) : null;
-			if (breed == null) return bars;
-
-			bars.Add(StatBar.Make("Escudo", breed.Shield / 300f, $"{breed.Shield:0}", cmpBreed == null ? -1 : cmpBreed.Shield / 300f));
-			bars.Add(StatBar.Make("Velocidade", breed.SpeedMultiplier / 2f, $"×{breed.SpeedMultiplier:0.00}", cmpBreed == null ? -1 : cmpBreed.SpeedMultiplier / 2f));
-			bars.Add(StatBar.Make("Pulo", breed.JumpMultiplier / 2f, $"×{breed.JumpMultiplier:0.00}", cmpBreed == null ? -1 : cmpBreed.JumpMultiplier / 2f));
-			bars.Add(StatBar.Make("Garra", breed.AttackDamage / 160f, $"{breed.AttackDamage:0}", cmpBreed == null ? -1 : cmpBreed.AttackDamage / 160f));
-			bars.Add(StatBar.Make("Resistência", (1f - breed.BodyResistance) / 0.5f, $"{(1f - breed.BodyResistance) * 100:0}%",
-				cmpBreed == null ? -1 : (1f - cmpBreed.BodyResistance) / 0.5f));
-			return bars;
-		}
-
 		if (item.Character is CharacterSkin skin)
 		{
 			CharacterSkin current = compare?.Character != null && compare != item ? compare.Character : null;

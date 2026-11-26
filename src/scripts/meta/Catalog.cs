@@ -8,7 +8,6 @@ public enum ItemKind
 	Weapon,
 	Utility,
 	Tattoo,
-	Breed,
 	Character,
 	Service,
 	/// <summary>Foto de perfil (<see cref="Avatars"/>): só a aparência, vale para sempre.</summary>
@@ -69,8 +68,6 @@ public sealed class CatalogItem
 	/// <summary>Consumível: some ao usar (troca de nome).</summary>
 	public bool Consumable;
 	public TattooEffect Tattoo;
-	/// <summary>Classe de lobo: o recurso com as estatísticas.</summary>
-	public string BreedPath;
 	/// <summary>Personagem: a pasta dele em assets/personagens.</summary>
 	public CharacterSkin Character;
 	/// <summary>Time em que o personagem pode ser usado (0 = os dois).</summary>
@@ -256,14 +253,6 @@ public static class Catalog
 			Rarity = 4, MinRank = 7, Prices = new[] { 280, 1400, 4200, 9300, 22000 }, Hot = true,
 			Tattoo = new TattooEffect { ClawDamage = 1.07f, Speed = 1.05f },
 			Description = "Lendária. +7% de dano da garra e +5% de velocidade na forma de lobo." },
-
-		// ---------------------------------------------------- classes de lobo
-		new() { Id = "raca_bruto", Name = "Bruto", Type = "Classe de lobo", Kind = ItemKind.Breed,
-			Rarity = 1, Starter = true, BreedPath = "res://src/resources/breeds/bruto.tres",
-			Description = "Linha de frente: escudo alto, garra pesada, resiste a tiro no corpo. Mais lento no chão." },
-		new() { Id = "raca_ligeiro", Name = "Ligeiro", Type = "Classe de lobo", Kind = ItemKind.Breed,
-			Rarity = 2, MinRank = 3, BreedPath = "res://src/resources/breeds/ligeiro.tres",
-			Description = "Velocidade e flanco: o lobo mais rápido e o pulo mais longo, com pouco escudo. Destrava em Batedor I." },
 
 		// ---------------------------------------------------- fotos de perfil
 		// As da loja (as de graça não são item: Avatars.cs). Só permanente.

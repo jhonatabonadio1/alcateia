@@ -627,6 +627,8 @@ Todo campo aqui vira um filtro na lista e uma linha no painel da sala. O conjunt
 
 - Placar por `Tab`, chat por `Enter` (time) e `Shift+Enter` (todos), menu de pausa por `Esc` com opções, controles e `Sair`.
 
+- **Trocar as teclas** (26/11, Jhon: "opção de editar controles nas configurações do game"): Opções → aba **Controles**, no saguão e no menu do `Esc` da partida (a mesma vista). Cada ação trocável numa faixa (Movimento, Combate, Armas, Interface), com a tecla de agora; clicar nela e apertar a nova, do teclado ou do mouse (botões, roda e laterais). `Esc` cancela a captura sem fechar o menu. Tecla que já é de outra ação abre uma pergunta logo abaixo da faixa ("L já é de «Pular». Trocar as duas?"): Trocar dá a tecla antiga a quem tinha a nova; Cancelar não muda nada. `↺` em cada faixa volta à tecla de fábrica; "Restaurar padrão" volta todas (e a sensibilidade). Vale na hora e fica salvo em `user://settings.json` (`Keys`: só o que difere do padrão). O `Esc` (menu) e as teclas de número do rádio não se trocam (faixa "Fixas"). O padrão continua o do `InputSetup`. As dicas do HUD (caixinhas do uivo e do especial, "R · RECARREGAR", a faixa da transformação, o guia do `E`, "Segure Tab") e a tabela de Controles do menu do `Esc` mostram a tecla de agora. Código: `KeyBindings.cs`, `KeyCapture.cs`, a aba em `OptionsScreen.cs`.
+
 - Votação de expulsão durante a partida, com maioria simples e cooldown.
 
 - Pedido de rendição a partir de metade do tempo, exigindo maioria do time.

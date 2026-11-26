@@ -1,12 +1,13 @@
 using Godot;
 using System.Threading.Tasks;
 
-/// <summary>Morrer de lobo e renascer: volta humano, com vida cheia, e
-/// perde 100 de WP (decisões do Jhon, v0.26.8 e v0.26.10).</summary>
+/// <summary>Morrer de lobo e renascer: volta humano, com vida cheia
+/// (decisões do Jhon, v0.26.8 e v0.26.10). O WP não cai: até 25/11 a morte
+/// tirava 100; decisão do Jhon, 26/11: "ao morrer, não pode perder KP".</summary>
 public sealed class RespawnTest : RegressionTest
 {
 	public override string Name => "RenasceHumano";
-	public override string Description => "quem morre de lobo renasce humano, de vida cheia, e perde 100 de WP";
+	public override string Description => "quem morre de lobo renasce humano, de vida cheia, e não perde WP";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -18,7 +19,7 @@ public sealed class RespawnTest : RegressionTest
 		await b.Seconds(0.3);
 
 		b.Check(b.Health.IsDead, "morreu");
-		b.Near(wp - 100f, b.Form.Wp, 0.01, "WP depois de morrer");
+		b.Near(wp, b.Form.Wp, 0.01, "WP depois de morrer (não cai)");
 
 		await b.Seconds(b.Health.RespawnWait + 0.2);
 		b.Check(b.Health.TryRespawn(), "renasceu");
@@ -32,11 +33,13 @@ public sealed class RespawnTest : RegressionTest
 	}
 }
 
-/// <summary>A garra do Bruto contra humano: o dano da classe × 1,6.</summary>
+/// <summary>A garra do lobo contra humano: o dano do lobo × 1,6. O lobo é um
+/// só desde 26/11 (decisão do Jhon: sem classes), garra 65 (era 75 no Bruto):
+/// 104, dois golpes matam um humano de 200.</summary>
 public sealed class ClawDamageTest : RegressionTest
 {
 	public override string Name => "DanoDaGarra";
-	public override string Description => "a garra do Bruto tira 75 × 1,6 = 120 de um humano";
+	public override string Description => "a garra do lobo tira 65 × 1,6 = 104 de um humano";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -53,7 +56,7 @@ public sealed class ClawDamageTest : RegressionTest
 		float before = health.Hp;
 		await b.Tap("attack");
 		await b.Seconds(0.6);
-		b.Near(120f, before - health.Hp, 0.5, "dano da primeira garrada");
+		b.Near(104f, before - health.Hp, 0.5, "dano da primeira garrada");
 	}
 }
 

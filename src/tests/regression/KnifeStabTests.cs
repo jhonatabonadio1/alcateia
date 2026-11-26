@@ -25,7 +25,11 @@ public sealed class KnifeStabTest : RegressionTest
 		CharacterBody3D away = bots[0], facing = bots[1];
 
 		b.Weapon.SelectSlot(Slot.Knife);
-		await b.Place(new Vector3(0, 1, 2), 0f);
+		// Mirando o peito (25° para baixo, o alvo a 1,4 m). Desde 26/11 a câmera fica
+		// nos olhos do corpo (decisão do Jhon: agachar idêntico na 1ª e na 3ª pessoa;
+		// em pé ela subiu 12 cm): reto, o golpe de frente pega a cabeça e tira o
+		// dobro — o que está certo, mas este teste é sobre a estocada no corpo.
+		await b.Place(new Vector3(0, 1, 2), 0f, -25f);
 		var view = b.Player.GetNode<ViewModel>("Head/Camera3D/ViewModel");
 
 		// De frente primeiro: o abate acende o "em chamas" de quem matou, que

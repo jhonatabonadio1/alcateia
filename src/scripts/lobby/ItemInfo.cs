@@ -8,12 +8,8 @@ public static class ItemInfo
 	/// <summary>Faltando menos que isto, o item aparece como "expirando".</summary>
 	public static readonly TimeSpan ExpiringSoon = TimeSpan.FromDays(3);
 
-	public static bool IsBreedUnlocked(CatalogItem item) =>
-		item.Kind == ItemKind.Breed && Profile.Rank >= item.MinRank;
-
 	/// <summary>O jogador pode usar o item agora?</summary>
-	public static bool Usable(CatalogItem item) =>
-		item.Kind == ItemKind.Breed ? IsBreedUnlocked(item) : Profile.Owns(item.Id);
+	public static bool Usable(CatalogItem item) => Profile.Owns(item.Id);
 
 	public static bool Locked(CatalogItem item) => Profile.Rank < item.MinRank;
 
@@ -30,7 +26,6 @@ public static class ItemInfo
 		{
 			ItemKind.Utility => "Granada",
 			ItemKind.Tattoo => "Melhoria",
-			ItemKind.Breed => "Classe",
 			ItemKind.Character => "Personagem",
 			ItemKind.Photo => "Foto de perfil",
 			_ => "Serviço"
@@ -47,13 +42,6 @@ public static class ItemInfo
 		color = UiTokens.TextSecondary;
 
 		if (item.Starter) return "Permanente";
-		if (item.Kind == ItemKind.Breed)
-		{
-			if (IsBreedUnlocked(item)) return "Permanente";
-			color = UiTokens.TextDisabled;
-			return Loc.F("Destrava em {0}", Ranks.NameOf(item.MinRank));
-		}
-
 		OwnedItem owned = Profile.Find(item.Id);
 		if (owned == null) return "";
 

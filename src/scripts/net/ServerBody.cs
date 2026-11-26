@@ -43,6 +43,9 @@ public sealed class ServerBody
 	/// <summary>O ritmo de dano de quem atira, por tipo de golpe.</summary>
 	public readonly DamageBudget GunBudget = new(), MeleeBudget = new(), GrenadeBudget = new();
 
+	/// <summary>O compasso dos golpes do lobo deste corpo (<see cref="WolfStrikePace"/>).</summary>
+	public readonly WolfStrikePace WolfPace = new();
+
 	public Health Health { get; }
 	public FormController Form { get; }
 	public Weapon Weapon { get; }
@@ -103,7 +106,9 @@ public sealed class ServerBody
 
 	/// <summary>Um passo do servidor: consome o comando deste passo (ou
 	/// dois, se o jogo está à frente) e guarda onde o corpo ficou.</summary>
-	public void Step(uint tick, double delta)
+	/// <param name="catchingUp">O servidor está dando os passos que deve depois
+	/// de engasgar (vários no mesmo quadro): a fila não apressa (CommandBuffer).</param>
+	public void Step(uint tick, double delta, bool catchingUp = false)
 	{
 		// Aliado não é parede, aqui também (TeamCollision): o jogo deixa o
 		// lobo atravessar o boneco do aliado, e o corpo daqui batia nele — a
@@ -111,7 +116,7 @@ public sealed class ServerBody
 		// desligado (Player.ReadyDriven): o par se refaz daqui.
 		TeamCollision.Keep(Body, Health, ref _collisionTeam);
 
-		int wanted = Commands.WantedThisTick;
+		int wanted = Commands.WantedThisTick(catchingUp);
 		for (int i = 0; i < wanted; i++)
 		{
 			if (!Commands.Next(out InputCommand command, out _)) break;
@@ -119,7 +124,7 @@ public sealed class ServerBody
 		}
 
 		if (Placed)
-			History.Record(tick, Body.GlobalPosition.ToNumerics(), Body.Rotation.Y, Body.HeadPitch, Body.IsCrouching ? Body.CrouchHeight : Body.StandHeight);
+			History.Record(tick, Body.GlobalPosition.ToNumerics(), Body.Rotation.Y, Body.HeadPitch, Body.BodyHeight);
 	}
 
 	/// <summary>Quantos passos seguidos o jogo conta que está na parede e
@@ -307,6 +312,10 @@ public sealed class ServerBody
 		Weapon.GuardOverride = guard && Form.IsWolf;
 	}
 
+	/// <summary>A arma é uma das duas que o jogo diz carregar (o último
+	/// <c>Status</c>): só essa pode cair no chão (26/11).</summary>
+	public bool Carries(string id) => !string.IsNullOrEmpty(id) && (id == _primary || id == _secondary);
+
 	/// <summary>O jogo contou que morreu sem ser por acerto de outra máquina
 	/// (queda, a própria granada, um bot dele).</summary>
 	public void SelfDeath()
@@ -330,12 +339,12 @@ public sealed class ServerBody
 		else Form.OnAssist();
 	}
 
-	/// <summary>A classe de lobo e as melhorias (Loadout): mudam a
-	/// velocidade e o pulo do lobo, então o servidor precisa delas.</summary>
-	public void ApplyLoadout(string breed, IEnumerable<string> tattoos)
+	/// <summary>As melhorias do lobo (Loadout): mudam a velocidade e o
+	/// pulo do lobo, então o servidor precisa delas.</summary>
+	public void ApplyLoadout(IEnumerable<string> tattoos)
 	{
 		var valid = tattoos.Where(id => Catalog.Get(id)?.Kind == ItemKind.Tattoo).Distinct().Take(Profile.MaxTattoos);
-		WolfBreed built = Profile.BuildBreed(breed, valid);
+		WolfBreed built = Profile.BuildBreed(valid);
 		if (built != null) Form.Breed = built;
 	}
 

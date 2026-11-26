@@ -121,7 +121,9 @@ public static class AccountSync
 	public static async Task<string> Buy(string itemId, Duration duration)
 	{
 		if (!Backend.LoggedIn) return NeedsAccount;
-		Backend.Reply reply = await Backend.Buy(itemId, duration);
+		// Um número por clique: se a rede mandar o pedido de novo, o servidor
+		// devolve a mesma compra em vez de cobrar duas vezes (26/11).
+		Backend.Reply reply = await Backend.Buy(itemId, duration, Guid.NewGuid().ToString("N"));
 		if (!reply.Ok) return reply.Error;
 		await Refresh();
 		return null;

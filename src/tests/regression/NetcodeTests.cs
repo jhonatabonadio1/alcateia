@@ -76,7 +76,7 @@ public sealed class ServerPredictionTest : NetcodeTest
 
 		MatchWorld world = await StartServer(b);
 		var server = new ServerBody(1, 0, world.SpawnBody("Servidor", Teams.Blue));
-		server.ApplyLoadout(Profile.Breed, Profile.OwnedTattoos());
+		server.ApplyLoadout(Profile.OwnedTattoos());
 
 		Player.NetQuantize = true;
 		var up = new FakeLink();

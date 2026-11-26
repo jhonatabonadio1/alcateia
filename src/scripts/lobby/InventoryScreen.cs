@@ -40,7 +40,7 @@ public partial class InventoryScreen : LobbyScreen
 	private static readonly string[][] SubTabs =
 	{
 		new[] { "Todas", "Primária", "Secundária", "Granada", "Corpo a corpo" },
-		new[] { "Melhorias", "Classes" },
+		new[] { "Melhorias" },
 		new[] { "Todos" },
 		new[] { "Todos" }
 	};
@@ -54,12 +54,12 @@ public partial class InventoryScreen : LobbyScreen
 		if (item == null) return;
 		_side = item.Kind switch
 		{
-			ItemKind.Tattoo or ItemKind.Breed => 1,
+			ItemKind.Tattoo => 1,
 			ItemKind.Character => 2,
 			ItemKind.Service or ItemKind.Photo => 3,
 			_ => 0
 		};
-		_sub = item.Kind == ItemKind.Breed ? 1 : 0;
+		_sub = 0;
 	}
 
 	private LoadoutSet CurrentSet => Profile.Sets[Mathf.Clamp(_setIndex, 0, Profile.Sets.Count - 1)];
@@ -238,11 +238,6 @@ public partial class InventoryScreen : LobbyScreen
 	private void WolfSide(VBoxContainer column)
 	{
 		column.AddChild(Step(1, "Clique no espaço que quer trocar"));
-		column.AddChild(UiKit.Caption("Classe"));
-		CatalogItem breed = Catalog.Get(Profile.Breed);
-		column.AddChild(SlotRow("Classe", breed, () => Filter(1, 1), null, choosing: _sub == 1));
-
-		column.AddChild(UiKit.Gap(UiTokens.S2));
 		column.AddChild(UiKit.Caption(Loc.F("Melhorias  ·  {0}/{1}", Profile.Tattoos.Count, Profile.MaxTattoos)));
 
 		for (int i = 0; i < Profile.MaxTattoos; i++)
@@ -254,8 +249,8 @@ public partial class InventoryScreen : LobbyScreen
 
 		column.AddChild(UiKit.Spacer());
 		column.AddChild(UiKit.Paragraph(
-			"A classe define escudo, velocidade, pulo e garra. As melhorias são ajustes pequenos por cima dela. " +
-			"Tudo do lobo se compra com Cash, nunca com IPs."));
+			"O lobo é um só para todos: mata rápido, mas tem pouco escudo e fica lobo por pouco tempo. " +
+			"As melhorias são ajustes pequenos por cima dele. Tudo do lobo se compra com Cash, nunca com IPs."));
 	}
 
 	private void CharacterSide(VBoxContainer column)
@@ -378,8 +373,7 @@ public partial class InventoryScreen : LobbyScreen
 		(0, 3) => "Escolha a granada",
 		(0, 4) => "Corpo a corpo",
 		(0, _) => "Todas as suas armas",
-		(1, 0) => "Escolha as melhorias",
-		(1, _) => "Escolha a classe do lobo",
+		(1, _) => "Escolha as melhorias",
 		(2, _) => "Escolha o personagem",
 		_ => "Seus serviços"
 	};
@@ -416,10 +410,7 @@ public partial class InventoryScreen : LobbyScreen
 
 	private IEnumerable<CatalogItem> Items()
 	{
-		IEnumerable<CatalogItem> owned = Catalog.All.Where(i =>
-			i.Kind == ItemKind.Breed
-			|| Profile.Find(i.Id) != null
-			|| i.Starter);
+		IEnumerable<CatalogItem> owned = Catalog.All.Where(i => Profile.Find(i.Id) != null || i.Starter);
 
 		return (_side, _sub) switch
 		{
@@ -428,8 +419,7 @@ public partial class InventoryScreen : LobbyScreen
 			(0, 3) => owned.Where(i => i.Kind == ItemKind.Utility),
 			(0, 4) => owned.Where(i => Arsenal.IsKnife(i.Id)),
 			(0, _) => owned.Where(i => i.Kind is ItemKind.Weapon or ItemKind.Utility),
-			(1, 0) => owned.Where(i => i.Kind == ItemKind.Tattoo),
-			(1, _) => owned.Where(i => i.Kind == ItemKind.Breed),
+			(1, _) => owned.Where(i => i.Kind == ItemKind.Tattoo),
 			(2, _) => owned.Where(i => i.Kind == ItemKind.Character),
 			_ => owned.Where(i => i.Kind is ItemKind.Service or ItemKind.Photo)
 		};
@@ -460,7 +450,6 @@ public partial class InventoryScreen : LobbyScreen
 	{
 		if (ItemInfo.IsPrimary(item)) return Catalog.Get(CurrentSet.Primary);
 		if (ItemInfo.IsSecondary(item)) return Catalog.Get(CurrentSet.Secondary);
-		if (item.Kind == ItemKind.Breed) return Catalog.Get(Profile.Breed);
 		if (item.Kind == ItemKind.Character)
 			return Catalog.Get(Profile.CharacterIdFor(item.Team == 0 ? Teams.Orange : item.Team));
 		return null;
@@ -484,7 +473,7 @@ public partial class InventoryScreen : LobbyScreen
 
 		Button discard = UiKit.Button("Descartar", ButtonKind.Danger, () => ConfirmDiscard(item));
 		discard.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		discard.Disabled = item.Starter || item.Kind == ItemKind.Breed || Profile.Find(item.Id) == null;
+		discard.Disabled = item.Starter || Profile.Find(item.Id) == null;
 		row.AddChild(discard);
 		column.AddChild(row);
 
@@ -494,7 +483,6 @@ public partial class InventoryScreen : LobbyScreen
 	private string EquipLabel(CatalogItem item) => item.Kind switch
 	{
 		ItemKind.Tattoo => Profile.Tattoos.Contains(item.Id) ? "Equipada" : "Equipar melhoria",
-		ItemKind.Breed => Profile.Breed == item.Id ? "Classe em uso" : "Usar esta classe",
 		ItemKind.Character => IsEquippedHere(item) ? Loc.F("Em uso {0}", TeamLabel(item)) : Loc.F("Usar {0}", TeamLabel(item)),
 		ItemKind.Service => "Usar",
 		ItemKind.Photo => IsEquippedHere(item) ? "Foto em uso" : "Usar como foto",
@@ -504,7 +492,6 @@ public partial class InventoryScreen : LobbyScreen
 	private bool IsEquippedHere(CatalogItem item) => item.Kind switch
 	{
 		ItemKind.Tattoo => Profile.Tattoos.Contains(item.Id),
-		ItemKind.Breed => Profile.Breed == item.Id,
 		ItemKind.Character => (item.Team is 0 or Teams.Blue ? Profile.BlueCharacter == item.Id : true)
 			&& (item.Team is 0 or Teams.Orange ? Profile.OrangeCharacter == item.Id : true),
 		ItemKind.Service => false,
@@ -519,11 +506,6 @@ public partial class InventoryScreen : LobbyScreen
 			case ItemKind.Tattoo:
 				if (!Profile.EquipTattoo(item.Id, out string error)) { Shell.Toast(error, UiTokens.Danger); return; }
 				Shell.Toast(Loc.F("{0} equipada", item.Name));
-				break;
-
-			case ItemKind.Breed:
-				Profile.SetBreed(item.Id);
-				Shell.Toast(Loc.F("Classe {0} em uso", item.Name));
 				break;
 
 			case ItemKind.Character:

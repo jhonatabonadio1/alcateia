@@ -55,7 +55,8 @@ public static class Credits
 			new Line("AR-15: tiros, recarga e manuseio", "Free Weapon SFX v1.1 (amostra do Weapon Sound Effects Bundle, GameDev Market)", "licença do GameDev Market"),
 			new Line("Rugido do lobo e faca", "Free Sounds Pack", "pacote gratuito"),
 			new Line("Raios do especial", "sintetizados por código (tools/sons/raios.py)"),
-			new Line("Acertos, faca e explosão", "Kenney (kenney.nl)", "CC0"),
+			new Line("Explosão e pavio da granada", "sintetizados por código (tools/sons/granada.py)"),
+			new Line("Acertos e faca", "Kenney (kenney.nl)", "CC0"),
 			new Line("Vento da Estação Polar e da Vila", "sintetizado para o jogo")
 		}),
 		new("Braços e armas em primeira pessoa", new[]

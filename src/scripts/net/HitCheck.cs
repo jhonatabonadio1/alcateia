@@ -119,7 +119,7 @@ public sealed class HitCheck
 			case KillCause.Wolf:
 				if (shot.Form is not (Form.Wolf or Form.ShiftingToWolf)) return HitVerdict.WrongWeapon;
 				range = WolfReach;
-				max = WolfMax(shooter);
+				max = WolfMoveMax(shooter, hit.WeaponId);
 				sight = false;
 				checkAim = false;
 				break;
@@ -128,7 +128,11 @@ public sealed class HitCheck
 				LoadGrenade();
 				range = _grenadeRadius + 1.5f;
 				max = _grenadeDamage;
-				sight = false;
+				// Parede e barreira protegem da explosão (Jhon, 26/11), no jogo e
+				// aqui: os mesmos pontos do corpo, saindo do mesmo lugar
+				// (Grenade.Exposed). Lá o caminho é uma bola de 6 cm, aqui um
+				// raio: o que passa lá passa aqui.
+				sight = true;
 				checkAim = false;
 				break;
 
@@ -153,7 +157,7 @@ public sealed class HitCheck
 		{
 			if (!target(tick, out Vector3 center, out float height)) continue;
 
-			Vector3 origin = hit.From;
+			Vector3 origin = SightFrom(hit);
 			float distance = origin.DistanceTo(center);
 			if (distance > range + HitRules.RangeSlack)
 			{
@@ -207,6 +211,17 @@ public sealed class HitCheck
 		amount = Math.Min(amount, cap);
 		if (!(amount > 0)) return HitVerdict.NotAllowed;
 
+		// O compasso do lobo: no mesmo alvo, um golpe por garrada; um bote por
+		// espera do bote (alpha fechado, 26/11: o clique em rajada).
+		if (hit.Cause == KillCause.Wolf)
+		{
+			Weapon w = shooter.Weapon;
+			int strikeTicks = (int)Math.Floor(w.StrikeSpacing * NetRates.TickRate) - PaceSlackTicks;
+			int leapTicks = (int)Math.Floor(w.LeapCooldown * NetRates.TickRate) - PaceSlackTicks;
+			if (!shooter.WolfPace.Allow(hit.Target, hit.Seq, hit.WeaponId == Kill.WolfDiveId, strikeTicks, leapTicks))
+				return HitVerdict.TooFast;
+		}
+
 		// O ritmo: o dano por segundo que a arma dá.
 		DamageBudget budget = hit.Cause switch
 		{
@@ -224,7 +239,7 @@ public sealed class HitCheck
 	/// comandos dele).</summary>
 	public HitVerdict CheckLine(in ClaimedHit hit, PoseAt target, double firstTick, double lastTick)
 	{
-		bool sight = hit.Cause is KillCause.Gun or KillCause.Headshot or KillCause.Knife;
+		bool sight = hit.Cause is KillCause.Gun or KillCause.Headshot or KillCause.Knife or KillCause.Grenade;
 		if (hit.Cause == KillCause.Grenade) LoadGrenade();
 		// (a granada: o raio dela, que é o da cena — era 10 m fixo, menos que o raio de 9 m da de 20/11 com a folga)
 		float reach = hit.Cause == KillCause.Grenade ? _grenadeRadius + 2f : hit.Cause == KillCause.Wolf ? WolfReach + 2f : 200f;
@@ -240,9 +255,10 @@ public sealed class HitCheck
 			}
 			if (!sight) return HitVerdict.Ok;
 
-			int count = HitRules.TargetPoints(center.ToNumerics(), height, hit.From.ToNumerics(), points);
+			Vector3 origin = SightFrom(hit);
+			int count = HitRules.TargetPoints(center.ToNumerics(), height, origin.ToNumerics(), points);
 			for (int i = 0; i < count; i++)
-				if (Clear(hit.From, points[i].ToGodot())) return HitVerdict.Ok;
+				if (Clear(origin, points[i].ToGodot())) return HitVerdict.Ok;
 			worst = Worse(worst, HitVerdict.Blocked);
 		}
 		return worst;
@@ -275,24 +291,45 @@ public sealed class HitCheck
 		}
 	}
 
-	/// <summary>O golpe mais forte do lobo: o maior multiplicador (combo,
-	/// salto ou bote) contra humano, caindo do alto.</summary>
-	private static float WolfMax(ServerBody shooter)
+	/// <summary>Folga do compasso do lobo, em comandos: o golpe que bate um
+	/// quadro antes (a garrada parada que vira andando) não é trapaça.</summary>
+	private const int PaceSlackTicks = 1;
+
+	/// <summary>O teto do golpe que o jogo disse que deu: a garrada mais forte
+	/// do combo, o bote ou o especial (o principal), contra humano e caindo do
+	/// alto. Golpe sem nome (jogo antigo): o maior de todos.</summary>
+	private static float WolfMoveMax(ServerBody shooter, string move)
 	{
 		Weapon w = shooter.Weapon;
 		WolfBreed breed = shooter.Form.Breed;
 		float attack = breed?.AttackDamage ?? 120f, air = breed?.AirAttackBonus ?? 1.5f;
 		float combo = 1f;
 		foreach (float c in w.ComboDamage ?? Array.Empty<float>()) combo = Math.Max(combo, c);
-		float move = Math.Max(combo, Math.Max(w.LeapDamageBonus, w.HeavyDamageBonus));
-		return attack * move * Math.Max(w.ClawVsHumanBonus, 1f) * Math.Max(air, 1f);
+		float multiplier = move switch
+		{
+			Kill.WolfClawId => combo,
+			Kill.WolfDiveId => w.LeapDamageBonus,
+			Kill.WolfPounceId => w.HeavyDamageBonus,
+			_ => Math.Max(combo, Math.Max(w.LeapDamageBonus, w.HeavyDamageBonus))
+		};
+		return attack * multiplier * Math.Max(w.ClawVsHumanBonus, 1f) * Math.Max(air, 1f);
 	}
+
+	/// <summary>De onde sai a conferência de visão: o olho do tiro, ou um
+	/// pouco acima do ponto da explosão (a granada pousada fica rente ao
+	/// chão; <see cref="Grenade.SightLift"/>, o mesmo do jogo).</summary>
+	private static Vector3 SightFrom(in ClaimedHit hit) =>
+		hit.Cause == KillCause.Grenade ? hit.From + Vector3.Up * Grenade.SightLift : hit.From;
+
+	/// <summary>O golpe mais forte do lobo: o maior multiplicador (combo,
+	/// salto ou bote) contra humano, caindo do alto.</summary>
+	private static float WolfMax(ServerBody shooter) => WolfMoveMax(shooter, "");
 
 	private static void LoadGrenade()
 	{
 		if (_grenadeDamage > 0) return;
 		var grenade = GD.Load<PackedScene>(Weapon.DefaultGrenadeScene)?.Instantiate<Grenade>();
-		_grenadeDamage = grenade?.MaxDamage ?? 420f;
+		_grenadeDamage = grenade?.MaxDamage ?? 300f;
 		_grenadeRadius = grenade?.Radius ?? 9f;
 		grenade?.Free();
 	}

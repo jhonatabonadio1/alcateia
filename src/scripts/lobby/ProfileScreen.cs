@@ -247,7 +247,6 @@ public partial class ProfileScreen : LobbyScreen
 		HBoxContainer favorites = UiKit.Row(UiTokens.S3);
 		column.AddChild(favorites);
 		favorites.AddChild(Favorite("Arma favorita", s.FavoriteWeapon));
-		favorites.AddChild(Favorite("Classe de lobo favorita", s.FavoriteBreed));
 
 		return column;
 	}
