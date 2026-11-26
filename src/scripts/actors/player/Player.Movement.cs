@@ -184,12 +184,13 @@ public partial class Player
 		_stunSlow = Mathf.Min(_stunSlow, Mathf.Clamp(slowFactor, 0.05f, 1f));
 	}
 
-	/// <summary>Só o humano: anda isto acima da base (<see cref="HumanSpeed"/>,
-	/// que é também a base do lobo e não muda). 1,08 desde a v0.27.1
-	/// (decisão do Jhon): 3,24 m/s com o fuzil, e agachado e com Shift
-	/// junto. A corrida do X Bot anda 3,02 a 1×, então o pé desliza um
-	/// pouco acima disso.</summary>
-	[Export] public float HumanSpeedBonus = 1.08f;
+	/// <summary>Só o humano: a velocidade dele é <see cref="HumanSpeed"/> (a base
+	/// do lobo, 3,2 na cena, que não muda) vezes isto. 0,9375 desde 26/11 (era
+	/// 1,08, 3,46 m/s; Jhon: "diminua a velocidade de andar do humano, ele tá
+	/// muito rápido e deslizando no mapa"): 3,0 m/s com o fuzil, e agachado e
+	/// com Shift junto. A corrida do clipe toca a
+	/// <see cref="CharacterAnimator.RunClipRate"/> para o pé acompanhar.</summary>
+	[Export] public float HumanSpeedBonus = 0.9375f;
 
 	/// <summary>A corrida de quatro do lobo: W duas vezes seguidas e ele
 	/// cai nas quatro patas, isto mais rápido que a corrida normal

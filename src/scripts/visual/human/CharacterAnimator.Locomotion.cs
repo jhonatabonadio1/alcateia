@@ -36,6 +36,18 @@ public partial class CharacterAnimator
 	[Export] public float StrafeClip = 1.03f;
 
 	/// <summary>
+	/// O ritmo da corrida para a frente (run_fwd), × o do arquivo. Medido no
+	/// corpo do jogo (Eve e Barut, 26/11): o pé de apoio da corrida anda 3,41
+	/// m/s a 1× — o 3,02 do <see cref="RunClip"/> é a passada do X Bot, menor.
+	/// Com o humano a 3,0 m/s (Player.HumanSpeedBonus, 26/11), a 1× as pernas
+	/// corriam 0,4 m/s mais que o corpo; a 0,88× a passada dá 3,0 e o pé fica
+	/// no chão. Mais lento, não mais rápido: o clipe nunca acelera (regra 9).
+	/// Os bots do nível difícil correm a 3,5 e ficam um pouco à frente das
+	/// pernas.
+	/// </summary>
+	[Export] public float RunClipRate = 0.88f;
+
+	/// <summary>
 	/// Inverte o eixo lateral do espaço de mistura.
 	///
 	/// Os clipes de strafe do Mixamo vieram com o nome trocado e
@@ -54,7 +66,7 @@ public partial class CharacterAnimator
 	[Export] public float BlendSmoothing = 9f;
 
 	/// <summary>Velocidade em que o agachado está andando a pleno.</summary>
-	[Export] public float CrouchWalkSpeed = 1.9f;
+	[Export] public float CrouchWalkSpeed = 0.6f;
 
 	/// <summary>Quanto da pose de mira em pé entra no tronco agachado: 1 é
 	/// o fuzil no ombro, como de pé; 0, o fuzil baixo dos clipes

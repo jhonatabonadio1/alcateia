@@ -103,6 +103,19 @@ public partial class CharacterAnimator
 		lower = Mathf.Max(lower, 0f);
 		KneelLower = lower * meters;
 
+		{
+			// DEBUG: a velocidade do pé de apoio no clipe (a passada).
+			float sum = 0; int cnt = 0;
+			for (int i = 1; i < samples; i++)
+			{
+				int st0 = legAt[i - 1, 0].Foot.Origin.Dot(up) <= legAt[i - 1, 1].Foot.Origin.Dot(up) ? 0 : 1;
+				Vector3 d = legAt[i, st0].Foot.Origin - legAt[i - 1, st0].Foot.Origin;
+				d -= up * d.Dot(up);
+				sum += d.Length() * meters * KneelRate; cnt++;
+			}
+			GD.Print($"DEBUG passada agachada: {sum / Mathf.Max(cnt, 1)} m/s, duração {animation.Length}");
+		}
+
 		for (int i = 0; i < samples; i++)
 		{
 			double t = Mathf.Min(animation.Length, i / KneelRate);
