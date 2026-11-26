@@ -329,6 +329,11 @@ fechado: "os pés do lobo atravessam o chão"). Duas partes:
   aponta mais para baixo. Copiando a direção, o pé inclinava e a ponta das
   garras entrava de 6 a 18 cm no chão em toda pose. Coluna, braços e cabeça
   continuam copiando a direção (o lobo do Meshy está em A, os clipes não).
+  Engatinhar e de quatro ficam como eram, copiando a direção também nas
+  pernas (`WolfOwnClips.KeepRestFor`): neles a pata de apoio patinava mais a
+  partir do repouso (engatinhando 0,27 → 0,65 m/s), e o apoio por quadro já
+  põe as garras no chão. Nos andares em pé o repouso patina menos (de lado
+  0,49 → 0,26 m/s, para trás 0,46 → 0,15).
 - **O apoio por quadro** (`WolfFootPlant`, um modificador do esqueleto, depois
   da animação): para cada pata, a pele de baixo do pé (e da mão) contra o chão
   de verdade em quatro pontos (calcanhar, garras, meio e o mais baixo, com o
