@@ -65,7 +65,13 @@ public sealed class WolfChargeTest : RegressionTest
 		b.Check(b.Player.HowlProgress > 0f, "no ar, o rugido começa");
 		b.AtLeast(3.0, airSpeed, "no ar, o corpo segue para a frente (m/s)");
 		await b.Until(() => b.Player.IsOnFloor(), 2.0);
-		await b.Seconds(0.3);
+		// 0,1 s depois de pousar, ainda rugindo. Era 0,3 s: com o pulo do lobo
+		// único (26/11, 2,09 m; o Bruto pulava 1,67) o voo é mais longo e, 0,3 s
+		// depois de pousar, o rugido de 1,53 s já tinha acabado e o lobo voltava
+		// a andar com o W ainda apertado.
+		await b.Seconds(0.1);
+		RegressionBench.Note($"pousou: rugido em {RegressionBench.F(b.Player.HowlProgress)}, corpo a {RegressionBench.F(RegressionBench.Flat(b.Player.Velocity))} m/s");
+		b.Check(b.Player.HowlProgress > 0f, "ainda rugindo ao pousar");
 		b.AtMost(0.05, RegressionBench.Flat(b.Player.Velocity), "pousou rugindo: para (m/s)");
 		Input.ActionRelease("howl");
 		RegressionBench.ReleaseAll();
