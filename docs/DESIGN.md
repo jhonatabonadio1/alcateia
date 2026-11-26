@@ -67,8 +67,36 @@ ou no meio da transição: o `FormController` volta para Humano no
 fica pronto primeiro, então o sinal chega nele antes). Antes o lobo
 voltava lobo.
 
-Não existe restrição de HP para transformar, e as classes básicas não
-custam WP: dá para transformar sempre.
+Não existe restrição de HP para transformar, e virar lobo não custa WP.
+
+**O lobo é por tempo** (decisão do Jhon, 26/11: "um tempo limite para
+usar o lobo; ao passar esse tempo volta a ser humano, deve avisar o
+player. E deve ter cooldown para voltar a ser lobo, para forçar os players
+a jogarem com armas"):
+
+- **30 s de lobo de cada vez** (`WolfTimeLimit`). Conta só na forma lobo,
+  não na fumaça. Acabou, o corpo volta a humano sozinho, pela mesma
+  transição de quem aperta 1 (com a vulnerabilidade dela). O jogador volta
+  com a arma que tinha na mão.
+- **Aviso nos últimos 5 s** (`WolfWarnAt`): o texto "Você volta a humano em
+  5 s", um bipe, e a barra de baixo vermelha, pulsando, contando
+  ("HUMANO EM 4 S"). Antes disso ela mostra o tempo que resta ("LOBO · 24 S").
+- **20 s de espera para virar lobo de novo** (`WolfCooldown`), contados de
+  quando a volta começa — pela tecla ou pelo tempo: sair cedo não zera a
+  espera. Na espera a barra enche ("ESPERE 12 S"), o espaço 3 da barra de
+  armas mostra os segundos ("12s"), e apertar 3 avisa quanto falta.
+- **Morrer zera os dois**: a vida nova começa livre.
+- **O bot respeita a mesma espera** e volta sozinho como o jogador.
+- No modo em que o time é lobo a partida toda, não vale (o time não tem
+  arma para voltar).
+- Online, o relógio é o da máquina do dono do corpo: o boneco dele nos
+  outros jogos e o corpo do servidor de partida espelham a forma que ele
+  manda e não voltam sozinhos.
+
+O porquê: com o lobo livre e de graça, ele dominava — mais rápido, mais
+vida, escudo, parede e dois golpes que matam. O tempo põe a arma de volta
+na mão do jogador, e a espera faz da transformação uma decisão: virar
+agora, ou guardar para a hora certa.
 
 **Transformar não cura.** A proporção de vida é preservada entre os
 corpos — metade da vida humana vira metade da vida do lobo. Sem isso,
@@ -319,13 +347,17 @@ o recuo à mão termina mirando abaixo do alvo.
 
 ### O lobo de perto
 
-Alcance de garra maior que o de uma faca, e **resistência no corpo**
-(0,6 no Bruto, 0,78 no Ligeiro). O lobo é uma ameaça de frente, não só
-um corpo rápido.
+Alcance de garra maior que o de uma faca. **O lobo é canhão de vidro**
+(decisão do Jhon, 26/11): mata um humano em duas garradas (104 cada), mas
+tem só **100 de escudo** (era 200) e **leva o tiro inteiro no corpo** — não
+há mais resistência (era 0,6 no Bruto e 0,78 no Ligeiro). Ele ganha a
+luta que escolhe, de perto e de surpresa; pego no aberto, cai rápido.
 
-**Headshot atravessa a resistência inteira.** Sem essa saída, o humano
-com rifle não teria resposta nenhuma contra um lobo vindo de frente —
-e um inimigo sem resposta não é difícil, é injusto.
+**O lobo é um só** (decisão do Jhon, 26/11: "remover 'Classes de lobo' do
+jogo, deixar apenas melhorias"): as classes Bruto e Ligeiro saíram, e o
+lobo único fica no meio delas (`src/resources/breeds/lobo.tres`: 4,33 m/s,
+pulo de 2,09 m, garra 65). O que muda de um jogador para outro são as
+melhorias, ajustes pequenos.
 
 ### Layout da tela
 
@@ -1189,7 +1221,7 @@ lobo precisa dela para subir.
 ### Alturas amarradas à física
 
 O humano pula 0,99 m: sobe caixote (0,8 m), não sobe contêiner
-(2,2 m). Para o Bruto alcançar o contêiner a partir do caixote ele
+(2,2 m). Para o lobo alcançar o contêiner a partir do caixote ele
 precisa pular 1,4 m — `JumpMultiplier` de pelo menos **1,2** (com
 1,28, 1,62 m). Ninguém alcança 5 m sem parede. **Mexeu no pulo, confira estes números** — um
 caixote 2 cm alto demais vira parede para o humano sem ninguém notar.
@@ -1809,8 +1841,9 @@ uso, estatísticas de treino. Opções ficam à parte, em
   raridade, patente mínima e promoções vêm do servidor (o painel muda);
   a vitrine do dia (quatro itens com 20%, configurável) é sorteada pelo
   servidor no dia de Brasília. A compra é do servidor. Item com patente mínima aparece
-  trancado, com a patente que destrava. A raça Ligeiro não é vendida:
-  destrava na patente.
+  trancado, com a patente que destrava. (Até 25/11 havia as classes de
+  lobo — o Ligeiro destravava na patente —; saíram em 26/11, e a loja e o
+  inventário do lobo têm só as melhorias.)
 - **Missões** (`meta/Missions.cs`, espelho do servidor): três diárias e
   cinco semanais sorteadas pelo servidor (as mesmas para todos), as
   permanentes, que dão título, e as de evento, com data para acabar.
