@@ -246,7 +246,6 @@ void fragment() {
 			case "troca_nome": NameTag(); break;
 			default:
 				if (_id.StartsWith("tat_")) Tattoo();
-				else if (_id.StartsWith("raca_")) WolfHead();
 				else if (_id.StartsWith("pers_")) Person();
 				break;
 		}
@@ -327,28 +326,6 @@ void fragment() {
 	{
 		if (WolfMark == null) return;
 		DrawTextureRect(WolfMark, new Rect2(P(cx - side / 2f, cy - side / 2f), new Vector2(side, side) * _s), false, new Color(c, c.A * _alpha));
-	}
-
-	/// <summary>Classe de lobo (Jhon, 21/11: "essas classes também estão mal
-	/// feitas"): a cabeça do lobo do ícone do jogo, e o que distingue a
-	/// classe atrás dela — o Bruto, um escudo (aguenta mais); o Ligeiro,
-	/// riscos de velocidade (corre e pula mais).</summary>
-	private void WolfHead()
-	{
-		if (_id == "raca_ligeiro")
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				float y = 30 + i * 12, x = 42 + (i == 1 ? 0 : 10);
-				Poly(Dark, x, y, x + 34, y, x + 30, y + 5, x - 4, y + 5);
-			}
-		}
-		else
-		{
-			// escudo hexagonal atrás da cabeça
-			Poly(new Color(Dark, 0.55f), 100, 0, 135, 18, 135, 58, 100, 78, 65, 58, 65, 18);
-		}
-		WolfAt(100, 40, 66, Metal);
 	}
 
 	/// <summary>Personagem: o busto do humano e, atrás dele, a cabeça do

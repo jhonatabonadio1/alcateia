@@ -1,12 +1,12 @@
 using Godot;
 
 /// <summary>
-/// Estatísticas de uma raça de lobo. É um Resource, então você cria
-/// um arquivo .tres por classe e ajusta os números no Inspector sem
-/// recompilar nada.
-///
-/// Regra de design (do documento): UM eixo de troca por classe.
-/// Não dois, não três.
+/// As estatísticas do lobo. Um só desde 26/11 (decisão do Jhon: "remover
+/// as classes de lobo, deixar apenas melhorias"): src/resources/breeds/lobo.tres,
+/// no meio do Bruto e do Ligeiro de antes, canhão de vidro (escudo 100, o
+/// corpo leva o dano inteiro). As melhorias (tatuagens, Catalog.cs) mexem
+/// numa cópia (<see cref="Profile.BuildBreed"/>). É um Resource: os números
+/// se ajustam no .tres, sem recompilar.
 /// </summary>
 [GlobalClass]
 public partial class WolfBreed : Resource

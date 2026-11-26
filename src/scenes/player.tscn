@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://cocu0rruv5614" path="res://src/scripts/combat/Health.cs" id="2_health"]
 [ext_resource type="Script" uid="uid://c6tli11hhni6f" path="res://src/scripts/forms/FormController.cs" id="3_form"]
 [ext_resource type="Script" uid="uid://dbfqy5fkibsdc" path="res://src/scripts/combat/weapon/Weapon.cs" id="4_weapon"]
-[ext_resource type="Resource" uid="uid://c1oart232v6is" path="res://src/resources/breeds/bruto.tres" id="5_breed"]
+[ext_resource type="Resource" uid="uid://c1oart232v6is" path="res://src/resources/breeds/lobo.tres" id="5_breed"]
 [ext_resource type="PackedScene" path="res://src/scenes/grenade.tscn" id="6_grenade"]
 [ext_resource type="Script" uid="uid://gnxboyvajtew" path="res://src/scripts/ui/ViewModel.cs" id="7_view"]
 [ext_resource type="Script" uid="uid://c04nc6fnnihqa" path="res://src/scripts/visual/wolf/WolfVisual.cs" id="8_wolf"]

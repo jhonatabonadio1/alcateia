@@ -40,7 +40,7 @@ public partial class ShopScreen : LobbyScreen
 
 	/// <summary>O que aparece na loja: o que não vem com a conta e que o
 	/// servidor não desligou.</summary>
-	private static IEnumerable<CatalogItem> ForSale => Catalog.All.Where(i => (!i.Starter || i.Kind == ItemKind.Breed) && ServerData.ItemOn(i.Id));
+	private static IEnumerable<CatalogItem> ForSale => Catalog.All.Where(i => !i.Starter && ServerData.ItemOn(i.Id));
 
 	protected override bool FollowsAccount => true;
 
@@ -53,7 +53,6 @@ public partial class ShopScreen : LobbyScreen
 		new("Humano", "Facas", () => ForSale.Where(i => Arsenal.IsKnife(i.Id))),
 		new("Humano", "Granadas", () => ForSale.Where(i => i.Kind == ItemKind.Utility)),
 		new("Lobo", "Melhorias", () => ForSale.Where(i => i.Kind == ItemKind.Tattoo)),
-		new("Lobo", "Classes de lobo", () => ForSale.Where(i => i.Kind == ItemKind.Breed)),
 		new("Conta", "Serviços", () => ForSale.Where(i => i.Kind == ItemKind.Service)),
 		new("Conta", "Fotos de perfil", () => ForSale.Where(i => i.Kind == ItemKind.Photo))
 	};
@@ -71,9 +70,8 @@ public partial class ShopScreen : LobbyScreen
 		_category = item.Kind switch
 		{
 			ItemKind.Tattoo => 6,
-			ItemKind.Breed => 7,
-			ItemKind.Service => 8,
-			ItemKind.Photo => 9,
+			ItemKind.Service => 7,
+			ItemKind.Photo => 8,
 			ItemKind.Utility => 5,
 			_ => Arsenal.IsKnife(item.Id) ? 4 : ItemInfo.IsSecondary(item) ? 3 : 2
 		};
@@ -240,7 +238,6 @@ public partial class ShopScreen : LobbyScreen
 		LoadoutSet set = Profile.Sets[Mathf.Clamp(Profile.LastUsed, 0, Profile.Sets.Count - 1)];
 		if (ItemInfo.IsPrimary(item)) compare = Catalog.Get(set.Primary);
 		else if (ItemInfo.IsSecondary(item)) compare = Catalog.Get(set.Secondary);
-		else if (item.Kind == ItemKind.Breed) compare = Catalog.Get(Profile.Breed);
 
 		return ItemDetail.Make(item, compare, Purchase(item));
 	}
@@ -251,12 +248,7 @@ public partial class ShopScreen : LobbyScreen
 
 		if (!item.ForSale)
 		{
-			string why = item.Kind == ItemKind.Breed
-				? ItemInfo.IsBreedUnlocked(item) ? "Já é sua. Escolha no inventário, aba Lobo." : Loc.F("Destrava na patente {0} — não está à venda.", Ranks.NameOf(item.MinRank))
-				: "Vem com todo perfil.";
-			column.AddChild(UiKit.Paragraph(why));
-			if (item.Kind == ItemKind.Breed && ItemInfo.IsBreedUnlocked(item))
-				column.AddChild(UiKit.Button("Abrir no inventário", ButtonKind.Secondary, () => Shell.GoInventory(item.Id)));
+			column.AddChild(UiKit.Paragraph("Vem com todo perfil."));
 			return column;
 		}
 

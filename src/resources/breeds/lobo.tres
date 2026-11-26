@@ -4,9 +4,13 @@
 
 [resource]
 script = ExtResource("1_breed")
+DisplayName = "Lobo"
 WpCost = 0.0
-SpeedMultiplier = 1.298
-JumpMultiplier = 1.28
-BodyResistance = 0.6
-AttackDamage = 75.0
-AttackRange = 5.0
+Shield = 100.0
+ShieldDecay = 5.5
+SpeedMultiplier = 1.352
+JumpMultiplier = 1.435
+BodyResistance = 1.0
+AttackDamage = 65.0
+AttackRange = 4.1
+AirAttackBonus = 1.75

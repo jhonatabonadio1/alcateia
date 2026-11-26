@@ -58,7 +58,7 @@ public sealed class BotBodyNetTest : WallNetTest
 		start += new Vector3(0, 0, 6f);
 
 		var server = new ServerBody(1, 0, world.SpawnBody("Servidor", mine));
-		server.ApplyLoadout(Profile.Breed, Profile.OwnedTattoos());
+		server.ApplyLoadout(Profile.OwnedTattoos());
 
 		// Dois corpos do mesmo time no servidor atravessam um ao outro, como
 		// os bonecos no jogo.

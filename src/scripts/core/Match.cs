@@ -462,7 +462,6 @@ public partial class Match : Node
 			SecondsHuman = _localSecondsHuman,
 			SecondsWolf = _localSecondsWolf,
 			KillsByWeapon = new Dictionary<string, int>(_localByWeapon),
-			Breed = Profile.Breed,
 			FireSeconds = (int)_local.Rage.FireSeconds
 		};
 

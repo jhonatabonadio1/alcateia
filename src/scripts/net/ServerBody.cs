@@ -330,12 +330,12 @@ public sealed class ServerBody
 		else Form.OnAssist();
 	}
 
-	/// <summary>A classe de lobo e as melhorias (Loadout): mudam a
-	/// velocidade e o pulo do lobo, então o servidor precisa delas.</summary>
-	public void ApplyLoadout(string breed, IEnumerable<string> tattoos)
+	/// <summary>As melhorias do lobo (Loadout): mudam a velocidade e o
+	/// pulo do lobo, então o servidor precisa delas.</summary>
+	public void ApplyLoadout(IEnumerable<string> tattoos)
 	{
 		var valid = tattoos.Where(id => Catalog.Get(id)?.Kind == ItemKind.Tattoo).Distinct().Take(Profile.MaxTattoos);
-		WolfBreed built = Profile.BuildBreed(breed, valid);
+		WolfBreed built = Profile.BuildBreed(valid);
 		if (built != null) Form.Breed = built;
 	}
 

@@ -43,16 +43,12 @@ public sealed class LifetimeStats
 	public double SecondsHuman { get; set; }
 	public double SecondsWolf { get; set; }
 	public Dictionary<string, int> KillsByWeapon { get; set; } = new();
-	public Dictionary<string, int> KillsByBreed { get; set; } = new();
 
 	public float WinRate => Matches == 0 ? 0f : Wins / (float)Matches;
 	public float KillDeath => Deaths == 0 ? Kills : Kills / (float)Deaths;
 
 	public string FavoriteWeapon => KillsByWeapon.Count == 0 ? null
 		: KillsByWeapon.OrderByDescending(p => p.Value).First().Key;
-
-	public string FavoriteBreed => KillsByBreed.Count == 0 ? null
-		: KillsByBreed.OrderByDescending(p => p.Value).First().Key;
 }
 
 /// <summary>
@@ -124,7 +120,6 @@ public static class Profile
 	public static List<LoadoutSet> Sets { get; private set; } = new();
 	public static int LastUsed { get; set; }
 
-	public static string Breed { get; private set; } = "raca_bruto";
 	public static List<string> Tattoos { get; private set; } = new();
 
 	/// <summary>O personagem de cada time (id do catálogo), ou nulo para o
@@ -153,7 +148,6 @@ public static class Profile
 		public List<RankEvent> RankHistory { get; set; }
 		public List<LoadoutSet> Sets { get; set; }
 		public int LastUsed { get; set; }
-		public string Breed { get; set; }
 		public List<string> Tattoos { get; set; }
 		public string BlueCharacter { get; set; }
 		public string OrangeCharacter { get; set; }
@@ -190,7 +184,6 @@ public static class Profile
 		RankHistory = data.RankHistory ?? new List<RankEvent>();
 		Sets = data.Sets ?? new List<LoadoutSet>();
 		LastUsed = data.LastUsed;
-		Breed = string.IsNullOrEmpty(data.Breed) ? "raca_bruto" : data.Breed;
 		Tattoos = data.Tattoos ?? new List<string>();
 		BlueCharacter = data.BlueCharacter;
 		OrangeCharacter = data.OrangeCharacter;
@@ -240,7 +233,6 @@ public static class Profile
 				RankHistory = RankHistory,
 				Sets = Sets,
 				LastUsed = LastUsed,
-				Breed = Breed,
 				Tattoos = Tattoos,
 				BlueCharacter = BlueCharacter,
 				OrangeCharacter = OrangeCharacter,
@@ -376,7 +368,7 @@ public static class Profile
 	/// <summary>Está em uso em algum conjunto, ou equipado no lobo?</summary>
 	public static bool IsEquipped(string id) =>
 		Sets.Any(s => s.Primary == id || s.Secondary == id || s.Melee == id || s.Utilities.Contains(id))
-		|| Tattoos.Contains(id) || Breed == id || id == Arsenal.KnifeId
+		|| Tattoos.Contains(id) || id == Arsenal.KnifeId
 		|| BlueCharacter == id || OrangeCharacter == id;
 
 	// ------------------------------------------------------------------ moedas
@@ -386,14 +378,6 @@ public static class Profile
 	public static long Balance(Currency currency) => currency == Currency.Presas ? Presas : Sangue;
 
 	// ------------------------------------------------------------------ lobo
-
-	public static void SetBreed(string id)
-	{
-		CatalogItem item = Catalog.Get(id);
-		if (item?.Kind != ItemKind.Breed || Rank < item.MinRank) return;
-		Breed = id;
-		Save();
-	}
 
 	public static bool EquipTattoo(string id, out string error)
 	{
@@ -417,27 +401,21 @@ public static class Profile
 	/// <summary>A classe de lobo do jogador com as melhorias aplicadas.
 	/// Cópia: o recurso original é compartilhado com os bots e não pode
 	/// mudar.</summary>
-	/// <summary>A classe de lobo que o jogador pode usar agora: a escolhida,
-	/// se a patente da conta a libera; senão, o Bruto.</summary>
-	public static string UsableBreed => BreedAllowed(Breed) ? Breed : "raca_bruto";
+	/// <summary>O lobo de todos (um só desde 26/11: as classes Bruto e
+	/// Ligeiro saíram, decisão do Jhon).</summary>
+	public const string WolfPath = "res://src/resources/breeds/lobo.tres";
 
-	private static bool BreedAllowed(string id) =>
-		Catalog.Get(id) is CatalogItem item && item.Kind == ItemKind.Breed && Rank >= item.MinRank;
-
-	public static WolfBreed BuildBreed() => BuildBreed(UsableBreed, OwnedTattoos());
+	public static WolfBreed BuildBreed() => BuildBreed(OwnedTattoos());
 
 	/// <summary>As melhorias equipadas que o jogador tem de fato.</summary>
 	public static System.Collections.Generic.List<string> OwnedTattoos() => Tattoos.Where(Owns).ToList();
 
-	/// <summary>A classe de lobo com as melhorias somadas. Uma cópia: o
-	/// recurso original é o mesmo de todos. Também é como o servidor de
-	/// partida monta o lobo de cada jogador (o jogo conta qual classe e
-	/// quais melhorias).</summary>
-	public static WolfBreed BuildBreed(string breedId, System.Collections.Generic.IEnumerable<string> tattoos)
+	/// <summary>O lobo com as melhorias somadas. Uma cópia: o recurso
+	/// original é o mesmo de todos. Também é como o servidor de partida
+	/// monta o lobo de cada jogador (o jogo conta quais melhorias).</summary>
+	public static WolfBreed BuildBreed(System.Collections.Generic.IEnumerable<string> tattoos)
 	{
-		CatalogItem item = Catalog.Get(breedId);
-		if (item?.BreedPath == null) item = Catalog.Get("raca_bruto");
-		var source = GD.Load<WolfBreed>(item.BreedPath);
+		var source = GD.Load<WolfBreed>(WolfPath);
 		if (source == null) return null;
 
 		var breed = (WolfBreed)source.Duplicate();
@@ -568,9 +546,6 @@ public static class Profile
 			Sets[i].IsDefault = false;
 
 		LastUsed = Mathf.Clamp(LastUsed, 0, SetCount - 1);
-
-		if (Catalog.Get(Breed)?.Kind != ItemKind.Breed || (HasAccount && !BreedAllowed(Breed)))
-			Breed = "raca_bruto";
 
 		Tattoos = Tattoos.Where(id => Catalog.Get(id)?.Kind == ItemKind.Tattoo).Distinct().Take(MaxTattoos).ToList();
 

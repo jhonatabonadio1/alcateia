@@ -391,12 +391,12 @@ public partial class NetMatch : Node
 		Send(stream, reliable: false);
 	}
 
-	/// <summary>A classe de lobo e as melhorias: o servidor precisa delas
-	/// para mover o lobo como este jogo move.</summary>
+	/// <summary>As melhorias do lobo: o servidor precisa delas para mover o
+	/// lobo como este jogo move. (A classe de lobo saiu em 26/11: o lobo é
+	/// um só, e o pacote leva só as melhorias.)</summary>
 	private void SendLoadout()
 	{
 		BinaryWriter w = NetWire.Begin(NetWire.Loadout, out MemoryStream stream);
-		w.Write(Profile.Breed ?? "");
 		List<string> tattoos = Profile.OwnedTattoos();
 		w.Write((byte)tattoos.Count);
 		foreach (string id in tattoos) w.Write(id);

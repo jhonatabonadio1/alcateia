@@ -163,7 +163,7 @@ public sealed class WallRunOnlineTest : WallNetTest
 		await b.Place(start, Mathf.RadToDeg(Mathf.Atan2(-along.X, -along.Z)), settle: 0.6);
 
 		var server = new ServerBody(1, 0, world.SpawnBody("Servidor", Teams.Blue));
-		server.ApplyLoadout(Profile.Breed, Profile.OwnedTattoos());
+		server.ApplyLoadout(Profile.OwnedTattoos());
 
 		// O boneco de quem vê de outra máquina. Não colide: ocupa o mesmo
 		// lugar do jogador deste teste.
@@ -278,7 +278,7 @@ public sealed class WallRunCorrectionTest : WallNetTest
 		await b.Place(start, Mathf.RadToDeg(Mathf.Atan2(-along.X, -along.Z)), settle: 0.6);
 
 		var server = new ServerBody(1, 0, world.SpawnBody("Servidor", Teams.Blue));
-		server.ApplyLoadout(Profile.Breed, Profile.OwnedTattoos());
+		server.ApplyLoadout(Profile.OwnedTattoos());
 		var mine = p.GetNode<WolfVisual>("WolfVisual");
 
 		Player.NetQuantize = true;
@@ -398,7 +398,7 @@ public sealed class WallRunServerDropTest : WallNetTest
 		await b.Place(start, Mathf.RadToDeg(Mathf.Atan2(-along.X, -along.Z)), settle: 0.6);
 
 		var server = new ServerBody(1, 0, world.SpawnBody("Servidor", Teams.Blue));
-		server.ApplyLoadout(Profile.Breed, Profile.OwnedTattoos());
+		server.ApplyLoadout(Profile.OwnedTattoos());
 
 		Player.NetQuantize = true;
 		var up = new JitterLink();

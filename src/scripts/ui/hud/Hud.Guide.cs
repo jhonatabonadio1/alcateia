@@ -66,7 +66,7 @@ public partial class Hud
 		Color tint = wolf ? UiTokens.WolfOrange : UiTokens.Accent;
 		head.AddChild(Icon.Make(wolf ? IconKind.Wolf : IconKind.Human, 40, tint));
 		VBoxContainer names = UiKit.Column(0);
-		string who = wolf ? Loc.F("LOBO · {0}", Loc.Upper(_form.Breed?.DisplayName ?? "")) : Loc.T("HUMANO");
+		string who = wolf ? Loc.T("LOBO") : Loc.T("HUMANO");
 		names.AddChild(HudStyle.Number(UiKit.Text(who, "Title"), 30));
 		names.AddChild(UiKit.Caption("Habilidades", UiTokens.TextSecondary));
 		head.AddChild(names);
@@ -92,6 +92,8 @@ public partial class Hud
 
 			GuideLine(right, IconKind.Shield, "Uivo", "Segure R",
 				Loc.F("Segure até o fim ({0:0.0} s) e o escudo volta inteiro. Soltar antes cancela. O rugido entrega onde você está.", WolfMoves.Duration(WolfMove.Howl)), UiTokens.Accent);
+			GuideLine(right, IconKind.Wolf, "Tempo de lobo", Loc.F("{0:0} s", _form.WolfTimeLimit),
+				Loc.F("Acabou o tempo, você volta a humano sozinho (a barra embaixo avisa nos últimos {0:0} s). Para virar lobo de novo, espere {1:0} s.", _form.WolfWarnAt, _form.WolfCooldown), tint);
 			GuideLine(right, IconKind.Wolf, "Corrida de quatro", "W W, segurando",
 				Loc.T("Dois toques no W e segure: 30% mais rápido."), tint);
 			GuideLine(right, IconKind.Go, "Corrida na parede", "W na parede · Espaço",
@@ -109,7 +111,7 @@ public partial class Hud
 				Loc.T("Equipe e clique para arremessar."), tint);
 
 			GuideLine(right, IconKind.Wolf, "Virar lobo", "3",
-				Loc.T("Custa KP. De lobo você é mais rápido, tem escudo e garras — e não atira."), UiTokens.WolfOrange);
+				Loc.F("De lobo você é mais rápido, mata em duas garradas e não atira — mas tem pouco escudo e dura {0:0} s; depois espera {1:0} s para virar de novo.", _form.WolfTimeLimit, _form.WolfCooldown), UiTokens.WolfOrange);
 			GuideLine(right, IconKind.Pounce, "Especial", "Q, de lobo",
 				Loc.T("A carga enche com abates também de humano. Cheia, vire lobo para usar."), UiTokens.WolfOrange);
 			GuideLine(right, IconKind.Human, "Andar em silêncio", "Shift",

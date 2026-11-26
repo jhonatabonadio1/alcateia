@@ -481,18 +481,12 @@ public sealed class HostedMatch
 
 			case NetWire.Loadout:
 				if (!Authoritative || !_bodies.TryGetValue(account, out ServerBody loading)) break;
-				string breed = r.ReadString();
 				var tattoos = new List<string>();
 				for (int n = Math.Min((int)r.ReadByte(), 8); n > 0; n--) tattoos.Add(r.ReadString());
-				// A classe de lobo e as melhorias têm de ser de série ou da conta:
-				// valem na velocidade, no pulo, no escudo e no dano do lobo.
-				if (!Allowed(account, breed))
-				{
-					GD.Print($"Match {Key}: account {account} brought wolf class {breed}, which is not theirs; using the default.");
-					breed = "raca_bruto";
-				}
+				// As melhorias têm de ser da conta: valem na velocidade, no
+				// pulo, no escudo e no dano do lobo. (O lobo é um só desde 26/11.)
 				tattoos.RemoveAll(t => !Allowed(account, t));
-				loading.ApplyLoadout(breed, tattoos);
+				loading.ApplyLoadout(tattoos);
 				break;
 
 			case NetWire.Attack:
