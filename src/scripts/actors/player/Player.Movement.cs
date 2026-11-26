@@ -74,10 +74,10 @@ public partial class Player
 	[Export] public float CrouchEyeHeight = 0.1f;
 
 	/// <summary>A cápsula agachada do humano (26/11). Era a do lobo, 1,0 m, com o
-	/// olho a 60 cm do chão; agora o olho é o do corpo visto agachado (~111 cm) e
-	/// a cápsula leva a cabeça dele (a cabeça fica uns 15 cm acima do olho).
-	/// Passar agachado por baixo de algo pede 1,3 m de vão.</summary>
-	public const float DefaultHumanCrouchHeight = 1.3f;
+	/// olho a 60 cm do chão; agora o olho é o do corpo visto agachado (~140 cm,
+	/// "precisam ficar mais altos") e a cápsula leva a cabeça dele (uns 15 cm
+	/// acima do olho). Passar agachado por baixo de algo pede 1,5 m de vão.</summary>
+	public const float DefaultHumanCrouchHeight = 1.5f;
 	[Export] public float HumanCrouchHeight = DefaultHumanCrouchHeight;
 
 	/// <summary>O olho do humano em pé e agachado, em metros acima dos pés.
@@ -85,11 +85,11 @@ public partial class Player
 	/// agachamento deve ser idêntico ao de 3ª pessoa, extremamente preciso"):
 	/// o <see cref="CharacterAnimator"/> lê no corpo desenhado, parado e de
 	/// cabeça reta, e ajusta estes (<see cref="TuneHumanEye"/>). Os de fábrica
-	/// são os medidos na Eve e no Barut de fuzil na mão (159,2 e 109,2 cm), para
+	/// são os medidos na Eve e no Barut de fuzil na mão (159,2 e ~140 cm), para
 	/// o corpo sem modelo (o servidor de partida) e o primeiro instante. Era
 	/// 147,5 cm em pé (12 abaixo dos olhos do corpo) e 60 cm agachado (50 abaixo).</summary>
 	[Export] public float HumanEyeHeight = 1.592f;
-	[Export] public float HumanCrouchEyeHeight = 1.092f;
+	[Export] public float HumanCrouchEyeHeight = 1.4f;
 
 	/// <summary>Quão rápido o olho do humano vai até o que o corpo visto mostra,
 	/// em m/s: trocar de arma muda o tronco, e a câmera não dá tranco.</summary>

@@ -20,7 +20,7 @@ public abstract class CrouchEyeTest : RegressionTest
 	protected abstract int Team { get; }
 	protected abstract string Who { get; }
 	public override string Scene => RegressionBench.Match;
-	public override string Description => $"a câmera da 1ª pessoa fica nos olhos do corpo visto de {Who}, em pé e agachado, parado e andando (até 1 cm), e o agachado ajoelha reto, sem pele no chão";
+	public override string Description => $"a câmera da 1ª pessoa fica nos olhos do corpo visto de {Who}, em pé e agachado, parado e andando (até 1 cm), e o agachado fica reto e alto, sem pele no chão";
 
 	public override void Prepare()
 	{
@@ -93,12 +93,11 @@ public abstract class CrouchEyeTest : RegressionTest
 		float standEye = rows[0].Eye, crouchEye = rows[2].Eye;
 		RegressionBench.Note($"{Who}: agachado, os olhos descem {RegressionBench.F((standEye - crouchEye) * 100)} cm");
 		// O corpo visto agachava pouco: os olhos desciam ~10 cm e a câmera 87,5 (26/11).
-		// Ajoelhado reto (Jhon, 26/11: "muito baixo, perna entornando para o lado,
-		// tem que agachar no limite da perna ficando de joelho, porém reta"): o
-		// joelho de trás no chão põe os olhos ~39 cm abaixo dos de pé; a pose
-		// de antes (50 cm) era baixa demais e torta.
-		b.AtLeast(0.33, standEye - crouchEye, $"{Who}: agachado, os olhos do corpo visto descem fundo (m)");
-		b.AtMost(0.45, standEye - crouchEye, $"{Who}: e não mais que o joelho no chão deixa (m)");
+		// Reto, e mais alto (Jhon, 26/11: "eles estão muito agachados ainda,
+		// precisam ficar mais altos", +20 cm sobre o joelho no chão): os olhos
+		// ~19 cm abaixo dos de pé (~140 cm).
+		b.AtLeast(0.15, standEye - crouchEye, $"{Who}: agachado, os olhos do corpo visto descem (m)");
+		b.AtMost(0.25, standEye - crouchEye, $"{Who}: mas não fundo demais (m)");
 
 		// Parado agachado: nada da pele no chão, a cabeça de acerto com a cabeça
 		// que se vê, e o pé parado (o clipe de andar agachado não anda no lugar).

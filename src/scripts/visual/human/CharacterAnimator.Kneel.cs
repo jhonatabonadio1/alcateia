@@ -34,6 +34,12 @@ public partial class CharacterAnimator
 	/// em comprimentos de coxa (perto de 1: coxa deitada, canela em pé).</summary>
 	[Export(PropertyHint.Range, "0.5,1.3")] public float KneelFrontReach = 0.92f;
 
+	/// <summary>Quanto o quadril sobe em relação ao joelho encostado no chão, em
+	/// metros, parado e andando (Jhon, 26/11: "eles estão muito agachados
+	/// ainda, precisam ficar mais altos"; +20 cm): os olhos ficam a ~140 cm e o
+	/// joelho de trás fica no ar. 0 volta ao joelho no chão.</summary>
+	[Export] public float CrouchRaise = 0.20f;
+
 	/// <summary>A velocidade do corpo agachado andando, em m/s: a passada é
 	/// calculada por ela, para o pé de apoio ficar parado no chão.</summary>
 	[Export] public float CrouchStrideSpeed = 1.35f;
@@ -119,7 +125,7 @@ public partial class CharacterAnimator
 		float thigh = upLeg.Origin.DistanceTo(knee.Origin);
 		float ankle = Mathf.Min(rig.Stand[0, 2].Origin.Dot(rig.Up), foot.Origin.Dot(rig.Up));
 		float kneeAt = ankle + KneeClearance / rig.Meters;
-		rig.Drop = Mathf.Max(upLeg.Origin.Dot(rig.Up) - (kneeAt + thigh), 0f);
+		rig.Drop = Mathf.Max(upLeg.Origin.Dot(rig.Up) - (kneeAt + thigh) - CrouchRaise / rig.Meters, 0f);
 		return rig;
 	}
 
@@ -181,7 +187,9 @@ public partial class CharacterAnimator
 			Vector3 a = rig.Stand[1, 0].Origin - down;
 			float thigh = rig.Stand[1, 0].Origin.DistanceTo(rig.Stand[1, 1].Origin);
 			float shin = rig.Stand[1, 1].Origin.DistanceTo(rig.Stand[1, 2].Origin);
-			Vector3 knee = a - up * thigh;
+			// Onde o joelho encostaria no chão: o tornozelo sai de lá, e com o quadril
+			// mais alto (CrouchRaise) o joelho sai do chão sem o pé mudar de lugar.
+			Vector3 knee = a - up * (thigh + CrouchRaise / rig.Meters);
 			float rise = 0.11f / rig.Meters;
 			Vector3 c = knee - forward * Mathf.Sqrt(Mathf.Max(shin * shin - rise * rise, 0f)) + up * rise;
 			// O pé na ponta: o tornozelo em cima, os dedos no chão.

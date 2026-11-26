@@ -197,7 +197,7 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
 	extremamente preciso"): em pé 159 cm e agachado 109 cm acima dos pés
 	(eram 147,5 e 60), lidos no corpo desenhado (`CharacterAnimator.Eye`,
 	`Player.HumanEyeHeight`); o corpo agacha fundo (`CharacterAnimator.Kneel`)
-	e a cápsula agachada do humano tem 1,3 m (a do lobo, 1,0). Teste:
+	e a cápsula agachada do humano tem 1,5 m (a do lobo, 1,0). Teste:
 	`OlhoNoCorpoEve`, `OlhoNoCorpoBarut` (até 1 cm).
 
 ---
