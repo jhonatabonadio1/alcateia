@@ -116,6 +116,56 @@ public static class CombatRulesTests
 			1e-3, "Bruto cheio contra humano");
 	}
 
+	// O especial mais forte e em área (decisão do Jhon, 26/11: "mais poder de
+	// dano e em área, afetando mais pessoas ao redor e mais dano ao alvo
+	// principal"): 3,7 × a garra no principal (era 2,6) e área de 3,5 m.
+
+	[Test("o especial (3,7 garras) mata humano de vida cheia e tira 80% do lobo canhão de vidro (300) com a garra de 65")]
+	public static void SpecialDamage()
+	{
+		float vsHuman = CombatRules.WolfStrike(65, CombatRules.PounceMultiplier(3.7f, 0.4f, 1f), true, 1.6f, false, 1.5f);
+		float vsWolf = CombatRules.WolfStrike(65, CombatRules.PounceMultiplier(3.7f, 0.4f, 1f), false, 1.6f, false, 1.5f);
+		Check.Near(384.8, vsHuman, 1e-2, "contra humano");
+		Check.True(vsHuman >= 200, "mata humano de vida cheia");
+		Check.Near(240.5, vsWolf, 1e-2, "contra lobo");
+		Check.True(vsWolf >= 0.8f * 300 && vsWolf < 300, "tira 80% dos 300 do lobo, sem matar sozinho");
+	}
+
+	[Test("a área do especial: 60% até 1,5 m, caindo até 30% na borda (3,5 m), nada fora")]
+	public static void SpecialArea()
+	{
+		Check.Near(0.6, CombatRules.PounceSplash(0.5f, 1.5f, 3.5f, 0.6f, 0.3f), 1e-5, "colado");
+		Check.Near(0.6, CombatRules.PounceSplash(1.5f, 1.5f, 3.5f, 0.6f, 0.3f), 1e-5, "a 1,5 m");
+		Check.Near(0.45, CombatRules.PounceSplash(2.5f, 1.5f, 3.5f, 0.6f, 0.3f), 1e-5, "no meio");
+		Check.Near(0.3, CombatRules.PounceSplash(3.5f, 1.5f, 3.5f, 0.6f, 0.3f), 1e-5, "na borda");
+		Check.Near(0, CombatRules.PounceSplash(3.6f, 1.5f, 3.5f, 0.6f, 0.3f), 1e-5, "fora");
+	}
+
+	[Test("o compasso do lobo: uma garrada a cada 0,154 + 0,19 = 0,344 s")]
+	public static void StrikeSpacing() =>
+		Check.Near(0.344, CombatRules.WolfStrikeSpacing(0.20f / 1.3f, 0.19f), 1e-3, "garrada encadeada");
+
+	// ------------------------------------------------------------ queda
+	// Dano de queda (decisão do Jhon, 26/11: "humano começar a tomar dano de
+	// queda, lobo também, mas menos").
+
+	[Test("humano: queda até 4 m não fere; 25 por metro além; 12 m mata (200)")]
+	public static void HumanFall()
+	{
+		Check.Near(0, CombatRules.FallDamage(2.9f, 4f, 25f), 1e-5, "de um contêiner");
+		Check.Near(0, CombatRules.FallDamage(4f, 4f, 25f), 1e-5, "no limite");
+		Check.Near(45, CombatRules.FallDamage(5.8f, 4f, 25f), 1e-3, "de dois contêineres");
+		Check.Near(200, CombatRules.FallDamage(12f, 4f, 25f), 1e-3, "de 12 m: a vida inteira");
+	}
+
+	[Test("lobo: queda até 7 m não fere; 12,5 por metro além (metade do humano); 300 só a 31 m")]
+	public static void WolfFall()
+	{
+		Check.Near(0, CombatRules.FallDamage(6.5f, 7f, 12.5f), 1e-5, "o pulo e a parede");
+		Check.Near(62.5, CombatRules.FallDamage(12f, 7f, 12.5f), 1e-3, "de 12 m: um terço do humano");
+		Check.Near(300, CombatRules.FallDamage(31f, 7f, 12.5f), 1e-3, "de 31 m: a vida e o escudo inteiros");
+	}
+
 	[Test("a distância do salto é só a da barra: 1,5 m sem carga, 8,4 m cheio, nunca além")]
 	public static void PounceRange()
 	{
