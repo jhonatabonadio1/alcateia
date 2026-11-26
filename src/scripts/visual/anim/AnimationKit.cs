@@ -218,8 +218,15 @@ public static class AnimationKit
 	/// do modelo (o "Armature" de um GLB do Blender gira 90° e vale 0,01):
 	/// sem ele, clipes de um arquivo com outra orientação ficam deitados.</param>
 	/// <param name="bodyFrame">O mesmo para o esqueleto do corpo.</param>
+	/// <param name="keepRest">Ossos que não copiam a direção do osso do clipe:
+	/// o giro que o clipe faz a partir do repouso dele vale a partir do
+	/// repouso do corpo (o osso parado no clipe fica parado no repouso do
+	/// corpo). É o caso do pé e da mão do lobo: a sola foi desenhada para o
+	/// repouso do corpo, e o pé do esqueleto dos clipes do Jhon aponta mais
+	/// para baixo — copiando a direção dele, a ponta das garras entrava de 6
+	/// a 18 cm no chão em toda pose (alpha fechado, 26/11).</param>
 	public static void RetargetPose(Animation animation, Skeleton3D reference, Skeleton3D body,
-		Quaternion? referenceFrame = null, Quaternion? bodyFrame = null)
+		Quaternion? referenceFrame = null, Quaternion? bodyFrame = null, ICollection<string> keepRest = null)
 	{
 		if (reference == null || body == null) return;
 		Quaternion fr = (referenceFrame ?? Quaternion.Identity).Normalized();
@@ -246,6 +253,8 @@ public static class AnimationKit
 			string name = body.GetBoneName(bone);
 			Quaternion result = Quaternion.Identity;
 			int refBone = Find(reference, name);
+			if (keepRest != null && keepRest.Contains(name))
+				return delta[bone] = result;
 			if (refBone >= 0 && MainChild.TryGetValue(name, out string child)
 				&& Find(body, child) is int bc && bc >= 0 && Find(reference, child) is int rc && rc >= 0)
 			{

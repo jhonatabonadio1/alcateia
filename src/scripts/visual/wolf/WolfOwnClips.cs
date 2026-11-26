@@ -43,6 +43,19 @@ public static class WolfOwnClips
 		["jump_land"] = "Jump_Land"
 	};
 
+	/// <summary>Os ossos que apoiam no chão (pés e mãos): giram a partir do
+	/// repouso do corpo, não na direção do osso do clipe
+	/// (<see cref="AnimationKit.RetargetPose"/>, parâmetro keepRest). O pé
+	/// do esqueleto dos clipes aponta mais para baixo que o do corpo: copiando
+	/// a direção dele, o pé inclinava para a frente e a ponta das garras
+	/// entrava de 6 a 18 cm no chão (26/11).</summary>
+	public static readonly HashSet<string> SoleBones = new()
+	{
+		"mixamorig_LeftUpLeg", "mixamorig_LeftLeg", "mixamorig_RightUpLeg", "mixamorig_RightLeg",
+		"mixamorig_LeftFoot", "mixamorig_LeftToeBase", "mixamorig_RightFoot", "mixamorig_RightToeBase",
+		"mixamorig_LeftHand", "mixamorig_RightHand"
+	};
+
 	public static bool Has(string role) => Names.ContainsKey(role);
 
 	/// <summary>Abre o arquivo; quem chama libera a cena. Null se o arquivo
@@ -123,7 +136,7 @@ public static class WolfOwnClips
 		AnimationKit.MoveHips(animation, reference, refHips, fr, body, bodyHips, fb);
 
 		AnimationKit.RetargetPose(animation, reference, body,
-			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion());
+			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion(), SoleBones);
 
 		// Os clipes do Jhon são no lugar: o quadril vai e volta dentro do
 		// ciclo (11 cm no andar) sem sair do lugar. Esse vaivém fica — tirá-lo
