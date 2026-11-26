@@ -16,9 +16,9 @@ using Godot;
 /// próximo abate. Conjunto com item vencido ou proibido pela regra da
 /// sala também aparece, com o motivo.
 ///
-/// O pagamento acontece aqui, no renascer, e não antes. O equipamento
-/// comprado some na morte, e morrer custa
-/// <see cref="FormController.WpLostOnDeath"/> do WP.
+/// O pagamento acontece aqui, no renascer, e não antes. Morrer não tira WP
+/// (Jhon, 26/11): a arma paga fica desbloqueada até o fim da partida
+/// (<see cref="MatchKp"/>), e o conjunto custa só o que ainda não foi pago.
 ///
 /// Morto por alguém, a tela espera <see cref="KillCamTime"/> antes de
 /// abrir: é o tempo de ver quem te matou, com a silhueta vermelha e a
@@ -39,7 +39,7 @@ public partial class LoadoutMenu : CanvasLayer
 	/// <summary>WP concedido ao escolher o padrão. É a rede de segurança:
 	/// o padrão não só é grátis, ele paga — quem está sem pontos tem
 	/// caminho de volta e a partida não trava para quem está perdendo.</summary>
-	[Export] public int DefaultBonus = 50;
+	[Export] public int DefaultBonus = MatchKp.DefaultBonus;
 
 	private const int CardWidth = 280;
 
@@ -151,7 +151,8 @@ public partial class LoadoutMenu : CanvasLayer
 		if (set.IsDefault) return null;
 		if (!RoomRules.Allows(set, out string why)) return why;
 		if (!set.Validate(out string error)) return error == "Item fora do inventário" ? "Item vencido ou fora do inventário" : error;
-		if (!set.IsAffordable(_form.Wp)) return Loc.F("Faltam {0:0} KP", set.TotalCost() - _form.Wp);
+		int cost = set.CostIn(_form.Kp);
+		if (cost > _form.Wp) return Loc.F("Faltam {0:0} KP", cost - _form.Wp);
 		return null;
 	}
 
@@ -213,8 +214,10 @@ public partial class LoadoutMenu : CanvasLayer
 			set = Profile.Sets[0];
 		}
 
+		// O padrão paga a rede de segurança; o resto paga só o que ainda não foi
+		// pago nesta partida, e o que pagou fica desbloqueado até o fim dela.
 		if (set.IsDefault) _form.AddWp(DefaultBonus);
-		else _form.TrySpend(set.TotalCost());
+		else if (_form.TrySpend(set.CostIn(_form.Kp))) _form.Kp.Unlock(set.PaidItems());
 
 		// O que não é do jogador (sem conta, tudo o que não é de série) entra como o padrão.
 		RoomRules.Equip(_weapon, Profile.Usable(set));
@@ -416,8 +419,14 @@ public partial class LoadoutMenu : CanvasLayer
 		}
 		else
 		{
-			price.AddChild(UiKit.Text(Loc.F("{0} KP", set.TotalCost()), "Subtitle", UiTokens.Accent));
+			// Já pago nesta partida: renascer com ele não cobra de novo.
+			int cost = set.CostIn(_form.Kp);
+			price.AddChild(cost == 0
+				? UiKit.Text("JÁ PAGO", "Subtitle", UiTokens.Success)
+				: UiKit.Text(Loc.F("{0} KP", cost), "Subtitle", UiTokens.Accent));
 			price.AddChild(UiKit.Spacer());
+			if (cost > 0 && cost < set.TotalCost())
+				price.AddChild(UiKit.Text(Loc.F("de {0}", set.TotalCost()), "Numeric", UiTokens.TextSecondary));
 		}
 		stack.AddChild(price);
 

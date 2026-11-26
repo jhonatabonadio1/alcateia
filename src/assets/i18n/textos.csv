@@ -1283,3 +1283,5 @@ ESPECTADOR,,SPECTATOR,ESPECTADOR,scripts/visual/KillCam.Hud.cs
 PRONTO PARA RENASCER,,READY TO RESPAWN,LISTO PARA REAPARECER,scripts/visual/KillCam.Hud.cs
 RENASCE EM,,RESPAWNS IN,REAPARECE EN,scripts/visual/KillCam.Hud.cs
 WASD E MOUSE  ·  ESPAÇO: VOLTAR AOS ALIADOS,,WASD AND MOUSE  ·  SPACE: BACK TO ALLIES,WASD Y RATÓN  ·  ESPACIO: VOLVER A LOS ALIADOS,scripts/visual/KillCam.Hud.cs
+JÁ PAGO,,PAID,PAGADO,scripts/ui/LoadoutMenu.cs
+de {0},,of {0},de {0},scripts/ui/LoadoutMenu.cs

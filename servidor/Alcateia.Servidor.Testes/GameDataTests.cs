@@ -188,6 +188,29 @@ public static class GameDataTests
 			Check.Equal(7, replies.Count(r => Code(r) == "saldo_insuficiente"), "as outras são recusadas por saldo");
 			var (_, wallet) = await p.Call(HttpMethod.Get, "/v1/inventory");
 			Check.Equal(0L, wallet["presas"].GetValue<long>(), "o saldo zerou, e não ficou negativo");
+		}),
+
+		("loja: o mesmo pedido repetido (duplo clique, a rede mandando de novo) compra uma vez só", async () =>
+		{
+			await using World w = await World.Start();
+			await using Player p = await w.NewPlayer();
+			await w.Db.Exec("update profiles set xp = 300, presas = 5000 where account_id = $1", p.Id);
+
+			// Consumível: cada compra soma um uso, então repetir sem o número compraria de novo.
+			JsonObject Order(string id) => new() { ["itemId"] = "troca_nome", ["duration"] = 4, ["requestId"] = id };
+			var first = await p.Call(HttpMethod.Post, "/v1/shop/buy", Order("pedido-1"));
+			Check.Equal(200, first.Status, "a primeira compra passa");
+			long price = first.Body["price"].GetValue<long>();
+			var replies = await Task.WhenAll(Enumerable.Range(0, 6).Select(_ => p.Call(HttpMethod.Post, "/v1/shop/buy", Order("pedido-1"))));
+			Check.True(replies.All(r => r.Status == 200 && r.Body["balance"].GetValue<long>() == 5000 - price), "o mesmo pedido de novo, até ao mesmo tempo: o mesmo recibo");
+			var (_, wallet) = await p.Call(HttpMethod.Get, "/v1/inventory");
+			Check.Equal(5000 - price, wallet["presas"].GetValue<long>(), "cobrou uma vez só");
+			Check.Equal(1, wallet["items"][0]["uses"].GetValue<int>(), "e deu um uso só");
+
+			Check.Equal(200, (await p.Call(HttpMethod.Post, "/v1/shop/buy", Order("pedido-2"))).Status, "outro pedido é outra compra");
+			Check.Equal(5000 - 2 * price, (await p.Call(HttpMethod.Get, "/v1/inventory")).Body["presas"].GetValue<long>(), "cobrou a segunda");
+			Check.Equal("pedido_repetido", Code(await p.Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = "ak74", ["duration"] = 0, ["requestId"] = "pedido-1" })), "o número de um pedido não serve para outro item");
+			Check.Equal("pedido_invalido", Code(await p.Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = "troca_nome", ["duration"] = 4, ["requestId"] = "a b;drop" })), "número de pedido estranho é recusado");
 		})
 	};
 }

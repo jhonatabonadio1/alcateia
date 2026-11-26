@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Alcateia.Aplicacao.Portas;
 using Alcateia.Dominio;
@@ -39,8 +40,16 @@ public sealed class ShopService
 			throw new Failure(FailureKind.NotFound, "item_inexistente", "Você não tem esse item.");
 	}
 
-	public Task<PurchaseReceipt> Buy(long accountId, string itemId, int duration)
+	/// <summary>O número de pedido aceito: até 64 letras, números, "-" e "_".</summary>
+	public static bool ValidRequestId(string id) =>
+		string.IsNullOrEmpty(id) || (id.Length <= 64 && id.All(ch => char.IsAsciiLetterOrDigit(ch) || ch is '-' or '_'));
+
+	/// <summary>Compra. Com <paramref name="requestId"/> (o jogo manda um por
+	/// clique), repetir o pedido não compra de novo (26/11).</summary>
+	public Task<PurchaseReceipt> Buy(long accountId, string itemId, int duration, string requestId = null)
 	{
+		if (!ValidRequestId(requestId))
+			throw new Failure(FailureKind.Invalid, "pedido_invalido", "Número de pedido inválido.");
 		GameData data = _data.Current;
 		DateTime now = _clock.UtcNow;
 		data.Items.TryGetValue(itemId ?? "", out CatalogEntry item);
@@ -53,6 +62,6 @@ public sealed class ShopService
 			if (wallet.Owned != null && wallet.Owned.ExpiresAt == null)
 				throw new Failure(FailureKind.Conflict, "ja_tem", "Você já tem esse item para sempre.");
 			return new PurchaseDecision(item.Currency, price, Shop.Expiry(wallet.Owned, duration, now));
-		});
+		}, string.IsNullOrEmpty(requestId) ? null : requestId);
 	}
 }

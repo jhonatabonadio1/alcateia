@@ -377,18 +377,21 @@ estão em `src/scripts/domain/CombatRules.cs`, com teste
 |---|---|---|
 | `HumanHp` | 200 | Vida (a mesma nas duas formas). O personagem multiplica (`HpMultiplier` no `personagem.tres` de cada pasta em `src/assets/personagens/`; Eve ×1,1 = 220) |
 | `MaxWp` | 10000 | Teto de WP (era 2500; Jhon, 21/11) |
-| `WpPerKill` | 100 | WP por abate de arma |
-| `WpPerWolfKill` | 70 | WP por abate de lobo |
-| `WpPerAssist` | 35 | WP por assistência |
+| `WpPerKill` | 125 (era 100; 26/11) | WP por abate de arma |
+| `WpPerWolfKill` | 88 (era 70) | WP por abate de lobo |
+| `WpPerAssist` | 44 (era 35) | WP por assistência |
 | `WpPerDamageDealt` | 0 | WP por dano (desligado) |
-| `WpLostOnDeath` | 100 | WP perdido ao morrer |
+| — | — | Morrer não tira WP (o `WpLostOnDeath` de 100 saiu em 26/11). A arma paga fica desbloqueada até o fim da partida (`FormController.Kp`, `MatchKp`) |
 | `ShiftDuration` | 0,55 s | Virar lobo |
 | `ShiftBackDuration` | 0,2 s | Voltar a humano |
 | `ShiftDamageMultiplier` | 1,5 | Dano recebido durante a transformação |
 | `RefillOnTransform` | não | Encher a vida ao transformar |
 
 Mais: `WpCost` da classe (seção 2), `DefaultBonus` 50 WP ao escolher o
-conjunto padrão (`LoadoutMenu.cs`) e o `WpCost` de cada arma. Renasce
+conjunto padrão (`LoadoutMenu.cs`) e o `WpCost` de cada arma. Os valores de
+fábrica dos ganhos moram em `src/scripts/domain/MatchKp.cs` (`PerKill`,
+`PerWolfKill`, `PerAssist`, `DefaultBonus`): o servidor de partida confere o
+gasto com eles, então mude lá, não só no Inspetor. Renasce
 sempre humano.
 
 ---

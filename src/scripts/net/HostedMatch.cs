@@ -58,6 +58,16 @@ public sealed partial class HostedMatch
 	/// <summary>O que cada conta tem na loja, como o saguão mandou na escalação.
 	/// Sem a conta aqui (servidor central antigo): nada é conferido.</summary>
 	private readonly Dictionary<long, HashSet<string>> _owned = new();
+
+	/// <summary>O KP de cada conta na partida autoritativa: o que já pagou (fica
+	/// desbloqueado até o fim, <see cref="MatchKp"/>) e quanto gastou. O ganho
+	/// sai do placar deste servidor (<see cref="MatchKp.MostEarned"/>), nunca do
+	/// que o jogo diz (26/11: "gasto de KP só vale se o servidor conferir").</summary>
+	private readonly Dictionary<long, (MatchKp Kp, int Spent)> _kp = new();
+
+	/// <summary>Arma que a conta trouxe sem KP para pagar, já anotada (conta
+	/// contra a conta uma vez, não a cada estado que chega).</summary>
+	private readonly HashSet<(long, string)> _unpaidNoted = new();
 	private readonly List<ServerBody> _bodyList = new();
 	private readonly Dictionary<long, byte> _indexOf = new();
 	private EntityState[] _states = new EntityState[16];
@@ -290,6 +300,50 @@ public sealed partial class HostedMatch
 		if (string.IsNullOrEmpty(id) || Allowed(account, id)) return id;
 		GD.Print($"Match {Key}: account {account} brought {id}, which is not theirs; using {fallback}.");
 		return fallback;
+	}
+
+	/// <summary>
+	/// A arma foi paga com KP nesta partida? O jogo paga no renascer (a tela de
+	/// conjuntos); aqui o servidor confere contra o que a conta pode ter
+	/// ganhado pelo placar dele. Arma nova que cabe no que sobra é paga e fica
+	/// desbloqueada até o fim; a que não cabe vira a padrão e conta contra a
+	/// conta (uma vez), como a arma que não é dela.
+	/// </summary>
+	public string PaidWeapon(long account, string id, string fallback)
+	{
+		// O que pode ir no conjunto padrão é de graça: com ele na mão, o jogador
+		// pode ter vindo pelo padrão (a M4A4 custa 200 num conjunto pago, 0 no padrão).
+		int price = Arsenal.CostOf(id);
+		if (string.IsNullOrEmpty(id) || price <= 0 || LoadoutSet.AllowedInDefault(id)) return id;
+		if (Referee.Find(account) is not { IsBot: false } seat) return id;
+
+		var (kp, spent) = _kp.TryGetValue(account, out var entry) ? entry : (new MatchKp(), 0);
+		if (kp.IsUnlocked(id)) return id;
+
+		int earned = MatchKp.MostEarned(seat.Kills, seat.KillsWolf, seat.Assists, seat.Deaths);
+		if (spent + price <= earned)
+		{
+			kp.Unlock(new[] { id });
+			_kp[account] = (kp, spent + price);
+			return id;
+		}
+
+		if (_unpaidNoted.Add((account, id)))
+		{
+			seat.RejectedHits++;
+			GD.Print($"Match {Key}: account {account} brought {id} ({price} KP) with {earned - spent} KP to spend; using {fallback}.");
+		}
+		_kp[account] = (kp, spent);
+		return fallback;
+	}
+
+	/// <summary>O KP que a conta ainda pode gastar nesta partida, pelo placar
+	/// do servidor. Para os testes.</summary>
+	public int KpLeft(long account)
+	{
+		if (Referee.Find(account) is not { } seat) return 0;
+		int spent = _kp.TryGetValue(account, out var entry) ? entry.Spent : 0;
+		return MatchKp.MostEarned(seat.Kills, seat.KillsWolf, seat.Assists, seat.Deaths) - spent;
 	}
 
 	/// <summary>O item é de série ou da conta? Sem a lista dela (servidor central
@@ -641,8 +695,8 @@ public sealed partial class HostedMatch
 			guard = r.ReadBoolean();
 		}
 
-		primary = AllowedWeapon(account, primary, Arsenal.DefaultPrimary);
-		secondary = AllowedWeapon(account, secondary, Arsenal.DefaultSecondary);
+		primary = PaidWeapon(account, AllowedWeapon(account, primary, Arsenal.DefaultPrimary), Arsenal.DefaultPrimary);
+		secondary = PaidWeapon(account, AllowedWeapon(account, secondary, Arsenal.DefaultSecondary), Arsenal.DefaultSecondary);
 
 		byte[] relayed = NetWire.Relay(packet, account);
 		if (!_bodies.TryGetValue(account, out ServerBody body) || !body.Placed)
