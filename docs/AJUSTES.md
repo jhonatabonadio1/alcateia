@@ -189,6 +189,8 @@ Multiplicam a classe do jogador (não a dos bots):
 | `WallGapMax` | 1,6 m | O maior vão (porta, janela, espaço entre casas) que o lobo atravessa correndo pela linha da parede; maior que isto, solta como na ponta (26/11) |
 | `WallClimbReach` | 1,8 m | Obstáculo à frente com o topo até esta altura acima de onde corre: o lobo sobe por cima e segue na parede. Mais alto é parede (vale o canto) (26/11) |
 | `WallClimbSpeed` | 7 m/s | Velocidade da subida por cima do obstáculo |
+| `WallPoleMaxWidth` | 0,6 m | Objeto pequeno (poste, haste de placa, coluna fina): o corte da colisão na altura do corpo cabe num quadrado deste lado, e nada em volta dele na altura do peito. Nele o lobo dá a volta, como no tonel (26/11). 0 desliga |
+| `WallOrbitMaxTurn` | 360°/s | Volta mais rápida em volta de poste, coluna ou tonel: num poste de 12 cm a corrida inteira dava quase duas voltas por segundo; no tonel não chega a agir (26/11). 0 desliga |
 | `CornerGrace` | 0,15 s | Tempo sem encostar em nada antes de soltar |
 | `WallJumpClimb` | 1,02 | Altura do salto da parede (era 1,35; −40%) |
 | `WallJumpPush` | 6,5 m/s | Empurrão para fora no salto da parede |
