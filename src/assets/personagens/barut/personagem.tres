@@ -12,3 +12,4 @@ HumanModel = "res://src/assets/personagens/barut/humano.glb"
 WolfModel = "res://src/assets/personagens/barut/lobo_vermelho.glb"
 EffectColor = Color(1, 0.35, 0.12, 1)
 HpMultiplier = 1.0
+EyeInHead = Vector3(0, 0.085, 0.094)

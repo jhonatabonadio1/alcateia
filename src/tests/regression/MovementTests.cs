@@ -6,20 +6,24 @@ using System.Threading.Tasks;
 public sealed class GroundSpeedTest : RegressionTest
 {
 	public override string Name => "VelocidadeNoChao";
-	public override string Description => "humano 3,46 m/s, agachado 1,56, faca 3,58; lobo 4,33, agachado 1,95";
+	public override string Description => "humano 3,0 m/s, agachado 1,35, faca 3,84; lobo 4,33, agachado 1,95";
 
 	public override async Task Run(RegressionBench b)
 	{
 		b.RemoveBots();
 
-		// Os números do jogo de hoje: Player.HumanSpeed 3,2 na cena (docs/MEDIDAS.md),
-		// × 1,08 do humano. Eram 3,24 (a base 3,0 do código, que a cena sobrescreve).
-		b.Near(3.456, await Measure(b, "move_forward"), 0.02, "humano correndo");
-		b.Near(1.555, await Measure(b, "move_forward", "crouch"), 0.05, "humano agachado");
-		b.Near(1.452, await Measure(b, "move_forward", "walk"), 0.05, "humano andando (Shift)");
+		// Os números do jogo de hoje: Player.HumanSpeed 3,2 na cena (docs/MEDIDAS.md,
+		// a base do lobo), × 0,9375 do humano desde 26/11 (era 1,08: 3,46 m/s; Jhon:
+		// "deve andar um pouco mais devagar", "tá deslizando no mapa"). Agachado e
+		// com Shift descem junto.
+		b.Near(3.0, await Measure(b, "move_forward"), 0.02, "humano correndo");
+		b.Near(1.35, await Measure(b, "move_forward", "crouch"), 0.05, "humano agachado");
+		b.Near(1.26, await Measure(b, "move_forward", "walk"), 0.05, "humano andando (Shift)");
 
 		b.Weapon.SelectSlot(Slot.Knife);
-		b.Near(3.584, await Measure(b, "move_forward"), 0.02, "humano com a faca");
+		// A faca na mão ×1,28 desde 26/11 (era ×1,037, 3,58 m/s; Jhon: "aumentar
+		// velocidade de movimento com faca equipada"): 3,84 m/s.
+		b.Near(3.84, await Measure(b, "move_forward"), 0.02, "humano com a faca");
 		b.Weapon.SelectSlot(Slot.Primary);
 
 		// O lobo é um só desde 26/11 (decisão do Jhon: sem classes), no meio do

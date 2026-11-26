@@ -119,7 +119,7 @@ public sealed class ServerBody
 		}
 
 		if (Placed)
-			History.Record(tick, Body.GlobalPosition.ToNumerics(), Body.Rotation.Y, Body.HeadPitch, Body.IsCrouching ? Body.CrouchHeight : Body.StandHeight);
+			History.Record(tick, Body.GlobalPosition.ToNumerics(), Body.Rotation.Y, Body.HeadPitch, Body.BodyHeight);
 	}
 
 	/// <summary>Quantos passos seguidos o jogo conta que está na parede e

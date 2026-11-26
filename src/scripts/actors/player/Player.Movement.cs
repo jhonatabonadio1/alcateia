@@ -63,11 +63,50 @@ public partial class Player
 	/// o lobo é puro movimento e não teria por que abrir mão disso.</summary>
 	[Export] public float WalkSpeedFactor = 0.42f;
 	[Export] public float StandHeight = 1.75f;
+
+	/// <summary>A cápsula agachada do lobo.</summary>
 	[Export] public float CrouchHeight = 1.0f;
 
-	/// <summary>Altura do olho em pé e agachado.</summary>
-	[Export] public float StandEyeHeight = 0.62f;
+	/// <summary>O olho do lobo (o pivô da câmera de 3ª pessoa) em pé e agachado,
+	/// a partir do centro da cápsula. Em pé, 0,6 é o da cena (o 0,62 de antes só
+	/// valia depois de agachar e levantar uma vez).</summary>
+	[Export] public float StandEyeHeight = 0.6f;
 	[Export] public float CrouchEyeHeight = 0.1f;
+
+	/// <summary>A cápsula agachada do humano (26/11). Era a do lobo, 1,0 m, com o
+	/// olho a 60 cm do chão; agora o olho é o do corpo visto agachado (~111 cm) e
+	/// a cápsula leva a cabeça dele (a cabeça fica uns 15 cm acima do olho).
+	/// Passar agachado por baixo de algo pede 1,3 m de vão.</summary>
+	public const float DefaultHumanCrouchHeight = 1.3f;
+	[Export] public float HumanCrouchHeight = DefaultHumanCrouchHeight;
+
+	/// <summary>O olho do humano em pé e agachado, em metros acima dos pés.
+	/// É o olho do corpo que os outros veem (Jhon, 26/11: "o nível de
+	/// agachamento deve ser idêntico ao de 3ª pessoa, extremamente preciso"):
+	/// o <see cref="CharacterAnimator"/> lê no corpo desenhado, parado e de
+	/// cabeça reta, e ajusta estes (<see cref="TuneHumanEye"/>). Os de fábrica
+	/// são os medidos na Eve e no Barut de fuzil na mão (159,2 e 109,2 cm), para
+	/// o corpo sem modelo (o servidor de partida) e o primeiro instante. Era
+	/// 147,5 cm em pé (12 abaixo dos olhos do corpo) e 60 cm agachado (50 abaixo).</summary>
+	[Export] public float HumanEyeHeight = 1.592f;
+	[Export] public float HumanCrouchEyeHeight = 1.092f;
+
+	/// <summary>Quão rápido o olho do humano vai até o que o corpo visto mostra,
+	/// em m/s: trocar de arma muda o tronco, e a câmera não dá tranco.</summary>
+	[Export] public float EyeTuneSpeed = 0.4f;
+
+	/// <summary>O olho do corpo visto, lido parado (em pé ou agachado), em metros
+	/// acima dos pés. Chamado pelo <see cref="CharacterAnimator"/> do dono.</summary>
+	public void TuneHumanEye(bool crouched, float height, float delta)
+	{
+		if (!float.IsFinite(height) || height < 0.3f || height > 2.5f) return;
+		float step = EyeTuneSpeed * delta;
+		if (crouched) HumanCrouchEyeHeight = Mathf.MoveToward(HumanCrouchEyeHeight, height, step);
+		else HumanEyeHeight = Mathf.MoveToward(HumanEyeHeight, height, step);
+	}
+
+	/// <summary>A altura da cápsula agora (em pé, agachado ou no meio).</summary>
+	public float BodyHeight => _height;
 
 	/// <summary>Velocidade da transição entre em pé e agachado.</summary>
 	[Export] public float CrouchLerpSpeed = 22f;
@@ -145,12 +184,13 @@ public partial class Player
 		_stunSlow = Mathf.Min(_stunSlow, Mathf.Clamp(slowFactor, 0.05f, 1f));
 	}
 
-	/// <summary>Só o humano: anda isto acima da base (<see cref="HumanSpeed"/>,
-	/// que é também a base do lobo e não muda). 1,08 desde a v0.27.1
-	/// (decisão do Jhon): 3,24 m/s com o fuzil, e agachado e com Shift
-	/// junto. A corrida do X Bot anda 3,02 a 1×, então o pé desliza um
-	/// pouco acima disso.</summary>
-	[Export] public float HumanSpeedBonus = 1.08f;
+	/// <summary>Só o humano: a velocidade dele é <see cref="HumanSpeed"/> (a base
+	/// do lobo, 3,2 na cena, que não muda) vezes isto. 0,9375 desde 26/11 (era
+	/// 1,08, 3,46 m/s; Jhon: "diminua a velocidade de andar do humano, ele tá
+	/// muito rápido e deslizando no mapa"): 3,0 m/s com o fuzil, e agachado e
+	/// com Shift junto. A corrida do clipe toca a
+	/// <see cref="CharacterAnimator.RunClipRate"/> para o pé acompanhar.</summary>
+	[Export] public float HumanSpeedBonus = 0.9375f;
 
 	/// <summary>A corrida de quatro do lobo: W duas vezes seguidas e ele
 	/// cai nas quatro patas, isto mais rápido que a corrida normal
@@ -356,10 +396,15 @@ public partial class Player
 		// um lobo furtivo, que é o oposto da forma.
 		_walking = !_onWall && !_form.IsWolf && _intent.WalkHeld;
 
-		float target = _crouching ? CrouchHeight : StandHeight;
+		float crouchHeight = _form.IsWolf ? CrouchHeight : HumanCrouchHeight;
+		float target = _crouching ? crouchHeight : StandHeight;
 		float previous = _height;
 
 		_height = Mathf.MoveToward(_height, target, CrouchLerpSpeed * (float)delta);
+
+		// O olho a cada passo: muda com a forma (o humano e o lobo têm olhos
+		// diferentes), não só quando a cápsula muda.
+		PlaceEye(crouchHeight);
 
 		if (Mathf.IsEqualApprox(previous, _height))
 			return;
@@ -374,11 +419,23 @@ public partial class Player
 		position.Y += (_height - previous) * 0.5f;
 		GlobalPosition = position;
 
-		// O olho acompanha a cápsula na mesma proporção.
-		float t = Mathf.InverseLerp(CrouchHeight, StandHeight, _height);
+		PlaceEye(crouchHeight);
+	}
+
+	/// <summary>
+	/// O olho acompanha a cápsula na mesma proporção, entre o de pé e o
+	/// agachado da forma de agora. O do humano é medido acima dos pés (o olho do
+	/// corpo visto); a cabeça é posta a partir do centro da cápsula.
+	/// </summary>
+	private void PlaceEye(float crouchHeight)
+	{
+		float t = Mathf.Clamp(Mathf.InverseLerp(crouchHeight, StandHeight, _height), 0f, 1f);
+		float eye = _form.IsWolf
+			? Mathf.Lerp(CrouchEyeHeight, StandEyeHeight, t)
+			: Mathf.Lerp(HumanCrouchEyeHeight, HumanEyeHeight, t) - _height * 0.5f;
 
 		Vector3 head = _head.Position;
-		head.Y = Mathf.Lerp(CrouchEyeHeight, StandEyeHeight, t) + _stepLift;
+		head.Y = eye + _stepLift;
 		_head.Position = head;
 	}
 

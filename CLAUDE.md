@@ -118,22 +118,32 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
    duas, mexa no `SpeedMultiplier` do lobo (`lobo.tres`), não só aqui.
 
    Valores absolutos atuais (velocidade em m/s, pulo em altura), medidos no
-   jogo em 24/11 (os testes seguem estes; `docs/MEDIDAS.md`). A cena do
-   jogador põe `HumanSpeed` 3,2 (o código diz 3,0): a base é 3,2 × 1,08.
-   O que o texto abaixo conta em 3,24 m/s é de antes.
+   jogo em 24/11 e, no humano, em 26/11 (os testes seguem estes;
+   `docs/MEDIDAS.md`). A cena do jogador põe `HumanSpeed` 3,2 (o código diz
+   3,0), a base do lobo; o humano anda 3,2 × `HumanSpeedBonus` 0,9375 = 3,0
+   m/s desde 26/11 (era × 1,08, 3,46; Jhon: "deve andar um pouco mais
+   devagar", "tá deslizando no mapa"). O que o texto abaixo conta em 3,24
+   m/s é de antes.
 
    | | Humano | Lobo (26/11) |
    |---|---|---|
-   | Velocidade | 3,46 (faca 3,58) | 4,33 (1,352×) |
+   | Velocidade | 3,0 (faca 3,84) | 4,33 (1,352×) |
    | Pulo | 1,02 m | 2,09 m |
-   | Avanço do pulo correndo | ~2,6 m | ~5,1 m |
-   | Agachado | 1,56 | 1,95 |
+   | Avanço do pulo correndo | ~2,25 m | ~5,1 m |
+   | Agachado | 1,35 | 1,95 |
    | De quatro (W W) | — | 7,44 |
    | Na parede | — | 4,94 |
 
    (O lobo único fica no meio do Bruto — 4,15, pulo 1,67 m — e do Ligeiro —
    4,50, 2,56 m — de antes. Os números do Bruto que o texto abaixo conta
-   são de antes dele.)
+   são de antes dele. O humano anda 3,0 desde 26/11: era 3,46.)
+
+   **No corpo do jogo (Eve e Barut) a corrida anda 3,41 m/s a 1×**
+   (medido no pé de apoio, 26/11): ela toca a 0,88× (`RunClipRate`) e dá os
+   3,0 do humano — o pé fica parado (0,01 m/s na Eve, 0,06 no Barut). Mais
+   devagar que o arquivo, nunca mais rápido. Com a faca (3,84 m/s) o pé fica
+   uns 0,8 m/s atrás do corpo; agachado (1,35), o andar agachado anda 0,67
+   e o pé fica 0,7 atrás. O texto abaixo é da medida antiga.
 
    **A velocidade do humano é a passada do X Bot**, medida no quadril:
    correr ("run_fwd") anda 3,0 m/s a 1×, andar 1,0, de costas 1,1 e
@@ -182,7 +192,13 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
 	de mira do parado em pé, `CharacterAnimator.CrouchAim` — agacha e
 	atira, decisão do Jhon; os clipes agachados seguravam a arma na
 	cintura), e o lobo encolhe parado e engatinha andando (veja "Clipes
-	do lobo").
+	do lobo"). **O olho do humano é o olho do corpo visto** (26/11, Jhon:
+	"o nível de agachamento deve ser idêntico ao de 3ª pessoa,
+	extremamente preciso"): em pé 159 cm e agachado 109 cm acima dos pés
+	(eram 147,5 e 60), lidos no corpo desenhado (`CharacterAnimator.Eye`,
+	`Player.HumanEyeHeight`); o corpo agacha fundo (`CharacterAnimator.Kneel`)
+	e a cápsula agachada do humano tem 1,3 m (a do lobo, 1,0). Teste:
+	`OlhoNoCorpoEve`, `OlhoNoCorpoBarut` (até 1 cm).
 
 ---
 

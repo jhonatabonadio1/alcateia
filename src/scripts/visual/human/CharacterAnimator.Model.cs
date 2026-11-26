@@ -146,12 +146,21 @@ public partial class CharacterAnimator
 					&& animation.Length > CrouchWalkTrim)
 					animation.Length = CrouchWalkTrim;
 
+				// O agachado do corpo visto, mais fundo que o do clipe (26/11).
+				if (clip is "crouch_walk" or "crouch_idle")
+					Kneel(animation, body, bodyPath);
+
 				animation.LoopMode = IsLooping(clip)
 					? Animation.LoopModeEnum.Linear
 					: Animation.LoopModeEnum.None;
 
 				library.AddAnimation(clip, animation);
 				count++;
+
+				// Sem clipe de agachado parado, a pose do andar agachado com os dois pés no chão.
+				if (clip == "crouch_walk" && !library.HasAnimation("crouch_idle")
+					&& KneelIdle(animation, body, bodyPath) is Animation idle)
+					library.AddAnimation("crouch_idle", idle);
 			}
 
 			temp.QueueFree();
