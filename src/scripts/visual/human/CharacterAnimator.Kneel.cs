@@ -1,18 +1,20 @@
 using Godot;
 
 /// <summary>
-/// O agachado mais fundo do corpo visto (Jhon, 26/11, alpha fechado: "ele
-/// agacha mais [em primeira pessoa] que a 3ª pessoa, deve ter um equilíbrio
-/// aí"; a primeira pessoa fica como está, quem desce é o corpo que os outros
-/// veem).
+/// O agachado do corpo visto, fundo (Jhon, 26/11, alpha fechado: "a animação
+/// de agachar em 3ª pessoa tá muito curta, precisa agachar mais"; e a 1ª pessoa
+/// idêntica a ela: CharacterAnimator.Eye).
 ///
 /// O único clipe agachado que existe é o "Crouched Walking" do Mixamo, que
 /// mal dobra os joelhos: o quadril ficava só 8 cm abaixo do de pé e a cabeça
-/// 10 cm, enquanto o olho de quem joga desce 87 cm. Em vez de trocar o clipe,
-/// ele é aprofundado ao carregar: o quadril desce <see cref="KneelDrop"/> e as
-/// pernas se dobram por cinemática inversa de dois ossos (coxa e canela),
-/// com cada pé no mesmo lugar e na mesma direção do clipe original — o pé não
-/// flutua nem entra no chão, e o joelho dobra para onde já apontava.
+/// 10 cm. Em vez de trocar o clipe, ele é aprofundado ao carregar: o quadril
+/// desce até <see cref="KneelDrop"/> — o mesmo tanto no clipe inteiro, o que a
+/// perna de apoio deixa no instante mais apertado (<see cref="KneelMinReach"/>),
+/// para o corpo não balançar a cada passo — e as pernas se dobram por
+/// cinemática inversa de dois ossos (coxa e canela), com cada pé no mesmo
+/// lugar e na mesma direção do clipe original: o pé não flutua nem entra no
+/// chão, e o joelho dobra para onde já apontava. Os olhos descem ~50 cm (159
+/// → 109 cm acima dos pés).
 ///
 /// É a animação, e não um modificador por cima dela, de propósito: o que lê
 /// os ossos durante o quadro (as peças de acerto do <see cref="BodyHitbox"/>,
@@ -22,14 +24,16 @@ using Godot;
 public partial class CharacterAnimator
 {
 	[ExportGroup("Agachado")]
-	/// <summary>Quanto o quadril do clipe agachado desce, em metros (o
-	/// tronco e a cabeça descem junto).</summary>
+	/// <summary>Quanto o quadril do clipe agachado desce, no máximo, em metros
+	/// (o tronco e a cabeça descem junto). 0,6 desde 26/11 (era 0,5 no rascunho
+	/// de 26/11 de manhã; o clipe sozinho, 0).</summary>
 	[Export] public float KneelDrop = 0.6f;
 
-	/// <summary>O quanto a perna pode se dobrar: a distância do quadril ao
-	/// tornozelo não fica abaixo desta fração da perna esticada (0,42 é o
-	/// joelho fechado a uns 50°, o agachado fundo). O quadril para de descer
-	/// antes de passar disso.</summary>
+	/// <summary>O quanto a perna de apoio pode se dobrar: a distância do quadril
+	/// ao tornozelo não fica abaixo desta fração da perna esticada (0,39: o
+	/// joelho fechado, o agachado fundo). O quadril para de descer antes de
+	/// passar disso. Abaixo de 0,39 a pele da perna entra no chão (0,36: 3,5 cm;
+	/// 0,30: 10 cm, medido em 26/11).</summary>
 	[Export(PropertyHint.Range, "0.2,0.95")] public float KneelMinReach = 0.39f;
 
 	/// <summary>Quanto o quadril desceu de fato no último clipe aprofundado, em
@@ -103,18 +107,6 @@ public partial class CharacterAnimator
 		lower = Mathf.Max(lower, 0f);
 		KneelLower = lower * meters;
 
-		{
-			// DEBUG: a velocidade do pé de apoio no clipe (a passada).
-			float sum = 0; int cnt = 0;
-			for (int i = 1; i < samples; i++)
-			{
-				int st0 = legAt[i - 1, 0].Foot.Origin.Dot(up) <= legAt[i - 1, 1].Foot.Origin.Dot(up) ? 0 : 1;
-				Vector3 d = legAt[i, st0].Foot.Origin - legAt[i - 1, st0].Foot.Origin;
-				d -= up * d.Dot(up);
-				sum += d.Length() * meters * KneelRate; cnt++;
-			}
-			GD.Print($"DEBUG passada agachada: {sum / Mathf.Max(cnt, 1)} m/s, duração {animation.Length}");
-		}
 
 		for (int i = 0; i < samples; i++)
 		{

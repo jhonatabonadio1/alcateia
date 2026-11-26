@@ -65,7 +65,10 @@ public partial class CharacterAnimator
 	/// troca de direção pisca entre clipes.</summary>
 	[Export] public float BlendSmoothing = 9f;
 
-	/// <summary>Velocidade em que o agachado está andando a pleno.</summary>
+	/// <summary>Velocidade em que o agachado está andando a pleno. 0,6 m/s
+	/// desde 26/11 (era 1,9): andando agachado (1,35 m/s) a mistura ficava no
+	/// meio do parado e do andar, e a mistura das duas poses de perna dobrada
+	/// enfiava a ponta do pé 16 cm no chão. Agora o andar toca inteiro.</summary>
 	[Export] public float CrouchWalkSpeed = 0.6f;
 
 	/// <summary>Quanto da pose de mira em pé entra no tronco agachado: 1 é

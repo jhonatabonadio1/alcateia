@@ -20,7 +20,8 @@ using System.Collections.Generic;
 ///
 /// Dividido em montar e tocar: CharacterAnimator.Model (clipes, modelo
 /// do time, arma), CharacterAnimator.Kneel (o agachado mais fundo, feito no
-/// clipe ao carregar) e CharacterAnimator.Tree (a árvore) rodam uma vez no
+/// clipe ao carregar), CharacterAnimator.Eye (os olhos do corpo, onde fica a
+/// câmera da 1ª pessoa) e CharacterAnimator.Tree (a árvore) rodam uma vez no
 /// _Ready; CharacterAnimator.Locomotion, .Actions e .Death leem o estado
 /// a cada quadro. As ferramentas que o lobo também usa estão no
 /// <see cref="AnimationKit"/>.
