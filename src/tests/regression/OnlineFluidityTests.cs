@@ -21,7 +21,12 @@ using System.Threading.Tasks;
 ///   a velocidade muda mais de <see cref="JoltSpeed"/> de um quadro para o
 ///   outro (tranco, tremor) e em que ela anda para trás (volta no tempo);
 /// - o boneco do outro (o modelo desenhado): o mesmo;
-/// - as correções do servidor no corpo do jogador (quantas, quanto).
+/// - as correções do servidor no corpo do jogador (quantas, quanto). No
+///   autoritativo, a cada <see cref="ShoveEvery"/> segundos o corpo do jogador
+///   no servidor é empurrado <see cref="Shove"/> de lado: é a divergência
+///   que o servidor corrige (o que no jogo vem da física das duas máquinas
+///   discordando num movimento difícil), e a câmera tem de escorregar até o
+///   lugar certo sem tranco.
 ///
 /// A rede limpa é a régua: o tranco que aparece nela é do próprio
 /// movimento (encostar em algo), não da rede.
@@ -47,6 +52,10 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 
 	/// <summary>A velocidade mudando mais que isto num quadro é tranco que se vê (m/s).</summary>
 	public const float JoltSpeed = 2f;
+
+	/// <summary>O empurrão no corpo do jogador no servidor (m) e de quanto em quanto tempo (s).</summary>
+	private const float Shove = 0.3f;
+	private const double ShoveEvery = 2.0;
 
 	/// <summary>O que se vê, um quadro por linha, gravado depois de todo o desenho.</summary>
 	private sealed partial class Sampler : Node
@@ -92,7 +101,9 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 		Health me = b.Health;
 		await b.Until(() => !me.IsProtected, 6.0);
 
-		FakeOther other = Authoritative ? await ShooterInSight(b) : null;
+		// O outro corre longe (de 8 a 12 m): perto, os dois esbarram, e o esbarrão
+		// é outra coisa (o jogo vê o outro no passado, o servidor no presente).
+		FakeOther other = Authoritative ? await RunnerFarAway(b) : null;
 		if (Authoritative && other == null)
 		{
 			b.Check(false, "achou lugar para o outro jogador correr");
@@ -114,6 +125,7 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 
 		RegressionBench.Press("move_forward");
 		double dt = 1.0 / Engine.PhysicsTicksPerSecond;
+		float shoveSide = -1f;
 		float relayAngle = 0f;
 		int frame = 0;
 		var results = new List<(string Name, int CamJolts, int CamBack, int PupJolts, int PupBack)>();
@@ -131,9 +143,17 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 			sampler.On = false;
 			sampler.Cam.Clear();
 			sampler.Pup.Clear();
-			double elapsed = 0;
+			double elapsed = 0, nextShove = Warm + 0.5;
 			while (elapsed < Warm + Measured)
 			{
+				if (Authoritative && elapsed >= nextShove)
+				{
+					nextShove += ShoveEvery;
+					ServerBody mine = Server.Match.BodyOf(TestMatchServer.MeAccount);
+					// Um para cada lado: o círculo não vai saindo do lugar até bater em parede.
+					shoveSide = -shoveSide;
+					if (mine is { Alive: true }) mine.Body.GlobalPosition += new Vector3(Shove * shoveSide, 0, 0);
+				}
 				// Correndo em círculo (o jogador e o outro).
 				p.Rotation = new Vector3(0, p.Rotation.Y + TurnRate * (float)dt, 0);
 				if (other != null)
@@ -179,15 +199,47 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 		sampler.QueueFree();
 		Server.Latency = Server.Jitter = Server.Loss = Server.StallEvery = 0;
 
-		// A rede limpa é a régua: o tranco que aparece nela é do próprio movimento.
+		// A câmera: nenhum tranco nem volta no tempo, em nenhuma rede (nem com o
+		// servidor corrigindo o corpo). O boneco: a rede limpa é a régua (o
+		// tranco que aparece nela é do próprio movimento).
 		var clean = results[0];
+		foreach (var r in results)
+			b.Check(r.CamJolts == 0 && r.CamBack == 0,
+				$"{mode}, rede {r.Name}: a câmera não dá tranco nem volta no tempo ({r.CamJolts} trancos, {r.CamBack} para trás)");
 		foreach (var r in results.Skip(1))
 		{
-			b.Check(r.CamJolts <= clean.CamJolts + 1 && r.CamBack == 0,
-				$"{mode}, rede {r.Name}: a câmera não dá tranco nem volta no tempo ({r.CamJolts} trancos, limpa {clean.CamJolts}; {r.CamBack} para trás)");
 			b.Check(r.PupJolts <= clean.PupJolts + 2 && r.PupBack == 0,
 				$"{mode}, rede {r.Name}: o outro jogador anda liso, sem voltar no tempo ({r.PupJolts} trancos, limpa {clean.PupJolts}; {r.PupBack} para trás)");
 		}
+	}
+
+	/// <summary>Autoritativo: o outro jogador num lugar de chão a 8–12 m do corpo
+	/// deste jogo no mundo do servidor, sem nada de 3 m em volta (para correr em
+	/// círculo sem esbarrar), já de corpo no mundo.</summary>
+	private async Task<FakeOther> RunnerFarAway(RegressionBench b)
+	{
+		ServerBody mine = Server.Match.BodyOf(TestMatchServer.MeAccount);
+		var space = Server.World.Space;
+		Vector3 me = mine.Body.GlobalPosition;
+		// Do joelho para cima (o chão não conta): um cilindro de 2,6 m de raio.
+		var probe = new CylinderShape3D { Radius = 2.6f, Height = 1.4f };
+		for (float reach = 8f; reach <= 12f; reach += 1f)
+			for (int k = 0; k < 16; k++)
+			{
+				float a = k * Mathf.Tau / 16;
+				Vector3 c = me + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * reach;
+				var down = space.IntersectRay(PhysicsRayQueryParameters3D.Create(c + Vector3.Up * 0.5f, c + Vector3.Down * 3f));
+				if (down.Count == 0) continue;
+				Vector3 stand = (Vector3)down["position"] + Vector3.Up * 0.9f;
+				if (Mathf.Abs(stand.Y - me.Y) > 0.5f) continue;
+				var room = new PhysicsShapeQueryParameters3D { Shape = probe, Transform = new Transform3D(Basis.Identity, stand + Vector3.Up * 0.3f) };
+				if (space.IntersectShape(room, 1).Count > 0) continue;
+				var fake = new FakeOther(Server, stand, 0f, 0f);
+				fake.Status();
+				for (int i = 0; i < 40; i++) { fake.Step(); await b.PhysicsFrame(); }
+				return fake;
+			}
+		return null;
 	}
 
 	/// <summary>Repasse: o jogo do outro jogador conta onde ele está (30 por
