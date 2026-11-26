@@ -185,9 +185,10 @@ public static class Backend
 	public static Task<Reply> Inventory() => Call(HttpMethod.Get, "/v1/inventory");
 
 	/// <summary>Compra na loja do servidor. Ele confere preço, patente e
-	/// saldo: o jogo só diz o item e a duração.</summary>
-	public static Task<Reply> Buy(string itemId, Duration duration) =>
-		Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = itemId, ["duration"] = (int)duration });
+	/// saldo: o jogo só diz o item e a duração. O número do pedido (um por
+	/// clique) faz o mesmo pedido mandado de novo não comprar duas vezes.</summary>
+	public static Task<Reply> Buy(string itemId, Duration duration, string requestId) =>
+		Call(HttpMethod.Post, "/v1/shop/buy", new JsonObject { ["itemId"] = itemId, ["duration"] = (int)duration, ["requestId"] = requestId });
 
 	/// <summary>Joga fora um item do inventário da conta.</summary>
 	public static Task<Reply> Discard(string itemId) => Call(HttpMethod.Delete, $"/v1/inventory/{Uri.EscapeDataString(itemId)}");

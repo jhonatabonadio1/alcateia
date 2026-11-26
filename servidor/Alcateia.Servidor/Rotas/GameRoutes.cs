@@ -76,7 +76,7 @@ public static class GameRoutes
 		{
 			Account account = await s.Accounts.Require(Api.Token(ctx));
 			JsonObject body = await Api.Body(ctx);
-			PurchaseReceipt receipt = await s.Shop.Buy(account.Id, Api.Text(body, "itemId"), Api.Int(body, "duration", -1));
+			PurchaseReceipt receipt = await s.Shop.Buy(account.Id, Api.Text(body, "itemId"), Api.Int(body, "duration", -1), Api.Text(body, "requestId"));
 			await Api.Send(ctx, new JsonObject
 			{
 				["itemId"] = receipt.ItemId, ["currency"] = receipt.Currency, ["price"] = receipt.Price, ["balance"] = receipt.Balance,

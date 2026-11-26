@@ -259,6 +259,23 @@ public static class Schema
 			ip text not null default ''
 		);
 		create index audit_log_at on audit_log(at desc);
+		",
+
+		// 3 — compra com número de pedido (26/11): o mesmo pedido repetido
+		// (duplo clique, a rede mandando de novo) devolve o mesmo recibo e
+		// não cobra outra vez.
+		@"
+		create table purchase_requests (
+			account_id bigint not null references accounts(id) on delete cascade,
+			request_id text not null,
+			item_id text not null,
+			currency text not null,
+			price int not null,
+			balance bigint not null,
+			expires_at timestamptz,
+			at timestamptz not null default now(),
+			primary key (account_id, request_id)
+		);
 		"
 	};
 

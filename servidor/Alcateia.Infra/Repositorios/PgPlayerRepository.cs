@@ -139,11 +139,24 @@ public sealed class PgPlayerRepository : IPlayerRepository
 	public async Task<bool> Revoke(long accountId, string itemId) =>
 		(await _db.Query("delete from inventory where account_id = $1 and item_id = $2", accountId, itemId)).Affected > 0;
 
-	public Task<PurchaseReceipt> Purchase(long accountId, string itemId, Func<PurchaseContext, PurchaseDecision> decide) =>
+	public Task<PurchaseReceipt> Purchase(long accountId, string itemId, Func<PurchaseContext, PurchaseDecision> decide, string requestId = null) =>
 		_db.Transaction(async c =>
 		{
 			PgResult wallet = await c.Query("select xp, presas, sangue from profiles where account_id = $1 for update", accountId);
 			if (wallet.Empty) throw new Failure(FailureKind.NotFound, "conta_inexistente", "Essa conta não existe.");
+
+			// O mesmo pedido de novo: a carteira já está travada, então o segundo
+			// espera o primeiro acabar e encontra o recibo dele aqui.
+			if (!string.IsNullOrEmpty(requestId))
+			{
+				PgResult done = await c.Query("select item_id, currency, price, balance, expires_at from purchase_requests where account_id = $1 and request_id = $2", accountId, requestId);
+				if (!done.Empty)
+				{
+					if (done.Text(0, "item_id") != itemId)
+						throw new Failure(FailureKind.Conflict, "pedido_repetido", "Esse pedido já foi usado para outro item.");
+					return new PurchaseReceipt(itemId, done.Text(0, "currency"), done.Int(0, "price"), done.Long(0, "balance"), done.Date(0, "expires_at"));
+				}
+			}
 
 			PgResult has = await c.Query("select * from inventory where account_id = $1 and item_id = $2", accountId, itemId);
 			OwnedItem owned = has.Empty ? null : Owned(has, 0);
@@ -151,6 +164,9 @@ public sealed class PgPlayerRepository : IPlayerRepository
 			PurchaseDecision d = decide(new PurchaseContext(wallet.Long(0, "xp"), wallet.Long(0, "presas"), wallet.Long(0, "sangue"), owned));
 			long balance = await Adjust(c, accountId, d.Currency, -d.Price, "compra", itemId, null);
 			await Grant(c, accountId, itemId, d.ExpiresAt, "loja", d.Uses);
+			if (!string.IsNullOrEmpty(requestId))
+				await c.Query("insert into purchase_requests (account_id, request_id, item_id, currency, price, balance, expires_at) values ($1, $2, $3, $4, $5, $6, $7)",
+					accountId, requestId, itemId, d.Currency, d.Price, balance, d.ExpiresAt);
 			return new PurchaseReceipt(itemId, d.Currency, d.Price, balance, d.ExpiresAt);
 		});
 

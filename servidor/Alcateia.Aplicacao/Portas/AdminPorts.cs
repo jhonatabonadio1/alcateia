@@ -126,7 +126,10 @@ public interface IPlayerRepository
 	/// <summary>A compra, tudo ou nada: trava a carteira, pergunta à regra o
 	/// preço (<paramref name="decide"/> pode recusar), desconta, entrega e
 	/// escreve o extrato.</summary>
-	Task<PurchaseReceipt> Purchase(long accountId, string itemId, Func<PurchaseContext, PurchaseDecision> decide);
+	/// <summary>Compra dentro de uma transação que trava a carteira. Com
+	/// <paramref name="requestId"/>, o mesmo pedido repetido devolve o recibo
+	/// da primeira vez e não cobra de novo.</summary>
+	Task<PurchaseReceipt> Purchase(long accountId, string itemId, Func<PurchaseContext, PurchaseDecision> decide, string requestId = null);
 	Task<IReadOnlyList<LedgerEntry>> Ledger(long accountId, int limit);
 	Task<IReadOnlyList<(string ChallengeId, string PeriodKey, int Progress, bool Claimed)>> Progress(long accountId);
 	Task AddProgress(long accountId, string challengeId, string periodKey, int amount);
