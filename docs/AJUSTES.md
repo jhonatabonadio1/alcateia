@@ -450,7 +450,8 @@ dano passa pela resistência do corpo como qualquer outro.
 | Campo | Valor | O que faz |
 |---|---|---|
 | `MaxHp` | 200 | Vida máxima (o `FormController` define a pool) |
-| `RespawnDelay` | 3 s (bots: 6 s na cena) | Espera para renascer |
+| `RespawnDelay` | 10 s | Espera para renascer na partida, a mesma para todo mundo (26/11: era 10 s + 1 s por morte, até 15) |
+| `TrainingRespawnDelay` | 3 s | A espera no campo de treino (sem partida) |
 | `SpawnProtection` | 3 s | Imortal ao renascer, contra os outros: a própria granada fere do mesmo jeito (`Health.TakeOwnDamage`, 25/11) |
 | `RegenDelay` | 15 s | Sem levar dano por este tempo, a vida começa a voltar (0 desliga). O escudo não volta sozinho |
 | `RegenRate` | 0,08 | Fração da vida máxima que volta por segundo (do zero ao cheio em 12,5 s) |

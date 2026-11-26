@@ -44,16 +44,12 @@ public partial class Health : Node
 
 	[Export] public float MaxHp = 200f;
 	/// <summary>
-	/// A espera para renascer, na partida (pedido do Jhon, 18/11): no
-	/// mínimo <see cref="RespawnDelay"/> para todo mundo, e cada morte
-	/// soma <see cref="RespawnGrowth"/>, até <see cref="RespawnMax"/>.
-	/// Com 10 / 1 / 15 (decisão do Jhon, 18/11, à noite): 10 s, 11 s,
-	/// 12 s… e 15 s da sexta morte em diante. Fora de partida (treino) vale
-	/// <see cref="TrainingRespawnDelay"/>, curto, sem crescer.
+	/// A espera para renascer na partida: um tempo só, igual para todo mundo
+	/// (decisão do Jhon, 26/11: "o tempo de respawn passa a ser 1 só, 10 seg";
+	/// antes crescia 1 s a cada morte, até 15). Fora de partida (treino) vale
+	/// <see cref="TrainingRespawnDelay"/>, curto.
 	/// </summary>
 	[Export] public float RespawnDelay = 10f;
-	[Export] public float RespawnGrowth = 1f;
-	[Export] public float RespawnMax = 15f;
 	[Export] public float TrainingRespawnDelay = 3f;
 
 	/// <summary>Quantas vezes este corpo morreu na partida.</summary>
@@ -67,9 +63,7 @@ public partial class Health : Node
 	/// jogador esperou o bastante para renascer.</summary>
 	public bool MatchTimings { get; set; }
 
-	private float WaitFor(int deaths) => Match.Current == null && !MatchTimings
-		? TrainingRespawnDelay
-		: Mathf.Min(RespawnDelay + RespawnGrowth * Mathf.Max(deaths - 1, 0), Mathf.Max(RespawnMax, RespawnDelay));
+	private float Wait => Match.Current == null && !MatchTimings ? TrainingRespawnDelay : RespawnDelay;
 
 	/// <summary>Segundos de imortalidade ao renascer. Sem isso, quem
 	/// morre perto de um inimigo volta direto para a mesma morte.</summary>
@@ -425,7 +419,7 @@ public partial class Health : Node
 		Hp = 0;
 		Shield = 0;
 		Deaths++;
-		RespawnWait = WaitFor(Deaths);
+		RespawnWait = Wait;
 		_respawnTimer = RespawnWait;
 
 		EmitSignal(SignalName.Died, killerId);
