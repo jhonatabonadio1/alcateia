@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using System.Collections.Generic;
 
@@ -43,10 +44,17 @@ public partial class Grenade : RigidBody3D
 	/// <summary>O raio da explosão (m). Era 6,5; o Jhon pediu maior (20/11).</summary>
 	[Export] public float Radius = 9f;
 
-	/// <summary>Dano no centro da explosão. Cai linearmente até a borda: com 420
-	/// no centro, mata quem tem 200 de vida a até 4,7 m; a 7 m ainda tira 93.
-	/// (Era 260, que só matava colado; o Jhon pediu "bem maior", 20/11.)</summary>
-	[Export] public float MaxDamage = 420f;
+	/// <summary>Dano no centro da explosão. Cai linearmente até a borda: com 300
+	/// no centro, mata quem tem 200 de vida a até 3 m; a 6 m ainda tira 100.
+	/// (Era 260, que só matava colado; 420 em 20/11, "bem maior", que matava a
+	/// 4,7 m; 300 em 26/11, decisão do Jhon: "granada forte demais".)</summary>
+	[Export] public float MaxDamage = 300f;
+
+	/// <summary>Quanto acima do ponto da explosão sai a conferência de
+	/// visão: a granada pousada fica rente ao chão, e um raio saindo dela
+	/// raspava a junta da calçada. O servidor usa o mesmo número
+	/// (<see cref="HitCheck"/>).</summary>
+	public const float SightLift = 0.15f;
 
 	/// <summary>
 	/// O tipo da granada. **Fragmentação** (a do jogo desde 19/11): a
@@ -268,6 +276,9 @@ public partial class Grenade : RigidBody3D
 			float distance = GlobalPosition.DistanceTo(body.GlobalPosition);
 			float falloff = Mathf.Clamp(1f - distance / Radius, 0f, 1f);
 			if (falloff <= 0) continue;
+			// Parede e barreira protegem (Jhon, 26/11: "área de efeito da granada
+			// atravessa paredes, não deve acontecer mais").
+			if (!Exposed(body)) continue;
 
 			var health = body.GetNodeOrNull<Health>("Health");
 
@@ -328,6 +339,74 @@ public partial class Grenade : RigidBody3D
 	}
 
 	private Weapon ThrowerWeapon => Thrower?.GetParent()?.GetNodeOrNull<Weapon>("Weapon");
+
+	/// <summary>A menor fresta por onde a explosão passa (m). Um raio fino
+	/// passava pela junta entre duas peças da parede, pela fresta de uma
+	/// porta ou pelo vão de 2 cm entre o muro e a calçada, e a granada feria
+	/// do outro lado; a conferência agora anda com uma bola desse diâmetro.</summary>
+	[Export] public float SightGap = 0.1f;
+
+	/// <summary>
+	/// A explosão enxerga o corpo (Jhon, 26/11: "área de efeito da granada
+	/// atravessa paredes, não deve acontecer mais"): algum dos pontos dele
+	/// (a cabeça, o peito, o meio, os joelhos e os dois lados do peito — os
+	/// mesmos que o servidor confere, <see cref="HitRules.TargetPoints"/>) tem
+	/// caminho livre até o ponto da explosão, sem parede, barreira nem
+	/// cenário no meio. Vários pontos para a quina não decidir sozinha: quem
+	/// está meio escondido atrás de um caixote ainda leva. O caminho é
+	/// conferido com uma bola de <see cref="SightGap"/>, não com um raio:
+	/// fresta mais fina que isso não deixa passar. Outro corpo na frente não
+	/// protege (o mesmo que o tiro, que passa por aliado).
+	///
+	/// O servidor autoritativo confere com um raio só
+	/// (<see cref="HitCheck"/>): quem passa aqui passa lá (um caminho livre
+	/// para a bola é livre para o raio do meio dela), então ele nunca recusa
+	/// a explosão honesta.
+	/// </summary>
+	public bool Exposed(Node3D body)
+	{
+		PhysicsDirectSpaceState3D space = GetWorld3D()?.DirectSpaceState;
+		if (space == null) return true;
+
+		var exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		foreach (string group in Groups.Fighters)
+			foreach (Node node in GetTree().GetNodesInGroup(group))
+				if (node is CollisionObject3D fighter) exclude.Add(fighter.GetRid());
+		if (body is CollisionObject3D own) exclude.Add(own.GetRid());
+
+		float height = body.GetNodeOrNull<CollisionShape3D>("CollisionShape3D")?.Shape is CapsuleShape3D capsule ? capsule.Height : 1.75f;
+		Vector3 from = GlobalPosition + Vector3.Up * SightLift;
+		Span<System.Numerics.Vector3> points = stackalloc System.Numerics.Vector3[6];
+		int count = HitRules.TargetPoints(body.GlobalPosition.ToNumerics(), height, from.ToNumerics(), points);
+		for (int i = 0; i < count; i++)
+			if (PathClear(space, from, new Vector3(points[i].X, points[i].Y, points[i].Z), exclude)) return true;
+		return false;
+	}
+
+	/// <summary>A bola de <see cref="SightGap"/> anda da explosão até o ponto
+	/// sem bater em nada. Se ela já nasce encostada (a granada parou colada
+	/// na parede ou no chão), vale o raio do meio: o lado em que a granada
+	/// está é o lado que ela enxerga.</summary>
+	private bool PathClear(PhysicsDirectSpaceState3D space, Vector3 from, Vector3 to, Godot.Collections.Array<Rid> exclude)
+	{
+		var ray = PhysicsRayQueryParameters3D.Create(from, to);
+		ray.Exclude = exclude;
+		ray.CollideWithAreas = false;
+		if (space.IntersectRay(ray).Count > 0) return false;
+		if (SightGap <= 0f) return true;
+
+		var ball = new PhysicsShapeQueryParameters3D
+		{
+			Shape = new SphereShape3D { Radius = SightGap * 0.5f },
+			Transform = new Transform3D(Basis.Identity, from),
+			Exclude = exclude,
+			CollideWithAreas = false
+		};
+		if (space.IntersectShape(ball, 1).Count > 0) return true;
+		ball.Motion = to - from;
+		float[] reach = space.CastMotion(ball);
+		return reach.Length == 0 || reach[0] >= 0.999f;
+	}
 
 	/// <summary>Abate de granada conta como qualquer outro: entra no
 	/// feed, no placar e rende o WP de quem lançou.</summary>
