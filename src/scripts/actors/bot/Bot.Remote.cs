@@ -186,6 +186,20 @@ public partial class Bot
 	/// </summary>
 	public void RemoteSnapshot(Vector3 position, Vector3 velocity, float yaw, float pitch, bool grounded, Form form, Slot slot)
 	{
+		RemoteInterpolated(position, velocity, yaw, pitch, grounded);
+		_form.RemoteSet(form);
+		if (!_form.IsWolf) _weapon.RemoteHold(_netPrimary, _netSecondary, slot);
+	}
+
+	/// <summary>
+	/// A pose do dono já interpolada entre dois estados, um pouco no passado
+	/// (a partida autoritativa, e a de repasse quando o dono conta o instante
+	/// de cada estado, desde 26/11). O boneco vai exatamente para lá a cada
+	/// passo; a notícia que chega (<see cref="RemoteUpdate"/>) passa a dizer só
+	/// a vida, a forma e as armas.
+	/// </summary>
+	public void RemoteInterpolated(Vector3 position, Vector3 velocity, float yaw, float pitch, bool grounded)
+	{
 		_netInterpolated = true;
 		_netPosition = position;
 		_netVelocity = velocity;
@@ -200,9 +214,6 @@ public partial class Bot
 			RemotePresent(true);
 			_netKnown = true;
 		}
-
-		_form.RemoteSet(form);
-		if (!_form.IsWolf) _weapon.RemoteHold(_netPrimary, _netSecondary, slot);
 	}
 
 	/// <summary>Partida autoritativa: vida, escudo e armas do dono (Status).</summary>
@@ -252,11 +263,16 @@ public partial class Bot
 		Form form, Slot slot, string primary, string secondary,
 		float hp, float maxHp, float shield, float maxShield, bool dead)
 	{
-		_netPosition = position;
-		_netVelocity = velocity;
-		_netYaw = yaw;
-		_netPitch = pitch;
-		_netGrounded = grounded;
+		// Desenhado pelo caminho interpolado (o dono conta o instante): a pose
+		// vem de lá; a notícia diz o resto.
+		if (!_netInterpolated)
+		{
+			_netPosition = position;
+			_netVelocity = velocity;
+			_netYaw = yaw;
+			_netPitch = pitch;
+			_netGrounded = grounded;
+		}
 		_netAge = 0;
 
 		if (!_netKnown)

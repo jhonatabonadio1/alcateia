@@ -111,12 +111,17 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 		}
 		if (other != null) other.Move = 127;
 
-		Vector3 center = p.GlobalPosition + new Vector3(4f, 0f, 0f);
+		// Repasse: o outro corre num lugar aberto, longe, no mundo deste jogo.
+		Vector3 center = Vector3.Inf;
 		if (!Authoritative)
 		{
-			var space = p.GetWorld3D().DirectSpaceState;
-			var down = space.IntersectRay(PhysicsRayQueryParameters3D.Create(center + Vector3.Up * 2f, center + Vector3.Down * 4f));
-			if (down.Count > 0) center = (Vector3)down["position"] + Vector3.Up * 0.875f;
+			center = OpenSpot(p.GetWorld3D().DirectSpaceState, p.GlobalPosition) ?? Vector3.Inf;
+			if (center == Vector3.Inf)
+			{
+				b.Check(false, "achou lugar aberto para o outro jogador correr");
+				return;
+			}
+			center += Vector3.Up * 0.875f;
 		}
 
 		var sampler = new Sampler();
@@ -213,33 +218,39 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 		}
 	}
 
-	/// <summary>Autoritativo: o outro jogador num lugar de chão a 8–12 m do corpo
-	/// deste jogo no mundo do servidor, sem nada de 3 m em volta (para correr em
-	/// círculo sem esbarrar), já de corpo no mundo.</summary>
-	private async Task<FakeOther> RunnerFarAway(RegressionBench b)
+	/// <summary>Um lugar de chão a 8–12 m de <paramref name="from"/>, na mesma
+	/// altura, sem nada de 2,6 m em volta do joelho para cima (para correr em
+	/// círculo sem esbarrar). O ponto é o chão.</summary>
+	private static Vector3? OpenSpot(PhysicsDirectSpaceState3D space, Vector3 from)
 	{
-		ServerBody mine = Server.Match.BodyOf(TestMatchServer.MeAccount);
-		var space = Server.World.Space;
-		Vector3 me = mine.Body.GlobalPosition;
 		// Do joelho para cima (o chão não conta): um cilindro de 2,6 m de raio.
 		var probe = new CylinderShape3D { Radius = 2.6f, Height = 1.4f };
 		for (float reach = 8f; reach <= 12f; reach += 1f)
 			for (int k = 0; k < 16; k++)
 			{
 				float a = k * Mathf.Tau / 16;
-				Vector3 c = me + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * reach;
+				Vector3 c = from + new Vector3(Mathf.Cos(a), 0, Mathf.Sin(a)) * reach;
 				var down = space.IntersectRay(PhysicsRayQueryParameters3D.Create(c + Vector3.Up * 0.5f, c + Vector3.Down * 3f));
 				if (down.Count == 0) continue;
-				Vector3 stand = (Vector3)down["position"] + Vector3.Up * 0.9f;
-				if (Mathf.Abs(stand.Y - me.Y) > 0.5f) continue;
-				var room = new PhysicsShapeQueryParameters3D { Shape = probe, Transform = new Transform3D(Basis.Identity, stand + Vector3.Up * 0.3f) };
+				Vector3 floor = (Vector3)down["position"];
+				if (Mathf.Abs(floor.Y + 0.9f - from.Y) > 0.5f) continue;
+				var room = new PhysicsShapeQueryParameters3D { Shape = probe, Transform = new Transform3D(Basis.Identity, floor + Vector3.Up * 1.2f) };
 				if (space.IntersectShape(room, 1).Count > 0) continue;
-				var fake = new FakeOther(Server, stand, 0f, 0f);
-				fake.Status();
-				for (int i = 0; i < 40; i++) { fake.Step(); await b.PhysicsFrame(); }
-				return fake;
+				return floor;
 			}
 		return null;
+	}
+
+	/// <summary>Autoritativo: o outro jogador num lugar aberto (<see cref="OpenSpot"/>)
+	/// no mundo do servidor, já de corpo no mundo.</summary>
+	private async Task<FakeOther> RunnerFarAway(RegressionBench b)
+	{
+		ServerBody mine = Server.Match.BodyOf(TestMatchServer.MeAccount);
+		if (OpenSpot(Server.World.Space, mine.Body.GlobalPosition) is not Vector3 floor) return null;
+		var fake = new FakeOther(Server, floor + Vector3.Up * 0.9f, 0f, 0f);
+		fake.Status();
+		for (int i = 0; i < 40; i++) { fake.Step(); await b.PhysicsFrame(); }
+		return fake;
 	}
 
 	/// <summary>Repasse: o jogo do outro jogador conta onde ele está (30 por
@@ -254,7 +265,9 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 		{
 			Position = at, Velocity = velocity, Yaw = Mathf.Atan2(-velocity.X, -velocity.Z), Grounded = true,
 			Form = (byte)Form.Human, Slot = (byte)Slot.Primary, Hp = 200, MaxHp = 200,
-			Primary = "m4a4", Secondary = "deagle", HasGear = true
+			Primary = "m4a4", Secondary = "deagle", HasGear = true,
+			// Como o jogo manda desde 26/11: o instante, no relógio de quem manda.
+			HasTime = true, Time = Engine.GetPhysicsFrames() / (double)Engine.PhysicsTicksPerSecond + 1000
 		};
 		BinaryWriter w = NetWire.Begin(NetWire.State, out MemoryStream stream);
 		state.Write(w);
