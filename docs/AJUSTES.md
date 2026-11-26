@@ -87,10 +87,11 @@ o renascer do bot (6 s).
 | `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Andando em pé e na parede: quanto a animação corre em relação ao corpo (1 acompanha, 0,7 é 30% mais lenta; a pata desliza a diferença). De quatro, o mesmo (acompanha o corpo). Só a animação. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
 | `WalkSpeedFactor` | 0,42 | Velocidade andando com Shift (só humano) |
 | `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula em pé (as duas formas) e agachada do lobo |
-| `HumanCrouchHeight` | 1,5 m (era 1,3, e antes 1,0, a do lobo) | A cápsula agachada do humano: leva a cabeça do corpo agachado (o olho a ~135 cm). Passar agachado por baixo de algo pede esse vão |
-| `CrouchWalkTrim` / `CrouchAim` / `CrouchWalkSpeed` (nó `Human`) | 0 / 0 / 0,6 | O agachado é o "Crouch Walking" do Mixamo inteiro (26/11): sem corte no clipe, sem a pose de mira em pé no tronco (o tronco inclina como no clipe); o parado é um instante dele com os dois pés no chão |
+| `HumanCrouchHeight` | 1,5 m (era 1,3, e antes 1,0, a do lobo) | A cápsula agachada do humano: leva a cabeça do corpo agachado (o olho a ~134 cm). Passar agachado por baixo de algo pede esse vão |
+| `CrouchWalkTrim` / `CrouchAim` / `CrouchWalkSpeed` (nó `Human`) | 0 / 0 / 0,6 | O agachado é o "Crouch Walking" do Mixamo inteiro (26/11): sem corte no clipe, sem a pose de mira em pé no tronco (da cintura para cima quem segura a arma é a animação dela, a mesma de pé); o parado é o instante de passada mais aberta dele, com os dois pés retos no chão |
+| `FootBones` / `SoleBand` (`AnimationKit.Legs`, código) | pés esquerdo e direito / 0,015 m | O pé copia o giro a partir do repouso, não a direção do osso (o ângulo do osso do pé muda de rig para rig). Nos clipes agachados a perna dobra até a sola (a pele do pé até 1,5 cm acima do ponto mais baixo da bota em repouso) não passar do chão |
 | `StandEyeHeight` / `CrouchEyeHeight` | 0,6 / 0,1 m | O olho do lobo (o pivô da câmera de 3ª pessoa) a partir do centro da cápsula. Em pé era 0,62 no código e 0,6 na cena (o que valia) |
-| `HumanEyeHeight` / `HumanCrouchEyeHeight` | 1,592 / 1,092 m acima dos pés (eram 1,475 e 0,60) | O olho do humano = o olho do corpo visto (26/11: "o nível de agachamento deve ser idêntico ao de 3ª pessoa"). O `CharacterAnimator` lê no corpo desenhado, parado e de cabeça reta, e afina estes (`TuneHumanEye`, a `EyeTuneSpeed` 0,4 m/s): Eve 159,3 / 108,6 cm, Barut 159,1 / 109,8 cm. Os de fábrica valem para o corpo sem modelo (o servidor de partida) |
+| `HumanEyeHeight` / `HumanCrouchEyeHeight` | 1,592 / 1,092 m acima dos pés (eram 1,475 e 0,60) | O olho do humano = o olho do corpo visto (26/11: "o nível de agachamento deve ser idêntico ao de 3ª pessoa"). O `CharacterAnimator` lê no corpo desenhado, parado e de cabeça reta, e afina estes (`TuneHumanEye`, a `EyeTuneSpeed` 0,4 m/s): Eve 159,3 / 133,9 cm, Barut 159,1 / 134,4 cm (26/11). Os de fábrica valem para o corpo sem modelo (o servidor de partida) |
 | `EyeInHead` (`personagem.tres` de cada personagem) | Eve (0; 0,066; 0,085), Barut (0; 0,085; 0,094) | O meio dos dois olhos no espaço do osso da cabeça, medido na malha (`src/tools/personagens/olhos.py`). Modelo novo: meça de novo |
 | `CrouchWalkSpeed` (nó `Human`) | 0,6 m/s (era 1,9) | Andando agachado a partir disto o clipe de andar toca inteiro (a mistura com o parado enfiava a ponta do pé 16 cm no chão) |
 | `CrouchLerpSpeed` | 22 | Rapidez de agachar e levantar |
@@ -811,8 +812,9 @@ nó é criado por código):
 | idem | `LeftEye` / `RightEye` | (6,47; 15,64; 22,7) / (−1,03; 15,58; 24,43) cm | Onde ficam os olhos no osso da cabeça, 2 cm à frente da pele, medidos no miolo aceso da emissão do modelo (o mesmo rosto nos dois times). Modelo novo: meça de novo |
 | `WolfFx` | `EyeBoost` | 0,8 | Quanto o brilho dos olhos sobe com o poder (1 + isto × o neon do poder) |
 
-**Humano** (`src/scripts/visual/human/`, nó `Human`): `CrouchAim` 1
-(fuzil no ombro agachado), `BlendSmoothing` 9, `HitCooldown` 1,6 s,
+**Humano** (`src/scripts/visual/human/`, nó `Human`): `CrouchAim` 0
+(desde 26/11 o tronco agachado é o do clipe, e a arma é segurada pela
+animação dela, a mesma de pé), `BlendSmoothing` 9, `HitCooldown` 1,6 s,
 `CorpseHold` / `CorpseFade` 1,2 s, `TintByTeam`, `BlueBody`,
 `OrangeBody`.
 

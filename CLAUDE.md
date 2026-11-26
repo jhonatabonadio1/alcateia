@@ -188,13 +188,16 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
 11. **Agachar vale nas duas formas.** Encolhe a cápsula, baixa o olho
 	e corta a velocidade para 45%. Não se agacha na parede — a corrida
 	já é um estado de corpo inteiro. **O corpo visto agacha junto**: o
-	humano usa o "Crouch Walking" do Mixamo inteiro, tronco inclinado e
-	braços do clipe (decisão do Jhon, 26/11: "do jeito que está, adaptado à
-	altura dela"), o parado um instante dele; e o lobo encolhe parado e
-	engatinha andando (veja "Clipes do lobo"). A câmera da 1ª pessoa fica nos
-	olhos desse corpo (~135 cm), e a cápsula agachada do humano tem 1,5 m (a
-	do lobo, 1,0). Teste:
-	`OlhoNoCorpoEve`, `OlhoNoCorpoBarut` (até 1 cm).
+	humano usa o "Crouch Walking" do Mixamo inteiro (decisão do Jhon, 26/11:
+	"do jeito que está, adaptado à altura dela"), com o pé e a perna
+	ajustados ao corpo (`AnimationKit.Legs`: pé reto, sola no chão); o
+	parado é o instante de passada mais aberta dele, os dois pés retos; a
+	arma fica na mão como de pé, reta ("fuzil precisa ficar reto"). O lobo
+	encolhe parado e engatinha andando (veja "Clipes do lobo"). A câmera da
+	1ª pessoa fica nos olhos desse corpo (~134 cm), e a cápsula agachada do
+	humano tem 1,5 m (a do lobo, 1,0). Testes: `OlhoNoCorpoEve`,
+	`OlhoNoCorpoBarut` (até 1 cm), `PeNoChaoEve`, `PeNoChaoBarut`,
+	`AgachadoMira`.
 
 ---
 

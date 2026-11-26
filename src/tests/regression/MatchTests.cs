@@ -176,24 +176,44 @@ public sealed class BotsHuntTest : RegressionTest
 	}
 }
 
-/// <summary>Humano agacha e atira (v0.26.10): o tronco agachado usa a
-/// pose de mira de pé, fuzil no ombro.</summary>
+/// <summary>Humano agacha e atira (v0.26.10). Até 26/11 o tronco agachado
+/// misturava a pose de mira de pé (CrouchAim 1); desde que o agachado é o
+/// "Crouch Walking" do Mixamo inteiro (Jhon, 26/11: "use o da mixamo, a
+/// animação completa"), da cintura para cima quem segura a arma é a animação
+/// dela (HoldClips), a mesma de pé, com o peito como no Blender. O que vale:
+/// agachado, o cano aponta para onde aponta de pé ("fuzil precisa ficar reto,
+/// como no da mixamo"), e o tiro sai.</summary>
 public sealed class CrouchAimTest : RegressionTest
 {
 	public override string Name => "AgachadoMira";
-	public override string Description => "o humano agachado fica com o fuzil no ombro e atira";
+	public override string Description => "o humano agachado segura o fuzil reto, como em pé, e atira";
+
+	/// <summary>Para onde o cano da arma vista de fora aponta, em graus acima do horizonte.</summary>
+	private static float Barrel(Player p)
+	{
+		HeldRig rig = p.FindChildren("*", "", true, false).OfType<HeldRig>().FirstOrDefault(r => r.Visible);
+		if (rig == null) return float.NaN;
+		Vector3 f = rig.GunForward();
+		return Mathf.RadToDeg(Mathf.Atan2(f.Y, new Vector2(f.X, f.Z).Length()));
+	}
 
 	public override async Task Run(RegressionBench b)
 	{
 		b.RemoveBots();
 		await b.Place(new Vector3(-15, 1, 13), -90f);
+		await b.Seconds(1.0);
+		float standing = Barrel(b.Player);
 		RegressionBench.Press("crouch");
-		await b.Seconds(0.6);
+		await b.Seconds(1.0);
 
 		var tree = b.Player.GetNode("Human").FindChildren("*", "AnimationTree", true, false).OfType<AnimationTree>().First();
 		var playback = (AnimationNodeStateMachinePlayback)tree.Get("parameters/Machine/playback");
 		b.Check(playback.GetCurrentNode() == "Crouch", $"estado da animação: {playback.GetCurrentNode()}");
-		b.Near(1.0, (float)tree.Get("parameters/Machine/Crouch/AimBlend/blend_amount"), 0.001, "tronco na pose de mira");
+		float crouched = Barrel(b.Player);
+		RegressionBench.Note($"cano da arma vista de fora: em pé {RegressionBench.F(standing)}°, agachado {RegressionBench.F(crouched)}° (olhando reto)");
+		// Medido em 26/11: -4,0° nos dois (AR-15, AK-74, M4A4, SCAR e SVD).
+		b.AtMost(1.0, Mathf.Abs(crouched - standing), "agachado, o cano aponta como em pé (graus de diferença)");
+		b.AtMost(6.0, Mathf.Abs(crouched), "agachado, olhando reto, o cano fica reto (graus)");
 
 		int before = b.Weapon.PrimaryAmmo;
 		RegressionBench.Press("attack");

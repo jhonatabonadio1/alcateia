@@ -123,8 +123,12 @@ public partial class CharacterAnimator
 				if (!SameRig(body, _model, FindSkeleton(temp), temp))
 				{
 					// Outro rig com os nomes do Mixamo: reorienta osso a osso e
-					// leva o quadril ao espaço e à altura do corpo.
-					FitToBody(animation, temp, body, _model, bodyPath);
+					// leva o quadril ao espaço e à altura do corpo. O agachado é
+					// de outro personagem, de pernas de outra proporção: as pernas
+					// dobram até o pé pousar onde o do clipe pousa, sem a sola
+					// passar do chão (AnimationKit.Legs). Nos clipes de pé isso
+					// mudava a passada medida (PassadaHumana, para trás 0,36 → 0,55).
+					FitToBody(animation, temp, body, _model, bodyPath, reachFloor: clip.StartsWith("crouch"));
 					// Ombros mais altos e braços mais curtos que os do X Bot: o
 					// fuzil chega mais perto do rosto, e a cabeça inclinada do
 					// clipe entrava na coronha. Ela sobe um pouco.
@@ -156,7 +160,7 @@ public partial class CharacterAnimator
 
 				// Sem clipe de agachado parado, a pose do andar agachado com os dois pés no chão.
 				if (clip == "crouch_walk" && !library.HasAnimation("crouch_idle")
-					&& CrouchIdle(animation, body, bodyPath) is Animation idle)
+					&& CrouchIdle(animation, body, bodyPath, _model) is Animation idle)
 					library.AddAnimation("crouch_idle", idle);
 			}
 

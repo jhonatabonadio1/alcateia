@@ -8,7 +8,7 @@ using System.Collections.Generic;
 /// o quadril a outro corpo, achar o esqueleto, filtrar a metade de cima do
 /// corpo e ligar estados da máquina. Antes cada um tinha a sua cópia.
 /// </summary>
-public static class AnimationKit
+public static partial class AnimationKit
 {
 	/// <summary>
 	/// A animação de verdade do tocador de origem.
@@ -408,13 +408,21 @@ public static class AnimationKit
 	/// <see cref="RetargetPose"/> (a direção no mundo, não o giro local).
 	/// Só o quadril anda; escala e posição dos outros ossos saem. O mesmo
 	/// ajuste que o lobo faz com os clipes do Jhon (WolfOwnClips.Fit).
+	///
+	/// O pé não copia a direção do osso: copia o giro a partir do repouso
+	/// (<see cref="FootBones"/>). Com <paramref name="reachFloor"/>, as pernas
+	/// ainda se ajustam para o tornozelo pousar onde o do clipe pousa
+	/// (<see cref="ReachFloor"/>).
 	/// </summary>
-	public static void FitToBody(Animation animation, Node clipRoot, Skeleton3D body, Node bodyRoot, string bodyPath)
+	public static void FitToBody(Animation animation, Node clipRoot, Skeleton3D body, Node bodyRoot, string bodyPath,
+		bool reachFloor = false)
 	{
 		Skeleton3D reference = FindSkeleton(clipRoot);
 		if (reference == null || body == null) return;
 		int refHips = reference.FindBone("mixamorig_Hips");
 		int bodyHips = body.FindBone("mixamorig_Hips");
+		// O clipe como veio, para saber onde o tornozelo dele pousa.
+		Animation source = reachFloor ? (Animation)animation.Duplicate() : null;
 
 		for (int track = animation.GetTrackCount() - 1; track >= 0; track--)
 		{
@@ -432,7 +440,10 @@ public static class AnimationKit
 			MoveHips(animation, reference, refHips, fr, body, bodyHips, fb);
 
 		RetargetPose(animation, reference, body,
-			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion());
+			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion(),
+			FootBones);
+
+		if (source != null) ReachFloor(animation, source, reference, fr, body, bodyRoot, fb);
 	}
 
 	/// <summary>

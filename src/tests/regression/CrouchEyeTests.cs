@@ -96,8 +96,11 @@ public abstract class CrouchEyeTest : RegressionTest
 		// Reto, e mais alto (Jhon, 26/11: "eles estão muito agachados ainda,
 		// precisam ficar mais altos", +20 cm sobre o joelho no chão): os olhos
 		// ~19 cm abaixo dos de pé (~140 cm).
+		// Desde 26/11 o parado é o instante de passada mais aberta do andar (os dois
+		// pés retos no chão, um à frente do outro): 1 cm mais baixo que o meio do
+		// passo, os olhos descem ~25,4 cm na Eve.
 		b.AtLeast(0.15, standEye - crouchEye, $"{Who}: agachado, os olhos do corpo visto descem (m)");
-		b.AtMost(0.25, standEye - crouchEye, $"{Who}: mas não fundo demais (m)");
+		b.AtMost(0.265, standEye - crouchEye, $"{Who}: mas não fundo demais (m)");
 
 		// Parado agachado: nada da pele no chão, a cabeça de acerto com a cabeça
 		// que se vê, e o pé parado (o clipe de andar agachado não anda no lugar).
@@ -121,8 +124,10 @@ public abstract class CrouchEyeTest : RegressionTest
 		RegressionBench.ReleaseAll();
 		RegressionBench.Note($"{Who} agachado: pele mais baixa {RegressionBench.F(low * 100 - feet * 100)} cm dos pés (em pé {RegressionBench.F((standLow - feet) * 100)}), peça da cabeça {RegressionBench.F((piece.Y - feet) * 100)} cm (olhos a {RegressionBench.F(eyeNow * 100)}), o pé parado andou {RegressionBench.F(wander * 100)} cm em 1 s");
 		// O andar agachado é o clipe do Mixamo inteiro (Jhon, 26/11: "do jeito que
-		// está"): a bota entra até 2 cm a mais que em pé.
-		b.AtLeast(standLow - 0.02, low, $"{Who}: agachado, nenhuma pele entra no chão mais que em pé (m)");
+		// está"), com o pé e a perna ajustados ao corpo (AnimationKit.Legs): a bota
+		// não entra no chão (era -2,9 cm na Eve e -4,4 no Barut; o ciclo do andar
+		// está no PeNoChaoEve/Barut).
+		b.AtLeast(-0.005, low - feet, $"{Who}: agachado, nenhuma pele entra no chão (m)");
 		b.Check(hasHead && piece.Y - feet > eyeNow - 0.08f && piece.Y - feet < eyeNow + 0.12f, $"{Who}: a peça de acerto da cabeça desce com a cabeça que se vê");
 		b.AtMost(0.01, wander, $"{Who}: parado agachado, o pé fica parado (m em 1 s; era 0,31, andando no lugar)");
 	}
