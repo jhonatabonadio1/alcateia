@@ -1081,7 +1081,10 @@ public partial class Player
 		Vector3 face = byFace ? _faceNormal : _wallNormal;
 		Vector3 along = byFace ? _faceAlong : _wallAlong;
 		Vector3 edge = GlobalPosition - normal * distance;
-		Vector3 from = edge + along * 0.4f - face * WallWrapMinFace;
+		// Um pouco antes da largura mínima: a mureta de exatamente 25 cm, medida
+		// pela face, deixava o raio raspar no plano de trás e passar direto (o
+		// lobo saía reto na ponta dela; até 26/11 contornava).
+		Vector3 from = edge + along * 0.4f - face * (WallWrapMinFace * 0.92f);
 
 		var query = PhysicsRayQueryParameters3D.Create(from, from - along * 0.7f);
 		query.Exclude = new Godot.Collections.Array<Rid> { GetRid() };
