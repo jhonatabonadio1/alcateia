@@ -172,13 +172,25 @@ public partial class CharacterAnimator
 		if (left < 0 || right < 0) return null;
 		Vector3 up = (body.GlobalBasis.Inverse() * Vector3.Up).Normalized();
 
-		double best = 0;
-		float lowest = float.MaxValue;
+		// Entre os instantes com os dois pés no chão (até 2 cm do mais baixo),
+		// o de cabeça mais perto da altura média do passo: parado e andando
+		// agachado, o olho fica na mesma altura (a câmera é uma só; 26/11).
+		int head = body.FindBone("mixamorig_Head");
+		float meters = Mathf.Max((body.GlobalBasis * up).Length(), 1e-6f);
+		var times = new System.Collections.Generic.List<(double T, float High, float Head)>();
 		for (double t = 0; t <= walk.Length; t += 1.0 / KneelRate)
 		{
 			float high = Mathf.Max(Global(walk, body, bodyPath, left, t).Origin.Dot(up), Global(walk, body, bodyPath, right, t).Origin.Dot(up));
-			if (high < lowest) { lowest = high; best = t; }
+			float h = head >= 0 ? Global(walk, body, bodyPath, head, t).Origin.Dot(up) : 0f;
+			times.Add((t, high, h));
 		}
+		float lowest = float.MaxValue, mean = 0;
+		foreach (var x in times) { lowest = Mathf.Min(lowest, x.High); mean += x.Head; }
+		mean /= Mathf.Max(times.Count, 1);
+		double best = 0;
+		float closest = float.MaxValue;
+		foreach (var x in times)
+			if (x.High <= lowest + 0.02f / meters && Mathf.Abs(x.Head - mean) < closest) { closest = Mathf.Abs(x.Head - mean); best = x.T; }
 
 		var idle = new Animation { Length = 1f, LoopMode = Animation.LoopModeEnum.Linear };
 		for (int track = 0; track < walk.GetTrackCount(); track++)

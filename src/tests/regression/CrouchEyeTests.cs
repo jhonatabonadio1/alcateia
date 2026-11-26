@@ -88,6 +88,41 @@ public abstract class CrouchEyeTest : RegressionTest
 
 		float standEye = rows[0].Eye, crouchEye = rows[2].Eye;
 		RegressionBench.Note($"{Who}: agachado, os olhos descem {RegressionBench.F((standEye - crouchEye) * 100)} cm");
+		// O corpo visto agachava pouco: os olhos desciam ~10 cm e a câmera 87,5 (26/11).
+		b.AtLeast(0.45, standEye - crouchEye, $"{Who}: agachado, os olhos do corpo visto descem fundo (m)");
+
+		// Parado agachado: nada da pele no chão, a cabeça de acerto com a cabeça
+		// que se vê, e o pé parado (o clipe de andar agachado não anda no lugar).
+		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.3);
+		float standLow = LowestSkin(b.Player);
+		RegressionBench.Press("crouch");
+		await b.Seconds(1.0);
+		float feet = b.Player.GlobalPosition.Y + b.Player.FeetOffset;
+		float low = LowestSkin(b.Player);
+		bool hasHead = BodyHitbox.TryGetHead(b.Player, out Vector3 piece, out _);
+		float eyeNow = b.Player.GetNode<CharacterAnimator>("Human").EyePosition.Y - feet;
+		Skeleton3D sk = SkinSilhouette.VisibleSkeleton(b.Player);
+		int foot = sk.FindBone("mixamorig_LeftFoot");
+		Vector3 first = sk.GlobalTransform * sk.GetBoneGlobalPose(foot).Origin;
+		float wander = 0f;
+		for (int i = 0; i < 30; i++)
+		{
+			await b.Frames(2);
+			wander = Mathf.Max(wander, (sk.GlobalTransform * sk.GetBoneGlobalPose(foot).Origin).DistanceTo(first));
+		}
+		RegressionBench.ReleaseAll();
+		RegressionBench.Note($"{Who} agachado: pele mais baixa {RegressionBench.F(low * 100 - feet * 100)} cm dos pés (em pé {RegressionBench.F((standLow - feet) * 100)}), peça da cabeça {RegressionBench.F((piece.Y - feet) * 100)} cm (olhos a {RegressionBench.F(eyeNow * 100)}), o pé parado andou {RegressionBench.F(wander * 100)} cm em 1 s");
+		b.AtLeast(standLow - 0.015, low, $"{Who}: agachado, nenhuma pele entra no chão mais que em pé (m)");
+		b.Check(hasHead && piece.Y - feet > eyeNow - 0.08f && piece.Y - feet < eyeNow + 0.12f, $"{Who}: a peça de acerto da cabeça desce com a cabeça que se vê");
+		b.AtMost(0.01, wander, $"{Who}: parado agachado, o pé fica parado (m em 1 s; era 0,31, andando no lugar)");
+	}
+
+	/// <summary>O ponto mais baixo da pele do corpo visto, no mundo.</summary>
+	private static float LowestSkin(Player p)
+	{
+		Node3D model = SkinSilhouette.VisibleSkeleton(p).GetParent<Node3D>();
+		while (model.GetParent() is Node3D up && up is not CharacterAnimator) model = up;
+		return SkinPoints.Lowest(model).Low;
 	}
 }
 
