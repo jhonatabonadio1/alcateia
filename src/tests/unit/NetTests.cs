@@ -166,41 +166,17 @@ public static class NetTests
 		Check.True(b.Next(out c, out _) && c.Seq == 7, "o perdido que chega tarde não vale mais (o passo dele já foi dado)");
 	}
 
-	[Test("fila de comandos: funda demais por meio segundo, apressa devagar até voltar; o engasgo curto não apressa")]
+	[Test("fila de comandos: funda demais, consome dois por passo até voltar; recuperando um engasgo do servidor, não apressa")]
 	public static void CommandBufferCatchUp()
 	{
-		// Mudou de propósito (26/11, "microtravamentos"): antes eram dois por
-		// passo assim que passava de 4; depois de um engasgo do servidor o corpo
-		// andava o dobro e quem o via dava um tranco.
 		var b = new CommandBuffer();
-		uint seq = 0;
-		for (int i = 0; i < 18; i++) b.Push(Cmd(++seq));
-		int extra = 0;
-		// O servidor recupera o engasgo: 16 passos seguidos, um por passo.
-		for (int i = 0; i < 16; i++)
-		{
-			int wanted = b.WantedThisTick;
-			extra += wanted - 1;
-			for (int k = 0; k < wanted; k++) b.Next(out _, out _);
-		}
-		Check.Equal(0, extra, "engasgo do servidor recuperado em poucos quadros: nenhum passo apressado");
-
-		// O jogo à frente de verdade: a fila fica funda, um comando novo por passo.
-		var c = new CommandBuffer();
-		seq = 0;
-		for (int i = 0; i < 12; i++) c.Push(Cmd(++seq));
-		int ticks = 0, doubles = 0;
-		while (c.Depth > CommandBuffer.HighWater && ticks < 400)
-		{
-			c.Push(Cmd(++seq));
-			int wanted = c.WantedThisTick;
-			if (wanted == 2) doubles++;
-			for (int k = 0; k < wanted; k++) c.Next(out _, out _);
-			ticks++;
-		}
-		Check.True(c.Depth <= CommandBuffer.HighWater, $"a fila volta ao normal ({ticks} passos)");
-		Check.True(ticks >= CommandBuffer.DeepPatience, "mas só depois de meio segundo funda");
-		Check.True(doubles * CommandBuffer.CatchUpEvery <= ticks, $"e apressa devagar: um a mais a cada {CommandBuffer.CatchUpEvery} passos ({doubles} em {ticks})");
+		for (uint s = 1; s <= 10; s++) b.Push(Cmd(s));
+		Check.Equal(2, b.WantedThisTick(), "dez na fila: dois por passo");
+		// Novo em 26/11 ("microtravamentos"): o servidor dando os passos que deve
+		// depois de engasgar não apressa — o corpo andava o dobro por passo.
+		Check.Equal(1, b.WantedThisTick(catchingUp: true), "recuperando um engasgo do servidor: um por passo");
+		for (int i = 0; i < 8; i++) b.Next(out _, out _);
+		Check.Equal(1, b.WantedThisTick(), "voltou ao normal: um por passo");
 	}
 
 	[Test("estado do mundo: 24 bytes por corpo, corpo comum e cabeçalho de cada um")]

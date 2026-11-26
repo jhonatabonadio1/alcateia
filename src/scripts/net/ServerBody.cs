@@ -103,7 +103,9 @@ public sealed class ServerBody
 
 	/// <summary>Um passo do servidor: consome o comando deste passo (ou
 	/// dois, se o jogo está à frente) e guarda onde o corpo ficou.</summary>
-	public void Step(uint tick, double delta)
+	/// <param name="catchingUp">O servidor está dando os passos que deve depois
+	/// de engasgar (vários no mesmo quadro): a fila não apressa (CommandBuffer).</param>
+	public void Step(uint tick, double delta, bool catchingUp = false)
 	{
 		// Aliado não é parede, aqui também (TeamCollision): o jogo deixa o
 		// lobo atravessar o boneco do aliado, e o corpo daqui batia nele — a
@@ -111,7 +113,7 @@ public sealed class ServerBody
 		// desligado (Player.ReadyDriven): o par se refaz daqui.
 		TeamCollision.Keep(Body, Health, ref _collisionTeam);
 
-		int wanted = Commands.WantedThisTick;
+		int wanted = Commands.WantedThisTick(catchingUp);
 		for (int i = 0; i < wanted; i++)
 		{
 			if (!Commands.Next(out InputCommand command, out _)) break;

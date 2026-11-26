@@ -376,13 +376,20 @@ public sealed class HostedMatch
 	/// <summary>Um passo de física: cada corpo consome o comando dele; a
 	/// cada <see cref="NetRates.SnapshotEvery"/> passos, o estado do mundo
 	/// vai para todos.</summary>
+	private ulong _lastStepFrame = ulong.MaxValue;
+
 	public void PhysicsStep(uint tick, double delta)
 	{
 		if (!Authoritative) return;
 
 		_tick = tick;
+		// Mais de um passo no mesmo quadro: o servidor engasgou e está dando os
+		// passos que deve. A fila de cada um não apressa (decisão 0018).
+		ulong frame = Godot.Engine.GetProcessFrames();
+		bool catchingUp = frame == _lastStepFrame;
+		_lastStepFrame = frame;
 		_botBodies?.Step(delta);
-		foreach (ServerBody body in _bodyList) body.Step(tick, delta);
+		foreach (ServerBody body in _bodyList) body.Step(tick, delta, catchingUp);
 		ResolveHits(tick);
 		if (tick % NetRates.SnapshotEvery == 0) SendSnapshots(tick);
 	}

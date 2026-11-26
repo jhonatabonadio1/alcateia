@@ -53,8 +53,12 @@ o servidor parando de 0,1 a 0,3 s a cada 1,5 s), cinco causas:
   chega sem passar; 30 cm somem em ~0,3 s com no máximo ~1,3 m/s a mais na
   câmera. O ponto de partida do passo anda junto com a correção. Um estado
   que chega depois de um mais novo não corrige de novo.
-- **A fila do servidor só apressa depois de meio segundo funda, e
-  devagar** (`CommandBuffer.DeepPatience` 30 passos, um a mais a cada 3).
+- **A fila do servidor não apressa enquanto ele recupera um engasgo dele
+  mesmo** (vários passos no mesmo quadro, `HostedMatch.PhysicsStep` →
+  `CommandBuffer.WantedThisTick(catchingUp)`). Fora disso apressa como
+  antes (dois por passo acima de 4): segurar a fila funda deixava o
+  servidor mais atrás e o jogo voltava para a parede mais tarde
+  (`ParedeCorrecao`).
 - **No repasse, o estado leva o instante de quem mandou**
   (`NetState.Time`, no fim da mensagem: jogo antigo não manda nem lê) e o
   boneco é desenhado como na autoritativa: entre dois estados, no relógio
