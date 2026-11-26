@@ -41,10 +41,11 @@ public partial class FormController : Node
 
 	[Export] public float MaxWp = 10000f;   // teto de WP na partida (Jhon, 21/11: "o wp máximo para acumular durante o game passa a ser 10 mil")
 
-	/// <summary>WP perdido a cada morte (decisão do Jhon). Um abate rende
-	/// 100: morrer custa um abate. Nunca abaixo de zero, e o conjunto
-	/// padrão continua devolvendo +50 no renascer.</summary>
-	[Export] public float WpLostOnDeath = 100f;
+	/// <summary>Morrer não tira WP (Jhon, 26/11: "ao morrer, não pode perder
+	/// KP"). Até 25/11 a morte tirava 100. As armas pagas com WP ficam
+	/// desbloqueadas até o fim da partida (<see cref="Kp"/>): renascer com
+	/// elas não cobra de novo.</summary>
+	public readonly MatchKp Kp = new();
 	/// <summary>
 	/// WP vem de abater e de renascer, não do relógio.
 	///
@@ -53,14 +54,14 @@ public partial class FormController : Node
 	/// jogador sem recurso nenhum — castigo que se acumula afunda
 	/// quem já está perdendo.
 	/// </summary>
-	[Export] public float WpPerKill = 100f;
+	[Export] public float WpPerKill = MatchKp.PerKill;   // 26/11: +25% (era 100)
 
 	/// <summary>Abate feito de lobo vale menos que de arma: o lobo já é
 	/// gratuito e fica disponível a qualquer hora, e premiar igual faria
 	/// dele a forma mais barata de enriquecer.</summary>
-	[Export] public float WpPerWolfKill = 70f;
+	[Export] public float WpPerWolfKill = MatchKp.PerWolfKill;   // era 70
 
-	[Export] public float WpPerAssist = 35f;
+	[Export] public float WpPerAssist = MatchKp.PerAssist;   // era 35
 
 
 	/// <summary>Zero desde o arsenal: o documento paga abate, lobo e
@@ -127,7 +128,6 @@ public partial class FormController : Node
 	{
 		_health = GetParent().GetNode<Health>("Health");
 		_health.SetPool(HumanHp, 0f, true);
-		_health.Died += _ => LoseWp(WpLostOnDeath);
 
 		// Renasce sempre humano (decisão do Jhon): o lobo é pago com WP e
 		// morre com o corpo. Conectado antes do Player e do Bot (o filho
@@ -259,13 +259,6 @@ public partial class FormController : Node
 	}
 
 	public void OnDamageDealt(float amount) => AddWp(amount * WpPerDamageDealt);
-
-	private void LoseWp(float amount)
-	{
-		if (amount <= 0 || Wp <= 0) return;
-		Wp = Mathf.Max(Wp - amount, 0f);
-		EmitSignal(SignalName.WpChanged, Wp, MaxWp);
-	}
 
 	/// <summary>Um abate (verdadeiro) ou uma assistência (falso) deste
 	/// corpo. Quem mais conta pontos por isso escuta aqui — a carga do
