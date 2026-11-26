@@ -519,26 +519,12 @@ public partial class Player
 	/// reto da ponta de uma parede fina.</summary>
 	private bool FollowWall(ref Vector3 normal, ref float wallDistance)
 	{
-		// Parede redonda (tonel, tanque, pilar cilíndrico): não tem quina.
-		// A normal gira um pouco a cada quadro e o sentido gira junto, no
-		// plano dela — o lobo dá a volta inteira, sem soltar. Antes a curva
-		// contava como "ponta de parede fina": ele saía reto, caía,
-		// grudava de novo e repetia (Jhon, 15/11, tonel da Estação Polar).
-		if (_wallRound)
-		{
-			Vector3 around = _wallAlong - normal * normal.Dot(_wallAlong);
-			around.Y = 0;
-			if (around.LengthSquared() > 0.04f) _wallAlong = around.Normalized();
-			_wallNormal = normal;
-			_cornerGrace = 0;
-			_rounding = false;
-			RememberFace(normal);
-			return true;
-		}
-
 		// Atravessando um vão (porta, janela, o espaço entre duas casas): segue
 		// reto pela linha da parede, sem puxar para dentro dele, até a parede
-		// voltar ao lado.
+		// voltar ao lado. Vem antes da parede redonda: a sonda dentro do vão
+		// pega o batente ou um poste e o via como coisa redonda, e a face da
+		// parede virava a diagonal dele (26/11, Neon x −32 z −10: o lobo virava
+		// para dentro do vão e soltava a 5,5 m).
 		if (_gapLeft > 0f)
 		{
 			if (normal.Dot(_faceNormal) > 0.85f && Mathf.Abs(normal.Dot(_wallAlong)) < 0.2f)
@@ -554,6 +540,23 @@ public partial class Player
 				_cornerGrace = 0;
 				return true;
 			}
+		}
+
+		// Parede redonda (tonel, tanque, pilar cilíndrico): não tem quina.
+		// A normal gira um pouco a cada quadro e o sentido gira junto, no
+		// plano dela — o lobo dá a volta inteira, sem soltar. Antes a curva
+		// contava como "ponta de parede fina": ele saía reto, caía,
+		// grudava de novo e repetia (Jhon, 15/11, tonel da Estação Polar).
+		if (_wallRound)
+		{
+			Vector3 around = _wallAlong - normal * normal.Dot(_wallAlong);
+			around.Y = 0;
+			if (around.LengthSquared() > 0.04f) _wallAlong = around.Normalized();
+			_wallNormal = normal;
+			_cornerGrace = 0;
+			_rounding = false;
+			RememberFace(normal);
+			return true;
 		}
 
 		// O ponto de parede mais perto ficou para trás: ou a parede
