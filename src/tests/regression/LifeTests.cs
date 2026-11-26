@@ -32,11 +32,13 @@ public sealed class RespawnTest : RegressionTest
 	}
 }
 
-/// <summary>A garra do Bruto contra humano: o dano da classe × 1,6.</summary>
+/// <summary>A garra do lobo contra humano: o dano do lobo × 1,6. O lobo é um
+/// só desde 26/11 (decisão do Jhon: sem classes), garra 65 (era 75 no Bruto):
+/// 104, dois golpes matam um humano de 200.</summary>
 public sealed class ClawDamageTest : RegressionTest
 {
 	public override string Name => "DanoDaGarra";
-	public override string Description => "a garra do Bruto tira 75 × 1,6 = 120 de um humano";
+	public override string Description => "a garra do lobo tira 65 × 1,6 = 104 de um humano";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -53,7 +55,7 @@ public sealed class ClawDamageTest : RegressionTest
 		float before = health.Hp;
 		await b.Tap("attack");
 		await b.Seconds(0.6);
-		b.Near(120f, before - health.Hp, 0.5, "dano da primeira garrada");
+		b.Near(104f, before - health.Hp, 0.5, "dano da primeira garrada");
 	}
 }
 

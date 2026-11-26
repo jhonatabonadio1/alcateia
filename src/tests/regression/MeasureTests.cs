@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 /// <summary>
 /// As medidas de <c>docs/MEDIDAS.md</c>, medidas no jogo: velocidade,
 /// altura do pulo, distância do pulo correndo, o degrau que se sobe sem
-/// pular e o caixote que se sobe pulando — do humano e de cada lobo.
+/// pular e o caixote que se sobe pulando — do humano e do lobo (um só
+/// desde 26/11: as classes Bruto e Ligeiro saíram).
 ///
 /// Os mapas são feitos com esses números. Se este teste falhar, uma
 /// mudança de jogo mexeu numa medida: ou ela volta, ou o documento (e os
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 public sealed class MeasureTest : RegressionTest
 {
 	public override string Name => "Medidas";
-	public override string Description => "as medidas de docs/MEDIDAS.md: velocidade, pulo, degrau e caixote do humano e dos lobos";
+	public override string Description => "as medidas de docs/MEDIDAS.md: velocidade, pulo, degrau e caixote do humano e do lobo";
 
 	private static readonly Vector3 At = new(-15, 1, 13);
 
@@ -29,18 +30,13 @@ public sealed class MeasureTest : RegressionTest
 		b.AtLeast(1.0, human.Box, "humano sobe pulando num caixote de 1 m");
 		b.AtMost(1.15, human.Box, "humano não sobe pulando em 1,2 m");
 
-		var bruto = await Measure(b, "lobo Bruto", true);
-		b.Near(4.15, bruto.Run, 0.06, "Bruto correndo (m/s)");
-		b.Near(7.14, bruto.Sprint, 0.12, "Bruto de quatro (m/s)");
-		b.Near(1.67, bruto.Rise, 0.05, "Bruto: o pulo sobe (m)");
-		b.AtLeast(0.8, bruto.Box, "Bruto sobe pulando num caixote de 0,8 m");
-
-		b.Form.ToggleForm();
-		await b.Until(() => b.Form.Current == Form.Human, 3.0);
-		b.Form.Breed = GD.Load<WolfBreed>("res://src/resources/breeds/ligeiro.tres");
-		var ligeiro = await Measure(b, "lobo Ligeiro", true);
-		b.AtLeast(bruto.Run, ligeiro.Run, "o Ligeiro corre mais que o Bruto");
-		b.AtLeast(bruto.Rise, ligeiro.Rise, "o Ligeiro pula mais alto que o Bruto");
+		// O lobo único (decisão do Jhon, 26/11), no meio do Bruto e do Ligeiro de
+		// antes: correndo 4,15 e 4,50, de quatro 7,14 e 7,73, o pulo 1,67 e 2,56 m.
+		var wolf = await Measure(b, "lobo", true);
+		b.Near(4.33, wolf.Run, 0.06, "lobo correndo (m/s)");
+		b.Near(7.44, wolf.Sprint, 0.12, "lobo de quatro (m/s)");
+		b.Near(2.09, wolf.Rise, 0.05, "lobo: o pulo sobe (m)");
+		b.AtLeast(0.8, wolf.Box, "lobo sobe pulando num caixote de 0,8 m");
 	}
 
 	private record struct Result(float Run, float Crouch, float Sprint, float Rise, float Leap, float Step, float Box);

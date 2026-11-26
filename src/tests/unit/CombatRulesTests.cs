@@ -1,7 +1,7 @@
 namespace Alcateia.UnitTests;
 
 /// <summary>As contas do combate (scripts/domain/CombatRules.cs), com os
-/// números do jogo: M16, AK, M3, Bruto e Ligeiro.</summary>
+/// números do jogo: M16, AK, M3 e o lobo (um só desde 26/11).</summary>
 public static class CombatRulesTests
 {
 	// ------------------------------------------------------------ queda de dano
@@ -92,19 +92,20 @@ public static class CombatRulesTests
 
 	// ------------------------------------------------------------ golpes do lobo
 
-	[Test("a garra do Bruto tira 120 de um humano, e o 3º golpe do combo, 180")]
-	public static void BrutoClaw()
+	// O lobo único (decisão do Jhon, 26/11: sem classes), no meio do Bruto
+	// (garra 75, bônus aéreo 1,5) e do Ligeiro (55, 2,0): garra 65, aéreo 1,75.
+	[Test("a garra do lobo tira 104 de um humano (dois golpes matam 200), e o 3º golpe do combo, 156")]
+	public static void WolfClaw()
 	{
-		Check.Near(120, CombatRules.WolfStrike(75, 1f, true, 1.6f, false, 1.5f), 1e-4, "1º golpe");
-		Check.Near(180, CombatRules.WolfStrike(75, 1.5f, true, 1.6f, false, 1.5f), 1e-4, "3º golpe");
-		Check.Near(75, CombatRules.WolfStrike(75, 1f, false, 1.6f, false, 1.5f), 1e-4, "contra lobo");
+		Check.Near(104, CombatRules.WolfStrike(65, 1f, true, 1.6f, false, 1.75f), 1e-4, "1º golpe");
+		Check.Near(156, CombatRules.WolfStrike(65, 1.5f, true, 1.6f, false, 1.75f), 1e-4, "3º golpe");
+		Check.Near(65, CombatRules.WolfStrike(65, 1f, false, 1.6f, false, 1.75f), 1e-4, "contra lobo");
 	}
 
-	[Test("cair de cima de alguém vale o bônus aéreo da classe")]
+	[Test("cair de cima de alguém vale o bônus aéreo do lobo")]
 	public static void AerialBonus()
 	{
-		Check.Near(180, CombatRules.WolfStrike(75, 1f, true, 1.6f, true, 1.5f), 1e-4, "Bruto");
-		Check.Near(176, CombatRules.WolfStrike(55, 1f, true, 1.6f, true, 2.0f), 1e-4, "Ligeiro");
+		Check.Near(182, CombatRules.WolfStrike(65, 1f, true, 1.6f, true, 1.75f), 1e-4, "lobo caindo em humano");
 	}
 
 	[Test("o salto cheio vale 2,1 garras; sem carga, 40% disso")]
