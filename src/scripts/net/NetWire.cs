@@ -79,6 +79,18 @@ using System.Text;
 ///
 /// O <c>Status</c> do jogo ganha, no fim, a guarda do especial do lobo; o
 /// que o servidor repassa dele aos outros leva a vida que o servidor tem.
+///
+/// **Arma no chão** (26/11, nos dois modos): é da partida, não de uma
+/// máquina. Quem solta avisa; o servidor guarda as que estão no chão (até
+/// 30 s, no máximo 20), passa a todos e decide quem pega — o primeiro
+/// pedido leva, ninguém leva duas vezes. Quem entra no meio recebe as que
+/// estão no chão.
+///
+/// | Tipo | Quem manda | Conteúdo |
+/// |---|---|---|
+/// | Drop | quem soltou → servidor → todos | número da arma, de quem caiu (conta ou bot), a arma, pente, reserva, de onde saiu, a força; do servidor, mais há quanto tempo está no chão |
+/// | Take | jogo → servidor | número da arma e quem pede (a conta ou um bot da máquina) |
+/// | Taken | servidor → todos | número da arma, quem levou (0: sumiu no chão), a arma, pente e reserva |
 /// </summary>
 public static class NetWire
 {
@@ -89,7 +101,13 @@ public static class NetWire
 		Hit = 6, Died = 7, Kill = 8, Clock = 9, Gone = 10,
 		BotState = 11, BotAttack = 12, BotHit = 13, BotDied = 14, HitBot = 15, Touch = 16,
 		Input = 17, Snapshot = 18, Status = 19, Loadout = 20, Radio = 21,
-		Damage = 22, Vitals = 23, Fire = 24, Seat = 25, BotOwner = 26;
+		Damage = 22, Vitals = 23, Fire = 24, Seat = 25, BotOwner = 26,
+		Drop = 27, Take = 28, Taken = 29;
+
+	/// <summary>O número de uma arma no chão é a conta de quem soltou vezes
+	/// isto, mais um contador da máquina dele: nunca se repete entre duas
+	/// máquinas, e o servidor confere que o número é de quem fala.</summary>
+	public const long DropIdBase = 1_000_000;
 
 	/// <summary>O modo da partida, no <c>Welcome</c>.</summary>
 	public const byte ModeRelay = 0, ModeAuthoritative = 1;
