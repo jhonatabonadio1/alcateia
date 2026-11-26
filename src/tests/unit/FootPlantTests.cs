@@ -5,16 +5,28 @@ namespace Alcateia.UnitTests;
 /// <summary>O pé do lobo no chão: quanto mover a sola e o IK de dois ossos.</summary>
 public static class FootPlantTests
 {
-	[Test("dentro do chão a sola sobe tudo; encostada fica; perto do chão desce suave; longe não mexe")]
+	[Test("dentro do chão a sola sobe tudo; a pata de apoio desce até o chão; a que dá o passo e a longe não mexem")]
 	public static void LiftByGap()
 	{
-		Check.Near(0.13, FootPlant.Lift(-0.13f, 0.05f), 1e-6, "13 cm dentro do chão: sobe 13");
-		Check.Near(0, FootPlant.Lift(0f, 0.05f), 1e-6, "encostada: nada");
-		Check.Near(-0.01, FootPlant.Lift(0.01f, 0.05f), 0.0012, "1 cm acima, na faixa: desce quase 1");
-		Check.True(FootPlant.Lift(0.04f, 0.05f) > -0.01f && FootPlant.Lift(0.04f, 0.05f) < 0f, "4 cm acima, no fim da faixa: desce pouco");
-		Check.Near(0, FootPlant.Lift(0.05f, 0.05f), 1e-6, "no fim da faixa: nada");
-		Check.Near(0, FootPlant.Lift(0.3f, 0.05f), 1e-6, "pé no ar dando o passo: nada");
-		Check.True(FootPlant.Lift(0.02f, 0.05f) <= 0f && FootPlant.Lift(0.02f, 0.05f) >= -0.02f, "nunca desce além do chão");
+		Check.Near(0.13, FootPlant.Lift(-0.13f, 0f, 0.15f), 1e-6, "13 cm dentro do chão: sobe 13, apoiando ou não");
+		Check.Near(0, FootPlant.Lift(0f, 1f, 0.15f), 1e-6, "encostada: nada");
+		Check.Near(-0.048, FootPlant.Lift(0.048f, 1f, 0.15f), 1e-6, "apoiando 4,8 cm acima (o agachado): desce tudo");
+		Check.Near(0, FootPlant.Lift(0.048f, 0f, 0.15f), 1e-6, "dando o passo 4,8 cm acima: nada");
+		Check.Near(-0.03, FootPlant.Lift(0.06f, 0.5f, 0.15f), 1e-6, "meio apoio: desce metade");
+		Check.Near(0, FootPlant.Lift(0.15f, 1f, 0.15f), 1e-6, "no fim da faixa: nada");
+		Check.True(FootPlant.Lift(0.13f, 1f, 0.15f) > -0.13f && FootPlant.Lift(0.13f, 1f, 0.15f) < 0f, "perto do fim da faixa: desce menos (suave)");
+		Check.Near(0, FootPlant.Lift(0.4f, 1f, 0.15f), 1e-6, "longe do chão (pulo): nada");
+	}
+
+	[Test("apoio pela velocidade vertical da sola: parada apoia, subindo ou descendo não")]
+	public static void StanceBySpeed()
+	{
+		Check.Near(1, FootPlant.Stance(0f, 0.3f), 1e-6, "parada");
+		Check.Near(1, FootPlant.Stance(0.1f, 0.3f), 1e-6, "quase parada");
+		Check.Near(0, FootPlant.Stance(0.5f, 0.3f), 1e-6, "subindo no passo");
+		Check.Near(0, FootPlant.Stance(-0.5f, 0.3f), 1e-6, "descendo no passo");
+		float mid = FootPlant.Stance(0.225f, 0.3f);
+		Check.True(mid > 0f && mid < 1f, "entre as duas, suave");
 	}
 
 	[Test("o IK leva a ponta ao alvo, mantém os comprimentos e o joelho dobra para o mesmo lado")]

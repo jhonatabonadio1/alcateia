@@ -7,30 +7,51 @@ using System.Numerics;
 /// com teste de unidade (tests/unit/FootPlantTests). Quem lê a sola e o chão
 /// e gira os ossos é o <c>WolfFootPlant</c>.
 ///
-/// Duas contas:
-/// - <see cref="Lift"/>: quanto o pé sobe ou desce para a sola encostar no
-///   chão. Dentro do chão, sobe sempre tudo. Um pouco acima do chão (o pé de
-///   apoio flutuando numa rampa, num degrau ou por diferença de proporção do
-///   clipe), desce — tudo perto do chão e nada a partir de
-///   <c>band</c>, para o pé que passa no ar, dando o passo, não ser puxado.
+/// Três contas:
+/// - <see cref="Stance"/>: a pata está apoiando? A que apoia fica parada em
+///   relação ao corpo na vertical (o passo a leva para trás, não para cima); a
+///   que dá o passo sobe e desce. Parada, apoio; subindo ou descendo, no ar.
+/// - <see cref="Lift"/>: quanto a sola sobe ou desce para encostar no chão.
+///   Dentro do chão, sobe sempre tudo. Acima dele, a pata de apoio desce até
+///   encostar (o pé flutuando numa rampa, num degrau, ou pela diferença de
+///   proporção entre o esqueleto dos clipes e o do corpo), até
+///   <c>band</c> de altura; a que dá o passo não é puxada.
 /// - <see cref="Solve"/>: o IK de dois ossos (coxa e canela, braço e
 ///   antebraço). Leva a ponta (tornozelo, pulso) ao alvo mantendo o plano
 ///   em que o joelho dobra; se o alvo está longe demais, estica até o limite.
 /// </summary>
 public static class FootPlant
 {
+	/// <summary>O quanto a pata está apoiando (0 a 1) pela velocidade
+	/// vertical da sola em relação ao corpo, em m/s: até metade de
+	/// <paramref name="still"/>, apoio; a partir de <paramref name="still"/>,
+	/// no ar; entre os dois, suave.</summary>
+	public static float Stance(float verticalSpeed, float still)
+	{
+		float speed = MathF.Abs(verticalSpeed);
+		if (still <= 0f) return speed <= 0f ? 1f : 0f;
+		return 1f - Smooth(0.5f * still, still, speed);
+	}
+
 	/// <summary>Quanto mover a sola na vertical (positivo, para cima):
 	/// <paramref name="gap"/> é a altura da sola acima do chão (negativo:
-	/// dentro dele). Até <paramref name="band"/> acima do chão o pé encosta,
-	/// com um peso que cai suave até zero no fim da faixa.</summary>
-	public static float Lift(float gap, float band)
+	/// dentro dele), <paramref name="contact"/> o quanto a pata apoia
+	/// (<see cref="Stance"/>). Dentro do chão sobe tudo, sempre. Acima, desce o
+	/// vão vezes o apoio, até <paramref name="band"/> de altura (o peso cai
+	/// suave a partir de 60% da faixa).</summary>
+	public static float Lift(float gap, float contact, float band)
 	{
 		if (gap <= 0f) return -gap;
 		if (band <= 0f || gap >= band) return 0f;
-		float t = gap / band;
-		// O peso do contato: 1 encostado, 0 no fim da faixa (suave nas duas pontas).
-		float weight = 1f - t * t * (3f - 2f * t);
-		return -gap * weight;
+		float fade = 1f - Smooth(0.6f * band, band, gap);
+		return -gap * Math.Clamp(contact, 0f, 1f) * fade;
+	}
+
+	private static float Smooth(float from, float to, float x)
+	{
+		if (to <= from) return x >= to ? 1f : 0f;
+		float t = Math.Clamp((x - from) / (to - from), 0f, 1f);
+		return t * t * (3f - 2f * t);
 	}
 
 	/// <summary>

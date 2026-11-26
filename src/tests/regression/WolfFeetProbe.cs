@@ -39,10 +39,17 @@ public sealed class WolfFeetProbe
 
 	private readonly List<Part> _parts = new();
 	private readonly CharacterBody3D _body;
+	private Dictionary<Limb, Contact> _last = new();
 
+	/// <summary>A pose que vai para a pele é a de depois dos modificadores do
+	/// esqueleto (as patas no chão, o rabo), e o Godot só a deixa nos ossos
+	/// durante a atualização do esqueleto: a medida é tirada no sinal
+	/// <c>skeleton_updated</c>, que é quando ela está pronta.</summary>
 	public WolfFeetProbe(CharacterBody3D body, Node3D model)
 	{
 		_body = body;
+		if (AnimationKit.FindSkeleton(model) is Skeleton3D updated)
+			updated.SkeletonUpdated += () => _last = Compute();
 		foreach (MeshInstance3D mesh in model.FindChildren("*", "MeshInstance3D", true, false).OfType<MeshInstance3D>())
 		{
 			if (mesh.Mesh is not ArrayMesh array || mesh.Skin == null) continue;
@@ -89,10 +96,20 @@ public sealed class WolfFeetProbe
 		return null;
 	}
 
-	/// <summary>O ponto mais baixo de cada membro agora, com o chão embaixo.</summary>
-	public Dictionary<Limb, Contact> Measure()
+	/// <summary>O ponto mais baixo de cada membro na última pose desenhada,
+	/// com o chão embaixo.</summary>
+	public Dictionary<Limb, Contact> Measure() => _last;
+
+	/// <summary>Um ponto da pele a cada tantos ganha o seu próprio raio até o
+	/// chão (a sola numa rampa ou na quina de um degrau: o chão muda ao longo
+	/// do pé, e o ponto mais baixo não é o mais enterrado).</summary>
+	private const int Stride = 3;
+
+	private Dictionary<Limb, Contact> Compute()
 	{
-		var lowest = new Dictionary<Limb, Vector3>();
+		var result = new Dictionary<Limb, Contact>();
+		PhysicsDirectSpaceState3D space = _body.GetWorld3D().DirectSpaceState;
+		var exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
 		foreach (Part part in _parts)
 		{
 			if (!part.Mesh.IsVisibleInTree()) continue;
@@ -103,7 +120,7 @@ public sealed class WolfFeetProbe
 				if (bone < 0) bone = part.Skeleton.FindBone(part.Skin.GetBindName(k));
 				binds[k] = part.Skeleton.GlobalTransform * part.Skeleton.GetBoneGlobalPose(bone) * part.Skin.GetBindPose(k);
 			}
-			for (int v = 0; v < part.Vertices.Length; v++)
+			for (int v = 0; v < part.Vertices.Length; v += Stride)
 			{
 				if (part.LimbOf[v] is not Limb limb) continue;
 				Vector3 p = Vector3.Zero;
@@ -112,18 +129,16 @@ public sealed class WolfFeetProbe
 					float w = part.Weights[v * part.Per + k];
 					if (w > 0f) p += binds[part.Bones[v * part.Per + k]] * part.Vertices[v] * w;
 				}
-				if (!lowest.TryGetValue(limb, out Vector3 low) || p.Y < low.Y) lowest[limb] = p;
+				// Só o que está perto do chão precisa de raio.
+				if (result.TryGetValue(limb, out Contact known) && known.HasFloor && p.Y - known.Floor > 0.3f && known.Gap < 0.3f) continue;
+				var query = PhysicsRayQueryParameters3D.Create(p + Vector3.Up * 0.6f, p + Vector3.Down * 1.5f, 1);
+				query.Exclude = exclude;
+				var hit = space.IntersectRay(query);
+				if (hit.Count == 0) continue;
+				float floor = ((Vector3)hit["position"]).Y;
+				var here = new Contact(p, floor, true);
+				if (!result.TryGetValue(limb, out Contact c) || here.Gap < c.Gap) result[limb] = here;
 			}
-		}
-
-		var result = new Dictionary<Limb, Contact>();
-		PhysicsDirectSpaceState3D space = _body.GetWorld3D().DirectSpaceState;
-		foreach (var (limb, p) in lowest)
-		{
-			var query = PhysicsRayQueryParameters3D.Create(p + Vector3.Up * 0.6f, p + Vector3.Down * 1.5f, 1);
-			query.Exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
-			var hit = space.IntersectRay(query);
-			result[limb] = hit.Count > 0 ? new Contact(p, ((Vector3)hit["position"]).Y, true) : new Contact(p, 0f, false);
 		}
 		return result;
 	}

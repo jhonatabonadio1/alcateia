@@ -71,11 +71,17 @@ public partial class WolfVisual : Node3D
 	/// um homem.</summary>
 	[Export] public float ModelScale = WolfMoves.BodyScale;
 
-	/// <summary>Quanto o lobo parado em pé desce, em metros. A sola do
-	/// Idle_Pose encosta no chão só nas garras (a almofada da pata fica 1 a
-	/// 2 cm acima), e de longe, com a sombra, ele parecia flutuar (Jhon,
-	/// 15/11). Andando ou agachado, não desce.</summary>
-	[Export] public float FootSink = 0.02f;
+	/// <summary>Quanto o lobo parado em pé desce, em metros. Era 2 cm (Jhon,
+	/// 15/11: a almofada da pata do lobo antigo ficava 1 a 2 cm acima do chão).
+	/// Desde 26/11 quem encosta cada pata no chão é o <see cref="WolfFootPlant"/>:
+	/// descer o corpo inteiro só enterrava as garras.</summary>
+	[Export] public float FootSink = 0f;
+
+	/// <summary>As patas no chão, depois da animação (nulo no servidor).</summary>
+	private WolfFootPlant _plant;
+
+	/// <summary>O apoio das patas, para os testes.</summary>
+	public WolfFootPlant FootPlant => _plant;
 
 	/// <summary>Mixamo olha para +Z; o corpo, para −Z.</summary>
 	[Export] public float ModelYaw = 180f;
@@ -163,6 +169,8 @@ public partial class WolfVisual : Node3D
 			- FootSink * (1f - _moveMix) * (1f - _crouch), 0);
 
 		UpdateTail((float)delta);
+		// As patas só procuram o chão com o lobo vivo e fora da parede.
+		if (_plant != null) _plant.Grounded = !_dead && !OnWallNow;
 
 		if (_dead)
 		{
