@@ -129,13 +129,13 @@ public partial class Hud
 	}
 
 	/// <summary>O espaço 3 da barra de armas: na espera mostra os segundos
-	/// que faltam, apagado; pronto, o "3" de sempre.</summary>
+	/// que faltam ("12s"), apagado; pronto, o "3" de sempre.</summary>
 	private void UpdateWolfSlot()
 	{
 		if (!_slots.TryGetValue(Slot.Wolf, out PanelContainer chip)) return;
 		Label text = chip.GetChild<Label>(0);
 		bool cooling = !_form.IsWolf && !_form.WolfReady;
-		string want = cooling ? $"{Mathf.Ceil(_form.WolfCooldownLeft):0}" : "3";
+		string want = cooling ? $"{Mathf.Ceil(_form.WolfCooldownLeft):0}s" : "3";
 		if (text.Text != want) text.Text = want;
 		chip.Modulate = cooling ? new Color(1, 1, 1, 0.45f) : Colors.White;
 	}

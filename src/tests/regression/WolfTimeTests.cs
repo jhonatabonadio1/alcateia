@@ -71,7 +71,7 @@ public sealed class WolfTimeTest : RegressionTest
 			await b.Frames(2);
 			string chip = slots[Slot.Wolf].GetChild<Label>(0).Text;
 			RegressionBench.Note($"espaço 3 na espera: '{chip}'; a barra diz '{shiftState?.Text}'");
-			b.Check(chip != "3" && int.TryParse(chip, out int secs) && secs is >= 1 and <= 3, $"o espaço 3 mostra os segundos da espera ('{chip}')");
+			b.Check(chip.EndsWith("s") && int.TryParse(chip.TrimEnd('s'), out int secs) && secs is >= 1 and <= 3, $"o espaço 3 mostra os segundos da espera ('{chip}')");
 			b.Check((shiftState?.Text ?? "").StartsWith("ESPERE"), $"a barra mostra a espera ('{shiftState?.Text}')");
 		}
 
