@@ -398,7 +398,7 @@ public partial class Player
 	/// A parede achada é uma aresta (de frente para ela não há face reta) e
 	/// a face está logo à frente, no sentido em que o corpo vai, ao lado
 	/// dele: até 0,8 m adiante, um raio para o lado da parede acha uma face
-	/// virada para o corpo.
+	/// virada para o corpo. Se já há face ao lado do corpo, não é ponta: não espera.
 	/// </summary>
 	private bool FaceJustAhead(Vector3 normal)
 	{
@@ -411,7 +411,7 @@ public partial class Player
 
 		var space = GetWorld3D().DirectSpaceState;
 		var exclude = new Godot.Collections.Array<Rid> { GetRid() };
-		foreach (float ahead in new[] { 0.25f, 0.5f, 0.8f })
+		foreach (float ahead in new[] { 0f, 0.25f, 0.5f, 0.8f })
 		{
 			Vector3 from = GlobalPosition + m * ahead;
 			var query = PhysicsRayQueryParameters3D.Create(from, from + side * (WallHoldDistance + WallCheckDistance));
@@ -420,7 +420,12 @@ public partial class Player
 			if (hit.Count == 0 || hit["collider"].Obj is CharacterBody3D || IsInvisibleLimit(hit["collider"].Obj)) continue;
 			Vector3 n = (Vector3)hit["normal"];
 			n.Y = 0;
-			if (n.LengthSquared() > 1e-6f && n.Normalized().Dot(-side) > 0.9f) return true;
+			if (n.LengthSquared() < 1e-6f || n.Normalized().Dot(-side) <= 0.9f) continue;
+			// Já ao lado da face, na altura do corpo: a aresta torta que a
+			// sonda achou é um enfeite da fachada, não a ponta da peça. Esperar
+			// ali fazia o lobo grudar um quadro depois numa normal mais torta e
+			// soltar (Distrito Neon, x −40, z 2,5: 0,56 m na parede). Gruda já.
+			return ahead > 0f;
 		}
 		return false;
 	}
@@ -1029,7 +1034,9 @@ public partial class Player
 		// Poste, coluna e tonel têm todas as normais: o mesmo objeto é a mesma
 		// parede, de qualquer lado. Sem isto saltar do poste e voltar a ele
 		// por outro lado subia o poste como elevador.
-		if (_lastWallRoundBody.IsValid && _wallRound && _wallBody == _lastWallRoundBody) return true;
+		// O objeto é a forma, não o corpo: nos mapas um corpo só guarda centenas
+		// de formas, e saltar de um poste não pode valer para todos os postes dele.
+		if (_lastWallRoundBody.IsValid && _wallRound && _wallBody == _lastWallRoundBody && _wallShape == _lastWallRoundShape) return true;
 		if (normal.Dot(_lastWall) <= SameWallThreshold) return false;
 		return Mathf.Abs(_lastWall.Dot(GlobalPosition) - _lastWallPlane) < SameWallGap;
 	}
@@ -1042,10 +1049,12 @@ public partial class Player
 		_lastWallHeight = GlobalPosition.Y;
 		_lastWallPlane = _wallNormal.Dot(GlobalPosition);
 		_lastWallRoundBody = _wallRound ? _wallBody : default;
+		_lastWallRoundShape = _wallShape;
 	}
 
 	/// <summary>O poste, coluna ou tonel deixado agora (vazio: era parede).</summary>
 	private Rid _lastWallRoundBody;
+	private int _lastWallRoundShape = -1;
 
 	private float _lastWallPlane;
 
@@ -1158,6 +1167,9 @@ public partial class Player
 	/// teto não contam. Gente também não é parede.
 	/// </summary>
 	private Rid _wallBody;
+
+	/// <summary>A forma do corpo em que a sonda encostou (o índice dela no corpo).</summary>
+	private int _wallShape = -1;
 
 	/// <summary>A parede em que a sonda encostou é redonda (cilindro,
 	/// cápsula ou esfera de colisão) ou pequena (<see cref="_wallSmall"/>):
@@ -1312,6 +1324,7 @@ public partial class Player
 		{
 			_wallBody = (Rid)rest["rid"];
 			int index = (int)rest["shape"];
+			_wallShape = index;
 			Rid shape = PhysicsServer3D.BodyGetShape(_wallBody, index);
 			var type = PhysicsServer3D.ShapeGetType(shape);
 			bool round = type == PhysicsServer3D.ShapeType.Cylinder || type == PhysicsServer3D.ShapeType.Capsule
