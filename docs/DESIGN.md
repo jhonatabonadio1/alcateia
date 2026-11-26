@@ -191,6 +191,42 @@ acabar.
 - **No canto, vira e continua.** Uma parede à frente vira a parede da
   corrida: o lobo segue por ela, para longe da antiga, no mesmo passo.
   Antes ele soltava e regrudava na parede de trás, voltando
+- **A parede que continua não é ponta** (26/11, alpha fechado: "não
+  contorna mais — anda reto"). Nos mapas de verdade a face "acaba" toda
+  hora sem acabar: o degrau de uma fachada, o fim de um pilar raso, um
+  batente, a junta entre duas casas. Passando da ponta, o lobo procura a
+  mesma face logo atrás (até `WallStepBack`, 0,6 m de fundo) ou depois de
+  um vão (até `WallGapMax`, 1,6 m: porta, janela): achou, segue nela — no
+  vão, reto pela linha da parede, sem entrar nele. A regra da quina vale
+  quando não há continuação, medida pela face em que ele corria (e não
+  pelo sentido de agora, que gira ao contornar um pilar à frente)
+- **Obstáculo pequeno, passa por cima.** Caixote, ar-condicionado,
+  peitoril, cano: a cápsula inteira varre o caminho à frente, e o que
+  fecha com o topo até `WallClimbReach` (1,8 m) acima de onde ele corre o
+  lobo sobe por cima (a 7 m/s) e segue na parede, na altura nova. Antes o
+  raio do meio do corpo só via o que estava na altura da barriga: o que
+  batia na cabeça ou nas patas o fazia escorregar por baixo ou parar e
+  cair. Só sobe ao lado da parede (acima do topo dela, não), e não sobe
+  em gente nem no limite do mapa
+- **Objeto pequeno: dá a volta** (Jhon, 26/11: "o lobo não gruda em
+  paredes e objetos muito curtos ou pequenos, como um poste ou placa de
+  rua"). Poste, haste de placa, coluna fina: o corte da colisão na altura
+  do corpo cabe num quadrado de `WallPoleMaxWidth` (0,6 m) e não há nada
+  em volta dele na altura do peito. Nele o lobo gruda e dá a volta, como
+  no tonel, com teto de giro (`WallOrbitMaxTurn`, 360°/s: num poste de
+  12 cm a corrida inteira dava quase duas voltas por segundo). Antes o
+  poste era "a ponta de uma parede fina": o lobo grudava e saía reto no
+  quadro seguinte. Mourão de grade, batente e cano colados na parede não
+  são soltos: neles vale a parede de sempre. Saltou de um poste, não
+  regruda nele (de lado nenhum) até tocar o chão — senão subia o poste
+  como elevador; o objeto é a forma de colisão, não o corpo (um corpo de
+  mapa guarda centenas de formas)
+- **Placa e parede curta: corre a face e sai reto.** Chegando pela ponta,
+  a sonda acha a aresta antes da face: o lobo espera os poucos
+  centímetros até ficar ao lado dela e gruda reto (grudar na aresta era
+  grudar torto e largar no quadro seguinte). Corre a face inteira e, na
+  ponta, segue reto no mesmo passo — não dá meia-volta em volta de uma
+  chapa de 5 cm. Já ao lado de uma face (fachada com enfeite), não espera
 - **A parede é o ponto mais próximo dela**, não o que um raio acerta:
   um cilindro em volta do lobo pega a geometria e `GetRestInfo` dá o
   ponto de contato, e a normal é a direção do ponto até o lobo. Ponto
