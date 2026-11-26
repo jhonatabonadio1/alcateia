@@ -131,9 +131,22 @@ editar auditoria.
 
 ## O que o servidor confere (e o cliente não decide)
 
-- **Compra**: preço, desconto, patente e saldo, numa transação que trava
-  a carteira. Oito compras ao mesmo tempo com dinheiro para uma: uma
-  passa (há teste).
+- **Compra**: preço do catálogo do servidor, desconto, patente, item
+  existente e saldo, numa transação que trava a carteira. Oito compras ao
+  mesmo tempo com dinheiro para uma: uma passa (há teste). **O mesmo
+  pedido repetido compra uma vez só** (26/11): o jogo manda um número por
+  clique (`requestId`), o servidor guarda o recibo (`purchase_requests`) e
+  devolve o mesmo, sem cobrar, a qualquer repetição — duplo clique, a rede
+  mandando de novo, sete pedidos iguais ao mesmo tempo (há teste).
+- **Moedas no jogo**: o jogo nunca credita nem debita Cash, IPs, XP ou
+  item; ele só espelha o que a conta tem (`Profile.ApplyAccount`, decisão
+  0015) e mostra o que a partida rendeu enquanto pergunta ao servidor.
+  Sem conta (offline), tudo é zero e só os itens de série valem.
+- **KP na partida** (o WP do código): é da partida e zera no fim. Na
+  autoritativa, o servidor de partida confere o gasto: a arma paga só vale
+  se o KP que o jogador pode ter ganhado **pelo placar do servidor**
+  (`MatchKp.MostEarned`) cobre o preço; senão vira a padrão e conta contra
+  ele (`HostedMatch.PaidWeapon`, 26/11). No repasse não se confere.
 - **Desafios**: o progresso vem do resultado que o servidor de partida
   manda; o prêmio sai uma vez por período.
 - **XP e Presas de partida**: `Rewards.cs`, com teto por partida; só

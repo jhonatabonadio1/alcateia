@@ -1461,15 +1461,19 @@ Especificação: `docs/CONJUNTOS.md`. Implementação:
 - Editar só fora da partida. Na partida só se escolhe e paga.
 - Respawn: 5 s, cartões que não cabem aparecem acinzentados com
   "faltam X", estouro do tempo usa o último conjunto ou o padrão.
-- Paga-se no renascer. O equipamento some na morte, e **morrer custa
-  100 WP** (`WpLostOnDeath`, decisão do Jhon) — um abate. Nunca abaixo
-  de zero; o padrão continua devolvendo +50.
+- Paga-se no renascer, e **morrer não tira WP** (Jhon, 26/11: "ao
+  morrer, não pode perder KP"). A arma paga fica desbloqueada até o fim
+  da partida (`MatchKp`): renascer com ela não cobra de novo, e o conjunto
+  custa só o que ainda não foi pago. Até 25/11 o equipamento sumia na
+  morte e a morte tirava 100 (`WpLostOnDeath`, que saiu). O padrão
+  continua devolvendo +50. Online, a partida autoritativa confere o gasto
+  pelo placar do servidor (docs/CONJUNTOS.md, seção 5).
 
 | Ganho | WP |
 |---|---|
-| Abate | 100 |
-| Abate de lobo | 70 |
-| Assistência (acertou nos 10 s antes da morte) | 35 |
+| Abate | 125 (era 100; +25% em 26/11) |
+| Abate de lobo | 88 (era 70) |
+| Assistência (acertou nos 10 s antes da morte) | 44 (era 35) |
 | Escolher o padrão | 50 |
 | Teto | 2500 |
 
