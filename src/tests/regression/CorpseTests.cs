@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 /// até sumir, mede a pele deformada pelo esqueleto contra o chão logo abaixo
 /// dela. Não pode entrar no chão nem ficar pairando ao assentar. No sumiço,
 /// toda superfície do corpo some junto e com a profundidade escrita antes da
-/// cor (<see cref="CorpseFade"/>): sem isso o Godot não ordena os pedaços de
+/// cor (<see cref="DeadBody"/>): sem isso o Godot não ordena os pedaços de
 /// um mesmo corpo, e o de dentro (olhos, dentes, forro) aparece.
 /// </summary>
 public sealed class CorpseGroundTest : RegressionTest
@@ -59,6 +59,19 @@ public sealed class CorpseGroundTest : RegressionTest
 				health.TakeDamage(99999f);
 				b.Check(health.IsDead, $"{who}: morreu");
 
+				// A pele como se desenha: medida quando a pose final do quadro fica
+				// pronta (skeleton_updated), já com o rabo simulado; depois do quadro o
+				// Godot devolve a pose sem os modificadores, e o rabo some da conta.
+				float poseLow = float.MaxValue;
+				Vector3 poseAt = Vector3.Zero;
+				var skeletons = SkinnedMeshes(body).Select(m => m.GetNode<Skeleton3D>(m.Skeleton)).Distinct().ToList();
+				System.Action measure = () =>
+				{
+					var meshes = SkinnedMeshes(body);
+					if (meshes.Count > 0) (poseLow, poseAt) = Lowest(meshes);
+				};
+				foreach (Skeleton3D skeleton in skeletons) skeleton.SkeletonUpdated += measure;
+
 				float deepest = float.MaxValue, deepestAt = 0f, rest = 0f, fadeStart = -1f, gone = -1f;
 				int frames = 0, fadeFrames = 0, fadeBad = 0, fadeSurfaces = 0;
 				var reasons = new HashSet<string>();
@@ -73,7 +86,8 @@ public sealed class CorpseGroundTest : RegressionTest
 						gone = (float)t;
 						break;
 					}
-					var (low, at) = Lowest(meshes);
+					var (low, at) = (poseLow, poseAt);
+					if (low == float.MaxValue) continue;
 					var hit = space.IntersectRay(PhysicsRayQueryParameters3D.Create(at + Vector3.Up * 0.6f, at + Vector3.Down * 3f, 1));
 					if (hit.Count == 0) continue;
 					float gap = low - ((Vector3)hit["position"]).Y;
@@ -101,6 +115,8 @@ public sealed class CorpseGroundTest : RegressionTest
 				b.Check(fadeFrames > 10, $"{who}: o corpo some aos poucos ({fadeFrames} quadros de sumiço)");
 				b.AtMost(0, fadeBad, $"{who}: no sumiço, todo o corpo some por igual, com a profundidade antes da cor");
 
+				foreach (Skeleton3D skeleton in skeletons)
+					if (GodotObject.IsInstanceValid(skeleton)) skeleton.SkeletonUpdated -= measure;
 				bot.QueueFree();
 				await b.Frames(2);
 			}
@@ -175,7 +191,7 @@ public sealed class CorpseGroundTest : RegressionTest
 			{
 				surfaces++;
 				Material m = mesh.GetActiveMaterial(s);
-				if (CorpseFade.IsFading(m))
+				if (DeadBody.IsFading(m))
 				{
 					faded++;
 					continue;
