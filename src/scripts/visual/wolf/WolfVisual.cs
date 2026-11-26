@@ -50,6 +50,8 @@ using System.Collections.Generic;
 /// WolfVisual.Tree (a árvore) rodam uma vez; WolfVisual.Locomotion,
 /// .Air e .Moves leem o estado a cada quadro. WolfVisual.Tail é o rabo
 /// com física (monta uma vez e soma as forças do movimento a cada quadro).
+/// WolfVisual.Corpse é o lobo morto: assenta no chão e some por igual
+/// (<see cref="DeadBody"/>).
 /// </summary>
 public partial class WolfVisual : Node3D
 {
@@ -166,10 +168,9 @@ public partial class WolfVisual : Node3D
 
 		if (_dead)
 		{
-			// Depois de cair, o corpo some.
+			// Depois de cair, o corpo fica no chão e some (WolfVisual.Corpse).
 			_deadTimer += delta;
-			float hold = (_lengths.TryGetValue("death", out float d) ? d : 1.5f) + 1.2f;
-			if (_deadTimer > hold) _model.Visible = false;
+			UpdateCorpse(delta);
 			return;
 		}
 
@@ -313,12 +314,14 @@ public partial class WolfVisual : Node3D
 		if (!_form.IsWolf) return;
 		_dead = true;
 		_deadTimer = 0;
+		BeginCorpse();
 		_playback?.Travel("Death");
 	}
 
 	private void OnRespawned()
 	{
 		_dead = false;
+		ResetCorpse();
 		_model.Visible = true;
 		_howling = false;
 		_onWall = false;

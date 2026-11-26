@@ -18,7 +18,9 @@ public sealed class WolfEyeGlowTest : RegressionTest
 	public override async Task Run(RegressionBench b)
 	{
 		// O valor de fábrica do neon, lido no código do shader (o material do lobo não o muda).
-		string code = GD.Load<Shader>(WolfSkin.ShaderPath).Code;
+		// Desde 26/11 os uniformes moram no lobo.gdshaderinc, dividido com o corpo morto
+		// sumindo (DeadBody): o lobo.gdshader só o inclui.
+		string code = Godot.FileAccess.GetFileAsString("res://src/assets/efeitos/lobo.gdshaderinc");
 		var found = System.Text.RegularExpressions.Regex.Match(code, @"uniform float neon_energy\s*=\s*([0-9.]+)");
 		float energy = found.Success ? float.Parse(found.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) : 0f;
 		RegressionBench.Note($"neon do corpo: {energy}");
