@@ -83,14 +83,14 @@ public partial class Hud
 
 		if (_form.IsWolf && _form.Rule == FormRule.Lobo)
 		{
-			_shiftKey.Text = "3";
+			_shiftKey.Text = KeyBindings.Short("slot_3");
 			_shiftText.Text = "LOBO";
 			_shiftState.Text = "A PARTIDA TODA NESTE MODO";
 			_shiftState.AddThemeColorOverride("font_color", UiTokens.TextSecondary);
 		}
 		else if (_form.IsWolf)
 		{
-			_shiftKey.Text = "1";
+			_shiftKey.Text = KeyBindings.Short("slot_1");
 			_shiftText.Text = "VOLTAR A HUMANO";
 			if (_form.WolfTimed)
 			{
@@ -104,7 +104,7 @@ public partial class Hud
 			}
 			else
 			{
-				_shiftState.Text = "OU 2 · 4 · 5";
+				_shiftState.Text = Loc.F("OU {0} · {1} · {2}", KeyBindings.Short("slot_2"), KeyBindings.Short("slot_4"), KeyBindings.Short("slot_5"));
 				_shiftState.AddThemeColorOverride("font_color", UiTokens.TextSecondary);
 			}
 		}
@@ -119,7 +119,7 @@ public partial class Hud
 		}
 		else
 		{
-			_shiftKey.Text = "3";
+			_shiftKey.Text = KeyBindings.Short("slot_3");
 			_shiftText.Text = "VIRAR LOBO";
 			_shiftState.Text = blocked ? "BLOQUEADO NESTE MODO" : "PRONTO";
 			_shiftState.AddThemeColorOverride("font_color", blocked ? UiTokens.TextDisabled : UiTokens.Success);

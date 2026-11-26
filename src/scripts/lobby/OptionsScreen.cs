@@ -61,6 +61,15 @@ public partial class OptionsScreen : LobbyScreen
 		private Func<string> _currentNote;
 		private int _tab;
 
+		/// <summary>Os botões de tecla da aba Controles e o "voltar ao padrão" de
+		/// cada um: trocar uma tecla refaz os textos sem refazer a aba (a lista não
+		/// pula para o alto).</summary>
+		private readonly List<(KeyCapture Capture, Button Reset)> _binds = new();
+
+		/// <summary>A pergunta do conflito ("já está em Pular: trocar?"), aberta logo
+		/// abaixo da faixa da tecla.</summary>
+		private PanelContainer _prompt;
+
 		public Sheet(Action credits)
 		{
 			_inLobby = credits != null;
@@ -123,6 +132,9 @@ public partial class OptionsScreen : LobbyScreen
 			UiKit.Clear(_preview);
 			_current = null;
 			_currentNote = null;
+			_binds.Clear();
+			_prompt = null;
+			KeyCapture.Listening?.Cancel();
 			_title.Text = TabNames[_tab];
 			_body.Text = Hint;
 
@@ -236,9 +248,112 @@ public partial class OptionsScreen : LobbyScreen
 			Row("Sensibilidade", Slider(v.Sensitivity, x => { v.Sensitivity = x; Settings.Save(); }, 0.25f, 3f, x => $"{x:0.00}×"),
 				() => "Quanto a mira gira por centímetro de mouse. Vale também no meio da partida.");
 
-			Section("Teclas");
-			foreach (var (key, action) in ControlsTable.Entries)
-				Row(action, Key(key), () => Loc.F("Tecla: {0}. Ainda não dá para trocar as teclas.", key));
+			// As teclas (Jhon, 26/11: "opção de editar controles"): clique na tecla e
+			// aperte a nova, do teclado ou do mouse. Vale na hora e fica salvo.
+			string group = null;
+			foreach (KeyBindings.Binding bind in KeyBindings.All)
+			{
+				if (bind.Group != group) Section(group = bind.Group);
+				KeyBindings.Binding b = bind;
+				Row(b.Label, Binder(b), () => BindNote(b));
+			}
+
+			Section("Fixas");
+			Row("Menu da partida", Key("Esc"), () => "O Esc abre o menu e cancela a troca de uma tecla: ele não se troca.");
+			Row("Falas do rádio", Key("1 … 0"), () => "Com o rádio aberto, as teclas de número escolhem a fala. Não se trocam.");
+		}
+
+		private static string BindNote(KeyBindings.Binding b)
+		{
+			string how = Loc.F("Tecla: {0}. Clique nela e aperte a nova, do teclado ou do mouse. Esc cancela.", KeyBindings.Label(b.Action));
+			return string.IsNullOrEmpty(b.Note) ? how : Loc.T(b.Note) + "\n\n" + how;
+		}
+
+		/// <summary>A tecla da ação e o "voltar à de fábrica".</summary>
+		private Control Binder(KeyBindings.Binding b)
+		{
+			HBoxContainer box = UiKit.Row(UiTokens.S1);
+			box.AddChild(UiKit.Spacer());
+
+			var capture = new KeyCapture(b.Action) { CustomMinimumSize = new Vector2(220, 34) };
+			capture.Pressed += ClosePrompt;
+			capture.Captured = input => Chosen(capture, input);
+			box.AddChild(capture);
+
+			Button reset = UiKit.Button("↺", ButtonKind.Tertiary, () =>
+			{
+				ClosePrompt();
+				KeyBindings.Reset(b.Action);
+				RefreshBinds();
+			});
+			reset.CustomMinimumSize = new Vector2(40, 34);
+			reset.TooltipText = Loc.F("Voltar à tecla de fábrica ({0})", KeyBindings.Name(KeyBindings.Default(b.Action)));
+			box.AddChild(reset);
+
+			_binds.Add((capture, reset));
+			reset.Disabled = KeyBindings.IsDefault(b.Action);
+			return box;
+		}
+
+		/// <summary>A tecla nova chegou: troca, ou pergunta se ela já é de outra ação.</summary>
+		private void Chosen(KeyCapture capture, InputEvent input)
+		{
+			string other = KeyBindings.ConflictWith(capture.Action, input);
+			if (other == null)
+			{
+				KeyBindings.Set(capture.Action, input, swap: false);
+				RefreshBinds();
+				return;
+			}
+			if (other == capture.Action) return;
+
+			ClosePrompt();
+			capture.Pending(input);
+			string otherName = Loc.T(KeyBindings.Of(other).Label);
+			Label question = UiKit.Paragraph(Loc.F("{0} já é de «{1}». Trocar as duas? «{1}» fica com {2}.",
+				KeyBindings.Name(input), otherName, KeyBindings.Label(capture.Action)));
+			question.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+
+			_prompt = UiKit.Card(out VBoxContainer inside, UiTokens.S3, UiTokens.S2);
+			_prompt.Name = "Conflito";
+			HBoxContainer line = UiKit.Row(UiTokens.S3);
+			line.AddChild(question);
+			line.AddChild(UiKit.Button("Trocar", ButtonKind.Primary, () =>
+			{
+				KeyBindings.Set(capture.Action, input, swap: true);
+				ClosePrompt();
+				RefreshBinds();
+			}));
+			line.AddChild(UiKit.Button("Cancelar", ButtonKind.Secondary, () =>
+			{
+				ClosePrompt();
+				RefreshBinds();
+			}));
+			inside.AddChild(line);
+
+			// Logo abaixo da faixa da tecla.
+			Node row = capture;
+			while (row != null && row.GetParent() != _list) row = row.GetParent();
+			_list.AddChild(_prompt);
+			if (row != null) _list.MoveChild(_prompt, row.GetIndex() + 1);
+		}
+
+		private void ClosePrompt()
+		{
+			if (_prompt != null && GodotObject.IsInstanceValid(_prompt)) _prompt.QueueFree();
+			_prompt = null;
+		}
+
+		/// <summary>Os textos das teclas e os "voltar ao padrão" de acordo com o que vale agora.</summary>
+		private void RefreshBinds()
+		{
+			foreach (var (capture, reset) in _binds)
+			{
+				if (!GodotObject.IsInstanceValid(capture)) continue;
+				capture.Refresh();
+				reset.Disabled = KeyBindings.IsDefault(capture.Action);
+			}
+			Again();
 		}
 
 		private void Crosshair()
@@ -326,6 +441,8 @@ public partial class OptionsScreen : LobbyScreen
 					break;
 				case ControlsTab:
 					v.Sensitivity = d.Sensitivity;
+					// As teclas também voltam às de fábrica (salva junto).
+					KeyBindings.ResetAll();
 					break;
 				case CrosshairTab:
 					v.Crosshair = new CrosshairSettings();
