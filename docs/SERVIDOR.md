@@ -113,6 +113,14 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
    minutos ou últimos 20% do tempo, o que for menor, ou um time com 80%
    dos pontos) não recebe ninguém: o servidor de partida conta tempo e
    placar a cada batida. Sala vazia descarta a partida.
+   A arma no chão é da partida (26/11, nos dois modos): quem solta
+   avisa (`Drop`), o servidor de partida guarda as que estão no chão
+   (até 30 s, no máximo 20) e passa a todos, amigo e inimigo; pegar é
+   pedir (`Take`), e o primeiro pedido leva (`Taken` a todos: some de
+   todas as telas, ninguém leva duas vezes). Quem entra no meio recebe
+   as que estão no chão. Na autoritativa, a arma solta tem de ser uma
+   das que o corpo carrega, e a arma pega do chão vale no corpo de quem
+   pegou mesmo sem ser da loja dele.
 5. No fim, o servidor de partida entrega o resultado
    (`POST /v1/matches`); o servidor calcula o prêmio com a mesma regra
    do jogo (`src/scripts/domain/Rewards.cs`), grava no perfil e avisa a
