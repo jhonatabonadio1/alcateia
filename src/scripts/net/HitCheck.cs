@@ -130,7 +130,7 @@ public sealed class HitCheck
 				max = _grenadeDamage;
 				// Parede e barreira protegem da explosão (Jhon, 26/11), no jogo e
 				// aqui: os mesmos pontos do corpo, saindo do mesmo lugar
-				// (Grenade.Exposed). Lá o caminho é uma bola de 10 cm, aqui um
+				// (Grenade.Exposed). Lá o caminho é uma bola de 6 cm, aqui um
 				// raio: o que passa lá passa aqui.
 				sight = true;
 				checkAim = false;

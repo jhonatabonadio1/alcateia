@@ -158,9 +158,61 @@ public partial class WorldAudio : Node
 				break;
 
 			case NoiseKind.Explosion:
-				Play("granada_explosao", noise, mine: false);
+				Play(ExplosionSound(noise.Position), noise, mine: false, reach: ExplosionReach);
 				break;
 		}
+	}
+
+	/// <summary>A explosão da granada (26/11, sons de <c>src/tools/sons/granada.py</c>):
+	/// longe (passou de <see cref="ExplosionFar"/>), a versão que o ar já comeu o
+	/// agudo; debaixo de teto (<see cref="ExplosionRoof"/>), a versão da sala; no
+	/// resto, a de perto.</summary>
+	[Export] public float ExplosionFar = 30f;
+	[Export] public float ExplosionRoof = 6f;
+
+	/// <summary>Até onde se ouve a explosão (m): mais longe que o ruído que os
+	/// bots ouvem, como o tiro (<see cref="ShotReach"/>).</summary>
+	[Export] public float ExplosionReach = 140f;
+
+	private string ExplosionSound(Vector3 at)
+	{
+		float distance = Listener(out Vector3 ear) ? ear.DistanceTo(at) : 0f;
+		bool covered = Covered(GetViewport()?.World3D?.DirectSpaceState, at, ExplosionRoof);
+		return ExplosionName(distance, covered, ExplosionFar);
+	}
+
+	/// <summary>Qual explosão toca, pela distância de quem ouve e pelo teto.
+	/// Sem o arquivo da variação, cai na de perto.</summary>
+	public static string ExplosionName(float distance, bool covered, float far = 30f)
+	{
+		if (distance > far) return Sfx.First("granada_explosao_distante", "granada_explosao");
+		if (covered) return Sfx.First("granada_explosao_dentro", "granada_explosao");
+		return "granada_explosao";
+	}
+
+	/// <summary>Há teto sólido até <paramref name="roof"/> m acima do ponto
+	/// (casa, garagem, passagem coberta)? Quem luta e as paredes invisíveis
+	/// (<c>Barreira…</c>) não contam.</summary>
+	public static bool Covered(PhysicsDirectSpaceState3D space, Vector3 at, float roof)
+	{
+		if (space == null) return false;
+		var exclude = new Godot.Collections.Array<Rid>();
+		Vector3 from = at + Vector3.Up * 0.3f, to = at + Vector3.Up * roof;
+		for (int tries = 0; tries < 4; tries++)
+		{
+			var query = PhysicsRayQueryParameters3D.Create(from, to);
+			query.Exclude = exclude;
+			query.CollideWithAreas = false;
+			var hit = space.IntersectRay(query);
+			if (hit.Count == 0) return false;
+			if (hit["collider"].Obj is Node node && (node is CharacterBody3D || node is RigidBody3D || node.Name.ToString().StartsWith("Barreira")))
+			{
+				exclude.Add((Rid)hit["rid"]);
+				continue;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/// <summary>O som do chão que está debaixo de quem pisou:

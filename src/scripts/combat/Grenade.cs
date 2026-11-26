@@ -125,6 +125,33 @@ public partial class Grenade : RigidBody3D
 	/// pode durar dois passos de física.</summary>
 	[Export] public float BounceGap = 0.07f;
 
+	/// <summary>O pavio que se ouve (Jhon, 26/11: "som de explosão de granada
+	/// melhor, com fuse perceptível"): um chiado em laço, preso à granada, do
+	/// arremesso até a explosão; e no primeiro toque, quando o pavio começa a
+	/// contar (<see cref="Fuse"/>), o fim do pavio — o chiado sobe e cliques
+	/// que se aceleram até estourar. Quem está perto sabe que vai estourar
+	/// agora. Sons de <c>src/tools/sons/granada.py</c>.</summary>
+	[ExportGroup("Pavio")]
+	[Export] public string FuseSound = "granada_pavio";
+	[Export] public string FuseEndSound = "granada_pavio_fim";
+
+	/// <summary>Até onde o pavio se ouve (m): é aviso de perto, não informação
+	/// do outro lado do mapa.</summary>
+	[Export] public float FuseRange = 14f;
+
+	/// <summary>Volume do chiado e do fim do pavio (dB).</summary>
+	[Export] public float FuseDb = -2f;
+	[Export] public float FuseEndDb = 0f;
+
+	/// <summary>Quanto dura o arquivo do fim do pavio (s). Se o
+	/// <see cref="Fuse"/> mudar, ele toca mais rápido ou mais devagar para
+	/// acabar junto com a explosão.</summary>
+	[Export] public float FuseEndLength = 1.2f;
+
+	/// <summary>O chiado e o fim do pavio tocando (nulos sem arquivo). Para os testes.</summary>
+	public Node FusePlayer { get; private set; }
+	public Node FuseEndPlayer { get; private set; }
+
 	/// <summary>Cada batida que soou: o tempo de voo e a velocidade dela. Para os testes.</summary>
 	public List<(double Time, float Speed)> Bounces { get; } = new();
 
@@ -154,6 +181,9 @@ public partial class Grenade : RigidBody3D
 		// o toque e a saída cabem num passo só e o aviso de contato pode não vir.
 		BodyEntered += _ => Land(GlobalPosition);
 
+		// O pavio chiando, do arremesso até a explosão (sai junto com a granada).
+		FusePlayer = Sfx.Attached(this, FuseSound, FuseRange, own: false, FuseDb);
+
 		// A granada de verdade no lugar da bola (pedido do Jhon, 18/11).
 		Node3D model = WeaponModel.Build(Arsenal.IsGrenade(ModelId) ? ModelId : Arsenal.GrenadeId);
 		if (model.GetChildCount() > 0)
@@ -173,6 +203,10 @@ public partial class Grenade : RigidBody3D
 			Landed = true;
 			LandedAt = at;
 			_timer = Fuse;
+			// O pavio começou a contar: o fim dele, acelerando até a explosão.
+			FuseEndPlayer = Sfx.Attached(this, FuseEndSound, FuseRange * 1.3f, own: false, FuseEndDb);
+			if (FuseEndPlayer is AudioStreamPlayer3D end && Fuse > 0.05f)
+				end.PitchScale = Mathf.Clamp(FuseEndLength / Fuse, 0.5f, 2f);
 		}
 		LinearDamp = RollDamp;
 		AngularDamp = SpinDamp;
@@ -342,9 +376,12 @@ public partial class Grenade : RigidBody3D
 
 	/// <summary>A menor fresta por onde a explosão passa (m). Um raio fino
 	/// passava pela junta entre duas peças da parede, pela fresta de uma
-	/// porta ou pelo vão de 2 cm entre o muro e a calçada, e a granada feria
-	/// do outro lado; a conferência agora anda com uma bola desse diâmetro.</summary>
-	[Export] public float SightGap = 0.1f;
+	/// porta ou pelo vão entre o muro e a calçada, e a granada feria do outro
+	/// lado; a conferência agora anda com uma bola desse diâmetro. Com 10 cm
+	/// a bola raspava na borda de cima de um muro baixo e a cabeça que
+	/// aparecia 4 cm acima dele não levava nada: 6 cm barra a fresta de 4 cm
+	/// e deixa passar o que se vê por cima do muro.</summary>
+	[Export] public float SightGap = 0.06f;
 
 	/// <summary>
 	/// A explosão enxerga o corpo (Jhon, 26/11: "área de efeito da granada
@@ -354,7 +391,7 @@ public partial class Grenade : RigidBody3D
 	/// caminho livre até o ponto da explosão, sem parede, barreira nem
 	/// cenário no meio. Vários pontos para a quina não decidir sozinha: quem
 	/// está meio escondido atrás de um caixote ainda leva. O caminho é
-	/// conferido com uma bola de <see cref="SightGap"/>, não com um raio:
+	/// conferido com uma bola de <see cref="SightGap"/> (6 cm), não com um raio:
 	/// fresta mais fina que isso não deixa passar. Outro corpo na frente não
 	/// protege (o mesmo que o tiro, que passa por aliado).
 	///
