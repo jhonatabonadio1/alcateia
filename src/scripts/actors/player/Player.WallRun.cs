@@ -92,6 +92,23 @@ public partial class Player
 	/// <summary>Velocidade com que sobe por cima do obstáculo, em m/s.</summary>
 	[Export] public float WallClimbSpeed = 7f;
 
+	/// <summary>
+	/// Objeto pequeno — poste, haste de placa, coluna fina, tubo: o corte
+	/// dele, na altura do corpo, cabe num quadrado deste lado (m). Nele o
+	/// lobo gruda e dá a volta, como no tonel, em vez de achar a "ponta de
+	/// uma parede fina" e sair reto na hora em que grudou (Jhon, 26/11: "o
+	/// lobo não gruda em paredes e objetos muito curtos ou pequenos, como um
+	/// poste ou placa de rua"). Uma placa ou parede curta é comprida num
+	/// sentido só: não é pequena, corre-se na face dela.
+	/// </summary>
+	[Export] public float WallPoleMaxWidth = 0.6f;
+
+	/// <summary>Volta mais rápida em volta de um objeto, em graus por segundo.
+	/// Num poste de 12 cm a corrida inteira (4,45 m/s no Bruto, a 0,4 m do
+	/// eixo) dava quase duas voltas por segundo; no tonel de 3 m (170°/s) não
+	/// muda nada.</summary>
+	[Export] public float WallOrbitMaxTurn = 360f;
+
 	/// <summary>Indo para longe da parede mais rápido que isto (m/s), não
 	/// gruda. É o que impede de regrudar na ponta que acabou de deixar.</summary>
 	[Export] public float WallLeaveSpeed = 0.5f;
@@ -362,7 +379,50 @@ public partial class Player
 			return false;
 		}
 
+		// Chegando pela ponta de uma placa, de uma parede curta ou de um bloco,
+		// a sonda acha a aresta antes da face: grudar ali era grudar numa
+		// normal torta e, no quadro seguinte, achar a "ponta da parede fina" e
+		// sair reto — numa placa de 1 m o lobo nem chegava a correr nela. A
+		// face está logo à frente: espera os poucos centímetros até ficar ao
+		// lado dela e gruda reto.
+		if (!_wallRound && FaceJustAhead(normal))
+		{
+			WallLog("at the edge: waits to be beside the face");
+			return false;
+		}
+
 		return CommitGrab(normal);
+	}
+
+	/// <summary>
+	/// A parede achada é uma aresta (de frente para ela não há face reta) e
+	/// a face está logo à frente, no sentido em que o corpo vai, ao lado
+	/// dele: até 0,8 m adiante, um raio para o lado da parede acha uma face
+	/// virada para o corpo.
+	/// </summary>
+	private bool FaceJustAhead(Vector3 normal)
+	{
+		var flat = new Vector3(Velocity.X, 0, Velocity.Z);
+		if (flat.Length() < 0.5f || FaceStraightAhead(normal)) return false;
+		Vector3 m = flat.Normalized();
+		Vector3 side = -(normal - m * normal.Dot(m));
+		if (side.Length() < 0.2f) return false;    // a parede está à frente, não ao lado
+		side = side.Normalized();
+
+		var space = GetWorld3D().DirectSpaceState;
+		var exclude = new Godot.Collections.Array<Rid> { GetRid() };
+		foreach (float ahead in new[] { 0.25f, 0.5f, 0.8f })
+		{
+			Vector3 from = GlobalPosition + m * ahead;
+			var query = PhysicsRayQueryParameters3D.Create(from, from + side * (WallHoldDistance + WallCheckDistance));
+			query.Exclude = exclude;
+			var hit = space.IntersectRay(query);
+			if (hit.Count == 0 || hit["collider"].Obj is CharacterBody3D || IsInvisibleLimit(hit["collider"].Obj)) continue;
+			Vector3 n = (Vector3)hit["normal"];
+			n.Y = 0;
+			if (n.LengthSquared() > 1e-6f && n.Normalized().Dot(-side) > 0.9f) return true;
+		}
+		return false;
 	}
 
 	/// <summary>Gruda de fato: daqui em diante o lobo corre nesta parede.</summary>
@@ -895,6 +955,15 @@ public partial class Player
 
 		float target = HumanSpeed * SpeedScale * WallRunSpeedBonus;
 
+		// Em volta de um poste a volta é curta: com o passo inteiro o lobo
+		// rodopiava. A volta tem um teto de giro (WallOrbitMaxTurn); num
+		// objeto largo, como o tonel, o teto nem chega.
+		if (_wallRound && WallOrbitMaxTurn > 0f)
+		{
+			float radius = new Vector2(GlobalPosition.X, GlobalPosition.Z).DistanceTo(_wallCenter);
+			target = Mathf.Min(target, Mathf.DegToRad(WallOrbitMaxTurn) * radius);
+		}
+
 		// O passo muda aos poucos: acelera ao grudar, em vez de saltar de
 		// parado para correndo num quadro. O olhar continua livre —
 		// a direção é a escolhida ao grudar.
@@ -956,7 +1025,12 @@ public partial class Player
 	/// mesmo plano (o corpo estava à mesma distância dela).</summary>
 	private bool IsLastWall(Vector3 normal)
 	{
-		if (_lastWall == Vector3.Zero || normal.Dot(_lastWall) <= SameWallThreshold) return false;
+		if (_lastWall == Vector3.Zero) return false;
+		// Poste, coluna e tonel têm todas as normais: o mesmo objeto é a mesma
+		// parede, de qualquer lado. Sem isto saltar do poste e voltar a ele
+		// por outro lado subia o poste como elevador.
+		if (_lastWallRoundBody.IsValid && _wallRound && _wallBody == _lastWallRoundBody) return true;
+		if (normal.Dot(_lastWall) <= SameWallThreshold) return false;
 		return Mathf.Abs(_lastWall.Dot(GlobalPosition) - _lastWallPlane) < SameWallGap;
 	}
 
@@ -967,7 +1041,11 @@ public partial class Player
 		_lastWall = _wallNormal;
 		_lastWallHeight = GlobalPosition.Y;
 		_lastWallPlane = _wallNormal.Dot(GlobalPosition);
+		_lastWallRoundBody = _wallRound ? _wallBody : default;
 	}
+
+	/// <summary>O poste, coluna ou tonel deixado agora (vazio: era parede).</summary>
+	private Rid _lastWallRoundBody;
 
 	private float _lastWallPlane;
 
@@ -1079,8 +1157,101 @@ public partial class Player
 	private Rid _wallBody;
 
 	/// <summary>A parede em que a sonda encostou é redonda (cilindro,
-	/// cápsula ou esfera de colisão).</summary>
+	/// cápsula ou esfera de colisão) ou pequena (<see cref="_wallSmall"/>):
+	/// o lobo dá a volta nela.</summary>
 	private bool _wallRound;
+
+	/// <summary>A parede em que a sonda encostou é um objeto pequeno: o corte
+	/// dele na altura do corpo cabe em <see cref="WallPoleMaxWidth"/>.</summary>
+	private bool _wallSmall;
+
+	/// <summary>O eixo do objeto redondo ou pequeno (x, z no mundo): a volta é
+	/// em torno dele.</summary>
+	private Vector2 _wallCenter;
+
+	/// <summary>A medida de cada forma de colisão (corpo, forma, faixa de
+	/// meio metro de altura): pequena e o centro. Medir uma malha grande é
+	/// caro; a resposta não muda enquanto o mapa não muda. Só números, por
+	/// jogador (não é cache de recurso).</summary>
+	private readonly System.Collections.Generic.Dictionary<(ulong, int, int), (bool Small, Vector2 Center)> _wallSizes = new();
+
+	/// <summary>
+	/// O corte da forma de colisão na altura do corpo (a faixa da sonda, 0,9 m)
+	/// cabe num quadrado de <see cref="WallPoleMaxWidth"/>? Poste, haste de
+	/// placa, coluna fina. Malha: só os triângulos que passam pela faixa
+	/// contam — o braço de um poste de luz, lá em cima, não faz dele uma
+	/// parede. Para de medir assim que passa da largura.
+	/// </summary>
+	private bool SmallAt(Rid body, int index, Rid shape, PhysicsServer3D.ShapeType type, out Vector2 center)
+	{
+		center = Vector2.Zero;
+		if (WallPoleMaxWidth <= 0f) return false;
+		var key = (body.Id, index, Mathf.FloorToInt(GlobalPosition.Y / 0.5f));
+		if (_wallSizes.TryGetValue(key, out var known))
+		{
+			center = known.Center;
+			return known.Small;
+		}
+
+		Transform3D at = (Transform3D)PhysicsServer3D.BodyGetState(body, PhysicsServer3D.BodyState.Transform)
+			* PhysicsServer3D.BodyGetShapeTransform(body, index);
+		float low = GlobalPosition.Y - 0.45f, high = GlobalPosition.Y + 0.45f;
+		Vector2 min = new(float.MaxValue, float.MaxValue), max = -min;
+		bool any = false, small = true;
+
+		void Take(Vector3 p)
+		{
+			min = min.Min(new Vector2(p.X, p.Z));
+			max = max.Max(new Vector2(p.X, p.Z));
+			any = true;
+			if (max.X - min.X > WallPoleMaxWidth || max.Y - min.Y > WallPoleMaxWidth) small = false;
+		}
+
+		Variant data = PhysicsServer3D.ShapeGetData(shape);
+		switch (type)
+		{
+			case PhysicsServer3D.ShapeType.Box:
+				Vector3 h = data.AsVector3();
+				for (int i = 0; i < 8 && small; i++)
+					Take(at * new Vector3((i & 1) == 0 ? -h.X : h.X, (i & 2) == 0 ? -h.Y : h.Y, (i & 4) == 0 ? -h.Z : h.Z));
+				break;
+			case PhysicsServer3D.ShapeType.ConvexPolygon:
+				foreach (Vector3 p in data.AsVector3Array())
+				{
+					Take(at * p);
+					if (!small) break;
+				}
+				break;
+			case PhysicsServer3D.ShapeType.ConcavePolygon:
+				Vector3[] faces = data.AsGodotDictionary()["faces"].AsVector3Array();
+				for (int i = 0; i + 2 < faces.Length && small; i += 3)
+				{
+					Vector3 a = at * faces[i], b = at * faces[i + 1], c = at * faces[i + 2];
+					if (Mathf.Max(a.Y, Mathf.Max(b.Y, c.Y)) < low || Mathf.Min(a.Y, Mathf.Min(b.Y, c.Y)) > high) continue;
+					Take(a); Take(b); Take(c);
+				}
+				break;
+			case PhysicsServer3D.ShapeType.Cylinder:
+			case PhysicsServer3D.ShapeType.Capsule:
+				float r = data.AsGodotDictionary()["radius"].AsSingle();
+				Take(at * new Vector3(-r, 0, -r));
+				Take(at * new Vector3(r, 0, r));
+				break;
+			case PhysicsServer3D.ShapeType.Sphere:
+				float s = data.AsSingle();
+				Take(at * new Vector3(-s, 0, -s));
+				Take(at * new Vector3(s, 0, s));
+				break;
+			default:
+				small = false;
+				break;
+		}
+
+		small &= any;
+		center = small ? (min + max) * 0.5f : Vector2.Zero;
+		_wallSizes[key] = (small, center);
+		return small;
+	}
 
 	private bool ProbeWall(out Vector3 normal, out float distance, bool behind = false)
 	{
@@ -1110,10 +1281,21 @@ public partial class Player
 		if (!behind)
 		{
 			_wallBody = (Rid)rest["rid"];
-			Rid shape = PhysicsServer3D.BodyGetShape(_wallBody, (int)rest["shape"]);
+			int index = (int)rest["shape"];
+			Rid shape = PhysicsServer3D.BodyGetShape(_wallBody, index);
 			var type = PhysicsServer3D.ShapeGetType(shape);
-			_wallRound = type == PhysicsServer3D.ShapeType.Cylinder || type == PhysicsServer3D.ShapeType.Capsule
+			bool round = type == PhysicsServer3D.ShapeType.Cylinder || type == PhysicsServer3D.ShapeType.Capsule
 				|| type == PhysicsServer3D.ShapeType.Sphere;
+			// Poste, haste, coluna fina: tão pequeno quanto um tonel é redondo —
+			// o lobo dá a volta nele.
+			_wallSmall = SmallAt(_wallBody, index, shape, type, out _wallCenter);
+			_wallRound = round || _wallSmall;
+			if (round && !_wallSmall)
+			{
+				Transform3D at = (Transform3D)PhysicsServer3D.BodyGetState(_wallBody, PhysicsServer3D.BodyState.Transform)
+					* PhysicsServer3D.BodyGetShapeTransform(_wallBody, index);
+				_wallCenter = new Vector2(at.Origin.X, at.Origin.Z);
+			}
 		}
 
 		if (BackedByBarrier((Vector3)rest["point"], (Vector3)rest["normal"])) return false;

@@ -35,6 +35,8 @@ public sealed class ScratchThinPropsTest : RegressionTest
 			types[t] = types.GetValueOrDefault(t) + 1;
 			Aabb box = WorldBox(cs);
 			if (box.Size == Vector3.Zero) continue;
+			string owner = cs.GetParent()?.Name ?? "";
+			if (owner.StartsWith("Barreira") || owner.StartsWith("Limite")) continue;
 			float a = Mathf.Min(box.Size.X, box.Size.Z), c = Mathf.Max(box.Size.X, box.Size.Z);
 			if (box.Size.Y < 0.6f) continue;
 			if (a > 0.35f) continue;
@@ -43,7 +45,7 @@ public sealed class ScratchThinPropsTest : RegressionTest
 			bool pole = c <= 0.4f;
 			if (pole) poles++; else plates++;
 			string body = cs.GetParent()?.Name ?? "?";
-			if (samples.Count < 400)
+			if (samples.Count < 4000)
 				samples.Add($"{(pole ? "POSTE" : "PLACA")} {body}/{cs.Name} {t} centro {box.GetCenter():0.00} tam {box.Size:0.00}");
 		}
 		RegressionBench.Note("tipos: " + string.Join(", ", types.Select(kv => $"{kv.Key} {kv.Value}")));
