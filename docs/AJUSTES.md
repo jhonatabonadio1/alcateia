@@ -727,6 +727,20 @@ nó é criado por código):
 `CorpseHold` / `CorpseFade` 1,2 s, `TintByTeam`, `BlueBody`,
 `OrangeBody`.
 
+**Corpo morto** (`src/scripts/visual/DeadBody.cs`, o mesmo no humano e no
+lobo; 26/11). `CorpseHold` / `CorpseFade` (nós `Human` e `WolfVisual`) =
+1,2 / 1,2 s: à mostra no chão depois do clipe de morte, e o sumiço. O corpo
+não desce mais um número fixo (`CorpseDrop` 0,12 m e `CorpseSink` saíram): a
+cada quadro o ponto mais baixo da pele (uns 6000 vértices por superfície) é
+medido contra o chão; caindo, sobe só o que entraria no chão; caído, encosta.
+`DeadBody.MaxLift` / `MaxDrop` = 0,6 / 0,4 m: o tanto que pode corrigir (mais
+que isso é medida errada, e o corpo fica onde o clipe pôs). O sumiço é em duas
+passadas: `corpo_profundidade.gdshader` (ou `lobo_profundidade.gdshader`)
+escreve a profundidade e a cor transparente vem depois; `push_back` 0,0008 m é
+o quanto a profundidade fica atrás da pele (o de dentro, mais fundo que isso,
+não aparece). Morto, o rabo do lobo encosta num plano no chão (o
+`ChaoDoMorto` do `WolfVisual.Corpse`).
+
 **Arma na tela** (`src/scripts/ui/ViewModel.cs`): `Kick` 0,055 m e
 `KickPitch` 3,2° (o coice: para trás e o cano para cima), `FlashLife`
 0,05 s, `BobAmount` 0,011 m e `BobSide` 0,007 m (balanço do passo, no
