@@ -213,6 +213,9 @@ public partial class Weapon : Node3D
 		if (_comboTimer > 0)
 			_comboTimer -= delta;
 
+		_sinceStrike += delta;
+		_sinceLeap += delta;
+
 		if (_strikeLeft > 0)
 			_strikeLeft -= delta;
 

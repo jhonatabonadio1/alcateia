@@ -39,9 +39,9 @@ public sealed class WolfSpamTest : RegressionTest
 		float claw = WolfMoves.ImpactDelay(WolfMove.Claw) + w.ClawCancelAfter;
 		RegressionBench.Note($"ritmo do desenho: uma garrada a cada {RegressionBench.F(claw)} s; bote a cada {RegressionBench.F(w.LeapCooldown)} s no mínimo");
 
-		foreach (string mode in new[] { "primario", "alternado", "pulo-bote-garra" })
+		foreach (string mode in new[] { "primario", "alternado", "pulo-bote", "pulo-bote-garra" })
 		{
-			await b.Place(Spot, -90f, mode == "pulo-bote-garra" ? -35f : 0f, settle: 0.5);
+			await b.Place(Spot, -90f, mode.StartsWith("pulo") ? -35f : 0f, settle: 0.5);
 			bot.GlobalPosition = Spot + new Vector3(1.4f, 0, 0);
 			target.SetPool(100000f, 0f, true);
 			await b.Seconds(0.3);
@@ -68,6 +68,11 @@ public sealed class WolfSpamTest : RegressionTest
 						else if (frame % 4 == 2) RegressionBench.Press("special");
 						else RegressionBench.Release("special");
 						break;
+					case "pulo-bote":
+						if (b.Player.IsOnFloor()) RegressionBench.Press("jump");
+						else RegressionBench.Release("jump");
+						if (down) RegressionBench.Press("special"); else RegressionBench.Release("special");
+						break;
 					default:
 						// No chão, pula; no ar, secundário (bote) e primário, um por quadro.
 						if (b.Player.IsOnFloor()) RegressionBench.Press("jump");
@@ -77,7 +82,7 @@ public sealed class WolfSpamTest : RegressionTest
 				}
 				// O alvo fica onde está (o empurrão da garra e o bote o levariam).
 				bot.GlobalPosition = Spot + new Vector3(1.4f, 0, 0);
-				if (mode != "pulo-bote-garra")
+				if (!mode.StartsWith("pulo"))
 				{
 					b.Player.GlobalPosition = new Vector3(Spot.X, b.Player.GlobalPosition.Y, Spot.Z);
 					b.Player.Rotation = new Vector3(0, Mathf.DegToRad(-90f), 0);
@@ -90,9 +95,19 @@ public sealed class WolfSpamTest : RegressionTest
 			target.Damaged -= OnDamaged;
 
 			double minGap = hits.Count > 1 ? hits.Zip(hits.Skip(1), (a, c) => c.At - a.At).Min() : double.NaN;
+			float strike = w.StrikeSpacing;
+			double frameTime = 1.0 / Engine.PhysicsTicksPerSecond;
+			// O bote é o golpe de 3× a garra: os de dano maior que a garrada mais forte.
+			int botes = hits.Count(h => h.Amount > 200f);
 			float total = hits.Sum(h => h.Amount);
 			RegressionBench.Note($"{mode}: {hits.Count} golpes em {span:0} s ({RegressionBench.F(hits.Count / span)} por s), menor intervalo {RegressionBench.F(minGap)} s, {total:0} de dano ({total / span:0} por s); golpes: "
 				+ string.Join(" ", hits.Select(h => $"{h.At:0.00}:{h.Amount:0}")));
+			b.Check(hits.Count > 0, $"{mode}: o lobo bate");
+			if (hits.Count > 1)
+				b.AtLeast(strike - frameTime * 1.5, minGap, $"{mode}: nenhum golpe a menos de {RegressionBench.F(strike)} s do anterior (s)");
+			b.AtMost(System.Math.Floor(span / strike) + 1, hits.Count, $"{mode}: golpes em {span:0} s, no máximo um a cada {RegressionBench.F(strike)} s");
+			b.AtMost(System.Math.Floor(span / System.Math.Max(w.LeapCooldown, 0.01f)) + 1, botes, $"{mode}: botes em {span:0} s, no máximo um a cada {RegressionBench.F(w.LeapCooldown)} s");
+			if (mode == "pulo-bote") b.AtLeast(2, botes, "pulando e apertando o secundário, o bote sai");
 			await b.Seconds(1.2);
 		}
 	}

@@ -50,6 +50,17 @@ public partial class Weapon
 
 	private int _comboIndex;
 
+	/// <summary>Segundos desde o último golpe do lobo que bateu (garrada,
+	/// bote, especial). É o relógio do teto contra o clique em rajada.</summary>
+	private double _sinceStrike = 99;
+
+	/// <summary>O menor intervalo entre dois golpes do lobo que ferem: o ritmo
+	/// da garrada encadeada (<see cref="CombatRules.WolfStrikeSpacing"/>, 0,34 s).
+	/// Nenhum golpe — garrada, bote — sai antes disso depois do anterior, por
+	/// mais rápido que se clique (alpha fechado, 26/11: "clique repetido nos
+	/// ataques do lobo, principal e secundário, parece não ter limite").</summary>
+	public float StrikeSpacing => CombatRules.WolfStrikeSpacing(WolfMoves.ImpactDelay(WolfMove.Claw), ClawCancelAfter);
+
 	/// <summary>Próxima garrada com o outro braço.</summary>
 	private bool _nextPunch;
 
@@ -345,6 +356,8 @@ public partial class Weapon
 				&& thing.GetNodeOrNull<Health>("Health") != null)
 				struckNow.Add(thing);
 		}
+
+		_sinceStrike = 0;
 
 		Node main = null;
 		if (splash < 1f)

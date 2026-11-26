@@ -108,6 +108,13 @@ public partial class Player
 	/// (<see cref="Weapon.DiveForwardFromWall"/>).</summary>
 	public bool JumpedFromWall => IsJumpAirborne && _jumpFromWall;
 	private bool _jumpFromWall;
+
+	/// <summary>A queda do passo anterior (<see cref="FallTracker"/>): na
+	/// parede e na escada o corpo está apoiado; no salto da parede, no bote e
+	/// no especial a queda não fere (Jhon, 26/11).</summary>
+	private void UpdateFall() =>
+		_fall.Update(this, _health, _fallProfile, _form.IsWolf, IsOnFloor() || _onWall || _onLadder,
+			JumpedFromWall || _weapon.FallExempt);
 	private CapsuleShape3D _capsule;
 	private bool _crouching;
 

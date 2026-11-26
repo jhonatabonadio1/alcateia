@@ -104,6 +104,11 @@ public partial class Weapon
 		// não saiu não sai mais, e os cliques guardados são esquecidos.
 		bool clawingInAir = _strikeLeft > 0 && !_diving && !_flying && !_body.IsOnFloor();
 		if (_cooldown > 0 && !clawingInAir) return;
+		// O teto do clique em rajada: o bote não sai antes de StrikeSpacing
+		// depois do último golpe que bateu, nem antes de LeapCooldown depois do
+		// último bote. Apertado antes, fica esperando no ar (Player.Actions) e
+		// sai na hora em que pode.
+		if (_sinceStrike < StrikeSpacing || _sinceLeap < LeapCooldown) return;
 		if (!_body.IsOnFloor() && HeightAboveGround() >= LeapMinHeight)
 		{
 			_attackQueue = 0;

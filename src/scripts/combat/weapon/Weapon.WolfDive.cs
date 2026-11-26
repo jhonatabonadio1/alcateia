@@ -11,14 +11,22 @@ public partial class Weapon
 	[ExportGroup("Lobo: bote")]
 	[Export] public float LeapDamageBonus = 3f;
 
-	/// <summary>Tempo mínimo entre um bote e outro, contado do clique.
-	/// Zero: o bote volta assim que a aterrissagem acaba, e todo pulo pode
-	/// ter o seu. Com 2 s, quem pulava logo depois de aterrissar apertava
-	/// e nada saía. A aterrissagem prende o lobo, então pular de novo já
-	/// espera o golpe acabar.</summary>
-	[Export] public float LeapCooldown = 0f;
+	/// <summary>Tempo mínimo entre um bote e outro, contado do clique. Era
+	/// 0 ("todo pulo pode ter o seu"): pulando e apertando o secundário sem
+	/// parar, saía um bote de 360 a cada 0,7 s (540 de dano por segundo; alpha
+	/// fechado, 26/11: "dá pra farmar clique"). Com 1 s, quase todo pulo ainda
+	/// tem o seu; o que cai antes fica guardado no ar e sai quando pode
+	/// (Player.Actions), e o HUD mostra a espera.</summary>
+	[Export] public float LeapCooldown = 1f;
 
-	/// <summary>Segundos entre o dano do bote e a garra poder sair.</summary>
+	/// <summary>Segundos desde o último bote (o clique).</summary>
+	private double _sinceLeap = 99;
+
+	/// <summary>Segundos entre o dano do bote e a garra poder sair. Era 0,05:
+	/// a garrada batia 0,2 s depois do bote, e o ciclo pulo-bote-garra dava
+	/// 870 de dano por segundo (alpha fechado, 26/11). Agora a garra pode sair
+	/// quando a próxima pancada chega a <see cref="StrikeSpacing"/> do bote
+	/// (o clique antes disso fica guardado e sai na hora).</summary>
 	[Export] public float DiveFollowUp = 0.05f;
 
 	/// <summary>Quanto ainda dura a aterrissagem do último bote, em tempo
@@ -113,6 +121,11 @@ public partial class Weapon
 	/// e mais nada até encostar.</summary>
 	public bool IsDiving => _diving && _form != null && _form.IsWolf;
 
+	/// <summary>Num golpe que voa — o bote, o especial do começo ao fim —: a
+	/// queda que passa por ele não fere (Jhon, 26/11: "não deve tomar dano de
+	/// queda no ataque secundário e com a habilidade suprema").</summary>
+	public bool FallExempt => _form != null && _form.IsWolf && (_diving || _flying || _pounceGuard || _diveLandLeft > 0);
+
 	/// <summary>Velocidade do mergulho em curso, fixa desde o clique.</summary>
 	public Vector3 DiveVelocity { get; private set; }
 
@@ -144,6 +157,7 @@ public partial class Weapon
 		_diving = true;
 		_diveLeft = DiveMaxTime;
 		_diveElapsed = 0;
+		_sinceLeap = 0;
 		_strikeId++;
 		_strikeLeft = 0;
 		_cooldown = DiveMaxTime + WolfMoves.LandDuration;
@@ -243,7 +257,7 @@ public partial class Weapon
 		float land = WolfMoves.LandDuration;
 		_strikeLeft = land;
 		_rootLeft = land;
-		_cooldown = Mathf.Max(DiveFollowUp, LeapCooldown - (float)_diveElapsed);
+		_cooldown = Mathf.Max(DiveFollowUp, StrikeSpacing - WolfMoves.ImpactDelay(WolfMove.Claw));
 		_diveLandLeft = land;
 		MarkRecovery(land);
 

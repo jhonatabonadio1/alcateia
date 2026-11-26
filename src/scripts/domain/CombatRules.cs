@@ -98,10 +98,46 @@ public static class CombatRules
 	public static float PounceMultiplier(float fullBonus, float minPower, float power) =>
 		fullBonus * Lerp(minPower, 1f, power);
 
+	/// <summary>
+	/// A fração do dano do especial que leva quem está em volta do alvo
+	/// principal, a <paramref name="distance"/> metros de onde o lobo caiu
+	/// (Jhon, 26/11: "mais poder de dano e em área, afetando mais pessoas ao
+	/// redor"): <paramref name="near"/> até <paramref name="inner"/> m, caindo
+	/// em linha reta até <paramref name="far"/> na borda (<paramref name="outer"/>),
+	/// e nada fora dela.
+	/// </summary>
+	public static float PounceSplash(float distance, float inner, float outer, float near, float far)
+	{
+		if (distance > outer) return 0f;
+		if (distance <= inner) return near;
+		return Lerp(near, far, (distance - inner) / MathF.Max(outer - inner, 0.01f));
+	}
+
+	/// <summary>
+	/// O menor intervalo entre dois golpes do lobo que ferem, em segundos: o
+	/// ritmo da garrada encadeada (o golpe chega em <paramref name="impactDelay"/>
+	/// e a próxima pode sair <paramref name="cancelAfter"/> depois dele). Vale
+	/// para qualquer golpe — garrada, bote — e é o teto contra o clique em
+	/// rajada (alpha fechado, 26/11).
+	/// </summary>
+	public static float WolfStrikeSpacing(float impactDelay, float cancelAfter) =>
+		MathF.Max(impactDelay + cancelAfter, 0.05f);
+
 	/// <summary>A carga para o salto cair a uma garra de quem está a
 	/// <paramref name="distance"/> metros. É como o bot escolhe.</summary>
 	public static float PounceChargeFor(float distance, float clawReach, float minDistance, float maxDistance) =>
 		Math.Clamp((distance - clawReach - minDistance) / MathF.Max(maxDistance - minDistance, 0.1f), 0f, 1f);
+
+	// ------------------------------------------------------------ queda
+
+	/// <summary>
+	/// Dano de uma queda de <paramref name="height"/> metros (do ponto mais
+	/// alto do voo até onde pousou): nada até <paramref name="safeHeight"/>, e
+	/// <paramref name="perMeter"/> a cada metro além disso (Jhon, 26/11:
+	/// "humano começar a tomar dano de queda, lobo também, mas menos").
+	/// </summary>
+	public static float FallDamage(float height, float safeHeight, float perMeter) =>
+		height > safeHeight ? (height - safeHeight) * MathF.Max(perMeter, 0f) : 0f;
 
 	// ------------------------------------------------------------ faca
 
