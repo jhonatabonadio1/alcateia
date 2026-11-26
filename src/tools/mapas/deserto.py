@@ -119,7 +119,8 @@ def desenho():
         ret = P.mundo(c0, r0, c1, r1)
         if c1 - c0 > r1 - r0: yaw = 90.0 if P.letra(r0, c0 - 1) in 'ae' else -90.0
         else: yaw = 0.0 if P.letra(r0 - 1, c0) in 'ae' else 180.0
-        M.rampa(M.encaixar('Stairs_01R', *ret, yaw=yaw, colide='malha'), (3.64, 0.0), (-1.79, 3.49), (-1.17, 1.17), eixo=2)
+        # folga de 3 cm: as quinas desta escada encostavam na chapa, e o corpo subia aos trancos (26/11)
+        M.rampa(M.encaixar('Stairs_01R', *ret, yaw=yaw, colide='malha'), (3.64, 0.0), (-1.79, 3.49), (-1.17, 1.17), eixo=2, folga=0.03)
 
     # ---- o que está na rua
     for L, r, c, x, z in P.celulas('mnwprbcjk'):

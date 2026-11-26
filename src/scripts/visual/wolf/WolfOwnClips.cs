@@ -43,6 +43,29 @@ public static class WolfOwnClips
 		["jump_land"] = "Jump_Land"
 	};
 
+	/// <summary>Os ossos que apoiam no chão (pés e mãos): giram a partir do
+	/// repouso do corpo, não na direção do osso do clipe
+	/// (<see cref="AnimationKit.RetargetPose"/>, parâmetro keepRest). O pé
+	/// do esqueleto dos clipes aponta mais para baixo que o do corpo: copiando
+	/// a direção dele, o pé inclinava para a frente e a ponta das garras
+	/// entrava de 6 a 18 cm no chão (26/11).</summary>
+	public static readonly HashSet<string> SoleBones = new()
+	{
+		"mixamorig_LeftUpLeg", "mixamorig_LeftLeg", "mixamorig_RightUpLeg", "mixamorig_RightLeg",
+		"mixamorig_LeftFoot", "mixamorig_LeftToeBase", "mixamorig_RightFoot", "mixamorig_RightToeBase",
+		"mixamorig_LeftHand", "mixamorig_RightHand"
+	};
+
+	/// <summary>Os papéis que seguem na direção dos ossos do clipe, pés
+	/// inclusive: engatinhar e de quatro. Neles a pata de apoio patinava mais
+	/// a partir do repouso (medido em 26/11, PassadaDoLobo: engatinhando 0,27
+	/// → 0,65 m/s, de quatro 0,56 → 0,65), e as patas no chão
+	/// (<see cref="WolfFootPlant"/>) já levantam as garras até o chão. Nos
+	/// andares em pé o repouso patina menos (de lado 0,49 → 0,26, para trás
+	/// 0,46 → 0,15).</summary>
+	private static ICollection<string> KeepRestFor(string role) =>
+		role is "crawl" or "sprint" ? null : SoleBones;
+
 	public static bool Has(string role) => Names.ContainsKey(role);
 
 	/// <summary>Abre o arquivo; quem chama libera a cena. Null se o arquivo
@@ -123,7 +146,7 @@ public static class WolfOwnClips
 		AnimationKit.MoveHips(animation, reference, refHips, fr, body, bodyHips, fb);
 
 		AnimationKit.RetargetPose(animation, reference, body,
-			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion());
+			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion(), KeepRestFor(role));
 
 		// Os clipes do Jhon são no lugar: o quadril vai e volta dentro do
 		// ciclo (11 cm no andar) sem sair do lugar. Esse vaivém fica — tirá-lo

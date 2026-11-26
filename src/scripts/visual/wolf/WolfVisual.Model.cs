@@ -90,6 +90,10 @@ public partial class WolfVisual
 		ViewModel.MarkCharacter(_model);
 		BuildTree();
 		BuildTail();
+		// As patas no chão (26/11): só onde o lobo é desenhado. O corpo do
+		// servidor de partida não desenha nem precisa.
+		if (!OS.HasFeature("dedicated_server") && _body is not Player { Driven: true } && FindSkeleton(_model) is Skeleton3D legs)
+			_plant = WolfFootPlant.For(_model, legs, _body);
 		return true;
 	}
 

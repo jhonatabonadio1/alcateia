@@ -182,21 +182,24 @@ class Montagem:
                     self.por(nome, x, z, yaw=yaw, y=y, escala=(1.0, 1.0 + 0.35 * f + (h >> 8) % 3 * 0.15, 1.0), colide=None, planta=False)
             dist += fundo + 5.0
 
-    def rampa(self, it, pe, alto, lados, eixo=0, ate=None, grosso=0.3):
+    def rampa(self, it, pe, alto, lados, eixo=0, ate=None, grosso=0.3, folga=0.0):
         """Sobre os degraus da escada ``it`` (posta com ``colide='malha'``), uma chapa inclinada só de colisão, rente às
         quinas dos degraus: o corpo sobe e desce deslizando, na velocidade de andar, em vez de bater em cada espelho e
         ser posto em cima do degrau (o tranco que o Jhon viu, 20/11: "ele não sobe na mesma velocidade que anda, ele
         trava"). Medidas da peça, sem escala: ``pe`` = (s, y) onde a linha das quinas toca a base; ``alto`` = (s, y) da
         quina do último degrau; ``lados`` = (de, até) no outro eixo; ``eixo``: 0 se a escada sobe ao longo de x, 2 se de
-        z. ``ate``: a altura (no mundo) do piso de cima — a chapa segue na mesma inclinação até lá."""
-        it.rampa = (pe, alto, lados, eixo, ate, grosso); return it
+        z. ``ate``: a altura (no mundo) do piso de cima — a chapa segue na mesma inclinação até lá. ``folga``: quanto a chapa
+        fica acima da linha das quinas, em metros (a escada do Deserto, Stairs_01R, tem quinas que encostam na chapa: o
+        corpo batia nelas e subia aos trancos, de 3 a 8 cm por quadro — o "tremor" de quatro na escada, 26/11; com 3 cm,
+        5,7 cm em todo quadro)."""
+        it.rampa = (pe, alto, lados, eixo, ate, grosso, folga); return it
 
     def _rampas(self):
         """As chapas das escadas, no mundo: (centro, base 3×3 com os eixos nas colunas, tamanho)."""
         out = []
         for it in self.itens:
             if not getattr(it, 'rampa', None): continue
-            pe, alto, lados, eixo, ate, grosso = it.rampa
+            pe, alto, lados, eixo, ate, grosso, folga = it.rampa if len(it.rampa) == 7 else (*it.rampa, 0.0)
             def ponto(s_, y, l):
                 q = np.zeros(3); q[eixo] = s_; q[1] = y; q[2 - eixo] = l; return it.pontos(q[None])[0]
             meio = (lados[0] + lados[1]) / 2; A, B = ponto(*pe, meio), ponto(*alto, meio)
@@ -204,7 +207,7 @@ class Montagem:
             u = (B - A) / np.linalg.norm(B - A); w = ponto(*pe, lados[1]) - ponto(*pe, lados[0]); largo = np.linalg.norm(w); w = w / largo
             n = np.cross(w, u)
             if n[1] < 0: n, w = -n, -w
-            out.append(((A + B) / 2 - n * grosso / 2, np.column_stack([u, n, w]), (float(np.linalg.norm(B - A)), grosso, float(largo))))
+            out.append(((A + B) / 2 - n * grosso / 2 + n * folga, np.column_stack([u, n, w]), (float(np.linalg.norm(B - A)), grosso, float(largo))))
         return out
 
     def fileira(self, nome, x0, z0, dx, dz, n, **k):

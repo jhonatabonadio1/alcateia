@@ -409,6 +409,39 @@ Enquanto se atira a mira **só sobe**; ela desce quando o gatilho solta
 com o mouse é descontado do que falta descer — sem isso, quem compensa
 o recuo à mão termina mirando abaixo do alvo.
 
+### As patas do lobo no chão (26/11)
+
+**Toda pata de apoio encosta no chão, e nenhuma entra nele** — no plano, na
+rampa, no degrau, parado, andando, de quatro, agachado e pousando (alpha
+fechado: "os pés do lobo atravessam o chão"). Duas partes:
+
+- **O ajuste dos clipes ao corpo** (`AnimationKit.RetargetPose`,
+  `WolfOwnClips.SoleBones`): pernas, pés e mãos giram a partir do repouso
+  do corpo, não na direção do osso do esqueleto dos clipes do Jhon, cujo pé
+  aponta mais para baixo. Copiando a direção, o pé inclinava e a ponta das
+  garras entrava de 6 a 18 cm no chão em toda pose. Coluna, braços e cabeça
+  continuam copiando a direção (o lobo do Meshy está em A, os clipes não).
+  Engatinhar e de quatro ficam como eram, copiando a direção também nas
+  pernas (`WolfOwnClips.KeepRestFor`): neles a pata de apoio patinava mais a
+  partir do repouso (engatinhando 0,27 → 0,65 m/s), e o apoio por quadro já
+  põe as garras no chão. Nos andares em pé o repouso patina menos (de lado
+  0,49 → 0,26 m/s, para trás 0,46 → 0,15).
+- **O apoio por quadro** (`WolfFootPlant`, um modificador do esqueleto, depois
+  da animação): para cada pata, a pele de baixo do pé (e da mão) contra o chão
+  de verdade em quatro pontos (calcanhar, garras, meio e o mais baixo, com o
+  plano do chão de cada um). Dentro do chão sobe; a de apoio (parada na
+  vertical em relação ao corpo) encosta; a que dá o passo não é puxada. Um IK
+  de dois ossos (coxa e canela, braço e antebraço) dobra o joelho, e a sola
+  mantém o ângulo da animação. Só desenho: a cápsula, a física e a rede não
+  mudam. Nas escadas, a pata pisa no degrau que se vê, não na chapa lisa e
+  invisível de subir.
+
+**Escada sem tranco**: a chapa de subir fica pelo menos 3 cm acima das quinas
+dos degraus quando a colisão dos degraus encosta nela (o Deserto:
+`Montagem.rampa`, `folga`) — senão o corpo bate ora na chapa, ora numa quina,
+e sobe aos trancos. A câmera de terceira pessoa entra rápido e sai devagar
+(`CameraArmEase`).
+
 ### O lobo de perto
 
 Alcance de garra maior que o de uma faca. **O lobo é canhão de vidro**
