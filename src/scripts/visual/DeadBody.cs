@@ -80,11 +80,20 @@ public sealed class DeadBody
 	/// <summary>Ossos por vértice guardados (o Godot usa 4 ou 8).</summary>
 	private const int Slots = 8;
 
-	public DeadBody(Node3D model, CollisionObject3D body)
+	/// <param name="owner">O nó do corpo que o dono esconde quando não é a
+	/// forma de agora (o humano de quem morreu lobo, e o contrário): escondido,
+	/// nada é medido.</param>
+	public DeadBody(Node3D model, CollisionObject3D body, Node3D owner)
 	{
 		_model = model;
 		_body = body;
+		_owner = owner;
 	}
+
+	private readonly Node3D _owner;
+
+	/// <summary>O corpo desta forma está à mostra (o lobo morto não mede o humano escondido).</summary>
+	private bool Shown => _model != null && _model.Visible && (_owner == null || _owner.Visible);
 
 	/// <summary>O modelo deste corpo (o personagem pode trocar de modelo).</summary>
 	public Node3D Model => _model;
@@ -116,7 +125,7 @@ public sealed class DeadBody
 	/// </summary>
 	public void Step(double delta, double timer, double clip)
 	{
-		if (_model == null || !_begun || !_model.Visible) return;
+		if (!_begun || !Shown) return;
 
 		_fallen = timer >= clip;
 		_delta = (float)delta;
@@ -137,7 +146,7 @@ public sealed class DeadBody
 	/// <summary>A pose do quadro está pronta: encosta o corpo no chão.</summary>
 	private void OnPose()
 	{
-		if (_model == null || !_begun || !_model.Visible) return;
+		if (!_begun || !Shown) return;
 		FitFloor(_delta, _fallen);
 		_model.Position = new Vector3(_model.Position.X, _baseY + _offset, _model.Position.Z);
 	}

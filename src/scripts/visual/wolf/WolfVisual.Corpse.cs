@@ -25,7 +25,7 @@ public partial class WolfVisual
 	private void BeginCorpse()
 	{
 		if (_model == null) return;
-		_deadBody ??= new DeadBody(_model, _body);
+		_deadBody ??= new DeadBody(_model, _body, this);
 		_deadBody.Hold = CorpseHold;
 		_deadBody.Fade = CorpseFade;
 		LayTailFloor();

@@ -39,7 +39,7 @@ public partial class CharacterAnimator
 		if (_deadBody?.Model != _model)
 		{
 			_deadBody?.Reset();
-			_deadBody = new DeadBody(_model, GetParentOrNull<CollisionObject3D>());
+			_deadBody = new DeadBody(_model, GetParentOrNull<CollisionObject3D>(), this);
 		}
 		_deadBody.Hold = CorpseHold;
 		_deadBody.Fade = CorpseFade;
