@@ -3313,28 +3313,28 @@ metadata/mapa_cor = Color(0.634, 0.466, 0.321, 1)
 shape = SubResource("S27")
 
 [node name="pr0" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.8777, -0.4792, 0, 0.4792, 0.8777, 0, 0, 0, 1, -17.0745, 1.6133, -18.6557)
+transform = Transform3D(0.8777, -0.4792, 0, 0.4792, 0.8777, 0, 0, 0, 1, -17.0889, 1.6396, -18.6557)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr0"]
 shape = SubResource("S42")
 
 [node name="pr1" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0.8777, -0.4792, 0, 0.4792, 0.8777, 0, 0, 0, 1, 12.9255, 1.6133, -16.1557)
+transform = Transform3D(0.8777, -0.4792, 0, 0.4792, 0.8777, 0, 0, 0, 1, 12.9111, 1.6396, -16.1557)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr1"]
 shape = SubResource("S42")
 
 [node name="pr2" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(-0.8777, 0.4792, 0, 0.4792, 0.8777, 0, 0, 0, -1, -12.9255, 1.6133, 16.1557)
+transform = Transform3D(-0.8777, 0.4792, 0, 0.4792, 0.8777, 0, 0, 0, -1, -12.9111, 1.6396, 16.1557)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr2"]
 shape = SubResource("S42")
 
 [node name="pr3" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(-0.8777, 0.4792, 0, 0.4792, 0.8777, 0, 0, 0, -1, 17.0745, 1.6133, 18.6557)
+transform = Transform3D(-0.8777, 0.4792, 0, 0.4792, 0.8777, 0, 0, 0, -1, 17.0889, 1.6396, 18.6557)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr3"]

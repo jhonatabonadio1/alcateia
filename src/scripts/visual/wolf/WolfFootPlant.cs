@@ -273,6 +273,12 @@ public partial class WolfFootPlant : SkeletonModifier3D
 		}
 	}
 
+	/// <summary>A chapa lisa, só de colisão, que os mapas põem por cima dos degraus
+	/// de uma escada (Montagem.rampa): "pr0", "er3"... no grupo Colisao.</summary>
+	private static bool IsStairPlate(Node node) =>
+		node is StaticBody3D && node.GetParent()?.Name == "Colisao"
+		&& System.Text.RegularExpressions.Regex.IsMatch(node.Name, "^[a-z]r\\d+$");
+
 	/// <summary>O ponto mais longe de <paramref name="from"/> na horizontal.</summary>
 	private static Vector3 Farthest(Vector3[] points, Vector3 from)
 	{
@@ -294,12 +300,14 @@ public partial class WolfFootPlant : SkeletonModifier3D
 		normal = Vector3.Up;
 		var query = PhysicsRayQueryParameters3D.Create(at + Vector3.Up * RayUp, at + Vector3.Down * RayDown, _body.CollisionMask);
 		var exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
-		for (int tries = 0; tries < 3; tries++)
+		for (int tries = 0; tries < 4; tries++)
 		{
 			query.Exclude = exclude;
 			var hit = space.IntersectRay(query);
 			if (hit.Count == 0) return false;
-			if (hit["collider"].AsGodotObject() is CharacterBody3D or RigidBody3D)
+			// Corpos não contam, e a chapa invisível das escadas também não: a pata
+			// pisa no degrau que se vê, embaixo dela (Montagem.rampa: "<x>r<n>" em Colisao).
+			if (hit["collider"].AsGodotObject() is CharacterBody3D or RigidBody3D || IsStairPlate(hit["collider"].AsGodotObject() as Node))
 			{
 				exclude.Add((Rid)hit["rid"]);
 				continue;

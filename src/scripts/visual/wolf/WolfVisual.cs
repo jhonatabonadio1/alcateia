@@ -80,6 +80,10 @@ public partial class WolfVisual : Node3D
 	/// <summary>As patas no chão, depois da animação (nulo no servidor).</summary>
 	private WolfFootPlant _plant;
 
+	/// <summary>A distância alisada da câmera de terceira pessoa (nulo fora do
+	/// lobo do dono).</summary>
+	public CameraArmEase ArmEase { get; private set; }
+
 	/// <summary>O apoio das patas, para os testes.</summary>
 	public WolfFootPlant FootPlant => _plant;
 
@@ -133,6 +137,15 @@ public partial class WolfVisual : Node3D
 		}
 
 		Visible = _form.ShowsWolf;
+
+		// A câmera de terceira pessoa do dono sem tremer nas escadas (26/11).
+		if (_player is { Driven: false })
+			Callable.From(() =>
+			{
+				if (_player.GetNodeOrNull<SpringArm3D>("Head/SpringArm3D") is SpringArm3D arm
+					&& arm.GetNodeOrNull<Camera3D>("WolfCamera") is Camera3D camera)
+					ArmEase = CameraArmEase.For(arm, camera);
+			}).CallDeferred();
 
 		// Os efeitos (aura, ar de velocidade, garras, fumaça) ficam no
 		// corpo, não aqui: a fumaça aparece com o lobo ainda escondido.
