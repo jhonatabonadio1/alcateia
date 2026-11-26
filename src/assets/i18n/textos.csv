@@ -1283,3 +1283,67 @@ ESPECTADOR,,SPECTATOR,ESPECTADOR,scripts/visual/KillCam.Hud.cs
 PRONTO PARA RENASCER,,READY TO RESPAWN,LISTO PARA REAPARECER,scripts/visual/KillCam.Hud.cs
 RENASCE EM,,RESPAWNS IN,REAPARECE EN,scripts/visual/KillCam.Hud.cs
 WASD E MOUSE  ·  ESPAÇO: VOLTAR AOS ALIADOS,,WASD AND MOUSE  ·  SPACE: BACK TO ALLIES,WASD Y RATÓN  ·  ESPACIO: VOLVER A LOS ALIADOS,scripts/visual/KillCam.Hud.cs
+Movimento,,Movement,Movimiento,scripts/core/KeyBindings.cs
+Combate,,Combat,Combate,scripts/core/KeyBindings.cs
+Andar para a frente,,Move forward,Avanzar,scripts/core/KeyBindings.cs
+Andar para trás,,Move back,Retroceder,scripts/core/KeyBindings.cs
+Andar para a esquerda,,Move left,Moverse a la izquierda,scripts/core/KeyBindings.cs
+Andar para a direita,,Move right,Moverse a la derecha,scripts/core/KeyBindings.cs
+Pular,,Jump,Saltar,scripts/core/KeyBindings.cs
+Andar devagar,,Walk slowly,Caminar despacio,scripts/core/KeyBindings.cs
+Mirar · bote,,Aim · air pounce,Apuntar · zarpazo,scripts/core/KeyBindings.cs
+Especial do lobo,,Wolf special,Especial del lobo,scripts/core/KeyBindings.cs
+Recarregar · uivar,,Reload · howl,Recargar · aullar,scripts/core/KeyBindings.cs
+Coronhada,,Butt strike,Culatazo,scripts/core/KeyBindings.cs
+Placar,,Scoreboard,Marcador,scripts/core/KeyBindings.cs
+Rádio do time,,Team radio,Radio del equipo,scripts/core/KeyBindings.cs
+Guia das habilidades,,Ability guide,Guía de habilidades,scripts/core/KeyBindings.cs
+Câmera livre (morto),,Free camera (dead),Cámara libre (muerto),scripts/core/KeyBindings.cs
+"Duas vezes seguidas e segurando, o lobo corre de quatro. Segurado, sustenta a corrida na parede.",,"Twice in a row and hold: the wolf runs on all fours. Held, it keeps the wall run going.","Dos veces seguidas y manteniendo: el lobo corre a cuatro patas. Mantenida, sostiene la carrera por la pared.",scripts/core/KeyBindings.cs
+"Pular, e saltar da parede com o lobo.",,"Jump, and leap off the wall as a wolf.","Saltar, y saltar de la pared como lobo.",scripts/core/KeyBindings.cs
+"Segurar para ficar agachado, nas duas formas.",,"Hold to stay crouched, in both forms.","Mantén para agacharte, en las dos formas.",scripts/core/KeyBindings.cs
+O humano anda devagar e em silêncio enquanto segura.,,The human walks slowly and silently while held.,El humano camina despacio y en silencio mientras la mantienes.,scripts/core/KeyBindings.cs
+"Atirar, golpear com a faca, lançar a granada, a garra do lobo.",,"Shoot, stab with the knife, throw the grenade, the wolf's claw.","Disparar, apuñalar, lanzar la granada, la garra del lobo.",scripts/core/KeyBindings.cs
+Mirar (humano) e o bote no ar (lobo).,,Aim (human) and the air pounce (wolf).,Apuntar (humano) y el zarpazo en el aire (lobo).,scripts/core/KeyBindings.cs
+"Salta na mira, também no ar. Enche com abates e, devagar, com o tempo.",,"Leaps at your aim, also mid-air. Fills with kills and, slowly, over time.","Salta hacia la mira, también en el aire. Se llena con bajas y, despacio, con el tiempo.",scripts/core/KeyBindings.cs
+Recarregar (humano) e o uivo do lobo (segurar até o fim).,,Reload (human) and the wolf's howl (hold to the end).,Recargar (humano) y el aullido del lobo (mantén hasta el final).,scripts/core/KeyBindings.cs
+"A coronhada, com arma de fogo na mão.",,"The butt strike, with a firearm in hand.","El culatazo, con un arma de fuego en la mano.",scripts/core/KeyBindings.cs
+"Solta a arma da mão, que cai à frente.",,"Drops the weapon in hand, which falls in front.","Suelta el arma de la mano, que cae delante.",scripts/core/KeyBindings.cs
+"O lobo é um slot, como as armas: apertar outro slot volta a humano.",,"The wolf is a slot, like the weapons: pressing another slot turns back to human.","El lobo es un espacio, como las armas: pulsar otro espacio vuelve a humano.",scripts/core/KeyBindings.cs
+Segurar para ver o placar.,,Hold to see the scoreboard.,Mantén para ver el marcador.,scripts/core/KeyBindings.cs
+"Abre a lista das falas; com ela aberta, as teclas de número escolhem (essas não se trocam).",,"Opens the list of lines; with it open, the number keys pick one (those can't be changed).","Abre la lista de frases; con ella abierta, las teclas de número eligen (esas no se cambian).",scripts/core/KeyBindings.cs
+Segurar para ver o que cada habilidade faz.,,Hold to see what each ability does.,Mantén para ver qué hace cada habilidad.,scripts/core/KeyBindings.cs
+"Morto, solta a câmera de espectador.",,"When dead, frees the spectator camera.","Muerto, libera la cámara de espectador.",scripts/core/KeyBindings.cs
+Botão do meio,,Middle button,Botón central,scripts/core/KeyBindings.cs
+Roda para cima,,Wheel up,Rueda arriba,scripts/core/KeyBindings.cs
+Roda para baixo,,Wheel down,Rueda abajo,scripts/core/KeyBindings.cs
+Botão lateral 1,,Side button 1,Botón lateral 1,scripts/core/KeyBindings.cs
+Botão lateral 2,,Side button 2,Botón lateral 2,scripts/core/KeyBindings.cs
+Botão {0},,Button {0},Botón {0},scripts/core/KeyBindings.cs
+MEIO,,MIDDLE,CENTRO,scripts/core/KeyBindings.cs
+Aperte uma tecla…,,Press a key…,Pulsa una tecla…,scripts/lobby/KeyCapture.cs
+{0} ?,,{0} ?,{0} ?,scripts/lobby/KeyCapture.cs
+Fixas,,Fixed,Fijas,scripts/lobby/OptionsScreen.cs
+Menu da partida,,Match menu,Menú de la partida,scripts/lobby/OptionsScreen.cs
+Falas do rádio,,Radio lines,Frases de radio,scripts/lobby/OptionsScreen.cs
+O Esc abre o menu e cancela a troca de uma tecla: ele não se troca.,,Esc opens the menu and cancels a key change: it can't be changed.,Esc abre el menú y cancela el cambio de tecla: no se cambia.,scripts/lobby/OptionsScreen.cs
+"Com o rádio aberto, as teclas de número escolhem a fala. Não se trocam.",,"With the radio open, the number keys pick the line. They can't be changed.","Con la radio abierta, las teclas de número eligen la frase. No se cambian.",scripts/lobby/OptionsScreen.cs
+"Tecla: {0}. Clique nela e aperte a nova, do teclado ou do mouse. Esc cancela.",,"Key: {0}. Click it and press the new one, on the keyboard or the mouse. Esc cancels.","Tecla: {0}. Haz clic y pulsa la nueva, del teclado o del ratón. Esc cancela.",scripts/lobby/OptionsScreen.cs
+Voltar à tecla de fábrica ({0}),,Back to the default key ({0}),Volver a la tecla de fábrica ({0}),scripts/lobby/OptionsScreen.cs
+{0} já é de «{1}». Trocar as duas? «{1}» fica com {2}.,,{0} is already «{1}». Swap them? «{1}» gets {2}.,{0} ya es de «{1}». ¿Intercambiar? «{1}» se queda con {2}.,scripts/lobby/OptionsScreen.cs
+{0} {0} (segurando),,{0} {0} (holding),{0} {0} (manteniendo),scripts/ui/ControlsTable.cs
+{0} segurado,,Hold {0},{0} mantenida,scripts/ui/ControlsTable.cs
+Segure {0} · habilidades,,Hold {0} · abilities,Mantén {0} · habilidades,scripts/ui/hud/Hud.Layout.cs
+{0} · RECARREGAR,,{0} · RELOAD,{0} · RECARGAR,scripts/ui/hud/Hud.Equipment.cs
+PRONTO · {0} ARMA,,READY · {0} TO ARM,LISTO · {0} ARMA,scripts/ui/hud/Hud.Equipment.cs
+SEGURE {0} · ESCUDO NO FIM,,HOLD {0} · SHIELD AT THE END,MANTÉN {0} · ESCUDO AL FINAL,scripts/ui/hud/Hud.Equipment.cs
+SEGURE {0} · HABILIDADES,,HOLD {0} · ABILITIES,MANTÉN {0} · HABILIDADES,scripts/ui/hud/Hud.Equipment.cs
+OU {0} · {1} · {2},,OR {0} · {1} · {2},O {0} · {1} · {2},scripts/ui/hud/Hud.Form.cs
+Segure {0} para ver o placar,,Hold {0} to see the scoreboard,Mantén {0} para ver el marcador,scripts/ui/MatchHud.cs
+Solte {0} para fechar,,Release {0} to close,Suelta {0} para cerrar,scripts/ui/hud/Hud.Guide.cs
+"{0}, no ar",,"{0}, mid-air","{0}, en el aire",scripts/ui/hud/Hud.Guide.cs
+"{0}, depois clique",,"{0}, then click","{0}, luego clic",scripts/ui/hud/Hud.Guide.cs
+Segure {0},,Hold {0},Mantén {0},scripts/ui/hud/Hud.Guide.cs
+"{0} {0}, segurando",,"{0} {0}, holding","{0} {0}, manteniendo",scripts/ui/hud/Hud.Guide.cs
+{0} na parede · {1},,{0} on the wall · {1},{0} en la pared · {1},scripts/ui/hud/Hud.Guide.cs
+"{0}, de lobo",,"{0}, as a wolf","{0}, como lobo",scripts/ui/hud/Hud.Guide.cs
