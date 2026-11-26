@@ -71,7 +71,11 @@ public abstract class CrouchEyeTest : RegressionTest
 			await b.Seconds(0.8);
 			if (walk) RegressionBench.Press("move_forward");
 			await b.Seconds(walk ? 0.6 : 0.2);
-			var (c, e, bob) = await Sample(b, 1.2);
+			// Andando, a média de passadas inteiras: o andar agachado leva 2,73 s por
+			// passada (a cabeça sobe e desce 4,4 cm), e 1,2 s pegava só um pedaço dela —
+			// a média dependia de em que ponto do passo a medida começava (0,8 cm num
+			// dia, 1,1 no outro). Duas passadas: a diferença de verdade é 0,2 cm.
+			var (c, e, bob) = await Sample(b, walk ? 5.46 : 1.2);
 			RegressionBench.ReleaseAll();
 			await b.Seconds(0.5);
 			rows.Add((what, c, e, bob));
