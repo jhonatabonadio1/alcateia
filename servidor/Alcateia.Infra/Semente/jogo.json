@@ -810,38 +810,6 @@
 			"sort": 370
 		},
 		{
-			"id": "raca_bruto",
-			"name": "Bruto",
-			"type": "Classe de lobo",
-			"kind": "breed",
-			"rarity": 1,
-			"minRank": 0,
-			"currency": "presas",
-			"prices": [],
-			"starter": true,
-			"hot": false,
-			"consumable": false,
-			"team": 0,
-			"image": "",
-			"sort": 380
-		},
-		{
-			"id": "raca_ligeiro",
-			"name": "Ligeiro",
-			"type": "Classe de lobo",
-			"kind": "breed",
-			"rarity": 2,
-			"minRank": 3,
-			"currency": "presas",
-			"prices": [],
-			"starter": false,
-			"hot": false,
-			"consumable": false,
-			"team": 0,
-			"image": "",
-			"sort": 390
-		},
-		{
 			"id": "foto_garras",
 			"name": "Foto Garras",
 			"type": "Foto de perfil",
@@ -861,7 +829,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/garras.png",
-			"sort": 400
+			"sort": 380
 		},
 		{
 			"id": "foto_capacete",
@@ -883,7 +851,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/capacete.png",
-			"sort": 410
+			"sort": 390
 		},
 		{
 			"id": "foto_escorpiao",
@@ -905,7 +873,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/escorpiao.png",
-			"sort": 420
+			"sort": 400
 		},
 		{
 			"id": "foto_bau",
@@ -927,7 +895,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/bau.png",
-			"sort": 430
+			"sort": 410
 		},
 		{
 			"id": "foto_urso",
@@ -949,7 +917,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/urso.png",
-			"sort": 440
+			"sort": 420
 		},
 		{
 			"id": "foto_cristal_lua",
@@ -971,7 +939,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/cristal_lua.png",
-			"sort": 450
+			"sort": 430
 		},
 		{
 			"id": "foto_coruja_neve",
@@ -993,7 +961,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/coruja_neve.png",
-			"sort": 460
+			"sort": 440
 		},
 		{
 			"id": "foto_raposa_espirito",
@@ -1015,7 +983,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/raposa_espirito.png",
-			"sort": 470
+			"sort": 450
 		},
 		{
 			"id": "foto_lobo_neon",
@@ -1037,7 +1005,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/lobo_neon.png",
-			"sort": 480
+			"sort": 460
 		},
 		{
 			"id": "foto_granada_ouro",
@@ -1059,7 +1027,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/granada_ouro.png",
-			"sort": 490
+			"sort": 470
 		},
 		{
 			"id": "foto_lobo_gelo",
@@ -1081,7 +1049,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/lobo_gelo.png",
-			"sort": 500
+			"sort": 480
 		},
 		{
 			"id": "foto_lobo_fogo",
@@ -1103,7 +1071,7 @@
 			"consumable": false,
 			"team": 0,
 			"image": "avatares/lobo_fogo.png",
-			"sort": 510
+			"sort": 490
 		},
 		{
 			"id": "pers_barut",
@@ -1119,7 +1087,7 @@
 			"consumable": false,
 			"team": 2,
 			"image": "personagens/barut.jpg",
-			"sort": 520
+			"sort": 500
 		},
 		{
 			"id": "pers_eve",
@@ -1135,7 +1103,7 @@
 			"consumable": false,
 			"team": 1,
 			"image": "personagens/eve.jpg",
-			"sort": 530
+			"sort": 510
 		},
 		{
 			"id": "troca_nome",
@@ -1157,7 +1125,7 @@
 			"consumable": true,
 			"team": 0,
 			"image": "",
-			"sort": 540
+			"sort": 520
 		}
 	],
 	"maps": [
