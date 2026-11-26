@@ -189,6 +189,17 @@ public static class KeyBindings
 
 	// ------------------------------------------------------------------ nome na tela
 
+	/// <summary>O nome curto, em caixa alta, para as caixinhas do HUD ("CLIQUE",
+	/// "DIREITO", "R", "ESPAÇO").</summary>
+	public static string Short(string action) => Current(action) switch
+	{
+		InputEventMouseButton { ButtonIndex: MouseButton.Left } => Loc.T("CLIQUE"),
+		InputEventMouseButton { ButtonIndex: MouseButton.Right } => Loc.T("DIREITO"),
+		InputEventMouseButton { ButtonIndex: MouseButton.Middle } => Loc.T("MEIO"),
+		InputEvent other => Name(other).ToUpperInvariant(),
+		_ => "—"
+	};
+
 	/// <summary>O nome da tecla da ação para a tela ("W", "Espaço", "Clique esquerdo").</summary>
 	public static string Label(string action) => Name(Current(action));
 

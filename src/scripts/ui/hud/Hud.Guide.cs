@@ -71,7 +71,7 @@ public partial class Hud
 		names.AddChild(UiKit.Caption("Habilidades", UiTokens.TextSecondary));
 		head.AddChild(names);
 		head.AddChild(UiKit.Spacer());
-		head.AddChild(UiKit.Caption("Solte E para fechar", UiTokens.TextSecondary));
+		head.AddChild(UiKit.Caption(Loc.F("Solte {0} para fechar", K("guide")), UiTokens.TextSecondary));
 		page.AddChild(head);
 
 		HBoxContainer columns = UiKit.Row(UiTokens.S5);
@@ -82,39 +82,39 @@ public partial class Hud
 		if (wolf)
 		{
 			WolfBreed breed = _form.Breed;
-			GuideLine(left, IconKind.Claw, "Garrada", "Clique esquerdo",
+			GuideLine(left, IconKind.Claw, "Garrada", K("attack"),
 				breed != null ? Loc.F("Um golpe por clique, uma mão de cada vez. {0:0} de dano.", breed.AttackDamage)
 					: Loc.T("Um golpe por clique, uma mão de cada vez."), tint);
-			GuideLine(left, IconKind.FromAbove, "Bote", "Clique direito, no ar",
+			GuideLine(left, IconKind.FromAbove, "Bote", Loc.F("{0}, no ar", K("special")),
 				Loc.T("Pulou ou caiu de cima? Mergulha em quem está embaixo de você."), tint);
-			GuideLine(left, IconKind.Pounce, "Especial", "Q, depois clique",
+			GuideLine(left, IconKind.Pounce, "Especial", Loc.F("{0}, depois clique", K("pounce")),
 				Loc.T("Com a carga cheia, Q arma os raios e trava no inimigo mais perto da mira. O clique salta nele, mesmo que ele se mexa. Do Q até cair, você leva metade do dano. Enche com abates e, devagar, com o tempo."), tint);
 
-			GuideLine(right, IconKind.Shield, "Uivo", "Segure R",
+			GuideLine(right, IconKind.Shield, "Uivo", Loc.F("Segure {0}", K("howl")),
 				Loc.F("Segure até o fim ({0:0.0} s) e o escudo volta inteiro. Soltar antes cancela. O rugido entrega onde você está.", WolfMoves.Duration(WolfMove.Howl)), UiTokens.Accent);
-			GuideLine(right, IconKind.Wolf, "Corrida de quatro", "W W, segurando",
+			GuideLine(right, IconKind.Wolf, "Corrida de quatro", Loc.F("{0} {0}, segurando", K("move_forward")),
 				Loc.T("Dois toques no W e segure: 30% mais rápido."), tint);
-			GuideLine(right, IconKind.Go, "Corrida na parede", "W na parede · Espaço",
+			GuideLine(right, IconKind.Go, "Corrida na parede", Loc.F("{0} na parede · {1}", K("move_forward"), K("jump")),
 				Loc.T("Pule numa parede e segure W para correr por ela. Espaço salta da parede."), tint);
 		}
 		else
 		{
-			GuideLine(left, IconKind.Gun, "Arma principal", "1",
+			GuideLine(left, IconKind.Gun, "Arma principal", K("slot_1"),
 				Loc.T("Clique atira, clique direito mira, R recarrega."), tint);
-			GuideLine(left, IconKind.Gun, "Arma secundária", "2",
+			GuideLine(left, IconKind.Gun, "Arma secundária", K("slot_2"),
 				Loc.T("A reserva para quando o pente da principal acaba."), tint);
-			GuideLine(left, IconKind.Knife, "Faca", "4",
+			GuideLine(left, IconKind.Knife, "Faca", K("slot_4"),
 				Loc.T("De perto e em silêncio."), tint);
-			GuideLine(left, IconKind.Grenade, "Granada", "5",
+			GuideLine(left, IconKind.Grenade, "Granada", K("slot_5"),
 				Loc.T("Equipe e clique para arremessar."), tint);
 
-			GuideLine(right, IconKind.Wolf, "Virar lobo", "3",
+			GuideLine(right, IconKind.Wolf, "Virar lobo", K("slot_3"),
 				Loc.T("Custa KP. De lobo você é mais rápido, tem escudo e garras — e não atira."), UiTokens.WolfOrange);
-			GuideLine(right, IconKind.Pounce, "Especial", "Q, de lobo",
+			GuideLine(right, IconKind.Pounce, "Especial", Loc.F("{0}, de lobo", K("pounce")),
 				Loc.T("A carga enche com abates também de humano. Cheia, vire lobo para usar."), UiTokens.WolfOrange);
-			GuideLine(right, IconKind.Human, "Andar em silêncio", "Shift",
+			GuideLine(right, IconKind.Human, "Andar em silêncio", K("walk"),
 				Loc.T("Devagar e sem barulho de passo. Ctrl agacha."), tint);
-			GuideLine(right, IconKind.Go, "Soltar a arma", "G",
+			GuideLine(right, IconKind.Go, "Soltar a arma", K("drop"),
 				Loc.T("A arma da mão cai à frente; dá para pegar outra do chão."), tint);
 		}
 	}
@@ -130,6 +130,9 @@ public partial class Hud
 	}
 
 	/// <summary>Uma habilidade: o ícone no quadrado, o nome com a tecla ao lado, e a frase.</summary>
+	/// <summary>A tecla da ação como está agora (a trocada nas Opções ou a de fábrica).</summary>
+	private static string K(string action) => KeyBindings.Label(action);
+
 	private static void GuideLine(VBoxContainer column, IconKind kind, string name, string key, string text, Color tint)
 	{
 		HBoxContainer row = UiKit.Row(UiTokens.S3);

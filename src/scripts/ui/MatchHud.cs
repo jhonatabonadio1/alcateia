@@ -299,7 +299,7 @@ public partial class MatchHud : CanvasLayer
 		Outline(_countdownNumber, 10);
 		box.AddChild(_countdownNumber);
 
-		Label hint = UiKit.Text("Segure Tab para ver o placar", "Muted");
+		Label hint = UiKit.Text(Loc.F("Segure {0} para ver o placar", KeyBindings.Label("scoreboard")), "Muted");
 		hint.HorizontalAlignment = HorizontalAlignment.Center;
 		Outline(hint, 5);
 		box.AddChild(hint);
