@@ -49,6 +49,12 @@ public sealed class WolfBotsTest : RegressionTest
 				// O especial é carga (18/11): cheia, para medir se o bot usa.
 				bot.GetNode<Weapon>("Weapon").FillSpecial();
 				var form = bot.GetNode<FormController>("FormController");
+				// Sem o tempo de lobo (26/11: 30 s de lobo e 20 s de espera, decisão do
+				// Jhon): este teste mede se o bot usa o especial quando pode, e vira o
+				// bot lobo a cada 2 s; com o relógio, cada volta a humano trava 20 s e
+				// sobra 1 salto em 90 s (10 sem ele). O relógio e o bot respeitando a
+				// espera estão no TempoDeLobo.
+				form.WolfTimeLimit = 0f;
 				if (form.Current != Form.Human || bot.GetNode<Health>("Health").IsDead) continue;
 				form.AddWp(5000);
 				form.ToggleForm();
