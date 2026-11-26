@@ -13,6 +13,15 @@ public sealed class FallTracker
 	private bool _airborne;
 	private bool _exempt;
 	private float _peak;
+	private float _lastY;
+	private bool _hasLast;
+
+	/// <summary>Andar mais que isto na vertical num passo não é queda: é o corpo
+	/// levado para outro lugar (renascer, a correção da rede, o teste). A queda
+	/// mais rápida do jogo anda menos de 1 m por passo a 60 quadros. Sem isto,
+	/// levar o lobo do alto de uma parede para o chão contava 40 m de queda e o
+	/// matava (26/11, na junção com a corrida na parede).</summary>
+	public const float TeleportStep = 2f;
 
 	/// <summary>Um passo. Devolve a altura da queda no passo em que pousou
 	/// (0 nos outros, e nas quedas isentas).</summary>
@@ -21,6 +30,19 @@ public sealed class FallTracker
 	/// saiu da parede num salto.</param>
 	public float Step(bool supported, float y, bool exempt)
 	{
+		bool moved = _hasLast && Mathf.Abs(y - _lastY) > TeleportStep;
+		_lastY = y;
+		_hasLast = true;
+		if (moved)
+		{
+			// Levado: o que estava caindo não conta, e a queda (se houver)
+			// começa daqui.
+			_airborne = !supported;
+			_exempt = false;
+			_peak = y;
+			return 0f;
+		}
+
 		if (!supported)
 		{
 			if (!_airborne)
