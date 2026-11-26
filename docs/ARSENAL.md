@@ -396,12 +396,15 @@ no `docs/AJUSTES.md`, seção 8).
 
 ```
 Custo WP        60          Quantidade  1
-Dano central    420         Raio  9.0m   Dano decai linearmente do centro à borda
+Dano central    300         Raio  9.0m   Dano decai linearmente do centro à borda
 Fuse            1.2s, contado do primeiro toque no chão
 Arremesso       cai onde a mira aponta (ThrowForce 17,5 m/s)
 ```
 
-Com 420 no centro, mata quem tem 200 de vida a até 4,7 m. As versões
+Com 300 no centro (era 420; decisão do Jhon, 26/11: "granada forte
+demais"), mata quem tem 200 de vida a até 3 m (era 4,7); a 4 m tira 164
+e a 6 m, 100. Parede, barreira e fresta protegem: só leva quem a
+explosão enxerga (docs/DESIGN.md, "Granada"). As versões
 (Carbono, Neon, Magma, Ouro) só mudam a pintura, custam o mesmo e
 qualquer uma vai no conjunto padrão.
 

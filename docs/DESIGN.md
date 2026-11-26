@@ -228,6 +228,34 @@ O bot arremessa direto.
 (era 11 e 3,5), mais o embalo de quem corre. Olhando reto, de pé, cai a
 15,5 m medidos (era ~11).
 
+**Parede protege** (Jhon, 26/11: "área de efeito da granada atravessa
+paredes, não deve acontecer mais"). A explosão só fere quem ela enxerga:
+algum dos 6 pontos do corpo (cabeça, peito, meio, joelhos e os lados do
+peito) tem caminho livre até ela, sem parede, barreira nem cenário no
+meio — o mesmo que o servidor autoritativo confere (`HitCheck`). Vários
+pontos para a quina não decidir sozinha (meio escondido atrás de um
+caixote ainda leva; por cima de um muro baixo, a cabeça leva), e o
+caminho é uma bola de 6 cm, não um raio: a junta entre duas peças da
+parede ou a fresta de uma porta não deixam a explosão passar. Outro
+corpo na frente não protege, como na bala.
+
+**Dano: 300 no centro** (era 420; Jhon, 26/11: "granada forte demais:
+deixar mais balanceada"). Mata quem tem 200 de vida a até 3 m (era 4,7);
+a 4 m tira 164 e a 6 m, 100. Contra o lobo de hoje (200 + 200 de
+escudo, o corpo do Bruto levando 60%), nem antes matava de vida cheia:
+o máximo que tira caiu de 252 para 180 (Bruto) e de 328 para 234
+(Ligeiro). Se o lobo ficar mais frágil (escudo 100, corpo levando 100%:
+300 para matar), a granada colada tira os 300 e a 2 m, 233.
+
+**O som** (26/11, "som de explosão AAA+, com fuse perceptível"): o pavio
+chia preso à granada do arremesso até a explosão, e no primeiro toque —
+quando o pavio começa a contar — o chiado sobe e cliques se aceleram
+até estourar: quem está perto sabe que vai estourar agora. A explosão
+tem três versões: de perto (estalo da onda, soco grave, bafo,
+estilhaços, ronco e eco), de longe (passou de 30 m: o ar come o agudo)
+e debaixo de teto (reflexões curtas, o grave da sala). Tudo feito por
+código (`src/tools/sons/granada.py`), sem gravação de terceiros.
+
 A granada sabe quem a lançou (`Grenade.Thrower`). Aliado passa ileso,
 dano e atordoamento; quem lançou, não — granada aos próprios pés tem
 que custar alguma coisa. Abate de granada entra no feed, no placar e

@@ -521,7 +521,13 @@ As durações das recargas continuam as do jogo (`ReloadTactical` 1,8 s e
 | `Grenade.Radius` | 9 m | Raio (era 6,5; 20/11) |
 | `Grenade.BounceLoudSpeed` / `BounceMinSpeed` | 7 / 0,45 m/s | O som de cada batida: a 7 m/s soa a 0 dB, metade da velocidade 6 dB a menos; abaixo de 0,45 é rolar e não soa. Solta de 2 m: três batidas, a 5,9, 1,8 e 0,5 m/s |
 | `Grenade.BounceRange` / `BounceGap` | 25 m / 0,07 s | Até onde a batida se ouve, e o tempo mínimo entre duas (o mesmo toque pode durar dois passos) |
-| `Grenade.MaxDamage` | 420 | Dano no centro, caindo até a borda: mata quem tem 200 de vida a até 4,7 m |
+| `Grenade.MaxDamage` | 300 (era 420) | Dano no centro, caindo até a borda: mata quem tem 200 de vida a até 3 m (era 4,7); a 4 m tira 164, a 6 m 100. Decisão do Jhon, 26/11: "granada forte demais" |
+| `Grenade.SightGap` | 0,06 m | Parede, barreira e fresta protegem (26/11): a explosão só fere quem ela enxerga, por algum dos 6 pontos do corpo (cabeça, peito, meio, joelhos e os lados do peito), com uma bola deste diâmetro (fresta mais fina não deixa passar). Com 0,1 a bola raspava na borda de um muro baixo e a cabeça que aparecia 4 cm acima não levava nada |
+| `Grenade.SightLift` (constante) | 0,15 m | De onde sai a conferência: este tanto acima do ponto da explosão (a granada pousada fica rente ao chão). O servidor autoritativo usa o mesmo (`HitCheck`), com um raio só |
+| `Grenade.FuseSound` / `FuseEndSound` | `granada_pavio` / `granada_pavio_fim` | O pavio (26/11): o chiado em laço, preso à granada do arremesso até a explosão, e no primeiro toque o fim do pavio (o chiado sobe e cliques que se aceleram). Sons de `src/tools/sons/granada.py` |
+| `Grenade.FuseRange` / `FuseDb` / `FuseEndDb` | 14 m / −2 dB / 0 dB | Até onde o pavio se ouve (o fim do pavio, 1,3 vez isso) e o volume |
+| `Grenade.FuseEndLength` | 1,2 s | A duração do arquivo do fim do pavio: com outro `Fuse`, ele toca mais rápido ou mais devagar para acabar junto com a explosão |
+| `WorldAudio.ExplosionFar` / `ExplosionRoof` / `ExplosionReach` | 30 m / 6 m / 140 m | A explosão: mais longe que `ExplosionFar`, a versão de longe (`granada_explosao_distante`); com teto sólido até `ExplosionRoof` acima, a da sala (`granada_explosao_dentro`); senão a de perto. Ouve-se até `ExplosionReach` (era o raio do ruído, 54 m) |
 | `Grenade.Kind` | `Frag` | Explosiva desde 19/11 (o id ainda é `choque`). `Shock`, a de choque de 18/11, está guardada: `ShockDamage` 60, `StunDuration` 2,5 s e `StunSlowFactor` 0,3 só valem nela |
 | `DropThrow` / `DropLift` | 5,5 / 1,8 m/s | Arremesso da arma ao soltar (G) |
 
