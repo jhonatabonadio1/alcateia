@@ -24,13 +24,13 @@ public partial class CharacterAnimator
 	[ExportGroup("Agachado")]
 	/// <summary>Quanto o quadril do clipe agachado desce, em metros (o
 	/// tronco e a cabeça descem junto).</summary>
-	[Export] public float KneelDrop = 0.5f;
+	[Export] public float KneelDrop = 0.6f;
 
 	/// <summary>O quanto a perna pode se dobrar: a distância do quadril ao
 	/// tornozelo não fica abaixo desta fração da perna esticada (0,42 é o
 	/// joelho fechado a uns 50°, o agachado fundo). O quadril para de descer
 	/// antes de passar disso.</summary>
-	[Export(PropertyHint.Range, "0.2,0.95")] public float KneelMinReach = 0.42f;
+	[Export(PropertyHint.Range, "0.2,0.95")] public float KneelMinReach = 0.39f;
 
 	/// <summary>Quanto o quadril desceu de fato no último clipe aprofundado, em
 	/// metros (o que a perna de apoio deixou de <see cref="KneelDrop"/>). Para
