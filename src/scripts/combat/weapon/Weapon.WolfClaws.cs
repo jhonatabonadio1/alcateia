@@ -59,6 +59,9 @@ public partial class Weapon
 	/// Nenhum golpe — garrada, bote — sai antes disso depois do anterior, por
 	/// mais rápido que se clique (alpha fechado, 26/11: "clique repetido nos
 	/// ataques do lobo, principal e secundário, parece não ter limite").</summary>
+	/// <summary>Até quanto uma pancada pode cair antes do compasso sem esperar (meio passo de física).</summary>
+	private const double SpacingSlack = 0.5 / 60.0;
+
 	public float StrikeSpacing => CombatRules.WolfStrikeSpacing(WolfMoves.ImpactDelay(WolfMove.Claw), ClawCancelAfter);
 
 	/// <summary>Próxima garrada com o outro braço.</summary>
@@ -332,6 +335,17 @@ public partial class Weapon
 	private void Claw(float multiplier, float reach, float radius, bool aerial, Vector3? facing = null,
 		Node3D focus = null, float splash = 1f, float area = 0f)
 	{
+		// O compasso do dano (27/11): as animações se cortam na hora (garra e bote), mas duas pancadas não
+		// saem a menos de StrikeSpacing (0,34 s) uma da outra — o que o servidor também confere
+		// (WolfStrikePace). A que cairia cedo demais espera o resto do compasso, presa a este golpe: se outro
+		// golpe o cortar nesse meio, ela não sai.
+		double early = StrikeSpacing - _sinceStrike;
+		if (early > SpacingSlack)
+		{
+			After((float)early, _strikeId, () => Claw(multiplier, reach, radius, aerial, facing, focus, splash, area));
+			return;
+		}
+
 		WolfBreed breed = _form.Breed;
 
 		// O volume nasce à frente do CORPO, na altura do peito. Preso

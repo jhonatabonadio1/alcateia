@@ -23,6 +23,7 @@ public partial class Hud
 	private void OnFormChanged(int form, bool animate)
 	{
 		bool wolf = _form.IsWolf;
+		ShowBreath(wolf);
 
 		_formIcon.Kind = wolf ? IconKind.Wolf : IconKind.Human;
 		_formIcon.Tint = wolf ? UiTokens.WolfOrange : UiTokens.TextPrimary;

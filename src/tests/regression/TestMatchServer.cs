@@ -52,6 +52,18 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 	public double StallMin { get; set; } = 0.1;
 	public double StallMax { get; set; } = 0.3;
 
+	/// <summary>Servidor lento (27/11, a bateria de rede): o processo dele só
+	/// consegue rodar um quadro a cada <see cref="StepEvery"/> quadros do jogo
+	/// (2: um servidor a 30 quadros por segundo; 3: a 20) e paga os passos de
+	/// física todos juntos, como o Godot faz quando o quadro demora. Nos
+	/// quadros que não roda, não lê nem manda nada.</summary>
+	public int StepEvery { get; set; } = 1;
+
+	/// <summary>Servidor sobrecarregado: a chance de cada quadro dele não
+	/// rodar (0,4: quatro em dez), sem padrão — os passos vêm em rajadas de
+	/// 1 a vários, e os estados chegam ao jogo aos montes e com buracos.</summary>
+	public double Overload { get; set; }
+
 	/// <summary>Quantos engasgos já houve, e pacotes jogados fora.</summary>
 	public int Stalls { get; private set; }
 	public int Dropped { get; private set; }
@@ -60,7 +72,9 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 	private double _lastDueIn, _lastDueOut, _stallUntil = -1, _nextStall;
 	private int _owedTicks;
 	private double _owedDelta;
-	private bool Stalled => _clock < _stallUntil;
+	private bool Stalled => _clock < _stallUntil || _busy;
+	private bool _busy;
+	private ulong _frames;
 
 	private readonly List<(double Due, long Peer, byte[] Packet, bool Reliable, bool In)> _delayed = new();
 	private double _clock;
@@ -72,7 +86,7 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 
 	/// <summary>Abre a porta e a partida: <paramref name="authoritative"/>
 	/// com mundo de física (o servidor move os corpos) ou só de repasse.</summary>
-	public void Start(bool authoritative, int scoreToWin = 50, IEnumerable<OnlineMatch.Seat> extra = null)
+	public void Start(bool authoritative, int scoreToWin = 50, IEnumerable<OnlineMatch.Seat> extra = null, string map = "armazem_estendido")
 	{
 		Name = "ServidorDeTeste";
 		var seats = new List<(long, string, int, long)> { (MeAccount, "Eu", Referee.Blue, 0L), (OtherAccount, "Outro", Referee.Orange, 0L) };
@@ -81,12 +95,16 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 		var referee = new Referee(seats, scoreToWin, 600, false, countdown: 0);
 		if (authoritative)
 		{
-			World = new MatchWorld("armazem_estendido");
+			World = new MatchWorld(map);
 			AddChild(World);
 		}
 		Match = new HostedMatch("teste", referee, this, World);
 
-		for (Port = 24000; Port < 24200; Port++)
+		// A porta sai do número do processo: os testes rodam vários ao mesmo tempo
+		// (testar.sh), e dois tentando a mesma porta deixavam "Couldn't create an
+		// ENet host" no Output — o que reprova o teste, mesmo com tudo certo.
+		int first = 24000 + OS.GetProcessId() % 3000 * 10;
+		for (Port = first; Port < first + 10; Port++)
 		{
 			_peer = new ENetMultiplayerPeer();
 			if (_peer.CreateServer(Port, 8) == Error.Ok) break;
@@ -131,10 +149,16 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 	public override void _PhysicsProcess(double delta)
 	{
 		_owedTicks++;
+		// O quadro que o servidor lento ou sobrecarregado não roda: vale para o
+		// _Process deste quadro também (que vem depois da física).
+		_busy = (StepEvery > 1 && _frames++ % (ulong)StepEvery != 0)
+			|| (Overload > 0 && _owedTicks < 8 && _rng.Randf() < Overload);
 		if (Stalled) return;
-		// Depois de um engasgo, recupera o que deve, até 8 passos por quadro.
+		// Depois de um engasgo, recupera o que deve, até 8 passos por quadro
+		// (e avisa a partida, desde o primeiro: está pagando passos atrasados).
+		bool behind = _owedTicks > 1;
 		for (int n = Mathf.Min(_owedTicks, 8); n > 0; n--, _owedTicks--)
-			Match?.PhysicsStep(++_tick, delta);
+			Match?.PhysicsStep(++_tick, delta, behind);
 	}
 
 	/// <summary>Quando um pacote chega do outro lado (e se chega), com a rede
@@ -156,7 +180,7 @@ public partial class TestMatchServer : Node, HostedMatch.IMatchLink
 		return due;
 	}
 
-	private bool Shaped => Latency > 0 || Jitter > 0 || Loss > 0 || StallEvery > 0;
+	private bool Shaped => Latency > 0 || Jitter > 0 || Loss > 0 || StallEvery > 0 || StepEvery > 1 || Overload > 0;
 
 	public uint Tick => _tick;
 

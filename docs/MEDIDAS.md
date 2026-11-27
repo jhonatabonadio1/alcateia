@@ -42,7 +42,7 @@ modelo.
 | | Medida | De onde |
 |---|---|---|
 | Cápsula de colisão (humano e lobo) | 0,30 de raio, 1,75 de altura | `player.tscn`, `CapsuleShape3D` |
-| Agachado | 1,30 de altura no humano, 1,00 no lobo | `Player.HumanCrouchHeight`, `Player.CrouchHeight` |
+| Agachado | 1,42 de altura no humano (olho a ~126 cm), 1,00 no lobo | `Player.HumanCrouchHeight`, `Player.CrouchHeight` |
 | Olho do humano | 1,59 do chão em pé, 1,09 agachado | os olhos do corpo visto (`Player.HumanEyeHeight`, afinados pelo `CharacterAnimator`); eram 1,475 e 0,60 até 26/11 |
 | Olho do lobo (pivô da câmera) | ~1,48 do chão | centro (0,875) + `Head` (0,60) |
 | Humano visível (topo da cabeça) | 1,79 | `CharacterSkin.HumanHeight` |
@@ -67,7 +67,7 @@ Medidos no chão plano, segurando a tecla.
 | | Humano | Lobo |
 |---|---|---|
 | Andando (W) | 2,56 m/s (faca 3,28) | 4,33 m/s |
-| Correndo (Shift, só para a frente) | 3,71 m/s | — |
+| Correndo (Shift, só para a frente) | 4,91 m/s (3,71 até 27/11) | — |
 | Agachado | 1,15 m/s | 1,95 m/s |
 | De quatro (W duas vezes) | — | 7,44 m/s |
 | Carregando o salto | — | ~1,0 m/s |

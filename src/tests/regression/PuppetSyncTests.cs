@@ -76,7 +76,7 @@ public sealed class PuppetWolfTest : RegressionTest
 		await b.Frames(3);
 		b.Check(form.Current == Form.Wolf && form.ShowsWolf, "o estado velho não volta o boneco a humano no meio da fumaça");
 
-		// Lobo rápido andando em pé (raça ou tatuagem de velocidade): sem galope.
+		// Lobo rápido andando em pé (raça ou melhoria de lobo de velocidade): sem galope.
 		for (int i = 0; i < 40; i++)
 		{
 			Tell(Form.Wolf, new Vector3(0f, 0f, -4.6f));

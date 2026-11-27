@@ -18,7 +18,7 @@ from mapas.kits import detalhe as D          # noqa: E402
 
 PECAS = os.path.join(D.RAIZ, "assets", "mapas", "pecas")
 # o .glb -> o kit (a paleta e as regras)
-KITS = dict(cidade="fps1", deserto="fps2", estacao="fps5", estacao_cidade="fps1", estacao_mato="fps3", obra="fps6", obra_mato="fps3")
+KITS = dict(cidade="fps1", deserto="fps2", estacao="fps5", obra="fps6")
 ARMAZENS = ("armazem_estendido",)
 
 

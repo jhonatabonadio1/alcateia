@@ -41,7 +41,7 @@ public partial class CharacterAnimator
 	/// normal, e só entra para quem está correndo (o humano normal anda
 	/// 2,56 m/s, abaixo da passada dele; era 3,46: pela velocidade sozinha, entraria
 	/// sem o Shift). A cadência acompanha o corpo: a corrida do jogo é
-	/// 3,71 m/s e o clipe toca a 1,11×.
+	/// 4,91 m/s (desde 27/11; era 3,71) e o clipe toca a 1,47×.
 	/// </summary>
 	[Export] public float SprintClip = 3.35f;
 
@@ -77,6 +77,14 @@ public partial class CharacterAnimator
 	/// <summary>Suavização da entrada do espaço de mistura. Sem ela a
 	/// troca de direção pisca entre clipes.</summary>
 	[Export] public float BlendSmoothing = 9f;
+
+	/// <summary>A mesma suavização ao entrar na corrida do Shift e ao sair
+	/// dela: mais depressa, para o corpo acompanhar a tecla (Jhon, 27/11: "ao
+	/// clicar em Shift a animação de iniciar a correr deve ser mais rápida, e
+	/// ao parar também"). Com 9 o corpo levava uns 0,33 s para chegar a 95%
+	/// da pose de correr; com 16, 0,19 s — o tempo de os braços abaixarem a
+	/// arma (<see cref="ViewModel.RigSprintIn"/>).</summary>
+	[Export] public float SprintBlendSmoothing = 16f;
 
 	/// <summary>Velocidade em que o agachado está andando a pleno. 0,6 m/s
 	/// desde 26/11 (era 1,9): andando agachado (1,35 m/s) a mistura ficava no

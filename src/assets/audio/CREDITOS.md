@@ -61,8 +61,8 @@ as versões por superfície (`_metal`, `_neve`, `_madeira`, `_terra`),
 **Kenney** ([kenney.nl](https://kenney.nl)), CC0: UI Audio
 (`ui_passar`, `ui_clique`), Interface Sounds (`ui_negado`, `acerto`,
 `abate`, `contagem`), RPG Audio (`faca`, `trocar_arma`, `recarga_m3`),
-Impact Sounds (`acerto`, `acerto_cabeca`, `lobo_pouso`, `granada_quique`
-— o `impact_metal_medium`). (A explosão da granada era do Sci-Fi Sounds;
+Impact Sounds (`acerto`, `acerto_cabeca`, `lobo_pouso`; o `granada_quique` era o
+`impact_metal_medium` até 27/11). (A explosão da granada era do Sci-Fi Sounds;
 desde 26/11 é feita por código, abaixo.) Via os espelhos no GitHub de Calinou e
 Boyquotes. (A voz provisória do locutor, do Voiceover Pack Fighter, saiu
 em 18/11: a narração agora é da Iris.)
@@ -84,11 +84,21 @@ com rajadas) por `tools/sons/processar.py`. São do projeto.
 `arma_vazia` (o clique seco do gatilho sem bala) é sintetizado pelo mesmo
 script. É do projeto.
 
-`granada_explosao_1..4`, `granada_explosao_distante_1..3`,
-`granada_explosao_dentro_1..3`, `granada_pavio` e `granada_pavio_fim` (26/11)
-são **sintetizados por código** (`src/tools/sons/granada.py`: ruído filtrado,
-senoides, atrasos e convolução com ruído; numpy e scipy). Nenhuma gravação;
-são do projeto, sem licença de terceiros.
+`granada_pavio` e `granada_pavio_fim` (26/11) são **sintetizados por código**
+(`src/tools/sons/granada.py`: ruído filtrado e senoides; numpy e scipy). Nenhuma
+gravação; são do projeto, sem licença de terceiros.
+
+`granada_explosao_1..4`, `granada_explosao_distante_1..3` e
+`granada_explosao_dentro_1..3` (27/11) saem de **uma gravação gerada por
+Jhonata Bonadio num gerador de som por IA** (a fonte está em
+`src/tools/sons/fontes/granada_explosao_ia.wav`), preparada por
+`src/tools/sons/granada_explosao.py`: mono, variações de altura, e as versões
+de longe e debaixo de teto com filtro, eco e sala. Uso conforme os termos do
+plano da ferramenta. Até 26/11 a explosão também era sintetizada.
+
+`granada_pavio` foi normalizado em 27/11 (pico a −1 dB, +8 dB): quase não se ouvia a granada chegando.
+
+`faca_vento` (27/11: a lâmina cortando o ar, na facada e, mais grave, na estocada) e `granada_quique_1..3` (27/11) foram **gerados por Jhonata Bonadio no ElevenLabs** (elevenlabs.io, efeitos sonoros; prompt "Single metal hand grenade dropping onto a concrete floor, one short sharp metallic clank with a tiny tinny rattle, close-up, dry, no reverb, no music"): as três batidas de uma queda, cortadas uma por arquivo e com o pico a −1 dB. Uso conforme os termos do plano do ElevenLabs.
 
 ## O uivo
 

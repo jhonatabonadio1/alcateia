@@ -261,6 +261,9 @@ public partial class Hud
 		side.OffsetLeft = -Edge - 380;
 		Tilt(side, TiltDegrees, right: true);
 
+		// O fôlego da corrida, em cima do KP (Hud.Breath).
+		BuildBreath(side);
+
 		// WP, perto da munição: é o que se gasta ao renascer.
 		HBoxContainer wpRow = UiKit.Row(UiTokens.S2);
 		wpRow.Alignment = BoxContainer.AlignmentMode.End;

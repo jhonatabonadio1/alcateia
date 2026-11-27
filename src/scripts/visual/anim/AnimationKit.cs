@@ -414,8 +414,10 @@ public static partial class AnimationKit
 	/// ainda se ajustam para o tornozelo pousar onde o do clipe pousa
 	/// (<see cref="ReachFloor"/>).
 	/// </summary>
+	/// <param name="sink">Metros a mais que o quadril desce (o agachado mais baixo que o do clipe, 27/11): as
+	/// pernas dobram até o pé pousar no mesmo lugar (só com <paramref name="reachFloor"/>).</param>
 	public static void FitToBody(Animation animation, Node clipRoot, Skeleton3D body, Node bodyRoot, string bodyPath,
-		bool reachFloor = false)
+		bool reachFloor = false, float sink = 0f)
 	{
 		Skeleton3D reference = FindSkeleton(clipRoot);
 		if (reference == null || body == null) return;
@@ -438,6 +440,7 @@ public static partial class AnimationKit
 
 		if (refHips >= 0 && bodyHips >= 0)
 			MoveHips(animation, reference, refHips, fr, body, bodyHips, fb);
+		if (sink > 0f && source != null) SinkHips(animation, fb, sink);
 
 		RetargetPose(animation, reference, body,
 			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion(),
@@ -519,6 +522,19 @@ public static partial class AnimationKit
 			string path = animation.TrackGetPath(track).ToString();
 			int colon = path.LastIndexOf(':');
 			if (colon >= 0) animation.TrackSetPath(track, $"{skeleton}:{path[(colon + 1)..]}");
+		}
+	}
+
+	/// <summary>Desce o quadril <paramref name="meters"/> (no mundo do corpo) em todas as chaves.</summary>
+	private static void SinkHips(Animation animation, Transform3D fb, float meters)
+	{
+		Vector3 down = (fb.Basis.Inverse() * (Vector3.Down * meters));
+		for (int track = 0; track < animation.GetTrackCount(); track++)
+		{
+			if (animation.TrackGetType(track) != Animation.TrackType.Position3D) continue;
+			if (!animation.TrackGetPath(track).ToString().Contains("Hips")) continue;
+			for (int key = 0; key < animation.TrackGetKeyCount(track); key++)
+				animation.TrackSetKeyValue(track, key, (Vector3)animation.TrackGetKeyValue(track, key) + down);
 		}
 	}
 

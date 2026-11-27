@@ -75,6 +75,12 @@ public static class AdminPlayerRoutes
 			["balance"] = await s.Players.Adjust(who, AdminApi.RouteId(ctx), Api.Text(body, "currency"), body["amount"]?.GetValue<long>() ?? 0, Api.Text(body, "reason"))
 		});
 
+		app.Post(s, "/players/{id}/level", async (ctx, who, body) =>
+		{
+			var (level, xp) = await s.Players.SetLevel(who, AdminApi.RouteId(ctx), Api.Int(body, "level"), Api.Text(body, "reason"));
+			return new JsonObject { ["level"] = level, ["xp"] = xp };
+		});
+
 		app.Post(s, "/players/{id}/items", async (ctx, who, body) =>
 		{
 			await s.Players.GrantItem(who, AdminApi.RouteId(ctx), Api.Text(body, "itemId"), Api.Int(body, "days"));
@@ -88,9 +94,21 @@ public static class AdminPlayerRoutes
 		});
 	}
 
-	private static JsonObject ToJson(PlayerSummary p, Services s) => new()
+	private static JsonObject ToJson(PlayerSummary p, Services s)
 	{
-		["id"] = p.Id, ["name"] = p.Name, ["xp"] = p.Xp, ["rank"] = RankRule.RankFor(p.Xp), ["presas"] = p.Presas, ["sangue"] = p.Sangue,
+		// O nível e onde ele começa e acaba, já contados aqui: o painel não tem a conta (RankRule) própria.
+		int rank = RankRule.RankFor(p.Xp);
+		var json = Summary(p, s);
+		json["rank"] = rank;
+		json["level"] = RankRule.LevelOf(rank);
+		json["levelXp"] = RankRule.XpFor(rank);
+		json["nextXp"] = rank < RankRule.Count - 1 ? RankRule.XpFor(rank + 1) : null;
+		return json;
+	}
+
+	private static JsonObject Summary(PlayerSummary p, Services s) => new()
+	{
+		["id"] = p.Id, ["name"] = p.Name, ["xp"] = p.Xp, ["presas"] = p.Presas, ["sangue"] = p.Sangue,
 		["matches"] = p.Matches, ["createdAt"] = Api.Date(p.CreatedAt), ["lastLoginAt"] = Api.Date(p.LastLoginAt),
 		["banned"] = p.Banned, ["bannedUntil"] = Api.Date(p.BannedUntil), ["online"] = s.Lobby.IsOnline(p.Id)
 	};

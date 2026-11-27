@@ -251,6 +251,12 @@ public partial class LobbyLink : Node
 				case "match.end":
 					MatchEnded?.Invoke(m);
 					break;
+				case "conta":
+					// O painel mudou a conta (moeda, item, nível): relê na hora, até
+					// no meio da partida. Nada aparece na tela durante ela — a
+					// comemoração de nível é do saguão (LobbyShell), que espera a volta.
+					_ = AccountSync.Refresh();
+					break;
 				case "closed":
 					Close();
 					Failed?.Invoke("desconectado", "A ligação com o servidor caiu.");

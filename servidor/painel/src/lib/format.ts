@@ -40,7 +40,7 @@ export const rarityNames = ["Comum", "Incomum", "Rara", "Épica", "Lendária"];
 export const kindNames: Record<string, string> = {
 	weapon: "Armas e skins",
 	utility: "Utilitários",
-	tattoo: "Melhorias de lobo",
+	wolf_upgrade: "Melhorias de lobo",
 	breed: "Classes de lobo",
 	character: "Personagens",
 	service: "Serviços",
@@ -133,8 +133,3 @@ export const eventGroups = [
 	{ value: "freio.", label: "Freio de pedidos" },
 ];
 
-/** O XP em que cada patente começa — a mesma conta do jogo e do servidor. */
-export function xpForRank(rank: number) {
-	if (rank <= 0) return 0;
-	return Math.round((230 * Math.pow(rank, 2.6)) / 10) * 10;
-}

@@ -89,6 +89,9 @@ class Mapa:
         self.escadas = []    # (grupo, nome, centro, base, tamanho) — o volume de subir
         self.focos = []      # (grupo, nome, pos, cor, energia, alcance, ângulo, sombra)
         self.cru_recursos, self.cru_nos = [], []     # linhas de .tscn prontas (partículas)
+        # Recursos de fora que as linhas prontas usam: (tipo, caminho res://, id) — o script de uma zona, a cena de
+        # um boneco de treino (o Setor Zero, 26/11).
+        self.cru_ext = []
         self.panoramas = []                          # imagens de fundo em volta do mapa (panorama)
         self.spawns = {AZUL: [], LARANJA: []}
         self.rotas = []
@@ -114,14 +117,21 @@ class Mapa:
 
     # ---------------------------------------------------------------- peças
 
-    def caixa(self, grupo, nome, centro, tamanho, material, colide=True, rot=None, oculta=False, cor=None, minimapa=True):
+    def caixa(self, grupo, nome, centro, tamanho, material, colide=True, rot=None, oculta=False, cor=None, minimapa=True,
+              so_espectador=False):
         """`oculta`: só a colisão, sem desenho — para quando o que se vê é
         uma forma mais rica por cima (degraus sobre a rampa, vagão).
         `cor`: (r, g, b) com que a caixa oculta aparece no minimapa, que
         desenha as caixas do mapa e não tem malha de onde tirar a cor
         (`metadata/mapa_cor`; sem ela, cinza). `minimapa=False`: a caixa
         oculta fica fora do minimapa (`metadata/mapa_fora`) — a laje de um
-        andar de cima, que taparia as paredes de baixo."""
+        andar de cima, que taparia as paredes de baixo. `so_espectador`: a caixa
+        oculta não colide com nada (camada 0) — só marca a caixa do mapa para
+        a câmera do espectador (`MapBounds`), num mapa de beira aberta (a Obra)."""
+        if so_espectador:
+            if not hasattr(self, "so_espectador"):
+                self.so_espectador = set()
+            self.so_espectador.add((grupo, nome))
         if not minimapa:
             if not hasattr(self, "fora_do_minimapa"):
                 self.fora_do_minimapa = set()
@@ -403,6 +413,9 @@ class Mapa:
         hdri = (self.ambiente.get("ceu") or {}).get("hdri")
         if hdri:
             ext.append(("Texture2D", f"res://src/assets/mapas/ceus/{hdri}.hdr", "t_ceu"))
+        if (self.ambiente.get("ceu") or {}).get("nuvens") is not None:
+            ext.append(("Shader", "res://src/assets/mapas/ceus/ceu_nuvens.gdshader", "s_ceu"))
+            ext.append(("Texture2D", "res://src/assets/mapas/ceus/nuvens_ruido.png", "t_nuvens"))
         for imagem in sorted({l[2] for l in self.letreiros}):
             ext.append(("Texture2D", f"res://src/assets/mapas/letreiros/{imagem}.png", f"l_{imagem}"))
         for imagem in sorted(set(self.panoramas)):
@@ -414,6 +427,7 @@ class Mapa:
         ext += [("Script", "res://src/scripts/core/SpawnPoints.cs", "s_spawns"),
                 ("Script", "res://src/scripts/core/PatrolRoutes.cs", "s_routes"),
                 ("Script", "res://src/scripts/core/NavBaker.cs", "s_nav")]
+        ext += list(self.cru_ext)
 
         ext += [("ArrayMesh", f"res://src/assets/mapas/{self.id}/{h}.obj", rid) for h, rid in obj_id.items()]
 
@@ -518,7 +532,11 @@ class Mapa:
             o += ['[node name="Preenchimento" type="DirectionalLight3D" parent="."]',
                   f"transform = {xform((0, 40, 0), olhar(p['yaw'], p['queda']))}",
                   f"light_color = {cor(p['cor'])}", f"light_energy = {f(p['energia'])}",
-                  "light_specular = 0.2", "shadow_enabled = false", ""]
+                  "light_specular = 0.2", "shadow_enabled = false"]
+            # (no céu calculado o sol é a primeira luz direcional que entra nele: esta, que aponta para cima, fica fora)
+            if (self.ambiente.get("ceu") or {}).get("nuvens") is not None:
+                o += ["sky_mode = 1"]
+            o += [""]
 
         # Reflexos: sem isto, metal não tem o que refletir e fica preto.
         o += ['[node name="Reflexo" type="ReflectionProbe" parent="."]',
@@ -553,6 +571,8 @@ class Mapa:
             if colide and oculta:
                 piso = superficie(self.materiais.get(mat, {}))
                 o += [f'[node name="{nome}" type="StaticBody3D" parent="{g}"]', f"transform = {xform(c, rows)}"]
+                if (g, nome) in getattr(self, "so_espectador", ()):
+                    o += ["collision_layer = 0", "collision_mask = 0"]
                 if piso:
                     o.append(f'metadata/piso = "{piso}"')
                 tom = getattr(self, "cores", {}).get((g, nome))
@@ -634,6 +654,22 @@ class Mapa:
             o += ['[sub_resource type="PanoramaSkyMaterial" id="CeuMat"]', 'panorama = ExtResource("t_ceu")',
                   f"energy_multiplier = {f(c.get('energia', 1.0))}", "",
                   '[sub_resource type="Sky" id="Ceu"]', 'sky_material = SubResource("CeuMat")', ""]
+        elif (a.get("ceu") or {}).get("nuvens") is not None:
+            # O céu calculado, com nuvens que andam (assets/mapas/ceus/ceu_nuvens.gdshader; os mapas de 27/11):
+            # "ceu" traz as cores do ar e "nuvens" os valores da camada de nuvens (os nomes são os do shader).
+            c = a["ceu"]
+            o += ['[sub_resource type="ShaderMaterial" id="CeuMat"]', 'shader = ExtResource("s_ceu")',
+                  'shader_parameter/ruido = ExtResource("t_nuvens")', f"shader_parameter/energia = {f(c.get('energia', 1.0))}"]
+            for nome in ("topo", "horizonte", "chao"):
+                if nome in c:
+                    o += [f"shader_parameter/{nome} = {cor(c[nome])}"]
+            for nome in ("curva", "clarao", "disco"):
+                if nome in c:
+                    o += [f"shader_parameter/{nome} = {f(c[nome])}"]
+            for nome, v in c["nuvens"].items():
+                o += [f"shader_parameter/{nome} = " + (cor(v) if nome.startswith("nuvem_") else f"Vector2({f(v[0])}, {f(v[1])})" if nome == "vento" else f(v))]
+            # (o céu anda: o mapa de reflexo e de luz ambiente é refeito todo quadro, no modo rápido, que pede 256 px)
+            o += ["", '[sub_resource type="Sky" id="Ceu"]', 'sky_material = SubResource("CeuMat")', "process_mode = 3", "radiance_size = 3", ""]
         elif a.get("ceu"):
             c = a["ceu"]
             o += ['[sub_resource type="ProceduralSkyMaterial" id="CeuMat"]',
@@ -648,7 +684,7 @@ class Mapa:
                 o += [f"sky_rotation = Vector3(0, {f(math.radians(a['ceu'].get('giro', 0.0)))}, 0)"]
         else:
             o += ["background_mode = 1", f"background_color = {cor(a.get('fundo', (0, 0, 0)))}"]
-        if hdri:
+        if hdri or (a.get("ceu") or {}).get("nuvens") is not None:
             o += ["ambient_light_source = 3", f"ambient_light_sky_contribution = {f(a['ceu'].get('ambiente', 0.7))}",
                   f"ambient_light_color = {cor(a.get('luz', (1, 1, 1)))}",
                   f"ambient_light_energy = {f(a.get('luz_energia', 0.5))}", "reflected_light_source = 2"]
@@ -703,6 +739,9 @@ class Mapa:
                 o += [f"fog_aerial_perspective = {f(n['aerea'])}"]
             if "sol" in n:
                 o += [f"fog_sun_scatter = {f(n['sol'])}"]
+            # (a névoa que adensa para baixo de uma altura: o precipício some em nuvem — o Setor Zero, 26/11)
+            if "altura" in n:
+                o += [f"fog_height = {f(n['altura'])}", f"fog_height_density = {f(n.get('altura_densidade', 0.01))}"]
         o += ["adjustment_enabled = true", f"adjustment_contrast = {f(a.get('contraste', 1.06))}",
               f"adjustment_saturation = {f(a.get('saturacao', 1.05))}", ""]
         return o

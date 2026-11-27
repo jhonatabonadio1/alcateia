@@ -276,6 +276,30 @@ public static class Schema
 			at timestamptz not null default now(),
 			primary key (account_id, request_id)
 		);
+		",
+
+		// 4 — "tatuagem" agora é "melhoria de lobo" (Jhon, 27/11: "troque todos
+		// esses termos para não confundir"): os ids tat_* viram up_* e o tipo
+		// "tattoo" vira "wolf_upgrade" em tudo o que guarda item — o catálogo
+		// (com a promoção que aponta para ele), os inventários, os prêmios dos
+		// desafios, os pedidos de compra, o extrato e os dados do perfil. O jogo
+		// de antes de 27/11 ainda manda tat_* para a partida: o servidor não
+		// acha o item na conta e o lobo entra sem a melhoria. O perfil salvo no
+		// computador do jogador o próprio jogo converte (Catalog.CurrentId).
+		@"
+		alter table promotions drop constraint if exists promotions_item_id_fkey;
+		update catalog_items set id = 'up_' || substr(id, 5), updated_at = now() where id like 'tat\_%';
+		update promotions set item_id = 'up_' || substr(item_id, 5) where item_id like 'tat\_%';
+		alter table promotions add constraint promotions_item_id_fkey
+			foreign key (item_id) references catalog_items(id) on delete cascade;
+		update catalog_items set kind = 'wolf_upgrade' where kind = 'tattoo';
+		update catalog_items set type = 'Melhoria de lobo' where type = 'Melhoria · lobo';
+
+		update inventory set item_id = 'up_' || substr(item_id, 5) where item_id like 'tat\_%';
+		update challenges set item_id = 'up_' || substr(item_id, 5) where item_id like 'tat\_%';
+		update purchase_requests set item_id = 'up_' || substr(item_id, 5) where item_id like 'tat\_%';
+		update ledger set ref = 'up_' || substr(ref, 5) where ref like 'tat\_%';
+		update profiles set data = replace(data::text, '""tat_', '""up_')::jsonb where data::text like '%""tat\_%';
 		"
 	};
 

@@ -176,6 +176,17 @@ public sealed class SpecialCityTest : RegressionTest
 		return space.IntersectShape(capsule, 1).Count == 0 && Clear(space, skip, at, at + Vector3.Up * 5f);
 	}
 
+	/// <summary>De onde o lobo salta há meio metro livre em volta do corpo
+	/// (um corpo de 85 cm de raio cabe ali). Na Cidade de 27/11 (a cena de
+	/// demonstração do kit) há casas com beiral e toldo baixos: o sorteio caía
+	/// a 10 cm de uma parede, debaixo do beiral, e o salto raspava nele ao
+	/// sair — o que mede o lugar sorteado, não o especial.</summary>
+	private static bool Roomy(PhysicsDirectSpaceState3D space, Godot.Collections.Array<Rid> skip, Vector3 at)
+	{
+		var wide = new PhysicsShapeQueryParameters3D { Shape = new CylinderShape3D { Radius = 0.85f, Height = 2.6f }, Exclude = skip, Transform = new Transform3D(Basis.Identity, at + Vector3.Up * 0.55f) };
+		return space.IntersectShape(wide, 1).Count == 0;
+	}
+
 	/// <summary>A rua aberta entre os dois: dos pés à cabeça, no meio e nos
 	/// lados do corpo (e não por uma janela ou o balcão de uma banca).</summary>
 	private static bool Open(PhysicsDirectSpaceState3D space, Godot.Collections.Array<Rid> skip, Vector3 a, Vector3 c)
@@ -212,7 +223,7 @@ public sealed class SpecialCityTest : RegressionTest
 			float x = (float)(random.NextDouble() * 100 - 50), z = (float)(random.NextDouble() * 70 - 35);
 			if (Floor(space, skip, new Vector3(x, 0, z)) is not float y0) continue;
 			Vector3 from = new(x, y0 + 0.9f, z);
-			if (!Free(space, skip, from)) continue;
+			if (!Free(space, skip, from) || !Roomy(space, skip, from)) continue;
 
 			float angle = (float)(random.NextDouble() * Mathf.Tau), distance = 5f + (float)random.NextDouble() * 8f;
 			float tx = x + Mathf.Cos(angle) * distance, tz = z + Mathf.Sin(angle) * distance;

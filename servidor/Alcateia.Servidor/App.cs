@@ -139,6 +139,7 @@ public static class App
 			AdminPlayerRoutes.Map(app, services);
 			AdminContentRoutes.Map(app, services);
 			AdminSecurityRoutes.Map(app, services);
+			AdminHelpRoutes.Map(app, services);
 		}
 		return app;
 	}

@@ -68,7 +68,7 @@ public sealed class LifetimeStats
 public static class Profile
 {
 	public const int SetCount = 4;
-	public const int MaxTattoos = 2;
+	public const int MaxWolfUpgrades = 2;
 	public const int NameMin = 3;
 	public const int NameMax = 16;
 
@@ -120,7 +120,7 @@ public static class Profile
 	public static List<LoadoutSet> Sets { get; private set; } = new();
 	public static int LastUsed { get; set; }
 
-	public static List<string> Tattoos { get; private set; } = new();
+	public static List<string> WolfUpgrades { get; private set; } = new();
 
 	/// <summary>O personagem de cada time (id do catálogo), ou nulo para o
 	/// de sempre (Exo Gray no azul, Ely no laranja).</summary>
@@ -148,6 +148,11 @@ public static class Profile
 		public List<RankEvent> RankHistory { get; set; }
 		public List<LoadoutSet> Sets { get; set; }
 		public int LastUsed { get; set; }
+		public List<string> WolfUpgrades { get; set; }
+		/// <summary>As melhorias de lobo no arquivo de antes de 27/11, quando se
+		/// chamavam tatuagens (ids <c>tat_*</c>). Só se lê; o arquivo novo grava
+		/// <see cref="WolfUpgrades"/>.</summary>
+		[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
 		public List<string> Tattoos { get; set; }
 		public string BlueCharacter { get; set; }
 		public string OrangeCharacter { get; set; }
@@ -184,7 +189,7 @@ public static class Profile
 		RankHistory = data.RankHistory ?? new List<RankEvent>();
 		Sets = data.Sets ?? new List<LoadoutSet>();
 		LastUsed = data.LastUsed;
-		Tattoos = data.Tattoos ?? new List<string>();
+		WolfUpgrades = (data.WolfUpgrades ?? data.Tattoos ?? new List<string>()).Select(Catalog.CurrentId).ToList();
 		BlueCharacter = data.BlueCharacter;
 		OrangeCharacter = data.OrangeCharacter;
 		Stats = data.Stats ?? new LifetimeStats();
@@ -233,7 +238,7 @@ public static class Profile
 				RankHistory = RankHistory,
 				Sets = Sets,
 				LastUsed = LastUsed,
-				Tattoos = Tattoos,
+				WolfUpgrades = WolfUpgrades,
 				BlueCharacter = BlueCharacter,
 				OrangeCharacter = OrangeCharacter,
 				Stats = Stats,
@@ -260,6 +265,10 @@ public static class Profile
 	/// Devolve as patentes alcançadas desde a última vez que ele disse
 	/// (para a tela de promoção) — na primeira, nenhuma.
 	/// </summary>
+	/// <summary>Acima de tantos níveis de uma vez, é salto (o painel), não progresso: veja
+	/// <see cref="ApplyAccount"/>. Uma partida ou um prêmio de missão rendem bem menos.</summary>
+	private const int BigJump = 10;
+
 	public static List<int> ApplyAccount(long xp, long presas, long sangue, IEnumerable<OwnedItem> items)
 	{
 		var promotions = new List<int>();
@@ -272,7 +281,18 @@ public static class Profile
 		Sangue = Math.Max(0, sangue);
 		Inventory = items?.ToList() ?? new List<OwnedItem>();
 
-		if (!first)
+		if (!first && Rank - before > BigJump)
+		{
+			// Um salto grande — o painel pôs a conta num nível (Jhon, 27/11) — comemora só o
+			// último nível marcante dele, não cada degrau: subir do 1 ao 500 eram dezenas de
+			// telas seguidas. O histórico guarda o nível final.
+			int shown = Rank;
+			for (int rank = Rank; rank > before; rank--)
+				if (Ranks.IsMilestone(rank)) { shown = rank; break; }
+			promotions.Add(shown);
+			RankHistory.Add(new RankEvent { Rank = Rank, Utc = DateTime.UtcNow });
+		}
+		else if (!first)
 			for (int rank = before + 1; rank <= Rank; rank++)
 			{
 				promotions.Add(rank);
@@ -368,7 +388,7 @@ public static class Profile
 	/// <summary>Está em uso em algum conjunto, ou equipado no lobo?</summary>
 	public static bool IsEquipped(string id) =>
 		Sets.Any(s => s.Primary == id || s.Secondary == id || s.Melee == id || s.Utilities.Contains(id))
-		|| Tattoos.Contains(id) || id == Arsenal.KnifeId
+		|| WolfUpgrades.Contains(id) || id == Arsenal.KnifeId
 		|| BlueCharacter == id || OrangeCharacter == id;
 
 	// ------------------------------------------------------------------ moedas
@@ -379,23 +399,23 @@ public static class Profile
 
 	// ------------------------------------------------------------------ lobo
 
-	public static bool EquipTattoo(string id, out string error)
+	public static bool EquipWolfUpgrade(string id, out string error)
 	{
 		error = null;
-		if (Catalog.Get(id)?.Kind != ItemKind.Tattoo) error = "Não é uma melhoria";
+		if (Catalog.Get(id)?.Kind != ItemKind.WolfUpgrade) error = "Não é uma melhoria de lobo";
 		else if (!Owns(id)) error = "Item fora do inventário ou expirado";
-		else if (Tattoos.Contains(id)) error = "Já equipada";
-		else if (Tattoos.Count >= MaxTattoos) error = Loc.F("Máximo de {0} melhorias", MaxTattoos);
+		else if (WolfUpgrades.Contains(id)) error = "Já equipada";
+		else if (WolfUpgrades.Count >= MaxWolfUpgrades) error = Loc.F("Máximo de {0} melhorias de lobo", MaxWolfUpgrades);
 
 		if (error != null) return false;
-		Tattoos.Add(id);
+		WolfUpgrades.Add(id);
 		Save();
 		return true;
 	}
 
-	public static void UnequipTattoo(string id)
+	public static void UnequipWolfUpgrade(string id)
 	{
-		if (Tattoos.Remove(id)) Save();
+		if (WolfUpgrades.Remove(id)) Save();
 	}
 
 	/// <summary>A classe de lobo do jogador com as melhorias aplicadas.
@@ -405,23 +425,23 @@ public static class Profile
 	/// Ligeiro saíram, decisão do Jhon).</summary>
 	public const string WolfPath = "res://src/resources/breeds/lobo.tres";
 
-	public static WolfBreed BuildBreed() => BuildBreed(OwnedTattoos());
+	public static WolfBreed BuildBreed() => BuildBreed(OwnedWolfUpgrades());
 
 	/// <summary>As melhorias equipadas que o jogador tem de fato.</summary>
-	public static System.Collections.Generic.List<string> OwnedTattoos() => Tattoos.Where(Owns).ToList();
+	public static System.Collections.Generic.List<string> OwnedWolfUpgrades() => WolfUpgrades.Where(Owns).ToList();
 
 	/// <summary>O lobo com as melhorias somadas. Uma cópia: o recurso
 	/// original é o mesmo de todos. Também é como o servidor de partida
 	/// monta o lobo de cada jogador (o jogo conta quais melhorias).</summary>
-	public static WolfBreed BuildBreed(System.Collections.Generic.IEnumerable<string> tattoos)
+	public static WolfBreed BuildBreed(System.Collections.Generic.IEnumerable<string> upgrades)
 	{
 		var source = GD.Load<WolfBreed>(WolfPath);
 		if (source == null) return null;
 
 		var breed = (WolfBreed)source.Duplicate();
-		foreach (string id in tattoos)
+		foreach (string id in upgrades)
 		{
-			TattooEffect fx = Catalog.Get(id)?.Tattoo;
+			WolfUpgradeEffect fx = Catalog.Get(id)?.WolfUpgrade;
 			if (fx == null) continue;
 
 			breed.SpeedMultiplier *= fx.Speed;
@@ -547,7 +567,7 @@ public static class Profile
 
 		LastUsed = Mathf.Clamp(LastUsed, 0, SetCount - 1);
 
-		Tattoos = Tattoos.Where(id => Catalog.Get(id)?.Kind == ItemKind.Tattoo).Distinct().Take(MaxTattoos).ToList();
+		WolfUpgrades = WolfUpgrades.Where(id => Catalog.Get(id)?.Kind == ItemKind.WolfUpgrade).Distinct().Take(MaxWolfUpgrades).ToList();
 
 		// Personagem que saiu da pasta, ou que não é daquele time, volta ao de sempre.
 		if (!FitsTeam(Catalog.Get(BlueCharacter), Teams.Blue)) BlueCharacter = null;

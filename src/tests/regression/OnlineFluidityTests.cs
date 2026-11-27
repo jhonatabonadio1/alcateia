@@ -33,9 +33,16 @@ using System.Threading.Tasks;
 /// </summary>
 public abstract partial class OnlineFluidityTest : OnlineGameTest
 {
-	private sealed record NetCondition(string Name, double Latency, double Jitter, double Loss, double StallEvery);
+	/// <param name="StepEvery">Servidor lento: roda um quadro a cada tantos (2: 30 por segundo).</param>
+	/// <param name="Overload">Servidor sobrecarregado: a chance de cada quadro dele não rodar.</param>
+	/// <param name="Awful">Ping horrível: o boneco do outro pode dar algum tranco (nunca voltar
+	/// no tempo); a câmera e o corpo do jogador, não — nem aqui.</param>
+	protected sealed record NetCondition(string Name, double Latency, double Jitter, double Loss, double StallEvery,
+		int StepEvery = 1, double Overload = 0, bool Awful = false);
 
-	private static readonly NetCondition[] Conditions =
+	protected virtual NetCondition[] Conditions => Network;
+
+	private static readonly NetCondition[] Network =
 	{
 		new("limpa", 0, 0, 0, 0),
 		new("80 ms", 0.04, 0.04, 0.02, 0),
@@ -52,6 +59,9 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 
 	/// <summary>A velocidade mudando mais que isto num quadro é tranco que se vê (m/s).</summary>
 	public const float JoltSpeed = 2f;
+
+	/// <summary>Trancos a mais do boneco que se aceita com o ping horrível, em seis segundos.</summary>
+	private const int AwfulJolts = 8;
 
 	/// <summary>O empurrão no corpo do jogador no servidor (m) e de quanto em quanto tempo (s).</summary>
 	private const float Shove = 0.3f;
@@ -72,6 +82,17 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 			if (IsInstanceValid(Camera)) Cam.Add(Camera.GlobalPosition);
 			if (IsInstanceValid(Puppet) && Puppet.IsVisibleInTree()) Pup.Add(Puppet.GlobalPosition);
 		}
+	}
+
+	/// <summary>Quadros em que o que se vê parou (menos de um quinto do passo de
+	/// sempre) com o jogador segurando para a frente: a primeira pessoa travada.</summary>
+	public static int Freezes(List<Vector3> path)
+	{
+		if (path.Count < 12) return 0;
+		var steps = new List<float>();
+		for (int i = 1; i < path.Count; i++) steps.Add((path[i] - path[i - 1]).Length());
+		float usual = steps.OrderBy(x => x).ElementAt(steps.Count / 2);
+		return usual < 0.005f ? 0 : steps.Count(x => x < usual * 0.2f);
 	}
 
 	/// <summary>Quadros com tranco, quadros andando para trás, e o maior tranco (m/s).</summary>
@@ -133,7 +154,7 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 		float shoveSide = -1f;
 		float relayAngle = 0f;
 		int frame = 0;
-		var results = new List<(string Name, int CamJolts, int CamBack, int PupJolts, int PupBack)>();
+		var results = new List<(NetCondition Net, int CamJolts, int CamBack, int CamFrozen, int PupJolts, int PupBack)>();
 
 		foreach (NetCondition net in Conditions)
 		{
@@ -141,6 +162,8 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 			Server.Jitter = net.Jitter;
 			Server.Loss = net.Loss;
 			Server.StallEvery = net.StallEvery;
+			Server.StepEvery = net.StepEvery;
+			Server.Overload = net.Overload;
 			int stallsBefore = Server.Stalls, droppedBefore = Server.Dropped;
 			int fixesBefore = 0;
 			float sumBefore = 0f, maxBefore = 0f;
@@ -194,27 +217,31 @@ public abstract partial class OnlineFluidityTest : OnlineGameTest
 			int fixes = NetMatch.Current.Corrections - fixesBefore;
 			float pulled = NetMatch.Current.CorrectionSum - sumBefore;
 			float biggest = NetMatch.Current.CorrectionMax > maxBefore ? NetMatch.Current.CorrectionMax : 0f;
-			results.Add((net.Name, cam.Jolts, cam.Backward, pup.Jolts, pup.Backward));
-			RegressionBench.Note($"{mode} {net.Name,-9}: câmera {cam.Jolts} trancos / {cam.Backward} para trás (pior {cam.Worst:0.0} m/s, {sampler.Cam.Count} quadros) | " +
+			int frozen = Freezes(sampler.Cam);
+			results.Add((net, cam.Jolts, cam.Backward, frozen, pup.Jolts, pup.Backward));
+			RegressionBench.Note($"{mode} {net.Name,-9}: câmera {cam.Jolts} trancos / {cam.Backward} para trás / {frozen} travadas (pior {cam.Worst:0.0} m/s, {sampler.Cam.Count} quadros) | " +
 				$"boneco {pup.Jolts} trancos / {pup.Backward} para trás (pior {pup.Worst:0.0} m/s, {sampler.Pup.Count} quadros) | " +
 				$"correções {fixes} ({pulled:0.00} m{(biggest > 0 ? $", a maior {biggest:0.00} m" : "")}) | " +
 				$"engasgos {Server.Stalls - stallsBefore}, pacotes perdidos {Server.Dropped - droppedBefore}");
 		}
 		RegressionBench.ReleaseAll();
 		sampler.QueueFree();
-		Server.Latency = Server.Jitter = Server.Loss = Server.StallEvery = 0;
+		Server.Latency = Server.Jitter = Server.Loss = Server.StallEvery = Server.Overload = 0;
+		Server.StepEvery = 1;
 
 		// A câmera: nenhum tranco nem volta no tempo, em nenhuma rede (nem com o
 		// servidor corrigindo o corpo). O boneco: a rede limpa é a régua (o
 		// tranco que aparece nela é do próprio movimento).
 		var clean = results[0];
 		foreach (var r in results)
-			b.Check(r.CamJolts == 0 && r.CamBack == 0,
-				$"{mode}, rede {r.Name}: a câmera não dá tranco nem volta no tempo ({r.CamJolts} trancos, {r.CamBack} para trás)");
+			b.Check(r.CamJolts == 0 && r.CamBack == 0 && r.CamFrozen == 0,
+				$"{mode}, rede {r.Net.Name}: a câmera não dá tranco, não volta no tempo nem trava ({r.CamJolts} trancos, {r.CamBack} para trás, {r.CamFrozen} travadas)");
 		foreach (var r in results.Skip(1))
 		{
-			b.Check(r.PupJolts <= clean.PupJolts + 2 && r.PupBack == 0,
-				$"{mode}, rede {r.Name}: o outro jogador anda liso, sem voltar no tempo ({r.PupJolts} trancos, limpa {clean.PupJolts}; {r.PupBack} para trás)");
+			// Com o ping horrível o boneco pode dar algum tranco; voltar no tempo, nunca.
+			int allowed = clean.PupJolts + (r.Net.Awful ? AwfulJolts : 2);
+			b.Check(r.PupJolts <= allowed && r.PupBack == 0,
+				$"{mode}, rede {r.Net.Name}: o outro jogador anda liso, sem voltar no tempo ({r.PupJolts} trancos, até {allowed}; {r.PupBack} para trás)");
 		}
 	}
 
@@ -280,6 +307,32 @@ public sealed class OnlineFluidityAuthoritativeTest : OnlineFluidityTest
 	public override string Name => "FluidezAutoritativo";
 	public override string Description => "online autoritativo com rede ruim (80/150/250 ms, jitter, perda, servidor engasgando): a câmera e o outro jogador andam lisos, sem tranco nem volta no tempo";
 	protected override bool Authoritative => true;
+}
+
+/// <summary>
+/// A bateria do servidor (Jhon, 27/11: "ping bom, ping ruim, servidor rápido,
+/// servidor lento... nunca travar o primeira pessoa ou a movimentação"): a
+/// rede boa de quem mora perto, o servidor rodando a 30 e a 20 quadros por
+/// segundo, sobrecarregado (quadros que não rodam, sem padrão), isso junto
+/// com ping ruim, e o ping horrível.
+/// </summary>
+public sealed class OnlineServerBatteryTest : OnlineFluidityTest
+{
+	public override string Name => "BateriaDoServidor";
+	public override string Description => "online autoritativo, ping bom e horrível com o servidor rápido, lento (30 e 20 quadros por segundo) e sobrecarregado: a câmera não treme, não volta nem trava; o outro jogador não volta no tempo";
+	protected override bool Authoritative => true;
+
+	protected override NetCondition[] Conditions => new NetCondition[]
+	{
+		new("limpa", 0, 0, 0, 0),
+		new("20 ms", 0.01, 0.004, 0, 0),
+		new("servidor 30", 0.01, 0.004, 0, 0, StepEvery: 2),
+		new("servidor 20", 0.01, 0.004, 0, 0, StepEvery: 3),
+		new("sobrecarga", 0.01, 0.004, 0, 0, Overload: 0.4),
+		new("ruim+sobrec.", 0.075, 0.04, 0.05, 0, Overload: 0.4),
+		new("400 ms", 0.2, 0.1, 0.1, 0, Awful: true),
+		new("400+sobrec.", 0.2, 0.1, 0.1, 0, Overload: 0.4, Awful: true),
+	};
 }
 
 public sealed class OnlineFluidityRelayTest : OnlineFluidityTest

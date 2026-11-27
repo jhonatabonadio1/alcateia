@@ -169,11 +169,18 @@ public sealed class WallPoleTest : RegressionTest
 /// e muretas 7 → 17 de 30 (o que sobra são grades de mourão e painel com
 /// colisão de um lado só, onde a parede "acaba" para o raio); Armazém, 32 →
 /// 34 de 36 placas.
+///
+/// Desde 27/11 a Cidade é a cena de demonstração do kit (docs/MAPAS.md), e os
+/// postes são outros: os de luz, de 12 cm, ficam todos colados à cerca da
+/// calçada (a menos de meio metro: não há como dar a volta), e os que estão
+/// soltos são os da rede elétrica, de 20 cm, e os troncos das árvores da
+/// praça, de 28 cm. O teste passou a usar esses; a haste de 12 cm continua
+/// medida no ParedePosteEPlaca, com o poste posto pelo teste.
 /// </summary>
 public sealed class WallPolesOnCityTest : RegressionTest
 {
 	public override string Name => "PostesNaCidade";
-	public override string Description => "na Cidade, o lobo gruda nos postes (12 e 28 cm) e dá a volta neles";
+	public override string Description => "na Cidade, o lobo gruda nos postes (20 e 28 cm) e dá a volta neles";
 	public override string Scene => RegressionBench.Match;
 
 	public override void Prepare()
@@ -196,9 +203,9 @@ public sealed class WallPolesOnCityTest : RegressionTest
 		// Os postes (centro no chão), e de que lado da rua há lugar para passar rente.
 		foreach (var (name, pole, side) in new[]
 		{
-			("haste de placa de 12 cm (pb1)", new Vector3(-32.6565f, 0, -31.25f), 1f),
-			("haste de placa de 12 cm (pb8)", new Vector3(-30.1565f, 0, -26.25f), 1f),
-			("poste de 28 cm (pb0)", new Vector3(-41.25f, 0, -31.25f), 1f),
+			("poste da rede de 20 cm (pb21)", new Vector3(-19.1348f, 0, 10.3478f), -1f),
+			("poste da rede de 20 cm (pb30)", new Vector3(12.7629f, 0, 10.3478f), -1f),
+			("tronco de 28 cm (pb42)", new Vector3(26.9909f, 0, -9.4443f), 1f),
 		})
 		{
 			var flat = new Vector3(pole.X - 0.45f, 0, pole.Z + side * 0.5f);
@@ -227,7 +234,7 @@ public sealed class WallPolesOnCityTest : RegressionTest
 			RegressionBench.Note($"{name}: grudou {grabbed}, volta de {RegressionBench.F(Mathf.RadToDeg(swept))}° em 2 s");
 			b.Check(grabbed, $"{name}: grudou");
 			b.Check(off == 0, $"{name}: não soltou");
-			b.AtLeast(600, Mathf.RadToDeg(swept), $"{name}: deu a volta no poste (graus; antes, a haste de 12 cm: quase nada)");
+			b.AtLeast(600, Mathf.RadToDeg(swept), $"{name}: deu a volta no poste (graus)");
 		}
 	}
 

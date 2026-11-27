@@ -4,7 +4,7 @@ using Godot;
 /// As estatísticas do lobo. Um só desde 26/11 (decisão do Jhon: "remover
 /// as classes de lobo, deixar apenas melhorias"): src/resources/breeds/lobo.tres,
 /// no meio do Bruto e do Ligeiro de antes, canhão de vidro (escudo 100, o
-/// corpo leva o dano inteiro). As melhorias (tatuagens, Catalog.cs) mexem
+/// corpo leva o dano inteiro). As melhorias de lobo (Catalog.cs) mexem
 /// numa cópia (<see cref="Profile.BuildBreed"/>). É um Resource: os números
 /// se ajustam no .tres, sem recompilar.
 /// </summary>

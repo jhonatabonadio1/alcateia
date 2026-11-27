@@ -41,7 +41,7 @@ public partial class VitrineEve : Node3D
 	/// frente e os Baruts atrás (cena <c>scenes/debug/vitrine_coronhada.tscn</c>).</summary>
 	[Export] public bool Butts;
 	[Export] public float ButtEvery = 1.6f;
-	[Export] public float RunSpeed = 3.71f;
+	[Export] public float RunSpeed = 4.91f;
 	/// <summary>O meio das rodas (m à frente do jogador) e os raios.</summary>
 	[Export] public float RingAhead = 10f;
 	[Export] public float InnerRing = 4f;

@@ -114,8 +114,11 @@ public partial class Hud
 				Loc.F("De lobo você é mais rápido, mata em duas garradas e não atira — mas tem pouco escudo e dura {0:0} s; depois espera {1:0} s para virar de novo.", _form.WolfTimeLimit, _form.WolfCooldown), UiTokens.WolfOrange);
 			GuideLine(right, IconKind.Pounce, "Especial", Loc.F("{0}, de lobo", K("pounce")),
 				Loc.T("A carga enche com abates também de humano. Cheia, vire lobo para usar."), UiTokens.WolfOrange);
-			GuideLine(right, IconKind.Human, "Correr", K("sprint"),
-				Loc.T("Mais rápido e de arma abaixada: correndo não atira. Ctrl agacha, em silêncio."), tint);
+			// O fôlego (27/11, Jhon: "no E também deve mostrar essa habilidade de correr").
+			GuideLine(right, IconKind.Run, "Correr", Loc.F("Segure {0}", K("sprint")),
+				_player != null
+					? Loc.F("Mais rápido e de arma abaixada: correndo não atira. O fôlego dura {0:0} s; acabou, espere {1:0.#} s para correr de novo (o quadradinho à direita mostra quanto resta). Ctrl agacha, em silêncio.", _player.SprintBreathTime, _player.SprintWindedWait)
+					: Loc.T("Mais rápido e de arma abaixada: correndo não atira. Ctrl agacha, em silêncio."), tint);
 			GuideLine(right, IconKind.Go, "Soltar a arma", K("drop"),
 				Loc.T("A arma da mão cai à frente; dá para pegar outra do chão."), tint);
 		}

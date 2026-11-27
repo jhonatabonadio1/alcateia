@@ -98,9 +98,10 @@ public abstract class CrouchEyeTest : RegressionTest
 		// ~19 cm abaixo dos de pé (~140 cm).
 		// Desde 26/11 o parado é o instante de passada mais aberta do andar (os dois
 		// pés retos no chão, um à frente do outro): 1 cm mais baixo que o meio do
-		// passo, os olhos descem ~25,4 cm na Eve.
-		b.AtLeast(0.15, standEye - crouchEye, $"{Who}: agachado, os olhos do corpo visto descem (m)");
-		b.AtMost(0.265, standEye - crouchEye, $"{Who}: mas não fundo demais (m)");
+		// passo, os olhos descem ~25,4 cm na Eve. Desde 27/11, 8 cm mais (Jhon: "o agachar do humano
+		// deve ser um pouco mais baixo, primeira e terceira pessoa"; CharacterAnimator.CrouchSink): ~33 cm.
+		b.AtLeast(0.25, standEye - crouchEye, $"{Who}: agachado, os olhos do corpo visto descem (m)");
+		b.AtMost(0.345, standEye - crouchEye, $"{Who}: mas não fundo demais (m)");
 
 		// Parado agachado: nada da pele no chão, a cabeça de acerto com a cabeça
 		// que se vê, e o pé parado (o clipe de andar agachado não anda no lugar).

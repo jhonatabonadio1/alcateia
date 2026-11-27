@@ -54,6 +54,9 @@ public static class MatchRoutes
 			{
 				KillsWolf = N("killsWolf"),
 				RejectedHits = N("rejectedHits"),
+				AimHits = N("aimHits"),
+				AimSnaps = N("aimSnaps"),
+				RefusedForms = N("refusedForms"),
 				FireSeconds = N("fire")
 			});
 		}

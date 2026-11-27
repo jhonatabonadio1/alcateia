@@ -202,15 +202,22 @@ public abstract class WallOnMapTest : RegressionTest
 	}
 }
 
+/// <summary>Desde 27/11 a Cidade é a cena de demonstração do kit
+/// (docs/MAPAS.md) e os pontos são outros: a fachada comprida da igreja,
+/// nos dois sentidos, e a fila de casas do lado sul da avenida, em que a fachada
+/// de cada casa fica 20 e 55 cm atrás da vizinha (o "degrau de fachada" que
+/// soltava a corrida). Os pontos da Cidade antiga (os degraus de 15 cm das
+/// lojas) saíram com ela. Só prédio de dentro do mapa: nos que o fecham a
+/// corrida não gruda (a barreira por trás da face).</summary>
 public sealed class WallOnCityTest : WallOnMapTest
 {
 	public override string Name => "ParedeNaCidade";
 	protected override string MapId => "cidade";
 	protected override (Vector3 At, Vector3 Normal, Vector3 Along, float Floor)[] Spots => new[]
 	{
-		(new Vector3(22.753f, 1.6f, -17f), Vector3.Left, Vector3.Forward, 0f),               // antes 0,1 m (degrau: "parede fina")
-		(new Vector3(11f, 1.46f, -24.783f), Vector3.Forward, Vector3.Right, -0.14f),         // antes 1,4 m (degrau: "parede fina")
-		(new Vector3(23f, 1.46f, -24.076f), new Vector3(-0.622f, 0, -0.783f), new Vector3(0.783f, 0, -0.622f), -0.14f), // antes 1,5 m
+		(new Vector3(-17.3f, 1.6f, -1f), Vector3.Left, Vector3.Forward, 0f),                 // a igreja, face oeste
+		(new Vector3(-17.3f, 1.6f, -11f), Vector3.Left, Vector3.Back, 0f),                   // a mesma face, no outro sentido (acaba no pórtico da frente)
+		(new Vector3(9f, 1.6f, 13.149f), Vector3.Forward, Vector3.Left, 0f),                 // as casas da avenida: dois degraus de fachada
 	};
 }
 

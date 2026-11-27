@@ -117,7 +117,7 @@ public partial class Bot
 	// ---- agachado: a cápsula do boneco encolhe como a do dono
 
 	/// <summary>A altura da cápsula agachada, a do dono: a do humano
-	/// (<see cref="Player.HumanCrouchHeight"/>, 1,5 m desde 26/11) ou a do lobo
+	/// (<see cref="Player.HumanCrouchHeight"/>, 1,42 m desde 27/11) ou a do lobo
 	/// (<see cref="Player.CrouchHeight"/>, 1,0). O desenho sobe a diferença para
 	/// os pés ficarem no chão (RemoteCrouchDrop): com a altura errada, o boneco
 	/// agachado flutuava ou afundava.</summary>
@@ -300,6 +300,53 @@ public partial class Bot
 	{
 		if (_health.IsDead) return;
 
+		// O corpo interpolado é desenhado um pouco no passado, e o aviso do
+		// golpe chega na hora: tocado já, o golpe saía antes de o corpo chegar
+		// ao lugar de onde foi dado — quem levava o bote via o lobo dar o
+		// golpe ainda longe, e só depois encostar (Jhon, 27/11: "quem tá
+		// recebendo o ataque deve enxergar todos os movimentos com precisão").
+		// O golpe espera o mesmo tempo do corpo. **O tiro de arma de fogo não
+		// espera** (Jhon, 27/11: "o tiro deve ser percebido imediatamente"): o
+		// estampido e o clarão saem quando o aviso chega — o dano dele também
+		// chega na hora, e ouvir o tiro 0,1 s depois de levar era o atraso que se
+		// sentia. Só o golpe de corpo (garra, bote, faca, coronhada) depende de
+		// onde o corpo está.
+		bool gunfire = move == 0 && slot is (Slot.Primary or Slot.Secondary) && !_form.IsWolf;
+		// (O boneco que o servidor ainda não mostrou a este jogador — ele acabou
+		// de atacar e passou a ser contado — espera o lugar chegar, tiro inclusive.)
+		if (_netInterpolated && RemoteAttackLag > 0f && (!gunfire || !Visible))
+		{
+			_remoteAttacks.Enqueue((_remoteClock + RemoteAttackLag, slot, yaw, pitch, move, a, b));
+			return;
+		}
+		PlayRemoteAttack(slot, yaw, pitch, move, a, b);
+	}
+
+	/// <summary>Quanto o golpe do boneco interpolado espera para tocar, em
+	/// segundos: o atraso com que a pose dele é desenhada
+	/// (<see cref="NetRates.InterpolationDelay"/>, 0,1 s). O boneco que não é
+	/// interpolado (o corpo adiantado pela velocidade) toca na hora.</summary>
+	[Export] public float RemoteAttackLag = 0.1f;
+
+	private readonly System.Collections.Generic.Queue<(double Due, Slot Slot, float Yaw, float Pitch, int Move, float A, float B)> _remoteAttacks = new();
+	private double _remoteClock;
+
+	/// <summary>Os golpes guardados cuja hora chegou.</summary>
+	private void PlayDueRemoteAttacks(double delta)
+	{
+		_remoteClock += delta;
+		if (_health.IsDead) { _remoteAttacks.Clear(); return; }
+		while (_remoteAttacks.Count > 0 && _remoteAttacks.Peek().Due <= _remoteClock)
+		{
+			var due = _remoteAttacks.Dequeue();
+			PlayRemoteAttack(due.Slot, due.Yaw, due.Pitch, due.Move, due.A, due.B);
+		}
+	}
+
+	private void PlayRemoteAttack(Slot slot, float yaw, float pitch, int move, float a, float b)
+	{
+		if (_health.IsDead) return;
+
 		Rotation = new Vector3(0, yaw, 0);
 		_head.Rotation = new Vector3(pitch, 0, 0);
 		if (move == NetWire.KnifeStabMove)
@@ -314,6 +361,7 @@ public partial class Bot
 
 	private void RemoteStep(double delta)
 	{
+		PlayDueRemoteAttacks(delta);
 		if (!_netKnown) return;
 
 		if (_health.IsDead)

@@ -93,6 +93,20 @@ public static class SecurityTests
 			Check.True(estranho.All(f => f.AccountId != 1), "26 s em chamas com três abates é possível");
 			Check.True(estranho.Any(f => f.AccountId == 2 && f.What.Contains("em chamas")), "200 s em chamas sem abate é denunciado");
 
+			// a mira e a forma (27/11): o servidor de partida conta, aqui vira denúncia
+			var mira = new Alcateia.Dominio.Partidas.MatchReport("k", "s", 0, 0, new[]
+			{
+				new Alcateia.Dominio.Partidas.ReportedLine(1, 10, 2, 0, 3, 0) { AimHits = 60, AimSnaps = 5 },
+				new Alcateia.Dominio.Partidas.ReportedLine(2, 10, 2, 0, 3, 0) { AimHits = 60, AimSnaps = 40 },
+				new Alcateia.Dominio.Partidas.ReportedLine(3, 1, 2, 0, 0, 0) { AimHits = 6, AimSnaps = 6 },
+				new Alcateia.Dominio.Partidas.ReportedLine(4, 1, 2, 0, 0, 0) { RefusedForms = 5 }
+			});
+			var suspeitos = Alcateia.Dominio.Partidas.Plausibility.Flags(mira, 10);
+			Check.True(suspeitos.All(f => f.AccountId != 1), "5 trancos de mira em 60 acertos é gente");
+			Check.True(suspeitos.Any(f => f.AccountId == 2 && f.What.Contains("aimbot")), "40 de 60 acertos depois de um tranco de mira é denunciado");
+			Check.True(suspeitos.All(f => f.AccountId != 3), "seis acertos são pouco para dizer");
+			Check.True(suspeitos.Any(f => f.AccountId == 4 && f.What.Contains("lobo fora das regras")), "cinco formas recusadas são denunciadas");
+
 			// fotos de perfil: grátis sempre; da loja, só com o item
 			Check.True(PhotoRule.Allowed("lobo_cinza", Array.Empty<string>()), "o lobo cinzento é grátis");
 			Check.True(!PhotoRule.Allowed("lobo_fogo", Array.Empty<string>()), "a da loja sem o item, não");

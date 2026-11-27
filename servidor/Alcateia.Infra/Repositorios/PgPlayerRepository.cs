@@ -84,6 +84,14 @@ public sealed class PgPlayerRepository : IPlayerRepository
 		return balance;
 	}
 
+	public Task<long> SetXp(long accountId, long xp) => _db.Transaction(async c =>
+	{
+		PgResult now = await c.Query("select xp from profiles where account_id = $1 for update", accountId);
+		if (now.Empty) throw new Failure(FailureKind.NotFound, "conta_inexistente", "Essa conta não existe.");
+		await c.Query("update profiles set xp = $2, updated_at = now() where account_id = $1", accountId, xp);
+		return now.Long(0, "xp");
+	});
+
 	/// <summary>A coluna da moeda — de uma lista fechada, nunca do pedido.</summary>
 	private static string Column(string currency) => currency switch
 	{

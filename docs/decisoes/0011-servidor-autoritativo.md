@@ -66,7 +66,7 @@ mundo é escrito uma vez e cada jogador recebe o cabeçalho dele.
 A forma, a arma na mão, a vida (pacote `Status`, 10 por segundo), se está
 morto e onde renasceu (no próprio comando, com o número da vida). O
 servidor copia — ainda dá para mentir sobre isso. A classe de lobo e as
-tatuagens vão no `Loadout` (o servidor monta o lobo igual, sem conferir se
+melhorias de lobo vão no `Loadout` (o servidor monta o lobo igual, sem conferir se
 o jogador as tem). O tiro, o dano e os bots são como na 0008.
 
 ## Medido

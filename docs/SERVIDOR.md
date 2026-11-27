@@ -45,6 +45,15 @@ contêineres: `banco`, `servidor` (porta 8080) e `partida` (porta
 7777/UDP). `docker compose logs -f servidor partida` mostra o que
 acontece; `docker compose down` para (os dados ficam no volume `banco`).
 
+**Mudou só o jogo (o servidor de partida)?** Reconstrua só ele, sem tocar nos outros:
+
+```
+docker compose up -d --build --no-deps partida
+```
+
+Sem o `--no-deps` o compose recria também o `servidor` (o `partida` depende dele): o saguão cai por uns
+segundos e quem está numa sala volta para o lobby (aconteceu em 27/11).
+
 No jogo: na tela de login, **Criar conta**. O endereço do servidor é fixo no jogo por enquanto (`Backend.DefaultUrl`, `http://127.0.0.1:8080`); `ALCATEIA_API` passa por cima. A escolha do servidor mais rápido e mais perto vem depois.
 
 **Para jogar com alguém de fora da sua máquina**, ponha no `.env` o
@@ -188,6 +197,36 @@ repasse, o boneco: 0 / 0 em todas (antes até 11 trancos a 150 ms). O
 sem tela (que roda mais rápido que o tempo real); com o relógio no passo
 e o resto antigo, eram 1 a 14 trancos e 2 voltas no tempo no engasgo.
 
+**A bateria do servidor** (27/11, `BateriaDoServidor`; Jhon: "ping bom, ping ruim, servidor rápido, servidor
+lento... nunca travar o primeira pessoa"): o mesmo teste, com o servidor de partida do teste rodando devagar
+(um quadro a cada dois ou três, pagando os passos juntos) e sobrecarregado (40% dos quadros não rodam, sem
+padrão). Travada: quadro em que a câmera anda menos de um quinto do passo de sempre, com o jogador segurando
+para a frente.
+
+| Condição | Câmera: trancos / para trás / travadas | Boneco: trancos / para trás |
+|---|---|---|
+| 20 ms (jitter 4) | 0 / 0 / 0 | 0 / 0 |
+| servidor a 30 quadros por segundo | 0 / 0 / 0 | 0 / 0 |
+| servidor a 20 quadros por segundo | 0 / 0 / 0 | 0 / 0 |
+| servidor sobrecarregado | 0 / 0 / 0 | 0 / 0 |
+| 150 ms, jitter 40, perda 5%, sobrecarregado | 0 / 0 / 0 | 0 / 0 |
+| 400 ms, jitter 100, perda 10% | 0 / 0 / 0 | 0 / 0 |
+| 400 ms + sobrecarregado | 0 / 0 / 0 | 0 / 0 |
+
+Subir e descer escada andando, correndo, pulando e agachando, a 20 ms, não deu nenhuma correção do servidor
+(medido em 27/11; o teste que mediu saiu no mesmo dia, decisão 0020). No `testar_online.sh` autoritativo (dois jogos sem tela, uma partida
+inteira com bots, no Docker), o criador terminou com 0 correções.
+
+**Contra wallhack e aimbot** (decisão 0019, `HostedMatch.Sight` e `AimAudit`): cada jogador só recebe o lugar do
+inimigo que pode ver ou ouvir (o dono dos bots da sala recebe todos); a mira de cada acerto de arma de fogo é
+contada e vai no resultado (`aimHits`, `aimSnaps`), junto com as formas recusadas (`refusedForms`). `ALCATEIA_NEBLINA=0`
+desliga o filtro de visão.
+
+**O que o servidor não copia mais** (decisão 0019): a forma (tempo de lobo, espera, transformação e o modo da
+sala), a pressa dos comandos (cota: ninguém anda mais que 10% acima do relógio) e o tiro de bot (teto da arma,
+alcance, ritmo, teleporte). O acerto aceito vai a todos na hora (`Hurt`), e quem atira vê a barra do alvo
+descer no quadro do tiro (a vida de verdade continua a do servidor).
+
 `ALCATEIA_TESTE_TELEPORTE=1` deixa o jogador "renascer" vivo em qualquer
 lugar: só o teste de ponta a ponta liga (o robô se põe de frente para o
 alvo). Nunca em produção.
@@ -237,9 +276,10 @@ Como chega lá:
 - **No modo de repasse (o padrão) não é à prova de trapaça** — a vida e
   o acerto moram nas máquinas dos jogadores (`docs/decisoes/0008`). Para
   ranking público, `ALCATEIA_NETCODE=autoritativo`: lá o servidor decide
-  vida, acerto e morte (decisão 0016). Mesmo nela, a forma, a arma na
-  mão e as armas do conjunto ainda vêm do jogo, e todos recebem todos os
-  corpos.
+  vida, acerto e morte (decisão 0016), e confere a forma (decisão 0019).
+  Mesmo nela, a arma na mão ainda vem do jogo e os bots são da máquina do
+  dono da sala (o servidor limita o que rendem e mata o que ele não mata;
+  por movê-los, o dono recebe o lugar de todos).
 - **Bots online andam na máquina de um jogador**: a do dono da sala
   (`docs/decisoes/0008`); se ele sai, passam para o próximo jogador
   ligado; sem ninguém, saem junto. A

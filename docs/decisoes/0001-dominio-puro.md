@@ -1,6 +1,8 @@
 # 0001 — Regras de jogo em C# puro, com teste de unidade
 
-**Situação:** aceita (v0.27.0)
+**Situação:** aceita (v0.27.0). "Com o teste junto" mudou na
+[0020](0020-teste-novo-se-propoe-antes.md): a conta continua indo para o
+domínio, e o teste dela se propõe antes.
 
 ## Contexto
 

@@ -308,6 +308,9 @@ public partial class Bot
 	/// </summary>
 	private void OnDamaged(float amount, Vector3 from)
 	{
+		// O boneco de outra máquina só mostra a reação (o corpo animado ouve o
+		// mesmo sinal): quem pensa e fala no rádio é o dono dele.
+		if (Remote) return;
 		// Lobo que apanha não fica plantado: troca o lado na hora.
 		if (_form != null && _form.IsWolf) { _strafeSide = -_strafeSide; _strafeTimer = StrafeInterval * 0.5; }
 		if (!_health.IsDead && _health.Hp < _health.MaxHp * 0.35f) BotRadio.Instance?.OnHurt(this);

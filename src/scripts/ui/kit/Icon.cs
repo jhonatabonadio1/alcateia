@@ -11,7 +11,9 @@ public enum IconKind
 	// O feed de abates: o especial do lobo, de cima, pelas costas, vingança.
 	Pounce, FromAbove, Behind, Revenge,
 	// O uivo, que enche o escudo (18/11): escudo com um raio.
-	Shield
+	Shield,
+	// A corrida do humano e o fôlego dela (27/11): o "person-simple-run" do Phosphor.
+	Run
 }
 
 /// <summary>

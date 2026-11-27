@@ -7,7 +7,11 @@ public enum ItemKind
 {
 	Weapon,
 	Utility,
-	Tattoo,
+	/// <summary>Melhoria de lobo (antes "tatuagem"). Ids <c>up_*</c>; no
+	/// servidor, o tipo <c>"wolf_upgrade"</c>. Até 27/11 eram <c>tat_*</c> e
+	/// <c>"tattoo"</c>: o banco migra no passo 4 do <c>Schema</c> e o perfil
+	/// salvo em <see cref="CurrentId"/>.</summary>
+	WolfUpgrade,
 	Character,
 	Service,
 	/// <summary>Foto de perfil (<see cref="Avatars"/>): só a aparência, vale para sempre.</summary>
@@ -25,9 +29,9 @@ public enum Duration
 	Permanent
 }
 
-/// <summary>Efeito de uma melhoria: multiplicadores sobre a classe de
+/// <summary>Efeito de uma melhoria de lobo: multiplicadores sobre a classe de
 /// lobo. Pequenos de propósito — ajuste fino, não poder.</summary>
-public sealed class TattooEffect
+public sealed class WolfUpgradeEffect
 {
 	public float Speed = 1f;
 	public float Jump = 1f;
@@ -67,7 +71,7 @@ public sealed class CatalogItem
 	public bool Hot;
 	/// <summary>Consumível: some ao usar (troca de nome).</summary>
 	public bool Consumable;
-	public TattooEffect Tattoo;
+	public WolfUpgradeEffect WolfUpgrade;
 	/// <summary>Personagem: a pasta dele em assets/personagens.</summary>
 	public CharacterSkin Character;
 	/// <summary>Time em que o personagem pode ser usado (0 = os dois).</summary>
@@ -215,43 +219,43 @@ public static class Catalog
 			Description = "Lendária. Ouro polido com treliça gravada, espoleta de ônix e alavanca de ouro branco. Só a aparência muda." },
 
 		// ---------------------------------------------------- melhorias
-		new() { Id = "tat_pata", Name = "Pata Leve", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "up_pata", Name = "Pata Leve", Type = "Melhoria de lobo", Kind = ItemKind.WolfUpgrade,
 			Rarity = 1, MinRank = 1, Prices = new[] { 120, 600, 1800, 4000, 9500 },
-			Tattoo = new TattooEffect { Speed = 1.05f },
+			WolfUpgrade = new WolfUpgradeEffect { Speed = 1.05f },
 			Description = "+5% de velocidade na forma de lobo." },
-		new() { Id = "tat_salto", Name = "Salto Longo", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "up_salto", Name = "Salto Longo", Type = "Melhoria de lobo", Kind = ItemKind.WolfUpgrade,
 			Rarity = 1, MinRank = 2, Prices = new[] { 120, 600, 1800, 4000, 9500 },
-			Tattoo = new TattooEffect { Jump = 1.06f },
+			WolfUpgrade = new WolfUpgradeEffect { Jump = 1.06f },
 			Description = "+6% de força no pulo do lobo." },
-		new() { Id = "tat_couro", Name = "Couro Grosso", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "up_couro", Name = "Couro Grosso", Type = "Melhoria de lobo", Kind = ItemKind.WolfUpgrade,
 			Rarity = 2, MinRank = 3, Prices = new[] { 150, 750, 2200, 5000, 12000 }, Hot = true,
-			Tattoo = new TattooEffect { Shield = 1.10f },
+			WolfUpgrade = new WolfUpgradeEffect { Shield = 1.10f },
 			Description = "+10% de escudo máximo do lobo." },
-		new() { Id = "tat_garra", Name = "Garra Afiada", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "up_garra", Name = "Garra Afiada", Type = "Melhoria de lobo", Kind = ItemKind.WolfUpgrade,
 			Rarity = 2, MinRank = 4, Prices = new[] { 150, 750, 2200, 5000, 12000 },
-			Tattoo = new TattooEffect { ClawDamage = 1.06f },
+			WolfUpgrade = new WolfUpgradeEffect { ClawDamage = 1.06f },
 			Description = "+6% de dano da garra." },
-		new() { Id = "tat_pelo", Name = "Pelo Denso", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "up_pelo", Name = "Pelo Denso", Type = "Melhoria de lobo", Kind = ItemKind.WolfUpgrade,
 			Rarity = 3, MinRank = 6, Prices = new[] { 180, 900, 2700, 6000, 14000 },
-			Tattoo = new TattooEffect { ShieldDecay = 0.8f },
+			WolfUpgrade = new WolfUpgradeEffect { ShieldDecay = 0.8f },
 			Description = "O escudo do lobo se desfaz 20% mais devagar." },
 		// Épicas e lendárias (19/11): duas coisas de uma vez, ainda ajuste
 		// fino — a maior soma fica perto de duas comuns.
-		new() { Id = "tat_cacador", Name = "Caçador Noturno", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "up_cacador", Name = "Caçador Noturno", Type = "Melhoria de lobo", Kind = ItemKind.WolfUpgrade,
 			Rarity = 3, MinRank = 5, Prices = new[] { 220, 1100, 3300, 7300, 17000 },
-			Tattoo = new TattooEffect { Speed = 1.06f, Jump = 1.05f },
+			WolfUpgrade = new WolfUpgradeEffect { Speed = 1.06f, Jump = 1.05f },
 			Description = "+6% de velocidade e +5% de força no pulo, na forma de lobo." },
-		new() { Id = "tat_presas", Name = "Presas de Aço", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "up_presas", Name = "Presas de Aço", Type = "Melhoria de lobo", Kind = ItemKind.WolfUpgrade,
 			Rarity = 3, MinRank = 5, Prices = new[] { 220, 1100, 3300, 7300, 17000 },
-			Tattoo = new TattooEffect { ClawDamage = 1.09f },
+			WolfUpgrade = new WolfUpgradeEffect { ClawDamage = 1.09f },
 			Description = "+9% de dano da garra." },
-		new() { Id = "tat_alfa", Name = "Alfa", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "up_alfa", Name = "Alfa", Type = "Melhoria de lobo", Kind = ItemKind.WolfUpgrade,
 			Rarity = 4, MinRank = 7, Prices = new[] { 280, 1400, 4200, 9300, 22000 }, Hot = true,
-			Tattoo = new TattooEffect { Shield = 1.12f, ShieldDecay = 0.8f },
+			WolfUpgrade = new WolfUpgradeEffect { Shield = 1.12f, ShieldDecay = 0.8f },
 			Description = "Lendária. +12% de escudo máximo do lobo, e ele se desfaz 20% mais devagar." },
-		new() { Id = "tat_lua", Name = "Fúria da Lua", Type = "Melhoria · lobo", Kind = ItemKind.Tattoo,
+		new() { Id = "up_lua", Name = "Fúria da Lua", Type = "Melhoria de lobo", Kind = ItemKind.WolfUpgrade,
 			Rarity = 4, MinRank = 7, Prices = new[] { 280, 1400, 4200, 9300, 22000 }, Hot = true,
-			Tattoo = new TattooEffect { ClawDamage = 1.07f, Speed = 1.05f },
+			WolfUpgrade = new WolfUpgradeEffect { ClawDamage = 1.07f, Speed = 1.05f },
 			Description = "Lendária. +7% de dano da garra e +5% de velocidade na forma de lobo." },
 
 		// ---------------------------------------------------- fotos de perfil
@@ -314,6 +318,13 @@ public static class Catalog
 	private static readonly Dictionary<string, CatalogItem> _byId = _items.ToDictionary(i => i.Id);
 
 	public static IReadOnlyList<CatalogItem> All => _items;
+
+	/// <summary>O id de hoje de um item que mudou de nome. As melhorias de
+	/// lobo eram <c>tat_*</c> até 27/11 ("tatuagem"); o perfil salvo antes
+	/// disso ainda as traz assim. O banco do servidor já migrou (passo 4 do
+	/// <c>Schema</c>).</summary>
+	public static string CurrentId(string id) =>
+		id != null && id.StartsWith("tat_", StringComparison.Ordinal) ? "up_" + id.Substring(4) : id;
 
 	public static CatalogItem Get(string id) =>
 		id != null && _byId.TryGetValue(id, out CatalogItem item) ? item : null;

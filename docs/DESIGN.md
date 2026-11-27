@@ -124,7 +124,7 @@ export `RefillOnTransform`, desligado por padrão.
 | Clique esq. | Atacar |
 | Botão direito, com a faca | A estocada: mais lenta (0,8 s) e mais forte (120); pelas costas, 240 — mata um humano de vida cheia |
 | Ctrl ou C | Agachar (nas duas formas). No Mac, Ctrl + clique vira clique direito no sistema; o jogo trata como ataque (`MacCtrlClick`), e o especial agachado sai agachando no C |
-| Shift | Correr, de arma abaixada: não atira, não mira e não recarrega (só humano, só para a frente) |
+| Shift | Correr, de arma abaixada: não atira, não mira e não recarrega (só humano, só para a frente). Com fôlego: 4 s de cada vez, 1,5 s sem fôlego quando acaba (27/11) |
 | R | Rugir (lobo): segure até o fim para o escudo voltar · recarregar (humano) |
 | G | Soltar a arma da mão: cai à frente, e você passa para a próxima |
 | Esc | Menu da partida (continuar, opções, controles, reiniciar, sair para a sala, sair do jogo) — **não pausa** |
@@ -1321,14 +1321,31 @@ esconde.
 Seis, todos na lista (`src/scripts/meta/Maps.cs`): Armazém, Cidade,
 Cidade do Deserto, Estação de Trem, Obra e Distrito Neon. Como cada um
 foi feito, e como fazer um novo, está em `docs/MAPAS.md`. **Desde 24/11 a
-fonte de cada mapa é a cena** (`src/scenes/maps/<id>.tscn`): o gerador
-(`gerar_mapas.py`) saiu, e os módulos de `src/tools/mapas/` ficaram só
-como registro de como cada mapa nasceu.
+fonte de cada mapa é a cena** (`src/scenes/maps/<id>.tscn`); os módulos
+de `src/tools/mapas/` são o registro de como cada mapa nasceu. A Cidade, o
+Deserto, a Estação e a Obra, refeitos em 27/11 da cena de demonstração de
+cada kit, ainda saem do gerador (`src/tools/gerar_mapas.py`, que voltou só
+para eles) enquanto ninguém os mexer na cena.
 
 **Simétrico.** Num mapa de bases, qualquer vantagem de um lado é
 vantagem de um time, e não tem como afinar isso jogando sozinho contra
 bots. Por isso o lado de um time é o do outro girado 180° (ou
 espelhado).
+
+**Quatro exceções, por decisão do Jhon (27/11): a Cidade, a Cidade do
+Deserto, a Estação de Trem e a Obra.** São a cena de demonstração do kit
+no tamanho em que o autor a montou ("use o que tem lá de demo"), e ela não
+é simétrica; dobrá-la com a cópia girada (como o Distrito Neon) as deixaria
+iguais para os dois times, mas a Cidade e o Deserto ficariam grandes
+demais para o humano lento do jogo ("para não ficar exagerado"), e a Obra,
+dobrada, ele preferiu de volta como na cena ("deixa o mapa da construção
+igual o da demo mesmo"). Cada time nasce num lugar diferente — na Cidade,
+o azul junto à prefeitura e o laranja no fim da avenida; no Deserto, em
+cantos opostos da cidadela; na Estação, um em cada ponta do pátio; na
+Obra, um em cada beira da laje. **Ninguém mediu se um lado leva
+vantagem**: é a primeira coisa a olhar quando forem jogados de verdade, e
+o conserto, se precisar, é mexer onde cada time nasce (`BASES`, no módulo
+do mapa). Simétricos ficam o Armazém e o Distrito Neon.
 
 **O que saiu.** O Hangar (o primeiro mapa próprio, o pátio de uma base
 aérea, 84 × 48 m), o Metrô e a Rua Abandonada saíram em 16/11, a pedido;
@@ -1939,7 +1956,7 @@ missões e títulos vêm do servidor e o jogo só os espelha
 Filhote, zero Presas e o equipamento de série; a loja mostra a vitrine
 e pede para entrar, as missões também. **Partida sem servidor é treino**
 e não rende nada. O arquivo `user://profile.json` (`Profile`, versão 4)
-guarda só escolhas: conjuntos, raça, tatuagens, personagens, título em
+guarda só escolhas: conjuntos, raça, melhorias de lobo, personagens, título em
 uso, estatísticas de treino. Opções ficam à parte, em
 `user://settings.json`.
 
@@ -1965,7 +1982,7 @@ uso, estatísticas de treino. Opções ficam à parte, em
   Preço, vitrine, bônus de evento e desafios também são do painel. Abandonar não rende nada. Só a partida online com
   conta rende; a tela de resultado mostra a previsão e quem paga é o
   servidor.
-- **Loja** (`meta/Catalog.cs`): armas, granada, tatuagens (bônus
+- **Loja** (`meta/Catalog.cs`): armas, granada, melhorias de lobo (bônus
   pequenos de velocidade, pulo, escudo, garra e perda de escudo) e
   troca de nome. Prazos de 1, 7, 30 e 90 dias ou permanente. Preço,
   raridade, patente mínima e promoções vêm do servidor (o painel muda);

@@ -1,368 +1,280 @@
 """
-Obra — mapa grande (100 × 70 m), a céu aberto, de dia.
+Obra — mapa pequeno (40 × 40 m, três pisos), a céu aberto, no alto de um prédio, de dia (era fim de tarde até 27/11).
 
-Um prédio de concreto em construção (60 × 40 m) ocupa o meio do canteiro: no térreo, um corredor de 60 m de ponta a
-ponta, quatro salas de canto e dois salões com pilares, tudo ligado por portas; duas escadas sobem à laje do primeiro
-piso (4 m), aberta dos lados, com muretas de tijolo; outras duas, à laje de cima (8 m), só no miolo. Em volta, o
-canteiro: material empilhado, muretas, andaimes encostados no prédio, as gruas. Cada time nasce numa ponta do canteiro.
+O canteiro do pacote "Low Poly FPS Map Vol.6 — Construction" como o autor montou: a cena de demonstração, lida do
+``.umap`` do Unreal (``kits/unreal_umap.py`` → ``fps6_demo.json``). Pedido do Jhon, 27/11: "use o que tem lá de demo".
+(Até 26/11 a Obra era uma planta própria, um prédio de 60 × 40 m no chão, desenhada em letras com as peças soltas do
+kit; está no git.)
 
-Montado com as peças do kit "Low Poly FPS Map Vol.6 — Construction" (JustCreate; ``tools/mapas/kits``), com planta
-própria. A planta é o desenho em letras aqui embaixo (``kits/planta.py``), um por piso: cada letra, 2,5 m.
+A cena é o topo de um prédio de 50 m, no meio do centro da cidade, onde se levantam mais andares: 40 × 40 m de laje
+com paredes de concreto pela metade, três escadas para o segundo piso (3,8 m), um pedaço de terceiro piso (7,6 m), duas
+gruas, andaimes, paletes, sacos de cimento, bobinas, banheiros químicos.
+
+**Acima das nuvens** (Jhon, 27/11: "ao invés de cidade ao redor do prédio, será um prédio alto acima das nuvens; o
+precipício será uma grande nuvem"): as torres e as ruas da demo saem; o prédio desce, andar sobre andar, até sumir num
+mar de nuvens (as camadas de ``nuvens.gdshader``, as do precipício do Setor Zero, no tom do fim de tarde), e a névoa
+adensa para baixo. A beira da laje continua fechada pela parede invisível: ninguém cai.
+
+**Igual à cena, no tamanho dela** (Jhon, 27/11: "deixa o mapa da construção igual o da demo mesmo" — uma primeira
+versão, do mesmo dia, punha dois canteiros lado a lado, 80 × 40 m). O azul nasce do lado oeste, o laranja do leste; os
+dois lados não são iguais (a cena não é simétrica). Para 6 contra 6 é apertado: 40 × 40 m.
+
+A única coisa que muda na cena são os módulos de parede que saem para o térreo ser um chão só (``abrir``, abaixo).
+
+A luz é de fim de tarde: sol baixo e alaranjado rente ao mar de nuvens, sombra comprida e fria, nuvens acesas por baixo.
 
 As quatro perguntas do teste de mapa:
-  1. Caminho que só o lobo faz: do andaime (2,5 m) para a laje do primeiro piso, e de laje em laje pelo lado de fora,
-     sem passar pelas escadas.
-  2. Onde o humano vê o lobo chegando: a laje de cima (8 m), com o canteiro inteiro à vista; as janelas das salas de
-     canto, de frente para o pátio.
-  3. Corredor que o humano deve evitar: o corredor do térreo, 60 m com porta dos dois lados.
-  4. Cair em cima de quem não olha: das lajes, pelos vãos das escadas e pelas beiradas sem mureta, sobre quem passa
-     embaixo.
-
-O leste é o oeste girado 180°.
+  1. Caminho que só o lobo faz: do térreo ao segundo piso pelos paletes, andaimes e muretas, sem a escada; e ao
+     terceiro piso (7,6 m), a que nenhuma escada chega.
+  2. Onde o humano vê o lobo chegando: as lajes abertas do segundo piso, com o térreo à vista.
+  3. Corredor que o humano deve evitar: os corredores do térreo debaixo da laje, entre paredes, com vão para cima.
+  4. Cair em cima de quem não olha: das bordas das lajes e dos vãos de escada para o térreo.
 """
-from .kit import Mapa, AZUL
-from .kits.montagem import Montagem, Grade, fechar, nascer, barrar, espalhar, luz_de_jogo, lampadas
-from .kits.planta import Planta
-from .kits.kit_fbx import Peca
+import os
+
 import numpy as np
 
-# # muro do canteiro   - | + parede de concreto (3,8 m)   D porta   J janela (vão)   = ! * mureta de tijolo
-# > < ^ v escada (sobe para onde aponta)   _ laje   s andaime   t grua   b caixotes   r bobinas   c cimento   g gerador
-# w banheiros   m cavalete de material   k tijolos   l refletor de obra   a monte de areia   p monte de brita
-# 1–9 por onde passam as rotas
-# (as colunas não se desenham: vão na malha de 7,5 m do prédio, em todos os pisos — ``colunas``)
-TERREO = [
-    "####################",
-    "#....a....c.....b...",
-    "#...r........=====..",
-    "#.......1.........2.",
-    "#..b...p....t....b..",
-    "#.....l...s.....s...",
-    "#.......+--D--+-JJ--",
-    "#..m....|.c...|.....",
-    "#.......|..b..|..r..",
-    "#....k..D.7...D.9...",
-    "#...a...|...l.|...m.",
-    "#.w.....|.....|.....",
-    "#.w...!.+--D--+--D--",
-    "#.....!.D...b.......",
-    "#.......D.....3..c.4",
-    "#..g..!.+-D---+-D---",
-    "#.....!.|..c..|.l...",
-    "#.......|.....|.....",
-    "#....k..D...b8|.>>>.",
-    "#....p..|.....D.....",
-    "#..c....|.r...|..b..",
-    "#.......+-JJ--+--D--",
-    "#.....r...s.....s...",
-    "#..b......a....b....",
-    "#.......5.........6.",
-    "#....=====...c....l.",
-    "#.m.......k....a....",
-    "####################",
-]
-VAZIO = "...................."
-PISO1 = [VAZIO] * 6 + [
-    "........+--JJ-+=====",
-    "........|_____!_____",
-    "........|_b_______c_",
-    "........J_____!>>>__",
-    "........|___________",
-    "........|__k__!___l_",
-    "........!___________",
-    "........!___c_______",
-    "........!_________b_",
-    "........!___________",
-    "........|_____!_____",
-    "........|__r_____b__",
-    "........J_____!_..._",
-    "........|_________l_",
-    "........|_c___!_____",
-    "........+-JJ--+=====",
-] + [VAZIO] * 6
-PISO2 = [VAZIO] * 7 + [
-    "...............*====",
-    "...............!____",
-    "..................__",
-    "...............!_b__",
-    "...............!____",
-    "...............!___c",
-    "..............._____",
-    "..............._____",
-    "...............!_k__",
-    "...............!____",
-    "...............!__c_",
-    "...............!____",
-    "...............!_l__",
-    "...............*====",
-] + [VAZIO] * 7
-SOLIDOS = "#-|+=!*><^vst"
-LAJE = "_-|+DJ=!*><^vbcrklgm"
-COLUNAS_C, COLUNAS_R = (8, 11, 14, 17), (6, 9, 12, 15, 18, 21)          # a malha de colunas do prédio: de 7,5 em 7,5 m
-P = Planta(TERREO, 2.5, 'giro', setas=True)
-P1, P2 = Planta(PISO1, 2.5, 'giro', setas=True), Planta(PISO2, 2.5, 'giro', setas=True)
-X, Z = P.X, P.Z
-ANDAR = 4.0          # de um piso ao outro: 3,8 m de parede e 20 cm de laje
-MURO = 3.8           # o muro do canteiro (era 16 m, com a empena dos vizinhos por cima; Jhon, 20/11: "um muro baixo, de obra mesmo")
+from .kit import Mapa, AZUL
+from .kits.kit_fbx import Kit
+from .kits.demo import Demo, por, barreiras, alcancavel, nascer_em, palete
+from .kits.montagem import Montagem, Grade, fechar, espalhar, luz_de_jogo, lampadas
+from .kits.montagem import CAIXA as CAIXA8
 
-CAIXA = ('Box_', 'CableReel', 'Cement', 'Generator', 'WC_', 'Pallet', 'Wall', 'TowerCrane_01', 'muro', 'parede', 'laje')
-SEM = ('Brick', 'Brush', 'Dye', 'Hammer', 'Sign', 'Door_', 'ConstructionStairs', 'ConstructionMat_01', 'MetalTile', 'WoodenPlank', 'WallDecor', 'Road_', 'House_', 'Light_', 'Pipe', 'TowerCrane_01_2', 'TowerCrane_02_2', 'chao')
+CHAO = 50.2                    # a altura do piso do canteiro na cena (o prédio tem 50 m; a placa do piso, 20 cm)
+LAJE = 0.2                     # a placa do piso: onde não há placa, pisa-se na laje do prédio, 20 cm abaixo
+ANDAR = 3.81                   # o segundo piso
+X, Z = 22.0, 22.0              # meia largura e meio fundo do mapa: a laje (20 × 20) e 2 m de parede invisível por fora
+BEIRA = (20.0, 20.0)           # a beira da laje
+TETO = 24.0
+
+# A colisão de cada peça é a da própria malha, menos o que é caixa de verdade (a caixa da bobina, do saco de cimento e do
+# gerador segurava o tiro de cima no ar: o teste TiroDeCimaObra)
+# (revisão de 27/11: o palete carregado, 1 m de blocos, a pilha de barras de aço e a escadinha de abrir colidem — o
+# corpo e o tiro passavam por dentro delas; as barras e a escadinha na forma delas)
+CAIXA = ('Floor_', 'WallCorner', 'WallPart', 'Door_', 'Box_', 'WC_01', 'Pallet_02')
+SEM = ('Brick', 'Brush', 'Dye', 'Hammer', 'Sign', 'WallDecor', 'Road', 'House_', 'Light_', 'Pipe',
+       'TowerCrane_01_2', 'TowerCrane_02_2', 'WC_01_2')
+LONGE = ('House_01', 'House_02', 'House_03', 'House_04')
+ANDARES_ABAIXO = 5             # quantas vezes o prédio da demo (50 m) se empilha embaixo da laje: até 250 m, dentro das nuvens
+
+# O mar de nuvens embaixo (``nuvens.gdshader``, o do precipício do Setor Zero), no tom do fim de tarde:
+# (nome, altura, lado do plano, tamanho do desenho, cobertura, maciez, opacidade, vento, cor, sombra, some de/até)
+NUVENS = [
+    # (de dia desde 27/11 — Jhon: "mapa da construção pode ser de dia, não em pôr do sol": nuvem branca, sombra azulada)
+    ("NuvensFundo", -200.0, 9000.0, 520.0, 0.97, 0.30, 1.00, (2.0, 0.8), (1.0, 0.99, 0.97), (0.62, 0.70, 0.86), (3000.0, 4200.0)),
+    ("NuvensMar", -120.0, 9000.0, 430.0, 0.78, 0.22, 0.97, (3.2, 1.3), (1.0, 0.99, 0.97), (0.66, 0.73, 0.88), (3000.0, 4200.0)),
+    ("NuvensMeio", -70.0, 8000.0, 360.0, 0.50, 0.20, 0.88, (4.4, 1.9), (1.0, 1.0, 0.98), (0.70, 0.77, 0.90), (2600.0, 3800.0)),
+    ("NuvensFarrapos", -32.0, 7000.0, 290.0, 0.26, 0.20, 0.65, (5.6, 2.6), (1.0, 1.0, 0.99), (0.76, 0.82, 0.93), (2200.0, 3400.0)),
+]
+
+
+def nuvens(m):
+    """O mar de nuvens embaixo do prédio: as camadas de ``nuvens.gdshader`` (planos grandes em que a nuvem é desenhada
+    por ruído, translúcida, andando com o vento), como o precipício do Setor Zero — a de baixo quase fechada, as de
+    cima em farrapos."""
+    from .kit import xform
+    m.cru_ext.append(("Shader", "res://src/assets/mapas/detalhe/nuvens.gdshader", "s_nuvens"))
+    c3 = lambda c: f"Color({c[0]}, {c[1]}, {c[2]}, 1)"
+    m.cru_nos += ['[node name="Nuvens" type="Node3D" parent="."]', ""]
+    for k, (nome, altura, lado, tam, cob, mac, opa, vento, cor, sombra, some) in enumerate(NUVENS):
+        m.cru_recursos += [f'[sub_resource type="ShaderMaterial" id="NuvemMat{k}"]', 'shader = ExtResource("s_nuvens")',
+                           f"shader_parameter/cor = {c3(cor)}", f"shader_parameter/sombra = {c3(sombra)}",
+                           f"shader_parameter/tamanho = {tam}", f"shader_parameter/cobertura = {cob}", f"shader_parameter/maciez = {mac}",
+                           f"shader_parameter/opacidade = {opa}", f"shader_parameter/vento = Vector2({vento[0]}, {vento[1]})",
+                           f"shader_parameter/some_de = {some[0]}", f"shader_parameter/some_ate = {some[1]}",
+                           f"shader_parameter/semente = Vector2({3.7 * k}, {1.9 * k})", "shader_parameter/encosto = 26.0",
+                           "shader_parameter/brilho = 1.05", "",
+                           f'[sub_resource type="PlaneMesh" id="NuvemPlano{k}"]', f'material = SubResource("NuvemMat{k}")', f"size = Vector2({lado}, {lado})", ""]
+        m.cru_nos += [f'[node name="{nome}" type="MeshInstance3D" parent="Nuvens"]', f"transform = {xform((0, altura, 0))}",
+                      f'mesh = SubResource("NuvemPlano{k}")', "cast_shadow = 0", "extra_cull_margin = 16384.0", ""]
+# as escadas de concreto, medidas na peça: (o pé da linha das quinas, a quina do último degrau, os lados)
+ESCADAS = {'Stairs_01': ((-0.452, 0.0), (5.28, 3.8), (-1.19, 1.19)), 'Stairs_02': ((-0.452, 0.0), (5.28, 3.8), (-1.19, 1.19))}
+
+
+# As tábuas (``WoodenPlank``) colidem na forma delas (Jhon, 27/11, fim do dia: "esses pontos do mapa estão sem
+# colisão"): a ponte de tábuas do segundo piso e as de cima da viga da grua eram desenho só, e se atravessava. Só a tábua
+# deitada no chão (até 6 cm de alto) fica sem: lá ela é um degrau à toa no pé de quem passa.
+TABUA = 'WoodenPlank'
+TABUA_NO_CHAO = 0.06
 
 
 def colisao(nome):
-    return 'caixa' if nome.startswith(CAIXA) else None if nome.startswith(SEM) else 'malha'
+    return None if nome.startswith(SEM) else 'caixa' if nome.startswith(CAIXA) else 'malha'
 
 
-def colunas(M, Pk, y, acima):
-    """As colunas do piso, na malha do prédio: inteiras (3,8 m) onde há laje por cima; onde o piso de cima ainda não foi
-    feito, o toco com a ferragem de espera. Não vai coluna no vão de porta nem na escada."""
-    pontos = [(r, c, None) for r in COLUNAS_R for c in COLUNAS_C + tuple(Pk.C - 1 - c for c in COLUNAS_C)] + [(r, Pk.C // 2 - 1, 0.0) for r in COLUNAS_R]
-    for r, c, no_eixo in pontos:
-        if Pk.letra(r, c) in 'DJ<>^v' or (y > 0 and Pk.letra(r, c) not in LAJE): continue
-        x, z = Pk.xz(r, c); x = x if no_eixo is None else no_eixo
-        coberta = acima is not None and acima.letra(r, c) in LAJE
-        if y == 0 and not coberta: continue
-        nome = 'WallCorner_01' if coberta else Pk.sorteio(x, z, ('WallCorner_03', 'WallCorner_02', 'WallCorner_03'), 4)
-        M.por(nome, x, z, y=y, colide='caixa' if coberta else 'malha', planta=y == 0)          # (o toco com a ferragem: a da malha — a caixa pegava o ferro e segurava tiro; 20/11)
-
-
-def objetos(M, Pk, y):
-    """O material espalhado num piso (as letras da planta dele)."""
-    for L, r, c, x, z in Pk.celulas('stbrcgwmkl'):
-        nx, nz = Pk.corrida(r, c, SOLIDOS); ao_x = nx >= nz; g = Pk.desvio(x, z, 25)
-        if L == 's':                    # o andaime, encostado na parede do prédio (a que estiver mais perto, ao norte ou ao sul)
-            perto = 1 if Pk.letra(r + 1, c) in '-+DJ' else -1
-            for dx in (-3.2, 0.0, 3.2): M.por('Scaffolding_01', x + dx, z + perto * 0.45, colide='malha')
-            M.por('WoodenPlank_01', x - 3.0, z + perto * 0.4, y=2.52, yaw=90.0 + g); M.por('Dye_01', x + 0.4, z + perto * 0.5, y=2.5); M.por('Brush_01', x + 0.8, z + perto * 0.4, y=2.5)
-        elif L == 't':
-            M.por('TowerCrane_01', x, z, colide='malha')          # (a treliça: o tiro passa pelo vão; 20/11)
-            M.por(Pk.sorteio(x, z, ('TowerCrane_01_2', 'TowerCrane_02_2')), x, z, y=16.0, yaw=Pk.desvio(x, z, 40) + (25 if x < 0 else 205), pivo=True, colide=None, planta=False)
-            for dx, dz in ((1.9, 1.7), (-1.9, 1.8), (1.8, -1.9)): M.por('Sign_01', x + dx, z + dz)
-        elif L == 'b':
-            M.por('Pallet_01', x, z, y=y, yaw=g); M.por('Box_01', x - 0.1, z, y=y + 0.15, yaw=g); M.por('Box_01', x + 1.1, z + 0.3, y=y, yaw=g + 30); M.por('Box_01', x + 0.1, z - 1.0, y=y, yaw=g - 15)
-            M.por('Hammer_01', x + 1.1, z + 0.3, y=y + 0.9, yaw=g)
-        elif L == 'r':
-            M.por('CableReel_01', x, z, y=y, yaw=g); M.por('CableReel_02', x + 1.9, z + 0.4, y=y, yaw=g + 50)
-        elif L == 'c':
-            for i, (dx, dz) in enumerate(((0, 0), (0, 0.8), (1.7, 0.2))): M.por(('CementC1_01', 'CementC2_01')[i % 2], x + dx, z + dz, y=y, yaw=g)
-            M.por('CementC1_01', x, z + 0.4, y=y + 0.7, yaw=g); M.por('CementC1_02', x - 1.0, z - 0.4, y=y, yaw=g + 40); M.por('CementC2_03', x - 1.2, z + 0.5, y=y, yaw=g - 30)
-        elif L == 'g':
-            M.por('Generator_01', x, z, y=y, yaw=g); M.por('Light_01', x + 1.4, z + 1.0, y=y, colide=None)
-        elif L == 'w':
-            M.por('WC_01', x, z, y=y, yaw=90.0 if x < 0 else -90.0)
-        elif L == 'm':
-            M.por('ConstructionMat_02', x, z, y=y, yaw=90.0 + g, colide='caixa'); M.por('ConstructionMat_01', x + 0.9, z, y=y, yaw=90.0 + g); M.por('ConstructionMat_01', x + 1.3, z + 0.2, y=y, yaw=84.0 + g)
-        elif L == 'k':
-            M.por('Wall_09', x, z, y=y, yaw=g + (0.0 if ao_x else 90.0), colide='caixa')
-            for i, (dx, dz) in enumerate(((0.9, 0.6), (1.2, 0.4), (1.0, 0.9), (-1.0, 0.7), (-1.3, 0.6))): M.por(('Brick_01', 'Brick_02', 'Brick_03')[i % 3], x + dx, z + dz, y=y, yaw=40.0 * i)
-        elif L == 'l':                  # o refletor de obra, com a lata e o cabo ao pé
-            M.por('Light_02', x, z, y=y, yaw=g * 3, colide='caixa'); M.por('Dye_02', x + 0.7, z + 0.3, y=y); M.por('Sign_01', x - 0.7, z - 0.4, y=y)
-
-
-def miudezas(M, Pk, y, sal):
-    """O que fica largado ao pé das paredes: cones, tábuas, chapas, tijolos, latas de tinta, escadas de mão, placas."""
-    for r, c, x, z, yaw, dist in Pk.beiras('#' if y == 0 else '', '-|+' if y == 0 else '-|+=!*', onde='.' if y == 0 else '_'):
-        M.grupo()
-        s_ = Pk.sorte(x, z, sal + int(yaw)); g = Pk.desvio(x, z, 30, sal)
-        if s_ < 0.06:
-            M.encostar('Sign_01', x, z, yaw, dist, y=y, folga=0.3); M.encostar('Sign_01', x, z, yaw, dist, y=y, folga=0.5, lado=0.6)
-        elif s_ < 0.12:
-            for i in range(3): M.encostar(('WoodenPlank_01', 'WoodenPlank_03', 'WoodenPlank_05')[i], x, z, yaw, dist, y=y + 0.06 * i, folga=0.25 + 0.2 * i, lado=0.1 * i)
-        elif s_ < 0.16:
-            M.encostar('MetalTile_01', x, z, yaw, dist, y=y, folga=0.2); M.encostar('MetalTile_02', x, z, yaw, dist, y=y + 0.07, folga=0.3, lado=0.2)
-        elif s_ < 0.21:
-            for i in range(4): M.encostar(('Brick_01', 'Brick_02', 'Brick_03', 'Brick_01')[i], x, z, yaw, dist, y=y + (0.2 if i == 3 else 0), folga=0.2 + 0.1 * (i % 2), lado=-0.6 + 0.55 * (i % 3))
-        elif s_ < 0.25:
-            M.encostar('Dye_01', x, z, yaw, dist, y=y, folga=0.2); M.encostar('Dye_03', x, z, yaw, dist, y=y, folga=0.25, lado=0.45); M.encostar('Brush_02', x, z, yaw, dist, y=y, folga=0.6, lado=0.2)
-        elif s_ < 0.29:
-            M.encostar(Pk.sorteio(x, z, ('SignA_01', 'SignB_01', 'SignA_02', 'SignB_02'), sal), x, z, yaw, dist, y=y + 1.7, folga=0.02)
-        elif s_ < 0.33:
-            M.encostar('ConstructionStairs_01', x, z, yaw, dist, y=y, folga=0.05)
-        elif s_ < 0.36:
-            M.encostar('ConstructionMat_01', x, z, yaw + 90.0, dist, y=y, folga=0.6)
-        elif s_ < 0.385:
-            M.encostar('Door_01', x, z, yaw, dist, y=y, folga=0.06)
-    M.grupo(fim=True)
-
-
-# ---------------------------------------------------------------- o chão do canteiro (Jhon, 20/11: "poderia ter algumas
-# poças de água, morros de areia e etc.; madeira espalhada no chão — barro, ao redor da construção central")
-def _disco(K, nome, rgb, semente, lados=18, irregular=0.3):
-    """Uma mancha deitada no chão (raio 1 m, de beira torta): a lama, a poça."""
-    (u, v), _ = K.uv_da_cor(rgb); r = np.random.default_rng(semente)
-    ang = np.linspace(0, 2 * np.pi, lados, endpoint=False); f = r.uniform(0, 6.28, 3)
-    raio = 1 + irregular * (0.6 * np.sin(2 * ang + f[0]) + 0.3 * np.sin(3 * ang + f[1]) + 0.25 * np.sin(5 * ang + f[2]))
-    b = np.stack([np.cos(ang) * raio, np.zeros(lados), np.sin(ang) * raio], 1)
-    pos = np.array([[np.zeros(3), b[(i + 1) % lados], b[i]] for i in range(lados)])
-    vira = np.cross(pos[:, 1] - pos[:, 0], pos[:, 2] - pos[:, 0])[:, 1] < 0; pos[vira] = pos[vira][:, [0, 2, 1]]
-    K.pecas[nome] = Peca(nome, pos, np.tile([0.0, 1.0, 0.0], (lados, 3, 1)), np.tile([u, v], (lados, 3, 1)).astype(float))
-
-
-def _monte(K, nome, rgb, semente, lados=14):
-    """Um monte de material despejado (raio 1 m, 1 m de alto, facetado como as peças do kit): areia, brita."""
-    (u, v), _ = K.uv_da_cor(rgb); r = np.random.default_rng(semente)
-    aneis = [(1.0, 0.0), (0.80, 0.30), (0.56, 0.62), (0.30, 0.86), (0.10, 0.98)]
-    ang = np.linspace(0, 2 * np.pi, lados, endpoint=False); f = r.uniform(0, 6.28, 2)
-    borda = 1 + 0.16 * np.sin(2 * ang + f[0]) + 0.10 * np.sin(3 * ang + f[1])
-    V = np.array([[(np.cos(a) * rr * borda[i] * (1 + 0.07 * r.standard_normal()), hh * (1 + 0.06 * r.standard_normal() * (k > 0)), np.sin(a) * rr * borda[i] * (1 + 0.07 * r.standard_normal()))
-                   for i, a in enumerate(ang + 0.22 * k)] for k, (rr, hh) in enumerate(aneis)])
-    topo = np.array([0.03, 1.0, -0.02]); tris = []
-    for k in range(len(aneis) - 1):
-        for i in range(lados):
-            j = (i + 1) % lados; tris += [[V[k, i], V[k + 1, i], V[k, j]], [V[k, j], V[k + 1, i], V[k + 1, j]]]
-    for i in range(lados): tris.append([V[-1, i], topo, V[-1, (i + 1) % lados]])
-    pos = np.array(tris); n = np.cross(pos[:, 1] - pos[:, 0], pos[:, 2] - pos[:, 0])
-    vira = (n * pos.mean(1) * np.array([1.0, 0.0, 1.0])).sum(1) + n[:, 1] * 0.5 < 0; pos[vira] = pos[vira][:, [0, 2, 1]]
-    n = np.cross(pos[:, 1] - pos[:, 0], pos[:, 2] - pos[:, 0]); n /= np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-9)
-    K.pecas[nome] = Peca(nome, pos, np.repeat(n[:, None, :], 3, 1), np.tile([u, v], (len(pos), 3, 1)).astype(float))
-
-
-def canteiro(M):
-    """O chão do canteiro: os montes de areia e de brita (as letras ``a`` e ``p``; sobe-se neles, e dão cobertura), o
-    barro pisado em volta do prédio com as tábuas jogadas por cima para passar, e as poças — no barro e no pátio."""
-    K = M.kit
-    for k in range(3):
-        _disco(K, f'lama_{k}', (0.30, 0.22, 0.15), 40 + k, irregular=0.34); _disco(K, f'poca_{k}', (0.27, 0.33, 0.38), 50 + k, irregular=0.2)
-    for k in range(2):
-        _monte(K, f'monte_areia_{k}', (0.80, 0.67, 0.44), 60 + k); _monte(K, f'monte_brita_{k}', (0.55, 0.55, 0.57), 70 + k)
-    for L, r, c, x, z in P.celulas('ap'):
-        s_ = P.sorte(x, z, 61); raio = 2.0 + 0.7 * s_; alto = 1.25 + 0.5 * P.sorte(x, z, 62)
-        M.por(('monte_areia_' if L == 'a' else 'monte_brita_') + str(int(s_ * 2) % 2), x, z, yaw=P.desvio(x, z, 180, 63), escala=(raio, alto, raio * (0.85 + 0.3 * P.sorte(x, z, 64))), colide='malha')
-        # o que escorreu do monte, e a pá de quem estava mexendo nele
-        M.por('lama_0', x + 0.4, z + 0.3, y=0.012, yaw=P.desvio(x, z, 180, 65), escala=(raio * 1.35, 1.0, raio * 1.25), colide=None, planta=False)
-
-    x0, z0, _, _ = P.mundo(8, 6, 9, 7); bx, bz = -(x0 + 1.25), -(z0 + 1.25)                # meia largura e meio fundo do prédio
-    def dos_dois(nome, x, z, yaw, **k):
-        M.por(nome, x, z, yaw=yaw, **k); M.por(nome, -x, -z, yaw=yaw + 180.0, **k)
-    # ---- o barro em volta do prédio: de 4,5 em 4,5 m ao longo das quatro paredes (só meia volta: a outra é o giro)
-    pontos = [(x, -bz, 0.0, -1.0) for x in np.arange(-bx - 2.0, bx + 2.1, 4.5)] + [(-bx, z, -1.0, 0.0) for z in np.arange(-bz + 3.0, bz - 2.9, 4.5)]
-    for k, (px, pz, nx, nz) in enumerate(pontos):
-        s_ = P.sorte(px, pz, 81)
-        if s_ > 0.82: continue
-        d = 1.9 + 2.2 * P.sorte(px, pz, 82); x, z = px + nx * d + P.desvio(px, pz, 0.9, 83) * abs(nz), pz + nz * d + P.desvio(px, pz, 0.9, 84) * abs(nx)
-        ao_longo = 0.0 if nz else 90.0; g = P.desvio(px, pz, 25, 85)
-        larg, fundo = 2.2 + 1.4 * P.sorte(px, pz, 86), 1.3 + 0.9 * P.sorte(px, pz, 87)
-        dos_dois(f'lama_{k % 3}', x, z, ao_longo + g, y=0.014, escala=(larg, 1.0, fundo), colide=None, planta=False)
-        if s_ < 0.36:                                                    # a água empoçada no barro
-            dos_dois(f'poca_{k % 3}', x + 0.3 * nz, z + 0.3 * nx, ao_longo - g, y=0.026, escala=(larg * 0.55, 1.0, fundo * 0.6), colide=None, planta=False)
-        n_tabuas = 1 + int(P.sorte(px, pz, 88) * 3.4)                    # as tábuas jogadas por cima, para passar
-        for i in range(n_tabuas):
-            t = (i - (n_tabuas - 1) / 2) * 0.55
-            dos_dois(('WoodenPlank_01', 'WoodenPlank_03', 'WoodenPlank_05')[(k + i) % 3], x + t * abs(nx) + 0.25 * i * abs(nz), z + t * abs(nz) + 0.25 * i * abs(nx),
-                     ao_longo + 90.0 + P.desvio(px + i, pz, 28, 89), y=0.03 + 0.012 * i, colide=None, planta=False)
-    # ---- as poças do pátio (onde a chuva ficou) e madeira largada
-    for L, r, c, x, z in P.celulas('.'):
-        if x > 0 or (abs(x) < bx + 1.5 and abs(z) < bz + 1.5): continue
-        s_ = P.sorte(x, z, 91)
-        if s_ < 0.07:
-            g = P.desvio(x, z, 180, 92); raio = 0.9 + 1.5 * P.sorte(x, z, 93)
-            dos_dois(f'lama_{int(s_ * 100) % 3}', x, z, g, y=0.014, escala=(raio * 1.5, 1.0, raio * 1.15), colide=None, planta=False)
-            dos_dois(f'poca_{int(s_ * 300) % 3}', x + 0.1, z - 0.1, g + 40.0, y=0.026, escala=(raio, 1.0, raio * 0.7), colide=None, planta=False)
-        elif s_ < 0.11:
-            g = P.desvio(x, z, 180, 94)
-            for i in range(2 + int(P.sorte(x, z, 95) * 3)):
-                dos_dois(('WoodenPlank_03', 'WoodenPlank_01', 'WoodenPlank_05')[i % 3], x + 0.35 * i, z + 0.2 * (i % 2), g + 17.0 * i, y=0.03 + 0.03 * i, colide=None, planta=False)
-
-
-def piso(M, Pk, y, paredes):
-    """Um piso do prédio: a laje (de y − 20 cm a y), as paredes, os vãos, as muretas e as escadas que sobem dele."""
-    if y > 0:
-        for c0, r0, c1, r1 in Pk.blocos(LAJE):
-            M.chapa('laje', *Pk.mundo(c0, r0, c1, r1), y=y - 0.2, alto=0.2, colide='caixa', planta=False)
-    muros, vaos, cantos = Pk.paredes('-', '|', '+', 'DJ', sobra=0.1)
-    for xa, za, xb, zb in muros:
-        M.muro(paredes, xa, za, xb, zb, 5.0, y=y, semente=int(abs(xa * 2 + za)), colide='caixa', planta=y == 0)
-    for L, x, z, ao_x in vaos:
-        M.verga('parede', x, z, ao_x, 2.5, y + 2.6, y + 3.8, grosso=0.22, colide='caixa', planta=y == 0)
-        if L == 'J': M.verga('parede', x, z, ao_x, 2.5, y, y + 1.0, grosso=0.22, colide='caixa', planta=y == 0)
-    for xa, za, xb, zb in Pk.paredes('=', '!', '*+|-', '')[0]:
-        # (colisão da própria peça: a mureta quebrada tem um vão de 1,4 m no meio, e por ele se passa — com a caixa
-        # inteira ninguém atravessava, Jhon, 20/11; de cada quatro módulos, três são da quebrada)
-        M.muro(('Wall_08', 'Wall_08', 'Wall_07', 'Wall_08'), xa, za, xb, zb, 5.0, y=y, semente=int(abs(xa + za * 3)), colide='malha', planta=y == 0)
-    for L, c0, r0, c1, r1 in Pk.regioes('<>^v'):
-        # (o último degrau do kit fica a 3,8 m: a escada é esticada para ele chegar à laje, a 4 m)
-        M.rampa(M.encaixar('Stairs_01', *Pk.mundo(c0, r0, c1, r1), yaw={'>': 0.0, '<': 180.0, '^': 90.0, 'v': -90.0}[L], y=y, alto=M.kit['Stairs_01'].tam[1] * ANDAR / 3.8,
-                           colide='malha', planta=y == 0), (-0.452, 0.0), (5.28, 3.8), (-1.19, 1.19), ate=y + ANDAR)
-
-
-def desenho():
-    M = Montagem('fps6', colisao); K = M.kit
-    K.chapa('parede', M.cor_dos_lados('Wall_01')); K.chapa('muro', M.cor_dos_lados('Wall_06')); K.chapa('laje', M.cor(K['Floor_01']), fundo=True)
-    K.chapa('chao', (0.50, 0.50, 0.52))
-
-    # ---- o muro do canteiro: maciço de 6,2 m, de tijolo na face (uma fiada inteira e outra mais baixa por cima) e uma
-    # cinta de concreto no topo. Por cima dele só a barreira invisível; atrás, os prédios vizinhos
-    for reg in P.regioes('#'):
-        M.chapa('muro', *P.mundo(*reg[1:]), alto=MURO, colide='caixa', planta=True)
-    # (muro de obra: o pano de tijolo, um pilar de concreto a cada 5 m e a capa de concreto por cima. Por cima dele o
-    # limite é invisível — ``barrar`` —, e o lobo não corre em parede invisível: cai)
-    import math as _m
-    for xa, za, xb, zb, yaw in P.contorno('#'):
-        M.muro('Wall_06', xa, za, xb, zb, 5.0, frente=yaw, recuo=0.08, colide=None, planta=False)
-        n = max(1, int(round(_m.hypot(xb - xa, zb - za) / 5.0))); fx, fz = _m.sin(_m.radians(yaw)), _m.cos(_m.radians(yaw))
-        for i in range(n + 1):
-            M.por('WallCorner_01', xa + (xb - xa) * i / n + fx * 0.12, za + (zb - za) * i / n + fz * 0.12, escala=(1.0, (MURO + 0.22) / 3.8, 1.0), colide=None, planta=False)
-    for reg in P.regioes('#'):
-        x0, z0, x1, z1 = P.mundo(*reg[1:]); M.chapa('laje', min(x0, x1) - 0.16, min(z0, z1) - 0.16, max(x0, x1) + 0.16, max(z0, z1) + 0.16, y=MURO, alto=0.16, colide=None, planta=False)
-
-    # ---- o prédio: o contrapiso, o térreo e as duas lajes
-    x0, z0, _, _ = P.mundo(8, 6, 9, 7); M.chapa('chao', x0 + 1.25, z0 + 1.25, -x0 - 1.25, -z0 - 1.25, y=0.0, alto=0.03)
-    piso(M, P, 0.0, ('Wall_01', 'Wall_02', 'Wall_03'))
-    piso(M, P1, ANDAR, ('Wall_06', 'Wall_01', 'Wall_06'))
-    piso(M, P2, 2 * ANDAR, ('Wall_01',))
-    for k, (Pk, acima) in enumerate(((P, P1), (P1, P2), (P2, None))):
-        colunas(M, Pk, k * ANDAR, acima); objetos(M, Pk, k * ANDAR); miudezas(M, Pk, k * ANDAR, 10 * k)
-    canteiro(M)
-
-    # ---- a cidade em volta (fora do mapa), sem colisão
-    M.arredores(('House_02', 'House_04', 'House_03', 'House_04', 'House_02'), X, Z, folga=8.0, fileiras=2, passo=27.0)
+def desenho(abertas=None):
+    """O canteiro da cena, o prédio debaixo dele, as torres da cidade em volta e as ruas lá embaixo. ``abertas``: os
+    módulos de parede que saem (``abrir``); sem dizer, calcula."""
+    K = Kit('fps6'); palete(K)                                              # (o palete carregado de blocos: o Unreal tem, o FBX não)
+    D = Demo(K)
+    if abertas is None: abertas = abrir(D)
+    M = Montagem(K, colisao); centro = np.array([0.0, CHAO, 0.0]); M.paredes = []
+    for k, item in enumerate(D.itens):
+        p, G, E, t, nome = item; t = t - centro
+        if nome.startswith(('Road', 'House_')):
+            # acima das nuvens (27/11): sem a cidade em volta; o prédio de baixo desce, andar sobre andar, até as nuvens
+            if nome == 'House_Main':
+                for k in range(ANDARES_ABAIXO):
+                    por(M, p, G, E, t - np.array([0.0, k * p.tam[1], 0.0]), nome, colide=None, planta=False)
+            continue
+        if k in abertas: continue
+        colide = 'padrao'
+        if nome.startswith(TABUA):
+            lo, hi = D.caixa(item)
+            if hi[1] - CHAO < TABUA_NO_CHAO: colide = None
+        it = por(M, p, G, E, t, nome, colide=colide, planta=not nome.startswith(SEM) and not (nome.startswith('Floor_') and t[1] > 1.0))
+        if nome in ESCADAS:
+            pe, alto, lados = ESCADAS[nome]; M.rampa(it, pe, alto, lados, eixo=0, ate=float(t[1]) + ANDAR)
+        if nome.startswith('Wall_0') and abs(t[1]) < 0.3: M.paredes.append((k, it))
+    M.abertas = sorted(abertas)
     return M
 
 
-def mato():
-    """O mato do canteiro (o kit da obra não tem planta: estas são as do kit do Escritório, num desenho à parte, sem
-    colisão): capim ao pé do muro e moitas nos cantos."""
-    V = Montagem('fps3', lambda nome: None)
-    for r, c, x, z, yaw, dist in P.beiras('#'):
-        s_ = P.sorte(x, z, 77 + int(yaw))
-        if s_ < 0.45:
-            for i in range(2 + int(s_ * 10) % 3): V.encostar(('Grass_01', 'Grass_02')[i % 2], x, z, yaw, dist, folga=0.1 + 0.25 * (i % 2), lado=-0.9 + 0.6 * i, escala=(1.0, 1.3, 1.6)[int(P.sorte(x, z, i) * 3)])
-        if 0.45 < s_ < 0.53: V.encostar('Plant_01', x, z, yaw, dist, folga=0.1, escala=0.8)
-        elif 0.53 < s_ < 0.57: V.encostar(P.sorteio(x, z, ('Stump_01', 'Log_01', 'Rock_02', 'Mushroom_01')), x, z, yaw, dist, folga=0.3)
-    return V
+# ---- as paredes que saem
+# Na cena, o térreo é uma fileira de cômodos fechados: paredes cegas, paredes de janela (peitoril de 50 cm) e algumas com
+# porta de 1 m. A navegação dos bots anda com meio metro de raio (``NavBaker``): por porta de 1 m eles não passam, e o
+# térreo fica partido em pedaços sem ligação — quem nascesse num deles não saía. Como é obra, a parede que falta "ainda
+# não foi levantada": saem os módulos de parede (5 m cada) que ligam um cômodo ao vizinho, **só o mínimo** para todo o
+# térreo ser um chão só (o resto fica igual à cena), de preferência a parede que já tinha porta, depois a quebrada,
+# depois a de janela. As paredes da beira da laje ficam. ``ATALHOS`` abre mais alguns, onde a volta a pé para chegar ao
+# outro lado da parede é comprida demais; está em zero.
+PREFERENCIA = {'Wall_04': 0, 'Wall_08': 1, 'Wall_09': 1, 'Wall_07': 1, 'Wall_05': 2}
+ATALHOS = 0                    # quantos módulos saem além do mínimo
+VOLTA_LONGA = 28.0             # só se a volta a pé de um lado ao outro da parede passar disto, em metros
+
+
+def _rotulos(g):
+    """Cada pedaço de chão ligado da grade com um número: (a matriz de rótulos, quantos)."""
+    L = g.livre; H, W = L.shape; rot = np.zeros((H, W), int); n = 0
+    for i0, j0 in zip(*np.nonzero(L)):
+        if rot[i0, j0]: continue
+        n += 1; rot[i0, j0] = n; fila = [(i0, j0)]
+        while fila:
+            i, j = fila.pop()
+            for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                a, b = i + di, j + dj
+                if 0 <= a < H and 0 <= b < W and L[a, b] and not rot[a, b]: rot[a, b] = n; fila.append((a, b))
+    return rot, n
+
+
+def abrir(D):
+    """Os módulos de parede do térreo que saem: os índices deles em ``D.itens``."""
+    M = desenho(abertas=frozenset()); oc = M.ocupacao((-X, -Z), (X, Z)); cel = 0.25
+    f = np.kron(fora(M, oc[::2, ::2]), np.ones((2, 2), bool))
+
+    def grade(ocupado):
+        g = Grade(ocupado, (-X, -Z), cel, folga=0.5); g.livre &= ~f; return g
+
+    def lados(it):
+        """Um ponto de cada lado da parede, a 1,2 m do meio dela."""
+        c = it.pontos((it.peca.lo + it.peca.tam / 2)[None])[0]; n = it.G[:, 2]
+        return (c[0] + n[0] * 1.2, c[2] + n[2] * 1.2), (c[0] - n[0] * 1.2, c[2] - n[2] * 1.2)
+
+    def apagar(ocupado, it):
+        """Tira da grade a parede (sem os 40 cm de cada ponta, onde ficam os pilares)."""
+        q = it.pontos(it.peca.lo + CAIXA8 * it.peca.tam); lo, hi = q.min(0), q.max(0); ao_x = (hi[0] - lo[0]) > (hi[2] - lo[2])
+        x0, x1, z0, z1 = (lo[0] + 0.4, hi[0] - 0.4, lo[2] - 0.15, hi[2] + 0.15) if ao_x else (lo[0] - 0.15, hi[0] + 0.15, lo[2] + 0.4, hi[2] - 0.4)
+        ocupado[int((z0 + Z) / cel):int((z1 + Z) / cel) + 1, int((x0 + X) / cel):int((x1 + X) / cel) + 1] = False
+
+    # as paredes de dentro (a da beira da laje não sai)
+    par = {}
+    for k, it in M.paredes:
+        c = it.pontos((it.peca.lo + it.peca.tam / 2)[None])[0]
+        if abs(c[0]) > BEIRA[0] - 0.6 or abs(c[2]) > BEIRA[1] - 0.6: continue
+        par[k] = [it]
+    ordem = sorted(par, key=lambda k: (PREFERENCIA.get(D.itens[k][4], 3), k))
+
+    # 1. o mínimo para ligar tudo
+    g = grade(oc); rot, n = _rotulos(g); pai = list(range(n + 1)); area = np.bincount(rot.ravel(), minlength=n + 1)
+    def raiz(a):
+        while pai[a] != a: pai[a] = pai[pai[a]]; a = pai[a]
+        return a
+    def rotulo(p):
+        if not g.anda(*p):
+            try: p = g.perto(*p, raio=1.0)
+            except ValueError: return 0
+        return int(rot[g.celula(*p)])
+    saem = []
+    for k in ordem:
+        juntou = False; pares = []
+        for it in par[k]:
+            a, b = (rotulo(p) for p in lados(it))
+            if a and b and min(area[a], area[b]) >= 8 * 16: pares.append((a, b)); juntou |= raiz(a) != raiz(b)       # (pedaço de menos de 8 m² não conta: o vão de uma pilha)
+        if juntou:
+            saem.append(k)
+            for a, b in pares: pai[raiz(a)] = raiz(b)
+    for k in saem:
+        for it in par[k]: apagar(oc, it)
+
+    # 2. os atalhos: a parede que obriga à volta mais comprida, uma de cada vez
+    for _ in range(ATALHOS):
+        g = grade(oc); melhor = None
+        for k in ordem:
+            if k in saem: continue
+            a, b = lados(par[k][0])
+            if not (g.anda(*a) and g.anda(*b)): continue
+            cam = g.caminho(a, b)
+            if cam is None: continue
+            volta = (len(cam) - 1) * cel * 1.1
+            if volta > VOLTA_LONGA and (melhor is None or volta > melhor[0]): melhor = (volta, k)
+        if melhor is None: break
+        saem.append(melhor[1])
+        for it in par[melhor[1]]: apagar(oc, it)
+    return frozenset(saem)
+
+
+def fora(M, celulas):
+    """O lado de fora: tudo o que passa da beira da laje (dois metros de parede invisível em toda a volta)."""
+    H, W = celulas.shape; f = np.ones((H, W), bool); cel = 2 * X / W
+    f[int(round((Z - BEIRA[1]) / cel)):int(round((Z + BEIRA[1]) / cel)), int(round((X - BEIRA[0]) / cel)):int(round((X + BEIRA[0]) / cel))] = False
+    return f
 
 
 def montar():
     m = Mapa("obra", "Obra", int(2 * X), int(2 * Z))
-    m.material("terra", "cascalho", (0.62, 0.54, 0.44), 2.4)
-    m.caixa("Chao", "Terra", (0, -0.25, 0), (400, 0.5, 400), "terra", colide=False)
     M = desenho()
+    ocupado = M.ocupacao((-X, -Z), (X, Z))
+    meio = ocupado.reshape(ocupado.shape[0] // 2, 2, ocupado.shape[1] // 2, 2).any((1, 3))
+    f = fora(M, meio)
     M.aplicar(m, "Obra", "obra")
-    mato().aplicar(m, "Obra", "obra_mato", no_planta='Mato', modelo='Mato')
-    fechar(m, X, Z, altura=22.0)
-    barrar(m, P, '#', 22.0)
-    m.panorama('cidade', X + 230.0, altura=170.0, base=-6.0)
+    # Sem parede invisível na beira (Jhon, 27/11: "no mapa da construção eu posso cair, não precisa ter a colisão nos
+    # limites do mapa"): o chão vai só até a beira da laje, e quem passa dela cai nas nuvens e morre (Player.FallLimit).
+    # As Limite… vão assim mesmo, sem colidir: só seguram a câmera do espectador dentro do mapa (MapBounds, 27/11).
+    fechar(m, X, Z, altura=TETO, piso=-LAJE, margem=BEIRA[0] - X, paredes=False)
+    n = 0
+    # (o centro ao longe, na cor do fim de tarde: o painel não recebe luz, a cor é a dele)
+    nuvens(m)
 
-    g = Grade(M.ocupacao((-X, -Z), (X, Z)), (-X, -Z), 0.25, folga=0.55)
-    a = nascer(m, g, (-43.5, 0.0), AZUL)[0]
-    rotas = dict(
-        patioNorte=P.rota(a, '12', '65'), corredor=P.rota(a, '34'), patioSul=P.rota(a, '56', '21'),
-        salas=P.rota(a, '79', '34'), porDentro=P.rota(a, '38', '97'), cruzadaNorte=P.rota(a, '12'), cruzadaSul=P.rota(a, '56'),
-    )
+    g = Grade(ocupado, (-X, -Z), 0.25, folga=0.5)
+    g.livre &= ~np.kron(f, np.ones((2, 2), bool))
+    chao, perto = alcancavel(g, BASES[0])
+    g.livre &= chao
+    a = nascer_em(m, g, BASES[0], AZUL, passo=1.3); nascer_em(m, g, BASES[1], 3 - AZUL, passo=1.3)
     m._grade = g
-    espalhar(m, g, a, quantos=16)          # o mata-mata: todos contra todos, cada um num canto do canteiro
-    for nome, pontos in rotas.items():
-        m.rota(nome, [(x, 0.5, z) for x, z in g.rota(pontos)])
+    espalhar(m, g, a, quantos=16)          # os pontos do mata-mata: todos contra todos, espalhados pelo mapa
+    def rota(*pts): return [(float(x), 0.5, float(z)) for x, z in g.rota([perto(*a)] + [perto(x, z) for x, z in pts])]
+    for nome, pts in ROTAS.items(): m.rota(nome, rota(*pts))
 
-    # ---- a luz, trabalhada como a do Armazém (pedido do Jhon, 20/11: "trabalhe na iluminação igual você fez no
-    # armazém"; os personagens ficavam com a aparência inconsistente — pretos na sombra do muro, estourados no sol).
-    # Sol quente e forte contra ambiente frio, ACES com branco 6, oclusão larga e um preenchimento frio, sem sombra, do
-    # lado oposto ao sol — é ele que dá volume a quem está na sombra e debaixo da laje. Sem luz rebatida (SDFGI): testada
-    # em foto Forward+, ela apagava o céu debaixo da laje e o personagem ficava preto ao lado da parede clara.
-    k = 0
-    for x in (-24, -12, 0, 12, 24):
-        for z in (-12.5, 0.0, 12.5):
-            k += 1; m.luz("Luzes", f"Terreo{k}", (float(x), 3.3, z), (1.0, 0.84, 0.6), 2.6, 12)
-    luz_de_jogo(m, 'dia', 52, 44)
+    # (de dia, o sol alto: era fim de tarde, 62°/24° — Jhon, 27/11)
+    luz_de_jogo(m, 'dia', 62, 48, alcance=110.0, nuvens=True)
+    # (para baixo da laje a névoa adensa: o prédio some na nuvem)
+    m.ambiente['neblina'] = dict(m.ambiente['neblina'], altura=-90.0, altura_densidade=0.003)
     lampadas(m, [M], maximo=16)
+    print(f"  obra: {n} barreiras, {len(M.abertas)} módulos de parede abertos, {len(m.luzes)} luzes, {int(chao.sum() * g.cel ** 2)} m² de térreo alcançável")
+    if os.environ.get('MAPA_GRADE'):
+        g.imagem(os.environ['MAPA_GRADE'], marcas=[(x, z, (40, 90, 255)) for x, _, z in m.spawns[AZUL]] + [(x, z, (255, 120, 30)) for x, _, z in m.spawns[3 - AZUL]] + [(x, z, (20, 160, 20)) for x, z in m.livres],
+                 escala=6, rotas=[[(x, z) for x, _, z in r] for _, r in m.rotas])
     return m
+
+
+# onde nasce cada time: o azul no corredor da beira oeste, o laranja no da beira leste
+BASES = ((-17.5, -8.0), (17.5, 8.0))
+# as rotas dos bots, a partir de onde nasce o azul (cada ponto cai no chão livre mais perto)
+ROTAS = dict(
+    norte=[(-17, -17), (-5, -15), (10, -15), (12, -8), (17, 0), (17.5, 8)],
+    sul=[(-17, 2), (-15, 15), (-3, 17), (5, 17), (17.5, 15), (17.5, 8)],
+    meio=[(-17, 2), (-8, 2), (0, -3), (10, -2), (17, 0), (17.5, 8)],
+    cruzada=[(-17, 2), (-15, 15), (-3, 17), (0, -3), (10, -15), (17, 0), (17.5, 8)],
+    ladoOeste=[(-17, -17), (-5, -15), (-8, -3), (-8, 2), (-15, 15), (-17, 2)],
+    ladoLeste=[(0, -3), (10, -2), (17, 0), (17.5, 15), (5, 17), (0, -3)],
+)

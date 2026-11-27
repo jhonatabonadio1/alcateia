@@ -3,6 +3,7 @@ import {
 	Ban,
 	Crosshair,
 	Gauge,
+	LifeBuoy,
 	LogOut,
 	Map as MapIcon,
 	Menu,
@@ -70,6 +71,10 @@ const groups: { name: string; entries: Entry[] }[] = [
 			{ to: "/configuracoes", label: "Configurações", icon: SettingsIcon, needs: "manage" },
 			{ to: "/administradores", label: "Administradores", icon: UserCog, needs: "manage" },
 		],
+	},
+	{
+		name: "Ajuda",
+		entries: [{ to: "/ajuda", label: "Central de ajuda", icon: LifeBuoy }],
 	},
 ];
 

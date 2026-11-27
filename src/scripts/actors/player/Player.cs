@@ -27,9 +27,16 @@ public partial class Player : CharacterBody3D
 	/// enquanto agacha para o salto, que é o embalo que se espera ver.</summary>
 	[Export] public float FreezeBrake = 30f;
 
-	/// <summary>Altura abaixo da qual o jogador é devolvido ao spawn.
-	/// Sem isto, sair do mapa é queda infinita.</summary>
+	/// <summary>Altura abaixo da qual quem caiu do mapa morre de queda (até 27/11
+	/// voltava vivo para onde nasceu). Sem isto, sair do mapa é queda infinita.</summary>
 	[Export] public float FallLimit = -25f;
+
+	/// <summary>Quanto o corpo de quem caiu do mapa continua caindo abaixo de
+	/// <see cref="FallLimit"/> antes de parar (já sumido na neblina da Obra).</summary>
+	[Export] public float FallAwayDepth = 200f;
+
+	/// <summary>O dano de quem cai do mapa (abaixo de <see cref="FallLimit"/>): mata qualquer um.</summary>
+	private const float OutOfMapDamage = 100000f;
 
 	private MeshInstance3D _mesh;
 	private Node3D _head;
@@ -406,13 +413,18 @@ public partial class Player : CharacterBody3D
 	/// <summary>Um passo do corpo, com a intenção já lida (do teclado ou da rede).</summary>
 	private void Step(double delta)
 	{
+		// Caiu do mapa: morre de queda (27/11; até aqui voltava vivo para onde nasceu). A Obra não tem
+		// parede na beira — "eu posso cair" (Jhon) — e lá embaixo só há nuvem. Morto, o corpo continua
+		// caindo até sumir (Corpse.FallAway). O corpo do servidor (Driven) não decide: o jogo conta a
+		// morte (sem autor), e até ela chegar o corpo espera parado no limite.
 		if (GlobalPosition.Y < FallLimit)
 		{
-			GlobalPosition = _spawn;
-			Velocity = Vector3.Zero;
 			_fall.Reset();
 			ReleaseWall();
 			_lastWall = Vector3.Zero;
+			if (!Driven && !_health.IsDead) _health.TakeOwnDamage(OutOfMapDamage, GlobalPosition, KillCause.Fall, "");
+			if (_health.IsDead) _corpse.FallAway(delta, _gravity, FallLimit - FallAwayDepth);
+			else Velocity = Vector3.Zero;
 			return;
 		}
 

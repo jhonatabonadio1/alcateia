@@ -26,6 +26,11 @@ public partial class CharacterAnimator
 	[ExportGroup("Árvore")]
 	[Export] public float CrouchWalkTrim = 0f;
 
+	/// <summary>Quanto o agachado desce além do clipe, em metros (Jhon, 27/11: "o agachar do humano deve ser
+	/// um pouco mais baixo, primeira e terceira pessoa"): o quadril desce isto e as pernas dobram mais, com o pé
+	/// no mesmo lugar. A câmera da 1ª pessoa fica nos olhos desse corpo (Player.TuneHumanEye), então desce junto.</summary>
+	[Export] public float CrouchSink = 0.08f;
+
 	/// <summary>
 	/// Locomoção num espaço de mistura 2D, e o resto como estados.
 	///

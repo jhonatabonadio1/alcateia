@@ -39,6 +39,13 @@ WORKDIR /app
 COPY --from=construir /saida .
 COPY --from=painel /fonte/servidor/painel/dist ./painel
 
+# A central de ajuda do painel lê os documentos do projeto daqui, com a
+# mesma estrutura do repositório (Rotas/AdminHelpRoutes.cs). Fica fora dos
+# arquivos do painel de propósito: esses abrem sem login.
+COPY CLAUDE.md CONTRIBUTING.md ./ajuda/
+COPY docs ./ajuda/docs
+COPY servidor/LEIA-ME.md ./ajuda/servidor/LEIA-ME.md
+
 # Sem privilégio de root dentro do contêiner.
 USER app
 ENV ALCATEIA_PORT=8080

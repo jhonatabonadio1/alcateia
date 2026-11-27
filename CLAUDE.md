@@ -16,6 +16,7 @@ do `docs/DESIGN.md` do sistema que for mexer.
 > | este guia | regras que não se violam, arquitetura, convenções, testes, estado |
 > | `docs/DESIGN.md` | as decisões de jogo, sistema por sistema, e o porquê de cada uma |
 > | `docs/ARQUITETURA.md` | como o código está montado e onde mexer em cada coisa |
+> | `docs/CALIBRAGEM.md` | calibrar o jogo por tarefa: "quero mudar X" → arquivo, campo, o que muda junto, o que conferir |
 > | `docs/AJUSTES.md` | todo número regulável, com o valor atual e onde mudar |
 > | `docs/MAPAS.md` | os mapas, como são gerados e como fazer um novo |
 > | `docs/PACOTES.md` | de onde vem a arte (texturas, objetos, céus, braços, armas), licenças e como baixar |
@@ -24,6 +25,11 @@ do `docs/DESIGN.md` do sistema que for mexer.
 > | `docs/ARSENAL.md`, `docs/CONJUNTOS.md`, `docs/UI.md` | especificações de armas, economia e interface |
 > | `docs/CHANGELOG.md` | o que entrou em cada versão |
 > | `CONTRIBUTING.md` | o passo a passo para trabalhar no projeto |
+>
+> Tudo isto também se lê no **painel, em Central de ajuda** (menu
+> lateral), com busca: o servidor lê estes arquivos do repositório a cada
+> visita (`docs/PAINEL.md`). Documento novo em `docs/` aparece lá sozinho;
+> para pô-lo num tema, uma linha em `servidor/painel/src/lib/help.ts`.
 >
 > **Mudou um número? Atualize a linha dele no `AJUSTES.md`.** Mudou uma
 > decisão de jogo? No `DESIGN.md`. Vai mexer num sistema? Leia a seção
@@ -59,7 +65,7 @@ existindo no sistema.
 **O lobo é um só, sem classes** (decisão do Jhon, 26/11: "remover
 'Classes de lobo' do jogo, deixar apenas melhorias de lobo"):
 `src/resources/breeds/lobo.tres`, no meio do Bruto e do Ligeiro de antes.
-A variação entre jogadores vem das melhorias (tatuagens), pequenas.
+A variação entre jogadores vem das melhorias de lobo, pequenas.
 
 **O lobo é canhão de vidro** (decisão do Jhon, 26/11): mata um humano em
 duas garradas, mas tem só 100 de escudo e leva o tiro inteiro no corpo. E
@@ -122,15 +128,16 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
 	`docs/MEDIDAS.md`). A cena do jogador põe `HumanSpeed` 3,2 (o código diz
 	3,0), a base do lobo; a base do humano é 3,2 × 0,8 (`HumanSpeedBonus`;
 	era 1,08 até 26/11).
-	**O Shift corre** (26/11): × 1,45 (`HumanSprintFactor`), só para a
+	**O Shift corre** (26/11): × 1,9176 (`HumanSprintFactor`; era 1,45 até 27/11: duas vezes +15%, pedidos do Jhon — **o humano correndo passa do lobo a pé**, decisão dele), só para a
 	frente, de arma abaixada e sem atirar; o andar em silêncio saiu do
-	Shift (quem quer silêncio agacha).
+	Shift (quem quer silêncio agacha). **Com fôlego** (27/11, `SprintBreath`): 4 s de
+	corrida, 1,5 s sem fôlego quando acaba, enche em 3 s — a corrida longa volta a ser do lobo.
 	O que o texto abaixo conta em 3,24 m/s é de antes.
 
 	| | Humano | Lobo (26/11) |
 	|---|---|---|
 	| Velocidade | 2,56 (faca 3,28) | 4,33 (1,352×) |
-	| Correndo (Shift) | 3,71 | — |
+	| Correndo (Shift) | 4,91 | — |
 	| Pulo | 1,02 m | 2,09 m |
 	| Avanço do pulo correndo | ~1,9 m | ~5,1 m |
 	| Agachado | 1,15 | 1,95 |
@@ -195,8 +202,9 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
 	parado é o instante de passada mais aberta dele, os dois pés retos; a
 	arma fica na mão como de pé, reta ("fuzil precisa ficar reto"). O lobo
 	encolhe parado e engatinha andando (veja "Clipes do lobo"). A câmera da
-	1ª pessoa fica nos olhos desse corpo (~134 cm), e a cápsula agachada do
-	humano tem 1,5 m (a do lobo, 1,0). Testes: `OlhoNoCorpoEve`,
+	1ª pessoa fica nos olhos desse corpo (~126 cm: 8 cm mais baixo que o
+	clipe desde 27/11, `CharacterAnimator.CrouchSink`), e a cápsula agachada do
+	humano tem 1,42 m (a do lobo, 1,0). Testes: `OlhoNoCorpoEve`,
 	`OlhoNoCorpoBarut` (até 1 cm), `PeNoChaoEve`, `PeNoChaoBarut`,
 	`AgachadoMira`.
 
@@ -256,7 +264,7 @@ alcateia/
 	│   ├── menu/menu.tscn  o lobby inteiro (LobbyShell)
 	│   ├── main.tscn   a partida
 	│   ├── treino.tscn campo de treino, sem partida
-	│   ├── maps/       armazem (o único na lista), vila, polar (.tscn gerados por src/tools/gerar_mapas.py)
+	│   ├── maps/       armazem_estendido, cidade, deserto, estacao, obra, neon (a cena é a fonte; cidade, deserto, estacao e obra ainda saem de src/tools/gerar_mapas.py — docs/MAPAS.md)
 	│   └── player, bot, dummy, grenade
 	├── tools/          geradores, e testar.sh (os testes)
 	└── scripts/
@@ -374,9 +382,10 @@ partida). As razões estão em `docs/decisoes/`.
   principal guarda o ciclo e lista as partes no comentário do topo;
   cada parte abre o seu `[ExportGroup]`. Campo mora na parte que é dona
   dele (ADR 0002)
-- **Conta de regra vai para `src/scripts/domain`** (C# puro, sem Godot),
-  com teste de unidade (ADR 0001). Número que se ajusta sem programar
-  vai num `.tres` (ADR 0005)
+- **Conta de regra vai para `src/scripts/domain`** (C# puro, sem Godot;
+  ADR 0001); o teste de unidade dela se **propõe**, não se escreve
+  direto (ADR 0020). Número que se ajusta sem programar vai num `.tres`
+  (ADR 0005)
 - O que o jogador e o bot fazem igual mora uma vez só
   (`src/scripts/actors/body`, ADR 0003). Achou uma cópia? Junte — o
   `src/tools/testar.sh` reprova seis linhas iguais em dois lugares
@@ -391,7 +400,9 @@ partida). As razões estão em `docs/decisoes/`.
 
 **Rode antes de todo commit:** `src/tools/testar.sh` (com `GODOT=` apontando
 para o Godot .NET, se ele não estiver no PATH). `--rapido` pula os dois
-testes de partida; um nome filtra (`src/tools/testar.sh Salto`). O GitHub
+testes de partida; um nome filtra (`src/tools/testar.sh Salto`). Os de
+regressão rodam 6 ao mesmo tempo (`JUNTOS=1` para um por vez): a bateria
+inteira leva uns 4 minutos. O GitHub
 roda o mesmo script a cada push (`.github/workflows/testes.yml`).
 
 | Camada | Onde | O que prova |
@@ -399,13 +410,38 @@ roda o mesmo script a cada push (`.github/workflows/testes.yml`).
 | Unidade | `src/tests/unit` (C# puro, sem Godot nem pacote) | As regras: dano, WP, tempos dos golpes... Tudo de `src/scripts/domain` e o `WolfMoves` |
 | Regressão | `src/tests/regression` (o jogo de verdade, sem tela, 60 quadros fixos, um processo por teste, semente fixa) | O comportamento aprovado: distância do salto, velocidades, altura do pulo, parede (correr, saltar, agarrar), passada do lobo, granada, dano da garra, ruído, níveis dos bots, clipes de animação, HUD, renascer, bots atirando, cenas sem erro |
 
+### Política: teste novo se propõe antes (ADR 0020, decisão do Jhon)
+
+**Não crie teste para cada mudança.** Teste novo — unidade, regressão
+ou servidor — só se escreve depois de propor e o Jhon aceitar. A
+bancada já tem 104 testes de regressão (um processo do Godot cada); cada
+teste a mais deixa todo commit mais lento e todo ajuste mais caro.
+
+- **Como propor:** no fim do trabalho, uma linha por teste, sem o
+  código: *"Teste sugerido: `Nome` (camada) — o que prova — o que
+  quebraria em silêncio sem ele — custo"*. Sem resposta, não escreva.
+- **Vale propor:** conta de regra com caso de borda que não se vê
+  jogando; número de sensação aprovado que outra mudança pode estragar;
+  defeito que voltou (relatado de novo depois de consertado); rede,
+  servidor, conta e trapaça; antes de refatorar peça grande sem
+  cobertura.
+- **Não proponha:** ajuste de número (atualize o teste que já prende
+  ele), texto, layout, arte, som, mapa, tela, peça descartável, o que se
+  vê na primeira partida, teste que repete a implementação. Se um teste
+  existente cobre o assunto, proponha **crescer ele**, não um novo.
+- **Não precisa propor:** ajustar um teste que já existe porque o
+  comportamento mudou de propósito (abaixo), e rodar a bancada.
+- Tirar teste também se propõe; não apague sem o Jhon aceitar.
+
+### Regras da bancada
+
 - **Mudou um comportamento de propósito?** Mude o teste no mesmo
   commit, dizendo no teste por quê. Teste vermelho sem mudança
   combinada é regressão: conserte o código, não o teste.
-- **Regra nova que dá para testar sem o Godot vai para `src/scripts/domain`**
-  (C# puro) com teste de unidade. O que precisa de física, animação ou
-  cena vira teste de regressão (`RegressionTest`, achado sozinho pela
-  bancada).
+- **Onde mora o teste aceito:** regra que dá para testar sem o Godot
+  vai para `src/scripts/domain` (C# puro) com teste de unidade; o que
+  precisa de física, animação ou cena é teste de regressão
+  (`RegressionTest`, achado sozinho pela bancada).
 - Um teste de regressão também reprova se o Output tiver `ERROR`.
 - **Mexeu no servidor ou na rede?** Rode também
   `src/tools/testar_servidor.sh` (o servidor contra um PostgreSQL de

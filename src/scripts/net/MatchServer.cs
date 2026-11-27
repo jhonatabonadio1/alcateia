@@ -120,6 +120,12 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 	private bool _authoritative;
 	private uint _tick;
 	private readonly System.Diagnostics.Stopwatch _stepWatch = new();
+
+	/// <summary>Mais que isto entre um passo de física e o seguinte, em
+	/// segundos, é engasgo do servidor: dois passos e meio (o normal é um, 16,7
+	/// ms; um quadro que atrasa um pouco não conta).</summary>
+	public const double StallGap = 2.5 * NetRates.TickSeconds;
+	private readonly System.Diagnostics.Stopwatch _sinceStep = new();
 	private double _stepTotalMs, _stepWorstMs, _statsTimer;
 	private int _stepCount;
 
@@ -278,10 +284,15 @@ public partial class MatchServer : Node, HostedMatch.IMatchLink
 		if (_net == null || !_authoritative || _matches.Count == 0) return;
 
 		_tick++;
+		// O servidor engasgou (o passo anterior foi há mais de StallGap): o Godot
+		// vai dar agora, em rajada, os passos que deve. A partida precisa saber
+		// desde o primeiro (HostedMatch.PhysicsStep, behind).
+		bool behind = _sinceStep.IsRunning && _sinceStep.Elapsed.TotalSeconds > StallGap;
+		_sinceStep.Restart();
 		_stepWatch.Restart();
 		foreach (HostedMatch match in _matches.Values)
 		{
-			try { match.PhysicsStep(_tick, delta); }
+			try { match.PhysicsStep(_tick, delta, behind); }
 			catch (Exception e) { Fault("passo da física", match.Key, e); }
 		}
 		double ms = _stepWatch.Elapsed.TotalMilliseconds;

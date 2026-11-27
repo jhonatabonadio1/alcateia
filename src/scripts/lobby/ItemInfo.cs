@@ -25,7 +25,7 @@ public static class ItemInfo
 		return item.Kind switch
 		{
 			ItemKind.Utility => "Granada",
-			ItemKind.Tattoo => "Melhoria",
+			ItemKind.WolfUpgrade => "Melhoria de lobo",
 			ItemKind.Character => "Personagem",
 			ItemKind.Photo => "Foto de perfil",
 			_ => "Serviço"

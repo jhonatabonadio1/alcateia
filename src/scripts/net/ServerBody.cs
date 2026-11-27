@@ -46,6 +46,9 @@ public sealed class ServerBody
 	/// <summary>O compasso dos golpes do lobo deste corpo (<see cref="WolfStrikePace"/>).</summary>
 	public readonly WolfStrikePace WolfPace = new();
 
+	/// <summary>A mira deste jogador, comando a comando (<see cref="AimAudit"/>, contra aimbot).</summary>
+	public readonly AimAudit Aim = new();
+
 	public Health Health { get; }
 	public FormController Form { get; }
 	public Weapon Weapon { get; }
@@ -134,6 +137,14 @@ public sealed class ServerBody
 	private int _wallBehind;
 	private bool _wallWas;
 
+	/// <summary>O que a sala deixa o time deste corpo ser (a partida diz).</summary>
+	public FormLimit FormLimit { get; set; } = FormLimit.Free;
+
+	private FormAudit _formAudit;
+
+	/// <summary>Formas recusadas (lobo além do tempo, sem esperar, sem virar, em modo só de humanos).</summary>
+	public int RefusedForms => _formAudit?.Refused ?? 0;
+
 	/// <summary>Quantas vezes voltou para a parede pelo que o jogo contou.</summary>
 	public int WallResumes { get; private set; }
 
@@ -146,6 +157,7 @@ public sealed class ServerBody
 		{
 			if (!c.HasSpawn || !MayRespawn(c.Spawn.ToGodot())) return;
 			Epoch = c.Epoch;
+			_formAudit?.Reset();
 			if (Health.IsDead) Health.Mirror(Health.MaxHp, Health.MaxHp, Health.MaxShield, Health.MaxShield, false);
 			Show();
 			Body.PlaceDriven(c.Spawn.ToGodot());
@@ -155,6 +167,10 @@ public sealed class ServerBody
 		if (!Health.IsDead)
 		{
 			Form form = System.Enum.IsDefined(typeof(Form), (int)c.Form) ? (Form)c.Form : global::Form.Human;
+			// A forma é a do jogo, dentro das regras (FormAudit): o tempo de
+			// lobo, a espera, a transformação e o que a sala deixa.
+			_formAudit ??= new FormAudit(Form.WolfTimeLimit, Form.WolfCooldown, Form.ShiftDuration);
+			form = (Form)_formAudit.Step((byte)form, FormLimit);
 			Form.RemoteSet(form);
 			if (!Form.IsWolf) Weapon.RemoteHold(_primary, _secondary, (Slot)c.HeldSlot);
 			TakeSpecial(c);
@@ -185,6 +201,7 @@ public sealed class ServerBody
 			}
 		}
 
+		Aim.Record(c.Seq, Quant.Yaw(c.Yaw), Quant.Pitch(c.Pitch));
 		RecordShot(c.Seq, tick);
 	}
 
@@ -341,9 +358,9 @@ public sealed class ServerBody
 
 	/// <summary>As melhorias do lobo (Loadout): mudam a velocidade e o
 	/// pulo do lobo, então o servidor precisa delas.</summary>
-	public void ApplyLoadout(IEnumerable<string> tattoos)
+	public void ApplyLoadout(IEnumerable<string> upgrades)
 	{
-		var valid = tattoos.Where(id => Catalog.Get(id)?.Kind == ItemKind.Tattoo).Distinct().Take(Profile.MaxTattoos);
+		var valid = upgrades.Where(id => Catalog.Get(id)?.Kind == ItemKind.WolfUpgrade).Distinct().Take(Profile.MaxWolfUpgrades);
 		WolfBreed built = Profile.BuildBreed(valid);
 		if (built != null) Form.Breed = built;
 	}

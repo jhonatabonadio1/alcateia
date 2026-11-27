@@ -196,9 +196,9 @@ public partial class ItemDetail : PanelContainer
 			return bars;
 		}
 
-		if (item.Kind == ItemKind.Tattoo && item.Tattoo != null)
+		if (item.Kind == ItemKind.WolfUpgrade && item.WolfUpgrade != null)
 		{
-			TattooEffect fx = item.Tattoo;
+			WolfUpgradeEffect fx = item.WolfUpgrade;
 			void Effect(string label, float mult, bool lowerIsBetter = false)
 			{
 				if (Mathf.IsEqualApprox(mult, 1f)) return;
@@ -213,7 +213,7 @@ public partial class ItemDetail : PanelContainer
 			Effect("Escudo máximo", fx.Shield);
 			Effect("Dano da garra", fx.ClawDamage);
 			Effect("Decaimento do escudo", fx.ShieldDecay, lowerIsBetter: true);
-			bars.Add(UiKit.Paragraph(Loc.F("Até {0} melhorias equipadas ao mesmo tempo. Vale só para você.", Profile.MaxTattoos)));
+			bars.Add(UiKit.Paragraph(Loc.F("Até {0} melhorias de lobo equipadas ao mesmo tempo. Vale só para você.", Profile.MaxWolfUpgrades)));
 			return bars;
 		}
 

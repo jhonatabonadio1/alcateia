@@ -35,33 +35,35 @@ const FOTOS := {
 	},
 	"cidade": {
 		"cena": "res://src/scenes/maps/cidade.tscn",
-		# Do meio da rua, na altura de quem joga, olhando um pouco para cima: a viatura, a barreira, a torre de
-		# vidro, os prédios de tijolo e o centro ao fundo.
-		"de": Vector3(-40.0, 2.0, 0.0),
-		"para": Vector3(-10.0, 7.0, 0.0),
+		# Do começo da avenida, na altura de quem joga, olhando um pouco para cima: o prédio em obras, a torre da
+		# prefeitura, as barreiras, os fios, as casas dos dois lados e o centro ao fundo, debaixo das nuvens.
+		"de": Vector3(-34.0, 1.7, 6.0),
+		"para": Vector3(10.0, 6.0, 6.0),
 		"fov": 75.0,
 	},
 	"deserto": {
 		"cena": "res://src/scenes/maps/deserto.tscn",
-		# De cima da casa da praça, olhando o chafariz, as palmeiras, a muralha e a serra.
-		"de": Vector3(-14.0, 7.0, -6.0),
-		"para": Vector3(6.0, 0.5, 2.0),
-		"fov": 65.0,
+		# Do largo do poço, a sudeste, na altura de quem joga: a banca da feira, os caixotes, as casas de adobe de
+		# dois andares, os toldos e as palmeiras, contra o céu do deserto.
+		"de": Vector3(20.0, 1.9, 24.0),
+		"para": Vector3(-5.0, 4.2, 5.0),
+		"fov": 76.0,
 	},
 	"estacao": {
 		"cena": "res://src/scenes/maps/estacao.tscn",
-		# De cima da passarela, olhando a plataforma, os trens, as torres de relógio e os prédios do centro.
-		"de": Vector3(-2.0, 8.2, 10.5),
-		"para": Vector3(-52.0, 3.0, 12.5),
-		"fov": 72.0,
+		# Da plataforma do pátio norte, na altura de quem joga, contra o sol do fim da tarde: o vagão de toras, os
+		# caixotes, a parede descascada da estação, a torre do relógio e o centro ao fundo.
+		"de": Vector3(-38.0, 2.2, -2.5),
+		"para": Vector3(25.0, 4.0, -6.0),
+		"fov": 76.0,
 	},
 	"obra": {
 		"cena": "res://src/scenes/maps/obra.tscn",
-		# De cima da laje mais alta, olhando o prédio aberto (as muretas, o material, as colunas), o canteiro, as
-		# gruas, o muro e os prédios da cidade.
-		"de": Vector3(30.0, 10.5, -19.0),
-		"para": Vector3(-12.0, 1.5, 6.0),
-		"fov": 68.0,
+		# Da laje do segundo piso, a sudoeste, olhando o canteiro: as duas gruas, o andaime, o banheiro químico, as
+		# paredes de concreto e de tijolo pela metade, contra o céu de dia e o mar de nuvens (de dia desde 27/11).
+		"de": Vector3(-18.0, 5.6, 14.0),
+		"para": Vector3(10.0, 6.0, -10.0),
+		"fov": 80.0,
 	},
 	"neon": {
 		"cena": "res://src/scenes/maps/neon.tscn",
@@ -82,7 +84,7 @@ const CAPA := {
 	"cidade": {"nevoa": 0.0035, "ar": Color(0.72, 0.84, 1.0)},
 	"deserto": {"nevoa": 0.0035, "ar": Color(1.0, 0.86, 0.68)},
 	"estacao": {"nevoa": 0.0045, "ar": Color(1.0, 0.78, 0.60)},
-	"obra": {"nevoa": 0.0035, "ar": Color(0.74, 0.86, 1.0)},
+	"obra": {"nevoa": 0.003, "ar": Color(0.74, 0.84, 1.0)},
 	"neon": {"nevoa": 0.0, "ar": Color(0.5, 0.3, 0.8), "noite": true},
 }
 
@@ -126,12 +128,42 @@ func _run() -> void:
 	var pedidos := Array(OS.get_cmdline_user_args())
 	_limpa = pedidos.has("limpa"); pedidos.erase("limpa")
 	_rascunho = pedidos.has("rascunho"); pedidos.erase("rascunho")
+	# "olhar": uma foto solta, de onde se disser, para achar o ângulo ou conferir um canto do mapa sem abrir o jogo:
+	#     ... -- olhar=obra de=30,10,-19 para=-12,1.5,6 fov=68 saida=/tmp/obra.png [limpa] [rascunho]
+	var solta := {}
+	for p in pedidos.duplicate():
+		if String(p).contains("="):
+			var kv := String(p).split("=", true, 1)
+			solta[kv[0]] = kv[1]
+			pedidos.erase(p)
+	if solta.has("olhar"):
+		var id := String(solta["olhar"])
+		if not FOTOS.has(id):
+			printerr("fotos_mapas: não há mapa \"%s\" em FOTOS" % id)
+			quit(1)
+			return
+		# (a foto solta nunca grava por cima da capa do mapa: sem saída, não tira — 27/11, uma de teste foi parar na da Obra)
+		if String(solta.get("saida", "")) == "":
+			printerr("fotos_mapas: a foto solta precisa de saida=<arquivo.png>")
+			quit(1)
+			return
+		var f: Dictionary = FOTOS[id].duplicate()
+		if solta.has("de"): f["de"] = _vetor(solta["de"])
+		if solta.has("para"): f["para"] = _vetor(solta["para"])
+		if solta.has("fov"): f["fov"] = float(solta["fov"])
+		await _foto(id, f, String(solta.get("saida", "")))
+		quit()
+		return
 	for id in FOTOS:
 		if pedidos.is_empty() or pedidos.has(id):
 			await _foto(id, FOTOS[id])
 	quit()
 
-func _foto(id: String, f: Dictionary) -> void:
+func _vetor(texto: String) -> Vector3:
+	var n := texto.split_floats(",")
+	return Vector3(n[0], n[1], n[2])
+
+func _foto(id: String, f: Dictionary, saida := "") -> void:
 	var viewport := SubViewport.new()
 	viewport.size = SIZE / 2 if _rascunho else SIZE
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -159,7 +191,7 @@ func _foto(id: String, f: Dictionary) -> void:
 
 	var image := viewport.get_texture().get_image()
 	var out := "res://src/assets/ui/mapas/%s_foto.png" % id
-	image.save_png(ProjectSettings.globalize_path(out))
+	image.save_png(saida if saida != "" else ProjectSettings.globalize_path(out))
 	print("foto: ", out)
 	viewport.queue_free()
 	await process_frame

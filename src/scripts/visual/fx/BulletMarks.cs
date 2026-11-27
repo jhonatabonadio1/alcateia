@@ -36,7 +36,20 @@ public static class BulletMarks
 	private static Texture2D _albedo, _normal;
 
 	/// <summary>Uma marca no ponto em que a bala bateu, deitada na superfície de normal <paramref name="normal"/>.</summary>
-	public static void Add(Node world, Vector3 point, Vector3 normal, Node collider)
+	/// <summary>O que deixou a marca: a bala, o fio da faca (o corte) ou a ponta dela (a estocada).</summary>
+	public enum Kind { Bullet, Cut, Stab }
+
+	/// <summary>O corte da faca na parede: um risco de 34 × 9 cm; a estocada, um talho de 6 × 15 cm (27/11).</summary>
+	public static readonly Vector2 CutSize = new(0.34f, 0.09f), StabSize = new(0.06f, 0.15f);
+
+	private static Texture2D _cut, _cutNormal, _stab, _stabNormal;
+
+	/// <summary>A marca da faca (Jhon, 27/11: "assim como os tiros marcam as paredes, as facas devem
+	/// dar umas cortadas e o botão direito da faca furar").</summary>
+	public static void AddKnife(Node world, Vector3 point, Vector3 normal, Node collider, bool stab) =>
+		Add(world, point, normal, collider, stab ? Kind.Stab : Kind.Cut);
+
+	public static void Add(Node world, Vector3 point, Vector3 normal, Node collider, Kind kind = Kind.Bullet)
 	{
 		if (world is not Node3D world3D || !world3D.IsInsideTree()) return;
 		// Corpo de gente não leva marca (o sangue é dele), nem a parede invisível do limite.
@@ -52,12 +65,27 @@ public static class BulletMarks
 		_normal ??= GD.Load<Texture2D>("res://src/assets/efeitos/marca_tiro_n.png");
 
 		float size = Size * Rng.RandfRange(0.8f, 1.2f);
+		var extent = new Vector3(size, Depth, size);
+		Texture2D albedo = _albedo, bump = _normal;
+		if (kind == Kind.Cut)
+		{
+			albedo = _cut ??= GD.Load<Texture2D>("res://src/assets/efeitos/marca_corte.png");
+			bump = _cutNormal ??= GD.Load<Texture2D>("res://src/assets/efeitos/marca_corte_n.png");
+			float k = Rng.RandfRange(0.85f, 1.15f);
+			extent = new Vector3(CutSize.X * k, Depth, CutSize.Y * k);
+		}
+		else if (kind == Kind.Stab)
+		{
+			albedo = _stab ??= GD.Load<Texture2D>("res://src/assets/efeitos/marca_furo.png");
+			bump = _stabNormal ??= GD.Load<Texture2D>("res://src/assets/efeitos/marca_furo_n.png");
+			extent = new Vector3(StabSize.X, Depth, StabSize.Y);
+		}
 		var mark = new Decal
 		{
-			Name = "MarcaDeTiro",
-			Size = new Vector3(size, Depth, size),
-			TextureAlbedo = _albedo,
-			TextureNormal = _normal,
+			Name = kind == Kind.Bullet ? "MarcaDeTiro" : kind == Kind.Cut ? "MarcaDeCorte" : "MarcaDeFuro",
+			Size = extent,
+			TextureAlbedo = albedo,
+			TextureNormal = bump,
 			AlbedoMix = 1f,
 			// Só no que está de frente (a quina não estica a marca) e sem aparecer de longe à toa.
 			NormalFade = 0.45f,
@@ -73,7 +101,9 @@ public static class BulletMarks
 		Vector3 y = normal.Normalized();
 		Vector3 x = y.Cross(Mathf.Abs(y.Y) < 0.9f ? Vector3.Up : Vector3.Right).Normalized();
 		Vector3 z = x.Cross(y);
-		var basis = new Basis(x, y, z).Rotated(y, Rng.RandfRange(0f, Mathf.Tau));
+		// A bala gira à toa; o corte fica deitado, meio inclinado (o braço corta de lado); o furo, em pé.
+		float turn = kind == Kind.Bullet ? Rng.RandfRange(0f, Mathf.Tau) : Rng.RandfRange(-0.45f, 0.45f);
+		var basis = new Basis(x, y, z).Rotated(y, turn);
 		mark.GlobalTransform = new Transform3D(basis, point);
 
 		Tween fade = mark.CreateTween();

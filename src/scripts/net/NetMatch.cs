@@ -426,9 +426,9 @@ public partial class NetMatch : Node
 	private void SendLoadout()
 	{
 		BinaryWriter w = NetWire.Begin(NetWire.Loadout, out MemoryStream stream);
-		List<string> tattoos = Profile.OwnedTattoos();
-		w.Write((byte)tattoos.Count);
-		foreach (string id in tattoos) w.Write(id);
+		List<string> upgrades = Profile.OwnedWolfUpgrades();
+		w.Write((byte)upgrades.Count);
+		foreach (string id in upgrades) w.Write(id);
 		Send(stream);
 	}
 
@@ -641,7 +641,14 @@ public partial class NetMatch : Node
 		foreach (var (id, poses) in _poses)
 		{
 			if (!_puppets.TryGetValue(id, out Bot puppet) || !poses.Sample(renderTime, out NetPose p)) continue;
-			if (!p.Has(EntityFlags.Present)) continue;
+			if (!p.Has(EntityFlags.Present))
+			{
+				// O servidor não conta onde ele está (ainda não nasceu, ou este
+				// jogador não pode vê-lo nem ouvi-lo: SightRules): o boneco some, e
+				// reaparece no lugar certo, sem deslizar, quando o estado voltar.
+				if (puppet.Visible && !puppet.GetNode<Health>("Health").IsDead) puppet.RemotePresent(false);
+				continue;
+			}
 
 			Form form = Enum.IsDefined(typeof(Form), (int)p.Form) ? (Form)p.Form : Form.Human;
 			puppet.RemoteSnapshot(p.Position.ToGodot(), p.Velocity.ToGodot(), p.Yaw, p.Pitch,
@@ -858,6 +865,11 @@ public partial class NetMatch : Node
 							moveA = r.ReadSingle();
 							moveB = r.ReadSingle();
 						}
+						// O golpe do corpo espera o atraso com que o boneco é desenhado
+						// **agora** (com jitter ele passa dos 0,1 s): o lobo dos outros dá a
+						// garrada e o bote no lugar e na hora em que o corpo dele chega.
+						if (Authoritative && _clock.Known)
+							attacker.RemoteAttackLag = (float)Math.Clamp(_clock.Now(LocalSeconds) - _clock.RenderTime(LocalSeconds), 0.05, 0.3);
 						attacker.RemoteAttack(attackSlot, attackYaw, attackPitch, move, moveA, moveB);
 					}
 					break;
@@ -872,6 +884,16 @@ public partial class NetMatch : Node
 
 				case NetWire.Damage:
 					TakeServerDamage(r);
+					break;
+
+				case NetWire.Hurt:
+					if (_puppets.TryGetValue(r.ReadInt64(), out Bot hurt))
+					{
+						r.ReadInt64();
+						float hurtDealt = r.ReadSingle(), hurtHp = r.ReadSingle(), hurtShield = r.ReadSingle();
+						bool fell = r.ReadBoolean();
+						hurt.GetNode<Health>("Health").ServerHurt(hurtDealt, hurtHp, hurtShield, fell, r.ReadVector());
+					}
 					break;
 
 				case NetWire.Vitals:

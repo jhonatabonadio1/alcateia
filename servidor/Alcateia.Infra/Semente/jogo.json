@@ -612,10 +612,10 @@
 			"sort": 280
 		},
 		{
-			"id": "tat_pata",
+			"id": "up_pata",
 			"name": "Pata Leve",
-			"type": "Melhoria · lobo",
-			"kind": "tattoo",
+			"type": "Melhoria de lobo",
+			"kind": "wolf_upgrade",
 			"rarity": 1,
 			"minRank": 1,
 			"currency": "presas",
@@ -634,10 +634,10 @@
 			"sort": 290
 		},
 		{
-			"id": "tat_salto",
+			"id": "up_salto",
 			"name": "Salto Longo",
-			"type": "Melhoria · lobo",
-			"kind": "tattoo",
+			"type": "Melhoria de lobo",
+			"kind": "wolf_upgrade",
 			"rarity": 1,
 			"minRank": 2,
 			"currency": "presas",
@@ -656,10 +656,10 @@
 			"sort": 300
 		},
 		{
-			"id": "tat_couro",
+			"id": "up_couro",
 			"name": "Couro Grosso",
-			"type": "Melhoria · lobo",
-			"kind": "tattoo",
+			"type": "Melhoria de lobo",
+			"kind": "wolf_upgrade",
 			"rarity": 2,
 			"minRank": 3,
 			"currency": "presas",
@@ -678,10 +678,10 @@
 			"sort": 310
 		},
 		{
-			"id": "tat_garra",
+			"id": "up_garra",
 			"name": "Garra Afiada",
-			"type": "Melhoria · lobo",
-			"kind": "tattoo",
+			"type": "Melhoria de lobo",
+			"kind": "wolf_upgrade",
 			"rarity": 2,
 			"minRank": 4,
 			"currency": "presas",
@@ -700,10 +700,10 @@
 			"sort": 320
 		},
 		{
-			"id": "tat_pelo",
+			"id": "up_pelo",
 			"name": "Pelo Denso",
-			"type": "Melhoria · lobo",
-			"kind": "tattoo",
+			"type": "Melhoria de lobo",
+			"kind": "wolf_upgrade",
 			"rarity": 3,
 			"minRank": 6,
 			"currency": "presas",
@@ -722,10 +722,10 @@
 			"sort": 330
 		},
 		{
-			"id": "tat_cacador",
+			"id": "up_cacador",
 			"name": "Caçador Noturno",
-			"type": "Melhoria · lobo",
-			"kind": "tattoo",
+			"type": "Melhoria de lobo",
+			"kind": "wolf_upgrade",
 			"rarity": 3,
 			"minRank": 5,
 			"currency": "presas",
@@ -744,10 +744,10 @@
 			"sort": 340
 		},
 		{
-			"id": "tat_presas",
+			"id": "up_presas",
 			"name": "Presas de Aço",
-			"type": "Melhoria · lobo",
-			"kind": "tattoo",
+			"type": "Melhoria de lobo",
+			"kind": "wolf_upgrade",
 			"rarity": 3,
 			"minRank": 5,
 			"currency": "presas",
@@ -766,10 +766,10 @@
 			"sort": 350
 		},
 		{
-			"id": "tat_alfa",
+			"id": "up_alfa",
 			"name": "Alfa",
-			"type": "Melhoria · lobo",
-			"kind": "tattoo",
+			"type": "Melhoria de lobo",
+			"kind": "wolf_upgrade",
 			"rarity": 4,
 			"minRank": 7,
 			"currency": "presas",
@@ -788,10 +788,10 @@
 			"sort": 360
 		},
 		{
-			"id": "tat_lua",
+			"id": "up_lua",
 			"name": "Fúria da Lua",
-			"type": "Melhoria · lobo",
-			"kind": "tattoo",
+			"type": "Melhoria de lobo",
+			"kind": "wolf_upgrade",
 			"rarity": 4,
 			"minRank": 7,
 			"currency": "presas",
@@ -1146,7 +1146,7 @@
 			"id": "cidade",
 			"name": "Cidade",
 			"size": "Grande",
-			"description": "Grande, 120 × 80 m, de dia. Um bairro inteiro: três ruas de ponta a ponta, o bulevar do centro e os becos de 2,5 m por dentro dos quarteirões — entre as lojas, em volta do prédio em obras de três andares, atrás do banco. Cada time nasce numa ponta da avenida.",
+			"description": "Grande, 86 × 92 m, de dia. Um bairro em volta de uma avenida de 80 m, entre a prefeitura e a torre do heliponto: casas de três e quatro andares, o estacionamento, a praça, a oficina, o pátio do prédio em obras e os becos por trás das casas. O azul nasce junto à prefeitura, o laranja no fim da avenida.",
 			"modes": [
 				"equipe",
 				"mata_mata"
@@ -1158,8 +1158,8 @@
 		{
 			"id": "deserto",
 			"name": "Cidade do Deserto",
-			"size": "Grande",
-			"description": "Grande, 110 × 75 m, sol alto. Uma cidadela talhada dentro da muralha: três vielas de ponta a ponta ligadas por becos de 2,5 m, a rua da feira e a praça do chafariz no meio. Casas de laje com escada de pedra; por cima da muralha, só o lobo.",
+			"size": "Médio",
+			"description": "Médio, 64 × 64 m, sol alto. Uma cidadela dentro da muralha: casas de adobe de um e dois andares com escada de pedra, toldos, bancas de feira, a praça do chafariz e vielas de 3 a 6 m entre os blocos de casas. Os times nascem em cantos opostos; por cima da muralha ninguém passa.",
 			"modes": [
 				"equipe",
 				"mata_mata"
@@ -1172,7 +1172,7 @@
 			"id": "estacao",
 			"name": "Estação de Trem",
 			"size": "Grande",
-			"description": "Grande, 120 × 95 m, fim de tarde, no centro da cidade. A rua e a praça, o prédio da estação com as torres de relógio — saguão, duas alas com corredor e salas —, duas plataformas, três linhas com trens parados e o pátio de carga. No centro, a passarela cruza as linhas por cima dos trens.",
+			"description": "Grande, 105 × 65 m, fim de tarde. Um pátio de estação fechado por paredes de 9 m: três linhas com trens parados ao norte, o saguão coberto no meio, mais duas linhas ao sul, e os prédios da estação em volta, com duas escadas para o piso de cima. O azul nasce a oeste, o laranja na ala leste.",
 			"modes": [
 				"equipe",
 				"mata_mata"
@@ -1184,8 +1184,8 @@
 		{
 			"id": "obra",
 			"name": "Obra",
-			"size": "Grande",
-			"description": "Grande, 100 × 70 m, de dia. Um prédio de concreto em construção no meio do canteiro: corredor de 60 m, salas e salões no térreo, duas lajes abertas em cima (4 e 8 m) com escadas e muretas de tijolo. Em volta, material empilhado, andaimes e gruas.",
+			"size": "Pequeno",
+			"description": "Pequeno, 40 × 40 m em três pisos, de dia, no alto de um prédio acima das nuvens. Um canteiro de obras na laje: paredes de concreto pela metade, escadas para o segundo piso, um pedaço de terceiro, gruas, andaimes e material empilhado. Em volta, só o céu do pôr do sol e o mar de nuvens lá embaixo.",
 			"modes": [
 				"mata_mata"
 			],

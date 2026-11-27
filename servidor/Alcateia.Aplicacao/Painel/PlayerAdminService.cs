@@ -6,6 +6,7 @@ using Alcateia.Aplicacao.Jogo;
 using Alcateia.Aplicacao.Portas;
 using Alcateia.Aplicacao.Saguao;
 using Alcateia.Dominio;
+using Alcateia.Dominio.Contas;
 using Alcateia.Dominio.Loja;
 using Alcateia.Dominio.Painel;
 using Alcateia.Dominio.Partidas;
@@ -125,7 +126,34 @@ public sealed class PlayerAdminService
 
 		long balance = await _players.Adjust(accountId, currency, amount, "painel", reason, who.Admin.Id);
 		await _audit.Note(who, amount > 0 ? "jogador.deu_moeda" : "jogador.tirou_moeda", Target(player), $"{amount:+#;-#} {currency}; saldo {balance}; motivo: {reason}");
+		await _lobby.AccountChanged(accountId);
 		return balance;
+	}
+
+	/// <summary>
+	/// Põe a conta num nível (Jhon, 27/11: "coloque a opção de inserir nível
+	/// no player pelo servidor"): o XP vai para o começo dele. Sobe ou desce.
+	/// Não paga o prêmio de subir de nível (as Presas de cada nível
+	/// alcançado): é correção de quem cuida do jogo, não progresso. O jogo
+	/// ligado recebe na hora (<see cref="LobbyService.AccountChanged"/>) e
+	/// comemora só o último nível marcante do salto, de volta ao saguão.
+	/// Pede motivo, que vai para a auditoria.
+	/// </summary>
+	public async Task<(int Level, long Xp)> SetLevel(AdminContext who, long accountId, int level, string reason)
+	{
+		who.Require(Permission.Economy);
+		reason = (reason ?? "").Trim();
+		if (level < 1 || level > RankRule.Count) throw new Failure(FailureKind.Invalid, "nivel_invalido", $"Nível de 1 a {RankRule.Count}.");
+		if (reason.Length is < 3 or > 200) throw new Failure(FailureKind.Invalid, "sem_motivo", "Diga o motivo (3 a 200 caracteres).");
+		PlayerDetail player = await Existing(accountId);
+		int before = RankRule.LevelOf(RankRule.RankFor(player.Summary.Xp));
+		if (before == level) throw new Failure(FailureKind.Conflict, "mesmo_nivel", $"Ele já está no nível {level}.");
+
+		long xp = RankRule.XpFor(level - 1);
+		long old = await _players.SetXp(accountId, xp);
+		await _audit.Note(who, "jogador.nivel", Target(player), $"nível {before} → {level} (XP {old} → {xp}); motivo: {reason}");
+		await _lobby.AccountChanged(accountId);
+		return (level, xp);
 	}
 
 	/// <summary>Entrega um item. <paramref name="days"/> zero é para sempre.</summary>
@@ -140,6 +168,7 @@ public sealed class PlayerAdminService
 		DateTime? until = days > 0 && !item.Consumable ? _clock.UtcNow.AddDays(days) : null;
 		await _players.Grant(accountId, item.Id, until, "painel", item.Consumable ? 1 : 0);
 		await _audit.Note(who, "jogador.deu_item", Target(player), $"{item.Id} ({(until == null ? "para sempre" : $"{days} dias")})");
+		await _lobby.AccountChanged(accountId);
 	}
 
 	public async Task RevokeItem(AdminContext who, long accountId, string itemId)
@@ -149,6 +178,7 @@ public sealed class PlayerAdminService
 		if (!await _players.Revoke(accountId, itemId))
 			throw new Failure(FailureKind.NotFound, "item_inexistente", "A conta não tem esse item.");
 		await _audit.Note(who, "jogador.tirou_item", Target(player), itemId);
+		await _lobby.AccountChanged(accountId);
 	}
 
 	private async Task<PlayerDetail> Existing(long accountId) =>

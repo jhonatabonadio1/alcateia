@@ -245,7 +245,7 @@ void fragment() {
 			case "choque_ouro": Grenade(); break;
 			case "troca_nome": NameTag(); break;
 			default:
-				if (_id.StartsWith("tat_")) Tattoo();
+				if (_id.StartsWith("up_")) WolfUpgrade();
 				else if (_id.StartsWith("pers_")) Person();
 				break;
 		}
@@ -304,7 +304,7 @@ void fragment() {
 		Poly(Dark, 154, 61, 160, 70, 152, 66);
 	}
 
-	private void Tattoo()
+	private void WolfUpgrade()
 	{
 		Color ink = new Color("d9c7a3");
 		DrawArcAt(100, 40, 30, ink);

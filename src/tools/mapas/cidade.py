@@ -1,177 +1,63 @@
 """
-Cidade — mapa grande (120 × 80 m), a céu aberto, de dia.
+Cidade — mapa grande (120 × 100 m), a céu aberto, de dia.
 
-Um bairro inteiro: três ruas de ponta a ponta (a do norte, a avenida no meio e a do sul), duas transversais e o bulevar
-do centro, e dentro dos quarteirões os becos de 2,5 m — entre as lojas e as casas, em volta do prédio em obras (três
-andares, com escada por dentro), atrás do banco. Cada time nasce numa ponta da avenida.
+O bairro do pacote "Low Poly FPS Map Vol.1 — City" como o autor montou: a cena de demonstração, lida do ``.umap`` do
+Unreal (``kits/unreal_umap.py`` → ``fps1_demo.json``: cada peça no lugar em que ele pôs). Pedido do Jhon, 27/11: "use o
+que tem lá de demo". (Até 26/11 a Cidade era uma planta própria, desenhada em letras com as peças soltas do kit — o
+pacote em FBX não trazia o mapa montado; está no git.)
 
-Montado com as peças do kit "Low Poly FPS Map Vol.1 — City" (JustCreate; ``tools/mapas/kits``), com planta própria (o kit
-vem sem o mapa montado). A planta é o desenho em letras aqui embaixo (``kits/planta.py``): cada letra, 2,5 m.
+A cena é uma avenida de 80 m entre a prefeitura e a torre do heliponto, com casas de três e quatro andares dos dois
+lados, o estacionamento, a praça, a oficina e, de um lado, o pátio do prédio em obras; por trás das casas da avenida,
+os becos e os quintais, fechados pelo anel de casas de fora.
+
+**No tamanho da cena** (Jhon, 27/11: "ajuste somente o da obra, para não ficar exagerado"): com 86 × 92 m de miolo ela
+já é dos maiores mapas do jogo, e não foi dobrada como o Distrito Neon. Só foi girada 90° — a avenida corre no eixo dos
+times: o azul nasce no largo da prefeitura (−X), o laranja no fim da avenida, ao pé da torre (+X). Os dois lados não
+são iguais (a cena não é simétrica).
+
+A luz é de fim de manhã: sol quente, sombra fria, e o céu com nuvens que andam (``assets/mapas/ceus/ceu_nuvens.gdshader``).
 
 As quatro perguntas do teste de mapa:
-  1. Caminho que só o lobo faz: do carro ou da caçamba para o teto das lojas (3,4 m) e dali, de teto em teto, por cima
-     dos becos; as lajes do prédio em obras.
-  2. Onde o humano vê o lobo chegando: as lajes do prédio em obras e as esquinas do bulevar, de frente para as três ruas.
-  3. Corredor que o humano deve evitar: os becos de 2,5 m (duas paredes para o lobo ricochetear, sem para onde fugir) e a
-     avenida de ponta a ponta, só com carro e barreira de cobertura.
-  4. Cair em cima de quem não olha: do teto das lojas sobre quem passa no beco.
-
-O leste é o oeste girado 180°: o azul nasce na ponta −X da avenida, o laranja na +X, e os dois veem o mesmo mapa.
+  1. Caminho que só o lobo faz: pelos toldos e pelas casas baixas (3 a 3,5 m) até as lajes do prédio em obras (3,6 e
+     7,2 m), sem a escada; e de um telhado baixo ao outro por cima dos becos.
+  2. Onde o humano vê o lobo chegando: as lajes abertas do prédio em obras e o meio da avenida, com 80 m de visão.
+  3. Corredor que o humano deve evitar: os becos entre as casas do lado de fora (2 a 3 m de largura, janelas e
+     telhados baixos por cima) e o pátio de obras, cheio de material.
+  4. Cair em cima de quem não olha: das lajes da obra e dos telhados baixos para o beco e para a calçada da avenida.
 """
+import os
+
 import numpy as np
 
 from .kit import Mapa, AZUL
-from .kits.montagem import Montagem, Grade, fechar, nascer, barrar, espalhar, luz_de_jogo, lampadas
-from .kits.planta import Planta
+from .kits.demo import Demo, por, barreiras, bolsoes, fechar_predios, fora_do_anel, alcancavel, nascer_em
+from .kits.montagem import Montagem, Grade, giro, fechar, espalhar, luz_de_jogo, lampadas
 
-# h casa (prédio fechado)   l loja baixa (anda-se no teto)   T torre   B banco   I igreja   K prédio em obras   O escritório
-# S oficina   q banca   c carro ao longo da rua   C carro atravessado   x barreira   b caixas   u caçamba   o tambores
-# t árvore   p poste   = ! grade de ferro   1–9 por onde passam as rotas
-OESTE = [
-    "TTTTThhhhhhhhhhhhhhhhhhh",
-    "TTTTThhhhhhhhhhhhhhhhhhh",
-    "TTTTThhhhhhhhhhhhhhhhhhh",
-    "TTTTT..t..p..c..t..t....",
-    "TTTTT....1......x....2..",
-    "hhhIIIII...p......C.....",
-    "hhhIIIII..lll.KKK.OOOO..",
-    "hhhIIIII..lll.KKK.OOOO.t",
-    "hhhIIIII..lll.KKK.OOOO..",
-    "hhhIIIII.....8KKK..b....",
-    "hhhIIIII..hhh.KKK.SSSS..",
-    "hhhIIIII..hhh.=b=.SSSS..",
-    "hhhIIIII..hhh..u..SSSS.c",
-    "hhh...t....p.....t...t..",
-    "hhh......3..qq......c...",
-    "hhh......x..qq.4.x.....5",
-    "hhh.......c......x......",
-    "hhh.............C....x..",
-    "hhh....t..p....t....p...",
-    "hhhTTTTT..BBBBB.hhhhhh.t",
-    "hhhTTTTT..BBBBB.hhhhhh..",
-    "hhhTTTTT..BBBBB.hhhhhh..",
-    "hhhTTTTT..BBBBB9........",
-    "hhhTTTTT..BBBBB.llllll..",
-    "hhh.c.c.!.=u.=..llllll..",
-    "hhh.....!..c..b.llllll.c",
-    "hhh.c.c.!....t....p...t.",
-    "hhh......6.....x....7...",
-    "hhh..t...p...C..t...t...",
-    "hhhhhhhhhhhhhhhhhhhhhhhh",
-    "hhhhhhhhhhhhhhhhhhhhhhhh",
-    "hhhhhhhhhhhhhhhhhhhhhhhh",
-]
-SOLIDOS = "hlTBIKOSq"
-P = Planta(OESTE, 2.5, 'giro')
-X, Z = P.X, P.Z            # o espaço jogável: de −X a X e de −Z a Z
+MEIO = (7.0, 26.0)             # na cena do pacote: o ponto que vira o centro do mapa
+VOLTA = giro(90)               # a cena girada 90°: a avenida (norte–sul na cena) fica no eixo dos times
+CHAO = 0.13                    # a altura do chão da cena (os planos de fundo); a rua fica 2 cm acima
+X, Z = 64.0, 54.0              # meia largura e meio fundo do mapa (o limite; o que se joga é o miolo, dentro do anel de casas)
+TETO = 24.0
 
-# (os prédios e os carros têm a colisão da própria malha: a caixa deles pegava a sacada, a escada de incêndio, a marquise
-# e o capô, e o tiro de cima do telhado para a rua batia nela, invisível, sem dano — Jhon, 20/11)
-CAIXA = ('AmoBox', 'ATM', 'Barrel', 'Box_', 'Fan', 'FlowerBed', 'Garbage', 'Hydrant', 'Trash', 'Wheel', 'Rock', 'Pallet',
-         'RoadPart', 'Barrier', 'Parking_01', 'Fence_03')
-SEM = ('BG_', 'Grass', 'Plant', 'Mud', 'Luke', 'PowerLines', 'RoadSign', 'Tree', 'Light', 'ParkingBG', 'asfalto', 'calcada', 'meiofio', 'branco', 'amarelo')
-CARROS = ('OldCar_01', 'OldCar_02', 'OldCar_03', 'OldCar_04', 'OldCar_05', 'OldCar_06', 'Car_01')
+# A colisão de cada peça é a da própria malha, menos o que é caixa de verdade: a caixa de um prédio pegava a sacada, a
+# escada de incêndio e a marquise, e a de um barril, de uma lixeira ou de uma barreira (redondos, de tampa torta, de
+# perfil em cunha) segurava o tiro de cima no ar, sem nada que se visse (Jhon, 20/11; o teste TiroDeCimaCidade)
+CAIXA = ('AmoBox', 'ATM', 'Box_', 'FlowerBed', 'Pallet', 'Parking_01', 'Fence_')
+# (revisão de 27/11: os montes de lama, até 65 cm, colidem na forma deles; a placa de rua de 1,8 m, pela haste)
+SEM = ('BG_', 'Grass', 'Plant', 'Luke', 'PowerLines', 'RoadSign', 'Tree', 'Light', 'ParkingBG', 'Road_', 'Stairs_01')
+ANEL = ('House_', 'Bank_', 'Church_', 'CityHall_', 'Office_')          # os prédios fechados (o miolo deles é sólido; o que encosta no lado de fora é barrado até o teto)
+# A escada do prédio em obras (``Construction_01``), medida na peça: degraus de 21 × 29 cm do térreo (0,40) ao primeiro
+# andar (3,40), ao longo de z. Ganha a chapa de subida das escadas dos outros mapas (``Montagem.rampa``), 3 cm acima das
+# quinas: sem ela, descendo, o corpo escorregava pela quina arredondada e voava três degraus de cada vez (27/11).
+OBRA_ESCADA = ((0.03, 0.40), (3.89, 3.19), (2.03, 3.65), 3.40)
+
+POSTES = {'Tree_01': (0.28, 3.0), 'Tree_02': (0.32, 3.4), 'Light_01': (0.12, 4.6), 'PowerLines_01': (0.2, 5.4), 'RoadSign_01': (0.08, 1.8)}      # o tronco e o poste: (largura, altura) da barra de colisão
 
 
-# ---- as ruas e as calçadas (pedido do Jhon, 20/11: "coloque calçadas na cidade, não deixe asfalto e chão se misturarem")
-# O asfalto fica MEIO_FIO abaixo da calçada, com o meio-fio na borda: são dois níveis de verdade, no desenho e na
-# colisão, e um não fica por cima do outro (era uma chapa a 3 cm da outra, e de longe as duas brigavam). A calçada é
-# o nível zero de sempre — os prédios e os becos não mudam; quem desce é a rua e o que está nela.
-RUAS = ((5, 3, 45, 6), (3, 26, 43, 29), (3, 14, 45, 18), (8, 3, 10, 29), (38, 3, 40, 29), (22, 3, 26, 29), (3, 24, 8, 29), (40, 3, 45, 8))
-MEIO_FIO = 0.14           # o degrau: o jogador (0,3 m) e o bot (0,5 m) sobem andando
-CALCADA = 1.6             # a largura da calçada ao pé dos prédios (as árvores e os postes ficam nela)
-GUIA = 0.2                # a largura do meio-fio
-PATIO = 41.0              # daqui para fora, na avenida, é o largo onde se nasce: calçada
-PASSO = 0.1               # a malha da planta do asfalto
-
-
-def planta_das_ruas():
-    """Onde é asfalto, numa malha de PASSO vista de cima (linhas em z, colunas em x), de −X−12 a X+12: as ruas da planta,
-    menos o largo onde se nasce, com a calçada tirada de cada borda."""
-    fora = 12.0; nx, nz = int(round((2 * X + 2 * fora) / PASSO)), int(round((2 * Z + 2 * fora) / PASSO))
-    col = lambda x: int(round((x + X + fora) / PASSO)); lin = lambda z: int(round((z + Z + fora) / PASSO))
-    rua = np.zeros((nz, nx), bool)
-    for c0, r0, c1, r1 in RUAS:
-        x0, z0, x1, z1 = P.mundo(c0, r0, c1, r1); rua[lin(z0):lin(z1), col(x0):col(x1)] = True
-    rua[lin(-7.5):lin(7.5), :col(-PATIO)] = False; rua[lin(-7.5):lin(7.5), col(PATIO):] = False
-    k = int(round(CALCADA / PASSO)); e = rua.copy()
-    for d in range(1, k + 1): e &= np.roll(rua, d, 1) & np.roll(rua, -d, 1)
-    f = e.copy()
-    for d in range(1, k + 1): f &= np.roll(e, d, 0) & np.roll(e, -d, 0)
-    return f, (-X - fora, -Z - fora)
-
-
-def retangulos(mascara, origem):
-    """A máscara em retângulos (x0, z0, x1, z1), poucos: as faixas iguais de linhas seguidas viram um só."""
-    out, abertos = [], {}
-    for r in range(mascara.shape[0] + 1):
-        linha = mascara[r] if r < mascara.shape[0] else np.zeros(mascara.shape[1], bool)
-        d = np.diff(np.concatenate([[0], linha.astype(np.int8), [0]]))
-        faixas = set(zip(np.flatnonzero(d == 1).tolist(), np.flatnonzero(d == -1).tolist()))
-        for fx in [f_ for f_ in abertos if f_ not in faixas]:
-            r0 = abertos.pop(fx); out.append((origem[0] + fx[0] * PASSO, origem[1] + r0 * PASSO, origem[0] + fx[1] * PASSO, origem[1] + r * PASSO))
-        for fx in faixas: abertos.setdefault(fx, r)
-    return out
-
-
-def crescer(mascara, k):
-    out = mascara.copy()
-    for d in range(1, k + 1): out |= np.roll(mascara, d, 1) | np.roll(mascara, -d, 1)
-    m2 = out.copy()
-    for d in range(1, k + 1): out |= np.roll(m2, d, 0) | np.roll(m2, -d, 0)
-    return out
-
-
-def calcadas(M):
-    """O chão em dois níveis e o que está na rua descendo com ela. Chamada no fim de ``desenho``, com tudo já posto.
-    Devolve os retângulos da calçada (com o meio-fio), para a colisão."""
-    rua, origem = planta_das_ruas(); guia = crescer(rua, int(round(GUIA / PASSO))) & ~rua
-    for x0, z0, x1, z1 in retangulos(rua, origem): M.chapa('asfalto', x0, z0, x1, z1, y=-MEIO_FIO - 0.03, alto=0.03)
-    for x0, z0, x1, z1 in retangulos(~rua & ~guia, origem): M.chapa('calcada', x0, z0, x1, z1, y=-MEIO_FIO - 0.03, alto=MEIO_FIO + 0.03)
-    for x0, z0, x1, z1 in retangulos(guia, origem): M.chapa('meiofio', x0, z0, x1, z1, y=-MEIO_FIO - 0.03, alto=MEIO_FIO + 0.03)
-
-    def na_rua(lo, hi):
-        """Quanto da pegada (de lo a hi, vista de cima) está no asfalto: 0 a 1."""
-        i0, i1 = int(np.floor((lo[2] - origem[1]) / PASSO)), int(np.ceil((hi[2] - origem[1]) / PASSO))
-        j0, j1 = int(np.floor((lo[0] - origem[0]) / PASSO)), int(np.ceil((hi[0] - origem[0]) / PASSO))
-        t = rua[max(i0, 0):max(i1, i0 + 1), max(j0, 0):max(j1, j0 + 1)]
-        return float(t.mean()) if t.size else 0.0
-
-    fica = []
-    for it in M.itens:
-        nome = it.peca.nome
-        if nome in ('asfalto', 'calcada', 'meiofio'): fica.append(it); continue
-        c = it.cantos(); lo, hi = c.min(0), c.max(0)
-        if lo[1] > 0.06 or lo[1] < -0.01: fica.append(it); continue          # o que não está no chão (em cima de outra coisa)
-        parte = na_rua(lo, hi)
-        if nome in ('branco', 'amarelo'):                                    # a pintura: só a que cabe inteira no asfalto
-            if parte > 0.999: it.t[1] -= MEIO_FIO; fica.append(it)
-            continue
-        if nome.startswith(('Tree', 'Light', 'PowerLines', 'RoadSign', 'Hydrant')):
-            # o que tem pé (o tronco, o poste): vale onde o pé está, não a copa
-            meio = (lo + hi) / 2; parte = na_rua(meio - 0.15, meio + 0.15)
-            if parte > 0.5: it.t[1] -= MEIO_FIO
-            if hasattr(it, '_aabb'): del it._aabb
-            fica.append(it); continue
-        if 0.0 < parte < 0.999 and max(hi[0] - lo[0], hi[2] - lo[2]) < 6.0:
-            # a cavalo no meio-fio (o carro encostado no prédio, a caçamba na beira): vai inteiro para a rua ou inteiro
-            # para a calçada, pelo caminho mais curto (no empate, para o lado do centro do mapa — o outro time vê o
-            # mesmo). Ficando onde estava, metade dele flutuava 14 cm acima do asfalto (Jhon, 20/11).
-            meio = (lo + hi) / 2; melhor = None
-            for dist in np.arange(0.1, 2.6, 0.1):
-                for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                    d = np.array([dx * dist, 0.0, dz * dist]); onde = na_rua(lo + d, hi + d)
-                    if onde > 0.999 or onde < 0.001:
-                        nota = (round(float(dist), 2), float(dx * meio[0] + dz * meio[2]))
-                        if melhor is None or nota < melhor[0]: melhor = (nota, d, 1.0 if onde > 0.5 else 0.0)
-                if melhor: break
-            if melhor: it.t = it.t + melhor[1]; parte = melhor[2]
-            elif not it.colide: continue                                                       # enfeite que não cabe em lado nenhum: sai
-        if parte > 0.999 or (parte >= 0.5 and not it.colide): it.t[1] -= MEIO_FIO
-        if hasattr(it, '_aabb'): del it._aabb
-        fica.append(it)
-    M.itens[:] = fica
-    return retangulos(~rua, origem)
+# Na cena, uma fileira de barreiras de concreto (1,1 m: o humano não pula) fecha a avenida de calçada a calçada a 17 m do
+# fim, e o trecho atrás dela fica sem uso. Aqui é onde nasce o laranja: saem as barreiras das duas pontas da fileira
+# (uma passagem de 3 m junto à cerca da praça, outra de 2 m na calçada sul) e os carros do meio ficam de cobertura.
+ABERTO = ((26.0, 0.8, 27.6, 5.6), (25.0, 9.8, 26.8, 13.2))
 
 
 def colisao(nome):
@@ -179,146 +65,75 @@ def colisao(nome):
 
 
 def desenho():
-    M = Montagem('fps1', colisao); K = M.kit
-    for nome, cor in (('asfalto', (0.30, 0.31, 0.33)), ('calcada', (0.48, 0.49, 0.51)), ('meiofio', (0.66, 0.66, 0.66)), ('branco', (0.92, 0.92, 0.92)),
-                      ('amarelo', (0.9, 0.75, 0.1))):
-        K.chapa(nome, cor)
-
-    # ---- o largo onde o azul nasce (o do laranja é ele girado), na ponta da avenida: caixas, tambores e um carro. (Era um
-    # posto de gasolina, com a cobertura e as bombas; saiu a pedido do Jhon, 20/11.)
-    M.por('AmoBox', -51.2, 5.4, yaw=20); M.por('AmoBox_01', -51.6, -5.6); M.por('Barrel_01', -51.9, -6.6); M.por('Barrel_02', -51.2, -6.9)
-    M.por('Box_01', -51.7, 6.6); M.por('Box_02', -51.7, 6.6, y=0.9, yaw=15); M.por('Box_03', -50.7, 6.8, yaw=40)
-    M.por('Trash_02', -51.8, 2.2, yaw=90); M.por('Wheel_01', -52.0, -1.2, yaw=90); M.por('Pallet_01', -44.2, -6.6, yaw=10)
-    M.por('RoadPart_02', -41.6, -4.4); M.por('RoadPart_04', -41.6, 3.6); M.por('Car_01', -43.4, 5.9, yaw=-25)
-    M.simetrico()
-
-    # ---- o chão (a calçada, o asfalto e o meio-fio entram no fim, em ``calcadas``): a faixa tracejada no eixo das ruas
-    for z in (-28.75, 0.0, 28.75):
-        for i in range(-10, 10):
-            if not (z == 0.0 and abs(i * 5 + 2.5) < 5): M.chapa('branco', i * 5 + 1.5, z - 0.08, i * 5 + 3.5, z + 0.08, y=0.0, alto=0.012)
-    for i in range(-6, 6):
-        if abs(i * 5 + 2.5) > 9: M.chapa('amarelo', -0.08, i * 5 + 1.5, 0.08, i * 5 + 3.5, y=0.0, alto=0.012)
-
-    # ---- os prédios: um por retângulo de letras (os de casa e de loja, cortados de três em três células)
-    # (os prédios de casa têm um corpo só, na altura do kit — 10, 12 e 15 m — e não repetem o vizinho. Os que fecham o
-    # mapa eram dois corpos empilhados, com a emenda à vista: "não ficaram naturais", Jhon, 20/11. A altura para o lobo
-    # não subir já não é deles: o muro de fora não segura mais a corrida — ``Player.BackedByBarrier``)
-    for k, reg in enumerate(P.regioes(SOLIDOS)):
-        L = reg[0]
-        if L == 'h':
-            for i, ret in enumerate(P.fatiar(reg, 3)):
-                M.encaixar(('House_01', 'House_04', 'House_03')[(i + k) % 3], *ret, yaw=P.frente(ret, SOLIDOS))
-        elif L == 'l':
-            for ret in P.fatiar(reg, 3):
-                x, z = (ret[0] + ret[2]) / 2, (ret[1] + ret[3]) / 2; nome = P.sorteio(x, z, ('House_05', 'House_06', 'House_07'))
-                M.encaixar(nome, *ret, yaw=P.frente(ret, SOLIDOS), colide='malha')
-        elif L == 'q':
-            x0, z0, x1, z1 = P.mundo(*reg[1:]); M.por('House_08', (x0 + x1) / 2, (z0 + z1) / 2, yaw=P.frente((x0, z0, x1, z1), SOLIDOS))
-        else:
-            nome = dict(T='House_02', B='Bank_01', I='Church_01', K='Construction_01', O='Office_01', S='AutoService_01')[L]
-            ret = P.mundo(*reg[1:]); p = K[nome]
-            M.encaixar(nome, *ret, yaw=P.frente(ret, SOLIDOS, (p.tam[0], p.tam[2])))
-
-    # ---- as grades de ferro
-    for xa, za, xb, zb in P.paredes('=', '!', '*')[0]:
-        M.muro('Fence_03', xa, za, xb, zb, 4.2)
-
-    # ---- o que está na rua
-    for L, r, c, x, z in P.celulas('cCxbuotp'):
-        nx, nz = P.corrida(r, c, SOLIDOS + '=!'); ao_x = nx >= nz
-        if L in 'cC':
-            yaw = (90.0 if ao_x else 0.0) + (90.0 if L == 'C' else 0.0) + P.desvio(x, z, 14)
-            M.por(P.sorteio(x, z, CARROS), x, z, yaw=yaw)
-        elif L == 'x':
-            yaw = (0.0 if ao_x else 90.0) + P.desvio(x, z, 8)
-            M.por(P.sorteio(x, z, ('RoadPart_03', 'RoadPart_05')), x, z, yaw=yaw)
-            a = 1.6 if ao_x else 0.0; M.por(P.sorteio(x, z, ('RoadPart_06', 'RoadPart_07', 'RoadPart_02'), 1), x + (0 if ao_x else 2.3), z + (2.3 if ao_x else 0), yaw=yaw)
-        elif L == 'b':
-            g = P.desvio(x, z, 30); M.por('Box_01', x - 0.5, z - 0.3, yaw=g); M.por('Box_02', x + 0.5, z + 0.2, yaw=g + 20); M.por('Box_03', x - 0.3, z - 0.1, y=0.9, yaw=g + 35)
-        elif L == 'u':
-            M.por(P.sorteio(x, z, ('Trash_01', 'Trash_02')), x, z, yaw=(0.0 if ao_x else 90.0)); M.por('Garbage_01', x + (1.6 if ao_x else 0), z + (0 if ao_x else 1.6))
-        elif L == 'o':
-            M.por('Barrel_01', x - 0.35, z); M.por('Barrel_02', x + 0.4, z + 0.3)
-        elif L == 't':
-            nome = P.sorteio(x, z, ('Tree_01', 'Tree_02')); M.por(nome, x, z, yaw=P.desvio(x, z, 180), colide=None); M.barra(x, z, 0.28, 3.0)          # (o tronco: 0,24 m; a caixa de 0,45 segurava tiro de raspão)
-            for i, (dx, dz) in enumerate(((0.7, 0.3), (-0.5, 0.6), (0.1, -0.8), (-0.8, -0.3))): M.por('Grass_01', x + dx, z + dz, yaw=70.0 * i, colide=None)
-            M.por('Plant_01', x + 0.9, z - 0.6, yaw=P.desvio(x, z, 90), colide=None)
-        elif L == 'p':
-            # (a caixa do poste vai no poste, não no meio da peça, que tem o braço de 2,4 m para um lado: a caixa ficava 1,1 m
-            # ao lado do poste, no ar, invisível, e segurava tiro; 20/11)
-            pe = M.por('Light_01', x, z, yaw=(0.0 if ao_x else 90.0), colide=None).pontos(np.zeros((1, 3)))[0]; M.barra(pe[0], pe[2], 0.12, 4.6)
-
-    # ---- o que dá vida à rua, sem colisão: canteiros, placas, lixo e ar-condicionado ao pé dos prédios; bueiros e poças
-    for r, c, x, z, yaw, dist in P.beiras(SOLIDOS):
-        M.grupo()
-        s_ = P.sorte(x, z, 3 + int(yaw)); alto = P.letra(r - (yaw == 0) + (yaw == 180), c - (yaw == 90) + (yaw == -90)) in 'hTBIO'
-        e = dict(colide=None, planta=False)
-        if s_ < 0.07:
-            for i in (-1, 0, 1): M.encostar('FlowerBed_01', x, z, yaw, dist, lado=0.65 * i, **e)
-            M.encostar('Plant_01', x, z, yaw, dist, y=0.1, **e)
-        elif s_ < 0.11: M.encostar('Hydrant', x, z, yaw, dist, folga=0.5, **e)
-        elif s_ < 0.16: M.encostar('RoadSign_01', x, z, yaw, dist, folga=0.25, **e)
-        elif s_ < 0.22: M.encostar('Garbage_01', x, z, yaw, dist, folga=0.1, **e); M.encostar('Wheel_02', x, z, yaw, dist, folga=0.1, lado=1.0, **e)
-        elif s_ < 0.31:
-            # o ar-condicionado só na parede fechada e alta: na frente do prédio em obras (aberto), da banca e da loja
-            # baixa ele ficava pendurado no ar (Jhon, 20/11: "alguns objetos estão flutuando na cidade")
-            if alto:
-                M.encostar('Fan_01', x, z, yaw, dist, y=2.7, folga=0.0, lado=0.4, **e); M.encostar('Fan_01', x, z, yaw, dist, y=5.9, folga=0.0, lado=-0.6, **e)
-            else:
-                for i in range(3): M.encostar('Grass_01', x, z, yaw, dist, folga=0.05 + 0.2 * (i % 2), lado=-0.8 + 0.7 * i, **e)
-        elif s_ < 0.35: M.encostar('Pallet_02', x, z, yaw, dist, folga=0.15, **e); M.encostar('Barrel_01', x, z, yaw, dist, folga=0.1, lado=1.05, **e)
-        elif s_ < 0.44:
-            for i in range(3): M.encostar('Grass_01', x, z, yaw, dist, folga=0.05 + 0.2 * (i % 2), lado=-0.8 + 0.7 * i, **e)
-        elif s_ < 0.47: M.encostar('ATM', x, z, yaw, dist, folga=0.0, **e)
-    M.grupo(fim=True)
-    encostadas = {(r, c) for r, c, *_ in P.beiras(SOLIDOS)}
-    for L, r, c, x, z in P.celulas('.'):
-        if (r, c) in encostadas: continue
-        s_ = P.sorte(x, z, 9)
-        if s_ < 0.03: M.por('Luke_01', x + 0.4, z - 0.3, colide=None, planta=False)
-        elif s_ < 0.06: M.por(P.sorteio(x, z, ('Mud_01', 'Mud_02'), 2), x, z, yaw=P.desvio(x, z, 180), colide=None, planta=False)
-    # as faixas de pedestre nas esquinas da avenida e os postes de luz com os fios, na calçada de fora das ruas norte e sul
-    for xs in (-34.5, -8.5, 6.0, 32.0):
-        for k in range(-4, 5): M.chapa('branco', xs, k * 1.3 - 0.3, xs + 2.5, k * 1.3 + 0.3, y=0.0, alto=0.012)
-    for sinal in (-1, 1):
-        zf = sinal * (Z - 7.9)
-        for i in range(-4, 5):
-            M.por('PowerLines_01', i * 10.0 + 3.0, zf, yaw=90.0, colide=None, planta=False)
-            if i < 4: M.por('PowerLines_02', i * 10.0 + 8.0, zf, y=5.1, escala=(1.25, 1.0, 1.0), colide=None, planta=False)
-
-    # ---- o cruzamento do centro: dois carros e barreiras em cruz, bueiros
-    M.por('OldCar_03', -2.2, 2.4, yaw=30); M.por('OldCar_05', 2.2, -2.4, yaw=210)
-    M.por('RoadPart_03', -6.5, -3.0); M.por('RoadPart_03', 6.5, 3.0)
-    M.por('Luke_01', 3.4, 4.0); M.por('Luke_01', -3.4, -4.0)
-    # ---- a cidade continua para fora do mapa: duas fileiras de prédios em toda a volta (sem colisão)
-    M.arredores(('House_02', 'Bank_01', 'House_04', 'Office_01', 'House_03', 'House_02'), X, Z, folga=3.0, fileiras=2)
-    # ---- o chão em dois níveis: a calçada (o nível zero), o asfalto MEIO_FIO abaixo e o meio-fio entre os dois
-    M.calcadas = calcadas(M)
-    return M
+    """A cena inteira, girada. Devolve a montagem e os pontos de fogo (os tambores acesos)."""
+    D = Demo('fps1'); M = Montagem(D.kit, colisao); centro = np.array([MEIO[0], CHAO, MEIO[1]])
+    for item in D.itens:
+        p, G, E, t, nome = item
+        if nome.startswith('BG_'): continue                                   # o chão de fundo: o mapa tem o dele
+        q = VOLTA @ (t - centro)
+        if nome == 'Barrier_01' and any(x0 < q[0] < x1 and z0 < q[2] < z1 for x0, z0, x1, z1 in ABERTO): continue
+        it = por(M, p, VOLTA @ G, E, q, nome, planta=not nome.startswith(SEM))
+        if nome == 'Construction_01':
+            pe, alto, lados, topo = OBRA_ESCADA; M.rampa(it, pe, alto, lados, eixo=2, ate=float(q[1]) + topo, folga=0.03)
+        if nome in POSTES:
+            largo, alto = POSTES[nome]; pe = it.pontos(np.array([[(p.lo[0] + p.hi[0]) / 2, 0.0, (p.lo[2] + p.hi[2]) / 2]]))[0] if nome != 'Light_01' else it.pontos(np.zeros((1, 3)))[0]
+            M.barra(float(pe[0]), float(pe[2]), largo, alto)
+    return M, [VOLTA @ (np.array(e['pos'], float) - centro) for e in D.efeitos]
 
 
 def montar():
     m = Mapa("cidade", "Cidade", int(2 * X), int(2 * Z))
-    M = desenho()
+    # o chão: asfalto velho de fotografia por baixo de tudo, com o topo 2 cm abaixo do zero, como na Estação. A calçada
+    # do kit fica no zero (o chão da cena, ``CHAO``): com o topo da caixa também no zero, as duas brigavam pelo mesmo
+    # plano e a calçada aparecia em cacos claros sobre o asfalto (Jhon, 27/11: "as calçadas da cidade estão com
+    # glitches"). A pista do kit, 12 cm abaixo, continua por baixo dele; quem pisa é o ``Piso``, no zero.
+    m.material("chao", "asfalto", (0.78, 0.78, 0.80), 3.2)
+    m.caixa("Chao", "Asfalto", (0, -0.27, 0), (520, 0.5, 520), "chao", colide=False)
+    M, fogos = desenho()
+    ocupado = M.ocupacao((-X, -Z), (X, Z))
+    meio = ocupado.reshape(ocupado.shape[0] // 2, 2, ocupado.shape[1] // 2, 2).any((1, 3))                  # células de 50 cm
+    fora = fora_do_anel(meio, 0.5)
+    fora = bolsoes(fora, ocupado, BASES[0], (-X, -Z))          # o beco sem saída colado à beira é lado de fora também
+    # o que fica inteiro do lado de fora não precisa de colisão (ninguém chega lá)
+    for it in M.itens:
+        if not it.colide: continue
+        c = it.cantos(); i0, i1 = int((c[:, 2].min() + Z) / 0.5), int((c[:, 2].max() + Z) / 0.5) + 1; j0, j1 = int((c[:, 0].min() + X) / 0.5), int((c[:, 0].max() + X) / 0.5) + 1
+        if i0 < 0 or j0 < 0 or i1 > fora.shape[0] or j1 > fora.shape[1] or fora[i0:i1, j0:j1].all(): it.colide = None
     M.aplicar(m, "Cidade", "cidade")
-    fechar(m, X, Z, piso=-MEIO_FIO)          # o chão de baixo é o do asfalto; a calçada tem a colisão dela, até o zero
-    for i, (x0, z0, x1, z1) in enumerate(M.calcadas):
-        m.caixa('Colisao', f'Calcada{i + 1}', ((x0 + x1) / 2, -0.5, (z0 + z1) / 2), (x1 - x0, 1.0, z1 - z0), 'kit_colisao', oculta=True, minimapa=False)
-    barrar(m, P, 'hT', 22.0)
+    fechar(m, X, Z, altura=TETO)
+    n = barreiras(m, ~fora, X, Z, TETO)
+    barrados, miolos = fechar_predios(m, M, fora, X, Z, TETO, lambda nome: nome.startswith(ANEL), inicio=n); n += barrados
     m.panorama('cidade', X + 170.0, altura=130.0, base=-6.0)
 
-    g = Grade(M.ocupacao((-X, -Z), (X, Z)), (-X, -Z), 0.25, folga=0.55)
-    a = nascer(m, g, (-47.5, 1.0), AZUL)[0]
-    rotas = dict(
-        ruaNorte=P.rota(a, '12', '76'), avenida=P.rota(a, '345'), ruaSul=P.rota(a, '67', '21'),
-        becos=P.rota(a, '382', '79'), fundos=P.rota(a, '697', '283'), cruzadaNorte=P.rota(a, '12'), cruzadaSul=P.rota(a, '67'),
-        obras=P.rota(a, '1845', '49'),
-    )
+    g = Grade(ocupado, (-X, -Z), 0.25, folga=0.55)
+    g.livre &= ~np.kron(fora, np.ones((2, 2), bool))
+    chao, perto = alcancavel(g, BASES[0])
+    g.livre &= chao
+    a = nascer_em(m, g, BASES[0], AZUL); nascer_em(m, g, BASES[1], 3 - AZUL)
     m._grade = g
     espalhar(m, g, a, quantos=16)          # os pontos do mata-mata: todos contra todos, espalhados pelo mapa
-    for nome, pontos in rotas.items():
-        m.rota(nome, [(x, 0.5, z) for x, z in g.rota(pontos)])
+    def rota(*pts): return [(float(x), 0.5, float(z)) for x, z in g.rota([perto(*a)] + [perto(x, z) for x, z in pts])]
+    for nome, pts in ROTAS.items(): m.rota(nome, rota(*pts))
 
-    luz_de_jogo(m, 'dia', 38, 42)
+    luz_de_jogo(m, 'dia', 38, 42, alcance=150.0, nuvens=True)
     lampadas(m, [M])
+    for i, q in enumerate(fogos, 1): m.luz("Luzes", f"Fogo{i}", (float(q[0]), float(q[1]) + 0.35, float(q[2])), (1.0, 0.55, 0.22), 2.2, 6.0)
+    print(f"  cidade: {n} barreiras, {len(m.luzes)} luzes, {int(chao.sum() * g.cel ** 2)} m² de chão alcançável")
+    if os.environ.get('MAPA_GRADE'):
+        g.imagem(os.environ['MAPA_GRADE'], marcas=[(x, z, (40, 90, 255)) for x, _, z in m.spawns[AZUL]] + [(x, z, (255, 120, 30)) for x, _, z in m.spawns[3 - AZUL]] + [(x, z, (20, 160, 20)) for x, z in m.livres],
+                 escala=2, rotas=[[(x, z) for x, _, z in r] for _, r in m.rotas])
     return m
+
+
+# onde nasce cada time, fora da linha de tiro da avenida: o azul debaixo da cobertura do estacionamento, junto à
+# prefeitura; o laranja no fim da avenida, atrás da fileira de barreiras, ao pé da torre
+BASES = ((-27.0, -8.0), (37.0, 6.0))
+# as rotas dos bots, a partir de onde nasce o azul (cada ponto cai no chão livre mais perto)
+ROTAS = dict(
+    avenida=[(-30, 6), (-10, 6), (10, 6), (30, 6), (37, 6)],
+    norte=[(-25, -30), (-5, -31), (8, -25), (18, -15), (22, 3), (37, 6)],
+    sul=[(-30, 6), (-28, 20), (-15, 22), (-8, 33), (-5, 12), (10, 6), (37, 6)],
+    estacionamento=[(-10, 6), (0, -5), (12, -5), (22, -10), (22, 3), (37, 6)],
+    patio=[(-30, 6), (-33, 25), (-25, 34), (-8, 34), (-3, 20), (-12, 12), (-30, 6)],
+    volta=[(-25, -30), (-5, -31), (-2, -15), (5, 6), (37, 6)],
+)

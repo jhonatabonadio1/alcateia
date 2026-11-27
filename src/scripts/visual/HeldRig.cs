@@ -367,7 +367,7 @@ public partial class HeldRig : Node3D
 		_restHold = 0;
 		// Abaixar a arma para correr e trazê-la de volta leva o mesmo que na
 		// primeira pessoa (ViewModel.RigSprintIn e RigSprintOut).
-		if (Playing != rest || !Player.IsPlaying()) Play(rest, 0, run ? 0.26 : Playing == "correr" ? 0.23 : 0.2);
+		if (Playing != rest || !Player.IsPlaying()) Play(rest, 0, run ? 0.20 : Playing == "correr" ? 0.28 : 0.2);
 	}
 
 	private double _restHold;

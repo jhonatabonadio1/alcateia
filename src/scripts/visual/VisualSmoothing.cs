@@ -77,6 +77,18 @@ public partial class VisualSmoothing : Node
 		_from += moved;
 	}
 
+	/// <summary>
+	/// O corpo subiu ou desceu um degrau de uma vez (<paramref name="moved"/>,
+	/// na vertical), e o dono já cuida de levar o olho até lá devagar
+	/// (<c>Player.EaseStep</c>). Esse pedaço do passo não é repartido pelo
+	/// quadro. Sem isto a compensação contava duas vezes: o desenho ainda
+	/// mostrava o corpo embaixo e a cabeça já tinha descido o degrau, e a
+	/// câmera afundava o degrau inteiro (17 cm) num quadro e voltava no
+	/// seguinte, a cada degrau (Jhon, 27/11: "ao subir escada com o humano,
+	/// tá mexendo muito a câmera para cima e para baixo").
+	/// </summary>
+	public void Stepped(Vector3 moved) => _from += moved;
+
 	/// <summary>Uma peça solta (<c>TopLevel</c>) presa ao desenho do corpo: anda com
 	/// ele (veja <see cref="_loose"/>). Sai sozinha quando é liberada.</summary>
 	public void Follow(Node3D loose)

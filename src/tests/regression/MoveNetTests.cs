@@ -73,7 +73,7 @@ public sealed class MoveNetTest : WallNetTest
 		}
 
 		var server = new ServerBody(1, 0, world.SpawnBody("Servidor", Teams.Blue));
-		server.ApplyLoadout(Profile.OwnedTattoos());
+		server.ApplyLoadout(Profile.OwnedWolfUpgrades());
 
 		// O boneco de quem vê de outra máquina. Não colide: ocupa o mesmo
 		// lugar do jogador deste teste.

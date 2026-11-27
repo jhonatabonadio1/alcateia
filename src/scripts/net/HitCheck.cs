@@ -269,6 +269,62 @@ public sealed class HitCheck
 	/// mais 30%, todos na cabeça, e uns disparos de folga — o que passa
 	/// disso é atirar mais rápido ou mais forte do que a arma deixa.
 	/// </summary>
+	/// <summary>O dano de um golpe do lobo de um bot, no máximo: a máquina do
+	/// dono move o bot e o servidor não tem a arma dele — vale o teto do lobo
+	/// do jogo (o bote no ar, com folga).</summary>
+	public const float BotWolfMax = 520f;
+
+	/// <summary>O maior golpe da faca de um bot (a estocada pelas costas, na cabeça).</summary>
+	public const float BotKnifeMax = 420f;
+
+	/// <summary>
+	/// O teto e o ritmo do dano de um bot (27/11): quem move o bot é a máquina
+	/// do dono da sala, e até aqui o acerto dele só passava pela origem e pela
+	/// parede — um jogo adulterado mandava os bots dele darem 1000 de dano,
+	/// quantas vezes quisesse por segundo. Agora vale o máximo da arma que o
+	/// bot diz usar (a cabeça entra no teto), o alcance dela, e o mesmo balde
+	/// de dano por segundo dos jogadores.
+	/// </summary>
+	public HitVerdict BotLimits(in ClaimedHit hit, float distance, DamageBudget budget, double now, ref float amount)
+	{
+		float max, head = 1f, rate, burst;
+		switch (hit.Cause)
+		{
+			case KillCause.Gun:
+			case KillCause.Headshot:
+				WeaponDefinition def = Arsenal.Get(hit.WeaponId);
+				if (def == null) return HitVerdict.WrongWeapon;
+				if (distance > def.Range + HitRules.RangeSlack) return HitVerdict.OutOfRange;
+				head = def.HeadshotMultiplier;
+				max = def.Damage * CombatRules.FirearmDamageScale * Math.Max(def.Pellets, 1) + 1f;
+				rate = max * head * Math.Max(def.Rpm, 60f) / 60f * 1.3f;
+				burst = max * head * 3f;
+				break;
+			case KillCause.Knife:
+				max = BotKnifeMax;
+				rate = max * 3f;
+				burst = max * 4f;
+				break;
+			case KillCause.Wolf:
+				max = BotWolfMax;
+				rate = max * 3f;
+				burst = max * 4f;
+				break;
+			case KillCause.Grenade:
+				LoadGrenade();
+				max = _grenadeDamage;
+				rate = max * 4f / 2f;
+				burst = max * 8f;
+				break;
+			default:
+				return HitVerdict.WrongWeapon;
+		}
+		amount = Math.Min(amount, max * (hit.Headshot ? head : 1f) * DamageSlack);
+		if (!(amount > 0)) return HitVerdict.NotAllowed;
+		budget.Configure(rate, burst);
+		return budget.Spend(amount, now) ? HitVerdict.Ok : HitVerdict.TooFast;
+	}
+
 	private static void ConfigureBudget(DamageBudget budget, KillCause cause, WeaponDefinition def, float max, float headMultiplier, ServerBody shooter)
 	{
 		switch (cause)
@@ -336,6 +392,9 @@ public sealed class HitCheck
 
 	/// <summary>Nada sólido do mapa entre os dois pontos (os corpos de
 	/// jogador não contam: a bala do jogo passa por aliado).</summary>
+	/// <summary>Nada do mapa entre os dois pontos (os corpos não contam).</summary>
+	public bool ClearLine(Vector3 from, Vector3 to) => Clear(from, to);
+
 	private bool Clear(Vector3 from, Vector3 to)
 	{
 		PhysicsDirectSpaceState3D space = _world.Space;

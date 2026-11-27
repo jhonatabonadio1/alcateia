@@ -526,15 +526,19 @@ class Grade:
 
 
 # ---------------------------------------------------------------- o que todo mapa de kit tem
-def fechar(m, x, z, altura=22.0, margem=8.0, piso=0.0):
+def fechar(m, x, z, altura=22.0, margem=8.0, piso=0.0, paredes=True):
     """O chão e as paredes invisíveis de um mapa de −x a x e de −z a z (``MapBounds``: os corpos ``Limite…`` e ``Piso``).
-    ``piso``: a altura do chão (abaixo de zero quando a rua é rebaixada e a calçada tem a colisão dela — a Cidade)."""
+    ``piso``: a altura do chão (abaixo de zero quando a rua é rebaixada e a calçada tem a colisão dela — a Cidade).
+    ``margem``: quanto o chão passa da borda (negativa: o chão acaba antes dela). ``paredes=False``: a beira é de
+    verdade e quem passa dela cai (a Obra, 27/11) — as ``Limite…`` vão assim mesmo, mas sem colidir com nada: só dizem
+    à câmera do espectador até onde ela vai (Jhon, 27/11: "o espectador não pode sair dos limites do mapa")."""
     if 'kit_colisao' not in m.materiais: m.material('kit_colisao', None, (0.5, 0.5, 0.5))
     m.caixa('Colisao', 'Piso', (0, piso - 0.5, 0), (2 * x + 2 * margem, 1, 2 * z + 2 * margem), 'kit_colisao', oculta=True)
     for nome, c, t in (('LimiteOeste', (-x - 0.5, altura / 2, 0), (1, altura, 2 * z + 2)), ('LimiteLeste', (x + 0.5, altura / 2, 0), (1, altura, 2 * z + 2)),
                        ('LimiteSul', (0, altura / 2, -z - 0.5), (2 * x + 2, altura, 1)), ('LimiteNorte', (0, altura / 2, z + 0.5), (2 * x + 2, altura, 1)),
                        ('LimiteTeto', (0, altura + 0.5, 0), (2 * x + 2, 1, 2 * z + 2))):
-        m.caixa('Colisao', nome, c, t, 'kit_colisao', oculta=True)
+        if paredes: m.caixa('Colisao', nome, c, t, 'kit_colisao', oculta=True)
+        else: m.caixa('Colisao', nome, c, t, 'kit_colisao', oculta=True, minimapa=False, so_espectador=True)
 
 
 def barrar(m, P, letras, altura):
@@ -625,16 +629,37 @@ CLIMAS = {
 }
 
 
-def luz_de_jogo(m, clima, yaw, queda, giro_ceu=74.0, alcance=170.0, **mais):
+# O céu calculado de cada clima (``assets/mapas/ceus/ceu_nuvens.gdshader``; os mapas de 27/11): as cores do ar e a
+# camada de nuvens. ``dia``: cúmulos brancos num azul fundo; ``deserto``: o horizonte claro de poeira e nuvens altas,
+# ralas e esfiapadas; ``tarde``: o sol baixo acende as nuvens por baixo, de laranja, contra um céu que escurece.
+CEUS = {
+    # (as cores do alto são mais fundas do que se quer ver: o mapeamento de cor ACES clareia e tira cor do azul)
+    'dia':     dict(topo=(0.04, 0.17, 0.60), horizonte=(0.56, 0.74, 0.95), chao=(0.40, 0.42, 0.45), curva=0.55, clarao=0.4,
+                    nuvens=dict(cobertura=0.46, maciez=0.20, densidade=1.7, escala=0.10, espessura=0.11, vento=(0.006, 0.0025),
+                                nuvem_luz=(1.0, 0.98, 0.95), nuvem_sombra=(0.50, 0.58, 0.74), contra_luz=1.3)),
+    # (o horizonte do deserto é claro e quase sem cor: o amarelo da poeira misturado ao azul do alto dava lilás)
+    'deserto': dict(topo=(0.04, 0.22, 0.62), horizonte=(0.80, 0.85, 0.88), chao=(0.62, 0.52, 0.38), curva=0.5, clarao=0.55,
+                    nuvens=dict(cobertura=0.30, maciez=0.30, densidade=1.2, escala=0.07, espessura=0.06, vento=(0.004, 0.0015),
+                                nuvem_luz=(1.0, 0.97, 0.90), nuvem_sombra=(0.72, 0.70, 0.72), contra_luz=1.6)),
+    'tarde':   dict(topo=(0.07, 0.12, 0.40), horizonte=(1.0, 0.60, 0.34), chao=(0.34, 0.30, 0.30), curva=0.6, clarao=0.8, disco=10.0,
+                    nuvens=dict(cobertura=0.52, maciez=0.24, densidade=1.6, escala=0.09, espessura=0.13, vento=(0.005, 0.002),
+                                nuvem_luz=(1.0, 0.84, 0.62), nuvem_sombra=(0.36, 0.30, 0.48), contra_luz=2.2)),
+}
+
+
+def luz_de_jogo(m, clima, yaw, queda, giro_ceu=74.0, alcance=170.0, nuvens=False, **mais):
     """A luz de um mapa de kit ao ar livre: ``clima`` é uma linha de ``CLIMAS``; ``yaw``/``queda`` o sol. ``mais``
-    troca qualquer valor do ambiente (``exposicao=…``, ``neblina=…``)."""
+    troca qualquer valor do ambiente (``exposicao=…``, ``neblina=…``). ``nuvens``: o céu calculado do clima
+    (``CEUS``), com nuvens que andam, no lugar da fotografia parada."""
     c = CLIMAS[clima]
-    m.ambiente = dict(ceu=dict(hdri="dia_claro", giro=giro_ceu, energia=1.0, ambiente=0.25),
+    m.ambiente = dict(ceu=dict(CEUS[clima], energia=1.0, ambiente=0.25) if nuvens else dict(hdri="dia_claro", giro=giro_ceu, energia=1.0, ambiente=0.25),
                       luz=c['sombra'], luz_energia=0.8, exposicao=0.92, branco=6.5,
                       brilho=0.7, brilho_bloom=0.12, brilho_limiar=1.0,
                       ssao=2.4, ssao_raio=1.6, ssao_potencia=1.5, ssao_luz=0.35, ssil=1.0,
                       contraste=1.06, saturacao=1.2,
                       neblina=dict(cor=c['ar'], densidade=0.0018, ceu=0.15, aerea=0.55, sol=0.25))
+    # (o céu calculado já tem o ar do horizonte dele: a névoa do mapa não entra no céu — com ela o azul virava lilás)
+    if nuvens: m.ambiente['neblina'] = dict(m.ambiente['neblina'], ceu=0.0)
     m.ambiente.update(mais)
     m.sol = dict(yaw=yaw, queda=queda, cor=c['sol'], energia=c['energia'], alcance=alcance, tamanho=0.8)
     m.preenchimento = dict(yaw=yaw, queda=-38, cor=c['volta'], energia=0.6)

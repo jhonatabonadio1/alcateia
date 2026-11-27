@@ -57,10 +57,37 @@ public sealed class Corpse
 		_shape.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
 	}
 
+	private bool _fallingAway;
+
+	/// <summary>
+	/// Quem morreu caindo do mapa continua caindo (Jhon, 27/11: "ao cair no
+	/// precipício, o corpo deve continuar caindo"): o embalo que tinha, mais a
+	/// gravidade, sem colisão — embaixo só há nuvem. Até 27/11 o corpo parava
+	/// pendurado no limite de queda. Abaixo de <paramref name="floor"/>, já
+	/// sumido na neblina, ele para (<see cref="Drop"/>): cair para sempre só
+	/// faria os números crescerem.
+	/// </summary>
+	public void FallAway(double delta, float gravity, float floor)
+	{
+		if (Settled) return;
+		if (!_fallingAway)
+		{
+			_fallingAway = true;
+			_shape.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
+		}
+
+		Vector3 velocity = _body.Velocity;
+		velocity.Y -= gravity * (float)delta;
+		_body.Velocity = velocity;
+		_body.GlobalPosition += velocity * (float)delta;
+		if (_body.GlobalPosition.Y < floor) Drop();
+	}
+
 	/// <summary>Renasceu: a colisão volta.</summary>
 	public void Revive()
 	{
 		Settled = false;
+		_fallingAway = false;
 		_shape.SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
 	}
 }

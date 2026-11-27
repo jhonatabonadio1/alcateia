@@ -118,14 +118,16 @@ fi
 if [ "${ALCATEIA_NETCODE:-}" = "autoritativo" ]; then
 	conferir "$PASTA/a.log" "modo=autoritativo" "o criador jogou a partida autoritativa (o servidor moveu os corpos)"
 	conferir "$PASTA/b.log" "modo=autoritativo" "o visitante também"
-	conferir "$PASTA/servidor.log" "autoritativa" "o servidor de partida abriu a partida com mundo e corpos"
+	conferir "$PASTA/servidor.log" "authoritative" "o servidor de partida abriu a partida com mundo e corpos"
+	# (O log do servidor de partida é em inglês; até 27/11 este trecho ainda
+	# procurava as frases em português e reprovava com tudo certo.)
 	# Vida e acerto no servidor (decisão 0016): os abates acima já foram
 	# decididos lá; aqui, o criador tentou trapacear e o visitante não.
 	conferir "$PASTA/a.log" "forjados=3 " "o criador mandou três acertos inventados (de 60 m acima do próprio corpo)"
-	conferir "$PASTA/servidor.log" "o tiro saiu de longe do corpo" "o servidor recusou os acertos inventados"
-	conferir "$PASTA/servidor.log" "suspeitos por jogador: .*RoboA[^ ,]* 3[,.]" "só os três inventados contaram contra o criador (nenhum acerto honesto recusado)"
-	conferir "$PASTA/servidor.log" "suspeitos por jogador: .*RoboB[^ ,]* 0[,.]" "e nenhum contra o visitante"
-	conferir "$PASTA/servidor.log" "Acertos em .*: [1-9][0-9]* valeram" "e os acertos de verdade valeram no servidor"
+	conferir "$PASTA/servidor.log" "shot started too far from the body" "o servidor recusou os acertos inventados"
+	conferir "$PASTA/servidor.log" "suspicious per player: .*RoboA[^ ,]* 3[,.]" "só os três inventados contaram contra o criador (nenhum acerto honesto recusado)"
+	conferir "$PASTA/servidor.log" "suspicious per player: .*RoboB[^ ,]* 0[,.]" "e nenhum contra o visitante"
+	conferir "$PASTA/servidor.log" "Hits in .*: [1-9][0-9]* accepted" "e os acertos de verdade valeram no servidor"
 fi
 
 # Como nos testes de regressão: erro no Output reprova, mesmo com o resto certo.

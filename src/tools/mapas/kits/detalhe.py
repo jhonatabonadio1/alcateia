@@ -143,6 +143,14 @@ def madeira(f):
     return out
 
 
+def palete_carregado(f):
+    """O palete carregado de blocos da Obra (``Pallet_02``, montado em ``kits/demo.py``): madeira até o topo do
+    palete (16 cm), tijolo acima."""
+    out = madeira(f)
+    out[f.y > 0.16] = C["tijolo"]
+    return out
+
+
 def banca(f):
     """Barraca de feira, tenda: madeira na armação, pano no que é de cor viva ou claro."""
     out = madeira(f)
@@ -311,7 +319,7 @@ PECAS = [
     ('fps6', r'MetalTile', so('metal_pintado')),
     # ---- estação (fps5)
     ('fps5', r'Train', trem), ('fps5', r'Railway', trilho), ('fps5', r'(Roof|SmallRoof)', so('telhado')),
-    ('fps5', r'Wall2?_|WallCorner|Building|HousePart|WallDecor|Window', predio_da_estacao), ('fps5', r'Stairs', escada_de_concreto),
+    ('fps5', r'Cube$', so('vidro')), ('fps5', r'Wall\d?_|WallCorner|WallPart|Building|HousePart|WallDecor|Window', predio_da_estacao), ('fps5', r'Stairs', escada_de_concreto),
     ('fps5', r'Platform', metal), ('fps5', r'Barrier', so('concreto')),
     # ---- mato (fps3) e o que vale para todos
     (None, r'(Tree|PalmTree|Plant|Grass|Mushroom)', planta), (None, r'Log', so('madeira')), (None, r'FlowerBed', canteiro),
@@ -321,7 +329,7 @@ PECAS = [
     (None, r'(Car_|OldCar)', veiculo), (None, r'Wheel', roda),
     (None, r'RoadPart', so('concreto')), (None, r'Mud', so('terra')), (None, r'Luke', so('metal_cru')),
     (None, r'PowerLines_01', poste_de_madeira), (None, r'PowerLines', so('borracha')),
-    (None, r'(Box|Pallet|WoodenPlank|Bench|Table|Furniture)', madeira),
+    ('fps6', r'Pallet_02$', palete_carregado), (None, r'(Box|Pallet|WoodenPlank|Bench|Table|Furniture)', madeira),
     (None, r'Garbage', lixo), (None, r'Trash', cacamba),
     (None, r'Light', luminaria),
     (None, r'(ATM|AmoBox|Barrel|Fan|Fence|Hydrant|RoadSign|TrafficLight|Generator|VendingMachine|PhoneBooth|Scaffolding|TowerCrane|Clock|Time|Sign|ConstructionStairs)', metal),

@@ -28,10 +28,12 @@ public sealed class ServerHealthTest : RegressionTest
 		public int Count(long peer, byte type) => Sent.Count(s => s.Peer == peer && s.Packet[0] == type);
 	}
 
-	private const long Shooter = 1, Clear = 2, Hidden = 3;
+	private const long Shooter = 1, Clear = 2, Hidden = 3, BotOfShooter = -5;
 	private const long PeerShooter = 101, PeerClear = 102, PeerHidden = 103;
 
 	private HostedMatch _match;
+	/// <summary>A forma que o "jogo" de cada um conta no comando (sem nada: humano).</summary>
+	private readonly Dictionary<long, byte> _forms = new();
 	private double _worstStepMs;
 	private uint _tick;
 	private readonly Dictionary<long, (uint Seq, InputCommand[] Recent, byte Epoch, Vector3 Spawn, float Yaw, float Pitch)> _input = new();
@@ -67,7 +69,9 @@ public sealed class ServerHealthTest : RegressionTest
 
 		var referee = new Referee(new[]
 		{
-			(Shooter, "Atirador", Referee.Blue, 0L), (Clear, "Alvo", Referee.Orange, 0L), (Hidden, "Escondido", Referee.Orange, 0L)
+			(Shooter, "Atirador", Referee.Blue, 0L), (Clear, "Alvo", Referee.Orange, 0L), (Hidden, "Escondido", Referee.Orange, 0L),
+			// Um bot do atirador: quem o move (e fala por ele) é a máquina do dono.
+			(BotOfShooter, "Bot", Referee.Blue, Shooter)
 		}, 50, 600, false, countdown: 0);
 		var link = new Link();
 		_match = new HostedMatch("teste", referee, link, world);
@@ -102,6 +106,55 @@ public sealed class ServerHealthTest : RegressionTest
 		// Até 25/11 o teto do servidor esquecia a escala e cortava a bala honesta (54 → 29 no AR-15).
 		b.Check(Mathf.Abs(before - target.Health.Hp - honest) < 0.5f, $"e valeu inteiro, como no jogo ({before - target.Health.Hp:0.#} de {honest:0.#})");
 		b.Check(link.Count(PeerClear, NetWire.Damage) == 1, "e a vítima recebeu como ficou (Damage)");
+		// 27/11: os outros ficam sabendo na hora (a barra de vida e a queda do
+		// alvo não esperam a notícia de vida da vítima).
+		b.Check(link.Count(PeerShooter, NetWire.Hurt) == 1 && link.Count(PeerHidden, NetWire.Hurt) == 1 && link.Count(PeerClear, NetWire.Hurt) == 0,
+			"e os outros dois foram avisados na hora (Hurt), no mesmo passo");
+
+		// O tiro de um bot (27/11): o dono da sala move o bot e fala por ele. O
+		// dano tem o teto da arma, o ritmo dela, e o bot que "aparece" noutro
+		// lugar não acerta ninguém por um segundo.
+		BotState(a);
+		await Steps(b, 3);
+		float hpBot = target.Health.Hp + target.Health.Shield;
+		int acceptedBot = _match.HitsAccepted;
+		BotHit(Clear, 900f, a + Vector3.Up * 0.6f, "m4a4");
+		await Steps(b, 3);
+		float byBot = hpBot - (target.Health.Hp + target.Health.Shield);
+		b.Check(_match.HitsAccepted == acceptedBot + 1 && byBot > 0 && byBot <= (m4.Damage * CombatRules.FirearmDamageScale + 1) * 1.06f,
+			$"o bot dizendo 900 de dano com a M4A4: vale só o máximo da arma ({byBot:0.#})");
+		int fastBot = Refused(HitVerdict.TooFast);
+		// (o alvo com vida de sobra só para a rajada não o matar: o que se mede é o ritmo)
+		Health th = target.Health;
+		float keepHp = th.Hp, keepMax = th.MaxHp, keepShield = th.Shield, keepMaxShield = th.MaxShield;
+		th.Mirror(5000f, 5000f, 0f, keepMaxShield, false);
+		for (int i = 0; i < 40; i++) BotHit(Clear, 36f, a + Vector3.Up * 0.6f, "m4a4");
+		await Steps(b, 3);
+		th.Mirror(keepHp, keepMax, keepShield, keepMaxShield, false);
+		b.Check(Refused(HitVerdict.TooFast) - fastBot >= 30, $"40 tiros do bot no mesmo instante: o ritmo recusa quase todos ({Refused(HitVerdict.TooFast) - fastBot})");
+
+		// Contra wallhack (27/11, HostedMatch.Sight): o estado do mundo de cada
+		// um só traz o lugar do inimigo que ele pode ver ou ouvir. O atirador vê
+		// o alvo e não vê o escondido; o escondido não vê o atirador; o aliado,
+		// sempre. Quem ataca se ouve: passa a ser contado.
+		if (a.DistanceTo(behind.Value) > SightRules.QuietRadius + 1f)
+		{
+			await Steps(b, SightRules.HoldTicks + SightRules.LoudTicks + 12);
+			b.Check(!Placed(link, PeerHidden, Shooter) && Placed(link, PeerHidden, Clear),
+				$"o escondido não recebe o lugar do atirador atrás da parede, e recebe o do aliado (atirador {Placed(link, PeerHidden, Shooter)}, aliado {Placed(link, PeerHidden, Clear)})");
+			b.Check(Placed(link, PeerClear, Shooter), "o alvo, à vista do atirador, recebe o lugar dele");
+			// O atirador é o dono de um bot: a máquina dele move o bot, que precisa saber de todos.
+			b.Check(Placed(link, PeerShooter, Clear) && Placed(link, PeerShooter, Hidden), "o dono de bots recebe o lugar de todos");
+			BinaryWriter shot = NetWire.Begin(NetWire.Attack, out MemoryStream shotStream);
+			shot.Write((byte)Slot.Primary); shot.Write(0f); shot.Write(0f);
+			Receive(PeerShooter, shotStream.ToArray());
+			await Steps(b, SightRules.EveryTicks + 2);
+			b.Check(Placed(link, PeerHidden, Shooter), "o atirador atirou: ouve-se, e o escondido passa a receber o lugar dele");
+			await Steps(b, SightRules.HoldTicks + SightRules.LoudTicks + 12);
+			b.Check(!Placed(link, PeerHidden, Shooter), "passado o som, deixa de receber");
+			RegressionBench.Note($"linha de visão: {_match.SightRays} raios em {_tick} passos ({_match.SightRays / (double)_tick:0.0} por passo, 3 jogadores); estados sem o lugar: {_match.HiddenStates}");
+		}
+		else RegressionBench.Note("o escondido ficou perto demais do atirador para o filtro de visão: não conferido aqui");
 
 		// 2. Através da parede: mira no escondido, que está atrás de algo sólido.
 		var onClear = _input[Shooter];
@@ -216,6 +269,38 @@ public sealed class ServerHealthTest : RegressionTest
 		_input[Clear] = _input[Clear] with { Epoch = (byte)(epoch + 2), Spawn = home };
 		await Steps(b, 10);
 		b.Check(target.Alive && target.Health.IsProtected, "na base do próprio time: renasce, protegido");
+		// O bot que "aparece" noutro lugar (o dono o teleportou): o acerto dele
+		// não vale por um segundo.
+		BotState(a);
+		await Steps(b, 1);
+		int originBot = Refused(HitVerdict.BadOrigin);
+		Vector3 far = seen.Value + (a - seen.Value).Normalized() * 2f;
+		BotState(far);
+		await Steps(b, 1);
+		BotHit(Clear, 20f, far + Vector3.Up * 0.6f, "m4a4");
+		await Steps(b, 3);
+		b.Check(_match.BotJumps == 1 && Refused(HitVerdict.BadOrigin) == originBot + 1,
+			$"o bot teleportado para perto do alvo ({a.DistanceTo(far):0.#} m num passo): o acerto dele não vale ({_match.BotJumps} salto, {Refused(HitVerdict.BadOrigin) - originBot} recusa)");
+
+		// A forma (FormAudit, 27/11): o jogo conta "lobo" de repente, sem a
+		// transformação — o corpo do servidor ainda está virando; e a garra de
+		// quem não é lobo aqui não vale.
+		ServerBody cheat = Body(world, Shooter);
+		_forms[Shooter] = (byte)Form.Wolf;
+		await Steps(b, 6);
+		b.Check(cheat.Form.Current == Form.ShiftingToWolf && cheat.RefusedForms == 1,
+			$"lobo sem transformar: o servidor ainda o tem virando ({cheat.Form.Current}, {cheat.RefusedForms} recusa)");
+		await Steps(b, 40);
+		b.Check(cheat.Form.Current == Form.Wolf, $"passado o tempo da transformação, é lobo ({cheat.Form.Current})");
+		_forms[Shooter] = (byte)Form.Human;
+		await Steps(b, 30);
+		_forms[Shooter] = (byte)Form.Wolf;
+		await Steps(b, 60);
+		b.Check(cheat.Form.Current == Form.Human && cheat.RefusedForms == 2,
+			$"lobo de novo meio segundo depois de voltar (a espera são 20 s): continua humano no servidor ({cheat.Form.Current}, {cheat.RefusedForms} recusas)");
+		_forms.Remove(Shooter);
+		await Steps(b, 3);
+
 		b.Check(referee.Find(Shooter).RejectedHits >= 4, $"as recusas contam contra o atirador ({referee.Find(Shooter).RejectedHits})");
 		b.Check(_match.Result("teste")["players"].AsArray().Any(p => p["rejectedHits"]?.GetValue<int>() > 0), "e vão no resultado da partida");
 
@@ -243,7 +328,8 @@ public sealed class ServerHealthTest : RegressionTest
 				var c = new InputCommand
 				{
 					Seq = s.Seq, Yaw = Quant.Yaw(s.Yaw), Pitch = Quant.Pitch(s.Pitch), Epoch = s.Epoch,
-					HeldSlot = (byte)Slot.Primary, HasSpawn = true, Spawn = s.Spawn.ToNumerics()
+					HeldSlot = (byte)Slot.Primary, HasSpawn = true, Spawn = s.Spawn.ToNumerics(),
+					Form = _forms.GetValueOrDefault(account)
 				};
 				s.Recent[s.Seq % InputCommand.Redundancy] = c;
 				_input[account] = s;
@@ -280,6 +366,51 @@ public sealed class ServerHealthTest : RegressionTest
 		w.Write(_input[shooter].Seq + 1);
 		w.Write((double)_tick - NetRates.InterpolationDelay * NetRates.TickRate);
 		Receive(PeerOf(shooter), stream.ToArray());
+	}
+
+	/// <summary>Onde o bot do atirador está, como a máquina do dono conta.</summary>
+	private void BotState(Vector3 at)
+	{
+		var state = new NetState
+		{
+			Position = at, Grounded = true, Form = (byte)Form.Human, Slot = (byte)Slot.Primary, Hp = 200, MaxHp = 200,
+			Primary = "m4a4", Secondary = "deagle", HasGear = true
+		};
+		BinaryWriter w = NetWire.Begin(NetWire.BotState, out MemoryStream stream);
+		w.Write(BotOfShooter);
+		state.Write(w);
+		Receive(PeerShooter, stream.ToArray());
+	}
+
+	/// <summary>Um acerto que a máquina do dono diz que o bot dele deu.</summary>
+	private void BotHit(long target, float amount, Vector3 from, string weapon)
+	{
+		BinaryWriter w = NetWire.Begin(NetWire.BotHit, out MemoryStream stream);
+		w.Write(BotOfShooter);
+		w.Write(target);
+		w.Write(amount);
+		w.Write(false);
+		w.Write((byte)KillCause.Gun);
+		w.Write(weapon);
+		w.Write(from);
+		Receive(PeerShooter, stream.ToArray());
+	}
+
+	/// <summary>No último estado do mundo mandado a esta ligação, o corpo desta
+	/// conta veio com o lugar (<see cref="EntityFlags.Present"/>)?</summary>
+	private bool Placed(Link link, long peer, long account)
+	{
+		byte[] packet = link.Sent.LastOrDefault(s => s.Peer == peer && s.Packet[0] == NetWire.Snapshot).Packet;
+		if (packet == null) return false;
+		var r = new PacketReader(packet.AsSpan(1));
+		int count = SnapshotWire.ReadHeader(ref r, out _, out _);
+		byte index = _match.BodyOf(account).Index;
+		for (int i = 0; i < count; i++)
+		{
+			EntityState e = EntityState.Read(ref r);
+			if (e.Index == index) return e.Has(EntityFlags.Present);
+		}
+		return false;
 	}
 
 	private void DiedPacket(long peer, long killer)

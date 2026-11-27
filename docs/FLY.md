@@ -192,8 +192,8 @@ git tag v0.4.0
 git push origin v0.4.0
 ```
 
-O `lancamento.yml` não roda os testes (desde 26/11: eles rodam no push do
-ramo, pelo `testes.yml`, e a tag não espera por eles), sobe o servidor, espera o `/health`, constrói a
+O `lancamento.yml` roda os testes (inclusive a checagem de que a semente
+do painel está em dia), sobe o servidor, espera o `/health`, constrói a
 imagem da partida e troca nas máquinas. As paradas trocam na hora. As
 ligadas: se o `/health` do servidor diz que não há partida em curso
 (`fleet.matches` 0), trocam na hora também (reiniciam na imagem nova em

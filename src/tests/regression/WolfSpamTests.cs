@@ -50,6 +50,10 @@ public sealed class WolfSpamTest : RegressionTest
 			double clock = 0;
 			void OnDamaged(float amount, Vector3 from) => hits.Add((clock, amount));
 			target.Damaged += OnDamaged;
+			int started = 0;
+			var where = new List<string>();
+			void OnMove(int move) { if (move == (int)WolfMove.Leap) { started++; Vector3 at = b.Player.GlobalPosition - bot.GlobalPosition; where.Add($"{clock:0.00}:({at.X:0.0},{at.Y:0.0},{at.Z:0.0})"); } }
+			w.WolfMoveStarted += OnMove;
 
 			const double span = 4.0;
 			int frame = 0;
@@ -93,6 +97,8 @@ public sealed class WolfSpamTest : RegressionTest
 			}
 			RegressionBench.ReleaseAll();
 			target.Damaged -= OnDamaged;
+			w.WolfMoveStarted -= OnMove;
+			RegressionBench.Note($"{mode}: botes saídos {started}, onde (do alvo): {string.Join(" ", where)}");
 
 			double minGap = hits.Count > 1 ? hits.Zip(hits.Skip(1), (a, c) => c.At - a.At).Min() : double.NaN;
 			float strike = w.StrikeSpacing;
@@ -107,7 +113,13 @@ public sealed class WolfSpamTest : RegressionTest
 				b.AtLeast(strike - frameTime * 1.5, minGap, $"{mode}: nenhum golpe a menos de {RegressionBench.F(strike)} s do anterior (s)");
 			b.AtMost(System.Math.Floor(span / strike) + 1, hits.Count, $"{mode}: golpes em {span:0} s, no máximo um a cada {RegressionBench.F(strike)} s");
 			b.AtMost(System.Math.Floor(span / System.Math.Max(w.LeapCooldown, 0.01f)) + 1, botes, $"{mode}: botes em {span:0} s, no máximo um a cada {RegressionBench.F(w.LeapCooldown)} s");
-			if (mode == "pulo-bote") b.AtLeast(2, botes, "pulando e apertando o secundário, o bote sai");
+			// Os botes que saíram (não só os que bateram), contra o mesmo teto. Desde 27/11 o
+			// bote sai a 0,3 m do chão (Jhon: "posso pular e já apertar para atacar, mas não a
+			// ponto de floodar"): o primeiro bate, e o lobo, que não é reposto neste modo, passa
+			// por cima do alvo parado — os seguintes saem no compasso e caem longe dele. O que
+			// este teste guarda é o compasso: por isso conta os que saíram.
+			b.AtMost(System.Math.Floor(span / System.Math.Max(w.LeapCooldown, 0.01f)) + 1, started, $"{mode}: botes saídos em {span:0} s, no máximo um a cada {RegressionBench.F(w.LeapCooldown)} s");
+			if (mode == "pulo-bote") b.AtLeast(2, started, "pulando e apertando o secundário, o bote sai");
 			await b.Seconds(1.2);
 		}
 	}

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 public sealed class GroundSpeedTest : RegressionTest
 {
 	public override string Name => "VelocidadeNoChao";
-	public override string Description => "humano 2,56 m/s, agachado 1,15, correndo (Shift) 3,71, faca 3,28; lobo 4,33, agachado 1,95";
+	public override string Description => "humano 2,56 m/s, agachado 1,15, correndo (Shift) 4,91 (com a faca e a pistola também), faca 3,28; lobo 4,33, agachado 1,95";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -27,6 +27,13 @@ public sealed class GroundSpeedTest : RegressionTest
 		// A faca na mão ×1,28 desde 26/11 (era ×1,037; Jhon: "aumentar velocidade de
 		// movimento com faca equipada"): 2,56 × 1,28 = 3,28 m/s.
 		b.Near(2.56 * b.Weapon.KnifeSpeedMultiplier, await Measure(b, "move_forward"), 0.02, "humano com a faca");
+		// Correndo, a faca não soma (Jhon, 27/11: "velocidade da corrida com faca pode diminuir, ficou muito
+		// rápido, tem que ser igual o sprint com fuzil"): era 2,56 × 1,9176 × 1,28 = 6,28 m/s.
+		b.Near(2.56 * b.Player.HumanSprintFactor, await Measure(b, "move_forward", "sprint"), 0.04, "correndo com a faca, o mesmo que com o fuzil");
+		// E com a pistola (× 1,08 andando): correndo, o mesmo também.
+		b.Weapon.SelectSlot(Slot.Secondary);
+		await b.Seconds(0.6);
+		b.Near(2.56 * b.Player.HumanSprintFactor, await Measure(b, "move_forward", "sprint"), 0.04, "correndo com a pistola, o mesmo que com o fuzil");
 		b.Weapon.SelectSlot(Slot.Primary);
 
 		// O lobo é um só desde 26/11 (decisão do Jhon: sem classes), no meio do
@@ -43,6 +50,7 @@ public sealed class GroundSpeedTest : RegressionTest
 	private static async Task<float> Measure(RegressionBench b, params string[] keys)
 	{
 		await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.6);
+		b.Player.Breath.Reset();   // cada medida com o fôlego cheio (SprintBreath)
 		RegressionBench.Press(keys);
 		await b.Seconds(0.6);
 		Vector3 moved = await b.Displacement(b.Player, 60);
@@ -145,7 +153,7 @@ public sealed class HumanSprintTest : RegressionTest
 		if (view != null) b.AtMost(0.05, Mathf.Abs(view.RigSprintBehind), "os braços no passo do corpo (fração do ciclo fora)");
 
 		// O clique tira da corrida: o tiro só sai depois de a arma voltar
-		// (SprintRecover 0,2 s), e o clique dado correndo não se perde.
+		// (SprintRecover, 0,18 s), e o clique dado correndo não se perde.
 		RegressionBench.Press("attack");
 		await b.Frames(5);
 		b.Check(b.Weapon.AmmoInMag == before, "a arma ainda voltando, o clique não atira");

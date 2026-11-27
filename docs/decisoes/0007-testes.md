@@ -1,6 +1,9 @@
 # 0007 — Duas camadas de teste, e o teste muda junto com a regra
 
-**Situação:** aceita (v0.27.0)
+**Situação:** aceita (v0.27.0). A criação de teste novo mudou na
+[0020](0020-teste-novo-se-propoe-antes.md): se propõe antes, não se
+escreve um por mudança. As duas camadas e a regra de mudar o teste junto
+com o comportamento continuam.
 
 ## Contexto
 

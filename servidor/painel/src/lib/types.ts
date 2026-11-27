@@ -58,6 +58,10 @@ export interface PlayerRow {
 	name: string;
 	xp: number;
 	rank: number;
+	/** O nível (1 a 3000), o XP em que ele começa e o do próximo (nulo no último): contados no servidor (RankRule). */
+	level: number;
+	levelXp: number;
+	nextXp: number | null;
 	presas: number;
 	sangue: number;
 	matches: number;

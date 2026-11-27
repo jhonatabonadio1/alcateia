@@ -381,6 +381,16 @@ public partial class Weapon : Node3D
 
 	public void TryAttack()
 	{
+		// De lobo, no meio do bote: a garra corta o bote na hora (Jhon, 27/11: "uma cancela a animação da
+		// outra, inclusive no ar; se cancelar, não é para dar o dano da anterior"). O bote ainda não bateu
+		// (bate ao encostar): o dano dele não sai.
+		if (_form.IsWolf && _diving && _form.CanAttack && !_health.IsDead)
+		{
+			CancelDive();
+			WolfAttack();
+			return;
+		}
+
 		if (_cooldown > 0)
 		{
 			// De lobo, o clique no fim de um golpe fica guardado.

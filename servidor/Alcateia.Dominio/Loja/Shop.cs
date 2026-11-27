@@ -9,8 +9,10 @@ namespace Alcateia.Dominio.Loja;
 /// <summary>Os tipos de item do catálogo (os do jogo, em <c>ItemKind</c>).</summary>
 public static class ItemKinds
 {
-	public const string Weapon = "weapon", Utility = "utility", Tattoo = "tattoo", Breed = "breed", Character = "character", Service = "service", Photo = "photo";
-	public static readonly string[] All = { Weapon, Utility, Tattoo, Breed, Character, Service, Photo };
+	// A melhoria de lobo era "tattoo" (de "tatuagem") até 27/11; o passo 4 do
+	// Schema migrou o banco.
+	public const string Weapon = "weapon", Utility = "utility", WolfUpgrade = "wolf_upgrade", Breed = "breed", Character = "character", Service = "service", Photo = "photo";
+	public static readonly string[] All = { Weapon, Utility, WolfUpgrade, Breed, Character, Service, Photo };
 }
 
 public static class Currency

@@ -9,6 +9,7 @@ import { Bans } from "@/pages/Bans";
 import { Catalog } from "@/pages/Catalog";
 import { Challenges } from "@/pages/Challenges";
 import { Fleet } from "@/pages/Fleet";
+import { Help } from "@/pages/Help";
 import { IpBlocks } from "@/pages/IpBlocks";
 import { Login } from "@/pages/Login";
 import { Maps } from "@/pages/Maps";
@@ -57,6 +58,8 @@ function Panel({ theme }: { theme: ReturnType<typeof useTheme> }) {
 				<Route path="/configuracoes" element={<Settings />} />
 				<Route path="/administradores" element={<Admins />} />
 				<Route path="/conta" element={<Account />} />
+				<Route path="/ajuda" element={<Help />} />
+				<Route path="/ajuda/:slug" element={<Help />} />
 				<Route path="*" element={<Navigate to="/" replace />} />
 			</Routes>
 		</Shell>

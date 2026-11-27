@@ -224,7 +224,9 @@ public partial class CharacterAnimator : Node3D
 		target = target.LimitLength(2.1f);
 		target = TowardSprint(target, ahead);
 
-		_blend = _blend.Lerp(target, Mathf.Min(1f, BlendSmoothing * (float)delta));
+		// (entrando na corrida do Shift ou saindo dela — o alvo ou a mistura além da corrida normal —, mais depressa)
+		float smoothing = target.Y > 2.02f || _blend.Y > 2.02f ? SprintBlendSmoothing : BlendSmoothing;
+		_blend = _blend.Lerp(target, Mathf.Min(1f, smoothing * (float)delta));
 
 		_tree.Set("parameters/Machine/Locomotion/Move/blend_position", _blend);
 		PaceSprint(local);

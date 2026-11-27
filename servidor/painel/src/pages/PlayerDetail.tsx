@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Ban, Coins, Gift, PlugZap, ShieldCheck, Trash2 } from "lucide-react";
+import { ArrowLeft, Ban, ChevronsUp, Coins, Gift, PlugZap, ShieldCheck, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ActionDialog } from "@/components/ConfirmDialog";
@@ -13,7 +13,7 @@ import { Select } from "@/components/ui/select";
 import { Table, Td, Th, Tr } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
-import { currencyNames, eventNames, n, relative, when, xpForRank } from "@/lib/format";
+import { currencyNames, eventNames, n, relative, when } from "@/lib/format";
 import { useContent, useRefresh } from "@/lib/queries";
 import { useSession } from "@/lib/session";
 import type { CatalogItem, PlayerFile } from "@/lib/types";
@@ -59,7 +59,7 @@ export function PlayerDetail() {
 	const refresh = useRefresh();
 	const content = useContent();
 	const file = useQuery({ queryKey: ["player", id], queryFn: () => api.get<PlayerFile>(`/players/${id}`), refetchInterval: 15_000 });
-	const [dialog, setDialog] = useState<"ban" | "unban" | "kick" | "currency" | "item" | null>(null);
+	const [dialog, setDialog] = useState<"ban" | "unban" | "kick" | "currency" | "item" | "level" | null>(null);
 	const [revoke, setRevoke] = useState<string | null>(null);
 
 	const [reason, setReason] = useState("");
@@ -69,6 +69,7 @@ export function PlayerDetail() {
 	const [amount, setAmount] = useState("");
 	const [itemId, setItemId] = useState("");
 	const [days, setDays] = useState("30");
+	const [level, setLevel] = useState("");
 
 	if (file.isPending) return <Loading />;
 	if (file.isError) return <ErrorNote error={file.error} retry={() => void file.refetch()} />;
@@ -79,9 +80,11 @@ export function PlayerDetail() {
 	const open = (which: typeof dialog) => {
 		setReason("");
 		setAmount("");
+		setLevel("");
 		setDialog(which);
 	};
-	const nextRank = xpForRank(player.rank + 1);
+	const wantedLevel = Math.round(Number(level));
+	const levelValid = Number.isFinite(wantedLevel) && wantedLevel >= 1 && wantedLevel <= 3000 && wantedLevel !== player.level;
 	const kd = player.stats.deaths > 0 ? (player.stats.kills / player.stats.deaths).toFixed(2) : player.stats.kills > 0 ? "∞" : "–";
 	const headshotRate = player.stats.kills > 0 ? Math.round((player.stats.headshots / player.stats.kills) * 100) : 0;
 
@@ -130,6 +133,10 @@ export function PlayerDetail() {
 								<Gift />
 								Dar item
 							</Button>
+							<Button onClick={() => open("level")}>
+								<ChevronsUp />
+								Mudar nível
+							</Button>
 						</>
 					)}
 					{can("moderate") && (
@@ -155,7 +162,7 @@ export function PlayerDetail() {
 			</header>
 
 			<Card className="mb-4 grid grid-cols-2 divide-line sm:grid-cols-3 lg:grid-cols-6 lg:divide-x">
-				<Stat label="Patente" value={player.rank} note={nextRank > player.xp ? `faltam ${n(nextRank - player.xp)} XP para a próxima` : "no topo"} />
+				<Stat label="Nível" value={player.level} note={player.nextXp !== null ? `faltam ${n(player.nextXp - player.xp)} XP para o próximo` : "no topo"} />
 				<Stat label="XP" value={n(player.xp)} />
 				<Stat label="Presas" value={n(player.presas)} />
 				<Stat label="Sangue" value={n(player.sangue)} />
@@ -417,6 +424,25 @@ export function PlayerDetail() {
 				</div>
 				<Field label="Motivo" hint="Fica no extrato dele e na auditoria.">
 					<Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Ex.: compensação pela queda do servidor" required />
+				</Field>
+			</ActionDialog>
+
+			<ActionDialog
+				open={dialog === "level"}
+				onOpenChange={(o) => !o && setDialog(null)}
+				title={`Nível de ${player.name}`}
+				description={`Hoje ele está no nível ${n(player.level)}, com ${n(player.xp)} XP. O XP vai para o começo do nível escolhido, subindo ou descendo. O prêmio de subir de nível não é pago, e no jogo o nível novo aparece quando ele abrir o perfil, a loja ou terminar uma partida.`}
+				action="Mudar nível"
+				danger={wantedLevel < player.level}
+				done="Nível atualizado."
+				disabled={!levelValid || reason.trim().length < 3}
+				onConfirm={() => api.post(`/players/${id}/level`, { level: wantedLevel, reason }).then(done)}
+			>
+				<Field label="Nível" hint={wantedLevel === player.level ? "É o nível em que ele já está." : "De 1 a 3000."}>
+					<Input type="number" min={1} max={3000} value={level} onChange={(e) => setLevel(e.target.value)} required className="num" />
+				</Field>
+				<Field label="Motivo" hint="Fica na auditoria.">
+					<Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Ex.: progresso perdido na migração da conta" required />
 				</Field>
 			</ActionDialog>
 

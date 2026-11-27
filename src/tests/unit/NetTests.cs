@@ -179,6 +179,183 @@ public static class NetTests
 		Check.Equal(1, b.WantedThisTick(), "voltou ao normal: um por passo");
 	}
 
+	[Test("fila de comandos: quem manda comandos em dobro (speed hack) não anda mais que 10% acima do relógio, e a fila não cresce sem fim")]
+	public static void CommandBufferSpeedHack()
+	{
+		var b = new CommandBuffer();
+		uint seq = 0;
+		int simulated = 0;
+		const int ticks = 600;                                   // 10 s de servidor
+		for (int t = 0; t < ticks; t++)
+		{
+			b.Push(Cmd(++seq)); b.Push(Cmd(++seq));               // dois comandos a cada passo
+			int wanted = b.WantedThisTick();
+			for (int k = 0; k < wanted; k++) if (b.Next(out _, out _)) simulated++;
+		}
+		Check.True(simulated <= ticks * 1.1 + CommandBuffer.HurryCap + 2, $"simulou {simulated} comandos em {ticks} passos (no máximo 10% a mais)");
+		Check.True(b.Depth <= CommandBuffer.MaxDepth + 2, $"a fila não cresce sem fim ({b.Depth})");
+		Check.True(b.Dropped > 0, "o excesso foi jogado fora");
+	}
+
+	[Test("o que se pode saber do inimigo: parado e calado só de perto, o passo de mais longe, o rugido do mapa inteiro; e o visto vale por 0,75 s")]
+	public static void SightRulesHearing()
+	{
+		Check.Equal(SightRules.QuietRadius, SightRules.HearingRadius(0f, false, false, false), "parado");
+		Check.Equal(SightRules.QuietRadius, SightRules.HearingRadius(1.1f, true, false, false), "agachado andando");
+		Check.Equal(SightRules.StepRadius, SightRules.HearingRadius(2.5f, false, false, false), "andando");
+		Check.Equal(SightRules.RunRadius, SightRules.HearingRadius(4.9f, false, true, false), "correndo");
+		Check.Equal(SightRules.HowlRadius, SightRules.HearingRadius(0f, false, false, true), "rugindo");
+		Check.True(SightRules.Fresh(100, 100 + SightRules.HoldTicks), "visto há 0,75 s: ainda vale");
+		Check.True(!SightRules.Fresh(100, 101 + SightRules.HoldTicks), "um passo depois, não");
+		Check.True(!SightRules.Fresh(0, 10), "nunca visto");
+	}
+
+	[Test("o boneco que o servidor deixou de contar (e o que voltou) não desliza de um lugar ao outro")]
+	public static void InterpolationPresence()
+	{
+		var b = new InterpolationBuffer();
+		b.Add(new NetPose { Time = 1.0, Flags = EntityFlags.None });
+		b.Add(new NetPose { Time = 1.1, Flags = EntityFlags.Present, Position = new System.Numerics.Vector3(30, 0, 0) });
+		Check.True(b.Sample(1.05, out NetPose p), "há pose");
+		Check.True(p.Has(EntityFlags.Present) && System.MathF.Abs(p.Position.X - 30f) < 0.001f, $"reaparece no lugar, sem vir deslizando do zero ({p.Position.X})");
+	}
+
+	[Test("mira no servidor: quem mira como gente (acompanha o alvo, um reflexo de vez em quando) não é suspeito; o giro de 40° em dois passos antes de quase todo acerto é")]
+	public static void AimAuditSnaps()
+	{
+		var human = new AimAudit();
+		uint seq = 0;
+		float yaw = 0f;
+		for (int shot = 0; shot < 60; shot++)
+		{
+			// acompanha o alvo: uns 60°/s (1° por passo); um tiro de reflexo a cada dez
+			for (int t = 0; t < 12; t++) human.Record(++seq, yaw += 0.0175f, 0f);
+			if (shot % 10 == 0) { human.Record(++seq, yaw += 0.35f, 0f); human.Record(++seq, yaw += 0.35f, 0f); }
+			human.Hit(seq);
+		}
+		Check.Equal(60, human.Hits, "60 acertos");
+		Check.True(human.Snaps <= 6 && !human.Suspicious, $"gente: {human.Snaps} trancos em 60 acertos, sem suspeita");
+
+		var bot = new AimAudit();
+		seq = 0; yaw = 0f;
+		for (int shot = 0; shot < 60; shot++)
+		{
+			for (int t = 0; t < 12; t++) bot.Record(++seq, yaw, 0f);
+			// gira 40° em dois passos e atira no segundo
+			bot.Record(++seq, yaw += 0.35f, 0f);
+			bot.Record(++seq, yaw += 0.35f, 0f);
+			bot.Hit(seq);
+			bot.Hit(seq);   // o segundo chumbo do mesmo disparo não conta de novo
+		}
+		Check.Equal(60, bot.Hits, "um acerto por disparo");
+		Check.True(bot.Snaps >= 55 && bot.Suspicious, $"aimbot: {bot.Snaps} trancos em 60 acertos, suspeito");
+
+		var few = new AimAudit();
+		for (uint s = 1; s <= 8; s++) few.Record(s, s * 0.3f, 0f);
+		few.Hit(8);
+		Check.True(!few.Suspicious, "um acerto só não diz nada");
+	}
+
+	[Test("conta do dano do bot: o bot honesto nunca é morto pelo servidor; o que o dono não mata, o servidor mata, e volta a valer quando renasce")]
+	public static void BotLedgerForcesDeath()
+	{
+		var honest = new BotLedger();
+		double now = 0;
+		for (int life = 0; life < 20; life++)
+		{
+			honest.Report(7, 200, 100, false, now);
+			// leva a vida e o escudo inteiros (e um pouco mais: a redução de dano) e o dono conta a morte
+			for (int i = 0; i < 9; i++) Check.True(!honest.Hit(7, 40, now += 0.2), "o servidor não mata o bot honesto");
+			honest.Report(7, 200, 100, true, now += 0.1);
+			now += 10;
+		}
+		Check.Equal(0, honest.Forced, "nenhum bot honesto morto pelo servidor");
+
+		var cheat = new BotLedger();
+		cheat.Report(9, 1e9f, 1e9f, false, 0);          // o dono diz que o bot tem um bilhão de vida
+		bool killed = false;
+		float taken = 0;
+		for (int i = 0; i < 100 && !killed; i++) { killed = cheat.Hit(9, 40, i * 0.2); taken += 40; }
+		Check.True(killed && taken <= BotLedger.MaxPool * BotLedger.Times + BotLedger.Slack + 40, $"o bot imortal morre no servidor com {taken} de dano");
+		Check.True(cheat.IsForcedDead(9), "e o que o dono conta dele não vale");
+		cheat.Report(9, 200, 100, false, 10);           // o dono insiste que está vivo, sem ter contado a morte
+		Check.True(cheat.IsForcedDead(9), "logo depois, o que ele conta ainda não vale");
+		cheat.Report(9, 200, 100, false, 30);
+		Check.True(!cheat.IsForcedDead(9), "passada a espera de renascer, volta a valer");
+		killed = false;
+		for (int i = 0; i < 100 && !killed; i++) killed = cheat.Hit(9, 40, 31 + i * 0.2);
+		Check.True(killed, "e morre de novo");
+	}
+
+	[Test("forma no servidor: o jogo honesto (vira, 30 s de lobo, volta, espera 20 s, vira de novo) passa sem recusa")]
+	public static void FormAuditHonest()
+	{
+		var a = new FormAudit(30f, 20f, 0.55f);
+		for (int round = 0; round < 3; round++)
+		{
+			for (int t = 0; t < 33; t++) Check.Equal(FormAudit.ShiftingToWolf, a.Step(FormAudit.ShiftingToWolf, FormLimit.Free), "virando");
+			for (int t = 0; t < 1800; t++) Check.Equal(FormAudit.Wolf, a.Step(FormAudit.Wolf, FormLimit.Free), "lobo pelos 30 s");
+			for (int t = 0; t < 12; t++) a.Step(FormAudit.ShiftingToHuman, FormLimit.Free);
+			for (int t = 0; t < 1200 - 12; t++) Check.Equal(FormAudit.Human, a.Step(FormAudit.Human, FormLimit.Free), "humano na espera");
+		}
+		Check.Equal(0, a.Refused, "nenhuma forma recusada");
+	}
+
+	[Test("forma no servidor: lobo além do tempo volta a humano, virar sem esperar não vale, lobo sem transformar ainda está virando, e modo só de humanos não tem lobo")]
+	public static void FormAuditCheats()
+	{
+		// Lobo para sempre: passados os 30 s (mais a folga), o servidor volta a humano.
+		var forever = new FormAudit(30f, 20f, 0.55f);
+		for (int t = 0; t < 33; t++) forever.Step(FormAudit.ShiftingToWolf, FormLimit.Free);
+		int wolf = 0;
+		// (2900 passos: os 30 s de lobo e quase toda a espera de 20 s — depois dela ele vira de novo, e pode.)
+		for (int t = 0; t < 2900; t++) if (forever.Step(FormAudit.Wolf, FormLimit.Free) == FormAudit.Wolf) wolf++;
+		Check.True(wolf <= 1800 + FormAudit.SlackTicks, $"lobo por {wolf} passos, de 2900 pedidos (o limite são 1800 e a folga)");
+		Check.True(forever.Refused >= 1, "contou a recusa");
+
+		// Sem esperar: voltou a humano e pede lobo logo em seguida.
+		var hurry = new FormAudit(30f, 20f, 0.55f);
+		for (int t = 0; t < 33; t++) hurry.Step(FormAudit.ShiftingToWolf, FormLimit.Free);
+		for (int t = 0; t < 600; t++) hurry.Step(FormAudit.Wolf, FormLimit.Free);
+		for (int t = 0; t < 60; t++) hurry.Step(FormAudit.Human, FormLimit.Free);
+		int early = 0;
+		for (int t = 0; t < 600; t++) if (hurry.Step(FormAudit.Wolf, FormLimit.Free) != FormAudit.Human) early++;
+		Check.Equal(0, early, "10 s depois de voltar (a espera são 20), o lobo não vale");
+		Check.True(hurry.Refused == 1, $"uma recusa pelo episódio, não uma por passo ({hurry.Refused})");
+		// ...e passada a espera, vale.
+		for (int t = 0; t < 600; t++) hurry.Step(FormAudit.Wolf, FormLimit.Free);
+		Check.Equal(FormAudit.Wolf, hurry.Step(FormAudit.Wolf, FormLimit.Free), "passada a espera, vira");
+
+		// Lobo direto, sem a transformação: o servidor conta o tempo dela.
+		var skip = new FormAudit(30f, 20f, 0.55f);
+		int shifting = 0;
+		for (int t = 0; t < 60; t++) if (skip.Step(FormAudit.Wolf, FormLimit.Free) == FormAudit.ShiftingToWolf) shifting++;
+		Check.True(shifting >= 33 - FormAudit.ShiftSlackTicks, $"ficou virando por {shifting} passos antes de ser lobo");
+
+		// Modo só de humanos, e só de lobos.
+		var human = new FormAudit(30f, 20f, 0.55f);
+		Check.Equal(FormAudit.Human, human.Step(FormAudit.Wolf, FormLimit.HumanOnly), "só humanos: não há lobo");
+		Check.Equal(1, human.Refused, "e conta");
+		Check.Equal(FormAudit.Wolf, new FormAudit(30f, 20f, 0.55f).Step(FormAudit.Human, FormLimit.WolfOnly), "só lobos: é lobo");
+	}
+
+	[Test("fila de comandos: um jogo honesto, com o relógio 1% adiantado, nunca perde comando nem fica para trás")]
+	public static void CommandBufferHonestDrift()
+	{
+		var b = new CommandBuffer();
+		uint seq = 0;
+		double owed = 0;
+		for (int t = 0; t < 6000; t++)
+		{
+			owed += 1.01;                                          // o jogo anda 1% mais rápido que o servidor
+			while (owed >= 1) { b.Push(Cmd(++seq)); owed -= 1; }
+			int wanted = b.WantedThisTick();
+			for (int k = 0; k < wanted; k++) b.Next(out _, out _);
+		}
+		Check.Equal(0, b.Dropped, "nenhum comando jogado fora");
+		Check.True(b.Depth <= CommandBuffer.HighWater + 1, $"a fila não cresce ({b.Depth})");
+	}
+
 	[Test("estado do mundo: 24 bytes por corpo, corpo comum e cabeçalho de cada um")]
 	public static void SnapshotRoundTrip()
 	{

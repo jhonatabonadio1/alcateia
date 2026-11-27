@@ -58,7 +58,7 @@ export function Players() {
 							<tr>
 								<Th>Jogador</Th>
 								<Th>Estado</Th>
-								<Th className="text-right">Patente</Th>
+								<Th className="text-right">Nível</Th>
 								<Th className="text-right">XP</Th>
 								<Th className="text-right">Presas</Th>
 								<Th className="text-right">Sangue</Th>
@@ -76,7 +76,7 @@ export function Players() {
 									<Td>
 										<PlayerState player={p} />
 									</Td>
-									<Td className="text-right">{p.rank}</Td>
+									<Td className="text-right">{p.level}</Td>
 									<Td className="text-right">{n(p.xp)}</Td>
 									<Td className="text-right">{n(p.presas)}</Td>
 									<Td className="text-right">{n(p.sangue)}</Td>

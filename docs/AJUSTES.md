@@ -19,7 +19,7 @@ que acontece quando muda. Valores do repositório na v0.27.0.
 |---|---|---|
 | **Inspetor do Godot** — campos `[Export]` dos scripts | Abra a cena (`src/scenes/player.tscn` para você, `src/scenes/bot.tscn` para os bots), selecione o nó (`Player`, `Weapon`, `Health`, `FormController`, `WolfVisual`, `Human`) e mude no Inspetor | Só aquela cena. O valor do script é o padrão; o da cena, quando existe, ganha |
 | **Recursos `.tres`** | Duplo clique no Godot, ou edite o texto | `src/resources/breeds/` (classes de lobo), `src/resources/weapons/` (armas de fogo), `src/resources/bots/` (níveis de dificuldade), `src/resources/body/ruido.tres` (ruído do corpo) |
-| **Código** | Edite o `.cs` | `WolfMoves.cs` (tempo dos golpes), `Catalog.cs` (tatuagens e preços), `Arsenal.cs` (granada, faca), `RoomConfig.cs` (sala padrão) |
+| **Código** | Edite o `.cs` | `WolfMoves.cs` (tempo dos golpes), `Catalog.cs` (melhorias de lobo e preços), `Arsenal.cs` (granada, faca), `RoomConfig.cs` (sala padrão) |
 
 Para mudar o padrão de todo mundo, mude no script; para mudar só o
 jogador ou só os bots, mude na cena. Hoje as cenas só sobrescrevem
@@ -72,7 +72,11 @@ o renascer do bot (6 s).
 | `HumanJumpVelocity` | 4,75 m/s | Impulso do pulo do humano. Com `HumanGravityScale`, sobe 0,80 m e volta em 0,67 s |
 | `HumanGravityScale` | 1,45 | Gravidade do humano no ar (o lobo usa 1). Pulo mais rápido e queda mais seca |
 | `StepHeight` / `WolfStepHeight` | 0,30 / 0,45 m | Degrau que se sobe andando, sem pular (a borda do contêiner tem 14 cm) |
-| `StepEase` | 2,2 m/s | Quão rápido o olho alcança o corpo depois de um degrau |
+| `StepEase` | 2,2 m/s | Quão rápido o olho alcança o corpo depois de um degrau **sozinho** (meio-fio, borda de contêiner) |
+| `StepRhythmWindow` | 0,4 s | Degraus seguidos com menos que isto entre eles são escada: o olho sobe e desce no ritmo dela, constante (27/11; antes ia a `StepEase` e parava a cada degrau) |
+| `StepAccel` | 18 m/s² | O quanto a velocidade do olho atrás do degrau muda por segundo: não sai nem para de uma vez |
+| `StepLag` / `StepCatchUp` | 0,25 m / 10 | Atrás do corpo mais que isto, o olho apressa (10 m/s por metro a mais) |
+| Ímã de chão andando | um degrau (`StepHeight`, 0,3 m; o lobo, `WolfStepHeight`) | Andando no chão sem pular, o corpo desce grudado até um degrau abaixo (27/11; fora disso, os 10 cm do Godot). O que passa de 8 cm num passo é degrau descido, e o olho vem atrás |
 | `GroundAccel` | 60 m/s² | Aceleração no chão (alto = resposta imediata) |
 | `GroundFriction` | 50 m/s² | Freada ao soltar as teclas (de 3,9 m/s para em 0,08 s) |
 | `AirAccel` | 18 m/s² | Controle de direção no ar |
@@ -85,16 +89,36 @@ o renascer do bot (6 s).
 | `WolfBackFactor` | 0,75 | De lobo, andando para trás: × a velocidade normal (na diagonal de trás, em parte). O humano não muda |
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
 | `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Andando em pé e na parede: quanto a animação corre em relação ao corpo (1 acompanha, 0,7 é 30% mais lenta; a pata desliza a diferença). De quatro, o mesmo (acompanha o corpo). Só a animação. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
-| `HumanSprintFactor` | 1,45 | A corrida do Shift (só humano, só para a frente, em pé): 3,71 m/s, de arma abaixada, sem atirar |
-| `SprintRecover` | 0,23 s | Depois de correr, quanto a arma leva para voltar antes de atirar (o clique fica guardado) |
-| `ViewModel.RigSprintIn` / `RigSprintOut` | 0,26 s / 0,23 s | Em quanto tempo os braços abaixam a arma para correr e a trazem de volta (a volta cabe no `SprintRecover`) |
+| `HumanSprintFactor` | 1,9176 (era 1,45 até 27/11: duas vezes +15%, pedidos do Jhon) | A corrida do Shift (só humano, só para a frente, em pé): 4,91 m/s com o fuzil — acima do lobo a pé (4,33) —, de arma abaixada, sem atirar; o clipe de correr toca a 1,47× |
+| `SprintRecover` | 0,18 s (era 0,23 até 27/11) | Depois de correr, quanto a arma leva para voltar antes de atirar (o clique fica guardado) |
+| `ViewModel.RigSprintIn` / `RigSprintOut` | 0,20 s / 0,18 s (eram 0,26 / 0,23 até 27/11; 0,18 / 0,16 já foi rápido demais) | Em quanto tempo os braços abaixam a arma para correr e a trazem de volta (a volta cabe no `SprintRecover`); a arma em terceira pessoa usa os mesmos tempos (`HeldRig`) |
+| `CharacterAnimator.SprintBlendSmoothing` | 16 (a mistura normal, `BlendSmoothing`, é 9) | Quão depressa o corpo em terceira pessoa entra na pose de correr do Shift e sai dela: ~0,19 s para 95% (com 9, ~0,33 s) |
+| `Bot.RemoteAttackLag` | o atraso do desenho, medido (0,05 a 0,3 s; 0,1 sem jitter) | Online, quanto o **golpe de corpo** de outro jogador (garra, bote, faca, coronhada) espera para tocar no boneco dele: o atraso com que a posição do boneco é desenhada naquele instante (`ServerClock`). O **tiro de arma de fogo não espera**: o estampido e o clarão tocam quando o aviso chega (27/11) |
+| `Health.MirrorHoldTime` | 0,35 s | Online, depois de um acerto previsto por quem atirou (`PredictHit`) ou confirmado pelo servidor (`ServerHurt`), a vida espelhada do boneco só desce: a notícia de vida mais velha não devolve a barra |
+| `FormAudit.SlackTicks` / `ShiftSlackTicks` | 45 passos (0,75 s) / 8 passos | Servidor: folga no tempo de lobo e na espera, e na transformação, antes de recusar a forma que o jogo conta (decisão 0019) |
+| `CommandBuffer.HurryRate` / `HurryCap` / `MaxDepth` | 0,1 por passo / 6 / 30 | Servidor: a cota de consumir dois comandos num passo (ninguém anda mais que 10% acima do relógio) e a fila que joga fora o mais velho |
+| `HostedMatch.BotMaxSpeed` / `BotJumpQuiet` | 30 m/s / 60 passos | Servidor: o bot que anda mais que isto entre dois estados foi teleportado pelo dono; o acerto dele não vale por 1 s |
+| `HitCheck.BotWolfMax` / `BotKnifeMax` | 520 / 420 | Servidor: o teto do golpe de lobo e de faca de um bot (a arma de fogo usa o máximo da própria arma) |
+| `SightRules.QuietRadius` / `StepRadius` / `RunRadius` / `HowlRadius` | 4 / 14 / 23 / 46 m | Servidor, contra wallhack: até onde o inimigo é contado a quem não o vê — parado ou agachado, andando, correndo ou lobo, rugindo (os alcances do som em `ruido.tres`, com folga) |
+| `SightRules.EveryTicks` / `HoldTicks` / `LoudTicks` / `LookAhead` | 6 passos (0,1 s) / 45 (0,75 s) / 90 (1,5 s) / 0,3 s | De quanto em quanto o servidor refaz a conta de quem vê quem; por quanto tempo o visto continua contado; por quanto tempo quem atacou é contado a todos; quanto à frente a linha de visão olha |
+| `ALCATEIA_NEBLINA=0` (ambiente do servidor de partida) | ligado | Desliga o filtro de visão (todos recebem todos, como antes de 27/11) |
+| `AimAudit.SnapTicks` / `SnapDegrees` / `MinHits` / `SnapShare` | 3 passos / 20° / 25 / 40% | Servidor, contra aimbot: o giro da mira antes do tiro que conta como tranco, e a partir de quantos acertos e de que proporção vira suspeita (os mesmos em `Plausibility.AimSample`/`AimSnapShare`, no servidor central) |
+| `BotLedger.Times` / `Slack` / `MaxPool` / `Forget` | 2× / 300 / 500 / 15 s | Servidor: o bot aguenta duas vezes a vida e o escudo que o dono conta (até 500) mais 300 de dano aceito antes de o servidor matá-lo; sem dano por 15 s a conta zera |
+| `HostedMatch.SwapWindow` | 2 s | Nos modos que trocam de lado na metade, quanto antes e depois da troca o servidor não confere a forma |
+| `Player.SprintRecover` / `ViewModel.RigSprintOut` | 0,28 s (0,18 de manhã, 0,23 antes) | A arma voltando ao sair da corrida, e quando o tiro pode sair ("a animação de sair da corrida não combinou, muito rápido") |
+| Arma leve correndo | × 1 no máximo (andando: faca × 1,28, pistola × 1,08) | Correndo, faca e pistola correm o mesmo do fuzil, 4,91 m/s (eram 6,28 e 5,30); a pesada segue com a sua (AK × 0,92, SCAR × 0,88, SVD × 0,86) |
+| `Player.SprintBreathTime` / `SprintBreathRefill` / `SprintWindedWait` | 4 s / 3 s / 1,5 s | O fôlego da corrida (`SprintBreath`): quanto se corre de uma vez, em quanto tempo parado o fôlego enche inteiro, e quanto se espera quando ele acaba |
+| `CombatantAudio.StabPitch` | 0,78 | O som da estocada: o da facada, mais grave |
+| `Grenade.BounceLoudSpeed` / `BounceQuietDb` / `BounceRange` / `FuseRange` | 4 m/s / −16 dB / 40 m / 22 m (eram 7, −26, 25 e 14) | O quique da granada: a velocidade de batida que soa a 0 dB, e o mais baixo que um quique soa. Um som por quique, sorteado entre `granada_quique_1..5` |
+| `BulletMarks.CutSize` / `StabSize` | 34 × 9 cm / 6 × 15 cm | A marca da facada (corte) e da estocada (furo) na parede |
 | `HeldWeapon.SprintLean` | 9° | Em terceira pessoa, quanto o tronco de quem corre inclina para a frente além da animação |
-| `HeldWeapon.SprintSpine` / `SprintSpineTime` | 0,9 / 0,3 s | Em terceira pessoa, quanto do tronco (coluna, pescoço, cabeça) fica com a animação de correr do corpo em vez da pose da arma, e em quanto tempo passa de uma para a outra |
+| `HeldWeapon.SprintSpine` / `SprintSpineTime` | 0,9 / 0,2 s (era 0,3 até 27/11) | Em terceira pessoa, quanto do tronco (coluna, pescoço, cabeça) fica com a animação de correr do corpo em vez da pose da arma, e em quanto tempo passa de uma para a outra |
 | `ViewModel.RigSprintStepAt` / `RigSprintLock` | 0,15 / 3 | Os braços correndo em primeira pessoa tocam presos ao passo do corpo: em que ponto do ciclo o pé bate, e com que força o clipe corrige o atraso |
 | `Hud.BreathSprintDb` / `BreathSprintIn` / `BreathSprintOut` | −27 dB / 3,5 s / 4 s | A respiração de quem corre: volume com o fôlego gasto, em quanto entra e em quanto some |
 | `CharacterAnimator.SprintClip` / `SprintPaceMax` | 3,35 m/s / 1,6 | A passada do clipe de correr do corpo e até quanto ele acelera |
 | `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula em pé (as duas formas) e agachada do lobo |
-| `HumanCrouchHeight` | 1,5 m (era 1,3, e antes 1,0, a do lobo) | A cápsula agachada do humano: leva a cabeça do corpo agachado (o olho a ~134 cm). Passar agachado por baixo de algo pede esse vão |
+| `HumanCrouchHeight` | 1,42 m (1,5 até 27/11; antes 1,3, e 1,0, a do lobo) | A cápsula agachada do humano: leva a cabeça do corpo agachado (o olho a ~126 cm). Passar agachado por baixo de algo pede esse vão |
+| `CharacterAnimator.CrouchSink` | 0,08 m | Quanto o agachado do humano desce além do clipe (27/11: "um pouco mais baixo, primeira e terceira pessoa"): o quadril desce e as pernas dobram mais, o pé no mesmo lugar; a câmera vai junto (o olho do corpo visto). Os olhos descem ~33 cm do de pé (eram ~25) |
 | `CrouchWalkTrim` / `CrouchAim` / `CrouchWalkSpeed` (nó `Human`) | 0 / 0 / 0,6 | O agachado é o "Crouch Walking" do Mixamo inteiro (26/11): sem corte no clipe, sem a pose de mira em pé no tronco (da cintura para cima quem segura a arma é a animação dela, a mesma de pé); o parado é o instante de passada mais aberta dele, com os dois pés retos no chão |
 | `FootBones` / `SoleBand` (`AnimationKit.Legs`, código) | pés esquerdo e direito / 0,015 m | O pé copia o giro a partir do repouso, não a direção do osso (o ângulo do osso do pé muda de rig para rig). Nos clipes agachados a perna dobra até a sola (a pele do pé até 1,5 cm acima do ponto mais baixo da bota em repouso) não passar do chão |
 | `StandEyeHeight` / `CrouchEyeHeight` | 0,6 / 0,1 m | O olho do lobo (o pivô da câmera de 3ª pessoa) a partir do centro da cápsula. Em pé era 0,62 no código e 0,6 na cena (o que valia) |
@@ -103,7 +127,8 @@ o renascer do bot (6 s).
 | `CrouchWalkSpeed` (nó `Human`) | 0,6 m/s (era 1,9) | Andando agachado a partir disto o clipe de andar toca inteiro (a mistura com o parado enfiava a ponta do pé 16 cm no chão) |
 | `CrouchLerpSpeed` | 22 | Rapidez de agachar e levantar |
 | `FreezeBrake` | 30 m/s² | Freada de quem fica preso no lugar (golpe, carga do salto) |
-| `FallLimit` | −25 m | Abaixo disto volta ao spawn |
+| `FallLimit` | −25 m | Abaixo disto morre de queda (até 27/11 voltava ao spawn) |
+| `FallAwayDepth` | 200 m | Morto, o corpo continua caindo até este tanto abaixo do `FallLimit` e para |
 | `MouseSensitivity` | 0,002 | Sensibilidade base. O jogador multiplica nas Opções (`Settings.Sensitivity`, padrão 1) |
 | `ThirdPersonDistance` | 2,5 m | Distância da câmera do lobo (era 3,5; longe demais, Jhon, 15/11) |
 | `FootSink` (nó `WolfVisual`) | 0 m (era 0,02) | Quanto o lobo parado em pé desce. Desde 26/11 quem encosta cada pata no chão é o `WolfFootPlant` (abaixo); descer o corpo inteiro só enterrava as garras |
@@ -138,7 +163,7 @@ o renascer do bot (6 s).
 |---|---|---|
 | Velocidade | 2,56 m/s (faca 3,28) | 4,33 (×1,352) |
 | Agachado | 1,15 | 1,95 |
-| Correndo (Shift) | 3,71 | — |
+| Correndo (Shift) | 4,91 | — |
 | De quatro (W W) | — | 7,44 |
 | Na parede | — | 4,94 |
 | Altura do pulo | 0,99 m | 2,09 m (×1,435) |
@@ -162,7 +187,7 @@ jogo, deixar apenas melhorias de lobo"). O lobo é um só, para o jogador e
 para os bots: `src/resources/breeds/lobo.tres` (script
 `src/scripts/forms/WolfBreed.cs`), **no meio do Bruto e do Ligeiro de antes**,
 e **canhão de vidro** (decisão do Jhon, 26/11): mata rápido, aguenta pouco.
-As melhorias (tatuagens, abaixo) multiplicam uma cópia dele.
+As melhorias de lobo (abaixo) multiplicam uma cópia dele.
 
 | Campo | Lobo | Bruto / Ligeiro (até 25/11) | O que faz |
 |---|---|---|---|
@@ -196,11 +221,11 @@ não transforma: avisa quanto falta ("Lobo de novo em 12 s") com o
 o boneco da rede e o corpo do servidor de partida espelham a forma que o
 dono manda e não voltam sozinhos.
 
-### Tatuagens (`src/scripts/meta/Catalog.cs`)
+### Melhorias de lobo (`src/scripts/meta/Catalog.cs`)
 
 Multiplicam o lobo do jogador (não o dos bots):
 
-| Tatuagem | Efeito |
+| Melhoria de lobo | Efeito |
 |---|---|
 | Pata Leve | velocidade ×1,05 |
 | Salto Longo | pulo ×1,06 |
@@ -352,11 +377,14 @@ começa 0,32 s depois de soltar e o dano sai em 1,14 s.
 | `LeapDamageBonus` | 3,0 | Multiplicador do dano |
 | `LeapReach` / `LeapRadius` | 1,7 / 1,5 m | Volume do acerto (maior que o da garra) |
 | `LeapCooldown` | 1 s (era 0, um por pulo) | Espera entre botes, do clique (26/11: pulando e apertando o secundário, saía um bote a cada 0,7 s). Apertado antes, o bote espera no ar e sai quando pode |
-| `DiveFollowUp` | 0,05 s (mínimo) | Do dano do bote até a garra poder sair: na prática o compasso (`StrikeSpacing` − o golpe da garra = 0,19 s) |
+| `DiveFollowUp` | 0,05 s | Do dano do bote até a garra poder sair (desde 27/11 de verdade: a pancada da garra é que espera o compasso, se cair antes dos 0,34 s) |
+| `DiveCutCarry` | 0,45 | A garra cortou o bote no ar: quanto da velocidade do mergulho o corpo guarda ao cair |
 
 A aterrissagem prende o lobo 0,87 s (`WolfMoves.Land`, a 1×). No ar, o bote
 corta a garrada em curso na hora (`Weapon.TrySpecial`; o dano dela que ainda
-não saiu não sai mais). A altura mínima (`LeapMinHeight`) continua valendo.
+não saiu não sai mais), e desde 27/11 a garra corta o bote no meio do mergulho
+do mesmo jeito (`Weapon.CancelDive`). Nenhum dos dois espera a pancada anterior:
+quem espera é o dano — duas pancadas nunca a menos de `StrikeSpacing` (0,34 s). A altura mínima (`LeapMinHeight`) é de 0,3 m desde 27/11 (era 1,1 até 26/11 e passou por 0,6 no mesmo dia — "a resposta de pular e ataque com o botão direito do mouse com o lobo deve ser bem rápida, sem delay, posso pular e já apertar para atacar, mas não a ponto de floodar"): dois ou três passos depois do pulo (~0,04 s), só o bastante para o lobo ter saído do chão. O botão direito apertado no chão fica guardado 0,25 s (`Player.LeapBuffer`, era 0,15). Quem segura a rajada é o `LeapCooldown` (1 s) e, online, o compasso do servidor (`WolfStrikePace`).
 
 ### Rugido (R)
 
@@ -873,10 +901,13 @@ o ferrolho recua 5 cm entre 78% e 90%.
 5, `Length` 8, `Thickness` 2.
 
 **Vitrine do personagem** (`src/scripts/lobby/CharacterPreview.cs`, o
-humano e o lobo em 3D no inventário e na loja; 25/11): `KeyEnergy` 2,1 (a
-principal, quente, com sombra macia), `FillEnergy` 0,55 (o preenchimento
-frio), `RimEnergy` 7 (os dois recortes atrás), `SkyEnergy` 0,55 (o céu do
-mapa de dia como ambiente e reflexo), `ContactShadow` 0,75 (a sombra
+humano e o lobo em 3D no inventário e na loja; 25/11, luz e cor revistas em
+27/11 — a luz forte deixava os dois brancos e a cor lavada): `KeyEnergy` 1,3
+(a principal, quente, com sombra macia; era 2,1), `FillEnergy` 0,4 (o
+preenchimento frio; era 0,55), `RimEnergy` 3,5 (os dois recortes atrás; era
+7), `SkyEnergy` 0,25 (o céu do mapa de dia como ambiente e reflexo; era
+0,55), `Saturation` 1,4, `Contrast` 1,12 e `Exposure` 0,9 (a cor da imagem;
+eram 1,05 / 1,06 / 1,05, no código), `ContactShadow` 0,75 (a sombra
 embaixo dos pés), `BackdropColor`/`BackdropStrength` 0,32 (o halo atrás) e `Spin` 0,35
 rad/s. O lobo não desce o `FootSink` do jogo aqui: as garras furariam o
 tampo (o teste `VitrineNoPedestal` reprova).

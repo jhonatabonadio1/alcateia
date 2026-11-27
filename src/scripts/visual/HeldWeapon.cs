@@ -839,7 +839,7 @@ public partial class HeldWeapon : Node3D
 	/// torce com a passada, e os braços e a arma vão com ele.
 	/// </summary>
 	[Export(PropertyHint.Range, "0,1")] public float SprintSpine = 0.9f;
-	[Export] public float SprintSpineTime = 0.3f;
+	[Export] public float SprintSpineTime = 0.2f;
 
 	/// <summary>Correndo, quanto o tronco inclina para a frente além da animação de correr (graus,
 	/// repartidos pelas vértebras): o "Rifle Run" corre quase em pé (Jhon, 26/11, vendo a roda

@@ -76,6 +76,8 @@ public partial class Weapon
 				_nextPunch = move == WolfMove.Punch;
 				_cooldown = 0;
 				_attackQueue = 0;
+				// a garra do dono cortou o bote no ar: o boneco também (27/11)
+				if (_diving) EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Leap);
 				_diving = false;
 				_flying = false;
 				WolfAttack();
@@ -137,6 +139,12 @@ public partial class Weapon
 	/// chão: quem o move é a rede).</summary>
 	private void RemoteLeap(float eta)
 	{
+		// o bote do dono cortou a garrada: o boneco também (27/11)
+		if (_strikeLeft > 0)
+		{
+			EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Claw);
+			EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Punch);
+		}
 		_comboIndex = 0;
 		_charging = false;
 		_flying = false;

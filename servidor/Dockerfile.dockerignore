@@ -18,3 +18,10 @@ servidor/painel/public/jogo
 !src/assets/ui/mapas/*.png
 !src/assets/ui/avatares/*.png
 !src/assets/personagens/*/thumb.jpg
+
+# Os documentos da central de ajuda do painel (só os .md).
+!CLAUDE.md
+!CONTRIBUTING.md
+!servidor/LEIA-ME.md
+!docs/*.md
+!docs/decisoes/*.md

@@ -6,10 +6,10 @@ todos na lista.
 | Mapa | id | Tamanho | Feito com |
 |---|---|---|---|
 | **Armazém** | `armazem_estendido` | 75 × 45 m (médio), 13 m de altura | o pacote LowPolyFPS4 da Unity (abaixo) |
-| **Cidade** | `cidade` | 120 × 80 m (grande) | kit fps1 (veja "Mapas de kit") |
-| **Cidade do Deserto** | `deserto` | 110 × 75 m (grande) | kit fps2 |
-| **Estação de Trem** | `estacao` | 120 × 95 m (grande) | kit fps5 (+ fps1 em volta) |
-| **Obra** | `obra` | 100 × 70 m (grande) | kit fps6 |
+| **Cidade** | `cidade` | 86 × 92 m (grande) | a cena de demonstração do kit fps1 (veja "Mapas da cena de demonstração") |
+| **Cidade do Deserto** | `deserto` | 64 × 64 m (médio) | a cena de demonstração do kit fps2 |
+| **Estação de Trem** | `estacao` | 105 × 65 m (grande) | a cena de demonstração do kit fps5 |
+| **Obra** | `obra` | 40 × 40 m, três pisos (pequeno) | a cena de demonstração do kit fps6 |
 | **Distrito Neon** | `neon` | 124 × 100 m (grande) | o pacote Low Poly Sci-Fi City da Unity (veja "Distrito Neon") |
 
 **O que saiu.** O Hangar, o Metrô e a Rua Abandonada saíram em 16/11 (a
@@ -41,10 +41,14 @@ escrevia o `.tscn` e a miniatura (`src/assets/ui/mapas/<id>.png`). O
 `mapas/pecas.py`, `mapas/blender/pecas_polyhaven.py`,
 `mapas/blender/malha.py` e `baixar_pacotes.py`. Os módulos dos seis mapas
 ficaram, mas **nada os chama mais**: são o registro de como cada mapa
-nasceu (as medidas, as plantas em letras, as rotas). Para gerar um mapa
-por script de novo, restaure o `gerar_mapas.py` do histórico do git —
-lembrando que gerar sobrescreve o `.tscn` e apaga o que foi mexido no
-Godot desde então.
+nasceu (as medidas, as plantas em letras, as rotas). **Em 27/11 o `gerar_mapas.py` voltou, só para quatro mapas** — a Cidade, a
+Cidade do Deserto, a Estação de Trem e a Obra, refeitos naquele dia da cena
+de demonstração de cada kit (veja "Mapas da cena de demonstração"):
+`python3 src/tools/gerar_mapas.py [cidade|deserto|estacao|obra]`. Gerar
+sobrescreve o `.tscn` e apaga o que foi mexido no Godot desde então:
+enquanto ninguém mexer nesses quatro na cena, o módulo é a fonte; mexeu na
+cena, a cena passa a ser a fonte e o mapa sai da lista do gerador. O
+Armazém e o Neon não estão na lista (foram mexidos na cena).
 
 O resto desta página conta como cada mapa foi feito e o que precisa
 continuar valendo em qualquer mapa, feito à mão ou por script.
@@ -83,10 +87,24 @@ material são três arquivos de 1024 px: `<nome>_cor.jpg`,
 metal em B). O resto do acabamento dos mapas de hoje é o detalhe de
 superfície por cima da paleta (veja "O detalhe das superfícies").
 
-O céu é uma HDRI em `src/assets/mapas/ceus/`: `dia_claro.hdr` (Poly
-Haven) na Cidade, no Deserto, na Estação e na Obra; `noite_neon.hdr`
-(desenhado, `kits/fundos.py`) na Neon. O Armazém é fechado e não tem
-céu.
+**O céu dos mapas de dia é calculado, com nuvens que andam** (27/11, pedido
+do Jhon: "shaders e nuvens"; "em todos os mapas que são de dia"):
+`src/assets/mapas/ceus/ceu_nuvens.gdshader` na Cidade, no Deserto, na
+Obra e na Estação. A cor do ar (o azul do alto, o claro do horizonte, o
+clarão e o disco do sol) e uma camada de nuvens com volume — a barriga
+escura, o lado do sol aceso, a borda que brilha contra a luz —, tirada do
+ruído `nuvens_ruido.png` (desenhado por `kits/fundos.py: nuvens`). As
+nuvens são desenhadas em meia resolução; como o céu anda, o recurso `Sky`
+da cena fica em tempo real (`process_mode = 3`, 256 px) e a luz ambiente
+acompanha. O sol do céu é a primeira luz direcional que entra nele: a luz
+de preenchimento do mapa fica fora (`sky_mode = 1`). Os valores de cada
+clima (`dia`, `deserto`, `tarde`) estão em `CEUS`, em
+`src/tools/mapas/kits/montagem.py` (e na cena: os `shader_parameter/…` do
+material `CeuMat`). Numa cena que já foi mexida no Godot, troca-se o céu
+sem gerar o mapa: `python3 src/tools/mapas/ceu_de_nuvens.py <id> <clima>`.
+O céu de fotografia (`dia_claro.hdr`, Poly Haven) saiu dos mapas. O Neon
+continua com `noite_neon.hdr` (desenhado, `kits/fundos.py`); o Armazém é
+fechado e não tem céu.
 
 ### Escadas
 
@@ -231,6 +249,108 @@ O ângulo de cada mapa (de onde a câmera olha e para onde) está em
 3. Acrescente um teste em `src/tests/regression/MapTests.cs` (três linhas).
 4. `src/tools/testar.sh Mapa`.
 
+## Mapas da cena de demonstração (27/11)
+
+Em 27/11 o Jhon trouxe o "Low Poly FPS Bundle" na versão do Unreal (`Archive.zip`: `.uasset` e `.umap`), que tem o que
+o pacote em FBX não tinha — **o mapa que o autor montou com cada kit** — e pediu os mapas feitos dele ("use o que tem lá
+de demo"), com "iluminação AAA+, shaders e nuvens". Os quatro mapas de planta própria (de 19 e 20/11) saíram; estão no
+histórico do git. Os ids são os mesmos: salas e perfis não mudam.
+
+| Mapa | O que é | O que mudou em relação à cena |
+|---|---|---|
+| **Cidade** | Um bairro em volta de uma avenida de 80 m, entre a prefeitura e a torre do heliponto: casas de três e quatro andares, estacionamento, praça, oficina, o pátio do prédio em obras, e os becos por trás das casas. 2.140 m² de chão andável | Girada 90° (a avenida no eixo dos times). Na fileira de barreiras de concreto que fecha a avenida a 17 m do fim saíram cinco, abrindo duas passagens: atrás dela nasce o laranja. Sem o chão de fundo da cena: o mapa tem o asfalto dele, com o topo 2 cm abaixo da calçada do kit, como na Estação (até a correção de 27/11 estava no mesmo plano, e a calçada aparecia em cacos claros) |
+| **Cidade do Deserto** | Uma cidadela de 64 × 64 m dentro da muralha: casas de adobe de um e dois andares com escada de pedra, toldos, bancas, a praça do chafariz, o largo da feira, palmeiras. 1.470 m² de chão andável | **Sem montanhas** (Jhon: "montanha com gelo no deserto não faz sentido"; "quero somente morros de areia"; "deserto não tem montanha nem picos"): saíram as cinco de pico branco, as dunas entram a 65% da altura e o painel do fundo ficou na proporção do desenho (a 120 m de altura as dunas redondas dele viravam picos) |
+| **Estação de Trem** | Um pátio de estação fechado por paredes de 9 m: três linhas com trens parados ao norte, o saguão coberto no meio, mais duas linhas ao sul, os prédios da estação em volta e duas escadas para o piso de cima (5,1 m). 2.620 m² de chão andável | Nada: é a cena. (As vidraças do piso de cima são o cubo do Unreal esticado; aqui, uma chapa da cor do vidro) |
+| **Obra** | O topo de um prédio **acima das nuvens** (27/11, Jhon: "ao invés de cidade ao redor do prédio, será um prédio alto acima das nuvens; o precipício será uma grande nuvem": saíram as torres e as ruas da demo, o prédio desce andar sobre andar até 250 m e some no mar de nuvens — quatro camadas de `nuvens.gdshader`, o do precipício do Setor Zero, no tom do pôr do sol, e a névoa adensa abaixo de −90 m; a beira continua fechada pela parede invisível), onde se levantam mais andares: 40 × 40 m, paredes de concreto pela metade, três escadas para o segundo piso (3,8 m), um pedaço de terceiro (7,6 m), duas gruas, andaimes. 1.150 m² de térreo andável | Saem 7 módulos de parede, o mínimo para o térreo ser um chão só (abaixo) |
+
+**Todos no tamanho da cena.** O primeiro pedido era "crie um maior, igual ao Armazém e ao Distrito Neon" (dobrar com a
+cópia girada 180°). Medidas as cenas, o Jhon decidiu não dobrar a Cidade nem o Deserto ("para não ficar exagerado") e,
+vista a Obra dobrada (80 × 40 m), voltou atrás nela também: "deixa o mapa da construção igual o da demo mesmo". Por
+isso **nenhum dos quatro é simétrico**: cada time nasce num lugar diferente (`BASES`, no módulo), e ninguém mediu se um
+lado leva vantagem. A Obra, com 40 × 40 m, é apertada para 6 contra 6.
+
+### Como são feitos
+
+```sh
+# uma vez por kit: as plantas (só Python; precisa do pacote do Unreal, que não vai para o repositório)
+python3 src/tools/mapas/kits/unreal_umap.py <pacote>/LowPolyFPS1/Maps/DEMO_Map.umap src/tools/mapas/fps1_demo.json <pacote>/LowPolyFPS1/Meshes
+# o mapa (numpy e Pillow), e depois o Godot importa o .glb (abra o editor, ou godot --headless --import)
+python3 src/tools/gerar_mapas.py cidade
+```
+
+- **`kits/unreal_umap.py`** lê o `.umap` do Unreal 5.0 sem o Unreal: a tabela de nomes, os objetos e, de cada peça, a
+  malha e a matriz (com a do pai, se estiver presa a outro ator), já no eixo do Godot — o Unreal é de mão esquerda, Z
+  para cima, em centímetros: posição (x, z, y) / 100. Grava também as luzes, os pontos de fogo e a caixa de cada malha
+  (`ExtendedBounds`), com que se conferiu o eixo de cada peça contra o kit em FBX. O nome no Unreal é o do kit com `SM_`
+  e a pasta na frente (`SM_Props_Box_01` → `Box_01`); as exceções estão em `kits/demo.py` — duas malhas de tamanho
+  diferente (`ESCALAS`), as paredes e os telhados da Estação, que mudaram de nome (`NOMES`), e as malhas com esqueleto
+  (a casa com porta, a cancela, a caixa de munição), que entram paradas. O palete deitado da Obra não veio no FBX: é
+  feito de tábuas (`demo.palete`).
+- **`kits/demo.py`** (`Demo`) põe as peças numa `Montagem` e tem o que os mapas dividem: o lado de fora
+  (`fora_do_anel`: o que se alcança da beira do mapa sem passar por fresta de menos de 5 m entre os prédios e muros
+  que o fecham; vira `Barreira…`, do chão ao teto), o miolo dos prédios fechados (`fechar_predios`, abaixo), o chão que
+  se alcança a pé (`alcancavel`), os pontos de nascer de mapa que não é simétrico (`nascer_em`), a cópia girada
+  (`girar`, de quando a Obra foi dobrada) e a planta para conferir (`vista_de_cima`).
+- **Os módulos** (`cidade.py`, `deserto.py`, `estacao.py`, `obra.py`): a colisão de cada tipo de peça, as escadas com a
+  chapa de subida (`ESCADAS`), onde nasce cada time e as rotas dos bots (`ROTAS`: pontos soltos, cada um cai no chão
+  livre mais perto e o caminho entre eles é achado na grade).
+- **A colisão é a da própria malha**, menos o que é caixa de verdade (caixote, piso, pilar) — `CAIXA` e `SEM` no topo
+  de cada módulo. A caixa de um barril, de um pote, de uma bobina ou do guindaste segurava o tiro de cima no ar, sem
+  nada que se visse (os testes `TiroDeCima…`).
+- **O miolo dos prédios fechados** (`demo.fechar_predios`, `miolo_da_peca`): a casa do kit é uma casca, e por dentro
+  dela ficava um cômodo fantasma, com o chão do mapa por piso. O prédio em que nenhum raio, na altura de quem anda,
+  passa da parede (não tem porta nem vão) e que tem telhado ganha uma caixa de colisão escondida por dentro, 60 cm para
+  dentro de cada parede (`miolo…`). No prédio que **fecha o mapa** (encosta no lado de fora) essa caixa vai do chão ao
+  teto e é uma `Barreira…`: ninguém passa por cima dele para fora. Muro e parede fina não ganham caixa: quem os fecha
+  é a mancha de fora.
+- **As paredes abertas da Obra** (`obra.py: abrir`): na cena o térreo é uma fileira de cômodos fechados — paredes
+  cegas, de janela (peitoril de 50 cm) e algumas com porta de 1 m. A navegação dos bots anda com meio metro de raio
+  (`NavBaker`): por porta de 1 m eles não passam, e o térreo ficava partido em pedaços sem ligação (quem nascesse num
+  deles não saía). Como é obra, a parede que falta "ainda não foi levantada": saem **só** os módulos (5 m) que ligam um
+  cômodo ao vizinho, o mínimo para o térreo ser um chão só — de preferência a que já tinha porta, depois a quebrada,
+  depois a de janela. São 7. `ATALHOS` abriria mais alguns (está em zero). As paredes da beira da laje ficam: são elas
+  e a parede invisível por fora que seguram quem chega à beira.
+- **A luz**: a de jogo dos mapas de kit (`luz_de_jogo`, abaixo), com o céu calculado do clima — `dia` na Cidade,
+  `deserto` no Deserto, `tarde` na Estação e na Obra (sol a 24°). A névoa do mapa não entra no céu (com ela o azul
+  virava lilás). Nos tambores acesos da Cidade, uma lâmpada cor de fogo; nas luminárias da Estação e da Obra, lâmpadas.
+- **O material de cada face** é o detalhe de superfície dos kits (abaixo), como antes: as peças são as mesmas.
+- **O palete carregado da Obra** (`demo.palete`): o `Pallet_02` do Unreal é uma pilha de 1,21 × 1,0 × 1,18 m, empilhável,
+  e não veio no FBX. Até a revisão de 27/11 ele era um palete vazio de 15 cm, e o que a demo põe em cima dele (latas,
+  pincéis, tijolos, o martelo, o carretel, outro palete) flutuava 85 cm (Jhon: "alguns pontos do mapa construção estão
+  com madeiras voando"). Agora é o palete do kit (`Pallet_01`) com quatro camadas de blocos (`Brick_01`/`02`) em cima,
+  cruzadas; o detalhe pinta de tijolo o que fica acima de 16 cm (`detalhe.palete_carregado`).
+- **A escada do prédio em obras da Cidade** (`cidade.OBRA_ESCADA`) tem a chapa de subida das outras escadas (27/11):
+  sem ela, descendo, o corpo escorregava pela quina arredondada do degrau e voava três degraus de cada vez.
+- **O que estava no terreno da demo** (`demo.assentar`): o Deserto do Unreal tem um terreno com relevo (*landscape*),
+  que não vem; aqui o chão é plano, e as palmeiras, pedras e plantas que estavam num montinho ficavam até 78 cm no
+  ar. Descem até o que está embaixo (as pedras antes, que há planta em cima de pedra).
+
+### A revisão de colisão (27/11)
+
+Pedido do Jhon: "revise todos os itens de colisões dos mapas que implementamos". Duas varreduras, peça por peça, nos
+quatro mapas (as ferramentas ficaram de fora do repositório; o jeito de refazer está abaixo):
+
+- **Peça que se vê e não colide** (de 35 cm para cima, no chão jogável). Passaram a colidir: na Obra, o palete
+  carregado (20, por caixa), as pilhas de barras de aço (`ConstructionMat_01`, ~1 m, na forma delas) e a escadinha de
+  abrir; na Estação, as vidraças do piso de cima (o cubo do Unreal esticado — passava-se por elas e caía-se no pátio),
+  a porta do piso de cima e as torres em cima dos telhados (o lobo que corria no telhado passava por dentro delas); na
+  Cidade, os montes de lama (até 65 cm, na forma deles) e as placas de rua de 1,8 m (pela haste). Ficam sem colisão, de
+  propósito: planta, arbusto, varal, jarro, bandeira, o que é pendurado em parede (luminária, relógio, janela, cano,
+  enfeite) e os fios.
+- **Peça solta no ar** (o ponto mais baixo dela não acha nada embaixo a menos de 6 cm). Além do palete e das plantas
+  do Deserto (acima), o que sobra é de propósito: o material pendurado no gancho das gruas da Obra, as tábuas pregadas
+  atravessando a porta (Obra), os caixas eletrônicos de parede, os barris deitados na mureta dos telhados da Cidade, as
+  caixas empilhadas e os vagões de toras da Estação (conferidos em foto).
+- **Caixa de colisão maior que o desenho** (parede invisível): nenhuma; o `TiroDeCima…` confere de cima, nos quatro.
+
+### O que foi conferido e o que não foi
+
+Conferido: a planta de cada mapa vista de cima contra a cena (peça a peça no lugar e no giro certos), o chão andável e
+as rotas na grade, fotos Forward+ de cada mapa (de cima e da altura do jogador) e os testes (abaixo). **Ninguém jogou
+uma partida neles.** Não foi medido o custo do céu em tempo real em máquina fraca, nem o de tanta colisão de malha. Na
+Obra, quem chega ao terceiro piso é só o lobo (nenhuma escada vai até lá, como na cena), e as portas de 1 m servem ao
+jogador, não aos bots.
+
 <!-- mapas de kit: início -->
 
 **O muro da cidade no Neon** (25/11): o Neon fecha no muro da cidade, não nas paredes `Limite…` da borda: tudo o que fica do lado de fora vira a parede invisível `BarreiraMuro` (do chão ao teto; por cima do carro e da sala de piso alto que encostam no muro, a partir de 3 m acima do carro e do telhado da sala). Ela é medida na colisão da cena: `godot --headless --path . -s res://src/tools/mapas/muro_da_cidade.gd -- neon [--seco] [--imagem=grade.png]` (rode de novo se o mapa mudar: refaz o corpo). O teste é `NeonMuroDaCidade`. **Os fios** do Neon (`SM_Buildings_Part_24` e `_25`) não têm colisão: `neon.py: FIOS`, e no `.glb` já montado `python3 src/tools/mapas/sem_colisao.py <glb> <prefixos>`.
@@ -248,10 +368,11 @@ caminhos e corredores** em vez de um retângulo aberto: foram refeitos no tamanh
 
 | Mapa | Tamanho | Tema | Módulo (registro; veja "A fonte de cada mapa é a cena") |
 |---|---|---|---|
-| **Cidade** (id `cidade`) | 120 × 80 m (grande) | Um bairro de dia: três ruas de ponta a ponta, duas transversais e o bulevar do centro; por dentro dos quarteirões, becos de 2,5 m entre lojas e casas, em volta do prédio em obras de três andares, atrás do banco; cada time nasce numa ponta da avenida | `src/tools/mapas/cidade.py` (kit fps1: "Low Poly FPS Map Vol.1 — City") |
-| **Cidade do Deserto** (id `deserto`) | 110 × 75 m (grande) | Cidadela no deserto, sol alto, talhada dentro da muralha: três vielas de ponta a ponta, becos de 2,5 m entre elas, a rua da feira (10 m) e a praça do chafariz; casas de laje com escada de pedra, e por cima da muralha (5,4 m) anda-se de ponta a ponta; cada time nasce no pátio da caravana | `src/tools/mapas/deserto.py` (kit fps2: "Low Poly FPS Map Vol.2 — Desert City") |
-| **Estação de Trem** (id `estacao`) | 120 × 95 m (grande) | Estação no centro da cidade, fim de tarde: a rua e a calçada da praça ao norte (carros, árvores, postes), o prédio de 97 m com o saguão mais alto entre quatro torres de relógio, alas de telhado de duas águas, sacadas e cobertura na plataforma; duas plataformas, três linhas com trens parados, pátio de carga e, no centro, a passarela de 5 m com seis escadas; os prédios do centro fecham o mapa (kit da Cidade, num segundo desenho com colisão); cada time nasce numa ponta da plataforma do meio | `src/tools/mapas/estacao.py` (kit fps5: "Low Poly FPS Map Vol.5 — Railway Station (a cidade em volta: Vol.1 — City)") |
-| **Obra** (id `obra`) | 100 × 70 m (grande) | Canteiro de obras, de dia: um prédio de concreto de 60 × 40 m no meio — no térreo, corredor de 60 m, quatro salas e dois salões com pilares; duas lajes abertas em cima (4 e 8 m), com escadas e muretas de tijolo —, andaimes, gruas e material empilhado em volta; a planta tem um desenho por piso | `src/tools/mapas/obra.py` (kit fps6: "Low Poly FPS Map Vol.6 — Construction") |
+
+**Desde 27/11 nenhum mapa do jogo é desta leva.** A Cidade, o Deserto, a Estação e a Obra de planta própria (120 × 80,
+110 × 75, 120 × 95 e 100 × 70 m, com a planta em letras) foram trocados pelos da cena de demonstração (acima); o que
+este capítulo conta deles — as calçadas da Cidade, a muralha do Deserto, a passarela da Estação, os andares da Obra — é
+o registro de como eram. As ferramentas (a planta em letras, a `Montagem`, a luz de jogo) continuam em uso.
 
 O Vol.4 (Warehouse) é o pacote do Armazém, que já estava no jogo.
 
@@ -473,3 +594,19 @@ ele maior; use LED para iluminar as partes que representam LED; de fundo, prédi
 - **Som**: `src/tools/sons/ambiente_mapas.py`; o fundo e o som de vez em quando de cada mapa estão em `Maps.cs`.
 - **Capas**: `src/tools/fotos_mapas.gd` (`CAPA` e `GRADE`): cor viva e desfoque leve embaixo e nos cantos.
 
+### Depois de jogar (27/11, fim do dia)
+
+- **Obra de dia** (Jhon: "mapa da construção pode ser de dia, não em pôr do sol"): `luz_de_jogo(m, 'dia', 62, 48, …)`
+  e o mar de nuvens branco, de sombra azulada (`NUVENS`, em `obra.py`). Capa refeita.
+- **Estação: as plataformas de 50 cm** (as placas `Floor_06`, `Floor_07`, `Floor_08`; a `Floor_08` tem quatro degraus
+  de 12 a 15 cm em cada ponta) tinham colisão de **caixa** — a regra das placas de chão —, e a caixa era uma parede de
+  55 cm no lugar dos degraus. São `DEGRAUS` em `estacao.py`: colisão da malha.
+  **Peça de chão com altura não é caixa**: conferir a altura da peça antes de pô-la em `CAIXA`.
+- **Obra sem parede na beira** (Jhon: "eu posso cair, não precisa ter a colisão nos limites do mapa"): `fechar(...,
+  margem=BEIRA[0] - X, paredes=False)` — o chão invisível vai só até a beira da laje, sem `Barreira…`. Quem passa da
+  beira cai e morre abaixo de `Player.FallLimit` (−25 m), e o corpo continua caindo. As paredes `Limite…` existem, mas
+  **sem colidir** (camada 0, 27/11): só dão à câmera de espectador a caixa do mapa (`MapBounds`) — sem elas a caixa era
+  toda a colisão, prédio incluído, e a câmera saía do mapa e nascia dentro do prédio. Num mapa de beira aberta novo,
+  `fechar(..., paredes=False)` já faz isso.
+- **Obra: as tábuas colidem** (`WoodenPlank`, menos a deitada no chão): a ponte do segundo piso e as de cima da viga
+  da grua eram só desenho.

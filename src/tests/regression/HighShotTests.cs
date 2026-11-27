@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 public abstract class HighShotTest : RegressionTest
 {
 	protected abstract string MapId { get; }
+
+	/// <summary>Quantos telhados com o caminho livre até a rua o mapa tem de dar, no mínimo.</summary>
+	protected virtual int MinShots => 8;
 	public override string Scene => RegressionBench.Match;
 	public override string Description => $"no mapa {Maps.Get(MapId).Name}, de cima dos telhados o tiro no oponente lá embaixo dá dano";
 
@@ -122,7 +125,9 @@ public abstract class HighShotTest : RegressionTest
 		foreach (var (roof, street) in spots.OrderBy(_ => rng.Randi()).Take(120))
 		{
 			await b.Place(roof + Vector3.Up * 1.1f, 0f, settle: 0.35);
-			if (b.Player.GlobalPosition.Y < roof.Y - 0.5f) continue;              // não ficou em cima
+			// não ficou em cima: desceu, ou ainda está caindo (na Cidade de 27/11 o raio de cima acha a 5 m coisas finas
+			// demais para ficar de pé — a ponta do toldo, a travessa do poste —, e o tiro saía no ar, com a dispersão do pulo)
+			if (b.Player.GlobalPosition.Y < roof.Y - 0.5f || !b.Player.IsOnFloor()) continue;
 			// (a origem do corpo é o meio da cápsula: o pé fica meia altura abaixo)
 			var capsule = bot.GetChildren().OfType<CollisionShape3D>().First();
 			float half = capsule.Shape is CapsuleShape3D cap ? cap.Height / 2f : 0.9f;
@@ -148,20 +153,22 @@ public abstract class HighShotTest : RegressionTest
 			tried++;
 			Aim(b.Player, camera, chest);
 			await b.Frames(2);
+			bool onFloor = b.Player.IsOnFloor();
+			float moving = b.Player.Velocity.Length();
 			target.SetHp(target.MaxHp);
 			RegressionBench.Press("attack");
 			await b.Frames(1);
 			RegressionBench.Release("attack");
 			await b.Frames(3);
 			if (target.Hp < target.MaxHp) hurt++;
-			else misses.Add($"({roof.X:0.0}, {roof.Y:0.0}, {roof.Z:0.0}) → ({street.X:0.0}, {street.Z:0.0}): segurou em '{first}'{(path.Count > 0 ? $" a {((Vector3)path["position"]).DistanceTo(camera.GlobalPosition):0.0} m" : "")}");
+			else misses.Add($"({roof.X:0.0}, {roof.Y:0.0}, {roof.Z:0.0}) → ({street.X:0.0}, {street.Z:0.0}): segurou em '{first}'{(path.Count > 0 ? $" a {((Vector3)path["position"]).DistanceTo(camera.GlobalPosition):0.0} m" : "")} — no chão {onFloor}, a {moving:0.00} m/s");
 			RegressionBench.ReleaseAll();
 			await b.Seconds(0.12);
 		}
 		RegressionBench.Note($"{meshes} malhas do mapa; {tried} tiros de cima, {hurt} com dano; {blocked} com parede que se vê no caminho; {hidden.Count} parados em caixa invisível");
 		foreach (string m in hidden.Take(12)) RegressionBench.Note("invisível: " + m);
 		foreach (string m in misses.Take(8)) RegressionBench.Note("sem dano: " + m);
-		b.Check(tried >= 8, $"testou pelo menos 8 telhados ({tried})");
+		b.Check(tried >= MinShots, $"testou pelo menos {MinShots} telhados ({tried})");
 		b.Check(hurt >= tried * 0.9f, $"o tiro de cima no peito dá dano ({hurt} de {tried}; a dispersão da arma pode tirar um ou outro)");
 		b.Check(hidden.Count == 0, $"nenhum tiro para em colisão que não se vê ({hidden.Count})");
 		RoomConfig.Active = false;
@@ -186,4 +193,6 @@ public abstract class HighShotTest : RegressionTest
 public sealed class CidadeHighShotTest : HighShotTest { public override string Name => "TiroDeCimaCidade"; protected override string MapId => "cidade"; }
 public sealed class DesertoHighShotTest : HighShotTest { public override string Name => "TiroDeCimaDeserto"; protected override string MapId => "deserto"; }
 public sealed class EstacaoHighShotTest : HighShotTest { public override string Name => "TiroDeCimaEstacao"; protected override string MapId => "estacao"; }
-public sealed class ObraHighShotTest : HighShotTest { public override string Name => "TiroDeCimaObra"; protected override string MapId => "obra"; }
+/// <summary>A Obra de 27/11 é a cena de demonstração do kit: 40 × 40 m, toda em paredes. Dos 118 pontos com laje em
+/// cima e chão embaixo, em 111 há parede (que se vê) no caminho: sobram 7 tiros limpos, não os 8 dos mapas grandes.</summary>
+public sealed class ObraHighShotTest : HighShotTest { public override string Name => "TiroDeCimaObra"; protected override string MapId => "obra"; protected override int MinShots => 5; }

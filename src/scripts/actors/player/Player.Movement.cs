@@ -61,21 +61,26 @@ public partial class Player
 
 	/// <summary>A corrida do humano (Shift, 26/11): × a velocidade normal,
 	/// só para a frente e com a arma abaixada — correndo ele não atira, não
-	/// mira e não recarrega. 1,45 dá 3,71 m/s com o fuzil (o andar a 2,56):
-	/// o "Rifle Run" do Mixamo (3,35 m/s a 1×) toca a 1,11×. Foi 4,3 m/s
-	/// (rápido demais, "parece o Sonic") e 3,46 ("pode deixar um pouco mais
-	/// rápida", Jhon, 26/11). Abaixo do lobo em pé (4,15 o Bruto). O andar
-	/// devagar e em silêncio, que morava no Shift, saiu: quem quer silêncio
-	/// agacha.</summary>
-	[Export] public float HumanSprintFactor = 1.45f;
+	/// mira e não recarrega. 1,9176 dá 4,91 m/s com o fuzil (o andar a
+	/// 2,56): o "Rifle Run" do Mixamo (3,35 m/s a 1×) toca a 1,47×. Desde
+	/// 27/11, em dois pedidos do Jhon ("aumente a velocidade do sprint do
+	/// humano, em 15%"; depois, "pode aumentar a velocidade de corrida do
+	/// humano em mais 15%"): era 1,45, 3,71 m/s, e passou por 1,6675, 4,27.
+	/// Antes disso foi 4,3 m/s (rápido demais, "parece o Sonic") e 3,46
+	/// ("pode deixar um pouco mais rápida", Jhon, 26/11). **Passa do lobo a
+	/// pé** (4,33), por decisão dele. O andar devagar e em silêncio, que
+	/// morava no Shift, saiu: quem quer silêncio agacha.</summary>
+	[Export] public float HumanSprintFactor = 1.9176f;
 
 	/// <summary>Quanto tempo a arma leva para voltar da corrida, em
 	/// segundos: parou de correr (ou clicou correndo), só atira depois
 	/// disto. É o preço da corrida: quem chega correndo chega de arma
-	/// baixa. O clique dado no caminho fica guardado e sai ao fim. 0,23 s
-	/// desde 26/11 (era 0,2): o tempo de os braços trazerem a arma de
-	/// volta (<see cref="ViewModel.RigSprintOut"/>).</summary>
-	[Export] public float SprintRecover = 0.23f;
+	/// baixa. O clique dado no caminho fica guardado e sai ao fim. É o
+	/// tempo de os braços trazerem a arma de volta
+	/// (<see cref="ViewModel.RigSprintOut"/>): 0,28 s desde o fim de 27/11 ("a animação de sair da corrida não combinou, muito rápido"; de manhã tinha ido a 0,18: Jhon,
+	/// "a velocidade de resposta da corrida... ao parar também"); era
+	/// 0,23, e antes 0,2.</summary>
+	[Export] public float SprintRecover = 0.28f;
 	[Export] public float StandHeight = 1.75f;
 
 	/// <summary>A cápsula agachada do lobo.</summary>
@@ -90,8 +95,10 @@ public partial class Player
 	/// <summary>A cápsula agachada do humano (26/11). Era a do lobo, 1,0 m, com o
 	/// olho a 60 cm do chão; agora o olho é o do corpo visto agachado (~140 cm,
 	/// "precisam ficar mais altos") e a cápsula leva a cabeça dele (uns 15 cm
-	/// acima do olho). Passar agachado por baixo de algo pede 1,5 m de vão.</summary>
-	public const float DefaultHumanCrouchHeight = 1.5f;
+	/// acima do olho). Passar agachado por baixo de algo pede 1,5 m de vão. Desde 27/11, 1,42 m: o agachado
+	/// desce 8 cm a mais (CharacterAnimator.CrouchSink; Jhon: "um pouco mais baixo, primeira e terceira
+	/// pessoa"), e a cápsula desce junto com a cabeça.</summary>
+	public const float DefaultHumanCrouchHeight = 1.42f;
 	[Export] public float HumanCrouchHeight = DefaultHumanCrouchHeight;
 
 	/// <summary>O olho do humano em pé e agachado, em metros acima dos pés.
@@ -103,7 +110,7 @@ public partial class Player
 	/// o corpo sem modelo (o servidor de partida) e o primeiro instante. Era
 	/// 147,5 cm em pé (12 abaixo dos olhos do corpo) e 60 cm agachado (50 abaixo).</summary>
 	[Export] public float HumanEyeHeight = 1.592f;
-	[Export] public float HumanCrouchEyeHeight = 1.4f;
+	[Export] public float HumanCrouchEyeHeight = 1.26f;   // (1,34 até 27/11, antes do CrouchSink)
 
 	/// <summary>Quão rápido o olho do humano vai até o que o corpo visto mostra,
 	/// em m/s: trocar de arma muda o tronco, e a câmera não dá tranco.</summary>
@@ -132,9 +139,34 @@ public partial class Player
 	[Export] public float StepHeight = 0.3f;
 	[Export] public float WolfStepHeight = 0.45f;
 
-	/// <summary>Quão rápido a câmera alcança o corpo depois de um degrau,
-	/// em m/s: o corpo sobe de uma vez, o olho vem logo atrás.</summary>
+	/// <summary>Quão rápido a câmera alcança o corpo depois de um degrau
+	/// sozinho (o meio-fio, a borda do contêiner), em m/s: o corpo sobe de uma
+	/// vez, o olho vem logo atrás. Numa escada de degraus a câmera vai no ritmo
+	/// dela (<see cref="StepRhythmWindow"/>).</summary>
 	[Export] public float StepEase = 2.2f;
+
+	/// <summary>
+	/// Degraus seguidos com menos que isto entre um e outro (em segundos) são
+	/// uma escada: a câmera sobe (ou desce) na velocidade em que os degraus
+	/// vêm, constante, em vez de alcançar o corpo a <see cref="StepEase"/> e
+	/// esperar o degrau seguinte. Era assim até 27/11 (Jhon: "ao subir escada
+	/// com o humano, tá mexendo muito a câmera para cima e para baixo"):
+	/// andando numa escada de 21 cm a velocidade vertical da câmera pulava de
+	/// 0 a 2,2 m/s oito vezes por segundo, e correndo o olho ficava até 72 cm
+	/// abaixo de onde devia (a escada subia mais rápido que os 2,2 m/s).
+	/// </summary>
+	[Export] public float StepRhythmWindow = 0.4f;
+
+	/// <summary>O quanto a velocidade da câmera atrás do degrau muda por
+	/// segundo (m/s²): ela não sai nem para de uma vez. Com 18, o arranque e a
+	/// chegada mudam no máximo 0,3 m/s num quadro.</summary>
+	[Export] public float StepAccel = 18f;
+
+	/// <summary>Atrás do corpo mais que isto (m), a câmera apressa
+	/// (<see cref="StepCatchUp"/> por metro a mais): o olho nunca fica muito
+	/// abaixo de onde está o corpo.</summary>
+	[Export] public float StepLag = 0.25f;
+	[Export] public float StepCatchUp = 10f;
 
 	private double _stunTimer;
 	private float _stunSlow = 1f;
@@ -294,12 +326,16 @@ public partial class Player
 		bool hands = !_intent.AttackHeld && !_intent.AimHeld && !_weapon.IsReloading && !_weapon.IsGrenadeReady
 			&& !_weapon.IsStabbing && !_sprintClick;
 		bool wants = !_form.IsWolf && _intent.SprintHeld && ahead && !_crouching && !_onWall && !IsStunned && hands;
-		bool now = wants && (_humanSprint || IsOnFloor());
+		// O fôlego (SprintBreath, 27/11): acabou, para de correr e espera um pouco.
+		bool now = wants && (_humanSprint || IsOnFloor()) && Breath.CanSprint;
+		Breath.Step((float)delta, now);
+		if (!Breath.CanSprint) now = false;
 
 		if (_humanSprint && !now) _sprintRecover = SprintRecover;
 		else if (_sprintRecover > 0) _sprintRecover -= delta;
 		if (_form.IsWolf) _sprintRecover = 0;
 		_humanSprint = now;
+		ReportBreath();
 	}
 
 	/// <summary>Morreu ou ficou preso na contagem: a corrida acaba, sem a
@@ -309,6 +345,33 @@ public partial class Player
 		_humanSprint = false;
 		_sprintRecover = 0;
 		_sprintClick = false;
+		_breath?.Reset();
+		ReportBreath();
+	}
+
+	/// <summary>O fôlego da corrida: segundos de corrida, segundos para encher de novo e a espera sem fôlego
+	/// (<see cref="SprintBreath"/>; Jhon, 27/11).</summary>
+	[Export] public float SprintBreathTime = 4f;
+	[Export] public float SprintBreathRefill = 3f;
+	[Export] public float SprintWindedWait = 1.5f;
+
+	/// <summary>O fôlego mudou (de 0 a 1), acabou, ou a corrida começou ou parou: para o HUD.</summary>
+	[Signal] public delegate void BreathChangedEventHandler(float fraction, bool winded, bool running);
+
+	private SprintBreath _breath;
+	public SprintBreath Breath => _breath ??= new SprintBreath(SprintBreathTime, SprintBreathRefill, SprintWindedWait);
+	private float _breathShown = -1f;
+	private bool _windedShown, _runningShown;
+
+	/// <summary>Avisa o HUD quando o fôlego muda de verdade (o HUD não pergunta).</summary>
+	private void ReportBreath()
+	{
+		SprintBreath b = Breath;
+		if (Mathf.Abs(b.Fraction - _breathShown) < 0.01f && b.Winded == _windedShown && _humanSprint == _runningShown) return;
+		_breathShown = b.Fraction;
+		_windedShown = b.Winded;
+		_runningShown = _humanSprint;
+		EmitSignal(SignalName.BreathChanged, b.Fraction, b.Winded, _humanSprint);
 	}
 
 	private float SpeedScale =>
@@ -319,7 +382,11 @@ public partial class Player
 		// A arma na mão pesa: 1,12 com a M9, 0,9 com a M3, e a faca alivia.
 		// É metade do que faz trocar para a secundária ser fuga e não só
 		// munição.
-		* (_form.IsWolf ? 1f : _weapon.MoveSpeedMultiplier);
+		// Correndo, a arma leve não soma (Jhon, 27/11: "velocidade da corrida com faca pode diminuir... tem que
+		// ser igual o sprint com fuzil"; "o sprint do humano com pistola tá muito rápido também"): faca (× 1,28),
+		// pistola (× 1,08) e fuzil correm a mesma coisa, 4,91 m/s; a arma pesada (AK, SCAR, SVD) segue mais lenta.
+		// Andando, cada uma continua com a sua.
+		* (_form.IsWolf ? 1f : _humanSprint ? Mathf.Min(_weapon.MoveSpeedMultiplier, 1f) : _weapon.MoveSpeedMultiplier);
 	private float JumpScale => _form.IsWolf ? _form.Breed.JumpMultiplier : 1f;
 
 	private void NormalMovement(double delta)
@@ -394,12 +461,28 @@ public partial class Player
 
 		Velocity = velocity;
 		Vector3 before = GlobalPosition;
+		// Descer degrau (27/11): andando no chão, sem pular, o corpo fica grudado
+		// nele até um degrau abaixo (o ímã do Godot, que fora daqui fica no padrão).
+		bool walking = grounded && velocity.Y <= 0.01f;
+		// (o ímã volta ao que era: a corrida na parede e o resto contam com o
+		// valor do corpo — repor "o padrão" à mão soltava o lobo da parede.)
+		float snap = FloorSnapLength;
+		// Só o humano: no lobo o ímã maior o arrancava da corrida na parede ao
+		// passar rente a um degrau ou batente (ParedeNoArmazem, ParedeNoNeon), e a
+		// câmera dele é de terceira pessoa — a escada não sacode a tela.
+		bool glued = walking && !_form.IsWolf;
+		if (glued) FloorSnapLength = Mathf.Max(snap, StepHeight);
 		MoveAndSlide();
-		if (grounded && direction != Vector3.Zero && velocity.Y <= 0.01f)
+		FloorSnapLength = snap;
+		if (walking && direction != Vector3.Zero)
 			TryStepUp(before, horizontal * (float)delta);
+		if (glued && IsOnFloor()) SteppedDown(before.Y - GlobalPosition.Y);
 	}
 
-	private float _stepLift;
+	/// <summary>A câmera atrás do corpo depois de um degrau (m; negativo: abaixo
+	/// dele, subindo), a velocidade com que ela o alcança, e o ritmo da escada.</summary>
+	private float _stepLift, _stepSpeed, _stepRate;
+	private double _sinceStep = double.MaxValue;
 
 	/// <summary>
 	/// Subir um degrau baixo andando. O <c>MoveAndSlide</c> trata a quina
@@ -429,19 +512,64 @@ public partial class Player
 		if (rise < 0.02f) return;
 
 		GlobalPosition = landed;
+		Stepped(rise);
+	}
+
+	/// <summary>Quanto o corpo pode descer num passo, andando no chão, e ainda
+	/// ser declive (a rampa, a escada com chapa): o lobo de quatro a 7,4 m/s
+	/// numa rampa de 35° desce uns 7 cm por passo. Mais que isto foi o ímã
+	/// puxando o corpo um degrau abaixo.</summary>
+	private const float SlopeDropPerStep = 0.08f;
+
+	/// <summary>
+	/// O corpo desceu <paramref name="drop"/> neste passo, andando no chão (27/11).
+	/// Até então o corpo só grudava no chão até 10 cm, e num degrau de escada (21
+	/// cm) saía do chão e caía, pulando degraus, e a câmera ia junto aos trancos;
+	/// agora o ímã o segura até um degrau abaixo (<see cref="StepHeight"/>), e o que
+	/// passa de um declive vira um degrau descido: a câmera fica onde estava e
+	/// vem atrás (<see cref="EaseStep"/>).
+	/// </summary>
+	private void SteppedDown(float drop)
+	{
+		if (drop > SlopeDropPerStep) Stepped(-drop);
+	}
+
+	/// <summary>O corpo subiu (<paramref name="rise"/> positivo) ou desceu um
+	/// degrau de uma vez: a câmera fica onde estava e passa a ir atrás dele; e
+	/// dois degraus seguidos dão o ritmo da escada.</summary>
+	private void Stepped(float rise)
+	{
+		_stepRate = _sinceStep < StepRhythmWindow ? Mathf.Abs(rise) / (float)Mathf.Max(_sinceStep, 0.001) : 0f;
+		_sinceStep = 0;
 		_stepLift -= rise;
 		Vector3 head = _head.Position;
 		head.Y -= rise;
 		_head.Position = head;
+		// o alisamento do desenho não reparte este pedaço pelo quadro: o olho já compensa
+		_smoothing ??= GetNodeOrNull<VisualSmoothing>("VisualSmoothing");
+		_smoothing?.Stepped(Vector3.Up * rise);
 	}
 
-	/// <summary>O olho alcança o corpo depois de um degrau.</summary>
+	private VisualSmoothing _smoothing;
+
+	/// <summary>O olho alcança o corpo depois de um degrau: no ritmo da escada,
+	/// se há uma (<see cref="StepRhythmWindow"/>), ou a <see cref="StepEase"/>;
+	/// apressando se ficou longe (<see cref="StepLag"/>); e sem sair nem parar
+	/// de uma vez (<see cref="StepAccel"/>).</summary>
 	private void EaseStep(double delta)
 	{
-		if (_stepLift == 0f) return;
+		_sinceStep += delta;
+		if (_sinceStep > StepRhythmWindow) _stepRate = 0f;
+		if (_stepLift == 0f) { _stepSpeed = 0f; return; }
 
+		float dt = (float)delta, distance = Mathf.Abs(_stepLift);
+		float want = (_stepRate > 0f ? _stepRate : StepEase) + Mathf.Max(0f, distance - StepLag) * StepCatchUp;
+		// chegando, freia para parar no lugar (v² = 2·a·d)
+		want = Mathf.Min(want, Mathf.Sqrt(2f * StepAccel * distance));
+		_stepSpeed = Mathf.MoveToward(_stepSpeed, want, StepAccel * dt);
+		// (sempre anda um pouco: a freada não pode deixar a câmera parada a um fio do corpo)
 		float previous = _stepLift;
-		_stepLift = Mathf.MoveToward(_stepLift, 0f, StepEase * (float)delta);
+		_stepLift = Mathf.MoveToward(_stepLift, 0f, Mathf.Max(_stepSpeed, 0.05f) * dt);
 		Vector3 head = _head.Position;
 		head.Y += _stepLift - previous;
 		_head.Position = head;

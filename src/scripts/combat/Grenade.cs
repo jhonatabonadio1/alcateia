@@ -112,14 +112,18 @@ public partial class Grenade : RigidBody3D
 	[Export] public string BounceSound = "granada_quique";
 
 	/// <summary>A velocidade de batida (m/s, na direção da superfície) que
-	/// soa a 0 dB; o arremesso longo bate a uns 12.</summary>
-	[Export] public float BounceLoudSpeed = 7f;
+	/// soa a 0 dB; o arremesso longo bate a uns 12. Era 7 até 27/11 (Jhon: "está faltando feedback sonoro"
+	/// no quique): o quique comum, a 3 m/s, soava a −7 dB, num arquivo já baixo; agora a −2.</summary>
+	[Export] public float BounceLoudSpeed = 4f;
+
+	/// <summary>O mais baixo que um quique soa (dB): o último, quase rolando, ainda se ouve (era −26).</summary>
+	[Export] public float BounceQuietDb = -16f;
 
 	/// <summary>Abaixo disto a batida não soa (é rolar, não bater).</summary>
 	[Export] public float BounceMinSpeed = 0.45f;
 
 	/// <summary>Até onde a batida se ouve (m).</summary>
-	[Export] public float BounceRange = 25f;
+	[Export] public float BounceRange = 40f;   // (25 até 27/11: "quase não consigo ouvir para correr e me esconder")
 
 	/// <summary>Tempo mínimo entre duas batidas que soam (s): o mesmo toque
 	/// pode durar dois passos de física.</summary>
@@ -137,7 +141,7 @@ public partial class Grenade : RigidBody3D
 
 	/// <summary>Até onde o pavio se ouve (m): é aviso de perto, não informação
 	/// do outro lado do mapa.</summary>
-	[Export] public float FuseRange = 14f;
+	[Export] public float FuseRange = 22f;   // (14 até 27/11, idem)
 
 	/// <summary>Volume do chiado e do fim do pavio (dB).</summary>
 	[Export] public float FuseDb = -2f;
@@ -268,7 +272,7 @@ public partial class Grenade : RigidBody3D
 		_lastBounce = _alive;
 		Bounces.Add((_alive, speed));
 		// O volume segue a energia da batida: metade da velocidade, 6 dB a menos.
-		float db = Mathf.Clamp(20f * Mathf.Log(speed / BounceLoudSpeed) / Mathf.Log(10f), -26f, 3f);
+		float db = Mathf.Clamp(20f * Mathf.Log(speed / BounceLoudSpeed) / Mathf.Log(10f), BounceQuietDb, 3f);
 		Sfx.At(BounceSound, GlobalPosition, BounceRange, db);
 	}
 

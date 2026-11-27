@@ -93,6 +93,7 @@ using System.Text;
 /// |---|---|---|
 /// | Drop | quem soltou → servidor → todos | número da arma, de quem caiu (conta ou bot), a arma, pente, reserva, de onde saiu, a força; do servidor, mais há quanto tempo está no chão |
 /// | Take | jogo → servidor | número da arma e quem pede (a conta ou um bot da máquina) |
+/// | Hurt | servidor → todos menos a vítima | autoritativa: um acerto valeu — vítima, autor, dano, vida e escudo como ficaram, caiu?, de onde veio |
 /// | Taken | servidor → todos | número da arma, quem levou (0: sumiu no chão), a arma, pente e reserva |
 /// </summary>
 public static class NetWire
@@ -109,7 +110,7 @@ public static class NetWire
 		BotState = 11, BotAttack = 12, BotHit = 13, BotDied = 14, HitBot = 15, Touch = 16,
 		Input = 17, Snapshot = 18, Status = 19, Loadout = 20, Radio = 21,
 		Damage = 22, Vitals = 23, Fire = 24, Seat = 25, BotOwner = 26,
-		Drop = 27, Take = 28, Taken = 29;
+		Drop = 27, Take = 28, Taken = 29, Hurt = 30;
 
 	/// <summary>O número de uma arma no chão é a conta de quem soltou vezes
 	/// isto, mais um contador da máquina dele: nunca se repete entre duas

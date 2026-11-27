@@ -40,7 +40,7 @@ public partial class InventoryScreen : LobbyScreen
 	private static readonly string[][] SubTabs =
 	{
 		new[] { "Todas", "Primária", "Secundária", "Granada", "Corpo a corpo" },
-		new[] { "Melhorias" },
+		new[] { "Melhorias de lobo" },
 		new[] { "Todos" },
 		new[] { "Todos" }
 	};
@@ -54,7 +54,7 @@ public partial class InventoryScreen : LobbyScreen
 		if (item == null) return;
 		_side = item.Kind switch
 		{
-			ItemKind.Tattoo => 1,
+			ItemKind.WolfUpgrade => 1,
 			ItemKind.Character => 2,
 			ItemKind.Service or ItemKind.Photo => 3,
 			_ => 0
@@ -238,19 +238,19 @@ public partial class InventoryScreen : LobbyScreen
 	private void WolfSide(VBoxContainer column)
 	{
 		column.AddChild(Step(1, "Clique no espaço que quer trocar"));
-		column.AddChild(UiKit.Caption(Loc.F("Melhorias  ·  {0}/{1}", Profile.Tattoos.Count, Profile.MaxTattoos)));
+		column.AddChild(UiKit.Caption(Loc.F("Melhorias de lobo  ·  {0}/{1}", Profile.WolfUpgrades.Count, Profile.MaxWolfUpgrades)));
 
-		for (int i = 0; i < Profile.MaxTattoos; i++)
+		for (int i = 0; i < Profile.MaxWolfUpgrades; i++)
 		{
-			string id = i < Profile.Tattoos.Count ? Profile.Tattoos[i] : null;
-			column.AddChild(SlotRow(Loc.F("Melhoria {0}", i + 1), Catalog.Get(id), () => Filter(1, 0),
-				id == null ? null : () => { Profile.UnequipTattoo(id); Refresh(); }, choosing: _sub == 0));
+			string id = i < Profile.WolfUpgrades.Count ? Profile.WolfUpgrades[i] : null;
+			column.AddChild(SlotRow(Loc.F("Melhoria de lobo {0}", i + 1), Catalog.Get(id), () => Filter(1, 0),
+				id == null ? null : () => { Profile.UnequipWolfUpgrade(id); Refresh(); }, choosing: _sub == 0));
 		}
 
 		column.AddChild(UiKit.Spacer());
 		column.AddChild(UiKit.Paragraph(
 			"O lobo é um só para todos: mata rápido, mas tem pouco escudo e fica lobo por pouco tempo. " +
-			"As melhorias são ajustes pequenos por cima dele. Tudo do lobo se compra com Cash, nunca com IPs."));
+			"As melhorias de lobo são ajustes pequenos por cima dele. Tudo do lobo se compra com Cash, nunca com IPs."));
 	}
 
 	private void CharacterSide(VBoxContainer column)
@@ -373,7 +373,7 @@ public partial class InventoryScreen : LobbyScreen
 		(0, 3) => "Escolha a granada",
 		(0, 4) => "Corpo a corpo",
 		(0, _) => "Todas as suas armas",
-		(1, _) => "Escolha as melhorias",
+		(1, _) => "Escolha as melhorias de lobo",
 		(2, _) => "Escolha o personagem",
 		_ => "Seus serviços"
 	};
@@ -403,7 +403,7 @@ public partial class InventoryScreen : LobbyScreen
 			grid.AddChild(ItemCard.Make(item, CardMode.Inventory, item.Id == _selectedId, Select));
 
 		if (items.Count == 0)
-			column.AddChild(UiKit.Paragraph("Nada aqui ainda. A loja vende armas, granadas e melhorias por Cash."));
+			column.AddChild(UiKit.Paragraph("Nada aqui ainda. A loja vende armas, granadas e melhorias de lobo por Cash."));
 
 		return column;
 	}
@@ -419,7 +419,7 @@ public partial class InventoryScreen : LobbyScreen
 			(0, 3) => owned.Where(i => i.Kind == ItemKind.Utility),
 			(0, 4) => owned.Where(i => Arsenal.IsKnife(i.Id)),
 			(0, _) => owned.Where(i => i.Kind is ItemKind.Weapon or ItemKind.Utility),
-			(1, _) => owned.Where(i => i.Kind == ItemKind.Tattoo),
+			(1, _) => owned.Where(i => i.Kind == ItemKind.WolfUpgrade),
 			(2, _) => owned.Where(i => i.Kind == ItemKind.Character),
 			_ => owned.Where(i => i.Kind is ItemKind.Service or ItemKind.Photo)
 		};
@@ -482,7 +482,7 @@ public partial class InventoryScreen : LobbyScreen
 
 	private string EquipLabel(CatalogItem item) => item.Kind switch
 	{
-		ItemKind.Tattoo => Profile.Tattoos.Contains(item.Id) ? "Equipada" : "Equipar melhoria",
+		ItemKind.WolfUpgrade => Profile.WolfUpgrades.Contains(item.Id) ? "Equipada" : "Equipar melhoria de lobo",
 		ItemKind.Character => IsEquippedHere(item) ? Loc.F("Em uso {0}", TeamLabel(item)) : Loc.F("Usar {0}", TeamLabel(item)),
 		ItemKind.Service => "Usar",
 		ItemKind.Photo => IsEquippedHere(item) ? "Foto em uso" : "Usar como foto",
@@ -491,7 +491,7 @@ public partial class InventoryScreen : LobbyScreen
 
 	private bool IsEquippedHere(CatalogItem item) => item.Kind switch
 	{
-		ItemKind.Tattoo => Profile.Tattoos.Contains(item.Id),
+		ItemKind.WolfUpgrade => Profile.WolfUpgrades.Contains(item.Id),
 		ItemKind.Character => (item.Team is 0 or Teams.Blue ? Profile.BlueCharacter == item.Id : true)
 			&& (item.Team is 0 or Teams.Orange ? Profile.OrangeCharacter == item.Id : true),
 		ItemKind.Service => false,
@@ -503,8 +503,8 @@ public partial class InventoryScreen : LobbyScreen
 	{
 		switch (item.Kind)
 		{
-			case ItemKind.Tattoo:
-				if (!Profile.EquipTattoo(item.Id, out string error)) { Shell.Toast(error, UiTokens.Danger); return; }
+			case ItemKind.WolfUpgrade:
+				if (!Profile.EquipWolfUpgrade(item.Id, out string error)) { Shell.Toast(error, UiTokens.Danger); return; }
 				Shell.Toast(Loc.F("{0} equipada", item.Name));
 				break;
 

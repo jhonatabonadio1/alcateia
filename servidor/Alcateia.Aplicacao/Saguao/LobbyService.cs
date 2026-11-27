@@ -147,6 +147,24 @@ public sealed class LobbyService : IDisposable
 		lock (_lock) return (_rooms.Count, _rooms.Values.Count(r => r.State != Dominio.Salas.RoomState.Waiting));
 	}
 
+	/// <summary>
+	/// Avisa o jogo de uma conta que ela mudou por fora dele — o painel deu
+	/// moeda, item ou nível (Jhon, 27/11: "o nível e as moedas devem entrar em
+	/// tempo real para o jogador"). Vai só o aviso (<c>conta</c>); o jogo relê
+	/// a conta pela API, como faz ao abrir a loja. Falso se ela não estava ligada.
+	/// </summary>
+	public async Task<bool> AccountChanged(long accountId)
+	{
+		var outbox = new Outbox();
+		lock (_lock)
+		{
+			if (!_sessions.TryGetValue(accountId, out Session session)) return false;
+			outbox.To(session, new JsonObject { ["t"] = "conta" });
+		}
+		await outbox.Deliver();
+		return true;
+	}
+
 	/// <summary>Derruba a conexão de uma conta (banimento, ou a pedido do
 	/// painel). Falso se ela não estava ligada.</summary>
 	public async Task<bool> Kick(long accountId, string why)

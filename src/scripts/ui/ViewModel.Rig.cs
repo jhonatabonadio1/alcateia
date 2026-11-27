@@ -767,9 +767,15 @@ public partial class ViewModel
 	/// 26/11: "está muito rápida, precisa ser um pouco mais lenta e
 	/// sincronizada com os outros movimentos das armas"). Foram 0,34 e
 	/// 0,30 por um instante ("deixe a entrada e saída da corrida um pouco
-	/// mais rápido"): ficam no tempo de mirar e desmirar.</summary>
-	[Export] public float RigSprintIn = 0.26f;
-	[Export] public float RigSprintOut = 0.23f;
+	/// mais rápido"): ficaram no tempo de mirar e desmirar, 0,26 e 0,23.
+	/// Em 27/11, de novo mais depressa ("aumente a velocidade de resposta da
+	/// corrida: ao clicar em Shift a animação de iniciar a correr deve ser
+	/// mais rápida, e ao parar também"): 0,20 e 0,18 — logo acima do que em
+	/// 26/11 tinha ficado rápido demais (0,18 e 0,16).</summary>
+	[Export] public float RigSprintIn = 0.20f;
+	// (a volta, 0,28 desde o fim de 27/11: a 0,18 "a animação de sair da corrida não combinou
+	// muito ao voltar os rifles, muito rápido"; a entrada continua em 0,20)
+	[Export] public float RigSprintOut = 0.28f;
 
 	/// <summary>A cadência dos braços correndo sem o passo do corpo para
 	/// seguir (corpo sem <see cref="Player"/>): fixa. Com ele, os braços

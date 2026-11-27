@@ -128,7 +128,8 @@ public partial class CharacterAnimator
 					// dobram até o pé pousar onde o do clipe pousa, sem a sola
 					// passar do chão (AnimationKit.Legs). Nos clipes de pé isso
 					// mudava a passada medida (PassadaHumana, para trás 0,36 → 0,55).
-					FitToBody(animation, temp, body, _model, bodyPath, reachFloor: clip.StartsWith("crouch"));
+					FitToBody(animation, temp, body, _model, bodyPath, reachFloor: clip.StartsWith("crouch"),
+						sink: clip.StartsWith("crouch") ? CrouchSink : 0f);
 					// Ombros mais altos e braços mais curtos que os do X Bot: o
 					// fuzil chega mais perto do rosto, e a cabeça inclinada do
 					// clipe entrava na coronha. Ela sobe um pouco.

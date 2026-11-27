@@ -1,78 +1,52 @@
 """
-Cidade do Deserto — mapa grande (110 × 75 m), a céu aberto, sol alto.
+Cidade do Deserto — mapa médio (64 × 64 m), a céu aberto, sol alto.
 
-Uma cidadela no deserto, talhada dentro da muralha: três vielas de ponta a ponta (a do norte, a rua da feira no meio, de
-10 m, e a do sul), ligadas por becos de 2,5 m entre as casas e pela rua do centro, que abre na praça do chafariz. Cada
-time nasce no pátio da caravana, atrás do portão, com três saídas: o portão e um beco para cada viela. As casas têm laje
-de 3,5 m (sobe-se por escadas de pedra) e por cima da muralha (5,4 m) anda-se de ponta a ponta — quem chega lá é o lobo.
+A cidadela do pacote "Low Poly FPS Map Vol.2 — Desert City" como o autor montou: a cena de demonstração, lida do
+``.umap`` do Unreal (``kits/unreal_umap.py`` → ``fps2_demo.json``). Pedido do Jhon, 27/11: "use o que tem lá de demo".
+(Até 26/11 o Deserto era uma planta própria, desenhada em letras com as peças soltas do kit; está no git.)
 
-Montado com as peças do kit "Low Poly FPS Map Vol.2 — Desert City" (JustCreate; ``tools/mapas/kits``), com planta própria.
-A planta é o desenho em letras aqui embaixo (``kits/planta.py``): cada letra, 2,5 m.
+A cena é uma cidadela de 64 × 64 m dentro da muralha (6 m): casas de adobe de um e dois andares, de laje, com escadas
+de pedra por fora, toldos, bancas de feira, a praça do chafariz, o largo da feira, palmeiras, e vielas de 3 a 6 m entre
+os blocos de casas. Em volta, só dunas (as montanhas de pico branco da cena saíram: deserto não tem pico).
+
+**No tamanho da cena** (Jhon, 27/11: "ajuste somente o da obra, para não ficar exagerado"): não foi dobrada como o
+Distrito Neon. O azul nasce do lado oeste (o da praça do chafariz), o laranja do lado leste (o do largo da feira); os
+dois lados não são iguais (a cena não é simétrica).
+
+A luz é de deserto ao meio-dia: sol forte e quente, sombra curta, o ar claro de poeira, e nuvens altas e ralas
+(``assets/mapas/ceus/ceu_nuvens.gdshader``).
 
 As quatro perguntas do teste de mapa:
-  1. Caminho que só o lobo faz: da laje das casas (3,5 m) para cima da muralha (5,4 m) e por ela, por cima dos becos,
-     de uma viela à outra.
-  2. Onde o humano vê o lobo chegando: a laje da casa da escada, de frente para a viela e para a rua do centro; as
-     bancas da feira, com a rua de 10 m inteira à vista.
-  3. Corredor que o humano deve evitar: os becos de 2,5 m entre as vielas (30 m sem porta, muralha dos dois lados).
-  4. Cair em cima de quem não olha: da muralha e das lajes sobre os becos e sobre a rua da feira.
-
-O leste é o oeste girado 180°.
+  1. Caminho que só o lobo faz: de laje em laje (3,5 m) pelos toldos e caixotes, e por cima das casas de dois andares
+     (7 m) ricocheteando nas vielas de 3 m; o alto da muralha é barrado.
+  2. Onde o humano vê o lobo chegando: as lajes das casas baixas (sobe-se pela escada de pedra), a praça do chafariz e
+     o largo da feira.
+  3. Corredor que o humano deve evitar: as vielas entre os blocos de casas, com laje dos dois lados.
+  4. Cair em cima de quem não olha: das lajes para a viela e para a praça do chafariz.
 """
+import os
+
+import numpy as np
+
 from .kit import Mapa, AZUL
-import math
+from .kits.demo import Demo, por, barreiras, fora_do_anel, alcancavel, nascer_em, assentar
+from .kits.montagem import Montagem, Grade, fechar, espalhar, luz_de_jogo
 
-from .kits.montagem import Montagem, Grade, fechar, nascer, barrar, espalhar, luz_de_jogo, lampadas
-from .kits.planta import Planta
+MEIO = (0.35, 0.5)             # na cena do pacote: o meio da cidadela (vira o centro do mapa)
+CHAO = 1.0                     # a altura do chão da cena (o terreno do Unreal)
+X, Z = 35.0, 35.0              # meia largura e meio fundo do mapa (o limite, por fora da muralha)
+TETO = 18.0
+MIOLO = (31.0, 31.0)           # por dentro da muralha: nenhuma duna entra aqui
+DUNA = 0.65                    # a altura das dunas da cena, para ficarem baixas e redondas
 
-# # muralha (maciço de 5,4 m, anda-se por cima)   T torreão   a e casa baixa (laje de 3,5 m)   A E casa alta (7 m)
-# s escada de pedra (sobe para a casa encostada na ponta)   m banca da feira   n tenda   w poço   p palmeira   r pedras
-# b caixote coberto (2 m)   c caixotes e sacas   j potes   k tapete   1–9 por onde passam as rotas
-OESTE = [
-    "######################",
-    "#####aaa#eeee###AAA###",
-    "#####aaa#eeee.w.AAA###",
-    "#####aaa#eeee...AAA###",
-    "###...p..1....b...p.2.",
-    "###..j..........r.....",
-    "###.#eee#aaaa.###aaa..",
-    "###.#eee#aaaa.sssaaa..",
-    "###.#eee#aaaa.###aaa..",
-    "###.#########8######..",
-    "###.##AAAeeee.aaa..p..",
-    "#.n..TAAAeeee.aaa.m...",
-    "#...c#AAAeeee.aaa....p",
-    "#..p..j.....m....p....",
-    "#.......3.b.......k..5",
-    "#..n.......m...4.b....",
-    "#.c...j...........p...",
-    "#.p..#eee.AAA#aaaa.j..",
-    "#..n.Teee.AAA#aaaa....",
-    "###.##eee.AAA#aaaa..b.",
-    "###.#####9##########..",
-    "###.#aaa#.#eeeesss##..",
-    "###.#aaa#.#eeee.p.##..",
-    "###.#aaa#.#eeee...##..",
-    "###..p...6....r..p..7.",
-    "###.....b........j....",
-    "#####AAA#eeee#aaa#EEE#",
-    "#####AAA#eeee#aaa#EEE#",
-    "#####AAA#eeee#aaa#EEE#",
-    "######################",
-]
-SOLIDOS = "#TaeAEs"
-P = Planta(OESTE, 2.5, 'giro')
-X, Z = P.X, P.Z
-MURALHA = 5.4          # a altura do maciço; a ameia da parede (6 m) passa por cima
-MURALHA_FORA = 7.6     # a muralha que fecha o mapa (era 14 m; Jhon, 20/11: "pode ser metade do que já é" — o lobo não corre nos limites invisíveis, cai)
-
-# (os caixotes têm a colisão da própria malha: a caixa deles pegava a tampa torta e segurava tiro de raspão — 20/11)
-CAIXA = ('Bag_', 'Barrel', 'Pallet', 'Pot_', 'Rock_', 'Furniture', 'Table', 'Jug_', 'Well', 'muralha')
+# A colisão de cada peça é a da própria malha, menos o que é caixa de verdade: a caixa de um pote, de um saco, de um
+# barril ou de uma mesa segurava o tiro de cima no ar, sem nada que se visse (o teste TiroDeCimaDeserto)
+CAIXA = ('Pallet', 'Door', 'Fence_01')
 SEM = ('Block_', 'Book', 'Carpet', 'Cup', 'Desk', 'Food', 'Plate', 'Scroll', 'Flag', 'Dryer', 'Plant', 'PalmTree', 'PowerLines', 'Tile', 'Hill', 'Mountain',
-       'Garbage', 'Door', 'WindowPart', 'FlowerBed', 'pedra')
-# a casa de cada tamanho de retângulo (em células, o lado maior primeiro): baixas e altas
-BAIXAS = {(3, 3): 'House_01', (3, 2): 'House_02', (4, 3): 'House_03', (4, 2): 'House_03', (2, 2): 'House_01'}
-ALTAS = {(3, 3): 'House_05', (2, 2): 'House_05', (4, 2): 'House_04L', (4, 3): 'House_04R', (3, 2): 'House_05'}
+       'Garbage', 'WindowPart', 'FlowerBed', 'Jug_')
+LONGE = ('Hill', 'Mountain')
+# as escadas de pedra, medidas na peça: (o pé da linha das quinas, a quina do último degrau, os lados)
+ESCADAS = {'Stairs_01L': ((3.64, 0.0), (-1.79, 3.49), (-1.17, 1.17)), 'Stairs_01R': ((3.64, 0.0), (-1.79, 3.49), (-1.17, 1.17))}
 
 
 def colisao(nome):
@@ -80,153 +54,73 @@ def colisao(nome):
 
 
 def desenho():
-    M = Montagem('fps2', colisao); K = M.kit
-    K.chapa('muralha', M.cor_dos_lados('Wall_01')); K.chapa('pedra', (0.62, 0.54, 0.46))
-
-    # ---- a muralha: o maciço (uma caixa por retângulo) e, em cada face que dá para a rua, os panos com ameia
-    # (a de dentro, entre as vielas, tem 5,4 m e o lobo anda por cima; a de fora, que fecha o mapa, 14 m: dois panos,
-    # a ameia só no de cima — ninguém chega lá)
-    Pm = P.marcada(P.borda('#T'), '@')
-    for reg in Pm.regioes('#'):
-        M.chapa('muralha', *P.mundo(*reg[1:]), alto=MURALHA, colide='caixa', planta=True)
-    for xa, za, xb, zb, yaw in Pm.contorno('#', fora=False):
-        M.muro(('Wall_01', 'Wall_02'), xa, za, xb, zb, 7.0, frente=yaw, recuo=0.27, semente=int(abs(xa * 3 + za * 7)), colide=None, planta=False)
-    for reg in Pm.regioes('@'):
-        M.chapa('muralha', *P.mundo(*reg[1:]), alto=MURALHA_FORA, colide='caixa', planta=True)
-    for xa, za, xb, zb, yaw in Pm.contorno('@'):
-        k = dict(frente=yaw, recuo=0.27, semente=int(abs(xa * 3 + za * 7)), colide=None, planta=False)
-        M.muro(('Wall_02', 'Wall_01'), xa, za, xb, zb, 7.0, alto=MURALHA_FORA - 5.2, **k)
-        M.muro(('Wall_01', 'Wall_02'), xa, za, xb, zb, 7.0, y=MURALHA_FORA - 5.4, **k)
-    for _, r, c, x, z in P.celulas('T'):
-        M.por('Wall_04', x, z, escala=1.25)
-
-    # ---- as casas: uma por retângulo de letras, a porta para o lado de mais chão livre
-    for reg in P.regioes('aeAE'):
-        L, c0, r0, c1, r1 = reg; ret = P.mundo(c0, r0, c1, r1); lados = tuple(sorted((c1 - c0, r1 - r0), reverse=True))
-        nome = (BAIXAS if L in 'ae' else ALTAS)[lados]; p = K[nome]; yaw = P.frente(ret, SOLIDOS, (p.tam[0], p.tam[2]))
-        M.encaixar(nome, *ret, yaw=yaw, colide='malha')
-        # por dentro (a porta fica aberta): o tapete no meio, a mesa posta e o armário no fundo, potes e sacas num canto
-        cx, cz = (ret[0] + ret[2]) / 2, (ret[1] + ret[3]) / 2; a = math.radians(yaw); fx, fz = math.sin(a), math.cos(a); dx, dz = fz, -fx
-        hf = (abs(ret[3] - ret[1]) if round(yaw / 90) % 2 == 0 else abs(ret[2] - ret[0])) / 2; hl = (abs(ret[2] - ret[0]) if round(yaw / 90) % 2 == 0 else abs(ret[3] - ret[1])) / 2
-        def dentro(frente, lado): return (cx + fx * frente + dx * lado, cz + fz * frente + dz * lado)
-        M.por(P.sorteio(cx, cz, ('Carpet_01', 'Carpet_02', 'Carpet_03', 'Carpet_04')), *dentro(0.2, 0.0), y=0.22, yaw=yaw + 90, escala=1.3)
-        tx, tz = dentro(-(hf - 1.5), hl - 1.7); M.por('Table_01', tx, tz, y=0.2, yaw=yaw + 90)
-        for i, n in enumerate(('Jug_01', 'Plate_03', 'Food_04', 'Cup_01')): M.por(n, tx + dx * 0.1 + fx * (-0.6 + 0.4 * i), tz + dz * 0.1 + fz * (-0.6 + 0.4 * i), y=0.93)
-        M.por(P.sorteio(cx, cz, ('Furniture_02', 'Furniture_01'), 1), *dentro(-(hf - 0.85), -(hl - 1.6)), y=0.2, yaw=yaw)
-        px, pz = dentro(hf - 1.3, -(hl - 1.1)); M.por('Jug_03', px, pz, y=0.2); M.por('Jug_02', px + dx * 0.5, pz + dz * 0.5, y=0.2); M.por('Bag_01', px + fx * -0.7, pz + fz * -0.7, y=0.2)
-    # as escadas: o alto fica na ponta encostada numa casa baixa
-    for _, c0, r0, c1, r1 in P.regioes('s'):
-        ret = P.mundo(c0, r0, c1, r1)
-        if c1 - c0 > r1 - r0: yaw = 90.0 if P.letra(r0, c0 - 1) in 'ae' else -90.0
-        else: yaw = 0.0 if P.letra(r0 - 1, c0) in 'ae' else 180.0
-        # folga de 3 cm: as quinas desta escada encostavam na chapa, e o corpo subia aos trancos (26/11)
-        M.rampa(M.encaixar('Stairs_01R', *ret, yaw=yaw, colide='malha'), (3.64, 0.0), (-1.79, 3.49), (-1.17, 1.17), eixo=2, folga=0.03)
-
-    # ---- o que está na rua
-    for L, r, c, x, z in P.celulas('mnwprbcjk'):
-        nx, nz = P.corrida(r, c, SOLIDOS); ao_x = nx >= nz; g = P.desvio(x, z, 25)
-        if L == 'm':
-            yaw = 0.0 if ao_x else 90.0
-            M.por(P.sorteio(x, z, ('Market_01', 'Market_02')), x, z, yaw=yaw); M.por(P.sorteio(x, z, ('Table_01', 'Table_02'), 1), x, z, yaw=yaw)
-            M.por(P.sorteio(x, z, ('Jug_01', 'Jug_03', 'Food_04'), 2), x + 0.3, z, y=0.75)
-        elif L == 'n':
-            M.por(P.sorteio(x, z, ('Tent_01', 'Tent_02', 'Tent_03')), x, z, yaw=90.0 + g, colide='malha', planta=False)
-            M.por('Carpet_01', x, z, yaw=90.0 + g); M.por('Bag_01', x + 1.4, z + 0.9); M.por('Bag_03', x + 1.5, z + 0.2)
-        elif L == 'w':
-            M.por('Box_02', x, z, yaw=g); M.por('Jug_01', x + 1.2, z + 0.4); M.por('Jug_03', x - 1.1, z - 0.3)          # era o poço (sem água no deserto; Jhon, 20/11)
-        elif L == 'p':
-            k_ = int(P.sorte(x, z, 21) * 3)          # sem vegetação no deserto (Jhon, 20/11): pedras, potes ou carga no lugar da palmeira
-            if k_ == 0: M.por('Rock_02', x, z, yaw=g * 2); M.por('Rock_01', x + 0.8, z + 0.5, yaw=g)
-            elif k_ == 1: M.por('Jug_03', x, z); M.por('Jug_01', x + 0.6, z - 0.4); M.por('Jug_02', x - 0.5, z + 0.5)
-            else: M.por('Box_01', x, z, yaw=g); M.por('Bag_02', x + 0.8, z + 0.3); M.por('Bag_01', x - 0.2, z + 0.9)
-            pass
-        elif L == 'r':
-            M.por('Rock_04', x, z, yaw=g); M.por('Rock_02', x + 1.0, z + 0.6, yaw=g * 2); M.por('Rock_01', x - 0.7, z + 0.9)
-        elif L == 'b':
-            M.por('Box_02', x, z, yaw=g * 0.5); M.por('Barrel_01', x + 1.5, z - 0.3)
-        elif L == 'c':
-            M.por('Box_01', x - 0.4, z, yaw=g); M.por('Box_01', x + 0.6, z + 0.3, yaw=g + 30); M.por('Bag_02', x + 0.2, z - 0.9); M.por('Pallet_02', x - 0.5, z + 1.1)
-        elif L == 'j':
-            M.por('Jug_01', x - 0.4, z); M.por('Jug_03', x + 0.3, z + 0.4); M.por('Jug_02', x + 0.2, z - 0.5)
-        elif L == 'k':
-            M.por('Carpet_02', x, z, yaw=g); M.por('Carpet_04', x + 1.3, z + 0.8, yaw=g + 60)
-
-    # ---- o que dá vida às vielas, sem colisão: potes, plantas, canteiros, tapetes, sacas, bandeiras e entulho ao pé das paredes
-    e = dict(colide=None, planta=False)
-    for r, c, x, z, yaw, dist in P.beiras(SOLIDOS):
-        M.grupo()
-        s_ = P.sorte(x, z, 5 + int(yaw)); g = P.desvio(x, z, 40, 6)
-        if s_ < 0.07:
-            M.encostar('Jug_01', x, z, yaw, dist, folga=0.1, **e); M.encostar('Jug_02', x, z, yaw, dist, folga=0.15, lado=0.6, **e); M.encostar('Jug_02', x, z, yaw, dist, folga=0.6, lado=0.3, **e)
-        elif s_ < 0.13: M.encostar('Jug_01', x, z, yaw, dist, folga=0.1, **e); M.encostar('Jug_03', x, z, yaw, dist, folga=0.2, lado=0.5, **e); M.encostar('Block_02', x, z, yaw, dist, folga=0.3, lado=-0.6, **e)
-        elif s_ < 0.18: M.encostar('Rock_03', x, z, yaw, dist, folga=0.05, **e); M.encostar('Block_01', x, z, yaw, dist, folga=0.2, lado=0.7, **e)
-        elif s_ < 0.23: M.encostar(P.sorteio(x, z, ('Carpet_01', 'Carpet_03', 'Carpet_04'), 8), x, z, yaw, dist, folga=0.15, **e); M.encostar('Jug_03', x, z, yaw, dist, folga=0.2, lado=0.9, **e)
-        elif s_ < 0.28: M.encostar('Bag_01', x, z, yaw, dist, folga=0.05, **e); M.encostar('Bag_02', x, z, yaw, dist, folga=0.1, lado=0.65, **e); M.encostar('Bag_03', x, z, yaw, dist, y=0.6, folga=0.08, lado=0.3, **e)
-        elif s_ < 0.32: M.encostar(P.sorteio(x, z, ('Furniture_04', 'Furniture_05'), 9), x, z, yaw, dist, folga=0.05, **e)
-        elif s_ < 0.37: M.encostar(P.sorteio(x, z, ('Flag_01', 'Flag_02'), 10), x, z, yaw, dist, y=3.2, folga=0.0, **e)
-        elif s_ < 0.41:
-            M.encostar('Garbage_02', x, z, yaw, dist, folga=0.1, **e)
-            for i in range(3): M.encostar(('Block_01', 'Block_02', 'Block_03')[i], x, z, yaw, dist, folga=0.15 + 0.25 * i, lado=0.8 - 0.3 * i, **e)
-        elif s_ < 0.47: M.encostar(P.sorteio(x, z, ('Tile_01', 'Tile_02', 'Tile_03'), 11), x, z, yaw, dist, folga=0.1, **e); M.encostar('Tile_04', x, z, yaw, dist, folga=0.5, lado=0.7, **e)
-        # os toldos da rua da feira, presos na parede
-        if r in (13, 16) and P.sorte(x, z, 12) < 0.4:
-            a = math.radians(yaw); M.por(P.sorteio(x, z, ('Tent_01', 'Tent_02', 'Tent_03'), 13), x - math.sin(a) * dist, z - math.cos(a) * dist, yaw=yaw, pivo=True, **dict(e, colide='malha'))
-    M.grupo(fim=True)
-    encostadas = {(r, c) for r, c, *_ in P.beiras(SOLIDOS)}
-    for L, r, c, x, z in P.celulas('.'):
-        M.grupo()
-        norte_sul = P.letra(r - 1, c) in SOLIDOS and P.letra(r + 1, c) in SOLIDOS; leste_oeste = P.letra(r, c - 1) in SOLIDOS and P.letra(r, c + 1) in SOLIDOS
-        if (norte_sul or leste_oeste) and P.sorte(x, z, 14) < 0.3:          # o varal atravessado no beco
-            M.por('Dryer_01', x, z, y=3.0, yaw=90.0 if norte_sul else 0.0, escala=(2.45 / 2.7, 1.0, 1.0), **e)
-        if (r, c) in encostadas: continue
-        s_ = P.sorte(x, z, 15)
-        if s_ < 0.09: M.por(P.sorteio(x, z, ('Tile_01', 'Tile_02', 'Tile_03'), 16), x, z, yaw=P.desvio(x, z, 20), **e); M.por('Tile_04', x + 1.0, z + 0.4, yaw=30.0, **e)
-        elif s_ < 0.13: M.por('Block_03', x - 0.4, z + 0.2, yaw=P.desvio(x, z, 180), **e); M.por('Block_01', x + 0.5, z - 0.3, yaw=P.desvio(x, z, 90, 3), **e)
-        elif s_ < 0.17: M.por('Rock_03', x, z, yaw=P.desvio(x, z, 180), **e)
-
-    M.grupo(fim=True)
-    # ---- a praça: o calçamento e o chafariz, no meio
-    M.chapa('pedra', *P.mundo(17, 10, 27, 20), y=0.0, alto=0.03)
-    # no meio, um estrado de pedra com a carga da feira em cima (era o chafariz: sem água no deserto; Jhon, 20/11)
-    M.chapa('muralha', -2.4, -2.4, 2.4, 2.4, y=0.0, alto=0.9, colide='caixa', planta=True)
-    M.por('Box_02', -0.6, 0.3, y=0.9, yaw=20.0); M.por('Barrel_01', 1.1, -0.7, y=0.9); M.por('Bag_01', 0.9, 1.1, y=0.9); M.por('Jug_01', -1.4, -1.3, y=0.9)
-    # a rua da feira calçada de ponta a ponta (o resto é areia): o caminho se lê no chão
-    M.chapa('pedra', -X + 2.5, -5.0, X - 2.5, 5.0, y=0.0, alto=0.025)
-    # ---- o deserto em volta (fora da muralha): dunas e serra, sem colisão
-    # (por cima da muralha de 14 m só se vê o que é alto: a serra em volta inteira, as dunas grandes atrás)
-    import math as _m
-    # dunas largas e redondas, em três fiadas (Jhon, 20/11: "montes mais arredondados e largos"; saiu a montanha de pico)
-    for fiada, (dist, quantas, largo, alto, fundo) in enumerate(((96.0, 12, 1.6, 0.75, -1.5), (130.0, 10, 2.4, 1.1, -2.0), (178.0, 9, 3.4, 1.6, -3.0))):
-        for i in range(quantas):
-            a = i * 2 * _m.pi / quantas + 0.31 * fiada; d = dist + 7 * (i % 2)
-            M.por(('Hill_01', 'Hill_02', 'Hill_03', 'Hill_04', 'Hill_05')[(i + fiada) % 5], _m.cos(a) * d * 1.2, _m.sin(a) * d, yaw=i * 41.0 + fiada * 17.0, y=fundo,
-                  escala=(largo, alto, largo * 0.8), colide=None, planta=False)
+    """A cidadela da cena e as dunas em volta."""
+    D = Demo('fps2'); M = Montagem(D.kit, colisao); centro = np.array([MEIO[0], CHAO, MEIO[1]]); M.dunas = 0
+    for item in D.itens:
+        p, G, E, t, nome = item; t = t - centro
+        # Só morros de areia em volta (Jhon, 27/11: "montanha com gelo no deserto não faz sentido"; "é um deserto,
+        # deserto não tem montanha nem picos"): as montanhas de pico branco da cena saem, e as dunas entram mais
+        # baixas (a 65% da altura), que é como ficam redondas
+        if nome.startswith('Mountain'): continue
+        if nome.startswith(LONGE):
+            E = E * np.array([1.0, DUNA, 1.0])
+            # (a duna que na cena passa por cima da muralha e entra na cidadela não entra)
+            q = p.pos.reshape(-1, 3) @ (G @ np.diag(E)).T + t
+            if ((np.abs(q[:, 0]) < MIOLO[0]) & (np.abs(q[:, 2]) < MIOLO[1]) & (q[:, 1] > 0.3)).any(): continue
+            por(M, p, G, E, t, nome, colide=None, planta=False); M.dunas += 1; continue
+        it = por(M, p, G, E, t, nome, planta=not nome.startswith(SEM))
+        if nome in ESCADAS:
+            pe, alto, lados = ESCADAS[nome]; M.rampa(it, pe, alto, lados, eixo=2, folga=0.03)
+        if nome.startswith('PalmTree'):
+            pe = it.pontos(np.zeros((1, 3)))[0]; M.barra(float(pe[0]), float(pe[2]), 0.3, 2.2)          # o tronco
+    # (o que estava num montinho do terreno da demo desce até o chão plano daqui: 27/11)
+    # (as pedras primeiro: há planta em cima de pedra)
+    M.assentadas = assentar(M, ('Rock',), ate=0.7) + assentar(M, ('Plant', 'PalmTree', 'FlowerBed'), ate=1.0)
     return M
 
 
 def montar():
     m = Mapa("deserto", "Cidade do Deserto", int(2 * X), int(2 * Z))
     m.material("areia", "areia", (1.0, 0.93, 0.80), 3.0)
-    m.caixa("Chao", "Areia", (0, -0.25, 0), (420, 0.5, 420), "areia", colide=False)
+    m.caixa("Chao", "Areia", (0, -0.25, 0), (520, 0.5, 520), "areia", colide=False)
     M = desenho()
+    ocupado = M.ocupacao((-X, -Z), (X, Z))
+    meio = ocupado.reshape(ocupado.shape[0] // 2, 2, ocupado.shape[1] // 2, 2).any((1, 3))                  # células de 50 cm
+    fora = fora_do_anel(meio, 0.5, vao=1.5)
     M.aplicar(m, "Deserto", "deserto")
-    fechar(m, X, Z, altura=18.0)
-    barrar(m, P, '#T', 18.0)
-    m.panorama('serra', X + 215.0, altura=120.0, base=-8.0)
+    fechar(m, X, Z, altura=TETO)
+    n = barreiras(m, ~fora, X, Z, TETO)
+    # (o painel das dunas ao longe, na proporção do desenho: mais alto que isto as dunas redondas dele viravam picos)
+    m.panorama('serra', X + 215.0, altura=62.0, base=-10.0)
 
-    g = Grade(M.ocupacao((-X, -Z), (X, Z)), (-X, -Z), 0.25, folga=0.55)
-    a = nascer(m, g, (-48.5, 0.0), AZUL)[0]
-    rotas = dict(
-        vielaNorte=P.rota(a, '12', '76'), feira=P.rota(a, '345'), vielaSul=P.rota(a, '67', '21'),
-        becoNorte=P.rota(a, '382', '543'), becoSul=P.rota(a, '3967', '54'), cruzadaNorte=P.rota(a, '12'), cruzadaSul=P.rota(a, '67'),
-        praca=P.rota(a, '1845', '49'),
-    )
+    g = Grade(ocupado, (-X, -Z), 0.25, folga=0.55)
+    g.livre &= ~np.kron(fora, np.ones((2, 2), bool))
+    chao, perto = alcancavel(g, BASES[0])
+    g.livre &= chao
+    a = nascer_em(m, g, BASES[0], AZUL); nascer_em(m, g, BASES[1], 3 - AZUL)
     m._grade = g
     espalhar(m, g, a, quantos=16)          # os pontos do mata-mata: todos contra todos, espalhados pelo mapa
-    for nome, pontos in rotas.items():
-        m.rota(nome, [(x, 0.5, z) for x, z in g.rota(pontos)])
+    def rota(*pts): return [(float(x), 0.5, float(z)) for x, z in g.rota([perto(*a)] + [perto(x, z) for x, z in pts])]
+    for nome, pts in ROTAS.items(): m.rota(nome, rota(*pts))
 
     # sol alto de deserto: sombra curta e dura, ar quente e claro
-    luz_de_jogo(m, 'deserto', 38, 52, alcance=160.0)
-    lampadas(m, [M], padrao=r'^(Light|Lamp|Lantern|Torch)')
+    luz_de_jogo(m, 'deserto', 38, 52, alcance=120.0, nuvens=True)
+    print(f"  deserto: {n} barreiras, {M.dunas} dunas, {M.assentadas} plantas e pedras assentadas, {int(chao.sum() * g.cel ** 2)} m² de chão alcançável")
+    if os.environ.get('MAPA_GRADE'):
+        g.imagem(os.environ['MAPA_GRADE'], marcas=[(x, z, (40, 90, 255)) for x, _, z in m.spawns[AZUL]] + [(x, z, (255, 120, 30)) for x, _, z in m.spawns[3 - AZUL]] + [(x, z, (20, 160, 20)) for x, z in m.livres],
+                 escala=5, rotas=[[(x, z) for x, _, z in r] for _, r in m.rotas])
     return m
+
+
+# onde nasce cada time: em cantos opostos da cidadela (70 m um do outro, o mais longe que ela dá) — o azul a noroeste,
+# o laranja a sudeste. Entre os dois, a rua norte, a rua sul e as vielas do meio
+BASES = ((-26.0, -24.0), (23.0, 21.0))
+# as rotas dos bots, a partir de onde nasce o azul (cada ponto cai no chão livre mais perto)
+ROTAS = dict(
+    norte=[(-12, -26), (5, -27), (20, -26), (28, -15), (28, -2), (24, 5), (27, 12), (23, 21)],
+    sul=[(-26, -14), (-24, -3), (-24, 8), (-27, 13), (-25, 26), (-8, 26), (5, 27), (15, 25), (23, 21)],
+    meio=[(-22, -6), (-10, -2), (2, 2), (2, 10), (12, 12), (18, 12), (23, 21)],
+    chafariz=[(-26, -14), (-22, -6), (-12, -4), (-12, -14), (-5, -22), (5, -27)],
+    feira=[(-12, -26), (5, -27), (8, -16), (10, -5), (16, 2), (24, 5), (23, 21)],
+    vielas=[(-22, -6), (-10, -2), (-5, 12), (-18, 13), (-25, 26), (5, 27), (8, 14), (2, 2)],
+)

@@ -32,10 +32,10 @@ public static class Credits
 		}),
 		new("Cenário", new[]
 		{
-			new Line("Mapa Armazém (galpão, contêineres, objetos e textura)",
-				"pacote LowPolyFPS4 da Unity Asset Store", "Licença da Asset Store"),
-			new Line("Mapas Cidade, Cidade do Deserto, Estação de Trem e Obra (peças e textura)",
-				"Low Poly FPS Bundle, de JustCreate (Fab)", "Licença padrão da Fab"),
+			// Uma linha só para todos os mapas (pedido do Jhon, 27/11: "coloque os créditos ao JustCreate, em todos os
+			// mapas e componentes de mapas"; "não precisa colocar peça por peça, deixe genérico"). O pacote de cada
+			// mapa está em docs/PACOTES.md.
+			new Line("Mapas: peças e componentes", "JustCreate", "Licenças da Fab e da Unity Asset Store"),
 			new Line("Texturas dos mapas, céus e objetos de cenário (barris, caixotes, estantes, pedras…)",
 				"Poly Haven (polyhaven.com)", "CC0"),
 			new Line("Letreiros: Overpass", "The Overpass Project Authors (Red Hat)", "SIL Open Font License 1.1", Required: true),
@@ -55,8 +55,10 @@ public static class Credits
 			new Line("AR-15: tiros, recarga e manuseio", "Free Weapon SFX v1.1 (amostra do Weapon Sound Effects Bundle, GameDev Market)", "licença do GameDev Market"),
 			new Line("Rugido do lobo e faca", "Free Sounds Pack", "pacote gratuito"),
 			new Line("Raios do especial", "sintetizados por código (tools/sons/raios.py)"),
-			new Line("Explosão e pavio da granada", "sintetizados por código (tools/sons/granada.py)"),
+			new Line("Explosão da granada", "gerada por Jhonata Bonadio com IA"),
+			new Line("Pavio da granada", "sintetizado por código (tools/sons/granada.py)"),
 			new Line("Acertos e faca", "Kenney (kenney.nl)", "CC0"),
+			new Line("Quique da granada e vento da faca", "gerados por Jhonata Bonadio no ElevenLabs (elevenlabs.io)", "termos do plano do ElevenLabs"),
 			new Line("Vento da Estação Polar e da Vila", "sintetizado para o jogo")
 		}),
 		new("Braços e armas em primeira pessoa", new[]

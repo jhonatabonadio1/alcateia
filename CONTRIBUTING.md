@@ -34,8 +34,11 @@ seis linhas iguais em dois lugares reprovam — junte numa peça só.
   um porquê que custou caro descobrir.
 - **Vai mudar um comportamento de propósito?** Mude o número esperado
   no teste no mesmo commit, e diga por quê.
-- **Vai refatorar algo sem teste?** Escreva o teste primeiro, com o
-  comportamento de hoje. Depois refatore até ficar verde de novo.
+- **Teste novo se propõe antes** (`docs/decisoes/0020`): não crie teste
+  para cada mudança. Ache que um vale a pena? Descreva numa linha (nome,
+  camada, o que prova, por que vale, custo) e espere o sim do Jhon. Vai
+  refatorar uma peça grande sem cobertura? É um bom caso para propor o
+  teste antes de começar.
 
 ## Onde cada coisa entra
 

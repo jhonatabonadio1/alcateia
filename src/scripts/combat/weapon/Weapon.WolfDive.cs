@@ -202,6 +202,25 @@ public partial class Weapon
 			DiveImpact();
 	}
 
+	/// <summary>Quanto da velocidade do bote o corpo guarda quando a garra o corta no ar: sem isto o lobo
+	/// seguia mergulhando a 13 m/s, agora sem o bote, até bater no chão.</summary>
+	[Export] public float DiveCutCarry = 0.45f;
+
+	/// <summary>A garra cortou o bote no ar: o mergulho para, o dano dele não sai (o golpe é outro) e o
+	/// corpo cai com parte do embalo. O bote gasto conta na espera entre botes (LeapCooldown).</summary>
+	private void CancelDive()
+	{
+		if (!_diving) return;
+		_diving = false;
+		_diveLeft = 0;
+		_strikeId++;
+		_strikeLeft = 0;
+		_cooldown = 0;
+		_attackQueue = 0;
+		if (_body is CharacterBody3D body) body.Velocity = DiveVelocity * DiveCutCarry;
+		EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Leap);
+	}
+
 	/// <summary>O corpo encostou no chão, numa parede ou no teto.</summary>
 	public void DiveContact()
 	{
@@ -257,7 +276,9 @@ public partial class Weapon
 		float land = WolfMoves.LandDuration;
 		_strikeLeft = land;
 		_rootLeft = land;
-		_cooldown = Mathf.Max(DiveFollowUp, StrikeSpacing - WolfMoves.ImpactDelay(WolfMove.Claw));
+		// (desde 27/11 a garra sai quase na hora — DiveFollowUp —, e é a pancada dela que espera o
+		// compasso, se cair cedo demais: Claw)
+		_cooldown = DiveFollowUp;
 		_diveLandLeft = land;
 		MarkRecovery(land);
 

@@ -52,7 +52,7 @@ public partial class ShopScreen : LobbyScreen
 		new("Humano", "Secundárias", () => ForSale.Where(i => ItemInfo.IsSecondary(i) && i.Kind == ItemKind.Weapon)),
 		new("Humano", "Facas", () => ForSale.Where(i => Arsenal.IsKnife(i.Id))),
 		new("Humano", "Granadas", () => ForSale.Where(i => i.Kind == ItemKind.Utility)),
-		new("Lobo", "Melhorias", () => ForSale.Where(i => i.Kind == ItemKind.Tattoo)),
+		new("Lobo", "Melhorias de lobo", () => ForSale.Where(i => i.Kind == ItemKind.WolfUpgrade)),
 		new("Conta", "Serviços", () => ForSale.Where(i => i.Kind == ItemKind.Service)),
 		new("Conta", "Fotos de perfil", () => ForSale.Where(i => i.Kind == ItemKind.Photo))
 	};
@@ -69,7 +69,7 @@ public partial class ShopScreen : LobbyScreen
 		_selectedId = item.Id;
 		_category = item.Kind switch
 		{
-			ItemKind.Tattoo => 6,
+			ItemKind.WolfUpgrade => 6,
 			ItemKind.Service => 7,
 			ItemKind.Photo => 8,
 			ItemKind.Utility => 5,

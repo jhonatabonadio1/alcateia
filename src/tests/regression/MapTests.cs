@@ -174,7 +174,9 @@ public sealed class ObraMapTest : MapPlaysTest
 {
 	public override string Name => "MapaObra";
 	protected override string MapId => "obra";
-	protected override bool ClosedRing => true;
+	// Sem parede na beira desde 27/11 (Jhon: "eu posso cair, não precisa ter a colisão nos limites do mapa"):
+	// quem passa da beira da laje cai e morre (Player.FallLimit).
+	protected override bool ClosedRing => false;
 }
 
 /// <summary>O Distrito Neon (20/11). Desde 25/11 fecha no muro da cidade: o

@@ -29,3 +29,5 @@ como "substituído por NNNN".
 | [0016](0016-vida-e-acerto-no-servidor.md) | Vida e acerto no servidor de partida: o acerto é conferido, a morte é decidida lá (segunda leva da 0011) |
 | [0017](0017-o-servidor-repete-o-especial-e-os-bots.md) | O servidor repete o especial do jogo (o ponto e o alvo vão no comando, a carga segue a do jogo) e põe os bots no mundo dele |
 | [0018](0018-o-desenho-online-anda-liso.md) | O desenho online anda liso: relógio no passo, o desenho dos outros só muda de ritmo (nunca pula nem volta), correção em mola, fila do servidor apressa devagar, repasse com o instante de quem mandou |
+| [0019](0019-o-que-o-servidor-nao-copia-mais.md) | O que o servidor não copia mais (a forma, a pressa dos comandos, o tiro de bot) e o acerto avisado a todos na hora, com a barra prevista em quem atira |
+| [0020](0020-teste-novo-se-propoe-antes.md) | Teste novo se propõe antes e o Jhon aceita; não se cria teste para cada mudança (muda a criação de teste da 0001 e da 0007) |

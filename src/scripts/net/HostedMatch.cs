@@ -153,6 +153,8 @@ public sealed partial class HostedMatch
 		string map = settings["map"]?.GetValue<string>() ?? Maps.All[0].Id;
 		var match = new HostedMatch(assignment["matchKey"].GetValue<string>(), referee, link,
 			authoritative ? new MatchWorld(map) : null);
+		int play = settings["play"]?.GetValue<int>() ?? 0;
+		if (System.Enum.IsDefined(typeof(PlayMode), play)) match.Play = (PlayMode)play;
 		match.NoteOwned(assignment);
 		int bots = seats.Count(s => s.Item4 != 0);
 		GD.Print($"Match {match.Key}: {seats.Count - bots} player(s) and {bots} bot(s), map {map}, first to {referee.ScoreToWin} points" +
@@ -402,6 +404,9 @@ public sealed partial class HostedMatch
 				["accountId"] = s.Id, ["kills"] = s.Kills, ["deaths"] = s.Deaths, ["assists"] = s.Assists,
 				["headshots"] = s.Headshots, ["points"] = s.Points,
 				["killsWolf"] = s.KillsWolf, ["rejectedHits"] = s.RejectedHits,
+				// A mira (AimAudit) e a forma recusada (FormAudit): para o servidor central denunciar.
+				["aimHits"] = s.AimHits, ["aimSnaps"] = s.AimSnaps,
+				["refusedForms"] = _bodies.TryGetValue(s.Id, out ServerBody sb) ? sb.RefusedForms : 0,
 				["fire"] = (int)s.Rage.FireSeconds
 			});
 
@@ -414,6 +419,33 @@ public sealed partial class HostedMatch
 
 	// ------------------------------------------------------------ o mundo (autoritativa)
 
+	/// <summary>O modo de jogo da sala ("play" nas regras): diz em que forma
+	/// cada time pode ficar. Sem a sala (o teste), Livre.</summary>
+	public PlayMode Play { get; set; } = PlayMode.Livre;
+
+	/// <summary>Quanto antes e depois da metade do tempo o servidor não confere
+	/// a forma, nos modos que trocam de lado (segundos): o relógio do jogo e o
+	/// daqui não viram no mesmo passo.</summary>
+	public const double SwapWindow = 2.0;
+
+	/// <summary>O que o modo deixa o time ser **agora**. Nos modos que trocam
+	/// na metade do tempo (Humanos × Lobos) vale a regra da metade em curso,
+	/// como no jogo (<c>Match.SecondHalf</c>), com uma janela sem conferência em
+	/// volta da troca.</summary>
+	private FormLimit LimitFor(int team)
+	{
+		bool secondHalf = Referee.Phase != RefPhase.Countdown && Referee.TimeLeft <= Referee.Duration / 2.0;
+		FormRule now = PlayModes.RuleFor(Play, team, secondHalf);
+		if (now != PlayModes.RuleFor(Play, team, !secondHalf)
+			&& Math.Abs(Referee.TimeLeft - Referee.Duration / 2.0) < SwapWindow) return FormLimit.Unchecked;
+		return now switch
+		{
+			FormRule.Humano => FormLimit.HumanOnly,
+			FormRule.Lobo => FormLimit.WolfOnly,
+			_ => FormLimit.Free
+		};
+	}
+
 	private void AddBody(long account)
 	{
 		Referee.Seat seat = Referee.Find(account);
@@ -421,6 +453,7 @@ public sealed partial class HostedMatch
 		var server = new ServerBody(account, _indexOf.GetValueOrDefault(account), body);
 		server.SpawnPoints.AddRange(World.SpawnsFor(seat?.Team ?? Referee.Blue));
 		server.SetRules(Referee.ScoreToWin, Referee.Duration);
+		server.FormLimit = LimitFor(seat?.Team ?? Referee.Blue);
 		// O alvo travado do especial chega pelo lugar na escalação.
 		server.Resolve = index => _bodyList.FirstOrDefault(b => b.Index == index && b.Alive)?.Body;
 		_bodies[account] = server;
@@ -434,24 +467,39 @@ public sealed partial class HostedMatch
 		body.Body.QueueFree();
 	}
 
+	private ulong _lastStepFrame = ulong.MaxValue;
+
 	/// <summary>Um passo de física: cada corpo consome o comando dele; a
 	/// cada <see cref="NetRates.SnapshotEvery"/> passos, o estado do mundo
 	/// vai para todos.</summary>
-	private ulong _lastStepFrame = ulong.MaxValue;
-
-	public void PhysicsStep(uint tick, double delta)
+	/// <param name="behind">Quem dá os passos sabe que está atrasado (engasgou
+	/// e deve passos): vale desde o primeiro passo da recuperação. Sem isto só
+	/// se descobria no segundo passo do mesmo quadro, e o primeiro de cada
+	/// quadro, com a fila funda dos comandos que se juntaram no engasgo,
+	/// consumia dois: o corpo andava um passo a mais, e dali a pouco ficava um
+	/// ou dois passos sem comando, parado — o tranco que o
+	/// <c>FluidezAutoritativo</c> media no boneco (27/11).</param>
+	public void PhysicsStep(uint tick, double delta, bool behind = false)
 	{
 		if (!Authoritative) return;
 
 		_tick = tick;
-		// Mais de um passo no mesmo quadro: o servidor engasgou e está dando os
-		// passos que deve. A fila de cada um não apressa (decisão 0018).
+		// O servidor engasgou e está dando os passos que deve: quem chama avisa
+		// (behind) ou, sem aviso, mais de um passo no mesmo quadro. A fila de
+		// cada um não apressa (decisão 0018).
 		ulong frame = Godot.Engine.GetProcessFrames();
-		bool catchingUp = frame == _lastStepFrame;
+		bool catchingUp = behind || frame == _lastStepFrame;
 		_lastStepFrame = frame;
 		_botBodies?.Step(delta);
-		foreach (ServerBody body in _bodyList) body.Step(tick, delta, catchingUp);
+		// A forma que a sala deixa cada time ter agora (muda na metade, nos modos que trocam).
+		FormLimit blue = LimitFor(Referee.Blue), orange = LimitFor(Referee.Orange);
+		foreach (ServerBody body in _bodyList)
+		{
+			body.FormLimit = Referee.Find(body.Account)?.Team == Referee.Orange ? orange : blue;
+			body.Step(tick, delta, catchingUp);
+		}
 		ResolveHits(tick);
+		if (tick % SightRules.EveryTicks == 0) UpdateSight(tick);
 		if (tick % NetRates.SnapshotEvery == 0) SendSnapshots(tick);
 	}
 
@@ -465,10 +513,34 @@ public sealed partial class HostedMatch
 
 	/// <summary>O estado de um bot, como o dono mandou (NetState): onde
 	/// está, para a conferência do tiro, e a cápsula dele no mundo daqui.</summary>
+	/// <summary>O ritmo de dano de cada bot (arma de fogo, corpo a corpo, granada).</summary>
+	private readonly Dictionary<long, (DamageBudget Gun, DamageBudget Melee, DamageBudget Grenade)> _botBudgets = new();
+
+	/// <summary>Em que passo cada bot deu um salto que corpo nenhum dá, e se
+	/// estava morto no último estado (renascer não é salto).</summary>
+	private readonly Dictionary<long, uint> _botJumped = new();
+	private readonly HashSet<long> _botDead = new();
+
+	/// <summary>Mais rápido que isto entre dois estados, o bot foi posto noutro
+	/// lugar (m/s; o especial do lobo, o mais rápido que há, voa a uns 14), e
+	/// por quantos passos depois disso o acerto dele não vale.</summary>
+	public const float BotMaxSpeed = 30f;
+	public const uint BotJumpQuiet = 60;
+
+	/// <summary>A conta do dano de cada bot: o servidor mata o que o dono não mata (<see cref="BotLedger"/>).</summary>
+	private readonly BotLedger _botLedger = new();
+
+	/// <summary>Bots que o servidor matou porque o dono não matou.</summary>
+	public int BotsForcedDead => _botLedger.Forced;
+
+	/// <summary>Bots que "apareceram" noutro lugar (para o relatório e o teste).</summary>
+	public int BotJumps { get; private set; }
+
 	private void ReadBotState(long bot, BinaryReader r)
 	{
 		long start = r.BaseStream.Position;
 		Vector3 position = r.ReadVector();
+		bool had = _botPoses.TryGetValue(bot, out var before);
 		_botPoses[bot] = (position, _tick);
 		if (_botBodies == null) return;
 
@@ -476,6 +548,21 @@ public sealed partial class HostedMatch
 		NetState s;
 		try { s = NetState.Read(r); }
 		catch (EndOfStreamException) { return; }
+
+		_botLedger.Report(bot, s.MaxHp, s.MaxShield, s.Dead, _now);
+
+		// Vivo antes e agora, e longe demais de onde estava para o tempo que passou.
+		bool wasDead = _botDead.Contains(bot);
+		if (s.Dead) _botDead.Add(bot); else _botDead.Remove(bot);
+		if (had && !wasDead && !s.Dead)
+		{
+			float seconds = Math.Max((_tick - before.Tick) * (float)NetRates.TickSeconds, (float)NetRates.TickSeconds * 2f);
+			if (position.DistanceTo(before.Position) > BotMaxSpeed * seconds + 1.5f)
+			{
+				_botJumped[bot] = _tick;
+				BotJumps++;
+			}
+		}
 		int team = Referee.Find(bot)?.Team ?? Referee.Blue;
 		_botBodies.Report(bot, team, s.Position, s.Velocity, s.Dead, s.Crouching);
 	}
@@ -488,17 +575,25 @@ public sealed partial class HostedMatch
 
 		int count = 0;
 		if (_states.Length < _bodyList.Count) _states = new EntityState[_bodyList.Count * 2];
+		if (_stateOwner.Length < _bodyList.Count) _stateOwner = new long[_bodyList.Count * 2];
 		foreach (ServerBody body in _bodyList)
-			if (body.Placed) _states[count++] = body.State();
+			if (body.Placed)
+			{
+				_stateOwner[count] = body.Account;
+				_states[count++] = body.State();
+			}
 
 		int size = 1 + count * EntityState.Size;
 		if (_snapshotBody.Length < size) _snapshotBody = new byte[size * 2];
+		if (_ownBody.Length < size) _ownBody = new byte[size * 2];
 		int bodyLength = SnapshotWire.WriteBody(_snapshotBody, _states.AsSpan(0, count));
-		ReadOnlySpan<byte> shared = _snapshotBody.AsSpan(0, bodyLength);
 
 		foreach (var (peer, account) in _accountOf)
 		{
 			uint ack = _bodies.TryGetValue(account, out ServerBody mine) ? mine.Commands.LastProcessed : 0;
+			// O corpo comum, ou o deste jogador sem o lugar de quem ele não pode saber (HostedMatch.Sight).
+			int own = WriteSnapshotFor(account, count, _ownBody);
+			ReadOnlySpan<byte> shared = own < 0 ? _snapshotBody.AsSpan(0, bodyLength) : _ownBody.AsSpan(0, own);
 			int length = SnapshotWire.Compose(_packet, NetWire.Snapshot, tick, ack, shared);
 			_link.Send(peer, _packet.AsSpan(0, length).ToArray(), false);
 		}
@@ -549,15 +644,17 @@ public sealed partial class HostedMatch
 
 			case NetWire.Loadout:
 				if (!Authoritative || !_bodies.TryGetValue(account, out ServerBody loading)) break;
-				var tattoos = new List<string>();
-				for (int n = Math.Min((int)r.ReadByte(), 8); n > 0; n--) tattoos.Add(r.ReadString());
+				var upgrades = new List<string>();
+				for (int n = Math.Min((int)r.ReadByte(), 8); n > 0; n--) upgrades.Add(r.ReadString());
 				// As melhorias têm de ser da conta: valem na velocidade, no
 				// pulo, no escudo e no dano do lobo. (O lobo é um só desde 26/11.)
-				tattoos.RemoveAll(t => !Allowed(account, t));
-				loading.ApplyLoadout(tattoos);
+				upgrades.RemoveAll(t => !Allowed(account, t));
+				loading.ApplyLoadout(upgrades);
 				break;
 
 			case NetWire.Attack:
+				// Quem ataca se ouve de longe: passa a ser contado a todos (HostedMatch.Sight).
+				MarkLoud(account);
 				Broadcast(NetWire.Relay(packet, account), except: peer);
 				break;
 
@@ -585,8 +682,13 @@ public sealed partial class HostedMatch
 				// Onde o bot está: é contra isso que se confere o acerto nele, e é
 				// onde a cápsula dele fica no mundo daqui.
 				if (type == NetWire.BotState) ReadBotState(speaker, r);
-				Broadcast(NetWire.AsPlayer(packet, type == NetWire.BotState ? NetWire.State : NetWire.Attack),
-					reliable: type != NetWire.BotState, except: peer);
+				else MarkLoud(speaker);
+				// A quem pode saber do bot (HostedMatch.Sight): o estado traz o lugar dele.
+				// O bot que o servidor matou: o que o dono conta dele não chega aos outros.
+				if (_botLedger.IsForcedDead(speaker)) break;
+				byte[] asPlayer = NetWire.AsPlayer(packet, type == NetWire.BotState ? NetWire.State : NetWire.Attack);
+				foreach (var (to, toAccount) in _accountOf)
+					if (to != peer && Knows(toAccount, speaker)) _link.Send(to, asPlayer, type != NetWire.BotState);
 				break;
 
 			case NetWire.BotHit:
@@ -761,6 +863,7 @@ public sealed partial class HostedMatch
 			hit.ViewTick = r.ReadDouble();
 		}
 		if (!float.IsFinite(hit.Amount) || !hit.From.IsFinite()) return;
+		MarkLoud(shooter);
 		_pending.Add(new PendingHit { Hit = hit, ByBot = byBot, Arrived = _tick });
 	}
 
@@ -826,6 +929,13 @@ public sealed partial class HostedMatch
 		if (victim != null && (!victim.Alive || victim.Health.IsProtected)) return;
 
 		HitsAccepted++;
+		// A mira de quem acertou com arma de fogo (AimAudit): só conta, não recusa.
+		if (!p.ByBot && hit.Cause is KillCause.Gun or KillCause.Headshot && _bodies.TryGetValue(hit.Shooter, out ServerBody aimer))
+		{
+			aimer.Aim.Hit(hit.Seq);
+			shooterSeat.AimHits = aimer.Aim.Hits;
+			shooterSeat.AimSnaps = aimer.Aim.Snaps;
+		}
 		if (target.IsBot) SendHitToOwner(hit, target, amount, headshot);
 		else ApplyHit(hit, victim, amount, headshot);
 	}
@@ -839,9 +949,25 @@ public sealed partial class HostedMatch
 		headshot = hit.Headshot;
 		if (!_botPoses.TryGetValue(hit.Shooter, out var bot)) return HitVerdict.ShooterGone;
 		if (hit.Cause != KillCause.Grenade && hit.From.DistanceTo(bot.Position) > HitRules.OriginSlack + 2.5f) return HitVerdict.BadOrigin;
+		// O bot que acabou de "aparecer" noutro lugar (o dono o teleportou para
+		// trás de alguém) não acerta ninguém por um segundo.
+		if (_botJumped.TryGetValue(hit.Shooter, out uint jumped) && tick - jumped < BotJumpQuiet) return HitVerdict.BadOrigin;
+		// O bot que o servidor matou (o dono não matou) não acerta ninguém.
+		if (_botLedger.IsForcedDead(hit.Shooter)) return HitVerdict.ShooterGone;
 		if (victim == null) return HitVerdict.Ok;   // bot em bot é da mesma máquina (Touch)
 
-		return _hits.CheckLine(hit, PoseOf(hit.Target, false), (double)tick - HitRules.MaxRewindTicks, tick);
+		HitVerdict line = _hits.CheckLine(hit, PoseOf(hit.Target, false), (double)tick - HitRules.MaxRewindTicks, tick);
+		if (line != HitVerdict.Ok) return line;
+
+		// O teto e o ritmo do dano, como os de um jogador (HitCheck.BotLimits).
+		if (!_botBudgets.TryGetValue(hit.Shooter, out var budgets)) _botBudgets[hit.Shooter] = budgets = (new DamageBudget(), new DamageBudget(), new DamageBudget());
+		DamageBudget budget = hit.Cause switch
+		{
+			KillCause.Grenade => budgets.Grenade,
+			KillCause.Knife or KillCause.Wolf => budgets.Melee,
+			_ => budgets.Gun
+		};
+		return _hits.BotLimits(hit, bot.Position.DistanceTo(victim.Body.GlobalPosition), budget, _now, ref amount);
 	}
 
 	/// <summary>Onde o alvo estava num passo: o corpo daqui (com a
@@ -910,6 +1036,18 @@ public sealed partial class HostedMatch
 			_link.Send(peer, stream.ToArray(), true);
 		}
 
+		// E a todos os outros, na hora (27/11): a barra de vida e a queda do
+		// alvo não esperam a notícia de vida da vítima dar a volta.
+		BinaryWriter hurt = NetWire.Begin(NetWire.Hurt, out MemoryStream hurtStream);
+		hurt.Write(hit.Target);
+		hurt.Write(hit.Shooter);
+		hurt.Write(dealt);
+		hurt.Write(h.Hp);
+		hurt.Write(h.Shield);
+		hurt.Write(h.IsDead);
+		hurt.Write(hit.From);
+		Broadcast(hurtStream.ToArray(), reliable: true, except: _peerOf.GetValueOrDefault(hit.Target));
+
 		if (!h.IsDead) return;
 		if (Referee.Death(hit.Target, hit.Shooter, headshot, Referee.RecentHitters(hit.Target), killerWasWolf: cause == KillCause.Wolf) is RefKill kill)
 			Announce(kill, (byte)cause, hit.Weapon ?? "");
@@ -918,7 +1056,19 @@ public sealed partial class HostedMatch
 	/// <summary>O acerto valeu num bot: segue para a máquina do dono, que o move.</summary>
 	private void SendHitToOwner(in ClaimedHit hit, Referee.Seat bot, float amount, bool headshot)
 	{
+		if (_botLedger.IsForcedDead(hit.Target)) return;
 		if (!Referee.Hit(hit.Shooter, hit.Target, amount) || !_peerOf.TryGetValue(bot.Owner, out long owner)) return;
+
+		// O dano aceito neste bot passou do que corpo nenhum aguenta e o dono não
+		// o matou: o servidor decide a morte (BotLedger) e manda ao dono um golpe
+		// que mata (o jogo honesto já o teria matado).
+		if (_botLedger.Hit(hit.Target, amount, _now))
+		{
+			amount = Referee.MaxHit;
+			GD.Print($"Bot {bot.Name} in {Key}: took more damage than any body holds and its owner kept it alive; the server kills it.");
+			if (Referee.Death(hit.Target, hit.Shooter, headshot, Referee.RecentHitters(hit.Target), killerWasWolf: hit.Cause == KillCause.Wolf) is RefKill kill)
+				Announce(kill, (byte)hit.Cause, hit.Weapon ?? "");
+		}
 
 		BinaryWriter w = NetWire.Begin(NetWire.HitBot, out MemoryStream stream);
 		w.Write(hit.Shooter);

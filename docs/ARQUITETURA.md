@@ -288,7 +288,7 @@ ChangeSceneToFile("res://src/scenes/main.tscn")
   │
   ├─ Player._EnterTree     lê RoomConfig.PlayerTeam → Health.Team
   ├─ Player._Ready         FormController.Breed = Profile.BuildBreed()
-  │                        (raça + tatuagens equipadas)
+  │                        (raça + melhorias de lobo equipadas)
   ├─ Match._Ready          lê ScoreToWin e Duration; começa a contagem
   ├─ MatchSetup._Ready     põe você num spawn da sua base; instancia
   │                        bot.tscn para cada bot da sala e aplica
@@ -468,7 +468,7 @@ public override void _ExitTree() => KillFeed.Reported -= OnKill;
 |---|---|---|
 | `Match.Current` | A partida em andamento. `Match.IsLive` é **verdadeiro quando não há partida** (treino) | A cena da partida |
 | `RoomConfig` | Configuração da sala para a partida ler | O jogo aberto |
-| `Profile` | Espelho da conta (XP e patente, Presas e Sangue, inventário com prazos, missões, títulos: `ApplyAccount`, `ClearAccount`, em memória) e as escolhas do jogador (conjuntos, raça, tatuagens, personagens, título em uso, estatísticas de treino), salvas em `user://profile.json`. Eventos `Changed` e `AccountChanged` | Escolhas em disco; o resto na conta (decisão 0015) |
+| `Profile` | Espelho da conta (XP e patente, Presas e Sangue, inventário com prazos, missões, títulos: `ApplyAccount`, `ClearAccount`, em memória) e as escolhas do jogador (conjuntos, raça, melhorias de lobo, personagens, título em uso, estatísticas de treino), salvas em `user://profile.json`. Eventos `Changed` e `AccountChanged` | Escolhas em disco; o resto na conta (decisão 0015) |
 | `AccountSync` | O caminho único entre o jogo e a conta: retomar o login, reler carteira, itens e missões, comprar, descartar, resgatar, trocar o nome; as promoções a comemorar | O jogo aberto |
 | `Settings` | Volumes por canal e sensibilidade. `user://settings.json` | Em disco |
 | `RoomDirectory` | As salas da lista (simuladas) e a sala em que você está (`Current`) | O jogo aberto |
@@ -524,7 +524,9 @@ terceira pessoa (`src/assets/personagens/<p>/animacoes/`) — perde o
 ajuste feito à mão quando o script roda de novo. Mude no script. Desde
 24/11 **não é mais o caso** de `src/resources/weapons/*.tres` (editados à
 mão; o `gerar_arsenal.py` saiu) nem de `src/scenes/maps/*.tscn` (a cena
-é a fonte; o `gerar_mapas.py` saiu).
+é a fonte), **menos a Cidade, o Deserto, a Estação e a Obra**: refeitos em 27/11, ainda
+saem do `src/tools/gerar_mapas.py`, que voltou só para eles — mexer num
+deles no Godot é tirá-lo do gerador (`docs/MAPAS.md`).
 
 **Método com nome de tipo do Godot.** Um método chamado `Panel()` ou
 `Button()` dentro de uma classe que herda de `Control` conflita com os
@@ -710,7 +712,7 @@ primário por tela, número com a variação `Numeric`.
 1. Se for arma nova, crie antes a arma (receita acima).
 2. Em `src/scripts/meta/Catalog.cs`, acrescente o `CatalogItem`: id, nome,
    tipo, descrição, raridade, patente mínima e os cinco preços (1, 7,
-   30, 90 dias e permanente). Tatuagem leva um `TattooEffect`.
+   30, 90 dias e permanente). Melhoria de lobo leva um `WolfUpgradeEffect`.
 3. Se o desenho do cartão não existir, acrescente a silhueta em
    `src/scripts/ui/kit/WeaponArt.cs`.
 
@@ -768,7 +770,8 @@ tema na raiz: `UiTheme.Apply(UiKit.Fill(new Control()))`.
 Passo a passo em `docs/MAPAS.md`. Em resumo: **a cena
 `src/scenes/maps/<id>.tscn` é a fonte** (desde 24/11; o
 `gerar_mapas.py`, que a escrevia a partir dos módulos de
-`src/tools/mapas/`, saiu — está no histórico do git), e o mapa entra na
+`src/tools/mapas/`, ficou só para a Cidade, o Deserto, a Estação e a Obra, os
+quatro feitos da cena de demonstração do kit em 27/11), e o mapa entra na
 lista em `src/scripts/meta/Maps.cs`. A cena da partida carrega o mapa da
 sala pelo `MapSlot` (nó `Map` do `main.tscn`).
 

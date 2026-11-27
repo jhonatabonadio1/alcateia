@@ -116,6 +116,8 @@ public partial class Weapon
 			// Só para a barra de vida do alvo aparecer na tela de quem acertou.
 			target.NoteAttacker(_body);
 			target.SendHit(amount, from, headshot, CauseOf(headshot), KillWeapon(target), _body);
+			// O que se vê não espera a rede: a barra desce e o alvo reage já.
+			target.PredictHit(amount, from, headshot);
 			EmitSignal(SignalName.DamageDealt, amount);
 			EmitSignal(SignalName.HitConfirmed, headshot);
 			_form.OnDamageDealt(amount);

@@ -43,18 +43,28 @@ public partial class CharacterPreview : Control
 	/// <summary>A luz principal (quente, de cima e da frente), em energia
 	/// do Godot. O suficiente para a pele e o pelo terem volume sem estourar
 	/// o branco da pelagem do lobo.</summary>
-	[Export] public float KeyEnergy = 2.1f;
+	[Export] public float KeyEnergy = 1.3f;
 
 	/// <summary>O preenchimento (frio, do outro lado): o lado de sombra não
 	/// some no fundo escuro.</summary>
-	[Export] public float FillEnergy = 0.55f;
+	[Export] public float FillEnergy = 0.4f;
 
 	/// <summary>Os dois recortes atrás (frios), que desenham a borda da
 	/// silhueta contra o fundo.</summary>
-	[Export] public float RimEnergy = 7f;
+	[Export] public float RimEnergy = 3.5f;
 
 	/// <summary>Quanto do céu do mapa entra como luz ambiente e reflexo.</summary>
-	[Export] public float SkyEnergy = 0.55f;
+	[Export] public float SkyEnergy = 0.25f;
+
+	/// <summary>A cor da imagem: saturação, contraste e exposição. O tom de
+	/// cinema desbota as cores fortes; isto as devolve (Jhon, 27/11: "deixe a
+	/// saturação igual da foto"; "a luz tá muito forte, deixando eles
+	/// brancos" — até 27/11 as luzes eram 2,1 / 0,55 / 7 / 0,55 e a
+	/// saturação 1,05: a roupa da Eve saía cinza-esverdeada e o vermelho do
+	/// Barut, apagado).</summary>
+	[Export] public float Saturation = 1.4f;
+	[Export] public float Contrast = 1.12f;
+	[Export] public float Exposure = 0.9f;
 
 	/// <summary>O quanto a sombra de contato escurece o tampo no meio,
 	/// embaixo dos pés (0 a 1).</summary>
@@ -191,7 +201,7 @@ public partial class CharacterPreview : Control
 			AmbientLightEnergy = 0.35f,
 			ReflectedLightSource = Godot.Environment.ReflectionSource.Disabled,
 			TonemapMode = Godot.Environment.ToneMapper.Filmic,
-			TonemapExposure = 1.05f,
+			TonemapExposure = Exposure,
 			TonemapWhite = 5f,
 			SsaoEnabled = true,
 			SsaoRadius = 0.45f,
@@ -203,8 +213,8 @@ public partial class CharacterPreview : Control
 			GlowBloom = 0.02f,
 			GlowHdrThreshold = 1.1f,
 			AdjustmentEnabled = true,
-			AdjustmentContrast = 1.06f,
-			AdjustmentSaturation = 1.05f
+			AdjustmentContrast = Contrast,
+			AdjustmentSaturation = Saturation
 		};
 
 		if (ResourceLoader.Exists(SkyPath) && GD.Load<Texture2D>(SkyPath) is Texture2D panorama)

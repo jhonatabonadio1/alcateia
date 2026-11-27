@@ -157,6 +157,175 @@
 	}
 }
 
+/*
+ * O texto dos documentos na central de ajuda (Markdown do repositório
+ * desenhado em HTML). Linha longa o bastante para tabela, curta o bastante
+ * para ler; tabela larga rola dentro dela, sem empurrar a página.
+ */
+@layer components {
+	.help-prose {
+		max-width: 88ch;
+		font-size: 15px;
+		line-height: 1.65;
+		color: var(--ink);
+		overflow-wrap: anywhere;
+	}
+	.help-prose > :first-child {
+		margin-top: 0;
+	}
+	.help-prose :is(h1, h2, h3, h4, h5, h6) {
+		position: relative;
+		scroll-margin-top: 72px;
+		font-stretch: 122%;
+		font-weight: 650;
+		letter-spacing: -0.01em;
+		line-height: 1.25;
+	}
+	.help-prose h1 {
+		font-size: 26px;
+		margin: 0 0 16px;
+	}
+	.help-prose h2 {
+		font-size: 20px;
+		margin: 36px 0 12px;
+		padding-top: 20px;
+		border-top: 1px solid var(--line);
+	}
+	/* Os documentos já separam com "---" antes do título: uma linha basta. */
+	.help-prose hr + h2 {
+		margin-top: 0;
+		padding-top: 0;
+		border-top: 0;
+	}
+	.help-prose h3 {
+		font-size: 17px;
+		margin: 28px 0 8px;
+	}
+	.help-prose :is(h4, h5, h6) {
+		font-size: 15px;
+		margin: 22px 0 6px;
+	}
+	.help-anchor {
+		position: absolute;
+		left: -1.1em;
+		color: var(--ink-3);
+		opacity: 0;
+		text-decoration: none;
+	}
+	.help-prose :is(h1, h2, h3, h4):hover .help-anchor,
+	.help-anchor:focus-visible {
+		opacity: 1;
+	}
+	.help-prose :is(p, ul, ol, pre, blockquote, table) {
+		margin: 0 0 14px;
+	}
+	.help-prose :is(ul, ol) {
+		padding-left: 1.4em;
+	}
+	.help-prose ul {
+		list-style: disc;
+	}
+	.help-prose ol {
+		list-style: decimal;
+	}
+	.help-prose li + li,
+	.help-prose li > :is(ul, ol) {
+		margin-top: 4px;
+	}
+	.help-prose li > p {
+		margin-bottom: 6px;
+	}
+	.help-prose a {
+		color: var(--primary);
+		text-decoration: underline;
+		text-decoration-color: color-mix(in srgb, var(--primary) 40%, transparent);
+		text-underline-offset: 2px;
+	}
+	.help-prose a:hover {
+		text-decoration-color: var(--primary);
+	}
+	.help-prose strong {
+		font-weight: 650;
+	}
+	.help-prose code {
+		font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+		font-size: 0.86em;
+		background: var(--surface-2);
+		border: 1px solid var(--line);
+		border-radius: 4px;
+		padding: 0.05em 0.35em;
+	}
+	.help-prose a code {
+		color: var(--primary);
+	}
+	.help-prose pre {
+		background: var(--bg);
+		border: 1px solid var(--line);
+		border-radius: var(--radius-md);
+		padding: 12px 14px;
+		overflow-x: auto;
+		line-height: 1.5;
+	}
+	.help-prose pre code {
+		background: none;
+		border: 0;
+		padding: 0;
+		font-size: 13px;
+		overflow-wrap: normal;
+	}
+	.help-prose blockquote {
+		border-left: 3px solid var(--primary);
+		background: var(--primary-soft);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+		padding: 10px 14px;
+		color: var(--ink);
+	}
+	.help-prose blockquote > :last-child {
+		margin-bottom: 0;
+	}
+	.help-prose hr {
+		border: 0;
+		border-top: 1px solid var(--line);
+		margin: 28px 0;
+	}
+	.help-prose table {
+		display: block;
+		max-width: 100%;
+		overflow-x: auto;
+		border-collapse: collapse;
+		font-size: 14px;
+		line-height: 1.5;
+		font-variant-numeric: tabular-nums;
+	}
+	.help-prose :is(th, td) {
+		border: 1px solid var(--line);
+		padding: 6px 10px;
+		text-align: left;
+		vertical-align: top;
+		overflow-wrap: normal;
+		min-width: 6ch;
+	}
+	.help-prose th {
+		background: var(--surface-2);
+		font-weight: 600;
+	}
+	.help-prose tr:nth-child(even) td {
+		background: color-mix(in srgb, var(--surface-2) 45%, transparent);
+	}
+	.help-file {
+		font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+		font-size: 0.86em;
+		color: var(--ink-2);
+	}
+	.help-prose mark,
+	.help-snippet mark {
+		background: var(--warn-soft);
+		color: var(--ink);
+		border-radius: 2px;
+		padding: 0 1px;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,

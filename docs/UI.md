@@ -152,7 +152,7 @@ Esse formato de formulário é melhor que chips espalhados: o jogador lê as reg
 
 **Específico do seu jogo**
 
-Se a transformação for escolha de classe (as 8 mutações de lobo do WolfTeam, por exemplo, com tatuagens dando bônus de atributo), a sala é onde essa escolha acontece. Reserve um painel para a seleção de mutação e loadout, visível para o dono e resumido no slot dos outros — saber que o time tem três lobos rápidos e nenhum tanque muda a decisão de quem ainda vai escolher.
+Se a transformação for escolha de classe (as 8 mutações de lobo do WolfTeam, por exemplo, com tatuagens — aqui, melhorias de lobo — dando bônus de atributo), a sala é onde essa escolha acontece. Reserve um painel para a seleção de mutação e loadout, visível para o dono e resumido no slot dos outros — saber que o time tem três lobos rápidos e nenhum tanque muda a decisão de quem ainda vai escolher.
 
 ## Inventário
 
@@ -170,9 +170,9 @@ Abaixo das abas, os slots do preset em coluna vertical: primária, secundária, 
 |---|---|
 | Armas | Primária, Secundária, Corpo a corpo, Granada/Especial |
 | Visual | Cabeça, Rosto, Torso, Pernas, Costas |
-| Bônus | Acessório, Item consumível, Tatuagem/mutação |
+| Bônus | Acessório, Item consumível, Melhoria de lobo/mutação |
 
-No seu jogo isso dobra: o lobo tem slots próprios (mutação, tatuagem, habilidade) que não existem no humano. Resolva com **abas Humano / Lobo** sobre o mesmo paper doll, nunca com os dois conjuntos na mesma tela.
+No seu jogo isso dobra: o lobo tem slots próprios (mutação, melhoria de lobo, habilidade) que não existem no humano. Resolva com **abas Humano / Lobo** sobre o mesmo paper doll, nunca com os dois conjuntos na mesma tela.
 
 **A grade de itens**
 
@@ -674,7 +674,7 @@ Todo campo aqui vira um filtro na lista e uma linha no painel da sala. O conjunt
 
 **Classes de lobo**
 
-O WolfTeam tem 8 mutações, com tatuagens dando bônus de atributo. Para o seu jogo, comece com 4 e expanda — 8 classes mal balanceadas é pior que 4 bem resolvidas. Uma base possível, com nomes próprios seus:
+O WolfTeam tem 8 mutações, com tatuagens (aqui, melhorias de lobo) dando bônus de atributo. Para o seu jogo, comece com 4 e expanda — 8 classes mal balanceadas é pior que 4 bem resolvidas. Uma base possível, com nomes próprios seus:
 
 | Classe | Papel | Atributos | Habilidades |
 |---|---|---|---|
@@ -683,7 +683,7 @@ O WolfTeam tem 8 mutações, com tatuagens dando bônus de atributo. Para o seu 
 | Espreitador | Emboscada | Vida média, furtivo | Camuflagem parcial, abate por trás com dano extra, salto silencioso |
 | Alfa | Suporte | Equilibrado | Uivo que acelera aliados, cura regenerativa, marcação de alvo |
 
-Cada classe tem slots de tatuagem para pequenos ajustes de atributo. **Venda tatuagem por moeda do jogo, não por dinheiro real** — foi exatamente aí que o WolfTeam virou pay-to-win, e é a crítica que mais pesou contra ele.
+Cada classe tem slots de melhoria de lobo para pequenos ajustes de atributo. **Venda melhoria de lobo por moeda do jogo, não por dinheiro real** — foi exatamente aí que o WolfTeam virou pay-to-win, e é a crítica que mais pesou contra ele.
 
 **Economia de rodada (WP)**
 
@@ -709,7 +709,7 @@ Esse último par é o que faz o balanceamento do jogo existir: uma arma pode ser
 
 | Moeda | Como se ganha | O que compra |
 |---|---|---|
-| Presas (moeda do jogo) | Partidas jogadas, vitórias, missões, eventos | Armas por tempo, visual básico, tatuagens, criação de matilha, troca de nome |
+| Presas (moeda do jogo) | Partidas jogadas, vitórias, missões, eventos | Armas por tempo, visual básico, melhorias de lobo, criação de matilha, troca de nome |
 | Sangue (moeda paga) | Compra com dinheiro real | Visual exclusivo, permanentes, conveniências, passe de temporada |
 
 Regra que vale ouro: **tudo que afeta o combate deve ser comprável com a moeda do jogo**. A moeda paga compra aparência, tempo e conveniência. Não é moralismo; é sobrevivência do jogo.
@@ -724,7 +724,7 @@ Regra que vale ouro: **tudo que afeta o combate deve ser comprável com a moeda 
 
 - Item expirado não some do inventário por 30 dias — aumenta renovação e reduz raiva.
 
-- Categorias: arma primária, secundária, corpo a corpo, granada, visual humano (cabeça, rosto, torso, pernas), visual lobo (pelagem, olhos, marcas), tatuagem, consumível, emblema de matilha.
+- Categorias: arma primária, secundária, corpo a corpo, granada, visual humano (cabeça, rosto, torso, pernas), visual lobo (pelagem, olhos, marcas), melhoria de lobo, consumível, emblema de matilha.
 
 **Caixas e aleatoriedade**
 

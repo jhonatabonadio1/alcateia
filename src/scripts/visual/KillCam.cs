@@ -28,6 +28,10 @@ public partial class KillCam : Node3D
 	/// <summary>Velocidade da câmera livre (m/s); com Shift, o dobro.</summary>
 	[Export] public float FreeSpeed = 9f;
 
+	/// <summary>Altura da câmera livre acima do que houver embaixo dela, quando
+	/// ela começa por cima do mapa (<see cref="PlaceFree"/>).</summary>
+	[Export] public float OverlookHeight = 4f;
+
 	private enum Phase { Death, First, Above, Free }
 	private Phase _phase = Phase.Death;
 
@@ -178,6 +182,7 @@ public partial class KillCam : Node3D
 		ShowBodies();
 		_phase = Phase.Free;
 		_camera.MakeCurrent();
+		PlaceFree();
 		Vector3 e = _camera.GlobalBasis.GetEuler();
 		_pitch = e.X;
 		_yaw = e.Y;
@@ -289,11 +294,7 @@ public partial class KillCam : Node3D
 	{
 		_flyShape ??= new SphereShape3D { Radius = FlyRadius };
 		PhysicsDirectSpaceState3D space = GetWorld3D().DirectSpaceState;
-		// Os corpos também estão na camada 1: ficam de fora.
-		var skip = new Godot.Collections.Array<Rid>();
-		foreach (string group in Groups.Fighters)
-			foreach (Node node in GetTree().GetNodesInGroup(group))
-				if (node is CollisionObject3D body) skip.Add(body.GetRid());
+		Godot.Collections.Array<Rid> skip = FighterRids();
 		Vector3 at = from;
 		foreach (Vector3 axis in new[] { Vector3.Right, Vector3.Up, Vector3.Back })
 		{
@@ -314,17 +315,68 @@ public partial class KillCam : Node3D
 		return at;
 	}
 
+	/// <summary>Os corpos estão na camada 1 também: a câmera não esbarra neles.</summary>
+	private Godot.Collections.Array<Rid> FighterRids()
+	{
+		var skip = new Godot.Collections.Array<Rid>();
+		foreach (string group in Groups.Fighters)
+			foreach (Node node in GetTree().GetNodesInGroup(group))
+				if (node is CollisionObject3D body) skip.Add(body.GetRid());
+		return skip;
+	}
+
+	/// <summary>
+	/// Onde a câmera livre começa. Normalmente onde a câmera já estava; mas
+	/// quem caiu da beira da Obra morre lá embaixo, fora do mapa, e puxada
+	/// para dentro da caixa a câmera nascia no meio do prédio (Jhon, 27/11:
+	/// "a câmera de espectador não pode nascer dentro do prédio"). Fora da
+	/// caixa ou dentro de algo sólido, ela começa por cima do mapa, perto de
+	/// onde estava: acima do que houver ali (um raio de cima para baixo acha
+	/// o telhado), olhando para o meio do mapa.
+	/// </summary>
+	private void PlaceFree()
+	{
+		Aabb box = MapBounds.Of(GetTree());
+		Vector3 at = _camera.GlobalPosition;
+		if (box.Grow(-0.4f).HasPoint(at) && !Blocked(at)) return;
+
+		float top = box.End.Y - 1f;
+		Vector3 near = MapBounds.Clamp(GetTree(), at, 3f);
+		var down = PhysicsRayQueryParameters3D.Create(new Vector3(near.X, top, near.Z), new Vector3(near.X, box.Position.Y - 1f, near.Z));
+		down.Exclude = FighterRids();
+		var hit = GetWorld3D().DirectSpaceState.IntersectRay(down);
+		float ground = hit.Count > 0 ? hit["position"].AsVector3().Y : box.Position.Y;
+		Vector3 spot = new(near.X, Mathf.Min(ground + OverlookHeight, top), near.Z);
+		while (Blocked(spot) && spot.Y < top) spot.Y = Mathf.Min(spot.Y + 1f, top);
+
+		_camera.GlobalPosition = spot;
+		Vector3 target = new(box.GetCenter().X, ground, box.GetCenter().Z);
+		Vector3 look = target - spot;
+		if (new Vector2(look.X, look.Z).LengthSquared() > 0.01f)
+			_camera.GlobalBasis = Basis.LookingAt(look, Vector3.Up);
+	}
+
+	/// <summary>A bola da câmera livre encosta em algo do cenário aqui.</summary>
+	private bool Blocked(Vector3 at)
+	{
+		_flyShape ??= new SphereShape3D { Radius = FlyRadius };
+		var query = new PhysicsShapeQueryParameters3D
+		{
+			Shape = _flyShape,
+			Transform = new Transform3D(Basis.Identity, at),
+			CollisionMask = 1,
+			Exclude = FighterRids()
+		};
+		return GetWorld3D().DirectSpaceState.IntersectShape(query, 1).Count > 0;
+	}
+
 	/// <summary>O ponto da vista de cima, puxado para perto do aliado se
 	/// houver parede no caminho.</summary>
 	private Vector3 SafePerch(Node3D mate, Vector3 want)
 	{
 		Vector3 eye = mate.GlobalPosition + Vector3.Up * 1.5f;
 		var query = PhysicsRayQueryParameters3D.Create(eye, want);
-		var skip = new Godot.Collections.Array<Rid>();
-		foreach (string group in Groups.Fighters)
-			foreach (Node node in GetTree().GetNodesInGroup(group))
-				if (node is CollisionObject3D fighter) skip.Add(fighter.GetRid());
-		query.Exclude = skip;
+		query.Exclude = FighterRids();
 		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
 		if (hit.Count == 0) return want;
 		Vector3 at = hit["position"].AsVector3();

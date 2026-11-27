@@ -13,7 +13,7 @@ public sealed class MapInfo
 	public string Name { get => Loc.T(_name); set => _name = value; }
 	public string Scene;
 	/// <summary>Planta vista de cima, gerada pelo gerador do mapa
-	/// (tools/gerar_mapas.py). Fica de reserva enquanto não há a foto.</summary>
+	/// (src/tools/gerar_mapas.py). Fica de reserva enquanto não há a foto.</summary>
 	public string Thumbnail;
 
 	/// <summary>A foto do mapa, de um bom ângulo, tirada no próprio jogo por
@@ -46,7 +46,7 @@ public sealed class MapInfo
 
 /// <summary>Os mapas jogáveis. Mapa novo entra aqui e já aparece na sala e
 /// na lista; a cena da partida carrega o da sala (<see cref="MapSlot"/>).
-/// Todos nascem de tools/gerar_mapas.py.</summary>
+/// A fonte de cada um é a cena (docs/MAPAS.md).</summary>
 public static class Maps
 {
 	public static readonly List<MapInfo> All = new()
@@ -74,10 +74,10 @@ public static class Maps
 			EventSound = "evento_passaros", EventEvery = new Vector2(60, 130),
 			Modes = new[] { GameMode.Equipe, GameMode.MataMata }
 		},
-		// Os mapas de 19/11 (pedido do Jhon: "inclua esses mapas no game"): montados
-		// com as peças dos kits "Low Poly FPS Map" Vol. 1, 2, 3, 5 e 6 (JustCreate),
-		// com planta própria — o pacote em FBX vem sem os mapas montados
-		// (tools/mapas/kits; docs/MAPAS.md).
+		// Os mapas dos kits "Low Poly FPS Map" (JustCreate). Desde 27/11 a Cidade, a Cidade do Deserto, a Estação de
+		// Trem e a Obra são a cena de demonstração de cada kit, lida do pacote do Unreal e no tamanho dela (pedido do
+		// Jhon: "use o que tem lá de demo"; src/tools/mapas; docs/MAPAS.md). Até 26/11 eram plantas próprias, montadas
+		// com as peças soltas do kit.
 		new()
 		{
 			Id = "cidade",
@@ -86,7 +86,7 @@ public static class Maps
 			Scene = "res://src/scenes/maps/cidade.tscn",
 			Thumbnail = "res://src/assets/ui/mapas/cidade.png",
 			Cover = "res://src/assets/ui/mapas/cidade_foto.png",
-			Description = "Grande, 120 × 80 m, de dia. Um bairro inteiro: três ruas de ponta a ponta, o bulevar do centro e os becos de 2,5 m por dentro dos quarteirões — entre as lojas, em volta do prédio em obras de três andares, atrás do banco. Cada time nasce numa ponta da avenida.",
+			Description = "Grande, 86 × 92 m, de dia. Um bairro em volta de uma avenida de 80 m, entre a prefeitura e a torre do heliponto: casas de três e quatro andares, o estacionamento, a praça, a oficina, o pátio do prédio em obras e os becos por trás das casas. O azul nasce junto à prefeitura, o laranja no fim da avenida.",
 			// O fundo de cada mapa de kit é o dele desde 20/11 (pedido do Jhon: "som de ambiente em todos os mapas,
 			// pássaros, buzinas de carros — deserto não tem carro"): tools/sons/ambiente_mapas.py. Aqui, a cidade ao
 			// longe com pássaros e buzinas; de vez em quando, duas buzinadas mais perto.
@@ -98,11 +98,11 @@ public static class Maps
 		{
 			Id = "deserto",
 			Name = "Cidade do Deserto",
-			Size = "Grande",
+			Size = "Médio",
 			Scene = "res://src/scenes/maps/deserto.tscn",
 			Thumbnail = "res://src/assets/ui/mapas/deserto.png",
 			Cover = "res://src/assets/ui/mapas/deserto_foto.png",
-			Description = "Grande, 110 × 75 m, sol alto. Uma cidadela talhada dentro da muralha: três vielas de ponta a ponta ligadas por becos de 2,5 m, a rua da feira e a praça do chafariz no meio. Casas de laje com escada de pedra; por cima da muralha, só o lobo.",
+			Description = "Médio, 64 × 64 m, sol alto. Uma cidadela dentro da muralha: casas de adobe de um e dois andares com escada de pedra, toldos, bancas de feira, a praça do chafariz e vielas de 3 a 6 m entre os blocos de casas. Os times nascem em cantos opostos; por cima da muralha ninguém passa.",
 			// (vento seco e pássaros longe; nenhum carro)
 			RoomSize = 0.4f, RoomWet = 0.08f, Ambience = "ambiente_deserto", AmbienceDb = -14f,
 			EventSound = "evento_passaros", EventEvery = new Vector2(45, 100),
@@ -116,7 +116,7 @@ public static class Maps
 			Scene = "res://src/scenes/maps/estacao.tscn",
 			Thumbnail = "res://src/assets/ui/mapas/estacao.png",
 			Cover = "res://src/assets/ui/mapas/estacao_foto.png",
-			Description = "Grande, 120 × 95 m, fim de tarde, no centro da cidade. A rua e a praça, o prédio da estação com as torres de relógio — saguão, duas alas com corredor e salas —, duas plataformas, três linhas com trens parados e o pátio de carga. No centro, a passarela cruza as linhas por cima dos trens.",
+			Description = "Grande, 105 × 65 m, fim de tarde. Um pátio de estação fechado por paredes de 9 m: três linhas com trens parados ao norte, o saguão coberto no meio, mais duas linhas ao sul, e os prédios da estação em volta, com duas escadas para o piso de cima. O azul nasce a oeste, o laranja na ala leste.",
 			// (a cidade de dia, o zumbido dos trilhos, pássaros sob a cobertura; de vez em quando um trem passa ao longe)
 			RoomSize = 0.6f, RoomWet = 0.2f, Ambience = "ambiente_estacao", AmbienceDb = -15f,
 			EventSound = "evento_trem", EventEvery = new Vector2(70, 140),
@@ -126,11 +126,11 @@ public static class Maps
 		{
 			Id = "obra",
 			Name = "Obra",
-			Size = "Grande",
+			Size = "Pequeno",
 			Scene = "res://src/scenes/maps/obra.tscn",
 			Thumbnail = "res://src/assets/ui/mapas/obra.png",
 			Cover = "res://src/assets/ui/mapas/obra_foto.png",
-			Description = "Grande, 100 × 70 m, de dia. Um prédio de concreto em construção no meio do canteiro: corredor de 60 m, salas e salões no térreo, duas lajes abertas em cima (4 e 8 m) com escadas e muretas de tijolo. Em volta, material empilhado, andaimes e gruas.",
+			Description = "Pequeno, 40 × 40 m em três pisos, de dia, no alto de um prédio acima das nuvens. Um canteiro de obras na laje: paredes de concreto pela metade, escadas para o segundo piso, um pedaço de terceiro, gruas, andaimes e material empilhado. Em volta, só o céu do pôr do sol e o mar de nuvens lá embaixo.",
 			// (o canteiro ao longe — máquina, batidas —, vento e pássaros; de vez em quando um cachorro late na vizinhança)
 			RoomSize = 0.55f, RoomWet = 0.18f, Ambience = "ambiente_obra", AmbienceDb = -15f,
 			EventSound = "evento_cachorro", EventEvery = new Vector2(50, 110),

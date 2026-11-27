@@ -102,6 +102,11 @@ public sealed class Config
 	/// <summary>A pasta com o painel já compilado (o React).</summary>
 	public string AdminUi = Path.Combine(AppContext.BaseDirectory, "painel");
 
+	/// <summary>A raiz dos documentos da central de ajuda (<c>CLAUDE.md</c>,
+	/// <c>docs/</c>...). Sem a variável, a pasta <c>ajuda</c> da imagem ou o
+	/// próprio repositório (<c>Rotas.AdminHelpRoutes.DefaultRoot</c>).</summary>
+	public string AdminDocs = "";
+
 	/// <summary>Quem pede <c>/metrics</c> apresenta esta chave. Vazia, só a porta protege.</summary>
 	public string MetricsKey = "";
 
@@ -137,6 +142,7 @@ public sealed class Config
 		c.AdminPassword = Env("ALCATEIA_ADMIN_PASSWORD", "");
 		c.AdminRequireTotp = Env("ALCATEIA_ADMIN_REQUIRE_2FA", "0") == "1";
 		c.AdminUi = Env("ALCATEIA_ADMIN_UI", c.AdminUi);
+		c.AdminDocs = Env("ALCATEIA_ADMIN_DOCS", Rotas.AdminHelpRoutes.DefaultRoot());
 		c.MetricsKey = Env("ALCATEIA_METRICS_KEY", "");
 		return c;
 	}

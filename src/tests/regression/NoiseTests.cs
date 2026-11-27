@@ -32,10 +32,11 @@ public sealed class NoiseTest : RegressionTest
 			b.Near(13, radius, 0.01, "raio do passo humano");
 
 			b.Check(await Walk(b, heard, "move_forward", "crouch") == 0, "agachado não faz passo");
-			// Com Shift o humano corre (26/11; antes andava em silêncio): 3,71 m/s por
-			// 3 s, uns 11 m em passadas de 1,12 m, e o passo se ouve de mais longe.
+			// Com Shift o humano corre (26/11; antes andava em silêncio): 4,91 m/s por
+			// 3 s (era 3,71 até 27/11: dois pedidos de +15% do Jhon), uns 14,7 m em
+			// passadas de 1,12 m, e o passo se ouve de mais longe.
 			int sprint = await Walk(b, heard, "move_forward", "sprint");
-			b.Check(sprint is >= 9 and <= 11, $"passos correndo com Shift em 3 s: {sprint} (esperado 10)");
+			b.Check(sprint is >= 12 and <= 14, $"passos correndo com Shift em 3 s: {sprint} (esperado 13)");
 			b.Near(22, heard.Find(n => n.Kind == NoiseKind.Step).Radius, 0.01, "raio do passo correndo com Shift");
 
 			// Pulo parado: um baque no pouso.

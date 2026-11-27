@@ -28,6 +28,12 @@ public abstract class WolfStairsTest : RegressionTest
 	/// escada (desvio padrão, em metros por quadro).</summary>
 	private const float Steady = 0.004f;
 
+	/// <summary>Para descer, o lobo é posto no alto, isto para lá do último
+	/// degrau (em metros). No Deserto de 27/11 (a cena de demonstração do kit)
+	/// a escada de pedra acaba num patamar de 1,2 m encostado na casa, e a
+	/// 1,2 m do último degrau já é parede: lá o lobo é posto no meio do patamar.</summary>
+	protected virtual float TopRunUp => 1.2f;
+
 	public override void Prepare()
 	{
 		RoomConfig.Settings = new RoomSettings { Map = MapId, TeamSize = 4 };
@@ -65,7 +71,7 @@ public abstract class WolfStairsTest : RegressionTest
 			string way = climbing ? "subindo" : "descendo";
 			RegressionBench.ReleaseAll();
 			if (climbing) await b.Place(foot - flat * 1.2f + Vector3.Up * 1.1f, yaw, settle: 0.6);
-			else await b.Place(high + flat * 1.2f + Vector3.Up * 1.1f, yaw + 180f, settle: 0.6);
+			else await b.Place(high + flat * TopRunUp + Vector3.Up * 1.1f, yaw + 180f, settle: 0.6);
 			await b.Tap("move_forward");
 			await b.Seconds(0.08);
 			RegressionBench.Press("move_forward");
@@ -108,6 +114,7 @@ public sealed class DesertoWolfStairsTest : WolfStairsTest
 {
 	public override string Name => "EscadaDeQuatroDeserto";
 	protected override string MapId => "deserto";
+	protected override float TopRunUp => 0.55f;
 }
 
 public sealed class EstacaoWolfStairsTest : WolfStairsTest

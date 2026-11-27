@@ -3,12 +3,20 @@
 // (assets/personagens/<pasta>/thumb.jpg). Roda sozinho antes de
 // "npm run dev" e "npm run build". Sem a pasta do jogo (um build fora do
 // repositório), não faz nada: o painel mostra o nome no lugar da imagem.
-import { cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 const here = import.meta.dirname;
 const game = process.env.JOGO_ASSETS ?? path.resolve(here, "../../../src/assets");
 const out = path.resolve(here, "../public/jogo");
+
+// A cópia é sempre legível por todos (644): o servidor roda como "app" dentro do contêiner, e
+// uma foto que saiu do Godot só para o dono (600) virava "Permission denied" e erro 500 no painel
+// (27/11: as fotos dos mapas). No git elas já são 644; isto é para o build feito da máquina de alguém.
+function copy(from, to) {
+	cpSync(from, to);
+	chmodSync(to, 0o644);
+}
 
 function copyImages(from, to, keep = () => true) {
 	if (!existsSync(from)) return 0;
@@ -16,7 +24,7 @@ function copyImages(from, to, keep = () => true) {
 	let count = 0;
 	for (const file of readdirSync(from)) {
 		if (!/\.(png|jpe?g|webp)$/i.test(file) || !keep(file)) continue;
-		cpSync(path.join(from, file), path.join(to, file));
+		copy(path.join(from, file), path.join(to, file));
 		count++;
 	}
 	return count;
@@ -35,7 +43,7 @@ if (!existsSync(game)) {
 		for (const name of readdirSync(folder)) {
 			const thumb = path.join(folder, name, "thumb.jpg");
 			if (!existsSync(thumb)) continue;
-			cpSync(thumb, path.join(out, "personagens", `${name}.jpg`));
+			copy(thumb, path.join(out, "personagens", `${name}.jpg`));
 			people++;
 		}
 	}

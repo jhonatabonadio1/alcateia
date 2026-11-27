@@ -77,6 +77,10 @@ não deixa passar é o que faz a trapaça valer a pena.
 
 ## O que ainda vem do jogo
 
+(Desde 27/11, decisão 0019: a forma é conferida — tempo de lobo, espera,
+transformação e o modo da sala —, o tiro de bot tem teto, alcance e ritmo,
+e o acerto aceito é avisado a todos na hora.)
+
 - **A forma e a arma na mão** (no comando) e **as armas do conjunto**
   (`Status`): o servidor não confere se o jogador tem a arma que diz ter
   (o inventário é do servidor central; o de partida ainda não pergunta).

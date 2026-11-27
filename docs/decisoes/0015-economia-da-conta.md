@@ -16,7 +16,7 @@ local deixa de guardar Presas e itens.
   disse (`Profile.ApplyAccount`); nada disso vai para o disco. Sem
   conta, é zero, Filhote e só o equipamento de série.
 - **O arquivo local guarda só escolhas**: nome de exibição, conjuntos,
-  classe e personagens escolhidos, tatuagens, título em uso,
+  classe e personagens escolhidos, melhorias de lobo, título em uso,
   estatísticas de treino, a última sala. Arquivo de versão antiga é
   lido e o que era carteira e inventário é ignorado (as contas de teste
   não valiam nada; nada foi migrado).

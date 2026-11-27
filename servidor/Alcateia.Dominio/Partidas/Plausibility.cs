@@ -23,6 +23,15 @@ public static class Plausibility
 	/// um ou outro é ping alto; dezenas é trapaça ou defeito.</summary>
 	public const int RejectedHitsAlert = 15;
 
+	/// <summary>Acertos de arma de fogo a partir dos quais a proporção com
+	/// tranco de mira diz alguma coisa, e a proporção (por cento) que vira
+	/// alerta. Os mesmos números do <c>AimAudit</c> do jogo.</summary>
+	public const int AimSample = 25;
+	public const int AimSnapShare = 40;
+
+	/// <summary>Formas recusadas numa partida a partir das quais vale olhar.</summary>
+	public const int RefusedFormsAlert = 3;
+
 	/// <summary>Folga, em segundos, antes de estranhar o tempo em chamas
 	/// (o rage): arredondamento e o último quadro da partida.</summary>
 	public const int FireSlack = 3;
@@ -47,6 +56,13 @@ public static class Plausibility
 			int fireMax = Rage.MaxFireSeconds(l.Kills, l.Assists);
 			if (l.FireSeconds < 0 || l.FireSeconds > fireMax + FireSlack || l.FireSeconds > minutes * 60 + FireSlack)
 				flags.Add((l.AccountId, $"{l.FireSeconds} s em chamas com {l.Kills} abates e {l.Assists} assistências (o máximo possível é {fireMax} s)"));
+			// A mira que não é de gente (o AimAudit do servidor de partida): quase
+			// todo acerto logo depois de um giro de 20° em 0,05 s.
+			if (l.AimHits >= AimSample && l.AimSnaps * 100 >= l.AimHits * AimSnapShare)
+				flags.Add((l.AccountId, $"{l.AimSnaps} de {l.AimHits} acertos de arma de fogo logo depois de um tranco de mira (suspeita de aimbot)"));
+			// A forma que as regras não deixam (o FormAudit): uma vez pode ser rede; várias, não.
+			if (l.RefusedForms >= RefusedFormsAlert)
+				flags.Add((l.AccountId, $"{l.RefusedForms} vezes lobo fora das regras (além do tempo, sem esperar, sem transformar ou em modo só de humanos)"));
 			if (l.RejectedHits >= RejectedHitsAlert)
 				flags.Add((l.AccountId, $"{l.RejectedHits} acertos recusados pelo servidor de partida (parede, mira, alcance ou ritmo)"));
 		}

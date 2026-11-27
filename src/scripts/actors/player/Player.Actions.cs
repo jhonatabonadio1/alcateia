@@ -24,7 +24,9 @@ public partial class Player
 	/// <summary>Quanto o botão direito apertado no chão fica guardado, em
 	/// segundos: junto com o pulo (ou um instante antes), o bote fica pedido
 	/// para este pulo (Jhon, 20/11).</summary>
-	[Export] public float LeapBuffer = 0.15f;
+	/// Desde 27/11, 0,25 s (era 0,15): quem aperta o botão direito um
+	/// instante antes do pulo não perde o bote.
+	[Export] public float LeapBuffer = 0.25f;
 
 	private double _leapBuffered;
 

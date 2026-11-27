@@ -159,9 +159,40 @@ def ceu_noite():
         arq.write(b"#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y %d +X %d\n" % (h, w)); arq.write(rgbe.tobytes())
 
 
+def nuvens(lado=512, semente=7):
+    """O ruído das nuvens do céu calculado (``assets/mapas/ceus/ceu_nuvens.gdshader``), que se repete sem emenda nos
+    quatro lados: no vermelho a forma grande (as massas de nuvem), no verde a média (os gomos: células arredondadas),
+    no azul o miúdo (a borda esfiapada). Cada canal é espalhado de 0 a 1 por igual (a ``cobertura`` do céu passa a
+    ser, de fato, a fração dele que é nuvem)."""
+    import numpy as np
+    rng = np.random.default_rng(semente); fx = np.fft.fftfreq(lado)[:, None] * lado; fy = np.fft.fftfreq(lado)[None, :] * lado; f = np.hypot(fx, fy); f[0, 0] = 1.0
+
+    def manchas(expoente, de=1.0, ate=1e9):
+        """Ruído de espectro 1/f^expoente (só as ondas entre ``de`` e ``ate`` por lado): repete-se por construção."""
+        e = (rng.normal(size=(lado, lado)) + 1j * rng.normal(size=(lado, lado))) / f ** expoente * ((f >= de) & (f <= ate))
+        return np.fft.ifft2(e).real
+
+    def gomos(pontos):
+        """Células arredondadas: 1 no meio de cada uma, 0 na divisa (a distância ao ponto mais perto, no toro)."""
+        p = rng.random((pontos, 2)) * lado; yy, xx = np.mgrid[0:lado, 0:lado]; d = np.full((lado, lado), 1e9)
+        for x, y in p:
+            dx = np.abs(xx - x); dy = np.abs(yy - y); d = np.minimum(d, np.hypot(np.minimum(dx, lado - dx), np.minimum(dy, lado - dy)))
+        return 1.0 - d / d.max()
+
+    def igual(a):
+        """Espalha os valores de 0 a 1 por igual (cada valor vira a fração dos pontos que ficam abaixo dele)."""
+        o = np.argsort(a, axis=None); r = np.empty(a.size); r[o] = np.linspace(0.0, 1.0, a.size); return r.reshape(a.shape)
+
+    grande = igual(manchas(1.75, 2, 40) + 0.35 * (gomos(14) - 0.5) * manchas(1.75, 2, 40).std() * 4)
+    media = igual(0.6 * gomos(60) + 0.4 * gomos(180) + 0.5 * igual(manchas(1.5, 6, 90)))
+    miudo = igual(manchas(1.2, 16, 200) + 0.3 * gomos(700))
+    im = Image.fromarray((np.dstack([grande, media, miudo]) * 255 + 0.5).astype(np.uint8), 'RGB')
+    im.save(os.path.join(RAIZ, 'assets', 'mapas', 'ceus', 'nuvens_ruido.png'))
+
+
 if __name__ == '__main__':
     os.makedirs(os.path.join(RAIZ, 'assets', 'mapas', 'fundos'), exist_ok=True)
     os.makedirs(os.path.join(RAIZ, 'assets', 'mapas', 'ceus'), exist_ok=True)
-    quais = sys.argv[1:] or ['cidade', 'serra', 'neon', 'ceu_noite']
+    quais = sys.argv[1:] or ['cidade', 'serra', 'neon', 'ceu_noite', 'nuvens']
     for q in quais: globals()[q]()
     print('fundos:', ', '.join(quais))

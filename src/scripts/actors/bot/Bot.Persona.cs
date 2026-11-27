@@ -86,7 +86,7 @@ public partial class Bot
 		get
 		{
 			// O boneco de outro jogador: o que o dono diz (21/11). Pela
-			// velocidade, o lobo de quem andava em pé com uma tatuagem de
+			// velocidade, o lobo de quem andava em pé com uma melhoria de lobo de
 			// velocidade, ou numa raça mais rápida que a do boneco, aparecia
 			// correndo de quatro.
 			if (Remote) return RemoteSprinting && _form.IsWolf && !_health.IsDead;

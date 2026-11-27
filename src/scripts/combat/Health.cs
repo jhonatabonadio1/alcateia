@@ -178,6 +178,9 @@ public partial class Health : Node
 
 		// A vida de um corpo de outro jogador vem espelhada da máquina dele.
 		if (!IsDead && !IsRemote) Regenerate(delta);
+		if (_mirrorHold > 0) _mirrorHold -= delta;
+		else _predicted = 0f;
+		if (_deathHold > 0) _deathHold -= delta;
 
 		if (!IsDead) return;
 
@@ -260,15 +263,77 @@ public partial class Health : Node
 	/// renascimento.</summary>
 	public void Mirror(float hp, float maxHp, float shield, float maxShield, bool dead)
 	{
+		// O servidor acabou de dizer que este corpo caiu (ServerHurt): a notícia
+		// de vida que saiu antes e chegou depois não o levanta.
+		if (!dead && IsDead && _deathHold > 0) return;
 		if (dead && !IsDead) Die(0);
 		else if (!dead && IsDead) Respawn();
 		if (dead) return;
+
+		// Logo depois de um acerto (o que este jogo previu, ou o que o servidor
+		// confirmou), a notícia mais velha, com mais vida, não devolve a barra.
+		if (_mirrorHold > 0 && hp + shield > Hp + Shield) return;
 
 		MaxHp = maxHp;
 		MaxShield = maxShield;
 		Hp = Mathf.Clamp(hp, 0f, maxHp);
 		Shield = Mathf.Clamp(shield, 0f, maxShield);
 		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
+	}
+
+	/// <summary>Por quanto tempo, depois de um acerto previsto ou confirmado,
+	/// a vida espelhada só desce (segundos): a notícia de vida vem 10 vezes
+	/// por segundo e pode ser de antes do acerto.</summary>
+	public const double MirrorHoldTime = 0.35;
+
+	private double _mirrorHold, _deathHold;
+	private float _predicted;
+
+	/// <summary>
+	/// O tiro deste jogo acertou o corpo de outro jogador (27/11, Jhon: "o tiro
+	/// deve ser percebido imediatamente... estou com 20 de ping e sinto delay
+	/// ao atirar em outras pessoas"): a barra de vida desce e o corpo reage
+	/// **já**, com a mesma conta do dano, sem esperar o servidor. É só o que se
+	/// vê: a vida de verdade é a do servidor, que confirma (<see cref="ServerHurt"/>)
+	/// ou, se recusar, a notícia seguinte devolve. Nunca prevê a morte — quem
+	/// decide que caiu é o servidor.
+	/// </summary>
+	public void PredictHit(float amount, Vector3 from, bool headshot)
+	{
+		if (!IsRemote || IsDead || amount <= 0) return;
+		DamageOutcome outcome = CombatRules.ApplyDamage(Hp, Shield, amount * GuardMultiplier, DamageMultiplier, BodyResistance, headshot);
+		_predicted += outcome.Dealt;
+		_mirrorHold = MirrorHoldTime;
+		EmitSignal(SignalName.Damaged, outcome.Dealt, from);
+		Shield = outcome.Shield;
+		Hp = Mathf.Max(outcome.Hp, 1f);
+		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
+	}
+
+	/// <summary>
+	/// Partida autoritativa: o servidor aplicou um acerto no corpo de outro
+	/// jogador e conta a todos, na hora, como ficou (<c>NetWire.Hurt</c>). Até
+	/// 27/11 os outros só sabiam pela notícia de vida da vítima, 10 vezes por
+	/// segundo e passando pela máquina dela: a barra e a morte chegavam até
+	/// 0,15 s depois do abate já decidido.
+	/// </summary>
+	public void ServerHurt(float dealt, float hp, float shield, bool dead, Vector3 from)
+	{
+		if (!IsRemote || IsDead) return;
+		// A reação já tocou se este jogo previu o acerto.
+		float fresh = dealt - _predicted;
+		_predicted = Mathf.Max(_predicted - dealt, 0f);
+		if (fresh > 0.5f) EmitSignal(SignalName.Damaged, fresh, from);
+
+		_mirrorHold = MirrorHoldTime;
+		Shield = Mathf.Clamp(shield, 0f, MaxShield);
+		Hp = Mathf.Clamp(hp, 0f, MaxHp);
+		EmitSignal(SignalName.Changed, Hp, MaxHp, Shield);
+		if (dead)
+		{
+			_deathHold = MirrorHoldTime;
+			Die(0);
+		}
 	}
 
 	/// <summary>

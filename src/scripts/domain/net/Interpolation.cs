@@ -65,7 +65,9 @@ public sealed class InterpolationBuffer
 			NetPose older = At(age), newer = At(age - 1);
 			if (time < older.Time) continue;
 
-			if (older.Epoch != newer.Epoch)
+			// Outra vida, ou o corpo que o servidor deixou de contar (ou voltou a
+			// contar: SightRules): não se desliza de um lugar ao outro.
+			if (older.Epoch != newer.Epoch || older.Has(EntityFlags.Present) != newer.Has(EntityFlags.Present))
 			{
 				pose = newer;
 				return true;

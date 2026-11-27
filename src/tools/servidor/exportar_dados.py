@@ -34,7 +34,7 @@ def _constants():
 
 
 CONSTANTS = _constants()
-KINDS = {"Weapon": "weapon", "Utility": "utility", "Tattoo": "tattoo", "Breed": "breed", "Character": "character", "Service": "service", "Photo": "photo"}
+KINDS = {"Weapon": "weapon", "Utility": "utility", "WolfUpgrade": "wolf_upgrade", "Breed": "breed", "Character": "character", "Service": "service", "Photo": "photo"}
 MODES = {"Equipe": "equipe", "MataMata": "mata_mata", "Dominacao": "dominacao", "Cacada": "cacada", "Sobrevivencia": "sobrevivencia"}
 METRICS = {"Matches": "matches", "Wins": "wins", "Kills": "kills", "KillsWolf": "kills_wolf", "KillsHuman": "kills_human",
            "Headshots": "headshots", "Assists": "assists", "Minutes": "minutes", "Mvps": "mvps"}

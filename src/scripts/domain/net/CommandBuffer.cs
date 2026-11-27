@@ -28,12 +28,36 @@
 ///   porque ele deve passos, não porque o jogo está à frente, e apressar
 ///   fazia o corpo andar o dobro por passo e quem o via dar um tranco
 ///   ("microtravamentos", 26/11).
+/// - **Apressar tem cota** (27/11, Jhon: "não podemos abrir brechas para
+///   cheaters"). Sem ela, um jogo que mandasse dois comandos por passo
+///   teria a fila sempre funda e o servidor consumiria dois por passo para
+///   sempre: o corpo andava no dobro da velocidade (speed hack). Agora cada
+///   passo rende <see cref="HurryRate"/> de cota, até <see cref="HurryCap"/>,
+///   e cada comando a mais gasta um: no máximo 10% mais rápido que o
+///   relógio, o que cobre o relógio de um jogo que anda um pouco adiantado e
+///   escoa o punhado de comandos que a rede junta. E a fila que passa de
+///   <see cref="MaxDepth"/> (meio segundo à frente: ninguém legítimo fica
+///   ali) é cortada: os comandos mais velhos são jogados fora, sem passo.
 /// </summary>
 public sealed class CommandBuffer
 {
 	public const int Capacity = 128;
 	public const int StartDepth = 2;
 	public const int HighWater = 4;
+
+	/// <summary>Cota de comandos a mais que cada passo rende (0,1: no máximo 10%
+	/// mais rápido que o relógio do servidor), e o máximo guardado.</summary>
+	public const float HurryRate = 0.1f;
+	public const float HurryCap = 6f;
+
+	/// <summary>Mais que isto de fila (passos à frente) é corte: o excesso, o
+	/// mais velho, é jogado fora sem ser simulado.</summary>
+	public const int MaxDepth = 30;
+
+	private float _hurry = HurryCap;
+
+	/// <summary>Comandos jogados fora porque a fila passou de <see cref="MaxDepth"/>.</summary>
+	public int Dropped { get; private set; }
 
 
 	/// <summary>Esperando o comando que falta, quantos passos ainda se
@@ -73,7 +97,33 @@ public sealed class CommandBuffer
 	public int WantedThisTick(bool catchingUp = false)
 	{
 		if (!Started) return 0;
-		return !catchingUp && Depth > HighWater ? 2 : 1;
+		_hurry = System.Math.Min(HurryCap, _hurry + HurryRate);
+		if (Depth > MaxDepth) Trim();
+		if (catchingUp || Depth <= HighWater || _hurry < 1f) return 1;
+		_hurry -= 1f;
+		return 2;
+	}
+
+	/// <summary>A fila funda demais: o mais velho sai, sem passo, até sobrar
+	/// <see cref="HighWater"/>. (O jogo que mandou é corrigido para onde o
+	/// servidor ficou.)</summary>
+	private void Trim()
+	{
+		uint keepFrom = _highest - (uint)HighWater + 1;
+		for (uint s = LastProcessed + 1; s < keepFrom; s++)
+		{
+			int i = (int)(s % Capacity);
+			if (_present[i] && _ring[i].Seq == s)
+			{
+				_present[i] = false;
+				_last = _ring[i];
+				_hasLast = true;
+			}
+			Dropped++;
+		}
+		LastProcessed = keepFrom - 1;
+		_waited = 0;
+		if (_lostUntil < LastProcessed) _lostUntil = LastProcessed;
 	}
 
 	public void Push(in InputCommand c)
@@ -186,5 +236,6 @@ public sealed class CommandBuffer
 		_hasLast = false;
 		_waited = 0;
 		_lostUntil = 0;
+		_hurry = HurryCap;
 	}
 }

@@ -47,6 +47,15 @@ public sealed record ReportedLine(long AccountId, int Kills, int Deaths, int Ass
 	/// servidor de partida autoritativo confere; o de repasse manda zero.</summary>
 	public int RejectedHits { get; init; }
 
+	/// <summary>Acertos de arma de fogo e, deles, os que vieram logo depois de
+	/// um tranco de mira (o AimAudit do servidor de partida, 27/11). Servidor
+	/// de partida antigo não manda: zero, e nada é denunciado.</summary>
+	public int AimHits { get; init; }
+	public int AimSnaps { get; init; }
+
+	/// <summary>Vezes em que o jogo contou uma forma que as regras não deixam (o FormAudit).</summary>
+	public int RefusedForms { get; init; }
+
 	/// <summary>Segundos em chamas (o rage, <see cref="Rage"/>): vira XP.
 	/// Servidor de partida antigo não manda: zero.</summary>
 	public int FireSeconds { get; init; }

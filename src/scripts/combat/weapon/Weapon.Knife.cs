@@ -88,8 +88,12 @@ public partial class Weapon
 		Vector3 from = _head.GlobalPosition;
 		Vector3 forward = -_head.GlobalTransform.Basis.Z;
 		Vector3 to = from + forward * (KnifeRange * knife.Range);
-		Health hit = Trace(from, to, Targets(), false, out Vector3 impact, out _, out bool headshot);
-		if (hit == null) return;
+		Health hit = Trace(from, to, Targets(), false, out Vector3 impact, out Node wall, out bool headshot);
+		if (hit == null)
+		{
+			KnifeMark(wall, impact, stab: true);
+			return;
+		}
 
 		// As costas: a frente do corpo de quem levou (o giro dele) contra o golpe.
 		bool behind = false;
@@ -101,6 +105,16 @@ public partial class Weapon
 		float damage = CombatRules.KnifeStab(KnifeStabDamage * knife.Damage, behind, KnifeStabBehind, headshot, HeadshotMultiplier);
 		Bleed(hit, impact, forward, behind ? 1.6f : 1.2f);
 		Damage(hit, damage, from, headshot);
+	}
+
+	/// <summary>A faca pegou na parede (Jhon, 27/11: "assim como os tiros marcam as paredes, as facas
+	/// devem dar umas cortadas e o botão direito da faca furar"): o corte ou o furo fica marcado, e o
+	/// estalo do material toca, como o da bala. Só o que se vê e ouve: no servidor (sem tela), nada.</summary>
+	private void KnifeMark(Node wall, Vector3 impact, bool stab)
+	{
+		if (wall == null || _body is Player { Driven: true }) return;
+		BulletMarks.AddKnife(_body.GetParent(), impact, _lastNormal, wall, stab);
+		EmitSignal(SignalName.WorldHit, impact, _lastNormal, wall);
 	}
 
 	/// <summary>
@@ -117,8 +131,12 @@ public partial class Weapon
 		Vector3 from = _head.GlobalPosition;
 		Vector3 to = from - _head.GlobalTransform.Basis.Z * (KnifeRange * knife.Range);
 
-		Health hit = Trace(from, to, Targets(), false, out Vector3 impact, out _, out bool headshot);
-		if (hit == null) return;
+		Health hit = Trace(from, to, Targets(), false, out Vector3 impact, out Node wall, out bool headshot);
+		if (hit == null)
+		{
+			KnifeMark(wall, impact, stab: false);
+			return;
+		}
 
 		float damage = KnifeDamage * knife.Damage * (headshot ? HeadshotMultiplier : 1f);
 		// A facada tira sangue, como o tiro e a garra (Jhon, 24/11: "as facadas tiram sangue do oponente?").

@@ -200,6 +200,7 @@ public partial class Hud : CanvasLayer
 			_weapon.AmmoTaken -= OnAmmoTaken;
 			_weapon.Dropped -= OnDropped;
 		}
+		UnhookBreath();
 	}
 
 	private bool _watchingShown;

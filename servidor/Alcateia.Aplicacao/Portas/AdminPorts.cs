@@ -117,6 +117,8 @@ public interface IPlayerRepository
 	Task<PlayerDetail> Detail(long accountId);
 	/// <summary>Soma (ou tira) moeda, com linha no extrato. Recusa se o saldo ficaria negativo.</summary>
 	Task<long> Adjust(long accountId, string currency, long amount, string reason, string reference, long? adminId);
+	/// <summary>Põe o XP da conta em <paramref name="xp"/>. Devolve o XP de antes.</summary>
+	Task<long> SetXp(long accountId, long xp);
 	Task<IReadOnlyList<OwnedItem>> Inventory(long accountId);
 	/// <summary>Entrega o item. <paramref name="uses"/>: usos a somar, se consumível.</summary>
 	Task Grant(long accountId, string itemId, DateTime? expiresAt, string source, int uses = 0);

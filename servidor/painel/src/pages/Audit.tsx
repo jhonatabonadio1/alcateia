@@ -21,6 +21,7 @@ const actions: Record<string, string> = {
 	"jogador.derrubou": "Derrubou a conexão",
 	"jogador.deu_moeda": "Deu moeda",
 	"jogador.tirou_moeda": "Tirou moeda",
+	"jogador.nivel": "Mudou o nível",
 	"jogador.deu_item": "Deu item",
 	"jogador.tirou_item": "Tirou item",
 	"catalogo.criou": "Criou item do catálogo",

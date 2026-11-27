@@ -7,6 +7,57 @@ pendências técnicas que já se conhecem.
 Resolveu um item? Tire daqui e escreva no `CHANGELOG.md`. Achou um novo?
 Ponha aqui, com o que se sabe dele.
 
+## Mapas da cena de demonstração e resposta do lobo (27/11)
+
+- **Ninguém jogou uma partida** na Cidade, no Deserto, na Estação nem na Obra novos (a cena de demonstração de cada
+  kit; `docs/MAPAS.md`). Os testes de mapa passam com bots, mas o ritmo e os pontos de vantagem são do papel.
+- **Os quatro não são simétricos** (decisão do Jhon: no tamanho da cena): medir se um lado leva vantagem e, se levar,
+  mexer onde cada time nasce (`BASES`, no módulo do mapa).
+- **A Obra tem 40 × 40 m**: para 6 contra 6 é apertada, e hoje está marcada só mata-mata em `Maps.cs` (como antes).
+- **Custo em máquina fraca não medido**: o céu calculado refaz o mapa de luz ambiente todo quadro (`Sky` em tempo
+  real), e os quatro mapas usam colisão de malha em quase tudo (prédios e objetos).
+- **Os bots não passam pelas portas de 1 m** (`NavBaker.AgentRadius` 0,5): na Obra saíram 7 módulos de parede por isso;
+  na Estação e na Cidade há salas a que só o jogador chega.
+- **O golpe de corpo do outro jogador espera o atraso do desenho** (`Bot.RemoteAttackLag`, agora o medido na hora; o
+  tiro de arma de fogo toca quando chega): os testes passam, falta o Jhon ver numa partida de verdade.
+- **O "Low Poly Sci-Fi City" (Distrito Neon) entrou no crédito genérico da JustCreate** a pedido ("em todos os mapas");
+  o autor desse pacote não está anotado no repositório (`docs/PACOTES.md` só diz Unity Asset Store): conferir.
+
+## Online: o que ainda falta fechar (decisão 0019)
+
+- **Os bots no servidor** (item 3 da decisão 0011) — o maior buraco que sobra, e o que segura os outros. Hoje o dono
+  da sala ainda decide onde o bot está e em quem atira; o servidor limita o dano, o ritmo, o teleporte e mata o bot
+  que o dono não mata. O que falta para rodar o bot no servidor de partida, na ordem:
+  1. O mundo do servidor guardar a navegação e as rotas do mapa (`MatchWorld.Strip` tira tudo o que não colide).
+  2. O que o bot lê de global passar a ser da partida: `Match.IsLive`/`Match.Current`, `RoomConfig.Rules`,
+     `TeamIntel`, `MatchRandom`, e os grupos (`Groups.Fighters`) — um servidor roda 4 partidas no mesmo processo, e o
+     bot de uma enxergaria os corpos da outra.
+  3. O dano direto (bot → jogador e jogador → bot) sair pelo servidor: `Damage`/`Hurt`, o juiz e a morte.
+  4. O servidor mandar o estado e o ataque de cada bot (os jogos já sabem desenhar o bot de outra máquina).
+  5. Os jogos deixarem de mover bots (`BotOwner`, `Touch`, `BotHit`, `BotDied` saem) e os testes online de bot mudarem.
+  6. Medir o passo do servidor com 12 bots pensando (hoje: 0,4 ms com 16 corpos sem cérebro).
+- **Wallhack: o dono dos bots recebe o lugar de todos** (a máquina dele move os bots). Fecha com o item acima. Em
+  partida sem bots o filtro vale para todos.
+- **O filtro de visão não foi jogado**: os testes passam (o boneco some e reaparece sem deslizar), mas o inimigo
+  aparecendo ao virar a esquina precisa ser visto numa partida de verdade. Se aparecer atrasado: `SightRules.LookAhead`
+  e `HoldTicks`; para desligar, `ALCATEIA_NEBLINA=0` no servidor de partida.
+- **Custo do filtro numa sala cheia não medido**: 6 raios por passo com 3 jogadores; 6 contra 6 são 72 pares.
+- **Aimbot: só o tranco de mira** (o giro de 20° em 0,05 s antes do acerto). O que acompanha o alvo devagar e sem erro
+  não é pego; e ninguém é punido sozinho — vira alerta no painel.
+- **Pôr o Easy Anti-Cheat da Epic** (decisão do Jhon, 27/11: "anota aí para colocarmos o anti-cheat da Epic"): o
+  anti-cheat no computador do jogador, que procura o programa de trapaça rodando — o que o servidor não tem como ver.
+  Gratuito, pelo Epic Online Services (EOS), com SDK em C#. Antes de abrir ao público. A fazer: conta de
+  desenvolvedor na Epic, o SDK do EOS no jogo (Godot .NET), o cliente protegido no instalador (Windows e Mac), o
+  servidor de partida conferindo cada jogador com a Epic antes de admitir, e a linha nos créditos e nas licenças.
+  Não substitui o que o servidor confere: soma.
+- **Esbarrão entre dois jogadores** ainda corrige (o jogo vê o outro ~0,1 s no passado, o servidor no presente).
+- **`CorpoPrecisoNoTiro` reprovou uma vez** em 27/11 (lobo de frente: 1703 cm², o teto é 1380) e passou em todas as
+  rodadas seguintes: intermitente, não investigado.
+- **`testar_online.sh`: as duas conferências da economia reprovam** no Docker (o robô termina com 230 Presas e o teste
+  espera 3000 ou mais para comprar um item de 1500): o saldo inicial da conta mudou e o teste não. Não foi rodado de
+  novo depois do filtro de visão.
+- **A ponta oeste da plataforma do norte da Estação** (x = −33) encosta noutra peça: por ali não se sobe.
+
 ## Corrida do humano (Shift, 26/11)
 
 - **Os bots não correm**, e o bot humano anda 3,0 m/s (`Bot.Speed`), mais
@@ -96,6 +147,13 @@ testes de movimento alinhados (Jhon). O que falta antes de abrir:
 | **Lobo sai da parede no servidor** (25/11: ~30 "wall server: off the wall … client on the wall: True" em 30 min) | O pátio de teste com parede reta não diverge (0 estados diferentes, `MovimentosOnline`). Dois motivos de divergência saíram (o bot sem corpo no servidor e o aliado sólido lá, decisão 0017). Falta medir nas paredes de verdade dos mapas (quinas, peças de colisão do mapa do servidor contra as do jogo). |
 
 ## Pedido e ainda não feito
+
+### Próximos (anotado em 27/11, "fazemos isso em outro momento")
+
+- **Rugido do lobo AAA+**: melhorar o efeito do rugido (R).
+- **Loja e perfil**: ajustar a visualização das duas telas, e o ícone do perfil.
+- **Lista de tiers**: uma tela para o jogador ver todas as bordas do jogo (a de cada faixa de nível).
+- **Teste proposto (decisão 0020), esperando o sim do Jhon**: no servidor, "o painel muda o nível: XP no começo do nível, auditoria, recusa sem motivo e fora de 1–3000, e o aviso `conta` chega à conexão do saguão do jogador" (crescer o `PanelTests` existente).
 
 ### Armas, lobos e site (anotado em 24/11)
 
@@ -301,14 +359,14 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   adversário ver que veio.
 - **Revisar o funcionamento da loja e do inventário** (pedido em 17/11):
   conferir compra, duração e vencimento do item, equipar e desequipar,
-  limite de tatuagens, o que o inventário mostra para cada categoria e o
+  limite de melhorias de lobo, o que o inventário mostra para cada categoria e o
   que chega à partida (e à rede). Hoje o perfil mora no arquivo do jogador,
   que se edita à mão (ver "Perfil, inventário e moedas no servidor").
 - **Armaduras em personagens e lobos, dando mais vida** (decidido pelo
   Jhon, 13/11). Entra no `docs/ARSENAL.md` e nos testes de equilíbrio.
   Proposta para não virar "paga para ganhar": a armadura se compra com
   **Presas** (moeda de jogar), nunca com Sangue; o bônus é pequeno e com
-  teto (como as tatuagens de hoje); e, se der vida, tira alguma outra
+  teto (como as melhorias de lobo de hoje); e, se der vida, tira alguma outra
   coisa (velocidade, por exemplo) — regra 1.
 - **Cash: dinheiro que o jogador paga** (17/11: o sistema de pagamento
   entra na lista de prioridades). Hoje o desenho já prevê o

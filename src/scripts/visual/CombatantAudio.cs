@@ -60,6 +60,7 @@ public partial class CombatantAudio : Node
 
 		_weapon.Fired += OnFired;
 		_weapon.HitConfirmed += OnHit;
+		_weapon.Stabbed += OnStabbed;
 		_weapon.WorldHit += OnWorldHit;
 		_weapon.AmmoChanged += OnAmmo;
 		_weapon.DryFired += OnDryFired;
@@ -81,6 +82,7 @@ public partial class CombatantAudio : Node
 		{
 			_weapon.Fired -= OnFired;
 			_weapon.HitConfirmed -= OnHit;
+			_weapon.Stabbed -= OnStabbed;
 			_weapon.WorldHit -= OnWorldHit;
 			_weapon.AmmoChanged -= OnAmmo;
 			_weapon.DryFired -= OnDryFired;
@@ -134,6 +136,8 @@ public partial class CombatantAudio : Node
 		if (_weapon.HumanSlot == Slot.Knife)
 		{
 			Play("faca");
+			// A lâmina cortando o ar (Jhon, 27/11: "falta o barulho de cortando o vento"), junto com o golpe.
+			if (Sfx.Has("faca_vento")) Play("faca_vento");
 			return;
 		}
 
@@ -144,6 +148,19 @@ public partial class CombatantAudio : Node
 			_casingTimer = CasingInterval;
 			GetTree().CreateTimer(CasingDelay).Timeout += () => Sfx.Own("capsula", -4f);
 		}
+	}
+
+	/// <summary>A estocada da faca (botão direito) tem som (Jhon, 27/11): o da facada, mais grave —
+	/// o golpe é mais lento e mais pesado. Até aqui saía muda.</summary>
+	[Export] public float StabPitch = 0.78f;
+
+	private void OnStabbed()
+	{
+		if (_form.IsWolf) return;
+		Play("faca", StabPitch);
+		// O ar da estocada: o próprio, se houver; senão o da facada, mais grave.
+		if (Sfx.Has("faca_estocada_vento")) Play("faca_estocada_vento");
+		else if (Sfx.Has("faca_vento")) Play("faca_vento", StabPitch);
 	}
 
 	/// <summary>A bala na parede: o estalo no ponto onde bateu.</summary>

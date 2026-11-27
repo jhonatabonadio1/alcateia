@@ -60,6 +60,9 @@ public sealed class Referee
 		/// vai no resultado, e o servidor central desconfia de quem tem muitos.</summary>
 		public int RejectedHits;
 
+		/// <summary>Acertos de arma de fogo e, deles, os que vieram logo depois de um tranco de mira (<c>AimAudit</c>).</summary>
+		public int AimHits, AimSnaps;
+
 		/// <summary>O rage (em chamas): o tempo em chamas vai no resultado e vira XP.</summary>
 		public readonly Rage Rage = new();
 		public int Points => Kills * PointsPerKill + Assists * PointsPerAssist;

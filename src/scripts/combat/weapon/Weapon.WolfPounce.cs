@@ -108,30 +108,27 @@ public partial class Weapon
 	/// </summary>
 	public void TrySpecial()
 	{
-		if (_charging) return;
+		if (_charging || _flying || _diving) return;
 		if (!_form.IsWolf || !_form.CanAttack) return;
-		// No ar, o bote corta a garrada em curso na hora (Jhon, 23/11: "se eu estiver no ar
-		// apertando o ataque primário e apertar o secundário, ele deve interromper o primário e
-		// acionar o secundário imediatamente"). O bote troca o golpe: o dano da garra que ainda
-		// não saiu não sai mais, e os cliques guardados são esquecidos.
-		bool clawingInAir = _strikeLeft > 0 && !_diving && !_flying && !_body.IsOnFloor();
-		if (_cooldown > 0 && !clawingInAir) return;
-		// O teto do clique em rajada: o bote não sai antes de StrikeSpacing
-		// depois do último golpe que bateu, nem antes de LeapCooldown depois do
-		// último bote. Apertado antes, fica esperando no ar (Player.Actions) e
-		// sai na hora em que pode.
-		if (_sinceStrike < StrikeSpacing || _sinceLeap < LeapCooldown) return;
-		if (!_body.IsOnFloor() && HeightAboveGround() >= LeapMinHeight)
+		// O bote responde na hora, e corta a garrada em curso, no ar (Jhon, 23/11 e de novo 27/11: "o ataque
+		// primário e secundário do lobo devem responder instantaneamente, uma cancela a animação da outra,
+		// inclusive no ar; mas se cancelar, não é para dar o dano da anterior"): o dano da garra que ainda não
+		// saiu não sai mais (Leap troca o golpe), e os cliques guardados são esquecidos. Até 27/11 o bote também
+		// esperava 0,34 s depois da última pancada; agora quem segura o ritmo do dano é o próprio golpe
+		// (Claw: uma pancada não sai a menos de StrikeSpacing da anterior). O que segura o clique em rajada é a
+		// espera entre botes (LeapCooldown, 1 s): apertado antes, fica esperando no ar (Player.Actions).
+		if (_sinceLeap < LeapCooldown) return;
+		if (_body.IsOnFloor() || HeightAboveGround() < LeapMinHeight) return;
+
+		_attackQueue = 0;
+		if (_strikeLeft > 0 || _cooldown > 0)
 		{
-			_attackQueue = 0;
-			if (clawingInAir)
-			{
-				// a garra some da tela enquanto o bote entra
-				EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Claw);
-				EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Punch);
-			}
-			Leap();
+			// a garra some da tela enquanto o bote entra
+			_stepLeft = 0;
+			EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Claw);
+			EmitSignal(SignalName.WolfMoveCancelled, (int)WolfMove.Punch);
 		}
+		Leap();
 	}
 
 	/// <summary>Altura mínima dos pés ao chão para o bote sair (Jhon, 21/11:
@@ -139,8 +136,18 @@ public partial class Weapon
 	/// suficiente para não ser praticamente instantâneo"). Com 1,1 m, num pulo
 	/// do chão plano, o bote sai uns 0,25 s depois do pulo no Bruto (que sobe
 	/// até 1,6 m) e 0,18 s no Ligeiro (2,5 m). Apertado antes, fica guardado e
-	/// sai quando chegar lá (Player.Actions).</summary>
-	[Export] public float LeapMinHeight = 1.1f;
+	/// sai quando chegar lá (Player.Actions). Desde 27/11, 0,6 m ("o ataque
+	/// secundário do lobo, quando pula, deve ter uma resposta mais rápida"):
+	/// no lobo de hoje (pulo de 2,09 m) a espera cai de uns 0,16 s para uns
+	/// 0,08 s depois do pulo — ainda não é instantâneo, que era o que a altura
+	/// mínima queria evitar. No mesmo dia, 0,3 m (Jhon: "a resposta de pular
+	/// e ataque com o botão direito do mouse com o lobo deve ser bem rápida,
+	/// sem delay, posso pular e já apertar para atacar, mas não a ponto de
+	/// floodar"): dois ou três passos depois do pulo (uns 0,04 s) — só o
+	/// bastante para o lobo ter saído do chão. Quem segura o clique em rajada
+	/// não é mais a altura, é a espera entre botes (<see cref="LeapCooldown"/>,
+	/// 1 s) e o compasso conferido no servidor (<c>WolfStrikePace</c>).</summary>
+	[Export] public float LeapMinHeight = 0.3f;
 
 	/// <summary>Dos pés ao cenário logo abaixo, em metros; sem chão até 40 m,
 	/// muito. Corpos (inimigo, aliado, bot) não contam: online o jogo vê os
