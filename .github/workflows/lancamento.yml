@@ -1,5 +1,5 @@
-# Lançamento: uma tag "v*" (git tag v0.4.0 && git push --tags) roda os
-# testes e, passando, sobe o servidor e a frota de partidas no Fly.io, monta
+# Lançamento: uma tag "v*" (git tag v0.4.0 && git push --tags) sobe o
+# servidor e a frota de partidas no Fly.io, monta
 # o jogo para Windows e para Mac e, só quando tudo isso deu certo,
 # publica a Release do GitHub (o link que vai para os testadores) com:
 #   WolfLeague-Setup-<versão>.exe   instalador do Windows (atalhos, desinstalador)
@@ -38,18 +38,15 @@ env:
   FLY_APP_PARTIDA: ${{ vars.FLY_APP_PARTIDA || 'wolfleague-partida' }}
   SERVIDOR_URL: ${{ vars.SERVIDOR_URL || format('https://{0}.fly.dev', vars.FLY_APP_API || 'wolfleague-api') }}
 
-# Os testes voltaram ao lançamento (Jhon, 25/11; tinham saído em 21/11):
-# nada sobe para o Fly nem vira Release sem o testes.yml inteiro passar. O
-# import do Godot (o job mais demorado) roda ao mesmo tempo que eles; os
-# clientes esperam os dois.
+# Os testes saíram do lançamento de novo (Jhon, 26/11: "tire os testes do
+# ci de release"; tinham saído em 21/11 e voltado em 25/11). A tag sobe
+# servidor, frota e clientes sem esperar o testes.yml, que continua rodando
+# a cada push. Para religar: um job "testes: uses: ./.github/workflows/testes.yml"
+# aqui, "needs: testes" no servidor e "testes" no needs dos dois clientes.
 jobs:
-  testes:
-    uses: ./.github/workflows/testes.yml
-
   # O servidor (API, saguão, painel). Sobe primeiro: a versão nova da
   # frota pode depender de rota nova dele; a velha continua falando com ele.
   servidor:
-    needs: testes
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: producao
@@ -153,7 +150,7 @@ jobs:
   # empacota o instalador (instalador/windows.nsi) e guarda como artefato.
   # Roda ao mesmo tempo que o deploy; quem publica é o job "release".
   cliente:
-    needs: [testes, importar]
+    needs: importar
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
@@ -253,7 +250,7 @@ jobs:
   # Apple, não é autenticado: na primeira vez o jogador libera em
   # Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo Assim.
   cliente-mac:
-    needs: [testes, importar]
+    needs: importar
     runs-on: macos-latest
     timeout-minutes: 360
     steps:

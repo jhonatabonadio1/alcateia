@@ -1,12 +1,13 @@
 # Roda todos os testes a cada push e pull request: compila o jogo, os
 # testes de unidade e os de regressão (o jogo de verdade, sem tela).
 # É o mesmo src/tools/testar.sh que roda no Mac. O lançamento
-# (lancamento.yml) chama este mesmo arquivo antes de subir para o Fly.
+# (lancamento.yml) não espera por ele desde 26/11 (o workflow_call fica
+# para religar).
 name: Testes
 
 on:
   push:
-    # Só ramos: a tag de lançamento já roda os testes pelo lancamento.yml.
+    # Só ramos: a tag de lançamento não roda os testes (o push do ramo roda).
     branches: ["**"]
   pull_request:
   workflow_dispatch:
