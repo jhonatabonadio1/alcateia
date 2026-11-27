@@ -6,6 +6,7 @@ montam (sem abrir o jogo):
     python3 tools/mapas/conferir.py            # os quatro
     python3 src/tools/mapas/conferir.py armazem_estendido
     python3 tools/mapas/conferir.py --cru      # antes do acerto automático
+    python3 src/tools/mapas/conferir.py setor_zero   # o campo de treino: só os quadrados vazios
 
 Sem `--cru`, confere o mapa como ele é gravado: depois de
 `Mapa.acertar()`, que já desempata as faces e assenta os letreiros. O
@@ -24,6 +25,14 @@ O que procura:
 4. **Objeto no ar ou afundado**: modelo pronto cuja base não encosta em
    nada (mais de 6 cm de folga) — só os que ficam no nível declarado.
 
+5. **Quadrado vazio** (só o Setor Zero): o campo dividido em quadrados
+   de 5 m; reprova o que não tiver nada além do pavimento de base — piso
+   de lugar, construção, pista, jardim, prop ou letreiro (o Jhon, 26/11:
+   nada de área grande vazia). A conta é do módulo dele
+   (`setor_zero.vazios`), que conhece as peças do kit; as outras quatro
+   conferências não valem para ele (o desenho é um .glb do kit, e as
+   paredes são caixas escondidas: todo letreiro pareceria sem parede).
+
 Sai com 1 se achar algo. Só olha caixas retas (sem giro): rampas e
 formas livres ficam de fora.
 """
@@ -35,6 +44,8 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(AQUI)))
 
 MAPAS = ("armazem_estendido",)
+# Só quando pedidos pelo nome, e só a conferência de vazios (montar o mapa regrava o .glb dele).
+SO_VAZIOS = ("setor_zero",)
 EPS = 0.004          # mesma face: até 4 mm
 AREA_MIN = 0.03      # sobreposição que se vê, m²
 
@@ -167,10 +178,20 @@ def objetos(m):
 
 
 def main():
-    quais = [a for a in sys.argv[1:] if a in MAPAS] or MAPAS
+    quais = [a for a in sys.argv[1:] if a in MAPAS + SO_VAZIOS] or MAPAS
     total = 0
     for ident in quais:
-        m = importlib.import_module(f"tools.mapas.{ident}").montar()
+        modulo = importlib.import_module(f"tools.mapas.{ident}")
+        m = modulo.montar()
+        if ident in SO_VAZIOS:
+            falta = modulo.vazios(m)
+            print(f"== {m.nome}: {len(falta)} quadrados de 5 m vazios")
+            for (x, y) in falta:
+                print(f"  vazio: x {x:.0f} a {x + 5:.0f}, y {y:.0f} a {y + 5:.0f} (coordenadas da planta)")
+            if not falta:
+                print("  nada")
+            total += len(falta)
+            continue
         if "--cru" not in sys.argv:
             m.acertar()
         b, l, n, o = brigas(m), letreiros(m), nascimentos(m), objetos(m)

@@ -62,6 +62,13 @@ public partial class LoadoutMenu : CanvasLayer
 	/// <summary>A escolha está na tela. Para os testes.</summary>
 	public bool IsOpen => _open;
 
+	/// <summary>O campo de treino (Jhon, 26/11: "ao apertar H abre o conjunto
+	/// de armas para trocar sempre que quiser, sem exigir KP"): a tecla dos
+	/// conjuntos (<c>loadout</c>, o H) abre e fecha a escolha a qualquer hora,
+	/// nenhum conjunto custa KP, e vivo não há relógio. Na partida continua
+	/// como sempre: escolhe-se ao renascer, pagando.</summary>
+	[Export] public bool Free = false;
+
 	public override void _Ready()
 	{
 		Layer = 9;
@@ -115,6 +122,14 @@ public partial class LoadoutMenu : CanvasLayer
 		}
 		if (!_open) return;
 
+		// No treino, vivo, a escolha fica aberta o tempo que o jogador quiser.
+		if (Free && !_health.IsDead)
+		{
+			_remaining = ChooseTime;
+			RefreshTimer();
+			return;
+		}
+
 		// O relógio corre mesmo com o menu do Esc por cima: o Esc não
 		// segura o jogo (não escolheu a tempo, vai o padrão e renasce).
 		_remaining -= delta;
@@ -127,6 +142,18 @@ public partial class LoadoutMenu : CanvasLayer
 
 	public override void _Input(InputEvent @event)
 	{
+		// No treino o H abre a escolha (vivo, sem outro menu na frente) e a fecha sem trocar nada.
+		if (Free && _root != null && @event.IsActionPressed("loadout"))
+		{
+			// "Nenhum outro menu por cima": a contagem pode estar zerada por quem troca de cena (ou pela bancada de testes).
+			if (_open && UiState.Open <= 1 && !_health.IsDead) Close();
+			else if (!_open && !UiState.AnyOpen && !_health.IsDead) Open();
+			else return;
+			Sfx.Ui(_open ? "ui_abrir" : "ui_fechar");
+			GetViewport().SetInputAsHandled();
+			return;
+		}
+
 		if (!_open || !UiState.IsAlone) return;
 
 		// 1 a 4 escolhem direto, como os números dos cartões.
@@ -151,6 +178,7 @@ public partial class LoadoutMenu : CanvasLayer
 		if (set.IsDefault) return null;
 		if (!RoomRules.Allows(set, out string why)) return why;
 		if (!set.Validate(out string error)) return error == "Item fora do inventário" ? "Item vencido ou fora do inventário" : error;
+		if (Free) return null;          // no treino nenhum conjunto custa
 		int cost = set.CostIn(_form.Kp);
 		if (cost > _form.Wp) return Loc.F("Faltam {0:0} KP", cost - _form.Wp);
 		return null;
@@ -216,7 +244,9 @@ public partial class LoadoutMenu : CanvasLayer
 
 		// O padrão paga a rede de segurança; o resto paga só o que ainda não foi
 		// pago nesta partida, e o que pagou fica desbloqueado até o fim dela.
-		if (set.IsDefault) _form.AddWp(DefaultBonus);
+		// (no treino não se paga nem se ganha: os KP não entram na troca)
+		if (Free) { }
+		else if (set.IsDefault) _form.AddWp(DefaultBonus);
 		else if (_form.TrySpend(set.CostIn(_form.Kp))) _form.Kp.Unlock(set.PaidItems());
 
 		// O que não é do jogador (sem conta, tudo o que não é de série) entra como o padrão.

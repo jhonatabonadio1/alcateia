@@ -46,6 +46,9 @@ public static class InputSetup
 		("guide", K(Key.E)),
 		// Z: a lista dos calls de rádio do time (Radio, Hud.Radio).
 		("radio", K(Key.Z)),
+		// H, no campo de treino: abre os conjuntos de armas para trocar quando quiser, sem custo (LoadoutMenu.Free;
+		// Jhon, 26/11). Na partida não faz nada: lá o conjunto se escolhe ao renascer.
+		("loadout", K(Key.H)),
 		// V: a coronhada (Weapon.Butt).
 		("melee", K(Key.V)),
 		// F, morto: solta a câmera de espectador (KillCam).

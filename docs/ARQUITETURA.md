@@ -787,6 +787,27 @@ O que a cena do mapa precisa ter:
   (`DirectionalLight3D`) próprios; quando o mapa traz, os padrões da
   cena da partida saem.
 
+**O campo de treinamento é a exceção** (o Setor Zero, 26/11): fica em
+`Maps.Training`, fora de `Maps.All`, e a cena dele não tem `SpawnPoints`
+por time, `PatrolRoutes` nem `NavBaker` — tem um `Nascer` (um ponto, para
+qualquer time) e o nó `Tutorial`, com as marcas, as portas, os bonecos e
+as zonas (`src/scripts/tutorial/TutorialZone.cs`: uma caixa com nome que
+avisa quando o jogador entra e sai, que devolve à marca quem cai num
+vão e, na do abismo, mata de queda quem pula da beira). É gerado por
+script; veja `docs/MAPAS.md`, "Setor Zero".
+
+Os "bonecos" são os robôs de treino: o `Dummy` (`src/scripts/debug/`)
+com o modelo `robo_treino.glb` — um inimigo sem arma, com `Health`, time,
+percurso (`DummyMove.Route`), barra de vida e a cabeça dele
+(`combat/IHeadBand.cs`, que o `Weapon.Damage` consulta no lugar da faixa
+da cápsula). A cena de andar no mapa é `src/scenes/treino_setor_zero.tscn`
+(`LoadoutMenu.Free`, `GameMenu.Training`), aberta pela tela principal
+(`lobby/HomeScreen.cs`, onde o `LobbyShell` cai ao entrar). As nuvens dos
+mapas a céu aberto são do `visual/SkyClouds.cs`, postas pelo `MapSlot`.
+Também é o `MapSlot` que põe a **sombra de apoio dos personagens**
+(`visual/GroundingShadow.cs`: o par de luzes que se anulam, em que só as
+camadas dos personagens fazem sombra) em todo mapa carregado.
+
 ### Ensinar uma decisão nova ao bot
 
 1. `src/scripts/ai/BotBrain.cs`: acrescente o valor em `BotAction` e uma

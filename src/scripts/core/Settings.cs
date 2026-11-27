@@ -154,7 +154,11 @@ public static class Settings
 	{
 		int q = Math.Clamp(Values.Quality, 0, QualityNames.Length - 1);
 
-		RenderingServer.DirectionalShadowAtlasSetSize(q switch { 0 => 2048, 3 => 8192, _ => 4096 }, true);
+		// O atlas é dividido entre as luzes direcionais com sombra: o sol do mapa e, da Média para cima, a sombra de
+		// apoio dos personagens (GroundingShadow). Na Alta e na Ultra ele cresce para o sol não perder definição.
+		RenderingServer.DirectionalShadowAtlasSetSize(q switch { 0 => 2048, 1 => 4096, 2 => 6144, _ => 8192 }, true);
+		foreach (Node node in tree.GetNodesInGroup(GroundingShadow.Group))
+			(node as GroundingShadow)?.Apply();
 		var filter = q switch
 		{
 			0 => RenderingServer.ShadowQuality.Hard,

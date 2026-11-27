@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://6hw2iv1jto2i" path="res://src/scenes/player.tscn" id="1_player"]
+[ext_resource type="Script" path="res://src/scripts/core/MapSlot.cs" id="2_map"]
+[ext_resource type="Script" path="res://src/scripts/ui/hud/Hud.cs" id="3_hud"]
+[ext_resource type="Script" path="res://src/scripts/ui/LoadoutMenu.cs" id="6_loadout"]
+[ext_resource type="Script" path="res://src/scripts/visual/WorldAudio.cs" id="20_world_audio"]
+[ext_resource type="Script" path="res://src/scripts/ui/GameMenu.cs" id="4_gamemenu"]
+
+[node name="TreinoSetorZero" type="Node3D"]
+
+[node name="Map" type="Node3D" parent="."]
+script = ExtResource("2_map")
+MapId = "setor_zero"
+
+[node name="Player" parent="." groups=["player"] instance=ExtResource("1_player")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -63, 1.2, 0)
+
+[node name="GameMenu" type="CanvasLayer" parent="."]
+script = ExtResource("4_gamemenu")
+Training = true
+
+[node name="LoadoutMenu" type="CanvasLayer" parent="."]
+layer = 9
+script = ExtResource("6_loadout")
+Free = true
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("3_hud")
+
+[node name="WorldAudio" type="Node" parent="."]
+script = ExtResource("20_world_audio")

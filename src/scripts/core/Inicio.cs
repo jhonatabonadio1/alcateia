@@ -41,6 +41,9 @@ public partial class Inicio : Node
 		// Placa fraca: na primeira abertura, as opções de custo vão ao mínimo.
 		if (!server) Settings.AutoTune();
 
+		// Desenvolvimento: `-- --foto=arquivo.png` fotografa a tela e fecha (DevShot).
+		if (!server) DevShot.Start(this, args);
+
 		// A suavização vale para a janela inteira, desde a primeira cena
 		// (também quando a partida é aberta direto do editor).
 		Settings.ApplyVideo(GetTree().Root);

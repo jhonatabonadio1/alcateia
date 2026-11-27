@@ -1351,3 +1351,20 @@ Segure {0},,Hold {0},Mantén {0},scripts/ui/hud/Hud.Guide.cs
 "{0}, de lobo",,"{0}, as a wolf","{0}, como lobo",scripts/ui/hud/Hud.Guide.cs
 "O humano corre para a frente enquanto segura, de arma abaixada: correndo não atira.",,"The human sprints forward while held, weapon lowered: no shooting while sprinting.","El humano corre hacia adelante mientras la mantienes, con el arma baja: corriendo no dispara.",scripts/core/KeyBindings.cs
 "A coronhada com a arma de fogo; com a faca, golpeia; com a granada, lança.",,"The butt strike with a firearm; with the knife, slashes; with the grenade, throws.","El culatazo con el arma de fuego; con el cuchillo, golpea; con la granada, lanza.",scripts/core/KeyBindings.cs
+Como você quer jogar?,,How do you want to play?,¿Cómo quieres jugar?,scripts/lobby/HomeScreen.cs
+"Escolha um modo. A loja, o inventário e as missões estão no alto.",,"Pick a mode. The shop, the inventory and the missions are at the top.","Elige un modo. La tienda, el inventario y las misiones están arriba.",scripts/lobby/HomeScreen.cs
+Jogo rápido,,Quick play,Juego rápido,scripts/lobby/HomeScreen.cs
+"Entre numa partida em segundos, sem escolher sala.",,"Jump into a match in seconds, without picking a room.","Entra en una partida en segundos, sin elegir sala.",scripts/lobby/HomeScreen.cs
+Arcade,,Arcade,Arcade,scripts/lobby/HomeScreen.cs
+"Modos diferentes, regras malucas, partidas curtas.",,"Different modes, wild rules, short matches.","Modos distintos, reglas locas, partidas cortas.",scripts/lobby/HomeScreen.cs
+Crie uma sala ou entre na de alguém: é o jogo de hoje.,,Create a room or join someone's: this is the game as it is today.,Crea una sala o entra en la de alguien: es el juego de hoy.,scripts/lobby/HomeScreen.cs
+Treino,,Training,Entrenamiento,scripts/lobby/HomeScreen.cs
+"O campo de treinamento: armas, lobo e robôs de alvo, sozinho e sem pressa. No campo, a tecla dos conjuntos troca as armas quando quiser.",,"The training grounds: weapons, wolf and target robots, alone and at your own pace. On the field, the loadout key swaps your weapons whenever you want.","El campo de entrenamiento: armas, lobo y robots de blanco, a solas y sin prisa. En el campo, la tecla de los conjuntos cambia las armas cuando quieras.",scripts/lobby/HomeScreen.cs
+Em breve,,Coming soon,Próximamente,scripts/lobby/HomeScreen.cs
+Início,,Home,Inicio,scripts/lobby/LobbyHeader.cs
+Sair do treinamento,,Leave training,Salir del entrenamiento,scripts/ui/GameMenu.cs
+Conjuntos (treino),,Loadouts (training),Conjuntos (entrenamiento),scripts/core/KeyBindings.cs
+"No campo de treino, abre os conjuntos de armas para trocar quando quiser, sem custo.",,"On the training grounds, opens the weapon loadouts so you can swap whenever you want, at no cost.","En el campo de entrenamiento, abre los conjuntos de armas para cambiar cuando quieras, sin coste.",scripts/core/KeyBindings.cs
+Robô de treino,,Training robot,Robot de entrenamiento,scripts/debug/Dummy.cs
+Setor Zero,,Sector Zero,Sector Cero,scripts/meta/Maps.cs
+"O centro de treinamento da WolfLeague, no alto de uma montanha, entre picos gelados: a Sala de Ativação, o corredor de calibragem, o Núcleo da Iris, a Linha de Fogo à beira do abismo, a Câmara de Metamorfose, a Arena da Matilha, a Rua Ignição e o Ponto de Retorno.",,"The WolfLeague training center, high on a mountain among icy peaks: the Activation Room, the calibration corridor, the Iris Core, the Firing Range on the edge of the abyss, the Metamorphosis Chamber, the Pack Arena, Ignition Street and the Return Point.","El centro de entrenamiento de WolfLeague, en lo alto de una montaña, entre picos helados: la Sala de Activación, el pasillo de calibración, el Núcleo de Iris, la Línea de Fuego al borde del abismo, la Cámara de Metamorfosis, la Arena de la Manada, la Calle Ignición y el Punto de Retorno.",scripts/meta/Maps.cs

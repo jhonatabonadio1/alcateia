@@ -169,6 +169,7 @@ public partial class LobbyHeader : PanelContainer
 
 		var items = new[]
 		{
+			new Nav(IconKind.Play, "Início", () => LobbyShell.Instance?.GoMenu()),
 			new Nav(IconKind.Rooms, "Salas", () => LobbyShell.Instance?.GoHome()),
 			new Nav(IconKind.Shop, "Loja", () => LobbyShell.Instance?.GoShop()),
 			new Nav(IconKind.Inventory, "Inventário", () => LobbyShell.Instance?.GoInventory()),

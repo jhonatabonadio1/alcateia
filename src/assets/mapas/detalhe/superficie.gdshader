@@ -29,6 +29,11 @@ uniform float manchas : hint_range(0.0, 3.0) = 1.0;
 uniform float tinta : hint_range(0.0, 2.0) = 1.0;
 /** Pinta cada material de uma cor, para conferir o que tools/mapas/kits/detalhe.py decidiu. */
 uniform bool ver_classes = false;
+// A peça que anda (o robô de treino do Setor Zero): o desenho do material gruda na peça em vez de no mundo — projetado
+// pelo mundo, ele escorregava por cima do robô a cada passo. `miudeza`: quantas vezes mais miúdo o desenho sai (uma
+// peça de 2 m pede o rebite e a emenda menores que os de uma parede).
+uniform bool na_peca = false;
+uniform float miudeza = 1.0;
 // o que acende (os LEDs, os anúncios e as janelas do mapa Neon): a textura da luz, no mesmo desenho da paleta. Preta (o
 // padrão) nos outros mapas: nada muda neles.
 uniform sampler2D luz : source_color, hint_default_black, filter_linear_mipmap, repeat_enable;
@@ -111,8 +116,13 @@ varying vec3 normal_mundo;
 
 void vertex() {
 	material_da_face = int(COLOR.r * 255.0 + 0.5);
-	pos_mundo = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	normal_mundo = normalize(MODEL_NORMAL_MATRIX * NORMAL);
+	if (na_peca) {
+		pos_mundo = VERTEX * miudeza;
+		normal_mundo = normalize(NORMAL);
+	} else {
+		pos_mundo = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+		normal_mundo = normalize(MODEL_NORMAL_MATRIX * NORMAL);
+	}
 }
 
 vec3 cor_da_classe(int c) {
@@ -220,6 +230,10 @@ void fragment() {
 		AO = mix(1.0, oclusao, 0.8 * quanto);
 		AO_LIGHT_AFFECT = 0.3;
 		vec3 nm = normalize(n + desvio * t1.z * relevo * intensidade);
+		if (na_peca) {
+			// a conta foi feita na peça: a normal vai para o mundo aqui
+			nm = normalize(MODEL_NORMAL_MATRIX * nm);
+		}
 		NORMAL = normalize((VIEW_MATRIX * vec4(nm, 0.0)).xyz);
 		if (luz_forca > 0.0) {
 			vec3 acesa = texture(luz, UV).rgb;

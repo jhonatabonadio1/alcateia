@@ -50,6 +50,7 @@ public static class KeyBindings
 		new("scoreboard", "Interface", "Placar", "Segurar para ver o placar."),
 		new("radio", "Interface", "Rádio do time", "Abre a lista das falas; com ela aberta, as teclas de número escolhem (essas não se trocam)."),
 		new("guide", "Interface", "Guia das habilidades", "Segurar para ver o que cada habilidade faz."),
+		new("loadout", "Interface", "Conjuntos (treino)", "No campo de treino, abre os conjuntos de armas para trocar quando quiser, sem custo."),
 		new("spectate_free", "Interface", "Câmera livre (morto)", "Morto, solta a câmera de espectador."),
 	};
 

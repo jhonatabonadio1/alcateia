@@ -22,6 +22,10 @@ public partial class GameMenu : CanvasLayer
 {
 	public const string MenuScene = "res://src/scenes/menu/menu.tscn";
 
+	/// <summary>A cena é o campo de treino (sem sala, sem partida): o menu
+	/// diz "Sair do treinamento" e não oferece reiniciar a partida.</summary>
+	[Export] public bool Training = false;
+
 	private Control _root;
 	private Control _main;
 	private Control _sub;
@@ -161,6 +165,15 @@ public partial class GameMenu : CanvasLayer
 		else BackToRoom();
 	}
 
+	/// <summary>O campo de treino: não há sala para onde voltar — volta-se
+	/// para a tela principal do jogo.</summary>
+	private void BackToMenu()
+	{
+		UiState.Reset();
+		RoomConfig.ReturnTo = ReturnTarget.None;
+		GetTree().ChangeSceneToFile(MenuScene);
+	}
+
 	private void BackToRoom()
 	{
 		if (Match.Current != null)
@@ -280,7 +293,9 @@ public partial class GameMenu : CanvasLayer
 		// Online, sair da partida é sair da sala (Jhon, 24/11): vai para o lobby, o
 		// mestre passa ao próximo e a partida segue; dá para voltar pela lista de
 		// salas, se houver vaga.
-		if (OnlineMatch.Active)
+		if (Training)
+			Item(stack, "Sair do treinamento", ButtonKind.Secondary, BackToMenu);
+		else if (OnlineMatch.Active)
 			Item(stack, "Sair da partida", ButtonKind.Secondary, () => Abandon("Sair da partida?", LeaveOnline));
 		else
 			Item(stack, "Sair para a sala", ButtonKind.Secondary, () => Abandon("Sair para a sala?", BackToRoom));

@@ -37,8 +37,13 @@ public partial class MapSlot : Node3D
 
 		Node map = scene.Instantiate();
 		AddChild(map);
+		// As nuvens do céu, pelo clima que o mapa declara (os mapas a céu aberto; o Setor Zero já traz as dele).
+		SkyClouds.AddTo(map, Info.Clouds);
 
 		Node parent = GetParent();
+		// A sombra de apoio dos personagens segue o sol que vale: o do mapa, ou o da cena da partida.
+		GroundingShadow.AddTo(map, map.GetNodeOrNull<DirectionalLight3D>("Sol")
+			?? (map.HasNode("Ambiente") ? null : parent?.GetNodeOrNull<DirectionalLight3D>("DirectionalLight3D")));
 		if (parent == null) return;
 
 		if (map.HasNode("Ambiente"))

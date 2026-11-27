@@ -65,6 +65,46 @@ def serra():
     im.save(os.path.join(RAIZ, 'assets', 'mapas', 'fundos', 'serra.png'))
 
 
+def picos():
+    """O horizonte do Setor Zero: uma cordilheira gelada em três planos, vista do alto de uma montanha (Jhon, 26/11: "ao
+    invés de cidade, coloque o fundo de montanhas gelosas"). Rocha azulada pela distância, a neve do meio da encosta para
+    cima e a face de sombra de cada pico; a base some na névoa."""
+    import math
+    rnd = random.Random(23); im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    for plano, (rocha, neve, alto, n, agudo) in enumerate((((176, 192, 214), (236, 242, 250), 0.80, 9, 0.55), ((134, 152, 180), (226, 234, 246), 0.62, 12, 0.7), ((96, 112, 138), (214, 224, 240), 0.44, 15, 0.85))):
+        cam = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(cam)
+        # os cumes: pontos de quebra num período inteiro (o painel emenda na volta), ligados por arestas serrilhadas
+        xs = sorted(rnd.uniform(0, W) for _ in range(n)); hs = [rnd.uniform(0.55, 1.0) for _ in range(n)]
+        nos = []
+        for i in range(n):
+            x0, h0 = xs[i], hs[i]; x1, h1 = (xs[(i + 1) % n] + (W if i == n - 1 else 0)), hs[(i + 1) % n]
+            vale = min(h0, h1) * rnd.uniform(0.35, 0.6); meio = (x0 + x1) / 2 + rnd.uniform(-0.15, 0.15) * (x1 - x0)
+            nos += [(x0, h0), ((x0 + meio) / 2, (h0 + vale) / 2 * rnd.uniform(0.9, 1.12)), (meio, vale), ((meio + x1) / 2, (vale + h1) / 2 * rnd.uniform(0.9, 1.12))]
+        nos = [(x - W, h) for x, h in nos[-4:]] + nos + [(x + W, h) for x, h in nos[:4]]
+        def topo(x):
+            for (xa, ha), (xb, hb) in zip(nos, nos[1:]):
+                if xa <= x <= xb:
+                    t_ = (x - xa) / max(xb - xa, 1e-6); h = ha + (hb - ha) * t_
+                    return H - int(H * alto * (h + 0.012 * agudo * math.sin(x * 0.11) + 0.008 * math.sin(x * 0.37 + plano)))
+            return H
+        pts = [(x, topo(x)) for x in range(0, W + 1, 4)]
+        d.polygon([(0, H)] + pts + [(W, H)], fill=rocha + (255,))
+        # a neve: de cada ponto da crista para baixo, mais funda nos cumes; a borda de baixo é serrilhada
+        linha = [(x, y + int((H - y) * (0.34 + 0.16 * math.sin(x * 0.045 + plano * 2)) + 10 * math.sin(x * 0.21))) for x, y in pts]
+        d.polygon(pts + linha[::-1], fill=neve + (255,))
+        # a face de sombra: à direita de cada cume, a rocha e a neve escurecem
+        sombra = Image.new('RGBA', (W, H), (0, 0, 0, 0)); ds = ImageDraw.Draw(sombra)
+        for i in range(2, len(pts) - 2):
+            if pts[i][1] <= pts[i - 1][1] and pts[i][1] < pts[i + 1][1]:
+                j = i
+                while j < len(pts) - 1 and pts[j + 1][1] >= pts[j][1]: j += 1
+                if j - i > 8: ds.polygon(pts[i:j + 1] + [(pts[j][0], H), (pts[i][0] + (pts[j][0] - pts[i][0]) * 0.28, H)], fill=(40, 58, 96, 58))
+        cam = Image.alpha_composite(cam, Image.composite(sombra, Image.new('RGBA', (W, H), (0, 0, 0, 0)), cam.getchannel('A')))
+        im = Image.alpha_composite(im, cam.filter(ImageFilter.GaussianBlur(0.7)))
+    im.paste((0, 0, 0, 0), (0, H - 6, W, H))
+    im.save(os.path.join(RAIZ, 'assets', 'mapas', 'fundos', 'picos.png'))
+
+
 def neon():
     """O horizonte do Neon (Jhon, 20/11: "prédios bem altos, com letreiros", como a cidade à noite das referências):
     arranha-céus em três planos contra a noite — os de trás roxos de névoa, os da frente quase pretos —, cada um com as
@@ -162,6 +202,6 @@ def ceu_noite():
 if __name__ == '__main__':
     os.makedirs(os.path.join(RAIZ, 'assets', 'mapas', 'fundos'), exist_ok=True)
     os.makedirs(os.path.join(RAIZ, 'assets', 'mapas', 'ceus'), exist_ok=True)
-    quais = sys.argv[1:] or ['cidade', 'serra', 'neon', 'ceu_noite']
+    quais = sys.argv[1:] or ['cidade', 'serra', 'neon', 'ceu_noite', 'picos']
     for q in quais: globals()[q]()
     print('fundos:', ', '.join(quais))

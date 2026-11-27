@@ -38,6 +38,12 @@ public sealed class MapInfo
 	public string Ambience;
 	public float AmbienceDb = -14f;
 
+	/// <summary>As nuvens do céu do mapa (<see cref="SkyClouds"/>): "dia",
+	/// "dia_seco" (o deserto: poucas e altas), "tarde" (douradas) ou "noite"
+	/// (escuras, com o roxo da cidade). Vazio: mapa fechado (o Armazém), ou
+	/// mapa que já traz as dele na cena (o Setor Zero).</summary>
+	public string Clouds = "";
+
 	/// <summary>Um som que toca de vez em quando, e de quanto em quanto
 	/// tempo (mínimo e máximo, em segundos).</summary>
 	public string EventSound;
@@ -81,6 +87,7 @@ public static class Maps
 		new()
 		{
 			Id = "cidade",
+			Clouds = "dia",
 			Name = "Cidade",
 			Size = "Grande",
 			Scene = "res://src/scenes/maps/cidade.tscn",
@@ -97,6 +104,7 @@ public static class Maps
 		new()
 		{
 			Id = "deserto",
+			Clouds = "dia_seco",
 			Name = "Cidade do Deserto",
 			Size = "Grande",
 			Scene = "res://src/scenes/maps/deserto.tscn",
@@ -111,6 +119,7 @@ public static class Maps
 		new()
 		{
 			Id = "estacao",
+			Clouds = "tarde",
 			Name = "Estação de Trem",
 			Size = "Grande",
 			Scene = "res://src/scenes/maps/estacao.tscn",
@@ -125,6 +134,7 @@ public static class Maps
 		new()
 		{
 			Id = "obra",
+			Clouds = "dia",
 			Name = "Obra",
 			Size = "Grande",
 			Scene = "res://src/scenes/maps/obra.tscn",
@@ -144,6 +154,7 @@ public static class Maps
 			// LED"): a cena de demonstração do pacote, lida do arquivo do Unity, duas vezes — a cópia girada 180° —,
 			// de noite, com os LEDs acesos (tools/mapas/neon.py; docs/MAPAS.md).
 			Id = "neon",
+			Clouds = "noite",
 			Name = "Distrito Neon",
 			Size = "Grande",
 			Scene = "res://src/scenes/maps/neon.tscn",
@@ -156,5 +167,36 @@ public static class Maps
 		}
 	};
 
-	public static MapInfo Get(string id) => All.FirstOrDefault(m => m.Id == id) ?? All[0];
+	/// <summary>
+	/// O campo de treinamento (o Setor Zero, 26/11): um mapa do jogo, mas não de
+	/// partida. Fica fora de <see cref="All"/> de propósito — tudo o que lista
+	/// mapas (a escolha na sala, o servidor de partida, o painel, a semente do
+	/// servidor) lê <see cref="All"/> e não o vê, sem precisar de filtro em cada
+	/// lugar. Abre só pelo tutorial e por Jogar → Treinamento, pelo id
+	/// (<see cref="Get"/>). Roda offline: não tem modo de sala, rota de ronda
+	/// nem ponto de nascer por time (docs/MAPAS.md, "Setor Zero").
+	/// </summary>
+	public static readonly MapInfo Training = new()
+	{
+		Id = "setor_zero",
+		Name = "Setor Zero",
+		Size = "Grande",
+		Scene = "res://src/scenes/maps/setor_zero.tscn",
+		Thumbnail = "res://src/assets/ui/mapas/setor_zero.png",
+		Cover = "res://src/assets/ui/mapas/setor_zero_foto.png",
+		Description = "O centro de treinamento da WolfLeague, no alto de uma montanha, entre picos gelados: a Sala de Ativação, o corredor de calibragem, o Núcleo da Iris, a Linha de Fogo à beira do abismo, a Câmara de Metamorfose, a Arena da Matilha, a Rua Ignição e o Ponto de Retorno.",
+		// (aberto e limpo, pouco eco; provisório: o fundo da Cidade, bem baixo — falta um vento de altitude, que não
+		// foi gerado; o treino é de falar)
+		RoomSize = 0.45f, RoomWet = 0.08f, Ambience = "ambiente_cidade", AmbienceDb = -18f,
+		EventSound = "evento_passaros", EventEvery = new Vector2(70, 140),
+		Modes = System.Array.Empty<GameMode>()
+	};
+
+	/// <summary>Um mapa pelo id: os da lista e o de treino. Id que o jogo não tem
+	/// (sala antiga, mapa que saiu) cai no primeiro da lista.</summary>
+	public static MapInfo Get(string id) =>
+		All.FirstOrDefault(m => m.Id == id) ?? (id == Training.Id ? Training : All[0]);
+
+	/// <summary>O mapa é o de treino (não entra em sala, rotação nem servidor).</summary>
+	public static bool IsTraining(string id) => id == Training.Id;
 }

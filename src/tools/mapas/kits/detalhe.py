@@ -288,8 +288,18 @@ def scifi(f):
     return cl
 
 
+def chapa_nomeada(f):
+    """As chapas do Setor Zero (``src/tools/mapas/setor_zero.py``): o nome diz o material — ``sz_<classe>`` ou
+    ``sz_<classe>_<variante>`` (``sz_concreto_claro``, ``sz_metal_pintado_escuro``). O LED (``sz_led_…``) fica liso: quem
+    acende é a textura ``scifi_luz``."""
+    resto = f.nome[3:]
+    classe = max((c for c in CLASSES if resto == c or resto.startswith(c + '_')), key=len, default='liso')
+    return np.full(f.n, C[classe])
+
+
 # A primeira regra que casa com o começo do nome vale. (kit, expressão, regra); kit None: todos.
 PECAS = [
+    ('scifi', r'sz_', chapa_nomeada),
     ('scifi', r'', scifi),
     # ---- as chapas que os mapas criam (Kit.chapa): o nome é o próprio material
     (None, r'asfalto$', so('asfalto')), (None, r'calcada$', so('piso')), (None, r'meiofio$', so('concreto')), (None, r'(branco|amarelo)$', so('faixa')),

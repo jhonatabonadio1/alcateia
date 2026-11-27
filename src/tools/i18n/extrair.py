@@ -26,7 +26,8 @@ FORA = ("scripts/tools/", "scripts/debug/", "scripts/visual/wolf/", "scripts/vis
         "scripts/core/Sfx", "scripts/core/NavBaker", "scripts/core/InputSetup", "scripts/combat/weapon/", "scripts/visual/Weapon",
         "scripts/visual/WorldAudio", "scripts/visual/CombatantAudio", "scripts/core/Loc.cs",
         "scripts/ui/kit/UiTheme", "scripts/ui/kit/UiFonts", "scripts/net/OnlineRobot",
-        "scripts/net/HitCheck", "scripts/net/HostedMatch", "scripts/visual/VisualSmoothing", "scripts/visual/Silhouette")
+        "scripts/net/HitCheck", "scripts/net/HostedMatch", "scripts/visual/VisualSmoothing", "scripts/visual/Silhouette",
+        "scripts/visual/GroundingShadow")
 # nomes de nó e de corpo (a lógica e a rede dependem deles), cabeçalhos e variáveis: nunca são texto
 NUNCA = {"Authorization", "Bearer ", "X-Fleet-Key", "Content-Type", "ALCATEIA_API", "Jogador{0}", "Bot{0}", "If-None-Match", "../Bots"}
 

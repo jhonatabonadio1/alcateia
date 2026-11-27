@@ -220,7 +220,9 @@ public partial class Weapon
 	{
 		if (collider is not Node3D body) return false;
 
-		return impact.Y - body.GlobalPosition.Y >= HeadZone;
+		// O corpo que diz onde a cabeça dele começa (o robô de treino) vale pelo que diz.
+		float zone = collider is IHeadBand band ? band.HeadFrom : HeadZone;
+		return impact.Y - body.GlobalPosition.Y >= zone;
 	}
 
 	/// <summary>Um corpo com modelo no caminho dos tiros: de quem, a vida, as

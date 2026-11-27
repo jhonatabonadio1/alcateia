@@ -89,6 +89,11 @@ class Mapa:
         self.escadas = []    # (grupo, nome, centro, base, tamanho) — o volume de subir
         self.focos = []      # (grupo, nome, pos, cor, energia, alcance, ângulo, sombra)
         self.cru_recursos, self.cru_nos = [], []     # linhas de .tscn prontas (partículas)
+        # Recursos de fora que as linhas prontas usam: (tipo, caminho res://, id) — o script de uma zona, a cena de
+        # um boneco de treino (o Setor Zero, 26/11).
+        self.cru_ext = []
+        # Mapa sem bots (o campo de treino) não assa navegação nem leva rotas de ronda.
+        self.com_bots = True
         self.panoramas = []                          # imagens de fundo em volta do mapa (panorama)
         self.spawns = {AZUL: [], LARANJA: []}
         self.rotas = []
@@ -411,9 +416,11 @@ class Mapa:
             ext.append(("PackedScene", f"res://src/assets/mapas/pecas/{arquivo}.glb", f"p_{arquivo}"))
         if self.escadas:
             ext.append(("Script", "res://src/scripts/core/Ladder.cs", "s_ladder"))
-        ext += [("Script", "res://src/scripts/core/SpawnPoints.cs", "s_spawns"),
-                ("Script", "res://src/scripts/core/PatrolRoutes.cs", "s_routes"),
-                ("Script", "res://src/scripts/core/NavBaker.cs", "s_nav")]
+        ext += [("Script", "res://src/scripts/core/SpawnPoints.cs", "s_spawns")]
+        if self.com_bots:
+            ext += [("Script", "res://src/scripts/core/PatrolRoutes.cs", "s_routes"),
+                    ("Script", "res://src/scripts/core/NavBaker.cs", "s_nav")]
+        ext += list(self.cru_ext)
 
         ext += [("ArrayMesh", f"res://src/assets/mapas/{self.id}/{h}.obj", rid) for h, rid in obj_id.items()]
 
@@ -615,6 +622,9 @@ class Mapa:
             for i, p in enumerate(self.spawns[time], 1):
                 o += [f'[node name="p{i}" type="Marker3D" parent="Spawn{tag}"]', f"transform = {xform(p)}", ""]
 
+        if not self.com_bots:
+            return "\n".join(o)
+
         o += ['[node name="PatrolRoutes" type="Node3D" parent="."]', 'script = ExtResource("s_routes")', ""]
         for nome, pontos in self.rotas:
             o += [f'[node name="{nome}" type="Node3D" parent="PatrolRoutes"]', ""]
@@ -703,6 +713,9 @@ class Mapa:
                 o += [f"fog_aerial_perspective = {f(n['aerea'])}"]
             if "sol" in n:
                 o += [f"fog_sun_scatter = {f(n['sol'])}"]
+            # (a névoa que adensa para baixo de uma altura: o precipício some em nuvem — o Setor Zero, 26/11)
+            if "altura" in n:
+                o += [f"fog_height = {f(n['altura'])}", f"fog_height_density = {f(n.get('altura_densidade', 0.01))}"]
         o += ["adjustment_enabled = true", f"adjustment_contrast = {f(a.get('contraste', 1.06))}",
               f"adjustment_saturation = {f(a.get('saturacao', 1.05))}", ""]
         return o

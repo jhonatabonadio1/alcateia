@@ -12,12 +12,35 @@ using System.Collections.Generic;
 ///
 /// Embaixo, as ações de quem chamou: no inventário Equipar, Renovar e
 /// Descartar; na loja, o seletor de duração e Comprar.
+///
+/// **O painel cabe sempre na altura da tela** (Jhon, 26/11: "a interface
+/// tem que evitar scroll ao máximo; as coisas precisam ser distribuídas
+/// melhor" — numa janela baixa o Comprar ficava para fora da tela, sem
+/// como chegar nele). O cabeçalho e as ações têm lugar fixo; o que cede é
+/// o meio: a vitrine encolhe (de <see cref="ArtMax"/> até
+/// <see cref="ArtMin"/>) e, só se ainda assim não couber, os atributos
+/// rolam dentro da área deles. Os atributos vêm em duas colunas e o preço
+/// fica na linha do botão, para isso quase nunca acontecer.
 /// </summary>
 public partial class ItemDetail : PanelContainer
 {
 	private CatalogItem _item;
 	private CatalogItem _compare;
 	private VBoxContainer _tabBody;
+	private VBoxContainer _column;
+	private ScrollContainer _scroll;
+	private Control _art;
+	private float _artMax;
+
+	/// <summary>A altura da vitrine: a de sempre (com espaço) e a menor que ela aceita (arma; o personagem em 3D
+	/// pede mais).</summary>
+	public const float ArtMax = 190f, ArtMin = 64f, CharacterArtMax = 300f, CharacterArtMin = 150f;
+
+	/// <summary>A menor altura da área dos atributos, quando rola.</summary>
+	public const float BodyMin = 52f;
+
+	/// <summary>A folga entre o pé do painel e o pé da tela.</summary>
+	public const float BottomGap = 16f;
 
 	public static ItemDetail Make(CatalogItem item, CatalogItem compareTo, Control actions)
 	{
@@ -49,6 +72,7 @@ public partial class ItemDetail : PanelContainer
 		AddChild(margin);
 		VBoxContainer column = UiKit.Column(UiTokens.S3);
 		margin.AddChild(column);
+		_column = column;
 
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
 		Label name = UiKit.Truncated(_item.Name, "Title");
@@ -66,7 +90,10 @@ public partial class ItemDetail : PanelContainer
 		column.AddChild(sub);
 
 		bool character = _item.Character != null;
-		var artFrame = new PanelContainer { CustomMinimumSize = new Vector2(0, character ? 300 : 190) };
+		// A vitrine começa na menor altura; o Fit dá a ela o que sobrar, até a de sempre.
+		_artMax = character ? CharacterArtMax : ArtMax;
+		var artFrame = new PanelContainer { CustomMinimumSize = new Vector2(0, character ? CharacterArtMin : ArtMin) };
+		_art = artFrame;
 		artFrame.AddThemeStyleboxOverride("panel", UiTheme.Box(new Color(ItemInfo.RarityColor(_item), 0.07f),
 			new Color(ItemInfo.RarityColor(_item), 0.5f), 1, UiTokens.RadiusPanel, 0, 0));
 		if (character)
@@ -120,12 +147,75 @@ public partial class ItemDetail : PanelContainer
 		Tabs tabs = Tabs.Make(new[] { "Descrição", "Atributos" }, 1, ShowTab);
 		column.AddChild(tabs);
 
+		// Os atributos, numa área que só rola se a janela for baixa demais para tudo.
+		_scroll = new ScrollContainer
+		{
+			HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled,
+			CustomMinimumSize = new Vector2(0, BodyMin),
+		};
 		_tabBody = UiKit.Column(UiTokens.S2);
-		_tabBody.SizeFlagsVertical = SizeFlags.ExpandFill;
-		column.AddChild(_tabBody);
+		_tabBody.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		_scroll.AddChild(_tabBody);
+		column.AddChild(_scroll);
 		ShowTab(1);
 
+		// O que sobra de altura fica aqui: as ações moram no pé do painel.
+		column.AddChild(UiKit.Spacer());
 		if (actions != null) column.AddChild(actions);
+
+		Resized += QueueFit;
+		_tabBody.MinimumSizeChanged += QueueFit;
+	}
+
+	public override void _Ready()
+	{
+		if (_column == null) return;
+		GetViewport().SizeChanged += QueueFit;
+		QueueFit();
+	}
+
+	public override void _ExitTree()
+	{
+		if (_column != null && GetViewport() is Viewport viewport) viewport.SizeChanged -= QueueFit;
+	}
+
+	private bool _fitQueued;
+
+	private void QueueFit()
+	{
+		if (_fitQueued || _column == null) return;
+		_fitQueued = true;
+		Callable.From(Fit).CallDeferred();
+	}
+
+	/// <summary>A altura que a área dos atributos pede agora (o conteúdo dela inteiro).</summary>
+	public float BodyWanted => _tabBody?.GetCombinedMinimumSize().Y ?? 0f;
+
+	/// <summary>A área dos atributos está rolando (não coube inteira).</summary>
+	public bool BodyScrolls => _scroll != null && _scroll.CustomMinimumSize.Y < BodyWanted - 0.5f;
+
+	/// <summary>
+	/// Reparte a altura: o que a tela dá ao painel (do topo dele ao pé da
+	/// tela), menos o que é fixo (cabeçalho, abas, ações), vai primeiro para
+	/// os atributos inteiros e o resto para a vitrine, entre a menor e a de
+	/// sempre. A conta parte da tela, não do tamanho do painel: um painel
+	/// maior que a tela "cabe" no próprio tamanho e nunca encolheria.
+	/// </summary>
+	public void Fit()
+	{
+		_fitQueued = false;
+		if (_column == null || !IsInsideTree()) return;
+
+		float artMin = _artMax >= CharacterArtMax ? CharacterArtMin : ArtMin;
+		float around = Size.Y - _column.Size.Y;                                   // as margens e a moldura
+		float fixedParts = _column.GetCombinedMinimumSize().Y - _art.CustomMinimumSize.Y - _scroll.CustomMinimumSize.Y;
+		float available = GetViewportRect().Size.Y - GlobalPosition.Y - BottomGap;
+		float room = available - around - fixedParts;
+
+		float body = Mathf.Min(BodyWanted, Mathf.Max(BodyMin, room - artMin));
+		float art = Mathf.Clamp(room - body, artMin, _artMax);
+		if (Mathf.Abs(_scroll.CustomMinimumSize.Y - body) > 0.5f) _scroll.CustomMinimumSize = new Vector2(0, body);
+		if (Mathf.Abs(_art.CustomMinimumSize.Y - art) > 0.5f) _art.CustomMinimumSize = new Vector2(0, art);
 	}
 
 	private void ShowTab(int index)
@@ -155,12 +245,17 @@ public partial class ItemDetail : PanelContainer
 		if (def != null)
 		{
 			bool cmp = other != null && other != def;
-			bars.Add(StatBar.Stars("Dano", def.StarDamage, cmp ? other.StarDamage : -1));
-			bars.Add(StatBar.Stars("Precisão", def.StarAccuracy, cmp ? other.StarAccuracy : -1));
-			bars.Add(StatBar.Stars("Cadência", def.StarRate, cmp ? other.StarRate : -1));
-			bars.Add(StatBar.Stars("Alcance", def.StarRange, cmp ? other.StarRange : -1));
-			bars.Add(StatBar.Stars("Mobilidade", def.StarMobility, cmp ? other.StarMobility : -1));
-			bars.Add(StatBar.Stars("Controle", def.StarRecoil, cmp ? other.StarRecoil : -1));
+			// As seis barras em duas colunas: metade da altura (o painel tem que caber na tela sem rolar).
+			GridContainer stars = new() { Name = "Barras", Columns = 2 };
+			stars.AddThemeConstantOverride("h_separation", UiTokens.S4);
+			stars.AddThemeConstantOverride("v_separation", UiTokens.S1);
+			stars.AddChild(StatBar.Stars("Dano", def.StarDamage, cmp ? other.StarDamage : -1));
+			stars.AddChild(StatBar.Stars("Precisão", def.StarAccuracy, cmp ? other.StarAccuracy : -1));
+			stars.AddChild(StatBar.Stars("Cadência", def.StarRate, cmp ? other.StarRate : -1));
+			stars.AddChild(StatBar.Stars("Alcance", def.StarRange, cmp ? other.StarRange : -1));
+			stars.AddChild(StatBar.Stars("Mobilidade", def.StarMobility, cmp ? other.StarMobility : -1));
+			stars.AddChild(StatBar.Stars("Controle", def.StarRecoil, cmp ? other.StarRecoil : -1));
+			bars.Add(stars);
 
 			GridContainer facts = new() { Columns = 2 };
 			facts.AddThemeConstantOverride("h_separation", UiTokens.S4);

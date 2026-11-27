@@ -28,6 +28,15 @@ O modelo do WolfTeam é **lobby persistente**: uma moldura fixa (header + barra 
 
 O ciclo que você quer otimizar é o 3 → 4 → 5 → 6 → 4. Cada atrito ali custa partidas jogadas.
 
+> **26/11 — regra do Jhon: evitar scroll ao máximo.** Uma tela cabe na
+> altura da janela. O que não cabe é redistribuído antes de rolar, e a
+> ação principal fica sempre à vista. Feito no detalhe do item
+> (`ItemDetail`: atributos em duas colunas, preço na linha do botão, a
+> vitrine cede altura, as ações no pé) e no perfil (fotos, título e troca
+> de nome debaixo das estatísticas). Teste: `DetalheCabeNaTela`. O fluxo
+> também mudou: entra-se pela **tela principal** (`HomeScreen`: Jogo
+> rápido e Arcade "em breve", Salas, Treino), não mais direto nas salas.
+
 ## Header persistente
 
 O header é a única parte da UI que nunca sai da tela fora da partida — ele é a identidade do jogador e o acesso ao dinheiro. Em FPS de lobby da escola do WolfTeam ele ocupa uma faixa de 56–72 px no topo, dividida em três zonas: identidade à esquerda, moedas à direita, navegação global entre as duas ou logo abaixo.

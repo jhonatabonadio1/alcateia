@@ -2010,6 +2010,65 @@ nova usa `src/scripts/ui/kit/` — não crie `Label` com tamanho e cor soltos.
 
 ---
 
+## Tela principal, treino e robôs (26/11)
+
+Decisões do Jhon, no dia em que o campo de treinamento ficou de pé:
+
+- **Ao entrar no jogo cai-se na tela principal**, com os jeitos de jogar:
+  Jogo rápido e Arcade (ainda não existem: aparecem apagados, "em breve"),
+  Salas (o jogo de hoje) e Treino (o Setor Zero). Antes caía-se direto nas
+  salas. O que não existe fica à vista de propósito: diz para onde o jogo
+  vai, e clicar não leva a lugar nenhum.
+- **No treino a economia não vale**: a tecla dos conjuntos (H) abre a
+  escolha a qualquer hora, com o jogador vivo, sem relógio, e nenhum
+  conjunto cobra nem paga KP. Treino é para experimentar arma; cobrar ali
+  seria ensinar a economia a quem ainda não sabe atirar. Na partida a
+  regra de sempre continua (escolhe-se morto, com custo).
+- **O robô de treino é um inimigo de verdade, menos a arma**: outro time,
+  a mesma vida e o mesmo dano de qualquer corpo, cabeça valendo, morre e
+  volta, mostra a vida — e **sempre anda num percurso**. Alvo parado
+  ensina a mirar em coisa parada. Ele não revida porque o tutorial precisa
+  de um alvo que não puna o erro; o que pune é o bot. As regras são as do
+  `Health` e do `Weapon`, sem versão própria para o robô (o balanceamento
+  medido nele vale contra gente).
+- **A interface evita scroll ao máximo**: uma tela cabe na altura da
+  janela; o que não cabe é redistribuído (colunas, a ação na linha do
+  preço, o conteúdo levado para onde sobra tela) antes de ganhar barra de
+  rolagem, e **a ação principal nunca fica fora da tela** (o Comprar do
+  detalhe do item ficava). Rolar é o último recurso, e só no miolo.
+
+## Sombra de apoio (26/11)
+
+Pedido do Jhon: sombra de personagem "mais precisa e definida, mesmo em
+lugares escuros, e sem mexer na saturação", com "uma lógica por trás".
+
+**O problema.** A sombra de um corpo só existe onde há luz direta para
+ele tapar. Na sombra de um prédio, num beco ou de noite o sol não chega: o
+personagem fica sem sombra e parece flutuar. E ao sol a sombra dele é a
+mesma do prédio — macia, num mapa de sombra que cobre o mapa inteiro.
+
+**A lógica.** Duas luzes direcionais iguais e opostas (uma soma, a outra
+subtrai, `light_negative`): no mapa inteiro dão zero, então **nada muda de
+brilho, de cor ou de saturação**. Só a que soma tem sombra, e só os
+personagens fazem sombra para ela. Onde um corpo a tapa, sobra a que
+subtrai: o chão escurece ali, e só ali. Disso sai tudo o que se queria:
+
+- **definida** — o mapa de sombra dela só desenha os corpos e só cobre
+  34 m em volta da câmera, sem o tamanho do sol;
+- **no escuro também** — não depende do sol; e como tira sempre a mesma
+  quantidade de luz, pesa mais onde a luz do lugar é pouca, que é onde o
+  corpo não tinha sombra;
+- **coerente** — cai para o lado do sol do mapa, só mais a pino (nunca
+  abaixo de 64°): ao sol fica por dentro da sombra do sol e vira o miolo
+  nítido dela, junto dos pés; na sombra é a única;
+- o corpo também a recebe: o que o céu não vê nele (a barriga e as patas
+  do lobo, as pernas sob o tronco) escurece um pouco.
+
+O que **não** se fez, e por quê: aumentar a luz dos personagens ou o
+contraste da imagem (muda o tom do mapa e a saturação); uma mancha redonda
+sob os pés (não é a forma do corpo); apertar a sombra do sol do mapa
+inteiro (os prédios ficariam com a borda dura).
+
 ## O teste de mapa
 
 Antes de colocar arte em qualquer mapa, ande por ele em cinza e

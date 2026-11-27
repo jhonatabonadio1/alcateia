@@ -139,10 +139,14 @@ public partial class LobbyShell : Control
 			return;
 		}
 
+		// Ao entrar no jogo (e ao sair do treino) cai-se na tela principal (Jhon,
+		// 26/11); de volta de uma partida, na sala ou na lista de salas.
 		if (target == ReturnTarget.Room && RoomDirectory.Current != null)
 			Go(new RoomScreen(RoomDirectory.Current));
-		else
+		else if (target == ReturnTarget.RoomList)
 			GoOnline();
+		else
+			GoMenu();
 	}
 
 	// ------------------------------------------------------------------ vidro fosco
@@ -278,6 +282,9 @@ public partial class LobbyShell : Control
 
 	/// <summary>A tela de login, com um recado (a sessão venceu, saiu da conta).</summary>
 	public void GoLogin(string notice = null) => Go(new LoginScreen(notice));
+
+	/// <summary>A tela principal: jogo rápido, arcade, treino e salas.</summary>
+	public void GoMenu() => Go(new HomeScreen());
 	public void GoCredits() => Go(new CreditsScreen());
 
 	/// <summary>A aba Salas: a sala em que o jogador está, se estiver numa;
@@ -303,7 +310,7 @@ public partial class LobbyShell : Control
 	/// <summary>
 	/// Abre uma tela direto pela linha de comando, para testar e
 	/// fotografar sem clicar: <c>-- --tela=loja</c>. Telas: entrada (o login),
-	/// salas, treino, sala, loja, inventario, perfil, missoes, opcoes, online, creditos.
+	/// inicio (a tela principal), salas, sala, loja, inventario, perfil, missoes, opcoes, online, creditos.
 	/// </summary>
 	private bool DevScreen()
 	{
@@ -326,6 +333,7 @@ public partial class LobbyShell : Control
 			case "missoes": GoMissions(); break;
 			case "opcoes": GoOptions(); break;
 			case "online": GoOnline(); break;
+			case "inicio": GoMenu(); break;
 			case "creditos": GoCredits(); break;
 			default: GoOnline(); break;
 		}

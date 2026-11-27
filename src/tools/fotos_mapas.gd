@@ -70,6 +70,187 @@ const FOTOS := {
 		"para": Vector3(50.0, 5.0, -18.0),
 		"fov": 78.0,
 	},
+	# O Setor Zero, o centro de treinamento (não é mapa de sala: `Maps.Training`). A capa: o cume visto do ar, do
+	# sudoeste — o campo em cima da rocha, a encosta, as nuvens e os picos gelados.
+	"setor_zero": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		"de": Vector3(-103.0, 44.0, 82.0),
+		"para": Vector3(9.0, -6.0, -6.0),
+		"fov": 58.0,
+	},
+	# Os ângulos de conferência do Setor Zero (docs/MAPAS.md): só saem quando pedidos pelo nome, ou todos de uma vez
+	# com "setor_zero_angulos"; vão para docs/tutorial/fotos/, sem o acabamento de capa.
+	"setor_zero_nucleo": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# O Núcleo da Iris, de quem chega pelo corredor: o anfiteatro, o holograma sob o anel suspenso, os pórticos.
+		"de": Vector3(-10.4, 1.8, 0.0),
+		"para": Vector3(3.0, 1.6, 0.0),
+		"fov": 82.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_nucleo.png",
+	},
+	"setor_zero_corredor": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# O Corredor de Calibragem, da porta da Sala de Ativação: os arcos de luz, as marcas, o vão, a viga.
+		"de": Vector3(-53.6, 1.7, 0.6),
+		"para": Vector3(-30.0, 1.8, 0.0),
+		"fov": 74.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_corredor.png",
+	},
+	"setor_zero_linha_de_fogo": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# A Linha de Fogo, do alto da escadaria: a cobertura das cabines, os alvos e, depois da beira, o abismo e os picos.
+		"de": Vector3(0.0, 1.9, -13.8),
+		"para": Vector3(0.0, -1.5, -46.0),
+		"fov": 82.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_linha_de_fogo.png",
+	},
+	"setor_zero_mirante": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# A beira da Linha de Fogo: o parapeito, os avisos, a encosta e a cordilheira.
+		"de": Vector3(13.0, -0.6, -45.5),
+		"para": Vector3(-15.0, -22.0, -110.0),
+		"fov": 78.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_mirante.png",
+	},
+	"setor_zero_camara": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# A Câmara de Metamorfose, do alto da escadaria do salão: o anel de energia e a cúpula de nervuras.
+		"de": Vector3(29.4, 3.2, 0.0),
+		"para": Vector3(39.0, 6.0, 0.0),
+		"fov": 86.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_camara.png",
+	},
+	"setor_zero_arena": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# A Arena da Matilha, da galeria: a reta, as plataformas, o vão do salto, os pilares, a rampa e os pinheiros por cima do muro.
+		"de": Vector3(26.0, 5.7, 15.4),
+		"para": Vector3(-11.0, 1.5, 40.0),
+		"fov": 82.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_arena.png",
+	},
+	"setor_zero_parede_de_corrida": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# A parede de corrida (32 m × 14 m, com a faixa de LED a cada metro) e a torre do canto.
+		"de": Vector3(37.0, 1.9, 38.0),
+		"para": Vector3(21.0, 6.0, 48.0),
+		"fov": 78.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_parede_de_corrida.png",
+	},
+	"setor_zero_rua_ignicao": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# A Rua Ignição, de quem entra pela Câmara: os portões de onda, os prédios com a escada externa, a passarela e o painel do KP.
+		"de": Vector3(37.0, 1.8, -15.8),
+		"para": Vector3(55.0, 4.5, -35.0),
+		"fov": 80.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_rua_ignicao.png",
+	},
+	"setor_zero_terraco": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# Do terraço da Rua Ignição, por cima dos muros: a cúpula da Câmara, o Núcleo e o campo.
+		"de": Vector3(38.0, 7.7, -38.0),
+		"para": Vector3(21.0, 2.0, -4.0),
+		"fov": 76.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_terraco.png",
+	},
+	"setor_zero_praca_e_pinhal": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# A Praça do Uivo, com a escultura do lobo, e o Pinhal da Matilha atrás (ficam fora do percurso).
+		"de": Vector3(54.0, 2.3, 10.5),
+		"para": Vector3(62.0, 4.0, -0.5),
+		"fov": 74.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_praca_e_pinhal.png",
+	},
+	"setor_zero_fachadas": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# As fachadas dos prédios da Rua Ignição: o soco, as pilastras, os panos de vidro, a marquise e a escada.
+		"de": Vector3(52.0, 1.7, -19.5),
+		"para": Vector3(44.0, 3.6, -35.0),
+		"fov": 74.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_fachadas.png",
+	},
+	"setor_zero_jardim": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# O Jardim Suspenso: os anéis, o espelho d'água, a Torre de Controle e a antena.
+		"de": Vector3(-64.4, 2.3, -19.6),
+		"para": Vector3(-47.0, 2.4, -32.0),
+		"fov": 74.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_jardim.png",
+	},
+	"setor_zero_robos": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# Os robôs de treino na Linha de Fogo, de perto: os alvos fixos, o do trilho e a beira ao fundo.
+		"de": Vector3(-4.0, -0.8, -29.4),
+		"para": Vector3(3.0, -1.2, -37.0),
+		"fov": 70.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_robos.png",
+	},
+	"setor_zero_robo": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# Um robô de treino de perto (o da estação da pistola): a blindagem, a viseira, o anel e a barra de vida.
+		"de": Vector3(-24.7, -0.95, -29.2),
+		"para": Vector3(-26.0, -1.35, -31.5),
+		"fov": 55.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_robo.png",
+	},
+	"setor_zero_sombra": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# Dois robôs na sombra do muro da Linha de Fogo (o corpo a corpo): a sombra de apoio onde o sol não chega.
+		"de": Vector3(-24.0, -0.9, -19.6),
+		"para": Vector3(-26.2, -1.5, -23.2),
+		"fov": 60.0,
+		"grupo": "setor_zero_sombras",
+		"saida": "res://docs/tutorial/fotos/setor_zero_sombra.png",
+	},
+	"setor_zero_sombra_sol": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# Um robô ao sol (a estação da pistola): a sombra do sol com o miolo nítido da sombra de apoio.
+		"de": Vector3(-24.7, -0.95, -29.2),
+		"para": Vector3(-26.0, -1.6, -31.5),
+		"fov": 62.0,
+		"grupo": "setor_zero_sombras",
+		"saida": "res://docs/tutorial/fotos/setor_zero_sombra_sol.png",
+	},
+	"setor_zero_pinhal": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# O Pinhal da Matilha por dentro: a trilha, o relevo, o sub-bosque.
+		"de": Vector3(49.6, 1.9, 35.2),
+		"para": Vector3(63.0, 3.2, 36.0),
+		"fov": 74.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_pinhal.png",
+	},
+	"setor_zero_de_cima": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# O campo inteiro, de cima: para conferir contra a planta (docs/tutorial/planta_setor_zero.png).
+		"de": Vector3(0.0, 190.0, 0.2),
+		"para": Vector3(0.0, 0.0, 0.0),
+		"fov": 34.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_de_cima.png",
+	},
+	"setor_zero_montanha": {
+		"cena": "res://src/scenes/maps/setor_zero.tscn",
+		# O cume visto de fora: a rocha, a encosta, o mar de nuvens e os picos.
+		"de": Vector3(-185.0, 38.0, 100.0),
+		"para": Vector3(0.0, -22.0, 0.0),
+		"fov": 60.0,
+		"grupo": "setor_zero_angulos",
+		"saida": "res://docs/tutorial/fotos/setor_zero_montanha.png",
+	},
 }
 
 const SIZE := Vector2i(1920, 1080)
@@ -117,6 +298,8 @@ void fragment() {
 
 var _limpa := false
 var _rascunho := false
+# "sem_apoio": a foto sem a sombra de apoio dos personagens (para comparar com a de sempre)
+var _sem_apoio := false
 
 func _initialize() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://src/assets/ui/mapas"))
@@ -126,9 +309,15 @@ func _run() -> void:
 	var pedidos := Array(OS.get_cmdline_user_args())
 	_limpa = pedidos.has("limpa"); pedidos.erase("limpa")
 	_rascunho = pedidos.has("rascunho"); pedidos.erase("rascunho")
+	_sem_apoio = pedidos.has("sem_apoio"); pedidos.erase("sem_apoio")
 	for id in FOTOS:
-		if pedidos.is_empty() or pedidos.has(id):
+		var grupo: String = FOTOS[id].get("grupo", "")
+		# O ângulo de conferência (tem "grupo") não é capa: só sai quando pedido, pelo nome dele ou do grupo.
+		if pedidos.has(id) or (grupo != "" and pedidos.has(grupo)) or (grupo == "" and pedidos.is_empty()):
 			await _foto(id, FOTOS[id])
+	# Uns quadros para o que foi solto (o mapa da última foto, os nós em C#) sair antes de o jogo fechar.
+	for i in 3:
+		await process_frame
 	quit()
 
 func _foto(id: String, f: Dictionary) -> void:
@@ -143,14 +332,21 @@ func _foto(id: String, f: Dictionary) -> void:
 	# O mapa traz o próprio céu, o sol e as luzes: é a foto do jogo.
 	var map: Node3D = load(f["cena"]).instantiate()
 	viewport.add_child(map)
+	# A sombra de apoio dos personagens, como no jogo (lá quem a põe é o MapSlot).
+	if not _sem_apoio and not map.has_node("SombraDeApoio"):
+		# (pela cena, não com `.new()` do script C#: o objeto criado assim pelo GDScript dava erro ao fechar a ferramenta)
+		var apoio = load("res://src/scenes/sombra_de_apoio.tscn").instantiate()
+		var sol := map.get_node_or_null("Sol") as Node3D
+		apoio.FollowRay(-sol.global_basis.z if sol != null else Vector3.ZERO)
+		map.add_child(apoio)
 
 	var cam := Camera3D.new()
 	cam.fov = f.get("fov", 60.0)
-	cam.far = 900.0
+	cam.far = 2400.0
 	viewport.add_child(cam)
 	cam.look_at_from_position(f["de"], f["para"], Vector3.UP)
 	cam.make_current()
-	if not _limpa:
+	if not _limpa and not f.has("saida"):
 		_capa(viewport, map, CAPA.get(id, {}))
 
 	# Uns quadros para sombras, sondas de reflexo e SSAO assentarem.
@@ -158,7 +354,8 @@ func _foto(id: String, f: Dictionary) -> void:
 		await process_frame
 
 	var image := viewport.get_texture().get_image()
-	var out := "res://src/assets/ui/mapas/%s_foto.png" % id
+	var out: String = f.get("saida", "res://src/assets/ui/mapas/%s_foto.png" % id)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out.get_base_dir()))
 	image.save_png(ProjectSettings.globalize_path(out))
 	print("foto: ", out)
 	viewport.queue_free()

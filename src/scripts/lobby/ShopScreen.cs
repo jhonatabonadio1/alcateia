@@ -253,10 +253,14 @@ public partial class ShopScreen : LobbyScreen
 		}
 
 		// Seletor de duração: uma linha de botões, preço ao vivo embaixo.
-		column.AddChild(UiKit.Caption("Duração"));
+		// (O "melhor valor" vai na linha do título, e o preço na do botão: o painel tem que caber na tela.)
+		Duration? best = Catalog.BestValue(item);
+		HBoxContainer durationHead = UiKit.Row(UiTokens.S2);
+		durationHead.AddChild(UiKit.Caption("Duração"));
+		durationHead.AddChild(UiKit.Spacer());
+		column.AddChild(durationHead);
 		HBoxContainer durations = UiKit.Row(UiTokens.S1);
 		var group = new ButtonGroup();
-		Duration? best = Catalog.BestValue(item);
 
 		foreach (Duration d in Enum.GetValues<Duration>())
 		{
@@ -287,29 +291,36 @@ public partial class ShopScreen : LobbyScreen
 			selectedPrice = Catalog.Price(item, _duration);
 		}
 
+		if (best == _duration) durationHead.AddChild(UiKit.Chip("Melhor valor", UiTokens.Success, solid: true));
+
+		// O preço à esquerda e o botão à direita, na mesma linha.
+		VBoxContainer priceBox = UiKit.Column(0);
+		priceBox.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 		HBoxContainer priceRow = UiKit.Row(UiTokens.S2);
 		Label price = UiKit.Text(UiTokens.Thousands(selectedPrice), "NumericLarge");
 		priceRow.AddChild(price);
 		priceRow.AddChild(Icon.Make(IconKind.Presa, 20, CurrencyLabel.ColorOf(Currency.Presas)));
 		priceRow.AddChild(UiKit.Text(Catalog.DurationLabels[(int)_duration], "Muted"));
-		priceRow.AddChild(UiKit.Spacer());
-		if (best == _duration) priceRow.AddChild(UiKit.Chip("Melhor valor", UiTokens.Success, solid: true));
-		column.AddChild(priceRow);
+		priceBox.AddChild(priceRow);
 
 		float perDay = Catalog.PerDay(item, _duration);
-		column.AddChild(UiKit.Text(perDay > 0 ? Loc.F("{0:0} de Cash por dia", perDay) : item.Consumable ? "Um uso" : "Para sempre", "Caption"));
+		priceBox.AddChild(UiKit.Text(perDay > 0 ? Loc.F("{0:0} de Cash por dia", perDay) : item.Consumable ? "Um uso" : "Para sempre", "Caption"));
 
 		bool locked = ItemInfo.Locked(item);
 		bool affordable = Profile.Presas >= selectedPrice;
 		bool ownedForever = Profile.Find(item.Id)?.IsPermanent == true && !item.Consumable;
 
 		HBoxContainer buy = UiKit.Row(UiTokens.S2);
+		buy.Name = "Comprar";
+		buy.AddChild(priceBox);
 		buy.AddChild(UiKit.Spacer());
 		// Comprar é com a conta: o servidor confere preço, patente e saldo.
 		if (!Profile.HasAccount)
 		{
 			Button enter = UiKit.Button(AccountGate.Loading ? "Carregando a conta…" : "Entrar na conta para comprar", ButtonKind.Primary, () => Shell.GoOnline());
-			enter.CustomMinimumSize = new Vector2(260, UiTokens.ButtonHeight);
+			enter.CustomMinimumSize = new Vector2(190, UiTokens.ButtonHeight);
+			enter.ClipText = true;
+			enter.TooltipText = "Entrar na conta para comprar";
 			enter.Disabled = AccountGate.Loading;
 			buy.AddChild(enter);
 			column.AddChild(buy);
@@ -318,7 +329,8 @@ public partial class ShopScreen : LobbyScreen
 
 		Button purchase = UiKit.Button(ownedForever ? "Já é permanente" : Profile.Owns(item.Id) && !item.Consumable ? "Comprar mais tempo" : "Comprar",
 			ButtonKind.Primary, () => Confirm(item, _duration, selectedPrice));
-		purchase.CustomMinimumSize = new Vector2(200, UiTokens.ButtonHeight);
+		purchase.Name = "Botao";
+		purchase.CustomMinimumSize = new Vector2(176, UiTokens.ButtonHeight);
 		purchase.Disabled = locked || ownedForever || _buying;
 		purchase.TooltipText = locked ? Loc.F("Exige {0}", Ranks.NameOf(item.MinRank)) : !affordable ? "Cash insuficiente" : "";
 		buy.AddChild(purchase);

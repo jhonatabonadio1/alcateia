@@ -902,3 +902,105 @@ que a corrida na parede não começou), `Weapon.Debug` (desligado no
 bot), `Match.Debug`, `CharacterAnimator.Debug`, `WolfVisual.Debug`,
 `Bot.Debug`, `WorldAudio.Debug`. A partida também imprime a semente do
 sorteio: `-- --seed=N` repete as decisões dos bots e a dispersão.
+
+## 14. Setor Zero (o campo de treinamento)
+
+As medidas do mapa que dependem da física do corpo. Estão no topo de
+`src/tools/mapas/setor_zero.py`; mudou uma, gere o mapa de novo
+(`docs/MAPAS.md`, "Setor Zero") e rode `src/tools/testar.sh SetorZero`.
+Mudou a física (o pulo, a cápsula agachada, o salto do lobo, o passo)?
+Os testes `SetorZero…` dizem qual obstáculo deixou de ser vencível.
+
+| O quê | Valor | Onde | Amarrado a |
+|---|---|---|---|
+| Largura do vão do corredor | 1,4 m | `VAO_HUMANO` | o pulo andando do humano (~2,0 m de centro a centro) |
+| Fundura dos vãos | 1,5 m | `VAO_FUNDO` | mais que o pulo do humano (1,02 m); menos que a queda que fere (4 m / 7 m) |
+| Altura livre sob a viga | 1,62 m | `VIGA_LIVRE` | `Player.HumanCrouchHeight` 1,5 m e `StandHeight` 1,75 m |
+| Vão da arena | 8 m | `VAO_ARENA` | `Weapon.PounceMaxDistance` 12 m (marca de saída a 1,2 m da borda) |
+| Plataforma baixa / alta | 2,7 m / 5 m | `PLATAFORMA_BAIXA`, `PLATAFORMA_ALTA` | `Weapon.PounceMaxClear` 3,2 m, com 15 % de folga (a alta, 2,3 m acima da baixa) |
+| Paredes da arena | 14 m | `ARENA_ALTURA` | a corrida na parede não sobe |
+| Linha de Fogo | −2,4 m | `N_FOGO` | a escadaria: 5,4 m de corrida (24°) |
+| Fundo do Núcleo | −1,2 m | `N_NUCLEO` | seis degraus em 2,8 m (23°) |
+| Rotunda da Câmara | +1,5 m | `N_CAMARA` | escadarias de 4,2 a 4,75 m (18° a 20°) |
+| Galeria da arena | +4 m | `N_GALERIA` | escadas de 7 m (30°); guarda-corpo de 1 m com colisão |
+| Terraço da Rua Ignição | +6 m | `N_TERRACO` | escada de 10,6 m (29°); cair dele fere o humano (queda segura: 4 m) |
+| Degrau desenhado | 20 cm | `DEGRAU` | a colisão é uma cunha lisa; o degrau fica meio degrau abaixo dela |
+| Parapeito da beira (Linha de Fogo) | 0,9 m | `PARAPEITO` | o humano pula 1,02 m: passa pulando, de propósito |
+| Parapeito do resto do campo | 1,1 m, com barreira até o teto | `limites` | — |
+| O abismo mata a partir de | 9 m abaixo do campo | `ABISMO` | acima do `Player.FallLimit` (−25 m), que só devolveria ao ponto de nascer |
+| Teto do mapa / limites | 30 m / 15 m para fora da beira | `TETO`, `limites` | quem pula cai, não bate |
+| Janelas (peitoril / verga) | 1,1 m / 3,1 m | `PEITORIL`, `VERGA` | o olho do humano fica a 1,59 m |
+| Coberturas baixas | 0,8 m (Linha de Fogo), 1,2 m (Rua Ignição) | `linha_de_fogo`, `rua` | 0,8 é a altura do caixote que o humano sobe |
+| Trecho silencioso | 12 m | `ZONAS` | 3 s de qualquer passo (correndo com Shift, 3,2 s) |
+| A luz | sol a 140° e 52° de queda; névoa 0,00055; exposição 0,86 | `montar` (`luz_de_jogo`) | o padrão `dia` dos mapas de kit, com o ar de montanha |
+| Som do lugar | `RoomSize` 0,45, `RoomWet` 0,08, `ambiente_cidade` a −18 dB | `Maps.Training` (`Maps.cs`) | provisório: falta um vento de altitude (não foi gerado som) |
+
+### Os robôs de treino
+
+No `Dummy` (`src/scripts/debug/Dummy.cs`), iguais para os 30; o percurso
+e a velocidade de cada um estão em `ALVOS` (`src/tools/mapas/setor_zero.py`
+— mudou, gere o mapa e rode `src/tools/testar.sh SetorZeroRobos`).
+
+| O quê | Valor | Onde |
+|---|---|---|
+| Time | Sindicato (o outro) | `Team` |
+| Vida | 200, sem escudo (a do `Health`) | `Health.MaxHp` |
+| Volta a regenerar depois de | 6 s sem dano (o jogador: 15 s), a 8 % por segundo | `RegenDelay`, `Health.RegenRate` |
+| Caído até voltar | 4 s | `RespawnDelay` |
+| Proteção ao voltar | 0,6 s | `SpawnProtection` |
+| Cabeça a partir de | 0,4 m acima do meio do corpo (1,40 m do chão) | `RobotHeadFrom` (a caixa cinza: `BoxHeadFrom` 0,72) |
+| Espera em cada ponta do percurso | 0,7 s | `MovePause` |
+| Velocidade | 0,8 a 4,2 m/s (o da reta de corrida) | `ALVOS` → `MoveSpeed` |
+| Encara o jogador a até | 12 m | `FaceWithin` (gira 240°/s, `TurnSpeed`) |
+| Paira | 6 cm, uma volta em 2,6 s | `HoverBob`, `HoverPeriod` |
+| Anel de energia | 70°/s | `RingSpeed` |
+| Barra de vida | 0,9 × 0,1 m, 1,28 m acima do meio do corpo | `BarSize`, `BarHeight` |
+| A barra cresce com a distância | 1× a cada 9 m, até 3× | `BarGrowEvery`, `BarGrowMax` |
+| A barra some | de 55 a 70 m | `BarFadeFrom`, `BarFadeTo` |
+| Rastro do golpe | espera 0,35 s, encolhe 0,9 da barra por segundo | `BarTrailWait`, `BarTrailSpeed` |
+| Material do robô | `na_peca` ligado, `miudeza` 3,2 | `src/assets/mapas/detalhe/robo_treino.tres` |
+
+### Nuvens dos mapas
+
+`src/scripts/visual/SkyClouds.cs` (`Climates`): duas camadas por clima —
+altura, tamanho do desenho, cobertura, maciez, opacidade, vento, as duas
+cores e o brilho. O clima de cada mapa é `MapInfo.Clouds` em `Maps.cs`
+(Cidade e Obra `dia`, Deserto `dia_seco`, Estação `tarde`, Neon `noite`,
+Armazém nenhum). As do Setor Zero estão em `nuvens()`
+(`setor_zero_acabamento.py`).
+
+| Clima | Camadas (altura · cobertura · brilho) |
+|---|---|
+| `dia` | 620 m · 0,40 · 2,3 e 1050 m · 0,32 · 2,3 |
+| `dia_seco` | 900 m · 0,22 · 2,5 e 1400 m · 0,26 · 2,5 |
+| `tarde` | 620 m · 0,46 · 1,9 e 1050 m · 0,36 · 1,9 |
+| `noite` | 560 m · 0,50 · 0,8 e 980 m · 0,40 · 0,8 |
+
+### Tela principal, treino e o painel de detalhe
+
+| O quê | Valor | Onde |
+|---|---|---|
+| Lado de cada quadrado da tela principal | 300 px | `HomeScreen.Square` |
+| Altura da faixa do Treino | 132 px | `HomeScreen.Strip` |
+| Tecla dos conjuntos no treino | H (ação `loadout`, remapeável) | `InputSetup`, `KeyBindings` |
+| Conjuntos sem custo e sem relógio | só na cena do treino | `LoadoutMenu.Free` (`treino_setor_zero.tscn`) |
+| Vitrine do item (altura) | de 190 px até 64 px quando a janela é baixa (personagem: 300 a 150) | `ItemDetail.ArtMax`, `ArtMin`, `CharacterArtMax`, `CharacterArtMin` |
+| Área dos atributos, quando rola | no mínimo 52 px | `ItemDetail.BodyMin` |
+| Folga do painel até o pé da tela | 16 px | `ItemDetail.BottomGap` |
+| Fotos de perfil por linha | 11 | `ProfileScreen.PhotoColumns` |
+
+### Sombra de apoio dos personagens
+
+`src/scripts/visual/GroundingShadow.cs` (posta pelo `MapSlot` em todo mapa
+carregado). O porquê está no comentário do topo do arquivo e no
+`docs/DESIGN.md` ("Sombra de apoio").
+
+| O quê | Valor | Onde |
+|---|---|---|
+| Quanta luz a sombra tira do chão | 0,42 (a energia das duas luzes do par) | `Strength` |
+| Ângulo mínimo com o chão | 64° (um corpo de 1,8 m faz 0,9 m de sombra) | `MinElevation` |
+| Até onde é desenhada | 34 m da câmera | `Reach` |
+| Maciez da borda | 0,4 | `Blur` |
+| Viés da sombra | 0,035 e 1,2 (normal) | `Bias`, `NormalBias` |
+| Quem a faz | camadas 18 (personagens), 2 (o corpo do dono) e 21 (quem se assiste) | `Casters` |
+| Atlas de sombra direcional | Baixa 2048 (sem sombra de apoio), Média 4096, Alta 6144, Ultra 8192 | `Settings.ApplyQuality` |

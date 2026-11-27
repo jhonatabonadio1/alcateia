@@ -20,8 +20,12 @@ public partial class ProfileScreen : LobbyScreen
 
 	protected override void Build()
 	{
-		// Com muita informação o perfil passa da altura da tela: rola, em vez
-		// de descer para fora dela (Jhon, 25/11).
+		// O perfil é distribuído para caber na tela sem rolar (Jhon, 26/11: "a
+		// interface tem que evitar scroll ao máximo; as coisas precisam ser
+		// distribuídas melhor"): à esquerda só quem é o jogador (patente, nome,
+		// XP); as fotos, o título e a troca de nome foram para baixo das
+		// estatísticas, onde sobrava tela. Numa janela baixa demais ainda rola,
+		// em vez de descer para fora dela (Jhon, 25/11).
 		var scroll = UiKit.Fill(new ScrollContainer { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled });
 		AddChild(scroll);
 		MarginContainer margin = UiKit.Margin(UiTokens.S5, UiTokens.S4, UiTokens.S5, UiTokens.S4);
@@ -39,11 +43,12 @@ public partial class ProfileScreen : LobbyScreen
 	private Control Identity()
 	{
 		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S5, UiTokens.S3);
-		panel.CustomMinimumSize = new Vector2(440, 0);
+		panel.CustomMinimumSize = new Vector2(380, 0);
+		panel.SizeFlagsVertical = SizeFlags.ShrinkBegin;
 
 		int rank = Profile.Rank;
 
-		RankBadge badge = RankBadge.Make(rank, 240, avatar: Avatars.Selected);
+		RankBadge badge = RankBadge.Make(rank, 200, avatar: Avatars.Selected);
 		badge.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
 		column.AddChild(badge);
 
@@ -94,11 +99,36 @@ public partial class ProfileScreen : LobbyScreen
 
 		column.AddChild(UiKit.Divider());
 
-		column.AddChild(UiKit.Caption("Foto de perfil"));
-		column.AddChild(Photos());
+		Label created = UiKit.Text(Loc.F("Perfil criado em {0:dd/MM/yyyy}", Profile.CreatedUtc.ToLocalTime()), "Caption");
+		created.HorizontalAlignment = HorizontalAlignment.Center;
+		column.AddChild(created);
 
+		return panel;
+	}
+
+	/// <summary>O nome é o da conta: quem troca é o servidor, que confere
+	/// se está livre e gasta o item.</summary>
+	/// <summary>As fotos de perfil: as suas para escolher, as da loja com cadeado e preço.</summary>
+	/// <summary>O que o jogador escolhe do perfil dele, numa faixa só, debaixo das estatísticas: as fotos (em
+	/// <see cref="PhotoColumns"/> colunas) e, ao lado, o título e a troca de nome.</summary>
+	private Control Personalize()
+	{
+		PanelContainer panel = UiKit.Card(out VBoxContainer card, UiTokens.S4, UiTokens.S2);
+		panel.Name = "Personalizar";
+		panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		HBoxContainer row = UiKit.Row(UiTokens.S5);
+		card.AddChild(row);
+
+		VBoxContainer photos = UiKit.Column(UiTokens.S2);
+		photos.AddChild(UiKit.Caption("Foto de perfil"));
+		photos.AddChild(Photos());
+		row.AddChild(photos);
+		row.AddChild(UiKit.Spacer());
+
+		VBoxContainer side = UiKit.Column(UiTokens.S2);
+		side.CustomMinimumSize = new Vector2(260, 0);
 		// Título exibível: ganho nas missões permanentes.
-		column.AddChild(UiKit.Caption("Título"));
+		side.AddChild(UiKit.Caption("Título"));
 		string[] titles = new[] { "Nenhum" }.Concat(Profile.Titles).ToArray();
 		int current = Math.Max(0, Array.IndexOf(titles, Profile.Title));
 		OptionButton picker = UiKit.Picker(titles, current, i =>
@@ -110,29 +140,24 @@ public partial class ProfileScreen : LobbyScreen
 		});
 		picker.Disabled = Profile.Titles.Count == 0;
 		picker.TooltipText = Profile.Titles.Count == 0 ? "Títulos vêm das missões permanentes" : "";
-		column.AddChild(picker);
-
-		column.AddChild(UiKit.Spacer());
+		side.AddChild(picker);
+		side.AddChild(UiKit.Spacer());
 
 		// Trocar o nome exige o item da loja.
 		bool canRename = Profile.HasAccount && Profile.Owns(AccountSync.RenameItem);
 		Button rename = UiKit.Button(canRename ? "Trocar nome" : "Trocar nome (item da loja)", ButtonKind.Secondary,
 			canRename ? Rename : () => Shell.GoShop("troca_nome"));
-		column.AddChild(rename);
-
-		Label created = UiKit.Text(Loc.F("Perfil criado em {0:dd/MM/yyyy}", Profile.CreatedUtc.ToLocalTime()), "Caption");
-		created.HorizontalAlignment = HorizontalAlignment.Center;
-		column.AddChild(created);
-
+		side.AddChild(rename);
+		row.AddChild(side);
 		return panel;
 	}
 
-	/// <summary>O nome é o da conta: quem troca é o servidor, que confere
-	/// se está livre e gasta o item.</summary>
-	/// <summary>As fotos de perfil: as suas para escolher, as da loja com cadeado e preço.</summary>
+	/// <summary>Quantas fotos por linha (são 21: duas linhas).</summary>
+	public const int PhotoColumns = 11;
+
 	private Control Photos()
 	{
-		var grid = new GridContainer { Columns = 7 };
+		var grid = new GridContainer { Columns = PhotoColumns };
 		grid.AddThemeConstantOverride("h_separation", UiTokens.S2);
 		grid.AddThemeConstantOverride("v_separation", UiTokens.S2);
 		foreach (Avatars.Photo photo in Avatars.All)
@@ -247,6 +272,8 @@ public partial class ProfileScreen : LobbyScreen
 		HBoxContainer favorites = UiKit.Row(UiTokens.S3);
 		column.AddChild(favorites);
 		favorites.AddChild(Favorite("Arma favorita", s.FavoriteWeapon));
+
+		column.AddChild(Personalize());
 
 		return column;
 	}

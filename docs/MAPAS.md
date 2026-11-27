@@ -22,6 +22,10 @@ apagados (estão no histórico do git). Salas e perfis antigos com
 semente também apaga do banco (e do painel) o mapa que o jogo não tem
 mais (`PgGameDataRepository.SeedMaps`).
 
+Fora da lista há um sétimo mapa, que não é de partida: o **Setor Zero**
+(`setor_zero`, `Maps.Training`), o campo de treinamento. Veja "Setor
+Zero", no fim desta página.
+
 A sala escolhe o mapa; a cena da partida (`src/scenes/main.tscn`) tem um nó
 `Map` com o script `MapSlot`, que carrega a cena do mapa escolhido antes
 de os jogadores nascerem. Para abrir um mapa direto no editor, ponha o
@@ -473,3 +477,346 @@ ele maior; use LED para iluminar as partes que representam LED; de fundo, prédi
 - **Som**: `src/tools/sons/ambiente_mapas.py`; o fundo e o som de vez em quando de cada mapa estão em `Maps.cs`.
 - **Capas**: `src/tools/fotos_mapas.gd` (`CAPA` e `GRADE`): cor viva e desfoque leve embaixo e nos cantos.
 
+## Setor Zero (26/11) — o campo de treinamento
+
+O centro de treinamento da WolfLeague: o cenário do tutorial com a Iris
+(`docs/TUTORIAL_ROTEIRO.md`). **Não é mapa de partida** — um jogador só,
+sem times, sem bots, offline — e por isso fica **fora de `Maps.All`**
+(`Maps.Training`, em `src/scripts/meta/Maps.cs`): a escolha de mapa da
+sala, o servidor de partida, a semente do servidor e o painel leem
+`Maps.All` e não o veem. Abre pelo id (`Maps.Get("setor_zero")`).
+
+| | |
+|---|---|
+| Tamanho | 150 × 100 m de campo, no topo de uma rocha; em volta, o precipício |
+| Tema | uma base no alto de uma montanha, de dia, cercada de picos gelados: concreto, aço escuro, LED, jardim e pinhal |
+| Feito com | o kit do Distrito Neon ("Low Poly Sci-Fi City"), o kit 3 ("Low Poly FPS Map Vol.3": pinheiro, árvores, rochas) e formas próprias (`setor_zero_formas.py`) |
+| Planta | `docs/tutorial/planta_setor_zero.png` (e `.svg`; o desenho é de `src/tools/tutorial/planta.py`) — o traçado é o dela; o tema e os níveis mudaram depois (abaixo) |
+| Cena | `src/scenes/maps/setor_zero.tscn`; para andar nele: `src/scenes/treino_setor_zero.tscn` (o mapa, o jogador e o HUD, sem a Iris) |
+
+**Ainda não existe o tutorial em si** (as falas, as etapas, o HUD da
+Iris): este mapa é o chão dele. Abre pela tela principal do jogo
+(**Treino**, `HomeScreen`). Os alvos são os **robôs de treino** (abaixo):
+inimigos que não atiram, cada um no percurso dele. As portas estão todas
+fechadas na cena (quem abre uma por vez é o tutorial).
+
+### O que o Jhon pediu (26/11)
+
+A primeira versão seguia a planta ao pé da letra: cyberpunk de dia, o
+skyline do Neon por cima de um muro, tudo no mesmo nível, tudo em caixa.
+Vistas as fotos, o Jhon pediu: "um mapa mais robusto, complexo, bonito,
+elegante, menos quadrado; crie elementos que achar necessário"; "ao
+invés de cidade, o fundo de montanhas gelosas, como se o mapa estivesse
+em cima de uma montanha, uma rocha cinza gigantesca; é um mapa alto, o
+player pode pular e se matar, num precipício infinito"; "pontos altos
+(com escadaria para subir), mapas baixos, corredores"; "escritas no mapa
+sempre em inglês"; "iluminação e texturas no padrão do restante do
+jogo". O traçado da planta ficou; mudaram o lugar, os níveis e as formas.
+
+### Os níveis
+
+| Lugar | Nível | Como se chega |
+|---|---|---|
+| Sala de Ativação, corredor, salão, arena, Rua Ignição, Ponto de Retorno | 0 | — |
+| **Linha de Fogo** | −2,4 m | a escadaria da passagem do Núcleo (6 m de largura, 24°) |
+| **Núcleo da Iris** (o fundo do anfiteatro) | −1,2 m | seis degraus em toda a volta (23°) |
+| **Câmara de Metamorfose** (a rotunda) | +1,5 m | três escadarias: do salão, da arena e da rua (18° a 20°) |
+| **Galeria da arena** | +4 m | uma escada em cada ponta (30°), ao longo da parede norte |
+| **Terraço da Rua Ignição** e a passarela | +6 m | a escada externa do prédio oeste (29°) |
+| Plataformas do bote | 2,7 m e 5 m | só o lobo, com o salto carregado |
+| Patamar da rampa longa | 5,2 m | a rampa de 18° |
+
+**Toda escadaria é uma cunha lisa de colisão** (um corpo convexo, sem
+ressalto nas pontas) com os degraus de 20 cm desenhados meio degrau
+abaixo: o corpo sobe e desce na velocidade de andar, sem tranco
+(`escadaria`, em `setor_zero.py`; o teste `SetorZeroEscadarias` mede o
+maior passo vertical num quadro: 2 cm). O anfiteatro do Núcleo são 24
+cunhas em roda. **Rampa que acaba numa peça redonda acaba antes dela**:
+a que entrava na lateral da rotunda encontrava a parede do cilindro 15 a
+30 cm abaixo do alto (foi o que o teste pegou).
+
+### A beira e o abismo
+
+O campo é o topo da rocha. Em volta dele há um parapeito de 1,1 m com a
+barreira invisível atrás (como o muro dos outros mapas: o lobo não corre
+nele) — **menos na Linha de Fogo**, que vai até a beira norte: ali o
+parapeito tem 0,9 m, não há barreira, e quem o pula cai. A zona `abismo`
+(`TutorialZone.Deadly`, de 9 m abaixo do campo para baixo) mata de
+queda, humano ou lobo, e o feed diz "queda"; o jogador renasce na Sala
+de Ativação. As paredes `Limite…` ficam 15 m para fora: quem pula cai,
+não bate. (O `Player.FallLimit`, −25 m, só devolveria ao ponto de nascer;
+a zona fica acima dele.)
+
+### Este mapa é gerado por script
+
+Ao contrário dos outros seis (veja "A fonte de cada mapa é a cena"), a
+fonte do Setor Zero **é o script**, enquanto ninguém mexer na cena à mão:
+
+```sh
+pip install numpy pillow
+python3 src/tools/mapas/kits/fundos.py picos      # o horizonte de picos (uma vez)
+python3 src/tools/mapas/letreiros.py setor_zero   # os letreiros (só se mudar um)
+python3 src/tools/mapas/setor_zero.py             # a cena, os dois .glb e a miniatura
+python3 src/tools/mapas/conferir.py setor_zero    # nenhum quadrado de 5 m vazio
+```
+
+Gerar **sobrescreve** `setor_zero.tscn`, `src/assets/mapas/pecas/setor_zero.glb`
+e `setor_zero_mato.glb`. Editou a cena no Godot? Daí em diante a cena é a
+fonte e o script é o registro, como nos outros.
+
+O script trabalha nas **coordenadas da planta** (x para a direita, y para
+baixo, 1 unidade = 1 m, origem no canto de cima à esquerda): no Godot,
+`X = x − 75`, `Z = y − 50`, norte em `−Z`. São três arquivos:
+
+- **`setor_zero.py: montar()` — o jogo.** Os pisos e os níveis, as
+  paredes, as escadarias, os obstáculos, e o nó `Tutorial` da cena, que o
+  roteiro acha pelo nome:
+  - `Tutorial/Marcas` — 30 `Marker3D` (onde nascer, o pé de cada etapa,
+    para onde o vão devolve);
+  - `Tutorial/Zonas` — 28 `TutorialZone`
+    (`src/scripts/tutorial/TutorialZone.cs`): uma caixa com nome que
+    avisa quando o jogador entra e sai (`Entered`, `Exited`). As duas do
+    fundo dos vãos (`vao`, `vao_arena`) têm `Reset`: quem cai volta para
+    a marca de antes, parado, sem dano (`SentBack`). A `abismo` tem
+    `Deadly`;
+  - `Tutorial/Portas` — 7 portas de energia (`StaticBody3D` do grupo
+    `porta_tutorial`, com `metadata/porta`; um campo âmbar translúcido):
+    abrir é desligar a `Colisao` e esconder;
+  - `Tutorial/Alvos` — 24 `dummy.tscn`, com `metadata/alvo` (o nome) e
+    `metadata/estado` (`parado`, `movel`, `ataca`, `onda` — o que o
+    tutorial vai fazer com cada um; hoje todos ficam parados), e as duas
+    pontas do trilho do alvo móvel.
+- **`setor_zero_acabamento.py: acabamento()` — o lugar.** A arquitetura
+  (pórticos, arcos, a cúpula, a cobertura das cabines, as torres), a
+  vegetação, a mobília, os letreiros, as áreas de apoio e a montanha.
+  Quase tudo sem colisão.
+- **`setor_zero_formas.py` — o que não é caixa.** Prisma chanfrado,
+  tronco, cilindro e cone, viga entre dois pontos, tubo ao longo de uma
+  linha (arco, nervura, cabo), setor de anel (parede curva de verdade),
+  sólido de revolução (a antena parabólica inclinada), e as composições
+  que se repetem: pilastra em talude, pórtico em trapézio, flâmula. São
+  triângulos escritos no mundo e juntados por material: cada material
+  vira **uma peça só** do `.glb` (poucos nós, por mais formas que haja —
+  hoje ~40 mil triângulos). O material sai do nome, como nas chapas.
+
+O `kit.py` ganhou duas coisas pequenas: `Mapa.cru_ext` (recurso de fora
+que as linhas prontas usam: o script da zona, a cena do boneco) e
+`Mapa.com_bots = False` (cena sem `PatrolRoutes` nem `NavBaker`). O
+`kits/detalhe.py` ganhou a regra `chapa_nomeada`: no Setor Zero o nome da
+peça diz o material (`sz_concreto_claro`, `sz_rocha`, `sz_led_ciano`). O
+`kits/fundos.py` ganhou `picos()`. A colisão que não é caixa reta
+(rampa, cunha do anfiteatro) é um `ConvexPolygonShape3D` (`solido`).
+
+### Os lugares
+
+O percurso do tutorial, na ordem: **Sala de Ativação** (onde se nasce) →
+**Corredor de Calibragem** (as marcas, o vão, a viga, o trecho
+silencioso, sob os arcos de luz) → **Núcleo da Iris** (o anfiteatro, com
+o holograma sob o anel suspenso por quatro pilones; quatro portas) →
+**Linha de Fogo** (norte: desce-se a escadaria; as cabines sob a
+cobertura, os alvos e, no fim, a beira) → **Câmara de Metamorfose**
+(leste: a rotunda sob a cúpula de nervuras) → **Arena da Matilha** (sul:
+a reta, o vão do salto, as plataformas, os pilares, a rampa, a parede de
+corrida, a galeria) → **Rua Ignição** (nordeste: os portões de onda, os
+dois prédios, a passarela, a escada do terraço) → **Ponto de Retorno**
+(sudoeste, onde se renasce). Em volta, fora do percurso: o Jardim
+Suspenso com a Torre de Controle, a antena parabólica, o espelho d'água
+e a cisterna; a Quadra de Agilidade; o Posto Médico e o Café do Setor
+(cenário: não curam nem dão nada); a Praça do Uivo; o Pinhal da Matilha;
+o pátio técnico; o heliponto no teto da Sala de Ativação; e as quatro
+bordas (pista de serviço com baias de drone, alameda, canteiro, pista de
+aquecimento), com uma torre de vigia em cada canto.
+
+**O percurso é fechado.** As áreas de apoio são paisagem: veem-se pelas
+janelas da Sala de Ativação e do corredor (aberturas sem vidro, fechadas
+por barreira invisível — o material de vidro do kit não deixa ver
+através), da beira da Linha de Fogo, da galeria da arena e do terraço da
+rua. Em cima de toda parede do percurso com menos de 10 m há uma
+`BarreiraParede…` até o teto: o lobo pula 2 m e ainda se pendura, e sem
+ela sairia por cima de um muro de 4 m — e, voltando a humano do lado de
+fora, não teria como voltar.
+
+**A montanha** (`acabamento.montanha`): em volta do campo, a beira de
+rocha irregular com neve; daí para baixo, a encosta em facetas (três
+anéis, até 185 m abaixo); o mar de nuvens a 190 m; dezesseis maciços em
+volta (cada um com a crista, o cume e dois ombros; rocha embaixo, neve
+em cima com a rocha aparecendo nas faces mais a pique); e, atrás, o
+horizonte pintado de picos (`fundos/picos.png`).
+
+### O que a física mudou na planta
+
+A planta é um desenho; as medidas saem do jogo de hoje (`docs/MEDIDAS.md`
+e os testes). Os números estão em `docs/AJUSTES.md`, "Setor Zero".
+
+| Peça | Na planta | No mapa | Por quê |
+|---|---|---|---|
+| Vão do corredor | 4 m | **1,4 m** | o pulo andando do humano avança ~2,0 m de centro a centro (medido: sai a 0,5 m da borda e pousa 7 cm além da outra); com Shift sobra |
+| Viga | "1,2 m" | **1,62 m livres** | a cápsula agachada do humano tem 1,5 m desde 26/11 (a do lobo, 1,0), e a de pé 1,75: passa agachado, bate de pé |
+| Fundura dos vãos | — | **1,5 m** | mais que o pulo do humano (1,02 m) e menos que a queda que fere (4 m o humano, 7 m o lobo) |
+| Vão da arena | 8 m | **8 m** | o salto carregado alcança 12 m; a marca de saída fica a 1,2 m da borda (10,4 m até o pouso: 15 % de folga) |
+| Plataformas do bote | 3 m e 6 m | **2,7 m e 5 m** | o salto pousa em cima do que tem até 3,2 m acima dos pés (`PounceMaxClear`); mais alto, para antes. Sobe-se na baixa do chão e na alta a partir da baixa |
+| Parede de corrida | 32 × 14 m | **32 × 14 m** | o lobo corre 4,9 m/s: 2 s são 10 m. Lisa de cima a baixo (o LED de cada metro é só desenho) |
+| Passagens e portas | 4 e 6 m | **6 m, centradas** | uma das passagens da planta ficava fora do centro do Núcleo; a porta da Sala de Ativação tem a largura do corredor (com 11 m dava para contornar os obstáculos) |
+| Linha de Fogo | 60 × 32 m, murada | **60 × 37 m, até a beira** | rebaixada e aberta ao norte; a linha de tiro foi para y = 22 (cabe a escadaria atrás dela) |
+| Alvos da Linha de Fogo | três em fila em x = 75 | o médio em x = 70, o distante em x = 80 | em fila, um tapava o outro; o posto fica em cima da linha de tiro, de onde se veem os três próximos por diante das divisórias |
+| Coberturas baixas | "0,8 ou 1,2" | **0,8 m** na Linha de Fogo, **1,2 m** na Rua Ignição | a altura do caixote (o humano sobe e se agacha atrás) no estande; só cobertura na rua |
+
+### Os robôs de treino (26/11)
+
+Decisão do Jhon: "os robôs são inimigos, não atiram, mas seguem sempre um
+percurso, tomam dano igual, morrem, regeneram, exibe a vida deles", e
+"robôs com textura melhor também, com acabamento legal".
+
+- **São 30**, em `ALVOS` (`setor_zero.py`): (id, lugar, nível, papel,
+  percurso, velocidade). O percurso é `("vai", [(dx, dy)…])` — vai ponto a
+  ponto, espera e volta — ou `("ronda", […])` — fecha a volta. Os pontos
+  contam de onde o robô nasce, que é de onde as visadas do roteiro são
+  conferidas. O grupo do especial anda em formação (o mesmo percurso nos
+  quatro). No piso, cada percurso tem o **trilho** dele (borracha escura,
+  dois frisos de aço e traços de LED laranja — `trilhos`, no acabamento).
+- **Quem os faz viver é o `Dummy`** (`src/scripts/debug/Dummy.cs`): é do
+  outro time (`Team`, Sindicato — o boneco antigo era do time do jogador e
+  o tiro passava sem ferir), a vida é o `Health` de qualquer corpo (200;
+  volta sozinha depois de 6 s sem dano; cai, some e volta em 4 s, onde
+  estaria no percurso), a cabeça vale tiro na cabeça (`IHeadBand`: o
+  capacete começa a 1,40 m), o abate entra no feed ("Robô de treino"), e
+  por cima dele paira a **barra de vida** com o número
+  (`barra_vida.gdshader`: verde, amarela abaixo da metade, vermelha abaixo
+  de um quarto, com o rastro claro do golpe; cresce com a distância e some
+  a 70 m). Olha para onde anda; a menos de 12 m, encara o jogador.
+- **O modelo** é de `src/tools/mapas/robo_treino.py` →
+  `robo_treino.glb`: desenho próprio (as referências de robô que o Jhon
+  mandou são de outro jogo e serviram só de ideia). Peças de revolução com
+  a luz lisa (blindagem clara, grafite), viseira de vidro fumê com a luz
+  dos olhos, ombreiras laranja, lâminas emissoras, mochila do propulsor e
+  um **anel de energia que gira** (as peças `…_f_gira`). O material é o
+  `robo_treino.tres`: o do kit com `na_peca` ligado — o desenho do
+  material gruda na peça em vez de ser projetado pelo mundo (senão
+  escorregava por cima do robô andando) — e `miudeza` 3,2.
+- O teste `SetorZeroRobos` anda **cada percurso inteiro** com a caixa do
+  corpo (não entra em parede, cobertura nem prop; há chão embaixo), confere
+  que dois robôs nunca se atravessam em 2 minutos de relógio, atira num
+  com a arma do jogador, e vê a barra descer, a vida voltar e o robô cair
+  e renascer.
+
+### O piso trabalhado e o recheio (26/11)
+
+Vendo o mapa andando, o Jhon achou "o chão muito simples, reto", "muito
+liso", e a Câmara "muito vazia". Duas passadas no acabamento:
+
+- **`pisos()`** — cada lugar deixa de ser um plano de um tom só: placas em
+  tons com a junta (`lajes`), as faixas de cada cabine até o fundo, as
+  marcas de distância, o tapete de borracha da linha de tiro, a canaleta
+  com grade, a hachura da beira do abismo; na Rua Ignição, a calçada, o
+  meio-fio, o asfalto gasto e remendado, a faixa central, a faixa de
+  pedestre, bueiros, ralos e poças (`sz_agua`, que reflete); na arena, a
+  pista de corrida de borracha com largada em xadrez, o tapete ao pé da
+  parede de corrida e o quadro do especial; o Núcleo e a Câmara em setores
+  e anéis; e os trilhos dos robôs. **É tudo desenho, de 3 a 12 mm de
+  altura, sem colisão** — abaixo dos letreiros pintados (12 mm) e das
+  linhas-guia (22 mm). Vai numa forma à parte (`…_f_piso`), que não conta
+  na conferência de quadrados vazios.
+- **`recheio()`** — na Câmara: oito cápsulas de vidro em roda (fora das
+  três portas), o relevo do lobo com luz por trás na parede do fundo e o
+  lustre de três aros sob a cúpula; no Núcleo: quatro mesas holográficas
+  nas diagonais; na Linha de Fogo, na arena e na rua: bancos, barris,
+  lixeiras, máquinas e três carros estacionados (peças do kit, com
+  colisão); no ar, oito drones de vigia (só desenho). Tudo fora dos
+  caminhos do treino e dos percursos dos robôs — os testes `SetorZero…`
+  passam por eles.
+- **O Jardim Suspenso e o Pinhal** ganharam relevo de verdade (classe
+  `Terreno`: um campo de alturas de ruído, com os caminhos em curva
+  cortados nele como fitas lisas com guia de pedra), grama em três tons,
+  mato rasteiro, e árvores, postes e bancos postos por regra: árvore a
+  3 m ou mais de qualquer caminho, poste e banco à beira dele.
+
+### As nuvens — aqui e nos outros mapas
+
+`src/assets/mapas/detalhe/nuvens.gdshader`: um plano grande em que a
+nuvem é conta (ruído), com brilho próprio (`brilho`: ~2,3 de dia — o céu
+de foto é bem mais claro que o branco "1" —, menos de 1 de noite) e sem
+névoa. No Setor Zero as seis camadas estão na cena (quatro no precipício:
+"o precipício deve ter aparência de nuvem, não algo sólido"; duas no céu).
+**Nos outros mapas a céu aberto** (pedido do Jhon: "coloque esses shaders
+de nuvens nos mapas de dia e de noite também"; "não precisa pôr no
+Armazém, é um mapa fechado") quem põe é o `MapSlot`, ao carregar, pelo
+clima que o mapa declara em `Maps.cs` (`MapInfo.Clouds`: `dia`,
+`dia_seco`, `tarde`, `noite`; vazio = sem nuvens) —
+`src/scripts/visual/SkyClouds.cs`. Testes: `NuvensNosMapas`,
+`SetorZeroNuvens`.
+
+### Luz, texturas e letreiros
+
+O padrão dos mapas de kit: `luz_de_jogo(m, "dia", 140, 52)` (o céu
+`dia_claro` gira com o sol, giro = yaw + 36), sem SDFGI, com o ar de
+montanha (a névoa mais rala e fria, exposição 0,86); `foco` de teto com
+sombra na Sala de Ativação, no Ponto de Retorno e no óculo da cúpula;
+`lampadas()` nos 24 postes mais espalhados; uma lâmpada da cor do bloco
+ao pé de cada letreiro de setor. O material é o `scifi.tres` +
+`superficie.gdshader` (o grão de cada superfície: concreto, piso, metal,
+rocha, borracha, folhagem, água). O LED é o do atlas (`scifi_luz`); as
+cores das chapas saem só do quadrante da paleta do atlas (`da_paleta`: o
+`Kit.uv_da_cor` às vezes cai num anúncio, que acende).
+
+**Os letreiros** são imagens de `src/tools/mapas/letreiros.py` (58, em
+`src/assets/mapas/letreiros/setor_zero_*.png`): placas de setor em
+Overpass, pintura de piso em Saira Stencil, anéis e marcas. **Tudo em
+inglês** (SECTOR ZERO, IRIS CORE, FIRING RANGE, PACK ARENA, WALL RUN,
+DANGER · SHEER DROP...); os nomes dos arquivos continuam os dos lugares.
+Nenhum `Label3D`. O `letreiros.py` e as fontes
+(`src/tools/mapas/fontes/`: Overpass, Saira Stencil One e Bebas Neue, SIL
+OFL 1.1, com as licenças em `fontes/licencas/`) tinham saído em 24/11 com
+a Vila e a Polar e voltaram do histórico do git, só com a lista do Setor
+Zero. As fontes já estavam na tela de créditos (`Credits.cs`).
+
+### Peças pendentes do Setor Zero
+
+O que não há. No mapa fica um substituto simples; onde ele se passa pela
+peça, leva o letreiro **PLACEHOLDER**.
+
+| Peça | Onde entra | O que há hoje | Sugestão |
+|---|---|---|---|
+| **Estátua do lobo** | Praça do Uivo, centro (planta 136, 51), sobre o pedestal de três degraus | a silhueta do lobo uivando recortada numa chapa de aço de 4 m (a mesma silhueta, em relevo com luz, está na parede da Câmara) | modelar no Blender (o lobo do jogo, em pose), 3 a 4 m, `.glb` |
+| **Contêineres** | pátio técnico (planta x 31–39, y 66–95), cinco | caixas chanfradas laranja e azul com nervuras, 2,6 m, PLACEHOLDER no primeiro | os do pacote do Armazém (LowPolyFPS4) convertidos em peça |
+| **Vidro** | as janelas da Sala de Ativação e do corredor; a cúpula da Câmara | aberturas sem vidro (com barreira invisível); a cúpula é só as nervuras | um material de vidro transparente (o do kit é opaco e reflete o céu) |
+| **Som do robô** | os 30 robôs de treino | nenhum (pairam e caem em silêncio; o acerto e o abate tocam o som de sempre do atirador) | um zumbido de propulsor e um estalo ao cair — pedir o som; não foi gerado |
+| **Holograma da Iris** | Núcleo, sobre o pedestal | um pilar e um losango de LED | um busto estilizado de luz (shader próprio) |
+| **Neve caindo, vento** | o mapa todo | nada | partículas (`Mapa.nevasca` existe no kit) e um som de vento de altitude — pedir o som; não foi gerado |
+
+O que o prompt do mapa supunha faltar e **o kit tem**: o pinheiro
+(`Tree_01` do kit 3, esticado para 6, 12, 18, 21,5 e 25 m), a torre com
+antenas (`SM_BigFence_02`) e o quiosque do café
+(`SM_Props_CyberIceCream_01` e `CyberIceBurger_01`). Os cones da quadra e
+a antena parabólica são formas próprias.
+
+### Conferência e testes
+
+- `python3 src/tools/mapas/conferir.py setor_zero`: o campo em quadrados
+  de 5 m; reprova o que não tiver nada além do pavimento de base (hoje:
+  0 de 600).
+- Os testes `SetorZero…` (`src/tests/regression/SetorZeroTests.cs`), na
+  cena `treino_setor_zero.tscn`: `SetorZeroCarrega` (fora da lista,
+  fechado, chão em todo o campo, cada nível na altura certa, a beira
+  barrada menos na Linha de Fogo, zonas, marcas, portas e alvos),
+  `SetorZeroVaoDoHumano`, `SetorZeroViga`, `SetorZeroTrechoSilencioso`,
+  `SetorZeroVaoDoLobo`, `SetorZeroPlataformas`,
+  `SetorZeroParedeDeCorrida`, `SetorZeroAlvos` (cada alvo à vista do
+  posto dele; o da granada, escondido atrás do muro), `SetorZeroPortas`,
+  `SetorZeroEscadarias` (anda-se a cada nível, sem tranco) e
+  `SetorZeroAbismo` (o parapeito segura quem anda; quem o pula morre de
+  queda, humano ou lobo, e renasce na sala). O Setor Zero não entra nos
+  `Mapa…` (os de partida: oito pontos por time, rotas, bots).
+- **As fotos**: `godot --path . -s res://src/tools/fotos_mapas.gd -- setor_zero`
+  tira a capa (`src/assets/ui/mapas/setor_zero_foto.png`), e
+  `-- setor_zero_angulos` os doze ângulos de conferência em
+  `docs/tutorial/fotos/` (a montanha, o mirante, a Linha de Fogo, o
+  Núcleo, o corredor, a Câmara, a arena, a parede de corrida, a Rua
+  Ignição, o terraço, a Praça e o Pinhal, e o campo de cima). Foram
+  tiradas em Forward+ no Mac em 26/11.
+
+**O que não foi conferido:** ninguém andou o mapa com as mãos (os testes
+andam por ele com teclas simuladas, e as fotos são de câmera parada); o
+custo em máquina fraca (~40 mil triângulos de formas, 1.300 peças de
+kit, 38 luzes sem sombra e 10 focos com sombra, o sol com sombra a
+200 m); a claridade do concreto ao sol do meio-dia, que nas fotos ainda
+fica alta; e a leitura dos letreiros de piso de perto.
