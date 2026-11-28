@@ -843,7 +843,8 @@ do código:
 | `combat/weapon/Weapon.Remote.cs` | A arma do boneco: encena, não fere |
 | `lobby/OnlineScreen.cs` | A lista de salas online (a terceira porta da tela JOGAR) |
 | `lobby/HomeScreen.cs`, `PlayScreen.cs`, `PhotoScreen.cs` | O início (banners e notícias, de `meta/News.cs`), a tela JOGAR e a foto de perfil |
-| `lobby/SocialDock.cs`, `MatchSearch.cs` | O painel social (amigos, pedidos, convites; o espelho é `net/Social.cs`) e a busca do jogo rápido — os dois moram na moldura (`LobbyShell`), não numa tela |
+| `lobby/SocialDock.cs`, `MatchSearch.cs` | O painel social (amigos, pedidos, convites e a conversa com cada amigo; os espelhos são `net/Social.cs` e `net/DirectChat.cs`) e a busca do jogo rápido — os dois moram na moldura (`LobbyShell`), não numa tela |
+| `ui/MatchChat.cs` | O chat da partida online (Enter todos, T o time), que é o da sala pelo saguão; digitando, `MatchChat.Typing` cala o teclado do jogo (`CharacterIntent.FromInput`) |
 
 Os três pontos onde o jogo offline foi aberto para a rede, e só eles:
 `Health.Remote`/`SendHit`/`Mirror` (o dano sai e a vida volta

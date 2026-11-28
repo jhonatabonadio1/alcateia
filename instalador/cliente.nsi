@@ -1,4 +1,5 @@
-; Instalador do cliente do WolfLeague para Windows (NSIS).
+; Instalador do Initech Launcher para Windows (NSIS): o cliente de instalação
+; da Initech Games, que baixa e abre os jogos do estúdio (o primeiro é o WolfLeague).
 ;
 ; O cliente (cliente/Alcateia.Cliente, o WolfLeagueLauncher.exe) é quem baixa
 ; o jogo, mantém atualizado e abre: este instalador põe só ele no computador
@@ -16,7 +17,8 @@
 ;            -DORIGEM="$PWD/build/lancador/windows" \
 ;            -DSAIDA="$PWD/build/WolfLeague-Launcher-Setup.exe" "$PWD/instalador/cliente.nsi"
 ;
-; Instala só para o usuário (%LOCALAPPDATA%\Programs\WolfLeague Launcher): não
+; Instala só para o usuário (%LOCALAPPDATA%\Programs\Initech Launcher; quem já
+; tinha o launcher instalado continua na pasta dele, WolfLeague Launcher): não
 ; pede senha de administrador, e o cliente se atualiza sozinho nessa pasta.
 ; Silencioso: WolfLeague-Launcher-Setup.exe /S
 ;
@@ -49,6 +51,9 @@ Unicode true
   !define SAIDA "WolfLeague-Launcher-Setup.exe"
 !endif
 
+!define APP       "Initech Launcher"
+!define ESTUDIO   "Initech Games"
+; O WolfLeague: o instalador de antes (windows.nsi), com o jogo inteiro, e os atalhos dele.
 !define NOME      "WolfLeague"
 !define EXE       "WolfLeagueLauncher.exe"
 !define CHAVE_DES "Software\Microsoft\Windows\CurrentVersion\Uninstall\WolfLeagueLauncher"
@@ -67,34 +72,35 @@ Unicode true
 !define BGR_FUNDO  0x19110A
 !define BGR_OURO   0x50B9F3
 
-Name "${NOME}"
+Name "${APP}"
 OutFile "${SAIDA}"
-InstallDir "$LOCALAPPDATA\Programs\${NOME} Launcher"
+InstallDir "$LOCALAPPDATA\Programs\${APP}"
+; A chave de antes de 27/11 (quando era o "WolfLeague Launcher"): reinstalar cai na mesma pasta.
 InstallDirRegKey HKCU "Software\${NOME} Launcher" "InstallPath"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma
-BrandingText "${NOME} ${VERSAO}"
+BrandingText "${APP} ${VERSAO}"
 InstallButtonText "Install"
 ShowInstDetails nevershow
 ShowUninstDetails nevershow
 
 VIProductVersion "${VERSAO_NUM}"
-VIAddVersionKey "ProductName" "${NOME}"
-VIAddVersionKey "CompanyName" "${NOME}"
-VIAddVersionKey "FileDescription" "${NOME} Setup"
+VIAddVersionKey "ProductName" "${APP}"
+VIAddVersionKey "CompanyName" "${ESTUDIO}"
+VIAddVersionKey "FileDescription" "${APP} Setup"
 VIAddVersionKey "FileVersion" "${VERSAO}"
 VIAddVersionKey "ProductVersion" "${VERSAO}"
-VIAddVersionKey "LegalCopyright" "${NOME}"
+VIAddVersionKey "LegalCopyright" "${ESTUDIO}"
 
 ; ---- requisitos mínimos (os do jogo: é para ele que o cliente serve) -------
 Function .onInit
   ${IfNot} ${IsNativeAMD64}
   ${AndIfNot} ${IsNativeARM64}
-    MessageBox MB_ICONSTOP|MB_OK "${NOME} requires 64-bit Windows, and this Windows is 32-bit." /SD IDOK
+    MessageBox MB_ICONSTOP|MB_OK "${APP} requires 64-bit Windows, and this Windows is 32-bit." /SD IDOK
     Abort
   ${EndIf}
   ${IfNot} ${AtLeastWin10}
-    MessageBox MB_ICONSTOP|MB_OK "${NOME} requires Windows 10 or Windows 11." /SD IDOK
+    MessageBox MB_ICONSTOP|MB_OK "${APP} requires Windows 10 or Windows 11." /SD IDOK
     Abort
   ${EndIf}
   ${If} ${IsNativeARM64}
@@ -119,8 +125,8 @@ Function .onInit
 FunctionEnd
 
 ; ---- aparência -----------------------------------------------------------
-!define MUI_ICON   "${__FILEDIR__}\WolfLeague.ico"
-!define MUI_UNICON "${__FILEDIR__}\WolfLeague.ico"
+!define MUI_ICON   "${__FILEDIR__}\WolfLeagueLauncher.ico"
+!define MUI_UNICON "${__FILEDIR__}\WolfLeagueLauncher.ico"
 !define MUI_BGCOLOR   "${COR_FUNDO}"
 !define MUI_TEXTCOLOR "${COR_TEXTO}"
 !define MUI_ABORTWARNING
@@ -173,24 +179,24 @@ FunctionEnd
 
 ; ---- páginas -------------------------------------------------------------
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${__FILEDIR__}\lateral_inicio.bmp"
-!define MUI_WELCOMEPAGE_TITLE "Welcome to WolfLeague"
-!define MUI_WELCOMEPAGE_TEXT "This wizard installs the WolfLeague app: it downloads the game, keeps it up to date and shows your friends.$\r$\n$\r$\nThe game itself is downloaded by the app after you sign in. An internet connection is required.$\r$\n$\r$\nClick Next to continue."
+!define MUI_WELCOMEPAGE_TITLE "Welcome to ${APP}"
+!define MUI_WELCOMEPAGE_TEXT "This wizard installs ${APP}, the ${ESTUDIO} launcher: it downloads our games, keeps them up to date and shows your friends.$\r$\n$\r$\nThe games are downloaded by the launcher after you sign in. An internet connection is required.$\r$\n$\r$\nClick Next to continue."
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW EstiloJanela
 !insertmacro MUI_PAGE_WELCOME
 
 !define MUI_PAGE_HEADER_TEXT "Installing"
-!define MUI_PAGE_HEADER_SUBTEXT "Copying the WolfLeague app."
+!define MUI_PAGE_HEADER_SUBTEXT "Copying ${APP}."
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW EstiloMeio
 !insertmacro MUI_PAGE_INSTFILES
 
-!define MUI_FINISHPAGE_TITLE "WolfLeague installed"
-!define MUI_FINISHPAGE_TEXT "All set. The shortcuts are on the Desktop and in the Start Menu.$\r$\n$\r$\nOpen WolfLeague, sign in and click Install to download the game."
+!define MUI_FINISHPAGE_TITLE "${APP} installed"
+!define MUI_FINISHPAGE_TEXT "All set. The shortcuts are on the Desktop and in the Start Menu.$\r$\n$\r$\nOpen ${APP}, sign in, pick a game and click Install."
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${EXE}"
-!define MUI_FINISHPAGE_RUN_TEXT "Open WolfLeague"
+!define MUI_FINISHPAGE_RUN_TEXT "Open ${APP}"
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW EstiloJanela
 !insertmacro MUI_PAGE_FINISH
 
-!define MUI_PAGE_HEADER_TEXT "Uninstall WolfLeague"
+!define MUI_PAGE_HEADER_TEXT "Uninstall ${APP}"
 !define MUI_PAGE_HEADER_SUBTEXT "Removes the app from this computer."
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW un.EstiloMeio
 !insertmacro MUI_UNPAGE_CONFIRM
@@ -213,19 +219,24 @@ Section "App"
   SetOutPath "$INSTDIR"
 
   File "${ORIGEM}\${EXE}"
-  File "${__FILEDIR__}\WolfLeague.ico"
+  File "${__FILEDIR__}\WolfLeagueLauncher.ico"
+  Delete "$INSTDIR\WolfLeague.ico"   ; o ícone de antes de 27/11, o mesmo do jogo
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
   ; Os atalhos têm o nome do jogo: é por eles que se joga. Os do instalador
   ; antigo (mesmo nome) passam a abrir o cliente.
-  CreateShortcut "$SMPROGRAMS\${NOME}.lnk" "$INSTDIR\${EXE}" "" "$INSTDIR\WolfLeague.ico"
-  CreateShortcut "$DESKTOP\${NOME}.lnk" "$INSTDIR\${EXE}" "" "$INSTDIR\WolfLeague.ico"
+  ; Os atalhos são do launcher (o nome do jogo saiu: é por ele que se abre cada jogo).
+  ; Os de antes, com o nome do jogo, saem.
+  Delete "$SMPROGRAMS\${NOME}.lnk"
+  Delete "$DESKTOP\${NOME}.lnk"
+  CreateShortcut "$SMPROGRAMS\${APP}.lnk" "$INSTDIR\${EXE}" "" "$INSTDIR\WolfLeagueLauncher.ico"
+  CreateShortcut "$DESKTOP\${APP}.lnk" "$INSTDIR\${EXE}" "" "$INSTDIR\WolfLeagueLauncher.ico"
 
   WriteRegStr HKCU "Software\${NOME} Launcher" "InstallPath" "$INSTDIR"
-  WriteRegStr HKCU "${CHAVE_DES}" "DisplayName" "${NOME}"
+  WriteRegStr HKCU "${CHAVE_DES}" "DisplayName" "${APP}"
   WriteRegStr HKCU "${CHAVE_DES}" "DisplayVersion" "${VERSAO}"
-  WriteRegStr HKCU "${CHAVE_DES}" "Publisher" "${NOME}"
-  WriteRegStr HKCU "${CHAVE_DES}" "DisplayIcon" "$INSTDIR\WolfLeague.ico"
+  WriteRegStr HKCU "${CHAVE_DES}" "Publisher" "${ESTUDIO}"
+  WriteRegStr HKCU "${CHAVE_DES}" "DisplayIcon" "$INSTDIR\WolfLeagueLauncher.ico"
   WriteRegStr HKCU "${CHAVE_DES}" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "${CHAVE_DES}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
   WriteRegStr HKCU "${CHAVE_DES}" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
@@ -256,10 +267,13 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\.pacote"
   Delete "$INSTDIR\*.antigo-*"
   Delete "$INSTDIR\*.baixando"
+  Delete "$INSTDIR\WolfLeagueLauncher.ico"
   Delete "$INSTDIR\WolfLeague.ico"
   Delete "$INSTDIR\Uninstall.exe"
   RMDir "$INSTDIR"   ; só some se ficou vazia
 
+  Delete "$SMPROGRAMS\${APP}.lnk"
+  Delete "$DESKTOP\${APP}.lnk"
   Delete "$SMPROGRAMS\${NOME}.lnk"
   Delete "$DESKTOP\${NOME}.lnk"
   DeleteRegValue HKCU "${CHAVE_RUN}" "WolfLeagueLauncher"

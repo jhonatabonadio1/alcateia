@@ -124,7 +124,7 @@ export `RefillOnTransform`, desligado por padrão.
 | Clique esq. | Atacar |
 | Botão direito, com a faca | A estocada: mais lenta (0,8 s) e mais forte (120); pelas costas, 240 — mata um humano de vida cheia |
 | Ctrl ou C | Agachar (nas duas formas). No Mac, Ctrl + clique vira clique direito no sistema; o jogo trata como ataque (`MacCtrlClick`), e o especial agachado sai agachando no C |
-| Shift | Correr, de arma abaixada: não atira, não mira e não recarrega (só humano, só para a frente). Com fôlego: 4 s de cada vez, 1,5 s sem fôlego quando acaba (27/11) |
+| Shift | Correr, de arma abaixada: não atira, não mira e não recarrega (só humano, só para a frente). Com fôlego: 7 s de cada vez (4 até o fim de 27/11), 1,5 s sem fôlego quando acaba (27/11) |
 | R | Rugir (lobo): segure até o fim para o escudo voltar · recarregar (humano) |
 | G | Soltar a arma da mão: cai à frente, e você passa para a próxima |
 | Esc | Menu da partida (continuar, opções, controles, reiniciar, sair para a sala, sair do jogo) — **não pausa** |

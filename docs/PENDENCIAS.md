@@ -23,6 +23,30 @@ Ponha aqui, com o que se sabe dele.
 - **O "Low Poly Sci-Fi City" (Distrito Neon) entrou no crédito genérico da JustCreate** a pedido ("em todos os mapas");
   o autor desse pacote não está anotado no repositório (`docs/PACOTES.md` só diz Unity Asset Store): conferir.
 
+## Agachado tático (28/11)
+
+- **O andar agachado continua o "Crouch Walking" do Mixamo**, com a cintura inclinada e o recuo, mas não a base larga (abrir ao andar foi tentado em 28/11 e o Jhon preferiu como estava), nem o pé de trás na ponta nem o passo mais curto do parado: ao sair andando as pernas passam de uma base para a outra em 0,25 s (a bota não entra no chão, `CrouchKneeFloor`). Se a troca parecer estranha jogando, o próximo passo é um andar agachado com a base larga (clipe novo ou o ajuste das pernas por cima do clipe).
+- **Não visto jogando**: a pose do meio da troca parado ↔ andando, e o agachado tático com as outras armas (pistola, faca, granada).
+
+## Chat (27/11): o que ficou por fazer
+
+O chat da partida, o da sala e as conversas com os amigos entraram
+(CHANGELOG, "Chat na partida, na sala e entre amigos"). Falta:
+
+- **Jogar** com duas pessoas: abrir o chat na partida (Enter e T), digitar
+  sem andar, o Esc fechar sem abrir o menu, as linhas sumindo; a conversa no
+  painel social (bolhas, rolagem, "mensagens anteriores", o aviso).
+- **Moderação**: sem filtro de palavrão, sem bloquear/silenciar alguém e sem
+  denúncia; o painel não vê as conversas.
+- **Compatibilidade**: com o servidor antigo (antes do deploy), o chat do
+  time vai para a sala inteira (o servidor antigo ignora `team`). Subir o
+  servidor junto com o jogo.
+- Chat no modo offline (contra bots, sem servidor) não existe: Enter não faz
+  nada.
+- Testes propostos, não escritos (ADR 0020): a conversa entre amigos e o
+  chat do time no servidor; o chat na partida no `testar_online.sh` (os
+  rascunhos usados para conferir estão no relatório da sessão).
+
 ## Online: o que ainda falta fechar (decisão 0019)
 
 - **Os bots no servidor** (item 3 da decisão 0011) — o maior buraco que sobra, e o que segura os outros. Hoje o dono
@@ -658,6 +682,9 @@ O cliente está escrito e foi conferido num Mac, sem janela
 - **O corpo morto foi medido, não visto**: doze situações no Deserto, sem tela. Falta olhar no jogo, e conferir online (o boneco de outro jogador que morre na parede) e os bots morrendo em escada.
 - **A água do chafariz não faz som de passo nem respinga em quem entra na bacia**, e o som da fonte e o passo novo **não foram ouvidos** por quem os fez (conferidos por medida: espectro, emenda do laço, instante da pisada).
 - **O recuo dos braços** (`ViewModel.ShotSeconds`) foi conferido por medida do clipe e pelos testes; falta ver na tela com cada arma.
+- **A cadência real é a do quadro de física** (achado em 27/11, no recuo revisto): o tiro só sai num quadro e a espera (`Weapon._cooldown = Interval`) não guarda a sobra, então o AR-15 e a M4A4 atiram a 600 RPM (não 650 e 700), a AK a 450 (500), a SCAR a 360 (400), a Desert Eagle no máximo a 225 e a SVD a 116; as skins de 690 a 760 ficam em 600 ou 720 (o "+RPM" de algumas não vale nada). Consertar (somar o intervalo à sobra enquanto o gatilho está preso) sobe o dano por segundo de 10 a 17%: decisão do Jhon.
+- **Recarga (27/11, feita às pressas para o lançamento)**: o som dos fuzis é o mesmo arquivo de antes, que já casava com o clipe a 1× (conferido por medida, não ouvido); falta ouvir na SCAR e nas outras. Polimento: os ruídos como eventos no clipe (uma marca por ruído) em vez de um arquivo inteiro; o fim (`recarga_fim`) toca quando a recarga acaba, ~0,9 s depois do encaixe nos fuzis; a escopeta (MP-153) a conferir quando entrar; um teste que prenda o `.tres` igual à duração do clipe.
+- **O recuo revisto pelo do CS** (27/11: padrão fixo, volta mais rápida, andar e pular somando dispersão) foi medido sem tela; falta jogar cada arma e afinar as pernas do desvio e o `AirSpread`.
 - **Jogo online não rodado** (`testar_online.sh`, `testar_servidor.sh`): o movimento mudou (degraus) e roda igual no servidor; os testes de rede da bancada passam, mas a partida de ponta a ponta não foi rodada (o servidor estava sendo mexido por outra sessão).
 
 ### Limpeza do repositório: o que ficou para decidir (levantado em 24/11)

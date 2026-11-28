@@ -83,8 +83,9 @@ public partial class CharacterAnimator
 	/// clicar em Shift a animação de iniciar a correr deve ser mais rápida, e
 	/// ao parar também"). Com 9 o corpo levava uns 0,33 s para chegar a 95%
 	/// da pose de correr; com 16, 0,19 s — o tempo de os braços abaixarem a
-	/// arma (<see cref="ViewModel.RigSprintIn"/>).</summary>
-	[Export] public float SprintBlendSmoothing = 16f;
+	/// arma (<see cref="ViewModel.RigSprintIn"/>). 24 desde o fim de 27/11 ("sinto um leve delay para
+	/// começar a correr"): 95% em 0,12 s (6 quadros; com 16, 0,17 s, 10 quadros).</summary>
+	[Export] public float SprintBlendSmoothing = 24f;
 
 	/// <summary>Velocidade em que o agachado está andando a pleno. 0,6 m/s
 	/// desde 26/11 (era 1,9): andando agachado (1,35 m/s) a mistura ficava no
@@ -115,6 +116,12 @@ public partial class CharacterAnimator
 	/// toca agora (1 = como foi gravado). 0 fora da corrida. A arma na mão
 	/// (<see cref="HeldWeapon"/>) toca o "correr" dela no mesmo passo.</summary>
 	public float SprintPace { get; private set; }
+
+	/// <summary>Correndo (Shift): quanto dura agora um ciclo do clipe de correr (dois passos), em
+	/// segundos, no ritmo em que ele toca pela velocidade de agora; 0 fora da corrida. É a cadência
+	/// firme da corrida desde o primeiro quadro: os braços na tela correm nela (<see cref="ViewModel"/>),
+	/// sem esperar as pisadas assentarem.</summary>
+	public float SprintCycle => SprintPace > 0f && _sprintLength > 0f ? _sprintLength / SprintPace : 0f;
 
 	/// <summary>Quem está correndo (o dono diz, <see cref="BodyMotion.HumanSprinting"/>)
 	/// sai da corrida normal (raio 2) para a do Shift (raio 3), pela

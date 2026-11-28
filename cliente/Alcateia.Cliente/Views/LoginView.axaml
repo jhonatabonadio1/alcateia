@@ -1,52 +1,67 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Alcateia.Cliente.ViewModels"
+             xmlns:c="using:Alcateia.Cliente.Core"
              x:Class="Alcateia.Cliente.Views.LoginView"
              x:DataType="vm:LoginViewModel">
 
+	<!--
+	A entrada do Initech Launcher: o formulário à esquerda e, à direita, o
+	estúdio — o emblema com o brilho quente da vinheta do jogo, e o nome.
+	A conta é a mesma em todos os jogos da Initech.
+	-->
 	<Grid ColumnDefinitions="460,*">
-		<!-- a arte do jogo, à direita -->
-		<Panel Grid.Column="1" ClipToBounds="True">
-			<Image Source="/Assets/arte.jpg" Stretch="UniformToFill" />
+		<Panel Grid.Column="1" ClipToBounds="True" Background="{StaticResource Deep}">
 			<Border>
 				<Border.Background>
-					<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-						<GradientStop Offset="0" Color="#E60A1119" />
-						<GradientStop Offset="0.45" Color="#330A1119" />
-						<GradientStop Offset="1" Color="#000A1119" />
-					</LinearGradientBrush>
+					<RadialGradientBrush Center="50%,46%" GradientOrigin="50%,46%" RadiusX="55%" RadiusY="60%">
+						<GradientStop Offset="0" Color="#3DFEC803" />
+						<GradientStop Offset="0.45" Color="#0FFEC803" />
+						<GradientStop Offset="1" Color="#00FEC803" />
+					</RadialGradientBrush>
 				</Border.Background>
 			</Border>
+			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="34">
+				<Image Source="/Assets/initech_emblema.png" Height="260" />
+				<StackPanel Spacing="14" HorizontalAlignment="Center">
+					<Image Source="/Assets/initech_nome.png" Height="40" />
+					<Image Source="/Assets/initech_games.png" Height="14" />
+				</StackPanel>
+			</StackPanel>
 		</Panel>
 
-		<Border Grid.Column="0" Background="{StaticResource Deep}" BorderBrush="{StaticResource Gold}" BorderThickness="0,0,2,0">
+		<Border Grid.Column="0" Background="{StaticResource Night}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
 			<ScrollViewer VerticalScrollBarVisibility="Auto">
 				<StackPanel Margin="44,48,44,32" Spacing="14">
-					<Image Source="/Assets/logo.png" Height="30" HorizontalAlignment="Left" Margin="0,0,0,18" />
+					<StackPanel Orientation="Horizontal" Spacing="12" Margin="0,0,0,6">
+						<Image Source="/Assets/initech_emblema.png" Height="30" />
+						<Image Source="/Assets/initech_nome.png" Height="16" VerticalAlignment="Center" />
+					</StackPanel>
+					<TextBlock Classes="label" Text="LAUNCHER" LetterSpacing="5" Margin="0,0,0,14" />
 
-					<StackPanel Orientation="Horizontal" Margin="-16,0,0,6" Height="40">
-						<Button Classes="tab" Classes.on="{Binding IsLogin}" Content="ENTRAR" Command="{Binding ShowLogin}" />
-						<Button Classes="tab" Classes.on="{Binding IsRegister}" Content="CRIAR CONTA" Command="{Binding ShowRegister}" />
+					<StackPanel Orientation="Horizontal" Margin="0,0,0,6" Height="36">
+						<Button Classes="tab" Classes.on="{Binding IsLogin}" Content="{c:T login.tab_enter}" Command="{Binding ShowLogin}" />
+						<Button Classes="tab" Classes.on="{Binding IsRegister}" Content="{c:T login.tab_create}" Command="{Binding ShowRegister}" />
 					</StackPanel>
 
 					<StackPanel Spacing="6">
-						<TextBlock Classes="label" Text="NOME DA CONTA" />
-						<TextBox Text="{Binding Name}" MaxLength="16" PlaceholderText="3 a 16 letras, números ou _">
+						<TextBlock Classes="label" Text="{c:T login.name}" />
+						<TextBox Text="{Binding Name}" MaxLength="16" PlaceholderText="{c:T login.name_hint}">
 							<TextBox.KeyBindings>
 								<KeyBinding Gesture="Enter" Command="{Binding Submit}" />
 							</TextBox.KeyBindings>
 						</TextBox>
 					</StackPanel>
 					<StackPanel Spacing="6">
-						<TextBlock Classes="label" Text="SENHA" />
-						<TextBox Text="{Binding Password}" PasswordChar="•" MaxLength="128" PlaceholderText="pelo menos 8 caracteres">
+						<TextBlock Classes="label" Text="{c:T login.password}" />
+						<TextBox Text="{Binding Password}" PasswordChar="•" MaxLength="128" PlaceholderText="{c:T login.password_hint}">
 							<TextBox.KeyBindings>
 								<KeyBinding Gesture="Enter" Command="{Binding Submit}" />
 							</TextBox.KeyBindings>
 						</TextBox>
 					</StackPanel>
 					<StackPanel Spacing="6" IsVisible="{Binding IsRegister}">
-						<TextBlock Classes="label" Text="A SENHA DE NOVO" />
+						<TextBlock Classes="label" Text="{c:T login.password_again}" />
 						<TextBox Text="{Binding Confirm}" PasswordChar="•" MaxLength="128">
 							<TextBox.KeyBindings>
 								<KeyBinding Gesture="Enter" Command="{Binding Submit}" />
@@ -56,17 +71,17 @@
 
 					<!-- só aparece para a conta com verificação em duas etapas, depois da senha certa -->
 					<StackPanel Spacing="6" IsVisible="{Binding NeedsCode}">
-						<TextBlock Classes="label" Text="CÓDIGO DO AUTENTICADOR" Foreground="{StaticResource Gold}" />
-						<TextBox Text="{Binding Code}" MaxLength="7" PlaceholderText="6 dígitos do aplicativo" FontSize="18">
+						<TextBlock Classes="label" Text="{c:T login.code}" Foreground="{StaticResource Gold}" />
+						<TextBox Text="{Binding Code}" MaxLength="7" PlaceholderText="{c:T login.code_hint}" FontSize="18">
 							<TextBox.KeyBindings>
 								<KeyBinding Gesture="Enter" Command="{Binding Submit}" />
 							</TextBox.KeyBindings>
 						</TextBox>
 					</StackPanel>
 
-					<CheckBox IsChecked="{Binding Remember}" Content="Lembrar desta conta neste computador" />
+					<CheckBox IsChecked="{Binding Remember}" Content="{c:T login.remember}" />
 
-					<Button Classes="primary" Content="{Binding SubmitText}" Command="{Binding Submit}" HorizontalAlignment="Stretch" FontSize="19" Padding="18,12" Margin="0,4,0,0" />
+					<Button Classes="primary" Content="{Binding SubmitText}" Command="{Binding Submit}" HorizontalAlignment="Stretch" FontSize="20" Padding="18,11" Margin="0,4,0,0" />
 
 					<Panel IsVisible="{Binding HasStatus}">
 						<TextBlock Text="{Binding Status}" TextWrapping="Wrap" Foreground="{StaticResource Danger}" IsVisible="{Binding StatusIsError}" />
@@ -75,14 +90,14 @@
 
 					<!-- as contas salvas neste computador -->
 					<StackPanel Spacing="8" Margin="0,18,0,0" IsVisible="{Binding HasSaved}">
-						<TextBlock Classes="label" Text="CONTAS NESTE COMPUTADOR" />
+						<TextBlock Classes="label" Text="{c:T login.saved}" />
 						<ItemsControl ItemsSource="{Binding Saved}">
 							<ItemsControl.ItemTemplate>
 								<DataTemplate x:DataType="vm:SavedAccountItem">
 									<Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
 										<Button Grid.Column="0" Classes="plain" Command="{Binding Enter}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="10,8">
 											<StackPanel Orientation="Horizontal" Spacing="10">
-												<Border Width="30" Height="30" CornerRadius="15" Background="{StaticResource Gold}">
+												<Border Width="30" Height="30" Background="{StaticResource Gold}">
 													<TextBlock Text="{Binding Initial}" Foreground="{StaticResource GoldInk}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
 												</Border>
 												<TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
@@ -90,7 +105,7 @@
 											</StackPanel>
 										</Button>
 										<Button Grid.Column="1" Classes="mini" Command="{Binding Forget}" Margin="6,0,0,0" Height="46" Width="34"
-										        ToolTip.Tip="Esquecer esta conta neste computador">
+										        ToolTip.Tip="{c:T login.forget}">
 											<Path Data="M3,3 L11,11 M11,3 L3,11" Stroke="{StaticResource Ink2}" StrokeThickness="1.6" Width="14" Height="14" />
 										</Button>
 									</Grid>

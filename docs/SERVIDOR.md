@@ -296,8 +296,18 @@ que cada coisa é.
   Quem está no meio de uma partida não é arrancado dela. Vive em memória,
   como a sala (`LobbyService.Groups.cs`, `Dominio/Salas/Group.cs`).
 - **A ligação do cliente de instalação** (`/v1/lobby?client=app`): à
-  parte da do jogo, só amigos. Com o jogo fechado, a conta aparece "no
-  aplicativo".
+  parte da do jogo, só amigos e as conversas com eles. Com o jogo fechado,
+  a conta aparece "no aplicativo".
+- **Chat** (27/11, Jhon: "chat em partida, chat na sala e entre amigos").
+  O da sala é também o da partida: a sala e a ligação do saguão continuam
+  abertas enquanto se joga, então o chat vai pelo saguão, não pelo servidor
+  de partida (que só leva o que é do jogo, decisão 0011). Com `team`, só o
+  time de quem fala ouve. As **mensagens diretas** entre amigos são de um
+  para um, chegam no jogo e no aplicativo das duas contas, e ficam no banco
+  (`direct_messages`, as últimas 200 de cada conversa): quem estava
+  desligado vê as não lidas ao entrar. Só entre amigos; 500 caracteres;
+  5 a cada 5 s e 30 por minuto (`Dominio/Conversas/ChatRules.cs`,
+  `LobbyService.Direct.cs`). Sem filtro de palavrão nem bloqueio ainda.
 - **Verificação em duas etapas, opcional.** O jogador liga um aplicativo
   autenticador (TOTP) no cliente de instalação; daí em diante entrar com a
   senha pede também o código de 6 dígitos. O segredo fica cifrado com a

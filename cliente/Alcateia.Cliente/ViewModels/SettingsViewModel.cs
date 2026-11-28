@@ -4,9 +4,10 @@ using Alcateia.Cliente.Core;
 namespace Alcateia.Cliente.ViewModels;
 
 /// <summary>
-/// As configurações do cliente: atualizar sozinho, o que fazer ao fechar a
-/// janela e ao abrir o jogo, abrir junto com o Windows, e a manutenção do
-/// jogo (a pasta, verificar e reparar, desinstalar).
+/// As configurações do launcher: o idioma, atualizar os jogos sozinho, o que
+/// fazer ao fechar a janela e ao abrir um jogo, abrir junto com o Windows. A
+/// manutenção de cada jogo (pasta, reparar, desinstalar) fica no menu de
+/// opções da página dele.
 /// </summary>
 public sealed class SettingsViewModel : Observable
 {
@@ -48,14 +49,36 @@ public sealed class SettingsViewModel : Observable
 		get => Startup.Enabled;
 		set
 		{
-			if (!Startup.Set(value)) _main.Toast("Não consegui mudar a abertura com o Windows.", error: true);
+			if (!Startup.Set(value)) _main.Toast(Tr.T("toast.startup_failed"), error: true);
 			Raise();
 		}
 	}
 
-	public string VersionText => "Cliente " + AppInfo.Version;
+	public string VersionText => Tr.F("settings.version", AppInfo.Version);
 	public string ServerText => AppInfo.ServerUrl;
-	public string DownloadsText => string.IsNullOrEmpty(_main.GameService.Downloads) ? "ainda não informado pelo servidor" : _main.GameService.Downloads;
+	public string DownloadsText => string.IsNullOrEmpty(_main.GameService.Downloads) ? Tr.T("settings.downloads_unknown") : _main.GameService.Downloads;
+
+	/// <summary>Os idiomas para escolher (os do arquivo), pelo nome no próprio idioma.</summary>
+	public System.Collections.Generic.IReadOnlyList<LanguageOption> LanguageOptions { get; } =
+		System.Linq.Enumerable.ToList(System.Linq.Enumerable.Select(Tr.Languages, l => new LanguageOption(l, Tr.NameOf(l))));
+
+	public LanguageOption Language
+	{
+		get => System.Linq.Enumerable.FirstOrDefault(LanguageOptions, o => o.Code == Tr.Current);
+		set
+		{
+			if (value == null || value.Code == Tr.Current) return;
+			S.Language = value.Code;
+			S.Save();
+			Tr.Set(value.Code);
+		}
+	}
 
 	internal void Refresh() => RaiseAll();
+}
+
+/// <summary>Um idioma na lista das configurações.</summary>
+public sealed record LanguageOption(string Code, string Name)
+{
+	public override string ToString() => Name;
 }

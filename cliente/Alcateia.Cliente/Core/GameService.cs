@@ -61,11 +61,15 @@ public sealed class GameService
 	private Process _game;
 	private bool _deepPaused;
 
-	public GameService(Settings settings, Api api)
+	public GameService(Settings settings, Api api, GameEntry entry)
 	{
 		_settings = settings;
 		_api = api;
+		Entry = entry;
 	}
+
+	/// <summary>O jogo da biblioteca que este serviço cuida.</summary>
+	public GameEntry Entry { get; }
 
 	public GameState State { get; private set; } = GameState.Checking;
 
@@ -94,9 +98,9 @@ public sealed class GameService
 
 	public event Action Changed;
 
-	public string GameDir => _settings.GameDir;
+	public string GameDir => _settings.GameDir(Entry);
 
-	private string ManifestLocation => Combine(Downloads, Packer.ManifestName(AppInfo.Product, AppInfo.GamePlatform));
+	private string ManifestLocation => Combine(Downloads, Packer.ManifestName(Entry.Product, AppInfo.GamePlatform));
 
 	private static bool IsHttp(string location) =>
 		location.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || location.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
@@ -114,7 +118,7 @@ public sealed class GameService
 		if (State is GameState.Working or GameState.Playing or GameState.Paused) return;
 		if (Latest == null) Set(GameState.Checking);
 
-		Manifest installed = await Task.Run(() => Installer.Installed(_settings.GameDir));
+		Manifest installed = await Task.Run(() => Installer.Installed(GameDir));
 		(Manifest latest, string problem) = await FetchLatest();
 		if (State is GameState.Working or GameState.Playing or GameState.Paused) return;
 
@@ -132,10 +136,10 @@ public sealed class GameService
 			Reply info = await _api.ClientInfo();
 			if (!info.Ok)
 				return (null, info.Status == 404
-					? "Este servidor ainda não diz de onde baixar o jogo."
-					: "Sem resposta do servidor: não deu para conferir se há versão nova.");
+					? Tr.T("svc.no_downloads_route")
+					: Tr.T("svc.no_reply"));
 			downloads = info.Body?["downloads"]?.GetValue<string>() ?? "";
-			if (downloads.Length == 0) return (null, "Os downloads ainda não foram configurados no servidor.");
+			if (downloads.Length == 0) return (null, Tr.T("svc.downloads_unset"));
 		}
 		Downloads = downloads.Trim();
 
@@ -149,7 +153,7 @@ public sealed class GameService
 				request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
 				using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
 				using HttpResponseMessage response = await Http.SendAsync(request, timeout.Token);
-				if ((int)response.StatusCode == 404) return (null, "Ainda não há versão publicada para este sistema.");
+				if ((int)response.StatusCode == 404) return (null, Tr.T("svc.not_published"));
 				response.EnsureSuccessStatusCode();
 				json = await response.Content.ReadAsStringAsync(timeout.Token);
 			}
@@ -162,7 +166,7 @@ public sealed class GameService
 		}
 		catch (Exception e) when (e is HttpRequestException or IOException or OperationCanceledException or UnauthorizedAccessException)
 		{
-			return (null, "Não deu para falar com o servidor de downloads. Confira a sua internet.");
+			return (null, Tr.T("svc.downloads_down"));
 		}
 	}
 
@@ -173,9 +177,9 @@ public sealed class GameService
 		FoundOldInstall = false;
 		if (Latest != null)
 		{
-			var installer = new Installer(_settings.GameDir, null);
+			var installer = new Installer(GameDir, null);
 			Estimate = installer.Estimate(Latest);
-			FoundOldInstall = Installed == null && Latest.Exe != "" && File.Exists(Manifest.OnDisk(_settings.GameDir, Latest.Exe));
+			FoundOldInstall = Installed == null && Latest.Exe != "" && File.Exists(Manifest.OnDisk(GameDir, Latest.Exe));
 		}
 
 		if (Installed == null) Set(Latest == null ? GameState.Unavailable : GameState.NotInstalled);
@@ -234,7 +238,7 @@ public sealed class GameService
 		try
 		{
 			IBlobSource source = BlobSources.For(target.Base, Http, ManifestLocation);
-			var installer = new Installer(_settings.GameDir, source);
+			var installer = new Installer(GameDir, source);
 			await Task.Run(() => installer.Apply(target, deep, progress, cancel), CancellationToken.None);
 			Installed = target;
 		}
@@ -249,9 +253,9 @@ public sealed class GameService
 		}
 		catch (Exception e) when (e is IOException or UnauthorizedAccessException or HttpRequestException or ManifestException)
 		{
-			Problem = "Não deu para terminar: " + e.Message;
+			Problem = Tr.F("svc.failed", e.Message);
 		}
-		Installed = await Task.Run(() => Installer.Installed(_settings.GameDir));
+		Installed = await Task.Run(() => Installer.Installed(GameDir));
 		string problem = Problem;
 		Decide();
 		// O Decide limpa o estado, não o recado do que acabou de falhar.
@@ -270,7 +274,7 @@ public sealed class GameService
 		Work = WorkKind.Uninstall;
 		Problem = "";
 		Set(GameState.Working);
-		string dir = _settings.GameDir;
+		string dir = GameDir;
 		await Task.Run(() => Installer.Uninstall(dir));
 		Installed = null;
 		Decide();
@@ -280,8 +284,7 @@ public sealed class GameService
 	public bool ChangeDir(string dir)
 	{
 		if (State is GameState.Working or GameState.Playing or GameState.Paused || string.IsNullOrWhiteSpace(dir)) return false;
-		_settings.GameDir = dir;
-		_settings.Save();
+		_settings.SetGameDir(Entry, dir);
 		Installed = Installer.Installed(dir);
 		Decide();
 		return true;
@@ -301,7 +304,7 @@ public sealed class GameService
 		_ui ??= SynchronizationContext.Current;
 		try
 		{
-			string exe = Manifest.OnDisk(_settings.GameDir, Installed.Exe);
+			string exe = Manifest.OnDisk(GameDir, Installed.Exe);
 			var start = new ProcessStartInfo(exe) { WorkingDirectory = Path.GetDirectoryName(exe), UseShellExecute = false };
 			if (account != null)
 			{
@@ -324,7 +327,7 @@ public sealed class GameService
 		}
 		catch (Exception e) when (e is System.ComponentModel.Win32Exception or IOException or InvalidOperationException or ManifestException)
 		{
-			Problem = "Não consegui abrir o jogo: " + e.Message + " Use Verificar e reparar.";
+			Problem = Tr.F("svc.open_failed", e.Message);
 			Changed?.Invoke();
 			return false;
 		}

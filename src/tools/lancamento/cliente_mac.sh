@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Monta o cliente de instalação para Mac: publica o programa, põe num .app
-# com o ícone do jogo, assina (ad hoc) e fecha num .dmg com o atalho para
+# com o ícone do launcher, assina (ad hoc) e fecha num .dmg com o atalho para
 # Aplicativos. Roda num Mac (precisa de codesign e hdiutil); o pipeline chama
 # uma vez por processador.
 #
 #   src/tools/lancamento/cliente_mac.sh VERSAO arm64|x64 [PASTA_DE_SAIDA]
 #
 # Sai em PASTA_DE_SAIDA (padrão build/lancador/mac-<arq>):
-#   WolfLeague.app                        o cliente (é o que o pacote de atualização leva)
+#   Initech Launcher.app                  o launcher (é o que o pacote de atualização leva)
 #   WolfLeague-Launcher-<versão>-mac-<arq>.dmg
 #
 # SERVIDOR_URL (opcional): o servidor com que o cliente fala; sem ela, o de
@@ -36,13 +36,13 @@ dotnet publish cliente/Alcateia.Cliente/Alcateia.Cliente.csproj -c Release -r "o
 	-p:PublishTrimmed=true -p:TrimMode=partial -p:DebugType=none \
 	-p:Version="$VERSAO" ${extra[@]+"${extra[@]}"} -o "$SAIDA/publicado" --nologo -v quiet
 
-APP="$SAIDA/WolfLeague.app"
+APP="$SAIDA/Initech Launcher.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$SAIDA/publicado/WolfLeagueLauncher" "$APP/Contents/MacOS/WolfLeagueLauncher"
 chmod +x "$APP/Contents/MacOS/WolfLeagueLauncher"
 
-# O ícone: a maior imagem de dentro do .ico do jogo, convertida para .icns.
-python3 - instalador/WolfLeague.ico "$SAIDA/icone.png" <<'PY'
+# O ícone: a maior imagem de dentro do .ico do launcher (não o do jogo: é outro programa), convertida para .icns.
+python3 - instalador/WolfLeagueLauncher.ico "$SAIDA/icone.png" <<'PY'
 import struct, sys
 dados = open(sys.argv[1], "rb").read()
 _, _, quantos = struct.unpack_from("<HHH", dados, 0)
@@ -65,8 +65,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleName</key><string>WolfLeague</string>
-	<key>CFBundleDisplayName</key><string>WolfLeague</string>
+	<key>CFBundleName</key><string>Initech Launcher</string>
+	<key>CFBundleDisplayName</key><string>Initech Launcher</string>
 	<key>CFBundleIdentifier</key><string>com.wolfleague.launcher</string>
 	<key>CFBundleExecutable</key><string>WolfLeagueLauncher</string>
 	<key>CFBundleIconFile</key><string>icone</string>
@@ -87,9 +87,9 @@ codesign --verify --deep --strict "$APP"
 
 rm -rf "$SAIDA/dmg"
 mkdir -p "$SAIDA/dmg"
-cp -R "$APP" "$SAIDA/dmg/WolfLeague.app"
+cp -R "$APP" "$SAIDA/dmg/Initech Launcher.app"
 ln -s /Applications "$SAIDA/dmg/Applications"
 DMG="$SAIDA/WolfLeague-Launcher-$VERSAO-mac-$ARQ.dmg"
-hdiutil create -volname "WolfLeague" -srcfolder "$SAIDA/dmg" -ov -format UDZO "$DMG" >/dev/null
+hdiutil create -volname "Initech Launcher" -srcfolder "$SAIDA/dmg" -ov -format UDZO "$DMG" >/dev/null
 rm -rf "$SAIDA/dmg" "$SAIDA/publicado" "$SAIDA/icone.png"
 ls -la "$SAIDA"

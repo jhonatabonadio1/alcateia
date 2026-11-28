@@ -37,8 +37,8 @@ public sealed class TwoFactorViewModel : Observable
 
 	public bool IsEnable { get; }
 	public bool IsDisable => !IsEnable;
-	public string Title => IsEnable ? "Ligar a verificação em duas etapas" : "Desligar a verificação em duas etapas";
-	public string ConfirmText => Busy ? "AGUARDE…" : IsEnable ? "LIGAR" : "DESLIGAR";
+	public string Title => Tr.T(IsEnable ? "2fa.title_on" : "2fa.title_off");
+	public string ConfirmText => Tr.T(Busy ? "common.wait" : IsEnable ? "2fa.turn_on" : "2fa.turn_off");
 
 	/// <summary>O QR code da chave, e a chave em grupos de quatro letras.</summary>
 	public Geometry Qr { get => _qr; private set { Set(ref _qr, value); Raise(nameof(HasQr)); } }
@@ -77,7 +77,7 @@ public sealed class TwoFactorViewModel : Observable
 	private async Task Start()
 	{
 		Loading = true;
-		Say("Pedindo a chave ao servidor…", false);
+		Say(Tr.T("2fa.asking"), false);
 		Reply reply = await _main.Api.TwoFactorStart(_main.Account.Token);
 		Loading = false;
 		if (!reply.Ok)
@@ -116,7 +116,7 @@ public sealed class TwoFactorViewModel : Observable
 	{
 		if (_main.CopyText == null || _rawSecret.Length == 0) return;
 		await _main.CopyText(_rawSecret);
-		Say("Chave copiada.", false);
+		Say(Tr.T("2fa.copied"), false);
 	}
 
 	private async Task Submit()
@@ -124,12 +124,12 @@ public sealed class TwoFactorViewModel : Observable
 		string code = (Code ?? "").Replace(" ", "");
 		if (code.Length != 6)
 		{
-			Say("O código tem 6 dígitos: é o que o aplicativo autenticador mostra agora.", true);
+			Say(Tr.T("2fa.code_digits"), true);
 			return;
 		}
 		if (IsDisable && string.IsNullOrEmpty(Password))
 		{
-			Say("Digite a senha da conta.", true);
+			Say(Tr.T("2fa.need_password"), true);
 			return;
 		}
 

@@ -28,8 +28,13 @@ public partial class CharacterAnimator
 
 	/// <summary>Quanto o agachado desce além do clipe, em metros (Jhon, 27/11: "o agachar do humano deve ser
 	/// um pouco mais baixo, primeira e terceira pessoa"): o quadril desce isto e as pernas dobram mais, com o pé
-	/// no mesmo lugar. A câmera da 1ª pessoa fica nos olhos desse corpo (Player.TuneHumanEye), então desce junto.</summary>
-	[Export] public float CrouchSink = 0.08f;
+	/// no mesmo lugar. A câmera da 1ª pessoa fica nos olhos desse corpo (Player.TuneHumanEye), então desce junto.
+	/// 0,16 desde o fim de 27/11 (era 0,08; Jhon: "o agachar deve agachar mais, primeira e 3 pessoa, sem ficar
+	/// torto no 3 pessoa, cabeça sempre alinhada com o primeira pessoa"): só o quadril desce e as pernas dobram —
+	/// o tronco e a cabeça seguem a arma na mão como em pé, retos —, e os olhos ficam a ~118 cm (eram ~126). Vale
+	/// para o andar agachado; o parado tem a base tática por cima (CrouchStance, 28/11), com o quadril 4 cm mais
+	/// alto e os olhos a ~120 cm.</summary>
+	[Export] public float CrouchSink = 0.16f;
 
 	/// <summary>
 	/// Locomoção num espaço de mistura 2D, e o resto como estados.
@@ -43,6 +48,7 @@ public partial class CharacterAnimator
 		// A corrida do Shift fica no raio 3, para a frente (só para quem
 		// corre: CharacterAnimator.TowardSprint).
 		_hasSprint = _player.HasAnimation("alcateia/sprint_fwd");
+		_sprintLength = _hasSprint ? (float)_player.GetAnimation("alcateia/sprint_fwd").Length : 0f;
 		var locomotion = new AnimationNodeBlendSpace2D
 		{
 			MinSpace = new Vector2(-2.2f, -2.2f),
@@ -116,6 +122,8 @@ public partial class CharacterAnimator
 
 		_tree.AnimPlayer = _tree.GetPathTo(_player);
 		_tree.Active = true;
+		// Agachado, o corpo sobe o que a bota entrar no chão, medido na pose deste quadro (CrouchLift).
+		_tree.MixerApplied += LiftOffFloor;
 
 		_playback = (AnimationNodeStateMachinePlayback)
 			_tree.Get("parameters/Machine/playback");
@@ -282,6 +290,9 @@ public partial class CharacterAnimator
 
 	/// <summary>O clipe de correr (Shift) existe e está na mistura.</summary>
 	private bool _hasSprint;
+
+	/// <summary>A duração do clipe de correr a 1× (s): um ciclo, dois passos.</summary>
+	private float _sprintLength;
 
 	/// <summary>O estado "Fall" foi montado (o clipe existe).</summary>
 	private bool _hasFall;

@@ -154,7 +154,7 @@ pelo painel (decisão 0013).
 ### 2.2 A cápsula
 
 Raio 0,3 m e altura 1,75 m, no `player.tscn` e no `bot.tscn`.
-`StandHeight` 1,75 no `Player`. Agachado: `HumanCrouchHeight` 1,5 m e
+`StandHeight` 1,75 no `Player`. Agachado: `HumanCrouchHeight` 1,36 m e
 `CrouchHeight` (lobo) 1,0 m. Muito código conta com 1,75 m: o nó `Human`
 a −0,875, a altura dos pés no `Weapon.HeightAboveGround` (0,85), o raio do
 salto (`PounceBodyRadius` 0,36 = 0,3 + folga), o `PounceStandOff` 0,7, o
@@ -245,10 +245,10 @@ arma leve). De lobo não há Shift.
 
 ### 3.5 Agachar e olho
 
-`HumanCrouchHeight` 1,5 m e `CrouchLerpSpeed` 22. O olho
-(`HumanEyeHeight` 1,592 e `HumanCrouchEyeHeight` 1,4 de fábrica) **não é
+`HumanCrouchHeight` 1,36 m e `CrouchLerpSpeed` 22. O olho
+(`HumanEyeHeight` 1,592 e `HumanCrouchEyeHeight` 1,197 de fábrica) **não é
 botão**: o `CharacterAnimator` o leva, a `EyeTuneSpeed` 0,4 m/s, até o
-olho do corpo desenhado (~159 cm em pé, ~134 cm agachado). Os de fábrica
+olho do corpo desenhado (~159 cm em pé, ~120 cm agachado; quão fundo o corpo agacha é o `CharacterAnimator.CrouchSink`, 0,16 m, e a postura do parado é a base tática, `CrouchFront`/`CrouchRear`/`CrouchWidth`/`CrouchHipsRaise`/`CrouchRearHeel`, com a cintura em `CrouchLean` e o corpo `CrouchBack` para trás: mexeu num desses, confira os olhos e a cápsula agachada, uns 16 cm acima do olho, no `OlhoNoCorpoEve`/`Barut` e no `PeNoChaoEve`/`Barut`). Os de fábrica
 valem para o corpo sem modelo (servidor de partida). Testes:
 `OlhoNoCorpoEve`, `OlhoNoCorpoBarut`, `PeNoChaoEve`, `PeNoChaoBarut`,
 `AgachadoMira`.
@@ -565,25 +565,37 @@ granada não passam por ele. O servidor usa a mesma constante.
 
 | Peça | Onde | O que faz |
 |---|---|---|
-| Recuo por tiro | `.tres` da arma | `RecoilVertical` nos primeiros `RecoilEarlyShots` tiros, `RecoilVerticalLate` depois (graus, a mira sobe). `RecoilHorizontal`: o lado, alternando direita e esquerda (decorável); depois de `RecoilHorizontalAfter` tiros (só a AK, 6), sorteado entre ± `RecoilHorizontalLate` (0,7) |
-| Volta | `.tres`: `RecoilRecovery` | Graus por segundo que a mira desce sozinha depois de parar de atirar. O lateral não volta: é ele que o jogador aprende a compensar |
+| Recuo por tiro | `.tres` da arma | `RecoilVertical` nos primeiros `RecoilEarlyShots` tiros, `RecoilVerticalLate` depois (graus, a mira sobe). `RecoilHorizontal`: o lado dos primeiros tiros, alternando esquerda e direita, pequeno. Do tiro `RecoilHorizontalAfter` em diante, o **desvio em padrão fixo** (27/11, como o spray do Counter-Strike; até então a AK sorteava): `RecoilHorizontalLate` graus por tiro, `RecoilSwayShots` tiros para um lado e os mesmos para o outro, começando por `RecoilSwayFirst` (1 direita, −1 esquerda) com meia perna — oscila em volta do centro, igual em toda rajada. Fuzis automáticos: AR-15 0,25 do 6º, à direita; M4A4 0,2 do 7º, à esquerda; AK 0,7 do 6º, à direita; SCAR 0,35 do 5º, à esquerda (4 tiros por perna). SVD e Desert Eagle: só o alternado |
+| Volta | `.tres`: `RecoilRecovery`; `Player.RecoilReturnExp` | A mira desce sozinha depois de parar de atirar: `RecoilRecovery` graus por segundo mais `RecoilReturnExp` (4) por segundo do que falta (27/11, como o "decay" do CS: o grosso volta logo). O teto de 4,5° volta em ~0,3 s na M4A4 e ~0,36 s no AK (eram 0,6 e 0,82 s). O lateral não volta: é ele que o jogador aprende a compensar |
 | Mirando | `.tres`: `AimRecoilMultiplier` | O que sobra do recuo com o zoom (só a SCAR: 0,35) |
 | Global | nó `Player` (`Player.Camera.cs`) | `RecoilScale` 1 (multiplica o recuo e a volta de toda arma), `RecoilMax` 4,5° (teto do vertical acumulado), `RecoilReturnDelay` 0,12 s (sem atirar por isso, a mira começa a descer) |
 | A rajada | `Weapon.cs` (código) | A contagem de tiros seguidos zera com 0,3 s sem atirar (e ao trocar de arma) |
-| A conta | `CombatRules.RecoilVertical` | Primeiros tiros ou fase de controle |
+| A conta | `CombatRules.RecoilVertical`, `RecoilYaw`, `RecoilReturn` | Primeiros tiros ou fase de controle; o lado de cada tiro; quanto volta por passo |
 
 **O teto manda mais que o recuo por tiro.** O AR-15 sobe 1° nos quatro
 primeiros (4°) e bate nos 4,5° no quinto; a AK (1,8°) bate no terceiro.
-Daí em diante a mira não sobe mais, a não ser que o jogador puxe o mouse
-para baixo: puxar desconta do acumulado, e cada tiro volta a subir o
-`RecoilVerticalLate`. Como as automáticas atiram mais rápido que os 0,12 s
-do `RecoilReturnDelay`, a mira não volta durante o spray.
+Daí em diante a mira não sobe mais e o spray vai para os lados (o desvio
+em padrão fixo). O tiro no teto também conta como tiro para a volta (até
+27/11 não contava: a mira subia e descia no alto do spray da M4A4), então
+com o dedo no gatilho a mira não volta; só a SCAR (um tiro a cada 10
+quadros, 0,167 s) passa dos 0,12 s do `RecoilReturnDelay` e desce um pouco
+entre um tiro e outro.
 
 **O coice da arma na tela não é código.** Os braços de primeira pessoa
 de todas as armas são "fiéis" (`"fiel": true` em
 `src/assets/armas/fp/bracos.json`): o coice que se vê é o da animação de
 atirar. Os `ViewModel.Kick` (0,055 m) e `KickPitch` (3,2°) só valeriam
 para uma arma sem conjunto fiel, e hoje não há nenhuma.
+
+**O coice dos braços no ritmo do tiro** (27/11, Jhon: "a animação de
+atirar da arma precisa ser um pouco mais sincronizada com os tiros, ak
+está boa"). Cada tiro recomeça o clipe `tiro` (`ViewModel.PlayRig`: o
+Godot não recomeça o mesmo clipe que ainda toca, e na rajada o coice saía a
+cada dois ou três tiros); o clipe começa `ShotPeakLead` (0,033 s, o do AK)
+antes do pico do coice dele (a Desert Eagle chegava ao pico 0,10 s depois do
+começo, o AR-15 0,067 s); e toca na razão volta ÷ intervalo
+(`ShotSeconds`), a arma de volta no tiro seguinte. Clipe novo de tiro não
+pede número: a regra lê o osso `ik_hand_gun` do clipe.
 
 O bot não tem recuo: quem erra por ele é o nível de dificuldade (seção 13).
 
@@ -592,7 +604,13 @@ O bot não tem recuo: quem erra por ele é o nível de dificuldade (seção 13).
 Meio-ângulo do cone, em graus: (`SpreadBase` + acumulado) ×
 `MoveSpreadMultiplier` (andando acima de `CombatRules.MovingSpreadSpeed`,
 0,6 m/s) × `CrouchSpreadMultiplier` (agachado) × `AimSpreadMultiplier`
-(mirando). Cada tiro soma `SpreadPerShot` ao acumulado, até `SpreadMax`;
+(mirando), **mais** `MoveSpread` andando e `AirSpread` no ar (27/11,
+`CombatRules.MovementSpread`; fora do chão por mais de
+`Weapon.AirSpreadGrace`, 0,1 s): estes não fecham na mira nem agachado —
+no CS, mirar não conserta o tiro de quem anda ou pula, e o multiplicador
+sozinho quase não pesava na arma precisa (a SVD escopada andando acertava
+como parada). O servidor aceita até `WeaponDefinition.WorstSpread` (o teto
+andando mais os dois). Cada tiro soma `SpreadPerShot` ao acumulado, até `SpreadMax`;
 sem atirar por `SpreadDelay` (0,12 s de padrão; 0,05 no AR-15, M4A4 e
 versões), o acumulado desce `SpreadRecovery` graus por segundo. O
 primeiro tiro parado sai sempre com a `SpreadBase`. O servidor soma a
@@ -625,7 +643,10 @@ As facas da loja multiplicam estes números: `Arsenal.KnifeStats`
 ### 9.2 Coronhada (V, `Weapon.Butt.cs`)
 
 `ButtDamage` 10, `ButtRange` 1,9 m, `ButtCooldown` 0,4 s, `ButtHitDelay`
-0,075 s. Não gasta munição e não tem cabeça. O V com a faca é o golpe da
+0,075 s. O golpe é um leque de raios (28/11): ±`ButtFanYaw` 20° e até
+`ButtFanDown` 30° abaixo da mira, em `ButtFanSteps` 2 passos (15 raios); leva o
+inimigo mais perto, e parede segura cada raio — pega quem está agachado e um
+pouco de lado. Não gasta munição e não tem cabeça. O V com a faca é o golpe da
 faca; com a granada, arremessa. O teste `Coronhada` confere que a 4 m não
 alcança.
 
@@ -721,7 +742,7 @@ Mudar estes números faz o pé patinar sem ninguém notar na hora.
 |---|---|---|---|
 | `RunClipRate` | nó `Human` | 0,88 | O ritmo da corrida do humano × o do arquivo. **Nunca acima de 1** (regra 9) |
 | `SprintPaceMax` | nó `Human` | 1,6 | Até quanto o clipe do Shift acelera |
-| `BlendSmoothing` / `SprintBlendSmoothing` | nó `Human` | 9 / 16 | Quão rápido o corpo muda de pose |
+| `BlendSmoothing` / `SprintBlendSmoothing` | nó `Human` | 9 / 24 | Quão rápido o corpo muda de pose |
 | `CrouchWalkSpeed` | nó `Human` | 0,6 m/s | A partir disto o agachado toca o clipe de andar inteiro |
 | `WalkAnimScale`, `SprintAnimScale`, `WallAnimScale` | nó `WolfVisual` | 1 | Quanto a animação do lobo corre em relação ao corpo (só a animação) |
 | `WalkSpeed` / `RunSpeed` | nó `WolfVisual` | 2,0 / 2,6 m/s | Onde o lobo troca de andar para correr |

@@ -15,7 +15,7 @@ namespace Alcateia.Cliente;
 ///
 ///   WolfLeagueLauncher                  abre a janela
 ///   WolfLeagueLauncher --minimizado     abre na bandeja (é como sobe com o Windows)
-///   WolfLeagueLauncher --desinstalar-jogo   apaga o jogo instalado e sai, sem janela
+///   WolfLeagueLauncher --desinstalar-jogo   apaga os jogos instalados e sai, sem janela
 ///                                       (o desinstalador do cliente chama antes de se apagar)
 ///
 /// Um cliente por vez: aberto de novo, o segundo só pede ao primeiro que
@@ -36,7 +36,9 @@ public static class Program
 	{
 		if (args.Contains("--desinstalar-jogo"))
 		{
-			Installer.Uninstall(Settings.Load().GameDir);
+			// Todos os jogos da biblioteca, cada um na sua pasta.
+			Settings settings = Settings.Load();
+			foreach (GameEntry game in Games.All) Installer.Uninstall(settings.GameDir(game));
 			return 0;
 		}
 

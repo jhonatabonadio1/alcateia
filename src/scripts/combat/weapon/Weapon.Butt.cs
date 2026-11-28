@@ -1,4 +1,5 @@
 using Godot;
+using System.Collections.Generic;
 
 /// <summary>
 /// O corpo a corpo da tecla V (<see cref="TryMelee"/>) e a coronhada.
@@ -21,6 +22,21 @@ public partial class Weapon
 	[Export] public float ButtRange = 1.9f;
 	[Export] public float ButtCooldown = 0.4f;
 	[Export] public float ButtHitDelay = 0.075f;
+
+	/// <summary>
+	/// O golpe é um leque, não um raio (Jhon, 28/11: "a coronhada não está
+	/// pegando"): um raio só, do olho para a frente, passava por cima de
+	/// quem estava agachado (a cabeça dele fica ~40 cm abaixo do olho de quem
+	/// bate) e errava quem estava um palmo de lado a 1,6 m. Como o corpo a
+	/// corpo dos FPS (o CS varre um volume), o golpe procura em
+	/// <see cref="ButtFanYaw"/> graus para cada lado e até
+	/// <see cref="ButtFanDown"/> abaixo da mira, em <see cref="ButtFanSteps"/>
+	/// passos de cada lado e para baixo; leva o inimigo mais perto que algum
+	/// raio encostar. Parede no caminho de um raio para ele.
+	/// </summary>
+	[Export] public float ButtFanYaw = 20f;
+	[Export] public float ButtFanDown = 30f;
+	[Export] public int ButtFanSteps = 2;
 
 	/// <summary>A coronhada começou (a arma na mão anima, o som sai).</summary>
 	[Signal] public delegate void ButtedEventHandler();
@@ -102,8 +118,32 @@ public partial class Weapon
 		if (_health.IsDead || _form.IsWolf) return;
 
 		Vector3 from = _head.GlobalPosition;
-		Vector3 to = from - _head.GlobalTransform.Basis.Z * ButtRange;
-		Health hit = Trace(from, to, Targets(), false, out _, out _, out _);
+		Health hit = ButtFan(from);
 		if (hit != null) Damage(hit, ButtDamage, from, false);
+	}
+
+	/// <summary>O inimigo mais perto que o leque da coronhada encosta (ou null).</summary>
+	private Health ButtFan(Vector3 from)
+	{
+		Basis aim = _head.GlobalTransform.Basis;
+		List<Target> targets = Targets();
+		int steps = Mathf.Max(ButtFanSteps, 0);
+		Health best = null;
+		float bestAt = float.MaxValue;
+		for (int down = 0; down <= steps; down++)
+			for (int side = -steps; side <= steps; side++)
+			{
+				float pitch = steps == 0 ? 0f : -ButtFanDown * down / steps;
+				float yaw = steps == 0 ? 0f : ButtFanYaw * side / steps;
+				Vector3 forward = (-aim.Z).Rotated(aim.Y.Normalized(), Mathf.DegToRad(yaw));
+				forward = forward.Rotated(aim.X.Normalized(), Mathf.DegToRad(pitch)).Normalized();
+				Health hit = Trace(from, from + forward * ButtRange, targets, false, out Vector3 impact, out _, out _);
+				if (hit == null) continue;
+				float at = from.DistanceTo(impact);
+				if (at >= bestAt) continue;
+				best = hit;
+				bestAt = at;
+			}
+		return best;
 	}
 }

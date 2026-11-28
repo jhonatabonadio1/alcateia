@@ -16,10 +16,10 @@ namespace Alcateia.Cliente.Core;
 /// </summary>
 public static class AppInfo
 {
-	public const string Name = "WolfLeague";
-
-	/// <summary>O produto que este cliente instala (o nome nos manifestos).</summary>
-	public const string Product = "wolfleague";
+	/// <summary>O nome do programa (Jhon, 27/11: "ele é iniciado da initech games, o initech
+	/// launcher"). Os jogos que ele instala estão em <see cref="Games"/>.</summary>
+	public const string Name = "Initech Launcher";
+	public const string Studio = "Initech Games";
 
 	public static readonly string Version =
 		typeof(AppInfo).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0-dev";
@@ -44,29 +44,86 @@ public static class AppInfo
 	public static string LauncherPlatform => IsWindows ? "windows"
 		: IsMac ? (RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "mac-arm64" : "mac-x64") : "linux";
 
-	/// <summary>Onde o cliente guarda os ajustes e as contas salvas. Não é a
-	/// pasta do jogo (o Godot usa "WolfLeague" na mesma raiz).</summary>
+	private static string Roaming => Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+	/// <summary>A pasta de dados de antes de 27/11, quando o cliente era só do WolfLeague.</summary>
+	private static string OldDataDir => Path.Combine(Roaming, "WolfLeagueLauncher");
+
+	private static string _dataDir;
+
+	/// <summary>A pasta de dados de teste (<c>WOLFLEAGUE_LAUNCHER_DADOS</c>, a das fotos
+	/// das telas): com ela, os jogos também ficam lá dentro, longe das pastas de verdade.</summary>
+	private static string TestDataDir => string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WOLFLEAGUE_LAUNCHER_DADOS"))
+		? null : Environment.GetEnvironmentVariable("WOLFLEAGUE_LAUNCHER_DADOS");
+
+	/// <summary>
+	/// Onde o cliente guarda os ajustes e as contas salvas (e, fora do
+	/// Windows, os jogos, em <c>game/</c>). Não é a pasta de dados de um jogo
+	/// (o Godot usa "WolfLeague" na mesma raiz). A de antes de 27/11
+	/// (WolfLeagueLauncher) é renomeada na primeira vez: as contas lembradas e o
+	/// jogo baixado vão junto. Sem conseguir (o Windows não renomeia pasta com
+	/// arquivo aberto), segue usando a de antes.
+	/// </summary>
 	public static string DataDir
 	{
 		get
 		{
+			if (_dataDir != null) return _dataDir;
 			string dir = Environment.GetEnvironmentVariable("WOLFLEAGUE_LAUNCHER_DADOS");
 			if (string.IsNullOrEmpty(dir))
-				dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WolfLeagueLauncher");
+			{
+				dir = Path.Combine(Roaming, "InitechLauncher");
+				if (Directory.Exists(OldDataDir) && !File.Exists(Path.Combine(dir, "settings.json")))
+				{
+					try
+					{
+						if (!Directory.Exists(dir)) Directory.Move(OldDataDir, dir);
+						else
+						{
+							// A nova já existe sem ajustes (criada por outra coisa): traz o
+							// que há na velha para dentro dela, o que ainda não estiver lá.
+							foreach (string entry in Directory.EnumerateFileSystemEntries(OldDataDir))
+							{
+								string to = Path.Combine(dir, Path.GetFileName(entry));
+								if (File.Exists(to) || Directory.Exists(to)) continue;
+								if (Directory.Exists(entry)) Directory.Move(entry, to);
+								else File.Move(entry, to);
+							}
+							if (!Directory.EnumerateFileSystemEntries(OldDataDir).GetEnumerator().MoveNext()) Directory.Delete(OldDataDir);
+						}
+					}
+					catch (Exception e) when (e is IOException or UnauthorizedAccessException) { dir = OldDataDir; }
+				}
+			}
 			Directory.CreateDirectory(dir);
-			return dir;
+			return _dataDir = dir;
 		}
 	}
 
 	/// <summary>
-	/// Onde o jogo vai, se o jogador não escolher outra pasta. No Windows é a
-	/// mesma do instalador de antes (%LOCALAPPDATA%\Programs\WolfLeague):
-	/// quem já tinha o jogo instalado por ele não baixa tudo de novo — o
-	/// cliente aproveita o que está lá e baixa só a diferença.
+	/// A pasta onde os jogos ficam, cada um na sua (<see cref="GameEntry.Folder"/>):
+	/// <c>game/WolfLeague</c> (Jhon, 27/11: "deve salvar o jogo em game"). No
+	/// Windows ao lado do launcher, fora do %APPDATA% (que acompanha o perfil
+	/// do Windows e não é lugar de 1 GB); no Mac e no Linux na pasta de dados.
 	/// </summary>
-	public static string DefaultGameDir => IsWindows
-		? OldInstallDir() ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "WolfLeague")
-		: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WolfLeagueLauncher", "Jogo");
+	public static string GamesRoot => TestDataDir != null ? Path.Combine(TestDataDir, "game")
+		: IsWindows
+		? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", Name, "game")
+		: Path.Combine(Roaming, "InitechLauncher", "game");
+
+	/// <summary>Onde um jogo vai, se o jogador não escolher outra pasta. Quem
+	/// tinha o WolfLeague pelo instalador de antes (windows.nsi) não baixa tudo
+	/// de novo: o launcher usa a pasta dele e baixa só a diferença.</summary>
+	public static string DefaultGameDir(GameEntry game) =>
+		(game.Id == Games.WolfLeague.Id ? OldInstallDir() : null) ?? Path.Combine(GamesRoot, game.Folder);
+
+	/// <summary>As pastas padrão de antes, fora do Windows, de onde o jogo
+	/// baixado é trazido para a de agora (<see cref="Settings"/>): ".../Jogo"
+	/// do cliente 0.4, na pasta de dados velha ou já na renomeada. No Windows a
+	/// de antes era a do instalador antigo e fica onde está.</summary>
+	public static string[] OldDefaultGameDirs(GameEntry game) => IsWindows || game.Id != Games.WolfLeague.Id
+		? Array.Empty<string>()
+		: new[] { Path.Combine(OldDataDir, "Jogo"), Path.Combine(Roaming, "InitechLauncher", "Jogo") };
 
 	/// <summary>Onde o instalador de antes pôs o jogo, se o jogador escolheu
 	/// outra pasta (ele a guarda em HKCU\Software\WolfLeague\InstallPath).</summary>
@@ -92,7 +149,7 @@ public static class AppInfo
 		{
 			string dir = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
 			if (!IsMac) return dir;
-			// …/WolfLeague Launcher.app/Contents/MacOS
+			// …/Initech Launcher.app/Contents/MacOS
 			string contents = Path.GetDirectoryName(dir);
 			string bundle = contents == null ? null : Path.GetDirectoryName(contents);
 			return bundle != null && bundle.EndsWith(".app", StringComparison.OrdinalIgnoreCase) && Path.GetFileName(contents) == "Contents" ? bundle : null;

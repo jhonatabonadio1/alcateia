@@ -94,8 +94,9 @@ hora: a loja do jogo mostra o que veio do servidor e é ele que cobra
 (`POST /v1/shop/buy`). **Moeda, item ou nível mudado pelo painel chega
 ao jogo na hora** (27/11): o servidor manda o aviso `conta` pela
 ligação do saguão (`LobbyService.AccountChanged`), que fica aberta até
-no meio da partida, e o jogo relê a conta (`AccountSync.Refresh`).
-Durante a partida nada aparece na tela; a comemoração de nível novo é
+no meio da partida, e o jogo relê a conta (`AccountSync.Refresh`). O
+saguão relê o XP junto: a sala em que a conta está manda o estado novo
+para todos nela, e os amigos e o grupo veem a patente nova. Durante a partida nada aparece na tela; a comemoração de nível novo é
 do saguão e espera a volta. Um salto de mais de 10 níveis comemora só o
 último nível marcante dele (`Profile.BigJump`). Jogador desligado vê
 tudo ao entrar (decisão 0015).

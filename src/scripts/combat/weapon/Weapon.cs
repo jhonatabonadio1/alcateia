@@ -289,6 +289,7 @@ public partial class Weapon : Node3D
 		if (_sinceShot > 0.3) _streak = 0;
 
 		bool onFloor = _body.IsOnFloor();
+		_airTime = onFloor ? 0 : _airTime + delta;
 		if (_wasOnFloor && !onFloor)
 			_fallStartY = _body.GlobalPosition.Y;
 		_wasOnFloor = onFloor;

@@ -888,8 +888,25 @@ public partial class HeldWeapon : Node3D
 		}
 
 		ChestAsBaked(fade);
+		LeanIntoCrouch();
 		LeanIntoRun();
 		PitchChest();
+	}
+
+	/// <summary>Agachado, a cintura inclina para a frente (<see cref="CharacterAnimator.CrouchLean"/>; Jhon,
+	/// 28/11: "eu inclinaria um pouco mais o tronco para frente"): Spine e Spine1 dobram e Spine2 volta o
+	/// mesmo tanto — o peito, a arma presa nele e a cabeça seguem retos ("fuzil precisa ficar reto").</summary>
+	private void LeanIntoCrouch()
+	{
+		float lean = GetParent() is CharacterAnimator animator ? animator.CrouchLeanNow : 0f;
+		if (Mathf.IsZeroApprox(lean) || _spines.Count < 2) return;
+		Basis body = _skeleton.GlobalBasis.Orthonormalized();
+		Vector3 side = _body.GlobalBasis.X.Normalized();
+		int chest = _spines.Count - 1;
+		// Em volta do lado do corpo, o ângulo negativo leva o alto para a frente.
+		var part = new Quaternion(side, -Mathf.DegToRad(lean) / chest);
+		for (int i = 0; i < chest; i++) TurnBone(_spines[i], part, body);
+		TurnBone(_spines[chest], new Quaternion(side, Mathf.DegToRad(lean)), body);
 	}
 
 	/// <summary>Correndo, o tronco inclina mais um pouco para a frente (<see cref="SprintLean"/>).</summary>

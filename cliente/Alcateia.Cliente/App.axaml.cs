@@ -1,4 +1,5 @@
 using System;
+using Alcateia.Cliente.Core;
 using Alcateia.Cliente.ViewModels;
 using Alcateia.Cliente.Views;
 using Avalonia;
@@ -58,9 +59,9 @@ public partial class App : Application
 	{
 		try
 		{
-			var open = new NativeMenuItem("Abrir o WolfLeague");
+			var open = new NativeMenuItem(Tr.F("tray.open", AppInfo.Name));
 			open.Click += (_, _) => ShowWindow();
-			var quit = new NativeMenuItem("Sair");
+			var quit = new NativeMenuItem(Tr.T("tray.quit"));
 			quit.Click += (_, _) => Quit(desktop);
 			var menu = new NativeMenu();
 			menu.Items.Add(open);
@@ -70,7 +71,7 @@ public partial class App : Application
 			var tray = new TrayIcon
 			{
 				Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://WolfLeagueLauncher/Assets/icone.ico"))),
-				ToolTipText = "WolfLeague",
+				ToolTipText = AppInfo.Name,
 				Menu = menu
 			};
 			tray.Clicked += (_, _) => ShowWindow();

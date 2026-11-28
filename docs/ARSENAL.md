@@ -22,7 +22,7 @@ primeira pessoa de cada arma saem de `src/tools/armas/reais.py`,
 | Vida do humano | 100 HP na conta deste documento, sem armadura. No jogo são 200, e o dano das armas de fogo é multiplicado por `CombatRules.FirearmDamageScale`. Era 2 (tiros para matar e TTK iguais aos do documento); **desde 25/11 é 1,38** (Jhon: "as armas estão muito apelonas"): no jogo, a conta das fichas abaixo vale como se a vida fosse 145 neste documento. Os tiros para matar de agora estão na tabela "No jogo, desde 25/11", logo abaixo |
 | Vida do lobo | a mesma do humano, mais o escudo da classe (`docs/AJUSTES.md`, seção 2) |
 | Dispersão | graus de meio-ângulo do cone |
-| Recoil | graus por tiro, aplicados à rotação da câmera |
+| Recoil | graus por tiro, aplicados à rotação da câmera (a bala sai onde a cruz está; o lado tem padrão fixo por arma, como o spray do Counter-Strike — `docs/CALIBRAGEM.md`, seção 8) |
 | Intervalo entre tiros | `60 / RPM` |
 | Falloff | dano cheio até a 1ª distância, decaindo linearmente até a 2ª |
 | Ruído | raio do evento de audição emitido para a IA |
@@ -82,17 +82,19 @@ Tiros para matar        4 corpo / 2 cabeça
 TTK                     0.26s
 
 Reload tática           2.30s
-Reload vazia            2.90s
+Reload vazia            2.30s       (2.90 até 27/11: o mesmo clipe, esticado)
 Draw / Holster          0.50s / 0.50s
 
 Dispersão base          0.16°
 Dispersão por tiro      +0.09°      Máxima 1.9°
 Recuperação             12.0°/s     (inicia 0.05s após o último tiro)
 Mult. movimento         1.6×        Mult. agachado 0.7×
+Andando / no ar         +0.30° / +3.5°  (somados; não fecham na mira)
 Na mira (zoom)          dispersão ×0.15
 
 Recoil vertical         0.85° tiros 1-4, depois 0.55°
-Recoil horizontal       ±0.14°
+Recoil horizontal       ±0.14° alternado; do 7º tiro, 0.20° por tiro em
+                        padrão fixo, 4 para cada lado, começando à esquerda
 Recuperação de recoil   7.5°/s
 
 Falloff                 100% até 30m → 70% a 55m
@@ -103,7 +105,7 @@ Modos de tiro           automático
 Estrelas: Dano 2.0 · Pen 2.5 · Precisão 3.5 · Cadência 3.5 · Mob 2.5 · Recuo 3.0 · Alcance 2.5
 
 Skins: **M4A4 Neon** (épica, 350 WP: 742 RPM, pente 32) e **M4A4 Dragão**
-(lendária, 500 WP: dano 29, pente 36, recarga mais rápida).
+(lendária, 500 WP: dano 29, pente 36).
 
 ## AR-15 — a referência (padrão de 15/11 a 19/11)
 *Preciso no tiro a tiro, previsível na rajada. Não é o melhor em nada e
@@ -124,17 +126,19 @@ Tiros para matar        4 corpo / 2 cabeça
 TTK                     0.28s
 
 Reload tática           2.30s
-Reload vazia            2.90s
+Reload vazia            2.30s       (2.90 até 27/11: o mesmo clipe, esticado)
 Draw / Holster          0.50s / 0.50s
 
 Dispersão base          0.15°
 Dispersão por tiro      +0.09°       Máxima 1.8°
 Recuperação             12.0°/s      (inicia 0.05s após o último tiro)
 Mult. movimento         1.6×         Mult. agachado 0.7×
+Andando / no ar         +0.30° / +3.5°   (somados; não fecham na mira)
 Na mira (zoom)          dispersão ×0.2
 
 Recoil vertical         1.00° tiros 1-4, depois 0.55°
-Recoil horizontal       ±0.18° alternado
+Recoil horizontal       ±0.18° alternado; do 6º tiro, 0.25° por tiro em
+                        padrão fixo, 4 para cada lado, começando à direita
 Recuperação de recoil   7.0°/s
 
 Falloff                 100% até 35m → 70% a 60m
@@ -170,7 +174,7 @@ Tiros para matar        4 corpo / 2 cabeça
 TTK                     0.26s       (o AR-15: 0.28s)
 
 Reload tática           2.30s       (a animação do AR-15)
-Reload vazia            2.90s
+Reload vazia            2.30s       (2.90 até 27/11: o mesmo clipe, esticado)
 Draw / Holster          0.50s / 0.50s
 
 Dispersão base          0.13°
@@ -227,18 +231,21 @@ Tiros para matar        3 corpo / 1 cabeça
 TTK                     0.24s        ← o melhor do arsenal
 
 Reload tática           2.50s
-Reload vazia            3.30s
+Reload vazia            2.50s        (3.30 até 27/11: o mesmo clipe, esticado)
 Draw / Holster          0.55s / 0.50s
 
-Dispersão base          0.45°
+Dispersão base          0.32°        (0.45° até 27/11: o primeiro tiro do CS)
 Dispersão por tiro      +0.40°       Máxima 6.5°
 Recuperação             7.0°/s
 Mult. movimento         3.0×         ← pune andar e atirar
+Andando / no ar         +0.40° / +4.0°  (somados; não fecham na mira)
 Mult. agachado          0.60×
 Na mira (zoom)          dispersão ×0.3
 
 Recoil vertical         1.80° tiros 1-5, depois 0.90°
-Recoil horizontal       ±0.15° até o 6º tiro, ±0.70° imprevisível depois
+Recoil horizontal       ±0.15° até o 6º tiro; depois 0.70° por tiro em padrão
+                        fixo, 4 para cada lado, começando à direita (até
+                        27/11 era sorteado: o spray agora se aprende)
 Recuperação de recoil   5.5°/s
 
 Falloff                 100% até 30m → 75% a 55m
@@ -268,17 +275,19 @@ Tiros para matar        3 corpo / 1 cabeça
 TTK                     0.30s
 
 Reload tática           2.90s
-Reload vazia            3.50s
+Reload vazia            2.90s        (3.50 até 27/11: o mesmo clipe, esticado)
 Draw / Holster          0.60s / 0.55s
 
 Dispersão base          0.30°
 Dispersão por tiro      +0.35°       Máxima 5.0°
 Recuperação             8.0°/s
 Mult. movimento         2.6×         Mult. agachado 0.60×
+Andando / no ar         +0.40° / +4.0°  (somados; não fecham na mira)
 Na mira (zoom)          dispersão ×0.25, recuo ×0.35
 
 Recoil vertical         2.10° tiros 1-3, depois 1.20°
-Recoil horizontal       ±0.20°
+Recoil horizontal       ±0.20° alternado; do 5º tiro, 0.35° por tiro em
+                        padrão fixo, 4 para cada lado, começando à esquerda
 Recuperação de recoil   5.0°/s
 
 Falloff                 100% até 40m → 80% a 70m
@@ -307,7 +316,7 @@ Pente / Reserva         10 / 30
 Tiros para matar        2 corpo / 1 cabeça
 
 Reload tática           3.00s
-Reload vazia            3.50s
+Reload vazia            3.00s        (3.50 até 27/11: o mesmo clipe, esticado)
 Draw / Holster          0.60s / 0.50s
 
 Dispersão sem mira      4.00°        ← inutilizável no quadril
@@ -315,6 +324,8 @@ Na mira                 dispersão ×0.006 (0.02°)
 Dispersão por tiro      +0.50°       Máxima 6.0°
 Recuperação             9.0°/s
 Mult. movimento         4.0×         Mult. agachado 0.7×
+Andando / no ar         +1.2° / +6.0°  (somados, também na luneta: escopado
+                        andando já não acerta como parado)
 Recoil vertical         3.00°
 Recoil horizontal       ±0.30°
 Recuperação de recoil   5.0°/s
@@ -327,8 +338,8 @@ Modos de tiro           semiautomático
 ```
 Estrelas: Dano 4.5 · Pen 4.0 · Precisão 5.0 · Cadência 1.5 · Mob 1.5 · Recuo 1.5 · Alcance 5.0
 
-Skins: **SVD Carbono** (épica, 750 WP: 130 RPM, recarga e saque mais
-rápidos) e **SVD Tempestade** (lendária, 900 WP: dano 94, pente 12).
+Skins: **SVD Carbono** (épica, 750 WP: 130 RPM, saque mais
+rápido) e **SVD Tempestade** (lendária, 900 WP: dano 94, pente 12).
 
 ---
 
@@ -345,10 +356,14 @@ saque e as recargas vêm da P9 (23/11; `docs/AJUSTES.md`, seção 7).
 Custo WP                0 (conjunto padrão)
 Dano                    55          Headshot ×2.2 (121 → morte instantânea)
 RPM                     240         Pente / Reserva  7 / 28
-Reload                  1.80s tática / 2.20s vazia
+Reload                  1.67s tática / 2.17s vazia (com o ferrolho; eram 1.80 / 2.20)
 Draw / Holster          0.40s / 0.30s
-Dispersão base          0.45°       Por tiro +0.80°   Máx 6.0°   Recuperação 9.0°/s
+Dispersão base          0.45°       Por tiro +1.20°   Máx 6.0°   Recuperação 4.5°/s
+                        (eram +0.80° e 9°/s: no ritmo máximo, 0,27 s, não
+                        acumulava; agora quem esvazia o pente erra e quem
+                        espera ~0,4 s volta ao primeiro tiro, como no CS)
 Mult. movimento         1.5×        Mult. agachado 0.8×
+Andando / no ar         +0.25° / +2.0°  (somados; não fecham na mira)
 Na mira (zoom)          dispersão ×0.6
 Recoil vertical         1.60°       Horizontal ±0.20°   Recuperação 5.5°/s
 Falloff                 100% até 25m → 70% a 45m
@@ -359,8 +374,7 @@ Modos de tiro           semiautomático
 Estrelas: Dano 4.0 · Pen 3.0 · Precisão 2.5 · Cadência 1.5 · Mob 4.5 · Recuo 1.5 · Alcance 2.5
 
 Skins: **Desert Eagle Cobra** (épica, 120 WP: 259 RPM, coice menor) e
-**Desert Eagle Fênix** (lendária, 240 WP: dano 61, pente 8, recarga mais
-rápida).
+**Desert Eagle Fênix** (lendária, 240 WP: dano 61, pente 8).
 
 ---
 
@@ -423,7 +437,9 @@ qualquer uma vai no conjunto padrão.
 | SVD | 600 | sniper |
 | Granada | 60 | utilitário |
 
-As skins custam mais que a arma de base (tabelas acima). O conjunto
+As skins custam mais que a arma de base (tabelas acima). A recarga é a da
+arma de base em todas (27/11: a recarga toca o clipe a 1×, e o mesmo modelo
+recarrega sempre no mesmo tempo). O conjunto
 padrão custa sempre 0 (`LoadoutSet.TotalCost`).
 
 ## Economia

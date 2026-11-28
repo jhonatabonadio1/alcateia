@@ -132,8 +132,8 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
 	pode acelerar um pouco" — e 1,08 até 26/11).
 	**O Shift corre** (26/11): × 1,74327 sobre o andar (`HumanSprintFactor`: os mesmos 4,91 m/s de quando era 1,9176 sobre 2,56; era 1,45 até 27/11: duas vezes +15%, pedidos do Jhon — **o humano correndo passa do lobo a pé**, decisão dele), só para a
 	frente, de arma abaixada e sem atirar; o andar em silêncio saiu do
-	Shift (quem quer silêncio agacha). **Com fôlego** (27/11, `SprintBreath`): 4 s de
-	corrida, 1,5 s sem fôlego quando acaba, enche em 3 s — a corrida longa volta a ser do lobo.
+	Shift (quem quer silêncio agacha). **Com fôlego** (27/11, `SprintBreath`): 7 s de
+	corrida (4 até o fim de 27/11: "agora o humano pode correr por mais 3seg"), 1,5 s sem fôlego quando acaba, enche em 3 s — a corrida longa volta a ser do lobo.
 	O que o texto abaixo conta em 3,24 m/s é de antes.
 
 	| | Humano | Lobo (26/11) |
@@ -201,12 +201,16 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
 	humano usa o "Crouch Walking" do Mixamo inteiro (decisão do Jhon, 26/11:
 	"do jeito que está, adaptado à altura dela"), com o pé e a perna
 	ajustados ao corpo (`AnimationKit.Legs`: pé reto, sola no chão); o
-	parado é o instante de passada mais aberta dele, os dois pés retos; a
-	arma fica na mão como de pé, reta ("fuzil precisa ficar reto"). O lobo
+	parado é o **agachado tático** (28/11, aprovado pelo Jhon na vitrine):
+	o quadril em cima do meio de uma base larga, o pé da frente reto, o de
+	trás atrás e na ponta, os joelhos para onde os pés apontam, a cintura
+	inclinada para a frente (`AnimationKit.CrouchStance`,
+	`CharacterAnimator.Crouch*`); a arma fica na mão como de pé, reta
+	("fuzil precisa ficar reto"). O lobo
 	encolhe parado e engatinha andando (veja "Clipes do lobo"). A câmera da
-	1ª pessoa fica nos olhos desse corpo (~126 cm: 8 cm mais baixo que o
-	clipe desde 27/11, `CharacterAnimator.CrouchSink`), e a cápsula agachada do
-	humano tem 1,42 m (a do lobo, 1,0). Testes: `OlhoNoCorpoEve`,
+	1ª pessoa fica nos olhos desse corpo (~120 cm, e ~8 cm à frente dela,
+	como em pé: o corpo agachado vai 15 cm para trás, `CrouchBack`), e a
+	cápsula agachada do humano tem 1,36 m (a do lobo, 1,0). Testes: `OlhoNoCorpoEve`,
 	`OlhoNoCorpoBarut` (até 1 cm), `PeNoChaoEve`, `PeNoChaoBarut`,
 	`AgachadoMira`.
 

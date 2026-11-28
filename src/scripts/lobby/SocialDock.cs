@@ -17,6 +17,11 @@ using System.Linq;
 /// desconectados; os pedidos que você mandou; e o campo de adicionar pelo
 /// nome com a tag.
 ///
+/// Clicar num amigo abre a conversa com ele (Jhon, 27/11: "chat [...] entre
+/// amigos"): as mensagens diretas, que o servidor guarda e que também
+/// aparecem no cliente de instalação (<see cref="DirectChat"/>). A bolinha
+/// com número na linha do amigo é o que ele mandou e você ainda não leu.
+///
 /// Recolhido, vira uma tira com as fotos de quem está conectado (as telas
 /// largas — loja, inventário — abrem com ele assim).
 ///
@@ -41,6 +46,12 @@ public partial class SocialDock : PanelContainer
 		{
 			if (_open == value) return;
 			_open = value;
+			// Recolhido, a conversa não está à vista: o que chega fica como não lido.
+			if (_chatWith != 0)
+			{
+				if (_open) DirectChat.OpenWith(_chatWith);
+				else DirectChat.Close();
+			}
 			Rebuild();
 		}
 	}
@@ -57,6 +68,9 @@ public partial class SocialDock : PanelContainer
 		Social.Changed += MarkDirty;
 		LobbyLink.Instance.Changed += MarkDirty;
 		Profile.Changed += MarkDirty;
+		DirectChat.UnreadChanged += MarkDirty;
+		DirectChat.Changed += OnTalkChanged;
+		DirectChat.Received += OnDirect;
 		Rebuild();
 	}
 
@@ -64,6 +78,10 @@ public partial class SocialDock : PanelContainer
 	{
 		Social.Changed -= MarkDirty;
 		Profile.Changed -= MarkDirty;
+		DirectChat.UnreadChanged -= MarkDirty;
+		DirectChat.Changed -= OnTalkChanged;
+		DirectChat.Received -= OnDirect;
+		DirectChat.Close();
 		if (LobbyLink.Instance is LobbyLink link && IsInstanceValid(link)) link.Changed -= MarkDirty;
 	}
 
@@ -96,10 +114,18 @@ public partial class SocialDock : PanelContainer
 		if (_field != null && IsInstanceValid(_field)) _typed = _field.Text;
 		bool typing = _field != null && IsInstanceValid(_field) && _field.HasFocus();
 		_field = null;
+		// E o da conversa.
+		if (_talkField != null && IsInstanceValid(_talkField)) _talkTyped = _talkField.Text;
+		bool talking = _talkField != null && IsInstanceValid(_talkField) && _talkField.HasFocus();
+		_talkField = null;
+		_talkLog = null;
 
 		UiKit.Clear(this);
 		CustomMinimumSize = new Vector2(_open ? Wide : Narrow, 0);
-		if (_open) BuildOpen(typing);
+		// A conversa com quem deixou de ser amigo fecha sozinha.
+		if (_chatWith != 0 && Social.Friends.All(f => f.Id != _chatWith)) CloseTalk(rebuild: false);
+		if (_open && _chatWith != 0) BuildTalk(talking);
+		else if (_open) BuildOpen(typing);
 		else BuildStrip();
 	}
 
@@ -114,12 +140,12 @@ public partial class SocialDock : PanelContainer
 		expand.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
 		column.AddChild(expand);
 
-		int waiting = Social.Requests.Count + Social.Invites.Count + Social.GroupInvites.Count;
+		int waiting = Social.Requests.Count + Social.Invites.Count + Social.GroupInvites.Count + DirectChat.TotalUnread;
 		if (waiting > 0)
 		{
 			PanelContainer badge = Deco.Tag(waiting.ToString(), UiTokens.Accent, UiTokens.AccentText);
 			badge.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
-			badge.TooltipText = Loc.T("Pedidos e convites à espera");
+			badge.TooltipText = Loc.T("Pedidos, convites e mensagens à espera");
 			column.AddChild(badge);
 		}
 
@@ -365,7 +391,7 @@ public partial class SocialDock : PanelContainer
 	/// <summary>A linha de uma pessoa: foto, nome, uma linha de estado e os
 	/// botões à direita (que só aparecem com o mouse em cima, se
 	/// <paramref name="onHover"/>).</summary>
-	private static (PanelContainer Row, HBoxContainer Actions) PersonRow(Social.Person person, string under, Color underColor, bool onHover)
+	private static (PanelContainer Row, HBoxContainer Actions) PersonRow(Social.Person person, string under, Color underColor, bool onHover, int unread = 0)
 	{
 		var row = new PanelContainer { CustomMinimumSize = new Vector2(0, 52), MouseFilter = MouseFilterEnum.Stop };
 		var idle = new StyleBoxFlat { BgColor = Colors.Transparent };
@@ -391,6 +417,14 @@ public partial class SocialDock : PanelContainer
 		Label name = UiKit.Truncated(person.Name, null, person.Connected || !onHover ? UiTokens.TextPrimary : UiTokens.TextSecondary);
 		name.AddThemeFontOverride("font", UiFonts.SemiBold);
 		top.AddChild(name);
+		// O que ele mandou e você não leu: fica à vista, sem passar o mouse.
+		if (unread > 0)
+		{
+			PanelContainer badge = Deco.Tag(unread > 99 ? "99+" : unread.ToString(), UiTokens.Accent, UiTokens.AccentText);
+			badge.MouseFilter = MouseFilterEnum.Ignore;
+			badge.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+			top.AddChild(badge);
+		}
 		text.AddChild(top);
 		Label where = UiKit.Truncated(under, "Caption", underColor);
 		where.AddThemeFontSizeOverride("font_size", 12);
@@ -431,8 +465,19 @@ public partial class SocialDock : PanelContainer
 
 	private Control FriendRow(Social.Person friend)
 	{
-		(PanelContainer row, HBoxContainer actions) = PersonRow(friend, Where(friend), friend.Connected ? StatusColor(friend.Status) : UiTokens.TextDisabled, onHover: true);
+		int unread = DirectChat.Unread(friend.Id);
+		(PanelContainer row, HBoxContainer actions) = PersonRow(friend, unread > 0 ? Loc.F("{0} mensagens novas", unread) : Where(friend),
+			unread > 0 ? UiTokens.Accent : friend.Connected ? StatusColor(friend.Status) : UiTokens.TextDisabled, onHover: true, unread);
 		row.TooltipText = friend.Handle;
+		row.MouseDefaultCursorShape = CursorShape.PointingHand;
+		// Clicar no amigo (fora dos botões) abre a conversa.
+		row.GuiInput += e =>
+		{
+			if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) OpenTalk(friend.Id);
+		};
+
+		if (!DirectChat.Unsupported)
+			actions.AddChild(Act(IconKind.Chat, Loc.F("Conversar com {0}", friend.Name), () => OpenTalk(friend.Id)));
 
 		// Para o grupo: quem está com o jogo aberto e ainda não está nele. Com
 		// grupo, só o líder chama; sem grupo, chamar é o que cria um.
@@ -600,7 +645,9 @@ public partial class SocialDock : PanelContainer
 
 	private LineEdit _field;
 
-	private Control AddRow(bool typing)
+	/// <summary>A faixa escura do pé do painel, com uma linha dentro (o campo
+	/// de adicionar, o campo da conversa).</summary>
+	private static PanelContainer FootPlate(out HBoxContainer row)
 	{
 		var plate = new PanelContainer();
 		var box = new StyleBoxFlat { BgColor = new Color(0, 0, 0, 0.25f), BorderColor = UiTokens.Border };
@@ -608,9 +655,14 @@ public partial class SocialDock : PanelContainer
 		box.ContentMarginLeft = box.ContentMarginRight = UiTokens.S2 + 4;
 		box.ContentMarginTop = box.ContentMarginBottom = UiTokens.S2 + 2;
 		plate.AddThemeStyleboxOverride("panel", box);
-
-		HBoxContainer row = UiKit.Row(UiTokens.S2);
+		row = UiKit.Row(UiTokens.S2);
 		plate.AddChild(row);
+		return plate;
+	}
+
+	private Control AddRow(bool typing)
+	{
+		PanelContainer plate = FootPlate(out HBoxContainer row);
 		// O nome, o # e os quatro algarismos da tag.
 		_field = UiKit.Field(_typed, "Adicionar: Nome#0000", Profile.NameMax + 5);
 		_field.TextSubmitted += _ => Ask();
@@ -643,5 +695,183 @@ public partial class SocialDock : PanelContainer
 		Social.Add(name);
 		_field.Clear();
 		_typed = "";
+	}
+
+	// ------------------------------------------------------------------ conversa
+
+	private long _chatWith;
+	private LineEdit _talkField;
+	private string _talkTyped = "";
+	private VBoxContainer _talkLog;
+	private ScrollContainer _talkScroll;
+
+	/// <summary>Bolha da mensagem: larga o bastante para uma frase, estreita
+	/// para caber o painel.</summary>
+	private const int BubbleWidth = 222;
+
+	private void OpenTalk(long friend)
+	{
+		if (DirectChat.Unsupported || !LobbyLink.Instance.Connected) return;
+		if (_chatWith != friend) _talkTyped = "";
+		_chatWith = friend;
+		DirectChat.OpenWith(friend);
+		Rebuild();
+		Callable.From(() => { if (_talkField != null && IsInstanceValid(_talkField) && _talkField.IsInsideTree()) _talkField.GrabFocus(); }).CallDeferred();
+	}
+
+	private void CloseTalk(bool rebuild = true)
+	{
+		_chatWith = 0;
+		_talkTyped = "";
+		DirectChat.Close();
+		if (rebuild) Rebuild();
+	}
+
+	/// <summary>Chegou mensagem ou histórico da conversa aberta: a lista de
+	/// mensagens se refaz, e o campo fica como está.</summary>
+	private void OnTalkChanged(long friend)
+	{
+		if (friend != _chatWith || _talkLog == null || !IsInstanceValid(_talkLog)) return;
+		FillTalk();
+		ScrollTalk();
+	}
+
+	/// <summary>Mensagem de um amigo com a conversa dele fechada: um aviso.</summary>
+	private void OnDirect(DirectChat.Line line)
+	{
+		if (line.From == _chatWith && _open) return;
+		string name = Social.Friends.FirstOrDefault(f => f.Id == line.From)?.Name;
+		if (name == null) return;
+		string text = line.Text.Length > 80 ? line.Text[..80] + "…" : line.Text;
+		LobbyShell.Instance?.Toast(Loc.F("{0}: {1}", name, text));
+	}
+
+	private void BuildTalk(bool focus)
+	{
+		Social.Person friend = Social.Friends.First(f => f.Id == _chatWith);
+		VBoxContainer column = UiKit.Column(0);
+		AddChild(column);
+
+		// Cabeça: voltar, a foto, o nome e onde ele está.
+		MarginContainer headPad = UiKit.Margin(UiTokens.S2, UiTokens.S2, UiTokens.S2, UiTokens.S2);
+		HBoxContainer head = UiKit.Row(UiTokens.S2);
+		headPad.AddChild(head);
+		head.AddChild(UiKit.IconButton(IconKind.Back, "Voltar aos amigos", () => CloseTalk(), 18));
+		head.AddChild(Face(friend, 34));
+		VBoxContainer who = UiKit.Column(0);
+		who.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		who.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+		Label name = UiKit.Truncated(friend.Name, "Subtitle");
+		name.AddThemeFontOverride("font", UiFonts.DisplaySemi);
+		who.AddChild(name);
+		Label where = UiKit.Truncated(Where(friend), "Caption", friend.Connected ? StatusColor(friend.Status) : UiTokens.TextDisabled);
+		where.AddThemeFontSizeOverride("font_size", 12);
+		who.AddChild(where);
+		head.AddChild(who);
+		column.AddChild(headPad);
+		column.AddChild(Deco.Hairline(new Color(UiTokens.Paper, 0.14f)));
+
+		_talkScroll = new ScrollContainer { SizeFlagsVertical = SizeFlags.ExpandFill, HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
+		MarginContainer pad = UiKit.Margin(UiTokens.S2, UiTokens.S2, UiTokens.S2, UiTokens.S2);
+		pad.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		_talkLog = UiKit.Column(UiTokens.S2);
+		_talkLog.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		pad.AddChild(_talkLog);
+		_talkScroll.AddChild(pad);
+		column.AddChild(_talkScroll);
+		FillTalk();
+
+		PanelContainer plate = FootPlate(out HBoxContainer row);
+		_talkField = UiKit.Field(_talkTyped, Loc.F("Mensagem para {0}", friend.Name), DirectChat.MaxLength);
+		_talkField.TextSubmitted += _ => SendTalk();
+		row.AddChild(_talkField);
+		Button send = UiKit.IconButton(IconKind.Go, "Enviar", SendTalk, 18);
+		send.CustomMinimumSize = new Vector2(UiTokens.FieldHeight, UiTokens.FieldHeight);
+		row.AddChild(send);
+		column.AddChild(plate);
+
+		if (focus) Callable.From(() => { if (IsInstanceValid(_talkField) && _talkField.IsInsideTree()) { _talkField.GrabFocus(); _talkField.CaretColumn = _talkField.Text.Length; } }).CallDeferred();
+		ScrollTalk();
+	}
+
+	private void FillTalk()
+	{
+		UiKit.Clear(_talkLog);
+		if (!DirectChat.Loaded(_chatWith))
+		{
+			_talkLog.AddChild(Note("Carregando a conversa…", loading: true));
+			return;
+		}
+
+		if (DirectChat.More(_chatWith))
+		{
+			Button older = UiKit.Button("Mensagens anteriores", ButtonKind.Tertiary, () => DirectChat.LoadOlder(_chatWith));
+			older.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+			_talkLog.AddChild(older);
+		}
+
+		IReadOnlyList<DirectChat.Line> lines = DirectChat.With(_chatWith);
+		if (lines.Count == 0) _talkLog.AddChild(Note("Nenhuma mensagem ainda. Diga oi!"));
+		foreach (DirectChat.Line line in lines) _talkLog.AddChild(Bubble(line));
+
+		Social.Person friend = Social.Friends.FirstOrDefault(f => f.Id == _chatWith);
+		if (friend is { Connected: false })
+			_talkLog.AddChild(Note(Loc.F("{0} está desconectado: a mensagem fica guardada para quando ele entrar.", friend.Name)));
+	}
+
+	/// <summary>Uma mensagem: as suas à direita, na cor de destaque; as dele à esquerda.</summary>
+	private static Control Bubble(DirectChat.Line line)
+	{
+		var plate = new PanelContainer { SizeFlagsHorizontal = line.Mine ? SizeFlags.ShrinkEnd : SizeFlags.ShrinkBegin };
+		var box = new StyleBoxFlat { BgColor = line.Mine ? new Color(UiTokens.Accent, 0.2f) : new Color(UiTokens.Paper, 0.08f) };
+		box.SetCornerRadiusAll(6);
+		box.ContentMarginLeft = box.ContentMarginRight = UiTokens.S2 + 2;
+		box.ContentMarginTop = box.ContentMarginBottom = UiTokens.S1 + 2;
+		plate.AddThemeStyleboxOverride("panel", box);
+
+		VBoxContainer column = UiKit.Column(0);
+		plate.AddChild(column);
+		var text = new Label
+		{
+			Text = line.Text,
+			AutowrapMode = TextServer.AutowrapMode.WordSmart,
+			CustomMinimumSize = new Vector2(BubbleWidth, 0),
+			AutoTranslateMode = AutoTranslateModeEnum.Disabled
+		};
+		text.AddThemeColorOverride("font_color", UiTokens.TextPrimary);
+		column.AddChild(text);
+		Label when = UiKit.Text(DateTimeOffset.FromUnixTimeSeconds(line.At).ToLocalTime().ToString("HH:mm"), "Caption", UiTokens.TextDisabled);
+		when.AddThemeFontSizeOverride("font_size", 11);
+		when.HorizontalAlignment = line.Mine ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+		when.AutoTranslateMode = AutoTranslateModeEnum.Disabled;
+		column.AddChild(when);
+		return plate;
+	}
+
+	private void SendTalk()
+	{
+		string text = _talkField?.Text.Trim() ?? "";
+		if (text.Length == 0) return;
+		if (!LobbyLink.Instance.Connected)
+		{
+			LobbyShell.Instance?.Toast("Sem ligação com o servidor", UiTokens.Danger);
+			return;
+		}
+		// A mensagem aparece quando o servidor a devolve (o eco é a confirmação).
+		DirectChat.Send(_chatWith, text);
+		_talkField.Clear();
+		_talkTyped = "";
+	}
+
+	private void ScrollTalk()
+	{
+		ScrollContainer scroll = _talkScroll;
+		if (scroll == null) return;
+		// Dois quadros: o primeiro monta as bolhas, o segundo já tem a altura delas.
+		Callable.From(() =>
+		{
+			if (!IsInstanceValid(scroll)) return;
+			Callable.From(() => { if (IsInstanceValid(scroll)) scroll.ScrollVertical = (int)scroll.GetVScrollBar().MaxValue; }).CallDeferred();
+		}).CallDeferred();
 	}
 }

@@ -26,6 +26,15 @@ public partial class Player
 	/// usa para a dispersão.
 	/// </summary>
 	[Export] public float RecoilReturnDelay = 0.12f;
+
+	/// <summary>
+	/// A parte proporcional da volta do coice, por segundo (a fixa é a
+	/// <see cref="WeaponDefinition.RecoilRecovery"/> da arma). No Counter-Strike
+	/// o recuo volta assim: o grosso logo, o fim assentando. Com 4, o teto de
+	/// 4,5° do AK volta em ~0,36 s em vez de 0,82 (27/11): parar de atirar
+	/// devolve a mira, e a rajada curta seguinte sai de onde se mirou.
+	/// </summary>
+	[Export] public float RecoilReturnExp = 4f;
 	[Export] public float MouseSensitivity = 0.002f;
 
 	/// <summary>Sensibilidade efetiva: a base daqui vezes a das opções.
@@ -93,16 +102,20 @@ public partial class Player
 		// Perto do teto o recuo para de crescer: a arma fica difícil,
 		// não inútil.
 		kick = Mathf.Min(kick, Mathf.Max(room, 0));
-		if (kick <= 0) return;
-
-		_cameraKick += kick;
+		// No teto, atirando, a mira também não volta: a volta é de quem soltou o
+		// gatilho. Antes o tiro no teto não contava como tiro, a volta começava
+		// no meio da rajada e a mira subia e descia no alto do spray (27/11).
 		_sinceKick = 0;
+		if (kick > 0)
+		{
+			_cameraKick += kick;
+			Vector3 rotation = _head.Rotation;
+			rotation.X = Mathf.Clamp(
+				rotation.X + kick, Mathf.DegToRad(-89f), Mathf.DegToRad(89f));
+			_head.Rotation = rotation;
+		}
 
-		Vector3 rotation = _head.Rotation;
-		rotation.X = Mathf.Clamp(
-			rotation.X + kick, Mathf.DegToRad(-89f), Mathf.DegToRad(89f));
-		_head.Rotation = rotation;
-
+		// No teto o lateral continua: é no alto do spray que ele desvia.
 		// O lateral não volta sozinho, de propósito: é ele que o jogador
 		// aprende a compensar com o mouse, e devolvê-lo automaticamente
 		// tiraria o padrão que diferencia uma arma da outra.
@@ -116,13 +129,14 @@ public partial class Player
 		_sinceKick += delta;
 		if (_sinceKick < RecoilReturnDelay) return;
 
-		// Volta linear, na velocidade do documento (°/s): o M16 desce os
-		// 4,5° do teto em 0,6 s, o AK em 0,8 s, a M3 em 1,1 s.
+		// A velocidade fixa do documento (°/s) mais uma parte proporcional ao
+		// que falta (RecoilReturnExp): o teto de 4,5° desce em ~0,3 s na M4A4 e
+		// ~0,36 s no AK (eram 0,6 e 0,8 s, só a fixa).
 		//
 		// O defeito antigo: a volta SOMAVA ao ângulo da cabeça em vez de
 		// subtrair, então a mira subia de novo ao parar de atirar.
 		float rate = Mathf.DegToRad((_weapon.Held?.RecoilRecovery ?? 7f) * RecoilScale);
-		float recover = Mathf.Min(rate * (float)delta, _cameraKick);
+		float recover = CombatRules.RecoilReturn(_cameraKick, rate, RecoilReturnExp, (float)delta);
 
 		_cameraKick -= recover;
 		_head.Rotation = new Vector3(

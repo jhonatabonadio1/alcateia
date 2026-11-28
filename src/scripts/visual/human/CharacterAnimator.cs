@@ -237,9 +237,10 @@ public partial class CharacterAnimator : Node3D
 		UpdateAir(delta);
 		UpdateStance();
 		UpdateCrouchBlend(delta);
+		UpdateCrouchLean(delta);
 		UpdateGrenade(delta);
 
-		Position = new Vector3(Position.X, BaseY, Position.Z);
+		Position = new Vector3(Position.X, BaseY + _crouchLift, Position.Z);
 
 		ReportState();
 	}

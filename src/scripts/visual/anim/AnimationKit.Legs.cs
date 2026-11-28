@@ -137,63 +137,153 @@ public static partial class AnimationKit
 					parent < 0 ? Quaternion.Identity : PoseAt(animation, bodyTracks, body, parent, time).Basis.Orthonormalized().GetRotationQuaternion());
 			}
 
-			Quaternion? lastThigh = null, lastShin = null, lastFoot = null;
-			for (int key = 0; key < keys; key++)
-			{
-				if (turned[key] is not var (qt, qs, qf)) continue;
-				Keep(ref qt, ref lastThigh);
-				Keep(ref qs, ref lastShin);
-				Keep(ref qf, ref lastFoot);
-				animation.TrackSetKeyValue(tt, key, qt);
-				animation.TrackSetKeyValue(ts, key, qs);
-				animation.TrackSetKeyValue(tf, key, qf);
-			}
+			WriteLeg(animation, tt, ts, tf, turned);
+		}
+	}
+
+	/// <summary>Escreve as rotações da coxa, da canela e do pé chave a chave, cada uma do mesmo lado da
+	/// anterior (sem a volta inteira na interpolação).</summary>
+	private static void WriteLeg(Animation animation, int tt, int ts, int tf, (Quaternion, Quaternion, Quaternion)?[] turned)
+	{
+		Quaternion? lastThigh = null, lastShin = null, lastFoot = null;
+		for (int key = 0; key < turned.Length; key++)
+		{
+			if (turned[key] is not var (qt, qs, qf)) continue;
+			Keep(ref qt, ref lastThigh);
+			Keep(ref qs, ref lastShin);
+			Keep(ref qf, ref lastFoot);
+			animation.TrackSetKeyValue(tt, key, qt);
+			animation.TrackSetKeyValue(ts, key, qs);
+			animation.TrackSetKeyValue(tf, key, qf);
 		}
 	}
 
 	/// <summary>
-	/// Os dois pés de uma pose parada (<paramref name="pose"/>, a mesma chave
-	/// do começo ao fim) retos no chão: a sola como em repouso, virada para
-	/// onde o pé já apontava, o tornozelo na altura do repouso no mesmo ponto
-	/// do chão e a perna dobrando até ele. O agachado parado é um instante do
-	/// andar, e nele um pé está sempre saindo do chão, de calcanhar levantado
-	/// (Jhon, 26/11: "parece que tá na ponta do pé"; no "Idle Crouching" do
-	/// Mixamo os dois pés ficam retos). O quadril não se mexe.
+	/// O andar agachado com as pernas um pouco abertas (Jhon, 28/11, vendo-o de trás, as pernas bem juntas:
+	/// "na pose anterior de andar agachado, somente abra um pouco para o lado a perna direita e um pouco para o
+	/// outro lado a perna esquerda"): cada tornozelo vai <paramref name="meters"/> para fora do seu lado, o
+	/// mesmo tanto nos dois e no passo inteiro — sem mudar de altura nem de ritmo —, e o joelho dobra para onde
+	/// o pé aponta.
 	/// </summary>
-	public static void FlatFeet(Animation pose, Skeleton3D body, Transform3D fb)
+	/// <param name="stretch">Quantas vezes o passo fica mais comprido para a frente e para trás (em volta do meio
+	/// do caminho do pé), no mesmo ritmo: o "Crouch Walking" anda menos que o corpo agachado (1,27 m/s), e o pé de
+	/// apoio patinava (Jhon, 28/11: "corrija a passada agachada para deixar melhor, mais bem feito").</param>
+	public static void OpenStride(Animation animation, Skeleton3D body, Transform3D fb, float meters, float stretch = 1f)
+	{
+		if (meters <= 0f && Mathf.IsEqualApprox(stretch, 1f)) return;
+		var tracks = new BoneTracks(animation);
+		Transform3D back = fb.AffineInverse();
+		foreach (string side in new[] { "Left", "Right" })
+		{
+			string thigh = $"mixamorig_{side}UpLeg", shin = $"mixamorig_{side}Leg", foot = $"mixamorig_{side}Foot";
+			int bt = body.FindBone(thigh), bs = body.FindBone(shin), bf = body.FindBone(foot), bo = body.FindBone($"mixamorig_{side}ToeBase");
+			if (bt < 0 || bs < 0 || bf < 0 || bo < 0 || body.GetBoneParent(bs) != bt || body.GetBoneParent(bf) != bs) continue;
+			if (!tracks.Rotation.TryGetValue(thigh, out int tt) || !tracks.Rotation.TryGetValue(shin, out int ts)
+				|| !tracks.Rotation.TryGetValue(foot, out int tf)) continue;
+			int keys = animation.TrackGetKeyCount(tt);
+			if (keys == 0 || animation.TrackGetKeyCount(ts) != keys || animation.TrackGetKeyCount(tf) != keys) continue;
+
+			// Para fora é o lado do pé no repouso; o passo cresce em volta do meio do caminho do pé.
+			var push = new Vector3(Mathf.Sign((fb * body.GetBoneGlobalRest(bf).Origin).X) * meters, 0f, 0f);
+			float middle = 0f;
+			for (int key = 0; key < keys; key++)
+				middle += (fb * PoseAt(animation, tracks, body, bf, animation.TrackGetKeyTime(tt, key)).Origin).Z / keys;
+			int parent = body.GetBoneParent(bt);
+			var turned = new (Quaternion, Quaternion, Quaternion)?[keys];
+			for (int key = 0; key < keys; key++)
+			{
+				double time = animation.TrackGetKeyTime(tt, key);
+				Transform3D up = PoseAt(animation, tracks, body, bt, time), knee = PoseAt(animation, tracks, body, bs, time);
+				Transform3D ankle = PoseAt(animation, tracks, body, bf, time), toe = PoseAt(animation, tracks, body, bo, time);
+				Vector3 along = fb * toe.Origin - fb * ankle.Origin;
+				var pole = new Vector3(along.X, 0f, along.Z);
+				if (pole.LengthSquared() < 1e-8f) pole = Vector3.Back;
+				Quaternion parentWorld = parent < 0 ? Quaternion.Identity : PoseAt(animation, tracks, body, parent, time).Basis.Orthonormalized().GetRotationQuaternion();
+				Vector3 at = fb * ankle.Origin;
+				var reach = new Vector3(0f, 0f, (at.Z - middle) * (stretch - 1f));
+				turned[key] = Bend(up, knee, ankle, back * (at + push + reach), parentWorld,
+					ankle.Basis.Orthonormalized().GetRotationQuaternion(), back.Basis * pole.Normalized());
+			}
+			WriteLeg(animation, tt, ts, tf, turned);
+			tracks = new BoneTracks(animation);
+		}
+	}
+
+	/// <summary>A base do agachado parado (<see cref="CrouchStance"/>), em metros e graus.</summary>
+	/// <param name="Front">O tornozelo da frente, à frente do quadril.</param>
+	/// <param name="Rear">O tornozelo de trás, atrás do quadril.</param>
+	/// <param name="Width">A distância de lado entre os dois tornozelos.</param>
+	/// <param name="HipsRaise">Quanto o quadril sobe em relação ao instante do andar.</param>
+	/// <param name="Back">Quanto o corpo inteiro (quadril e base) vai para trás da cápsula.</param>
+	/// <param name="RearHeel">O calcanhar de trás erguido, em volta da base dos dedos.</param>
+	/// <param name="FrontOut">Quanto a ponta do pé da frente abre para fora.</param>
+	/// <param name="RearOut">Quanto a ponta do pé de trás abre para fora.</param>
+	public readonly record struct Stance(float Front, float Rear, float Width, float HipsRaise, float Back,
+		float RearHeel, float FrontOut, float RearOut);
+
+	/// <summary>
+	/// O agachado parado tático (Jhon, 28/11, vendo o agachado mais fundo de 27/11: "parece estar sentado
+	/// em uma cadeira invisível... o quadril está muito deslocado para trás... a perna traseira está
+	/// bastante comprimida... o ideal é criar uma base mais estável, com os joelhos acompanhando a direção
+	/// dos pés"; aprovado na vitrine: "esses ficaram bons"). Sobre uma pose parada (<paramref name="pose"/>,
+	/// a mesma chave do começo ao fim; o instante do andar agachado): o quadril vai para cima do meio da
+	/// base; o pé da frente fica à frente dele, reto no chão; o de trás, atrás e na ponta (com ele reto,
+	/// a canela deitava em cima do calcanhar da bota); os dois abertos de lado e com a ponta para fora; e
+	/// cada joelho dobra para onde o seu pé aponta. A frente é +Z do modelo; o pé da frente é o que já
+	/// estava à frente no instante. Até 28/11 era <c>FlatFeet</c>: os dois pés retos onde o andar os
+	/// deixava, um 55 cm à frente e o outro embaixo do quadril.
+	/// </summary>
+	public static void CrouchStance(Animation pose, Skeleton3D body, Transform3D fb, Stance s)
 	{
 		var tracks = new BoneTracks(pose);
 		Quaternion frame = fb.Basis.Orthonormalized().GetRotationQuaternion();
 		Transform3D back = fb.AffineInverse();
 		Quaternion Rest(int bone) => (frame * body.GetBoneGlobalRest(bone).Basis.Orthonormalized().GetRotationQuaternion()).Normalized();
-		static Vector3 Flat(Vector3 v) => new(v.X, 0f, v.Z);
+		int lf = body.FindBone("mixamorig_LeftFoot"), rf = body.FindBone("mixamorig_RightFoot");
+		if (lf < 0 || rf < 0 || !tracks.Position.TryGetValue("mixamorig_Hips", out int hp)) return;
+		string front = (fb * PoseAt(pose, tracks, body, lf, 0).Origin).Z > (fb * PoseAt(pose, tracks, body, rf, 0).Origin).Z ? "Left" : "Right";
+
+		// O quadril, por cima do meio da base (e a base inteira Back para trás).
+		Vector3 hips = fb * (Vector3)pose.TrackGetKeyValue(hp, 0);
+		Vector3 shift = new Vector3(0f, hips.Y + s.HipsRaise, -s.Back) - hips;
+		for (int key = 0; key < pose.TrackGetKeyCount(hp); key++)
+			pose.TrackSetKeyValue(hp, key, back * (fb * (Vector3)pose.TrackGetKeyValue(hp, key) + shift));
+		tracks = new BoneTracks(pose);
 
 		foreach (string side in new[] { "Left", "Right" })
 		{
+			bool isFront = side == front;
 			string thigh = $"mixamorig_{side}UpLeg", shin = $"mixamorig_{side}Leg", foot = $"mixamorig_{side}Foot", toes = $"mixamorig_{side}ToeBase";
 			int bt = body.FindBone(thigh), bs = body.FindBone(shin), bf = body.FindBone(foot), bo = body.FindBone(toes);
 			if (bt < 0 || bs < 0 || bf < 0 || bo < 0) continue;
 			if (body.GetBoneParent(bs) != bt || body.GetBoneParent(bf) != bs || body.GetBoneParent(bo) != bf) continue;
 			if (!tracks.Rotation.TryGetValue(thigh, out int tt) || !tracks.Rotation.TryGetValue(shin, out int ts)
 				|| !tracks.Rotation.TryGetValue(foot, out int tf)) continue;
-
 			Transform3D up = PoseAt(pose, tracks, body, bt, 0), knee = PoseAt(pose, tracks, body, bs, 0), ankle = PoseAt(pose, tracks, body, bf, 0);
 			int parent = body.GetBoneParent(bt);
 			Quaternion parentWorld = parent < 0 ? Quaternion.Identity : PoseAt(pose, tracks, body, parent, 0).Basis.Orthonormalized().GetRotationQuaternion();
 
-			// Para onde o pé aponta no chão agora, a partir de para onde apontava em repouso.
-			Vector3 restAlong = Flat(fb * body.GetBoneGlobalRest(bo).Origin - fb * body.GetBoneGlobalRest(bf).Origin);
-			Quaternion turned = (frame * ankle.Basis.Orthonormalized().GetRotationQuaternion()).Normalized() * Rest(bf).Inverse();
-			Vector3 nowAlong = Flat(turned * (fb * body.GetBoneGlobalRest(bo).Origin - fb * body.GetBoneGlobalRest(bf).Origin));
-			if (restAlong.LengthSquared() < 1e-10f || nowAlong.LengthSquared() < 1e-10f) continue;
-			Quaternion heading = Arc(restAlong.Normalized(), nowAlong.Normalized());
+			// Para onde o pé aponta: para a frente, aberto para o lado dele.
+			float outside = Mathf.Sign((fb * body.GetBoneGlobalRest(bf).Origin).X);
+			float open = outside * Mathf.DegToRad(isFront ? s.FrontOut : s.RearOut);
+			var dir = new Vector3(Mathf.Sin(open), 0f, Mathf.Cos(open));
+			Vector3 along = fb * body.GetBoneGlobalRest(bo).Origin - fb * body.GetBoneGlobalRest(bf).Origin;
+			Quaternion heading = Arc(new Vector3(along.X, 0f, along.Z).Normalized(), dir);
 
+			// O tornozelo na altura do repouso, à frente ou atrás do quadril, aberto de lado.
+			var goal = new Vector3(outside * s.Width * 0.5f, (fb * body.GetBoneGlobalRest(bf).Origin).Y, -s.Back + (isFront ? s.Front : -s.Rear));
 			Quaternion footWorld = (frame.Inverse() * heading * Rest(bf)).Normalized();
 			Quaternion toesWorld = (frame.Inverse() * heading * Rest(bo)).Normalized();
-			Vector3 goal = fb * ankle.Origin;
-			goal.Y = (fb * body.GetBoneGlobalRest(bf).Origin).Y;
-			if (Bend(up, knee, ankle, back * goal, parentWorld, footWorld) is not var (qt, qs, qf)) continue;
+			if (!isFront && s.RearHeel > 0f)
+			{
+				// Na ponta: o pé gira em volta da base dos dedos, que fica no chão.
+				var pitch = new Quaternion(Vector3.Up.Cross(dir).Normalized(), Mathf.DegToRad(s.RearHeel));
+				Vector3 ball = goal + heading * along;
+				goal = ball + pitch * (goal - ball);
+				footWorld = (frame.Inverse() * pitch * heading * Rest(bf)).Normalized();
+			}
 
+			if (Bend(up, knee, ankle, back * goal, parentWorld, footWorld, back.Basis * dir) is not var (qt, qs, qf)) continue;
 			void Set(int track, Quaternion value)
 			{
 				for (int key = 0; key < pose.TrackGetKeyCount(track); key++) pose.TrackSetKeyValue(track, key, value);
@@ -202,7 +292,17 @@ public static partial class AnimationKit
 			Set(ts, qs);
 			Set(tf, qf);
 			if (tracks.Rotation.TryGetValue(toes, out int to)) Set(to, (footWorld.Inverse() * toesWorld).Normalized());
+			tracks = new BoneTracks(pose);
 		}
+	}
+
+	/// <summary>A pele dos dois pés do corpo, a bota inteira (cada ponto e o osso dele), para medir na pose de
+	/// agora: na ponta do pé, a ponta da bota é que desce.</summary>
+	public static List<(int Bone, Vector3 Local)> FootPoints(Node bodyRoot, Skeleton3D body)
+	{
+		var all = new List<(int Bone, Vector3 Local)>();
+		foreach (var points in Soles(bodyRoot, body, ChainTo(body, bodyRoot), float.MaxValue).Values) all.AddRange(points);
+		return all;
 	}
 
 	/// <summary>Quanto acima do ponto mais baixo da bota em repouso ainda conta como sola (m).</summary>
@@ -217,7 +317,8 @@ public static partial class AnimationKit
 	/// hora em que ele passa e derrubava a saída de um boneco no merge de 26/11
 	/// ("Handle is not initialized", BonecoMaos).
 	/// </summary>
-	private static Dictionary<string, List<(int Bone, Vector3 Local)>> Soles(Node bodyRoot, Skeleton3D body, Transform3D fb)
+	private static Dictionary<string, List<(int Bone, Vector3 Local)>> Soles(Node bodyRoot, Skeleton3D body, Transform3D fb,
+		float band = SoleBand)
 	{
 		var found = new Dictionary<string, List<(int Bone, Vector3 Local, float Height)>> { ["Left"] = new(), ["Right"] = new() };
 		if (bodyRoot != null)
@@ -270,7 +371,7 @@ public static partial class AnimationKit
 		foreach (var (side, points) in found)
 		{
 			float lowest = points.Count > 0 ? points.Min(p => p.Height) : 0f;
-			soles[side] = points.Where(p => p.Height < lowest + SoleBand).Select(p => (p.Bone, p.Local)).ToList();
+			soles[side] = points.Where(p => p.Height < lowest + band).Select(p => (p.Bone, p.Local)).ToList();
 		}
 		return soles;
 	}
@@ -290,7 +391,7 @@ public static partial class AnimationKit
 	/// para saber o lado.
 	/// </summary>
 	private static (Quaternion, Quaternion, Quaternion)? Bend(Transform3D thigh, Transform3D shin, Transform3D foot,
-		Vector3 goal, Quaternion parent, Quaternion? footTurned = null)
+		Vector3 goal, Quaternion parent, Quaternion? footTurned = null, Vector3? pole = null)
 	{
 		Vector3 h = thigh.Origin, k = shin.Origin, a = foot.Origin;
 		float upper = h.DistanceTo(k), lower = k.DistanceTo(a);
@@ -301,7 +402,9 @@ public static partial class AnimationKit
 		float slack = (upper + lower) * 1e-3f;
 		float reach = Mathf.Clamp(distance, Mathf.Abs(upper - lower) + slack, upper + lower - slack);
 
-		Vector3 side = (k - h) - direction * (k - h).Dot(direction);
+		// O joelho vai para o lado em que já estava, ou para o pole (o agachado: para onde o pé aponta).
+		Vector3 bentFrom = pole ?? (k - h);
+		Vector3 side = bentFrom - direction * bentFrom.Dot(direction);
 		if (side.LengthSquared() < (upper * 1e-3f) * (upper * 1e-3f)) return null;
 		side = side.Normalized();
 
@@ -312,6 +415,19 @@ public static partial class AnimationKit
 
 		Quaternion turnThigh = Arc((k - h).Normalized(), (kneeTo - h).Normalized());
 		Vector3 ankleAfter = h + turnThigh * (a - h);
+		if (pole != null)
+		{
+			// Com o pole a coxa ainda gira em volta de si até a canela dobrar para o lado dele: o joelho olha
+			// para onde o pé aponta, sem torcer.
+			Vector3 axis = (kneeTo - h).Normalized();
+			Vector3 now = (ankleAfter - kneeTo) - axis * (ankleAfter - kneeTo).Dot(axis);
+			Vector3 want = (ankleTo - kneeTo) - axis * (ankleTo - kneeTo).Dot(axis);
+			if (now.LengthSquared() > 1e-8f && want.LengthSquared() > 1e-8f)
+			{
+				turnThigh = Arc(now.Normalized(), want.Normalized()) * turnThigh;
+				ankleAfter = h + turnThigh * (a - h);
+			}
+		}
 		Quaternion turnShin = Arc((ankleAfter - kneeTo).Normalized(), (ankleTo - kneeTo).Normalized());
 
 		Quaternion thighWorld = (turnThigh * thigh.Basis.Orthonormalized().GetRotationQuaternion()).Normalized();

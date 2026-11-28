@@ -2,46 +2,52 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Alcateia.Cliente.ViewModels"
         xmlns:v="using:Alcateia.Cliente.Views"
+        xmlns:c="using:Alcateia.Cliente.Core"
         x:Class="Alcateia.Cliente.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Title="WolfLeague"
+        Title="Initech Launcher"
         Icon="/Assets/icone.ico"
-        Width="1200" Height="740" MinWidth="1040" MinHeight="660"
+        Width="1240" Height="760" MinWidth="1080" MinHeight="680"
         WindowStartupLocation="CenterScreen">
 
+	<!--
+	O Initech Launcher: a barra do estúdio em cima (o emblema e o nome da
+	Initech, e você), a biblioteca de jogos na esquerda, a página do jogo
+	escolhido (ou as configurações) no meio e os amigos na direita.
+	-->
 	<Grid>
 		<!-- sem conta: a entrada -->
 		<Panel IsVisible="{Binding IsLoggedOut}">
 			<v:LoginView DataContext="{Binding Login}" />
 		</Panel>
 
-		<!-- com conta: a barra do alto, a página e os amigos -->
-		<Grid IsVisible="{Binding IsLoggedIn}" RowDefinitions="Auto,60,*" ColumnDefinitions="*,304">
+		<Grid IsVisible="{Binding IsLoggedIn}" RowDefinitions="Auto,56,*" ColumnDefinitions="236,*,300">
 
-			<!-- a versão nova do cliente já baixou -->
-			<Border Grid.Row="0" Grid.ColumnSpan="2" Background="{StaticResource Gold}" Padding="20,7" IsVisible="{Binding HasUpdateBanner}">
+			<!-- a versão nova do launcher já baixou -->
+			<Border Grid.Row="0" Grid.ColumnSpan="3" Background="{StaticResource Gold}" Padding="20,6" IsVisible="{Binding HasUpdateBanner}">
 				<StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
 					<TextBlock Text="{Binding UpdateBanner}" Foreground="{StaticResource GoldInk}" FontWeight="SemiBold" VerticalAlignment="Center" />
-					<Button Content="REINICIAR AGORA" Command="{Binding RestartNow}" Padding="12,4" FontSize="13" />
+					<Button Content="{c:T banner.restart}" Command="{Binding RestartNow}" Padding="12,3" FontSize="14" />
 				</StackPanel>
 			</Border>
 
-			<Border Grid.Row="1" Grid.ColumnSpan="2" Background="{StaticResource Deep}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+			<!-- a barra do estúdio -->
+			<Border Grid.Row="1" Grid.ColumnSpan="3" Background="{StaticResource Deep}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
 				<Grid ColumnDefinitions="Auto,*,Auto">
-					<Image Grid.Column="0" Source="/Assets/logo.png" Height="24" Margin="24,0,30,0" VerticalAlignment="Center" />
-
-					<StackPanel Grid.Column="1" Orientation="Horizontal">
-						<Button Classes="tab" Classes.on="{Binding IsGame}" Content="JOGO" Command="{Binding GoGame}" />
-						<Button Classes="tab" Classes.on="{Binding IsNews}" Content="NOVIDADES" Command="{Binding GoNews}" />
-						<Button Classes="tab" Classes.on="{Binding IsSettings}" Content="CONFIGURAÇÕES" Command="{Binding GoSettings}" />
+					<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" Margin="22,0,0,0" VerticalAlignment="Center">
+						<Image Source="/Assets/initech_emblema.png" Height="28" />
+						<Image Source="/Assets/initech_nome.png" Height="15" VerticalAlignment="Center" />
+						<Border Width="1" Height="16" Background="{StaticResource Line2}" Margin="4,0" />
+						<TextBlock Text="LAUNCHER" FontFamily="{StaticResource Display}" FontWeight="SemiBold" FontSize="13" LetterSpacing="4"
+						           Foreground="{StaticResource Ink3}" VerticalAlignment="Center" />
 					</StackPanel>
 
 					<!-- você: clicar copia Nome#0000 -->
-					<Button Grid.Column="2" Classes="ghost plain" Command="{Binding CopyHandle}" Margin="0,0,12,0" Padding="10,6"
-					        ToolTip.Tip="Copiar o seu nome com a tag, para passar a um amigo">
+					<Button Grid.Column="2" Classes="ghost plain" Command="{Binding CopyHandle}" Margin="0,0,10,0" Padding="10,5"
+					        ToolTip.Tip="{c:T me.copy_tip}">
 						<StackPanel Orientation="Horizontal" Spacing="10">
-							<Border Width="34" Height="34" CornerRadius="17" Background="{StaticResource Gold}">
-								<TextBlock Text="{Binding MeInitial}" Foreground="{StaticResource GoldInk}" FontWeight="Bold" FontSize="16"
+							<Border Width="32" Height="32" Background="{StaticResource Gold}">
+								<TextBlock Text="{Binding MeInitial}" Foreground="{StaticResource GoldInk}" FontFamily="{StaticResource Display}" FontWeight="Bold" FontSize="18"
 								           HorizontalAlignment="Center" VerticalAlignment="Center" />
 							</Border>
 							<StackPanel VerticalAlignment="Center" Spacing="0">
@@ -56,45 +62,89 @@
 				</Grid>
 			</Border>
 
-			<Panel Grid.Row="2" Grid.Column="0">
-				<Panel IsVisible="{Binding IsGame}">
+			<!-- a biblioteca -->
+			<Border Grid.Row="2" Grid.Column="0" Background="{StaticResource Deep}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+				<Grid RowDefinitions="Auto,Auto,*,Auto">
+					<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="18,22,18,10">
+						<Path Classes="diamond" />
+						<TextBlock Classes="label" Text="{c:T lib.title}" />
+					</StackPanel>
+
+					<ItemsControl Grid.Row="1" ItemsSource="{Binding Library}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="vm:LibraryItem">
+								<Button Classes="rail plain" Classes.on="{Binding Selected}" Command="{Binding Select}">
+									<Grid ColumnDefinitions="Auto,*">
+										<Image Grid.Column="0" Source="{Binding Icon}" Width="38" Height="38" Margin="0,0,12,0" VerticalAlignment="Center" />
+										<StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+											<TextBlock Text="{Binding Name}" FontFamily="{StaticResource Display}" FontWeight="SemiBold" FontSize="18" LetterSpacing="0.5" />
+											<TextBlock Text="{Binding Status}" FontSize="12" Foreground="{StaticResource Ink2}" />
+											<ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress}" IsVisible="{Binding Busy}" Height="2" MinHeight="2" Margin="0,2,8,0" />
+										</StackPanel>
+									</Grid>
+								</Button>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+
+					<!-- mais jogos virão: o launcher é do estúdio -->
+					<StackPanel Grid.Row="2" Margin="18,18,18,0" Spacing="6">
+						<Border Height="1" Background="{StaticResource Line}" />
+						<TextBlock Text="{c:T lib.more_soon}" FontSize="12" Foreground="{StaticResource Ink3}" TextWrapping="Wrap" Margin="0,6,0,0" />
+					</StackPanel>
+
+					<Button Grid.Row="3" Classes="rail" Classes.on="{Binding IsSettings}" Command="{Binding GoSettings}" Margin="0,0,0,10">
+						<StackPanel Orientation="Horizontal" Spacing="12">
+							<Path Width="16" Height="16" Stretch="Uniform" Fill="{StaticResource Ink2}" VerticalAlignment="Center"
+							      Data="M19.14,12.94a7.07,7.07,0,0,0,.06-.94,7.07,7.07,0,0,0-.06-.94l2-1.58a.5.5,0,0,0,.12-.64l-1.92-3.32a.5.5,0,0,0-.61-.22l-2.39,1a7.3,7.3,0,0,0-1.63-.94l-.36-2.54A.5.5,0,0,0,13.86,2H10.14a.5.5,0,0,0-.5.42L9.28,5a7.3,7.3,0,0,0-1.63.94l-2.39-1a.5.5,0,0,0-.61.22L2.73,8.48a.5.5,0,0,0,.12.64l2,1.58a7.07,7.07,0,0,0-.06.94,7.07,7.07,0,0,0,.06.94l-2,1.58a.5.5,0,0,0-.12.64l1.92,3.32a.5.5,0,0,0,.61.22l2.39-1a7.3,7.3,0,0,0,1.63.94l.36,2.54a.5.5,0,0,0,.5.42h3.72a.5.5,0,0,0,.5-.42l.36-2.54a7.3,7.3,0,0,0,1.63-.94l2.39,1a.5.5,0,0,0,.61-.22l1.92-3.32a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
+							<TextBlock Text="{c:T nav.settings}" FontFamily="{StaticResource Display}" FontWeight="SemiBold" FontSize="15" LetterSpacing="2" VerticalAlignment="Center" />
+						</StackPanel>
+					</Button>
+				</Grid>
+			</Border>
+
+			<!-- o miolo: o jogo escolhido ou as configurações -->
+			<Panel Grid.Row="2" Grid.Column="1">
+				<Panel IsVisible="{Binding IsLibrary}">
 					<v:GameView DataContext="{Binding Game}" />
-				</Panel>
-				<Panel IsVisible="{Binding IsNews}">
-					<v:NewsView DataContext="{Binding Game}" />
 				</Panel>
 				<Panel IsVisible="{Binding IsSettings}">
 					<v:SettingsView />
 				</Panel>
 			</Panel>
 
-			<v:FriendsView Grid.Row="2" Grid.Column="1" DataContext="{Binding Friends}" />
+			<v:FriendsView Grid.Row="2" Grid.Column="2" DataContext="{Binding Friends}" />
+
+			<!-- a conversa com um amigo, no canto, ao lado da lista -->
+			<Panel Grid.Row="2" Grid.Column="1" IsVisible="{Binding Friends.HasChat}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,14,14">
+				<v:ChatView DataContext="{Binding Friends.Chat}" />
+			</Panel>
 		</Grid>
 
 		<!-- o aviso curto, no pé -->
 		<Border IsVisible="{Binding HasToast}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,26"
-		        Background="#F2111A26" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="3" Padding="18,11" MaxWidth="640">
+		        Background="#F2111114" BorderBrush="{StaticResource Line2}" BorderThickness="1" Padding="18,11" MaxWidth="640">
 			<StackPanel Orientation="Horizontal" Spacing="10">
-				<Border Width="4" Background="{StaticResource Gold}" IsVisible="{Binding ToastIsInfo}" />
-				<Border Width="4" Background="{StaticResource Danger}" IsVisible="{Binding ToastIsError}" />
+				<Border Width="3" Background="{StaticResource Gold}" IsVisible="{Binding ToastIsInfo}" />
+				<Border Width="3" Background="{StaticResource Danger}" IsVisible="{Binding ToastIsError}" />
 				<TextBlock Text="{Binding ToastText}" TextWrapping="Wrap" MaxWidth="580" VerticalAlignment="Center" />
 			</StackPanel>
 		</Border>
 
 		<!-- ligar ou desligar a verificação em duas etapas -->
-		<Border IsVisible="{Binding HasTwoFactor}" Background="#CC060B11">
+		<Border IsVisible="{Binding HasTwoFactor}" Background="#CC050506">
 			<v:TwoFactorView DataContext="{Binding TwoFactor}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 		</Border>
 
 		<!-- a pergunta por cima de tudo -->
-		<Border IsVisible="{Binding HasModal}" Background="#CC060B11">
-			<Border HorizontalAlignment="Center" VerticalAlignment="Center" Width="460" Background="{StaticResource Surface}"
-			        BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="3" Padding="28,24">
+		<Border IsVisible="{Binding HasModal}" Background="#CC050506">
+			<Border HorizontalAlignment="Center" VerticalAlignment="Center" Width="470" Background="{StaticResource Surface}"
+			        BorderBrush="{StaticResource Gold}" BorderThickness="0,3,0,0" Padding="28,24">
 				<StackPanel Spacing="14">
-					<TextBlock Classes="title" FontSize="24" Text="{Binding Modal.Title}" TextWrapping="Wrap" />
+					<TextBlock Classes="title" FontSize="28" Text="{Binding Modal.Title}" TextWrapping="Wrap" />
 					<TextBlock Classes="muted" Text="{Binding Modal.Body}" TextWrapping="Wrap" LineHeight="22" />
 					<StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,8,0,0">
-						<Button Content="VOLTAR" Command="{Binding Modal.Dismiss}" />
+						<Button Content="{Binding Modal.DismissText}" Command="{Binding Modal.Dismiss}" />
 						<Button Classes="danger" Content="{Binding Modal.ConfirmText}" Command="{Binding Modal.Confirm}" IsVisible="{Binding Modal.Danger}" />
 						<Button Classes="primary" Content="{Binding Modal.ConfirmText}" Command="{Binding Modal.Confirm}" IsVisible="{Binding Modal.Normal}" />
 					</StackPanel>

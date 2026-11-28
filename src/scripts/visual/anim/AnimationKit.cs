@@ -416,8 +416,9 @@ public static partial class AnimationKit
 	/// </summary>
 	/// <param name="sink">Metros a mais que o quadril desce (o agachado mais baixo que o do clipe, 27/11): as
 	/// pernas dobram até o pé pousar no mesmo lugar (só com <paramref name="reachFloor"/>).</param>
+	/// <param name="back">Metros que o corpo inteiro vai para trás (o agachado, 28/11): os pés vão junto.</param>
 	public static void FitToBody(Animation animation, Node clipRoot, Skeleton3D body, Node bodyRoot, string bodyPath,
-		bool reachFloor = false, float sink = 0f)
+		bool reachFloor = false, float sink = 0f, float back = 0f)
 	{
 		Skeleton3D reference = FindSkeleton(clipRoot);
 		if (reference == null || body == null) return;
@@ -440,7 +441,7 @@ public static partial class AnimationKit
 
 		if (refHips >= 0 && bodyHips >= 0)
 			MoveHips(animation, reference, refHips, fr, body, bodyHips, fb);
-		if (sink > 0f && source != null) SinkHips(animation, fb, sink);
+		if ((sink > 0f || back > 0f) && source != null) SinkHips(animation, fb, sink, back);
 
 		RetargetPose(animation, reference, body,
 			fr.Basis.Orthonormalized().GetRotationQuaternion(), fb.Basis.Orthonormalized().GetRotationQuaternion(),
@@ -525,10 +526,11 @@ public static partial class AnimationKit
 		}
 	}
 
-	/// <summary>Desce o quadril <paramref name="meters"/> (no mundo do corpo) em todas as chaves.</summary>
-	private static void SinkHips(Animation animation, Transform3D fb, float meters)
+	/// <summary>Desce o quadril <paramref name="meters"/> e o leva <paramref name="back"/> para trás (no
+	/// mundo do corpo; a frente do modelo é +Z) em todas as chaves.</summary>
+	private static void SinkHips(Animation animation, Transform3D fb, float meters, float back = 0f)
 	{
-		Vector3 down = (fb.Basis.Inverse() * (Vector3.Down * meters));
+		Vector3 down = (fb.Basis.Inverse() * (Vector3.Down * meters + new Vector3(0f, 0f, -back)));
 		for (int track = 0; track < animation.GetTrackCount(); track++)
 		{
 			if (animation.TrackGetType(track) != Animation.TrackType.Position3D) continue;

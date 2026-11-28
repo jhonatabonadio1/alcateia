@@ -57,8 +57,9 @@ public static class VideoMode
 		catch (UnauthorizedAccessException e) { GD.PushWarning($"Video mode: could not write {FilePath}: {e.Message}"); }
 	}
 
-	/// <summary>O modo em que o jogo está rodando agora, para mostrar.</summary>
-	public static string Current => RenderingServer.GetCurrentRenderingDriverName() switch
+	/// <summary>O modo em que o jogo está rodando agora, para mostrar (no
+	/// idioma do jogo: entra no meio de outro texto, que o Godot não traduz).</summary>
+	public static string Current => Loc.T(RenderingServer.GetCurrentRenderingDriverName() switch
 	{
 		"vulkan" => "Vulkan",
 		"d3d12" => "DirectX 12",
@@ -66,5 +67,5 @@ public static class VideoMode
 		"opengl3" => "compatibilidade (OpenGL)",
 		"metal" => "Metal",
 		var other => other
-	};
+	});
 }

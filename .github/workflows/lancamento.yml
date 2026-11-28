@@ -1,5 +1,5 @@
-# Lançamento: uma tag "v*" (git tag v0.4.0 && git push --tags) roda os
-# testes e, passando, sobe o servidor e a frota de partidas no Fly.io, monta
+# Lançamento: uma tag "v*" (git tag v0.4.0 && git push --tags) sobe o
+# servidor e a frota de partidas no Fly.io, monta
 # o jogo para Windows e para Mac e, só quando tudo isso deu certo,
 # publica a Release do GitHub (o link que vai para os testadores) com:
 #   WolfLeague-Setup-<versão>.exe   instalador do Windows (atalhos, desinstalador)
@@ -65,19 +65,16 @@ env:
   # A API S3 do Cloudflare R2 (o número é o da conta; não é segredo).
   R2_ENDPOINT: ${{ vars.R2_ENDPOINT || 'https://969ab96ae86fb74cc06954dd82147e57.r2.cloudflarestorage.com' }}
 
-# Os testes voltaram ao lançamento (Jhon, 27/11: "pode voltar os testes no
-# ci"; tinham saído em 21/11 e em 26/11, e voltado em 25/11):
-# nada sobe para o Fly nem vira Release sem o testes.yml inteiro passar. O
-# import do Godot (o job mais demorado) roda ao mesmo tempo que eles; os
-# clientes esperam os dois.
+# Os testes saíram do lançamento de novo (Jhon, 27/11: "tire os testes do
+# ci de release"; saíram em 21/11 e 26/11, voltaram em 25/11 e 27/11). A tag
+# sobe servidor, frota e clientes sem esperar o testes.yml, que continua
+# rodando a cada push de ramo. Para religar: um job
+# "testes: uses: ./.github/workflows/testes.yml" aqui, "needs: testes" no
+# servidor e "testes" no needs dos dois clientes.
 jobs:
-  testes:
-    uses: ./.github/workflows/testes.yml
-
   # O servidor (API, saguão, painel). Sobe primeiro: a versão nova da
   # frota pode depender de rota nova dele; a velha continua falando com ele.
   servidor:
-    needs: testes
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: producao
@@ -191,7 +188,7 @@ jobs:
   # empacota o instalador (instalador/windows.nsi) e guarda como artefato.
   # Roda ao mesmo tempo que o deploy; quem publica é o job "release".
   cliente:
-    needs: [testes, importar]
+    needs: importar
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
@@ -291,7 +288,7 @@ jobs:
   # Apple, não é autenticado: na primeira vez o jogador libera em
   # Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo Assim.
   cliente-mac:
-    needs: [testes, importar]
+    needs: importar
     runs-on: macos-latest
     timeout-minutes: 360
     steps:
@@ -552,7 +549,7 @@ jobs:
 
           for arq in arm64 x64; do
             src/tools/lancamento/cliente_mac.sh "$v" "$arq" "cliente-$arq"
-            pacote empacotar --origem "cliente-$arq/WolfLeague.app" --saida saida --produto launcher --plataforma "mac-$arq" \
+            pacote empacotar --origem "cliente-$arq/Initech Launcher.app" --saida saida --produto launcher --plataforma "mac-$arq" \
               --versao "$v" --exe Contents/MacOS/WolfLeagueLauncher --base "$base"
             cp "cliente-$arq/WolfLeague-Launcher-${v}-mac-$arq.dmg" saida/
           done

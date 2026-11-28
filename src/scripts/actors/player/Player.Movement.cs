@@ -99,8 +99,10 @@ public partial class Player
 	/// "precisam ficar mais altos") e a cápsula leva a cabeça dele (uns 15 cm
 	/// acima do olho). Passar agachado por baixo de algo pede 1,5 m de vão. Desde 27/11, 1,42 m: o agachado
 	/// desce 8 cm a mais (CharacterAnimator.CrouchSink; Jhon: "um pouco mais baixo, primeira e terceira
-	/// pessoa"), e a cápsula desce junto com a cabeça.</summary>
-	public const float DefaultHumanCrouchHeight = 1.42f;
+	/// pessoa"), e a cápsula desce junto com a cabeça. Desde o fim de 27/11, mais baixo (Jhon: "o agachar deve
+	/// agachar mais, primeira e 3 pessoa"); desde 28/11, o agachado tático (CharacterAnimator.CrouchStance): o
+	/// olho a ~120 cm, a cabeça uns 16 cm acima dele — 1,36 m.</summary>
+	public const float DefaultHumanCrouchHeight = 1.36f;
 	[Export] public float HumanCrouchHeight = DefaultHumanCrouchHeight;
 
 	/// <summary>O olho do humano em pé e agachado, em metros acima dos pés.
@@ -112,7 +114,7 @@ public partial class Player
 	/// o corpo sem modelo (o servidor de partida) e o primeiro instante. Era
 	/// 147,5 cm em pé (12 abaixo dos olhos do corpo) e 60 cm agachado (50 abaixo).</summary>
 	[Export] public float HumanEyeHeight = 1.592f;
-	[Export] public float HumanCrouchEyeHeight = 1.26f;   // (1,34 até 27/11, antes do CrouchSink)
+	[Export] public float HumanCrouchEyeHeight = 1.197f;   // (1,34 até 27/11, antes do CrouchSink; 1,26 com ele a 0,08; 1,197 no agachado tático, 28/11)
 
 	/// <summary>Quão rápido o olho do humano vai até o que o corpo visto mostra,
 	/// em m/s: trocar de arma muda o tronco, e a câmera não dá tranco.</summary>
@@ -355,8 +357,9 @@ public partial class Player
 	}
 
 	/// <summary>O fôlego da corrida: segundos de corrida, segundos para encher de novo e a espera sem fôlego
-	/// (<see cref="SprintBreath"/>; Jhon, 27/11).</summary>
-	[Export] public float SprintBreathTime = 4f;
+	/// (<see cref="SprintBreath"/>; Jhon, 27/11). 7 s de corrida desde o fim de 27/11 (Jhon: "agora o humano
+	/// pode correr por mais 3seg"; era 4): o tanque continua enchendo inteiro em 3 s.</summary>
+	[Export] public float SprintBreathTime = 7f;
 	[Export] public float SprintBreathRefill = 3f;
 	[Export] public float SprintWindedWait = 1.5f;
 

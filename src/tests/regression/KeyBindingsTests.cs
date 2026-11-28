@@ -49,7 +49,7 @@ public sealed class KeyBindingsTest : RegressionTest
 	private static async Task Rules(RegressionBench b)
 	{
 		KeyBindings.ResetAll();
-		b.Check(Bound("jump") == KeyBindings.Encode(Key(Godot.Key.Space)) && KeyBindings.Label("jump") == "Espaço", $"de fábrica, pular é o Espaço ({Bound("jump")}, {KeyBindings.Label("jump")})");
+		b.Check(Bound("jump") == KeyBindings.Encode(Key(Godot.Key.Space)) && KeyBindings.Label("jump") == Loc.T("Espaço"), $"de fábrica, pular é o Espaço ({Bound("jump")}, {KeyBindings.Label("jump")})");
 		b.Check(KeyBindings.All.All(x => KeyBindings.Default(x.Action) != null), "toda ação trocável tem tecla de fábrica");
 
 		// Pular no K: o InputMap muda e o corpo pula com o K, não com o Espaço.
@@ -82,7 +82,7 @@ public sealed class KeyBindingsTest : RegressionTest
 		b.Check(KeyBindings.Set("melee", new InputEventMouseButton { ButtonIndex = MouseButton.Middle }, swap: false), "trocou a coronhada para o botão do meio");
 		Input.ParseInputEvent(new InputEventMouseButton { ButtonIndex = MouseButton.Middle, Pressed = true });
 		await b.Frames(2);
-		b.Check(Input.IsActionPressed("melee") && KeyBindings.Label("melee") == "Botão do meio", $"o botão do meio é a coronhada ({KeyBindings.Label("melee")})");
+		b.Check(Input.IsActionPressed("melee") && KeyBindings.Label("melee") == Loc.T("Botão do meio"), $"o botão do meio é a coronhada ({KeyBindings.Label("melee")})");
 		Input.ParseInputEvent(new InputEventMouseButton { ButtonIndex = MouseButton.Middle, Pressed = false });
 
 		// Conflito: agachar no K, que é de pular.
@@ -152,7 +152,8 @@ public sealed class KeyBindingsTest : RegressionTest
 		KeyCapture jump = keys.FirstOrDefault(k => k.Action == "jump"), crouch = keys.FirstOrDefault(k => k.Action == "crouch"),
 			drop = keys.FirstOrDefault(k => k.Action == "drop");
 		if (jump == null || crouch == null || drop == null) return;
-		b.Check(jump.Text == "Espaço" && crouch.Text == "Ctrl", $"a aba mostra as teclas de agora ({jump.Text}, {crouch.Text})");
+		// O nome da tecla sai no idioma do jogo (o padrão é o inglês desde 27/11).
+		b.Check(jump.Text == Loc.T("Espaço") && crouch.Text == "Ctrl", $"a aba mostra as teclas de agora ({jump.Text}, {crouch.Text})");
 		await Photo("controles_1_normal");
 
 		// Clicar em pular e apertar o L.

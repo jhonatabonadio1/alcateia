@@ -18,6 +18,16 @@ public sealed class WolfTimeTest : RegressionTest
 	public override string Name => "TempoDeLobo";
 	public override string Description => "lobo dura 30 s (aviso nos últimos 5 s, texto e som), volta a humano sozinho, espera 20 s para virar de novo (pela tecla também); morrer zera; o bot respeita; o boneco da rede não volta sozinho";
 
+	/// <summary>O começo do texto do HUD, até o número, no idioma do jogo:
+	/// o padrão é o inglês desde 27/11 (Jhon), e o português só vale para quem
+	/// escolheu. O teste confere o aviso, não a língua.</summary>
+	private static string Before(string key)
+	{
+		string text = Loc.T(key);
+		int at = text.IndexOf('{');
+		return at < 0 ? text : text[..at];
+	}
+
 	public override async Task Run(RegressionBench b)
 	{
 		FormController form = b.Form;
@@ -52,14 +62,14 @@ public sealed class WolfTimeTest : RegressionTest
 		await b.Seconds(1.0);
 		string midText = shiftState?.Text ?? "";
 		RegressionBench.Note($"no meio do lobo o HUD diz '{midText}'");
-		b.Check(midText.StartsWith("LOBO"), $"o HUD mostra o tempo de lobo ('{midText}')");
+		b.Check(midText.StartsWith(Before("LOBO · {0:0} S")), $"o HUD mostra o tempo de lobo ('{midText}')");
 
 		b.Check(await b.Until(() => warnedAt >= 0, 4.0), "avisou antes do fim");
 		await b.Frames(2);
 		RegressionBench.Note($"aviso a {warnedAt:0.00} s (esperado 2,0); o HUD diz '{warning?.Text}' e '{shiftState?.Text}'");
 		b.Near(2.0, warnedAt, 0.1, "o aviso sai a 2 s do fim");
-		b.Check((warning?.Text ?? "").Contains("humano"), $"o aviso na tela fala da volta a humano ('{warning?.Text}')");
-		b.Check((shiftState?.Text ?? "").StartsWith("HUMANO EM"), $"a barra conta a volta ('{shiftState?.Text}')");
+		b.Check((warning?.Text ?? "").StartsWith(Before("Você volta a humano em {0:0} s")), $"o aviso na tela fala da volta a humano ('{warning?.Text}')");
+		b.Check((shiftState?.Text ?? "").StartsWith(Before("HUMANO EM {0:0} S")), $"a barra conta a volta ('{shiftState?.Text}')");
 
 		b.Check(await b.Until(() => form.Current == Form.Human, 4.0), "voltou a humano sozinho");
 		RegressionBench.Note($"o tempo acabou a {upAt:0.00} s (esperado 4,0)");
@@ -72,14 +82,14 @@ public sealed class WolfTimeTest : RegressionTest
 			string chip = slots[Slot.Wolf].GetChild<Label>(0).Text;
 			RegressionBench.Note($"espaço 3 na espera: '{chip}'; a barra diz '{shiftState?.Text}'");
 			b.Check(chip.EndsWith("s") && int.TryParse(chip.TrimEnd('s'), out int secs) && secs is >= 1 and <= 3, $"o espaço 3 mostra os segundos da espera ('{chip}')");
-			b.Check((shiftState?.Text ?? "").StartsWith("ESPERE"), $"a barra mostra a espera ('{shiftState?.Text}')");
+			b.Check((shiftState?.Text ?? "").StartsWith(Before("ESPERE {0:0} S")), $"a barra mostra a espera ('{shiftState?.Text}')");
 		}
 
 		form.ToggleForm();
 		await b.Frames(2);
 		b.Check(form.Current == Form.Human, "apertar 3 na espera não transforma");
 		b.Check(coolingSaid > 0f, $"e o HUD é avisado de quanto falta ({coolingSaid:0.0} s)");
-		b.Check((warning?.Text ?? "").Contains("Lobo de novo"), $"o aviso na tela diz quando volta ('{warning?.Text}')");
+		b.Check((warning?.Text ?? "").StartsWith(Before("Lobo de novo em {0:0} s")), $"o aviso na tela diz quando volta ('{warning?.Text}')");
 
 		b.Check(await b.Until(() => form.WolfReady, 4.0), "a espera acaba");
 		await b.Frames(2);

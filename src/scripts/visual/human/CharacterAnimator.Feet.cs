@@ -76,8 +76,11 @@ public partial class CharacterAnimator
 	public int FootBeats { get; private set; } = -1;
 
 	/// <summary>Em que ponto da passada o corpo está: 0 logo depois da pisada, 1
-	/// na seguinte (pelo tempo da última passada).</summary>
-	public float FootPhase => (float)Mathf.Clamp(_sinceBeat / Mathf.Max(_beatEvery, 0.05), 0.0, 1.0);
+	/// na seguinte (pelo tempo da última passada; correndo no Shift, pelo meio
+	/// ciclo do clipe de correr, <see cref="SprintCycle"/>: a última passada
+	/// ainda é a do andar, e com ela o ponto andava a metade do certo no começo da
+	/// corrida — os braços na tela seguem este ponto).</summary>
+	public float FootPhase => (float)Mathf.Clamp(_sinceBeat / Mathf.Max(SprintCycle > 0f ? SprintCycle * 0.5 : _beatEvery, 0.05), 0.0, 1.0);
 
 	private void FindFeet()
 	{

@@ -52,6 +52,11 @@ public static class InputSetup
 		// F, vivo, não faz mais nada (Jhon, 24/11: "tire o F"): olhava a arma
 		// na mão. O começo do giro da faca virou a estocada, no botão direito.
 		("spectate_free", K(Key.F)),
+		// O chat da partida online (Jhon, 27/11: "chat em partida"): Enter fala
+		// com todos, T só com o time, como nos FPS. Digitando, o personagem não
+		// anda nem atira (MatchChat.Typing).
+		("chat_all", K(Key.Enter)),
+		("chat_team", K(Key.T)),
 		// Slots: o lobo é o 3, na mesma memória muscular das armas.
 		("slot_1", K(Key.Key1)),
 		("slot_2", K(Key.Key2)),

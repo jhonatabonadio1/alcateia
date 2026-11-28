@@ -14,10 +14,10 @@ using System.Linq;
 ///
 /// Aqui só se escolhe o que tocar, seguindo a arma:
 /// - **tiro**: o clipe do disparo, do começo, a cada tiro;
-/// - **recarga**: o clipe tocado na velocidade que o faz terminar junto
-///   com a recarga de verdade (<see cref="Weapon.ReloadDuration"/>) — o
-///   de pente vazio quando o pente esvaziou; na escopeta, um ciclo por
-///   cartucho;
+/// - **recarga**: o clipe a 1×, sempre (27/11): o tempo da recarga de
+///   verdade (<see cref="Weapon.ReloadDuration"/>) é o dele — o de pente
+///   vazio quando o pente esvaziou e o conjunto tem; na escopeta, um ciclo
+///   por cartucho;
 /// - **golpe**, **golpe2**, **golpe4** e **golpe3** na faca, um a cada
 ///   clique (estocada, corte, estocada alta, corte deitado), no tempo
 ///   entre dois golpes;
@@ -596,6 +596,13 @@ public partial class ViewModel
 		// Trecho do mesmo clipe não se mistura consigo mesmo: troca seca.
 		bool sameClip = _rigPlayer.CurrentAnimation == clip.Name;
 		_rigPlayer.PlaySection(clip.Name, clip.From, clip.To, sameClip ? 0 : blend, speed);
+		// O mesmo clipe ainda tocando: o Godot só troca a velocidade e segue de
+		// onde estava, não recomeça. Era o tiro fora do ritmo (Jhon, 27/11: "a
+		// animação de atirar da arma precisa ser um pouco mais sincronizada com
+		// os tiros"): na rajada, o tiro que chegava com o coice anterior ainda
+		// voltando não tocava nada — o coice aparecia a cada dois ou três tiros,
+		// no ritmo do clipe e não no da arma. Volta ao começo do trecho.
+		if (sameClip) _rigPlayer.Seek(clip.From, true);
 		_rigPlaying = name;
 		RigStarts++;
 	}
@@ -669,45 +676,67 @@ public partial class ViewModel
 
 		// Atirou no meio do caminho (subindo ou descendo): a arma chega um pouco mais devagar.
 		bool moving = _rigPlaying is "mirar" or "desmirar" && _rigPlayer.IsPlaying();
-		double seconds = ShotSeconds(shot);
-		PlayRig(name, seconds, moving ? 0.07 : 0.02);
+		ShotTiming timing = KickBack(shot);
+		double seconds = ShotSeconds(shot, timing);
+		// O clipe começa perto do pico do coice dele, não no começo do arquivo
+		// (um trecho à parte, como a armada da faca; quem toca continua sendo "tiro").
+		_rigClips["_tiro"] = new Clip(shot.Name, shot.From + timing.Start, shot.To);
+		PlayRig("_tiro", seconds, moving ? 0.07 : 0.02);
+		_rigPlaying = name;
 		_rigBusy = seconds;
 	}
 
 	/// <summary>
-	/// Em quanto tempo toca o clipe do tiro: o do arquivo, ou menos, para o coice
-	/// caber no intervalo da arma (Jhon, 27/11: "a animação de recuo do tiro em
-	/// primeira pessoa nas armas não coincide com a velocidade que estou atirando").
-	/// Medido nos conjuntos: a arma do AK, do M4 e da SCAR leva 0,20 a 0,22 s para
-	/// voltar do coice, e o tiro seguinte vem em 0,09 a 0,15 s; o clipe recomeçava
-	/// do zero com a arma ainda no meio do caminho e ela pulava de volta, um tranco
-	/// por tiro fora do ritmo. Agora o clipe inteiro anda na razão
-	/// volta ÷ intervalo: a arma chega de volta no instante do tiro seguinte, e a
-	/// rajada lê como um coice por tiro. Arma mais lenta que o coice (a SVD, a
-	/// Desert Eagle) toca como veio.
+	/// Quanto do clipe do tiro vem antes do pico do coice e ainda fica, em
+	/// segundos do arquivo: o do AK (Jhon, 27/11: "ak está boa"), que chega ao
+	/// pico 0,033 s depois do começo. Clipe que demora mais a chegar lá (a Desert
+	/// Eagle, 0,10 s; o AR-15, 0,067 s) começa adiantado o que passa disso: o
+	/// coice batia três a seis quadros depois do estampido e do clarão.
 	/// </summary>
-	private double ShotSeconds(Clip shot)
+	[Export] public float ShotPeakLead = 0.033f;
+
+	/// <summary>Onde o clipe do tiro começa (<c>Start</c>, segundos depois do
+	/// começo do trecho) e quando a arma volta do coice (<c>Back</c>, idem).</summary>
+	private readonly record struct ShotTiming(double Start, double Back)
 	{
-		float interval = _weapon.Held?.Interval ?? 0f;
-		double back = KickBack(shot);
-		if (interval <= 0f || back <= interval) return shot.Length;
-		return shot.Length * interval / back;
+		public double Kick => Back - Start;
 	}
 
-	/// <summary>Quanto do clipe <see cref="ShotSeconds"/> já mediu (a volta do
-	/// coice, por clipe), deste conjunto.</summary>
-	private readonly Dictionary<string, double> _kickBack = new();
+	/// <summary>
+	/// Em quanto tempo toca o clipe do tiro, a partir de onde ele começa: o do
+	/// arquivo, ou menos, para o coice caber no intervalo da arma (Jhon, 27/11: "a
+	/// animação de recuo do tiro em primeira pessoa nas armas não coincide com a
+	/// velocidade que estou atirando"). Medido nos conjuntos: a arma do AK, do M4 e
+	/// da SCAR leva 0,20 a 0,22 s para voltar do coice, e o tiro seguinte vem em
+	/// 0,09 a 0,15 s; o clipe recomeçava do zero com a arma ainda no meio do
+	/// caminho e ela pulava de volta, um tranco por tiro fora do ritmo. Agora o
+	/// clipe inteiro anda na razão volta ÷ intervalo: a arma chega de volta no
+	/// instante do tiro seguinte, e a rajada lê como um coice por tiro. Arma mais
+	/// lenta que o coice (a SVD, a Desert Eagle) toca como veio.
+	/// </summary>
+	private double ShotSeconds(Clip shot, ShotTiming timing)
+	{
+		float interval = _weapon.Held?.Interval ?? 0f;
+		double length = shot.Length - timing.Start;
+		if (interval <= 0f || timing.Kick <= interval) return length;
+		return length * interval / timing.Kick;
+	}
+
+	/// <summary>O que <see cref="KickBack"/> já mediu, por clipe, deste conjunto.</summary>
+	private readonly Dictionary<string, ShotTiming> _kickBack = new();
 
 	/// <summary>
-	/// Em quanto tempo, desde o começo do clipe do tiro, a arma volta do coice:
-	/// o primeiro instante depois do pico em que a posição e o giro do osso da
-	/// arma (<c>ik_hand_gun</c>) estão a menos de 10% do pico, cada um contra o
-	/// seu. Lido no clipe uma vez por conjunto. Sem o osso, o clipe inteiro.
+	/// O coice no clipe do tiro, pelo osso da arma (<c>ik_hand_gun</c>): o pico é
+	/// o instante em que a posição e o giro, cada um contra o seu máximo, mais se
+	/// afastam do primeiro quadro; o clipe começa <see cref="ShotPeakLead"/> antes
+	/// dele (nunca antes do começo); a volta é o primeiro instante depois do pico
+	/// em que os dois estão a menos de 10% do máximo. Lido no clipe uma vez por
+	/// conjunto. Sem o osso, o clipe inteiro, do começo.
 	/// </summary>
-	private double KickBack(Clip shot)
+	private ShotTiming KickBack(Clip shot)
 	{
-		if (_kickBack.TryGetValue(shot.Name, out double known)) return known;
-		double back = shot.Length;
+		if (_kickBack.TryGetValue(shot.Name, out ShotTiming known)) return known;
+		var timing = new ShotTiming(0, shot.Length);
 		Animation anim = _rigPlayer?.GetAnimation(shot.Name);
 		int position = -1, rotation = -1;
 		if (anim != null)
@@ -735,15 +764,18 @@ public partial class ViewModel
 			for (int i = 0; i <= samples; i++)
 				if (moved[i] / Mathf.Max(peakMoved, 1e-6f) + turned[i] / Mathf.Max(peakTurned, 1e-6f)
 					> moved[peak] / Mathf.Max(peakMoved, 1e-6f) + turned[peak] / Mathf.Max(peakTurned, 1e-6f)) peak = i;
+			double back = shot.Length;
 			for (int i = peak; i <= samples; i++)
 				if (moved[i] <= 0.1f * peakMoved && turned[i] <= 0.1f * peakTurned)
 				{
 					back = shot.Length * i / samples;
 					break;
 				}
+			double start = Mathf.Max(0.0, shot.Length * peak / samples - ShotPeakLead);
+			timing = new ShotTiming(start, back);
 		}
-		_kickBack[shot.Name] = back;
-		return back;
+		_kickBack[shot.Name] = timing;
+		return timing;
 	}
 
 	private void UpdateRig(float dt)
@@ -788,9 +820,20 @@ public partial class ViewModel
 				: _emptyReload && _rigClips.ContainsKey("recarga_vazia") ? "recarga_vazia"
 				: "recarga";
 
-			// Começou a recarga — ou, na escopeta, o cartucho seguinte.
+			// Começou a recarga — ou, na escopeta, o cartucho seguinte. O clipe
+			// toca sempre a 1× (Jhon, 27/11: "às vezes sinto a recarga ir mais
+			// rápido e às vezes mais lenta, aí o som não acompanha"): era esticado
+			// até o tempo da recarga, e a vazia (mais longa, com o mesmo clipe) e a
+			// recomeçada no meio tocavam em outra velocidade. O tempo da recarga de
+			// cada arma (.tres) é o do clipe; a conta ainda começa de onde a regra
+			// está, se os braços chegaram no meio (troca de câmera).
 			if (_rigPlaying != name || p < _rigLastReload - 0.2f)
-				PlayRig(name, _weapon.ReloadDuration * (1f - p));
+			{
+				PlayRig(name, 0);
+				double into = p * _weapon.ReloadDuration;
+				if (into > 0.02 && _rigClips.TryGetValue(name, out Clip reload))
+					_rigPlayer.Seek(reload.From + Mathf.Min(into, reload.Length), true);
+			}
 			_rigLastReload = p;
 			_rigBusy = 0;
 			_idle = 0f;
@@ -832,8 +875,30 @@ public partial class ViewModel
 		_rigRestHold = 0f;
 
 		if (_rigPlaying != rest || !_rigPlayer.IsPlaying())
+		{
 			PlayRig(rest, 0, sprinting ? RigSprintIn : _rigPlaying == "correr" ? RigSprintOut : 0.2);
+			if (sprinting) StartInStep();
+		}
 	}
+
+	/// <summary>
+	/// O "correr" começa no ponto do ciclo em que o corpo está na passada, e não
+	/// do início (27/11; Jhon: "parece que não está algo fluido apertar para
+	/// correr e parar, sinto um leve delay para começar a correr, tipo a animação
+	/// um pouco mais lenta"). Do início, ele nascia em média meio passo fora do pé
+	/// (medido: 0,43 do ciclo), e a trava do passo (<see cref="PaceRig"/>) o
+	/// tocava a 2,2× por 0,22 s para alcançar e depois a 0,8× por outros 0,22 s.
+	/// </summary>
+	private void StartInStep()
+	{
+		if (_player == null || _player.StrideLength <= 0.01f || !_rigClips.TryGetValue("correr", out Clip clip)) return;
+		_rigPlayer.Seek(clip.From + SprintStepPhase() * clip.Length, true);
+	}
+
+	/// <summary>Em que ponto do ciclo do "correr" (fração) os braços devem estar
+	/// agora, pelo passo do corpo.</summary>
+	private float SprintStepPhase() =>
+		Mathf.PosMod(RigSprintStepAt + (_player.Steps % 2 + _player.StridePhase) * 0.5f, 1f);
 
 	/// <summary>Em quanto tempo os braços abaixam a arma para correr e em
 	/// quanto a trazem de volta (s). A volta cabe na espera do tiro
@@ -869,6 +934,13 @@ public partial class ViewModel
 	/// (por ciclo de diferença). Baixo, demora a acertar; alto, dá tranco.</summary>
 	[Export] public float RigSprintLock = 3f;
 
+	/// <summary>Até quanto a correção do passo acelera ou freia os braços (fração da
+	/// cadência, 27/11): 0,15 é de 0,85× a 1,15× do ritmo da corrida.</summary>
+	[Export(PropertyHint.Range, "0,1")] public float RigSprintNudge = 0.15f;
+
+	/// <summary>O corpo animado do jogador (a cadência da corrida dele).</summary>
+	private CharacterAnimator _human;
+
 	/// <summary>Quanto o "correr" está atrás do passo do corpo, em fração do
 	/// ciclo (leitura para o teste).</summary>
 	public float RigSprintBehind { get; private set; }
@@ -884,14 +956,23 @@ public partial class ViewModel
 			pace = RigSprintPace;
 			if (_player != null && _player.StrideLength > 0.01f)
 			{
-				// Duas pisadas por ciclo: a cadência sai da velocidade e da passada.
+				// A cadência: a do clipe de correr do corpo, no ritmo da velocidade de agora (um
+				// ciclo dele, dois passos, é um ciclo dos braços). Até 27/11 saía da passada medida
+				// entre as pisadas, que vem do andar e leva alguns passos para assentar: na entrada
+				// a primeira pisada da corrida mediu 1,48 m (a da corrida é 1,12), e os braços
+				// tocavam a 0,8× do certo. Sem o corpo animado, pela passada.
+				_human ??= _player.GetNodeOrNull<CharacterAnimator>("Human");
+				float cycle = _human?.SprintCycle ?? 0f;
 				float speed = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z).Length();
-				pace = speed / (2f * _player.StrideLength) * (float)clip.Length;
-				float want = Mathf.PosMod(RigSprintStepAt + (_player.Steps % 2 + _player.StridePhase) * 0.5f, 1f);
+				pace = cycle > 0.05f ? (float)clip.Length / cycle : speed / (2f * _player.StrideLength) * (float)clip.Length;
+				float want = SprintStepPhase();
 				float at = Mathf.PosMod((float)((_rigPlayer.CurrentAnimationPosition - clip.From) / clip.Length), 1f);
 				float behind = Mathf.PosMod(want - at + 0.5f, 1f) - 0.5f;
 				RigSprintBehind = behind;
-				pace = Mathf.Clamp(pace * (1f + behind * RigSprintLock), 0.3f, 2.2f);
+				// A correção do passo, no máximo RigSprintNudge da cadência: a pisada da
+				// troca do andar para a corrida cai fora do ritmo, e sem o teto os braços
+				// davam trancos de 2,2× e 0,8× atrás dela.
+				pace *= 1f + Mathf.Clamp(behind * RigSprintLock, -RigSprintNudge, RigSprintNudge);
 			}
 		}
 		if (!Mathf.IsEqualApprox(_rigPlayer.SpeedScale, pace)) _rigPlayer.SpeedScale = pace;

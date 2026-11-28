@@ -464,7 +464,9 @@ public partial class OnlineScreen : LobbyScreen
 		_chatScroll.AddChild(_chatLog);
 		column.AddChild(_chatScroll);
 
-		foreach ((string from, string text) in Lobby.Chat) _chatLog.AddChild(ChatLine(from, text));
+		// Só o que se falou na lista: o da sala é da tela da sala.
+		foreach (LobbyLink.ChatLine line in Lobby.Chat)
+			if (line.Room == 0) _chatLog.AddChild(ChatLine(line.From, line.Text));
 		ScrollChat();
 
 		LineEdit input = UiKit.Field("", "Escreva e aperte Enter", 200);
@@ -485,10 +487,10 @@ public partial class OnlineScreen : LobbyScreen
 		return line;
 	}
 
-	private void OnChat(string from, string text)
+	private void OnChat(LobbyLink.ChatLine line)
 	{
-		if (!Alive || _chatLog == null || !IsInstanceValid(_chatLog)) return;
-		_chatLog.AddChild(ChatLine(from, text));
+		if (!Alive || _chatLog == null || !IsInstanceValid(_chatLog) || line.Room != 0) return;
+		_chatLog.AddChild(ChatLine(line.From, line.Text));
 		ScrollChat();
 	}
 

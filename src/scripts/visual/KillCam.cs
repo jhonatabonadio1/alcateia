@@ -129,7 +129,7 @@ public partial class KillCam : Node3D
 	public override void _Process(double delta)
 	{
 		if (_cleaned) return;
-		bool blocked = UiState.AnyOpen;
+		bool blocked = UiState.AnyOpen || MatchChat.Typing;
 
 		// O matador pode trocar de forma enquanto você espera: o corpo
 		// novo ganha a silhueta também.

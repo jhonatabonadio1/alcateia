@@ -200,15 +200,38 @@ public partial class CombatantAudio : Node
 	{
 		string id = _weapon.Held?.Id ?? "";
 
+		// A recarga toca do começo junto com a animação (a 1×, no tempo do
+		// clipe): os ruídos de dentro do arquivo (soltar o carregador, pegar,
+		// encaixar) caem nos instantes do clipe. Com o pente vazio, o arquivo
+		// da vazia, se houver (a Desert Eagle: o ferrolho no fim). Interrompida
+		// (troca de arma, tiro na escopeta), o som para junto (Jhon, 27/11).
+		string model = Sfx.ModelOf(id);
 		if (reloading && !_wasReloading)
-			Play(Sfx.First($"recarga_{id}", $"recarga_{Sfx.ModelOf(id)}", "recarga"));
+		{
+			StopReloadSound();
+			string name = inMag <= 0
+				? Sfx.First($"recarga_vazia_{id}", $"recarga_vazia_{model}", $"recarga_{id}", $"recarga_{model}", "recarga")
+				: Sfx.First($"recarga_{id}", $"recarga_{model}", "recarga");
+			if (name != null) _reloadSound = Sfx.Attached(_body, name, CosmeticRange, _local);
+		}
 		else if (reloading && _wasReloading && inMag > _lastMag)
 			Play("cartucho");
 		else if (!reloading && _wasReloading && inMag >= magSize && magSize > 0)
-			Play(Sfx.First($"recarga_fim_{id}", $"recarga_fim_{Sfx.ModelOf(id)}", "recarga_fim"));
+			Play(Sfx.First($"recarga_fim_{id}", $"recarga_fim_{model}", "recarga_fim"));
+		else if (!reloading && _wasReloading)
+			StopReloadSound();
 
 		_wasReloading = reloading;
 		_lastMag = inMag;
+	}
+
+	/// <summary>O som da recarga em curso, para cortar se ela parar no meio.</summary>
+	private Node _reloadSound;
+
+	private void StopReloadSound()
+	{
+		if (_reloadSound != null && IsInstanceValid(_reloadSound)) _reloadSound.QueueFree();
+		_reloadSound = null;
 	}
 
 	private void OnSlot(int slot)
@@ -264,6 +287,7 @@ public partial class CombatantAudio : Node
 		// o jogador trocando de arma, então não faz som de troca.
 		_quiet = 0.5;
 		_wasReloading = false;
+		StopReloadSound();
 		_wasOnFloor = true;
 
 		if (_local) Sfx.Local("respawn");

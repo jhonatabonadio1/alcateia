@@ -13,7 +13,7 @@ Por que existe e por que é assim: `docs/decisoes/0021-cliente-de-instalacao.md`
 |---|---|
 | **Conta** | Entrar e criar conta (as mesmas do jogo, no mesmo servidor), até 3 contas lembradas, entrar sozinho na última. Verificação em duas etapas opcional (QR code para o aplicativo autenticador). |
 | **Jogo** | Um botão que é sempre a próxima coisa a fazer: instalar, atualizar, jogar, continuar. Barra com tamanho, velocidade e tempo que falta; pausar e continuar; verificar e reparar; mudar a pasta; desinstalar. |
-| **Atualização** | Confere ao abrir e a cada 20 minutos. Baixa só o que mudou (uma versão nova costuma ser uma fração do jogo). Com "atualizar sozinho" ligado, começa sem esperar o clique. O próprio cliente também se atualiza, em segundo plano. |
+| **Atualização** | Confere ao abrir e a cada 20 minutos. Baixa só o que mudou (uma versão nova costuma ser uma fração do jogo). Com "atualizar sozinho" ligado, começa sem esperar o clique. O próprio cliente também se atualiza, em segundo plano, e reabre sozinho na versão nova quando não atrapalha (jogo fechado, nada baixando, janela na bandeja ou recém-aberta; senão, um aviso). |
 | **Amigos** | A lista com onde cada um está (no jogo, na sala, em partida, no aplicativo, desconectado), adicionar pelo `Nome#0000`, aceitar e recusar pedidos, desfazer amizade. Convidar para sala e para grupo é de dentro do jogo. |
 | **Jogar** | Abre o jogo já com a conta do cliente: o jogador não digita a senha de novo. |
 | **Bandeja** | Fechar a janela deixa o cliente na bandeja (os amigos seguem vendo você, o download segue). Abrir junto com o Windows é opcional. |
@@ -230,11 +230,17 @@ do topo.
   qualquer programa do computador leria). O jogo entra com ela uma vez
   (`Backend.TakeLauncherAccess`, na `LoginScreen`). Aberto direto, sem o
   cliente, o jogo abre na tela de login de sempre, com as contas salvas.
+- **Onde o jogo fica**: numa pasta `game` (`AppInfo.DefaultGameDir`). No
+  Windows, ao lado do cliente (`%LOCALAPPDATA%\Programs\WolfLeague Launcher\game`);
+  no Mac e no Linux, na pasta de dados dele (`WolfLeagueLauncher/game`; a
+  `Jogo` de antes de 27/11 é renomeada ao abrir). O jogador pode escolher outra.
 - **O jogo instalado pelo instalador antigo** (`windows.nsi`) é
-  aproveitado: a pasta padrão do cliente no Windows é a mesma
-  (`%LOCALAPPDATA%\Programs\WolfLeague`, ou a que o jogador tinha
-  escolhido, lida do registro), e o que já está lá entra na conta como
-  pedaços que não precisam vir da rede.
+  aproveitado: o cliente usa a pasta dele (lida do registro,
+  `HKCU\Software\WolfLeague\InstallPath`), e o que já está lá entra na
+  conta como pedaços que não precisam vir da rede.
+- **O ícone do cliente não é o do jogo** (`instalador/WolfLeagueLauncher.ico`,
+  de `icone_launcher.svg`: o emblema da Initech Games em ouro `#FEC803` sobre
+  preto, as cores do estúdio). É outro programa.
 - **O iniciador de vídeo continua** (`instalador/iniciador.nsi`): o
   `WolfLeague.exe` que o cliente abre é ele, que acha o modo de vídeo que
   funciona; o jogo de verdade fica em `game\`.

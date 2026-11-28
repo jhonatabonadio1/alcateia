@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Alcateia.Cliente.ViewModels"
+             xmlns:c="using:Alcateia.Cliente.Core"
+             x:Class="Alcateia.Cliente.Views.ChatView"
+             x:DataType="vm:ChatViewModel">
+
+	<!-- A conversa com um amigo, no canto da janela, ao lado da lista de amigos. -->
+	<Border Width="360" Height="460" Background="{StaticResource Surface}" BorderBrush="{StaticResource Gold}" BorderThickness="0,3,0,0"
+	        BoxShadow="0 10 40 0 #A0000000">
+		<Grid RowDefinitions="Auto,*,Auto">
+			<!-- quem -->
+			<Border Grid.Row="0" Background="{StaticResource Surface2}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Padding="16,10,8,10">
+				<Grid ColumnDefinitions="*,Auto">
+					<StackPanel Spacing="1">
+						<StackPanel Orientation="Horizontal" Spacing="2">
+							<TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="16" />
+							<TextBlock Text="{Binding Tag}" Foreground="{StaticResource Ink3}" FontSize="14" VerticalAlignment="Bottom" Margin="0,0,0,1" />
+						</StackPanel>
+						<TextBlock Text="{Binding Where}" Classes="muted" FontSize="12" />
+					</StackPanel>
+					<Button Grid.Column="1" Classes="mini" Command="{Binding Close}" ToolTip.Tip="{c:T chat.close}" VerticalAlignment="Center">
+						<Path Data="M3,3 L11,11 M11,3 L3,11" Stroke="{StaticResource Ink2}" StrokeThickness="1.6" Width="14" Height="14" />
+					</Button>
+				</Grid>
+			</Border>
+
+			<!-- as mensagens -->
+			<ScrollViewer Grid.Row="1" x:Name="Scroll" VerticalScrollBarVisibility="Auto">
+				<StackPanel Margin="12,10,12,10" Spacing="6">
+					<Button Classes="ghost" Content="{c:T chat.older}" Command="{Binding Older}" IsVisible="{Binding HasOlder}" HorizontalAlignment="Center" FontSize="13" />
+					<TextBlock Text="{c:T chat.empty}" IsVisible="{Binding IsEmpty}" Classes="muted" FontSize="13" TextWrapping="Wrap" TextAlignment="Center" Margin="10,40,10,0" />
+					<ItemsControl ItemsSource="{Binding Lines}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="vm:ChatLine">
+								<Panel Margin="0,3">
+									<!-- dele: à esquerda, cinza -->
+									<Border IsVisible="{Binding Theirs}" HorizontalAlignment="Left" MaxWidth="270" Background="{StaticResource Surface2}" Padding="11,7">
+										<StackPanel Spacing="2">
+											<TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="14" />
+											<TextBlock Text="{Binding Time}" FontSize="11" Foreground="{StaticResource Ink3}" />
+										</StackPanel>
+									</Border>
+									<!-- minha: à direita, com o fio ouro -->
+									<Border IsVisible="{Binding Mine}" HorizontalAlignment="Right" MaxWidth="270" Background="#22FEC803"
+									        BorderBrush="{StaticResource Gold}" BorderThickness="0,0,2,0" Padding="11,7" Classes.pending="{Binding Pending}">
+										<StackPanel Spacing="2">
+											<TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="14" />
+											<TextBlock Text="{Binding Time}" FontSize="11" Foreground="{StaticResource Ink3}" HorizontalAlignment="Right" />
+										</StackPanel>
+									</Border>
+								</Panel>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</StackPanel>
+			</ScrollViewer>
+
+			<!-- escrever -->
+			<Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="10">
+				<TextBox x:Name="Input" Text="{Binding Draft}" PlaceholderText="{c:T chat.placeholder}" MaxLength="500">
+					<TextBox.KeyBindings>
+						<KeyBinding Gesture="Enter" Command="{Binding Send}" />
+					</TextBox.KeyBindings>
+				</TextBox>
+				<Button Grid.Column="1" Classes="primary" Command="{Binding Send}" Margin="6,0,0,0" Width="44" Height="40" Padding="0" ToolTip.Tip="{c:T chat.send}">
+					<Path Data="M1,7 L13,7 M8,2 L13,7 L8,12" Stroke="{StaticResource GoldInk}" StrokeThickness="2" Width="14" Height="14" />
+				</Button>
+			</Grid>
+		</Grid>
+	</Border>
+
+	<UserControl.Styles>
+		<Style Selector="Border.pending">
+			<Setter Property="Opacity" Value="0.55" />
+		</Style>
+	</UserControl.Styles>
+</UserControl>

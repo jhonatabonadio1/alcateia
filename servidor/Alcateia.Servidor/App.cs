@@ -58,7 +58,7 @@ public sealed record Services(Config Config, PgPool Db, AccountService Accounts,
 /// | GET /v1/ranking | qualquer um | os primeiros por XP |
 /// | GET /v1/rooms | qualquer um | as salas abertas |
 /// | GET /v1/matches | jogador | as últimas partidas dele |
-/// | GET /v1/lobby (WebSocket) | jogador | salas, chat, amigos e grupo ao vivo; com <c>?client=app</c>, só os amigos (o cliente de instalação) |
+/// | GET /v1/lobby (WebSocket) | jogador | salas, chat, amigos, conversas e grupo ao vivo; com <c>?client=app</c>, só os amigos e as conversas (o cliente de instalação) |
 /// | POST /v1/fleet/heartbeat | servidor de partida | "estou vivo, com estas partidas"; recebe as novas |
 /// | POST /v1/matches | servidor de partida | o resultado de uma partida |
 /// | GET /v1/gamedata | qualquer um | catálogo, mapas, promoções, desafios e configurações |
@@ -188,6 +188,7 @@ public static class App
 		var lobby = new LobbyService(fleet, accounts, clock, config.TicketLife, config.RoomListEvery, config.MaxRooms) 
 		{
 			MapAllowed = gameData.MapAllowed, Inventory = playerStore.Inventory, FriendStore = new PgFriendRepository(db),
+			DirectStore = new PgDirectMessageRepository(db),
 			// O jogo rápido sorteia entre os mapas que o painel deixou ligados, e grava a nota no perfil.
 			QuickMaps = () => gameData.Current.Maps.Where(m => m.Enabled).Select(m => (m.Id, m.Size)).ToList(),
 			SaveSkill = accounts.SaveSkill

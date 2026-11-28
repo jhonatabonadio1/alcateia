@@ -51,6 +51,8 @@ public static class KeyBindings
 		new("radio", "Interface", "Rádio do time", "Abre a lista das falas; com ela aberta, as teclas de número escolhem (essas não se trocam)."),
 		new("guide", "Interface", "Guia das habilidades", "Segurar para ver o que cada habilidade faz."),
 		new("spectate_free", "Interface", "Câmera livre (morto)", "Morto, solta a câmera de espectador."),
+		new("chat_all", "Interface", "Chat para todos", "Na partida online, abre o chat para a sala inteira. Enter manda, Esc fecha, Tab troca para o time."),
+		new("chat_team", "Interface", "Chat do time", "Na partida online, abre o chat só para o seu time."),
 	};
 
 	/// <summary>O que não se pode usar numa troca: o Esc abre o menu e cancela a captura.</summary>

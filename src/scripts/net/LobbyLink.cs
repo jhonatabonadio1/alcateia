@@ -60,9 +60,21 @@ public partial class LobbyLink : Node
 	public void JoinQueue() => Send("queue.join");
 	public void LeaveQueue() => Send("queue.leave");
 
-	/// <summary>As últimas mensagens do chat, para a tela que abrir depois.</summary>
-	public List<(string From, string Text)> Chat { get; } = new();
+	/// <summary>Uma linha do chat: quem falou (a conta e o nome), em que
+	/// sala (0: na lista de salas), de que time (0 fora de sala), se foi só
+	/// para o time e o texto.</summary>
+	public sealed record ChatLine(long FromId, string From, int Room, int Side, bool Team, string Text);
+
+	/// <summary>As últimas mensagens do chat, para a tela que abrir depois
+	/// (cada tela mostra as do lugar dela: a sala, ou a lista).</summary>
+	public List<ChatLine> Chat { get; } = new();
 	private const int ChatKept = 80;
+
+	/// <summary>O tamanho de uma mensagem do chat (o servidor corta o resto).</summary>
+	public const int ChatMax = 200;
+
+	/// <summary>A sala em que se está agora (0: nenhuma).</summary>
+	public int RoomId => Room?["id"]?.GetValue<int>() ?? 0;
 
 	/// <summary>A última lista de salas e a sala em que se está (ou null).</summary>
 	public JsonArray Rooms { get; private set; } = new();
@@ -70,7 +82,7 @@ public partial class LobbyLink : Node
 
 	/// <summary>Algo mudou (lista, sala, conexão): a tela se redesenha.</summary>
 	public event Action Changed;
-	public event Action<string, string> ChatReceived;
+	public event Action<ChatLine> ChatReceived;
 	public event Action<string, string> Failed;
 	public event Action<JsonObject> MatchStarting;
 	public event Action<JsonObject> MatchEnded;
@@ -121,6 +133,7 @@ public partial class LobbyLink : Node
 		if (Queue?["state"]?.GetValue<string>() == "searching") SetQueue(new JsonObject { ["t"] = "queue", ["state"] = "idle" });
 		Queue = null;
 		Social.Reset();
+		DirectChat.Reset();
 	}
 
 	public void CreateRoom(JsonObject settings) => Send("room.create", ("settings", settings));
@@ -163,7 +176,13 @@ public partial class LobbyLink : Node
 	/// <summary>Bots na sala (só o dono): entram num time, saem pelo número.</summary>
 	public void AddBot(int team) => Send("room.bot.add", ("team", team));
 	public void RemoveBot(long id) => Send("room.bot.remove", ("id", id));
-	public void Say(string text) => Send("chat", ("text", text));
+	/// <summary>Fala no chat: na sala, para a sala (ou, com <paramref name="team"/>,
+	/// só para o time — o chat do time da partida); fora dela, para a lista.</summary>
+	public void Say(string text, bool team = false)
+	{
+		if (team) Send("chat", ("text", text), ("team", true));
+		else Send("chat", ("text", text));
+	}
 	public void RefreshRooms() => Send("rooms.list");
 
 	/// <summary>Uma mensagem de amigos (<see cref="Social"/>). Servidor de
@@ -171,6 +190,12 @@ public partial class LobbyLink : Node
 	public void SendFriend(string type, params (string Key, JsonNode Value)[] fields)
 	{
 		if (!_noFriends) Send(type, fields);
+	}
+
+	/// <summary>Uma mensagem das conversas com os amigos (<see cref="DirectChat"/>).</summary>
+	public void SendDirect(string type, params (string Key, JsonNode Value)[] fields)
+	{
+		if (!_noFriends && !DirectChat.Unsupported) Send(type, fields);
 	}
 
 	private bool _noFriends;
@@ -246,6 +271,8 @@ public partial class LobbyLink : Node
 		{
 			// Amigos, pedidos e convites: o espelho fica no Social.
 			if (Social.Apply(m, Time.GetTicksMsec() / 1000.0)) continue;
+			// As conversas com os amigos, idem no DirectChat.
+			if (DirectChat.Apply(m)) continue;
 
 			switch (m["t"]?.GetValue<string>())
 			{
@@ -265,10 +292,12 @@ public partial class LobbyLink : Node
 					Changed?.Invoke();
 					break;
 				case "chat":
-					(string from, string text) = (m["from"]?.GetValue<string>() ?? "", m["text"]?.GetValue<string>() ?? "");
-					Chat.Add((from, text));
+					var line = new ChatLine(m["id"]?.GetValue<long>() ?? 0, m["from"]?.GetValue<string>() ?? "",
+						m["room"]?.GetValue<int?>() ?? 0, m["side"]?.GetValue<int>() ?? 0,
+						m["team"]?.GetValue<bool>() ?? false, m["text"]?.GetValue<string>() ?? "");
+					Chat.Add(line);
 					if (Chat.Count > ChatKept) Chat.RemoveAt(0);
-					ChatReceived?.Invoke(from, text);
+					ChatReceived?.Invoke(line);
 					break;
 				case "error":
 					string code = m["code"]?.GetValue<string>() ?? "", message = m["message"]?.GetValue<string>() ?? "";
@@ -286,6 +315,12 @@ public partial class LobbyLink : Node
 						break;
 					}
 					// Servidor de antes dos amigos: a tela diz isso, sem erro.
+					// Servidor de antes das conversas com os amigos: idem.
+					if (code == "mensagem_desconhecida" && message.Contains("dm."))
+					{
+						DirectChat.MarkUnsupported();
+						break;
+					}
 					if (code == "mensagem_desconhecida" && (message.Contains("friend") || message.Contains("invite.") || message.Contains("group.")))
 					{
 						_noFriends = true;

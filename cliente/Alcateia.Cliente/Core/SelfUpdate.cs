@@ -12,8 +12,10 @@ namespace Alcateia.Cliente.Core;
 /// O cliente se atualiza sozinho, com o mesmo pacote do jogo: o manifesto
 /// dele (<c>launcher-windows.manifest.json</c>, <c>launcher-mac-arm64…</c>)
 /// fica no mesmo lugar dos do jogo. Havendo versão mais nova, baixa em
-/// segundo plano por cima da própria instalação e avisa: a nova vale ao
-/// reiniciar (<see cref="Restart"/>) ou na próxima vez que abrir.
+/// segundo plano por cima da própria instalação e reinicia sozinho quando
+/// não atrapalha (o <c>MainViewModel</c> decide quando: jogo fechado, nada
+/// baixando, a janela escondida ou recém-aberta); senão avisa, e a nova vale
+/// ao clicar em reiniciar (<see cref="Restart"/>) ou na próxima vez que abrir.
 ///
 /// No Windows um programa aberto não se sobrescreve, mas troca de nome: o
 /// executável antigo sai da frente (<c>.antigo-…</c>), o novo entra no lugar,
@@ -85,14 +87,15 @@ public sealed class SelfUpdate
 		}
 	}
 
-	/// <summary>Abre o cliente de novo (já a versão nova) e fecha este.</summary>
-	public static bool Restart()
+	/// <summary>Abre o cliente de novo (já a versão nova) e fecha este.
+	/// <paramref name="hidden"/>: o novo nasce na bandeja, como este estava.</summary>
+	public static bool Restart(bool hidden = false)
 	{
 		try
 		{
 			string exe = Environment.ProcessPath;
 			if (string.IsNullOrEmpty(exe)) return false;
-			Process.Start(new ProcessStartInfo(exe) { UseShellExecute = false, Arguments = "--reiniciado" });
+			Process.Start(new ProcessStartInfo(exe) { UseShellExecute = false, Arguments = hidden ? "--reiniciado --minimizado" : "--reiniciado" });
 			return true;
 		}
 		catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException or IOException)

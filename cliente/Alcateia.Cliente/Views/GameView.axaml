@@ -1,60 +1,105 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Alcateia.Cliente.ViewModels"
+             xmlns:c="using:Alcateia.Cliente.Core"
              x:Class="Alcateia.Cliente.Views.GameView"
              x:DataType="vm:GameViewModel">
 
+	<!--
+	A página de um jogo: a arte dele de fundo, o logo e as abas no alto
+	(visão geral, novidades), e no pé o botão que é a próxima coisa a fazer,
+	o menu de opções do jogo e a linha de como ele está.
+	-->
 	<Grid RowDefinitions="*,Auto">
-		<!-- a arte do jogo -->
 		<Panel Grid.Row="0" ClipToBounds="True">
-			<Image Source="/Assets/arte.jpg" Stretch="UniformToFill" />
-			<!-- escurece a esquerda, para o título, e o pé, para emendar na faixa do botão -->
+			<Image Source="{Binding Art}" Stretch="UniformToFill" />
+			<!-- escurece em cima (o logo e as abas), à esquerda e no pé (a faixa do botão) -->
 			<Border>
 				<Border.Background>
 					<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-						<GradientStop Offset="0" Color="#D90A1119" />
-						<GradientStop Offset="0.5" Color="#260A1119" />
-						<GradientStop Offset="1" Color="#000A1119" />
+						<GradientStop Offset="0" Color="#E609090B" />
+						<GradientStop Offset="0.55" Color="#3309090B" />
+						<GradientStop Offset="1" Color="#0009090B" />
 					</LinearGradientBrush>
 				</Border.Background>
 			</Border>
-			<Border VerticalAlignment="Bottom" Height="170">
+			<Border VerticalAlignment="Top" Height="150">
 				<Border.Background>
 					<LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-						<GradientStop Offset="0" Color="#000A1119" />
-						<GradientStop Offset="1" Color="#FF0A1119" />
+						<GradientStop Offset="0" Color="#F009090B" />
+						<GradientStop Offset="1" Color="#0009090B" />
+					</LinearGradientBrush>
+				</Border.Background>
+			</Border>
+			<Border VerticalAlignment="Bottom" Height="160">
+				<Border.Background>
+					<LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+						<GradientStop Offset="0" Color="#0009090B" />
+						<GradientStop Offset="1" Color="#FF09090B" />
 					</LinearGradientBrush>
 				</Border.Background>
 			</Border>
 
-			<StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="36,0,0,26" Spacing="2">
-				<Border Background="{StaticResource Gold}" Padding="9,2" HorizontalAlignment="Left" Margin="0,0,0,8">
-					<TextBlock Text="ALPHA" FontWeight="Bold" FontSize="12" LetterSpacing="1" Foreground="{StaticResource GoldInk}" />
-				</Border>
-				<TextBlock Text="{Binding Title}" FontFamily="{StaticResource Display}" FontWeight="Bold" FontStyle="Italic" FontSize="62" LineHeight="64" />
-				<TextBlock Text="FPS online · humanos × lobos" FontSize="19" Foreground="{StaticResource Ink2}" />
+			<!-- as novidades por cima da arte -->
+			<Border IsVisible="{Binding IsNews}" Background="#E609090B" Margin="0,110,0,0">
+				<ScrollViewer VerticalScrollBarVisibility="Auto">
+					<StackPanel Margin="36,26,36,30" Spacing="16" MaxWidth="720" HorizontalAlignment="Left">
+						<TextBlock Classes="title" Text="{Binding NotesTitle}" TextWrapping="Wrap" />
+						<TextBlock Text="{Binding Notes}" TextWrapping="Wrap" LineHeight="24" Foreground="{StaticResource Ink2}" />
+					</StackPanel>
+				</ScrollViewer>
+			</Border>
+
+			<!-- o logo do jogo e as abas -->
+			<StackPanel VerticalAlignment="Top" Margin="36,26,36,0" Spacing="16">
+				<StackPanel Orientation="Horizontal" Spacing="14">
+					<Image Source="{Binding Logo}" Height="34" HorizontalAlignment="Left" />
+					<Border Background="{StaticResource Gold}" Padding="8,1" VerticalAlignment="Center" IsVisible="{Binding HasStage}">
+						<TextBlock Text="{Binding Stage}" FontFamily="{StaticResource Display}" FontWeight="Bold" FontSize="13" LetterSpacing="2" Foreground="{StaticResource GoldInk}" />
+					</Border>
+				</StackPanel>
+				<StackPanel Orientation="Horizontal" Height="30">
+					<Button Classes="tab" Classes.on="{Binding IsOverview}" Content="{c:T game.tab_overview}" Command="{Binding ShowOverview}" />
+					<Button Classes="tab" Classes.on="{Binding IsNews}" Content="{c:T game.tab_news}" Command="{Binding ShowNews}" />
+				</StackPanel>
 			</StackPanel>
 		</Panel>
 
-		<!-- o botão, como o jogo está e a barra do download -->
-		<StackPanel Grid.Row="1" Margin="36,6,36,30" Spacing="16">
+		<!-- o botão, as opções do jogo, como ele está e a barra do download -->
+		<StackPanel Grid.Row="1" Margin="36,4,36,28" Spacing="14">
 			<Grid ColumnDefinitions="Auto,*">
-				<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+				<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
 					<Button Classes="primary hero" Content="{Binding PrimaryText}" Command="{Binding Primary}" />
-					<Button Content="PAUSAR" Command="{Binding Pause}" IsVisible="{Binding CanPause}" VerticalAlignment="Stretch" />
-					<Button Content="AGORA NÃO" Command="{Binding Cancel}" IsVisible="{Binding CanCancel}" VerticalAlignment="Stretch" />
+					<Button Width="52" VerticalAlignment="Stretch" Padding="0" ToolTip.Tip="{c:T game.options}">
+						<Path Width="18" Height="18" Stretch="Uniform" Fill="{StaticResource Ink}"
+						      Data="M19.14,12.94a7.07,7.07,0,0,0,.06-.94,7.07,7.07,0,0,0-.06-.94l2-1.58a.5.5,0,0,0,.12-.64l-1.92-3.32a.5.5,0,0,0-.61-.22l-2.39,1a7.3,7.3,0,0,0-1.63-.94l-.36-2.54A.5.5,0,0,0,13.86,2H10.14a.5.5,0,0,0-.5.42L9.28,5a7.3,7.3,0,0,0-1.63.94l-2.39-1a.5.5,0,0,0-.61.22L2.73,8.48a.5.5,0,0,0,.12.64l2,1.58a7.07,7.07,0,0,0-.06.94,7.07,7.07,0,0,0,.06.94l-2,1.58a.5.5,0,0,0-.12.64l1.92,3.32a.5.5,0,0,0,.61.22l2.39-1a7.3,7.3,0,0,0,1.63.94l.36,2.54a.5.5,0,0,0,.5.42h3.72a.5.5,0,0,0,.5-.42l.36-2.54a7.3,7.3,0,0,0,1.63-.94l2.39,1a.5.5,0,0,0,.61-.22l1.92-3.32a.5.5,0,0,0-.12-.64ZM12,15.5A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
+						<Button.Flyout>
+							<MenuFlyout Placement="TopEdgeAlignedLeft">
+								<MenuItem Header="{Binding InstalledVersion}" IsEnabled="False" />
+								<MenuItem Header="{Binding InstallDirLine}" IsEnabled="False" />
+								<Separator />
+								<MenuItem Header="{c:T game.repair}" Command="{Binding Repair}" />
+								<MenuItem Header="{c:T game.open_folder}" Command="{Binding OpenFolder}" />
+								<MenuItem Header="{c:T game.change_folder}" Command="{Binding ChangeFolder}" />
+								<Separator />
+								<MenuItem Header="{c:T game.uninstall_menu}" Command="{Binding Uninstall}" />
+							</MenuFlyout>
+						</Button.Flyout>
+					</Button>
+					<Button Content="{c:T game.pause}" Command="{Binding Pause}" IsVisible="{Binding CanPause}" VerticalAlignment="Stretch" />
+					<Button Content="{c:T game.not_now}" Command="{Binding Cancel}" IsVisible="{Binding CanCancel}" VerticalAlignment="Stretch" />
 				</StackPanel>
 
 				<StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="22,0,0,0" Spacing="3">
-					<TextBlock Text="{Binding StatusLine}" FontSize="16" TextWrapping="Wrap" />
+					<TextBlock Text="{Binding StatusLine}" FontSize="15" TextWrapping="Wrap" />
 					<TextBlock Text="{Binding Problem}" Foreground="{StaticResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasProblem}" />
 				</StackPanel>
 			</Grid>
 
 			<Grid ColumnDefinitions="*,Auto" IsVisible="{Binding ProgressVisible}">
 				<ProgressBar Grid.Column="0" Minimum="0" Maximum="100" Value="{Binding ProgressValue}" VerticalAlignment="Center" />
-				<TextBlock Grid.Column="1" Text="{Binding ProgressPercent}" Classes="muted" FontFamily="{StaticResource Display}" FontWeight="SemiBold" FontStyle="Italic"
-				           FontSize="17" Width="52" TextAlignment="Right" VerticalAlignment="Center" />
+				<TextBlock Grid.Column="1" Text="{Binding ProgressPercent}" Classes="muted" FontFamily="{StaticResource Display}" FontWeight="SemiBold"
+				           FontSize="18" Width="52" TextAlignment="Right" VerticalAlignment="Center" />
 			</Grid>
 		</StackPanel>
 	</Grid>

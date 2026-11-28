@@ -14,7 +14,7 @@ public sealed record Reply(int Status, JsonObject Body)
 	public bool Ok => Status is >= 200 and < 300;
 	public string Code => Body?["error"]?["code"]?.GetValue<string>() ?? (Status == 0 ? "sem_servidor" : "");
 	public string Error => Body?["error"]?["message"]?.GetValue<string>()
-		?? (Status == 0 ? "Sem resposta do servidor. Confira a sua internet." : Ok ? "" : $"O servidor respondeu {Status}.");
+		?? (Status == 0 ? Tr.T("api.no_reply") : Ok ? "" : Tr.F("api.status", Status));
 }
 
 /// <summary>A conta que está entrada no cliente.</summary>

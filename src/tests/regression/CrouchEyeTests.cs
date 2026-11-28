@@ -100,8 +100,11 @@ public abstract class CrouchEyeTest : RegressionTest
 		// pés retos no chão, um à frente do outro): 1 cm mais baixo que o meio do
 		// passo, os olhos descem ~25,4 cm na Eve. Desde 27/11, 8 cm mais (Jhon: "o agachar do humano
 		// deve ser um pouco mais baixo, primeira e terceira pessoa"; CharacterAnimator.CrouchSink): ~33 cm.
-		b.AtLeast(0.25, standEye - crouchEye, $"{Who}: agachado, os olhos do corpo visto descem (m)");
-		b.AtMost(0.345, standEye - crouchEye, $"{Who}: mas não fundo demais (m)");
+		// No fim de 27/11, mais 8 cm (Jhon: "o agachar deve agachar mais, primeira e 3 pessoa"; CrouchSink 0,16):
+		// ~41 cm (Eve 41,4, Barut 40,7). Desde 28/11 o agachado tático (CharacterAnimator.CrouchStance, o quadril 4 cm
+		// mais alto e a cintura inclinada): ~39,5 cm (Eve 39,7, Barut 39,2).
+		b.AtLeast(0.37, standEye - crouchEye, $"{Who}: agachado, os olhos do corpo visto descem (m)");
+		b.AtMost(0.44, standEye - crouchEye, $"{Who}: mas não fundo demais (m)");
 
 		// Parado agachado: nada da pele no chão, a cabeça de acerto com a cabeça
 		// que se vê, e o pé parado (o clipe de andar agachado não anda no lugar).

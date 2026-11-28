@@ -99,18 +99,43 @@ public partial class WeaponDefinition : Resource
 	[Export] public float MoveSpreadMultiplier = 2.2f;
 	[Export] public float CrouchSpreadMultiplier = 0.7f;
 
+	/// <summary>Graus somados andando, por cima do multiplicador: não fecham na
+	/// mira nem no agachar (27/11, o recuo revisto pelo Counter-Strike). O
+	/// multiplicador sozinho quase não pesava na arma precisa (o 0,16° da M4A4
+	/// andando virava 0,26°) e nada na luneta (a SVD escopada andando acertava
+	/// como parada); no CS, atirar andando erra, e é por soma.</summary>
+	[Export] public float MoveSpread;
+
+	/// <summary>Graus somados no ar (pulando, caindo): a maior penalidade de
+	/// precisão do CS, em toda arma. Também não fecha na mira.</summary>
+	[Export] public float AirSpread = 3f;
+
 	[ExportGroup("Recuo (graus por tiro)")]
 	[Export] public float RecoilVertical = 1f;
 
 	/// <summary>Recuo depois de <see cref="RecoilEarlyShots"/> tiros seguidos.</summary>
 	[Export] public float RecoilVerticalLate = 0.55f;
 	[Export] public int RecoilEarlyShots = 4;
+	/// <summary>O lateral dos primeiros tiros: alternado, para um lado e para o
+	/// outro, quase nada — a rajada curta sobe reta.</summary>
 	[Export] public float RecoilHorizontal = 0.18f;
 
-	/// <summary>Horizontal mais forte e imprevisível depois de N tiros
-	/// (o AK). Zero desliga.</summary>
+	/// <summary>
+	/// O desvio para o lado a partir do tiro <see cref="RecoilHorizontalAfter"/>
+	/// da rajada (graus por tiro), em <b>padrão fixo</b>, como o spray do
+	/// Counter-Strike: <see cref="RecoilSwayShots"/> tiros para um lado, os mesmos
+	/// para o outro, começando por <see cref="RecoilSwayFirst"/>, a meia volta
+	/// do centro (<see cref="CombatRules.RecoilYaw"/>). Até 27/11 era sorteado
+	/// (o AK depois do sexto tiro): não se aprendia. Zero desliga.
+	/// </summary>
 	[Export] public float RecoilHorizontalLate;
 	[Export] public int RecoilHorizontalAfter;
+
+	/// <summary>Tiros de cada perna do desvio (par: o desvio fica centrado).</summary>
+	[Export] public int RecoilSwayShots = 4;
+
+	/// <summary>Para que lado o desvio vai primeiro: 1 direita, −1 esquerda.</summary>
+	[Export] public int RecoilSwayFirst = 1;
 
 	[Export] public float RecoilRecovery = 7f;
 
@@ -165,6 +190,13 @@ public partial class WeaponDefinition : Resource
 	[Export] public float StarRange;
 
 	public float Interval => 60f / Mathf.Max(Rpm, 1f);
+
+	/// <summary>A maior dispersão que um tiro honesto pode ter (graus): o teto
+	/// andando, mais o que se soma andando e no ar. É a folga do servidor
+	/// (<c>HitCheck</c>); com só o <see cref="SpreadMax"/>, o tiro pulando era
+	/// barrado como trapaça.</summary>
+	public float WorstSpread => SpreadMax * Mathf.Max(MoveSpreadMultiplier, 1f)
+		+ CombatRules.MovementSpread(true, MoveSpread, true, AirSpread);
 
 	public bool IsAutomatic => Mode == FireMode.Auto;
 

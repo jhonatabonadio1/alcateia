@@ -11,12 +11,13 @@ using System;
 /// segundos, mesmo segurando o Shift; depois corre com o que encheu. Parar
 /// antes de esvaziar não tem castigo: o tanque volta a encher na hora.
 ///
-/// Os números (decisão minha, 27/11, para o Jhon ajustar): <b>4 s</b> de
-/// corrida (uns 20 m a 4,91 m/s), <b>1,5 s</b> sem fôlego, e o tanque enche
-/// inteiro em <b>3 s</b> — ao fim da espera já há 2 s de corrida. Quem segura
-/// o Shift sem parar corre 4 s, e depois 2 s a cada 3,5 s (57% do tempo): em
-/// média uns 3,9 m/s, e o lobo a pé (4,33 m/s) volta a ser mais rápido que o
-/// humano numa corrida longa — a mobilidade é do lobo (regra 9 do guia).
+/// Os números (27/11, para o Jhon ajustar): <b>7 s</b> de corrida (uns 34 m a
+/// 4,91 m/s; eram 4 s até o fim de 27/11 — Jhon: "agora o humano pode correr
+/// por mais 3seg"), <b>1,5 s</b> sem fôlego, e o tanque enche inteiro em
+/// <b>3 s</b> — ao fim da espera já há 3,5 s de corrida. Quem segura o Shift
+/// sem parar corre 7 s, e depois 3,5 s a cada 5 s (70% do tempo): em média uns
+/// 4,28 m/s, e o lobo a pé (4,33 m/s) ainda é mais rápido que o humano numa
+/// corrida longa — a mobilidade é do lobo (regra 9 do guia).
 ///
 /// C# puro e determinístico (o passo de física): o corpo do servidor conta o
 /// mesmo fôlego e corrige quem corresse além dele.
@@ -38,7 +39,7 @@ public sealed class SprintBreath
 	/// <summary>O tanque, de 0 a 1.</summary>
 	public float Fraction => Capacity > 0f ? Left / Capacity : 1f;
 
-	public SprintBreath(float capacity = 4f, float refillTime = 3f, float windedWait = 1.5f)
+	public SprintBreath(float capacity = 7f, float refillTime = 3f, float windedWait = 1.5f)
 	{
 		Capacity = Math.Max(capacity, 0.1f);
 		RefillTime = Math.Max(refillTime, 0.1f);

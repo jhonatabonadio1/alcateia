@@ -93,7 +93,7 @@ o renascer do bot (6 s).
 | `HumanSprintFactor` | 1,74327 (era 1,9176 com o andar a 2,56; antes 1,45 até 27/11: duas vezes +15%, pedidos do Jhon) | A corrida do Shift (só humano, só para a frente, em pé): 4,91 m/s com o fuzil — acima do lobo a pé (4,33) —, de arma abaixada, sem atirar; o clipe de correr toca a 1,47×. É × o andar: 2,816 × 1,74327 = 4,909 |
 | `SprintRecover` | 0,18 s (era 0,23 até 27/11) | Depois de correr, quanto a arma leva para voltar antes de atirar (o clique fica guardado) |
 | `ViewModel.RigSprintIn` / `RigSprintOut` | 0,20 s / 0,18 s (eram 0,26 / 0,23 até 27/11; 0,18 / 0,16 já foi rápido demais) | Em quanto tempo os braços abaixam a arma para correr e a trazem de volta (a volta cabe no `SprintRecover`); a arma em terceira pessoa usa os mesmos tempos (`HeldRig`) |
-| `CharacterAnimator.SprintBlendSmoothing` | 16 (a mistura normal, `BlendSmoothing`, é 9) | Quão depressa o corpo em terceira pessoa entra na pose de correr do Shift e sai dela: ~0,19 s para 95% (com 9, ~0,33 s) |
+| `CharacterAnimator.SprintBlendSmoothing` | 24 (16 até o fim de 27/11; a mistura normal, `BlendSmoothing`, é 9) | Quão depressa o corpo em terceira pessoa entra na pose de correr do Shift e sai dela: ~0,12 s para 95% (com 16, ~0,17 s; com 9, ~0,33 s) |
 | `Bot.RemoteAttackLag` | o atraso do desenho, medido (0,05 a 0,3 s; 0,1 sem jitter) | Online, quanto o **golpe de corpo** de outro jogador (garra, bote, faca, coronhada) espera para tocar no boneco dele: o atraso com que a posição do boneco é desenhada naquele instante (`ServerClock`). O **tiro de arma de fogo não espera**: o estampido e o clarão tocam quando o aviso chega (27/11) |
 | `Health.MirrorHoldTime` | 0,35 s | Online, depois de um acerto previsto por quem atirou (`PredictHit`) ou confirmado pelo servidor (`ServerHurt`), a vida espelhada do boneco só desce: a notícia de vida mais velha não devolve a barra |
 | `FormAudit.SlackTicks` / `ShiftSlackTicks` | 45 passos (0,75 s) / 8 passos | Servidor: folga no tempo de lobo e na espera, e na transformação, antes de recusar a forma que o jogo conta (decisão 0019) |
@@ -108,22 +108,30 @@ o renascer do bot (6 s).
 | `HostedMatch.SwapWindow` | 2 s | Nos modos que trocam de lado na metade, quanto antes e depois da troca o servidor não confere a forma |
 | `Player.SprintRecover` / `ViewModel.RigSprintOut` | 0,28 s (0,18 de manhã, 0,23 antes) | A arma voltando ao sair da corrida, e quando o tiro pode sair ("a animação de sair da corrida não combinou, muito rápido") |
 | Arma leve correndo | × 1 no máximo (andando: faca × 1,28, pistola × 1,08) | Correndo, faca e pistola correm o mesmo do fuzil, 4,91 m/s (eram 6,28 e 5,30); a pesada segue com a sua (AK × 0,92, SCAR × 0,88, SVD × 0,86) |
-| `Player.SprintBreathTime` / `SprintBreathRefill` / `SprintWindedWait` | 4 s / 3 s / 1,5 s | O fôlego da corrida (`SprintBreath`): quanto se corre de uma vez, em quanto tempo parado o fôlego enche inteiro, e quanto se espera quando ele acaba |
+| `Player.SprintBreathTime` / `SprintBreathRefill` / `SprintWindedWait` | 7 s (4 até o fim de 27/11: "agora o humano pode correr por mais 3seg") / 3 s / 1,5 s | O fôlego da corrida (`SprintBreath`): quanto se corre de uma vez, em quanto tempo parado o fôlego enche inteiro, e quanto se espera quando ele acaba |
 | `CombatantAudio.StabPitch` | 0,78 | O som da estocada: o da facada, mais grave |
 | `Grenade.BounceLoudSpeed` / `BounceQuietDb` / `BounceTrimDb` / `BounceRange` / `FuseRange` | 4 m/s / −16 dB / −3 dB / 40 m / 22 m (eram 7, −26, 0, 25 e 14) | O quique da granada: a velocidade de batida que soa a 0 dB, o mais baixo que um quique soa, e o corte em todos (27/11: "baixar um pouco"). Um som por quique, sorteado entre `granada_quique_1..5` |
 | `BulletMarks.CutSize` / `StabSize` | 34 × 9 cm / 6 × 15 cm | A marca da facada (corte) e da estocada (furo) na parede |
 | `HeldWeapon.SprintLean` | 9° | Em terceira pessoa, quanto o tronco de quem corre inclina para a frente além da animação |
 | `HeldWeapon.SprintSpine` / `SprintSpineTime` | 0,9 / 0,2 s (era 0,3 até 27/11) | Em terceira pessoa, quanto do tronco (coluna, pescoço, cabeça) fica com a animação de correr do corpo em vez da pose da arma, e em quanto tempo passa de uma para a outra |
-| `ViewModel.RigSprintStepAt` / `RigSprintLock` | 0,15 / 3 | Os braços correndo em primeira pessoa tocam presos ao passo do corpo: em que ponto do ciclo o pé bate, e com que força o clipe corrige o atraso |
+| `ViewModel.RigSprintStepAt` / `RigSprintLock` / `RigSprintNudge` | 0,15 / 3 / 0,15 | Os braços correndo em primeira pessoa tocam na cadência do clipe de correr do corpo (`CharacterAnimator.SprintCycle`, desde o fim de 27/11) e presos ao passo dele: em que ponto do ciclo o pé bate, com que força o clipe corrige o atraso e até quanto essa correção acelera ou freia (0,85× a 1,15×; sem o teto davam trancos de 2,2× e 0,8× ao começar a correr). Começam no ponto do ciclo em que o corpo está |
 | `Hud.BreathSprintDb` / `BreathSprintIn` / `BreathSprintOut` | −27 dB / 3,5 s / 4 s | A respiração de quem corre: volume com o fôlego gasto, em quanto entra e em quanto some |
 | `CharacterAnimator.SprintClip` / `SprintPaceMax` | 3,35 m/s / 1,6 | A passada do clipe de correr do corpo e até quanto ele acelera |
 | `StandHeight` / `CrouchHeight` | 1,75 / 1,0 m | Altura da cápsula em pé (as duas formas) e agachada do lobo |
-| `HumanCrouchHeight` | 1,42 m (1,5 até 27/11; antes 1,3, e 1,0, a do lobo) | A cápsula agachada do humano: leva a cabeça do corpo agachado (o olho a ~126 cm). Passar agachado por baixo de algo pede esse vão |
-| `CharacterAnimator.CrouchSink` | 0,08 m | Quanto o agachado do humano desce além do clipe (27/11: "um pouco mais baixo, primeira e terceira pessoa"): o quadril desce e as pernas dobram mais, o pé no mesmo lugar; a câmera vai junto (o olho do corpo visto). Os olhos descem ~33 cm do de pé (eram ~25) |
+| `HumanCrouchHeight` | 1,36 m (1,34 no fim de 27/11, 1,42 antes, 1,5 antes disso; antes 1,3, e 1,0, a do lobo) | A cápsula agachada do humano: leva a cabeça do corpo agachado (o olho a ~120 cm, o agachado tático de 28/11). Passar agachado por baixo de algo pede esse vão |
+| `CharacterAnimator.CrouchSink` | 0,16 m (0,08 até o fim de 27/11) | Quanto o agachado do humano desce além do clipe (27/11: "um pouco mais baixo, primeira e terceira pessoa"; depois "o agachar deve agachar mais, primeira e 3 pessoa, sem ficar torto"): só o quadril desce e as pernas dobram mais, o pé no mesmo lugar, o tronco e a cabeça retos como em pé; a câmera vai junto (o olho do corpo visto). Os olhos descem ~41 cm do de pé (eram ~33, e ~25 antes); no parado, com a base tática por cima, ~39,5 |
+| `CharacterAnimator.CrouchFront` / `CrouchRear` / `CrouchWidth` | 0,32 / 0,28 / 0,32 m | O agachado tático parado (28/11, Jhon: "parece sentado numa cadeira invisível... uma base mais estável, com os joelhos acompanhando a direção dos pés"; aprovado na vitrine): o pé da frente à frente do quadril (era 55 cm), o de trás atrás (era embaixo do quadril), e a distância de lado entre os dois (era ~15) |
+| `CharacterAnimator.CrouchRearHeel` / `CrouchFrontOut` / `CrouchRearOut` | 45° / 12° / 30° | O pé de trás na ponta (com ele reto, a canela deitava em cima do calcanhar da bota) e quanto cada ponta abre para fora; cada joelho dobra para onde o seu pé aponta (`AnimationKit.CrouchStance`) |
+| `CharacterAnimator.CrouchHipsRaise` | 0,04 m | Quanto o quadril do parado sobe do instante do andar agachado: com a cintura inclinada, os olhos ficam a ~120 cm |
+| `CharacterAnimator.CrouchLean` | 30° | Agachado (parado e andando), a cintura inclina para a frente e o peito volta o mesmo tanto (`HeldWeapon.LeanIntoCrouch`): o tronco vai para a frente e a arma e a cabeça seguem retas |
+| `CharacterAnimator.CrouchBack` | 0,15 m | Agachado, o corpo visto inteiro (pés junto) vai para trás da cápsula: com a cintura inclinada, os olhos voltam a ~8 cm à frente da câmera da 1ª pessoa, como em pé (sem isto, 23 cm) |
+| `CharacterAnimator.CrouchWalkOpen` | 0,045 m | Andando agachado, cada pé vai isto para fora do seu lado, os dois o mesmo e no passo inteiro, o joelho junto (`AnimationKit.OpenStride`; Jhon, 28/11: "na pose anterior de andar agachado, somente abra um pouco para o lado a perna direita e um pouco para o outro lado a perna esquerda"). Na Eve, os tornozelos andam 26 cm um do outro de lado (eram 17) |
+| `CharacterAnimator.CrouchWalkStretch` | 1,13 | Andando agachado, quantas vezes o passo fica mais comprido no mesmo ritmo (`AnimationKit.OpenStride`; Jhon, 28/11: "corrija a passada agachada para deixar melhor, mais bem feito"): o clipe anda ~1,06 m/s e o corpo 1,27, e o pé apoiado patinava 0,16 m/s para a frente; com 1,13, 0,00 (−0,002, medido no pé rente ao chão). O clipe não acelera (regra 9) |
+| `CharacterAnimator.CrouchKneeFloor` | 0,07 m | Na troca entre o parado e o andar agachado (a mistura das duas bases, 0,25 s) a bota entrava até 9 cm no chão: o corpo visto sobe o que a bota estiver abaixo do chão ou o joelho abaixo disto, medido na pose do quadro (`MixerApplied`) |
 | `CrouchWalkTrim` / `CrouchAim` / `CrouchWalkSpeed` (nó `Human`) | 0 / 0 / 0,6 | O agachado é o "Crouch Walking" do Mixamo inteiro (26/11): sem corte no clipe, sem a pose de mira em pé no tronco (da cintura para cima quem segura a arma é a animação dela, a mesma de pé); o parado é o instante de passada mais aberta dele, com os dois pés retos no chão |
 | `FootBones` / `SoleBand` (`AnimationKit.Legs`, código) | pés esquerdo e direito / 0,015 m | O pé copia o giro a partir do repouso, não a direção do osso (o ângulo do osso do pé muda de rig para rig). Nos clipes agachados a perna dobra até a sola (a pele do pé até 1,5 cm acima do ponto mais baixo da bota em repouso) não passar do chão |
 | `StandEyeHeight` / `CrouchEyeHeight` | 0,6 / 0,1 m | O olho do lobo (o pivô da câmera de 3ª pessoa) a partir do centro da cápsula. Em pé era 0,62 no código e 0,6 na cena (o que valia) |
-| `HumanEyeHeight` / `HumanCrouchEyeHeight` | 1,592 / 1,092 m acima dos pés (eram 1,475 e 0,60) | O olho do humano = o olho do corpo visto (26/11: "o nível de agachamento deve ser idêntico ao de 3ª pessoa"). O `CharacterAnimator` lê no corpo desenhado, parado e de cabeça reta, e afina estes (`TuneHumanEye`, a `EyeTuneSpeed` 0,4 m/s): Eve 159,3 / 133,9 cm, Barut 159,1 / 134,4 cm (26/11). Os de fábrica valem para o corpo sem modelo (o servidor de partida) |
+| `HumanEyeHeight` / `HumanCrouchEyeHeight` | 1,592 / 1,197 m acima dos pés (o agachado tático medido em 28/11: Eve 119,6, Barut 119,9 cm; 1,18 no fim de 27/11) (eram 1,475 e 0,60) | O olho do humano = o olho do corpo visto (26/11: "o nível de agachamento deve ser idêntico ao de 3ª pessoa"). O `CharacterAnimator` lê no corpo desenhado, parado e de cabeça reta, e afina estes (`TuneHumanEye`, a `EyeTuneSpeed` 0,4 m/s): Eve 159,3 / 133,9 cm, Barut 159,1 / 134,4 cm (26/11). Os de fábrica valem para o corpo sem modelo (o servidor de partida) |
 | `EyeInHead` (`personagem.tres` de cada personagem) | Eve (0; 0,066; 0,085), Barut (0; 0,085; 0,094) | O meio dos dois olhos no espaço do osso da cabeça, medido na malha (`src/tools/personagens/olhos.py`). Modelo novo: meça de novo |
 | `CrouchWalkSpeed` (nó `Human`) | 0,6 m/s (era 1,9) | Andando agachado a partir disto o clipe de andar toca inteiro (a mistura com o parado enfiava a ponta do pé 16 cm no chão) |
 | `CrouchLerpSpeed` | 22 | Rapidez de agachar e levantar |
@@ -554,14 +562,17 @@ fortes que a arma de base; a ficha de cada uma está no `docs/ARSENAL.md`.
 | `Rpm` | 650 | 700 | 500 | 400 | 120 | 240 |
 | `Mode` | Auto | Auto | Auto | Auto | Semi | Semi |
 | `Magazine` / `Reserve` | 30 / 90 | 30 / 90 | 30 / 90 | 20 / 80 | 10 / 30 | 7 / 28 |
-| `ReloadTactical` / `Empty` (s) | 2,3 / 2,9 | 2,3 / 2,9 | 2,5 / 3,3 | 2,9 / 3,5 | 3,0 / 3,5 | 1,8 / 2,2 |
+| `ReloadTactical` / `Empty` (s; = o clipe da recarga, que toca a 1×, desde 27/11; as skins, os mesmos) | 2,3 / 2,3 (vazia 2,9 até 27/11) | 2,3 / 2,3 (2,9) | 2,5 / 2,5 (3,3) | 2,9 / 2,9 (3,5) | 3,0 / 3,0 (3,5) | 1,667 / 2,167 (1,8 / 2,2) |
 | `DrawTime` / `HolsterTime` (s) | 0,5 / 0,5 | 0,5 / 0,5 | 0,55 / 0,5 | 0,6 / 0,55 | 0,6 / 0,5 | 0,4 / 0,3 |
-| `SpreadBase` / `PerShot` / `Max` (°) | 0,15 / 0,09 / 1,8 | 0,16 / 0,09 / 1,9 | 0,45 / 0,4 / 6,5 | 0,3 / 0,35 / 5 | 4 / 0,5 / 6 | 0,45 / 0,8 / 6 |
-| `SpreadRecovery` (°/s) | 12 (espera 0,05 s) | 12 (espera 0,05 s) | 7 | 8 | 9 | 9 |
+| `SpreadBase` / `PerShot` / `Max` (°) | 0,15 / 0,09 / 1,8 | 0,16 / 0,09 / 1,9 | 0,32 / 0,4 / 6,5 (base 0,45 até 27/11) | 0,3 / 0,35 / 5 | 4 / 0,5 / 6 | 0,45 / 1,2 / 6 (por tiro 0,8 até 27/11) |
+| `SpreadRecovery` (°/s) | 12 (espera 0,05 s) | 12 (espera 0,05 s) | 7 | 8 | 9 | 4,5 (9 até 27/11) |
 | `MoveSpreadMultiplier` | 1,6 | 1,6 | 3,0 | 2,6 | 4,0 | 1,5 |
+| `MoveSpread` (° somados andando; não fecham na mira, 27/11) | 0,3 | 0,3 | 0,4 | 0,4 | 1,2 | 0,25 |
+| `AirSpread` (° somados no ar, 27/11) | 3,5 | 3,5 | 4 | 4 | 6 | 2 |
 | `CrouchSpreadMultiplier` | 0,7 | 0,7 | 0,6 | 0,6 | 0,7 | 0,8 |
 | `RecoilVertical` / `Late` (tiros antes do `Late`) | 1,0 / 0,55 (4) | 0,85 / 0,55 (4) | 1,8 / 0,9 (5) | 2,1 / 1,2 (3) | 3,0 | 1,6 |
-| `RecoilHorizontal` | 0,18 | 0,14 | 0,15 (0,7 após 6 tiros) | 0,2 | 0,3 | 0,2 |
+| `RecoilHorizontal` (alternado, os primeiros tiros) | 0,18 | 0,14 | 0,15 | 0,2 | 0,3 | 0,2 |
+| Desvio em padrão fixo (27/11): `RecoilHorizontalLate` / do tiro `RecoilHorizontalAfter` / `RecoilSwayShots` por perna / `RecoilSwayFirst` | 0,25 / 6 / 4 / direita | 0,2 / 7 / 4 / esquerda | 0,7 / 6 / 4 / direita (era sorteado) | 0,35 / 5 / 4 / esquerda | — | — |
 | `RecoilRecovery` | 7 | 7,5 | 5,5 | 5 | 5 | 5,5 |
 | `Range` (m) | 150 | 150 | 150 | 200 | 300 | 100 |
 | Queda de dano (m → fração) | 35–60 → 0,7 | 30–55 → 0,7 | 30–55 → 0,75 | 40–70 → 0,8 | nenhuma | 25–45 → 0,7 |
@@ -603,7 +614,11 @@ a opacidade são as da mira do jogador).
 
 Ajustes globais do recuo, no `Player`: `RecoilScale` 1 (multiplica o de
 toda arma), `RecoilMax` 4,5° (teto acumulado), `RecoilReturnDelay`
-0,12 s. Traçante: `Weapon.ShowTracer` e `TracerColor`; o efeito em
+0,12 s, `RecoilReturnExp` 4 por segundo (27/11: a parte proporcional da
+volta, somada ao `RecoilRecovery` da arma). `Weapon.AirSpreadGrace` 0,1 s
+(fora do chão por menos que isso não conta como no ar). O coice dos braços:
+`ViewModel.ShotPeakLead` 0,033 s (quanto do clipe de tiro antes do pico
+fica; o resto se pula). Traçante: `Weapon.ShowTracer` e `TracerColor`; o efeito em
 `BulletTracer` (`Speed` 190 m/s, `StreakLength` 3,2 m, `CoreWidth` 0,022 m,
 `GlowWidth` 0,12 m, `TrailLife` 0,45 s, `TrailWidth` 0,03 m, `TrailStrength`
 0,38, `TrailWisp` 0,03 m, `FlashSize` 0,22 m, `FlashLife` 0,05 s). Ruído do
@@ -630,8 +645,14 @@ deagle_fenix` e a terceira pessoa (`mao_manny_anim.py eve deagle`,
 | `FACA_SACAR_PUNHO` (`mao_manny_anim.py`) | 25°, 15° | O punho direito no saque da faca: até quanto dobra e vai para o lado (a faca gira junto com a palma); `0` desliga |
 | `COTOVELO_D_MIRA` (`mao_manny_anim.py`) | Barut `2.0,-1.0,0.0` (64° do para baixo); Eve sem | Para onde o cotovelo direito prefere ir na mira do fuzil, por personagem (fora, cima, trás); a variável de ambiente vale para todos |
 
-As durações das recargas continuam as do jogo (`ReloadTactical` 1,8 s e
-`ReloadEmpty` 2,2 s no `.tres`; o clipe tem 1,67 e 2,17 s).
+As durações das recargas são as dos clipes desde 27/11 (`ReloadTactical`
+1,667 s e `ReloadEmpty` 2,167 s no `.tres`; eram 1,8 e 2,2 com o clipe
+esticado). A recarga toca sempre a 1×: arma nova ou clipe novo, o `.tres`
+leva a duração do clipe (`fp/bracos.json`, `recarga` e `recarga_vazia`);
+sem `recarga_vazia`, a vazia tem o mesmo tempo da tática. O som
+(`recarga_<modelo>.wav`, e `recarga_vazia_<modelo>` se houver) toca do
+começo junto e para se a recarga parar; o da Desert Eagle sai de
+`src/tools/sons/recarga_deagle.py`.
 
 ---
 

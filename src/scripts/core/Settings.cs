@@ -60,9 +60,12 @@ public static class Settings
 		public bool Blood { get; set; } = true;
 
 		/// <summary>O idioma dos textos, um dos de <see cref="Loc.Languages"/>
-		/// (as colunas de assets/i18n/textos.csv). Português por padrão,
-		/// seja qual for o idioma do sistema.</summary>
-		public string Language { get; set; } = Loc.Source;
+		/// (as colunas de assets/i18n/textos.csv). Inglês por padrão, seja
+		/// qual for o idioma do sistema (Jhon, 27/11: "o padrão do jogo e do
+		/// launcher será em inglês"; era o português). Quem já escolheu fica
+		/// no dele: o arquivo guarda o idioma. Sem a coluna "en" no arquivo,
+		/// <see cref="Loc.Apply"/> cai no português.</summary>
+		public string Language { get; set; } = "en";
 
 		/// <summary>A mira do jogador. Arquivo antigo sem ela: a de sempre.</summary>
 		public CrosshairSettings Crosshair { get; set; } = new();

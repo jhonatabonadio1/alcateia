@@ -135,7 +135,8 @@ public partial class CharacterAnimator
 					// na horizontal, mas outros pontos passam a contar como apoio.
 					bool crouch = clip.StartsWith("crouch");
 					FitToBody(animation, temp, body, _model, bodyPath, reachFloor: crouch || (IsLooping(clip) && clip != "fall"),
-						sink: crouch ? CrouchSink : 0f);
+						sink: crouch ? CrouchSink : 0f, back: crouch ? CrouchBack : 0f);
+					if (clip == "crouch_walk") OpenStride(animation, body, ChainTo(body, _model), CrouchWalkOpen, CrouchWalkStretch);
 					// Ombros mais altos e braços mais curtos que os do X Bot: o
 					// fuzil chega mais perto do rosto, e a cabeça inclinada do
 					// clipe entrava na coronha. Ela sobe um pouco.
@@ -167,7 +168,7 @@ public partial class CharacterAnimator
 
 				// Sem clipe de agachado parado, a pose do andar agachado com os dois pés no chão.
 				if (clip == "crouch_walk" && !library.HasAnimation("crouch_idle")
-					&& CrouchIdle(animation, body, bodyPath, _model) is Animation idle)
+					&& CrouchIdle(animation, body, bodyPath, _model, CrouchStance) is Animation idle)
 					library.AddAnimation("crouch_idle", idle);
 			}
 

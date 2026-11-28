@@ -107,6 +107,8 @@ public partial class MatchSetup : Node
 		}
 
 		AddChild(net);
+		// O chat da partida é o da sala, pelo saguão (MatchChat).
+		AddChild(new MatchChat { Name = "MatchChat" });
 		foreach (Bot puppet in puppets) net.Register(puppet);
 		foreach (Bot bot in owned) net.Own(bot);
 	}

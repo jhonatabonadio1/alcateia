@@ -42,6 +42,9 @@ public partial class GameMenu : CanvasLayer
 	{
 		if (!@event.IsActionPressed("menu")) return;
 
+		// Digitando no chat, o Esc fecha o chat (MatchChat), não abre o menu.
+		if (MatchChat.Typing) return;
+
 		// No fim da partida quem manda é a tela de resultado.
 		if (Match.Current?.Phase == MatchPhase.Ended) return;
 

@@ -125,6 +125,10 @@ Novo conjunto,,New loadout,Nuevo equipo,scripts/combat/LoadoutSet.cs
 O segundo utilitário só aceita granada de luz ou de fumaça,,The second utility only takes a flash or smoke grenade,El segundo utilitario solo acepta granada cegadora o de humo,scripts/combat/LoadoutSet.cs
 Primária obrigatória,,Primary required,Primaria obligatoria,scripts/combat/LoadoutSet.cs
 Secundária obrigatória,,Secondary required,Secundaria obligatoria,scripts/combat/LoadoutSet.cs
+Alt,,Alt,Alt,scripts/core/KeyBindings.cs
+Backspace,,Backspace,Retroceso,scripts/core/KeyBindings.cs
+Caps Lock,,Caps Lock,Bloq Mayús,scripts/core/KeyBindings.cs
+Enter,,Enter,Enter,scripts/core/KeyBindings.cs
 ", na cabeça",,", headshot",", en la cabeza",scripts/core/KillFeed.cs
 com granada,,with a grenade,con granada,scripts/core/KillFeed.cs
 com {0},,with {0},con {0},scripts/core/KillFeed.cs
@@ -252,18 +256,19 @@ TAA (mais lisa),,TAA (smoothest),TAA (la más suave),scripts/core/Settings.cs
 Ultra,,Ultra,Ultra,scripts/core/Settings.cs
 Verde,,Green,Verde,scripts/core/Settings.cs
 Vermelho,,Red,Rojo,scripts/core/Settings.cs
-{0} FPS,,,,scripts/core/Settings.cs
-Automático,,,,scripts/core/VideoMode.cs
-Compatibilidade (DirectX 11),,,,scripts/core/VideoMode.cs
-compatibilidade (DirectX 11),,,,scripts/core/VideoMode.cs
-compatibilidade (OpenGL),,,,scripts/core/VideoMode.cs
-DirectX 12,,,,scripts/core/VideoMode.cs
-Metal,,,,scripts/core/VideoMode.cs
-Vulkan,,,,scripts/core/VideoMode.cs
+{0} FPS,,{0} FPS,{0} FPS,scripts/core/Settings.cs
+Automático,,Automatic,Automático,scripts/core/VideoMode.cs
+Compatibilidade (DirectX 11),,Compatibility (DirectX 11),Compatibilidad (DirectX 11),scripts/core/VideoMode.cs
+compatibilidade (DirectX 11),,compatibility (DirectX 11),compatibilidad (DirectX 11),scripts/core/VideoMode.cs
+compatibilidade (OpenGL),,compatibility (OpenGL),compatibilidad (OpenGL),scripts/core/VideoMode.cs
+DirectX 12,,DirectX 12,DirectX 12,scripts/core/VideoMode.cs
+Metal,,Metal,Metal,scripts/core/VideoMode.cs
+Vulkan,,Vulkan,Vulkan,scripts/core/VideoMode.cs
 Bruto,,Brute,Bruto,scripts/forms/WolfBreed.cs
 Abrir Online,,Open Online,Abrir En línea,scripts/lobby/AccountGate.cs
 "Carregando a sua conta… Se o servidor não responder, confira a conexão em Online.",,"Loading your account… If the server doesn't answer, check the connection in Online.","Cargando tu cuenta… Si el servidor no responde, revisa la conexión en En línea.",scripts/lobby/AccountGate.cs
 Entrar na conta,,Sign in,Entrar en la cuenta,scripts/lobby/AccountGate.cs
+Fundo,,Background,Fondo,scripts/lobby/CharacterPreview.cs
 As licenças completas e a origem de cada arquivo estão na pasta do jogo: ,,The full licenses and the source of each file are in the game folder: ,Las licencias completas y el origen de cada archivo están en la carpeta del juego: ,scripts/lobby/CreditsScreen.cs
 "assets/audio/CREDITOS.md, assets/fonts/OFL.txt e docs/PACOTES.md.",,"assets/audio/CREDITOS.md, assets/fonts/OFL.txt and docs/PACOTES.md.","assets/audio/CREDITOS.md, assets/fonts/OFL.txt y docs/PACOTES.md.",scripts/lobby/CreditsScreen.cs
 Créditos,,Credits,Créditos,scripts/lobby/CreditsScreen.cs
@@ -273,6 +278,10 @@ As missões são da conta: entre nela para ver as de hoje.,,Missions belong to t
 Missões do dia,,Daily missions,Misiones del día,scripts/lobby/DailyMissions.cs
 troca em {0} h {1:00} min,,resets in {0} h {1:00} min,cambian en {0} h {1:00} min,scripts/lobby/DailyMissions.cs
 Ver todas as missões,,See all missions,Ver todas las misiones,scripts/lobby/DailyMissions.cs
+Aviso,,Notice,Aviso,scripts/lobby/HomeScreen.cs
+Banner anterior,,Previous banner,Banner anterior,scripts/lobby/HomeScreen.cs
+Carreira,,Career,Carrera,scripts/lobby/HomeScreen.cs
+Próximo banner,,Next banner,Siguiente banner,scripts/lobby/HomeScreen.cs
 "1. Escolha o conjunto.
 2. Clique no espaço que quer trocar.
 3. Clique na arma: aqui aparecem os atributos e o botão Equipar.",,"1. Pick the loadout.
@@ -281,6 +290,7 @@ Ver todas as missões,,See all missions,Ver todas las misiones,scripts/lobby/Dai
 2. Haz clic en el espacio que quieres cambiar.
 3. Haz clic en el arma: aquí aparecen los atributos y el botón Equipar.",scripts/lobby/InventoryScreen.cs
 "A classe define escudo, velocidade, pulo e garra. As melhorias são ajustes pequenos por cima dela. ",,"The class sets shield, speed, jump and claws. Upgrades are small tweaks on top of it. ","La clase define escudo, velocidad, salto y garras. Las mejoras son pequeños ajustes encima de ella. ",scripts/lobby/InventoryScreen.cs
+"As melhorias de lobo são ajustes pequenos por cima dele. Tudo do lobo se compra com Cash, nunca com IPs.",,"Wolf upgrades are small tweaks on top of it. Everything for the wolf is bought with Cash, never with IPs.","Las mejoras de lobo son pequeños ajustes encima de él. Todo lo del lobo se compra con Cash, nunca con IPs.",scripts/lobby/InventoryScreen.cs
 Classe,,Class,Clase,scripts/lobby/InventoryScreen.cs
 Classe em uso,,Class in use,Clase en uso,scripts/lobby/InventoryScreen.cs
 Classe {0} em uso,,Class {0} in use,Clase {0} en uso,scripts/lobby/InventoryScreen.cs
@@ -324,6 +334,7 @@ na Vanguarda e no Sindicato,,on the Vanguard and the Syndicate,en la Vanguardia 
 no Sindicato,,on the Syndicate,en el Sindicato,scripts/lobby/InventoryScreen.cs
 Nome do conjunto,,Loadout name,Nombre del equipo,scripts/lobby/InventoryScreen.cs
 "O conjunto padrão: grátis, sempre disponível, rende +50 KP. Aceita as armas comuns e a granada",,"The default loadout: free, always available, earns +50 KP. Takes the common weapons and the grenade","El equipo predeterminado: gratis, siempre disponible, rinde +50 KP. Acepta las armas comunes y la granada",scripts/lobby/InventoryScreen.cs
+"O lobo é um só para todos: mata rápido, mas tem pouco escudo e fica lobo por pouco tempo. ",,"There's one wolf for everyone: it kills fast, but has little shield and only stays a wolf for a short time. ","El lobo es uno solo para todos: mata rápido, pero tiene poco escudo y es lobo por poco tiempo.",scripts/lobby/InventoryScreen.cs
 "O personagem vale no time dele, com o lobo dele: escolheu a pessoa, transforma no lobo dela. ",,"A character counts on its own team, with its own wolf: pick the person, transform into their wolf. ","El personaje vale en su equipo, con su lobo: eliges a la persona, te transformas en su lobo. ",scripts/lobby/InventoryScreen.cs
 Padrão (Barut),,Default (Barut),Predeterminado (Barut),scripts/lobby/InventoryScreen.cs
 Padrão (Eve),,Default (Eve),Predeterminado (Eve),scripts/lobby/InventoryScreen.cs
@@ -404,8 +415,12 @@ Serviço,,Service,Servicio,scripts/lobby/ItemInfo.cs
 {0} h {1} min,,{0} h {1} min,{0} h {1} min,scripts/lobby/ItemInfo.cs
 {0} usos,,{0} uses,{0} usos,scripts/lobby/ItemInfo.cs
 Abrir o perfil,,Open profile,Abrir el perfil,scripts/lobby/LobbyHeader.cs
+Abrir o perfil · {0} / {1} XP,,Open profile · {0} / {1} XP,Abrir el perfil · {0} / {1} XP,scripts/lobby/LobbyHeader.cs
+Amigos,,Friends,Amigos,scripts/lobby/LobbyHeader.cs
 "Entre na sua conta (Online) para ter carteira, itens e patente",,"Sign in to your account (Online) to have a wallet, items and rank","Entra en tu cuenta (En línea) para tener cartera, objetos y rango",scripts/lobby/LobbyHeader.cs
+"Entre na sua conta para ter carteira, itens e patente",,"Sign in to your account to have a wallet, items and rank","Entra en tu cuenta para tener cartera, objetos y rango",scripts/lobby/LobbyHeader.cs
 Expandir a barra,,Expand the bar,Expandir la barra,scripts/lobby/LobbyHeader.cs
+Início,,Home,Inicio,scripts/lobby/LobbyHeader.cs
 LEAGUE,,LEAGUE,LEAGUE,scripts/lobby/LobbyHeader.cs
 Loja,,Shop,Tienda,scripts/lobby/LobbyHeader.cs
 Missões,,Missions,Misiones,scripts/lobby/LobbyHeader.cs
@@ -414,23 +429,45 @@ Perfil,,Profile,Perfil,scripts/lobby/LobbyHeader.cs
 Recolher a barra,,Collapse the bar,Contraer la barra,scripts/lobby/LobbyHeader.cs
 Sair,,Quit,Salir,scripts/lobby/LobbyHeader.cs
 Salas,,Rooms,Salas,scripts/lobby/LobbyHeader.cs
+"Seu perfil, inventário e missões ficam salvos na sua conta.",,"Your profile, inventory and missions are saved to your account.","Tu perfil, inventario y misiones se guardan en tu cuenta.",scripts/lobby/LobbyHeader.cs
 "Seu perfil, inventário e missões ficam salvos neste computador.",,"Your profile, inventory and missions are saved on this computer.","Tu perfil, inventario y misiones se guardan en esta computadora.",scripts/lobby/LobbyHeader.cs
+Trocar de conta,,Switch account,Cambiar de cuenta,scripts/lobby/LobbyHeader.cs
 WOLF,,WOLF,WOLF,scripts/lobby/LobbyHeader.cs
 Jhon,,Jhon,Jhon,scripts/lobby/LobbyShell.cs
 Sala do Jhon,,Jhon's room,Sala de Jhon,scripts/lobby/LobbyShell.cs
+{0} chamou você para o grupo,,{0} invited you to their party,{0} te invitó a su grupo,scripts/lobby/LobbyShell.cs
+{0} convidou você para a sala #{1},,{0} invited you to room #{1},{0} te invitó a la sala #{1},scripts/lobby/LobbyShell.cs
 3 a 16 caracteres,,3 to 16 characters,De 3 a 16 caracteres,scripts/lobby/LoginScreen.cs
+6 dígitos,,6 digits,6 dígitos,scripts/lobby/LoginScreen.cs
 8 ou mais caracteres,,8 or more characters,8 o más caracteres,scripts/lobby/LoginScreen.cs
 "A conta guarda o seu Cash, os seus itens, as missões, a patente e o seu lugar no ranking. O nome é o que aparece no placar.",,"The account keeps your Cash, your items, missions, rank and your place in the ranking. The name is what shows on the scoreboard.","La cuenta guarda tu Cash, tus objetos, las misiones, el rango y tu lugar en la clasificación. El nombre es el que aparece en el marcador.",scripts/lobby/LoginScreen.cs
+"A conta guarda o seu Cash, os seus itens, as missões, a patente e os seus amigos. O nome é o que aparece no placar.",,"The account keeps your Cash, your items, missions, rank and your friends. The name is what shows on the scoreboard.","La cuenta guarda tu Cash, tus objetos, las misiones, el rango y tus amigos. El nombre es el que aparece en el marcador.",scripts/lobby/LoginScreen.cs
 a mesma senha,,the same password,la misma contraseña,scripts/lobby/LoginScreen.cs
 A senha precisa de 8 ou mais caracteres.,,The password needs 8 or more characters.,La contraseña necesita 8 o más caracteres.,scripts/lobby/LoginScreen.cs
 As duas senhas não são iguais.,,The two passwords don't match.,Las dos contraseñas no coinciden.,scripts/lobby/LoginScreen.cs
 Conta,,Account,Cuenta,scripts/lobby/LoginScreen.cs
 CONTAS SALVAS,,SAVED ACCOUNTS,CUENTAS GUARDADAS,scripts/lobby/LoginScreen.cs
+Contas salvas,,Saved accounts,Cuentas guardadas,scripts/lobby/LoginScreen.cs
 Criar conta,,Create account,Crear cuenta,scripts/lobby/LoginScreen.cs
+CÓDIGO DO AUTENTICADOR,,AUTHENTICATOR CODE,CÓDIGO DEL AUTENTICADOR,scripts/lobby/LoginScreen.cs
 Digite a senha.,,Type the password.,Escribe la contraseña.,scripts/lobby/LoginScreen.cs
+Digite o código de 6 dígitos do aplicativo autenticador.,,Enter the 6-digit code from your authenticator app.,Escribe el código de 6 dígitos de la aplicación de autenticación.,scripts/lobby/LoginScreen.cs
 Digite o nome da conta.,,Type the account name.,Escribe el nombre de la cuenta.,scripts/lobby/LoginScreen.cs
 Entrando como {0}…,,Signing in as {0}…,Entrando como {0}…,scripts/lobby/LoginScreen.cs
 Entrar,,Sign in,Entrar,scripts/lobby/LoginScreen.cs
+Campo de caça {0:00} / {1:00},,Hunting ground {0:00} / {1:00},Coto de caza {0:00} / {1:00},scripts/lobby/MapReel.cs
+Cancelar a busca,,Cancel search,Cancelar la búsqueda,scripts/lobby/MatchSearch.cs
+Partida encontrada,,Match found,Partida encontrada,scripts/lobby/MatchSearch.cs
+Procurando partida,,Searching for a match,Buscando partida,scripts/lobby/MatchSearch.cs
+Times equilibrados por habilidade · modo e mapa sorteados,,Skill-balanced teams · random mode and map,Equipos equilibrados por habilidad · modo y mapa al azar,scripts/lobby/MatchSearch.cs
+Você está num grupo: quem procura partida é o líder.,,You're in a party: the leader is the one who searches for a match.,Estás en un grupo: quien busca partida es el líder.,scripts/lobby/MatchSearch.cs
+{0} contra {0} · {1} · {2},,{0} vs {0} · {1} · {2},{0} contra {0} · {1} · {2},scripts/lobby/MatchSearch.cs
+{0} na fila · aceitando a partir de {1} contra {1},,{0} in queue · accepting from {1} vs {1},{0} en la cola · aceptando desde {1} contra {1},scripts/lobby/MatchSearch.cs
+Acabando,,Ending,Terminando,scripts/lobby/OnlineScreen.cs
+Cheia,,Full,Llena,scripts/lobby/OnlineScreen.cs
+Conectando,,Connecting,Conectando,scripts/lobby/OnlineScreen.cs
+Conversa do saguão,,Lobby chat,Chat del vestíbulo,scripts/lobby/OnlineScreen.cs
+Entrando como {0}.,,Signing in as {0}.,Entrando como {0}.,scripts/lobby/OnlineScreen.cs
 Entrar na partida,,Join match,Entrar en la partida,scripts/lobby/OnlineScreen.cs
 Esquecer este acesso neste computador,,Forget this access on this computer,Olvidar este acceso en este ordenador,scripts/lobby/LoginScreen.cs
 Falando com o servidor…,,Talking to the server…,Hablando con el servidor…,scripts/lobby/LoginScreen.cs
@@ -472,6 +509,9 @@ Criar sala,,Create room,Crear sala,scripts/lobby/OnlineScreen.cs
 "Crie a sua e chame alguém. Nos modos contra bots, o dono da sala põe os bots que quiser em cada time.",,"Create yours and invite someone. In modes against bots, the room owner puts as many bots as they like on each team.","Crea la tuya e invita a alguien. En los modos contra bots, el dueño de la sala pone los bots que quiera en cada equipo.",scripts/lobby/OnlineScreen.cs
 Entrando como {0} em {1}.,,Signing in as {0} at {1}.,Entrando como {0} en {1}.,scripts/lobby/OnlineScreen.cs
 Escreva e aperte Enter,,Type and press Enter,Escribe y pulsa Enter,scripts/lobby/OnlineScreen.cs
+Esperando,,Waiting,Esperando,scripts/lobby/OnlineScreen.cs
+Estado,,Status,Estado,scripts/lobby/OnlineScreen.cs
+Lugares,,Slots,Plazas,scripts/lobby/OnlineScreen.cs
 Nenhuma sala aberta agora,,No open rooms right now,Ninguna sala abierta ahora,scripts/lobby/OnlineScreen.cs
 Ninguém jogou ainda.,,Nobody has played yet.,Nadie ha jugado todavía.,scripts/lobby/OnlineScreen.cs
 Não consegui carregar.,,Couldn't load.,No se pudo cargar.,scripts/lobby/OnlineScreen.cs
@@ -486,18 +526,20 @@ Sala de {0},,{0}'s room,Sala de {0},scripts/lobby/OnlineScreen.cs
 Sem ligação com o servidor,,No connection to the server,Sin conexión con el servidor,scripts/lobby/OnlineScreen.cs
 Senha da sala,,Room password,Contraseña de la sala,scripts/lobby/OnlineScreen.cs
 Tentar de novo,,Try again,Intentar de nuevo,scripts/lobby/OnlineScreen.cs
+{0} aberta(s),,{0} open,{0} abierta(s),scripts/lobby/OnlineScreen.cs
 {0} aberta(s) · você é {1},,{0} open · you are {1},{0} abierta(s) · eres {1},scripts/lobby/OnlineScreen.cs
 {0} jogador(es) e {1} bot(s). Quem entra toma o lugar de um bot.,,{0} player(s) and {1} bot(s). Whoever joins takes a bot's place.,{0} jugador(es) y {1} bot(s). Quien entra toma el lugar de un bot.,scripts/lobby/OnlineScreen.cs
 {0} jogador(es) e {1} bot(s).,,{0} player(s) and {1} bot(s).,{0} jugador(es) y {1} bot(s).,scripts/lobby/OnlineScreen.cs
 A partida está quase acabando: espere a próxima,,The match is almost over: wait for the next one,La partida está por terminar: espera la siguiente,scripts/lobby/OnlineScreen.cs
-"A cruz abre com o espalhamento do tiro: ao atirar seguido, andar e pular. Desligada, fica parada.",,,,scripts/lobby/OptionsScreen.cs
-A folga entre o centro e o começo das hastes.,,,,scripts/lobby/OptionsScreen.cs
-A largura das hastes.,,,,scripts/lobby/OptionsScreen.cs
-A música dos menus e o som de fundo dos mapas.,,,,scripts/lobby/OptionsScreen.cs
-Abrir ao atirar e ao correr,,,,scripts/lobby/OptionsScreen.cs
-Agora em {0}. A troca vale na próxima vez que o jogo abrir.,,,,scripts/lobby/OptionsScreen.cs
-"As prontas, ou uma livre no último quadrado.",,,,scripts/lobby/OptionsScreen.cs
-Contorno escuro,,,,scripts/lobby/OptionsScreen.cs
+{0} pts · {1} min,,{0} pts · {1} min,{0} pts · {1} min,scripts/lobby/OnlineScreen.cs
+"A cruz abre com o espalhamento do tiro: ao atirar seguido, andar e pular. Desligada, fica parada.",,"The cross opens up with bullet spread: when firing in a row, moving and jumping. Off, it stays still.","La cruz se abre con la dispersión del disparo: al disparar seguido, caminar y saltar. Desactivada, se queda fija.",scripts/lobby/OptionsScreen.cs
+A folga entre o centro e o começo das hastes.,,The gap between the center and the start of the lines.,La separación entre el centro y el inicio de las líneas.,scripts/lobby/OptionsScreen.cs
+A largura das hastes.,,The width of the lines.,El ancho de las líneas.,scripts/lobby/OptionsScreen.cs
+A música dos menus e o som de fundo dos mapas.,,The menu music and the maps' ambient sound.,La música de los menús y el sonido ambiente de los mapas.,scripts/lobby/OptionsScreen.cs
+Abrir ao atirar e ao correr,,Expand when shooting and running,Abrir al disparar y al correr,scripts/lobby/OptionsScreen.cs
+Agora em {0}. A troca vale na próxima vez que o jogo abrir.,,Now on {0}. The change applies the next time the game starts.,Ahora en {0}. El cambio se aplica la próxima vez que se abra el juego.,scripts/lobby/OptionsScreen.cs
+"As prontas, ou uma livre no último quadrado.",,"The presets, or a custom one in the last square.","Los predefinidos, o uno libre en el último cuadrado.",scripts/lobby/OptionsScreen.cs
+Contorno escuro,,Dark outline,Contorno oscuro,scripts/lobby/OptionsScreen.cs
 Cor,,Color,Color,scripts/lobby/OptionsScreen.cs
 Cruz,,Cross,Cruz,scripts/lobby/OptionsScreen.cs
 Cruz com ponto,,Cross with dot,Cruz con punto,scripts/lobby/OptionsScreen.cs
@@ -505,52 +547,70 @@ Efeitos,,Effects,Efectos,scripts/lobby/OptionsScreen.cs
 Espaço no centro,,Center gap,Espacio en el centro,scripts/lobby/OptionsScreen.cs
 Espessura,,Thickness,Grosor,scripts/lobby/OptionsScreen.cs
 Estilo,,Style,Estilo,scripts/lobby/OptionsScreen.cs
-Formato,,,,scripts/lobby/OptionsScreen.cs
+Formato,,Shape,Forma,scripts/lobby/OptionsScreen.cs
 Geral,,General,General,scripts/lobby/OptionsScreen.cs
 Idioma,,Language,Idioma,scripts/lobby/OptionsScreen.cs
-Imagem,,,,scripts/lobby/OptionsScreen.cs
+Imagem,,Image,Imagen,scripts/lobby/OptionsScreen.cs
 Interface,,Interface,Interfaz,scripts/lobby/OptionsScreen.cs
-Jogo,,,,scripts/lobby/OptionsScreen.cs
+Jogo,,Game,Juego,scripts/lobby/OptionsScreen.cs
 Limite de FPS,,FPS limit,Límite de FPS,scripts/lobby/OptionsScreen.cs
 Mira,,Crosshair,Mira,scripts/lobby/OptionsScreen.cs
-Modo de vídeo,,,,scripts/lobby/OptionsScreen.cs
-Mostrar desempenho,,,,scripts/lobby/OptionsScreen.cs
+Modo de vídeo,,Video mode,Modo de video,scripts/lobby/OptionsScreen.cs
+Mostrar desempenho,,Show performance,Mostrar rendimiento,scripts/lobby/OptionsScreen.cs
 Mouse,,Mouse,Ratón,scripts/lobby/OptionsScreen.cs
 Música e ambiente,,Music and ambience,Música y ambiente,scripts/lobby/OptionsScreen.cs
-O comprimento de cada haste.,,,,scripts/lobby/OptionsScreen.cs
-O FPS e o ping no canto da tela.,,,,scripts/lobby/OptionsScreen.cs
+O comprimento de cada haste.,,The length of each line.,La longitud de cada línea.,scripts/lobby/OptionsScreen.cs
+O FPS e o ping no canto da tela.,,FPS and ping in the corner of the screen.,Los FPS y el ping en la esquina de la pantalla.,scripts/lobby/OptionsScreen.cs
 "O máximo de quadros por segundo. O do monitor acompanha os Hz dele (60, 75, 144…). Para passar dos Hz, desligue o V-Sync.",,"The maximum frames per second. The monitor option follows its refresh rate (60, 75, 144…). To go above it, turn V-Sync off.","El máximo de cuadros por segundo. El del monitor sigue sus Hz (60, 75, 144…). Para superarlos, desactiva el V-Sync.",scripts/lobby/OptionsScreen.cs
-O quanto a mira cobre o que está atrás.,,,,scripts/lobby/OptionsScreen.cs
-O que ainda não tem tradução aparece em português.,,,,scripts/lobby/OptionsScreen.cs
-O respingo de sangue quando o tiro ou a garra acerta.,,,,scripts/lobby/OptionsScreen.cs
-O volume de tudo.,,,,scripts/lobby/OptionsScreen.cs
+O quanto a mira cobre o que está atrás.,,How much the crosshair covers what's behind it.,Cuánto cubre la mira lo que está detrás.,scripts/lobby/OptionsScreen.cs
+O que ainda não tem tradução aparece em português.,,Anything not yet translated shows in Portuguese.,Lo que aún no está traducido aparece en portugués.,scripts/lobby/OptionsScreen.cs
+O respingo de sangue quando o tiro ou a garra acerta.,,The blood splatter when a shot or a claw hits.,La salpicadura de sangre cuando el disparo o la garra acierta.,scripts/lobby/OptionsScreen.cs
+O volume de tudo.,,The volume of everything.,El volumen de todo.,scripts/lobby/OptionsScreen.cs
 Opacidade,,Opacity,Opacidad,scripts/lobby/OptionsScreen.cs
-Os cliques e avisos dos menus e do HUD.,,,,scripts/lobby/OptionsScreen.cs
+Os cliques e avisos dos menus e do HUD.,,Clicks and alerts from the menus and the HUD.,Los clics y avisos de los menús y del HUD.,scripts/lobby/OptionsScreen.cs
 Outra cor,,Custom color,Otro color,scripts/lobby/OptionsScreen.cs
 Ponto,,Dot,Punto,scripts/lobby/OptionsScreen.cs
-Quadros,,,,scripts/lobby/OptionsScreen.cs
+Quadros,,Frames,Fotogramas,scripts/lobby/OptionsScreen.cs
 Qualidade,,Quality,Calidad,scripts/lobby/OptionsScreen.cs
-"Quando a placa não segura o limite de FPS, o 3D baixa a resolução sozinho (até 50%) e volta quando sobra. A resolução 3D é o máximo.",,,,scripts/lobby/OptionsScreen.cs
-Quanto a mira gira por centímetro de mouse. Vale também no meio da partida.,,,,scripts/lobby/OptionsScreen.cs
+"Quando a placa não segura o limite de FPS, o 3D baixa a resolução sozinho (até 50%) e volta quando sobra. A resolução 3D é o máximo.",,"When the graphics card can't hold the FPS limit, the 3D lowers its resolution on its own (down to 50%) and raises it again when there is headroom. The 3D resolution is the maximum.","Cuando la tarjeta no aguanta el límite de FPS, el 3D baja la resolución solo (hasta 50%) y la sube cuando sobra. La resolución 3D es el máximo.",scripts/lobby/OptionsScreen.cs
+Quanto a mira gira por centímetro de mouse. Vale também no meio da partida.,,How much your aim turns per centimeter of mouse movement. Also applies mid-match.,Cuánto gira la mira por centímetro de ratón. También vale en mitad de la partida.,scripts/lobby/OptionsScreen.cs
 Quanto da tela o jogo desenha em 3D. Menos é mais rápido; o menu e a mira ficam nítidos. A luz não muda. É o que mais ajuda em placa fraca.,,How much of the screen the game renders in 3D. Lower is faster; the menu and crosshair stay sharp. Lighting does not change. This helps the most on a weak graphics card.,Cuánto de la pantalla dibuja el juego en 3D. Menos es más rápido; el menú y la mira se ven nítidos. La luz no cambia. Es lo que más ayuda en una tarjeta débil.,scripts/lobby/OptionsScreen.cs
 Resolução 3D,,3D resolution,Resolución 3D,scripts/lobby/OptionsScreen.cs
 Resolução dinâmica,,Dynamic resolution,Resolución dinámica,scripts/lobby/OptionsScreen.cs
-Restaurar padrão,,,,scripts/lobby/OptionsScreen.cs
-Sangue ao acertar,,,,scripts/lobby/OptionsScreen.cs
+Restaurar padrão,,Restore defaults,Restaurar predeterminados,scripts/lobby/OptionsScreen.cs
+Sangue ao acertar,,Blood on hit,Sangre al acertar,scripts/lobby/OptionsScreen.cs
 Sensibilidade,,Sensitivity,Sensibilidad,scripts/lobby/OptionsScreen.cs
-Sistema,,,,scripts/lobby/OptionsScreen.cs
+Sistema,,System,Sistema,scripts/lobby/OptionsScreen.cs
 Suavização,,Anti-aliasing,Suavizado,scripts/lobby/OptionsScreen.cs
-"Só o ponto tem um tamanho só: escolhido ele, os ajustes das hastes somem.",,,,scripts/lobby/OptionsScreen.cs
+"Só o ponto tem um tamanho só: escolhido ele, os ajustes das hastes somem.",,"Only the dot has a single size: with it chosen, the line settings go away.","Solo el punto tiene un único tamaño: si lo eliges, los ajustes de las líneas desaparecen.",scripts/lobby/OptionsScreen.cs
 Tamanho,,Size,Tamaño,scripts/lobby/OptionsScreen.cs
-Tecla: {0}. Ainda não dá para trocar as teclas.,,,,scripts/lobby/OptionsScreen.cs
-Teclas,,,,scripts/lobby/OptionsScreen.cs
-"Tiros, passos, golpes, uivos e explosões.",,,,scripts/lobby/OptionsScreen.cs
-Uma borda escura em volta: a mira lê em fundo claro e escuro.,,,,scripts/lobby/OptionsScreen.cs
-V-Sync,,,,scripts/lobby/OptionsScreen.cs
-Volume,,,,scripts/lobby/OptionsScreen.cs
+Tecla: {0}. Ainda não dá para trocar as teclas.,,Key: {0}. Keys can't be changed yet.,Tecla: {0}. Todavía no se pueden cambiar las teclas.,scripts/lobby/OptionsScreen.cs
+Teclas,,Keys,Teclas,scripts/lobby/OptionsScreen.cs
+"Tiros, passos, golpes, uivos e explosões.",,"Shots, footsteps, strikes, howls and explosions.","Disparos, pasos, golpes, aullidos y explosiones.",scripts/lobby/OptionsScreen.cs
+Uma borda escura em volta: a mira lê em fundo claro e escuro.,,A dark border around it: the crosshair reads on light and dark backgrounds.,Un borde oscuro alrededor: la mira se ve en fondos claros y oscuros.,scripts/lobby/OptionsScreen.cs
+V-Sync,,V-Sync,V-Sync,scripts/lobby/OptionsScreen.cs
+Volume,,Volume,Volumen,scripts/lobby/OptionsScreen.cs
 Vídeo,,Video,Video,scripts/lobby/OptionsScreen.cs
 {0:0} px,,{0:0} px,{0:0} px,scripts/lobby/OptionsScreen.cs
 Áudio,,Audio,Audio,scripts/lobby/OptionsScreen.cs
+Em uso,,In use,En uso,scripts/lobby/PhotoScreen.cs
+Na loja,,In the shop,En la tienda,scripts/lobby/PhotoScreen.cs
+Suas fotos,,Your photos,Tus fotos,scripts/lobby/PhotoScreen.cs
+Voltar ao perfil,,Back to profile,Volver al perfil,scripts/lobby/PhotoScreen.cs
+"É a foto que aparece na sala, no placar e na lista de amigos, dentro da moldura do seu nível.",,"It's the photo shown in the room, on the scoreboard and in the friends list, inside your level's frame.","Es la foto que aparece en la sala, en el marcador y en la lista de amigos, dentro del marco de tu nivel.",scripts/lobby/PhotoScreen.cs
+Até 4 contra 4 · times equilibrados,,Up to 4 vs 4 · balanced teams,Hasta 4 contra 4 · equipos equilibrados,scripts/lobby/PlayScreen.cs
+Conectando ao servidor…,,Connecting to the server…,Conectando al servidor…,scripts/lobby/PlayScreen.cs
+Em breve,,Coming soon,Próximamente,scripts/lobby/PlayScreen.cs
+Escolha como entrar na caçada,,Choose how to join the hunt,Elige cómo entrar en la cacería,scripts/lobby/PlayScreen.cs
+Jogo rápido,,Quick match,Partida rápida,scripts/lobby/PlayScreen.cs
+O servidor junta jogadores do seu nível em dois times da mesma força e sorteia o modo e o mapa. É entrar e caçar.,,The server groups players of your level into two evenly matched teams and picks a random mode and map. Just jump in and hunt.,El servidor junta jugadores de tu nivel en dos equipos de la misma fuerza y sortea el modo y el mapa. Es entrar y cazar.,scripts/lobby/PlayScreen.cs
+Offline · não vale XP nem Cash,,Offline · no XP or Cash,Sin conexión · no da XP ni Cash,scripts/lobby/PlayScreen.cs
+Procurando…,,Searching…,Buscando…,scripts/lobby/PlayScreen.cs
+Treinamento,,Training,Entrenamiento,scripts/lobby/PlayScreen.cs
+"Uma sala só sua, contra bots do nível que você escolher. Para aquecer a mira e a garra.",,"A room all to yourself, against bots of the level you choose. To warm up your aim and your claws.","Una sala solo para ti, contra bots del nivel que elijas. Para calentar la mira y la garra.",scripts/lobby/PlayScreen.cs
+"Veja as salas abertas, entre na de um amigo ou crie a sua com o mapa e as regras que quiser.",,"Browse open rooms, join a friend's or create your own with the map and rules you want.","Mira las salas abiertas, entra en la de un amigo o crea la tuya con el mapa y las reglas que quieras.",scripts/lobby/PlayScreen.cs
+{0} aberta(s) · crie a sua,,{0} open · create your own,{0} abierta(s) · crea la tuya,scripts/lobby/PlayScreen.cs
+A sua tag. Clique para copiar {0},,Your tag. Click to copy {0},Tu etiqueta. Haz clic para copiar {0},scripts/lobby/ProfileScreen.cs
 Abates,,Kills,Bajas,scripts/lobby/ProfileScreen.cs
 Abates como humano,,Kills as human,Bajas como humano,scripts/lobby/ProfileScreen.cs
 Abates como lobo,,Kills as wolf,Bajas como lobo,scripts/lobby/ProfileScreen.cs
@@ -575,8 +635,11 @@ Partidas,,Matches,Partidas,scripts/lobby/ProfileScreen.cs
 Patente máxima,,Highest rank,Rango máximo,scripts/lobby/ProfileScreen.cs
 Perfil criado em {0:dd/MM/yyyy},,Profile created on {0:dd/MM/yyyy},Perfil creado el {0:dd/MM/yyyy},scripts/lobby/ProfileScreen.cs
 Próxima:,,Next:,Siguiente:,scripts/lobby/ProfileScreen.cs
+Sua carreira na liga,,Your career in the league,Tu carrera en la liga,scripts/lobby/ProfileScreen.cs
 Tempo jogado,,Time played,Tiempo jugado,scripts/lobby/ProfileScreen.cs
 Trocar,,Change,Cambiar,scripts/lobby/ProfileScreen.cs
+Trocar a foto de perfil,,Change profile photo,Cambiar la foto de perfil,scripts/lobby/ProfileScreen.cs
+Trocar foto,,Change photo,Cambiar foto,scripts/lobby/ProfileScreen.cs
 Trocar nome,,Change name,Cambiar nombre,scripts/lobby/ProfileScreen.cs
 Trocar nome (item da loja),,Change name (shop item),Cambiar nombre (objeto de la tienda),scripts/lobby/ProfileScreen.cs
 Título,,Title,Título,scripts/lobby/ProfileScreen.cs
@@ -586,20 +649,27 @@ Vitórias,,Wins,Victorias,scripts/lobby/ProfileScreen.cs
 {0:0}% dos abates,,{0:0}% of kills,{0:0}% de las bajas,scripts/lobby/ProfileScreen.cs
 {0} como humano,,{0} as human,{0} como humano,scripts/lobby/ProfileScreen.cs
 {0} como lobo,,{0} as wolf,{0} como lobo,scripts/lobby/ProfileScreen.cs
+{0} copiado: passe para um amigo adicionar você,,{0} copied: send it to a friend so they can add you,{0} copiado: pásalo a un amigo para que te agregue,scripts/lobby/ProfileScreen.cs
 {0} h {1:00} min,,{0} h {1:00} min,{0} h {1:00} min,scripts/lobby/ProfileScreen.cs
 {0} · {1} de Cash na loja,,{0} · {1} Cash in the shop,{0} · {1} de Cash en la tienda,scripts/lobby/ProfileScreen.cs
 +  Adicionar bot,,+  Add bot,+  Añadir bot,scripts/lobby/RoomScreen.cs
+4 a 8 caracteres. Quem é convidado por um amigo entra sem ela.,,4 to 8 characters. Anyone invited by a friend gets in without it.,De 4 a 8 caracteres. Quien es invitado por un amigo entra sin ella.,scripts/lobby/RoomScreen.cs
 4 a 8 caracteres. Vale quando houver multijogador.,,4 to 8 characters. Applies once there's multiplayer.,De 4 a 8 caracteres. Vale cuando haya multijugador.,scripts/lobby/RoomScreen.cs
 A partida está em andamento,,The match is in progress,La partida está en curso,scripts/lobby/RoomScreen.cs
 A PARTIDA VAI COMEÇAR,,THE MATCH IS ABOUT TO START,LA PARTIDA VA A EMPEZAR,scripts/lobby/RoomScreen.cs
 A senha tem de 4 a 8 caracteres,,The password must be 4 to 8 characters,La contraseña debe tener de 4 a 8 caracteres,scripts/lobby/RoomScreen.cs
 Abates / mortes,,Kills / deaths,Bajas / muertes,scripts/lobby/RoomScreen.cs
+Adicionar aos amigos,,Add friend,Agregar a amigos,scripts/lobby/RoomScreen.cs
 Aguardando,,Waiting,Esperando,scripts/lobby/RoomScreen.cs
 Arma,,Weapon,Arma,scripts/lobby/RoomScreen.cs
 Bare,,Bare,Bare,scripts/lobby/RoomScreen.cs
 Bots,,Bots,Bots,scripts/lobby/RoomScreen.cs
 Canal local,,Local channel,Canal local,scripts/lobby/RoomScreen.cs
+Clique no + ao lado de um amigo conectado para convidar,,Click the + next to an online friend to invite them,Haz clic en el + junto a un amigo conectado para invitarlo,scripts/lobby/RoomScreen.cs
+Com senha,,Password protected,Con contraseña,scripts/lobby/RoomScreen.cs
+Conversa da sala,,Room chat,Chat de la sala,scripts/lobby/RoomScreen.cs
 Convidar,,Invite,Invitar,scripts/lobby/RoomScreen.cs
+Convidar amigos,,Invite friends,Invitar amigos,scripts/lobby/RoomScreen.cs
 Convidar amigos exige servidor,,Inviting friends needs a server,Invitar amigos requiere servidor,scripts/lobby/RoomScreen.cs
 Dificuldade,,Difficulty,Dificultad,scripts/lobby/RoomScreen.cs
 difíceis,,hard,difíciles,scripts/lobby/RoomScreen.cs
@@ -622,11 +692,14 @@ Jogador,,Player,Jugador,scripts/lobby/RoomScreen.cs
 Jogadores,,Players,Jugadores,scripts/lobby/RoomScreen.cs
 M16A2,,M16A2,M16A2,scripts/lobby/RoomScreen.cs
 Mapa,,Map,Mapa,scripts/lobby/RoomScreen.cs
+Mapa · {0},,Map · {0},Mapa · {0},scripts/lobby/RoomScreen.cs
 Marcar pronto,,Ready up,Marcar listo,scripts/lobby/RoomScreen.cs
 Modo,,Mode,Modo,scripts/lobby/RoomScreen.cs
 Médio,,Medium,Medio,scripts/lobby/RoomScreen.cs
 médios,,medium,medios,scripts/lobby/RoomScreen.cs
 Nível,,Level,Nivel,scripts/lobby/RoomScreen.cs
+Nível máximo,,Max level,Nivel máximo,scripts/lobby/RoomScreen.cs
+Nível mínimo,,Min level,Nivel mínimo,scripts/lobby/RoomScreen.cs
 Nível {0},,Level {0},Nivel {0},scripts/lobby/RoomScreen.cs
 O time {0} está cheio,,Team {0} is full,El equipo {0} está lleno,scripts/lobby/RoomScreen.cs
 O time {0} ficaria com dois a mais: troque de lado,,Team {0} would have two more players: switch sides,El equipo {0} tendría dos más: cambia de lado,scripts/lobby/RoomScreen.cs
@@ -636,10 +709,12 @@ A partida já começou. Escolha o lado e entre.,,The match has started. Pick a s
 Jogando,,Playing,Jugando,scripts/lobby/RoomScreen.cs
 Na sala,,In the room,En la sala,scripts/lobby/RoomScreen.cs
 na sala,,in the room,en la sala,scripts/lobby/RoomScreen.cs
+O treinamento é só seu: convide numa sala online,,Training is just for you: invite people in an online room,El entrenamiento es solo tuyo: invita en una sala en línea,scripts/lobby/RoomScreen.cs
 Objetivo,,Objective,Objetivo,scripts/lobby/RoomScreen.cs
 Online,,Online,En línea,scripts/lobby/RoomScreen.cs
 Os dois times precisam de alguém,,Both teams need someone,Los dos equipos necesitan a alguien,scripts/lobby/RoomScreen.cs
 Os dois times precisam de alguém: ponha um bot no time vazio,,Both teams need someone: put a bot on the empty team,Los dos equipos necesitan a alguien: pon un bot en el equipo vacío,scripts/lobby/RoomScreen.cs
+Ou passe o número da sala: {0},,Or share the room number: {0},O pasa el número de la sala: {0},scripts/lobby/RoomScreen.cs
 Passe o número da sala: {0},,Share the room number: {0},Pasa el número de la sala: {0},scripts/lobby/RoomScreen.cs
 Pronto  »,,Ready  »,Listo  »,scripts/lobby/RoomScreen.cs
 Prontos: {0} contra {1} — espere mais alguém ficar pronto,,Ready: {0} against {1} — wait for someone else to ready up,Listos: {0} contra {1} — espera a que alguien más esté listo,scripts/lobby/RoomScreen.cs
@@ -647,6 +722,7 @@ Regras da sala,,Room rules,Reglas de la sala,scripts/lobby/RoomScreen.cs
 Sair da sala,,Leave room,Salir de la sala,scripts/lobby/RoomScreen.cs
 SALA,,ROOM,SALA,scripts/lobby/RoomScreen.cs
 Sala,,Room,Sala,scripts/lobby/RoomScreen.cs
+Sala #{0} · online,,Room #{0} · online,Sala #{0} · en línea,scripts/lobby/RoomScreen.cs
 Sem senha,,No password,Sin contraseña,scripts/lobby/RoomScreen.cs
 Senha,,Password,Contraseña,scripts/lobby/RoomScreen.cs
 Situação,,Status,Situación,scripts/lobby/RoomScreen.cs
@@ -657,8 +733,10 @@ Tempo,,Time,Tiempo,scripts/lobby/RoomScreen.cs
 Tipo,,Type,Tipo,scripts/lobby/RoomScreen.cs
 Tirar {0},,Remove {0},Quitar {0},scripts/lobby/RoomScreen.cs
 Tire jogadores antes de diminuir os times,,Remove players before shrinking the teams,Quita jugadores antes de reducir los equipos,scripts/lobby/RoomScreen.cs
+Treinamento · offline,,Training · offline,Entrenamiento · sin conexión,scripts/lobby/RoomScreen.cs
 Troca de lado,,Side swap,Cambio de lado,scripts/lobby/RoomScreen.cs
 Trocar de lado,,Swap sides,Cambiar de lado,scripts/lobby/RoomScreen.cs
+Vaga aberta,,Open slot,Plaza libre,scripts/lobby/RoomScreen.cs
 Vale quando houver multijogador.,,Applies once there's multiplayer.,Vale cuando haya multijugador.,scripts/lobby/RoomScreen.cs
 Ver perfil,,View profile,Ver perfil,scripts/lobby/RoomScreen.cs
 {0}  ·  {1:0}% de vitórias,,{0}  ·  {1:0}% wins,{0}  ·  {1:0}% de victorias,scripts/lobby/RoomScreen.cs
@@ -668,6 +746,8 @@ Ver perfil,,View profile,Ver perfil,scripts/lobby/RoomScreen.cs
 {0} ficou de fora: não estava pronto.,,{0} was left out: wasn't ready.,{0} quedó fuera: no estaba listo.,scripts/lobby/RoomScreen.cs
 {0} foi para o time {1}.,,{0} moved to team {1}.,{0} pasó al equipo {1}.,scripts/lobby/RoomScreen.cs
 {0} não está mais pronto.,,{0} is no longer ready.,{0} ya no está listo.,scripts/lobby/RoomScreen.cs
+{0} pontos · {1} min,,{0} points · {1} min,{0} puntos · {1} min,scripts/lobby/RoomScreen.cs
+{0} · na sala,,{0} · in the room,{0} · en la sala,scripts/lobby/RoomScreen.cs
 1 item,,1 item,1 objeto,scripts/lobby/ShopScreen.cs
 A venda de IPs ainda não abriu. E eles nunca compram poder.,,IP sales haven't opened yet. And they never buy power.,La venta de IPs aún no abrió. Y nunca compran poder.,scripts/lobby/ShopScreen.cs
 A vitrine do dia vem do servidor: entre em Online,,Today's showcase comes from the server: go to Online,El escaparate del día viene del servidor: entra en En línea,scripts/lobby/ShopScreen.cs
@@ -712,25 +792,73 @@ Vem com todo perfil.,,Comes with every profile.,Viene con todo perfil.,scripts/l
 Você tem,,You have,Tienes,scripts/lobby/ShopScreen.cs
 {0:0} de Cash por dia,,{0:0} Cash per day,{0:0} de Cash por día,scripts/lobby/ShopScreen.cs
 {0} itens,,{0} items,{0} objetos,scripts/lobby/ShopScreen.cs
-Baú,,,,scripts/meta/Avatars.cs
-Capacete,,,,scripts/meta/Avatars.cs
-Coruja da Neve,,,,scripts/meta/Avatars.cs
-Coruja Piloto,,,,scripts/meta/Avatars.cs
-Cristal da Lua,,,,scripts/meta/Avatars.cs
-Drone,,,,scripts/meta/Avatars.cs
-Escorpião,,,,scripts/meta/Avatars.cs
+A sua tag. Clique para copiar {0} e passar a um amigo,,Your tag. Click to copy {0} and send it to a friend,Tu etiqueta. Haz clic para copiar {0} y pasársela a un amigo,scripts/lobby/SocialDock.cs
+Abrir os amigos,,Open friends,Abrir amigos,scripts/lobby/SocialDock.cs
+Aceitar {0},,Accept {0},Aceptar a {0},scripts/lobby/SocialDock.cs
+Adicionar: Nome#0000,,Add: Name#0000,Agregar: Nombre#0000,scripts/lobby/SocialDock.cs
+Aguardando resposta,,Waiting for a reply,Esperando respuesta,scripts/lobby/SocialDock.cs
+Amigos conectados,,Online friends,Amigos conectados,scripts/lobby/SocialDock.cs
+Cancelar o pedido a {0},,Cancel the request to {0},Cancelar la solicitud a {0},scripts/lobby/SocialDock.cs
+"Chamar {0} para o grupo: vocês entram juntos nas salas, no mesmo time",,"Invite {0} to your party: you join rooms together, on the same team","Invitar a {0} al grupo: entran juntos en las salas, en el mismo equipo",scripts/lobby/SocialDock.cs
+Conectado,,Online,Conectado,scripts/lobby/SocialDock.cs
+Conectados,,Online,Conectados,scripts/lobby/SocialDock.cs
+Convidar {0} para a sua sala,,Invite {0} to your room,Invitar a {0} a tu sala,scripts/lobby/SocialDock.cs
+Convite enviado para {0},,Invite sent to {0},Invitación enviada a {0},scripts/lobby/SocialDock.cs
+Convite para grupo,,Party invite,Invitación a grupo,scripts/lobby/SocialDock.cs
+Convite para o grupo enviado a {0},,Party invite sent to {0},Invitación al grupo enviada a {0},scripts/lobby/SocialDock.cs
+Convite para sala,,Room invite,Invitación a sala,scripts/lobby/SocialDock.cs
+Desconectado,,Offline,Desconectado,scripts/lobby/SocialDock.cs
+Desconectados,,Offline,Desconectados,scripts/lobby/SocialDock.cs
+Desfazer,,Remove,Eliminar,scripts/lobby/SocialDock.cs
+Desfazer a amizade com {0},,Unfriend {0},Eliminar la amistad con {0},scripts/lobby/SocialDock.cs
+Desfazer a amizade?,,Remove friend?,¿Eliminar la amistad?,scripts/lobby/SocialDock.cs
+Em partida,,In a match,En partida,scripts/lobby/SocialDock.cs
+Enviar pedido de amizade,,Send friend request,Enviar solicitud de amistad,scripts/lobby/SocialDock.cs
+"Escreva o nome com a tag, assim: Nome#0000. A tag do seu amigo aparece no painel social dele.",,"Type the name with the tag, like this: Name#0000. Your friend's tag shows on their social panel.","Escribe el nombre con la etiqueta, así: Nombre#0000. La etiqueta de tu amigo aparece en su panel social.",scripts/lobby/SocialDock.cs
+Grupo,,Party,Grupo,scripts/lobby/SocialDock.cs
+"Jogar juntos, no mesmo time",,"Play together, on the same team","Jugar juntos, en el mismo equipo",scripts/lobby/SocialDock.cs
+Líder,,Leader,Líder,scripts/lobby/SocialDock.cs
+Na sala #{0},,In room #{0},En la sala #{0},scripts/lobby/SocialDock.cs
+Nenhum amigo conectado agora.,,No friends online right now.,Ningún amigo conectado ahora.,scripts/lobby/SocialDock.cs
+"No aplicativo, com o jogo fechado",,"In the launcher, game closed","En la aplicación, con el juego cerrado",scripts/lobby/SocialDock.cs
+No menu,,In the menu,En el menú,scripts/lobby/SocialDock.cs
+"O líder escolhe a sala e o grupo entra junto, no mesmo time.",,"The leader picks the room and the party joins together, on the same team.","El líder elige la sala y el grupo entra junto, en el mismo equipo.",scripts/lobby/SocialDock.cs
+Passar a liderança do grupo para {0},,Make {0} party leader,Pasar el liderazgo del grupo a {0},scripts/lobby/SocialDock.cs
+Pedidos,,Requests,Solicitudes,scripts/lobby/SocialDock.cs
+Pedidos e convites à espera,,Pending requests and invites,Solicitudes e invitaciones pendientes,scripts/lobby/SocialDock.cs
+Pedidos enviados,,Sent requests,Solicitudes enviadas,scripts/lobby/SocialDock.cs
+Quer ser seu amigo,,Wants to be your friend,Quiere ser tu amigo,scripts/lobby/SocialDock.cs
+Recolher os amigos,,Collapse friends,Contraer amigos,scripts/lobby/SocialDock.cs
+Recusar,,Decline,Rechazar,scripts/lobby/SocialDock.cs
+Recusar {0},,Decline {0},Rechazar a {0},scripts/lobby/SocialDock.cs
+Sair do grupo,,Leave party,Salir del grupo,scripts/lobby/SocialDock.cs
+Sala #{0}{1},,Room #{0}{1},Sala #{0}{1},scripts/lobby/SocialDock.cs
+Sem ligação,,Disconnected,Sin conexión,scripts/lobby/SocialDock.cs
+Social,,Social,Social,scripts/lobby/SocialDock.cs
+Tirar {0} do grupo,,Kick {0} from the party,Sacar a {0} del grupo,scripts/lobby/SocialDock.cs
+Você,,You,Tú,scripts/lobby/SocialDock.cs
+"Você ainda não tem amigos. Adicione pelo nome com a tag (Nome#0000), aqui embaixo.",,"You don't have any friends yet. Add them by name and tag (Name#0000), down below.","Todavía no tienes amigos. Agrégalos por el nombre con la etiqueta (Nombre#0000), aquí abajo.",scripts/lobby/SocialDock.cs
+"Você lidera: a sala em que você entrar leva o grupo junto, no mesmo time.",,"You're the leader: whatever room you join, the party comes along, on the same team.","Tú lideras: la sala en la que entres lleva al grupo contigo, en el mismo equipo.",scripts/lobby/SocialDock.cs
+"{0} sai da sua lista, e você da dele.",,"{0} leaves your list, and you leave theirs.","{0} sale de tu lista, y tú de la suya.",scripts/lobby/SocialDock.cs
+Baú,,Chest,Cofre,scripts/meta/Avatars.cs
+Capacete,,Helmet,Casco,scripts/meta/Avatars.cs
+Coruja da Neve,,Snow Owl,Búho de las Nieves,scripts/meta/Avatars.cs
+Coruja Piloto,,Pilot Owl,Búho Piloto,scripts/meta/Avatars.cs
+Cristal da Lua,,Moon Crystal,Cristal de Luna,scripts/meta/Avatars.cs
+Drone,,Drone,Dron,scripts/meta/Avatars.cs
+Escorpião,,Scorpion,Escorpión,scripts/meta/Avatars.cs
 Filhote,,Pup,Cachorro,scripts/meta/Avatars.cs
-Garras,,,,scripts/meta/Avatars.cs
-Geleia,,,,scripts/meta/Avatars.cs
-Granada de Ouro,,,,scripts/meta/Avatars.cs
-Lobo Cinzento,,,,scripts/meta/Avatars.cs
-Lobo de Fogo,,,,scripts/meta/Avatars.cs
-Lobo de Gelo,,,,scripts/meta/Avatars.cs
-Lobo Neon,,,,scripts/meta/Avatars.cs
+Garras,,Claws,Garras,scripts/meta/Avatars.cs
+Geleia,,Jelly,Gelatina,scripts/meta/Avatars.cs
+Granada de Ouro,,Gold Grenade,Granada de Oro,scripts/meta/Avatars.cs
+Lobo Cinzento,,Gray Wolf,Lobo Gris,scripts/meta/Avatars.cs
+Lobo de Fogo,,Fire Wolf,Lobo de Fuego,scripts/meta/Avatars.cs
+Lobo de Gelo,,Ice Wolf,Lobo de Hielo,scripts/meta/Avatars.cs
+Lobo Neon,,Neon Wolf,Lobo Neón,scripts/meta/Avatars.cs
 Lua Cheia,,Full Moon,Luna Llena,scripts/meta/Avatars.cs
-Panda Vermelho,,,,scripts/meta/Avatars.cs
-Raposa Espírito,,,,scripts/meta/Avatars.cs
-Urso de Guerra,,,,scripts/meta/Avatars.cs
+Panda Vermelho,,Red Panda,Panda Rojo,scripts/meta/Avatars.cs
+Raposa Espírito,,Spirit Fox,Zorro Espíritu,scripts/meta/Avatars.cs
+Urso de Guerra,,War Bear,Oso de Guerra,scripts/meta/Avatars.cs
 +10% de escudo máximo do lobo.,,+10% wolf max shield.,+10% de escudo máximo del lobo.,scripts/meta/Catalog.cs
 +5% de velocidade na forma de lobo.,,+5% speed in wolf form.,+5% de velocidad en forma de lobo.,scripts/meta/Catalog.cs
 +6% de dano da garra.,,+6% claw damage.,+6% de daño de garra.,scripts/meta/Catalog.cs
@@ -763,18 +891,18 @@ Desert Eagle Fênix,,Desert Eagle Phoenix,Desert Eagle Fénix,scripts/meta/Catal
 "Explosiva: mata de perto e fere até a borda do raio. Cai onde a mira aponta. Todo mundo tem, e já vem no conjunto padrão.",,"Explosive: kills up close and wounds out to the edge of the blast. Lands where you aim. Everyone has it, and it comes in the default loadout.","Explosiva: mata de cerca y hiere hasta el borde del radio. Cae donde apunta la mira. Todos la tienen, y ya viene en el equipo predeterminado.",scripts/meta/Catalog.cs
 Faca Damasco,,Damascus Knife,Cuchillo Damasco,scripts/meta/Catalog.cs
 Faca Obsidiana,,Obsidian Knife,Cuchillo Obsidiana,scripts/meta/Catalog.cs
-Foto Baú,,,,scripts/meta/Catalog.cs
-Foto Capacete,,,,scripts/meta/Catalog.cs
-Foto Coruja da Neve,,,,scripts/meta/Catalog.cs
-Foto Cristal da Lua,,,,scripts/meta/Catalog.cs
-Foto Escorpião,,,,scripts/meta/Catalog.cs
-Foto Garras,,,,scripts/meta/Catalog.cs
-Foto Granada de Ouro,,,,scripts/meta/Catalog.cs
-Foto Lobo de Fogo,,,,scripts/meta/Catalog.cs
-Foto Lobo de Gelo,,,,scripts/meta/Catalog.cs
-Foto Lobo Neon,,,,scripts/meta/Catalog.cs
-Foto Raposa Espírito,,,,scripts/meta/Catalog.cs
-Foto Urso de Guerra,,,,scripts/meta/Catalog.cs
+Foto Baú,,Chest Photo,Foto Cofre,scripts/meta/Catalog.cs
+Foto Capacete,,Helmet Photo,Foto Casco,scripts/meta/Catalog.cs
+Foto Coruja da Neve,,Snow Owl Photo,Foto Búho de las Nieves,scripts/meta/Catalog.cs
+Foto Cristal da Lua,,Moon Crystal Photo,Foto Cristal de Luna,scripts/meta/Catalog.cs
+Foto Escorpião,,Scorpion Photo,Foto Escorpión,scripts/meta/Catalog.cs
+Foto Garras,,Claws Photo,Foto Garras,scripts/meta/Catalog.cs
+Foto Granada de Ouro,,Gold Grenade Photo,Foto Granada de Oro,scripts/meta/Catalog.cs
+Foto Lobo de Fogo,,Fire Wolf Photo,Foto Lobo de Fuego,scripts/meta/Catalog.cs
+Foto Lobo de Gelo,,Ice Wolf Photo,Foto Lobo de Hielo,scripts/meta/Catalog.cs
+Foto Lobo Neon,,Neon Wolf Photo,Foto Lobo Neón,scripts/meta/Catalog.cs
+Foto Raposa Espírito,,Spirit Fox Photo,Foto Zorro Espíritu,scripts/meta/Catalog.cs
+Foto Urso de Guerra,,War Bear Photo,Foto Oso de Guerra,scripts/meta/Catalog.cs
 Fuzil de assalto,,Assault rifle,Fusil de asalto,scripts/meta/Catalog.cs
 "Fuzil de batalha 7,62: pente de 20, tiro lento e pesado. Segura um corredor de longe; de perto, perde para qualquer fuzil.",,"7.62 battle rifle: 20-round magazine, slow and heavy shots. Holds a corridor from afar; up close, it loses to any rifle.","Fusil de batalla 7,62: cargador de 20, disparo lento y pesado. Aguanta un pasillo de lejos; de cerca, pierde contra cualquier fusil.",scripts/meta/Catalog.cs
 Fuzil de impacto,,Impact rifle,Fusil de impacto,scripts/meta/Catalog.cs
@@ -800,18 +928,18 @@ M4A4 Neon,,M4A4 Neon,M4A4 Neón,scripts/meta/Catalog.cs
 "O AR-15 no limite: um pouco mais de dano, cadência e pente, e o recuo mais domado. Pele roxa com flames que brilham.",,"The AR-15 at its limit: a bit more damage, fire rate and magazine, and the recoil tamed further. Purple skin with glowing flames.","La AR-15 al límite: un poco más de daño, cadencia y cargador, y el retroceso más domado. Piel morada con llamas que brillan.",scripts/meta/Catalog.cs
 O escudo do lobo se desfaz 20% mais devagar.,,The wolf's shield wears off 20% slower.,El escudo del lobo se desgasta un 20% más lento.,scripts/meta/Catalog.cs
 "O fuzil padrão. Carabina rápida e fácil de segurar: um pouco mais de cadência que o AR-15, um pouco menos de alcance.",,"The standard rifle. A fast, easy-to-handle carbine: a bit more fire rate than the AR-15, a bit less range.","El fusil estándar. Carabina rápida y fácil de controlar: un poco más de cadencia que el AR-15, un poco menos de alcance.",scripts/meta/Catalog.cs
-O ícone Baú no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Capacete no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Coruja da Neve no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Cristal da Lua no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Escorpião no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Garras no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Granada de Ouro no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Lobo de Fogo no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Lobo de Gelo no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Lobo Neon no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Raposa Espírito no seu retrato.,,,,scripts/meta/Catalog.cs
-O ícone Urso de Guerra no seu retrato.,,,,scripts/meta/Catalog.cs
+O ícone Baú no seu retrato.,,The Chest icon on your portrait.,El icono Cofre en tu retrato.,scripts/meta/Catalog.cs
+O ícone Capacete no seu retrato.,,The Helmet icon on your portrait.,El icono Casco en tu retrato.,scripts/meta/Catalog.cs
+O ícone Coruja da Neve no seu retrato.,,The Snow Owl icon on your portrait.,El icono Búho de las Nieves en tu retrato.,scripts/meta/Catalog.cs
+O ícone Cristal da Lua no seu retrato.,,The Moon Crystal icon on your portrait.,El icono Cristal de Luna en tu retrato.,scripts/meta/Catalog.cs
+O ícone Escorpião no seu retrato.,,The Scorpion icon on your portrait.,El icono Escorpión en tu retrato.,scripts/meta/Catalog.cs
+O ícone Garras no seu retrato.,,The Claws icon on your portrait.,El icono Garras en tu retrato.,scripts/meta/Catalog.cs
+O ícone Granada de Ouro no seu retrato.,,The Gold Grenade icon on your portrait.,El icono Granada de Oro en tu retrato.,scripts/meta/Catalog.cs
+O ícone Lobo de Fogo no seu retrato.,,The Fire Wolf icon on your portrait.,El icono Lobo de Fuego en tu retrato.,scripts/meta/Catalog.cs
+O ícone Lobo de Gelo no seu retrato.,,The Ice Wolf icon on your portrait.,El icono Lobo de Hielo en tu retrato.,scripts/meta/Catalog.cs
+O ícone Lobo Neon no seu retrato.,,The Neon Wolf icon on your portrait.,El icono Lobo Neón en tu retrato.,scripts/meta/Catalog.cs
+O ícone Raposa Espírito no seu retrato.,,The Spirit Fox icon on your portrait.,El icono Zorro Espíritu en tu retrato.,scripts/meta/Catalog.cs
+O ícone Urso de Guerra no seu retrato.,,The War Bear icon on your portrait.,El icono Oso de Guerra en tu retrato.,scripts/meta/Catalog.cs
 os dois times,,both teams,los dos equipos,scripts/meta/Catalog.cs
 Pata Leve,,Light Paw,Pata Ligera,scripts/meta/Catalog.cs
 Pelo Denso,,Dense Fur,Pelaje Denso,scripts/meta/Catalog.cs
@@ -844,9 +972,10 @@ Três tiros no corpo. Feita para rajadas de três a cinco: depois disso o cano v
 "Épica. Um pouco mais de dano e golpe um pouco mais rápido. Lâmina de aço damasco em ondas, cabo de madeira e cobre.",,"Epic. A little more damage and a slightly faster strike. A wavy Damascus steel blade, wood and copper handle.","Épica. Un poco más de daño y un golpe algo más rápido. Hoja de acero de Damasco en ondas, mango de madera y cobre.",scripts/meta/Catalog.cs
 Épica. Um pouco mais de dano e o coice mais fácil de segurar na rajada. Laranja com listras de tigre.,,Epic. A little more damage and a kick that is easier to hold in a burst. Orange with tiger stripes.,Épica. Un poco más de daño y un retroceso más fácil de controlar en ráfaga. Naranja con rayas de tigre.,scripts/meta/Catalog.cs
 .NET — .NET Foundation e colaboradores,,.NET — .NET Foundation and contributors,.NET — .NET Foundation y colaboradores,scripts/meta/Credits.cs
+Acertos e faca,,Hits and knife,Impactos y cuchillo,scripts/meta/Credits.cs
 "Acertos, faca e explosão",,"Hits, knife and explosion","Impactos, cuchillo y explosión",scripts/meta/Credits.cs
 AK-74M,,AK-74M,AK-74M,scripts/meta/Credits.cs
-"Animações da pistola (pegada, saque e recarga), de referência",,,,scripts/meta/Credits.cs
+"Animações da pistola (pegada, saque e recarga), de referência",,"Pistol animations (grip, draw and reload), as reference","Animaciones de la pistola (empuñadura, desenfunde y recarga), como referencia",scripts/meta/Credits.cs
 Animações do AR-15,,AR-15 animations,Animaciones de la AR-15,scripts/meta/Credits.cs
 "Animações do humano, morte e corrida na parede do lobo; braços do AR-15 (X Bot)",,"Human animations, death and the wolf's wall run; AR-15 arms (X Bot)","Animaciones del humano, muerte y carrera por la pared del lobo; brazos del AR-15 (X Bot)",scripts/meta/Credits.cs
 "Animações do lobo (andar, agachar, correr de quatro, golpes, uivo, pulo e salto)",,"Wolf animations (walk, crouch, four-legged run, strikes, howl, jump and leap)","Animaciones del lobo (andar, agacharse, correr a cuatro patas, golpes, aullido, salto y brinco)",scripts/meta/Credits.cs
@@ -875,6 +1004,7 @@ eNse7en (Sketchfab),,eNse7en (Sketchfab),eNse7en (Sketchfab),scripts/meta/Credit
 Erik Kennedy,,Erik Kennedy,Erik Kennedy,scripts/meta/Credits.cs
 Escopeta semiautomática,,Semi-automatic shotgun,Escopeta semiautomática,scripts/meta/Credits.cs
 Eve e Barut (modelos e texturas dos humanos),,Eve and Barut (human models and textures),Eve y Barut (modelos y texturas de los humanos),scripts/meta/Credits.cs
+Explosão da granada,,Grenade explosion,Explosión de la granada,scripts/meta/Credits.cs
 Faca com braços e animações,,Knife with arms and animations,Cuchillo con brazos y animaciones,scripts/meta/Credits.cs
 "feitas para o jogo (tools/bordas.py, fotos_armas.tscn)",,"made for the game (tools/bordas.py, fotos_armas.tscn)","hechas para el juego (tools/bordas.py, fotos_armas.tscn)",scripts/meta/Credits.cs
 "feitos para o jogo, por código e no Blender (tools/)",,"made for the game, in code and in Blender (tools/)","hechos para el juego, por código y en Blender (tools/)",scripts/meta/Credits.cs
@@ -885,7 +1015,9 @@ Free Sounds Pack,,Free Sounds Pack,Free Sounds Pack,scripts/meta/Credits.cs
 "Free Weapon SFX v1.1 (amostra do Weapon Sound Effects Bundle, GameDev Market)",,"Free Weapon SFX v1.1 (sample of the Weapon Sound Effects Bundle, GameDev Market)","Free Weapon SFX v1.1 (muestra del Weapon Sound Effects Bundle, GameDev Market)",scripts/meta/Credits.cs
 Fuzil compacto com luneta,,Compact rifle with scope,Fusil compacto con mira telescópica,scripts/meta/Credits.cs
 Física,,Physics,Física,scripts/meta/Credits.cs
+gerada por Jhonata Bonadio com IA,,generated by Jhonata Bonadio with AI,generada por Jhonata Bonadio con IA,scripts/meta/Credits.cs
 gerado por Jhonata Bonadio no Meshy (meshy.ai),,generated by Jhonata Bonadio on Meshy (meshy.ai),generado por Jhonata Bonadio en Meshy (meshy.ai),scripts/meta/Credits.cs
+gerados por Jhonata Bonadio no ElevenLabs (elevenlabs.io),,generated by Jhonata Bonadio on ElevenLabs (elevenlabs.io),generados por Jhonata Bonadio en ElevenLabs (elevenlabs.io),scripts/meta/Credits.cs
 "Godot Engine — Juan Linietsky, Ariel Manzur e colaboradores",,"Godot Engine — Juan Linietsky, Ariel Manzur and contributors","Godot Engine — Juan Linietsky, Ariel Manzur y colaboradores",scripts/meta/Credits.cs
 Granada de choque M84,,M84 shock grenade,Granada de choque M84,scripts/meta/Credits.cs
 haoliu95 (Sketchfab),,haoliu95 (Sketchfab),haoliu95 (Sketchfab),scripts/meta/Credits.cs
@@ -922,28 +1054,32 @@ Motor do jogo,,Game engine,Motor del juego,scripts/meta/Credits.cs
 obra do autor,,author's own work,obra del autor,scripts/meta/Credits.cs
 Oculus Audio Pack 1 — Meta Platforms,,Oculus Audio Pack 1 — Meta Platforms,Oculus Audio Pack 1 — Meta Platforms,scripts/meta/Credits.cs
 Omnibus-Type,,Omnibus-Type,Omnibus-Type,scripts/meta/Credits.cs
-"P9 Manny FPS Animations, Blend_GUY (Sketchfab)",,,,scripts/meta/Credits.cs
+"P9 Manny FPS Animations, Blend_GUY (Sketchfab)",,"P9 Manny FPS Animations, Blend_GUY (Sketchfab)","P9 Manny FPS Animations, Blend_GUY (Sketchfab)",scripts/meta/Credits.cs
 pacote gratuito,,free pack,paquete gratuito,scripts/meta/Credits.cs
 pacote LowPolyFPS4 da Unity Asset Store,,LowPolyFPS4 pack from the Unity Asset Store,paquete LowPolyFPS4 de la Unity Asset Store,(não está mais no código)
 "pacote Stylized Sci-Fi Characters, da Unity Asset Store",,"Stylized Sci-Fi Characters pack, from the Unity Asset Store","paquete Stylized Sci-Fi Characters, de la Unity Asset Store",scripts/meta/Credits.cs
 "Passos, pulos, lobo, vozes, ambiente do hangar e do metrô (modificados)",,"Footsteps, jumps, wolf, voices, hangar and subway ambience (modified)","Pasos, saltos, lobo, voces, ambiente del hangar y del metro (modificados)",scripts/meta/Credits.cs
+Pavio da granada,,Grenade fuse,Mecha de la granada,scripts/meta/Credits.cs
 Personagens e animação,,Characters and animation,Personajes y animación,scripts/meta/Credits.cs
 Phosphor Icons (phosphoricons.com),,Phosphor Icons (phosphoricons.com),Phosphor Icons (phosphoricons.com),scripts/meta/Credits.cs
 Poly Haven (polyhaven.com),,Poly Haven (polyhaven.com),Poly Haven (polyhaven.com),scripts/meta/Credits.cs
 PostgreSQL Global Development Group,,PostgreSQL Global Development Group,PostgreSQL Global Development Group,scripts/meta/Credits.cs
 PostgreSQL License,,PostgreSQL License,PostgreSQL License,scripts/meta/Credits.cs
+Quique da granada e vento da faca,,Grenade bounce and knife swish,Rebote de la granada y silbido del cuchillo,scripts/meta/Credits.cs
 raimeiyonke (Sketchfab),,raimeiyonke (Sketchfab),raimeiyonke (Sketchfab),scripts/meta/Credits.cs
 Raios do especial,,Special's lightning,Rayos del especial,scripts/meta/Credits.cs
 Rugido do lobo e faca,,Wolf roar and knife,Rugido del lobo y cuchillo,scripts/meta/Credits.cs
 Servidor,,Server,Servidor,scripts/meta/Credits.cs
 SIL Open Font License 1.1,,SIL Open Font License 1.1,SIL Open Font License 1.1,scripts/meta/Credits.cs
 sintetizado para o jogo,,synthesized for the game,sintetizado para el juego,scripts/meta/Credits.cs
+sintetizado por código (tools/sons/granada.py),,synthesized in code (tools/sons/granada.py),sintetizado por código (tools/sons/granada.py),scripts/meta/Credits.cs
 sintetizados por código (tools/sons/raios.py),,synthesized in code (tools/sons/raios.py),sintetizados por código (tools/sons/raios.py),scripts/meta/Credits.cs
-Sketchfab Standard,,,,scripts/meta/Credits.cs
+Sketchfab Standard,,Sketchfab Standard,Sketchfab Standard,scripts/meta/Credits.cs
 Sons,,Sounds,Sonidos,scripts/meta/Credits.cs
 Submetralhadora,,Submachine gun,Subfusil,scripts/meta/Credits.cs
 "TastyTony, no FPS Tutorial da InfimaGames",,"TastyTony, in the InfimaGames FPS Tutorial","TastyTony, en el FPS Tutorial de InfimaGames",scripts/meta/Credits.cs
 Tecnologia,,Technology,Tecnología,scripts/meta/Credits.cs
+termos do plano do ElevenLabs,,ElevenLabs plan terms,términos del plan de ElevenLabs,scripts/meta/Credits.cs
 termos do plano do Meshy,,Meshy plan terms,términos del plan de Meshy,scripts/meta/Credits.cs
 "Texturas dos mapas, céus e objetos de cenário (barris, caixotes, estantes, pedras…)",,"Map textures, skies and scenery props (barrels, crates, shelves, rocks…)","Texturas de los mapas, cielos y objetos del escenario (barriles, cajones, estanterías, piedras…)",scripts/meta/Credits.cs
 The Overpass Project Authors (Red Hat),,The Overpass Project Authors (Red Hat),The Overpass Project Authors (Red Hat),scripts/meta/Credits.cs
@@ -1002,6 +1138,28 @@ Vença 1 partida,,Win 1 match,Gana 1 partida,scripts/meta/Missions.cs
 Vença 100 partidas,,Win 100 matches,Gana 100 partidas,scripts/meta/Missions.cs
 Vença 7 partidas,,Win 7 matches,Gana 7 partidas,scripts/meta/Missions.cs
 Veterano,,Veteran,Veterano,scripts/meta/Missions.cs
+Abrir a loja,,Open the shop,Abrir la tienda,scripts/meta/News.cs
+Alpha 16,,Alpha 16,Alpha 16,scripts/meta/News.cs
+"Armas, visuais e fotos de perfil em promoção, trocando todo dia.",,"Weapons, skins and profile photos on sale, changing every day.","Armas, aspectos y fotos de perfil en oferta, cambiando cada día.",scripts/meta/News.cs
+As calçadas em cacos saíram e as seis capas dos mapas foram fotografadas de novo.,,The cracked sidewalks are gone and all six map covers were shot again.,Las aceras rotas desaparecieron y las seis portadas de los mapas se fotografiaron de nuevo.,scripts/meta/News.cs
+"As dez explosões foram refeitas: de perto, de longe e de dentro de casa.",,"All ten explosions were redone: up close, far away and from indoors.","Las diez explosiones se rehicieron: de cerca, de lejos y desde dentro de casa.",scripts/meta/News.cs
+Cidade com calçadas novas,,City with new sidewalks,Ciudad con aceras nuevas,scripts/meta/News.cs
+Corrida,,Sprint,Carrera,scripts/meta/News.cs
+Do galpão de contêineres às ruas de neon: seis mapas na rotação. Escolha o seu ao criar a sala.,,From the container warehouse to the neon streets: six maps in rotation. Pick yours when you create a room.,Del galpón de contenedores a las calles de neón: seis mapas en rotación. Elige el tuyo al crear la sala.,scripts/meta/News.cs
+Espectador dentro do mapa,,Spectator stays inside the map,Espectador dentro del mapa,scripts/meta/News.cs
+Fôlego no Shift,,Stamina on Shift,Aliento en el Shift,scripts/meta/News.cs
+Granada com som de bomba,,Grenade that sounds like a bomb,Granada con sonido de bomba,scripts/meta/News.cs
+Jogar agora,,Play now,Jugar ahora,scripts/meta/News.cs
+Mapas,,Maps,Mapas,scripts/meta/News.cs
+O humano corre quatro segundos e precisa respirar. A corrida longa continua sendo do lobo.,,The human sprints for four seconds and needs to catch their breath. Long runs still belong to the wolf.,El humano corre cuatro segundos y necesita respirar. La carrera larga sigue siendo del lobo.,scripts/meta/News.cs
+"Quem cai do precipício continua caindo, e a câmera de quem assiste não sai mais dos limites.",,"Whoever falls off the cliff keeps falling, and the spectator camera no longer leaves the bounds.","Quien cae por el precipicio sigue cayendo, y la cámara de quien mira ya no sale de los límites.",scripts/meta/News.cs
+Seis campos de caça,,Six hunting grounds,Seis cotos de caza,scripts/meta/News.cs
+Som,,Sound,Sonido,scripts/meta/News.cs
+Trinta segundos de fera,,Thirty seconds of beast,Treinta segundos de fiera,scripts/meta/News.cs
+Ver as melhorias de lobo,,See the wolf upgrades,Ver las mejoras de lobo,scripts/meta/News.cs
+Ver as salas,,See the rooms,Ver las salas,scripts/meta/News.cs
+Virar lobo não custa nada e mata em duas garradas. São 30 segundos de cada vez: faça valer.,,Turning wolf costs nothing and kills in two claw strikes. It's 30 seconds at a time: make them count.,Convertirse en lobo no cuesta nada y mata en dos zarpazos. Son 30 segundos cada vez: haz que valgan.,scripts/meta/News.cs
+Vitrine do dia,,Today's showcase,Escaparate del día,scripts/meta/News.cs
 Abates ×{0},,Kills ×{0},Bajas ×{0},scripts/meta/Progression.cs
 Assistências ×{0},,Assists ×{0},Asistencias ×{0},scripts/meta/Progression.cs
 Bônus de evento,,Event bonus,Bonificación de evento,scripts/meta/Progression.cs
@@ -1022,7 +1180,14 @@ Bot {0},,Bot {0},Bot {0},scripts/meta/RoomDirectory.cs
 O servidor respondeu {0}.,,The server answered {0}.,El servidor respondió {0}.,scripts/net/Backend.cs
 Sem resposta do servidor.,,No response from the server.,Sin respuesta del servidor.,scripts/net/Backend.cs
 A ligação com o servidor caiu.,,The connection to the server dropped.,Se cayó la conexión con el servidor.,scripts/net/LobbyLink.cs
-Aquecimento,,,,scripts/net/MatchWorld.cs
+Este servidor ainda não tem o jogo rápido.,,This server doesn't have quick match yet.,Este servidor todavía no tiene partida rápida.,scripts/net/LobbyLink.cs
+Aquecimento,,Warm-up,Calentamiento,scripts/net/MatchWorld.cs
+O grupo acabou,,The party was disbanded,El grupo se disolvió,scripts/net/Social.cs
+{0} aceitou o seu pedido de amizade,,{0} accepted your friend request,{0} aceptó tu solicitud de amistad,scripts/net/Social.cs
+{0} quer ser seu amigo,,{0} wants to be your friend,{0} quiere ser tu amigo,scripts/net/Social.cs
+{0} recusou o convite,,{0} declined the invite,{0} rechazó la invitación,scripts/net/Social.cs
+{0} recusou o convite para o grupo,,{0} declined the party invite,{0} rechazó la invitación al grupo,scripts/net/Social.cs
+{0} tirou você do grupo,,{0} kicked you from the party,{0} te sacó del grupo,scripts/net/Social.cs
 ALVO TRAVADO · TAB: VOLTAR AO CHÃO,,TARGET LOCKED · TAB: BACK TO GROUND,OBJETIVO FIJADO · TAB: VOLVER AL SUELO,scripts/ui/ChargeBar.cs
 CLIQUE NO ALVO · TAB: VOLTAR AO CHÃO,,CLICK THE TARGET · TAB: BACK TO GROUND,CLIC EN EL OBJETIVO · TAB: VOLVER AL SUELO,scripts/ui/ChargeBar.cs
 FORÇA DO SALTO,,JUMP STRENGTH,FUERZA DEL SALTO,scripts/ui/ChargeBar.cs
@@ -1067,7 +1232,7 @@ VOCÊ ABATEU,,YOU KILLED,ABATISTE A,scripts/ui/DuelCard.cs
 a partida continua rodando,,the match keeps running,la partida sigue en curso,scripts/ui/GameMenu.cs
 A partida continua sem você e não rende XP nem Cash. Missões também não contam.,,The match goes on without you and earns no XP or Cash. Missions don't count either.,La partida sigue sin ti y no da XP ni Cash. Las misiones tampoco cuentan.,scripts/ui/GameMenu.cs
 "A partida continua sem você. Você sai da sala e volta ao lobby; dá para entrar de novo pela lista de salas, se houver vaga.",,The match goes on without you. You leave the room and go back to the lobby; you can rejoin from the room list if there's a free spot.,La partida sigue sin ti. Sales de la sala y vuelves al lobby; puedes volver a entrar desde la lista de salas si hay lugar.,scripts/ui/GameMenu.cs
-"A partida recomeça do zero para todos da sala. Esta não rende XP, Cash nem missões para ninguém.",,,,scripts/ui/GameMenu.cs
+"A partida recomeça do zero para todos da sala. Esta não rende XP, Cash nem missões para ninguém.",,"The match restarts from scratch for everyone in the room. This one gives no XP, Cash or missions to anyone.","La partida empieza de cero para todos en la sala. Esta no da XP, Cash ni misiones a nadie.",scripts/ui/GameMenu.cs
 Abandonar,,Abandon,Abandonar,scripts/ui/GameMenu.cs
 Continuar,,Continue,Continuar,scripts/ui/GameMenu.cs
 Controles,,Controls,Controles,scripts/ui/GameMenu.cs
@@ -1076,10 +1241,10 @@ Ficar,,Stay,Quedarse,scripts/ui/GameMenu.cs
 Modal,,Modal,Modal,scripts/ui/GameMenu.cs
 Opções,,Options,Opciones,scripts/ui/GameMenu.cs
 Partida,,Match,Partida,scripts/ui/GameMenu.cs
-Reiniciando a partida para todos…,,,,scripts/ui/GameMenu.cs
-Reiniciar,,,,scripts/ui/GameMenu.cs
+Reiniciando a partida para todos…,,Restarting the match for everyone…,Reiniciando la partida para todos…,scripts/ui/GameMenu.cs
+Reiniciar,,Restart,Reiniciar,scripts/ui/GameMenu.cs
 Reiniciar a partida?,,Restart the match?,¿Reiniciar la partida?,scripts/ui/GameMenu.cs
-Reiniciar para todos?,,,,scripts/ui/GameMenu.cs
+Reiniciar para todos?,,Restart for everyone?,¿Reiniciar para todos?,scripts/ui/GameMenu.cs
 Reiniciar partida,,Restart match,Reiniciar partida,scripts/ui/GameMenu.cs
 Sair do jogo,,Quit game,Salir del juego,scripts/ui/GameMenu.cs
 Sair do jogo?,,Quit the game?,¿Salir del juego?,scripts/ui/GameMenu.cs
@@ -1088,13 +1253,22 @@ Sair para a sala?,,Leave to the room?,¿Salir a la sala?,scripts/ui/GameMenu.cs
 Sair da partida,,Leave match,Salir de la partida,scripts/ui/GameMenu.cs
 Sair da partida?,,Leave the match?,¿Salir de la partida?,scripts/ui/GameMenu.cs
 Voltar,,Back,Volver,scripts/ui/GameMenu.cs
+Agachado você não faz barulho de passo. Os bots escutam.,,"Crouched, your footsteps make no noise. The bots are listening.",Agachado no haces ruido al pisar. Los bots escuchan.,scripts/ui/LoadingScreen.cs
+Carregando,,Loading,Cargando,scripts/ui/LoadingScreen.cs
 Carregando o mapa…,,Loading the map…,Cargando el mapa…,scripts/ui/LoadingScreen.cs
+Inimigo só aparece no minimapa enquanto alguém do seu time o enxerga.,,Enemies only show on the minimap while someone on your team can see them.,El enemigo solo aparece en el minimapa mientras alguien de tu equipo lo ve.,scripts/ui/LoadingScreen.cs
 Mata-mata em equipe,,Team deathmatch,Combate a muerte por equipos,scripts/ui/LoadingScreen.cs
+O lobo corre na parede: pule contra ela e segure para a frente.,,The wolf runs on walls: jump into one and hold forward.,El lobo corre por la pared: salta contra ella y mantén hacia adelante.,scripts/ui/LoadingScreen.cs
+O lobo mata em duas garradas e tem só 100 de escudo. Chegue por cima ou pelas costas.,,The wolf kills in two claw strikes and has only 100 shield. Come from above or from behind.,El lobo mata en dos zarpazos y tiene solo 100 de escudo. Llega por arriba o por la espalda.,scripts/ui/LoadingScreen.cs
+"O Shift corre por quatro segundos. Sem fôlego, você fica 1,5 s sem correr.",,"Shift sprints for four seconds. Out of breath, you can't sprint for 1.5 s.","El Shift corre durante cuatro segundos. Sin aliento, te quedas 1,5 s sin correr.",scripts/ui/LoadingScreen.cs
 Posicionando os jogadores…,,Placing the players…,Posicionando a los jugadores…,scripts/ui/LoadingScreen.cs
 Preparando a partida…,,Preparing the match…,Preparando la partida…,scripts/ui/LoadingScreen.cs
 Pronto,,Ready,Listo,scripts/ui/LoadingScreen.cs
+Segure o rugido até o fim e o escudo volta inteiro. Ele entrega onde você está.,,Hold the roar until the end and your shield comes back full. It gives away where you are.,Mantén el rugido hasta el final y el escudo vuelve entero. Delata dónde estás.,scripts/ui/LoadingScreen.cs
 Subtitle,,Subtitle,Subtitle,scripts/ui/LoadingScreen.cs
+Tiro na cabeça atravessa a resistência do lobo.,,Headshots go through the wolf's resistance.,Los disparos a la cabeza atraviesan la resistencia del lobo.,scripts/ui/LoadingScreen.cs
 Title,,Title,Title,scripts/ui/LoadingScreen.cs
+"Virar lobo não custa nada, mas dura 30 segundos: escolha a hora.",,"Turning wolf costs nothing, but it lasts 30 seconds: pick your moment.","Convertirse en lobo no cuesta nada, pero dura 30 segundos: elige el momento.",scripts/ui/LoadingScreen.cs
 {0} contra {1},,{0} versus {1},{0} contra {1},scripts/ui/LoadingScreen.cs
 {0} min,,{0} min,{0} min,scripts/ui/LoadingScreen.cs
 {0} pontos,,{0} points,{0} puntos,scripts/ui/LoadingScreen.cs
@@ -1123,8 +1297,8 @@ Caption,,Caption,Caption,scripts/ui/MatchHud.cs
 Segure Tab para ver o placar,,Hold Tab to see the scoreboard,Mantén Tab para ver el marcador,scripts/ui/MatchHud.cs
 VALENDO!,,GO!,¡YA!,scripts/ui/MatchHud.cs
 {0}  ·  {1}  ·  primeiro a {2}  ·  {3},,{0}  ·  {1}  ·  first to {2}  ·  {3},{0}  ·  {1}  ·  primero a {2}  ·  {3},scripts/ui/MatchHud.cs
-   Ping {0} ms   loss {1:0}%,,,,scripts/ui/PerfOverlay.cs
-{0} FPS  {1:0.0} ms   GPU {2:0.0} ms   3D {3}%,,,,scripts/ui/PerfOverlay.cs
+   Ping {0} ms   loss {1:0}%,,   Ping {0} ms   loss {1:0}%,   Ping {0} ms   pérdida {1:0}%,scripts/ui/PerfOverlay.cs
+{0} FPS  {1:0.0} ms   GPU {2:0.0} ms   3D {3}%,,{0} FPS  {1:0.0} ms   GPU {2:0.0} ms   3D {3}%,{0} FPS  {1:0.0} ms   GPU {2:0.0} ms   3D {3}%,scripts/ui/PerfOverlay.cs
 Destravado: ,,Unlocked: ,Desbloqueado: ,scripts/ui/PromotionOverlay.cs
 Display,,Display,Display,scripts/ui/PromotionOverlay.cs
 NOVA BORDA,,NEW FRAME,NUEVO MARCO,scripts/ui/PromotionOverlay.cs
@@ -1149,7 +1323,7 @@ RECOMPENSA,,REWARD,RECOMPENSA,scripts/ui/ResultScreen.cs
 Sair para o lobby,,Leave to lobby,Salir al lobby,scripts/ui/ResultScreen.cs
 "Sem conta, a partida não rende XP nem Cash. Entre na sua conta em Online para ganhar.",,"Without an account, the match earns no XP or Cash. Sign in to your account in Online to earn.","Sin cuenta, la partida no da XP ni Cash. Entra en tu cuenta en En línea para ganar.",scripts/ui/ResultScreen.cs
 Sem MVP: ninguém pontuou nesta partida.,,No MVP: nobody scored this match.,Sin MVP: nadie puntuó en esta partida.,scripts/ui/ResultScreen.cs
-Só o mestre da sala reinicia a partida.,,,,scripts/ui/ResultScreen.cs
+Só o mestre da sala reinicia a partida.,,Only the room host can restart the match.,Solo el anfitrión de la sala reinicia la partida.,scripts/ui/ResultScreen.cs
 VITÓRIA,,VICTORY,VICTORIA,scripts/ui/ResultScreen.cs
 VOCÊ,,YOU,TÚ,scripts/ui/ResultScreen.cs
 Voltar à sala,,Back to room,Volver a la sala,scripts/ui/ResultScreen.cs
@@ -1187,16 +1361,22 @@ SEM MUNIÇÃO,,NO AMMO,SIN MUNICIÓN,scripts/ui/hud/Hud.Equipment.cs
 VINGANÇA,,REVENGE,VENGANZA,scripts/ui/hud/Hud.Feed.cs
 A PARTIDA TODA NESTE MODO,,THE WHOLE MATCH IN THIS MODE,TODA LA PARTIDA EN ESTE MODO,scripts/ui/hud/Hud.Form.cs
 BLOQUEADO NESTE MODO,,LOCKED IN THIS MODE,BLOQUEADO EN ESTE MODO,scripts/ui/hud/Hud.Form.cs
+ESPERE {0:0} S,,WAIT {0:0} S,ESPERA {0:0} S,scripts/ui/hud/Hud.Form.cs
 Faltam {0:0} KP para transformar,,{0:0} KP short to transform,Faltan {0:0} KP para transformarte,scripts/ui/hud/Hud.Form.cs
 HUMANO,,HUMAN,HUMANO,scripts/ui/hud/Hud.Form.cs
+HUMANO EM {0:0} S,,HUMAN IN {0:0} S,HUMANO EN {0:0} S,scripts/ui/hud/Hud.Form.cs
 Lobo,,Wolf,Lobo,scripts/ui/hud/Hud.Form.cs
 LOBO,,WOLF,LOBO,scripts/ui/hud/Hud.Form.cs
+Lobo de novo em {0:0} s,,Wolf again in {0:0} s,Lobo de nuevo en {0:0} s,scripts/ui/hud/Hud.Form.cs
+LOBO · {0:0} S,,WOLF · {0:0} S,LOBO · {0:0} S,scripts/ui/hud/Hud.Form.cs
 LOBO · {0},,WOLF · {0},LOBO · {0},scripts/ui/hud/Hud.Form.cs
+O tempo de lobo acabou · lobo de novo em {0:0} s,,Wolf time is up · wolf again in {0:0} s,Se acabó el tiempo de lobo · lobo de nuevo en {0:0} s,scripts/ui/hud/Hud.Form.cs
 OU 2 · 4 · 5,,OR 2 · 4 · 5,O 2 · 4 · 5,scripts/ui/hud/Hud.Form.cs
 PRONTO,,READY,LISTO,scripts/ui/hud/Hud.Form.cs
 TRANSFORMANDO,,TRANSFORMING,TRANSFORMANDO,scripts/ui/hud/Hud.Form.cs
 VIRANDO LOBO,,TURNING WOLF,VOLVIÉNDOSE LOBO,scripts/ui/hud/Hud.Form.cs
 VIRAR LOBO,,TURN WOLF,VOLVERSE LOBO,scripts/ui/hud/Hud.Form.cs
+Você volta a humano em {0:0} s,,You turn back to human in {0:0} s,Vuelves a humano en {0:0} s,scripts/ui/hud/Hud.Form.cs
 VOLTANDO,,REVERTING,VOLVIENDO,scripts/ui/hud/Hud.Form.cs
 VOLTANDO A HUMANO,,BACK TO HUMAN,VOLVIENDO A HUMANO,scripts/ui/hud/Hud.Form.cs
 VOLTAR A HUMANO,,REVERT TO HUMAN,VOLVER A HUMANO,scripts/ui/hud/Hud.Form.cs
@@ -1204,6 +1384,7 @@ VOLTAR A HUMANO,,REVERT TO HUMAN,VOLVER A HUMANO,scripts/ui/hud/Hud.Form.cs
 A arma da mão cai à frente; dá para pegar outra do chão.,,The weapon in hand falls in front of you; you can pick another one off the ground.,El arma de la mano cae delante; puedes recoger otra del suelo.,scripts/ui/hud/Hud.Guide.cs
 "A carga enche com abates também de humano. Cheia, vire lobo para usar.",,"The charge also fills with kills as a human. When full, turn wolf to use it.","La carga se llena con bajas también como humano. Llena, vuélvete lobo para usarla.",scripts/ui/hud/Hud.Guide.cs
 A reserva para quando o pente da principal acaba.,,The backup for when the primary's magazine runs out.,La reserva para cuando se acaba el cargador de la principal.,scripts/ui/hud/Hud.Guide.cs
+"Acabou o tempo, você volta a humano sozinho (a barra embaixo avisa nos últimos {0:0} s). Para virar lobo de novo, espere {1:0} s.",,"When time runs out you turn back to human on your own (the bar below warns you in the last {0:0} s). To turn wolf again, wait {1:0} s.","Al acabarse el tiempo vuelves a humano solo (la barra de abajo avisa en los últimos {0:0} s). Para convertirte en lobo de nuevo, espera {1:0} s.",scripts/ui/hud/Hud.Guide.cs
 Correr,,Sprint,Correr,scripts/ui/hud/Hud.Guide.cs
 Armas,,Weapons,Armas,scripts/ui/hud/Hud.Guide.cs
 Ataque,,Attack,Ataque,scripts/ui/hud/Hud.Guide.cs
@@ -1215,6 +1396,7 @@ Corpo,,Melee,Cuerpo,scripts/ui/hud/Hud.Guide.cs
 Corrida de quatro,,Four-legged sprint,Carrera a cuatro patas,scripts/ui/hud/Hud.Guide.cs
 Corrida na parede,,Wall run,Carrera por la pared,scripts/ui/hud/Hud.Guide.cs
 "Custa KP. De lobo você é mais rápido, tem escudo e garras — e não atira.",,"Costs KP. As a wolf you're faster, have a shield and claws — and can't shoot.","Cuesta KP. Como lobo eres más rápido, tienes escudo y garras — y no disparas.",scripts/ui/hud/Hud.Guide.cs
+"De lobo você é mais rápido, mata em duas garradas e não atira — mas tem pouco escudo e dura {0:0} s; depois espera {1:0} s para virar de novo.",,"As a wolf you're faster, kill in two claw strikes and can't shoot — but you have little shield and it lasts {0:0} s; then you wait {1:0} s to turn again.","Como lobo eres más rápido, matas en dos zarpazos y no disparas — pero tienes poco escudo y dura {0:0} s; después esperas {1:0} s para convertirte de nuevo.",scripts/ui/hud/Hud.Guide.cs
 De perto e em silêncio.,,Up close and silent.,De cerca y en silencio.,scripts/ui/hud/Hud.Guide.cs
 "Mais rápido e de arma abaixada: correndo não atira. Ctrl agacha, em silêncio.",,"Faster, with the weapon lowered: no shooting while sprinting. Ctrl crouches, silently.","Más rápido y con el arma baja: corriendo no dispara. Ctrl se agacha, en silencio.",scripts/ui/hud/Hud.Guide.cs
 Dois toques no W e segure: 30% mais rápido.,,Double-tap W and hold: 30% faster.,Dos toques en W y mantén: 30% más rápido.,scripts/ui/hud/Hud.Guide.cs
@@ -1232,11 +1414,13 @@ Segure até o fim ({0:0.0} s) e o escudo volta inteiro. Soltar antes cancela. O 
 Segure R,,Hold R,Mantén R,scripts/ui/hud/Hud.Guide.cs
 Soltar a arma,,Drop weapon,Soltar el arma,scripts/ui/hud/Hud.Guide.cs
 Solte E para fechar,,Release E to close,Suelta E para cerrar,scripts/ui/hud/Hud.Guide.cs
+Tempo de lobo,,Wolf time,Tiempo de lobo,scripts/ui/hud/Hud.Guide.cs
 Uivo,,Howl,Aullido,scripts/ui/hud/Hud.Guide.cs
 "Um golpe por clique, uma mão de cada vez.",,"One strike per click, one hand at a time.","Un golpe por clic, una mano a la vez.",scripts/ui/hud/Hud.Guide.cs
 "Um golpe por clique, uma mão de cada vez. {0:0} de dano.",,"One strike per click, one hand at a time. {0:0} damage.","Un golpe por clic, una mano a la vez. {0:0} de daño.",scripts/ui/hud/Hud.Guide.cs
 W na parede · Espaço,,W on the wall · Space,W en la pared · Espacio,scripts/ui/hud/Hud.Guide.cs
 "W W, segurando",,"W W, holding","W W, manteniendo",scripts/ui/hud/Hud.Guide.cs
+{0:0} s,,{0:0} s,{0:0} s,scripts/ui/hud/Hud.Guide.cs
 CLIQUE,,CLICK,CLIC,scripts/ui/hud/Hud.Layout.cs
 DIREITO,,RIGHT,DERECHO,scripts/ui/hud/Hud.Layout.cs
 Humano,,Human,Humano,scripts/ui/hud/Hud.Layout.cs
@@ -1251,27 +1435,29 @@ Soltou: {0},,Dropped: {0},Soltaste: {0},scripts/ui/hud/Hud.cs
 ELIMINOU,,ELIMINATED,ELIMINÓ,scripts/ui/hud/KillBanner.cs
 na cabeça,,headshot,en la cabeza,scripts/ui/hud/KillBanner.cs
 Cash — ganho jogando. Compra armas e melhorias de lobo.,,Cash — earned by playing. It buys weapons and wolf upgrades.,Cash — se gana jugando. Compra armas y mejoras de lobo.,scripts/ui/kit/CurrencyLabel.cs
-IP,,,,scripts/ui/kit/CurrencyLabel.cs
+IP,,IP,IP,scripts/ui/kit/CurrencyLabel.cs
 IPs,,IPs,IPs,scripts/ui/kit/CurrencyLabel.cs
 IPs (Inipoints) — moeda comprada. Disponível quando houver servidor.,,IPs (Inipoints) — purchased currency. Available once there's a server.,IPs (Inipoints) — moneda comprada. Disponible cuando haya servidor.,scripts/ui/kit/CurrencyLabel.cs
 Bot,,Bot,Bot,scripts/ui/kit/LevelChip.cs
-Label,,,,scripts/ui/kit/LevelChip.cs
+Label,,Label,Label,scripts/ui/kit/LevelChip.cs
 Local,,Local,Local,scripts/ui/kit/PingBars.cs
+Jogar,,Play,Jugar,scripts/ui/kit/PlayTab.cs
+NA SALA #{0},,IN ROOM #{0},EN LA SALA #{0},scripts/ui/kit/PlayTab.cs
 Surface1,,Surface1,Surface1,scripts/ui/kit/UiKit.cs
 Comum,,Common,Común,scripts/ui/kit/UiTokens.cs
 Incomum,,Uncommon,Poco común,scripts/ui/kit/UiTokens.cs
 Lendário,,Legendary,Legendario,scripts/ui/kit/UiTokens.cs
 Raro,,Rare,Raro,scripts/ui/kit/UiTokens.cs
 Épico,,Epic,Épico,scripts/ui/kit/UiTokens.cs
-Trigger,,,,scripts/visual/HeldWeapon.Pin.cs
-Index,,,,scripts/visual/HeldWeapon.cs
-Left,,,,scripts/visual/HeldWeapon.cs
-Middle,,,,scripts/visual/HeldWeapon.cs
-Pinky,,,,scripts/visual/HeldWeapon.cs
-Right,,,,scripts/visual/HeldWeapon.cs
-Ring,,,,scripts/visual/HeldWeapon.cs
-Spine2,,,,scripts/visual/HeldWeapon.cs
-Thumb,,,,scripts/visual/HeldWeapon.cs
+Trigger,,Trigger,Trigger,scripts/visual/HeldWeapon.Pin.cs
+Index,,Index,Index,scripts/visual/HeldWeapon.cs
+Left,,Left,Left,scripts/visual/HeldWeapon.cs
+Middle,,Middle,Middle,scripts/visual/HeldWeapon.cs
+Pinky,,Pinky,Pinky,scripts/visual/HeldWeapon.cs
+Right,,Right,Right,scripts/visual/HeldWeapon.cs
+Ring,,Ring,Ring,scripts/visual/HeldWeapon.cs
+Spine2,,Spine2,Spine2,scripts/visual/HeldWeapon.cs
+Thumb,,Thumb,Thumb,scripts/visual/HeldWeapon.cs
 ASSISTINDO,,WATCHING,OBSERVANDO,scripts/visual/KillCam.Hud.cs
 CLIQUES: TROCAR ALIADO  ·  ESPAÇO: VOLTAR,,CLICKS: SWITCH ALLY  ·  SPACE: BACK,CLICS: CAMBIAR ALIADO  ·  ESPACIO: VOLVER,scripts/visual/KillCam.Hud.cs
 COMO HUMANO,,AS A HUMAN,COMO HUMANO,scripts/visual/KillCam.Hud.cs
@@ -1358,3 +1544,19 @@ Licenças da Fab e da Unity Asset Store,,Fab and Unity Asset Store licenses,Lice
 "Pequeno, 40 × 40 m em três pisos, de dia, no alto de um prédio acima das nuvens. Um canteiro de obras na laje: paredes de concreto pela metade, escadas para o segundo piso, um pedaço de terceiro, gruas, andaimes e material empilhado. Em volta, só o céu do pôr do sol e o mar de nuvens lá embaixo.",,"Small, 40 × 40 m on three floors, late afternoon, on top of a tower above the clouds. A construction site on the slab: half-built concrete walls, stairs to the second floor, a piece of a third, cranes, scaffolding and stacked material. All around, only the sunset sky and the sea of clouds far below.","Pequeño, 40 × 40 m en tres pisos, final de la tarde, en lo alto de un edificio sobre las nubes. Una obra en la losa: paredes de hormigón a medio levantar, escaleras al segundo piso, un trozo de tercero, grúas, andamios y material apilado. Alrededor, solo el cielo del atardecer y el mar de nubes allá abajo.",scripts/meta/Maps.cs
 SEM FÔLEGO,,WINDED,SIN ALIENTO,ui/hud/Hud.Breath.cs
 "Mais rápido e de arma abaixada: correndo não atira. O fôlego dura {0:0} s; acabou, espere {1:0.#} s para correr de novo (o quadradinho à direita mostra quanto resta). Ctrl agacha, em silêncio.",,"Faster, with your weapon lowered: you can't shoot while running. Your breath lasts {0:0} s; once it runs out, wait {1:0.#} s to run again (the square on the right shows how much is left). Ctrl crouches, silently.","Más rápido y con el arma baja: corriendo no disparas. El aliento dura {0:0} s; cuando se acaba, espera {1:0.#} s para correr de nuevo (el cuadrito a la derecha muestra cuánto queda). Ctrl se agacha, en silencio.",ui/hud/Hud.Guide.cs
+{0} (amigo),,{0} (friend),{0} (amigo),scripts/ui/MatchChat.cs
+(time),,(team),(equipo),scripts/lobby/RoomScreen.cs
+Chat para todos,,All chat,Chat general,scripts/core/KeyBindings.cs
+"Na partida online, abre o chat para a sala inteira. Enter manda, Esc fecha, Tab troca para o time.",,"In an online match, opens the chat to the whole room. Enter sends, Esc closes, Tab switches to team.","En una partida en línea, abre el chat para toda la sala. Enter envía, Esc cierra, Tab cambia al equipo.",scripts/core/KeyBindings.cs
+Chat do time,,Team chat,Chat del equipo,scripts/core/KeyBindings.cs
+"Na partida online, abre o chat só para o seu time.",,"In an online match, opens the chat for your team only.","En una partida en línea, abre el chat solo para tu equipo.",scripts/core/KeyBindings.cs
+Chat da partida online: todos · só o time,,Online match chat: all · team only,Chat de la partida en línea: todos · solo el equipo,scripts/ui/ControlsTable.cs
+"Pedidos, convites e mensagens à espera",,"Requests, invites and messages waiting","Solicitudes, invitaciones y mensajes pendientes",scripts/lobby/SocialDock.cs
+{0} mensagens novas,,{0} new messages,{0} mensajes nuevos,scripts/lobby/SocialDock.cs
+Conversar com {0},,Chat with {0},Chatear con {0},scripts/lobby/SocialDock.cs
+Voltar aos amigos,,Back to friends,Volver a los amigos,scripts/lobby/SocialDock.cs
+Mensagem para {0},,Message to {0},Mensaje para {0},scripts/lobby/SocialDock.cs
+Carregando a conversa…,,Loading the conversation…,Cargando la conversación…,scripts/lobby/SocialDock.cs
+Mensagens anteriores,,Earlier messages,Mensajes anteriores,scripts/lobby/SocialDock.cs
+Nenhuma mensagem ainda. Diga oi!,,No messages yet. Say hi!,Aún no hay mensajes. ¡Saluda!,scripts/lobby/SocialDock.cs
+{0} está desconectado: a mensagem fica guardada para quando ele entrar.,,{0} is offline: the message is kept for when they log in.,{0} está desconectado: el mensaje queda guardado para cuando entre.,scripts/lobby/SocialDock.cs

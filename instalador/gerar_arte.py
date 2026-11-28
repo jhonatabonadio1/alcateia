@@ -4,11 +4,12 @@
 Uso:  python3 instalador/gerar_arte.py   (de qualquer pasta)
 
 Lê  src/assets/personagens/eve/thumb.jpg, a fonte Kanit do jogo e
-    instalador/icone.svg (precisa do `rsvg-convert`: brew install librsvg)
+    instalador/icone.svg e icone_launcher.svg (precisa do `rsvg-convert`: brew install librsvg)
 Grava em instalador/:
     lateral_inicio.bmp   painel esquerdo das telas de boas-vindas e final (Eve, a capa)
     cabecalho.bmp        faixa de cima das telas do meio
     WolfLeague.ico       o ícone (o mesmo do jogo, icon.svg)
+    WolfLeagueLauncher.ico  o ícone do launcher (o emblema da Initech Games: é outro programa)
     capa.png             a capa da Release (Eve)
 
 As imagens prontas ficam no repositório: o pipeline não roda este script,
@@ -76,9 +77,9 @@ def lateral(thumb, saida, cx, fonte):
     base.convert("RGB").save(saida, "BMP")
 
 
-def icone(raiz_instalador, tamanho):
+def icone(raiz_instalador, tamanho, svg="icone.svg"):
     png = subprocess.run(
-        ["rsvg-convert", "-w", str(tamanho), "-h", str(tamanho), os.path.join(raiz_instalador, "icone.svg")],
+        ["rsvg-convert", "-w", str(tamanho), "-h", str(tamanho), os.path.join(raiz_instalador, svg)],
         capture_output=True, check=True).stdout
     return Image.open(io.BytesIO(png)).convert("RGBA")
 
@@ -93,13 +94,13 @@ def cabecalho(inst, saida):
     base.convert("RGB").save(saida, "BMP")
 
 
-def ico(inst, saida):
+def ico(inst, saida, svg="icone.svg"):
     tam = [16, 24, 32, 48, 64, 128, 256]
-    imgs = [icone(inst, t) for t in tam]
+    imgs = [icone(inst, t, svg) for t in tam]
     imgs[-1].save(saida, format="ICO", sizes=[(t, t) for t in tam], append_images=imgs[:-1])
 
 
-def capa(eve, inst, saida, fonte, fonte_texto):
+def capa(eve, inst, saida, fonte):
     """960x480 para a Release: a Eve à direita, o nome à esquerda."""
     w, h = 960, 480
     base = Image.new("RGBA", (w, h), AZUL_NOITE + (255,))
@@ -110,9 +111,7 @@ def capa(eve, inst, saida, fonte, fonte_texto):
     d = ImageDraw.Draw(base)
     base.alpha_composite(icone(inst, 72), (56, 52))
     d.rectangle((58, 150, 58 + 56, 154), fill=OURO)
-    y = marca(base, 56, 160, 92, fonte)
-    ft = ImageFont.truetype(fonte_texto, 26)
-    d.text((58, y + 16), "Online FPS  ·  Humans × Wolves", font=ft, fill=TEXTO)
+    marca(base, 56, 160, 92, fonte)
     # etiqueta do teste
     fa = ImageFont.truetype(fonte, 24)
     d.rectangle((58, h - 74, 58 + 150, h - 34), fill=OURO)
@@ -128,13 +127,13 @@ def main():
     inst = os.path.dirname(os.path.abspath(__file__))   # onde estão icone.svg e o resto
     saida = a.saida or inst
     fonte = os.path.join(a.raiz, "src/assets/fonts/Kanit-BoldItalic.ttf")
-    fonte_texto = os.path.join(a.raiz, "src/assets/fonts/Kanit-SemiBold.ttf")
     eve = Image.open(os.path.join(a.raiz, "src/assets/personagens/eve/thumb.jpg")).convert("RGB")
     os.makedirs(saida, exist_ok=True)
     lateral(eve, os.path.join(saida, "lateral_inicio.bmp"), 0.5, fonte)
     cabecalho(inst, os.path.join(saida, "cabecalho.bmp"))
     ico(inst, os.path.join(saida, "WolfLeague.ico"))
-    capa(eve, inst, os.path.join(saida, "capa.png"), fonte, fonte_texto)
+    ico(inst, os.path.join(saida, "WolfLeagueLauncher.ico"), "icone_launcher.svg")
+    capa(eve, inst, os.path.join(saida, "capa.png"), fonte)
     print("arte gerada em", saida)
 
 

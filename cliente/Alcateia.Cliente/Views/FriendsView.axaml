@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Alcateia.Cliente.ViewModels"
+             xmlns:c="using:Alcateia.Cliente.Core"
              x:Class="Alcateia.Cliente.Views.FriendsView"
              x:DataType="vm:FriendsViewModel">
 
@@ -9,11 +10,16 @@
 		<DataTemplate x:Key="Person" x:DataType="vm:FriendItem">
 			<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,5,10,5" ToolTip.Tip="{Binding Friend.Handle}" Background="Transparent">
 				<Panel Grid.Column="0" Width="36" Height="36" Margin="0,0,10,0" Classes.dim="{Binding Dim}">
-					<Border Width="34" Height="34" CornerRadius="17" Background="{StaticResource Surface2}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+					<Border Width="34" Height="34" Background="{StaticResource Surface2}" BorderBrush="{StaticResource Line}" BorderThickness="1">
 						<TextBlock Text="{Binding Initial}" FontWeight="SemiBold" Foreground="{StaticResource Ink2}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 					</Border>
 					<Ellipse Width="11" Height="11" Fill="{Binding Dot}" Stroke="{StaticResource Deep}" StrokeThickness="2"
 					         HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+					<!-- mensagens não lidas dele -->
+					<Border IsVisible="{Binding HasUnread}" Background="{StaticResource Gold}" MinWidth="16" Height="16" Padding="3,0"
+					        HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-5,-6,0">
+						<TextBlock Text="{Binding UnreadText}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource GoldInk}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+					</Border>
 				</Panel>
 
 				<StackPanel Grid.Column="1" VerticalAlignment="Center" Classes.dim="{Binding Dim}">
@@ -25,16 +31,19 @@
 				</StackPanel>
 
 				<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-					<Button Classes="mini" Command="{Binding Accept}" IsVisible="{Binding IsRequest}" ToolTip.Tip="Aceitar">
+					<Button Classes="mini" Command="{Binding Accept}" IsVisible="{Binding IsRequest}" ToolTip.Tip="{c:T friends.accept}">
 						<Path Data="M2,7.5 L6,11.5 L12,3.5" Stroke="{StaticResource Ok}" StrokeThickness="2" Width="14" Height="14" />
 					</Button>
-					<Button Classes="mini" Command="{Binding Decline}" IsVisible="{Binding IsRequest}" ToolTip.Tip="Recusar">
+					<Button Classes="mini" Command="{Binding Decline}" IsVisible="{Binding IsRequest}" ToolTip.Tip="{c:T friends.decline}">
 						<Path Data="M3,3 L11,11 M11,3 L3,11" Stroke="{StaticResource Danger}" StrokeThickness="1.8" Width="14" Height="14" />
 					</Button>
-					<Button Classes="mini" Command="{Binding Decline}" IsVisible="{Binding IsSent}" ToolTip.Tip="Cancelar o pedido">
+					<Button Classes="mini" Command="{Binding Decline}" IsVisible="{Binding IsSent}" ToolTip.Tip="{c:T friends.cancel}">
 						<Path Data="M3,3 L11,11 M11,3 L3,11" Stroke="{StaticResource Ink2}" StrokeThickness="1.6" Width="14" Height="14" />
 					</Button>
-					<Button Classes="mini" Command="{Binding Remove}" IsVisible="{Binding IsFriend}" ToolTip.Tip="Desfazer a amizade">
+					<Button Classes="mini" Command="{Binding Chat}" IsVisible="{Binding IsFriend}" ToolTip.Tip="{c:T friends.chat_tip}">
+						<Path Data="M2,2 L14,2 L14,10 L7,10 L4,13 L4,10 L2,10 Z" Stroke="{StaticResource Ink2}" StrokeThickness="1.4" StrokeJoin="Round" Width="16" Height="15" />
+					</Button>
+					<Button Classes="mini" Command="{Binding Remove}" IsVisible="{Binding IsFriend}" ToolTip.Tip="{c:T friends.remove_tip}">
 						<Path Data="M3,3 L11,11 M11,3 L3,11" Stroke="{StaticResource Ink3}" StrokeThickness="1.6" Width="14" Height="14" />
 					</Button>
 				</StackPanel>
@@ -54,8 +63,11 @@
 	<Border Background="{StaticResource Deep}" BorderBrush="{StaticResource Line}" BorderThickness="1,0,0,0">
 		<Grid RowDefinitions="Auto,Auto,*">
 			<Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="16,16,16,10">
-				<TextBlock Classes="label" Text="AMIGOS" Foreground="{StaticResource Ink}" FontSize="16" />
-				<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" ToolTip.Tip="Amigos conectados">
+				<StackPanel Orientation="Horizontal" Spacing="8">
+					<Path Classes="diamond" />
+					<TextBlock Classes="label" Text="{c:T friends.title}" Foreground="{StaticResource Ink}" FontSize="16" />
+				</StackPanel>
+				<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" ToolTip.Tip="{c:T friends.online_tip}">
 					<Ellipse Width="8" Height="8" Fill="{StaticResource Ok}" VerticalAlignment="Center" />
 					<TextBlock Text="{Binding OnlineCount}" Classes="muted" FontWeight="SemiBold" />
 				</StackPanel>
@@ -63,13 +75,13 @@
 
 			<!-- adicionar pelo nome com a tag -->
 			<Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="16,0,16,6">
-				<TextBox Grid.Column="0" Text="{Binding AddText}" PlaceholderText="Adicionar: Nome#0000" MaxLength="21">
+				<TextBox Grid.Column="0" Text="{Binding AddText}" PlaceholderText="{c:T friends.add_placeholder}" MaxLength="21">
 					<TextBox.KeyBindings>
 						<KeyBinding Gesture="Enter" Command="{Binding Add}" />
 					</TextBox.KeyBindings>
 				</TextBox>
 				<Button Grid.Column="1" Classes="primary" Command="{Binding Add}" Margin="6,0,0,0" Width="40" Height="40" Padding="0"
-				        ToolTip.Tip="Enviar pedido de amizade">
+				        ToolTip.Tip="{c:T friends.add_tip}">
 					<Path Data="M7,1 L7,13 M1,7 L13,7" Stroke="{StaticResource GoldInk}" StrokeThickness="2.2" Width="14" Height="14" />
 				</Button>
 			</Grid>

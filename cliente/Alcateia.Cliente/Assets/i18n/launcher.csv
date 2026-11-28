@@ -1,0 +1,176 @@
+chave,en,pt_BR,es
+common.back,BACK,VOLTAR,VOLVER
+common.wait,PLEASE WAIT…,AGUARDE…,ESPERA…
+common.no_link,No connection to the server. Try again in a moment.,Sem ligação com o servidor. Tente de novo em instantes.,Sin conexión con el servidor. Inténtalo de nuevo en un momento.
+api.no_reply,No answer from the server. Check your internet connection.,Sem resposta do servidor. Confira a sua internet.,El servidor no responde. Revisa tu conexión a internet.
+api.status,The server answered {0}.,O servidor respondeu {0}.,El servidor respondió {0}.
+tray.open,Open {0},Abrir o {0},Abrir {0}
+tray.quit,Quit,Sair,Salir
+banner.update_ready,Version {0} of the launcher has been downloaded.,A versão {0} do launcher já foi baixada.,La versión {0} del launcher ya se descargó.
+banner.restart,RESTART NOW,REINICIAR AGORA,REINICIAR AHORA
+me.level,Level {0},Nível {0},Nivel {0}
+me.copy_tip,Copy your name with the tag to give to a friend,"Copiar o seu nome com a tag, para passar a um amigo",Copiar tu nombre con la etiqueta para pasársela a un amigo
+nav.settings,SETTINGS,CONFIGURAÇÕES,AJUSTES
+lib.title,GAMES,JOGOS,JUEGOS
+lib.more_soon,More Initech Games titles are coming soon.,Mais jogos da Initech Games em breve.,Más juegos de Initech Games muy pronto.
+lib.unavailable,Unavailable,Indisponível,No disponible
+lib.not_installed,Not installed,Não instalado,No instalado
+lib.update,Update available,Atualização disponível,Actualización disponible
+lib.ready,Ready to play,Pronto para jogar,Listo para jugar
+lib.paused,Paused,Pausado,En pausa
+lib.playing,Playing,Jogando,Jugando
+lib.uninstalling,Uninstalling…,Desinstalando…,Desinstalando…
+lib.working,Downloading · {0}%,Baixando · {0}%,Descargando · {0}%
+game.tab_overview,OVERVIEW,VISÃO GERAL,RESUMEN
+game.tab_news,PATCH NOTES,NOVIDADES,NOVEDADES
+game.options,Game options,Opções do jogo,Opciones del juego
+game.btn_checking,CHECKING…,CONFERINDO…,COMPROBANDO…
+game.btn_unavailable,UNAVAILABLE,INDISPONÍVEL,NO DISPONIBLE
+game.btn_install,INSTALL,INSTALAR,INSTALAR
+game.btn_update,UPDATE,ATUALIZAR,ACTUALIZAR
+game.btn_play,PLAY,JOGAR,JUGAR
+game.btn_resume,RESUME,CONTINUAR,REANUDAR
+game.btn_playing,PLAYING,JOGANDO,JUGANDO
+game.btn_installing,INSTALLING…,INSTALANDO…,INSTALANDO…
+game.btn_updating,UPDATING…,ATUALIZANDO…,ACTUALIZANDO…
+game.btn_verifying,VERIFYING…,VERIFICANDO…,VERIFICANDO…
+game.btn_uninstalling,UNINSTALLING…,DESINSTALANDO…,DESINSTALANDO…
+game.pause,PAUSE,PAUSAR,PAUSAR
+game.not_now,NOT NOW,AGORA NÃO,AHORA NO
+game.st_checking,Checking for the latest version…,Conferindo a versão…,Comprobando la versión…
+game.st_found_old,Version {0} · there is already a game in this folder: only the difference will be downloaded,Versão {0} · já há um jogo nesta pasta: só a diferença será baixada,Versión {0} · ya hay un juego en esta carpeta: solo se descargará la diferencia
+game.st_not_installed,Version {0} · {1} download · {2} on disk,Versão {0} · {1} de download · {2} em disco,Versión {0} · {1} de descarga · {2} en disco
+game.st_upto, · up to {0} download, · até {0} de download, · hasta {0} de descarga
+game.st_repair_needed,Version {0} · some files need repair{1},Versão {0} · há arquivos a consertar{1},Versión {0} · hay archivos que reparar{1}
+game.st_update,Version {0} available (you have {1}){2},Versão {0} disponível (você tem a {1}){2},Versión {0} disponible (tienes la {1}){2}
+game.st_offline,"Version {0} · offline, can't check for a newer one",Versão {0} · sem conexão para conferir se há uma nova,Versión {0} · sin conexión para comprobar si hay una nueva
+game.st_ready,Version {0} · up to date,Versão {0} · atualizado,Versión {0} · actualizado
+game.st_paused,Paused · what was downloaded is kept,Pausado · o que já baixou está guardado,En pausa · lo descargado se conserva
+game.st_playing,The game is running,O jogo está aberto,El juego está abierto
+game.wk_uninstall,Deleting the game files…,Apagando os arquivos do jogo…,Borrando los archivos del juego…
+game.wk_checking,Checking the files already on disk…,Conferindo os arquivos que já estão no disco…,Comprobando los archivos que ya están en el disco…
+game.wk_finishing,Putting the files in place…,Colocando os arquivos no lugar…,Colocando los archivos en su sitio…
+game.wk_building,Assembling the files · {0} of {1},Montando os arquivos · {0} de {1},Montando los archivos · {0} de {1}
+game.wk_download,{0} of {1},{0} de {1},{0} de {1}
+game.left_lt1,less than 1 min left,falta menos de 1 min,queda menos de 1 min
+game.left_min,{0} min left,faltam {0} min,quedan {0} min
+game.left_h,{0} h {1} min left,faltam {0} h {1} min,quedan {0} h {1} min
+game.version,Version {0},Versão {0},Versión {0}
+game.on_disk,{0} on disk,{0} em disco,{0} en disco
+game.folder_line,Folder: {0},Pasta: {0},Carpeta: {0}
+game.repair,Verify and repair,Verificar e reparar,Verificar y reparar
+game.open_folder,Open folder,Abrir a pasta,Abrir la carpeta
+game.change_folder,Change folder (before installing),Mudar a pasta (antes de instalar),Cambiar la carpeta (antes de instalar)
+game.uninstall_menu,Uninstall,Desinstalar,Desinstalar
+game.uninstall,Uninstall,Desinstalar,Desinstalar
+game.uninstall_title,Uninstall {0}?,Desinstalar o {0}?,¿Desinstalar {0}?
+game.uninstall_body,"The game files are deleted from this folder. Your account, your settings and what you bought are not touched: they stay on the server and in the game's data folder.","Os arquivos do jogo são apagados desta pasta. A sua conta, os seus ajustes e o que você comprou não são tocados: ficam no servidor e na pasta de dados do jogo.","Los archivos del juego se borran de esta carpeta. Tu cuenta, tus ajustes y lo que compraste no se tocan: quedan en el servidor y en la carpeta de datos del juego."
+game.pick_folder,Where to install {0},Onde instalar o {0},Dónde instalar {0}
+game.notes_title,What's new in version {0},O que há na versão {0},Novedades de la versión {0}
+game.notes_none,The notes for this version haven't arrived yet.,As notas desta versão ainda não chegaram.,Las notas de esta versión aún no llegaron.
+login.tab_enter,SIGN IN,ENTRAR,ENTRAR
+login.tab_create,CREATE ACCOUNT,CRIAR CONTA,CREAR CUENTA
+login.enter,SIGN IN,ENTRAR,ENTRAR
+login.create,CREATE ACCOUNT,CRIAR CONTA,CREAR CUENTA
+login.name,ACCOUNT NAME,NOME DA CONTA,NOMBRE DE LA CUENTA
+login.name_hint,"3 to 16 letters, numbers or _","3 a 16 letras, números ou _","De 3 a 16 letras, números o _"
+login.password,PASSWORD,SENHA,CONTRASEÑA
+login.password_hint,at least 8 characters,pelo menos 8 caracteres,al menos 8 caracteres
+login.password_again,PASSWORD AGAIN,A SENHA DE NOVO,REPITE LA CONTRASEÑA
+login.code,AUTHENTICATOR CODE,CÓDIGO DO AUTENTICADOR,CÓDIGO DEL AUTENTICADOR
+login.code_hint,6 digits from the app,6 dígitos do aplicativo,6 dígitos de la aplicación
+login.remember,Remember this account on this computer,Lembrar desta conta neste computador,Recordar esta cuenta en este ordenador
+login.saved,ACCOUNTS ON THIS COMPUTER,CONTAS NESTE COMPUTADOR,CUENTAS EN ESTE ORDENADOR
+login.forget,Forget this account on this computer,Esquecer esta conta neste computador,Olvidar esta cuenta en este ordenador
+login.server,Server: {0},Servidor: {0},Servidor: {0}
+login.need_both,Enter the account name and the password.,Escreva o nome da conta e a senha.,Escribe el nombre de la cuenta y la contraseña.
+login.mismatch,The two passwords don't match.,As duas senhas não são iguais.,Las dos contraseñas no coinciden.
+login.creating,Creating the account…,Criando a conta…,Creando la cuenta…
+login.entering,Signing in…,Entrando…,Entrando…
+login.entering_as,Signing in as {0}…,Entrando como {0}…,Entrando como {0}…
+login.expired,The saved sign-in for {0} has expired. Enter the password to sign in.,O acesso salvo de {0} venceu. Digite a senha para entrar.,El acceso guardado de {0} caducó. Escribe la contraseña para entrar.
+login.no_reply_saved,No answer from the server. You can try again by clicking the account.,Sem resposta do servidor. Você pode tentar de novo clicando na conta.,El servidor no responde. Puedes intentarlo de nuevo haciendo clic en la cuenta.
+friends.title,FRIENDS,AMIGOS,AMIGOS
+friends.online_tip,Friends online,Amigos conectados,Amigos conectados
+friends.add_placeholder,Add: Name#0000,Adicionar: Nome#0000,Añadir: Nombre#0000
+friends.add_tip,Send friend request,Enviar pedido de amizade,Enviar solicitud de amistad
+friends.accept,Accept,Aceitar,Aceptar
+friends.decline,Decline,Recusar,Rechazar
+friends.cancel,Cancel the request,Cancelar o pedido,Cancelar la solicitud
+friends.remove_tip,Remove friend,Desfazer a amizade,Eliminar amigo
+friends.requests,REQUESTS · {0},PEDIDOS · {0},SOLICITUDES · {0}
+friends.in_game,IN GAME · {0},NO JOGO · {0},EN JUEGO · {0}
+friends.in_app,IN THE LAUNCHER · {0},NO LAUNCHER · {0},EN EL LAUNCHER · {0}
+friends.offline,OFFLINE · {0},DESCONECTADOS · {0},DESCONECTADOS · {0}
+friends.sent,SENT REQUESTS · {0},PEDIDOS ENVIADOS · {0},SOLICITUDES ENVIADAS · {0}
+friends.replaced,Your account opened the launcher on another computer. Reopen it to see your friends here.,A sua conta abriu o launcher em outro computador. Reabra-o para ver os amigos aqui.,Tu cuenta abrió el launcher en otro ordenador. Vuelve a abrirlo para ver a tus amigos aquí.
+friends.connecting,Connecting to the server…,Ligando com o servidor…,Conectando con el servidor…
+friends.loading,Loading friends…,Carregando os amigos…,Cargando amigos…
+friends.none,You don't have friends yet. Ask someone for their tag (Name#0000) and add it above — or share yours.,Você ainda não tem amigos. Peça a tag de alguém (Nome#0000) e adicione aqui em cima — ou passe a sua.,"Aún no tienes amigos. Pide la etiqueta de alguien (Nombre#0000) y añádela arriba, o comparte la tuya."
+friends.bad_handle,"Write the name with the tag, like this: Name#0000.","Escreva o nome com a tag, assim: Nome#0000.","Escribe el nombre con la etiqueta, así: Nombre#0000."
+friends.wants,Wants to be your friend,Quer ser seu amigo,Quiere ser tu amigo
+friends.waiting,Waiting for an answer,Aguardando resposta,Esperando respuesta
+friends.remove_title,Remove this friend?,Desfazer a amizade?,¿Eliminar a este amigo?
+friends.remove_body,"{0} leaves your list, and you leave theirs.","{0} sai da sua lista, e você da dele.","{0} sale de tu lista, y tú de la suya."
+friends.remove,Remove,Desfazer,Eliminar
+friends.at_menu,In the menu,No menu,En el menú
+friends.at_room,In room #{0},Na sala #{0},En la sala #{0}
+friends.at_match,In a match,Em partida,En partida
+friends.at_offline,Offline,Desconectado,Desconectado
+settings.language,LANGUAGE,IDIOMA,IDIOMA
+settings.language_note,The launcher's language. Each game has its own in its options.,O idioma do launcher. Cada jogo tem o seu nas opções dele.,El idioma del launcher. Cada juego tiene el suyo en sus opciones.
+settings.auto_update,Update games automatically when a new version is out,Atualizar os jogos sozinho quando sair versão nova,Actualizar los juegos automáticamente cuando salga una versión nueva
+settings.close_to_tray,"When closing the window, keep running in the tray","Ao fechar a janela, continuar aberto na bandeja","Al cerrar la ventana, seguir abierto en la bandeja"
+settings.minimize_on_play,"When a game starts, move the launcher out of the way","Ao abrir um jogo, tirar o launcher da frente","Al abrir un juego, quitar el launcher de delante"
+settings.auto_login,Sign in automatically to the remembered account,Entrar sozinho na conta lembrada,Entrar automáticamente en la cuenta recordada
+settings.start_with_windows,Start with Windows,Abrir junto com o Windows,Abrir junto con Windows
+settings.account,ACCOUNT,A CONTA,LA CUENTA
+settings.tag_note,Your name with the tag is what a friend types to add you.,O nome com a tag é o que um amigo escreve para adicionar você.,Tu nombre con la etiqueta es lo que un amigo escribe para añadirte.
+settings.copy_tag,COPY TAG,COPIAR A TAG,COPIAR ETIQUETA
+settings.logout,SIGN OUT,SAIR DA CONTA,CERRAR SESIÓN
+settings.2fa,TWO-STEP VERIFICATION,VERIFICAÇÃO EM DUAS ETAPAS,VERIFICACIÓN EN DOS PASOS
+settings.2fa_on,On: signing in with the password also asks for the code from the authenticator app.,Ligada: entrar com a senha pede também o código do aplicativo autenticador.,Activada: entrar con la contraseña también pide el código de la aplicación autenticadora.
+settings.2fa_off,Off. Turn it on so that the password alone isn't enough to get into your account.,Desligada. Ligue para que só a senha não baste para entrar na sua conta.,Desactivada. Actívala para que la contraseña sola no baste para entrar en tu cuenta.
+settings.2fa_enable,TURN ON,ATIVAR,ACTIVAR
+settings.2fa_disable,TURN OFF,DESATIVAR,DESACTIVAR
+settings.version,Launcher {0},Launcher {0},Launcher {0}
+settings.server,Server:,Servidor:,Servidor:
+settings.downloads,Downloads:,Downloads:,Descargas:
+settings.downloads_unknown,not yet provided by the server,ainda não informado pelo servidor,el servidor aún no lo informó
+2fa.title_on,Turn on two-step verification,Ligar a verificação em duas etapas,Activar la verificación en dos pasos
+2fa.title_off,Turn off two-step verification,Desligar a verificação em duas etapas,Desactivar la verificación en dos pasos
+2fa.turn_on,TURN ON,LIGAR,ACTIVAR
+2fa.turn_off,TURN OFF,DESLIGAR,DESACTIVAR
+2fa.asking,Asking the server for the key…,Pedindo a chave ao servidor…,Pidiendo la clave al servidor…
+2fa.copied,Key copied.,Chave copiada.,Clave copiada.
+2fa.code_digits,The code has 6 digits: it's what the authenticator app shows right now.,O código tem 6 dígitos: é o que o aplicativo autenticador mostra agora.,El código tiene 6 dígitos: es lo que muestra ahora la aplicación autenticadora.
+2fa.need_password,Enter the account password.,Digite a senha da conta.,Escribe la contraseña de la cuenta.
+2fa.step1,"1. On your phone, open an authenticator app (Google Authenticator, Authy, 1Password) and point the camera at the QR code.","1. No celular, abra um aplicativo autenticador (Google Authenticator, Authy, 1Password) e aponte a câmera para o QR code.","1. En el móvil, abre una aplicación autenticadora (Google Authenticator, Authy, 1Password) y apunta la cámara al código QR."
+2fa.or_key,OR TYPE THE KEY,OU DIGITE A CHAVE,O ESCRIBE LA CLAVE
+2fa.copy_key,COPY KEY,COPIAR A CHAVE,COPIAR LA CLAVE
+2fa.step2,2. Type here the 6-digit code the app shows:,2. Digite aqui o código de 6 dígitos que o aplicativo mostra:,2. Escribe aquí el código de 6 dígitos que muestra la aplicación:
+2fa.off_body,"Without it, anyone who finds out your password gets into the account. To turn it off, confirm the password and a code from the authenticator app.","Sem ela, quem descobrir a sua senha entra na conta. Para desligar, confirme a senha e um código do aplicativo autenticador.","Sin ella, quien descubra tu contraseña entra en la cuenta. Para desactivarla, confirma la contraseña y un código de la aplicación autenticadora."
+toast.restart_failed,Couldn't restart on my own. Close and open the launcher.,Não consegui reabrir sozinho. Feche e abra o launcher.,No pude reiniciarme solo. Cierra y abre el launcher.
+toast.tag_copied,{0} copied: give it to a friend so they can add you,{0} copiado: passe para um amigo adicionar você,{0} copiado: pásalo a un amigo para que te añada
+toast.2fa_on,Two-step verification turned on.,Verificação em duas etapas ligada.,Verificación en dos pasos activada.
+toast.2fa_off,Two-step verification turned off.,Verificação em duas etapas desligada.,Verificación en dos pasos desactivada.
+toast.open_folder_failed,Couldn't open the folder.,Não consegui abrir a pasta.,No pude abrir la carpeta.
+toast.cant_change_folder,The folder can't be changed right now.,Agora não dá para trocar a pasta.,Ahora no se puede cambiar la carpeta.
+toast.startup_failed,Couldn't change starting with Windows.,Não consegui mudar a abertura com o Windows.,No pude cambiar el inicio con Windows.
+svc.no_downloads_route,This server doesn't say where to download the game from yet.,Este servidor ainda não diz de onde baixar o jogo.,Este servidor aún no indica de dónde descargar el juego.
+svc.no_reply,No answer from the server: couldn't check for a new version.,Sem resposta do servidor: não deu para conferir se há versão nova.,El servidor no responde: no se pudo comprobar si hay versión nueva.
+svc.downloads_unset,Downloads haven't been set up on the server yet.,Os downloads ainda não foram configurados no servidor.,Las descargas aún no se configuraron en el servidor.
+svc.not_published,There's no version published for this system yet.,Ainda não há versão publicada para este sistema.,Aún no hay una versión publicada para este sistema.
+svc.downloads_down,Couldn't reach the download server. Check your internet connection.,Não deu para falar com o servidor de downloads. Confira a sua internet.,No se pudo contactar con el servidor de descargas. Revisa tu conexión a internet.
+svc.failed,Couldn't finish: {0},Não deu para terminar: {0},No se pudo terminar: {0}
+svc.open_failed,Couldn't open the game: {0} Use Verify and repair.,Não consegui abrir o jogo: {0} Use Verificar e reparar.,No pude abrir el juego: {0} Usa Verificar y reparar.
+friends.chat_tip,Chat,Conversar,Chatear
+friends.notice_request,{0} wants to be your friend,{0} quer ser seu amigo,{0} quiere ser tu amigo
+friends.notice_accepted,{0} accepted your friend request,{0} aceitou o seu pedido de amizade,{0} aceptó tu solicitud de amistad
+friends.refused,The server refused the request.,O servidor recusou o pedido.,El servidor rechazó la solicitud.
+chat.placeholder,Write a message…,Escreva uma mensagem…,Escribe un mensaje…
+chat.send,Send,Enviar,Enviar
+chat.close,Close,Fechar,Cerrar
+chat.older,Load older messages,Mensagens anteriores,Mensajes anteriores
+chat.empty,No messages yet. Say hi!,Nenhuma mensagem ainda. Diga oi!,Aún no hay mensajes. ¡Saluda!
+chat.toast,{0}: {1},{0}: {1},{0}: {1}

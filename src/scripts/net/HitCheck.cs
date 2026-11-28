@@ -102,7 +102,7 @@ public sealed class HitCheck
 				// Sem ela o teto cortava toda bala honesta no servidor autoritativo: com a escala 2 de
 				// antes, o AR-15 mandava 54 e valia 29 (achado em 25/11, no ajuste do dano).
 				max = def.Damage * CombatRules.FirearmDamageScale * Math.Max(def.Pellets, 1) + 1f;
-				spread = def.SpreadMax;
+				spread = def.WorstSpread;
 				break;
 
 			case KillCause.Knife:

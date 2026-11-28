@@ -331,7 +331,8 @@ public partial class Player : CharacterBody3D
 		// girar o corpo morto mexendo a câmera"): o olhar gira o corpo inteiro
 		// (Look → RotateY), e o cadáver rodava no chão — na tela dos outros
 		// também, online. A câmera de morte é fixa (KillCam) e não usa isto.
-		if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured && !_health.IsDead)
+		// Digitando no chat da partida, o mouse também espera.
+		if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured && !_health.IsDead && !MatchChat.Typing)
 			Look(motion);
 	}
 

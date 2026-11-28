@@ -59,6 +59,7 @@ public partial class MainWindow : Window
 			return picked.FirstOrDefault()?.TryGetLocalPath();
 		};
 		vm.HideWindow = () => WindowState = WindowState.Minimized;
+		vm.WindowAway = () => !IsVisible || WindowState == WindowState.Minimized;
 		_timer.Start();
 		_ = vm.Start();
 	}
@@ -67,10 +68,12 @@ public partial class MainWindow : Window
 	{
 		// Fechar a janela deixa o cliente na bandeja: os amigos seguem vendo
 		// você e o download segue. Sair de verdade é pelo menu da bandeja.
-		if (!Quitting && HasTray && DataContext is MainViewModel { Settings.CloseToTray: true })
+		if (!Quitting && HasTray && DataContext is MainViewModel { Settings.CloseToTray: true } vm)
 		{
 			e.Cancel = true;
 			Hide();
+			// Foi para a bandeja: se há versão nova do cliente esperando, é a hora.
+			vm.RestartIfIdle();
 			return;
 		}
 		base.OnClosing(e);

@@ -56,6 +56,7 @@ as versões por superfície (`_metal`, `_neve`, `_madeira`, `_terra`),
 | `tiro_ump45`, `recarga_ump45`, `recarga_fim_ump45` | Carl Gustav M45 |
 | `tiro_m3`, `recarga_fim_m3`, `cartucho` | Benelli Nova |
 | `tiro_m9`, `recarga_m9`, `recarga_fim_m9` | Walther PPQ |
+| `recarga_deagle`, `recarga_vazia_deagle` (27/11, recortados de `src/tools/sons/fontes/recarga_deagle_original.wav` por `src/tools/sons/recarga_deagle.py`) | Walther PPQ (a recarga da M9, mais grave) |
 | `tiro_distante_*` | Versões "mid distance" das mesmas armas |
 
 **Kenney** ([kenney.nl](https://kenney.nl)), CC0: UI Audio

@@ -1,55 +1,51 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Alcateia.Cliente.ViewModels"
+             xmlns:c="using:Alcateia.Cliente.Core"
              x:Class="Alcateia.Cliente.Views.SettingsView"
              x:DataType="vm:MainViewModel">
 
+	<!--
+	As configurações do launcher: o idioma, o comportamento, a conta e as
+	duas etapas. A manutenção de cada jogo fica no menu de opções da página dele.
+	-->
 	<UserControl.Styles>
 		<Style Selector="Border.card">
 			<Setter Property="Background" Value="{StaticResource Surface}" />
 			<Setter Property="BorderBrush" Value="{StaticResource Line}" />
 			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="CornerRadius" Value="3" />
 			<Setter Property="Padding" Value="22,18" />
+		</Style>
+		<Style Selector="TextBlock.cardtitle">
+			<Setter Property="Foreground" Value="{StaticResource Gold}" />
 		</Style>
 	</UserControl.Styles>
 
 	<ScrollViewer VerticalScrollBarVisibility="Auto">
-		<StackPanel Margin="40,34,40,40" Spacing="16" MaxWidth="760" HorizontalAlignment="Left">
-			<TextBlock Classes="title" Text="Configurações" />
+		<StackPanel Margin="40,30,40,40" Spacing="16" MaxWidth="760" HorizontalAlignment="Left">
+			<TextBlock Classes="title" Text="{c:T nav.settings}" />
 
-			<!-- o jogo instalado -->
+			<!-- o idioma -->
 			<Border Classes="card">
-				<StackPanel Spacing="12">
-					<TextBlock Classes="label" Text="O JOGO" Foreground="{StaticResource Gold}" />
-					<StackPanel Orientation="Horizontal" Spacing="14">
-						<TextBlock Text="{Binding Game.InstalledVersion}" FontWeight="SemiBold" />
-						<TextBlock Text="{Binding Game.InstalledSize}" Classes="muted" />
+				<Grid ColumnDefinitions="*,Auto">
+					<StackPanel Spacing="6" VerticalAlignment="Center">
+						<TextBlock Classes="label cardtitle" Text="{c:T settings.language}" />
+						<TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap" Text="{c:T settings.language_note}" />
 					</StackPanel>
-					<StackPanel Spacing="3">
-						<TextBlock Classes="label" Text="PASTA DE INSTALAÇÃO" />
-						<TextBlock Text="{Binding Game.InstallDir}" Classes="muted" TextWrapping="Wrap" />
-					</StackPanel>
-					<WrapPanel>
-						<Button Content="VERIFICAR E REPARAR" Command="{Binding Game.Repair}" Margin="0,0,8,8"
-						        ToolTip.Tip="Lê todos os arquivos do jogo e baixa de novo só o que estiver estragado" />
-						<Button Content="ABRIR A PASTA" Command="{Binding Game.OpenFolder}" Margin="0,0,8,8" />
-						<Button Content="MUDAR A PASTA" Command="{Binding Game.ChangeFolder}" Margin="0,0,8,8"
-						        ToolTip.Tip="Só com o jogo desinstalado: escolha a pasta antes de instalar" />
-						<Button Classes="danger" Content="DESINSTALAR" Command="{Binding Game.Uninstall}" Margin="0,0,8,8" />
-					</WrapPanel>
-				</StackPanel>
+					<ComboBox Grid.Column="1" ItemsSource="{Binding Config.LanguageOptions}" SelectedItem="{Binding Config.Language}"
+					          VerticalAlignment="Center" Margin="16,0,0,0" />
+				</Grid>
 			</Border>
 
-			<!-- o cliente -->
+			<!-- o launcher -->
 			<Border Classes="card">
 				<StackPanel Spacing="10">
-					<TextBlock Classes="label" Text="O CLIENTE" Foreground="{StaticResource Gold}" />
-					<CheckBox IsChecked="{Binding Config.AutoUpdate}" Content="Atualizar o jogo sozinho quando sair versão nova" />
-					<CheckBox IsChecked="{Binding Config.CloseToTray}" Content="Ao fechar a janela, continuar aberto na bandeja" />
-					<CheckBox IsChecked="{Binding Config.MinimizeOnPlay}" Content="Ao abrir o jogo, tirar o cliente da frente" />
-					<CheckBox IsChecked="{Binding Config.AutoLogin}" Content="Entrar sozinho na conta lembrada" />
-					<CheckBox IsChecked="{Binding Config.StartWithSystem}" Content="Abrir junto com o Windows" IsVisible="{Binding Config.CanStartWithSystem}" />
+					<TextBlock Classes="label cardtitle" Text="INITECH LAUNCHER" />
+					<CheckBox IsChecked="{Binding Config.AutoUpdate}" Content="{c:T settings.auto_update}" />
+					<CheckBox IsChecked="{Binding Config.CloseToTray}" Content="{c:T settings.close_to_tray}" />
+					<CheckBox IsChecked="{Binding Config.MinimizeOnPlay}" Content="{c:T settings.minimize_on_play}" />
+					<CheckBox IsChecked="{Binding Config.AutoLogin}" Content="{c:T settings.auto_login}" />
+					<CheckBox IsChecked="{Binding Config.StartWithSystem}" Content="{c:T settings.start_with_windows}" IsVisible="{Binding Config.CanStartWithSystem}" />
 				</StackPanel>
 			</Border>
 
@@ -57,17 +53,16 @@
 			<Border Classes="card">
 				<Grid ColumnDefinitions="*,Auto">
 					<StackPanel Spacing="6">
-						<TextBlock Classes="label" Text="A CONTA" Foreground="{StaticResource Gold}" />
+						<TextBlock Classes="label cardtitle" Text="{c:T settings.account}" />
 						<StackPanel Orientation="Horizontal" Spacing="3">
 							<TextBlock Text="{Binding MeName}" FontWeight="SemiBold" FontSize="17" />
 							<TextBlock Text="{Binding MeTag}" Foreground="{StaticResource Ink3}" FontSize="17" />
 						</StackPanel>
-						<TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap"
-						           Text="O nome com a tag é o que um amigo escreve para adicionar você." />
+						<TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap" Text="{c:T settings.tag_note}" />
 					</StackPanel>
 					<StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
-						<Button Content="COPIAR A TAG" Command="{Binding CopyHandle}" HorizontalAlignment="Stretch" />
-						<Button Content="SAIR DA CONTA" Command="{Binding Logout}" HorizontalAlignment="Stretch" />
+						<Button Content="{c:T settings.copy_tag}" Command="{Binding CopyHandle}" HorizontalAlignment="Stretch" />
+						<Button Content="{c:T settings.logout}" Command="{Binding Logout}" HorizontalAlignment="Stretch" />
 					</StackPanel>
 				</Grid>
 			</Border>
@@ -76,7 +71,7 @@
 			<Border Classes="card">
 				<Grid ColumnDefinitions="*,Auto">
 					<StackPanel Spacing="6">
-						<TextBlock Classes="label" Text="VERIFICAÇÃO EM DUAS ETAPAS" Foreground="{StaticResource Gold}" />
+						<TextBlock Classes="label cardtitle" Text="{c:T settings.2fa}" />
 						<TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding TwoFactorState}" />
 					</StackPanel>
 					<Button Grid.Column="1" Content="{Binding TwoFactorButton}" Command="{Binding ToggleTwoFactor}" VerticalAlignment="Center" Margin="16,0,0,0" MinWidth="150" />
@@ -86,11 +81,12 @@
 			<StackPanel Spacing="3" Margin="2,6,0,0">
 				<TextBlock Text="{Binding Config.VersionText}" Classes="muted" FontSize="13" />
 				<TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap">
-					<Run Text="Servidor: " /><Run Text="{Binding Config.ServerText}" />
+					<Run Text="{c:T settings.server}" /><Run Text=" " /><Run Text="{Binding Config.ServerText}" />
 				</TextBlock>
 				<TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap">
-					<Run Text="Downloads: " /><Run Text="{Binding Config.DownloadsText}" />
+					<Run Text="{c:T settings.downloads}" /><Run Text=" " /><Run Text="{Binding Config.DownloadsText}" />
 				</TextBlock>
+				<TextBlock Classes="muted" FontSize="13" Text="© Initech Games" Margin="0,8,0,0" />
 			</StackPanel>
 		</StackPanel>
 	</ScrollViewer>

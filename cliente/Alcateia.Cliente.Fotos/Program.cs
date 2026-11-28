@@ -84,9 +84,27 @@ public static class Program
 		Shoot(outDir, "7_novidades", Logged(), vm =>
 		{
 			vm.GameService.Preview(GameState.Ready, latest, latest);
-			vm.Page = Page.News;
-			vm.Toast("LoboGuara#0042 copiado: passe para um amigo adicionar você");
+			vm.Game.Tab = GameTab.News;
+			vm.Toast(Tr.F("toast.tag_copied", "LoboGuara#0042"));
 		});
+
+		// --- a conversa com um amigo
+		Shoot(outDir, "10_conversa", Logged(), vm =>
+		{
+			vm.GameService.Preview(GameState.Ready, latest, latest);
+			vm.FriendsLink.PreviewTalk(1, 3, (false, "bora uma partida?"), (true, "bora! cria a sala"), (false, "sala 12, senha lobo"),
+				(true, "entrando"), (false, "traz o Garra também"));
+			foreach (var f in vm.FriendsLink.Friends)
+				if (f.Id == 3) vm.Friends.OpenChat(f);
+		});
+
+		// --- os idiomas: a mesma tela em português e em espanhol (o padrão é inglês)
+		foreach (string language in new[] { "pt_BR", "es" })
+		{
+			Tr.Set(language);
+			Shoot(outDir, "9_" + language, Logged(), vm => vm.GameService.Preview(GameState.UpdateAvailable, latest, old));
+		}
+		Tr.Set(Tr.Default);
 
 		Console.WriteLine("fotos em " + outDir);
 		return 0;
@@ -94,7 +112,8 @@ public static class Program
 
 	private static MainViewModel Logged(bool friends = true)
 	{
-		var vm = new MainViewModel(new Settings());
+		// O idioma da foto: o que estiver posto (o MainViewModel põe o dos ajustes).
+		var vm = new MainViewModel(new Settings { Language = Tr.Current });
 		vm.Preview(new Account(1, "LoboGuara", "0042", 18400, 12, "t"));
 		JsonObject list = friends ? Friends() : new JsonObject { ["t"] = "friends", ["friends"] = new JsonArray(), ["requests"] = new JsonArray(), ["sent"] = new JsonArray() };
 		// Pelo texto, como chega do servidor (os números vêm sem tipo).

@@ -353,6 +353,26 @@ public static class Schema
 		@"
 		alter table profiles add column skill double precision;
 		alter table profiles add column skill_matches integer not null default 0;
+		",
+
+		// 9 — as mensagens diretas entre amigos (Jhon, 27/11: "coloque chat
+		// também no [...] launcher e no game [...] e entre amigos"). Uma linha
+		// por mensagem; a conversa é o par (o menor e o maior número de conta),
+		// e cada uma guarda só as mais novas (ChatRules.Kept: quem grava apaga
+		// as de trás). read_at vazio é não lida — o índice parcial é o que conta
+		// a caixa de quem acabou de entrar. Conta apagada leva as dela.
+		@"
+		create table direct_messages (
+			id bigserial primary key,
+			sender bigint not null references accounts(id) on delete cascade,
+			recipient bigint not null references accounts(id) on delete cascade,
+			text text not null,
+			sent_at timestamptz not null default now(),
+			read_at timestamptz,
+			check (sender <> recipient)
+		);
+		create index direct_messages_pair on direct_messages (least(sender, recipient), greatest(sender, recipient), id desc);
+		create index direct_messages_unread on direct_messages (recipient, sender) where read_at is null;
 		"
 	};
 

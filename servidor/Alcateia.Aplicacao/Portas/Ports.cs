@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Alcateia.Dominio.Contas;
+using Alcateia.Dominio.Conversas;
 using Alcateia.Dominio.Partidas;
 
 namespace Alcateia.Aplicacao.Portas;
@@ -81,6 +82,30 @@ public interface IFriendRepository
 
 	/// <summary>Desfaz a amizade. Falso se não eram amigos.</summary>
 	Task<bool> RemoveFriend(long me, long other);
+}
+
+/// <summary>
+/// Onde as mensagens diretas entre amigos ficam guardadas: as últimas
+/// <see cref="ChatRules.Kept"/> de cada conversa, para quem abre a conversa
+/// depois ou estava desligado. Quem confere a amizade é o saguão.
+/// </summary>
+public interface IDirectMessageRepository
+{
+	/// <summary>Grava a mensagem (com o número e a hora do banco) e apaga as
+	/// mais velhas da conversa além de <see cref="ChatRules.Kept"/>.</summary>
+	Task<DirectMessage> Save(long from, long to, string text);
+
+	/// <summary>As até <paramref name="limit"/> mensagens entre as duas contas
+	/// antes da de número <paramref name="beforeId"/> (0: as mais novas), da
+	/// mais antiga para a mais nova.</summary>
+	Task<IReadOnlyList<DirectMessage>> History(long a, long b, long beforeId, int limit);
+
+	/// <summary>Marca como lidas as que <paramref name="from"/> mandou para
+	/// <paramref name="reader"/>. Devolve quantas eram.</summary>
+	Task<int> MarkRead(long reader, long from);
+
+	/// <summary>Quantas não lidas a conta tem, por quem mandou.</summary>
+	Task<IReadOnlyList<(long From, int Count)>> Unread(long accountId);
 }
 
 /// <summary>Um banimento em vigor: até quando (null = para sempre) e por quê.</summary>

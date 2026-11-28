@@ -1,37 +1,41 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Alcateia.Cliente.App"
-             Name="WolfLeague"
+             Name="Initech Launcher"
              RequestedThemeVariant="Dark">
 
 	<!--
-	A cara do cliente: as cores do menu do jogo (src/scripts/ui/kit/UiTokens.cs,
-	paleta Menu — as mesmas do instalador) e as letras dos menus dele
-	(src/scripts/ui/kit/UiFonts.cs; Jhon, 27/11: "essa fonte tem que casar
-	com as do game atual"): Figtree para ler e nos rótulos em caixa alta,
-	Kanit itálica nos títulos e nos botões. Mudou a letra do jogo, muda aqui.
+	A cara do Initech Launcher (Jhon, 27/11: "ele é iniciado da initech
+	games [...] pode ter um outro design mais próximo da logo, algo mais
+	exclusivo"): as cores da logo do estúdio (src/tools/estudio/initech_games.svg)
+	— ouro #FEC803 sobre preto, como na vinheta de abertura do jogo — e cantos
+	retos. Barlow Condensed, a letra estreita e reta mais perto da logo, nos
+	títulos, rótulos e botões; Figtree para ler. A página de cada jogo traz a
+	arte e o logo dele: o jogo tem a cara dele, o launcher a do estúdio.
 	-->
 	<Application.Resources>
-		<Color x:Key="NightColor">#0A1119</Color>
-		<!-- A cor de destaque do tema (caixas de marcar, foco): o ouro do jogo, não o azul do sistema. -->
-		<Color x:Key="SystemAccentColor">#F3B950</Color>
-		<Color x:Key="SystemAccentColorDark1">#E0A63C</Color>
-		<Color x:Key="SystemAccentColorLight1">#FFCE73</Color>
-		<SolidColorBrush x:Key="Night" Color="#0A1119" />
-		<SolidColorBrush x:Key="Deep" Color="#060B11" />
-		<SolidColorBrush x:Key="Surface" Color="#111A26" />
-		<SolidColorBrush x:Key="Surface2" Color="#16212F" />
-		<SolidColorBrush x:Key="Line" Color="#223144" />
-		<SolidColorBrush x:Key="Ink" Color="#EDF2F7" />
-		<SolidColorBrush x:Key="Ink2" Color="#9DB0C4" />
-		<SolidColorBrush x:Key="Ink3" Color="#5E7186" />
-		<SolidColorBrush x:Key="Gold" Color="#F3B950" />
-		<SolidColorBrush x:Key="GoldHot" Color="#FFCE73" />
-		<SolidColorBrush x:Key="GoldInk" Color="#1A1204" />
+		<Color x:Key="NightColor">#09090B</Color>
+		<!-- A cor de destaque do tema (caixas de marcar, foco, listas): o ouro da Initech. -->
+		<Color x:Key="SystemAccentColor">#FEC803</Color>
+		<Color x:Key="SystemAccentColorDark1">#E0B000</Color>
+		<Color x:Key="SystemAccentColorLight1">#FFD94D</Color>
+		<SolidColorBrush x:Key="Night" Color="#09090B" />
+		<SolidColorBrush x:Key="Deep" Color="#050506" />
+		<SolidColorBrush x:Key="Surface" Color="#111114" />
+		<SolidColorBrush x:Key="Surface2" Color="#18181C" />
+		<SolidColorBrush x:Key="Line" Color="#232329" />
+		<SolidColorBrush x:Key="Line2" Color="#34343C" />
+		<SolidColorBrush x:Key="Ink" Color="#F4F4F5" />
+		<SolidColorBrush x:Key="Ink2" Color="#A1A1AA" />
+		<SolidColorBrush x:Key="Ink3" Color="#5F5F69" />
+		<SolidColorBrush x:Key="Gold" Color="#FEC803" />
+		<SolidColorBrush x:Key="GoldHot" Color="#FFD94D" />
+		<SolidColorBrush x:Key="GoldDim" Color="#33FEC803" />
+		<SolidColorBrush x:Key="GoldInk" Color="#121000" />
 		<SolidColorBrush x:Key="Danger" Color="#F0655A" />
 		<SolidColorBrush x:Key="Ok" Color="#4ADE80" />
 		<FontFamily x:Key="Body">avares://WolfLeagueLauncher/Assets/Fonts#Figtree</FontFamily>
-		<FontFamily x:Key="Display">avares://WolfLeagueLauncher/Assets/Fonts#Kanit</FontFamily>
+		<FontFamily x:Key="Display">avares://WolfLeagueLauncher/Assets/Fonts#Barlow Condensed</FontFamily>
 	</Application.Resources>
 
 	<Application.Styles>
@@ -44,58 +48,68 @@
 			<Setter Property="Foreground" Value="{StaticResource Ink}" />
 		</Style>
 
-		<!-- rótulo pequeno em caixa alta, afastado -->
+		<!-- rótulo pequeno em caixa alta, afastado: a letra da logo -->
 		<Style Selector="TextBlock.label">
-			<Setter Property="FontFamily" Value="{StaticResource Body}" />
+			<Setter Property="FontFamily" Value="{StaticResource Display}" />
 			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="FontSize" Value="12" />
-			<Setter Property="LetterSpacing" Value="1" />
+			<Setter Property="FontSize" Value="13" />
+			<Setter Property="LetterSpacing" Value="2" />
 			<Setter Property="Foreground" Value="{StaticResource Ink3}" />
 		</Style>
 		<Style Selector="TextBlock.title">
 			<Setter Property="FontFamily" Value="{StaticResource Display}" />
 			<Setter Property="FontWeight" Value="Bold" />
-			<Setter Property="FontStyle" Value="Italic" />
-			<Setter Property="FontSize" Value="30" />
+			<Setter Property="FontSize" Value="34" />
+			<Setter Property="LetterSpacing" Value="1" />
 		</Style>
 		<Style Selector="TextBlock.muted">
 			<Setter Property="Foreground" Value="{StaticResource Ink2}" />
+		</Style>
+
+		<!-- o losango da logo, na frente dos rótulos de seção -->
+		<Style Selector="Path.diamond">
+			<Setter Property="Data" Value="M4,0 L8,4 L4,8 L0,4 Z" />
+			<Setter Property="Fill" Value="{StaticResource Gold}" />
+			<Setter Property="Width" Value="8" />
+			<Setter Property="Height" Value="8" />
+			<Setter Property="VerticalAlignment" Value="Center" />
 		</Style>
 
 		<!-- botões: base -->
 		<Style Selector="Button">
 			<Setter Property="FontFamily" Value="{StaticResource Display}" />
 			<Setter Property="FontWeight" Value="SemiBold" />
-			<Setter Property="FontStyle" Value="Italic" />
-			<Setter Property="FontSize" Value="15" />
-			<Setter Property="CornerRadius" Value="2" />
-			<Setter Property="Padding" Value="18,9" />
+			<Setter Property="FontSize" Value="16" />
+			<Setter Property="LetterSpacing" Value="1.5" />
+			<Setter Property="CornerRadius" Value="0" />
+			<Setter Property="Padding" Value="18,8" />
 			<Setter Property="Cursor" Value="Hand" />
 			<Setter Property="Background" Value="{StaticResource Surface2}" />
 			<Setter Property="Foreground" Value="{StaticResource Ink}" />
-			<Setter Property="BorderBrush" Value="{StaticResource Line}" />
+			<Setter Property="BorderBrush" Value="{StaticResource Line2}" />
 			<Setter Property="BorderThickness" Value="1" />
 			<Setter Property="HorizontalContentAlignment" Value="Center" />
 			<Setter Property="VerticalContentAlignment" Value="Center" />
 		</Style>
 		<Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-			<Setter Property="Background" Value="#1D2B3D" />
-			<Setter Property="BorderBrush" Value="#35485F" />
+			<Setter Property="Background" Value="#222228" />
+			<Setter Property="BorderBrush" Value="{StaticResource Gold}" />
 			<Setter Property="Foreground" Value="{StaticResource Ink}" />
 		</Style>
 		<Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
-			<Setter Property="Background" Value="#16212F" />
+			<Setter Property="Background" Value="#18181C" />
 		</Style>
 		<Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
-			<Setter Property="Background" Value="#111A26" />
+			<Setter Property="Background" Value="#111114" />
 			<Setter Property="Foreground" Value="{StaticResource Ink3}" />
-			<Setter Property="BorderBrush" Value="#1A2636" />
+			<Setter Property="BorderBrush" Value="#1C1C21" />
 		</Style>
 
 		<!-- a ação que leva adiante: ouro -->
 		<Style Selector="Button.primary">
 			<Setter Property="Background" Value="{StaticResource Gold}" />
 			<Setter Property="Foreground" Value="{StaticResource GoldInk}" />
+			<Setter Property="FontWeight" Value="Bold" />
 			<Setter Property="BorderThickness" Value="0" />
 		</Style>
 		<Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
@@ -103,36 +117,37 @@
 			<Setter Property="Foreground" Value="{StaticResource GoldInk}" />
 		</Style>
 		<Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
-			<Setter Property="Background" Value="#E0A63C" />
+			<Setter Property="Background" Value="#E0B000" />
 			<Setter Property="Foreground" Value="{StaticResource GoldInk}" />
 		</Style>
 		<Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
-			<Setter Property="Background" Value="#2A3545" />
-			<Setter Property="Foreground" Value="#7C8DA1" />
+			<Setter Property="Background" Value="#2A2A30" />
+			<Setter Property="Foreground" Value="#7A7A84" />
 		</Style>
 		<Style Selector="Button.hero">
-			<Setter Property="FontSize" Value="26" />
-			<Setter Property="FontWeight" Value="Bold" />
-			<Setter Property="Padding" Value="46,14" />
-			<Setter Property="MinWidth" Value="240" />
+			<Setter Property="FontSize" Value="28" />
+			<Setter Property="LetterSpacing" Value="3" />
+			<Setter Property="Padding" Value="40,12" />
+			<Setter Property="MinWidth" Value="250" />
 		</Style>
 
 		<Style Selector="Button.danger">
-			<Setter Property="Background" Value="#3A1B1B" />
-			<Setter Property="BorderBrush" Value="#7A3530" />
+			<Setter Property="Background" Value="#2A1414" />
+			<Setter Property="BorderBrush" Value="#6A2C28" />
 			<Setter Property="Foreground" Value="#FFB4AC" />
 		</Style>
 		<Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-			<Setter Property="Background" Value="#522321" />
+			<Setter Property="Background" Value="#3E1A19" />
 			<Setter Property="BorderBrush" Value="{StaticResource Danger}" />
 			<Setter Property="Foreground" Value="#FFD3CE" />
 		</Style>
 
-		<!-- botão que carrega texto de ler (um nome, uma conta): a letra de ler, em pé -->
+		<!-- botão que carrega texto de ler (um nome, uma conta): a letra de ler -->
 		<Style Selector="Button.plain">
 			<Setter Property="FontFamily" Value="{StaticResource Body}" />
-			<Setter Property="FontStyle" Value="Normal" />
 			<Setter Property="FontWeight" Value="Normal" />
+			<Setter Property="LetterSpacing" Value="0" />
+			<Setter Property="FontSize" Value="15" />
 		</Style>
 
 		<!-- sem placa: só o texto -->
@@ -143,22 +158,20 @@
 			<Setter Property="Padding" Value="10,6" />
 		</Style>
 		<Style Selector="Button.ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-			<Setter Property="Background" Value="#14FFFFFF" />
+			<Setter Property="Background" Value="#12FFFFFF" />
 			<Setter Property="Foreground" Value="{StaticResource Ink}" />
 		</Style>
 
-		<!-- aba do alto -->
+		<!-- aba: texto com um fio ouro embaixo quando escolhida -->
 		<Style Selector="Button.tab">
 			<Setter Property="Background" Value="Transparent" />
 			<Setter Property="BorderThickness" Value="0,0,0,2" />
 			<Setter Property="BorderBrush" Value="Transparent" />
-			<Setter Property="CornerRadius" Value="0" />
 			<Setter Property="Foreground" Value="{StaticResource Ink2}" />
-			<Setter Property="FontFamily" Value="{StaticResource Body}" />
-			<Setter Property="FontStyle" Value="Normal" />
-			<Setter Property="FontSize" Value="14" />
-			<Setter Property="LetterSpacing" Value="1" />
-			<Setter Property="Padding" Value="16,0" />
+			<Setter Property="FontSize" Value="15" />
+			<Setter Property="LetterSpacing" Value="2" />
+			<Setter Property="Padding" Value="2,0" />
+			<Setter Property="Margin" Value="0,0,26,0" />
 			<Setter Property="VerticalAlignment" Value="Stretch" />
 		</Style>
 		<Style Selector="Button.tab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
@@ -171,6 +184,28 @@
 			<Setter Property="BorderBrush" Value="{StaticResource Gold}" />
 		</Style>
 		<Style Selector="Button.tab.on:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="BorderBrush" Value="{StaticResource Gold}" />
+		</Style>
+
+		<!-- um item do menu da esquerda (um jogo, as configurações) -->
+		<Style Selector="Button.rail">
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="2,0,0,0" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="Padding" Value="16,10" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="HorizontalContentAlignment" Value="Left" />
+		</Style>
+		<Style Selector="Button.rail:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="#0DFFFFFF" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+		</Style>
+		<Style Selector="Button.rail.on">
+			<Setter Property="Background" Value="{StaticResource Surface2}" />
+			<Setter Property="BorderBrush" Value="{StaticResource Gold}" />
+		</Style>
+		<Style Selector="Button.rail.on:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="{StaticResource Surface2}" />
 			<Setter Property="BorderBrush" Value="{StaticResource Gold}" />
 		</Style>
 
@@ -192,8 +227,8 @@
 		<Style Selector="TextBox">
 			<Setter Property="Background" Value="{StaticResource Deep}" />
 			<Setter Property="Foreground" Value="{StaticResource Ink}" />
-			<Setter Property="BorderBrush" Value="{StaticResource Line}" />
-			<Setter Property="CornerRadius" Value="2" />
+			<Setter Property="BorderBrush" Value="{StaticResource Line2}" />
+			<Setter Property="CornerRadius" Value="0" />
 			<Setter Property="Padding" Value="12,9" />
 			<Setter Property="FontSize" Value="15" />
 			<Setter Property="MinHeight" Value="40" />
@@ -201,7 +236,7 @@
 		</Style>
 		<Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
 			<Setter Property="Background" Value="{StaticResource Deep}" />
-			<Setter Property="BorderBrush" Value="#35485F" />
+			<Setter Property="BorderBrush" Value="#4A4A54" />
 		</Style>
 		<Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
 			<Setter Property="Background" Value="{StaticResource Deep}" />
@@ -209,17 +244,33 @@
 			<Setter Property="BorderThickness" Value="1" />
 		</Style>
 
-		<Style Selector="ProgressBar">
-			<Setter Property="Height" Value="6" />
-			<Setter Property="MinHeight" Value="6" />
+		<Style Selector="ComboBox">
 			<Setter Property="CornerRadius" Value="0" />
-			<Setter Property="Background" Value="#33FFFFFF" />
+			<Setter Property="Background" Value="{StaticResource Deep}" />
+			<Setter Property="BorderBrush" Value="{StaticResource Line2}" />
+			<Setter Property="MinWidth" Value="220" />
+		</Style>
+
+		<Style Selector="ProgressBar">
+			<Setter Property="Height" Value="4" />
+			<Setter Property="MinHeight" Value="4" />
+			<Setter Property="CornerRadius" Value="0" />
+			<Setter Property="Background" Value="#26FFFFFF" />
 			<Setter Property="Foreground" Value="{StaticResource Gold}" />
 		</Style>
 
 		<Style Selector="CheckBox">
 			<Setter Property="Foreground" Value="{StaticResource Ink}" />
 			<Setter Property="FontSize" Value="15" />
+		</Style>
+
+		<Style Selector="MenuFlyoutPresenter">
+			<Setter Property="Background" Value="{StaticResource Surface}" />
+			<Setter Property="BorderBrush" Value="{StaticResource Line2}" />
+			<Setter Property="CornerRadius" Value="0" />
+		</Style>
+		<Style Selector="MenuItem">
+			<Setter Property="FontSize" Value="14" />
 		</Style>
 	</Application.Styles>
 </Application>

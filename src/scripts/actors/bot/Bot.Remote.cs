@@ -117,7 +117,7 @@ public partial class Bot
 	// ---- agachado: a cápsula do boneco encolhe como a do dono
 
 	/// <summary>A altura da cápsula agachada, a do dono: a do humano
-	/// (<see cref="Player.HumanCrouchHeight"/>, 1,42 m desde 27/11) ou a do lobo
+	/// (<see cref="Player.HumanCrouchHeight"/>, 1,36 m desde 28/11) ou a do lobo
 	/// (<see cref="Player.CrouchHeight"/>, 1,0). O desenho sobe a diferença para
 	/// os pés ficarem no chão (RemoteCrouchDrop): com a altura errada, o boneco
 	/// agachado flutuava ou afundava.</summary>

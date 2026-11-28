@@ -59,7 +59,7 @@ public sealed class LoginViewModel : Observable
 	}
 
 	public bool IsLogin => !IsRegister;
-	public string SubmitText => Busy ? "AGUARDE…" : IsRegister ? "CRIAR CONTA" : "ENTRAR";
+	public string SubmitText => Tr.T(Busy ? "common.wait" : IsRegister ? "login.create" : "login.enter");
 
 	public bool Busy
 	{
@@ -78,7 +78,7 @@ public sealed class LoginViewModel : Observable
 
 	public ObservableCollection<SavedAccountItem> Saved { get; } = new();
 	public bool HasSaved => Saved.Count > 0;
-	public string ServerText => AppInfo.ServerOverride == null ? "" : "Servidor: " + AppInfo.ServerUrl;
+	public string ServerText => AppInfo.ServerOverride == null ? "" : Tr.F("login.server", AppInfo.ServerUrl);
 
 	public Command Submit { get; }
 	public Command ShowLogin { get; }
@@ -117,17 +117,17 @@ public sealed class LoginViewModel : Observable
 		string name = (Name ?? "").Trim();
 		if (name.Length == 0 || string.IsNullOrEmpty(Password))
 		{
-			SetStatus("Escreva o nome da conta e a senha.", true);
+			SetStatus(Tr.T("login.need_both"), true);
 			return;
 		}
 		if (IsRegister && Password != Confirm)
 		{
-			SetStatus("As duas senhas não são iguais.", true);
+			SetStatus(Tr.T("login.mismatch"), true);
 			return;
 		}
 
 		Busy = true;
-		SetStatus(IsRegister ? "Criando a conta…" : "Entrando…", false);
+		SetStatus(Tr.T(IsRegister ? "login.creating" : "login.entering"), false);
 		Reply reply = IsRegister ? await _main.Api.Register(name, Password) : await _main.Api.Login(name, Password, NeedsCode ? Code : null);
 		Busy = false;
 
@@ -156,7 +156,7 @@ public sealed class LoginViewModel : Observable
 	{
 		if (Busy) return false;
 		Busy = true;
-		SetStatus($"Entrando como {saved.Name}…", false);
+		SetStatus(Tr.F("login.entering_as", saved.Name), false);
 		Reply reply = await _main.Api.Profile(saved.Token);
 		Busy = false;
 
@@ -172,9 +172,9 @@ public sealed class LoginViewModel : Observable
 			Reload();
 			Name = saved.Name;
 			IsRegister = false;
-			SetStatus(reply.Status == 403 ? reply.Error : $"O acesso salvo de {saved.Name} venceu. Digite a senha para entrar.", true);
+			SetStatus(reply.Status == 403 ? reply.Error : Tr.F("login.expired", saved.Name), true);
 		}
-		else SetStatus(quiet ? "Sem resposta do servidor. Você pode tentar de novo clicando na conta." : reply.Error, true);
+		else SetStatus(quiet ? Tr.T("login.no_reply_saved") : reply.Error, true);
 		return false;
 	}
 }

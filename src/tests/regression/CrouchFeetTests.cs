@@ -12,15 +12,16 @@ using System.Threading.Tasks;
 /// entrava até 5,4 cm no chão no passo (3,4 no Barut parado).
 ///
 /// Toca os clipes do corpo visto (a biblioteca já ajustada ao personagem)
-/// numa cópia do modelo, quadro a quadro: parado, os dois pés retos e no chão;
-/// andando, o ciclo inteiro, a sola nunca abaixo do chão.
+/// numa cópia do modelo, quadro a quadro: parado, o pé da frente reto e o de trás
+/// na ponta (o agachado tático, 28/11), os dois no chão; andando, o ciclo inteiro,
+/// a sola nunca abaixo do chão.
 /// </summary>
 public abstract class CrouchFeetTest : RegressionTest
 {
 	protected abstract int Team { get; }
 	protected abstract string Who { get; }
 	public override string Scene => RegressionBench.Match;
-	public override string Description => $"{Who} agachado: parado, os dois pés retos no chão; andando, a sola nunca entra no chão";
+	public override string Description => $"{Who} agachado: parado, o pé da frente reto no chão e o de trás na ponta; andando, a sola nunca entra no chão";
 
 	public override void Prepare()
 	{
@@ -80,14 +81,21 @@ public abstract class CrouchFeetTest : RegressionTest
 		Pose(clips.GetAnimation("alcateia/idle_rifle"), skeleton, 0);
 		RegressionBench.Note($"{Who} em pé: sola {RegressionBench.F(Sole("Left") * 100)} / {RegressionBench.F(Sole("Right") * 100)} cm do chão");
 
-		// Parado: um instante do andar, com os dois pés retos (no instante, um está saindo do chão).
+		// Parado: o agachado tático (28/11, AnimationKit.CrouchStance; Jhon: "a perna traseira está bastante
+		// comprimida... uma base mais estável"). O pé da frente reto no chão; o de trás na ponta, o calcanhar
+		// erguido CrouchRearHeel (45°) — com ele reto, a canela deitava em cima do calcanhar da bota. Até 28/11
+		// os dois ficavam retos.
 		Pose(clips.GetAnimation("alcateia/crouch_idle"), skeleton, 0);
+		var (leftPitch, _) = Foot(skeleton, "Left");
+		var (rightPitch, _) = Foot(skeleton, "Right");
+		string rear = leftPitch > rightPitch ? "Left" : "Right";
 		foreach (string side in new[] { "Left", "Right" })
 		{
 			var (pitch, lift) = Foot(skeleton, side);
 			float sole = Sole(side);
 			RegressionBench.Note($"{Who} parado agachado, pé {side}: {RegressionBench.F(pitch)}° além do repouso, tornozelo {RegressionBench.F(lift * 100)} cm acima do repouso, sola {RegressionBench.F(sole * 100)} cm do chão");
-			b.AtMost(3.0, Mathf.Abs(pitch), $"{Who} parado agachado: o pé {side} reto, não na ponta (graus)");
+			if (side == rear) b.Near(45.0, pitch, 5.0, $"{Who} parado agachado: o pé de trás ({side}) na ponta (graus)");
+			else b.AtMost(3.0, Mathf.Abs(pitch), $"{Who} parado agachado: o pé da frente ({side}) reto, não na ponta (graus)");
 			b.AtLeast(-0.005, sole, $"{Who} parado agachado: a sola do pé {side} não entra no chão (m)");
 			b.AtMost(0.01, sole, $"{Who} parado agachado: o pé {side} no chão (m acima)");
 		}

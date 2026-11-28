@@ -50,6 +50,12 @@ public static class CombatRules
 		return spread;
 	}
 
+	/// <summary>A dispersão que se soma por cima da da arma (graus), andando e
+	/// no ar: não fecha na mira nem agachado — no Counter-Strike, mirar não
+	/// conserta o tiro de quem corre ou pula.</summary>
+	public static float MovementSpread(bool moving, float moveSpread, bool airborne, float airSpread) =>
+		(moving ? MathF.Max(moveSpread, 0f) : 0f) + (airborne ? MathF.Max(airSpread, 0f) : 0f);
+
 	/// <summary>Andando mais rápido que isto (m/s), a dispersão de
 	/// movimento vale.</summary>
 	public const float MovingSpreadSpeed = 0.6f;
@@ -67,6 +73,41 @@ public static class CombatRules
 	/// rajada: forte nos primeiros, o da fase de controle depois.</summary>
 	public static float RecoilVertical(int streak, int earlyShots, float early, float late) =>
 		streak <= earlyShots ? early : late;
+
+	/// <summary>
+	/// Recuo lateral do tiro número <paramref name="streak"/> da rajada, em
+	/// graus (positivo: para a direita). Padrão fixo, o mesmo em toda rajada,
+	/// como o spray do Counter-Strike: até o tiro <paramref name="swayAfter"/>,
+	/// alternado e pequeno (<paramref name="zigzag"/>; o primeiro para a
+	/// esquerda); dali em diante <paramref name="sway"/> por tiro,
+	/// <paramref name="swayShots"/> tiros para um lado e os mesmos para o outro,
+	/// começando por <paramref name="firstSide"/> com meia perna — o desvio
+	/// oscila em volta do centro em vez de fugir para um lado só.
+	/// <paramref name="swayAfter"/> zero: só o alternado.
+	/// </summary>
+	public static float RecoilYaw(int streak, float zigzag, int swayAfter, float sway, int swayShots, int firstSide)
+	{
+		if (swayAfter <= 0 || streak < swayAfter) return streak % 2 == 0 ? zigzag : -zigzag;
+		int shots = Math.Max(swayShots, 1);
+		int leg = (streak - swayAfter + shots / 2) / shots;
+		int side = (firstSide < 0 ? -1 : 1) * (leg % 2 == 0 ? 1 : -1);
+		return side * sway;
+	}
+
+	/// <summary>
+	/// Quanto do coice acumulado na câmera (<paramref name="kick"/>, em
+	/// qualquer unidade de ângulo) volta neste passo: uma parte proporcional
+	/// (<paramref name="expRate"/> por segundo) e uma fixa
+	/// (<paramref name="linearRate"/> por segundo), como o "decay" do recuo do
+	/// Counter-Strike: o grosso volta logo, o fim assenta. Nunca mais que o
+	/// que há.
+	/// </summary>
+	public static float RecoilReturn(float kick, float linearRate, float expRate, float delta)
+	{
+		if (kick <= 0f) return 0f;
+		float proportional = kick * (1f - MathF.Exp(-MathF.Max(expRate, 0f) * delta));
+		return MathF.Min(kick, proportional + MathF.Max(linearRate, 0f) * delta);
+	}
 
 	// ------------------------------------------------------------ lobo
 

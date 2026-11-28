@@ -625,7 +625,9 @@ Todo campo aqui vira um filtro na lista e uma linha no painel da sala. O conjunt
 
 - Espectador após a morte: a câmera fica onde se morreu; um clique segue um aliado, o Espaço volta (27/11: a câmera livre e a vista de cima saíram, para ninguém ver para fora do mapa).
 
-- Placar por `Tab`, chat por `Enter` (time) e `Shift+Enter` (todos), menu de pausa por `Esc` com opções, controles e `Sair`.
+- Placar por `Tab`, menu de pausa por `Esc` com opções, controles e `Sair`.
+
+- **Chat da partida** (27/11, online): `Enter` abre para todos, `T` só para o time (as duas se trocam em Controles); `Enter` manda, `Esc` fecha, `Tab` troca entre todos e o time sem fechar. Fica no canto esquerdo, abaixo do minimapa; as linhas somem depois de 9 s, e com o campo aberto as últimas 12 voltam. O nome vem na cor do time de quem falou, e o do time com `[TIME]`. As mensagens diretas dos amigos aparecem ali também, marcadas "(amigo)". Digitando, o personagem não anda, não atira e não vira a câmera, e o rádio, o guia, o placar e o menu esperam (`MatchChat.Typing`). É o chat da sala: o que se fala na partida aparece na tela da sala, e continua lá na volta. Código: `MatchChat.cs`.
 
 - **Trocar as teclas** (26/11, Jhon: "opção de editar controles nas configurações do game"): Opções → aba **Controles**, no saguão e no menu do `Esc` da partida (a mesma vista). Cada ação trocável numa faixa (Movimento, Combate, Armas, Interface), com a tecla de agora; clicar nela e apertar a nova, do teclado ou do mouse (botões, roda e laterais). `Esc` cancela a captura sem fechar o menu. Tecla que já é de outra ação abre uma pergunta logo abaixo da faixa ("L já é de «Pular». Trocar as duas?"): Trocar dá a tecla antiga a quem tinha a nova; Cancelar não muda nada. `↺` em cada faixa volta à tecla de fábrica; "Restaurar padrão" volta todas (e a sensibilidade). Vale na hora e fica salvo em `user://settings.json` (`Keys`: só o que difere do padrão). O `Esc` (menu) e as teclas de número do rádio não se trocam (faixa "Fixas"). O padrão continua o do `InputSetup`. As dicas do HUD (caixinhas do uivo e do especial, "R · RECARREGAR", a faixa da transformação, o guia do `E`, "Segure Tab") e a tabela de Controles do menu do `Esc` mostram a tecla de agora. Código: `KeyBindings.cs`, `KeyCapture.cs`, a aba em `OptionsScreen.cs`.
 
@@ -857,9 +859,11 @@ aparece desabilitado com "em breve" ou não aparece.
 
 ### Fora do escopo (precisa de servidor)
 
-Login de verdade, canais, amigos, matilha, chat entre jogadores,
-ranking, compra paga, temporadas e moderação. O chat da sala existe e
-mostra mensagens do sistema e as suas; ninguém responde.
+Canais, matilha, compra paga, temporadas e moderação. (Online já há
+login, amigos, ranking e chat: o da sala, que também é o da partida, e as
+conversas com os amigos no painel social — clicar no amigo abre a
+conversa; a bolinha com número é o que ele mandou e você não leu. Offline,
+o chat da sala mostra só as mensagens do sistema e as suas.)
 
 ## Menus refeitos (27/11)
 

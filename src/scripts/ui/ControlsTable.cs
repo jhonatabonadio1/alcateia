@@ -30,6 +30,7 @@ public static class ControlsTable
 		(() => Loc.F("{0} {0} (segurando)", K("move_forward")), "Lobo: corrida de quatro, 30% mais rápida"),
 		(() => Loc.F("{0} segurado", K("move_forward")), "Sustenta a corrida em parede"),
 		(() => K("scoreboard"), "Placar (segurar)"),
+		(() => $"{K("chat_all")} · {K("chat_team")}", "Chat da partida online: todos · só o time"),
 		(() => "Esc", "Menu da partida — não pausa"),
 	};
 

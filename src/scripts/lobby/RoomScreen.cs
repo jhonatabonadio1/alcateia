@@ -145,10 +145,11 @@ public partial class RoomScreen : LobbyScreen
 		Refresh();
 	}
 
-	private void OnOnlineChat(string from, string text)
+	private void OnOnlineChat(LobbyLink.ChatLine line)
 	{
 		if (!IsInsideTree() || _chatLog == null || !IsInstanceValid(_chatLog)) return;
-		AddChatLine(from, text, false);
+		if (line.Room != S.Number) return;
+		AddOnlineLine(line);
 		ScrollToEnd();
 	}
 
@@ -735,8 +736,13 @@ public partial class RoomScreen : LobbyScreen
 		_chatScroll.AddChild(_chatLog);
 		column.AddChild(_chatScroll);
 
+		// Online, o que se falou nesta sala — também durante a partida, que
+		// usa o mesmo chat (o do time só aparece para o time).
 		if (_online)
-			foreach ((string from, string text) in Lobby.Chat) AddChatLine(from, text, false);
+			foreach (LobbyLink.ChatLine line in Lobby.Chat)
+			{
+				if (line.Room == S.Number) AddOnlineLine(line);
+			}
 		else
 			foreach (var line in Chats[S.Number]) AddChatLine(line.Who, line.Text, line.System);
 
@@ -1239,7 +1245,12 @@ public partial class RoomScreen : LobbyScreen
 		ScrollToEnd();
 	}
 
-	private void AddChatLine(string who, string text, bool system)
+	/// <summary>Uma linha do chat do servidor: o nome na cor do time de quem
+	/// falou, e "(time)" quando foi só para o time.</summary>
+	private void AddOnlineLine(LobbyLink.ChatLine line) =>
+		AddChatLine(line.Team ? $"{line.From} {Loc.T("(time)")}" : line.From, line.Text, false, line.Side);
+
+	private void AddChatLine(string who, string text, bool system, int side = 0)
 	{
 		if (_chatLog == null || !IsInstanceValid(_chatLog)) return;
 
@@ -1255,7 +1266,7 @@ public partial class RoomScreen : LobbyScreen
 		string clean = text.Replace("[", "[lb]");
 		line.Text = system
 			? $"[color=#{UiTokens.Warning.ToHtml(false)}]» {clean}[/color]"
-			: $"[color=#{Teams.ColorOf(Me?.Team ?? Teams.Blue).ToHtml(false)}][b]{who}[/b][/color]: {clean}";
+			: $"[color=#{Teams.ColorOf(side != 0 ? side : Me?.Team ?? Teams.Blue).ToHtml(false)}][b]{who.Replace("[", "[lb]")}[/b][/color]: {clean}";
 		_chatLog.AddChild(line);
 	}
 

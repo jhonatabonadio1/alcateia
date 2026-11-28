@@ -1,12 +1,13 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Alcateia.Cliente.ViewModels"
+             xmlns:c="using:Alcateia.Cliente.Core"
              x:Class="Alcateia.Cliente.Views.TwoFactorView"
              x:DataType="vm:TwoFactorViewModel">
 
-	<Border Width="560" Background="{StaticResource Surface}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="3" Padding="28,24">
+	<Border Width="560" Background="{StaticResource Surface}" BorderBrush="{StaticResource Gold}" BorderThickness="0,3,0,0" Padding="28,24">
 		<StackPanel Spacing="14">
-			<TextBlock Classes="title" FontSize="24" Text="{Binding Title}" TextWrapping="Wrap" />
+			<TextBlock Classes="title" FontSize="28" Text="{Binding Title}" TextWrapping="Wrap" />
 
 			<!-- ligar: o QR code, a chave e o primeiro código -->
 			<Grid ColumnDefinitions="Auto,*" IsVisible="{Binding IsEnable}">
@@ -15,28 +16,28 @@
 				</Border>
 				<StackPanel Grid.Column="1" Margin="20,0,0,0" Spacing="10">
 					<TextBlock Classes="muted" TextWrapping="Wrap" LineHeight="21"
-					           Text="1. No celular, abra um aplicativo autenticador (Google Authenticator, Authy, 1Password) e aponte a câmera para o QR code." />
+					           Text="{c:T 2fa.step1}" />
 					<StackPanel Spacing="4">
-						<TextBlock Classes="label" Text="OU DIGITE A CHAVE" />
+						<TextBlock Classes="label" Text="{c:T 2fa.or_key}" />
 						<TextBlock Text="{Binding Secret}" FontWeight="SemiBold" TextWrapping="Wrap" />
-						<Button Classes="ghost" Content="COPIAR A CHAVE" Command="{Binding CopyKey}" HorizontalAlignment="Left" Padding="0,2" FontSize="13" />
+						<Button Classes="ghost" Content="{c:T 2fa.copy_key}" Command="{Binding CopyKey}" HorizontalAlignment="Left" Padding="0,2" FontSize="13" />
 					</StackPanel>
-					<TextBlock Classes="muted" TextWrapping="Wrap" LineHeight="21" Text="2. Digite aqui o código de 6 dígitos que o aplicativo mostra:" />
+					<TextBlock Classes="muted" TextWrapping="Wrap" LineHeight="21" Text="{c:T 2fa.step2}" />
 				</StackPanel>
 			</Grid>
 
 			<!-- desligar: a senha -->
 			<StackPanel Spacing="10" IsVisible="{Binding IsDisable}">
 				<TextBlock Classes="muted" TextWrapping="Wrap" LineHeight="21"
-				           Text="Sem ela, quem descobrir a sua senha entra na conta. Para desligar, confirme a senha e um código do aplicativo autenticador." />
+				           Text="{c:T 2fa.off_body}" />
 				<StackPanel Spacing="6">
-					<TextBlock Classes="label" Text="SENHA" />
+					<TextBlock Classes="label" Text="{c:T login.password}" />
 					<TextBox Text="{Binding Password}" PasswordChar="•" MaxLength="128" />
 				</StackPanel>
 			</StackPanel>
 
 			<StackPanel Spacing="6">
-				<TextBlock Classes="label" Text="CÓDIGO DO AUTENTICADOR" />
+				<TextBlock Classes="label" Text="{c:T login.code}" />
 				<TextBox Text="{Binding Code}" MaxLength="7" PlaceholderText="000000" FontSize="20" LetterSpacing="4" Width="170" HorizontalAlignment="Left">
 					<TextBox.KeyBindings>
 						<KeyBinding Gesture="Enter" Command="{Binding Confirm}" />
@@ -50,7 +51,7 @@
 			</Panel>
 
 			<StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,4,0,0">
-				<Button Content="VOLTAR" Command="{Binding Close}" />
+				<Button Content="{c:T common.back}" Command="{Binding Close}" />
 				<Button Classes="primary" Content="{Binding ConfirmText}" Command="{Binding Confirm}" IsVisible="{Binding IsEnable}" />
 				<Button Classes="danger" Content="{Binding ConfirmText}" Command="{Binding Confirm}" IsVisible="{Binding IsDisable}" />
 			</StackPanel>

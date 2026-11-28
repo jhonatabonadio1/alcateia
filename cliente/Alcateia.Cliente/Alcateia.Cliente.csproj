@@ -1,10 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<!--
-	O cliente de instalação do WolfLeague (Jhon, 27/11: "um cliente de
-	instalação igual o battle.net"): entra na conta, baixa o jogo, mantém
-	atualizado, repara, desinstala, mostra os amigos e abre o jogo já com a
-	conta entrada.
+	O Initech Launcher, o cliente de instalação da Initech Games (Jhon, 27/11:
+	"um cliente de instalação igual o battle.net"; "ele é iniciado da initech
+	games [...] lá tem o wolfleague, não é exclusivo do wolfleague"): entra na
+	conta, mostra a biblioteca de jogos do estúdio, baixa, mantém atualizado,
+	repara, desinstala, mostra os amigos e abre o jogo já com a conta entrada.
+	O executável continua WolfLeagueLauncher: é o nome que a atualização
+	automática e os atalhos de quem já instalou conhecem.
 
 	A interface é Avalonia (o mesmo C# do jogo e do servidor, em Windows e
 	Mac); o download e a atualização por diferença são de Alcateia.Pacote.
@@ -22,10 +25,13 @@
 		<Nullable>disable</Nullable>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<AssemblyName>WolfLeagueLauncher</AssemblyName>
+		<Product>Initech Launcher</Product>
+		<AssemblyTitle>Initech Launcher</AssemblyTitle>
+		<Company>Initech Games</Company>
 		<RootNamespace>Alcateia.Cliente</RootNamespace>
 		<Version>0.0.0-dev</Version>
 		<ServidorUrl Condition="'$(ServidorUrl)' == ''">https://wolfleague-api.fly.dev</ServidorUrl>
-		<ApplicationIcon>../../instalador/WolfLeague.ico</ApplicationIcon>
+		<ApplicationIcon>../../instalador/WolfLeagueLauncher.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
@@ -49,17 +55,25 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- A arte e as letras são as do jogo e do instalador: um arquivo só no repositório. -->
-		<AvaloniaResource Include="../../src/assets/personagens/eve/thumb.jpg" Link="Assets/arte.jpg" />
-		<AvaloniaResource Include="../../instalador/WolfLeague.ico" Link="Assets/icone.ico" />
-		<AvaloniaResource Include="../../src/assets/ui/marca/wolfleague_logo_horizontal.png" Link="Assets/logo.png" />
-		<!-- As letras dos menus do jogo (src/scripts/ui/kit/UiFonts.cs): Figtree para ler, Kanit nos títulos e botões. OFL. -->
+		<!-- O estúdio: o emblema e o nome da logo (recortados de src/assets/ui/estudio, os da vinheta do jogo) e o ícone. -->
+		<AvaloniaResource Include="Assets/*.png" />
+		<AvaloniaResource Include="../../instalador/WolfLeagueLauncher.ico" Link="Assets/icone.ico" />
+		<!-- Os textos em cada idioma (Core/Tr.cs). -->
+		<AvaloniaResource Include="Assets/i18n/launcher.csv" />
+		<!-- Cada jogo da biblioteca (Core/Games.cs): a arte e o logo são os do próprio jogo, um arquivo só no repositório. -->
+		<AvaloniaResource Include="Assets/jogos/**/*.png" />
+		<AvaloniaResource Include="../../src/assets/personagens/eve/thumb.jpg" Link="Assets/jogos/wolfleague/arte.jpg" />
+		<AvaloniaResource Include="../../src/assets/ui/marca/wolfleague_logo_horizontal.png" Link="Assets/jogos/wolfleague/logo.png" />
+		<!-- As letras: Figtree para ler; Barlow Condensed (a do launcher, perto da logo da Initech) nos títulos e botões. OFL.
+		     A Kanit fica para o que é do WolfLeague. -->
 		<!-- A Figtree em pesos fixos, tirados da variável do jogo por cliente/ferramentas/gerar_figtree.py:
 		     o Avalonia não aplica o peso de fonte variável (saía tudo fino). -->
 		<AvaloniaResource Include="Assets/Fonts/*.ttf" />
 		<AvaloniaResource Include="../../src/assets/fonts/Kanit-SemiBold.ttf" Link="Assets/Fonts/Kanit-SemiBold.ttf" />
 		<AvaloniaResource Include="../../src/assets/fonts/Kanit-SemiBoldItalic.ttf" Link="Assets/Fonts/Kanit-SemiBoldItalic.ttf" />
 		<AvaloniaResource Include="../../src/assets/fonts/Kanit-BoldItalic.ttf" Link="Assets/Fonts/Kanit-BoldItalic.ttf" />
+		<AvaloniaResource Include="../../src/assets/fonts/BarlowCondensed-SemiBold.ttf" Link="Assets/Fonts/BarlowCondensed-SemiBold.ttf" />
+		<AvaloniaResource Include="../../src/assets/fonts/BarlowCondensed-Bold.ttf" Link="Assets/Fonts/BarlowCondensed-Bold.ttf" />
 	</ItemGroup>
 
 </Project>

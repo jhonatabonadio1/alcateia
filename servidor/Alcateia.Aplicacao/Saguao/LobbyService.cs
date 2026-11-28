@@ -9,6 +9,7 @@ using Alcateia.Aplicacao.Frota;
 using Alcateia.Aplicacao.Portas;
 using Alcateia.Dominio;
 using Alcateia.Dominio.Contas;
+using Alcateia.Dominio.Conversas;
 using Alcateia.Dominio.Fila;
 using Alcateia.Dominio.Frota;
 using Alcateia.Dominio.Partidas;
@@ -32,11 +33,12 @@ namespace Alcateia.Aplicacao.Saguao;
 /// outra parte da classe, <c>LobbyService.Friends.cs</c>; os grupos (amigos
 /// que entram juntos nas salas, no mesmo time), em
 /// <c>LobbyService.Groups.cs</c>; o jogo rápido (a fila que junta os
-/// jogadores por habilidade e monta os times), em <c>LobbyService.Queue.cs</c>.
+/// jogadores por habilidade e monta os times), em <c>LobbyService.Queue.cs</c>;
+/// as mensagens diretas entre amigos, em <c>LobbyService.Direct.cs</c>.
 ///
 /// Cada conta tem até duas ligações: a do jogo (<see cref="_sessions"/>) e a
 /// do cliente de instalação (<see cref="_apps"/>), que só vê e mexe nos
-/// amigos — não entra em sala, grupo nem chat.
+/// amigos e conversa com eles — não entra em sala, grupo nem chat da sala.
 ///
 /// As salas vivem em memória: sala é coisa de agora, e se o servidor
 /// reiniciar os jogadores voltam para a lista. As regras de cada sala são
@@ -46,7 +48,7 @@ namespace Alcateia.Aplicacao.Saguao;
 /// </summary>
 public sealed partial class LobbyService : IDisposable
 {
-	public const int MaxChat = 200;
+	public const int MaxChat = ChatRules.RoomMax;
 
 	/// <summary>Salas abertas ao mesmo tempo, no máximo (decisão do Jhon, 13/11).</summary>
 	public const int DefaultMaxRooms = 1000;
@@ -90,6 +92,10 @@ public sealed partial class LobbyService : IDisposable
 		internal readonly Queue<DateTime> FriendWrites = new();
 		internal readonly Queue<DateTime> InvitesSent = new();
 
+		// ---- mensagens diretas (LobbyService.Direct.cs)
+		internal readonly Queue<DateTime> DirectBurst = new();
+		internal readonly Queue<DateTime> DirectMinute = new();
+
 		// ---- grupo (LobbyService.Groups.cs)
 		/// <summary>O grupo em que a conta está, ou null.</summary>
 		internal Group Group;
@@ -107,7 +113,8 @@ public sealed partial class LobbyService : IDisposable
 
 		/// <summary>A ligação é do cliente de instalação, não do jogo: vê os
 		/// amigos, pede e aceita amizade, e aparece para eles como "no
-		/// aplicativo". Não entra em sala, grupo nem chat.</summary>
+		/// aplicativo". Conversa com os amigos (mensagens diretas); não entra
+		/// em sala, grupo nem chat da sala.</summary>
 		internal bool App;
 	}
 
@@ -205,17 +212,52 @@ public sealed partial class LobbyService : IDisposable
 	/// moeda, item ou nível (Jhon, 27/11: "o nível e as moedas devem entrar em
 	/// tempo real para o jogador"). Vai só o aviso (<c>conta</c>); o jogo relê
 	/// a conta pela API, como faz ao abrir a loja. Falso se ela não estava ligada.
+	///
+	/// O saguão guarda o XP de cada um (a patente que a sala, os amigos e o
+	/// grupo mostram), lido ao ligar: relê aqui também, e a sala em que ela
+	/// está manda o estado novo para todos nela (Jhon, 27/11: "quando subi
+	/// nível pelo painel, atualizou em tudo, menos na sala. tive que sair e
+	/// entrar").
 	/// </summary>
 	public async Task<bool> AccountChanged(long accountId)
 	{
+		if (!IsOnline(accountId)) return false;
+		long? xp = null;
+		try
+		{
+			xp = (await _accounts.Profile(accountId)).Xp;
+		}
+		catch (Failure)
+		{
+			// Sem o perfil, vai só o aviso: o jogo relê o dele pela API.
+		}
+
 		var outbox = new Outbox();
 		lock (_lock)
 		{
 			outbox.To(Live(accountId), new JsonObject { ["t"] = "conta" });
-			if (!_sessions.ContainsKey(accountId)) return false;
+			if (!_sessions.TryGetValue(accountId, out Session session)) return false;
+			if (xp is long now) SetXp(session, now, outbox);
+			FlushFriends(outbox);
 		}
 		await outbox.Deliver();
 		return true;
+	}
+
+	/// <summary>O XP da conta mudou por fora de uma partida (o painel): a
+	/// sala dela, os amigos e o grupo passam a ver a patente nova.</summary>
+	private void SetXp(Session s, long xp, Outbox outbox)
+	{
+		if (s.Xp == xp) return;
+		s.Xp = xp;
+		if (_apps.TryGetValue(s.Account.Id, out Session app)) app.Xp = xp;
+		if (s.Room?.Members.FirstOrDefault(m => m.Account.Id == s.Account.Id) is RoomMember member)
+		{
+			member.Xp = xp;
+			RoomState(s.Room, outbox);
+		}
+		NotifyFriends(s, outbox);
+		if (s.Group != null) outbox.Groups.Add(s.Group);
 	}
 
 	/// <summary>Derruba a conexão de uma conta (banimento, ou a pedido do
@@ -304,6 +346,7 @@ public sealed partial class LobbyService : IDisposable
 		}
 
 		await outbox.Deliver();
+		await PushUnread(session);
 		if (old != null) _ = old.Connection.Close("outra conexão da mesma conta");
 		return session;
 	}
@@ -342,6 +385,7 @@ public sealed partial class LobbyService : IDisposable
 		}
 
 		await outbox.Deliver();
+		await PushUnread(session);
 		if (old != null) _ = old.Connection.Close("outro aplicativo da mesma conta");
 		return session;
 	}
@@ -363,8 +407,8 @@ public sealed partial class LobbyService : IDisposable
 	private bool IsCurrent(Session s) =>
 		!s.Gone && (s.App ? _apps : _sessions).TryGetValue(s.Account.Id, out Session current) && current == s;
 
-	/// <summary>O que o cliente de instalação pode pedir: os amigos e mais nada.</summary>
-	private static bool AllowedInApp(string type) => type is "ping" or "friends.list" || IsFriendWrite(type);
+	/// <summary>O que o cliente de instalação pode pedir: os amigos e as conversas com eles.</summary>
+	private static bool AllowedInApp(string type) => type is "ping" or "friends.list" || IsFriendWrite(type) || IsDirect(type);
 
 	/// <summary>Uma mensagem do jogador. Pedido que não dá vira um <c>error</c> só para ele.</summary>
 	public async Task Handle(Session session, string text)
@@ -379,6 +423,8 @@ public sealed partial class LobbyService : IDisposable
 				throw new Failure(FailureKind.Conflict, "so_no_jogo", "Isso só dá para fazer de dentro do jogo.");
 			// O que grava amizade passa pelo banco, fora da trava.
 			if (IsFriendWrite(type)) await FriendWrite(session, type, message, outbox);
+			// As conversas também: gravar e ler a mensagem vão ao banco.
+			else if (IsDirect(type)) await Direct(session, type, message, outbox);
 			else
 			{
 				await RefreshItemsFor(session, type);
@@ -575,7 +621,7 @@ public sealed partial class LobbyService : IDisposable
 				break;
 
 			case "chat":
-				Chat(c, m["text"]?.GetValue<string>() ?? "", outbox);
+				Chat(c, m["text"]?.GetValue<string>() ?? "", m["team"]?.GetValue<bool>() ?? false, outbox);
 				break;
 
 			case "profile.photo":
@@ -820,11 +866,18 @@ public sealed partial class LobbyService : IDisposable
 		outbox.To(session, start);
 	}
 
-	private void Chat(Session c, string text, Outbox outbox)
+	/// <summary>
+	/// O chat da sala, que também é o da partida (Jhon, 27/11: "chat em
+	/// partida, chat na sala"): a sala continua aberta enquanto se joga, e a
+	/// ligação do saguão também. <paramref name="team"/>: só para o time de
+	/// quem fala (o "U" dos FPS) — fora de sala não há time.
+	/// </summary>
+	private void Chat(Session c, string text, bool team, Outbox outbox)
 	{
-		text = text.Trim();
+		text = ChatRules.Clean(text, ChatRules.RoomMax);
 		if (text.Length == 0) return;
-		if (text.Length > MaxChat) text = text[..MaxChat];
+		RoomMember seat = c.Room?.Members.FirstOrDefault(x => x.Account.Id == c.Account.Id);
+		if (team && seat == null) InRoom(c);
 
 		// Cinco mensagens a cada cinco segundos: o bastante para conversar.
 		DateTime now = _clock.UtcNow;
@@ -832,18 +885,23 @@ public sealed partial class LobbyService : IDisposable
 		if (c.Chats.Count >= 5) throw new Failure(FailureKind.TooMany, "devagar", "Devagar com as mensagens.");
 		c.Chats.Enqueue(now);
 
+		int side = seat?.Team ?? 0;
 		var line = new JsonObject
 		{
 			["t"] = "chat",
 			["from"] = c.Account.Name,
+			["id"] = c.Account.Id,
 			["room"] = c.Room?.Id,
+			// O time de quem falou (0 fora de sala): a tela pinta o nome com a cor dele.
+			["side"] = side,
+			["team"] = team,
 			["text"] = text,
 			["at"] = new DateTimeOffset(now).ToUnixTimeSeconds()
 		};
 
-		// Na sala, fala com a sala; fora dela, com quem está na lista.
+		// Na sala, fala com a sala (ou só com o time); fora dela, com quem está na lista.
 		IEnumerable<Session> to = c.Room != null
-			? c.Room.Members.Select(SessionOf).Where(s => s != null)
+			? c.Room.Members.Where(x => !team || x.Team == side).Select(SessionOf).Where(s => s != null)
 			: _sessions.Values.Where(x => x.Room == null);
 		outbox.To(to, line);
 	}

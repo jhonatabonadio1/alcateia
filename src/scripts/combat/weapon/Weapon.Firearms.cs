@@ -97,11 +97,12 @@ public partial class Weapon
 
 		Recoil = CombatRules.RecoilVertical(_streak, held.RecoilEarlyShots, held.RecoilVertical, held.RecoilVerticalLate);
 
-		// Horizontal alternado é decorável; depois do limite, sorteado. É
-		// o que faz o AK ser arma de rajada e não de spray.
-		bool wild = held.RecoilHorizontalAfter > 0 && _streak >= held.RecoilHorizontalAfter;
-		float side = wild ? held.RecoilHorizontalLate : held.RecoilHorizontal;
-		RecoilYaw = wild ? _rng.Range(-side, side) : (_streak % 2 == 0 ? side : -side);
+		// O lateral é um padrão fixo, o mesmo em toda rajada (o spray do
+		// Counter-Strike, 27/11): a rajada curta sobe reta, a longa desvia para
+		// um lado e para o outro sempre igual — difícil, mas aprendível. Até
+		// 27/11 o AK sorteava o lado depois do sexto tiro.
+		RecoilYaw = CombatRules.RecoilYaw(_streak, held.RecoilHorizontal, held.RecoilHorizontalAfter,
+			held.RecoilHorizontalLate, held.RecoilSwayShots, held.RecoilSwayFirst);
 		// Na mira, o coice da arma que pede menos (a SCAR escopada).
 		float steady = Mathf.Lerp(1f, held.AimRecoilMultiplier, AimEase);
 		Recoil *= steady;
@@ -180,12 +181,26 @@ public partial class Weapon
 	private float SpreadNow(WeaponDefinition held)
 	{
 		var flat = new Vector3(_body.Velocity.X, 0, _body.Velocity.Z);
+		bool moving = flat.Length() > CombatRules.MovingSpreadSpeed;
 		return CombatRules.Spread(held.SpreadBase, _bloom,
-			flat.Length() > CombatRules.MovingSpreadSpeed, held.MoveSpreadMultiplier,
+			moving, held.MoveSpreadMultiplier,
 			_body is Player player && player.IsCrouching, held.CrouchSpreadMultiplier)
 			// Na mira, o cone fecha (Weapon.Aim).
-			* AimSpreadFactor;
+			* AimSpreadFactor
+			// Andando e no ar, soma-se por cima: a mira não conserta.
+			+ CombatRules.MovementSpread(moving, held.MoveSpread, Airborne, held.AirSpread);
 	}
+
+	/// <summary>Quanto tempo fora do chão até o tiro contar como no ar (s):
+	/// descendo escada ou passando numa quina o corpo perde o chão por um
+	/// quadro, e isso não é pular.</summary>
+	[Export] public float AirSpreadGrace = 0.1f;
+
+	/// <summary>Há quanto tempo o corpo está fora do chão (s), contado no passo da arma.</summary>
+	private double _airTime;
+
+	/// <summary>No ar de verdade (pulando ou caindo), para a dispersão.</summary>
+	public bool Airborne => _airTime > AirSpreadGrace;
 
 	/// <summary>Direção sorteada num cone de meio-ângulo dado. A raiz no
 	/// raio distribui por área; sem ela os tiros se amontoam no centro e o

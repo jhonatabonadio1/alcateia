@@ -72,8 +72,11 @@ public readonly record struct CharacterIntent
 	/// <summary>Ninguém pedindo nada.</summary>
 	public static readonly CharacterIntent None = new();
 
-	/// <summary>Lê o teclado e o mouse agora.</summary>
-	public static CharacterIntent FromInput() => new()
+	/// <summary>Lê o teclado e o mouse agora. Digitando no chat da partida
+	/// (<see cref="MatchChat.Typing"/>), o teclado é do campo: ninguém pede nada.</summary>
+	public static CharacterIntent FromInput() => MatchChat.Typing ? None : Read();
+
+	private static CharacterIntent Read() => new()
 	{
 		Move = Input.GetVector("move_left", "move_right", "move_forward", "move_back"),
 		Forward = Input.IsActionPressed("move_forward"),

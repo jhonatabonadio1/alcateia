@@ -23,13 +23,15 @@ Alcateia.Dominio/        as regras, puras (sem banco, rede ou ASP.NET)
   Painel/Admin.cs        papéis e permissões do painel, regras de conta
   Contas/RankRule.cs     a patente a partir do XP (a mesma conta do jogo) e o prêmio de promoção
   Contas/Friends.cs      amigos: o que uma conta é da outra, os tetos e os "não dá"
+  Conversas/ChatRules.cs o chat da sala e as mensagens diretas: o texto numa linha, os tetos e o freio
   GameClock.cs           o dia do jogo (Brasília): quando viram missões e vitrine
 Alcateia.Aplicacao/      os casos de uso
   Portas/Ports.cs        o que a aplicação pede de fora: repositórios, senha, relógio, conexão
   Contas/AccountService  criar conta, entrar, sair, perfil, ranking, verificação em duas etapas
   Saguao/LobbyService    quem está ligado, salas e chat (o protocolo do WebSocket);
                          em LobbyService.Friends.cs, os amigos: lista, pedidos, presença e convites;
-                         em LobbyService.Groups.cs, os grupos: amigos que entram juntos nas salas
+                         em LobbyService.Groups.cs, os grupos: amigos que entram juntos nas salas;
+                         em LobbyService.Direct.cs, as mensagens diretas entre amigos
   Frota/FleetService     a frota em uso (trava, relógio, partida perdida)
   Partidas/MatchService  recebe o resultado, grava, paga, libera a sala, anda os desafios
   Jogo/GameDataService   catálogo, mapas, promoções, desafios e configurações, em memória
@@ -40,7 +42,7 @@ Alcateia.Aplicacao/      os casos de uso
 Alcateia.Infra/          o mundo de fora
   Banco/Pg.cs            cliente do PostgreSQL (protocolo de fio)
   Banco/Schema.cs        migrações
-  Repositorios/          contas, amizades, partidas, jogadores (carteira, inventário), dados do jogo,
+  Repositorios/          contas, amizades, mensagens diretas, partidas, jogadores (carteira, inventário), dados do jogo,
                          segurança (blacklist, eventos, banimentos) e painel no PostgreSQL
   Seguranca/Passwords.cs senha (PBKDF2), tokens, assinatura dos ingressos, relógio
   Seguranca/Crypto.cs    AES-256-GCM para o que não pode ficar legível no banco
@@ -113,10 +115,12 @@ segunda derruba a primeira.
 
 **O cliente de instalação** liga com `/v1/lobby?client=app&token=`. É uma
 ligação à parte, que convive com a do jogo (abrir o jogo não a derruba, nem
-o contrário) e só vê e mexe nos amigos: recebe `hello`, `friends`,
-`friend.request` e `friend.accepted`, e pode mandar `ping`, `friends.list`,
-`friend.add`, `friend.accept`, `friend.decline` e `friend.remove`. O resto
-responde `so_no_jogo`. Com o jogo fechado, os amigos veem a conta com
+o contrário) e só vê e mexe nos amigos e conversa com eles: recebe `hello`,
+`friends`, `friend.request`, `friend.accepted`, `dm`, `dm.history` e
+`dm.unread`, e pode mandar `ping`, `friends.list`, `friend.add`,
+`friend.accept`, `friend.decline`, `friend.remove`, `dm.send`, `dm.history`,
+`dm.read` e `dm.unread` ("Conversas com os amigos", abaixo). O resto responde
+`so_no_jogo`. Com o jogo fechado, os amigos veem a conta com
 `status: "app"`.
 
 **A tag.** Toda conta tem quatro algarismos sorteados quando nasce (`tag`,
@@ -140,7 +144,7 @@ contou sabe — ver um nome no placar não basta para encher a caixa dela.
 | `room.bot.remove` | `id` (negativo) | Só o dono: tira o bot |
 | `room.start` | | Só o dono, com todos prontos (bot está sempre pronto) |
 | `room.restart` | | Só o dono: a sala inteira vai para uma partida nova, sem esperar pronto. Com partida em curso, ela é descartada (sai da frota; o resultado dela, quando vier, é recusado e não paga ninguém). Na tela do resultado é o "jogar de novo" |
-| `chat` | `text` | Na sala, para a sala; fora, para o saguão |
+| `chat` | `text`, `team` (opcional) | Na sala, para a sala; fora, para o saguão. É também o chat da partida: a sala continua aberta enquanto se joga. Com `team: true`, só para o time de quem fala (`fora_de_sala` fora de sala). O texto sai numa linha (quebra de linha e caractere de controle viram espaço), até 200 caracteres; 5 mensagens a cada 5 s (`devagar`) |
 | `friends.list` | | Pede a lista de amigos (ela também vem sozinha ao entrar e a cada mudança) |
 | `friend.add` | `name` | Pede amizade pelo nome com a tag (`Nome#0042`), sem diferenciar maiúsculas. Sem a tag, `tag_faltando`; tag errada responde igual a nome que não existe (`conta_inexistente`). Se a outra conta já tinha pedido, vira amizade na hora. Recusa `conta_inexistente`, `amigo_voce`, `ja_amigos`, `pedido_ja_enviado`, `amigos_cheio` (100 amigos), `pedidos_demais` (50 pedidos seus esperando), `pedidos_demais_dele` (50 esperando na caixa do outro) e `devagar` (10 pedidos por minuto) |
 | `friend.accept` | `id` | Aceita o pedido que a conta `id` mandou. `pedido_inexistente`; `amigos_cheio` ou `amigos_cheio_dele` se um dos dois não tem mais lugar |
@@ -165,7 +169,7 @@ contou sabe — ver um nome no placar não basta para encher a caixa dela.
 | `rooms` | A lista de salas (a cada mudança). Cada uma com `players` (gente; jogando, só quem está na partida) e `bots` (o jogo mostra a soma), `open` (dá para entrar agora: esperando com lugar, ou jogando com vaga sem desequilibrar e sem estar acabando) e `closing` (a partida está quase acabando) |
 | `room` | A sala em que você está: regras, membros, estado. Os bots vêm em `members` com `bot: true`, `id` negativo, `owner` (a conta do dono da sala, cuja máquina os move) e sem `xp`. Cada pessoa tem `inMatch` (está jogando a partida em curso). Com a partida em curso, a sala traz `enter` (por quais times dá para entrar agora) e `closing` |
 | `left` | Você saiu da sala |
-| `chat` | `from`, `text` |
+| `chat` | `from` (o nome), `id` (a conta), `room` (a sala, ou `null` no saguão), `side` (o time de quem falou, 0 fora de sala), `team` (foi só para o time), `text`, `at` (segundos Unix) |
 | `match.start` | `address`, `port`, `matchKey`, `accountId`, `expires`, `ticket`, `settings`, `restart` (o dono reiniciou a partida que estava em curso), `late` (entrou com a partida em curso: os bots são bonecos até o servidor de partida dizer que passaram para você) — hora de ligar no servidor de partida |
 | `match.end` | O placar e o que você ganhou (`you{xp, presas}`) |
 | `friends` | `friends[]` (`id`, `name`, `tag`, `xp`, `photo`, `status`, `room`), `requests[]` (pedidos recebidos: `id`, `name`, `xp`, `photo`) e `sent[]` (pedidos enviados, igual). `status`: `offline`, `app` (jogo fechado, cliente de instalação aberto: dá para ver, não para convidar), `online` (ligado, fora de sala), `room` (numa sala, esperando ou de fora da partida dela) ou `playing` (jogando); `room` é o número da sala, ou `null`. No jogo primeiro, depois os que estão só no aplicativo, depois os desligados; em cada grupo, por nome. Vem ao entrar, em resposta a `friends.list`, quando a sua lista muda e quando um amigo muda de presença (entrou, caiu, sala, partida, foto). Amigo desligado sai com o nome e o XP de quando você entrou e a foto padrão |
@@ -180,3 +184,42 @@ contou sabe — ver um nome no placar não basta para encher a caixa dela.
 | `queue` | O jogo rápido. `state`: `searching` (com `players`, quantos procuram; `waited`, segundos na fila; `size`, quantos na sua entrada; `teamMin`, o menor time que o formador já aceita para você; `note`, um recado, como sem servidor de partida livre), `idle` (parou: `note` diz por quê — cancelou, foi para uma sala, o grupo mudou, alguém do grupo caiu; vazio se foi você que cancelou) ou `found` (`room`, `map`, `play`, `teamSize`). Achada a partida, vêm a `room` (com `settings.quick: true` e todos em `inMatch`) e o `match.start`. A sala do jogo rápido não aparece na lista, não aceita entrar, trocar de time, mudar regra, bot, convite nem recomeçar (`sala_da_fila`), e acaba com a partida (chega `left`) |
 | `error` | `code`, `message`. Na sala em partida: `servidor_caiu` (o servidor de partida parou de bater) ou `partida_encerrada` (fechou sem resultado) — a sala já voltou a esperar |
 | `pong` | |
+
+## Conversas com os amigos (mensagens diretas)
+
+Uma conversa de um para um com cada amigo, no jogo e no cliente de
+instalação (as duas ligações da conta mandam e recebem igual). Só entre
+amigos: com quem não é (ou deixou de ser), tudo responde `nao_e_amigo`. O
+servidor guarda no PostgreSQL (tabela `direct_messages`, migração 9) as
+últimas **200** de cada conversa: quem estava desligado recebe a contagem de
+não lidas ao ligar e abre a conversa pelo histórico. Desfazer a amizade não
+apaga a conversa, só a fecha; refazer, ela volta.
+
+| Do jogo ou do aplicativo | Campos | |
+|---|---|---|
+| `dm.send` | `to` (a conta do amigo), `text`, `ref` (opcional) | Manda. O texto é aparado e sai numa linha (quebra de linha e caractere de controle viram espaço), até **500** caracteres (o resto é cortado). `ref` (até 40 caracteres, qualquer texto) volta no eco, para a tela casar a mensagem que mostrou como "enviando". Responde com `dm`. Recusa `nao_e_amigo`, `mensagem_vazia`, `devagar` (mais de 5 em 5 s ou 30 por minuto, por ligação) e `conversa_indisponivel` (o banco não respondeu) |
+| `dm.history` | `with` (a conta do amigo), `before` (opcional, o `id` de uma mensagem) | As até 50 mensagens mais novas da conversa — com `before`, as 50 anteriores a ela (rolar para cima). Não marca como lidas. Responde `dm.history` |
+| `dm.read` | `with` | Marca como lidas as que esse amigo mandou. Responde `dm.unread` para todas as ligações da conta (o jogo e o aplicativo ficam com a mesma contagem) |
+| `dm.unread` | | Pede a contagem de não lidas |
+
+| Do servidor | |
+|---|---|
+| `dm` | `id`, `from`, `to` (as contas), `text`, `at` (segundos Unix, UTC), `ref` (só no eco, se veio). Vai para todas as ligações vivas das duas contas: para quem mandou é a confirmação (com o `id` e a hora do servidor); para quem recebe, a mensagem. O `id` cresce: é a ordem da conversa |
+| `dm.history` | `with`, `messages[]` (`id`, `from`, `to`, `text`, `at`, `read`: quem recebeu já leu), da mais antiga para a mais nova, e `more` (há mais antigas: peça com `before` = o `id` da primeira) |
+| `dm.unread` | `unread[]` (`id` do amigo e `count`, só quem tem alguma) e `total`. Vem sozinho ao ligar (jogo e aplicativo), depois de cada `dm.read` e quando pedido. Entre um e outro, quem conta é o cliente: cada `dm` com `from` de outra conta e a conversa fechada na tela soma um |
+
+Exemplo — Ana (conta 7) escreve para Bia (conta 9), que está com o
+aplicativo aberto:
+
+```
+Ana → {"t":"dm.send","to":9,"text":"bora jogar?","ref":"a1"}
+Ana ← {"t":"dm","id":512,"from":7,"to":9,"text":"bora jogar?","at":1795737600,"ref":"a1"}
+Bia ← {"t":"dm","id":512,"from":7,"to":9,"text":"bora jogar?","at":1795737600}
+Bia → {"t":"dm.history","with":7}
+Bia ← {"t":"dm.history","with":7,"messages":[{"id":498,"from":9,"to":7,"text":"gg","at":1795651200,"read":true},{"id":512,"from":7,"to":9,"text":"bora jogar?","at":1795737600,"read":false}],"more":false}
+Bia → {"t":"dm.read","with":7}
+Bia ← {"t":"dm.unread","unread":[],"total":0}
+```
+
+Servidor de antes das conversas responde `mensagem_desconhecida` (com `dm.`
+na frase): o jogo esconde as conversas nessa ligação.
