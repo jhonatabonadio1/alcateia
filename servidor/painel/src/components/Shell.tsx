@@ -9,6 +9,7 @@ import {
 	Menu,
 	Moon,
 	Network,
+	Newspaper,
 	ScrollText,
 	Server,
 	Settings as SettingsIcon,
@@ -54,6 +55,7 @@ const groups: { name: string; entries: Entry[] }[] = [
 			{ to: "/mapas", label: "Mapas", icon: MapIcon },
 			{ to: "/promocoes", label: "Promoções", icon: Tag },
 			{ to: "/desafios", label: "Desafios", icon: Target },
+			{ to: "/noticias", label: "Notícias", icon: Newspaper },
 		],
 	},
 	{

@@ -28,8 +28,23 @@ public sealed class Corpse
 	{
 		if (Settled) return;
 
+		if (_sliding)
+		{
+			Slide(delta, gravity);
+			return;
+		}
+
 		if (_body.IsOnFloor())
 		{
+			// Parou numa saliência (a viga que sai do muro, um peitoril, a quina de
+			// um toldo), com o chão de verdade mais abaixo? Continua descendo.
+			if (Perched(out _slideFloor))
+			{
+				_sliding = true;
+				_body.Velocity = Vector3.Zero;
+				_shape.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
+				return;
+			}
 			_body.Velocity = Vector3.Zero;
 			Settled = true;
 			_shape.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
@@ -40,6 +55,65 @@ public sealed class Corpse
 		}
 
 		_body.MoveAndSlide();
+	}
+
+	/// <summary>Quanto os pés podem ficar acima do chão que há debaixo do meio do
+	/// corpo e ainda ser "no chão" (m).</summary>
+	public const float PerchGap = 0.08f;
+
+	/// <summary>Até onde se procura o chão debaixo do corpo que parou numa saliência (m).</summary>
+	public const float PerchReach = 6f;
+
+	private bool _sliding;
+	private float _slideFloor;
+
+	/// <summary>Metade da altura da cápsula: do meio do corpo aos pés.</summary>
+	private float HalfHeight => _shape.Shape is CapsuleShape3D capsule ? capsule.Height * 0.5f : 0.875f;
+
+	/// <summary>
+	/// O corpo parou em cima de alguma coisa, mas o chão debaixo do meio dele está
+	/// mais abaixo (27/11; Jhon: "quando o lobo morre ou o humano, ele tá ficando
+	/// no ar"). Medido no Deserto: o lobo que morre correndo na parede cai rente a
+	/// ela, a cápsula encosta numa saliência do muro (as vigas que saem do adobe) e
+	/// assentava ali, 28 cm acima do chão, com o corpo deitado no ar. Só o cenário
+	/// conta: um raio do meio do corpo para baixo, sem os outros corpos.
+	/// </summary>
+	private bool Perched(out float floor)
+	{
+		floor = 0f;
+		World3D world = _body.GetWorld3D();
+		if (world == null) return false;
+		Vector3 from = _body.GlobalPosition;
+		var exclude = new Godot.Collections.Array<Rid> { _body.GetRid() };
+		for (int tries = 0; tries < 4; tries++)
+		{
+			var query = PhysicsRayQueryParameters3D.Create(from, from + Vector3.Down * (HalfHeight + PerchReach), 1, exclude);
+			var hit = world.DirectSpaceState.IntersectRay(query);
+			if (hit.Count == 0) return false;
+			if (hit["collider"].AsGodotObject() is CharacterBody3D other)
+			{
+				exclude.Add(other.GetRid());
+				continue;
+			}
+			floor = ((Vector3)hit["position"]).Y;
+			return from.Y - HalfHeight - floor > PerchGap;
+		}
+		return false;
+	}
+
+	/// <summary>Desce reto, sem colisão, até o chão achado debaixo do corpo.</summary>
+	private void Slide(double delta, float gravity)
+	{
+		Vector3 velocity = new(0, _body.Velocity.Y - gravity * (float)delta, 0);
+		Vector3 at = _body.GlobalPosition + velocity * (float)delta;
+		if (at.Y - HalfHeight <= _slideFloor)
+		{
+			at.Y = _slideFloor + HalfHeight;
+			velocity = Vector3.Zero;
+			Settled = true;
+		}
+		_body.Velocity = velocity;
+		_body.GlobalPosition = at;
 	}
 
 	/// <summary>
@@ -53,6 +127,7 @@ public sealed class Corpse
 	public void Drop()
 	{
 		Settled = true;
+		_sliding = false;
 		_body.Velocity = Vector3.Zero;
 		_shape.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
 	}
@@ -88,6 +163,7 @@ public sealed class Corpse
 	{
 		Settled = false;
 		_fallingAway = false;
+		_sliding = false;
 		_shape.SetDeferred(CollisionShape3D.PropertyName.Disabled, false);
 	}
 }

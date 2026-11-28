@@ -139,7 +139,10 @@ public sealed class WolfFxTest : RegressionTest
 		// escudo cheio fecha com o anel. Soltar no meio não dá o anel.
 		b.Check(fx.Roar.Glow <= 0.01f && !fx.Roar.Sweeping, "sem rugir, nada da luz do uivo");
 		Input.ActionPress("howl");
-		await b.Seconds(0.5);
+		// (27/11: o rugido foi refeito em quatro tempos; as fotos, só com --fotos, pegam cada um.)
+		await b.Seconds(0.2);
+		await Photo(b, "6_rugido_estouro", new Vector3(1.9f, 1.0f, -3.4f), follow: true);
+		await b.Seconds(0.3);
 		b.Check(fx.Roar.Active, "segurando R, o rugido aparece");
 		b.AtLeast(0.5, fx.Roar.Glow, "a luz de regeneração acende durante o uivo");
 		int arcs = 0;
@@ -149,6 +152,8 @@ public sealed class WolfFxTest : RegressionTest
 			arcs = Mathf.Max(arcs, fx.Roar.Arcs);
 		}
 		b.AtLeast(1, arcs, "arcos elétricos saltam para o corpo no uivo");
+		await Photo(b, "7_rugido_carga", new Vector3(1.9f, 1.0f, -3.4f), follow: true);
+		await Photo(b, "7_rugido_carga_de_cima", new Vector3(2.6f, 2.6f, 2.6f), follow: true);
 		b.AtMost(2.5, RoarBurst.ShaftTop, "a luz do uivo é baixa (não passa de 2,5 m dos pés)");
 		Input.ActionRelease("howl");
 		await b.Seconds(0.1);
@@ -162,9 +167,19 @@ public sealed class WolfFxTest : RegressionTest
 		{
 			await b.PhysicsFrame();
 			swept = fx.Roar.Sweeping;
+			if (i == 78) await Photo(b, "8_rugido_quase_cheio", new Vector3(1.9f, 1.0f, -3.4f), follow: true);
 		}
 		Input.ActionRelease("howl");
 		b.Check(swept, "rugiu até o fim: o anel de escudo cheio sobe");
+		if (!string.IsNullOrEmpty(_photos))
+		{
+			await b.Frames(4);
+			await Photo(b, "9_escudo_cheio", new Vector3(1.9f, 1.0f, -3.4f), follow: true);
+			await b.Frames(5);
+			await Photo(b, "9_escudo_cheio_de_cima", new Vector3(2.6f, 2.6f, 2.6f), follow: true);
+			await b.Frames(10);
+			await Photo(b, "9_escudo_dissipando", new Vector3(1.9f, 1.0f, -3.4f), follow: true);
+		}
 		await b.Seconds(1.2);
 		b.Check(fx.Roar.Glow <= 0.01f && fx.Roar.Arcs == 0, "acabou o uivo, a luz e os arcos somem");
 
@@ -177,11 +192,39 @@ public sealed class WolfFxTest : RegressionTest
 		b.Check(human.Visible && !wolf.Visible, "de humano, o lobo some");
 	}
 
+	private bool _dark;
+
+	/// <summary>Com <c>-- --fotos-escuro</c>, as fotos saem de noite: o campo de treino é quase
+	/// branco, e efeito de luz (que soma) some em cima dele. Chão e paredes escuros, sol fraco.</summary>
+	private void Darken(RegressionBench b)
+	{
+		if (_dark || !OS.GetCmdlineUserArgs().Contains("--fotos-escuro")) return;
+		_dark = true;
+		var night = new StandardMaterial3D { AlbedoColor = new Color(0.13f, 0.14f, 0.17f), Roughness = 0.85f };
+		foreach (StaticBody3D solid in b.Scene.FindChildren("*", nameof(StaticBody3D), true, false).OfType<StaticBody3D>())
+			foreach (MeshInstance3D mesh in solid.FindChildren("*", nameof(MeshInstance3D), true, false).OfType<MeshInstance3D>())
+				mesh.MaterialOverride = night;
+		foreach (DirectionalLight3D sun in b.Scene.FindChildren("*", nameof(DirectionalLight3D), true, false).OfType<DirectionalLight3D>())
+			sun.LightEnergy *= 0.3f;
+		foreach (WorldEnvironment sky in b.Scene.FindChildren("*", nameof(WorldEnvironment), true, false).OfType<WorldEnvironment>())
+			if (sky.Environment != null)
+			{
+				sky.Environment.BackgroundMode = Godot.Environment.BGMode.Color;
+				sky.Environment.BackgroundColor = new Color(0.03f, 0.04f, 0.06f);
+				sky.Environment.AmbientLightSource = Godot.Environment.AmbientSource.Color;
+				sky.Environment.AmbientLightColor = new Color(0.25f, 0.28f, 0.36f);
+				sky.Environment.AmbientLightEnergy = 0.5f;
+			}
+	}
+
 	private async Task Photo(RegressionBench b, string name, Vector3 offset, bool follow = false)
 	{
 		if (string.IsNullOrEmpty(_photos)) return;
+		// Com janela, para fotografar: o mouse fica solto (a janela abre atrás).
+		Input.MouseMode = Input.MouseModeEnum.Visible;
 		DirAccess.MakeDirRecursiveAbsolute(_photos);
 		_camera ??= new Camera3D { Fov = 50f, Near = 0.05f, CullMask = 0xFFFFFFFFu };
+		Darken(b);
 		if (_camera.GetParent() == null) b.AddChild(_camera);
 		Vector3 at = b.Player.GlobalPosition;
 		Basis basis = follow ? b.Player.GlobalBasis : Basis.Identity;

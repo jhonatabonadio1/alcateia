@@ -81,6 +81,9 @@ public sealed class BackToRoomTest : RegressionTest
 			me.RespawnDelay = 60f;
 			await b.Until(() => !me.IsProtected, 5.0);
 			me.TakeDamage(99999f);
+			// (desde 27/11 a câmera fica onde morreu; um clique vai para a tela de um aliado)
+			await b.Seconds(0.3);
+			await b.Tap("attack");
 			bool watching = await b.Until(() => InTree(KillCam.Current) && InTree(KillCam.Current.Watching), 4.0);
 			Node3D mate = watching ? KillCam.Current.Watching : null;
 			bool hidden = mate != null && await b.Until(() => mate.FindChildren("*", nameof(VisualInstance3D), true, false)

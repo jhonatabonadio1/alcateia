@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Alcateia.Cliente.ViewModels"
+             x:Class="Alcateia.Cliente.Views.GameView"
+             x:DataType="vm:GameViewModel">
+
+	<Grid RowDefinitions="*,Auto">
+		<!-- a arte do jogo -->
+		<Panel Grid.Row="0" ClipToBounds="True">
+			<Image Source="/Assets/arte.jpg" Stretch="UniformToFill" />
+			<!-- escurece a esquerda, para o título, e o pé, para emendar na faixa do botão -->
+			<Border>
+				<Border.Background>
+					<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+						<GradientStop Offset="0" Color="#D90A1119" />
+						<GradientStop Offset="0.5" Color="#260A1119" />
+						<GradientStop Offset="1" Color="#000A1119" />
+					</LinearGradientBrush>
+				</Border.Background>
+			</Border>
+			<Border VerticalAlignment="Bottom" Height="170">
+				<Border.Background>
+					<LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+						<GradientStop Offset="0" Color="#000A1119" />
+						<GradientStop Offset="1" Color="#FF0A1119" />
+					</LinearGradientBrush>
+				</Border.Background>
+			</Border>
+
+			<StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="36,0,0,26" Spacing="2">
+				<Border Background="{StaticResource Gold}" Padding="9,2" HorizontalAlignment="Left" Margin="0,0,0,8">
+					<TextBlock Text="ALPHA" FontWeight="Bold" FontSize="12" LetterSpacing="1" Foreground="{StaticResource GoldInk}" />
+				</Border>
+				<TextBlock Text="{Binding Title}" FontFamily="{StaticResource Display}" FontWeight="Bold" FontStyle="Italic" FontSize="62" LineHeight="64" />
+				<TextBlock Text="FPS online · humanos × lobos" FontSize="19" Foreground="{StaticResource Ink2}" />
+			</StackPanel>
+		</Panel>
+
+		<!-- o botão, como o jogo está e a barra do download -->
+		<StackPanel Grid.Row="1" Margin="36,6,36,30" Spacing="16">
+			<Grid ColumnDefinitions="Auto,*">
+				<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+					<Button Classes="primary hero" Content="{Binding PrimaryText}" Command="{Binding Primary}" />
+					<Button Content="PAUSAR" Command="{Binding Pause}" IsVisible="{Binding CanPause}" VerticalAlignment="Stretch" />
+					<Button Content="AGORA NÃO" Command="{Binding Cancel}" IsVisible="{Binding CanCancel}" VerticalAlignment="Stretch" />
+				</StackPanel>
+
+				<StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="22,0,0,0" Spacing="3">
+					<TextBlock Text="{Binding StatusLine}" FontSize="16" TextWrapping="Wrap" />
+					<TextBlock Text="{Binding Problem}" Foreground="{StaticResource Danger}" TextWrapping="Wrap" IsVisible="{Binding HasProblem}" />
+				</StackPanel>
+			</Grid>
+
+			<Grid ColumnDefinitions="*,Auto" IsVisible="{Binding ProgressVisible}">
+				<ProgressBar Grid.Column="0" Minimum="0" Maximum="100" Value="{Binding ProgressValue}" VerticalAlignment="Center" />
+				<TextBlock Grid.Column="1" Text="{Binding ProgressPercent}" Classes="muted" FontFamily="{StaticResource Display}" FontWeight="SemiBold" FontStyle="Italic"
+				           FontSize="17" Width="52" TextAlignment="Right" VerticalAlignment="Center" />
+			</Grid>
+		</StackPanel>
+	</Grid>
+</UserControl>

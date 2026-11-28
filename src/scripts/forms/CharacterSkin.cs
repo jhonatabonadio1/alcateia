@@ -74,6 +74,12 @@ public partial class CharacterSkin : Resource
 	/// src/tools/personagens/olhos.py. Modelo novo: meça de novo.</summary>
 	[Export] public Vector3 EyeInHead = new(0f, 0.075f, 0.09f);
 
+	/// <summary>O tom da voz do humano (o "uh" da coronhada): multiplica a
+	/// altura do som. A voz gravada é masculina (src/tools/sons/coronhada.py);
+	/// na Eve ela sobe (Jhon, 27/11: "o barulho de coronhada da Eve deve ter
+	/// pitch"). 1 = como foi gravada.</summary>
+	[Export] public float VoicePitch = 1f;
+
 	/// <summary>O personagem cujo corpo humano é <paramref name="model"/> (nulo se nenhum).</summary>
 	public static CharacterSkin OfHumanModel(string model) =>
 		string.IsNullOrEmpty(model) ? null : All().Find(s => s.HumanModel == model);

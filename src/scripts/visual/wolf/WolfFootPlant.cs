@@ -179,6 +179,8 @@ public partial class WolfFootPlant : SkeletonModifier3D
 		_limbs.Add(limb);
 	}
 
+	private VisualSmoothing _smoothing;
+
 	public override void _ProcessModificationWithDelta(double delta)
 	{
 		Skeleton3D skeleton = GetSkeleton();
@@ -197,6 +199,13 @@ public partial class WolfFootPlant : SkeletonModifier3D
 		}
 		float dt = Mathf.Max((float)delta, 1e-4f);
 		float baseY = _model != null && IsInstanceValid(_model) ? _model.GlobalPosition.Y : _body.GlobalPosition.Y;
+		// Depois de um degrau o corpo desenhado sobe devagar atrás do da física
+		// (VisualSmoothing.Lift, 27/11), e esse deslocamento entra no fim do quadro,
+		// depois desta conta: a pata era posta no chão e o corpo inteiro descia em
+		// seguida — 6 cm dentro do degrau (PesDoLoboNoChao). A sola é medida onde vai
+		// ser desenhada.
+		_smoothing ??= _body.GetNodeOrNull<VisualSmoothing>("VisualSmoothing");
+		float pending = _smoothing?.PendingLift ?? 0f;
 		float blend = 1f - Mathf.Exp(-dt / Mathf.Max(ContactTime, 1e-3f));
 
 		Transform3D toWorld = skeleton.GlobalTransform;
@@ -262,7 +271,7 @@ public partial class WolfFootPlant : SkeletonModifier3D
 					if (d < best) { best = d; nearestY = y; }
 				}
 				if (floorY == float.MinValue) floorY = nearestY;
-				gap = Mathf.Min(gap, p.Y - floorY);
+				gap = Mathf.Min(gap, p.Y + pending - floorY);
 			}
 			limb.Gap = gap;
 

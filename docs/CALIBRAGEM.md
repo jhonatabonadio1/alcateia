@@ -198,17 +198,17 @@ A conta: `HumanSpeed` × `HumanSpeedBonus` × agachado × Shift × arma.
 | Campo | Onde | Valor | O que faz |
 |---|---|---|---|
 | `HumanSpeed` | `player.tscn` (o script diz 3,0) | **3,2** | A base. **É também a base do lobo**: mexer aqui muda as duas formas |
-| `HumanSpeedBonus` | `Player.Movement.cs` | 0,8 | Só o humano. **É o botão da velocidade do humano**: 2,56 m/s com o fuzil |
-| `SpeedMultiplier` da arma | cada `.tres` | AR-15 e M4A4 1,0; AK 0,92; SCAR 0,88; SVD 0,86; Desert Eagle 1,08 | A arma na mão pesa: 2,56 / 2,36 / 2,25 / 2,20 / 2,76 m/s |
-| `KnifeSpeedMultiplier` | nó `Weapon` (`Weapon.Knife.cs`) | 1,28 | Com a faca, andando: 3,28 m/s |
+| `HumanSpeedBonus` | `Player.Movement.cs` | 0,88 | Só o humano. **É o botão da velocidade do humano**: 2,82 m/s com o fuzil (0,8 e 2,56 até 27/11). A corrida do Shift é × isto: mexeu aqui e quer a corrida igual, mexa no `HumanSprintFactor` na conta inversa |
+| `SpeedMultiplier` da arma | cada `.tres` | AR-15 e M4A4 1,0; AK 0,92; SCAR 0,88; SVD 0,86; Desert Eagle 1,08 | A arma na mão pesa: 2,82 / 2,59 / 2,48 / 2,42 / 3,04 m/s |
+| `KnifeSpeedMultiplier` | nó `Weapon` (`Weapon.Knife.cs`) | 1,28 | Com a faca, andando: 3,60 m/s |
 | `AimSpeedMultiplier` da arma | `.tres` | 0,7 (SCAR 0,6, SVD 0,5) | Passo que sobra mirando |
-| `CrouchSpeedFactor` | `Player.Movement.cs` | 0,45 | Agachado, nas duas formas: 1,15 m/s |
+| `CrouchSpeedFactor` | `Player.Movement.cs` | 0,45 | Agachado, nas duas formas: 1,27 m/s o humano, 1,95 o lobo |
 
 ### 3.2 Corrida (Shift)
 
 | Campo | Onde | Valor | O que faz |
 |---|---|---|---|
-| `HumanSprintFactor` | `Player.Movement.cs` | 1,9176 | × a velocidade de andar. 4,91 m/s com fuzil ou faca, 4,52 com a AK, 5,30 com a Desert Eagle. Passa do lobo a pé (4,33), por decisão do Jhon |
+| `HumanSprintFactor` | `Player.Movement.cs` | 1,74327 | × a velocidade de andar (2,816 × 1,74327 = 4,909). 4,91 m/s com fuzil, faca ou pistola (correndo a arma leve não soma, 27/11), 4,52 com a AK. Passa do lobo a pé (4,33), por decisão do Jhon |
 | `SprintRecover` | idem | 0,28 s | Quanto a arma leva para voltar depois de correr. O clique dado nesse tempo fica guardado |
 | `ViewModel.RigSprintIn` / `RigSprintOut` | `src/scripts/ui/ViewModel.Rig.cs` | 0,20 / 0,28 s | Os braços abaixando e trazendo a arma. **A volta cabe no `SprintRecover`**: mexeu num, mexa no outro |
 | `SprintClip` / `SprintPaceMax` | nó `Human` (`CharacterAnimator.Locomotion.cs`) | 3,35 m/s / 1,6 | A passada do clipe de correr e até quanto ele acelera: a corrida passa a patinar acima de 5,36 m/s |
@@ -253,10 +253,11 @@ valem para o corpo sem modelo (servidor de partida). Testes:
 `OlhoNoCorpoEve`, `OlhoNoCorpoBarut`, `PeNoChaoEve`, `PeNoChaoBarut`,
 `AgachadoMira`.
 
-**Testes que prendem o humano:** `VelocidadeNoChao` (2,56 e 1,152 escritos
-no teste; Shift e faca pelos campos), `Medidas` (2,56, pulo 1,02, avanço
-1,9), `AlturaDoPulo` (0,99), `CorridaDoHumano` (Shift e `SprintRecover`),
-`ShiftPreso`, `Ruido` (8 passos em 3 s andando, 13 correndo),
+**Testes que prendem o humano:** `VelocidadeNoChao` (2,816 e 1,267 escritos
+no teste; Shift e faca pelos campos), `Medidas` (2,82, pulo 1,02, avanço
+2,1), `AlturaDoPulo` (0,99), `CorridaDoHumano` (Shift e `SprintRecover`),
+`ShiftPreso`, `Ruido` (6 a 8 passos em 3 s andando, 11 a 14 correndo: o passo
+é a pisada do corpo animado, `CharacterAnimator.Feet`),
 `PassoNoRitmo`, `PassadaHumana`, `EscadaObra` e as outras `Escada*`.
 
 ---
@@ -791,7 +792,7 @@ vira lobo), `WolfSprintFactor` 1,3, `JumpVelocity` 4,4, `JumpMaxHeight`
 seção 1.3: o movimento do bot não é o do jogador.
 
 Note que o bot humano anda a `Speed` do nível, sem o peso da arma: no
-médio, 3,0 m/s, mais que o jogador (2,56).
+médio, 3,0 m/s, mais que o jogador (2,82).
 
 **Testes:** `Dificuldade`, `BotsAtiram`, `BotsCacam`, `BotsJogamGranada`,
 `LobosUsamEspeciais`, `GalopeDosBots`, `TempoDeLobo` (o bot respeita o
@@ -905,17 +906,20 @@ pule no caixote, no contêiner e no terraço antes de fechar.
 
 ### 16.4 "O humano está lento"
 
-`HumanSpeedBonus` (0,8) no `Player.Movement.cs`. Acima da passada de
-corrida (~3,0 m/s no corpo do jogo) o pé começa a patinar: aí o problema
-é o clipe, não o número (seção 11). Os passos aumentam junto: reprovam
-`VelocidadeNoChao` e `Medidas` (2,56 escritos) e `Ruido` (8 passos em 3
-s). O bot humano não muda (`Speed` do nível).
+`HumanSpeedBonus` (0,88 desde 27/11; era 0,8) no `Player.Movement.cs`. Acima
+da passada de corrida (~3,0 m/s no corpo do jogo) o pé começa a patinar: aí o
+problema é o clipe, não o número (seção 11). A corrida do Shift é × o andar:
+para ela não mudar junto, desça o `HumanSprintFactor` na conta inversa (foi o
+que se fez em 27/11). Reprovam `VelocidadeNoChao` e `Medidas` (2,816 e 2,82
+escritos); o `Ruido` não (o passo segue o pé da animação, não a distância). O
+bot humano não muda (`Speed` do nível).
 
 ### 16.5 "A corrida (Shift) está rápida ou lenta"
 
-`HumanSprintFactor`. O teste `VelocidadeNoChao` lê o campo; o `Ruido`
-conta 13 passos em 3 s. Com a Desert Eagle a corrida já anda 5,30 m/s,
-perto do teto do clipe (5,36, `SprintPaceMax`). A arma demora a voltar?
+`HumanSprintFactor` (× o andar: 1,74327 sobre 2,816 = 4,91 m/s). O teste
+`VelocidadeNoChao` lê o campo; o `Ruido` conta de 11 a 14 passos em 3 s (a
+pisada do corpo animado). Correndo, faca e pistola não somam (27/11): todas
+a 4,91, abaixo do teto do clipe (5,36, `SprintPaceMax`). A arma demora a voltar?
 `SprintRecover` e `ViewModel.RigSprintOut` juntos.
 
 ### 16.6 "O pulo do humano"

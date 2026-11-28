@@ -69,8 +69,10 @@ public partial class Player
 	/// Antes disso foi 4,3 m/s (rápido demais, "parece o Sonic") e 3,46
 	/// ("pode deixar um pouco mais rápida", Jhon, 26/11). **Passa do lobo a
 	/// pé** (4,33), por decisão dele. O andar devagar e em silêncio, que
-	/// morava no Shift, saiu: quem quer silêncio agacha.</summary>
-	[Export] public float HumanSprintFactor = 1.9176f;
+	/// morava no Shift, saiu: quem quer silêncio agacha. Desde 27/11 o andar
+	/// subiu 10% (<see cref="HumanSpeedBonus"/> 0,88) e isto desceu na mesma
+	/// conta (1,9176 × 0,8 / 0,88): a corrida continua nos 4,91 m/s.</summary>
+	[Export] public float HumanSprintFactor = 1.74327f;
 
 	/// <summary>Quanto tempo a arma leva para voltar da corrida, em
 	/// segundos: parou de correr (ou clicou correndo), só atira depois
@@ -248,8 +250,11 @@ public partial class Player
 	/// muito muito rápida, e o andar do humano também... deixar na
 	/// velocidade de um humano"). Abaixo da passada da corrida do X Bot
 	/// (3,02 a 1×): o corpo anda numa mistura do andar com a corrida, sem
-	/// acelerar clipe. Era 1,08 (3,46 m/s) desde a v0.27.1.</summary>
-	[Export] public float HumanSpeedBonus = 0.8f;
+	/// acelerar clipe. Era 1,08 (3,46 m/s) desde a v0.27.1. 0,88 desde 27/11
+	/// (Jhon: "o andar normal do humano está muito lento, pode acelerar um
+	/// pouco"): 2,82 m/s, 10% a mais; a corrida do Shift ficou nos 4,91
+	/// (<see cref="HumanSprintFactor"/> desceu na mesma conta).</summary>
+	[Export] public float HumanSpeedBonus = 0.88f;
 
 	/// <summary>A corrida de quatro do lobo: W duas vezes seguidas e ele
 	/// cai nas quatro patas, isto mais rápido que a corrida normal
@@ -461,27 +466,202 @@ public partial class Player
 
 		Velocity = velocity;
 		Vector3 before = GlobalPosition;
-		// Descer degrau (27/11): andando no chão, sem pular, o corpo fica grudado
-		// nele até um degrau abaixo (o ímã do Godot, que fora daqui fica no padrão).
+		// Descer degrau (27/11): com um degrau logo abaixo à frente, o corpo desce
+		// grudado nele (BodyMotion.MoveOnSteps). Até aqui o ímã valia para todo passo
+		// do humano e nunca para o lobo (o ímã o arrancava da corrida na parede ao
+		// passar rente a um degrau ou batente: ParedeNoArmazem, ParedeNoNeon). Agora
+		// vale para os dois, e só onde há degrau para descer.
 		bool walking = grounded && velocity.Y <= 0.01f;
-		// (o ímã volta ao que era: a corrida na parede e o resto contam com o
-		// valor do corpo — repor "o padrão" à mão soltava o lobo da parede.)
-		float snap = FloorSnapLength;
-		// Só o humano: no lobo o ímã maior o arrancava da corrida na parede ao
-		// passar rente a um degrau ou batente (ParedeNoArmazem, ParedeNoNeon), e a
-		// câmera dele é de terceira pessoa — a escada não sacode a tela.
-		bool glued = walking && !_form.IsWolf;
-		if (glued) FloorSnapLength = Mathf.Max(snap, StepHeight);
-		MoveAndSlide();
-		FloorSnapLength = snap;
-		if (walking && direction != Vector3.Zero)
-			TryStepUp(before, horizontal * (float)delta);
-		if (glued && IsOnFloor()) SteppedDown(before.Y - GlobalPosition.Y);
+		BodyMotion.MoveOnSteps(this, walking, direction, _form.IsWolf ? WolfStepHeight : StepHeight);
+		bool climbed = walking && direction != Vector3.Zero && TryStepUp(before, horizontal * (float)delta);
+		FollowStairs(walking, climbed, before.Y, velocity.Y, (float)delta);
+	}
+
+	/// <summary>O quanto o corpo subiu ou desceu no passo anterior andando no
+	/// chão (m); há quanto tempo ele saiu do chão sem pular, e de que altura.</summary>
+	private float _lastRise;
+	private double _offFloor = double.MaxValue;
+	private float _offFloorFrom;
+
+	/// <summary>Quanto o subir ou descer de um passo pode diferir do anterior
+	/// (m) e ainda ser um declive liso: numa rampa o corpo sobe o mesmo tanto
+	/// a cada passo; num degrau sem chapa a cápsula rola pela quina, e cada
+	/// passo sobe ou desce um tanto diferente.</summary>
+	private const float SlopeWobble = 0.006f;
+
+	/// <summary>Sair do chão andando e pousar em menos que isto (s), pouco
+	/// abaixo, é descer um degrau, não cair.</summary>
+	[Export] public float StepFallTime = 0.22f;
+
+	/// <summary>
+	/// O sobe e desce do corpo andando numa escada de degraus sem a chapa de
+	/// subida (27/11; Jhon: "quero que ajuste para subir qualquer tipo de
+	/// escadaria, de qualquer mapa, tranquilamente, humano ou lobo. Subir e
+	/// descer"). Com a chapa o corpo desliza numa rampa, e nada disto age.
+	///
+	/// É degrau: o corpo posto em cima de um (<see cref="TryStepUp"/>); uma
+	/// descida maior que a de um declive num passo; o subir ou descer que muda
+	/// de um passo para o outro (a cápsula rolando pela quina: medido, até 5 cm
+	/// num passo, nunca igual ao anterior); e sair do chão andando e pousar
+	/// logo, pouco abaixo (o lobo, que só gruda no chão depois do primeiro
+	/// degrau). No meio da escada (dois degraus seguidos) tudo o que o corpo
+	/// sobe e desce fica com o olho e com o corpo desenhado
+	/// (<see cref="Absorb"/>), que vão atrás na velocidade média da escada
+	/// (<see cref="EaseStep"/>): a tela e o boneco sobem como numa rampa.
+	/// Até 27/11 só o degrau de <see cref="TryStepUp"/> e a descida grande
+	/// eram alisados, e só no olho: descendo, a câmera caía com o corpo (1,6 cm
+	/// de desvio por quadro, até 9,5 correndo), e o boneco pulava 13 cm de um
+	/// quadro para o outro.
+	/// </summary>
+	private void FollowStairs(bool walking, bool climbed, float beforeY, float speedY, float delta)
+	{
+		float rise = GlobalPosition.Y - beforeY;
+		if (!IsOnFloor())
+		{
+			// Saiu do chão andando (não pulou): pode ser a beira de um degrau — a
+			// cápsula rola pela quina e cai no de baixo. Passou do tempo, é queda.
+			if (walking && speedY <= 0.01f) { _offFloor = 0; _offFloorFrom = beforeY; }
+			else if (_offFloor < double.MaxValue) _offFloor += delta;
+			if (_offFloor > StepFallTime || IsJumpAirborne) _offFloor = double.MaxValue;
+			_lastRise = _lastTurn = 0f;
+			if (_inRhythm && _offFloor < double.MaxValue) AbsorbStair(rise, delta);
+			return;
+		}
+
+		if (!walking)
+		{
+			// Pousou. De uma queda curta e baixa, andando, foi um degrau descido.
+			float fell = _offFloorFrom - GlobalPosition.Y;
+			bool shortFall = _offFloor < double.MaxValue;
+			_offFloor = double.MaxValue;
+			_lastRise = _lastTurn = 0f;
+			if (shortFall && !IsJumpAirborne && fell > 0.02f && fell <= (_form.IsWolf ? WolfStepHeight : StepHeight))
+			{
+				MarkStep();
+				if (_inRhythm) AbsorbStair(rise, delta);
+			}
+			return;
+		}
+
+		_offFloor = double.MaxValue;
+		// O vaivém da cápsula na quina: o subir (ou descer) do passo muda para um
+		// lado e logo para o outro. Entrar e sair de uma rampa muda para um lado só.
+		float turn = rise - _lastRise;
+		_lastRise = rise;
+		_sinceTurn += delta;
+		bool wobble = false;
+		if (Mathf.Abs(turn) > SlopeWobble)
+		{
+			wobble = _lastTurn != 0f && Mathf.Sign(turn) != Mathf.Sign(_lastTurn) && _sinceTurn < 0.25;
+			_lastTurn = turn;
+			_sinceTurn = 0;
+		}
+
+		if (climbed || -rise > SlopeDropPerStep)
+		{
+			MarkStep(climbed);
+			if (!_inRhythm) Absorb(rise);          // um degrau sozinho: só ele
+		}
+		else if (wobble) MarkStep();
+
+		if (_inRhythm) AbsorbStair(rise, delta);   // na escada: tudo o que o corpo sobe e desce
+		else _stairSpeed = 0f;
+	}
+
+	/// <summary>A mudança do último passo em que o subir do corpo mudou de
+	/// verdade, e há quanto tempo foi.</summary>
+	private float _lastTurn;
+	private double _sinceTurn;
+
+	/// <summary>No meio da escada: o que o corpo subiu ou desceu neste passo fica
+	/// com o olho e com o corpo desenhado, e entra na velocidade média dela (sem
+	/// o serrilhado dos degraus).</summary>
+	private void AbsorbStair(float rise, float delta)
+	{
+		Absorb(rise);
+		_stairSpeed = Mathf.Lerp(_stairSpeed, rise / Mathf.Max(delta, 0.0001f), 1f - Mathf.Exp(-delta / StairAverage));
+	}
+
+	/// <summary>Em quanto tempo a velocidade média da escada alcança a do corpo
+	/// (s): menos, a câmera segue cada degrau; mais, demora a pegar o ritmo.</summary>
+	[Export] public float StairAverage = 0.1f;
+
+	/// <summary>No meio da escada, o olho atrás do corpo apressa isto por metro
+	/// de atraso (1/s): com a velocidade média sozinha ele ficaria para trás o
+	/// que perdeu até pegar o ritmo.</summary>
+	[Export] public float StairPull = 2f;
+
+	/// <summary>A velocidade vertical média do corpo na escada (m/s, com sinal).</summary>
+	private float _stairSpeed;
+
+	/// <summary>Houve um degrau agora: dois seguidos são uma escada.</summary>
+	/// <param name="climbed">O corpo foi posto em cima de um degrau (<see cref="TryStepUp"/>).</param>
+	private void MarkStep(bool climbed = false)
+	{
+		bool running = _sinceStep < StepRhythmWindow;
+		_stepsInRow = running ? _stepsInRow + 1 : 1;
+		if (climbed) _climbsInRow = running ? _climbsInRow + 1 : 1;
+		else if (!running) _climbsInRow = 0;
+		_inRhythm = _stepsInRow >= StairSteps;
+		_sinceStep = 0;
+	}
+
+	/// <summary>Quantos degraus subidos em seguida (um degrau sozinho, mesmo com a
+	/// cápsula rolando na quina dele, é um).</summary>
+	private int _climbsInRow;
+
+	/// <summary>Quantos degraus seguidos fazem uma escada. Três: o pé e o alto de
+	/// uma rampa (a borda da chapa, o pouso) dão um ou dois de uma vez, e a rampa
+	/// não é escada — tratada como uma, o olho ficava até 48 cm para trás do lobo
+	/// descendo de quatro (medido).</summary>
+	private const int StairSteps = 3;
+	private int _stepsInRow;
+
+	/// <summary>Degraus seguidos (uma escada): o olho vai na velocidade média
+	/// dela; um só (o meio-fio), a <see cref="StepEase"/>.</summary>
+	private bool _inRhythm;
+
+	/// <summary>O corpo subiu (<paramref name="rise"/> positivo) ou desceu de
+	/// uma vez: o olho e o corpo desenhado ficam onde estavam e passam a ir
+	/// atrás dele (<see cref="EaseStep"/>).</summary>
+	private void Absorb(float rise)
+	{
+		if (rise == 0f) return;
+		_stepLift -= rise;
+		Vector3 head = _head.Position;
+		head.Y -= rise;
+		_head.Position = head;
+		// o alisamento do desenho não reparte este pedaço pelo quadro: o olho já compensa
+		_smoothing ??= GetNodeOrNull<VisualSmoothing>("VisualSmoothing");
+		if (_smoothing == null) return;
+		_smoothing.Stepped(Vector3.Up * rise);
+		LiftModel(0f);
+	}
+
+	/// <summary>O quanto o corpo desenhado está fora do lugar da física (m), atrás do olho.</summary>
+	private float _modelLift;
+
+	/// <summary>
+	/// O corpo desenhado vai com o olho depois de um degrau (27/11): o boneco não
+	/// pula de degrau em degrau. O do humano, sempre. O do lobo, só subindo uma
+	/// escada (dois degraus subidos em seguida): num degrau sozinho ele sobe de uma vez, como
+	/// antes — as patas dele procuram o chão (<see cref="WolfFootPlant"/>), e com o
+	/// corpo descido um degrau inteiro a perna não dobra o bastante: a pata entrava
+	/// 6 cm no degrau (PesDoLoboNoChao). Entra e sai devagar, sem pulo.
+	/// </summary>
+	private void LiftModel(float delta)
+	{
+		if (_smoothing == null) return;
+		float target = _form.IsWolf && !(_inRhythm && _climbsInRow >= 2) ? 0f : _stepLift;
+		_modelLift = _form.IsWolf ? Mathf.MoveToward(_modelLift, target, (2.5f + Mathf.Abs(_stairSpeed)) * delta) : target;
+		// (o do lobo nunca passa do olho: ele só alcança)
+		if (_form.IsWolf && Mathf.Abs(_modelLift) > Mathf.Abs(_stepLift)) _modelLift = _stepLift;
+		_smoothing.Lift = _modelLift;
 	}
 
 	/// <summary>A câmera atrás do corpo depois de um degrau (m; negativo: abaixo
 	/// dele, subindo), a velocidade com que ela o alcança, e o ritmo da escada.</summary>
-	private float _stepLift, _stepSpeed, _stepRate;
+	private float _stepLift, _stepSpeed;
 	private double _sinceStep = double.MaxValue;
 
 	/// <summary>
@@ -490,16 +670,16 @@ public partial class Player
 	/// chão andou bem menos do que queria e bateu em parede: tenta o mesmo
 	/// passo de um degrau acima e desce até achar chão. Achou chão, firme e
 	/// mais alto que antes, o corpo fica lá; a câmera desce o que subiu e
-	/// vem atrás (<see cref="EaseStep"/>), para o degrau não dar tranco.
+	/// vem atrás (<see cref="FollowStairs"/>), para o degrau não dar tranco.
 	/// </summary>
-	private void TryStepUp(Vector3 from, Vector3 wanted)
+	private bool TryStepUp(Vector3 from, Vector3 wanted)
 	{
 		var flatWanted = new Vector3(wanted.X, 0, wanted.Z);
 		float want = flatWanted.Length();
-		if (want < 0.0005f || !IsOnWall()) return;
+		if (want < 0.0005f || !IsOnWall()) return false;
 
 		Vector3 moved = GlobalPosition - from;
-		if (new Vector2(moved.X, moved.Z).Length() > want * 0.6f) return;
+		if (new Vector2(moved.X, moved.Z).Length() > want * 0.6f) return false;
 
 		float height = _form.IsWolf ? WolfStepHeight : StepHeight;
 		Vector3 up = Vector3.Up * height;
@@ -507,72 +687,55 @@ public partial class Player
 		// não passaria da quina.
 		Vector3 ahead = flatWanted.Normalized() * Mathf.Max(want, 0.12f);
 
-		if (!BodyMotion.ProbeStep(this, from, up, ahead, FloorMaxAngle, out Vector3 landed)) return;
+		if (!BodyMotion.ProbeStep(this, from, up, ahead, FloorMaxAngle, out Vector3 landed)) return false;
 		float rise = landed.Y - from.Y;
-		if (rise < 0.02f) return;
+		if (rise < 0.02f) return false;
 
 		GlobalPosition = landed;
-		Stepped(rise);
+		return true;
 	}
 
 	/// <summary>Quanto o corpo pode descer num passo, andando no chão, e ainda
 	/// ser declive (a rampa, a escada com chapa): o lobo de quatro a 7,4 m/s
 	/// numa rampa de 35° desce uns 7 cm por passo. Mais que isto foi o ímã
-	/// puxando o corpo um degrau abaixo.</summary>
+	/// puxando o corpo um degrau abaixo (até 27/11 o corpo só grudava no chão
+	/// até 10 cm, e num degrau de escada, de 21 cm, saía do chão e caía, pulando
+	/// degraus).</summary>
 	private const float SlopeDropPerStep = 0.08f;
-
-	/// <summary>
-	/// O corpo desceu <paramref name="drop"/> neste passo, andando no chão (27/11).
-	/// Até então o corpo só grudava no chão até 10 cm, e num degrau de escada (21
-	/// cm) saía do chão e caía, pulando degraus, e a câmera ia junto aos trancos;
-	/// agora o ímã o segura até um degrau abaixo (<see cref="StepHeight"/>), e o que
-	/// passa de um declive vira um degrau descido: a câmera fica onde estava e
-	/// vem atrás (<see cref="EaseStep"/>).
-	/// </summary>
-	private void SteppedDown(float drop)
-	{
-		if (drop > SlopeDropPerStep) Stepped(-drop);
-	}
-
-	/// <summary>O corpo subiu (<paramref name="rise"/> positivo) ou desceu um
-	/// degrau de uma vez: a câmera fica onde estava e passa a ir atrás dele; e
-	/// dois degraus seguidos dão o ritmo da escada.</summary>
-	private void Stepped(float rise)
-	{
-		_stepRate = _sinceStep < StepRhythmWindow ? Mathf.Abs(rise) / (float)Mathf.Max(_sinceStep, 0.001) : 0f;
-		_sinceStep = 0;
-		_stepLift -= rise;
-		Vector3 head = _head.Position;
-		head.Y -= rise;
-		_head.Position = head;
-		// o alisamento do desenho não reparte este pedaço pelo quadro: o olho já compensa
-		_smoothing ??= GetNodeOrNull<VisualSmoothing>("VisualSmoothing");
-		_smoothing?.Stepped(Vector3.Up * rise);
-	}
 
 	private VisualSmoothing _smoothing;
 
-	/// <summary>O olho alcança o corpo depois de um degrau: no ritmo da escada,
-	/// se há uma (<see cref="StepRhythmWindow"/>), ou a <see cref="StepEase"/>;
-	/// apressando se ficou longe (<see cref="StepLag"/>); e sem sair nem parar
-	/// de uma vez (<see cref="StepAccel"/>).</summary>
+	/// <summary>O olho e o corpo desenhado alcançam o corpo depois de um degrau:
+	/// na velocidade média da escada, se há uma (<see cref="FollowStairs"/>), ou
+	/// a <see cref="StepEase"/>; apressando se ficaram longe
+	/// (<see cref="StepLag"/>); e sem sair nem parar de uma vez
+	/// (<see cref="StepAccel"/>).</summary>
 	private void EaseStep(double delta)
 	{
 		_sinceStep += delta;
-		if (_sinceStep > StepRhythmWindow) _stepRate = 0f;
-		if (_stepLift == 0f) { _stepSpeed = 0f; return; }
+		if (_sinceStep > StepRhythmWindow) { _inRhythm = false; _stepsInRow = _climbsInRow = 0; }
+		_smoothing ??= GetNodeOrNull<VisualSmoothing>("VisualSmoothing");
+		if (_stepLift == 0f)
+		{
+			_stepSpeed = 0f;
+			LiftModel((float)delta);
+			return;
+		}
 
 		float dt = (float)delta, distance = Mathf.Abs(_stepLift);
-		float want = (_stepRate > 0f ? _stepRate : StepEase) + Mathf.Max(0f, distance - StepLag) * StepCatchUp;
-		// chegando, freia para parar no lugar (v² = 2·a·d)
-		want = Mathf.Min(want, Mathf.Sqrt(2f * StepAccel * distance));
-		_stepSpeed = Mathf.MoveToward(_stepSpeed, want, StepAccel * dt);
+		float want = (_inRhythm ? Mathf.Abs(_stairSpeed) + distance * StairPull : StepEase) + Mathf.Max(0f, distance - StepLag) * StepCatchUp;
+		// chegando, freia para parar no lugar (v² = 2·a·d); na escada não: o corpo segue subindo
+		if (!_inRhythm) want = Mathf.Min(want, Mathf.Sqrt(2f * StepAccel * distance));
+		// (na escada a velocidade média já muda devagar; o limite de arranque por cima
+		// dela deixava o olho meio metro para trás até pegar o ritmo)
+		_stepSpeed = _inRhythm ? want : Mathf.MoveToward(_stepSpeed, want, StepAccel * dt);
 		// (sempre anda um pouco: a freada não pode deixar a câmera parada a um fio do corpo)
 		float previous = _stepLift;
 		_stepLift = Mathf.MoveToward(_stepLift, 0f, Mathf.Max(_stepSpeed, 0.05f) * dt);
 		Vector3 head = _head.Position;
 		head.Y += _stepLift - previous;
 		_head.Position = head;
+		LiftModel(dt);
 	}
 
 	/// <summary>

@@ -50,7 +50,11 @@ public partial class BodyNoiseProfile : Resource
 	/// Trocou o clipe ou a velocidade de andar, refaça a conta.
 	/// </summary>
 	[ExportGroup("Passada")]
-	[Export] public float StrideHuman = 0.94f;
+	// (1,17 m desde 27/11: o humano anda 2,82 m/s e a perna do corpo do jogo pisa a cada
+	// 0,417 s — meio ciclo do clipe de corrida a 0,88×. Era 0,94, a conta do ciclo a 1×.
+	// Com corpo animado o passo sai da pisada dele, CharacterAnimator.Feet; isto vale
+	// para o corpo sem modelo.)
+	[Export] public float StrideHuman = 1.17f;
 
 	/// <summary>O humano correndo (Shift): o "Rifle Run" do Mixamo anda
 	/// 3,35 m/s com um ciclo de 0,667 s, duas pisadas.</summary>

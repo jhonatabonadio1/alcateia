@@ -72,7 +72,7 @@ public partial class KillCam
 		// A escolha de conjunto (na hora de renascer) cobre tudo.
 		_hudLayer.Visible = !UiState.AnyOpen;
 		if (_subjectHud != null && IsInstanceValid(_subjectHud)) _subjectHud.Visible = !UiState.AnyOpen;
-		bool watching = _phase is Phase.First or Phase.Above && _mate != null && IsInstanceValid(_mate);
+		bool watching = _phase == Phase.First && _mate != null && IsInstanceValid(_mate);
 
 		// Quem: no segundo do corpo caindo, quem te matou; depois, quem se vê.
 		Node3D who = watching ? _mate : _phase == Phase.Death ? _killer : null;
@@ -94,12 +94,7 @@ public partial class KillCam
 
 		// O título e as teclas.
 		_title.Text = _phase == Phase.Death ? "" : "ESPECTADOR";
-		_hint.Text = _phase switch
-		{
-			Phase.Death => "ESPAÇO: ESPECTADOR",
-			Phase.First => "CLIQUES: TROCAR ALIADO  ·  ESPAÇO: VISTA DE CIMA",
-			Phase.Above => "CLIQUES: TROCAR ALIADO  ·  ESPAÇO: CÂMERA LIVRE",
-			_ => "WASD E MOUSE  ·  ESPAÇO: VOLTAR AOS ALIADOS"
-		};
+		_hint.Text = _phase == Phase.First ? "CLIQUES: TROCAR ALIADO  ·  ESPAÇO: VOLTAR"
+			: HasMate ? "CLIQUE: TELA DE UM ALIADO" : "";
 	}
 }

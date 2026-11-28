@@ -51,6 +51,8 @@ services:
       ALCATEIA_TRUSTED_PROXIES: ${ALCATEIA_TRUSTED_PROXIES:-}
       ALCATEIA_IP_ALLOW: ${ALCATEIA_IP_ALLOW:-}
       ALCATEIA_METRICS_KEY: ${ALCATEIA_METRICS_KEY:-}
+      # De onde o cliente de instalação baixa o jogo (cliente/LEIA-ME.md).
+      ALCATEIA_DOWNLOADS: ${ALCATEIA_DOWNLOADS:-}
     ports:
       - "${ALCATEIA_PORT:-8080}:8080"
       # O painel só na própria máquina: de fora, por túnel SSH ou VPN

@@ -44,6 +44,22 @@ public partial class LobbyLink : Node
 	/// <summary>Há uma sala aberta nesta sessão (sem criar a ligação só para perguntar).</summary>
 	public static bool InRoom => _instance != null && IsInstanceValid(_instance) && _instance.Room != null;
 
+	/// <summary>A sala aberta é a de uma partida do jogo rápido (os times, o
+	/// mapa e as regras são da fila do servidor: não se mexe nela).</summary>
+	public static bool InQuickRoom => InRoom && (_instance.Room["settings"]?["quick"]?.GetValue<bool>() ?? false);
+
+	/// <summary>O último estado do jogo rápido que o servidor mandou
+	/// (<c>queue</c>: <c>searching</c>, <c>idle</c> ou <c>found</c>), ou null.</summary>
+	public JsonObject Queue { get; private set; }
+
+	/// <summary>O jogo rápido mudou: começou a procurar (este jogador ou o
+	/// líder do grupo dele), parou (com o porquê em <c>note</c>) ou achou.</summary>
+	public event Action<JsonObject> QueueChanged;
+
+	/// <summary>Entra na fila do jogo rápido (num grupo, só o líder: o grupo vai junto).</summary>
+	public void JoinQueue() => Send("queue.join");
+	public void LeaveQueue() => Send("queue.leave");
+
 	/// <summary>As últimas mensagens do chat, para a tela que abrir depois.</summary>
 	public List<(string From, string Text)> Chat { get; } = new();
 	private const int ChatKept = 80;
@@ -86,7 +102,11 @@ public partial class LobbyLink : Node
 
 		_ = Task.Run(() => ReadLoop(_socket, _cancel.Token));
 		_noPhotos = false;            // conexão nova, servidor talvez novo
+		_noFriends = false;
 		SetPhoto(Avatars.Selected);   // a foto chega antes de qualquer sala
+		// O servidor manda os amigos sozinho; pedir serve para o de antes dos
+		// amigos responder que não conhece, e a tela dizer isso.
+		SendFriend("friends.list");
 		return true;
 	}
 
@@ -97,6 +117,10 @@ public partial class LobbyLink : Node
 		_socket = null;
 		Room = null;
 		Rooms = new JsonArray();
+		// Caiu a ligação: o servidor tira da fila quem cai.
+		if (Queue?["state"]?.GetValue<string>() == "searching") SetQueue(new JsonObject { ["t"] = "queue", ["state"] = "idle" });
+		Queue = null;
+		Social.Reset();
 	}
 
 	public void CreateRoom(JsonObject settings) => Send("room.create", ("settings", settings));
@@ -141,6 +165,15 @@ public partial class LobbyLink : Node
 	public void RemoveBot(long id) => Send("room.bot.remove", ("id", id));
 	public void Say(string text) => Send("chat", ("text", text));
 	public void RefreshRooms() => Send("rooms.list");
+
+	/// <summary>Uma mensagem de amigos (<see cref="Social"/>). Servidor de
+	/// antes dos amigos: não manda mais nesta conexão.</summary>
+	public void SendFriend(string type, params (string Key, JsonNode Value)[] fields)
+	{
+		if (!_noFriends) Send(type, fields);
+	}
+
+	private bool _noFriends;
 
 	/// <summary>A foto de perfil escolhida, para os outros verem na sala e
 	/// no placar. O servidor confere se ela é sua (grátis ou comprada).</summary>
@@ -211,8 +244,14 @@ public partial class LobbyLink : Node
 	{
 		while (_inbox.TryDequeue(out JsonObject m))
 		{
+			// Amigos, pedidos e convites: o espelho fica no Social.
+			if (Social.Apply(m, Time.GetTicksMsec() / 1000.0)) continue;
+
 			switch (m["t"]?.GetValue<string>())
 			{
+				case "queue":
+					SetQueue(m);
+					break;
 				case "rooms":
 					Rooms = (JsonArray)m["rooms"].DeepClone();
 					Changed?.Invoke();
@@ -240,6 +279,19 @@ public partial class LobbyLink : Node
 						_noPhotos = true;
 						break;
 					}
+					// Servidor de antes do jogo rápido: a busca para, com o recado.
+					if (code == "mensagem_desconhecida" && message.Contains("queue."))
+					{
+						SetQueue(new JsonObject { ["t"] = "queue", ["state"] = "idle", ["note"] = "Este servidor ainda não tem o jogo rápido." });
+						break;
+					}
+					// Servidor de antes dos amigos: a tela diz isso, sem erro.
+					if (code == "mensagem_desconhecida" && (message.Contains("friend") || message.Contains("invite.") || message.Contains("group.")))
+					{
+						_noFriends = true;
+						Social.MarkUnsupported();
+						break;
+					}
 					Failed?.Invoke(code, message);
 					break;
 				case "match.start":
@@ -264,6 +316,12 @@ public partial class LobbyLink : Node
 					break;
 			}
 		}
+	}
+
+	private void SetQueue(JsonObject state)
+	{
+		Queue = state;
+		QueueChanged?.Invoke(state);
 	}
 
 	public override void _ExitTree()

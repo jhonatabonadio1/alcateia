@@ -9,6 +9,7 @@ using Alcateia.Aplicacao.Frota;
 using Alcateia.Aplicacao.Portas;
 using Alcateia.Dominio;
 using Alcateia.Dominio.Contas;
+using Alcateia.Dominio.Fila;
 using Alcateia.Dominio.Frota;
 using Alcateia.Dominio.Partidas;
 using Alcateia.Dominio.Salas;
@@ -27,13 +28,23 @@ namespace Alcateia.Aplicacao.Saguao;
 /// <c>match.start</c>, <c>match.end</c>, <c>pong</c> e <c>error</c>. O
 /// formato de cada uma está em servidor/LEIA-ME.md.
 ///
+/// Os amigos (lista, pedidos, presença e convites para a sala) ficam na
+/// outra parte da classe, <c>LobbyService.Friends.cs</c>; os grupos (amigos
+/// que entram juntos nas salas, no mesmo time), em
+/// <c>LobbyService.Groups.cs</c>; o jogo rápido (a fila que junta os
+/// jogadores por habilidade e monta os times), em <c>LobbyService.Queue.cs</c>.
+///
+/// Cada conta tem até duas ligações: a do jogo (<see cref="_sessions"/>) e a
+/// do cliente de instalação (<see cref="_apps"/>), que só vê e mexe nos
+/// amigos — não entra em sala, grupo nem chat.
+///
 /// As salas vivem em memória: sala é coisa de agora, e se o servidor
 /// reiniciar os jogadores voltam para a lista. As regras de cada sala são
 /// do domínio (<see cref="Room"/>); aqui ficam quem está ligado, a trava
 /// e quem precisa saber do quê. A conexão em si (o WebSocket) é de fora:
 /// chega como <see cref="ILobbyConnection"/>.
 /// </summary>
-public sealed class LobbyService : IDisposable
+public sealed partial class LobbyService : IDisposable
 {
 	public const int MaxChat = 200;
 
@@ -61,6 +72,43 @@ public sealed class LobbyService : IDisposable
 		/// e o servidor de partida só aceita levar a arma que está aqui ou é de série.
 		/// Lidos ao entrar e de novo antes de começar a partida.</summary>
 		internal HashSet<string> Items = new();
+
+		// ---- amigos (LobbyService.Friends.cs)
+		/// <summary>A lista de amigos e pedidos da conta, lida do banco ao
+		/// entrar e de novo a cada mudança.</summary>
+		internal Dictionary<long, FriendLink> Links = new();
+		/// <summary>Quantos de <see cref="Links"/> são amigos. Zero: a conta
+		/// não custa nada à presença.</summary>
+		internal int FriendCount;
+		/// <summary>A presença como os amigos a viram por último.</summary>
+		internal string Presence;
+		/// <summary>A conexão acabou (caiu, foi derrubada ou trocada por outra).</summary>
+		internal bool Gone;
+		/// <summary>Convites para sala recebidos, por quem convidou.</summary>
+		internal readonly Dictionary<long, (int Room, DateTime At)> Invites = new();
+		internal readonly Queue<DateTime> FriendAdds = new();
+		internal readonly Queue<DateTime> FriendWrites = new();
+		internal readonly Queue<DateTime> InvitesSent = new();
+
+		// ---- grupo (LobbyService.Groups.cs)
+		/// <summary>O grupo em que a conta está, ou null.</summary>
+		internal Group Group;
+		/// <summary>Convites para grupo recebidos: de quem e quando.</summary>
+		internal readonly Dictionary<long, DateTime> GroupInvites = new();
+		internal readonly Queue<DateTime> GroupInvitesSent = new();
+
+		// ---- jogo rápido (LobbyService.Queue.cs)
+		/// <summary>A nota de habilidade da conta, lida ao entrar e acertada no
+		/// fim de cada partida de fila.</summary>
+		internal Skill Skill = new(SkillRules.Start, 0);
+		/// <summary>A entrada na fila (a dele, ou a do grupo dele), ou null.</summary>
+		internal QueueTicket Ticket;
+		internal readonly Queue<DateTime> QueueJoins = new();
+
+		/// <summary>A ligação é do cliente de instalação, não do jogo: vê os
+		/// amigos, pede e aceita amizade, e aparece para eles como "no
+		/// aplicativo". Não entra em sala, grupo nem chat.</summary>
+		internal bool App;
 	}
 
 	private readonly FleetService _fleet;
@@ -69,6 +117,9 @@ public sealed class LobbyService : IDisposable
 	private readonly TimeSpan _ticketLife;
 	private readonly object _lock = new();
 	private readonly Dictionary<long, Session> _sessions = new();
+	/// <summary>As ligações dos clientes de instalação, por conta: à parte das
+	/// do jogo, para abrir o jogo não derrubar o aplicativo (nem o contrário).</summary>
+	private readonly Dictionary<long, Session> _apps = new();
 	private readonly Dictionary<int, Room> _rooms = new();
 	private int _nextRoom = 1;
 
@@ -122,6 +173,8 @@ public sealed class LobbyService : IDisposable
 				_listChanged = false;
 				outbox.To(_sessions.Values.Where(s => s.Room == null), RoomsMessage());
 			}
+			TickQueue(outbox);
+			FlushFriends(outbox);
 		}
 		await outbox.Deliver();
 	}
@@ -158,8 +211,8 @@ public sealed class LobbyService : IDisposable
 		var outbox = new Outbox();
 		lock (_lock)
 		{
-			if (!_sessions.TryGetValue(accountId, out Session session)) return false;
-			outbox.To(session, new JsonObject { ["t"] = "conta" });
+			outbox.To(Live(accountId), new JsonObject { ["t"] = "conta" });
+			if (!_sessions.ContainsKey(accountId)) return false;
 		}
 		await outbox.Deliver();
 		return true;
@@ -170,16 +223,26 @@ public sealed class LobbyService : IDisposable
 	public async Task<bool> Kick(long accountId, string why)
 	{
 		var outbox = new Outbox();
-		Session session;
+		Session session, app;
 		lock (_lock)
 		{
-			if (!_sessions.TryGetValue(accountId, out session)) return false;
-			Leave(session, outbox);
-			_sessions.Remove(accountId);
+			// O aplicativo da conta cai junto: banido não fica olhando os amigos.
+			if (_apps.Remove(accountId, out app)) app.Gone = true;
+			if (_sessions.TryGetValue(accountId, out session))
+			{
+				session.Gone = true;
+				QueueLeave(session, outbox, "Um jogador do grupo caiu: a busca parou.");
+				LeaveGroup(session, outbox);
+				Leave(session, outbox);
+				_sessions.Remove(accountId);
+			}
+			if ((session ?? app) is Session gone) NotifyFriends(gone, outbox);
+			FlushFriends(outbox);
 		}
 		await outbox.Deliver();
-		_ = session.Connection.Close(why);
-		return true;
+		if (app != null) _ = app.Connection.Close(why);
+		if (session != null) _ = session.Connection.Close(why);
+		return session != null;
 	}
 
 	private void RequireMap(JsonObject settings)
@@ -197,8 +260,62 @@ public sealed class LobbyService : IDisposable
 
 	// ------------------------------------------------------------ a conexão
 
-	/// <summary>Um jogador chegou. Uma conexão por conta: a nova derruba a velha.</summary>
-	public async Task<Session> Connect(Account account, ILobbyConnection connection)
+	/// <summary>Um jogador chegou. Uma conexão por conta e por programa: a
+	/// nova derruba a velha. <paramref name="app"/>: é o cliente de instalação
+	/// (<see cref="ConnectApp"/>).</summary>
+	public async Task<Session> Connect(Account account, ILobbyConnection connection, bool app = false)
+	{
+		if (app) return await ConnectApp(account, connection);
+
+		long xp = 0;
+		var skill = new Skill(SkillRules.Start, 0);
+		try
+		{
+			Profile profile = await _accounts.Profile(account.Id);
+			xp = profile.Xp;
+			skill = SkillOf(profile);
+		}
+		catch (Failure)
+		{
+			// Conta sem perfil ainda entra; só aparece sem patente.
+		}
+
+		var session = new Session { Account = account, Connection = connection, Xp = xp, Skill = skill, Photos = await OwnedPhotos(account.Id), Items = await OwnedItems(account.Id) };
+		SetLinks(session, await LoadLinks(account.Id));
+		var outbox = new Outbox();
+		Session old;
+		lock (_lock)
+		{
+			_sessions.TryGetValue(account.Id, out old);
+			if (old != null)
+			{
+				old.Gone = true;
+				QueueLeave(old, outbox, "A conta abriu o jogo em outro lugar: a busca parou.");
+				LeaveGroup(old, outbox);
+				Leave(old, outbox);
+			}
+			_sessions[account.Id] = session;
+			outbox.To(session, Hello(account));
+			outbox.To(session, RoomsMessage());
+			// A lista de amigos vem sem pedir, e os amigos ligados ficam sabendo que chegou.
+			outbox.Dirty.Add(session);
+			SyncPresence(session, outbox);
+			FlushFriends(outbox);
+		}
+
+		await outbox.Deliver();
+		if (old != null) _ = old.Connection.Close("outra conexão da mesma conta");
+		return session;
+	}
+
+	/// <summary>
+	/// O cliente de instalação de uma conta chegou (Jhon, 27/11: "cliente de
+	/// instalação igual o battle.net [...] fazer login, adicionar novos
+	/// amigos"). Recebe o olá e a lista de amigos, e daí em diante o que muda
+	/// nela; os amigos passam a vê-lo "no aplicativo" enquanto o jogo dele
+	/// estiver fechado. Não mexe na ligação do jogo.
+	/// </summary>
+	private async Task<Session> ConnectApp(Account account, ILobbyConnection connection)
 	{
 		long xp = 0;
 		try
@@ -207,25 +324,47 @@ public sealed class LobbyService : IDisposable
 		}
 		catch (Failure)
 		{
-			// Conta sem perfil ainda entra; só aparece sem patente.
 		}
 
-		var session = new Session { Account = account, Connection = connection, Xp = xp, Photos = await OwnedPhotos(account.Id), Items = await OwnedItems(account.Id) };
+		var session = new Session { Account = account, Connection = connection, Xp = xp, App = true };
+		SetLinks(session, await LoadLinks(account.Id));
 		var outbox = new Outbox();
 		Session old;
 		lock (_lock)
 		{
-			_sessions.TryGetValue(account.Id, out old);
-			if (old != null) Leave(old, outbox);
-			_sessions[account.Id] = session;
-			outbox.To(session, new JsonObject { ["t"] = "hello", ["id"] = account.Id, ["name"] = account.Name, ["online"] = _sessions.Count });
-			outbox.To(session, RoomsMessage());
+			if (_apps.TryGetValue(account.Id, out old)) old.Gone = true;
+			_apps[account.Id] = session;
+			outbox.To(session, Hello(account));
+			outbox.Dirty.Add(session);
+			// Sem o jogo aberto, os amigos veem a conta sair de "fora do ar".
+			if (old == null && !_sessions.ContainsKey(account.Id)) NotifyFriends(session, outbox);
+			FlushFriends(outbox);
 		}
 
 		await outbox.Deliver();
-		if (old != null) _ = old.Connection.Close("outra conexão da mesma conta");
+		if (old != null) _ = old.Connection.Close("outro aplicativo da mesma conta");
 		return session;
 	}
+
+	private JsonObject Hello(Account account) => new()
+	{
+		["t"] = "hello", ["id"] = account.Id, ["name"] = account.Name,
+		["tag"] = AccountRules.TagText(account.Tag), ["online"] = _sessions.Count
+	};
+
+	/// <summary>As ligações vivas de uma conta: a do jogo e a do aplicativo.</summary>
+	private IEnumerable<Session> Live(long accountId)
+	{
+		if (_sessions.TryGetValue(accountId, out Session game)) yield return game;
+		if (_apps.TryGetValue(accountId, out Session app)) yield return app;
+	}
+
+	/// <summary>Esta ainda é a ligação que vale para a conta (não foi trocada nem caiu).</summary>
+	private bool IsCurrent(Session s) =>
+		!s.Gone && (s.App ? _apps : _sessions).TryGetValue(s.Account.Id, out Session current) && current == s;
+
+	/// <summary>O que o cliente de instalação pode pedir: os amigos e mais nada.</summary>
+	private static bool AllowedInApp(string type) => type is "ping" or "friends.list" || IsFriendWrite(type);
 
 	/// <summary>Uma mensagem do jogador. Pedido que não dá vira um <c>error</c> só para ele.</summary>
 	public async Task Handle(Session session, string text)
@@ -235,8 +374,22 @@ public sealed class LobbyService : IDisposable
 		{
 			if (JsonNode.Parse(text) is not JsonObject message)
 				throw new Failure(FailureKind.Invalid, "mensagem_invalida", "Mensagem inválida.");
-			await RefreshItemsFor(session, message["t"]?.GetValue<string>() ?? "");
-			lock (_lock) Dispatch(session, message, outbox);
+			string type = message["t"]?.GetValue<string>() ?? "";
+			if (session.App && !AllowedInApp(type))
+				throw new Failure(FailureKind.Conflict, "so_no_jogo", "Isso só dá para fazer de dentro do jogo.");
+			// O que grava amizade passa pelo banco, fora da trava.
+			if (IsFriendWrite(type)) await FriendWrite(session, type, message, outbox);
+			else
+			{
+				await RefreshItemsFor(session, type);
+				lock (_lock)
+				{
+					// Mesmo que o pedido não dê, o que mudou antes dele (saiu da
+					// sala para entrar noutra, por exemplo) chega aos amigos.
+					try { Dispatch(session, message, outbox); }
+					finally { FlushFriends(outbox); }
+				}
+			}
 		}
 		catch (Failure e)
 		{
@@ -255,10 +408,24 @@ public sealed class LobbyService : IDisposable
 		var outbox = new Outbox();
 		lock (_lock)
 		{
-			if (_sessions.TryGetValue(session.Account.Id, out Session current) && current == session)
+			if (IsCurrent(session))
 			{
-				Leave(session, outbox);
-				_sessions.Remove(session.Account.Id);
+				session.Gone = true;
+				if (session.App)
+				{
+					_apps.Remove(session.Account.Id);
+					// Com o jogo aberto, fechar o aplicativo não muda o que os amigos veem.
+					if (!_sessions.ContainsKey(session.Account.Id)) NotifyFriends(session, outbox);
+				}
+				else
+				{
+					QueueLeave(session, outbox, "Um jogador do grupo caiu: a busca parou.");
+					LeaveGroup(session, outbox);
+					Leave(session, outbox);
+					_sessions.Remove(session.Account.Id);
+					NotifyFriends(session, outbox);
+				}
+				FlushFriends(outbox);
 			}
 		}
 		await outbox.Deliver();
@@ -278,11 +445,15 @@ public sealed class LobbyService : IDisposable
 		var gains = match.Lines.ToDictionary(l => l.Seat.AccountId, Gain);
 
 		var outbox = new Outbox();
+		IReadOnlyList<SkillRules.Change> rated = null;
 		lock (_lock)
 		{
 			Room room = _rooms.Values.FirstOrDefault(r => r.MatchKey == match.Assignment.MatchKey);
+			// Quem ainda estava jogando quando acabou (o resto largou a partida).
+			HashSet<long> present = room?.Members.Where(m => m.InMatch).Select(m => m.Account.Id).ToHashSet();
 			if (room != null && room.EndMatch(match.Assignment.MatchKey))
 			{
+				if (room.Quick) rated = RateQuick(match, present);
 				foreach (RoomMember m in room.Members)
 				{
 					var end = new JsonObject { ["t"] = "match.end", ["match"] = summary.DeepClone() };
@@ -294,11 +465,14 @@ public sealed class LobbyService : IDisposable
 					}
 					outbox.To(SessionOf(m), end);
 				}
-				RoomState(room, outbox);
+				if (room.Quick) Dissolve(room, outbox);
+				else RoomState(room, outbox);
 				ListChanged();
 			}
+			FlushFriends(outbox);
 		}
 		await outbox.Deliver();
+		await SaveRated(rated);
 	}
 
 	/// <summary>O que um jogador levou de uma partida, como vai para o cliente.</summary>
@@ -317,12 +491,17 @@ public sealed class LobbyService : IDisposable
 		{
 			if (!_rooms.TryGetValue(lost.Assignment.RoomId, out Room room) || !room.EndMatch(lost.Assignment.MatchKey)) return;
 
+			// Sala do jogo rápido não volta a esperar: acaba, e ninguém sobe nem desce de nota.
+			string after = room.Quick ? "" : " A sala voltou a esperar.";
 			JsonObject why = lost.Reason == MatchLoss.ServerDown
-				? ErrorMessage("servidor_caiu", "O servidor da partida caiu. A sala voltou a esperar.")
-				: ErrorMessage("partida_encerrada", "A partida foi encerrada sem resultado. A sala voltou a esperar.");
+				? ErrorMessage("servidor_caiu", "O servidor da partida caiu." + after)
+				: ErrorMessage("partida_encerrada", "A partida foi encerrada sem resultado." + after);
 			foreach (RoomMember m in room.Members) outbox.To(SessionOf(m), why);
-			RoomState(room, outbox);
+			_quick.Remove(lost.Assignment.MatchKey);
+			if (room.Quick) Dissolve(room, outbox);
+			else RoomState(room, outbox);
 			ListChanged();
+			FlushFriends(outbox);
 		}
 		_ = outbox.Deliver();
 	}
@@ -332,6 +511,10 @@ public sealed class LobbyService : IDisposable
 	private void Dispatch(Session c, JsonObject m, Outbox outbox)
 	{
 		string type = m["t"]?.GetValue<string>() ?? "";
+		// Quem está na fila e resolve ir para uma sala sai da fila (a dele ou a do grupo).
+		if (c.Ticket != null && type is "room.create" or "room.join" or "invite.accept")
+			QueueLeave(c, outbox, "Você foi para uma sala: a busca parou.");
+
 		switch (type)
 		{
 			case "ping":
@@ -352,13 +535,11 @@ public sealed class LobbyService : IDisposable
 				break;
 
 			case "room.leave":
-				Leave(c, outbox);
-				outbox.To(c, RoomsMessage());
+				LeaveTogether(c, outbox);
 				break;
 
 			case "room.team":
-				InRoom(c).ChangeTeam(c.Account.Id, m["team"]?.GetValue<int>() ?? 0);
-				RoomState(c.Room, outbox);
+				ChangeTeam(c, m["team"]?.GetValue<int>() ?? 0, outbox);
 				break;
 
 			case "room.ready":
@@ -404,6 +585,55 @@ public sealed class LobbyService : IDisposable
 				else _ = RecheckPhoto(c, photo);   // pode ter acabado de comprar
 				break;
 
+			case "friends.list":
+				outbox.Dirty.Add(c);
+				break;
+
+			case "friend.invite":
+				Invite(c, m["id"]?.GetValue<long>() ?? 0, outbox);
+				break;
+
+			case "invite.accept":
+				AcceptInvite(c, m["from"]?.GetValue<long>() ?? 0, outbox);
+				break;
+
+			case "invite.decline":
+				DeclineInvite(c, m["from"]?.GetValue<long>() ?? 0, outbox);
+				break;
+
+			case "queue.join":
+				QueueJoin(c, outbox);
+				break;
+
+			case "queue.leave":
+				QueueLeave(c, outbox, null);
+				break;
+
+			case "group.invite":
+				GroupInvite(c, m["id"]?.GetValue<long>() ?? 0, outbox);
+				break;
+
+			case "group.accept":
+				GroupAccept(c, m["from"]?.GetValue<long>() ?? 0, outbox);
+				break;
+
+			case "group.decline":
+				GroupDecline(c, m["from"]?.GetValue<long>() ?? 0, outbox);
+				break;
+
+			case "group.leave":
+				if (c.Group == null) throw GroupRules.NoGroup();
+				LeaveGroup(c, outbox);
+				break;
+
+			case "group.kick":
+				GroupKick(c, m["id"]?.GetValue<long>() ?? 0, outbox);
+				break;
+
+			case "group.lead":
+				GroupPromote(c, m["id"]?.GetValue<long>() ?? 0, outbox);
+				break;
+
 			default:
 				throw new Failure(FailureKind.Invalid, "mensagem_desconhecida", $"Não conheço '{type}'.");
 		}
@@ -412,6 +642,11 @@ public sealed class LobbyService : IDisposable
 	private void Create(Session c, JsonObject settings, Outbox outbox)
 	{
 		if (_rooms.Count >= _maxRooms) throw new Failure(FailureKind.Unavailable, "cheio", "O servidor está com salas demais.");
+		if (c.Group != null)
+		{
+			CreateWithGroup(c, settings, outbox);
+			return;
+		}
 		Leave(c, outbox);
 
 		Room room = Room.Create(_nextRoom++, c.Account, c.Xp, settings);
@@ -420,10 +655,15 @@ public sealed class LobbyService : IDisposable
 		Changed(room, outbox);
 	}
 
-	private void Join(Session c, int id, string password, Outbox outbox)
+	private void Join(Session c, int id, string password, Outbox outbox, bool invited = false)
 	{
 		if (!_rooms.TryGetValue(id, out Room room)) throw new Failure(FailureKind.NotFound, "sala_sumiu", "Essa sala não existe mais.");
 		if (c.Room == room) return;
+		if (c.Group != null)
+		{
+			JoinWithGroup(c, room, password, invited, outbox);
+			return;
+		}
 
 		// Com a partida em curso (Jhon, 24/11: "ao sair da partida, posso entrar
 		// nela novamente caso tenha vaga"; 25/11: "ele entra na sala para poder
@@ -436,7 +676,7 @@ public sealed class LobbyService : IDisposable
 		int team = playing ? _fleet.SeatTeam(room.MatchKey, c.Account.Id) : 0;
 
 		// A sala nova confere tudo antes: recusado, o jogador fica onde estava.
-		room.Join(c.Account, c.Xp, password, team);
+		room.Join(c.Account, c.Xp, password, team, invited);
 		Leave(c, outbox);
 		c.Room = room;
 		Changed(room, outbox);
@@ -490,6 +730,7 @@ public sealed class LobbyService : IDisposable
 		room.Leave(c.Account.Id);
 		c.Room = null;
 		outbox.To(c, new JsonObject { ["t"] = "left", ["id"] = room.Id });
+		if (!c.Gone) SyncPresence(c, outbox);
 
 		if (room.IsEmpty)
 		{
@@ -499,6 +740,7 @@ public sealed class LobbyService : IDisposable
 			if (room.State == Dominio.Salas.RoomState.Playing)
 			{
 				_fleet.Release(room.MatchKey);
+				_quick.Remove(room.MatchKey);
 				room.EndMatch(room.MatchKey);
 			}
 			_rooms.Remove(room.Id);
@@ -627,6 +869,7 @@ public sealed class LobbyService : IDisposable
 	{
 		var list = new JsonArray();
 		IEnumerable<Room> shown = _rooms.Values
+			.Where(r => !r.Quick)   // a sala do jogo rápido não é de entrar: quem a monta é a fila
 			.OrderByDescending(r => r.HasRoom)
 			.ThenByDescending(r => r.Id)
 			.Take(MaxListed);
@@ -680,6 +923,10 @@ public sealed class LobbyService : IDisposable
 			if (type == "room.enter") who = new List<Session> { session };
 			else if (type is "room.start" or "room.restart" && session.Room != null)
 				who = session.Room.Members.Select(SessionOf).Where(x => x != null).ToList();
+			// A partida da fila começa sem ninguém pedir: os itens valem como estavam ao entrar nela.
+			else if (type == "queue.join")
+				who = session.Group == null ? new List<Session> { session }
+					: session.Group.Members.Select(id => _sessions.TryGetValue(id, out Session x) ? x : null).Where(x => x != null).ToList();
 			else return;
 		}
 		foreach (Session x in who)
@@ -715,6 +962,7 @@ public sealed class LobbyService : IDisposable
 		if (c.Photo == photo) return;
 		c.Photo = photo;
 		if (c.Room != null) RoomState(c.Room, outbox);
+		SyncPresence(c, outbox);
 	}
 
 	/// <summary>Pediu uma foto da loja que não estava na lista: relê os itens
@@ -727,6 +975,7 @@ public sealed class LobbyService : IDisposable
 		{
 			c.Photos = owned;
 			if (owned.Contains(photo)) SetPhoto(c, photo, outbox);
+			FlushFriends(outbox);
 		}
 		await outbox.Deliver();
 	}
@@ -787,6 +1036,10 @@ public sealed class LobbyService : IDisposable
 			state["closing"] = closing;
 		}
 		outbox.To(room.Members.Select(SessionOf), state);
+
+		// Entrar, sair, a partida começar ou acabar muda o que os amigos de
+		// cada um veem (quem não tem amigo não custa nada aqui).
+		foreach (RoomMember m in room.Members) SyncPresence(SessionOf(m), outbox);
 	}
 
 	/// <summary>A lista de salas mudou: vai na próxima leva (<see cref="FlushList"/>).</summary>
@@ -800,6 +1053,15 @@ public sealed class LobbyService : IDisposable
 	private sealed class Outbox
 	{
 		private readonly List<(Session Session, string Text)> _items = new();
+
+		/// <summary>Quem precisa da lista de amigos de novo: junta aqui e sai
+		/// uma mensagem só por pessoa, montada no fim da trava
+		/// (<see cref="FlushFriends"/>).</summary>
+		public readonly HashSet<Session> Dirty = new();
+
+		/// <summary>Os grupos que mudaram (quem está, quem lidera, onde cada um
+		/// está): cada um vai uma vez só para os seus, na mesma passagem.</summary>
+		public readonly HashSet<Group> Groups = new();
 
 		public void To(Session session, JsonObject message)
 		{

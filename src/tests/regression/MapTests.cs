@@ -222,7 +222,7 @@ public abstract class StairsRunTest : RegressionTest
 		b.Check(ramps.Count > 0, $"o mapa tem chapa de subida nas escadas ({ramps.Count})");
 		if (ramps.Count == 0) { RoomConfig.Active = false; return; }
 
-		StaticBody3D ramp = ramps[0];
+		StaticBody3D ramp = StairPick.Open(ramps);
 		Vector3 size = ((BoxShape3D)ramp.GetChild<CollisionShape3D>(0).Shape).Size;
 		Basis basis = ramp.GlobalTransform.Basis;
 		Vector3 up = basis.X.Normalized(), top = ramp.GlobalPosition + basis.Y.Normalized() * size.Y * 0.5f;

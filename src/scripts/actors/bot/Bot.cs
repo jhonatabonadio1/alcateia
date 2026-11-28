@@ -403,9 +403,15 @@ public partial class Bot : CharacterBody3D
 	/// <summary>Mesma regra do jogador (<see cref="BodyNoise"/>): o bot
 	/// não agacha, então o passo sempre sai; o boneco de outro jogador
 	/// corre de humano (Shift) quando o dono corre.</summary>
-	private void UpdateNoise(double delta) =>
+	private void UpdateNoise(double delta)
+	{
+		// De humano, o passo é a pisada do corpo animado, como no jogador.
+		(int beats, float phase) = (-1, -1f);
+		if (!_form.IsWolf && (_animator ??= GetNodeOrNull<CharacterAnimator>("Human")) is { FootBeats: >= 0 } feet)
+			(beats, phase) = (feet.FootBeats, feet.FootPhase);
 		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, howling: Action == BotAction.Howl || RemoteHowling,
-			silent: Remote && RemoteQuiet, sprinting: IsHumanSprinting);
+			silent: Remote && RemoteQuiet, sprinting: IsHumanSprinting, beats: beats, phase: phase);
+	}
 
 	/// <summary>
 	/// Transições explícitas. Ter os estados nomeados vale mais que a

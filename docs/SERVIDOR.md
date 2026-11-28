@@ -23,7 +23,8 @@ a blacklist de IP, como pôr na internet), em `docs/SEGURANCA.md`.
 | **Painel** | React. Jogadores, banimentos, moeda e itens, armas e skins, mapas, promoções, desafios, eventos de segurança, blacklist de IP, auditoria. Servido pelo próprio servidor, **em outra porta** (8081), que não se abre para a internet | `servidor/painel`, `docs/PAINEL.md` |
 | **Banco** | PostgreSQL 16. É onde tudo mora: contas, sessões, perfis, carteira, inventário, extrato, partidas, catálogo, mapas, promoções, desafios, banimentos, blacklist de IP, eventos de segurança, administradores e auditoria | contêiner `banco` |
 | **Servidor de partida** | Um programa à parte, exportado do mesmo projeto como servidor dedicado (`servidor/partida.Dockerfile`, docs/SERVIDOR_DEDICADO.md); no desenvolvimento, o jogo sem tela (`godot --headless -- --servidor`). Várias partidas ao mesmo tempo (4 por padrão, `ALCATEIA_MATCHES`), na mesma porta: recebe os jogadores de cada uma, repassa o que cada um faz, arbitra e entrega o resultado. Partida que todos abandonam acaba em 20 s e libera o lugar | `src/scripts/net/MatchServer.cs`, `HostedMatch.cs` |
-| **Jogo** | A tela Online (`OnlineScreen`), a conta (`Backend`), o saguão ao vivo (`LobbyLink`) e a partida em rede (`NetMatch`) | `src/scripts/net`, `src/scripts/lobby` |
+| **Jogo** | A tela Online (`OnlineScreen`), a conta (`Backend`), o saguão ao vivo (`LobbyLink`), os amigos e o grupo (`Social`) e a partida em rede (`NetMatch`) | `src/scripts/net`, `src/scripts/lobby` |
+| **Cliente de instalação** | O programa que o jogador instala: entra na conta, baixa e atualiza o jogo, mostra os amigos e abre o jogo já logado. Fala com o servidor (conta por HTTP, amigos por uma ligação própria do saguão) e baixa os arquivos de um balde público, não do servidor | `cliente/`, `cliente/LEIA-ME.md`, decisão 0021 |
 
 ## Subir tudo
 
@@ -82,7 +83,9 @@ Suba mais com `docker compose up -d --scale partida=3` — tirando do
 | `ALCATEIA_NETCODE` | `autoritativo`: o servidor de partida move os corpos (decisão 0011) e decide vida, acerto e morte (0016); vazio ou `repasse`: cada jogo move o seu e decide a própria vida (0008) | vazio |
 | `ALCATEIA_API` | (jogo e servidor de partida) onde fica o servidor; passa por cima do endereço fixo do jogo | — |
 | `ALCATEIA_SESSION_DAYS` | Validade do login | `30` |
-| `ALCATEIA_MASTER_KEY` | Cifra o que não pode ficar legível no banco (o segredo das duas etapas) | obrigatória |
+| `ALCATEIA_DOWNLOADS` | De onde o cliente de instalação baixa o jogo: o endereço público da pasta com os manifestos e os pacotes (um balde do R2). O cliente pergunta em `GET /v1/client`. O pipeline grava no Fly a partir do `R2_PUBLIC_URL` | vazio (o cliente avisa que não está configurado) |
+| `ALCATEIA_SESSAO`, `ALCATEIA_CONTA` | (jogo) o login e o nome da conta que o cliente de instalação passa ao abrir o jogo; o jogo entra com ela uma vez | — |
+| `ALCATEIA_MASTER_KEY` | Cifra o que não pode ficar legível no banco (o segredo das duas etapas, dos administradores e dos jogadores) | obrigatória |
 | `ALCATEIA_ADMIN_USER`, `ALCATEIA_ADMIN_PASSWORD` | O primeiro administrador do painel; só vale enquanto não há nenhum | — |
 | `ALCATEIA_ADMIN_PORT` | Porta do painel (0 desliga o painel) | `8081` |
 | `ALCATEIA_ADMIN_BIND` | Em que endereço a porta do painel escuta. Fora do Docker, só a própria máquina | `127.0.0.1` |
@@ -270,6 +273,38 @@ Como chega lá:
   passar de dezenas de milhares no saguão, o próximo passo é dividir o
   saguão entre vários processos com um canal entre eles — hoje não é
   preciso.
+
+## Amigos, grupo e conta (27/11)
+
+O formato de cada mensagem e rota está em `servidor/LEIA-ME.md`; aqui, o
+que cada coisa é.
+
+- **A tag.** Toda conta tem quatro algarismos sorteados quando nasce
+  (`Nome#0042`), que não mudam. O nome continua único (é com ele que se
+  entra); a tag é o que é preciso saber para **pedir amizade**: ver um
+  nome no placar ou no ranking não basta para encher a caixa de pedidos de
+  alguém. Tag errada responde igual a nome que não existe.
+- **Amigos.** A amizade nasce de um pedido aceito e mora no banco
+  (`friendships`); a presença (no menu, numa sala, em partida, no
+  aplicativo, desligado) e os convites para sala são de memória. Nada tem
+  relógio: a lista vai aos amigos quando algo muda.
+- **Grupo.** Amigos que entram juntos nas salas, no mesmo time (até 6: um
+  time inteiro). O líder escolhe a sala e o grupo vai junto; se não cabem
+  todos do mesmo lado, ninguém entra. Com a sala esperando, o time é do
+  grupo (o líder troca, todos trocam). Com a partida em curso, cada um
+  entra por onde o equilíbrio dos times deixar, e o grupo pode se dividir.
+  Quem está no meio de uma partida não é arrancado dela. Vive em memória,
+  como a sala (`LobbyService.Groups.cs`, `Dominio/Salas/Group.cs`).
+- **A ligação do cliente de instalação** (`/v1/lobby?client=app`): à
+  parte da do jogo, só amigos. Com o jogo fechado, a conta aparece "no
+  aplicativo".
+- **Verificação em duas etapas, opcional.** O jogador liga um aplicativo
+  autenticador (TOTP) no cliente de instalação; daí em diante entrar com a
+  senha pede também o código de 6 dígitos. O segredo fica cifrado com a
+  chave mestra. Os logins já abertos continuam valendo. Desligar pede a
+  senha e um código; quem perde o celular pede ao suporte, que desliga
+  pelo painel (`POST /admin/v1/players/{id}/2fa/reset`, com registro na
+  auditoria).
 
 ## O que ainda não faz
 

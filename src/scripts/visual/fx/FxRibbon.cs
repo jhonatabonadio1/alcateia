@@ -120,6 +120,38 @@ public static class FxRibbon
 		}
 	}
 
+	/// <summary>Um risco reto de <paramref name="from"/> a <paramref name="to"/>,
+	/// de frente para <paramref name="eye"/>, com uma cor em cada ponta: a
+	/// faísca que estica com a velocidade (cabeça acesa, cauda sumindo). Sem
+	/// função por ponto como a <see cref="Strip"/>: são dezenas por quadro, e
+	/// cada função seria lixo para o coletor.</summary>
+	public static void Segment(ImmediateMesh mesh, Vector3 from, Vector3 to, Vector3 eye, float width, Color head, Color tail)
+	{
+		Vector3 across = (to - from).Cross(eye - from);
+		across = across.LengthSquared() > 1e-10f ? across.Normalized() * (width * 0.5f) : Vector3.Up * (width * 0.5f);
+		Add(mesh, from - across, 0f, 0f, head);
+		Add(mesh, from + across, 1f, 0f, head);
+		Add(mesh, to - across, 0f, 1f, tail);
+		Add(mesh, from + across, 1f, 0f, head);
+		Add(mesh, to + across, 1f, 1f, tail);
+		Add(mesh, to - across, 0f, 1f, tail);
+	}
+
+	/// <summary>Uma faísca: acesa em <paramref name="head"/>, sumindo para
+	/// <paramref name="tail"/> (a cauda, comprida) e para <paramref name="tip"/>
+	/// (a ponta, curta) — sem corte seco em nenhuma das duas. Como o neon, são
+	/// duas no mesmo caminho: o clarão largo na cor e o miolo fino quase branco.</summary>
+	public static void Dart(ImmediateMesh mesh, Vector3 tip, Vector3 head, Vector3 tail, Vector3 eye, float width, Color tint, float strength)
+	{
+		var glow = new Color(tint.R, tint.G, tint.B, 0.42f * strength);
+		var core = new Color(Mathf.Lerp(tint.R, 1f, 0.8f), Mathf.Lerp(tint.G, 1f, 0.8f), Mathf.Lerp(tint.B, 1f, 0.8f), strength);
+		var none = new Color(tint.R, tint.G, tint.B, 0f);
+		Segment(mesh, head, tail, eye, width * 3.2f, glow, none);
+		Segment(mesh, head, tip, eye, width * 3.2f, glow, none);
+		Segment(mesh, head, tail, eye, width, core, none);
+		Segment(mesh, head, tip, eye, width, core, none);
+	}
+
 	private static void Add(ImmediateMesh mesh, Vector3 at, float u, float v, Color color)
 	{
 		mesh.SurfaceSetColor(color);

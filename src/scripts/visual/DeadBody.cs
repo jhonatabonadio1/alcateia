@@ -17,6 +17,14 @@ using System.Collections.Generic;
 /// dos vértices) é medido contra o chão logo abaixo dele: caindo, o corpo só
 /// sobe o que entraria no chão; depois de cair, encosta nele.
 ///
+/// **Deitado no chão que tem** (27/11; Jhon: "quando o lobo morre ou o humano,
+/// ele tá ficando no ar"). O clipe deita o corpo na horizontal. Numa escada ou
+/// num declive, medido: a ponta do corpo ficava 50 a 80 cm acima dos degraus.
+/// Do meio da queda em diante o corpo se inclina até o plano do chão que há
+/// debaixo dele — a altura do chão sob o quadril, a cabeça, as mãos e os pés
+/// (<see cref="Tilt"/>), até <see cref="MaxTilt"/> graus —, e só então encosta.
+/// Na beira de uma laje, o que fica para fora (o chão lá embaixo) não conta.
+///
 /// **Some por igual.** Cada superfície da pele vira duas passadas: primeiro a
 /// profundidade do corpo inteiro, sem cor (<c>corpo_profundidade.gdshader</c>,
 /// ou a do lobo, <c>lobo_profundidade.gdshader</c>, com o pelo balançando
@@ -47,10 +55,46 @@ public sealed class DeadBody
 	/// uma escada, uma borda), e o corpo fica onde o clipe o põe.</summary>
 	public float MaxLift = 0.6f, MaxDrop = 0.4f;
 
+	/// <summary>O quanto o corpo deitado se inclina para acompanhar o chão (graus),
+	/// e a partir de que ponto do clipe de morte (0 a 1) ele começa a se inclinar
+	/// e já está todo inclinado.</summary>
+	public float MaxTilt = 42f, TiltFrom = 0.45f, TiltBy = 0.85f;
+
+	/// <summary>Um ponto do corpo cujo chão difere mais que isto (m) do chão do meio
+	/// dele está para fora de uma beira: não entra na conta da inclinação. (Numa
+	/// escada de 33° o corpo deitado, de 1,7 m, tem até 1,1 m de desnível.)</summary>
+	public float TiltLedge = 1.4f;
+
+	/// <summary>E o ponto cujo chão fica mais que isto (m) acima do plano dos outros
+	/// está em cima de uma mureta ou de um caixote: sai da conta do plano.</summary>
+	public float TiltCurb = 0.08f;
+
 	private readonly Node3D _model;
 	private readonly CollisionObject3D _body;
-	private float _baseY, _offset, _delta;
+	private float _baseY, _offset, _delta, _progress;
 	private bool _begun, _fallen;
+	private Transform3D _base;
+	private Quaternion _tilt = Quaternion.Identity;
+	private Vector3 _pivot;
+
+	/// <summary>O plano do chão debaixo do corpo deitado (<see cref="Tilt"/>): um
+	/// ponto dele e a normal. Falso antes de o corpo começar a deitar.</summary>
+	public bool HasGround { get; private set; }
+	public Vector3 GroundPoint { get; private set; }
+	public Vector3 GroundNormal { get; private set; } = Vector3.Up;
+
+	/// <summary>Quanto o quadril do corpo deitado fica, no mínimo, acima do plano
+	/// do chão (m): é até onde o corpo desce para encostar num declive.</summary>
+	public float HipsClear = 0.03f;
+
+	/// <summary>Quanto o chão debaixo de um ponto do corpo deitado pode ficar abaixo
+	/// do plano do chão dele (m): a altura de um degrau.</summary>
+	public float LedgeSlack = 0.2f;
+
+	/// <summary>E quanto pode ficar acima dele (m): mais que isto é uma mureta, um
+	/// rodapé, um caixote ao lado — a ponta do corpo entra nele, o corpo não sobe.</summary>
+	public float CurbSlack = 0.06f;
+	private readonly List<int> _tiltBones = new();
 
 	/// <summary>O esqueleto que avisa quando a pose do quadro ficou pronta: a
 	/// medida é feita ali, e não no _Process do dono, que corre antes da
@@ -105,15 +149,30 @@ public sealed class DeadBody
 	/// (positivo: para cima).</summary>
 	public float Offset => _offset;
 
-	/// <summary>Morreu: guarda a altura do modelo e a amostra da pele.</summary>
-	public void Begin()
+	/// <summary>Morreu: guarda o lugar do modelo e a amostra da pele.</summary>
+	/// <param name="rest">O lugar do modelo de pé, se o dono o mexe em vida (o lobo:
+	/// a pose da parede, a inclinação da corrida); sem ele, o da primeira morte.</param>
+	public void Begin(Transform3D? rest = null)
 	{
 		if (_model == null) return;
-		if (!_begun) _baseY = _model.Position.Y;
+		if (rest is Transform3D given)
+		{
+			_base = given;
+			_baseY = given.Origin.Y;
+		}
+		else if (!_begun)
+		{
+			_baseY = _model.Position.Y;
+			_base = _model.Transform;
+		}
 		_begun = true;
 		_offset = 0f;
 		_fallen = false;
+		_progress = 0f;
+		_tilt = Quaternion.Identity;
+		HasGround = false;
 		SampleSkin();
+		FindTiltBones();
 		Listen(_skin.Count > 0 ? _skin[0].Skeleton : null);
 	}
 
@@ -128,6 +187,7 @@ public sealed class DeadBody
 		if (!_begun || !Shown) return;
 
 		_fallen = timer >= clip;
+		_progress = clip > 0.01 ? (float)(timer / clip) : 1f;
 		_delta = (float)delta;
 		if (_listening == null) OnPose();
 
@@ -150,8 +210,115 @@ public sealed class DeadBody
 		// "Voltar à sala"): fora da árvore não há chão nem posição no mundo para
 		// medir (26/11: 30 erros "!is_inside_tree()" no VoltarASalaSemCrash).
 		if (!_begun || !Shown || !GodotObject.IsInstanceValid(_model) || !_model.IsInsideTree()) return;
+		Tilt(_delta);
+		Place();
 		FitFloor(_delta, _fallen);
-		_model.Position = new Vector3(_model.Position.X, _baseY + _offset, _model.Position.Z);
+		Place();
+	}
+
+	/// <summary>Põe o modelo: onde a cena o tem, inclinado em volta do meio do
+	/// corpo, e subido (ou descido) o que falta para encostar no chão.</summary>
+	private void Place()
+	{
+		if (_tilt.IsEqualApprox(Quaternion.Identity) || _model.GetParent() is not Node3D parent)
+		{
+			_model.Transform = new Transform3D(_base.Basis, new Vector3(_base.Origin.X, _baseY + _offset, _base.Origin.Z));
+			return;
+		}
+		Transform3D flat = parent.GlobalTransform * _base;
+		var tilted = new Transform3D(new Basis(_tilt) * flat.Basis, _pivot + _tilt * (flat.Origin - _pivot));
+		tilted.Origin += Vector3.Up * _offset;
+		_model.GlobalTransform = tilted;
+	}
+
+	/// <summary>Os ossos que dizem onde o corpo está deitado: o quadril, a cabeça,
+	/// as mãos e os pés (os nomes do Mixamo, no humano e no lobo).</summary>
+	private void FindTiltBones()
+	{
+		_tiltBones.Clear();
+		if (_skin.Count == 0) return;
+		Skeleton3D skeleton = _skin[0].Skeleton;
+		for (int i = 0; i < skeleton.GetBoneCount(); i++)
+		{
+			string name = skeleton.GetBoneName(i);
+			if (name.EndsWith("Hips") || name.EndsWith("Head") || name.EndsWith("LeftHand") || name.EndsWith("RightHand")
+				|| name.EndsWith("LeftFoot") || name.EndsWith("RightFoot"))
+				_tiltBones.Add(i);
+		}
+	}
+
+	/// <summary>O plano y = a·x + b·z + c que melhor passa pelos pontos (mínimos
+	/// quadrados, em volta do meio deles). Falso se eles estão em linha: não
+	/// dizem plano nenhum.</summary>
+	private static bool FitPlane(System.ReadOnlySpan<Vector3> points, out Vector3 mean, out float a, out float b)
+	{
+		mean = Vector3.Zero;
+		a = b = 0f;
+		foreach (Vector3 point in points) mean += point;
+		mean /= Mathf.Max(points.Length, 1);
+		float sxx = 0, szz = 0, sxz = 0, sxy = 0, szy = 0;
+		foreach (Vector3 point in points)
+		{
+			Vector3 d = point - mean;
+			sxx += d.X * d.X; szz += d.Z * d.Z; sxz += d.X * d.Z; sxy += d.X * d.Y; szy += d.Z * d.Y;
+		}
+		float det = sxx * szz - sxz * sxz;
+		if (det < 1e-4f) return false;
+		a = (sxy * szz - szy * sxz) / det;
+		b = (szy * sxx - sxy * sxz) / det;
+		return true;
+	}
+
+	/// <summary>
+	/// Inclina o corpo até o plano do chão debaixo dele: o plano que melhor passa
+	/// pela altura do chão sob cada osso de <see cref="FindTiltBones"/> (mínimos
+	/// quadrados), sem os que ficam para fora de uma beira. Entra aos poucos, do
+	/// meio do clipe de morte ao fim dele: quem leva o tiro em pé ainda não deitou.
+	/// </summary>
+	private void Tilt(float delta)
+	{
+		float weight = Mathf.SmoothStep(TiltFrom, TiltBy, _progress);
+		if (weight <= 0f || _tiltBones.Count < 3 || _skin.Count == 0) return;
+		Skeleton3D skeleton = _skin[0].Skeleton;
+		if (!GodotObject.IsInstanceValid(skeleton)) return;
+
+		// O chão debaixo de cada osso; o do primeiro (o quadril) é a referência.
+		Transform3D toWorld = skeleton.GlobalTransform;
+		System.Span<Vector3> points = stackalloc Vector3[_tiltBones.Count];
+		int count = 0;
+		float reference = float.NaN;
+		foreach (int bone in _tiltBones)
+		{
+			Vector3 at = toWorld * skeleton.GetBoneGlobalPose(bone).Origin;
+			if (!Floor(at, out float floor)) continue;
+			if (float.IsNaN(reference)) reference = floor;
+			else if (Mathf.Abs(floor - reference) > TiltLedge) continue;
+			points[count++] = new Vector3(at.X, floor, at.Z);
+		}
+		if (count < 3) return;
+
+		if (!FitPlane(points[..count], out Vector3 mean, out float a, out float b)) return;
+		// Um ponto bem acima do plano está em cima de outra coisa (a mureta do lado
+		// da escada, um caixote): sem ele o plano é o do chão. Medido na escada do
+		// Deserto, o lobo ficava 12 cm mais alto que no chão plano por causa de um.
+		int kept = 0;
+		for (int i = 0; i < count; i++)
+		{
+			Vector3 d = points[i] - mean;
+			if (d.Y - (a * d.X + b * d.Z) <= TiltCurb) points[kept++] = points[i];
+		}
+		if (kept < count && kept >= 3 && FitPlane(points[..kept], out Vector3 mean2, out float a2, out float b2))
+			(mean, a, b) = (mean2, a2, b2);
+		Vector3 normal = new Vector3(-a, 1f, -b).Normalized();
+		HasGround = true;
+		GroundPoint = mean;
+		GroundNormal = normal;
+
+		float angle = Mathf.Min(Vector3.Up.AngleTo(normal), Mathf.DegToRad(MaxTilt)) * weight;
+		Vector3 axis = Vector3.Up.Cross(normal);
+		Quaternion target = axis.LengthSquared() < 1e-8f ? Quaternion.Identity : new Quaternion(axis.Normalized(), angle);
+		_tilt = _tilt.Slerp(target, 1f - Mathf.Exp(-delta / 0.12f)).Normalized();
+		_pivot = mean;
 	}
 
 	private void Listen(Skeleton3D skeleton)
@@ -169,10 +336,11 @@ public sealed class DeadBody
 		Restore();
 		if (_model != null && _begun)
 		{
-			_model.Position = new Vector3(_model.Position.X, _baseY, _model.Position.Z);
+			_model.Transform = new Transform3D(_base.Basis, new Vector3(_base.Origin.X, _baseY, _base.Origin.Z));
 			_model.Visible = true;
 		}
 		_offset = 0f;
+		_tilt = Quaternion.Identity;
 		_skin.Clear();
 	}
 
@@ -213,8 +381,9 @@ public sealed class DeadBody
 				int stride = Mathf.Max(1, vertices.Length / 6000);
 				for (int v = 0; v < vertices.Length; v += stride)
 				{
-					sampled.Vertex.Add(vertices[v]);
 					int stored = bones.Length / vertices.Length;
+					if (Loose(sampled, bones, weights, v * stored, per)) continue;
+					sampled.Vertex.Add(vertices[v]);
 					for (int j = 0; j < Slots; j++)
 					{
 						sampled.Bones.Add(j < per ? bones[v * stored + j] : 0);
@@ -226,11 +395,49 @@ public sealed class DeadBody
 		}
 	}
 
-	/// <summary>O ponto mais baixo da pele agora, no mundo. Falso sem pele.</summary>
+	/// <summary>
+	/// Os ossos soltos, que não entram na medida do chão: os de mola (o rabo do
+	/// lobo). A medida supõe que o ponto mais baixo desce e sobe junto com o
+	/// corpo; a mola não — ela pende até o chão dela, seja qual for a altura
+	/// do corpo. Com o rabo na conta o lobo morto flutuava (Jhon, 27/11:
+	/// "parece que o lobo encosta, porém o rabo dele o levanta"): a ponta do
+	/// rabo, pousada no chão, era sempre "o ponto que entraria no chão"; o
+	/// corpo subia um centímetro para tirá-la dali, o rabo esticava e pousava
+	/// de novo, e assim até o teto (<see cref="MaxLift"/>, 60 cm). Quem
+	/// segura o rabo fora do chão é o plano dele (WolfVisual.Corpse).
+	/// </summary>
+	public System.Collections.Generic.ICollection<string> LooseBones { get; set; }
+
+	/// <summary>O vértice é mais de um osso solto que do resto do corpo.</summary>
+	private bool Loose(Sampled sampled, int[] bones, float[] weights, int first, int per)
+	{
+		if (LooseBones == null || LooseBones.Count == 0) return false;
+		float loose = 0f, total = 0f;
+		for (int j = 0; j < per; j++)
+		{
+			float w = weights[first + j];
+			if (w <= 0f) continue;
+			total += w;
+			int bind = bones[first + j];
+			int bone = bind >= 0 && bind < sampled.BindBone.Length ? sampled.BindBone[bind] : -1;
+			if (bone >= 0 && LooseBones.Contains(sampled.Skeleton.GetBoneName(bone))) loose += w;
+		}
+		return total > 0f && loose > total * 0.5f;
+	}
+
+	/// <summary>A altura do plano do chão do corpo deitado em (x, z).</summary>
+	private float PlaneAt(Vector3 at) =>
+		GroundPoint.Y - (GroundNormal.X * (at.X - GroundPoint.X) + GroundNormal.Z * (at.Z - GroundPoint.Z)) / Mathf.Max(GroundNormal.Y, 0.3f);
+
+	/// <summary>O ponto da pele mais perto do chão agora, no mundo: o mais baixo;
+	/// ou, com o plano do chão conhecido (<see cref="Tilt"/>), o de menor altura
+	/// acima dele — num declive o ponto mais baixo é a ponta de baixo do corpo, e
+	/// quem entra no chão é a de cima. Falso sem pele.</summary>
 	private bool Lowest(out Vector3 lowest)
 	{
 		lowest = Vector3.Zero;
 		float low = float.MaxValue;
+		bool plane = HasGround;
 		foreach (Sampled s in _skin)
 		{
 			if (!GodotObject.IsInstanceValid(s.Mesh) || !GodotObject.IsInstanceValid(s.Skeleton)) continue;
@@ -245,9 +452,10 @@ public sealed class DeadBody
 					float w = s.Weights[v * Slots + j];
 					if (w > 0f) p += s.Bind[s.Bones[v * Slots + j]] * s.Vertex[v] * w;
 				}
-				if (p.Y < low)
+				float height = plane ? p.Y - PlaneAt(p) : p.Y;
+				if (height < low)
 				{
-					low = p.Y;
+					low = height;
 					lowest = p;
 				}
 			}
@@ -260,9 +468,16 @@ public sealed class DeadBody
 		if (_skin.Count == 0 || !Lowest(out Vector3 low)) return;
 		// O ponto mais baixo sem a correção de agora: a pose do clipe.
 		float pose = low.Y - _offset;
-		if (!Floor(new Vector3(low.X, pose, low.Z), out float floor)) return;
+		bool hit = Floor(new Vector3(low.X, pose, low.Z), out float floor);
+		// Deitado num chão de plano conhecido, o chão do ponto não fica muito abaixo
+		// dele (um degrau): o que pende para fora de uma beira não puxa o corpo para
+		// o chão lá de baixo.
+		// E nem muito acima (a mureta do lado da escada, o rodapé de uma parede): uma
+		// ponta do corpo por cima de algo mais alto não levanta o corpo inteiro.
+		if (HasGround) floor = hit ? Mathf.Clamp(floor, PlaneAt(low) - LedgeSlack, PlaneAt(low) + CurbSlack) : PlaneAt(low);
+		else if (!hit) return;
 
-		float target = Mathf.Clamp(floor - pose, -MaxDrop, MaxLift);
+		float target = Mathf.Clamp(floor - pose, -DropLimit(), MaxLift);
 		if (!fallen)
 		{
 			// Caindo, o clipe manda: só sobe o que entraria no chão.
@@ -272,6 +487,24 @@ public sealed class DeadBody
 		// Caído: encosta. Subir é na hora (nada entra no chão); descer, em
 		// um quarto de segundo, para não dar um tranco.
 		_offset = target > _offset ? target : Mathf.Lerp(_offset, target, 1f - Mathf.Exp(-delta / 0.08f));
+	}
+
+	/// <summary>
+	/// O quanto o corpo pode descer para encostar. Deitado num chão de plano
+	/// conhecido (<see cref="Tilt"/>): até o quadril ficar a <see cref="HipsClear"/>
+	/// dele — num declive o corpo, girado em volta do meio, fica paralelo ao chão
+	/// mas longe dele (na escada do Deserto, 35 cm; o limite fixo de
+	/// <see cref="MaxDrop"/> o deixava no ar). Sem plano: <see cref="MaxDrop"/>.
+	/// </summary>
+	private float DropLimit()
+	{
+		if (!HasGround || _tiltBones.Count == 0 || _skin.Count == 0) return MaxDrop;
+		Skeleton3D skeleton = _skin[0].Skeleton;
+		if (!GodotObject.IsInstanceValid(skeleton)) return MaxDrop;
+		Vector3 hips = skeleton.GlobalTransform * skeleton.GetBoneGlobalPose(_tiltBones[0]).Origin;
+		float plane = GroundPoint.Y - (GroundNormal.X * (hips.X - GroundPoint.X) + GroundNormal.Z * (hips.Z - GroundPoint.Z)) / Mathf.Max(GroundNormal.Y, 0.3f);
+		// (a altura do quadril sem a correção de agora, contra o plano)
+		return Mathf.Max(MaxDrop, (hips.Y - _offset) - (plane + HipsClear));
 	}
 
 	private bool Floor(Vector3 at, out float floor) => FloorUnder(_model, _body, at, out floor);

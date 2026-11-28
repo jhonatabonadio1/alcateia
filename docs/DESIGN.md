@@ -1566,6 +1566,44 @@ o menu para fugir de uma luta. Com o menu aberto o corpo fica parado
 
 ---
 
+
+### Jogo rápido: a fila escolhe, e escolhe pelo equilíbrio (27/11)
+
+Pedido do Jhon: "escolhe os players baseado nas suas habilidades, níveis,
+experiências [...] extremamente bem equilibrado. modo aleatório, mapa
+aleatório". O que foi decidido, e por quê:
+
+- **Equilíbrio é chance de vitória perto de meio a meio**, não times
+  "parecidos" a olho. Cada conta tem uma nota escondida, estilo Elo por
+  time: ela sobe quando o time ganha de quem devia ganhar dele e desce no
+  contrário, e com o tempo para onde a pessoa ganha metade das partidas.
+  O formador procura a divisão de menor diferença entre as notas médias
+  dos times (olha todas), e no empate separa os dois melhores.
+- **Nível e experiência entram na largada, não na nota.** O nível sobe com
+  tempo de jogo, não com habilidade: usado direto, quem joga muito e mal
+  cairia contra quem joga pouco e bem. Ele, as vitórias, o K/D e os MVPs de
+  tudo o que a conta já jogou dizem só de onde a nota parte; daí em diante
+  quem manda é o resultado. As dez primeiras partidas de fila andam rápido.
+- **4 contra 4 é o formato recomendado** (decisão do Jhon delegada: "você
+  decide a quantidade de players"). Com oito em campo cada um pesa no
+  resultado (o que deixa a nota medir alguém) e o mapa médio fica cheio sem
+  virar fila de renascimento; e oito pessoas de nota próxima chegam rápido
+  mesmo com pouca gente. Fila cheia cresce até 6 contra 6; fila vazia, a
+  espera libera formatos menores até o 1 contra 1. Grupo entra junto e fica
+  do mesmo lado.
+- **A espera troca por equilíbrio, devagar.** No começo só serve gente bem
+  próxima e times quase iguais; a cada segundo a faixa abre. Depois de 100 s,
+  qualquer partida: uma desigual é melhor que nenhuma.
+- **Só a fila mexe na nota.** Sala criada à mão dá para combinar resultado
+  ou encher de bot; lá a nota não anda. E quem larga a partida leva derrota:
+  sair não pode ser o jeito de não cair.
+- **Modo e mapa sorteados** entre os modos contra jogadores e os mapas
+  ligados que servem para o tamanho dos times (mapa pequeno não recebe 6
+  contra 6, nem grande 1 contra 1).
+
+Os números estão em `docs/AJUSTES.md` ("Jogo rápido"), e a régua para
+mexer neles é `servidor/Alcateia.Fila.Simulacao`.
+
 ## Arsenal
 
 Especificação: `docs/ARSENAL.md`. Implementação:
@@ -1720,6 +1758,20 @@ ele era um ponto. A escolha de conjunto espera 1,8 s para abrir
 (`LoadoutMenu.KillCamTime`): o fundo escuro dela cobriria justamente
 isso. O matador é o último que te acertou nos últimos 5 s
 (`Health.Killer`); a granada conta quem a lançou.
+
+**Morto, a câmera fica onde você morreu** (decisão do Jhon, 27/11: "tire o
+modo espectador flutuante; se morrer, fica onde morreu. Com isso, usuários
+não irão ver para fora do mapa"). Não há mais vista de cima nem câmera
+livre, e a câmera não vai sozinha para a tela de um aliado: um clique leva
+à primeira pessoa de um aliado vivo (os cliques trocam de aliado) e o
+Espaço volta para onde se morreu. Morto, o mouse não gira nada.
+
+**O corpo de quem morre cai no chão que há debaixo dele** (27/11: "quando o
+lobo morre ou o humano, ele tá ficando no ar"; "o corpo deve cair quando
+morre"). Quem morre no ar ou na parede cai; o corpo que para numa saliência
+do muro continua até o chão; deitado numa escada ou num declive, inclina-se
+até o plano do chão; e o rabo do lobo, que é mola, deita no chão em vez de
+levantar o corpo (`Corpse`, `DeadBody`, `TailFloor`).
 
 **Matou ou morreu, sobe o cartão do duelo** (`DuelCard`, decisão do
 Jhon): no centro de baixo, você à esquerda e o outro à direita, com a

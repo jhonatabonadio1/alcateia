@@ -18,6 +18,7 @@ import { PlayerDetail } from "@/pages/PlayerDetail";
 import { Players } from "@/pages/Players";
 import { Promotions } from "@/pages/Promotions";
 import { Security } from "@/pages/Security";
+import { News } from "@/pages/News";
 import { Settings } from "@/pages/Settings";
 
 export function App() {
@@ -51,6 +52,7 @@ function Panel({ theme }: { theme: ReturnType<typeof useTheme> }) {
 				<Route path="/mapas" element={<Maps />} />
 				<Route path="/promocoes" element={<Promotions />} />
 				<Route path="/desafios" element={<Challenges />} />
+				<Route path="/noticias" element={<News />} />
 				<Route path="/seguranca" element={<Security />} />
 				<Route path="/seguranca/ips" element={<IpBlocks />} />
 				<Route path="/seguranca/banimentos" element={<Bans />} />

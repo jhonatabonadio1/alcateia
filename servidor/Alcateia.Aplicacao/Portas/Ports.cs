@@ -9,8 +9,9 @@ namespace Alcateia.Aplicacao.Portas;
 /// <summary>Onde as contas, os logins e os perfis ficam guardados.</summary>
 public interface IAccountRepository
 {
-	/// <summary>Cria a conta e o perfil juntos. Null se o nome já existe.</summary>
-	Task<long?> TryCreate(string name, string nameKey, string passwordHash, long starterPresas);
+	/// <summary>Cria a conta e o perfil juntos, sorteando a tag. Null se o
+	/// nome já existe.</summary>
+	Task<Account> TryCreate(string name, string nameKey, string passwordHash, long starterPresas);
 
 	/// <summary>A conta com esta chave de nome e o hash da senha dela, ou null.</summary>
 	Task<(Account Account, string PasswordHash)?> FindByName(string nameKey);
@@ -39,6 +40,47 @@ public interface IAccountRepository
 
 	/// <summary>O banimento em vigor da conta, ou null se não há.</summary>
 	Task<BanStatus> Ban(long accountId);
+
+	/// <summary>A segunda etapa da conta: o segredo cifrado (null se não há) e se está valendo.</summary>
+	Task<(string SecretCipher, bool Enabled)> Totp(long accountId);
+
+	Task SetTotp(long accountId, string secretCipher, bool enabled);
+
+	/// <summary>O hash da senha da conta (para pedir a senha de novo antes de desligar a segunda etapa).</summary>
+	Task<string> PasswordHash(long accountId);
+
+	/// <summary>Guarda a nota de habilidade do jogo rápido e quantas partidas a formaram.</summary>
+	Task SaveSkill(long accountId, double rating, int matches);
+}
+
+/// <summary>
+/// Onde as amizades ficam guardadas. Cada par de contas tem no máximo uma
+/// linha (pedido esperando ou amizade), e é o banco que garante isso: dois
+/// pedidos cruzados ao mesmo tempo não viram duas linhas.
+/// </summary>
+public interface IFriendRepository
+{
+	/// <summary>Amigos, pedidos recebidos e pedidos enviados da conta.</summary>
+	Task<IReadOnlyList<FriendLink>> Links(long accountId);
+
+	/// <summary>A conta com esta chave de nome, ou null.</summary>
+	Task<FriendTarget> Find(string nameKey);
+
+	/// <summary>Pede amizade, conferindo os tetos (<see cref="FriendRules"/>)
+	/// dos dois lados. Se <paramref name="to"/> já tinha pedido, aceita.
+	/// Recusa (<c>Failure</c>) se já são amigos, se já pediu ou se não cabe.</summary>
+	Task<FriendRequestOutcome> Request(long from, long to);
+
+	/// <summary>Aceita o pedido que <paramref name="from"/> mandou para
+	/// <paramref name="me"/>. Falso se não havia; <c>Failure</c> se não cabe.</summary>
+	Task<bool> Accept(long me, long from);
+
+	/// <summary>Apaga o pedido pendente entre as duas contas, de qualquer
+	/// lado (recusar o recebido, cancelar o enviado). Falso se não havia.</summary>
+	Task<bool> RemovePending(long me, long other);
+
+	/// <summary>Desfaz a amizade. Falso se não eram amigos.</summary>
+	Task<bool> RemoveFriend(long me, long other);
 }
 
 /// <summary>Um banimento em vigor: até quando (null = para sempre) e por quê.</summary>

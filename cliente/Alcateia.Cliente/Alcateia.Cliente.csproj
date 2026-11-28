@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	O cliente de instalação do WolfLeague (Jhon, 27/11: "um cliente de
+	instalação igual o battle.net"): entra na conta, baixa o jogo, mantém
+	atualizado, repara, desinstala, mostra os amigos e abre o jogo já com a
+	conta entrada.
+
+	A interface é Avalonia (o mesmo C# do jogo e do servidor, em Windows e
+	Mac); o download e a atualização por diferença são de Alcateia.Pacote.
+	Por que assim: docs/decisoes/0021-cliente-de-instalacao.md. Como montar e
+	publicar: cliente/LEIA-ME.md.
+
+	Propriedades que o pipeline passa (dotnet publish -p:Nome=valor):
+	  Version       a versão do cliente (a da tag)
+	  ServidorUrl   o servidor de contas e amigos (padrão: o de produção)
+	-->
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<AssemblyName>WolfLeagueLauncher</AssemblyName>
+		<RootNamespace>Alcateia.Cliente</RootNamespace>
+		<Version>0.0.0-dev</Version>
+		<ServidorUrl Condition="'$(ServidorUrl)' == ''">https://wolfleague-api.fly.dev</ServidorUrl>
+		<ApplicationIcon>../../instalador/WolfLeague.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<!-- A versão vai sem o "+commit" no fim: é ela que se compara com a do manifesto. -->
+		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<AssemblyMetadata Include="ServidorUrl" Value="$(ServidorUrl)" />
+		<!-- As fotos das telas montam estados de mentira (Preview). -->
+		<InternalsVisibleTo Include="fotos" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="12.2.0" />
+		<PackageReference Include="Avalonia.Desktop" Version="12.2.0" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.2.0" />
+		<ProjectReference Include="../Alcateia.Pacote/Alcateia.Pacote.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- A arte e as letras são as do jogo e do instalador: um arquivo só no repositório. -->
+		<AvaloniaResource Include="../../src/assets/personagens/eve/thumb.jpg" Link="Assets/arte.jpg" />
+		<AvaloniaResource Include="../../instalador/WolfLeague.ico" Link="Assets/icone.ico" />
+		<AvaloniaResource Include="../../src/assets/ui/marca/wolfleague_logo_horizontal.png" Link="Assets/logo.png" />
+		<!-- As letras dos menus do jogo (src/scripts/ui/kit/UiFonts.cs): Figtree para ler, Kanit nos títulos e botões. OFL. -->
+		<!-- A Figtree em pesos fixos, tirados da variável do jogo por cliente/ferramentas/gerar_figtree.py:
+		     o Avalonia não aplica o peso de fonte variável (saía tudo fino). -->
+		<AvaloniaResource Include="Assets/Fonts/*.ttf" />
+		<AvaloniaResource Include="../../src/assets/fonts/Kanit-SemiBold.ttf" Link="Assets/Fonts/Kanit-SemiBold.ttf" />
+		<AvaloniaResource Include="../../src/assets/fonts/Kanit-SemiBoldItalic.ttf" Link="Assets/Fonts/Kanit-SemiBoldItalic.ttf" />
+		<AvaloniaResource Include="../../src/assets/fonts/Kanit-BoldItalic.ttf" Link="Assets/Fonts/Kanit-BoldItalic.ttf" />
+	</ItemGroup>
+
+</Project>

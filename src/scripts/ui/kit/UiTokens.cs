@@ -78,10 +78,10 @@ public static class UiTokens
 
 	// Jogo: fundo cinza quase preto, levemente azulado — não preto puro.
 	// Menus: azul-noite.
-	private static readonly Color DarkBg = new("0f1318"), MenuBg = new("0a1119");
-	private static readonly Color DarkSurface1 = new("161b22"), MenuSurface1 = new("111a26");
-	private static readonly Color DarkSurface2 = new("1c222b"), MenuSurface2 = new("16212f");
-	private static readonly Color DarkSurface3 = new("242b35"), MenuSurface3 = new("1f2c3d");
+	private static readonly Color DarkBg = new("0f1318"), MenuBg = new("080c12");
+	private static readonly Color DarkSurface1 = new("161b22"), MenuSurface1 = new("0f1721");
+	private static readonly Color DarkSurface2 = new("1c222b"), MenuSurface2 = new("141e2b");
+	private static readonly Color DarkSurface3 = new("242b35"), MenuSurface3 = new("1d2a3a");
 	private static readonly Color DarkBorder = new(1, 1, 1, 0.09f), MenuBorder = new(0.75f, 0.86f, 1f, 0.1f);
 	private static readonly Color DarkBorderStrong = new(1, 1, 1, 0.18f), MenuBorderStrong = new(0.75f, 0.86f, 1f, 0.2f);
 	private static readonly Color DarkTextPrimary = new("e9ecf0"), MenuTextPrimary = new("edf2f7");
@@ -109,6 +109,17 @@ public static class UiTokens
 	/// mais vivo.</summary>
 	public static Color Accent => Menu ? MenuAccent : DarkAccent;
 	public static Color AccentText => Menu ? MenuAccentText : DarkAccentText;
+
+	/// <summary>
+	/// O "papel" dos menus (27/11, a volta do Valorant de referência): um
+	/// branco quente, chapado, para a peça que manda na tela — a aba JOGAR, o
+	/// botão que leva à partida, a linha escolhida. Uma peça clara num mar
+	/// escuro é o que dá a hierarquia; o ouro continua sendo a marca.
+	/// </summary>
+	public static readonly Color Paper = new("ece6da");
+
+	/// <summary>O texto em cima do papel.</summary>
+	public static readonly Color PaperText = new("0d131a");
 
 	public static Color Danger => Menu ? MenuDanger : DarkDanger;
 	public static Color Success => Menu ? MenuSuccess : DarkSuccess;
@@ -144,6 +155,12 @@ public static class UiTokens
 	/// <summary>Transição padrão: entre 120 e 200 ms, com curva de saída.</summary>
 	public const float Fast = 0.12f;
 	public const float Normal = 0.18f;
+
+	/// <summary>A troca de tela dos menus: a tela nova entra deslizando.</summary>
+	public const float Screen = 0.32f;
+
+	/// <summary>O atraso entre uma peça e a seguinte numa entrada em cascata.</summary>
+	public const float Step = 0.045f;
 
 	/// <summary>Número que muda conta de A até B neste tempo.</summary>
 	public const float CountUp = 0.4f;

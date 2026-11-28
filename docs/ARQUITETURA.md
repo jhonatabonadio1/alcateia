@@ -97,7 +97,9 @@ alcateia/
 ├── project.godot          configuração; cena principal = menu
 ├── WolfLeague.csproj      o projeto C# (export_presets.cfg ao lado)
 ├── servidor/              o servidor (.NET + PostgreSQL), fora do Godot
-├── instalador/            a arte e o script do instalador
+├── cliente/               o cliente de instalação (.NET + Avalonia) e o pacote do jogo, fora do Godot
+│                          (baixa, atualiza e abre o jogo; cliente/LEIA-ME.md, decisão 0021)
+├── instalador/            a arte e os scripts dos instaladores (o do cliente e o do jogo inteiro)
 ├── CLAUDE.md / AGENTS.md  guia para agentes: regras, arquitetura, testes
 ├── CONTRIBUTING.md        como trabalhar no projeto (passo a passo)
 ├── docs/
@@ -839,7 +841,9 @@ do código:
 | `domain/Referee.cs` | O juiz: fases, placar, o que vale como abate. C# puro, com teste |
 | `actors/bot/Bot.Remote.cs` | O bot como boneco de outro jogador |
 | `combat/weapon/Weapon.Remote.cs` | A arma do boneco: encena, não fere |
-| `lobby/OnlineScreen.cs` | A tela Online |
+| `lobby/OnlineScreen.cs` | A lista de salas online (a terceira porta da tela JOGAR) |
+| `lobby/HomeScreen.cs`, `PlayScreen.cs`, `PhotoScreen.cs` | O início (banners e notícias, de `meta/News.cs`), a tela JOGAR e a foto de perfil |
+| `lobby/SocialDock.cs`, `MatchSearch.cs` | O painel social (amigos, pedidos, convites; o espelho é `net/Social.cs`) e a busca do jogo rápido — os dois moram na moldura (`LobbyShell`), não numa tela |
 
 Os três pontos onde o jogo offline foi aberto para a rede, e só eles:
 `Health.Remote`/`SendHit`/`Mirror` (o dano sai e a vida volta

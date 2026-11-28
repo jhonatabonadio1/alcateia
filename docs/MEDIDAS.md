@@ -66,14 +66,14 @@ Medidos no chão plano, segurando a tecla.
 
 | | Humano | Lobo |
 |---|---|---|
-| Andando (W) | 2,56 m/s (faca 3,28) | 4,33 m/s |
+| Andando (W) | 2,82 m/s (faca 3,60; 2,56 e 3,28 até 27/11) | 4,33 m/s |
 | Correndo (Shift, só para a frente) | 4,91 m/s (3,71 até 27/11) | — |
-| Agachado | 1,15 m/s | 1,95 m/s |
+| Agachado | 1,27 m/s (1,15 até 27/11) | 1,95 m/s |
 | De quatro (W duas vezes) | — | 7,44 m/s |
 | Carregando o salto | — | ~1,0 m/s |
 
 Velocidade de base: `Player.HumanSpeed` 3,2 na cena; o humano anda isto
-× `HumanSpeedBonus` 0,9375 (desde 26/11; era 1,08, 3,46 m/s). O lobo é um só
+× `HumanSpeedBonus` 0,88 (desde 27/11: "pode acelerar um pouco"; era 0,8, 2,56 m/s, e antes 1,08, 3,46 m/s). O lobo é um só
 desde 26/11 (as classes Bruto e Ligeiro saíram; ele fica no meio delas):
 multiplica por `src/resources/breeds/lobo.tres` (`SpeedMultiplier` 1,352) e,
 de quatro, por `WolfSprintFactor` (1,719 na cena). Até 25/11: Bruto 4,15 /

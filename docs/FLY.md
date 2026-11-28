@@ -161,6 +161,13 @@ No repositório: Settings → Secrets and variables → Actions.
   estreito, crie uma organização só para o jogo.
 - Variáveis `FLY_APP_API` e `FLY_APP_PARTIDA`: só se os nomes não forem os
   padrão.
+- Para o **cliente de instalação** (o que o jogador baixa; os arquivos
+  ficam num balde do Cloudflare R2, não nas Releases, que são de
+  repositório privado): os segredos `R2_ACCESS_KEY_ID` e
+  `R2_SECRET_ACCESS_KEY`, e `R2_BUCKET_NAME` e `R2_PUBLIC_URL` (variável
+  ou segredo). O pipeline grava o endereço público no servidor
+  (`ALCATEIA_DOWNLOADS`) no deploy. O passo a passo e os links do site
+  estão em `cliente/LEIA-ME.md`, "De onde o cliente baixa".
 
 ### 7. O jogo apontando para lá
 

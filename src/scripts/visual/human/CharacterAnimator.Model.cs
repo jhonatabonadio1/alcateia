@@ -123,13 +123,19 @@ public partial class CharacterAnimator
 				if (!SameRig(body, _model, FindSkeleton(temp), temp))
 				{
 					// Outro rig com os nomes do Mixamo: reorienta osso a osso e
-					// leva o quadril ao espaço e à altura do corpo. O agachado é
-					// de outro personagem, de pernas de outra proporção: as pernas
+					// leva o quadril ao espaço e à altura do corpo. O clipe é de
+					// outro personagem, de pernas de outra proporção: as pernas
 					// dobram até o pé pousar onde o do clipe pousa, sem a sola
-					// passar do chão (AnimationKit.Legs). Nos clipes de pé isso
-					// mudava a passada medida (PassadaHumana, para trás 0,36 → 0,55).
-					FitToBody(animation, temp, body, _model, bodyPath, reachFloor: clip.StartsWith("crouch"),
-						sink: clip.StartsWith("crouch") ? CrouchSink : 0f);
+					// passar do chão (AnimationKit.Legs). No agachado desde 26/11;
+					// nos clipes de chão de pé (parado, andar, correr, de lado)
+					// desde 27/11 (Jhon: "o pé do 3ª pessoa humano atravessa o chão
+					// ao andar") — medido, a sola entrava até 3,0 cm na Eve e 5,1
+					// no Barut. Tinha ficado de fora porque muda a medida do
+					// PassadaHumana (para trás 0,36 → 0,55 m/s): o pé não anda mais
+					// na horizontal, mas outros pontos passam a contar como apoio.
+					bool crouch = clip.StartsWith("crouch");
+					FitToBody(animation, temp, body, _model, bodyPath, reachFloor: crouch || (IsLooping(clip) && clip != "fall"),
+						sink: crouch ? CrouchSink : 0f);
 					// Ombros mais altos e braços mais curtos que os do X Bot: o
 					// fuzil chega mais perto do rosto, e a cabeça inclinada do
 					// clipe entrava na coronha. Ela sobe um pouco.
@@ -186,6 +192,10 @@ public partial class CharacterAnimator
 	/// <summary>O arquivo do modelo em uso, quando é o de um time ou de um
 	/// personagem (nulo no xbot da cena).</summary>
 	private string _modelPath;
+
+	/// <summary>O tom da voz do personagem deste corpo (<see cref="CharacterSkin.VoicePitch"/>).</summary>
+	public float VoicePitch => _voicePitch ??= CharacterSkin.OfHumanModel(_modelPath)?.VoicePitch ?? 1f;
+	private float? _voicePitch;
 
 	private static bool IsLooping(string clip) =>
 		clip.StartsWith("idle") || clip.StartsWith("walk") ||
@@ -274,6 +284,8 @@ public partial class CharacterAnimator
 		_model = model;
 		SkinCulling.Loosen(_model);
 		_modelPath = path;
+		_voicePitch = null;
+		if (FootBeats >= 0 || _feetSkeleton != null) FindFeet();
 		_teamModel = true;
 	}
 

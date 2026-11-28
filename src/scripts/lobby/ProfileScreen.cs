@@ -8,6 +8,12 @@ using System.Linq;
 /// perfil" da sala. (O painel com o histórico e as próximas patentes saiu
 /// a pedido do Jhon, 21/11.)
 ///
+/// **A foto de perfil se escolhe em outra tela** (Jhon, 27/11: "em perfil,
+/// a área de ícones deve ficar em um lugar melhor, em outra tela"):
+/// <see cref="PhotoScreen"/>, que abre clicando na própria foto ou em
+/// "Trocar foto". Aqui a grade apertava a identidade e fazia a tela rolar;
+/// sem ela o perfil cabe inteiro.
+///
 /// Perfil de outro jogador (Fase 2) mostra tudo menos saldo e
 /// inventário — por isso o saldo não aparece aqui também: ele já está no
 /// header.
@@ -18,20 +24,26 @@ public partial class ProfileScreen : LobbyScreen
 
 	protected override bool FollowsAccount => true;
 
+	private bool _shown;
+
 	protected override void Build()
 	{
-		// Com muita informação o perfil passa da altura da tela: rola, em vez
-		// de descer para fora dela (Jhon, 25/11).
-		var scroll = UiKit.Fill(new ScrollContainer { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled });
-		AddChild(scroll);
-		MarginContainer margin = UiKit.Margin(UiTokens.S5, UiTokens.S4, UiTokens.S5, UiTokens.S4);
-		margin.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		scroll.AddChild(margin);
-		HBoxContainer split = UiKit.Row(UiTokens.S4);
-		margin.AddChild(split);
+		VBoxContainer page = Page(UiTokens.S3);
+		page.AddChild(Deco.Title("Perfil", "Sua carreira na liga"));
 
-		split.AddChild(Identity());
-		split.AddChild(Stats());
+		HBoxContainer split = UiKit.Row(UiTokens.S4);
+		split.SizeFlagsVertical = SizeFlags.ExpandFill;
+		page.AddChild(split);
+
+		Control identity = Identity();
+		Control stats = Stats();
+		split.AddChild(identity);
+		split.AddChild(stats);
+
+		if (_shown) return;
+		_shown = true;
+		Motion.Rise(identity, 0.04f, new Vector2(-28, 0));
+		Motion.Rise(stats, 0.1f, new Vector2(0, 28));
 	}
 
 	// ------------------------------------------------------------------ identidade
@@ -43,13 +55,34 @@ public partial class ProfileScreen : LobbyScreen
 
 		int rank = Profile.Rank;
 
-		RankBadge badge = RankBadge.Make(rank, 240, avatar: Avatars.Selected);
+		// A foto é o botão de trocar a foto.
+		RankBadge badge = RankBadge.Make(rank, 232, avatar: Avatars.Selected);
 		badge.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+		badge.MouseFilter = MouseFilterEnum.Stop;
+		badge.MouseDefaultCursorShape = CursorShape.PointingHand;
+		badge.TooltipText = Loc.T("Trocar a foto de perfil");
+		badge.GuiInput += e =>
+		{
+			if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left }) Shell.GoPhotos();
+		};
 		column.AddChild(badge);
 
 		Label name = UiKit.Text(Profile.PlayerName, "Display");
 		name.HorizontalAlignment = HorizontalAlignment.Center;
 		column.AddChild(name);
+
+		// A tag (Nome#0042): é com ela que um amigo adiciona. Clicar copia.
+		if (Backend.LoggedIn && Backend.AccountTag.Length > 0)
+		{
+			Button tag = UiKit.Button("#" + Backend.AccountTag, ButtonKind.Tertiary, () =>
+			{
+				DisplayServer.ClipboardSet(Backend.AccountHandle);
+				Shell.Toast(Loc.F("{0} copiado: passe para um amigo adicionar você", Backend.AccountHandle), UiTokens.Success);
+			});
+			tag.TooltipText = Loc.F("A sua tag. Clique para copiar {0}", Backend.AccountHandle);
+			tag.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+			column.AddChild(tag);
+		}
 
 		HBoxContainer level = UiKit.Row(UiTokens.S2);
 		level.Alignment = BoxContainer.AlignmentMode.Center;
@@ -94,9 +127,6 @@ public partial class ProfileScreen : LobbyScreen
 
 		column.AddChild(UiKit.Divider());
 
-		column.AddChild(UiKit.Caption("Foto de perfil"));
-		column.AddChild(Photos());
-
 		// Título exibível: ganho nas missões permanentes.
 		column.AddChild(UiKit.Caption("Título"));
 		string[] titles = new[] { "Nenhum" }.Concat(Profile.Titles).ToArray();
@@ -116,9 +146,15 @@ public partial class ProfileScreen : LobbyScreen
 
 		// Trocar o nome exige o item da loja.
 		bool canRename = Profile.HasAccount && Profile.Owns(AccountSync.RenameItem);
+		HBoxContainer buttons = UiKit.Row(UiTokens.S2);
+		Button photo = UiKit.Button("Trocar foto", ButtonKind.Secondary, () => Shell.GoPhotos());
+		photo.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		buttons.AddChild(photo);
 		Button rename = UiKit.Button(canRename ? "Trocar nome" : "Trocar nome (item da loja)", ButtonKind.Secondary,
 			canRename ? Rename : () => Shell.GoShop("troca_nome"));
-		column.AddChild(rename);
+		rename.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		buttons.AddChild(rename);
+		column.AddChild(buttons);
 
 		Label created = UiKit.Text(Loc.F("Perfil criado em {0:dd/MM/yyyy}", Profile.CreatedUtc.ToLocalTime()), "Caption");
 		created.HorizontalAlignment = HorizontalAlignment.Center;
@@ -129,59 +165,6 @@ public partial class ProfileScreen : LobbyScreen
 
 	/// <summary>O nome é o da conta: quem troca é o servidor, que confere
 	/// se está livre e gasta o item.</summary>
-	/// <summary>As fotos de perfil: as suas para escolher, as da loja com cadeado e preço.</summary>
-	private Control Photos()
-	{
-		var grid = new GridContainer { Columns = 7 };
-		grid.AddThemeConstantOverride("h_separation", UiTokens.S2);
-		grid.AddThemeConstantOverride("v_separation", UiTokens.S2);
-		foreach (Avatars.Photo photo in Avatars.All)
-		{
-			bool mine = Avatars.Owns(photo.Id), chosen = mine && Avatars.Selected == photo.Id;
-			var cell = new Button
-			{
-				CustomMinimumSize = new Vector2(52, 52), Flat = true, FocusMode = FocusModeEnum.None,
-				TooltipText = mine ? photo.Name : Loc.F("{0} · {1} de Cash na loja", photo.Name, UiTokens.Thousands(photo.Price)),
-				Disabled = !mine
-			};
-			var face = new TextureRect
-			{
-				Texture = Avatars.PhotoOf(photo.Id), ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-				StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered, MouseFilter = MouseFilterEnum.Ignore,
-				Modulate = mine ? Colors.White : new Color(0.4f, 0.4f, 0.45f)
-			};
-			face.SetAnchorsPreset(LayoutPreset.FullRect);
-			face.OffsetLeft = face.OffsetTop = 3; face.OffsetRight = face.OffsetBottom = -3;
-			cell.AddChild(face);
-			if (!mine)
-			{
-				Icon lockIcon = Icon.Make(IconKind.Lock, 16, UiTokens.TextPrimary);
-				lockIcon.SetAnchorsPreset(LayoutPreset.Center);
-				lockIcon.MouseFilter = MouseFilterEnum.Ignore;
-				cell.AddChild(lockIcon);
-			}
-			if (chosen)
-			{
-				var ring = new Panel { MouseFilter = MouseFilterEnum.Ignore };
-				var box = new StyleBoxFlat { DrawCenter = false, BorderColor = UiTokens.Accent };
-				box.SetBorderWidthAll(3);
-				box.SetCornerRadiusAll(4);
-				ring.AddThemeStyleboxOverride("panel", box);
-				ring.SetAnchorsPreset(LayoutPreset.FullRect);
-				cell.AddChild(ring);
-			}
-			string id = photo.Id;
-			cell.Pressed += () =>
-			{
-				Avatars.Selected = id;
-				Profile.NotifyChanged();
-				Refresh();
-			};
-			grid.AddChild(cell);
-		}
-		return grid;
-	}
-
 	private async void DoRename(string name)
 	{
 		string error = Profile.ValidateName(name) ?? await AccountSync.Rename(name.Trim());
@@ -215,7 +198,7 @@ public partial class ProfileScreen : LobbyScreen
 		VBoxContainer column = UiKit.Column(UiTokens.S3);
 		column.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
-		column.AddChild(UiKit.Text("Estatísticas", "Title"));
+		column.AddChild(Deco.Kicker("Estatísticas"));
 
 		LifetimeStats s = Profile.Stats;
 		var grid = new GridContainer { Columns = 3 };

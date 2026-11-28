@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	Calibragem do jogo rápido: simula a fila (gente chegando, sozinha ou em
+	grupo, com habilidade de verdade que o formador não vê), forma as
+	partidas com as regras do domínio (Dominio/Fila), sorteia os resultados
+	pela habilidade de verdade e mede o que importa: quanto se espera, o
+	tamanho dos times, a diferença entre eles e se a nota chega na habilidade.
+
+	Não é teste (não reprova nada): é a régua para mexer nos números do
+	Matchmaker e do SkillRules (docs/AJUSTES.md, "Jogo rápido").
+
+	Rodar (da raiz): dotnet run, com -c Release e o projeto servidor/Alcateia.Fila.Simulacao.
+	-->
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<RootNamespace>Alcateia.Fila.Simulacao</RootNamespace>
+		<InvariantGlobalization>true</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../Alcateia.Dominio/Alcateia.Dominio.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -39,9 +39,11 @@ public static class AccountRoutes
 			string token;
 			try
 			{
-				(account, token) = await s.Accounts.Login(name, Api.Text(body, "password"));
+				(account, token) = await s.Accounts.Login(name, Api.Text(body, "password"), Api.Text(body, "code"));
 			}
-			catch (Failure f) when (f.Code == "login_invalido")
+			// Código da segunda etapa errado conta como login errado: quem
+			// chuta códigos esbarra no mesmo freio de quem chuta senhas.
+			catch (Failure f) when (f.Code is "login_invalido" or "codigo_invalido")
 			{
 				s.Security.LoginFailed(ClientIp.Address(ctx), ip, name, "/v1/sessions");
 				throw;
@@ -67,6 +69,41 @@ public static class AccountRoutes
 		{
 			Account account = await s.Accounts.Require(Api.Token(ctx));
 			await Api.Send(ctx, ToJson(await s.Accounts.Profile(account.Id)));
+		});
+
+		// ---- verificação em duas etapas (opcional, por conta)
+		app.MapPost("/v1/account/2fa", async ctx =>
+		{
+			Account account = await s.Accounts.Require(Api.Token(ctx));
+			(string secret, string uri) = await s.Accounts.StartTwoFactor(account);
+			await Api.Send(ctx, new JsonObject { ["secret"] = secret, ["uri"] = uri });
+		});
+
+		app.MapPost("/v1/account/2fa/confirm", async ctx =>
+		{
+			s.Logins.Check(ctx);
+			Account account = await s.Accounts.Require(Api.Token(ctx));
+			await s.Accounts.ConfirmTwoFactor(account.Id, Api.Text(await Api.Body(ctx), "code"));
+			s.Security.Record(EventKind.LoginOk, Severity.Info, ClientIp.Of(ctx), account.Id, account.Name, "/v1/account/2fa/confirm", "ligou a verificação em duas etapas");
+			ctx.Response.StatusCode = 204;
+		});
+
+		app.MapPost("/v1/account/2fa/disable", async ctx =>
+		{
+			s.Logins.Check(ctx);
+			Account account = await s.Accounts.Require(Api.Token(ctx));
+			JsonObject body = await Api.Body(ctx);
+			try
+			{
+				await s.Accounts.DisableTwoFactor(account.Id, Api.Text(body, "password"), Api.Text(body, "code"));
+			}
+			catch (Failure f) when (f.Code is "senha_errada" or "codigo_invalido")
+			{
+				s.Security.LoginFailed(ClientIp.Address(ctx), ClientIp.Of(ctx), account.Name, "/v1/account/2fa/disable");
+				throw;
+			}
+			s.Security.Record(EventKind.LoginOk, Severity.Warning, ClientIp.Of(ctx), account.Id, account.Name, "/v1/account/2fa/disable", "desligou a verificação em duas etapas");
+			ctx.Response.StatusCode = 204;
 		});
 
 		app.MapPut("/v1/profile/data", async ctx =>
@@ -109,6 +146,9 @@ public static class AccountRoutes
 		{
 			["id"] = p.Id,
 			["name"] = p.Name,
+			// A tag já escrita (quatro algarismos): quem mostra não precisa saber completar com zeros.
+			["tag"] = AccountRules.TagText(p.Tag),
+			["twoFactor"] = p.TwoFactor,
 			["createdAt"] = p.CreatedAt,
 			["xp"] = p.Xp,
 			["presas"] = p.Presas,

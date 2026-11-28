@@ -86,7 +86,11 @@ public sealed class JitterWalkTest : WallNetTest
 
 		RegressionBench.Note($"comandos {seq}; o servidor esperou comando {server.Commands.Starved} passo(s) e deu {server.Commands.Skipped} perdido(s) com o último segurado; correções {fixes}, a maior {worst * 100f:0} cm");
 		b.AtLeast(20, server.Commands.Starved, "a rede oscilou de verdade: o servidor teve de esperar comando (passos)");
-		b.AtMost(2, fixes, "correções no jogo andando, virando e pulando com a rede oscilando");
+		// Três desde 27/11 (eram duas): o humano anda 10% mais rápido (2,82 m/s, pedido
+		// do Jhon), e num dos cinco pacotes perdidos o comando segurado passa a diferir
+		// o bastante para corrigir. Conferido: com a velocidade de antes, 2 correções (a
+		// maior de 4 cm); com a de agora, 3 (a maior de 3 cm).
+		b.AtMost(3, fixes, "correções no jogo andando, virando e pulando com a rede oscilando");
 		b.AtMost(0.1f, worst, "a maior correção (m)");
 
 		world.QueueFree();

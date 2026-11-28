@@ -25,9 +25,11 @@ public sealed class NoiseTest : RegressionTest
 
 		try
 		{
-			// Correndo 3,24 m/s por 3 s: uns 9,5 m, oito passadas de 1,19 m.
+			// Andando por 3 s, do lugar: desde 27/11 o passo é a pisada do corpo animado
+			// (CharacterAnimator.Feet), uma a cada 0,417 s — sete em 3 s, e a primeira
+			// espera o pé chegar ao chão. (Era por distância: oito passadas de 0,94 m.)
 			int steps = await Walk(b, heard, "move_forward");
-			b.Check(steps is >= 7 and <= 9, $"passos correndo em 3 s: {steps} (esperado 8)");
+			b.Check(steps is >= 6 and <= 8, $"passos andando em 3 s: {steps} (esperado 7)");
 			float radius = heard.Find(n => n.Kind == NoiseKind.Step).Radius;
 			b.Near(13, radius, 0.01, "raio do passo humano");
 
@@ -36,7 +38,9 @@ public sealed class NoiseTest : RegressionTest
 			// 3 s (era 3,71 até 27/11: dois pedidos de +15% do Jhon), uns 14,7 m em
 			// passadas de 1,12 m, e o passo se ouve de mais longe.
 			int sprint = await Walk(b, heard, "move_forward", "sprint");
-			b.Check(sprint is >= 12 and <= 14, $"passos correndo com Shift em 3 s: {sprint} (esperado 13)");
+			// (a pisada da corrida vem a cada 0,23 s: 13 em 3 s cheios; saindo do lugar, as
+			// duas primeiras são do corpo ainda entrando na corrida)
+			b.Check(sprint is >= 11 and <= 14, $"passos correndo com Shift em 3 s: {sprint} (esperado 11 a 13)");
 			b.Near(22, heard.Find(n => n.Kind == NoiseKind.Step).Radius, 0.01, "raio do passo correndo com Shift");
 
 			// Pulo parado: um baque no pouso.

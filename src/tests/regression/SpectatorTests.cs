@@ -3,17 +3,17 @@ using System.Linq;
 using System.Threading.Tasks;
 
 /// <summary>
-/// Morto: 1 s no próprio corpo; depois a câmera de abate — o replay pelo
-/// olho de quem matou, em primeira pessoa com a arma dele, o HUD dele e o
-/// nome no alto —; Espaço vai para o espectador, direto na primeira pessoa
-/// de um aliado; Espaço troca para de cima e para a câmera livre, que não
-/// sai do mapa; morto, o rádio não fala; a escolha de conjunto só aparece
-/// na hora de renascer.
+/// Morto: a câmera fica onde morreu até renascer (Jhon, 27/11: "tire o modo
+/// espectador flutuante, se morrer, fica onde morreu"; até então, passado 1 s,
+/// ela ia sozinha para a tela de um aliado, e o Espaço trocava para a vista de
+/// cima e para a câmera livre). Um clique vai para a primeira pessoa de um
+/// aliado, o Espaço volta; morto, o rádio não fala; a escolha de conjunto só
+/// aparece na hora de renascer.
 /// </summary>
 public sealed class SpectatorTest : RegressionTest
 {
 	public override string Name => "Espectador";
-	public override string Description => "morto: 1 s no corpo e o espectador em primeira pessoa do aliado, de cima e livre dentro do mapa";
+	public override string Description => "morto: a câmera fica onde morreu; um clique vai para a primeira pessoa do aliado e o Espaço volta";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -48,13 +48,26 @@ public sealed class SpectatorTest : RegressionTest
 		if (cam == null) return;
 		b.Check(KillCam.Active, "o HUD de quem joga sai (o de quem se vê toma o lugar)");
 
-		// Desde 19/11 sem câmera de abate: passou o segundo no corpo, direto
-		// no espectador.
+		// Desde 27/11 a câmera fica onde morreu: nem o tempo, nem o Espaço, nem
+		// o WASD a tiram de lá.
+		Camera3D view = b.GetViewport().GetCamera3D();
+		Vector3 died = view.GlobalPosition;
 		await b.Seconds(1.1);
-		b.Check(cam.Mode == "primeira" && cam.Watching == mate, $"1 s depois: espectador, direto na primeira pessoa do aliado (modo {cam.Mode})");
+		await b.Tap("jump");
+		RegressionBench.Press("move_forward");
+		await b.Seconds(0.5);
+		RegressionBench.ReleaseAll();
+		view = b.GetViewport().GetCamera3D();
+		b.Check(cam.Mode == "morte" && cam.Watching == null, $"1,6 s depois, com Espaço e W: ainda onde morreu (modo {cam.Mode})");
+		b.AtMost(0.01, view.GlobalPosition.DistanceTo(died), "a câmera não sai do lugar (m)");
 		Hud mine = b.GetTree().Root.FindChildren("*", "", true, false).OfType<Hud>().FirstOrDefault(h => h.Subject == null);
 		b.Check(mine != null && !mine.Visible, "o HUD de quem joga sai da tela");
 		b.AtMost(0.3, RegressionBench.Flat(b.Player.GlobalPosition - fell), "o corpo fica onde caiu (m)");
+
+		// Um clique: a primeira pessoa do aliado.
+		await b.Tap("attack");
+		await b.Frames(3);
+		b.Check(cam.Mode == "primeira" && cam.Watching == mate, $"clique: a primeira pessoa do aliado (modo {cam.Mode})");
 		b.Check(KillCam.Focus == mate.GetNode<Health>("Health").PublicName, "o feed marca o aliado");
 		b.Check(cam.SubjectHud != null && cam.SubjectHud.Subject == mate && cam.SubjectHud.Visible, "na tela, o HUD do aliado");
 
@@ -62,49 +75,23 @@ public sealed class SpectatorTest : RegressionTest
 		Radio.Reset();
 		b.Check(!Radio.Send(b.Player, 0), "morto, o rádio não fala");
 		await b.Seconds(0.3);
-		Camera3D view = b.GetViewport().GetCamera3D();
+		view = b.GetViewport().GetCamera3D();
 		b.AtMost(0.3, view.GlobalPosition.DistanceTo(mate.GlobalPosition + Vector3.Up * mate.GetNode<Node3D>("Head").Position.Y), "a câmera fica no olho do aliado (m)");
 		b.Check(cam.FirstPerson && cam.PovWeapon != null, $"com a arma dele na mão ({cam.PovWeapon})");
 
-		// O aliado vira lobo enquanto você o vê em primeira pessoa: na vista
-		// de cima, aparece o lobo (e não o humano que estava escondido).
-		var mateForm = mate.GetNode<FormController>("FormController");
-		bool wasWolf = mateForm.ShowsWolf;
-		mateForm.ProcessMode = Node.ProcessModeEnum.Always;
-		mateForm.MirrorWp(mateForm.MaxWp);
-		mateForm.ToggleForm();
-		await b.Seconds(1.6);
-
+		// Espaço: de volta para onde morreu, com o corpo do aliado à mostra de novo.
 		await b.Tap("jump");
-		await b.Seconds(0.8);
-		b.Check(cam.Mode == "cima", "Espaço: vista de cima do aliado");
-		bool nowWolf = mateForm.ShowsWolf;
-		var mateHuman = mate.GetNode<Node3D>("Human");
-		var mateWolf = mate.GetNode<Node3D>("WolfVisual");
-		b.Check(nowWolf != wasWolf, $"o aliado trocou de forma ({(nowWolf ? "lobo" : "humano")})");
-		b.Check(mateHuman.Visible == !nowWolf && mateWolf.Visible == nowWolf, "na vista de cima, aparece a forma de agora dele");
-		b.Check(mate.FindChildren("*", nameof(VisualInstance3D), true, false).OfType<VisualInstance3D>().All(v => (v.Layers & KillCam.WatchedLayer) == 0),
-			"nada do corpo dele fica escondido da câmera");
+		await b.Frames(3);
 		view = b.GetViewport().GetCamera3D();
-		b.AtMost(6.0, view.GlobalPosition.DistanceTo(mate.GlobalPosition), "a câmera fica por cima do aliado (m)");
+		b.Check(cam.Mode == "morte" && cam.Watching == null, $"Espaço: de volta para onde morreu ({cam.Mode})");
+		b.AtMost(0.01, view.GlobalPosition.DistanceTo(died), "a câmera volta ao lugar da morte (m)");
+		b.Check(mate.FindChildren("*", nameof(VisualInstance3D), true, false).OfType<VisualInstance3D>().All(v => (v.Layers & KillCam.WatchedLayer) == 0),
+			"nada do corpo do aliado fica escondido da câmera");
+		b.Check(mate.GetNodeOrNull("Head/Camera3D/ViewModel") == null, "a arma emprestada sai do olho do aliado");
 
-		await b.Tap("jump");
+		// Para o fim do teste: de novo na tela do aliado, que tem de sair ao renascer.
+		await b.Tap("attack");
 		await b.Frames(3);
-		b.Check(cam.Mode == "livre", "Espaço de novo: câmera livre");
-		Vector3 before = view.GlobalPosition;
-		RegressionBench.Press("move_forward");
-		await b.Seconds(0.5);
-		b.AtLeast(2.5, view.GlobalPosition.DistanceTo(before), "livre, o W anda pelo mapa (m)");
-		// Segura o W até bater na borda: a câmera não sai do mapa.
-		RegressionBench.Press("sprint");
-		await b.Seconds(8);
-		RegressionBench.ReleaseAll();
-		Aabb box = MapBounds.Of(b.GetTree());
-		b.Check(box.Grow(0.05f).HasPoint(view.GlobalPosition), $"a câmera livre não sai do mapa ({view.GlobalPosition})");
-
-		await b.Tap("jump");
-		await b.Frames(3);
-		b.Check(cam.Mode == "primeira", "Espaço de novo volta aos aliados, em primeira pessoa");
 		var menu = b.GetTree().Root.FindChildren("*", "", true, false).OfType<LoadoutMenu>().FirstOrDefault();
 		b.Check(menu != null && !menu.IsOpen, "morto e assistindo, a escolha de conjunto não aparece");
 
@@ -197,7 +184,8 @@ public sealed class WatchedHudLiveTest : RegressionTest
 		KillFeed.Report(new Kill(mate.GetNode<Health>("Health").PublicName, b.Health.Team, other.PublicName, other.Team, KillCause.Gun, "ar15"));
 		b.Health.TakeDamage(99999f);
 		await b.Seconds(0.3);
-		await b.Tap("jump");
+		// (desde 27/11 a câmera fica onde morreu; o clique vai para a tela do aliado)
+		await b.Tap("attack");
 		await b.Frames(4);
 		KillCam cam = b.GetTree().Root.FindChildren("*", "", true, false).OfType<KillCam>().FirstOrDefault();
 		b.Check(cam != null && cam.Mode == "primeira" && cam.Watching == mate, $"espectador na tela do aliado ({cam?.Mode})");
@@ -229,15 +217,17 @@ public sealed class WatchedHudLiveTest : RegressionTest
 }
 
 /// <summary>
-/// No Armazém, a câmera livre do espectador fica dentro do galpão (19/11:
-/// "não posso sair pelas paredes, chão e teto"): voando para cima, para os
-/// lados e para baixo, ela para no cenário.
+/// No Armazém, morto, a câmera fica onde morreu, dentro do galpão. Até 27/11
+/// este teste voava a câmera livre contra o teto, as paredes e o chão (19/11:
+/// "não posso sair pelas paredes, chão e teto"); a câmera livre saiu (Jhon,
+/// 27/11: "se morrer, fica onde morreu. Com isso, usuários não irão ver para
+/// fora do mapa"), e o que se confere agora é que nada a tira do lugar.
 /// </summary>
 public sealed class SpectatorInsideTest : RegressionTest
 {
 	public override string Scene => RegressionBench.Match;
 	public override string Name => "EspectadorNoArmazem";
-	public override string Description => "a câmera livre do espectador não atravessa parede, chão nem teto do Armazém";
+	public override string Description => "morto no Armazém, a câmera fica onde morreu, dentro do galpão: o tempo, o Espaço, o WASD e o mouse não a tiram de lá";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -246,36 +236,27 @@ public sealed class SpectatorInsideTest : RegressionTest
 		await b.Seconds(0.5);
 		b.Health.TrainingRespawnDelay = 60f;
 		b.Health.TakeDamage(99999f);
-		await b.Seconds(0.3);
+		await b.Frames(3);
 		KillCam cam = b.GetTree().Root.FindChildren("*", "", true, false).OfType<KillCam>().FirstOrDefault();
 		b.Check(cam != null, "morreu: há câmera");
 		if (cam == null) return;
-		for (int i = 0; i < 4 && cam.Mode != "livre"; i++) { await b.Tap("jump"); await b.Frames(3); }
-		b.Check(cam.Mode == "livre", $"chegou na câmera livre ({cam.Mode})");
-		Vector3 inside = b.Player.GlobalPosition + Vector3.Up * 1.2f;
+		Vector3 died = b.GetViewport().GetCamera3D().GlobalPosition;
+		Aabb box = MapBounds.Of(b.GetTree());
 
-		var space = b.Player.GetWorld3D().DirectSpaceState;
-		Godot.Collections.Array<Rid> skip = new();
-		foreach (string group in Groups.Fighters)
-			foreach (Node node in b.GetTree().GetNodesInGroup(group))
-				if (node is CollisionObject3D body) skip.Add(body.GetRid());
-
-		foreach (var (name, yaw, pitch) in new[] { ("teto", 0f, 89f), ("parede", 0f, 0f), ("parede do lado", 90f, 0f), ("chão", 30f, -89f) })
+		for (int i = 0; i < 4; i++)
 		{
-			cam.AimFree(yaw, pitch);
+			await b.Tap("jump");
+			Input.ParseInputEvent(new InputEventMouseMotion { Relative = new Vector2(400, -300) });
 			RegressionBench.Press("move_forward");
 			RegressionBench.Press("sprint");
-			await b.Seconds(6);
+			await b.Seconds(1.5);
 			RegressionBench.ReleaseAll();
-			await b.Frames(2);
-			Vector3 at = b.GetViewport().GetCamera3D().GlobalPosition;
-			// Do ponto de dentro até a câmera não pode haver casca no meio.
-			var q = PhysicsRayQueryParameters3D.Create(inside, at, 1);
-			q.Exclude = skip;
-			var hit = space.IntersectRay(q);
-			string wall = hit.Count > 0 ? ((Node)hit["collider"]).Name : "";
-			b.Check(!wall.StartsWith("casca") && at.Y > -0.1f, $"{name}: a câmera fica dentro do galpão ({at}, no caminho: {(wall == "" ? "nada" : wall)})");
 		}
+		await b.Frames(2);
+		Camera3D view = b.GetViewport().GetCamera3D();
+		b.Check(cam.Mode == "morte", $"continua onde morreu ({cam.Mode})");
+		b.AtMost(0.01, view.GlobalPosition.DistanceTo(died), "a câmera não sai do lugar (m)");
+		b.Check(box.HasPoint(view.GlobalPosition), $"e fica dentro do mapa ({view.GlobalPosition})");
 	}
 }
 

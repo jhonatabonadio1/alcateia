@@ -56,6 +56,14 @@ public sealed class Config
 	/// <summary>Quanto vale o ingresso de entrada numa partida.</summary>
 	public TimeSpan TicketLife = TimeSpan.FromMinutes(3);
 
+	/// <summary>De onde o cliente de instalação baixa o jogo
+	/// (<c>ALCATEIA_DOWNLOADS</c>): o endereço público da pasta com os
+	/// manifestos e os pacotes (um balde do Cloudflare R2, por exemplo), com a
+	/// barra no fim. O cliente pergunta em <c>GET /v1/client</c>, então mudar
+	/// de hospedagem é mudar esta variável — não é preciso lançar cliente
+	/// novo. Vazio: o cliente avisa que os downloads não estão configurados.</summary>
+	public string Downloads = "";
+
 	// ------------------------------------------------------------ segurança
 
 	public const string DevMasterKey = "chave-mestra-de-desenvolvimento-troque";
@@ -135,6 +143,8 @@ public sealed class Config
 		c.FlyApp = Env("ALCATEIA_FLY_APP", "");
 		c.FlyToken = Env("ALCATEIA_FLY_TOKEN", "");
 		c.FlyApi = Env("ALCATEIA_FLY_API", c.FlyApi);
+		c.Downloads = Env("ALCATEIA_DOWNLOADS", "").Trim();
+		if (c.Downloads != "" && !c.Downloads.EndsWith('/')) c.Downloads += "/";
 		c.AdminPort = int.Parse(Env("ALCATEIA_ADMIN_PORT", "8081"));
 		c.AdminBind = Env("ALCATEIA_ADMIN_BIND", c.AdminBind);
 		c.AdminAllow = Ranges(Env("ALCATEIA_ADMIN_ALLOW", ""), wide: true);

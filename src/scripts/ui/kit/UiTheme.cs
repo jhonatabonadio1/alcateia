@@ -56,9 +56,9 @@ public static class UiTheme
 		{
 			// Menus (pedido do Jhon, 17/11: "mais suave, tá muito
 			// grosseiro"): os quatro cantos arredondados, sem corte.
-			box.CornerDetail = 8;
+			box.CornerDetail = 4;
 			box.SetCornerRadiusAll(Soft(radius));
-			box.AntiAliasingSize = 1f;
+			box.AntiAliasingSize = 0.6f;
 			return box;
 		}
 
@@ -77,18 +77,19 @@ public static class UiTheme
 	private static StyleBoxFlat Lifted(StyleBoxFlat box)
 	{
 		if (!UiTokens.Menu) return box;
-		box.ShadowColor = new Color(0f, 0.01f, 0.03f, 0.32f);
-		box.ShadowSize = 26;
-		box.ShadowOffset = new Vector2(0, 10);
+		box.ShadowColor = new Color(0f, 0.01f, 0.03f, 0.3f);
+		box.ShadowSize = 18;
+		box.ShadowOffset = new Vector2(0, 8);
 		return box;
 	}
 
 	/// <summary>O tamanho do corte de um canto, a partir do raio de antes.</summary>
 	public static int Facet(int radius) => radius <= 0 ? 0 : Mathf.RoundToInt(radius * 2.5f);
 
-	/// <summary>O raio de um canto arredondado dos menus, a partir do raio
-	/// de antes: 6 nos pequenos (botão, campo), 10 nos painéis.</summary>
-	public static int Soft(int radius) => radius <= 0 ? 0 : radius <= UiTokens.RadiusSmall ? 6 : 10;
+	/// <summary>O canto dos menus (27/11, placas retas: era 6 nos pequenos e
+	/// 10 nos painéis): 2 nos controles pequenos, para o fio não serrilhar, e
+	/// reto nos painéis.</summary>
+	public static int Soft(int radius) => radius <= 0 ? 0 : radius <= UiTokens.RadiusSmall ? 2 : 0;
 
 	/// <summary>Inclinação dos botões e abas: o topo anda para a direita.
 	/// Só na partida; nos menus os botões são retos.</summary>
@@ -187,9 +188,9 @@ public static class UiTheme
 			foreach (string state in new[] { "normal", "hover" })
 			{
 				var box = (StyleBoxFlat)t.GetStylebox(state, "PrimaryButton");
-				box.ShadowColor = new Color(UiTokens.Accent, state == "hover" ? 0.42f : 0.3f);
-				box.ShadowSize = 12;
-				box.ShadowOffset = new Vector2(0, 4);
+				box.ShadowColor = new Color(UiTokens.Accent, state == "hover" ? 0.34f : 0.2f);
+				box.ShadowSize = 10;
+				box.ShadowOffset = new Vector2(0, 3);
 			}
 
 		t.SetTypeVariation("TertiaryButton", "Button");
@@ -285,7 +286,7 @@ public static class UiTheme
 		t.SetStylebox("panel", "PanelContainer", Box(UiTokens.Surface1, default, 0, UiTokens.RadiusPanel, 0, 0));
 		t.SetStylebox("panel", "Panel", Box(UiTokens.Surface1, default, 0, UiTokens.RadiusPanel, 0, 0));
 
-		// Translúcidos: em cima do fundo borrado do menu (MenuBackdrop),
+		// Translúcidos: em cima do fundo vivo do menu (LoginBackdrop),
 		// viram vidro.
 		PanelVariant(t, "Surface1", Lifted(Box(new Color(UiTokens.Surface1, UiTokens.Menu ? 0.88f : 0.8f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3)));
 		PanelVariant(t, "Surface2", Lifted(Box(new Color(UiTokens.Surface2, UiTokens.Menu ? 0.88f : 0.84f), UiTokens.Border, 1, UiTokens.RadiusPanel, UiTokens.S3, UiTokens.S3)));

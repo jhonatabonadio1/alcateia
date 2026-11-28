@@ -71,21 +71,19 @@ public partial class KillCam
 		_subject = null;
 	}
 
-	/// <summary>
-	/// Um quadro da visão de quem se vê. <paramref name="above"/>: a vista
-	/// de cima (no espectador), em vez da primeira pessoa.
-	/// </summary>
-	private void ViewSubject(double delta, bool above = false)
+	/// <summary>Um quadro da visão de quem se vê: a primeira pessoa dele, ou a
+	/// câmera de terceira pessoa se ele é lobo.</summary>
+	private void ViewSubject(double delta)
 	{
 		if (_subject == null || !IsInstanceValid(_subject)) return;
 		bool wolf = _subject.GetNodeOrNull<FormController>("FormController")?.ShowsWolf ?? false;
 
-		if (above || wolf)
+		if (wolf)
 		{
 			LeaveFirstPerson();
 			ShowBody(_subject);
 			if (!_camera.Current) _camera.MakeCurrent();
-			if (wolf && !above) WolfCamera(_subject, delta);
+			WolfCamera(_subject, delta);
 			return;
 		}
 

@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://src/scripts/core/SpawnPoints.cs" id="s_spawns"]
 [ext_resource type="Script" path="res://src/scripts/core/PatrolRoutes.cs" id="s_routes"]
 [ext_resource type="Script" path="res://src/scripts/core/NavBaker.cs" id="s_nav"]
+[ext_resource type="Script" path="res://src/scripts/visual/fx/WaterFeature.cs" id="s_agua"]
 
 [sub_resource type="StandardMaterial3D" id="M_areia"]
 albedo_color = Color(1, 0.93, 0.8, 1)
@@ -50,84 +51,87 @@ size = Vector3(2.5, 1.125, 0.375)
 size = Vector3(0.3, 2.2, 0.3)
 
 [sub_resource type="BoxShape3D" id="S7"]
-size = Vector3(6.4548, 0.3, 2.34)
+size = Vector3(6.595, 0.3, 2.3)
 
 [sub_resource type="BoxShape3D" id="S8"]
-size = Vector3(86, 1, 86)
+size = Vector3(6.4548, 0.3, 2.34)
 
 [sub_resource type="BoxShape3D" id="S9"]
-size = Vector3(1, 18, 72)
+size = Vector3(86, 1, 86)
 
 [sub_resource type="BoxShape3D" id="S10"]
-size = Vector3(72, 18, 1)
+size = Vector3(1, 18, 72)
 
 [sub_resource type="BoxShape3D" id="S11"]
-size = Vector3(72, 1, 72)
+size = Vector3(72, 18, 1)
 
 [sub_resource type="BoxShape3D" id="S12"]
-size = Vector3(70, 18, 2)
+size = Vector3(72, 1, 72)
 
 [sub_resource type="BoxShape3D" id="S13"]
-size = Vector3(29.5, 18, 1)
+size = Vector3(70, 18, 2)
 
 [sub_resource type="BoxShape3D" id="S14"]
-size = Vector3(7, 18, 1)
+size = Vector3(29.5, 18, 1)
 
 [sub_resource type="BoxShape3D" id="S15"]
-size = Vector3(15.5, 18, 1)
+size = Vector3(7, 18, 1)
 
 [sub_resource type="BoxShape3D" id="S16"]
-size = Vector3(13.5, 18, 1)
+size = Vector3(15.5, 18, 1)
 
 [sub_resource type="BoxShape3D" id="S17"]
-size = Vector3(3.5, 18, 67)
+size = Vector3(13.5, 18, 1)
 
 [sub_resource type="BoxShape3D" id="S18"]
-size = Vector3(4, 18, 19)
+size = Vector3(3.5, 18, 67)
 
 [sub_resource type="BoxShape3D" id="S19"]
-size = Vector3(3, 18, 5)
+size = Vector3(4, 18, 19)
 
 [sub_resource type="BoxShape3D" id="S20"]
-size = Vector3(2, 18, 43)
+size = Vector3(3, 18, 5)
 
 [sub_resource type="BoxShape3D" id="S21"]
-size = Vector3(2, 18, 10)
+size = Vector3(2, 18, 43)
 
 [sub_resource type="BoxShape3D" id="S22"]
-size = Vector3(1, 18, 23.5)
+size = Vector3(2, 18, 10)
 
 [sub_resource type="BoxShape3D" id="S23"]
-size = Vector3(1, 18, 19)
+size = Vector3(1, 18, 23.5)
 
 [sub_resource type="BoxShape3D" id="S24"]
-size = Vector3(10.5, 18, 3)
+size = Vector3(1, 18, 19)
 
 [sub_resource type="BoxShape3D" id="S25"]
-size = Vector3(5.5, 18, 3)
+size = Vector3(10.5, 18, 3)
 
 [sub_resource type="BoxShape3D" id="S26"]
-size = Vector3(8, 18, 3)
+size = Vector3(5.5, 18, 3)
 
 [sub_resource type="BoxShape3D" id="S27"]
-size = Vector3(7.5, 18, 3)
+size = Vector3(8, 18, 3)
 
 [sub_resource type="BoxShape3D" id="S28"]
-size = Vector3(14, 18, 3)
+size = Vector3(7.5, 18, 3)
 
 [sub_resource type="BoxShape3D" id="S29"]
-size = Vector3(1.5, 18, 2.5)
+size = Vector3(14, 18, 3)
 
 [sub_resource type="BoxShape3D" id="S30"]
-size = Vector3(2, 18, 2.5)
+size = Vector3(1.5, 18, 2.5)
 
 [sub_resource type="BoxShape3D" id="S31"]
-size = Vector3(0.5, 18, 2.5)
+size = Vector3(2, 18, 2.5)
 
 [sub_resource type="BoxShape3D" id="S32"]
-size = Vector3(7, 18, 2)
+size = Vector3(0.5, 18, 2.5)
 
 [sub_resource type="BoxShape3D" id="S33"]
+size = Vector3(7, 18, 2)
+
+[sub_resource type="BoxShape3D" id="S34"]
 size = Vector3(4.5, 18, 2)
 
 [sub_resource type="BoxMesh" id="B1"]
@@ -356,7 +360,7 @@ albedo_color = Color(0.481, 0.363, 0.24, 1)
 size = Vector3(4.2, 2.42, 4.2)
 
 [sub_resource type="StandardMaterial3D" id="KC38"]
-albedo_color = Color(0.479, 0.446, 0.411, 1)
+albedo_color = Color(0.494, 0.412, 0.356, 1)
 
 [sub_resource type="StandardMaterial3D" id="KC39"]
 albedo_color = Color(0.748, 0.588, 0.479, 1)
@@ -1355,222 +1359,250 @@ metadata/mapa_cor = Color(0.35, 0.3, 0.25, 1)
 shape = SubResource("S6")
 
 [node name="pr0" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0, 0, 1, 0.5407, 0.8412, 0, -0.8412, 0.5407, 0, -16.9632, 1.6441, 9.798)
+transform = Transform3D(0, 0, 1, 0.5004, 0.8658, 0, -0.8658, 0.5004, 0, 21.6107, 1.7361, 9.5411)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr0"]
 shape = SubResource("S7")
 
 [node name="pr1" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(-0.8412, 0.5407, 0, 0.5407, 0.8412, 0, 0, 0, -1, -13.6838, 1.6441, -0.3619)
+transform = Transform3D(0, 0, 1, 0.5407, 0.8412, 0, -0.8412, 0.5407, 0, -16.9632, 1.6441, 9.798)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr1"]
-shape = SubResource("S7")
+shape = SubResource("S8")
 
 [node name="pr2" type="StaticBody3D" parent="Colisao"]
-transform = Transform3D(0, 0, 1, 0.5407, 0.8412, 0, -0.8412, 0.5407, 0, 17.0594, 1.6441, -1.2887)
+transform = Transform3D(-0.8412, 0.5407, 0, 0.5407, 0.8412, 0, 0, 0, -1, -13.6838, 1.6441, -0.3619)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/pr2"]
+shape = SubResource("S8")
+
+[node name="pr3" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0.5407, 0.8412, 0, -0.8412, 0.5407, 0, 17.0594, 1.6441, -1.2887)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pr3"]
+shape = SubResource("S8")
+
+[node name="pr4" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, 1, 0.5004, 0.8658, 0, -0.8658, 0.5004, 0, 9.6309, 1.7361, -3.0868)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pr4"]
+shape = SubResource("S7")
+
+[node name="pr5" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(-0.8658, 0.5004, 0, 0.5004, 0.8658, 0, 0, 0, -1, 19.8968, 1.7361, -16.4168)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pr5"]
+shape = SubResource("S7")
+
+[node name="pr6" type="StaticBody3D" parent="Colisao"]
+transform = Transform3D(0, 0, -1, 0.5004, 0.8658, 0, 0.8658, -0.5004, 0, -7.82, 1.7361, -12.4688)
+metadata/mapa_fora = true
+
+[node name="Colisao" type="CollisionShape3D" parent="Colisao/pr6"]
 shape = SubResource("S7")
 
 [node name="Piso" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Piso"]
-shape = SubResource("S8")
+shape = SubResource("S9")
 
 [node name="LimiteOeste" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35.5, 9, 0)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteOeste"]
-shape = SubResource("S9")
+shape = SubResource("S10")
 
 [node name="LimiteLeste" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.5, 9, 0)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteLeste"]
-shape = SubResource("S9")
+shape = SubResource("S10")
 
 [node name="LimiteSul" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -35.5)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteSul"]
-shape = SubResource("S10")
+shape = SubResource("S11")
 
 [node name="LimiteNorte" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, 35.5)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteNorte"]
-shape = SubResource("S10")
+shape = SubResource("S11")
 
 [node name="LimiteTeto" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 18.5, 0)
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/LimiteTeto"]
-shape = SubResource("S11")
+shape = SubResource("S12")
 
 [node name="Barreira1" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, -34)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira1"]
-shape = SubResource("S12")
+shape = SubResource("S13")
 
 [node name="Barreira2" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.25, 9, -32.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira2"]
-shape = SubResource("S13")
+shape = SubResource("S14")
 
 [node name="Barreira3" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 9, -32.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira3"]
-shape = SubResource("S14")
+shape = SubResource("S15")
 
 [node name="Barreira4" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.25, 9, -32.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira4"]
-shape = SubResource("S15")
+shape = SubResource("S16")
 
 [node name="Barreira5" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.25, 9, -32.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira5"]
-shape = SubResource("S16")
+shape = SubResource("S17")
 
 [node name="Barreira6" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.25, 9, 1.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira6"]
-shape = SubResource("S17")
+shape = SubResource("S18")
 
 [node name="Barreira7" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 9, -22.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira7"]
-shape = SubResource("S18")
+shape = SubResource("S19")
 
 [node name="Barreira8" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.5, 9, -10.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira8"]
-shape = SubResource("S19")
+shape = SubResource("S20")
 
 [node name="Barreira9" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 9, 13.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira9"]
-shape = SubResource("S20")
+shape = SubResource("S21")
 
 [node name="Barreira10" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 9, 6.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira10"]
-shape = SubResource("S21")
+shape = SubResource("S22")
 
 [node name="Barreira11" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, 9, 23.25)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira11"]
-shape = SubResource("S22")
+shape = SubResource("S23")
 
 [node name="Barreira12" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.5, 9, 25.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira12"]
-shape = SubResource("S23")
+shape = SubResource("S24")
 
 [node name="Barreira13" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.25, 9, 33.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira13"]
-shape = SubResource("S24")
+shape = SubResource("S25")
 
 [node name="Barreira14" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.75, 9, 33.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira14"]
-shape = SubResource("S25")
+shape = SubResource("S26")
 
 [node name="Barreira15" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 9, 33.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira15"]
-shape = SubResource("S26")
+shape = SubResource("S27")
 
 [node name="Barreira16" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.75, 9, 33.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira16"]
-shape = SubResource("S27")
+shape = SubResource("S28")
 
 [node name="Barreira17" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 9, 33.5)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira17"]
-shape = SubResource("S28")
+shape = SubResource("S29")
 
 [node name="Barreira18" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.25, 9, 33.75)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira18"]
-shape = SubResource("S29")
+shape = SubResource("S30")
 
 [node name="Barreira19" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 9, 33.75)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira19"]
-shape = SubResource("S30")
+shape = SubResource("S31")
 
 [node name="Barreira20" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.75, 9, 33.75)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira20"]
-shape = SubResource("S31")
+shape = SubResource("S32")
 
 [node name="Barreira21" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, 9, 33.75)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira21"]
-shape = SubResource("S29")
+shape = SubResource("S30")
 
 [node name="Barreira22" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 9, 34)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira22"]
-shape = SubResource("S32")
+shape = SubResource("S33")
 
 [node name="Barreira23" type="StaticBody3D" parent="Colisao"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.75, 9, 34)
 metadata/mapa_fora = true
 
 [node name="Colisao" type="CollisionShape3D" parent="Colisao/Barreira23"]
-shape = SubResource("S33")
+shape = SubResource("S34")
 
 [node name="Desenho" parent="Deserto" instance=ExtResource("p_deserto")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
@@ -3178,6 +3210,37 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.12, 1.2, -23.88)
 
 [node name="livre16" type="Marker3D" parent="NascerLivre"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.88, 1.2, 26.12)
+
+[node name="Chafariz" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.086, 0.35, -7.6692)
+script = ExtResource("s_agua")
+Radius = 1.9
+Murk = 1.2
+Liveliness = 1
+FallHeight = 2.07
+FallTopRadius = 0.53
+FallRadius = 0.74
+Streams = 8
+TopRadius = 0.37
+Sound = "fonte"
+SoundRange = 24
+SoundDb = -2
+
+[node name="Poco1" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.3431, 0.667, -29.1854)
+script = ExtResource("s_agua")
+Radius = 0.68
+Murk = 0.45
+Liveliness = 0.35
+Deep = Color(0.03, 0.2, 0.3, 1)
+
+[node name="Poco2" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.3345, 0.667, 20.2135)
+script = ExtResource("s_agua")
+Radius = 0.68
+Murk = 0.45
+Liveliness = 0.35
+Deep = Color(0.03, 0.2, 0.3, 1)
 
 [node name="SpawnA" type="Node3D" parent="."]
 script = ExtResource("s_spawns")

@@ -23,11 +23,11 @@ public sealed class MeasureTest : RegressionTest
 		b.RemoveBots();
 
 		var human = await Measure(b, "humano", false);
-		// 2,56 desde 26/11 (HumanSpeedBonus 0,8, pedido do Jhon; era 3,46).
-		b.Near(2.56, human.Run, 0.05, "humano correndo (m/s)");
+		// 2,82 desde 27/11 (HumanSpeedBonus 0,88, "pode acelerar um pouco"; era 2,56, e antes 3,46).
+		b.Near(2.82, human.Run, 0.05, "humano correndo (m/s)");
 		b.Near(1.02, human.Rise, 0.04, "humano: o pulo sobe (m)");
-		// 1,9 m desde 26/11: o humano anda 2,56 m/s (era 3,46, e o pulo ia 2,6 m).
-		b.Near(1.9, human.Leap, 0.25, "humano: pulo correndo vai (m)");
+		// ~2,1 m desde 27/11: o humano anda 2,82 m/s (1,9 a 2,56; a 3,46 o pulo ia 2,6 m).
+		b.Near(2.1, human.Leap, 0.25, "humano: pulo correndo vai (m)");
 		b.AtLeast(1.0, human.Box, "humano sobe pulando num caixote de 1 m");
 		b.AtMost(1.15, human.Box, "humano não sobe pulando em 1,2 m");
 

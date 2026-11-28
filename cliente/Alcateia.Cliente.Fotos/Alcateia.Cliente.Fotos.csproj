@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	Fotografa as telas do cliente sem abrir janela nenhuma (o Avalonia
+	desenha num quadro de memória e o quadro vira PNG), com conta, amigos e
+	download de mentira. É como se confere a interface depois de mexer nela,
+	sem servidor e sem tomar o foco de quem está trabalhando.
+
+	Uso: dotnet run com o projeto cliente/Alcateia.Cliente.Fotos e a pasta de
+	saída como argumento (cliente/LEIA-ME.md).
+	-->
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<AssemblyName>fotos</AssemblyName>
+		<RootNamespace>Alcateia.Cliente.Fotos</RootNamespace>
+		<InvariantGlobalization>true</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia.Headless" Version="12.2.0" />
+		<PackageReference Include="Avalonia.Skia" Version="12.2.0" />
+		<ProjectReference Include="../Alcateia.Cliente/Alcateia.Cliente.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -25,6 +25,13 @@ public partial class WorldAudio : Node
 	/// está atrás de você. Abaixo de uns −6 ele some no meio do jogo.</summary>
 	[Export] public float OwnStepVolume = -3f;
 
+	/// <summary>O passo do humano correndo (Shift), em relação ao de andar: quanto
+	/// mais alto (dB) e o tom (1 = igual; menos, mais grave). O pé bate com mais
+	/// peso (27/11, "mais natural e próximo da realidade"); a variação de tom de
+	/// cada passo (<see cref="Sfx.PitchVariation"/>) entra por cima.</summary>
+	[Export] public float SprintStepDb = 2.5f;
+	[Export] public float SprintStepPitch = 0.94f;
+
 	/// <summary>Escreve no Output cada ruído recebido e o som que ele
 	/// tocou — ou "SEM ARQUIVO". Para descobrir por que algo está mudo.</summary>
 	[Export] public bool Debug;
@@ -138,7 +145,10 @@ public partial class WorldAudio : Node
 		switch (noise.Kind)
 		{
 			case NoiseKind.Step:
-				Play(OnSurface(wolf ? "lobo_passo" : "passo", noise), noise, mine, mine ? OwnStepVolume : 0f);
+				// O humano correndo (Shift) pisa mais pesado: mais alto e um pouco mais grave.
+				bool running = !wolf && source is CharacterBody3D runner && BodyMotion.HumanSprinting(runner);
+				Play(OnSurface(wolf ? "lobo_passo" : "passo", noise), noise, mine,
+					(mine ? OwnStepVolume : 0f) + (running ? SprintStepDb : 0f), pitch: running ? SprintStepPitch : 1f);
 				break;
 
 			case NoiseKind.Land:
@@ -247,7 +257,7 @@ public partial class WorldAudio : Node
 			: Sfx.First($"tiro_{id}", $"tiro_{model}", "tiro");
 	}
 
-	private void Play(string name, Noise noise, bool mine, float volumeDb = 0f, float reach = 0f)
+	private void Play(string name, Noise noise, bool mine, float volumeDb = 0f, float reach = 0f, float pitch = 1f)
 	{
 		if (Debug)
 			GD.Print($"[sound] {noise.Kind} from {noise.Source?.Name} ({(mine ? "yours" : $"radius {noise.Radius:0} m")}) → "
@@ -255,8 +265,8 @@ public partial class WorldAudio : Node
 
 		if (name == null) return;
 
-		if (mine) Sfx.Own(name, volumeDb);
-		else Sfx.At(name, noise.Position, noise.Radius, volumeDb, reach);
+		if (mine) Sfx.Own(name, volumeDb, pitch);
+		else Sfx.At(name, noise.Position, noise.Radius, volumeDb, reach, pitch);
 	}
 
 	private bool Listener(out Vector3 position)

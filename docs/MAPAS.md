@@ -321,6 +321,18 @@ python3 src/tools/gerar_mapas.py cidade
   cruzadas; o detalhe pinta de tijolo o que fica acima de 16 cm (`detalhe.palete_carregado`).
 - **A escada do prédio em obras da Cidade** (`cidade.OBRA_ESCADA`) tem a chapa de subida das outras escadas (27/11):
   sem ela, descendo, o corpo escorregava pela quina arredondada do degrau e voava três degraus de cada vez.
+- **As casas de escada do Deserto** (`House_06L/R`, quatro no mapa: a escada é por dentro, do alpendre à laje, 14 degraus
+  de 17 × 30 cm) também têm a chapa (`deserto.ESCADAS`, 27/11; Jhon: "não consigo subir escadarias em algum lugar"). Sem
+  ela o humano subia aos trancos e descia voando, e o lobo, com a verga da porta em cima, nem entrava no primeiro degrau.
+  Para achar escada sem chapa num kit: a peça com faces viradas para cima em três ou mais níveis seguidos, de 8 a 45 cm
+  um do outro (foi assim que se varreram os quatro mapas; nos outros não há). O jogo também sobe e desce escada sem
+  chapa desde 27/11 (`BodyMotion.MoveOnSteps`, `Player.FollowStairs`), mas com a chapa é liso.
+- **A água** (`Mapa.agua`, 27/11): o chafariz e os dois poços do Deserto têm água de verdade — o nó `WaterFeature`
+  (superfície animada, queda, respingos, som), com as medidas tiradas da peça (`deserto.FONTE`, `POCO`). A face de água
+  da peça do chafariz sai do desenho e da colisão (`deserto.sem_agua`): entra-se na bacia, e a água não é chão. Mapa novo
+  com fonte, tanque ou poço: medir na peça a altura e o raio do espelho e chamar `m.agua(...)`.
+- **O lado de fora do Deserto são só as dunas** (decisão do Jhon, 27/11: "pode tirar essa cidade ao redor do deserto, só
+  os montes e a cor de areia tá bom"): um entorno com bairros, torres e oásis chegou a ser montado e saiu no mesmo dia.
 - **O que estava no terreno da demo** (`demo.assentar`): o Deserto do Unreal tem um terreno com relevo (*landscape*),
   que não vem; aqui o chão é plano, e as palmeiras, pedras e plantas que estavam num montinho ficavam até 78 cm no
   ar. Descem até o que está embaixo (as pedras antes, que há planta em cima de pedra).

@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using System.Linq;
 
 /// <summary>
 /// Os braços animados: para as armas de fogo, o que o jogador vê é um
@@ -156,6 +157,7 @@ public partial class ViewModel
 		_magazineNode = null;
 		_rigObject = null;
 		_rigPlayer = null;
+		_kickBack.Clear();
 		_cameraSkeleton = null;
 		_cameraBone = -1;
 		_throwing = false;
@@ -667,8 +669,81 @@ public partial class ViewModel
 
 		// Atirou no meio do caminho (subindo ou descendo): a arma chega um pouco mais devagar.
 		bool moving = _rigPlaying is "mirar" or "desmirar" && _rigPlayer.IsPlaying();
-		PlayRig(name, 0, moving ? 0.07 : 0.02);
-		_rigBusy = shot.Length;
+		double seconds = ShotSeconds(shot);
+		PlayRig(name, seconds, moving ? 0.07 : 0.02);
+		_rigBusy = seconds;
+	}
+
+	/// <summary>
+	/// Em quanto tempo toca o clipe do tiro: o do arquivo, ou menos, para o coice
+	/// caber no intervalo da arma (Jhon, 27/11: "a animação de recuo do tiro em
+	/// primeira pessoa nas armas não coincide com a velocidade que estou atirando").
+	/// Medido nos conjuntos: a arma do AK, do M4 e da SCAR leva 0,20 a 0,22 s para
+	/// voltar do coice, e o tiro seguinte vem em 0,09 a 0,15 s; o clipe recomeçava
+	/// do zero com a arma ainda no meio do caminho e ela pulava de volta, um tranco
+	/// por tiro fora do ritmo. Agora o clipe inteiro anda na razão
+	/// volta ÷ intervalo: a arma chega de volta no instante do tiro seguinte, e a
+	/// rajada lê como um coice por tiro. Arma mais lenta que o coice (a SVD, a
+	/// Desert Eagle) toca como veio.
+	/// </summary>
+	private double ShotSeconds(Clip shot)
+	{
+		float interval = _weapon.Held?.Interval ?? 0f;
+		double back = KickBack(shot);
+		if (interval <= 0f || back <= interval) return shot.Length;
+		return shot.Length * interval / back;
+	}
+
+	/// <summary>Quanto do clipe <see cref="ShotSeconds"/> já mediu (a volta do
+	/// coice, por clipe), deste conjunto.</summary>
+	private readonly Dictionary<string, double> _kickBack = new();
+
+	/// <summary>
+	/// Em quanto tempo, desde o começo do clipe do tiro, a arma volta do coice:
+	/// o primeiro instante depois do pico em que a posição e o giro do osso da
+	/// arma (<c>ik_hand_gun</c>) estão a menos de 10% do pico, cada um contra o
+	/// seu. Lido no clipe uma vez por conjunto. Sem o osso, o clipe inteiro.
+	/// </summary>
+	private double KickBack(Clip shot)
+	{
+		if (_kickBack.TryGetValue(shot.Name, out double known)) return known;
+		double back = shot.Length;
+		Animation anim = _rigPlayer?.GetAnimation(shot.Name);
+		int position = -1, rotation = -1;
+		if (anim != null)
+			for (int t = 0; t < anim.GetTrackCount(); t++)
+			{
+				if (!anim.TrackGetPath(t).GetConcatenatedSubNames().EndsWith("ik_hand_gun")) continue;
+				if (anim.TrackGetType(t) == Animation.TrackType.Position3D) position = t;
+				else if (anim.TrackGetType(t) == Animation.TrackType.Rotation3D) rotation = t;
+			}
+		if (position >= 0 || rotation >= 0)
+		{
+			const int samples = 96;
+			var moved = new float[samples + 1];
+			var turned = new float[samples + 1];
+			Vector3 restAt = position >= 0 ? anim.PositionTrackInterpolate(position, shot.From) : Vector3.Zero;
+			Quaternion restTurn = rotation >= 0 ? anim.RotationTrackInterpolate(rotation, shot.From) : Quaternion.Identity;
+			for (int i = 0; i <= samples; i++)
+			{
+				double t = shot.From + shot.Length * i / samples;
+				if (position >= 0) moved[i] = anim.PositionTrackInterpolate(position, t).DistanceTo(restAt);
+				if (rotation >= 0) turned[i] = anim.RotationTrackInterpolate(rotation, t).AngleTo(restTurn);
+			}
+			int peak = 0;
+			float peakMoved = moved.Max(), peakTurned = turned.Max();
+			for (int i = 0; i <= samples; i++)
+				if (moved[i] / Mathf.Max(peakMoved, 1e-6f) + turned[i] / Mathf.Max(peakTurned, 1e-6f)
+					> moved[peak] / Mathf.Max(peakMoved, 1e-6f) + turned[peak] / Mathf.Max(peakTurned, 1e-6f)) peak = i;
+			for (int i = peak; i <= samples; i++)
+				if (moved[i] <= 0.1f * peakMoved && turned[i] <= 0.1f * peakTurned)
+				{
+					back = shot.Length * i / samples;
+					break;
+				}
+		}
+		_kickBack[shot.Name] = back;
+		return back;
 	}
 
 	private void UpdateRig(float dt)

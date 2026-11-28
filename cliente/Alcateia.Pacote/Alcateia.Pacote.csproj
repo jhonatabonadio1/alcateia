@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	O pacote do jogo: como uma pasta exportada vira arquivos para baixar, e
+	como uma pasta instalada é levada de uma versão à outra baixando só o que
+	mudou. Manifesto, corte em pedaços por conteúdo, empacotar, instalar,
+	atualizar, conferir e desinstalar.
+
+	C# puro, sem pacote NuGet e sem interface: quem empacota é a ferramenta
+	(Alcateia.Pacote.Ferramenta, no pipeline) e quem instala é o cliente
+	(Alcateia.Cliente). Os dois usam este mesmo código — é o que garante que
+	cortam os arquivos do mesmo jeito.
+	-->
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<RootNamespace>Alcateia.Pacote</RootNamespace>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<IsTrimmable>true</IsTrimmable>
+	</PropertyGroup>
+
+</Project>

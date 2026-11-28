@@ -45,7 +45,6 @@ public static class UiFonts
 	private static readonly Font MenuNumeric = Vary(Figtree, weight: 600, tabular: true);
 	private static readonly Font MenuNumericDisplay = Vary(KanitItalic, tabular: true);
 	private static readonly Font MenuLabel = Vary(Figtree, weight: 600, spacing: 1);
-
 	/// <summary>As que já são itálicas de desenho: não levam a inclinação
 	/// por transformação (<see cref="HudStyle.Slanted"/>).</summary>
 	private static readonly HashSet<Font> Italics = new() { KanitItalic, KanitHeavy, MenuNumericDisplay };
@@ -66,6 +65,17 @@ public static class UiFonts
 	/// <summary>O título mais pesado (nome do jogador, tela de entrada).</summary>
 	public static Font DisplayHeavy => UiTokens.Menu ? KanitHeavy : GameDisplay;
 
+	/// <summary>A letra do logotipo ("WOLFLEAGUE" no header): a Kanit itálica
+	/// de sempre (Jhon, 27/11: "a logotipo pode manter a mesma").</summary>
+	public static Font Brand => KanitItalic;
+
+	/// <summary>O título grande das telas novas (nome de tela, de mapa, de
+	/// modo): a Kanit itálica pesada, a mesma letra de sempre. (Em 27/11
+	/// chegou a ser uma condensada em pé com as letras afastadas; o Jhon
+	/// pediu de volta: "fonte do jeito que era antes, mais grossinha e
+	/// inclinada, estilo Overwatch", "não precisa muito separada".)</summary>
+	public static Font Wide => KanitHeavy;
+
 	/// <summary>Para ler, com algarismos tabulares.</summary>
 	public static Font Numeric => UiTokens.Menu ? MenuNumeric : GameNumeric;
 
@@ -75,6 +85,10 @@ public static class UiFonts
 	/// <summary>Rótulo: um pouco mais de espaço entre letras, para caixa
 	/// alta pequena continuar legível.</summary>
 	public static Font Label => UiTokens.Menu ? MenuLabel : GameLabel;
+
+	/// <summary>Etiqueta: caixa alta pequena (abas do header, cabeçalho de
+	/// coluna, "// MISSÕES DO DIA"). A mesma letra dos rótulos.</summary>
+	public static Font Tag => Label;
 
 	private static Font Load(string file)
 	{

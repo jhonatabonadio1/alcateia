@@ -31,9 +31,15 @@ public sealed class StepRhythmTest : RegressionTest
 
 		try
 		{
-			// Humano: o clipe de corrida toca a 1×, então o pé cai a cada
-			// meio ciclo — e o som tem de cair junto.
-			float cycle = ClipLength("res://src/assets/personagens/_comum/humano/run_fwd.fbx");
+			// Humano: o pé cai a cada meio ciclo do clipe de corrida como ele toca
+			// (a 0,88×, CharacterAnimator.RunClipRate) — e o som tem de cair junto.
+			// Até 27/11 este teste contava o ciclo a 1× (0,733 s), e o som, que saía a
+			// cada 0,94 m andados, batia com essa conta e não com a perna, que dá o
+			// passo a cada 0,417 s (Jhon: "os barulhos de passos... não estão
+			// sincronizados com as pernas"). Agora o som sai da pisada do corpo
+			// animado (CharacterAnimator.Feet), e a conta é a do clipe como toca.
+			float cycle = ClipLength("res://src/assets/personagens/_comum/humano/run_fwd.fbx")
+				/ p.GetNode<CharacterAnimator>("Human").RunClipRate;
 			await b.Place(new Vector3(-15, 1, 13), -90f, settle: 0.6);
 			RegressionBench.Press("move_forward");
 			await b.Seconds(0.8);
@@ -48,9 +54,10 @@ public sealed class StepRhythmTest : RegressionTest
 
 			double expected = 3.0 / (cycle / 2);
 			b.Near(expected, steps.Count, 1.0, $"passos do humano em 3 s (ciclo de {RegressionBench.F(cycle)} s)");
-			// A passada do perfil (ruido.tres) é a do jogo: 0,94 m, o que o humano anda
-			// (2,56 m/s desde 26/11; era 1,19 m a 3,24) em meio ciclo do clipe de corrida.
-			b.Near(0.94, profile.StrideHuman, 0.01, "passada do humano no perfil (m)");
+			// A passada do perfil (ruido.tres) é a do jogo, para o corpo sem modelo (o
+			// servidor): 1,17 m, o que o humano anda (2,82 m/s desde 27/11) em meio ciclo
+			// do clipe de corrida como ele toca. (Era 0,94 m, a conta do ciclo a 1×.)
+			b.Near(1.17, profile.StrideHuman, 0.01, "passada do humano no perfil (m)");
 			RegressionBench.Note($"passada medida: {RegressionBench.F(speed * cycle / 2)} m");
 
 			// Lobo em pé: o andar do Jhon acelera até a velocidade do corpo

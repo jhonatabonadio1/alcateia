@@ -5,17 +5,19 @@ using System.Linq;
 using System.Text.Json.Nodes;
 
 /// <summary>
-/// A sala antes da partida, em três áreas:
+/// A sala antes da partida. Refeita em 27/11 (Jhon: "refaça a HUD dos
+/// menus e da sala, com Valorant de inspiração"), em três faixas:
 ///
-/// - times à esquerda, Azul e Laranja lado a lado, com um botão de
-///   trocar de lado entre os dois. Lugar vazio aparece listrado e
-///   clicável; o mestre leva uma coroa; quem está pronto leva as divisas
-///   verdes ».
-/// - regras à direita, em formulário: rótulo à esquerda, valor à direita,
-///   uma linha por regra — o jogador lê as regras de cima a baixo numa
-///   varredura só. Embaixo, o mapa.
-/// - faixa inferior com o chat, o painel de informações de quem foi
-///   clicado e os botões Convidar, Pronto e Iniciar.
+/// - **no alto**, o nome da sala em letra de placa e o que se joga, em
+///   etiquetas (modo, tamanho, objetivo), com o botão de sair;
+/// - **no meio**, os times frente a frente — Vanguarda à esquerda,
+///   Sindicato à direita, espelhados, com o "VS" e a troca de lado entre os
+///   dois — e, à direita, o mapa (a foto grande) e as regras, duas por
+///   linha, que cabem sem rolar. Lugar vazio aparece listrado; o mestre
+///   leva a coroa; cada lugar diz se a pessoa está pronta;
+/// - **embaixo**, a conversa, quem foi clicado e as ações: convidar
+///   amigos (pelo painel social), marcar pronto e o botão de papel que
+///   inicia.
 ///
 /// Iniciar abre uma contagem de 5 s num círculo grande sobre os times,
 /// cancelável enquanto roda.
@@ -46,8 +48,8 @@ public partial class RoomScreen : LobbyScreen
 	private VBoxContainer _chatLog;
 	private ScrollContainer _chatScroll;
 	private Control _userInfo;
-	private Button _ready;
-	private Button _start;
+	private CtaButton _ready;
+	private CtaButton _start;
 	private CountdownRing _ring;
 	private double _countdown = -1;
 
@@ -119,7 +121,6 @@ public partial class RoomScreen : LobbyScreen
 		if (!_online) return;
 		Lobby.Changed += OnLobbyChanged;
 		Lobby.ChatReceived += OnOnlineChat;
-		Lobby.Failed += OnOnlineFailed;
 	}
 
 	public override void _ExitTree()
@@ -127,7 +128,6 @@ public partial class RoomScreen : LobbyScreen
 		if (!_online) return;
 		Lobby.Changed -= OnLobbyChanged;
 		Lobby.ChatReceived -= OnOnlineChat;
-		Lobby.Failed -= OnOnlineFailed;
 	}
 
 	private void OnLobbyChanged()
@@ -150,11 +150,6 @@ public partial class RoomScreen : LobbyScreen
 		if (!IsInsideTree() || _chatLog == null || !IsInstanceValid(_chatLog)) return;
 		AddChatLine(from, text, false);
 		ScrollToEnd();
-	}
-
-	private void OnOnlineFailed(string code, string message)
-	{
-		if (IsInsideTree()) Shell.Toast(message, UiTokens.Danger);
 	}
 
 	/// <summary>Manda as regras da tela para o servidor (só o dono pode).</summary>
@@ -201,11 +196,13 @@ public partial class RoomScreen : LobbyScreen
 
 	// ------------------------------------------------------------------ montagem
 
+	private bool _shown;
+
 	protected override void Build()
 	{
 		if (_room == null)
 		{
-			Shell.GoOnline();
+			Shell.GoPlay();
 			return;
 		}
 
@@ -218,60 +215,92 @@ public partial class RoomScreen : LobbyScreen
 
 		VBoxContainer page = Page(UiTokens.S3);
 
-		page.AddChild(Top());
+		Control top = Top();
+		page.AddChild(top);
 
 		HBoxContainer middle = UiKit.Row(UiTokens.S4);
 		middle.SizeFlagsVertical = SizeFlags.ExpandFill;
 		page.AddChild(middle);
 
-		middle.AddChild(TeamsArea());
-		middle.AddChild(RulesPanel());
+		Control teams = TeamsArea();
+		Control rules = RulesPanel();
+		middle.AddChild(teams);
+		middle.AddChild(rules);
 
-		page.AddChild(Bottom());
+		Control bottom = Bottom();
+		page.AddChild(bottom);
 
 		RefreshActions();
+
+		// A entrada só na primeira vez: a sala se refaz a cada clique e a
+		// cada notícia do servidor.
+		if (_shown) return;
+		_shown = true;
+		Motion.Rise(top, 0f, new Vector2(-24, 0));
+		Motion.Rise(teams, 0.05f);
+		Motion.Rise(rules, 0.1f, new Vector2(28, 0));
+		Motion.Rise(bottom, 0.15f);
 	}
 
 	private Control Top()
 	{
 		HBoxContainer row = UiKit.Row(UiTokens.S3);
 
-		Label room = UiKit.Text("SALA", "Title");
-		room.AddThemeFontOverride("font", UiFonts.Display);
-		row.AddChild(room);
-
-		Label number = UiKit.Text($"#{S.Number}", "Title", UiTokens.Accent);
-		number.AddThemeFontOverride("font", UiFonts.NumericDisplay);
-		row.AddChild(number);
-
-		Label title = UiKit.Truncated(S.Title, "Subtitle", UiTokens.TextSecondary);
-		title.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+		VBoxContainer title = UiKit.Column(0);
+		title.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		string where = _online ? Loc.F("Sala #{0} · online", S.Number) : Loc.T("Treinamento · offline");
+		title.AddChild(Deco.Kicker(where));
+		Label name = Deco.Big(S.Title, 44);
+		name.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
+		name.ClipText = true;
+		title.AddChild(name);
 		row.AddChild(title);
 
-		Label channel = UiKit.Caption(_online ? "Online" : "Canal local");
-		channel.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		row.AddChild(channel);
+		// O que se joga, em etiquetas: lê-se de relance, sem abrir as regras.
+		HBoxContainer tags = UiKit.Row(UiTokens.S2);
+		tags.SizeFlagsVertical = SizeFlags.ShrinkEnd;
+		// Offline só há os modos contra bots: o que vale é o que o seletor mostra.
+		PlayModes.Info[] modes = _online ? PlayModes.All : PlayModes.VersusBots;
+		tags.AddChild(Deco.Tag((modes.FirstOrDefault(m => m.Mode == S.Play) ?? modes[0]).Name, new Color(UiTokens.Paper, 0.12f), UiTokens.TextPrimary));
+		tags.AddChild(Deco.Tag(Loc.F("{0} contra {1}", S.TeamSize, S.TeamSize), new Color(UiTokens.Paper, 0.12f), UiTokens.TextPrimary));
+		tags.AddChild(Deco.Tag(Loc.F("{0} pontos · {1} min", S.ScoreToWin, S.Minutes), new Color(UiTokens.Paper, 0.12f), UiTokens.TextPrimary));
+		if (S.Password.Length > 0) tags.AddChild(Deco.Tag("Com senha", UiTokens.Accent, UiTokens.AccentText));
+		row.AddChild(tags);
 
-		row.AddChild(UiKit.Button("Sair da sala", ButtonKind.Tertiary, Leave));
+		CtaButton leave = CtaButton.Make("Sair da sala", CtaKind.Ghost, Leave, 40, 17);
+		leave.SizeFlagsVertical = SizeFlags.ShrinkEnd;
+		row.AddChild(leave);
 		return row;
 	}
 
 	// ------------------------------------------------------------------ times
 
+	/// <summary>Altura de um lugar de time.</summary>
+	private const int SlotHeight = 48;
+
 	private Control TeamsArea()
 	{
 		var holder = new Control { SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.ExpandFill };
 
-		HBoxContainer teams = UiKit.Fill(UiKit.Row(UiTokens.S3));
+		HBoxContainer teams = UiKit.Fill(UiKit.Row(UiTokens.S2));
 		holder.AddChild(teams);
 
 		teams.AddChild(TeamColumn(Teams.Blue));
 
-		VBoxContainer swap = UiKit.Column(UiTokens.S2);
-		swap.Alignment = BoxContainer.AlignmentMode.Center;
+		// Entre os dois times: o "VS" e o botão de trocar de lado.
+		VBoxContainer versus = UiKit.Column(UiTokens.S2);
+		versus.CustomMinimumSize = new Vector2(56, 0);
+		versus.AddChild(UiKit.Gap(UiTokens.S2));
+		Label vs = UiKit.Text("VS", "Title", new Color(UiTokens.Paper, 0.5f));
+		vs.AddThemeFontOverride("font", UiFonts.Wide);
+		vs.AddThemeFontSizeOverride("font_size", 22);
+		vs.HorizontalAlignment = HorizontalAlignment.Center;
+		versus.AddChild(vs);
 		Button swapButton = UiKit.IconButton(IconKind.Refresh, "Trocar de lado", SwapSide, 22);
-		swap.AddChild(swapButton);
-		teams.AddChild(swap);
+		swapButton.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+		swapButton.AddThemeStyleboxOverride("normal", UiTheme.Box(new Color(UiTokens.Paper, 0.06f), new Color(UiTokens.Paper, 0.3f), 1, 0, UiTokens.S2, UiTokens.S2));
+		versus.AddChild(swapButton);
+		teams.AddChild(versus);
 
 		teams.AddChild(TeamColumn(Teams.Orange));
 
@@ -288,34 +317,53 @@ public partial class RoomScreen : LobbyScreen
 
 	private Control TeamColumn(int team)
 	{
-		VBoxContainer column = UiKit.Column(UiTokens.S1 + 2);
+		VBoxContainer column = UiKit.Column(UiTokens.S1);
 		column.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
 		List<RoomMember> members = _room.Members.Where(m => m.Team == team).ToList();
 		Color color = Teams.ColorOf(team);
+		bool right = team == Teams.Orange;
 
-		// Cabeçalho grande na cor do time, com a contagem ao lado.
-		PanelContainer head = UiKit.Panel("Bare");
-		StyleBoxFlat headStyle = UiTheme.Box(new Color(color, 0.1f), color, 0, 0, UiTokens.S3, UiTokens.S2);
-		headStyle.BorderWidthBottom = 2;
-		head.AddThemeStyleboxOverride("panel", headStyle);
-		HBoxContainer headRow = UiKit.Row(UiTokens.S2);
+		// A placa do time: o nome grande na cor dele, a contagem e um
+		// degradê que some para o lado de dentro.
+		var head = new PanelContainer { CustomMinimumSize = new Vector2(0, 64) };
+		var gradient = new Gradient();
+		gradient.SetColor(0, new Color(color, right ? 0.02f : 0.34f));
+		gradient.SetColor(1, new Color(color, right ? 0.34f : 0.02f));
+		var plate = new StyleBoxTexture { Texture = new GradientTexture2D { Gradient = gradient, Width = 64, Height = 1 } };
+		plate.ContentMarginLeft = plate.ContentMarginRight = UiTokens.S3;
+		head.AddThemeStyleboxOverride("panel", plate);
+		// O fio da cor do time na base, e a barra grossa na ponta de fora.
+		head.Draw += () =>
+		{
+			head.DrawRect(new Rect2(0, head.Size.Y - 2, head.Size.X, 2), color);
+			head.DrawRect(new Rect2(right ? head.Size.X - 6 : 0, 0, 6, head.Size.Y), color);
+		};
+
+		HBoxContainer headRow = UiKit.Row(UiTokens.S3);
 		head.AddChild(headRow);
 
-		Label name = UiKit.Text(Teams.NameOf(team), "Subtitle", color);
-		name.AddThemeFontOverride("font", UiFonts.Display);
-		name.AddThemeFontSizeOverride("font_size", 26);
-		headRow.AddChild(name);
-		headRow.AddChild(UiKit.Text($"{Shown(team)}/{S.TeamSize}", "Numeric", UiTokens.TextSecondary));
-		headRow.AddChild(UiKit.Spacer());
+		Label name = Deco.Big(Teams.NameOf(team), 36, color.Lerp(Colors.White, 0.35f));
+		Label count = UiKit.Text($"{Shown(team)}/{S.TeamSize}", "Numeric", UiTokens.TextPrimary);
+		count.AddThemeFontOverride("font", UiFonts.NumericDisplay);
+		count.AddThemeFontSizeOverride("font_size", 26);
 
 		// Contra bots, o mestre põe quantos bots quiser em cada time.
+		Button fill = null;
 		if (VsBots && IsHost && members.Count < S.TeamSize)
 		{
-			Button fill = UiKit.Button("Encher com bots", ButtonKind.Tertiary, () => AddBot(team, S.TeamSize));
+			fill = UiKit.Button("Encher com bots", ButtonKind.Tertiary, () => AddBot(team, S.TeamSize));
 			fill.CustomMinimumSize = new Vector2(0, 28);
-			headRow.AddChild(fill);
 		}
+
+		// O time da direita é o espelho do da esquerda.
+		Control[] pieces = right
+			? new Control[] { count, fill, UiKit.Spacer(), name }
+			: new Control[] { name, UiKit.Spacer(), fill, count };
+		headRow.AddChild(UiKit.Gap(UiTokens.S1));
+		foreach (Control piece in pieces)
+			if (piece != null) headRow.AddChild(piece);
+		headRow.AddChild(UiKit.Gap(UiTokens.S1));
 
 		column.AddChild(head);
 
@@ -330,16 +378,24 @@ public partial class RoomScreen : LobbyScreen
 		bool selected = member == _selected;
 		var slot = new PanelContainer
 		{
-			CustomMinimumSize = new Vector2(0, 40),
+			CustomMinimumSize = new Vector2(0, SlotHeight),
 			MouseFilter = MouseFilterEnum.Stop,
 			MouseDefaultCursorShape = CursorShape.PointingHand
 		};
 		Color team = Teams.ColorOf(member.Team);
-		StyleBoxFlat style = UiTheme.Box(selected ? UiTokens.Surface3 : UiTokens.Surface2,
-			selected ? new Color(team, 0.7f) : UiTokens.Border, 1, UiTokens.RadiusSmall, UiTokens.S2, 0);
-		style.BorderWidthLeft = 3;
-		style.BorderColor = selected ? team : new Color(team, 0.5f);
-		slot.AddThemeStyleboxOverride("panel", style);
+		StyleBoxFlat Box(Color bg, Color edge)
+		{
+			var b = new StyleBoxFlat { BgColor = bg, BorderColor = edge };
+			b.BorderWidthLeft = 3;
+			b.ContentMarginLeft = UiTokens.S2 + 2;
+			b.ContentMarginRight = UiTokens.S2;
+			return b;
+		}
+		StyleBoxFlat idle = Box(selected ? new Color(UiTokens.Paper, 0.13f) : new Color(0.02f, 0.035f, 0.055f, 0.62f), selected ? UiTokens.Paper : new Color(team, 0.75f));
+		StyleBoxFlat hot = Box(new Color(UiTokens.Paper, selected ? 0.16f : 0.08f), selected ? UiTokens.Paper : team);
+		slot.AddThemeStyleboxOverride("panel", idle);
+		slot.MouseEntered += () => slot.AddThemeStyleboxOverride("panel", hot);
+		slot.MouseExited += () => slot.AddThemeStyleboxOverride("panel", idle);
 		slot.GuiInput += e =>
 		{
 			if (e is InputEventMouseButton { Pressed: true, ButtonIndex: MouseButton.Left })
@@ -353,10 +409,20 @@ public partial class RoomScreen : LobbyScreen
 		row.MouseFilter = MouseFilterEnum.Ignore;
 		slot.AddChild(row);
 
-		row.AddChild(PhotoTile.Make(PhotoOf(member), 30));
+		if (member.IsBot)
+		{
+			var botBox = new CenterContainer { CustomMinimumSize = new Vector2(36, 36), SizeFlagsVertical = SizeFlags.ShrinkCenter };
+			botBox.AddChild(Icon.Make(IconKind.Bot, 22, UiTokens.TextDisabled));
+			row.AddChild(botBox);
+		}
+		else
+		{
+			PhotoTile photo = PhotoTile.Make(PhotoOf(member), 36);
+			photo.Edge = new Color(team, 0.8f);
+			row.AddChild(photo);
+		}
 
-		Icon crown = Icon.Make(IconKind.Crown, 16, member.IsHost ? UiTokens.Accent : new Color(0, 0, 0, 0));
-		row.AddChild(crown);
+		if (member.IsHost) row.AddChild(Icon.Make(IconKind.Crown, 16, UiTokens.Accent));
 
 		// O nível como no cabeçalho ("32 ★"), na frente do nome. Bot não tem.
 		if (!member.IsBot)
@@ -367,44 +433,43 @@ public partial class RoomScreen : LobbyScreen
 		}
 
 		Label name = UiKit.Truncated(member.Name, null, member.IsBot ? UiTokens.TextSecondary : UiTokens.TextPrimary);
-		name.AddThemeFontOverride("font", member.IsBot ? UiFonts.Medium : UiFonts.SemiBold);
+		name.AddThemeFontOverride("font", UiFonts.DisplaySemi);
+		name.AddThemeFontSizeOverride("font_size", 21);
 		row.AddChild(name);
-
-		if (member.IsBot) row.AddChild(UiKit.Chip("bot", UiTokens.TextDisabled));
 
 		// Com a partida em curso, o que conta é quem está nela e quem ainda
 		// está na sala, escolhendo o lado.
 		if (_online && _room.State == RoomState.Playing && !member.IsBot)
 			row.AddChild(member.InMatch
-				? UiKit.Text("jogando", "Caption", UiTokens.Warning)
-				: UiKit.Text("na sala", "Caption", UiTokens.TextDisabled));
-		// Pronto: divisas verdes. Quem não está pronto simplesmente não
-		// tem as divisas — e o texto diz que está aguardando. O mestre não
-		// marca pronto: a coroa já diz que é ele quem inicia.
+				? Deco.Tag("Jogando", new Color(UiTokens.Warning, 0.9f), UiTokens.AccentText)
+				: Deco.Tag("Na sala", new Color(UiTokens.Paper, 0.12f), UiTokens.TextSecondary));
+		// Pronto: a etiqueta verde. Quem não está pronto fica "aguardando".
+		// O mestre não marca pronto: a coroa já diz que é ele quem inicia.
+		else if (member.IsBot)
+			row.AddChild(Deco.Tag("Bot", new Color(UiTokens.Paper, 0.08f), UiTokens.TextDisabled));
+		else if (member.IsHost)
+			row.AddChild(Deco.Tag("Mestre", new Color(UiTokens.Accent, 0.16f), UiTokens.Accent));
 		else if (member.Ready)
-			row.AddChild(Icon.Make(IconKind.Chevrons, 18, UiTokens.Success));
-		else if (!member.IsHost)
-			row.AddChild(UiKit.Text("aguardando", "Caption", UiTokens.TextDisabled));
-
-		row.AddChild(PingBars.Make(0));
+			row.AddChild(Deco.Tag("Pronto", new Color(UiTokens.Success, 0.9f), UiTokens.AccentText));
+		else
+			row.AddChild(Deco.Tag("Aguardando", new Color(UiTokens.Paper, 0.08f), UiTokens.TextDisabled));
 
 		if (VsBots && IsHost && member.IsBot)
 		{
 			Button remove = UiKit.IconButton(IconKind.Close, Loc.F("Tirar {0}", member.Name), () => RemoveBot(member), 14);
 			remove.CustomMinimumSize = new Vector2(28, 28);
+			remove.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 			row.AddChild(remove);
-		}
-		else
-		{
-			row.AddChild(UiKit.Gap(28));
 		}
 		return slot;
 	}
 
 	private Control EmptySlot(int team)
 	{
-		var slot = new PanelContainer { CustomMinimumSize = new Vector2(0, 40) };
-		slot.AddThemeStyleboxOverride("panel", UiTheme.Box(Colors.Transparent, UiTokens.Border, 1, UiTokens.RadiusSmall, 0, 0));
+		var slot = new PanelContainer { CustomMinimumSize = new Vector2(0, SlotHeight) };
+		var box = new StyleBoxFlat { BgColor = new Color(0.02f, 0.035f, 0.055f, 0.3f), BorderColor = new Color(UiTokens.Paper, 0.1f) };
+		box.SetBorderWidthAll(1);
+		slot.AddThemeStyleboxOverride("panel", box);
 		slot.AddChild(new Striped());
 
 		// Contra bots, o mestre põe um bot na vaga. Contra jogadores não há
@@ -412,14 +477,14 @@ public partial class RoomScreen : LobbyScreen
 		if (VsBots && IsHost)
 		{
 			Button add = UiKit.Button("+  Adicionar bot", ButtonKind.Tertiary, () => AddBot(team, 1));
-			add.CustomMinimumSize = new Vector2(0, 38);
+			add.CustomMinimumSize = new Vector2(0, SlotHeight - 2);
 			add.Alignment = HorizontalAlignment.Left;
 			slot.AddChild(add);
 			return slot;
 		}
 
 		MarginContainer margin = UiKit.Margin(UiTokens.S3, 0, UiTokens.S2, 0);
-		Label free = UiKit.Text("vaga", "Caption", UiTokens.TextDisabled);
+		Label free = UiKit.Caption("Vaga aberta", UiTokens.TextDisabled);
 		free.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 		margin.AddChild(free);
 		slot.AddChild(margin);
@@ -430,74 +495,74 @@ public partial class RoomScreen : LobbyScreen
 
 	private Control RulesPanel()
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
-		panel.CustomMinimumSize = new Vector2(500, 0);
+		VBoxContainer side = UiKit.Column(UiTokens.S3);
+		side.CustomMinimumSize = new Vector2(460, 0);
 
-		var scroll = new ScrollContainer { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
-		panel.AddChild(scroll);
+		side.AddChild(MapBlock());
 
-		MarginContainer margin = UiKit.Margin(UiTokens.S4, UiTokens.S2, UiTokens.S4, UiTokens.S2);
-		margin.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		scroll.AddChild(margin);
-
-		VBoxContainer form = UiKit.Column(UiTokens.S1);
-		margin.AddChild(form);
+		PanelContainer panel = UiKit.Card(out VBoxContainer form, UiTokens.S3, UiTokens.S2);
+		Deco.Ticks(panel);
+		side.AddChild(panel);
 
 		HBoxContainer head = UiKit.Row(UiTokens.S2);
-		head.AddChild(UiKit.Caption("Regras da sala"));
+		head.AddChild(Deco.Kicker("Regras da sala"));
 		head.AddChild(UiKit.Spacer());
-		if (!IsHost) head.AddChild(UiKit.Text("só o mestre altera", "Caption"));
+		if (!IsHost) head.AddChild(UiKit.Text(Loc.T("só o mestre altera"), "Caption"));
 		form.AddChild(head);
+
+		// Duas regras por linha, o rótulo em cima do valor: as nove cabem
+		// sem rolar (antes era uma por linha, num painel que rolava).
+		var grid = new GridContainer { Columns = 2 };
+		grid.AddThemeConstantOverride("h_separation", UiTokens.S3);
+		grid.AddThemeConstantOverride("v_separation", UiTokens.S2);
+		form.AddChild(grid);
 
 		LineEdit title = UiKit.Field(S.Title, "Título", 24);
 		title.TextSubmitted += _ => SetTitle(title.Text);
 		title.FocusExited += () => SetTitle(title.Text);
-		form.AddChild(Row("Título", title));
+		grid.AddChild(Rule("Título", title));
 
 		LineEdit pass = UiKit.Field(S.Password, "Sem senha", 8);
 		pass.Secret = true;
-		pass.TooltipText = "4 a 8 caracteres. Vale quando houver multijogador.";
+		pass.TooltipText = "4 a 8 caracteres. Quem é convidado por um amigo entra sem ela.";
 		pass.TextSubmitted += _ => SetPassword(pass.Text);
 		pass.FocusExited += () => SetPassword(pass.Text);
-		form.AddChild(Row("Senha", pass));
+		grid.AddChild(Rule("Senha", pass));
 
 		// O modo de jogo. Offline (sem outros jogadores) só há os contra bots.
 		PlayModes.Info[] modes = _online ? PlayModes.All : PlayModes.VersusBots;
 		OptionButton mode = Picker(modes.Select(m => m.Name).ToArray(), Mathf.Max(0, Array.FindIndex(modes, m => m.Mode == S.Play)),
 			i => { Change("Modo", modes[i].Name, () => S.Play = modes[i].Mode); Refresh(); });
 		mode.TooltipText = PlayModes.Of(S.Play).Line;
-		form.AddChild(Row("Modo", mode));
+		grid.AddChild(Rule("Modo", mode));
 
 		int[] sizes = RoomSettings.TeamSizes;
-		form.AddChild(Row("Jogadores", Picker(sizes.Select(n => Loc.F("{0} contra {1}", n, n)).ToArray(),
+		grid.AddChild(Rule("Jogadores", Picker(sizes.Select(n => Loc.F("{0} contra {1}", n, n)).ToArray(),
 			Mathf.Max(0, Array.IndexOf(sizes, S.TeamSize)), i => SetTeamSize(sizes[i]))));
 
 		int[] scores = { 20, 40, 60, 100 };
-		form.AddChild(Row("Objetivo", Picker(scores.Select(n => Loc.F("{0} pontos", n)).ToArray(),
-			Mathf.Max(0, Array.IndexOf(scores, S.ScoreToWin)), i => Change("Objetivo", Loc.F("{0} pontos", scores[i]), () => S.ScoreToWin = scores[i]))));
+		grid.AddChild(Rule("Objetivo", Picker(scores.Select(n => Loc.F("{0} pontos", n)).ToArray(),
+			Mathf.Max(0, Array.IndexOf(scores, S.ScoreToWin)), i => { Change("Objetivo", Loc.F("{0} pontos", scores[i]), () => S.ScoreToWin = scores[i]); Refresh(); })));
 
 		// Até 30 minutos (decisão do Jhon, 18/11).
 		int[] minutes = { 5, 10, 15, 20, 25, 30 };
-		form.AddChild(Row("Tempo", Picker(minutes.Select(n => Loc.F("{0} min", n)).ToArray(),
-			Mathf.Max(0, Array.IndexOf(minutes, S.Minutes)), i => Change("Tempo", Loc.F("{0} min", minutes[i]), () => S.Minutes = minutes[i]))));
+		grid.AddChild(Rule("Tempo", Picker(minutes.Select(n => Loc.F("{0} min", n)).ToArray(),
+			Mathf.Max(0, Array.IndexOf(minutes, S.Minutes)), i => { Change("Tempo", Loc.F("{0} min", minutes[i]), () => S.Minutes = minutes[i]); Refresh(); })));
 
-		form.AddChild(Row("Armas", Picker(RoomSettings.WeaponNames.Select((n, i) => RoomSettings.WeaponsAvailable((WeaponRule)i) ? n : Loc.F("{0} (em breve)", n)).ToArray(),
+		grid.AddChild(Rule("Armas", Picker(RoomSettings.WeaponNames.Select((n, i) => RoomSettings.WeaponsAvailable((WeaponRule)i) ? n : Loc.F("{0} (em breve)", n)).ToArray(),
 			(int)S.Weapons, i => Change("Armas", RoomSettings.WeaponNames[i], () => S.Weapons = (WeaponRule)i),
 			RoomSettings.WeaponNames.Select((_, i) => !RoomSettings.WeaponsAvailable((WeaponRule)i)).ToArray())));
 
-		form.AddChild(Row("Bots", Picker(new[] { "Fáceis", "Médios", "Difíceis" }, (int)S.Difficulty, SetDifficulty)));
+		grid.AddChild(Rule("Bots", Picker(new[] { "Fáceis", "Médios", "Difíceis" }, (int)S.Difficulty, SetDifficulty)));
 
 		// Níveis de 1 a 3000: o filtro anda em degraus (o começo de cada
 		// metal e algumas paradas no Iniciante), não nível a nível.
 		string[] stepNames = LevelSteps.Select(r => Loc.F("Nível {0}", Ranks.LevelOf(r))).ToArray();
-		HBoxContainer range = UiKit.Row(UiTokens.S2);
 		OptionButton min = Picker(stepNames, StepOf(S.MinRank), i => SetRankRange(LevelSteps[i], S.MaxRank));
 		OptionButton max = Picker(stepNames, StepOf(S.MaxRank), i => SetRankRange(S.MinRank, LevelSteps[i]));
-		range.AddChild(min);
-		range.AddChild(UiKit.Text("a", "Muted"));
-		range.AddChild(max);
-		range.TooltipText = "Vale quando houver multijogador.";
-		form.AddChild(Row("Nível", range));
+		min.TooltipText = max.TooltipText = "Vale quando houver multijogador.";
+		grid.AddChild(Rule("Nível mínimo", min));
+		grid.AddChild(Rule("Nível máximo", max));
 
 		HBoxContainer checks = UiKit.Row(UiTokens.S3);
 		checks.AddChild(Check("Fogo amigo", S.FriendlyFire, v => Change("Fogo amigo", v ? "ligado" : "desligado", () => S.FriendlyFire = v)));
@@ -510,55 +575,69 @@ public partial class RoomScreen : LobbyScreen
 		checks.AddChild(spectators);
 		form.AddChild(checks);
 
-		form.AddChild(UiKit.Divider());
-		form.AddChild(MapBlock());
-
-		return panel;
+		return side;
 	}
 
+	/// <summary>Uma regra: o rótulo pequeno em cima, o valor embaixo.</summary>
+	private Control Rule(string label, Control value)
+	{
+		VBoxContainer box = UiKit.Column(2);
+		box.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		Label name = UiKit.Caption(label);
+		name.AddThemeFontSizeOverride("font_size", 12);
+		box.AddChild(name);
+		value.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		box.AddChild(value);
+		if (!IsHost) SetEditable(value, false);
+		return box;
+	}
+
+	/// <summary>O mapa da sala: a foto grande, o nome por cima e o botão de
+	/// trocar. É a primeira coisa que se olha numa sala.</summary>
 	private Control MapBlock()
 	{
 		MapInfo map = Maps.Get(S.Map);
-		VBoxContainer block = UiKit.Column(UiTokens.S2);
+		// A foto fica com a altura que as regras deixarem.
+		var frame = new PanelContainer { CustomMinimumSize = new Vector2(0, 190), ClipContents = true, SizeFlagsVertical = SizeFlags.ExpandFill };
+		frame.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Bg, UiTokens.Border, 1, 0, 0, 0));
+		Deco.Ticks(frame, new Color(UiTokens.Paper, 0.7f), 12f);
+		frame.AddChild(Deco.Photo(map.Picture, 0.96f, fromLeft: false, drift: 0.05f));
 
-		HBoxContainer head = UiKit.Row(UiTokens.S2);
-		head.AddChild(UiKit.Caption("Mapa"));
-		head.AddChild(UiKit.Spacer());
-		Button change = UiKit.Button("Trocar", ButtonKind.Tertiary, PickMap);
-		change.CustomMinimumSize = new Vector2(0, 28);
-		change.Disabled = !IsHost;
-		change.TooltipText = IsHost ? "" : "Só o mestre troca o mapa";
-		head.AddChild(change);
-		block.AddChild(head);
+		MarginContainer pad = UiKit.Margin(UiTokens.S3);
+		pad.MouseFilter = MouseFilterEnum.Ignore;
+		frame.AddChild(pad);
+		VBoxContainer column = UiKit.Column(0);
+		column.Alignment = BoxContainer.AlignmentMode.End;
+		column.MouseFilter = MouseFilterEnum.Ignore;
+		pad.AddChild(column);
 
-		// Miniatura ao lado do texto: o formulário inteiro cabe sem
-		// rolar, e a miniatura vale mais que o nome.
-		HBoxContainer body = UiKit.Row(UiTokens.S3);
-		var frame = new PanelContainer();
-		frame.AddThemeStyleboxOverride("panel", UiTheme.Box(UiTokens.Bg, UiTokens.Border, 1, UiTokens.RadiusSmall, 0, 0));
-		TextureRect thumb = UiKit.Thumbnail(map.Picture, new Vector2(184, 104));
-		frame.AddChild(thumb);
-		body.AddChild(frame);
-
-		VBoxContainer text = UiKit.Column(UiTokens.S1);
+		HBoxContainer row = UiKit.Row(UiTokens.S2);
+		row.MouseFilter = MouseFilterEnum.Ignore;
+		VBoxContainer text = UiKit.Column(0);
 		text.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-		text.AddChild(UiKit.Text(map.Name, "Subtitle"));
-		Label description = UiKit.Paragraph(map.Description, "Muted");
-		description.AddThemeFontSizeOverride("font_size", UiTokens.Caption);
-		text.AddChild(description);
-		body.AddChild(text);
-		block.AddChild(body);
-		return block;
+		text.MouseFilter = MouseFilterEnum.Ignore;
+		text.AddChild(Deco.Kicker(Loc.F("Mapa · {0}", map.Size)));
+		text.AddChild(Deco.Big(map.Name, 46));
+		row.AddChild(text);
+
+		CtaButton change = CtaButton.Make("Trocar", CtaKind.Ghost, PickMap, 36, 16);
+		change.Cut = 8;
+		change.Disabled = !IsHost;
+		change.TooltipText = IsHost ? map.Description : "Só o mestre troca o mapa";
+		change.SizeFlagsVertical = SizeFlags.ShrinkEnd;
+		row.AddChild(change);
+		column.AddChild(row);
+		return frame;
 	}
 
-	/// <summary>A escolha do mapa: um cartão por mapa, com a miniatura,
-	/// o tamanho e a descrição. O atual vem marcado.</summary>
+	/// <summary>A escolha do mapa: um cartão por mapa, com a foto, o
+	/// tamanho e o nome. O atual vem marcado.</summary>
 	private void PickMap()
 	{
 		if (!IsHost) return;
 
 		Modal modal = null;
-		GridContainer grid = new() { Columns = 2 };
+		GridContainer grid = new() { Columns = 3 };
 		grid.AddThemeConstantOverride("h_separation", UiTokens.S3);
 		grid.AddThemeConstantOverride("v_separation", UiTokens.S3);
 
@@ -569,32 +648,32 @@ public partial class RoomScreen : LobbyScreen
 			bool current = map.Id == S.Map;
 			var card = new Button
 			{
-				CustomMinimumSize = new Vector2(300, 0),
-				ToggleMode = true,
-				ButtonPressed = current,
+				CustomMinimumSize = new Vector2(300, 190),
 				FocusMode = FocusModeEnum.All,
-				MouseDefaultCursorShape = CursorShape.PointingHand
+				MouseDefaultCursorShape = CursorShape.PointingHand,
+				ClipContents = true,
+				TooltipText = map.Description
 			};
-			card.AddThemeStyleboxOverride("normal", UiTheme.Box(UiTokens.Surface2, current ? UiTokens.Accent : UiTokens.Border, current ? 2 : 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
-			card.AddThemeStyleboxOverride("hover", UiTheme.Box(UiTokens.Surface3, UiTokens.Accent, 1, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
-			card.AddThemeStyleboxOverride("pressed", UiTheme.Box(UiTokens.Surface3, UiTokens.Accent, 2, UiTokens.RadiusPanel, UiTokens.S2, UiTokens.S2));
+			card.AddThemeStyleboxOverride("normal", UiTheme.Box(UiTokens.Bg, current ? UiTokens.Accent : UiTokens.Border, current ? 2 : 1, 0, 0, 0));
+			card.AddThemeStyleboxOverride("hover", UiTheme.Box(UiTokens.Bg, UiTokens.Paper, 2, 0, 0, 0));
+			card.AddThemeStyleboxOverride("pressed", UiTheme.Box(UiTokens.Bg, UiTokens.Accent, 2, 0, 0, 0));
 
-			VBoxContainer inside = UiKit.Column(UiTokens.S1);
+			Control photo = UiKit.Fill(Deco.Photo(map.Picture, 0.95f, fromLeft: false, drift: 0f));
+			photo.OffsetLeft = photo.OffsetTop = 2;
+			photo.OffsetRight = photo.OffsetBottom = -2;
+			card.AddChild(photo);
+
+			VBoxContainer inside = UiKit.Column(0);
 			inside.MouseFilter = MouseFilterEnum.Ignore;
-			inside.SetAnchorsPreset(LayoutPreset.FullRect);
-			inside.OffsetLeft = inside.OffsetTop = UiTokens.S2;
-			inside.OffsetRight = inside.OffsetBottom = -UiTokens.S2;
-			TextureRect thumb = UiKit.Thumbnail(map.Picture, new Vector2(284, 160));
-			thumb.MouseFilter = MouseFilterEnum.Ignore;
-			inside.AddChild(thumb);
-			HBoxContainer line = UiKit.Row(UiTokens.S2);
-			line.MouseFilter = MouseFilterEnum.Ignore;
-			line.AddChild(UiKit.Text(map.Name, "Subtitle"));
-			line.AddChild(UiKit.Spacer());
-			line.AddChild(UiKit.Chip(map.Size, UiTokens.TextSecondary));
-			inside.AddChild(line);
-			card.CustomMinimumSize = new Vector2(300, 212);
+			inside.SetAnchorsAndOffsetsPreset(LayoutPreset.BottomWide);
+			inside.GrowVertical = GrowDirection.Begin;
+			inside.OffsetLeft = UiTokens.S3;
+			inside.OffsetRight = -UiTokens.S3;
+			inside.OffsetBottom = -UiTokens.S2;
+			inside.AddChild(Deco.Kicker(current ? Loc.F("{0} · na sala", map.Size) : map.Size, current ? UiTokens.Accent : UiTokens.TextSecondary));
+			inside.AddChild(Deco.Big(map.Name, 32));
 			card.AddChild(inside);
+
 			card.Pressed += () =>
 			{
 				Change("Mapa", chosen.Name, () => S.Map = chosen.Id);
@@ -606,13 +685,6 @@ public partial class RoomScreen : LobbyScreen
 		}
 
 		modal = Shell.Modal("Escolha o mapa", grid, new Modal.Choice("Fechar", ButtonKind.Secondary, null));
-	}
-
-	private HBoxContainer Row(string label, Control value)
-	{
-		HBoxContainer row = UiKit.FormRow(label, value, 130);
-		if (!IsHost) SetEditable(value, false);
-		return row;
 	}
 
 	private static void SetEditable(Control control, bool on)
@@ -638,7 +710,7 @@ public partial class RoomScreen : LobbyScreen
 	private Control Bottom()
 	{
 		HBoxContainer row = UiKit.Row(UiTokens.S4);
-		row.CustomMinimumSize = new Vector2(0, 184);
+		row.CustomMinimumSize = new Vector2(0, 196);
 
 		row.AddChild(Chat());
 		row.AddChild(UserInfo());
@@ -648,15 +720,10 @@ public partial class RoomScreen : LobbyScreen
 
 	private Control Chat()
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
+		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S3, UiTokens.S2);
 		panel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
-		MarginContainer margin = UiKit.Margin(UiTokens.S3, UiTokens.S2, UiTokens.S3, UiTokens.S3);
-		panel.AddChild(margin);
-		VBoxContainer column = UiKit.Column(UiTokens.S2);
-		margin.AddChild(column);
-
-		column.AddChild(Tabs.Make(new[] { "Sala" }));
+		column.AddChild(Deco.Kicker("Conversa da sala"));
 
 		_chatScroll = new ScrollContainer
 		{
@@ -686,16 +753,11 @@ public partial class RoomScreen : LobbyScreen
 
 	private Control UserInfo()
 	{
-		PanelContainer panel = UiKit.Panel("Surface1");
+		PanelContainer panel = UiKit.Card(out VBoxContainer column, UiTokens.S3, UiTokens.S2);
 		panel.CustomMinimumSize = new Vector2(340, 0);
 		_userInfo = panel;
 
-		MarginContainer margin = UiKit.Margin(UiTokens.S3);
-		panel.AddChild(margin);
-		VBoxContainer column = UiKit.Column(UiTokens.S2);
-		margin.AddChild(column);
-
-		column.AddChild(UiKit.Caption("Jogador"));
+		column.AddChild(Deco.Kicker("Jogador"));
 
 		RoomMember m = _selected ?? Me;
 		if (m == null) return panel;
@@ -721,30 +783,35 @@ public partial class RoomScreen : LobbyScreen
 		VBoxContainer names = UiKit.Column(2);
 		names.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		names.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		names.AddChild(UiKit.Truncated(m.Name, "Subtitle", Teams.ColorOf(m.Team)));
+		Label name = UiKit.Truncated(m.Name, "Subtitle", Teams.ColorOf(m.Team).Lerp(Colors.White, 0.3f));
+		name.AddThemeFontOverride("font", UiFonts.Display);
+		name.AddThemeFontSizeOverride("font_size", 28);
+		names.AddChild(name);
 		names.AddChild(UiKit.Text(Ranks.NameOf(m.Rank), "Caption", Ranks.InkOf(m.Rank)));
 		who.AddChild(names);
 		column.AddChild(who);
 
 		if (m.IsBot)
 		{
-			column.AddChild(Info("Tipo", "Bot"));
 			column.AddChild(Info("Dificuldade", new[] { "Fácil", "Médio", "Difícil" }[(int)S.Difficulty]));
 			column.AddChild(Info("Arma", S.Weapons == WeaponRule.SoPistolas ? "M9" : "M16A2"));
 		}
 		else if (_online && m != Me)
 		{
-			column.AddChild(Info("Nível", Ranks.NameOf(m.Rank)));
 			column.AddChild(Info("Situação", _online && _room.State == RoomState.Playing ? (m.InMatch ? "Jogando" : "Na sala")
 				: m.IsHost ? "Dono da sala" : m.Ready ? "Pronto" : "Aguardando"));
+			// Quem ainda não é amigo: o pedido sai daqui.
+			if (Social.Friends.All(f => f.Id != m.Id) && Social.Sent.All(f => f.Id != m.Id))
+			{
+				string who2 = m.Name;
+				column.AddChild(UiKit.Button("Adicionar aos amigos", ButtonKind.Tertiary, () => Social.Add(who2)));
+			}
 		}
 		else
 		{
 			LifetimeStats s = Profile.Stats;
-			if (!string.IsNullOrEmpty(Profile.Title)) column.AddChild(Info("Título", Profile.Title));
 			column.AddChild(Info("Partidas", Loc.F("{0}  ·  {1:0}% de vitórias", s.Matches, s.WinRate * 100)));
 			column.AddChild(Info("Abates / mortes", $"{s.Kills} / {s.Deaths}  ·  {s.KillDeath:0.00}"));
-			column.AddChild(UiKit.Button("Ver perfil", ButtonKind.Tertiary, () => Shell.GoProfile()));
 		}
 
 		return panel;
@@ -755,26 +822,31 @@ public partial class RoomScreen : LobbyScreen
 	private Control Actions()
 	{
 		VBoxContainer column = UiKit.Column(UiTokens.S2);
-		column.CustomMinimumSize = new Vector2(240, 0);
+		column.CustomMinimumSize = new Vector2(300, 0);
 
-		Button invite = UiKit.Button("Convidar", ButtonKind.Secondary);
-		invite.Disabled = true;
-		invite.TooltipText = _online ? Loc.F("Passe o número da sala: {0}", S.Number) : "Convidar amigos exige servidor";
+		// Convidar: os amigos estão no painel social, com o + ao lado de
+		// quem está conectado.
+		CtaButton invite = CtaButton.Make("Convidar amigos", CtaKind.Ghost, () =>
+		{
+			Shell.OpenSocial();
+			Shell.Toast("Clique no + ao lado de um amigo conectado para convidar");
+		}, 40, 17);
+		invite.Disabled = !_online;
+		invite.TooltipText = _online ? Loc.F("Ou passe o número da sala: {0}", S.Number) : "O treinamento é só seu: convide numa sala online";
 		column.AddChild(invite);
 
-		_ready = UiKit.Button("Pronto", ButtonKind.Secondary, ToggleReady);
+		_ready = CtaButton.Make("Marcar pronto", CtaKind.Ghost, ToggleReady, 40, 17);
 		column.AddChild(_ready);
 
 		column.AddChild(UiKit.Spacer());
 
-		_hint = UiKit.Paragraph("A partida já começou. Escolha o lado e entre.");
+		_hint = UiKit.Paragraph("A partida já começou. Escolha o lado e entre.", "Caption");
 		_hint.Visible = false;
 		column.AddChild(_hint);
 
-		// Primário, sólido, longe de qualquer coisa destrutiva.
-		_start = UiKit.Button("Iniciar partida", ButtonKind.Primary, StartOrCancel);
-		_start.CustomMinimumSize = new Vector2(0, 56);
-		_start.AddThemeFontSizeOverride("font_size", UiTokens.Subtitle);
+		// A peça de papel da tela, longe de qualquer coisa destrutiva.
+		_start = CtaButton.Make("Iniciar partida", CtaKind.Paper, StartOrCancel, 68, 30);
+		_start.Arrow = true;
 		column.AddChild(_start);
 
 		return column;
@@ -861,9 +933,8 @@ public partial class RoomScreen : LobbyScreen
 		// Mesmo símbolo do lugar na lista: as divisas » querem dizer
 		// "pronto" em toda a tela.
 		_ready.Visible = !IsHost;
-		_ready.Text = Me.Ready ? "Pronto  »" : "Marcar pronto";
-		foreach (string state in new[] { "font_color", "font_hover_color", "font_focus_color", "font_pressed_color" })
-			_ready.AddThemeColorOverride(state, Me.Ready ? UiTokens.Success : UiTokens.TextPrimary);
+		_ready.Text = Me.Ready ? "Pronto" : "Marcar pronto";
+		_ready.Kind = Me.Ready ? CtaKind.Gold : CtaKind.Ghost;
 		_ready.Disabled = _countdown >= 0;
 
 		if (_countdown >= 0)
@@ -981,7 +1052,7 @@ public partial class RoomScreen : LobbyScreen
 
 		Chats.Remove(S.Number);
 		RoomDirectory.Current = null;
-		Shell.GoOnline();
+		Shell.GoPlay();
 	}
 
 	private void SwapSide()

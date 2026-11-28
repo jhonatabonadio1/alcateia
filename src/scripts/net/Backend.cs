@@ -21,7 +21,10 @@ using System.Threading.Tasks;
 /// **Acesso salvo não entra sozinho** (Jhon, 20/11): o jogo abre na tela
 /// de login (<see cref="LoginScreen"/>), com as contas salvas para clicar.
 /// A sessão (<see cref="Token"/>) só existe depois do clique, ou do login,
-/// e vale até fechar o jogo ou sair da conta.
+/// e vale até fechar o jogo ou sair da conta. A exceção é o jogo aberto
+/// pelo cliente de instalação, que já vem com a conta de lá
+/// (<see cref="TakeLauncherAccess"/>; Jhon, 27/11: "mantenha o cache de
+/// contas e agora o instalador inicia o game já logado").
 /// </summary>
 public static class Backend
 {
@@ -59,6 +62,15 @@ public static class Backend
 	public static string Token { get; private set; }
 	public static long AccountId { get; private set; }
 	public static string AccountName { get; private set; } = "";
+
+	/// <summary>A tag da conta, quatro algarismos ("0042"); vazia sem login ou
+	/// com um servidor de antes das tags.</summary>
+	public static string AccountTag { get; private set; } = "";
+
+	/// <summary>O nome com a tag (Nome#0042): é o que se passa a um amigo
+	/// para ele pedir amizade.</summary>
+	public static string AccountHandle => AccountTag.Length == 0 ? AccountName : $"{AccountName}#{AccountTag}";
+
 	public static bool LoggedIn => !string.IsNullOrEmpty(Token);
 
 	/// <summary>Um acesso guardado neste computador: a conta, o servidor e
@@ -111,7 +123,11 @@ public static class Backend
 
 	public static Task<Reply> Register(string name, string password) => Enter("/v1/accounts", name, password);
 
-	public static Task<Reply> Login(string name, string password) => Enter("/v1/sessions", name, password);
+	/// <summary><paramref name="code"/>: o código do aplicativo autenticador,
+	/// para a conta que ligou a verificação em duas etapas (27/11). Sem ele,
+	/// o servidor responde <c>codigo_necessario</c> (<see cref="Reply.Code"/>):
+	/// a senha estava certa, e a tela pede o código e chama de novo com ele.</summary>
+	public static Task<Reply> Login(string name, string password, string code = null) => Enter("/v1/sessions", name, password, code);
 
 	/// <summary>
 	/// Entra com um acesso salvo (o clique na conta, na tela de login):
@@ -125,6 +141,7 @@ public static class Backend
 		Token = access.Token;
 		AccountId = access.Id;
 		AccountName = access.Name;
+		AccountTag = "";
 		KeepAccess = true;
 
 		Reply profile = await Profile();
@@ -135,10 +152,34 @@ public static class Backend
 			Token = null;
 			AccountId = 0;
 			AccountName = "";
+			AccountTag = "";
 			Save();
 		}
 		return profile;
 	}
+
+	/// <summary>
+	/// O acesso que o cliente de instalação passou ao abrir o jogo (27/11):
+	/// quem já entrou na conta no cliente e clicou em Jogar não digita a senha
+	/// de novo. Vem em variáveis de ambiente — <c>ALCATEIA_SESSAO</c> (o login)
+	/// e <c>ALCATEIA_CONTA</c> (o nome, para a tela dizer "Entrando como…") —,
+	/// que só o processo do jogo enxerga; na linha de comando qualquer programa
+	/// do computador leria. Vale uma vez por execução: quem sair da conta
+	/// dentro do jogo cai na tela de login de sempre.
+	///
+	/// Aberto direto, sem o cliente, nada muda: o jogo abre na tela de login,
+	/// com as contas salvas para clicar (decisão do Jhon, 20/11).
+	/// </summary>
+	public static SavedAccess TakeLauncherAccess()
+	{
+		if (_launcherTaken) return null;
+		_launcherTaken = true;
+		string token = OS.GetEnvironment("ALCATEIA_SESSAO");
+		if (string.IsNullOrEmpty(token) || token.Length > 128) return null;
+		return new SavedAccess(Url, 0, OS.GetEnvironment("ALCATEIA_CONTA"), token, "");
+	}
+
+	private static bool _launcherTaken;
 
 	/// <summary>Fecha a sessão sem sair da conta — o que acontece ao fechar
 	/// o jogo: o acesso salvo fica, e a próxima entrada é o clique nele. Os
@@ -148,6 +189,7 @@ public static class Backend
 		Token = null;
 		AccountId = 0;
 		AccountName = "";
+		AccountTag = "";
 		AccountSync.SessionEnded();
 		SessionChanged?.Invoke();
 	}
@@ -227,9 +269,11 @@ public static class Backend
 
 	// ------------------------------------------------------------------
 
-	private static async Task<Reply> Enter(string path, string name, string password)
+	private static async Task<Reply> Enter(string path, string name, string password, string code = null)
 	{
-		Reply reply = await Call(HttpMethod.Post, path, new JsonObject { ["name"] = name, ["password"] = password });
+		var body = new JsonObject { ["name"] = name, ["password"] = password };
+		if (!string.IsNullOrWhiteSpace(code)) body["code"] = code.Trim();
+		Reply reply = await Call(HttpMethod.Post, path, body);
 		if (reply.Ok) Remember(reply.Body["token"].GetValue<string>(), reply.Body["profile"] as JsonObject);
 		return reply;
 	}
@@ -262,6 +306,7 @@ public static class Backend
 		Token = token;
 		AccountId = profile?["id"]?.GetValue<long>() ?? 0;
 		AccountName = profile?["name"]?.GetValue<string>() ?? "";
+		AccountTag = profile?["tag"]?.GetValue<string>() ?? "";
 		Drop(Url, AccountId);
 		if (KeepAccess) _saved.Insert(0, new SavedAccess(Url, AccountId, AccountName, Token, DateTime.UtcNow.ToString("o")));
 		Save();
@@ -294,6 +339,7 @@ public static class Backend
 		Token = null;
 		AccountId = 0;
 		AccountName = "";
+		AccountTag = "";
 		Save();
 		AccountSync.SessionEnded();
 		SessionChanged?.Invoke();

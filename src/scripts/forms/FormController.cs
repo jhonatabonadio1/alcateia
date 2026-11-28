@@ -253,6 +253,12 @@ public partial class FormController : Node
 		if (Current != Form.ShiftingToWolf && Current != Form.ShiftingToHuman)
 			return;
 
+		// Morto no meio da transformação, ela não termina: terminar virava lobo
+		// depois da morte e enchia de novo o relógio que o Died acabou de zerar
+		// (o TempoDeLobo reprovou assim quando o bot matou na transição, 27/11).
+		// O renascer põe a forma certa.
+		if (_health == null || _health.IsDead) return;
+
 		bool shown = ShowsWolf;
 		_shiftTimer -= delta;
 		if (_shiftTimer > 0)

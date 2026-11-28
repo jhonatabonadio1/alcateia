@@ -300,6 +300,59 @@ public static class Schema
 		update purchase_requests set item_id = 'up_' || substr(item_id, 5) where item_id like 'tat\_%';
 		update ledger set ref = 'up_' || substr(ref, 5) where ref like 'tat\_%';
 		update profiles set data = replace(data::text, '""tat_', '""up_')::jsonb where data::text like '%""tat\_%';
+		",
+
+		// 5 — amigos (Jhon, 27/11: "a parte do social (amigos), inclusive
+		// convidar, aceitar pedidos"). Uma linha por par de contas, com a
+		// menor na frente: o pedido cruzado bate na mesma chave e vira
+		// amizade em vez de segunda linha. `requester` é quem pediu;
+		// `accepted` diz se já são amigos. Conta apagada leva as linhas dela.
+		@"
+		create table friendships (
+			low bigint not null references accounts(id) on delete cascade,
+			high bigint not null references accounts(id) on delete cascade,
+			requester bigint not null,
+			accepted boolean not null default false,
+			created_at timestamptz not null default now(),
+			accepted_at timestamptz,
+			primary key (low, high),
+			check (low < high),
+			check (requester = low or requester = high)
+		);
+		create index friendships_high on friendships(high);
+		",
+
+		// 6 — a tag da conta (Jhon, 27/11: "cada player terá uma tag #0000
+		// para adicionar"): quatro algarismos sorteados quando a conta nasce,
+		// que vão depois do nome (Nome#0042) e que é preciso saber para pedir
+		// amizade. O nome continua único; a tag não precisa ser. As contas
+		// que já existiam ganham a delas aqui.
+		@"
+		alter table accounts add column tag integer;
+		update accounts set tag = floor(random() * 10000)::int;
+		alter table accounts alter column tag set not null;
+		alter table accounts alter column tag set default floor(random() * 10000)::int;
+		alter table accounts add constraint accounts_tag_range check (tag between 0 and 9999);
+		",
+
+		// 7 — a verificação em duas etapas do jogador (Jhon, 27/11: "dê opção
+		// para o player cadastrar 2 fatores"): o segredo do aplicativo
+		// autenticador, cifrado com a chave mestra (como o dos administradores),
+		// e se já está valendo. Segredo guardado sem estar valendo é quem
+		// começou a ligar e ainda não confirmou o primeiro código.
+		@"
+		alter table accounts add column totp_secret text;
+		alter table accounts add column totp_enabled boolean not null default false;
+		",
+
+		// 8 — a nota de habilidade do jogo rápido (Jhon, 27/11: "escolhe os
+		// players baseado nas suas habilidades, níveis, experiências"). Vazia
+		// até a conta jogar a primeira partida pela fila: até lá a largada sai
+		// do histórico dela (Dominio/Fila/SkillRules.Seed). skill_matches é
+		// quantas partidas de fila formaram a nota.
+		@"
+		alter table profiles add column skill double precision;
+		alter table profiles add column skill_matches integer not null default 0;
 		"
 	};
 

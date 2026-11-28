@@ -365,6 +365,24 @@ class Mapa:
             f"{f(self.largura + 16)}, {f(altura + 8)}, {f(self.fundo + 16)})",
             'process_material = SubResource("NevePM")', 'draw_pass_1 = SubResource("NeveQuad")', ""]
 
+    def agua(self, nome, centro, raio, queda=0.0, sai=0.5, bate=0.62, fios=8, alto=0.38, som="", alcance=20.0, volume=-3.0,
+             agito=1.0, turvo=0.8, raso=None, fundo=None):
+        """Água de verdade num lugar do mapa (src/scripts/visual/fx/WaterFeature.cs): a superfície animada, e com
+        ``queda`` (m acima da água) a cortina caindo de ``sai`` (o raio lá em cima) até ``bate`` (o raio na bacia), em
+        ``fios`` fios, com o filme de água de raio ``alto`` no topo, os respingos e a névoa. ``centro`` é o meio da
+        superfície, na altura dela. ``som``: o arquivo em assets/audio (vazio: muda). Só desenho e som: a colisão é
+        da peça do mapa."""
+        if not any(i == "s_agua" for _, _, i in self.cru_ext):
+            self.cru_ext.append(("Script", "res://src/scripts/visual/fx/WaterFeature.cs", "s_agua"))
+        o = [f'[node name="{nome}" type="Node3D" parent="."]', f"transform = {xform(centro)}", 'script = ExtResource("s_agua")',
+             f"Radius = {f(raio)}", f"Murk = {f(turvo)}", f"Liveliness = {f(agito)}"]
+        if queda > 0:
+            o += [f"FallHeight = {f(queda)}", f"FallTopRadius = {f(sai)}", f"FallRadius = {f(bate)}", f"Streams = {int(fios)}", f"TopRadius = {f(alto)}"]
+        if raso: o.append(f"Shallow = {cor(raso)}")
+        if fundo: o.append(f"Deep = {cor(fundo)}")
+        if som: o += [f'Sound = "{som}"', f"SoundRange = {f(alcance)}", f"SoundDb = {f(volume)}"]
+        self.cru_nos += o + [""]
+
     def luz(self, grupo, nome, pos, cor_, energia, alcance, sombra=False):
         self.luzes.append((grupo, nome, pos, cor_, energia, alcance, sombra))
 

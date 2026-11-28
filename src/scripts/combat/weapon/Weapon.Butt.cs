@@ -64,7 +64,7 @@ public partial class Weapon
 		_buttLeft = ButtCooldown;
 		_buttHitIn = ButtHitDelay;
 		EmitSignal(SignalName.Butted);
-		Sfx.At("coronhada", _body.GlobalPosition, 6f, -2f, 16f);
+		ButtSound();
 		return true;
 	}
 
@@ -81,7 +81,14 @@ public partial class Weapon
 		_buttLeft = ButtCooldown;
 		_buttHitIn = -1;
 		EmitSignal(SignalName.Butted);
-		Sfx.At("coronhada", _body.GlobalPosition, 6f, -2f, 16f);
+		ButtSound();
+	}
+
+	/// <summary>O som da coronhada, no tom da voz de quem bate (a Eve mais aguda).</summary>
+	private void ButtSound()
+	{
+		float pitch = _body.GetNodeOrNull<CharacterAnimator>("Human")?.VoicePitch ?? 1f;
+		Sfx.At("coronhada", _body.GlobalPosition, 6f, -2f, 16f, pitch);
 	}
 
 	private void TickButt(double delta)

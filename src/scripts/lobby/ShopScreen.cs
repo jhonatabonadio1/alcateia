@@ -29,6 +29,9 @@ public partial class ShopScreen : LobbyScreen
 {
 	public override IconKind NavIcon => IconKind.Shop;
 
+	/// <summary>Precisa da largura toda: o painel social abre recolhido aqui.</summary>
+	public override bool Wide => true;
+
 	private static int _category;
 
 	private string _selectedId;

@@ -32,6 +32,12 @@ public static class SettingKeys
 	/// <summary><c>{ "base": 150, "kill": 10, "assist": 5, "win": 100, "draw": 50, "mvp": 50, "starter": 0 }</c> —
 	/// o Cash que cada coisa rende numa partida e o com que a conta nova começa.</summary>
 	public const string Rewards = "recompensas";
+	/// <summary><c>{ "banners": [], "noticias": [] }</c> — o que a tela inicial do
+	/// jogo anuncia (27/11). Banner: <c>{ category, title, body, image, cta, go, on }</c>;
+	/// notícia: <c>{ category, title, body, image, date, on }</c>. <c>image</c> é o id de
+	/// um mapa (a capa dele); <c>go</c> é para onde o botão leva (jogar, loja,
+	/// inventario, missoes ou vazio). Vazias, o jogo mostra as que vêm nele.</summary>
+	public const string News = "noticias";
 
 	public static readonly IReadOnlyDictionary<string, string> Defaults = new Dictionary<string, string>
 	{
@@ -41,7 +47,8 @@ public static class SettingKeys
 		[Bonus] = "{\"xp\":1,\"presas\":1,\"until\":null}",
 		[Challenges] = "{\"daily\":3,\"weekly\":5}",
 		[Showcase] = "{\"count\":4,\"percent\":20}",
-		[Rewards] = "{\"base\":150,\"kill\":10,\"assist\":5,\"win\":100,\"draw\":50,\"mvp\":50,\"starter\":0}"
+		[Rewards] = "{\"base\":150,\"kill\":10,\"assist\":5,\"win\":100,\"draw\":50,\"mvp\":50,\"starter\":0}",
+		[News] = "{\"banners\":[],\"noticias\":[]}"
 	};
 }
 

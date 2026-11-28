@@ -327,7 +327,11 @@ public partial class Player : CharacterBody3D
 
 		// A mira é sempre do mouse: no modo alvo do especial, a trava segue
 		// quem estiver perto do centro da tela (Player.Lock).
-		if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured)
+		// Morto, o mouse não gira nada (Jhon, 27/11: "se eu morrer, tô conseguindo
+		// girar o corpo morto mexendo a câmera"): o olhar gira o corpo inteiro
+		// (Look → RotateY), e o cadáver rodava no chão — na tela dos outros
+		// também, online. A câmera de morte é fixa (KillCam) e não usa isto.
+		if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured && !_health.IsDead)
 			Look(motion);
 	}
 
@@ -432,6 +436,9 @@ public partial class Player : CharacterBody3D
 		{
 			StopHumanSprint();
 			_fall.Reset();
+			// Quem morre correndo na parede sai dela: o corpo cai, e o lobo desenhado
+			// deixa a pose da parede (WolfVisual.OnDied).
+			if (_onWall) ReleaseWall();
 			Settle(delta);
 			return;
 		}
@@ -541,8 +548,12 @@ public partial class Player : CharacterBody3D
 		_wolfVisual ??= GetNodeOrNull<WolfVisual>("WolfVisual");
 		WolfVisual visual = _form.IsWolf ? _wolfVisual : null;
 		int beats = visual != null && IsSprinting && visual.SprintDrivesSteps ? visual.SprintBeats : -1;
+		// De humano, o passo é a pisada do corpo animado (CharacterAnimator.Feet).
+		float phase = -1f;
+		if (!_form.IsWolf && (_animator ??= GetNodeOrNull<CharacterAnimator>("Human")) is { FootBeats: >= 0 } feet)
+			(beats, phase) = (feet.FootBeats, feet.FootPhase);
 		_noise.Update(delta, IsOnFloor(), Velocity, _form.IsWolf, _howling, silent: _crouching,
-			sprinting: IsSprinting || _humanSprint, stride: visual?.StepStride ?? 0f, beats: beats);
+			sprinting: IsSprinting || _humanSprint, stride: visual?.StepStride ?? 0f, beats: beats, phase: phase);
 	}
 
 	private WolfVisual _wolfVisual;

@@ -7,7 +7,9 @@ A cidadela do pacote "Low Poly FPS Map Vol.2 — Desert City" como o autor monto
 
 A cena é uma cidadela de 64 × 64 m dentro da muralha (6 m): casas de adobe de um e dois andares, de laje, com escadas
 de pedra por fora, toldos, bancas de feira, a praça do chafariz, o largo da feira, palmeiras, e vielas de 3 a 6 m entre
-os blocos de casas. Em volta, só dunas (as montanhas de pico branco da cena saíram: deserto não tem pico).
+os blocos de casas. Em volta, só dunas (as montanhas de pico branco da cena saíram: deserto não tem pico; e em 27/11
+um lado de fora com bairros, torres e oásis chegou a ser montado e saiu no mesmo dia — Jhon: "pode tirar essa cidade ao
+redor do deserto, só os montes e a cor de areia tá bom").
 
 **No tamanho da cena** (Jhon, 27/11: "ajuste somente o da obra, para não ficar exagerado"): não foi dobrada como o
 Distrito Neon. O azul nasce do lado oeste (o da praça do chafariz), o laranja do lado leste (o do largo da feira); os
@@ -30,6 +32,7 @@ import numpy as np
 
 from .kit import Mapa, AZUL
 from .kits.demo import Demo, por, barreiras, fora_do_anel, alcancavel, nascer_em, assentar
+from .kits.kit_fbx import Peca
 from .kits.montagem import Montagem, Grade, fechar, espalhar, luz_de_jogo
 
 MEIO = (0.35, 0.5)             # na cena do pacote: o meio da cidadela (vira o centro do mapa)
@@ -46,18 +49,42 @@ SEM = ('Block_', 'Book', 'Carpet', 'Cup', 'Desk', 'Food', 'Plate', 'Scroll', 'Fl
        'Garbage', 'WindowPart', 'FlowerBed', 'Jug_')
 LONGE = ('Hill', 'Mountain')
 # as escadas de pedra, medidas na peça: (o pé da linha das quinas, a quina do último degrau, os lados)
-ESCADAS = {'Stairs_01L': ((3.64, 0.0), (-1.79, 3.49), (-1.17, 1.17)), 'Stairs_01R': ((3.64, 0.0), (-1.79, 3.49), (-1.17, 1.17))}
+ESCADAS = {'Stairs_01L': ((3.64, 0.0), (-1.79, 3.49), (-1.17, 1.17)), 'Stairs_01R': ((3.64, 0.0), (-1.79, 3.49), (-1.17, 1.17)),
+           # as casas de escada (a escada é por dentro, do alpendre de 19 cm à laje de 3,49 m, em degraus de 17 × 30 cm): sem
+           # a chapa o humano subia aos trancos e descia voando três degraus, e o lobo, com a verga da porta em cima, nem
+           # entrava no primeiro degrau (Jhon, 27/11: "não consigo subir escadarias em algum lugar, lobo não reconhece")
+           'House_06L': ((3.32, 0.19), (-2.39, 3.49), (-1.15, 1.15)), 'House_06R': ((3.32, 0.19), (-2.39, 3.49), (-1.15, 1.15))}
+# a água: a bacia do chafariz (o espelho a 35 cm, de 1,9 m de raio; o pilar tem 2,42 m, com a base de 69 cm de raio) e a
+# boca do poço (a 65 cm, 69 cm de raio). Jhon, 27/11: "a fonte do mapa deserto teria que ter textura, barulho e
+# movimentação de água, não colisão... coloque uma água bem feita"
+FONTE = dict(nivel=0.35, raio=1.9, alto=2.42, sai=0.53, bate=0.74, filme=0.37)
+POCO = dict(nivel=0.655, raio=0.68)
+POCO_MEIO = np.array([0.008, 0.0, 0.014])          # o meio da boca do poço, na peça
 
 
 def colisao(nome):
     return 'caixa' if nome.startswith(CAIXA) else None if nome.startswith(SEM) else 'malha'
 
 
+def sem_agua(p, nivel, raio):
+    """A peça sem a face da água (as faces viradas para cima, na altura ``nivel``, a menos de ``raio`` do meio): a água é
+    posta por cima, de verdade (``Mapa.agua``), e a face lisa do kit, que era também colisão — andava-se em cima da água
+    do chafariz —, sai do desenho e da colisão. Entra-se na bacia: o fundo é o chão do mapa."""
+    P = p.pos; n = np.cross(P[:, 1] - P[:, 0], P[:, 2] - P[:, 0]); n = n / np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-12)
+    c = P.mean(1); agua = (n[:, 1] > 0.9) & (np.abs(c[:, 1] - nivel) < 0.03) & (np.linalg.norm(c[:, [0, 2]], axis=1) < raio)
+    return Peca(p.nome + '_seca', P[~agua], p.normal[~agua], p.uv[~agua]), int(agua.sum())
+
+
 def desenho():
     """A cidadela da cena e as dunas em volta."""
     D = Demo('fps2'); M = Montagem(D.kit, colisao); centro = np.array([MEIO[0], CHAO, MEIO[1]]); M.dunas = 0
+    M.fontes, M.pocos = [], []; seca = None
     for item in D.itens:
         p, G, E, t, nome = item; t = t - centro
+        if nome.startswith('Fountain'):
+            if seca is None: seca, M.agua_tirada = sem_agua(p, FONTE['nivel'], FONTE['raio'] + 0.02)
+            p = seca; M.fontes.append(t.copy())
+        if nome.startswith('Well'): M.pocos.append((t.copy(), G))
         # Só morros de areia em volta (Jhon, 27/11: "montanha com gelo no deserto não faz sentido"; "é um deserto,
         # deserto não tem montanha nem picos"): as montanhas de pico branco da cena saem, e as dunas entram mais
         # baixas (a 65% da altura), que é como ficam redondas
@@ -103,9 +130,20 @@ def montar():
     def rota(*pts): return [(float(x), 0.5, float(z)) for x, z in g.rota([perto(*a)] + [perto(x, z) for x, z in pts])]
     for nome, pts in ROTAS.items(): m.rota(nome, rota(*pts))
 
+    # a água de verdade: o chafariz (com a queda e o som) e a boca dos poços
+    for i, t in enumerate(M.fontes, 1):
+        m.agua(f"Chafariz{i}" if len(M.fontes) > 1 else "Chafariz", (float(t[0]), float(t[1]) + FONTE['nivel'], float(t[2])), FONTE['raio'],
+               queda=FONTE['alto'] - FONTE['nivel'], sai=FONTE['sai'], bate=FONTE['bate'], fios=8, alto=FONTE['filme'], turvo=1.2,
+               som="fonte", alcance=24.0, volume=-2.0)
+    for i, (t, G) in enumerate(M.pocos, 1):
+        # (a boca do poço não é no meio da peça: o meio das faces da água, levado ao mundo)
+        q = G @ POCO_MEIO + t
+        m.agua(f"Poco{i}", (float(q[0]), float(t[1]) + POCO['nivel'] + 0.012, float(q[2])), POCO['raio'], agito=0.35, turvo=0.45, fundo=(0.03, 0.2, 0.3))
+
     # sol alto de deserto: sombra curta e dura, ar quente e claro
     luz_de_jogo(m, 'deserto', 38, 52, alcance=120.0, nuvens=True)
     print(f"  deserto: {n} barreiras, {M.dunas} dunas, {M.assentadas} plantas e pedras assentadas, {int(chao.sum() * g.cel ** 2)} m² de chão alcançável")
+    print(f"  deserto: a face da água saiu do chafariz ({M.agua_tirada} triângulos); {len(M.fontes)} chafariz, {len(M.pocos)} poços")
     if os.environ.get('MAPA_GRADE'):
         g.imagem(os.environ['MAPA_GRADE'], marcas=[(x, z, (40, 90, 255)) for x, _, z in m.spawns[AZUL]] + [(x, z, (255, 120, 30)) for x, _, z in m.spawns[3 - AZUL]] + [(x, z, (20, 160, 20)) for x, z in m.livres],
                  escala=5, rotas=[[(x, z) for x, _, z in r] for _, r in m.rotas])

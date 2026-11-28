@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Alcateia.Cliente.ViewModels"
+             x:Class="Alcateia.Cliente.Views.FriendsView"
+             x:DataType="vm:FriendsViewModel">
+
+	<UserControl.Resources>
+		<!-- uma pessoa: o retrato com o ponto de onde está, o nome com a tag, a linha de estado e os botões -->
+		<DataTemplate x:Key="Person" x:DataType="vm:FriendItem">
+			<Grid ColumnDefinitions="Auto,*,Auto" Margin="16,5,10,5" ToolTip.Tip="{Binding Friend.Handle}" Background="Transparent">
+				<Panel Grid.Column="0" Width="36" Height="36" Margin="0,0,10,0" Classes.dim="{Binding Dim}">
+					<Border Width="34" Height="34" CornerRadius="17" Background="{StaticResource Surface2}" BorderBrush="{StaticResource Line}" BorderThickness="1">
+						<TextBlock Text="{Binding Initial}" FontWeight="SemiBold" Foreground="{StaticResource Ink2}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+					</Border>
+					<Ellipse Width="11" Height="11" Fill="{Binding Dot}" Stroke="{StaticResource Deep}" StrokeThickness="2"
+					         HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+				</Panel>
+
+				<StackPanel Grid.Column="1" VerticalAlignment="Center" Classes.dim="{Binding Dim}">
+					<StackPanel Orientation="Horizontal" Spacing="2">
+						<TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+						<TextBlock Text="{Binding Tag}" Foreground="{StaticResource Ink3}" FontSize="13" VerticalAlignment="Bottom" Margin="0,0,0,1" />
+					</StackPanel>
+					<TextBlock Text="{Binding Where}" Classes="muted" FontSize="12.5" TextTrimming="CharacterEllipsis" />
+				</StackPanel>
+
+				<StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+					<Button Classes="mini" Command="{Binding Accept}" IsVisible="{Binding IsRequest}" ToolTip.Tip="Aceitar">
+						<Path Data="M2,7.5 L6,11.5 L12,3.5" Stroke="{StaticResource Ok}" StrokeThickness="2" Width="14" Height="14" />
+					</Button>
+					<Button Classes="mini" Command="{Binding Decline}" IsVisible="{Binding IsRequest}" ToolTip.Tip="Recusar">
+						<Path Data="M3,3 L11,11 M11,3 L3,11" Stroke="{StaticResource Danger}" StrokeThickness="1.8" Width="14" Height="14" />
+					</Button>
+					<Button Classes="mini" Command="{Binding Decline}" IsVisible="{Binding IsSent}" ToolTip.Tip="Cancelar o pedido">
+						<Path Data="M3,3 L11,11 M11,3 L3,11" Stroke="{StaticResource Ink2}" StrokeThickness="1.6" Width="14" Height="14" />
+					</Button>
+					<Button Classes="mini" Command="{Binding Remove}" IsVisible="{Binding IsFriend}" ToolTip.Tip="Desfazer a amizade">
+						<Path Data="M3,3 L11,11 M11,3 L3,11" Stroke="{StaticResource Ink3}" StrokeThickness="1.6" Width="14" Height="14" />
+					</Button>
+				</StackPanel>
+			</Grid>
+		</DataTemplate>
+	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<Style Selector=":is(Control).dim">
+			<Setter Property="Opacity" Value="0.55" />
+		</Style>
+		<Style Selector="TextBlock.section">
+			<Setter Property="Margin" Value="16,16,16,4" />
+		</Style>
+	</UserControl.Styles>
+
+	<Border Background="{StaticResource Deep}" BorderBrush="{StaticResource Line}" BorderThickness="1,0,0,0">
+		<Grid RowDefinitions="Auto,Auto,*">
+			<Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="16,16,16,10">
+				<TextBlock Classes="label" Text="AMIGOS" Foreground="{StaticResource Ink}" FontSize="16" />
+				<StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" ToolTip.Tip="Amigos conectados">
+					<Ellipse Width="8" Height="8" Fill="{StaticResource Ok}" VerticalAlignment="Center" />
+					<TextBlock Text="{Binding OnlineCount}" Classes="muted" FontWeight="SemiBold" />
+				</StackPanel>
+			</Grid>
+
+			<!-- adicionar pelo nome com a tag -->
+			<Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="16,0,16,6">
+				<TextBox Grid.Column="0" Text="{Binding AddText}" PlaceholderText="Adicionar: Nome#0000" MaxLength="21">
+					<TextBox.KeyBindings>
+						<KeyBinding Gesture="Enter" Command="{Binding Add}" />
+					</TextBox.KeyBindings>
+				</TextBox>
+				<Button Grid.Column="1" Classes="primary" Command="{Binding Add}" Margin="6,0,0,0" Width="40" Height="40" Padding="0"
+				        ToolTip.Tip="Enviar pedido de amizade">
+					<Path Data="M7,1 L7,13 M1,7 L13,7" Stroke="{StaticResource GoldInk}" StrokeThickness="2.2" Width="14" Height="14" />
+				</Button>
+			</Grid>
+
+			<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+				<StackPanel Margin="0,0,0,16">
+					<TextBlock Text="{Binding Note}" IsVisible="{Binding HasNote}" Classes="muted" TextWrapping="Wrap" Margin="16,14,16,0" LineHeight="21" />
+
+					<TextBlock Classes="label section" Text="{Binding RequestsTitle}" Foreground="{StaticResource Gold}" IsVisible="{Binding HasRequests}" />
+					<ItemsControl ItemsSource="{Binding Requests}" ItemTemplate="{StaticResource Person}" />
+
+					<TextBlock Classes="label section" Text="{Binding InGameTitle}" IsVisible="{Binding HasInGame}" />
+					<ItemsControl ItemsSource="{Binding InGame}" ItemTemplate="{StaticResource Person}" />
+
+					<TextBlock Classes="label section" Text="{Binding InAppTitle}" IsVisible="{Binding HasInApp}" />
+					<ItemsControl ItemsSource="{Binding InApp}" ItemTemplate="{StaticResource Person}" />
+
+					<TextBlock Classes="label section" Text="{Binding OfflineTitle}" IsVisible="{Binding HasOffline}" />
+					<ItemsControl ItemsSource="{Binding Offline}" ItemTemplate="{StaticResource Person}" />
+
+					<TextBlock Classes="label section" Text="{Binding SentTitle}" IsVisible="{Binding HasSent}" />
+					<ItemsControl ItemsSource="{Binding Sent}" ItemTemplate="{StaticResource Person}" />
+				</StackPanel>
+			</ScrollViewer>
+		</Grid>
+	</Border>
+</UserControl>

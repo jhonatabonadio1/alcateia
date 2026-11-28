@@ -66,17 +66,18 @@ o renascer do bot (6 s).
 | Campo | Valor | O que faz |
 |---|---|---|
 | `HumanSpeed` | 3,2 m/s na cena (`src/scenes/player.tscn`; o código diz 3,0) | Base da velocidade. **Base do lobo também.** É a passada do clipe de corrida: subir faz o pé patinar |
-| `HumanSpeedBonus` | 0,8 | Só o humano: × a base (2,56 m/s; era 1,08, 3,46 m/s, até 26/11); o lobo não muda |
+| `HumanSpeedBonus` | 0,88 | Só o humano: × a base (2,82 m/s desde 27/11, "o andar normal do humano está muito lento, pode acelerar um pouco"; era 0,8, 2,56 m/s, e 1,08, 3,46 m/s, até 26/11); o lobo não muda. Agachado 1,27 m/s, com a faca 3,60. A corrida do Shift não mudou (`HumanSprintFactor` desceu na mesma conta) |
 | `RunClipRate` (nó `Human`, `CharacterAnimator`) | 0,88 | O ritmo da corrida para a frente (`run_fwd`) × o do arquivo: a passada dela no corpo do jogo é 3,41 m/s a 1×, e a 0,88× dá 3,0. O humano anda 2,56, numa mistura do andar com a corrida. Nunca acima de 1 (regra 9) |
 | `JumpVelocity` | 4,4 m/s | Impulso do pulo do lobo (vezes `JumpMultiplier`) e base do salto da parede |
 | `HumanJumpVelocity` | 4,75 m/s | Impulso do pulo do humano. Com `HumanGravityScale`, sobe 0,80 m e volta em 0,67 s |
 | `HumanGravityScale` | 1,45 | Gravidade do humano no ar (o lobo usa 1). Pulo mais rápido e queda mais seca |
-| `StepHeight` / `WolfStepHeight` | 0,30 / 0,45 m | Degrau que se sobe andando, sem pular (a borda do contêiner tem 14 cm) |
+| `StepHeight` / `WolfStepHeight` | 0,30 / 0,45 m | Degrau que se sobe andando, sem pular (a borda do contêiner tem 14 cm). Com teto baixo em cima (a verga de uma porta) o corpo testa o degrau subindo só o que couber (`BodyMotion.ProbeStep`, 27/11: o lobo não entrava na escada das casas do Deserto) |
 | `StepEase` | 2,2 m/s | Quão rápido o olho alcança o corpo depois de um degrau **sozinho** (meio-fio, borda de contêiner) |
 | `StepRhythmWindow` | 0,4 s | Degraus seguidos com menos que isto entre eles são escada: o olho sobe e desce no ritmo dela, constante (27/11; antes ia a `StepEase` e parava a cada degrau) |
 | `StepAccel` | 18 m/s² | O quanto a velocidade do olho atrás do degrau muda por segundo: não sai nem para de uma vez |
 | `StepLag` / `StepCatchUp` | 0,25 m / 10 | Atrás do corpo mais que isto, o olho apressa (10 m/s por metro a mais) |
-| Ímã de chão andando | um degrau (`StepHeight`, 0,3 m; o lobo, `WolfStepHeight`) | Andando no chão sem pular, o corpo desce grudado até um degrau abaixo (27/11; fora disso, os 10 cm do Godot). O que passa de 8 cm num passo é degrau descido, e o olho vem atrás |
+| Ímã de chão andando | um degrau (`StepHeight`, 0,3 m; o lobo, `WolfStepHeight`) | Andando no chão sem pular, **com um degrau logo abaixo à frente** (`BodyMotion.StepBelow`, a `StepReach` 0,3 m do corpo), o corpo desce grudado nele e a quina do degrau conta como chão até `StairFloorAngle` 72° (`BodyMotion.MoveOnSteps`, 27/11: humano, lobo e bot; antes só o humano, em todo passo, e a cápsula voava dois a três degraus de cada vez). O que passa de 8 cm num passo é degrau descido, e o olho vem atrás |
+| `StairAverage` / `StairPull` / `StepFallTime` | 0,1 s / 2 por s / 0,22 s | Escada de degraus **sem chapa de subida** (três degraus seguidos): o olho e o corpo desenhado seguem a velocidade média da escada (alisada em `StairAverage`), apressando `StairPull` por metro de atraso; sair do chão andando e pousar em menos de `StepFallTime`, pouco abaixo, é degrau, não queda (`Player.FollowStairs`, 27/11) |
 | `GroundAccel` | 60 m/s² | Aceleração no chão (alto = resposta imediata) |
 | `GroundFriction` | 50 m/s² | Freada ao soltar as teclas (de 3,9 m/s para em 0,08 s) |
 | `AirAccel` | 18 m/s² | Controle de direção no ar |
@@ -89,7 +90,7 @@ o renascer do bot (6 s).
 | `WolfBackFactor` | 0,75 | De lobo, andando para trás: × a velocidade normal (na diagonal de trás, em parte). O humano não muda |
 | `DoubleTapWindow` | 0,3 s | Tempo máximo entre os dois toques no W |
 | `WalkAnimScale` / `SprintAnimScale` / `WallAnimScale` (nó `WolfVisual`) | 1 | Andando em pé e na parede: quanto a animação corre em relação ao corpo (1 acompanha, 0,7 é 30% mais lenta; a pata desliza a diferença). De quatro, o mesmo (acompanha o corpo). Só a animação. ~~Antes:~~ velocidade fixa da animação do lobo andando/correndo em pé, de quatro e na parede (1 = normal). 0 = acompanha o corpo, sem patinar |
-| `HumanSprintFactor` | 1,9176 (era 1,45 até 27/11: duas vezes +15%, pedidos do Jhon) | A corrida do Shift (só humano, só para a frente, em pé): 4,91 m/s com o fuzil — acima do lobo a pé (4,33) —, de arma abaixada, sem atirar; o clipe de correr toca a 1,47× |
+| `HumanSprintFactor` | 1,74327 (era 1,9176 com o andar a 2,56; antes 1,45 até 27/11: duas vezes +15%, pedidos do Jhon) | A corrida do Shift (só humano, só para a frente, em pé): 4,91 m/s com o fuzil — acima do lobo a pé (4,33) —, de arma abaixada, sem atirar; o clipe de correr toca a 1,47×. É × o andar: 2,816 × 1,74327 = 4,909 |
 | `SprintRecover` | 0,18 s (era 0,23 até 27/11) | Depois de correr, quanto a arma leva para voltar antes de atirar (o clique fica guardado) |
 | `ViewModel.RigSprintIn` / `RigSprintOut` | 0,20 s / 0,18 s (eram 0,26 / 0,23 até 27/11; 0,18 / 0,16 já foi rápido demais) | Em quanto tempo os braços abaixam a arma para correr e a trazem de volta (a volta cabe no `SprintRecover`); a arma em terceira pessoa usa os mesmos tempos (`HeldRig`) |
 | `CharacterAnimator.SprintBlendSmoothing` | 16 (a mistura normal, `BlendSmoothing`, é 9) | Quão depressa o corpo em terceira pessoa entra na pose de correr do Shift e sai dela: ~0,19 s para 95% (com 9, ~0,33 s) |
@@ -109,7 +110,7 @@ o renascer do bot (6 s).
 | Arma leve correndo | × 1 no máximo (andando: faca × 1,28, pistola × 1,08) | Correndo, faca e pistola correm o mesmo do fuzil, 4,91 m/s (eram 6,28 e 5,30); a pesada segue com a sua (AK × 0,92, SCAR × 0,88, SVD × 0,86) |
 | `Player.SprintBreathTime` / `SprintBreathRefill` / `SprintWindedWait` | 4 s / 3 s / 1,5 s | O fôlego da corrida (`SprintBreath`): quanto se corre de uma vez, em quanto tempo parado o fôlego enche inteiro, e quanto se espera quando ele acaba |
 | `CombatantAudio.StabPitch` | 0,78 | O som da estocada: o da facada, mais grave |
-| `Grenade.BounceLoudSpeed` / `BounceQuietDb` / `BounceRange` / `FuseRange` | 4 m/s / −16 dB / 40 m / 22 m (eram 7, −26, 25 e 14) | O quique da granada: a velocidade de batida que soa a 0 dB, e o mais baixo que um quique soa. Um som por quique, sorteado entre `granada_quique_1..5` |
+| `Grenade.BounceLoudSpeed` / `BounceQuietDb` / `BounceTrimDb` / `BounceRange` / `FuseRange` | 4 m/s / −16 dB / −3 dB / 40 m / 22 m (eram 7, −26, 0, 25 e 14) | O quique da granada: a velocidade de batida que soa a 0 dB, o mais baixo que um quique soa, e o corte em todos (27/11: "baixar um pouco"). Um som por quique, sorteado entre `granada_quique_1..5` |
 | `BulletMarks.CutSize` / `StabSize` | 34 × 9 cm / 6 × 15 cm | A marca da facada (corte) e da estocada (furo) na parede |
 | `HeldWeapon.SprintLean` | 9° | Em terceira pessoa, quanto o tronco de quem corre inclina para a frente além da animação |
 | `HeldWeapon.SprintSpine` / `SprintSpineTime` | 0,9 / 0,2 s (era 0,3 até 27/11) | Em terceira pessoa, quanto do tronco (coluna, pescoço, cabeça) fica com a animação de correr do corpo em vez da pose da arma, e em quanto tempo passa de uma para a outra |
@@ -393,16 +394,29 @@ inteiro. Pode andar rugindo. `HowlNoise` 45 m (ouvido pelos bots) e
 `Health.ShieldDecayGrace` 1 s (o escudo espera isso para voltar a
 escorrer).
 
-O que se vê e se ouve (23/11): só a silhueta na cor do lobo (`WolfFx`,
-pelo `RoarBurst.Glow`) e os raios elétricos (`RoarBurst`). Dois sons: a
-voz (`WorldAudio.HowlSound` = `lobo_rugido`) e os choques, só estalos e
-arcos, sem tom que sobe (`WolfFx.HowlEnergySound` = `lobo_uivo_choque`,
-22 m; era `lobo_uivo_energia`). O estalo do escudo cheio saiu
-(`WolfFx.HowlShieldSound` vazio, era `lobo_uivo_escudo`). Virar lobo e
-voltar a humano tocam o "puff" (`CombatantAudio.TransformSound` e
-`UntransformSound` = `forma_puff`; eram os rugidos `lobo_transformar` e
-`lobo_destransformar`, que ficam no disco). Os dois sons novos saem de
-`src/tools/sons/choque_puff.py`.
+O que se vê e se ouve (27/11): o rugido em quatro tempos (`RoarBurst`):
+antecipação, estouro, sustentação com a casca do escudo fechando, e
+escudo cheio. Três sons: a voz (`WorldAudio.HowlSound` = `lobo_rugido`),
+a energia por baixo dela (`WolfFx.HowlEnergySound` = `lobo_uivo_energia`,
+22 m) e o escudo cheio (`WolfFx.HowlShieldSound` = `lobo_uivo_escudo`);
+os dois últimos saem de `src/tools/sons/uivo.py`. Virar lobo e voltar a
+humano tocam o "puff" (`CombatantAudio.TransformSound` e
+`UntransformSound` = `forma_puff`, de `src/tools/sons/choque_puff.py`).
+
+| Onde | Campo | Valor | O que é |
+|---|---|---|---|
+| `RoarBurst` | `ShaftTop` | 2,35 m | Teto de tudo o que o rugido desenha, a partir dos pés (a luz é baixa) |
+| `RoarBurst` | `IntakeTime` | 0,12 s | Antecipação, do R ao estouro (o som usa o mesmo: `PUXA` no `uivo.py`) |
+| `RoarBurst` | `BlastLife` / `SweepLife` | 0,4 / 0,5 s | Duração do estouro e do fecho do escudo |
+| `RoarBurst` | `GroundEvery` | 0,5 s | Uma onda fraca pelo chão a cada tanto, na sustentação |
+| `RoarBurst` | `FlickerFrom` / `FlickerTo` | 7 / 20 por s | Tremor da luz, do começo ao cheio (o som treme igual: `TREME`) |
+| `RoarBurst` | `GroundRadius` | 4,0 m | Meio lado do chão do efeito (as ondas vão até 3,4 m) |
+| `RoarBurst` | `ShellWidth` / `ShellHalfHeight` / `ShellCenter` | 0,95 / 1,1 / 1,1 m | A casca do escudo (topo a 2,20 m) |
+| `RoarBurst` | `BreathLength` / `BreathSpread` | 1,9 / 0,62 m | O cone de ar da boca |
+| `RoarBurst` | `RisingRate` / `MouthRate` | 46 / 34 por s | Faíscas subindo do chão e saindo da boca (na qualidade Alta) |
+| `RoarBurst` | `SealArcs` / `SealCrawls` | 7 / 4 | Arcos da descarga do escudo cheio: do corpo e pelo chão |
+| `RoarBurst` | `SparkBudget` | 28 / 56 / 96 / 120 | Teto de faíscas vivas por qualidade (Baixa a Ultra) |
+| `WolfFx` | `RoarFovKick` | 3,5° | Coice da câmera do dono: 45% no estouro, inteiro no escudo cheio |
 
 ### Quanto dá hoje (contra humano, 200 de vida)
 
@@ -763,6 +777,50 @@ mapa, pontos, minutos, armas (todas, sem pesadas ou só pistolas), fogo
 amigo, troca de lado, espectadores e dificuldade dos bots. Todos os
 modos são mata-mata em equipe.
 
+### Amigos, grupo e conta (27/11)
+
+| Onde | Campo | Padrão |
+|---|---|---|
+| `servidor/Alcateia.Dominio/Contas/Friends.cs` (`FriendRules`) | `MaxFriends`, `MaxPending` | 100 amigos por conta; 50 pedidos esperando (os que mandou e, à parte, os que recebeu) |
+| `servidor/Alcateia.Aplicacao/Saguao/LobbyService.Friends.cs` | `FriendAddsPerMinute`, `FriendWritesPerMinute` | 10 pedidos de amizade e 40 respostas (aceitar, recusar, remover) por minuto, por ligação |
+| idem | `InvitesPerWindow`, `InviteWindow`, `InviteAgain`, `InviteLife` | 8 convites a cada 20 s; o mesmo amigo de novo só depois de 5 s; o convite vale 2 min. Valem para o convite de sala e o de grupo |
+| `servidor/Alcateia.Dominio/Salas/Group.cs` | `Group.MaxSize` | 6 por grupo: um time inteiro (`Room.MaxTeamSize`). Maior que isso não haveria sala em que coubessem do mesmo lado |
+| `servidor/Alcateia.Dominio/Contas/Account.cs` (`AccountRules`) | `TagCount` | 10 000 tags (0000 a 9999). O sorteio é do banco (o padrão da coluna `accounts.tag`): mudar aqui pede migração |
+| `servidor/Alcateia.Dominio/Seguranca/Totp.cs` | `Step`, `Digits` | Duas etapas: código de 6 dígitos a cada 30 s (o padrão dos aplicativos autenticadores), aceitando um passo de relógio para cada lado |
+| `src/scripts/net/Social.cs` | `InviteSeconds` | 60 s: quanto um convite fica na tela do jogo (o servidor guarda por 2 min) |
+
+### Jogo rápido (27/11)
+
+Calibrar com a régua: `dotnet run -c Release --project servidor/Alcateia.Fila.Simulacao` (espera, formato, diferença entre os times, chance real do mais forte, convergência das notas, tempo com 3000 na fila).
+
+| Onde | Campo | Padrão |
+|---|---|---|
+| `servidor/Alcateia.Dominio/Fila/Matchmaker.cs` | `Recommended`, `MaxTeam` | **4 contra 4 é o formato recomendado** (o que se forma assim que há 8 de nota próxima); com a fila cheia cresce para 5 (10 esperando) e 6 (12) |
+| idem | `MinTeam(espera)` | Formatos menores só com espera: 3 contra 3 depois de 25 s, 2 contra 2 depois de 50 s, 1 contra 1 depois de 75 s |
+| idem | `Spread(espera)` | Quanto a nota dos outros pode diferir da de quem espera: 80 + 8 por segundo, até 600 |
+| idem | `Tolerance(espera)` | A maior diferença aceitável entre as médias dos times: 25 + 1 por segundo, até 100 (25 = 53,6% para o mais forte; 100 = 64%) |
+| idem | `GiveUp` | 100 s: daí em diante vale qualquer nota e qualquer divisão |
+| idem | `PartyBonus` | +12 na nota de cada um por colega de grupo (gente combinada joga melhor que a soma) |
+| idem | `ScoreFor` | Pontos para vencer: 10 por jogador do time, de 20 a 60 (1 contra 1: 15) |
+| idem | `TeamsFor` | Mapa por tamanho do time: Pequeno de 1 a 3, Médio de 2 a 6, Grande de 4 a 6 |
+| idem | `Modes` | Sorteia entre Livre, Só humanos, Só lobos e Humanos × Lobos (os de bot ficam de fora) |
+| `servidor/Alcateia.Aplicacao/Saguao/LobbyService.Queue.cs` | `QuickMinutes` | 10 min de partida |
+| `servidor/Alcateia.Dominio/Fila/Skill.cs` (`SkillRules`) | `Start`, `Min`, `Max` | Nota 1000 de quem nunca jogou nada, entre 100 e 3000 |
+| idem | `Seed`, `SeedMin`, `SeedMax` | A largada de quem entra na fila pela primeira vez sai do histórico (K/D, vitórias, MVPs, nível; amostra pequena puxada para o meio), entre 700 e 1500 |
+| idem | `K`, `Placement` | Passo da nota: 48 nas 10 primeiras partidas de fila (colocação), 32 até 30, 24 depois |
+| idem | `PerformanceShare`, `PlacementPerformanceShare` | O desempenho individual (pontos contra a média da partida) é 20% do passo (40% na colocação) |
+| idem | `Update` | A margem do placar pesa de 0,85 (apertada) a 1,3 (lavada); quem larga a partida leva derrota com peso 1,3, ganhe o time ou não |
+
+### Cliente de instalação (27/11)
+
+| Onde | Campo | Padrão |
+|---|---|---|
+| `cliente/Alcateia.Pacote/Chunker.cs` | `Min`, `Max`, a máscara | Pedaços de 256 KB a 4 MB (uns 1,25 MB em média). **É formato, não ajuste**: mudar faz a próxima atualização de todo mundo baixar o jogo inteiro |
+| `cliente/Alcateia.Pacote/Packer.cs` (`PackOptions`) | `BlobMax`, `Quality` | Arquivos de pacote de até 1,5 GB; Brotli no nível 5 |
+| `cliente/Alcateia.Pacote/Installer.cs` | `MaxRun`, `Attempts`, `SpaceMargin` | Até 32 MB por pedido de download; 5 tentativas com espera crescente quando a rede cai; 64 MB de folga de disco |
+| `cliente/Alcateia.Cliente/Views/MainWindow.axaml.cs` | `CheckEvery` | 20 min: de quanto em quanto tempo o cliente aberto pergunta por versão nova (do jogo e dele mesmo) |
+| `cliente/Alcateia.Cliente/Core/Settings.cs` | `MaxAccounts` | 3 contas lembradas (o mesmo teto do jogo) |
+
 ---
 
 ## 11. Ruído e som
@@ -778,7 +836,7 @@ Abra no Inspector e mude ali — vale para os dois.
 | `StepWolf` | 20 |
 | `Land` | 17 |
 | `Howl` | 45 (já no começo do rugido e a cada 0,5 s) |
-| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 0,94 / 1,32 / 2,37 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça. De lobo, só vale sem o modelo: com ele, em pé a passada é a do andar que toca (frente, trás ou lado) e de quatro o som sai uma vez por ciclo do clipe, quando as patas se juntam (`WolfVisual.SprintGather`, 0,567 s) |
+| `StrideHuman` / `StrideWolf` / `StrideWolfSprint` | 1,17 (era 0,94 até 27/11) / 1,32 / 2,37 m — a passada: um ruído de passo a cada tanto. Sai dos clipes (teste `PassoNoRitmo`); trocou clipe ou velocidade, refaça. **De humano, só vale sem o modelo** (o servidor): com ele o passo sai quando o pé do corpo animado toca o chão (`CharacterAnimator.Feet`: `FootLift` 3 cm e `FootLiftShare` 0,45 para sair do chão, `FootDown` 1,2 cm / `FootNear` 4 a 6 cm / `FootSettle` 0,45 m/s para pisar, `FootGap` 0,18 s entre duas pisadas). De lobo, só vale sem o modelo: com ele, em pé a passada é a do andar que toca (frente, trás ou lado) e de quatro o som sai uma vez por ciclo do clipe, quando as patas se juntam (`WolfVisual.SprintGather`, 0,567 s) |
 | `NoiseRadius` da arma | 45 a 80 (seção 7) |
 
 O som do lugar fica no mapa (`src/scripts/meta/Maps.cs`):
@@ -925,6 +983,34 @@ velocidade dele depois do último estado) e `BotProxies.StaleAfter` 1 s
 comando com renascimento, ponto mirado e alvo travado).
 
 ---
+
+### Menus e HUD (27/11)
+
+| Onde | Campo | Valor | O que é |
+|---|---|---|---|
+| `Hud` | `MinimapSide` | 240 px | Lado do minimapa (era 200) |
+| `HomeScreen` | `BannerSeconds` | 7 s | Quanto cada banner do início fica |
+| `News` | `MaxBanners` / `MaxStories` | 6 / 3 | Quantos banners e notícias publicados o início mostra (o painel guarda até 8 e 12: `ContentService`) |
+| `PlayScreen` | `QuickOpen` / `TrainingOpen` | falso / falso | Os cartões Jogo rápido e Treinamento estão trancados (cadeado) |
+| `MatchSearch` | `AskEvery` / `MinSearch` / `GiveUp` | 1,5 / 2,5 / 8 s | Jogo rápido: de quanto em quanto pede a lista, o mínimo procurando, e quando abre uma sala |
+| `PlayTab` | `SheenEvery` | 6 s | O reflexo que passa sozinho na aba JOGAR |
+| `LoadingScreen` | `TipEvery` / `MinShown` | 4,5 / 2 s | Troca da dica e o mínimo da tela de carregamento |
+| `MapReel` | `Every` | 7 s | Troca do mapa ao fundo do login |
+| `ScreenWipe` | `In` / `Out` | 0,26 / 0,34 s | A cortina: cobrir e descobrir |
+| `UiTokens` | `Screen` / `Step` | 0,32 / 0,045 s | Entrada de uma tela e o passo da cascata das peças |
+| `LobbyShell` | `RetryEvery` / `Retries` | 10 s / 3 | Religação sozinha com o saguão |
+| `SocialDock` | `Wide` / `Narrow` | 304 / 60 px | Largura do painel social, aberto e recolhido |
+| `TailFloor` | `Margin` | 11,5 cm | Lobo morto: quanto as juntas do rabo ficam acima do chão (a grossura do rabo com o pelo) |
+| `DeadBody` | `MaxLift` / `MaxDrop` | 0,6 / 0,4 m | Quanto o corpo morto pode subir ou descer para encostar no chão (o rabo do lobo não entra na medida: `LooseBones`). Deitado num declive desce o que for preciso até o quadril ficar a `HipsClear` 3 cm do plano do chão |
+| `DeadBody` | `MaxTilt` / `TiltFrom` / `TiltBy` | 42° / 0,45 / 0,85 | O corpo deitado se inclina até o plano do chão debaixo dele (escada, declive), entrando do meio ao fim do clipe de morte (27/11) |
+| `DeadBody` | `TiltLedge` / `TiltCurb` / `LedgeSlack` / `CurbSlack` | 1,4 / 0,08 / 0,2 / 0,06 m | Que pontos entram na conta do plano (fora de uma beira ou em cima de uma mureta, não) e quanto o chão de um ponto pode ficar abaixo ou acima do plano |
+| `Corpse` | `PerchGap` / `PerchReach` | 0,08 / 6 m | O corpo morto que para numa saliência (viga do muro, peitoril) com o chão mais abaixo continua descendo até ele (27/11) |
+| `WorldAudio` | `SprintStepDb` / `SprintStepPitch` | +2,5 dB / 0,94 | O passo do humano correndo com Shift, em relação ao de andar: mais alto e um pouco mais grave (27/11) |
+| `CharacterSkin` (`personagem.tres`) | `VoicePitch` | Eve 1,3; Barut 1 | O tom da voz do personagem (o "uh" da coronhada): a gravação é masculina, e na Eve sobe (27/11) |
+| `WaterFeature` (nó no mapa) | `Radius` / `FallHeight` / `FallTopRadius` / `FallRadius` / `Streams` / `TopRadius` | chafariz do Deserto: 1,9 m / 2,07 m / 0,53 / 0,74 m / 8 / 0,37 m | A água de verdade (27/11): o raio do espelho, de quanto cai a queda, de onde sai e onde bate, quantos fios, o filme no alto. Vem do gerador do mapa (`deserto.py`: `FONTE`, `POCO`) |
+| `WaterFeature` | `Shallow` / `Deep` / `Murk` / `Liveliness` | verde-claro / azul / 1,2 m (poço 0,45) / 1 (poço 0,35) | A cor rasa e a funda, com quantos metros de água o fundo some, e o quanto a água se mexe |
+| `WaterFeature` | `Sound` / `SoundRange` / `SoundDb` | `fonte` / 24 m / −2 dB | O som em laço da água (`src/assets/audio/fonte.wav`, feito por `src/tools/sons/fonte.py`); o poço é mudo |
+| `Social` | `InviteSeconds` | 60 s | Quanto um convite para sala fica na tela |
 
 ## 13. Diagnóstico (desligar para versão final)
 

@@ -78,8 +78,10 @@ public partial class Bot
 		Velocity = velocity;
 		Vector3 before = GlobalPosition;
 		bool grounded = IsOnFloor();
-		MoveAndSlide();
-		if (grounded && velocity.Y <= 0.01f)
+		// (descendo uma escada de degraus o corpo desce grudado nela, como o do jogador)
+		bool walking = grounded && velocity.Y <= 0.01f;
+		BodyMotion.MoveOnSteps(this, walking, new Vector3(direction.X, 0, direction.Z).Normalized(), StepHeight);
+		if (walking)
 			TryStepUp(before, new Vector3(velocity.X, 0, velocity.Z) * (float)delta);
 	}
 

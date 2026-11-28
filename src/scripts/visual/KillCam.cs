@@ -2,45 +2,36 @@ using Godot;
 using System.Collections.Generic;
 
 /// <summary>
-/// O que o morto vê até renascer (pedidos do Jhon, 18 e 19/11, com o
-/// Overwatch de referência):
+/// O que o morto vê até renascer:
 ///
-/// 1. **Morte** (1 s): a câmera fica no próprio corpo caindo.
-/// 2. **Espectador**: direto na **tela de um aliado vivo**: a arma na mão
-///    dele, o HUD dele, o som dele (<c>KillCam.Pov.cs</c>). Clique esquerdo: próximo aliado; direito: o anterior.
-///    **Espaço troca a visão**: a tela dele → de cima → câmera livre (WASD
-///    e mouse, presa dentro do mapa, <see cref="MapBounds"/>) → de volta.
+/// 1. **Onde morreu** (até renascer): a câmera fica onde estava na hora da
+///    morte, com o próprio corpo caindo à frente (Jhon, 27/11: "tire o modo
+///    espectador flutuante, se morrer, fica onde morreu. Com isso, usuários
+///    não irão ver para fora do mapa").
+/// 2. **A tela de um aliado vivo**, só se pedir (clique esquerdo; o direito,
+///    o anterior): a arma na mão dele, o HUD dele, o som dele
+///    (<c>KillCam.Pov.cs</c>). Espaço volta para onde morreu.
 ///
-/// Até 19/11 havia entre os dois a câmera de abate (o replay pela tela de
-/// quem te matou); saiu a pedido do Jhon. O HUD de quem joga sai da tela
-/// enquanto isto existe; a escolha de
-/// conjunto só aparece na hora de renascer (<see cref="LoadoutMenu"/>).
-/// Morto, o rádio não fala.
+/// Até 27/11, passado 1 s, a câmera ia sozinha para a tela de um aliado, e
+/// o Espaço trocava para a vista de cima e para a câmera livre (WASD e mouse,
+/// voando pelo mapa); as duas saíram. Até 19/11 havia ainda a câmera de abate
+/// (o replay pela tela de quem te matou). O HUD de quem joga sai da tela
+/// enquanto isto existe; a escolha de conjunto só aparece na hora de
+/// renascer (<see cref="LoadoutMenu"/>). Morto, o rádio não fala.
 ///
 /// Quem te matou continua com a **silhueta vermelha** (só para você,
 /// através das paredes) enquanto esta câmera existe.
 /// </summary>
 public partial class KillCam : Node3D
 {
-	/// <summary>Segundos vendo o próprio corpo antes do espectador.</summary>
-	[Export] public float DeathTime = 1f;
-
-	/// <summary>Velocidade da câmera livre (m/s); com Shift, o dobro.</summary>
-	[Export] public float FreeSpeed = 9f;
-
-	/// <summary>Altura da câmera livre acima do que houver embaixo dela, quando
-	/// ela começa por cima do mapa (<see cref="PlaceFree"/>).</summary>
-	[Export] public float OverlookHeight = 4f;
-
-	private enum Phase { Death, First, Above, Free }
+	private enum Phase { Death, First }
 	private Phase _phase = Phase.Death;
 
 	private Node3D _killer, _victim, _mate;
 	private Camera3D _camera;
 	private Transform3D _from;
 	private float _fov = 75f;
-	private double _time, _remark;
-	private float _yaw, _pitch;
+	private double _remark;
 	private readonly Dictionary<GeometryInstance3D, Material> _marked = new();
 
 	/// <summary>O nome de quem a câmera mostra agora. Null fora disso.</summary>
@@ -52,12 +43,9 @@ public partial class KillCam : Node3D
 	/// <summary>A câmera de morte na tela agora (nula sem nenhuma).</summary>
 	public static KillCam Current { get; private set; }
 
-	/// <summary>Em que modo está: "morte", "abate", "primeira", "cima" ou
-	/// "livre". Para os testes.</summary>
-	public string Mode => _phase switch
-	{
-		Phase.Death => "morte", Phase.First => "primeira", Phase.Above => "cima", _ => "livre"
-	};
+	/// <summary>Em que modo está: "morte" (onde morreu) ou "primeira" (na
+	/// tela de um aliado). Para os testes.</summary>
+	public string Mode => _phase == Phase.Death ? "morte" : "primeira";
 
 	/// <summary>Quem te matou, como a câmera o tem (nulo: morte sem matador).
 	/// Para os testes.</summary>
@@ -69,7 +57,7 @@ public partial class KillCam : Node3D
 	public string WhoName => _whoName != null && _whoName.Visible ? _whoName.Text : "";
 
 	/// <summary>Quem a câmera segue no espectador. Para os testes.</summary>
-	public Node3D Watching => _phase is Phase.First or Phase.Above ? _mate : null;
+	public Node3D Watching => _phase == Phase.First ? _mate : null;
 
 	public static KillCam Begin(Node parent, Node3D victim, Node3D killer, Camera3D current)
 	{
@@ -141,7 +129,6 @@ public partial class KillCam : Node3D
 	public override void _Process(double delta)
 	{
 		if (_cleaned) return;
-		_time += delta;
 		bool blocked = UiState.AnyOpen;
 
 		// O matador pode trocar de forma enquanto você espera: o corpo
@@ -149,43 +136,53 @@ public partial class KillCam : Node3D
 		_remark -= delta;
 		if (_remark <= 0) { _remark = 0.5; Mark(); }
 
-		switch (_phase)
-		{
-			case Phase.Death:
-				Focus = null;
-				// Espaço já vai para o espectador; passou o segundo, também.
-				if ((!blocked && Input.IsActionJustPressed("jump")) || _time >= DeathTime) EnterSpectate();
-				break;
+		bool next = !blocked && Input.IsActionJustPressed("attack");
+		bool previous = !blocked && Input.IsActionJustPressed("special");
+		bool back = !blocked && Input.IsActionJustPressed("jump");
 
-			default:
-				Spectate(delta, blocked);
-				break;
+		if (_phase == Phase.Death)
+		{
+			// Onde morreu: a câmera não sai do lugar. Um clique vai para a tela de um aliado.
+			Focus = null;
+			if ((next || previous) && NextMate(null, previous ? -1 : 1) is Node3D mate) Spectate(mate);
+		}
+		else
+		{
+			bool gone = _mate == null || !IsInstanceValid(_mate) || (_mate.GetNodeOrNull<Health>("Health")?.IsDead ?? true);
+			if (gone) _mate = NextMate(null);
+			else if (next) _mate = NextMate(_mate, 1);
+			else if (previous) _mate = NextMate(_mate, -1);
+			if (_mate == null || back) ReturnToBody();
+			else
+			{
+				Watch(_mate);
+				Focus = _mate.GetNodeOrNull<Health>("Health")?.PublicName;
+				ViewSubject(delta);
+			}
 		}
 
 		UpdateHud();
 	}
 
-	private void EnterSpectate()
+	/// <summary>Na tela de <paramref name="mate"/>.</summary>
+	private void Spectate(Node3D mate)
 	{
-		Unwatch();
-		ShowBodies();
-		_time = 0;
 		_phase = Phase.First;
-		_mate = NextMate(null);
-		if (_mate == null) EnterFree();
-		else Watch(_mate);
+		_mate = mate;
+		Watch(_mate);
 	}
 
-	private void EnterFree()
+	/// <summary>De volta para onde morreu, a câmera como estava na hora.</summary>
+	private void ReturnToBody()
 	{
 		Unwatch();
 		ShowBodies();
-		_phase = Phase.Free;
+		_phase = Phase.Death;
+		_mate = null;
+		Focus = null;
+		_camera.Fov = _fov;
+		_camera.GlobalTransform = _from;
 		_camera.MakeCurrent();
-		PlaceFree();
-		Vector3 e = _camera.GlobalBasis.GetEuler();
-		_pitch = e.X;
-		_yaw = e.Y;
 	}
 
 	// ------------------------------------------------------------ espectador
@@ -205,192 +202,8 @@ public partial class KillCam : Node3D
 		return mates[((at + step) % mates.Count + mates.Count) % mates.Count];
 	}
 
-	private void Spectate(double delta, bool blocked)
-	{
-		bool next = !blocked && Input.IsActionJustPressed("attack");
-		bool previous = !blocked && Input.IsActionJustPressed("special");
-		bool cycle = !blocked && Input.IsActionJustPressed("jump");
-
-		if (_phase is Phase.First or Phase.Above)
-		{
-			bool gone = _mate == null || !IsInstanceValid(_mate) || (_mate.GetNodeOrNull<Health>("Health")?.IsDead ?? true);
-			if (gone) _mate = NextMate(null);
-			else if (next) _mate = NextMate(_mate, 1);
-			else if (previous) _mate = NextMate(_mate, -1);
-			if (_mate == null || (cycle && _phase == Phase.Above)) { EnterFree(); return; }
-			if (cycle) _phase = Phase.Above;
-			Watch(_mate);
-
-			Focus = _mate.GetNodeOrNull<Health>("Health")?.PublicName;
-			if (_phase == Phase.First)
-			{
-				ViewSubject(delta);
-				return;
-			}
-
-			// De cima: por cima e atrás do aliado, olhando para onde ele vai.
-			ViewSubject(delta, above: true);
-			Vector3 forward = -_mate.GlobalBasis.Z; forward.Y = 0;
-			forward = forward.LengthSquared() > 0.001f ? forward.Normalized() : Vector3.Forward;
-			float weight = Mathf.Min(1f, (float)delta * 6f);
-			Vector3 perch = SafePerch(_mate, _mate.GlobalPosition + Vector3.Up * 1.9f - forward * 3.4f);
-			_camera.Near = 0.05f;
-			Vector3 glide = _camera.GlobalPosition.DistanceTo(perch) > 25f ? perch : _camera.GlobalPosition.Lerp(perch, weight);
-			// Nunca fora do mapa nem atrás de parede (19/11: com o aliado
-			// encostado na borda, a vista de cima saía do mapa).
-			_camera.GlobalPosition = MapBounds.Clamp(GetTree(), glide);
-			Vector3 target = _mate.GlobalPosition + Vector3.Up * 0.7f + forward * 2f;
-			if (_camera.GlobalPosition.DistanceSquaredTo(target) > 0.01f)
-			{
-				Basis look = Basis.LookingAt(target - _camera.GlobalPosition, Vector3.Up);
-				_camera.GlobalBasis = new Basis(_camera.GlobalBasis.GetRotationQuaternion().Slerp(look.GetRotationQuaternion(), weight));
-			}
-			_camera.Fov = Mathf.Lerp(_camera.Fov, 75f, weight);
-			return;
-		}
-
-		// Livre: WASD para onde se olha, mouse vira, dentro do mapa. Espaço
-		// (ou um clique) volta aos aliados, na tela deles.
-		Focus = null;
-		if ((cycle || next || previous) && NextMate(null) is Node3D)
-		{
-			_phase = Phase.First;
-			_mate = NextMate(previous ? null : _mate, previous ? -1 : 1) ?? NextMate(null);
-			Watch(_mate);
-			return;
-		}
-
-		_camera.Near = 0.05f;
-		_camera.Fov = Mathf.Lerp(_camera.Fov, 75f, Mathf.Min(1f, (float)delta * 6f));
-		_camera.GlobalBasis = Basis.FromEuler(new Vector3(_pitch, _yaw, 0));
-		if (!blocked)
-		{
-			Vector2 move = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
-			Vector3 step = _camera.GlobalBasis * new Vector3(move.X, 0, move.Y);
-			_camera.GlobalPosition = Fly(_camera.GlobalPosition, step * FreeSpeed * (Input.IsActionPressed("sprint") ? 2f : 1f) * (float)delta);
-		}
-		_camera.GlobalPosition = MapBounds.Clamp(GetTree(), _camera.GlobalPosition);
-	}
-
-	/// <summary>Aponta a câmera livre (graus). Para os testes.</summary>
-	public void AimFree(float yawDegrees, float pitchDegrees)
-	{
-		_yaw = Mathf.DegToRad(yawDegrees);
-		_pitch = Mathf.DegToRad(pitchDegrees);
-	}
-
-	/// <summary>Raio da bola que a câmera livre é para o cenário.</summary>
-	private const float FlyRadius = 0.3f;
-
-	private SphereShape3D _flyShape;
-
-	/// <summary>
-	/// A câmera livre bate no cenário (19/11: "tenho que ficar dentro do
-	/// Armazém, não posso sair pelas paredes, chão e teto"): anda como uma
-	/// bola de 30 cm, eixo por eixo, então escorrega na parede em vez de
-	/// parar seco. Só o cenário conta (camada 1), não os corpos.
-	/// </summary>
-	private Vector3 Fly(Vector3 from, Vector3 motion)
-	{
-		_flyShape ??= new SphereShape3D { Radius = FlyRadius };
-		PhysicsDirectSpaceState3D space = GetWorld3D().DirectSpaceState;
-		Godot.Collections.Array<Rid> skip = FighterRids();
-		Vector3 at = from;
-		foreach (Vector3 axis in new[] { Vector3.Right, Vector3.Up, Vector3.Back })
-		{
-			Vector3 part = axis * motion.Dot(axis);
-			if (part.LengthSquared() < 1e-10f) continue;
-			var query = new PhysicsShapeQueryParameters3D
-			{
-				Shape = _flyShape,
-				Transform = new Transform3D(Basis.Identity, at),
-				Motion = part,
-				CollisionMask = 1,
-				Exclude = skip
-			};
-			float[] cast = space.CastMotion(query);
-			float safe = cast.Length > 0 ? cast[0] : 1f;
-			at += part * safe;
-		}
-		return at;
-	}
-
-	/// <summary>Os corpos estão na camada 1 também: a câmera não esbarra neles.</summary>
-	private Godot.Collections.Array<Rid> FighterRids()
-	{
-		var skip = new Godot.Collections.Array<Rid>();
-		foreach (string group in Groups.Fighters)
-			foreach (Node node in GetTree().GetNodesInGroup(group))
-				if (node is CollisionObject3D body) skip.Add(body.GetRid());
-		return skip;
-	}
-
-	/// <summary>
-	/// Onde a câmera livre começa. Normalmente onde a câmera já estava; mas
-	/// quem caiu da beira da Obra morre lá embaixo, fora do mapa, e puxada
-	/// para dentro da caixa a câmera nascia no meio do prédio (Jhon, 27/11:
-	/// "a câmera de espectador não pode nascer dentro do prédio"). Fora da
-	/// caixa ou dentro de algo sólido, ela começa por cima do mapa, perto de
-	/// onde estava: acima do que houver ali (um raio de cima para baixo acha
-	/// o telhado), olhando para o meio do mapa.
-	/// </summary>
-	private void PlaceFree()
-	{
-		Aabb box = MapBounds.Of(GetTree());
-		Vector3 at = _camera.GlobalPosition;
-		if (box.Grow(-0.4f).HasPoint(at) && !Blocked(at)) return;
-
-		float top = box.End.Y - 1f;
-		Vector3 near = MapBounds.Clamp(GetTree(), at, 3f);
-		var down = PhysicsRayQueryParameters3D.Create(new Vector3(near.X, top, near.Z), new Vector3(near.X, box.Position.Y - 1f, near.Z));
-		down.Exclude = FighterRids();
-		var hit = GetWorld3D().DirectSpaceState.IntersectRay(down);
-		float ground = hit.Count > 0 ? hit["position"].AsVector3().Y : box.Position.Y;
-		Vector3 spot = new(near.X, Mathf.Min(ground + OverlookHeight, top), near.Z);
-		while (Blocked(spot) && spot.Y < top) spot.Y = Mathf.Min(spot.Y + 1f, top);
-
-		_camera.GlobalPosition = spot;
-		Vector3 target = new(box.GetCenter().X, ground, box.GetCenter().Z);
-		Vector3 look = target - spot;
-		if (new Vector2(look.X, look.Z).LengthSquared() > 0.01f)
-			_camera.GlobalBasis = Basis.LookingAt(look, Vector3.Up);
-	}
-
-	/// <summary>A bola da câmera livre encosta em algo do cenário aqui.</summary>
-	private bool Blocked(Vector3 at)
-	{
-		_flyShape ??= new SphereShape3D { Radius = FlyRadius };
-		var query = new PhysicsShapeQueryParameters3D
-		{
-			Shape = _flyShape,
-			Transform = new Transform3D(Basis.Identity, at),
-			CollisionMask = 1,
-			Exclude = FighterRids()
-		};
-		return GetWorld3D().DirectSpaceState.IntersectShape(query, 1).Count > 0;
-	}
-
-	/// <summary>O ponto da vista de cima, puxado para perto do aliado se
-	/// houver parede no caminho.</summary>
-	private Vector3 SafePerch(Node3D mate, Vector3 want)
-	{
-		Vector3 eye = mate.GlobalPosition + Vector3.Up * 1.5f;
-		var query = PhysicsRayQueryParameters3D.Create(eye, want);
-		query.Exclude = FighterRids();
-		var hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
-		if (hit.Count == 0) return want;
-		Vector3 at = hit["position"].AsVector3();
-		return at + (eye - at).Normalized() * WolfMargin;
-	}
-
-	public override void _UnhandledInput(InputEvent @event)
-	{
-		if (_phase != Phase.Free || UiState.AnyOpen || @event is not InputEventMouseMotion motion) return;
-		if (Input.MouseMode != Input.MouseModeEnum.Captured) return;
-		const float sense = 0.0022f;
-		_yaw -= motion.Relative.X * sense;
-		_pitch = Mathf.Clamp(_pitch - motion.Relative.Y * sense, Mathf.DegToRad(-88f), Mathf.DegToRad(88f));
-	}
+	/// <summary>Há aliado vivo para assistir (o HUD só oferece o clique se houver).</summary>
+	private bool HasMate => NextMate(null) != null;
 
 	// ------------------------------------------------------------ a silhueta do matador
 

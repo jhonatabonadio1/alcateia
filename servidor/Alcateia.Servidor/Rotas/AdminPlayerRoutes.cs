@@ -64,6 +64,13 @@ public static class AdminPlayerRoutes
 			return null;
 		});
 
+		// Quem perdeu o aplicativo autenticador: o suporte desliga a segunda etapa.
+		app.Post(s, "/players/{id}/2fa/reset", async (ctx, who, body) =>
+		{
+			await s.Players.ResetTwoFactor(who, AdminApi.RouteId(ctx));
+			return null;
+		});
+
 		app.Post(s, "/players/{id}/kick", async (ctx, who, body) =>
 		{
 			await s.Players.Kick(who, AdminApi.RouteId(ctx));

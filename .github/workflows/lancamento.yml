@@ -12,11 +12,36 @@
 # Também dá para rodar à mão (aba Actions → Lançamento → Run workflow):
 # sem tag não há Release, o instalador fica como artefato do workflow.
 #
+# Com a Release pronta, o **cliente de instalação** (cliente/LEIA-ME.md): os
+# jobs "lancador" e "lancador-mac" empacotam o jogo e o próprio cliente em
+# pedaços, e o "distribuir" sobe tudo para o Cloudflare R2, de onde o cliente
+# baixa (a Release do GitHub é de repositório privado: só baixa quem tem
+# login). Lá ficam, sempre com o mesmo nome, o manifesto da última versão de
+# cada produto (wolfleague-windows.manifest.json, launcher-windows…) e os
+# instaladores do cliente (WolfLeague-Launcher-Setup.exe, …-mac-arm64.dmg,
+# …-mac-x64.dmg); os pacotes de cada versão ficam em v<versão>/.
+# Esses três jobs vêm depois da Release e não a seguram: se o R2 falhar, o
+# instalador de sempre já saiu.
+#
 # Configuração de uma vez (docs/FLY.md):
 #   segredo  FLY_API_TOKEN       token que pode fazer deploy nos dois apps
 #   variável FLY_APP_API         (opcional) padrão wolfleague-api
 #   variável FLY_APP_PARTIDA     (opcional) padrão wolfleague-partida
 #   variável SERVIDOR_URL        (opcional) padrão https://<FLY_APP_API>.fly.dev
+# **Os links do site** (sempre a última versão; não mudam de uma versão para outra):
+#   <R2_PUBLIC_URL>/WolfLeague-Launcher-Setup.exe        Windows
+#   <R2_PUBLIC_URL>/WolfLeague-Launcher-mac-arm64.dmg    Mac com Apple Silicon
+#   <R2_PUBLIC_URL>/WolfLeague-Launcher-mac-x64.dmg      Mac com Intel
+#   <R2_PUBLIC_URL>/latest.json                          versão, tamanho e SHA-256 de cada um
+# O "distribuir" confere que respondem sem login e os escreve no resumo da execução.
+#
+# Para o cliente de instalação (sem eles, os três jobs são pulados):
+#   segredo  R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY   token de API do R2, leitura e escrita no balde
+#   variável ou segredo R2_BUCKET_NAME   o balde
+#   variável ou segredo R2_PUBLIC_URL    o endereço público do balde (https://pub-….r2.dev ou um domínio).
+#                                Não é segredo: como variável, os links aparecem inteiros no resumo
+#                                (como segredo, o GitHub os troca por ***)
+#   variável R2_ENDPOINT         (opcional) a API S3 da conta; padrão, a da conta do projeto
 name: Lançamento
 
 on:
@@ -37,6 +62,8 @@ env:
   FLY_APP_API: ${{ vars.FLY_APP_API || 'wolfleague-api' }}
   FLY_APP_PARTIDA: ${{ vars.FLY_APP_PARTIDA || 'wolfleague-partida' }}
   SERVIDOR_URL: ${{ vars.SERVIDOR_URL || format('https://{0}.fly.dev', vars.FLY_APP_API || 'wolfleague-api') }}
+  # A API S3 do Cloudflare R2 (o número é o da conta; não é segredo).
+  R2_ENDPOINT: ${{ vars.R2_ENDPOINT || 'https://969ab96ae86fb74cc06954dd82147e57.r2.cloudflarestorage.com' }}
 
 # Os testes voltaram ao lançamento (Jhon, 27/11: "pode voltar os testes no
 # ci"; tinham saído em 21/11 e em 26/11, e voltado em 25/11):
@@ -54,9 +81,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: producao
+    env:
+      R2_PUBLIC_URL: ${{ vars.R2_PUBLIC_URL || secrets.R2_PUBLIC_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
+      # O servidor diz ao cliente de instalação de onde baixar (GET /v1/client).
+      # "--stage" só guarda o valor: ele entra no deploy logo abaixo, sem
+      # reiniciar o servidor uma vez a mais.
+      - name: Endereço dos downloads
+        if: env.R2_PUBLIC_URL != ''
+        run: flyctl secrets set ALCATEIA_DOWNLOADS="${R2_PUBLIC_URL%/}/" --app "$FLY_APP_API" --stage
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
       - name: Deploy do servidor
         run: flyctl deploy --config fly.servidor.toml --app "$FLY_APP_API" --remote-only --wait-timeout 300
         env:
@@ -402,3 +439,240 @@ jobs:
             gh release create "$TAG" entrega/* --latest --title "WolfLeague $TAG" \
               --notes-file notas.md --generate-notes
           fi
+
+  # ---------------------------------------------------------------------
+  # O cliente de instalação (cliente/LEIA-ME.md). Vem depois da Release e
+  # não a segura.
+
+  # Windows: empacota o jogo que o job "cliente" exportou (o .zip dele é a
+  # pasta inteira), publica o cliente, empacota o cliente e monta o
+  # instalador dele (instalador/cliente.nsi).
+  lancador:
+    if: success() && startsWith(github.ref, 'refs/tags/v')
+    needs: [release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      R2_PUBLIC_URL: ${{ vars.R2_PUBLIC_URL || secrets.R2_PUBLIC_URL }}
+    steps:
+      - name: Há onde publicar?
+        id: r2
+        run: |
+          if [ -n "$R2_PUBLIC_URL" ]; then echo "sim=1" >> "$GITHUB_OUTPUT"; else echo "::notice::sem R2_PUBLIC_URL: o cliente de instalação não é publicado"; fi
+      - uses: actions/checkout@v4
+        if: steps.r2.outputs.sim
+      - uses: actions/setup-dotnet@v4
+        if: steps.r2.outputs.sim
+        with:
+          dotnet-version: 8.0.x
+      - uses: actions/download-artifact@v4
+        if: steps.r2.outputs.sim
+        with:
+          name: wolfleague-windows
+          path: entrada
+      - name: Empacotar o jogo e o cliente
+        if: steps.r2.outputs.sim
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          n="$(echo "${v%%-*}" | awk -F. '{printf "%d.%d.%d.0", $1, $2, $3}')"
+          base="${R2_PUBLIC_URL%/}/v${v}/"
+          pacote() { dotnet run --project cliente/Alcateia.Pacote.Ferramenta -c Release -- "$@"; }
+          python3 src/tools/lancamento/notas.py docs/CHANGELOG.md > notas.txt
+          mkdir -p jogo saida
+
+          unzip -q "entrada/WolfLeague-${v}-windows.zip" -d jogo
+          test -f jogo/WolfLeague.exe
+          pacote empacotar --origem jogo --saida saida --produto wolfleague --plataforma windows \
+            --versao "$v" --exe WolfLeague.exe --base "$base" --notas notas.txt
+
+          dotnet publish cliente/Alcateia.Cliente/Alcateia.Cliente.csproj -c Release -r win-x64 --self-contained true \
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:PublishTrimmed=true -p:TrimMode=partial -p:DebugType=none \
+            -p:Version="$v" -p:ServidorUrl="$SERVIDOR_URL" -o cliente-win --nologo -v quiet
+          rm -f cliente-win/*.pdb
+          test -f cliente-win/WolfLeagueLauncher.exe
+          pacote empacotar --origem cliente-win --saida saida --produto launcher --plataforma windows \
+            --versao "$v" --exe WolfLeagueLauncher.exe --base "$base"
+
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends nsis
+          makensis -V2 -DVERSAO="$v" -DVERSAO_NUM="$n" -DORIGEM="$PWD/cliente-win" \
+            -DSAIDA="$PWD/saida/WolfLeague-Launcher-Setup-${v}.exe" "$PWD/instalador/cliente.nsi"
+          ls -la saida
+      - uses: actions/upload-artifact@v4
+        if: steps.r2.outputs.sim
+        with:
+          name: lancador-windows
+          path: saida/*
+          if-no-files-found: error
+          retention-days: 3
+
+  # Mac: o mesmo, num Mac (o cliente precisa do codesign). O jogo vem do .dmg
+  # que o job "cliente-mac" montou; o cliente sai um por processador.
+  lancador-mac:
+    if: success() && startsWith(github.ref, 'refs/tags/v')
+    needs: [release]
+    runs-on: macos-latest
+    timeout-minutes: 40
+    env:
+      R2_PUBLIC_URL: ${{ vars.R2_PUBLIC_URL || secrets.R2_PUBLIC_URL }}
+    steps:
+      - name: Há onde publicar?
+        id: r2
+        run: |
+          if [ -n "$R2_PUBLIC_URL" ]; then echo "sim=1" >> "$GITHUB_OUTPUT"; else echo "::notice::sem R2_PUBLIC_URL: o cliente de instalação não é publicado"; fi
+      - uses: actions/checkout@v4
+        if: steps.r2.outputs.sim
+      - uses: actions/setup-dotnet@v4
+        if: steps.r2.outputs.sim
+        with:
+          dotnet-version: 8.0.x
+      - uses: actions/download-artifact@v4
+        if: steps.r2.outputs.sim
+        with:
+          name: wolfleague-mac
+          path: entrada
+      - name: Empacotar o jogo e o cliente
+        if: steps.r2.outputs.sim
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          base="${R2_PUBLIC_URL%/}/v${v}/"
+          pacote() { dotnet run --project cliente/Alcateia.Pacote.Ferramenta -c Release -- "$@"; }
+          python3 src/tools/lancamento/notas.py docs/CHANGELOG.md > notas.txt
+          mkdir -p jogo saida
+
+          # O jogo: o WolfLeague.app de dentro do .dmg, já assinado.
+          hdiutil attach "entrada/WolfLeague-${v}-mac.dmg" -nobrowse -readonly -mountpoint montado
+          cp -R montado/WolfLeague.app jogo/WolfLeague.app
+          hdiutil detach montado
+          codesign --verify --deep --strict jogo/WolfLeague.app
+          exe="WolfLeague.app/Contents/MacOS/$(ls jogo/WolfLeague.app/Contents/MacOS | head -1)"
+          pacote empacotar --origem jogo --saida saida --produto wolfleague --plataforma mac \
+            --versao "$v" --exe "$exe" --base "$base" --notas notas.txt
+
+          for arq in arm64 x64; do
+            src/tools/lancamento/cliente_mac.sh "$v" "$arq" "cliente-$arq"
+            pacote empacotar --origem "cliente-$arq/WolfLeague.app" --saida saida --produto launcher --plataforma "mac-$arq" \
+              --versao "$v" --exe Contents/MacOS/WolfLeagueLauncher --base "$base"
+            cp "cliente-$arq/WolfLeague-Launcher-${v}-mac-$arq.dmg" saida/
+          done
+          ls -la saida
+      - uses: actions/upload-artifact@v4
+        if: steps.r2.outputs.sim
+        with:
+          name: lancador-mac
+          path: saida/*
+          if-no-files-found: error
+          retention-days: 3
+
+  # Sobe tudo para o R2. A ordem importa: primeiro os pacotes da versão,
+  # depois os instaladores, e só no fim os manifestos — é o manifesto que
+  # diz ao cliente "há versão nova", e ele não pode apontar para pacote que
+  # ainda não chegou. Depois confere pelo endereço público, como um jogador:
+  # o manifesto responde, um pacote aceita download em partes, e o pacote do
+  # cliente instala inteiro.
+  distribuir:
+    if: success() && startsWith(github.ref, 'refs/tags/v')
+    needs: [lancador, lancador-mac]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      R2_PUBLIC_URL: ${{ vars.R2_PUBLIC_URL || secrets.R2_PUBLIC_URL }}
+      R2_BUCKET_NAME: ${{ vars.R2_BUCKET_NAME || secrets.R2_BUCKET_NAME }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      # O R2 não entende a conferência nova (CRC64) que o aws-cli passou a mandar por padrão.
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+    steps:
+      - name: Há onde publicar?
+        id: r2
+        run: |
+          if [ -n "$R2_PUBLIC_URL" ] && [ -n "$R2_BUCKET_NAME" ] && [ -n "$AWS_ACCESS_KEY_ID" ]; then echo "sim=1" >> "$GITHUB_OUTPUT"; else echo "::notice::faltam os segredos do R2: nada é publicado"; fi
+      - uses: actions/checkout@v4
+        if: steps.r2.outputs.sim
+      - uses: actions/setup-dotnet@v4
+        if: steps.r2.outputs.sim
+        with:
+          dotnet-version: 8.0.x
+      - uses: actions/download-artifact@v4
+        if: steps.r2.outputs.sim
+        with:
+          pattern: lancador-*
+          merge-multiple: true
+          path: saida
+      - name: Subir para o R2
+        if: steps.r2.outputs.sim
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          balde="s3://${R2_BUCKET_NAME}"
+          r2() { aws s3 "$@" --endpoint-url "$R2_ENDPOINT" --no-progress; }
+          ls -la saida
+
+          # 1. Os pacotes: nome com a versão, nunca mudam.
+          r2 cp saida "$balde/v${v}/" --recursive --exclude "*" --include "*.pack" \
+            --cache-control "public, max-age=31536000, immutable"
+
+          # 2. Os instaladores do cliente, com a versão e com o nome fixo (o link do site).
+          for f in saida/WolfLeague-Launcher-*; do
+            r2 cp "$f" "$balde/v${v}/$(basename "$f")" --cache-control "public, max-age=31536000, immutable"
+          done
+          r2 cp "saida/WolfLeague-Launcher-Setup-${v}.exe" "$balde/WolfLeague-Launcher-Setup.exe" --cache-control "no-cache"
+          r2 cp "saida/WolfLeague-Launcher-${v}-mac-arm64.dmg" "$balde/WolfLeague-Launcher-mac-arm64.dmg" --cache-control "no-cache"
+          r2 cp "saida/WolfLeague-Launcher-${v}-mac-x64.dmg" "$balde/WolfLeague-Launcher-mac-x64.dmg" --cache-control "no-cache"
+
+          # 3. Os manifestos, por último: a partir daqui os clientes veem a versão nova.
+          for f in saida/*.manifest.json; do
+            r2 cp "$f" "$balde/$(basename "$f")" --cache-control "no-cache" --content-type "application/json"
+          done
+
+          # 4. Para o site: a versão, o tamanho e o SHA-256 de cada instalador.
+          python3 src/tools/lancamento/ultima_versao.py --versao "$v" --publico "$R2_PUBLIC_URL" --pasta saida > latest.json
+          r2 cp latest.json "$balde/latest.json" --cache-control "no-cache" --content-type "application/json"
+      - name: Conferir pelo endereço público
+        if: steps.r2.outputs.sim
+        run: |
+          publico="${R2_PUBLIC_URL%/}"
+          for m in wolfleague-windows wolfleague-mac launcher-windows launcher-mac-arm64 launcher-mac-x64; do
+            curl -fsS -o /dev/null "$publico/$m.manifest.json" || { echo "::error::$m.manifest.json não baixa pelo endereço público: o balde está com o acesso público ligado?"; exit 1; }
+          done
+          # Baixa de verdade, em partes, como o cliente faz: o pacote do cliente do Windows inteiro.
+          dotnet run --project cliente/Alcateia.Pacote.Ferramenta -c Release -- instalar \
+            --manifesto "$publico/launcher-windows.manifest.json" --destino conferido
+          test -f conferido/WolfLeagueLauncher.exe
+          dotnet run --project cliente/Alcateia.Pacote.Ferramenta -c Release -- info --manifesto "$publico/wolfleague-windows.manifest.json"
+
+          # Os links do site: respondem sem login, e o de nome fixo já é o desta versão.
+          v="${GITHUB_REF_NAME#v}"
+          for f in WolfLeague-Launcher-Setup.exe WolfLeague-Launcher-mac-arm64.dmg WolfLeague-Launcher-mac-x64.dmg latest.json; do
+            codigo="$(curl -s -o /dev/null -w '%{http_code}' -I "$publico/$f")"
+            [ "$codigo" = 200 ] || { echo "::error::$f respondeu $codigo pelo endereço público"; exit 1; }
+          done
+          no_ar="$(curl -fsSL "$publico/WolfLeague-Launcher-Setup.exe" | sha256sum | cut -d' ' -f1)"
+          daqui="$(sha256sum "saida/WolfLeague-Launcher-Setup-${v}.exe" | cut -d' ' -f1)"
+          [ "$no_ar" = "$daqui" ] || { echo "::error::o WolfLeague-Launcher-Setup.exe do endereço público não é o desta versão (cópia antiga no caminho?)"; exit 1; }
+      - name: Os links, no resumo
+        if: steps.r2.outputs.sim
+        run: |
+          publico="${R2_PUBLIC_URL%/}"
+          {
+            echo "## Cliente de instalação ${GITHUB_REF_NAME} no ar"
+            echo
+            echo "Links fixos para o site (sempre a última versão):"
+            echo
+            echo "| Sistema | Link |"
+            echo "|---|---|"
+            echo "| Windows | $publico/WolfLeague-Launcher-Setup.exe |"
+            echo "| Mac (Apple Silicon) | $publico/WolfLeague-Launcher-mac-arm64.dmg |"
+            echo "| Mac (Intel) | $publico/WolfLeague-Launcher-mac-x64.dmg |"
+            echo "| Versão, tamanho e SHA-256 | $publico/latest.json |"
+            echo
+            echo "Se os links aparecerem com \*\*\*, o endereço público está guardado como segredo: cadastre-o como **variável** (R2_PUBLIC_URL) e apague o segredo — ele não é segredo."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Os instaladores do cliente também na Release
+        if: steps.r2.outputs.sim
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "$GITHUB_REF_NAME" saida/WolfLeague-Launcher-* --clobber

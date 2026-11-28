@@ -7,15 +7,16 @@ barulho de poder. O core do lobo é eletricidade").
 
     python3 tools/sons/uivo.py            # grava em assets/audio/
 
-- lobo_uivo_energia_1..2   toca junto com o rugido, do começo ao fim (1,6 s): o
-                           poder CARREGANDO. Um grave que sobe uma oitava, um
-                           zunido de bobina que sobe duas e treme cada vez mais
-                           rápido, estalos elétricos cada vez mais juntos e um
-                           ar agudo que abre. Tudo cresce até o corte;
+- lobo_uivo_energia_1..2   toca junto com o rugido, do começo ao fim (1,6 s): o ar
+                           PUXADO, o ESTOURO e o poder CARREGANDO. Um grave que
+                           sobe uma oitava, um zunido de bobina que sobe duas e
+                           treme no passo da luz, estalos elétricos cada vez
+                           mais juntos, um baque a cada onda do chão e um ar
+                           agudo que abre. Tudo cresce até o corte;
 - lobo_uivo_escudo_1..2    toca quando o rugido termina e o escudo enche: o
                            poder SOLTO. Uma pancada grave que desce, um trovão
-                           curto, o estalo e o zunido de um raio, o ar sendo
-                           empurrado e o chiado do escudo ficando. Sem nota e
+                           curto, a trava da casca fechando, três raios saindo,
+                           o ar empurrado e o chiado do escudo desacelerando. Sem nota e
                            sem sino: o Jhon não gostou do "plin" no final.
 
 O rugido (lobo_rugido) é só grave e médio (nada acima de 2 kHz): estes dois dão
@@ -74,81 +75,116 @@ def serras(f, vozes=3, fora=0.006, rng=None):
         x += signal.sawtooth(fase(f * d) + (rng.uniform(0, 6) if rng is not None else 0.0))
     return x / vozes
 
+# Os tempos do rugido que se vê (scripts/visual/fx/RoarBurst.cs, 27/11): o som bate neles.
+PUXA = 0.12            # a antecipação: do R até o estouro (RoarBurst.IntakeTime)
+CHEIO = 1.30           # quando o rugido já vale inteiro (85% de 1,53 s)
+ONDAS = (0.62, 1.12)   # as ondas do chão da sustentação (uma a cada 0,5 s depois do estouro)
+TREME = (7.0, 20.0)    # o tremor da luz, em vezes por segundo, do começo ao cheio (FlickerFrom, FlickerTo)
+
+
+def pancada(dur, de, ate, cai, desce=0.06):
+    """Um grave que desce de `de` a `ate` Hz e some: o peso de um golpe."""
+    t = tempo(dur)
+    return np.sin(fase(ate + (de - ate) * np.exp(-t / desce))) * np.exp(-t / cai)
+
 def energia(seed):
+    """Refeito em 27/11 com o visual (pedido do Jhon: "fx e vfx mais profissional"), nos
+    mesmos tempos dele: o ar sendo PUXADO (0,12 s), o ESTOURO (a pancada e o sopro), a
+    CARGA subindo — o zunido de bobina tremendo no passo da luz, os estalos cada vez
+    mais juntos, um baque surdo a cada onda do chão — e o corte seco no fim, para o
+    escudo responder. Sem o acorde de vidro de antes: é eletricidade, não brilho."""
     rng = np.random.default_rng(seed)
     dur = 1.6
     t = tempo(dur)
-    u = np.clip(t / 1.5, 0, 1)
-    cresce = u ** 1.4                                              # do nada ao cheio, junto com o escudo
+    u = np.clip((t - PUXA) / (CHEIO - PUXA), 0, 1)                 # a carga, de 0 (estouro) a 1 (cheio)
+    depois = (t >= PUXA).astype(float)
+    cresce = (0.2 + 0.8 * u ** 1.5) * depois
+
+    # a puxada: ar e faíscas correndo para dentro — um sopro que sobe e corta no estouro
+    tp = tempo(PUXA)
+    puxa = varredura(rng, PUXA, 380, 4200, 0.9) * (tp / PUXA) ** 2.2
+
+    # o estouro: a pancada no peito, o estalo e o ar empurrado
+    golpe = pancada(0.5, 150, 46, 0.2)
+    sopro = faixa(rng.standard_normal(int(0.4 * SR)), 180, 2600) * np.exp(-tempo(0.4) / 0.085)
 
     # o peso: um grave que sobe uma oitava e incha
-    grave = np.sin(fase(48 * 2 ** u)) + 0.5 * np.sin(fase(96 * 2 ** u))
-    grave *= cresce
+    grave = (np.sin(fase(48 * 2 ** u)) + 0.5 * np.sin(fase(96 * 2 ** u))) * cresce
 
-    # a bobina: serras que sobem duas oitavas, tremendo cada vez mais rápido (a pressa é a tensão)
+    # a bobina: serras que sobem duas oitavas, tremendo no passo do tremor da luz
     bobina = baixo(serras(110 * 4 ** u, rng=rng), 3400)
-    treme = 0.62 + 0.38 * np.sin(fase(7 + 21 * u ** 1.5))
+    treme = 0.58 + 0.42 * np.sin(fase(TREME[0] + (TREME[1] - TREME[0]) * u))
     bobina *= cresce * treme
 
-    # a eletricidade: estalos cada vez mais juntos e o chiado da alta tensão
-    estalos = faiscas(rng, dur, 320, forma=lambda tt: 0.1 + np.clip(tt / 1.5, 0, 1) ** 1.6)
-    chiado = zumbido(rng, dur, 118) * cresce
+    # a eletricidade: estalos cada vez mais juntos (os arcos) e o chiado da alta tensão
+    estalos = faiscas(rng, dur, 380, forma=lambda tt: (tt >= PUXA) * (0.08 + np.clip((tt - PUXA) / (CHEIO - PUXA), 0, 1) ** 1.7))
+    chiado = zumbido(rng, dur, 118) * cresce * (0.75 + 0.25 * treme)
 
-    # o ar: ruído agudo que abre para cima
+    # o ar da boca: ruído que abre para cima com a carga
     ruido = rng.standard_normal(len(t))
-    ar = (faixa(ruido, 1500, 4000) * (1 - u) + faixa(ruido, 4500, 10500) * u) * cresce
+    ar = (faixa(ruido, 1400, 3800) * (1 - u) + faixa(ruido, 4200, 10000) * u) * cresce
 
-    # o brilho: o acorde de vidro, baixo, só para dar cor em cima
-    sobe = 2 ** (2.0 * u / 12)
-    vidro = np.zeros(len(t))
-    for mult, peso in ((1, 1.0), (1.5, 0.8), (2, 0.7), (3, 0.45), (4, 0.3)):
-        for fora in (-0.003, 0.003):
-            vidro += peso * 0.5 * np.sin(fase(MI * mult * sobe * (1 + fora)) + rng.uniform(0, 6))
-    vidro *= cresce
-
-    x = somar(dur,
-              (0.0, grave, 0.55),
-              (0.0, bobina, 1.00),
-              (0.0, estalos, 0.90),
-              (0.0, chiado, 0.30),
-              (0.0, ar, 0.60),
-              (0.0, vidro, 0.25))
+    partes = [(0.0, puxa, 0.55),
+              (PUXA, estalo(rng, 0.07), 0.45),
+              (PUXA, golpe, 0.85),
+              (PUXA, sopro, 0.7),
+              (0.0, grave, 0.6),
+              (0.0, bobina, 1.0),
+              (0.0, estalos, 0.95),
+              (0.0, chiado, 0.32),
+              (0.0, ar, 0.5)]
+    # as ondas do chão: um baque surdo e curto, cada um mais forte
+    for k, quando in enumerate(ONDAS):
+        partes.append((quando, pancada(0.3, 110, 52, 0.11, 0.04), 0.7 + 0.25 * k))
+        partes.append((quando, faixa(rng.standard_normal(int(0.2 * SR)), 250, 1400) * np.exp(-tempo(0.2) / 0.05), 0.35))
+    x = somar(dur, *partes)
     # entra macio e corta seco no fim: quem responde é o som do escudo
-    x *= np.minimum(t / 0.1, 1.0) * np.clip((dur - t) / 0.07, 0, 1)
+    x *= np.minimum(t / 0.02, 1.0) * np.clip((dur - t) / 0.07, 0, 1)
     return acabar(x, -18.5, some=0.02)
 
 def escudo(seed):
     """O fim do rugido, com o escudo cheio. Sem nota nem sino ("não gostei do plin no
-    final"): é pancada, trovão e eletricidade — peso, não música."""
+    final"): é pancada, trovão e eletricidade — peso, não música. Refeito em 27/11 para
+    bater no visual: a casca FECHA (um baque seco de trava), a descarga sai em três
+    raios quase juntos, a bolha de ar empurra, e o campo do escudo fica zunindo e
+    desacelera (o contrário da carga: a energia assenta)."""
     rng = np.random.default_rng(seed)
-    dur = 1.15
+    dur = 1.3
     t = tempo(dur)
 
-    # a pancada: um grave que desce, com o estalo na frente
-    pancada = np.sin(fase(40 + 86 * np.exp(-t / 0.075))) * np.exp(-t / 0.36)
-    trovao = baixo(rng.standard_normal(len(t)), 230, 3) * np.exp(-t / 0.32)
+    # a pancada: um grave fundo que desce, com o trovão curto por baixo
+    fundo = pancada(dur, 170, 38, 0.42, 0.07)
+    trovao = baixo(rng.standard_normal(len(t)), 230, 3) * np.exp(-t / 0.34)
 
-    # o raio: o zunido que desce e os estalos que sobram
-    zun = varredura(rng, 0.36, rng.uniform(6800, 8200), rng.uniform(420, 600)) * np.exp(-tempo(0.36) / 0.14)
-    sobras = faiscas(rng, dur - 0.04, 260, decai=(0.002, 0.013), forma=lambda tt: np.exp(-tt / 0.32))
+    # a trava: a casca fechando — um baque seco, médio, sem tom
+    trava = faixa(rng.standard_normal(int(0.16 * SR)), 140, 620, 3) * np.exp(-tempo(0.16) / 0.03)
 
-    # o empurrão de ar: ruído médio que fecha para o grave (o "vum" da energia assentando)
+    # a descarga: três raios saindo, um atrás do outro, cada um com o seu zunido descendo
+    raios = []
+    for quando in (0.0, 0.035, 0.085):
+        d = rng.uniform(0.26, 0.38)
+        raios.append((quando, varredura(rng, d, rng.uniform(6200, 8600), rng.uniform(380, 640)) * np.exp(-tempo(d) / 0.12), rng.uniform(0.8, 1.2)))
+        raios.append((quando, estalo(rng, 0.08), 0.9))
+    sobras = faiscas(rng, dur - 0.05, 300, decai=(0.002, 0.013), forma=lambda tt: np.exp(-tt / 0.3))
+
+    # a bolha: o ar empurrado — ruído médio que fecha para o grave (o "vum")
     ruido = rng.standard_normal(len(t))
     u = np.clip(t / 0.5, 0, 1)
-    vum = (faixa(ruido, 500, 1400) * (1 - u) + faixa(ruido, 110, 420) * u) * np.minimum(t / 0.015, 1.0) * np.exp(-t / 0.3)
+    vum = (faixa(ruido, 500, 1500) * (1 - u) + faixa(ruido, 100, 420) * u) * np.minimum(t / 0.012, 1.0) * np.exp(-t / 0.28)
 
-    # o escudo ficando: o chiado da alta tensão, sem tom, que treme e some
-    campo = zumbido(rng, dur, 96) * (0.7 + 0.3 * np.sin(2 * np.pi * 15 * t)) * np.exp(-t / 0.42)
+    # o campo: o chiado do escudo de pé, tremendo cada vez mais devagar até sumir
+    passo = TREME[1] - (TREME[1] - TREME[0]) * np.clip(t / 0.9, 0, 1)
+    campo = zumbido(rng, dur, 96) * (0.62 + 0.38 * np.sin(fase(passo))) * np.exp(-t / 0.48)
 
     x = somar(dur,
-              (0.0, estalo(rng, 0.1), 1.3),
-              (0.0, pancada, 1.3),
+              (0.0, fundo, 1.45),
               (0.0, trovao, 1.2),
-              (0.0, zun, 1.25),
-              (0.04, sobras, 0.9),
+              (0.0, trava, 1.5),
+              *[(q, r, g * 1.15) for q, r, g in raios],
+              (0.05, sobras, 0.9),
               (0.0, vum, 1.7),
-              (0.03, campo[:len(t) - int(0.03 * SR)], 0.4))
-    return acabar(x, -15.0, some=0.3)
+              (0.03, campo[:len(t) - int(0.03 * SR)], 0.5))
+    return acabar(x, -15.0, some=0.35)
 
 
 if __name__ == "__main__":

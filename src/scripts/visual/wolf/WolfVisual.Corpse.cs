@@ -16,11 +16,22 @@ public partial class WolfVisual
 
 	private DeadBody _deadBody;
 
-	/// <summary>O chão para o rabo do lobo morto. O rabo é uma mola com gravidade
-	/// (WolfVisual.Tail) e só bate nas pernas e no quadril: deitado, ele pendia
-	/// para dentro do chão (o rabo4 a 42 cm abaixo dele), e o corpo, empurrado
-	/// para tirá-lo dali, ficava 19 cm no ar. Morto, o rabo encosta neste plano.</summary>
-	private SpringBoneCollisionPlane3D _tailFloor;
+	/// <summary>
+	/// O chão do rabo do lobo morto (<see cref="TailFloor"/>): o rabo é uma mola
+	/// com gravidade (WolfVisual.Tail) e, deitado, pendia 44 cm para dentro do
+	/// chão; o ajuste o dobra para ficar pousado nele.
+	///
+	/// **E o rabo não entra na medida que encosta o corpo no chão**
+	/// (<see cref="DeadBody.LooseBones"/>; Jhon, 27/11: "o lobo, ao morrer,
+	/// flutua"; "parece que o lobo encosta, porém o rabo dele o levanta"). O
+	/// rabo era sempre o ponto mais baixo, o corpo subia para tirá-lo do chão,
+	/// o rabo esticava e pousava de novo, e o corpo ia parar 60 cm no ar
+	/// (medido: quadril a 62 cm, ponta do rabo no chão).
+	/// </summary>
+	private TailFloor _tailFloor;
+
+	/// <summary>A cadeia do rabo, da raiz à ponta (rabo1..rabo5).</summary>
+	private static readonly string[] TailBones = { "rabo1", "rabo2", "rabo3", "rabo4", "rabo5" };
 
 	private void BeginCorpse()
 	{
@@ -28,25 +39,46 @@ public partial class WolfVisual
 		_deadBody ??= new DeadBody(_model, _body, this);
 		_deadBody.Hold = CorpseHold;
 		_deadBody.Fade = CorpseFade;
+		// O rabo é mola: não entra na medida do chão.
+		_deadBody.LooseBones = TailBones;
 		LayTailFloor();
-		_deadBody.Begin();
+		// (o lugar do modelo é o de pé, de agora — WolfVisual.OnDied —, não o da primeira morte)
+		_deadBody.Begin(_model.Transform);
 	}
 
+	/// <summary>Põe o chão do rabo na altura do chão de verdade, debaixo da
+	/// raiz do rabo (o corpo deitado tem dois metros: o chão do rabo pode não
+	/// ser o dos pés). A cada quadro: quem morre no ar ainda vai cair. Sem
+	/// chão ao alcance — caindo de alto —, o rabo fica solto até haver.</summary>
 	private void LayTailFloor()
 	{
-		if (_tail == null || !GodotObject.IsInstanceValid(_tail)) return;
-		Vector3 at = _body.GlobalPosition;
-		if (!DeadBody.FloorUnder(this, _body, at, out float floor)) return;
+		if (_tail == null || !GodotObject.IsInstanceValid(_tail) || !_tail.IsInsideTree()) return;
+		if (_tail.GetSkeleton() is not Skeleton3D skeleton) return;
+
 		if (_tailFloor == null || !GodotObject.IsInstanceValid(_tailFloor))
 		{
-			_tailFloor = new SpringBoneCollisionPlane3D { Name = "ChaoDoMorto" };
-			_tail.AddChild(_tailFloor);
+			// Depois da mola, na ordem dos filhos do esqueleto: ajusta o que ela deixou.
+			_tailFloor = new TailFloor { Name = "ChaoDoRabo", Chain = TailBones };
+			skeleton.AddChild(_tailFloor);
+			skeleton.MoveChild(_tailFloor, _tail.GetIndex() + 1);
 		}
-		_tailFloor.GlobalTransform = new Transform3D(Basis.Identity, new Vector3(at.X, floor, at.Z));
+
+		int root = skeleton.FindBone(TailRoot);
+		Vector3 at = root >= 0 ? skeleton.GlobalTransform * skeleton.GetBoneGlobalPose(root).Origin : _body.GlobalPosition;
+		_tailFloor.HasFloor = DeadBody.FloorUnder(this, _body, at, out float floor);
+		_tailFloor.FloorY = floor;
 	}
 
-	private void UpdateCorpse(double delta) =>
+	private void UpdateCorpse(double delta)
+	{
+		LayTailFloor();
 		_deadBody?.Step(delta, _deadTimer, _lengths.TryGetValue("death", out float clip) ? clip : 1.5f);
+		// Deitado num declive (a escada), o chão do rabo é o plano do chão do corpo.
+		if (_tailFloor == null || !GodotObject.IsInstanceValid(_tailFloor)) return;
+		bool sloped = _deadBody is { HasGround: true };
+		_tailFloor.Normal = sloped ? _deadBody.GroundNormal : Vector3.Up;
+		if (sloped) _tailFloor.Point = _deadBody.GroundPoint;
+	}
 
 	private void ResetCorpse()
 	{

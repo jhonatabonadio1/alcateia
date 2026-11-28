@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 public sealed class GroundSpeedTest : RegressionTest
 {
 	public override string Name => "VelocidadeNoChao";
-	public override string Description => "humano 2,56 m/s, agachado 1,15, correndo (Shift) 4,91 (com a faca e a pistola também), faca 3,28; lobo 4,33, agachado 1,95";
+	public override string Description => "humano 2,82 m/s, agachado 1,27, correndo (Shift) 4,91 (com a faca e a pistola também), faca 3,60; lobo 4,33, agachado 1,95";
 
 	public override async Task Run(RegressionBench b)
 	{
@@ -15,25 +15,28 @@ public sealed class GroundSpeedTest : RegressionTest
 		// Os números do jogo de hoje: Player.HumanSpeed 3,2 na cena (docs/MEDIDAS.md),
 		// × 0,8 do humano (HumanSpeedBonus). Era × 1,08, 3,46 m/s, até 26/11 (Jhon:
 		// "o personagem pode andar mais lento"; "deixar na velocidade de um humano").
-		b.Near(2.56, await Measure(b, "move_forward"), 0.02, "humano andando");
-		b.Near(1.152, await Measure(b, "move_forward", "crouch"), 0.05, "humano agachado");
+		// × 0,88 desde 27/11, 2,816 m/s (Jhon: "o andar normal do humano está muito
+		// lento, pode acelerar um pouco"); a corrida continua nos 4,91.
+		b.Near(2.816, await Measure(b, "move_forward"), 0.02, "humano andando");
+		b.Near(4.909, 2.816 * b.Player.HumanSprintFactor, 0.01, "a corrida do Shift nos 4,91 m/s de antes");
+		b.Near(1.267, await Measure(b, "move_forward", "crouch"), 0.05, "humano agachado");
 		// O Shift corre desde 26/11 (pedido do Jhon; era andar devagar, 1,45 m/s):
 		// × HumanSprintFactor, só para a frente, em pé.
-		b.Near(2.56 * b.Player.HumanSprintFactor, await Measure(b, "move_forward", "sprint"), 0.03, "humano correndo com Shift");
-		b.Near(2.56, await Measure(b, "move_back", "sprint"), 0.03, "com Shift para trás não corre");
-		b.Near(1.152, await Measure(b, "move_forward", "sprint", "crouch"), 0.05, "agachado, o Shift não corre");
+		b.Near(2.816 * b.Player.HumanSprintFactor, await Measure(b, "move_forward", "sprint"), 0.03, "humano correndo com Shift");
+		b.Near(2.816, await Measure(b, "move_back", "sprint"), 0.03, "com Shift para trás não corre");
+		b.Near(1.267, await Measure(b, "move_forward", "sprint", "crouch"), 0.05, "agachado, o Shift não corre");
 
 		b.Weapon.SelectSlot(Slot.Knife);
 		// A faca na mão ×1,28 desde 26/11 (era ×1,037; Jhon: "aumentar velocidade de
-		// movimento com faca equipada"): 2,56 × 1,28 = 3,28 m/s.
-		b.Near(2.56 * b.Weapon.KnifeSpeedMultiplier, await Measure(b, "move_forward"), 0.02, "humano com a faca");
+		// movimento com faca equipada"): 2,816 × 1,28 = 3,60 m/s (3,28 até 27/11).
+		b.Near(2.816 * b.Weapon.KnifeSpeedMultiplier, await Measure(b, "move_forward"), 0.02, "humano com a faca");
 		// Correndo, a faca não soma (Jhon, 27/11: "velocidade da corrida com faca pode diminuir, ficou muito
 		// rápido, tem que ser igual o sprint com fuzil"): era 2,56 × 1,9176 × 1,28 = 6,28 m/s.
-		b.Near(2.56 * b.Player.HumanSprintFactor, await Measure(b, "move_forward", "sprint"), 0.04, "correndo com a faca, o mesmo que com o fuzil");
+		b.Near(2.816 * b.Player.HumanSprintFactor, await Measure(b, "move_forward", "sprint"), 0.04, "correndo com a faca, o mesmo que com o fuzil");
 		// E com a pistola (× 1,08 andando): correndo, o mesmo também.
 		b.Weapon.SelectSlot(Slot.Secondary);
 		await b.Seconds(0.6);
-		b.Near(2.56 * b.Player.HumanSprintFactor, await Measure(b, "move_forward", "sprint"), 0.04, "correndo com a pistola, o mesmo que com o fuzil");
+		b.Near(2.816 * b.Player.HumanSprintFactor, await Measure(b, "move_forward", "sprint"), 0.04, "correndo com a pistola, o mesmo que com o fuzil");
 		b.Weapon.SelectSlot(Slot.Primary);
 
 		// O lobo é um só desde 26/11 (decisão do Jhon: sem classes), no meio do

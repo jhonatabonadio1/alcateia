@@ -623,7 +623,7 @@ Todo campo aqui vira um filtro na lista e uma linha no painel da sala. O conjunt
 
 - Tempo de respawn fixo por modo, ou por onda de respawn no modo Equipe.
 
-- Espectador após a morte: câmera livre ou seguindo um aliado.
+- Espectador após a morte: a câmera fica onde se morreu; um clique segue um aliado, o Espaço volta (27/11: a câmera livre e a vista de cima saíram, para ninguém ver para fora do mapa).
 
 - Placar por `Tab`, chat por `Enter` (time) e `Shift+Enter` (todos), menu de pausa por `Esc` com opções, controles e `Sair`.
 
@@ -860,3 +860,30 @@ aparece desabilitado com "em breve" ou não aparece.
 Login de verdade, canais, amigos, matilha, chat entre jogadores,
 ranking, compra paga, temporadas e moderação. O chat da sala existe e
 mostra mensagens do sistema e as suas; ninguém responde.
+
+## Menus refeitos (27/11)
+
+O Jhon pediu os menus de novo, com Valorant de referência para a
+estrutura (o header com JOGAR no centro, o início com banners, o painel
+social) e a letra de sempre ("mais grossinha e inclinada, estilo
+Overwatch"). O que mudou em relação ao que este guia descreve acima:
+
+| Ponto | Antes | Agora |
+|---|---|---|
+| Primeira tela depois do login | Lista de salas | **Início**: banners e notícias (`HomeScreen`), publicados pelo painel |
+| Header | Identidade à esquerda, fileira de ícones com rótulo, moedas à direita | **JOGAR** em placa clara no centro; Início, Inventário, Loja e Missões em texto dos lados; moedas, identidade e três ícones à direita. O « de recolher saiu (não há mais fileira de ícones) |
+| Entrar numa partida | Lista de salas | Tela **JOGAR** com três portas (jogo rápido e treinamento trancados por enquanto; salas) |
+| Lateral das salas | Missões do dia, ranking e chat | Só a conversa; o ranking saiu, as missões foram para o início |
+| Amigos | Fora do escopo | **Painel social** na moldura, em todas as telas (`SocialDock`) |
+| Cantos dos menus | Arredondados (6 e 10) | Retos, com cantoneiras e o canto cortado nos botões de ação |
+| Peça principal de cada tela | Botão de ouro | Placa de **papel** (`UiTokens.Paper`); o ouro fica para a marca, o criar e o comprar |
+| Fotos de perfil | Grade dentro do perfil | Tela própria (`PhotoScreen`) |
+| Regras da sala | Uma por linha, num painel que rolava | Duas por linha, sem rolar; a capa do mapa em cima |
+| Movimento | Aparecer em 180 ms | A tela entra deslizando, as peças em cascata; cortina na troca de lugar (login → jogo) |
+
+Onde está cada coisa: `src/scripts/lobby/` (`LobbyShell`, `LobbyHeader`,
+`HomeScreen`, `PlayScreen`, `OnlineScreen`, `RoomScreen`, `LoginScreen`,
+`MapReel`, `PhotoScreen`, `SocialDock`, `MatchSearch`) e
+`src/scripts/ui/kit/` (`CtaButton`, `Loader`, `ScreenWipe`, `Deco`,
+`NavTab`, `PlayTab`, `Motion`). Os números estão no `AJUSTES.md`,
+"Menus e HUD".

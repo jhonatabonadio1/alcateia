@@ -203,7 +203,30 @@ export interface Challenge {
 	today: boolean;
 }
 
+/** Um banner da tela inicial do jogo. `image` é o id de um mapa (a capa dele). */
+export interface NewsBanner {
+	category: string;
+	title: string;
+	body: string;
+	image: string;
+	cta: string;
+	/** Para onde o botão leva: "jogar", "loja", "inventario", "missoes" ou "" (sem botão). */
+	go: string;
+	on: boolean;
+}
+
+/** Uma notícia curta da tela inicial do jogo. */
+export interface NewsStory {
+	category: string;
+	title: string;
+	body: string;
+	image: string;
+	date: string;
+	on: boolean;
+}
+
 export interface Settings {
+	noticias: { banners: NewsBanner[]; noticias: NewsStory[] };
 	manutencao: { on: boolean; message: string };
 	versao_minima: { version: string };
 	aviso: { text: string };

@@ -78,7 +78,36 @@ public sealed class Room
 	public string StateName => State == RoomState.Waiting ? "waiting" : "playing";
 	public string HostName => _members.FirstOrDefault(m => m.Account.Id == HostId)?.Account.Name ?? "";
 
+	/// <summary>
+	/// A sala é de uma partida do jogo rápido (27/11): quem a montou foi o
+	/// formador da fila (<c>Dominio/Fila/Matchmaker</c>), com os times já
+	/// equilibrados, o modo e o mapa sorteados. Ninguém entra nela, troca de
+	/// time, mexe nas regras ou recomeça: tudo isso desfaria o equilíbrio.
+	/// Não aparece na lista de salas e acaba quando a partida acaba.
+	/// </summary>
+	public bool Quick { get; private set; }
+
 	private Room(int id) => Id = id;
+
+	/// <summary>A sala de uma partida do jogo rápido, com os dois times prontos.</summary>
+	public static Room Matched(int id, IReadOnlyList<(Account Account, long Xp)> blue, IReadOnlyList<(Account Account, long Xp)> orange, JsonObject settings)
+	{
+		var room = new Room(id) { HostId = blue[0].Account.Id, Quick = true };
+		room.ApplySettings(settings ?? new JsonObject());
+		foreach ((Account account, long xp) in blue) room._members.Add(new RoomMember { Account = account, Xp = xp, Team = Blue, Ready = true });
+		foreach ((Account account, long xp) in orange) room._members.Add(new RoomMember { Account = account, Xp = xp, Team = Orange, Ready = true });
+		return room;
+	}
+
+	/// <summary>A escalação de uma sala do jogo rápido: não há dono para
+	/// pedir nem pronto para esperar.</summary>
+	public MatchAssignment QuickLineup(string matchKey) => Assignment(matchKey);
+
+	private void RequireOpen()
+	{
+		if (Quick)
+			throw new Failure(FailureKind.Conflict, "sala_da_fila", "Esta sala é do jogo rápido: os times, o mapa e as regras são do servidor.");
+	}
 
 	/// <summary>Sala nova, com quem a criou dentro (no azul) e como dono.</summary>
 	public static Room Create(int id, Account host, long xp, JsonObject settings)
@@ -107,12 +136,17 @@ public sealed class Room
 	/// falso), no time sugerido, e entra com <see cref="Enter"/>. Os bots já
 	/// estão jogando e não dão o lugar. <paramref name="team"/> é a sugestão:
 	/// quem já jogou esta partida começa no time em que estava, se ainda
-	/// couber; senão, no que dá para entrar.</summary>
-	public void Join(Account account, long xp, string password, int team = 0)
+	/// couber; senão, no que dá para entrar.
+	///
+	/// <paramref name="invited"/>: veio pelo convite de um amigo que está na
+	/// sala (27/11). O convite dispensa a senha — quem está dentro chamou — e
+	/// mais nada: lotação e times valem igual.</summary>
+	public void Join(Account account, long xp, string password, int team = 0, bool invited = false)
 	{
 		if (Has(account.Id)) return;
+		RequireOpen();
 		if (_members.Count >= Capacity) throw new Failure(FailureKind.Conflict, "sala_cheia", "A sala está cheia.");
-		if (HasPassword && !Secrets.Same(Password, password))
+		if (HasPassword && !invited && !Secrets.Same(Password, password))
 			throw new Failure(FailureKind.Forbidden, "senha_errada", "Senha da sala incorreta.");
 
 		if (State == RoomState.Playing)
@@ -128,6 +162,93 @@ public sealed class Room
 		int side = blue <= orange ? Blue : Orange;
 		MakeRoom(side);
 		_members.Add(new RoomMember { Account = account, Xp = xp, Team = side });
+	}
+
+	/// <summary>
+	/// Um grupo entra junto, no mesmo time (Jhon, 27/11: "grupo para jogarem
+	/// juntos no mesmo time"). <paramref name="group"/> é o grupo inteiro que
+	/// vai ficar na sala: quem dele já está nela não entra de novo, mas conta
+	/// para o time e muda de lado com os outros se for preciso. Tudo ou nada:
+	/// se não cabem todos, ninguém entra.
+	///
+	/// Com a sala esperando, vão todos para o time <paramref name="team"/> se
+	/// o grupo couber nele (é onde o líder já está); senão, para o que tiver
+	/// lugar para todos, o mais vazio primeiro. Bot dá o lugar, como para
+	/// qualquer pessoa. Com a partida em curso valem as regras de
+	/// <see cref="Join"/>: sentam de fora, no time sugerido, e cada um entra
+	/// na partida com <see cref="Enter"/> — ali quem manda é o equilíbrio dos
+	/// times, e o grupo pode acabar dividido.
+	/// </summary>
+	public void JoinTogether(IReadOnlyList<(Account Account, long Xp)> group, string password, int team = 0, bool invited = false)
+	{
+		RequireOpen();
+		var ids = group.Select(g => g.Account.Id).ToHashSet();
+		var coming = group.Where(g => !Has(g.Account.Id)).ToList();
+		if (_members.Count + coming.Count > Capacity)
+			throw coming.Count <= 1 ? new Failure(FailureKind.Conflict, "sala_cheia", "A sala está cheia.") : GroupRules.NoRoom(group.Count);
+		if (coming.Count > 0 && HasPassword && !invited && !Secrets.Same(Password, password))
+			throw new Failure(FailureKind.Forbidden, "senha_errada", "Senha da sala incorreta.");
+
+		if (State == RoomState.Playing)
+		{
+			if (coming.Count == 0) return;
+			int[] open = new[] { Blue, Orange }.Where(CanEnter).ToArray();
+			if (open.Length == 0) throw new Failure(FailureKind.Conflict, "sala_cheia", "A partida está cheia.");
+			int chosen = open.Contains(team) ? team : open.OrderBy(PlayingOn).ThenBy(t => t).First();
+			foreach ((Account account, long xp) in coming)
+				_members.Add(new RoomMember { Account = account, Xp = xp, Team = chosen });
+			return;
+		}
+
+		int side = SideFor(ids, team);
+		foreach (RoomMember seat in _members.Where(m => ids.Contains(m.Account.Id) && m.Team != side).ToList())
+		{
+			MakeRoom(side, seat);
+			seat.Team = side;
+			seat.Ready = false;
+		}
+		foreach ((Account account, long xp) in coming)
+		{
+			MakeRoom(side);
+			_members.Add(new RoomMember { Account = account, Xp = xp, Team = side });
+		}
+	}
+
+	/// <summary>O time em que o grupo inteiro cabe do mesmo lado: o preferido,
+	/// se couber; senão o mais vazio dos que cabem. Só gente conta (bot dá o lugar).</summary>
+	private int SideFor(HashSet<long> ids, int preferred)
+	{
+		int Others(int team) => _members.Count(m => m.Team == team && !ids.Contains(m.Account.Id));
+		bool Fits(int team) => Others(team) + ids.Count <= TeamSize;
+
+		if (preferred is Blue or Orange && Fits(preferred)) return preferred;
+		int[] fit = new[] { Blue, Orange }.Where(Fits).OrderBy(Others).ToArray();
+		if (fit.Length == 0) throw GroupRules.NoTeam(ids.Count);
+		return fit[0];
+	}
+
+	/// <summary>O líder troca de time e o grupo vai junto (só com a sala
+	/// esperando; com a partida em curso cada um escolhe por onde entra).
+	/// <paramref name="ids"/>: quem do grupo está na sala. Não cabem todos do
+	/// outro lado, ninguém troca.</summary>
+	public void ChangeTeamTogether(IReadOnlyCollection<long> ids, int team)
+	{
+		if (team is not (Blue or Orange)) throw new Failure(FailureKind.Invalid, "time_invalido", "Time inválido.");
+		RequireOpen();
+		RequireWaiting("A sala está em partida.");
+
+		List<RoomMember> seats = _members.Where(m => ids.Contains(m.Account.Id)).ToList();
+		int others = _members.Count(m => m.Team == team && !ids.Contains(m.Account.Id));
+		if (others + seats.Count > TeamSize)
+			throw new Failure(FailureKind.Conflict, "time_cheio", $"Esse time não tem lugar para o grupo inteiro ({seats.Count}).");
+
+		foreach (RoomMember seat in seats)
+		{
+			if (seat.Team == team) continue;
+			MakeRoom(team, seat);
+			seat.Team = team;
+			seat.Ready = false;
+		}
 	}
 
 	/// <summary>Há lugar para mais alguém agora (gente e, com a partida em
@@ -190,6 +311,7 @@ public sealed class Room
 	{
 		RoomMember seat = Seat(accountId);
 		if (team is not (Blue or Orange)) throw new Failure(FailureKind.Invalid, "time_invalido", "Time inválido.");
+		RequireOpen();
 
 		// Com a partida em curso, quem ainda está de fora escolhe o time por
 		// onde vai entrar: só um que tenha lugar e não fique desequilibrado.
@@ -216,6 +338,7 @@ public sealed class Room
 
 	public void ChangeSettings(long accountId, JsonObject settings)
 	{
+		RequireOpen();
 		RequireHost(accountId);
 		RequireWaiting("A sala está em partida.");
 		ApplySettings(settings);
@@ -223,6 +346,7 @@ public sealed class Room
 
 	public void AddBot(long accountId, int team)
 	{
+		RequireOpen();
 		RequireHost(accountId);
 		RequireWaiting("A sala está em partida.");
 		if (!VsBots) throw new Failure(FailureKind.Conflict, "sem_bots", "Bots só nos modos contra bots.");
@@ -249,6 +373,7 @@ public sealed class Room
 	/// <see cref="BeginMatch"/>, quando há servidor para ela.</summary>
 	public MatchAssignment Lineup(long accountId, string matchKey)
 	{
+		RequireOpen();
 		RequireHost(accountId);
 		RequireWaiting("A partida já começou.");
 		if (_members.Any(m => !m.Ready && m.Account.Id != HostId))
@@ -266,6 +391,7 @@ public sealed class Room
 	/// </summary>
 	public MatchAssignment RestartLineup(long accountId, string matchKey)
 	{
+		RequireOpen();
 		RequireHost(accountId);
 		return Assignment(matchKey);
 	}

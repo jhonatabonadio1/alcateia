@@ -38,7 +38,7 @@ public static class HudStyle
 	public static readonly Color Shade = new(0.03f, 0.04f, 0.06f, 0.5f);
 
 	/// <summary>O tom do vidro fosco dos menus: azul-noite.</summary>
-	public static readonly Color Frost = new(0.055f, 0.09f, 0.14f, 0.6f);
+	public static readonly Color Frost = new(0.04f, 0.065f, 0.1f, 0.66f);
 
 	// Quanto de magenta há no pixel (t) é quanto de vidro ele leva: na
 	// beira suavizada entre a borda e o fundo a cor vem misturada, e um

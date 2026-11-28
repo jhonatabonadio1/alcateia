@@ -30,6 +30,9 @@ public partial class InventoryScreen : LobbyScreen
 {
 	public override IconKind NavIcon => IconKind.Inventory;
 
+	/// <summary>Precisa da largura toda: o painel social abre recolhido aqui.</summary>
+	public override bool Wide => true;
+
 	private static int _side;          // a seção: 0 armas, 1 lobo, 2 personagem, 3 especial
 	private static int _setIndex = 1;  // conjunto aberto
 	private static int _sub;           // o filtro dentro da seção (o espaço escolhido)

@@ -53,11 +53,12 @@ public sealed record Services(Config Config, PgPool Db, AccountService Accounts,
 /// | POST /v1/sessions | qualquer um | entra (login) |
 /// | DELETE /v1/sessions | jogador | sai |
 /// | GET /v1/profile | jogador | o perfil |
+/// | POST /v1/account/2fa, …/confirm, …/disable | jogador | liga e desliga a verificação em duas etapas |
 /// | PUT /v1/profile/data | jogador | guarda conjuntos, personagem... |
 /// | GET /v1/ranking | qualquer um | os primeiros por XP |
 /// | GET /v1/rooms | qualquer um | as salas abertas |
 /// | GET /v1/matches | jogador | as últimas partidas dele |
-/// | GET /v1/lobby (WebSocket) | jogador | salas e chat ao vivo |
+/// | GET /v1/lobby (WebSocket) | jogador | salas, chat, amigos e grupo ao vivo; com <c>?client=app</c>, só os amigos (o cliente de instalação) |
 /// | POST /v1/fleet/heartbeat | servidor de partida | "estou vivo, com estas partidas"; recebe as novas |
 /// | POST /v1/matches | servidor de partida | o resultado de uma partida |
 /// | GET /v1/gamedata | qualquer um | catálogo, mapas, promoções, desafios e configurações |
@@ -65,6 +66,7 @@ public sealed record Services(Config Config, PgPool Db, AccountService Accounts,
 /// | POST /v1/shop/buy | jogador | compra (preço, patente e saldo conferidos aqui) |
 /// | GET /v1/challenges | jogador | os desafios e o progresso dele |
 /// | POST /v1/challenges/{id}/claim | jogador | recebe o prêmio |
+/// | GET /v1/client | qualquer um | de onde o cliente de instalação baixa o jogo |
 /// | /admin/v1/... | administrador | o painel — só na porta do painel |
 /// | GET /metrics | Prometheus | os números — só na porta do painel |
 ///
@@ -132,6 +134,7 @@ public static class App
 		FleetRoutes.Map(app, services);
 		MatchRoutes.Map(app, services);
 		GameRoutes.Map(app, services);
+		ClientRoutes.Map(app, services);
 		if (config.AdminPort != 0)
 		{
 			AdminSessionRoutes.Map(app, services);
@@ -175,13 +178,20 @@ public static class App
 		var gameData = new GameDataService(new PgGameDataRepository(db));
 		var accounts = new AccountService(new PgAccountRepository(db), hasher, tokens, clock, config.SessionDays)
 		{
-			StarterCash = () => gameData.Current.StarterCash
+			StarterCash = () => gameData.Current.StarterCash,
+			Cipher = new AesCipher(config.MasterKey)
 		};
 		IFleetScaler scaler = config.FlyApp != "" && config.FlyToken != ""
 			? new Alcateia.Infra.Fly.FlyMachines(config.FlyApi, config.FlyApp, config.FlyToken) : null;
 		var fleet = new FleetService(config.FleetTimeout, new FleetSigner(config.FleetKey), clock, scaler, config.FleetReserve);
 		fleet.Lost += lost => RecordLost(security, lost);
-		var lobby = new LobbyService(fleet, accounts, clock, config.TicketLife, config.RoomListEvery, config.MaxRooms) { MapAllowed = gameData.MapAllowed, Inventory = playerStore.Inventory };
+		var lobby = new LobbyService(fleet, accounts, clock, config.TicketLife, config.RoomListEvery, config.MaxRooms) 
+		{
+			MapAllowed = gameData.MapAllowed, Inventory = playerStore.Inventory, FriendStore = new PgFriendRepository(db),
+			// O jogo rápido sorteia entre os mapas que o painel deixou ligados, e grava a nota no perfil.
+			QuickMaps = () => gameData.Current.Maps.Where(m => m.Enabled).Select(m => (m.Id, m.Size)).ToList(),
+			SaveSkill = accounts.SaveSkill
+		};
 		var challenges = new ChallengeService(playerStore, gameData, clock);
 		var matches = new MatchService(matchStore, fleet, lobby, gameData, challenges, security, clock);
 

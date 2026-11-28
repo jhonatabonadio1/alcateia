@@ -12,5 +12,8 @@
     <!-- O servidor (contas, salas, frota) é outro programa, em ASP.NET:
          servidor/Alcateia.Servidor. -->
     <Compile Remove="servidor/**" />
+    <!-- O cliente de instalação (baixa, atualiza e abre o jogo) é outro
+         programa, em Avalonia: cliente/Alcateia.Cliente. -->
+    <Compile Remove="cliente/**" />
   </ItemGroup>
 </Project>

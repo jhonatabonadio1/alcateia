@@ -56,7 +56,7 @@ public abstract class WolfStairsTest : RegressionTest
 		b.Check(ramps.Count > 0, $"o mapa tem escadas ({ramps.Count})");
 		if (ramps.Count == 0) { RoomConfig.Active = false; return; }
 
-		StaticBody3D ramp = ramps[0];
+		StaticBody3D ramp = StairPick.Open(ramps);
 		Vector3 size = ((BoxShape3D)ramp.GetChild<CollisionShape3D>(0).Shape).Size;
 		Basis basis = ramp.GlobalTransform.Basis;
 		Vector3 up = basis.X.Normalized();
@@ -121,4 +121,38 @@ public sealed class EstacaoWolfStairsTest : WolfStairsTest
 {
 	public override string Name => "EscadaDeQuatroEstacao";
 	protected override string MapId => "estacao";
+}
+
+/// <summary>
+/// Qual escada do mapa os testes de escada usam: a primeira de entrada livre.
+/// Os testes andam um quarto da largura para o lado do meio (a escada da Estação
+/// tem o corrimão no meio); numa escada por dentro de uma casa — as casas de
+/// escada do Deserto, que ganharam a chapa em 27/11 e passaram a vir primeiro —
+/// esse lado é o batente da porta, e o corpo não entra. Livre: uma bola de 32 cm,
+/// a 1 m do chão, vai de 1,2 m antes do pé até 60 cm escada adentro, por essa
+/// linha, sem bater em nada.
+/// </summary>
+public static class StairPick
+{
+	public static StaticBody3D Open(List<StaticBody3D> ramps)
+	{
+		foreach (StaticBody3D ramp in ramps)
+		{
+			Vector3 size = ((BoxShape3D)ramp.GetChild<CollisionShape3D>(0).Shape).Size;
+			Basis basis = ramp.GlobalTransform.Basis;
+			Vector3 up = basis.X.Normalized();
+			Vector3 top = ramp.GlobalPosition + basis.Y.Normalized() * size.Y * 0.5f + basis.Z.Normalized() * size.Z * 0.25f;
+			Vector3 foot = top - up * size.X * 0.5f, flat = new Vector3(up.X, 0, up.Z).Normalized();
+			var query = new PhysicsShapeQueryParameters3D
+			{
+				Shape = new SphereShape3D { Radius = 0.32f },
+				Transform = new Transform3D(Basis.Identity, foot - flat * 1.2f + Vector3.Up * 1.0f),
+				Motion = flat * 1.8f + Vector3.Up * 0.35f,
+				CollisionMask = 1
+			};
+			float[] cast = ramp.GetWorld3D().DirectSpaceState.CastMotion(query);
+			if (cast.Length == 0 || cast[0] >= 0.999f) return ramp;
+		}
+		return ramps[0];
+	}
 }

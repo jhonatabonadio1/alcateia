@@ -119,6 +119,11 @@ public partial class Grenade : RigidBody3D
 	/// <summary>O mais baixo que um quique soa (dB): o último, quase rolando, ainda se ouve (era −26).</summary>
 	[Export] public float BounceQuietDb = -16f;
 
+	/// <summary>Quanto todo quique soa abaixo da conta da velocidade (dB): 3 dB desde
+	/// 27/11 (Jhon: "pode baixar um pouco o barulho da granada caindo, só um pouco").
+	/// Desce o primeiro toque e os últimos por igual.</summary>
+	[Export] public float BounceTrimDb = -3f;
+
 	/// <summary>Abaixo disto a batida não soa (é rolar, não bater).</summary>
 	[Export] public float BounceMinSpeed = 0.45f;
 
@@ -272,7 +277,7 @@ public partial class Grenade : RigidBody3D
 		_lastBounce = _alive;
 		Bounces.Add((_alive, speed));
 		// O volume segue a energia da batida: metade da velocidade, 6 dB a menos.
-		float db = Mathf.Clamp(20f * Mathf.Log(speed / BounceLoudSpeed) / Mathf.Log(10f), BounceQuietDb, 3f);
+		float db = Mathf.Clamp(20f * Mathf.Log(speed / BounceLoudSpeed) / Mathf.Log(10f), BounceQuietDb, 3f) + BounceTrimDb;
 		Sfx.At(BounceSound, GlobalPosition, BounceRange, db);
 	}
 

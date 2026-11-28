@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Alcateia.Cliente.ViewModels"
+             x:Class="Alcateia.Cliente.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+
+	<Grid ColumnDefinitions="460,*">
+		<!-- a arte do jogo, à direita -->
+		<Panel Grid.Column="1" ClipToBounds="True">
+			<Image Source="/Assets/arte.jpg" Stretch="UniformToFill" />
+			<Border>
+				<Border.Background>
+					<LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+						<GradientStop Offset="0" Color="#E60A1119" />
+						<GradientStop Offset="0.45" Color="#330A1119" />
+						<GradientStop Offset="1" Color="#000A1119" />
+					</LinearGradientBrush>
+				</Border.Background>
+			</Border>
+		</Panel>
+
+		<Border Grid.Column="0" Background="{StaticResource Deep}" BorderBrush="{StaticResource Gold}" BorderThickness="0,0,2,0">
+			<ScrollViewer VerticalScrollBarVisibility="Auto">
+				<StackPanel Margin="44,48,44,32" Spacing="14">
+					<Image Source="/Assets/logo.png" Height="30" HorizontalAlignment="Left" Margin="0,0,0,18" />
+
+					<StackPanel Orientation="Horizontal" Margin="-16,0,0,6" Height="40">
+						<Button Classes="tab" Classes.on="{Binding IsLogin}" Content="ENTRAR" Command="{Binding ShowLogin}" />
+						<Button Classes="tab" Classes.on="{Binding IsRegister}" Content="CRIAR CONTA" Command="{Binding ShowRegister}" />
+					</StackPanel>
+
+					<StackPanel Spacing="6">
+						<TextBlock Classes="label" Text="NOME DA CONTA" />
+						<TextBox Text="{Binding Name}" MaxLength="16" PlaceholderText="3 a 16 letras, números ou _">
+							<TextBox.KeyBindings>
+								<KeyBinding Gesture="Enter" Command="{Binding Submit}" />
+							</TextBox.KeyBindings>
+						</TextBox>
+					</StackPanel>
+					<StackPanel Spacing="6">
+						<TextBlock Classes="label" Text="SENHA" />
+						<TextBox Text="{Binding Password}" PasswordChar="•" MaxLength="128" PlaceholderText="pelo menos 8 caracteres">
+							<TextBox.KeyBindings>
+								<KeyBinding Gesture="Enter" Command="{Binding Submit}" />
+							</TextBox.KeyBindings>
+						</TextBox>
+					</StackPanel>
+					<StackPanel Spacing="6" IsVisible="{Binding IsRegister}">
+						<TextBlock Classes="label" Text="A SENHA DE NOVO" />
+						<TextBox Text="{Binding Confirm}" PasswordChar="•" MaxLength="128">
+							<TextBox.KeyBindings>
+								<KeyBinding Gesture="Enter" Command="{Binding Submit}" />
+							</TextBox.KeyBindings>
+						</TextBox>
+					</StackPanel>
+
+					<!-- só aparece para a conta com verificação em duas etapas, depois da senha certa -->
+					<StackPanel Spacing="6" IsVisible="{Binding NeedsCode}">
+						<TextBlock Classes="label" Text="CÓDIGO DO AUTENTICADOR" Foreground="{StaticResource Gold}" />
+						<TextBox Text="{Binding Code}" MaxLength="7" PlaceholderText="6 dígitos do aplicativo" FontSize="18">
+							<TextBox.KeyBindings>
+								<KeyBinding Gesture="Enter" Command="{Binding Submit}" />
+							</TextBox.KeyBindings>
+						</TextBox>
+					</StackPanel>
+
+					<CheckBox IsChecked="{Binding Remember}" Content="Lembrar desta conta neste computador" />
+
+					<Button Classes="primary" Content="{Binding SubmitText}" Command="{Binding Submit}" HorizontalAlignment="Stretch" FontSize="19" Padding="18,12" Margin="0,4,0,0" />
+
+					<Panel IsVisible="{Binding HasStatus}">
+						<TextBlock Text="{Binding Status}" TextWrapping="Wrap" Foreground="{StaticResource Danger}" IsVisible="{Binding StatusIsError}" />
+						<TextBlock Text="{Binding Status}" TextWrapping="Wrap" Classes="muted" IsVisible="{Binding !StatusIsError}" />
+					</Panel>
+
+					<!-- as contas salvas neste computador -->
+					<StackPanel Spacing="8" Margin="0,18,0,0" IsVisible="{Binding HasSaved}">
+						<TextBlock Classes="label" Text="CONTAS NESTE COMPUTADOR" />
+						<ItemsControl ItemsSource="{Binding Saved}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate x:DataType="vm:SavedAccountItem">
+									<Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+										<Button Grid.Column="0" Classes="plain" Command="{Binding Enter}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="10,8">
+											<StackPanel Orientation="Horizontal" Spacing="10">
+												<Border Width="30" Height="30" CornerRadius="15" Background="{StaticResource Gold}">
+													<TextBlock Text="{Binding Initial}" Foreground="{StaticResource GoldInk}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+												</Border>
+												<TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center" />
+												<TextBlock Text="{Binding Tag}" Foreground="{StaticResource Ink3}" VerticalAlignment="Center" Margin="-7,0,0,0" />
+											</StackPanel>
+										</Button>
+										<Button Grid.Column="1" Classes="mini" Command="{Binding Forget}" Margin="6,0,0,0" Height="46" Width="34"
+										        ToolTip.Tip="Esquecer esta conta neste computador">
+											<Path Data="M3,3 L11,11 M11,3 L3,11" Stroke="{StaticResource Ink2}" StrokeThickness="1.6" Width="14" Height="14" />
+										</Button>
+									</Grid>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+
+					<TextBlock Text="{Binding ServerText}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+				</StackPanel>
+			</ScrollViewer>
+		</Border>
+	</Grid>
+</UserControl>

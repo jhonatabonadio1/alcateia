@@ -107,6 +107,19 @@ public sealed class PlayerAdminService
 		await _audit.Note(who, "jogador.derrubou", Target(player));
 	}
 
+	/// <summary>Desliga a verificação em duas etapas de um jogador que perdeu
+	/// o aplicativo autenticador (ele volta a entrar só com a senha) e derruba
+	/// os logins da conta. Fica na auditoria: é a porta por onde alguém se
+	/// passando pelo dono tentaria entrar.</summary>
+	public async Task ResetTwoFactor(AdminContext who, long accountId)
+	{
+		who.Require(Permission.Moderate);
+		PlayerDetail player = await Existing(accountId);
+		await _accounts.ResetTwoFactor(accountId);
+		await Drop(accountId, "verificação em duas etapas desligada pelo suporte");
+		await _audit.Note(who, "jogador.tirou_duas_etapas", Target(player));
+	}
+
 	private async Task Drop(long accountId, string why)
 	{
 		await _players.RemoveSessions(accountId);

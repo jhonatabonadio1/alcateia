@@ -153,6 +153,35 @@ testes de movimento alinhados (Jhon). O que falta antes de abrir:
 - **Rugido do lobo AAA+**: melhorar o efeito do rugido (R).
 - **Loja e perfil**: ajustar a visualização das duas telas, e o ícone do perfil.
 - **Lista de tiers**: uma tela para o jogador ver todas as bordas do jogo (a de cada faixa de nível).
+- **Quatro armas novas, pela metade** (pedido de 27/11: "coloque a animação completa e implemente a source.zip na raiz,
+  primeira, segunda pessoa, segurar, recarregar, mirar e etc. capriche. e a archive 2 tmb. extremamente detalhado, e
+  depois crie 2 skins para cada, gold e outra que vc escolher", "e a melhoria na textura também", "padrão AAA+";
+  parado a pedido do Jhon: "deixe para depois"). Os arquivos: `source.zip` (SKS Sage) e `Archive 2.zip` (HK UCP,
+  Baikal MP153, PGM Timberwolf), na raiz; cópias em `src/assets/pacotes/reais/origem/` (fora do git). Licença dos
+  modelos: ainda é do Jhon confirmar (`PACOTES.md` §3). Papéis pensados: SKS, semiautomática de precisão com luneta
+  (classe Sniper ou Rifle: decidir); Timberwolf, de ferrolho, 1 tiro no corpo mata, 5 balas; MP-153, escopeta
+  semiautomática de 8 chumbos, cartucho a cartucho; UCP, pistola rápida de pente grande.
+  - **Feito:** a conversão (`tools/armas/blender/reais.py`, ids `sks timberwolf mp153 ucp`); as entradas em
+    `tools/armas/reais.py` (`ARMAS`, `ONDE`, `MAOS`, `LUNETAS`), os modelos do mundo em `assets/armas/<id>/` e as
+    entradas em `armas.json`; um cartucho calibre 12 feito por código para a MP-153 (`reais.cartucho_12`; mora no tubo,
+    cores avulsas no fim da paleta). Em `tools/armas/conjuntos.py`: as entradas de `LONGAS` das três longas e as pegadas
+    próprias — `empunhadura_vertical` (a esquerda da SKS), `punho_na_coronha` (a direita da MP-153, sem punho),
+    `CicloDoFerrolho` (o Timberwolf abre e fecha a culatra a cada tiro, e na `recarga_vazia`) e `cartuchos` (a
+    MP-153: `recarga_entra`, `recarga_um`, `recarga_sai`). Só o conjunto da SKS foi gerado (`fp/sks.glb`, fora da
+    `bracos.json`); as outras duas ainda não rodaram.
+  - **O que a primeira olhada na SKS mostrou:** a luneta tapa a tela no parado (a arma está perto e alta demais: descer e
+    afastar, como a SVD) e a mão esquerda na empunhadura ficou com o indicador para cima (o fechamento atravessou 5 mm;
+    ajustar `rolo`/`reta` de `empunhadura_vertical`). Conferir com `python3 src/tools/armas/ver_fp.py fp/<id>.glb
+    saida.png parado:0 tiro:0.05` (`VISTA=yaw,pitch,x,y,z,dist` olha de lado).
+  - **Falta:** acertar as poses e gerar Timberwolf e MP-153; a UCP (`pistola()` e `RefP9` estão presas à `deagle`:
+    generalizar); `MIRAS`/`BAIXO`/`COICE_NA_MIRA` das quatro; `correr.py` (`TIPOS`: a UCP como pistola) e
+    `coronhada_pistola.py`; rodar com `SEM_PELES=1` (`peles.reaplicar` não existe) e a `--ficha` de verdade. As
+    texturas de fábrica (`peles.py`, estilo `fabrica`) e as 8 peles (ouro — o estilo `ouro` é do AR-15, fazer um
+    genérico — e mais uma de cada). A terceira pessoa (`animacoes_armas.py`, `mao_manny_anim.py`, Eve e Barut). No
+    jogo: os `.tres`, `Arsenal`, `Catalog` (tipo "Escopeta"), `WeaponModel.IsPistol` pela classe (hoje é
+    `== "deagle"`), o modo `Bolt` de verdade (sai da luneta no ciclo), `recarga_entra`/`recarga_sai` no
+    `ViewModel.Rig` e `recarga_um` no `HeldRig`, os sons (`tools/sons/reais.py`), as fotos (`fotos_armas.gd`,
+    `WeaponPhotos.Ids`), i18n, `exportar_dados.py`, créditos, docs e os testes (`SkinTests` tem a tabela das peles à mão).
 - **Teste proposto (decisão 0020), esperando o sim do Jhon**: no servidor, "o painel muda o nível: XP no começo do nível, auditoria, recusa sem motivo e fora de 1–3000, e o aviso `conta` chega à conexão do saguão do jogador" (crescer o `PanelTests` existente).
 
 ### Armas, lobos e site (anotado em 24/11)
@@ -214,8 +243,8 @@ testes de movimento alinhados (Jhon). O que falta antes de abrir:
   mais robusta a cada patente, com a patente escrita no centro de baixo.
 - **Câmera de abate e jogada da partida — de volta.** Removidas por
   inteiro em 19/11 (`ReplayTape`, `PlayOfTheGame` e a fase de replay da
-  `KillCam` saíram; a partida não é gravada). Hoje, morto: o corpo por um
-  instante e o espectador. Para voltar, fazer do jeito do Overwatch: o
+  `KillCam` saíram; a partida não é gravada). Hoje, morto: a câmera fica
+  onde se morreu (27/11), com a tela de um aliado a um clique. Para voltar, fazer do jeito do Overwatch: o
   servidor guarda os últimos segundos do estado de todos e o cliente
   remonta a cena com os modelos de verdade.
 - **Tradução revisada por nativo.** Inglês e espanhol estão preenchidos em
@@ -315,9 +344,12 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   botão que põe o jogador numa partida aberta (ou cria uma) sem passar
   pela lista de salas, equilibrando times e patente. Pede fila e
   pareamento no servidor.
-- **Modo espectador pela sala** (pedido em 17/11). Morto, o espectador já
-  existe (19/11: primeira pessoa do aliado com o HUD dele, vista de cima e
-  câmera livre presa no mapa — `KillCam`). Mas a caixa "Espectador" da
+- **Modo espectador pela sala** (pedido em 17/11). Morto, a câmera fica
+  onde se morreu, e um clique leva à primeira pessoa de um aliado, com o
+  HUD dele (`KillCam`; a vista de cima e a câmera livre saíram em 27/11:
+  "tire o modo espectador flutuante... usuários não irão ver para fora do
+  mapa" — o espectador da sala, se voltar a ter câmera livre, precisa
+  dela presa por dentro do mapa). Mas a caixa "Espectador" da
   sala só guarda a escolha: nada no jogo nem no servidor a lê. A fazer:
   botão "Assistir" na lista de salas (o espectador não ocupa vaga nos
   times e fica numa faixa à parte na sala); na partida, sem corpo e fora
@@ -393,15 +425,9 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   salvas para clicar (salvo não entra sozinho), entrar e criar conta. O
   "Recomeçar perfil" das opções saiu. O treino com bots segue sem conta,
   num botão discreto embaixo do login.
-- **Launcher externo, estilo Battle.net** (pedido em 17/11): programa à
-  parte que baixa e instala o jogo, atualiza sozinho, obriga a atualizar
-  quando o servidor exige, desinstala e abre o jogo. Contradiz a decisão
-  de 13/11 logo acima (sem launcher separado): confirmar quando chegar a
-  hora. Base que falta: preset de exportação para Mac e Windows (o jogo
-  nunca foi exportado), número de versão no projeto e checagem de versão
-  no servidor (cliente velho é recusado). O Mac exige assinatura e
-  notarização. Vem por último: só vale com uma versão estável para
-  distribuir.
+- ~~**Launcher externo, estilo Battle.net**~~ (pedido em 17/11; feito em
+  27/11: o cliente de instalação, `cliente/`, decisão 0021). O que dele
+  ficou por fazer está logo abaixo, em "Cliente de instalação".
 - **Perfil, inventário e moedas no servidor** (hoje ficam no arquivo do
   jogador — dá para editar à mão).
 - **Uma instância só do jogo por máquina** (anotado em 22/11, para
@@ -443,13 +469,118 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
   - Alternar em vez de segurar (agachar, mirar); o remapeamento é o
     item acima.
 
+### Jogo rápido (27/11): o que ficou por fazer
+
+- **Jogar uma partida pela fila** com oito contas (ou com o `testar_online.sh` adaptado): a busca, a faixa, o carregamento e a volta ao início no fim foram vistos só em código e nos testes do servidor.
+- **A tela da sala de quem volta de uma partida de fila** ("voltar à sala" no menu da partida) mostra os botões de trocar time e de regras, que o servidor recusa (`sala_da_fila`). Esconder na `RoomScreen` quando `LobbyLink.InQuickRoom`.
+- **Procurar de novo no fim da partida**: a tela do resultado não tem o botão; hoje volta-se ao início e clica-se em JOGAR.
+- **Punição por largar**: largar leva derrota na nota, e só. Fila bloqueada por alguns minutos para quem larga seguido é o comum.
+- **Mostrar a nota?** Está escondida (nem o jogo nem o painel mostram). Decidir se o painel mostra (ajuda o suporte) e se vira divisão visível (Bronze, Prata…) para o jogador.
+- **Região**: um servidor só, sem ping no pareamento.
+- **Fila vazia**: com quase ninguém, depois de 75 s sai 1 contra 1, e com ninguém não sai nada. Completar com bots é uma opção.
+- **Textos novos fora do `textos.csv`.**
+
+### Cliente de instalação (27/11): o que ficou por fazer
+
+O cliente está escrito e foi conferido num Mac, sem janela
+(`cliente/LEIA-ME.md`, "O que foi conferido e o que não foi"). Falta:
+
+- **Rodar no Windows.** Ninguém abriu o cliente num Windows: a janela, a
+  bandeja, o "abrir junto com o Windows", a atualização do próprio cliente
+  com o executável aberto (a troca de nome do `.exe`).
+- **O instalador do cliente** (`instalador/cliente.nsi`) nunca foi
+  compilado (não havia `makensis` na máquina): instalar, atualizar por
+  cima, tirar a entrada do instalador antigo de "Aplicativos",
+  desinstalar com e sem os arquivos do jogo.
+- **O primeiro lançamento pelo R2.** Os jobs `lancador`, `lancador-mac` e
+  `distribuir` do `lancamento.yml` foram validados (YAML), não executados.
+  No balde: ligar o acesso público (ou um domínio próprio, que é o que a
+  Cloudflare recomenda para produção) e, se o site for ler o
+  `latest.json` pelo navegador, a regra de CORS com o domínio do site.
+- **Trocar o link do site** para
+  `<endereço público do balde>/WolfLeague-Launcher-Setup.exe` (e os dois
+  `.dmg`) depois do primeiro lançamento conferido. O instalador do jogo
+  inteiro (`windows.nsi`) e o `.zip` continuam saindo na Release até lá;
+  depois dá para tirá-los do pipeline.
+- **O servidor não recusa jogo velho.** O cliente atualiza, mas quem abre
+  o jogo direto (ou não deixou atualizar) entra com a versão que tiver.
+  Falta a versão mínima no servidor (uma configuração do painel) e o jogo
+  dizer "atualize pelo cliente".
+- **Assinar o manifesto.** Hoje quem confia é o HTTPS do balde: quem
+  tomar o balde troca o jogo de todo mundo. Uma chave do pipeline assina,
+  e o cliente (com a chave pública dentro) confere antes de baixar.
+- **Assinatura de código.** Sem certificado, o Windows avisa e o Mac
+  bloqueia na primeira vez (agora uma vez só, no cliente, e não a cada
+  versão do jogo). Certificado de assinatura no Windows; conta de
+  desenvolvedor e notarização no Mac.
+- **Mac num arquivo só.** Hoje saem dois `.dmg` do cliente (Apple Silicon
+  e Intel). Um universal pede juntar os dois programas arquivo a arquivo.
+- **Só em português.** O jogo tem inglês e espanhol; o cliente, não.
+- **A foto de perfil no cliente.** Os amigos aparecem com a inicial do
+  nome: o cliente não tem as fotos do jogo.
+- **Notícias no cliente.** A aba Novidades mostra os títulos do CHANGELOG
+  da versão; as notícias que o painel publica para a tela inicial do jogo
+  podiam aparecer ali também.
+- **Velocidade numa rede de verdade.** Medido só no disco e num servidor
+  de teste na própria máquina; o download é um pedido por vez (trechos de
+  até 32 MB). Se o R2 ficar aquém da banda do jogador, baixar dois ou três
+  trechos ao mesmo tempo.
+- **Uma instalação adotada guarda arquivo que saiu do jogo** (uma DLL da
+  versão antiga): o cliente só apaga o que ele instalou. Não atrapalha.
+
+### Amigos, grupo e duas etapas (27/11): o que ficou por fazer
+
+- **Jogar em grupo de verdade.** As regras do grupo foram conferidas no
+  servidor (um rascunho de teste, fora da bancada) e o painel social
+  compila; ninguém formou um grupo com duas contas no jogo e entrou numa
+  sala.
+- **O grupo na tela da sala.** Quem é do seu grupo não tem marca na sala
+  (`RoomScreen`), e o botão de trocar de time de quem não lidera só avisa
+  depois do clique ("quem troca de time é o líder").
+- **Com a partida em curso o grupo pode se dividir**: cada um entra por
+  onde o equilíbrio dos times deixar (um time não fica com dois a mais).
+  Decidir se o grupo fura essa regra ou espera a próxima partida.
+- **Jogo rápido com grupo** escolhe pela lista de salas só as que têm
+  lugar para todos; se o servidor recusar (não cabem do mesmo lado), a
+  busca termina com o aviso em vez de tentar a próxima sala.
+- **Tirar as duas etapas pelo painel**: a rota existe
+  (`POST /admin/v1/players/{id}/2fa/reset`, permissão de moderação, com
+  auditoria); falta o botão na ficha do jogador.
+- **Códigos de reserva.** Quem perde o celular depende do suporte. O
+  comum é dar dez códigos de uso único ao ligar.
+- **Mostrar no perfil do jogo** se a conta tem as duas etapas
+  (`twoFactor` vem no perfil) e ligar por lá; hoje só pelo cliente.
+- **A tag no jogo aparece no painel social e no perfil**; na sala e no
+  placar, só o nome. Adicionar alguém da sala ou do fim da partida com um
+  clique (sem digitar a tag) ainda não existe.
+- **Textos novos fora do `textos.csv`** (grupo, tag): em inglês e
+  espanhol aparecem em português, como os do painel social.
+
+### Menus novos (27/11): o que ficou por fazer
+
+- **Jogar pelos menus novos.** As telas foram conferidas em foto; ninguém
+  fez o caminho login → início → salas → sala → partida → volta jogando.
+- **Treinamento trancado** (`PlayScreen.TrainingOpen`), a pedido. O jogo
+  rápido abriu em 27/11, com fila no servidor (seção "Jogo rápido" acima).
+- **Painel social contra o servidor de verdade**: só foi visto com amigos
+  de mentira (`--amigos-de-mentira`); falta pedir, aceitar e convidar com
+  duas contas.
+- **Notícias de ponta a ponta**: publicar no painel e ver chegar no jogo.
+  A capa é a de um mapa; imagem própria por notícia (envio de arquivo)
+  não existe.
+- **Tela de carregamento nova** não foi fotografada (o atalho
+  `--tela=carregando` entra na partida antes da foto).
+- **Textos novos fora do `textos.csv`**: em inglês e espanhol aparecem em
+  português. O `src/tools/i18n/extrair.py` ainda procura `assets/` e
+  `scripts/` na raiz (são de antes da pasta `src/`).
+- **Tela estreita (4:3)**: as abas do header encostam nas moedas; foi
+  desenhado para 16:9 e 16:10.
+
 ### Social e salas (pedido em 17/11)
 
-- **Amigos**: lista, pedido de amizade, ver quem está online e em que
-  sala. Hoje: só o saguão com chat (`UI.md` lista canais, amigos e
-  matilha em "ainda fora").
-- **Convidar para o jogo**: convite direto para um amigo entrar na sala,
-  com aviso na tela dele.
+- **Amigos, convite para a sala, tag e grupo**: entraram em 27/11 (painel
+  social na moldura do lobby; veja o `CHANGELOG.md`). Falta o teste com
+  duas contas (acima).
 - **Sala pública e privada.** Hoje: a sala aceita senha na criação
   (`Room.cs`), mas não há o conceito de pública ou privada: a lista mostra
   tudo. A fazer: privada fora da lista, só por convite ou código.
@@ -518,9 +649,16 @@ Lista do Jhon (13/11/2026), agrupada. "Hoje" diz o que já existe.
 
 ## Pendências técnicas conhecidas
 
-### O pé do humano entra no chão andando e correndo de pé (medido em 26/11)
+### Restos do trabalho de 27/11 (escadas, passos, pé, corpo morto, água)
 
-Com o ajuste do pé de 26/11 (o pé copia o giro a partir do repouso), parado em pé a sola fica a +0,3/+0,5 cm. Andando e correndo ela ainda entra: Eve −2,1 (andar) e −3,1 cm (correr), Barut −4,1 e −4,6 (era −5,3 e −6,4). A perna da Eve e do Barut tem outra proporção que a do X Bot, e o tornozelo pousa baixo. O ajuste de perna do agachado (`AnimationKit.ReachFloor`) resolve (todos a −0,5 cm ou mais), mas nos clipes de pé mudou a medida de deslize do `PassadaHumana` (para trás 0,36 → 0,55 m/s), sem o pé andar na horizontal: muda quais pontos a medida conta como apoiados. Ficou só no agachado até combinar se a medida muda.
+- **O pé do humano na corrida comum** ainda entra 1,0 a 1,2 cm no chão por um instante, **entre dois quadros do clipe** (nos quadros a sola fica no chão; andando, de lado e na corrida do Shift sobra menos de 0,7 cm). O ajuste de perna (`AnimationKit.ReachFloor`) vale nos clipes de pé desde 27/11. Se incomodar: conferir a sola também no meio de cada par de quadros.
+- **Andando de lado, o som do passo sai irregular** (0,18 a 0,9 s entre pisadas): o som agora segue o pé do corpo animado (`CharacterAnimator.Feet`), e o clipe de lado é um andar tocado com o corpo a 2,8 m/s (o pé patina ~2,3 m/s, pendência antiga). Resolve com o clipe de corrida lateral.
+- **Escada sem chapa de subida**: funciona para humano e lobo, subindo e descendo, mas o corpo ainda sobe aos degraus por baixo do desenho — a câmera e o boneco alisam (o salto de um quadro caiu de 13 para 4 cm), não ficam lisos como na chapa (desvio 0). Mapa novo: pôr a chapa em toda escada (`Montagem.rampa`); a varredura que acha peça com cara de escada está no histórico de 27/11 (degraus de 8 a 45 cm em 3 níveis ou mais).
+- **O lobo morto numa escada** fica uns 6 cm acima do ideal quando um ponto dele cai sobre a mureta lateral; encostado numa parede, a cabeça entra 1 a 3 cm na base dela.
+- **O corpo morto foi medido, não visto**: doze situações no Deserto, sem tela. Falta olhar no jogo, e conferir online (o boneco de outro jogador que morre na parede) e os bots morrendo em escada.
+- **A água do chafariz não faz som de passo nem respinga em quem entra na bacia**, e o som da fonte e o passo novo **não foram ouvidos** por quem os fez (conferidos por medida: espectro, emenda do laço, instante da pisada).
+- **O recuo dos braços** (`ViewModel.ShotSeconds`) foi conferido por medida do clipe e pelos testes; falta ver na tela com cada arma.
+- **Jogo online não rodado** (`testar_online.sh`, `testar_servidor.sh`): o movimento mudou (degraus) e roda igual no servidor; os testes de rede da bancada passam, mas a partida de ponta a ponta não foi rodada (o servidor estava sendo mexido por outra sessão).
 
 ### Limpeza do repositório: o que ficou para decidir (levantado em 24/11)
 

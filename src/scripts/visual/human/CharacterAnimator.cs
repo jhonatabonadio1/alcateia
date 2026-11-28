@@ -150,6 +150,7 @@ public partial class CharacterAnimator : Node3D
 		_modelY = Position.Y;
 		_model.Position = new Vector3(_model.Position.X, 0, _model.Position.Z);
 		FindEyes();
+		FindFeet();
 
 		HideFromOwner();
 		ApplyTeamTint();

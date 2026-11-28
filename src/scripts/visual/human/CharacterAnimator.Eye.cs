@@ -52,7 +52,11 @@ public partial class CharacterAnimator
 	/// <summary>No passo de física: a pose que está nos ossos é a final do
 	/// quadro anterior (a arma na mão mexe no tronco depois da animação, com
 	/// prioridade 100).</summary>
-	public override void _PhysicsProcess(double delta) => TuneEye(delta);
+	public override void _PhysicsProcess(double delta)
+	{
+		TuneEye(delta);
+		UpdateFeet(delta);
+	}
 
 	/// <summary>
 	/// Lê o olho do corpo parado, de cabeça reta, e o dá ao dono: o de pé ou o

@@ -1273,15 +1273,13 @@ Ring,,,,scripts/visual/HeldWeapon.cs
 Spine2,,,,scripts/visual/HeldWeapon.cs
 Thumb,,,,scripts/visual/HeldWeapon.cs
 ASSISTINDO,,WATCHING,OBSERVANDO,scripts/visual/KillCam.Hud.cs
-CLIQUES: TROCAR ALIADO  ·  ESPAÇO: CÂMERA LIVRE,,CLICKS: SWITCH ALLY  ·  SPACE: FREE CAMERA,CLICS: CAMBIAR ALIADO  ·  ESPACIO: CÁMARA LIBRE,scripts/visual/KillCam.Hud.cs
-CLIQUES: TROCAR ALIADO  ·  ESPAÇO: VISTA DE CIMA,,CLICKS: SWITCH ALLY  ·  SPACE: TOP VIEW,CLICS: CAMBIAR ALIADO  ·  ESPACIO: VISTA DESDE ARRIBA,scripts/visual/KillCam.Hud.cs
+CLIQUES: TROCAR ALIADO  ·  ESPAÇO: VOLTAR,,CLICKS: SWITCH ALLY  ·  SPACE: BACK,CLICS: CAMBIAR ALIADO  ·  ESPACIO: VOLVER,scripts/visual/KillCam.Hud.cs
 COMO HUMANO,,AS A HUMAN,COMO HUMANO,scripts/visual/KillCam.Hud.cs
 COMO LOBO,,AS A WOLF,COMO LOBO,scripts/visual/KillCam.Hud.cs
-ESPAÇO: ESPECTADOR,,SPACE: SPECTATOR,ESPACIO: ESPECTADOR,scripts/visual/KillCam.Hud.cs
+CLIQUE: TELA DE UM ALIADO,,CLICK: AN ALLY'S VIEW,CLIC: PANTALLA DE UN ALIADO,scripts/visual/KillCam.Hud.cs
 ESPECTADOR,,SPECTATOR,ESPECTADOR,scripts/visual/KillCam.Hud.cs
 PRONTO PARA RENASCER,,READY TO RESPAWN,LISTO PARA REAPARECER,scripts/visual/KillCam.Hud.cs
 RENASCE EM,,RESPAWNS IN,REAPARECE EN,scripts/visual/KillCam.Hud.cs
-WASD E MOUSE  ·  ESPAÇO: VOLTAR AOS ALIADOS,,WASD AND MOUSE  ·  SPACE: BACK TO ALLIES,WASD Y RATÓN  ·  ESPACIO: VOLVER A LOS ALIADOS,scripts/visual/KillCam.Hud.cs
 JÁ PAGO,,PAID,PAGADO,scripts/ui/LoadoutMenu.cs
 de {0},,of {0},de {0},scripts/ui/LoadoutMenu.cs
 Movimento,,Movement,Movimiento,scripts/core/KeyBindings.cs

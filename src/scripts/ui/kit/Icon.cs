@@ -13,7 +13,9 @@ public enum IconKind
 	// O uivo, que enche o escudo (18/11): escudo com um raio.
 	Shield,
 	// A corrida do humano e o fôlego dela (27/11): o "person-simple-run" do Phosphor.
-	Run
+	Run,
+	// A aba Início do header (27/11): só marca a aba, que é texto — não tem desenho.
+	Home
 }
 
 /// <summary>

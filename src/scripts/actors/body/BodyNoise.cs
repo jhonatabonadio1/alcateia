@@ -4,11 +4,12 @@ using Godot;
 /// Os ruídos do corpo, publicados no <see cref="NoiseBus"/> — o mesmo
 /// para o jogador e para o bot, que ouvem e são ouvidos pela mesma regra:
 ///
-/// - **Passo** a cada passada (a distância entre um pé e o outro, do
-///   <see cref="BodyNoiseProfile"/> ou do clipe que o lobo está tocando),
-///   não por tempo: o som cai com o pé da animação e a cadência segue a
-///   velocidade sozinha. A exceção é a corrida de quatro, que toca a 1×:
-///   ali o passo é a batida do clipe, quando as patas se juntam.
+/// - **Passo** do humano quando o pé do corpo animado toca o chão
+///   (<see cref="CharacterAnimator.FootBeats"/>, 27/11); do lobo, a cada
+///   passada (a distância entre um pé e o outro, do clipe que ele está
+///   tocando), não por tempo — a exceção é a corrida de quatro, que toca a
+///   1×: ali o passo é a batida do clipe, quando as patas se juntam. Sem
+///   corpo animado (o servidor), a passada do <see cref="BodyNoiseProfile"/>.
 /// - **Baque** ao pousar.
 /// - **Rugido** já no começo e a cada meio segundo enquanto dura.
 ///
@@ -35,7 +36,14 @@ public sealed class BodyNoise
 	/// também quando o passo é mudo (agachado). É por aqui que o
 	/// balanço da arma na mão cai junto com o som do pé.</summary>
 	public int Steps { get; private set; }
-	public float StridePhase => Mathf.Clamp(_walked / Mathf.Max(_stride, 0.01f), 0f, 1f);
+	public float StridePhase => _beatPhase >= 0f ? _beatPhase : Mathf.Clamp(_walked / Mathf.Max(_stride, 0.01f), 0f, 1f);
+
+	/// <summary>O ponto da passada dito por quem conta as batidas (o corpo
+	/// animado do humano); −1: pela distância andada.</summary>
+	private float _beatPhase = -1f;
+
+	/// <summary>O que o corpo andou desde a última batida (m).</summary>
+	private float _sinceBeat;
 
 	/// <summary>A passada de agora, em metros (0 antes do primeiro passo).</summary>
 	public float StrideLength => _stride;
@@ -53,9 +61,12 @@ public sealed class BodyNoise
 	/// quatro: uma quando as patas se juntam); −1 conta pela distância.</param>
 	/// <param name="sprinting">De lobo, a corrida de quatro; de humano, a
 	/// corrida do Shift (outra passada e um passo mais alto).</param>
+	/// <param name="phase">Com <paramref name="beats"/>: o ponto da passada
+	/// (0 na pisada, 1 na seguinte), de quem as conta; −1 se não sabe.</param>
 	public void Update(double delta, bool grounded, Vector3 velocity, bool isWolf, bool howling, bool silent,
-		bool sprinting = false, float stride = 0f, int beats = -1)
+		bool sprinting = false, float stride = 0f, int beats = -1, float phase = -1f)
 	{
+		_beatPhase = beats >= 0 ? phase : -1f;
 		if (grounded && _wasAirborne)
 			NoiseBus.Emit(_source.GlobalPosition, _profile.Land, NoiseKind.Land, _source);
 		_wasAirborne = !grounded;
@@ -79,17 +90,27 @@ public sealed class BodyNoise
 		// O ritmo vem da animação: um passo a cada batida nova.
 		if (beats >= 0)
 		{
-			if (_beats < 0 || beats < _beats) _beats = beats;
+			// (outra contagem — trocou de forma, o corpo trocou de modelo —: recomeça dela, sem
+			// despejar de uma vez a diferença entre as duas)
+			if (_beats < 0 || beats < _beats || beats - _beats > 3) _beats = beats;
+			// A passada de quem conta por batida é o que o corpo andou entre duas delas
+			// (os braços na tela tiram a cadência daqui: ViewModel.PaceRig).
+			_sinceBeat += new Vector3(velocity.X, 0, velocity.Z).Length() * (float)delta;
 			while (_beats < beats)
 			{
 				_beats++;
 				Steps++;
+				if (_sinceBeat > 0.05f) _stride = _stride <= 0f ? _sinceBeat : Mathf.Lerp(_stride, _sinceBeat, 0.5f);
+				_sinceBeat = 0f;
 				if (!silent)
-					NoiseBus.Emit(_source.GlobalPosition, isWolf ? _profile.StepWolf : _profile.StepHuman, NoiseKind.Step, _source);
+					NoiseBus.Emit(_source.GlobalPosition, StepRadius(isWolf, sprinting), NoiseKind.Step, _source);
 			}
+			// (a distância fica pronta para o corpo que perder as batidas: meia passada)
+			_walked = _stride * 0.5f;
 			return;
 		}
 		_beats = -1;
+		_sinceBeat = 0f;
 
 		if (stride <= 0f)
 			stride = isWolf ? (sprinting ? _profile.StrideWolfSprint : _profile.StrideWolf)
@@ -114,7 +135,11 @@ public sealed class BodyNoise
 		// em silêncio.
 		if (silent) return;
 
-		float radius = isWolf ? _profile.StepWolf : sprinting ? _profile.StepHumanSprint : _profile.StepHuman;
-		NoiseBus.Emit(_source.GlobalPosition, radius, NoiseKind.Step, _source);
+		NoiseBus.Emit(_source.GlobalPosition, StepRadius(isWolf, sprinting), NoiseKind.Step, _source);
 	}
+
+	/// <summary>Até onde se ouve o passo: o do lobo, o do humano andando ou o
+	/// do humano correndo (Shift).</summary>
+	private float StepRadius(bool isWolf, bool sprinting) =>
+		isWolf ? _profile.StepWolf : sprinting ? _profile.StepHumanSprint : _profile.StepHuman;
 }

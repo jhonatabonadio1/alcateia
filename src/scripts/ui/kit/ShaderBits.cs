@@ -1,7 +1,8 @@
 /// <summary>
 /// Pedaços de shader que mais de uma tela usa, para entrar no código de cada
-/// uma (o fundo do login e o do menu dividem o ruído). Antes cada uma tinha a
-/// sua cópia, e o tools/duplicados.py reprovava.
+/// uma (o fundo do login e o do menu dividiam o ruído; desde 27/11 o fundo é um
+/// só, o <see cref="LoginBackdrop"/>). Antes cada uma tinha a sua cópia, e o
+/// tools/duplicados.py reprovava.
 /// </summary>
 public static class ShaderBits
 {

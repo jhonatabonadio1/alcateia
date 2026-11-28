@@ -34,7 +34,8 @@ using System.Collections.Generic;
 public partial class Hud : CanvasLayer
 {
 	private const int Edge = UiTokens.S5;
-	private const int MinimapSide = 200;
+	/// <summary>Lado do minimapa, em pixels (Jhon, 27/11: "pode aumentar um pouco": era 200).</summary>
+	private const int MinimapSide = 240;
 
 	private Health _health;
 	private FormController _form;

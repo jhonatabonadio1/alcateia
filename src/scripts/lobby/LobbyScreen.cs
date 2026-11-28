@@ -13,6 +13,10 @@ public abstract partial class LobbyScreen : Control
 	/// <summary>A aba do header que acende com esta tela.</summary>
 	public virtual IconKind NavIcon => IconKind.None;
 
+	/// <summary>A tela precisa da largura toda (loja, inventário, opções):
+	/// o painel social abre recolhido nela.</summary>
+	public virtual bool Wide => false;
+
 	/// <summary>O shell que hospeda a tela.</summary>
 	protected LobbyShell Shell => LobbyShell.Instance;
 

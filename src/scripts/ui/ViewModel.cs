@@ -297,7 +297,10 @@ public partial class ViewModel : Node3D
 			_heldId = "\0";
 			Refresh();
 		}
-		_recoil = Mathf.MoveToward(_recoil, 0f, dt * 5.5f);
+		// O coice de código volta em 0,18 s, ou no intervalo da arma, se ela atira mais
+		// depressa que isso: em rajada a arma não fica presa lá atrás (27/11).
+		float interval = _weapon.Held?.Interval ?? 0f;
+		_recoil = Mathf.MoveToward(_recoil, 0f, dt * (interval > 0f ? Mathf.Max(5.5f, 1f / interval) : 5.5f));
 		_draw = Mathf.MoveToward(_draw, 0f, dt * 3.6f);
 
 		Vector3 bob = UpdateBob(dt);

@@ -39,6 +39,7 @@ Pede a senha nova, desliga as duas etapas dessa conta e a destrava.
 | **Mapas** | Cada mapa com a foto: **liga e desliga a rotação** com um clique. Mapa desligado não abre sala nova. O cartão só anuncia modo que o jogo já tem (hoje, Equipe): mapa feito para um modo que ainda não existe, como a Obra para o mata-mata, diz isso e em que modo se joga nele por enquanto | administrador |
 | **Promoções** | Desconto com começo e fim num item à venda. Vale na loja sozinho, no horário | administrador |
 | **Desafios** | As missões diárias, semanais, permanentes e de **evento** (com datas): o que conta, o alvo e o prêmio (Presas, XP, Sangue, item por tantos dias, título). Das diárias e semanais ligadas o servidor sorteia as que valem em cada período (as mesmas para todos); a etiqueta **Valendo hoje / esta semana** mostra quais | administrador |
+| **Notícias** | O que a tela inicial do jogo anuncia: os **banners** grandes (categoria, título, descrição, capa de um mapa, texto e destino do botão) e as **notícias curtas** (categoria, título, descrição, capa, data). Cada item se liga e desliga, e a ordem é a das setas. O jogo mostra os 6 primeiros banners e as 3 primeiras notícias publicados; sem nada publicado, as que vêm nele. Guarda até 8 e 12 (configuração `noticias`) | conteúdo |
 | **Eventos** (Segurança) | Tudo o que o escudo viu, com filtro por tipo, gravidade e IP; bloquear um endereço dali mesmo. O filtro **Partidas** mostra o que deu errado nos servidores de partida: servidor que sumiu, jogador recusado, ligação que caiu, partida vazia, resultado que não chegou, erro e lentidão (detalhe em `SEGURANCA.md`) | moderador bloqueia |
 | **Blacklist de IP** | Endereços e faixas bloqueados (pelo escudo ou pela equipe), com prazo e motivo | moderador |
 | **Banimentos** | As contas banidas e o histórico | todos veem |
@@ -85,7 +86,9 @@ motivo.
 O painel grava no banco e o servidor renova na hora os dados em memória.
 O jogo lê `GET /v1/gamedata` ao entrar na conta e a cada minuto no
 saguão (`src/scripts/net/ServerData.cs`): mapa desligado some da escolha de
-mapa, o aviso aparece no saguão. Banimento e manutenção valem no mesmo
+mapa, o aviso aparece no saguão, e os banners e as notícias publicados
+na página Notícias trocam na tela inicial (`ServerData.News`, lido pelo
+`News`). Banimento e manutenção valem no mesmo
 instante (são do servidor). Preço, promoção e vitrine do dia valem na
 hora: a loja do jogo mostra o que veio do servidor e é ele que cobra
 (`POST /v1/shop/buy`). **Moeda, item ou nível mudado pelo painel chega

@@ -23,6 +23,7 @@ do `docs/DESIGN.md` do sistema que for mexer.
 > | `docs/PERSONAGENS.md` | personagens jogáveis (`src/assets/personagens/`, uma pasta cada): como fazer um novo nas proporções certas |
 > | `docs/decisoes/` | as decisões de arquitetura (ADR) |
 > | `docs/ARSENAL.md`, `docs/CONJUNTOS.md`, `docs/UI.md` | especificações de armas, economia e interface |
+> | `cliente/LEIA-ME.md` | o cliente de instalação (baixa, atualiza e abre o jogo; amigos; duas etapas) e o pacote por pedaços |
 > | `docs/CHANGELOG.md` | o que entrou em cada versão |
 > | `CONTRIBUTING.md` | o passo a passo para trabalhar no projeto |
 >
@@ -124,11 +125,12 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
    duas, mexa no `SpeedMultiplier` do lobo (`lobo.tres`), não só aqui.
 
    Valores absolutos atuais (velocidade em m/s, pulo em altura), medidos no
-	jogo em 24/11 e, no humano, em 26/11 (os testes seguem estes;
+	jogo em 24/11 e, no humano, em 27/11 (os testes seguem estes;
 	`docs/MEDIDAS.md`). A cena do jogador põe `HumanSpeed` 3,2 (o código diz
-	3,0), a base do lobo; a base do humano é 3,2 × 0,8 (`HumanSpeedBonus`;
-	era 1,08 até 26/11).
-	**O Shift corre** (26/11): × 1,9176 (`HumanSprintFactor`; era 1,45 até 27/11: duas vezes +15%, pedidos do Jhon — **o humano correndo passa do lobo a pé**, decisão dele), só para a
+	3,0), a base do lobo; a base do humano é 3,2 × 0,88 (`HumanSpeedBonus`;
+	era 0,8 até 27/11 — Jhon: "o andar normal do humano está muito lento,
+	pode acelerar um pouco" — e 1,08 até 26/11).
+	**O Shift corre** (26/11): × 1,74327 sobre o andar (`HumanSprintFactor`: os mesmos 4,91 m/s de quando era 1,9176 sobre 2,56; era 1,45 até 27/11: duas vezes +15%, pedidos do Jhon — **o humano correndo passa do lobo a pé**, decisão dele), só para a
 	frente, de arma abaixada e sem atirar; o andar em silêncio saiu do
 	Shift (quem quer silêncio agacha). **Com fôlego** (27/11, `SprintBreath`): 4 s de
 	corrida, 1,5 s sem fôlego quando acaba, enche em 3 s — a corrida longa volta a ser do lobo.
@@ -136,11 +138,11 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
 
 	| | Humano | Lobo (26/11) |
 	|---|---|---|
-	| Velocidade | 2,56 (faca 3,28) | 4,33 (1,352×) |
+	| Velocidade | 2,82 (faca 3,60) | 4,33 (1,352×) |
 	| Correndo (Shift) | 4,91 | — |
 	| Pulo | 1,02 m | 2,09 m |
-	| Avanço do pulo correndo | ~1,9 m | ~5,1 m |
-	| Agachado | 1,15 | 1,95 |
+	| Avanço do pulo correndo | ~2,1 m | ~5,1 m |
+	| Agachado | 1,27 | 1,95 |
 	| De quatro (W W) | — | 7,44 |
 	| Na parede | — | 4,94 |
 
@@ -150,7 +152,7 @@ forçar os players a jogarem com armas" (`FormController.WolfTimeLimit`,
 
 	**No corpo do jogo (Eve e Barut) a corrida anda 3,41 m/s a 1×**
 	(medido no pé de apoio, 26/11): ela toca a 0,88× (`RunClipRate`), mais
-	devagar que o arquivo, nunca mais rápido. O humano anda 2,56 m/s numa
+	devagar que o arquivo, nunca mais rápido. O humano anda 2,82 m/s numa
 	mistura do andar com a corrida. O texto abaixo é da medida antiga.
 
    **A velocidade do humano é a passada do X Bot**, medida no quadril:
@@ -250,6 +252,7 @@ alcateia/
 ├── CONTRIBUTING.md     o passo a passo para trabalhar no projeto
 ├── docs/               DESIGN, ARQUITETURA, AJUSTES, UI, ARSENAL, CONJUNTOS, MAPAS, PACOTES, SERVIDOR, PENDENCIAS, CHANGELOG, decisoes/ (ADR)
 ├── servidor/           o servidor (.NET + PostgreSQL) e as imagens Docker — fora do Godot (.gdignore)
+├── cliente/            o cliente de instalação (.NET + Avalonia) e o pacote do jogo — fora do Godot; cliente/LEIA-ME.md
 ├── docker-compose.yml  banco + servidor + servidor de partida
 ├── WolfLeague.csproj, export_presets.cfg, icon.svg, addons/ (o Godot só acha plugin em res://addons)
 └── src/                o jogo (res://src/...)
@@ -303,7 +306,7 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `actors/bot/Bot.Navigation.cs` | Malha de navegação, desvio, pular obstáculo, virar o corpo |
 | `actors/bot/Bot.Cover.cs` | Achar cobertura testando a linha de tiro, recuar |
 | `actors/bot/Bot.Patrol.cs` | Ronda pelas rotas do mapa e busca onde o alvo sumiu |
-| `actors/body/` | O corpo que o jogador e o bot dividem: `WolfMoveMotor` (bote, voo do salto, preso ao chão), `BodyNoise` + `BodyNoiseProfile` (passo, baque, rugido; `src/resources/body/ruido.tres`), `Corpse` (cair e assentar morto), `BodyMotion.Hold`, `TeamCollision` (aliado atravessa, inimigo é sólido) |
+| `actors/body/` | O corpo que o jogador e o bot dividem: `WolfMoveMotor` (bote, voo do salto, preso ao chão), `BodyNoise` + `BodyNoiseProfile` (passo, baque, rugido; `src/resources/body/ruido.tres`), `Corpse` (cair e assentar morto, sem parar em saliência de muro), `BodyMotion` (`Hold`; os degraus: `ProbeStep` sobe, `StepBelow` e `MoveOnSteps` descem grudado na escada), `TeamCollision` (aliado atravessa, inimigo é sólido) |
 | `combat/Health.cs` | HP, escudo, dano, morte, respawn |
 | `combat/weapon/Weapon*.cs` | A arma na mão, dividida por responsabilidade (classe parcial): `Weapon.cs` (slots, troca, roteamento do ataque), `.Inventory` (equipar, pente e reserva, recarga, soltar e pegar), `.Firearms` (tiro, dispersão, recuo), `.Aim` (zoom do botão direito), `.Knife`, `.Grenade`, `.WolfClaws` (garras e o relógio dos golpes), `.WolfPounce` (salto carregado), `.WolfPouncePath` (o caminho do salto: o voo do corpo inteiro e o lado do alvo onde cair), `.WolfDive` (bote), `.Damage` (o raio com a cabeça do modelo e aplicar dano) |
 | `combat/BodyHitbox.cs` | O corpo que leva tiro, no modelo que se vê (25/11): uma peça por osso, ajustada à pele e seguindo o osso; a cabeça é uma delas (`HeadHitbox` só diz onde ela está). Sem modelo, a cápsula e a faixa de cima dela |
@@ -313,8 +316,10 @@ sala até a partida estão em `docs/ARQUITETURA.md`.
 | `domain/BodyHit.cs` | A peça do corpo (cápsula de corte oval) ajustada à pele, e o raio entrando nela; `HeadHit.cs`, a bola e quando a cabeça conta (parede na frente protege). C# puro com teste |
 | `domain/net/` | O núcleo da rede autoritativa (decisão 0011): pacote binário sem alocar, comando, fila de comandos, estado do mundo, história, interpolação, relógio do servidor e predição — C# puro, com teste de unidade |
 | `ai/BotDifficulty.cs` | Um nível de dificuldade como dado (`src/resources/bots/*.tres`) |
-| `visual/human/CharacterAnimator*.cs` | O corpo humano animado: `.Model` e `.Tree` montam uma vez (clipes, modelo do time, árvore); `.Locomotion`, `.Actions` (recarga, granada, reação) e `.Death` tocam por quadro |
-| `visual/wolf/WolfVisual*.cs` | O corpo do lobo: `.Model` e `.Tree` montam; `.Locomotion`, `.Air` (parede, pulo, bote) e `.Moves` (golpes, rugido) tocam; `.Tail` é o rabo com física (mola, gravidade e inércia) |
+| `visual/human/CharacterAnimator*.cs` | O corpo humano animado: `.Model` e `.Tree` montam uma vez (clipes, modelo do time, árvore); `.Locomotion`, `.Actions` (recarga, granada, reação) e `.Death` tocam por quadro; `.Eye` são os olhos do corpo (a câmera da 1ª pessoa) e `.Feet` as pisadas (o som do passo sai quando o pé toca o chão) |
+| `visual/wolf/WolfVisual*.cs` | O corpo do lobo: `.Model` e `.Tree` montam; `.Locomotion`, `.Air` (parede, pulo, bote) e `.Moves` (golpes, rugido) tocam; `.Tail` é o rabo com física (mola, gravidade e inércia); `.Corpse` e `TailFloor` são o lobo morto (o rabo deita no chão) |
+| `visual/DeadBody.cs` | O corpo morto como se vê, humano e lobo: encosta no chão debaixo dele (inclina-se num declive), e some por igual |
+| `visual/fx/WaterFeature.cs` | Água num lugar do mapa (chafariz, poço): superfície animada, queda, respingos e som; sem colisão. Posta pelo gerador do mapa (`Mapa.agua`) |
 | `visual/wolf/WolfOwnClips.cs` | As animações do Jhon (`lobo_anim.glb`): abre o arquivo e encaixa cada clipe no corpo (eixos, quadril) |
 | `visual/anim/AnimationKit.cs` | O que os dois corpos e o lobby dividem: clipe do Mixamo, raiz parada, quadril, esqueleto, filtro do tronco, transições |
 | `core/Match.cs` | Fases da partida, placar, MVP, pagamento de XP e Presas no fim |
@@ -479,7 +484,21 @@ linha dele ali no mesmo commit.**
   próprio corpo e a própria vida; o servidor decide abate, placar e
   resultado.** Não é à prova de trapaça.
 
-**Ainda fora** (o guia `docs/UI.md` descreve): canais, amigos, matilha,
+**Menus refeitos em 27/11** (`docs/UI.md`, "Menus refeitos"): depois do
+login abre o início (banners e notícias, publicados pelo painel), o
+header tem JOGAR no centro, e o painel social (amigos, pedidos, convites)
+mora na moldura do lobby.
+
+**Amigos, grupo, duas etapas e o cliente de instalação (27/11).** Cada
+conta tem uma tag (`Nome#0042`), e é por ela que se pede amizade. Amigos
+formam **grupo** e entram juntos nas salas, no mesmo time: quem escolhe a
+sala é o líder (`LobbyService.Groups.cs`). A verificação em duas etapas é
+opcional, por conta. E o jogador não instala mais o jogo: instala o
+**cliente** (`cliente/`, decisão 0021), que baixa o jogo, atualiza só com
+o que mudou e abre o jogo já logado. `docs/SERVIDOR.md`, "Amigos, grupo e
+conta"; `cliente/LEIA-ME.md`.
+
+**Ainda fora** (o guia `docs/UI.md` descreve): canais, matilha,
 compra paga (Sangue), temporadas, moderação, perfil da loja no
 servidor. Na criação de sala, os modos além de Equipe, a regra "Só
 faca" e as transformações "Obrigatória" e "Só um lado" aparecem como

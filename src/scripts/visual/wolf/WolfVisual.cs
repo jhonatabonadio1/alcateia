@@ -335,6 +335,18 @@ public partial class WolfVisual : Node3D
 		if (!_form.IsWolf) return;
 		_dead = true;
 		_deadTimer = 0;
+		// O corpo volta ao prumo antes de cair (27/11; Jhon: "o lobo, ao morrer,
+		// flutua. O corpo deve cair quando morre"). Correndo na parede o modelo
+		// fica girado e encostado nela (UpdateWall), e de quatro, inclinado para a
+		// frente; morto, este nó não atualiza mais nada, e o clipe de morte tocava
+		// com o corpo "deitado" no plano da parede — o lobo no ar, a um metro do
+		// chão, com uma pata apontando para baixo.
+		// (só o corpo que este nó mexe em vida: o do jogador, e o boneco de outro
+		// jogador que estava na parede. O do bot fica como foi montado.)
+		if (_player != null || (_bot is { Remote: true } && (_onWall || _wallBlend > 0f))) _model.Transform = Upright();
+		_onWall = false;
+		_wallBlend = 0f;
+		_lean = 0f;
 		BeginCorpse();
 		_playback?.Travel("Death");
 	}

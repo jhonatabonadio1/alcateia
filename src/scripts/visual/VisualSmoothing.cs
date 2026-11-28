@@ -42,7 +42,11 @@ public partial class VisualSmoothing : Node
 	/// 17 cm num passo e a arma descolava 10 cm das mãos (Jhon, 24/11). Andam junto,
 	/// no mundo.</summary>
 	private readonly List<Node3D> _loose = new();
-	private Vector3 _from, _applied, _appliedWorld;
+	private Vector3 _from, _applied, _appliedWorld, _appliedLift;
+
+	/// <summary>A cabeça (as câmeras): o dono a põe no lugar depois de um degrau,
+	/// e o <see cref="Lift"/> não entra nela.</summary>
+	private Node3D _headPart;
 	private bool _shifted;
 
 	/// <summary>O que falta o desenho andar de uma correção da rede (no
@@ -89,6 +93,22 @@ public partial class VisualSmoothing : Node
 	/// </summary>
 	public void Stepped(Vector3 moved) => _from += moved;
 
+	/// <summary>
+	/// Quanto o corpo desenhado fica acima (ou abaixo, negativo) do corpo da
+	/// física, em metros: depois de um degrau o dono traz o olho devagar
+	/// (<c>Player.EaseStep</c>), e o boneco vai junto (27/11) — numa escada de
+	/// degraus sem chapa ele subia aos pulos, 13 cm de um quadro para o outro
+	/// (medido), que é o "tremendo" que se via no lobo. A cabeça fica de fora:
+	/// o dono já a põe no lugar.
+	/// </summary>
+	public float Lift { get; set; }
+
+	/// <summary>O que o desenho do corpo ainda vai subir (ou descer) neste quadro
+	/// por conta do <see cref="Lift"/>: zero se o deslocamento do quadro já está
+	/// nas partes. Quem mede o corpo desenhado contra o chão no meio do quadro (as
+	/// patas do lobo, <see cref="WolfFootPlant"/>) soma isto.</summary>
+	public float PendingLift => _shifted ? 0f : Lift;
+
 	/// <summary>Uma peça solta (<c>TopLevel</c>) presa ao desenho do corpo: anda com
 	/// ele (veja <see cref="_loose"/>). Sai sozinha quando é liberada.</summary>
 	public void Follow(Node3D loose)
@@ -102,6 +122,7 @@ public partial class VisualSmoothing : Node
 		_health = _body.GetNodeOrNull<Health>("Health");
 		foreach (string name in Parts)
 			if (_body.GetNodeOrNull<Node3D>(name) is Node3D part) _parts.Add(part);
+		_headPart = _body.GetNodeOrNull<Node3D>("Head");
 
 		_from = _body.GlobalPosition;
 
@@ -155,15 +176,18 @@ public partial class VisualSmoothing : Node
 			float fraction = Mathf.Clamp((float)Engine.GetPhysicsInterpolationFraction(), 0f, 1f);
 			behind += step * (fraction - 1f);
 		}
-		if (behind.LengthSquared() < 1e-8f) return;
+		Vector3 lift = Vector3.Up * Lift;
+		if (behind.LengthSquared() < 1e-8f && Lift == 0f) return;
 
 		_applied = _body.GlobalTransform.Basis.Inverse() * behind;
 		_appliedWorld = behind;
+		_appliedLift = _body.GlobalTransform.Basis.Inverse() * lift;
 		foreach (Node3D part in _parts)
-			if (IsInstanceValid(part)) part.Position += _applied;
+			if (IsInstanceValid(part)) part.Position += part == _headPart ? _applied : _applied + _appliedLift;
 		_loose.RemoveAll(n => !IsInstanceValid(n));
 		foreach (Node3D loose in _loose)
-			if (loose.IsInsideTree()) loose.GlobalPosition += _appliedWorld;
+			if (loose.IsInsideTree()) loose.GlobalPosition += _appliedWorld + lift;
+		_appliedWorld += lift;
 		_shifted = true;
 	}
 
@@ -176,7 +200,7 @@ public partial class VisualSmoothing : Node
 		_shifted = false;
 
 		foreach (Node3D part in _parts)
-			if (IsInstanceValid(part)) part.Position -= _applied;
+			if (IsInstanceValid(part)) part.Position -= part == _headPart ? _applied : _applied + _appliedLift;
 		foreach (Node3D loose in _loose)
 			if (IsInstanceValid(loose) && loose.IsInsideTree()) loose.GlobalPosition -= _appliedWorld;
 	}

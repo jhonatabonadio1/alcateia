@@ -62,7 +62,6 @@ public sealed class SpectatorBodiesTest : RegressionTest
 					if (hidden.Count > 0) first ??= $"{body.Name} (não visto) com {hidden[0].Name} escondido";
 				}
 			}
-			if (cam.Mode == "livre") await b.Tap("jump");
 		}
 		RegressionBench.Note($"{steps} passos; {first ?? "tudo certo"}");
 		b.Check(stuck == 0, $"quem não se vê não tem parte escondida ({stuck})");

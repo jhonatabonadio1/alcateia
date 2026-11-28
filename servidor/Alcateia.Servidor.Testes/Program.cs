@@ -53,6 +53,10 @@ public sealed class Player : IAsyncDisposable
 {
 	public string Name, Token;
 	public long Id;
+
+	/// <summary>A tag da conta e o nome com ela (Nome#0042): é assim que se pede amizade.</summary>
+	public string Tag = "";
+	public string Handle => $"{Name}#{Tag}";
 	private readonly World _world;
 	private ClientWebSocket _socket;
 	private readonly List<JsonObject> _inbox = new();
@@ -71,11 +75,15 @@ public sealed class Player : IAsyncDisposable
 		return ((int)response.StatusCode, text.Length > 0 ? JsonNode.Parse(text) as JsonObject : null);
 	}
 
-	public async Task Connect()
+	/// <summary>Liga no saguão. <paramref name="app"/>: como o cliente de
+	/// instalação (<c>?client=app</c>), que convive com a ligação do jogo.</summary>
+	public async Task Connect(bool app)
 	{
 		_socket = new ClientWebSocket();
-		await _socket.ConnectAsync(new Uri(_world.Url.Replace("http://", "ws://") + "/v1/lobby?token=" + Token), CancellationToken.None);
+		await _socket.ConnectAsync(new Uri(_world.Url.Replace("http://", "ws://") + "/v1/lobby?token=" + Token + (app ? "&client=app" : "")), CancellationToken.None);
 	}
+
+	public Task Connect() => Connect(false);
 
 	public Task Say(JsonObject message) =>
 		_socket.SendAsync(Encoding.UTF8.GetBytes(message.ToJsonString()), WebSocketMessageType.Text, true, CancellationToken.None);
@@ -194,6 +202,7 @@ public sealed class World : IAsyncDisposable
 		Check.Equal(201, status, $"criar a conta {p.Name}");
 		p.Token = body["token"].GetValue<string>();
 		p.Id = body["profile"]["id"].GetValue<long>();
+		p.Tag = body["profile"]["tag"].GetValue<string>();
 		return p;
 	}
 
@@ -246,6 +255,7 @@ public static class Program
 		tests.AddRange(DatabaseTests.All);
 		tests.AddRange(AccountTests.All);
 		tests.AddRange(LobbyTests.All);
+		tests.AddRange(FriendTests.All);
 		tests.AddRange(MatchTests.All);
 		tests.AddRange(RestartTests.All);
 		tests.AddRange(RejoinTests.All);

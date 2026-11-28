@@ -88,6 +88,11 @@ script. É do projeto.
 (`src/tools/sons/granada.py`: ruído filtrado e senoides; numpy e scipy). Nenhuma
 gravação; são do projeto, sem licença de terceiros.
 
+`fonte` (27/11, a água do chafariz do Deserto, em laço) é **sintetizado por
+código** (`src/tools/sons/fonte.py`: ruído filtrado para a queda e o chiado,
+senoides curtas que sobem de tom para as borbulhas; numpy e scipy). Nenhuma
+gravação; é do projeto, sem licença de terceiros.
+
 `granada_explosao_1..4`, `granada_explosao_distante_1..3` e
 `granada_explosao_dentro_1..3` (27/11) saem de **uma gravação gerada por
 Jhonata Bonadio num gerador de som por IA** (a fonte está em
@@ -133,6 +138,11 @@ nome do autor. O Jhon precisa confirmar a licença e o crédito de cada pacote
 `lobo_uivo_escudo_1..2` (o escudo cheio, no fim) são **sintetizados por
 código** (`tools/sons/uivo.py`: senoides, serras e ruído filtrado, numpy e
 scipy). Nenhuma gravação; sem licença de terceiros.
+
+Refeitos em 27/11 pelo mesmo `uivo.py`, junto com o visual do rugido
+(`RoarBurst`) e nos tempos dele: a energia ganhou a puxada de ar, o estouro e um
+baque a cada onda do chão, e treme no passo da luz; o escudo ganhou a trava da
+casca fechando e três raios saindo. Continuam som próprio, sintetizado.
 
 `lobo_uivo_choque_1..2` (os choques do rugido desde 23/11, só estalos, no
 lugar do `lobo_uivo_energia`) e `forma_puff_1..3` (o "puff" de virar lobo e

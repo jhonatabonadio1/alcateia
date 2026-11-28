@@ -9,6 +9,11 @@ using System.Threading.Tasks;
 /// servidor no ar (<c>ALCATEIA_API</c>), faz o caminho inteiro pela tela:
 /// cria uma conta, "fecha o jogo", entra clicando na conta salva, erra a
 /// senha e esquece o acesso. Sem servidor, confere só a tela.
+///
+/// Em 27/11 a tela depois do login deixou de ser a das salas (OnlineScreen)
+/// e passou a ser o início, com banners e notícias (HomeScreen; pedido do
+/// Jhon: "a tela inicial ao logar não será mais salas"): o teste espera a
+/// tela nova. A cortina da troca leva um quarto de segundo; a espera é a mesma.
 /// </summary>
 public sealed class LoginTest : RegressionTest
 {
@@ -53,9 +58,9 @@ public sealed class LoginTest : RegressionTest
 			fields[1].Text = password;
 			fields[2].Text = password;
 			Click(shell, "Criar conta");
-			bool created = await RealUntil(b, () => shell.Current is OnlineScreen && Backend.LoggedIn, 5);
+			bool created = await RealUntil(b, () => shell.Current is HomeScreen && Backend.LoggedIn, 5);
 			if (!created) GD.Print("Login: na tela: " + string.Join(" | ", Labels(shell).Select(l => l.Text).Where(t => t.Trim().Length > 0)));
-			b.Check(created, "criou a conta e entrou nas salas");
+			b.Check(created, "criou a conta e entrou no início");
 			b.Check(Backend.Saved.FirstOrDefault()?.Name == name, "e o acesso ficou salvo");
 
 			// "Fecha o jogo e abre de novo": a conta aparece, mas só entra com o clique.
@@ -67,7 +72,7 @@ public sealed class LoginTest : RegressionTest
 			Button account = Buttons(shell).FirstOrDefault(x => x.HasMeta("conta") && (string)x.GetMeta("conta") == name);
 			b.Check(account != null, "a conta salva aparece para clicar");
 			account?.EmitSignal(BaseButton.SignalName.Pressed);
-			b.Check(await RealUntil(b, () => shell.Current is OnlineScreen && Backend.LoggedIn && Backend.AccountName == name, 5), "um clique na conta: entrou");
+			b.Check(await RealUntil(b, () => shell.Current is HomeScreen && Backend.LoggedIn && Backend.AccountName == name, 5), "um clique na conta: entrou");
 
 			// Senha errada: fica no login, com o recado.
 			Backend.EndSession();

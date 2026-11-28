@@ -31,17 +31,21 @@ public static class LobbyRoutes
 			if (s.GameData.Current.Maintenance) throw new Failure(FailureKind.Unavailable, "manutencao", "O servidor está em manutenção.");
 			Account account = await s.Accounts.FromToken(ctx.Request.Query["token"]) ?? await s.Accounts.Require(Api.Token(ctx));
 
+			// ?client=app: é o cliente de instalação, que só vê e mexe nos amigos
+			// e convive com a ligação do jogo da mesma conta.
+			bool app = ctx.Request.Query["client"] == "app";
+
 			using WebSocket socket = await ctx.WebSockets.AcceptWebSocketAsync();
-			await Run(s.Lobby, account, socket);
+			await Run(s.Lobby, account, socket, app);
 		});
 	}
 
 	/// <summary>Atende uma conexão do começo ao fim: cada mensagem vai para
 	/// o saguão; caiu ou fechou, sai da sala.</summary>
-	private static async Task Run(LobbyService lobby, Account account, WebSocket socket)
+	private static async Task Run(LobbyService lobby, Account account, WebSocket socket, bool app)
 	{
 		var connection = new SocketConnection(socket);
-		LobbyService.Session session = await lobby.Connect(account, connection);
+		LobbyService.Session session = await lobby.Connect(account, connection, app);
 		var buffer = new byte[8 * 1024];
 		try
 		{

@@ -117,7 +117,8 @@ public sealed class ContentService
 	/// e com o formato conferido.</summary>
 	public async Task SaveSetting(AdminContext who, string key, JsonNode value)
 	{
-		who.Require(Permission.Manage);
+		// As notícias são conteúdo (quem cuida da loja e dos mapas publica); o resto é do servidor.
+		who.Require(key == SettingKeys.News ? Permission.Content : Permission.Manage);
 		if (!SettingKeys.Defaults.ContainsKey(key ?? "")) throw new Failure(FailureKind.NotFound, "configuracao_inexistente", "Não conheço essa configuração.");
 		if (value is not JsonObject o) throw new Failure(FailureKind.Invalid, "valor_invalido", "Valor inválido.");
 
@@ -128,6 +129,7 @@ public sealed class ContentService
 			SettingKeys.Notice => new JsonObject { ["text"] = Cut(o["text"]?.GetValue<string>(), 300) },
 			SettingKeys.Challenges => new JsonObject { ["daily"] = Count(o["daily"]), ["weekly"] = Count(o["weekly"]) },
 			SettingKeys.Showcase => new JsonObject { ["count"] = Count(o["count"]), ["percent"] = Percent(o["percent"]) },
+			SettingKeys.News => new JsonObject { ["banners"] = NewsList(o["banners"], MaxBanners, banner: true), ["noticias"] = NewsList(o["noticias"], MaxStories, banner: false) },
 			SettingKeys.Rewards => new JsonObject
 			{
 				["base"] = Cash(o["base"]), ["kill"] = Cash(o["kill"]), ["assist"] = Cash(o["assist"]),
@@ -144,6 +146,51 @@ public sealed class ContentService
 		await _data.Reload();
 		await _audit.Note(who, "configuracao.alterou", key, clean.ToJsonString());
 	}
+
+	/// <summary>Quantos banners e quantas notícias o painel guarda, no máximo
+	/// (o jogo mostra os primeiros publicados de cada lista).</summary>
+	public const int MaxBanners = 8, MaxStories = 12;
+
+	private static readonly string[] NewsTargets = { "", "jogar", "loja", "inventario", "missoes" };
+
+	/// <summary>Uma lista de banners ou de notícias vinda do painel: só os
+	/// campos conhecidos, cada texto no tamanho que cabe na tela do jogo.
+	/// Item sem título não entra.</summary>
+	private static JsonArray NewsList(JsonNode node, int max, bool banner)
+	{
+		var clean = new JsonArray();
+		if (node is not JsonArray list) return clean;
+		if (list.Count > max) throw new Failure(FailureKind.Invalid, "noticias_demais", $"No máximo {max} por lista.");
+
+		foreach (JsonNode item in list)
+		{
+			if (item is not JsonObject o) continue;
+			string title = Cut(Text(o["title"]).Trim(), 60);
+			if (title.Length == 0) throw new Failure(FailureKind.Invalid, "noticia_sem_titulo", "Toda notícia precisa de título.");
+
+			var entry = new JsonObject
+			{
+				["category"] = Cut(Text(o["category"]).Trim(), 24),
+				["title"] = title,
+				["body"] = Cut(Text(o["body"]).Trim(), 240),
+				["image"] = Cut(Text(o["image"]).Trim(), 40),
+				["on"] = o["on"] is JsonValue on && on.TryGetValue(out bool published) ? published : true
+			};
+			if (banner)
+			{
+				string go = Text(o["go"]);
+				if (!NewsTargets.Contains(go)) throw new Failure(FailureKind.Invalid, "destino_invalido", "O botão leva a: jogar, loja, inventario, missoes ou a lugar nenhum.");
+				entry["cta"] = Cut(Text(o["cta"]).Trim(), 32);
+				entry["go"] = go;
+			}
+			else entry["date"] = Cut(Text(o["date"]).Trim(), 16);
+			clean.Add(entry);
+		}
+		return clean;
+	}
+
+	/// <summary>O texto de um campo; outro tipo (número, lista) vale vazio.</summary>
+	private static string Text(JsonNode node) => node is JsonValue v && v.TryGetValue(out string text) ? text ?? "" : "";
 
 	private static int Percent(JsonNode node)
 	{

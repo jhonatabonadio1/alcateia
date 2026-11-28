@@ -28,6 +28,11 @@ public static class ServerData
 	/// <summary>Já chegou alguma resposta do servidor.</summary>
 	public static bool Loaded { get; private set; }
 
+	/// <summary>Os banners e as notícias que o painel publicou para a tela
+	/// inicial (<c>{ banners: [], noticias: [] }</c>; nulo: servidor de antes
+	/// delas). Quem lê é o <see cref="global::News"/>.</summary>
+	public static JsonNode News { get; private set; }
+
 	/// <summary>O aviso que o painel escreveu para o saguão (vazio: nenhum).</summary>
 	public static string Notice { get; private set; } = "";
 
@@ -126,6 +131,7 @@ public static class ServerData
 
 		JsonNode settings = data["settings"];
 		Notice = settings?["aviso"]?["text"]?.GetValue<string>() ?? "";
+		News = settings?["noticias"]?.DeepClone();
 		Maintenance = settings?["manutencao"]?["on"]?.GetValue<bool>() ?? false;
 		MinVersion = settings?["versao_minima"]?["version"]?.GetValue<string>() ?? "0.0.0";
 		XpBonus = Number(settings?["bonus"]?["xp"]);
@@ -163,6 +169,7 @@ public static class ServerData
 		Daily.Clear();
 		Promos.Clear();
 		Notice = "";
+		News = null;
 		Maintenance = false;
 		MinVersion = "0.0.0";
 		XpBonus = PresasBonus = 1;

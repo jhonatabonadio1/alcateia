@@ -191,6 +191,7 @@ public partial class WolfFx : Node3D
 		if (_smoke != null) _smoke.Amount = q switch { 0 => 6, 1 => 10, _ => 16 };
 		if (_wisps != null) _wisps.Max = q switch { 0 => 0, 1 => 5, _ => 8 };
 		if (_sparks != null) _sparks.Arcs = q switch { 0 => 3, 1 => 5, _ => 7 };
+		if (_roar != null) _roar.Detail = q;
 	}
 
 	private static float SmokeRatio => Mathf.Clamp(Settings.Values.Quality, 0, 3) switch { 0 => 0.35f, 1 => 0.65f, _ => 1f };
@@ -423,6 +424,8 @@ public partial class WolfFx : Node3D
 		bool roaring = shown && (_visual?.Howling ?? false);
 		_roar.Tint = color;
 		_roar.Active = roaring;
+		// No ar não há chão para rachar nem poeira para levantar.
+		_roar.Grounded = _body.IsOnFloor();
 		if (roaring && _skeleton != null && _muzzle >= 0 && IsInstanceValid(_skeleton))
 		{
 			// A boca, pelo osso do focinho; o rugido vai para onde o corpo olha.
@@ -541,12 +544,20 @@ public partial class WolfFx : Node3D
 			if (IsInstanceValid(mesh)) BodyOverlay.SetAura(mesh, on ? _overlay : null);
 	}
 
+	/// <summary>Quanto a câmera do dono abre (graus) no coice do rugido: um
+	/// pouco no estouro do começo, inteiro quando o escudo fecha. Só o campo
+	/// de visão: a mira não sai do lugar.</summary>
+	[Export] public float RoarFovKick = 3.5f;
+
 	/// <summary>Para o dono do lobo, a câmera abre um pouco com o vento: é
-	/// o que vende velocidade de dentro.</summary>
+	/// o que vende velocidade de dentro. E dá um coice curto no rugido
+	/// (<see cref="RoarBurst.Kick"/>): o estouro se sente, não só se vê.</summary>
 	private void UpdateCamera(float dt)
 	{
 		if (_wolfCamera == null || _player == null || !_wolfCamera.Current) return;
-		float k = 1f - Mathf.Exp(-8f * dt);
-		_wolfCamera.Fov = Mathf.Lerp(_wolfCamera.Fov, _wolfCameraFov + AirFovKick * _air, k);
+		float kick = _roar?.Kick ?? 0f;
+		// O coice entra de uma vez (a câmera persegue rápido) e volta devagar.
+		float k = 1f - Mathf.Exp(-(kick > 0.01f ? 26f : 8f) * dt);
+		_wolfCamera.Fov = Mathf.Lerp(_wolfCamera.Fov, _wolfCameraFov + AirFovKick * _air + RoarFovKick * kick, k);
 	}
 }

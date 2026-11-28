@@ -63,6 +63,12 @@ public partial class WolfVisual
 	/// continuam de pé, como a física as deixa. A entrada e a saída são
 	/// suaves (<see cref="WallTurnTime"/>), senão o bicho estala de lado.
 	/// </summary>
+	/// <summary>O modelo de pé, no lugar: virado para onde o corpo anda, sem a
+	/// inclinação da corrida de quatro nem a pose da parede.</summary>
+	private Transform3D Upright() => new(
+		Basis.FromEuler(new Vector3(0, Mathf.DegToRad(ModelYaw) + (_player == null ? 0f : _yawOffset), 0)).Scaled(Vector3.One * ModelScale),
+		Vector3.Zero);
+
 	private void UpdateWall(float delta)
 	{
 		// O bot daqui não corre na parede, e o modelo dele fica como foi
@@ -75,9 +81,7 @@ public partial class WolfVisual
 		float target = _onWall ? 1f : 0f;
 		_wallBlend = Mathf.MoveToward(_wallBlend, target, delta / Mathf.Max(WallTurnTime, 0.01f));
 
-		var rest = new Transform3D(
-			Basis.FromEuler(new Vector3(0, Mathf.DegToRad(ModelYaw) + (puppet ? 0f : _yawOffset), 0)).Scaled(Vector3.One * ModelScale),
-			Vector3.Zero);
+		Transform3D rest = Upright();
 
 		if (!puppet && _lean > 0.01f)
 		{

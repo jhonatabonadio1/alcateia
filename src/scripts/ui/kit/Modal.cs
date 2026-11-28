@@ -39,7 +39,13 @@ public partial class Modal : Control
 		VBoxContainer column = UiKit.Column(UiTokens.S3);
 		modal._panel.AddChild(column);
 
-		column.AddChild(UiKit.Text(title, "Subtitle"));
+		// O título em letra de placa, com o fio da marca embaixo; cantoneiras no painel.
+		Label heading = UiKit.Text(Loc.Upper(title), "Subtitle");
+		heading.AddThemeFontOverride("font", UiFonts.Wide);
+		heading.AddThemeFontSizeOverride("font_size", 22);
+		column.AddChild(heading);
+		column.AddChild(Deco.Hairline(UiTokens.Accent, 2));
+		Deco.Ticks(modal._panel, new Color(UiTokens.Paper, 0.6f), 12f);
 		if (body != null) column.AddChild(body);
 
 		HBoxContainer buttons = UiKit.Row(UiTokens.S2);
@@ -64,6 +70,15 @@ public partial class Modal : Control
 
 		host.AddChild(modal);
 		Motion.FadeIn(modal, UiTokens.Fast);
+		// O painel cresce um pouco ao abrir.
+		PanelContainer panel = modal._panel;
+		panel.Scale = new Vector2(0.96f, 0.96f);
+		Callable.From(() =>
+		{
+			if (!IsInstanceValid(panel)) return;
+			panel.PivotOffset = panel.Size / 2f;
+			panel.CreateTween().TweenProperty(panel, "scale", Vector2.One, 0.2f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		}).CallDeferred();
 		modal._focus?.CallDeferred(Control.MethodName.GrabFocus);
 		return modal;
 	}

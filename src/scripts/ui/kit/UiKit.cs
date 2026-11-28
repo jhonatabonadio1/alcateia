@@ -38,8 +38,13 @@ public static class UiKit
 
 	/// <summary>Rótulo pequeno em caixa alta, para cabeçalho de coluna e
 	/// nome de campo.</summary>
-	public static Label Caption(string text, Color? color = null) =>
-		Text(Loc.Upper(text), "Caption", color);
+	public static Label Caption(string text, Color? color = null)
+	{
+		Label label = Text(Loc.Upper(text), "Caption", color);
+		// Nos menus, a letra de etiqueta (afastada): é rótulo, não frase.
+		if (UiTokens.Menu) label.AddThemeFontOverride("font", UiFonts.Tag);
+		return label;
+	}
 
 	/// <summary>Texto que corta com reticências em vez de quebrar linha
 	/// ou empurrar o resto.</summary>
@@ -87,6 +92,17 @@ public static class UiKit
 
 		Sfx.Wire(button);
 		return button;
+	}
+
+	/// <summary>Um botão que se desenha sozinho (<c>_Draw</c>): o Godot não
+	/// põe nem caixa nem letra. Continua botão — foco, teclado, sinal.</summary>
+	public static void Undrawn(Button button)
+	{
+		var empty = new StyleBoxEmpty();
+		foreach (string state in new[] { "normal", "hover", "pressed", "hover_pressed", "disabled", "focus" })
+			button.AddThemeStyleboxOverride(state, empty);
+		foreach (string color in new[] { "font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color", "font_disabled_color" })
+			button.AddThemeColorOverride(color, Colors.Transparent);
 	}
 
 	/// <summary>Botão só com ícone, com dica ao passar o mouse.</summary>

@@ -1,0 +1,97 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Alcateia.Cliente.ViewModels"
+             x:Class="Alcateia.Cliente.Views.SettingsView"
+             x:DataType="vm:MainViewModel">
+
+	<UserControl.Styles>
+		<Style Selector="Border.card">
+			<Setter Property="Background" Value="{StaticResource Surface}" />
+			<Setter Property="BorderBrush" Value="{StaticResource Line}" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="CornerRadius" Value="3" />
+			<Setter Property="Padding" Value="22,18" />
+		</Style>
+	</UserControl.Styles>
+
+	<ScrollViewer VerticalScrollBarVisibility="Auto">
+		<StackPanel Margin="40,34,40,40" Spacing="16" MaxWidth="760" HorizontalAlignment="Left">
+			<TextBlock Classes="title" Text="Configurações" />
+
+			<!-- o jogo instalado -->
+			<Border Classes="card">
+				<StackPanel Spacing="12">
+					<TextBlock Classes="label" Text="O JOGO" Foreground="{StaticResource Gold}" />
+					<StackPanel Orientation="Horizontal" Spacing="14">
+						<TextBlock Text="{Binding Game.InstalledVersion}" FontWeight="SemiBold" />
+						<TextBlock Text="{Binding Game.InstalledSize}" Classes="muted" />
+					</StackPanel>
+					<StackPanel Spacing="3">
+						<TextBlock Classes="label" Text="PASTA DE INSTALAÇÃO" />
+						<TextBlock Text="{Binding Game.InstallDir}" Classes="muted" TextWrapping="Wrap" />
+					</StackPanel>
+					<WrapPanel>
+						<Button Content="VERIFICAR E REPARAR" Command="{Binding Game.Repair}" Margin="0,0,8,8"
+						        ToolTip.Tip="Lê todos os arquivos do jogo e baixa de novo só o que estiver estragado" />
+						<Button Content="ABRIR A PASTA" Command="{Binding Game.OpenFolder}" Margin="0,0,8,8" />
+						<Button Content="MUDAR A PASTA" Command="{Binding Game.ChangeFolder}" Margin="0,0,8,8"
+						        ToolTip.Tip="Só com o jogo desinstalado: escolha a pasta antes de instalar" />
+						<Button Classes="danger" Content="DESINSTALAR" Command="{Binding Game.Uninstall}" Margin="0,0,8,8" />
+					</WrapPanel>
+				</StackPanel>
+			</Border>
+
+			<!-- o cliente -->
+			<Border Classes="card">
+				<StackPanel Spacing="10">
+					<TextBlock Classes="label" Text="O CLIENTE" Foreground="{StaticResource Gold}" />
+					<CheckBox IsChecked="{Binding Config.AutoUpdate}" Content="Atualizar o jogo sozinho quando sair versão nova" />
+					<CheckBox IsChecked="{Binding Config.CloseToTray}" Content="Ao fechar a janela, continuar aberto na bandeja" />
+					<CheckBox IsChecked="{Binding Config.MinimizeOnPlay}" Content="Ao abrir o jogo, tirar o cliente da frente" />
+					<CheckBox IsChecked="{Binding Config.AutoLogin}" Content="Entrar sozinho na conta lembrada" />
+					<CheckBox IsChecked="{Binding Config.StartWithSystem}" Content="Abrir junto com o Windows" IsVisible="{Binding Config.CanStartWithSystem}" />
+				</StackPanel>
+			</Border>
+
+			<!-- a conta -->
+			<Border Classes="card">
+				<Grid ColumnDefinitions="*,Auto">
+					<StackPanel Spacing="6">
+						<TextBlock Classes="label" Text="A CONTA" Foreground="{StaticResource Gold}" />
+						<StackPanel Orientation="Horizontal" Spacing="3">
+							<TextBlock Text="{Binding MeName}" FontWeight="SemiBold" FontSize="17" />
+							<TextBlock Text="{Binding MeTag}" Foreground="{StaticResource Ink3}" FontSize="17" />
+						</StackPanel>
+						<TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap"
+						           Text="O nome com a tag é o que um amigo escreve para adicionar você." />
+					</StackPanel>
+					<StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+						<Button Content="COPIAR A TAG" Command="{Binding CopyHandle}" HorizontalAlignment="Stretch" />
+						<Button Content="SAIR DA CONTA" Command="{Binding Logout}" HorizontalAlignment="Stretch" />
+					</StackPanel>
+				</Grid>
+			</Border>
+
+			<!-- a verificação em duas etapas -->
+			<Border Classes="card">
+				<Grid ColumnDefinitions="*,Auto">
+					<StackPanel Spacing="6">
+						<TextBlock Classes="label" Text="VERIFICAÇÃO EM DUAS ETAPAS" Foreground="{StaticResource Gold}" />
+						<TextBlock Classes="muted" TextWrapping="Wrap" Text="{Binding TwoFactorState}" />
+					</StackPanel>
+					<Button Grid.Column="1" Content="{Binding TwoFactorButton}" Command="{Binding ToggleTwoFactor}" VerticalAlignment="Center" Margin="16,0,0,0" MinWidth="150" />
+				</Grid>
+			</Border>
+
+			<StackPanel Spacing="3" Margin="2,6,0,0">
+				<TextBlock Text="{Binding Config.VersionText}" Classes="muted" FontSize="13" />
+				<TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap">
+					<Run Text="Servidor: " /><Run Text="{Binding Config.ServerText}" />
+				</TextBlock>
+				<TextBlock Classes="muted" FontSize="13" TextWrapping="Wrap">
+					<Run Text="Downloads: " /><Run Text="{Binding Config.DownloadsText}" />
+				</TextBlock>
+			</StackPanel>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

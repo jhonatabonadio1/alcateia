@@ -18,6 +18,9 @@ public partial class OptionsScreen : LobbyScreen
 {
 	public override IconKind NavIcon => IconKind.Options;
 
+	/// <summary>Precisa da largura toda: o painel social abre recolhido aqui.</summary>
+	public override bool Wide => true;
+
 	protected override void Build()
 	{
 		VBoxContainer page = Page();

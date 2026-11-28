@@ -3,69 +3,98 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// O header persistente: a única parte da interface que nunca sai da
-/// tela fora da partida. Uma faixa só, com divisórias verticais (a
-/// sensação de cockpit), em três zonas:
+/// O header persistente: a única parte da interface que nunca sai da tela
+/// fora da partida. Refeito em 27/11 (Jhon: "refaça a HUD dos menus usando
+/// Valorant como inspiração; ao centro do header terá um JOGAR"):
 ///
-/// - identidade à esquerda — insígnia, nome, patente e barra de XP, um
-///   único bloco clicável que abre o perfil;
-/// - navegação no meio — ícones das telas, com um « que recolhe a
-///   fileira (numa interface densa, deixar esconder é o que impede a
-///   tela de sufocar);
-/// - moedas à direita — Presas e Sangue, com largura fixa e contagem
-///   animada a cada mudança.
+/// - **no meio, a aba JOGAR**, uma placa de papel que desce do topo: é a
+///   peça clara da tela, o que o jogador veio fazer. De um lado e do outro,
+///   as abas de texto — Início e Inventário, Loja e Missões — com um
+///   losango embaixo da que está aberta;
+/// - **à esquerda**, a marca;
+/// - **à direita**, as moedas (largura fixa, contagem animada), a
+///   identidade (foto, nome, nível e XP: um bloco só, que abre o perfil) e
+///   três ícones: opções, social e sair.
 ///
 /// WP não aparece aqui: WP é da partida, não do lobby.
 /// </summary>
 public partial class LobbyHeader : PanelContainer
 {
-	private readonly record struct Nav(IconKind Icon, string Label, System.Action Go);
-
 	private PhotoTile _photo;
 	private LevelChip _chip;
 	private Label _name;
 	private ProgressBar _xp;
-	private Label _xpText;
 	private CurrencyLabel _presas;
 	private CurrencyLabel _sangue;
-	private HBoxContainer _navRow;
-	private Button _collapse;
-	private readonly Dictionary<IconKind, Button> _navButtons = new();
-	private Label _missionBadge;
-	private IconKind _active;
-	private bool _collapsed;
+	private readonly Dictionary<IconKind, NavTab> _tabs = new();
+	private PlayTab _play;
+	private Button _identity;
+	private Label _socialBadge;
+
+	/// <summary>Largura da aba JOGAR.</summary>
+	private const int PlayWidth = 252;
 
 	public override void _Ready()
 	{
 		ThemeTypeVariation = "Header";
 		CustomMinimumSize = new Vector2(0, UiTokens.HeaderHeight);
 
-		HBoxContainer row = UiKit.Row(0);
-		AddChild(row);
+		// Três zonas ancoradas: a do meio fica no meio da tela, tenham as
+		// dos lados a largura que tiverem.
+		var bar = new Control { CustomMinimumSize = new Vector2(0, UiTokens.HeaderHeight), MouseFilter = MouseFilterEnum.Ignore };
+		AddChild(bar);
 
-		row.AddChild(Logo());
-		row.AddChild(new VSeparator());
-		row.AddChild(Identity());
-		row.AddChild(new VSeparator());
-		row.AddChild(UiKit.Spacer());
-		row.AddChild(Navigation());
-		row.AddChild(new VSeparator());
-		row.AddChild(Currencies());
-		row.AddChild(new VSeparator());
-		row.AddChild(ExitButton());
+		Control left = Logo();
+		left.SetAnchorsAndOffsetsPreset(LayoutPreset.LeftWide);
+		bar.AddChild(left);
+
+		// A aba JOGAR no centro exato da tela; as abas de texto encostam nela
+		// pelos dois lados (as da esquerda são mais largas que as da direita:
+		// numa fileira só, a placa sairia do meio).
+		HBoxContainer before = UiKit.Row(0), after = UiKit.Row(0);
+		Navigation(before, after);
+		foreach ((Control piece, GrowDirection grow, float from) in new (Control, GrowDirection, float)[]
+			{ (before, GrowDirection.Begin, -PlayWidth / 2f), (_play, GrowDirection.Both, 0f), (after, GrowDirection.End, PlayWidth / 2f) })
+		{
+			piece.SetAnchorsAndOffsetsPreset(LayoutPreset.CenterTop);
+			piece.GrowHorizontal = grow;
+			piece.OffsetLeft = piece.OffsetRight = from;
+			piece.OffsetTop = 0;
+			bar.AddChild(piece);
+		}
+
+		HBoxContainer right = UiKit.Row(UiTokens.S2);
+		right.SetAnchorsAndOffsetsPreset(LayoutPreset.RightWide);
+		right.GrowHorizontal = GrowDirection.Begin;
+		right.AddChild(Currencies());
+		right.AddChild(new VSeparator());
+		right.AddChild(Identity());
+		right.AddChild(new VSeparator());
+		right.AddChild(Tools());
+		bar.AddChild(right);
 
 		Profile.Changed += OnProfileChanged;
+		Social.Changed += OnSocialChanged;
+		LobbyLink.Instance.Changed += OnLobbyChanged;
 		OnProfileChanged();
+		OnSocialChanged();
 	}
 
-	public override void _ExitTree() => Profile.Changed -= OnProfileChanged;
+	public override void _ExitTree()
+	{
+		Profile.Changed -= OnProfileChanged;
+		Social.Changed -= OnSocialChanged;
+		if (LobbyLink.Instance is LobbyLink link && IsInstanceValid(link)) link.Changed -= OnLobbyChanged;
+	}
 
 	// ------------------------------------------------------------------ zonas
 
 	private static Control Logo()
 	{
-		MarginContainer margin = UiKit.Margin(0, 0, UiTokens.S3, 0);
+		MarginContainer margin = UiKit.Margin(UiTokens.S2, 0, 0, 0);
+		margin.MouseFilter = MouseFilterEnum.Ignore;
 		HBoxContainer row = UiKit.Row(UiTokens.S2);
+		row.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
 		margin.AddChild(row);
 
 		row.AddChild(Icon.Make(IconKind.Wolf, 28, UiTokens.Accent));
@@ -74,7 +103,7 @@ public partial class LobbyHeader : PanelContainer
 		foreach (var (part, color) in new[] { ("WOLF", UiTokens.TextPrimary), ("LEAGUE", UiTokens.Accent) })
 		{
 			Label word = UiKit.Text(part, "Subtitle", color);
-			word.AddThemeFontOverride("font", UiFonts.Display);
+			word.AddThemeFontOverride("font", UiFonts.Brand);
 			word.AddThemeFontSizeOverride("font_size", 26);
 			word.SizeFlagsVertical = SizeFlags.ShrinkCenter;
 			name.AddChild(word);
@@ -83,37 +112,53 @@ public partial class LobbyHeader : PanelContainer
 		return margin;
 	}
 
+	private void Navigation(HBoxContainer before, HBoxContainer after)
+	{
+		void Tab(HBoxContainer row, IconKind kind, string text, Action go)
+		{
+			NavTab tab = NavTab.Make(text, go);
+			_tabs[kind] = tab;
+			row.AddChild(tab);
+		}
+
+		Tab(before, IconKind.Home, "Início", () => LobbyShell.Instance?.GoHome());
+		Tab(before, IconKind.Inventory, "Inventário", () => LobbyShell.Instance?.GoInventory());
+
+		_play = new PlayTab { CustomMinimumSize = new Vector2(PlayWidth, UiTokens.HeaderHeight) };
+		_play.Pressed += () => LobbyShell.Instance?.GoPlay();
+		Sfx.Wire(_play);
+
+		Tab(after, IconKind.Shop, "Loja", () => LobbyShell.Instance?.GoShop());
+		Tab(after, IconKind.Missions, "Missões", () => LobbyShell.Instance?.GoMissions());
+	}
+
 	private Control Identity()
 	{
-		// Patente, nome e XP são um bloco só, clicável — não espalhe.
-		var cluster = new Button
+		// Foto, nome, nível e XP são um bloco só, clicável — não espalhe.
+		_identity = new Button
 		{
 			ThemeTypeVariation = "TertiaryButton",
-			CustomMinimumSize = new Vector2(360, UiTokens.HeaderHeight - 8),
+			CustomMinimumSize = new Vector2(220, UiTokens.HeaderHeight - 8),
+			SizeFlagsVertical = SizeFlags.ShrinkCenter,
 			FocusMode = FocusModeEnum.All,
 			MouseDefaultCursorShape = CursorShape.PointingHand,
 			TooltipText = "Abrir o perfil"
 		};
-		cluster.Pressed += () => LobbyShell.Instance?.GoProfile();
-		Sfx.Wire(cluster);
+		_identity.Pressed += () => LobbyShell.Instance?.GoProfile();
+		Sfx.Wire(_identity);
 
-		MarginContainer margin = UiKit.Fill(UiKit.Margin(UiTokens.S3, UiTokens.S1, UiTokens.S3, UiTokens.S1));
+		MarginContainer margin = UiKit.Fill(UiKit.Margin(UiTokens.S2, UiTokens.S1, UiTokens.S2, UiTokens.S1));
 		margin.MouseFilter = MouseFilterEnum.Ignore;
-		cluster.AddChild(margin);
+		_identity.AddChild(margin);
 
-		HBoxContainer row = UiKit.Row(UiTokens.S3);
+		HBoxContainer row = UiKit.Row(UiTokens.S2 + 2);
 		row.MouseFilter = MouseFilterEnum.Ignore;
 		margin.AddChild(row);
 
-		// Só a foto, sem a borda do nível: aqui não há espaço para ela (o nível está no chip ao lado).
-		_photo = PhotoTile.Make(Avatars.Selected, 48);
+		_photo = PhotoTile.Make(Avatars.Selected, 44);
 		row.AddChild(_photo);
 
-		// Duas linhas, não três (Jhon, 21/11: "ficou muito apertado a barra,
-		// o nível e o nome um abaixo do outro"): em cima o nome, com o XP à
-		// direita; embaixo o nível ("20 ★★★★★") e a barra ao lado. O metal
-		// não vai escrito ("não precisa desse bronze"): a cor do chip diz.
-		VBoxContainer text = UiKit.Column(UiTokens.S1 + 2);
+		VBoxContainer text = UiKit.Column(UiTokens.S1);
 		text.MouseFilter = MouseFilterEnum.Ignore;
 		text.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 		text.SizeFlagsVertical = SizeFlags.ShrinkCenter;
@@ -122,87 +167,84 @@ public partial class LobbyHeader : PanelContainer
 		HBoxContainer top = UiKit.Row(UiTokens.S2);
 		top.MouseFilter = MouseFilterEnum.Ignore;
 		_name = UiKit.Truncated("", "Subtitle");
-		_name.AddThemeFontSizeOverride("font_size", 17);
-		_name.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		_name.AddThemeFontOverride("font", UiFonts.DisplaySemi);
+		_name.AddThemeFontSizeOverride("font_size", 20);
 		top.AddChild(_name);
-		// O XP na mesma linha de base do nome: centralizar as caixas deixava o
-		// texto menor 2 px acima (medido no Godot com a Figtree: base do nome
-		// a 17 px, a do XP a 15). Embaixo, com 1 px de folga = a diferença das
-		// descidas das duas fontes (5 e 4 px), a base cai no mesmo lugar.
-		var xpBox = new MarginContainer { MouseFilter = MouseFilterEnum.Ignore, SizeFlagsVertical = SizeFlags.Fill };
-		xpBox.AddThemeConstantOverride("margin_bottom", 1);
-		_xpText = UiKit.Text("", "Caption", UiTokens.TextSecondary);
-		_xpText.AddThemeFontOverride("font", UiFonts.Numeric);
-		_xpText.SizeFlagsVertical = SizeFlags.Fill;
-		_xpText.VerticalAlignment = VerticalAlignment.Bottom;
-		xpBox.AddChild(_xpText);
-		top.AddChild(xpBox);
-		text.AddChild(top);
-
-		HBoxContainer bottom = UiKit.Row(UiTokens.S2);
-		bottom.MouseFilter = MouseFilterEnum.Ignore;
 		_chip = LevelChip.Make(Profile.Rank, 18);
 		_chip.MouseFilter = MouseFilterEnum.Ignore;
-		bottom.AddChild(_chip);
+		top.AddChild(_chip);
+		text.AddChild(top);
+
 		_xp = new ProgressBar
 		{
-			CustomMinimumSize = new Vector2(0, 6),
-			SizeFlagsHorizontal = SizeFlags.ExpandFill,
-			SizeFlagsVertical = SizeFlags.ShrinkCenter,
+			CustomMinimumSize = new Vector2(0, 3),
 			ShowPercentage = false,
 			MaxValue = 1,
 			Step = 0.001,
 			MouseFilter = MouseFilterEnum.Ignore
 		};
-		bottom.AddChild(_xp);
-		text.AddChild(bottom);
+		// Um fio reto, sem pílula: é um medidor, não um controle.
+		_xp.AddThemeStyleboxOverride("background", new StyleBoxFlat { BgColor = new Color(UiTokens.Paper, 0.14f) });
+		_xp.AddThemeStyleboxOverride("fill", new StyleBoxFlat { BgColor = UiTokens.Accent });
+		text.AddChild(_xp);
 
-		return cluster;
+		return _identity;
 	}
 
-	private Control Navigation()
+	private Control Currencies()
 	{
-		HBoxContainer outer = UiKit.Row(0);
-
-		_navRow = UiKit.Row(0);
-		outer.AddChild(_navRow);
-
-		var items = new[]
-		{
-			new Nav(IconKind.Rooms, "Salas", () => LobbyShell.Instance?.GoHome()),
-			new Nav(IconKind.Shop, "Loja", () => LobbyShell.Instance?.GoShop()),
-			new Nav(IconKind.Inventory, "Inventário", () => LobbyShell.Instance?.GoInventory()),
-			new Nav(IconKind.Missions, "Missões", () => LobbyShell.Instance?.GoMissions()),
-			new Nav(IconKind.Profile, "Perfil", () => LobbyShell.Instance?.GoProfile()),
-			new Nav(IconKind.Options, "Opções", () => LobbyShell.Instance?.GoOptions()),
-		};
-
-		foreach (Nav nav in items)
-		{
-			Button button = NavButton(nav);
-			_navButtons[nav.Icon] = button;
-			_navRow.AddChild(button);
-		}
-
-		_collapse = UiKit.IconButton(IconKind.Collapse, "Recolher a barra", ToggleCollapse, 18);
-		_collapse.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		outer.AddChild(_collapse);
-		return outer;
+		VBoxContainer column = UiKit.Column(2);
+		column.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+		_presas = CurrencyLabel.Make(Currency.Presas, Profile.Presas, 84);
+		_sangue = CurrencyLabel.Make(Currency.Sangue, Profile.Sangue, 84);
+		column.AddChild(_presas);
+		column.AddChild(_sangue);
+		return column;
 	}
 
-	/// <summary>
-	/// Botão do header: ícone em cima, rótulo embaixo. A largura vem do
-	/// rótulo: "INVENTÁRIO" não cabe no mesmo botão que "LOJA", e rótulo
-	/// que vaza encavala no vizinho.
-	/// </summary>
-	private static (Button Button, Icon Icon, Label Label) HeaderButton(IconKind kind, string text, string tooltip, Action pressed)
+	/// <summary>Opções, social e sair: ícones, no canto onde a mão procura.</summary>
+	private Control Tools()
+	{
+		MarginContainer margin = UiKit.Margin(0, 0, UiTokens.S2, 0);
+		margin.SizeFlagsVertical = SizeFlags.ShrinkCenter;
+		HBoxContainer row = UiKit.Row(0);
+		margin.AddChild(row);
+
+		_options = ToolButton(IconKind.Options, "Opções", () => LobbyShell.Instance?.GoOptions());
+		row.AddChild(_options);
+
+		Button social = ToolButton(IconKind.Users, "Amigos", () => LobbyShell.Instance?.ToggleSocial());
+		// O número de pedidos e convites à espera.
+		_socialBadge = UiKit.Text("", "Caption", UiTokens.AccentText);
+		_socialBadge.AddThemeStyleboxOverride("normal", Badge());
+		_socialBadge.Position = new Vector2(26, 8);
+		_socialBadge.Visible = false;
+		social.AddChild(_socialBadge);
+		row.AddChild(social);
+
+		// Sair pede confirmação: um clique errado no canto da tela não pode
+		// fechar o jogo.
+		Button exit = ToolButton(IconKind.Power, "Sair do jogo", ConfirmExit, UiTokens.Danger);
+		row.AddChild(exit);
+		return margin;
+	}
+
+	private Button _options;
+
+	private static StyleBoxFlat Badge()
+	{
+		var box = new StyleBoxFlat { BgColor = UiTokens.Accent };
+		box.ContentMarginLeft = box.ContentMarginRight = 5;
+		return box;
+	}
+
+	private static Button ToolButton(IconKind kind, string tooltip, Action pressed, Color? hot = null)
 	{
 		var button = new Button
 		{
-			ThemeTypeVariation = "TertiaryButton",
-			CustomMinimumSize = new Vector2(
-				Mathf.Max(72, UiFonts.Label.GetStringSize(Loc.Upper(text), HorizontalAlignment.Left, -1, UiTokens.Caption).X + UiTokens.S4),
-				UiTokens.HeaderHeight - 8),
+			ThemeTypeVariation = "IconButton",
+			CustomMinimumSize = new Vector2(44, 44),
+			SizeFlagsVertical = SizeFlags.ShrinkCenter,
 			FocusMode = FocusModeEnum.All,
 			MouseDefaultCursorShape = CursorShape.PointingHand,
 			TooltipText = tooltip
@@ -210,88 +252,24 @@ public partial class LobbyHeader : PanelContainer
 		button.Pressed += pressed;
 		Sfx.Wire(button);
 
-		VBoxContainer stack = UiKit.Fill(UiKit.Column(2));
-		stack.Alignment = BoxContainer.AlignmentMode.Center;
-		stack.MouseFilter = MouseFilterEnum.Ignore;
-		stack.Name = "Column";
-		button.AddChild(stack);
-
 		Icon icon = Icon.Make(kind, 22, UiTokens.TextSecondary);
-		icon.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
+		icon.SetAnchorsPreset(LayoutPreset.TopLeft);
+		icon.Position = new Vector2(11, 11);
+		icon.Size = new Vector2(22, 22);
 		icon.Name = "Icon";
-		stack.AddChild(icon);
-
-		Label label = UiKit.Caption(text);
-		label.HorizontalAlignment = HorizontalAlignment.Center;
-		label.Name = "Label";
-		stack.AddChild(label);
-
-		return (button, icon, label);
-	}
-
-	private Button NavButton(Nav nav)
-	{
-		(Button button, _, _) = HeaderButton(nav.Icon, nav.Label, nav.Label, nav.Go);
-
-		if (nav.Icon == IconKind.Missions)
-		{
-			// Bolinha com o número de missões prontas para resgatar.
-			_missionBadge = UiKit.Text("", "Caption", UiTokens.AccentText);
-			_missionBadge.AddThemeStyleboxOverride("normal", UiTheme.Box(UiTokens.Accent, default, 0, 8, 5, 0));
-			_missionBadge.Position = new Vector2(46, 4);
-			_missionBadge.Visible = false;
-			button.AddChild(_missionBadge);
-		}
-
+		button.AddChild(icon);
+		button.MouseEntered += () => icon.Tint = hot ?? UiTokens.TextPrimary;
+		button.MouseExited += () => icon.Tint = button.HasMeta("on") ? UiTokens.Accent : UiTokens.TextSecondary;
 		return button;
-	}
-
-	private Control Currencies()
-	{
-		MarginContainer margin = UiKit.Margin(UiTokens.S3, 0, UiTokens.S4, 0);
-		VBoxContainer column = UiKit.Column(2);
-		column.SizeFlagsVertical = SizeFlags.ShrinkCenter;
-		margin.AddChild(column);
-
-		_presas = CurrencyLabel.Make(Currency.Presas, Profile.Presas, 92);
-		_sangue = CurrencyLabel.Make(Currency.Sangue, Profile.Sangue, 92);
-		column.AddChild(_presas);
-		column.AddChild(_sangue);
-		return margin;
-	}
-
-	/// <summary>
-	/// Sair do jogo, no canto direito — onde a mão vai procurar. Pede
-	/// confirmação: um clique errado no canto da tela não pode fechar o
-	/// jogo. O perfil é salvo a cada mudança, então sair não perde nada.
-	/// </summary>
-	private Control ExitButton()
-	{
-		(Button button, Icon icon, Label label) = HeaderButton(IconKind.Power, "Sair", "Sair do jogo", ConfirmExit);
-
-		// Vermelho só no foco do mouse: em repouso é discreto como os outros.
-		button.MouseEntered += () =>
-		{
-			icon.Tint = UiTokens.Danger;
-			label.AddThemeColorOverride("font_color", UiTokens.Danger);
-		};
-		button.MouseExited += () =>
-		{
-			icon.Tint = UiTokens.TextSecondary;
-			label.RemoveThemeColorOverride("font_color");
-		};
-
-		MarginContainer margin = UiKit.Margin(UiTokens.S1, 0, UiTokens.S2, 0);
-		margin.AddChild(button);
-		return margin;
 	}
 
 	private void ConfirmExit()
 	{
-		Label body = UiKit.Paragraph("Seu perfil, inventário e missões ficam salvos neste computador.");
+		Label body = UiKit.Paragraph("Seu perfil, inventário e missões ficam salvos na sua conta.");
 		body.CustomMinimumSize = new Vector2(400, 0);
 
 		LobbyShell.Instance?.Modal("Sair do jogo?", body,
+			new Modal.Choice("Trocar de conta", ButtonKind.Secondary, () => LobbyShell.Instance?.Logout()),
 			new Modal.Choice("Sair", ButtonKind.Danger, () =>
 			{
 				Profile.Save();
@@ -305,28 +283,32 @@ public partial class LobbyHeader : PanelContainer
 
 	public void SetActive(IconKind icon)
 	{
-		_active = icon;
-		foreach (var (kind, button) in _navButtons)
-		{
-			bool on = kind == icon;
-			Color color = on ? UiTokens.Accent : UiTokens.TextSecondary;
-			button.GetNode<Icon>("Column/Icon").Tint = color;
-			button.GetNode<Label>("Column/Label").AddThemeColorOverride("font_color", on ? UiTokens.TextPrimary : UiTokens.TextSecondary);
+		foreach (var (kind, tab) in _tabs) tab.Active = kind == icon;
+		// As salas e a sala são a aba JOGAR.
+		_play.Active = icon is IconKind.Play or IconKind.Rooms;
 
-			var underline = UiTheme.Box(on ? new Color(1, 1, 1, 0.03f) : Colors.Transparent, UiTokens.Accent, 0, 0, 0, 0);
-			underline.BorderWidthBottom = on ? 2 : 0;
-			button.AddThemeStyleboxOverride("normal", underline);
-		}
+		bool options = icon == IconKind.Options;
+		if (options) _options.SetMeta("on", true); else _options.RemoveMeta("on");
+		_options.GetNode<Icon>("Icon").Tint = options ? UiTokens.Accent : UiTokens.TextSecondary;
+
+		var on = UiTheme.Box(new Color(UiTokens.Paper, 0.05f), UiTokens.Accent, 0, 0, 0, 0);
+		on.BorderWidthBottom = 2;
+		if (icon == IconKind.Profile) _identity.AddThemeStyleboxOverride("normal", on);
+		else _identity.RemoveThemeStyleboxOverride("normal");
 	}
 
-	private void ToggleCollapse()
+	private void OnLobbyChanged()
 	{
-		_collapsed = !_collapsed;
-		foreach (var (kind, button) in _navButtons)
-			button.Visible = !_collapsed || kind == _active;
+		if (!IsInsideTree()) return;
+		_play.Room = LobbyLink.InRoom ? LobbyLink.Instance.Room?["id"]?.GetValue<int>() ?? 0 : 0;
+	}
 
-		_collapse.TooltipText = _collapsed ? "Expandir a barra" : "Recolher a barra";
-		_collapse.GetChild<Icon>(0).Kind = _collapsed ? IconKind.Expand : IconKind.Collapse;
+	private void OnSocialChanged()
+	{
+		if (_socialBadge == null) return;
+		int waiting = Social.Requests.Count + Social.Invites.Count;
+		_socialBadge.Visible = waiting > 0;
+		_socialBadge.Text = waiting.ToString();
 	}
 
 	private void OnProfileChanged()
@@ -337,26 +319,24 @@ public partial class LobbyHeader : PanelContainer
 		_photo.Photo = Avatars.Selected;
 		_photo.Edge = Ranks.ColorOf(rank);
 		_chip.Rank = rank;
-		_name.Text = string.IsNullOrEmpty(Profile.Title) ? Profile.PlayerName : $"{Profile.PlayerName}";
+		_name.Text = Profile.PlayerName;
 
 		long into = Profile.RankXp - Ranks.XpFor(rank);
 		long span = Ranks.XpFor(rank + 1) - Ranks.XpFor(rank);
 		_xp.Value = Ranks.Progress(Profile.RankXp);
-		_xpText.Text = rank >= Ranks.Count - 1 ? "MÁX" : Loc.F("{0} / {1} XP", UiTokens.Thousands(into), UiTokens.Thousands(span));
+		_identity.TooltipText = rank >= Ranks.Count - 1
+			? Loc.T("Abrir o perfil")
+			: Loc.F("Abrir o perfil · {0} / {1} XP", UiTokens.Thousands(into), UiTokens.Thousands(span));
 
 		_presas.SetValue(Profile.Presas);
 		_sangue.SetValue(Profile.Sangue);
 		// Carteira e patente são da conta: sem ela, é tudo zero.
-		string hint = Profile.HasAccount ? "" : "Entre na sua conta (Online) para ter carteira, itens e patente";
+		string hint = Profile.HasAccount ? "" : "Entre na sua conta para ter carteira, itens e patente";
 		_presas.TooltipText = hint;
 		_sangue.TooltipText = hint;
 
-		int claimable = Profile.Missions.ClaimableCount;
-		if (_missionBadge != null)
-		{
-			_missionBadge.Visible = claimable > 0;
-			_missionBadge.Text = claimable.ToString();
-		}
+		if (_tabs.TryGetValue(IconKind.Missions, out NavTab missions))
+			missions.Badge = Profile.Missions.ClaimableCount;
 	}
 
 	/// <summary>Atualiza o selo de missões (chamado após resgatar).</summary>

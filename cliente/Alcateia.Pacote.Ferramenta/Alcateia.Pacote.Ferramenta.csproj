@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	A ferramenta de linha de comando do pacote: o pipeline a usa para
+	empacotar o jogo exportado (cliente/LEIA-ME.md), e ela também instala,
+	atualiza e desinstala sem interface — é como se confere um pacote antes
+	de publicar.
+
+	O uso está em Program.cs e em cliente/LEIA-ME.md.
+	-->
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<AssemblyName>pacote</AssemblyName>
+		<RootNamespace>Alcateia.Pacote.Ferramenta</RootNamespace>
+		<InvariantGlobalization>true</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../Alcateia.Pacote/Alcateia.Pacote.csproj" />
+	</ItemGroup>
+
+</Project>
