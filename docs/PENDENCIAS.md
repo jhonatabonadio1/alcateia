@@ -25,6 +25,7 @@ Ponha aqui, com o que se sabe dele.
 
 ## Agachado tático (28/11)
 
+- **Andar agachado feito a partir da pose parada** (Jhon, 28/11: "na posição dele parado, ele só deve avançar as pernas, trocar a ponta do pé"): um ciclo construído em cima do agachado tático, sem giro da coxa e da canela no próprio eixo, pés sem virar de lado nem cruzar. Abrir e esticar o clipe por cima (`CrouchWalkOpen`, `CrouchWalkStretch`) foi tentado e desligado.
 - **O andar agachado continua o "Crouch Walking" do Mixamo**, com a cintura inclinada e o recuo, mas não a base larga (abrir ao andar foi tentado em 28/11 e o Jhon preferiu como estava), nem o pé de trás na ponta nem o passo mais curto do parado: ao sair andando as pernas passam de uma base para a outra em 0,25 s (a bota não entra no chão, `CrouchKneeFloor`). Se a troca parecer estranha jogando, o próximo passo é um andar agachado com a base larga (clipe novo ou o ajuste das pernas por cima do clipe).
 - **Não visto jogando**: a pose do meio da troca parado ↔ andando, e o agachado tático com as outras armas (pistola, faca, granada).
 

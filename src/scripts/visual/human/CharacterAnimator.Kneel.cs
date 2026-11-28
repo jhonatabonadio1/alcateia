@@ -53,12 +53,15 @@ public partial class CharacterAnimator
 	/// inteiro (Jhon, 28/11, vendo de trás as pernas bem juntas: "na pose anterior de andar agachado, somente
 	/// abra um pouco para o lado a perna direita e um pouco para o outro lado a perna esquerda";
 	/// <see cref="AnimationKit.OpenStride"/>).</summary>
-	[Export] public float CrouchWalkOpen = 0.045f;
+	// Desligado (0) em 28/11: aberto e esticado por cima do clipe, a perna girava no próprio eixo
+	// (Jhon: "não ficou profissional, movimento girando a perna no próprio eixo"). O andar agachado
+	// volta a ser o clipe como é, até haver um ciclo feito a partir da pose parada (docs/PENDENCIAS.md).
+	[Export] public float CrouchWalkOpen = 0f;
 
 	/// <summary>Andando agachado, quantas vezes o passo fica mais comprido, no mesmo ritmo (Jhon, 28/11: "corrija
 	/// a passada agachada para deixar melhor, mais bem feito"): o clipe anda ~1,06 m/s e o corpo agachado 1,27,
 	/// e o pé de apoio patinava 0,21 m/s para a frente; o clipe não acelera (regra 9), o passo é que cresce.</summary>
-	[Export] public float CrouchWalkStretch = 1.13f;
+	[Export] public float CrouchWalkStretch = 1f;
 
 	/// <summary>Agachado, quanto a cintura inclina para a frente (graus): o peito volta o mesmo tanto, e a
 	/// arma e a cabeça seguem retas (<see cref="HeldWeapon"/>). Parado e andando.</summary>
